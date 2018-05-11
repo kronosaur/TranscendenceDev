@@ -1708,9 +1708,9 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 		//	it so that we can do a more accurate calculation.
 
 		if (pObj 
+				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj) 
 				&& pObj->CanBeHit() 
-				&& pObj->InBox(vUR, vLL)
 				&& !pObj->IsDestroyed()
 				&& pObj != Ctx.pObj)
 			{
@@ -1925,7 +1925,7 @@ void CParticleArray::UpdateCollisions (const CParticleSystemDesc &Desc, SEffectU
 				DamageCtx.Damage.SetDamage(iDamage);
 				DamageCtx.Damage.AddEnhancements(Ctx.pEnhancements);
 				DamageCtx.Damage.SetCause(Ctx.iCause);
-				if (Ctx.bAutomatedWeapon)
+				if (Ctx.Attacker.IsAutomatedWeapon())
 					DamageCtx.Damage.SetAutomatedWeapon();
 				DamageCtx.vHitPos = pHit->vHitPos;
 				DamageCtx.iDirection = VectorToPolar(DamageCtx.vHitPos - pObj->GetPos());

@@ -725,8 +725,6 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 								Ctx.pObj = pObj;
 								Ctx.pDesc = pType->pDamageDesc;
 								Ctx.Damage = pType->pDamageDesc->GetDamage();
-								if (IsAutomatedWeapon())
-									Ctx.Damage.SetAutomatedWeapon();
 								Ctx.iDirection = VectorToPolar(vDeltaV);
 								Ctx.vHitPos = pObj->GetPos();
 								Ctx.pCause = this;

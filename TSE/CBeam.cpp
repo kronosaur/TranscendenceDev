@@ -232,7 +232,7 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddBonus(m_iBonus);
 		Ctx.Damage.SetCause(m_Source.GetCause());
-		if (IsAutomatedWeapon())
+		if (m_Source.IsAutomatedWeapon())
 			Ctx.Damage.SetAutomatedWeapon();
 		Ctx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
 		Ctx.vHitPos = m_vPaintTo;

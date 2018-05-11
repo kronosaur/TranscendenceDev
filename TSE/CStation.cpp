@@ -2025,7 +2025,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	if (pOrderGiver 
 			&& pOrderGiver->CanAttack()
-			&& !Ctx.Damage.IsAutomatedWeapon())
+			&& !Ctx.Attacker.IsAutomatedWeapon())
 		{
 		//	Tell our base that we were attacked.
 

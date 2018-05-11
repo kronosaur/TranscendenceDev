@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							40;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					34;
-constexpr DWORD SYSTEM_SAVE_VERSION =					157;
+constexpr DWORD SYSTEM_SAVE_VERSION =					158;
 
 //	Uncomment out the following define when building a stable release
 
@@ -583,3 +583,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					157;
 //
 //	157: 1.8 Beta 1
 //		Added m_sID to CInstalledDevice
+//
+//	158: 1.8 Beta 2
+//		Removed m_fAutomatedWeapon from CSpaceObject

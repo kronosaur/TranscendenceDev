@@ -253,7 +253,6 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fNoFriendlyFire(false),
 		m_fTimeStop(false),
 		m_fPlayerTarget(false),
-		m_fAutomatedWeapon(false),
 		m_fHasOnObjDockedEvent(false),
 		m_fOnCreateCalled(false),
 		m_fNoFriendlyTarget(false),
@@ -894,12 +893,8 @@ bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj)
 	{
 	return (
 		//	We cannot hit our friends (if our source can't)
-		//	(NOTE: we check for sovereign as opposed to IsEnemy because
-		//	it is faster. For our purposes, same sovereign is what we want).
-		(CanHitFriends() || GetSovereign() != pObj->GetSovereign())
-		
-		//	We cannot hit if the obj cannot be hit by friends
-		&& (pObj->CanBeHitByFriends() || GetSovereign() != pObj->GetSovereign()));
+		(CanHitFriends() && pObj->CanBeHitByFriends()) || GetSovereign() == NULL || !GetSovereign()->IsFriend(pObj->GetSovereign())
+		);
 	}
 
 bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *retiResult, CString *retsResult, CItem *retItemToReplace)
@@ -1141,7 +1136,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fNoFriendlyFire =			((dwLoad & 0x00000100) ? true : false);
 	pObj->m_fTimeStop =					((dwLoad & 0x00000200) ? true : false);
 	pObj->m_fPlayerTarget =				((dwLoad & 0x00000400) ? true : false);
-	pObj->m_fAutomatedWeapon =			((dwLoad & 0x00000800) ? true : false);
+	//	0x00000800 unused since version 158
 	pObj->m_fNoFriendlyTarget =			((dwLoad & 0x00001000) ? true : false);
 	pObj->m_fPlayerDestination =		((dwLoad & 0x00002000) ? true : false);
 	pObj->m_fShowDistanceAndBearing =	((dwLoad & 0x00004000) ? true : false);
@@ -5971,16 +5966,11 @@ bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, 
 				&& pDesc->CanHit(pObj)
 
 				//	We cannot hit our friends (if our source can't)
-				//	(NOTE: we check for sovereign as opposed to IsEnemy because
-				//	it is faster. For our purposes, same sovereign is what we want).
-				&& ((CanHitFriends() && Source.CanHitFriends()) || Source.GetSovereign() != pObj->GetSovereign())
+				&& ((CanHitFriends() && Source.CanHitFriends() && pObj->CanBeHitByFriends()) || !Source.IsFriend(pObj->GetSovereign()))
 
 				//	If our source is the player, then we cannot hit player wingmen
 
-				&& Source.CanHit(pObj)
-				
-				//	We cannot hit if the object cannot be hit by friends
-				&& (pObj->CanBeHitByFriends() || Source.GetSovereign() != pObj->GetSovereign()));
+				&& Source.CanHit(pObj));
 		}
 
 	//	If we don't have a source...
@@ -8050,7 +8040,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoFriendlyFire			? 0x00000100 : 0);
 	dwSave |= (m_fTimeStop					? 0x00000200 : 0);
 	dwSave |= (m_fPlayerTarget				? 0x00000400 : 0);
-	dwSave |= (m_fAutomatedWeapon			? 0x00000800 : 0);
+	//	0x00000800 unused
 	dwSave |= (m_fNoFriendlyTarget			? 0x00001000 : 0);
 	dwSave |= (m_fPlayerDestination			? 0x00002000 : 0);
 	dwSave |= (m_fShowDistanceAndBearing	? 0x00004000 : 0);

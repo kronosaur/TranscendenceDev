@@ -156,7 +156,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		Ctx.Damage = m_pDesc->GetDamage();
 		Ctx.Damage.AddEnhancements(m_pEnhancements);
 		Ctx.Damage.SetCause(m_Source.GetCause());
-		if (IsAutomatedWeapon())
+		if (m_Source.IsAutomatedWeapon())
 			Ctx.Damage.SetAutomatedWeapon();
 		Ctx.iDirection = (iAngle + 180) % 360;
 		Ctx.vHitPos = vHitPos;

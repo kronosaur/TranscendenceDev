@@ -1003,6 +1003,8 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 			//	at the root problem (the player instead of her autons)
 			//
 			//	Also, we ignore damage from automated weapons
+			//	[LATER: If we could pass CDamageSource instead of pAttacker, we could
+			//	use the source to figure out if this is an automated weapon.]
 
 			if (!Damage.Damage.IsAutomatedWeapon())
 				HandleFriendlyFire(pAttacker, pOrderGiver);

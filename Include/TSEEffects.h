@@ -40,7 +40,6 @@ struct SEffectUpdateCtx
 			pDamageDesc(NULL),
 			pEnhancements(NULL),
 			iCause(killedByDamage),
-			bAutomatedWeapon(false),
 			pTarget(NULL),
 
 			iTotalParticleCount(1),
@@ -61,7 +60,6 @@ struct SEffectUpdateCtx
 	CWeaponFireDesc *pDamageDesc;				//	Damage done by particles (may be NULL)
 	CItemEnhancementStack *pEnhancements;		//	Damage enhancements (may be NULL)
 	DestructionTypes iCause;					//	Cause of damage
-	bool bAutomatedWeapon;						//	TRUE if this is an automated attack
 	CDamageSource Attacker;						//	Attacker
 	CSpaceObject *pTarget;						//	Target
 

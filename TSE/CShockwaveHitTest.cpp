@@ -185,9 +185,9 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 		{
 		CSpaceObject *pObj = Ctx.pSystem->GetObject(i);
 		if (pObj 
+				&& pObj->InBox(vUR, vLL)
 				&& Ctx.pObj->CanHit(pObj)
 				&& pObj->CanBeHit()
-				&& pObj->InBox(vUR, vLL)
 				&& pObj->CanBeHitBy(Ctx.pDamageDesc->GetDamage())
 				&& !pObj->IsDestroyed()
 				&& pObj != Ctx.pObj)
@@ -289,7 +289,7 @@ void CShockwaveHitTest::Update (SEffectUpdateCtx &Ctx, const CVector &vPos, Metr
 							DamageCtx.Damage = Ctx.pDamageDesc->GetDamage();
 							DamageCtx.Damage.AddEnhancements(Ctx.pEnhancements);
 							DamageCtx.Damage.SetCause(Ctx.iCause);
-							if (Ctx.bAutomatedWeapon)
+							if (Ctx.Attacker.IsAutomatedWeapon())
 								DamageCtx.Damage.SetAutomatedWeapon();
 							DamageCtx.iDirection = (SegHit[j].iAngle + 180) % 360;
 							DamageCtx.vHitPos = SegHit[j].vHitPos;

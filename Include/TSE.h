@@ -1111,7 +1111,6 @@ class CSpaceObject : public CObject
 		bool IsAutoClearDestination (void) { return m_fAutoClearDestination; }
 		bool IsAutoClearDestinationOnDestroy (void) { return m_fAutoClearDestinationOnDestroy; }
 		bool IsAutoClearDestinationOnDock (void) { return m_fAutoClearDestinationOnDock; }
-		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
 		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
 		inline bool IsCollisionTestNeeded (void) { return m_fCollisionTestNeeded; }
 		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
@@ -1169,7 +1168,6 @@ class CSpaceObject : public CObject
 		inline void SetAutoClearDestination (void) { m_fAutoClearDestination = true; }
 		inline void SetAutoClearDestinationOnDestroy (void) { m_fAutoClearDestinationOnDestroy = true; }
 		inline void SetAutoClearDestinationOnDock (void) { m_fAutoClearDestinationOnDock = true; }
-		inline void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
 		inline void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
 		inline void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		inline void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
@@ -1699,14 +1697,13 @@ class CSpaceObject : public CObject
 
 		DWORD m_fTimeStop:1;					//	TRUE if time has stopped for this object
 		DWORD m_fPlayerTarget:1;				//	TRUE if this is a target for the player
-		DWORD m_fAutomatedWeapon:1;				//	TRUE if this is a shot from automated weapon
 		DWORD m_fHasOnObjDockedEvent:1;			//	TRUE if this object has an OnObjDocked event
 		DWORD m_fOnCreateCalled:1;				//	TURE if OnCreate event has already been called
 		DWORD m_fNoFriendlyTarget:1;			//	TRUE if object cannot be hit by friends
 		DWORD m_fItemEventsValid:1;				//	TRUE if item event dispatcher is up to date
 		DWORD m_fHasOnDamageEvent:1;			//	TRUE if object has OnDamage event
-
 		DWORD m_fHasOnAttackedEvent:1;			//	TRUE if object has OnAttacked event
+
 		DWORD m_fInDamage:1;					//	TRUE if object is inside Damage call
 		DWORD m_fDestroyed:1;					//	TRUE if object is destroyed (but not yet deleted)
 		DWORD m_fPlayerDestination:1;			//	TRUE if object is a destination for the player
@@ -1714,8 +1711,8 @@ class CSpaceObject : public CObject
 		DWORD m_fHasInterSystemEvent:1;			//	TRUE if object has OnPlayerEnteredSystem or OnPlayerLeftSystem event
 		DWORD m_fAutoClearDestination:1;		//	TRUE if m_fPlayerDestination is cleared when object in SRS
 		DWORD m_fHasOnOrdersCompletedEvent:1;	//	TRUE if object has OnOrdersCompleted event
-
 		DWORD m_fPlayerDocked:1;				//	TRUE if player is docked with this object
+
 		DWORD m_fPaintNeeded:1;					//	TRUE if object needs to be painted
 		DWORD m_fNonLinearMove:1;				//	TRUE if object updates its position inside OnMove
 		DWORD m_fHasName:1;						//	TRUE if object has been named (this is an optimization--it may have false positives)
@@ -1723,8 +1720,8 @@ class CSpaceObject : public CObject
 		DWORD m_fAscended:1;					//	TRUE if object is ascended (i.e., stored outside a system)
 		DWORD m_fOutOfPlaneObj:1;				//	TRUE if object is out of plane
 		DWORD m_fPainted:1;						//	TRUE if we painted the object last tick
-
 		DWORD m_fAutoClearDestinationOnDock:1;	//	TRUE if we should clear the destination when player docks
+
 		DWORD m_fShowHighlight:1;				//	TRUE if we should paint a target highlight in SRS
 		DWORD m_fAutoClearDestinationOnDestroy:1;//	TRUE if we should clear the destination when station is destroyed
 		DWORD m_fShowDamageBar:1;				//	TRUE if we should show damage bar
@@ -1732,12 +1729,13 @@ class CSpaceObject : public CObject
 		DWORD m_fInsideBarrier:1;				//	TRUE if we got created inside a barrier
 		DWORD m_fHasOnSubordinateAttackedEvent:1;	//	TRUE if we have a <OnSubordinateAttacked> event
 		DWORD m_fHasGetDockScreenEvent:1;		//	TRUE if we have a <GetDockScreen> event
-
 		DWORD m_fHasOnAttackedByPlayerEvent:1;	//	TRUE if we have an <OnAttackedByPlayer> event
+
 		DWORD m_fHasOnOrderChangedEvent:1;		//	TRUE if we have an <OnOrderChanged> event
 		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
 		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
 		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
+		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

@@ -276,7 +276,6 @@ void CAreaDamage::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	EffectCtx.pDamageDesc = m_pDesc;
 	EffectCtx.pEnhancements = m_pEnhancements;
 	EffectCtx.iCause = m_Source.GetCause();
-	EffectCtx.bAutomatedWeapon = IsAutomatedWeapon();
 	EffectCtx.Attacker = m_Source;
 
 	m_pPainter->OnUpdate(EffectCtx);

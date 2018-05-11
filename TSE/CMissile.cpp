@@ -367,7 +367,7 @@ void CMissile::CreateFragments (const CVector &vPos)
 	Ctx.Damage = m_pDesc->GetDamage();
 	Ctx.Damage.AddEnhancements(m_pEnhancements);
 	Ctx.Damage.SetCause(m_Source.GetCause());
-	if (IsAutomatedWeapon())
+	if (m_Source.IsAutomatedWeapon())
 		Ctx.Damage.SetAutomatedWeapon();
 	Ctx.iDirection = mathRandom(0, 359);
 	Ctx.vHitPos = vPos;
@@ -1285,7 +1285,7 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 				DamageCtx.Damage = m_pDesc->GetDamage();
 				DamageCtx.Damage.AddEnhancements(m_pEnhancements);
 				DamageCtx.Damage.SetCause(m_Source.GetCause());
-				if (IsAutomatedWeapon())
+				if (m_Source.IsAutomatedWeapon())
 					DamageCtx.Damage.SetAutomatedWeapon();
 				DamageCtx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
 				DamageCtx.vHitPos = m_vHitPos;

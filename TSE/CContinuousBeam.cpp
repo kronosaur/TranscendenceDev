@@ -230,7 +230,7 @@ EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHi
 	DamageCtx.Damage = m_pDesc->GetDamage();
 	DamageCtx.Damage.AddEnhancements(m_pEnhancements);
 	DamageCtx.Damage.SetCause(m_Source.GetCause());
-	if (IsAutomatedWeapon())
+	if (m_Source.IsAutomatedWeapon())
 		DamageCtx.Damage.SetAutomatedWeapon();
 	DamageCtx.iDirection = AngleMod(iHitDir + mathRandom(0, 30) - 15);
 	DamageCtx.vHitPos = vHitPos;

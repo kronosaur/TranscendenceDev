@@ -364,6 +364,23 @@ bool CDamageSource::IsEqual (CSpaceObject *pSrc) const
 		}
 	}
 
+bool CDamageSource::IsFriend (CSovereign *pSovereign) const
+
+//	IsFriend
+//
+//	Returns TRUE if we consider pSovereign a friend.
+
+	{
+	if (pSovereign == NULL)
+		return false;
+
+	CSovereign *pOurSovereign = GetSovereign();
+	if (pOurSovereign == NULL)
+		return false;
+
+	return pOurSovereign->IsFriend(pSovereign);
+	}
+
 void CDamageSource::OnLeaveSystem (void)
 
 //	OnLeaveSystem

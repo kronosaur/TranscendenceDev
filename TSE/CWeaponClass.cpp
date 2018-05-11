@@ -2063,6 +2063,11 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			CSpaceObject *pNewObj;
 			CDamageSource Source(pSource, killedByDamage);
 
+			//	If this shot was created by automated weapon fire, then set flag
+
+			if (pDevice->IsAutomatedWeapon())
+				Source.SetAutomatedWeapon();
+
 			//	Flags for the type of shot
 
 			DWORD dwFlags = 0;
@@ -2093,6 +2098,8 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 			else
 				{
+				//	Create
+
 				SShotCreateCtx Ctx;
 				Ctx.pDesc = pShot;
 				Ctx.pEnhancements = pDevice->GetEnhancementStack();
@@ -2104,11 +2111,6 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 				Ctx.pTarget = (m_bMIRV ? MIRVTarget[i] : pTarget);
 				Ctx.dwFlags = dwFlags;
 				pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
-
-				//	If this shot was created by automated weapon fire, then set flag
-
-				if (pDevice->IsAutomatedWeapon())
-					pNewObj->SetAutomatedWeapon();
 
 				//	Remember the shot, if necessary
 

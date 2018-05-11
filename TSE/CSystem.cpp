@@ -1905,11 +1905,6 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 				CSpaceObject *pNewObj;
 				if (error = CreateWeaponFire(FragCtx, &pNewObj))
 					return error;
-
-				//	Preserve automated weapon flag
-
-				if (pMissileSource && pMissileSource->IsAutomatedWeapon())
-					pNewObj->SetAutomatedWeapon();
 				}
 			}
 

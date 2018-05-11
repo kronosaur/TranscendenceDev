@@ -571,6 +571,7 @@ class CDamageSource
 		DWORD GetSovereignUNID (void) const;
 		inline bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
 		bool HasSource (void) const;
+		inline bool IsAutomatedWeapon (void) const { return ((m_dwFlags & FLAG_IS_AUTOMATED_WEAPON) ? true : false); }
 		bool IsCausedByEnemyOf (CSpaceObject *pObj) const;
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
@@ -579,10 +580,12 @@ class CDamageSource
 		bool IsEnemy (CDamageSource &Src) const;
 		bool IsEqual (const CDamageSource &Src) const;
 		bool IsEqual (CSpaceObject *pSrc) const;
+		bool IsFriend (CSovereign *pSovereign) const;
 		inline bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);
 		void OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
+		inline void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
 		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetObj (CSpaceObject *pSource);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
@@ -596,6 +599,8 @@ class CDamageSource
 			FLAG_IS_PLAYER_SUBORDINATE		= 0x00000002,
 			FLAG_IS_PLAYER_CAUSED			= 0x00000004,
 			FLAG_OBJ_ID						= 0x00000008,	//	m_pSource is an ID, not a pointer
+
+			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
 			};
 
 		inline DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
