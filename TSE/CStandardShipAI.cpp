@@ -1513,6 +1513,7 @@ void CStandardShipAI::BehaviorStart (void)
 				if (pObj
 						&& !pObj->IsRadioactive()
 						&& !pObj->IsIntangible()
+						&& (!pObj->IsAbandoned() || m_pShip->GetSovereign() == pObj->GetSovereign())
 						&& (pObj->CanObjRequestDock(m_pShip) == CSpaceObject::dockingOK)
 						&& pObj->HasAttribute(CONSTLIT("populated")))
 					{
