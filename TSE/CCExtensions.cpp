@@ -4194,8 +4194,11 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	The first argument is an UNID
 
-	CDesignType *pType = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue());
-	if (pType == NULL)
+	CDesignType *pType;
+	if (pArgs->GetElement(0)->IsNil())
+		return pCC->CreateNil();
+
+	else if ((pType = g_pUniverse->FindDesignType(pArgs->GetElement(0)->GetIntegerValue())) == NULL)
 		{
 		if (dwData == FN_DESIGN_GET_PROPERTY 
 				|| pArgs->GetElement(0)->GetIntegerValue() == 0)
