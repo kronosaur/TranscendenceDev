@@ -64,6 +64,13 @@ bool CDamageSource::CanHitFriends (void) const
 //	Returns TRUE if we know that the source can hit friend.
 
 	{
+	//	Automated weapons never hit friends
+
+	if (IsAutomatedWeapon())
+		return false;
+
+	//	See if our source can hit friends.
+
 	CSpaceObject *pObj = GetObj();
 	return (pObj ? pObj->CanHitFriends() : false);
 	}
