@@ -379,7 +379,11 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 
-ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+#define FN_ROLL_DICE					1
+#define FN_ROLL_CHANCE					2
+
+ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
+
 ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -1042,9 +1046,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(fmtVerb verb pluralize) -> string",
 			"sv",	0, },
 
-		{	"rollDice",						fnRollDice,		0,
+		{	"rollChance",					fnRollDice,		FN_ROLL_CHANCE,
+			"(rollChance percentChance [rolls]) -> True/Nil",
+			"n*",	0,	},
+
+		{	"rollDice",						fnRollDice,		FN_ROLL_DICE,
 			"(rollDice count sides [bonus]) -> value",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"ii*",	0,	},
 
 		//	Ship functions
 		//	--------------
@@ -8989,7 +8997,7 @@ ICCItem *fnResourceGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	return pCC->CreateNil();
 	}
 
-ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnRollDice
 //
@@ -8997,28 +9005,48 @@ ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
-	ICCItem *pArgs;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
 
-	//	Evaluate the arguments and validate them
+	switch (dwData)
+		{
+		case FN_ROLL_CHANCE:
+			{
+			Metric rProb = pArgs->GetElement(0)->GetDoubleValue() / 100.0;
+			
+			//	If we're trying multiple times, then we adjust the probability
 
-	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("ii*"));
-	if (pArgs->IsError())
-		return pArgs;
+			if (pArgs->GetCount() > 1)
+				{
+				Metric rRolls = pArgs->GetElement(1)->GetDoubleValue();
+				if (rRolls <= 0.0)
+					return pCC->CreateError(CONSTLIT("Number of rolls must be positive."), pArgs->GetElement(1));
 
-	//	Arguments
+				rProb = 1.0 - pow(1.0 - rProb, rRolls);
+				}
 
-	int iCount = pArgs->GetElement(0)->GetIntegerValue();
-	int iFaces = pArgs->GetElement(1)->GetIntegerValue();
-	int iBonus = 0;
-	if (pArgs->GetElement(2))
-		iBonus = pArgs->GetElement(2)->GetIntegerValue();
+			//	Roll
 
-	pArgs->Discard(pCC);
+			return pCC->CreateBool(mathRandomDouble() <= rProb);
+			}
 
-	//	Roll Dice
+		case FN_ROLL_DICE:
+			{
+			int iCount = pArgs->GetElement(0)->GetIntegerValue();
+			int iFaces = pArgs->GetElement(1)->GetIntegerValue();
+			int iBonus = 0;
+			if (pArgs->GetElement(2))
+				iBonus = pArgs->GetElement(2)->GetIntegerValue();
 
-	DiceRange Dice(iFaces, iCount, iBonus);
-	return pCC->CreateInteger(Dice.Roll());
+			DiceRange Dice(iFaces, iCount, iBonus);
+			return pCC->CreateInteger(Dice.Roll());
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
 	}
 
 ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
