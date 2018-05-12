@@ -123,6 +123,7 @@ CUniverse::~CUniverse (void)
 
 	m_Design.CleanUp();
 	m_Extensions.CleanUp();
+	m_Topology.DeleteAll();
 
 	//	We own m_pPlayer;
 
