@@ -456,11 +456,9 @@ void CShip::CalcDeviceBonus (void)
 			if (!Mods.IsEmpty())
 				pEnhancements->Insert(Mods);
 
-			//	Add any slot bonus
+			//	Add enhancements from the slot
 
-			int iSlotBonus = Device.GetSlotBonus();
-			if (iSlotBonus != 0)
-				pEnhancements->InsertHPBonus(iSlotBonus);
+			Device.AccumulateSlotEnhancements(this, EnhancementIDs, pEnhancements);
 
 			//	Add enhancements from other devices
 

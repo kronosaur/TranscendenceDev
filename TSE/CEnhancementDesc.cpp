@@ -175,3 +175,64 @@ void CEnhancementDesc::SetType (int iEntry, const CString &sType)
 	else if (iEntry >= 0 && iEntry < m_Enhancements.GetCount())
 		m_Enhancements[iEntry].sType = sType;
 	}
+
+void CEnhancementDesc::ReadFromStream (SLoadCtx &Ctx)
+
+//	ReadFromStream
+//
+//	DWORD				Count of SEnhancerDesc
+//
+//	CString				sType
+//	CString				Criteria
+//	CItemLevelCriteria	LevelCheck
+//	CItemEnhancement	Enhancement
+
+	{
+	int i;
+	DWORD dwLoad;
+
+	Ctx.pStream->Read(dwLoad);
+	m_Enhancements.DeleteAll();
+	m_Enhancements.InsertEmpty(dwLoad);
+
+	for (i = 0; i < m_Enhancements.GetCount(); i++)
+		{
+		SEnhancerDesc &Enhancer = m_Enhancements[i];
+
+		Ctx.pStream->Read(Enhancer.sType);
+
+		CString sCriteria;
+		Ctx.pStream->Read(sCriteria);
+		CItem::ParseCriteria(sCriteria, &Enhancer.Criteria);
+		Enhancer.LevelCheck.ReadFromStream(Ctx);
+		Enhancer.Enhancement.ReadFromStream(Ctx);
+		}
+	}
+
+void CEnhancementDesc::WriteToStream (IWriteStream &Stream) const
+
+//	WriteToStream
+//
+//	DWORD				Count of SEnhancerDesc
+//
+//	CString				sType
+//	CString				Criteria
+//	CItemLevelCriteria	LevelCheck
+//	CItemEnhancement	Enhancement
+
+	{
+	int i;
+
+	DWORD dwSave = m_Enhancements.GetCount();
+	Stream.Write(dwSave);
+
+	for (i = 0; i < m_Enhancements.GetCount(); i++)
+		{
+		const SEnhancerDesc &Enhancer = m_Enhancements[i];
+
+		Stream.Write(Enhancer.sType);
+		Stream.Write(CItem::GenerateCriteria(Enhancer.Criteria));
+		Enhancer.LevelCheck.WriteToStream(Stream);
+		Enhancer.Enhancement.WriteToStream(&Stream);
+		}
+	}

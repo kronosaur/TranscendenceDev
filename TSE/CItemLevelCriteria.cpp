@@ -103,3 +103,26 @@ bool CItemLevelCriteria::MatchesCriteria (int iLevel, const CItem &Item) const
 			return false;
 		}
 	}
+
+void CItemLevelCriteria::ReadFromStream (SLoadCtx &Ctx)
+
+//	ReadFromStream
+//
+//	DWORD		m_iType
+
+	{
+	DWORD dwLoad;
+	Ctx.pStream->Read(dwLoad);
+
+	m_iType = (ETypes)dwLoad;
+	}
+
+void CItemLevelCriteria::WriteToStream (IWriteStream &Stream) const
+
+//	WriteToStream
+//
+//	DWORD		m_iType
+
+	{
+	Stream.Write((DWORD)m_iType);
+	}

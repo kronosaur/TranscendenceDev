@@ -46,6 +46,31 @@ CInstalledDevice::CInstalledDevice (void) :
 	{
 	}
 
+bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
+
+//	AccumulateSlotEnhancements
+//
+//	Accumulates enhancements confered by the slot itself.
+
+	{
+	bool bEnhanced = false;
+
+	//	Slot enhancements
+
+	if (!m_SlotEnhancements.IsEmpty())
+		bEnhanced = m_SlotEnhancements.Accumulate(CItemCtx(pSource, const_cast<CInstalledDevice *>(this)), *GetItem(), EnhancementIDs, pEnhancements);
+
+	//	Add slot bonus
+
+	if (m_iSlotBonus != 0)
+		{
+		pEnhancements->InsertHPBonus(m_iSlotBonus);
+		bEnhanced = true;
+		}
+
+	return bEnhanced;
+	}
+
 int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
 
 //	CalcPowerUsed
@@ -293,6 +318,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 
 	m_fSecondaryWeapon = Desc.bSecondary;
 
+	m_SlotEnhancements = Desc.Enhancements;
 	m_iSlotBonus = Desc.iSlotBonus;
 	m_iSlotPosIndex = -1;
 	}
@@ -404,6 +430,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		SetLinkedFireOptions(Desc.dwLinkedFireOptions);
 		m_fSecondaryWeapon = Desc.bSecondary;
 
+		m_SlotEnhancements = Desc.Enhancements;
 		m_iSlotBonus = Desc.iSlotBonus;
 		}
 
@@ -683,6 +710,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	m_fCannotBeEmpty =		((dwLoad & 0x00020000) ? true : false);
 	m_fFateDestroyed =		((dwLoad & 0x00040000) ? true : false);
 	m_fFateComponetized =	((dwLoad & 0x00080000) ? true : false);
+	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -720,6 +748,9 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 92)
 		m_pEnhancements = CItemEnhancementStack::ReadFromStream(Ctx);
+
+	if (bSlotEnhancements)
+		m_SlotEnhancements.ReadFromStream(Ctx);
 	}
 
 int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
@@ -1011,6 +1042,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
+//	CEnhancementDesc
 
 	{
 	int i;
@@ -1070,7 +1102,11 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fCannotBeEmpty ?		0x00020000 : 0);
 	dwSave |= (m_fFateDestroyed ?		0x00040000 : 0);
 	dwSave |= (m_fFateComponetized ?	0x00080000 : 0);
+	dwSave |= (!m_SlotEnhancements.IsEmpty() ? 0x00100000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
+
+	if (!m_SlotEnhancements.IsEmpty())
+		m_SlotEnhancements.WriteToStream(*pStream);
 	}

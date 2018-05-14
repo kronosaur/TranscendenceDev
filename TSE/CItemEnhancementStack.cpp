@@ -86,7 +86,7 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 
 	int iBonus = GetBonus();
 	if (iBonus < 0)
-		retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("-%d%%"), iBonus), true));
+		retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%d%%"), iBonus), true));
 	else if (iBonus > 0)
 		retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+%d%%"), iBonus), true));
 

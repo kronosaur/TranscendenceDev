@@ -68,21 +68,23 @@ class CItemLevelCriteria
 	public:
 		enum ETypes
 			{
-			checkNone,							//	Matches everything
+			checkNone =						0,	//	Matches everything
 
-			checkLessEqualToLevel,				//	Target item level is <= to our level
-			checkLessThanLevel,					//	Target item level is < than our level
-			checkGreaterEqualToLevel,			//	Target item level is >= to our level
-			checkGreaterThanLevel,				//	Target item level is > than our level
-			checkLessEqualToRepairLevel,		//	Target item repair level is <= to our level
-			checkLessThanRepairLevel,			//	Target item repair level is < to our level
-			checkGreaterEqualToRepairLevel,		//	Target item repair level is >= to our level
-			checkGreaterThanRepairLevel,		//	Target item repair level is > than our level
+			checkLessEqualToLevel =			1,	//	Target item level is <= to our level
+			checkLessThanLevel =			2,	//	Target item level is < than our level
+			checkGreaterEqualToLevel =		3,	//	Target item level is >= to our level
+			checkGreaterThanLevel =			4,	//	Target item level is > than our level
+			checkLessEqualToRepairLevel =	5,	//	Target item repair level is <= to our level
+			checkLessThanRepairLevel =		6,	//	Target item repair level is < to our level
+			checkGreaterEqualToRepairLevel = 7,	//	Target item repair level is >= to our level
+			checkGreaterThanRepairLevel =	8,	//	Target item repair level is > than our level
 			};
 
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
 		inline bool IsEmpty (void) const { return m_iType == checkNone; }
 		bool MatchesCriteria (int iLevel, const CItem &Item) const;
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		ETypes m_iType = checkNone;
@@ -93,11 +95,14 @@ class CEnhancementDesc
 	public:
 		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		inline bool IsEmpty (void) const { return (m_Enhancements.GetCount() == 0); }
 		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
 		inline const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Enhancements[iIndex].Enhancement; }
+		void ReadFromStream (SLoadCtx &Ctx);
 		void SetCriteria (int iEntry, const CItemCriteria &Criteria);
 		void SetLevelCheck (int iEntry, const CItemLevelCriteria &LevelCheck);
 		void SetType (int iEntry, const CString &sType);
+		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
 		struct SEnhancerDesc
@@ -333,28 +338,29 @@ class CDeviceClass
 
 struct SDeviceDesc
 	{
-	CString sID;
+	CString sID;								//	Slot ID
 
-	CItem Item;
+	CItem Item;									//	Item to add
+	CItemList ExtraItems;						//	Extra items to add (e.g., missiles)
 
-	int iPosAngle = 0;
+	int iPosAngle = 0;							//	Slot position
 	int iPosRadius = 0;
 	int iPosZ = 0;
 	bool b3DPosition = false;
-	bool bExternal = false;
-	bool bCannotBeEmpty = false;
-	ItemFates iFate = fateNone;
 
-	bool bOmnidirectional = false;
-	int iMinFireArc = 0;
+	bool bOmnidirectional = false;				//	Slot turret
+	int iMinFireArc = 0;						//	Slot swivel
 	int iMaxFireArc = 0;
+
+	DWORD dwLinkedFireOptions = 0;				//	Slot linked-fire options
 	bool bSecondary = false;
 
-	DWORD dwLinkedFireOptions = 0;
+	bool bExternal = false;						//	Slot is external
+	bool bCannotBeEmpty = false;				//	Slot cannot be empty
+	ItemFates iFate = fateNone;					//	Fate of device when ship destroyed
 
+	CEnhancementDesc Enhancements;				//	Slot enhancements to installed device
 	int iSlotBonus = 0;
-
-	CItemList ExtraItems;
 	};
 
 class CDeviceDescList
@@ -456,6 +462,7 @@ class CInstalledDevice
 		inline int GetPosZ (void) const { return m_iPosZ; }
 		inline int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
 		inline int GetSlotBonus (void) const { return m_iSlotBonus; }
+		inline const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		inline int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
 		inline int GetTemperature (void) const { return m_iTemperature; }
 		inline int GetTimeUntilReady (void) const { return m_iTimeUntilReady; }
@@ -510,6 +517,7 @@ class CInstalledDevice
 		inline bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
 		inline bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return m_pClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements); }
         inline bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return m_pClass->AccumulatePerformance(ItemCtx, Ctx); }
+		bool AccumulateSlotEnhancements (CSpaceObject *pSource, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		inline bool Activate (CSpaceObject *pSource, 
 							  CSpaceObject *pTarget,
 							  bool *retbSourceDestroyed,
@@ -588,6 +596,7 @@ class CInstalledDevice
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
 		COverlay *m_pOverlay;					//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
+		CEnhancementDesc m_SlotEnhancements;	//	Enhancements confered by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
 		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
 

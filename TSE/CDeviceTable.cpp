@@ -8,6 +8,7 @@
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define DEVICE_SLOT_TAG							CONSTLIT("DeviceSlot")
 #define DEVICE_SLOTS_TAG						CONSTLIT("DeviceSlots")
+#define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define GROUP_TAG								CONSTLIT("Group")
 #define ITEM_TAG								CONSTLIT("Item")
 #define ITEMS_TAG								CONSTLIT("Items")
@@ -55,7 +56,6 @@ class CNullDevice : public IDeviceGenerator
 class CSingleDevice : public IDeviceGenerator
 	{
 	public:
-		CSingleDevice (void) : m_pExtraItems(NULL) { }
 		~CSingleDevice (void);
 
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
@@ -65,36 +65,40 @@ class CSingleDevice : public IDeviceGenerator
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
-		CItemTypeRef m_pItemType;
-		DiceRange m_Count;
-		int m_iDamaged;
-		CRandomEnhancementGenerator m_Enhanced;
-        DiceRange m_Level;                  //  For scalable items
+		//	Item creation parameters
 
-		int m_iPosAngle;
-		int m_iPosRadius;
-		int m_iPosZ;
-		bool m_b3DPosition;
-		bool m_bDefaultPos;
-		bool m_bExternal;
-		bool m_bCannotBeEmpty;
+		CItemTypeRef m_pItemType;				//	Device for this slot
+		DiceRange m_Count;						//	Number of slots to create
+        DiceRange m_Level;						//  For scalable items
 
-		bool m_bOmnidirectional;
-		int m_iMinFireArc;
-		int m_iMaxFireArc;
-		bool m_bDefaultFireArc;
+		int m_iDamaged = 0;						//	Chance device is damaged
+		CRandomEnhancementGenerator m_Enhanced;	//	Procedure for enhancing device item
+		IItemGenerator *m_pExtraItems = NULL;	//	Extra items to add when device is added
 
-		ItemFates m_iFate;
+		//	Slot properties
 
-		DWORD m_dwLinkedFireOptions;
-		bool m_bDefaultLinkedFire;
+		int m_iPosAngle = 0;					//	Slot position
+		int m_iPosRadius = 0;
+		int m_iPosZ = 0;
+		bool m_b3DPosition = false;				//	Backwards compatibility
+		bool m_bDefaultPos = false;				//	This slot does not define a position
 
-		bool m_bSecondary;
+		bool m_bOmnidirectional = false;		//	This slot has a turret
+		int m_iMinFireArc = 0;					//	This slot swivels
+		int m_iMaxFireArc = 0;
+		bool m_bDefaultFireArc = false;			//	This slot does not define swivel
 
-		int m_iSlotBonus;
-		bool m_bDefaultSlotBonus;
+		DWORD m_dwLinkedFireOptions = 0;		//	This slot has linked-fire properties
+		bool m_bDefaultLinkedFire = false;		//	This slot does not define linked-fire
+		bool m_bSecondary = false;				//	Secondary weapon (for AI)
 
-		IItemGenerator *m_pExtraItems;
+		bool m_bExternal = false;				//	This slot is external
+		bool m_bCannotBeEmpty = false;			//	This slot cannot be empty
+		ItemFates m_iFate = fateNone;			//	What happens to item when ship is destroyed
+
+		CEnhancementDesc m_Enhancements;		//	This slot enhances the installed device
+		int m_iSlotBonus = 0;					//	HP bonus to devices in this slot
+		bool m_bDefaultSlotBonus = false;		//	This slot does not define a bonus
 	};
 
 class CLevelTableOfDeviceGenerators : public IDeviceGenerator
@@ -277,6 +281,15 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 
 	retDesc->bSecondary = pDesc->GetAttributeBool(SECONDARY_WEAPON_ATTRIB);
 
+	//	Slot enhancements
+
+	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
+	if (pEnhanceList)
+		{
+		if (error = retDesc->Enhancements.InitFromXML(Ctx, pEnhanceList))
+			return error;
+		}
+
 	retDesc->iSlotBonus = pDesc->GetAttributeInteger(HP_BONUS_ATTRIB);
 
 	return NOERROR;
@@ -402,6 +415,13 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.dwLinkedFireOptions = 0;
 
 		Desc.bSecondary = m_bSecondary;
+
+		//	Enhancements
+
+		if (!m_Enhancements.IsEmpty())
+			Desc.Enhancements = m_Enhancements;
+		else if (bUseSlotDesc)
+			Desc.Enhancements = SlotDesc.Enhancements;
 
 		//	Slot bonus
 
@@ -596,6 +616,15 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 
 	m_bSecondary = pDesc->GetAttributeBool(SECONDARY_WEAPON_ATTRIB);
+
+	//	Slot enhancements
+
+	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
+	if (pEnhanceList)
+		{
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+			return error;
+		}
 
 	//	Slot bonus
 
