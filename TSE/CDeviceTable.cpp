@@ -363,6 +363,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			}
 		else if (bUseSlotDesc)
 			{
+			Desc.sID = SlotDesc.sID;
 			Desc.iPosAngle = SlotDesc.iPosAngle;
 			Desc.iPosRadius = SlotDesc.iPosRadius;
 			Desc.iPosZ = SlotDesc.iPosZ;

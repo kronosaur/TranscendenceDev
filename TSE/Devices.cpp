@@ -45,6 +45,7 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
+#define PROPERTY_SLOT_ID						CONSTLIT("slotID")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
 
 const int MAX_COUNTER =					        100;
@@ -517,6 +518,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());
+
+	else if (strEquals(sName, PROPERTY_SLOT_ID))
+		return (pDevice ? CC.CreateString(pDevice->GetID()) : CC.CreateNil());
 
     else if (strEquals(sName, PROPERTY_TEMPERATURE))
         {
