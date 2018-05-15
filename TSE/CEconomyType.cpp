@@ -467,7 +467,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 	//	If the value is "balanced" then we take the standard treasure value
 	//	for the level.
 
-	if (strEquals(sValue, FIELD_BALANCED))
+	else if (strEquals(sValue, FIELD_BALANCED))
 		{
 		//	If we don't have a default level, then use default
 
