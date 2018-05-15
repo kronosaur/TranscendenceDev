@@ -35,7 +35,7 @@ void CDisplayAttributeDefinitions::AccumulateAttributes (const CItem &Item, TArr
 	for (i = 0; i < m_ItemAttribs.GetCount(); i++)
 		{
 		if (Item.MatchesCriteria(m_ItemAttribs[i].Criteria))
-			retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText));
+			retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID));
 		}
 	}
 

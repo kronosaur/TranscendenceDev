@@ -36,6 +36,7 @@
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
 #define PROPERTY_REFERENCE						CONSTLIT("reference")
 #define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
+#define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
@@ -1237,6 +1238,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItem *pResult;
+	int i;
 
 	//	First we handle all properties that are specific to the item instance.
 
@@ -1288,6 +1290,19 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateString(sRoot);
 		else
 			return CC.CreateString(strPatternSubst(CONSTLIT("%s, %s"), sRoot, sModifier));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TRADE_ID))
+		{
+		TArray<SDisplayAttribute> Attribs;
+		if (!GetDisplayAttributes(Ctx, &Attribs, NULL, true))
+			return CC.CreateNil();
+
+		for (i = 0; i < Attribs.GetCount(); i++)
+			if (!Attribs[i].sID.IsBlank())
+				return CC.CreateString(Attribs[i].sID);
+
+		return CC.CreateNil();
 		}
 
 	else if (strEquals(sProperty, PROPERTY_USED))
