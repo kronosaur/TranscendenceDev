@@ -274,6 +274,7 @@ class CStationType : public CDesignType
 		inline bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
 		inline CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		inline CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
+		CurrencyValue GetBalancedTreasure (void) const;
 		inline CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		inline IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
 		CSovereign *GetControllingSovereign (void);
@@ -405,7 +406,7 @@ class CStationType : public CDesignType
 			};
 
 		void AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, bool> *retTypesUsed);
-		Metric CalcBalance (int iLevel) const;
+		Metric CalcBalance (void) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
 		Metric CalcTreasureValue (int iLevel) const;
@@ -420,7 +421,7 @@ class CStationType : public CDesignType
 		CSovereignRef m_pSovereign;						//	Sovereign
 		ScaleTypes m_iScale;							//	Scale
 		Metric m_rParallaxDist;							//	Parallax distance for background objects
-		int m_iLevel;									//	Station level
+		mutable int m_iLevel;							//	Station level
 		Metric m_rMass;									//	Mass of station
 														//		For stars, this is in solar masses
 														//		For worlds, this is in Earth masses
@@ -470,8 +471,8 @@ class CStationType : public CDesignType
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
 
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
-		DWORD m_fSpare2:1;
-		DWORD m_fSpare3:1;
+		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
+		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
@@ -540,6 +541,10 @@ class CStationType : public CDesignType
 		CEffectCreatorRef m_pBarrierEffect;				//	Effect when object hits station
 		CSovereignRef m_pControllingSovereign;			//	If controlled by different sovereign
 														//	(e.g., centauri occupation)
+
+		//	Cached
+		mutable Metric m_rCombatBalance = 0.0;			//	Station power relative to level (1.0 == balanced)
+
 		//	Temporary
 		int m_iChance;									//	Used when computing chance of encounter
 

@@ -43,3 +43,29 @@ class CCurrencyAndRange
 		CEconomyTypeRef m_pCurrency;
 	};
 
+class CCurrencyValueDesc
+	{
+	public:
+		enum ESpecialValues
+			{
+			specialNone,
+
+			specialBalancedTreasure,
+			specialStdTreasure,
+			};
+
+		inline ALERROR Bind (SDesignLoadCtx &Ctx) { return m_Value.Bind(Ctx); }
+		inline CurrencyValue GetCreditValue (void) const { return m_Value.GetCreditValue(); }
+		inline CEconomyType *GetCurrencyType (void) const { return m_Value.GetCurrencyType(); }
+		inline ESpecialValues GetSpecial (void) const { return m_iSpecial; }
+		inline CurrencyValue GetValue (void) const { return m_Value.GetValue(); }
+		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CString &sDesc, int iDefaultLevel) { return InitFromXMLAndDefault(Ctx, sDesc, CCurrencyAndValue(), iDefaultLevel); }
+		ALERROR InitFromXMLAndDefault (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default, int iDefaultLevel = 0);
+		inline bool IsEmpty (void) const { return m_Value.IsEmpty(); }
+
+		static ALERROR Parse (SDesignLoadCtx &Ctx, const CString &sDesc, const CCurrencyAndValue &Default, int iDefaultLevel, CCurrencyAndValue &retValue, ESpecialValues *retiSpecial = NULL);
+
+	private:
+		ESpecialValues m_iSpecial = specialNone;
+		CCurrencyAndValue m_Value;
+	};

@@ -310,19 +310,26 @@ void CStationType::AddTypesUsedByXML (CXMLElement *pElement, TSortMap<DWORD, boo
 		AddTypesUsedByXML(pElement->GetContentElement(i), retTypesUsed);
 	}
 
-Metric CStationType::CalcBalance (int iLevel) const
+Metric CStationType::CalcBalance (void) const
 
 //	CalcBalance
 //
 //	Calculates the station defense balance assuming the station is at the given level.
 
 	{
-	if (iLevel <= 0 || iLevel > MAX_TECH_LEVEL)
-		return 0.0;
+	//	Compute balance, if necessary
 
-	Metric rBalance = (CalcDefenderStrength(iLevel) + CalcWeaponStrength(iLevel)) / 3.5;
-	rBalance *= Min(2.0, sqrt((Metric)CalcHitsToDestroy(iLevel) / 50.0));
-	return rBalance;
+	if (!m_fBalanceValid)
+		{
+		int iLevel = GetLevel();
+		if (iLevel <= 0 || iLevel > MAX_TECH_LEVEL)
+			return 0.0;
+
+		m_rCombatBalance = (CalcDefenderStrength(iLevel) + CalcWeaponStrength(iLevel)) / 3.5;
+		m_rCombatBalance *= Min(2.0, sqrt((Metric)CalcHitsToDestroy(iLevel) / 50.0));
+		}
+
+	return m_rCombatBalance;
 	}
 
 Metric CStationType::CalcDefenderStrength (int iLevel) const
@@ -663,7 +670,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
     else if (strEquals(sField, FIELD_ABANDONED_DOCK_SCREEN))
         *retsValue = m_pAbandonedDockScreen.GetStringUNID(const_cast<CStationType *>(this));
     else if (strEquals(sField, FIELD_BALANCE))
-        *retsValue = strFromInt((int)(CalcBalance(GetLevel()) * 100.0));
+        *retsValue = strFromInt((int)(CalcBalance() * 100.0));
     else if (strEquals(sField, FIELD_CATEGORY))
         {
         if (!CanBeEncounteredRandomly())
@@ -723,7 +730,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	else if (strEquals(sField, FIELD_TREASURE_BALANCE))
 		{
 		int iLevel = GetLevel();
-		Metric rExpected = pow(CalcBalance(iLevel), TREASURE_BALACE_POWER) * (Metric)STD_STATION_DATA[iLevel].dwTreasureValue;
+		Metric rExpected = (Metric)GetBalancedTreasure();
 		Metric rTreasure = CalcTreasureValue(iLevel);
 		*retsValue = strFromInt((int)(100.0 * (rExpected > 0.0 ? rTreasure / rExpected : 0.0)));
 		}
@@ -735,6 +742,17 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		return CDesignType::FindDataField(sField, retsValue);
 
 	return true;
+	}
+
+CurrencyValue CStationType::GetBalancedTreasure (void) const
+
+//	GetBalancedTreasure
+//
+//	Returns the value of treasure (in credits) for this station that would 
+//	balance against its difficulty.
+
+	{
+	return (CurrencyValue)(pow(CalcBalance(), TREASURE_BALACE_POWER) * (Metric)STD_STATION_DATA[GetLevel()].dwTreasureValue);
 	}
 
 CCommunicationsHandler *CStationType::GetCommsHandler (void)
@@ -806,41 +824,35 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 
 	{
 	int i;
-	int iLevel;
 
-	if (m_iLevel)
-		{
-		if (retiMinLevel) *retiMinLevel = m_iLevel;
-		if (retiMaxLevel) *retiMaxLevel = m_iLevel;
-		return m_iLevel;
-		}
-	else if (iLevel = GetEncounterDesc().CalcLevelFromFrequency())
-		{
-		if (retiMinLevel) *retiMinLevel = iLevel;
-		if (retiMaxLevel) *retiMaxLevel = iLevel;
-		return iLevel;
-		}
-	else
-		{
-		//	Take the highest level of armor or devices
+	//	If necessary, calculate level.
 
-		iLevel = m_HullDesc.GetArmorLevel();
-		for (i = 0; i < m_iDevicesCount; i++)
+	if (m_iLevel == 0)
+		{
+		m_iLevel = GetEncounterDesc().CalcLevelFromFrequency();
+
+		if (m_iLevel == 0)
 			{
-			if (!m_Devices[i].IsEmpty())
+			//	Take the highest level of armor or devices
+
+			m_iLevel = m_HullDesc.GetArmorLevel();
+			for (i = 0; i < m_iDevicesCount; i++)
 				{
-				int iDeviceLevel = m_Devices[i].GetClass()->GetLevel();
-				if (iDeviceLevel > iLevel)
-					iLevel = iDeviceLevel;
+				if (!m_Devices[i].IsEmpty())
+					{
+					int iDeviceLevel = m_Devices[i].GetClass()->GetLevel();
+					if (iDeviceLevel > m_iLevel)
+						m_iLevel = iDeviceLevel;
+					}
 				}
 			}
-
-		//	Done
-
-		if (retiMinLevel) *retiMinLevel = iLevel;
-		if (retiMaxLevel) *retiMaxLevel = iLevel;
-		return iLevel;
 		}
+
+	//	Return
+
+	if (retiMinLevel) *retiMinLevel = m_iLevel;
+	if (retiMaxLevel) *retiMaxLevel = m_iLevel;
+	return m_iLevel;
 	}
 
 Metric CStationType::GetLevelStrength (int iLevel)
@@ -1208,7 +1220,10 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Initialize basic info
 
-	m_iLevel = pDesc->GetAttributeInteger(LEVEL_ATTRIB);
+	m_iLevel = pDesc->GetAttributeIntegerBounded(LEVEL_ATTRIB, 1, MAX_SYSTEM_LEVEL, 0);
+	m_fCalcLevel = (m_iLevel == 0);
+	m_fBalanceValid = false;
+
 	if (error = m_pSovereign.LoadUNID(Ctx, pDesc->GetAttribute(SOVEREIGN_ATTRIB), (GetAPIVersion() >= 26 ? UNID_NEUTRAL_SOVEREIGN : 0)))
 		return error;
 
@@ -1640,6 +1655,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	if (strEquals(sProperty, PROPERTY_SOVEREIGN))
 		return (m_pSovereign ? ICCItemPtr(CC.CreateInteger(m_pSovereign->GetUNID())) : ICCItemPtr(CC.CreateNil()));
+
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN_NAME))
 		{
 		if (m_pSovereign == NULL)
@@ -1647,6 +1663,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 		return ICCItemPtr(m_pSovereign->GetProperty(Ctx, PROPERTY_NAME));
 		}
+
 	else
 		return NULL;
 	}
@@ -1744,6 +1761,13 @@ void CStationType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	//	Load opaque data
 
 	ReadGlobalData(Ctx);
+
+	//	Clear cache so we recalculate
+
+	if (m_fCalcLevel)
+		m_iLevel = 0;
+
+	m_fBalanceValid = false;
 	}
 
 void CStationType::OnReinit (void)
@@ -1753,6 +1777,17 @@ void CStationType::OnReinit (void)
 //	Reinitialize the type
 
 	{
+	//	If level is calculated, then reset so that we recalculated it.
+
+	if (m_fCalcLevel)
+		m_iLevel = 0;
+
+	//	Clear other values so we recalculate
+
+	m_fBalanceValid = false;
+
+	//	Reinitialize
+
 	m_Name.Reinit();
 	m_EncounterRecord.Reinit(m_RandomPlacement);
 	m_Image.Reinit();
