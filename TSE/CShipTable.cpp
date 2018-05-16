@@ -17,6 +17,7 @@
 #define SHIPS_TAG					CONSTLIT("Ships")
 #define TABLE_TAG					CONSTLIT("Table")
 
+#define BUILD_ATTRIB				CONSTLIT("build")
 #define CHANCE_ATTRIB				CONSTLIT("chance")
 #define CLASS_ATTRIB				CONSTLIT("class")
 #define CONTROLLER_ATTRIB			CONSTLIT("controller")
@@ -111,6 +112,7 @@ class CSingleShip : public IShipGenerator
 		IShipGenerator *m_pEscorts;					//	Random table of escorts (or NULL)
 		CAttributeDataBlock m_InitialData;			//	Initial data for ship
 		ICCItem *m_pOnCreate;						//	Create call
+		bool m_bBuild = false;						//	If TRUE, build on Ctx.pBase instead of gating in
 
 		CDesignTypeRef<CDesignType> m_pOverride;	//	Override (event handler)
 		CString m_sController;						//	Controller to use (or "" to use default)
@@ -816,7 +818,18 @@ void CSingleShip::CreateShips (SShipCreateCtx &Ctx)
 	else
 		{
 		if (pGate = Ctx.pGate)
+			{
+			//	If we want to build instead of gate, change the gate source.
+			//	NOTE: This is only valid if we have a valid Ctx.pGate because
+			//	our callers don't always want the ship to appear at a gate
+			//	(e.g., at create-time).
+
+			if (m_bBuild && Ctx.pBase)
+				pGate = Ctx.pBase;
+
 			vCenter = pGate->GetPos();
+			}
+
 		else
 			vCenter = Ctx.vPos;
 		}
@@ -990,6 +1003,10 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		}
 	else
 		m_pEscorts = NULL;
+
+	//	Options
+
+	m_bBuild = pDesc->GetAttributeBool(BUILD_ATTRIB);
 
 	return NOERROR;
 	}
