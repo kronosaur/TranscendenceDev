@@ -474,29 +474,31 @@ void CGroupOfGenerators::AddItems (SItemAddCtx &Ctx)
 
 	if (SetsAverageValue())
 		{
+		//	Figure out how many loops to do. The more loops we do, the more
+		//	different items there will be. We want a small number of loops
+		//	for less valuable treasure hordes.
+
+		Metric rUnitCost = Max(1.0, CWeaponClass::GetStdStats(Ctx.iLevel).rCost * 0.5);
+		int iLoopCount = Max(1, Min(mathRandom(9, 13), mathRound((Metric)m_AverageValue[Ctx.iLevel].GetCreditValue() / rUnitCost)));
+
 		//	CountAdj is the number of times we need to loop through our table
 		//	to get the required item value (on average). We convert this to the
-		//	scaling factor to use if we want to loop exactly ten times.
-		//
-		//	This gets us closer to average values (otherwise, if we looped a
-		//	small number of times then we would have a wide variation in 
-		//	results.)
+		//	scaling factor to use for the given number of loops.
 
 #ifdef DEBUG_AVERAGE_VALUE
 	bool bDebug = (Ctx.pDest && Ctx.pDest->GetType()->GetUNID() == 0x080200C0);
 	if (bDebug)
 		printf("[%d] Level %d\n", Ctx.pDest->GetID(), Ctx.iLevel);
 #endif
-		static const int LOOP_COUNT = 10;
 		Metric rCountAdj = GetCountAdj(Ctx.iLevel);
-		Metric rScale = rCountAdj / LOOP_COUNT;
+		Metric rScale = rCountAdj / iLoopCount;
 
 #ifdef DEBUG_AVERAGE_VALUE
 	if (bDebug)
 		printf("[%d] CountAdj: %.2f\n", Ctx.pDest->GetID(), rCountAdj);
 #endif
 
-		for (i = 0; i < LOOP_COUNT; i++)
+		for (i = 0; i < iLoopCount; i++)
 			AddItemsScaled(Ctx, rScale);
 		}
 	else
