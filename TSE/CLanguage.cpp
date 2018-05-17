@@ -15,6 +15,233 @@
 #define SECOND_PLURAL_ATTRIB				CONSTLIT("secondPlural")
 #define VOWEL_ARTICLE_ATTRIB				CONSTLIT("reverseArticle")
 
+CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
+
+//	Compose
+//
+//	Replaces the following variables:
+//
+//		%name%				player name
+//		%he%				he or she
+//		%his%				his or her (matching case)
+//		%hers%				his or hers (matching case)
+//		%him%				him or her (matching case)
+//		%sir%				sir or ma'am (matching case)
+//		%man%				man or woman (matching case)
+//		%brother%			brother or sister (matching case)
+//		%%					%
+
+	{
+	//	Prepare output
+
+	CString sOutput;
+	int iOutLeft = sString.GetLength() * 2;
+	char *pOut = sOutput.GetWritePointer(iOutLeft);
+
+	//	If pArgs is a structure, then we look up variable names in it.
+
+	bool bHasData = (pArgs && pArgs->IsSymbolTable());
+
+	//	Compose. Loop once for each segment that we need to add
+
+	bool bDone = false;
+	bool bVar = false;
+	char *pPos = sString.GetASCIIZPointer();
+	while (!bDone)
+		{
+		CString sVar;
+		char *pSeg;
+		char *pSegEnd;
+
+		if (bVar)
+			{
+			ICCItem *pValue;
+
+			int iArg;
+			ASSERT(*pPos == '%');
+
+			//	Skip %
+
+			pPos++;
+			char *pStart = pPos;
+			while (*pPos != '%' && *pPos != ':' && *pPos != '\0')
+				pPos++;
+
+			sVar = CString(pStart, pPos - pStart);
+
+			//	If we've got a colon, then we take the remainder as a parameter
+
+			CString sParam;
+			if (*pPos == ':')
+				{
+				pPos++;
+				pStart = pPos;
+				while (*pPos != '%' && *pPos != '\0')
+					pPos++;
+
+				sParam = CString(pStart, pPos - pStart);
+				}
+
+			//	Skip the closing %
+
+			if (*pPos == '%')
+				{
+				pPos++;
+				bVar = false;
+				}
+			else
+				bDone = true;
+
+			//	If the variable is capitalized, then we capitalize the result.
+
+			bool bCapitalize = (*sVar.GetASCIIZPointer() >= 'A' && *sVar.GetASCIIZPointer() <= 'Z');
+
+			//	Used if this is a gendered word.
+
+			const SStaticGenderWord *pGenderedWord = NULL;
+
+			//	Setup the segment depending on the variable
+
+			if (sVar.IsBlank())
+				sVar = CONSTLIT("%");
+
+			//	Check to see if this is a variable referencing gData.
+
+			else if (bHasData && (pValue = pArgs->GetElement(sVar)) && !pValue->IsNil())
+				sVar = pValue->GetStringValue();
+
+			//	Otherwise we look for standard variables
+
+			else if (strEquals(sVar, CONSTLIT("name")))
+				sVar = g_pUniverse->GetPlayerName();
+
+			//	Is this a gendered word?
+
+			else if (pGenderedWord = GENDER_WORD_TABLE.GetAt(sVar))
+				{
+				//	If we have a parameter then we expect it to be a variable in gData
+				//	with the gender.
+
+				if (!sParam.IsBlank())
+					{
+					if (bHasData 
+							&& (pValue = pArgs->GetElement(sParam)) 
+							&& !pValue->IsNil())
+						{
+						sVar = ComposeGenderedWord(sVar, ParseGenomeID(pValue->GetStringValue()));
+						}
+					else
+						sVar = strPatternSubst(CONSTLIT("%s not found"), sParam);
+					}
+
+				//	Otherwise, we use the player's gender
+
+				else
+					sVar = ComposeGenderedWord(sVar, g_pUniverse->GetPlayerGenome());
+				}
+
+			//	If we still haven't found it, then assume this is an index into 
+			//	and array of values.
+
+			else if (pArgs 
+					&& pArgs->IsList() 
+					&& !pArgs->IsSymbolTable()
+					&& (iArg = strToInt(sVar, 0)) != 0
+					&& Absolute(iArg) + 1 < pArgs->GetCount())
+				{
+				if (iArg < 0)
+					{
+					iArg = -iArg;
+					bCapitalize = true;
+					}
+
+				ICCItem *pArg = pArgs->GetElement(iArg + 1);
+				if (pArg)
+					sVar = pArg->GetStringValue();
+				}
+
+			//	If we could not find a valid var, then we assume a
+			//	single % sign.
+
+			else
+				{
+				sVar = CONSTLIT("%");
+				pPos = pStart;
+				bDone = (*pPos == '\0');
+				bVar = false;
+				bCapitalize = false;
+				}
+
+			//	Capitalize, if necessary
+
+			if (bCapitalize)
+				sVar = strCapitalize(sVar);
+
+			//	Setup segment
+
+			pSeg = sVar.GetASCIIZPointer();
+			pSegEnd = pSeg + sVar.GetLength();
+			}
+		else
+			{
+			//	Skip to the next variable or the end of the string
+
+			pSeg = pPos;
+			while (*pPos != '%' && *pPos != '\0')
+				pPos++;
+
+			if (*pPos == '\0')
+				bDone = true;
+			else
+				bVar = true;
+
+			pSegEnd = pPos;
+			}
+
+		//	Add the next segment
+
+		int iLen = pSegEnd - pSeg;
+		if (iLen > 0)
+			{
+			if (iLen > iOutLeft)
+				{
+				int iAlloc = sOutput.GetLength();
+				int iCurLen = iAlloc - iOutLeft;
+				int iNewAlloc = max(iAlloc * 2, iAlloc + iLen);
+				pOut = sOutput.GetWritePointer(iNewAlloc);
+				pOut += iCurLen;
+				iOutLeft = iNewAlloc - iCurLen;
+				}
+
+			while (pSeg < pSegEnd)
+				*pOut++ = *pSeg++;
+
+			iOutLeft -= iLen;
+			}
+		}
+
+	//	Done
+
+	int iAlloc = sOutput.GetLength();
+	int iCurLen = iAlloc - iOutLeft;
+	sOutput.Truncate(iCurLen);
+	return sOutput;
+	}
+
+CString CLanguage::ComposeGenderedWord (const CString &sWord, GenomeTypes iGender)
+
+//	ComposeGenderedWord
+//
+//	Returns the given gendered word.
+
+	{
+	const SStaticGenderWord *pEntry = GENDER_WORD_TABLE.GetAt(sWord);
+	if (pEntry == NULL || iGender < 0 || iGender >= genomeCount)
+		return sWord;
+
+	return pEntry->pszText[iGender];
+	}
+
 CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags)
 
 //	ComposeNounPhrase
@@ -204,6 +431,23 @@ CString CLanguage::ComposeVerb (const CString &sVerb, DWORD dwVerbFlags)
 		return CString(pVerbData->pszPlural, -1, TRUE);
 
 	return sVerb;
+	}
+
+bool CLanguage::FindGenderedWord (const CString &sWord, GenomeTypes iGender, CString *retsResult)
+
+//	FindGenderedWord
+//
+//	Returns TRUE if the given word is a gendered word.
+
+	{
+	const SStaticGenderWord *pEntry = GENDER_WORD_TABLE.GetAt(sWord);
+	if (pEntry == NULL || iGender < 0 || iGender >= genomeCount)
+		return false;
+
+	if (retsResult)
+		*retsResult = pEntry->pszText[iGender];
+
+	return true;
 	}
 
 DWORD CLanguage::LoadNameFlags (CXMLElement *pDesc)

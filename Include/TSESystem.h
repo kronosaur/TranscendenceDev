@@ -32,6 +32,7 @@ class CNavigationPath : public TSEListNode<CNavigationPath>
 		inline DWORD GetID (void) const { return m_dwID; }
 		inline int GetNavPointCount (void) const { return m_iWaypointCount; }
 		CVector GetNavPoint (int iIndex) const;
+		inline CVector GetPathEnd (void) const { return GetNavPoint(GetNavPointCount() - 1); }
 		bool Matches (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		void OnReadFromStream (SLoadCtx &Ctx);
 		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;

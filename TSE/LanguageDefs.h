@@ -5,6 +5,25 @@
 
 #include "PreComp.h"
 
+//	Gender Words
+
+struct SStaticGenderWord
+	{
+	const char *pszKey;
+	const char *pszText[genomeCount];
+	};
+
+static TStaticStringTable<SStaticGenderWord, 8> GENDER_WORD_TABLE = {
+	"brother",		{ "partner",	"brother",	"sister", },
+	"he",			{ "they",		"he",		"she", },
+	"hers",			{ "theirs",		"his",		"hers", },
+	"him",			{ "them",		"him",		"her", },
+	"his",			{ "their",		"his",		"her", },
+	"man",			{ "person",		"man",		"woman", },
+	"sir",			{ "sir",		"sir",		"ma'am", },
+	"son",			{ "child",		"son",		"daughter", },
+	};
+
 //	Convert from a string to NounPhraseFlags
 
 static TStaticStringTable<TStaticStringEntry<DWORD>, 21> NOUN_FLAG_TABLE = {

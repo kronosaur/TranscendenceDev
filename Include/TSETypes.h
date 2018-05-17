@@ -258,4 +258,6 @@ enum GenomeTypes
 	genomeUnknown		= 0,
 	genomeHumanMale		= 1,
 	genomeHumanFemale	= 2,
+
+	genomeCount			= 3,
 	};

@@ -4416,7 +4416,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sText = pArgs->GetElement(0)->GetStringValue();
 			ICCItem *pData = (pArgs->GetCount() > 1 ? pArgs->GetElement(1) : NULL);
-			return pCC->CreateString(::ComposePlayerNameString(sText, g_pUniverse->GetPlayerName(), g_pUniverse->GetPlayerGenome(), pData));
+			return pCC->CreateString(CLanguage::Compose(sText, pData));
 			}
 
 		case FN_CURRENCY:
