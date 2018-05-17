@@ -564,6 +564,13 @@ bool CAIBehaviorCtx::CalcNavPath (CShip *pShip, CSpaceObject *pTo)
 
 	ASSERT(pTo);
 
+	//	If the destination moves (e.g., is a ship) then we place a nav path to
+	//	where it is currenly and allow the code to recalc nav paths as
+	//	appropriate.
+
+	if (pTo->CanThrust())
+		return CalcNavPath(pShip, pTo->GetPos());
+
 	//	Figure out an appropriate starting point
 
 	CSpaceObject *pBestObj = NULL;

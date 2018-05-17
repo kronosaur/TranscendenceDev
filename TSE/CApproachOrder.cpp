@@ -9,8 +9,11 @@ const Metric APPROACH_THRESHOLD =		(50.0 * LIGHT_SECOND);
 const Metric APPROACH_THRESHOLD2 =		(APPROACH_THRESHOLD * APPROACH_THRESHOLD);
 
 const Metric PATROL_SENSOR_RANGE =		(30.0 * LIGHT_SECOND);
-const Metric NAV_PATH_THRESHOLD =		(4.0 * PATROL_SENSOR_RANGE);
+const Metric NAV_PATH_THRESHOLD =		(3.0 * PATROL_SENSOR_RANGE);
 const Metric NAV_PATH_THRESHOLD2 =		(NAV_PATH_THRESHOLD * NAV_PATH_THRESHOLD);
+
+const Metric NAV_PATH_RECALC_THRESHOLD = (50.0 * LIGHT_SECOND);
+const Metric NAV_PATH_RECALC_THRESHOLD2 = (NAV_PATH_RECALC_THRESHOLD * NAV_PATH_RECALC_THRESHOLD);
 
 void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
@@ -25,6 +28,8 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		{
 		case stateOnCourseViaNavPath:
 			{
+			Metric rDest2;
+
 			Ctx.ImplementAttackNearestTarget(pShip, Ctx.GetBestWeaponRange(), &m_Objs[objTarget]);
 			Ctx.ImplementFireOnTargetsOfOpportunity(pShip, m_Objs[objTarget]);
 
@@ -35,10 +40,32 @@ void CApproachOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 				Ctx.ClearNavPath();
 				m_iState = stateApproaching;
 				}
-			else if ((m_Objs[objDest]->GetPos() - pShip->GetPos()).Length2() < m_rMinDist2)
+			else if ((rDest2 = (m_Objs[objDest]->GetPos() - pShip->GetPos()).Length2()) < m_rMinDist2)
 				{
 				Ctx.ClearNavPath();
 				pShip->CancelCurrentOrder();
+				}
+
+			//	If our destination can move and it has moved away from the nav path
+			//	destination, then we need to recalc.
+
+			else if (m_Objs[objDest]->CanThrust() 
+					&& (m_Objs[objDest]->GetPos() - Ctx.GetNavPath()->GetPathEnd()).Length2() > NAV_PATH_RECALC_THRESHOLD2)
+				{
+				//	If we're still far enough away that we need a new nav path, then
+				//	recalc.
+
+				if (rDest2 > NAV_PATH_THRESHOLD2
+						&& Ctx.CalcNavPath(pShip, m_Objs[objDest]))
+					;
+
+				//	Otherwise, done with nav path.
+
+				else
+					{
+					Ctx.ClearNavPath();
+					m_iState = stateApproaching;
+					}
 				}
 
 			break;
@@ -100,7 +127,6 @@ void CApproachOrder::OnBehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceO
 	//	See if we should take a nav path
 
 	if (pShip->GetDistance2(pOrderTarget) > NAV_PATH_THRESHOLD2
-			&& !pOrderTarget->CanThrust()
 			&& Ctx.CalcNavPath(pShip, pOrderTarget))
 		m_iState = stateOnCourseViaNavPath;
 
