@@ -5469,6 +5469,8 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 	CVector vTarget = (pTarget ? pTarget->GetPos() : vSource);
 	Metric rMaxDist2 = rDistance * rDistance;
+	bool bCheckTargetOverStation = (pTarget && pTarget->CanThrust());
+	bool bTargetIsStation = (pTarget && pTarget->GetCategory() == catStation);
 
 	//	See if any friendly object is in the line of fire
 
@@ -5489,16 +5491,27 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 			{
 			CSpaceObject::Categories iCategory = pObj->GetCategory();
 
-			//	If this is an enemy and it is a ship, then it is OK 
-			//	to hit it (we only hit stations if we're aiming for them).
+			//	If this is an enemy then see if it is OK to hit them.
 
-			if (IsEnemy(pObj) && iCategory == catShip)
-				continue;
+			if (IsEnemy(pObj))
+				{
+				//	If this is another ship, then it is OK to hit.
+
+				if (iCategory == catShip)
+					continue;
+
+				//	If the target is a station, then it is OK to hit other 
+				//	stations of the same sovereign.
+
+				if (bTargetIsStation && pTarget->GetSovereign() == pObj->GetSovereign())
+					continue;
+				}
 
 			//	If the target is right on top of a station, then we
 			//	cannot fire.
 
-			if (iCategory == catStation)
+			if (iCategory == catStation
+					&& bCheckTargetOverStation)
 				{
 				//	Compute the distance of the object from us and from
 				//	the target.
