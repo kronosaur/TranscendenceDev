@@ -3922,7 +3922,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (bIsDelimeter)
 				{
-				pList->AppendString(*pCC, CString(pStart, (int)(pPos - pStart)));
+				pList->AppendString(*pCC, strTrimWhitespace(CString(pStart, (int)(pPos - pStart))));
 				bInWord = false;
 				}
 			}
