@@ -1458,11 +1458,17 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		{
 #ifdef DEBUG
 		{
+		CInstalledDevice *pWeapon = pShip->GetNamedDevice(iWeaponToFire);
+
 		char szDebug[1024];
 		if (bAimError)
-			wsprintf(szDebug, "%s: false positive  iAim=%d  iFireAngle=%d", pShip->GetNamedDevice(iWeaponToFire)->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
+			wsprintf(szDebug, "%s: false positive  iAim=%d  iFireAngle=%d", pWeapon->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
+		else if (!pShip->GetWeaponIsReady(iWeaponToFire))
+			wsprintf(szDebug, "%s: aligned; NOT READY", pWeapon->GetName().GetASCIIZPointer());
+		else if (rTargetDist2 > (rWeaponRange * rWeaponRange))
+			wsprintf(szDebug, "%s: aligned; TARGET OUT OF RANGE", pWeapon->GetName().GetASCIIZPointer());
 		else
-			wsprintf(szDebug, "%s: aligned  iAim=%d  iFireAngle=%d", pShip->GetNamedDevice(iWeaponToFire)->GetName().GetASCIIZPointer(), iAimAngle, iFireAngle);
+			wsprintf(szDebug, "%s: aligned", pWeapon->GetName().GetASCIIZPointer());
 
 		DEBUG_COMBAT_OUTPUT(szDebug);
 		}
@@ -1472,7 +1478,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		//	in range of the target, then fire!
 
 		if (pShip->GetWeaponIsReady(iWeaponToFire)
-				&& rTargetDist2 < (rWeaponRange * rWeaponRange))
+				&& rTargetDist2 <= (rWeaponRange * rWeaponRange))
 			{
 			CInstalledDevice *pWeapon = pShip->GetNamedDevice(iWeaponToFire);
 
