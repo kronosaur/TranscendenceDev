@@ -75,11 +75,11 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 			if (*pPos == ':')
 				{
 				pPos++;
-				pStart = pPos;
+				char *pParamStart = pPos;
 				while (*pPos != '%' && *pPos != '\0')
 					pPos++;
 
-				sParam = CString(pStart, pPos - pStart);
+				sParam = CString(pParamStart, pPos - pParamStart);
 				}
 
 			//	Skip the closing %
