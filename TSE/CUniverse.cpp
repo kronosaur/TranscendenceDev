@@ -732,6 +732,8 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 //	Generates the current game stats
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Ask all design types to generate game stats
@@ -763,6 +765,8 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 		Stats.Insert(CONSTLIT("Game"), CONSTLIT("Debug"));
 	else
 		Stats.Insert(CONSTLIT("Game"), CONSTLIT("Unregistered"));
+
+	DEBUG_CATCH
 	}
 
 const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const

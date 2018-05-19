@@ -2546,6 +2546,8 @@ void CDesignType::Reinit (void)
 //	Reinitializes the variant portions of the design type
 	
 	{
+	DEBUG_TRY
+
 	//	Reinit global data
 
 	if (m_pExtra)
@@ -2554,6 +2556,8 @@ void CDesignType::Reinit (void)
 	//	Allow sub-classes to reinit
 
 	OnReinit();
+
+	DEBUG_CATCH_MSG1(CONSTLIT("Crash in CDesignType::Reinit Type = %x"), GetUNID())
 	}
 
 void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError)
