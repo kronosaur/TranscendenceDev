@@ -11,6 +11,7 @@ class CGPath
 		void AddPolygonHandoff (TArray<CVector> &Points);
 		void Close (void);
 		void CreateSubPathStrokePath (int iSubPath, Metric rLineWidth, CGPath *retPath);
+		inline void DeleteAll (void) { m_SubPaths.DeleteAll(); }
 		inline int GetSubPathCount (void) const { return m_SubPaths.GetCount(); }
 		int GetSubPathPolygonPoints (int iSubPath, TArray<CVector> *retPoints) const;
 		int GetVertexCount (void) const;
@@ -21,6 +22,8 @@ class CGPath
 		void LineTo (const CVector &Pos);
 		void MoveTo (const CVector &Pos);
 		void Rasterize (CGRegion *retRegion, int iAntiAlias = 4);
+		void Scale (Metric rScale);
+		void Translate (const CVector &vOffset);
 
 		static void CalcCornerPoints (const CVector &From, const CVector &Center, const CVector &To, Metric rHalfWidth, CVector *retInner, CVector *retOuter);
 

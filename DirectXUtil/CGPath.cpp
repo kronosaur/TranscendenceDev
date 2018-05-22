@@ -434,3 +434,37 @@ void CGPath::Rasterize (CGRegion *retRegion, int iAntiAlias)
 	CPolygonRasterizer Rasterizer(*this, iAntiAlias);
 	Rasterizer.Rasterize(retRegion);
 	}
+
+void CGPath::Scale (Metric rScale)
+
+//	Scale
+//
+//	Scales all vector by the give factor
+
+	{
+	int i, j;
+
+	for (i = 0; i < m_SubPaths.GetCount(); i++)
+		{
+		SSubPath &Path = m_SubPaths[i];
+		for (j = 0; j < Path.Lines.GetCount(); j++)
+			Path.Lines[j] = Path.Lines[j] * rScale;
+		}
+	}
+
+void CGPath::Translate (const CVector &vOffset)
+
+//	Translate
+//
+//	Offsets all vectors
+
+	{
+	int i, j;
+
+	for (i = 0; i < m_SubPaths.GetCount(); i++)
+		{
+		SSubPath &Path = m_SubPaths[i];
+		for (j = 0; j < Path.Lines.GetCount(); j++)
+			Path.Lines[j] = Path.Lines[j] + vOffset;
+		}
+	}
