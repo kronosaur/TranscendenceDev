@@ -13,7 +13,7 @@
 
 const int RING_SPACING = 2;
 const int LEFT_CONTROL_WIDTH = 64;
-const int RIGHT_CONTROL_WIDTH = 140;
+const int RIGHT_CONTROL_WIDTH = 200;
 
 const CG32bitPixel DAMAGED_TEXT_COLOR =		CG32bitPixel(128, 0, 0);
 
@@ -389,11 +389,13 @@ void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)
 			Stats.sReactorName,
 			ReactorPower2String(Stats.iReactorPower));
 
-	CVector vInnerPos = CVector::FromPolarInv(0.0, m_iGaugeRadius + RING_SPACING + m_iGaugeWidth + RING_SPACING);
-	CVector vOuterPos = vInnerPos + CVector(RIGHT_CONTROL_WIDTH, 0.0);
-
 	int cyHeight;
 	int cxWidth = MediumFont.MeasureText(sReactorName, &cyHeight) + 4 * RING_SPACING;
+	cyHeight += RING_SPACING;
+
+	CVector vInnerPos = CVector::FromPolarInv(0.0, m_iGaugeRadius + RING_SPACING + m_iGaugeWidth + RING_SPACING);
+	CVector vOuterPos = vInnerPos + CVector(Min(cxWidth, RIGHT_CONTROL_WIDTH), 0.0);
+
 	int xText = m_xCenter + (int)vInnerPos.GetX() + 2 * RING_SPACING;
 	int yText = m_yCenter + (int)vInnerPos.GetY() - (cyHeight / 2);
 
