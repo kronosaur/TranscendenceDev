@@ -403,6 +403,9 @@ CArtifactAwakening::EResultTypes CArtifactAwakening::GetStatus (void) const
 	{
 	switch (m_iState)
 		{
+		case stateStart:
+			return resultNone;
+
 		case stateSuccess:
 			return resultArtifactSubdued;
 
