@@ -563,7 +563,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 		{
 		//	Load the currency type
 
-		retValue = CCurrencyAndValue();
+		retValue.SetCurrencyType(sCurrency);
 
 		//	Load the value
 
