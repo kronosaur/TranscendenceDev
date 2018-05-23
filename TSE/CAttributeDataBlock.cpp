@@ -633,8 +633,20 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, ICCItem *pItem)
 //	Sets string data associated with attribute
 
 	{
-    SDataEntry *pEntry = m_Data.SetAt(sAttrib);
-    pEntry->pData = ICCItemPtr(pItem->CloneContainer(&g_pUniverse->GetCC()));
+	//	If the value is Nil, then we delete the entry
+
+	if (pItem->IsNil())
+		{
+		m_Data.DeleteAt(sAttrib);
+		}
+
+	//	Otherwise, we set it.
+
+	else
+		{
+		SDataEntry *pEntry = m_Data.SetAt(sAttrib);
+		pEntry->pData = ICCItemPtr(pItem->CloneContainer(&g_pUniverse->GetCC()));
+		}
 	}
 
 void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
