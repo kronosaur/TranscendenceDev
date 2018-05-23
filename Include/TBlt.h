@@ -616,28 +616,9 @@ template <class PAINTER> class TBlt
 
 			int cxDest = RectWidth(rcDest);
 			int cyDest = RectHeight(rcDest);
-
 			int xDest = rcDest.left;
-			if (xDest < 0)
-				{
-				cxDest += xDest;
-				xDest = 0;
-				}
-
 			int yDest = rcDest.top;
-			if (yDest < 0)
-				{
-				cyDest += yDest;
-				yDest = 0;
-				}
-
-			if (xDest + cxDest > Dest.GetWidth())
-				cxDest = Dest.GetWidth() - xDest;
-
-			if (yDest + cyDest > Dest.GetHeight())
-				cyDest = Dest.GetHeight() - yDest;
-
-			if (cxDest <= 0 || cyDest <= 0)
+			if (!Dest.AdjustCoords(NULL, NULL, 0, 0, &xDest, &yDest, &cxDest, &cyDest))
 				return;
 
 			int xSrcEnd = xSrc + cxSrc;
