@@ -32,6 +32,7 @@
 
 const int DEFAULT_PORT_POS_RADIUS =				64;
 const int DEFAULT_DOCK_DISTANCE_LS =			12;
+const Metric DEFAULT_DOCK_DISTANCE2 =			(LIGHT_SECOND * LIGHT_SECOND * DEFAULT_DOCK_DISTANCE_LS * DEFAULT_DOCK_DISTANCE_LS);
 const Metric GATE_DIST =						KLICKS_PER_PIXEL * 64.0;
 const Metric GATE_DIST2 =						GATE_DIST * GATE_DIST;
 
@@ -989,7 +990,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	//	Don't bother checking if the station is too far
 
-	if (pPlayer && rDist2 > rMaxDist2)
+	if (pPlayer && rDist2 > DEFAULT_DOCK_DISTANCE2)
 		pPlayer = NULL;
 
 	//	If this is a stargate and we are at the center (just came through) 
@@ -1033,8 +1034,8 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 				//	If this is a better port, then replace the existing 
 				//	solution.
 
-				if (Ctx.pDockingObj == NULL
-							|| rDist2 < Ctx.rDockingPortDist2)
+				if (rDist2 <= rMaxDist2
+						&& (Ctx.pDockingObj == NULL || rDist2 < Ctx.rDockingPortDist2))
 					{
 					Ctx.pDockingObj = pOwner;
 					Ctx.iDockingPort = i;
