@@ -1637,7 +1637,7 @@ CString strFromDouble (double rValue, int iDecimals)
 	if (iDecimals == -1)
 		{
 		char *pPos = sResult.GetWritePointer(_CVTBUFSIZE);
-		if (_gcvt_s(pPos, sResult.GetLength(), rValue, 16) != 0)
+		if (_gcvt_s(pPos, sResult.GetLength(), rValue, 17) != 0)
 			return CONSTLIT("NaN");
 		}
 	else
