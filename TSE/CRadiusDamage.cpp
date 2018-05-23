@@ -124,6 +124,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		if (!CanHit(pObj)
 				|| !pObj->CanBeHit()
 				|| !pObj->CanBeHitBy(m_pDesc->GetDamage())
+				|| pObj->IsDestroyed()
 				|| pObj == this)
 			continue;
 
