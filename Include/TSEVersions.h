@@ -586,3 +586,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					158;
 //
 //	158: 1.8 Beta 2
 //		Removed m_fAutomatedWeapon from CSpaceObject
+//
+//	159: 1.8 Beta 2
+//		Added m_iExtraPowerUse to replace m_iSlotBonus in CInstalledDevice

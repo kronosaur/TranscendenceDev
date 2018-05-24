@@ -25,7 +25,7 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_iFireAngle(0),
 		m_iTemperature(0),
 		m_iActivateDelay(0),
-		m_iSlotBonus(0),
+		m_iExtraPowerUse(0),
 		m_iSlotPosIndex(-1),
 
 		m_fOmniDirectional(false),
@@ -60,14 +60,6 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 	if (!m_SlotEnhancements.IsEmpty())
 		bEnhanced = m_SlotEnhancements.Accumulate(CItemCtx(pSource, const_cast<CInstalledDevice *>(this)), *GetItem(), EnhancementIDs, pEnhancements);
 
-	//	Add slot bonus
-
-	if (m_iSlotBonus != 0)
-		{
-		pEnhancements->InsertHPBonus(m_iSlotBonus);
-		bEnhanced = true;
-		}
-
 	return bEnhanced;
 	}
 
@@ -75,13 +67,24 @@ int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
 
 //	CalcPowerUsed
 //
-//	Calculates how much power this device used this turn
+//	Calculates how much power this device used this tick. Positive numbers are
+//	consumption; negative numbers are power generation.
 
 	{
-	if (!IsEmpty()) 
-		return m_pClass->CalcPowerUsed(Ctx, this, pSource);
-	else
+	if (IsEmpty()) 
 		return 0;
+
+	//	Let the device compute power used. 
+
+	int iPower = m_pClass->CalcPowerUsed(Ctx, this, pSource);
+
+	//	Add extra power used
+
+	iPower += m_iExtraPowerUse;
+
+	//	Done
+
+	return iPower;
 	}
 
 void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
@@ -319,7 +322,9 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_fSecondaryWeapon = Desc.bSecondary;
 
 	m_SlotEnhancements = Desc.Enhancements;
-	m_iSlotBonus = Desc.iSlotBonus;
+	if (Desc.iSlotBonus != 0)
+		m_SlotEnhancements.InsertHPBonus(Desc.iSlotBonus);
+
 	m_iSlotPosIndex = -1;
 	}
 
@@ -364,6 +369,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	m_iSlotPosIndex = -1;
 	m_pOverlay = NULL;
 	m_dwData = 0;
+	m_iExtraPowerUse = 0;
 	m_iTemperature = 0;
 	m_fWaiting = false;
 	m_fEnabled = true;
@@ -431,7 +437,8 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		m_fSecondaryWeapon = Desc.bSecondary;
 
 		m_SlotEnhancements = Desc.Enhancements;
-		m_iSlotBonus = Desc.iSlotBonus;
+		if (Desc.iSlotBonus != 0)
+			m_SlotEnhancements.InsertHPBonus(Desc.iSlotBonus);
 		}
 
 	//	Event (when creating a ship we wait until the
@@ -655,8 +662,18 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	else
 		m_iSlotPosIndex = (int)LOWORD(dwLoad);
 
+	//	In version 159, we replace slot bonus with extra power variable
+
+	int iSlotBonus = 0;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_iSlotBonus = (int)LOWORD(dwLoad);
+
+	if (Ctx.dwVersion >= 159)
+		m_iExtraPowerUse = (int)LOWORD(dwLoad);
+	else
+		{
+		m_iExtraPowerUse = 0;
+		iSlotBonus = (int)LOWORD(dwLoad);
+		}
 
 	if (Ctx.dwVersion >= 29)
 		m_iDeviceSlot = (int)HIWORD(dwLoad);
@@ -751,6 +768,9 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 
 	if (bSlotEnhancements)
 		m_SlotEnhancements.ReadFromStream(Ctx);
+
+	if (iSlotBonus != 0)
+		m_SlotEnhancements.InsertHPBonus(iSlotBonus);
 	}
 
 int CInstalledDevice::IncCharges (CSpaceObject *pSource, int iChange)
@@ -1075,7 +1095,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave = MAKELONG(m_iSlotPosIndex, m_iTemperature);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	dwSave = MAKELONG(m_iSlotBonus, m_iDeviceSlot);
+	dwSave = MAKELONG(m_iExtraPowerUse, m_iDeviceSlot);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);

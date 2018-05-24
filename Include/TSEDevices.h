@@ -95,6 +95,7 @@ class CEnhancementDesc
 	public:
 		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		void InsertHPBonus (int iBonus);
 		inline bool IsEmpty (void) const { return (m_Enhancements.GetCount() == 0); }
 		inline int GetCount (void) const { return m_Enhancements.GetCount(); }
 		inline const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Enhancements[iIndex].Enhancement; }
@@ -469,7 +470,6 @@ class CInstalledDevice
 		inline int GetPosRadius (void) const { return m_iPosRadius; }
 		inline int GetPosZ (void) const { return m_iPosZ; }
 		inline int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
-		inline int GetSlotBonus (void) const { return m_iSlotBonus; }
 		inline const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
 		inline int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
 		inline int GetTemperature (void) const { return m_iTemperature; }
@@ -511,7 +511,6 @@ class CInstalledDevice
 		inline void SetPosZ (int iZ) { m_iPosZ = iZ; m_f3DPosition = (iZ != 0); }
 		inline void SetRegenerating (bool bRegenerating) { m_fRegenerating = bRegenerating; }
 		inline void SetSecondary (bool bSecondary = true) { m_fSecondaryWeapon = bSecondary; }
-		inline void SetSlotBonus (int iBonus) { m_iSlotBonus = iBonus; }
 		inline void SetSlotPosIndex (int iIndex) { m_iSlotPosIndex = iIndex; }
 		inline void SetTemperature (int iTemperature) { m_iTemperature = iTemperature; }
 		inline void SetTimeUntilReady (int iDelay) { m_iTimeUntilReady = iDelay; }
@@ -623,7 +622,7 @@ class CInstalledDevice
 
 		int m_iTemperature:16;					//	Temperature for weapons
 		int m_iActivateDelay:16;				//	Cached activation delay
-		int m_iSlotBonus:16;					//	Bonus from device slot itself
+		int m_iExtraPowerUse:16;				//	Additional power use per tick
 		int m_iSlotPosIndex:16;					//	Slot placement
 
 		DWORD m_fOmniDirectional:1;				//	Installed on turret

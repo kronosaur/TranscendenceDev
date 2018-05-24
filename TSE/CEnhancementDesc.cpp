@@ -119,6 +119,18 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	return NOERROR;
 	}
 
+void CEnhancementDesc::InsertHPBonus (int iBonus)
+
+//	InsertHPBonus
+//
+//	Adds a standard HP bonus enhancement.
+
+	{
+	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
+	CItem::InitCriteriaAll(&pEnhance->Criteria);
+	pEnhance->Enhancement.SetModBonus(iBonus);
+	}
+
 void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
 
 //	SetCriteria
