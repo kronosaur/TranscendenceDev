@@ -2049,7 +2049,7 @@ Metric CArmorClass::GetScaledCostAdj (CItemCtx &ItemCtx) const
     if (m_pScalable == NULL || ItemCtx.IsItemNull())
         return 1.0;
 
-    int iLevel = Min(ItemCtx.GetItem().GetVariantHigh(), m_iScaledLevels);
+    int iLevel = ItemCtx.GetItem().GetLevel();
     if (iLevel <= 0)
         return 1.0;
 

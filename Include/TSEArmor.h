@@ -205,7 +205,7 @@ class CArmorClass
 
 		CItemType *m_pItemType;					//	Item for this armor
 
-        int m_iScaledLevels;                    //  Number of levels
+        int m_iScaledLevels;                    //  Number of levels above first
         SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
 
 		SEventHandlerDesc m_CachedEvents[evtCount];

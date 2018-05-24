@@ -741,7 +741,7 @@ Metric CDeviceClass::OnGetScaledCostAdj (CItemCtx &Ctx) const
     if (Ctx.IsItemNull())
         return 1.0;
 
-    int iLevel = Min(Ctx.GetItem().GetVariantHigh(), m_pItemType->GetMaxLevel());
+    int iLevel = Ctx.GetItem().GetLevel();
     if (iLevel <= 0)
         return 1.0;
 
