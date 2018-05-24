@@ -873,8 +873,6 @@ void CShip::CalcPerformance (void)
     {
 	DEBUG_TRY
 
-    int i;
-
     //  Remember current settings so we can detect if something changed.
 
     int iOldThrust = m_Perf.GetDriveDesc().GetThrust();
@@ -904,20 +902,11 @@ void CShip::CalcPerformance (void)
 
     //  Accumulate settings from armor
 
-	for (i = 0; i < GetArmorSectionCount(); i++)
-		{
-        CItemCtx ItemCtx(this, GetArmorSection(i));
-        ItemCtx.GetArmor()->AccumulatePerformance(ItemCtx, Ctx);
-		}
+	m_Armor.AccumulatePerformance(Ctx);
 
     //  Accumulate settings from devices
 
-    for (i = 0; i < GetDeviceCount(); i++)
-        if (!GetDevice(i)->IsEmpty())
-            {
-            CItemCtx ItemCtx(this, GetDevice(i));
-            ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
-            }
+	m_Devices.AccumulatePerformance(Ctx);
 
     //  If we're tracking mass, adjust rotation descriptor to compensate for
     //  ship mass.
@@ -950,7 +939,6 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 //	reactor sources.
 
 	{
-	int i;
 	int iPowerUsed = 0;
 	int iPowerGenerated = 0;
 
@@ -969,15 +957,7 @@ int CShip::CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated)
 
 	//	Compute power drain from armor
 
-	for (i = 0; i < GetArmorSectionCount(); i++)
-		{
-		CInstalledArmor *pArmor = GetArmorSection(i);
-		int iArmorPower = pArmor->GetClass()->CalcPowerUsed(Ctx, this, pArmor);
-		if (iArmorPower >= 0)
-			iPowerUsed += iArmorPower;
-		else
-			iPowerGenerated += -iArmorPower;
-		}
+	m_Armor.AccumulatePowerUsed(Ctx, this, iPowerUsed, iPowerGenerated);
 
 	//	Done
 
@@ -3103,7 +3083,6 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	int i;
 	CCodeChain &CC = g_pUniverse->GetCC();
     ICCItem *pResult;
 
@@ -3131,44 +3110,23 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pSection = GetArmorSection(i);
-			if (!pSection->GetClass()->IsBlindingDamageImmune(CItemCtx(this, pSection)))
-				return CC.CreateNil();
-			}
+		return CC.CreateBool(m_Armor.IsImmune(this, specialBlinding));
 
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
 
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
 
-	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE) || strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pSection = GetArmorSection(i);
-			if (!pSection->GetClass()->IsDeviceDamageImmune(CItemCtx(this, pSection)))
-				return CC.CreateNil();
-			}
+	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
+		return CC.CreateBool(m_Armor.IsImmune(this, specialDeviceDamage));
 
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
+	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
+		return CC.CreateBool(m_Armor.IsImmune(this, specialDeviceDisrupt));
+
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pSection = GetArmorSection(i);
-			if (!pSection->GetClass()->IsDisintegrationImmune(CItemCtx(this, pSection)))
-				return CC.CreateNil();
-			}
+		return CC.CreateBool(m_Armor.IsImmune(this, specialDisintegration));
 
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
 	else if (strEquals(sName, PROPERTY_DOCKED_AT_ID))
 		return (!m_fShipCompartment && m_pDocked ? CC.CreateInteger(m_pDocked->GetID()) : CC.CreateNil());
 
@@ -3182,16 +3140,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         return CC.CreateInteger(m_Armor.GetHealerLeft());
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pSection = GetArmorSection(i);
-			if (!pSection->GetClass()->IsEMPDamageImmune(CItemCtx(this, pSection)))
-				return CC.CreateNil();
-			}
-
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
+		return CC.CreateBool(m_Armor.IsImmune(this, specialEMP));
 
     else if (strEquals(sName, PROPERTY_FUEL_LEFT))
         return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
@@ -3261,16 +3210,8 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CInstalledArmor *pSection = GetArmorSection(i);
-			if (!pSection->GetClass()->IsRadiationImmune(CItemCtx(this, pSection)))
-				return CC.CreateNil();
-			}
+		return CC.CreateBool(m_Armor.IsImmune(this, specialRadiation));
 
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
 
@@ -3327,16 +3268,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CreateListFromItem(CC, theItem);
 		}
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
-		{
-		for (i = 0; i < GetArmorSectionCount(); i++)
-			{
-			CItemCtx Ctx(this, GetArmorSection(i));
-			if (!Ctx.GetArmorClass()->IsShatterImmune(Ctx))
-				return CC.CreateNil();
-			}
-
-		return (GetArmorSectionCount() > 0 ? CC.CreateTrue() : CC.CreateNil());
-		}
+		return CC.CreateBool(m_Armor.IsImmune(this, specialShatter));
 
 	//	Drive properties
 
@@ -4041,14 +3973,7 @@ bool CShip::IsRadiationImmune (void)
 //	armor segments are immune.
 
 	{
-	for (int i = 0; i < GetArmorSectionCount(); i++)
-		{
-		CInstalledArmor *pSection = GetArmorSection(i);
-		if (!pSection->GetClass()->IsRadiationImmune(CItemCtx(this, pSection)))
-			return false;
-		}
-
-	return true;
+	return m_Armor.IsImmune(this, specialRadiation);
 	}
 
 bool CShip::IsSingletonDevice (ItemCategories iItemCat)

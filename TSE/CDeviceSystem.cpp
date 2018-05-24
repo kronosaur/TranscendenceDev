@@ -40,6 +40,23 @@ void CDeviceSystem::AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalle
 			}
 	}
 
+void CDeviceSystem::AccumulatePerformance (SShipPerformanceCtx &Ctx) const
+
+//	AccumulatePerformance
+//
+//	Accumulate performance metrics.
+
+	{
+	int i;
+
+    for (i = 0; i < m_Devices.GetCount(); i++)
+        if (!m_Devices[i].IsEmpty())
+            {
+            CItemCtx ItemCtx(Ctx.pShip, &m_Devices[i]);
+            ItemCtx.GetDevice()->AccumulatePerformance(ItemCtx, Ctx);
+            }
+	}
+
 void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated)
 
 //	AccumulatePowerUsed

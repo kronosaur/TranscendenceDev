@@ -109,14 +109,9 @@ class CArmorClass
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
 		inline DWORD GetUNID (void);
-		bool IsBlindingDamageImmune (CItemCtx &ItemCtx);
-		bool IsDeviceDamageImmune (CItemCtx &ItemCtx);
-		bool IsDisintegrationImmune (CItemCtx &ItemCtx);
-		bool IsEMPDamageImmune (CItemCtx &ItemCtx);
-		bool IsRadiationImmune (CItemCtx &ItemCtx);
+		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
 		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }
-		bool IsShatterImmune (CItemCtx &ItemCtx);
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
@@ -130,6 +125,7 @@ class CArmorClass
         static const SStdStats &GetStdStats (int iLevel);
 
 	private:
+
         struct SScalableStats
             {
             int iLevel;

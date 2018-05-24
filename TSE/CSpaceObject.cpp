@@ -1625,7 +1625,7 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 
 		if (iResult == eisOK 
 				&& Enhancement.IsRadiationImmune()
-				&& pArmorClass->IsRadiationImmune(CItemCtx(this, pArmor)))
+				&& pArmorClass->IsImmune(CItemCtx(this, pArmor), specialRadiation))
 			return eisAlreadyEnhanced;
 		}
 

@@ -3918,7 +3918,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(pArmor->GetRepairTech());
 
 		case FN_ARM_IS_RADIATION_IMMUNE:
-			return pCC->CreateBool(pArmor->IsRadiationImmune(CItemCtx(&ArmorItem)));
+			return pCC->CreateBool(pArmor->IsImmune(CItemCtx(&ArmorItem), specialRadiation));
 
 		default:
 			ASSERT(FALSE);
@@ -9225,7 +9225,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (Item.IsInstalled())
 					pInstalled = pShip->GetArmorSection(Item.GetInstalled());
 
-				return pCC->CreateBool(pArmor->IsRadiationImmune(CItemCtx(pShip, pInstalled)));
+				return pCC->CreateBool(pArmor->IsImmune(CItemCtx(pShip, pInstalled), specialRadiation));
 				}
 			else
 				return pCC->CreateBool(pShip->IsRadiationImmune());

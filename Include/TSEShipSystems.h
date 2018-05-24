@@ -60,12 +60,15 @@ class CArmorSystem
                 m_iHealerLeft(0)
             { }
 
+		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
+		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP = NULL) const;
         inline int GetHealerLeft (void) const { return m_iHealerLeft; }
 		inline CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
 		inline int GetSegmentCount (void) const { return m_Segments.GetCount(); }
         inline int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
         void Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate = false);
+		bool IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDamage) const;
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
@@ -87,6 +90,7 @@ class CDeviceSystem
 		CDeviceSystem (void);
 
 		void AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const;
 		void CleanUp (void);
