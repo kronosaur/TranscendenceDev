@@ -1287,13 +1287,13 @@ int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstall
 
 	SEventHandlerDesc Event;
 	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
-	{
+		{
 		int iCustomPowerUse = UpdateCustom(pArmor, pSource, Event);
 		if (iCustomPowerUse > 0)
-		{
+			{
 			iTotalPower += iCustomPowerUse;
+			}
 		}
-	}
 
 	//	Done
 
@@ -2359,44 +2359,29 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 
 //	UpdateCustom
 //
-//	Fire the armor item's <OnArmorConsumePower> event. If that event returns True, then
-//  we also return True and consume power. Else, return False.
+//	Fires <OnArmorConsumePower> and returns the amount of power consumed. This
+//	is added to the currently calculated power.
 
 	{
-	//	Only works on ships (with segments).
-	//	LATER: Introduce the concept of segments to stations.
-	CItem *pItem = pArmor->GetItem();
-
-	CShip *pShip = pSource->AsShip();
-	if (pShip == NULL)
-		return false;
-
-	int iResult = 0;
 	CCodeChainCtx Ctx;
-	const CItemEnhancementStack *pEnhancement = pArmor->GetEnhancementStack();
-
 	Ctx.SaveAndDefineSourceVar(pSource);
-	Ctx.SaveAndDefineItemVar(*pItem);
-	ICCItem *pResult = Ctx.Run(Event);
+	Ctx.SaveAndDefineItemVar(*pArmor->GetItem());
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+
 	if (pResult->IsError())
+		{
 		pSource->ReportEventError(ON_ARMOR_CONSUME_POWER_EVENT, pResult);
+		return 0;
+		}
+	else if (pResult->IsNil())
+		return 0;
 
-	if (pResult->IsNil())
-		{
-		iResult = 0;
-		}
-	else if (pResult->IsInteger())
-		{
-		iResult = pResult->GetIntegerValue();
-		}
+	else if (pResult->IsNumber())
+		return pResult->GetIntegerValue();
+
 	else
-		{
-		iResult = 0;
-		}
-
-	//	We've modified the armor
-
-	return iResult;
+		return 0;
 	}
 
 bool CArmorClass::UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick)

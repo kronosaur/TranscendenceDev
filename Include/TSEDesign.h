@@ -223,7 +223,15 @@ class CDesignType
 		inline void ClearMark (void) { OnClearMark(); }
 		inline CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
-		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (!m_pExtra) return false; if (retEvent) *retEvent = m_pExtra->EventsCache[iEvent]; return (m_pExtra->EventsCache[iEvent].pCode != NULL); }
+		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+			{
+			if (!m_pExtra || !m_pExtra->EventsCache[iEvent].pCode) 
+				return false;
+				
+			if (retEvent) *retEvent = m_pExtra->EventsCache[iEvent]; 
+			return true;
+			}
+
 		bool FindStaticData (const CString &sAttrib, ICCItemPtr &pData) const;
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);

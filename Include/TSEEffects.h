@@ -456,7 +456,15 @@ class CEffectCreator : public CDesignType
 		static void WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter);
 
 		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
-		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { if (retEvent) *retEvent = m_CachedEvents[iEvent]; return (m_CachedEvents[iEvent].pCode != NULL); }
+		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+			{
+			if (!m_CachedEvents[iEvent].pCode)
+				return false;
+
+			if (retEvent) *retEvent = m_CachedEvents[iEvent];
+			return true;
+			}
+
 		inline CWeaponFireDesc *GetDamageDesc (void) { return m_pDamage; }
 		inline EInstanceTypes GetInstance (void) const { return m_iInstance; }
 		inline const CString &GetUNIDString (void) { return m_sUNID; }
