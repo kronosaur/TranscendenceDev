@@ -979,6 +979,7 @@ class CSpaceObjectGrid
 		~CSpaceObjectGrid (void);
 
 		inline void AddObject (CSpaceObject *pObj);
+		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags);
 		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) { return i.bMore; }

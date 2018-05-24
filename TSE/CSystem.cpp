@@ -3960,6 +3960,16 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	m_EventHandlers.ObjDestroyed(Ctx.pObj);
 
+	//	If this is the player and we're resurrecting, then remove the player from
+	//	the grid. We need to do this because resurrecting player ships don't have
+	//	the destroyed flag set, but we don't want them to show up in future 
+	//	searches.
+
+	if (Ctx.pObj->IsPlayer() && Ctx.bResurrectPending)
+		{
+		m_ObjGrid.Delete(Ctx.pObj);
+		}
+
 	//	Deal with joints
 
 	m_Joints.ObjDestroyed(Ctx.pObj);

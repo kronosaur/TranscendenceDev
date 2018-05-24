@@ -1545,6 +1545,11 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	//	If resurrection is pending, then clear the destroyed flag. Otherwise, 
 	//	wingmen might leave the player.
+	//
+	//	NOTE: This is somewhat a hack, and it works only because we remove the
+	//	player ship from lists that might contain it (including the system grid).
+	//	In the future it might be cleaner to leave the destroyed flag set but
+	//	set an additional resurrection flag and have wingmen check that.
 
 	if (Ctx.bResurrectPending && IsPlayer())
 		m_fDestroyed = false;

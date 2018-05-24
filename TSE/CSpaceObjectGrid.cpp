@@ -34,6 +34,24 @@ CSpaceObjectGrid::~CSpaceObjectGrid (void)
 	delete [] m_pGrid;
 	}
 
+void CSpaceObjectGrid::Delete (CSpaceObject *pObj)
+
+//	Delete
+//
+//	Delete the given object from the grid. NOTE: This is a relatively expensive
+//	operation, so we only do it when we really need to.
+
+	{
+	int i;
+	int iTotal = m_iGridSize * m_iGridSize;
+	for (i = 0; i < iTotal; i++)
+		{
+		if (m_pGrid[i].Delete(pObj))
+			//	We assume that an object can only be on one list in the grid.
+			break;
+		}
+	}
+
 void CSpaceObjectGrid::DeleteAll (void)
 
 //	DeleteAll
