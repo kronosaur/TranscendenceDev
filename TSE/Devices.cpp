@@ -38,6 +38,7 @@
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
+#define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
@@ -483,6 +484,14 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_EXTERNAL))
 		return CC.CreateBool(pDevice ? pDevice->IsExternal() : IsExternal());
 
+	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
+		{
+		if (pDevice == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateInteger(pDevice->GetExtraPowerUse());
+		}
+
     else if (strEquals(sName, PROPERTY_POS))
         {
         if (pDevice == NULL)
@@ -816,166 +825,7 @@ bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
-	//	Get the installed device. We need this to set anything.
-
-	CInstalledDevice *pDevice = Ctx.GetDevice();
-	if (pDevice == NULL)
-		{
-		*retsError = CONSTLIT("Item is not an installed device on object.");
-		return false;
-		}
-
-	//	Figure out what to set
-
-    if (strEquals(sName, PROPERTY_CAPACITOR))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        if (!SetCounter(pDevice, pSource, cntCapacitor, pValue->GetIntegerValue()))
-            {
-            *retsError = CONSTLIT("Unable to set capacitor value.");
-            return false;
-            }
-        }
-	else if (strEquals(sName, PROPERTY_EXTERNAL))
-		{
-		bool bSetExternal = (pValue && !pValue->IsNil());
-		if (pDevice->IsExternal() != bSetExternal)
-			{
-			//	If the class is external and we don't want it to be external, then
-			//	we cannot comply.
-
-			if (IsExternal() && !bSetExternal)
-				{
-				*retsError = CONSTLIT("Device is natively external and cannot be made internal.");
-				return false;
-				}
-
-			pDevice->SetExternal(bSetExternal);
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_FIRE_ARC))
-		{
-		//	A value of nil means no fire arc (and no omni)
-
-		if (pValue == NULL || pValue->IsNil())
-			{
-			pDevice->SetOmniDirectional(false);
-			pDevice->SetFireArc(0, 0);
-			}
-
-		//	A value of "omnidirectional" counts
-
-		else if (strEquals(pValue->GetStringValue(), PROPERTY_OMNIDIRECTIONAL))
-			{
-			pDevice->SetOmniDirectional(true);
-			pDevice->SetFireArc(0, 0);
-			}
-
-		//	A single value means that we just point in a direction
-
-		else if (pValue->GetCount() == 1)
-			{
-			int iMinFireArc = AngleMod(pValue->GetElement(0)->GetIntegerValue());
-			pDevice->SetOmniDirectional(false);
-			pDevice->SetFireArc(iMinFireArc, iMinFireArc);
-			}
-
-		//	Otherwise we expect a list with two elements
-
-		else if (pValue->GetCount() >= 2)
-			{
-			int iMinFireArc = AngleMod(pValue->GetElement(0)->GetIntegerValue());
-			int iMaxFireArc = AngleMod(pValue->GetElement(1)->GetIntegerValue());
-			pDevice->SetOmniDirectional(false);
-			pDevice->SetFireArc(iMinFireArc, iMaxFireArc);
-			}
-
-		//	Invalid
-
-		else
-			{
-			*retsError = CONSTLIT("Invalid fireArc parameter.");
-			return false;
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_LINKED_FIRE_OPTIONS))
-		{
-		//	Parse the options
-
-		DWORD dwOptions;
-		if (!::GetLinkedFireOptions(pValue, &dwOptions, retsError))
-			return false;
-
-		//	Set
-
-		pDevice->SetLinkedFireOptions(dwOptions);
-		}
-
-	else if (strEquals(sName, PROPERTY_POS))
-		{
-		//	Get the parameters. We accept a single list parameter with angle/radius/z.
-		//	(The latter is compatible with the return of objGetDevicePos.)
-
-		int iPosAngle;
-		int iPosRadius;
-		int iZ;
-		if (pValue == NULL || pValue->IsNil())
-			{
-			iPosAngle = 0;
-			iPosRadius = 0;
-			iZ = 0;
-			}
-		else if (pValue->GetCount() >= 2)
-			{
-			iPosAngle = pValue->GetElement(0)->GetIntegerValue();
-			iPosRadius = pValue->GetElement(1)->GetIntegerValue();
-
-			if (pValue->GetCount() >= 3)
-				iZ = pValue->GetElement(2)->GetIntegerValue();
-			else
-				iZ = 0;
-			}
-		else
-			{
-			*retsError = CONSTLIT("Invalid angle and radius");
-			return false;
-			}
-
-		//	Set it
-
-		pDevice->SetPosAngle(iPosAngle);
-		pDevice->SetPosRadius(iPosRadius);
-		pDevice->SetPosZ(iZ);
-		}
-
-	else if (strEquals(sName, PROPERTY_SECONDARY))
-		{
-		if (pValue == NULL || !pValue->IsNil())
-			pDevice->SetSecondary(true);
-		else
-			pDevice->SetSecondary(false);
-		}
-
-    else if (strEquals(sName, PROPERTY_TEMPERATURE))
-        {
-        CSpaceObject *pSource = Ctx.GetSource();
-        if (!SetCounter(pDevice, pSource, cntTemperature, pValue->GetIntegerValue()))
-            {
-            *retsError = CONSTLIT("Unable to set temperature value.");
-            return false;
-            }
-        }
-
-	else
-		{
-		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-		return false;
-		}
-
-	return true;
+	*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
+	return false;
 	}
 

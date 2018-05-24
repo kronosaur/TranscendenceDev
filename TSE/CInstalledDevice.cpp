@@ -8,6 +8,18 @@
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
 #define ITEM_ATTRIB								CONSTLIT("item")
 
+#define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_ENABLED						CONSTLIT("enabled")
+#define PROPERTY_EXTERNAL						CONSTLIT("external")
+#define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
+#define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
+#define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
+#define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
+#define PROPERTY_POS							CONSTLIT("pos")
+#define PROPERTY_SECONDARY						CONSTLIT("secondary")
+#define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+
 //	CInstalledDevice class
 
 CInstalledDevice::CInstalledDevice (void) : 
@@ -935,6 +947,180 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 		m_fLinkedFireTarget = true;
 	else if (dwOptions & CDeviceClass::lkfEnemyInRange)
 		m_fLinkedFireEnemy = true;
+	}
+
+bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+
+//	SetProperty
+//
+//	Sets a property for an installed device. Returns FALSE if we could not set
+//	the property for some reason.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+	if (IsEmpty())
+		{
+		if (retsError) *retsError = CONSTLIT("No device installed.");
+		return false;
+		}
+
+	//	Figure out what to set
+
+    if (strEquals(sName, PROPERTY_CAPACITOR))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
+            {
+            if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
+            return false;
+            }
+        }
+	else if (strEquals(sName, PROPERTY_EXTERNAL))
+		{
+		bool bSetExternal = (pValue && !pValue->IsNil());
+		if (IsExternal() != bSetExternal)
+			{
+			//	If the class is external and we don't want it to be external, then
+			//	we cannot comply.
+
+			if (m_pClass->IsExternal() && !bSetExternal)
+				{
+				if (retsError) *retsError = CONSTLIT("Device is natively external and cannot be made internal.");
+				return false;
+				}
+
+			SetExternal(bSetExternal);
+			}
+		}
+
+	else if (strEquals(sName, PROPERTY_EXTRA_POWER_USE))
+		{
+		m_iExtraPowerUse = pValue->GetIntegerValue();
+		}
+
+	else if (strEquals(sName, PROPERTY_FIRE_ARC))
+		{
+		//	A value of nil means no fire arc (and no omni)
+
+		if (pValue == NULL || pValue->IsNil())
+			{
+			SetOmniDirectional(false);
+			SetFireArc(0, 0);
+			}
+
+		//	A value of "omnidirectional" counts
+
+		else if (strEquals(pValue->GetStringValue(), PROPERTY_OMNIDIRECTIONAL))
+			{
+			SetOmniDirectional(true);
+			SetFireArc(0, 0);
+			}
+
+		//	A single value means that we just point in a direction
+
+		else if (pValue->GetCount() == 1)
+			{
+			int iMinFireArc = AngleMod(pValue->GetElement(0)->GetIntegerValue());
+			SetOmniDirectional(false);
+			SetFireArc(iMinFireArc, iMinFireArc);
+			}
+
+		//	Otherwise we expect a list with two elements
+
+		else if (pValue->GetCount() >= 2)
+			{
+			int iMinFireArc = AngleMod(pValue->GetElement(0)->GetIntegerValue());
+			int iMaxFireArc = AngleMod(pValue->GetElement(1)->GetIntegerValue());
+			SetOmniDirectional(false);
+			SetFireArc(iMinFireArc, iMaxFireArc);
+			}
+
+		//	Invalid
+
+		else
+			{
+			if (retsError) *retsError = CONSTLIT("Invalid fireArc parameter.");
+			return false;
+			}
+		}
+
+	else if (strEquals(sName, PROPERTY_LINKED_FIRE_OPTIONS))
+		{
+		//	Parse the options
+
+		DWORD dwOptions;
+		if (!::GetLinkedFireOptions(pValue, &dwOptions, retsError))
+			{
+			if (retsError) *retsError = CONSTLIT("Invalid linked-fire option.");
+			return false;
+			}
+
+		//	Set
+
+		SetLinkedFireOptions(dwOptions);
+		}
+
+	else if (strEquals(sName, PROPERTY_POS))
+		{
+		//	Get the parameters. We accept a single list parameter with angle/radius/z.
+		//	(The latter is compatible with the return of objGetDevicePos.)
+
+		int iPosAngle;
+		int iPosRadius;
+		int iZ;
+		if (pValue == NULL || pValue->IsNil())
+			{
+			iPosAngle = 0;
+			iPosRadius = 0;
+			iZ = 0;
+			}
+		else if (pValue->GetCount() >= 2)
+			{
+			iPosAngle = pValue->GetElement(0)->GetIntegerValue();
+			iPosRadius = pValue->GetElement(1)->GetIntegerValue();
+
+			if (pValue->GetCount() >= 3)
+				iZ = pValue->GetElement(2)->GetIntegerValue();
+			else
+				iZ = 0;
+			}
+		else
+			{
+			if (retsError) *retsError = CONSTLIT("Invalid angle and radius");
+			return false;
+			}
+
+		//	Set it
+
+		SetPosAngle(iPosAngle);
+		SetPosRadius(iPosRadius);
+		SetPosZ(iZ);
+		}
+
+	else if (strEquals(sName, PROPERTY_SECONDARY))
+		{
+		if (pValue == NULL || !pValue->IsNil())
+			SetSecondary(true);
+		else
+			SetSecondary(false);
+		}
+
+    else if (strEquals(sName, PROPERTY_TEMPERATURE))
+        {
+        CSpaceObject *pSource = Ctx.GetSource();
+        if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
+            {
+            if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
+            return false;
+            }
+        }
+
+	//	Otherwise, let any sub-classes handle it.
+
+	else
+		return m_pClass->SetItemProperty(Ctx, sName, pValue, retsError);
+
+	return true;
 	}
 
 void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList)

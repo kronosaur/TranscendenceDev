@@ -2938,6 +2938,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
+	CInstalledDevice *pDevice;
 
 	if (IsEmpty())
 		{
@@ -3022,21 +3023,17 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
         return true;
         }
 
+	//	If this is an installed device, then pass it on
+
+	else if (pDevice = Ctx.GetDevice())
+		return pDevice->SetProperty(Ctx, sName, pValue, retsError);
+
+	//	Otherwise, nothing
+
 	else
 		{
-		//	If this is a device, then pass it on
-
-		CDeviceClass *pDevice;
-		if (pDevice = GetType()->GetDeviceClass())
-			return pDevice->SetItemProperty(Ctx, sName, pValue, retsError);
-
-		//	Otherwise, nothing
-
-		else
-			{
-			*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-			return false;
-			}
+		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
+		return false;
 		}
 
 	return true;

@@ -455,6 +455,7 @@ class CInstalledDevice
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
 		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
+		inline int GetExtraPowerUse (void) const { return m_iExtraPowerUse; }
 		ItemFates GetFate (void) const;
 		inline int GetFireArc (void) const { return (IsOmniDirectional() ? 360 : AngleRange(m_iMinFireArc, m_iMaxFireArc)); }
 		inline int GetFireAngle (void) const { return m_iFireAngle; }
@@ -509,6 +510,7 @@ class CInstalledDevice
 		inline void SetPosAngle (int iAngle) { m_iPosAngle = iAngle; }
 		inline void SetPosRadius (int iRadius) { m_iPosRadius = iRadius; }
 		inline void SetPosZ (int iZ) { m_iPosZ = iZ; m_f3DPosition = (iZ != 0); }
+		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		inline void SetRegenerating (bool bRegenerating) { m_fRegenerating = bRegenerating; }
 		inline void SetSecondary (bool bSecondary = true) { m_fSecondaryWeapon = bSecondary; }
 		inline void SetSlotPosIndex (int iIndex) { m_iSlotPosIndex = iIndex; }
