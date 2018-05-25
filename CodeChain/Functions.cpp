@@ -3192,18 +3192,22 @@ ICCItem *fnMathNumerals (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_MATH_ROUND:
 			{
+			//	NOTE: In the future, if we have problems converting to an int
+			//	we can check to see if the result exceeds MAX_INT and return
+			//	in a double.
+
 			if (pArgs->GetCount() >= 2)
 				{
 				CString sOption = pArgs->GetElement(0)->GetStringValue();
 				double rValue = pArgs->GetElement(1)->GetDoubleValue();
 
 				if (strEquals(sOption, CONSTLIT("stochastic")))
-					return pCC->CreateDouble(mathRoundStochastic(rValue));
+					return pCC->CreateInteger(mathRoundStochastic(rValue));
 				else
-					return pCC->CreateDouble(round(rValue));
+					return pCC->CreateInteger((int)round(rValue));
 				}
 			else
-				return pCC->CreateDouble(round(pArgs->GetElement(0)->GetDoubleValue()));
+				return pCC->CreateInteger((int)round(pArgs->GetElement(0)->GetDoubleValue()));
 			}
 
 		case FN_MATH_SIN:
