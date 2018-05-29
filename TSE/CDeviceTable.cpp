@@ -60,6 +60,7 @@ class CSingleDevice : public IDeviceGenerator
 
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -109,6 +110,7 @@ class CLevelTableOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -135,6 +137,7 @@ class CTableOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -159,6 +162,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual bool IsVariant (void) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
@@ -464,6 +468,22 @@ void CSingleDevice::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pExtraItems->AddTypesUsed(retTypesUsed);
 	}
 
+bool CSingleDevice::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any items have the given attribute.
+
+	{
+	if (m_pItemType && m_pItemType->HasAttribute(sAttrib))
+		return true;
+
+	if (m_pExtraItems && m_pExtraItems->HasItemAttribute(sAttrib))
+		return true;
+
+	return false;
+	}
+
 bool CSingleDevice::IsVariant (void) const
 
 //	IsVariant
@@ -731,6 +751,22 @@ void CTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
 	}
 
+bool CTableOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns if any item has the given attribute
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pDevice->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
+	}
+
 bool CTableOfDeviceGenerators::IsVariant (void) const
 
 //	IsVariant
@@ -874,6 +910,22 @@ void CLevelTableOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retType
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
+	}
+
+bool CLevelTableOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if we have any item with the given attribute.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pDevice->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
 	}
 
 bool CLevelTableOfDeviceGenerators::IsVariant (void) const
@@ -1138,6 +1190,22 @@ CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSp
 			return &m_SlotDesc[i];
 
 	return NULL;
+	}
+
+bool CGroupOfDeviceGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pDevice->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
 	}
 
 bool CGroupOfDeviceGenerators::IsVariant (void) const

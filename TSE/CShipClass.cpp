@@ -193,6 +193,7 @@
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
+#define SPECIAL_ITEM_ATTRIBUTE					CONSTLIT("itemAttribute:")
 #define SPECIAL_MANUFACTURER					CONSTLIT("manufacturer:")
 
 #define SPECIAL_VALUE_TRUE						CONSTLIT("true")
@@ -3854,6 +3855,18 @@ bool CShipClass::OnHasSpecialAttribute (const CString &sAttrib) const
 		bool bIsPlayerClass = (pPlayer && m_fOwnPlayerSettings);
 
 		return (strEquals(sValue, SPECIAL_VALUE_TRUE) == bIsPlayerClass);
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_ITEM_ATTRIBUTE))
+		{
+		CString sItemAttrib = strSubString(sAttrib, SPECIAL_ITEM_ATTRIBUTE.GetLength());
+
+		if (m_pDevices && m_pDevices->HasItemAttribute(sItemAttrib))
+			return true;
+
+		if (m_pItems && m_pItems->HasItemAttribute(sItemAttrib))
+			return true;
+
+		return false;
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_MANUFACTURER))
 		{

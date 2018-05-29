@@ -93,6 +93,7 @@ class CGroupOfGenerators : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual IItemGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -128,6 +129,7 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual IItemGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -159,6 +161,7 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual IItemGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -189,6 +192,7 @@ class CLookup : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel) { return m_pTable->GetAverageValue(iLevel); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return m_pTable->GetGenerator(); }
 		virtual int GetGeneratorCount (void) { return ((m_pTable && m_pTable->GetGenerator()) ? 1 : 0); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -214,6 +218,7 @@ class CRandomItems : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual CItemType *GetItemType (int iIndex) { return m_Table[iIndex].pType; }
 		virtual int GetItemTypeCount (void) { return m_iCount; }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -247,6 +252,7 @@ class CSingleItem : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual CItemType *GetItemType (int iIndex) { return m_pItemType; }
 		virtual int GetItemTypeCount (void) { return 1; }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -271,6 +277,7 @@ class CTableOfGenerators : public IItemGenerator
 		virtual CurrencyValue GetAverageValue (int iLevel);
 		virtual IItemGenerator *GetGenerator (int iIndex) { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) { return m_Table.GetCount(); }
+		virtual bool HasItemAttribute (const CString &sAttrib) const override;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 
@@ -678,6 +685,22 @@ Metric CGroupOfGenerators::GetCountAdj (int iLevel)
 		return 0.0;
 	}
 
+bool CGroupOfGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pItem->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
+	}
+
 ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -822,6 +845,19 @@ CurrencyValue CSingleItem::GetAverageValue (int iLevel)
 
 	{
 	return CalcItemValue(m_pItemType);
+	}
+
+bool CSingleItem::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute
+
+	{
+	if (m_pItemType && m_pItemType->HasAttribute(sAttrib))
+		return true;
+
+	return false;
 	}
 
 ALERROR CSingleItem::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -987,6 +1023,22 @@ CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (int iLevel)
 	return (CurrencyValue)(rTotal + 0.5);
 	}
 
+bool CLevelTableOfItemGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pEntry->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
+	}
+
 ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -1143,6 +1195,22 @@ CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (int iLeve
 	return (CurrencyValue)(rTotal + 0.5);
 	}
 
+bool CLocationCriteriaTableOfItemGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pEntry->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
+	}
+
 ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	LoadFromXML
@@ -1233,6 +1301,16 @@ ALERROR CLookup::Create (DWORD dwUNID, IItemGenerator **retpGenerator, CString *
 	*retpGenerator = pGenerator;
 
 	return NOERROR;
+	}
+
+bool CLookup::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute
+
+	{
+	return m_pTable->HasItemAttribute(sAttrib);
 	}
 
 ALERROR CLookup::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -1366,6 +1444,22 @@ CurrencyValue CTableOfGenerators::GetAverageValue (int iLevel)
 #endif
 
 	return (CurrencyValue)(rTotal + 0.5);
+	}
+
+bool CTableOfGenerators::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Table.GetCount(); i++)
+		if (m_Table[i].pItem->HasItemAttribute(sAttrib))
+			return true;
+
+	return false;
 	}
 
 ALERROR CTableOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -1607,6 +1701,22 @@ CurrencyValue CRandomItems::GetAverageValue (int iLevel)
 
 		return (CurrencyValue)(rTotal + 0.5);
 		}
+	}
+
+bool CRandomItems::HasItemAttribute (const CString &sAttrib) const
+
+//	HasItemAttribute
+//
+//	Returns TRUE if any item has the given attribute
+
+	{
+	int i;
+
+	for (i = 0; i < m_iCount; i++)
+		if (m_Table[i].pType->HasAttribute(sAttrib))
+			return true;
+
+	return false;
 	}
 
 void CRandomItems::InitTable (const CString &sLevelFrequency)

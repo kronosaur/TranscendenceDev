@@ -415,6 +415,7 @@ class IDeviceGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
+		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
 		virtual bool IsVariant (void) const = 0;
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
