@@ -1167,7 +1167,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 							&& pNewCargo->GetCargoSpace() < pOldCargo->GetCargoSpace())
 						{
 						OnComponentChanged(comCargo);
-						Metric rRequiredCargoSpace = GetCargoMass() + Item.GetMass();
+						Metric rRequiredCargoSpace = GetCargoMass() + ItemToReplace.GetMass() - Item.GetMass();
 						Metric rNewCargoSpace = (Metric)Hull.GetCargoSpace() + pNewCargo->GetCargoSpace();
 
 						if (rRequiredCargoSpace > rNewCargoSpace)
