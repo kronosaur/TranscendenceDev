@@ -197,6 +197,9 @@ class CDeviceClass
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+		inline bool CanBeDamaged (void) const { return (!m_fDeviceDamageImmune && (m_fCanBeDamagedOverride || OnCanBeDamaged())); }
+		inline bool CanBeDisabled (CItemCtx &Ctx) const { return m_fCanBeDisabledOverride || OnCanBeDisabled(Ctx); }
+		inline bool CanBeDisrupted (void) const { return (!m_fDeviceDisruptImmune && (m_fCanBeDisruptedOverride || OnCanBeDisrupted())); }
         inline ALERROR FinishBind (SDesignLoadCtx &Ctx) { return OnFinishBind(Ctx); }
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		inline bool FindEventHandlerDeviceClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
@@ -239,9 +242,6 @@ class CDeviceClass
 		virtual CWeaponClass *AsWeaponClass (void) { return NULL; }
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
-		virtual bool CanBeDamaged (void) { return !m_fDeviceDamageImmune; }
-		virtual bool CanBeDisabled (CItemCtx &Ctx) { return (GetPowerRating(Ctx) != 0); }
-		virtual bool CanBeDisrupted(void) { return !m_fDeviceDisruptImmune; }
 		virtual bool CanHitFriends (void) { return true; }
 		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
@@ -317,6 +317,9 @@ class CDeviceClass
 		virtual bool OnAccumulateEnhancements (CItemCtx &Device, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) { return false; }
         virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const { return false; }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+		virtual bool OnCanBeDamaged (void) const { return true; }
+		virtual bool OnCanBeDisabled (CItemCtx &Ctx) const { return (GetPowerRating(Ctx) != 0); }
+		virtual bool OnCanBeDisrupted(void) const { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
@@ -339,8 +342,11 @@ class CDeviceClass
 		DWORD m_fExternal:1;					//	Device is external
 		DWORD m_fDeviceDamageImmune:1;			//	Prevents this device from being damaged by ion effects. Only applies to devices that can be damaged in the first place. Default: false
 		DWORD m_fDeviceDisruptImmune:1;			//	Prevents this device from being disrupted by ion effects. Only applies to devices that can be damaged in the first place. Default: false
+		DWORD m_fCanBeDamagedOverride:1;		//	Device can be damaged even if category generally does not allow it (e.g., cargo holds)
+		DWORD m_fCanBeDisabledOverride:1;		//	Device can be disabled even if category generally does not allow it (e.g., cargo holds)
+		DWORD m_fCanBeDisruptedOverride:1;		//	Device can be disrupted even if category generally does not allow it (e.g., cargo holds)
 
-		DWORD m_dwSpare:29;
+		DWORD m_dwSpare:26;
 	};
 
 //	IDeviceGenerator -----------------------------------------------------------

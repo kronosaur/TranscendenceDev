@@ -7,6 +7,9 @@
 #define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define EQUIPMENT_TAG							CONSTLIT("Equipment")
 
+#define CAN_BE_DAMAGED_ATTRIB					CONSTLIT("canBeDamaged")
+#define CAN_BE_DISABLED_ATTRIB					CONSTLIT("canBeDisabled")
+#define CAN_BE_DISRUPTED_ATTRIB					CONSTLIT("canBeDisrupted")
 #define CATEGORY_ATTRIB							CONSTLIT("category")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define DEVICE_DAMAGE_IMMUNE_ATTRIB				CONSTLIT("deviceDamageImmune")
@@ -354,6 +357,12 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	m_fDeviceDamageImmune = pDesc->GetAttributeBool(DEVICE_DAMAGE_IMMUNE_ATTRIB);
 	m_fDeviceDisruptImmune = pDesc->GetAttributeBool(DEVICE_DISRUPT_IMMUNE_ATTRIB);
+
+	//	Sometimes we override the basic properties of a device category.
+
+	m_fCanBeDamagedOverride = pDesc->GetAttributeBool(CAN_BE_DAMAGED_ATTRIB);
+	m_fCanBeDisabledOverride = pDesc->GetAttributeBool(CAN_BE_DISABLED_ATTRIB);
+	m_fCanBeDisruptedOverride = pDesc->GetAttributeBool(CAN_BE_DISRUPTED_ATTRIB);
 
 	//	Slot type
 
