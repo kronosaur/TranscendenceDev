@@ -122,14 +122,14 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"Iterate itemVar over list evaluating exp. Returns the last value of exp.",
 			NULL,	0,	},
 
-		{	"enumwhile",		fnEnum,			FN_ENUM_WHILE,
-			"(enumwhile list condition itemVar exp) -> value\n\n"
+		{	"enumWhile",		fnEnum,			FN_ENUM_WHILE,
+			"(enumWhile list condition itemVar exp) -> value\n\n"
 
 			"Iterate itemVar over list evaluating exp while condition is True. Returns the last value of exp.",
 			NULL,	0,	},
 
-		{	"errblock",			fnBlock,		FN_BLOCK_ERRBLOCK,
-			"(errblock localsList [exp1 exp2 ... expn] expErr) -> value of expn or expErr if error occurs\n\n"
+		{	"errBlock",			fnBlock,		FN_BLOCK_ERRBLOCK,
+			"(errBlock localsList [exp1 exp2 ... expn] expErr) -> value of expn or expErr if error occurs\n\n"
 			
 			"Like block, except it evaluates and returns the last expression only if one of the other expressions evaluates to an error.\n"
 			"LocalsList must contain at least one variable. If the first variable is not assigned within localsList, it will be set\n"
@@ -196,11 +196,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 		{	"if",				fnIf,			0,						"(if condition exp1 [exp2]) -> exp1 if condition True, otherwise exp2",		NULL,	0,	},
 		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"(int x) -> x as an integer",						NULL,	0,	},
 		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"(double x) -> x as a double",						NULL,	0,  },
-		{	"isatom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"(isatom exp) -> True if exp is not a list",		NULL,	0,	},
-		{	"iserror",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"(iserror exp) -> True if exp is an error",			NULL,	0,	},
-		{	"isint",			fnItemInfo,		FN_ITEMINFO_ISINT,		"(isint exp) -> True if exp is an integer",			NULL,	0,	},
-		{	"isfunction",		fnItemInfo,		FN_ITEMINFO_ISFUNCTION,	"(isfunction exp) -> True if exp is a function",	NULL,	0,	},
-		{	"isprimitive",		fnItemInfo,		FN_ITEMINFO_ISPRIMITIVE,"(isprimitive exp) -> True if exp is a primitive",	NULL,	0,	},
+		{	"isAtom",			fnItemInfo,		FN_ITEMINFO_ISATOM,		"(isAtom exp) -> True if exp is not a list",		NULL,	0,	},
+		{	"isError",			fnItemInfo,		FN_ITEMINFO_ISERROR,	"(isError exp) -> True if exp is an error",			NULL,	0,	},
+		{	"isInt",			fnItemInfo,		FN_ITEMINFO_ISINT,		"(isInt exp) -> True if exp is an integer",			NULL,	0,	},
+		{	"isFunction",		fnItemInfo,		FN_ITEMINFO_ISFUNCTION,	"(isFunction exp) -> True if exp is a function",	NULL,	0,	},
+		{	"isPrimitive",		fnItemInfo,		FN_ITEMINFO_ISPRIMITIVE,"(isPrimitive exp) -> True if exp is a primitive",	NULL,	0,	},
 
 		{	"@",				fnItem,			FN_ITEM,
 			"(@ list index) -> item index from list (0-based)\n"
@@ -467,10 +467,10 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(vecCreate) -> empty vector", 
 			NULL, 0, },
 
-		{ "vfilled", fnVecCreate, FN_VECREATE_FILLED, "(vfilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
+		{ "vFilled", fnVecCreate, FN_VECREATE_FILLED, "(vFilled scalar shapelist) -> vector filled with scalar's value", NULL, 0, },
 		{ "vector", fnVecCreate, FN_VECCREATE, "(vector contentlist) -> vector form of contentlist", NULL, 0, },
 		{ "v+", fnVecMath, FN_VECTOR_ADD, "(v+ vec1 vec2) -> result of vector addition of vec1 and vec2", NULL, 0, },
-		{ "vdot", fnVecMath, FN_VECTOR_DOT, "(vdot vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
+		{ "vDot", fnVecMath, FN_VECTOR_DOT, "(vDot vec1 vec2) -> result of vector dot product of vec1 and vec2", NULL, 0, },
 		{ "v*", fnVecMath, FN_VECTOR_SCALMUL, "(v* scalar vec1) -> result of scalar multiplication of scalar and vec1", NULL, 0, },
 		{ "v^", fnVecMath, FN_VECTOR_EMUL, "(v^ vec1 vec2) -> result of element-wise multiplication of vec1 and vec2", NULL, 0, },
 		{ "v<-", fnVector, FN_VECTOR_SET, "(v<- vec1 indexlist datalist) -> set the elements of vec1 with datalist based on the indices in indexlist", NULL, PPFLAG_SIDEEFFECTS, },
