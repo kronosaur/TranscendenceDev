@@ -432,16 +432,15 @@ class CG16bitFont
 	public:
 		enum Flags
 			{
-			SmartQuotes =	0x00000001,
-			TruncateLine =	0x00000002,
+			AlignCenter =	0x00000001,
+			AlignRight =	0x00000002,
+            AlignMiddle =   0x00000004,
 
-			AlignCenter =	0x00000004,
-			AlignRight =	0x00000008,
-
-			MeasureOnly =	0x00000010,
-			AdjustToFit =	0x00000020,
-
-            AlignMiddle =   0x00000040,
+			SmartQuotes =	0x00000100,
+			TruncateLine =	0x00000200,
+			MeasureOnly =	0x00000400,
+			AdjustToFit =	0x00000800,
+			TruncateBlock =	0x00001000,
 			};
 
 		CG16bitFont (void);
@@ -533,6 +532,8 @@ class CG16bitFont
 			int cxWidth;
 			int cxAdvance;
 			};
+
+		const CharMetrics &GetCharMetrics (char chChar) const;
 
 		CG16bitImage m_FontImage;
 

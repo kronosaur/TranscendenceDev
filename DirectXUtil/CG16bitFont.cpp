@@ -669,18 +669,58 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 
 	BreakText(sText, RectWidth(rcRect), &Lines, dwFlags);
 
+	int iLines = Lines.GetCount();
+	int cyHeight = iLines * m_cyHeight + (iLineAdj * (iLines - 1));
+
+	//	If we're truncating, see if we exceeded the vertical height.
+
+	int iEllipsisLine = -1;
+	if (dwFlags & TruncateBlock)
+		{
+		while (iLines > 1 && cyHeight > RectHeight(rcRect))
+			{
+			iLines--;
+			cyHeight -= (m_cyHeight + iLineAdj);
+			}
+
+		//	If necessary, modify the last line to add an ellipsis
+
+		if (Lines.GetCount() != iLines)
+			{
+			int cxEllipsis = MeasureText(STR_ELLIPSIS);
+
+			CString &sLastLine = Lines[iLines - 1];
+			int cxLastLine = MeasureText(sLastLine) + cxEllipsis;
+
+			char *pPos = sLastLine.GetASCIIZPointer();
+			char *pPosEnd = pPos + sLastLine.GetLength();
+
+			while (pPosEnd > pPos && cxLastLine > RectWidth(rcRect))
+				{
+				pPosEnd--;
+
+				const CharMetrics &Metrics = GetCharMetrics(*pPosEnd);
+				cxLastLine -= Metrics.cxAdvance;
+				}
+
+			CString sNewLine = CString(pPos, (int)(pPosEnd - pPos));
+			sNewLine.Append(STR_ELLIPSIS);
+
+			Lines[iLines - 1] = sNewLine;
+			}
+		}
+
     //  Compute top alignment
 
 	int y = rcRect.top;
     if (dwFlags & AlignMiddle)
         {
-        int cyHeight = Lines.GetCount() * m_cyHeight + (iLineAdj * (Lines.GetCount() - 1));
         y += (RectHeight(rcRect) - cyHeight) / 2;
         }
 
     //  Paint each line
 
-	for (i = 0; i < Lines.GetCount(); i++)
+	for (i = 0; i < iLines; i++)
 		{
 		int x = rcRect.left;
 
@@ -867,6 +907,18 @@ const CG16bitImage &CG16bitFont::GetCharacterImage (char chChar, int *retx, int 
 		*retcxAdvance = Metrics.cxAdvance;
 
 	return m_FontImage;
+	}
+
+const CG16bitFont::CharMetrics &CG16bitFont::GetCharMetrics (char chChar) const
+
+//	GetCharMetrics
+//
+//	Return metrics for this character.
+
+	{
+	int iIndex = (int)(BYTE)chChar - g_iStartChar;
+	iIndex = Max(0, iIndex);
+	return m_Metrics[iIndex];
 	}
 
 const CG16bitFont &CG16bitFont::GetDefault (void)
