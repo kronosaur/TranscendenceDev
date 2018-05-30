@@ -264,6 +264,7 @@ class CItemTable : public CDesignType
 		inline void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
 		inline CurrencyValue GetAverageValue (int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(iLevel) : 0); }
 		inline IItemGenerator *GetGenerator (void) { return m_pGenerator; }
+		inline CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return m_pGenerator->GetProbabilityTable(Ctx); }
 		inline bool HasItemAttribute (const CString &sAttrib) const { return (m_pGenerator ? m_pGenerator->HasItemAttribute(sAttrib) : false); }
 
 		//	CDesignType overrides

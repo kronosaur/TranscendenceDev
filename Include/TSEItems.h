@@ -590,6 +590,24 @@ struct SItemAddCtx
 	int iLevel = 1;								//	Level to use for item create (for LevelTable)
 	};
 
+class CItemTypeProbabilityTable
+	{
+	public:
+		void Add (CItemType *pType, Metric rProbability = 1.0);
+		void Add (const CItemTypeProbabilityTable &Src);
+		inline void DeleteAll (void) { m_Table.DeleteAll(); }
+		inline int GetCount (void) const { return m_Table.GetCount(); }
+		inline Metric GetProbability (int iIndex) const { return m_Table[iIndex]; }
+		inline Metric GetProbability (CItemType *pType) const { Metric *pProb = m_Table.GetAt(pType); return (pProb ? *pProb : 0.0); }
+		inline CItemType *GetType (int iIndex) const { return m_Table.GetKey(iIndex); }
+		void Scale (Metric rProbability);
+		void Union (CItemType *pType, Metric rProbability = 1.0);
+		void Union (const CItemTypeProbabilityTable &Src);
+
+	private:
+		TSortMap<CItemType *, Metric> m_Table;
+	};
+
 class IItemGenerator
 	{
 	public:
@@ -607,6 +625,7 @@ class IItemGenerator
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual CItemType *GetItemType (int iIndex) { return NULL; }
 		virtual int GetItemTypeCount (void) { return 0; }
+		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return CItemTypeProbabilityTable(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }

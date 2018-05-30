@@ -388,6 +388,7 @@
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemPriceTracker.cpp" />
+    <ClCompile Include="CItemTypeProbabilityTable.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CNameDesc.cpp" />
