@@ -701,6 +701,12 @@ CItemTypeProbabilityTable CGroupOfGenerators::GetProbabilityTable (SItemAddCtx &
 	{
 	int i;
 
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return CItemTypeProbabilityTable();
+
 	//	We combine probabilities.
 
 	CItemTypeProbabilityTable Result;
@@ -1072,6 +1078,12 @@ CItemTypeProbabilityTable CLevelTableOfItemGenerators::GetProbabilityTable (SIte
 	{
 	int i;
 
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return CItemTypeProbabilityTable();
+
 	//	Compute probabilities, if necessary
 
 	if (m_iComputedLevel != Ctx.iLevel)
@@ -1286,6 +1298,12 @@ CItemTypeProbabilityTable CLocationCriteriaTableOfItemGenerators::GetProbability
 
 	{
 	int i;
+
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return CItemTypeProbabilityTable();
 
 	//	Cache probabilities, if necessary
 
@@ -1596,6 +1614,12 @@ CItemTypeProbabilityTable CTableOfGenerators::GetProbabilityTable (SItemAddCtx &
 
 	{
 	int i;
+
+	//	Make sure we don't recurse
+
+	CRecursingCheck Check(m_bRecursing);
+	if (Check.IsRecursing())
+		return CItemTypeProbabilityTable();
 
 	//	Short-circuit
 
