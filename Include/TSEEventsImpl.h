@@ -54,6 +54,8 @@ class CTimedEncounterEvent : public CSystemEvent
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
+		CVector CalcEncounterPos (CSpaceObject *pTarget, Metric rDistance) const;
+
 		CSpaceObject *m_pTarget;
 		DWORD m_dwEncounterTableUNID;
 		CSpaceObject *m_pGate;

@@ -744,6 +744,7 @@ class CSystem
 		inline CSpaceObject *EnumObjectsInBoxGetNextFast (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextFast(i); }
 		inline CSpaceObject *EnumObjectsInBoxPointGetNext (SSpaceObjectGridEnumerator &i) const { return m_ObjGrid.EnumGetNextInBoxPoint(i); }
 		CSpaceObject *FindObject (DWORD dwID);
+		CSpaceObject *FindObjectInRange (const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria = CSpaceObjectCriteria()) const;
         CSpaceObject *FindObjectWithOrbit (const COrbit &Orbit) const;
 		bool FindObjectName (CSpaceObject *pObj, CString *retsName = NULL);
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CWeaponFireDesc *pDesc, const CDamageSource &Source);

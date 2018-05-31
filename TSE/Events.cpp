@@ -1,8 +1,15 @@
 //	Events.cpp
 //
 //	Event classes
+//	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+
+#define SEPARATION_CRITERIA						CONSTLIT("sTA")
+
+static const Metric MIN_SEPARATION =			20.0 * LIGHT_SECOND;
+static const Metric MIN_PLAYER_SEPARATION =		100.0 * LIGHT_SECOND;
+static const Metric MIN_PLAYER_SEPARATION2 =	MIN_PLAYER_SEPARATION * MIN_PLAYER_SEPARATION;
 
 CSystemEvent::CSystemEvent (SLoadCtx &Ctx)
 
@@ -133,6 +140,87 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	Ctx.pStream->Read((char *)&m_rDistance, sizeof(Metric));
 	}
 
+CVector CTimedEncounterEvent::CalcEncounterPos (CSpaceObject *pTarget, Metric rDistance) const
+
+//	CalcEncounterPos
+//
+//	Generates a random position for the encounter.
+
+	{
+	CVector vPos;
+
+	//	Short-circuit
+
+	if (pTarget == NULL)
+		return CVector();
+
+	CSystem *pSystem = pTarget->GetSystem();
+	if (pSystem == NULL)
+		return CVector();
+
+	CSpaceObject *pPlayer = pSystem->GetPlayerShip();
+	Metric rPlayerDist = (pPlayer && pPlayer != pTarget ? pPlayer->GetDistance(pTarget) : 0.0);
+	Metric rSeparation = Min(0.5 * m_rDistance, MIN_SEPARATION);
+
+	//	If the target is the player, then we just pick a position in a circle
+	//	around the player. Or, if the player is so far away that there's no 
+	//	chance of spawning near her, then pick a random position.
+
+	if (pTarget->IsPlayer()
+			|| pPlayer == NULL
+			|| rPlayerDist > rDistance + MIN_PLAYER_SEPARATION
+			|| rPlayerDist < MIN_PLAYER_SEPARATION - rDistance)
+		{
+		int iTries = 100;
+		while (iTries > 0)
+			{
+			vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), m_rDistance);
+
+			if (pSystem->FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA))
+					&& --iTries > 0)
+				continue;
+
+			//	Found a good position
+
+			return vPos;
+			}
+
+		//	If not found, then we just return an arbitrary position
+
+		return vPos;
+		}
+
+	//	Otherwise, we pick a location at the given distance from the target, but
+	//	away from the player
+
+	else
+		{
+		int iTries = 100;
+		while (iTries > 0)
+			{
+			vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), m_rDistance);
+
+			//	If this position is too close to the player, or if it is too 
+			//	close to some other object, then skip.
+
+			if (((pPlayer->GetPos() - vPos).Length2() < MIN_PLAYER_SEPARATION2)
+					|| pSystem->FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA)))
+				{
+				if (--iTries > 0)
+					continue;
+				}
+
+			//	Found a good position
+
+			return vPos;
+			}
+
+		//	If not found, then we just return an arbitrary position
+
+		return vPos;
+		}
+	}
+
 CString CTimedEncounterEvent::DebugCrashInfo (void)
 
 //	DebugCrashInfo
@@ -170,7 +258,7 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	if (m_rDistance > 0.0)
 		{
 		if (m_pTarget)
-			Ctx.vPos = m_pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), m_rDistance);
+			Ctx.vPos = CalcEncounterPos(m_pTarget, m_rDistance);
 		Ctx.PosSpread = DiceRange(3, 1, 2);
 		}
 	else if (m_pGate && m_pGate->IsActiveStargate())
