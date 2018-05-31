@@ -101,6 +101,7 @@
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MERGED							CONSTLIT("merged")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
+#define PROPERTY_UNID							CONSTLIT("unid")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
 #define FIELD_EXTENSION_UNID					CONSTLIT("extensionUNID")
@@ -608,6 +609,9 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
 		return pResult;
 		}
+
+    else if (strEquals(sProperty, PROPERTY_UNID))
+		return CC.CreateInteger(GetUNID());
 
 	//	Otherwise, we see if there is a data field
 

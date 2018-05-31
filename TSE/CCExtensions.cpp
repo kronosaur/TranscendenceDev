@@ -2422,11 +2422,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'isRecorded        Mission has been completed and debriefed\n"
 			"   'isSuccess         Mission has succeeded\n"
 			"   'isUnavailable     Mission is unavailable to player\n"
+			"   'maxAppearing      Max number of this type that can exist\n"
 			"   'name              The name of the mission\n"
 			"   'nodeID            ID of the mission's owner system\n"
 			"   'ownerID           ID of the mission's owner object\n"
 			"   'priority          Mission priority\n"
 			"   'summary           A summary description of the mission\n"
+			"   'totalAccepted     Count of this type accepted by player\n"
+			"   'totalExisting     Count of this type currently existing in universe\n"
 			"   'unid              Mission type UNID",
 
 			"is",	0,	},

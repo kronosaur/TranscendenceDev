@@ -10,7 +10,7 @@ class CMissionType : public CDesignType
 	public:
 		inline bool CanBeDeclined (void) const { return !m_fNoDecline; }
 		inline bool CanBeDeleted (void) const { return m_fAllowDelete; }
-		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iAccepted < m_iMaxAppearing); }
+		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
 		inline bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
 		inline bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
 		inline bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
@@ -23,6 +23,8 @@ class CMissionType : public CDesignType
 		inline bool HasDebrief (void) const { return !m_fNoDebrief; }
 		inline void IncAccepted (void) { m_iAccepted++; }
 		inline bool KeepsStats (void) const { return !m_fNoStats; }
+		inline void OnMissionCreated (void) { m_iExisting++; }
+		inline void OnMissionDestroyed (void) { m_iExisting--; }
 
 		//	CDesignType overrides
 
@@ -36,6 +38,7 @@ class CMissionType : public CDesignType
 
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
@@ -60,6 +63,10 @@ class CMissionType : public CDesignType
 		//	Mission stats
 
 		int m_iMaxAppearing;				//	Limit to number of times mission can appear (-1 = no limit)
+		int m_iExisting;					//	How many missions of this type currently exist.
+											//		NOTE: This number can go up and down. If we create a mission
+											//		the number goes up, but if we later destroy the mission
+											//		(perhaps because it expired) then the count drops.
 		int m_iAccepted;					//	Number of times player has accepted this mission type
 
 		DWORD m_fNoFailureOnOwnerDestroyed:1;	//	If TRUE, mission does not fail when owner destroyed

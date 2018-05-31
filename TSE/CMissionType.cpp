@@ -24,6 +24,15 @@
 #define FIELD_MIN_LEVEL							CONSTLIT("minLevel")
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
+#define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
+#define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
+#define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
+#define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
+#define PROPERTY_PRIORITY						CONSTLIT("priority")
+#define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
+#define PROPERTY_TOTAL_EXISTING					CONSTLIT("totalExisting")
+
 bool CMissionType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
@@ -92,6 +101,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
+	m_iExisting = 0;
 
 	//	Level
 
@@ -122,6 +132,48 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
+ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	OnGetProperty
+//
+//	Returns a property (or NULL if not found).
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
+		return ICCItemPtr(CC.CreateBool(CanBeDeclined()));
+
+	else if (strEquals(sProperty, PROPERTY_CAN_BE_DELETED))
+		return ICCItemPtr(CC.CreateBool(CanBeDeleted()));
+
+	else if (strEquals(sProperty, PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF))
+		return ICCItemPtr(CC.CreateBool(ForceUndockAfterDebrief()));
+
+	else if (strEquals(sProperty, PROPERTY_HAS_DEBRIEF))
+		return ICCItemPtr(CC.CreateBool(HasDebrief()));
+
+	else if (strEquals(sProperty, PROPERTY_PRIORITY))
+		return ICCItemPtr(CC.CreateInteger(GetPriority()));
+
+	else if (strEquals(sProperty, PROPERTY_MAX_APPEARING))
+		{
+		if (m_iMaxAppearing != -1)
+			return ICCItemPtr(CC.CreateInteger(m_iMaxAppearing));
+		else
+			return ICCItemPtr(CC.CreateNil());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TOTAL_ACCEPTED))
+		return ICCItemPtr(CC.CreateInteger(m_iAccepted));
+
+	else if (strEquals(sProperty, PROPERTY_TOTAL_EXISTING))
+		return ICCItemPtr(CC.CreateInteger(m_iExisting));
+
+	else
+		return NULL;
+	}
+
 void CMissionType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	OnReadFromStream
@@ -131,9 +183,14 @@ void CMissionType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	{
 	if (Ctx.dwVersion >= 22)
 		{
-		Ctx.pStream->Read((char *)&m_iMaxAppearing, sizeof(DWORD));
-		Ctx.pStream->Read((char *)&m_iAccepted, sizeof(DWORD));
+		Ctx.pStream->Read(m_iMaxAppearing);
+		Ctx.pStream->Read(m_iAccepted);
 		}
+
+	if (Ctx.dwVersion >= 35)
+		Ctx.pStream->Read(m_iExisting);
+	else
+		m_iExisting = m_iAccepted;
 	}
 
 void CMissionType::OnReinit (void)
@@ -145,6 +202,7 @@ void CMissionType::OnReinit (void)
 	{
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
+	m_iExisting = 0;
 	}
 
 void CMissionType::OnWriteToStream (IWriteStream *pStream)
@@ -154,6 +212,7 @@ void CMissionType::OnWriteToStream (IWriteStream *pStream)
 //	Write mission type data
 
 	{
-	pStream->Write((char *)&m_iMaxAppearing, sizeof(DWORD));
-	pStream->Write((char *)&m_iAccepted, sizeof(DWORD));
+	pStream->Write(m_iMaxAppearing);
+	pStream->Write(m_iAccepted);
+	pStream->Write(m_iExisting);
 	}
