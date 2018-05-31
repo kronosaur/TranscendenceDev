@@ -955,17 +955,17 @@ enum SpaceObjectGridFlags
 struct SSpaceObjectGridEnumerator
 	{
 	SSpaceObjectGridEnumerator (void) : pGridIndexList(NULL) { }
-	~SSpaceObjectGridEnumerator (void) { if (pGridIndexList) delete pGridIndexList; }
+	~SSpaceObjectGridEnumerator (void) { if (pGridIndexList) delete [] pGridIndexList; }
 
 	CSpaceObject *pObj;						//	Current object
 	int iGridIndex;							//	Current grid cell to search
-	CSpaceObjectList *pList;				//	Current list
+	const CSpaceObjectList *pList;				//	Current list
 	int iIndex;								//	Current index
 	int iListCount;							//	Number of elements in current list
 	bool bMore;								//	TRUE if there is more
 
 	int iGridIndexCount;					//	Number of grid indices to traverse
-	CSpaceObjectList **pGridIndexList;		//	Array of grid indices to traverse
+	const CSpaceObjectList **pGridIndexList;		//	Array of grid indices to traverse
 
 	bool bCheckBox;							//	If TRUE, only return objects in box
 	CVector vLL;							//	Box to check
@@ -981,10 +981,10 @@ class CSpaceObjectGrid
 		inline void AddObject (CSpaceObject *pObj);
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
-		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags);
-		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) { return i.bMore; }
-		CSpaceObject *EnumGetNext (SSpaceObjectGridEnumerator &i);
-		inline CSpaceObject *EnumGetNextFast (SSpaceObjectGridEnumerator &i)
+		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags) const;
+		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) const { return i.bMore; }
+		CSpaceObject *EnumGetNext (SSpaceObjectGridEnumerator &i) const;
+		inline CSpaceObject *EnumGetNextFast (SSpaceObjectGridEnumerator &i) const
 			{
 			ASSERT(i.iIndex >= 0);
 			CSpaceObject *pCurObj = i.pList->GetObj(i.iIndex++);
@@ -992,13 +992,15 @@ class CSpaceObjectGrid
 				EnumGetNextList(i);
 			return pCurObj;
 			}
-		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i);
+		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const;
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result);
 
 	private:
-		bool EnumGetNextList (SSpaceObjectGridEnumerator &i);
-		bool GetGridCoord (const CVector &vPos, int *retx, int *rety);
+		bool EnumGetNextList (SSpaceObjectGridEnumerator &i) const;
+		bool GetGridCoord (const CVector &vPos, int *retx, int *rety) const;
+		const CSpaceObjectList &GetList (const CVector &vPos) const;
 		CSpaceObjectList &GetList (const CVector &vPos);
+		inline const CSpaceObjectList &GetList (int x, int y) const { return m_pGrid[y * m_iGridSize + x]; }
 		inline CSpaceObjectList &GetList (int x, int y) { return m_pGrid[y * m_iGridSize + x]; }
 
 		CSpaceObjectList *m_pGrid;

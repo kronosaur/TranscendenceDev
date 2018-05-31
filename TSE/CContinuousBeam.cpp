@@ -823,7 +823,7 @@ void CContinuousBeam::PaintSegment (CG32bitImage &Dest, const CVector &vFrom, co
 	Dest.DrawLine(xFrom, yFrom, xTo, yTo, 2, CG32bitPixel(255, 255, 0));
 	}
 
-bool CContinuousBeam::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CContinuousBeam::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

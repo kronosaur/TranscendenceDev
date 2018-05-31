@@ -6640,7 +6640,7 @@ void CShip::PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx)
 		}
 	}
 
-bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //
@@ -6663,7 +6663,7 @@ bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
 	DEBUG_CATCH
 	}
 
-bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos)
+bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //
@@ -6686,7 +6686,7 @@ bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const
 	DEBUG_CATCH
 	}
 
-void CShip::PointInObjectInit (SPointInObjectCtx &Ctx)
+void CShip::PointInObjectInit (SPointInObjectCtx &Ctx) const
 
 //	PointInObjectInit
 //

@@ -346,7 +346,7 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 		}
 	}
 
-bool CAreaDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CAreaDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

@@ -461,7 +461,7 @@ void CRadiusDamage::OnWriteToStream (IWriteStream *pStream)
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
 	}
 
-bool CRadiusDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CRadiusDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

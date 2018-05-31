@@ -26,7 +26,7 @@ class CAreaDamage : public CSpaceObject
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
 		//	Virtuals to be overridden
@@ -166,7 +166,7 @@ class CContinuousBeam : public CSpaceObject
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
 		//	Virtuals to be overridden
@@ -520,7 +520,7 @@ class CMissile : public CSpaceObject
 		virtual bool IsIntangible (void) const { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
 
 	protected:
@@ -603,7 +603,7 @@ class CParticleDamage : public CSpaceObject
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
 		//	Virtuals to be overridden
@@ -787,7 +787,7 @@ class CParticleEffect : public CSpaceObject
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	private:
 
@@ -883,7 +883,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnSystemLoaded (void) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
 	protected:
 		//	Virtuals to be overridden
@@ -1205,9 +1205,9 @@ class CShip : public CSpaceObject
 		virtual void MakeRadioactive (void) override;
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
-		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) override;
-		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
+		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const override;
+		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const override;
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) override;
 		virtual void RefreshBounds (void) override { CalcBounds(); }
 		virtual void Refuel (Metric rFuel) override;
@@ -1554,9 +1554,9 @@ class CStation : public CSpaceObject
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) override;
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) override;
-		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) override;
-		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) override;
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
+		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const override;
+		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const override;
 		virtual void RefreshBounds (void) override { CalcBounds(); }
 		virtual void RemoveOverlay (DWORD dwID) override;
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) override;
@@ -1605,7 +1605,7 @@ class CStation : public CSpaceObject
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
-		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL);
+		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		int CalcNumberOfShips (void);
 		void CalcOverlayImpact (void);
 		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
@@ -1617,7 +1617,7 @@ class CStation : public CSpaceObject
 		void DeterAttack (CSpaceObject *pTarget);
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
-		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL);
+		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
 		bool IsBlacklisted (CSpaceObject *pObj = NULL) const;
 		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);

@@ -3558,7 +3558,7 @@ ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 	return pType->GetGlobalData(sAttribute);
 	}
 
-void CSpaceObject::GetHitRect (CVector *retvUR, CVector *retvLL)
+void CSpaceObject::GetHitRect (CVector *retvUR, CVector *retvLL) const
 
 //	GetHitRect
 //
@@ -5657,20 +5657,19 @@ void CSpaceObject::Jump (const CVector &vPos)
 	m_SubscribedObjs.NotifyOnObjJumped(this);
 	}
 
-bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit)
+bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const
 
 //	MatchesCriteria
 //
 //	Returns TRUE if this object matches the criteria
 
 	{
-	int i;
-
-	if (Crit.pSource == this)
+	CSpaceObject *pSource = Crit.GetSource();
+	if (pSource == this)
 		return false;
 
-	if (!(Crit.dwCategories & GetCategory())
-			&& (!Crit.bSelectPlayer || !IsPlayer()))
+	if (!(Crit.MatchesCategory(GetCategory()))
+			&& (!Crit.MatchesPlayer() || !IsPlayer()))
 		return false;
 
 	//	NOTE: Virtual objects always count as active. E.g., we want the virtual
@@ -5678,128 +5677,82 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	//	[An alternative is to add !IsVirtual() to all places that look for
 	//	enemies to attack.]
 
-	if (Crit.bActiveObjectsOnly && IsInactive() && !IsVirtual())
+	if (Crit.MatchesActiveOnly() && IsInactive() && !IsVirtual())
 		return false;
 
-	if (Crit.bStargatesOnly && !IsActiveStargate())
+	if (Crit.MatchesStargatesOnly() && !IsActiveStargate())
 		return false;
 
-	if (Crit.bStructureScaleOnly 
+	if (Crit.MatchesStructureScaleOnly() 
 			&& GetCategory() == CSpaceObject::catStation
 			&& (GetScale() == scaleStar || GetScale() == scaleWorld))
 		return false;
 
-	if (Crit.bManufacturedObjectsOnly 
+	if (Crit.MatchesManufacturedOnly()
 			&& (GetScale() == scaleWorld || GetScale() == scaleStar))
 		return false;
 
-	if (Crit.bKilledObjectsOnly && (CanAttack() || IsVirtual()))
+	if (Crit.MatchesKilledOnly() && (CanAttack() || IsVirtual()))
 		return false;
 
-	CSovereign *pSovereign;
-	if (Crit.dwSovereignUNID 
-			&& (((pSovereign = GetSovereign()) == NULL) || pSovereign->GetUNID() != Crit.dwSovereignUNID))
+	if (!Crit.MatchesSovereign(GetSovereign()))
 		return false;
 
-	if (Crit.bDockedWithSource)
-		if (Crit.pSource == NULL || !Crit.pSource->IsObjDocked(this))
+	if (Crit.MatchesDockedWithSource())
+		if (pSource == NULL || !pSource->IsObjDocked(const_cast<CSpaceObject *>(this)))
 			return false;
 
-	if (Crit.bFriendlyObjectsOnly 
-			&& Crit.pSource
-			&& Crit.pSource->IsEnemy(this) 
-			&& !IsEscortingFriendOf(Crit.pSource) 
-			&& !Crit.pSource->IsEscortingFriendOf(this))
+	if (Crit.MatchesFriendlyOnly() 
+			&& pSource
+			&& pSource->IsEnemy(this) 
+			&& !IsEscortingFriendOf(pSource) 
+			&& !pSource->IsEscortingFriendOf(this))
 		return false;
 
-	if (Crit.bEnemyObjectsOnly 
-			&& Crit.pSource
-			&& (!Crit.pSource->IsEnemy(this) || IsEscortingFriendOf(Crit.pSource) || Crit.pSource->IsEscortingFriendOf(this)))
+	if (Crit.MatchesEnemyOnly() 
+			&& pSource
+			&& (!pSource->IsEnemy(this) || IsEscortingFriendOf(pSource) || pSource->IsEscortingFriendOf(this)))
 		return false;
 
-	if (Crit.bAngryObjectsOnly 
-			&& Crit.pSource
-			&& (!IsAngryAt(Crit.pSource) || IsEscortingFriendOf(Crit.pSource) || Crit.pSource->IsEscortingFriendOf(this)))
+	if (Crit.MatchesAngryOnly() 
+			&& pSource
+			&& (!IsAngryAt(pSource) || IsEscortingFriendOf(pSource) || pSource->IsEscortingFriendOf(this)))
 		return false;
 
-	if (!Crit.sStargateID.IsBlank() && !strEquals(Crit.sStargateID, GetStargateID()))
+	if (!Crit.MatchesStargate(GetStargateID()))
 		return false;
 
-	if (Crit.bHomeBaseIsSource && GetBase() != Crit.pSource)
+	if (Crit.MatchesHomeBaseIsSource() && GetBase() != pSource)
 		return false;
 
-	if (Crit.bTargetIsSource && GetTarget(CItemCtx()) != Crit.pSource)
+	if (Crit.MatchesTargetIsSource() && GetTarget(CItemCtx()) != pSource)
 		return false;
 
 	//	Check level
 
-	if (Crit.iEqualToLevel != -1 && GetLevel() != Crit.iEqualToLevel)
+	if (!Crit.MatchesLevel(GetLevel()))
 		return false;
 
-	if (Crit.iGreaterThanLevel != -1 && GetLevel() <= Crit.iGreaterThanLevel)
+	//	Check attributes
+
+	if (!Crit.MatchesAttributes(*this))
 		return false;
 
-	if (Crit.iLessThanLevel != -1 && GetLevel() >= Crit.iLessThanLevel)
+	//	Other checks
+
+	if (Crit.ExcludesPlayer() && IsPlayer())
 		return false;
 
-	//	Check required attributes
-
-	for (i = 0; i < Crit.AttribsRequired.GetCount(); i++)
-		if (!HasAttribute(Crit.AttribsRequired[i]))
-			return false;
-
-	//	Check attributes not allowed
-
-	for (i = 0; i < Crit.AttribsNotAllowed.GetCount(); i++)
-		if (HasAttribute(Crit.AttribsNotAllowed[i]))
-			return false;
-
-	//	Check special attribs required
-
-	for (i = 0; i < Crit.SpecialRequired.GetCount(); i++)
-		if (!HasSpecialAttribute(Crit.SpecialRequired[i]))
-			return false;
-
-	//	Check special attribs not allowed
-
-	for (i = 0; i < Crit.SpecialNotAllowed.GetCount(); i++)
-		if (HasSpecialAttribute(Crit.SpecialNotAllowed[i]))
-			return false;
-
-	if (Crit.bExcludePlayer && IsPlayer())
+	if (!Crit.MatchesData().IsBlank() && m_Data.IsDataNil(Crit.MatchesData()))
 		return false;
 
-	if (!Crit.sData.IsBlank() && m_Data.IsDataNil(Crit.sData))
-		return false;
-
-	if (!Crit.bIncludeVirtual && IsVirtual())
+	if (Crit.ExcludesVirtual() && IsVirtual())
 		return false;
 
 	//	With a particular order
 
-	switch (Crit.iOrder)
-		{
-		case IShipController::orderNone:
-			break;
-
-		case IShipController::orderEscort:
-			if (GetEscortPrincipal() != Crit.pSource)
-				return false;
-			break;
-
-		default:
-			{
-			IShipController::OrderTypes iOrder = IShipController::orderNone;
-			CSpaceObject *pTarget = NULL;
-
-			CShip *pShip = AsShip();
-			if (pShip && pShip->GetController())
-				iOrder = pShip->GetController()->GetCurrentOrderEx(&pTarget);
-
-			if (Crit.iOrder != iOrder || Crit.pSource != pTarget)
-				return false;
-			}
-		}
+	if (!Crit.MatchesOrder(pSource, *this))
+		return false;
 
 	//	If necessary, compute the distance and angle from the source to the obj.
 
@@ -5808,7 +5761,7 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	Metric rObjDist2;
 	if (Ctx.bCalcPolar)
 		{
-		CVector vCenter = (Crit.pSource ? Crit.pSource->GetPos() : CVector());
+		CVector vCenter = (pSource ? pSource->GetPos() : CVector());
 		CVector vDist = GetPos() - vCenter;
 
 		iObjAngle = VectorToPolar(vDist, &rObjDist);
@@ -5816,7 +5769,7 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 		}
 	else if (Ctx.bCalcDist2)
 		{
-		CVector vCenter = (Crit.pSource ? Crit.pSource->GetPos() : CVector());
+		CVector vCenter = (pSource ? pSource->GetPos() : CVector());
 		CVector vDist = GetPos() - vCenter;
 
 		iObjAngle = 0;
@@ -5826,15 +5779,15 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 
 	//	Ranges
 
-	if (Crit.bNearerThan && rObjDist2 > Ctx.rMaxRadius2)
+	if (Crit.MatchesNearerThan() && rObjDist2 > Ctx.rMaxRadius2)
 		return false;
 
-	if (Crit.bFartherThan && rObjDist2 < Ctx.rMinRadius2)
+	if (Crit.MatchesFartherThan() && rObjDist2 < Ctx.rMinRadius2)
 		return false;
 
 	//	Visible only
 
-	if (Crit.bPerceivableOnly && rObjDist2 > GetDetectionRange2(Crit.iPerception))
+	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Crit.MatchesPerception()))
 		return false;
 
 	//	Angle
@@ -5842,7 +5795,7 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 	//	Only bother checking if rDist > 0 (we always intersect with an
 	//	object that is 0 distance from us :).
 
-	if (Crit.iIntersectAngle != -1 && rObjDist > 0.0)
+	if (Crit.MatchesIntersectAngle() != -1 && rObjDist > 0.0)
 		{
 		//	Figure out how large the object is at this distance
 
@@ -5850,97 +5803,40 @@ bool CSpaceObject::MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit
 		
 		//	If we do not intersect the line then we're done
 
-		if (!AreAnglesAligned(Crit.iIntersectAngle, iObjAngle, iHalfAngularSize))
+		if (!AreAnglesAligned(Crit.MatchesIntersectAngle(), iObjAngle, iHalfAngularSize))
 			return false;
 		}
 
 	//	Position checks
 
-	switch (Crit.iPosCheck)
-		{
-		case checkNone:
-			break;
-
-		case checkPosIntersect:
-			if (!PointInObject(GetPos(), Crit.vPos1))
-				return false;
-			break;
-
-		case checkLineIntersect:
-			{
-			//	Get the size of the object
-
-			CVector vObjUR;
-			CVector vObjLL;
-			GetHitRect(&vObjUR, &vObjLL);
-
-			//	Get the distance along the ray at which we intersect the given
-			//	object rectangle
-
-			Metric rObjHitFrac;
-			if (!IntersectRectAndRay(vObjUR, vObjLL, Crit.vPos1, Crit.vPos2, NULL, &rObjHitFrac))
-				return false;
-
-			//	See if we actually hit the object
-
-			CVector vLine = Crit.vPos2 - Crit.vPos1;
-			Metric rLineLen = vLine.Length();
-			if (rLineLen == 0.0)
-				return false;
-
-			CVector vRayN = vLine / rLineLen;
-			CVector vRayPixel = vRayN * g_KlicksPerPixel;
-			Metric rObjHitLen = rObjHitFrac * rLineLen;
-
-			SPointInObjectCtx Ctx;
-			PointInObjectInit(Ctx);
-
-			Metric rTestHitLen = rObjHitLen;
-			CVector vTestPos = Crit.vPos1 + (rTestHitLen * vRayN);
-			bool bHit = false;
-			while (rTestHitLen < rLineLen)
-				{
-				if (PointInObject(Ctx, GetPos(), vTestPos))
-					{
-					bHit = true;
-					break;
-					}
-
-				rTestHitLen += g_KlicksPerPixel;
-				vTestPos = vTestPos + vRayPixel;
-				}
-
-			if (!bHit)
-				return false;
-			break;
-			}
-		}
+	if (!Crit.MatchesPosition(*this))
+		return false;
 
 	//	If we're looking for the nearest or farthest, do that computation now
 
-	if (Crit.bNearestOnly)
+	if (Crit.MatchesNearestOnly())
 		{
 		if (rObjDist2 < Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
 			{
-			Ctx.pBestObj = this;
+			Ctx.pBestObj = const_cast<CSpaceObject *>(this);
 			Ctx.rBestDist2 = rObjDist2;
 			}
 		}
-	else if (Crit.bFarthestOnly)
+	else if (Crit.MatchesFarthestOnly())
 		{
 		if (rObjDist2 > Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
 			{
-			Ctx.pBestObj = this;
+			Ctx.pBestObj = const_cast<CSpaceObject *>(this);
 			Ctx.rBestDist2 = rObjDist2;
 			}
 		}
 
 	//	If we're sorting by distance, then add the object to the list
 
-	if (Crit.iSort == sortByDistance)
-		Ctx.DistSort.Insert(rObjDist2, this);
+	if (Crit.GetSort() == CSpaceObjectCriteria::sortByDistance)
+		Ctx.DistSort.Insert(rObjDist2, const_cast<CSpaceObject *>(this));
 
 	return true;
 	}
@@ -6522,391 +6418,6 @@ void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SView
 	CPaintHelper::PaintTargetHighlight(Dest, x, y, iTick, iRadius, iRingSpacing, 3, rgbColor);
 	}
 
-void CSpaceObject::ParseCriteria (CSpaceObject *pSource, const CString &sCriteria, Criteria *retCriteria)
-
-//	ParseCriteria
-//
-//	Parses a string and returns criteria structure
-//
-//		b			Include beams
-//		k			Include markers
-//		m			Include missiles
-//		s			Include ships
-//		t			Include stations (including planets)
-//		z			Include the player
-//
-//		A			Active objects only (i.e., objects that can attack)
-//		B:xyz;		Only objects with attribute 'xyz'
-//		C			(unused)
-//		D:xyz;		Only objects with data 'xyz'
-//		E			Enemy objects only
-//		F			Friendly objects only
-//		G			Stargates only
-//		G:xyz;		Stargate with ID 'xyz'
-//		H			Only objects whose base = source
-//		I:angle		Only objects that intersect line from source
-//		J			Same sovereign as source
-//		J:unid;		Sovereign unid = unid
-//		K			Killed objects only (i.e., objects that cannot attack)
-//		L:x-y;		Objects of level x to y.
-//		M			Manufactured objects only (i.e., no planets or asteroids)
-//		N			Return only the nearest object to the source
-//		N:nn;		Return only objects within nn light-seconds
-//		O:docked;	Ships that are currently docked at source
-//		O:escort;	Ships ordered to escort source
-//		O:guard;	Ships ordered to guard source
-//		P			Only objects that can be detected (perceived) by source
-//		Q			(unused)
-//		R			Return only the farthest object to the source
-//		R:nn;		Return only objects greater than nn light-seconds away
-//		S:sort		Sort order ('d' = distance ascending; 'D' = distance descending
-//		T			Include structure-scale stations
-//		T:xyz;		Include stations with attribute 'xyz'
-//		U			(unused)
-//		V			Include virtual objects
-//		W			(unused)
-//		X			Only objects whose target is the source
-//		Y			Enemy/angry objects only
-//		Z			Exclude the player
-//
-//		+xyz;		Include objects with the given attribute
-//		-xyz;		Exclude objects with the given attribute
-//
-//		=n			Level comparisons
-
-	{
-	CString sParam;
-
-	//	Initialize
-
-	retCriteria->pSource = pSource;
-	retCriteria->dwCategories = 0;
-	retCriteria->bSelectPlayer = false;
-	retCriteria->bIncludeVirtual = false;
-	retCriteria->bActiveObjectsOnly = false;
-	retCriteria->bKilledObjectsOnly = false;
-	retCriteria->bFriendlyObjectsOnly = false;
-	retCriteria->bEnemyObjectsOnly = false;
-	retCriteria->bAngryObjectsOnly = false;
-	retCriteria->bManufacturedObjectsOnly = false;
-	retCriteria->bStructureScaleOnly = false;
-	retCriteria->bStargatesOnly = false;
-	retCriteria->bNearestOnly = false;
-	retCriteria->bFarthestOnly = false;
-	retCriteria->bNearerThan = false;
-	retCriteria->bFartherThan = false;
-	retCriteria->bHomeBaseIsSource = false;
-	retCriteria->bDockedWithSource = false;
-	retCriteria->bExcludePlayer = false;
-	retCriteria->bTargetIsSource = false;
-	retCriteria->bPerceivableOnly = false;
-	retCriteria->bSourceSovereignOnly = false;
-	retCriteria->dwSovereignUNID = 0;
-	retCriteria->rMinRadius = 0.0;
-	retCriteria->rMaxRadius = g_InfiniteDistance;
-	retCriteria->iIntersectAngle = -1;
-	retCriteria->iOrder = IShipController::orderNone;
-	retCriteria->iEqualToLevel = -1;
-	retCriteria->iGreaterThanLevel = -1;
-	retCriteria->iLessThanLevel = -1;
-	retCriteria->iPosCheck = checkNone;
-	retCriteria->iSort = sortNone;
-	retCriteria->iSortOrder = AscendingSort;
-
-	//	Parse
-
-	char *pPos = sCriteria.GetPointer();
-	while (*pPos != '\0')
-		{
-		switch (*pPos)
-			{
-			case '*':
-				retCriteria->dwCategories = 0xffffffff;
-				break;
-
-			case 'A':
-				retCriteria->bActiveObjectsOnly = true;
-				break;
-
-			case 'B':
-				{
-				CString sAttrib = ParseCriteriaParam(&pPos);
-				if (!sAttrib.IsBlank())
-					retCriteria->AttribsRequired.Insert(sAttrib);
-				break;
-				}
-
-			case 'b':
-				retCriteria->dwCategories |= catBeam;
-				break;
-
-			case 'D':
-				retCriteria->sData = ParseCriteriaParam(&pPos);
-				break;
-
-			case 'E':
-				retCriteria->bEnemyObjectsOnly = true;
-				break;
-
-			case 'F':
-				retCriteria->bFriendlyObjectsOnly = true;
-				break;
-
-			case 'G':
-				retCriteria->dwCategories |= CSpaceObject::catStation;
-				retCriteria->sStargateID = ParseCriteriaParam(&pPos);
-				retCriteria->bStargatesOnly = true;
-				break;
-
-			case 'H':
-				retCriteria->bHomeBaseIsSource = true;
-				break;
-
-			case 'I':
-				retCriteria->iIntersectAngle = strToInt(ParseCriteriaParam(&pPos), -1);
-				break;
-
-			case 'J':
-				sParam = ParseCriteriaParam(&pPos);
-				if (!sParam.IsBlank())
-					retCriteria->dwSovereignUNID = strToInt(sParam, 0);
-				else
-					{
-					retCriteria->bSourceSovereignOnly = true;
-					retCriteria->dwSovereignUNID = (pSource && pSource->GetSovereign() ? pSource->GetSovereign()->GetUNID() : 0);
-					}
-				break;
-
-			case 'K':
-				retCriteria->bKilledObjectsOnly = true;
-				break;
-
-			case 'k':
-				retCriteria->dwCategories |= catMarker;
-				break;
-
-			case 'L':
-				{
-				CString sParam = ParseCriteriaParam(&pPos);
-				char *pParamPos = sParam.GetASCIIZPointer();
-
-				//	Parse the first number
-
-				int iLow = strParseInt(pParamPos, -1, &pParamPos);
-
-				//	If we don't have a second number, then we just want items
-				//	of the given level.
-
-				if (*pParamPos != '-')
-					{
-					if (iLow != -1)
-						retCriteria->iEqualToLevel = iLow;
-					}
-
-				//	Otherwise, we parse a second number
-
-				else
-					{
-					pParamPos++;
-					int iHi = strParseInt(pParamPos, -1, &pParamPos);
-
-					if (iLow == -1)
-						iLow = 1;
-					if (iHi == -1)
-						iHi = MAX_OBJECT_LEVEL;
-
-					retCriteria->iGreaterThanLevel = iLow - 1;
-					retCriteria->iLessThanLevel = iHi + 1;
-					}
-
-				break;
-				}
-
-			case 'M':
-				retCriteria->bManufacturedObjectsOnly = true;
-				break;
-
-			case 'm':
-				retCriteria->dwCategories |= catMissile;
-				break;
-
-			case 'N':
-				sParam = ParseCriteriaParam(&pPos);
-				if (sParam.IsBlank())
-					retCriteria->bNearestOnly = true;
-				else
-					{
-					retCriteria->bNearerThan = true;
-					retCriteria->rMaxRadius = LIGHT_SECOND * strToInt(sParam, 0, NULL);
-					}
-				break;
-
-			case 'O':
-				{
-				CString sAttrib = ParseCriteriaParam(&pPos);
-				if (strEquals(sAttrib, ORDER_DOCKED))
-					retCriteria->bDockedWithSource = true;
-				else
-					{
-					retCriteria->iOrder = ::GetOrderType(sAttrib);
-					if (retCriteria->iOrder == IShipController::orderNone)
-						::kernelDebugLogPattern("Invalid sysFindObject order: %s", sAttrib);
-					}
-				break;
-				}
-
-			case 'P':
-				retCriteria->bPerceivableOnly = true;
-				retCriteria->iPerception = (pSource ? pSource->GetPerception() : 0);
-				break;
-
-			case 'R':
-				sParam = ParseCriteriaParam(&pPos);
-				if (sParam.IsBlank())
-					retCriteria->bFarthestOnly = true;
-				else
-					{
-					retCriteria->bFartherThan = true;
-					retCriteria->rMinRadius = LIGHT_SECOND * strToInt(sParam, 0, NULL);
-					}
-				break;
-
-			case 's':
-				retCriteria->dwCategories |= CSpaceObject::catShip;
-				break;
-
-			case 'S':
-				{
-				sParam = ParseCriteriaParam(&pPos);
-				char *pSort = sParam.GetASCIIZPointer();
-				if (*pSort == 'd')
-					{
-					retCriteria->iSort = sortByDistance;
-					retCriteria->iSortOrder = AscendingSort;
-					}
-				else if (*pSort == 'D')
-					{
-					retCriteria->iSort = sortByDistance;
-					retCriteria->iSortOrder = DescendingSort;
-					}
-				break;
-				}
-
-			case 't':
-				{
-				retCriteria->dwCategories |= CSpaceObject::catStation;
-
-				CString sAttrib = ParseCriteriaParam(&pPos);
-				if (!sAttrib.IsBlank())
-					retCriteria->AttribsRequired.Insert(sAttrib);
-				break;
-				}
-
-			case 'T':
-				{
-				retCriteria->dwCategories |= CSpaceObject::catStation;
-
-				CString sAttrib = ParseCriteriaParam(&pPos);
-				if (!sAttrib.IsBlank())
-					retCriteria->AttribsRequired.Insert(sAttrib);
-
-				retCriteria->bStructureScaleOnly = true;
-				break;
-				}
-
-			case 'V':
-				retCriteria->bIncludeVirtual = true;
-				break;
-
-			case 'X':
-				retCriteria->bTargetIsSource = true;
-				break;
-
-			case 'Y':
-				retCriteria->bAngryObjectsOnly = true;
-				break;
-
-			case 'z':
-				retCriteria->bSelectPlayer = true;
-				break;
-
-			case 'Z':
-				retCriteria->bExcludePlayer = true;
-				break;
-
-			case '+':
-			case '-':
-				{
-				bool bRequired = (*pPos == '+');
-				bool bBinaryParam;
-				CString sParam = ParseCriteriaParam(&pPos, false, &bBinaryParam);
-
-				if (!sParam.IsBlank())
-					{
-					if (bRequired)
-						{
-						if (bBinaryParam)
-							retCriteria->SpecialRequired.Insert(sParam);
-						else
-							retCriteria->AttribsRequired.Insert(sParam);
-						}
-					else
-						{
-						if (bBinaryParam)
-							retCriteria->SpecialNotAllowed.Insert(sParam);
-						else
-							retCriteria->AttribsNotAllowed.Insert(sParam);
-						}
-					}
-				break;
-				}
-
-			case '>':
-			case '<':
-			case '=':
-				{
-				char chChar = *pPos;
-				pPos++;
-
-				//	<= or >=
-
-				int iEqualAdj;
-				if (*pPos == '=')
-					{
-					pPos++;
-					iEqualAdj = 1;
-					}
-				else
-					iEqualAdj = 0;
-
-				//	Get the number
-
-				char *pNewPos;
-				int iValue = strParseInt(pPos, 0, &pNewPos);
-
-				//	Back up one because we will increment at the bottom
-				//	of the loop.
-
-				if (pPos != pNewPos)
-					pPos = pNewPos - 1;
-
-				//	Levels
-
-				if (chChar == '=')
-					retCriteria->iEqualToLevel = iValue;
-				else if (chChar == '>')
-					retCriteria->iGreaterThanLevel = iValue - iEqualAdj;
-				else if (chChar == '<')
-					retCriteria->iLessThanLevel = iValue + iEqualAdj;
-
-				break;
-				}
-			}
-
-		pPos++;
-		}
-	}
-
 void CSpaceObject::Reconned (void)
 
 //	Reconned
@@ -7165,27 +6676,6 @@ void CSpaceObject::ScrapeOverlays (void)
 		return;
 
 	pOverlays->ScrapeHarmfulOverlays(this);
-	}
-
-void CSpaceObject::SetCriteriaSource (Criteria &Crit, CSpaceObject *pSource)
-
-//	SetCriteriaSource
-//
-//	Assuming the criteria was been properly parsed, this function sets
-//	the source for the criteria.
-//
-//	This is useful when we need to parse the criteria in two passes.
-
-	{
-	ASSERT(pSource);
-
-	Crit.pSource = pSource;
-
-	if (Crit.bSourceSovereignOnly)
-		Crit.dwSovereignUNID = (pSource->GetSovereign() ? pSource->GetSovereign()->GetUNID() : 0);
-
-	if (Crit.bPerceivableOnly)
-		Crit.iPerception = pSource->GetPerception();
 	}
 
 void CSpaceObject::SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor)
@@ -8172,28 +7662,4 @@ void CSpaceObject::PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewport
 	}
 
 #endif
-
-//	SCriteriaMatchCtx ----------------------------------------------------------
-
-CSpaceObject::SCriteriaMatchCtx::SCriteriaMatchCtx (const Criteria &Crit) :
-		DistSort(Crit.iSortOrder)
-
-//	SCriteriaMatchCtx constructor
-
-	{
-	pBestObj = NULL;
-	rBestDist2 = (Crit.bNearestOnly ? g_InfiniteDistance * g_InfiniteDistance : 0.0);
-
-	bCalcPolar = (Crit.iIntersectAngle != -1);
-	bCalcDist2 = (!bCalcPolar 
-			&& (Crit.bNearestOnly 
-				|| Crit.bFarthestOnly 
-				|| Crit.bNearerThan 
-				|| Crit.bFartherThan 
-				|| Crit.bPerceivableOnly
-				|| Crit.iSort == CSpaceObject::sortByDistance));
-
-	rMinRadius2 = Crit.rMinRadius * Crit.rMinRadius;
-	rMaxRadius2 = Crit.rMaxRadius * Crit.rMaxRadius;
-	}
 

@@ -695,19 +695,6 @@ class CSpaceObject : public CObject
 			insInstallItemResultsCount,			//	Must be last enum
 			};
 
-		enum CriteriaSortTypes
-			{
-			sortNone,
-			sortByDistance,
-			};
-
-		enum CriteriaPosCheckTypes
-			{
-			checkNone,
-			checkPosIntersect,
-			checkLineIntersect,
-			};
-
 		enum RequestDockResults
 			{
 			dockingOK,
@@ -715,80 +702,6 @@ class CSpaceObject : public CObject
 			dockingNotSupported,				//	No docking ports, or object destroyed
 			dockingDisabled,					//	Docking temporarily unavailable
 			dockingDenied,						//	Docking request denied
-			};
-
-		struct Criteria
-			{
-			CSpaceObject *pSource;				//	Source
-
-			DWORD dwCategories;					//	Only these object categories
-			bool bSelectPlayer;					//	Select the player
-			bool bIncludeVirtual;				//	Include virtual objects
-			bool bActiveObjectsOnly;			//	Only active object (e.g., objects that can attack)
-			bool bKilledObjectsOnly;			//	Only objects that cannot attack
-			bool bFriendlyObjectsOnly;			//	Only friendly to source
-			bool bEnemyObjectsOnly;				//	Only enemy to source
-			bool bAngryObjectsOnly;				//	Only enemy and angry objects
-			bool bManufacturedObjectsOnly;		//	Exclude planets, stars, etc.
-			bool bStructureScaleOnly;			//	Only structure-scale objects
-			bool bStargatesOnly;				//	Only stargates
-			bool bNearestOnly;					//	The nearest object to the source
-			bool bFarthestOnly;					//	The fartest object to the source
-			bool bNearerThan;					//	Only objects nearer than rMinRadius
-			bool bFartherThan;					//	Only objects farther than rMaxRadius
-			bool bHomeBaseIsSource;				//	Only objects whose home base is the source
-			bool bDockedWithSource;				//	Only objects currently docked with source
-			bool bExcludePlayer;				//	Exclude the player
-			bool bTargetIsSource;				//	Only objects whose target is the source
-
-			bool bPerceivableOnly;				//	Only objects that can be perceived by the source
-			int iPerception;					//	Cached perception of pSource
-
-			bool bSourceSovereignOnly;			//	Only objects the same sovereign as source
-			DWORD dwSovereignUNID;				//	Only objects with this sovereign UNID
-
-			CString sData;						//	Only objects with non-Nil data
-			CString sStargateID;				//	Only objects with this stargate ID (if non blank)
-			Metric rMinRadius;					//	Only objects at or beyond the given radius
-			Metric rMaxRadius;					//	Only objects within the given radius
-			int iIntersectAngle;				//	Only objects that intersect line from source
-			IShipController::OrderTypes iOrder;	//	Only objects with this order
-
-			TArray<CString> AttribsRequired;	//	Required attributes
-			TArray<CString> AttribsNotAllowed;	//	Exclude objects with these attributes
-			TArray<CString> SpecialRequired;	//	Special required attributes
-			TArray<CString> SpecialNotAllowed;	//	Special excluding attributes
-
-			int iEqualToLevel;					//	Objects of this level
-			int iGreaterThanLevel;
-			int iLessThanLevel;
-
-			CriteriaPosCheckTypes iPosCheck;
-			CVector vPos1;
-			CVector vPos2;
-
-			CriteriaSortTypes iSort;
-			ESortOptions iSortOrder;
-			};
-
-		struct SCriteriaMatchCtx
-			{
-			SCriteriaMatchCtx (const Criteria &Crit);
-
-			//	Computed from criteria
-			Metric rMinRadius2;
-			Metric rMaxRadius2;
-
-			//	Nearest/farthest object
-			CSpaceObject *pBestObj;
-			Metric rBestDist2;
-
-			//	Sorted results
-			TSortMap<Metric, CSpaceObject *> DistSort;
-
-			//	Temporaries
-			bool bCalcPolar;
-			bool bCalcDist2;
 			};
 
 		struct SOnCreate
@@ -1043,7 +956,7 @@ class CSpaceObject : public CObject
 		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
-		void GetHitRect (CVector *retvUR, CVector *retvLL);
+		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
 		Metric GetHitSize (void) const;
 		inline int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
 		inline DWORD GetID (void) const { return m_dwID; }
@@ -1212,9 +1125,7 @@ class CSpaceObject : public CObject
 		void WriteToStream (IWriteStream *pStream);
 		inline void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
 
-		bool MatchesCriteria (SCriteriaMatchCtx &Ctx, const Criteria &Crit);
-		static void ParseCriteria (CSpaceObject *pSource, const CString &sCriteria, Criteria *retCriteria);
-		static void SetCriteriaSource (Criteria &Crit, CSpaceObject *pSource);
+		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 
 #ifdef DEBUG_VECTOR
 		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -1411,9 +1322,9 @@ class CSpaceObject : public CObject
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
 		virtual void OnSystemLoaded (void) { }
-		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) { return false; }
-		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) { return PointInObject(vObjPos, vPointPos); }
-		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) { }
+		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const { return false; }
+		virtual bool PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const CVector &vPointPos) const { return PointInObject(vObjPos, vPointPos); }
+		virtual void PointInObjectInit (SPointInObjectCtx &Ctx) const { }
 		virtual void RefreshBounds (void) { }
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions) { return false; }
 		virtual void SetExplored (bool bExplored = true) { }

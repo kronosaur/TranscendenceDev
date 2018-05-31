@@ -397,25 +397,25 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 				{
 				//	First we set the source
 
-				CSpaceObject::SetCriteriaSource(m_TargetCriteria, pSource);
+				m_TargetCriteria.SetSource(pSource);
 
 				//	Compute the range
 
 				Metric rBestDist2;
-				if (m_TargetCriteria.rMaxRadius < g_InfiniteDistance)
-					rBestDist2 = (m_TargetCriteria.rMaxRadius * m_TargetCriteria.rMaxRadius);
+				if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
+					rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
 				else
 					rBestDist2 = m_rInterceptRange * m_rInterceptRange;
 
 				//	Now look for the nearest object
 
-				CSpaceObject::SCriteriaMatchCtx Ctx(m_TargetCriteria);
+				CSpaceObjectCriteria::SCtx Ctx(m_TargetCriteria);
 				for (i = 0; i < pSystem->GetObjectCount(); i++)
 					{
 					CSpaceObject *pObj = pSystem->GetObject(i);
 					Metric rDistance2;
 					if (pObj
-							&& (m_TargetCriteria.dwCategories & pObj->GetCategory())
+							&& (m_TargetCriteria.MatchesCategory(pObj->GetCategory()))
 							&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
 							&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 							&& !pObj->IsIntangible()
@@ -508,7 +508,7 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 		//	it in an object-generic way, since one class could be used by
 		//	multiple objects.
 
-		CSpaceObject::ParseCriteria(NULL, sCriteria, &pDevice->m_TargetCriteria);
+		pDevice->m_TargetCriteria.Init(sCriteria);
 		}
 
 	//	Otherwise, we use a hard-coded method

@@ -625,7 +625,7 @@ void CParticleDamage::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
-bool CParticleDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CParticleDamage::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

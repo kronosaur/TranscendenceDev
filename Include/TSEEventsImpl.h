@@ -31,7 +31,7 @@ class CRangeTypeEvent : public CSystemEvent
 		CString m_sCriteria;				//	Match these objects (if empty, match player ship)
 		
 		Metric m_rRadius2;					//	Cached for efficiency.
-		CSpaceObject::Criteria m_Criteria;	//	Parsed criteria (cached)
+		CSpaceObjectCriteria m_Criteria;	//	Parsed criteria (cached)
 		bool m_bCriteriaInit;				//	TRUE if we've parsed the criteria
 	};
 

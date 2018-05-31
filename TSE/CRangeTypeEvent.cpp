@@ -94,11 +94,11 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 
 		if (!m_bCriteriaInit)
 			{
-			CSpaceObject::ParseCriteria(m_pCenter, m_sCriteria, &m_Criteria);
+			m_Criteria.Init(m_pCenter, m_sCriteria);
 			m_bCriteriaInit = true;
 			}
 
-		CSpaceObject::SCriteriaMatchCtx Ctx(m_Criteria);
+		CSpaceObjectCriteria::SCtx Ctx(m_Criteria);
 
 		//	See if there are any objects in range
 

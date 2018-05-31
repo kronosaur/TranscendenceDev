@@ -1442,7 +1442,7 @@ void CMissile::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 				markerSmallRound);
 	}
 
-bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

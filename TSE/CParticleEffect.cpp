@@ -1135,7 +1135,7 @@ void CParticleEffect::PaintSmokeParticles (SParticleArray *pGroup, CG32bitImage 
 		}
 	}
 
-bool CParticleEffect::PointInObject (const CVector &vObjPos, const CVector &vPointPos)
+bool CParticleEffect::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
 
 //	PointInObject
 //

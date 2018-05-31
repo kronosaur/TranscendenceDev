@@ -43,7 +43,7 @@ class CAutoDefenseClass : public CDeviceClass
 
 
 		TargetingSystemTypes m_iTargeting;
-		CSpaceObject::Criteria m_TargetCriteria;
+		CSpaceObjectCriteria m_TargetCriteria;
 		Metric m_rInterceptRange;
 
 		bool m_bOmnidirectional;				//	Omnidirectional
@@ -51,8 +51,6 @@ class CAutoDefenseClass : public CDeviceClass
 		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
 		int m_iRechargeTicks;
 		CDeviceClassRef m_pWeapon;
-
-
 	};
 
 class CCargoSpaceClass : public CDeviceClass
