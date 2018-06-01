@@ -1453,7 +1453,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'SRS\n"
 			"   'SRSEnhancer\n"
 			"   'SystemMap\n"
-			"   'TargetingComputer\n\n"
+			"   'TargetingComputer\n"
+			"   'TradingComputer\n\n"
 			
 			"command\n\n"
 			
@@ -3059,6 +3060,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"criteria\n\n"
 			
+			"   *                  Include all Types\n"
 			"   a                  AdventureDesc\n"
 			"   b                  ItemTable\n"
 			"   c                  EffectType\n"
@@ -3081,8 +3083,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   z                  SystemMap\n"
 			"   $                  EconomyType\n"
 			"\n"
+			"   L:x-y              Only Types of level x to y\n"
 			"   V                  Include virtual types\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
+			"   +/-event:xyz;      Require/exclude types with given event\n"
+			"   +/-isEnemyOf:xyz;  Require/exclude types which are enemy of sovereign\n"
 			"   =n;                Level comparisons (also supports < etc.)",
 
 			"s",	0,	},
@@ -3419,13 +3424,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"criteria\n\n"
 			
+			"   *                  Include all types\n"
 			"   s                  ShipClass\n"
 			"   t                  StationType\n"
 			"   T                  StationType (structure-scale)\n"
+			"\n"
+			"   A                  Active objects only\n"
+			"   K                  Killed objects only\n"
+			"   L:x-y;             Objects of level x to y\n"
 			"   V                  Include virtual objects\n"
-			"   +/-{attrib}        Require/exclude types with given attribute\n\n"
+			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"
-			"   =n;                Level comparisons (also supports < etc.)\n"
+			"   =n;                Level comparisons (also supports < etc.)\n\n"
 
 			"entry\n\n"
 			
