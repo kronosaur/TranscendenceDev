@@ -2674,6 +2674,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"criteria is a string that must specify one or more of the following categories:\n\n"
 			
+			"   *           Include all categories\n"
 			"   b           Include beams\n"
 			"   G           Include ONLY stargates\n"
 			"   G:xyz;      Include ONLY stargate with ID 'xyz'\n"
@@ -2717,9 +2718,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   X           Only objects whose target is the source\n"
 			"   Y           Only objects angry at (or enemies of) the source\n"
 			"   Z           Exclude the player\n"
-			"   +xyz;       Exclude objects without the given attribute\n"
-			"   -xyz;       Exclude objects with the given attribute\n"
-			"   =n          Only objects of level n. You can also use >, <, >=, and <=.\n\n"
+			"   +xyz;       Only objects with attribute 'xyz'\n"
+			"   -xyz;       Exclude objects with attribute 'xyz'\n"
+			"   =n;         Only objects of level n. You can also replace = with >, <, >=, or <=,\n"
+			"				but they need to be escaped in XML.\n\n"
 			
 			"   +/-data:xyz;        Include only/exclude objects with data 'xyz'\n"
 			"   +/-isPlanet:true;   Include only/exclude planets\n"
