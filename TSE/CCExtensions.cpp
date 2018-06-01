@@ -2716,7 +2716,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   Z           Exclude the player\n"
 			"   +xyz;       Only objects with attribute 'xyz'\n"
 			"   -xyz;       Exclude objects with attribute 'xyz'\n"
-			"   =n;         Only objects of level n. You can also replace = with &gt;, &lt;, &gt;=, or &lt;=.\n\n"
+			"   =n;         Only objects of level n. You can also replace = with >, <, >=, or <=,\n"
+			"				but they need to be escaped in XML.\n\n"
 			
 			"   +/-data:xyz;        Include only/exclude objects with data 'xyz'\n"
 			"   +/-isPlanet:true;   Include only/exclude planets\n"
