@@ -2070,11 +2070,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 			//	Flags for the type of shot
 
-			DWORD dwFlags = 0;
-			if (i != 0)
-				dwFlags = SShotCreateCtx::CWF_FRAGMENT;
-			else
-				dwFlags = SShotCreateCtx::CWF_WEAPON_FIRE;
+			DWORD dwFlags = SShotCreateCtx::CWF_WEAPON_FIRE;
+			if (i == 0)
+				dwFlags |= SShotCreateCtx::CWF_PRIMARY;
 
 			if (iRepeatingCount != 0)
 				dwFlags |= SShotCreateCtx::CWF_REPEAT;

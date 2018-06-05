@@ -2184,9 +2184,14 @@ void CSystem::FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDes
 	{
 	if (!m_EventHandlers.IsEmpty())
 		{
+		//	Skip any anything except the first shot in a multi-shot weapon.
+
+		if (!(dwFlags & SShotCreateCtx::CWF_PRIMARY))
+			NULL;
+
 		//	Skip any fragments
 
-		if (dwFlags & SShotCreateCtx::CWF_FRAGMENT)
+		else if (dwFlags & SShotCreateCtx::CWF_FRAGMENT)
 			NULL;
 
 		//	If this is an explosion, then fire explosion event

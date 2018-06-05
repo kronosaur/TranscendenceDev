@@ -301,6 +301,7 @@ struct SShotCreateCtx
 		CWF_EXPLOSION =					0x00000004,	//	Creating an explosion (or fragment of an explosion)
 		CWF_EJECTA =					0x00000008,	//	Creating ejecta (or fragments of ejecta)
 		CWF_REPEAT =					0x00000010,	//	Mixed with CWF_WEAPON_FIRE to indicate this is a repeat
+		CWF_PRIMARY =					0x00000020,	//	The first shot in a multi-shot weapon
 		};
 
 	CWeaponFireDesc *pDesc = NULL;
