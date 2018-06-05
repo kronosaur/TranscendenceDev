@@ -164,6 +164,7 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 
 	ICCItem *pNew = pCC->CreateSymbolTable();
 	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
+	pNewTable->CloneItem(this);
 	ASSERT(pNewTable);
 
 	//	Add all the items to the table
