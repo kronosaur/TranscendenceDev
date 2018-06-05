@@ -540,7 +540,11 @@ void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRang
 
 		if (GetBestWeapon() == NULL)
 			{
-			(*iopTarget) = NULL;
+			//	Some ships only have secondary weapons. In that case, keep the 
+			//	target so that we can attack with secondaries.
+
+			if (!HasSecondaryWeapons())
+				(*iopTarget) = NULL;
 			return;
 			}
 
