@@ -258,24 +258,24 @@ bool CG32bitImage::CopyToClipboard (void)
 	//	Copy to the clipboard
 
 	if (!::OpenClipboard(NULL))
-		return ERR_FAIL;
+		return false;
 
 	if (!::EmptyClipboard())
 		{
 		::CloseClipboard();
-		return ERR_FAIL;
+		return false;
 		}
 
 	if (!::SetClipboardData(CF_BITMAP, hBitmap))
 		{
 		::CloseClipboard();
-		return ERR_FAIL;
+		return false;
 		}
 
 	if (!::CloseClipboard())
-		return ERR_FAIL;
+		return false;
 
-	return NOERROR;
+	return true;
 	}
 
 void CG32bitImage::CopyTransformed (const RECT &rcDest, const CG32bitImage &Src, const RECT &rcSrc, const CXForm &SrcToDest, const CXForm &DestToSrc, const RECT &rcDestXForm)
