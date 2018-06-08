@@ -54,6 +54,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_DATA_TRANSFER_EVENT                  CONSTLIT("OnDataTransfer")
 #define ON_DESELECTED_EVENT						CONSTLIT("OnDeselected")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
+#define ON_DESTROY_OBJ_EVENT					CONSTLIT("OnDestroyObj")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
 #define ON_ENTERED_GATE_EVENT					CONSTLIT("OnEnteredGate")
 #define ON_ENTERED_SYSTEM_EVENT					CONSTLIT("OnEnteredSystem")
@@ -1483,6 +1484,9 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 	if (pWeaponDesc)
 		pWeaponDesc->FireOnDestroyObj(Ctx);
 
+	if (Attacker.GetObj())
+		Attacker.GetObj()->FireOnDestroyObj(Ctx);
+
 	//	Remove from the object from the universal list (NOTE: We must do this
 	//	before we clear out m_pSystem.)
 
@@ -2489,6 +2493,33 @@ void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 		}
 
 	DEBUG_CATCH
+	}
+
+void CSpaceObject::FireOnDestroyObj (const SDestroyCtx &Ctx)
+
+//	FireOnDestroyObj
+//
+//	Fire OnDestroyObj event
+
+	{
+	SEventHandlerDesc Event;
+
+	if (FindEventHandler(ON_DESTROY_OBJ_EVENT, &Event))
+		{
+		CCodeChainCtx CCCtx;
+
+		CCCtx.SaveAndDefineSourceVar(this);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+		ICCItem *pResult = CCCtx.Run(Event);
+		if (pResult->IsError())
+			ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
+		CCCtx.Discard(pResult);
+		}
 	}
 
 bool CSpaceObject::FireOnDockObjAdj (CSpaceObject **retpObj)
