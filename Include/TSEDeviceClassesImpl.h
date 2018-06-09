@@ -788,6 +788,7 @@ class CWeaponClass : public CDeviceClass
 						 int iRepeatingCount,
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
+		int GetContinuousFireDelay(CWeaponFireDesc *pShot) const;
 		int GetFireDelay (CWeaponFireDesc *pShot) const;
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
@@ -817,6 +818,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iIdlePowerUse;					//	Power use when capacitors fully charged
 		int m_iRecoil;							//	0-7 (as per momentum damage)
 		int m_iFailureChance;					//	Chance of failure
+		int m_iContinuousFireDelay;				//	Ticks between continuous fire shots
 
 		bool m_bOmnidirectional;				//	Omnidirectional
 		bool m_bMIRV;							//	Each shot seeks an independent target
