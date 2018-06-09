@@ -268,6 +268,16 @@ void CCodeChainCtx::DefineContainingType (const CItem &Item)
 	DefineInteger(CONSTLIT(STR_G_TYPE), Item.GetType()->GetUNID());
 	}
 
+void CCodeChainCtx::DefineContainingType (const COverlay *pOverlay)
+
+//	DefineContainingType
+//
+//	Defines an containing type
+
+	{
+	DefineInteger(CONSTLIT(STR_G_TYPE), pOverlay->GetType()->GetUNID());
+	}
+
 void CCodeChainCtx::DefineContainingType (CSpaceObject *pObj)
 
 //	DefineContainingType
