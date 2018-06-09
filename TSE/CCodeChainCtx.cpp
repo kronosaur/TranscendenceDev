@@ -15,6 +15,7 @@
 #define STR_G_DATA								CONSTLIT("gData")
 #define STR_G_ITEM								CONSTLIT("gItem")
 #define STR_G_SOURCE							CONSTLIT("gSource")
+#define STR_G_TYPE								CONSTLIT("gType")
 
 TArray<CCodeChainCtx::SInvokeFrame> CCodeChainCtx::g_Invocations;
 
@@ -245,6 +246,36 @@ void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
 	ICCItem *pItem = CreateItemFromDamageEffects(m_CC, Ctx);
 	m_CC.DefineGlobal(sVar, pItem);
 	pItem->Discard(&m_CC);
+	}
+
+void CCodeChainCtx::DefineContainingType (CDesignType *pType)
+
+//	DefineContainingType
+//
+//	Defines an containing type
+
+{
+	DefineInteger(CONSTLIT(STR_G_TYPE), pType->GetUNID());
+}
+
+void CCodeChainCtx::DefineContainingType (const CItem &Item)
+
+//	DefineContainingType
+//
+//	Defines an containing type
+
+	{
+	DefineInteger(CONSTLIT(STR_G_TYPE), Item.GetType()->GetUNID());
+	}
+
+void CCodeChainCtx::DefineContainingType (CSpaceObject *pObj)
+
+//	DefineContainingType
+//
+//	Defines an containing type
+
+	{
+	DefineContainingType(pObj->GetType());
 	}
 
 void CCodeChainCtx::DefineItem (const CString &sVar, CItemCtx &ItemCtx)

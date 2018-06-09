@@ -93,6 +93,9 @@ class CCodeChainCtx
 		CCodeChainCtx (void);
 		~CCodeChainCtx (void);
 
+		void DefineContainingType (CDesignType *pType);
+		void DefineContainingType (const CItem &Item);
+		void DefineContainingType (CSpaceObject *pObj);
 		inline ICCItem *CreateNil (void) { return m_CC.CreateNil(); }
 		inline void DefineBool (const CString &sVar, bool bValue) { m_CC.DefineGlobal(sVar, (bValue ? m_CC.CreateTrue() : m_CC.CreateNil())); }
 		void DefineDamageCtx (const SDamageCtx &Ctx, int iDamage = -1);
