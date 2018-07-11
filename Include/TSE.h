@@ -907,6 +907,7 @@ class CSpaceObject : public CObject
 		int FireOnDamage (SDamageCtx &Ctx, int iDamage);
 		void FireOnDeselected (void);
 		void FireOnDestroy (const SDestroyCtx &Ctx);
+		void FireOnDestroyObj (const SDestroyCtx &Ctx);
 		bool FireOnDockObjAdj (CSpaceObject **retpObj);
 		void FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate);
 		void FireOnEnteredSystem (CSpaceObject *pGate);
