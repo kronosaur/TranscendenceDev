@@ -1321,7 +1321,14 @@ void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	CItemCtx Ctx(pSource, pDevice);
 
 	*retiStatus = GetHPLeft(Ctx);
-	*retiMaxStatus = GetMaxHP(Ctx);
+	if (m_fHasNonRegenHPBonus)
+		{
+		*retiMaxStatus = GetMaxHP(Ctx) - pDevice->GetCharges(pSource);
+		}
+		else
+		{
+		*retiMaxStatus = GetMaxHP(Ctx);
+		}
 	}
 
 Metric CShieldClass::GetStdCost (int iLevel)
@@ -1634,10 +1641,11 @@ void CShieldClass::SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 //	Sets HP left on shields
 
 	{
+	CItemCtx Ctx(pSource, pDevice);
 	if (bConsumeCharges 
 			&& m_fHasNonRegenHPBonus 
-			&& iHP < pDevice->GetCharges(pSource))
-		pDevice->SetCharges(pSource, iHP);
+			&& iHP < GetMaxHP(Ctx))
+		pDevice->SetCharges(pSource, max(0, iHP - (GetMaxHP(Ctx) - pDevice->GetCharges(pSource))));
 		
 	pDevice->SetData((DWORD)iHP);
 	}
@@ -1813,18 +1821,27 @@ void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 				//	re-enable a device.
 
 				if (m_fHasNonRegenHPBonus
-						&& iHPLeft + iRegenHP < pDevice->GetCharges(pSource))
-					iRegenHP = pDevice->GetCharges(pSource) - iHPLeft;
+						&& iHPLeft + iRegenHP < iMaxHP
+						&& pDevice->GetCharges(pSource) > 0)
+					iRegenHP = iMaxHP - iHPLeft;
 
-				//	Regen
+				//	Regen, unless we have non-regenerating HP and we're above
+				//  the regenerating HP level.
 
-				SetHPLeft(pDevice, pSource, Min(iMaxHP, iHPLeft + iRegenHP));
-				pSource->OnComponentChanged(comShields);
+				if (!(m_fHasNonRegenHPBonus && pDevice->GetCharges(pSource) > 0
+					&& (iHPLeft >= iMaxHP)))
+					{
 
-				//	Remember that we regenerated this turn (so that we can
-				//	consume power)
+					//	Regen
 
-				pDevice->SetRegenerating(true);
+					SetHPLeft(pDevice, pSource, Min(iMaxHP, iHPLeft + iRegenHP));
+					pSource->OnComponentChanged(comShields);
+
+					//	Remember that we regenerated this turn (so that we can
+					//	consume power)
+
+					pDevice->SetRegenerating(true);
+					}
 				}
 			}
 		}
