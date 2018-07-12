@@ -16,6 +16,7 @@
 #define ANGLE_ATTRIB							CONSTLIT("angle")
 #define CHARGES_ATTRIB							CONSTLIT("charges")
 #define CONFIGURATION_ATTRIB					CONSTLIT("configuration")
+#define CONTINUOUS_CONSUME_PERSHOT_ATTRIB		CONSTLIT("consumeAmmoPerRepeatingShot")
 #define COOLING_RATE_ATTRIB						CONSTLIT("coolingRate")
 #define COUNTER_ATTRIB							CONSTLIT("counter")
 #define COUNTER_ACTIVATE_ATTRIB					CONSTLIT("counterActivate")
@@ -1296,7 +1297,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 	
 	if (pShot->GetContinuous() > 0)
 		{
-		if (iRepeatingCount == 0)
+		if ((iRepeatingCount == 0) || m_bContinuousConsumePerShot)
 			{
 			//	If ammo items...
 
@@ -1316,13 +1317,14 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 					return false;
 				}
 
-			//	We don't consume yet
-
-			return true;
+			//	We don't consume yet (unless m_bContinuousConsumePerShot is true)
+			
+			if (!m_bContinuousConsumePerShot)
+				return true;
 			}
-		else if (iRepeatingCount != pShot->GetContinuous())
+		else if ((iRepeatingCount != pShot->GetContinuous()) && !m_bContinuousConsumePerShot)
 			{
-			//	We don't consume until the last shot.
+			//	We don't consume until the last shot, unless m_bContinuousConsumePerShot is true.
 
 			return true;
 			}
@@ -1479,6 +1481,8 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
 	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
+	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
+
 
 	//	Configuration
 
