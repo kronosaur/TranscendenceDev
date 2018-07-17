@@ -102,7 +102,7 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (pNewDest)
 		{
-		if (m_fFullImage)
+		if (m_fFullImage || retImage->IsAnimated())
 			retImage->SetImage(new CObjectImage(pNewDest, true));
 		else
 			retImage->Init(pNewDest, rcNewImage, 0, 0, true);
@@ -116,7 +116,7 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 //	Creates a copy of the given image. Caller is reponsible for freeing.
 
 	{
-	if (m_fFullImage)
+	if (m_fFullImage || pImage->IsAnimated())
 		{
 		CG32bitImage *pNewImage = new CG32bitImage(pImage->GetImage(NULL_STR));
 

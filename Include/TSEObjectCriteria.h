@@ -79,7 +79,7 @@ class CSpaceObjectCriteria
 		inline int MatchesPerception (void) const { return m_iPerception; }
 		inline bool MatchesPlayer (void) const { return m_bSelectPlayer; }
 		bool MatchesPosition (const CSpaceObject &Obj) const;
-		inline bool MatchesSovereign (CSovereign *pSovereign) const { return ((m_dwSovereignUNID == 0) || (pSovereign && pSovereign->GetUNID() == m_dwSovereignUNID)); }
+		bool MatchesSovereign (CSovereign *pSovereign) const;
 		inline bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
 		inline bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
 		inline bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }

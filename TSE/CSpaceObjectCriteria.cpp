@@ -172,6 +172,16 @@ bool CSpaceObjectCriteria::MatchesPosition (const CSpaceObject &Obj) const
 		}
 	}
 
+bool CSpaceObjectCriteria::MatchesSovereign (CSovereign *pSovereign) const
+
+//	MatchesSovereign
+//
+//	Returns TRUE if we match the sovereign
+
+	{
+	return ((m_dwSovereignUNID == 0) || (pSovereign && pSovereign->GetUNID() == m_dwSovereignUNID));
+	}
+
 void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteria)
 
 //	Parse

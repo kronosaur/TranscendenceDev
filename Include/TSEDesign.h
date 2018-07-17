@@ -665,6 +665,7 @@ class CGenericType : public CDesignType
 
 //	Station Definitions --------------------------------------------------------
 
+#include "TSEObjectCriteria.h"
 #include "TSEDockScreenType.h"
 #include "TSEStationType.h"
 

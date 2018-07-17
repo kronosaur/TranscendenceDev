@@ -212,6 +212,7 @@ class CObjectImageArray
 		inline int GetImageWidth (void) const { return RectWidth(m_rcImage); }
 		inline bool HasAlpha (void) const { return (m_pImage ? m_pImage->HasAlpha() : false); }
 		bool ImagesIntersect (int iTick, int iRotation, int x, int y, const CObjectImageArray &Image2, int iTick2, int iRotation2) const;
+		inline bool IsAnimated (void) const { return (m_iTicksPerFrame > 0 && m_iFrameCount > 1); }
 		inline bool IsEmpty (void) const { return ((m_pImage == NULL) && (m_dwBitmapUNID == 0)); }
 		inline bool IsLoaded (void) const { return (m_pImage != NULL); }
         inline bool IsMarked (void) const { return (m_pImage && m_pImage->IsMarked()); }

@@ -9,6 +9,7 @@
 #define TABLES_TAG								CONSTLIT("Tables")
 
 #define BACKGROUND_ID_ATTRIB					CONSTLIT("backgroundID")
+#define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define NO_EXTRA_ENCOUNTERS_ATTRIB				CONSTLIT("noExtraEncounters")
 #define NO_RANDOM_ENCOUNTERS_ATTRIB				CONSTLIT("noRandomEncounters")
 #define SPACE_SCALE_ATTRIB						CONSTLIT("spaceScale")
@@ -227,6 +228,8 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		if (error = m_ImageFilters.InitFromXML(Ctx, *pFilters))
 			return error;
+
+		m_ImageFilterCriteria.Init(pFilters->GetAttribute(CRITERIA_ATTRIB));
 		}
 
 	return NOERROR;

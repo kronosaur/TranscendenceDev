@@ -4553,6 +4553,10 @@ const CImageFilterStack *CSpaceObject::GetSystemFilters (void) const
 	if (pType == NULL)
 		return NULL;
 
+	if (!pType->GetImageFiltersCriteria().IsEmpty()
+			&& !MatchesCriteria(pType->GetImageFiltersCriteria()))
+		return NULL;
+
 	const CImageFilterStack *pFilters = &pType->GetImageFilters();
 	if (pFilters->IsEmpty())
 		return NULL;
