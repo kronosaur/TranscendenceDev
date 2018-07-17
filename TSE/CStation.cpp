@@ -49,6 +49,7 @@
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
+#define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
 #define PROPERTY_SUBORDINATES					CONSTLIT("subordinates")
@@ -1553,6 +1554,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(m_Scale != scaleStar && m_Scale != scaleWorld && m_pType->ShowsMapIcon() && !m_fNoMapLabel);
+
+	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
+		return CC.CreateBool(m_pMapOrbit && m_fShowMapOrbit);
 
 	else if (strEquals(sName, PROPERTY_STARGATE_ID))
 		{
@@ -4609,6 +4613,11 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		{
 		m_fNoMapLabel = pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
+		{
+		m_fShowMapOrbit = !pValue->IsNil();
 		return true;
 		}
 	else if (m_Hull.SetPropertyIfFound(sName, pValue, &sError))
