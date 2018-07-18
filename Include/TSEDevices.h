@@ -93,6 +93,7 @@ class CItemLevelCriteria
 class CEnhancementDesc
 	{
 	public:
+		bool Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InsertHPBonus (int iBonus);

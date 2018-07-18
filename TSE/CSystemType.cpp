@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define ENHANCE_ABILITIES_TAG					CONSTLIT("EnhancementAbilities")
 #define IMAGE_FILTERS_TAG						CONSTLIT("ImageFilters")
 #define SYSTEM_GROUP_TAG						CONSTLIT("SystemGroup")
 #define TABLES_TAG								CONSTLIT("Tables")
@@ -230,6 +231,15 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			return error;
 
 		m_ImageFilterCriteria.Init(pFilters->GetAttribute(CRITERIA_ATTRIB));
+		}
+
+	//	Enhancements
+
+	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
+	if (pEnhanceList)
+		{
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+			return error;
 		}
 
 	return NOERROR;

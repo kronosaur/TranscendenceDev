@@ -46,6 +46,7 @@ class CSystemType : public CDesignType
 		inline CXMLElement *GetDesc (void) { return m_pDesc; }
 		inline const CImageFilterStack &GetImageFilters (void) const { return m_ImageFilters; }
 		inline const CSpaceObjectCriteria &GetImageFiltersCriteria (void) const { return m_ImageFilterCriteria; }
+		inline const CEnhancementDesc &GetItemEnhancements (void) const { return m_Enhancements; }
 		inline CXMLElement *GetLocalSystemTables (void) { return m_pLocalTables; }
 		inline ETileSize GetSpaceEnvironmentTileSize (void) const { return m_iTileSize; }
 		inline Metric GetSpaceScale (void) const { return m_rSpaceScale; }
@@ -70,6 +71,7 @@ class CSystemType : public CDesignType
 		ETileSize m_iTileSize;				//	Tile size for environment
 		CImageFilterStack m_ImageFilters;	//	Filters on object images
 		CSpaceObjectCriteria m_ImageFilterCriteria;	//	Only if object matches criteria
+		CEnhancementDesc m_Enhancements;	//	Enhancements confered on items
 
 		CXMLElement *m_pDesc;				//	System definition
 		CXMLElement *m_pLocalTables;		//	Local system tables

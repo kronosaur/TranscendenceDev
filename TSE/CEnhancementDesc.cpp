@@ -12,7 +12,7 @@
 #define LEVEL_CHECK_ATTRIB						CONSTLIT("levelCheck")
 #define TYPE_ATTRIB								CONSTLIT("type")
 
-bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
+bool CEnhancementDesc::Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
 
 //	Accumulate
 //
@@ -38,7 +38,7 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 		//	If we're checking level, then make sure our level is at least as 
 		//	high as the target.
 
-		if (!m_Enhancements[i].LevelCheck.MatchesCriteria(Ctx.GetItem().GetLevel(), Target))
+		if (!m_Enhancements[i].LevelCheck.MatchesCriteria(iLevel, Target))
 			continue;
 
 		//	Add the enhancement
@@ -53,6 +53,16 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 		}
 
 	return bEnhanced;
+	}
+
+bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const
+
+//	Accumulate
+//
+//	Adds enhancements to the stack. Returns TRUE if any enhancements were added.
+
+	{
+	return Accumulate(Ctx.GetItem().GetLevel(), Target, EnhancementIDs, pEnhancements);
 	}
 
 ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)

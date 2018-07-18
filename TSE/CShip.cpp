@@ -304,6 +304,10 @@ void CShip::CalcArmorBonus (void)
 	int i, j;
 	bool bComplete = true;
 
+	//	Enhancements from system
+
+	const CEnhancementDesc *pSystemEnhancements = GetSystemEnhancements();
+
 	//	Generate a list of all segments by type.
 
 	TSortMap<DWORD, TArray<int>> SegmentsByType;
@@ -353,6 +357,11 @@ void CShip::CalcArmorBonus (void)
 			//	Now see if any devices enhance this segment
 
 			AccumulateDeviceEnhancementsToArmor(pArmor, EnhancementIDs, pEnhancements);
+
+			//	Enhancements from the system.
+
+			if (pSystemEnhancements)
+				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
 
 			//	Set the enhancement stack
 
@@ -424,6 +433,10 @@ void CShip::CalcDeviceBonus (void)
 
 	int i, j;
 
+	//	Enhancements from system
+
+	const CEnhancementDesc *pSystemEnhancements = GetSystemEnhancements();
+
 	//	Keep track of duplicate installed devices
 
 	TSortMap<DWORD, int> DeviceTypes;
@@ -492,6 +505,11 @@ void CShip::CalcDeviceBonus (void)
 						pArmor->GetClass()->GetItemType()->SetKnown();
 					}
 				}
+
+			//	Add enhancements from system
+
+			if (pSystemEnhancements)
+				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
 
 			//	Deal with class specific stuff
 
@@ -5043,6 +5061,18 @@ void CShip::OnNewSystem (CSystem *pSystem)
 	//	Restore any attached objects and their joints
 
 	m_Interior.OnNewSystem(pSystem, this, m_pClass->GetInteriorDesc());
+
+	//	Recalc bonuses, etc.
+
+	CalcBounds();
+	CalcOverlayImpact();
+	CalcArmorBonus();
+	CalcDeviceBonus();
+    CalcPerformance();
+
+    m_pController->OnStatsChanged();
+	m_pController->OnWeaponStatusChanged();
+	m_pController->OnShipStatus(IShipController::statusArmorRepaired, -1);
 
 	//	Let the controller handle it.
 

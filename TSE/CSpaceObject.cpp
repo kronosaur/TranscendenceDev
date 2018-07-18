@@ -4538,6 +4538,28 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 		return CG32bitPixel(0, 192, 0);
 	}
 
+const CEnhancementDesc *CSpaceObject::GetSystemEnhancements (void) const
+
+//	GetSystemEnhancements
+//
+//	Returns the list of system enhancements (or NULL if none).
+
+	{
+	CSystem *pSystem = GetSystem();
+	if (pSystem == NULL)
+		return NULL;
+
+	CSystemType *pType = pSystem->GetType();
+	if (pType == NULL)
+		return NULL;
+
+	const CEnhancementDesc &Enhancements = pType->GetItemEnhancements();
+	if (Enhancements.IsEmpty())
+		return NULL;
+
+	return &Enhancements;
+	}
+
 const CImageFilterStack *CSpaceObject::GetSystemFilters (void) const
 
 //	GetSystemFilters
