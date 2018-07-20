@@ -97,7 +97,7 @@ CSovereign::Disposition g_DispositionTable[5][5] =
 		//	WE are constructive chaos...
 		{
 			CSovereign::dispFriend,			//	THEY are constructive chaos
-			CSovereign::dispFriend,			//	THEY are constructive order
+			CSovereign::dispNeutral,		//	THEY are constructive order
 			CSovereign::dispNeutral,		//	THEY are neutral
 			CSovereign::dispEnemy,			//	THEY are destructive order
 			CSovereign::dispEnemy,			//	THEY are destructive chaos
