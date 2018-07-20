@@ -16,7 +16,6 @@
 #define ANGLE_ATTRIB							CONSTLIT("angle")
 #define CHARGES_ATTRIB							CONSTLIT("charges")
 #define CONFIGURATION_ATTRIB					CONSTLIT("configuration")
-#define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
 #define COOLING_RATE_ATTRIB						CONSTLIT("coolingRate")
 #define COUNTER_ATTRIB							CONSTLIT("counter")
 #define COUNTER_ACTIVATE_ATTRIB					CONSTLIT("counterActivate")
@@ -1480,7 +1479,6 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bMIRV = pDesc->GetAttributeBool(MULTI_TARGET_ATTRIB);
 	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
-	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 1, -1, 0);
 
 	//	Configuration
 
@@ -2199,16 +2197,6 @@ int CWeaponClass::GetAmmoItemCount (void) const
     else
         return 1;
     }
-
-int CWeaponClass::GetContinuousFireDelay(CWeaponFireDesc *pShot) const
-
-//	GetContinuousFireDelay
-//
-//	Returns number of ticks to wait between continuous fire shots.
-
-{
-	return m_iContinuousFireDelay;
-}
 
 int CWeaponClass::GetFireDelay (CWeaponFireDesc *pShot) const
 
@@ -4440,29 +4428,37 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	//	See if we continue to fire
 
-	int iContinuousDelay = max(1, m_iContinuousFireDelay);
 	DWORD dwContinuous = GetContinuousFire(pDevice);
 	if (dwContinuous == CONTINUOUS_START)
-	{
-		//	-1 is used to skip the first update cycle
-		//	(which happens on the same tick as Activate)
-
+		{
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
-		if (iContinuousDelay > 1)
+		if (pShot)
 			{
-			SetContinuousFire(pDevice, (pShot ? ((pShot->GetContinuous()+1)*iContinuousDelay) - 1: 0));
+			int iContinuousDelay = Max(1, pShot->GetContinuousFireDelay() + 1);
+
+			//	-1 is used to skip the first update cycle
+			//	(which happens on the same tick as Activate)
+
+			if (iContinuousDelay > 1)
+				{
+				SetContinuousFire(pDevice, ((pShot->GetContinuous() + 1) * iContinuousDelay) - 1);
+				}
+			else
+				{
+				SetContinuousFire(pDevice, pShot->GetContinuous());
+				}
 			}
 		else
-			{
-			SetContinuousFire(pDevice, (pShot ? pShot->GetContinuous()*iContinuousDelay : 0));
-			}
+			SetContinuousFire(pDevice, 0);
 		}
 	else if (dwContinuous > 0)
 		{
-		if (dwContinuous % iContinuousDelay == 0)
+		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
+		if (pShot)
 			{
-			CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
-			if (pShot)
+			int iContinuousDelay = Max(1, pShot->GetContinuousFireDelay() + 1);
+
+			if ((dwContinuous % iContinuousDelay) == 0)
 				{
 				FireWeapon(pDevice,
 					pShot,
@@ -4476,6 +4472,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 					return;
 				}
 			}
+
 		dwContinuous--;
 		SetContinuousFire(pDevice, dwContinuous);
 		}

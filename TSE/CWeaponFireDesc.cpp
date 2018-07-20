@@ -65,6 +65,7 @@
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
 #define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
+#define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
@@ -1599,6 +1600,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pAmmoType = NULL;
 
 	m_iContinuous = 0;
+	m_iContinuousFireDelay = 0;
 	m_iPassthrough = 0;
 	m_iFireRate = -1;
 
@@ -2024,6 +2026,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Load continuous and passthrough
 
 	m_iContinuous = pDesc->GetAttributeInteger(BEAM_CONTINUOUS_ATTRIB);
+	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 1, -1, 0);
+
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))
 		{
 		//	In previous versions passthrough was a boolean value, so for backwards
@@ -2259,6 +2263,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_pAmmoType = Src.m_pAmmoType;
     m_iFireType = Src.m_iFireType;
     m_iContinuous = Src.m_iContinuous;
+	m_iContinuousFireDelay = Src.m_iContinuousFireDelay;
 	m_iFireRate = Src.m_iFireRate;
 
 	m_fRelativisticSpeed = Src.m_fRelativisticSpeed;

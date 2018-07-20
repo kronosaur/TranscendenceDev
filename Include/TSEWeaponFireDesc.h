@@ -454,7 +454,8 @@ class CWeaponFireDesc
 		Metric GetAveParticleCount (void) const;
         Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
         inline int GetContinuous (void) const { return m_iContinuous; }
-        const DamageDesc &GetDamage (void) const { return m_Damage; }
+		inline int GetContinuousFireDelay (void) const { return m_iContinuousFireDelay; }
+		const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
 		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
         inline Metric GetEffectiveRange (void) const { return m_rMaxEffectiveRange; }
@@ -549,6 +550,7 @@ class CWeaponFireDesc
 		FireTypes m_iFireType;				//	beam or missile
 		DamageDesc m_Damage;				//	Damage per shot
 		int m_iContinuous;					//	repeat for this number of frames
+		int m_iContinuousFireDelay;			//	Ticks between continuous fire shots
 		int m_iFireRate;					//	Ticks between shots (-1 = default to weapon fire rate)
 
 		Metric m_rMissileSpeed;				//	Speed of missile
