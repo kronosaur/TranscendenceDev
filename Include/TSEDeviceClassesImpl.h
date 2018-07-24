@@ -818,6 +818,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iRecoil;							//	0-7 (as per momentum damage)
 		int m_iFailureChance;					//	Chance of failure
 
+		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		bool m_bOmnidirectional;				//	Omnidirectional
 		bool m_bMIRV;							//	Each shot seeks an independent target
 		bool m_bReportAmmo;						//	Report count of ammo shot even if not a launcher
