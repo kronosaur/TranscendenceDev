@@ -1905,6 +1905,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'destNodeID\n"
 			"   'destStargateID\n"
 			"   'dockingPortCount\n"
+			"   'explored -> True if the player has docked with the station\n"
 			"   'hp\n"
 			"   'ignoreFriendlyFire\n"
 			"   'immutable\n"
@@ -2223,8 +2224,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"   'angry True|Nil|ticks\n"
 			"   'barrier True|Nil\n"
-			"   'ignoreFriendlyFire True|Nil\n"
+			"   'explored True|Nil\n"
 			"   'hp hitPoints\n"
+			"   'ignoreFriendlyFire True|Nil\n"
 			"   'immutable True|Nil\n"
 			"   'known True|Nil\n"
 			"   'maxHP hitPoints\n"

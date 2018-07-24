@@ -33,6 +33,7 @@
 #define PROPERTY_DEST_NODE_ID					CONSTLIT("destNodeID")
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
+#define PROPERTY_EXPLORED						CONSTLIT("explored")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
@@ -1521,6 +1522,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
+
+	else if (strEquals(sName, PROPERTY_EXPLORED))
+		return CC.CreateBool(m_fExplored);
 
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
 		return CC.CreateBool(!CanBlacklist());
@@ -4485,6 +4489,11 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_BARRIER))
 		{
 		m_fBlocksShips = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_EXPLORED))
+		{
+		m_fExplored = !pValue->IsNil();
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_IGNORE_FRIENDLY_FIRE))
