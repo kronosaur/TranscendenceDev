@@ -4273,8 +4273,11 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pObj == NULL)
 				return pCC->CreateNil();
 
+			CString sEvent = pArgs->GetElement(2)->GetStringValue();
+			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(3) : NULL);
+
 			ICCItem *pResult;
-			pType->FireObjCustomEvent(pArgs->GetElement(2)->GetStringValue(), pObj, &pResult);
+			pType->FireObjCustomEvent(sEvent, pObj, pData, &pResult);
 			return pResult;
 			}
 
