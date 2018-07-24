@@ -33,6 +33,8 @@ class ICCItemPtr
 
 		void Delete (void);
 
+		bool Load (const CString &sCode, CString *retsError);
+
 		void TakeHandoff (ICCItem *pPtr);
 		void TakeHandoff (ICCItemPtr &Src);
 

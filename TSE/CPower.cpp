@@ -18,12 +18,16 @@
 #define STR_A_CAUSE								CONSTLIT("aCause")
 #define STR_A_DESTROYER							CONSTLIT("aDestroyer")
 
-CPower::CPower (void) : 
-		m_pCode(NULL),
-		m_pOnShow(NULL),
-		m_pOnDestroyCheck(NULL),
-		m_pOnInvokedByPlayer(NULL),
-		m_pOnInvokedByNonPlayer(NULL)
+static char *CACHED_EVENTS[CPower::evtCount] =
+	{
+	"OnInvoke",
+	"OnShow",
+	"OnInvokedByPlayer",
+	"OnInvokedByNonPlayer",
+	"OnDestroyCheck",
+	};
+
+CPower::CPower (void)
 
 //	CPower constructor
 
@@ -35,22 +39,20 @@ CPower::~CPower (void)
 //	CPower destructor
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	}
 
-	if (m_pCode)
-		m_pCode->Discard(&CC);
+void CPower::InitOldStyleEvent (ECachedHandlers iEvent, ICCItem *pCode)
 
-	if (m_pOnShow)
-		m_pOnShow->Discard(&CC);
+//	InitOldStyleEvent
+//
+//	Initialize the event, if necessary.
 
-	if (m_pOnInvokedByPlayer)
-		m_pOnInvokedByPlayer->Discard(&CC);
-
-	if (m_pOnInvokedByNonPlayer)
-		m_pOnInvokedByNonPlayer->Discard(&CC);
-
-	if (m_pOnDestroyCheck)
-		m_pOnDestroyCheck->Discard(&CC);
+	{
+	if (m_CachedEvents[iEvent].pCode == NULL && pCode)
+		{
+		m_CachedEvents[iEvent].pCode = pCode;
+		m_CachedEvents[iEvent].pExtension = GetExtension();
+		}
 	}
 
 void CPower::Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
@@ -60,13 +62,16 @@ void CPower::Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 //	Invoke the power
 
 	{
-	CCodeChainCtx Ctx;
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtCode, &Event))
+		return;
 
-	Ctx.SetExtension(GetExtension());
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
 
-	ICCItem *pResult = Ctx.Run(GetCode());
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (retsError)
 		{
 		if (pResult->IsError())
@@ -74,8 +79,6 @@ void CPower::Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 		else
 			*retsError = NULL_STR;
 		}
-
-	Ctx.Discard(pResult);
 	}
 
 void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
@@ -85,57 +88,46 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 //	Invoke the power for a player
 
 	{
+	if (retsError) *retsError = NULL_STR;
+
 	CCodeChainCtx Ctx;
-
-	if (retsError)
-		*retsError = NULL_STR;
-
-	Ctx.SetExtension(GetExtension());
+	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
 
 	//	First handle the OnInvokedByPlayer check. If it is not defined, then skip it.
 
-	ICCItem *pResult;
-	ICCItem *pCode = GetOnInvokedByPlayer();
-	if (pCode)
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnInvokedByPlayer, &Event))
 		{
-		pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
-		bool bCancelInvocation = false;
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = pResult->GetStringValue();
 
-			bCancelInvocation = true;
+			//	Can't invoke
+
+			return;
 			}
 
 		//	If OnInvokedByPlayer returns Nil, then we do not invoke
 
 		else if (pResult->IsNil())
-			bCancelInvocation = true;
-
-		//	Continue?
-
-		Ctx.Discard(pResult);
-		if (bCancelInvocation)
 			return;
 		}
 
 	//	Invoke
 
-	pCode = GetCode();
-	if (pCode)
+	if (FindEventHandler(evtCode, &Event))
 		{
-		pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = pResult->GetStringValue();
 			}
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -146,57 +138,46 @@ void CPower::InvokeByNonPlayer(CSpaceObject *pSource, CSpaceObject *pTarget, CSt
 //	Invoke the power for a non-player
 
 	{
+	if (retsError) *retsError = NULL_STR;
+
 	CCodeChainCtx Ctx;
-
-	if (retsError)
-		*retsError = NULL_STR;
-
-	Ctx.SetExtension(GetExtension());
+	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
 
 	//	First handle the OnInvokedByNonPlayer check. If it is not defined, then skip it.
 
-	ICCItem *pResult;
-	ICCItem *pCode = GetOnInvokedByNonPlayer();
-	if (pCode)
+	SEventHandlerDesc Event;
+	if (FindEventHandler(evtOnInvokedByNonPlayer, &Event))
 		{
-		pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
-		bool bCancelInvocation = false;
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = pResult->GetStringValue();
 
-			bCancelInvocation = true;
+			//	Can't invoke
+
+			return;
 			}
 
 		//	If OnInvokedByNonPlayer returns Nil, then we do not invoke
 
 		else if (pResult->IsNil())
-			bCancelInvocation = true;
-
-		//	Continue?
-
-		Ctx.Discard(pResult);
-		if (bCancelInvocation)
 			return;
 		}
 
 	//	Invoke
 
-	pCode = GetCode();
-	if (pCode)
+	if (FindEventHandler(evtCode, &Event))
 		{
-		pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			if (retsError)
 				*retsError = pResult->GetStringValue();
 			}
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -207,7 +188,6 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 //	Create from XML
 
 	{
-	ALERROR error;
 	int i;
 
 	//	Load basic stuff
@@ -229,28 +209,28 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (strEquals(pBlock->GetTag(), INVOKE_TAG))
 			{
-			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pCode, &Ctx.sError))
-				return error;
+			if (!m_pCode.Load(pBlock->GetContentText(0), &Ctx.sError))
+				return ERR_FAIL;
 			}
 		else if (strEquals(pBlock->GetTag(), ON_SHOW_TAG))
 			{
-			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnShow, &Ctx.sError))
-				return error;
+			if (!m_pOnShow.Load(pBlock->GetContentText(0), &Ctx.sError))
+				return ERR_FAIL;
 			}
 		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_PLAYER_TAG))
 			{
-			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnInvokedByPlayer, &Ctx.sError))
-				return error;
+			if (!m_pOnInvokedByPlayer.Load(pBlock->GetContentText(0), &Ctx.sError))
+				return ERR_FAIL;
 			}
 		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_NON_PLAYER_TAG))
 			{
-			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnInvokedByNonPlayer, &Ctx.sError))
-				return error;
+			if (!m_pOnInvokedByNonPlayer.Load(pBlock->GetContentText(0), &Ctx.sError))
+				return ERR_FAIL;
 			}
 		else if (strEquals(pBlock->GetTag(), ON_DESTROY_CHECK_TAG))
 			{
-			if (error = LoadCodeBlock(pBlock->GetContentText(0), &m_pOnDestroyCheck, &Ctx.sError))
-				return error;
+			if (!m_pOnDestroyCheck.Load(pBlock->GetContentText(0), &Ctx.sError))
+				return ERR_FAIL;
 			}
 		else if (IsValidLoadXML(pBlock->GetTag()))
 			;
@@ -265,6 +245,30 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
+ALERROR CPower::OnBindDesign (SDesignLoadCtx &Ctx)
+
+//	OnBindDesign
+//
+//	Bind design.
+
+	{
+	//	Init from standard events
+
+	InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
+
+	//	See if we have old-style events.
+
+	InitOldStyleEvent(evtCode, m_pCode);
+	InitOldStyleEvent(evtOnShow, m_pOnShow);
+	InitOldStyleEvent(evtOnInvokedByPlayer, m_pOnInvokedByPlayer);
+	InitOldStyleEvent(evtOnInvokedByNonPlayer, m_pOnInvokedByNonPlayer);
+	InitOldStyleEvent(evtOnDestroyCheck, m_pOnDestroyCheck);
+
+	//	Done
+
+	return NOERROR;
+	}
+
 bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, const CDamageSource &Attacker)
 
 //	OnDestroyCheck
@@ -272,28 +276,22 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 //	Returns TRUE if ship can be destroyed; otherwise, FALSE
 
 	{
-	if (m_pOnDestroyCheck)
-		{
-		CCodeChainCtx Ctx;
-
-		//	Set up parameters
-
-		Ctx.SetExtension(GetExtension());
-		CSpaceObject *pAttacker = Attacker.GetObj();
-		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineSpaceObject(STR_A_DESTROYER, pAttacker);
-		Ctx.DefineInteger(STR_A_CAUSE, iCause);
-
-		//	Invoke
-
-		ICCItem *pResult = Ctx.Run(m_pOnDestroyCheck);
-		bool bResult = (pResult->IsNil() ? false : true);
-		Ctx.Discard(pResult);
-
-		return bResult;
-		}
-	else
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnDestroyCheck, &Event))
 		return true;
+
+	//	Set up parameters
+
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.DefineSpaceObject(STR_A_DESTROYER, Attacker.GetObj());
+	Ctx.DefineInteger(STR_A_CAUSE, iCause);
+
+	//	Invoke
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	return (pResult->IsNil() ? false : true);
 	}
 
 bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
@@ -303,29 +301,25 @@ bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 //	Returns TRUE if we should show this power on the menu
 
 	{
-	ICCItem *pCode = GetOnShow();
-	if (pCode)
-		{
-		CCodeChainCtx Ctx;
-
-		Ctx.SetExtension(GetExtension());
-		Ctx.SaveAndDefineSourceVar(pSource);
-		Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
-
-		ICCItem *pResult = Ctx.Run(GetOnShow());
-		if (retsError)
-			{
-			if (pResult->IsError())
-				*retsError = pResult->GetStringValue();
-			else
-				*retsError = NULL_STR;
-			}
-
-		bool bResult = !pResult->IsNil();
-		Ctx.Discard(pResult);
-
-		return bResult;
-		}
-	else
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(evtOnShow, &Event))
 		return true;
+
+	//	Set up parameters
+
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(pSource);
+	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (retsError)
+		{
+		if (pResult->IsError())
+			*retsError = pResult->GetStringValue();
+		else
+			*retsError = NULL_STR;
+		}
+
+	return !pResult->IsNil();
 	}

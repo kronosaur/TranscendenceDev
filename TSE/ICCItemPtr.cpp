@@ -58,6 +58,39 @@ void ICCItemPtr::Delete (void)
 	m_pPtr = NULL;
 	}
 
+bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
+
+//	Load
+//
+//	Load from string.
+
+	{
+	//	Null case
+
+	if (sCode.IsBlank())
+		{
+		Delete();
+		return true;
+		}
+
+	//	Compile the code
+
+	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode, 0, NULL);
+	if (pCode->IsError())
+		{
+		if (retsError)
+			*retsError = pCode->GetStringValue();
+
+		pCode->Discard(&g_pUniverse->GetCC());
+		return false;
+		}
+
+	//	Done
+
+	TakeHandoff(pCode);
+	return true;
+	}
+
 void ICCItemPtr::TakeHandoff (ICCItem *pPtr)
 	{
 	if (m_pPtr)

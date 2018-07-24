@@ -1011,7 +1011,7 @@ int CDesignType::FireGetGlobalResurrectPotential (void)
 	return iResult;
 	}
 
-void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult)
+void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData, ICCItem **retpResult)
 
 //	FireObjCustomEvent
 //
@@ -1023,8 +1023,9 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 	SEventHandlerDesc Event;
 	if (FindEventHandler(sEvent, &Event))
 		{
-		Ctx.SaveAndDefineSourceVar(pObj);
 		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(pObj);
+		Ctx.SaveAndDefineDataVar(pData);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())

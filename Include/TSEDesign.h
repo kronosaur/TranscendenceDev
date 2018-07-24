@@ -239,7 +239,7 @@ class CDesignType
 		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
 		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
-		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem **retpResult);
+		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		ALERROR FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError);
 		void FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalIntroCommand (const SEventHandlerDesc &Event, const CString &sCommand);

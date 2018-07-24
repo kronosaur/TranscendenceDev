@@ -254,9 +254,9 @@ void CCodeChainCtx::DefineContainingType (CDesignType *pType)
 //
 //	Defines an containing type
 
-{
+	{
 	DefineInteger(CONSTLIT(STR_G_TYPE), pType->GetUNID());
-}
+	}
 
 void CCodeChainCtx::DefineContainingType (const CItem &Item)
 
