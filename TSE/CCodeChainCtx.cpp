@@ -33,6 +33,7 @@ CCodeChainCtx::CCodeChainCtx (void) :
 		m_pOldSource(NULL),
 		m_pOldItem (NULL),
 		m_pOldOverlayID(NULL),
+		m_pOldType(NULL),
 		m_bRestoreGlobalDefineHook(false),
 		m_pOldGlobalDefineHook(NULL)
 
@@ -255,7 +256,7 @@ void CCodeChainCtx::DefineContainingType (CDesignType *pType)
 //	Defines an containing type
 
 	{
-	DefineInteger(CONSTLIT(STR_G_TYPE), pType->GetUNID());
+	SaveAndDefineType(pType ? pType->GetUNID() : 0);
 	}
 
 void CCodeChainCtx::DefineContainingType (const CItem &Item)
@@ -265,7 +266,7 @@ void CCodeChainCtx::DefineContainingType (const CItem &Item)
 //	Defines an containing type
 
 	{
-	DefineInteger(CONSTLIT(STR_G_TYPE), Item.GetType()->GetUNID());
+	DefineContainingType(Item.GetType());
 	}
 
 void CCodeChainCtx::DefineContainingType (const COverlay *pOverlay)
@@ -275,7 +276,7 @@ void CCodeChainCtx::DefineContainingType (const COverlay *pOverlay)
 //	Defines an containing type
 
 	{
-	DefineInteger(CONSTLIT(STR_G_TYPE), pOverlay->GetType()->GetUNID());
+	DefineContainingType(pOverlay->GetType());
 	}
 
 void CCodeChainCtx::DefineContainingType (CSpaceObject *pObj)
@@ -462,6 +463,13 @@ void CCodeChainCtx::RestoreVars (void)
 		m_CC.DefineGlobal(STR_A_OVERLAY_ID, m_pOldOverlayID);
 		m_pOldOverlayID->Discard(&m_CC);
 		m_pOldOverlayID = NULL;
+		}
+
+	if (m_pOldType)
+		{
+		m_CC.DefineGlobal(STR_G_TYPE, m_pOldType);
+		m_pOldType->Discard(&m_CC);
+		m_pOldType = NULL;
 		}
 	}
 
@@ -675,6 +683,22 @@ void CCodeChainCtx::SaveAndDefineSovereignVar (CSovereign *pSource)
 		m_pOldSource = m_CC.LookupGlobal(STR_G_SOURCE, this);
 
 	DefineInteger(STR_G_SOURCE, pSource->GetUNID());
+	}
+
+void CCodeChainCtx::SaveAndDefineType (DWORD dwUNID)
+
+//	SaveAndDefineType
+//
+//	Saves and defines gType
+
+	{
+	if (m_pOldType == NULL)
+		m_pOldType = m_CC.LookupGlobal(STR_G_TYPE, this);
+
+	if (dwUNID)
+		DefineInteger(STR_G_TYPE, dwUNID);
+	else
+		m_CC.DefineGlobal(STR_G_TYPE, m_CC.CreateNil());
 	}
 
 void CCodeChainCtx::SaveItemVar (void)

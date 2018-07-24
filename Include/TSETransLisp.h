@@ -136,6 +136,7 @@ class CCodeChainCtx
 		void SaveAndDefineOverlayID (DWORD dwID);
 		void SaveAndDefineSourceVar (CSpaceObject *pSource);
 		void SaveAndDefineSovereignVar (CSovereign *pSource);
+		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);
 		void SaveSourceVar (void);
 		inline void SetDockScreenList (IListData *pListData) { m_pListData = pListData; }
@@ -184,6 +185,7 @@ class CCodeChainCtx
 		ICCItem *m_pOldSource;
 		ICCItem *m_pOldItem;
 		ICCItem *m_pOldOverlayID;
+		ICCItem *m_pOldType;
 
 		bool m_bRestoreGlobalDefineHook;
 		IItemTransform *m_pOldGlobalDefineHook;
