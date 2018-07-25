@@ -7265,6 +7265,9 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	if (FindEventHandler(CDesignType::evtOnUpdate)
 			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
 			&& (pType = GetType())
+			//	Skip missiles, because we can't tell the difference between OnUpdate
+			//	for the item and OnUpdate for the missile object.
+			&& pType->GetType() != designItemType
 			&& pType->GetAPIVersion() >= 31)
 		{
 		FireOnUpdate();
