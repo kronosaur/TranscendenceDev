@@ -506,6 +506,7 @@ class COverlay
 		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
 		inline void SetRotation (int iRotation) { m_iRotation = iRotation; }
 		inline bool Spins (CSpaceObject *pSource) const { return m_pType->Spins(); }
+		inline bool StopsTime (const CSpaceObject *pSource) const { return m_pType->StopsTime(); }
 		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -592,6 +593,7 @@ class COverlayList
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
         ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
 		inline bool IsEmpty (void) { return (m_pFirst == NULL); }
+		bool IsTimeStopped (const CSpaceObject *pSource) const;
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -1054,7 +1056,7 @@ class CSpaceObject : public CObject
 		inline bool IsShowingHighlight (void) { return m_fShowHighlight; }
 		bool IsStargateInRange (Metric rMaxRange);
 		inline bool IsSubscribedToEvents (CSpaceObject *pObj) { return m_SubscribedObjs.FindObj(pObj); }
-		inline bool IsTimeStopped (void) const { return m_fTimeStop; }
+		bool IsTimeStopped (void) const;
 		bool IsUnderAttack (void);
 		inline void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);

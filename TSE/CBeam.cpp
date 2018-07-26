@@ -224,22 +224,22 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	if (m_pHit)
 		{
+		//	Old-style bonus
+
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		pEnhancements->InsertHPBonus(m_iBonus);
+
 		//	Tell the object hit that it has been damaged
 
-		SDamageCtx Ctx;
-		Ctx.pObj = m_pHit;
-		Ctx.pDesc = m_pDesc;
-		Ctx.Damage = m_pDesc->GetDamage();
-		Ctx.Damage.AddBonus(m_iBonus);
-		Ctx.Damage.SetCause(m_Source.GetCause());
-		if (m_Source.IsAutomatedWeapon())
-			Ctx.Damage.SetAutomatedWeapon();
-		Ctx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
-		Ctx.vHitPos = m_vPaintTo;
-		Ctx.pCause = this;
-		Ctx.Attacker = m_Source;
+		SDamageCtx DamageCtx(m_pHit,
+				m_pDesc,
+				pEnhancements,
+				m_Source,
+				this,
+				AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
+				m_vPaintTo);
 
-		EDamageResults result = m_pHit->Damage(Ctx);
+		EDamageResults result = m_pHit->Damage(DamageCtx);
 
 		//	Set the beam to destroy itself after a hit
 

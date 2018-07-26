@@ -1831,9 +1831,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Roll for damage
+	//	Short-circuit
 
-	Ctx.iDamage = Ctx.Damage.RollDamage();
 	if (Ctx.iDamage == 0)
 		{
 		if (IsImmutable())
@@ -2083,7 +2082,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		//	If this armor section reflects this kind of damage then
 		//	send the damage on
 
-		if (Ctx.bReflect && Ctx.pCause)
+		if (Ctx.IsShotReflected() && Ctx.pCause)
 			{
 			Ctx.pCause->CreateReflection(Ctx.vHitPos, (Ctx.iDirection + 120 + mathRandom(0, 120)) % 360);
 			return damageNoDamage;

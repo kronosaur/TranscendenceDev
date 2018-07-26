@@ -24,6 +24,7 @@
 #define SHOW_ON_MAP_ATTRIB						CONSTLIT("showOnMap")
 #define SPIN_ATTRIB								CONSTLIT("spin")
 #define STYLE_ATTRIB							CONSTLIT("style")
+#define TIME_STOP_ATTRIB						CONSTLIT("timeStop")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 #define BONUS_ADJ_ATTRIB						CONSTLIT("weaponBonusAdj")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
@@ -313,6 +314,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fParalyzeShip = pDesc->GetAttributeBool(PARALYZE_ATTRIB);
 	m_fDisableShipScreen = pDesc->GetAttributeBool(DISABLE_SHIP_SCREEN_ATTRIB);
 	m_fSpinShip = pDesc->GetAttributeBool(SPIN_ATTRIB);
+	m_fTimeStop = pDesc->GetAttributeBool(TIME_STOP_ATTRIB);
 
 	int iDrag;
 	if (pDesc->FindAttributeInteger(DRAG_ATTRIB, &iDrag))

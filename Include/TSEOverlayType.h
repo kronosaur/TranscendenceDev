@@ -39,6 +39,7 @@ class COverlayType : public CDesignType
 		inline bool Paralyzes (void) const { return m_fParalyzeShip; }
 		inline bool RotatesWithShip (void) { return m_fRotateWithShip; }
 		inline bool Spins (void) const { return m_fSpinShip; }
+		inline bool StopsTime (void) const { return m_fTimeStop; }
 
 		//	CDesignType overrides
 		static COverlayType *AsType(CDesignType *pType) { return ((pType && pType->GetType() == designOverlayType) ? (COverlayType *)pType : NULL); }
@@ -75,7 +76,7 @@ class COverlayType : public CDesignType
 		DWORD m_fSpinShip:1;					//	If TRUE, ship spins uncontrollably
 		DWORD m_fShowOnMap:1;					//	If TRUE, we show on the system map
 
-		DWORD m_fSpare1:1;
+		DWORD m_fTimeStop:1;					//	If TRUE, ship is time-stopped
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

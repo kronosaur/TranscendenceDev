@@ -361,20 +361,15 @@ void CMissile::CreateFragments (const CVector &vPos)
 
 	//	Create the hit effect
 
-	SDamageCtx Ctx;
-	Ctx.pObj = NULL;
-	Ctx.pDesc = m_pDesc;
-	Ctx.Damage = m_pDesc->GetDamage();
-	Ctx.Damage.AddEnhancements(m_pEnhancements);
-	Ctx.Damage.SetCause(m_Source.GetCause());
-	if (m_Source.IsAutomatedWeapon())
-		Ctx.Damage.SetAutomatedWeapon();
-	Ctx.iDirection = mathRandom(0, 359);
-	Ctx.vHitPos = vPos;
-	Ctx.pCause = this;
-	Ctx.Attacker = m_Source;
+	SDamageCtx DamageCtx(NULL,
+			m_pDesc,
+			m_pEnhancements,
+			m_Source,
+			this,
+			mathRandom(0, 359),
+			vPos);
 
-	m_pDesc->CreateHitEffect(GetSystem(), Ctx);
+	m_pDesc->CreateHitEffect(GetSystem(), DamageCtx);
 
 	DEBUG_CATCH
 	}
@@ -643,10 +638,9 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iSectHit = -1;
 
-	//	Compute damage
+	//	Short-circuit
 
 	bool bDestroy = false;
-	Ctx.iDamage = Ctx.Damage.RollDamage();
 	if (Ctx.iDamage == 0)
 		return damageNoDamage;
 
@@ -1279,18 +1273,13 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 			else if (m_iHitDir != -1)
 				{
-				SDamageCtx DamageCtx;
-				DamageCtx.pObj = m_pHit;
-				DamageCtx.pDesc = m_pDesc;
-				DamageCtx.Damage = m_pDesc->GetDamage();
-				DamageCtx.Damage.AddEnhancements(m_pEnhancements);
-				DamageCtx.Damage.SetCause(m_Source.GetCause());
-				if (m_Source.IsAutomatedWeapon())
-					DamageCtx.Damage.SetAutomatedWeapon();
-				DamageCtx.iDirection = (m_iHitDir + 360 + mathRandom(0, 30) - 15) % 360;
-				DamageCtx.vHitPos = m_vHitPos;
-				DamageCtx.pCause = this;
-				DamageCtx.Attacker = m_Source;
+				SDamageCtx DamageCtx(m_pHit,
+						m_pDesc,
+						m_pEnhancements,
+						m_Source,
+						this,
+						AngleMod(m_iHitDir + mathRandom(0, 30) - 15),
+						m_vHitPos);
 
 				EDamageResults result = m_pHit->Damage(DamageCtx);
 

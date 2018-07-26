@@ -224,18 +224,13 @@ EDamageResults CContinuousBeam::DoDamage (CSpaceObject *pHit, const CVector &vHi
 //	Do damage to the given object
 
 	{
-	SDamageCtx DamageCtx;
-	DamageCtx.pObj = pHit;
-	DamageCtx.pDesc = m_pDesc;
-	DamageCtx.Damage = m_pDesc->GetDamage();
-	DamageCtx.Damage.AddEnhancements(m_pEnhancements);
-	DamageCtx.Damage.SetCause(m_Source.GetCause());
-	if (m_Source.IsAutomatedWeapon())
-		DamageCtx.Damage.SetAutomatedWeapon();
-	DamageCtx.iDirection = AngleMod(iHitDir + mathRandom(0, 30) - 15);
-	DamageCtx.vHitPos = vHitPos;
-	DamageCtx.pCause = this;
-	DamageCtx.Attacker = m_Source;
+	SDamageCtx DamageCtx(pHit,
+			m_pDesc,
+			m_pEnhancements,
+			m_Source,
+			this,
+			AngleMod(iHitDir + mathRandom(0, 30) - 15),
+			vHitPos);
 
 	return pHit->Damage(DamageCtx);
 	}

@@ -134,6 +134,10 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+shield penetrate"), true));
 					break;
 
+				case specialTimeStop:
+					retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+time stop"), true));
+					break;
+
 				case specialWMD:
 					retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("+WMD %d"), DamageDesc::GetMassDestructionLevelFromValue(iLevel))));
 					break;
@@ -1712,6 +1716,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			case specialShatter:
 			case specialShieldDisrupt:
 			case specialShieldPenetrator:
+			case specialTimeStop:
 			case specialWMD:
 				{
 				if (bDisadvantage)

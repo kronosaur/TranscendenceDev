@@ -1039,7 +1039,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		CCCtx.DefineInteger(CONSTLIT("aShieldHP"), Ctx.iHPLeft);
 		CCCtx.DefineInteger(CONSTLIT("aShieldDamageHP"), Ctx.iShieldDamage);
 		CCCtx.DefineInteger(CONSTLIT("aArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
-		if (Ctx.bReflect)
+		if (Ctx.IsShotReflected())
 			{
 			CCCtx.DefineString(CONSTLIT("aShieldReflect"), STR_SHIELD_REFLECT);
 			CCCtx.DefineInteger(CONSTLIT("aOriginalShieldDamageHP"), Ctx.iOriginalShieldDamage);
@@ -1078,16 +1078,16 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 				{
 				if (strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT))
 					{
-					Ctx.bReflect = true;
+					Ctx.SetShotReflected(true);
 					Ctx.iAbsorb = Ctx.iDamage;
 					Ctx.iShieldDamage = 0;
 					}
 				else
 					{
 					Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(0)->GetIntegerValue(), Ctx.iHPLeft));
-					if (Ctx.bReflect)
+					if (Ctx.IsShotReflected())
 						{
-						Ctx.bReflect = false;
+						Ctx.SetShotReflected(false);
 						Ctx.iAbsorb = Ctx.iOriginalAbsorb;
 						}
 					}
@@ -1097,7 +1097,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 
 			else if (pResult->GetCount() == 2)
 				{
-				Ctx.bReflect = false;
+				Ctx.SetShotReflected(false);
 				Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(0)->GetIntegerValue(), Ctx.iHPLeft));
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(1)->GetIntegerValue()));
 				}
@@ -1106,7 +1106,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 
 			else
 				{
-				Ctx.bReflect = strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT);
+				Ctx.SetShotReflected(strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT));
 				Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(1)->GetIntegerValue(), Ctx.iHPLeft));
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(2)->GetIntegerValue()));
 				}
@@ -1120,7 +1120,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 
 		else if (strEquals(pResult->GetStringValue(), STR_SHIELD_REFLECT))
 			{
-			Ctx.bReflect = true;
+			Ctx.SetShotReflected(true);
 			Ctx.iAbsorb = Ctx.iDamage;
 			Ctx.iShieldDamage = 0;
 			bResult = false;

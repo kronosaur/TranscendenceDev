@@ -233,7 +233,8 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		//	See if we reflect
 
-		if (Ctx.bReflect = (mathRandom(1, 100) <= iChance))
+		Ctx.SetShotReflected(mathRandom(1, 100) <= iChance);
+		if (Ctx.IsShotReflected())
 			{
 			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
 			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
@@ -242,13 +243,13 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			}
 		}
 	else
-		Ctx.bReflect = false;
+		Ctx.SetShotReflected(false);
 
 	//	If this damage is a shield penetrator, then we either penetrate the 
 	//	shields, or reflect.
 
 	int iPenetrateAdj = Ctx.Damage.GetShieldPenetratorAdj();
-	if (iPenetrateAdj > 0 && !Ctx.bReflect)
+	if (iPenetrateAdj > 0 && !Ctx.IsShotReflected())
 		{
 		//	We compare the HP of damage done to the shields vs. the HP left
 		//	on the shields. Bigger values means greater chance of penetrating.
@@ -283,7 +284,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 		else
 			{
-			Ctx.bReflect = true;
+			Ctx.SetShotReflected(true);
 			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
 			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
 			Ctx.iAbsorb = Ctx.iDamage;
@@ -309,7 +310,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	If we reflect, then create the reflection
 
-	if (Ctx.bReflect)
+	if (Ctx.IsShotReflected())
 		{
 		int iDirection;
 
@@ -335,7 +336,7 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	Create shield effect
 
-	if ((Ctx.iAbsorb || Ctx.bReflect)
+	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
 			&& m_pHitEffect
 			&& !Ctx.bNoHitEffect)
 		{
@@ -956,7 +957,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		CCCtx.DefineInteger(CONSTLIT("aShieldHP"), Ctx.iHPLeft);
 		CCCtx.DefineInteger(CONSTLIT("aShieldDamageHP"), Ctx.iShieldDamage);
 		CCCtx.DefineInteger(CONSTLIT("aArmorDamageHP"), Ctx.iDamage - Ctx.iAbsorb);
-		if (Ctx.bReflect)
+		if (Ctx.IsShotReflected())
 			{
 			CCCtx.DefineString(CONSTLIT("aShieldReflect"), STR_SHIELD_REFLECT);
 			CCCtx.DefineInteger(CONSTLIT("aOriginalShieldDamageHP"), Ctx.iOriginalShieldDamage);
@@ -991,16 +992,16 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 				{
 				if (strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT))
 					{
-					Ctx.bReflect = true;
+					Ctx.SetShotReflected(true);
 					Ctx.iAbsorb = Ctx.iDamage;
 					Ctx.iShieldDamage = 0;
 					}
 				else
 					{
 					Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(0)->GetIntegerValue(), Ctx.iHPLeft));
-					if (Ctx.bReflect)
+					if (Ctx.IsShotReflected())
 						{
-						Ctx.bReflect = false;
+						Ctx.SetShotReflected(false);
 						Ctx.iAbsorb = Ctx.iOriginalAbsorb;
 						}
 					}
@@ -1010,7 +1011,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 			else if (pResult->GetCount() == 2)
 				{
-				Ctx.bReflect = false;
+				Ctx.SetShotReflected(false);
 				Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(0)->GetIntegerValue(), Ctx.iHPLeft));
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(1)->GetIntegerValue()));
 				}
@@ -1019,7 +1020,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 			else
 				{
-				Ctx.bReflect = strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT);
+				Ctx.SetShotReflected(strEquals(pResult->GetElement(0)->GetStringValue(), STR_SHIELD_REFLECT));
 				Ctx.iShieldDamage = Max(0, Min(pResult->GetElement(1)->GetIntegerValue(), Ctx.iHPLeft));
 				Ctx.iAbsorb = Max(0, Ctx.iDamage - Max(0, pResult->GetElement(2)->GetIntegerValue()));
 				}

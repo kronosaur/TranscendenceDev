@@ -29,6 +29,8 @@ enum SpecialDamageTypes
 	specialArmor			= 13,
 	specialSensor			= 14,
 	specialShieldPenetrator	= 15,
+
+	specialTimeStop			= 16,
 	};
 
 class DamageDesc
@@ -68,6 +70,7 @@ class DamageDesc
 				m_SensorDamage(0),
 				m_ShieldDamage(0),
 				m_ArmorDamage(0),
+				m_TimeStopDamage(0),
 				m_WormholeDamage(0),
 				m_FuelDamage(0),
 				m_fNoSRSFlash(0),
@@ -80,7 +83,6 @@ class DamageDesc
 				m_dwSpare2(0)
 			{ }
 
-		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
 		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
@@ -121,6 +123,7 @@ class DamageDesc
 		inline int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
 		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
 		inline int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
+		inline int GetTimeStopDamageLevel (void) const { return (int)m_TimeStopDamage; }
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
@@ -130,6 +133,7 @@ class DamageDesc
         static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
+		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 
@@ -161,7 +165,7 @@ class DamageDesc
 
 		BYTE m_ShieldDamage;					//	Shield damage (level)	shield:level
 		BYTE m_ArmorDamage;						//	Armor damage (level)
-		BYTE m_Spare2;
+		BYTE m_TimeStopDamage;					//	Time stop (level)
 		BYTE m_Spare3;
 	};
 
@@ -184,81 +188,88 @@ enum EDamageResults
 
 struct SDamageCtx
 	{
-	SDamageCtx (void) :
-			pObj(NULL),
-			pDesc(NULL),
-			iDirection(-1),
-			pCause(NULL),
-			bNoHitEffect(false),
-			bIgnoreOverlays(false),
-			bIgnoreShields(false),
-			iDamage(0),
-			iSectHit(-1),
-			iOverlayHitDamage(0),
-			iShieldHitDamage(0),
-			iArmorHitDamage(0),
-			iHPLeft(0),
-			iAbsorb(0),
-			iShieldDamage(0),
-			iOriginalAbsorb(0),
-			iOriginalShieldDamage(0),
-			iArmorAbsorb(0),
-			iArmorDamage(0),
-			bBlind(false),
-			iBlindTime(0),
-			bDeviceDisrupt(false),
-			iDisruptTime(0),
-			bDeviceDamage(false),
-			bDisintegrate(false),
-			bParalyze(false),
-			iParalyzeTime(0),
-			bRadioactive(false),
-			bReflect(false),
-			bShatter(false)
-		{ }
+	public:
+		SDamageCtx (void) { }
+		SDamageCtx (CSpaceObject *pObjHitArg, 
+				CWeaponFireDesc *pDescArg, 
+				const CItemEnhancementStack *pEnhancementsArg, 
+				CDamageSource &AttackerArg, 
+				CSpaceObject *pCauseArg, 
+				int iDirectionArg, 
+				const CVector &vHitPosArg,
+				int iDamageArg = -1);
 
-	inline CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
+		inline void ClearTimeStop (void) { m_bTimeStop = false; }
+		inline int GetBlindTime (void) const { return m_iBlindTime; }
+		inline int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
+		inline CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
+		inline int GetParalyzedTime (void) const { return m_iParalyzeTime; }
+		inline bool IsBlinded (void) const { return m_bBlind; }
+		inline bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
+		inline bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
+		inline bool IsDisintegrated (void) const { return m_bDisintegrate; }
+		inline bool IsParalyzed (void) const { return m_bParalyze; }
+		inline bool IsRadioactive (void) const { return m_bRadioactive; }
+		inline bool IsShattered (void) const { return m_bShatter; }
+		inline bool IsShotReflected (void) const { return m_bReflect; }
+		inline bool IsTimeStopped (void) const { return m_bTimeStop; }
+		inline void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
+		inline void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
+		inline void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }
+		inline void SetDeviceDisrupted (bool bValue = true) { m_bDeviceDisrupt = bValue; }
+		inline void SetDeviceDisruptedTime (int iTime) { m_iDisruptTime = iTime; }
+		inline void SetDisintegrated (bool bValue = true) { m_bDisintegrate = bValue; }
+		inline void SetParalyzed (bool bValue = true) { m_bParalyze = bValue; }
+		inline void SetParalyzedTime (int iTime) { m_iParalyzeTime = iTime; }
+		inline void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
+		inline void SetShattered (bool bValue = true) { m_bShatter = bValue; }
+		inline void SetShotReflected (bool bValue = true) { m_bReflect = bValue; }
 
-	CSpaceObject *pObj;							//	Object hit
-	CWeaponFireDesc *pDesc;						//	WeaponFireDesc
-	DamageDesc Damage;							//	Damage
-	int iDirection;								//	Direction that hit came from
-	CVector vHitPos;							//	Hit at this position
-	CSpaceObject *pCause;						//	Object that directly caused the damage
-	CDamageSource Attacker;						//	Ultimate attacker
-	bool bNoHitEffect;							//	No hit effect
-	bool bIgnoreOverlays;						//	Start damage at shields
-	bool bIgnoreShields;						//	Start damage at armor
+		CSpaceObject *pObj = NULL;					//	Object hit
+		CWeaponFireDesc *pDesc = NULL;				//	WeaponFireDesc
+		DamageDesc Damage;							//	Damage
+		int iDirection = -1;						//	Direction that hit came from
+		CVector vHitPos;							//	Hit at this position
+		CSpaceObject *pCause = NULL;				//	Object that directly caused the damage
+		CDamageSource Attacker;						//	Ultimate attacker
+		bool bNoHitEffect = false;					//	No hit effect
+		bool bIgnoreOverlays = false;				//	Start damage at shields
+		bool bIgnoreShields = false;				//	Start damage at armor
 
-	int iDamage;								//	Damage hp
-	int iSectHit;								//	Armor section hit on object
+		int iDamage = 0;							//	Damage hp
+		int iSectHit = -1;							//	Armor section hit on object
 
-	//	These are some results
-	int iOverlayHitDamage;						//	HP that hit overlays
-	int iShieldHitDamage;						//	HP that hit shields
-	int iArmorHitDamage;						//	HP that hit armor
+		//	These are some results
+		int iOverlayHitDamage = 0;					//	HP that hit overlays
+		int iShieldHitDamage = 0;					//	HP that hit shields
+		int iArmorHitDamage = 0;					//	HP that hit armor
 
-	//	These are used within armor/shield processing
-	int iHPLeft;								//	HP left on shields (before damage)
-	int iAbsorb;								//	Damage absorbed by shields
-	int iShieldDamage;							//	Damage taken by shields
-	int iOriginalAbsorb;						//	Computed absorb value, if shot had not been reflected
-	int iOriginalShieldDamage;					//	Computed shield damage value, if shot had not been reflected
-	int iArmorAbsorb;							//	Damage absorbed by armor
-	int iArmorDamage;							//	Damage taken by armor
+		//	These are used within armor/shield processing
+		int iHPLeft = 0;							//	HP left on shields (before damage)
+		int iAbsorb = 0;							//	Damage absorbed by shields
+		int iShieldDamage = 0;						//	Damage taken by shields
+		int iOriginalAbsorb = 0;					//	Computed absorb value, if shot had not been reflected
+		int iOriginalShieldDamage = 0;				//	Computed shield damage value, if shot had not been reflected
+		int iArmorAbsorb = 0;						//	Damage absorbed by armor
+		int iArmorDamage = 0;						//	Damage taken by armor
 
-	//	Damage effects
-	bool bBlind;								//	If true, shot will blind the target
-	int iBlindTime;
-	bool bDeviceDisrupt;						//	If true, shot will disrupt devices
-	int iDisruptTime;
-	bool bDeviceDamage;							//	If true, shot will damage devices
-	bool bDisintegrate;							//	If true, shot will disintegrate target
-	bool bParalyze;								//	If true, shot will paralyze the target
-	int iParalyzeTime;
-	bool bRadioactive;							//	If true, shot will irradiate the target
-	bool bReflect;								//	If true, armor/shields reflected the shot
-	bool bShatter;								//	If true, shot will shatter the target
+	private:
+		void InitDamageEffects (const DamageDesc &DamageArg);
+
+		//	Damage effects
+
+		bool m_bBlind = false;						//	If true, shot will blind the target
+		int m_iBlindTime = 0;
+		bool m_bDeviceDisrupt = false;				//	If true, shot will disrupt devices
+		int m_iDisruptTime = 0;
+		bool m_bDeviceDamage = false;				//	If true, shot will damage devices
+		bool m_bDisintegrate = false;				//	If true, shot will disintegrate target
+		bool m_bParalyze = false;					//	If true, shot will paralyze the target
+		int m_iParalyzeTime = 0;
+		bool m_bRadioactive = false;				//	If true, shot will irradiate the target
+		bool m_bReflect = false;					//	If true, armor/shields reflected the shot
+		bool m_bShatter = false;					//	If true, shot will shatter the target
+		bool m_bTimeStop = false;					//	If TRUE, target will be stopped in time
 	};
 
 struct SDestroyCtx

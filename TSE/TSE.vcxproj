@@ -550,6 +550,7 @@
     <ClCompile Include="IElementGenerator.cpp" />
     <ClCompile Include="IListData.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
+    <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />

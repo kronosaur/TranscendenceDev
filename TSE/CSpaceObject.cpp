@@ -5292,6 +5292,27 @@ bool CSpaceObject::IsStargateInRange (Metric rMaxRange)
 	return false;
 	}
 
+bool CSpaceObject::IsTimeStopped (void) const
+
+//	IsTimeStopped
+//
+//	Returns TRUE if we're stopped.
+
+	{
+	if (m_fTimeStop)
+		return true;
+
+	//	See if any overlays has stopped time.
+
+	const COverlayList *pList = GetOverlays();
+	if (pList && pList->IsTimeStopped(this))
+		return true;
+
+	//	Not stopped
+
+	return false;
+	}
+
 bool CSpaceObject::IsUnderAttack (void)
 
 //	IsUnderAttack

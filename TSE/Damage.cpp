@@ -97,6 +97,8 @@ SSpecialDamageData SPECIAL_DAMAGE_DATA[] =
 		{	"sensor",			"damageSensor" },
 		{	"shieldPenetrate",	"damageShieldPenetrate" },
 
+		{	"timeStop",			"damageTimeStop" },
+
 		{	NULL,				NULL }
 	};
 
@@ -414,6 +416,9 @@ int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) co
 		case specialShieldPenetrator:
 			return ((dwFlags & flagSpecialAdj) ? GetShieldPenetratorAdj() : m_ShieldPenetratorAdj);
 
+		case specialTimeStop:
+			return m_TimeStopDamage;
+
 		case specialWMD:
             if (dwFlags & flagSpecialAdj)
                 return GetMassDestructionAdj();
@@ -496,6 +501,10 @@ void DamageDesc::SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel)
 
 		case specialShieldPenetrator:
 			m_ShieldPenetratorAdj = Max(0, Min(iLevel, MAX_INTENSITY));
+			break;
+
+		case specialTimeStop:
+			m_TimeStopDamage = Max(1, Min(iLevel, MAX_ITEM_LEVEL));
 			break;
 
 		case specialWMD:
@@ -622,6 +631,7 @@ ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 	m_SensorDamage = 0;
 	m_ShieldDamage = 0;
 	m_ArmorDamage = 0;
+	m_TimeStopDamage = 0;
 	m_WormholeDamage = 0;
 	m_FuelDamage = 0;
 	m_ShieldPenetratorAdj = 0;
@@ -726,6 +736,8 @@ ALERROR DamageDesc::LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, 
 			}
 		else if (strEquals(sType, GetSpecialDamageName(specialArmor)))
 			m_ArmorDamage = (BYTE)Max(1, Min(iCount, MAX_ITEM_LEVEL));
+		else if (strEquals(sType, GetSpecialDamageName(specialTimeStop)))
+			m_TimeStopDamage = (BYTE)Max(1, Min(iCount, MAX_ITEM_LEVEL));
 		else if (strEquals(sType, GetSpecialDamageName(specialWormhole)))
 			m_WormholeDamage = (DWORD)Min(iCount, MAX_INTENSITY);
 		else if (strEquals(sType, GetSpecialDamageName(specialFuel)))
@@ -930,6 +942,7 @@ void DamageDesc::ReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		m_ShieldDamage = (BYTE)(dwLoad & 0xff);
 		m_ArmorDamage = (BYTE)((dwLoad & 0xff00) >> 8);
+		m_TimeStopDamage = (BYTE)((dwLoad & 0xff0000) >> 16);
 		}
 	}
 
@@ -999,7 +1012,7 @@ void DamageDesc::WriteToStream (IWriteStream *pStream) const
 	dwSave |= m_ShatterDamage << 9;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	dwSave = (m_ArmorDamage << 8) | m_ShieldDamage;
+	dwSave = (m_TimeStopDamage << 16) | (m_ArmorDamage << 8) | m_ShieldDamage;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 	}
 
@@ -1093,9 +1106,9 @@ ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)
 	{
 	//	Short-circuit if we have no effects
 
-	if (!Ctx.bBlind && !Ctx.bDeviceDamage && !Ctx.bDeviceDisrupt && !Ctx.bDisintegrate
-			&& !Ctx.bParalyze && !Ctx.bRadioactive && !Ctx.bReflect
-			&& !Ctx.bShatter)
+	if (!Ctx.IsBlinded() && !Ctx.IsDeviceDamaged() && !Ctx.IsDeviceDisrupted() && !Ctx.IsDisintegrated()
+			&& !Ctx.IsParalyzed() && !Ctx.IsRadioactive() && !Ctx.IsShotReflected()
+			&& !Ctx.IsShattered())
 		return CC.CreateNil();
 
 	//	Create a list to hold the result
@@ -1109,28 +1122,28 @@ ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)
 
 	//	Add effects
 
-	if (Ctx.bBlind)
-		AddEffectItem(CC, pList, SPECIAL_DAMAGE_BLINDING, Ctx.iBlindTime);
+	if (Ctx.IsBlinded())
+		AddEffectItem(CC, pList, SPECIAL_DAMAGE_BLINDING, Ctx.GetBlindTime());
 
-	if (Ctx.bDeviceDamage)
+	if (Ctx.IsDeviceDamaged())
 		AddEffectItem(CC, pList, SPECIAL_DAMAGE_DEVICE);
 
-	if (Ctx.bDeviceDisrupt)
-		AddEffectItem(CC, pList, SPECIAL_DAMAGE_DEVICE_DISRUPT, Ctx.iDisruptTime);
+	if (Ctx.IsDeviceDisrupted())
+		AddEffectItem(CC, pList, SPECIAL_DAMAGE_DEVICE_DISRUPT, Ctx.GetDeviceDisruptTime());
 
-	if (Ctx.bDisintegrate)
+	if (Ctx.IsDisintegrated())
 		AddEffectItem(CC, pList, SPECIAL_DAMAGE_DISINTEGRATION);
 
-	if (Ctx.bParalyze)
-		AddEffectItem(CC, pList, SPECIAL_DAMAGE_EMP, Ctx.iParalyzeTime);
+	if (Ctx.IsParalyzed())
+		AddEffectItem(CC, pList, SPECIAL_DAMAGE_EMP, Ctx.GetParalyzedTime());
 
-	if (Ctx.bRadioactive)
+	if (Ctx.IsRadioactive())
 		AddEffectItem(CC, pList, SPECIAL_DAMAGE_RADIATION);
 
-	if (Ctx.bReflect)
+	if (Ctx.IsShotReflected())
 		AddEffectItem(CC, pList, SPECIAL_DAMAGE_REFLECT);
 
-	if (Ctx.bShatter)
+	if (Ctx.IsShattered())
 		AddEffectItem(CC, pList, SPECIAL_DAMAGE_SHATTER);
 
 	return pList;
@@ -1159,14 +1172,14 @@ void LoadDamageEffectsFromItem (ICCItem *pItem, SDamageCtx &Ctx)
 	//	Initialize Ctx to defaults
 
 	Ctx.iDamage = 0;
-	Ctx.bBlind = false;
-	Ctx.bDeviceDamage = false;
-	Ctx.bDeviceDisrupt = false;
-	Ctx.bDisintegrate = false;
-	Ctx.bParalyze = false;
-	Ctx.bRadioactive = false;
-	Ctx.bReflect = false;
-	Ctx.bShatter = false;
+	Ctx.SetBlinded(false);
+	Ctx.SetDeviceDamaged(false);
+	Ctx.SetDeviceDisrupted(false);
+	Ctx.SetDisintegrated(false);
+	Ctx.SetParalyzed(false);
+	Ctx.SetRadioactive(false);
+	Ctx.SetShotReflected(false);
+	Ctx.SetShattered(false);
 
 	//	Keep track of whether we found normal damage or not
 	//	so that we don't keep looking (to save time)
@@ -1196,37 +1209,37 @@ void LoadDamageEffectsFromItem (ICCItem *pItem, SDamageCtx &Ctx)
 			}
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_BLINDING))
 			{
-			Ctx.bBlind = true;
+			Ctx.SetBlinded(true);
 			if (pEffect->GetCount() >= 2)
-				Ctx.iBlindTime = Max(0, pEffect->GetElement(1)->GetIntegerValue());
+				Ctx.SetBlindedTime(Max(0, pEffect->GetElement(1)->GetIntegerValue()));
 			else
-				Ctx.iBlindTime = DEFAULT_BLINDING_TIME;
+				Ctx.SetBlindedTime(DEFAULT_BLINDING_TIME);
 			}
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_DEVICE))
-			Ctx.bDeviceDamage = true;
+			Ctx.SetDeviceDamaged(true);
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_DEVICE_DISRUPT))
 			{
-			Ctx.bDeviceDisrupt = true;
+			Ctx.SetDeviceDisrupted(true);
 			if (pEffect->GetCount() >= 2)
-				Ctx.iDisruptTime = Max(0, pEffect->GetElement(1)->GetIntegerValue());
+				Ctx.SetDeviceDisruptedTime(Max(0, pEffect->GetElement(1)->GetIntegerValue()));
 			else
-				Ctx.iDisruptTime = DEFAULT_DEVICE_DISRUPT_TIME;
+				Ctx.SetDeviceDisruptedTime(DEFAULT_DEVICE_DISRUPT_TIME);
 			}
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_DISINTEGRATION))
-			Ctx.bDisintegrate = true;
+			Ctx.SetDisintegrated(true);
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_EMP))
 			{
-			Ctx.bParalyze = true;
+			Ctx.SetParalyzed(true);
 			if (pEffect->GetCount() >= 2)
-				Ctx.iParalyzeTime = Max(0, pEffect->GetElement(1)->GetIntegerValue());
+				Ctx.SetParalyzedTime(Max(0, pEffect->GetElement(1)->GetIntegerValue()));
 			else
-				Ctx.iParalyzeTime = DEFAULT_EMP_TIME;
+				Ctx.SetParalyzedTime(DEFAULT_EMP_TIME);
 			}
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_RADIATION))
-			Ctx.bRadioactive = true;
+			Ctx.SetRadioactive(true);
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_REFLECT))
-			Ctx.bReflect = true;
+			Ctx.SetShotReflected(true);
 		else if (strEquals(sDamage, SPECIAL_DAMAGE_SHATTER))
-			Ctx.bShatter = true;
+			Ctx.SetShattered(true);
 		}
 	}

@@ -4352,9 +4352,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	int i;
 
-	//	Roll for damage
+	//	Short-circuit
 
-	Ctx.iDamage = Ctx.Damage.RollDamage();
 	if (Ctx.iDamage == 0)
 		return damageNoDamage;
 

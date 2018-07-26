@@ -166,6 +166,7 @@ const Metric BALANCE_SHIELD_LEVEL_FACTOR =      10;         //  Bonus to balance
 const Metric BALANCE_ARMOR_LEVEL_FACTOR =       20;         //  Bonus to balance proportional to armor damage level
 const Metric BALANCE_MINING_FACTOR =            0.1;        //  Bonus to balance for each % of mining adj
 const Metric BALANCE_WMD_FACTOR =               0.5;        //  Bonust to balance for each % of WMD
+const Metric BALANCE_TIME_STOP_LEVEL_FACTOR =	50;         //  Bonus to balance proportional to time stop level
 
 const Metric PARTICLE_CLOUD_DAMAGE_FACTOR =		0.75;
 const Metric SHOCKWAVE_DAMAGE_FACTOR =			4.0;
@@ -603,6 +604,15 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
         int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
         retBalance.rArmor = BALANCE_ARMOR_LEVEL_FACTOR * iEffectLevel;
         retBalance.rBalance += retBalance.rArmor;
+        }
+
+	//	Time stop
+
+    if (iDamage = pShot->GetSpecialDamage(specialTimeStop))
+        {
+        int iEffectLevel = Max(0, 3 + iDamage - retBalance.iLevel);
+        retBalance.rTimeStop = BALANCE_TIME_STOP_LEVEL_FACTOR * iEffectLevel;
+        retBalance.rBalance += retBalance.rTimeStop;
         }
 
     //  Mining
@@ -1622,19 +1632,20 @@ void CWeaponClass::FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 	if (pDevice == NULL)
 		return;
 
-	SDamageCtx Ctx;
-	Ctx.pObj = pSource;
-	Ctx.pDesc = pShot;
-	Ctx.Damage = pShot->GetDamage();
-	Ctx.Damage.SetCause(killedByWeaponMalfunction);
-	Ctx.iDirection = (pDevice->GetPosAngle() + 360 + mathRandom(0, 30) - 15) % 360;
-	Ctx.vHitPos = pDevice->GetPos(pSource);
-	Ctx.pCause = pSource;
-	Ctx.Attacker = CDamageSource(pSource, killedByWeaponMalfunction);
-	Ctx.bIgnoreOverlays = true;
-	Ctx.bIgnoreShields = true;
+	SDamageCtx DamageCtx(pSource,
+			pShot,
+			NULL,
+			CDamageSource(pSource, killedByWeaponMalfunction),
+			pSource,
+			AngleMod(pDevice->GetPosAngle() + mathRandom(0, 30) - 15),
+			pDevice->GetPos(pSource));
 
-	EDamageResults iResult = pSource->Damage(Ctx);
+	//	Damage source is inside shields/overlays
+
+	DamageCtx.bIgnoreOverlays = true;
+	DamageCtx.bIgnoreShields = true;
+
+	EDamageResults iResult = pSource->Damage(DamageCtx);
 
 	if (iResult == damageDestroyed 
 			|| iResult == damageDisintegrated

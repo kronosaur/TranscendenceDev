@@ -6160,19 +6160,20 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	After the call to pObj->Damage we must consider that pObj might
 			//	be destroyed (though not freed)
 
-			SDamageCtx Ctx;
-			Ctx.pObj = pObj;
-			Ctx.pDesc = pDesc;
-			Ctx.Damage = pDesc->GetDamage();
-			Ctx.iDirection = AngleMod(iDir + mathRandom(0, 30) - 15);
-			Ctx.vHitPos = vHitPos;
-			Ctx.Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
-			Ctx.pCause = Ctx.Attacker.GetObj();
-			Ctx.bNoHitEffect = bNoHitEffect;
-			Ctx.bIgnoreOverlays = bIgnoreOverlays;
-			Ctx.bIgnoreShields = bIgnoreShields;
+			CDamageSource Attacker = GetDamageSourceArg(*pCC, pArgs->GetElement(2));
+			SDamageCtx DamageCtx(pObj,
+					pDesc,
+					NULL,
+					Attacker,
+					Attacker.GetObj(),
+					AngleMod(iDir + mathRandom(0, 30) - 15),
+					vHitPos);
 
-			EDamageResults result = pObj->Damage(Ctx);
+			DamageCtx.bNoHitEffect = bNoHitEffect;
+			DamageCtx.bIgnoreOverlays = bIgnoreOverlays;
+			DamageCtx.bIgnoreShields = bIgnoreShields;
+
+			EDamageResults result = pObj->Damage(DamageCtx);
 
 			//	Create fragments
 
@@ -6180,11 +6181,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				SShotCreateCtx FragCtx;
 				FragCtx.pDesc = pDesc;
-				FragCtx.Source = Ctx.Attacker;
+				FragCtx.Source = DamageCtx.Attacker;
 				FragCtx.pTarget = (!pObj->IsDestroyed() ? pObj : NULL);
 				FragCtx.vPos = vHitPos;
 
-				pSystem->CreateWeaponFragments(FragCtx, Ctx.pCause);
+				pSystem->CreateWeaponFragments(FragCtx, DamageCtx.pCause);
 				}
 
 			//	No need to expose the concept of passthrough
@@ -6203,10 +6204,10 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pResult = pCC->CreateSymbolTable();
 
 				pResult->SetStringAt(*pCC, CONSTLIT("result"), GetDamageResultsName(result));
-				pResult->SetIntegerAt(*pCC, CONSTLIT("armorSeg"), Ctx.iSectHit);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("overlayHitDamage"), Ctx.iOverlayHitDamage);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("shieldHitDamage"), Ctx.iShieldHitDamage);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("armorHitDamage"), Ctx.iArmorHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorSeg"), DamageCtx.iSectHit);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("overlayHitDamage"), DamageCtx.iOverlayHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("shieldHitDamage"), DamageCtx.iShieldHitDamage);
+				pResult->SetIntegerAt(*pCC, CONSTLIT("armorHitDamage"), DamageCtx.iArmorHitDamage);
 
 				return pResult;
 				}
@@ -11352,17 +11353,23 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get Parameters to initialize context
 
-			SDamageCtx Ctx;
-			Ctx.pDesc = pDesc;
-			Ctx.pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			Ctx.vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
-			Ctx.iDirection = pArgs->GetElement(3)->GetIntegerValue();
-			Ctx.Damage = pDesc->GetDamage();
-			Ctx.iDamage = pArgs->GetElement(4)->GetIntegerValue();
+			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CVector vHitPos = CreateVectorFromList(*pCC, pArgs->GetElement(2));
+			int iDir = pArgs->GetElement(3)->GetIntegerValue();
+
+			SDamageCtx DamageCtx(pObj,
+					pDesc,
+					NULL,
+					CDamageSource(),
+					NULL,
+					iDir,
+					vHitPos);
+
+			DamageCtx.iDamage = pArgs->GetElement(4)->GetIntegerValue();
 
 			//	Create the effect
 
-			pDesc->CreateHitEffect(pSystem, Ctx);
+			pDesc->CreateHitEffect(pSystem, DamageCtx);
 			return pCC->CreateTrue();
 			}
 

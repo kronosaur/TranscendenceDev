@@ -240,7 +240,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	If this armor section reflects this kind of damage then
 	//	send the damage on
 
-	if (Ctx.bReflect)
+	if (Ctx.IsShotReflected())
 		{
 		if (Ctx.pCause)
 			Ctx.pCause->CreateReflection(Ctx.vHitPos, (Ctx.iDirection + 120 + mathRandom(0, 120)) % 360);
@@ -249,7 +249,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	If this is a disintegration attack, then disintegrate the ship
 
-	if (Ctx.bDisintegrate)
+	if (Ctx.IsDisintegrated())
 		{
 		Ctx.Damage.SetCause(killedByDisintegration);
 		return damageDisintegrated;
@@ -257,7 +257,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	If this is a shatter attack, see if the ship is destroyed
 
-	if (Ctx.bShatter)
+	if (Ctx.IsShattered())
 		{
 		Ctx.Damage.SetCause(killedByShatter);
 		return damageShattered;
@@ -266,26 +266,26 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	If this is a paralysis attack and we've gotten past the shields
 	//	then freeze the ship.
 
-	if (Ctx.bParalyze)
-		pSource->MakeParalyzed(Ctx.iParalyzeTime);
+	if (Ctx.IsParalyzed())
+		pSource->MakeParalyzed(Ctx.GetParalyzedTime());
 
 	//	If this is blinding damage then our sensors are disabled
 
-	if (Ctx.bBlind)
-		pSource->MakeBlind(Ctx.iBlindTime);
+	if (Ctx.IsBlinded())
+		pSource->MakeBlind(Ctx.GetBlindTime());
 
 	//	If this attack is radioactive, then contaminate the ship
 
-	if (Ctx.bRadioactive)
+	if (Ctx.IsRadioactive())
 		pSource->OnHitByRadioactiveDamage(Ctx);
 
 	//	If this is device damage, then see if any device is damaged
 
-	if (Ctx.bDeviceDamage)
+	if (Ctx.IsDeviceDamaged())
 		pSource->OnHitByDeviceDamage();
 
-	if (Ctx.bDeviceDisrupt)
-		pSource->OnHitByDeviceDisruptDamage(Ctx.iDisruptTime);
+	if (Ctx.IsDeviceDisrupted())
+		pSource->OnHitByDeviceDisruptDamage(Ctx.GetDeviceDisruptTime());
 
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
@@ -1151,102 +1151,66 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	Reflect
 
-	Ctx.bReflect = (IsReflective(ItemCtx, Ctx.Damage) && Ctx.iDamage > 0);
+	Ctx.SetShotReflected(IsReflective(ItemCtx, Ctx.Damage) && Ctx.iDamage > 0);
 
 	//	Disintegration
 
-	int iDisintegration = Ctx.Damage.GetDisintegrationDamage();
-	if (iDisintegration && !IsImmune(ItemCtx, specialDisintegration))
-		{
-		//	The chance of being disintegrated is dependent on the rating.
-		//	Since disintegration is from 1 to 7, chance is from 4 to 100.
-
-		int iChance = (2 * iDisintegration * iDisintegration) + 2;
-		Ctx.bDisintegrate = (mathRandom(1, 100) <= iChance);
-		}
-	else
-		Ctx.bDisintegrate = false;
+	if (Ctx.IsDisintegrated() && IsImmune(ItemCtx, specialDisintegration))
+		Ctx.SetDisintegrated(false);
 
 	//	Shatter
 
-	int iShatter = Ctx.Damage.GetShatterDamage();
-	if (iShatter && !IsImmune(ItemCtx, specialShatter))
-		{
-		//	Compute the threshold mass. Below this size, we shatter the object
-
-		int iMassLimit = 10 * mathPower(5, iShatter);
-		Ctx.bShatter = (pSource && pSource->GetMass() < iMassLimit);
-		}
-	else
-		Ctx.bShatter = false;
+	if (Ctx.IsShattered() && IsImmune(ItemCtx, specialShatter))
+		Ctx.SetShattered(false);
 
 	//	Blinding
 
-	int iBlinding = Ctx.Damage.GetBlindingDamage();
-	if (iBlinding && !IsImmune(ItemCtx, specialBlinding))
+	if (Ctx.IsBlinded())
 		{
-		//	The chance of being blinded is dependent
-		//	on the rating.
-
-		int iChance = 4 * iBlinding * iBlinding * Stats.iBlindingDamageAdj / 100;
-		Ctx.bBlind = (mathRandom(1, 100) <= iChance);
-		Ctx.iBlindTime = Ctx.iDamage * g_TicksPerSecond / 2;
+		if (IsImmune(ItemCtx, specialBlinding))
+			Ctx.SetBlinded(false);
+		else if (Stats.iBlindingDamageAdj != 100 && mathRandom(1, 100) >= Stats.iBlindingDamageAdj)
+			Ctx.SetBlinded(false);
 		}
-	else
-		Ctx.bBlind = false;
 
 	//	EMP
 
-	int iEMP = Ctx.Damage.GetEMPDamage();
-	if (iEMP && !IsImmune(ItemCtx, specialEMP))
+	if (Ctx.IsParalyzed())
 		{
-		//	The chance of being paralyzed is dependent
-		//	on the EMP rating.
-
-		int iChance = 4 * iEMP * iEMP * Stats.iEMPDamageAdj / 100;
-		Ctx.bParalyze = (mathRandom(1, 100) <= iChance);
-		Ctx.iParalyzeTime = Ctx.iDamage * g_TicksPerSecond / 2;
+		if (IsImmune(ItemCtx, specialEMP))
+			Ctx.SetParalyzed(false);
+		else if (Stats.iEMPDamageAdj != 100 && mathRandom(1, 100) >= Stats.iEMPDamageAdj)
+			Ctx.SetParalyzed(false);
 		}
-	else
-		Ctx.bParalyze = false;
 
-	//	Device disrupt
+	//	Device disrupt/damage
 
-	int iDeviceDisrupt = Ctx.Damage.GetDeviceDisruptDamage();
-	if (iDeviceDisrupt && !IsImmune(ItemCtx, specialDeviceDisrupt))
+	if (Ctx.IsDeviceDisrupted())
 		{
-		//	The chance of damaging a device depends on the rating.
-
-		int iChance = 4 * iDeviceDisrupt * iDeviceDisrupt * Stats.iDeviceDamageAdj / 100;
-		Ctx.bDeviceDisrupt = (mathRandom(1, 100) <= iChance);
-		Ctx.iDisruptTime = 2 * Ctx.iDamage * g_TicksPerSecond;
+		if (IsImmune(ItemCtx, specialDeviceDisrupt))
+			Ctx.SetDeviceDisrupted(false);
+		else if (Stats.iDeviceDamageAdj != 100 && mathRandom(1, 100) >= Stats.iDeviceDamageAdj)
+			Ctx.SetDeviceDisrupted(false);
 		}
-	else
-		Ctx.bDeviceDisrupt = false;
 
-	//	Device damage
-
-	int iDeviceDamage = Ctx.Damage.GetDeviceDamage();
-	if (iDeviceDamage && !IsImmune(ItemCtx, specialDeviceDamage))
+	if (Ctx.IsDeviceDamaged())
 		{
-		//	The chance of damaging a device depends on the rating.
-
-		int iChance = 4 * iDeviceDamage * iDeviceDamage * Stats.iDeviceDamageAdj / 100;
-		Ctx.bDeviceDamage = (mathRandom(1, 100) <= iChance);
+		if (IsImmune(ItemCtx, specialDeviceDamage))
+			Ctx.SetDeviceDamaged(false);
+		else if (Stats.iDeviceDamageAdj != 100 && mathRandom(1, 100) >= Stats.iDeviceDamageAdj)
+			Ctx.SetDeviceDamaged(false);
 		}
-	else
-		Ctx.bDeviceDamage = false;
 
 	//	Radiation
 
-	int iRadioactive = Ctx.Damage.GetRadiationDamage();
-	Ctx.bRadioactive = (iRadioactive > 0 && !IsImmune(ItemCtx, specialRadiation));
+	if (Ctx.IsRadioactive() && IsImmune(ItemCtx, specialRadiation))
+		Ctx.SetRadioactive(false);
 
 	//	Some effects decrease damage
 
-	if (iBlinding || iEMP)
+	if (Ctx.Damage.GetBlindingDamage() || Ctx.Damage.GetEMPDamage())
 		Ctx.iDamage = 0;
-	else if (iDeviceDamage)
+	else if (Ctx.Damage.GetDeviceDamage() || Ctx.Damage.GetDeviceDisruptDamage())
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 

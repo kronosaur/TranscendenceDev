@@ -550,76 +550,43 @@ class CWeaponClass : public CDeviceClass
 
         struct SBalance
             {
-            SBalance (void) :
-                    rBalance(0.0),
-                    iLevel(0),
-                    rStdDamage180(0.0),
-                    rDamageHP(0.0),
-                    rDamageMult(0.0),
-                    rDamage(0.0),
-                    rDamageType(0.0),
-                    rStdAmmoCost(0.0),
-                    rStdAmmoMass(0.0),
-                    rAmmo(0.0),
-                    rOmni(0.0),
-                    rTracking(0.0),
-                    rRange(0.0),
-                    rSpeed(0.0),
-                    rProjectileHP(0.0),
-                    rPower(0.0),
-                    rCost(0.0),
-                    rSlots(0.0),
-                    rExternal(0.0),
-                    rLinkedFire(0.0),
-                    rRecoil(0.0),
-                    rRadiation(0.0),
-                    rDeviceDisrupt(0.0),
-                    rDeviceDamage(0.0),
-                    rDisintegration(0.0),
-                    rShieldPenetrate(0.0),
-                    rShatter(0.0),
-                    rShield(0.0),
-                    rArmor(0.0),
-                    rWMD(0.0),
-                    rMining(0.0)
-                { }
+            Metric rBalance = 0.0;			//  Total balance
+            int iLevel = 0;					//  Level for which we balanced
 
-            Metric rBalance;        //  Total balance
-            int iLevel;             //  Level for which we balanced
+            Metric rStdDamage180 = 0.0;		//  Standard damage (for level and fire rate)
+            Metric rDamageHP = 0.0;			//  HP damage per projectile
+            Metric rDamageMult = 0.0;		//  Effective number of projectiles
+            Metric rDamage180 = 0.0;		//  Damage per 180 ticks
+            Metric rDamage = 0.0;			//  Damage balance component
+            Metric rDamageType = 0.0;		//  Damage type balance contribution
 
-            Metric rStdDamage180;   //  Standard damage (for level and fire rate)
-            Metric rDamageHP;       //  HP damage per projectile
-            Metric rDamageMult;     //  Effective number of projectiles
-            Metric rDamage180;      //  Damage per 180 ticks
-            Metric rDamage;         //  Damage balance component
-            Metric rDamageType;     //  Damage type balance contribution
+            Metric rStdAmmoCost = 0.0;		//  Standard ammo cost (for level and fire rate)
+            Metric rStdAmmoMass = 0.0;		//  Standard ammo mass (for level and fire rate)
+            Metric rAmmo = 0.0;				//  Ammo contribution
+            Metric rOmni = 0.0;				//  Omni and swivel component
+            Metric rTracking = 0.0;			//  Tracking component
 
-            Metric rStdAmmoCost;    //  Standard ammo cost (for level and fire rate)
-            Metric rStdAmmoMass;    //  Standard ammo mass (for level and fire rate)
-            Metric rAmmo;           //  Ammo contribution
-            Metric rOmni;           //  Omni and swivel component
-            Metric rTracking;       //  Tracking component
+            Metric rRange = 0.0;			//  Range component
+            Metric rSpeed = 0.0;			//  Speed component
+            Metric rProjectileHP = 0.0;		//  HP and interaction balance component
+            Metric rPower = 0.0;			//  Power use component
+            Metric rCost = 0.0;				//  Cost component to balance
+            Metric rSlots = 0.0;			//  Slot component
+            Metric rExternal = 0.0;			//  External component
+            Metric rLinkedFire = 0.0;		//  Weapon is linked-fire
+            Metric rRecoil = 0.0;			//  Weapon has recoil
 
-            Metric rRange;          //  Range component
-            Metric rSpeed;          //  Speed component
-            Metric rProjectileHP;   //  HP and interaction balance component
-            Metric rPower;          //  Power use component
-            Metric rCost;           //  Cost component to balance
-            Metric rSlots;          //  Slot component
-            Metric rExternal;       //  External component
-            Metric rLinkedFire;     //  Weapon is linked-fire
-            Metric rRecoil;         //  Weapon has recoil
-
-            Metric rRadiation;      //  Bonus for radiation
-            Metric rDeviceDisrupt;  //  Bonus for device disrupt
-            Metric rDeviceDamage;   //  Bonus for device damage
-            Metric rDisintegration; //  Bonus for disintegration
-            Metric rShatter;        //  Bonus for shatter damage
-            Metric rShieldPenetrate;//  Bonus for shield penetration
-            Metric rShield;         //  Bonus for shield damage
-            Metric rArmor;          //  Bonus for armor damage
-            Metric rWMD;            //  Bonus for WMD
-            Metric rMining;         //  Bonus for mining
+            Metric rRadiation = 0.0;		//  Bonus for radiation
+            Metric rDeviceDisrupt = 0.0;	//  Bonus for device disrupt
+            Metric rDeviceDamage = 0.0;		//  Bonus for device damage
+            Metric rDisintegration = 0.0;	//  Bonus for disintegration
+            Metric rShatter = 0.0;			//  Bonus for shatter damage
+            Metric rShieldPenetrate = 0.0;	//  Bonus for shield penetration
+            Metric rShield = 0.0;			//  Bonus for shield damage
+            Metric rArmor = 0.0;			//  Bonus for armor damage
+            Metric rWMD = 0.0;				//  Bonus for WMD
+            Metric rMining = 0.0;			//  Bonus for mining
+			Metric rTimeStop = 0.0;			//	Bonus for time stop
             };
 
         struct SStdStats

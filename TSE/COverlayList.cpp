@@ -225,6 +225,30 @@ int COverlayList::GetCountOfType (COverlayType *pType)
 	return iCount;
 	}
 
+bool COverlayList::IsTimeStopped (const CSpaceObject *pSource) const
+
+//	IsTimeStopped
+//
+//	Returns TRUE if any overlay stops time.
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			if (pField->StopsTime(pSource))
+				return true;
+			}
+
+		//	Next
+
+		pField = pField->GetNext();
+		}
+
+	return false;
+	}
+
 void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const
 
 //	GetImpact

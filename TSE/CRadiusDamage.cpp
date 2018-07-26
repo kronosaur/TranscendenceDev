@@ -149,35 +149,32 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		if (rHitDist > rMaxRadius)
 			continue;
 
-		//	Setup context
-
-		SDamageCtx Ctx;
-		Ctx.pObj = pObj;
-		Ctx.pDesc = m_pDesc;
-		Ctx.Damage = m_pDesc->GetDamage();
-		Ctx.Damage.AddEnhancements(m_pEnhancements);
-		Ctx.Damage.SetCause(m_Source.GetCause());
-		if (m_Source.IsAutomatedWeapon())
-			Ctx.Damage.SetAutomatedWeapon();
-		Ctx.iDirection = (iAngle + 180) % 360;
-		Ctx.vHitPos = vHitPos;
-		Ctx.pCause = this;
-		Ctx.Attacker = m_Source;
-
 		//	If we're beyond the minimum radius, then decrease the damage
 		//	to account for distance
 
+		int iDamage;
 		if (rHitDist > rMinRadius && rRadiusRange > 0.0)
 			{
 			Metric rMult = (rRadiusRange - (rHitDist - rMinRadius)) / rRadiusRange;
-
-			int iDamage = (int)(rMult * (Metric)Ctx.Damage.RollDamage() + 0.5);
-			Ctx.Damage.SetDamage(iDamage);
+			iDamage = (int)(rMult * (Metric)m_pDesc->GetDamage().RollDamage() + 0.5);
 			}
+		else
+			iDamage = m_pDesc->GetDamage().RollDamage();
+
+		//	Setup context
+
+		SDamageCtx DamageCtx(pObj,
+				m_pDesc,
+				m_pEnhancements,
+				m_Source,
+				this,
+				AngleMod(iAngle + 180),
+				vHitPos,
+				iDamage);
 
 		//	Do damage
 
-		pObj->Damage(Ctx);
+		pObj->Damage(DamageCtx);
 		}
 	}
 
