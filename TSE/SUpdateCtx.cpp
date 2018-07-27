@@ -7,11 +7,11 @@
 
 int SUpdateCtx::GetLightIntensity (CSpaceObject *pObj) const
 	{
-	if (pObj == pCacheObj && iLightIntensity != -1)
-		return iLightIntensity;
+	if (pObj == m_pCacheObj && m_iLightIntensity != -1)
+		return m_iLightIntensity;
 
-	pCacheObj = pObj;
-	iLightIntensity = pSystem->CalculateLightIntensity(pObj->GetPos());
-	return iLightIntensity;
+	m_pCacheObj = pObj;
+	m_iLightIntensity = pSystem->CalculateLightIntensity(pObj->GetPos());
+	return m_iLightIntensity;
 	}
 

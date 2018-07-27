@@ -31,7 +31,7 @@ void CShipInterior::CalcAttachPos (CShip *pShip, const CShipInteriorDesc &Desc, 
 	//	specify object joints as 3D positions.
 
 	CVector vPos;
-	CompDesc.AttachPos.CalcCoord(pShip->GetClass()->GetImage().GetImageViewportSize(), &vPos);
+	CompDesc.AttachPos.CalcCoord(pShip->GetImageScale(), &vPos);
 	vPos.Rotate(pShip->GetRotation());
 	vPos = pAttachedTo->GetPos() + vPos;
 

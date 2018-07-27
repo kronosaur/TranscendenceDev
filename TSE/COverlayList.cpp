@@ -152,6 +152,46 @@ CString COverlayList::DebugCrashInfo (void) const
 		}
 	}
 
+bool COverlayList::DestroyDeleted (void)
+
+//	DestroyDeleted
+//
+//	Destroy any deleted/expired overlays. Returns TRUE if any where deleted.
+
+	{
+	bool bModified = false;
+
+	COverlay *pField = m_pFirst;
+	COverlay *pPrevField = NULL;
+	while (pField)
+		{
+		COverlay *pNext = pField->GetNext();
+
+		//	If this overlay was destroyed, handle that now
+
+		if (pField->IsDestroyed()
+				&& !pField->IsFading())
+			{
+			delete pField;
+
+			if (pPrevField)
+				pPrevField->SetNext(pNext);
+			else
+				m_pFirst = pNext;
+
+			bModified = true;
+			}
+		else
+			pPrevField = pField;
+
+		//	Next energy field
+
+		pField = pNext;
+		}
+
+	return bModified;
+	}
+
 bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
 
 //	FireGetDockScreen
@@ -900,35 +940,56 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 
 	//	Do a second pass in which we destroy fields marked for deletion
 
-	pField = m_pFirst;
-	COverlay *pPrevField = NULL;
+	if (DestroyDeleted())
+		bModified = true;
+
+	if (retbModified) *retbModified = bModified;
+
+	DEBUG_CATCH
+	}
+
+void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified)
+
+//	UpdateTimeStopped
+//
+//	Update fields. Returns bModified = TRUE if any field changed such that the object
+//	need to be recalculated.
+
+	{
+	DEBUG_TRY
+
+	bool bModified = false;
+
+	//	First update all fields
+
+	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-		COverlay *pNext = pField->GetNext();
-
-		//	If this overlay was destroyed, handle that now
-
-		if (pField->IsDestroyed()
-				&& !pField->IsFading())
+		if (pField->GetType()->StopsTime()
+				&& (!pField->IsDestroyed()
+					|| pField->IsFading()))
 			{
-			delete pField;
+			bool bOverlayModified;
 
-			if (pPrevField)
-				pPrevField->SetNext(pNext);
-			else
-				m_pFirst = pNext;
+			pField->Update(pSource, iScale, iRotation, &bOverlayModified);
+			if (bOverlayModified)
+				bModified = true;
 
-			bModified = true;
+			//	If the source got destroyed, then we're done
+
+			if (CSpaceObject::IsDestroyedInUpdate())
+				return;
 			}
-		else
-			pPrevField = pField;
 
-		//	Next energy field
-
-		pField = pNext;
+		pField = pField->GetNext();
 		}
 
-	*retbModified = bModified;
+	//	Do a second pass in which we destroy fields marked for deletion
+
+	if (DestroyDeleted())
+		bModified = true;
+
+	if (retbModified) *retbModified = bModified;
 
 	DEBUG_CATCH
 	}
@@ -942,7 +1003,7 @@ void COverlayList::WriteToStream (IWriteStream *pStream)
 //	COverlay array
 
 	{
-	//	NOTE: We have to saved destroyed overlays because we need to run some 
+	//	NOTE: We have to save destroyed overlays because we need to run some 
 	//	code when removing an overlay (e.g., see CShip::CalcOverlayImpact).
 
 	DWORD dwSave = 0;

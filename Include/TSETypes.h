@@ -77,6 +77,7 @@ const int g_TicksPerSecond =			30;			//	Frames per second of time
 const Metric g_LRSRange =				(100.0 * LIGHT_SECOND);	//	Range of LRS
 const Metric g_MapKlicksPerPixel =		g_AU / 400.0;//	400 pixels per AU
 const Metric g_InfiniteDistance =		g_AU * g_AU * 1000000.0;	//	A very large number
+const Metric g_InfiniteDistance2 =		g_InfiniteDistance * g_InfiniteDistance;	//	A very large number
 const Metric g_SpaceDragFactor =		0.98;		//	Coefficient of drag in space (1.0 = no drag)
 const Metric g_BounceCoefficient =		0.50;		//	Speed coefficient when bouncing
 const Metric g_MomentumConstant =		25.0;		//	Arbitrary constant for momentum

@@ -266,7 +266,7 @@ CVector CInstalledDevice::GetPos (CSpaceObject *pSource)
 	{
 	if (m_f3DPosition)
 		{
-		int iScale = pSource->GetImage().GetImageViewportSize();
+		int iScale = pSource->GetImageScale();
 
 		CVector vOffset;
 		C3DConversion::CalcCoord(iScale, pSource->GetRotation() + m_iPosAngle, m_iPosRadius, m_iPosZ, &vOffset);
@@ -292,7 +292,7 @@ CVector CInstalledDevice::GetPosOffset (CSpaceObject *pSource)
 	{
 	if (m_f3DPosition)
 		{
-		int iScale = pSource->GetImage().GetImageViewportSize();
+		int iScale = pSource->GetImageScale();
 
 		CVector vOffset;
 		C3DConversion::CalcCoord(iScale, 90 + m_iPosAngle, m_iPosRadius, m_iPosZ, &vOffset);

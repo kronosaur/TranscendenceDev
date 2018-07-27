@@ -3666,6 +3666,20 @@ const CObjectImageArray &CSpaceObject::GetImage (void) const
 	return NullImage;
 	}
 
+int CSpaceObject::GetImageScale (void) const
+
+//	GetImageScale
+//
+//	Returns the scale.
+
+	{
+	const CObjectImageArray &Image = GetImage();
+	if (Image.IsEmpty())
+		return 512;	//	Default
+
+	return Image.GetImageViewportSize();
+	}
+
 CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
 
 //	GetItemForDevice
@@ -7269,7 +7283,77 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	{
 	SetInUpdateCode();
 
-	//	Update the highlight
+	//	Update as long as we are not time-stopped.
+
+	if (!Ctx.IsTimeStopped())
+		{
+		//	Update effects
+
+		if (m_pFirstEffect)
+			UpdateEffects();
+
+		//	Update items
+
+		if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
+			{
+			FireItemOnUpdate();
+
+			//	We could have gotten destroyed here.
+
+			if (IsDestroyed())
+				{
+				ClearInUpdateCode();
+				return;
+				}
+			}
+
+		//	Update object
+
+		CDesignType *pType;
+		if (FindEventHandler(CDesignType::evtOnUpdate)
+				&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
+				&& (pType = GetType())
+				//	Skip missiles, because we can't tell the difference between OnUpdate
+				//	for the item and OnUpdate for the missile object.
+				&& pType->GetType() != designItemType
+				&& pType->GetAPIVersion() >= 31)
+			{
+			FireOnUpdate();
+
+			//	We could have gotten destroyed here, so we check and leave if 
+			//	necessary.
+
+			if (IsDestroyed())
+				{
+				ClearInUpdateCode();
+				return;
+				}
+			}
+
+		//	Update the specific object subclass.
+
+		OnUpdate(Ctx, g_SecondsPerUpdate);
+		if (IsDestroyed())
+			{
+			ClearInUpdateCode();
+			return;
+			}
+		}
+
+	//	Otherwise, if we're time-stopped we need to update any overlays that
+	//	cause time stop (so that they can expire properly).
+
+	else
+		{
+		COverlayList *pOverlays = GetOverlays();
+		if (pOverlays)
+			pOverlays->UpdateTimeStopped(this, GetImageScale(), GetRotation());
+		}
+
+	//	Now update some variables that are only used by the player but relate
+	//	to this object.
+	//
+	//	NOTE: These should update even if we're time-stopped.
 
 	if (m_iHighlightCountdown > 0)
 		{
@@ -7277,55 +7361,14 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			m_sHighlightText = NULL_STR;
 		}
 
-	//	Update effects
-
-	if (m_pFirstEffect)
-		UpdateEffects();
-
-	//	Update items
-
-	if (IsDestinyTime(ITEM_ON_UPDATE_CYCLE, ITEM_ON_UPDATE_OFFSET))
-		{
-		FireItemOnUpdate();
-
-		//	We could have gotten destroyed here.
-
-		if (IsDestroyed())
-			{
-			ClearInUpdateCode();
-			return;
-			}
-		}
-
-	//	Update object
-
-	CDesignType *pType;
-	if (FindEventHandler(CDesignType::evtOnUpdate)
-			&& IsDestinyTime(OBJECT_ON_UPDATE_CYCLE, OBJECT_ON_UPDATE_OFFSET)
-			&& (pType = GetType())
-			//	Skip missiles, because we can't tell the difference between OnUpdate
-			//	for the item and OnUpdate for the missile object.
-			&& pType->GetType() != designItemType
-			&& pType->GetAPIVersion() >= 31)
-		{
-		FireOnUpdate();
-
-		//	We could have gotten destroyed here, so we check and leave if 
-		//	necessary.
-
-		if (IsDestroyed())
-			{
-			ClearInUpdateCode();
-			return;
-			}
-		}
-
 	//	See if this is the nearest player target
 
 	if (Ctx.pPlayer
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
+		{
 		UpdatePlayerTarget(Ctx);
+		}
 
 	//	See if we have a dock screen. We only check every 20 ticks or so, so this
 	//	information might be stale. Use this for the docking ports animation, but
@@ -7338,10 +7381,6 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 		{
 		m_fHasDockScreenMaybe = (CanObjRequestDock(Ctx.pPlayer) == dockingOK);
 		}
-
-	//	Update the specific object subclass.
-
-	OnUpdate(Ctx, g_SecondsPerUpdate);
 
 	//	Done
 

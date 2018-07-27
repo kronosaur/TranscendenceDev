@@ -4683,24 +4683,32 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	for (i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL)
+			continue;
 
-		if (pObj && !pObj->IsTimeStopped())
+		//	Initialize context
+
+		Ctx.SetTimeStopped(pObj->IsTimeStopped());
+
+		//	Update behavior first.
+
+		if (!Ctx.IsTimeStopped())
 			{
 			SetProgramState(psUpdatingBehavior, pObj);
 			pObj->Behavior(Ctx);
+			}
 
-			//	Update the objects
+		//	Now update. We do this even if we're time-stopped because we might
+		//	need to update the overlay that stops time.
 
-			SetProgramState(psUpdatingObj, pObj);
-			pObj->Update(Ctx);
+		SetProgramState(psUpdatingObj, pObj);
+		pObj->Update(Ctx);
 
-			//	NOTE: pObj may have been destroyed after
-			//	Update(). Do not use the pointer.
+		//	Debug
 
 #ifdef DEBUG_PERFORMANCE
-			iUpdateObj++;
+		iUpdateObj++;
 #endif
-			}
 		}
 	DebugStopTimer("Updating objects");
 

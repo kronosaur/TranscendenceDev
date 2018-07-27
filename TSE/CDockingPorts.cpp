@@ -529,7 +529,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 					if (iConvertRotation != -1)
 						{
 						if (iScale <= 0)
-							iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
+							iScale = (pOwner ? pOwner->GetImageScale() : 512);
 
 						m_pPort[i].Pos.InitFromXY(iScale, vDockPos, pPort->GetAttributeInteger(POS_Z_ATTRIB));
 
@@ -623,7 +623,7 @@ void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale) const
 	//	and have not yet assigned an image.
 
 	if (iScale <= 0)
-		iScale = ((pOwner && !pOwner->GetImage().IsEmpty()) ? pOwner->GetImage().GetImageViewportSize() : 512);
+		iScale = (pOwner ? pOwner->GetImageScale() : 512);
 
 	//	Compute coordinates for each port
 

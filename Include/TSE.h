@@ -607,10 +607,13 @@ class COverlayList
 		void SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos);
 		bool SetProperty (CSpaceObject *pSource, DWORD dwID, const CString &sName, ICCItem *pValue);
 		void SetRotation (DWORD dwID, int iRotation);
-		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified);
+		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
+		void UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		bool DestroyDeleted (void);
+
 		COverlay *m_pFirst;
 	};
 
@@ -809,6 +812,16 @@ class CSpaceObject : public CObject
 		virtual void Refuel (const CItem &Fuel) { }
 
 		bool HasFuelItem (void);
+
+		//	Images
+
+		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
+		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
+		virtual const CObjectImageArray &GetImage (void) const;
+        virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
+		virtual void MarkImages (void) { }
+
+		int GetImageScale (void) const;
 
 		//	Items
 
@@ -1131,13 +1144,6 @@ class CSpaceObject : public CObject
 		inline bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { return MatchesCriteria(CSpaceObjectCriteria::SCtx(Crit), Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 
-#ifdef DEBUG_VECTOR
-		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		inline void SetDebugVector (const CVector &vVector) { m_vDebugVector = vVector; }
-#else
-		inline void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
-		inline void SetDebugVector (const CVector &vVector) { }
-#endif
 		//	Motion
 		//
 		//	CanMove: This returns TRUE if OnMove should be called for the object.
@@ -1272,6 +1278,18 @@ class CSpaceObject : public CObject
 		virtual bool IsEscortingPlayer (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }
 
+		//	DEBUG
+
+		virtual CString DebugCrashInfo (void) { return NULL_STR; }
+
+#ifdef DEBUG_VECTOR
+		void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		inline void SetDebugVector (const CVector &vVector) { m_vDebugVector = vVector; }
+#else
+		inline void PaintDebugVector (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
+		inline void SetDebugVector (const CVector &vVector) { }
+#endif
+
 		//	Other virtuals to be overridden
 
 		//	...for all objects
@@ -1287,16 +1305,11 @@ class CSpaceObject : public CObject
 		virtual bool CanBeHitBy (const DamageDesc &Damage) { return true; }
 		virtual bool CanHit (CSpaceObject *pObj) { return true; }
 		virtual bool ClassCanAttack (void) { return false; }
-		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
-		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) { return false; }
 		virtual AbilityStatus GetAbility (Abilities iAbility) const { return ablUninstalled; }
 		virtual Categories GetCategory (void) const { return catOther; }
 		virtual DWORD GetClassUNID (void) { return 0; }
 		virtual Metric GetGravity (Metric *retrRadius) const { return 0.0; }
-		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
-		virtual const CObjectImageArray &GetImage (void) const;
-        virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual int GetInteraction (void) const { return 100; }
 		virtual Metric GetInvMass (void) const { return 0.0; }
 		virtual const COrbit *GetMapOrbit (void) const { return NULL; }
@@ -1323,7 +1336,6 @@ class CSpaceObject : public CObject
 		virtual bool IsShownInGalacticMap (void) const { return false; }
 		virtual bool IsVirtual (void) const { return false; }
 		virtual bool IsWreck (void) const { return false; }
-		virtual void MarkImages (void) { }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) { }
 		virtual void OnSystemLoaded (void) { }
