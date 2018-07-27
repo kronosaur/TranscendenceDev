@@ -4555,7 +4555,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Handle special attacks
 
-	if (Ctx.IsTimeStopped() && !IsTimeStopImmune())
+	if (Ctx.IsTimeStopped() 
+			&& !IsTimeStopImmune()
+			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
 

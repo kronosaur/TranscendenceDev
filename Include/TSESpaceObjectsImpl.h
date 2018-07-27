@@ -1458,6 +1458,7 @@ class CStation : public CSpaceObject
 		//	CSpaceObject virtuals
 
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) override;
+		using CSpaceObject::AddOverlay;
 		virtual void AddSubordinate (CSpaceObject *pSubordinate) override;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CStation *AsStation (void) override { return this; }

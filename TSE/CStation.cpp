@@ -105,6 +105,8 @@ const Metric g_DockBeamTangentStrength = 250.0;
 
 const int g_iMapScale = 5;
 
+const int DEFAULT_TIME_STOP_TIME =				150;
+
 CStation::CStation (void) : CSpaceObject(&g_Class),
 		m_fArmed(false),
 		m_dwSpare(0),
@@ -2118,6 +2120,19 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjDamaged(Ctx);
+
+	//	Handle special attacks
+
+	if (Ctx.IsTimeStopped() 
+			&& !IsTimeStopImmune()
+			&& !IsTimeStopped())
+		{
+		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
+
+		//	No damage
+
+		Ctx.iDamage = 0;
+		}
 
 	//	If we've still got armor left, then we take damage but otherwise
 	//	we're OK.
