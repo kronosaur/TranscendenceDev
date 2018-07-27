@@ -1074,6 +1074,7 @@ class CShip : public CSpaceObject
 
 		virtual bool AbsorbWeaponFire (CInstalledDevice *pWeapon) override;
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) override;
+		using CSpaceObject::AddOverlay;
 		virtual CTradingDesc *AllocTradeDescOverride (void) override;
 		virtual CShip *AsShip (void) override { return this; }
 		virtual void Behavior (SUpdateCtx &Ctx) override;

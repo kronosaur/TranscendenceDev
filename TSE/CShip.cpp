@@ -121,6 +121,8 @@ const DWORD CONTROLLER_GAIANPROCESSORAI =		0x100000 + 29;
 const DWORD CONTROLLER_ZOANTHROPEAI =			0x100000 + 31;
 const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
+const int DEFAULT_TIME_STOP_TIME =				150;
+
 CShip::CShip (void) : CSpaceObject(&g_Class),
 		m_pDocked(NULL),
 		m_pController(NULL),
@@ -4550,6 +4552,17 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjDamaged(Ctx);
+
+	//	Handle special attacks
+
+	if (Ctx.IsTimeStopped() && !IsTimeStopImmune())
+		{
+		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
+
+		//	No damage
+
+		Ctx.iDamage = 0;
+		}
 
 	//	If armor absorbed all the damage, then we're OK
 

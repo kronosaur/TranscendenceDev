@@ -292,6 +292,18 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			}
 		}
 
+	//	If we have time stop damage, then there is a chance that the shields 
+	//	will prevent it.
+	//
+	//	The chance of negating time stop damage depends on the difference in 
+	//	levels.
+
+	if (Ctx.IsTimeStopped()
+			&& mathRandom(1, 100) <= Ctx.Damage.GetTimeStopResistChance(GetLevel()))
+		{
+		Ctx.SetTimeStopped(false);
+		}
+
 	//	Give custom damage a chance to react. These events can modify the
 	//	following variables:
 	//

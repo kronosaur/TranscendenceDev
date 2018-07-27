@@ -1206,6 +1206,11 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	if (Ctx.IsRadioactive() && IsImmune(ItemCtx, specialRadiation))
 		Ctx.SetRadioactive(false);
 
+	//	Time Stop
+
+	if (Ctx.IsTimeStopped() && mathRandom(1, 100) <= Ctx.Damage.GetTimeStopResistChance(ItemCtx.GetItem().GetLevel()))
+		Ctx.SetTimeStopped(false);
+
 	//	Some effects decrease damage
 
 	if (Ctx.Damage.GetBlindingDamage() || Ctx.Damage.GetEMPDamage())

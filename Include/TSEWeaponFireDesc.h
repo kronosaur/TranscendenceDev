@@ -124,6 +124,7 @@ class DamageDesc
 		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
 		inline int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
 		inline int GetTimeStopDamageLevel (void) const { return (int)m_TimeStopDamage; }
+		int GetTimeStopResistChance (int iTargetLevel) const;
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
 		static SpecialDamageTypes ConvertToSpecialDamageTypes (const CString &sValue);
@@ -224,6 +225,7 @@ struct SDamageCtx
 		inline void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
 		inline void SetShattered (bool bValue = true) { m_bShatter = bValue; }
 		inline void SetShotReflected (bool bValue = true) { m_bReflect = bValue; }
+		inline void SetTimeStopped (bool bValue = true) { m_bTimeStop = bValue; }
 
 		CSpaceObject *pObj = NULL;					//	Object hit
 		CWeaponFireDesc *pDesc = NULL;				//	WeaponFireDesc

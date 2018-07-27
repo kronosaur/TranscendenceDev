@@ -71,8 +71,7 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 
 	//	Radiation
 
-	int iRadioactive = DamageArg.GetRadiationDamage();
-	m_bRadioactive = (iRadioactive > 0);
+	m_bRadioactive = (DamageArg.GetRadiationDamage() > 0);
 
 	//	EMP
 
@@ -142,4 +141,8 @@ void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 		}
 	else
 		m_bShatter = false;
+
+	//	Time Stop
+
+	m_bTimeStop = (DamageArg.GetTimeStopDamageLevel() > 0);
 	}

@@ -538,6 +538,23 @@ void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRo
 	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iLifetime, retdwID);
 	}
 
+void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID)
+
+//	AddOverlay
+//
+//	Adds an overly by UNID
+
+	{
+	COverlayType *pType = g_pUniverse->FindOverlayType(dwUNID);
+	if (pType == NULL)
+		{
+		if (retdwID) *retdwID = 0;
+		return;
+		}
+
+	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iLifetime, retdwID);
+	}
+
 ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 
 //	AddToSystem

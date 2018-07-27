@@ -606,6 +606,43 @@ int DamageDesc::GetMaxDamage (void) const
 	return m_Damage.GetCount() * m_Damage.GetFaces() + m_Damage.GetBonus();
 	}
 
+int DamageDesc::GetTimeStopResistChance (int iTargetLevel) const
+
+//	GetTimeStopResistChance
+//
+//	Returns the probability that an item at the given target level can resist 
+//	time stop.
+
+	{
+	int iDiff = iTargetLevel - GetTimeStopDamageLevel();
+	switch (iDiff)
+		{
+		case -3:
+			return 10;
+
+		case -2:
+			return 25;
+
+		case -1:
+			return 40;
+
+		case 0:
+			return 50;
+
+		case 1:
+			return 60;
+
+		case 2:
+			return 75;
+
+		case 3:
+			return 90;
+
+		default:
+			return (iDiff < -3 ? 0 : 100);
+		}
+	}
+
 ALERROR DamageDesc::LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib)
 
 //	LoadFromXML
