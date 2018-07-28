@@ -51,7 +51,7 @@
 #define COUNTER_TYPE_CAPACITOR					CONSTLIT("capacitor")
 
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
-#define ON_CONSUME_AMMO_EVENT					CONSTLIT("OnConsumeAmmo")
+#define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
 
 
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
@@ -210,7 +210,7 @@ static CWeaponClass::SStdStats STD_WEAPON_STATS[MAX_ITEM_LEVEL] =
 static char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
-		"OnConsumeAmmo",
+		"GetAmmoToConsume",
 	};
 
 CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
@@ -1306,7 +1306,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 	if (pDevice == NULL)
 		return false;
 
-	int iAmmoConsumed = FireOnConsumeAmmo(ItemCtx, pShot, iRepeatingCount);
+	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, pShot, iRepeatingCount);
 	//	For repeating weapons, we check at the beginning and consume at the end.
 	
 	if (pShot->GetContinuous() > 0)
@@ -1806,7 +1806,7 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
-int CWeaponClass::FireOnConsumeAmmo(CItemCtx &ItemCtx,
+int CWeaponClass::FireGetAmmoToConsume(CItemCtx &ItemCtx,
 	CWeaponFireDesc *pShot,
 	int iRepeatingCount)
 
@@ -1820,7 +1820,7 @@ int CWeaponClass::FireOnConsumeAmmo(CItemCtx &ItemCtx,
 
 {
 	SEventHandlerDesc Event;
-	if (FindEventHandlerWeaponClass(evtOnConsumeAmmo, &Event))
+	if (FindEventHandlerWeaponClass(evtGetAmmoToConsume, &Event))
 	{
 		CCodeChainCtx Ctx;
 		int iResult;
@@ -1833,7 +1833,7 @@ int CWeaponClass::FireOnConsumeAmmo(CItemCtx &ItemCtx,
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
-			ItemCtx.GetSource()->ReportEventError(ON_CONSUME_AMMO_EVENT, pResult);
+			ItemCtx.GetSource()->ReportEventError(GET_AMMO_TO_CONSUME_EVENT, pResult);
 
 		if (pResult->IsInteger())
 		{

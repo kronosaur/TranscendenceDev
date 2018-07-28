@@ -544,7 +544,7 @@ class CWeaponClass : public CDeviceClass
 		enum ECachedHandlers
 			{
 			evtOnFireWeapon				= 0,
-			evtOnConsumeAmmo			= 1,
+			evtGetAmmoToConsume			= 1,
 
 			evtCount					= 2,
 			};
@@ -743,7 +743,7 @@ class CWeaponClass : public CDeviceClass
 		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		void FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed);
-		int FireOnConsumeAmmo(CItemCtx &ItemCtx,
+		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
 							  CWeaponFireDesc *pShot,
 							  int iRepeatingCount);
 		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
