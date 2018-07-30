@@ -22,7 +22,6 @@ class CDockingPorts
 		inline int GetPortCount (CSpaceObject *pOwner = NULL) const { return m_iPortCount; }
 		inline CSpaceObject *GetPortObj (CSpaceObject *pOwner, int iPort) { ASSERT(m_pPort[iPort].pObj == NULL || m_pPort[iPort].iStatus != psEmpty); return m_pPort[iPort].pObj; }
 		inline CVector GetPortPos (CSpaceObject *pOwner, int iPort, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) { return GetPortPos(pOwner, m_pPort[iPort], pShip, retbPaintInFront, retiRotation); }
-		CVector GetPortPosAtRotation (int iOwnerRotation, int iScale, int iPort, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		int GetPortsInUseCount (CSpaceObject *pOwner);
 		void InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius);
 		void InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc);
@@ -40,6 +39,7 @@ class CDockingPorts
 		inline void SetMaxDockingDist (int iDist) { m_iMaxDist = iDist; }
 		void Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbWasDocked = NULL);
 		void UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner);
+		void UpdatePortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale = -1);
 		void WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream);
 
 	private:
@@ -78,6 +78,7 @@ class CDockingPorts
 		void CleanUp (void);
 		void Copy (const CDockingPorts &Src);
 		CVector GetPortPos (CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
+		CVector GetPortPosAtRotation (int iOwnerRotation, int iScale, int iPort, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		void InitXYPortPos (CSpaceObject *pOwner, int iScale = -1) const;
 		void InitXYPortPos (int iRotation, int iScale) const;
 		bool IsDocked (CSpaceObject *pObj);
