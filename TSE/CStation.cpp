@@ -356,13 +356,13 @@ void CStation::CalcOverlayImpact (void)
 //	whenever the set of overlays changes.
 
 	{
-	COverlayList::SImpactDesc Impact;
-	m_Overlays.GetImpact(this, &Impact);
+	COverlay::SImpactDesc Impact;
+	m_Overlays.GetImpact(this, Impact);
 
 	//	Update our cache
 
-	m_fDisarmedByOverlay = Impact.bDisarm;
-	m_fParalyzedByOverlay = Impact.bParalyze;
+	m_fDisarmedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndDisarmed);
+	m_fParalyzedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndParalyzed);
 
 	//	Recalc bounds
 

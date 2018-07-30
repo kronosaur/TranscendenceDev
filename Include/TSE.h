@@ -455,6 +455,12 @@ class CItemEventDispatcher
 class COverlay
 	{
 	public:
+		struct SImpactDesc
+			{
+			CConditionSet Conditions;			//	Set of conditions imparted
+			Metric rDrag = 1.0;					//	Drag coefficient (1.0 = no drag)
+			};
+
 		COverlay (void);
 		~COverlay (void);
 		static void CreateFromType (COverlayType *pType, 
@@ -480,6 +486,7 @@ class COverlay
 		inline int GetDevice (void) const { return m_iDevice; }
 		inline Metric GetDrag (CSpaceObject *pSource) const { return m_pType->GetDrag(); }
 		inline DWORD GetID (void) const { return m_dwID; }
+		bool GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const;
 		inline const CString &GetMessage (void) const { return m_sMessage; }
 		inline COverlay *GetNext (void) const { return m_pNext; }
 		CVector GetPos (CSpaceObject *pSource);
@@ -544,24 +551,6 @@ class COverlay
 class COverlayList
 	{
 	public:
-		struct SImpactDesc
-			{
-			SImpactDesc (void) :
-					bDisarm(false),
-					bParalyze(false),
-					bSpin(false),
-					bShipScreenDisabled(false),
-					rDrag(1.0)
-				{ }
-
-			bool bDisarm;					//	TRUE if source is disarmed
-			bool bParalyze;					//	TRUE if source is paralyzed.
-			bool bSpin;						//	TRUE if source should spin wildly.
-			bool bShipScreenDisabled;		//	TRUE if source cannot bring up ship screen.
-
-			Metric rDrag;					//	Drag coefficient (1.0 = no drag)
-			};
-
 		COverlayList (void);
 		~COverlayList (void);
 
@@ -582,7 +571,7 @@ class COverlayList
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		int GetCountOfType (COverlayType *pType);
 		ICCItemPtr GetData (DWORD dwID, const CString &sAttrib) const;
-		void GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const;
+		bool GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impact) const;
 		void GetList (TArray<COverlay *> *retList);
 		void GetListOfCommandPaneCounters (TArray<COverlay *> *retList);
 		COverlay *GetOverlay (DWORD dwID) const;
@@ -1189,7 +1178,7 @@ class CSpaceObject : public CObject
 		void CalcOverlayPos (COverlayType *pOverlayType, const CVector &vPos, int *retiPosAngle, int *retiPosRadius);
 		inline COverlay *GetOverlay (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetOverlay(dwID) : NULL); }
 		ICCItemPtr GetOverlayData (DWORD dwID, const CString &sAttrib) const;
-		inline void GetOverlayImpact (COverlayList::SImpactDesc *retImpact) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetImpact(this, retImpact); else *retImpact = COverlayList::SImpactDesc(); }
+		inline bool GetOverlayImpact (COverlay::SImpactDesc &Impact) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) return pOverlays->GetImpact(this, Impact); else return false; }
 		inline void GetOverlayList (TArray<COverlay *> *retList) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetList(retList); else retList->DeleteAll(); }
 		inline void GetOverlayListOfCommandPaneCounters (TArray<COverlay *> *retList) { COverlayList *pOverlays = GetOverlays(); if (pOverlays) pOverlays->GetListOfCommandPaneCounters(retList); else retList->DeleteAll(); }
 		inline CVector GetOverlayPos (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetPos(this, dwID) : GetPos()); }

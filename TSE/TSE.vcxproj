@@ -346,6 +346,7 @@
     <ClCompile Include="CCommunicationsStack.cpp" />
     <ClCompile Include="CCompositeImageModifiers.cpp" />
     <ClCompile Include="CCompositeImageType.cpp" />
+    <ClCompile Include="CConditionSet.cpp" />
     <ClCompile Include="CContinuousBeam.cpp" />
     <ClCompile Include="CCreatePainterCtx.cpp" />
     <ClCompile Include="CCrewAI.cpp" />

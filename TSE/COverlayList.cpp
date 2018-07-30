@@ -289,7 +289,7 @@ bool COverlayList::IsTimeStopped (const CSpaceObject *pSource) const
 	return false;
 	}
 
-void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) const
+bool COverlayList::GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impact) const
 
 //	GetImpact
 //
@@ -298,36 +298,20 @@ void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) con
 	{
 	DEBUG_TRY
 
+	bool bHasImpact = false;
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
 			{
-			//	Do we disarm the source?
+			COverlay::SImpactDesc FieldImpact;
+			if (pField->GetImpact(pSource, FieldImpact))
+				{
+				Impact.Conditions.Set(FieldImpact.Conditions);
+				Impact.rDrag *= FieldImpact.rDrag;
 
-			if (pField->Disarms(pSource))
-				retImpact->bDisarm = true;
-
-			//	Do we paralyze the source?
-
-			if (pField->Paralyzes(pSource))
-				retImpact->bParalyze = true;
-
-			//	Can't bring up ship status
-
-			if (pField->IsShipScreenDisabled())
-				retImpact->bShipScreenDisabled = true;
-
-			//	Do we spin the source ?
-
-			if (pField->Spins(pSource))
-				retImpact->bSpin = true;
-
-			//	Get appy drag
-
-			Metric rDrag;
-			if ((rDrag = pField->GetDrag(pSource)) < 1.0)
-				retImpact->rDrag *= rDrag;
+				bHasImpact = true;
+				}
 			}
 
 		//	Next
@@ -335,6 +319,7 @@ void COverlayList::GetImpact (CSpaceObject *pSource, SImpactDesc *retImpact) con
 		pField = pField->GetNext();
 		}
 
+	return bHasImpact;
 	DEBUG_CATCH
 	}
 

@@ -872,14 +872,14 @@ void CShip::CalcOverlayImpact (void)
 	{
 	DEBUG_TRY
 
-	COverlayList::SImpactDesc Impact;
-	m_Overlays.GetImpact(this, &Impact);
+	COverlay::SImpactDesc Impact;
+	m_Overlays.GetImpact(this, Impact);
 
 	//	Update our cache
 
-	m_fDisarmedByOverlay = Impact.bDisarm;
-	m_fParalyzedByOverlay = Impact.bParalyze;
-	m_fSpinningByOverlay = Impact.bSpin;
+	m_fDisarmedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndDisarmed);
+	m_fParalyzedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndParalyzed);
+	m_fSpinningByOverlay = Impact.Conditions.IsSet(CConditionSet::cndSpinning);
 	m_fDragByOverlay = (Impact.rDrag < 1.0);
 
 	DEBUG_CATCH
@@ -6106,11 +6106,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         //	We're too lazy to store the drag coefficient, so we recalculate it here.
         //
         //	(Since it's rare to have this, it shouldn't been too much of a performance
-        //	penalty. But if necessary we have add a special function to just get the
+        //	penalty. But if necessary we can add a special function to just get the
         //	drag coefficient from the overlay list.)
 
-        COverlayList::SImpactDesc Impact;
-        m_Overlays.GetImpact(this, &Impact);
+        COverlay::SImpactDesc Impact;
+        m_Overlays.GetImpact(this, Impact);
 
         SetVel(CVector(GetVel().GetX() * Impact.rDrag, GetVel().GetY() * Impact.rDrag));
         }
