@@ -22,10 +22,21 @@ class CConditionSet
 			cndSpinning =			0x00000020,		//	Spinning uncontrollably
 			cndTimeStopped =		0x00000040,		//	Time-stopped
 			cndShipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+
+			cndCount =				8,
+			};
+
+		enum EModifications
+			{
+			cndModificationUnknown =	-1,
+
+			cndAdded =					0,
+			cndRemoved =				1,
 			};
 
 		inline void Clear (ETypes iCondition) { m_dwSet &= ~iCondition; }
 		inline void ClearAll (void) { m_dwSet = 0; }
+		bool Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TArray<ETypes> &Removed) const;
 		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
 		inline bool IsSet (ETypes iCondition) const { return ((m_dwSet & iCondition) ? true : false); }
 		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }

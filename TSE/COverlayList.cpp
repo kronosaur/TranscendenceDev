@@ -145,7 +145,7 @@ void COverlayList::AddField (CSpaceObject *pSource,
 
 	//	Either way, we need to recalculate impact
 
-	m_Conditions = CalcConditions(pSource);
+	OnConditionsChanged(pSource);
 
 	//	Done
 
@@ -345,30 +345,6 @@ int COverlayList::GetCountOfType (COverlayType *pType)
 		}
 
 	return iCount;
-	}
-
-bool COverlayList::IsTimeStopped (const CSpaceObject *pSource) const
-
-//	IsTimeStopped
-//
-//	Returns TRUE if any overlay stops time.
-
-	{
-	COverlay *pField = m_pFirst;
-	while (pField)
-		{
-		if (!pField->IsDestroyed())
-			{
-			if (pField->StopsTime(pSource))
-				return true;
-			}
-
-		//	Next
-
-		pField = pField->GetNext();
-		}
-
-	return false;
 	}
 
 bool COverlayList::GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impact) const
@@ -647,6 +623,33 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
     }
 
+void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
+
+//	OnConditionsChanged
+//
+//	Imparted conditions may have changed, so notify source.
+
+	{
+	int i;
+
+	CConditionSet OldConditions = m_Conditions;
+	m_Conditions = CalcConditions(pSource);
+
+	//	See what changed.
+
+	TArray<CConditionSet::ETypes> Added;
+	TArray<CConditionSet::ETypes> Removed;
+
+	if (m_Conditions.Diff(OldConditions, Added, Removed))
+		{
+		for (i = 0; i < Added.GetCount(); i++)
+			pSource->OnOverlayConditionChanged(Added[i], CConditionSet::cndAdded);
+
+		for (i = 0; i < Removed.GetCount(); i++)
+			pSource->OnOverlayConditionChanged(Removed[i], CConditionSet::cndRemoved);
+		}
+	}
+
 void COverlayList::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
@@ -802,7 +805,7 @@ void COverlayList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 
 			//	Recalc conditions
 
-			m_Conditions = CalcConditions(pSource);
+			OnConditionsChanged(pSource);
 			return;
 			}
 
@@ -951,10 +954,11 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 		if (!pField->IsDestroyed()
 				|| pField->IsFading())
 			{
+			bool bIsDestroyed = pField->IsDestroyed();
 			bool bOverlayModified;
 
 			pField->Update(pSource, iScale, iRotation, &bOverlayModified);
-			if (pField->IsDestroyed())
+			if (!bIsDestroyed && pField->IsDestroyed())
 				{
 				bDestroyed = true;
 				bModified = true;
@@ -974,7 +978,7 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 	//	Recalc conditions
 
 	if (bDestroyed)
-		m_Conditions = CalcConditions(pSource);
+		OnConditionsChanged(pSource);
 
 	//	Do a second pass in which we destroy fields marked for deletion
 
@@ -997,6 +1001,7 @@ void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRo
 	DEBUG_TRY
 
 	bool bModified = false;
+	bool bDestroyed = false;
 
 	//	First update all fields
 
@@ -1007,10 +1012,16 @@ void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRo
 				&& (!pField->IsDestroyed()
 					|| pField->IsFading()))
 			{
+			bool bIsDestroyed = pField->IsDestroyed();
 			bool bOverlayModified;
 
 			pField->Update(pSource, iScale, iRotation, &bOverlayModified);
-			if (bOverlayModified)
+			if (!bIsDestroyed && pField->IsDestroyed())
+				{
+				bDestroyed = true;
+				bModified = true;
+				}
+			else if (bOverlayModified)
 				bModified = true;
 
 			//	If the source got destroyed, then we're done
@@ -1021,6 +1032,11 @@ void COverlayList::UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRo
 
 		pField = pField->GetNext();
 		}
+
+	//	Recalc conditions
+
+	if (bDestroyed)
+		OnConditionsChanged(pSource);
 
 	//	Do a second pass in which we destroy fields marked for deletion
 

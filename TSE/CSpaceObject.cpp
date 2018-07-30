@@ -5336,7 +5336,7 @@ bool CSpaceObject::IsTimeStopped (void) const
 	//	See if any overlays has stopped time.
 
 	const COverlayList *pList = GetOverlays();
-	if (pList && pList->IsTimeStopped(this))
+	if (pList && pList->GetConditions().IsSet(CConditionSet::cndTimeStopped))
 		return true;
 
 	//	Not stopped

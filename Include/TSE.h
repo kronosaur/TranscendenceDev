@@ -584,7 +584,6 @@ class COverlayList
 		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
         ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
 		inline bool IsEmpty (void) { return (m_pFirst == NULL); }
-		bool IsTimeStopped (const CSpaceObject *pSource) const;
 		inline void OnNewSystem (CSpaceObject *pSource, CSystem *pSystem) { m_Conditions = CalcConditions(pSource); }
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -606,6 +605,7 @@ class COverlayList
 	private:
 		CConditionSet CalcConditions (CSpaceObject *pSource) const;
 		bool DestroyDeleted (void);
+		void OnConditionsChanged (CSpaceObject *pSource);
 
 		COverlay *m_pFirst;
 		CConditionSet m_Conditions;			//	Imparted conditions (cached from actual overlays)
@@ -1176,6 +1176,7 @@ class CSpaceObject : public CObject
 		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
 		virtual COverlayList *GetOverlays (void) { return NULL; }
 		virtual const COverlayList *GetOverlays (void) const { return NULL; }
+		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) { }
 		virtual void RemoveOverlay (DWORD dwID) { }
 
 		void AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iLifetime, DWORD *retdwID = NULL);
