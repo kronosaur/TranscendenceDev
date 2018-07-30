@@ -230,7 +230,6 @@ void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int 
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
-	CalcOverlayImpact();
 	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
@@ -860,29 +859,6 @@ int CShip::CalcMaxCargoSpace (void) const
 
 	{
     return m_Perf.GetCargoDesc().GetCargoSpace();
-	}
-
-void CShip::CalcOverlayImpact (void)
-
-//	CalcOverlayImpact
-//
-//	Calculates the impact of overlays on the ship. This should be called 
-//	whenever the set of overlays changes.
-
-	{
-	DEBUG_TRY
-
-	COverlay::SImpactDesc Impact;
-	m_Overlays.GetImpact(this, Impact);
-
-	//	Update our cache
-
-	m_fDisarmedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndDisarmed);
-	m_fParalyzedByOverlay = Impact.Conditions.IsSet(CConditionSet::cndParalyzed);
-	m_fSpinningByOverlay = Impact.Conditions.IsSet(CConditionSet::cndSpinning);
-	m_fDragByOverlay = (Impact.rDrag < 1.0);
-
-	DEBUG_CATCH
 	}
 
 void CShip::CalcPerformance (void)
@@ -1600,10 +1576,6 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fRecalcRotationAccel = false;
 	pShip->m_fDockingDisabled = false;
 	pShip->m_fControllerDisabled = false;
-	pShip->m_fParalyzedByOverlay = false;
-	pShip->m_fDisarmedByOverlay = false;
-	pShip->m_fSpinningByOverlay = false;
-	pShip->m_fDragByOverlay = false;
 	pShip->m_fAlwaysLeaveWreck = false;
 	pShip->m_fEmergencySpeed = false;
 	pShip->m_fQuarterSpeed = false;
@@ -5078,8 +5050,8 @@ void CShip::OnNewSystem (CSystem *pSystem)
 
 	//	Recalc bonuses, etc.
 
+	m_Overlays.OnNewSystem(this, pSystem);
 	CalcBounds();
-	CalcOverlayImpact();
 	CalcArmorBonus();
 	CalcDeviceBonus();
     CalcPerformance();
@@ -5546,10 +5518,10 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	0x00010000 Unused as of version 155
 	m_fDockingDisabled =		((dwLoad & 0x00020000) ? true : false);
 	m_fControllerDisabled =		((dwLoad & 0x00040000) ? true : false);
-	m_fParalyzedByOverlay =		((dwLoad & 0x00080000) ? true : false);
-	m_fDisarmedByOverlay =		((dwLoad & 0x00100000) ? true : false);
-	m_fSpinningByOverlay =		((dwLoad & 0x00200000) ? true : false);
-	m_fDragByOverlay =			((dwLoad & 0x00400000) ? true : false);
+	//	0x00080000 Unused as of version 160
+	//	0x00100000 Unused as of version 160
+	//	0x00200000 Unused as of version 160
+	//	0x00400000 Unused as of version 160
 	m_fAlwaysLeaveWreck =		((dwLoad & 0x00800000) ? true : false);
 	if (Ctx.dwVersion < 144)
 		{
@@ -6094,13 +6066,13 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         {
         //	Spin wildly
 
-        if (!IsAnchored() && m_fSpinningByOverlay)
+        if (!IsAnchored() && m_Overlays.GetConditions().IsSet(CConditionSet::cndSpinning))
             m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
         }
 
     //	Slow down if an overlay is imposing drag
 
-    if (m_fDragByOverlay
+    if (m_Overlays.GetConditions().IsSet(CConditionSet::cndDragged)
             && !ShowParalyzedEffect())
         {
         //	We're too lazy to store the drag coefficient, so we recalculate it here.
@@ -6290,9 +6262,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     if (bBoundsChanged)
         CalcBounds();
 
-    if (bOverlaysChanged)
-        CalcOverlayImpact();
-
 	if (bCalcArmorBonus)
 		CalcArmorBonus();
 
@@ -6437,10 +6406,10 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	0x00010000
 	dwSave |= (m_fDockingDisabled ?		0x00020000 : 0);
 	dwSave |= (m_fControllerDisabled ?	0x00040000 : 0);
-	dwSave |= (m_fParalyzedByOverlay ?	0x00080000 : 0);
-	dwSave |= (m_fDisarmedByOverlay ?	0x00100000 : 0);
-	dwSave |= (m_fSpinningByOverlay ?	0x00200000 : 0);
-	dwSave |= (m_fDragByOverlay ?		0x00400000 : 0);
+	//	0x00080000
+	//	0x00100000
+	//	0x00200000
+	//	0x00400000
 	dwSave |= (m_fAlwaysLeaveWreck ?	0x00800000 : 0);
 	dwSave |= (m_fShipCompartment ?		0x01000000 : 0);
 	//	0x02000000
@@ -8232,15 +8201,15 @@ void CShip::UpdateInactive (void)
         }
 	}
 
-void CShip::UpdateNoFriendlyFire(void)
+void CShip::UpdateNoFriendlyFire (void)
 
 //	UpdateNoFriendlyFire
 //
 //	Updates NoFriendlyFire based on AISettings
 
-{
+	{
 	if (m_pController->GetAISettings()->NoFriendlyFire())
 		SetNoFriendlyFire();
 	else
 		ClearNoFriendlyFire();
-}
+	}

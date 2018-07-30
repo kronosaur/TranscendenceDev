@@ -481,6 +481,7 @@ class COverlay
 		void FireOnDestroy (CSpaceObject *pSource);
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
+		CConditionSet GetConditions (CSpaceObject *pSource) const;
 		inline int GetCounter (void) const { return m_iCounter; }
 		inline ICCItemPtr GetData (const CString &sAttrib) { return m_Data.GetDataAsItem(sAttrib); }
 		inline int GetDevice (void) const { return m_iDevice; }
@@ -569,6 +570,7 @@ class COverlayList
 		bool FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen = NULL, int *retiPriority = NULL, ICCItemPtr *retpData = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
+		inline const CConditionSet &GetConditions (void) const { return m_Conditions; }
 		int GetCountOfType (COverlayType *pType);
 		ICCItemPtr GetData (DWORD dwID, const CString &sAttrib) const;
 		bool GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impact) const;
@@ -583,6 +585,7 @@ class COverlayList
         ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
 		inline bool IsEmpty (void) { return (m_pFirst == NULL); }
 		bool IsTimeStopped (const CSpaceObject *pSource) const;
+		inline void OnNewSystem (CSpaceObject *pSource, CSystem *pSystem) { m_Conditions = CalcConditions(pSource); }
 		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -601,9 +604,11 @@ class COverlayList
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		CConditionSet CalcConditions (CSpaceObject *pSource) const;
 		bool DestroyDeleted (void);
 
 		COverlay *m_pFirst;
+		CConditionSet m_Conditions;			//	Imparted conditions (cached from actual overlays)
 	};
 
 //	Space Objects

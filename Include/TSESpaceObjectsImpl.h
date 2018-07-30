@@ -1161,7 +1161,7 @@ class CShip : public CSpaceObject
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
 		virtual bool IsBlind (void) const override { return m_iBlindnessTimer != 0; }
-		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay || m_iDisarmedTimer != 0; }
+		virtual bool IsDisarmed (void) override { return (m_Overlays.GetConditions().IsSet(CConditionSet::cndDisarmed) || m_iDisarmedTimer != 0); }
 		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
@@ -1169,7 +1169,7 @@ class CShip : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
-		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay || m_iParalysisTimer != 0; }
+		virtual bool IsParalyzed (void) override { return (m_Overlays.GetConditions().IsSet(CConditionSet::cndParalyzed) || m_iParalysisTimer != 0); }
 		virtual bool IsPlayer (void) const override;
 		virtual bool IsPlayerWingman (void) const override { return m_pController->IsPlayerWingman(); }
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
@@ -1268,7 +1268,6 @@ class CShip : public CSpaceObject
 		bool CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
-		void CalcOverlayImpact (void);
         void CalcPerformance (void);
 		int CalcPowerUsed (SUpdateCtx &Ctx, int *retiPowerGenerated = NULL);
 		void CreateExplosion (SDestroyCtx &Ctx);
@@ -1358,27 +1357,20 @@ class CShip : public CSpaceObject
 		DWORD m_fDockingDisabled:1;				//	TRUE if docking is disabled
 		DWORD m_fControllerDisabled:1;			//	TRUE if we want to disable controller
 		DWORD m_fRecalcRotationAccel:1;			//	TRUE if we need to recalc rotation acceleration
-		DWORD m_fParalyzedByOverlay:1;			//	TRUE if one or more overlays paralyze the ship.
-		DWORD m_fDisarmedByOverlay:1;			//	TRUE if one or more overlays disarmed the ship.
-		DWORD m_fSpinningByOverlay:1;			//	TRUE if we should spin wildly
-
-		DWORD m_fDragByOverlay:1;				//	TRUE if overlay imposes drag
 		DWORD m_fAlwaysLeaveWreck:1;			//	TRUE if we always leave a wreck
 		DWORD m_fEmergencySpeed:1;				//	TRUE if we're operating at 1.5x max speed
 		DWORD m_fQuarterSpeed:1;				//	TRUE if we're operating at 0.25x max speed
+		
 		DWORD m_fLRSDisabledByNebula:1;			//	TRUE if LRS is disabled due to environment
 		DWORD m_fShipCompartment:1;				//	TRUE if we're part of another ship (m_pDocked is the root ship)
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
 		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
-
 		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
-		DWORD m_fSpare2:1;
-		DWORD m_fSpare3:1;
-		DWORD m_fSpare4:1;
-		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
 	friend CObjectClass<CShip>;
 	};
@@ -1527,7 +1519,7 @@ class CStation : public CSpaceObject
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
-		virtual bool IsDisarmed (void) override { return m_fDisarmedByOverlay; }
+		virtual bool IsDisarmed (void) override { return m_Overlays.GetConditions().IsSet(CConditionSet::cndDisarmed); }
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
@@ -1535,7 +1527,7 @@ class CStation : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
-		virtual bool IsParalyzed (void) override { return m_fParalyzedByOverlay; }
+		virtual bool IsParalyzed (void) override { return m_Overlays.GetConditions().IsSet(CConditionSet::cndParalyzed); }
 		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
         virtual bool IsShownInGalacticMap (void) const override;
@@ -1609,7 +1601,6 @@ class CStation : public CSpaceObject
 		void CalcBounds (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		int CalcNumberOfShips (void);
-		void CalcOverlayImpact (void);
 		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
@@ -1676,24 +1667,15 @@ class CStation : public CSpaceObject
 		DWORD m_fFireReconEvent:1;				//	If TRUE, fire OnReconned
 
 		DWORD m_fExplored:1;					//	If TRUE, player has docked at least once
-		DWORD m_fDisarmedByOverlay:1;			//	If TRUE, an overlay has disarmed us
-		DWORD m_fParalyzedByOverlay:1;			//	If TRUE, an overlay has paralyzed us
 		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
 		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
 		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
-
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
-		DWORD m_fSpare3:1;
-		DWORD m_fSpare4:1;
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
 
-		DWORD m_dwSpare:8;
+		DWORD m_dwSpare:16;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)

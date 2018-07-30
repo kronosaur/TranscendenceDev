@@ -96,6 +96,88 @@ void COverlayList::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRot
 		}
 	}
 
+void COverlayList::AddField (CSpaceObject *pSource, 
+								 COverlayType *pType,
+								 int iPosAngle,
+								 int iPosRadius,
+								 int iRotation,
+								 int iLifeLeft, 
+								 DWORD *retdwID)
+
+//	AddField
+//
+//	Adds a field of the given type to the head of the list
+
+	{
+	COverlay *pField;
+	COverlay::CreateFromType(pType, 
+			iPosAngle, 
+			iPosRadius, 
+			iRotation, 
+			iLifeLeft, 
+			&pField);
+
+	DWORD dwID = pField->GetID();
+
+	//	Add the field to the head of the list
+
+	pField->SetNext(m_pFirst);
+	m_pFirst = pField;
+
+	//	Call OnCreate
+
+	pField->FireOnCreate(pSource);
+
+	//	If we deleted, then we're done
+
+	if (pField->IsDestroyed())
+		{
+		COverlay *pNext = pField->GetNext();
+		m_pFirst = pNext;
+		delete pField;
+		pField = NULL;
+
+		dwID = 0;
+		}
+
+	//	NOTE: After this point we cannot guarantee that pField is valid, since
+	//	it may have been destroyed.
+
+	//	Either way, we need to recalculate impact
+
+	m_Conditions = CalcConditions(pSource);
+
+	//	Done
+
+	if (retdwID)
+		*retdwID = dwID;
+	}
+
+CConditionSet COverlayList::CalcConditions (CSpaceObject *pSource) const
+
+//	CalcConditions
+//
+//	Computes the conditions that we impart.
+
+	{
+	CConditionSet AllConditions;
+
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (!pField->IsDestroyed())
+			{
+			AllConditions.Set(pField->GetConditions(pSource));
+			}
+
+		//	Next
+
+		pField = pField->GetNext();
+		}
+
+	return AllConditions;
+	}
+
 bool COverlayList::Damage (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 //	Damage
@@ -321,55 +403,6 @@ bool COverlayList::GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impa
 
 	return bHasImpact;
 	DEBUG_CATCH
-	}
-
-void COverlayList::AddField (CSpaceObject *pSource, 
-								 COverlayType *pType,
-								 int iPosAngle,
-								 int iPosRadius,
-								 int iRotation,
-								 int iLifeLeft, 
-								 DWORD *retdwID)
-
-//	AddField
-//
-//	Adds a field of the given type to the head of the list
-
-	{
-	COverlay *pField;
-	COverlay::CreateFromType(pType, 
-			iPosAngle, 
-			iPosRadius, 
-			iRotation, 
-			iLifeLeft, 
-			&pField);
-
-	//	Add the field to the head of the list
-
-	pField->SetNext(m_pFirst);
-	m_pFirst = pField;
-
-	//	Call OnCreate
-
-	pField->FireOnCreate(pSource);
-
-	//	If we deleted, then we're done
-
-	if (pField->IsDestroyed())
-		{
-		COverlay *pNext = pField->GetNext();
-		m_pFirst = pNext;
-		delete pField;
-
-		if (retdwID)
-			*retdwID = 0;
-		return;
-		}
-
-	//	Done
-
-	if (retdwID)
-		*retdwID = pField->GetID();
 	}
 
 void COverlayList::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const
@@ -744,6 +777,11 @@ void COverlayList::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource)
 		pPrevField = pField;
 		dwCount--;
 		}
+
+	//	Recalc conditions
+
+	if (m_pFirst)
+		m_Conditions = CalcConditions(pSource);
 	}
 
 void COverlayList::RemoveField (CSpaceObject *pSource, DWORD dwID)
@@ -761,6 +799,10 @@ void COverlayList::RemoveField (CSpaceObject *pSource, DWORD dwID)
 		if (pField->GetID() == dwID)
 			{
 			pField->Destroy(pSource);
+
+			//	Recalc conditions
+
+			m_Conditions = CalcConditions(pSource);
 			return;
 			}
 
@@ -899,6 +941,7 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 	DEBUG_TRY
 
 	bool bModified = false;
+	bool bDestroyed = false;
 
 	//	First update all fields
 
@@ -911,7 +954,12 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 			bool bOverlayModified;
 
 			pField->Update(pSource, iScale, iRotation, &bOverlayModified);
-			if (bOverlayModified)
+			if (pField->IsDestroyed())
+				{
+				bDestroyed = true;
+				bModified = true;
+				}
+			else if (bOverlayModified)
 				bModified = true;
 
 			//	If the source got destroyed, then we're done
@@ -922,6 +970,11 @@ void COverlayList::Update (CSpaceObject *pSource, int iScale, int iRotation, boo
 
 		pField = pField->GetNext();
 		}
+
+	//	Recalc conditions
+
+	if (bDestroyed)
+		m_Conditions = CalcConditions(pSource);
 
 	//	Do a second pass in which we destroy fields marked for deletion
 
