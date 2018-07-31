@@ -1307,7 +1307,8 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 		return false;
 
 	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, pShot, iRepeatingCount);
-	//	For repeating weapons, we check at the beginning and consume at the end.
+
+  //	For repeating weapons, we check at the beginning and consume at the end.
 	
 	if (pShot->GetContinuous() > 0)
 		{
@@ -1806,22 +1807,20 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
-int CWeaponClass::FireGetAmmoToConsume(CItemCtx &ItemCtx,
-	CWeaponFireDesc *pShot,
-	int iRepeatingCount)
+int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount)
 
-	//	FireOnFireWeapon
-	//
-	//	Fires OnFireWeapon event
-	//
-	//	default (or Nil) = fire weapon as normal
-	//	noShot = do not consume power or ammo
-	//	shotFired (or True) = consume power and ammo normally
+//	FireOnFireWeapon
+//
+//	Fires OnFireWeapon event
+//
+//	default (or Nil) = fire weapon as normal
+//	noShot = do not consume power or ammo
+//	shotFired (or True) = consume power and ammo normally
 
-{
+	{
 	SEventHandlerDesc Event;
 	if (FindEventHandlerWeaponClass(evtGetAmmoToConsume, &Event))
-	{
+		{
 		CCodeChainCtx Ctx;
 		int iResult;
 		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
@@ -1836,23 +1835,23 @@ int CWeaponClass::FireGetAmmoToConsume(CItemCtx &ItemCtx,
 			ItemCtx.GetSource()->ReportEventError(GET_AMMO_TO_CONSUME_EVENT, pResult);
 
 		if (pResult->IsInteger())
-		{
+			{
 			iResult = pResult->GetIntegerValue();
-		}
+			}
 		else
-		{
+			{
 			iResult = 1;
-		}
+			}
 
 		Ctx.Discard(pResult);
 
 		//	Done
 
 		return iResult;
-	}
+		}
 	else
 		return 1;
-}
+	}
 
 CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
 																   CWeaponFireDesc *pShot,

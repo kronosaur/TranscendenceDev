@@ -601,6 +601,72 @@ void COverlay::FireOnUpdate (CSpaceObject *pSource)
 		}
 	}
 
+CConditionSet COverlay::GetConditions (CSpaceObject *pSource) const
+
+//	GetConditions
+//
+//	Returns the set of imparted conditions
+
+	{
+	CConditionSet Conditions;
+
+	//	Do we disarm the source?
+
+	if (Disarms(pSource))
+		Conditions.Set(CConditionSet::cndDisarmed);
+
+	//	Do we paralyze the source?
+
+	if (Paralyzes(pSource))
+		Conditions.Set(CConditionSet::cndParalyzed);
+
+	//	Can't bring up ship status
+
+	if (IsShipScreenDisabled())
+		Conditions.Set(CConditionSet::cndShipScreenDisabled);
+
+	//	Do we spin the source ?
+
+	if (Spins(pSource))
+		Conditions.Set(CConditionSet::cndSpinning);
+
+	//	Drag
+
+	if (GetDrag(pSource) < 1.0)
+		Conditions.Set(CConditionSet::cndDragged);
+
+	//	Time-stopped?
+
+	if (StopsTime(pSource))
+		Conditions.Set(CConditionSet::cndTimeStopped);
+
+	//	Done
+
+	return Conditions;
+	}
+
+bool COverlay::GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const
+
+//	GetImpact
+//
+//	Returns the impact of this overlay.
+
+	{
+	//	Conditions
+
+	Impact.Conditions = GetConditions(pSource);
+	bool bHasImpact = !Impact.Conditions.IsEmpty();
+
+	//	Get appy drag
+
+	if ((Impact.rDrag = GetDrag(pSource)) < 1.0)
+		bHasImpact = true;
+
+	//	Done
+
+	return bHasImpact;
+	}
+
 CVector COverlay::GetPos (CSpaceObject *pSource)
 
 //	GetPos

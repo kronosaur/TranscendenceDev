@@ -254,6 +254,8 @@ class IShipController
 			statusReactorOverloadWarning,	//	dwData = sequence
 			statusReactorPowerFailure,		//	Reactor is dead
 			statusReactorRestored,			//	Reactor is functioning normally
+			statusTimeStopped,				//	Time stopped
+			statusTimeRestored,				//	Time continues
 			};
 
 		virtual ~IShipController (void) { }
@@ -337,6 +339,7 @@ class IShipController
 		virtual void OnObjDamaged (const SDamageCtx &Ctx) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
+		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) { }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) { }
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }

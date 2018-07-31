@@ -7863,9 +7863,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIX_PARALYSIS:
 			{
-			CShip *pShip = pObj->AsShip();
-			if (pShip)
-				pShip->ClearParalyzed();
+			pObj->ClearCondition(CConditionSet::cndParalyzed);
 			return pCC->CreateTrue();
 			}
 
@@ -8441,8 +8439,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
 			pArgs->Discard(pCC);
 
-			pObj->MakeParalyzed(iTime);
-
+			pObj->SetCondition(CConditionSet::cndParalyzed, iTime);
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -9248,7 +9245,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateBool(pArmor->IsImmune(CItemCtx(pShip, pInstalled), specialRadiation));
 				}
 			else
-				return pCC->CreateBool(pShip->IsRadiationImmune());
+				return pCC->CreateBool(pShip->IsImmuneTo(CConditionSet::cndRadioactive));
 			break;
 			}
 
@@ -9398,12 +9395,12 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			break;
 
 		case FN_SHIP_DECONTAMINATE:
-			pShip->Decontaminate();
+			pShip->ClearCondition(CConditionSet::cndRadioactive);
 			pResult = pCC->CreateTrue();
 			break;
 
 		case FN_SHIP_MAKE_RADIOACTIVE:
-			pShip->MakeRadioactive();
+			pShip->SetCondition(CConditionSet::cndRadioactive);
 			pResult = pCC->CreateTrue();
 			break;
 

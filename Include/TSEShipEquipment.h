@@ -5,6 +5,50 @@
 
 #pragma once
 
+//	Conditions -----------------------------------------------------------------
+
+class CConditionSet
+	{
+	public:
+		enum ETypes
+			{
+			cndNone =				0x00000000,
+
+			cndBlind =				0x00000001,		//	SRS-blind
+			cndParalyzed =			0x00000002,		//	EMP
+			cndRadioactive =		0x00000004,		//	Radioactive
+			cndDisarmed =			0x00000008,		//	Unable to fire weapons
+			cndDragged =			0x00000010,		//	Subject to drag
+			cndSpinning =			0x00000020,		//	Spinning uncontrollably
+			cndTimeStopped =		0x00000040,		//	Time-stopped
+			cndShipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+			cndLRSBlind =			0x00000100,		//	LRS-blind
+
+			cndCount =				9,
+			};
+
+		enum EModifications
+			{
+			cndModificationUnknown =	-1,
+
+			cndAdded =					0,
+			cndRemoved =				1,
+			};
+
+		inline void Clear (ETypes iCondition) { m_dwSet &= ~iCondition; }
+		inline void ClearAll (void) { m_dwSet = 0; }
+		bool Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TArray<ETypes> &Removed) const;
+		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
+		inline bool IsSet (ETypes iCondition) const { return ((m_dwSet & iCondition) ? true : false); }
+		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		inline void Set (ETypes iCondition) { m_dwSet |= iCondition; }
+		void Set (const CConditionSet &Conditions);
+		inline void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+
+	private:
+		DWORD m_dwSet = 0;
+	};
+
 //	Equipment (Abilities) ------------------------------------------------------
 //
 //	See AbilityTable in ConstantsUtilities.cpp

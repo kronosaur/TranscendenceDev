@@ -105,6 +105,8 @@ const Metric g_DockBeamTangentStrength = 250.0;
 
 const int g_iMapScale = 5;
 
+const int DEFAULT_TIME_STOP_TIME =				150;
+
 CStation::CStation (void) : CSpaceObject(&g_Class),
 		m_fArmed(false),
 		m_dwSpare(0),
@@ -156,7 +158,6 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
-	CalcOverlayImpact();
 	}
 
 void CStation::AddSubordinate (CSpaceObject *pSubordinate)
@@ -344,27 +345,6 @@ int CStation::CalcNumberOfShips (void)
 	return iCount;
 
 	DEBUG_CATCH
-	}
-
-void CStation::CalcOverlayImpact (void)
-
-//	CalcOverlayImpact
-//
-//	Calculates the impact of overlays on the station. This should be called 
-//	whenever the set of overlays changes.
-
-	{
-	COverlayList::SImpactDesc Impact;
-	m_Overlays.GetImpact(this, &Impact);
-
-	//	Update our cache
-
-	m_fDisarmedByOverlay = Impact.bDisarm;
-	m_fParalyzedByOverlay = Impact.bParalyze;
-
-	//	Recalc bounds
-
-	CalcBounds();
 	}
 
 bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength)
@@ -710,8 +690,6 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_yMapLabel = -6;
 	pStation->m_rMass = pType->GetMass();
 	pStation->m_dwWreckUNID = 0;
-	pStation->m_fDisarmedByOverlay = false;
-	pStation->m_fParalyzedByOverlay = false;
 	pStation->m_fNoBlacklist = false;
 	pStation->SetHasGravity(pType->HasGravity());
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
@@ -907,7 +885,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	Make radioactive, if necessary
 
 	if (pType->IsRadioactive())
-		pStation->MakeRadioactive();
+		pStation->SetCondition(CConditionSet::cndRadioactive);
 
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
@@ -1816,6 +1794,21 @@ bool CStation::IsShownInGalacticMap (void) const
     return true;
     }
 
+void CStation::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+
+//	OnClearCondition
+//
+//	Clears a condition
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndRadioactive:
+			m_fRadioactive = false;
+			break;
+		}
+	}
+
 EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 //	Damage
@@ -1961,7 +1954,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			{
 			int iChance = 4 * iRadioactive * iRadioactive;
 			if (mathRandom(1, 100) <= iChance)
-				MakeRadioactive();
+				SetCondition(CConditionSet::cndRadioactive);
 			}
 
 		//	If we have mining damage then call OnMining
@@ -2118,6 +2111,19 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	if (pOrderGiver && pOrderGiver->CanAttack())
 		pOrderGiver->OnObjDamaged(Ctx);
+
+	//	Handle special attacks
+
+	if (Ctx.IsTimeStopped() 
+			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
+			&& !IsTimeStopped())
+		{
+		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
+
+		//	No damage
+
+		Ctx.iDamage = 0;
+		}
 
 	//	If we've still got armor left, then we take damage but otherwise
 	//	we're OK.
@@ -2320,6 +2326,40 @@ void CStation::OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *
 		}
 	}
 
+bool CStation::OnGetCondition (CConditionSet::ETypes iCondition) const
+
+//	OnGetCondition
+//
+//	Returns station condition.
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndRadioactive:
+			return (m_fRadioactive ? true : false);
+
+		default:
+			return false;
+		}
+	}
+
+bool CStation::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
+
+//	OnIsImmuneTo
+//
+//	Returns TRUE if we are immune to the given condition.
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndTimeStopped:
+			return m_pType->IsTimeStopImmune();
+
+		default:
+			return false;
+		}
+	}
+
 void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 
 //	OnMove
@@ -2331,6 +2371,21 @@ void CStation::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	move along with it.
 
 	m_DockingPorts.MoveAll(this);
+	}
+
+void CStation::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
+
+//	OnSetCondition
+//
+//	Sets a condition
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndRadioactive:
+			m_fRadioactive = true;
+			break;
+		}
 	}
 
 void CStation::AvengeAttack (CSpaceObject *pTarget)
@@ -3440,8 +3495,8 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		bImmutable = false;
 
 	m_fExplored =			((dwLoad & 0x00000800) ? true : false);
-	m_fDisarmedByOverlay =	((dwLoad & 0x00001000) ? true : false);
-	m_fParalyzedByOverlay =	((dwLoad & 0x00002000) ? true : false);
+	//	0x00001000 Unused as of version 160
+	//	0x00002000 Unused as of version 160
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
@@ -3763,7 +3818,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (CSpaceObject::IsDestroyedInUpdate())
 			return;
 		else if (bModified)
-			CalcOverlayImpact();
+			CalcBounds();
 		}
 
 	DEBUG_CATCH
@@ -3942,8 +3997,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	0x00000200 retired
 	//	0x00000400 retired at 151
 	dwSave |= (m_fExplored ?			0x00000800 : 0);
-	dwSave |= (m_fDisarmedByOverlay ?	0x00001000 : 0);
-	dwSave |= (m_fParalyzedByOverlay ?	0x00002000 : 0);
+	//	0x00001000
+	//	0x00002000
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
@@ -4194,7 +4249,6 @@ void CStation::RemoveOverlay (DWORD dwID)
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
-	CalcOverlayImpact();
 	}
 
 bool CStation::RemoveSubordinate (CSpaceObject *pSubordinate)
@@ -4586,15 +4640,9 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
 		if (pValue->IsNil())
-			{
-			if (IsRadioactive())
-				Decontaminate();
-			}
+			ClearCondition(CConditionSet::cndRadioactive);
 		else
-			{
-			if (!IsRadioactive())
-				MakeRadioactive();
-			}
+			SetCondition(CConditionSet::cndRadioactive);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

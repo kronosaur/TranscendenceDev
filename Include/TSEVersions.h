@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							41;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					159;
+constexpr DWORD SYSTEM_SAVE_VERSION =					160;
 
 //	Uncomment out the following define when building a stable release
 
@@ -592,3 +592,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					159;
 //
 //	159: 1.8 Beta 2
 //		Added m_iExtraPowerUse to replace m_iSlotBonus in CInstalledDevice
+//
+//	160: 1.8 Beta 3
+//		Moved some condition flags to COverlayList

@@ -830,7 +830,7 @@ void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
 					&& !pOwner->IsEnemy(m_pPort[i].pObj))
 				{
 				m_pPort[i].pObj->RepairDamage(iRepairRate);
-				m_pPort[i].pObj->Decontaminate();
+				m_pPort[i].pObj->ClearCondition(CConditionSet::cndRadioactive);
 				m_pPort[i].pObj->ScrapeOverlays();
 				}
 		}
@@ -1184,6 +1184,36 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 		}
 
 	DEBUG_CATCH
+	}
+
+void CDockingPorts::UpdatePortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale)
+
+//	UpdatePortsFromXML
+//
+//	Updates the port positions in case they changed.
+
+	{
+	int i;
+
+	CDockingPorts NewPorts;
+	NewPorts.InitPortsFromXML(pOwner, pElement, iScale);
+
+	int iCount = Min(NewPorts.GetPortCount(), GetPortCount());
+	for (i = 0; i < iCount; i++)
+		{
+		m_pPort[i].Pos = NewPorts.m_pPort[i].Pos;
+		m_pPort[i].iLayer = NewPorts.m_pPort[i].iLayer;
+		m_pPort[i].iRotation = NewPorts.m_pPort[i].iRotation;
+		m_pPort[i].vPos = NewPorts.m_pPort[i].vPos;
+
+		//	LATER: We need to update the position of the actual ship docked
+		//	here. Unfortunately, if we call this at load time we won't yet have
+		//	the ship object pointer. We'll have to call this at a later point
+		//	(or fix up the ships at a later point).
+		}
+
+	m_iMaxDist = NewPorts.m_iMaxDist;
+	m_iLastRotation = NewPorts.m_iLastRotation;
 	}
 
 void CDockingPorts::WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream)

@@ -931,6 +931,25 @@ bool CSpaceObject::CanInstallItem (const CItem &Item, int iSlot, InstallItemResu
 	return false;
 	}
 
+void CSpaceObject::ClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+
+//	ClearCondition
+//
+//	Clears the given condition (generically).
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndTimeStopped:
+			m_fTimeStop = false;
+			break;
+
+		default:
+			OnClearCondition(iCondition, dwFlags);
+			break;
+		}
+	}
+
 void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 //	CommsMessageFrom
@@ -3455,6 +3474,56 @@ int CSpaceObject::GetCommsMessageCount (void)
 		return pHandler->GetCount();
 	}
 
+bool CSpaceObject::GetCondition (CConditionSet::ETypes iCondition) const
+
+//	GetCondition
+//
+//	Returns TRUE if the object is in the given condition.
+
+	{
+	//	We handle certain conditions.
+
+	switch (iCondition)
+		{
+		case CConditionSet::cndTimeStopped:
+			if (m_fTimeStop)
+				return true;
+			break;
+		}
+
+	//	See if an overlay imparts this condition
+
+	const COverlayList *pList = GetOverlays();
+	if (pList && pList->GetConditions().IsSet(iCondition))
+		return true;
+
+	//	Finally, let the sub-class handle it.
+
+	return OnGetCondition(iCondition);
+	}
+
+CConditionSet CSpaceObject::GetConditions (void) const
+
+//	GetConditions
+//
+//	Returns the set of all conditions.
+
+	{
+	int i;
+
+	CConditionSet Conditions;
+	DWORD dwFlag = 1;
+	for (i = 0; i < CConditionSet::cndCount; i++)
+		{
+		if (GetCondition((CConditionSet::ETypes)dwFlag))
+			Conditions.Set((CConditionSet::ETypes)dwFlag);
+
+		dwFlag = dwFlag << 1;
+		}
+
+	return Conditions;
+	}
+
 int CSpaceObject::GetDataInteger (const CString &sAttrib) const
 
 //	GetDataInteger
@@ -5323,27 +5392,6 @@ bool CSpaceObject::IsStargateInRange (Metric rMaxRange)
 	return false;
 	}
 
-bool CSpaceObject::IsTimeStopped (void) const
-
-//	IsTimeStopped
-//
-//	Returns TRUE if we're stopped.
-
-	{
-	if (m_fTimeStop)
-		return true;
-
-	//	See if any overlays has stopped time.
-
-	const COverlayList *pList = GetOverlays();
-	if (pList && pList->IsTimeStopped(this))
-		return true;
-
-	//	Not stopped
-
-	return false;
-	}
-
 bool CSpaceObject::IsUnderAttack (void)
 
 //	IsUnderAttack
@@ -6192,6 +6240,36 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	Remove the object if it had a subscription to us
 
 	m_SubscribedObjs.Delete(Ctx.pObj);
+	}
+
+void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)
+
+//	SetCondition
+//
+//	Sets the given condition (generically).
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndTimeStopped:
+			m_fTimeStop = true;
+			break;
+
+		default:
+			OnSetCondition(iCondition, iTimer);
+			break;
+		}
+	}
+
+void CSpaceObject::SetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+
+//	SetConditionDueToDamage
+//
+//	The given damage has imparted the given condition. NOTE: The caller is 
+//	responsible for checking to see if the object is immune or not.
+
+	{
+	OnSetConditionDueToDamage(DamageCtx, iCondition);
 	}
 
 void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
