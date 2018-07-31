@@ -830,7 +830,7 @@ void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
 					&& !pOwner->IsEnemy(m_pPort[i].pObj))
 				{
 				m_pPort[i].pObj->RepairDamage(iRepairRate);
-				m_pPort[i].pObj->Decontaminate();
+				m_pPort[i].pObj->ClearCondition(CConditionSet::cndRadioactive);
 				m_pPort[i].pObj->ScrapeOverlays();
 				}
 		}

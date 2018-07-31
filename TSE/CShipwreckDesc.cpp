@@ -301,7 +301,7 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 	//	ship class always has radioactive wrecks)
 
 	if ((pShip && pShip->IsRadioactive()) || IsRadioactive())
-		pWreck->MakeRadioactive();
+		pWreck->SetCondition(CConditionSet::cndRadioactive);
 
 	//	Done
 

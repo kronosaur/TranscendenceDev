@@ -32,21 +32,25 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 21> NOUN_FLAG_TABLE = {
 	"article",				nounArticle,
 	"capitalize",			nounCapitalize,
 	"count",				nounCount,
+
 	"countAlways",			nounCountAlways,
 	"countOnly",			nounCountOnly,
 	"demonstrative",		nounDemonstrative,
 	"demonym",				nounDemonym,
 	"duplicateModifier",	nounDuplicateModifier,
+
 	"escapeQuotes",			nounEscapeQuotes,
 	"generic",				nounGeneric,
 	"installedState",		nounInstalledState,
 	"noDeterminer",			nounNoDeterminer,
 	"noEvent",				nounNoEvent,
+
 	"noModifiers",			nounNoModifiers,
 	"noQuotes",				nounNoQuotes,
 	"plural",				nounPlural,
 	"short",				nounShort,
 	"titleCapitalize",		nounTitleCapitalize,
+
 	"tokenize",				nounTokenize,
 	};
 

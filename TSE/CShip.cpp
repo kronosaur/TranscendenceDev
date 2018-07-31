@@ -1313,26 +1313,6 @@ void CShip::ClearAllTriggered (void)
 		GetDevice(i)->SetTriggered(false);
 	}
 
-void CShip::ClearBlindness (bool bNoMessage)
-
-//	ClearBlindness
-//
-//	Ship is no longer blind
-
-	{
-	SetAbility(ablShortRangeScanner, ablRepair, -1, (bNoMessage ? ablOptionNoMessage : 0));
-	}
-
-void CShip::ClearDisarmed (void)
-
-//	ClearDisarmed
-//
-//	Ship is no longer disarmed
-
-	{
-	m_iDisarmedTimer = 0;
-	}
-
 void CShip::ClearLRSBlindness (void)
 
 //	ClearLRSBlindness
@@ -1341,16 +1321,6 @@ void CShip::ClearLRSBlindness (void)
 
 	{
 	m_iLRSBlindnessTimer = 0;
-	}
-
-void CShip::ClearParalyzed (void)
-
-//	ClearParalyzed
-//
-//	Ship is no longer paralyzed
-
-	{
-	m_iParalysisTimer = 0;
 	}
 
 void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
@@ -2011,27 +1981,6 @@ CString CShip::DebugCrashInfo (void)
 	sResult.Append(m_Overlays.DebugCrashInfo());
 
 	return sResult;
-	}
-
-void CShip::Decontaminate (void)
-
-//	Decontaminate
-//
-//	Decontaminates the ship
-
-	{
-	if (m_fRadioactive)
-		{
-		if (m_pIrradiatedBy)
-			{
-			delete m_pIrradiatedBy;
-			m_pIrradiatedBy = NULL;
-			}
-
-		m_iContaminationTimer = 0;
-		m_fRadioactive = false;
-		m_pController->OnShipStatus(IShipController::statusRadiationCleared);
-		}
 	}
 
 void CShip::DepleteShields (void)
@@ -3104,7 +3053,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialBlinding));
+		return CC.CreateBool(IsImmuneTo(CConditionSet::cndBlind));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE))
 		return CC.CreateInteger(CalcMaxCargoSpace());
@@ -3143,7 +3092,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         return CC.CreateInteger(m_Armor.GetHealerLeft());
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialEMP));
+		return CC.CreateBool(IsImmuneTo(CConditionSet::cndParalyzed));
 
     else if (strEquals(sName, PROPERTY_FUEL_LEFT))
         return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
@@ -3213,7 +3162,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger((int)GetTradePrice(NULL).GetValue());
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialRadiation));
+		return CC.CreateBool(IsImmuneTo(CConditionSet::cndRadioactive));
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());
@@ -3968,17 +3917,6 @@ bool CShip::IsPlayer (void) const
 	return m_pController->IsPlayer();
 	}
 
-bool CShip::IsRadiationImmune (void)
-
-//	IsRadiationImmune
-//
-//	Return TRUE if the ship is immune to radiation. The ship is immune if all
-//	armor segments are immune.
-
-	{
-	return m_Armor.IsImmune(this, specialRadiation);
-	}
-
 bool CShip::IsSingletonDevice (ItemCategories iItemCat)
 
 //	IsSingletonDevice
@@ -4039,32 +3977,6 @@ bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiA
 		}
 	}
 
-void CShip::MakeBlind (int iTickCount)
-
-//	MakeBlind
-//
-//	Ship is blind
-
-	{
-	SetAbility(ablShortRangeScanner, ablDamage, iTickCount, 0);
-	}
-
-void CShip::MakeDisarmed (int iTickCount)
-
-//	MakeDisarmed
-//
-//	Ship cannot use weapons
-
-	{
-	if (m_iDisarmedTimer != -1)
-		{
-		if (iTickCount == -1)
-			m_iDisarmedTimer = -1;
-		else
-			m_iDisarmedTimer += iTickCount;
-		}
-	}
-
 void CShip::MakeLRSBlind (int iTickCount)
 
 //	MakeLRSBlind
@@ -4078,37 +3990,6 @@ void CShip::MakeLRSBlind (int iTickCount)
 			m_iLRSBlindnessTimer = -1;
 		else
 			m_iLRSBlindnessTimer += iTickCount;
-		}
-	}
-
-void CShip::MakeParalyzed (int iTickCount)
-
-//	MakeParalyzed
-//
-//	Ship is paralyzed
-
-	{
-	if (m_iParalysisTimer != -1)
-		{
-		if (iTickCount == -1)
-			m_iParalysisTimer = -1;
-		else
-			m_iParalysisTimer = Min(m_iParalysisTimer + iTickCount, MAX_SHORT);
-		}
-	}
-
-void CShip::MakeRadioactive (void)
-
-//	MakeRadioactive
-//
-//	Ship is radioactive
-
-	{
-	if (!m_fRadioactive)
-		{
-		m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
-		m_fRadioactive = true;
-		m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
 		}
 	}
 
@@ -4241,6 +4122,50 @@ void CShip::OnBounce (CSpaceObject *pBarrierObj, const CVector &vPos)
 
 	{
 	m_pController->OnHitBarrier(pBarrierObj, vPos);
+	}
+
+void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
+
+//	OnClearCondition
+//
+//	Clears the condition
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndBlind:
+			{
+			DWORD dwOptions = 0;
+			if (dwFlags & FLAG_NO_MESSAGE)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablShortRangeScanner, ablRepair, -1, dwOptions);
+			break;
+			}
+
+		case CConditionSet::cndDisarmed:
+			m_iDisarmedTimer = 0;
+			break;
+
+		case CConditionSet::cndParalyzed:
+			m_iParalysisTimer = 0;
+			break;
+
+		case CConditionSet::cndRadioactive:
+			if (m_fRadioactive)
+				{
+				if (m_pIrradiatedBy)
+					{
+					delete m_pIrradiatedBy;
+					m_pIrradiatedBy = NULL;
+					}
+
+				m_iContaminationTimer = 0;
+				m_fRadioactive = false;
+				m_pController->OnShipStatus(IShipController::statusRadiationCleared);
+				}
+			break;
+		}
 	}
 
 DWORD CShip::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)
@@ -4528,7 +4453,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Handle special attacks
 
 	if (Ctx.IsTimeStopped() 
-			&& !IsTimeStopImmune()
+			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
 			&& !IsTimeStopped())
 		{
 		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
@@ -4811,8 +4736,8 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	//	If we've docked with a radioactive object then we become radioactive
 	//	unless our armor is immune
 
-	if (pObj->IsRadioactive() && !IsRadiationImmune())
-		MakeRadioactive();
+	if (pObj->IsRadioactive() && !IsImmuneTo(CConditionSet::cndRadioactive))
+		SetCondition(CConditionSet::cndRadioactive);
 
 	//	Tell our items that we docked with something
 
@@ -4864,6 +4789,34 @@ bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoin
 	//	OK to gate
 
 	return true;
+	}
+
+bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
+
+//	OnGetCondition
+//
+//	Returns TRUE if we have the given condition. NOTE: We only handle cases 
+//	where this sub-class has the condition state (otherwise, this will be 
+//	handled by CSpaceObject).
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndBlind:
+			return (m_iBlindnessTimer != 0);
+
+		case CConditionSet::cndDisarmed:
+			return (m_iDisarmedTimer != 0);
+
+		case CConditionSet::cndParalyzed:
+			return (m_iParalysisTimer != 0);
+
+		case CConditionSet::cndRadioactive:
+			return (m_fRadioactive ? true : false);
+
+		default:
+			return false;
+		}
 	}
 
 CSpaceObject *CShip::OnGetOrderGiver (void)
@@ -4950,29 +4903,29 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 		}
 	}
 
-void CShip::OnHitByRadioactiveDamage (SDamageCtx &Ctx)
+bool CShip::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 
-//	OnHitByRadioactiveDamage
+//	OnIsImmuneTo
 //
-//	Ship was hit by radioactive damage (and armor could not repel it)
-	
+//	Returns TRUE if we are immune to the given condition.
+
 	{
-	//	If we're not radioactive, make ourselves radioactive
-
-	if (!IsRadioactive())
+	switch (iCondition)
 		{
-		//	Remember the object that hit us so that we can report
-		//	it back if/when we are destroyed.
+		case CConditionSet::cndBlind:
+			return m_Armor.IsImmune(const_cast<CShip *>(this), specialBlinding);
 
-		if (m_pIrradiatedBy == NULL)
-			m_pIrradiatedBy = new CDamageSource;
+		case CConditionSet::cndParalyzed:
+			return m_Armor.IsImmune(const_cast<CShip *>(this), specialEMP);
+			
+		case CConditionSet::cndRadioactive:
+			return m_Armor.IsImmune(const_cast<CShip *>(this), specialRadiation);
+			
+		case CConditionSet::cndTimeStopped:
+			return m_pClass->IsTimeStopImmune();
 
-		*m_pIrradiatedBy = Ctx.Attacker;
-		m_pIrradiatedBy->SetCause(killedByRadiationPoisoning);
-
-		//	Radioactive
-
-		MakeRadioactive();
+		default:
+			return false;
 		}
 	}
 
@@ -5808,6 +5761,91 @@ void CShip::OnRemoved (SDestroyCtx &Ctx)
 
 			pAttached->Remove(removedFromSystem, CDamageSource(this, removedFromSystem), true);
 			}
+		}
+	}
+
+void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
+
+//	OnSetCondition
+//
+//	Sets (or clears) the given condition.
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndBlind:
+			SetAbility(ablShortRangeScanner, ablDamage, iTimer, 0);
+			break;
+
+		case CConditionSet::cndDisarmed:
+			if (m_iDisarmedTimer != -1)
+				{
+				if (iTimer == -1)
+					m_iDisarmedTimer = -1;
+				else
+					m_iDisarmedTimer = Min(m_iDisarmedTimer + iTimer, MAX_SHORT);
+				}
+			break;
+
+		case CConditionSet::cndParalyzed:
+			if (m_iParalysisTimer != -1)
+				{
+				if (iTimer == -1)
+					m_iParalysisTimer = -1;
+				else
+					m_iParalysisTimer = Min(m_iParalysisTimer + iTimer, MAX_SHORT);
+				}
+			break;
+
+		case CConditionSet::cndRadioactive:
+			if (!m_fRadioactive)
+				{
+				if (iTimer == -1)
+					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
+				else
+					m_iContaminationTimer = Min(iTimer, MAX_SHORT);
+
+				m_fRadioactive = true;
+				m_pController->OnShipStatus(IShipController::statusRadiationWarning, m_iContaminationTimer);
+				}
+			break;
+		}
+	}
+
+void CShip::OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition)
+
+//	OnSetConditionDueToDamage
+//
+//	Damage has imparted the given condition.
+
+	{
+	switch (iCondition)
+		{
+		case CConditionSet::cndBlind:
+			SetCondition(iCondition, DamageCtx.GetBlindTime());
+			break;
+
+		case CConditionSet::cndParalyzed:
+			SetCondition(iCondition, DamageCtx.GetParalyzedTime());
+			break;
+
+		case CConditionSet::cndRadioactive:
+			if (!IsRadioactive())
+				{
+				//	Remember the object that hit us so that we can report
+				//	it back if/when we are destroyed.
+
+				if (m_pIrradiatedBy == NULL)
+					m_pIrradiatedBy = new CDamageSource;
+
+				*m_pIrradiatedBy = DamageCtx.Attacker;
+				m_pIrradiatedBy->SetCause(killedByRadiationPoisoning);
+
+				//	Radioactive
+
+				SetCondition(iCondition);
+				}
+			break;
 		}
 	}
 
@@ -6751,7 +6789,7 @@ void CShip::ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)
 
 			int iSuccess = 50 + 10 * (Program.iAILevel - iTargetLevel);
 			if (mathRandom(1, 100) <= iSuccess)
-				MakeDisarmed(Program.iAILevel * mathRandom(30, 60));
+				SetCondition(CConditionSet::cndDisarmed, Program.iAILevel * mathRandom(30, 60));
 
 			break;
 			}
@@ -7643,15 +7681,9 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
 		{
 		if (pValue->IsNil())
-			{
-			if (IsRadioactive())
-				Decontaminate();
-			}
+			ClearCondition(CConditionSet::cndRadioactive);
 		else
-			{
-			if (!IsRadioactive())
-				MakeRadioactive();
-			}
+			SetCondition(CConditionSet::cndRadioactive);
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION))

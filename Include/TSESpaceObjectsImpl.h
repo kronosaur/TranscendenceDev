@@ -1006,18 +1006,9 @@ class CShip : public CSpaceObject
 		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
 		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
-		void ClearBlindness (bool bNoMessage = false);
-
-		void ClearDisarmed (void);
-		void MakeDisarmed (int iTickCount = -1);
-
 		void ClearLRSBlindness (void);
 		inline bool IsLRSBlind (void) { return m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0); }
 		void MakeLRSBlind (int iTickCount = -1);
-
-		void ClearParalyzed (void);
-
-		bool IsRadiationImmune (void);
 
 		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
@@ -1088,7 +1079,6 @@ class CShip : public CSpaceObject
 		virtual void DamageExternalDevice (int iDev, SDamageCtx &Ctx) override;
 		virtual void DeactivateShields (void) override;
 		virtual CString DebugCrashInfo (void) override;
-		virtual void Decontaminate (void) override;
 		virtual void DepleteShields (void) override;
 		virtual void DisableDevice (CInstalledDevice *pDevice) override;
 		virtual CInstalledArmor *FindArmor (const CItem &Item) override;
@@ -1160,8 +1150,6 @@ class CShip : public CSpaceObject
 		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
-		virtual bool IsBlind (void) const override { return m_iBlindnessTimer != 0; }
-		virtual bool IsDisarmed (void) override { return (m_Overlays.GetConditions().IsSet(CConditionSet::cndDisarmed) || m_iDisarmedTimer != 0); }
 		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
@@ -1169,13 +1157,10 @@ class CShip : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
-		virtual bool IsParalyzed (void) override { return (m_Overlays.GetConditions().IsSet(CConditionSet::cndParalyzed) || m_iParalysisTimer != 0); }
 		virtual bool IsPlayer (void) const override;
 		virtual bool IsPlayerWingman (void) const override { return m_pController->IsPlayerWingman(); }
-		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
 		virtual bool IsShownInGalacticMap (void) const override { return m_pClass->HasDockingPorts(); }
 		virtual bool IsSuspended (void) const override { return m_fManualSuspended; }
-		virtual bool IsTimeStopImmune (void) override { return m_pClass->IsTimeStopImmune(); }
 		virtual bool IsVirtual (void) const override { return m_pClass->IsVirtual(); }
 		virtual void MarkImages (void) override;
 		virtual bool ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos) override;
@@ -1190,7 +1175,6 @@ class CShip : public CSpaceObject
 		virtual bool OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj) override;
 		virtual void OnHitByDeviceDamage (void) override;
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) override;
-		virtual void OnHitByRadioactiveDamage (SDamageCtx &Ctx) override;
 		virtual void OnItemEnhanced (CItemListManipulator &ItemList) override;
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pController->OnMissionCompleted(pMission, bSuccess); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
@@ -1202,9 +1186,6 @@ class CShip : public CSpaceObject
 		virtual void OnStationDestroyed (const SDestroyCtx &Ctx) override;
 		virtual void OnSystemCreated (SSystemCreateCtx &CreateCtx) override;
 		virtual void OnSystemLoaded (void) override;
-		virtual void MakeBlind (int iTickCount = -1) override;
-		virtual void MakeParalyzed (int iTickCount = -1) override;
-		virtual void MakeRadioactive (void) override;
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
@@ -1238,10 +1219,13 @@ class CShip : public CSpaceObject
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
+		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;
 		virtual CSpaceObject *OnGetOrderGiver (void) override;
+		virtual bool OnIsImmuneTo (CConditionSet::ETypes iCondition) const override;
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
@@ -1250,6 +1234,8 @@ class CShip : public CSpaceObject
 		virtual void OnPlace (const CVector &vOldPos) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnRemoved (SDestroyCtx &Ctx) override;
+		virtual void OnSetCondition (CConditionSet::ETypes iCondition, int iTimer = -1) override;
+		virtual void OnSetConditionDueToDamage (SDamageCtx &DamageCtx, CConditionSet::ETypes iCondition) override;
 		virtual void OnSetEventFlags (void) override;
         virtual void OnSetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
@@ -1465,7 +1451,6 @@ class CStation : public CSpaceObject
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &Needed = CShipChallengeDesc()) override;
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) override;
 		virtual CString DebugCrashInfo (void) override;
-		virtual void Decontaminate (void) override { m_fRadioactive = false; }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return m_pType->GetBalancedTreasure(); }
         virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual Categories GetCategory (void) const override { return catStation; }
@@ -1520,7 +1505,6 @@ class CStation : public CSpaceObject
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
-		virtual bool IsDisarmed (void) override { return m_Overlays.GetConditions().IsSet(CConditionSet::cndDisarmed); }
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
@@ -1528,15 +1512,11 @@ class CStation : public CSpaceObject
 		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
-		virtual bool IsParalyzed (void) override { return m_Overlays.GetConditions().IsSet(CConditionSet::cndParalyzed); }
-		virtual bool IsRadioactive (void) override { return (m_fRadioactive ? true : false); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
         virtual bool IsShownInGalacticMap (void) const override;
 		virtual bool IsStargate (void) const override { return !m_sStargateDestNode.IsBlank(); }
-		virtual bool IsTimeStopImmune (void) override { return m_pType->IsTimeStopImmune(); }
 		virtual bool IsVirtual (void) const override { return m_pType->IsVirtual(); }
 		virtual bool IsWreck (void) const override { return (m_dwWreckUNID != 0); }
-		virtual void MakeRadioactive (void) override { m_fRadioactive = true; }
 		virtual void MarkImages (void) override { m_pType->MarkImages(m_ImageSelector); }
 		virtual bool ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
@@ -1574,14 +1554,18 @@ class CStation : public CSpaceObject
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
+		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
+		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const override;
+		virtual bool OnIsImmuneTo (CConditionSet::ETypes iCondition) const override;
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual void OnSetCondition (CConditionSet::ETypes iCondition, int iTimer = -1) override;
 		virtual void OnSetEventFlags (void) override;
         virtual void OnSetSovereign (CSovereign *pSovereign) override { m_pSovereign = pSovereign; }
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
