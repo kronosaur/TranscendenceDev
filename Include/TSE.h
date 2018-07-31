@@ -763,6 +763,7 @@ class CSpaceObject : public CObject
 		inline bool IsBlind (void) const { return GetCondition(CConditionSet::cndBlind); }
 		inline bool IsDisarmed (void) const { return GetCondition(CConditionSet::cndDisarmed); }
 		inline bool IsImmuneTo (CConditionSet::ETypes iCondition) const { return OnIsImmuneTo(iCondition); }
+		inline bool IsLRSBlind (void) const { return GetCondition(CConditionSet::cndLRSBlind); }
 		inline bool IsParalyzed (void) const { return GetCondition(CConditionSet::cndParalyzed); }
 		inline bool IsRadioactive (void) const { return GetCondition(CConditionSet::cndRadioactive); }
 		inline bool IsTimeStopped (void) const { return GetCondition(CConditionSet::cndTimeStopped); }

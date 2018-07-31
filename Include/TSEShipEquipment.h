@@ -22,8 +22,9 @@ class CConditionSet
 			cndSpinning =			0x00000020,		//	Spinning uncontrollably
 			cndTimeStopped =		0x00000040,		//	Time-stopped
 			cndShipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
+			cndLRSBlind =			0x00000100,		//	LRS-blind
 
-			cndCount =				8,
+			cndCount =				9,
 			};
 
 		enum EModifications

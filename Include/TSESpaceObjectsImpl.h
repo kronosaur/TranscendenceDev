@@ -1006,10 +1006,6 @@ class CShip : public CSpaceObject
 		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
 		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
-		void ClearLRSBlindness (void);
-		inline bool IsLRSBlind (void) { return m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0); }
-		void MakeLRSBlind (int iTickCount = -1);
-
 		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
 

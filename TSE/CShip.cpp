@@ -1313,16 +1313,6 @@ void CShip::ClearAllTriggered (void)
 		GetDevice(i)->SetTriggered(false);
 	}
 
-void CShip::ClearLRSBlindness (void)
-
-//	ClearLRSBlindness
-//
-//	Ship is no longer LRS blind
-
-	{
-	m_iLRSBlindnessTimer = 0;
-	}
-
 void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
 
 //	ConsumeFuel
@@ -3977,22 +3967,6 @@ bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiA
 		}
 	}
 
-void CShip::MakeLRSBlind (int iTickCount)
-
-//	MakeLRSBlind
-//
-//	Ship is LRS blind
-
-	{
-	if (m_iLRSBlindnessTimer != -1)
-		{
-		if (iTickCount == -1)
-			m_iLRSBlindnessTimer = -1;
-		else
-			m_iLRSBlindnessTimer += iTickCount;
-		}
-	}
-
 void CShip::MarkImages (void)
 
 //	MarkImages
@@ -4146,6 +4120,16 @@ void CShip::OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags)
 		case CConditionSet::cndDisarmed:
 			m_iDisarmedTimer = 0;
 			break;
+
+		case CConditionSet::cndLRSBlind:
+			{
+			DWORD dwOptions = 0;
+			if (dwFlags & FLAG_NO_MESSAGE)
+				dwOptions |= ablOptionNoMessage;
+
+			SetAbility(ablLongRangeScanner, ablRepair, -1, dwOptions);
+			break;
+			}
 
 		case CConditionSet::cndParalyzed:
 			m_iParalysisTimer = 0;
@@ -4807,6 +4791,9 @@ bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
 
 		case CConditionSet::cndDisarmed:
 			return (m_iDisarmedTimer != 0);
+
+		case CConditionSet::cndLRSBlind:
+			return (m_fLRSDisabledByNebula || (m_iLRSBlindnessTimer != 0));
 
 		case CConditionSet::cndParalyzed:
 			return (m_iParalysisTimer != 0);
@@ -5780,17 +5767,21 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		case CConditionSet::cndDisarmed:
 			if (m_iDisarmedTimer != -1)
 				{
-				if (iTimer == -1)
+				if (iTimer < 0)
 					m_iDisarmedTimer = -1;
 				else
 					m_iDisarmedTimer = Min(m_iDisarmedTimer + iTimer, MAX_SHORT);
 				}
 			break;
 
+		case CConditionSet::cndLRSBlind:
+			SetAbility(ablLongRangeScanner, ablDamage, iTimer, 0);
+			break;
+
 		case CConditionSet::cndParalyzed:
 			if (m_iParalysisTimer != -1)
 				{
-				if (iTimer == -1)
+				if (iTimer < 0)
 					m_iParalysisTimer = -1;
 				else
 					m_iParalysisTimer = Min(m_iParalysisTimer + iTimer, MAX_SHORT);
@@ -5800,7 +5791,7 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 		case CConditionSet::cndRadioactive:
 			if (!m_fRadioactive)
 				{
-				if (iTimer == -1)
+				if (iTimer < 0)
 					m_iContaminationTimer = (IsPlayer() ? 180 : 60) * g_TicksPerSecond;
 				else
 					m_iContaminationTimer = Min(iTimer, MAX_SHORT);
@@ -6221,7 +6212,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     //	LRS blindness
 
     if (m_iLRSBlindnessTimer > 0)
-        --m_iLRSBlindnessTimer;
+        if (--m_iLRSBlindnessTimer == 0)
+			m_pController->OnAbilityChanged(ablLongRangeScanner, ablRepair);
 
     //	Energy fields
 
@@ -7203,10 +7195,10 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 					bool bChanged = (m_iLRSBlindnessTimer == 0);
 					if (m_iLRSBlindnessTimer != -1)
 						{
-						if (iDuration == -1)
+						if (iDuration < 0)
 							m_iLRSBlindnessTimer = -1;
 						else
-							m_iLRSBlindnessTimer += iDuration;
+							m_iLRSBlindnessTimer = Min(m_iLRSBlindnessTimer + iDuration, MAX_SHORT);
 						}
 
 					if (bChanged)
@@ -7235,10 +7227,10 @@ bool CShip::SetAbility (Abilities iAbility, AbilityModifications iModification, 
 					bool bChanged = (m_iBlindnessTimer == 0);
 					if (m_iBlindnessTimer != -1)
 						{
-						if (iDuration == -1)
+						if (iDuration < 0)
 							m_iBlindnessTimer = -1;
 						else
-							m_iBlindnessTimer += iDuration;
+							m_iBlindnessTimer = Min(m_iBlindnessTimer + iDuration, MAX_SHORT);
 						}
 
 					if (bChanged)
