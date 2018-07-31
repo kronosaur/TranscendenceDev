@@ -1308,7 +1308,7 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 
 	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, pShot, iRepeatingCount);
 
-  //	For repeating weapons, we check at the beginning and consume at the end.
+	//	For repeating weapons, we check at the beginning and consume at the end.
 	
 	if (pShot->GetContinuous() > 0)
 		{
