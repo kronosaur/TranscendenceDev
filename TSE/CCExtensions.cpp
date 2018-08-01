@@ -1022,8 +1022,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v*",	0, },
 
 		{	"fmtNoun",						fnFormat,		FN_NAME,
-			"(fmtNoun name nameFlags count formatFlags) -> string",
-			"siiv",	0, },
+			"(fmtNoun namePattern [nameFlags] count formatFlags) -> string",
+			"v*iv",	0, },
 
 		{	"fmtNumber",					fnFormat,		FN_NUMBER,
 			"(fmtNumber [type] value) -> string\n\n"
@@ -4474,10 +4474,40 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_NAME:
 			{
-			CString sName = pArgs->GetElement(0)->GetStringValue();
-			DWORD dwNameFlags = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
-			int iCount = pArgs->GetElement(2)->GetIntegerValue();
-			DWORD dwFlags = pCtx->AsNameFlags(pArgs->GetElement(3));
+			//	We accept either 3 or 4 arguments
+
+			ICCItem *pName;
+			DWORD dwNameFlags;
+			int iCount;
+			DWORD dwFlags;
+
+			if (pArgs->GetCount() >= 4)
+				{
+				pName = pArgs->GetElement(0);
+				dwNameFlags = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
+				iCount = pArgs->GetElement(2)->GetIntegerValue();
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(3));
+				}
+			else
+				{
+				pName = pArgs->GetElement(0);
+				dwNameFlags = 0;
+				iCount = pArgs->GetElement(1)->GetIntegerValue();
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(2));
+				}
+
+			//	Get a name pattern or a string.
+
+			CString sName;
+			if (pName->IsSymbolTable())
+				{
+				sName = pName->GetStringAt(CONSTLIT("pattern"));
+				dwNameFlags = pName->GetIntegerAt(CONSTLIT("flags"));
+				}
+			else
+				sName = pName->GetStringValue();
+
+			//	Compose
 
 			return pCC->CreateString(CLanguage::ComposeNounPhrase(sName, iCount, NULL_STR, dwNameFlags, dwFlags));
 			}
