@@ -170,6 +170,7 @@ void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj,
 
 	//	Define parameters
 
+	Ctx.DefineContainingType(pObj);
 	Ctx.SaveAndDefineSourceVar(pObj);
 	Ctx.SaveAndDefineDataVar(pData);
 	Ctx.DefineInteger(CONSTLIT("aPlayer"), pSender->GetUNID());

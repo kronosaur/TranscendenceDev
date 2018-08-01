@@ -260,6 +260,7 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		//	Setup arguments
 
 		CCodeChainCtx Ctx;
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
 

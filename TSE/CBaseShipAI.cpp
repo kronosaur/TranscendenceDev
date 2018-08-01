@@ -161,6 +161,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 		if (m_pCommandCode)
 			{
 			CCodeChainCtx Ctx;
+			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 
 			ICCItem *pResult = Ctx.RunLambda(m_pCommandCode);

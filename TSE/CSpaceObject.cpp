@@ -863,6 +863,7 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 
 			//	Define parameters
 
+			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
 			Ctx.DefineSpaceObject(CONSTLIT("gSender"), pSender);
 
@@ -967,6 +968,7 @@ void CSpaceObject::CommsMessageFrom (CSpaceObject *pSender, int iIndex)
 
 		//	Define parameters
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("gSender"), pSender);
 
@@ -1039,6 +1041,7 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -5438,6 +5441,7 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 
 		//	Define parameters
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineSpaceObject(CONSTLIT("gSender"), pSender);
 
@@ -7195,6 +7199,7 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 			{
 			CCodeChainCtx Ctx;
 
+			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
 
 			ICCItem *pResult = Ctx.Run(Event);
@@ -7218,6 +7223,7 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 			{
 			CCodeChainCtx Ctx;
 
+			Ctx.DefineContainingType(this);
 			Ctx.SaveAndDefineSourceVar(this);
 
 			ICCItem *pResult = Ctx.Run(Event);
@@ -7674,6 +7680,7 @@ void CSpaceObject::UseItem (CItem &Item, CString *retsError)
 		{
 		//	Define parameters
 
+		Ctx.DefineContainingType(Item);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Item);
 		Ctx.SetScreensRoot(Item.GetType());

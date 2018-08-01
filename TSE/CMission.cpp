@@ -299,6 +299,7 @@ void CMission::FireCustomEvent (const CString &sEvent, ICCItem *pData)
 		CCodeChainCtx Ctx;
 
 		Ctx.SetEvent(eventDoEvent);
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -322,6 +323,7 @@ void CMission::FireOnAccepted (void)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -347,6 +349,7 @@ ICCItem *CMission::FireOnDeclined (void)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -378,6 +381,7 @@ ICCItem *CMission::FireOnReward (ICCItem *pData)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -408,6 +412,7 @@ void CMission::FireOnSetPlayerTarget (const CString &sReason)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.DefineString(STR_A_REASON, sReason);
 
@@ -431,6 +436,7 @@ void CMission::FireOnStart (void)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -453,6 +459,7 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineDataVar(pData);
 		Ctx.DefineString(STR_A_REASON, sReason);

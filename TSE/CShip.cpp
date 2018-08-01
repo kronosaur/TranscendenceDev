@@ -6977,6 +6977,7 @@ void CShip::Refuel (const CItem &Fuel)
 
 		//	Define parameters
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 		Ctx.SaveAndDefineItemVar(Fuel);
 
@@ -7427,6 +7428,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 		{
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aBaseObj"), Ctx.pBase);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), Ctx.pTarget);

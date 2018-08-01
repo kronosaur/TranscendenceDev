@@ -46,6 +46,7 @@ ALERROR CSystemCreateEvents::FireDeferredEvent (const CString &sEvent, CString *
 			//	Execute
 
 			Ctx.SetExtension(m_Events[i].pExtension);
+			Ctx.DefineContainingType(m_Events[i].pObj);
 			Ctx.SaveAndDefineSourceVar(m_Events[i].pObj);
 
 			ICCItem *pResult = Ctx.Run(pCode);

@@ -1825,6 +1825,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pSho
 		int iResult;
 		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
 
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
 		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
@@ -1876,6 +1877,7 @@ CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &Ite
 		EOnFireWeaponResults iResult;
 		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
 
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
 		Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);

@@ -141,6 +141,7 @@ void CItem::AccumulateCustomAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	CCodeChainCtx Ctx;
 
 	Ctx.SetItemType(GetType());
+	Ctx.DefineContainingType(m_pItemType);
 	Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 	Ctx.SaveAndDefineItemVar(*this);
 	Ctx.SaveAndDefineDataVar(pData);
@@ -468,6 +469,7 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -532,6 +534,7 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -574,6 +577,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 		{
 		//	Define some globals
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -615,6 +619,7 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 		Ctx.DefineInteger(CONSTLIT("aResult"), (int)iStatus);
@@ -644,6 +649,7 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 		{
 		Ctx.SetEvent(eventOnDestroyCheck);
 		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineSpaceObject(CONSTLIT("aDestroyer"), Attacker.GetObj());
@@ -674,6 +680,7 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -696,6 +703,7 @@ void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineSpaceObject(CONSTLIT("aObjDocked"), pSource);
@@ -720,6 +728,7 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -742,6 +751,7 @@ void CItem::FireOnInstall (CSpaceObject *pSource) const
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -765,6 +775,7 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 		{
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(pSource);
 		CCCtx.SaveAndDefineItemVar(*this);
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
@@ -793,6 +804,7 @@ bool CItem::FireOnReactorOverload (CSpaceObject *pSource) const
 		CCodeChainCtx Ctx;
 		bool bHandled = false;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -821,6 +833,7 @@ void CItem::FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &Item
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(ItemEnhanced);
 
@@ -843,6 +856,7 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -895,6 +909,7 @@ CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 
 		Ctx.SetEvent(eventGetDescription);
 		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -1125,6 +1140,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 		Ctx.SetEvent(eventGetName);
 		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(NULL);
 		Ctx.SaveAndDefineItemVar(*this);
 
@@ -1446,6 +1462,7 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 
 			Ctx.SetEvent(eventGetReferenceText);
 			Ctx.SetItemType(GetType());
+			Ctx.DefineContainingType(m_pItemType);
 			Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 			Ctx.SaveAndDefineItemVar(*this);
 
@@ -1591,6 +1608,7 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 
 		Ctx.SetEvent(eventGetTradePrice);
 		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pObj);
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineString(CONSTLIT("aPriceType"), (bActual ? CONSTLIT("actual") : CONSTLIT("normal")));

@@ -2529,6 +2529,7 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 
 	//	Otherwise, if we run the event to get the value
 
+	Ctx.DefineContainingType(pShip);
 	Ctx.SaveAndDefineSourceVar(pShip);
 	Ctx.SetEvent(eventGetHullPrice);
 	Ctx.DefineString(CONSTLIT("aCurrency"), HullValue.GetSID());

@@ -933,6 +933,7 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
 		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
@@ -962,6 +963,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx;
+		CCCtx.DefineContainingType(GetItemType());
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
 		CCCtx.DefineDamageCtx(Ctx);
@@ -1054,6 +1056,7 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineItemVar(pSource->GetItemForDevice(pDevice));
 

@@ -73,6 +73,7 @@ void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSe
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pShip);
 		Ctx.SaveAndDefineItemVar(pShip->GetItemForDevice(pDevice));
 		Ctx.DefineInteger(CONSTLIT("aArmorSeg"), iSegment);

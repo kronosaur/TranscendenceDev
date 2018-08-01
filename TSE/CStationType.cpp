@@ -1809,6 +1809,7 @@ void CStationType::OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceOb
 		CCodeChainCtx Ctx;
 		Ctx.SetSystemCreateCtx(&CreateCtx);
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(NULL);
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 		Ctx.DefineInteger(CONSTLIT("aEncounterType"), GetUNID());

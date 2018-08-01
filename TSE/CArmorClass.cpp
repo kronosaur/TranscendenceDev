@@ -1579,6 +1579,7 @@ int CArmorClass::FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const
 		//	Setup arguments
 
 		CCodeChainCtx Ctx;
+		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
 
@@ -1612,6 +1613,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		//	Setup arguments
 
 		CCodeChainCtx CCCtx;
+		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
 
@@ -2333,6 +2335,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 
 	{
 	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(m_pItemType);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.SaveAndDefineItemVar(*pArmor->GetItem());
 

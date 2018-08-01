@@ -868,6 +868,7 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), Source.GetObj());
@@ -896,6 +897,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
@@ -939,6 +941,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 
@@ -982,6 +985,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aOverlayID"), pOverlay->GetID());
@@ -1031,6 +1035,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		if (pShip)
 			pShip->SetCursorAtDevice(ItemList, iDevice);
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
 		CCCtx.DefineDamageCtx(Ctx);
 		CCCtx.DefineInteger(CONSTLIT("aDevice"), iDevice);
@@ -1156,6 +1161,7 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
@@ -1188,6 +1194,7 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
 		CCCtx.DefineItemType(CONSTLIT("aWeaponType"), GetWeaponType());
 		CCCtx.DefineSpaceObject(CONSTLIT("aAttacker"), pShot->GetDamageSource().GetObj());
@@ -1216,6 +1223,7 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 
 		CCodeChainCtx CCCtx;
 
+		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
 		CCCtx.DefineSpaceObject(CONSTLIT("aNearestObj"), pNearestObj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);

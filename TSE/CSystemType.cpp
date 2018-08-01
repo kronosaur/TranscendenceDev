@@ -87,6 +87,7 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 		{
 		CCodeChainCtx Ctx;
 
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(pObj);
 		Ctx.DefineVector(CONSTLIT("aJumpPos"), *iovPos);
 
