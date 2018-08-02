@@ -387,7 +387,10 @@ CString CVirtualKeyData::GetKeyLabel (DWORD dwVirtKey)
     if (dwVirtKey >= 256)
         return NULL_STR;
 
-	return CString(m_VirtKeyData[dwVirtKey].pszLabel, -1, true);
+	if (m_VirtKeyData[dwVirtKey].pszLabel)
+		return CString(m_VirtKeyData[dwVirtKey].pszLabel, -1, true);
+	else
+		return CString(m_VirtKeyData[dwVirtKey].pszName, -1, true);
 	}
 
 DWORD CVirtualKeyData::TranslateVirtKey (DWORD dwVirtKey, DWORD dwKeyData)
