@@ -655,6 +655,7 @@ class CSystem
 			//	PaintViewport flags
 			VWP_ENHANCED_DISPLAY =			0x00000001,	//	Show enhanced display markers
 			VWP_NO_STAR_FIELD =				0x00000002,	//	Do not paint star field background
+			VWP_MINING_DISPLAY =			0x00000004,	//	Show unexplored asteroids
 			};
 
 		//	System methods

@@ -2946,6 +2946,16 @@ void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPa
 
 	{
 	m_Overlays.PaintAnnotations(Dest, x, y, Ctx);
+
+	//	If this is an unexplored asteroid then annotate it so that we know which
+	//	asteroids we've scanned or not.
+
+	if (!m_fExplored 
+			&& m_pType->ShowsUnexploredAnnotation()
+			&& Ctx.bShowUnexploredAnnotation)
+		{
+		COverlay::PaintCounterFlag(Dest, x, y, NULL_STR, CONSTLIT("Unexplored"), CG32bitPixel(128, 128, 128), Ctx);
+		}
 	}
 
 void CStation::OnObjBounce (CSpaceObject *pObj, const CVector &vPos)

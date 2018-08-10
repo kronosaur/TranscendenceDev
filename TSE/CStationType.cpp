@@ -152,6 +152,7 @@
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
 #define PROPERTY_NAME							CONSTLIT("name")
+#define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
 
@@ -1167,6 +1168,12 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 		m_fNoMapIcon = true;
 		}
 
+	//	If we have an OnMining event then we show an unexplored flag when
+	//	necessary (this is used for asteroid mining).
+
+	bool bHasOnMining = FindEventHandler(EVENT_ON_MINING);
+	m_fShowsUnexploredAnnotation = bHasOnMining;
+
 	//	Figure out if this is static
 
 	m_fStatic = (m_HullDesc.GetMaxHitPoints() == 0)
@@ -1196,7 +1203,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 			&& m_HullDesc.GetMaxHitPoints() == 0
 			&& m_HullDesc.GetMaxStructuralHP() == 0
 			&& m_iEjectaAdj == 0
-			&& !FindEventHandler(EVENT_ON_MINING))
+			&& !bHasOnMining)
 		m_HullDesc.SetImmutable();
 
 	return NOERROR;
@@ -1653,7 +1660,10 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_SOVEREIGN))
+	if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
+		return ICCItemPtr(CC.CreateBool(ShowsUnexploredAnnotation()));
+
+	else if (strEquals(sProperty, PROPERTY_SOVEREIGN))
 		return (m_pSovereign ? ICCItemPtr(CC.CreateInteger(m_pSovereign->GetUNID())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN_NAME))

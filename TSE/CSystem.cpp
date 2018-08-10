@@ -630,7 +630,8 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 
 	//	Initialize some flags
 
-	Ctx.fEnhancedDisplay = ((dwFlags & VWP_ENHANCED_DISPLAY) ? true : false);
+	Ctx.bEnhancedDisplay = ((dwFlags & VWP_ENHANCED_DISPLAY) ? true : false);
+	Ctx.bShowUnexploredAnnotation = ((dwFlags & VWP_MINING_DISPLAY) ? true : false);
 	Ctx.fNoStarfield = ((dwFlags & VWP_NO_STAR_FIELD) ? true : false);
 	Ctx.fShowManeuverEffects = g_pUniverse->GetSFXOptions().IsManeuveringEffectEnabled();
 	Ctx.fNoStarshine = !g_pUniverse->GetSFXOptions().IsStarshineEnabled();
@@ -3112,7 +3113,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				bool bMarker = pObj->IsPlayerTarget()
 						|| pObj->IsPlayerDestination()
 						|| pObj->IsHighlighted()
-						|| (Ctx.fEnhancedDisplay
+						|| (Ctx.bEnhancedDisplay
 							&& (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							&& pObj->PosInBox(Ctx.vEnhancedUR, Ctx.vEnhancedLL)
 							&& Perception.IsVisibleInLRS(Ctx.pCenter, pObj)

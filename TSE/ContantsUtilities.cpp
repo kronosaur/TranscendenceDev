@@ -66,6 +66,7 @@ static SConstString AbilityTable[ablCount] =
 		{	CONSTDEF("FriendlyFireLock") },
 		{	CONSTDEF("TradingComputer") },
 		{	CONSTDEF("ProtectWingmen") },
+		{	CONSTDEF("MiningComputer") },
 	};
 
 const int AbilityTableSize = (sizeof(AbilityTable) / sizeof(AbilityTable[0]));

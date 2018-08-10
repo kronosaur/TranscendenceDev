@@ -362,6 +362,7 @@ class CStationType : public CDesignType
 		inline bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		inline bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
 		inline bool ShowsMapLabel (void) { return (m_fNoMapLabel ? false : true); }
+		inline bool ShowsUnexploredAnnotation (void) const { return (m_fShowsUnexploredAnnotation ? true : false); }
 		inline bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
@@ -473,7 +474,7 @@ class CStationType : public CDesignType
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
-		DWORD m_fSpare4:1;
+		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;

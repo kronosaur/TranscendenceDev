@@ -7,134 +7,97 @@
 
 struct SViewportPaintCtx
 	{
-	SViewportPaintCtx (void) :
-			pCenter(NULL),
-			xCenter(0),
-			yCenter(0),
-			pObj(NULL),
-			iPerception(4),				//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
-			rgbSpaceColor(CG32bitPixel::Null()),
-			pStar(NULL),
-			pVolumetricMask(NULL),
-			pThreadPool(NULL),
-			fNoSelection(false),
-			fNoRecon(false),
-			fNoDockedShips(false),
-			fEnhancedDisplay(false),
-			fNoStarfield(false),
-			fShowManeuverEffects(false),
-			fNoStarshine(false),
-			fNoSpaceBackground(false),
-            fShowSatellites(false),
-			bInFront(false),
-			bFade(false),
-			iTick(0),
-			iVariant(0),
-			iDestiny(0),
-			iRotation(0),
-			iMaxLength(-1),
-			iStartFade(0),
-			rOffsetScale(1.0)
-		{ }
-
-	inline void Save (void)
-		{
-		SVariants *pFrame = m_SaveStack.Insert();
-
-		pFrame->bFade = bFade;
-		pFrame->bInFront = bInFront;
-		pFrame->iDestiny = iDestiny;
-		pFrame->iMaxLength = iMaxLength;
-		pFrame->iRotation = iRotation;
-		pFrame->iTick = iTick;
-		pFrame->iVariant = iVariant;
-		}
-
-	inline void Restore (void)
-		{
-		int iLastIndex = m_SaveStack.GetCount() - 1;
-		if (iLastIndex >= 0)
+	public:
+		inline void Save (void)
 			{
-			SVariants *pFrame = &m_SaveStack[iLastIndex];
+			SVariants *pFrame = m_SaveStack.Insert();
 
-			bFade = pFrame->bFade;
-			bInFront = pFrame->bInFront;
-			iDestiny = pFrame->iDestiny;
-			iMaxLength = pFrame->iMaxLength;
-			iRotation = pFrame->iRotation;
-			iTick = pFrame->iTick;
-			iVariant = pFrame->iVariant;
-
-			m_SaveStack.Delete(iLastIndex);
+			pFrame->bFade = bFade;
+			pFrame->bInFront = bInFront;
+			pFrame->iDestiny = iDestiny;
+			pFrame->iMaxLength = iMaxLength;
+			pFrame->iRotation = iRotation;
+			pFrame->iTick = iTick;
+			pFrame->iVariant = iVariant;
 			}
-		}
 
-	//	Viewport metrics
+		inline void Restore (void)
+			{
+			int iLastIndex = m_SaveStack.GetCount() - 1;
+			if (iLastIndex >= 0)
+				{
+				SVariants *pFrame = &m_SaveStack[iLastIndex];
 
-	CSpaceObject *pCenter;				//	Center object (viewport perspective)
-	CVector vCenterPos;					//	Center of viewport
-	RECT rcView;						//	Viewport
-	int xCenter;						//	Center of viewport (pixels)
-	int yCenter;						//	Center of viewport (pixels)
-	ViewportTransform XForm;			//	Converts from object to screen viewport coordinates
-										//		Screen viewport coordinates has positive-Y down.
-	ViewportTransform XFormRel;			//	In the case of effects, this Xform has been translated
-										//		to offset for the effect position
+				bFade = pFrame->bFade;
+				bInFront = pFrame->bInFront;
+				iDestiny = pFrame->iDestiny;
+				iMaxLength = pFrame->iMaxLength;
+				iRotation = pFrame->iRotation;
+				iTick = pFrame->iTick;
+				iVariant = pFrame->iVariant;
 
-	CVector vDiagonal;					//	Length of 1/2 viewport diagonal (in global coordinates).
-	CVector vUR;						//	upper-right and lower-left of viewport in global
-	CVector vLL;						//		coordinates.
+				m_SaveStack.Delete(iLastIndex);
+				}
+			}
 
-	CVector vEnhancedDiagonal;			//	Length of 1/2 enhanced viewport diagonal
-	CVector vEnhancedUR;
-	CVector vEnhancedLL;
+		//	Viewport metrics
 
-	int iPerception;					//	Perception
-	Metric rIndicatorRadius;			//	Radius of circle to show target indicators (in pixels)
-	CG32bitPixel rgbSpaceColor;			//	Starshine color
-	CSpaceObject *pStar;				//	Nearest star to POV
-	const CG8bitSparseImage *pVolumetricMask;	//	Volumetric mask for starshine
+		CSpaceObject *pCenter = NULL;			//	Center object (viewport perspective)
+		CVector vCenterPos;						//	Center of viewport
+		RECT rcView;							//	Viewport
+		int xCenter = 0;						//	Center of viewport (pixels)
+		int yCenter = 0;						//	Center of viewport (pixels)
+		ViewportTransform XForm;				//	Converts from object to screen viewport coordinates
+												//		Screen viewport coordinates has positive-Y down.
+		ViewportTransform XFormRel;				//	In the case of effects, this Xform has been translated
+												//		to offset for the effect position
 
-	CThreadPool *pThreadPool;			//	Thread pool for painting.
+		CVector vDiagonal;						//	Length of 1/2 viewport diagonal (in global coordinates).
+		CVector vUR;							//	upper-right and lower-left of viewport in global
+		CVector vLL;							//		coordinates.
 
-	//	Options
+		CVector vEnhancedDiagonal;				//	Length of 1/2 enhanced viewport diagonal
+		CVector vEnhancedUR;
+		CVector vEnhancedLL;
 
-	DWORD fNoSelection:1;
-	DWORD fNoRecon:1;
-	DWORD fNoDockedShips:1;
-	DWORD fEnhancedDisplay:1;
-	DWORD fNoStarfield:1;
-	DWORD fShowManeuverEffects:1;
-	DWORD fNoStarshine:1;
-	DWORD fNoSpaceBackground:1;
+		int iPerception = 4;					//	LATER: Same as CSpaceObject::perceptNormal (but we haven't included it yet).
+		Metric rIndicatorRadius = 0.0;			//	Radius of circle to show target indicators (in pixels)
+		CG32bitPixel rgbSpaceColor = CG32bitPixel::Null();			//	Starshine color
+		CSpaceObject *pStar = NULL;				//	Nearest star to POV
+		const CG8bitSparseImage *pVolumetricMask = NULL;	//	Volumetric mask for starshine
 
-    DWORD fShowSatellites:1;
-    DWORD fSpare2:1;
-    DWORD fSpare3:1;
-    DWORD fSpare4:1;
-    DWORD fSpare5:1;
-    DWORD fSpare6:1;
-    DWORD fSpare7:1;
+		CThreadPool *pThreadPool = NULL;		//	Thread pool for painting.
 
-	DWORD dwSpare:16;
+		//	Options
 
-	CSpaceObject *pObj;					//	Current object being painted
-	RECT rcObjBounds;					//	Object bounds in screen coordinates.
-	int yAnnotations;					//	Start of free area for annotations (This start at the
-										//		bottom of the object bounds, and each annotation
-										//		should increment the value appropriately.
+		bool fNoSelection = false;
+		bool fNoRecon = false;
+		bool fNoDockedShips = false;
+		bool bEnhancedDisplay = false;
+		bool fNoStarfield = false;
+		bool fShowManeuverEffects = false;
+		bool fNoStarshine = false;
+		bool fNoSpaceBackground = false;
+		bool fShowSatellites = false;
+		bool bShowUnexploredAnnotation = false;
 
-	//	May be modified by callers
+		CSpaceObject *pObj = NULL;				//	Current object being painted
+		RECT rcObjBounds;						//	Object bounds in screen coordinates.
+		int yAnnotations = 0;					//	Start of free area for annotations (This start at the
+												//		bottom of the object bounds, and each annotation
+												//		should increment the value appropriately.
 
-	bool bInFront;						//	If TRUE, paint elements in front of object (otherwise, behind)
-	bool bFade;							//	If TRUE, we're painting a fading element
-	int iTick;
-	int iVariant;
-	int iDestiny;
-	int iRotation;						//	An angle 0-359
-	int iMaxLength;						//	Max length of object (used for projectiles); -1 == no limit
-	int iStartFade;						//	If bFade is TRUE this is the tick on which we started fading
-	Metric rOffsetScale;				//	Scale of Group offsets
+		//	May be modified by callers
+
+		bool bInFront = false;					//	If TRUE, paint elements in front of object (otherwise, behind)
+		bool bFade = false;						//	If TRUE, we're painting a fading element
+		int iTick = 0;
+		int iVariant = 0;
+		int iDestiny = 0;
+		int iRotation = 0;						//	An angle 0-359
+		int iMaxLength = -1;					//	Max length of object (used for projectiles); -1 == no limit
+		int iStartFade = 0;						//	If bFade is TRUE this is the tick on which we started fading
+		Metric rOffsetScale = 1.0;				//	Scale of Group offsets
 
 	private:
 		struct SVariants

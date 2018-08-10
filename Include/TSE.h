@@ -518,6 +518,8 @@ class COverlay
 		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
 		void WriteToStream (IWriteStream *pStream);
 
+		static void PaintCounterFlag (CG32bitImage &Dest, int x, int y, const CString &sCounter, const CString &sLabel, CG32bitPixel rgbColor, SViewportPaintCtx &Ctx);
+
 	private:
 		void CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
 		void FireOnUpdate (CSpaceObject *pSource);

@@ -67,8 +67,9 @@ enum Abilities
 	ablFriendlyFireLock =		7,		//	Can't missile/auto lock on friendlies
 	ablTradingComputer =		8,		//	Trading computer
 	ablProtectWingmen =			9,		//	Do not hit wingmen/autons/etc.
+	ablMiningComputer =			10,		//	Mining computer
 
-	ablCount =					10,
+	ablCount =					11,
 	};
 
 enum AbilityModifications
