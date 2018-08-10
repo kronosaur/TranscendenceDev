@@ -310,7 +310,7 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 
 		//	Ignore files that we can't open
 
-		if (GameFile.Open(sFilename) != NOERROR)
+		if (GameFile.Open(sFilename, CGameFile::FLAG_NO_UPGRADE) != NOERROR)
 			continue;
 
 		//	If the universe is not valid, then this is not a proper save file

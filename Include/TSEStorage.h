@@ -42,7 +42,9 @@ class CGameFile
 		inline bool IsOpen (void) const { return (m_pFile != NULL); }
 		inline bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
 		inline bool IsUniverseValid (void) { return (m_Header.dwUniverse != INVALID_ENTRY); }
-		ALERROR Open (const CString &sFilename);
+
+		static constexpr DWORD FLAG_NO_UPGRADE =	0x00000001;
+		ALERROR Open (const CString &sFilename, DWORD dwFlags);
 
 		ALERROR LoadGameStats (CGameStats *retStats);
 		ALERROR LoadSystem (DWORD dwUNID, CSystem **retpSystem, CString *retsError, DWORD dwObjID = OBJID_NULL, CSpaceObject **retpObj = NULL, CSpaceObject *pPlayerShip = NULL);
@@ -119,6 +121,12 @@ class CGameFile
 			char szEpitaph[EPITAPH_MAX];	//	Epitaph (if dead)
 			};
 
+		struct SSystemData
+			{
+			DWORD dwEntry = 0;				//	Entry in data file
+			bool bCompressed = false;		//	Entry is compressed
+			};
+
 		ALERROR ComposeLoadError (const CString &sError, CString *retsError);
 		ALERROR LoadGameHeader (SGameHeader *retHeader);
 		void LoadSystemMapFromStream (DWORD dwVersion, const CString &sStream);
@@ -131,6 +139,6 @@ class CGameFile
 
 		int m_iHeaderID;							//	Entry of header
 		SGameHeader m_Header;						//	Loaded header
-		CIDTable m_SystemMap;						//	Map from system ID to save file ID
+		TSortMap<DWORD, SSystemData> m_SystemMap;	//	Map from system ID to save file ID
 	};
 

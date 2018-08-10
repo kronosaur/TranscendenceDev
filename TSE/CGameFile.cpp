@@ -4,14 +4,14 @@
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
+#include "Zip.h"
 
 #define MIN_GAME_FILE_VERSION					5
-#define GAME_FILE_VERSION						8
+#define GAME_FILE_VERSION						9
 
 CGameFile::CGameFile (void) : 
 		m_pFile(NULL),
-		m_iRefCount(0),
-		m_SystemMap(FALSE, TRUE)
+		m_iRefCount(0)
 
 //	CGameFile constructor
 
@@ -163,7 +163,7 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 
 	//	Save out an empty system map
 
-	m_SystemMap.RemoveAll();
+	m_SystemMap.DeleteAll();
 	CString sData;
 	SaveSystemMapToStream(&sData);
 
@@ -343,8 +343,8 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 	//	Get the entry where this system is stored. If we can't find it,
 	//	then this must be a new system.
 
-	DWORD dwEntry;
-	if (m_SystemMap.Lookup(dwUNID, (CObject **)&dwEntry) != NOERROR)
+	SSystemData *pSystem = m_SystemMap.GetAt(dwUNID);
+	if (pSystem == NULL)
 		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to find system ID: %x"), dwUNID), retsError);
 
 	//	If the IN_STARGATE flag is set then it means that we crashed after we saved
@@ -352,21 +352,21 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 
 	if (m_Header.dwFlags & GAME_FLAG_IN_STARGATE)
 		{
-		kernelDebugLogPattern("Recovering from corrupt save file system: %x", dwEntry);
+		kernelDebugLogPattern("Recovering from corrupt save file system: %x", pSystem->dwEntry);
 
 		//	Read the version history. We should have a previous version
 
 		TArray<CDataFile::SVersionInfo> History;
-		if (error = m_pFile->ReadHistory(dwEntry, &History))
-			return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to read entry history: %x"), dwEntry), retsError);
+		if (error = m_pFile->ReadHistory(pSystem->dwEntry, &History))
+			return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to read entry history: %x"), pSystem->dwEntry), retsError);
 
 		//	If we have a previous version, delete the current one and clear the
 		//	flag.
 
 		if (History.GetCount() > 1)
 			{
-			if (error = m_pFile->DeleteEntry(dwEntry))
-				return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to delete entry: %x"), dwEntry), retsError);
+			if (error = m_pFile->DeleteEntry(pSystem->dwEntry))
+				return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to delete entry: %x"), pSystem->dwEntry), retsError);
 
 			//	Clear the flag now that we have recovered
 
@@ -379,14 +379,30 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 	//	Read the system data
 
 	CString sData;
-	if (error = m_pFile->ReadEntry(dwEntry, &sData))
-		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to read system data entry: %x"), dwEntry), retsError);
+	if (error = m_pFile->ReadEntry(pSystem->dwEntry, &sData))
+		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to read system data entry: %x"), pSystem->dwEntry), retsError);
+
+	//	Decompress, if necessary
+
+	CMemoryWriteStream Output;
+	if (pSystem->bCompressed)
+		{
+		CBufferReadBlock Input(sData);
+
+		if (error = Output.Create())
+			return ComposeLoadError(CONSTLIT("Unable to create decompression buffer"), retsError);
+
+		if (!::zipDecompress(Input, compressionZlib, Output))
+			return ComposeLoadError(CONSTLIT("Error decompressing system"), retsError);
+
+		sData = CString(Output.GetPointer(), Output.GetLength(), true);
+		}
 
 	//	Convert to a stream
 
 	CMemoryReadStream Stream(sData.GetPointer(), sData.GetLength());
 	if (error = Stream.Open())
-		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to open data stream for system entry: %x"), dwEntry), retsError);
+		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to open data stream for system entry: %x"), pSystem->dwEntry), retsError);
 
 	//	Load the system from the stream
 
@@ -404,7 +420,7 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 	if (error)
 		{
 		Stream.Close();
-		return ComposeLoadError(strPatternSubst(CONSTLIT("System %x: %s"), dwEntry, sError), retsError);
+		return ComposeLoadError(strPatternSubst(CONSTLIT("System %x: %s"), pSystem->dwEntry, sError), retsError);
 		}
 
 	//	Tell the universe
@@ -413,7 +429,7 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 		{
 		delete *retpSystem;
 		Stream.Close();
-		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to add system to topology: %x"), dwEntry), retsError);
+		return ComposeLoadError(strPatternSubst(CONSTLIT("Unable to add system to topology: %x"), pSystem->dwEntry), retsError);
 		}
 
 	//	Done
@@ -453,12 +469,15 @@ void CGameFile::LoadSystemMapFromStream (DWORD dwVersion, const CString &sStream
 
 	if (bLoadV6)
 		{
-		m_SystemMap.RemoveAll();
+		m_SystemMap.DeleteAll();
 		for (i = 0; i < iCount && pPos < pPosEnd; i++)
 			{
 			DWORD dwValue = *pPos++;
 			if (dwValue)
-				m_SystemMap.AddEntry(i + 1, (CObject *)dwValue);
+				{
+				SSystemData *pSystem = m_SystemMap.SetAt(i + 1);
+				pSystem->dwEntry = dwValue;
+				}
 			}
 		}
 
@@ -466,13 +485,20 @@ void CGameFile::LoadSystemMapFromStream (DWORD dwVersion, const CString &sStream
 
 	else
 		{
-		m_SystemMap.RemoveAll();
+		m_SystemMap.DeleteAll();
 		for (i = 0; i < iCount && pPos < pPosEnd; i++)
 			{
 			DWORD dwKey = *pPos++;
-			DWORD dwValue = *pPos++;
+			SSystemData *pSystem = m_SystemMap.SetAt(dwKey);
 
-			m_SystemMap.AddEntry(dwKey, (CObject *)dwValue);
+			DWORD dwValue = *pPos++;
+			pSystem->dwEntry = dwValue;
+
+			if (m_Header.dwVersion >= 9)
+				{
+				DWORD dwFlags = *pPos++;
+				pSystem->bCompressed = ((dwFlags & 0x00000001) ? true : false);
+				}
 			}
 		}
 	}
@@ -535,7 +561,7 @@ ALERROR CGameFile::LoadUniverse (CUniverse &Univ, DWORD *retdwSystemID, DWORD *r
 	DEBUG_CATCH
 	}
 
-ALERROR CGameFile::Open (const CString &sFilename)
+ALERROR CGameFile::Open (const CString &sFilename, DWORD dwFlags)
 
 //	Open
 //
@@ -545,6 +571,7 @@ ALERROR CGameFile::Open (const CString &sFilename)
 	DEBUG_TRY
 
 	ALERROR error;
+	bool bNoUpgrade = ((dwFlags & FLAG_NO_UPGRADE) ? true : false);
 
 	if (m_iRefCount == 0)
 		{
@@ -585,9 +612,9 @@ ALERROR CGameFile::Open (const CString &sFilename)
 		//	If this is a previous version, upgrade to the latest
 
 		bool bUpgrade = false;
-		if (m_Header.dwVersion < 8)
+		if (!bNoUpgrade && m_Header.dwVersion < 9)
 			{
-			//	Save out the system map because we changed the format in version 7
+			//	Save out the system map because we changed the format in version 9
 
 			SaveSystemMapToStream(&sSystemMap);
 			if (error = m_pFile->WriteEntry(m_Header.dwSystemMap, sSystemMap))
@@ -720,70 +747,121 @@ ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 	if (error = Stream.Close())
 		return error;
 
-	CString sStream(Stream.GetPointer(), Stream.GetLength(), true);
+	//	Get the system map entry
 
-	//	See if this system has already been saved
+	SSystemData *pSystemEntry = m_SystemMap.SetAt(dwUNID);
 
-	DWORD dwEntry;
-	if (m_SystemMap.Lookup(dwUNID, (CObject **)&dwEntry) == NOERROR)
+	//	Options
+
+	bool bCompress = false;
+	bool bNewEntry = false;
+	bool bVersion = false;
+	bool bWriteSystemMap = false;
+
+	//	If this is a new entry then we need to add it.
+
+	if (pSystemEntry->dwEntry == 0)
 		{
-		//	If we're entering a stargate, then we save the system with
-		//	versioning so that we can revert it if saving fails later.
-
-		if (dwFlags & FLAG_ENTER_GATE)
-			{
-			ASSERT(!(m_Header.dwFlags & GAME_FLAG_IN_STARGATE));
-
-			//	Save the system as a new version
-
-			if (error = m_pFile->WriteVersion(dwEntry, sStream))
-				{
-				kernelDebugLogPattern("Unable to write system version: %x", dwUNID);
-				return error;
-				}
-
-			//	Mark the fact that we are in the middle of changing system
-
-			m_Header.dwFlags |= GAME_FLAG_IN_STARGATE;
-			m_Header.dwPartialSave = dwEntry;
-			if (error = SaveGameHeader(m_Header))
-				{
-				kernelDebugLogPattern("Unable to write game header");
-				return error;
-				}
-			}
-
-		//	Otherwise, just save the system
-
-		else
-			{
-			//	Save the system
-
-			if (error = m_pFile->WriteEntry(dwEntry, sStream))
-				{
-				kernelDebugLogPattern("Unable to write system: %x", dwUNID);
-				return error;
-				}
-			}
+		bCompress = true;
+		bNewEntry = true;
+		bWriteSystemMap = true;
 		}
 
-	//	Otherwise, we add the system
+	//	If we're entering a stargate, then we save the system with
+	//	versioning so that we can revert it if saving fails later.
+
+	else if (dwFlags & FLAG_ENTER_GATE)
+		{
+		//	Since we're adding a version, we preserve the current
+		//	compression state
+
+		bCompress = pSystemEntry->bCompressed;
+		bVersion = true;
+		}
+
+	//	Otherwise, we write it out normally.
 
 	else
 		{
-		//	Save the system
+		bCompress = true;
+		bWriteSystemMap = !pSystemEntry->bCompressed;
+		}
 
-		if (error = m_pFile->AddEntry(sStream, (int *)&dwEntry))
+	//	Compress, if necessary
+
+	CString sStream;
+	CMemoryWriteStream Output;
+	if (bCompress)
+		{
+		CMemoryReadBlockWrapper Input(Stream);
+
+		if (error = Output.Create())
+			return error;
+
+		CString sError;
+		if (!::zipCompress(Input, compressionZlib, Output, &sError))
+			{
+			kernelDebugLogPattern("Unable to compress: %s", sError);
+			return ERR_FAIL;
+			}
+
+		sStream = CString(Output.GetPointer(), Output.GetLength(), true);
+		}
+	else
+		sStream = CString(Stream.GetPointer(), Stream.GetLength(), true);
+
+	//	Version if necessary
+
+	if (bVersion)
+		{
+		ASSERT(!(m_Header.dwFlags & GAME_FLAG_IN_STARGATE));
+
+		//	Save the system as a new version
+
+		if (error = m_pFile->WriteVersion(pSystemEntry->dwEntry, sStream))
+			{
+			kernelDebugLogPattern("Unable to write system version: %x", dwUNID);
+			return error;
+			}
+
+		//	Mark the fact that we are in the middle of changing system
+
+		m_Header.dwFlags |= GAME_FLAG_IN_STARGATE;
+		m_Header.dwPartialSave = pSystemEntry->dwEntry;
+		if (error = SaveGameHeader(m_Header))
+			{
+			kernelDebugLogPattern("Unable to write game header");
+			return error;
+			}
+		}
+
+	//	New entry, if necessary
+
+	else if (bNewEntry)
+		{
+		if (error = m_pFile->AddEntry(sStream, (int *)&pSystemEntry->dwEntry))
 			{
 			kernelDebugLogPattern("Unable to add system: %x", dwUNID);
 			return error;
 			}
+		}
 
-		//	Add to the map
+	//	Write out
 
-		m_SystemMap.AddEntry(dwUNID, (CObject *)dwEntry);
+	else
+		{
+		if (error = m_pFile->WriteEntry(pSystemEntry->dwEntry, sStream))
+			{
+			kernelDebugLogPattern("Unable to write system: %x", dwUNID);
+			return error;
+			}
+		}
 
-		//	Save the map
+	//	Write out the system map, if necessary
+
+	if (bWriteSystemMap)
+		{
+		pSystemEntry->bCompressed = bCompress;
 
 		CString sData;
 		SaveSystemMapToStream(&sData);
@@ -811,9 +889,13 @@ void CGameFile::SaveSystemMapToStream (CString *retsStream)
 	{
 	int i;
 
-	//	The system map is a DWORD length followed by n pair of DWORDs
+	//	The system map is a DWORD length; each entry has the following data:
+	//
+	//	DWORD		Key
+	//	DWORD		Entry
+	//	DWORD		Flags
 
-	int iTotalLen = sizeof(DWORD) + m_SystemMap.GetCount() * 2 * sizeof(DWORD);
+	int iTotalLen = sizeof(DWORD) + m_SystemMap.GetCount() * 3 * sizeof(DWORD);
 	CString sOutput;
 	DWORD *pPos = (DWORD *)sOutput.GetWritePointer(iTotalLen);
 
@@ -826,11 +908,14 @@ void CGameFile::SaveSystemMapToStream (CString *retsStream)
 
 	for (i = 0; i < m_SystemMap.GetCount(); i++)
 		{
-		dwSave = (DWORD)m_SystemMap.GetKey(i);
-		*pPos++ = dwSave;
+		*pPos++ = m_SystemMap.GetKey(i);
 
-		dwSave = (DWORD)m_SystemMap.GetValue(i);
-		*pPos++ = dwSave;
+		const SSystemData &System = m_SystemMap.GetValue(i);
+		*pPos++ = System.dwEntry;
+
+		DWORD dwFlags = 0;
+		dwFlags |= (System.bCompressed ? 0x00000001 : 0);
+		*pPos++ = dwFlags;
 		}
 
 	//	Done
