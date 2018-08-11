@@ -162,6 +162,8 @@ void CHumanInterface::MainLoop (void)
 
 	while (TRUE)
 		{
+		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
+
 		//	Tell the main window that we're animating
 
 		OnAnimate();
@@ -184,16 +186,20 @@ void CHumanInterface::MainLoop (void)
 				::TranslateMessage(&msg);
 				::DispatchMessage(&msg);
 				}
+
+			//	If it's time for the next frame, then break.
+
+			if (timeGetTime() >= dwNextFrame)
+				break;
 			}
 
 		//	Figure out how long until our next animation
 
 #ifndef DEBUG_MAX_FRAME_RATE
-		DWORD dwNow = timeGetTime();
-		DWORD dwNextFrame = dwStartTime + FRAME_DELAY;
 
 		//	Wait
 
+		DWORD dwNow = timeGetTime();
 		if (dwNextFrame > dwNow)
 			{
 			::Sleep(dwNextFrame - dwNow);
