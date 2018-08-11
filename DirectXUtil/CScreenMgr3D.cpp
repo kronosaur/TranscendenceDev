@@ -39,7 +39,7 @@ bool CScreenMgr3D::CheckIsReady (void)
 //	Returns TRUE if we are ready
 
 	{
-	return true;
+	return m_DX.IsReady();
 	}
 
 void CScreenMgr3D::CleanUp (void)

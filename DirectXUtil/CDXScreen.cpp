@@ -579,7 +579,7 @@ void CDXScreen::Render (void)
 	//	The remaining methods all use DX, so if we've lost the device, we can't
 	//	do anything.
 
-	else if (m_bDeviceLost)
+	else if (m_bDeviceLost || m_pD3DDevice == NULL)
 		return;
 
 	//	If we're using textures, then we paint each layer as a texture
