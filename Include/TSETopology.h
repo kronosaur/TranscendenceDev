@@ -31,6 +31,8 @@ class CTopologyNode
 		struct SCriteriaCtx
 			{
 			CTopology *pTopology = NULL;
+
+			TSortMap<CString, TSortMap<CString, int>> DistanceCache;
 			};
 
 		struct SCriteria
@@ -42,6 +44,8 @@ class CTopologyNode
 			int iMaxInterNodeDist = -1;
 			SAttributeCriteria AttribCriteria;
 			TArray<SDistanceTo> DistanceTo;			//	Matches if node is within the proper distance of another node or nodes
+
+			bool bKnownOnly = false;				//	Only nodes that are known to the player
 			};
 
 		struct SStargateDesc
@@ -155,8 +159,10 @@ class CTopologyNode
 		inline void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
 		bool HasVariantLabel (const CString &sVariant);
 
+		static void InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria);
 		static ALERROR ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit);
 		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
+		static ALERROR ParseCriteria (ICCItem *pItem, SCriteria &retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParsePointList (const CString &sValue, TArray<SPoint> *retPoints);
 		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
@@ -413,6 +419,7 @@ class CTopology
 		ALERROR AddTopology (STopologyCreateCtx &Ctx);
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
+		void CalcDistances (const CTopologyNode *pSrc, TSortMap<CString, int> &retDistances) const;
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;

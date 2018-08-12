@@ -883,6 +883,54 @@ ALERROR CTopology::AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNod
 	return GetOrAddTopologyNode(Ctx, sNodeID, retpNewNode);
 	}
 
+void CTopology::CalcDistances (const CTopologyNode *pSrc, TSortMap<CString, int> &retDistances) const
+
+//	CalcDistances
+//
+//	Returns a map of distances from pSrc. If a node is not reachable from pSrc,
+//	then we leave the distance as -1 (UNKNOWN_DISTANCE).
+
+	{
+	int i;
+
+	retDistances.DeleteAll();
+	if (GetTopologyNodeCount() == 0)
+		return;
+
+	//	We mark nodes to track our progress, so we have to save the
+	//	previous value of the marks.
+	//
+	//	We also initialize the calculated distance to UNKNOWN_DISTANCE
+
+	CLargeSet OldMarks;
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		{
+		if (GetTopologyNode(i)->IsMarked())
+			OldMarks.Set(i);
+
+		GetTopologyNode(i)->SetMarked(false);
+		GetTopologyNode(i)->SetCalcDistance(UNKNOWN_DISTANCE);
+		}
+
+	pSrc->SetCalcDistance(0);
+
+	//	Loop over all nodes and compute the distance (this call will set the
+	//	calculated distance and store it in the node).
+
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		GetDistance(GetTopologyNode(i), INFINITE_DISTANCE);
+
+	//	Restore and return
+
+	retDistances.GrowToFit(GetTopologyNodeCount());
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		{
+		CTopologyNode *pNode = GetTopologyNode(i);
+		retDistances.SetAt(pNode->GetID(), pNode->GetCalcDistance());
+		pNode->SetMarked(OldMarks.IsSet(i));
+		}
+	}
+
 ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode)
 
 //	CreateTopologyNode
@@ -1243,7 +1291,7 @@ int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 	//	Recursively compute the distance based on any neighboring
 	//	systems.
 
-	bool bDistKnown = true;
+	bool bDistKnown = false;
 	iNewBestDist = INFINITE_DISTANCE;
 	for (i = 0; i < pSource->GetStargateCount(); i++)
 		{
@@ -1260,19 +1308,17 @@ int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 				{
 				iNewBestDist = iDist;
 
+				//	At least one path leads to the destination, so we can set the
+				//	distance.
+
+				bDistKnown = true;
+
 				//	Can't get closer than this, so we're done.
 
 				if (iNewBestDist == 0)
 					break;
 				}
 			}
-
-		//	If the destination node doesn't know its distance, then we can't
-		//	compute our distance either (it means that we're down a dead-end branch
-		//	or something).
-
-		if (pDest->GetCalcDistance() == UNKNOWN_DISTANCE)
-			bDistKnown = false;
 		}
 
 	//	Clear the mark

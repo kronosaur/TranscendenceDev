@@ -2775,8 +2775,15 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"sysGetNodes",					fnSystemGet,	FN_SYS_ALL_NODES,
-			"(sysGetNodes) -> list of nodeIDs",
-			NULL,	0,	},
+			"(sysGetNodes [criteria]) -> list of nodeIDs\n\n"
+			
+			"criteria:\n\n"
+			
+			"   knownOnly:True  Only nodes known to player\n"
+			"   maxDist:n       Only nodes n or fewer gates away.\n"
+			"   minDist:n       Only nodes n or more gates away.\n",
+
+			"*",	0,	},
 
 		{	"sysGetObjectByName",			fnSystemGetObjectByName,	0,
 			"(sysGetObjectByName [source] name) -> obj",
@@ -9807,6 +9814,11 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pShip->InstallItemAsDevice(ItemList, iDeviceSlot, iSlotPosIndex);
 
+			//	Make sure the cursor is still valid
+
+			if (!ItemList.IsCursorValid())
+				return pCC->CreateError(CONSTLIT("Installation did not preserve cursor."));
+
 			//	Done
 
 			return CreateListFromItem(*pCC, ItemList.GetItemAtCursor());
@@ -13229,25 +13241,57 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ALL_NODES:
 			{
+			int i;
+
 			//	Create a list
 
 			ICCItem *pResult = pCC->CreateLinkedList();
 			if (pResult->IsError())
 				return pResult;
 
-			CCLinkedList *pList = (CCLinkedList *)pResult;
+			//	If we have no parameters, then we return all nodes
 
-			//	Loop over all topology nodes and add the IDs to the list
-
-			for (int i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+			if (pArgs->GetCount() == 0)
 				{
-				CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
-				if (pNode->IsEndGame())
-					continue;
+				//	Loop over all topology nodes and add the IDs to the list
 
-				ICCItem *pValue = pCC->CreateString(pNode->GetID());
-				pList->Append(*pCC, pValue);
-				pValue->Discard(pCC);
+				for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+					{
+					CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+					if (pNode->IsEndGame())
+						continue;
+
+					pResult->AppendString(*pCC, pNode->GetID());
+					}
+				}
+
+			//	Otherwise, we expect a criteria parameter
+
+			else
+				{
+				ICCItem *pCriteria = pArgs->GetElement(0);
+				CTopologyNode::SCriteria Criteria;
+
+				CString sError;
+				if (CTopologyNode::ParseCriteria(pCriteria, Criteria, &sError) != NOERROR)
+					return pCC->CreateError(sError, pCriteria);
+
+				//	Loop
+
+				CTopologyNode::SCriteriaCtx Ctx;
+				CTopologyNode::InitCriteriaCtx(Ctx, Criteria);
+
+				for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+					{
+					CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+					if (pNode->IsEndGame())
+						continue;
+
+					if (!pNode->MatchesCriteria(Ctx, Criteria))
+						continue;
+
+					pResult->AppendString(*pCC, pNode->GetID());
+					}
 				}
 
 			return pResult;

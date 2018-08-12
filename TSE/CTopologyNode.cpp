@@ -33,6 +33,10 @@
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
+#define FIELD_KNOWN_ONLY						CONSTLIT("knownOnly")
+#define FIELD_MAX_DIST							CONSTLIT("maxDist")
+#define FIELD_MIN_DIST							CONSTLIT("minDist")
+
 #define PREV_DEST								CONSTLIT("[Prev]")
 
 #define PROPERTY_DEST_GATE_ID					CONSTLIT("destGateID")
@@ -660,6 +664,39 @@ bool CTopologyNode::HasVariantLabel (const CString &sVariant)
 	return false;
 	}
 
+void CTopologyNode::InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria)
+
+//	InitCriteriaCtx
+//
+//	Initializes criteria context. This is needed to optimize distance 
+//	calculations.
+
+	{
+	int i;
+
+	Ctx.pTopology = &g_pUniverse->GetTopology();
+
+	//	Initialize the distance cache, if necessary.
+
+	for (i = 0; i < Criteria.DistanceTo.GetCount(); i++)
+		{
+		//	If we're restricting nodes to a distance from a particular node, 
+		//	then we pre-calculate distances.
+	
+		if (!Criteria.DistanceTo[i].sNodeID.IsBlank())
+			{
+			CTopologyNode *pSource = Ctx.pTopology->FindTopologyNode(Criteria.DistanceTo[i].sNodeID);
+			if (pSource == NULL)
+				continue;
+
+			bool bNew;
+			TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.SetAt(pSource->GetID(), &bNew);
+			if (bNew)
+				Ctx.pTopology->CalcDistances(pSource, *pDistMap);
+			}
+		}
+	}
+
 ALERROR CTopologyNode::InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError)
 
 //	InitFromAdditionalXML
@@ -801,6 +838,11 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 	if (Crit.iMaxStargates != -1 && m_NamedGates.GetCount() > Crit.iMaxStargates)
 		return false;
 
+	//	Flags
+
+	if (Crit.bKnownOnly && !IsKnown())
+		return false;
+
 	//	Distance to other nodes
 
 	if (Ctx.pTopology)
@@ -825,7 +867,16 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 
 			else
 				{
-				int iDist = Ctx.pTopology->GetDistance(GetID(), Crit.DistanceTo[i].sNodeID);
+				int iDist;
+
+				//	See if we can use the cache to get the distance. If not, then
+				//	we just compute it.
+
+				const TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.GetAt(Crit.DistanceTo[i].sNodeID);
+				if (pDistMap == NULL || !pDistMap->Find(GetID(), &iDist))
+					iDist = Ctx.pTopology->GetDistance(Crit.DistanceTo[i].sNodeID, GetID());
+
+				//	In range?
 
 				if (iDist != -1 && iDist < Crit.DistanceTo[i].iMinDist)
 					return false;
@@ -967,6 +1018,97 @@ ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CS
 		}
 
 	return NOERROR;
+	}
+
+ALERROR CTopologyNode::ParseCriteria (ICCItem *pItem, SCriteria &retCrit, CString *retsError)
+
+//	ParseCriteria
+//
+//	Parses a TLisp criteria structure.
+
+	{
+	int i;
+
+	//	Initialize
+
+	retCrit = SCriteria();
+
+	//	Parse
+
+	if (!pItem || pItem->IsNil())
+		return NOERROR;
+
+	else if (!pItem->IsSymbolTable())
+		{
+		if (retsError) *retsError = CONSTLIT("Criteria must be a structure.");
+		return ERR_FAIL;
+		}
+
+	else
+		{
+		int iMaxDist = -1;
+		int iMinDist = 0;
+
+		for (i = 0; i < pItem->GetCount(); i++)
+			{
+			CString sKey = pItem->GetKey(i);
+			if (strEquals(sKey, FIELD_MAX_DIST))
+				{
+				iMaxDist = pItem->GetElement(i)->GetIntegerValue();
+				}
+			else if (strEquals(sKey, FIELD_MIN_DIST))
+				{
+				iMinDist = pItem->GetElement(i)->GetIntegerValue();
+				}
+			else if (strEquals(sKey, FIELD_KNOWN_ONLY))
+				{
+				retCrit.bKnownOnly = true;
+				}
+			else
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown criteria field: %s"), sKey);
+				return ERR_FAIL;
+				}
+			}
+
+		//	Set min/max
+
+		if (iMaxDist != -1 || iMinDist != 0)
+			{
+			if ((iMaxDist != -1 && iMaxDist < iMinDist)
+					|| iMinDist < 0)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid criteria distance."));
+				return ERR_FAIL;
+				}
+
+			//	This short-cut only works if we're not using the full-length,
+			//	explicit distanceTo criteria (not yet implemented).
+
+			else if (retCrit.DistanceTo.GetCount() != 0)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("maxDist and minDist incompatible with distanceTo."));
+				return ERR_FAIL;
+				}
+
+			//	Make sure we have a valid node
+
+			else if (g_pUniverse->GetCurrentTopologyNode() == NULL)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("No current system."));
+				return ERR_FAIL;
+				}
+
+			//	Create a new entry
+
+			SDistanceTo *pDistCriteria = retCrit.DistanceTo.Insert();
+			pDistCriteria->sNodeID = g_pUniverse->GetCurrentTopologyNode()->GetID();
+			pDistCriteria->iMaxDist = iMaxDist;
+			pDistCriteria->iMinDist = iMinDist;
+			}
+
+		return NOERROR;
+		}
 	}
 
 ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *retPoints)
