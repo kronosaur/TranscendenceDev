@@ -216,6 +216,23 @@ void CLanguageDataBlock::DeleteAll (void)
 	m_Data.DeleteAll();
 	}
 
+CLanguageDataBlock::SEntryDesc CLanguageDataBlock::GetEntry (int iIndex) const
+
+//	GetEntry
+//
+//	Returns the entry by index.
+
+	{
+	SEntryDesc Entry;
+
+	Entry.sID = m_Data.GetKey(iIndex);
+	Entry.sText = m_Data[iIndex].sText;
+	if (m_Data[iIndex].pCode)
+		Entry.pCode = ICCItemPtr(m_Data[iIndex].pCode->Reference());
+
+	return Entry;
+	}
+
 ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML

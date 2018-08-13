@@ -107,6 +107,13 @@ class CLanguage
 class CLanguageDataBlock
 	{
 	public:
+		struct SEntryDesc
+			{
+			CString sID;
+			CString sText;
+			ICCItemPtr pCode;
+			};
+
 		CLanguageDataBlock (void) { }
 		CLanguageDataBlock (const CLanguageDataBlock &Src) { Copy(Src); }
 		~CLanguageDataBlock (void) { CleanUp(); }
@@ -115,6 +122,8 @@ class CLanguageDataBlock
 
 		void AddEntry (const CString &sID, const CString &sText);
 		void DeleteAll (void);
+		inline int GetCount (void) const { return m_Data.GetCount(); }
+		SEntryDesc GetEntry (int iIndex) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);

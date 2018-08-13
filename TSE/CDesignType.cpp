@@ -1079,7 +1079,7 @@ void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const
 //
 //	Fire event
 
-{
+	{
 	CCodeChainCtx Ctx;
 	Ctx.DefineContainingType(this);
 	Ctx.DefineString(CONSTLIT("aCommand"), sCommand);
@@ -1093,7 +1093,7 @@ void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const
 	//	Done
 
 	Ctx.Discard(pResult);
-}
+	}
 
 void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 
@@ -1101,7 +1101,7 @@ void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 //
 //	Fire event
 
-{
+	{
 	CCodeChainCtx Ctx;
 	Ctx.DefineContainingType(this);
 
@@ -1114,7 +1114,7 @@ void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 	//	Done
 
 	Ctx.Discard(pResult);
-}
+	}
 
 void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
 
@@ -2050,6 +2050,31 @@ void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap
 	AddUniqueHandlers(retInheritedHandlers);
 	}
 
+CLanguageDataBlock CDesignType::GetMergedLanguageBlock (void) const
+
+//	GetMergedLanguageBlock
+//
+//	Returns a fully merged language block.
+//
+//	NOTE: This is used only for debugging. When looking up a language entry it
+//	is much faster to use the Translate functions.
+
+	{
+	CLanguageDataBlock Result;
+
+	if (m_pExtra)
+		Result = m_pExtra->Language;
+
+	//	Merge inherited types
+
+	if (m_pInheritFrom)
+		Result.MergeFrom(m_pInheritFrom->GetMergedLanguageBlock());
+
+	//	Done
+
+	return Result;
+	}
+
 CXMLElement *CDesignType::GetScreen (const CString &sUNID)
 
 //	GetScreen
@@ -2121,6 +2146,24 @@ bool CDesignType::HasAttribute (const CString &sAttrib) const
 		return true;
 
 	return HasSpecialAttribute(sAttrib);
+	}
+
+bool CDesignType::HasLanguageBlock (void) const
+
+//	HasLanguageBlock
+//
+//	Returns TRUE if we have any language blocks.
+
+	{
+	if (m_pExtra && !m_pExtra->Language.IsEmpty())
+		return true;
+
+	if (m_pInheritFrom && m_pInheritFrom->HasLanguageBlock())
+		return true;
+
+	//	Not found
+
+	return false;
 	}
 
 bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const

@@ -279,6 +279,7 @@ class CDesignType
 		inline DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
 		inline CXMLElement *GetLocalScreens (void) const { return (m_pExtra ? m_pExtra->pLocalScreens : NULL); }
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
+		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		int GetPropertyInteger (const CString &sProperty);
@@ -291,6 +292,7 @@ class CDesignType
 		TSortMap<DWORD, DWORD> GetXMLMergeFlags (void) const;
 		bool HasAttribute (const CString &sAttrib) const;
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
+		bool HasLanguageBlock (void) const;
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
         inline ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }

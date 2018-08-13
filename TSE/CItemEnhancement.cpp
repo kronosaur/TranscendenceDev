@@ -1408,6 +1408,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+resistMatter:{n}			DamageAdj for matter damage set to n
 //	+shield:{n}					Add shield disrupt special damage, where n is an item level
 //	+speed:{n}					Faster. n is new delay value as a percent of normal
+//	+tracking:{n}				n is maneuver rate
 
 	{
 	//	If the string is a number then we interpret it as a mod code.
