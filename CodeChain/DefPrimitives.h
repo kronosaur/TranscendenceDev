@@ -212,8 +212,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"vv",	0,	},
 
 		{	"join",				fnItem,			FN_JOIN,
-			"(join list [separator]) -> string\n"
-            "(join list 'oxfordComma) -> string",
+			"(join list [separator]) -> Concatenates items of list into a string, with separator in between each.\n"
+            "(join list 'oxfordComma) -> 'a' ; 'a and b' ; 'a, b, and c' ; etc.",
 			"v*",	0,	},
 
 		{	"lambda",			fnLambda,		0,
@@ -221,32 +221,32 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			NULL,	0,	},
 
 		{	"log",				fnMathNumerals,	FN_MATH_LOG,
-			"(log x [base]) -> z",
+			"(log x [base]) -> Logarithm of x (real). Base defaults to e.",
 			"n*",	0,	},
 
 		{	"lookup",			fnFind,			FN_LOOKUP,
-			"(lookup source target ['ascending|'descending] [keyIndex]) -> found entry",
+			"(lookup source target ['ascending|'descending] [keyIndex]) -> Like find, but returns the matching item rather than the index.",
 			"vv*",	0,	},
 
 		{	"loop",				fnLoop,			0,
-			"(loop condition exp) -> evaluate exp until condition is Nil",
+			"(loop condition exp) -> Evaluate exp until condition is Nil",
 			NULL,	0,	},
 
 		{	"link",				fnLink,			0,						"",		"s",	0,	},
 		{	"list",				fnList,			FN_LIST,
-			"(list i1 i2 ... in) -> list",
+			"(list [i1 i2 ... in]) -> list",
 			"*",	0,	},
 
 		{	"lnkAppend",		fnLinkedListAppend,	0,	
-			"(lnkAppend list item) -> list",
+			"(lnkAppend list item) -> Modifies list by appending item to the end and returns the result.",
 			"uv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"lnkRemove",		fnLinkedList,	FN_LINKEDLIST_REMOVE,
-			"(lnkRemove list index) -> list",
+			"(lnkRemove list index) -> Modifies list by removing the specified item (0-based) and returns the result.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"lnkRemoveNil",		fnLinkedList,	FN_LINKEDLIST_REMOVE_NIL,
-			"(lnkRemoveNil list) -> list",
+			"(lnkRemoveNil list) -> Modifies list by removing all Nil items and returns the result.",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
 		{	"lnkReplace",		fnLinkedList,	FN_LINKEDLIST_REPLACE,
@@ -255,7 +255,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"make",				fnList,			FN_MAKE,
 			"(make 'sequence count) -> list from 1 to count\n"
-			"(make 'sequence start end [inc]) -> list from start to end",
+			"(make 'sequence start end [inc]) -> list from start to end, incrementing by inc",
 			"s*",	0,	},
 
 		{	"map",				fnMap,			0,
