@@ -212,7 +212,7 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 	int iPrice;
 
 	if (IsAbandoned())
-		return false;
+		return -1;
 
 	//	First see if we have an override
 
