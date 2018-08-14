@@ -996,9 +996,16 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 	pValidation = sArgValidation.GetPointer();
 
 	//	If there is a '*' in the validation, figure out
-	//	how many arguments it represents
+	//	how many arguments it represents.
+	//
+	//	NOTE: We can't have more than a single '*' in a validation string.
 
-	int iVarArgs = Max(0, pArgs->GetCount() - (sArgValidation.GetLength() - 1));
+	int iVarArgs = pArgs->GetCount() - (sArgValidation.GetLength() - 1);
+	if (iVarArgs < 0)
+		{
+		pEvalList->Discard(this);
+		return CreateError(LITERAL("Insufficient arguments"), NULL);
+		}
 
 	//	Loop over each argument
 
