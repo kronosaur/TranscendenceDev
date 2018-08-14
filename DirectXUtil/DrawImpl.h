@@ -93,7 +93,7 @@ class CFilterDesaturate : public TBlt<CFilterDesaturate>
 			}
 	};
 
-class CFilterDesaturateTrans : public TBlt<CFilterDesaturate>
+class CFilterDesaturateTrans : public TBlt<CFilterDesaturateTrans>
 	{
 	public:
 		CFilterDesaturateTrans (BYTE byOpacity) : m_byOpacity(byOpacity)
