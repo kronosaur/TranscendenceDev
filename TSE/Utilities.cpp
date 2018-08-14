@@ -209,8 +209,13 @@ struct SGenomeData
 static SGenomeData g_Genome[] =
 	{
 		{	"",		""	},						//	genomeUnknown
-		{	"humanMale",	"human male"	},	//	genomeMale
-		{	"humanFemale",	"human female"	},	//	genomeFemale
+		{	"humanMale",			"human male"	},	//	genomeMale
+		{	"humanFemale",			"human female"	},	//	genomeFemale
+		{	"genderNeuter",			"neuter"		},	//	genderNeuter
+
+		{	"genderMale",			"male"			},	//	genomeMale
+		{	"genderFemale",			"female"		},	//	genomeFemale
+		{	"genderUnspecified",	"unspecified"	},	//	genomeUnknown
 	};
 
 #define GENOME_COUNT				(sizeof(g_Genome) / sizeof(g_Genome[0]))

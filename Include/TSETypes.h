@@ -257,9 +257,10 @@ enum FrequencyTypes
 
 enum GenomeTypes
 	{
-	genomeUnknown		= 0,
-	genomeHumanMale		= 1,
-	genomeHumanFemale	= 2,
+	genomeUnknown		= 0,					//	They, their, them
+	genomeHumanMale		= 1,					//	He, his, him
+	genomeHumanFemale	= 2,					//	She, her, her
+	genderNeuter		= 3,					//	It, its, it
 
-	genomeCount			= 3,
+	genomeCount			= 4,
 	};

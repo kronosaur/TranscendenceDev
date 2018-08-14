@@ -14,14 +14,14 @@ struct SStaticGenderWord
 	};
 
 static TStaticStringTable<SStaticGenderWord, 8> GENDER_WORD_TABLE = {
-	"brother",		{ "partner",	"brother",	"sister", },
-	"he",			{ "they",		"he",		"she", },
-	"hers",			{ "theirs",		"his",		"hers", },
-	"him",			{ "them",		"him",		"her", },
-	"his",			{ "their",		"his",		"her", },
-	"man",			{ "person",		"man",		"woman", },
-	"sir",			{ "sir",		"sir",		"ma'am", },
-	"son",			{ "child",		"son",		"daughter", },
+	"brother",		{ "partner",	"brother",	"sister",	"partner", },
+	"he",			{ "they",		"he",		"she",		"it", },
+	"hers",			{ "theirs",		"his",		"hers",		"its", },
+	"him",			{ "them",		"him",		"her",		"it", },
+	"his",			{ "their",		"his",		"her",		"its", },
+	"man",			{ "person",		"man",		"woman",	"creature", },
+	"sir",			{ "sir",		"sir",		"ma'am",	"sir", },
+	"son",			{ "child",		"son",		"daughter", "child", },
 	};
 
 //	Convert from a string to NounPhraseFlags
