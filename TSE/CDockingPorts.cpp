@@ -483,11 +483,15 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 	if (pDockingPorts)
 		{
 		//	Initialize max dist
+		//
 		//	NOTE: pOwner can be NULL because sometimes we init ports from a ship class 
 		//	(without an object).
+		//
+		//	NOTE: This is the max distance from a docking port, not from the center of
+		//	the station, so we don't have to change the defaults for different sized
+		//	stations.
 
-		int iDefaultDist = Max(DEFAULT_DOCK_DISTANCE_LS, (pOwner ? 8 + (int)((pOwner->GetBoundsRadius() / LIGHT_SECOND) + 0.5) : 0));
-		m_iMaxDist = pDockingPorts->GetAttributeIntegerBounded(MAX_DIST_ATTRIB, 1, -1, iDefaultDist);
+		m_iMaxDist = pDockingPorts->GetAttributeIntegerBounded(MAX_DIST_ATTRIB, 1, -1, DEFAULT_DOCK_DISTANCE_LS);
 
 		//	Sometimes we specify x,y coordinate but want to convert to rotating 
 		//	polar coordinate.
@@ -988,11 +992,6 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 	if (pPlayer && pPlayer->IsEnemy(pOwner) && !pOwner->IsAbandoned())
 		pPlayer = NULL;
 
-	//	Don't bother checking if the station is too far
-
-	if (pPlayer && rDist2 > DEFAULT_DOCK_DISTANCE2)
-		pPlayer = NULL;
-
 	//	If this is a stargate and we are at the center (just came through) 
 	//	then don't bother showing docking ports.
 
@@ -1003,6 +1002,15 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	if (pPlayer && !pOwner->SupportsDockingFast())
 		pPlayer = NULL;
+
+	//	Don't bother checking if the station is too far
+
+	if (pPlayer)
+		{
+		Metric rMaxRadius = (0.5 * pOwner->GetHitSize()) + (LIGHT_SECOND * m_iMaxDist);
+		if (rDist2 > rMaxRadius * rMaxRadius)
+			pPlayer = NULL;
+		}
 
 	//	Loop over all ports
 
