@@ -125,9 +125,12 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	else
 		{
 		CSpaceObject *pPlayerShip = pSystem->GetPlayerShip();
-		Metric rDist2 = (pPlayerShip->GetPos() - vCenter).Length2();
-		if (rDist2 < m_rRadius2)
-			pFound = pPlayerShip;
+		if (pPlayerShip)
+			{
+			Metric rDist2 = (pPlayerShip->GetPos() - vCenter).Length2();
+			if (rDist2 < m_rRadius2)
+				pFound = pPlayerShip;
+			}
 		}
 
 	//	If we did not find an object, then we try again in a little while
