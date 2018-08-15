@@ -336,6 +336,24 @@ CG32bitPixel CG32bitPixel::Interpolate (CG32bitPixel rgbFrom, CG32bitPixel rgbTo
 	return CG32bitPixel(byRedResult, byGreenResult, byBlueResult, byAlphaResult);
 	}
 
+CG32bitPixel CG32bitPixel::PreMult (BYTE byRed, BYTE byGreen, BYTE byBlue, BYTE byAlpha)
+
+//	PreMult
+//
+//	Returns a new color premultiplied by the alpha value
+
+	{
+	if (byAlpha == 0x00)
+		return CG32bitPixel::Null();
+	else if (byAlpha == 0xff)
+		return CG32bitPixel(byRed, byGreen, byBlue, 0xff);
+	else
+		{
+		BYTE *pAlpha = CG32bitPixel::AlphaTable(byAlpha);
+		return CG32bitPixel(pAlpha[byRed], pAlpha[byGreen], pAlpha[byBlue], byAlpha);
+		}
+	}
+
 CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 
 //	PreMult
@@ -350,12 +368,7 @@ CG32bitPixel CG32bitPixel::PreMult (CG32bitPixel rgbColor, BYTE byAlpha)
 	else
 		{
 		BYTE *pAlpha = CG32bitPixel::AlphaTable(byAlpha);
-
-		BYTE byRed = rgbColor.GetRed();
-		BYTE byGreen = rgbColor.GetGreen();
-		BYTE byBlue = rgbColor.GetBlue();
-
-		return CG32bitPixel(pAlpha[byRed], pAlpha[byGreen], pAlpha[byBlue], byAlpha);
+		return CG32bitPixel(pAlpha[rgbColor.GetRed()], pAlpha[rgbColor.GetGreen()], pAlpha[rgbColor.GetBlue()], byAlpha);
 		}
 	}
 

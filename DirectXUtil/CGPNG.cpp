@@ -42,7 +42,11 @@ bool CGPNG::Load (IReadBlock &Data, CG32bitImage &Image, CString *retsError)
 		while (pDest < pDestEnd)
 			{
 			BYTE *pPixel = (BYTE *)pSrc;
-			*pDest++ = CG32bitPixel(pPixel[0], pPixel[1], pPixel[2], pPixel[3]);
+
+			//	PNG has transparency channel, but does not premultiply the color
+			//	values, so we do that here.
+
+			*pDest++ = CG32bitPixel::PreMult(pPixel[0], pPixel[1], pPixel[2], pPixel[3]);
 			pSrc++;
 			}
 

@@ -90,6 +90,7 @@ class CG32bitPixel
 
 		inline static CG32bitPixel PreMult (CG32bitPixel rgbColor) { return PreMult(rgbColor, rgbColor.GetAlpha()); }
 		static CG32bitPixel PreMult (CG32bitPixel rgbColor, BYTE byAlpha);
+		static CG32bitPixel PreMult (BYTE byRed, BYTE byGreen, BYTE byBlue, BYTE byAlpha);
 
 		static bool Init (void);
 
