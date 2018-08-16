@@ -2505,18 +2505,18 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		//	----------------
 
 		{	"sysAddEncounterEvent",			fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_GATE,
-			"(sysAddEncounterEvent delay target encounterID gate)\n\n"
+			"(sysAddEncounterEvent delay target encounterID gateObj|pos)\n\n"
 
 			"delay in ticks",
 
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"iiiv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddEncounterEventAtDist",	fnSystemAddEncounterEvent,	FN_ADD_ENCOUNTER_FROM_DIST,
 			"(sysAddEncounterEventAtDist delay target encounterID distance)\n\n"
 
 			"delay in ticks",
 
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"iiii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysAddObjTimerEvent",			fnSystemAddStationTimerEvent,	FN_ADD_TIMER_NORMAL,	
 			"(sysAddObjTimerEvent delay obj event)\n\n"
@@ -10971,7 +10971,7 @@ ICCItem *fnStationType (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	return pResult;
 	}
 
-ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnSystemAddEncounterEvent
 //
@@ -10979,23 +10979,13 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArguments,
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
-	ICCItem *pArgs;
-
-	//	Evaluate the arguments and validate them
-
-	pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iiii"));
-	if (pArgs->IsError())
-		return pArgs;
 
 	//	Arguments
 
 	int iTime = pArgs->GetElement(0)->GetIntegerValue();
 	CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 	if (pTarget == NULL)
-		{
-		pArgs->Discard(pCC);
 		return pCC->CreateNil();
-		}
 
 	DWORD dwEncounterID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
@@ -11003,14 +10993,16 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArguments,
 
 	int iDistance = 0;
 	CSpaceObject *pGate = NULL;
+	CVector vPos;
 
 	if (dwData == FN_ADD_ENCOUNTER_FROM_DIST)
 		iDistance =	pArgs->GetElement(3)->GetIntegerValue();
 	else
-		pGate = CreateObjFromItem(*pCC, pArgs->GetElement(3));
+		{
+		if (::GetPosOrObject(pEvalCtx, pArgs->GetElement(3), &vPos, &pGate) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(3));
+		}
 	
-	pArgs->Discard(pCC);
-
 	//	Create the event
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
@@ -11022,6 +11014,7 @@ ICCItem *fnSystemAddEncounterEvent (CEvalContext *pEvalCtx, ICCItem *pArguments,
 			pTarget,
 			dwEncounterID,
 			pGate,
+			vPos,
 			iDistance * LIGHT_SECOND);
 
 	pSystem->AddTimedEvent(pEvent);

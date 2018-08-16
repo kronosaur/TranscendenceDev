@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							41;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					160;
+constexpr DWORD SYSTEM_SAVE_VERSION =					161;
 
 //	Uncomment out the following define when building a stable release
 
@@ -595,3 +595,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					160;
 //
 //	160: 1.8 Beta 3
 //		Moved some condition flags to COverlayList
+//
+//	161: 1.8 Beta 3
+//		Added m_vPos to CTimedEncounterEvent

@@ -42,6 +42,7 @@ class CTimedEncounterEvent : public CSystemEvent
 							  CSpaceObject *pTarget,
 							  DWORD dwEncounterTableUNID,
 							  CSpaceObject *pGate,
+							  const CVector &vPos,
 							  Metric rDistance);
 		CTimedEncounterEvent (SLoadCtx &Ctx);
 
@@ -58,7 +59,9 @@ class CTimedEncounterEvent : public CSystemEvent
 
 		CSpaceObject *m_pTarget;
 		DWORD m_dwEncounterTableUNID;
+
 		CSpaceObject *m_pGate;
+		CVector m_vPos;
 		Metric m_rDistance;
 	};
 

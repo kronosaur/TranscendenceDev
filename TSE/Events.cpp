@@ -117,11 +117,13 @@ CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
 											CSpaceObject *pTarget,
 											DWORD dwEncounterTableUNID,
 											CSpaceObject *pGate,
+											const CVector &vPos,
 											Metric rDistance) :
 		CSystemEvent(iTick),
 		m_pTarget(pTarget),
 		m_dwEncounterTableUNID(dwEncounterTableUNID),
 		m_pGate(pGate),
+		m_vPos(vPos),
 		m_rDistance(rDistance)
 
 //	CTimedEncounterEvent constructor
@@ -134,10 +136,13 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 //	CTimedEvencounterEvent constructor
 
 	{
-	Ctx.pStream->Read((char *)&m_dwEncounterTableUNID, sizeof(DWORD));
+	Ctx.pStream->Read(m_dwEncounterTableUNID);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pGate);
-	Ctx.pStream->Read((char *)&m_rDistance, sizeof(Metric));
+	Ctx.pStream->Read(m_rDistance);
+
+	if (Ctx.dwVersion >= 161)
+		m_vPos.ReadFromStream(*Ctx.pStream);
 	}
 
 CVector CTimedEncounterEvent::CalcEncounterPos (CSpaceObject *pTarget, Metric rDistance) const
@@ -268,6 +273,11 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		Ctx.vPos = m_pGate->GetPos();
 		Ctx.PosSpread = DiceRange(2, 1, 2);
 		}
+	else if (!m_vPos.IsNull())
+		{
+		Ctx.vPos = m_vPos;
+		Ctx.PosSpread = DiceRange(2, 1, 2);
+		}
 	else if (m_pTarget)
 		Ctx.pGate = m_pTarget->GetNearestStargate(true);
 
@@ -302,12 +312,14 @@ void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 //	DWORD		m_pTarget (CSpaceObject ref)
 //	DWORD		m_pGate (CSpaceObject ref)
 //	Metric		m_rDistance
+//	CVector		m_vPos
 
 	{
-	pStream->Write((char *)&m_dwEncounterTableUNID, sizeof(DWORD));
+	pStream->Write(m_dwEncounterTableUNID);
 	pSystem->WriteObjRefToStream(m_pTarget, pStream);
 	pSystem->WriteObjRefToStream(m_pGate, pStream);
-	pStream->Write((char *)&m_rDistance, sizeof(Metric));
+	pStream->Write(m_rDistance);
+	m_vPos.WriteToStream(*pStream);
 	}
 
 //	CTimedCustomEvent class --------------------------------------------------
