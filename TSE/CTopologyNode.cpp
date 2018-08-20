@@ -42,6 +42,8 @@
 #define PROPERTY_DEST_GATE_ID					CONSTLIT("destGateID")
 #define PROPERTY_DEST_ID						CONSTLIT("destID")
 #define PROPERTY_GATE_ID						CONSTLIT("gateID")
+#define PROPERTY_LAST_VISITED_GAME_SECONDS		CONSTLIT("lastVisitSeconds")
+#define PROPERTY_LAST_VISITED_ON				CONSTLIT("lastVisitOn")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_NODE_ID						CONSTLIT("nodeID")
@@ -513,7 +515,24 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_LEVEL))
+	if (strEquals(sName, PROPERTY_LAST_VISITED_GAME_SECONDS))
+		{
+		DWORD dwLastVisited = GetLastVisitedTime();
+		if (dwLastVisited == 0xffffffff)
+			return CC.CreateNil();
+
+		CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(GetLastVisitedTime());
+		return CC.CreateInteger(Span.Seconds());
+		}
+	else if (strEquals(sName, PROPERTY_LAST_VISITED_ON))
+		{
+		DWORD dwLastVisited = GetLastVisitedTime();
+		if (dwLastVisited == 0xffffffff)
+			return CC.CreateNil();
+		else
+			return CC.CreateInteger(dwLastVisited);
+		}
+	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
 	else if (strEquals(sName, PROPERTY_NAME))
 		return CC.CreateString(GetSystemName());

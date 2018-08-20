@@ -2794,6 +2794,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'lastVisitOn       Tick on which player last visited\n"
+			"   'lastVisitSeconds  Game seconds since player last visited\n"
 			"   'level             The level of the system\n"
 			"   'name              The name of the system\n"
 			"   'pos               Node position on map (x y)",
