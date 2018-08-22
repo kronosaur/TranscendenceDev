@@ -919,8 +919,8 @@ const CTimeSpan operator+ (const CTimeSpan &op1, const CTimeSpan &op2)
 //	Subtract op2 from op1 (op1 must be greater than op2)
 
 	{
-	LONGLONG time1 = (op1.Days() * SECONDS_PER_DAY * 1000) + op1.Milliseconds();
-	LONGLONG time2 = (op2.Days() * SECONDS_PER_DAY * 1000) + op2.Milliseconds();
+	LONGLONG time1 = ((LONGLONG)op1.Days() * SECONDS_PER_DAY * 1000) + op1.Milliseconds();
+	LONGLONG time2 = ((LONGLONG)op2.Days() * SECONDS_PER_DAY * 1000) + op2.Milliseconds();
 	LONGLONG result = time1 + time2;
 
 	return CTimeSpan((int)(result / (SECONDS_PER_DAY * 1000)), (int)(result % (SECONDS_PER_DAY * 1000)));
@@ -933,8 +933,8 @@ const CTimeSpan operator- (const CTimeSpan &op1, const CTimeSpan &op2)
 //	Subtract op2 from op1 (op1 must be greater than op2)
 
 	{
-	LONGLONG time1 = (op1.Days() * SECONDS_PER_DAY * 1000) + op1.Milliseconds();
-	LONGLONG time2 = (op2.Days() * SECONDS_PER_DAY * 1000) + op2.Milliseconds();
+	LONGLONG time1 = ((LONGLONG)op1.Days() * SECONDS_PER_DAY * 1000) + op1.Milliseconds();
+	LONGLONG time2 = ((LONGLONG)op2.Days() * SECONDS_PER_DAY * 1000) + op2.Milliseconds();
 	LONGLONG result = (time1 >= time2 ? time1 - time2 : time2 - time1);
 
 	return CTimeSpan((int)(result / (SECONDS_PER_DAY * 1000)), (int)(result % (SECONDS_PER_DAY * 1000)));
