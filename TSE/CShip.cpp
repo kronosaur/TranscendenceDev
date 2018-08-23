@@ -1813,12 +1813,10 @@ int CShip::DamageArmor (int iSect, DamageDesc &Damage)
 //	Damage armor. Returns the number of hits points of damage caused.
 
 	{
+	SDamageCtx DamageCtx(Damage);
 	CInstalledArmor *pArmor = GetArmorSection(iSect);
 
-	SDamageCtx DamageCtx;
-	DamageCtx.Damage = Damage;
-	DamageCtx.iDamage = Damage.RollDamage();
-	DamageCtx.iArmorHitDamage = DamageCtx.iDamage;
+	//	Armor takes damage
 
 	EDamageResults iResult = pArmor->AbsorbDamage(this, DamageCtx);
 	if (iResult == damageNoDamage || DamageCtx.iArmorDamage == 0)
@@ -1827,6 +1825,8 @@ int CShip::DamageArmor (int iSect, DamageDesc &Damage)
 	//	Tell the controller that we were damaged
 
 	m_pController->OnDamaged(CDamageSource(), pArmor, Damage, DamageCtx.iArmorDamage);
+
+	//	Return damage caused
 
 	return DamageCtx.iArmorDamage;
 	}

@@ -199,6 +199,8 @@ struct SDamageCtx
 				int iDirectionArg, 
 				const CVector &vHitPosArg,
 				int iDamageArg = -1);
+		SDamageCtx (const DamageDesc &DamageArg);
+		~SDamageCtx (void);
 
 		inline void ClearTimeStop (void) { m_bTimeStop = false; }
 		inline int GetBlindTime (void) const { return m_iBlindTime; }
@@ -258,6 +260,11 @@ struct SDamageCtx
 	private:
 		void InitDamageEffects (const DamageDesc &DamageArg);
 
+        //  Copying this class is not supported
+
+		SDamageCtx (const SDamageCtx &Src) = delete;
+        SDamageCtx & operator= (const SDamageCtx &Src) = delete;
+
 		//	Damage effects
 
 		bool m_bBlind = false;						//	If true, shot will blind the target
@@ -272,6 +279,8 @@ struct SDamageCtx
 		bool m_bReflect = false;					//	If true, armor/shields reflected the shot
 		bool m_bShatter = false;					//	If true, shot will shatter the target
 		bool m_bTimeStop = false;					//	If TRUE, target will be stopped in time
+
+		bool m_bFreeDesc = false;					//	If TRUE, we own pDesc.
 	};
 
 struct SDestroyCtx

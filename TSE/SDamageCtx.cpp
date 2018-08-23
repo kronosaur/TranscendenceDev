@@ -46,6 +46,36 @@ SDamageCtx::SDamageCtx (CSpaceObject *pObjHitArg,
 	InitDamageEffects(Damage);
 	}
 
+SDamageCtx::SDamageCtx (const DamageDesc &DamageArg)
+
+//	SDamageCtx constructor
+
+	{
+	//	Initialize a descriptor
+
+	pDesc = new CWeaponFireDesc;
+	m_bFreeDesc = true;
+	pDesc->InitFromDamage(DamageArg);
+
+	//	Roll damage
+
+	Damage = DamageArg;
+	iDamage = Damage.RollDamage();
+
+	//	Initialize damage effects
+
+	InitDamageEffects(Damage);
+	}
+
+SDamageCtx::~SDamageCtx (void)
+
+//	SDamageCtx destructor
+
+	{
+	if (m_bFreeDesc)
+		delete pDesc;
+	}
+
 void SDamageCtx::InitDamageEffects (const DamageDesc &DamageArg)
 
 //	InitDamageEffects
