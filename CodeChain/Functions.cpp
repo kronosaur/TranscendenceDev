@@ -2339,7 +2339,7 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				if (pArgs->GetCount() >= 2)
 					iStart = pArgs->GetElement(1)->GetIntegerValue();
 				else
-					iStart = 0;
+					return pCC->CreateNil();
 
 				int iEnd;
 				if (pArgs->GetCount() >= 3)
@@ -2348,21 +2348,47 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					//	If only one number, then we create a sequence from 1 to that number
 
+					if (iStart < 1)
+						return pCC->CreateNil();
+
 					iEnd = iStart;
 					iStart = 1;
 					}
 
 				int iInc;
-				if (pArgs->GetCount() >= 4)
+				if (iStart == iEnd)
+					iInc = 1;
+				else if (pArgs->GetCount() >= 4)
+					{
 					iInc = pArgs->GetElement(3)->GetIntegerValue();
+
+					//	Make sure this is valid
+
+					if (iInc == 0)
+						return pCC->CreateNil();
+					else if (iStart > iEnd && iInc > 0)
+						return pCC->CreateNil();
+					else if (iStart < iEnd && iInc < 0)
+						return pCC->CreateNil();
+					}
+				else if (iStart > iEnd)
+					iInc = -1;
 				else
 					iInc = 1;
 
 				//	Create the sequence.
 
 				ICCItem *pList = pCC->CreateLinkedList();
-				for (i = iStart; i <= iEnd; i += iInc)
-					pList->AppendInteger(*pCC, i);
+				if (iInc < 0)
+					{
+					for (i = iStart; i >= iEnd; i += iInc)
+						pList->AppendInteger(*pCC, i);
+					}
+				else
+					{
+					for (i = iStart; i <= iEnd; i += iInc)
+						pList->AppendInteger(*pCC, i);
+					}
 
 				return pList;
 				}
