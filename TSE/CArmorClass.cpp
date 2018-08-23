@@ -223,7 +223,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	//	First give custom weapons a chance
 
-	bool bCustomDamage = Ctx.pDesc->FireOnDamageArmor(Ctx);
+	bool bCustomDamage = (Ctx.pDesc && Ctx.pDesc->FireOnDamageArmor(Ctx));
 	if (pSource->IsDestroyed())
 		return damageDestroyed;
 
@@ -290,7 +290,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	//	Create a hit effect. (Many weapons show an effect even if no damage was
 	//	done.)
 
-	if (!Ctx.bNoHitEffect)
+	if (!Ctx.bNoHitEffect && Ctx.pDesc)
 		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
 
 	//	Give source events a chance to change the damage before we

@@ -1814,31 +1814,21 @@ int CShip::DamageArmor (int iSect, DamageDesc &Damage)
 
 	{
 	CInstalledArmor *pArmor = GetArmorSection(iSect);
-	CItemCtx ItemCtx(this, pArmor);
 
 	SDamageCtx DamageCtx;
 	DamageCtx.Damage = Damage;
 	DamageCtx.iDamage = Damage.RollDamage();
+	DamageCtx.iArmorHitDamage = DamageCtx.iDamage;
 
-	//	Adjust the damage for the armor
-
-	pArmor->GetClass()->CalcAdjustedDamage(ItemCtx, DamageCtx);
-	if (DamageCtx.iDamage == 0)
+	EDamageResults iResult = pArmor->AbsorbDamage(this, DamageCtx);
+	if (iResult == damageNoDamage || DamageCtx.iArmorDamage == 0)
 		return 0;
-
-	//	Armor takes damage
-
-	int iDamage = Min(DamageCtx.iDamage, pArmor->GetHitPoints());
-	if (iDamage == 0)
-		return 0;
-
-	pArmor->IncHitPoints(-iDamage);
 
 	//	Tell the controller that we were damaged
 
-	m_pController->OnDamaged(CDamageSource(), pArmor, Damage, iDamage);
+	m_pController->OnDamaged(CDamageSource(), pArmor, Damage, DamageCtx.iArmorDamage);
 
-	return iDamage;
+	return DamageCtx.iArmorDamage;
 	}
 
 void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
