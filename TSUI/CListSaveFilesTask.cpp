@@ -95,7 +95,10 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Add the character name and current star system
 
-	CString sHeading = strPatternSubst(CONSTLIT("%s — %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
+	bool bPermadeath = GameFile.GetResurrectCount() == 0;
+	CString sHeading;
+	
+	sHeading = strPatternSubst(CONSTLIT("%s — %s%s"), GameFile.GetPlayerName(), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" — Permadeath") : NULL_STR);
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, y));
@@ -117,7 +120,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	if (GameFile.IsEndGame())
 		sState = strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName());
 	else if (GameFile.IsGameResurrect())
-		sState = strPatternSubst(CONSTLIT("Resurrect in the %s System"), GameFile.GetSystemName());
+		sState = strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR);
 	else
 		sState = strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName());
 
