@@ -393,6 +393,7 @@
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
+    <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CNameDesc.cpp" />
     <ClCompile Include="CNetworkTopologyCreator.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />

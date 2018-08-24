@@ -154,3 +154,39 @@ class CVolumetricShadowPainter
 		CVector m_vUL;						//	Upper-left of shadow box (mask coords)
 		CVector m_vLR;						//	Lower-right of shadow box (mask coords)
 	};
+
+class CMapLabelArranger
+	{
+	public:
+		enum EPositions
+			{
+			posNone					= 0,	//	Unknown
+
+			posRight				= 1,	//	To the right of the object
+			posLeft					= 2,	//	To the left of the object
+			posBottom				= 3,	//	Centered below the object
+			};
+
+		static void Arrange (CSystem *pSystem);
+		static void CalcLabelPos (const CString &sLabel, EPositions iPos, int &xMapLabel, int &yMapLabel);
+		static inline EPositions LoadPosition (DWORD dwLoad) { return (EPositions)dwLoad; }
+		static inline DWORD SavePosition (EPositions iPos) { return (DWORD)iPos; }
+
+	private:
+		struct SLabelEntry
+			{
+			CSpaceObject *pObj = NULL;
+			int x = 0;
+			int y = 0;
+			int cxLabel = 0;
+
+			RECT rcLabel = { 0, 0, 0, 0 };
+			EPositions iPosition = posNone;
+			EPositions iNewPosition  = posNone;
+			};
+
+		static bool CalcOverlap (SLabelEntry *pEntries, int iCount);
+		static void SetLabelBelow (SLabelEntry &Entry, int cyChar);
+		static void SetLabelLeft (SLabelEntry &Entry, int cyChar);
+		static void SetLabelRight (SLabelEntry &Entry, int cyChar);
+	};

@@ -1243,6 +1243,9 @@
     <ClCompile Include="CConditionSet.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CMapLabelArranger.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

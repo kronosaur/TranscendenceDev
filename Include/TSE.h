@@ -1434,7 +1434,7 @@ class CSpaceObject : public CObject
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetIdentified (bool bIdentified = true) { }
-		virtual void SetMapLabelPos (int x, int y) { }
+		virtual void SetMapLabelPos (CMapLabelArranger::EPositions iPos) { }
 		virtual void UpdateArmorItems (void) { }
 
 		//	...for objects that can bounce

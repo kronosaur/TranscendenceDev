@@ -1535,7 +1535,7 @@ class CStation : public CSpaceObject
 		virtual void SetExplored (bool bExplored = true) override { m_fExplored = bExplored; }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fKnown = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) override;
-		virtual void SetMapLabelPos (int x, int y) override { m_xMapLabel = x; m_yMapLabel = y; }
+		virtual void SetMapLabelPos (CMapLabelArranger::EPositions iPos) override { m_iMapLabelPos = iPos; m_sMapLabel = NULL_STR; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
@@ -1592,6 +1592,7 @@ class CStation : public CSpaceObject
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
+		void InitMapLabel (void);
 		bool IsBlacklisted (CSpaceObject *pObj = NULL) const;
 		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
@@ -1614,8 +1615,7 @@ class CStation : public CSpaceObject
 		CCompositeImageSelector m_ImageSelector;//	Image variant to display
 		int m_iDestroyedAnimation;				//	Frames left of destroyed animation
 		COrbit *m_pMapOrbit;					//	Orbit to draw on map
-		int m_xMapLabel;						//	Name label in map view
-		int m_yMapLabel;
+		CMapLabelArranger::EPositions m_iMapLabelPos;	//	Position of label in map/LRS view
 		Metric m_rParallaxDist;					//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 
 		CString m_sStargateDestNode;			//	Destination node
@@ -1663,6 +1663,8 @@ class CStation : public CSpaceObject
 
 		CG32bitImage m_MapImage;				//	Image for the map (if star or world)
 		CString m_sMapLabel;					//	Label for map
+		int m_xMapLabel;						//	Name label in map view (cached)
+		int m_yMapLabel;
 
 		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
 

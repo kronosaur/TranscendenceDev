@@ -34,36 +34,11 @@ int g_iGateTimerTick = -1;
 int g_cxStarField = -1;
 int g_cyStarField = -1;
 
-enum LabelPositionTypes
-	{
-	labelPosNone,
-
-	labelPosRight,
-	labelPosLeft,
-	labelPosBottom,
-	};
-
-struct SLabelEntry
-	{
-	CSpaceObject *pObj;
-	int x;
-	int y;
-	int cxLabel;
-
-	RECT rcLabel;
-	int iPosition;
-	int iNewPosition;
-	};
-
 const CG32bitPixel g_rgbSpaceColor = CG32bitPixel(0,0,8);
 const Metric g_MetersPerKlick = 1000.0;
 const Metric MAP_VERTICAL_ADJUST =						1.4;
 
 const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(65, 68, 77);
-
-const int LABEL_SPACING_X =								8;
-const int LABEL_SPACING_Y =								4;
-const int LABEL_OVERLAP_Y =								1;
 
 const Metric BACKGROUND_OBJECT_FACTOR =					4.0;
 
@@ -74,11 +49,6 @@ const Metric CELL_BORDER =								(128.0 * g_KlicksPerPixel);
 const Metric SAME_POS_THRESHOLD2 =						(g_KlicksPerPixel * g_KlicksPerPixel);
 
 const Metric MAP_GRID_SIZE =							3000.0 * LIGHT_SECOND;
-
-bool CalcOverlap (SLabelEntry *pEntries, int iCount);
-void SetLabelBelow (SLabelEntry &Entry, int cyChar);
-void SetLabelLeft (SLabelEntry &Entry, int cyChar);
-void SetLabelRight (SLabelEntry &Entry, int cyChar);
 
 CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : 
 		m_dwID(OBJID_NULL),
@@ -741,96 +711,6 @@ void CSystem::CancelTimedEvent (CDesignType *pSource, const CString &sEvent, boo
 				}
 			}
 		}
-	}
-
-void CSystem::ComputeMapLabels (void)
-
-//	ComputeMapLabels
-//
-//	Positions the labels for all objects that need one
-
-	{
-	int i;
-	const int MAX_LABELS = 100;
-	int iLabelCount = 0;
-	SLabelEntry Labels[MAX_LABELS];
-
-	//	Compute some font metrics
-
-	int cxChar = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).GetAverageWidth();
-	int cyChar = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).GetHeight();
-
-	//	Compute a transform for map coordinate
-
-	ViewportTransform Trans(CVector(), 
-			g_MapKlicksPerPixel, 
-			g_MapKlicksPerPixel * MAP_VERTICAL_ADJUST,
-			0, 
-			0);
-
-	//	Loop over all objects and see if they have a map label
-
-	for (i = 0; i < GetObjectCount() && iLabelCount < MAX_LABELS; i++)
-		{
-		CSpaceObject *pObj = GetObject(i);
-
-		if (pObj && pObj->HasMapLabel())
-			{
-			Labels[iLabelCount].pObj = pObj;
-			Trans.Transform(pObj->GetPos(), &Labels[iLabelCount].x, &Labels[iLabelCount].y);
-			Labels[iLabelCount].cxLabel = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).MeasureText(pObj->GetNounPhrase(0));
-
-			SetLabelRight(Labels[iLabelCount], cyChar);
-
-			iLabelCount++;
-			}
-		}
-
-	//	Keep looping until we minimize overlap
-
-	bool bOverlap;
-	int iIteration = 0;
-
-	do
-		{
-		bOverlap = CalcOverlap(Labels, iLabelCount);
-		if (bOverlap)
-			{
-			//	Modify the label location of any overlapping labels
-
-			for (i = 0; i < iLabelCount; i++)
-				{
-				switch (Labels[i].iNewPosition)
-					{
-					case labelPosRight:
-						{
-						SetLabelRight(Labels[i], cyChar);
-						break;
-						}
-
-					case labelPosLeft:
-						{
-						SetLabelLeft(Labels[i], cyChar);
-						break;
-						}
-
-					case labelPosBottom:
-						{
-						SetLabelBelow(Labels[i], cyChar);
-						break;
-						}
-					}
-				}
-
-			iIteration++;
-			}
-		}
-	while (bOverlap && iIteration < 10);
-
-	//	Set the label position for all the objects
-
-	for (i = 0; i < iLabelCount; i++)
-		Labels[i].pObj->SetMapLabelPos(Labels[i].rcLabel.left - Labels[i].x, Labels[i].rcLabel.top - Labels[i].y - LABEL_OVERLAP_Y);
 	}
 
 void CSystem::ComputeRandomEncounters (void)
@@ -5210,79 +5090,4 @@ void CSystem::WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *p
 		dwSave = pSovereign->GetUNID();
 
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
-	}
-
-//	Miscellaneous --------------------------------------------------------------
-
-bool CalcOverlap (SLabelEntry *pEntries, int iCount)
-	{
-	bool bOverlap = false;
-	int i, j;
-
-	for (i = 0; i < iCount; i++)
-		{
-		pEntries[i].iNewPosition = labelPosNone;
-
-		for (j = 0; j < iCount; j++)
-			if (i != j)
-				{
-				if (RectsIntersect(pEntries[i].rcLabel, pEntries[j].rcLabel))
-					{
-					int xDelta = pEntries[j].x - pEntries[i].x;
-					int yDelta = pEntries[j].y - pEntries[i].y;
-
-					switch (pEntries[i].iPosition)
-						{
-						case labelPosRight:
-							{
-							if (xDelta > 0)
-								pEntries[i].iNewPosition = labelPosLeft;
-							break;
-							}
-
-						case labelPosLeft:
-							{
-							if (xDelta < 0)
-								pEntries[i].iNewPosition = labelPosBottom;
-							break;
-							}
-						}
-
-					bOverlap = true;
-					break;
-					}
-				}
-		}
-
-	return bOverlap;
-	}
-
-void SetLabelBelow (SLabelEntry &Entry, int cyChar)
-	{
-	Entry.rcLabel.top = Entry.y + LABEL_SPACING_Y + LABEL_OVERLAP_Y;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
-	Entry.rcLabel.left = Entry.x - (Entry.cxLabel / 2);
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
-
-	Entry.iPosition = labelPosBottom;
-	}
-
-void SetLabelLeft (SLabelEntry &Entry, int cyChar)
-	{
-	Entry.rcLabel.left = Entry.x - (LABEL_SPACING_X + Entry.cxLabel);
-	Entry.rcLabel.top = Entry.y - (cyChar / 2) + LABEL_OVERLAP_Y;
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
-
-	Entry.iPosition = labelPosLeft;
-	}
-
-void SetLabelRight (SLabelEntry &Entry, int cyChar)
-	{
-	Entry.rcLabel.left = Entry.x + LABEL_SPACING_X;
-	Entry.rcLabel.top = Entry.y - (cyChar / 2) + LABEL_OVERLAP_Y;
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
-
-	Entry.iPosition = labelPosRight;
 	}

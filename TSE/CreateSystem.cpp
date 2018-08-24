@@ -3894,7 +3894,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 	//	Arrange all map labels so that they don't overlap
 
-	pSystem->ComputeMapLabels();
+	CMapLabelArranger::Arrange(pSystem);
 	pSystem->ComputeStars();
 
 	//	Call each object and tell it that the system has been

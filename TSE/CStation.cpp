@@ -686,8 +686,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	pStation->m_fNoReinforcements = false;
 	pStation->m_fNoConstruction = false;
 	pStation->m_fRadioactive = false;
-	pStation->m_xMapLabel = 10;
-	pStation->m_yMapLabel = -6;
+	pStation->m_iMapLabelPos = CMapLabelArranger::posRight;
 	pStation->m_rMass = pType->GetMass();
 	pStation->m_dwWreckUNID = 0;
 	pStation->m_fNoBlacklist = false;
@@ -1712,6 +1711,20 @@ bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &I
 
 	return ImagesIntersect(Image, iTick, iRotation, vImagePos,
 			DestImage, iDestTick, iDestVariant, vObjPos);
+	}
+
+void CStation::InitMapLabel (void)
+
+//	InitMapLabel
+//
+//	Make sure the map label is initialized.
+
+	{
+	if (m_sMapLabel.IsBlank())
+		{
+		m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
+		CMapLabelArranger::CalcLabelPos(m_sMapLabel, m_iMapLabelPos, m_xMapLabel, m_yMapLabel);
+		}
 	}
 
 bool CStation::IsBlacklisted (CSpaceObject *pObj) const
@@ -3087,8 +3100,9 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 		if (!m_fNoMapLabel)
 			{
-			if (m_sMapLabel.IsBlank())
-				m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
+			//	We cache the label and the position here.
+
+			InitMapLabel();
 
 			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel + 1, 
@@ -3154,8 +3168,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //	DWORD		m_iDestroyedAnimation
 //	DWORD		1 if orbit, 0xffffffff if no orbit
 //	Orbit		System orbit
-//	DWORD		m_xMapLabel
-//	DWORD		m_yMapLabel
+//	DWORD		m_iMapLabelPos
 //	Metric		m_rParallaxDist
 //	CString		m_sStargateDestNode
 //	CString		m_sStargateDestEntryPoint
@@ -3212,22 +3225,25 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Station type
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_pType = g_pUniverse->FindStationType(dwLoad);
 
 	//	Read name
 
 	m_sName.ReadFromStream(Ctx.pStream);
 	if (Ctx.dwVersion >= 36)
-		Ctx.pStream->Read((char *)&m_dwNameFlags, sizeof(DWORD));
+		Ctx.pStream->Read(m_dwNameFlags);
 	else
 		m_dwNameFlags = 0;
 
 	//	Stuff
 
 	CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
-	Ctx.pStream->Read((char *)&m_Scale, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_rMass, sizeof(Metric));
+
+	Ctx.pStream->Read(dwLoad);
+	m_Scale = CStationType::LoadScaleType(dwLoad);
+
+	Ctx.pStream->Read(m_rMass);
 
 	//	Read composite image selector
 
@@ -3235,7 +3251,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		m_ImageSelector.ReadFromStream(Ctx);
 	else
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		IImageEntry *pRoot = m_pType->GetImage().GetRoot();
 		DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
 		m_ImageSelector.AddVariant(dwID, dwLoad);
@@ -3243,26 +3259,46 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Animation data
 
-	Ctx.pStream->Read((char *)&m_iDestroyedAnimation, sizeof(DWORD));
+	Ctx.pStream->Read(m_iDestroyedAnimation);
 
 	//	Load orbit
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad != 0xffffffff)
 		{
 		m_pMapOrbit = new COrbit;
+		//	LATER: COrbit should load itself
 		Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
 		}
 
-	//	More stuff
+	//	Map label
 
-	Ctx.pStream->Read((char *)&m_xMapLabel, sizeof(DWORD));
-	Ctx.pStream->Read((char *)&m_yMapLabel, sizeof(DWORD));
+	if (Ctx.dwVersion >= 162)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_iMapLabelPos = CMapLabelArranger::LoadPosition(dwLoad);
+		}
+	else
+		{
+		int xMapLabel, yMapLabel;
+		Ctx.pStream->Read(xMapLabel);
+		Ctx.pStream->Read(yMapLabel);
+
+		//	For backwards compatibility we reverse engineer label coordinates
+		//	to a label position.
+
+		if (xMapLabel < 0 && yMapLabel > 0)
+			m_iMapLabelPos = CMapLabelArranger::posBottom;
+		else if (xMapLabel < 0)
+			m_iMapLabelPos = CMapLabelArranger::posLeft;
+		else
+			m_iMapLabelPos = CMapLabelArranger::posRight;
+		}
 
 	//	Parallax
 
 	if (Ctx.dwVersion >= 94)
-		Ctx.pStream->Read((char *)&m_rParallaxDist, sizeof(Metric));
+		Ctx.pStream->Read(m_rParallaxDist);
 	else
 		{
 		m_rParallaxDist = m_pType->GetParallaxDist();
@@ -3342,7 +3378,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Devices
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (dwLoad)
 		{
 		m_pDevices = new CInstalledDevice [dwLoad];
@@ -3361,13 +3397,13 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 77)
 		{
 		DWORD dwCount;
-		Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+		Ctx.pStream->Read(dwCount);
 		if (dwCount)
 			{
 			for (i = 0; i < (int)dwCount; i++)
 				{
 				DWORD dwObjID;
-				Ctx.pStream->Read((char *)&dwObjID, sizeof(DWORD));
+				Ctx.pStream->Read(dwObjID);
 
 				TArray<CSpaceObject *> *pList = Ctx.Subscribed.SetAt(dwObjID);
 				pList->Insert(this);
@@ -3409,19 +3445,19 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		int iCounter;
 
 		CSystem::ReadSovereignRefFromStream(Ctx, &pBlacklist);
-		Ctx.pStream->Read((char *)&iCounter, sizeof(DWORD));
+		Ctx.pStream->Read(iCounter);
 
 		if (pBlacklist != NULL)
 			m_Blacklist.Blacklist();
 		}
 
 	if (Ctx.dwVersion >= 3)
-		Ctx.pStream->Read((char *)&m_iAngryCounter, sizeof(DWORD));
+		Ctx.pStream->Read(m_iAngryCounter);
 	else
 		m_iAngryCounter = 0;
 
 	if (Ctx.dwVersion >= 9)
-		Ctx.pStream->Read((char *)&m_iReinforceRequestCount, sizeof(DWORD));
+		Ctx.pStream->Read(m_iReinforceRequestCount);
 	else
 		m_iReinforceRequestCount = 0;
 
@@ -3429,7 +3465,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 62)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad != 0xffffffff)
 			{
 			m_pMoney = new CCurrencyBlock;
@@ -3440,7 +3476,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	else if (Ctx.dwVersion >= 12)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad)
 			{
 			m_pMoney = new CCurrencyBlock;
@@ -3456,7 +3492,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 37)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad != 0xffffffff)
 			{
 			m_pTrade = new CTradingDesc;
@@ -3470,7 +3506,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Wreck UNID
 
-	Ctx.pStream->Read((char *)&m_dwWreckUNID, sizeof(DWORD));
+	Ctx.pStream->Read(m_dwWreckUNID);
 
 	//	Previous versions didn't have m_ImageSelector
 
@@ -3486,7 +3522,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fArmed =				((dwLoad & 0x00000001) ? true : false);
 	m_fKnown =				((dwLoad & 0x00000002) ? true : false);
 	m_fNoMapLabel =			((dwLoad & 0x00000004) ? true : false);
@@ -3860,8 +3896,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		m_iDestroyedAnimation
 //	DWORD		1 if orbit, 0xffffffff if no orbit
 //	Orbit		System orbit
-//	DWORD		m_xMapLabel
-//	DWORD		m_yMapLabel
+//	DWORD		m_iMapLabelPos
 //	Metric		m_rParallaxDist
 //	CString		m_sStargateDestNode
 //	CString		m_sStargateDestEntryPoint
@@ -3915,37 +3950,37 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	dwSave = m_pType->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	m_sName.WriteToStream(pStream);
-	pStream->Write((char *)&m_dwNameFlags, sizeof(DWORD));
+	pStream->Write(m_dwNameFlags);
 	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
-	pStream->Write((char *)&m_Scale, sizeof(DWORD));
-	pStream->Write((char *)&m_rMass, sizeof(Metric));
+	pStream->Write((DWORD)m_Scale);
+	pStream->Write(m_rMass);
 	m_ImageSelector.WriteToStream(pStream);
-	pStream->Write((char *)&m_iDestroyedAnimation, sizeof(DWORD));
+	pStream->Write(m_iDestroyedAnimation);
 
 	if (m_pMapOrbit)
 		{
 		dwSave = 1;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
+		//	LATER: COrbit should have a save method
 		pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
 		}
 	else
 		{
 		dwSave = 0xffffffff;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
-	pStream->Write((char *)&m_xMapLabel, sizeof(DWORD));
-	pStream->Write((char *)&m_yMapLabel, sizeof(DWORD));
-	pStream->Write((char *)&m_rParallaxDist, sizeof(Metric));
+	pStream->Write(CMapLabelArranger::SavePosition(m_iMapLabelPos));
+	pStream->Write(m_rParallaxDist);
 	m_sStargateDestNode.WriteToStream(pStream);
 	m_sStargateDestEntryPoint.WriteToStream(pStream);
 
 	m_Hull.WriteToStream(*pStream, this);
 
 	dwSave = (m_pDevices ? maxDevices : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	for (i = 0; i < (int)dwSave; i++)
 		m_pDevices[i].WriteToStream(pStream);
@@ -3959,22 +3994,22 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_Targets.WriteToStream(GetSystem(), pStream);
 
 	m_Blacklist.WriteToStream(pStream);
-	pStream->Write((char *)&m_iAngryCounter, sizeof(DWORD));
-	pStream->Write((char *)&m_iReinforceRequestCount, sizeof(DWORD));
+	pStream->Write(m_iAngryCounter);
+	pStream->Write(m_iReinforceRequestCount);
 
 	//	Money
 
 	if (m_pMoney)
 		{
 		dwSave = 1;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		m_pMoney->WriteToStream(pStream);
 		}
 	else
 		{
 		dwSave = 0xffffffff;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
 	//	Trade desc
@@ -3982,17 +4017,17 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	if (m_pTrade)
 		{
 		dwSave = 1;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		m_pTrade->WriteToStream(pStream);
 		}
 	else
 		{
 		dwSave = 0xffffffff;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
-	pStream->Write((char *)&m_dwWreckUNID, sizeof(DWORD));
+	pStream->Write(m_dwWreckUNID);
 
 	dwSave = 0;
 	dwSave |= (m_fArmed ?				0x00000001 : 0);
@@ -4016,7 +4051,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Rotation
 
@@ -4070,8 +4105,7 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 				&& m_pType->ShowsMapIcon() 
 				&& !m_fNoMapLabel)
 			{
-			if (m_sMapLabel.IsBlank())
-				m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
+			InitMapLabel();
 
 			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
@@ -4422,6 +4456,10 @@ void CStation::SetName (const CString &sName, DWORD dwFlags)
 	{
 	m_sName = sName;
 	m_dwNameFlags = dwFlags;
+
+	//	Clear cache so we recompute label metrics
+
+	m_sMapLabel = NULL_STR;
 	}
 
 void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryPoint)
