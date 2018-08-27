@@ -39,9 +39,9 @@ class CDXScreen
 		void CleanUp (void);
 		bool CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError = NULL);
 		void DebugOutputStats (void);
-		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return ((!IsReady() || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer); }
+		inline CG32bitImage &GetLayerBuffer (int iLayerID) { return ((!IsReady() || m_bDeviceLost || iLayerID < 0 || iLayerID >= m_Layers.GetCount()) ? CG32bitImage::Null() : m_Layers[iLayerID].BackBuffer); }
 		bool Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CString *retsError = NULL);
-		inline bool IsReady (void) const { return (m_bUseGDI || (m_pD3DDevice && !m_bDeviceLost)); }
+		inline bool IsReady (void) const { return (m_bUseGDI || m_pD3DDevice); }
 		inline bool IsUsingDirectX (void) const { return !m_bUseGDI; }
 		inline bool IsUsingTextures (void) const { return m_bUseTextures; }
 		void Render (void);
