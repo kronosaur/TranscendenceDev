@@ -379,6 +379,7 @@ class CFractureEffect : public CSpaceObject
 		virtual Categories GetCategory (void) const override { return catFractureEffect; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CFractureEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual void MarkImages (void) override { m_Image.MarkImage(); }
 		virtual void SetAttractor (CSpaceObject *pObj) override;
 
 	protected:
@@ -1513,7 +1514,7 @@ class CStation : public CSpaceObject
 		virtual bool IsStargate (void) const override { return !m_sStargateDestNode.IsBlank(); }
 		virtual bool IsVirtual (void) const override { return m_pType->IsVirtual(); }
 		virtual bool IsWreck (void) const override { return (m_dwWreckUNID != 0); }
-		virtual void MarkImages (void) override { m_pType->MarkImages(m_ImageSelector); }
+		virtual void MarkImages (void) override;
 		virtual bool ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnObjBounce (CSpaceObject *pObj, const CVector &vPos) override;

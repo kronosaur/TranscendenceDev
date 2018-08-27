@@ -797,11 +797,9 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	If we are a wreck, set the wreck parameters (mass, etc.)
 
-	if (pStation->m_ImageSelector.HasShipwreckImage())
-		{
-		CShipClass *pWreckClass = pStation->m_ImageSelector.GetShipwreckClass();
+	CShipClass *pWreckClass;
+	if (pType->GetImage().HasShipwreckClass(pStation->m_ImageSelector, &pWreckClass))
 		pStation->SetWreckParams(pWreckClass);
-		}
 
 	//	Create any items on the station
 
@@ -4070,6 +4068,19 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 		}
 	}
 
+void CStation::MarkImages (void)
+
+//	MarkImages
+//
+//	Mark images in use.
+
+	{
+	CCompositeImageModifiers Modifiers;
+	CalcImageModifiers(&Modifiers);
+
+	m_pType->MarkImages(m_ImageSelector, Modifiers);
+	}
+
 void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans)
 
 //	PaintLRSBackground
@@ -4557,6 +4568,11 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 	//	Set the wreck UNID
 
 	m_dwWreckUNID = pWreckClass->GetUNID();
+
+	//	Set the rotation
+
+	if (pShip)
+		SetRotation(pShip->GetRotation());
 	}
 
 bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)

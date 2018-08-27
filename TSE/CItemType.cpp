@@ -317,7 +317,7 @@ void CItemType::CreateFlotsamImage (void)
 	rcRect.top = 0;
 	rcRect.right = m_FlotsamBitmap.GetWidth();
 	rcRect.bottom = m_FlotsamBitmap.GetHeight();
-	m_FlotsamImage.Init(&m_FlotsamBitmap, rcRect, 0, 0, false);
+	m_FlotsamImage.InitFromBitmap(&m_FlotsamBitmap, rcRect, 0, 0, false);
 	}
 
 bool CItemType::FindDataField (const CString &sField, CString *retsValue) const

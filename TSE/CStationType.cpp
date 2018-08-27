@@ -19,6 +19,7 @@
 #define IMAGE_TAG								CONSTLIT("Image")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
 #define IMAGE_LOOKUP_TAG						CONSTLIT("ImageLookup")
+#define IMAGE_SHIPWRECK_TAG						CONSTLIT("ImageShipwreck")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
 #define ITEMS_TAG								CONSTLIT("Items")
 #define NAMES_TAG								CONSTLIT("Names")
@@ -157,6 +158,7 @@
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
 
 #define VALUE_FALSE								CONSTLIT("false")
+#define VALUE_SHIPWRECK							CONSTLIT("shipwreck")
 #define VALUE_TRUE								CONSTLIT("true")
 
 #define MAX_ATTACK_DISTANCE						(g_KlicksPerPixel * 512)
@@ -945,14 +947,14 @@ bool CStationType::IsSizeClass (ESizeClass iClass) const
 		}
 	}
 
-void CStationType::MarkImages (const CCompositeImageSelector &Selector)
+void CStationType::MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImages
 //
 //	Marks images used by the station
 
 	{
-	m_Image.MarkImage(Selector);
+	m_Image.MarkImage(Selector, Modifiers);
 
 	//	Cache the destroyed station image, if necessary
 
@@ -1418,6 +1420,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		pImage = pDesc->GetContentElementByTag(IMAGE_EFFECT_TAG);
 	if (pImage == NULL)
 		pImage = pDesc->GetContentElementByTag(IMAGE_LOOKUP_TAG);
+	if (pImage == NULL)
+		pImage = pDesc->GetContentElementByTag(IMAGE_SHIPWRECK_TAG);
 
 	//	Load the image
 
@@ -1425,6 +1429,13 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		//	If this image comes from a shipwreck then load it from
 		//	a ship class object. Otherwise, initialize the image from the XML
+		//
+		//	NOTE: This is for bacwards compatibility the new way of doing this
+		//	is to have an <ImageVariants> element with a set of <Shipwreck>
+		//	elements.
+		//
+		//	LATER: We should convert this to the new format so that we can
+		//	get rid of the m_ShipWrecks variable.
 
 		if (pImage->AttributeExists(SHIPWRECK_UNID_ATTRIB))
 			{
@@ -1433,6 +1444,9 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 			if (m_ShipWrecks.GetCount() == 0)
 				return ComposeLoadError(Ctx, CONSTLIT("Expected ship wreck list"));
+
+			if (error = m_Image.InitAsShipwreck(Ctx))
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 
 		//	Otherwise, load the image
@@ -1442,6 +1456,15 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			if (error = m_Image.InitFromXML(Ctx, pImage))
 				return ComposeLoadError(Ctx, Ctx.sError);
 			}
+		}
+
+	//	If we don't have an image defined, and this is a shipwreck, then we 
+	//	default to shipwreck image.
+
+	else if (m_iScale == scaleShip && HasAttribute(VALUE_SHIPWRECK))
+		{
+		if (error = m_Image.InitAsShipwreck(Ctx))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	//	Load hero image
@@ -1736,7 +1759,7 @@ void CStationType::OnMarkImages (void)
 
 	//	Mark
 
-	MarkImages(Selector);
+	MarkImages(Selector, CCompositeImageModifiers());
 	}
 
 void CStationType::OnReadFromStream (SUniverseLoadCtx &Ctx)

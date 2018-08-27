@@ -2780,7 +2780,7 @@ void CSystem::MarkImages (void)
 		//	If we have no type, then mark the default space background because
 		//	we use it by default for the intro.
 
-		CObjectImage *pDefault = g_pUniverse->FindLibraryImage(UNID_DEFAULT_SYSTEM_BACKGROUND);
+		TSharedPtr<CObjectImage> pDefault = g_pUniverse->FindLibraryImage(UNID_DEFAULT_SYSTEM_BACKGROUND);
 		if (pDefault)
 			pDefault->Mark();
 		}
@@ -2801,7 +2801,7 @@ void CSystem::MarkImages (void)
 	if (pEffect)
 		pEffect->MarkImages();
 
-	CObjectImage *pImage = g_pUniverse->FindLibraryImage(g_ShipExplosionParticlesUNID);
+	TSharedPtr<CObjectImage> pImage = g_pUniverse->FindLibraryImage(g_ShipExplosionParticlesUNID);
 	if (pImage)
 		pImage->Mark();
 

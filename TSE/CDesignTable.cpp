@@ -51,7 +51,7 @@ void CDesignTable::Delete (DWORD dwUNID)
 	if (m_Table.FindPos(dwUNID, &iIndex))
 		{
 		if (m_bFreeTypes)
-			delete m_Table[iIndex];
+			m_Table[iIndex]->Delete();
 
 		m_Table.Delete(iIndex);
 		}
@@ -69,7 +69,7 @@ void CDesignTable::DeleteAll (void)
 	if (m_bFreeTypes)
 		{
 		for (i = 0; i < GetCount(); i++)
-			delete GetEntry(i);
+			GetEntry(i)->Delete();
 		}
 
 	m_Table.DeleteAll();
@@ -256,7 +256,7 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 	//	Delete replaced entries
 
 	for (i = 0; i < Replaced.GetCount(); i++)
-		delete Replaced[i];
+		Replaced[i]->Delete();
 
 	return NOERROR;
 	}

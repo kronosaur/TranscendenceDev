@@ -291,7 +291,7 @@ void CExtension::CleanUp (void)
 	//	Delete design types
 
 	for (i = 0; i < m_DesignTypes.GetCount(); i++)
-		delete m_DesignTypes.GetEntry(i);
+		m_DesignTypes.GetEntry(i)->Delete();
 
 	m_DesignTypes.DeleteAll();
 	m_Externals.DeleteAll();

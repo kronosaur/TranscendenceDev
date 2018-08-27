@@ -1718,7 +1718,7 @@ void CDesignList::DeleteAll (bool bFree)
 	if (bFree)
 		{
 		for (i = 0; i < m_List.GetCount(); i++)
-			delete m_List[i];
+			m_List[i]->Delete();
 		}
 
 	m_List.DeleteAll();

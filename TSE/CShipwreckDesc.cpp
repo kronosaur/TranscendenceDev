@@ -144,7 +144,6 @@ void CShipwreckDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 
 	{
 	retTypesUsed->SetAt(m_pWreckType.GetUNID(), true);
-	retTypesUsed->SetAt(m_WreckImage.GetBitmapUNID(), true);
 	retTypesUsed->SetAt(m_pExplosionType.GetUNID(), true);
 	}
 
@@ -251,8 +250,7 @@ void CShipwreckDesc::CleanUp (void)
 //	Clean up images to free up space.
 
 	{
-	m_WreckBitmap.CleanUp();
-	m_WreckImage.CleanUp();
+	m_WreckImages.DeleteAll();
 	}
 
 void CShipwreckDesc::ClearMarks (void)
@@ -262,7 +260,10 @@ void CShipwreckDesc::ClearMarks (void)
 //	Clear image marks
 
 	{
-	m_WreckImage.ClearMark();
+	int i;
+
+	for (i = 0; i < m_WreckImages.GetCount(); i++)
+		m_WreckImages[i].ClearMark();
 	}
 
 bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const
@@ -348,126 +349,137 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 	DEBUG_CATCH
 	}
 
-void CShipwreckDesc::CreateWreckImage (DWORD dwShipClass, const CObjectImageArray &ShipImage)
+bool CShipwreckDesc::CreateWreckImage (CShipClass *pClass, int iRotationFrame, CObjectImageArray &Result) const
 
 //	CreateWreckImage
 //
-//	Creates a wreck image, if we don't already have one.
+//	Initializes Result. Returns FALSE if we failed.
 
 	{
-	DEBUG_TRY
-
 	int i;
 
-	//	If we've already got a wreck image, then we just mark it here.
+	//	Get the original ship class image
 
-	if (m_WreckImage.IsLoaded())
-		{
-		m_WreckImage.MarkImage();
-		return;
-		}
-
-	//	If no ship image, then we can't do anything
-
+	const CObjectImageArray &ShipImage = pClass->GetTypeImage().GetSimpleImage();
 	if (!ShipImage.IsLoaded())
-		return;
-
-	int cxWidth = RectWidth(ShipImage.GetImageRect());
-	int cyHeight = RectHeight(ShipImage.GetImageRect());
-
-	//	Get the image for damage
-
-	if (m_pDamageBitmap == NULL)
-		{
-		CObjectImage *pDamageImage = g_pUniverse->FindLibraryImage(g_DamageImageUNID);
-		if (pDamageImage == NULL)
-			return;
-
-		//	Lock the image because we keep it around in a global
-
-		SDesignLoadCtx Ctx;
-		if (pDamageImage->Lock(Ctx) != NOERROR)
-			return;
-
-		//	Get the image
-
-		m_pDamageBitmap = pDamageImage->GetRawImage(strFromInt(ShipImage.GetBitmapUNID()));
-		if (m_pDamageBitmap == NULL)
-			return;
-		}
-
-	//	Create the bitmap
-
-	CG32bitImage &SourceImage = ShipImage.GetImage(NULL_STR);
-	m_WreckBitmap.Create(cxWidth, cyHeight * WRECK_IMAGE_VARIANTS, SourceImage.GetAlphaType());
+		return false;
 
 	//	Initialize the random seed so that we can have a consistent pattern for
 	//	each ship class.
 
 	DWORD dwOldSeed = mathGetSeed();
-	mathSetSeed(mathMakeSeed(dwShipClass));
+	static constexpr DWORD PRIME_2E16_MINUS_123 = 0xf85;
+	DWORD dwNewSeed = pClass->GetUNID() * (DWORD)(iRotationFrame * PRIME_2E16_MINUS_123);
+	mathSetSeed(mathMakeSeed(dwNewSeed));
 
-	//	Blt the images
+	//	Get the RECT of for that frame.
 
-	TArray<int> Rotations;
-	Rotations.InsertEmpty(WRECK_IMAGE_VARIANTS);
+	RECT rcSrc = ShipImage.GetImageRect(0, iRotationFrame);
+	int cxWidth = RectWidth(rcSrc);
+	int cyHeight = RectHeight(rcSrc);
 
-	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
+	//	Get the actual bitmap
+
+	const CG32bitImage &Src = ShipImage.GetImage(CONSTLIT("Shipwreck image"));
+
+	//	Now we create the destination image.
+
+	CG32bitImage *pImage = new CG32bitImage;
+	pImage->Create(cxWidth, cyHeight, Src.GetAlphaType());
+	ShipImage.CopyImage(*pImage, 0, 0, 0, iRotationFrame);
+
+	//	Add some destruction
+
+	InitDamageImage();
+
+	int iCount = cxWidth * 2;
+	for (i = 0; i < iCount; i++)
 		{
-		//	Pick a random rotation
-
-		Rotations[i] = mathRandom(0, ShipImage.GetRotationCount() - 1);
-
-		//	Copy the frame
-
-		ShipImage.CopyImage(m_WreckBitmap,
+		pImage->Blt(DAMAGE_IMAGE_WIDTH * mathRandom(0, DAMAGE_IMAGE_COUNT-1),
 				0,
-				i * cyHeight,
-				0,
-				Rotations[i]);
-
-		//	Add some destruction
-
-		int iCount = cxWidth * 2;
-		for (int j = 0; j < iCount; j++)
-			{
-			m_WreckBitmap.Blt(DAMAGE_IMAGE_WIDTH * mathRandom(0, DAMAGE_IMAGE_COUNT-1),
-					0,
-					DAMAGE_IMAGE_WIDTH,
-					DAMAGE_IMAGE_COUNT,
-					255,
-					*m_pDamageBitmap,
-					mathRandom(0, cxWidth-1) - (DAMAGE_IMAGE_WIDTH / 2),
-					(i * cyHeight) + mathRandom(0, cyHeight-1) - (DAMAGE_IMAGE_HEIGHT / 2));
-			}
-
+				DAMAGE_IMAGE_WIDTH,
+				DAMAGE_IMAGE_COUNT,
+				255,
+				*m_pDamageBitmap,
+				mathRandom(0, cxWidth-1) - (DAMAGE_IMAGE_WIDTH / 2),
+				mathRandom(0, cyHeight-1) - (DAMAGE_IMAGE_HEIGHT / 2));
 		}
-
-	mathSetSeed(dwOldSeed);
 
 	//	Copy the mask back to the image because we blew it away painting
 	//	the damage.
 
-	for (i = 0; i < WRECK_IMAGE_VARIANTS; i++)
-		{
-		RECT rcSrc = ShipImage.GetImageRect(0, Rotations[i]);
-		m_WreckBitmap.CopyChannel(channelAlpha, rcSrc.left, rcSrc.top, cxWidth, cyHeight, SourceImage, 0, i * cyHeight);
-		}
+	pImage->CopyChannel(channelAlpha, rcSrc.left, rcSrc.top, cxWidth, cyHeight, Src, 0, 0);
+
+	//	Restore seed
+
+	mathSetSeed(dwOldSeed);
 
 	//	Initialize an image
 
-	RECT rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = cxWidth;
-	rcRect.bottom = cyHeight;
-	m_WreckImage.Init(&m_WreckBitmap, rcRect, 0, 0, false);
+	RECT rcFinalRect;
+	rcFinalRect.left = 0;
+	rcFinalRect.top = 0;
+	rcFinalRect.right = cxWidth;
+	rcFinalRect.bottom = cyHeight;
 
-	//	Mark to indicate in use (we call this function from CShipClass::MarkImages)
+	Result.InitFromBitmap(pImage, rcFinalRect, 0, 0, true);
 
-	m_WreckImage.MarkImage();
+	//	Success
 
-	DEBUG_CATCH
+	return true;
+	}
+
+CObjectImageArray *CShipwreckDesc::GetWreckImage (CShipClass *pClass, int iRotation) const
+
+//	GetWreckImage
+//
+//	Returns the wreck image for the given rotation. We return NULL if we could 
+//	not create the image.
+//
+//	NOTE: Callers must NOT free the resulting pointer (we cache it). But callers
+//	must not hold the pointer across a Mark/Sweep cycle (they must call this 
+//	again to mark).
+
+	{
+	//	Get the original ship class image (we need this to get the rotation 
+	//	frame count).
+
+	const CObjectImageArray &ShipImage = pClass->GetTypeImage().GetSimpleImage();
+	if (!ShipImage.IsLoaded())
+		return NULL;
+
+	//	Figure out the rotation frame that we want based on the rotation angle.
+
+	int iFrameCount = ShipImage.GetRotationCount();
+	if (iFrameCount == 0)
+		return NULL;
+
+	int iRotationFrame = CIntegralRotationDesc::GetFrameIndex(iFrameCount, iRotation);
+
+	//	See if we have this image in the cache.
+
+	bool bNotInCache;
+	CObjectImageArray *pImage = m_WreckImages.SetAt(iRotationFrame, &bNotInCache);
+
+	//	If not in the cache, then we need to add it.
+
+	if (bNotInCache)
+		{
+		if (!CreateWreckImage(pClass, iRotationFrame, *pImage))
+			{
+			//	This should never happen. But if it does, we're ready for it.
+			m_WreckImages.DeleteAt(iRotationFrame);
+			return NULL;
+			}
+		}
+
+	//	Mark to indicate in use
+
+	pImage->MarkImage();
+
+	//	Done
+
+	return pImage;
 	}
 
 CStationType *CShipwreckDesc::GetWreckType (void) const
@@ -485,6 +497,33 @@ CStationType *CShipwreckDesc::GetWreckType (void) const
 			m_pWreckDesc = g_pUniverse->FindStationType(g_ShipWreckUNID);
 
 		return m_pWreckDesc;
+		}
+	}
+
+void CShipwreckDesc::InitDamageImage (void) const
+
+//	InitDamageImage
+//
+//	Makes sure the damage template is loaded.
+
+	{
+	if (m_pDamageBitmap == NULL)
+		{
+		TSharedPtr<CObjectImage> pDamageImage = g_pUniverse->FindLibraryImage(g_DamageImageUNID);
+		if (pDamageImage == NULL)
+			return;
+
+		//	Lock the image because we keep it around in a global
+
+		SDesignLoadCtx Ctx;
+		if (pDamageImage->Lock(Ctx) != NOERROR)
+			return;
+
+		//	Get the image
+
+		m_pDamageBitmap = pDamageImage->GetRawImage(CONSTLIT("Damage image"));
+		if (m_pDamageBitmap == NULL)
+			return;
 		}
 	}
 
@@ -532,7 +571,7 @@ ALERROR CShipwreckDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Me
 	return NOERROR;
 	}
 
-void CShipwreckDesc::MarkImages (void)
+void CShipwreckDesc::MarkImages (CShipClass *pClass, int iRotation) const
 
 //	MarkImages
 //
@@ -542,7 +581,9 @@ void CShipwreckDesc::MarkImages (void)
 	if (m_pExplosionType)
 		m_pExplosionType->MarkImages();
 
-	//	NOTE: Caller will call CreateWreckImage to mark it.
+	//	Get the wreck image (to mark it)
+
+	GetWreckImage(pClass, iRotation);
 	}
 
 void CShipwreckDesc::SweepImages (void)
@@ -552,8 +593,16 @@ void CShipwreckDesc::SweepImages (void)
 //	Sweep unused images
 
 	{
-	if (!m_WreckImage.IsMarked())
-		CleanUp();
+	int i;
+
+	for (i = 0; i < m_WreckImages.GetCount(); i++)
+		{
+		if (!m_WreckImages[i].IsMarked())
+			{
+			m_WreckImages.Delete(i);
+			i--;
+			}
+		}
 
 	//	NOTE: No need to sweep m_pExplosionType because that is a normal design type.
 	}

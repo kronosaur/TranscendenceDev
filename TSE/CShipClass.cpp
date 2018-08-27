@@ -2431,7 +2431,7 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
 
     const CPlayerSettings *pPlayerSettings;
     DWORD dwImageUNID;
-	CObjectImage *pLargeImageObj;
+	TSharedPtr<CObjectImage> pLargeImageObj;
     CG32bitImage *pLargeImage;
     if (m_HeroImage.IsEmpty()
             && (pPlayerSettings = GetPlayerSettings())
@@ -2461,7 +2461,7 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
             rcImage.right = pNewImage->GetWidth();
             rcImage.bottom = pNewImage->GetHeight();
 
-            m_HeroImage.Init(pNewImage, rcImage, 1, 1, true);
+            m_HeroImage.InitFromBitmap(pNewImage, rcImage, 1, 1, true);
             }
         else
             {
@@ -2994,12 +2994,6 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
 	m_Image.MarkImage();
     m_HeroImage.MarkImage();
-	m_WreckDesc.MarkImages();
-
-	//	We make sure the wreck image is created (if it is already created, then
-	//	this call just marks it.
-
-	m_WreckDesc.CreateWreckImage(GetUNID(), m_Image.GetSimpleImage());
 
 	//	If necessary mark images for all our installed devices
 

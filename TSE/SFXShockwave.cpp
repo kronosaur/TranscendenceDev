@@ -396,7 +396,7 @@ bool CShockwavePainter::CalcIntermediates (void)
 			rcRect.top = 0;
 			rcRect.bottom = cyHeight;
 
-			if (m_Image.Init(pImage, rcRect, 1, 1, true) != NOERROR)
+			if (m_Image.InitFromBitmap(pImage, rcRect, 1, 1, true) != NOERROR)
 				{
 				delete pImage;
 				return false;

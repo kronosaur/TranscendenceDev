@@ -405,7 +405,7 @@ class CUniverse
 
 		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);
-		inline CObjectImage *FindLibraryImage (DWORD dwUNID) { return CObjectImage::AsType(m_Design.FindEntry(dwUNID)); }
+		inline TSharedPtr<CObjectImage> FindLibraryImage (DWORD dwUNID) { CObjectImage *pImage = CObjectImage::AsType(m_Design.FindEntry(dwUNID)); return TSharedPtr<CObjectImage>(pImage ? pImage->AddRef() : NULL); }
 		inline CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
 		inline CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
 		inline void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }

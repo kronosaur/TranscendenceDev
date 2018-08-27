@@ -199,7 +199,6 @@ class CDesignType
             };
 
 		CDesignType (void);
-		virtual ~CDesignType (void);
 		void CreateClone (CDesignType **retpType);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType);
 
@@ -319,6 +318,7 @@ class CDesignType
 
 		//	CDesignType overrides
 
+		virtual void Delete (void) { delete this; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
 		virtual CCommunicationsHandler *GetCommsHandler (void) { return NULL; }
 		virtual CEconomyType *GetEconomyType (void) const;
@@ -338,6 +338,8 @@ class CDesignType
 		void ReportEventError (const CString &sEvent, ICCItem *pError);
 
 		//	CDesignType overrides
+		virtual ~CDesignType (void);
+
 		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const { }
 		virtual void OnAddExternals (TArray<CString> *retExternals) { }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
@@ -1071,7 +1073,7 @@ class CDynamicDesignTable
 			~SEntry (void)
 				{
 				if (pType)
-					delete pType;
+					pType->Delete();
 
 				if (pSource)
 					delete pSource;

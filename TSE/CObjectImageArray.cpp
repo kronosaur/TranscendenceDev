@@ -51,7 +51,6 @@ CG32bitImage CObjectImageArray::m_NullImage;
 CObjectImageArray CObjectImageArray::m_Null;
 
 CObjectImageArray::CObjectImageArray (void) : 
-		m_pImage(NULL),
 		m_pRotationOffset(NULL),
 		m_pGlowImages(NULL),
 		m_pScaledImages(NULL),
@@ -264,11 +263,7 @@ void CObjectImageArray::CleanUp (void)
 		m_cxScaledImage = -1;
 		}
 
-	if (m_pImage && m_dwBitmapUNID == 0)
-		{
-		delete m_pImage;
-		m_pImage = NULL;
-		}
+	m_pImage = NULL;
 	}
 
 void CObjectImageArray::ComputeSourceXY (int iTick, int iRotation, int *retxSrc, int *retySrc) const
@@ -410,16 +405,7 @@ void CObjectImageArray::CopyFrom (const CObjectImageArray &Source)
 
 	{
 	m_dwBitmapUNID = Source.m_dwBitmapUNID;
-	if (m_dwBitmapUNID || Source.m_pImage == NULL)
-		m_pImage = Source.m_pImage;
-	else
-		{
-		if (Source.m_pImage->FreesBitmap())
-			m_pImage = new CObjectImage(Source.m_pImage->CreateCopy(), true);
-		else
-			m_pImage = new CObjectImage(Source.m_pImage->GetRawImage(NULL_STR));
-		}
-
+	m_pImage = Source.m_pImage;
 	m_rcImage = Source.m_rcImage;
 	m_iFrameCount = Source.m_iFrameCount;
 	m_iRotationCount = Source.m_iRotationCount;
@@ -846,38 +832,6 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 	return false;
 	}
 
-ALERROR CObjectImageArray::Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset, int yOffset)
-
-//	Init
-//
-//	Create from parameters
-
-	{
-	CleanUp();
-
-	//	Initialize basic info
-
-	m_dwBitmapUNID = 0;
-	m_pImage = new CObjectImage(pBitmap, bFreeBitmap);
-	m_rcImage = rcImage;
-	m_iFrameCount = iFrameCount;
-	m_iRotationCount = STD_ROTATION_COUNT;
-	m_iFramesPerColumn = m_iRotationCount;
-	m_iFramesPerRow = iFrameCount;
-	m_iTicksPerFrame = iTicksPerFrame;
-	m_iFlashTicks = 0;
-	m_iRotationOffset = 0;
-	m_pRotationOffset = NULL;
-	m_iBlending = blendNormal;
-	m_iViewportSize = RectWidth(rcImage);
-	m_bDefaultSize = false;
-
-    if (xOffset != 0 || yOffset != 0)
-        ComputeRotationOffsets(xOffset, -yOffset);
-
-	return NOERROR;
-	}
-
 ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow)
 
 //  Init
@@ -952,7 +906,8 @@ ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int 
 	//	Initialize basic info
 
 	m_dwBitmapUNID = pImage->GetUNID();
-	m_pImage = pImage;
+	//	LATER: pImage should be a smart pointer
+	m_pImage = TSharedPtr<CObjectImage>(pImage->AddRef());
 	m_rcImage = rcImage;
 	m_iFrameCount = iFrameCount;
 	m_iRotationCount = 1;
@@ -994,6 +949,38 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	m_iBlending = blendNormal;
 	m_iViewportSize = RectWidth(rcImage);
 	m_bDefaultSize = false;
+
+	return NOERROR;
+	}
+
+ALERROR CObjectImageArray::InitFromBitmap (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset, int yOffset)
+
+//	InitFromBitmap
+//
+//	Create from parameters
+
+	{
+	CleanUp();
+
+	//	Initialize basic info
+
+	m_dwBitmapUNID = 0;
+	m_pImage = TSharedPtr<CObjectImage>(new CObjectImage(pBitmap, bFreeBitmap));
+	m_rcImage = rcImage;
+	m_iFrameCount = iFrameCount;
+	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iFramesPerColumn = m_iRotationCount;
+	m_iFramesPerRow = iFrameCount;
+	m_iTicksPerFrame = iTicksPerFrame;
+	m_iFlashTicks = 0;
+	m_iRotationOffset = 0;
+	m_pRotationOffset = NULL;
+	m_iBlending = blendNormal;
+	m_iViewportSize = RectWidth(rcImage);
+	m_bDefaultSize = false;
+
+    if (xOffset != 0 || yOffset != 0)
+        ComputeRotationOffsets(xOffset, -yOffset);
 
 	return NOERROR;
 	}
@@ -1068,7 +1055,7 @@ ALERROR CObjectImageArray::InitFromRotated (const CObjectImageArray &Source, int
 	//	Initialize
 
 	m_dwBitmapUNID = 0;
-	m_pImage = new CObjectImage(pDest, true, pShadowMask);
+	m_pImage = TSharedPtr<CObjectImage>(new CObjectImage(pDest, true, pShadowMask));
 	m_rcImage.left = 0;
 	m_rcImage.top = 0;
 	m_rcImage.right = pDest->GetWidth();
@@ -1246,7 +1233,6 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (m_dwBitmapUNID)
 		{
 		m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
-
 		if (m_pImage == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown image: %x"), m_dwBitmapUNID);
@@ -1861,19 +1847,13 @@ void CObjectImageArray::ReadFromStream (SLoadCtx &Ctx)
 	m_bDefaultSize = false;
 	}
 
-void CObjectImageArray::SetImage (CObjectImage *pImage)
+void CObjectImageArray::SetImage (TSharedPtr<CObjectImage> pImage)
 
 //	SetImage
 //
 //	Sets the image and takes ownership
 
 	{
-	if (m_pImage && m_dwBitmapUNID == 0)
-		{
-		delete m_pImage;
-		m_pImage = NULL;
-		}
-
 	m_pImage = pImage;
 	m_dwBitmapUNID = 0;
 	}

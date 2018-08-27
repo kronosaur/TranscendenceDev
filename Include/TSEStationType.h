@@ -351,7 +351,7 @@ class CStationType : public CDesignType
 		inline bool IsTimeStopImmune (void) const { return (m_fTimeStopImmune ? true : false); }
 		inline bool IsUniqueInSystem (void) const { return GetEncounterDesc().IsUniqueInSystem(); }
 		inline bool IsWall (void) { return (m_fWall ? true : false); }
-		void MarkImages (const CCompositeImageSelector &Selector);
+		void MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);

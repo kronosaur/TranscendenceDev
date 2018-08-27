@@ -61,10 +61,7 @@ void CCompositeImageSelector::AddShipwreck (DWORD dwID, CShipClass *pWreckClass,
 
 	pEntry->dwID = dwID;
 	pEntry->dwExtra = (DWORD)pWreckClass;
-	if (pWreckClass)
-		pEntry->iVariant = (iVariant == -1 ? mathRandom(0, pWreckClass->GetWreckImageVariants() - 1) : iVariant);
-	else
-		pEntry->iVariant = (iVariant == -1 ? 0 : iVariant);
+	pEntry->iVariant = 0;
 	}
 
 void CCompositeImageSelector::AddVariant (DWORD dwID, int iVariant)
@@ -180,20 +177,6 @@ CShipClass *CCompositeImageSelector::GetShipwreckClass (DWORD dwID) const
 		return NULL;
 
 	return (CShipClass *)pEntry->dwExtra;
-	}
-
-CObjectImageArray &CCompositeImageSelector::GetShipwreckImage (DWORD dwID) const
-
-//	GetShipwreckImage
-//
-//	Returns the shipwreck image for the given selection
-
-	{
-	CShipClass *pWreckClass = GetShipwreckClass(dwID);
-	if (pWreckClass == NULL)
-		return EMPTY_IMAGE;
-
-	return pWreckClass->GetWreckImage();
 	}
 
 CCompositeImageSelector::ETypes CCompositeImageSelector::GetType (DWORD dwID) const

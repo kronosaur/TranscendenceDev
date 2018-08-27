@@ -26,7 +26,9 @@
 //
 //	<RotationTable>
 //		<{entry} rotation="..." />
-//	</RtationTable>
+//	</RotationTable>
+//
+//	<Shipwreck class="..."/>
 //
 //	<Table>
 //		{set of entries}
@@ -44,7 +46,7 @@
 //		{ordered list of entries}
 //	</ImageComposite>
 //
-//	An <ImageVariants> element is:
+//	<ImageShipwreck class="..." />
 //
 //	<ImageVariants>
 //		{set of entries}
@@ -59,14 +61,17 @@
 #define IMAGE_COMPOSITE_TAG						CONSTLIT("ImageComposite")
 #define IMAGE_EFFECT_TAG						CONSTLIT("ImageEffect")
 #define IMAGE_LOOKUP_TAG						CONSTLIT("ImageLookup")
+#define IMAGE_SHIPWRECK_TAG						CONSTLIT("ImageShipwreck")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
 #define LOCATION_CRITERIA_TABLE_TAG				CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG								CONSTLIT("Lookup")
 #define ROTATION_TABLE_TAG						CONSTLIT("RotationTable")
+#define SHIPWRECK_TAG							CONSTLIT("Shipwreck")
 #define TABLE_TAG								CONSTLIT("Table")
 #define VARIANTS_TAG							CONSTLIT("Variants")
 
 #define CHANCE_ATTRIB							CONSTLIT("chance")
+#define CLASS_ATTRIB							CONSTLIT("class")
 #define COLOR_ATTRIB							CONSTLIT("color")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define EFFECT_ATTRIB							CONSTLIT("effect")
@@ -86,12 +91,13 @@ class CCompositeEntry : public IImageEntry
 		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override;
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
 		virtual bool IsRotatable (void) const override;
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -113,7 +119,7 @@ class CEffectEntry : public IImageEntry
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual bool IsConstant (void) override { return true; }
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -131,12 +137,13 @@ class CFilterColorizeEntry : public IImageEntry
 		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override { return (m_pSource ? m_pSource->GetShipwreckClass(Selector) : NULL); }
 		virtual int GetVariantCount (void) override { return 1; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
 		virtual bool IsRotatable (void) const override;
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -161,7 +168,7 @@ class CImageEntry : public IImageEntry
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual bool IsConstant (void) override { return true; }
 		virtual bool IsRotatable (void) const override { return (m_Image.GetRotationCount() > 1); }
-		virtual void MarkImage (void) override { m_Image.MarkImage(); }
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override { m_Image.MarkImage(); }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override { return m_Image.OnDesignLoadComplete(Ctx); }
 
 	private:
@@ -178,12 +185,13 @@ class CLocationCriteriaTableEntry : public IImageEntry
 		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
 		virtual bool IsRotatable (void) const override;
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -212,7 +220,7 @@ class CRotationTableEntry : public IImageEntry
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override;
 		virtual bool IsRotatable (void) const override { return true; }
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -225,6 +233,32 @@ class CRotationTableEntry : public IImageEntry
 		TArray<SEntry> m_Table;
 	};
 
+class CShipwreckEntry : public IImageEntry
+	{
+	public:
+		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pClass) m_pClass->AddTypesUsed(retTypesUsed); }
+        virtual IImageEntry *Clone (void) override;
+		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
+		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
+		virtual int GetMaxLifetime (void) const override { return -1; }
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override;
+		virtual int GetVariantCount (void) override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
+		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
+		virtual bool IsConstant (void) override { return (m_pClass != NULL); }
+		virtual bool IsRotatable (void) const override { return true; }
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
+		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
+
+		static void GetImage (CShipClass *pClass, int iRotation, CObjectImageArray *retImage);
+
+	private:
+		inline int GetRotation (const CCompositeImageModifiers &Modifiers) const { if (m_iRotation != -1) return m_iRotation; return Modifiers.GetRotation(); }
+
+		CShipClassRef m_pClass;
+		int m_iRotation = -1;
+	};
+
 class CTableEntry : public IImageEntry
 	{
 	public:
@@ -235,12 +269,13 @@ class CTableEntry : public IImageEntry
 		virtual int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const override;
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) override;
 		virtual int GetMaxLifetime (void) const override;
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const override;
 		virtual int GetVariantCount (void) override { return m_Table.GetCount(); }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) override;
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_Table.GetCount() == 0 || ((m_Table.GetCount() == 1) && m_Table[0].pImage->IsConstant())); }
 		virtual bool IsRotatable (void) const override;
-		virtual void MarkImage (void) override;
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -367,29 +402,9 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 	{
 	CCompositeImageSelector::ETypes iType = Selector.GetType(DEFAULT_SELECTOR_ID);
 
-	//	If the selector has a wreck image, then we use that
+	//	If we have a root descriptor, then we let it generate an image
 
-	if (iType == CCompositeImageSelector::typeShipClass)
-		{
-		if (retiFrameIndex)
-			*retiFrameIndex = Selector.GetVariant(DEFAULT_SELECTOR_ID);
-
-		return Selector.GetShipwreckImage(DEFAULT_SELECTOR_ID);
-		}
-
-	//	If the selector has an item image, then we use that
-
-	else if (iType == CCompositeImageSelector::typeItemType)
-		{
-		if (retiFrameIndex)
-			*retiFrameIndex = 0;
-
-		return Selector.GetFlotsamImage(DEFAULT_SELECTOR_ID);
-		}
-
-	//	Get the image from the root entry
-
-	else if (m_pRoot)
+	if (m_pRoot)
 		{
 		//	retiRotation is used as the vertical index into the image.
 		//	Since each variant is expected to be its own image, we set to 0.
@@ -408,6 +423,9 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		pEntry = m_Cache.Insert();
 		pEntry->Selector = Selector;
 		pEntry->Modifiers = Modifiers;
+
+		//	Generate the image
+
 		m_pRoot->GetImage(Selector, Modifiers, &pEntry->Image);
 
 		//	Apply modifiers
@@ -418,6 +436,24 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		//	Done
 
 		return pEntry->Image;
+		}
+
+	//	If the selector has an item image, then we use that
+
+	else if (iType == CCompositeImageSelector::typeItemType)
+		{
+		if (retiFrameIndex)
+			*retiFrameIndex = 0;
+
+		return Selector.GetFlotsamImage(DEFAULT_SELECTOR_ID);
+		}
+
+	//	This should never happen
+
+	else if (iType == CCompositeImageSelector::typeShipClass)
+		{
+		ASSERT(false);
+		return EMPTY_IMAGE;
 		}
 	else
 		return EMPTY_IMAGE;
@@ -450,6 +486,60 @@ CObjectImageArray &CCompositeImageDesc::GetSimpleImage (void)
     return m_pRoot->GetSimpleImage();
     }
 
+bool CCompositeImageDesc::HasShipwreckClass (const CCompositeImageSelector &Selector, CShipClass **retpClass) const
+
+//	HasShipwreckClass
+//
+//	Returns TRUE if we're using a shipwreck as an image.
+
+	{
+	CShipClass *pWreckClass;
+
+	//	Selector based:
+
+	if (pWreckClass = Selector.GetShipwreckClass())
+		{ }
+
+	//	Not class if null
+
+	else if (m_pRoot == NULL)
+		pWreckClass = NULL;
+
+	//	Otherwise, ask the root
+
+	else
+		pWreckClass = m_pRoot->GetShipwreckClass(Selector);
+
+	//	Done
+
+	if (retpClass)
+		*retpClass = pWreckClass;
+
+	return (pWreckClass != NULL);
+	}
+
+ALERROR CCompositeImageDesc::InitAsShipwreck (SDesignLoadCtx &Ctx)
+
+//	InitAsShipwreck
+//
+//	Initialize as a shipwreck (actual class is defined at create time).
+
+	{
+	ALERROR error;
+
+	CIDCounter IDGen;
+	m_pRoot = new CShipwreckEntry;
+
+	if (error = m_pRoot->InitFromXML(Ctx, IDGen, NULL))
+		return error;
+
+	m_bConstant = m_pRoot->IsConstant();
+
+	//	Done
+
+	return NOERROR;
+	}
+
 ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIDCounter &IDGen, IImageEntry **retpEntry)
 
 //	InitEntryFromXML
@@ -472,6 +562,8 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 		pEntry = new CLocationCriteriaTableEntry;
 	else if (strEquals(pDesc->GetTag(), ROTATION_TABLE_TAG))
 		pEntry = new CRotationTableEntry;
+	else if (strEquals(pDesc->GetTag(), SHIPWRECK_TAG) || strEquals(pDesc->GetTag(), IMAGE_SHIPWRECK_TAG))
+		pEntry = new CShipwreckEntry;
 	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
 		{
 		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
@@ -576,7 +668,7 @@ void CCompositeImageDesc::MarkImage (void)
 	if (m_pRoot == NULL)
 		return;
 
-	m_pRoot->MarkImage();
+	m_pRoot->MarkImage(CCompositeImageSelector(), CCompositeImageModifiers());
 	}
 
 void CCompositeImageDesc::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
@@ -586,6 +678,9 @@ void CCompositeImageDesc::MarkImage (const CCompositeImageSelector &Selector, co
 //	Marks the image in use
 
 	{
+	if (m_pRoot)
+		m_pRoot->MarkImage(Selector, Modifiers);
+
 	GetImage(Selector, Modifiers).MarkImage();
 	}
 
@@ -598,7 +693,9 @@ ALERROR CCompositeImageDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 
-	//	If no XML then this is a simple image (and that's OK).
+	//	If no XML then this is a simple image (e.g., from a CShipClass, which 
+	//	does not support compound images and which uses InitSimpleFromXML
+	//	to initialize).
 
 	if (m_pDesc == NULL)
         {
@@ -807,7 +904,7 @@ void CCompositeEntry::GetImage (const CCompositeImageSelector &Selector, const C
 	rcFinalRect.bottom = cyHeight;
 
 	CObjectImageArray Comp;
-	Comp.Init(pComp, rcFinalRect, 0, 0, true);
+	Comp.InitFromBitmap(pComp, rcFinalRect, 0, 0, true);
 
 	//	Done
 
@@ -832,6 +929,27 @@ int CCompositeEntry::GetMaxLifetime (void) const
 		}
 
 	return iMaxLifetime;
+	}
+
+CShipClass *CCompositeEntry::GetShipwreckClass (const CCompositeImageSelector &Selector) const
+
+//	GetShipwreckClass
+//
+//	Returns the shipwreck class (if any).
+
+	{
+	int i;
+	CShipClass *pClass;
+
+	//	We return the class for the first layer we find
+
+	for (i = 0; i < m_Layers.GetCount(); i++)
+		if (pClass = m_Layers[i]->GetShipwreckClass(Selector))
+			return pClass;
+
+	//	Not found
+
+	return NULL;
 	}
 
 ALERROR CCompositeEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
@@ -912,7 +1030,7 @@ bool CCompositeEntry::IsRotatable (void) const
 	return false;
 	}
 
-void CCompositeEntry::MarkImage (void)
+void CCompositeEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -922,7 +1040,7 @@ void CCompositeEntry::MarkImage (void)
 	int i;
 
 	for (i = 0; i < m_Layers.GetCount(); i++)
-		m_Layers[i]->MarkImage();
+		m_Layers[i]->MarkImage(Selector, Modifiers);
 	}
 
 ALERROR CCompositeEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1031,7 +1149,7 @@ void CEffectEntry::GetImage (const CCompositeImageSelector &Selector, const CCom
 	rcFinalRect.bottom = cyHeight;
 
 	CObjectImageArray Comp;
-	Comp.Init(pDest, rcFinalRect, 0, 0, true);
+	Comp.InitFromBitmap(pDest, rcFinalRect, 0, 0, true);
 
 	//	Done
 
@@ -1073,7 +1191,7 @@ ALERROR CEffectEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLE
 	return NOERROR;
 	}
 
-void CEffectEntry::MarkImage (void)
+void CEffectEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -1196,7 +1314,7 @@ void CFilterColorizeEntry::GetImage (const CCompositeImageSelector &Selector, co
 	rcFinalRect.bottom = cyHeight;
 
 	CObjectImageArray Comp;
-	Comp.Init(pDest, rcFinalRect, 0, 0, true);
+	Comp.InitFromBitmap(pDest, rcFinalRect, 0, 0, true);
 
 	//	Done
 
@@ -1291,7 +1409,7 @@ bool CFilterColorizeEntry::IsRotatable (void) const
 	return m_pSource->IsRotatable();
 	}
 
-void CFilterColorizeEntry::MarkImage (void)
+void CFilterColorizeEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -1299,7 +1417,7 @@ void CFilterColorizeEntry::MarkImage (void)
 
 	{
 	if (m_pSource)
-		m_pSource->MarkImage();
+		m_pSource->MarkImage(Selector, Modifiers);
 	}
 
 ALERROR CFilterColorizeEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1496,6 +1614,20 @@ int CLocationCriteriaTableEntry::GetMaxLifetime (void) const
 	return iMaxLifetime;
 	}
 
+CShipClass *CLocationCriteriaTableEntry::GetShipwreckClass (const CCompositeImageSelector &Selector) const
+
+//	GetShipwreckClass
+//
+//	Returns the shipwreck class (if any).
+
+	{
+	int iIndex = Selector.GetVariant(GetID());
+	if (iIndex < 0 || iIndex >= m_Table.GetCount())
+		return NULL;
+
+	return m_Table[iIndex].pImage->GetShipwreckClass(Selector);
+	}
+
 ALERROR CLocationCriteriaTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -1598,7 +1730,7 @@ bool CLocationCriteriaTableEntry::IsRotatable (void) const
 	return false;
 	}
 
-void CLocationCriteriaTableEntry::MarkImage (void)
+void CLocationCriteriaTableEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -1608,7 +1740,7 @@ void CLocationCriteriaTableEntry::MarkImage (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		m_Table[i].pImage->MarkImage();
+		m_Table[i].pImage->MarkImage(Selector, Modifiers);
 	}
 
 ALERROR CLocationCriteriaTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1687,7 +1819,7 @@ int CRotationTableEntry::GetActualRotation (const CCompositeImageSelector &Selec
 	{
 	int i;
 
-	//	Look for the closes rotation to the given one.
+	//	Look for the closest rotation to the given one.
 
 	int iBest = -1;
 	int iBestDiff = 360;
@@ -1829,7 +1961,7 @@ bool CRotationTableEntry::IsConstant (void)
 	return true;
 	}
 
-void CRotationTableEntry::MarkImage (void)
+void CRotationTableEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -1839,7 +1971,7 @@ void CRotationTableEntry::MarkImage (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		m_Table[i].pImage->MarkImage();
+		m_Table[i].pImage->MarkImage(Selector, Modifiers);
 	}
 
 ALERROR CRotationTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1857,6 +1989,171 @@ ALERROR CRotationTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		if (error = m_Table[i].pImage->OnDesignLoadComplete(Ctx))
 			return error;
 		}
+
+	return NOERROR;
+	}
+
+//	CShipwreckEntry ------------------------------------------------------------
+
+IImageEntry *CShipwreckEntry::Clone (void)
+
+//	Clone
+//
+//	Clone the entry
+
+	{
+	CShipwreckEntry *pDest = new CShipwreckEntry;
+	pDest->m_dwID = m_dwID;
+	pDest->m_pClass = m_pClass;
+	pDest->m_iRotation = m_iRotation;
+
+	return pDest;
+	}
+
+int CShipwreckEntry::GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) const
+
+//	GetActualRotation
+//
+//	Returns the actual rotation given the selector
+
+	{
+	if (m_pClass == NULL)
+		return 0;
+
+	int iFrameCount = m_pClass->GetImage().GetRotationCount();
+	if (iFrameCount <= 1)
+		return 0;
+
+	return CIntegralRotationDesc::GetRotationAngle(iFrameCount, CIntegralRotationDesc::GetFrameIndex(iFrameCount, GetRotation(Modifiers)));
+	}
+
+void CShipwreckEntry::GetImage (CShipClass *pClass, int iRotation, CObjectImageArray *retImage)
+
+//	GetImage
+//
+//	Returns an image.
+
+	{
+	const CShipwreckDesc &WreckDesc = pClass->GetWreckDesc();
+	CObjectImageArray *pWreckImage = WreckDesc.GetWreckImage(pClass, iRotation);
+	if (pWreckImage == NULL)
+		{
+		*retImage = EMPTY_IMAGE;
+		return;
+		}
+
+	*retImage = *pWreckImage;
+	}
+
+void CShipwreckEntry::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage)
+
+//	GetImage
+//
+//	Returns an image.
+
+	{
+	CShipClass *pClass = GetShipwreckClass(Selector);
+	if (pClass == NULL)
+		{
+		*retImage = EMPTY_IMAGE;
+		return;
+		}
+
+	GetImage(pClass, GetRotation(Modifiers), retImage);
+	}
+
+CShipClass *CShipwreckEntry::GetShipwreckClass (const CCompositeImageSelector &Selector) const
+
+//	GetShipwreckClass
+//
+//	Returns the class.
+
+	{
+	//	If we have a class, then we use that.
+
+	if (m_pClass)
+		return m_pClass;
+
+	//	Otherwise, return the selector class (if any)
+
+	else
+		return Selector.GetShipwreckClass();
+	}
+
+int CShipwreckEntry::GetVariantCount (void)
+
+//	GetVariantCount
+//
+//	Return the number of valid variants.
+
+	{
+	return 1;
+	}
+
+ALERROR CShipwreckEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
+
+//	InitFromXML
+//
+//	Initialize from XML
+
+	{
+	ALERROR error;
+
+	m_dwID = IDGen.GetID();
+
+	//	Get the class (pDesc can be NULL if we're creating a generic shipwreck).
+
+	if (pDesc)
+		{
+		if (error = m_pClass.LoadUNID(Ctx, pDesc->GetAttribute(CLASS_ATTRIB)))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
+void CShipwreckEntry::InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector)
+
+//	InitSelector
+//
+//	Initialize selector
+
+	{
+	}
+
+void CShipwreckEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
+
+//	MarkImage
+//
+//	Mark images being used.
+
+	{
+	CShipClass *pClass = GetShipwreckClass(Selector);
+	if (pClass == NULL)
+		return;
+
+	//	Mark the underlying class image (because we may need it to create a wreck
+	//	image).
+
+	pClass->MarkImages(false);
+
+	//	Mark any cached wreck images.
+
+	const CShipwreckDesc &WreckDesc = pClass->GetWreckDesc();
+	WreckDesc.MarkImages(pClass, GetRotation(Modifiers));
+	}
+
+ALERROR CShipwreckEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
+
+//	OnDesignLoadComplete
+//
+//	Bind design
+
+	{
+	ALERROR error;
+
+	if (error = m_pClass.Bind(Ctx))
+		return error;
 
 	return NOERROR;
 	}
@@ -1962,6 +2259,20 @@ int CTableEntry::GetMaxLifetime (void) const
 	return iMaxLifetime;
 	}
 
+CShipClass *CTableEntry::GetShipwreckClass (const CCompositeImageSelector &Selector) const
+
+//	GetShipwreckClass
+//
+//	Returns the shipwreck class (if any).
+
+	{
+	int iIndex = Selector.GetVariant(GetID());
+	if (iIndex < 0 || iIndex >= m_Table.GetCount())
+		return NULL;
+
+	return m_Table[iIndex].pImage->GetShipwreckClass(Selector);
+	}
+
 ALERROR CTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -2039,7 +2350,7 @@ bool CTableEntry::IsRotatable (void) const
 	return false;
 	}
 
-void CTableEntry::MarkImage (void)
+void CTableEntry::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -2049,7 +2360,7 @@ void CTableEntry::MarkImage (void)
 	int i;
 
 	for (i = 0; i < m_Table.GetCount(); i++)
-		m_Table[i].pImage->MarkImage();
+		m_Table[i].pImage->MarkImage(Selector, Modifiers);
 	}
 
 ALERROR CTableEntry::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

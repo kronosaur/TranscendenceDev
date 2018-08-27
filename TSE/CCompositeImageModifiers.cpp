@@ -103,9 +103,9 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 	if (pNewDest)
 		{
 		if (m_fFullImage || retImage->IsAnimated())
-			retImage->SetImage(new CObjectImage(pNewDest, true));
+			retImage->SetImage(TSharedPtr<CObjectImage>(new CObjectImage(pNewDest, true)));
 		else
-			retImage->Init(pNewDest, rcNewImage, 0, 0, true);
+			retImage->InitFromBitmap(pNewDest, rcNewImage, 0, 0, true);
 		}
 	}
 

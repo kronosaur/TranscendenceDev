@@ -118,6 +118,7 @@ class CObjectImage : public CDesignType
 		CObjectImage (CG32bitImage *pBitmap, bool bFreeBitmap = false, CG32bitImage *pShadowMask = NULL);
 		~CObjectImage (void);
 
+		inline CObjectImage *AddRef (void) { m_dwRefCount++; return this; }
 		CG32bitImage *CreateCopy (CString *retsError = NULL);
 		ALERROR Exists (SDesignLoadCtx &Ctx);
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
@@ -135,16 +136,18 @@ class CObjectImage : public CDesignType
 
 		//	CDesignType overrides
 		static CObjectImage *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImage) ? (CObjectImage *)pType : NULL); }
-		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
-		virtual DesignTypes GetType (void) const { return designImage; }
+
+		virtual void Delete (void) override { if (--m_dwRefCount == 0) delete this; }
+		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual DesignTypes GetType (void) const override { return designImage; }
 
 	protected:
 		//	CDesignType overrides
-		virtual void OnClearMark (void) { m_bMarked = false; }
-		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx);
-		virtual void OnSweep (void);
-		virtual void OnUnbindDesign (void);
+		virtual void OnClearMark (void) override { m_bMarked = false; }
+		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual void OnSweep (void) override;
+		virtual void OnUnbindDesign (void) override;
 
 	private:
 		void CleanUp (void);
@@ -160,11 +163,17 @@ class CObjectImage : public CDesignType
 		bool m_bLoadOnUse = false;				//	If TRUE, image is only loaded when needed
 		mutable bool m_bFreeBitmap = false;		//	If TRUE, we free the bitmap when done
 
+		//	Runtime
+
+		bool m_bMarked = false;					//	Marked
+		bool m_bLocked = false;					//	Image is never unloaded
+		DWORD m_dwRefCount = 1;
+
+		//	Cached values
+
 		mutable CG32bitImage *m_pBitmap = NULL;	//	Loaded image (NULL if not loaded)
 		CG32bitImage *m_pHitMask = NULL;		//	NULL if not loaded
 		CG32bitImage *m_pShadowMask = NULL;		//	NULL if not loaded
-		bool m_bMarked = false;					//	Marked
-		bool m_bLocked = false;					//	Image is never unloaded
 		mutable bool m_bLoadError = false;		//	If TRUE, load failed
 	};
 
@@ -183,10 +192,10 @@ class CObjectImageArray
 		~CObjectImageArray (void);
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
-		ALERROR Init (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
 		ALERROR Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);
 		ALERROR Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
 		ALERROR Init (CObjectImage *pImage, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
+		ALERROR InitFromBitmap (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
 		ALERROR InitFromFrame (const CObjectImageArray &Source, int iTick, int iRotationIndex);
 		ALERROR InitFromRotated (const CObjectImageArray &Source, int iTick, int iVariant, int iRotation);
 		ALERROR InitFromXML (CXMLElement *pDesc);
@@ -249,7 +258,7 @@ class CObjectImageArray
 		bool PointInImage (SPointInObjectCtx &Ctx, int x, int y) const;
 		void PointInImageInit (SPointInObjectCtx &Ctx, int iTick, int iRotation) const;
 		void ReadFromStream (SLoadCtx &Ctx);
-		void SetImage (CObjectImage *pImage);
+		void SetImage (TSharedPtr<CObjectImage> pImage);
 		void SetRotationCount (int iRotationCount);
 		void TakeHandoff (CObjectImageArray &Source);
 		void WriteToStream (IWriteStream *pStream) const;
@@ -279,7 +288,7 @@ class CObjectImageArray
 		CG32bitImage *GetHitMask (void) const;
 
 		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)
-		CObjectImage *m_pImage;				//	Image (if UNID is 0, we own this structure)
+		TSharedPtr<CObjectImage> m_pImage;	//	Image
 		RECT m_rcImage;
 		int m_iFrameCount;
 		int m_iTicksPerFrame;
@@ -332,10 +341,8 @@ class CCompositeImageSelector
 		CObjectImageArray &GetFlotsamImage (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		CItemType *GetFlotsamType (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		CShipClass *GetShipwreckClass (DWORD dwID = DEFAULT_SELECTOR_ID) const;
-		CObjectImageArray &GetShipwreckImage (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		ETypes GetType (DWORD dwID) const;
 		int GetVariant (DWORD dwID) const;
-		inline bool HasShipwreckImage (DWORD dwID = DEFAULT_SELECTOR_ID) const { return (GetShipwreckClass(dwID) != NULL); }
 		void ReadFromItem (ICCItemPtr pData);
 		void ReadFromStream (SLoadCtx &Ctx);
 		ICCItemPtr WriteToItem (void) const;
@@ -382,13 +389,14 @@ class IImageEntry
 		inline DWORD GetID (void) const { return m_dwID; }
 		virtual void GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, CObjectImageArray *retImage) = 0;
 		virtual int GetMaxLifetime (void) const { return 0; }
+		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const { return NULL; }
         virtual CObjectImageArray &GetSimpleImage (void);
 		virtual int GetVariantCount (void) = 0;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) { return NOERROR; }
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) { }
 		virtual bool IsConstant (void) = 0;
 		virtual bool IsRotatable (void) const { return false; }
-		virtual void MarkImage (void) { }
+		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifier) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
 	protected:
@@ -451,6 +459,8 @@ class CCompositeImageDesc
         inline const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }
         CObjectImageArray &GetSimpleImage (void);
 		inline int GetVariantCount (void) { return (m_pRoot ? m_pRoot->GetVariantCount() : 0); }
+		bool HasShipwreckClass (const CCompositeImageSelector &Selector, CShipClass **retpClass = NULL) const;
+		ALERROR InitAsShipwreck (SDesignLoadCtx &Ctx);
 		static ALERROR InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIDCounter &IDGen, IImageEntry **retpEntry);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
@@ -495,7 +505,7 @@ class CCompositeImageType : public CDesignType
 
 		//	CDesignType overrides
 		static CCompositeImageType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designImageComposite) ? (CCompositeImageType *)pType : NULL); }
-		virtual DesignTypes GetType (void) const { return designImageComposite; }
+		virtual DesignTypes GetType (void) const override { return designImageComposite; }
 
 	protected:
 		//	CDesignType overrides
