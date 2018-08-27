@@ -247,6 +247,7 @@ class CShipwreckEntry : public IImageEntry
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) override;
 		virtual bool IsConstant (void) override { return (m_pClass != NULL); }
 		virtual bool IsRotatable (void) const override { return true; }
+		virtual bool IsShipwreckDesc (void) const { return true; }
 		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
@@ -682,6 +683,26 @@ void CCompositeImageDesc::MarkImage (const CCompositeImageSelector &Selector, co
 		m_pRoot->MarkImage(Selector, Modifiers);
 
 	GetImage(Selector, Modifiers).MarkImage();
+	}
+
+bool CCompositeImageDesc::NeedsShipwreckClass (void) const
+
+//	NeedsShipwreckClass
+//
+//	This returns TRUE if we need the shipwreck class to be passed in by the 
+//	creator. This happens when we're creating a shipwreck and when the shipwreck
+//	station type does not define its own image (it comes from the ship class).
+
+	{
+	//	If no descriptor, then we need it.
+
+	if (m_pRoot == NULL)
+		return true;
+
+	//	If we're a shipwreck descriptor and we don't define a class, then we 
+	//	need one.
+
+	return (m_pRoot->IsShipwreckDesc() && m_pRoot->GetShipwreckClass(CCompositeImageSelector()) == NULL);
 	}
 
 ALERROR CCompositeImageDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

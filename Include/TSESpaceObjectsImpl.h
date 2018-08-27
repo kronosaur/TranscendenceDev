@@ -1428,8 +1428,6 @@ class CStation : public CSpaceObject
 		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
 		inline void SetStructuralHitPoints (int iHP) { m_Hull.SetStructuralHP(iHP); }
-		void SetWreckImage (CShipClass *pWreckClass);
-		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 
 		//	CSpaceObject virtuals
 
@@ -1601,6 +1599,7 @@ class CStation : public CSpaceObject
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
+		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
 		void UpdateAttacking (SUpdateCtx &Ctx, int iTick);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);

@@ -343,6 +343,7 @@ class CCompositeImageSelector
 		CShipClass *GetShipwreckClass (DWORD dwID = DEFAULT_SELECTOR_ID) const;
 		ETypes GetType (DWORD dwID) const;
 		int GetVariant (DWORD dwID) const;
+		inline bool IsEmpty (void) const { return (m_Sel.GetCount() == 0); }
 		void ReadFromItem (ICCItemPtr pData);
 		void ReadFromStream (SLoadCtx &Ctx);
 		ICCItemPtr WriteToItem (void) const;
@@ -396,6 +397,7 @@ class IImageEntry
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) { }
 		virtual bool IsConstant (void) = 0;
 		virtual bool IsRotatable (void) const { return false; }
+		virtual bool IsShipwreckDesc (void) const { return false; }
 		virtual void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifier) { }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 
@@ -458,7 +460,7 @@ class CCompositeImageDesc
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
         inline const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }
         CObjectImageArray &GetSimpleImage (void);
-		inline int GetVariantCount (void) { return (m_pRoot ? m_pRoot->GetVariantCount() : 0); }
+		inline int GetVariantCount (void) const { return (m_pRoot ? m_pRoot->GetVariantCount() : 0); }
 		bool HasShipwreckClass (const CCompositeImageSelector &Selector, CShipClass **retpClass = NULL) const;
 		ALERROR InitAsShipwreck (SDesignLoadCtx &Ctx);
 		static ALERROR InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIDCounter &IDGen, IImageEntry **retpEntry);
@@ -466,10 +468,11 @@ class CCompositeImageDesc
 		void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector);
 		ALERROR InitSimpleFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bResolveNow = false, int iDefaultRotationCount = 1);
 		inline bool IsConstant (void) const { return m_bConstant; }
-		inline bool IsEmpty (void) { return (GetVariantCount() == 0); }
+		inline bool IsEmpty (void) const { return (GetVariantCount() == 0); }
 		inline bool IsRotatable (void) const { return (m_pRoot ? m_pRoot->IsRotatable() : false); }
 		void MarkImage (void);
 		void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
+		bool NeedsShipwreckClass (void) const;
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void Reinit (void);
 

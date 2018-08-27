@@ -791,15 +791,33 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	pType->SetImageSelector(InitCtx, &pStation->m_ImageSelector);
 
-	//	Now that we have an image, set the bound
-
-	pStation->CalcBounds();
-
-	//	If we are a wreck, set the wreck parameters (mass, etc.)
+	//	If the image is a shipwreck class, then we take the parameters from the
+	//	appropriate class.
 
 	CShipClass *pWreckClass;
 	if (pType->GetImage().HasShipwreckClass(pStation->m_ImageSelector, &pWreckClass))
 		pStation->SetWreckParams(pWreckClass);
+
+	//	Otherwise, if we've got a shipwreck class, take parameters from that.
+
+	else if (CreateCtx.pWreckClass)
+		{
+		//	If necessary, set the image
+
+		if (pType->GetImage().NeedsShipwreckClass())
+			{
+			pStation->m_ImageSelector.DeleteAll();
+			pStation->m_ImageSelector.AddShipwreck(DEFAULT_SELECTOR_ID, CreateCtx.pWreckClass);
+			}
+
+		//	Set the parameters
+
+		pStation->SetWreckParams(CreateCtx.pWreckClass, CreateCtx.pWreckShip);
+		}
+
+	//	Now that we have an image, set the bound
+
+	pStation->CalcBounds();
 
 	//	Create any items on the station
 
@@ -4484,21 +4502,6 @@ void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryP
 	m_sStargateDestEntryPoint = sDestEntryPoint;
 	}
 
-void CStation::SetWreckImage (CShipClass *pWreckClass)
-
-//	SetImage
-//
-//	Sets the image for the station
-
-	{
-	m_ImageSelector.DeleteAll();
-	m_ImageSelector.AddShipwreck(DEFAULT_SELECTOR_ID, pWreckClass);
-
-	//	Set bounds
-
-	CalcBounds();
-	}
-
 void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 
 //	SetWreckParams
@@ -4568,11 +4571,6 @@ void CStation::SetWreckParams (CShipClass *pWreckClass, CShip *pShip)
 	//	Set the wreck UNID
 
 	m_dwWreckUNID = pWreckClass->GetUNID();
-
-	//	Set the rotation
-
-	if (pShip)
-		SetRotation(pShip->GetRotation());
 	}
 
 bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)

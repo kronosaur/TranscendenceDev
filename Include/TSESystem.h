@@ -599,17 +599,7 @@ class CSystemSpacePainter
 struct SObjCreateCtx
 	{
 	SObjCreateCtx (SSystemCreateCtx &SystemCtxArg) :
-			SystemCtx(SystemCtxArg),
-			iRotation(-1),
-			rParallax(1.0),
-			pLoc(NULL),
-			pOrbit(NULL),
-			pExtraData(NULL),
-			pEventHandler(NULL),
-			pSovereign(NULL),
-			bCreateSatellites(false),
-            bIsSegment(false),
-			bIgnoreLimits(false)
+			SystemCtx(SystemCtxArg)
 		{ }
 
 	SSystemCreateCtx &SystemCtx;			//	System create context
@@ -617,18 +607,20 @@ struct SObjCreateCtx
 											//		always be set properly, even if orbit
 											//		or location is also provided.
 	CVector vVel;							//	Initial velocity.
-	int iRotation;							//	-1 = default rotation
-	Metric rParallax;						//	Parallax
+	int iRotation = -1;						//	-1 = default rotation
+	Metric rParallax = 1.0;					//	Parallax
 
-	const CLocationDef *pLoc;				//	Optional location (may be NULL)
-	const COrbit *pOrbit;					//	Optional orbit (may be NULL)
-	CXMLElement *pExtraData;				//	Extra data for object (may be NULL)
-	CDesignType *pEventHandler;				//	Event handler for object
-	CSovereign *pSovereign;					//	Optional sovereign (may be NULL)
+	const CLocationDef *pLoc = NULL;		//	Optional location (may be NULL)
+	const COrbit *pOrbit = NULL;			//	Optional orbit (may be NULL)
+	CXMLElement *pExtraData = NULL;			//	Extra data for object (may be NULL)
+	CDesignType *pEventHandler = NULL;		//	Event handler for object
+	CSovereign *pSovereign = NULL;			//	Optional sovereign (may be NULL)
+	CShipClass *pWreckClass = NULL;			//	Optional for creating wrecks (may be NULL)
+	CShip *pWreckShip = NULL;				//	Optional for creating wrecks (may be NULL)
 
-	bool bCreateSatellites;					//	If TRUE, create satellites
-    bool bIsSegment;                        //  If TRUE, we're a satellite segment
-	bool bIgnoreLimits;						//	If TRUE, create even if we exceed limits
+	bool bCreateSatellites = false;			//	If TRUE, create satellites
+    bool bIsSegment = false;				//  If TRUE, we're a satellite segment
+	bool bIgnoreLimits = false;				//	If TRUE, create even if we exceed limits
 	};
 
 class CSystem

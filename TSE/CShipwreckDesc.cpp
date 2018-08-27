@@ -275,6 +275,8 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 //	NOTE: pShip may be NULL.
 
 	{
+	ASSERT(pClass);
+
 	DEBUG_TRY
 
 	SSystemCreateCtx Ctx(pSystem);
@@ -282,6 +284,10 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
+	CreateCtx.pSovereign = pSovereign;
+	CreateCtx.iRotation = (pShip ? pShip->GetRotation() : -1);
+	CreateCtx.pWreckClass = pClass;
+	CreateCtx.pWreckShip = pShip;
 
 	//	Create the wreck
 
@@ -291,12 +297,6 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 			CreateCtx,
 			&pWreck) != NOERROR)
 		return false;
-
-	//	Set properties of the wreck
-
-	pWreck->SetSovereign(pSovereign);
-	pWreck->SetWreckImage(pClass);
-	pWreck->SetWreckParams(pClass, pShip);
 
 	//	The wreck is radioactive if the ship is radioactive (or if this
 	//	ship class always has radioactive wrecks)
