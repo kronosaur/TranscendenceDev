@@ -66,7 +66,7 @@ class CListCollectionTask : public IHITask
 class CListSaveFilesTask : public IHITask
 	{
 	public:
-		CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, int cxWidth);
+		CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, bool bFilterPermadeath, int cxWidth);
 		~CListSaveFilesTask (void);
 
 		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
@@ -79,6 +79,7 @@ class CListSaveFilesTask : public IHITask
 
 		TArray<CString> m_Folders;
 		CString m_sUsername;
+		bool m_bFilterPermadeath;
 		int m_cxWidth;
 
 		CAniListBox *m_pList;
