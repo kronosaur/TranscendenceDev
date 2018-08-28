@@ -78,6 +78,7 @@ class CShipwreckDesc
 		bool CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const;
 		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
+		size_t GetMemoryUsage (void) const;
 		inline int GetStructuralHP (void) const { return m_iStructuralHP; }
 		inline int GetWreckChance (void) const { return m_iLeavesWreck; }
 		CObjectImageArray *GetWreckImage (CShipClass *pClass, int iRotation) const;
@@ -309,6 +310,7 @@ class CShipClass : public CDesignType
 
 	protected:
 		//	CDesignType overrides
+		virtual void OnAccumulateStats (SStats &Stats) const;
 		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;

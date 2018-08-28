@@ -717,6 +717,34 @@ int CObjectImageArray::GetImageViewportSize (void) const
 	return m_iViewportSize;
 	}
 
+size_t CObjectImageArray::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the amount of memory used by bitmaps.
+
+	{
+	int i;
+	size_t dwTotal = 0;
+
+	if (m_pImage)
+		dwTotal += m_pImage->GetMemoryUsage();
+
+	if (m_pGlowImages)
+		{
+		for (i = 0; i < m_iRotationCount; i++)
+			dwTotal += m_pGlowImages[i].GetMemoryUsage();
+		}
+
+	if (m_pScaledImages)
+		{
+		for (i = 0; i < m_iRotationCount; i++)
+			dwTotal += m_pScaledImages[i].GetMemoryUsage();
+		}
+
+	return dwTotal;
+	}
+
 bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y, const CObjectImageArray &Image2, int iTick2, int iRotation2) const
 
 //	ImagesIntersect

@@ -473,6 +473,38 @@ int CCompositeImageDesc::GetMaxLifetime (void) const
 	return m_pRoot->GetMaxLifetime();
 	}
 
+size_t CCompositeImageDesc::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the amount of memory used.
+
+	{
+	int i;
+	size_t dwTotal = 0;
+
+	//	We count only cached images that no one else owns.
+
+	for (i = 0; i < m_Cache.GetCount(); i++)
+		{
+		//	If this image has an UNID, then we don't own it.
+
+		if (m_Cache[i].Image.GetBitmapUNID() != 0)
+			continue;
+
+		//	If this entry is for a shipwreck, then we don't own it.
+
+		if (HasShipwreckClass(m_Cache[i].Selector))
+			continue;
+
+		//	Add to total
+
+		dwTotal += m_Cache[i].Image.GetMemoryUsage();
+		}
+
+	return dwTotal;
+	}
+
 CObjectImageArray &CCompositeImageDesc::GetSimpleImage (void)
 
 //  GetSimpleImage

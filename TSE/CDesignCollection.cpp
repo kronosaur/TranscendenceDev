@@ -1281,6 +1281,8 @@ void CDesignCollection::GetStats (SStats &Result) const
 	{
 	int i;
 
+	Result = SStats();
+
 	Result.Extensions = m_BoundExtensions;
 	Result.iAllTypes = m_AllTypes.GetCount();
 	Result.iDynamicTypes = m_DynamicTypes.GetCount();
@@ -1309,6 +1311,8 @@ void CDesignCollection::GetStats (SStats &Result) const
 		Result.dwBaseTypeMemory += ExtStats.dwBaseTypeMemory;
 		Result.dwTotalTypeMemory += ExtStats.dwTotalTypeMemory;
 		Result.dwTotalXMLMemory += ExtStats.dwTotalXMLMemory;
+		Result.dwGraphicsMemory += ExtStats.dwGraphicsMemory;
+		Result.dwWreckGraphicsMemory += ExtStats.dwWreckGraphicsMemory;
 		}
 
 	if (m_pAdventureExtension)

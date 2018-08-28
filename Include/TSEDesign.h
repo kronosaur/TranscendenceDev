@@ -198,6 +198,12 @@ class CDesignType
             bool bFriend;
             };
 
+		struct SStats
+			{
+			size_t dwGraphicsMemory = 0;
+			size_t dwWreckGraphicsMemory = 0;
+			};
+
 		CDesignType (void);
 		void CreateClone (CDesignType **retpType);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType);
@@ -263,7 +269,7 @@ class CDesignType
 		ALERROR FireOnGlobalUniverseSave (const SEventHandlerDesc &Event);
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
-		DWORDLONG GetAllocMemoryUsage (void) const;
+		size_t GetAllocMemoryUsage (void) const;
 		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
@@ -285,6 +291,7 @@ class CDesignType
 		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
 		ICCItemPtr GetStaticData (const CString &sAttrib) const;
+		void GetStats (SStats &Stats) const;
 		CString GetTypeClassName (void) const;
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
@@ -340,6 +347,7 @@ class CDesignType
 		//	CDesignType overrides
 		virtual ~CDesignType (void);
 
+		virtual void OnAccumulateStats (SStats &Stats) const { }
 		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const { }
 		virtual void OnAddExternals (TArray<CString> *retExternals) { }
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
@@ -806,9 +814,11 @@ class CExtension
 
 		struct SStats
 			{
-			DWORDLONG dwTotalTypeMemory = 0;	//	Total memory used for all bound design types
-			DWORDLONG dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
-			DWORDLONG dwTotalXMLMemory = 0;		//	Total memory used for XML structures
+			size_t dwTotalTypeMemory = 0;		//	Total memory used for all bound design types
+			size_t dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
+			size_t dwTotalXMLMemory = 0;		//	Total memory used for XML structures
+			size_t dwWreckGraphicsMemory = 0;	//	Memory used by cached wreck images
+			size_t dwGraphicsMemory = 0;		//	Total memory used by graphics
 			};
 
 		CExtension (void);
@@ -849,7 +859,7 @@ class CExtension
 		inline EExtensionTypes GetType (void) const { return m_iType; }
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
-		DWORDLONG GetXMLMemoryUsage (void) const;
+		size_t GetXMLMemoryUsage (void) const;
 		inline bool IsAutoInclude (void) const { return m_bAutoInclude; }
 		inline bool IsDebugOnly (void) const { return m_bDebugOnly; }
 		inline bool IsDisabled (void) const { return m_bDisabled; }
@@ -1191,9 +1201,11 @@ class CDesignCollection
 			int iEffectTypes = 0;				//	Count of effects
 			int iSupportTypes = 0;				//	Count of tables, generic types, etc.
 
-			DWORDLONG dwTotalTypeMemory = 0;	//	Total memory used for all bound design types
-			DWORDLONG dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
-			DWORDLONG dwTotalXMLMemory = 0;		//	Total memory used for XML structures (excluding dynamic)
+			size_t dwTotalTypeMemory = 0;		//	Total memory used for all bound design types
+			size_t dwBaseTypeMemory = 0;		//	Total memory used for base class of bound design types (CDesignType only)
+			size_t dwTotalXMLMemory = 0;		//	Total memory used for XML structures (excluding dynamic)
+			size_t dwWreckGraphicsMemory = 0;	//	Memory used by cached wreck images
+			size_t dwGraphicsMemory = 0;		//	Total memory used by graphics
 			};
 
 		CDesignCollection (void);

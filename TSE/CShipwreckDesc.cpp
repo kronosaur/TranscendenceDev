@@ -429,6 +429,22 @@ bool CShipwreckDesc::CreateWreckImage (CShipClass *pClass, int iRotationFrame, C
 	return true;
 	}
 
+size_t CShipwreckDesc::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the memory used by our cache.
+
+	{
+	int i;
+	size_t dwTotal = 0;
+
+	for (i = 0; i < m_WreckImages.GetCount(); i++)
+		dwTotal += m_WreckImages[i].GetMemoryUsage();
+
+	return dwTotal;
+	}
+
 CObjectImageArray *CShipwreckDesc::GetWreckImage (CShipClass *pClass, int iRotation) const
 
 //	GetWreckImage

@@ -122,6 +122,14 @@ void CExtension::AccumulateStats (SStats &Stats) const
 
 		Stats.dwBaseTypeMemory += sizeof(CDesignType) + pType->GetAllocMemoryUsage();
 
+		//	Get specific type stats
+
+		CDesignType::SStats TypeStats;
+		pType->GetStats(TypeStats);
+
+		Stats.dwGraphicsMemory += TypeStats.dwGraphicsMemory;
+		Stats.dwWreckGraphicsMemory += TypeStats.dwWreckGraphicsMemory;
+
 		//	LATER: Accumulate memory used by the derived class into
 		//	Stats.dwTotalTypeMemory.
 		}
@@ -959,7 +967,7 @@ CString CExtension::GetEntityName (DWORD dwUNID) const
 	return *pName;
 	}
 
-DWORDLONG CExtension::GetXMLMemoryUsage (void) const
+size_t CExtension::GetXMLMemoryUsage (void) const
 
 //	GetXMLMemoryUsage
 //
@@ -968,10 +976,10 @@ DWORDLONG CExtension::GetXMLMemoryUsage (void) const
 	{
 	int i;
 
-	DWORDLONG dwTotal = (m_pRootXML ? (DWORDLONG)m_pRootXML->GetMemoryUsage() : 0);
+	size_t dwTotal = (m_pRootXML ? m_pRootXML->GetMemoryUsage() : 0);
 
 	for (i = 0; i < m_ModuleXML.GetCount(); i++)
-		dwTotal += (DWORDLONG)m_ModuleXML[i]->GetMemoryUsage();
+		dwTotal += m_ModuleXML[i]->GetMemoryUsage();
 
 	return dwTotal;
 	}

@@ -981,6 +981,16 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector, const CC
 	//	delay slightly.]
 	}
 
+void CStationType::OnAccumulateStats (SStats &Stats) const
+
+//	OnAccumulateStats
+//
+//	Accumulate stats.
+
+	{
+	Stats.dwGraphicsMemory += m_Image.GetMemoryUsage();
+	}
+
 void CStationType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
 
 //	OnAccumulateXMLMergeFlags

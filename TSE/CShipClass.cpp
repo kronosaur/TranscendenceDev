@@ -3019,6 +3019,21 @@ void CShipClass::MarkImages (bool bMarkDevices)
 	DEBUG_CATCH
 	}
 
+void CShipClass::OnAccumulateStats (SStats &Stats) const
+
+//	OnAccumulateStats
+//
+//	Accumulate system stats.
+
+	{
+	size_t dwWreckMemory = m_WreckDesc.GetMemoryUsage();
+
+	Stats.dwGraphicsMemory += m_Image.GetMemoryUsage();
+	Stats.dwGraphicsMemory += dwWreckMemory;
+
+	Stats.dwWreckGraphicsMemory = dwWreckMemory;
+	}
+
 void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
 
 //	OnAccumulateXMLMergeFlags

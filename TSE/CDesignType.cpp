@@ -1606,7 +1606,7 @@ void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
 		}
 	}
 
-DWORDLONG CDesignType::GetAllocMemoryUsage (void) const
+size_t CDesignType::GetAllocMemoryUsage (void) const
 
 //	GetAllocMemoryUsage
 //
@@ -1615,7 +1615,7 @@ DWORDLONG CDesignType::GetAllocMemoryUsage (void) const
 //	itself.
 
 	{
-	DWORDLONG dwTotal = 0;
+	size_t dwTotal = 0;
 
 	if (m_pExtra)
 		dwTotal += sizeof(SExtra);
@@ -2103,6 +2103,20 @@ ICCItemPtr CDesignType::GetStaticData (const CString &sAttrib) const
 		return m_pInheritFrom->GetStaticData(sAttrib);
 
 	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	}
+
+void CDesignType::GetStats (SStats &Stats) const
+
+//	GetStats
+//
+//	Returns system stats about the type.
+
+	{
+	Stats = SStats();
+
+	//	Accumulate from base class
+
+	OnAccumulateStats(Stats);
 	}
 
 CString CDesignType::GetTypeChar (DesignTypes iType)

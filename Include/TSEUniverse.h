@@ -93,6 +93,8 @@ class CDebugOptions
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		
 	private:
+		ICCItemPtr GetMemoryUse (void) const;
+
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 	};

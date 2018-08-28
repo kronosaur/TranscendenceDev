@@ -124,6 +124,7 @@ class CObjectImage : public CDesignType
 		inline bool FreesBitmap (void) const { return m_bFreeBitmap; }
         inline int GetHeight (void) const { return (m_pBitmap ? m_pBitmap->GetHeight() : 0); }
 		CG32bitImage *GetHitMask (void);
+		size_t GetMemoryUsage (void) const;
 		CG32bitImage *GetRawImage (const CString &sLoadReason, CString *retsError = NULL) const;
 		inline CString GetImageFilename (void) { return m_sBitmap; }
 		CG32bitImage *GetShadowMask (void);
@@ -143,6 +144,7 @@ class CObjectImage : public CDesignType
 
 	protected:
 		//	CDesignType overrides
+		virtual void OnAccumulateStats (SStats &Stats) const { Stats.dwGraphicsMemory += GetMemoryUsage(); }
 		virtual void OnClearMark (void) override { m_bMarked = false; }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
@@ -215,10 +217,11 @@ class CObjectImageArray
 		RECT GetImageRect (int iTick, int iRotation, int *retxCenter = NULL, int *retyCenter = NULL) const;
 		RECT GetImageRectAtPoint (int x, int y) const;
 		bool GetImageOffset (int iTick, int iRotation, int *retx, int *rety) const;
-		inline int GetRotationCount (void) const { return m_iRotationCount; }
-		inline int GetTicksPerFrame (void) const { return m_iTicksPerFrame; }
 		int GetImageViewportSize (void) const;
 		inline int GetImageWidth (void) const { return RectWidth(m_rcImage); }
+		size_t GetMemoryUsage (void) const;
+		inline int GetRotationCount (void) const { return m_iRotationCount; }
+		inline int GetTicksPerFrame (void) const { return m_iTicksPerFrame; }
 		inline bool HasAlpha (void) const { return (m_pImage ? m_pImage->HasAlpha() : false); }
 		bool ImagesIntersect (int iTick, int iRotation, int x, int y, const CObjectImageArray &Image2, int iTick2, int iRotation2) const;
 		inline bool IsAnimated (void) const { return (m_iTicksPerFrame > 0 && m_iFrameCount > 1); }
@@ -457,6 +460,7 @@ class CCompositeImageDesc
 		inline int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers()) const { return (m_pRoot ? m_pRoot->GetActualRotation(Selector, Modifiers) : 0); }
 		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
 		int GetMaxLifetime (void) const;
+		size_t GetMemoryUsage (void) const;
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
         inline const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }
         CObjectImageArray &GetSimpleImage (void);
