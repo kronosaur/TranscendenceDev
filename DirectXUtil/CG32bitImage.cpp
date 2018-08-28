@@ -1067,6 +1067,21 @@ void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMa
 		}
 	}
 
+size_t CG32bitImage::GetMemoryUsage (void) const
+
+//	GetMemoryUsage
+//
+//	Returns the amount of memory used.
+
+	{
+	size_t dwTotal = 0;
+
+	if (m_pRGBA && m_bFreeRGBA)
+		dwTotal += (size_t)CalcBufferSize(m_iPitch / sizeof(DWORD), m_cyHeight);
+
+	return dwTotal;
+	}
+
 void CG32bitImage::InitBMI (BITMAPINFO **retpbi) const
 
 //	InitBMP

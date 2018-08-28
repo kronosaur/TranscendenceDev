@@ -199,6 +199,7 @@ class CG32bitImage : public CGImagePlane
 		void BltToDC (HDC hDC, int x, int y) const;
 		void BltToSurface (LPDIRECTDRAWSURFACE7 pSurface, SurfaceTypes iType);
 		bool CopyToClipboard (void);
+		size_t GetMemoryUsage (void) const;
 		bool SaveAsWindowsBMP (const CString &sFilespec);
 		void SwapBuffers (CG32bitImage &Other);
 		bool WriteToWindowsBMP (IWriteStream *pStream);

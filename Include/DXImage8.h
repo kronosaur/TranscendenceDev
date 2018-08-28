@@ -37,6 +37,10 @@ class CG8bitImage : public CGImagePlane
 		inline void SetPixel (int x, int y, BYTE Value) 
 			{ if (x >= m_rcClip.left && y >= m_rcClip.top && x < m_rcClip.right && y < m_rcClip.bottom) *GetPixelPos(x, y) = Value; }
 
+		//	Debug
+
+		inline size_t GetMemoryUsage (void) const { return (size_t)CalcBufferSize(GetWidth(), GetHeight()); }
+
 	private:
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }
 		void Copy (const CG8bitImage &Src);
