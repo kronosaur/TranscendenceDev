@@ -425,6 +425,18 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		pEntry->Selector = Selector;
 		pEntry->Modifiers = Modifiers;
 
+		//	This case is for backwards compatibility
+
+		if (iType == CCompositeImageSelector::typeShipClass && !m_pRoot->IsShipwreckDesc())
+			{
+			CShipClass *pClass = Selector.GetShipwreckClass();
+			if (pClass)
+				{
+				CShipwreckEntry::GetImage(pClass, Modifiers.GetRotation(), &pEntry->Image);
+				return pEntry->Image;
+				}
+			}
+
 		//	Generate the image
 
 		m_pRoot->GetImage(Selector, Modifiers, &pEntry->Image);
