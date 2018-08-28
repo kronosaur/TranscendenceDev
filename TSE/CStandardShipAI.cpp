@@ -109,7 +109,9 @@ const Metric SAFE_ORBIT_RANGE =			(30.0 * LIGHT_SECOND);
 const Metric LONG_THREAT_RANGE =		(120 * LIGHT_SECOND);
 const Metric LONG_THREAT_RANGE2 =		(LONG_THREAT_RANGE * LONG_THREAT_RANGE);
 
-#define SPACE_OBJ_SCAVENGE_DATA			CONSTLIT("$scavenge")
+#define FIELD_SCAVENGE					CONSTLIT("$scavenge")
+#define FIELD_CORE_NO_SALVAGE			CONSTLIT("core.noSalvage")
+#define FIELD_NO_SALVAGE				CONSTLIT("noSalvage")
 
 static CShip *g_pDebugShip = NULL;
 int g_iDebugLine = 0;
@@ -609,7 +611,9 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& !pObj->IsRadioactive()
 							&& !pObj->IsIntangible()
 							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
-							&& pObj->GetData(SPACE_OBJ_SCAVENGE_DATA)->IsNil())
+							&& !pObj->HasAttribute(FIELD_NO_SALVAGE)
+							&& pObj->GetData(FIELD_CORE_NO_SALVAGE)->IsNil()
+							&& pObj->GetData(FIELD_SCAVENGE)->IsNil())
 						{
 						CVector vRange = pObj->GetPos() - m_pShip->GetPos();
 						Metric rDistance2 = vRange.Dot(vRange);
@@ -685,7 +689,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 						//	Mark so we don't loot this object again
 
 						ICCItemPtr pValue(g_pUniverse->GetCC().CreateString(CONSTLIT("l")));
-						pDock->SetData(SPACE_OBJ_SCAVENGE_DATA, pValue);
+						pDock->SetData(FIELD_SCAVENGE, pValue);
 
 						//	Undock
 
