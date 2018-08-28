@@ -52,9 +52,10 @@ const int ICON_RADIUS =							6;
 const int SELECTION_BORDER_WIDTH =				1;
 const int SELECTION_CORNER_RADIUS =				8;
 
-CListSaveFilesTask::CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, int cxWidth) : IHITask(HI), 
+CListSaveFilesTask::CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, bool bFilterPermadeath, int cxWidth) : IHITask(HI),
 		m_Folders(Folders),
 		m_sUsername(sUsername),
+		m_bFilterPermadeath(bFilterPermadeath),
 		m_cxWidth(cxWidth),
 		m_pList(NULL)
 
@@ -95,7 +96,10 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Add the character name and current star system
 
-	CString sHeading = strPatternSubst(CONSTLIT("%s — %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
+	bool bPermadeath = m_bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//We still show the Permadeath label if we don't force it
+	CString sHeading;
+	
+	sHeading = strPatternSubst(CONSTLIT("%s — %s%s"), GameFile.GetPlayerName(), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" — Permadeath") : NULL_STR);
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, y));
@@ -117,7 +121,12 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	if (GameFile.IsEndGame())
 		sState = strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName());
 	else if (GameFile.IsGameResurrect())
-		sState = strPatternSubst(CONSTLIT("Resurrect in the %s System"), GameFile.GetSystemName());
+		{
+		if(m_bFilterPermadeath)
+			sState = strPatternSubst(CONSTLIT("Died in the %s System"), GameFile.GetSystemName());
+		else
+			sState = strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR);
+		}
 	else
 		sState = strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName());
 
@@ -323,6 +332,11 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 		//	(or unregistered games).
 
 		if (GameFile.IsRegistered() && !strEquals(GameFile.GetUsername(), m_sUsername))
+			continue;
+
+		//	If we're filtering permadeath, then we only show permadeath games
+
+		if (m_bFilterPermadeath && GameFile.GetResurrectCount() > 0)
 			continue;
 
 		//	Generate a record for the file
