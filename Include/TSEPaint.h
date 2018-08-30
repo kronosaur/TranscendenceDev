@@ -80,6 +80,7 @@ struct SViewportPaintCtx
 		bool fNoSpaceBackground = false;
 		bool fShowSatellites = false;
 		bool bShowUnexploredAnnotation = false;
+		bool bShowBounds = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.

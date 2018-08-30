@@ -7,6 +7,7 @@
 
 #define PROPERTY_DEBUG_MODE					CONSTLIT("debugMode")
 #define PROPERTY_MEMORY_USE					CONSTLIT("memoryUse")
+#define PROPERTY_SHOW_BOUNDS				CONSTLIT("showBounds")
 #define PROPERTY_SHOW_LINE_OF_FIRE			CONSTLIT("showLineOfFire")
 #define PROPERTY_SHOW_NAV_PATHS				CONSTLIT("showNavPaths")
 
@@ -50,6 +51,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_DEBUG_MODE))
 		return ICCItemPtr(CC.CreateBool(g_pUniverse->InDebugMode()));
 
+	else if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
+		return ICCItemPtr(CC.CreateBool(m_bShowBounds));
+
 	else if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
 		return ICCItemPtr(CC.CreateBool(m_bShowLineOfFire));
 
@@ -81,7 +85,10 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	//	Set a property
 
-	if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
+	if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
+		m_bShowBounds = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
 		m_bShowLineOfFire = !pValue->IsNil();
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))

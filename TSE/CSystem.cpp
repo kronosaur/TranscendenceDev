@@ -607,6 +607,10 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.fNoStarshine = !g_pUniverse->GetSFXOptions().IsStarshineEnabled();
 	Ctx.fNoSpaceBackground = !g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled();
 
+	//	Debug options
+
+	Ctx.bShowBounds = g_pUniverse->GetDebugOptions().IsShowBoundsEnabled();
+
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
 
