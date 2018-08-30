@@ -143,6 +143,19 @@ void CGDraw::RectGradient (CG32bitImage &Dest, int xDest, int yDest, int cxDest,
 		}
 	}
 
+void CGDraw::RectOutline (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor)
+
+//	RectOutline
+//
+//	Draw a rect outline
+
+	{
+	Dest.DrawLine(x, y, x + cxWidth, y, 1, rgbColor);
+	Dest.DrawLine(x, y + cyHeight, x + cxWidth, y + cyHeight, 1, rgbColor);
+	Dest.DrawLine(x, y, x, y + cyHeight, 1, rgbColor);
+	Dest.DrawLine(x + cxWidth, y, x + cxWidth, y + cyHeight, 1, rgbColor);
+	}
+
 void CGDraw::RectOutlineDotted (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight, CG32bitPixel rgbColor)
 
 //	RectDotted
