@@ -1094,6 +1094,10 @@ void CStation::CreateStarlightImage (int iStarAngle, Metric rStarDist)
 
 	m_StarlightImage.InitFromRotated(Image, iTick, iVariant, iRotation);
 
+	//	Recalculate bounds
+
+	CalcBounds();
+
 	//	While we're here, create the map image
 
 	CreateMapImage();
