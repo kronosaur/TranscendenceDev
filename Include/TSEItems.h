@@ -292,6 +292,9 @@ class CItem
 
 			FLAG_IGNORE_INSTALLED =			0x00000001,
 			FLAG_IGNORE_CHARGES =			0x00000002,
+			FLAG_IGNORE_DATA =				0x00000004,
+			FLAG_IGNORE_DISRUPTED =			0x00000008,
+			FLAG_IGNORE_ENHANCEMENTS =		0x00000010,
 			};
 
 		CItem (void);
@@ -388,6 +391,7 @@ class CItem
 		static void InitCriteriaAll (CItemCriteria *retCriteria);
 		static const CItem &NullItem (void) { return CItem::m_NullItem; }
 		static void ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria);
+		static DWORD ParseFlags (ICCItem *pItem);
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 
 		void ReadFromStream (SLoadCtx &Ctx);

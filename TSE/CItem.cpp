@@ -1739,12 +1739,15 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
 
 	{
 	const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
+	const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
+	const bool bIgnoreDisrupted = (dwFlags & FLAG_IGNORE_DISRUPTED ? true : false);
+	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwVariant == 0
-			&& (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks())
-			&& pExtra->m_Mods.IsEmpty()
-			&& pExtra->m_Data.IsEmpty());
+			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks()))
+			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
+			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
 	}
 
 bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
@@ -1759,12 +1762,15 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 	if (m_pExtra && pSrc)
 		{
 		const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
+		const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
+		const bool bIgnoreDisrupted = (dwFlags & FLAG_IGNORE_DISRUPTED ? true : false);
+		const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwVariant == pSrc->m_dwVariant
-				&& IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime)
-				&& m_pExtra->m_Mods.IsEqual(pSrc->m_Mods)
-				&& m_pExtra->m_Data.IsEqual(pSrc->m_Data));
+				&& (bIgnoreDisrupted || IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
+				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
+				&& (bIgnoreData || m_pExtra->m_Data.IsEqual(pSrc->m_Data)));
 		}
 
 	//	Neither has extra struct
@@ -2702,6 +2708,27 @@ void CItem::ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria)
 
 		pPos++;
 		}
+	}
+
+DWORD CItem::ParseFlags (ICCItem *pItem)
+
+//	ParseFlags
+//
+//	Parse flags for objHasItem and others.
+
+	{
+	DWORD dwFlags = 0;
+
+	if (pItem)
+		{
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreCharges")) ? CItem::FLAG_IGNORE_CHARGES : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreData")) ? CItem::FLAG_IGNORE_DATA : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreDisrupted")) ? CItem::FLAG_IGNORE_DISRUPTED : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreEnhancements")) ? CItem::FLAG_IGNORE_ENHANCEMENTS : 0);
+		dwFlags |= (pItem->GetBooleanAt(CONSTLIT("ignoreInstalled")) ? CItem::FLAG_IGNORE_INSTALLED : 0);
+		}
+
+	return dwFlags;
 	}
 
 void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)

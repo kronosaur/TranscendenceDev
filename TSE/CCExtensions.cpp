@@ -255,7 +255,8 @@ ICCItem *fnObjIDGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_OBJ_ENUM_ITEMS			3
 #define FN_OBJ_HAS_ITEM				4
 
-ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
+ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 
 #define FN_OBJ_ARMOR_DAMAGE			2
 #define FN_OBJ_REPAIR_ARMOR			3
@@ -1712,7 +1713,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"ivs",	0,	},
 
-		{	"objGetItems",					fnObjItem,		FN_OBJ_ENUM_ITEMS,
+		{	"objGetItems",					fnObjItemOld,		FN_OBJ_ENUM_ITEMS,
 			"(objGetItems obj criteria) -> list of items\n\n"
 
 			"criteria as itmGetTypes plus\n\n"
@@ -1997,8 +1998,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"objHasItem",					fnObjItem,		FN_OBJ_HAS_ITEM,
-			"(objHasItem obj item [count]) -> number of items (or Nil)",
-			NULL,	0,	},
+			"(objHasItem obj item [count] [options]) -> number of items (or Nil)\n\n"
+			
+			"options:\n\n"
+			
+			"   'ignoreCharges\n"
+			"   'ignoreData\n"
+			"   'ignoreDisruption\n"
+			"   'ignoreEnhancements\n"
+			"   'ignoreInstalled\n",
+
+			"iv*",	0,	},
 
 		{	"objHasTradeService",			fnObjGet,		FN_OBJ_HAS_SERVICE,
 			"(objHasTradeService obj service) -> True/Nil",
@@ -2086,8 +2096,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItem",				fnObjItem,		FN_OBJ_REMOVE_ITEM,
-			"(objRemoveItem obj item [count]) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+			"(objRemoveItem obj item [count] [options]) -> True/Nil",
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRemoveItemEnhancement",		fnObjSet,		FN_OBJ_REMOVE_ITEM_ENHANCEMENT,
 			"(objRemoveItemEnhancement obj item enhancementID) -> True/Nil",
@@ -8557,14 +8567,109 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	return pResult;
 	}
 
-ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnObjItem
 //
 //	Gets and sets items
+
+	{
+	CCodeChain *pCC = pEvalCtx->pCC;
+
+	//	Convert the first argument into a space object
+
+	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
+	if (pObj == NULL)
+		return pCC->CreateNil();
+
+	//	Second argument is an item
+
+	CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+	if (Item.IsEmpty())
+		return pCC->CreateNil();
+
+	//	Do command
+
+	switch (dwData)
+		{
+		case FN_OBJ_HAS_ITEM:
+			{
+			//	We have two optional arguments: a count and options.
+
+			int iCount = Item.GetCount();
+			ICCItem *pOptions = NULL;
+
+			int iArg = 2;
+			if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsNumber())
+				iCount = pArgs->GetElement(iArg++)->GetIntegerValue();
+
+			if (pArgs->GetCount() > iArg)
+				pOptions = pArgs->GetElement(iArg++);
+
+			//	Generate flags
+
+			DWORD dwFlags = CItem::ParseFlags(pOptions);
+
+			//	Find
+
+			CItemListManipulator ObjList(pObj->GetItemList());
+			if (!ObjList.SetCursorAtItem(Item, dwFlags))
+				return pCC->CreateNil();
+
+			if (ObjList.GetItemAtCursor().GetCount() < iCount)
+				return pCC->CreateNil();
+
+			return pCC->CreateInteger(ObjList.GetItemAtCursor().GetCount());
+			}
+
+		case FN_OBJ_REMOVE_ITEM:
+			{
+			//	We have two optional arguments: a count and options.
+
+			int iCount = Item.GetCount();
+			ICCItem *pOptions = NULL;
+
+			int iArg = 2;
+			if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsNumber())
+				iCount = pArgs->GetElement(iArg++)->GetIntegerValue();
+
+			if (pArgs->GetCount() > iArg)
+				pOptions = pArgs->GetElement(iArg++);
+
+			//	Generate flags
+
+			DWORD dwFlags = CItem::ParseFlags(pOptions);
+
+			//	Remove
+
+			CItemListManipulator ObjList(pObj->GetItemList());
+			if (!ObjList.SetCursorAtItem(Item, dwFlags))
+				return pCC->CreateNil();
+
+			if (ObjList.GetItemAtCursor().IsInstalled())
+				return pCC->CreateError(CONSTLIT("Installed items cannot be removed; use (shpRemoveDevice) instead"));
+
+			ObjList.DeleteAtCursor(iCount);
+
+			pObj->OnComponentChanged(comCargo);
+			pObj->ItemsModified();
+			pObj->InvalidateItemListAddRemove();
+			return pCC->CreateTrue();
+			}
+
+		default:
+			ASSERT(false);
+			return pCC->CreateNil();
+		}
+	}
+
+ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
+
+//	fnObjItemOld
+//
+//	Gets and sets items
 //
 //	(objAddItem obj item)
-//	(objHasItem obj item [count])
 //	(objRemoveItem obj item [count])
 
 	{
@@ -8594,25 +8699,6 @@ ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	switch (dwData)
 		{
-		case FN_OBJ_HAS_ITEM:
-			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			int iCount = Item.GetCount();
-			if (pArgs->GetElement(2))
-				iCount = pArgs->GetElement(2)->GetIntegerValue();
-			pArgs->Discard(pCC);
-
-			CItemListManipulator ObjList(pObj->GetItemList());
-			if (!ObjList.SetCursorAtItem(Item))
-				return pCC->CreateNil();
-
-			if (ObjList.GetItemAtCursor().GetCount() < iCount)
-				return pCC->CreateNil();
-
-			pResult = pCC->CreateInteger(ObjList.GetItemAtCursor().GetCount());
-			break;
-			}
-
 		case FN_OBJ_REMOVE_ITEM:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
