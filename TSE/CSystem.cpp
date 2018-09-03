@@ -387,6 +387,8 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 //	in space.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Find the nearest star to the position. We optimize the case where
@@ -443,6 +445,8 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 		*retpVolumetricMask = &pBestStar->VolumetricMask;
 
 	return Max(0, iPercent);
+
+	DEBUG_CATCH
 	}
 
 int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &Criteria)
