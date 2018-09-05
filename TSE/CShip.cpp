@@ -4003,8 +4003,7 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	If this object is docked with us, remove it from the
 	//	docking table.
 
-	if (m_pClass->HasDockingPorts())
-		m_DockingPorts.OnObjDestroyed(this, Ctx.pObj);
+	m_DockingPorts.OnObjDestroyed(this, Ctx.pObj);
 
 	//	If our exit gate got destroyed, then we're OK (this can happen if
 	//	a carrier gets destroyed while gunships are being launched)
@@ -4646,8 +4645,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 
 	//	Release any docking objects
 
-	if (m_pClass->HasDockingPorts())
-		m_DockingPorts.OnDestroyed();
+	m_DockingPorts.OnDestroyed();
 
 	//	Create an effect appropriate to the cause of death
 
@@ -4951,8 +4949,7 @@ void CShip::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	If the station is moving then make sure all docked ships
 	//	move along with it.
 
-	if (m_pClass->HasDockingPorts())
-		m_DockingPorts.MoveAll(this);
+	m_DockingPorts.MoveAll(this);
 
 	//	Move effects
 

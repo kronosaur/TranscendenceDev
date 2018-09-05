@@ -244,7 +244,7 @@ class CShipClass : public CDesignType
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		inline int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
 		inline const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
-		inline bool HasDockingPorts (void) { return (m_fHasDockingPorts ? true : false); }
+		inline bool HasDockingPorts (void) { return (m_DockingPorts.GetPortCount() > 0); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
         void InitPerformance (SShipPerformanceCtx &Ctx) const;
@@ -452,7 +452,6 @@ class CShipClass : public CDesignType
 
 		//	Misc
 
-		DWORD m_fHasDockingPorts:1;				//	TRUE if ship has docking ports
 		DWORD m_fCommsHandlerInit:1;			//	TRUE if comms handler has been initialized
 		DWORD m_fVirtual:1;						//	TRUE if ship class is virtual (e.g., a base class)
 		DWORD m_fOwnPlayerSettings:1;		    //	TRUE if we own m_pPlayerSettings
@@ -460,11 +459,12 @@ class CShipClass : public CDesignType
 		DWORD m_fLevelOverride:1;				//	TRUE if level is specified in XML
 		DWORD m_fInheritedDevices:1;			//	TRUE if m_pDevices is inherited from another class
 		DWORD m_fInheritedItems:1;				//	TRUE if m_pItems is inherited from another class
-
 		DWORD m_fInheritedEscorts:1;			//	TRUE if m_pEscorts is inherited from another class
+
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
 		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
+		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
