@@ -1350,7 +1350,7 @@ class CShip : public CSpaceObject
 		DWORD m_fHasShipCompartments:1;			//	TRUE if we have ship compartment objects attached
 		DWORD m_fAutoCreatedPorts:1;			//	TRUE if we have auto created some docking ports
 		DWORD m_fNameBlanked:1;					//	TRUE if name has been blanked; show generic name
-		DWORD m_fSpare6:1;
+		DWORD m_fShowMapLabel:1;				//	TRUE if we should show a map label
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

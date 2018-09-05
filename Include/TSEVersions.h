@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							41;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					162;
+constexpr DWORD SYSTEM_SAVE_VERSION =					163;
 
 //	Uncomment out the following define when building a stable release
 
@@ -601,3 +601,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					162;
 //
 //	162: 1.8 Beta 3
 //		Remove m_xMapLabel and m_yMapLabel from CStation
+//
+//	163: 1.8 Beta 3
+//		Added m_fShowMapLabel to CShip

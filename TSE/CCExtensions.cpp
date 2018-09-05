@@ -1898,6 +1898,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'selectedMissile\n"
 			"   'selectedWeapon\n"
 			"   'shatterImmune\n"
+			"   'showMapLabel\n"
 			"   'thrust -> in GN\n"
 			"   'thrustToWeight -> acceleration, 1 = 500 m/s^2 (ships stats show this / 1000)\n"
 			"\n"
@@ -2232,6 +2233,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'rotation angle\n"
 			"   'selectedMissile type|item\n"
 			"   'selectedWeapon type|item\n"
+			"   'showMapLabel True|Nil\n"
 			"   'sovereign type\n"
 			"\n"
 			"property (stations)\n\n"
@@ -2251,6 +2253,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'playerBlacklisted True|Nil\n"
 			"   'shipConstructionEnabled True|Nil\n"
 			"   'shipReinforcementEnabled True|Nil\n"
+			"   'showMapLabel True|Nil\n"
 			"   'sovereign type\n"
 			"   'structuralHP hitPoints",
 

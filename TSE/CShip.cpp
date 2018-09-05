@@ -90,6 +90,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_SELECTED_MISSILE				CONSTLIT("selectedMissile")
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 
@@ -1549,6 +1550,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_fHasShipCompartments = false;
 	pShip->m_fAutoCreatedPorts = false;
 	pShip->m_fNameBlanked = false;
+	pShip->m_fShowMapLabel = pClass->ShowsMapLabel();
 
 	//	Shouldn't be able to hit a virtual ship
 
@@ -3206,6 +3208,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(this, specialShatter));
+
+	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
+		return CC.CreateBool(m_fShowMapLabel);
 
 	//	Drive properties
 
@@ -5199,7 +5204,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 	//	Or if it has docking services and the player knows about it
 
-	else if (m_fKnown && m_pClass->HasDockingPorts())
+	else if (m_fKnown && m_fShowMapLabel)
 		{
 		CG32bitPixel rgbColor;
 		if (IsEnemy(GetUniverse()->GetPOV()))
@@ -5436,7 +5441,10 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_fNameBlanked =			((dwLoad & 0x00000020) ? true : false) && (Ctx.dwVersion >= 155);
 	bool bTrackFuel =			((dwLoad & 0x00000040) ? true : false);
 	bool bHasMoney =			((dwLoad & 0x00000080) ? true : false) && (Ctx.dwVersion >= 145);
-	//	0x00000100 Unused as of version 155
+	if (Ctx.dwVersion >= 163)
+		m_fShowMapLabel =		((dwLoad & 0x00000100) ? true : false);
+	else
+		m_fShowMapLabel = m_pClass->ShowsMapLabel();
 	m_fRecalcItemMass =			((dwLoad & 0x00000200) ? true : false);
 	m_fKnown =					((dwLoad & 0x00000400) ? true : false);
 	m_fHiddenByNebula =			((dwLoad & 0x00000800) ? true : false);
@@ -6417,7 +6425,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNameBlanked ?			0x00000020 : 0);
 	dwSave |= (m_pPowerUse ?			0x00000040 : 0);
 	dwSave |= (m_pMoney ?				0x00000080 : 0);
-	//	0x00000100
+	dwSave |= (m_fShowMapLabel ?		0x00000100 : 0);
 	dwSave |= (m_fRecalcItemMass ?		0x00000200 : 0);
 	dwSave |= (m_fKnown ?				0x00000400 : 0);
 	dwSave |= (m_fHiddenByNebula ?		0x00000800 : 0);
@@ -6541,7 +6549,7 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 	if (IsHidden())
 		return;
 
-	if (m_fKnown && m_pClass->HasDockingPorts())
+	if (m_fKnown && m_fShowMapLabel)
 		{
 		if (m_sMapLabel.IsBlank())
 			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
@@ -7744,6 +7752,11 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 			}
 
 		SelectWeapon(iDev, 0);
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
+		{
+		m_fShowMapLabel = !pValue->IsNil();
 		return true;
 		}
 	else
