@@ -4853,13 +4853,20 @@ bool CSpaceObject::HasDockScreen (void) const
 	if (FireGetDockScreen())
 		return true;
 
-	if (g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(const_cast<CSpaceObject *>(this)))
-		return true;
-
 	const COverlayList *pOverlays;
 	if ((pOverlays = GetOverlays()) 
 			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
 		return true;
+
+	//	NOTE: We do not consider <GetGlobalDockScreen> for purposes of whether 
+	//	we have a dock screen or not. This is for two reasons:
+	//
+	//	1.	<GetGlobalDockScreen> is generally used to override a dock screen
+	//		(not to add one to an object that doesn't have one).
+	//
+	//	2.	If we were to consider it, then all (e.g.,) Commonwealth ships 
+	//		would have docking ports because we create docking ports on ships
+	//		if we have a screen.
 
 	return false;
 	}
