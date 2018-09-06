@@ -1539,7 +1539,7 @@ void CStandardShipAI::BehaviorStart (void)
 
 			if (pBestDest)
 				{
-				AddOrder(IShipController::orderWait, NULL, IShipController::SData(mathRandom(4, 24)), true);
+				AddOrder(IShipController::orderWaitForThreat, NULL, IShipController::SData(mathRandom(4, 24)), true);
 				AddOrder(IShipController::orderDock, pBestDest, IShipController::SData(), true);
 				}
 
