@@ -244,7 +244,7 @@ class CShipClass : public CDesignType
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
 		inline int GetWreckChance (void) const { return m_WreckDesc.GetWreckChance(); }
 		inline const CShipwreckDesc &GetWreckDesc (void) const { return m_WreckDesc; }
-		inline bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0); }
+		inline bool HasDockingPorts (void) const { return (m_DockingPorts.GetPortCount() > 0 || !m_pDefaultScreen.IsEmpty()); }
 		inline bool HasShipName (void) const { return !m_sShipNames.IsBlank(); }
 		void InitEffects (CShip *pShip, CObjectEffectList *retEffects);
         void InitPerformance (SShipPerformanceCtx &Ctx) const;
