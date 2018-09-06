@@ -1499,6 +1499,7 @@ class CSpaceObject : public CObject
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
+		virtual CDesignType *GetDefaultOverride (void) const { return NULL; }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
 		virtual void OnAscended (void) { }

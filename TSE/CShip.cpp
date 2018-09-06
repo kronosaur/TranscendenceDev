@@ -1676,14 +1676,11 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	pShip->m_Interior.CreateAttached(pShip, pClass->GetInteriorDesc());
 
-	//	Set override, just before creation. Get the override from the class, if
-	//	necessary.
-
-	if (pOverride == NULL)
-		pOverride = pClass->GetDefaultEventHandler();
-
 	//	NOTE: We need to call SetOverride even if we have NULL for a handler 
 	//	because it also sets event flags (SetEventFlags).
+	//
+	//	NOTE: Inside the call to SetOverride we set it to the default handler
+	//	from the class (if pOverride is NULL).
 
 	pShip->SetOverride(pOverride);
 
@@ -4066,6 +4063,9 @@ void CShip::OnAscended (void)
 	{
 	//	Kill any event handlers (these are often used to provide behavior in
 	//	a specific system).
+	//
+	//	NOTE: This will restore it back to the default handler from the class,
+	//	if defined.
 
 	SetOverride(NULL);
 

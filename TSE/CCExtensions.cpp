@@ -4381,8 +4381,11 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get parameters
 
 			int iArg = 1;
-			CString sText = pArgs->GetElement(iArg++)->GetStringValue();
+			ICCItem *pText = pArgs->GetElement(iArg++);
+			if (pText->IsNil())
+				return pCC->CreateNil();
 
+			CString sText = pText->GetStringValue();
 			ICCItem *pData = NULL;
 			if (pArgs->GetCount() > iArg)
 				{
@@ -6965,8 +6968,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get parameters
 
 			int iArg = 1;
-			CString sText = pArgs->GetElement(iArg++)->GetStringValue();
+			ICCItem *pText = pArgs->GetElement(iArg++);
+			if (pText->IsNil())
+				return pCC->CreateNil();
 
+			CString sText = pText->GetStringValue();
 			ICCItem *pData = NULL;
 			if (pArgs->GetCount() > iArg)
 				{
@@ -7282,10 +7288,13 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Second param is the sender; third is message ID
 
 			CSpaceObject *pSender = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			CString sMessageID = pArgs->GetElement(2)->GetStringValue();
+			ICCItem *pMessageID = pArgs->GetElement(2);
+			if (pMessageID->IsNil())
+				return pCC->CreateNil();
 
 			//	If no message, nothing to do
 
+			CString sMessageID = pMessageID->GetStringValue();
 			if (sMessageID.IsBlank())
 				return pCC->CreateNil();
 
@@ -8305,6 +8314,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_EVENT_HANDLER:
 			if (pArgs->GetElement(1)->IsNil())
+				//	NOTE: This will set it back to the default handler from the class
+				//	(if any).
 				pObj->SetOverride(NULL);
 			else
 				{

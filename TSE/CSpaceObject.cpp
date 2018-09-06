@@ -7207,6 +7207,16 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 //	Sets the override.
 	
 	{
+	//	NULL means go back to the default event handler (which could be NULL).
+
+	if (pOverride == NULL)
+		pOverride = GetDefaultOverride();
+
+	//	Short-circuit if no change
+
+	if (pOverride == m_pOverride)
+		return;
+
 	//	Let the previous event handler terminate
 
 	if (m_pOverride)

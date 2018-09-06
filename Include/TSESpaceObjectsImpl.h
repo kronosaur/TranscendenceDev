@@ -1215,6 +1215,7 @@ class CShip : public CSpaceObject
 		virtual bool CanFireOn (CSpaceObject *pObj) override { return CanFireOnObjHelper(pObj); }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
+		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual void OnClearCondition (CConditionSet::ETypes iCondition, DWORD dwFlags) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
