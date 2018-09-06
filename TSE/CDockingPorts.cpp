@@ -728,6 +728,22 @@ void CDockingPorts::OnDestroyed (void)
 	DEBUG_CATCH
 	}
 
+void CDockingPorts::OnDockObjDestroyed (CSpaceObject *pOwner, const SDestroyCtx &Ctx)
+
+//	OnDockObjDestroyed
+//
+//	The owner object has been destroyed, so we notify anyone who is docked with
+//	it.
+//
+//	NOTE: This is sent out whenever OnObjDestroyed is sent out, but does not
+//	require a subscription. E.g., it is called when a station is destroyed.
+
+	{
+	for (int i = 0; i < m_iPortCount; i++)
+		if (m_pPort[i].pObj != NULL)
+			m_pPort[i].pObj->FireOnDockObjDestroyed(pOwner, Ctx);
+	}
+
 void CDockingPorts::OnNewSystem (CSystem *pNewSystem)
 
 //	OnNewSystem

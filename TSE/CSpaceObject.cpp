@@ -56,6 +56,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
 #define ON_DESTROY_OBJ_EVENT					CONSTLIT("OnDestroyObj")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
+#define ON_DOCK_OBJ_DESTROYED_EVENT				CONSTLIT("OnDockObjDestroyed")
 #define ON_ENTERED_GATE_EVENT					CONSTLIT("OnEnteredGate")
 #define ON_ENTERED_SYSTEM_EVENT					CONSTLIT("OnEnteredSystem")
 #define ON_LOAD_EVENT							CONSTLIT("OnLoad")
@@ -2609,6 +2610,32 @@ bool CSpaceObject::FireOnDockObjAdj (CSpaceObject **retpObj)
 		}
 
 	return false;
+	}
+
+void CSpaceObject::FireOnDockObjDestroyed (CSpaceObject *pDockTarget, const SDestroyCtx &Ctx)
+
+//	FireOnDockObjDestroyed
+//
+//	Fire event when a object that we are docked with (or in the process of 
+//	docking with) got destroyed.
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(ON_DOCK_OBJ_DESTROYED_EVENT, &Event))
+		return;
+
+	CCodeChainCtx CCCtx;
+	CCCtx.DefineContainingType(this);
+	CCCtx.SaveAndDefineSourceVar(this);
+	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+	CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+	CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+	CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+	CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_DOCK_OBJ_DESTROYED_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGate)
@@ -6162,6 +6189,12 @@ void CSpaceObject::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
 	{
 	m_SubscribedObjs.NotifyOnObjDestroyed(Ctx);
+
+	//	Notify any docked objects that their dock target got destroyed.
+
+	CDockingPorts *pPorts = GetDockingPorts();
+	if (pPorts)
+		pPorts->OnDockObjDestroyed(this, Ctx);
 	}
 
 void CSpaceObject::NotifyOnObjDocked (CSpaceObject *pDockTarget)

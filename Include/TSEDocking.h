@@ -31,6 +31,7 @@ class CDockingPorts
 		inline bool IsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
 		void MoveAll (CSpaceObject *pOwner);
 		void OnDestroyed (void);
+		void OnDockObjDestroyed (CSpaceObject *pOwner, const SDestroyCtx &Ctx);
 		void OnNewSystem (CSystem *pNewSystem);
 		void OnObjDestroyed (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retbDestroyed = NULL);
 		void ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx);

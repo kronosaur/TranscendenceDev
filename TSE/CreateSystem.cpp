@@ -148,18 +148,6 @@
 #define INCREMENTING_ANGLE				CONSTLIT("incrementing")
 #define MIN_SEPARATION_ANGLE			CONSTLIT("minSeparation")
 
-#define ORDER_TYPE_ATTACK				CONSTLIT("attack")
-#define ORDER_TYPE_GUARD				CONSTLIT("guard")
-#define ORDER_TYPE_GATE					CONSTLIT("gate")
-#define ORDER_TYPE_PATROL				CONSTLIT("patrol")
-#define ORDER_TYPE_ESCORT				CONSTLIT("escort")
-#define ORDER_TYPE_SCAVENGE				CONSTLIT("scavenge")
-#define ORDER_TYPE_TRADE_ROUTE			CONSTLIT("trade route")
-#define ORDER_TYPE_WANDER				CONSTLIT("wander")
-#define ORDER_TYPE_HOLD					CONSTLIT("hold")
-#define ORDER_TYPE_MINE					CONSTLIT("mine")
-#define ORDER_TYPE_FOLLOW				CONSTLIT("follow")
-
 #define SHAPE_CIRCULAR					CONSTLIT("circular")
 #define SHAPE_ARC						CONSTLIT("arc")
 
