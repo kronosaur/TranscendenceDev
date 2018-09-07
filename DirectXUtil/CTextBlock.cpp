@@ -34,6 +34,7 @@
 
 #define CODE_BOLD								CONSTLIT("b")
 #define CODE_COLOR								CONSTLIT("c")
+#define CODE_NEW_LINE							CONSTLIT("n")
 #define CODE_TYPEFACE							CONSTLIT("f")
 #define CODE_ITALIC								CONSTLIT("i")
 #define CODE_RTF								CONSTLIT("rtf")
@@ -244,7 +245,7 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 		//	iSpanPos is the offset into the span where we should continue adding
 		//		(Only valid if bLineEnd is TRUE).
 
-		if (!sOutput.IsBlank())
+		if (!sOutput.IsBlank() || pSpan->bEoP)
 			{
 			STextSpan *pNewSpan = Line.Insert();
 			pNewSpan->bEoP = (!bLineEnd && pSpan->bEoP);
@@ -543,70 +544,70 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 			{
 			m_pInput++;
 
-			//	If this is the beginning of the block then parse some codes
+			//	Parse the code
 
-			if (bBlockStart)
+			switch (*m_pInput)
 				{
-				CString sCode;
-				CString sParam;
-				if (!ParseCode(&sCode, &sParam, retsError))
-					return false;
+				case '{':
+				case '}':
+				case '\\':
+				case '/':
+					AddSpan(CString(m_pInput, 1), Format);
+					m_pInput++;
+					break;
 
-				//	Interpret code
+				case 'n':
+					AddSpan(NULL_STR, Format, true);
+					m_pInput++;
+					break;
 
-				if (strEquals(sCode, CODE_BOLD))
-					Format.bBold = true;
-				else if (strEquals(sCode, CODE_COLOR))
+				default:
 					{
-					DWORD dwRGB;
-					if (*sParam.GetASCIIZPointer() == '#')
-						dwRGB = (DWORD)strToCOLORREF(sParam);
+					//	If this is the beginning of the block then parse some 
+					//	formatting codes.
+
+					if (bBlockStart)
+						{
+						CString sCode;
+						CString sParam;
+						if (!ParseCode(&sCode, &sParam, retsError))
+							return false;
+
+						//	Interpret code
+
+						if (strEquals(sCode, CODE_BOLD))
+							Format.bBold = true;
+						else if (strEquals(sCode, CODE_COLOR))
+							{
+							DWORD dwRGB;
+							if (*sParam.GetASCIIZPointer() == '#')
+								dwRGB = (DWORD)strToCOLORREF(sParam);
+							else
+								dwRGB = (DWORD)strToInt(sParam, 0);
+
+							Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
+							}
+						else if (strEquals(sCode, CODE_TYPEFACE))
+							{
+							Format.sTypeface = sParam;
+							Format.pFont = NULL;
+							}
+						else if (strEquals(sCode, CODE_ITALIC))
+							Format.bItalic = true;
+						else if (strEquals(sCode, CODE_RTF))
+							;
+						else
+							{
+							*retsError = strPatternSubst(ERR_UNKNOWN_CODE, sCode);
+							return false;
+							}
+						}
 					else
-						dwRGB = (DWORD)strToInt(sParam, 0);
-
-					Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
-					}
-				else if (strEquals(sCode, CODE_TYPEFACE))
-					{
-					Format.sTypeface = sParam;
-					Format.pFont = NULL;
-					}
-				else if (strEquals(sCode, CODE_ITALIC))
-					Format.bItalic = true;
-				else if (strEquals(sCode, CODE_RTF))
-					;
-				else
-					{
-					*retsError = strPatternSubst(ERR_UNKNOWN_CODE, sCode);
-					return false;
-					}
-				}
-
-			//	Parse some escape characters
-
-			else
-				{
-				switch (*m_pInput)
-					{
-					case '{':
-					case '}':
-					case '\\':
-					case '/':
-						AddSpan(CString(m_pInput, 1), Format);
-						break;
-
-					case 'n':
-						AddSpan(NULL_STR, Format, true);
-						break;
-
-					default:
 						{
 						*retsError = strPatternSubst(ERR_UNKNOWN_CODE, CString(m_pInput, 1));
 						return false;
 						}
 					}
-
-				m_pInput++;
 				}
 			}
 
