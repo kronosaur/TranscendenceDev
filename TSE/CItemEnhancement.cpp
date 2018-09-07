@@ -1395,6 +1395,8 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //
 //	{number}					Interpret as a mod code
 //	+armor:{n}					Add	armor special damage, where n is an item level
+//	+efficient:{n}				+/- n% power use.
+//									E.g., +efficient:20 = (100 - 20) = 80% power use
 //	+hpBonus:{n}				Add hp bonus.
 //	+hpBonus:{s}:{n}			DamageAdj for type s set to hpBonus n
 //	+immunity:{s}				Immunity to special damage s.
@@ -1685,6 +1687,19 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			//	LATER: Support min and max delay limits
 			SetModSpeed(iValue);
 		}
+
+	//	Efficiency
+
+	else if (strEquals(sID, CONSTLIT("efficient")))
+		{
+		if (bDisadvantage && iValue > 0)
+			iValue = -iValue;
+
+		iValue = mathRound(iValue / 10.0);
+		SetModEfficiency(iValue);
+		}
+
+	//	Tracking
 
 	else if (strEquals(sID, CONSTLIT("tracking")))
 		{
