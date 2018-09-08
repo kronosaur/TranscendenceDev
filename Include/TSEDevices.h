@@ -147,6 +147,13 @@ class CDeviceClass
 			failWeaponMisfire,
 			};
 
+		enum DeviceRotationTypes
+			{
+			rotNone,							//	Cannot rotate
+			rotSwivel,							//	Can swivel but not 360 degrees
+			rotOmnidirectional,					//	Omnidirectional
+			};
+
 		enum LinkedFireOptions
 			{
 			lkfAlways =				0x0000001,	//	Linked to fire button
@@ -218,6 +225,7 @@ class CDeviceClass
 		inline ItemCategories GetCategory (void) const { return (m_iSlotCategory == itemcatNone ? GetImplCategory() : m_iSlotCategory); }
 		inline CString GetDataField (const CString &sField) { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
+		int GetFireArc (CItemCtx &Ctx) const;
 		int GetInstallCost (CItemCtx &ItemCtx);
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline int GetLevel (void) const;
@@ -244,7 +252,6 @@ class CDeviceClass
 		virtual int CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget) { return -1; }
 		virtual int CalcPowerUsed (SUpdateCtx &Ctx, CInstalledDevice *pDevice, CSpaceObject *pSource) { return 0; }
 		virtual bool CanHitFriends (void) { return true; }
-		virtual bool CanRotate (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) const { return false; }
 		virtual void Deplete (CInstalledDevice *pDevice, CSpaceObject *pSource) { }
 		virtual bool FindAmmoDataField (const CItem &Ammo, const CString &sField, CString *retsValue) const { return false; }
         virtual ICCItem *FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, const CString &sProperty) { return CDeviceClass::FindItemProperty(Ctx, sProperty); }
@@ -268,6 +275,7 @@ class CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
+		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return rotNone; }
 		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
@@ -545,7 +553,6 @@ class CInstalledDevice
 		inline bool CanBeDisabled (CItemCtx &Ctx) { return m_pClass->CanBeDisabled(Ctx); }
 		inline bool CanBeDisrupted (void) { return m_pClass->CanBeDisrupted(); }
 		inline bool CanHitFriends (void) { return m_pClass->CanHitFriends(); }
-		inline bool CanRotate (CItemCtx &Ctx) const { return m_pClass->CanRotate(Ctx); }
 		inline void Deplete (CSpaceObject *pSource) { m_pClass->Deplete(this, pSource); }
 		int GetActivateDelay (CSpaceObject *pSource) const;
 		inline ItemCategories GetCategory (void) const { return m_pClass->GetCategory(); }

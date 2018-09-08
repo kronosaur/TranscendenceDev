@@ -803,9 +803,9 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 			iScore += (iDamageEffect / 10);
 		}
 
-	//	If this weapon has a fire arc and the target is in the arc, then prefer this weapon
+	//	If this weapon aligned, then prefer this weapon
 
-	if (pTarget && pWeapon->IsDirectional() && pWeapon->IsWeaponAligned(pShip, pTarget))
+	if (pTarget && pWeapon->IsWeaponAligned(pShip, pTarget))
 		iScore += 10;
 
 	//	If this is an area weapon then make sure there aren't too many friendlies around

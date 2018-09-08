@@ -333,7 +333,7 @@ int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 //	Computes the activation delay, optionally dealing with enhancements.
 
 	{
-	const CItemEnhancementStack *pEnhancements = ItemCtx.GetEnhancementStack();
+	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
 	if (pEnhancements)
 		return pEnhancements->CalcActivateDelay(ItemCtx);
 
@@ -447,7 +447,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     //  Omni and swivel weapons are a bonus
 
-    Metric rSwivelRange = CalcRotateRange(ItemCtx) / 360.0;
+    Metric rSwivelRange = GetFireArc(ItemCtx) / 360.0;
     if (rSwivelRange > 0.0)
         {
 		Metric rOmni = BALANCE_OMNI_FACTOR * pow(rSwivelRange, BALANCE_OMNI_POWER);
@@ -1074,7 +1074,22 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	if (pDevice == NULL)
 		return -1;
 
-	if (pTarget && CanRotate(ItemCtx))
+	//	Get the swivel/turret parameters
+
+	int iMinFireArc, iMaxFireArc;
+	DeviceRotationTypes iType = GetRotationType(ItemCtx, &iMinFireArc, &iMaxFireArc);
+
+	//	If we don't have a target, or if we're firing straight, then we fire 
+	//	straight.
+
+	if (pTarget == NULL || iType == rotNone)
+		{
+		return AngleMod(pSource->GetRotation() + iMinFireArc);
+		}
+
+	//	Otherwise, we need to compute a firing solution.
+
+	else
 		{
 		int iFireAngle;
 
@@ -1093,11 +1108,10 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 		//	If this is a directional weapon make sure we are in-bounds
 
-		int iMinFireAngle, iMaxFireAngle;
-		if (IsDirectional(pDevice, &iMinFireAngle, &iMaxFireAngle))
+		if (iType == rotSwivel)
 			{
-			int iMin = (pSource->GetRotation() + iMinFireAngle) % 360;
-			int iMax = (pSource->GetRotation() + iMaxFireAngle) % 360;
+			int iMin = AngleMod(pSource->GetRotation() + iMinFireArc);
+			int iMax = AngleMod(pSource->GetRotation() + iMaxFireArc);
 
 			if (iMin < iMax)
 				{
@@ -1128,8 +1142,6 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 
 		return iFireAngle;
 		}
-	else
-		return GetDefaultFireAngle(pDevice, pSource);
 	}
 
 int CWeaponClass::CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSource, CSpaceObject *pTarget)
@@ -1199,86 +1211,11 @@ int CWeaponClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevic
 
 	//	Adjust based on power efficiency enhancement
 
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
 	return iPower;
-	}
-
-int CWeaponClass::CalcRotateRange (CItemCtx &ItemCtx) const
-
-//  CalcRotateRange
-//
-//  Calculates the number of degrees of arc that this weapon is able to rotate.
-//  E.g., omni weapons = 360; fixed weapons = 0.
-
-    {
-    int iMinArc;
-    int iMaxArc;
-    if (!CanRotate(ItemCtx, &iMinArc, &iMaxArc))
-        return 0;
-
-    if (iMinArc == iMaxArc)
-        return 360;
-
-    return AngleRange(iMinArc, iMaxArc);
-    }
-
-bool CWeaponClass::CanRotate (CItemCtx &Ctx, int *retiMinFireArc, int *retiMaxFireArc) const
-
-//	CanRotate
-//
-//	Returns TRUE if the weapon is either omnidirectional or directional
-
-	{
-	//	If the weapon is natively on a turret
-
-	if (m_bOmnidirectional)
-		{
-		if (retiMinFireArc)
-			*retiMinFireArc = 0;
-		if (retiMaxFireArc)
-			*retiMaxFireArc = 0;
-		return true;
-		}
-	else if (m_iMinFireArc != m_iMaxFireArc)
-		{
-		if (retiMinFireArc)
-			*retiMinFireArc = m_iMinFireArc;
-		if (retiMaxFireArc)
-			*retiMaxFireArc = m_iMaxFireArc;
-		return true;
-		}
-
-	//	If the device slot is a turret
-
-	else if (Ctx.GetDevice())
-		{
-		if (Ctx.GetDevice()->IsOmniDirectional())
-			{
-			if (retiMinFireArc)
-				*retiMinFireArc = 0;
-			if (retiMaxFireArc)
-				*retiMaxFireArc = 0;
-			return true;
-			}
-		else if (Ctx.GetDevice()->IsDirectional())
-			{
-			if (retiMinFireArc)
-				*retiMinFireArc = Ctx.GetDevice()->GetMinFireArc();
-			if (retiMaxFireArc)
-				*retiMaxFireArc = Ctx.GetDevice()->GetMaxFireArc();
-			return true;
-			}
-		else
-			return false;
-		}
-
-	//	Fixed weapon
-
-	else
-		return false;
 	}
 
 bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed)
@@ -1823,8 +1760,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pSho
 		{
 		CCodeChainCtx Ctx;
 		int iResult;
-		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
-
+	
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -1875,7 +1811,7 @@ CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &Ite
 		{
 		CCodeChainCtx Ctx;
 		EOnFireWeaponResults iResult;
-		const CItemEnhancementStack *pEnhancement = ItemCtx.GetEnhancementStack();
+		TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
@@ -1884,7 +1820,7 @@ CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &Ite
 		Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
 		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
 		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
-		Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancement ? pEnhancement->GetBonus() : 0));
+		Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
 		Ctx.DefineItemType(CONSTLIT("aWeaponType"), pShot->GetWeaponType());
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -2349,7 +2285,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	//	Enhancements
 
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 
 	//	Get the property
 
@@ -2451,42 +2387,35 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_FIRE_ARC))
 		{
-		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
 		int iMinFireArc;
 		int iMaxFireArc;
 
-		//	Omnidirectional
-
-		if (IsOmniDirectional(pDevice))
-			return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
-
-		//	Fire arc
-
-		else if (IsDirectional(pDevice, &iMinFireArc, &iMaxFireArc))
+		switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
 			{
-			//	Create a list
+			case rotOmnidirectional:
+				return CC.CreateString(PROPERTY_OMNIDIRECTIONAL);
 
-			ICCItem *pResult = CC.CreateLinkedList();
-			if (pResult->IsError())
+			case rotSwivel:
+				{
+				//	Create a list
+
+				ICCItem *pResult = CC.CreateLinkedList();
+				if (pResult->IsError())
+					return pResult;
+
+				pResult->AppendInteger(CC, iMinFireArc);
+				pResult->AppendInteger(CC, iMaxFireArc);
+
 				return pResult;
+				}
 
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-
-			pList->AppendInteger(CC, iMinFireArc);
-			pList->AppendInteger(CC, iMaxFireArc);
-
-			return pResult;
-			}
-
-		//	Otherwise, see if we are pointing in a particular direction
-
-		else
-			{
-			int iFacingAngle = AngleMod((pDevice ? pDevice->GetRotation() : 0) + AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
-			if (iFacingAngle == 0)
-				return CC.CreateNil();
-			else
-				return CC.CreateInteger(iFacingAngle);
+			default:
+				{
+				if (iMinFireArc == 0)
+					return CC.CreateNil();
+				else
+					return CC.CreateInteger(iMinFireArc);
+				}
 			}
 		}
 
@@ -2542,10 +2471,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateBool(m_Configuration != ctSingle);
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
-		{
-		CInstalledDevice *pDevice = Ctx.GetDevice();	//	May be NULL
-		return CC.CreateBool(IsOmniDirectional(pDevice));
-		}
+		return CC.CreateBool(GetRotationType(Ctx) == rotOmnidirectional);
+
 	else if (strEquals(sProperty, PROPERTY_REPEATING))
 		{ 
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
@@ -2808,7 +2735,7 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx) const
 	{
 	int iPower = m_iPowerUse;
 
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
 		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
 
@@ -2873,7 +2800,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	Modify the damage based on any enhancements that the ship may have
 
-		const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+		TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 		if (pEnhancements)
 			Damage.AddEnhancements(pEnhancements);
 
@@ -3057,6 +2984,84 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 		*retiFragments = iBestFragments;
 
 	return pBestShot;
+	}
+
+CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, int *retiMinArc, int *retiMaxArc) const
+
+//	GetRotationType
+//
+//	Returns information about the weapon's rotation.
+//
+//	If the weapon is omnidirectional, then we return rotOmnidirectional and 
+//	retiMinArc and retiMaxArc are undefined.
+//
+//	If the weapon swivels, then we return rotSwivel and retiMinArc and 
+//	retiMaxArc are defined.
+//
+//	If the weapon is fixed, then we return rotNone and retiMinArc and
+//	retiMaxArc are both equal to the fire direction (if the device slot sets 
+//	it).
+
+	{
+	CInstalledDevice *pDevice = Ctx.GetDevice();
+	TSharedPtr<CItemEnhancementStack> pEnhancement = Ctx.GetEnhancementStack();
+	int iEnhancedFireArc = (pEnhancement ? pEnhancement->GetFireArc() : 0);
+
+	//	If the device has a fire arc, then we use that for a direction
+
+	int iDeviceMinFireArc = (pDevice ? pDevice->GetMinFireArc() : 0);
+	int iDeviceMaxFireArc = (pDevice ? pDevice->GetMaxFireArc() : 0);
+
+	//	If we're stuck, then we're not directional
+
+	if (iEnhancedFireArc == -1)
+		{
+		if (retiMinArc && retiMaxArc)
+			{
+			int iFireAngle = AngleMiddle(iDeviceMinFireArc, iDeviceMaxFireArc);
+			*retiMinArc = iFireAngle;
+			*retiMaxArc = iFireAngle;
+			}
+
+		return rotNone;
+		}
+
+	//	If the weapon is omnidirectional then we don't need directional 
+	//	calculations.
+
+	else if (m_bOmnidirectional || (pDevice && pDevice->IsOmniDirectional()) || iEnhancedFireArc == 360)
+		return rotOmnidirectional;
+
+	//	If we're fixed then we're done
+
+	else if (iEnhancedFireArc == 0 && m_iMinFireArc == m_iMaxFireArc && iDeviceMinFireArc == iDeviceMaxFireArc)
+		{
+		if (retiMinArc && retiMaxArc)
+			{
+			int iFireAngle = AngleMiddle(iDeviceMinFireArc, iDeviceMaxFireArc);
+			*retiMinArc = iFireAngle;
+			*retiMaxArc = iFireAngle;
+			}
+
+		return rotNone;
+		}
+
+	//	Otherwise, we try to figure out the largest fire arc and use that.
+
+	else
+		{
+		if (retiMinArc && retiMaxArc)
+			{
+			int iFireAngle = AngleMiddle(iDeviceMinFireArc, iDeviceMaxFireArc);
+			int iFireArc = Max(Max(iEnhancedFireArc, AngleRange(iDeviceMinFireArc, iDeviceMaxFireArc)), AngleRange(m_iMinFireArc, m_iMaxFireArc));
+			int iHalfFireArc = iFireArc / 2;
+
+			*retiMinArc = AngleMod(iFireAngle - iHalfFireArc);
+			*retiMaxArc = AngleMod(iFireAngle + iHalfFireArc);
+			}
+
+		return rotSwivel;
+		}
 	}
 
 int CWeaponClass::GetSelectVariantCount (void) const
@@ -3659,88 +3664,6 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 	return false;
 	}
 
-bool CWeaponClass::IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc)
-
-//	IsDirectional
-//
-//	Returns TRUE if the weapon can turn but is not omni
-
-	{
-	//	If the weapon is omnidirectional then we don't need directional 
-	//	calculations.
-
-	if (m_bOmnidirectional || (pDevice && pDevice->IsOmniDirectional()))
-		return false;
-
-	//	If we have a device, combine the fire arcs of device slot and weapon
-
-	if (pDevice)
-		{
-		//	If the device is directional then we always take the fire arc from
-		//	the device slot.
-
-		if (pDevice->IsDirectional())
-			{
-			if (retiMinFireArc)
-				*retiMinFireArc = pDevice->GetMinFireArc();
-			if (retiMaxFireArc)
-				*retiMaxFireArc = pDevice->GetMaxFireArc();
-
-			return true;
-			}
-
-		//	Otherwise, see if the weapon is directional.
-
-		else if (m_iMinFireArc != m_iMaxFireArc)
-			{
-			//	If the device points in a specific direction then we offset the
-			//	weapon's fire arc.
-
-			int iDeviceSlotOffset = pDevice->GetMinFireArc();
-
-			if (retiMinFireArc)
-				*retiMinFireArc = (m_iMinFireArc + iDeviceSlotOffset) % 360;
-			if (retiMaxFireArc)
-				*retiMaxFireArc = (m_iMaxFireArc + iDeviceSlotOffset) % 360;
-
-			return true;
-			}
-
-		//	Otherwise, we are not directional
-
-		else
-			return false;
-		}
-	else
-		{
-		//	Otherwise, just check the weapon
-
-		if (retiMinFireArc)
-			*retiMinFireArc = m_iMinFireArc;
-		if (retiMaxFireArc)
-			*retiMaxFireArc = m_iMaxFireArc;
-
-		return (m_iMinFireArc != m_iMaxFireArc);
-		}
-	}
-
-bool CWeaponClass::IsOmniDirectional (CInstalledDevice *pDevice)
-
-//	IsOmniDirectional
-//
-//	Returns TRUE if the weapon is omnidirectional (not limited)
-
-	{
-	//	The device slot improves the weapon. If the device slot is directional, then
-	//	the weapon is directional. If the device slot is omni directional, then the
-	//	weapon is omnidirectional.
-
-	if (pDevice && pDevice->IsOmniDirectional())
-		return true;
-
-	return m_bOmnidirectional;
-	}
-
 bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
 
 //	IsStdDamageType
@@ -3838,16 +3761,21 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 	if (retiAimAngle)
 		*retiAimAngle = iAim;
 
+	//	Get rotation info
+
+	int iMinFireArc, iMaxFireArc;
+	DeviceRotationTypes iType = GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc);
+
 	//	Omnidirectional weapons are always aligned
 
-	if (IsOmniDirectional(pDevice))
+	if (iType == rotOmnidirectional)
 		{
 		if (retiFireAngle)
 			*retiFireAngle = iAim;
 		return true;
 		}
 
-	int iFacingAngle = (pShip->GetRotation() + pDevice->GetRotation() + AngleMiddle(m_iMinFireArc, m_iMaxFireArc)) % 360;
+	int iFacingAngle = AngleMod(pShip->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
 
 	//	Area weapons are always aligned
 
@@ -3897,26 +3825,20 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 			}
 		}
 
-	//	If this is a directional weapon, figure out whether the target
-	//	is in the fire arc
-
-	int iMinFireAngle;
-	int iMaxFireAngle;
-	bool bDirectional = IsDirectional(pDevice, &iMinFireAngle, &iMaxFireAngle);
-
 	//	Tracking weapons behave like directional weapons with 120 degree field
 
-	if (!bDirectional && IsTracking(Ctx, pShot))
+	if (iType != rotSwivel && IsTracking(Ctx, pShot))
 		{
-		iMinFireAngle = 300;
-		iMaxFireAngle = 60;
-		bDirectional = true;
+		int iDeviceAngle = AngleMiddle(iMinFireArc, iMaxFireArc);
+		iMinFireArc = AngleMod(iDeviceAngle - 60);
+		iMaxFireArc = AngleMod(iDeviceAngle + 60);
+		iType = rotSwivel;
 		}
 
-	if (bDirectional)
+	if (iType == rotSwivel)
 		{
-		int iMin = (pShip->GetRotation() + iMinFireAngle - iAimTolerance + 360) % 360;
-		int iMax = (pShip->GetRotation() + iMaxFireAngle + iAimTolerance) % 360;
+		int iMin = AngleMod(pShip->GetRotation() + iMinFireArc - iAimTolerance);
+		int iMax = AngleMod(pShip->GetRotation() + iMaxFireArc + iAimTolerance);
 
 		//	Are we in the fire arc?
 
@@ -3997,28 +3919,31 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 
 	//	If we're an omni or swivel weapon, adjust our fire arc
 
-	int iMinFireArc = 0;
-	int iMaxFireArc = 0;
-	if (CanRotate(Ctx, &iMinFireArc, &iMaxFireArc))
+	int iMinFireArc, iMaxFireArc;
+	switch (GetRotationType(Ctx, &iMinFireArc, &iMaxFireArc))
 		{
-		//	Adjust arc based on player rotation
-
-		if (iMinFireArc != iMaxFireArc
-				&& Ctx.GetSource())
+		case rotOmnidirectional:
 			{
-			iMinFireArc = AngleMod(iMinFireArc + Ctx.GetSource()->GetRotation());
-			iMaxFireArc = AngleMod(iMaxFireArc + Ctx.GetSource()->GetRotation());
+			if (retiMinFireArc) *retiMinFireArc = 0;
+			if (retiMaxFireArc) *retiMaxFireArc = 0;
+			return true;
 			}
 
-		if (retiMinFireArc) *retiMinFireArc = iMinFireArc;
-		if (retiMaxFireArc) *retiMaxFireArc = iMaxFireArc;
+		case rotSwivel:
+			{
+			if (Ctx.GetSource())
+				{
+				iMinFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMinFireArc);
+				iMaxFireArc = AngleMod(Ctx.GetSource()->GetRotation() + iMaxFireArc);
+				}
+			if (retiMinFireArc) *retiMinFireArc = iMinFireArc;
+			if (retiMaxFireArc) *retiMaxFireArc = iMaxFireArc;
+			return true;
+			}
 
-		return true;
+		default:
+			return false;
 		}
-
-	//	Otherwise, we don't need a target
-
-	return false;
 	}
 
 void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
@@ -4030,22 +3955,20 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 	{
 	//	Add omnidirectional and arc attributes
 
-	int iMinArc;
-	int iMaxArc;
-	if (CanRotate(ItemCtx, &iMinArc, &iMaxArc))
+	int iMinArc, iMaxArc;
+	switch (GetRotationType(ItemCtx, &iMinArc, &iMaxArc))
 		{
-		//	Omni
-
-		if (iMinArc == iMaxArc)
+		case rotOmnidirectional:
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("omnidirectional")));
-		else
-			{
+			break;
+
+		case rotSwivel:
 			int iArc = AngleRange(iMinArc, iMaxArc);
 			if (iArc >= 150)
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("hemi-directional")));
 			else
 				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("swivel")));
-			}
+			break;
 		}
 
 	//	These properties are valid either for an ammo-less weapon, or a specific

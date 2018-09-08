@@ -322,6 +322,35 @@ int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
 	return (int)(rValue + 0.5);
 	}
 
+int CItemEnhancementStack::GetFireArc (void) const
+
+//	GetFireArc
+//
+//	Returns the imposed fire arc. -1 = stuck.
+
+	{
+	int i;
+	int iBestFireArc = 0;
+
+	for (i = 0; i < m_Stack.GetCount(); i++)
+		{
+		int iFireArc = m_Stack[i].GetFireArc();
+
+		//	If any element is a disadvantage (stuck turret) then we're stuck.
+
+		if (iFireArc == -1)
+			return -1;
+
+		//	Otherwise, take the best fire arc
+
+		iBestFireArc = Max(iBestFireArc, iFireArc);
+		}
+
+	//	Done
+
+	return iBestFireArc;
+	}
+
 int CItemEnhancementStack::GetManeuverRate (void) const
 
 //	GetManeuverRate

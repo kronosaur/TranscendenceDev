@@ -606,6 +606,27 @@ bool CDeviceClass::FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon, i
 	return true;
 	}
 
+int CDeviceClass::GetFireArc (CItemCtx &Ctx) const
+
+//	GetFireArc
+//
+//	Returns the fire arc for swivel weapons and turrets.
+
+	{
+	int iMinArc, iMaxArc;
+	switch (GetRotationType(Ctx, &iMinArc, &iMaxArc))
+		{
+		case rotOmnidirectional:
+			return 360;
+
+		case rotSwivel:
+			return AngleRange(iMinArc, iMaxArc);
+
+		default:
+			return 0;
+		}
+	}
+
 ItemCategories CDeviceClass::GetItemCategory (DeviceNames iDev)
 
 //	GetItemCategory

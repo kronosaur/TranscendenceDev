@@ -527,10 +527,19 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 	CWeaponClass *pWeapon = pDeviceClass->AsWeaponClass();
 	if (pWeapon)
 		{
-		if (pWeapon->CanRotate(CItemCtx(), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+		switch (pWeapon->GetRotationType(CItemCtx(), &iWeaponMinFireArc, &iWeaponMaxFireArc))
 			{
-			if (iWeaponMinFireArc == iWeaponMaxFireArc)
+			case CDeviceClass::rotOmnidirectional:
 				bWeaponIsOmnidirectional = true;
+				break;
+
+			case CDeviceClass::rotSwivel:
+				break;
+
+			default:
+				iWeaponMinFireArc = -1;
+				iWeaponMaxFireArc = -1;
+				break;
 			}
 		}
 

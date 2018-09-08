@@ -576,15 +576,7 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 		else
 			iDeviceCoverage = 0;
 
-		int iMinFireArc;
-		int iMaxFireArc;
-		int iWeaponCoverage;
-		if (!pWeapon->CanRotate(CItemCtx(), &iMinFireArc, &iMaxFireArc))
-			iWeaponCoverage = 0;
-		else if (iMinFireArc != iMaxFireArc)
-			iWeaponCoverage = ::AngleRange(iMinFireArc, iMaxFireArc);
-		else
-			iWeaponCoverage = 360;
+		int iWeaponCoverage = pWeapon->GetFireArc(CItemCtx());
 
 		if (bCanTrack)
 			iWeaponCoverage = Max(iWeaponCoverage, 180);
