@@ -337,11 +337,18 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 			int iAdj = 100 + ((pShip->GetDestiny() % 60) - 30);
 			m_rBestWeaponRange = m_rBestWeaponRange * (iAdj * 0.01);
+
+			//	If this weapon is not pointed forwards, then remember that 
+			//	because it will affect how we maneuver.
+
+			int iWeaponFacing = m_pBestWeapon->GetRotation();
+			m_fBestWeaponIsBackwards = (iWeaponFacing > 30 && iWeaponFacing < 330);
 			}
 		else
 			{
 			m_iBestWeapon = devNone;
 			m_pBestWeapon = NULL;
+			m_fBestWeaponIsBackwards = false;
 
 			//	If we can't find a good weapon, at least set the weapon range so that we close
 			//	to secondary weapon range.
