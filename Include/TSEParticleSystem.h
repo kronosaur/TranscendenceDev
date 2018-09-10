@@ -347,6 +347,7 @@ class CParticleArray
 		void EmitExhaust (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick, CVector *retvLastSource);
 		void EmitJet (const CParticleSystemDesc &Desc, CSpaceObject *pObj, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
+		void EmitRadiateArc (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 
 		void PaintFireAndSmoke (CG32bitImage &Dest, 

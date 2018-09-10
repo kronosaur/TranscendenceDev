@@ -355,7 +355,10 @@ void CParticleArray::Emit (const CParticleSystemDesc &Desc, CSpaceObject *pObj, 
 
 		case CParticleSystemDesc::styleRadiate:
 		case CParticleSystemDesc::styleWrithe:
-			EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			if (Desc.GetSpreadAngle().IsEmpty())
+				EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+			else
+				EmitRadiateArc(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
 			break;
 
 		case CParticleSystemDesc::styleSpray:
@@ -675,6 +678,56 @@ void CParticleArray::EmitRadiate (const CParticleSystemDesc &Desc, int iCount, c
 		//	Choose a random angle and velocity
 
 		Metric rAngle = 2.0 * PI * (mathRandom(0, 9999) / 10000.0);
+		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
+		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
+
+		//	Lifetime
+
+		int iLifeLeft = Desc.GetParticleLifetime().Roll();
+
+		//	Add the particle
+
+		AddParticle(vSource, vVel, iLifeLeft, AngleToDegrees(rAngle), -1, iTick);
+		}
+	}
+
+void CParticleArray::EmitRadiateArc (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick)
+
+//	EmitRadiateArc
+//
+//	Emits in a circular arc centered on iDirection.
+
+	{
+	//	Calculate the size of the arc (in degrees)
+
+	int iArcAngle = Desc.GetSpreadAngle().Roll();
+	if (iArcAngle <= 0)
+		return;
+	else if (iArcAngle >= 360)
+		return EmitRadiate(Desc, iCount, vSource, vSourceVel, iDirection, iTick);
+
+	Metric rMinAngle = mathDegreesToRadians(AngleMod(iDirection - (iArcAngle / 2)));
+	Metric rRange = mathDegreesToRadians(iArcAngle);
+
+	//	Compute some basic stuff
+
+	const Metric rJitterFactor = LIGHT_SPEED / 100000.0;
+
+	//	Calculate where last tick's particles would be based on the last rotation.
+
+	Metric rAveSpeed = Desc.GetEmitSpeed().GetAveValue() * LIGHT_SPEED / 100.0;
+
+	//	Create particles
+
+	for (int i = 0; i < iCount; i++)
+		{
+		//	Choose a random angle within the arc (no need for mod since we're
+		//	about to convert to Cartessian below).
+
+		Metric rAngle = rMinAngle + (mathRandomDouble() * rRange);
+
+		//	Choose a random velocity
+
 		Metric rSpeed = (Desc.GetEmitSpeed().Roll() * LIGHT_SPEED / 100.0) + rJitterFactor * mathRandom(-500, 500);
 		CVector vVel = Desc.GetXformTime() * (vSourceVel + ::PolarToVectorRadians(rAngle, rSpeed));
 
