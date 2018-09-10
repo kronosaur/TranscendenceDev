@@ -2993,7 +2993,7 @@ CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, 
 //	Returns information about the weapon's rotation.
 //
 //	If the weapon is omnidirectional, then we return rotOmnidirectional and 
-//	retiMinArc and retiMaxArc are undefined.
+//	retiMinArc and retiMaxArc are equal to the fire direction of the device.
 //
 //	If the weapon swivels, then we return rotSwivel and retiMinArc and 
 //	retiMaxArc are defined.
@@ -3030,7 +3030,16 @@ CDeviceClass::DeviceRotationTypes CWeaponClass::GetRotationType (CItemCtx &Ctx, 
 	//	calculations.
 
 	else if (m_bOmnidirectional || (pDevice && pDevice->IsOmniDirectional()) || iEnhancedFireArc == 360)
+		{
+		if (retiMinArc && retiMaxArc)
+			{
+			int iFireAngle = AngleMiddle(iDeviceMinFireArc, iDeviceMaxFireArc);
+			*retiMinArc = iFireAngle;
+			*retiMaxArc = iFireAngle;
+			}
+
 		return rotOmnidirectional;
+		}
 
 	//	If we're fixed then we're done
 
