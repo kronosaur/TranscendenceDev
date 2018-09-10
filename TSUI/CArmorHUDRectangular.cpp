@@ -373,7 +373,7 @@ void CArmorHUDRectangular::PaintHealerLevel (SHUDPaintCtx &Ctx, CShip *pShip)
 	//	Healer applies to all sections, so we need to do this. This function
 	//	works even if the ship has no sections.
 
-	if (Ctx.SectionInfo.GetCount() == 0)
+	if (pShip->HasAttachedSections() && Ctx.SectionInfo.GetCount() == 0)
 		pShip->GetAttachedSectionInfo(Ctx.SectionInfo);
 
 	//	Add up the max HP

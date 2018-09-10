@@ -157,7 +157,7 @@ struct SCompartmentDesc
 	CString sName;							//	User-visible name (e.g., "bridge")
 	CShipClassRef Class;					//	For attached sections
 	ECompartmentTypes iType;				//	Type of compartment
-	int iMaxHP;								//	Initial HP
+	int iMaxHP;								//	Initial HP (always 0 for attached)
 	RECT rcPos;								//	Position and size relative to image
 
 	CString sAttachID;						//	ID of compartment we're attached to (NULL = root object)
@@ -212,6 +212,7 @@ class CShipInterior
 		void OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInteriorDesc &Desc);
 		void OnPlace (CShip *pShip, const CVector &vOldPos);
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
+		bool RepairHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iRepairHP);
 		inline void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
 		void SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iHP);
 		void WriteToStream (CShip *pShip, IWriteStream *pStream);
@@ -224,7 +225,7 @@ class CShipInterior
 					pAttached(NULL)
 				{ }
 
-			int iHP;						//	HP left
+			int iHP;						//	HP left (always 0 for attached)
 			CSpaceObject *pAttached;		//	May be NULL
 
 			//	Temporaries

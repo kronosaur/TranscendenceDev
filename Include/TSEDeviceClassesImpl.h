@@ -349,9 +349,13 @@ class CRepairerClass : public CDeviceClass
 		CRepairerClass (void);
 
 		void CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSegment, int iTick, int *retiHP, int *retiPower);
+		bool RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
+		bool RepairShipAttachedSections (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
+		bool RepairShipInterior (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx);
 
 		TArray<CRegenDesc> m_Repair;			//	Repair descriptor (by level)
-		int m_iPowerUse;						//	Power used for each hp of repair
+		CRegenDesc m_CompartmentRepair;			//	Repair compartments
+		int m_iPowerUse;						//	Power used while repairing
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 	};

@@ -4,7 +4,7 @@
 
 #include "PreComp.h"
 
-
+#define COMPARTMENT_REGEN_ATTRIB	CONSTLIT("compartmentRegen")
 #define POWER_USE_ATTRIB			CONSTLIT("powerUse")
 #define REPAIR_CYCLE_ATTRIB			CONSTLIT("repairCycle")
 #define REGEN_ATTRIB				CONSTLIT("regen")
@@ -163,11 +163,109 @@ ALERROR CRepairerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 			pRegen->InitFromRepairRateString(Ctx, List[i], REPAIR_CYCLE_TIME);
 		}
 
+	//	Compartment repair
+
+	CString sAttrib;
+	if (pDesc->FindAttribute(COMPARTMENT_REGEN_ATTRIB, &sAttrib))
+		{
+		if (error = pDevice->m_CompartmentRepair.InitFromRegenString(Ctx, sAttrib, REPAIR_CYCLE_TIME))
+			return error;
+		}
+
 	//	Done
 
 	*retpDevice = pDevice;
 
 	return NOERROR;
+	}
+
+bool CRepairerClass::RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+
+//	RepairShipArmor
+//
+//	Repairs armor for the ship and sets power consumption. We return TRUE if armor
+//	is damaged (whether or not it was repaired this tick).
+
+	{
+	bool bNeedsRepair = false;
+	int iTotalPower = 0;
+
+	for (int i = 0; i < pShip->GetArmorSectionCount(); i++)
+		{
+		if (pShip->IsArmorDamaged(i))
+			{
+			int iHP;
+			int iPowerPerSegment;
+
+			CalcRegen(pDevice, pShip, i, Ctx.iTick, &iHP, &iPowerPerSegment);
+
+			//	Repair armor
+
+			if (iHP)
+				pShip->RepairArmor(i, iHP);
+
+			//	Add to consumption
+
+			iTotalPower += iPowerPerSegment;
+			bNeedsRepair = true;
+			}
+		}
+
+	//	Store the power consumption on the device itself. We will keep on
+	//	consuming this amount of power per tick until we update again.
+
+	pDevice->SetData(iTotalPower);
+
+	//	Done
+
+	return bNeedsRepair;
+	}
+
+bool CRepairerClass::RepairShipAttachedSections (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+
+//	RepairShipAttachedSections
+//
+//	Repairs attached sections. Returns TRUE if at least one section needs repairs.
+
+	{
+	TArray<CShip::SAttachedSectionInfo> Sections;
+	pShip->GetAttachedSectionInfo(Sections);
+
+	for (int i = 0; i < Sections.GetCount(); i++)
+		{
+		//	The first section is the ship itself
+
+		if (Sections[i].pObj == pShip)
+			continue;
+
+		//	Repair this section; if we repaired it, then we're done (we only
+		//	repair one section at a time).
+
+		CShip *pSection = Sections[i].pObj->AsShip();
+		if (pSection == NULL)
+			continue;
+
+		if (RepairShipArmor(pDevice, pSection, Ctx))
+			return true;
+		}
+
+	//	Nothing repaired
+
+	return false;
+	}
+
+bool CRepairerClass::RepairShipInterior (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
+
+//	RepairShipInterior
+//
+//	Repair the ship interior. Returns TRUE if we repaired at least one hp.
+
+	{
+	bool bRepairsNeeded = pShip->RepairInterior(m_CompartmentRepair.GetRegen(Ctx.iTick, REPAIR_CYCLE_TIME));
+	int iPowerUsed = (bRepairsNeeded ? m_iPowerUse : 0);
+	pDevice->SetData(iPowerUsed);
+
+	return bRepairsNeeded;
 	}
 
 void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)
@@ -179,47 +277,34 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 	{
 	DEBUG_TRY
 
-	int i;
+	//	Short-circuit various cases
 
 	CShip *pShip = pSource->AsShip();
-	if ((Ctx.iTick % REPAIR_CYCLE_TIME) == 0 && pShip)
-		{
-		int iTotalPower = 0;
+	if (pShip == NULL
+			|| (Ctx.iTick % REPAIR_CYCLE_TIME) != 0
+			|| !pDevice->IsEnabled() 
+			|| pDevice->IsDamaged()
+			|| pDevice->IsDisrupted())
+		return;
 
-		//	If the repairer is enabled, attempt to repair armor. We compute the 
-		//	total power consumed (per tick).
+	//	Repair interior compartments first
 
-		if (pDevice->IsEnabled() 
-				&& !pDevice->IsDamaged()
-				&& !pDevice->IsDisrupted())
-			{
-			for (i = 0; i < pShip->GetArmorSectionCount(); i++)
-				{
-				if (pShip->IsArmorDamaged(i))
-					{
-					int iHP;
-					int iPowerPerSegment;
+	if (!m_CompartmentRepair.IsEmpty() && pShip->IsMultiHull() && RepairShipInterior(pDevice, pShip, Ctx))
+		return;
 
-					CalcRegen(pDevice, pShip, i, Ctx.iTick, &iHP, &iPowerPerSegment);
+	//	Armor is repaired next, if necessary
 
-					//	Repair armor
+	if (RepairShipArmor(pDevice, pShip, Ctx))
+		return;
 
-					if (iHP)
-						pShip->RepairArmor(i, iHP);
+	//	Otherwise, if we have attached objects, try to repair those.
 
-					//	Add to consumption
+	if (pShip->HasAttachedSections() && RepairShipAttachedSections(pDevice, pShip, Ctx))
+		return;
 
-					iTotalPower += iPowerPerSegment;
-					}
-				}
-			}
+	//	Finally, see if we repair interior compartments
 
-		//	Store the power consumption on the device itself. We will keep on
-		//	consuming this amount of power per tick until we update again.
-
-		pDevice->SetData(iTotalPower);
-		}
-
+		
 	DEBUG_CATCH
 	}
 

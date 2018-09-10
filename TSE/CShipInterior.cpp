@@ -617,6 +617,50 @@ void CShipInterior::ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc,
 		}
 	}
 
+bool CShipInterior::RepairHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iRepairHP)
+
+//	RepairHitPoints
+//
+//	Repairs up to iRepairHP hit points. We return TRUE if we needed to be 
+//	repaired (regardless of the value if iRepairHP).
+
+	{
+	int i;
+
+	//	First compute the current and maximum hit points.
+
+	int iHP = 0;
+	int iMaxHP = 0;
+	for (i = 0; i < m_Compartments.GetCount(); i++)
+		{
+		iHP += m_Compartments[i].iHP;
+		iMaxHP += Desc.GetCompartment(i).iMaxHP;
+		}
+
+	//	If no HP, then we're done
+
+	if (iMaxHP <= iHP)
+		return false;
+
+	//	Adjust repair HP so we don't overshoot.
+
+	iRepairHP = Min(iRepairHP, iMaxHP - iHP);
+
+	//	Short-circuit, but we return TRUE to indicate that we need to repair
+	//	damage.
+
+	if (iRepairHP == 0)
+		return true;
+
+	//	Set HP to new value
+
+	SetHitPoints(pShip, Desc, iHP + iRepairHP);
+
+	//	Done
+
+	return true;
+	}
+
 void CShipInterior::SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iHP)
 
 //	SetHitPoints

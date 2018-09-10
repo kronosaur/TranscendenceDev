@@ -968,6 +968,7 @@ class CShip : public CSpaceObject
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
 		inline bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
 		inline bool IsShipSection (void) const { return m_fShipCompartment; }
+		inline bool RepairInterior (int iRepairHP) { return m_Interior.RepairHitPoints(this, m_pClass->GetInteriorDesc(), iRepairHP); }
 		void SetAsShipSection (CShip *pMain);
 
 		//	Device methods
