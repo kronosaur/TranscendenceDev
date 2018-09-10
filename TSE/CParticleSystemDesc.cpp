@@ -80,8 +80,14 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	ALERROR error;
 
 	DWORD dwID;
-	if (CEffectParamDesc::FindIdentifier(pDesc->GetAttribute(STYLE_ATTRIB), STYLE_TABLE, &dwID))
+	CString sAttrib = pDesc->GetAttribute(STYLE_ATTRIB);
+	if (CEffectParamDesc::FindIdentifier(sAttrib, STYLE_TABLE, &dwID))
 		m_iStyle = (EStyles)dwID;
+	else if (!sAttrib.IsBlank())
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid style: %s"), sAttrib);
+		return ERR_FAIL;
+		}
 
 	if (error = m_EmitRate.LoadFromXML(pDesc->GetAttribute(EMIT_RATE_ATTRIB)))
 		{
@@ -136,9 +142,37 @@ ALERROR CParticleSystemDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID)
 
 //	InitFromWeaponDescXML
+//
+//	For backwards compatibility, we allow loading from a weapon descriptor
+
+	{
+	ALERROR error;
+
+	if (error = InitFromXML(Ctx, pDesc, sUNID))
+		return error;
+
+	//	For weapon descriptors we cannot use styleJet, so we convert to 
+	//	styleSpray.
+
+	if (m_iStyle == styleJet)
+		{
+		if (g_pUniverse->InDebugMode())
+			::kernelDebugLogPattern("%s: style='jet' is not valid for weapons; using style='spray' instead.", sUNID);
+
+		m_iStyle = styleSpray;
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CParticleSystemDesc::InitFromWeaponDescXMLCompatible (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+
+//	InitFromWeaponDescXMLCompatible
 //
 //	For backwards compatibility, we allow loading from a weapon descriptor
 

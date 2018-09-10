@@ -143,7 +143,8 @@ class CParticleSystemDesc
 		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_pParticleEffect.GetUNID(), true); }
 		inline ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pParticleEffect.Bind(Ctx); }
 		inline IEffectPainter *CreateParticlePainter (CCreatePainterCtx &Ctx) { return m_pParticleEffect.CreatePainter(Ctx); }
-		ALERROR InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
+		ALERROR InitFromWeaponDescXMLCompatible (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		inline Metric GetCohesionFactor (void) const { return m_rCohesionFactor; }
 		inline int GetCohesionPotential (void) const { return mathRound(m_rCohesionFactor * 100.0); }

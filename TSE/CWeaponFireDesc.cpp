@@ -1942,7 +1942,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			CXMLElement *pParticleSystem = pDesc->GetContentElementByTag(PARTICLE_SYSTEM_TAG);
 			if (pParticleSystem)
 				{
-				if (error = m_pParticleDesc->InitFromXML(Ctx, pParticleSystem, m_sUNID))
+				if (error = m_pParticleDesc->InitFromWeaponDescXML(Ctx, pParticleSystem, m_sUNID))
 					return error;
 
 				//	We take certain values from the particle system.
@@ -1958,7 +1958,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 			else
 				{
-				if (error = m_pParticleDesc->InitFromWeaponDescXML(Ctx, pDesc))
+				if (error = m_pParticleDesc->InitFromWeaponDescXMLCompatible(Ctx, pDesc))
 					return error;
 
 				//	In this case we honor settings from pDesc, since we're in 
