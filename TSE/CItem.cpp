@@ -1143,6 +1143,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(NULL);
 		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())

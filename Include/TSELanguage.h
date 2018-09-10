@@ -96,6 +96,7 @@ class CLanguage
 		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static bool FindGenderedWord (const CString &sWord, GenomeTypes iGender, CString *retsResult = NULL);
+		static ICCItemPtr GetNounFlags (DWORD dwFlags);
 		static DWORD LoadNameFlags (CXMLElement *pDesc);
 		static void ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers);
 		static void ParseLabelDesc (const CString &sLabelDesc, CString *retsLabel, CString *retsKey = NULL, int *retiKey = NULL, TArray<ELabelAttribs> *retAttribs = NULL);
