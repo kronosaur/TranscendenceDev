@@ -967,6 +967,11 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 		else if (m_pItemType->IsMissile() && (pDevice = m_pItemType->GetAmmoLauncher()))
 			pDevice->AccumulateAttributes(Ctx, *this, retList);
 
+		//	Useable attribute
+
+		if (m_pItemType->GetUseDesc())
+			retList->Insert(SDisplayAttribute(attribNeutral, CONSTLIT("useable")));
+
 		//	Add custom attributes
 
 		AccumulateCustomAttributes(Ctx, retList, pData);

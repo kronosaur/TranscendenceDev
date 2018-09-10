@@ -122,7 +122,7 @@ class CItemType : public CDesignType
 		CString GetSortName (void) const;
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
-		bool GetUseDesc (SUseDesc *retDesc) const;
+		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
         inline int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
 		inline int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
         CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
