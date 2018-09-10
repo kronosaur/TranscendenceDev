@@ -3296,7 +3296,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'extension        UNID of extension where type is defined\n"
 			"   'mapDescription   Type description used for map labels\n"
 			"   'merged           True if type inherits from another type\n"
-			"   'namePattern\n\n"
+			"   'namePattern\n"
+			"   'obsoleteVersion  Type is obsolete at this API version\n\n"
 
 			"property (sovereign):\n\n"
 

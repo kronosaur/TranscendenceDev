@@ -250,7 +250,7 @@ bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 	if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase();
 	else
-		return false;
+		return CDesignType::FindDataField(sField, retsValue);
 
 	return true;
 	}

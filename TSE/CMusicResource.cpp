@@ -23,7 +23,7 @@ bool CMusicResource::FindDataField (const CString &sField, CString *retsValue) c
 //	Returns a data field
 
 	{
-	return false;
+	return CDesignType::FindDataField(sField, retsValue);
 	}
 
 int CMusicResource::FindSegment (int iPos)

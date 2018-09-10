@@ -97,7 +97,7 @@ bool CEconomyType::FindDataField (const CString &sField, CString *retsValue) con
 	if (strEquals(sField, FIELD_NAME))
 		*retsValue = m_sCurrencySingular;
 	else
-		return false;
+		return CDesignType::FindDataField(sField, retsValue);
 
 	return true;
 	}

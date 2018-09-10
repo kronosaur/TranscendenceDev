@@ -1305,7 +1305,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		//	Figure out the minimum API version for all extensions being used.
 
-		DWORD dwAPIVersion = API_VERSION;
+		DWORD dwAPIVersion = Ctx.dwMinAPIVersion;
 		for (i = 0; i < BindOrder.GetCount(); i++)
 			{
 			if (BindOrder[i]->GetAPIVersion() < dwAPIVersion)

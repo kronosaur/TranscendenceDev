@@ -52,7 +52,7 @@ bool CMissionType::FindDataField (const CString &sField, CString *retsValue) con
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = m_sName;
 	else
-		return false;
+		return CDesignType::FindDataField(sField, retsValue);
 
 	return true;
 	}

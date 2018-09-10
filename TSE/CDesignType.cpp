@@ -100,6 +100,7 @@
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MERGED							CONSTLIT("merged")
+#define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
@@ -600,6 +601,9 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
     else if (strEquals(sProperty, PROPERTY_MERGED))
         return CC.CreateBool(m_bIsMerged);
+
+	else if (strEquals(sProperty, PROPERTY_OBSOLETE_VERSION))
+		return (m_dwObsoleteVersion > 0 ? CC.CreateInteger(m_dwObsoleteVersion) : CC.CreateNil());
 
     else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
 		{

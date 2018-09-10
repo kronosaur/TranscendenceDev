@@ -152,7 +152,7 @@ bool CObjectImage::FindDataField (const CString &sField, CString *retsValue) con
 				pImage->GetHeight());
 		}
 	else
-		return false;
+		return CDesignType::FindDataField(sField, retsValue);
 
 	return true;
 	}

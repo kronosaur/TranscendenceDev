@@ -187,49 +187,34 @@ class CUniverse
 
 		struct SInitDesc
 			{
-			SInitDesc (void) :
-					pHost(NULL),
-					bInLoadGame(false),
-					bNoResources(false),
-					bNoReload(false),
-					bDebugMode(false),
-					bDefaultExtensions(false),
-					bForceTDB(false),
-                    bNoCollectionLoad(false),
-					bNoCollectionCheck(false),
-					bForceCompatibilityLibrary(false),
-					bRecoverAdventureError(false),
-					pAdventure(NULL),
-					dwAdventure(0)
-				{ }
-
-			IHost *pHost;					//	Host
+			IHost *pHost = NULL;						//	Host
 			TArray<SPrimitiveDefTable> CCPrimitives;	//	Additional primitives to define
-			CString sFilespec;				//	Filespec of main TDB/XML file.
-			CString sSourceFilespec;		//	Filespec of main source XML file (for debugging).
-			CString sCollectionFolder;		//	If non-blank, use this as Collection folder (and remember it)
-			TArray<CString> ExtensionFolders;	//	Add these as extension folders.
-			TSortMap<DWORD, bool> TypesUsed;//	List of types used (bind these, even if obsolete).
+			CString sFilespec;							//	Filespec of main TDB/XML file.
+			CString sSourceFilespec;					//	Filespec of main source XML file (for debugging).
+			CString sCollectionFolder;					//	If non-blank, use this as Collection folder (and remember it)
+			TArray<CString> ExtensionFolders;			//	Add these as extension folders.
+			TSortMap<DWORD, bool> TypesUsed;			//	List of types used (bind these, even if obsolete).
+			DWORD dwMinAPIVersion = API_VERSION;		//	Min API version (for compatibility)
 
 			//	Options
 
-			bool bInLoadGame;				//	We're loading a game, which means don't reset dynamic types
-			bool bNoResources;				//	If TRUE, do not bother loaded images
-			bool bNoReload;					//	If TRUE, do not reload extensions
-			bool bDebugMode;				//	Initialize in debug mode
-			bool bDefaultExtensions;		//	If TRUE, we include all appropriate extensions
-			bool bForceTDB;					//	If TRUE, use Transcendence.tdb even if XMLs exist
-			bool bNoCollectionLoad;         //  If TRUE, don't load collection (only in debug mode)
-			bool bNoCollectionCheck;		//  If TRUE, don't check collection digests
-			bool bForceCompatibilityLibrary;//	If TRUE, force include of Compatibility Library
-			bool bRecoverAdventureError;	//	If TRUE, we try to recover if given adventure not found
+			bool bInLoadGame = false;					//	We're loading a game, which means don't reset dynamic types
+			bool bNoResources = false;					//	If TRUE, do not bother loaded images
+			bool bNoReload = false;						//	If TRUE, do not reload extensions
+			bool bDebugMode = false;					//	Initialize in debug mode
+			bool bDefaultExtensions = false;			//	If TRUE, we include all appropriate extensions
+			bool bForceTDB = false;						//	If TRUE, use Transcendence.tdb even if XMLs exist
+			bool bNoCollectionLoad = false;				//  If TRUE, don't load collection (only in debug mode)
+			bool bNoCollectionCheck = false;			//  If TRUE, don't check collection digests
+			bool bForceCompatibilityLibrary = false;	//	If TRUE, force include of Compatibility Library
+			bool bRecoverAdventureError = false;		//	If TRUE, we try to recover if given adventure not found
 
 			//	Adventure to bind to (choose one, in order)
 
-			CExtension *pAdventure;			//	If not NULL, bind to this adventure
-			DWORD dwAdventure;				//	It not 0, bind to this adventure
-			CString sAdventureFilespec;		//	If not empty, bind to this adventure
-			TArray<DWORD> ExtensionUNIDs;	//	Extensions to use
+			CExtension *pAdventure = NULL;				//	If not NULL, bind to this adventure
+			DWORD dwAdventure = 0;						//	It not 0, bind to this adventure
+			CString sAdventureFilespec;					//	If not empty, bind to this adventure
+			TArray<DWORD> ExtensionUNIDs;				//	Extensions to use
 
 			//	Extension list
 
