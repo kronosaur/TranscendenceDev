@@ -387,7 +387,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 	Metric rAimRange = (GetFireRangeAdj() * rPrimaryRange) / (100.0 + ((pShip->GetDestiny() % 8) + 4));
 	if (rAimRange < 1.5 * MIN_TARGET_DIST)
 		rAimRange = 1.5 * MIN_TARGET_DIST;
-	m_rPrimaryAimRange2 = 4.0 * rAimRange * rAimRange;
+	m_rPrimaryAimRange2 = rAimRange * rAimRange;
 
 	//	Compute the minimum flanking distance. If we're very maneuverable,
 	//	can get in closer because we can turn faster to adjust for the target's
