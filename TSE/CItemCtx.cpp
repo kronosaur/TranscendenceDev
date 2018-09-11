@@ -212,7 +212,7 @@ TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 	return m_pEnhancements;
 	}
 
-const CItem &CItemCtx::GetItem(void)
+const CItem &CItemCtx::GetItem (void)
 
 //	GetItem
 //

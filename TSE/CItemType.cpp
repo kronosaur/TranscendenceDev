@@ -1617,8 +1617,16 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			}
 		else if (strEquals(pSubDesc->GetTag(), SHIELD_CLASS_TAG))
 			{
-			if (error = CShieldClass::CreateFromXML(Ctx, pSubDesc, this, &m_pDevice))
+			CShieldClass::SInitCtx InitCtx;
+			InitCtx.pType = this;
+
+			if (error = CShieldClass::CreateFromXML(Ctx, InitCtx, pSubDesc, &m_pDevice))
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unable to load %s: %s"), pSubDesc->GetTag(), Ctx.sError));
+
+			//	For backwards compatibility, CShieldClass can set our max charges.
+
+			if (InitCtx.iMaxCharges != -1)
+				m_iMaxCharges = InitCtx.iMaxCharges;
 			}
 		else if (strEquals(pSubDesc->GetTag(), DRIVE_CLASS_TAG))
 			{

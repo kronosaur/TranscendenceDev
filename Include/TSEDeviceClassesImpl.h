@@ -410,7 +410,14 @@ class CShieldClass : public CDeviceClass
 			int iPower;									//	Power (in tenths of MWs)
 			};
 
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CDeviceClass **retpShield);
+		struct SInitCtx
+			{
+			CItemType *pType = NULL;
+
+			int iMaxCharges = -1;			//	CreateFromXML may set this to affect its CItemType
+			};
+
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXMLElement *pDesc, CDeviceClass **retpShield);
 
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		inline bool FindEventHandlerShieldClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const
@@ -498,7 +505,6 @@ class CShieldClass : public CDeviceClass
 		DamageTypeSet m_WeaponSuppress;			//	Types of weapons suppressed
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 
-		int m_iMaxCharges;						//	Max charges
 		int m_iExtraHPPerCharge;				//	Extra HP for each point of charge
 		int m_iExtraPowerPerCharge;				//	Extra power use for each point of charge (1/10 megawatt)
 		int m_iExtraRegenPerCharge;				//	Extra regen/180 ticks per point of charge

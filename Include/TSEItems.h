@@ -352,6 +352,7 @@ class CItem
         inline int GetLevel (void) const;
 		inline Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
+		int GetMaxCharges (void) const;
 		inline const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
 		static const CItemEnhancement &GetNullMod (void) { return m_NullMod; }

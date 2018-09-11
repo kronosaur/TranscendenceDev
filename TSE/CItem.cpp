@@ -1124,6 +1124,16 @@ int CItem::GetMassKg (void) const
 	return m_pItemType->GetMassKg(CItemCtx(*this));
 	}
 
+int CItem::GetMaxCharges (void) const
+
+//	GetMaxCharges
+//
+//	Returns the maximum charges for the item.
+
+	{
+	return (m_pItemType ? m_pItemType->GetMaxCharges() : 0);
+	}
+
 CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 //	GetNounPhrase
