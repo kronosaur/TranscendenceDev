@@ -860,51 +860,38 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 		{
 		CCodeChainCtx Ctx;
 		Ctx.DefineContainingType(this);
+
 		//	Run code
 		
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
+
+		//	Interpret result
+
 		if (pResult->IsError())
 			ReportEventError(GET_GLOBAL_ACHIEVEMENTS_EVENT, pResult);
+
 		else if (pResult->IsNil())
 			;
-		else if (pResult->IsList())
+
+		else if (pResult->IsSymbolTable())
+			Stats.Insert(this, pResult);
+
+		else if (pResult->IsList() && pResult->GetCount() > 0)
 			{
 			//	If we have a list of lists, then we have 
 			//	a list of achievements
 
-			if (pResult->GetCount() > 0 && pResult->GetElement(0)->IsList())
+			if (pResult->GetElement(0)->IsList() || pResult->GetElement(0)->IsSymbolTable())
 				{
 				for (i = 0; i < pResult->GetCount(); i++)
-					{
-					ICCItem *pAchievement = pResult->GetElement(i);
-					if (pAchievement->GetCount() > 0)
-						{
-						CString sName = pAchievement->GetElement(0)->GetStringValue();
-						CString sValue = ParseAchievementValue(pAchievement->GetElement(1));
-						CString sSection = ParseAchievementSection(pAchievement->GetElement(2));
-						CString sSort = ParseAchievementSort(pAchievement->GetElement(3));
-
-						if (!sName.IsBlank())
-							Stats.Insert(sName, sValue, sSection, sSort);
-						}
-					}
+					Stats.Insert(this, pResult->GetElement(i));
 				}
 
 			//	Otherwise, we have a single achievement
 
-			else if (pResult->GetCount() > 0)
-				{
-				CString sName = pResult->GetElement(0)->GetStringValue();
-				CString sValue = ParseAchievementValue(pResult->GetElement(1));
-				CString sSection = ParseAchievementSection(pResult->GetElement(2));
-				CString sSort = ParseAchievementSort(pResult->GetElement(3));
-
-				if (!sName.IsBlank())
-					Stats.Insert(sName, sValue, sSection, sSort);
-				}
+			else
+				Stats.Insert(this, pResult);
 			}
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -3145,38 +3132,3 @@ void CEffectCreatorRef::Set (CEffectCreator *pEffect)
 		m_dwUNID = 0;
 	}
 
-//	Utility -------------------------------------------------------------------
-
-CString ParseAchievementSection (ICCItem *pItem)
-	{
-	if (pItem == NULL)
-		return NULL_STR;
-	else if (pItem->IsNil())
-		return NULL_STR;
-	else
-		return pItem->GetStringValue();
-	}
-
-CString ParseAchievementSort (ICCItem *pItem)
-	{
-	if (pItem == NULL)
-		return NULL_STR;
-	else if (pItem->IsNil())
-		return NULL_STR;
-	else if (pItem->IsInteger())
-		return strPatternSubst(CONSTLIT("%08x"), pItem->GetIntegerValue());
-	else
-		return pItem->GetStringValue();
-	}
-
-CString ParseAchievementValue (ICCItem *pItem)
-	{
-	if (pItem == NULL)
-		return NULL_STR;
-	else if (pItem->IsNil())
-		return NULL_STR;
-	else if (pItem->IsInteger())
-		return strFormatInteger(pItem->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED);
-	else
-		return pItem->GetStringValue();
-	}

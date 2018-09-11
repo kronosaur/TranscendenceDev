@@ -6,6 +6,14 @@
 
 const DWORD GAME_STAT_VERSION =				1;
 
+#define FIELD_DESC								CONSTLIT("desc")
+#define FIELD_DESC_ID							CONSTLIT("descID")
+#define FIELD_SECTION							CONSTLIT("section")
+#define FIELD_SECTION_ID						CONSTLIT("sectionID")
+#define FIELD_SORT								CONSTLIT("sort")
+#define FIELD_VALUE								CONSTLIT("value")
+#define FIELD_VALUE_ID							CONSTLIT("valueID")
+
 void CGameStats::GetEntry (int iIndex, CString *retsStatName, CString *retsStatValue, CString *retsSection) const
 
 //	GetEntry
@@ -32,6 +40,68 @@ void CGameStats::GetEntry (int iIndex, CString *retsStatName, CString *retsStatV
 			*retsSection = CString(pStart, pPos - pStart);
 		else
 			*retsSection = NULL_STR;
+		}
+	}
+
+CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, const CString &sTextField, ICCItem *pEntry)
+
+//	GetTextValue
+//
+//	Looks for sIDField in pEntry; if found, we lookup the language element in 
+//	pType. Otherwise, we get the value of the sTextField in pEntry.
+
+	{
+	//	If we have an ID to a language entry, use that.
+
+	ICCItem *pItem = pEntry->GetElement(sIDField);
+	if (pItem && !pItem->IsNil())
+		{
+		CString sText;
+		if (!pType->TranslateText(NULL, pItem->GetStringValue(), NULL, &sText))
+			return NULL_STR;
+
+		return sText;
+		}
+
+	//	Otherwise, we expect the text to be in a field.
+
+	pItem = pEntry->GetElement(sTextField);
+	if (pItem == NULL || pItem->IsNil())
+		return NULL_STR;
+	else if (pItem->IsInteger())
+		return strFormatInteger(pItem->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED);
+	else
+		return pItem->GetStringValue();
+	}
+
+void CGameStats::Insert (CDesignType *pType, ICCItem *pAchievement)
+
+//	Insert
+//
+//	Insert a ICCItem stat
+
+	{
+	if (pAchievement == NULL || pAchievement->IsNil())
+		;
+	else if (pAchievement->IsSymbolTable())
+		{
+		CString sName = GetTextValue(pType, FIELD_DESC_ID, FIELD_DESC, pAchievement);
+		CString sValue = GetTextValue(pType, FIELD_VALUE_ID, FIELD_VALUE, pAchievement);
+		CString sSection = GetTextValue(pType, FIELD_SECTION_ID, FIELD_SECTION, pAchievement);
+		CString sSort = ParseAchievementSort(pAchievement->GetElement(FIELD_SORT));
+
+		if (!sName.IsBlank())
+			Insert(sName, sValue, sSection, sSort);
+		}
+	else if (pAchievement->GetCount() > 0)
+		{
+		CString sName = pAchievement->GetElement(0)->GetStringValue();
+		CString sValue = ParseAchievementValue(pAchievement->GetElement(1));
+		CString sSection = ParseAchievementSection(pAchievement->GetElement(2));
+		CString sSort = ParseAchievementSort(pAchievement->GetElement(3));
+
+		if (!sName.IsBlank())
+			Insert(sName, sValue, sSection, sSort);
 		}
 	}
 
@@ -92,7 +162,41 @@ ALERROR CGameStats::LoadFromStream (IReadStream *pStream)
 	return NOERROR;
 	}
 
-void CGameStats::ParseSortKey (const CString &sSortKey, CString *retsSection, CString *retsSectionSortKey) const
+CString CGameStats::ParseAchievementSection (ICCItem *pItem)
+	{
+	if (pItem == NULL)
+		return NULL_STR;
+	else if (pItem->IsNil())
+		return NULL_STR;
+	else
+		return pItem->GetStringValue();
+	}
+
+CString CGameStats::ParseAchievementSort (ICCItem *pItem)
+	{
+	if (pItem == NULL)
+		return NULL_STR;
+	else if (pItem->IsNil())
+		return NULL_STR;
+	else if (pItem->IsInteger())
+		return strPatternSubst(CONSTLIT("%08x"), pItem->GetIntegerValue());
+	else
+		return pItem->GetStringValue();
+	}
+
+CString CGameStats::ParseAchievementValue (ICCItem *pItem)
+	{
+	if (pItem == NULL)
+		return NULL_STR;
+	else if (pItem->IsNil())
+		return NULL_STR;
+	else if (pItem->IsInteger())
+		return strFormatInteger(pItem->GetIntegerValue(), -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED);
+	else
+		return pItem->GetStringValue();
+	}
+	
+void CGameStats::ParseSortKey (const CString &sSortKey, CString *retsSection, CString *retsSectionSortKey)
 
 //	ParseSortKey
 //

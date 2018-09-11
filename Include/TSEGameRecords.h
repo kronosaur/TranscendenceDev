@@ -108,6 +108,7 @@ class CGameStats
 		inline int GetCount (void) const { return m_Stats.GetCount(); }
 		inline const CString &GetDefaultSectionName (void) const { return m_sDefaultSectionName; }
 		void GetEntry (int iIndex, CString *retsStatName, CString *retsStatValue, CString *retsSection) const;
+		void Insert (CDesignType *pType, ICCItem *pAchievement);
 		void Insert (const CString &sStatName, const CString &sStatValue = NULL_STR, const CString &sSection = NULL_STR, const CString &sSortKey = NULL_STR);
 		ALERROR LoadFromStream (IReadStream *pStream);
 		void SaveToJSON (CJSONValue *retOutput) const;
@@ -129,7 +130,11 @@ class CGameStats
 			CString sStatValue;
 			};
 
-		void ParseSortKey (const CString &sSortKey, CString *retsSection, CString *retsSectionSortKey) const;
+		static CString GetTextValue (CDesignType *pType, const CString &sIDField, const CString &sTextField, ICCItem *pEntry);
+		static CString ParseAchievementSection (ICCItem *pItem);
+		static CString ParseAchievementSort (ICCItem *pItem);
+		static CString ParseAchievementValue (ICCItem *pItem);
+		static void ParseSortKey (const CString &sSortKey, CString *retsSection, CString *retsSectionSortKey);
 
 		TArray<SStat> m_Stats;
 		CString m_sDefaultSectionName;
