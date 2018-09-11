@@ -573,8 +573,8 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 
 	//	Fire on the target as best we can
 
-	int iFireDir;
-	ImplementFireWeaponOnTarget(pShip, -1, -1, pTarget, vTarget, rTargetDist2, &iFireDir, bDoNotShoot);
+	int iDesiredFacingDir;
+	ImplementFireWeaponOnTarget(pShip, -1, -1, pTarget, vTarget, rTargetDist2, &iDesiredFacingDir, bDoNotShoot);
 
 #ifdef DEBUG_ATTACK_TARGET
 	pShip->SetDebugVector(CVector());
@@ -613,31 +613,38 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 		//	ignore the fire solution because we've already maneuvered
 
 		if (ImplementAttackTargetManeuver(pShip, pTarget, vTarget, rTargetDist2))
-			iFireDir = -1;
+			iDesiredFacingDir = -1;
 		}
 
 	//	Turn towards fire solution, if we have one
 
-	if (iFireDir != -1
+	if (iDesiredFacingDir != -1
 			&& !NoDogfights())
 		{
 		bool bThrustWhileAim = false;
-		int iFacingAngle = pShip->GetRotation();
+		int iCurrentFacingDir = pShip->GetRotation();
+
+		//	If we're roughly facing the target and not too close,
+		//	then thrust while we aim
 
 		if (rTargetDist2 > GetPrimaryAimRange2() / 9)
 			{
-			if (AreAnglesAligned(iFireDir, iFacingAngle, 30))
+			if (AreAnglesAligned(VectorToPolar(vTarget), iCurrentFacingDir, 30))
 				bThrustWhileAim = true;
 			}
+
+		//	If we're close to the target, thrust if it will
+		//	decrease our relative velocity
+
 		else 
 			{
 			CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
 			if (vTargetVel.Length() > pShip->GetMaxSpeed() / 3
-					&& AreAnglesAligned(VectorToPolar(vTargetVel), iFacingAngle, 30))
+					&& AreAnglesAligned(VectorToPolar(vTargetVel), iCurrentFacingDir, 30))
 				bThrustWhileAim = true;
 			}
 
-		ImplementManeuver(pShip, iFireDir, bThrustWhileAim);
+		ImplementManeuver(pShip, iDesiredFacingDir, bThrustWhileAim);
 		}
 
 	DEBUG_CATCH
