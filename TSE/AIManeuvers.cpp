@@ -622,32 +622,20 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 			&& !NoDogfights())
 		{
 		bool bThrustWhileAim = false;
+		int iFacingAngle = pShip->GetRotation();
 
-		//	If we're roughly aligned with the target, then thrust while we
-		//	maneuver.
-		//
-		//	NOTE: Some ships have weapons that are not aligned on the direction
-		//	of travel (e.g., Luminous Drone). We don't thrust in those cases.
-
-		if (!m_fBestWeaponIsBackwards)
+		if (rTargetDist2 > GetPrimaryAimRange2() / 9)
 			{
-			int iFacingAngle = pShip->GetRotation();
-
-			if (rTargetDist2 > GetPrimaryAimRange2() / 9)
-				{
-				if (AreAnglesAligned(iFireDir, iFacingAngle, 30))
-					bThrustWhileAim = true;
-				}
-			else 
-				{
-				CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
-				if (vTargetVel.Length() > pShip->GetMaxSpeed() / 3
-						&& AreAnglesAligned(VectorToPolar(vTargetVel), iFacingAngle, 30))
-					bThrustWhileAim = true;
-				}
+			if (AreAnglesAligned(iFireDir, iFacingAngle, 30))
+				bThrustWhileAim = true;
 			}
-
-		//	Turn to face the target
+		else 
+			{
+			CVector vTargetVel = pTarget->GetVel() - pShip->GetVel();
+			if (vTargetVel.Length() > pShip->GetMaxSpeed() / 3
+					&& AreAnglesAligned(VectorToPolar(vTargetVel), iFacingAngle, 30))
+				bThrustWhileAim = true;
+			}
 
 		ImplementManeuver(pShip, iFireDir, bThrustWhileAim);
 		}
