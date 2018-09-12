@@ -450,6 +450,12 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 	if (!pDevice->IsReady() || !pDevice->IsEnabled())
 		return;
 
+	//	If the ship is disarmed or paralyzed, then we do not fire.
+
+	if (pSource->GetCondition(CConditionSet::cndParalyzed) 
+			|| pSource->GetCondition(CConditionSet::cndDisarmed))
+		return;
+
 	//	Look for a target; if none, then skip.
 
 	CSpaceObject *pTarget = FindTarget(pDevice, pSource);
