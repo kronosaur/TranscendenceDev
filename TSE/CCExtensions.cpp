@@ -2782,7 +2782,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"v",	0,	},
 
 		{	"sysGetItemBuyPrice",			fnSystemGet,	FN_SYS_ITEM_BUY_PRICE,
-			"(sysGetItemBuyPrice [nodeID] item) -> price (or Nil)",
+			"(sysGetItemBuyPrice [nodeID] item [typeCriteria]) -> price (or Nil)",
 			"*v",	0,	},
 
 		{	"sysGetLevel",					fnSystemGet,	FN_SYS_LEVEL,
@@ -12719,26 +12719,31 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ITEM_BUY_PRICE:
 			{
-			CTopologyNode *pNode;
 			int iArg = 0;
 
-			//	If we have more than 1 args, then the first arg is
-			//	the node ID.
+			//	If we have more than 1 args, and the arg is a string,
+			//	then the first arg is the node ID.
 
-			CSystem *pSystem = NULL;
-			if (pArgs->GetCount() <= 1)
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() > 1 && pArgs->GetElement(0)->IsIdentifier())
 				{
-				pSystem = g_pUniverse->GetCurrentSystem();
+				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Otherwise, we assume the current system.
+
+			else
+				{
+				CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 				if (pSystem == NULL)
 					return StdErrorNoSystem(*pCC);
 
 				pNode = pSystem->GetTopology();
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("No topology node"));
 				}
-			else
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
-
-			if (pNode == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 
 			//	Get the item type
 
@@ -12747,9 +12752,22 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pType == NULL)
 				return pCC->CreateNil();
 
+			//	If we have more args then this is a type criteria
+
+			CDesignTypeCriteria Criteria;
+			if (iArg < pArgs->GetCount())
+				{
+				ICCItem *pCriteria = pArgs->GetElement(iArg++);
+				if (pCriteria && !pCriteria->IsNil())
+					{
+					if (CDesignTypeCriteria::ParseCriteria(pCriteria->GetStringValue(), &Criteria) != NOERROR)
+						return pCC->CreateError(CONSTLIT("Invalid criteria"), pCriteria);
+					}
+				}
+
 			//	Get the item price (in item's default currency)
 
-			int iPrice = CTradingComputer::GetItemBuyPrice(*g_pUniverse, pNode, Item);
+			int iPrice = CTradingComputer::GetItemBuyPrice(*g_pUniverse, pNode, Criteria, Item);
 			if (iPrice == 0)
 				return pCC->CreateNil();
 

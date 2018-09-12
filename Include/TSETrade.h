@@ -254,5 +254,5 @@ class CTradingComputer
 		static int GetItemEstimatedPrice (const CTopologyNode *pNode, CItemType *pItemType);
 		static void GetItemEstimatedPriceList (const CUniverse &Universe, CItemType *pItemType, DWORD dwFlags, TSortMap<int, TArray<const CTopologyNode *>> &NodesAtPrice);
 
-		static int GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CItem &Item, DWORD *retdwObjID = NULL);
+		static int GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CDesignTypeCriteria &Criteria, const CItem &Item, DWORD *retdwObjID = NULL);
 	};

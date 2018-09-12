@@ -69,7 +69,7 @@ void CTradingComputer::GetItemEstimatedPriceList (const CUniverse &Universe, CIt
 		}
 	}
 
-int CTradingComputer::GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CItem &Item, DWORD *retdwObjID)
+int CTradingComputer::GetItemBuyPrice (const CUniverse &Universe, const CTopologyNode *pNode, const CDesignTypeCriteria &Criteria, const CItem &Item, DWORD *retdwObjID)
 
 //	GetItemTradePrice
 //
@@ -99,6 +99,9 @@ int CTradingComputer::GetItemBuyPrice (const CUniverse &Universe, const CTopolog
 		CDesignType *pType = TradingObjs[i].pType;
 		CTradingDesc *pTrade = pType->GetTradingDesc();
 		if (pTrade == NULL)
+			continue;
+
+		if (!Criteria.IsEmpty() && !pType->MatchesCriteria(Criteria))
 			continue;
 
 		int iPrice;
