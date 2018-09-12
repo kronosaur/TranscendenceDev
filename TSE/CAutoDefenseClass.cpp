@@ -34,6 +34,127 @@ CAutoDefenseClass::CAutoDefenseClass (void)
 	{
 	}
 
+CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource)
+
+//	FindTarget
+//
+//	Returns an appropriate target (or NULL).
+
+	{
+	//	Look for a target
+
+	bool isOmniDirectional = false;
+	int iMinFireArc, iMaxFireArc;
+
+	//	Look for a target 
+
+	CSpaceObject *pBestTarget = NULL;
+	CSystem *pSystem = pSource->GetSystem();
+	CVector vSourcePos = pDevice->GetPos(pSource);
+
+	//  Find out whether our autoDefenseDevice is omnidirectional,
+	//  directional or has a fixed angle
+
+	if (IsOmniDirectional(pDevice))
+		isOmniDirectional = true;
+
+	//  If not omnidirectional, check directional. If not, then
+	//  our device points in one direction
+
+	else if (!IsDirectional(pDevice, &iMinFireArc, &iMaxFireArc)) 
+		{
+		iMinFireArc = AngleMod((pDevice ? pDevice->GetRotation() : 0)
+			+ AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
+		iMaxFireArc = iMinFireArc;
+		}
+
+	//  Calculate min/max fire arcs given the object's rotation
+
+	iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
+	iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
+
+	//	Use the appropriate targeting method
+
+	switch (m_iTargeting)
+		{
+		//	Hard-code search for the nearest missile
+
+		case trgMissiles:
+			{
+			Metric rBestDist2 = m_rInterceptRange * m_rInterceptRange;
+
+			for (int i = 0; i < pSystem->GetObjectCount(); i++)
+				{
+				CSpaceObject *pObj = pSystem->GetObject(i);
+
+				if (pObj
+						&& pObj->GetCategory() == CSpaceObject::catMissile
+						&& !pObj->GetDamageSource().IsEqual(pSource)
+						&& !pObj->IsIntangible()
+						&& pSource->IsEnemy(pObj->GetDamageSource())
+						&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
+							isOmniDirectional))
+					{
+					CVector vRange = pObj->GetPos() - vSourcePos;
+					Metric rDistance2 = vRange.Dot(vRange);
+
+					if (rDistance2 < rBestDist2)
+						{
+						pBestTarget = pObj;
+						rBestDist2 = rDistance2;
+						}
+					}
+				}
+
+			return pBestTarget;
+			}
+
+		//	Look for an object by criteria
+
+		case trgCriteria:
+			{
+			//	First we set the source
+
+			m_TargetCriteria.SetSource(pSource);
+
+			//	Compute the range
+
+			Metric rBestDist2;
+			if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
+				rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
+			else
+				rBestDist2 = m_rInterceptRange * m_rInterceptRange;
+
+			//	Now look for the nearest object
+
+			CSpaceObjectCriteria::SCtx Ctx(m_TargetCriteria);
+			for (int i = 0; i < pSystem->GetObjectCount(); i++)
+				{
+				CSpaceObject *pObj = pSystem->GetObject(i);
+				Metric rDistance2;
+				if (pObj
+						&& (m_TargetCriteria.MatchesCategory(pObj->GetCategory()))
+						&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
+						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
+						&& !pObj->IsIntangible()
+						&& pObj != pSource
+						&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
+							isOmniDirectional))
+					{
+					pBestTarget = pObj;
+					rBestDist2 = rDistance2;
+					}
+				}
+
+			return pBestTarget;
+			}
+
+		default:
+			ASSERT(false);
+			return NULL;
+		}
+	}
+
 int CAutoDefenseClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
 
 //	GetActivateDelay
@@ -321,141 +442,40 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 
 	pWeapon->Update(pDevice, pSource, Ctx);
 
-	//	Look for a target and fire
+	//	Skip if we're not ready or disabled
+	//
+	//	NOTE: If pDevice is damaged or disrupted we handle this as a potential 
+	//	misfire inside of pWeapon->Activate.
 
-	if (pDevice->IsReady() && pDevice->IsEnabled())
+	if (!pDevice->IsReady() || !pDevice->IsEnabled())
+		return;
+
+	//	Look for a target; if none, then skip.
+
+	CSpaceObject *pTarget = FindTarget(pDevice, pSource);
+	if (pTarget == NULL)
+		return;
+
+	//	Shoot at target
+
+	int iFireAngle = pWeapon->CalcFireSolution(pDevice, pSource, pTarget);
+	if (iFireAngle != -1)
 		{
-		int i;
-		bool isOmniDirectional = false;
-		int iMinFireArc, iMaxFireArc;
+		//	Since we're using this as a target, set the destroy notify flag
+		//	(Normally beams don't notify, so we need to override this).
 
-		//	Look for a target 
+		pTarget->SetDestructionNotify();
 
-		CSpaceObject *pBestTarget = NULL;
-		CSystem *pSystem = pSource->GetSystem();
-		CVector vSourcePos = pDevice->GetPos(pSource);
+		//	Fire
 
-		//  Find out whether our autoDefenseDevice is omnidirectional,
-		//  directional or has a fixed angle
+		pDevice->SetFireAngle(iFireAngle);
+		pWeapon->Activate(pDevice, pSource, pTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
+		pDevice->SetTimeUntilReady(m_iRechargeTicks);
 
-		if (IsOmniDirectional(pDevice))
-			isOmniDirectional = true;
+		//	Identify
 
-		//  If not omnidirectional, check directional. If not, then
-		//  our device points in one direction
-
-		else if (!IsDirectional(pDevice, &iMinFireArc, &iMaxFireArc)) {
-			iMinFireArc = AngleMod((pDevice ? pDevice->GetRotation() : 0)
-				+ AngleMiddle(m_iMinFireArc, m_iMaxFireArc));
-			iMaxFireArc = iMinFireArc;
-		}
-
-		//  Calculate min/max fire arcs given the object's rotation
-
-		iMinFireArc = (pSource->GetRotation() + iMinFireArc) % 360;
-		iMaxFireArc = (pSource->GetRotation() + iMaxFireArc) % 360;
-
-		//	Use the appropriate targeting method
-
-		switch (m_iTargeting)
-			{
-			//	Hard-code search for the nearest missile
-
-			case trgMissiles:
-				{
-				Metric rBestDist2 = m_rInterceptRange * m_rInterceptRange;
-
-				for (i = 0; i < pSystem->GetObjectCount(); i++)
-					{
-					CSpaceObject *pObj = pSystem->GetObject(i);
-
-					if (pObj
-							&& pObj->GetCategory() == CSpaceObject::catMissile
-							&& !pObj->GetDamageSource().IsEqual(pSource)
-							&& !pObj->IsIntangible()
-							&& pSource->IsEnemy(pObj->GetDamageSource())
-							&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
-								isOmniDirectional))
-						{
-						CVector vRange = pObj->GetPos() - vSourcePos;
-						Metric rDistance2 = vRange.Dot(vRange);
-
-						if (rDistance2 < rBestDist2)
-							{
-							pBestTarget = pObj;
-							rBestDist2 = rDistance2;
-							}
-						}
-					}
-
-				break;
-				}
-
-			//	Look for an object by criteria
-
-			case trgCriteria:
-				{
-				//	First we set the source
-
-				m_TargetCriteria.SetSource(pSource);
-
-				//	Compute the range
-
-				Metric rBestDist2;
-				if (m_TargetCriteria.MatchesMaxRadius() < g_InfiniteDistance)
-					rBestDist2 = (m_TargetCriteria.MatchesMaxRadius() * m_TargetCriteria.MatchesMaxRadius());
-				else
-					rBestDist2 = m_rInterceptRange * m_rInterceptRange;
-
-				//	Now look for the nearest object
-
-				CSpaceObjectCriteria::SCtx Ctx(m_TargetCriteria);
-				for (i = 0; i < pSystem->GetObjectCount(); i++)
-					{
-					CSpaceObject *pObj = pSystem->GetObject(i);
-					Metric rDistance2;
-					if (pObj
-							&& (m_TargetCriteria.MatchesCategory(pObj->GetCategory()))
-							&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
-							&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
-							&& !pObj->IsIntangible()
-							&& pObj != pSource
-							&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
-								isOmniDirectional))
-						{
-						pBestTarget = pObj;
-						rBestDist2 = rDistance2;
-						}
-					}
-
-				break;
-				}
-			}
-
-		//	If we found a target, try to shoot at it
-
-		if (pBestTarget)
-			{
-			int iFireAngle = pWeapon->CalcFireSolution(pDevice, pSource, pBestTarget);
-			if (iFireAngle != -1)
-				{
-				//	Since we're using this as a target, set the destroy notify flag
-				//	(Normally beams don't notify, so we need to override this).
-
-				pBestTarget->SetDestructionNotify();
-
-				//	Fire
-
-				pDevice->SetFireAngle(iFireAngle);
-				pWeapon->Activate(pDevice, pSource, pBestTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
-				pDevice->SetTimeUntilReady(m_iRechargeTicks);
-
-				//	Identify
-
-				if (pSource->IsPlayer())
-					GetItemType()->SetKnown();
-				}
-			}
+		if (pSource->IsPlayer())
+			GetItemType()->SetKnown();
 		}
 
 	DEBUG_CATCH

@@ -40,7 +40,7 @@ class CAutoDefenseClass : public CDeviceClass
 		inline CDeviceClass *GetWeapon (void) const { return m_pWeapon; }
 		bool IsDirectional (CInstalledDevice *pDevice, int *retiMinFireArc, int *retiMaxFireArc);
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
-
+		CSpaceObject *FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource);
 
 		TargetingSystemTypes m_iTargeting;
 		CSpaceObjectCriteria m_TargetCriteria;
