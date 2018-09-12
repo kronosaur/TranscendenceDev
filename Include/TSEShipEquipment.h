@@ -43,7 +43,10 @@ class CConditionSet
 		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
 		inline void Set (ETypes iCondition) { m_dwSet |= iCondition; }
 		void Set (const CConditionSet &Conditions);
+		ICCItemPtr WriteAsCCItem (void) const;
 		inline void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+
+		static ETypes ParseCondition (const CString &sCondition);
 
 	private:
 		DWORD m_dwSet = 0;

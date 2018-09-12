@@ -238,6 +238,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_GET_CHARACTER_DATA	131
 #define FN_OBJ_SET_CHARACTER_DATA	132
 #define FN_OBJ_HAS_SERVICE			133
+#define FN_OBJ_CONDITION			134
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1607,6 +1608,21 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objGetCombatPower",			fnObjGetOld,		FN_OBJ_COMBAT_POWER,
 			"(objGetCombatPower obj) -> 0-100",
 			NULL,	0,	},
+
+		{	"objGetCondition",				fnObjGet,		FN_OBJ_CONDITION,
+			"(objGetCondition obj [condition]) -> True/Nil\n\n"
+			
+			"condition:\n\n"
+			
+			"   'blind\n"
+			"   'disarmed\n"
+			"   'lrsBlind\n"
+			"   'paralyzed\n"
+			"   'radioactive\n"
+			"   'spinning\n"
+			"   'timeStopped",
+
+			"i*",	0,	},
 
 		{	"objGetDamageType",				fnObjGetOld,		FN_OBJ_DAMAGE_TYPE,
 			"(objGetDamageType obj) -> damage type",
@@ -6159,6 +6175,32 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pResult;
+			}
+
+		case FN_OBJ_CONDITION:
+			{
+			ICCItem *pCondition = pArgs->GetElement(1);
+			CString sCondition = (pCondition && !pCondition->IsNil() ? pCondition->GetStringValue() : NULL_STR);
+
+			//	If we want all conditions, then we return a list of conditions
+			//	(or Nil)
+
+			if (sCondition.IsBlank())
+				{
+				ICCItemPtr pResult = pObj->GetConditions().WriteAsCCItem();
+				return pResult->Reference();
+				}
+
+			//	Otherwise, we just return the value for the given condition.
+
+			else
+				{
+				CConditionSet::ETypes iCondition = CConditionSet::ParseCondition(sCondition);
+				if (iCondition == CConditionSet::cndNone)
+					return pCC->CreateError(CONSTLIT("Unknown condition"), pCondition);
+
+				return pCC->CreateBool(pObj->GetCondition(iCondition));
+				}
 			}
 
 		case FN_OBJ_DAMAGE:
