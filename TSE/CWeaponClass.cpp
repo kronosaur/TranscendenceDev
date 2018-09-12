@@ -943,8 +943,8 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 			Metric rHitFraction;
 			switch (pFragment->pDesc->GetType())
 				{
-				case ftArea:
-				case ftRadius:
+				case CWeaponFireDesc::ftArea:
+				case CWeaponFireDesc::ftRadius:
 					rHitFraction = 1.0;
 					break;
 
@@ -981,12 +981,12 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 
 		switch (pShot->GetType())
 			{
-			case ftArea:
+			case CWeaponFireDesc::ftArea:
 				//	Assume 1/8th damage points hit on average
 				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->GetDamage().GetDamageValue(dwDamageFlags);
 				break;
 
-			case ftRadius:
+			case CWeaponFireDesc::ftRadius:
 				//	Assume average target is far enough away to take half damage
 				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->GetDamage().GetDamageValue(dwDamageFlags);
 				break;
@@ -2043,7 +2043,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	CVector vRecoil;
 	bool bNoShotsFired = true;
 
-	if (pShot->GetFireType() == ftContinuousBeam && !pDevice->HasLastShots())
+	if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam && !pDevice->HasLastShots())
 		pDevice->SetLastShotCount(iShotCount);
 
 	for (i = 0; i < iShotCount; i++)
@@ -2087,7 +2087,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 			//	If this is a continuous beam, then we need special code.
 
-			if (pShot->GetFireType() == ftContinuousBeam
+			if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam
 					&& (pNewObj = pDevice->GetLastShot(pSource, i))
 					&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == ShotDir[i]))
 				{
@@ -2120,7 +2120,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 				//	Remember the shot, if necessary
 
-				if (pShot->GetFireType() == ftContinuousBeam)
+				if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam)
 					pDevice->SetLastShot(pNewObj, i);
 				}
 
@@ -2733,7 +2733,20 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx) const
 //	Returns the rated power
 
 	{
-	int iPower = m_iPowerUse;
+	int iPower;
+
+	//	If the weapon fire descriptor overrides power use, then use that.
+
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	if (pShot && pShot->GetPowerUse() != -1)
+		iPower = pShot->GetPowerUse();
+
+	//	Otherwise, we use rated power
+
+	else
+		iPower = m_iPowerUse;
+
+	//	Adjust if we have an enhancement.
 
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
@@ -2806,7 +2819,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For shockwaves...
 
-		if (pShot->GetType() == ftArea)
+		if (pShot->GetType() == CWeaponFireDesc::ftArea)
 			{
 			//	Compute total damage. NOTE: For particle weapons the damage 
 			//	specified is the total damage if ALL particle were to hit.
@@ -2831,7 +2844,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For area weapons...
 
-		else if (pShot->GetType() == ftRadius)
+		else if (pShot->GetType() == CWeaponFireDesc::ftRadius)
 			{
 			CString sDamage = Damage.GetDesc(DamageDesc::flagAverageDamage);
 
@@ -2846,7 +2859,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 		//	For particles...
 
-		else if (pShot->GetType() == ftParticles)
+		else if (pShot->GetType() == CWeaponFireDesc::ftParticles)
 			{
 			//	Some weapons fire multiple shots (e.g., Avalanche cannon)
 
@@ -2949,13 +2962,13 @@ CWeaponFireDesc *CWeaponClass::GetReferenceShotData (CWeaponFireDesc *pShot, int
 			{
 			//	Area damage counts as multiple hits
 
-			case ftArea:
+			case CWeaponFireDesc::ftArea:
 				iFragments = (int)(iFragments * SHOCKWAVE_DAMAGE_FACTOR);
 				break;
 
 			//	Radius damage always hits (if in range)
 
-			case ftRadius:
+			case CWeaponFireDesc::ftRadius:
 				break;
 
 			//	For others, only some of the fragments will hit
@@ -3632,7 +3645,7 @@ ALERROR CWeaponClass::InitVariantsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
         if (pType->IsScalable())
             {
-            if (error = m_ShotData[0].pDesc->InitScaledStats(Ctx, pDesc, pType))
+            if (error = m_ShotData[0].pDesc->InitScaledStats(Ctx, pDesc, pType, this))
                 return error;
             }
 		}
@@ -3664,10 +3677,10 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 	if (pShot == NULL)
 		return false;
 
-	if (pShot->GetType() == ftArea)
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
 		return true;
 
-	if (pShot->HasFragments() && pShot->GetFirstFragment()->pDesc->GetType() == ftArea)
+	if (pShot->HasFragments() && pShot->GetFirstFragment()->pDesc->GetType() == CWeaponFireDesc::ftArea)
 		return true;
 
 	return false;
@@ -3788,7 +3801,7 @@ bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip,
 
 	//	Area weapons are always aligned
 
-	if (pShot->GetType() == ftArea)
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
 		{
 		if (retiFireAngle)
 			*retiFireAngle = iFacingAngle;
@@ -4001,20 +4014,20 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 
 		//	Special damage delivery
 
-		if (pShot->GetType() == ftArea)
+		if (pShot->GetType() == CWeaponFireDesc::ftArea)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("shockwave")));
 
-		else if (pShot->GetType() == ftRadius)
+		else if (pShot->GetType() == CWeaponFireDesc::ftRadius)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("radius")));
 
 		//	For continuous beam
 
-		else if (pShot->GetType() == ftContinuousBeam)
+		else if (pShot->GetType() == CWeaponFireDesc::ftContinuousBeam)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("beam")));
 
 		//	For particles...
 
-		else if (pShot->GetType() == ftParticles)
+		else if (pShot->GetType() == CWeaponFireDesc::ftParticles)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("cloud")));
 
 		//	For large number of fragments, we have a special description
@@ -4027,7 +4040,7 @@ void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo,
 		//	(We ignore passthrough for shockwaves, since that's already a 
 		//	property of them.)
 
-		if (pShot->GetPassthrough() >= 20 && pShot->GetType() != ftArea)
+		if (pShot->GetPassthrough() >= 20 && pShot->GetType() != CWeaponFireDesc::ftArea)
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("passthrough")));
 
 		//	Stealth

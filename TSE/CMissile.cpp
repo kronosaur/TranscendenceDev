@@ -496,7 +496,7 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	{
 	//	We count as a beam if we're type="beam"
 
-	return (m_pDesc->GetFireType() == ftBeam ? catBeam : catMissile);
+	return (m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam ? catBeam : catMissile);
 	}
 
 int CMissile::GetManeuverRate (void) const
@@ -857,7 +857,7 @@ void CMissile::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		//	LATER: We should incorporate this into the painter when we
 		//	load the CWeaponFireDesc.
 
-		if (m_pDesc->GetFireType() == ftBeam && m_pDesc->GetImage().IsLoaded())
+		if (m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam && m_pDesc->GetImage().IsLoaded())
 			{
 			m_pDesc->GetImage().PaintImage(Dest,
 					x,

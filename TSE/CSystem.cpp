@@ -1544,8 +1544,8 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 
 	switch (Ctx.pDesc->GetType())
 		{
-		case ftBeam:
-		case ftMissile:
+		case CWeaponFireDesc::ftBeam:
+		case CWeaponFireDesc::ftMissile:
 			{
 			CMissile *pMissile;
 
@@ -1555,7 +1555,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			break;
 			}
 
-		case ftContinuousBeam:
+		case CWeaponFireDesc::ftContinuousBeam:
 			{
 			CContinuousBeam *pBeam;
 
@@ -1565,7 +1565,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			break;
 			}
 
-		case ftArea:
+		case CWeaponFireDesc::ftArea:
 			{
 			CAreaDamage *pArea;
 
@@ -1575,7 +1575,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			break;
 			}
 
-		case ftParticles:
+		case CWeaponFireDesc::ftParticles:
 			{
 			CParticleDamage *pParticles;
 
@@ -1585,7 +1585,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			break;
 			}
 
-		case ftRadius:
+		case CWeaponFireDesc::ftRadius:
 			{
 			CRadiusDamage *pRadius;
 

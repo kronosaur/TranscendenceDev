@@ -339,16 +339,6 @@ struct SShotCreateCtx
 
 //	WeaponFireDesc
 
-enum FireTypes
-	{
-	ftArea,
-	ftBeam,
-	ftContinuousBeam,
-	ftMissile,
-	ftParticles,
-	ftRadius,
-	};
-
 struct SExplosionType
 	{
 	CWeaponFireDesc *pDesc = NULL;					//	Explosion type
@@ -359,6 +349,16 @@ struct SExplosionType
 class CWeaponFireDesc
 	{
 	public:
+		enum FireTypes
+			{
+			ftArea,
+			ftBeam,
+			ftContinuousBeam,
+			ftMissile,
+			ftParticles,
+			ftRadius,
+			};
+
 		enum ECachedHandlers
 			{
 			evtOnCreateShot				= 0,
@@ -506,6 +506,7 @@ class CWeaponFireDesc
 		CEffectCreator *GetParticleEffect (void) const;
 		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
 		inline int GetPassthrough (void) const { return m_iPassthrough; }
+		inline int GetPowerUse (void) const { return m_iPowerUse; }
 		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
 		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
         CWeaponFireDesc *GetScaledDesc (int iLevel) const;
@@ -522,7 +523,7 @@ class CWeaponFireDesc
 		void InitFromDamage (const DamageDesc &Damage);
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
-        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem);
+        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
 		inline bool IsCurvedBeam (void) const { return false; }
         inline bool IsDirectionalImage (void) const { return m_fDirectional; }
         inline bool IsFragment (void) const { return m_fFragment; }
@@ -540,9 +541,9 @@ class CWeaponFireDesc
 	private:
         struct SOldEffects
             {
-		    CObjectImageArray Image;		//	Image for missile
-            SExhaustDesc Exhaust;           //  Exhaust effect
-            SVaporTrailDesc VaporTrail;     //  Vapor trail effect
+		    CObjectImageArray Image;			//	Image for missile
+            SExhaustDesc Exhaust;				//  Exhaust effect
+            SVaporTrailDesc VaporTrail;			//  Vapor trail effect
             };
 
         //  Copying this class is not supported
@@ -555,97 +556,98 @@ class CWeaponFireDesc
 		CEffectCreator *GetFireEffect (void) const;
         inline SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
         inline SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
-        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
+        ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
 
-		CExtension *m_pExtension;			//	Extension that defines the weaponfiredesc
-		CString m_sUNID;					//	Identification. The format is
-											//		uuuuu/n/fi/e
-											//
-											//		uuuuu = weapon UNID
-											//		n = shot data ordinal
-											//		fi = fragment, i is index (optional)
-											//		e = enhanced (optional)
+		CExtension *m_pExtension = NULL;		//	Extension that defines the weaponfiredesc
+		CString m_sUNID;						//	Identification. The format is
+												//		uuuuu/n/fi/e
+												//
+												//		uuuuu = weapon UNID
+												//		n = shot data ordinal
+												//		fi = fragment, i is index (optional)
+												//		e = enhanced (optional)
 
 		//	Basic properties
-        int m_iLevel;                       //  Level of desc (missile or weapon or scalable weapon)
-		CItemTypeRef m_pAmmoType;			//	item type for this ammo
-		FireTypes m_iFireType;				//	beam or missile
-		DamageDesc m_Damage;				//	Damage per shot
-		int m_iContinuous;					//	repeat for this number of frames
-		int m_iContinuousFireDelay;			//	Ticks between continuous fire shots
-		int m_iFireRate;					//	Ticks between shots (-1 = default to weapon fire rate)
+        int m_iLevel = 0;						//  Level of desc (missile or weapon or scalable weapon)
+		CItemTypeRef m_pAmmoType;				//	item type for this ammo
+		FireTypes m_iFireType = ftMissile;		//	beam or missile
+		DamageDesc m_Damage;					//	Damage per shot
+		int m_iContinuous = 0;					//	repeat for this number of frames
+		int m_iContinuousFireDelay = 0;			//	Ticks between continuous fire shots
+		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
+		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 
-		Metric m_rMissileSpeed;				//	Speed of missile
-		DiceRange m_MissileSpeed;			//	Speed of missile (if random)
-		DiceRange m_Lifetime;				//	Lifetime of fire in seconds
-		DiceRange m_InitialDelay;			//	Delay for n ticks before starting
+		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
+		DiceRange m_MissileSpeed;				//	Speed of missile (if random)
+		DiceRange m_Lifetime;					//	Lifetime of fire in seconds
+		DiceRange m_InitialDelay;				//	Delay for n ticks before starting
 
-		int m_iPassthrough;					//	Chance that the missile will continue through target
+		int m_iPassthrough = 0;					//	Chance that the missile will continue through target
 
         //  Computed properties
-		Metric m_rMaxEffectiveRange;		//	Max effective range of weapon
+		Metric m_rMaxEffectiveRange = 0.0;		//	Max effective range of weapon
 
 		//	Effects
-		CEffectCreatorRef m_pEffect;		//	Effect for the actual bullet/missile/beam
-		CEffectCreatorRef m_pHitEffect;		//	Effect when we hit/explode
-		CEffectCreatorRef m_pFireEffect;	//	Effect when we fire (muzzle flash)
-		CSoundRef m_FireSound;				//	Sound when weapon is fired
-        SOldEffects *m_pOldEffects;         //  Non-painter effects.
+		CEffectCreatorRef m_pEffect;			//	Effect for the actual bullet/missile/beam
+		CEffectCreatorRef m_pHitEffect;			//	Effect when we hit/explode
+		CEffectCreatorRef m_pFireEffect;		//	Effect when we fire (muzzle flash)
+		CSoundRef m_FireSound;					//	Sound when weapon is fired
+        SOldEffects *m_pOldEffects = NULL;		//  Non-painter effects.
 		CWeaponFireDescRef m_pExplosionType;	//	Explosion to create when ship is destroyed
 
 		//	Missile stuff (m_iFireType == ftMissile)
-		int m_iAccelerationFactor;			//	% increase in speed per 10 ticks
-		Metric m_rMaxMissileSpeed;			//	Max speed.
-		int m_iStealth;						//	Missile stealth
-		int m_iHitPoints;					//	HP before dissipating (0 = destroyed by any hit)
-		int m_iInteraction;					//	Interaction opacity (0-100)
-		int m_iManeuverability;				//	Tracking maneuverability (0 = none)
-		int m_iManeuverRate;				//	Angle turned at each maneuverability point
+		int m_iAccelerationFactor = 0;			//	% increase in speed per 10 ticks
+		Metric m_rMaxMissileSpeed = 0.0;		//	Max speed.
+		int m_iStealth = 0;						//	Missile stealth
+		int m_iHitPoints = 0;					//	HP before dissipating (0 = destroyed by any hit)
+		int m_iInteraction = 0;					//	Interaction opacity (0-100)
+		int m_iManeuverability = 0;				//	Tracking maneuverability (0 = none)
+		int m_iManeuverRate = 0;				//	Angle turned at each maneuverability point
 
 		//	Particles (m_iFireType == ftParticles)
-		CParticleSystemDesc *m_pParticleDesc;
-		DiceRange m_MinDamage;				//	Minimum damage when hit by particles
+		CParticleSystemDesc *m_pParticleDesc = NULL;
+		DiceRange m_MinDamage;					//	Minimum damage when hit by particles
 
 		//	Area stuff (m_iFireType == ftArea)
-		DiceRange m_ExpansionSpeed;			//	Speed of expansion (% of lightspeed)
-		DiceRange m_AreaDamageDensity;		//	Number of points along the edge
+		DiceRange m_ExpansionSpeed;				//	Speed of expansion (% of lightspeed)
+		DiceRange m_AreaDamageDensity;			//	Number of points along the edge
 
 		//	Radius stuff (m_iFireType == ftRadius)
-		Metric m_rMinRadius;				//	All objects inside this radius take full damage
-		Metric m_rMaxRadius;				//	Damage inside this radius is decreased by inverse square law
+		Metric m_rMinRadius = 0.0;				//	All objects inside this radius take full damage
+		Metric m_rMaxRadius = 0.0;				//	Damage inside this radius is decreased by inverse square law
 
 		//	Fragmentation
-		SFragmentDesc *m_pFirstFragment;	//	Pointer to first fragment desc (or NULL)
-		int m_iProximityFailsafe;			//	Min ticks before proximity is active
-		DiceRange m_FragInterval;			//	If not empty, we keep fragmenting
-		Metric m_rFragThreshold;			//	Max fragmentation distance
+		SFragmentDesc *m_pFirstFragment = NULL;	//	Pointer to first fragment desc (or NULL)
+		int m_iProximityFailsafe = 0;			//	Min ticks before proximity is active
+		DiceRange m_FragInterval;				//	If not empty, we keep fragmenting
+		Metric m_rFragThreshold = 0.0;			//	Max fragmentation distance
 
 		//	Events
-		CEventHandler m_Events;				//	Events
+		CEventHandler m_Events;					//	Events
 		SEventHandlerDesc m_CachedEvents[evtCount];
 
         //  Scalable items
-        int m_iBaseLevel;                   //  Base level
-        int m_iScaledLevels;                //  Number of scaled levels above base
-        CWeaponFireDesc *m_pScalable;       //  Array of entries, one per scaled level above base
+        int m_iBaseLevel = 0;                   //  Base level
+        int m_iScaledLevels = 0;                //  Number of scaled levels above base
+        CWeaponFireDesc *m_pScalable = NULL;	//  Array of entries, one per scaled level above base
 
 		//	Flags
-		DWORD m_fVariableInitialSpeed:1;	//	TRUE if initial speed is random
-		DWORD m_fNoFriendlyFire:1;			//	TRUE if we cannot hit our friends
-		DWORD m_fNoWorldHits:1;				//	If TRUE, we never hit worlds (or stars)
-		DWORD m_fNoImmutableHits:1;			//	If TRUE, we never hit immutable objects
-		DWORD m_fNoStationHits:1;			//	If TRUE, we never hit station-scale objects
-		DWORD m_fNoImmobileHits:1;			//	If TRUE, we never hit immobile objects
-		DWORD m_fNoShipHits:1;				//	If TRUE, we never hit ship-scale objects
-		DWORD m_fAutoTarget:1;				//	If TRUE, we can acquire new targets after launch
+		DWORD m_fVariableInitialSpeed:1;		//	TRUE if initial speed is random
+		DWORD m_fNoFriendlyFire:1;				//	TRUE if we cannot hit our friends
+		DWORD m_fNoWorldHits:1;					//	If TRUE, we never hit worlds (or stars)
+		DWORD m_fNoImmutableHits:1;				//	If TRUE, we never hit immutable objects
+		DWORD m_fNoStationHits:1;				//	If TRUE, we never hit station-scale objects
+		DWORD m_fNoImmobileHits:1;				//	If TRUE, we never hit immobile objects
+		DWORD m_fNoShipHits:1;					//	If TRUE, we never hit ship-scale objects
+		DWORD m_fAutoTarget:1;					//	If TRUE, we can acquire new targets after launch
 
-		DWORD m_fCanDamageSource;			//	TRUE if we can damage the source
-		DWORD m_fDirectional:1;				//	True if different images for each direction
-		DWORD m_fFragment:1;				//	True if this is a fragment of a proximity blast
-		DWORD m_fProximityBlast;			//	This is TRUE if we have fragments or if we have
-											//		and OnFragment event.
-        DWORD m_fRelativisticSpeed:1;		//	If TRUE, adjust speed to simulate for light-lag
-        DWORD m_fTargetRequired:1;			//	If TRUE, do not fragment unless we have a target
+		DWORD m_fCanDamageSource;				//	TRUE if we can damage the source
+		DWORD m_fDirectional:1;					//	True if different images for each direction
+		DWORD m_fFragment:1;					//	True if this is a fragment of a proximity blast
+		DWORD m_fProximityBlast;				//	This is TRUE if we have fragments or if we have
+												//		and OnFragment event.
+        DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
+        DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
         DWORD m_fSpare7:1;
         DWORD m_fSpare8:1;
 
