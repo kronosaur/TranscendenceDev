@@ -337,7 +337,7 @@ int CWeaponClass::CalcActivateDelay (CItemCtx &ItemCtx) const
 	if (pEnhancements)
 		return pEnhancements->CalcActivateDelay(ItemCtx);
 
-	return GetActivateDelay(ItemCtx.GetDevice(), ItemCtx.GetSource());
+	return GetActivateDelay(ItemCtx);
 	}
 
 int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
@@ -2156,7 +2156,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	return true;
 	}
 
-int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
+int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
 
 //	GetActivateDelay
 //
@@ -2164,7 +2164,7 @@ int CWeaponClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSo
 //	NOTE: We do not adjust for enhancements.
 
 	{
-	return GetFireDelay(GetWeaponFireDesc(CItemCtx(pSource, pDevice)));
+	return GetFireDelay(GetWeaponFireDesc(ItemCtx));
 	}
 
 CItemType *CWeaponClass::GetAmmoItem (int iIndex) const
@@ -2728,24 +2728,19 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 //	Returns the rated power
 
 	{
-	int iPower;
-	int iIdlePower;
+	int iPower = m_iPowerUse;
+	int iIdlePower = m_iIdlePowerUse;
 
 	//	If the weapon fire descriptor overrides power use, then use that.
 
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
-	if (pShot && pShot->GetPowerUse() != -1)
+	if (pShot)
 		{
-		iPower = pShot->GetPowerUse();
-		iIdlePower = pShot->GetIdlePowerUse();
-		}
+		if (pShot->GetPowerUse() != -1)
+			iPower = pShot->GetPowerUse();
 
-	//	Otherwise, we use rated power
-
-	else
-		{
-		iPower = m_iPowerUse;
-		iIdlePower = m_iIdlePowerUse;
+		if (pShot->GetIdlePowerUse() != -1)
+			iIdlePower = pShot->GetIdlePowerUse();
 		}
 
 	//	Adjust if we have an enhancement.

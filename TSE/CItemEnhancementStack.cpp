@@ -162,7 +162,7 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	//	Get the raw activation delay. NOTE: This DOES NOT include
 	//	any enhancements on the item.
 
-	Metric rDelay = pClass->GetActivateDelay(DeviceCtx.GetDevice(), DeviceCtx.GetSource());
+	Metric rDelay = pClass->GetActivateDelay(DeviceCtx);
 
 	//	Apply enhancements (including on the item itself)
 

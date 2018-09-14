@@ -75,7 +75,7 @@ ALERROR CMiscellaneousClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	return NOERROR;
 	}
 
-int CMiscellaneousClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
+int CMiscellaneousClass::GetActivateDelay (CItemCtx &ItemCtx) const
 
 //	GetActivateDelay
 //
@@ -85,7 +85,7 @@ int CMiscellaneousClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObje
 	if (m_iPowerToActivate == 0)
 		return 0;
 
-	int iPowerPerCycle = GetCapacitorPowerUse(pDevice, pSource);
+	int iPowerPerCycle = GetCapacitorPowerUse(ItemCtx.GetDevice(), ItemCtx.GetSource());
 	if (iPowerPerCycle == 0)
 		return 0;
 
@@ -102,12 +102,14 @@ int CMiscellaneousClass::GetCapacitorPowerUse (CInstalledDevice *pDevice, CSpace
 	{
 	if (m_iPowerForCapacitor >= 0)
 		return m_iPowerForCapacitor;
-	else
+	else if (pSource)
 		{
 		//	m_iPowerForCapacitor is a % of max power
 
 		return pSource->GetMaxPower() * (-m_iPowerForCapacitor) / 100;
 		}
+	else
+		return 0;
 	}
 
 int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, CounterTypes *retiType, int *retiLevel)
@@ -159,7 +161,7 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 
 	//	Figure out how long before we're ready
 
-	int iActivateDelay = GetActivateDelay(pDevice, pSource);
+	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
 	int iLevel = (iActivateDelay > 0 ? 100 - (pDevice->GetTimeUntilReady() * 100 / iActivateDelay) : 0);
 
     if (retiLevel)
@@ -205,7 +207,7 @@ bool CMiscellaneousClass::SetCounter (CInstalledDevice *pDevice, CSpaceObject *p
     if (iCounter != cntCapacitor || m_iPowerToActivate == 0 || pDevice == NULL || pSource == NULL)
         return false;
 
-	int iActivateDelay = GetActivateDelay(pDevice, pSource);
+	int iActivateDelay = GetActivateDelay(CItemCtx(pSource, pDevice));
     int iTimeLeft = Max(0, Min((100 - iLevel) * iActivateDelay / 100, iActivateDelay));
 
     pDevice->SetTimeUntilReady(iTimeLeft);

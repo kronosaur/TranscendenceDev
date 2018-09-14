@@ -157,6 +157,7 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 //	Returns description of the enhancement
 
 	{
+	CItemCtx ItemCtx(pSource, this);
 	int iDamageBonus;
 
 	//	If the item is enhanced, then we show the enhancement
@@ -168,9 +169,9 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 
 	//	Describe enhancements from the device only (e.g., confered by other devices)
 
-	else if (GetActivateDelay(pSource) > m_pClass->GetActivateDelay(this, pSource))
+	else if (GetActivateDelay(pSource) > m_pClass->GetActivateDelay(ItemCtx))
 		return CONSTLIT("-slow");
-	else if (GetActivateDelay(pSource) < m_pClass->GetActivateDelay(this, pSource))
+	else if (GetActivateDelay(pSource) < m_pClass->GetActivateDelay(ItemCtx))
 		return CONSTLIT("+fast");
 	else if (iDamageBonus = (m_pEnhancements ? m_pEnhancements->GetBonus() : 0))
 		return (iDamageBonus > 0 ? strPatternSubst(CONSTLIT("+%d%%"), iDamageBonus) : strPatternSubst(CONSTLIT("%d%%"), iDamageBonus));
@@ -412,7 +413,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
 
-	m_iActivateDelay = m_pClass->GetActivateDelay(this, pObj);
+	m_iActivateDelay = m_pClass->GetActivateDelay(CItemCtx(pObj, this));
 
 	//	If we're installing a device after creation then we
 	//	zero-out the device position, etc. If necessary the
@@ -716,7 +717,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	//	In newer versions we store an activation delay instead of an adjustment
 
 	if (Ctx.dwVersion < 93)
-		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(this, pSource) / 100;
+		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(CItemCtx(pSource, this)) / 100;
 
 	//	We no longer store mods in the device structure
 

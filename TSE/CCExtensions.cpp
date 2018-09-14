@@ -7910,6 +7910,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
+			CItemCtx WeaponCtx(pObj, pDevice);
+
 			CSpaceObject *pTarget = CreateObjFromItem(*pCC, pArgs->GetElement(2));
 
 			if (pTarget) pTarget->SetDestructionNotify();
@@ -7959,7 +7961,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pArgs->GetCount() >= 4 && !(pArgs->GetElement(3)->IsNil()))
 					iFireDelay = pArgs->GetElement(3)->GetIntegerValue();
 				else
-					iFireDelay = pDevice->GetClass()->GetActivateDelay(pDevice, pObj);
+					iFireDelay = pDevice->GetClass()->GetActivateDelay(WeaponCtx);
 
 				pDevice->SetTimeUntilReady(iFireDelay);
 				DEBUG_CATCH

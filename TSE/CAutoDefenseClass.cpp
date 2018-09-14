@@ -155,7 +155,7 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 		}
 	}
 
-int CAutoDefenseClass::GetActivateDelay (CInstalledDevice *pDevice, CSpaceObject *pSource) const
+int CAutoDefenseClass::GetActivateDelay (CItemCtx &ItemCtx) const
 
 //	GetActivateDelay
 //
