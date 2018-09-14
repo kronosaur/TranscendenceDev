@@ -1205,17 +1205,12 @@ int CWeaponClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevic
 
 	//	We consume less power when we are fully charged
 
-	int iPower = m_iPowerUse;
+	int iIdlePower;
+	int iPower = GetPowerRating(Ctx, &iIdlePower);
 	if (pDevice->IsReady() && (!pDevice->IsTriggered() || !pDevice->IsLastActivateSuccessful()))
-		iPower = m_iIdlePowerUse;
-
-	//	Adjust based on power efficiency enhancement
-
-	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
-	if (pEnhancements)
-		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
-
-	return iPower;
+		return iIdlePower;
+	else
+		return iPower;
 	}
 
 bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed)
@@ -2726,7 +2721,7 @@ DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
 	return m_dwLinkedFireOptions; 
 	}
 
-int CWeaponClass::GetPowerRating (CItemCtx &Ctx) const
+int CWeaponClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
@@ -2734,23 +2729,37 @@ int CWeaponClass::GetPowerRating (CItemCtx &Ctx) const
 
 	{
 	int iPower;
+	int iIdlePower;
 
 	//	If the weapon fire descriptor overrides power use, then use that.
 
 	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 	if (pShot && pShot->GetPowerUse() != -1)
+		{
 		iPower = pShot->GetPowerUse();
+		iIdlePower = pShot->GetIdlePowerUse();
+		}
 
 	//	Otherwise, we use rated power
 
 	else
+		{
 		iPower = m_iPowerUse;
+		iIdlePower = m_iIdlePowerUse;
+		}
 
 	//	Adjust if we have an enhancement.
 
 	TSharedPtr<CItemEnhancementStack> pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
-		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
+		{
+		int iAdj = pEnhancements->GetPowerAdj();
+		iPower = iPower * iAdj / 100;
+		iIdlePower = iIdlePower * iAdj / 100;
+		}
+
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = iIdlePower;
 
 	return iPower;
 	}

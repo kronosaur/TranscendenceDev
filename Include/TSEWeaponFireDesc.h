@@ -491,6 +491,7 @@ class CWeaponFireDesc
 		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
 		inline Metric GetFragmentationThreshold (void) const { return m_rFragThreshold; }
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
         inline const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
 		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
@@ -576,6 +577,7 @@ class CWeaponFireDesc
 		int m_iContinuousFireDelay = 0;			//	Ticks between continuous fire shots
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
+		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)
 
 		Metric m_rMissileSpeed = 0.0;			//	Speed of missile
 		DiceRange m_MissileSpeed;				//	Speed of missile (if random)

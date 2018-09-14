@@ -647,33 +647,23 @@ int CShieldClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevic
 	{
 	CItemCtx Ctx(pSource, pDevice);
 
-	int iPower = 0;
-
 	//	Only if enabled
 
 	if (!pDevice->IsEnabled())
 		return 0;
 
+	//	Compute power
+
+	int iIdlePower;
+	int iPower = GetPowerRating(Ctx, &iIdlePower);
+
 	//	If we're regenerating shields, then we consume more power
 	//	otherwise, we only consume half power
 
 	if ((!m_Regen.IsEmpty() || m_iExtraRegenPerCharge > 0) && pDevice->IsRegenerating())
-		iPower += m_iPowerUse;
+		return iPower;
 	else
-		iPower += m_iIdlePowerUse;
-
-	//	Adjust based on charges
-
-	if (m_iExtraPowerPerCharge)
-		iPower += m_iExtraPowerPerCharge * pDevice->GetCharges(pSource);
-
-	//	Adjust based on power efficiency enhancement
-
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
-	if (pEnhancements)
-		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
-
-	return iPower;
+		return iIdlePower;
 	}
 
 ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXMLElement *pDesc, CDeviceClass **retpShield)
@@ -1281,7 +1271,7 @@ int CShieldClass::GetMaxHP (CItemCtx &Ctx) const
 	return iMax;
 	}
 
-int CShieldClass::GetPowerRating (CItemCtx &Ctx) const
+int CShieldClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
@@ -1289,10 +1279,31 @@ int CShieldClass::GetPowerRating (CItemCtx &Ctx) const
 
 	{
 	int iPower = m_iPowerUse;
+	int iIdlePower = m_iIdlePowerUse;
+
+	if (m_iExtraPowerPerCharge)
+		{
+		iPower += m_iExtraHPPerCharge * Ctx.GetItemCharges();
+
+		if (m_iPowerUse > 0)
+			{
+			Metric rAdj = (Metric)m_iIdlePowerUse / m_iPowerUse;
+			iIdlePower += mathRound(m_iExtraHPPerCharge * rAdj * Ctx.GetItemCharges());
+			}
+		else
+			iIdlePower += (m_iExtraHPPerCharge * Ctx.GetItemCharges()) / 2;
+		}
 
 	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
 	if (pEnhancements)
-		iPower = iPower * pEnhancements->GetPowerAdj() / 100;
+		{
+		int iAdj = pEnhancements->GetPowerAdj();
+		iPower = iPower * iAdj / 100;
+		iIdlePower = iIdlePower * iAdj / 100;
+		}
+
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = iIdlePower;
 
 	return iPower;
 	}

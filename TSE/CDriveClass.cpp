@@ -275,13 +275,16 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 		return CDeviceClass::FindItemProperty(Ctx, sProperty);
 	}
 
-int CDriveClass::GetPowerRating (CItemCtx &Ctx) const
+int CDriveClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
 //	Get minimum reactor output for device
 
 	{
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = 0;
+
 	const SScalableStats *pDesc = GetDesc(Ctx);
     if (pDesc == NULL)
         return 0;

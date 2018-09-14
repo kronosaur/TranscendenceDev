@@ -283,7 +283,7 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 		return CDeviceClass::FindItemProperty(Ctx, sProperty);
 	}
 
-int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx) const
+int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
@@ -293,9 +293,14 @@ int CAutoDefenseClass::GetPowerRating (CItemCtx &Ctx) const
 	CDeviceClass *pWeapon = GetWeapon();
 
 	if (pWeapon)
-		return pWeapon->GetPowerRating(Ctx);
+		return pWeapon->GetPowerRating(Ctx, retiIdlePowerUse);
 	else
+		{
+		if (retiIdlePowerUse)
+			*retiIdlePowerUse;
+
 		return 0;
+		}
 	}
 
 bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const

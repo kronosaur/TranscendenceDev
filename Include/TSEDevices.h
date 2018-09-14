@@ -272,7 +272,7 @@ class CDeviceClass
 
 		static const DWORD GPO_FLAG_NORMAL_POWER = 0x00000001;	//	Power when not damage and not enhanced
 		virtual int GetPowerOutput (CItemCtx &Ctx, DWORD dwFlags = 0) const { return 0; }
-		virtual int GetPowerRating (CItemCtx &Ctx) const { return 0; }
+		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { if (retiIdlePowerUse) *retiIdlePowerUse = 0; return 0; }
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const { return false; }
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const { return false; }
 		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const { return rotNone; }
@@ -568,7 +568,7 @@ class CInstalledDevice
 		inline CString GetName (void) { return m_pClass->GetName(); }
 		CVector GetPos (CSpaceObject *pSource);
 		CVector GetPosOffset (CSpaceObject *pSource);
-		inline int GetPowerRating (CItemCtx &Ctx) const { return m_pClass->GetPowerRating(Ctx); }
+		inline int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { return m_pClass->GetPowerRating(Ctx, retiIdlePowerUse); }
 		inline void GetSelectedVariantInfo (CSpaceObject *pSource, 
 											CString *retsLabel,
 											int *retiAmmoLeft,

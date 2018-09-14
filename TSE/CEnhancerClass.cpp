@@ -281,7 +281,7 @@ ICCItem *CEnhancerClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CDeviceClass::FindItemProperty(Ctx, sName);
 	}
 
-int CEnhancerClass::GetPowerRating (CItemCtx &Ctx) const
+int CEnhancerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
@@ -289,6 +289,9 @@ int CEnhancerClass::GetPowerRating (CItemCtx &Ctx) const
 //	enabled or not).
 
 	{
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = 0;
+
 	const SScalableStats *pStats = GetStats(Ctx);
 	if (pStats == NULL)
 		return m_iPowerUse;

@@ -168,13 +168,16 @@ int CMiscellaneousClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pS
 	return iLevel;
 	}
 
-int CMiscellaneousClass::GetPowerRating (CItemCtx &Ctx) const
+int CMiscellaneousClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 //	GetPowerRating
 //
 //	Returns the minimum reactor size needed for this device
 
 	{
+	if (retiIdlePowerUse)
+		*retiIdlePowerUse = 0;
+
 	//	If we have an explicit power rating, then use that
 
 	if (m_iPowerRating > 0)

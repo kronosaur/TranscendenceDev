@@ -38,6 +38,7 @@
 #define FRAGMENT_TARGET_ATTRIB					CONSTLIT("fragmentTarget")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
+#define IDLE_POWER_USE_ATTRIB					CONSTLIT("idlePowerUse")
 #define INITIAL_DELAY_ATTRIB					CONSTLIT("initialDelay")
 #define INTERACTION_ATTRIB						CONSTLIT("interaction")
 #define EXHAUST_LIFETIME_ATTRIB					CONSTLIT("lifetime")
@@ -1724,6 +1725,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	//	Power use
 
 	m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
+	m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, (m_iPowerUse == -1 ? -1 : m_iPowerUse / 10));
 
 	//	Hit criteria
 
@@ -2268,6 +2270,7 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	rAdj = (Metric)Scaled.iPower / Base.iPower;
 	int iBasePowerUse = pWeapon->GetPowerRating(CItemCtx());
 	m_iPowerUse = mathRound(iBasePowerUse * rAdj);
+	m_iIdlePowerUse = mathRound(pWeapon->GetIdlePowerUse() * rAdj);
 
     //  These stats never scale, so we just copy them
 
