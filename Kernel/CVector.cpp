@@ -114,32 +114,28 @@ int IntVectorToPolar (int x, int y, int *retiRadius)
 //	Returns the angle from 0-359 and radius
 
 	{
-	int iAngle;
-	int iRadius;
 	int iSqrRadius = (x * x) + (y * y);
 
 	//	If we are at the origin then the angle is undefined
 
 	if (iSqrRadius == 0)
 		{
-		iAngle = 0;
-		iRadius = 0;
-		}
-	else
-		{
-		iRadius = mathSqrt(iSqrRadius);
-		if (x >= 0.0)
-			iAngle = (((int)(180 * asin((double)y / (double)iRadius) / PI)) + 360) % 360;
-		else
-			iAngle = 180 - ((int)(180 * asin((double)y / (double)iRadius) / PI));
+		if (retiRadius)
+			*retiRadius = 0;
+		return 0;
 		}
 
-	ASSERT(iAngle >= 0 && iAngle < 360);
+	//	Compute angle
 
-	//	Done
+	Metric rAngle = atan2(y, x);
+	int iAngle = AngleToDegrees(rAngle);
+
+	//	Compute radius
 
 	if (retiRadius)
-		*retiRadius = iRadius;
+		*retiRadius = mathSqrt(iSqrRadius);
+
+	//	Done
 
 	return iAngle;
 	}
