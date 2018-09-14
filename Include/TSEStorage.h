@@ -25,7 +25,11 @@ class CGameFile
 		ALERROR Create (const CString &sFilename, const CString &sUsername);
 		static CString GenerateFilename (const CString &sName);
 		inline DWORD GetAdventure (void) const { return m_Header.dwAdventure; }
-		inline DWORD GetCreateVersion (void) const { return m_Header.dwCreateVersion; }
+
+		static constexpr DWORD FLAG_VERSION_NUMBERS =	0x00000001;
+		static constexpr DWORD FLAG_VERSION_STRING =	0x00000002;
+		CString GetCreateVersion (DWORD dwFlags = FLAG_VERSION_STRING) const;
+
 		inline CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
 		inline CString GetFilespec (void) const { return m_pFile->GetFilename(); }
 		inline CString GetGameID (void) { return CString(m_Header.szGameID); }
@@ -72,6 +76,7 @@ class CGameFile
 			PLAYER_NAME_MAX =						128,
 			USERNAME_MAX =							256,
 			EPITAPH_MAX =							256,
+			VERSION_MAX =							32,
 			INVALID_ENTRY =							0xffffffff,
 			};
 
@@ -92,6 +97,33 @@ class CGameFile
 			DWORD dwPartialSave;			//	System entry that was partially saved (while entering a gate)
 
 			DWORD dwSpare[4];
+			};
+
+		struct SGameHeader9
+			{
+			DWORD dwVersion;				//	Game file format version
+
+			DWORD dwUniverse;				//	Location of universe data
+			DWORD dwSystemMap;				//	Location of system directory. The system
+											//		directory is an array of file IDs
+											//		indexed by system UNID and prefixed
+											//		by a count.
+			char szSystemName[GAME_HEADER_MAX_SYSTEM_NAME];
+			DWORD dwFlags;					//	Flags for game
+			DWORD dwResurrectCount;			//	Number of times we're been resurrected
+			DWORD dwGameStats;				//	Location of game stats
+			DWORD dwCreateVersion;			//	Product version that created this save file
+			DWORD dwPartialSave;			//	System entry that was partially saved (while entering a gate)
+
+			//	New in SGameHeader 9
+			char szUsername[USERNAME_MAX];	//	Username (may be NULL if not a regulation game)
+			char szGameID[GAME_ID_MAX];		//	GameID (may be NULL if not a regulation game)
+			DWORD dwAdventure;				//	UNID of adventure (extension)
+			char szPlayerName[PLAYER_NAME_MAX];
+			DWORD dwGenome;					//	Player genome
+			DWORD dwPlayerShip;				//	UNID of player ship
+			DWORD dwScore;					//	Current score
+			char szEpitaph[EPITAPH_MAX];	//	Epitaph (if dead)
 			};
 
 		struct SGameHeader
@@ -119,6 +151,14 @@ class CGameFile
 			DWORD dwPlayerShip;				//	UNID of player ship
 			DWORD dwScore;					//	Current score
 			char szEpitaph[EPITAPH_MAX];	//	Epitaph (if dead)
+
+			//	New in SGameHeader 10
+			DWORD dwCreateAPI;				//	Created on this API version
+			DWORD dwCreateVersionMajor;
+			DWORD dwCreateVersionMinor;
+			DWORD dwCreateVersionPoint;
+			DWORD dwCreateVersionBuild;
+			char szCreateVersion[VERSION_MAX];
 			};
 
 		struct SSystemData

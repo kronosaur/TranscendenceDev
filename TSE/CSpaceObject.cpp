@@ -7248,7 +7248,13 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 	//	Short-circuit if no change
 
 	if (pOverride == m_pOverride)
+		{
+		//	Always set the event flags because we call this when we create the
+		//	universe and we want to make sure we set the flags in that case.
+
+		SetEventFlags();
 		return;
+		}
 
 	//	Let the previous event handler terminate
 

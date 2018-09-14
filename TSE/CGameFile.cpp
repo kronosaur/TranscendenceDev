@@ -7,7 +7,7 @@
 #include "Zip.h"
 
 #define MIN_GAME_FILE_VERSION					5
-#define GAME_FILE_VERSION						9
+#define GAME_FILE_VERSION						10
 
 CGameFile::CGameFile (void) : 
 		m_pFile(NULL),
@@ -142,6 +142,16 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 
 	m_Header.dwVersion = GAME_FILE_VERSION;
 	m_Header.dwCreateVersion = fileGetProductVersion();
+	m_Header.dwCreateAPI = API_VERSION;
+
+	SFileVersionInfo VerInfo;
+	::fileGetVersionInfo(NULL_STR, &VerInfo);
+	m_Header.dwCreateVersionMajor = HIWORD((DWORD)(VerInfo.dwProductVersion >> 32));
+	m_Header.dwCreateVersionMinor = LOWORD((DWORD)(VerInfo.dwProductVersion >> 32));
+	m_Header.dwCreateVersionPoint = HIWORD((DWORD)VerInfo.dwProductVersion);
+	m_Header.dwCreateVersionBuild = LOWORD((DWORD)VerInfo.dwProductVersion);
+	lstrcpyn(m_Header.szCreateVersion, VerInfo.sProductVersion.GetASCIIZPointer(), sizeof(m_Header.szCreateVersion));
+
 	m_Header.dwUniverse = INVALID_ENTRY;
 	m_Header.dwGameStats = INVALID_ENTRY;
 	m_Header.dwResurrectCount = 0;
@@ -215,6 +225,26 @@ CString CGameFile::GenerateFilename (const CString &sName)
 	return sFilespec;
 	}
 
+CString CGameFile::GetCreateVersion (DWORD dwFlags) const
+
+//	GetCreateVersion
+//
+//	Returns a string representing the version created.
+
+	{
+	if (m_Header.szCreateVersion[0] == '\0')
+		return strPatternSubst(CONSTLIT("%d.%d.%d.%d"), HIBYTE(HIWORD(m_Header.dwCreateVersion)), LOBYTE(HIWORD(m_Header.dwCreateVersion)), HIBYTE(LOWORD(m_Header.dwCreateVersion)), LOBYTE(LOWORD(m_Header.dwCreateVersion)));
+
+	if ((dwFlags & FLAG_VERSION_NUMBERS) && (dwFlags & FLAG_VERSION_STRING))
+		return strPatternSubst(CONSTLIT("%s (%d.%d.%d.%d)"), CString(m_Header.szCreateVersion), m_Header.dwCreateVersionMajor, m_Header.dwCreateVersionMinor, m_Header.dwCreateVersionPoint, m_Header.dwCreateVersionBuild);
+
+	else if (dwFlags & FLAG_VERSION_NUMBERS)
+		return strPatternSubst(CONSTLIT("%d.%d.%d.%d"), m_Header.dwCreateVersionMajor, m_Header.dwCreateVersionMinor, m_Header.dwCreateVersionPoint, m_Header.dwCreateVersionBuild);
+
+	else
+		return CString(m_Header.szCreateVersion);
+	}
+
 CString CGameFile::GetPlayerName (void) const
 
 //	GetPlayerName
@@ -278,6 +308,20 @@ ALERROR CGameFile::LoadGameHeader (SGameHeader *retHeader)
 		retHeader->dwPlayerShip = 0;
 		retHeader->dwScore = 0;
 		retHeader->szEpitaph[0] = '\0';
+		}
+
+	else if (sHeader.GetLength() == sizeof(SGameHeader9))
+		{
+		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader9));
+
+		//	Initialize additional data
+
+		retHeader->dwCreateAPI = 0;
+		retHeader->dwCreateVersionMajor = 0;
+		retHeader->dwCreateVersionMinor = 0;
+		retHeader->dwCreateVersionPoint = 0;
+		retHeader->dwCreateVersionBuild = 0;
+		retHeader->szCreateVersion[0] = '\0';
 		}
 
 	//	Read current version
