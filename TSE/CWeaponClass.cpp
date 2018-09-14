@@ -1079,13 +1079,16 @@ int CWeaponClass::CalcFireAngle (CItemCtx &ItemCtx, Metric rSpeed, CSpaceObject 
 	int iMinFireArc, iMaxFireArc;
 	DeviceRotationTypes iType = GetRotationType(ItemCtx, &iMinFireArc, &iMaxFireArc);
 
-	//	If we don't have a target, or if we're firing straight, then we fire 
-	//	straight.
+	//	If we're firing straight, then we just fire straight
 
-	if (pTarget == NULL || iType == rotNone)
-		{
+	if (iType == rotNone)
 		return AngleMod(pSource->GetRotation() + iMinFireArc);
-		}
+
+	//	If we don't have a target, then we fire straight also, but we need to 
+	//	compute that based on the fire arc.
+
+	else if (pTarget == NULL)
+		return AngleMod(pSource->GetRotation() + AngleMiddle(iMinFireArc, iMaxFireArc));
 
 	//	Otherwise, we need to compute a firing solution.
 
