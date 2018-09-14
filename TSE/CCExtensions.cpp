@@ -639,6 +639,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'debugMode\n"
 			"   'showBounds\n"
+			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
 			"   'showNavPaths\n",
 
@@ -662,6 +663,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'showBounds True/Nil\n"
+			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
 			"   'showNavPaths True/Nil\n",
 

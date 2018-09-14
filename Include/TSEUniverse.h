@@ -89,6 +89,7 @@ class CDebugOptions
 	public:
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		inline bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
+		inline bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
 		inline bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		inline bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
@@ -99,6 +100,7 @@ class CDebugOptions
 		bool m_bShowBounds = false;
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
+		bool m_bShowFacingsAngle = false;
 	};
 
 //	SFX Options ----------------------------------------------------------------
