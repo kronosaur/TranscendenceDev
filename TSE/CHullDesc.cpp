@@ -9,6 +9,7 @@
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
+#define COUNTER_INCREMENT_RATE_ATTRIB			CONSTLIT("counterIncrementRate")
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
 #define DEVICE_CRITERIA_ATTRIB					CONSTLIT("deviceCriteria")
 #define HULL_VALUE_ATTRIB						CONSTLIT("hullValue")
@@ -16,6 +17,7 @@
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
 #define MAX_CARGO_SPACE_ATTRIB					CONSTLIT("maxCargoSpace")
+#define MAX_COUNTER_ATTRIB						CONSTLIT("maxCounter")
 #define MAX_DEVICES_ATTRIB						CONSTLIT("maxDevices")
 #define MAX_NON_WEAPONS_ATTRIB					CONSTLIT("maxNonWeapons")
 #define MAX_REACTOR_POWER_ATTRIB				CONSTLIT("maxReactorPower")
@@ -306,6 +308,11 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 		if (!m_bTimeStopImmune && pDesc->FindAttributeBool(TIME_STOP_IMMUNE_ATTRIB, &bValue))
 			m_bTimeStopImmune = bValue;
 		}
+
+	// Counter limit and increment rate
+	
+	m_iCounterIncrementRate = pHull->GetAttributeInteger(COUNTER_INCREMENT_RATE_ATTRIB);
+	m_iMaxCounter = pHull->GetAttributeInteger(MAX_COUNTER_ATTRIB);
 
 	//	Done
 

@@ -37,6 +37,7 @@
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
+#define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
 #define TYPE_ATTRIB								CONSTLIT("type")
 
@@ -96,6 +97,7 @@
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
+#define PROPERTY_SHIP_COUNTER_PER_SHOT			CONSTLIT("shipCounterPerShot")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
@@ -1436,6 +1438,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bReportAmmo = pDesc->GetAttributeBool(REPORT_AMMO_ATTRIB);
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
 	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
+	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0);
 
 
 	//	Configuration
@@ -1875,12 +1878,6 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	CFailureDesc::EFailureTypes iFailureMode = CFailureDesc::failNone;
 
-	//	See if we have enough ammo/charges to proceed. If we don't then we 
-	//	cannot continue.
-
-	if (!ConsumeAmmo(ItemCtx, pShot, iRepeatingCount, retbConsumedItems))
-		return false;
-
 	//	Update capacitor counters
 
 	if (m_Counter == cntCapacitor)
@@ -1898,6 +1895,20 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 			//	outcome.
 			return true;
 		}
+
+	//  Update the ship energy/heat counter.
+
+	if (m_iCounterPerShot != 0)
+		{
+		if (!UpdateShipCounter(ItemCtx, pShot))
+			return false;
+		}
+	
+	//	See if we have enough ammo/charges to proceed. If we don't then we 
+	//	cannot continue.
+
+	if (!ConsumeAmmo(ItemCtx, pShot, iRepeatingCount, retbConsumedItems))
+		return false;
 
 	//	If we're damaged, disabled, or badly designed, we have a chance of 
 	//	failure.
@@ -2475,6 +2486,10 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		{ 
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
 		return CC.CreateInteger(pShot->GetContinuous());
+		}
+	else if (strEquals(sProperty, PROPERTY_SHIP_COUNTER_PER_SHOT))
+		{
+		return CC.CreateInteger(m_iCounterPerShot);
 		}
     else if (strEquals(sProperty, PROPERTY_STD_COST))
         {
@@ -4506,6 +4521,45 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 
 	DEBUG_CATCH
 	}
+
+bool CWeaponClass::UpdateShipCounter(CItemCtx &ItemCtx, CWeaponFireDesc *pShot)
+
+//	UpdateShipCounter
+//
+//	If ship counter is within bounds, we update it and return TRUE. Otherwise,
+//	we return FALSE.
+
+{
+	//	Get source and device
+
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return false;
+
+	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	if (pDevice == NULL)
+		return false;
+
+	//  If we update the ship's counter, make sure that after increase/decrease we're
+	//  below/above the maximum/minimum counter, respectively.
+
+	if (m_iCounterPerShot > 0)
+	{
+		if (pSource->GetCounterValue() + m_iCounterPerShot > pSource->GetMaxCounterValue())
+		{
+			return false;
+		}
+	}
+	else if (m_iCounterPerShot < 0)
+	{
+		if (pSource->GetCounterValue() + m_iCounterPerShot < 0)
+		{
+			return false;
+		}
+	}
+	pSource->IncCounterValue(m_iCounterPerShot);
+	return true;
+}
 
 bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, CFailureDesc::EFailureTypes *retiFailureMode, bool *retbSourceDestroyed)
 

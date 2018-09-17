@@ -32,10 +32,12 @@ const Metric MAX_SPEED_FOR_DOCKING2 =			(0.04 * 0.04 * LIGHT_SPEED * LIGHT_SPEED
 const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
+#define FIELD_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
 #define FIELD_LAUNCHER							CONSTLIT("launcher")
 #define FIELD_LAUNCHER_UNID						CONSTLIT("launcherUNID")
 #define FIELD_MAX_SPEED							CONSTLIT("maxSpeed")
 #define FIELD_MANEUVER							CONSTLIT("maneuver")
+#define FIELD_MAX_COUNTER						CONSTLIT("maxCounter")
 #define FIELD_NAME								CONSTLIT("name")
 #define FIELD_PRIMARY_ARMOR						CONSTLIT("primaryArmor")
 #define FIELD_PRIMARY_ARMOR_UNID				CONSTLIT("primaryArmorUNID")
@@ -55,6 +57,9 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_CARGO_SPACE					CONSTLIT("cargoSpace")
 #define PROPERTY_CARGO_SPACE_FREE_KG			CONSTLIT("cargoSpaceFreeKg")
 #define PROPERTY_CARGO_SPACE_USED_KG			CONSTLIT("cargoSpaceUsedKg")
+#define PROPERTY_COUNTER_INCREMENT_RATE			CONSTLIT("counterIncrementRate")
+#define PROPERTY_COUNTER_VALUE					CONSTLIT("counterValue")
+#define PROPERTY_COUNTER_VALUE_INCREMENT		CONSTLIT("counterValueIncrement")
 #define PROPERTY_CHARACTER						CONSTLIT("character")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
@@ -70,6 +75,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HULL_PRICE						CONSTLIT("hullPrice")
 #define PROPERTY_INTERIOR_HP					CONSTLIT("interiorHP")
+#define PROPERTY_MAX_COUNTER					CONSTLIT("maxCounter")
 #define PROPERTY_MAX_FUEL						CONSTLIT("maxFuel")
 #define PROPERTY_MAX_FUEL_EXACT					CONSTLIT("maxFuelExact")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
@@ -1528,6 +1534,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pShip->m_pMoney = NULL;
 	pShip->m_pPowerUse = NULL;
 	pShip->m_pCharacter = pClass->GetCharacter();
+	pShip->m_iCounterValue = 0;
 
 	pShip->m_fTrackMass = false;
 	pShip->m_fRadioactive = false;
@@ -3017,25 +3024,25 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
 
 	else if (strEquals(sName, PROPERTY_AVAILABLE_DEVICE_SLOTS))
-		{
+	{
 		int iAll = CalcDeviceSlotsInUse();
 
 		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxDevices() - iAll);
-		}
+	}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
-		{
+	{
 		int iNonWeapon;
 		int iAll = CalcDeviceSlotsInUse(NULL, &iNonWeapon);
 
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxNonWeapons() - iNonWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
-		}
+	}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_WEAPON_SLOTS))
-		{
+	{
 		int iWeapon;
 		int iAll = CalcDeviceSlotsInUse(&iWeapon);
 
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
-		}
+	}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsImmuneTo(CConditionSet::cndBlind));
 
@@ -3046,10 +3053,16 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(mathRound(GetCargoSpaceLeft() * 1000.0));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
-		{
+	{
 		OnComponentChanged(comCargo);
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));
-		}
+	}
+
+	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
+		return CC.CreateInteger(GetCounterValue());
+
+	else if (strEquals(sName, PROPERTY_COUNTER_INCREMENT_RATE))
+		return CC.CreateInteger(GetCounterIncrementRate());
 
 	else if (strEquals(sName, PROPERTY_CHARACTER))
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
@@ -3096,6 +3109,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP);
 		return CC.CreateInteger(iHP);
 		}
+
+	else if (strEquals(sName, PROPERTY_MAX_COUNTER))
+		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxCounter());
 
 	else if (strEquals(sName, PROPERTY_MAX_FUEL))
         return CC.CreateInteger(mathRound(GetMaxFuel() / FUEL_UNITS_PER_STD_ROD));
@@ -5333,6 +5349,8 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	DWORD		Controlled ObjID
 //	Controller Data
+//
+//	DWORD		m_iCounterValue
 
 	{
 #ifdef DEBUG_LOAD
@@ -5730,6 +5748,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		}
 
 	m_pController->ReadFromStream(Ctx, this);
+
+	if (Ctx.dwVersion >= 160)
+		Ctx.pStream->Read((char *)&m_iCounterValue, sizeof(DWORD));
+	else
+		m_iCounterValue = 0;
 
     //  Recompute performance (because we don't save it).
 
@@ -6338,6 +6361,20 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	if (m_iMissileFireDelay > 0)
 		m_iMissileFireDelay--;
 
+	int iCounterIncRate = m_pClass->GetHullDesc().GetCounterIncrementRate();
+	if (iCounterIncRate > 0)
+		{
+		//  If counter increment rate is greater than zero, then we allow the counter value to be unbounded below
+		//  but bounded above
+		m_iCounterValue = Min(m_iCounterValue + (iCounterIncRate), m_pClass->GetHullDesc().GetMaxCounter());
+		}
+	else
+		{
+		//  Else we allow the counter value to be unbounded above
+		//  but bounded below
+		m_iCounterValue = Max(0, m_iCounterValue + (iCounterIncRate));
+		}
+
 	DEBUG_CATCH
 	}
 
@@ -6399,6 +6436,8 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		Controller ObjID
 //	Controller Data
+//
+//	DWORD		m_iCounterValue
 
 	{
 	DWORD dwSave;
@@ -6539,6 +6578,10 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 		dwSave = 0;
 		pStream->Write((char *)&dwSave, sizeof(DWORD));
 		}
+
+	//  Heat counter
+
+	pStream->Write((char *)&m_iCounterValue, sizeof(DWORD));
 	}
 
 bool CShip::OrientationChanged (void)
@@ -7597,6 +7640,16 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		{
 		m_fAlwaysLeaveWreck = !pValue->IsNil();
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
+		{
+		SetCounterValue(pValue->GetIntegerValue());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_COUNTER_VALUE_INCREMENT))
+		{
+		IncCounterValue(pValue->GetIntegerValue());
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_CHARACTER))

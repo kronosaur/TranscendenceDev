@@ -15,6 +15,7 @@ class CHullDesc
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+		inline int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
 		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
@@ -22,6 +23,7 @@ class CHullDesc
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
+		inline int GetMaxCounter(void) const { return m_iMaxCounter; }
 		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
 		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
 		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
@@ -45,6 +47,7 @@ class CHullDesc
 		int m_iMass = 0;					//	Empty hull mass (tons)
 		CCurrencyAndValue m_Value;			//	Value of hull alone (excluding any devices/armor)
 		int m_iCargoSpace = 0;				//	Default cargo space (tons)
+		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 
 		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
@@ -54,6 +57,7 @@ class CHullDesc
 		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
 
 		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
+		int m_iMaxCounter = 0;				//  Max value of counter (used for temperature or capacitor)
 		int m_iMaxReactorPower = 0;			//	Max compatible reactor power
 		int m_iMaxDevices = 0;				//	Max number of devices
 		int m_iMaxWeapons = 0;				//	Max number of weapon devices (including launchers)
