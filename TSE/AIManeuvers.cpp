@@ -627,7 +627,7 @@ void CAIBehaviorCtx::ImplementAttackTarget (CShip *pShip, CSpaceObject *pTarget,
 		//	If we're roughly facing the target and not too close,
 		//	then thrust while we aim
 
-		if (rTargetDist2 > GetPrimaryAimRange2() / 9)
+		if (rTargetDist2 > GetPrimaryAimRange2() / 4)
 			{
 			if (AreAnglesAligned(VectorToPolar(vTarget), iCurrentFacingDir, 30))
 				bThrustWhileAim = true;
