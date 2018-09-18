@@ -176,7 +176,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 //
 //	Paints the heat/energy gauge
 
-{
+	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
 	const CG16bitFont &SmallFont = VI.GetFont(fontSmall);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
@@ -231,7 +231,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 	yText += SmallFont.GetHeight();
 
 	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rCounterValue) + 0.5)), CG16bitFont::AlignRight);
-}
+	}
 
 void CReactorHUDCircular::PaintFuelGauge (const SReactorStats &Stats, bool bCounterGaugePresent)
 
@@ -520,13 +520,16 @@ void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)
 	PaintReactorItem(Stats);
 
 	//	Paint gauges
+
 	if (bCounterGaugePresent)
 		{
 		PaintCounterGauge(pShip);
 		}
+
 	if (Stats.bUsesCharges)
 		PaintChargesGauge(Stats);
 	else
 		PaintFuelGauge(Stats, bCounterGaugePresent);
+
 	PaintPowerGauge(Stats);
 	}

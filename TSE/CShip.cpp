@@ -3024,25 +3024,25 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
 
 	else if (strEquals(sName, PROPERTY_AVAILABLE_DEVICE_SLOTS))
-	{
+		{
 		int iAll = CalcDeviceSlotsInUse();
 
 		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxDevices() - iAll);
-	}
+		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
-	{
+		{
 		int iNonWeapon;
 		int iAll = CalcDeviceSlotsInUse(NULL, &iNonWeapon);
 
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxNonWeapons() - iNonWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
-	}
+		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_WEAPON_SLOTS))
-	{
+		{
 		int iWeapon;
 		int iAll = CalcDeviceSlotsInUse(&iWeapon);
 
 		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxWeapons() - iWeapon, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
-	}
+		}
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsImmuneTo(CConditionSet::cndBlind));
 
@@ -3053,10 +3053,10 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(mathRound(GetCargoSpaceLeft() * 1000.0));
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
-	{
+		{
 		OnComponentChanged(comCargo);
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));
-	}
+		}
 
 	else if (strEquals(sName, PROPERTY_COUNTER_VALUE))
 		return CC.CreateInteger(GetCounterValue());
@@ -5749,7 +5749,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	m_pController->ReadFromStream(Ctx, this);
 
-	if (Ctx.dwVersion >= 160)
+	if (Ctx.dwVersion >= 164)
 		Ctx.pStream->Read((char *)&m_iCounterValue, sizeof(DWORD));
 	else
 		m_iCounterValue = 0;
@@ -6366,13 +6366,13 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		{
 		//  If counter increment rate is greater than zero, then we allow the counter value to be unbounded below
 		//  but bounded above
-		m_iCounterValue = Min(m_iCounterValue + (iCounterIncRate), m_pClass->GetHullDesc().GetMaxCounter());
+		m_iCounterValue = Min(m_iCounterValue + iCounterIncRate, m_pClass->GetHullDesc().GetMaxCounter());
 		}
 	else
 		{
 		//  Else we allow the counter value to be unbounded above
 		//  but bounded below
-		m_iCounterValue = Max(0, m_iCounterValue + (iCounterIncRate));
+		m_iCounterValue = Max(0, m_iCounterValue + iCounterIncRate);
 		}
 
 	DEBUG_CATCH
