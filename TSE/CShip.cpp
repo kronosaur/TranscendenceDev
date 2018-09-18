@@ -5361,7 +5361,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load class
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_pClass = g_pUniverse->FindShipClass(dwLoad);
 
 	//	In 144 we started saving the power consumption members in a separate
@@ -5382,7 +5382,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		int iCount = 20;
 		while (iCount-- > 0 && m_pClass == NULL)
 			{
-			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+			Ctx.pStream->Read(dwLoad);
 			m_pClass = g_pUniverse->FindShipClass(dwLoad);
 			}
 		}
@@ -5395,7 +5395,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	m_sName.ReadFromStream(Ctx.pStream);
 	if (Ctx.dwVersion >= 26)
-		Ctx.pStream->Read((char *)&m_dwNameFlags, sizeof(DWORD));
+		Ctx.pStream->Read(m_dwNameFlags);
 	else
 		{
 		if (!m_sName.IsBlank())
@@ -5410,28 +5410,28 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		m_Rotation.ReadFromStream(Ctx, m_pClass->GetRotationDesc());
 	else
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_Rotation.Init(m_pClass->GetRotationDesc(), (int)LOWORD(dwLoad));
 		}
 
 	//	Load more
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iFireDelay = (int)LOWORD(dwLoad);
 	m_iMissileFireDelay = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	if (Ctx.dwVersion < 144)
 		iReactorGraceTimer143 = (int)LOWORD(dwLoad);
 	m_iContaminationTimer = (int)HIWORD(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iParalysisTimer = (int)HIWORD(dwLoad);
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iExitGateTimer = (int)LOWORD(dwLoad);
 	m_iDisarmedTimer = (int)HIWORD(dwLoad);
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_iLRSBlindnessTimer = (int)LOWORD(dwLoad);
 	m_iDriveDamagedTimer = (int)HIWORD(dwLoad);
 
@@ -5447,23 +5447,23 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		}
 
 	if (Ctx.dwVersion >= 2)
-		Ctx.pStream->Read((char *)&m_rItemMass, sizeof(Metric));
-	Ctx.pStream->Read((char *)&m_rCargoMass, sizeof(Metric));
+		Ctx.pStream->Read(m_rItemMass);
+	Ctx.pStream->Read(m_rCargoMass);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pDocked);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pExitGate);
 	if (Ctx.dwVersion >= 42)
-		Ctx.pStream->Read((char *)&m_iLastFireTime, sizeof(DWORD));
+		Ctx.pStream->Read(m_iLastFireTime);
 	else
 		m_iLastFireTime = 0;
 
 	if (Ctx.dwVersion >= 96)
-		Ctx.pStream->Read((char *)&m_iLastHitTime, sizeof(DWORD));
+		Ctx.pStream->Read(m_iLastHitTime);
 	else
 		m_iLastHitTime = 0;
 
 	//	Load flags
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 
 	bool bBit01 =				((dwLoad & 0x00000001) ? true : false);
 	m_fRadioactive =			((dwLoad & 0x00000002) ? true : false);
@@ -5552,7 +5552,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Stealth
 
 	if (Ctx.dwVersion >= 5)
-		Ctx.pStream->Read((char *)&m_iStealth, sizeof(DWORD));
+		Ctx.pStream->Read(m_iStealth);
 	else
 		m_iStealth = stealthNormal;
 
@@ -5582,7 +5582,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Previous versions stored drive desc UNID
 
     if (Ctx.dwVersion < 127)
-	    Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	    Ctx.pStream->Read(dwLoad);
 
 	//	Energy fields
 
@@ -5622,7 +5622,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 105)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad != 0xffffffff)
 			{
 			m_pTrade = new CTradingDesc;
@@ -5649,13 +5649,13 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 77)
 		{
 		DWORD dwCount;
-		Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+		Ctx.pStream->Read(dwCount);
 		if (dwCount)
 			{
 			for (i = 0; i < (int)dwCount; i++)
 				{
 				DWORD dwObjID;
-				Ctx.pStream->Read((char *)&dwObjID, sizeof(DWORD));
+				Ctx.pStream->Read(dwObjID);
 
 				TArray<CSpaceObject *> *pList = Ctx.Subscribed.SetAt(dwObjID);
 				pList->Insert(this);
@@ -5667,7 +5667,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 2)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad)
 			m_pEncounterInfo = g_pUniverse->FindStationType(dwLoad);
 		}
@@ -5698,7 +5698,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 
 		//	In previous versions we saved the object ID, so we need to convert:
 
@@ -5750,7 +5750,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	m_pController->ReadFromStream(Ctx, this);
 
 	if (Ctx.dwVersion >= 164)
-		Ctx.pStream->Read((char *)&m_iCounterValue, sizeof(DWORD));
+		Ctx.pStream->Read(m_iCounterValue);
 	else
 		m_iCounterValue = 0;
 
@@ -6443,31 +6443,31 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	dwSave = m_pClass->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	GetSystem()->WriteSovereignRefToStream(m_pSovereign, pStream);
 
 	m_sName.WriteToStream(pStream);
-	pStream->Write((char *)&m_dwNameFlags, sizeof(DWORD));
+	pStream->Write(m_dwNameFlags);
 
 	m_Rotation.WriteToStream(pStream);
 
 	dwSave = MAKELONG(m_iFireDelay, m_iMissileFireDelay);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = MAKELONG(0, m_iContaminationTimer);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = MAKELONG(m_iBlindnessTimer, m_iParalysisTimer);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = MAKELONG(m_iExitGateTimer, m_iDisarmedTimer);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	dwSave = MAKELONG(m_iLRSBlindnessTimer, m_iDriveDamagedTimer);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	pStream->Write((char *)&m_rItemMass, sizeof(Metric));
-	pStream->Write((char *)&m_rCargoMass, sizeof(Metric));
+	pStream->Write(m_rItemMass);
+	pStream->Write(m_rCargoMass);
 	WriteObjRefToStream(m_pDocked, pStream);
 	WriteObjRefToStream(m_pExitGate, pStream);
-	pStream->Write((char *)&m_iLastFireTime, sizeof(DWORD));
-	pStream->Write((char *)&m_iLastHitTime, sizeof(DWORD));
+	pStream->Write(m_iLastFireTime);
+	pStream->Write(m_iLastHitTime);
 
 	dwSave = 0;
 	dwSave |= (m_fLRSDisabledByNebula ? 0x00000001 : 0);
@@ -6499,7 +6499,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fEmergencySpeed ?		0x04000000 : 0);
 	dwSave |= (m_fQuarterSpeed ?		0x08000000 : 0);
 	dwSave |= (m_fHasShipCompartments ?	0x10000000 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Armor
 
@@ -6511,7 +6511,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 
 	//	Stealth
 
-	pStream->Write((char *)&m_iStealth, sizeof(DWORD));
+	pStream->Write(m_iStealth);
 
 	//	Fuel consumption
 
@@ -6544,14 +6544,14 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	if (m_pTrade)
 		{
 		dwSave = 1;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 
 		m_pTrade->WriteToStream(pStream);
 		}
 	else
 		{
 		dwSave = 0xffffffff;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
 	//	Money
@@ -6562,7 +6562,7 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	//	Encounter info
 
 	dwSave = (m_pEncounterInfo ? m_pEncounterInfo->GetUNID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Irradiated by
 
@@ -6576,12 +6576,12 @@ void CShip::OnWriteToStream (IWriteStream *pStream)
 	else
 		{
 		dwSave = 0;
-		pStream->Write((char *)&dwSave, sizeof(DWORD));
+		pStream->Write(dwSave);
 		}
 
 	//  Heat counter
 
-	pStream->Write((char *)&m_iCounterValue, sizeof(DWORD));
+	pStream->Write(m_iCounterValue);
 	}
 
 bool CShip::OrientationChanged (void)
