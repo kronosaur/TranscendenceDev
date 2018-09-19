@@ -2528,6 +2528,7 @@ void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 		//	Run code
@@ -2559,6 +2560,7 @@ void CSpaceObject::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 		ICCItem *pResult = CCCtx.Run(Event);
@@ -2631,6 +2633,7 @@ void CSpaceObject::FireOnDockObjDestroyed (CSpaceObject *pDockTarget, const SDes
 	CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 	CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 	CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+	CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 	CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 	ICCItemPtr pResult = CCCtx.RunCode(Event);
@@ -2830,6 +2833,7 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 		ICCItem *pResult = CCCtx.Run(Event);
@@ -3367,6 +3371,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 		ICCItem *pResult = CCCtx.Run(Event);

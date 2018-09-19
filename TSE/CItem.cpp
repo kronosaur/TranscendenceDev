@@ -654,6 +654,7 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 		Ctx.SaveAndDefineItemVar(*this);
 		Ctx.DefineSpaceObject(CONSTLIT("aDestroyer"), Attacker.GetObj());
 		Ctx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Attacker.GetOrderGiver());
+		Ctx.DefineBool(CONSTLIT("aDestroy"), (iCause != enteredStargate && iCause != ascended));
 		Ctx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(iCause));
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -782,6 +783,7 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+		CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
 		CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
 
 		ICCItem *pResult = CCCtx.Run(Event);
