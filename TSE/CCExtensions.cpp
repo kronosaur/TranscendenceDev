@@ -421,6 +421,7 @@ ICCItem *fnItemCreateRandom (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 #define FN_MISSION_ADD_TIMER			10
 #define FN_MISSION_ADD_RECURRING_TIMER	11
 #define FN_MISSION_CANCEL_TIMER			12
+#define FN_MISSION_CAN_CREATE			13
 
 ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMissionGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -2395,6 +2396,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"msnCancelTimerEvent",				fnMissionSet,	FN_MISSION_CANCEL_TIMER,
 			"(msnCancelTimerEvent missionObj event) -> True/Nil",
 			"is",	0,	},
+
+		{	"msnCanCreate",					fnMission,			FN_MISSION_CAN_CREATE,
+			"(msnCanCreate unid [owner [data]]) -> True|Nil",
+			"v*",	0,	},
 
 		{	"msnCreate",					fnMission,			FN_MISSION_CREATE,
 			"(msnCreate unid owner [data]) -> missionObj|Nil\n"
@@ -8886,6 +8891,22 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_MISSION_CAN_CREATE:
+			{
+			CMissionType *pType = g_pUniverse->FindMissionType(pArgs->GetElement(0)->GetIntegerValue());
+			if (pType == NULL)
+				return pCC->CreateError(CONSTLIT("Unknown mission type"), pArgs->GetElement(0));
+
+			//	Get arguments
+
+			CSpaceObject *pOwner = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			ICCItem *pData = pArgs->GetElement(2);
+
+			//	See if we can create the mission
+
+			return pCC->CreateBool(pType->CanBeCreated(pOwner, pData));
+			}
+
 		case FN_MISSION_CREATE:
 			{
 			//	Get the list of mission types, categorized by priority

@@ -12,7 +12,7 @@ class CMissionType : public CDesignType
 			{
 			//	This list must match CACHED_EVENTS array in CMissionType.cpp
 
-			evtCanBeCreated				= 0,
+			evtCanCreate				= 0,
 
 			evtCount					= 1,
 			};

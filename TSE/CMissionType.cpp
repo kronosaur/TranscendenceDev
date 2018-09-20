@@ -35,21 +35,21 @@
 
 static char *CACHED_EVENTS[CMissionType::evtCount] =
 	{
-	"CanBeCreated",
+	"CanCreate",
 	};
 
 bool CMissionType::FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const
 
 //	FireCanCreate
 //
-//	Invokes <CanBeCreated> to see if the mission is available to be created.
+//	Invokes <CanCreate> to see if the mission is available to be created.
 
 	{
-	//	If we cannot find CanBeCreated event, then we assume we can create this
+	//	If we cannot find CanCreate event, then we assume we can create this
 	//	mission.
 
 	SEventHandlerDesc Handler;
-	if (!FindCachedEventHandler(evtCanBeCreated, &Handler))
+	if (!FindCachedEventHandler(evtCanCreate, &Handler))
 		return true;
 
 	//	Fire the event
@@ -62,7 +62,7 @@ bool CMissionType::FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) co
 	ICCItemPtr pResult = Ctx.RunCode(Handler);
 	if (pResult->IsError())
 		{
-		::kernelDebugLogPattern("[%08x] <CanBeCreated>: %s", GetUNID(), pResult->GetStringValue());
+		::kernelDebugLogPattern("[%08x] <CanCreate>: %s", GetUNID(), pResult->GetStringValue());
 		return false;
 		}
 	else
