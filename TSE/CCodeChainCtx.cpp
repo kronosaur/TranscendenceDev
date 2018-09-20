@@ -249,7 +249,7 @@ void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
 	pItem->Discard(&m_CC);
 	}
 
-void CCodeChainCtx::DefineContainingType (CDesignType *pType)
+void CCodeChainCtx::DefineContainingType (const CDesignType *pType)
 
 //	DefineContainingType
 //
@@ -279,7 +279,7 @@ void CCodeChainCtx::DefineContainingType (const COverlay *pOverlay)
 	DefineContainingType(pOverlay->GetType());
 	}
 
-void CCodeChainCtx::DefineContainingType (CSpaceObject *pObj)
+void CCodeChainCtx::DefineContainingType (const CSpaceObject *pObj)
 
 //	DefineContainingType
 //

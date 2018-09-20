@@ -157,6 +157,48 @@ inline void DebugStopTimer (char *szTiming) { }
 
 #define TRY(f)	{try { error = f; } catch (...) { error = ERR_FAIL; }}
 
+//	ICCItem SmartPtr
+
+class ICCItemPtr
+	{
+	public:
+		constexpr ICCItemPtr (void) : m_pPtr(NULL) { }
+		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
+
+		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+
+		ICCItemPtr (const ICCItemPtr &Src);
+
+		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+			{
+			Src.m_pPtr = NULL;
+			}
+
+		~ICCItemPtr (void);
+
+		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItem *pSrc);
+		operator ICCItem *() const { return m_pPtr; }
+		ICCItem * operator->() const { return m_pPtr; }
+
+		explicit operator bool() const { return (m_pPtr != NULL); }
+
+		void Delete (void);
+
+		bool Load (const CString &sCode, CString *retsError);
+
+		void TakeHandoff (ICCItem *pPtr);
+		void TakeHandoff (ICCItemPtr &Src);
+
+		void Set (const ICCItemPtr &Src)
+			{
+			*this = Src;
+			}
+
+	private:
+		ICCItem *m_pPtr;
+	};
+
 //	Game load/save structures
 
 #ifdef TRANSCENDENCE_STABLE_RELEASE
@@ -515,6 +557,51 @@ class CGlobalEventCache
 
 		CString m_sEvent;
 		TArray<SEntry> m_Cache;
+	};
+
+template <typename EVENT_ENUM, size_t N> class TEventHandlerCache
+	{
+	public:
+		bool FindEventHandler (EVENT_ENUM iEvent, SEventHandlerDesc *retEvent = NULL) const
+			{
+			if (!m_Cache[iEvent].pCode)
+				return false;
+
+			if (retEvent)
+				{
+				retEvent->pExtension = m_Cache[iEvent].pExtension;
+				retEvent->pCode = m_Cache[iEvent].pCode;
+				}
+
+			return true;
+			}
+
+		void Init (CDesignType *pType, LPSTR pEvents[N])
+			{
+			for (int i = 0; i < N; i++)
+				{
+				SEventHandlerDesc Handler;
+				if (pType->FindEventHandler(CString(pEvents[i], -1, true), &Handler))
+					{
+					m_Cache[i].pExtension = Handler.pExtension;
+					m_Cache[i].pCode = (Handler.pCode ? Handler.pCode->Reference() : NULL);
+					}
+				else
+					{
+					m_Cache[i].pExtension = NULL;
+					m_Cache[i].pCode = NULL;
+					}
+				}
+			}
+
+	private:
+		struct SEntry
+			{
+			CExtension *pExtension = NULL;
+			ICCItemPtr pCode;
+			};
+
+		SEntry m_Cache[N];
 	};
 
 enum DestructionTypes

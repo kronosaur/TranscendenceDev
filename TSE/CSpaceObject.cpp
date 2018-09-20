@@ -2112,7 +2112,7 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 		return false;
 
 	CCodeChainCtx Ctx;
-	Ctx.DefineContainingType(const_cast<CSpaceObject *>(this));
+	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
@@ -2137,7 +2137,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 	if (FindEventHandler(GET_EXPLOSION_TYPE_EVENT, &Event))
 		{
 		CCodeChainCtx Ctx;
-		Ctx.DefineContainingType(const_cast<CSpaceObject *>(this));
+		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
 
 		ICCItem *pResult = Ctx.Run(Event);

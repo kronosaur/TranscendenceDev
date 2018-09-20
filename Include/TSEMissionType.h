@@ -8,6 +8,16 @@
 class CMissionType : public CDesignType
 	{
 	public:
+		enum ECachedHandlers
+			{
+			//	This list must match CACHED_EVENTS array in CMissionType.cpp
+
+			evtCanBeCreated				= 0,
+
+			evtCount					= 1,
+			};
+
+		inline bool CanBeCreated (CSpaceObject *pOwner, ICCItem *pCreateData) const { return (CanBeEncountered() && FireCanCreate(pOwner, pCreateData)); }
 		inline bool CanBeDeclined (void) const { return !m_fNoDecline; }
 		inline bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
@@ -15,6 +25,7 @@ class CMissionType : public CDesignType
 		inline bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
 		inline bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
 		inline bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
+		inline bool FindCachedEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { return m_CachedEvents.FindEventHandler(iEvent, retEvent); }
 		inline bool ForceUndockAfterDebrief (void) const { return m_fForceUndockAfterDebrief; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline int GetExpireTime (void) const { return m_iExpireTime; }
@@ -44,6 +55,8 @@ class CMissionType : public CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
+		bool FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const;
+
 		//	Basic properties
 
 		CString m_sName;					//	Internal name
@@ -68,6 +81,10 @@ class CMissionType : public CDesignType
 											//		the number goes up, but if we later destroy the mission
 											//		(perhaps because it expired) then the count drops.
 		int m_iAccepted;					//	Number of times player has accepted this mission type
+
+		//	Events
+
+		TEventHandlerCache<ECachedHandlers, evtCount> m_CachedEvents;
 
 		DWORD m_fNoFailureOnOwnerDestroyed:1;	//	If TRUE, mission does not fail when owner destroyed
 		DWORD m_fNoDebrief:1;				//	If TRUE, mission is closed on success

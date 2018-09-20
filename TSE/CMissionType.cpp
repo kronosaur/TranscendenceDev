@@ -33,6 +33,42 @@
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
 #define PROPERTY_TOTAL_EXISTING					CONSTLIT("totalExisting")
 
+static char *CACHED_EVENTS[CMissionType::evtCount] =
+	{
+	"CanBeCreated",
+	};
+
+bool CMissionType::FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const
+
+//	FireCanCreate
+//
+//	Invokes <CanBeCreated> to see if the mission is available to be created.
+
+	{
+	//	If we cannot find CanBeCreated event, then we assume we can create this
+	//	mission.
+
+	SEventHandlerDesc Handler;
+	if (!FindCachedEventHandler(evtCanBeCreated, &Handler))
+		return true;
+
+	//	Fire the event
+
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineDataVar(pCreateData);
+	Ctx.DefineSpaceObject(CONSTLIT("aOwnerObj"), pOwner);
+
+	ICCItemPtr pResult = Ctx.RunCode(Handler);
+	if (pResult->IsError())
+		{
+		::kernelDebugLogPattern("[%08x] <CanBeCreated>: %s", GetUNID(), pResult->GetStringValue());
+		return false;
+		}
+	else
+		return !pResult->IsNil();
+	}
+
 bool CMissionType::FindDataField (const CString &sField, CString *retsValue) const
 
 //	FindDataField
@@ -64,6 +100,8 @@ ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	m_CachedEvents.Init(this, CACHED_EVENTS);
+
 	return NOERROR;
 	}
 

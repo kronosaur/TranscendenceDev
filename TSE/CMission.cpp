@@ -198,7 +198,7 @@ ALERROR CMission::Create (CMissionType *pType,
 
 	//	If we cannot encounter this mission, then we fail
 
-	if (!pType->CanBeEncountered())
+	if (!pType->CanBeCreated(pOwner, pCreateData))
 		return ERR_NOTFOUND;
 
 	//	Create the new object
