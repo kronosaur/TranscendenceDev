@@ -217,6 +217,22 @@ bool CSovereign::CalcSelfRel (void)
 	return (pRel != NULL);
 	}
 
+#ifdef DEBUG_ENEMY_CACHE_BUG
+void CSovereign::DebugObjDeleted (CSpaceObject *pObj) const
+
+//	DebugObjDeleted
+//
+//	Make sure this object is not in our cache.
+
+	{
+	for (int i = 0; i < m_EnemyObjects.GetCount(); i++)
+		if (pObj == m_EnemyObjects.GetObj(i))
+			{
+			ASSERT(false)
+			}
+	}
+#endif
+
 void CSovereign::DeleteRelationships (void)
 
 //	DeleteRelationships

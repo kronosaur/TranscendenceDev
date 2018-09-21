@@ -22,6 +22,7 @@
 //	Define some debugging symbols
 
 #ifdef DEBUG
+#define DEBUG_ENEMY_CACHE_BUG
 //#define DEBUG_ALL_ITEMS
 //#define DEBUG_ALL_NODES
 //#define DEBUG_ASTAR_PATH

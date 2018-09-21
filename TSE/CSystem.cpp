@@ -179,6 +179,17 @@ ALERROR CSystem::AddTimedEvent (CSystemEvent *pEvent)
 	return NOERROR;
 	}
 
+void CSystem::AddToDeleteList (CSpaceObject *pObj)
+
+//	AddToDeleteList
+//
+//	Adds the object to a list to be deleted later.
+
+	{
+	ASSERT(pObj->IsDestroyed());
+	m_DeletedObjects.FastAdd(pObj);
+	}
+
 ALERROR CSystem::AddToSystem (CSpaceObject *pObj, int *retiIndex)
 
 //	AddToSystem

@@ -12,9 +12,7 @@ void CAscendedObjectList::CleanUp (void)
 //	Clean up the structure. We own all objects.
 
 	{
-	int i;
-
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		delete m_List[i];
 
 	m_List.DeleteAll();

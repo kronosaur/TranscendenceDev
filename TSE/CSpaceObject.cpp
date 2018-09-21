@@ -320,6 +320,13 @@ CSpaceObject::~CSpaceObject (void)
 		delete pDelete;
 		}
 
+#ifdef DEBUG_ENEMY_CACHE_BUG
+	for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+		{
+		g_pUniverse->GetSovereign(i)->DebugObjDeleted(this);
+		}
+#endif
+
 #ifdef DEBUG_OBJ_REFERENCES
 	//	Make sure the object is not being held by anyone else
 

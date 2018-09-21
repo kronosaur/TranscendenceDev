@@ -67,6 +67,9 @@ class CSovereign : public CDesignType
 		CSovereign (void);
 		~CSovereign (void);
 
+#ifdef DEBUG_ENEMY_CACHE_BUG
+		void DebugObjDeleted (CSpaceObject *pObj) const;
+#endif
 		void DeleteRelationships (void);
 		inline void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);

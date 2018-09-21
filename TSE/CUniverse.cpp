@@ -2578,6 +2578,9 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 //	Sets the current system
 
 	{
+	if (m_pCurrentSystem)
+		m_pCurrentSystem->FlushEnemyObjectCache();
+
 	CSystem *pOldSystem = m_pCurrentSystem;
 	m_pCurrentSystem = pSystem;
 
