@@ -132,7 +132,7 @@ static const SOrderTypeData g_OrderTypes[] =
 
 static char *g_pszDestructionCauses[killedCount] =
 	{
-	"",
+	"removedFromSystem",
 
 	"damage",
 	"runningOutOfFuel",
