@@ -95,10 +95,21 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	m_pArmorClass = pType->GetArmorClass();
 	ASSERT(m_pArmorClass);
 
-	//	Clear the enhancement stack because it might include some item 
-	//	enhancements from the previous armor item.
+	//	Set up the enhancements from the armor itself. We will add other 
+	//	enhancements later, in CShip::CalcArmorBonus.
+	//
+	//	NOTE: We need to do this so that the enhancements match the calculation
+	//	of hit points below. That way, in CalcArmorBonus we will have the 
+	//	correct value for old hit points when we apply other enhancements.
 
-	if (m_pEnhancements)
+	const CItemEnhancement &Mods = ItemCtx.GetMods();
+	if (!Mods.IsEmpty())
+		{
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		pEnhancements->Insert(Mods);
+		m_pEnhancements = pEnhancements;
+		}
+	else
 		m_pEnhancements = NULL;
 
 	//	Set
@@ -250,6 +261,14 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 
 		else
 			{
+			//	This should never happen, but if it does, we deal with it.
+
+			if (m_iHitPoints > iOldMaxHP)
+				{
+				iOldMaxHP = m_iHitPoints;
+				ASSERT(false);
+				}
+
 			Metric rDamage = (iOldMaxHP - m_iHitPoints) / (Metric)iOldMaxHP;
 			int iDamage = Min(mathRound(rDamage * iNewMaxHP), iNewMaxHP);
 			m_iHitPoints = iNewMaxHP - iDamage;
