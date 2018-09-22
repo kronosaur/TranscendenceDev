@@ -272,12 +272,12 @@ void CFleetShipAI::Behavior (SUpdateCtx &Ctx)
 				int iCounterAdj;
 				if (m_AICtx.GetCombatStyle() == aicombatStandOff)
 					{
-					rRange = m_AICtx.GetBestWeaponRange() / 2.0;
+					rRange = Max(m_pTarget->GetHitSize(), (0.5 * m_AICtx.GetBestWeaponRange()));
 					iCounterAdj = 2;
 					}
 				else
 					{
-					rRange = m_AICtx.GetBestWeaponRange() / 6.0;
+					rRange = (0.5 * m_pTarget->GetHitSize()) + (0.2 * m_AICtx.GetBestWeaponRange());
 					iCounterAdj = 1;
 					}
 
