@@ -2158,6 +2158,77 @@ CString CSystem::GetAttribsAtPos (const CVector &vPos)
 	return ::AppendModifiers(sAttribs, m_Territories.GetAttribsAtPos(vPos));
 	}
 
+void CSystem::GetDebugInfo (SDebugInfo &Info) const
+
+//	GetDebugInfo
+//
+//	Returns debug info when we crash. 
+
+	{
+	TArray<CSpaceObject *> Stars;
+
+	//	Loop over all objects
+
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL)
+			continue;
+
+		try
+			{
+			if (pObj->GetSystem() != this)
+				Info.iBadObjs++;
+			else if (pObj->IsDestroyed())
+				Info.iDestroyedObjs++;
+			else
+				{
+				Info.iTotalObjs++;
+				}
+
+			//	If this is a star, keep track.
+
+			if (pObj->GetScale() == scaleStar)
+				{
+				Info.iStarObjs++;
+				Stars.Insert(pObj);
+				}
+			}
+		catch (...)
+			{
+			//	Crashed accessing an object
+
+			Info.iBadObjs++;
+			}
+		}
+
+	//	Make sure our cached list of stars is OK.
+
+	for (int i = 0; i < m_Stars.GetCount(); i++)
+		{
+		try
+			{
+			CSpaceObject *pStar = m_Stars[i].pStarObj;
+			if (pStar == NULL)
+				Info.bBadStarCache = true;
+			else if (pStar->IsDestroyed())
+				Info.bBadStarCache = true;
+			else if (pStar->GetSystem() != this)
+				Info.bBadStarCache = true;
+			else if (!Stars.Find(pStar))
+				Info.bBadStarCache = true;
+			}
+		catch (...)
+			{
+			Info.bBadStarCache = true;
+			}
+		}
+
+	//	Deleted object list
+
+	Info.iDeletedObj += m_DeletedObjects.GetCount();
+	}
+
 int CSystem::GetEmptyLocationCount (void)
 
 //	GetEmptyLocationCount

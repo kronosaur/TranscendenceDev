@@ -228,7 +228,7 @@ void CSovereign::DebugObjDeleted (CSpaceObject *pObj) const
 	for (int i = 0; i < m_EnemyObjects.GetCount(); i++)
 		if (pObj == m_EnemyObjects.GetObj(i))
 			{
-			ASSERT(false)
+			ASSERT(false);
 			}
 	}
 #endif

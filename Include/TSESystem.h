@@ -650,6 +650,17 @@ class CSystem
 			VWP_MINING_DISPLAY =			0x00000004,	//	Show unexplored asteroids
 			};
 
+		struct SDebugInfo
+			{
+			int iTotalObjs = 0;					//	Total number of non-NULL CSpaceObjects
+			int iDestroyedObjs = 0;				//	->IsDestroyed() == true
+			int iDeletedObj = 0;				//	In m_DeletedObjects
+			int iBadObjs = 0;					//	Crash when trying to access object
+			int iStarObjs = 0;					//	Total stars
+
+			bool bBadStarCache = false;			//	m_Stars array is bad.
+			};
+
 		//	System methods
 
 		static ALERROR CreateEmpty (CUniverse *pUniv, CTopologyNode *pTopology, CSystem **retpSystem);
@@ -746,8 +757,7 @@ class CSystem
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
 		void FlushEnemyObjectCache (void);
 		CString GetAttribsAtPos (const CVector &vPos);
-		inline CSpaceObject *GetDestroyedObject (int iIndex) { return m_DeletedObjects.GetObj(iIndex); }
-		inline int GetDestroyedObjectCount (void) { return m_DeletedObjects.GetCount(); }
+		void GetDebugInfo (SDebugInfo &Info) const;
 		inline CEnvironmentGrid *GetEnvironmentGrid (void) { InitSpaceEnvironment(); return m_pEnvironment; }
 		inline DWORD GetID (void) { return m_dwID; }
 		inline int GetLastUpdated (void) { return m_iLastUpdated; }

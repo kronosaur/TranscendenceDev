@@ -321,9 +321,12 @@ CSpaceObject::~CSpaceObject (void)
 		}
 
 #ifdef DEBUG_ENEMY_CACHE_BUG
-	for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+	if (g_pUniverse)
 		{
-		g_pUniverse->GetSovereign(i)->DebugObjDeleted(this);
+		for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+			{
+			g_pUniverse->GetSovereign(i)->DebugObjDeleted(this);
+			}
 		}
 #endif
 
