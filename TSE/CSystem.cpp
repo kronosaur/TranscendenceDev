@@ -2119,9 +2119,13 @@ void CSystem::FlushDeletedObjects (void)
 //	Flush deleted objects from the deleted list.
 
 	{
-	int i;
+	//	Clear out the grid, so that it's not holding on to stale objects.
 
-	for (i = 0; i < m_DeletedObjects.GetCount(); i++)
+	m_ObjGrid.DeleteAll();
+
+	//	Flush objects deleted last tick
+
+	for (int i = 0; i < m_DeletedObjects.GetCount(); i++)
 		{
 		CSpaceObject *pObj = m_DeletedObjects.GetObj(i);
 		if (pObj->IsNamed())
@@ -4611,6 +4615,12 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	int iMoveObj = 0;
 #endif
 
+	//	Delete all objects in the deleted list (we do this at the
+	//	beginning because we want to keep the list after the update
+	//	so that callers can examine it).
+
+	FlushDeletedObjects();
+
 	//	Set up context
 
 	SUpdateCtx Ctx;
@@ -4623,11 +4633,10 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	CalcAutoTarget(Ctx);
 
-	//	Delete all objects in the deleted list (we do this at the
-	//	beginning because we want to keep the list after the update
-	//	so that callers can examine it).
+	//	Add all objects to the grid so that we can do faster
+	//	hit tests
 
-	FlushDeletedObjects();
+	CalcObjGrid(Ctx);
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some
@@ -4637,11 +4646,6 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	SetProgramState(psUpdatingEvents);
 	if (!IsTimeStopped() && (g_pUniverse->GetPlayerShip() || SystemCtx.bForceEventFiring))
 		m_TimedEvents.Update(m_iTick, this);
-
-	//	Add all objects to the grid so that we can do faster
-	//	hit tests
-
-	CalcObjGrid(Ctx);
 
 	//	If necessary, mark as painted so that objects update correctly.
 
