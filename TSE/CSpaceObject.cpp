@@ -6270,8 +6270,14 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 			return false;
 
 		case dockingDenied:
-			pObj->SendMessage(this, pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, CONSTLIT("Docking request denied")));
+			{
+			CString sText;
+			if (!pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, &sText))
+				sText = CONSTLIT("Docking request denied");
+
+			pObj->SendMessage(this, sText);
 			return false;
+			}
 			
 		default:
 			//	Should never happen. This means that we missed a result type.
@@ -7425,20 +7431,6 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, CString *retsT
 	//	Otherwise, we can't find it.
 
 	return false;
-	}
-
-CString CSpaceObject::Translate (const CString &sID, ICCItem *pData, const CString &sDefault)
-
-//	Translate
-//
-//	Translate a message by ID
-
-	{
-	CString sMsg;
-	if (!Translate(sID, pData, &sMsg))
-		return sDefault;
-
-	return sMsg;
 	}
 
 void CSpaceObject::Update (SUpdateCtx &Ctx)

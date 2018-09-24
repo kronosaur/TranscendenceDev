@@ -861,7 +861,6 @@ class CSpaceObject : public CObject
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
 		bool Translate (const CString &sID, ICCItem *pData, CString *retsText);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult);
-		CString Translate (const CString &sID, ICCItem *pData, const CString &sDefault);
 		void UseItem (CItem &Item, CString *retsError = NULL);
 
 		inline void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
