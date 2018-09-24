@@ -187,6 +187,8 @@ void CSystem::AddToDeleteList (CSpaceObject *pObj)
 
 	{
 	ASSERT(pObj->IsDestroyed());
+	ASSERT(pObj->GetID() != 0xdddddddd);
+
 	m_DeletedObjects.FastAdd(pObj);
 	}
 

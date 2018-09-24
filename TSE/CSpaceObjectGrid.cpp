@@ -34,6 +34,24 @@ CSpaceObjectGrid::~CSpaceObjectGrid (void)
 	delete [] m_pGrid;
 	}
 
+void CSpaceObjectGrid::DebugObjDeleted (CSpaceObject *pObj) const
+
+//	DebugObjDeleted
+//
+//	pObj has been deleted. Make sure that it is no longer part of the grid. This
+//	is used to debug a problem.
+
+	{
+	int iTotal = m_iGridSize * m_iGridSize;
+	for (int i = 0; i < iTotal; i++)
+		{
+		if (m_pGrid[i].FindObj(pObj))
+			{
+			ASSERT(false);
+			}
+		}
+	}
+
 void CSpaceObjectGrid::Delete (CSpaceObject *pObj)
 
 //	Delete

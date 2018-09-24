@@ -324,9 +324,11 @@ CSpaceObject::~CSpaceObject (void)
 	if (g_pUniverse)
 		{
 		for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
-			{
 			g_pUniverse->GetSovereign(i)->DebugObjDeleted(this);
-			}
+
+		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+		if (pSystem)
+			pSystem->GetObjectGrid().DebugObjDeleted(this);
 		}
 #endif
 

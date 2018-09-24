@@ -1055,6 +1055,7 @@ class CSpaceObjectGrid
 		~CSpaceObjectGrid (void);
 
 		inline void AddObject (CSpaceObject *pObj);
+		void DebugObjDeleted (CSpaceObject *pObj) const;
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags) const;

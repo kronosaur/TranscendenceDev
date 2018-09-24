@@ -768,6 +768,7 @@ class CSystem
 		CNavigationPath *GetNavPathByID (DWORD dwID);
 		inline CSpaceObject *GetObject (int iIndex) const { return m_AllObjects[iIndex]; }
 		inline int GetObjectCount (void) const { return m_AllObjects.GetCount(); }
+		inline const CSpaceObjectGrid &GetObjectGrid (void) const { return m_ObjGrid; }
 		inline void GetObjectsInBox (const CVector &vPos, Metric rRange, CSpaceObjectList &Result)
 			{
 			CVector vRange = CVector(rRange, rRange);
