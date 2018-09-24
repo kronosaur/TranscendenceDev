@@ -2111,7 +2111,7 @@ void CSpaceObject::FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject
 		}
 	}
 
-bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
+bool CSpaceObject::FireGetDockScreen (CDockScreenSys::SSelector *retSelector) const
 
 //	FireGetDockScreen
 //
@@ -2134,7 +2134,7 @@ bool CSpaceObject::FireGetDockScreen (CString *retsScreen, int *retiPriority, IC
 		return false;
 		}
 
-	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
+	return CTLispConvert::AsScreenSelector(pResult, retSelector);
 	}
 
 bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
@@ -3648,62 +3648,44 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 
 	//	First see if any global types override this
 
-	CString sScreen;
-	int iPriority;
-	ICCItemPtr pData;
-	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, &sScreen, &pData, &iPriority))
-		iPriority = -1;
+	CDockScreenSys::SSelector Screen;
+	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, &Screen))
+		Screen.iPriority = -1;
 
 	//	See if any overlays have dock screens
 
 	COverlayList *pOverlays;
 	if (pOverlays = GetOverlays())
 		{
-		CString sOverlayScreen;
-		int iOverlayPriority;
-		ICCItemPtr pOverlayData;
-		if (pOverlays->FireGetDockScreen(this, &sOverlayScreen, &iOverlayPriority, &pOverlayData))
-			{
-			if (iOverlayPriority > iPriority)
-				{
-				sScreen = sOverlayScreen;
-				iPriority = iOverlayPriority;
-				pData = pOverlayData;
-				}
-			}
+		CDockScreenSys::SSelector OverlayScreen;
+		if (pOverlays->FireGetDockScreen(this, &OverlayScreen)
+				&& OverlayScreen.iPriority > Screen.iPriority)
+			Screen = OverlayScreen;
 		}
 
 	//	Next see if we have an event that handles this
 
-	CString sCustomScreen;
-	int iCustomPriority;
-	ICCItemPtr pCustomData;
-	if (FireGetDockScreen(&sCustomScreen, &iCustomPriority, &pCustomData))
-		{
-		if (iCustomPriority > iPriority)
-			{
-			sScreen = sCustomScreen;
-			iPriority = iCustomPriority;
-			pData = pCustomData;
-			}
-		}
+	CDockScreenSys::SSelector CustomScreen;
+	if (FireGetDockScreen(&CustomScreen)
+			&& CustomScreen.iPriority > Screen.iPriority)
+		Screen = CustomScreen;
 
 	//	If an event has overridden the dock screen, then resolve
 	//	the screen now.
 
-	if (iPriority != -1)
+	if (Screen.iPriority != -1)
 		{
-		CDesignType *pScreen = CDockScreenType::ResolveScreen(GetType(), sScreen, retsScreen);
+		CDesignType *pScreen = CDockScreenType::ResolveScreen(GetType(), Screen.sScreen, retsScreen);
 		if (pScreen)
 			{
 			if (retpData)
-				*retpData = pData;
+				*retpData = Screen.pData;
 
 			return pScreen;
 			}
 		else
 			{
-			::kernelDebugLogPattern("Unable to resolve screen: %s", sScreen);
+			::kernelDebugLogPattern("Unable to resolve screen: %s", Screen.sScreen);
 			}
 		}
 

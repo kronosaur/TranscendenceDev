@@ -274,7 +274,7 @@ bool COverlayList::DestroyDeleted (void)
 	return bModified;
 	}
 
-bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
+bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
 
 //	FireGetDockScreen
 //
@@ -284,44 +284,38 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	CString sBestScreen;
-	int iBestPriority = -1;
-	ICCItemPtr pBestData;
+	CDockScreenSys::SSelector BestScreen;
+	BestScreen.iPriority = -1;
 
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
 		if (!pField->IsDestroyed())
 			{
-			CString sScreen;
-			int iPriority;
-			ICCItemPtr pData;
-
-			if (pField->FireGetDockScreen(pSource, &sScreen, &iPriority, &pData))
+			CDockScreenSys::SSelector OverlayScreen;
+			if (pField->FireGetDockScreen(pSource, OverlayScreen))
 				{
-				if (iPriority > iBestPriority)
-					{
-					sBestScreen = sScreen;
-					iBestPriority = iPriority;
-					pBestData = pData;
-					}
+				//	Short-circuit if all we care about is whether we have at 
+				//	least one screen.
+
+				if (retSelector == NULL)
+					return true;
+
+				//	See if this is better than previous.
+
+				else if (OverlayScreen.iPriority > BestScreen.iPriority)
+					BestScreen = OverlayScreen;
 				}
 			}
 
 		pField = pField->GetNext();
 		}
 
-	if (iBestPriority == -1)
+	if (BestScreen.iPriority == -1)
 		return false;
 
-	if (retsScreen)
-		*retsScreen = sBestScreen;
-
-	if (retiPriority)
-		*retiPriority = iBestPriority;
-
-	if (retpData)
-		*retpData = pBestData;
+	if (retSelector)
+		*retSelector = BestScreen;
 
 	return true;
 	}

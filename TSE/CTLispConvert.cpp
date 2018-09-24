@@ -92,7 +92,7 @@ DWORD CTLispConvert::AsImageDesc (ICCItem *pItem, RECT *retrcRect)
 	return pItem->GetElement(IMAGE_UNID_INDEX)->GetIntegerValue();
 	}
 
-bool CTLispConvert::AsScreen (ICCItem *pItem, CString *retsScreen, ICCItemPtr *retpData, int *retiPriority)
+bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector)
 
 //	AsScreen
 //
@@ -100,33 +100,39 @@ bool CTLispConvert::AsScreen (ICCItem *pItem, CString *retsScreen, ICCItemPtr *r
 //	screen reference.
 
 	{
-	//	Pre-initialize
-
-	if (retsScreen) *retsScreen = NULL_STR;
-	if (retpData) retpData->Delete();
-	if (retiPriority) *retiPriority = 0;
+	//	Load
 
 	if (pItem->IsNil())
 		return false;
 
 	else if (pItem->IsList() && pItem->GetCount() >= 2)
 		{
-		if (retsScreen) *retsScreen = pItem->GetElement(0)->GetStringValue();
-		if (pItem->GetCount() >= 3)
+		if (retSelector)
 			{
-			if (retpData) *retpData = ICCItemPtr(pItem->GetElement(1)->Reference());
-			if (retiPriority) *retiPriority = pItem->GetElement(2)->GetIntegerValue();
-			}
-		else
-			{
-			if (retiPriority) *retiPriority = pItem->GetElement(1)->GetIntegerValue();
+			*retSelector = CDockScreenSys::SSelector();
+
+			retSelector->sScreen = pItem->GetElement(0)->GetStringValue();
+			if (pItem->GetCount() >= 3)
+				{
+				retSelector->pData = ICCItemPtr(pItem->GetElement(1)->Reference());
+				retSelector->iPriority = pItem->GetElement(2)->GetIntegerValue();
+				}
+			else
+				{
+				retSelector->iPriority = pItem->GetElement(1)->GetIntegerValue();
+				}
 			}
 
 		return true;
 		}
 	else if (pItem->GetCount() > 0)
 		{
-		if (retsScreen) *retsScreen = pItem->GetElement(0)->GetStringValue();
+		if (retSelector)
+			{
+			*retSelector = CDockScreenSys::SSelector();
+			retSelector->sScreen = pItem->GetElement(0)->GetStringValue();
+			}
+
 		return true;
 		}
 	else

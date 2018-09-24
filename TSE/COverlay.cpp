@@ -369,7 +369,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 		*retpResult = g_pUniverse->GetCC().CreateNil();
 	}
 
-bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, int *retiPriority, ICCItemPtr *retpData) const
+bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
 
 //	FireGetDockScreen
 //
@@ -392,7 +392,7 @@ bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CString *retsScreen, in
 		return false;
 		}
 
-	return CTLispConvert::AsScreen(pResult, retsScreen, retpData, retiPriority);
+	return CTLispConvert::AsScreenSelector(pResult, &Selector);
 	}
 
 void COverlay::FireOnCreate (CSpaceObject *pSource)

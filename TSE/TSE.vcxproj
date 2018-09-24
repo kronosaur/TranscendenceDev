@@ -245,6 +245,7 @@
     <ClInclude Include="..\Include\TSEArtifactAwakening.h" />
     <ClInclude Include="..\Include\TSEComms.h" />
     <ClInclude Include="..\Include\TSECurrency.h" />
+    <ClInclude Include="..\Include\TSEDesignDefs.h" />
     <ClInclude Include="..\Include\TSEDevices.h" />
     <ClInclude Include="..\Include\TSEDocking.h" />
     <ClInclude Include="..\Include\TSEDockScreenType.h" />

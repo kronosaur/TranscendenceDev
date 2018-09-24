@@ -22,6 +22,6 @@ class CTLispConvert
 
 		static ETypes ArgType (ICCItem *pItem, ETypes iDefaultType, ICCItem **retpValue = NULL);
 		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
-		static bool AsScreen (ICCItem *pItem, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
+		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
 		static ICCItemPtr CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value);
 	};

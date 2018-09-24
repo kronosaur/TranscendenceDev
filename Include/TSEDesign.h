@@ -241,7 +241,7 @@ class CDesignType
 		void FireCustomEvent (const CString &sEvent, ECodeChainEvents iEvent = eventNone, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
 		bool FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, CSpaceObject **retpGate, CVector *retvPos);
 		void FireGetGlobalAchievements (CGameStats &Stats);
-		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
+		bool FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const;
 		bool FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		int FireGetGlobalResurrectPotential (void);
 		void FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData = NULL, ICCItem **retpResult = NULL);
@@ -342,7 +342,7 @@ class CDesignType
 		ICCItem *FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		bool IsValidLoadXML (const CString &sTag);
 		void ReadGlobalData (SUniverseLoadCtx &Ctx);
-		void ReportEventError (const CString &sEvent, ICCItem *pError);
+		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 
 		//	CDesignType overrides
 		virtual ~CDesignType (void);
@@ -1220,7 +1220,7 @@ class CDesignCollection
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
-		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL, int *retiPriority = NULL);
+		bool FireGetGlobalDockScreen (CSpaceObject *pObj, CDockScreenSys::SSelector *retSelector = NULL);
 		bool FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
 		void FireOnGlobalEndDiagnostics (void);
 		void FireOnGlobalIntroCommand (const CString &sCommand);
