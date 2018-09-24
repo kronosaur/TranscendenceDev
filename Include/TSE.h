@@ -2019,6 +2019,7 @@ class CListWrapper : public IListData
 #include "TSEArtifactAwakening.h"
 #include "TSEEventsImpl.h"
 #include "TSEMapPainters.h"
+#include "TSETransLispUtil.h"
 
 #include "TSEUniverse.h"
 
