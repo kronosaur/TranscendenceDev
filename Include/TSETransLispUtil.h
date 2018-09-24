@@ -24,4 +24,5 @@ class CTLispConvert
 		static DWORD AsImageDesc (ICCItem *pItem, RECT *retrcRect);
 		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
 		static ICCItemPtr CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value);
+		static ICCItemPtr GetElementAt (ICCItem *pItem, const CString &sField);
 	};

@@ -105,6 +105,21 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 	if (pItem->IsNil())
 		return false;
 
+	else if (pItem->IsSymbolTable())
+		{
+		if (retSelector)
+			{
+			*retSelector = CDockScreenSys::SSelector();
+			
+			retSelector->sScreen = pItem->GetStringAt(CONSTLIT("screen"));
+			retSelector->iPriority = pItem->GetIntegerAt(CONSTLIT("priority"), 0);
+			retSelector->pData = GetElementAt(pItem, CONSTLIT("data"));
+			retSelector->bOverrideOnly = pItem->GetBooleanAt(CONSTLIT("overrideOnly"));
+			}
+
+		return true;
+		}
+
 	else if (pItem->IsList() && pItem->GetCount() >= 2)
 		{
 		if (retSelector)
@@ -150,4 +165,21 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Val
 		return ICCItemPtr(CC.CreateDouble((double)Value));
 	else
 		return ICCItemPtr(CC.CreateInteger((int)Value));
+	}
+
+ICCItemPtr CTLispConvert::GetElementAt (ICCItem *pItem, const CString &sField)
+
+//	GetElementAt
+//
+//	Returns a field in a struct.
+
+	{
+	if (pItem == NULL)
+		return ICCItemPtr();
+
+	ICCItem *pResult = pItem->GetElement(sField);
+	if (pResult == NULL)
+		return ICCItemPtr();
+	else
+		return ICCItemPtr(pResult->Reference());
 	}

@@ -71,7 +71,7 @@ class CCodeChainCtx
 		void SaveAndDefineItemVar (const CItem &Item);
 		void SaveAndDefineItemVar (CItemCtx &ItemCtx);
 		void SaveAndDefineOverlayID (DWORD dwID);
-		void SaveAndDefineSourceVar (CSpaceObject *pSource);
+		void SaveAndDefineSourceVar (const CSpaceObject *pSource);
 		void SaveAndDefineSovereignVar (CSovereign *pSource);
 		void SaveAndDefineType (DWORD dwUNID);
 		void SaveItemVar (void);

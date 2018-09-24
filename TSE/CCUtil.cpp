@@ -1092,7 +1092,7 @@ void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item)
 	pItem->Discard(&CC);
 	}
 
-void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, CSpaceObject *pObj)
+void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineGlobalSpaceObject
 //

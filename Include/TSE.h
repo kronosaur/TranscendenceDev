@@ -2102,7 +2102,7 @@ CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg);
 CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList);
 CCXMLWrapper *CreateXMLElementFromItem (CCodeChain &CC, ICCItem *pItem);
 void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item);
-void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, CSpaceObject *pObj);
+void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj);
 void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVector);
 void DefineGlobalWeaponType (CCodeChain &CC, const CString &sVar, CItemType *pWeaponType);
 CInstalledArmor *GetArmorSectionArg (CCodeChain &CC, ICCItem *pArg, CSpaceObject *pObj);

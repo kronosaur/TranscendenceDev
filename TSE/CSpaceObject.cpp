@@ -3649,7 +3649,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
-	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, &Screen))
+	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, 0, &Screen))
 		Screen.iPriority = -1;
 
 	//	See if any overlays have dock screens
@@ -4884,15 +4884,16 @@ bool CSpaceObject::HasDockScreen (void) const
 			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
 		return true;
 
-	//	NOTE: We do not consider <GetGlobalDockScreen> for purposes of whether 
-	//	we have a dock screen or not. This is for two reasons:
+	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
+	//	only interested in non-override screens. Override screens are screens
+	//	like decontamination screens, which should only show up if the station
+	//	or ship has other screens.
 	//
-	//	1.	<GetGlobalDockScreen> is generally used to override a dock screen
-	//		(not to add one to an object that doesn't have one).
-	//
-	//	2.	If we were to consider it, then all (e.g.,) Commonwealth ships 
-	//		would have docking ports because we create docking ports on ships
-	//		if we have a screen.
+	//	If we don't do this, then some ships would automatically get screens
+	//	because we auto-create docking ports for ships if they have screens.
+
+	if (g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, CDesignCollection::FLAG_NO_OVERRIDE))
+		return true;
 
 	return false;
 	}

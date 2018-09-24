@@ -895,7 +895,7 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 		}
 	}
 
-bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const
+bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, const CSpaceObject *pObj, CDockScreenSys::SSelector &Selector) const
 
 //	FireGetGlobalDockScreen
 //

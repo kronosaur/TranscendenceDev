@@ -659,7 +659,7 @@ void CCodeChainCtx::SaveAndDefineOverlayID (DWORD dwID)
 	DefineInteger(STR_A_OVERLAY_ID, (int)dwID);
 	}
 
-void CCodeChainCtx::SaveAndDefineSourceVar (CSpaceObject *pSource)
+void CCodeChainCtx::SaveAndDefineSourceVar (const CSpaceObject *pSource)
 
 //	SaveAndDefineSourceVar
 //
