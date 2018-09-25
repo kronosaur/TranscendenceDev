@@ -1458,6 +1458,7 @@ const DWORD FFL_FLAG_RECURSIVE =			0x00000004;
 bool fileGetFileList (const CString &sRoot, const CString &sPath, const CString &sSearch, DWORD dwFlags, TArray<CString> *retFiles);
 
 CTimeDate fileGetModifiedTime (const CString &sFilespec);
+CString fileGetProductName (void);
 DWORD fileGetProductVersion (void);
 ALERROR fileGetVersionInfo (const CString &sFilename, SFileVersionInfo *retInfo);
 bool fileMove (const CString &sSourceFilespec, const CString &sDestFilespec);

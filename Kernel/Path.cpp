@@ -180,6 +180,18 @@ CTimeDate fileGetModifiedTime (const CString &sFilespec)
 	return CTimeDate(SystemTime);
 	}
 
+CString fileGetProductName (void)
+
+//	fileGetProductName
+//
+//	Returns the name of the product.
+
+	{
+	SFileVersionInfo VerInfo;
+	fileGetVersionInfo(NULL_STR, &VerInfo);
+	return VerInfo.sProductName;
+	}
+
 DWORD fileGetProductVersion (void)
 
 //	fileGetProductVersion
