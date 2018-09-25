@@ -417,7 +417,8 @@ ALERROR CObjectImage::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Transparent color
 
 	CString sTransColor;
-	if (pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
+	if (Ctx.pExtension && Ctx.pExtension->GetAPIVersion() >= 36 
+			&& pDesc->FindAttribute(BACK_COLOR_ATTRIB, &sTransColor))
 		::kernelDebugLogPattern("backColor not supported: %s.", m_sBitmap);
 
 	//	Sprite
