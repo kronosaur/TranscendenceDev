@@ -413,8 +413,9 @@ ALERROR CExtension::CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLE
 	if (pExtension->m_dwAPIVersion > API_VERSION)
 		{
 		pExtension->m_pEntities = NULL;	//	Let our parent clean up
+		pExtension->m_pRootXML = NULL;
 		delete pExtension;
-		Ctx.sError = CONSTLIT("Newer version of the Transcendence engine is required.");
+		Ctx.sError = strPatternSubst(CONSTLIT("Newer version of %s is required."), fileGetProductName());
 		return ERR_FAIL;
 		}
 
@@ -638,7 +639,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	//	If this is a later version, then disabled it
 
 	if (pExtension->m_dwAPIVersion > API_VERSION)
-		pExtension->SetDisabled(CONSTLIT("Requires a newer version of Transcendence.exe"));
+		pExtension->SetDisabled(strPatternSubst(CONSTLIT("Requires a newer version of %s"), fileGetProductName()));
 
 	//	Release
 
