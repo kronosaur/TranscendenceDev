@@ -258,7 +258,7 @@ CMultiverseModel::EOnlineStates CMultiverseModel::GetOnlineState (CString *retsU
 	else if (m_sUsername.IsBlank())
 		{
 		if (retsUsername) *retsUsername = CONSTLIT("Offline");
-		if (retsDesc) *retsDesc = CONSTLIT("Click to register a new account");
+		if (retsDesc) *retsDesc = CONSTLIT("Click to register a new account or sign in");
 		return stateNoUser;
 		}
 	else if (!m_fUserSignedIn)
