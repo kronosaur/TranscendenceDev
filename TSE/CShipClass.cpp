@@ -1736,7 +1736,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_MANUFACTURER))
 		*retsValue = m_sManufacturer;
 	else if (strEquals(sField, FIELD_MASS))
-		*retsValue = strFromInt(m_Hull.GetMass());
+		*retsValue = strFromInt(mathRound(CalcMass(m_AverageDevices)));
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
 		*retsValue = strFromInt(mathRound(GetRotationDesc().GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
