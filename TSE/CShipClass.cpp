@@ -178,6 +178,7 @@
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
+#define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
@@ -824,7 +825,7 @@ Metric CShipClass::CalcDefenseRate (void) const
 	return rRate;
 	}
 
-CurrencyValue CShipClass::CalcHullValue (void) const
+CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 
 //	CalcHullValue
 //
@@ -851,7 +852,10 @@ CurrencyValue CShipClass::CalcHullValue (void) const
 	//	values.
 
 	if (m_Hull.GetMaxReactorPower() == 0)
+		{
+		if (retrPoints) *retrPoints = 0.0;
 		return 0;
+		}
 
 	//	We use a point system to sum of the value of the hull properties.
 
@@ -909,6 +913,9 @@ CurrencyValue CShipClass::CalcHullValue (void) const
 	Metric rPrice = rScaledPoints * rUnitPrice;
 
 	//	Done
+
+	if (retrPoints)
+		*retrPoints = rPoints;
 
 	return (CurrencyValue)round(rPrice);
 	}
@@ -3770,6 +3777,13 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_HAS_VARIANTS))
 		return ICCItemPtr(CC.CreateBool(m_pDevices && m_pDevices->IsVariant()));
+
+	else if (strEquals(sProperty, PROPERTY_HULL_POINTS))
+		{
+		Metric rPoints;
+		CalcHullValue(&rPoints);
+		return ICCItemPtr(CC.CreateInteger(mathRound(rPoints * 10.0)));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
 		return CTLispConvert::CreateCurrencyValue(CC, GetEconomyType()->Exchange(m_Hull.GetValue()));
