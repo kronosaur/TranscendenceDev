@@ -895,7 +895,7 @@ class CSpaceObject : public CObject
 		bool CanCommunicateWith (CSpaceObject *pSender);
 		inline bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
 		inline void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
-		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
+		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fAutoClearDestinationOnGate = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
 		inline void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
 		inline void ClearPlayerTarget (void) { m_fPlayerTarget = false; }
 		inline void ClearPOVLRS (void) { m_fInPOVLRS = false; }
@@ -1056,14 +1056,15 @@ class CSpaceObject : public CObject
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		inline ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		bool InteractsWith (int iInteraction) const;
-		bool IsAutoClearDestination (void) { return m_fAutoClearDestination; }
-		bool IsAutoClearDestinationOnDestroy (void) { return m_fAutoClearDestinationOnDestroy; }
-		bool IsAutoClearDestinationOnDock (void) { return m_fAutoClearDestinationOnDock; }
-		bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
-		inline bool IsCollisionTestNeeded (void) { return m_fCollisionTestNeeded; }
+		inline bool IsAutoClearDestination (void) const { return m_fAutoClearDestination; }
+		inline bool IsAutoClearDestinationOnDestroy (void) const { return m_fAutoClearDestinationOnDestroy; }
+		inline bool IsAutoClearDestinationOnDock (void) const { return m_fAutoClearDestinationOnDock; }
+		inline bool IsAutoClearDestinationOnGate (void) const { return m_fAutoClearDestinationOnGate; }
+		inline bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
+		inline bool IsCollisionTestNeeded (void) const { return m_fCollisionTestNeeded; }
 		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
 		bool IsCovering (CSpaceObject *pObj);
-		bool IsCreated (void) { return m_fOnCreateCalled; }
+		inline bool IsCreated (void) const { return m_fOnCreateCalled; }
 		bool IsDestinyTime (int iCycle, int iOffset = 0);
 		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
 		static bool IsDestroyedInUpdate (void) { return m_bObjDestroyed; }
@@ -1072,8 +1073,8 @@ class CSpaceObject : public CObject
 		bool IsEnemyInRange (Metric rMaxRange, bool bIncludeStations = false);
 		bool IsEscortingFriendOf (const CSpaceObject *pObj) const;
 		bool IsFriend (const CSpaceObject *pObj) const;
-		inline bool IsHighlighted (void) { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
-		bool IsInDamageCode (void) { return (m_fInDamage ? true : false); }
+		inline bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
+		inline bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
 		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
 		inline bool IsMarked (void) const { return m_fMarked; }
 		inline bool IsNamed (void) const { return m_fHasName; }
@@ -1081,13 +1082,13 @@ class CSpaceObject : public CObject
 		inline bool IsPlayerDestination (void) { return m_fPlayerDestination; }
 		inline bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);
-		inline bool IsPlayerTarget (void) { return m_fPlayerTarget; }
-		inline bool IsSelected (void) { return m_fSelected; }
-		inline bool IsShowingDamageBar (void) { return m_fShowDamageBar; }
-		inline bool IsShowingDistanceAndBearing (void) { return m_fShowDistanceAndBearing; }
-		inline bool IsShowingHighlight (void) { return m_fShowHighlight; }
+		inline bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
+		inline bool IsSelected (void) const { return m_fSelected; }
+		inline bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
+		inline bool IsShowingDistanceAndBearing (void) const { return m_fShowDistanceAndBearing; }
+		inline bool IsShowingHighlight (void) const { return m_fShowHighlight; }
 		bool IsStargateInRange (Metric rMaxRange);
-		inline bool IsSubscribedToEvents (CSpaceObject *pObj) { return m_SubscribedObjs.FindObj(pObj); }
+		inline bool IsSubscribedToEvents (CSpaceObject *pObj) const { return m_SubscribedObjs.FindObj(pObj); }
 		bool IsUnderAttack (void);
 		inline void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
@@ -1115,6 +1116,7 @@ class CSpaceObject : public CObject
 		inline void SetAutoClearDestination (void) { m_fAutoClearDestination = true; }
 		inline void SetAutoClearDestinationOnDestroy (void) { m_fAutoClearDestinationOnDestroy = true; }
 		inline void SetAutoClearDestinationOnDock (void) { m_fAutoClearDestinationOnDock = true; }
+		inline void SetAutoClearDestinationOnGate (void) { m_fAutoClearDestinationOnGate = true; }
 		inline void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
 		inline void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		inline void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
@@ -1683,7 +1685,7 @@ class CSpaceObject : public CObject
 		DWORD m_fManualAnchor:1;				//	TRUE if object is temporarily anchored
 		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
 		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
-		DWORD m_fSpare5:1;
+		DWORD m_fAutoClearDestinationOnGate:1;	//	TRUE if we should clear the destination when player gates
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

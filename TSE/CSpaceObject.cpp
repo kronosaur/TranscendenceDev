@@ -288,7 +288,8 @@ CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
 		m_fHasOnOrderChangedEvent(false),
 		m_fManualAnchor(false),
 		m_fCollisionTestNeeded(false),
-		m_fHasDockScreenMaybe(false)
+		m_fHasDockScreenMaybe(false),
+		m_fAutoClearDestinationOnGate(false)
 
 //	CSpaceObject constructor
 
@@ -1189,7 +1190,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fNoFriendlyFire =			((dwLoad & 0x00000100) ? true : false);
 	pObj->m_fTimeStop =					((dwLoad & 0x00000200) ? true : false);
 	pObj->m_fPlayerTarget =				((dwLoad & 0x00000400) ? true : false);
-	//	0x00000800 unused since version 158
+	pObj->m_fAutoClearDestinationOnGate = (((dwLoad & 0x00000800) ? true : false) && Ctx.dwVersion >= 158);
 	pObj->m_fNoFriendlyTarget =			((dwLoad & 0x00001000) ? true : false);
 	pObj->m_fPlayerDestination =		((dwLoad & 0x00002000) ? true : false);
 	pObj->m_fShowDistanceAndBearing =	((dwLoad & 0x00004000) ? true : false);
@@ -1722,7 +1723,9 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 
 //	EnterGate
 //
-//	Enter a stargate
+//	We enter a stargate.
+//
+//	NOTE: pDestNode and pStargate may be NULL.
 
 	{
 	int i;
@@ -1736,10 +1739,17 @@ void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntr
 
 	m_SubscribedObjs.NotifyOnObjEnteredGate(this, pDestNode, sDestEntryPoint, pStargate);
 
-	//	If some object destroyed the player while gating
+	//	Handle the case where the player entered the gate
 
 	if (IsPlayer())
 		{
+		//	Clear destination, if necessary
+
+		if (pStargate && pStargate->IsAutoClearDestinationOnGate())
+			pStargate->ClearPlayerDestination();
+
+		//	If some object destroyed the player while gating
+
 		if (IsDestroyed())
 			return;
 		}
@@ -7835,7 +7845,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoFriendlyFire			? 0x00000100 : 0);
 	dwSave |= (m_fTimeStop					? 0x00000200 : 0);
 	dwSave |= (m_fPlayerTarget				? 0x00000400 : 0);
-	//	0x00000800 unused
+	dwSave |= (m_fAutoClearDestinationOnGate ? 0x00000800 : 0);
 	dwSave |= (m_fNoFriendlyTarget			? 0x00001000 : 0);
 	dwSave |= (m_fPlayerDestination			? 0x00002000 : 0);
 	dwSave |= (m_fShowDistanceAndBearing	? 0x00004000 : 0);

@@ -2292,6 +2292,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'autoClear            Clear when in SRS range\n"
 			"   'autoClearOnDestroy   Clear when destroyed\n"
 			"   'autoClearOnDock      Clear when player docks\n"
+			"   'autoClearOnGate      Clear when player gates into object\n"
 			"   'showDistance         Show distance\n"
 			"   'showHighlight        Show target highlight",
 
@@ -8202,11 +8203,11 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_AS_DESTINATION:
 			{
-			int i;
 			bool bShowDistanceAndBearing = false;
 			bool bAutoClearDestination = false;
 			bool bAutoClearOnDestroy = false;
 			bool bAutoClearOnDock = false;
+			bool bAutoClearOnGate = false;
 			bool bShowHighlight = false;
 
 			//	If we have an extra argument then it is either a boolean (which
@@ -8216,25 +8217,14 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem *pOptions = pArgs->GetElement(1);
 				if (!pOptions->IsNil() 
-						&& (pOptions->IsIdentifier() || pOptions->IsList()))
+						&& (pOptions->IsIdentifier() || pOptions->IsList() || pOptions->IsSymbolTable()))
 					{
-					for (i = 0; i < pOptions->GetCount(); i++)
-						{
-						CString sOption = pOptions->GetElement(i)->GetStringValue();
-
-						if (strEquals(sOption, CONSTLIT("autoClear")))
-							bAutoClearDestination = true;
-						else if (strEquals(sOption, CONSTLIT("autoClearOnDestroy")))
-							bAutoClearOnDestroy = true;
-						else if (strEquals(sOption, CONSTLIT("autoClearOnDock")))
-							bAutoClearOnDock = true;
-						else if (strEquals(sOption, CONSTLIT("showDistance")))
-							bShowDistanceAndBearing = true;
-						else if (strEquals(sOption, CONSTLIT("showHighlight")))
-							bShowHighlight = true;
-						else
-							return pCC->CreateError(strPatternSubst(CONSTLIT("Invalid option: %s"), sOption));
-						}
+					bAutoClearDestination = pOptions->GetBooleanAt(CONSTLIT("autoClear"));
+					bAutoClearOnDestroy = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDestroy"));
+					bAutoClearOnDock = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDock"));
+					bAutoClearOnGate = pOptions->GetBooleanAt(CONSTLIT("autoClearOnGate"));
+					bShowDistanceAndBearing = pOptions->GetBooleanAt(CONSTLIT("showDistance"));
+					bShowHighlight = pOptions->GetBooleanAt(CONSTLIT("showHighlight"));
 					}
 				else
 					bShowDistanceAndBearing = !pOptions->IsNil();
@@ -8260,6 +8250,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pObj->SetAutoClearDestinationOnDestroy();
 			if (bAutoClearOnDock)
 				pObj->SetAutoClearDestinationOnDock();
+			if (bAutoClearOnGate)
+				pObj->SetAutoClearDestinationOnGate();
 			if (bShowHighlight)
 				pObj->SetShowHighlight();
 
