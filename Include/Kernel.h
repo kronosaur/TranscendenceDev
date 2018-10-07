@@ -76,15 +76,6 @@ inline BOOL ErrorWasDisplayed (ALERROR error) { return (error & ERR_FLAG_DISPLAY
 inline ALERROR ErrorSetDisplayed (ALERROR error) { return error | ERR_FLAG_DISPLAYED; }
 inline ALERROR ErrorCode (ALERROR error) { return error & ~ERR_FLAG_DISPLAYED; }
 
-class CException
-	{
-	public:
-		CException (ALERROR error) : m_error(error) { }
-
-	private:
-		int m_error;
-	};
-
 //	Miscellaneous macros
 
 inline int Absolute (int iValue) { return (iValue < 0 ? -iValue : iValue); }
@@ -631,6 +622,24 @@ class CString : public CObject
 		static PSTORESTRUCT g_pStore;
 		static int g_iStoreSize;
 		static PSTORESTRUCT g_pFreeStore;
+	};
+
+//	Exceptions
+
+class CException
+	{
+	public:
+		CException (ALERROR error, const CString &sMsg = NULL_STR) : 
+				m_error(error),
+				m_sMsg(sMsg)
+			{ }
+
+		inline ALERROR GetErrorCode (void) const { return m_error; }
+		CString GetErrorMessage (void) const;
+
+	private:
+		ALERROR m_error;
+		CString m_sMsg;
 	};
 
 //	CDictionary. Implementation of a dynamic array of entries

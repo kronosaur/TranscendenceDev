@@ -179,6 +179,19 @@ template <class VALUE> class TArray : public CArrayBase
 			DeleteBytes(iIndex * sizeof(VALUE), sizeof(VALUE));
 			}
 
+		void Delete (int iIndex, int iCount)
+			{
+			if (iIndex < 0 || iCount <= 0)
+				return;
+
+			iCount = Min(iCount, GetCount() - iIndex);
+			VALUE *pElement = (VALUE *)(GetBytes() + iIndex * sizeof(VALUE));
+			for (int i = 0; i < iCount; i++, pElement++)
+				pElement->VALUE::~VALUE();
+
+			DeleteBytes(iIndex * sizeof(VALUE), iCount * sizeof(VALUE));
+			}
+
 		void DeleteAll (void)
 			{
 			VALUE *pElement = (VALUE *)GetBytes();
