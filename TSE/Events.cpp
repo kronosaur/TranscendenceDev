@@ -76,7 +76,7 @@ void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 			break;
 
 		default:
-			throw CException(ERR_FAIL);
+			throw CException(ERR_FAIL, CONSTLIT("Invalid event type"));
 		}
 
 	//	Done

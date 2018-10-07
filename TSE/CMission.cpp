@@ -854,7 +854,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_pType = CMissionType::AsType(g_pUniverse->FindDesignType(dwLoad));
 	if (m_pType == NULL)
-		throw CException(ERR_FAIL);
+		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined mission type: %08x"), dwLoad));
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 	m_iStatus = (EStatus)dwLoad;

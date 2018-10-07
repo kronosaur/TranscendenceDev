@@ -748,7 +748,7 @@ void CEnvironmentGrid::ReadFromStream (SLoadCtx &Ctx)
 		//	Now load the tile map.
 
 		if (error = m_Map.ReadFromStream(Ctx.pStream))
-			throw CException(error);
+			throw CException(error, CONSTLIT("Unable to read environment grid."));
 
 		m_iTileCount = m_Map.GetTotalSize();
 		}

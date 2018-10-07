@@ -63,7 +63,10 @@ void CAscendedObjectList::ReadFromStream (SLoadCtx &Ctx)
 			{
 			CString sError = CSpaceObject::DebugLoadError(Ctx);
 			kernelDebugLogString(sError);
-			return;
+
+			m_List.Delete(i, (int)dwCount - i);
+			CleanUp();
+			throw;
 			}
 
 		//	Add to list

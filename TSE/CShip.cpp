@@ -5387,6 +5387,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 			}
 		}
 
+	//	If we still can't find the class, then this is an error.
+
+	if (m_pClass == NULL)
+		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined ship class: %08x."), dwLoad));
+
 	//	Load misc stuff
 
 	CSystem::ReadSovereignRefFromStream(Ctx, &m_pSovereign);
