@@ -2838,6 +2838,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'known             Known to player\n"
 			"   'lastVisitOn       Tick on which player last visited\n"
 			"   'lastVisitSeconds  Game seconds since player last visited\n"
 			"   'level             The level of the system\n"
@@ -3009,7 +3010,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysSetProperty [nodeID] property value) -> True/Nil\n\n"
 			
 			"property:\n\n"
-			
+
+			"   'known             Known to player\n"
 			"   'pos               Node position on map (x y)",
 
 			"*sv",	PPFLAG_SIDEEFFECTS,	},

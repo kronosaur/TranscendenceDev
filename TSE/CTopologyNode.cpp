@@ -42,6 +42,7 @@
 #define PROPERTY_DEST_GATE_ID					CONSTLIT("destGateID")
 #define PROPERTY_DEST_ID						CONSTLIT("destID")
 #define PROPERTY_GATE_ID						CONSTLIT("gateID")
+#define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LAST_VISITED_GAME_SECONDS		CONSTLIT("lastVisitSeconds")
 #define PROPERTY_LAST_VISITED_ON				CONSTLIT("lastVisitOn")
 #define PROPERTY_LEVEL							CONSTLIT("level")
@@ -515,7 +516,10 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_LAST_VISITED_GAME_SECONDS))
+	if (strEquals(sName, PROPERTY_KNOWN))
+		return CC.CreateBool(IsKnown());
+
+	else if (strEquals(sName, PROPERTY_LAST_VISITED_GAME_SECONDS))
 		{
 		DWORD dwLastVisited = GetLastVisitedTime();
 		if (dwLastVisited == 0xffffffff)
@@ -534,8 +538,10 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_LEVEL))
 		return CC.CreateInteger(GetLevel());
+
 	else if (strEquals(sName, PROPERTY_NAME))
 		return CC.CreateString(GetSystemName());
+
 	else if (strEquals(sName, PROPERTY_POS))
 		{
 		//	If no map, then no position
@@ -1267,7 +1273,10 @@ bool CTopologyNode::SetProperty (const CString &sName, ICCItem *pValue, CString 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sName, PROPERTY_POS))
+	if (strEquals(sName, PROPERTY_KNOWN))
+		SetKnown(!pValue->IsNil());
+
+	else if (strEquals(sName, PROPERTY_POS))
 		{
 		if (m_pMap == NULL)
 			{
@@ -1283,11 +1292,11 @@ bool CTopologyNode::SetProperty (const CString &sName, ICCItem *pValue, CString 
 
 		m_xPos = pValue->GetElement(0)->GetIntegerValue();
 		m_yPos = pValue->GetElement(1)->GetIntegerValue();
-
-		return true;
 		}
 	else
 		return false;
+
+	return true;
 	}
 
 void CTopologyNode::SetStargateCharted (const CString &sName, bool bCharted)
