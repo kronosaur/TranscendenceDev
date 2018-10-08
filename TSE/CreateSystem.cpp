@@ -2773,7 +2773,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		//	Parse the code
 
-		ICCItem *pCode = g_pUniverse->GetCC().Link(pObj->GetContentText(0), 0, NULL);
+		ICCItem *pCode = g_pUniverse->GetCC().Link(pObj->GetContentText(0));
 		if (pCode->IsError())
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("<Code>: %s"), pCode->GetStringValue());

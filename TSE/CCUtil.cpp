@@ -420,7 +420,12 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 	//	If prefixed with = sign, then this is a CodeChain expression
 
 	else if (*sValue.GetASCIIZPointer() == '=')
-		return CC.Link(sValue, 1, NULL);
+		{
+		CCodeChain::SLinkOptions Options;
+		Options.iOffset = 1;
+
+		return CC.Link(sValue, Options);
+		}
 
 	//	Handle some special constants
 

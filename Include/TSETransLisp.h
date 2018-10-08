@@ -60,10 +60,11 @@ class CCodeChainCtx
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
 		inline CUniverse &GetUniverse (void) { return *g_pUniverse; }
-		inline ICCItem *Link (const CString &sString, int iOffset, int *retiLinked) { return m_CC.Link(sString, iOffset, retiLinked); }
+		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options = CCodeChain::SLinkOptions());
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
 		ICCItem *Run (const SEventHandlerDesc &Event);
+		ICCItemPtr RunCode (ICCItem *pCode);
 		ICCItemPtr RunCode (const SEventHandlerDesc &Event);
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
 		ICCItem *RunLambda (ICCItem *pCode);

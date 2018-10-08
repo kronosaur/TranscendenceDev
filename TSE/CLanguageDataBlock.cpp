@@ -273,8 +273,19 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				//	Link the code
 
 				CCodeChainCtx CCCtx;
-				ICCItem *pCode = CCCtx.Link(pItem->GetContentText(0), 0, NULL);
-				if (pCode->IsError())
+				ICCItemPtr pCode = CCCtx.LinkCode(pItem->GetContentText(0));
+
+				//	Nil means blank
+
+				if (pCode->IsNil())
+					{
+					pEntry->pCode = NULL;
+					pEntry->sText = NULL_STR;
+					}
+
+				//	Report errors
+
+				else if (pCode->IsError())
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Language id: %s : %s"), sID, pCode->GetStringValue());
 					return ERR_FAIL;
@@ -283,7 +294,7 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				//	If pCode is a string and not an identifier, then we can just
 				//	store it directly.
 
-				if (pCode->IsIdentifier() && pCode->IsQuoted())
+				else if (pCode->IsIdentifier() && pCode->IsQuoted())
 					{
 					pEntry->pCode = NULL;
 					pEntry->sText = pCode->GetStringValue();
@@ -293,10 +304,6 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 				else
 					pEntry->pCode = pCode->Reference();
-
-				//	Done
-
-				CCCtx.Discard(pCode);
 				}
 
 			//	Otherwise, we parse it into a string.

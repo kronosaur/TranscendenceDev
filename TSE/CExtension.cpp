@@ -1354,15 +1354,18 @@ ALERROR CExtension::LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Parse the code and keep it
 
-	ICCItem *pCode = CCCtx.Link(pDesc->GetContentText(0), 0, NULL);
-	if (pCode->IsError())
+	ICCItemPtr pCode = CCCtx.LinkCode(pDesc->GetContentText(0));
+	if (pCode->IsNil())
+		return NOERROR;
+
+	else if (pCode->IsError())
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("%s globals: %s"), Ctx.sErrorFilespec, pCode->GetStringValue());
 		return ERR_FAIL;
 		}
 
 	SGlobalsEntry *pEntry = m_Globals.Insert();
-	pEntry->pCode = pCode;
+	pEntry->pCode = pCode->Reference();
 	pEntry->sFilespec = Ctx.sErrorFilespec;
 
 #ifdef DEBUG_GLOBALS

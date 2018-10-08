@@ -1561,7 +1561,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else if (strEquals(pSubDesc->GetTag(), COCKPIT_USE_TAG))
 			{
-			m_pUseCode = g_pUniverse->GetCC().Link(pSubDesc->GetContentText(0), 0, NULL);
+			m_pUseCode = g_pUniverse->GetCC().Link(pSubDesc->GetContentText(0));
 
 			//	These are also set in the main desc; we only override if we find them here
 

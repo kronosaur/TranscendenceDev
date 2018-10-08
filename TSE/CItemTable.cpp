@@ -2224,7 +2224,10 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 
 		m_Mods = CItemEnhancement();
 
-		m_pCode = CC.Link(pPos, 1, NULL);
+		CCodeChain::SLinkOptions Options;
+		Options.iOffset = 1;
+
+		m_pCode = CC.Link(pPos, Options);
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();

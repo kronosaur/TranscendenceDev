@@ -33,13 +33,12 @@ ALERROR CSystemCreateEvents::FireDeferredEvent (const CString &sEvent, CString *
 			{
 			//	Link the code
 
-			ICCItem *pCode = Ctx.Link(m_Events[i].pEventCode->GetContentText(0), 0, NULL);
+			ICCItemPtr pCode = Ctx.LinkCode(m_Events[i].pEventCode->GetContentText(0));
 			if (pCode->IsError())
 				{
 				if (retsError)
 					*retsError = pCode->GetStringValue();
 
-				Ctx.Discard(pCode);
 				return ERR_FAIL;
 				}
 
@@ -49,8 +48,7 @@ ALERROR CSystemCreateEvents::FireDeferredEvent (const CString &sEvent, CString *
 			Ctx.DefineContainingType(m_Events[i].pObj);
 			Ctx.SaveAndDefineSourceVar(m_Events[i].pObj);
 
-			ICCItem *pResult = Ctx.Run(pCode);
-			Ctx.Discard(pCode);
+			ICCItemPtr pResult = Ctx.RunCode(pCode);
 
 			//	Check error
 
@@ -59,11 +57,8 @@ ALERROR CSystemCreateEvents::FireDeferredEvent (const CString &sEvent, CString *
 				if (retsError)
 					*retsError = pResult->GetStringValue();
 
-				Ctx.Discard(pResult);
 				return ERR_FAIL;
 				}
-
-			Ctx.Discard(pResult);
 			}
 		}
 

@@ -1813,7 +1813,7 @@ ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsEr
 
 	//	Compile the code
 
-	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode, 0, NULL);
+	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode);
 	if (pCode->IsError())
 		{
 		if (retsError)

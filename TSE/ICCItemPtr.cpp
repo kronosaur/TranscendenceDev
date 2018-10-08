@@ -75,7 +75,7 @@ bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 
 	//	Compile the code
 
-	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode, 0, NULL);
+	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode);
 	if (pCode->IsError())
 		{
 		if (retsError)

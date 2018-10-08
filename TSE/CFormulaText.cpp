@@ -41,9 +41,11 @@ int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CSt
 
 		//	Link and evaluate the code
 
-		ICCItem *pExp = Ctx.Link(m_sText, 1, NULL);
-		ICCItem *pResult = Ctx.Run(pExp);	//	LATER:Event
-		Ctx.Discard(pExp);
+		CCodeChain::SLinkOptions Options;
+		Options.iOffset = 1;
+
+		ICCItemPtr pExp = Ctx.LinkCode(m_sText, Options);
+		ICCItemPtr pResult = Ctx.RunCode(pExp);	//	LATER:Event
 
 		//	Check for and return error
 
@@ -54,15 +56,12 @@ int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CSt
 				*retsError = sError;
 
 			kernelDebugLogString(sError);
-			Ctx.Discard(pResult);
 			return 0;
 			}
 
 		//	Done
 
-		int iResult = pResult->GetIntegerValue();
-		Ctx.Discard(pResult);
-		return iResult;
+		return pResult->GetIntegerValue();
 		}
 
 	//	If we have a number, then return it

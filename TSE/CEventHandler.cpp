@@ -74,7 +74,9 @@ ALERROR CEventHandler::AddEvent (const CString &sEvent, const CString &sCode, CS
 //	Adds an event
 
 	{
-	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode, 0, NULL);
+	CCodeChainCtx Ctx;
+
+	ICCItemPtr pCode = Ctx.LinkCode(sCode);
 	if (pCode->IsError())
 		{
 		if (retsError)
@@ -82,7 +84,7 @@ ALERROR CEventHandler::AddEvent (const CString &sEvent, const CString &sCode, CS
 		return ERR_FAIL;
 		}
 
-	m_Handlers.Insert(sEvent, pCode);
+	m_Handlers.Insert(sEvent, pCode->Reference());
 
 	return NOERROR;
 	}
@@ -147,8 +149,21 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pHandler = pDesc->GetContentElement(i);
-		ICCItem *pCode = g_pUniverse->GetCC().Link(pHandler->GetContentText(0), 0, NULL);
-		if (pCode->IsError())
+
+		CCodeChain::SLinkOptions Options;
+		Options.bNullIfEmpty = true;
+
+		ICCItemPtr pCode = ICCItemPtr(g_pUniverse->GetCC().Link(pHandler->GetContentText(0), Options));
+
+		//	If Link returns NULL, then it means that this was just whitespace
+		//	or comments only.
+
+		if (!pCode)
+			continue;
+
+		//	Report link errors.
+
+		else if (pCode->IsError())
 			{
 			Ctx.sError = strPatternSubst("<%s> event: %s", pHandler->GetTag(), pCode->GetStringValue());
 			return ERR_FAIL;
@@ -168,7 +183,7 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		//	Done
 
-		m_Handlers.Insert(pHandler->GetTag(), pCode);
+		m_Handlers.Insert(pHandler->GetTag(), pCode->Reference());
 		}
 
 	return NOERROR;
