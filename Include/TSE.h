@@ -940,6 +940,7 @@ class CSpaceObject : public CObject
 		int FireOnDamage (SDamageCtx &Ctx, int iDamage);
 		void FireOnDeselected (void);
 		void FireOnDestroy (const SDestroyCtx &Ctx);
+		bool FireOnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker);
 		void FireOnDestroyObj (const SDestroyCtx &Ctx);
 		bool FireOnDockObjAdj (CSpaceObject **retpObj);
 		void FireOnDockObjDestroyed (CSpaceObject *pDockTarget, const SDestroyCtx &Ctx);

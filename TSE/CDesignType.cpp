@@ -176,16 +176,13 @@ static char *CACHED_EVENTS[CDesignType::evtCount] =
 	{
 		"CanInstallItem",
 		"CanRemoveItem",
+		"OnDestroyCheck",
 		"OnGlobalTypesInit",
 		"OnObjDestroyed",
 		"OnSystemObjAttacked",
 		"OnSystemWeaponFire",
 		"OnUpdate",
 	};
-
-CString ParseAchievementSection (ICCItem *pItem);
-CString ParseAchievementSort (ICCItem *pItem);
-CString ParseAchievementValue (ICCItem *pItem);
 
 CDesignType::CDesignType (void) : 
 		m_dwUNID(0), 

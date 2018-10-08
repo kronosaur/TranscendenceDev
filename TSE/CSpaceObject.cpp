@@ -54,6 +54,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_DATA_TRANSFER_EVENT                  CONSTLIT("OnDataTransfer")
 #define ON_DESELECTED_EVENT						CONSTLIT("OnDeselected")
 #define ON_DESTROY_EVENT						CONSTLIT("OnDestroy")
+#define ON_DESTROY_CHECK_EVENT					CONSTLIT("OnDestroyCheck")
 #define ON_DESTROY_OBJ_EVENT					CONSTLIT("OnDestroyObj")
 #define ON_DOCK_OBJ_ADJ_EVENT					CONSTLIT("OnDockObjAdj")
 #define ON_DOCK_OBJ_DESTROYED_EVENT				CONSTLIT("OnDockObjDestroyed")
@@ -2562,6 +2563,38 @@ void CSpaceObject::FireOnDestroy (const SDestroyCtx &Ctx)
 		}
 
 	DEBUG_CATCH
+	}
+
+bool CSpaceObject::FireOnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker)
+
+//	FireOnDestroyCheck
+//
+//	Fire OnDestroyCheck event. Returns FALSE if we avoid destruction.
+
+	{
+	CCodeChainCtx Ctx;
+
+	//	If we have code, call it.
+
+	SEventHandlerDesc Event;
+	if (FindEventHandler(CDesignType::evtOnDestroyCheck, &Event)
+			&& !Ctx.InEvent(eventOnDestroyCheck))
+		{
+		Ctx.SetEvent(eventOnDestroyCheck);
+		Ctx.DefineContainingType(this);
+		Ctx.SaveAndDefineSourceVar(this);
+		Ctx.DefineSpaceObject(CONSTLIT("aDestroyer"), Attacker.GetObj());
+		Ctx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Attacker.GetOrderGiver());
+		Ctx.DefineBool(CONSTLIT("aDestroy"), (iCause != enteredStargate && iCause != ascended));
+		Ctx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(iCause));
+
+		ICCItemPtr pResult = Ctx.RunCode(Event);
+		return !pResult->IsNil();
+		}
+
+	//	Otherwise, destruction succeeds
+
+	return true;
 	}
 
 void CSpaceObject::FireOnDestroyObj (const SDestroyCtx &Ctx)

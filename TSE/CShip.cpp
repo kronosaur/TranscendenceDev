@@ -4558,6 +4558,11 @@ bool CShip::OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attack
 	if (!m_Devices.OnDestroyCheck(this, iCause, Attacker))
 		return false;
 
+	//	See if the ship class handles this natively.
+
+	if (!FireOnDestroyCheck(iCause, Attacker))
+		return false;
+
 	//	Check to see if the controller can prevent the destruction
 	//	(For the player, this will invoke Domina powers, if possible)
 

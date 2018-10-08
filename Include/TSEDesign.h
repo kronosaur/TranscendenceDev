@@ -176,13 +176,14 @@ class CDesignType
 			{
 			evtCanInstallItem			= 0,
 			evtCanRemoveItem			= 1,
-			evtOnGlobalTypesInit		= 2,
-			evtOnObjDestroyed			= 3,
-			evtOnSystemObjAttacked		= 4,
-			evtOnSystemWeaponFire		= 5,
-			evtOnUpdate					= 6,
+			evtOnDestroyCheck			= 2,
+			evtOnGlobalTypesInit		= 3,
+			evtOnObjDestroyed			= 4,
+			evtOnSystemObjAttacked		= 5,
+			evtOnSystemWeaponFire		= 6,
+			evtOnUpdate					= 7,
 
-			evtCount					= 7,
+			evtCount					= 8,
 			};
 
         struct SMapDescriptionCtx
