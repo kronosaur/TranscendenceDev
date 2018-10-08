@@ -2035,7 +2035,7 @@ ICCItem *fnLink (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pCtx->pCC;
-	return pCC->Link(pArgs->GetElement(0)->GetStringValue(), 0, NULL);
+	return pCC->Link(pArgs->GetElement(0)->GetStringValue());
 	}
 
 ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)

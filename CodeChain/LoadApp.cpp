@@ -42,7 +42,7 @@ ICCItem *CCodeChain::LoadApp (HMODULE hModule, char *pszRes)
 
 	//	Run the app
 
-	pStartUp = Link(LITERAL("(boot)"), 0, NULL);
+	pStartUp = Link(LITERAL("(boot)"));
 	pResult = TopLevel(pStartUp, NULL);
 
 	//	Done

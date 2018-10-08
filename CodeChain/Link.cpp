@@ -14,7 +14,41 @@
 #define SYMBOL_CLOSEBRACE				'}'		//	Close structure
 #define SYMBOL_COLON					':'		//	Key/value separator
 
-ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked, int *ioiCurLine)
+ICCItem *CCodeChain::Link (const CString &sString, SLinkOptions &Options)
+
+//	Link
+//
+//	Parses the given string and converts it into a linked
+//	chain of items
+
+	{
+	//	If we ignore blank string, then check.
+
+	if (Options.bNullIfEmpty)
+		{
+		char *pStart = sString.GetPointer() + Options.iOffset;
+		char *pPos = pStart;
+
+		//	Skip any whitespace
+
+		pPos = SkipWhiteSpace(pPos, &Options.iCurLine);
+
+		//	If we've reached the end, then we have nothing.
+
+		if (*pPos == '\0')
+			return NULL;
+
+		//	Otherwise, set the offset so we start at the correct place.
+
+		Options.iOffset += (pPos - pStart);
+		}
+
+	//	Link
+
+	return LinkFragment(sString, Options.iOffset, &Options.iLinked, &Options.iCurLine);
+	}
+
+ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *retiLinked, int *ioiCurLine)
 
 //	Link
 //
@@ -48,7 +82,7 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 
 		pPos++;
 
-		pResult = Link(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+		pResult = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 		if (pResult->IsError())
 			return pResult;
 
@@ -92,7 +126,7 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 				ICCItem *pItem;
 				int iLinked;
 
-				pItem = Link(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				pItem = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pItem->IsError())
 					return pItem;
 
@@ -164,7 +198,7 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 				ICCItem *pKey;
 				int iLinked;
 
-				pKey = Link(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				pKey = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pKey->IsError())
 					{
 					pTable->Discard(this);
@@ -188,7 +222,7 @@ ICCItem *CCodeChain::Link (const CString &sString, int iOffset, int *retiLinked,
 
 				ICCItem *pValue;
 
-				pValue = Link(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
+				pValue = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pValue->IsError())
 					{
 					pKey->Discard(this);

@@ -832,6 +832,15 @@ class CEvalContext
 class CCodeChain
 	{
 	public:
+		struct SLinkOptions
+			{
+			int iOffset = 0;				//	Offset into string
+			bool bNullIfEmpty = false;		//	If we have a blank string, return NULL
+
+			int iLinked = 0;				//	Returns number of characters we parsed.
+			int iCurLine = 1;				//	Updated to return current line.
+			};
+
 		CCodeChain (void);
 		virtual ~CCodeChain (void);
 
@@ -886,7 +895,7 @@ class CCodeChain
 		inline ICCItem *GetNil (void) { return m_pNil; }
 		inline ICCItem *GetTrue (void) { return m_pTrue; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		ICCItem *Link (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
+		ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
 		ICCItem *LoadApp (HMODULE hModule, char *pszRes);
 		ICCItem *LoadInitFile (const CString &sFilename);
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
@@ -919,6 +928,7 @@ class CCodeChain
 		ICCItem *CreateIntegerIfPossible (const CString &sString);
 		ICCItem *CreateParseError (int iLine, const CString &sError);
 		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
+		ICCItem *LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
 		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);
 		ALERROR LoadDefinitions (IReadBlock *pBlock);
 		char *SkipWhiteSpace (char *pPos, int *ioiLine);
