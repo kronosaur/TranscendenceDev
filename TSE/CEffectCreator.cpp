@@ -718,7 +718,7 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	m_sUNID = strFromInt(GetUNID(), false);
 
 	if (error = InitBasicsFromXML(Ctx, pDesc))
-		return error;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Allow our subclass to initialize based on the effect
 	//	It is valid to not have an effect tag if we've got a dynamically
@@ -735,7 +735,7 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		if (pEventsDesc)
 			{
 			if (error = m_Events.InitFromXML(Ctx, pEventsDesc))
-				return error;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 
 		//	Load the single effect
@@ -746,7 +746,7 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		error = OnEffectCreateFromXML(Ctx, pEffect, m_sUNID);
 
 	if (error)
-		return error;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load damage descriptors
 
@@ -760,7 +760,7 @@ ALERROR CEffectCreator::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		m_pDamage = new CWeaponFireDesc;
 		if (error = m_pDamage->InitFromXML(Ctx, pDamageDesc, Options))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 	
 	return NOERROR;

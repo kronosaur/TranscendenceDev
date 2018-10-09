@@ -199,10 +199,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				pEffect, 
 				strPatternSubst(CONSTLIT("%d:e"), GetUNID()), 
 				&m_pEffect))
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: Unable to load effect"), GetUNID());
-			return error;
-			}
+			return ComposeLoadError(Ctx, CONSTLIT("Unable to load effect."));
 		}
 
 	pEffect = pDesc->GetContentElementByTag(HIT_EFFECT_TAG);
@@ -215,10 +212,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				pEffect, 
 				strPatternSubst(CONSTLIT("%d:h"), GetUNID()), 
 				&m_pHitEffect))
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: Unable to load hit effect"), GetUNID());
-			return error;
-			}
+			return ComposeLoadError(Ctx, CONSTLIT("Unable to load hit effect."));
 
 		//	For compatibility with previous versions, if we're using the old
 		//	<ShipEnergyFieldType> then altEffect defaults to TRUE. Otherwise, for new
@@ -240,26 +234,17 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Damage adjustment
 
 	if (error = m_AbsorbAdj.InitFromDamageAdj(Ctx, pDesc->GetAttribute(ABSORB_ADJ_ATTRIB), false))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: %s"), GetUNID(), Ctx.sError);
-		return error;
-		}
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Bonus adjustment
 
 	if (error = m_BonusAdj.InitFromHPBonus(Ctx, pDesc->GetAttribute(BONUS_ADJ_ATTRIB)))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("OverlayType %x: %s"), GetUNID(), Ctx.sError);
-		return error;
-		}
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load the weapon suppress
 
 	if (error = m_WeaponSuppress.InitFromXML(pDesc->GetAttribute(WEAPON_SUPPRESS_ATTRIB)))
-		{
-		Ctx.sError = CONSTLIT("Unable to load weapon suppress attribute");
-		return error;
-		}
+		return ComposeLoadError(Ctx, CONSTLIT("Unable to load weapon suppress attribute"));
 
 	//	Are we a field/shield overlay (or part of hull)?
 	//	By default, we are a shield overlay if we absorb damage.
@@ -290,10 +275,7 @@ ALERROR COverlayType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_iCounterType = counterRadius;
 
 		else
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle);
-			return ERR_FAIL;
-			}
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown counter style: %s"), sStyle));
 
 		m_sCounterLabel = pCounter->GetAttribute(LABEL_ATTRIB);
 		m_iCounterMax = pCounter->GetAttributeIntegerBounded(MAX_ATTRIB, 0, -1, 100);

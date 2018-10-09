@@ -229,7 +229,7 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pFilters)
 		{
 		if (error = m_ImageFilters.InitFromXML(Ctx, *pFilters))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 		m_ImageFilterCriteria.Init(pFilters->GetAttribute(CRITERIA_ATTRIB));
 		}
@@ -240,7 +240,7 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pEnhanceList)
 		{
 		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	return NOERROR;

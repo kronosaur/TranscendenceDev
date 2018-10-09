@@ -131,10 +131,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pDesc->FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
 		{
 		if (error = m_MaxAppearing.LoadFromXML(sAttrib))
-			{
-			Ctx.sError = CONSTLIT("Invalid maxAppearing parameter.");
-			return ERR_FAIL;
-			}
+			return ComposeLoadError(Ctx, CONSTLIT("Invalid maxAppearing parameter."));
 		}
 
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());

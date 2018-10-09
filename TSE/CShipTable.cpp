@@ -291,10 +291,7 @@ ALERROR CShipTable::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pElement)
 		{
 		if (error = IShipGenerator::CreateFromXML(Ctx, pElement, &m_pGenerator))
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("ShipTable (%x): %s"), GetUNID(), Ctx.sError);
-			return error;
-			}
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	return NOERROR;
@@ -911,6 +908,12 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_pShipClass.LoadUNID(Ctx, pDesc->GetAttribute(CLASS_ATTRIB)))
 		return error;
+
+	if (m_pShipClass.GetUNID() == 0)
+		{
+		Ctx.sError = CONSTLIT("Invalid or missing ship class.");
+		return ERR_FAIL;
+		}
 
 	if (error = m_pSovereign.LoadUNID(Ctx, pDesc->GetAttribute(SOVEREIGN_ATTRIB)))
 		return error;

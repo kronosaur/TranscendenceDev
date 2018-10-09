@@ -360,7 +360,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
 	m_dwBackgroundImage = pDesc->GetAttributeInteger(BACKGROUND_IMAGE_ATTRIB);
 	if (error = m_pPrimaryMap.LoadUNID(Ctx, pDesc->GetAttribute(PRIMARY_MAP_ATTRIB)))
-		return error;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	m_rBackgroundImageScale = pDesc->GetAttributeIntegerBounded(BACKGROUND_IMAGE_SCALE_ATTRIB, 10, 10000, 100) / 100.0;
 
@@ -400,7 +400,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 						strPatternSubst(CONSTLIT("%s:b"), sUNID),
 						pItem,
 						NULL_STR))
-					return error;
+					return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			}
 		else if (strEquals(pItem->GetTag(), TOPOLOGY_CREATOR_TAG)
@@ -417,21 +417,21 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			CString sProcessorUNID = strPatternSubst(CONSTLIT("%d:p%d"), GetUNID(), m_Processors.GetCount());
 
 			if (error = ITopologyProcessor::CreateFromXMLAsGroup(Ctx, pItem, sProcessorUNID, &pNewProc))
-				return error;
+				return ComposeLoadError(Ctx, Ctx.sError);
 
 			m_Processors.Insert(pNewProc);
 			}
 		else if (strEquals(pItem->GetTag(), SYSTEM_TOPOLOGY_TAG))
 			{
 			if (error = m_FixedTopology.LoadFromXML(Ctx, pItem, this, sUNID, true))
-				return error;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pItem->GetTag(), USES_TAG))
 			{
 			CSystemMapRef *pRef = m_Uses.Insert();
 
 			if (error = pRef->LoadUNID(Ctx, pItem->GetAttribute(UNID_ATTRIB)))
-				return error;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (IsValidLoadXML(pItem->GetTag()))
 			{
@@ -443,7 +443,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			//	If it's none of the above, see if it is a node descriptor
 
 			if (error = m_FixedTopology.LoadNodeFromXML(Ctx, pItem, this, sUNID))
-				return error;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		}
 
@@ -455,7 +455,7 @@ ALERROR CSystemMap::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	for (i = 0; i < RootNodes.GetCount(); i++)
 		if (error = m_FixedTopology.AddRootNode(Ctx, RootNodes[i]))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Init
 

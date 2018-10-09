@@ -270,7 +270,11 @@ ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sErro
 //	Sets Ctx.sError appropriately and returns ERR_FAIL
 
 	{
-	Ctx.sError = strPatternSubst("%s (%x): %s", GetNounPhrase(), GetUNID(), sError);
+	CString sEntity = GetEntityName();
+	if (sEntity.IsBlank())
+		sEntity = strPatternSubst("%08x", GetUNID());
+
+	Ctx.sError = strPatternSubst("%s (%s): %s", GetNounPhrase(), sEntity, sError);
 	return ERR_FAIL;
 	}
 
@@ -2429,6 +2433,10 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 	if (error = OnCreateFromXML(Ctx, pDesc))
 		{
 		Ctx.pType = NULL;
+
+		//	No need for ComposeLoadError because subclasses should always use 
+		//	that when returning errors.
+
 		return error;
 		}
 

@@ -210,27 +210,27 @@ ALERROR CPower::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (strEquals(pBlock->GetTag(), INVOKE_TAG))
 			{
 			if (!m_pCode.Load(pBlock->GetContentText(0), &Ctx.sError))
-				return ERR_FAIL;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pBlock->GetTag(), ON_SHOW_TAG))
 			{
 			if (!m_pOnShow.Load(pBlock->GetContentText(0), &Ctx.sError))
-				return ERR_FAIL;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_PLAYER_TAG))
 			{
 			if (!m_pOnInvokedByPlayer.Load(pBlock->GetContentText(0), &Ctx.sError))
-				return ERR_FAIL;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pBlock->GetTag(), ON_INVOKED_BY_NON_PLAYER_TAG))
 			{
 			if (!m_pOnInvokedByNonPlayer.Load(pBlock->GetContentText(0), &Ctx.sError))
-				return ERR_FAIL;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (strEquals(pBlock->GetTag(), ON_DESTROY_CHECK_TAG))
 			{
 			if (!m_pOnDestroyCheck.Load(pBlock->GetContentText(0), &Ctx.sError))
-				return ERR_FAIL;
+				return ComposeLoadError(Ctx, Ctx.sError);
 			}
 		else if (IsValidLoadXML(pBlock->GetTag()))
 			;

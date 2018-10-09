@@ -28,7 +28,7 @@ ALERROR CGenericType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	{
 	ALERROR error;
 	if (error = m_Comms.InitFromXML(Ctx, pDesc->GetContentElementByTag(COMMUNICATIONS_TAG)))
-		return error;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	return NOERROR;
 	}

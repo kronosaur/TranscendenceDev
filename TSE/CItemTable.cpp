@@ -431,10 +431,7 @@ ALERROR CItemTable::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (pElement)
 		{
 		if (error = IItemGenerator::CreateFromXML(Ctx, pElement, &m_pGenerator))
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("ItemTable (%x): %s"), GetUNID(), Ctx.sError);
-			return error;
-			}
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 
 	return NOERROR;
