@@ -528,6 +528,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_UNIVERSE_GET_ELAPSED_GAME_TIME	7
 #define FN_UNIVERSE_SET_OBJECT_KNOWN	8
 #define FN_UNIVERSE_ENTITY				9
+#define FN_UNIVERSE_GET_PROPERTY		10
 
 ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -3523,6 +3524,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"unvGetExtensionData",			fnUniverseGet,	FN_UNIVERSE_GET_EXTENSION_DATA,
 			"(unvGetExtensionData scope attrib) -> data",
 			"ss",	0,	},
+
+		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
+			"(unvGetProperty property)\n\n"
+				
+			"   'apiVersion        Engine API version\n",
+
+			"s",	0,	},
 
 		{	"unvGetRealDate",				fnUniverseGet,	FN_UNIVERSE_REAL_DATE,
 			"(unvGetRealDate) -> (year month day) GMT",
@@ -14030,6 +14038,9 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown format: %s"), sFormat));
 			}
+
+		case FN_UNIVERSE_GET_PROPERTY:
+			return g_pUniverse->GetProperty(*pCtx, pArgs->GetElement(0)->GetStringValue())->Reference();
 
 		case FN_UNIVERSE_FIND_OBJ:
 			{
