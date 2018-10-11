@@ -14,6 +14,8 @@
 #define CONTROLLER_GLADIATOR				CONSTLIT("gladiator")
 #define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
 
+#define PROPERTY_API_VERSION				CONSTLIT("apiVersion")
+
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID;
@@ -979,6 +981,21 @@ CSovereign *CUniverse::GetPlayerSovereign (void) const
 		return m_pPlayer->GetSovereign();
 	else
 		return NULL;
+	}
+
+ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+
+//	GetProperty
+//
+//	Returns a property
+
+	{
+	CCodeChain &CC = GetCC();
+
+	if (strEquals(sProperty, PROPERTY_API_VERSION))
+		return ICCItemPtr(CC.CreateInteger(API_VERSION));
+	else
+		return ICCItemPtr(CC.CreateNil());
 	}
 
 void CUniverse::GetRandomLevelEncounter (int iLevel, 
