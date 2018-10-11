@@ -636,23 +636,13 @@ class CPowerConsumption
 struct SShipPerformanceCtx
     {
     SShipPerformanceCtx (CShipClass *pClassArg) :
-			pClass(pClassArg),
-            pShip(NULL),
-            rSingleArmorFraction(0.0),
-			iArmorMass(0),
-            rOperatingSpeedAdj(1.0),
-			rArmorSpeedBonus(0.0),
-			rMaxSpeedLimit(LIGHT_SPEED),
-            bDriveDamaged(false),
-            CargoDesc(0),
-            iMaxCargoSpace(0),
-			bShieldInterference(false)
+			pClass(pClassArg)
         { }
 
-	CShipClass *pClass;						//	Class (required)
-    CShip *pShip;                           //  Target ship (may be NULL, if computing class perf)
-    Metric rSingleArmorFraction;            //  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
-	int iArmorMass;							//	Total mass of all armor segments (kg)
+	CShipClass *pClass = NULL;				//	Class (required)
+    CShip *pShip = NULL;					//  Target ship (may be NULL, if computing class perf)
+    Metric rSingleArmorFraction = 0.0;		//  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
+	int iArmorMass = 0;						//	Total mass of all armor segments (kg)
 
 	CAbilitySet Abilities;					//	Equipment installed
 
@@ -661,16 +651,16 @@ struct SShipPerformanceCtx
 	CReactorDesc ReactorDesc;				//	Reactor descriptor
 
     CDriveDesc DriveDesc;                   //  Drive descriptor
-	Metric rOperatingSpeedAdj;				//	Adjustment to speed based on operations (1.0 = normal)
-	Metric rArmorSpeedBonus;				//	Increase/decrease in speed
-	Metric rMaxSpeedLimit;					//	Bonuses should not increase speed above this limit
-	bool bDriveDamaged;                     //  If TRUE, cut thrust in half
+	Metric rOperatingSpeedAdj = 1.0;		//	Adjustment to speed based on operations (1.0 = normal)
+	Metric rArmorSpeedBonus = 0.0;			//	Increase/decrease in speed
+	Metric rMaxSpeedLimit = LIGHT_SPEED;	//	Bonuses should not increase speed above this limit
+	bool bDriveDamaged = false;				//  If TRUE, cut thrust in half
 
     CCargoDesc CargoDesc;                   //  Cargo space descriptor
-    int iMaxCargoSpace;                     //  Max cargo space limit imposed by class
+    int iMaxCargoSpace = 0;					//  Max cargo space limit imposed by class
                                             //      0 = no limit
 
-	bool bShieldInterference;				//	Meteorsteel (or something) is interfering
+	bool bShieldInterference = false;		//	Meteorsteel (or something) is interfering
     };
 
 class CShipPerformanceDesc
