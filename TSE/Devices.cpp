@@ -202,7 +202,8 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 
 	//	If we install equipment, then add it.
 
-	Ctx.Abilities.Set(m_Equipment);
+	if (ItemCtx.IsDeviceEnabled() && !ItemCtx.IsDeviceDamaged())
+		Ctx.Abilities.Set(m_Equipment);
 
     //  Let sub-classes handle it
 

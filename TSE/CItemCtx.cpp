@@ -319,6 +319,16 @@ CShipClass *CItemCtx::GetSourceShipClass (void) const
 	return pShip->GetClass();
 	}
 
+bool CItemCtx::IsDeviceDamaged (void)
+
+//	IsDeviceDamaged
+//
+//	Returns TRUE if the device is damaged.
+
+	{
+	return (GetDevice() != NULL && GetDevice()->IsDamaged());
+	}
+
 bool CItemCtx::IsDeviceEnabled (void)
 
 //  IsDeviceEnabled

@@ -562,6 +562,7 @@ class CItemCtx
 		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
         inline const CItem &GetVariantItem (void) const { return m_Variant; }
         inline bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+		bool IsDeviceDamaged (void)
         bool IsDeviceEnabled (void);
 		bool ResolveVariant (void);
         inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
