@@ -5,7 +5,8 @@ root = true
 
 # Windows-style newline + 4-col tabs
 [*]
-end_of_line = cr
+end_of_line = crlf
 insert_final_newline = true
 indent_style = tab
-indent_size = 4
+indent_size = tab
+tab_width = 4
