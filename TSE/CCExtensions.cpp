@@ -13201,7 +13201,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	If we have an object, set the POV
 
-			if (pObj)
+			if (pObj && !pObj->IsDestroyed() && pObj->GetSystem())
 				g_pUniverse->SetPOV(pObj);
 
 			//	Otherwise we create an auto-destroy marker

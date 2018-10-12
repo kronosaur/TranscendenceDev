@@ -2172,8 +2172,8 @@ void CUniverse::PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObjec
 //	Paints this object only
 
 	{
-	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportObject(Dest, rcView, m_pPOV, pObj);
+	if (m_pCurrentSystem && m_pPOV)
+		m_pCurrentSystem->PaintViewportObject(Dest, rcView, m_pPOV, pObj);
 	}
 
 void CUniverse::PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj)
@@ -2183,8 +2183,8 @@ void CUniverse::PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 //	Paints this object only
 
 	{
-	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportMapObject(Dest, rcView, m_pPOV, pObj);
+	if (m_pCurrentSystem && m_pPOV)
+		m_pCurrentSystem->PaintViewportMapObject(Dest, rcView, m_pPOV, pObj);
 	}
 
 void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
@@ -2194,9 +2194,9 @@ void CUniverse::PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags)
 //	Paint the current point of view
 
 	{
-	if (m_pPOV)
+	if (m_pCurrentSystem && m_pPOV)
 		{
-		m_pPOV->GetSystem()->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
+		m_pCurrentSystem->PaintViewport(Dest, rcView, m_pPOV, dwFlags, &m_ViewportAnnotations);
 
 		//	Reset annotations until the next update
 
@@ -2213,8 +2213,8 @@ void CUniverse::PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rSca
 //	Paint the LRS from the current POV
 
 	{
-	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
+	if (m_pCurrentSystem && m_pPOV)
+		m_pCurrentSystem->PaintViewportLRS(Dest, rcView, m_pPOV, rScale, dwFlags, retbNewEnemies);
 	}
 
 void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale)
@@ -2224,8 +2224,8 @@ void CUniverse::PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMap
 //	Paint the system map
 
 	{
-	if (m_pPOV)
-		m_pPOV->GetSystem()->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
+	if (m_pCurrentSystem && m_pPOV)
+		m_pCurrentSystem->PaintViewportMap(Dest, rcView, m_pPOV, rMapScale);
 
 	m_iPaintTick++;
 	}
@@ -2729,7 +2729,7 @@ void CUniverse::SetPlayerShip (CSpaceObject *pPlayer)
 	CC.DefineGlobal(STR_G_PLAYER_SHIP, (m_pPlayerShip ? CC.CreateInteger((int)m_pPlayerShip) : CC.CreateNil()));
 	}
 
-void CUniverse::SetPOV (CSpaceObject *pPOV)
+bool CUniverse::SetPOV (CSpaceObject *pPOV)
 
 //	SetPOV
 //
@@ -2737,6 +2737,19 @@ void CUniverse::SetPOV (CSpaceObject *pPOV)
 //	and to determine what should be updated.
 
 	{
+	//	Only valid if POV is part of a system.
+
+	if (pPOV && (pPOV->GetSystem() == NULL || pPOV->IsDestroyed()))
+		{
+		//	We try to leave the universe in a valid state. I.e., we cannot leave
+		//	the old POV because it might have been destroyed.
+
+		SetPOV(NULL);
+		return false;
+		}
+
+	//	Remove old POV
+
 	if (m_pPOV)
 		{
 		CSpaceObject *pOldPOV = m_pPOV;
@@ -2750,6 +2763,8 @@ void CUniverse::SetPOV (CSpaceObject *pPOV)
 		SetCurrentSystem(m_pPOV->GetSystem());
 	else
 		SetCurrentSystem(NULL);
+
+	return true;
 	}
 
 void CUniverse::StartGame (bool bNewGame)
@@ -2840,10 +2855,12 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 //	Update the system of the current point of view
 
 	{
+	if (m_pCurrentSystem == NULL)
+		return;
+
 	//	Update system
 
-	if (m_pPOV)
-		m_pPOV->GetSystem()->Update(Ctx, &m_ViewportAnnotations);
+	m_pCurrentSystem->Update(Ctx, &m_ViewportAnnotations);
 
 	//	Fire timed events
 
