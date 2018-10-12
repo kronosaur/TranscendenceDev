@@ -1291,6 +1291,11 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 			&pShip))
 		return error;
 
+	//	If the ship destroyed itself, then we return NOT_FOUND
+
+	if (pShip->IsDestroyed())
+		return ERR_NOTFOUND;
+
 	//	If we're coming out of a gate, set the timer
 
 	if (pExitGate)
