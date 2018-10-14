@@ -46,6 +46,7 @@
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+#define PROPERTY_REGEN							CONSTLIT("regen")
 
 #define STR_BY_SHIELD_INTEGRITY					CONSTLIT("byShieldIntegrity")
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
@@ -666,6 +667,37 @@ int CShieldClass::CalcPowerUsed (SUpdateCtx &UpdateCtx, CInstalledDevice *pDevic
 		return iIdlePower;
 	}
 
+Metric CShieldClass::CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags) const
+
+//	CalcRegen180
+//
+//	Returns the average number of HP regenerated every 180 ticks.
+//
+//	NOTE: This is used for stats purposes; the actual regeneration uses a 
+//	different algorithm.
+
+	{
+	//	If there is interference, then we don't regenerate
+
+	CSpaceObject *pSource = Ctx.GetSource();
+	if (pSource && pSource->GetShipPerformance().HasShieldInterference())
+		return 0.0;
+
+	//	If the device is disabled, then no regeneration
+
+	if (!Ctx.IsDeviceEnabled() && !(dwFlags & FLAG_IGNORE_DISABLED))
+		return 0.0;
+
+	//	Compute regeneration
+
+	Metric rRegen = m_Regen.GetHPPer180();
+	
+	if (m_iExtraHPPerCharge)
+		rRegen += m_iExtraHPPerCharge * Ctx.GetItemCharges();
+
+	return rRegen;
+	}
+
 ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXMLElement *pDesc, CDeviceClass **retpShield)
 
 //	CreateFromXML
@@ -1210,6 +1242,9 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));
 
+	else if (strEquals(sName, PROPERTY_REGEN))
+		return CC.CreateInteger(mathRound(CalcRegen180(Ctx)));
+
 	//	Otherwise, just get the property from the base class
 
 	else
@@ -1550,7 +1585,7 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 	//	Compute the regeneration
 
 	sReference = strPatternSubst("Regen @ %s", 
-			m_Regen.GetReferenceRate(CONSTLIT("hp/sec")));
+			CLanguage::ComposeNumber(CLanguage::numberRegenRate, CalcRegen180(Ctx, FLAG_IGNORE_DISABLED)));
 
 	return sReference;
 	}

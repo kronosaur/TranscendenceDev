@@ -1246,7 +1246,6 @@ class CRegenDesc
 		void Add (const CRegenDesc &Desc);
 		double GetHPPer180 (int iTicksPerCycle = 1) const;
 		int GetHPPerEra (void) const;
-		CString GetReferenceRate (const CString &sUnits, int iTicksPerCycle = 1) const;
 		int GetRegen (int iTick, int iTicksPerCycle = 1) const;
 		void Init (int iHPPerEra, int iCyclesPerBurst = 1);
 		void InitFromRegen (double rRegen, int iTicksPerCycle = 1);

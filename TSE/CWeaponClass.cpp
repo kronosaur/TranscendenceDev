@@ -2782,18 +2782,7 @@ CString GetReferenceFireRate (int iFireRate)
 	if (iFireRate <= 0)
 		return NULL_STR;
 
-	int iRate = (int)((10.0 * g_TicksPerSecond / iFireRate) + 0.5);
-	if (iRate == 0)
-		return CONSTLIT(" @ <0.1 shots/sec");
-	else if ((iRate % 10) == 0)
-		{
-		if ((iRate / 10) == 1)
-			return strPatternSubst(CONSTLIT(" @ %d shot/sec"), iRate / 10);
-		else
-			return strPatternSubst(CONSTLIT(" @ %d shots/sec"), iRate / 10);
-		}
-	else
-		return strPatternSubst(CONSTLIT(" @ %d.%d shots/sec"), iRate / 10, iRate % 10);
+	return strPatternSubst(CONSTLIT(" @ %s"), CLanguage::ComposeNumber(CLanguage::numberFireRate, iFireRate));
 	}
 
 bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const

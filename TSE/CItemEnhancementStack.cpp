@@ -183,6 +183,21 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 	return (int)(rDelay + 0.5);
 	}
 
+Metric CItemEnhancementStack::CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const
+
+//	CalcRegen180
+//
+//	Calculates the regeneration in 180 ticks.
+
+	{
+	Metric rRegen = 0.0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		rRegen += m_Stack[i].GetRegen180(ItemCtx, iTicksPerUpdate);
+
+	return rRegen;
+	}
+
 void CItemEnhancementStack::CalcCache (void) const
 
 //	CalcCache

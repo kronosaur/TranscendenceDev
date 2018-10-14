@@ -74,6 +74,7 @@
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_PRIME_SEGMENT					CONSTLIT("primeSegment")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
+#define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
@@ -1269,6 +1270,29 @@ int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstall
 	return iTotalPower;
 	}
 
+Metric CArmorClass::CalcRegen180 (CItemCtx &ItemCtx) const
+
+//	CalcRegen180
+//
+//	Returns the average number of HP regenerated every 180 ticks.
+//
+//	NOTE: This is used for stats purposes; the actual regeneration uses a 
+//	different algorithm.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+
+	Metric rRegen = 0.0;
+
+	if (Stats.iRegenType != regenNone)
+		rRegen = Stats.Regen.GetHPPer180(TICKS_PER_UPDATE);
+
+	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	rRegen += Enhancements.CalcRegen180(ItemCtx, TICKS_PER_UPDATE);
+
+	return rRegen;
+	}
+
 ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor)
 
 //	CreateFromXML
@@ -1862,6 +1886,9 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		return CC.CreateBool(IsImmune(Ctx, specialRadiation));
 
+	else if (strEquals(sName, PROPERTY_REGEN))
+		return CC.CreateInteger(mathRound(CalcRegen180(Ctx)));
+
 	else if (strEquals(sName, PROPERTY_REPAIR_COST))
 		return CC.CreateInteger(GetRepairCost(Ctx));
 
@@ -1929,16 +1956,21 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 //		30 hp; laser-resistant; impact-resistant
 
 	{
-	int iKg = m_pItemType->GetMassKg(Ctx);
-	int iTons = iKg / 1000;
-	int iKgExtra = iKg % 1000;
+	CString sReference;
 
-	if (iTons == 1 && iKgExtra == 0)
-		return CONSTLIT("1 ton");
-	else if (iKgExtra == 0)
-		return strPatternSubst(CONSTLIT("%d tons"), iTons);
-	else
-		return strPatternSubst(CONSTLIT("%d.%d tons"), iTons, iKgExtra / 100);
+	//	Mass
+
+	AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberMass, m_pItemType->GetMassKg(Ctx)));
+
+	//	Regeneration
+
+	Metric rRegen = CalcRegen180(Ctx);
+	if (rRegen > 0.0)
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("Regen @ %s"), CLanguage::ComposeNumber(CLanguage::numberRegenRate, rRegen)));
+
+	//	Done
+
+	return sReference;
 	}
 
 bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray)

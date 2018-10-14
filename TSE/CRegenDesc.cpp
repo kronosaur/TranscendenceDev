@@ -60,35 +60,6 @@ int CRegenDesc::GetHPPerEra (void) const
 	return (m_iHPPerCycle * CYCLES_PER_ERA) + m_iHPPerEraRemainder;
 	}
 
-CString CRegenDesc::GetReferenceRate (const CString &sUnits, int iTicksPerCycle) const
-
-//	GetReferenceRate
-//
-//	Returns a rate in hit points per real second:
-//
-//	<0.1 hp/sec
-//	1.0 hp/sec
-//	none
-//
-//	(Where sUnits = "hp/sec")
-
-	{
-	if (IsEmpty())
-		return CONSTLIT("none");
-	else
-		{
-		double rSecondsPerEra = CYCLES_PER_ERA * iTicksPerCycle / g_TicksPerSecond;
-		int iRate10 = (int)(10.0 * GetHPPerEra() / rSecondsPerEra);
-
-		if (iRate10 == 0)
-			return strPatternSubst(CONSTLIT("<0.1 %s"), sUnits);
-		else if ((iRate10 % 10) == 0)
-			return strPatternSubst(CONSTLIT("%d %s"), iRate10 / 10, sUnits);
-		else
-			return strPatternSubst(CONSTLIT("%d.%d %s"), iRate10 / 10, iRate10 % 10, sUnits);
-		}
-	}
-
 int CRegenDesc::GetRegen (int iTick, int iTicksPerCycle) const
 
 //	GetRegen

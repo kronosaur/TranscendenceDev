@@ -129,6 +129,7 @@ class CItemEnhancement
 		inline DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPowerAdj (void) const;
 		int GetReflectChance (DamageTypes iDamage) const;
+		Metric GetRegen180 (CItemCtx &Ctx, int iTicksPerUpdate) const;
 		int GetResistEnergyAdj (void) const { return (GetType() == etResistEnergy ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
 		int GetResistHPBonus (void) const;
 		int GetResistMatterAdj (void) const { return (GetType() == etResistMatter ? Level2DamageAdj(GetLevel(), IsDisadvantage()) : 100); }
@@ -184,6 +185,7 @@ class CItemEnhancement
 		static const CItemEnhancement &Null (void) { return m_Null; }
 
 	private:
+		bool CalcRegen (CItemCtx &ItemCtx, int iTicksPerUpdate, CRegenDesc &retRegen, ERegenTypes *retiType = NULL) const;
 		bool CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const;
 		bool CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const;
 		EnhanceItemStatus CombineAdvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
@@ -222,6 +224,7 @@ class CItemEnhancementStack
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
 		int CalcActivateDelay (CItemCtx &DeviceCtx) const;
+		Metric CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const;
 		void Delete (void);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateDelayAdj (void) const;

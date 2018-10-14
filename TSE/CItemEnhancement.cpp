@@ -255,6 +255,76 @@ bool CItemEnhancement::CalcNewHPBonus (const CItem &Item, const CItemEnhancement
 	return (iNewBonus != iCurBonus);
 	}
 
+bool CItemEnhancement::CalcRegen (CItemCtx &ItemCtx, int iTicksPerUpdate, CRegenDesc &retRegen, ERegenTypes *retiType) const
+
+//	CalcRegen
+//
+//	Initializes a regen structure (or return FALSE if no regen).
+
+	{
+	ERegenTypes iRegenType;
+
+	//	Figure out how much we regenerate
+
+	switch (GetType())
+		{
+		case etPhotoRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			//	Standard regeneration is 1% of standard armor HP per 180 ticks
+
+			iRegenType = regenSolar;
+			retRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTicksPerUpdate);
+			break;
+			}
+
+		case etRegenerate:
+		case etHealerRegenerate:
+			{
+			//	Skip disadvantages (decay)
+
+			if (IsDisadvantage())
+				return false;
+
+			if (GetType() == etHealerRegenerate)
+				iRegenType = regenFromHealer;
+			else
+				iRegenType = regenStandard;
+
+			//	Get the regen rate.
+
+			int iRegen = GetDataX();
+
+			//	If regen rate is 0, then we use standard regeneration, which is
+			//	1% of standard armor HP per 180 ticks.
+
+			if (iRegen == 0)
+				retRegen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ItemCtx.GetItem().GetLevel()), iTicksPerUpdate);
+
+			//	Otherwise it is specified
+
+			else
+				retRegen.InitFromRegen(iRegen, iTicksPerUpdate);
+
+			break;
+			}
+
+		default:
+			return false;
+		}
+
+	//	Success
+
+	if (retiType)
+		*retiType = iRegenType;
+
+	return true;
+	}
+
 bool CItemEnhancement::CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const
 
 //	CanBeCombinedWith
@@ -1260,6 +1330,21 @@ int CItemEnhancement::GetReflectChance (DamageTypes iDamage) const
 		}
 	}
 
+Metric CItemEnhancement::GetRegen180 (CItemCtx &Ctx, int iTicksPerUpdate) const
+
+//	GetRegen180
+//
+//	Returns the number of HP regenerated per 180 ticks.
+
+	{
+	CRegenDesc Regen;
+
+	if (!CalcRegen(Ctx, iTicksPerUpdate, Regen))
+		return 0.0;
+
+	return Regen.GetHPPer180(iTicksPerUpdate);
+	}
+
 int CItemEnhancement::GetResistHPBonus (void) const
 
 //	GetResistHPBonus
@@ -2025,58 +2110,8 @@ bool CItemEnhancement::UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateC
 	ERegenTypes iRegenType;
 	CRegenDesc Regen;
 
-	//	Figure out how much we regenerate
-
-	switch (GetType())
-		{
-		case etPhotoRegenerate:
-			{
-			//	Skip disadvantages (decay)
-
-			if (IsDisadvantage())
-				return false;
-
-			//	Standard regeneration is 1% of standard armor HP per 180 ticks
-
-			iRegenType = regenSolar;
-			Regen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ArmorCtx.GetItem().GetLevel()), CArmorClass::TICKS_PER_UPDATE);
-			break;
-			}
-
-		case etRegenerate:
-		case etHealerRegenerate:
-			{
-			//	Skip disadvantages (decay)
-
-			if (IsDisadvantage())
-				return false;
-
-			if (GetType() == etHealerRegenerate)
-				iRegenType = regenFromHealer;
-			else
-				iRegenType = regenStandard;
-
-			//	Get the regen rate.
-
-			int iRegen = GetDataX();
-
-			//	If regen rate is 0, then we use standard regeneration, which is
-			//	1% of standard armor HP per 180 ticks.
-
-			if (iRegen == 0)
-				Regen.InitFromRegen(0.01 * CArmorClass::GetStdHP(ArmorCtx.GetItem().GetLevel()), CArmorClass::TICKS_PER_UPDATE);
-
-			//	Otherwise it is specified
-
-			else
-				Regen.InitFromRegen(iRegen, CArmorClass::TICKS_PER_UPDATE);
-
-			break;
-			}
-
-		default:
-			return false;
-		}
+	if (!CalcRegen(ArmorCtx, CArmorClass::TICKS_PER_UPDATE, Regen, &iRegenType))
+		return false;
 
 	//	Regenerate
 

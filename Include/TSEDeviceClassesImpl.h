@@ -479,6 +479,10 @@ class CShieldClass : public CDeviceClass
 		Metric CalcBalanceDefense (CItemCtx &ItemCtx, int iLevel, Metric rHP, Metric rRegen180, Metric *retrRatio = NULL) const;
 		Metric CalcBalancePowerUse (CItemCtx &ItemCtx, const SStdStats &Stats) const;
 		void CalcMinMaxHP (CItemCtx &Ctx, int iCharges, int iArmorSegs, int iTotalHP, int *retiMin, int *retiMax) const;
+
+		static const DWORD FLAG_IGNORE_DISABLED = 0x00000001;
+		Metric CalcRegen180 (CItemCtx &Ctx, DWORD dwFlags = 0) const;
+
 		bool IsDepleted (CInstalledDevice *pDevice);
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);

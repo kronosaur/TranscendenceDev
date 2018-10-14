@@ -169,6 +169,7 @@ class CArmorClass
 		Metric CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
+		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
 		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
