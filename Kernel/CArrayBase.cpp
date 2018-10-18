@@ -217,7 +217,7 @@ ALERROR CArrayBase::Resize (int iNewSize, bool bPreserve, int iAllocQuantum)
 		{
 		//	Allocate a new block
 
-		int iNewAllocSize = sizeof(SHeader) + AlignUp(iNewSize, iAllocQuantum);
+		int iNewAllocSize = sizeof(SHeader) + Max(iNewSize * 2, AlignUp(iNewSize, iAllocQuantum));
 		SHeader *pNewBlock = (SHeader *)::HeapAlloc(GetHeap(), 0, iNewAllocSize);
 		if (pNewBlock == NULL)
 			{
