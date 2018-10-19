@@ -881,7 +881,6 @@ class CSystem
 		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
 
 		void CalcAutoTarget (SUpdateCtx &Ctx);
-		void CalcObjGrid (SUpdateCtx &Ctx);
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
 		void CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &VolumetricMask);
 		void ComputeRandomEncounters (void);

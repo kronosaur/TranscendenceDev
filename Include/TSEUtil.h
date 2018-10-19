@@ -1048,13 +1048,41 @@ struct SSpaceObjectGridEnumerator
 	CVector vUR;
 	};
 
+class CSpaceObjectPool
+	{
+	public:
+		struct SNode
+			{
+			//	No initializers to save on performance.
+
+			CSpaceObject *pObj;
+			SNode *pNext;
+			};
+
+		~CSpaceObjectPool (void) { DeleteAll(); }
+		CSpaceObjectPool (const CSpaceObjectPool &Src) = delete;
+		CSpaceObjectPool &operator= (const CSpaceObjectPool &Src) = delete;
+
+		SNode *AllocList (CSpaceObject *pObj);
+		SNode *AllocObj (SNode *pList, CSpaceObject *pObj);
+		void DeleteAll (void);
+		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj);
+		void Init (int iSize);
+
+	private:
+		SNode *m_Pool = NULL;
+		int m_iSize = 0;
+		int m_iNextNode = 0;
+	};
+
+#define DEBUG_OBJ_GRID_PERFORMANCE
+
 class CSpaceObjectGrid
 	{
 	public:
 		CSpaceObjectGrid (int iGridSize, Metric rCellSize, Metric rCellBorder);
 		~CSpaceObjectGrid (void);
 
-		inline void AddObject (CSpaceObject *pObj);
 		void DebugObjDeleted (CSpaceObject *pObj) const;
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
@@ -1071,8 +1099,15 @@ class CSpaceObjectGrid
 			}
 		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const;
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result);
+		void Init (CSystem *pSystem, SUpdateCtx &Ctx);
+
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+		static DWORD m_dwTime;
+		static DWORD m_dwCount;
+#endif
 
 	private:
+		void AddObject (CSpaceObject *pObj);
 		bool EnumGetNextList (SSpaceObjectGridEnumerator &i) const;
 		bool GetGridCoord (const CVector &vPos, int *retx, int *rety) const;
 		const CSpaceObjectList &GetList (const CVector &vPos) const;

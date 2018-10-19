@@ -524,40 +524,6 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	return iWeight;
 	}
 
-void CSystem::CalcObjGrid (SUpdateCtx &Ctx)
-
-//	CalcObjGrid
-//
-//	Loops over all objects and adds them to m_ObjGrid so we can do fast finds.
-
-	{
-	int i;
-
-	DebugStartTimer();
-	m_ObjGrid.DeleteAll();
-	for (i = 0; i < GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = GetObject(i);
-		if (pObj == NULL)
-			continue;
-
-		if (pObj->CanBeHit())
-			{
-			m_ObjGrid.AddObject(pObj);
-
-			//	If this is an object that can block ships, then we remember it
-			//	so that we can optimize systems without it.
-			//
-			//	LATER: We should implement this as a system variable that we
-			//	change in create/delete object.
-
-			if (pObj->BlocksShips())
-				Ctx.bHasShipBarriers = true;
-			}
-		}
-	DebugStopTimer("Adding objects to grid");
-	}
-
 CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
 
 //	CalculateSpaceColor
@@ -4643,7 +4609,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests
 
-	CalcObjGrid(Ctx);
+	m_ObjGrid.Init(this, Ctx);
 
 	//	Fire timed events
 	//	NOTE: We only do this if we have a player because otherwise, some

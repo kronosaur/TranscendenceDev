@@ -477,6 +477,7 @@
     <ClCompile Include="CSoundResource.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectCriteria.cpp" />
+    <ClCompile Include="CSpaceObjectPool.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
     <ClCompile Include="CStationEncounterCtx.cpp" />

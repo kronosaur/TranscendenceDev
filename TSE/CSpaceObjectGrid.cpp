@@ -1,8 +1,14 @@
 //	CSpaceObjectGrid.cpp
 //
 //	CSpaceObjectGrid class
+//	Copyright (c) 2018 Kronosaur Productions, LLC.
 
 #include "PreComp.h"
+
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+DWORD CSpaceObjectGrid::m_dwTime = 0;
+DWORD CSpaceObjectGrid::m_dwCount = 0;
+#endif
 
 CSpaceObjectGrid::CSpaceObjectGrid (int iGridSize, Metric rCellSize, Metric rCellBorder)
 
@@ -77,11 +83,19 @@ void CSpaceObjectGrid::DeleteAll (void)
 //	Remove all objects
 
 	{
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+	DWORD dwStart = ::GetTickCount();
+#endif
+
 	int iTotal = m_iGridSize * m_iGridSize;
 	for (int i = 0; i < iTotal; i++)
 		m_pGrid[i].DeleteAll();
 
 	m_Outer.DeleteAll();
+
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+	m_dwTime += sysGetTicksElapsed(dwStart);
+#endif
 	}
 
 bool CSpaceObjectGrid::GetGridCoord (const CVector &vPos, int *retx, int *rety) const
@@ -393,4 +407,43 @@ void CSpaceObjectGrid::GetObjectsInBox (const CVector &vUR, const CVector &vLL, 
 					}
 				}
 			}
+	}
+
+void CSpaceObjectGrid::Init (CSystem *pSystem, SUpdateCtx &Ctx)
+
+//	Init
+//
+//	Initialize the object grid from the system.
+
+	{
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+	DWORD dwStart = ::GetTickCount();
+#endif
+
+	DeleteAll();
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = pSystem->GetObject(i);
+		if (pObj == NULL)
+			continue;
+
+		if (pObj->CanBeHit())
+			{
+			AddObject(pObj);
+
+			//	If this is an object that can block ships, then we remember it
+			//	so that we can optimize systems without it.
+			//
+			//	LATER: We should implement this as a system variable that we
+			//	change in create/delete object.
+
+			if (pObj->BlocksShips())
+				Ctx.bHasShipBarriers = true;
+			}
+		}
+
+#ifdef DEBUG_OBJ_GRID_PERFORMANCE
+	m_dwTime += sysGetTicksElapsed(dwStart);
+	m_dwCount += 1;
+#endif
 	}

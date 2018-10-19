@@ -1252,6 +1252,9 @@
     <ClCompile Include="CMapLabelArranger.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="CSpaceObjectPool.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">
