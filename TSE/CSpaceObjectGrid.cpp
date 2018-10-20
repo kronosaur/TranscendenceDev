@@ -5,11 +5,6 @@
 
 #include "PreComp.h"
 
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-DWORD CSpaceObjectGrid::m_dwTime = 0;
-DWORD CSpaceObjectGrid::m_dwCount = 0;
-#endif
-
 CSpaceObjectGrid::CSpaceObjectGrid (int iGridSize, Metric rCellSize, Metric rCellBorder)
 
 //	CSpaceObjectGrid constructor
@@ -106,18 +101,10 @@ void CSpaceObjectGrid::DeleteAll (void)
 //	Remove all objects
 
 	{
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-	DWORD dwStart = ::GetTickCount();
-#endif
-
 	int iTotal = m_iGridSize * m_iGridSize;
 	utlMemSet(m_pGrid, sizeof(SList) * iTotal, 0);
 
 	m_Outer.pList = NULL;
-
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-	m_dwTime += sysGetTicksElapsed(dwStart);
-#endif
 	}
 
 bool CSpaceObjectGrid::GetGridCoord (const CVector &vPos, int *retx, int *rety) const
@@ -468,10 +455,6 @@ void CSpaceObjectGrid::Init (CSystem *pSystem, SUpdateCtx &Ctx)
 //	Initialize the object grid from the system.
 
 	{
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-	DWORD dwStart = ::GetTickCount();
-#endif
-
 	DeleteAll();
 	m_Pool.Init(pSystem->GetObjectCount());
 
@@ -495,9 +478,4 @@ void CSpaceObjectGrid::Init (CSystem *pSystem, SUpdateCtx &Ctx)
 				Ctx.bHasShipBarriers = true;
 			}
 		}
-
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-	m_dwTime += sysGetTicksElapsed(dwStart);
-	m_dwCount += 1;
-#endif
 	}

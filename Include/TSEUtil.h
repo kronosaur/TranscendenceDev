@@ -1057,8 +1057,6 @@ class CSpaceObjectPool
 		int m_iNextNode = 0;
 	};
 
-#define DEBUG_OBJ_GRID_PERFORMANCE
-
 class CSpaceObjectGrid
 	{
 	public:
@@ -1075,11 +1073,6 @@ class CSpaceObjectGrid
 		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const;
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result);
 		void Init (CSystem *pSystem, SUpdateCtx &Ctx);
-
-#ifdef DEBUG_OBJ_GRID_PERFORMANCE
-		static DWORD m_dwTime;
-		static DWORD m_dwCount;
-#endif
 
 	private:
 		struct SList
