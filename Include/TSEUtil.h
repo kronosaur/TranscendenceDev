@@ -19,6 +19,7 @@ struct SDesignLoadCtx;
 struct SDamageCtx;
 struct SDestroyCtx;
 struct SSystemCreateCtx;
+struct SSpaceObjectGridEnumerator;
 
 //	Utility inlines
 
@@ -1028,26 +1029,6 @@ enum SpaceObjectGridFlags
 	gridNoBoxCheck			= 0x00000001,	//	Do not check for objects in the box
 	};
 
-struct SSpaceObjectGridEnumerator
-	{
-	SSpaceObjectGridEnumerator (void) : pGridIndexList(NULL) { }
-	~SSpaceObjectGridEnumerator (void) { if (pGridIndexList) delete [] pGridIndexList; }
-
-	CSpaceObject *pObj;						//	Current object
-	int iGridIndex;							//	Current grid cell to search
-	const CSpaceObjectList *pList;				//	Current list
-	int iIndex;								//	Current index
-	int iListCount;							//	Number of elements in current list
-	bool bMore;								//	TRUE if there is more
-
-	int iGridIndexCount;					//	Number of grid indices to traverse
-	const CSpaceObjectList **pGridIndexList;		//	Array of grid indices to traverse
-
-	bool bCheckBox;							//	If TRUE, only return objects in box
-	CVector vLL;							//	Box to check
-	CVector vUR;
-	};
-
 class CSpaceObjectPool
 	{
 	public:
@@ -1059,14 +1040,15 @@ class CSpaceObjectPool
 			SNode *pNext;
 			};
 
+		CSpaceObjectPool (void) { }
 		~CSpaceObjectPool (void) { DeleteAll(); }
 		CSpaceObjectPool (const CSpaceObjectPool &Src) = delete;
 		CSpaceObjectPool &operator= (const CSpaceObjectPool &Src) = delete;
 
-		SNode *AllocList (CSpaceObject *pObj);
 		SNode *AllocObj (SNode *pList, CSpaceObject *pObj);
 		void DeleteAll (void);
-		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj);
+		SNode *DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted = false);
+		bool FindObj (SNode *pList, CSpaceObject *pObj) const;
 		void Init (int iSize);
 
 	private:
@@ -1087,16 +1069,9 @@ class CSpaceObjectGrid
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags) const;
-		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) const { return i.bMore; }
+		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) const;
 		CSpaceObject *EnumGetNext (SSpaceObjectGridEnumerator &i) const;
-		inline CSpaceObject *EnumGetNextFast (SSpaceObjectGridEnumerator &i) const
-			{
-			ASSERT(i.iIndex >= 0);
-			CSpaceObject *pCurObj = i.pList->GetObj(i.iIndex++);
-			if (i.iIndex >= i.iListCount)
-				EnumGetNextList(i);
-			return pCurObj;
-			}
+		CSpaceObject *EnumGetNextFast (SSpaceObjectGridEnumerator &i) const;
 		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const;
 		void GetObjectsInBox (const CVector &vUR, const CVector &vLL, CSpaceObjectList &Result);
 		void Init (CSystem *pSystem, SUpdateCtx &Ctx);
@@ -1107,16 +1082,22 @@ class CSpaceObjectGrid
 #endif
 
 	private:
+		struct SList
+			{
+			CSpaceObjectPool::SNode *pList;
+			};
+
 		void AddObject (CSpaceObject *pObj);
 		bool EnumGetNextList (SSpaceObjectGridEnumerator &i) const;
 		bool GetGridCoord (const CVector &vPos, int *retx, int *rety) const;
-		const CSpaceObjectList &GetList (const CVector &vPos) const;
-		CSpaceObjectList &GetList (const CVector &vPos);
-		inline const CSpaceObjectList &GetList (int x, int y) const { return m_pGrid[y * m_iGridSize + x]; }
-		inline CSpaceObjectList &GetList (int x, int y) { return m_pGrid[y * m_iGridSize + x]; }
+		const SList &GetList (const CVector &vPos) const;
+		SList &GetList (const CVector &vPos);
+		inline const SList &GetList (int x, int y) const { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
+		inline SList &GetList (int x, int y) { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
 
-		CSpaceObjectList *m_pGrid;
-		CSpaceObjectList m_Outer;
+		CSpaceObjectPool m_Pool;
+		SList *m_pGrid;
+		SList m_Outer;
 
 		int m_iGridSize;
 		CVector m_vGridSize;
@@ -1124,6 +1105,27 @@ class CSpaceObjectGrid
 		Metric m_rCellBorder;
 		CVector m_vLL;
 		CVector m_vUR;
+
+		friend struct SSpaceObjectGridEnumerator;
+	};
+
+struct SSpaceObjectGridEnumerator
+	{
+	SSpaceObjectGridEnumerator (void) : pGridIndexList(NULL) { }
+	~SSpaceObjectGridEnumerator (void) { if (pGridIndexList) delete [] pGridIndexList; }
+
+	CSpaceObject *pObj;						//	Current object
+	int iGridIndex;							//	Current grid cell to search
+	const CSpaceObjectGrid::SList *pList;						//	Current list
+	const CSpaceObjectPool::SNode *pNode;						//	Current node
+	bool bMore;								//	TRUE if there is more
+
+	int iGridIndexCount;					//	Number of grid indices to traverse
+	const CSpaceObjectGrid::SList **pGridIndexList;			//	Array of grid indices to traverse
+
+	bool bCheckBox;							//	If TRUE, only return objects in box
+	CVector vLL;							//	Box to check
+	CVector vUR;
 	};
 
 class CGameTimeKeeper
@@ -1635,6 +1637,8 @@ inline void ParseAttributes (const CString &sAttribs, TArray<CString> *retAttrib
 void ParseIntegerList (const CString &sList, DWORD dwFlags, TArray<int> *retList);
 
 void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList);
+
+inline bool CSpaceObjectGrid::EnumHasMore (SSpaceObjectGridEnumerator &i) const { return i.bMore; }
 
 #ifdef LEVEL_ROMAN_NUMERALS
 inline CString strLevel (int iLevel) { return strRomanNumeral(iLevel); }

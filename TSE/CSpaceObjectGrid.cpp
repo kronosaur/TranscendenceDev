@@ -20,7 +20,10 @@ CSpaceObjectGrid::CSpaceObjectGrid (int iGridSize, Metric rCellSize, Metric rCel
 	ASSERT(rCellBorder > 0.0);
 
 	int iTotal = iGridSize * iGridSize;
-	m_pGrid = new CSpaceObjectList [iTotal];
+	m_pGrid = new SList [iTotal];
+	utlMemSet(m_pGrid, sizeof(SList) * iTotal, 0);
+
+	m_Outer.pList = NULL;
 
 	m_iGridSize = iGridSize;
 	m_rCellSize = rCellSize;
@@ -40,6 +43,19 @@ CSpaceObjectGrid::~CSpaceObjectGrid (void)
 	delete [] m_pGrid;
 	}
 
+void CSpaceObjectGrid::AddObject (CSpaceObject *pObj)
+
+//	AddObject
+//
+//	Adds an object to the list.
+	
+	{
+	ASSERT(pObj->GetID() != 0xdddddddd);
+	
+	SList &List = GetList(pObj->GetPos());
+	List.pList = m_Pool.AllocObj(List.pList, pObj);
+	}
+
 void CSpaceObjectGrid::DebugObjDeleted (CSpaceObject *pObj) const
 
 //	DebugObjDeleted
@@ -51,7 +67,7 @@ void CSpaceObjectGrid::DebugObjDeleted (CSpaceObject *pObj) const
 	int iTotal = m_iGridSize * m_iGridSize;
 	for (int i = 0; i < iTotal; i++)
 		{
-		if (m_pGrid[i].FindObj(pObj))
+		if (m_Pool.FindObj(m_pGrid[i].pList, pObj))
 			{
 			ASSERT(false);
 			}
@@ -66,14 +82,21 @@ void CSpaceObjectGrid::Delete (CSpaceObject *pObj)
 //	operation, so we only do it when we really need to.
 
 	{
-	int i;
 	int iTotal = m_iGridSize * m_iGridSize;
-	for (i = 0; i < iTotal; i++)
+	for (int i = 0; i < iTotal; i++)
 		{
-		if (m_pGrid[i].Delete(pObj))
+		bool bDeleted;
+		m_pGrid[i].pList = m_Pool.DeleteObj(m_pGrid[i].pList, pObj, &bDeleted);
+		if (bDeleted)
+			{
 			//	We assume that an object can only be on one list in the grid.
-			break;
+			return;
+			}
 		}
+
+	//	If we get this far, then try to delete from the outer list.
+
+	m_Outer.pList = m_Pool.DeleteObj(m_Outer.pList, pObj);
 	}
 
 void CSpaceObjectGrid::DeleteAll (void)
@@ -88,10 +111,9 @@ void CSpaceObjectGrid::DeleteAll (void)
 #endif
 
 	int iTotal = m_iGridSize * m_iGridSize;
-	for (int i = 0; i < iTotal; i++)
-		m_pGrid[i].DeleteAll();
+	utlMemSet(m_pGrid, sizeof(SList) * iTotal, 0);
 
-	m_Outer.DeleteAll();
+	m_Outer.pList = NULL;
 
 #ifdef DEBUG_OBJ_GRID_PERFORMANCE
 	m_dwTime += sysGetTicksElapsed(dwStart);
@@ -115,7 +137,7 @@ bool CSpaceObjectGrid::GetGridCoord (const CVector &vPos, int *retx, int *rety) 
 	return (x >= 0 && y >= 0 && x < m_iGridSize && y < m_iGridSize);
 	}
 
-const CSpaceObjectList &CSpaceObjectGrid::GetList (const CVector &vPos) const
+const CSpaceObjectGrid::SList &CSpaceObjectGrid::GetList (const CVector &vPos) const
 
 //	GetList
 //
@@ -132,7 +154,7 @@ const CSpaceObjectList &CSpaceObjectGrid::GetList (const CVector &vPos) const
 		return GetList(x, y);
 	}
 
-CSpaceObjectList &CSpaceObjectGrid::GetList (const CVector &vPos)
+CSpaceObjectGrid::SList &CSpaceObjectGrid::GetList (const CVector &vPos)
 
 //	GetList
 //
@@ -180,9 +202,9 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 	//	Generate a list of all grid cells to traverse
 
 	int iMaxSize = (xEnd - xStart + 1) * (yEnd - yStart + 1);
-	i.pGridIndexList = new const CSpaceObjectList * [iMaxSize];
+	i.pGridIndexList = new const SList * [iMaxSize];
 	i.iGridIndexCount = 0;
-	bool bOuterAdded = (m_Outer.GetCount() == 0);
+	bool bOuterAdded = (m_Outer.pList == NULL);
 
 	//	Always start with the center cell
 
@@ -190,8 +212,8 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 	int yCenter = yStart + (yEnd - yStart) / 2;
 	if (xCenter >= 0 && yCenter >= 0 && xCenter < m_iGridSize && yCenter < m_iGridSize)
 		{
-		const CSpaceObjectList *pList = &GetList(xCenter, yCenter);
-		if (pList->GetCount() > 0)
+		const CSpaceObjectGrid::SList *pList = &GetList(xCenter, yCenter);
+		if (pList->pList)
 			i.pGridIndexList[i.iGridIndexCount++] = pList;
 		}
 	else if (!bOuterAdded)
@@ -208,8 +230,8 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 				NULL;
 			else if (x >= 0 && y >= 0 && x < m_iGridSize && y < m_iGridSize)
 				{
-				const CSpaceObjectList *pList = &GetList(x, y);
-				if (pList->GetCount() > 0)
+				const CSpaceObjectGrid::SList *pList = &GetList(x, y);
+				if (pList->pList)
 					i.pGridIndexList[i.iGridIndexCount++] = pList;
 				}
 			else if (!bOuterAdded)
@@ -229,8 +251,7 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 		{
 		i.iGridIndex = 0;
 		i.pList = i.pGridIndexList[0];
-		i.iIndex = -1;
-		i.iListCount = i.pList->GetCount();
+		i.pNode = NULL;
 		i.pObj = NULL;
 
 		//	Start with the first
@@ -259,16 +280,26 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i) cons
 
 	do
 		{
-		i.iIndex++;
-		if (i.iIndex < i.iListCount)
-			{
-			ASSERT(i.iIndex >= 0);
+		//	Advance
 
-			i.pObj = i.pList->GetObj(i.iIndex);
+		if (i.pNode == NULL)
+			i.pNode = i.pList->pList;
+		else
+			i.pNode = i.pNode->pNext;
+
+		//	If we're still on the current list, then return the node
+
+		if (i.pNode)
+			{
+			i.pObj = i.pNode->pObj;
+
 			if (!i.pObj->IsDestroyed() 
 					&& (!i.bCheckBox || i.pObj->InBox(i.vUR, i.vLL)))
 				return pCurrentObj;
 			}
+
+		//	Otherwise, next list.
+
 		else
 			{
 			i.iGridIndex++;
@@ -277,8 +308,7 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i) cons
 				ASSERT(i.iGridIndex >= 0);
 
 				i.pList = i.pGridIndexList[i.iGridIndex];
-				i.iListCount = i.pList->GetCount();
-				i.iIndex = -1;
+				i.pNode = NULL;
 				}
 			else
 				{
@@ -290,6 +320,23 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNext (SSpaceObjectGridEnumerator &i) cons
 	while (true);
 
 	DEBUG_CATCH
+	}
+
+CSpaceObject *CSpaceObjectGrid::EnumGetNextFast (SSpaceObjectGridEnumerator &i) const
+
+//	EnumGetNextFast
+//
+//	Returns the next object in the enumeration
+
+	{
+	ASSERT(i.pNode != NULL);
+
+	CSpaceObject *pCurObj = i.pNode->pObj;
+	i.pNode = i.pNode->pNext;
+	if (i.pNode == NULL)
+		EnumGetNextList(i);
+
+	return pCurObj;
 	}
 
 CSpaceObject *CSpaceObjectGrid::EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const
@@ -307,15 +354,25 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNextInBoxPoint (SSpaceObjectGridEnumerato
 
 	do
 		{
-		i.iIndex++;
-		if (i.iIndex < i.iListCount)
-			{
-			ASSERT(i.iIndex >= 0);
+		//	Advance
 
-			i.pObj = i.pList->GetObj(i.iIndex);
+		if (i.pNode == NULL)
+			i.pNode = i.pList->pList;
+		else
+			i.pNode = i.pNode->pNext;
+
+		//	If we're still on the current list, then return the node
+
+		if (i.pNode)
+			{
+			i.pObj = i.pNode->pObj;
+
 			if (!i.pObj->IsDestroyed() && i.pObj->InBoxPoint(i.vUR, i.vLL))
 				return pCurrentObj;
 			}
+
+		//	Otherwise, next list.
+
 		else
 			{
 			i.iGridIndex++;
@@ -324,8 +381,7 @@ CSpaceObject *CSpaceObjectGrid::EnumGetNextInBoxPoint (SSpaceObjectGridEnumerato
 				ASSERT(i.iGridIndex >= 0);
 
 				i.pList = i.pGridIndexList[i.iGridIndex];
-				i.iListCount = i.pList->GetCount();
-				i.iIndex = -1;
+				i.pNode = NULL;
 				}
 			else
 				{
@@ -352,8 +408,7 @@ bool CSpaceObjectGrid::EnumGetNextList (SSpaceObjectGridEnumerator &i) const
 		}
 
 	i.pList = i.pGridIndexList[i.iGridIndex];
-	i.iListCount = i.pList->GetCount();
-	i.iIndex = 0;
+	i.pNode = i.pList->pList;
 
 	return true;
 	}
@@ -367,7 +422,7 @@ void CSpaceObjectGrid::GetObjectsInBox (const CVector &vUR, const CVector &vLL, 
 //	Note: We do not check for duplicates before adding to Result
 
 	{
-	int i, x, y;
+	int x, y;
 
 	//	First we need to generate a box that will contain enough grid cells
 	//	so that we can find the objects even if their center is outside
@@ -386,7 +441,7 @@ void CSpaceObjectGrid::GetObjectsInBox (const CVector &vUR, const CVector &vLL, 
 	for (y = yLL; y <= yUR; y++)
 		for (x = xLL; x <= xUR; x++)
 			{
-			const CSpaceObjectList *pList;
+			const SList *pList;
 			if (x >= 0 && y >= 0 && x < m_iGridSize && y < m_iGridSize)
 				pList = &GetList(x, y);
 			else if (bCheckOuter)
@@ -397,14 +452,11 @@ void CSpaceObjectGrid::GetObjectsInBox (const CVector &vUR, const CVector &vLL, 
 			else
 				pList = NULL;
 
-			if (pList)
+			const CSpaceObjectPool::SNode *pNode = pList->pList;
+			while (pNode)
 				{
-				for (i = 0; i < pList->GetCount(); i++)
-					{
-					CSpaceObject *pObj = pList->GetObj(i);
-					if (!pObj->IsDestroyed() && pObj->InBox(vUR, vLL))
-						Result.FastAdd(pObj);
-					}
+				Result.FastAdd(pNode->pObj);
+				pNode = pNode->pNext;
 				}
 			}
 	}
@@ -421,6 +473,8 @@ void CSpaceObjectGrid::Init (CSystem *pSystem, SUpdateCtx &Ctx)
 #endif
 
 	DeleteAll();
+	m_Pool.Init(pSystem->GetObjectCount());
+
 	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);

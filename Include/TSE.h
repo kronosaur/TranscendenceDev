@@ -2133,7 +2133,6 @@ inline void CInstalledDevice::SetTarget (CSpaceObject *pObj) { m_dwTargetID = (p
 
 inline bool CItem::IsDisrupted (void) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= (DWORD)g_pUniverse->GetTicks()) : false); }
 
-inline void CSpaceObjectGrid::AddObject (CSpaceObject *pObj) { ASSERT(pObj->GetID() != 0xdddddddd); GetList(pObj->GetPos()).FastAdd(pObj); }
 
 inline int CalcHPDamageAdj (int iHP, int iDamageAdj)
 	{ return (iDamageAdj == 0 ? -1 : (int)((iHP * 100.0 / iDamageAdj) + 0.5)); }

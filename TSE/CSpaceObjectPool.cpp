@@ -5,29 +5,12 @@
 
 #include "PreComp.h"
 
-CSpaceObjectPool::SNode *CSpaceObjectPool::AllocList (CSpaceObject *pObj)
-
-//	AllocList
-//
-//	Starts a new list with the given object and return the node.
-
-	{
-	if (m_iNextNode == m_iSize)
-		throw CException(ERR_MEMORY);
-
-	SNode *pList = &m_Pool[m_iNextNode++];
-	pList->pObj = pObj;
-	pList->pNext = NULL;
-
-	return pList;
-	}
-
 CSpaceObjectPool::SNode *CSpaceObjectPool::AllocObj (SNode *pList, CSpaceObject *pObj)
 
 //	AllocObj
 //
 //	Adds a new object to the given list and returns the newly allocated node,
-//	which becomes the new head of the list.
+//	which becomes the new head of the list. pList may be NULL.
 
 	{
 	if (m_iNextNode == m_iSize)
@@ -57,7 +40,7 @@ void CSpaceObjectPool::DeleteAll (void)
 	m_iNextNode = 0;
 	}
 
-CSpaceObjectPool::SNode *CSpaceObjectPool::DeleteObj (SNode *pList, CSpaceObject *pObj)
+CSpaceObjectPool::SNode *CSpaceObjectPool::DeleteObj (SNode *pList, CSpaceObject *pObj, bool *retbDeleted)
 
 //	DeleteObj
 //
@@ -77,21 +60,44 @@ CSpaceObjectPool::SNode *CSpaceObjectPool::DeleteObj (SNode *pList, CSpaceObject
 			if (pPrev)
 				{
 				pPrev->pNext = pNext->pNext;
+				if (retbDeleted) *retbDeleted = true;
 				return pList;
 				}
 			else
 				{
+				if (retbDeleted) *retbDeleted = true;
 				return pNext->pNext;
 				}
 			}
 
+		pPrev = pNext;
 		pNext = pNext->pNext;
 		}
 
 	//	Not found; just return the original list so that callers don'g have to
 	//	do any special checking.
 
+	if (retbDeleted) *retbDeleted = false;
 	return pList;
+	}
+
+bool CSpaceObjectPool::FindObj (SNode *pList, CSpaceObject *pObj) const
+
+//	FindObj
+//
+//	Find object in the given list
+
+	{
+	SNode *pNext = pList;
+	while (pNext)
+		{
+		if (pNext->pObj == pObj)
+			return true;
+
+		pNext = pNext->pNext;
+		}
+
+	return false;
 	}
 
 void CSpaceObjectPool::Init (int iSize)
