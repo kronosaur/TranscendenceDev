@@ -3,6 +3,7 @@
 //	Miscellaneous utility functions
 
 #include "Kernel.h"
+#include <cstring>
 
 DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
 
@@ -149,7 +150,7 @@ DWORD utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 
 #undef mix
 
-void utlMemSet (LPVOID pDest, DWORD Count, char Value)
+void utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
 
 //	utlMemSet
 //
@@ -161,28 +162,7 @@ void utlMemSet (LPVOID pDest, DWORD Count, char Value)
 //		Value: Value to initialize to
 
 	{
-	char *pPos = (char *)pDest;
-	char *pEndPos = pPos + Count;
-	DWORD dwValue;
-	DWORD *pdwPos;
-
-	//	Store the initial unaligned piece
-
-	while (pPos < pEndPos && ((DWORD)pPos % sizeof(DWORD)))
-		*pPos++ = Value;
-
-	//	Store the aligned piece
-
-	dwValue = ((BYTE)Value) << 24 | ((BYTE)Value) << 16 | ((BYTE)Value) << 8 | (BYTE)Value;
-	pdwPos = (DWORD *)pPos;
-	while (pdwPos < (DWORD *)(pEndPos - (sizeof(DWORD) - 1)))
-		*pdwPos++ = dwValue;
-
-	//	Store the ending unaligned piece
-
-	pPos = (char *)pdwPos;
-	while (pPos < pEndPos)
-		*pPos++ = Value;
+	std::memset(pDest, Value, Count);
 	}
 
 void utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
@@ -197,8 +177,7 @@ void utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
 //		dwCount: Number of bytes to copy
 
 	{
-	for (; dwCount > 0; dwCount--)
-		*pDest++ = *pSource++;
+	std::memcpy(pDest, pSource, dwCount);
 	}
 
 BOOL utlMemCompare (char *pSource, char *pDest, DWORD dwCount)

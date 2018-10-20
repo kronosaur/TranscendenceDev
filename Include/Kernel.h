@@ -1542,7 +1542,7 @@ bool sysOpenURL (const CString &sURL);
 //	Utility functions (Utilities.cpp)
 
 DWORD utlHashFunctionCase (BYTE *pKey, int iKeyLen);
-void utlMemSet (LPVOID pDest, DWORD Count, char Value);
+void utlMemSet (LPVOID pDest, DWORD Count, BYTE Value);
 void utlMemCopy (char *pSource, char *pDest, DWORD dwCount);
 BOOL utlMemCompare (char *pSource, char *pDest, DWORD dwCount);
 inline LPVOID MemAlloc (int iSize) { return (BYTE *)HeapAlloc(GetProcessHeap(), 0, iSize); }
