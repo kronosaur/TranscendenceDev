@@ -833,17 +833,18 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 //	Computes the value of the hull based on its properties (in credits).
 
 	{
-	static const Metric PARTIAL_SLOT_FACTOR = 0.5;
+	static const Metric PARTIAL_SLOT_FACTOR = 0.67;
 	static const Metric CARGO_PER_POINT = 100.0;
 	static const Metric MAX_CARGO_PER_POINT = 200.0;
 	static const int STD_ARMOR_SEGMENTS = 4;
-	static const Metric POINTS_PER_ARMOR_SEGMENT = 0.5;
+	static const Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
 	static const Metric ARMOR_PER_POINT = 6000.0;
+	static const int MAX_ARMOR_MASS = 20000;
 	static const Metric MAX_ARMOR_PER_POINT = 12000.0;
 	static const Metric MIN_SPEED = 15.0;
 	static const Metric SPEED_PER_POINT = 6.0;
-	static const Metric THRUST_RATIO_PER_POINT = 16.0;
-	static const Metric MAX_ROTATION_PER_POINT = 9.0;
+	static const Metric THRUST_RATIO_PER_POINT = 20.0;
+	static const Metric MAX_ROTATION_PER_POINT = 12.0;
 
 	static const Metric PRICE_PER_TENTH_MW = 0.5;
 	static const Metric POINT_BIAS = -10.0;
@@ -879,7 +880,7 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 
 	rPoints += (m_Armor.GetCount() - STD_ARMOR_SEGMENTS) * POINTS_PER_ARMOR_SEGMENT;
 	rPoints += m_Hull.GetStdArmorMass() / ARMOR_PER_POINT;
-	rPoints += m_Hull.GetMaxArmorMass() / MAX_ARMOR_PER_POINT;
+	rPoints += Min(MAX_ARMOR_MASS, m_Hull.GetMaxArmorMass()) / MAX_ARMOR_PER_POINT;
 
 	//	Points for max speed
 
@@ -3810,10 +3811,10 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return (m_Hull.GetMaxArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetMaxArmorMass())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MAX_ARMOR))
-		return (m_Hull.GetMaxArmorSpeedPenalty() != 0 ? ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMaxArmorSpeedPenalty())) : ICCItemPtr(CC.CreateNil()));
+		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMaxArmorSpeedPenalty()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MIN_ARMOR))
-		return (m_Hull.GetMinArmorSpeedBonus() != 0 ? ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMinArmorSpeedBonus())) : ICCItemPtr(CC.CreateNil()));
+		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMinArmorSpeedBonus()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
 		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
