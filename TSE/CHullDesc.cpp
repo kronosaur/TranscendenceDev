@@ -16,6 +16,7 @@
 #define MASS_ATTRIB								CONSTLIT("mass")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
+#define MAX_ARMOR_SPEED_PENALTY_ATTRIB			CONSTLIT("maxArmorSpeedAdj")
 #define MAX_CARGO_SPACE_ATTRIB					CONSTLIT("maxCargoSpace")
 #define MAX_COUNTER_ATTRIB						CONSTLIT("maxCounter")
 #define MAX_DEVICES_ATTRIB						CONSTLIT("maxDevices")
@@ -23,6 +24,7 @@
 #define MAX_REACTOR_POWER_ATTRIB				CONSTLIT("maxReactorPower")
 #define MAX_WEAPONS_ATTRIB						CONSTLIT("maxWeapons")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
+#define MIN_ARMOR_SPEED_BONUS_ATTRIB			CONSTLIT("minArmorSpeedAdj")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 #define TIME_STOP_IMMUNE_ATTRIB					CONSTLIT("timeStopImmune")
@@ -278,8 +280,19 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 
 	m_iMaxArmorMass = pHull->GetAttributeInteger(MAX_ARMOR_ATTRIB);
 	m_iStdArmorMass = pHull->GetAttributeIntegerBounded(STD_ARMOR_ATTRIB, 0, m_iMaxArmorMass, m_iMaxArmorMass / 2);
-	m_iMaxArmorSpeedPenalty = pHull->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
-	m_iMinArmorSpeedBonus = pHull->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
+
+	//	Speed bonus/penalty
+
+	int iValue;
+	if (pHull->FindAttributeInteger(MAX_ARMOR_SPEED_PENALTY_ATTRIB, &iValue))
+		m_iMaxArmorSpeedPenalty = Max(Min(iValue, 0), -iMaxSpeed);
+	else
+		m_iMaxArmorSpeedPenalty = pHull->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
+
+	if (pHull->FindAttributeInteger(MIN_ARMOR_SPEED_BONUS_ATTRIB, &iValue))
+		m_iMinArmorSpeedBonus = Min(Max(0, iValue), 100 - iMaxSpeed);
+	else
+		m_iMinArmorSpeedBonus = pHull->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
 
 	//	Device limits
 
