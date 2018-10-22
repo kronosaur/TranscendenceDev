@@ -186,6 +186,7 @@
 #define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
 #define PROPERTY_MAX_SPEED_BY_ARMOR_MASS		CONSTLIT("maxSpeedByArmorMass")
 #define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
@@ -3256,6 +3257,20 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Interior.BindDesign(Ctx))
 		goto Fail;
 
+	//	If we calculated hull value, and if we don't have a trading desc (which
+	//	sets currency) then we set our currency based on any installed items.
+
+	if (m_fAutoCalcHullValue 
+			&& GetTradingDesc() == NULL
+			&& m_AverageDevices.GetCount() > 0)
+		{
+		CEconomyType *pCurrency = m_AverageDevices.GetDeviceClass(0)->GetItemType()->GetCurrencyType();
+		if (pCurrency && m_Hull.GetValue().GetCurrencyType() != pCurrency)
+			{
+			m_Hull.SetValue(CCurrencyAndValue(pCurrency->Exchange(m_Hull.GetValue()), pCurrency));
+			}
+		}
+
     //  Compute performance based on average devices
 
     CalcPerformance();
@@ -3698,7 +3713,10 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		//	Defaults to credits
 		m_Hull.SetValue(CCurrencyAndValue(CalcHullValue()));
+		m_fAutoCalcHullValue = true;
 		}
+	else
+		m_fAutoCalcHullValue = false;
 
 	//	Done
 
@@ -3799,6 +3817,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
 		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
+
+	else if (strEquals(sProperty, PROPERTY_PRICE))
+		return ICCItemPtr(CC.CreateInteger((int)GetTradePrice(NULL, true).GetValue()));
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_Hull.GetStdArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetStdArmorMass())) : ICCItemPtr(CC.CreateNil()));

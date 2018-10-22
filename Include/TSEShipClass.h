@@ -469,7 +469,7 @@ class CShipClass : public CDesignType
 		DWORD m_fInheritedTrade:1;				//	TRUE if m_pTrade is inherited from another class
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
 		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
-		DWORD m_fSpare4:1;
+		DWORD m_fAutoCalcHullValue:1;			//	TRUE if we computed hull value
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
