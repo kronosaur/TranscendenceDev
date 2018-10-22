@@ -87,6 +87,7 @@ class CSovereign : public CDesignType
 		static Alignments ParseAlignment (const CString &sAlign);
 		void SetDispositionTowards (CSovereign *pSovereign, Disposition iDisp, bool bMutual = false);
 		void SetDispositionTowards (Alignments iAlignment, Disposition iDisp, bool bMutual = false);
+		void SetDispositionTowardsFlag (DWORD dwAlignmentFlag, Disposition iDisp, bool bMutual = false);
 		bool SetPropertyInteger (const CString &sProperty, int iValue);
 		bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList);
 		bool SetPropertyString (const CString &sProperty, const CString &sValue);
@@ -98,6 +99,7 @@ class CSovereign : public CDesignType
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		virtual DesignTypes GetType (void) const override { return designSovereign; }
 
+		static DWORD ParseAlignmentFlag (const CString &sValue);
 		static Disposition ParseDisposition (const CString &sValue);
 
 	protected:

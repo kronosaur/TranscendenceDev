@@ -149,6 +149,17 @@ const DWORD ALIGN_FLAG_SPIRITUALITY =		0x00000020;
 const DWORD ALIGN_FLAG_EVOLUTION =			0x00000040;
 const DWORD ALIGN_FLAG_TRADITION =			0x00000080;
 
+static TStaticStringTable<TStaticStringEntry<DWORD>, 8> ALIGN_FLAG_TABLE = {
+	"community",			ALIGN_FLAG_COMMUNITY,
+	"constructive",			ALIGN_FLAG_CONSTRUCTIVE,
+	"destructive",			ALIGN_FLAG_DESTRUCTIVE,
+	"evolution",			ALIGN_FLAG_EVOLUTION,
+	"independence",			ALIGN_FLAG_INDEPENDENCE,
+	"knowledge",			ALIGN_FLAG_KNOWLEDGE,
+	"spirituality",			ALIGN_FLAG_SPIRITUALITY,
+	"tradition",			ALIGN_FLAG_TRADITION,
+	};
+
 struct SAlignData
 	{
 	int iNameLen;
@@ -179,7 +190,7 @@ static SAlignData ALIGN_DATA[CSovereign::alignCount] =
 
 		{	CONSTDEF("unorganized"),	alignNeutral,				0 },
 		{	CONSTDEF("subsapient"),		alignNeutral,				0 },
-		{	CONSTDEF("predator"),		alignDestructiveChaos,		0 },
+		{	CONSTDEF("predator"),		alignDestructiveChaos,		ALIGN_FLAG_DESTRUCTIVE },
 	};
 
 CSovereign::CSovereign (void) : 
@@ -528,17 +539,30 @@ void CSovereign::InitRelationships (void)
 
 			if (pRelDesc->FindAttribute(ALIGNMENT_ATTRIB, &sTarget))
 				{
-				Alignments iAlignment = ParseAlignment(sTarget);
-				if (iAlignment == alignUnknown)
+				//	See if this is a flag
+
+				DWORD dwAlignmentFlag = ParseAlignmentFlag(sTarget);
+				if (dwAlignmentFlag)
 					{
-					::kernelDebugLogPattern("[%08x]: Unknown alignment: %s.", GetUNID(), sTarget);
-					continue;
+					SetDispositionTowardsFlag(dwAlignmentFlag, iDisp, bMutual);
 					}
 
-				//	Set the disposition for all sovereigns of the given 
-				//	alignment.
+				//	Otherwise, we expect a named alignment
 
-				SetDispositionTowards(iAlignment, iDisp, bMutual);
+				else
+					{
+					Alignments iAlignment = ParseAlignment(sTarget);
+					if (iAlignment == alignUnknown)
+						{
+						::kernelDebugLogPattern("[%08x]: Unknown alignment: %s.", GetUNID(), sTarget);
+						continue;
+						}
+
+					//	Set the disposition for all sovereigns of the given 
+					//	alignment.
+
+					SetDispositionTowards(iAlignment, iDisp, bMutual);
+					}
 				}
 
 			//	Otherwise, see if this is towards a sovereign
@@ -896,6 +920,20 @@ CSovereign::Alignments CSovereign::ParseAlignment (const CString &sAlign)
 	return alignUnknown;
 	}
 
+DWORD CSovereign::ParseAlignmentFlag (const CString &sValue)
+
+//	ParseAlignmentFlag
+//
+//	Parse the string into an alignment flag
+
+	{
+	const TStaticStringEntry<DWORD> *pEntry = ALIGN_FLAG_TABLE.GetAt(sValue);
+	if (pEntry == NULL)
+		return 0;
+
+	return pEntry->Value;
+	}
+
 CSovereign::Disposition CSovereign::ParseDisposition (const CString &sValue)
 
 //	ParseDisposition
@@ -977,6 +1015,42 @@ void CSovereign::SetDispositionTowards (Alignments iAlignment, Disposition iDisp
 		if (pTarget->GetAlignment() != iAlignment
 				|| pTarget == this)
 			continue;
+
+		//	If we're already at this disposition then skip
+
+		if (GetDispositionTowards(pTarget) == iDisp
+				&& (!bMutual || pTarget->GetDispositionTowards(this) == iDisp))
+			continue;
+
+		//	Set disposition
+
+		SetDispositionTowards(pTarget, iDisp, bMutual);
+		}
+	}
+
+void CSovereign::SetDispositionTowardsFlag (DWORD dwAlignmentFlag, Disposition iDisp, bool bMutual)
+
+//	SetDispositionTowardsFlag
+//
+//	Sets disposition towards all sovereigns that have the given flag.
+
+	{
+	for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+		{
+		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		Alignments iAlignment = pTarget->GetAlignment();
+		if (iAlignment == alignUnknown
+				|| pTarget == this
+				|| !(ALIGN_DATA[iAlignment].dwFlags & dwAlignmentFlag))
+			continue;
+
+		//	If we're already at this disposition then skip
+
+		if (GetDispositionTowards(pTarget) == iDisp
+				&& (!bMutual || pTarget->GetDispositionTowards(this) == iDisp))
+			continue;
+
+		//	Set disposition
 
 		SetDispositionTowards(pTarget, iDisp, bMutual);
 		}
