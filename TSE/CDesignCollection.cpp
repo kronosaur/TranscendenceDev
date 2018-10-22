@@ -272,9 +272,16 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 			return error;
 			}
 
+		//	If we're loading an old game, and if we don't have the TypesUsed array, then it
+		//	means we need to load all obsolete types. In that case we use API = 0.
+
+		DWORD dwAPIToUse = dwAPIVersion;
+		if (!bNewGame && TypesUsed.GetCount() == 0)
+			dwAPIToUse = 0;
+
 		//	Add the types
 
-		m_AllTypes.Merge(Types, m_OverrideTypes, ExtensionsIncluded, TypesUsed, dwAPIVersion);
+		m_AllTypes.Merge(Types, m_OverrideTypes, ExtensionsIncluded, TypesUsed, dwAPIToUse);
 
 		//	If this is the adventure, then remember it
 
