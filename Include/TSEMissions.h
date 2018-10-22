@@ -59,6 +59,7 @@ class CMission : public CSpaceObject
 		inline bool KeepsStats (void) const { return m_pType->KeepsStats(); }
 		bool MatchesCriteria (CSpaceObject *pSource, const SCriteria &Criteria);
 		void OnPlayerEnteredSystem (CSpaceObject *pPlayer);
+		bool RefreshSummary (void);
 		bool Reward (ICCItem *pData, ICCItem **retpResult = NULL);
 		bool SetAccepted (void);
 		bool SetDeclined (ICCItem **retpResult = NULL);

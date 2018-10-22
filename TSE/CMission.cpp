@@ -262,11 +262,7 @@ ALERROR CMission::Create (CMissionType *pType,
 	//	Get the mission title and description (we remember these because we may
 	//	need to access them outside of the system).
 
-	if (!pMission->Translate(CONSTLIT("Name"), NULL, &pMission->m_sTitle))
-		pMission->m_sTitle = pType->GetName();
-
-	if (!pMission->Translate(CONSTLIT("Summary"), NULL, &pMission->m_sInstructions))
-		pMission->m_sInstructions = NULL_STR;
+	pMission->RefreshSummary();
 
 	//	If we haven't subscribed to the owner, do it now
 
@@ -1117,6 +1113,27 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 	return true;
 	}
 
+bool CMission::RefreshSummary (void)
+
+//	RefreshSummary
+//
+//	Refreshes the mission summary.
+
+	{
+	bool bSuccess = true;
+
+	if (!Translate(CONSTLIT("Name"), NULL, &m_sTitle))
+		m_sTitle = m_pType->GetName();
+
+	if (!Translate(CONSTLIT("Summary"), NULL, &m_sInstructions))
+		{
+		m_sInstructions = NULL_STR;
+		bSuccess = false;
+		}
+
+	return bSuccess;
+	}
+
 bool CMission::Reward (ICCItem *pData, ICCItem **retpResult)
 
 //	Reward
@@ -1207,11 +1224,7 @@ bool CMission::SetAccepted (void)
 	//	Get the mission title and description (we remember these because we may
 	//	need to access them outside of the system).
 
-	if (!Translate(CONSTLIT("Name"), NULL, &m_sTitle))
-		m_sTitle = m_pType->GetName();
-
-	if (!Translate(CONSTLIT("Summary"), NULL, &m_sInstructions))
-		m_sInstructions = NULL_STR;
+	RefreshSummary();
 
 	return true;
 	}

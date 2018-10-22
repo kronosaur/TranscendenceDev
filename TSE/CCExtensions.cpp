@@ -422,6 +422,7 @@ ICCItem *fnItemCreateRandom (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 #define FN_MISSION_ADD_RECURRING_TIMER	11
 #define FN_MISSION_CANCEL_TIMER			12
 #define FN_MISSION_CAN_CREATE			13
+#define FN_MISSION_REFRESH_SUMMARY		14
 
 ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnMissionGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -2496,6 +2497,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"msnIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
+			"(msnRefreshSummary missionObj)",
+			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRegisterForEvents",			fnObjSetOld,		FN_OBJ_REGISTER_EVENTS,
 			"(msnRegisterForEvents missionObj obj)",
@@ -9153,6 +9158,9 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			
 		case FN_MISSION_FAILURE:
 			return pCC->CreateBool(pMission->SetFailure((pArgs->GetCount() >= 2 ? pArgs->GetElement(1) : NULL)));
+
+		case FN_MISSION_REFRESH_SUMMARY:
+			return pCC->CreateBool(pMission->RefreshSummary());
 
 		case FN_MISSION_REWARD:
 			{
