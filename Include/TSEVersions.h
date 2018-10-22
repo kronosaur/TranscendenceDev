@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							42;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					164;
+constexpr DWORD SYSTEM_SAVE_VERSION =					165;
 
 //	Uncomment out the following define when building a stable release
 
@@ -604,3 +604,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					164;
 //
 //	163: 1.8 Beta 3
 //		Added m_fShowMapLabel to CShip
+//
+//	165: 1.8 Beta 4
+//		Added m_dwCompletedOn to CMission

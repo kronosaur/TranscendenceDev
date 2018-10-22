@@ -2460,6 +2460,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'acceptedOn        Tick on which player accepted mission (or Nil)\n"
 			"   'canBeDeclined     Mission can be declined by player\n"
 			"   'canBeDeleted      Mission can be deleted by player\n"
+			"   'completedOn       Tick on which mission was completed\n"
 			"   'debrieferID       ID of the object that will debrief the player\n"
 			"   'forceUndockAfterDebrief  Force undock after showing debrief screen\n"
 			"   'hasDebrief        Mission has a debrief phase\n"

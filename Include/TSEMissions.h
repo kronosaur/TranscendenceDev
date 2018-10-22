@@ -123,6 +123,7 @@ class CMission : public CSpaceObject
 		DWORD m_dwAcceptedOn;				//	Tick on which mission was accepted
 		DWORD m_dwLeftSystemOn;				//	Left the system on this tick (only used if the mission
 											//		times out when out of the system).
+		DWORD m_dwCompletedOn;				//	Tick on which mission was completed
 
 		CString m_sTitle;					//	Mission title
 		CString m_sInstructions;			//	Current instructions
