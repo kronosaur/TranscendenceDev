@@ -2037,8 +2037,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"iv*",	0,	},
 
 		{	"objHasTradeService",			fnObjGet,		FN_OBJ_HAS_SERVICE,
-			"(objHasTradeService obj service) -> True/Nil",
-			"is",	0,	},
+			"(objHasTradeService obj service [options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   fullInstallOnly: True/Nil\n"
+			"   itemCriteria: criteria\n",
+
+			"is*",	0,	},
 
 		{	"objIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(objIncData obj attrib [increment]) -> new value",
@@ -6881,7 +6887,12 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (iService == serviceNone)
 				return pCC->CreateError(CONSTLIT("Unknown service type"), pArgs->GetElement(1));
 
-			return pCC->CreateBool(pObj->HasTradeService(iService));
+			ICCItem *pOptions = pArgs->GetElement(2);
+			CTradingDesc::SHasServiceOptions Options;
+			if (!CTradingDesc::ParseHasServiceOptions(pOptions, Options))
+				return pCC->CreateError(CONSTLIT("Invalid options"), pOptions);
+
+			return pCC->CreateBool(pObj->HasTradeService(iService, Options));
 			}
 
 		case FN_OBJ_IDENTIFIED:

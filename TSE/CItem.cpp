@@ -3226,10 +3226,6 @@ void CItem::WriteToStream (IWriteStream *pStream)
 
 //	CItemCriteria ------------------------------------------------------------
 
-CItemCriteria::CItemCriteria (void) : pFilter(NULL)
-	{ 
-	}
-
 CItemCriteria::CItemCriteria (const CItemCriteria &Copy)
 
 //	Criteria copy constructor
@@ -3439,4 +3435,23 @@ CString CItemCriteria::GetName (void) const
 
 		return sName;
 		}
+	}
+
+bool CItemCriteria::Intersects (const CItemCriteria &Src) const
+
+//	Intersects
+//
+//	Returns TRUE if the two criterias match at least one item in common.
+
+	{
+	for (int i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+		{
+		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItem Item(pType, 1);
+
+		if (Item.MatchesCriteria(*this) && Item.MatchesCriteria(Src))
+			return true;
+		}
+
+	return false;
 	}

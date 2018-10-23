@@ -662,7 +662,7 @@ int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
 	return iMaxLevel;
 	}
 
-bool CSpaceObject::HasTradeService (ETradeServiceTypes iService)
+bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options)
 
 //	HasTradeService
 //
@@ -672,14 +672,14 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService)
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->HasService(iService))
+	if (pTradeOverride && pTradeOverride->HasService(iService, Options))
 		return true;
 
 	//	Ask base type
 
 	CDesignType *pType = GetType();
 	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade && pTrade->HasService(iService))
+	if (pTrade && pTrade->HasService(iService, Options))
 		return true;
 
 	//	No service

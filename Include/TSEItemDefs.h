@@ -41,7 +41,7 @@ enum ItemFates
 
 struct CItemCriteria
 	{
-	CItemCriteria (void);
+	CItemCriteria (void) { }
 	CItemCriteria (const CItemCriteria &Copy);
 	~CItemCriteria (void);
 
@@ -50,39 +50,41 @@ struct CItemCriteria
 	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 	int GetMaxLevelMatched (void) const;
 	CString GetName (void) const;
+	bool Intersects (const CItemCriteria &Src) const;
+	inline bool IsEmpty (void) const { return (dwItemCategories == 0 && sLookup.IsBlank() && pFilter == NULL); }
     inline bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
 
-	DWORD dwItemCategories;			//	Set of ItemCategories to match on
-	DWORD dwExcludeCategories;		//	Categories to exclude
-	DWORD dwMustHaveCategories;		//	ANDed categories
+	DWORD dwItemCategories = 0;				//	Set of ItemCategories to match on
+	DWORD dwExcludeCategories = 0;			//	Categories to exclude
+	DWORD dwMustHaveCategories = 0;			//	ANDed categories
 
-	WORD wFlagsMustBeSet;			//	These flags must be set
-	WORD wFlagsMustBeCleared;		//	These flags must be cleared
+	WORD wFlagsMustBeSet = 0;				//	These flags must be set
+	WORD wFlagsMustBeCleared = 0;			//	These flags must be cleared
 
-	bool bUsableItemsOnly;			//	Item must be usable
-	bool bExcludeVirtual;			//	Exclude virtual items
-	bool bInstalledOnly;			//	Item must be installed
-	bool bNotInstalledOnly;			//	Item must not be installed
-	bool bLauncherMissileOnly;		//	Item must be a missile for a launcher
+	bool bUsableItemsOnly = false;			//	Item must be usable
+	bool bExcludeVirtual = false;			//	Exclude virtual items
+	bool bInstalledOnly = false;			//	Item must be installed
+	bool bNotInstalledOnly = false;			//	Item must not be installed
+	bool bLauncherMissileOnly = false;		//	Item must be a missile for a launcher
 
 	TArray<CString> ModifiersRequired;		//	Required modifiers
 	TArray<CString> ModifiersNotAllowed;	//	Exclude these modifiers
 	TArray<CString> SpecialAttribRequired;	//	Special required attributes
 	TArray<CString> SpecialAttribNotAllowed;//	Exclude these special attributes
-	CString Frequency;				//	If not blank, only items with these frequencies
+	CString Frequency;						//	If not blank, only items with these frequencies
 
-	int iEqualToLevel;				//	If not -1, only items of this level
-	int iGreaterThanLevel;			//	If not -1, only items greater than this level
-	int iLessThanLevel;				//	If not -1, only items less than this level
-	int iEqualToPrice;				//	If not -1, only items at this price
-	int iGreaterThanPrice;			//	If not -1, only items greater than this price
-	int iLessThanPrice;				//	If not -1, only items less than this price
-	int iEqualToMass;				//	If not -1, only items of this mass (in kg)
-	int iGreaterThanMass;			//	If not -1, only items greater than this mass (in kg)
-	int iLessThanMass;				//	If not -1, only items less than this mass (in kg)
+	int iEqualToLevel = -1;					//	If not -1, only items of this level
+	int iGreaterThanLevel = -1;				//	If not -1, only items greater than this level
+	int iLessThanLevel = -1;				//	If not -1, only items less than this level
+	int iEqualToPrice = -1;					//	If not -1, only items at this price
+	int iGreaterThanPrice = -1;				//	If not -1, only items greater than this price
+	int iLessThanPrice = -1;				//	If not -1, only items less than this price
+	int iEqualToMass = -1;					//	If not -1, only items of this mass (in kg)
+	int iGreaterThanMass = -1;				//	If not -1, only items greater than this mass (in kg)
+	int iLessThanMass = -1;					//	If not -1, only items less than this mass (in kg)
 
-	CString sLookup;				//	Look up a shared criteria
-	ICCItem *pFilter;				//	Filter returns Nil for excluded items
+	CString sLookup;						//	Look up a shared criteria
+	ICCItem *pFilter = NULL;				//	Filter returns Nil for excluded items
 	};
 
 enum EDisplayAttributeTypes
