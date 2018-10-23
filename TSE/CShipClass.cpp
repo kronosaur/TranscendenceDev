@@ -215,6 +215,8 @@ const Metric DRIVE_POWER_FACTOR =				13.0;
 
 const int MAX_HERO_IMAGE_HEIGHT =               528;
 
+const Metric STRUCTURAL_HP_POWER =				0.65;
+
 struct ScoreDesc
 	{
 	int iBaseXP;
@@ -2585,7 +2587,7 @@ int CShipClass::GetMaxStructuralHitPoints (void) const
 
 	//	Otherwise we have to compute it based on level and mass
 
-	return (int)(pow(1.3, m_iLevel) * (sqrt(m_Hull.GetMass()) + 10.0));
+	return (int)(pow(1.3, m_iLevel) * (pow(m_Hull.GetMass(), STRUCTURAL_HP_POWER) + 10.0));
 	}
 
 CString CShipClass::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
