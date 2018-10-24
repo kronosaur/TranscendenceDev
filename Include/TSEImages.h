@@ -281,6 +281,7 @@ class CObjectImageArray
 			int y;
 			};
 
+		void CalcRequiredImageSize (int &cxRequired, int &cyRequired) const;
 		void ComputeRotationOffsets (void);
 		void ComputeRotationOffsets (int xOffset, int yOffset);
 		void ComputeSourceXY (int iTick, int iRotation, int *retxSrc, int *retySrc) const;
@@ -289,6 +290,7 @@ class CObjectImageArray
 		void GenerateGlowImage (int iRotation) const;
 		void GenerateScaledImages (int iRotation, int cxWidth, int cyHeight) const;
 		CG32bitImage *GetHitMask (void) const;
+		bool ValidateImageSize (int cxWidth, int cyHeight) const;
 
 		DWORD m_dwBitmapUNID;				//	UNID of bitmap (0 if none)
 		TSharedPtr<CObjectImage> m_pImage;	//	Image

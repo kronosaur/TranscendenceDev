@@ -266,6 +266,68 @@ void CObjectImageArray::CleanUp (void)
 	m_pImage = NULL;
 	}
 
+void CObjectImageArray::CalcRequiredImageSize (int &cxRequired, int &cyRequired) const
+
+//	CalcRequiredImageSize
+//
+//	Returns the required width and height depending on our frame configuration.
+
+	{
+	//	If we're animating...
+
+	if (m_iFrameCount > 0 && m_iTicksPerFrame > 0)
+		{
+		//	If we've got multi-row animations, then we deal with that.
+
+		if (m_iFramesPerRow != m_iFrameCount)
+			{
+			//	HACK: m_iFramesPerRow is really "frames per column"
+
+			int iCols = m_iFrameCount / m_iFramesPerRow;
+
+			cxRequired = m_rcImage.left + (iCols * RectWidth(m_rcImage));
+			cyRequired = m_rcImage.top + (m_iFramesPerRow * RectHeight(m_rcImage));
+			}
+
+		//	If we've got multi-column rotations, then we need to deal with that.
+
+		else if (m_iRotationCount != m_iFramesPerColumn)
+			{
+			int iCols = (m_iRotationCount + m_iFramesPerColumn - 1) / m_iFramesPerColumn;
+
+			cxRequired = m_rcImage.left + (m_iFrameCount * iCols * RectWidth(m_rcImage));
+			cyRequired = m_rcImage.top + (m_iFramesPerColumn * RectHeight(m_rcImage));
+			}
+
+		//	Otherwise, we expect a single column per frame
+
+		else
+			{
+			cxRequired = m_rcImage.left + (m_iFrameCount * RectWidth(m_rcImage));
+			cyRequired = m_rcImage.top + (m_iRotationCount * RectHeight(m_rcImage));
+			}
+		}
+
+	//	If we've got multi-column rotations but no animations, then we just
+	//	compute the proper column
+
+	else if (m_iRotationCount != m_iFramesPerColumn)
+		{
+		int iCols = (m_iRotationCount + m_iFramesPerColumn - 1) / m_iFramesPerColumn;
+
+		cxRequired = m_rcImage.left + (iCols * RectHeight(m_rcImage));
+		cyRequired = m_rcImage.top + (m_iFramesPerColumn * RectWidth(m_rcImage));
+		}
+	
+	//	Otherwise, a single column
+
+	else
+		{
+		cxRequired = m_rcImage.left + RectWidth(m_rcImage);
+		cyRequired = m_rcImage.top + (m_iRotationCount * RectHeight(m_rcImage));
+		}
+	}
+
 void CObjectImageArray::ComputeSourceXY (int iTick, int iRotation, int *retxSrc, int *retySrc) const
 
 //	ComputeSourceXY
@@ -906,7 +968,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicks
     //  Initialize the rest
 
 	m_iFrameCount = iFrameCount;
-	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iRotationCount = 1;
 	m_iFramesPerColumn = m_iRotationCount;
 	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
@@ -967,7 +1029,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
 	m_rcImage = rcImage;
 	m_iFrameCount = iFrameCount;
-	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iRotationCount = 1;
 	m_iFramesPerColumn = m_iRotationCount;
 	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
@@ -996,7 +1058,7 @@ ALERROR CObjectImageArray::InitFromBitmap (CG32bitImage *pBitmap, const RECT &rc
 	m_pImage = TSharedPtr<CObjectImage>(new CObjectImage(pBitmap, bFreeBitmap));
 	m_rcImage = rcImage;
 	m_iFrameCount = iFrameCount;
-	m_iRotationCount = STD_ROTATION_COUNT;
+	m_iRotationCount = 1;
 	m_iFramesPerColumn = m_iRotationCount;
 	m_iFramesPerRow = iFrameCount;
 	m_iTicksPerFrame = iTicksPerFrame;
@@ -1147,9 +1209,7 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 		}
 
 	m_iFrameCount = pDesc->GetAttributeInteger(CONSTLIT(g_ImageFrameCountAttrib));
-	m_iRotationCount = pDesc->GetAttributeInteger(ROTATION_COUNT_ATTRIB);
-	if (m_iRotationCount <= 0)
-		m_iRotationCount = iDefaultRotationCount;
+	m_iRotationCount = pDesc->GetAttributeIntegerBounded(ROTATION_COUNT_ATTRIB, 1, -1, iDefaultRotationCount);
 
 	int iRotationCols = pDesc->GetAttributeIntegerBounded(ROTATION_COLUMNS_ATTRIB, 0, m_iRotationCount, 0);
 	if (iRotationCols > 0)
@@ -1235,13 +1295,7 @@ void CObjectImageArray::MarkImage (void) const
     //  rect against the actual image.
 
     if (g_pUniverse->InDebugMode())
-        {
-        if (m_rcImage.right > m_pImage->GetWidth() || m_rcImage.bottom > m_pImage->GetHeight())
-            {
-            ASSERT(false);
-            ::kernelDebugLogPattern("[0x%08x %s]: Image rect too big for bitmap.", m_pImage->GetUNID(), m_pImage->GetImageFilename());
-            }
-        }
+		ValidateImageSize(m_pImage->GetWidth(), m_pImage->GetHeight());
 	}
 
 ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1954,6 +2008,31 @@ void CObjectImageArray::TakeHandoff (CObjectImageArray &Source)
 	m_iViewportSize = Source.m_iViewportSize;
 	m_iRotationOffset = Source.m_iRotationOffset;
 	m_bDefaultSize = Source.m_bDefaultSize;
+	}
+
+bool CObjectImageArray::ValidateImageSize (int cxWidth, int cyHeight) const
+
+//	ValidateImageSize
+//
+//	Returns TRUE if the given image width and height are large enough to handle
+//	all frames in this array.
+
+	{
+	//	Compute the image size based on the configuration.
+
+	int cxRequired, cyRequired;
+	CalcRequiredImageSize(cxRequired, cyRequired);
+
+	//	Now make sure we have enough image
+
+	if ((cxWidth >= cxRequired) && (cyHeight >= cyRequired))
+		return true;
+
+	//	Otherwise, log it.
+
+    ::kernelDebugLogPattern("[0x%08x %s]: Image not large enough; %d x %d needed.", m_pImage->GetUNID(), m_pImage->GetImageFilename(), cxRequired, cyRequired);
+
+	return false;
 	}
 
 void CObjectImageArray::WriteToStream (IWriteStream *pStream) const
