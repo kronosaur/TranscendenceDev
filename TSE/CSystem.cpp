@@ -4582,6 +4582,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 //	Updates the system
 
 	{
+	DEBUG_TRY
+
 	int i;
 #ifdef DEBUG_PERFORMANCE
 	int iUpdateObj = 0;
@@ -4777,6 +4779,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Next
 
 	m_iTick++;
+
+	DEBUG_CATCH
 	}
 
 void CSystem::UpdateCollisionTesting (SUpdateCtx &Ctx)

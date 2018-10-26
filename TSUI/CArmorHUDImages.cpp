@@ -164,6 +164,8 @@ void CArmorHUDImages::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &C
 //	Paint to the destination bitmap
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	if (m_bInvalid)
@@ -201,6 +203,8 @@ void CArmorHUDImages::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &C
 
 		Ctx.iMode = iOldMode;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)

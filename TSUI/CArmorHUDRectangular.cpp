@@ -294,6 +294,8 @@ void CArmorHUDRectangular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintC
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -308,6 +310,8 @@ void CArmorHUDRectangular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintC
 			m_Buffer,
 			x,
 			y);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRectangular::PaintArmorSegments (SHUDPaintCtx &Ctx, CShip *pShip)

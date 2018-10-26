@@ -96,6 +96,8 @@ void CReactorHUDCircular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCt
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -110,6 +112,8 @@ void CReactorHUDCircular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCt
 			m_Buffer,
 			x,
 			y);
+
+	DEBUG_CATCH
 	}
 
 void CReactorHUDCircular::OnUpdate (SHUDUpdateCtx &Ctx)

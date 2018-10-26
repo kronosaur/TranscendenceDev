@@ -107,6 +107,8 @@ void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -121,6 +123,8 @@ void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 			m_Buffer,
 			x,
 			y);
+
+	DEBUG_CATCH
 	}
 
 void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y)

@@ -86,6 +86,8 @@ void CArmorHUDShaped::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &C
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -100,6 +102,8 @@ void CArmorHUDShaped::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &C
 			m_Buffer,
 			x,
 			y);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDShaped::Realize (SHUDPaintCtx &Ctx)

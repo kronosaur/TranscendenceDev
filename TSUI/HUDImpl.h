@@ -15,13 +15,13 @@ class CArmorHUDImages : public IHUDPainter
 	public:
 		CArmorHUDImages (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		struct SArmorSegmentImageDesc
@@ -69,13 +69,13 @@ class CArmorHUDShaped : public IHUDPainter
 	public:
 		CArmorHUDShaped (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		void Realize (SHUDPaintCtx &Ctx);
@@ -110,14 +110,14 @@ class CReactorHUDDefault : public IHUDPainter
 		CReactorHUDDefault (void);
 		virtual ~CReactorHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
-		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
 
 	private:
 		void Realize (SHUDPaintCtx &Ctx);
@@ -157,12 +157,12 @@ class CShieldHUDDefault : public IHUDPainter
 		CShieldHUDDefault (void);
 		virtual ~CShieldHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		struct STextPaint
@@ -192,13 +192,13 @@ class CWeaponHUDDefault : public IHUDPainter
 		CWeaponHUDDefault (void);
 		virtual ~CWeaponHUDDefault (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		void PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x, int y);
@@ -229,13 +229,13 @@ class CArmorHUDRingSegments : public IHUDPainter
 	public:
 		CArmorHUDRingSegments (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		void DrawArmorName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledArmor *pArmor, CG32bitPixel rgbBack, CG32bitPixel rgbColor);
@@ -278,14 +278,14 @@ class CReactorHUDCircular : public IHUDPainter
 		CReactorHUDCircular (void);
 		virtual ~CReactorHUDCircular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
-		virtual void OnUpdate (SHUDUpdateCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
 
 	private:
 		void PaintChargesGauge (const SReactorStats &Stats);
@@ -326,13 +326,13 @@ class CWeaponHUDCircular : public IHUDPainter
 		CWeaponHUDCircular (void);
 		virtual ~CWeaponHUDCircular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		void PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObject *pTarget);
@@ -374,13 +374,13 @@ class CArmorHUDRectangular : public IHUDPainter
 	public:
 		CArmorHUDRectangular (void);
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx);
-		virtual void GetBounds (int *retWidth, int *retHeight) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc);
-		virtual void Invalidate (void) { m_bInvalid = true;  }
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override;
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override;
+		virtual void Invalidate (void) override { m_bInvalid = true;  }
 
 	protected:
-		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx);
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
 
 	private:
 		struct SLabelEntry

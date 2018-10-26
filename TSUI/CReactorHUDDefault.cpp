@@ -176,6 +176,8 @@ void CReactorHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -190,6 +192,8 @@ void CReactorHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx
 			m_Buffer,
 			x + DISPLAY_OFFSET_X,
 			y + DISPLAY_OFFSET_Y);
+
+	DEBUG_CATCH
 	}
 
 void CReactorHUDDefault::OnUpdate (SHUDUpdateCtx &Ctx)

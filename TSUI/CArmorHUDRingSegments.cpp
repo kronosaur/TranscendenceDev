@@ -296,6 +296,8 @@ void CArmorHUDRingSegments::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaint
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	if (m_bInvalid)
 		{
 		Realize(Ctx);
@@ -310,6 +312,8 @@ void CArmorHUDRingSegments::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaint
 			m_Buffer,
 			x,
 			y);
+
+	DEBUG_CATCH
 	}
 
 void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)

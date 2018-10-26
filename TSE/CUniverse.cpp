@@ -2855,6 +2855,8 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 //	Update the system of the current point of view
 
 	{
+	DEBUG_TRY
+
 	if (m_pCurrentSystem == NULL)
 		return;
 
@@ -2881,6 +2883,8 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 	//	Next
 
 	m_iTick++;
+
+	DEBUG_CATCH
 	}
 
 void CUniverse::UpdateExtended (void)
@@ -2891,6 +2895,8 @@ void CUniverse::UpdateExtended (void)
 //	away. We update the system to reflect the amount of time that has passed.
 
 	{
+	DEBUG_TRY
+
 	CSystem *pSystem = GetCurrentSystem();
 	ASSERT(pSystem);
 
@@ -2905,6 +2911,8 @@ void CUniverse::UpdateExtended (void)
 	//	Update the system 
 
 	pSystem->UpdateExtended(TotalTime);
+
+	DEBUG_CATCH
 	}
 
 void CUniverse::UpdateMissions (int iTick, CSystem *pSystem)
@@ -2914,6 +2922,8 @@ void CUniverse::UpdateMissions (int iTick, CSystem *pSystem)
 //	Update missions in the system.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	SUpdateCtx Ctx;
@@ -2945,6 +2955,8 @@ void CUniverse::UpdateMissions (int iTick, CSystem *pSystem)
 				pMission->UpdateExpiration(iTick);
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CUniverse::UpdateSovereigns (int iTick, CSystem *pSystem)
@@ -2954,13 +2966,15 @@ void CUniverse::UpdateSovereigns (int iTick, CSystem *pSystem)
 //	Update each sovereign
 
 	{
-	int i;
+	DEBUG_TRY
 
-	for (i = 0; i < GetSovereignCount(); i++)
+	for (int i = 0; i < GetSovereignCount(); i++)
 		{
 		CSovereign *pSovereign = GetSovereign(i);
 		pSovereign->Update(iTick, pSystem);
 		}
+
+	DEBUG_CATCH
 	}
 
 CString CUniverse::ValidatePlayerName (const CString &sName)

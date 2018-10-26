@@ -1160,10 +1160,10 @@ void CDesignCollection::FireOnGlobalUpdate (int iTick)
 //	Types get a chance to do whatever they want once every 15 ticks.
 
 	{
-	int i;
+	DEBUG_TRY
 
 	CString sError;
-	for (i = 0; i < m_EventsCache[evtOnGlobalUpdate]->GetCount(); i++)
+	for (int i = 0; i < m_EventsCache[evtOnGlobalUpdate]->GetCount(); i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalUpdate]->GetEntry(i, &Event);
@@ -1171,6 +1171,8 @@ void CDesignCollection::FireOnGlobalUpdate (int iTick)
 		if ((((DWORD)iTick + pType->GetUNID()) % GLOBAL_ON_UPDATE_CYCLE) == 0)
 			pType->FireOnGlobalUpdate(Event);
 		}
+
+	DEBUG_CATCH
 	}
 
 DWORD CDesignCollection::GetDynamicUNID (const CString &sName)

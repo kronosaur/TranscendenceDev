@@ -114,6 +114,8 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 //	Paint
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	If we're painting over a buffer, then we paint the previously 
@@ -280,4 +282,6 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 
 		m_pShieldPainter->Paint(Dest, x, y, Ctx);
 		}
+
+	DEBUG_CATCH
 	}
