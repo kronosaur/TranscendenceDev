@@ -55,6 +55,8 @@ void CGTextArea::FormatRTF (const RECT &rcRect)
 //	Make sure we are formatted
 
 	{
+	DEBUG_TRY
+
 	if (m_bRTFInvalid)
 		{
 		SBlockFormatDesc BlockFormat;
@@ -72,6 +74,8 @@ void CGTextArea::FormatRTF (const RECT &rcRect)
 
 		m_bRTFInvalid = false;
 		}
+
+	DEBUG_CATCH
 	}
 
 int CGTextArea::Justify (const RECT &rcRect)
@@ -119,6 +123,8 @@ void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	Handle paint
 
 	{
+	DEBUG_TRY
+
 	RECT rcText = CalcTextRect(rcRect);
 
 	//	Paint the background
@@ -142,6 +148,8 @@ void CGTextArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 		PaintText(Dest, rcText);
 	else
 		PaintRTF(Dest, rcText);
+
+	DEBUG_CATCH
 	}
 
 void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
@@ -151,6 +159,8 @@ void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
 //	Paint RTF
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Must have a font table
@@ -174,6 +184,8 @@ void CGTextArea::PaintRTF (CG32bitImage &Dest, const RECT &rcRect)
 				Span.Format.rgbColor,
 				Span.sText);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CGTextArea::PaintText (CG32bitImage &Dest, const RECT &rcRect)

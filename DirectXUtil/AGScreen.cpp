@@ -394,6 +394,8 @@ void AGScreen::Paint (CG32bitImage &Dest)
 //	Dest is the entire display area; its origin is 0,0.
 
 	{
+	DEBUG_TRY
+
 	if (!IsRectEmpty(&m_rcInvalid))
 		{
 		int i;
@@ -451,6 +453,8 @@ void AGScreen::Paint (CG32bitImage &Dest)
 	CG16bitFont::GetDefault().DrawText(Dest, m_rcRect.left, m_rcRect.top + 20, CG32bitPixel(255, 255, 255), strPatternSubst(CONSTLIT("m_pMouseOver: %x"), (DWORD)m_pMouseOver));
 	Dest.SetClipRect(rcClip);
 #endif
+
+	DEBUG_CATCH
 	}
 
 void AGScreen::SetMouseOver (AGArea *pArea)
@@ -479,11 +483,13 @@ void AGScreen::Update (void)
 //	Update the screen
 
 	{
-	int i;
+	DEBUG_TRY
 
-	for (i = 0; i < GetAreaCount(); i++)
+	for (int i = 0; i < GetAreaCount(); i++)
 		{
 		AGArea *pArea = GetArea(i);
 		pArea->Update();
 		}
+
+	DEBUG_CATCH
 	}

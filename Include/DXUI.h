@@ -205,15 +205,15 @@ class CGButtonArea : public AGArea
 		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
 
 		//	AGArea virtuals
-		virtual int Justify (const RECT &rcRect);
-		virtual void LButtonUp (int x, int y);
-		virtual void MouseEnter (void);
-		virtual void MouseLeave (void);
-		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect);
+		virtual int Justify (const RECT &rcRect) override;
+		virtual void LButtonUp (int x, int y) override;
+		virtual void MouseEnter (void) override;
+		virtual void MouseLeave (void) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
 
 	protected:
 		//	AGArea virtuals
-		virtual void OnSetRect (void);
+		virtual void OnSetRect (void) override;
 
 	private:
 		RECT CalcTextRect (const RECT &rcRect);
@@ -255,8 +255,8 @@ class CGImageArea : public AGArea
 		inline void SetTransBackground (bool bTrans = true) { m_bTransBackground = bTrans; }
 
 		//	AGArea virtuals
-		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect);
-		virtual bool WantsMouseOver (void) { return false; }
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+		virtual bool WantsMouseOver (void) override { return false; }
 
 	private:
 		CG32bitImage *m_pImage;
@@ -287,9 +287,9 @@ class CGTextArea : public AGArea
 		inline void SetText (const CString &sText) { m_sText = sText; m_sRTF = NULL_STR; m_cxJustifyWidth = 0; Invalidate(); }
 
 		//	AGArea virtuals
-		virtual int Justify (const RECT &rcRect);
-		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect);
-		virtual void Update (void) { m_iTick++; }
+		virtual int Justify (const RECT &rcRect) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+		virtual void Update (void) override { m_iTick++; }
 
 	private:
 		RECT CalcTextRect (const RECT &rcRect);

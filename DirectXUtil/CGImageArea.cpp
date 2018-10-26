@@ -23,6 +23,8 @@ void CGImageArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	Handle paint
 
 	{
+	DEBUG_TRY
+
 	if (!m_bTransBackground)
 		Dest.Fill(rcRect.left,
 				rcRect.top,
@@ -65,5 +67,7 @@ void CGImageArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 				RectHeight(m_rcImage),
 				CG32bitPixel(0, 0, 0));
 		}
+
+	DEBUG_CATCH
 	}
 

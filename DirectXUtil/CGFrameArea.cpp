@@ -299,6 +299,8 @@ void CGFrameArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	rcRect is the rect to which this area should be painted.
 
 	{
+	DEBUG_TRY
+
 	for (int i = 0; i < GetAreaCount(); i++)
 		{
 		AGArea *pArea = GetArea(i);
@@ -319,6 +321,8 @@ void CGFrameArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	CG16bitFont::GetDefault().DrawText(Dest, rcRect.left, rcRect.top, CG32bitPixel(255, 255, 255), strPatternSubst(CONSTLIT("m_pMouseOver: %x"), (DWORD)m_pMouseOver));
 	Dest.SetClipRect(rcClip);
 #endif
+
+	DEBUG_CATCH
 	}
 
 void CGFrameArea::Update (void)
@@ -328,9 +332,13 @@ void CGFrameArea::Update (void)
 //	Update the area
 
 	{
+	DEBUG_TRY
+
 	for (int i = 0; i < GetAreaCount(); i++)
 		{
 		AGArea *pArea = GetArea(i);
 		pArea->Update();
 		}
+
+	DEBUG_CATCH
 	}

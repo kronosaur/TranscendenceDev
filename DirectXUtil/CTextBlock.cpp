@@ -154,6 +154,8 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 //	Format the text for the given width
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	m_Formatted.DeleteAll();
@@ -346,6 +348,8 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 
 		bLineEnd = false;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CTextBlock::GetBounds (RECT *retrcRect)
@@ -505,6 +509,8 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 //	the end of the block.
 
 	{
+	DEBUG_TRY
+
 	//	Keep track of the current format and text
 
 	STextFormatDesc Format = InitFormat;
@@ -654,6 +660,8 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 	//	Done
 
 	return true;
+
+	DEBUG_CATCH
 	}
 
 bool CRTFParser::ParseCode (CString *retsCode, CString *retsParam, CString *retsError)

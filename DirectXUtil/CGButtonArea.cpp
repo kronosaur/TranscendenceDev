@@ -143,6 +143,8 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 //	Handle paint
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Paint the background
@@ -257,6 +259,8 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 			yPaint += m_pDescFont->GetHeight();
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 void CGButtonArea::SetLabelAccelerator (const CString &sKey, int iKeyOffset)
