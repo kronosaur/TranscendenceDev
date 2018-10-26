@@ -33,6 +33,8 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 //	Handle an attack from another object
 
 	{
+	DEBUG_TRY
+
 	//	Tell our escorts that we were attacked, if necessary
 
 	if (pAttacker
@@ -43,6 +45,8 @@ void IOrderModule::Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 	//	Let our subclass handle it.
 
 	OnAttacked(pShip, Ctx, pAttacker, Damage, bFriendlyFire);
+
+	DEBUG_CATCH
 	}
 
 DWORD IOrderModule::Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2)

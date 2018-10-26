@@ -562,6 +562,8 @@ void CBaseShipAI::FireOnOrderChanged (void)
 //	Ship's current order has changed
 
 	{
+	DEBUG_TRY
+
 	if (m_pShip->HasOnOrderChangedEvent() && !m_fInOnOrderChanged)
 		{
 		m_fInOnOrderChanged = true;
@@ -605,6 +607,8 @@ void CBaseShipAI::FireOnOrderChanged (void)
 	//	Give descendents a chance
 
 	OnOrderChanged();
+
+	DEBUG_CATCH
 	}
 
 void CBaseShipAI::FireOnOrdersCompleted (void)

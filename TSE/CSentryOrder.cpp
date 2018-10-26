@@ -71,6 +71,8 @@ void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 //	We've been attacked.
 
 	{
+	DEBUG_TRY
+
 	//	If we have a valid attacker, then we try to respond. We ignore friendly
 	//	fire because that's handled by CBaseShipAI.
 
@@ -99,6 +101,8 @@ void CSentryOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *
 			&& pBase->IsAngryAt(pAttacker)
 			&& (pTarget = pBase->CalcTargetToAttack(pAttacker, pOrderGiver)))
 		pShip->Communicate(pBase, msgAttackDeter, pTarget);
+
+	DEBUG_CATCH
 	}
 
 void CSentryOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)

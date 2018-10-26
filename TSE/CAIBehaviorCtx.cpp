@@ -902,14 +902,14 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 //	Sends a message to the ship's escorts
 
 	{
-	int i;
+	DEBUG_TRY
 
 	if (HasEscorts())
 		{
 		bool bEscortsFound = false;
 
 		CSovereign *pSovereign = pShip->GetSovereign();
-		for (i = 0; i < pShip->GetSystem()->GetObjectCount(); i++)
+		for (int i = 0; i < pShip->GetSystem()->GetObjectCount(); i++)
 			{
 			CSpaceObject *pObj = pShip->GetSystem()->GetObject(i);
 
@@ -927,6 +927,8 @@ void CAIBehaviorCtx::CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage
 		if (!bEscortsFound)
 			SetHasEscorts(false);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

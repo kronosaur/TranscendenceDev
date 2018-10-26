@@ -142,6 +142,8 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 //	We've been attacked.
 
 	{
+	DEBUG_TRY
+
 	//	If we're waiting for a threat and we got attacked, then we're done 
 	//	waiting.
 
@@ -185,6 +187,8 @@ void CWaitOrder::OnAttacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pA
 		m_Objs[objTarget] = pAttacker;
 		ASSERT(m_Objs[objTarget]->DebugIsValid() && m_Objs[objTarget]->NotifyOthersWhenDestroyed());
 		}
+
+	DEBUG_CATCH
 	}
 
 void CWaitOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
