@@ -930,7 +930,10 @@ bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
 		case IShipController::orderGuard:
 		case IShipController::orderPatrol:
 		case IShipController::orderSentry:
-			return GetCurrentOrderTarget()->IsAngryAt(pObj);
+			{
+			CSpaceObject *pBase = GetCurrentOrderTarget();
+			return (pBase && pBase->IsAngryAt(pObj));
+			}
 
 		default:
 			return false;
