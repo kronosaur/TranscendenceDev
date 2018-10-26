@@ -63,11 +63,6 @@
 
 //	Debugging help
 
-#define DEBUG_TRY					try {
-#define DEBUG_CATCH					} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); throw; }
-#define DEBUG_CATCH_CONTINUE		} catch (...) { kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); }
-#define DEBUG_CATCH_MSG(msg)		} catch (...) { kernelDebugLogPattern((msg)); throw; }
-#define DEBUG_CATCH_MSG1(msg,p1)	} catch (...) { kernelDebugLogPattern((msg),(p1)); throw; }
 #define DEBUG_CATCH_OBJ(pObj)		} catch (...) \
 		{ \
 		kernelDebugLogPattern("Crash in %s", CString(__FUNCTION__)); \
