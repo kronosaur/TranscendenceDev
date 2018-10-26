@@ -123,6 +123,11 @@ void CNavigateOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 		if (pShip->GetDockedObj() == m_Objs[objDest])
 			pShip->CancelCurrentOrder();
 
+		//	If we have no target, then nothing to do
+
+		else if (m_Objs[objDest] == NULL)
+			pShip->CancelCurrentOrder();
+
 		//	Navigate
 
 		else
