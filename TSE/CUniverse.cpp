@@ -1595,26 +1595,6 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 	return NOERROR;
 	}
 
-void CUniverse::NotifyMissionsOfNewSystem (CSystem *pSystem)
-
-//	NotifyMissionsOfNewSystem
-//
-//	We're showing a new system, so missions need to handle it.
-
-	{
-	int i;
-
-	//	Loop over all missions and update
-
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-
-		if (!pMission->IsDestroyed())
-			pMission->OnNewSystem(pSystem);
-		}
-	}
-
 void CUniverse::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 
 //	NotifyOnObjDestroyed
@@ -2276,8 +2256,6 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 //	Player is placed in the current system.
 
 	{
-	int i;
-
 	ASSERT(m_pCurrentSystem);
 	ASSERT(pPlayerShip->GetSystem() == NULL);
 
@@ -2315,12 +2293,7 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 
 	//	Tell all missions that the player has entered the system
 
-	for (i = 0; i < m_AllMissions.GetCount(); i++)
-		{
-		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->IsActive())
-			pMission->OnPlayerEnteredSystem(pPlayerShip);
-		}
+	m_AllMissions.NotifyOnPlayerEnteredSystem(pPlayerShip);
 	}
 
 void CUniverse::RefreshCurrentMission (void)
@@ -2617,7 +2590,7 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 	//	Initialize mission cache
 
 	if (pOldSystem != m_pCurrentSystem)
-		NotifyMissionsOfNewSystem(m_pCurrentSystem);
+		m_AllMissions.NotifyOnNewSystem(m_pCurrentSystem);
 	}
 
 bool CUniverse::SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData)

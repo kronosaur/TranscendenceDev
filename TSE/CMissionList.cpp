@@ -48,6 +48,36 @@ void CMissionList::DeleteAll (void)
 	m_List.DeleteAll();
 	}
 
+void CMissionList::FireOnSystemStarted (DWORD dwElapsedTime)
+
+//	FireOnSystemStarted
+//
+//	Invoke <OnSystemStarted> event for all active missions.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->IsActive())
+			pMission->FireOnSystemStarted(dwElapsedTime);
+		}
+	}
+
+void CMissionList::FireOnSystemStopped (void)
+
+//	FireOnSystemStopped
+//
+//	Invoke <OnSystemStopped> event for all active missions.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->IsActive())
+			pMission->FireOnSystemStopped();
+		}
+	}
+
 CMission *CMissionList::GetMissionByID (DWORD dwID) const
 
 //	GetMissionByID
@@ -72,6 +102,37 @@ void CMissionList::Insert (CMission *pMission)
 
 	{
 	m_List.Insert(pMission);
+	}
+
+void CMissionList::NotifyOnNewSystem (CSystem *pSystem)
+
+//	NotifyOnNewSystem
+//
+//	Call OnNewSystem for all missions.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+
+		if (!pMission->IsDestroyed())
+			pMission->OnNewSystem(pSystem);
+		}
+	}
+
+void CMissionList::NotifyOnPlayerEnteredSystem (CSpaceObject *pPlayerShip)
+
+//	NotifyOnPlayerEnteredSystem
+//
+//	Call OnPlayerEnteredSystem for all active missions.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CMission *pMission = GetMission(i);
+		if (pMission->IsActive())
+			pMission->OnPlayerEnteredSystem(pPlayerShip);
+		}
 	}
 
 ALERROR CMissionList::ReadFromStream (SLoadCtx &Ctx, CString *retsError)

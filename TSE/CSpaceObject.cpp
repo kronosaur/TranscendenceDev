@@ -87,6 +87,8 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_SUBORDINATE_ATTACKED_EVENT			CONSTLIT("OnSubordinateAttacked")
 #define ON_SYSTEM_EXPLOSION_EVENT				CONSTLIT("OnSystemExplosion")
 #define ON_SYSTEM_OBJ_DESTROYED_EVENT			CONSTLIT("OnSystemObjDestroyed")
+#define ON_SYSTEM_STARTED_EVENT					CONSTLIT("OnSystemStarted")
+#define ON_SYSTEM_STOPPED_EVENT					CONSTLIT("OnSystemStopped")
 #define ON_SYSTEM_WEAPON_FIRE_EVENT				CONSTLIT("OnSystemWeaponFire")
 #define ON_TRANSLATE_MESSAGE_EVENT				CONSTLIT("OnTranslateMessage")
 #define ON_UPDATE_EVENT							CONSTLIT("OnUpdate")
@@ -3434,6 +3436,47 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 			ReportEventError(ON_OBJ_DESTROYED_EVENT, pResult);
 		CCCtx.Discard(pResult);
 		}
+	}
+
+void CSpaceObject::FireOnSystemStarted (DWORD dwElapsedTime)
+
+//	FireOnSystemStarted
+//
+//	Fire OnSystemStarted event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(CDesignType::evtOnSystemStarted, &Event))
+		return;
+
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(this);
+	Ctx.DefineInteger(CONSTLIT("aElapsedTime"), dwElapsedTime);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STARTED_EVENT, pResult);
+	}
+
+void CSpaceObject::FireOnSystemStopped (void)
+
+//	FireOnSystemStopped
+//
+//	Fire OnSystemStopped event
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandler(CDesignType::evtOnSystemStopped, &Event))
+		return;
+
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+	Ctx.SaveAndDefineSourceVar(this);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		ReportEventError(ON_SYSTEM_STOPPED_EVENT, pResult);
 	}
 
 void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pSource, DWORD dwItemUNID, int iRepeatingCount)

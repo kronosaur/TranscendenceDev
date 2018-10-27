@@ -180,10 +180,12 @@ class CDesignType
 			evtOnGlobalTypesInit		= 3,
 			evtOnObjDestroyed			= 4,
 			evtOnSystemObjAttacked		= 5,
-			evtOnSystemWeaponFire		= 6,
-			evtOnUpdate					= 7,
+			evtOnSystemStarted			= 6,
+			evtOnSystemStopped			= 7,
+			evtOnSystemWeaponFire		= 8,
+			evtOnUpdate					= 9,
 
-			evtCount					= 8,
+			evtCount					= 10,
 			};
 
         struct SMapDescriptionCtx

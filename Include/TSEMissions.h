@@ -152,10 +152,14 @@ class CMissionList
 		void Delete (int iIndex);
 		void Delete (CMission *pMission);
 		void DeleteAll (void);
+		void FireOnSystemStarted (DWORD dwElapsedTime);
+		void FireOnSystemStopped (void);
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CMission *GetMission (int iIndex) const { return m_List[iIndex]; }
 		CMission *GetMissionByID (DWORD dwID) const;
 		void Insert (CMission *pMission);
+		void NotifyOnNewSystem (CSystem *pSystem);
+		void NotifyOnPlayerEnteredSystem (CSpaceObject *pPlayerShip);
 		ALERROR ReadFromStream (SLoadCtx &Ctx, CString *retsError);
 		ALERROR WriteToStream (IWriteStream *pStream, CString *retsError);
 

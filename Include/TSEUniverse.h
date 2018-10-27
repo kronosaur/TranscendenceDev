@@ -302,6 +302,7 @@ class CUniverse
 		inline IHost *GetHost (void) const { return m_pHost; }
 		inline CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		inline int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
+		inline CMissionList &GetMissions (void) { return m_AllMissions; }
 		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		inline const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
 		inline const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
@@ -464,7 +465,6 @@ class CUniverse
 		ALERROR InitLevelEncounterTables (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
-		void NotifyMissionsOfNewSystem (CSystem *pSystem);
 		inline void SetCurrentAdventureDesc (CAdventureDesc *pAdventure) { m_pAdventure = pAdventure; }
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);

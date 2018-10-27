@@ -966,6 +966,8 @@ class CSpaceObject : public CObject
 		void FireOnSystemExplosion (CSpaceObject *pExplosion, CSpaceObject *pSource, DWORD dwItemUNID);
 		void FireOnSystemObjAttacked (SDamageCtx &Ctx);
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
+		void FireOnSystemStarted (DWORD dwElapsedTime);
+		void FireOnSystemStopped (void);
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pSource, DWORD dwItemUNID, int iRepeatingCount);
 		bool FireOnTranslateMessage (const CString &sMessage, CString *retsMessage);
 		void FireOnUpdate (void);

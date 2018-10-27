@@ -180,6 +180,8 @@ static char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnGlobalTypesInit",
 		"OnObjDestroyed",
 		"OnSystemObjAttacked",
+		"OnSystemStarted",
+		"OnSystemStopped",
 		"OnSystemWeaponFire",
 		"OnUpdate",
 	};
