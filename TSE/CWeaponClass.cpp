@@ -3378,15 +3378,16 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 			break;
 		}
 
-	//	If the weapon has EMP damage and the target is not paralysed then
+	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.
 
-	if (pTarget && pShot->GetDamage().GetEMPDamage() > 0)
+	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetEMPDamage() > 0)
 		{
-		//	If the target is already ionized, or if the target is a station
-		//	(which cannot be paralyzed) then don't use this weapon.
+		//	If the target is already paralyzed, or if the target is immune
+		//	or is a station (which cannot be paralyzed) then don't use this weapon.
 
 		if (pTarget->IsParalyzed() 
+				|| pTarget->GetArmorSystem()->IsImmune(pTarget, specialEMP)
 				|| pTarget->GetCategory() != CSpaceObject::catShip)
 			return -100;
 
@@ -3396,12 +3397,13 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	//	If the weapon has blinding damage and the target is not blind then
 	//	this is very effective
 
-	if (pTarget && pShot->GetDamage().GetBlindingDamage() > 0)
+	if (pTarget && pTarget->GetShieldLevel() <= 0 && pShot->GetDamage().GetBlindingDamage() > 0)
 		{
-		//	If the target is already blind, or if the target is a station, then
-		//	don't bother with this weapon.
+		//	If the target is already blind, or if the target is immune or is
+		//	a station, then don't bother with this weapon.
 
 		if (pTarget->IsBlind()
+				|| pTarget->GetArmorSystem()->IsImmune(pTarget, specialBlinding)
 				|| pTarget->GetCategory() != CSpaceObject::catShip)
 			return -100;
 
