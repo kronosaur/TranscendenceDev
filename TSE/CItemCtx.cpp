@@ -329,6 +329,16 @@ bool CItemCtx::IsDeviceDamaged (void)
 	return (GetDevice() != NULL && GetDevice()->IsDamaged());
 	}
 
+bool CItemCtx::IsDeviceDisrupted (void)
+
+//	IsDeviceDisrupted
+//
+//	Returns TRUE if the device is disrupted.
+
+	{
+	return (GetDevice() != NULL && GetDevice()->IsDisrupted());
+	}
+
 bool CItemCtx::IsDeviceEnabled (void)
 
 //  IsDeviceEnabled
