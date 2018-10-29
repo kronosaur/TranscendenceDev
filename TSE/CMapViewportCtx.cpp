@@ -9,31 +9,10 @@
 const int VIEWPORT_EXTRA =								256;
 const CG32bitPixel RGB_GRID_LINE =						CG32bitPixel(43, 45, 51);
 
-CMapViewportCtx::CMapViewportCtx (void) :
-		m_pCenter(NULL),
-		m_bNoSpaceBackground(false),
-		m_b3DMap(true)
-
-//	CMapViewportCtx constructor
-
-	{
-	m_rcView.left = 0;
-	m_rcView.top = 0;
-	m_rcView.right = 0;
-	m_rcView.bottom = 0;
-
-	m_rMapScale = g_KlicksPerPixel;
-
-	m_xCenter = 0;
-	m_yCenter = 0;
-	}
-
 CMapViewportCtx::CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale) :
 		m_pCenter(pCenter),
 		m_rcView(rcView),
-		m_rMapScale(rMapScale),
-		m_bNoSpaceBackground(false),
-		m_b3DMap(true)
+		m_rMapScale(rMapScale)
 
 //	CMapViewportCtx constructor
 

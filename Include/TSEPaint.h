@@ -138,7 +138,7 @@ class CViewportPaintCtxSmartSave
 class CMapViewportCtx
 	{
 	public:
-		CMapViewportCtx (void);
+		CMapViewportCtx (void) { }
 		CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale);
 
 		inline CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
@@ -148,25 +148,28 @@ class CMapViewportCtx
 		inline const RECT &GetViewportRect (void) const { return m_rcView; }
 		inline ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;
+		inline bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
 		inline bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
 		inline void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
+		inline void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
 		inline void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
-		CSpaceObject *m_pCenter;		//	Center of viewport (may be NULL)
-		CVector m_vCenter;				//	Center of viewport in global coordinate
-		RECT m_rcView;					//	RECT of viewport
-		Metric m_rMapScale;				//	Map scale (klicks per pixel)
+		CSpaceObject *m_pCenter = NULL;		//	Center of viewport (may be NULL)
+		CVector m_vCenter;					//	Center of viewport in global coordinate
+		RECT m_rcView = { 0, 0, 0, 0 };		//	RECT of viewport
+		Metric m_rMapScale = g_KlicksPerPixel;	//	Map scale (klicks per pixel)
 
-		CVector m_vUR;					//	Upper-right of viewport bounds (in global coordinates)
-		CVector m_vLL;					//	Lower-left of viewport bounds
-		int m_xCenter;					//	Center of viewport
-		int m_yCenter;					//		(in viewport coordinate)
+		CVector m_vUR;						//	Upper-right of viewport bounds (in global coordinates)
+		CVector m_vLL;						//	Lower-left of viewport bounds
+		int m_xCenter = 0;					//	Center of viewport
+		int m_yCenter = 0;					//		(in viewport coordinate)
 
-		ViewportTransform m_Trans;		//	Transform
+		ViewportTransform m_Trans;			//	Transform
 
-		bool m_b3DMap;					//	Use standard 3D projection
-		bool m_bNoSpaceBackground;		//	Do not paint a space background
+		bool m_b3DMap = true;				//	Use standard 3D projection
+		bool m_bNoSpaceBackground = false;	//	Do not paint a space background
+		bool m_bPaintStationImages = false;	//	Paint station images
 	};
 

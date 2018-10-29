@@ -3584,6 +3584,14 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	Ctx.Set3DMapEnabled(g_pUniverse->GetSFXOptions().Is3DSystemMapEnabled());
 	Ctx.SetSpaceBackgroundEnabled(g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled());
 
+	//	In the future we should paint station images if the zoom level is greater
+	//	than a certain value. NOTE: We would need to improve the current scaling
+	//	algorithm, which is terrible for shrinking.
+
+#ifdef LATER
+	Ctx.SetPaintStationImagesEnabled(true);
+#endif
+
 	//	Make sure we've initialized the grid
 
 	if (m_GridPainter.IsEmpty())

@@ -992,11 +992,6 @@ ALERROR CStation::CreateMapImage (void)
 //	Creates a small version of the station image
 
 	{
-	//	Only do this for stars and planets
-
-	if (m_Scale != scaleStar && m_Scale != scaleWorld)
-		return NOERROR;
-
 	//	Scale is 0.5 light-second per pixel (we compute the fraction of a full-sized image,
 	//	while is at 12500 klicks per pixel.)
 
@@ -3095,20 +3090,44 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 		if (m_Scale == scaleStructure && m_rMass > 100000.0)
 			{
-			if (IsActiveStargate())
+			if (Ctx.IsPaintStationImagesEnabled())
 				{
-				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
-				Dest.DrawDot(x, y, rgbColor, markerMediumCross);
-				}
-			else if (!IsAbandoned() || IsImmutable())
-				{
-				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-				Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+				if (m_MapImage.IsEmpty())
+					CreateMapImage();
+
+				if (!IsAbandoned() || IsImmutable())
+					{
+					Dest.Blt(0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 255,
+							m_MapImage,
+							x - (m_MapImage.GetWidth() / 2),
+							y - (m_MapImage.GetHeight() / 2));
+					}
+				else
+					{
+					CGDraw::BltGray(Dest,
+							x - (m_MapImage.GetWidth() / 2),
+							y - (m_MapImage.GetHeight() / 2),
+							m_MapImage,
+							0, 0, m_MapImage.GetWidth(), m_MapImage.GetHeight(), 0x80);
+					}
 				}
 			else
 				{
-				Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
-				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+				if (IsActiveStargate())
+					{
+					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerMediumCross);
+					}
+				else if (!IsAbandoned() || IsImmutable())
+					{
+					Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallFilledSquare);
+					}
+				else
+					{
+					Dest.DrawDot(x+1, y+1, 0, markerSmallSquare);
+					Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
+					}
 				}
 			}
 		else
