@@ -6273,14 +6273,19 @@ void CSpaceObject::NotifyOnNewSystem (CSystem *pNewSystem)
 	int i;
 
 	//	If any objects in the old system subscribe to us, then we need to
-	//	cancel the subscription.
+	//	cancel the subscription (missions are OK because they cross systems).
 
 	for (i = 0; i < m_SubscribedObjs.GetCount(); i++)
-		if (m_SubscribedObjs.GetObj(i)->GetSystem() != pNewSystem)
+		{
+		CSpaceObject *pSubscriber = m_SubscribedObjs.GetObj(i);
+		if (pSubscriber->IsDestroyed()
+				|| (!pSubscriber->IsMission() 
+					&& pSubscriber->GetSystem() != pNewSystem))
 			{
 			m_SubscribedObjs.Delete(i);
 			i--;
 			}
+		}
 
 	//	Let our subclasses handle it
 
