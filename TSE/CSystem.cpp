@@ -1800,9 +1800,25 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	CSpaceObject *pObj = g_pUniverse->RemoveAscendedObj(dwObjID);
 	if (pObj == NULL)
 		{
-		if (retsError)
-			*retsError = CONSTLIT("Object not ascended.");
-		return false;
+		//	See if this object is already descended. Then we succeed.
+
+		pObj = g_pUniverse->FindObject(dwObjID);
+		if (pObj && pObj->GetSystem() == this && !pObj->IsAscended())
+			{
+			if (retpObj)
+				*retpObj = pObj;
+
+			return true;
+			}
+
+		//	Otherwise, failure
+
+		else
+			{
+			if (retsError)
+				*retsError = CONSTLIT("Object not ascended.");
+			return false;
+			}
 		}
 
 	pObj->SetAscended(false);

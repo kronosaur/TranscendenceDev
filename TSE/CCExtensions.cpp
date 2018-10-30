@@ -12583,7 +12583,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CSpaceObject *pObj;
 			if (!pSystem->DescendObject(dwObjID, vPos, &pObj))
-				return pCC->CreateNil();
+				return pCC->CreateError(strPatternSubst(CONSTLIT("Unable to descend object ID: %d"), dwObjID), pArgs->GetElement(0));
 
 			return pCC->CreateInteger((int)pObj);
 			}
