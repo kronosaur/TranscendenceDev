@@ -1875,6 +1875,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (ships)\n\n"
 			
 			"   'alwaysLeaveWreck\n"
+			"   'autoTarget\n"
 			"   'availableDeviceSlots\n"
 			"   'availableNonWeaponSlots\n"
 			"   'availableWeaponSlots\n"
@@ -1924,6 +1925,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'selectedWeapon\n"
 			"   'shatterImmune\n"
 			"   'showMapLabel\n"
+			"   'target\n"
 			"   'thrust -> in GN\n"
 			"   'thrustToWeight -> acceleration, 1 = 500 m/s^2 (ships stats show this / 1000)\n"
 			"\n"

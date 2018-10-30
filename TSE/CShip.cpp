@@ -50,6 +50,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define FIELD_THRUST_TO_WEIGHT					CONSTLIT("thrustToWeight")
 
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
+#define PROPERTY_AUTO_TARGET					CONSTLIT("autoTarget")
 #define PROPERTY_AVAILABLE_DEVICE_SLOTS			CONSTLIT("availableDeviceSlots")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
@@ -97,6 +98,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_SELECTED_WEAPON				CONSTLIT("selectedWeapon")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
+#define PROPERTY_TARGET							CONSTLIT("target")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 
@@ -3023,6 +3025,12 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
 
+	else if (strEquals(sName, PROPERTY_AUTO_TARGET))
+		{
+		CSpaceObject *pTarget = GetTarget(CItemCtx(), false);
+		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
+		}
+
 	else if (strEquals(sName, PROPERTY_AVAILABLE_DEVICE_SLOTS))
 		{
 		int iAll = CalcDeviceSlotsInUse();
@@ -3232,6 +3240,12 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_MAX_SPEED))
 		return CC.CreateInteger((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+
+	else if (strEquals(sName, PROPERTY_TARGET))
+		{
+		CSpaceObject *pTarget = GetTarget(CItemCtx(), true);
+		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
+		}
 
 	else if (strEquals(sName, PROPERTY_THRUST))
 		return CC.CreateInteger((int)GetThrustProperty());
