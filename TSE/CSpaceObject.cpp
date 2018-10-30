@@ -120,6 +120,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_DESTINY						CONSTLIT("destiny")
 #define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
+#define PROPERTY_EVENT_SUBSCRIBERS				CONSTLIT("eventSubscribers")
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_ID								CONSTLIT("id")
@@ -4557,6 +4558,25 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			}
 
 		return pList;
+		}
+
+	else if (strEquals(sName, PROPERTY_EVENT_SUBSCRIBERS))
+		{
+		ICCItem *pResult = CC.CreateLinkedList();
+		for (int i = 0; i < m_SubscribedObjs.GetCount(); i++)
+			{
+			CSpaceObject *pObj = m_SubscribedObjs.GetObj(i);
+			if (!pObj->IsDestroyed())
+				pResult->AppendInteger(CC, (int)pObj);
+			}
+
+		if (pResult->GetCount() == 0)
+			{
+			pResult->Discard(&CC);
+			return CC.CreateNil();
+			}
+		else
+			return pResult;
 		}
 
 	else if (strEquals(sName, PROPERTY_HAS_DOCKING_PORTS))
