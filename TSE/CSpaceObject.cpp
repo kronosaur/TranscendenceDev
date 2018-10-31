@@ -612,6 +612,11 @@ void CSpaceObject::Ascend (void)
 //	Ascend out of system so that it can move to a different system.
 
 	{
+	//	Set ascended flag so that when we get called at OnObjEnteredGate
+	//	we can test for it.
+
+	SetAscended(true);
+
 	//	To everyone else in the system, it looks like the object entered a gate
 
 	EnterGate(NULL, NULL_STR, NULL, true);
@@ -623,10 +628,6 @@ void CSpaceObject::Ascend (void)
 	//	Remove the object from the old system
 
 	Remove(ascended, CDamageSource());
-
-	//	Done
-
-	SetAscended(true);
 	}
 
 void CSpaceObject::CalcInsideBarrier (void)
