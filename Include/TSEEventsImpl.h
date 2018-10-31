@@ -44,6 +44,12 @@ class CTimedEncounterEvent : public CSystemEvent
 							  CSpaceObject *pGate,
 							  const CVector &vPos,
 							  Metric rDistance);
+		CTimedEncounterEvent (int iTick,
+							  const CSpaceObjectList &Targets,
+							  DWORD dwEncounterTableUNID,
+							  CSpaceObject *pGate,
+							  const CVector &vPos,
+							  Metric rDistance);
 		CTimedEncounterEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
@@ -57,7 +63,7 @@ class CTimedEncounterEvent : public CSystemEvent
 	private:
 		CVector CalcEncounterPos (CSpaceObject *pTarget, Metric rDistance) const;
 
-		CSpaceObject *m_pTarget;
+		CSpaceObjectList m_Targets;
 		DWORD m_dwEncounterTableUNID;
 
 		CSpaceObject *m_pGate;

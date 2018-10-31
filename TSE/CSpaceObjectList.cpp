@@ -308,6 +308,19 @@ void CSpaceObjectList::ReadFromStream (SLoadCtx &Ctx, bool bIgnoreMissing)
 		}
 	}
 
+void CSpaceObjectList::ReadFromStreamSingle (SLoadCtx &Ctx)
+
+//	ReadFromStreamSingle
+//
+//	Read a single object into the list (generally used for backwards compatibility)
+
+	{
+	ASSERT(m_List.GetCount() == 0);
+
+	m_List.InsertEmpty(1);
+	CSystem::ReadObjRefFromStream(Ctx, &m_List[0]);
+	}
+
 void CSpaceObjectList::ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj)
 
 //	ResolveObjProc

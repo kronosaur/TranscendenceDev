@@ -120,7 +120,26 @@ CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
 											const CVector &vPos,
 											Metric rDistance) :
 		CSystemEvent(iTick),
-		m_pTarget(pTarget),
+		m_dwEncounterTableUNID(dwEncounterTableUNID),
+		m_pGate(pGate),
+		m_vPos(vPos),
+		m_rDistance(rDistance)
+
+//	CTimedEncounterEvent constructor
+
+	{
+	if (pTarget)
+		m_Targets.FastAdd(pTarget);
+	}
+
+CTimedEncounterEvent::CTimedEncounterEvent (int iTick,
+											const CSpaceObjectList &Targets,
+											DWORD dwEncounterTableUNID,
+											CSpaceObject *pGate,
+											const CVector &vPos,
+											Metric rDistance) :
+		CSystemEvent(iTick),
+		m_Targets(Targets),
 		m_dwEncounterTableUNID(dwEncounterTableUNID),
 		m_pGate(pGate),
 		m_vPos(vPos),
@@ -137,7 +156,12 @@ CTimedEncounterEvent::CTimedEncounterEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 
 	{
 	Ctx.pStream->Read(m_dwEncounterTableUNID);
-	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
+
+	if (Ctx.dwVersion >= 166)
+		m_Targets.ReadFromStream(Ctx);
+	else
+		m_Targets.ReadFromStreamSingle(Ctx);
+
 	CSystem::ReadObjRefFromStream(Ctx, &m_pGate);
 	Ctx.pStream->Read(m_rDistance);
 
@@ -253,17 +277,19 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		return;
 		}
 
+	CSpaceObject *pTarget = m_Targets.GetRandomObj();
+
 	SShipCreateCtx Ctx;
 	Ctx.pSystem = pSystem;
-	Ctx.pTarget = m_pTarget;
+	Ctx.pTarget = pTarget;
 	Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY;
 
 	//	Figure out where the encounter will come from
 
 	if (m_rDistance > 0.0)
 		{
-		if (m_pTarget)
-			Ctx.vPos = CalcEncounterPos(m_pTarget, m_rDistance);
+		if (pTarget)
+			Ctx.vPos = CalcEncounterPos(pTarget, m_rDistance);
 		Ctx.PosSpread = DiceRange(3, 1, 2);
 		}
 	else if (m_pGate && m_pGate->IsActiveStargate())
@@ -278,8 +304,8 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		Ctx.vPos = m_vPos;
 		Ctx.PosSpread = DiceRange(2, 1, 2);
 		}
-	else if (m_pTarget)
-		Ctx.pGate = m_pTarget->GetNearestStargate(true);
+	else if (pTarget)
+		Ctx.pGate = pTarget->GetNearestStargate(true);
 
 	//	Create ships
 
@@ -299,7 +325,8 @@ bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
 //	Returns TRUE if the event should be destroyed
 
 	{
-	return (m_pTarget == pObj);
+	m_Targets.Delete(pObj);
+	return (m_Targets.GetCount() == 0);
 	}
 
 void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
@@ -308,15 +335,15 @@ void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStr
 //
 //	Writes the obj data to stream
 //
-//	DWORD		m_dwEncounterTableUNID
-//	DWORD		m_pTarget (CSpaceObject ref)
-//	DWORD		m_pGate (CSpaceObject ref)
-//	Metric		m_rDistance
-//	CVector		m_vPos
+//	DWORD				m_dwEncounterTableUNID
+//	CSpaceObjectList	m_Targets
+//	DWORD				m_pGate (CSpaceObject ref)
+//	Metric				m_rDistance
+//	CVector				m_vPos
 
 	{
 	pStream->Write(m_dwEncounterTableUNID);
-	pSystem->WriteObjRefToStream(m_pTarget, pStream);
+	m_Targets.WriteToStream(pSystem, pStream);
 	pSystem->WriteObjRefToStream(m_pGate, pStream);
 	pStream->Write(m_rDistance);
 	m_vPos.WriteToStream(*pStream);

@@ -884,6 +884,7 @@ class CSpaceObjectList
 		inline bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
+		inline CSpaceObject *GetRandomObj (void) const { return (m_List.GetCount() == 0 ? NULL : m_List[mathRandom(0, m_List.GetCount() - 1)]); }
 		inline TArray<CSpaceObject *> &GetRawList (void) { return m_List; }
 		inline bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
@@ -894,6 +895,7 @@ class CSpaceObjectList
 		void NotifyOnObjReconned (CSpaceObject *pReconnedObj);
 		void NotifyOnPlayerBlacklisted (CSpaceObject *pBlacklistingObj);
 		void ReadFromStream (SLoadCtx &Ctx, bool bIgnoreMissing = false);
+		void ReadFromStreamSingle (SLoadCtx &Ctx);
 		void SetAllocSize (int iNewCount);
 		inline void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);

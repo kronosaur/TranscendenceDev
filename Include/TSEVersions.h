@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							42;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					165;
+constexpr DWORD SYSTEM_SAVE_VERSION =					166;
 
 //	Uncomment out the following define when building a stable release
 
@@ -607,3 +607,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					165;
 //
 //	165: 1.8 Beta 4
 //		Added m_dwCompletedOn to CMission
+//
+//	166: 1.8 Beta 4
+//		m_Targets in CTimedEncounterEvent replaces m_pTarget
