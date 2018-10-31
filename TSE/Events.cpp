@@ -329,6 +329,19 @@ bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_Targets.GetCount() == 0);
 	}
 
+bool CTimedEncounterEvent::OnStationDestroyed (CSpaceObject *pObj)
+
+//	OnStationDestroyed
+//
+//	Returns TRUE if the event should be destroyed
+
+	{
+	//	If this is one of our targets, then we remove it.
+
+	m_Targets.Delete(pObj);
+	return (m_Targets.GetCount() == 0);
+	}
+
 void CTimedEncounterEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream

@@ -55,6 +55,7 @@ class CTimedEncounterEvent : public CSystemEvent
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
+		virtual bool OnStationDestroyed (CSpaceObject *pObj) override;
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedEncounterEvent; }

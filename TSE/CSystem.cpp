@@ -2934,6 +2934,16 @@ CVector CSystem::OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos)
 	return vPos;
 	}
 
+void CSystem::OnStationDestroyed (SDestroyCtx &Ctx)
+
+//	OnStationDestroyed
+//
+//	A station has been abandoned.
+
+	{
+	m_TimedEvents.OnStationDestroyed(Ctx.pObj);
+	}
+
 void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj)
 
 //	PaintDestinationMarker
@@ -3984,13 +3994,9 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		DEBUG_RESTORE_PROGRAMSTATE;
 		}
 
-	//	Check to see if the object being destroyed was held by
-	//	a timed encounter
-
-	RemoveTimersForObj(Ctx.pObj);
-
 	//	Deal with event handlers
 
+	m_TimedEvents.OnObjDestroyed(Ctx.pObj);
 	m_EventHandlers.ObjDestroyed(Ctx.pObj);
 
 	//	If this is the player and we're resurrecting, then remove the player from
@@ -4072,23 +4078,6 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 #endif
 
 	DEBUG_CATCH
-	}
-
-void CSystem::RemoveTimersForObj (CSpaceObject *pObj)
-
-//	RemoveTimersForObj
-//
-//	Remove timers for the given object
-
-	{
-	int i;
-
-	for (i = 0; i < GetTimedEventCount(); i++)
-		{
-		CSystemEvent *pEvent = GetTimedEvent(i);
-		if (pEvent->OnObjDestroyed(pObj))
-			pEvent->SetDestroyed();
-		}
 	}
 
 void CSystem::RemoveVolumetricShadow (CSpaceObject *pObj)

@@ -120,6 +120,36 @@ void CSystemEventList::DeleteAll (void)
 	m_List.DeleteAll();
 	}
 
+void CSystemEventList::OnObjDestroyed (CSpaceObject *pObj)
+
+//	OnObjDestroyed
+//
+//	An object has been destroyed
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CSystemEvent *pEvent = GetEvent(i);
+		if (pEvent->OnObjDestroyed(pObj))
+			pEvent->SetDestroyed();
+		}
+	}
+
+void CSystemEventList::OnStationDestroyed (CSpaceObject *pObj)
+
+//	OnStationDestroyed
+//
+//	A station has been destroyed.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CSystemEvent *pEvent = GetEvent(i);
+		if (pEvent->OnStationDestroyed(pObj))
+			pEvent->SetDestroyed();
+		}
+	}
+
 void CSystemEventList::ReadFromStream (SLoadCtx &Ctx)
 
 //	ReadFromStream

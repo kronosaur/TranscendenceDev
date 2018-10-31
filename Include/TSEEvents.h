@@ -38,6 +38,7 @@ class CSystemEvent
 		virtual CDesignType *GetEventHandlerType (void) { return NULL; }
 		virtual bool OnObjChangedSystems (CSpaceObject *pObj) { return false; }
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) { return false; }
+		virtual bool OnStationDestroyed (CSpaceObject *pObj) { return false; }
 
 	protected:
 		virtual Classes GetClass (void) const = 0;
@@ -61,6 +62,8 @@ class CSystemEventList
 		inline int GetCount (void) const { return m_List.GetCount(); }
 		inline CSystemEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
 		inline void MoveEvent (int iIndex, CSystemEventList &Dest) { Dest.AddEvent(m_List[iIndex]); m_List.Delete(iIndex); }
+		void OnObjDestroyed (CSpaceObject *pObj);
+		void OnStationDestroyed (CSpaceObject *pObj);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }
 		void Update (DWORD dwTick, CSystem *pSystem);

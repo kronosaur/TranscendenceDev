@@ -2244,12 +2244,19 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 				pObj->OnStationDestroyed(DestroyCtx);
 			}
 
+		//	Tell the system to notify events that we've been destroyed
+
+		GetSystem()->OnStationDestroyed(DestroyCtx);
+
 		//	NOTE: We fire <OnObjDestroyed> AFTER OnStationDestroyed
 		//	so that script inside <OnObjDestroyed> can add orders
 		//	about the station (without getting clobbered in 
 		//	OnStationDestroyed).
 
 		NotifyOnObjDestroyed(DestroyCtx);
+
+		//	Tell the system and universe that a station has been destroyed so
+		//	that they handle timed events, etc.
 
 		GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
 		g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
