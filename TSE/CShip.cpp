@@ -4092,12 +4092,14 @@ void CShip::OnAscended (void)
 
 	{
 	//	Kill any event handlers (these are often used to provide behavior in
-	//	a specific system).
+	//	a specific system). But we only do it for characters, which are expected
+	//	to survive across systems.
 	//
 	//	NOTE: This will restore it back to the default handler from the class,
 	//	if defined.
 
-	SetOverride(NULL);
+	if (GetCharacter())
+		SetOverride(NULL);
 
 	//	Cancel all orders in case we're keeping pointers to other system
 	//	objects.
