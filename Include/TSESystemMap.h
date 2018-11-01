@@ -8,6 +8,22 @@
 class ITopologyProcessor
 	{
 	public:
+		enum EPhase
+			{
+			phaseDefault =			-1,
+
+			phasePrimaryMap =		0,
+			phaseSecondaryMap =		1,
+
+			phaseFormation =		2,
+			phaseLifeforms =		3,
+			phasePrimaryColony =	4,
+			phaseSecondaryColony =	5,
+			phaseTertiaryColony =	6,
+
+			phaseCount =			7,
+			};
+
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc);
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc);
 
