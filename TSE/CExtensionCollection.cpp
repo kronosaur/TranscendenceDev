@@ -324,8 +324,10 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 		{
 		retList->Insert(pExtension);
 
+#ifdef DEBUG_LOAD_EXTENSIONS
 		if (bDebugMode)
 			::kernelDebugLogPattern("Adding: %s.", pExtension->GetName());
+#endif
 		}
 
 	//	Success.
@@ -666,8 +668,10 @@ ALERROR CExtensionCollection::ComputeBindOrder (CExtension *pAdventure,
 		CoreLibraries[i]->SetMarked();
 		retList->Insert(CoreLibraries[i]);
 
+#ifdef DEBUG_LOAD_EXTENSIONS
 		if (bDebugMode)
 			::kernelDebugLogPattern("Adding core library: %s", CoreLibraries[i]->GetName());
+#endif
 		}
 
 	//	Make a list of all compatibility libraries

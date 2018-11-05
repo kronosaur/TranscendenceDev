@@ -1110,6 +1110,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 			//	Debug output
 
+#ifdef DEBUG_LOAD_EXTENSIONS
 			switch (m_iType)
 				{
 				case extAdventure:
@@ -1127,6 +1128,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 					kernelDebugLogPattern("Loaded library: %s", m_sFilespec);
 					break;
 				}
+#endif
 
 			return NOERROR;
 			}

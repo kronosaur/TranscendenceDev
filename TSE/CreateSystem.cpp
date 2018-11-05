@@ -170,6 +170,12 @@
 const Metric DEFAULT_EXCLUSION =		50.0 * LIGHT_SECOND;
 const Metric DEFAULT_EXCLUSION2 =		DEFAULT_EXCLUSION * DEFAULT_EXCLUSION;
 
+constexpr int FILL_LOCATIONS_MAX_TRIES =		10;
+constexpr int RANDOM_ANGLE_MAX_TRIES =			20;
+constexpr int DIST_ANGLE_MAX_TRIES =			10;
+constexpr int PLACE_RANDOM_STATION_MAX_TRIES =	10;
+constexpr int RANDOM_POSITION_MAX_TRIES =		100;
+
 static char g_ProbabilitiesAttrib[] = "probabilities";
 
 //	Debugging Support
@@ -724,10 +730,10 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 	//	Keep trying for a while to make sure that we find something that fits
 
-	int iTries = 10;
+	int iTries = FILL_LOCATIONS_MAX_TRIES;
 	while (iTries > 0)
 		{
-		STATION_PLACEMENT_OUTPUT(strPatternSubst(CONSTLIT("try %d\n"), 11 - iTries).GetASCIIZPointer());
+		STATION_PLACEMENT_OUTPUT(strPatternSubst(CONSTLIT("try %d\n"), (FILL_LOCATIONS_MAX_TRIES + 1) - iTries).GetASCIIZPointer());
 
 		//	Pick a random location that fits the criteria
 
@@ -756,9 +762,12 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 			if (error == ERR_NOTFOUND)
 				{
+				iTries--;
+
 				//	No more tries
 
-				if (--iTries == 0 && g_pUniverse->InDebugMode())
+#ifdef DEBUG_FILL_LOCATIONS
+				if (iTries == 0 && g_pUniverse->InDebugMode())
 					{
 					g_pUniverse->LogOutput(CONSTLIT("Warning: Ran out of tries in FillLocations"));
 					g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("Level: %d; Loc attribs: %s; Node attribs: %s"), 
@@ -798,6 +807,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 
 					DumpDebugStack(pCtx);
 					}
+#endif
 
 				continue;
 				}
@@ -1396,7 +1406,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 			for (i = 0; i < iCount; i++)
 				{
 				bool bAngleOK = true;
-				int iTries = 20;
+				int iTries = RANDOM_ANGLE_MAX_TRIES;
 
 				do
 					{
@@ -1462,12 +1472,11 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 		else
 			{
-			const int MAX_TRIES = 10;
-			int iTries = MAX_TRIES;
+			int iTries = DIST_ANGLE_MAX_TRIES;
 
 			do
 				{
-				int iJitter = 100 * (MAX_TRIES - iTries) / MAX_TRIES;
+				int iJitter = 100 * (DIST_ANGLE_MAX_TRIES - iTries) / DIST_ANGLE_MAX_TRIES;
 
 				if (error = GenerateAngles(pCtx, sAngle, iCount, rAngle, iJitter))
 					return error;
@@ -1762,7 +1771,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 	//	Keep trying for a while to make sure that we find something that fits
 
-	int iTries = 10;
+	int iTries = PLACE_RANDOM_STATION_MAX_TRIES;
 	while (iTries > 0)
 		{
 		//	Pick a random station type that fits the criteria
@@ -3048,7 +3057,7 @@ ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCoun
 		for (i = 0; i < iCount; i++)
 			{
 			bool bAngleIsOK;
-			int iTries = 20;
+			int iTries = RANDOM_ANGLE_MAX_TRIES;
 
 			do 
 				{
@@ -3183,7 +3192,7 @@ void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPla
 	//	objects.
 
 	COrbit NewOrbit;
-	int iTries = 100;
+	int iTries = RANDOM_POSITION_MAX_TRIES;
 	bool bFound = false;
 	while (iTries-- > 0 && !bFound)
 		{

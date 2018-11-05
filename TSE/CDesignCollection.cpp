@@ -238,6 +238,16 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	m_pTopology = NULL;
 	m_pAdventureExtension = NULL;
 
+	//	Minimum API version
+	//
+	//	If we're loading an old game, and if we don't have the TypesUsed array, then it
+	//	means we need to load all obsolete types. In that case we use API = 0.
+
+	if (!bNewGame && TypesUsed.GetCount() == 0)
+		m_dwMinAPIVersion = 0;
+	else
+		m_dwMinAPIVersion = dwAPIVersion;
+
 	//	Create a design load context
 
 	SDesignLoadCtx Ctx;
@@ -272,16 +282,9 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 			return error;
 			}
 
-		//	If we're loading an old game, and if we don't have the TypesUsed array, then it
-		//	means we need to load all obsolete types. In that case we use API = 0.
-
-		DWORD dwAPIToUse = dwAPIVersion;
-		if (!bNewGame && TypesUsed.GetCount() == 0)
-			dwAPIToUse = 0;
-
 		//	Add the types
 
-		m_AllTypes.Merge(Types, m_OverrideTypes, ExtensionsIncluded, TypesUsed, dwAPIToUse);
+		m_AllTypes.Merge(Types, m_OverrideTypes, ExtensionsIncluded, TypesUsed, m_dwMinAPIVersion);
 
 		//	If this is the adventure, then remember it
 
@@ -594,6 +597,33 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 	return NOERROR;
 
 	DEBUG_CATCH
+	}
+
+void CDesignCollection::DebugOutputExtensions (void) const
+
+//	DebugOutputExtensions
+//
+//	Outputs the list of bound extensions.
+
+	{
+	for (int i = 0; i < GetExtensionCount(); i++)
+		{
+		CExtension *pExtension = GetExtension(i);
+		if (pExtension->GetFolderType() == CExtension::folderBase)
+			continue;
+
+		CString sName = pExtension->GetName();
+		if (sName.IsBlank())
+			sName = strPatternSubst(CONSTLIT("%08x"), pExtension->GetUNID());
+
+		CString sVersion = pExtension->GetVersion();
+		if (!sVersion.IsBlank())
+			sVersion = strPatternSubst(CONSTLIT(" [%s]"), sVersion);
+
+		::kernelDebugLogPattern("Extension: %s%s", sName, sVersion);
+		}
+
+	::kernelDebugLogPattern("Using API version: %d", m_dwMinAPIVersion);
 	}
 
 CExtension *CDesignCollection::FindExtension (DWORD dwUNID) const
