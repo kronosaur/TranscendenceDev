@@ -1694,46 +1694,6 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 			return error;
 		}
 
-#if 0
-	//	Run all primary map topology processors. We guarantee that the topology 
-	//	processors of a primary map will run before any secondary ones.
-
-	for (i = 0; i < PrimaryMaps.GetCount(); i++)
-		{
-		CSystemMap *pMap = PrimaryMaps[i];
-
-		//	Get the set of nodes that this map operates on.
-
-		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pMap->GetUNID());
-		if (pNodeList == NULL || pNodeList->GetCount() == 0)
-			continue;
-
-		//	Process topology
-
-		if (error = pMap->ProcessTopology(m_Topology, pMap, *pNodeList, retsError))
-			return error;
-		}
-
-	//	Now run all secondary map topology processors
-
-	for (i = 0; i < SecondaryMaps.GetCount(); i++)
-		{
-		CSystemMap *pMap = SecondaryMaps[i];
-
-		//	Secondary maps operate on nodes in a primary map.
-
-		CSystemMap *pTargetMap = pMap->GetDisplayMap();
-		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pTargetMap->GetUNID());
-		if (pNodeList == NULL || pNodeList->GetCount() == 0)
-			continue;
-
-		//	Process topology
-
-		if (error = pMap->ProcessTopology(m_Topology, pTargetMap, *pNodeList, retsError))
-			return error;
-		}
-#endif
-
 	//	Make sure every node added has a system UNID
 
 	for (i = 0; i < PrimaryMaps.GetCount(); i++)
