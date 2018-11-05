@@ -1563,6 +1563,43 @@ void CTopology::ReadFromStream (SUniverseLoadCtx &Ctx)
 		}
 	}
 
+ALERROR CTopology::RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError)
+
+//	RunProcessors
+//
+//	Run topology processors on topology.
+
+	{
+	ALERROR error;
+
+	//	Apply any topology processors (in order) on all the newly added nodes
+
+	for (int i = 0; i < Processors.GetCount(); i++)
+		{
+		const TArray<ITopologyProcessor *> &List = Processors[i];
+
+		for (int j = 0; j < List.GetCount(); j++)
+			{
+			//	Make a copy of the node list because each call will destroy it
+
+			CTopologyNodeList NodeList = Nodes;
+
+			//	Process
+
+			CString sError;
+			if (error = List[j]->Process(pMap, *this, NodeList, &sError))
+				{
+				*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), pMap->GetUNID(), sError);
+				return error;
+				}
+			}
+		}
+
+	//	Success
+
+	return NOERROR;
+	}
+
 //	Initialize Topology
 
 ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
@@ -1605,6 +1642,7 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 	TSortMap<DWORD, CTopologyNodeList> NodesAdded;
 	TArray<CSystemMap *> PrimaryMaps;
 	TArray<CSystemMap *> SecondaryMaps;
+	TSortMap<CSystemMap *, TSortMap<int, TArray<ITopologyProcessor *>>> Processors;
 
 	//	Let the maps add their topologies
 
@@ -1629,8 +1667,34 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 			PrimaryMaps.Insert(pMap);
 		else
 			SecondaryMaps.Insert(pMap);
+
+		//	Get the list of topology processors from this map (but store the
+		//	processors with the primary map).
+
+		auto pEntry = Processors.SetAt(pMap->GetDisplayMap());
+		pMap->AccumulateTopologyProcessors(*pEntry);
 		}
 
+	//	Now loop over all primary maps with processors and execute from lowest
+	//	priority to highest priority.
+
+	for (i = 0; i < Processors.GetCount(); i++)
+		{
+		CSystemMap *pMap = Processors.GetKey(i);
+
+		//	Get the nodes for this map
+
+		CTopologyNodeList *pNodeList = NodesAdded.GetAt(pMap->GetUNID());
+		if (pNodeList == NULL || pNodeList->GetCount() == 0)
+			continue;
+
+		//	Run all processors
+
+		if (error = m_Topology.RunProcessors(pMap, Processors[i], *pNodeList, retsError))
+			return error;
+		}
+
+#if 0
 	//	Run all primary map topology processors. We guarantee that the topology 
 	//	processors of a primary map will run before any secondary ones.
 
@@ -1668,6 +1732,7 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 		if (error = pMap->ProcessTopology(m_Topology, pTargetMap, *pNodeList, retsError))
 			return error;
 		}
+#endif
 
 	//	Make sure every node added has a system UNID
 

@@ -56,6 +56,25 @@ CSystemMap::~CSystemMap (void)
 		delete m_Processors[i];
 	}
 
+void CSystemMap::AccumulateTopologyProcessors (TSortMap<int, TArray<ITopologyProcessor *>> &Result) const
+
+//	AccumulateTopologyProcessors
+//
+//	Accumulates a list of processors, ordered by priority.
+
+	{
+	for (int i = 0; i < m_Processors.GetCount(); i++)
+		{
+		ITopologyProcessor *pProcessor = m_Processors[i];
+		ITopologyProcessor::EPhase iPhase = pProcessor->GetPhase();
+		if (iPhase == ITopologyProcessor::phaseDefault)
+			iPhase = (IsPrimaryMap() ? ITopologyProcessor::phasePrimaryMap : ITopologyProcessor::phaseSecondaryMap);
+
+		auto pArray = Result.SetAt(iPhase);
+		pArray->Insert(pProcessor);
+		}
+	}
+
 bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID)
 
 //	AddAnnotation

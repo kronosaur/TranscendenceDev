@@ -8,6 +8,8 @@
 const int INFINITE_NODE_DIST =					1000000;
 const DWORD END_GAME_SYSTEM_UNID =				0x00ffffff;
 
+class ITopologyProcessor;
+
 class CTopologyNode
 	{
 	public:
@@ -434,6 +436,7 @@ class CTopology
 		inline DWORD GetVersion (void) const { return m_dwVersion; }
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
+		ALERROR RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError);
 
 	private:
 		enum NodeTypes

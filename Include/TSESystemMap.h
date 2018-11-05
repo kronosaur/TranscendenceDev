@@ -11,6 +11,7 @@ class ITopologyProcessor
 		enum EPhase
 			{
 			phaseDefault =			-1,
+			phaseError =			-2,
 
 			phasePrimaryMap =		0,
 			phaseSecondaryMap =		1,
@@ -30,9 +31,12 @@ class ITopologyProcessor
 		virtual ~ITopologyProcessor (void) { }
 		inline ALERROR BindDesign (SDesignLoadCtx &Ctx) { return OnBindDesign(Ctx); }
 		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
+		inline EPhase GetPhase (void) const { return m_iPhase; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		inline void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { OnPaint(Dest, xCenter, yCenter, rScale); }
 		inline ALERROR Process (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(pMap, Topology, NodeList, retsError); }
+
+		static EPhase ParsePhase (const CString &sValue);
 
 	protected:
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
@@ -47,6 +51,7 @@ class ITopologyProcessor
 		void SaveAndMarkNodes (CTopology &Topology, CTopologyNodeList &NodeList, TArray<bool> *retSaved);
 
 		CTopologyNode::SCriteria m_Criteria;
+		EPhase m_iPhase = phaseDefault;
 	};
 
 class CSystemMap : public CDesignType
@@ -67,6 +72,7 @@ class CSystemMap : public CDesignType
 		CSystemMap (void) : m_bAdded(false), m_bDebugShowAttributes(false) { }
 		virtual ~CSystemMap (void);
 
+		void AccumulateTopologyProcessors (TSortMap<int, TArray<ITopologyProcessor *>> &Result) const;
 		bool AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL) { return AddAnnotation(NULL_STR, pEffect, x, y, iRotation, retdwID); }
 		bool AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
 		inline bool AddAreaHighlight (const CComplexArea &Area) { m_AreaHighlights.Insert(Area); return true; }

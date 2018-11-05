@@ -17,6 +17,17 @@
 #define TABLE_TAG							CONSTLIT("Table")
 
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
+#define PRIORITY_ATTRIB						CONSTLIT("priority")
+
+static TStaticStringTable<TStaticStringEntry<ITopologyProcessor::EPhase>, ITopologyProcessor::phaseCount> PHASE_TABLE = {
+	"formation",			ITopologyProcessor::phaseFormation,
+	"lifeforms",			ITopologyProcessor::phaseLifeforms,
+	"primaryColony",		ITopologyProcessor::phasePrimaryColony,
+	"primaryMap",			ITopologyProcessor::phasePrimaryMap,
+	"secondaryColony",		ITopologyProcessor::phaseSecondaryColony,
+	"secondaryMap",			ITopologyProcessor::phaseSecondaryMap,
+	"tertiaryColony",		ITopologyProcessor::phaseTertiaryColony,
+	};
 
 ALERROR ITopologyProcessor::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc)
 
@@ -158,9 +169,35 @@ ALERROR ITopologyProcessor::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 			}
 		}
 
+	//	Phase
+
+	m_iPhase = ParsePhase(pDesc->GetAttribute(PRIORITY_ATTRIB));
+	if (m_iPhase == phaseError)
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid priority: %s"), pDesc->GetAttribute(PRIORITY_ATTRIB));
+		return ERR_FAIL;
+		}
+
 	//	Let subclass handle the rest.
 
 	return OnInitFromXML(Ctx, pDesc, sUNID);
+	}
+
+ITopologyProcessor::EPhase ITopologyProcessor::ParsePhase (const CString &sValue)
+
+//	ParsePhase
+//
+//	Parses a phase value.
+
+	{
+	if (sValue.IsBlank())
+		return phaseDefault;
+
+	auto *pEntry = PHASE_TABLE.GetAt(sValue);
+	if (pEntry == NULL)
+		return phaseError;
+
+	return pEntry->Value;
 	}
 
 void ITopologyProcessor::RestoreMarks (CTopology &Topology, TArray<bool> &Saved)
