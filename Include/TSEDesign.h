@@ -1218,6 +1218,7 @@ class CDesignCollection
 		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
+		void DebugOutputExtensions (void) const;
 		inline CEconomyType *FindEconomyType (const CString &sID) { CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
 		inline CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
 		CExtension *FindExtension (DWORD dwUNID) const;
@@ -1257,8 +1258,8 @@ class CDesignCollection
 		void GetEnabledExtensions (TArray<CExtension *> *retExtensionList);
 		inline CDesignType *GetEntry (int iIndex) const { return m_AllTypes.GetEntry(iIndex); }
 		inline CDesignType *GetEntry (DesignTypes iType, int iIndex) const { return m_ByType[iType].GetEntry(iIndex); }
-		inline CExtension *GetExtension (int iIndex) { return m_BoundExtensions[iIndex]; }
-		inline int GetExtensionCount (void) { return m_BoundExtensions.GetCount(); }
+		inline CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
+		inline int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
 		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
@@ -1288,6 +1289,7 @@ class CDesignCollection
 
 		//	Cached data initialized at bind-time
 
+		DWORD m_dwMinAPIVersion;
 		TArray<CExtension *> m_BoundExtensions;
 		CDesignTable m_AllTypes;
 		CDesignList m_ByType[designCount];
