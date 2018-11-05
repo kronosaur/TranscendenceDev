@@ -3544,7 +3544,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"unvGetProperty",				fnUniverseGet,	FN_UNIVERSE_GET_PROPERTY,
 			"(unvGetProperty property)\n\n"
 				
-			"   'apiVersion        Engine API version\n",
+			"   'apiVersion        Engine API version\n"
+			"   'minAPIVersion     Lowest API version used by extensions\n",
 
 			"s",	0,	},
 
