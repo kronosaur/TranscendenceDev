@@ -84,7 +84,17 @@ void CTopologyNode::AddAttributes (const CString &sAttribs)
 //	Append the given attributes
 
 	{
-	m_sAttributes = ::AppendModifiers(m_sAttributes, sAttribs);
+	if (m_sAttributes.IsBlank())
+		m_sAttributes = sAttribs;
+	else
+		{
+		TArray<CString> Attribs;
+		::ParseAttributes(sAttribs, &Attribs);
+
+		for (int i = 0; i < Attribs.GetCount(); i++)
+			if (!::HasModifier(m_sAttributes, Attribs[i]))
+				m_sAttributes = ::AppendModifiers(m_sAttributes, Attribs[i]);
+		}
 	}
 
 ALERROR CTopologyNode::AddStargate (const SStargateDesc &GateDesc)
