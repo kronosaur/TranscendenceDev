@@ -207,7 +207,6 @@ class CDesignType
 			size_t dwWreckGraphicsMemory = 0;
 			};
 
-		CDesignType (void);
 		void CreateClone (CDesignType **retpType);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType);
 
@@ -215,7 +214,7 @@ class CDesignType
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
-		bool IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const;
+		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		void MergeType (CDesignType *pSource);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
@@ -310,8 +309,7 @@ class CDesignType
 		inline bool IsClone (void) const { return m_bIsClone; }
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
-		inline bool IsObsoleteAt (DWORD dwAPIVersion) const { return (m_dwObsoleteVersion > 0 && dwAPIVersion >= m_dwObsoleteVersion); }
-		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
+		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		inline void MarkImages (void) { OnMarkImages(); }
 		inline void SetGlobalData (const CString &sAttrib, ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
@@ -401,24 +399,25 @@ class CDesignType
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
 		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
-		DWORD m_dwUNID;
-		CExtension *m_pExtension;				//	Extension
-		DWORD m_dwVersion;						//	Extension API version
-		DWORD m_dwObsoleteVersion;				//	API version on which this type is obsolete (0 = not obsolete)
-		CXMLElement *m_pXML;					//	Optional XML for this type
+		DWORD m_dwUNID = 0;
+		CExtension *m_pExtension = NULL;				//	Extension
+		DWORD m_dwVersion = 0;							//	Extension API version
+		DWORD m_dwObsoleteVersion = 0;					//	API version on which this type is obsolete (0 = not obsolete)
+		DWORD m_dwMinVersion = 0;						//	Exclude if using an API version lower than this (0 = always include)
+		CXMLElement *m_pXML = NULL;						//	Optional XML for this type
 
-		DWORD m_dwInheritFrom;					//	Inherit from this type
-		CDesignType *m_pInheritFrom;			//	Inherit from this type
+		DWORD m_dwInheritFrom = 0;						//	Inherit from this type
+		CDesignType *m_pInheritFrom = NULL;				//	Inherit from this type
 
-		CString m_sAttributes;					//	Type attributes
-		CEventHandler m_Events;					//	Event handlers
+		CString m_sAttributes;							//	Type attributes
+		CEventHandler m_Events;							//	Event handlers
 
-		TUniquePtr<SExtra> m_pExtra;			//	Extra type stuff (not all types need this, so we only
-												//		allocate when necessary).
+		TUniquePtr<SExtra> m_pExtra;					//	Extra type stuff (not all types need this, so we only
+														//		allocate when necessary).
 
-		bool m_bIsModification;					//	TRUE if this modifies the type it overrides
-		bool m_bIsClone;						//	TRUE if we cloned this from another type
-		bool m_bIsMerged;						//	TRUE if we created this type by merging (inheritance)
+		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
+		bool m_bIsClone = false;						//	TRUE if we cloned this from another type
+		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
 	};
 
 template <class CLASS> class CDesignTypeRef

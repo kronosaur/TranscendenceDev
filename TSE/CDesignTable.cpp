@@ -162,18 +162,10 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 					}
 				}
 
-			//	Otherwise, see if we exclude it because it is obsolete.
+			//	Otherwise, if we exclude this type because of API of extension
+			//	requirements, then skip.
 
-			else if (pNewType->IsObsoleteAt(dwAPIVersion))
-				{
-				iSrcPos++;
-				continue;
-				}
-
-			//	Or see if it is excluded because we don't have the property set
-			//	of extensions.
-
-			else if (!pNewType->IsIncluded(ExtensionsIncluded))
+			else if (!pNewType->IsIncluded(dwAPIVersion, ExtensionsIncluded))
 				{
 				iSrcPos++;
 				continue;

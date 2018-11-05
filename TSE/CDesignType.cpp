@@ -51,6 +51,8 @@
 #define INHERIT_ATTRIB							CONSTLIT("inherit")
 #define MODIFIERS_ATTRIB						CONSTLIT("modifiers")
 #define OBSOLETE_ATTRIB							CONSTLIT("obsolete")
+#define OBSOLETE_VERSION_ATTRIB					CONSTLIT("obsoleteVersion")
+#define REQUIRED_VERSION_ATTRIB					CONSTLIT("requiredVersion")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
 #define GET_CREATE_POS_EVENT					CONSTLIT("GetCreatePos")
@@ -100,8 +102,9 @@
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
 #define PROPERTY_MERGED							CONSTLIT("merged")
-#define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
+#define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
+#define PROPERTY_REQUIRED_VERSION				CONSTLIT("requiredVersion")
 #define PROPERTY_UNID							CONSTLIT("unid")
 
 #define FIELD_ENTITY							CONSTLIT("entity")
@@ -185,19 +188,6 @@ static char *CACHED_EVENTS[CDesignType::evtCount] =
 		"OnSystemWeaponFire",
 		"OnUpdate",
 	};
-
-CDesignType::CDesignType (void) : 
-		m_dwUNID(0), 
-		m_pExtension(NULL),
-		m_dwObsoleteVersion(0),
-		m_pXML(NULL),
-		m_dwInheritFrom(0), 
-		m_pInheritFrom(NULL),
-		m_bIsModification(false),
-		m_bIsClone(false),
-		m_bIsMerged(false)
-	{
-	}
 
 CDesignType::~CDesignType (void)
 
@@ -605,9 +595,6 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
     else if (strEquals(sProperty, PROPERTY_MERGED))
         return CC.CreateBool(m_bIsMerged);
 
-	else if (strEquals(sProperty, PROPERTY_OBSOLETE_VERSION))
-		return (m_dwObsoleteVersion > 0 ? CC.CreateInteger(m_dwObsoleteVersion) : CC.CreateNil());
-
     else if (strEquals(sProperty, PROPERTY_NAME_PATTERN))
 		{
 		pResult = CC.CreateSymbolTable();
@@ -616,6 +603,12 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
 		return pResult;
 		}
+
+	else if (strEquals(sProperty, PROPERTY_OBSOLETE_VERSION))
+		return (m_dwObsoleteVersion > 0 ? CC.CreateInteger(m_dwObsoleteVersion) : CC.CreateNil());
+
+	else if (strEquals(sProperty, PROPERTY_REQUIRED_VERSION))
+		return (m_dwMinVersion > 0 ? CC.CreateInteger(m_dwMinVersion) : CC.CreateNil());
 
     else if (strEquals(sProperty, PROPERTY_UNID))
 		return CC.CreateInteger(GetUNID());
@@ -1926,7 +1919,7 @@ bool CDesignType::InheritsFrom (DWORD dwUNID) const
 	return m_pInheritFrom->InheritsFrom(dwUNID);
 	}
 
-bool CDesignType::IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const
+bool CDesignType::IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const
 
 //	IsIncluded
 //
@@ -1934,6 +1927,14 @@ bool CDesignType::IsIncluded (const TArray<DWORD> &ExtensionsIncluded) const
 //	given set of extensions/libraries.
 
 	{
+	//	First see if this type is excluded because we're using the wrong API.
+
+	if (dwAPIVersion < m_dwMinVersion)
+		return false;
+
+	if (m_dwObsoleteVersion != 0 && dwAPIVersion >= m_dwObsoleteVersion)
+		return false;
+
 	//	If no extra block, then this is a standard type with no special
 	//	instructions.
 
@@ -2376,9 +2377,12 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 
 	m_pInheritFrom = NULL;
 
-	//	Obsolete
+	//	API requirements
 
-	m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_ATTRIB, 0, -1, 0);
+	m_dwMinVersion = pDesc->GetAttributeIntegerBounded(REQUIRED_VERSION_ATTRIB, 0, -1, 0);
+	m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_VERSION_ATTRIB, 0, -1, 0);
+	if (m_dwObsoleteVersion == 0)
+		m_dwObsoleteVersion = pDesc->GetAttributeIntegerBounded(OBSOLETE_ATTRIB, 0, -1, 0);
 
 	//	Load attributes
 
