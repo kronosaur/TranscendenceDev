@@ -1234,6 +1234,100 @@ int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDes
 	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
 	}
 
+int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const
+
+//	GetDistance
+//
+//	Returns the shortest distance between pSrc and any node that matches the given criteria.
+//	If no matching nodes are found, then we return -1.
+
+	{
+	int i;
+
+	if (GetTopologyNodeCount() < 2)
+		return -1;
+
+	//	We mark nodes to track our progress, so we have to save the
+	//	previous value of the marks.
+	//
+	//	We also initialize the calculated distance to either UNKNOWN_DISTANCE
+	//	or 0, depending on whether we match.
+
+	CLargeSet OldMarks;
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		{
+		CTopologyNode *pNode = GetTopologyNode(i);
+		if (pNode->IsMarked())
+			OldMarks.Set(i);
+
+		pNode->SetMarked(false);
+		if (pNode->MatchesAttributeCriteria(Criteria))
+			pNode->SetCalcDistance(0);
+		else
+			pNode->SetCalcDistance(UNKNOWN_DISTANCE);
+		}
+
+	//	Loop over all gates and recurse
+
+	int iBestDist = GetDistance(pSrc, INFINITE_DISTANCE);
+
+	//	Restore
+
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		GetTopologyNode(i)->SetMarked(OldMarks.IsSet(i));
+
+	//	Done
+
+	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
+	}
+
+int CTopology::GetDistanceNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const
+
+//	GetDistanceNoMatch
+//
+//	Returns the shortest distance between pSrc and any node that DOES NOT matches 
+//	the given criteria. If no matching nodes are found, then we return -1.
+
+	{
+	int i;
+
+	if (GetTopologyNodeCount() < 2)
+		return -1;
+
+	//	We mark nodes to track our progress, so we have to save the
+	//	previous value of the marks.
+	//
+	//	We also initialize the calculated distance to either UNKNOWN_DISTANCE
+	//	or 0, depending on whether we match.
+
+	CLargeSet OldMarks;
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		{
+		CTopologyNode *pNode = GetTopologyNode(i);
+		if (pNode->IsMarked())
+			OldMarks.Set(i);
+
+		pNode->SetMarked(false);
+		if (pNode->MatchesAttributeCriteria(Criteria))
+			pNode->SetCalcDistance(UNKNOWN_DISTANCE);
+		else
+			pNode->SetCalcDistance(0);
+		}
+
+	//	Loop over all gates and recurse
+
+	int iBestDist = GetDistance(pSrc, INFINITE_DISTANCE);
+
+	//	Restore
+
+	for (i = 0; i < GetTopologyNodeCount(); i++)
+		GetTopologyNode(i)->SetMarked(OldMarks.IsSet(i));
+
+	//	Done
+
+	return (iBestDist != INFINITE_DISTANCE ? iBestDist : -1);
+	}
+
 int CTopology::GetDistance (const CString &sSourceID, const CString &sDestID) const
 
 //	GetDistance

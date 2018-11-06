@@ -34,6 +34,34 @@ void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
 		}
 	}
 
+int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria)
+
+//	CalcDistanceToCriteria
+//
+//	If pNode does not match AttribCriteria, then we return the number of jumps
+//	required to reach a node with the given criteria. If a node with the given
+//	criteria cannot be reached, we return 100.
+//
+//	If pNode does match AttribCriteria, we compute the number of jumps required
+//	to reach a node that DOES NOT match the criteria and return that as a 
+//	negative number. If we cannot reach such a node, we return -100.
+
+	{
+	int iDist = g_pUniverse->GetTopology().GetDistance(pNode, Criteria);
+	if (iDist == -1)
+		return 100;
+	else if (iDist > 0)
+		return iDist;
+	else
+		{
+		iDist = g_pUniverse->GetTopology().GetDistanceNoMatch(pNode, Criteria);
+		if (iDist == -1)
+			return -100;
+		else
+			return -iDist;
+		}
+	}
+
 bool CStationEncounterCtx::CanBeEncountered (const CStationEncounterDesc &Desc)
 
 //	CanBeEncountered
@@ -105,6 +133,14 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
             if (!pNode->MatchesCriteria(Ctx, *pSystemCriteria))
                 pStats->iNodeCriteria = 0;
             }
+
+		//	Adjust based on distance criteria.
+
+		if (pStats->iNodeCriteria > 0 && !Desc.GetDistanceCriteria().IsEmpty())
+			{
+			int iDist = CalcDistanceToCriteria(pNode, Desc.GetDistanceCriteria());
+			pStats->iNodeCriteria = pStats->iNodeCriteria * Desc.GetFrequencyByDistance(iDist) / ftCommon;
+			}
         }
 
     //  Return cached value

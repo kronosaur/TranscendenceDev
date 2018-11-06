@@ -934,6 +934,8 @@ ALERROR CTopologyNode::ParseAttributeCriteria (const CString &sCriteria, SAttrib
 //	Parses a string criteria
 
 	{
+	*retCrit = SAttributeCriteria();
+
 	char *pPos = sCriteria.GetASCIIZPointer();
 	while (*pPos != '\0')
 		{

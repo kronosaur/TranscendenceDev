@@ -15,6 +15,8 @@ class CTopologyNode
 	public:
 		struct SAttributeCriteria
 			{
+			inline bool IsEmpty (void) const { return (AttribsRequired.GetCount() == 0 && AttribsNotAllowed.GetCount() == 0 && SpecialRequired.GetCount() == 0 && SpecialNotAllowed.GetCount() == 0); }
+
 			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing
 			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
 			TArray<CString> SpecialRequired;			//	Special attributes
@@ -235,7 +237,6 @@ class CTopologyNodeList
 	public:
 		inline CTopologyNode *operator [] (int iIndex) const { return m_List.GetAt(iIndex); }
 
-		int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria) const;
 		void Delete (CTopologyNode *pNode);
 		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
 		inline void DeleteAll (void) { m_List.DeleteAll(); }
@@ -252,9 +253,6 @@ class CTopologyNodeList
 		inline void Shuffle (void) { m_List.Shuffle(); }
 
 	private:
-		int CalcDistanceToCriteriaMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
-		int CalcDistanceToCriteriaNoMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
-
 		TArray<CTopologyNode *> m_List;
 	};
 
@@ -433,7 +431,9 @@ class CTopology
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const;
+		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
+		int GetDistanceNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
 		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
