@@ -235,6 +235,7 @@ class CTopologyNodeList
 	public:
 		inline CTopologyNode *operator [] (int iIndex) const { return m_List.GetAt(iIndex); }
 
+		int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria) const;
 		void Delete (CTopologyNode *pNode);
 		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
 		inline void DeleteAll (void) { m_List.DeleteAll(); }
@@ -251,6 +252,9 @@ class CTopologyNodeList
 		inline void Shuffle (void) { m_List.Shuffle(); }
 
 	private:
+		int CalcDistanceToCriteriaMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
+		int CalcDistanceToCriteriaNoMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
+
 		TArray<CTopologyNode *> m_List;
 	};
 

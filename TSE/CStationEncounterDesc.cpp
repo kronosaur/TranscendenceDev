@@ -7,6 +7,7 @@
 
 #define CRITERIA_TAG							CONSTLIT("Criteria")
 #define ENCOUNTER_TAG							CONSTLIT("Encounter")
+#define SYSTEM_CRITERIA_TAG						CONSTLIT("SystemCriteria")
 
 #define ENEMY_EXCLUSION_RADIUS_ATTRIB			CONSTLIT("enemyExclusionRadius")
 #define EXCLUSION_RADIUS_ATTRIB					CONSTLIT("exclusionRadius")
@@ -325,7 +326,10 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	System criteria
 
-	CXMLElement *pCriteria = pDesc->GetContentElementByTag(CRITERIA_TAG);
+	CXMLElement *pCriteria = pDesc->GetContentElementByTag(SYSTEM_CRITERIA_TAG);
+	if (pCriteria == NULL)
+		pCriteria = pDesc->GetContentElementByTag(CRITERIA_TAG);
+
 	if (pCriteria)
 		{
 		if (error = CTopologyNode::ParseCriteria(pCriteria, &m_SystemCriteria, &Ctx.sError))

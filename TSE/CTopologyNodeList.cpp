@@ -4,6 +4,102 @@
 
 #include "PreComp.h"
 
+int CTopologyNodeList::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria) const
+
+//	CalcDistanceToCriteria
+//
+//	If pNode does not match AttribCriteria, then we return the number of jumps
+//	required to reach a node with the given criteria. If a node with the given
+//	criteria cannot be reached, we return 100.
+//
+//	If pNode does match AttribCriteria, we compute the number of jumps required
+//	to reach a node that DOES NOT match the criteria and return that as a 
+//	negative number. If we cannot reach such a node, we return -100.
+
+	{
+	CTopologyNodeList Checked;
+
+	int iDist = CalcDistanceToCriteriaMatch(pNode, AttribCriteria, Checked);
+	if (iDist == -1)
+		return 100;
+	else if (iDist > 0)
+		return iDist;
+	else
+		{
+		Checked.DeleteAll();
+
+		iDist = CalcDistanceToCriteriaNoMatch(pNode, AttribCriteria, Checked);
+		if (iDist == -1)
+			return -100;
+		else
+			return -iDist;
+		}
+	}
+
+int CTopologyNodeList::CalcDistanceToCriteriaMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const
+
+//	CalcDistanceToCriteriaMatch
+//
+//	Returns the distance from pNode to a neighboring node that matches 
+//	AttribCriteria. If we cannot find a matching node, we return -1.
+
+	{
+	if (pNode->MatchesAttributeCriteria(AttribCriteria))
+		return 0;
+
+	//	Add ourselves to the Checked list and recurse.
+
+	Checked.Insert(pNode);
+	int iBestDist = -1;
+	for (int i = 0; i < pNode->GetStargateCount(); i++)
+		{
+		CTopologyNode *pDest = pNode->GetStargateDest(i);
+
+		//	Skip if we've already checked this node
+
+		if (Checked.FindNode(pDest))
+			continue;
+
+		int iDist = CalcDistanceToCriteriaMatch(pDest, AttribCriteria, Checked);
+		if (iDist != -1 && (iBestDist == -1 || iDist < iBestDist))
+			iBestDist = iDist + 1;
+		}
+
+	return iBestDist;
+	}
+
+int CTopologyNodeList::CalcDistanceToCriteriaNoMatch (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const
+
+//	CalcDistanceToCriteriaNoMatch
+//
+//	Returns the distance from pNode to a neighboring node that DOES NOT match
+//	AttribCriteria. If we cannot find such a node, we return -1.
+
+	{
+	if (!pNode->MatchesAttributeCriteria(AttribCriteria))
+		return 0;
+
+	//	Add ourselves to the Checked list and recurse.
+
+	Checked.Insert(pNode);
+	int iBestDist = -1;
+	for (int i = 0; i < pNode->GetStargateCount(); i++)
+		{
+		CTopologyNode *pDest = pNode->GetStargateDest(i);
+
+		//	Skip if we've already checked this node
+
+		if (Checked.FindNode(pDest))
+			continue;
+
+		int iDist = CalcDistanceToCriteriaNoMatch(pDest, AttribCriteria, Checked);
+		if (iDist != -1 && (iBestDist == -1 || iDist < iBestDist))
+			iBestDist = iDist + 1;
+		}
+
+	return iBestDist;
+	}
+
 void CTopologyNodeList::Delete (CTopologyNode *pNode)
 
 //	Delete
