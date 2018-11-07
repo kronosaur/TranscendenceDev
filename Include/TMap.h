@@ -808,6 +808,93 @@ struct SSimpleStringEntry
 	const char *pszKey;
 	};
 
+template <class VALUE> class TProbabilityMap
+	{
+	public:
+		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+
+		void Delete (int iIndex)
+			{
+			m_iTotalChance -= m_Table[iIndex];
+			m_Table.Delete(iIndex);
+			}
+
+		void DeleteAll (void)
+			{
+			m_Table.DeleteAll();
+			m_iTotalChance = 0;
+			}
+
+		inline int GetChance (int iIndex) const { return m_Table[iIndex]; }
+
+		int GetChanceByValue (const VALUE &ToFind) const
+			{
+			int *pChance = m_Table.GetAt(ToFind);
+			if (pChance == NULL)
+				return 0;
+
+			return *pChance;
+			}
+
+		inline int GetCount (void) const { return m_Table.GetCount(); }
+
+		const VALUE &GetKey (int iIndex) const { return m_Table.GetKey(iIndex); }
+
+		double GetScaledChance (int iIndex, int iScale = 100) const
+			{
+			if (m_iTotalChance == 0)
+				return 0.0;
+
+			return (double)iScale * (double)GetChance(iIndex) / (double)m_iTotalChance;
+			}
+
+		double GetScaledChanceByValue (const VALUE &ToFind, int iScale = 100) const
+			{
+			if (m_iTotalChance == 0)
+				return 0.0;
+
+			return (double)iScale * (double)GetChanceByValue(ToFind) / (double)m_iTotalChance;
+			}
+
+		inline int GetTotalChance (void) const { return m_iTotalChance; }
+
+		void Insert (const VALUE &NewValue, int iChance)
+			{
+			ASSERT(iChance >= 0);
+
+			bool bInserted;
+			int *pChance = m_Table.SetAt(NewValue, &bInserted);
+			if (bInserted)
+				*pChance = iChance;
+			else
+				*pChance += iChance;
+
+			m_iTotalChance += iChance;
+			}
+
+		inline bool IsEmpty (void) const { return (m_iTotalChance == 0); }
+
+		int RollPos (void) const
+			{
+			if (IsEmpty())
+				return -1;
+
+			int iPos = 0;
+			int iRoll = mathRandom(0, m_iTotalChance - 1);
+
+			//	Get the position
+
+			while (m_Table[iPos] <= iRoll)
+				iRoll -= m_Table[iPos++];
+
+			return iPos;
+			}
+
+	private:
+		TSortMap<VALUE, int> m_Table;
+		int m_iTotalChance = 0;
+	};
+
 //	Simple map classes
 
 template <class VALUE> class TStringMap : public TMap<CString, VALUE> { };

@@ -500,7 +500,32 @@ template <class VALUE> class TProbabilityTable
 
 		inline int GetChance (int iIndex) const { return m_Table[iIndex].iChance; }
 
+		int GetChanceByValue (const VALUE &ToFind) const
+			{
+			for (int i = 0; i < m_Table.GetCount(); i++)
+				if (m_Table[i].Value == ToFind)
+					return m_Table[i].iChance;
+
+			return 0;
+			}
+
 		inline int GetCount (void) const { return m_Table.GetCount(); }
+
+		double GetScaledChance (int iIndex, int iScale = 100) const
+			{
+			if (m_iTotalChance == 0)
+				return 0.0;
+
+			return (double)iScale * (double)GetChance(iIndex) / (double)m_iTotalChance;
+			}
+
+		double GetScaledChanceByValue (const VALUE &ToFind, int iScale = 100) const
+			{
+			if (m_iTotalChance == 0)
+				return 0.0;
+
+			return (double)iScale * (double)GetChanceByValue(ToFind) / (double)m_iTotalChance;
+			}
 
 		inline int GetTotalChance (void) const { return m_iTotalChance; }
 
