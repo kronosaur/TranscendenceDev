@@ -397,6 +397,7 @@ class CAttributeCriteria
 		int AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight = 1000) const;
 		int AdjStationWeight (CStationType *pType, int iOriginalWeight = 1000) const;
 		int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const;
+		int CalcNodeWeight (CTopologyNode *pNode) const;
 		inline int GetCount (void) const { return m_Attribs.GetCount(); }
 		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired) const;
 		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;

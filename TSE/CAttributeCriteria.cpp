@@ -119,6 +119,39 @@ int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLo
 	return CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
 	}
 
+int CAttributeCriteria::CalcNodeWeight (CTopologyNode *pNode) const
+
+//	CalcNodeWeight
+//
+//	Computes the weight of the node.
+
+	{
+	int i;
+
+	//	Special values
+
+	if (MatchesDefault())
+		return 0;
+	else if (MatchesAll())
+		return 1000;
+
+	//	Compute
+
+	int iChance = 1000;
+	for (i = 0; i < GetCount(); i++)
+		{
+		DWORD dwMatchStrength;
+		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
+
+		bool bMatches = (pNode->HasSpecialAttribute(sAttrib) || pNode->HasAttribute(sAttrib));
+		int iAdj = CalcWeightAdj(bMatches, dwMatchStrength);
+
+		iChance = (iChance * iAdj) / 1000;
+		}
+
+	return iChance;
+	}
+
 int CAttributeCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
 
 //	CalcWeightAdj

@@ -159,10 +159,16 @@ class CSystemCreateStats
 		struct SFillLocationsTable
 			{
 			int iLevel;
+			CString sNodeID;
 			CString sSystemName;
 			CSystemType *pSystemType;
+			CString sSystemAttribs;
 			CString sStationCriteria;
-			TProbabilityTable<CStationType *> Table;
+			TProbabilityMap<CStationType *> SystemProb;			//	Probability for each station, considering only system attribs
+			TProbabilityMap<CStationType *> FillProb;			//	Probability including stationCriteria in <FillLocations>
+			TProbabilityMap<CStationType *> LocationProb;		//	Probability including available locations
+
+			int iCount;
 			};
 
 		CSystemCreateStats (void);
@@ -204,7 +210,7 @@ class CSystemCreateStats
 		//	Encounter tables
 
 		TArray<SEncounterTable> m_EncounterTables;
-		TArray<SFillLocationsTable> m_FillLocationsTables;
+		TSortMap<CString, SFillLocationsTable> m_FillLocationsTables;
 	};
 
 class CSystemCreateEvents

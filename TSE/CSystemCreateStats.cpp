@@ -94,14 +94,24 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	{
 	int i, j;
 
-	if (LocationTable.GetCount() == 0)
+	if (LocationTable.GetCount() == 0 || pSystem->GetTopology() == NULL)
 		return;
 
-	SFillLocationsTable *pEntry = m_FillLocationsTables.Insert();
-	pEntry->iLevel = pSystem->GetLevel();
-	pEntry->sSystemName = pSystem->GetName();
-	pEntry->pSystemType = pSystem->GetType();
-	pEntry->sStationCriteria = sStationCriteria;
+	bool bNew;
+	SFillLocationsTable *pEntry = m_FillLocationsTables.SetAt(pSystem->GetName(), &bNew);
+	if (bNew)
+		{
+		pEntry->iCount = 1;
+
+		pEntry->iLevel = pSystem->GetLevel();
+		pEntry->sNodeID = pSystem->GetTopology()->GetID();
+		pEntry->sSystemName = pSystem->GetName();
+		pEntry->pSystemType = pSystem->GetType();
+		pEntry->sSystemAttribs = pSystem->GetTopology()->GetAttributes();
+		pEntry->sStationCriteria = sStationCriteria;
+		}
+	else
+		pEntry->iCount++;
 
 	//	Parse station criteria if we've got it.
 	//	NOTE: For now we only do enemies.
@@ -122,35 +132,43 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	for (i = 0; i < g_pUniverse->GetStationTypeCount(); i++)
 		{
 		CStationType *pType = g_pUniverse->GetStationType(i);
-		int iBaseChance = StationCriteria.AdjStationWeight(pType, ((1000 / ftCommon) * pType->GetFrequencyForSystem(pSystem)));
-		if (iBaseChance > 0)
+		int iSystemChance = (1000 * pType->GetFrequencyForSystem(pSystem) / ftCommon);
+		if (iSystemChance == 0)
+			continue;
+
+		pEntry->SystemProb.Insert(pType, iSystemChance);
+
+		int iBaseChance = StationCriteria.AdjStationWeight(pType, iSystemChance);
+		if (iBaseChance == 0)
+			continue;
+
+		pEntry->FillProb.Insert(pType, iBaseChance);
+
+		CAttributeCriteria LocationCriteria;
+		LocationCriteria.Parse(pType->GetLocationCriteria(), 0);
+
+		//	Average out our chance of ending up at one of the given locations.
+
+		int iTotal = 0;
+		for (j = 0; j < LocationTable.GetCount(); j++)
 			{
-			CAttributeCriteria LocationCriteria;
-			LocationCriteria.Parse(pType->GetLocationCriteria(), 0);
+			int iLocID = LocationTable[j];
+			CLocationDef *pLoc = pSystem->GetLocation(iLocID);
 
-			//	Average out our chance of ending up at one of the given locations.
-
-			int iTotal = 0;
-			for (j = 0; j < LocationTable.GetCount(); j++)
-				{
-				int iLocID = LocationTable[j];
-				CLocationDef *pLoc = pSystem->GetLocation(iLocID);
-
-				iTotal += LocationCriteria.AdjLocationWeight(pSystem, pLoc);
-				}
-
-			int iAverageChance = iTotal / LocationTable.GetCount();
-
-			//	Now adjust the base chance
-
-			int iChance = iBaseChance * iAverageChance / 1000;
-			if (iChance <= 0)
-				continue;
-
-			//	Add it to our table.
-
-			pEntry->Table.Insert(pType, iChance);
+			iTotal += LocationCriteria.AdjLocationWeight(pSystem, pLoc);
 			}
+
+		int iAverageChance = iTotal / LocationTable.GetCount();
+
+		//	Now adjust the base chance
+
+		int iChance = iBaseChance * iAverageChance / 1000;
+		if (iChance <= 0)
+			continue;
+
+		//	Add it to our table.
+
+		pEntry->LocationProb.Insert(pType, iChance);
 		}
 	}
 
