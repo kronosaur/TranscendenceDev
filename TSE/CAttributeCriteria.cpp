@@ -574,3 +574,18 @@ ALERROR CAttributeCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStr
 
 	return NOERROR;
 	}
+
+void CAttributeCriteria::WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix)
+
+//	WriteAsString
+//
+//	Write as a string.
+
+	{
+	for (int i = 0; i < Attribs.GetCount(); i++)
+		{
+		Stream.WriteChars(sPrefix);
+		Stream.WriteChars(Attribs[i]);
+		Stream.WriteChars(CONSTLIT("; "));
+		}
+	}

@@ -15,6 +15,20 @@ class CTopologyNode
 	public:
 		struct SAttributeCriteria
 			{
+			inline CString AsString (void) const
+				{
+				CMemoryWriteStream Stream;
+				if (Stream.Create() != NOERROR)
+					return NULL_STR;
+
+				CAttributeCriteria::WriteAsString(Stream, AttribsRequired, CONSTLIT("+"));
+				CAttributeCriteria::WriteAsString(Stream, SpecialRequired, CONSTLIT("+"));
+				CAttributeCriteria::WriteAsString(Stream, AttribsNotAllowed, CONSTLIT("-"));
+				CAttributeCriteria::WriteAsString(Stream, SpecialNotAllowed, CONSTLIT("-"));
+
+				return CString(Stream.GetPointer(), Stream.GetLength());
+				}
+
 			inline bool IsEmpty (void) const { return (AttribsRequired.GetCount() == 0 && AttribsNotAllowed.GetCount() == 0 && SpecialRequired.GetCount() == 0 && SpecialNotAllowed.GetCount() == 0); }
 
 			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing

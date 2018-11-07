@@ -152,10 +152,12 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
+#define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
+#define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_SHIPWRECK							CONSTLIT("shipwreck")
@@ -1693,7 +1695,10 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
+	if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
+		return ICCItemPtr(CC.CreateString(m_RandomPlacement.GetLevelFrequency()));
+
+	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(CC.CreateBool(ShowsUnexploredAnnotation()));
 
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN))
@@ -1705,6 +1710,17 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(CC.CreateNil());
 
 		return ICCItemPtr(m_pSovereign->GetProperty(Ctx, PROPERTY_NAME));
+		}
+	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
+		{
+        const CTopologyNode::SCriteria *pSystemCriteria;
+        if (!m_RandomPlacement.HasSystemCriteria(&pSystemCriteria))
+			return ICCItemPtr(CC.CreateNil());
+
+		if (pSystemCriteria->AttribCriteria.IsEmpty())
+			return ICCItemPtr(CC.CreateNil());
+
+		return ICCItemPtr(CC.CreateString(pSystemCriteria->AttribCriteria.AsString()));
 		}
 
 	else

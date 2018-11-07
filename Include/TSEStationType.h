@@ -128,6 +128,7 @@ class CStationEncounterDesc
 		inline Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
 		int GetFrequencyByDistance (int iDistance) const;
 		int GetFrequencyByLevel (int iLevel) const;
+		inline const CString &GetLevelFrequency (void) const { return m_sLevelFrequency; }
 		inline const CString &GetLocationCriteria (void) const { return m_sLocationCriteria; }
 		inline int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		inline int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }

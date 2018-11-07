@@ -407,6 +407,7 @@ class CAttributeCriteria
 
 		static int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq = -1);
+		static void WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix);
 
 	private:
 		enum MatchStrengthEncoding
