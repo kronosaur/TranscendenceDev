@@ -114,6 +114,7 @@ class CStationEncounterDesc
 			Metric rEnemyExclusionRadius2;
 			};
 
+		int CalcAffinity (CTopologyNode *pNode) const;
 		int CalcLevelFromFrequency (void) const;
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -150,9 +151,10 @@ class CStationEncounterDesc
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
 		CTopologyNode::SCriteria m_SystemCriteria;	//	System criteria
 
-		CTopologyNode::SAttributeCriteria m_DistanceCriteria;		//	Criteria for nodes for distance calc
+		CTopologyNode::SAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria
 		CString m_sLevelFrequency;					//	String array of frequency distribution by level
+		CAttributeCriteria m_SystemAffinity;		//	Adjust frequency based on number of matches
 
 		CString m_sLocationCriteria;				//	Criteria for location
 		Metric m_rExclusionRadius = 0.0;			//	No stations of any kind within this radius

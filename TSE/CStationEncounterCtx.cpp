@@ -141,6 +141,14 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 			int iDist = CalcDistanceToCriteria(pNode, Desc.GetDistanceCriteria());
 			pStats->iNodeCriteria = pStats->iNodeCriteria * Desc.GetFrequencyByDistance(iDist) / ftCommon;
 			}
+
+		//	Adjust based on affinity
+
+		int iAffinity;
+		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(pNode)) < ftCommon)
+			{
+			pStats->iNodeCriteria = pStats->iNodeCriteria * iAffinity / ftCommon;
+			}
         }
 
     //  Return cached value

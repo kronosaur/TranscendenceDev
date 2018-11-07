@@ -19,6 +19,7 @@
 #define MAX_IN_SYSTEM_ATTRIB					CONSTLIT("maxInSystem")
 #define MIN_APPEARING_ATTRIB					CONSTLIT("minAppearing")
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
+#define SYSTEM_AFFINITY_ATTRIB					CONSTLIT("systemAffinity")
 #define SYSTEM_CRITERIA_ATTRIB					CONSTLIT("systemCriteria")
 #define UNIQUE_ATTRIB							CONSTLIT("unique")
 
@@ -29,6 +30,21 @@
 #define VALUE_TRUE								CONSTLIT("true")
 
 const Metric DEFAULT_ENEMY_EXCLUSION =			50.0 * LIGHT_SECOND;
+
+int CStationEncounterDesc::CalcAffinity (CTopologyNode *pNode) const
+
+//	CalcAffinity
+//
+//	Calculates the affinity for the given node. We return values between
+//	ftCommon and 0.
+
+	{
+	if (m_SystemAffinity.MatchesAll())
+		return ftCommon;
+
+	int iWeight = m_SystemAffinity.CalcNodeWeight(pNode);
+	return (ftCommon * iWeight / 1000);
+	}
 
 int CStationEncounterDesc::CalcLevelFromFrequency (void) const
 
@@ -261,6 +277,12 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 	if (Override.FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
 		m_sLocationCriteria = sAttrib;
 
+	if (Override.FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
+		{
+		if (m_SystemAffinity.Parse(sAttrib, 0, retsError) != NOERROR)
+			return false;
+		}
+
 	//	Exclusion radius
 
 	int iRadius;
@@ -394,6 +416,12 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	m_sDistanceFrequency = pDesc->GetAttribute(DISTANCE_FREQUENCY_ATTRIB);
 	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
 	m_sLocationCriteria = pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+
+	if (pDesc->FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
+		{
+		if (error = m_SystemAffinity.Parse(sAttrib, 0, &Ctx.sError))
+			return error;
+		}
 
 	//	Exclusion radius
 
