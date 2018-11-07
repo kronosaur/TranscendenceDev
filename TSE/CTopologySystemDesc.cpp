@@ -38,6 +38,7 @@
 
 #include "PreComp.h"
 
+#define CRITERIA_TAG							CONSTLIT("Criteria")
 #define NAMES_TAG								CONSTLIT("Names")
 #define SYSTEM_TAG								CONSTLIT("System")
 
@@ -201,6 +202,12 @@ ALERROR CTopologySystemDesc::InitFromXML (SDesignLoadCtx &LoadCtx, CXMLElement *
 			if (error = IElementGenerator::CreateFromXML(LoadCtx, pSub, m_pGenerator))
 				return error;
 			}
+
+		//	Sometimes we use a <Criteria> tag when this is part of topology
+		//	processor.
+
+		else if (strEquals(sTag, CRITERIA_TAG))
+			NULL;
 
 		//	Otherwise, we don't recognize this tag
 
