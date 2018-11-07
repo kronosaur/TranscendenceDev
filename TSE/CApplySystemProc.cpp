@@ -51,6 +51,21 @@ ALERROR CApplySystemProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		return ERR_FAIL;
 		}
 
+	//	See if we have any children (e.g., <Criteria>)
+
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
+		{
+		CXMLElement *pItem = pDesc->GetContentElement(i);
+
+		//	See if this is an element handled by our base class
+
+		if ((error = InitBaseItemXML(Ctx, pItem)) != ERR_NOTFOUND)
+			{
+			if (error != NOERROR)
+				return error;
+			}
+		}
+
 	return NOERROR;
 	}
 
@@ -63,11 +78,21 @@ ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 	{
 	int i;
 
+	CTopologyNode::SCriteriaCtx Ctx;
+	Ctx.pTopology = &Topology;
+
 	//	Apply system properties to all nodes in list
 
 	for (i = 0; i < NodeList.GetCount(); i++)
 		{
 		CTopologyNode *pNode = NodeList[i];
+
+		//	Make sure we match criteria
+
+		if (!pNode->MatchesCriteria(Ctx, m_Criteria))
+			continue;
+
+		//	Apply
 
 		if (!m_sAttributes.IsBlank())
 			pNode->AddAttributes(m_sAttributes);
