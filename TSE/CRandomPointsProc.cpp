@@ -411,25 +411,28 @@ ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 	//	Any nodes that are unmarked should be removed from the list
 	//	(because we processed them)
 
-	if (pNodeList == &NodeList)
+	if (Ctx.bReduceNodeList)
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
+		if (pNodeList == &NodeList)
 			{
-			CTopologyNode *pNode = pNodeList->GetAt(i);
-			if (!pNode->IsMarked())
+			for (i = 0; i < pNodeList->GetCount(); i++)
 				{
-				pNodeList->Delete(i);
-				i--;
+				CTopologyNode *pNode = pNodeList->GetAt(i);
+				if (!pNode->IsMarked())
+					{
+					pNodeList->Delete(i);
+					i--;
+					}
 				}
 			}
-		}
-	else
-		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
+		else
 			{
-			CTopologyNode *pNode = pNodeList->GetAt(i);
-			if (!pNode->IsMarked())
-				NodeList.Delete(pNode);
+			for (i = 0; i < pNodeList->GetCount(); i++)
+				{
+				CTopologyNode *pNode = pNodeList->GetAt(i);
+				if (!pNode->IsMarked())
+					NodeList.Delete(pNode);
+				}
 			}
 		}
 

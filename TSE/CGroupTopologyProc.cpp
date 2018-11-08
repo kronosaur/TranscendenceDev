@@ -79,6 +79,8 @@ ALERROR CGroupTopologyProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	ALERROR error;
 	int i;
 
+	//	LATER: Read m_bReduceNodeList so that we can choose that option.
+
 	//	Loop over all elements
 
 	for (i = 0; i < pDesc->GetContentElementCount(); i++)
@@ -135,6 +137,20 @@ ALERROR CGroupTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Node
 		return ERR_FAIL;
 		}
 
+	//	If we're reducing the node list, then make a copy of the node list.
+
+	bool bSavedReduceNodeList = Ctx.bReduceNodeList;
+	Ctx.bReduceNodeList = m_bReduceNodeList;
+
+	//	If we're reducing the list, then make a copy of it (because we don't 
+	//	want to change our input list).
+
+	if (m_bReduceNodeList && pNodeList == &NodeList)
+		{
+		FilteredNodeList = NodeList;
+		pNodeList = &FilteredNodeList;
+		}
+
 	//	Loop over all processors in order
 	//	(Each call will potentially reduce the node list)
 
@@ -143,6 +159,10 @@ ALERROR CGroupTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Node
 		if (error = m_Procs[i]->Process(Ctx, *pNodeList, retsError))
 			return error;
 		}
+
+	//	Restore
+
+	Ctx.bReduceNodeList = bSavedReduceNodeList;
 
 	return NOERROR;
 	}

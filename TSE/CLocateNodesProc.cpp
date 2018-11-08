@@ -250,9 +250,12 @@ ALERROR CLocateNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 
 	//	Remove from the original node list
 
-	for (i = 0; i < pNodeList->GetCount(); i++)
-		if (!pNodeList->GetAt(i)->IsMarked())
-			NodeList.Delete(pNodeList->GetAt(i));
+	if (Ctx.bReduceNodeList)
+		{
+		for (i = 0; i < pNodeList->GetCount(); i++)
+			if (!pNodeList->GetAt(i)->IsMarked())
+				NodeList.Delete(pNodeList->GetAt(i));
+		}
 
 	//	Done
 

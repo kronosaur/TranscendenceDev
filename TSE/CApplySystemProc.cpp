@@ -78,6 +78,8 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 	{
 	int i;
 
+	CTopologyNodeList Remaining;
+
 	CTopologyNode::SCriteriaCtx MatchCtx;
 	MatchCtx.pTopology = &Ctx.Topology;
 
@@ -90,7 +92,14 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 		//	Make sure we match criteria
 
 		if (!pNode->MatchesCriteria(MatchCtx, m_Criteria))
+			{
+			//	Add to remaining (unprocessed list).
+
+			if (Ctx.bReduceNodeList)
+				Remaining.Insert(pNode);
+
 			continue;
+			}
 
 		//	Apply
 
@@ -101,9 +110,10 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 			m_SystemDesc.Apply(Ctx.Topology, pNode);
 		}
 
-	//	Remove from the original node list
+	//	Modify original list to have only remaining (unprocessed) nodes.
 
-	NodeList.DeleteAll();
+	if (Ctx.bReduceNodeList)
+		NodeList = Remaining;
 
 	return NOERROR;
 	}

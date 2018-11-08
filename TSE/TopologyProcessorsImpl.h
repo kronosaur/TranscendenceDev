@@ -122,6 +122,7 @@ class CGroupTopologyProc : public ITopologyProcessor
 
 	private:
 		TArray<ITopologyProcessor *> m_Procs;
+		bool m_bReduceNodeList = false;
 	};
 
 class CLocateNodesProc : public ITopologyProcessor

@@ -152,12 +152,15 @@ ALERROR CFillNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList
 
 	//	Remove from the original node list
 
-	if (pNodeList == &NodeList)
-		NodeList.DeleteAll();
-	else
+	if (Ctx.bReduceNodeList)
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
-			NodeList.Delete(pNodeList->GetAt(i));
+		if (pNodeList == &NodeList)
+			NodeList.DeleteAll();
+		else
+			{
+			for (i = 0; i < pNodeList->GetCount(); i++)
+				NodeList.Delete(pNodeList->GetAt(i));
+			}
 		}
 
 	return NOERROR;

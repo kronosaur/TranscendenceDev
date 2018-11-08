@@ -426,12 +426,15 @@ ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 
 	//	Remove from the original node list
 
-	if (pNodeList == &NodeList && iNodesLeft == 0)
-		NodeList.DeleteAll();
-	else
+	if (Ctx.bReduceNodeList)
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
-			NodeList.Delete(pNodeList->GetAt(i));
+		if (pNodeList == &NodeList && iNodesLeft == 0)
+			NodeList.DeleteAll();
+		else
+			{
+			for (i = 0; i < pNodeList->GetCount(); i++)
+				NodeList.Delete(pNodeList->GetAt(i));
+			}
 		}
 
 	//	Done

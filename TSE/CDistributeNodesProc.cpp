@@ -197,8 +197,11 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 
 	//	Delete
 
-	for (i = 0; i < NodesToDelete.GetCount(); i++)
-		NodeList.Delete(NodesToDelete[i]);
+	if (Ctx.bReduceNodeList)
+		{
+		for (i = 0; i < NodesToDelete.GetCount(); i++)
+			NodeList.Delete(NodesToDelete[i]);
+		}
 
 	return NOERROR;
 	}
