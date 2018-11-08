@@ -82,7 +82,6 @@ class CSystemMap : public CDesignType
 			int iSort;
 			};
 
-		CSystemMap (void) : m_bAdded(false), m_bDebugShowAttributes(false) { }
 		virtual ~CSystemMap (void);
 
 		void AccumulateTopologyProcessors (TSortMap<int, TArray<ITopologyProcessor *>> &Result) const;
@@ -101,6 +100,7 @@ class CSystemMap : public CDesignType
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
 		inline bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }
 		inline bool IsStartingMap (void) const { return m_bStartingMap; }
+		inline void SetBackgroundImageUNID (DWORD dwUNID) { m_dwBackgroundImageOverride = dwUNID; }
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }
@@ -150,37 +150,39 @@ class CSystemMap : public CDesignType
 			};
 
 		ALERROR ExecuteCreator (STopologyCreateCtx &Ctx, CTopology &Topology, CXMLElement *pCreator);
+		DWORD GetBackgroundImageUNID (void) const;
 
 		CString m_sName;						//	Name of the map (for the player)
-		int m_iInitialScale;					//	Initial map display scale (100 = 100%)
-		int m_iMaxScale;						//	Max zoom
-		int m_iMinScale;						//	Min zoom
-        Metric m_rLightYearsPerPixel;           //  Number of light years per pixel
+		int m_iInitialScale = 100;				//	Initial map display scale (100 = 100%)
+		int m_iMaxScale = 100;					//	Max zoom
+		int m_iMinScale = 100;					//	Min zoom
+        Metric m_rLightYearsPerPixel = 1.0;		//  Number of light years per pixel
 
 		CSystemMapRef m_pPrimaryMap;			//	If not NULL, place nodes on given map
 		TArray<CSystemMapRef> m_Uses;			//	List of maps that we rely on.
 
 		//	Map image
-		DWORD m_dwBackgroundImage;				//	Background image to use
-		Metric m_rBackgroundImageScale;			//	Pixels per galactic unit
-        CG32bitPixel m_rgbStargateLines;        //  Color of stargate line
+		DWORD m_dwBackgroundImage = 0;			//	Background image to use
+		Metric m_rBackgroundImageScale = 1.0;	//	Pixels per galactic unit
+        CG32bitPixel m_rgbStargateLines = 0;	//  Color of stargate line
 		CEffectCreatorRef m_pBackgroundEffect;	//	Background annotations to paint on galactic map
+		DWORD m_dwBackgroundImageOverride = 0;	//	Override by creators
 
 		//	Topology generation
 		CTopologyDescTable m_FixedTopology;
 		TArray<CXMLElement *> m_Creators;
 		TArray<ITopologyProcessor *> m_Processors;
-		bool m_bStartingMap;					//	Do not load unless specified by player ship
+		bool m_bStartingMap = false;			//	Do not load unless specified by player ship
 
 		//	Annotations
 		TArray<SMapAnnotation> m_Annotations;
 		TArray<CComplexArea> m_AreaHighlights;
 
 		//	Temporaries
-		bool m_bAdded;							//	TRUE if map was added to topology
+		bool m_bAdded = false;					//	TRUE if map was added to topology
 
 		//	Debug
-		bool m_bDebugShowAttributes;
+		bool m_bDebugShowAttributes = false;
 	};
 
 int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2);

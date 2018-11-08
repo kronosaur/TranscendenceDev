@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							43;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					166;
+constexpr DWORD SYSTEM_SAVE_VERSION =					167;
 
 //	Uncomment out the following define when building a stable release
 
@@ -610,3 +610,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					166;
 //
 //	166: 1.8 Beta 4
 //		m_Targets in CTimedEncounterEvent replaces m_pTarget
+//
+//	167: 1.8 Beta 4
+//		m_dwBackgroundImageOverride in CSystemMap

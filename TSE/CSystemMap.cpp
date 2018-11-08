@@ -177,6 +177,11 @@ ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 		return error;
 		}
 
+	//	If we have a background image, then set this image to the primary map.
+
+	if (!IsPrimaryMap() && m_dwBackgroundImage)
+		GetDisplayMap()->SetBackgroundImageUNID(m_dwBackgroundImage);
+
 	return NOERROR;
 	}
 
@@ -190,7 +195,7 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (Metric *retrImageScale)
 	{
 	int i;
 
-	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmapCopy(m_dwBackgroundImage);
+	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmapCopy(GetBackgroundImageUNID());
 	if (pImage == NULL)
 		return NULL;
 
@@ -319,7 +324,7 @@ void CSystemMap::GetBackgroundImageSize (int *retcx, int *retcy)
 //	Returns the size of the background image (in galactic coordinates).
 
 	{
-	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(m_dwBackgroundImage);
+	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(GetBackgroundImageUNID());
 	if (pImage)
 		{
 		*retcx = (int)(pImage->GetWidth() / m_rBackgroundImageScale);
@@ -330,6 +335,19 @@ void CSystemMap::GetBackgroundImageSize (int *retcx, int *retcy)
 		*retcx = 0;
 		*retcy = 0;
 		}
+	}
+
+DWORD CSystemMap::GetBackgroundImageUNID (void) const
+
+//	GetBackgroundImageUNID
+//
+//	Returns the background image to use.
+
+	{
+	if (m_dwBackgroundImageOverride)
+		return m_dwBackgroundImageOverride;
+
+	return m_dwBackgroundImage;
 	}
 
 ALERROR CSystemMap::OnBindDesign (SDesignLoadCtx &Ctx)
@@ -571,6 +589,8 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 //
 //	DWORD		No. of area highlights
 //	CComplexArea
+//
+//	DWORD		m_dwBackgroundImageOverride
 
 	{
 	int i;
@@ -633,6 +653,13 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 			m_Annotations.Delete(i);
 			i--;
 			}
+
+	//	Background image
+
+	if (Ctx.dwSystemVersion >= 167)
+		Ctx.pStream->Read(m_dwBackgroundImageOverride);
+	else
+		m_dwBackgroundImageOverride = 0;
 	}
 
 void CSystemMap::OnReinit (void)
@@ -645,6 +672,7 @@ void CSystemMap::OnReinit (void)
 	m_bAdded = false;
 	m_Annotations.DeleteAll();
 	m_AreaHighlights.DeleteAll();
+	m_dwBackgroundImageOverride = 0;
 	}
 
 void CSystemMap::OnWriteToStream (IWriteStream *pStream)
@@ -665,6 +693,8 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		No. of area highlights
 //	CComplexArea
+//
+//	DWORD		m_dwBackgroundImageOverride
 
 	{
 	int i;
@@ -694,6 +724,8 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 
 	for (i = 0; i < m_AreaHighlights.GetCount(); i++)
 		m_AreaHighlights[i].WriteToStream(*pStream);
+
+	pStream->Write(m_dwBackgroundImageOverride);
 	}
 
 int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2)
