@@ -110,7 +110,7 @@ ALERROR CGroupTopologyProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	return NOERROR;
 	}
 
-ALERROR CGroupTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CGroupTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -128,7 +128,7 @@ ALERROR CGroupTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CT
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -140,7 +140,7 @@ ALERROR CGroupTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CT
 
 	for (i = 0; i < m_Procs.GetCount(); i++)
 		{
-		if (error = m_Procs[i]->Process(pMap, Topology, *pNodeList, retsError))
+		if (error = m_Procs[i]->Process(Ctx, *pNodeList, retsError))
 			return error;
 		}
 

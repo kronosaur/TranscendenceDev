@@ -112,7 +112,7 @@ ALERROR CFillNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
-ALERROR CFillNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CFillNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -131,7 +131,7 @@ ALERROR CFillNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopol
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -146,7 +146,7 @@ ALERROR CFillNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopol
 		CTopologyNodeList SingleNode;
 		SingleNode.Insert(pNodeList->GetAt(i));
 
-		if (error = m_Procs[i % iProcCount]->Process(pMap, Topology, SingleNode, retsError))
+		if (error = m_Procs[i % iProcCount]->Process(Ctx, SingleNode, retsError))
 			return error;
 		}
 

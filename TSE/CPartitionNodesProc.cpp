@@ -187,7 +187,7 @@ ALERROR CPartitionNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	return NOERROR;
 	}
 
-ALERROR CPartitionNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CPartitionNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -206,7 +206,7 @@ ALERROR CPartitionNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, C
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -239,7 +239,7 @@ ALERROR CPartitionNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, C
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
 
 	//	Loop until we have placed all nodes in a partition
 
@@ -301,7 +301,7 @@ ALERROR CPartitionNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, C
 
 			//	Process recursively
 
-			if (error = m_Partitions[iPartition].pProc->Process(pMap, Topology, PartitionNodes, retsError))
+			if (error = m_Partitions[iPartition].pProc->Process(Ctx, PartitionNodes, retsError))
 				return error;
 
 			//	If we're making progress, reset our loop counter
@@ -345,7 +345,7 @@ ALERROR CPartitionNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, C
 
 	//	Done
 
-	RestoreMarks(Topology, SavedMarks);
+	RestoreMarks(Ctx.Topology, SavedMarks);
 
 	return NOERROR;
 	}

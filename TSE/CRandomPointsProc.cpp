@@ -276,7 +276,7 @@ ALERROR CRandomPointsProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -297,7 +297,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 	CComplexArea ValidArea;
 	if (m_pAreaDef)
 		{
-		if (error = Topology.InitComplexArea(m_pAreaDef, m_iMinSeparation, &ValidArea))
+		if (error = Ctx.Topology.InitComplexArea(m_pAreaDef, m_iMinSeparation, &ValidArea))
 			{
 			*retsError = CONSTLIT("Invalid area definition");
 			return error;
@@ -309,7 +309,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 		//	of the image in galactic coordinates, not necessarily pixels.
 
 		int cxWidth, cyHeight;
-		pMap->GetBackgroundImageSize(&cxWidth, &cyHeight);
+		Ctx.pMap->GetBackgroundImageSize(&cxWidth, &cyHeight);
 		ValidArea.IncludeRect(-cxWidth / 2, cyHeight / 2, cxWidth, cyHeight);
 		}
 
@@ -322,7 +322,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -333,7 +333,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
 
 	//	Loop over each point
 
@@ -356,7 +356,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 		//	Add any effects
 
 		if (pPointProc->pMapEffect)
-			pMap->AddAnnotation(pPointProc->pMapEffect, xPos, yPos, GenerateRotation(xPos, yPos));
+			Ctx.pMap->AddAnnotation(pPointProc->pMapEffect, xPos, yPos, GenerateRotation(xPos, yPos));
 
 		//	Process any nodes near the point
 
@@ -403,7 +403,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 			//	Process all the nodes
 
 			if (NodesNearPoint.GetCount() > 0)
-				if (error = pPointProc->pProc->Process(pMap, Topology, NodesNearPoint, retsError))
+				if (error = pPointProc->pProc->Process(Ctx, NodesNearPoint, retsError))
 					return error;
 			}
 		}
@@ -435,7 +435,7 @@ ALERROR CRandomPointsProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 
 	//	Done
 
-	RestoreMarks(Topology, SavedMarks);
+	RestoreMarks(Ctx.Topology, SavedMarks);
 
 	return NOERROR;
 	}

@@ -69,7 +69,7 @@ ALERROR CApplySystemProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	return NOERROR;
 	}
 
-ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -78,8 +78,8 @@ ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 	{
 	int i;
 
-	CTopologyNode::SCriteriaCtx Ctx;
-	Ctx.pTopology = &Topology;
+	CTopologyNode::SCriteriaCtx MatchCtx;
+	MatchCtx.pTopology = &Ctx.Topology;
 
 	//	Apply system properties to all nodes in list
 
@@ -89,7 +89,7 @@ ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 
 		//	Make sure we match criteria
 
-		if (!pNode->MatchesCriteria(Ctx, m_Criteria))
+		if (!pNode->MatchesCriteria(MatchCtx, m_Criteria))
 			continue;
 
 		//	Apply
@@ -98,7 +98,7 @@ ALERROR CApplySystemProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTop
 			pNode->AddAttributes(m_sAttributes);
 
 		if (!m_SystemDesc.IsEmpty())
-			m_SystemDesc.Apply(Topology, pNode);
+			m_SystemDesc.Apply(Ctx.Topology, pNode);
 		}
 
 	//	Remove from the original node list

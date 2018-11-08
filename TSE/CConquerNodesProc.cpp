@@ -298,7 +298,7 @@ ALERROR CConquerNodesProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-ALERROR CConquerNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -317,7 +317,7 @@ ALERROR CConquerNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -328,7 +328,7 @@ ALERROR CConquerNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
 
 	//	Initialize some conqueror temporaries
 
@@ -420,7 +420,7 @@ ALERROR CConquerNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 		{
 		SSeed *pSeed = &Seeds[i];
 
-		if (error = pSeed->pConqueror->pProc->Process(pMap, Topology, pSeed->Nodes, retsError))
+		if (error = pSeed->pConqueror->pProc->Process(Ctx, pSeed->Nodes, retsError))
 			return error;
 		}
 
@@ -436,7 +436,7 @@ ALERROR CConquerNodesProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTo
 
 	//	Done
 
-	RestoreMarks(Topology, SavedMarks);
+	RestoreMarks(Ctx.Topology, SavedMarks);
 
 	return NOERROR;
 	}

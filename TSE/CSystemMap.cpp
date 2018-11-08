@@ -696,36 +696,6 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 		m_AreaHighlights[i].WriteToStream(*pStream);
 	}
 
-ALERROR CSystemMap::ProcessTopology (CTopology &Topology, CSystemMap *pTargetMap, CTopologyNodeList &NodesAdded, CString *retsError)
-
-//	ProcessTopology
-//
-//	Process the topology over any nodes added to this map.
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Apply any topology processors (in order) on all the newly added nodes
-
-	for (i = 0; i < m_Processors.GetCount(); i++)
-		{
-		//	Make a copy of the node list because each call will destroy it
-
-		CTopologyNodeList NodeList = NodesAdded;
-
-		//	Process
-
-		if (error = m_Processors[i]->Process(pTargetMap, Topology, NodeList, retsError))
-			{
-			*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), GetUNID(), *retsError);
-			return error;
-			}
-		}
-
-	return NOERROR;
-	}
-
 int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2)
 	{
 	if (Key1.iSort > Key2.iSort)

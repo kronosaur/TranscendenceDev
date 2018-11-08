@@ -118,7 +118,7 @@ ALERROR CTableTopologyProc::OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 	return NOERROR;
 	}
 
-ALERROR CTableTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError)
+ALERROR CTableTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError)
 
 //	OnProcess
 //
@@ -136,7 +136,7 @@ ALERROR CTableTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CT
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Topology, m_Criteria, NodeList, FilteredNodeList);
+	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 	if (pNodeList == NULL)
 		{
 		*retsError = CONSTLIT("Error filtering nodes");
@@ -154,7 +154,7 @@ ALERROR CTableTopologyProc::OnProcess (CSystemMap *pMap, CTopology &Topology, CT
 		{
 		if (iRoll <= m_Procs[i].iChance)
 			{
-			if (error = m_Procs[i].pProc->Process(pMap, Topology, *pNodeList, retsError))
+			if (error = m_Procs[i].pProc->Process(Ctx, *pNodeList, retsError))
 				return error;
 
 			break;

@@ -19,7 +19,7 @@ class CApplySystemProc : public ITopologyProcessor
 
 	protected:
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		CTopologySystemDesc m_SystemDesc;
@@ -33,7 +33,7 @@ class CConquerNodesProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		struct SNodeWeight
@@ -82,7 +82,7 @@ class CDistributeNodesProc : public ITopologyProcessor
 
 	protected:
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		struct SSystemEntry
@@ -103,7 +103,7 @@ class CFillNodesProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		TArray<ITopologyProcessor *> m_Procs;
@@ -118,7 +118,7 @@ class CGroupTopologyProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		TArray<ITopologyProcessor *> m_Procs;
@@ -134,7 +134,7 @@ class CLocateNodesProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		struct SLocation
@@ -159,7 +159,7 @@ class CPartitionNodesProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		enum EPartitionOrders
@@ -195,7 +195,7 @@ class CRandomPointsProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		enum ERotationTypes
@@ -241,7 +241,7 @@ class CTableTopologyProc : public ITopologyProcessor
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) override;
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) override;
 
 	private:
 		struct SEntry

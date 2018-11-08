@@ -1666,6 +1666,9 @@ ALERROR CTopology::RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<I
 	{
 	ALERROR error;
 
+	ASSERT(pMap);
+	ITopologyProcessor::SProcessCtx Ctx(*this, pMap);
+
 	//	Apply any topology processors (in order) on all the newly added nodes
 
 	for (int i = 0; i < Processors.GetCount(); i++)
@@ -1681,7 +1684,7 @@ ALERROR CTopology::RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<I
 			//	Process
 
 			CString sError;
-			if (error = List[j]->Process(pMap, *this, NodeList, &sError))
+			if (error = List[j]->Process(Ctx, NodeList, &sError))
 				{
 				*retsError = strPatternSubst(CONSTLIT("SystemMap (%x): %s"), pMap->GetUNID(), sError);
 				return error;

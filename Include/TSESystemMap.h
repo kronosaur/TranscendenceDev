@@ -25,6 +25,19 @@ class ITopologyProcessor
 			phaseCount =			7,
 			};
 
+		struct SProcessCtx
+			{
+			SProcessCtx (CTopology &TopologyArg, CSystemMap *pMapArg) :
+					Topology(TopologyArg),
+					pMap(pMapArg)
+				{ }
+
+			CTopology &Topology;					//	Topology
+			CSystemMap *pMap;						//	Map that we're processing
+
+			bool bReduceNodeList = false;			//	Remove nodes when processed
+			};
+
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc);
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc);
 
@@ -34,7 +47,7 @@ class ITopologyProcessor
 		inline EPhase GetPhase (void) const { return m_iPhase; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		inline void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { OnPaint(Dest, xCenter, yCenter, rScale); }
-		inline ALERROR Process (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(pMap, Topology, NodeList, retsError); }
+		inline ALERROR Process (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(Ctx, NodeList, retsError); }
 
 		static EPhase ParsePhase (const CString &sValue);
 
@@ -43,7 +56,7 @@ class ITopologyProcessor
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual ALERROR OnInitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) { return NOERROR; }
 		virtual void OnPaint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { }
-		virtual ALERROR OnProcess (CSystemMap *pMap, CTopology &Topology, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
+		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
 
 		CTopologyNodeList *FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
 		ALERROR InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
@@ -88,7 +101,6 @@ class CSystemMap : public CDesignType
 		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
 		inline bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }
 		inline bool IsStartingMap (void) const { return m_bStartingMap; }
-		ALERROR ProcessTopology (CTopology &Topology, CSystemMap *pTargetMap, CTopologyNodeList &NodesAdded, CString *retsError);
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }
