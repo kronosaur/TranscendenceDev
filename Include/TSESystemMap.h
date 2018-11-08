@@ -89,7 +89,7 @@ class CSystemMap : public CDesignType
 		bool AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL) { return AddAnnotation(NULL_STR, pEffect, x, y, iRotation, retdwID); }
 		bool AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
 		inline bool AddAreaHighlight (const CComplexArea &Area) { m_AreaHighlights.Insert(Area); return true; }
-		ALERROR AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
+		ALERROR GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 		bool DebugShowAttributes (void) const { return m_bDebugShowAttributes; }
 		CG32bitImage *CreateBackgroundImage (Metric *retrImageScale);
 		void GetBackgroundImageSize (int *retcx, int *retcy);

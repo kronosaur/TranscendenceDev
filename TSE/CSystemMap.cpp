@@ -114,9 +114,9 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 	return true;
 	}
 
-ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
+ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
 
-//	AddFixedTopology
+//	GenerateTopology
 //
 //	Adds all the nodes in its fixed topology
 
@@ -138,7 +138,7 @@ ALERROR CSystemMap::AddFixedTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 
 	for (i = 0; i < m_Uses.GetCount(); i++)
 		{
-		if (error = m_Uses[i]->AddFixedTopology(Topology, NodesAdded, retsError))
+		if (error = m_Uses[i]->GenerateTopology(Topology, NodesAdded, retsError))
 			return error;
 		}
 

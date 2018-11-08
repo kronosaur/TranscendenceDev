@@ -1755,7 +1755,7 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 
 		//	Add topology
 
-		if (error = pMap->AddFixedTopology(m_Topology, NodesAdded, retsError))
+		if (error = pMap->GenerateTopology(m_Topology, NodesAdded, retsError))
 			return error;
 
 		//	Keep track of primary vs. secondary maps
