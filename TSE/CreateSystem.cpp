@@ -700,6 +700,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	//	See how many locations we actually filled. If we filled fewer locations
 	//	than expected, then report the actual number.
 
+#ifdef DEBUG_FILL_LOCATIONS
 	int iFilled = iLocationCount - LocationTable.GetCount();
 	if (iFilled < iCount 
 			&& g_pUniverse->InDebugMode()
@@ -707,6 +708,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 		{
 		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: Only filled %d of %d locations (%d%%)"), pCtx->pTopologyNode->GetID(), iFilled, iLocationCount, iFilled * 100 / iLocationCount));
 		}
+#endif
 
 	PopDebugStack(pCtx);
 	return NOERROR;
