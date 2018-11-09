@@ -46,6 +46,7 @@ class CMission : public CSpaceObject
 		inline bool CleanNonPlayer (void) const { return m_pType->CleanNonPlayer(); }
 		inline DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
 		inline int GetPriority (void) const { return m_pType->GetPriority(); }
+		inline bool IsAccepted (void) const { return (m_iStatus == statusAccepted); }
 		inline bool IsActive (void) const { return (m_iStatus == statusAccepted || (!m_fDebriefed && (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure))); }
 		inline bool IsClosed (void) const { return (!IsActive() && IsCompleted()); }
 		inline bool IsCompleted (void) const { return (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure || m_iStatus == statusSuccess || m_iStatus == statusFailure); }

@@ -731,7 +731,8 @@ void CMission::OnNewSystem (CSystem *pSystem)
 			{
 			//	If mission fails when we leave the system, fail now
 
-			if (m_pType->GetOutOfSystemTimeOut() == 0)
+			if (m_pType->GetOutOfSystemTimeOut() == 0
+					&& IsAccepted())
 				SetFailure(NULL);
 
 			//	If required, close the mission
@@ -938,7 +939,7 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	int iTimeout;
 	if (!m_fInMissionSystem
-			&& !IsCompleted()
+			&& IsAccepted()
 			&& (iTimeout = m_pType->GetOutOfSystemTimeOut()) != -1)
 		{
 		if (m_dwLeftSystemOn + iTimeout < (DWORD)g_pUniverse->GetTicks())
