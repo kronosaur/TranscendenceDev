@@ -2473,6 +2473,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'forceUndockAfterDebrief  Force undock after showing debrief screen\n"
 			"   'hasDebrief        Mission has a debrief phase\n"
 			"   'id                Mission object ID\n"
+			"   'inProgress        Active player mission and not completed\n"
 			"   'isActive          Is an active player mission\n"
 			"   'isCompleted       Is a completed mission (player or non-player)\n"
 			"   'isDebriefed       Player has been debriefed\n"

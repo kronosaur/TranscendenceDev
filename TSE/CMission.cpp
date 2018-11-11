@@ -17,6 +17,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 #define PROPERTY_ACCEPTED_ON					CONSTLIT("acceptedOn")
 #define PROPERTY_COMPLETED_ON					CONSTLIT("completedOn")
 #define PROPERTY_DEBRIEFER_ID					CONSTLIT("debrieferID")
+#define PROPERTY_IN_PROGRESS					CONSTLIT("inProgress")
 #define PROPERTY_IS_ACTIVE						CONSTLIT("isActive")
 #define PROPERTY_IS_COMPLETED					CONSTLIT("isCompleted")
 #define PROPERTY_IS_DEBRIEFED					CONSTLIT("isDebriefed")
@@ -494,6 +495,9 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		else
 			return CC.CreateNil();
 		}
+
+	else if (strEquals(sName, PROPERTY_IN_PROGRESS))
+		return CC.CreateBool(IsActive() && !IsCompleted());
 
 	else if (strEquals(sName, PROPERTY_IS_ACTIVE))
 		return CC.CreateBool(IsActive());
