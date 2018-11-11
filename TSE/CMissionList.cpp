@@ -58,7 +58,7 @@ void CMissionList::FireOnSystemStarted (DWORD dwElapsedTime)
 	for (int i = 0; i < GetCount(); i++)
 		{
 		CMission *pMission = GetMission(i);
-		if (pMission->IsActive())
+		if (!pMission->IsClosed())
 			pMission->FireOnSystemStarted(dwElapsedTime);
 		}
 	}
@@ -73,7 +73,7 @@ void CMissionList::FireOnSystemStopped (void)
 	for (int i = 0; i < GetCount(); i++)
 		{
 		CMission *pMission = GetMission(i);
-		if (pMission->IsActive())
+		if (!pMission->IsClosed())
 			pMission->FireOnSystemStopped();
 		}
 	}
@@ -130,7 +130,7 @@ void CMissionList::NotifyOnPlayerEnteredSystem (CSpaceObject *pPlayerShip)
 	for (int i = 0; i < GetCount(); i++)
 		{
 		CMission *pMission = GetMission(i);
-		if (pMission->IsActive())
+		if (!pMission->IsClosed())
 			pMission->OnPlayerEnteredSystem(pPlayerShip);
 		}
 	}
