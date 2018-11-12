@@ -179,6 +179,108 @@ ALERROR CRepairerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
+int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
+
+//	GetPowerRating
+//
+//	Returns the power used by this device.
+
+	{
+	//	Idle power is always 0
+
+	if (retiIdlePowerUse) *retiIdlePowerUse = 0;
+
+	//	We make a list of all armor class types for the ship.
+
+	TArray<const CArmorClass *> Armor;
+	CSpaceObject *pSource = Ctx.GetSource();
+	CShip *pShip = (pSource ? pSource->AsShip() : NULL);
+	const CShipClass *pClass;
+
+	//	If we have a real ship, get the armor from it.
+
+	if (pShip)
+		{
+		Armor.InsertEmpty(pShip->GetArmorSectionCount());
+		for (int i = 0; i < pShip->GetArmorSectionCount(); i++)
+			Armor[i] = pShip->GetArmorSection(i)->GetClass();
+		}
+
+	//	Otherwise, see if we have a ship class
+
+	else if (pClass = Ctx.GetSourceShipClass())
+		{
+		Armor.InsertEmpty(pClass->GetArmorDesc().GetCount());
+		for (int i = 0; i < pClass->GetArmorDesc().GetCount(); i++)
+			Armor[i] = pClass->GetArmorDesc().GetSegment(i).GetArmorClass();
+		}
+
+	//	Otherwise, standard rating
+
+	else
+		{
+		return 2 * m_iPowerUse;
+		}
+
+	//	Loop over all armor segments adding up power consumption
+
+	int iTotalPowerUse = 0;
+
+	for (int i = 0; i < Armor.GetCount(); i++)
+		{
+		int iPowerUse = 0;
+
+		if (Armor[i] == NULL)
+			continue;
+
+		//	First compute the standard power
+
+		int iArmorTech = Armor[i]->GetRepairTech();
+		if (iArmorTech - 1 < m_Repair.GetCount())
+			{
+			iPowerUse = (m_Repair[iArmorTech - 1].GetHPPerEra() > 0 ? m_iPowerUse : 0);
+			}
+
+		//	Next, if we have an event, we call it to compute power
+
+		SEventHandlerDesc Event;
+		if (FindEventHandlerRepairerClass(evtGetArmorRegen, &Event))
+			{
+			CCodeChainCtx CCCtx;
+
+			CCCtx.DefineContainingType(GetItemType());
+			CCCtx.SaveAndDefineSourceVar(pShip);
+			CCCtx.SaveAndDefineItemVar(Ctx.GetItem());
+			CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), i);
+			CCCtx.DefineItemType(CONSTLIT("aArmorType"), Armor[i]->GetItemType());
+
+			ICCItemPtr pResult = CCCtx.RunCode(Event);
+			if (pResult->IsError())
+				NULL;
+
+			else if (pResult->IsInteger())
+				NULL;
+
+			else if (!pResult->IsNil())
+				{
+				//	We expect a struct
+
+				ICCItem *pPowerUse = pResult->GetElement(CONSTLIT("powerUse"));
+				if (pPowerUse)
+					iPowerUse = pPowerUse->GetIntegerValue();
+				}
+			}
+
+		//	Add it to the total
+
+		iTotalPowerUse += iPowerUse;
+		}
+
+	//	Done
+
+	return iTotalPowerUse;
+	}
+
 bool CRepairerClass::RepairShipArmor (CInstalledDevice *pDevice, CShip *pShip, SDeviceUpdateCtx &Ctx)
 
 //	RepairShipArmor

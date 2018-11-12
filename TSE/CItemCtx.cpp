@@ -302,7 +302,7 @@ const CItemEnhancement &CItemCtx::GetMods(void)
 	return GetItem().GetMods();
 	}
 
-CShipClass *CItemCtx::GetSourceShipClass (void) const
+const CShipClass *CItemCtx::GetSourceShipClass (void) const
 
 //	GetSourceShipClass
 //
@@ -310,7 +310,7 @@ CShipClass *CItemCtx::GetSourceShipClass (void) const
 
 	{
 	if (m_pSource == NULL)
-		return NULL;
+		return m_pSourceShipClass;
 
 	CShip *pShip = m_pSource->AsShip();
 	if (pShip == NULL)

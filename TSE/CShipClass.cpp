@@ -1177,7 +1177,7 @@ int CShipClass::CalcRatedPowerUse (const CDeviceDescList &Devices) const
 	for (int i = 0; i < Devices.GetCount(); i++)
 		{
 		const CItem &Item = Devices.GetDeviceDesc(i).Item;
-		CItemCtx ItemCtx(Item);
+		CItemCtx ItemCtx(this, Item);
 		CDeviceClass *pDevice = ItemCtx.GetDeviceClass();
 
 		bool bAddedWeapon = false;

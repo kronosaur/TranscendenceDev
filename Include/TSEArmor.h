@@ -104,7 +104,7 @@ class CArmorClass
 		int GetDamageAdjForWeaponLevel (int iLevel);
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
-		inline CItemType *GetItemType (void) { return m_pItemType; }
+		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
@@ -112,7 +112,7 @@ class CArmorClass
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
 		inline int GetRepairCost (CItemCtx &Ctx) const;
-		inline int GetRepairTech (void) { return m_iRepairTech; }
+		inline int GetRepairTech (void) const { return m_iRepairTech; }
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }

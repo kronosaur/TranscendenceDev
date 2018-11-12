@@ -8,6 +8,7 @@
 class CInstalledArmor;
 class CInstalledDevice;
 class CItemList;
+class CShipClass;
 
 //	Item Types
 
@@ -540,12 +541,13 @@ class CItemCtx
 	{
 	public:
         CItemCtx (CItemType *pItemType);
-		CItemCtx (const CItem &Item) : m_pItem(&Item), m_pSource(NULL), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(NULL), m_pSource(pSource), m_pArmor(pArmor), m_pDevice(NULL), m_pWeapon(NULL), m_iVariant(-1) { }
-		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(NULL), m_pSource(pSource), m_pArmor(NULL), m_pDevice(pDevice), m_pWeapon(NULL), m_iVariant(-1) { }
+		CItemCtx (const CItem &Item) : m_pItem(&Item) { }
+		CItemCtx (const CShipClass *pSource, const CItem &Item) : m_pSourceShipClass(pSource), m_pItem(&Item) { }
+		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pItem(pItem), m_pSource(pSource), m_pArmor(pArmor) { }
+		CItemCtx (const CItem *pItem, CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pItem(pItem), m_pSource(pSource), m_pDevice(pDevice) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pSource(pSource), m_pArmor(pArmor) { }
+		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pSource(pSource), m_pDevice(pDevice) { }
 
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
@@ -560,7 +562,7 @@ class CItemCtx
 		int GetItemCharges (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
-		CShipClass *GetSourceShipClass (void) const;
+		const CShipClass *GetSourceShipClass (void) const;
 		inline int GetVariant (void) const { return m_iVariant; }
 		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
         inline const CItem &GetVariantItem (void) const { return m_Variant; }
@@ -574,15 +576,16 @@ class CItemCtx
 	private:
 		const CItem *GetItemPointer (void);
 
-		const CItem *m_pItem;					//	The item
+		const CItem *m_pItem = NULL;			//	The item
 		CItem m_Item;							//	A cached item, if we need to cons one up.
-		CSpaceObject *m_pSource;				//	Where the item is installed (may be NULL)
-		CInstalledArmor *m_pArmor;				//	Installation structure (may be NULL)
-		CInstalledDevice *m_pDevice;			//	Installation structure (may be NULL)
+		CSpaceObject *m_pSource = NULL;			//	Where the item is installed (may be NULL)
+		const CShipClass *m_pSourceShipClass = NULL;	//	For some ship class functions
+		CInstalledArmor *m_pArmor = NULL;		//	Installation structure (may be NULL)
+		CInstalledDevice *m_pDevice = NULL;		//	Installation structure (may be NULL)
 
         CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
-		CDeviceClass *m_pWeapon;				//	This is the weapon that uses the given item
-		int m_iVariant;							//	NOTE: In this case, m_pItem may be either a
+		CDeviceClass *m_pWeapon = NULL;			//	This is the weapon that uses the given item
+		int m_iVariant = -1;					//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.
 
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up

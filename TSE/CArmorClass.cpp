@@ -2011,7 +2011,7 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 
 	//	Include adjustment for mass
 
-	CShipClass *pShipClass;
+	const CShipClass *pShipClass;
 	if (pShipClass = Ctx.GetSourceShipClass())
 		{
 		int iArmorMass = m_pItemType->GetMassKg(Ctx);
