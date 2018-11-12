@@ -186,8 +186,10 @@ class CShipClass : public CDesignType
 		inline int Angle2Direction (int iAngle) const { return m_Perf.GetRotationDesc().GetFrameIndex(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetRotationDesc().AlignToRotationAngle(iAngle); }
 		int CalcArmorSpeedBonus (int iTotalArmorMass) const;
+		Metric CalcFuelEfficiency (const CDeviceDescList &Devices) const;
 		inline int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;
+		int CalcRatedPowerUse (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
 		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale = 1.0);

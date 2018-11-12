@@ -176,6 +176,7 @@
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
+#define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
@@ -187,6 +188,7 @@
 #define PROPERTY_MAX_SPEED_BY_ARMOR_MASS		CONSTLIT("maxSpeedByArmorMass")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_PRICE							CONSTLIT("price")
+#define PROPERTY_RATED_POWER					CONSTLIT("ratedPower")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
@@ -828,6 +830,36 @@ Metric CShipClass::CalcDefenseRate (void) const
 	return rRate;
 	}
 
+Metric CShipClass::CalcFuelEfficiency (const CDeviceDescList &Devices) const
+
+//	CalcFueldEfficiency
+//
+//	Computes the fuel efficiency of the class, which is defined as the number of
+//	ticks required to consume 10 standard fuel rod assuming:
+//
+//	1. Max shield consumption
+//	2. Max primary weapon consumption
+//	3. Max thrust
+//	4. Standard consumption from all other devices/armor
+
+	{
+	int iPowerUsed = CalcRatedPowerUse(Devices);
+
+	//	Compute reactor efficiency
+
+	Metric rEfficiency = m_Perf.GetReactorDesc().GetEfficiency();
+	if (rEfficiency <= 0.0)
+		rEfficiency = g_MWPerFuelUnit;
+
+	//	Compute the number of fuel units per tick.
+
+	Metric rFuelPerTick = iPowerUsed / rEfficiency;
+	if (rFuelPerTick <= 0.0)
+		return 0.0;
+
+	return 10.0 * FUEL_UNITS_PER_STD_ROD / rFuelPerTick;
+	}
+
 CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 
 //	CalcHullValue
@@ -1116,6 +1148,70 @@ void CShipClass::CalcPerformance (void)
 
 	DEBUG_CATCH
     }
+
+int CShipClass::CalcRatedPowerUse (const CDeviceDescList &Devices) const
+
+//	CalcRatedPowerUse
+//
+//	Computes the rated power used by the class, which is defined as the number 
+//	power consumed at:
+//
+//	1. Max shield consumption
+//	2. Max primary weapon consumption
+//	3. Max thrust
+//	4. Idle consumption from all other devices/armor
+
+	{
+	int iPowerUsed = 0;
+
+	//	We always consume power for life support
+
+	iPowerUsed += CPowerConsumption::DEFAULT_LIFESUPPORT_POWER_USE;
+
+	//	Consume power from drive (as if we're always thrusting)
+
+	iPowerUsed += m_Perf.GetDriveDesc().GetPowerUse();
+
+	//	Add devices
+
+	for (int i = 0; i < Devices.GetCount(); i++)
+		{
+		const CItem &Item = Devices.GetDeviceDesc(i).Item;
+		CItemCtx ItemCtx(Item);
+		CDeviceClass *pDevice = ItemCtx.GetDeviceClass();
+
+		bool bAddedWeapon = false;
+		int iIdlePowerUse;
+		int iFullPowerUse = pDevice->GetPowerRating(ItemCtx, &iIdlePowerUse);
+
+		switch (Item.GetType()->GetCategory())
+			{
+			//	Add first weapon at full power
+
+			case itemcatWeapon:
+				if (!bAddedWeapon)
+					{
+					iPowerUsed += iFullPowerUse;
+					bAddedWeapon = true;
+					}
+				break;
+
+			//	Add shields at full power
+
+			case itemcatShields:
+				iPowerUsed += iFullPowerUse;
+				break;
+
+			//	All other devices at idle power
+
+			default:
+				iPowerUsed += iIdlePowerUse;
+				break;
+			}
+		}
+
+	return iPowerUsed;
+	}
 
 int CShipClass::CalcScore (void)
 
@@ -3793,6 +3889,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? ICCItemPtr(CC.CreateInteger(m_pDefaultSovereign.GetUNID())) : ICCItemPtr(CC.CreateNil()));
 
+	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY))
+		return ICCItemPtr(CC.CreateInteger(mathRound(CalcFuelEfficiency(m_AverageDevices))));
+
 	else if (strEquals(sProperty, PROPERTY_HAS_TRADE_DESC))
 		return ICCItemPtr(CC.CreateBool(m_pTrade != NULL));
 
@@ -3823,6 +3922,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return ICCItemPtr(CC.CreateInteger((int)GetTradePrice(NULL, true).GetValue()));
+
+	else if (strEquals(sProperty, PROPERTY_RATED_POWER))
+		return ICCItemPtr(CC.CreateInteger(CalcRatedPowerUse(m_AverageDevices)));
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_Hull.GetStdArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetStdArmorMass())) : ICCItemPtr(CC.CreateNil()));

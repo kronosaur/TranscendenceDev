@@ -592,6 +592,8 @@ class CReactorDesc
 class CPowerConsumption
 	{
 	public:
+		static constexpr int DEFAULT_LIFESUPPORT_POWER_USE = 5;
+
 		CPowerConsumption (void) :
 				m_rFuelLeft(0.0),
 				m_iPowerDrain(0),
