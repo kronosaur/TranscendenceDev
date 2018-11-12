@@ -55,7 +55,7 @@
 #define MAX_REFLECTION_CHANCE					95
 const Metric MAX_REFLECTION_TARGET =			50.0 * LIGHT_SECOND;
 const Metric STD_FIRE_DELAY_TICKS =				8.0;
-const Metric STD_DEFENSE_RATIO =				1.25;
+const Metric STD_DEFENSE_RATIO =				0.8;
 const int STD_DEPLETION_DELAY =					360;
 
 const Metric REFLECTION_BALANCE_BONUS =			50.0;
@@ -71,35 +71,35 @@ const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a
 static CShieldClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
 		//	HP		Regen	Cost			Power
-		{	35,		12,		500.0,			10, },
-		{	45,		16,		1000.0,			20, },
-		{	60,		20,		2000.0,			50, },
+		{	35,		12,		350.0,			10, },
+		{	45,		16,		800.0,			20, },
+		{	60,		20,		1850.0,			50, },
 		{	80,		28,		4000.0,			100, },
-		{	100,	36,		8000.0,			200, },
+		{	100,	36,		8500.0,			200, },
 
-		{	135,	45,		16000.0,		300, },
-		{	175,	60,		32000.0,		500, },
-		{	225,	80,		65000.0,		1000, },
-		{	300,	100,	130000.0,		2000, },
-		{	380,	130,	250000.0,		3000, },
+		{	135,	45,		18500.0,		300, },
+		{	175,	60,		39000.0,		500, },
+		{	225,	80,		78500.0,		1000, },
+		{	300,	100,	158000.0,		2000, },
+		{	380,	130,	320000.0,		3000, },
 
-		{	500,	170,	500000.0,		5000, },
-		{	650,	220,	1000000.0,		8000, },
-		{	850,	290,	2000000.0,		12000, },
-		{	1100,	370,	4000000.0,		18000, },
-		{	1400,	490,	8000000.0,		27500, },
+		{	500,	170,	640000.0,		5000, },
+		{	650,	220,	1300000.0,		8000, },
+		{	850,	290,	2700000.0,		12000, },
+		{	1100,	370,	5300000.0,		18000, },
+		{	1400,	490,	10600000.0,		27500, },
 
-		{	1850,	630,	16000000.0,		40000, },
-		{	2400,	820,	32000000.0,		60000, },
-		{	3100,	1100,	65000000.0,		90000, },
-		{	4000,	1400,	130000000.0,	120000, },
-		{	5250,	1800,	260000000.0,	160000, },
+		{	1850,	630,	21300000.0,		40000, },
+		{	2400,	820,	42600000.0,		60000, },
+		{	3100,	1100,	85200000.0,		90000, },
+		{	4000,	1400,	170000000.0,	120000, },
+		{	5250,	1800,	341000000.0,	160000, },
 
-		{	6850,	2350,	525000000.0,	220000, },
-		{	9000,	3050,	1000000000.0,	300000, },
-		{	12000,	4000,	2100000000.0,	400000, },
-		{	15000,	5150,	4200000000.0,	500000, },
-		{	20000,	6700,	8400000000.0,	600000, },
+		{	6850,	2350,	682000000.0,	220000, },
+		{	9000,	3050,	1400000000.0,	300000, },
+		{	12000,	4000,	2700000000.0,	400000, },
+		{	15000,	5150,	5500000000.0,	500000, },
+		{	20000,	6700,	10900000000.0,	600000, },
 	};
 
 static char *CACHED_EVENTS[CShieldClass::evtCount] =
@@ -560,11 +560,11 @@ Metric CShieldClass::CalcBalanceDefense (CItemCtx &ItemCtx, int iLevel, Metric r
 //	Calc defense balance based on level, HP, and regen.
 
 	{
-	Metric rCycles = 6.0;
+	Metric rCycles = 3.0;
 	Metric rEffectiveHP = rHP + (rCycles * rRegen180);
 
 	//	Our defense ratio is the ratio of effective HP to 180-tick std weapon
-	//	damage at our level. The standard value for this ratio is 1.25.
+	//	damage at our level. The standard value for this ratio is STD_DEFENSE_RATIO.
 
 	Metric rDefenseRatio = rEffectiveHP / CWeaponClass::GetStdDamage180(iLevel);
 

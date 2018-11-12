@@ -404,9 +404,6 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 	if (pShip->HasAttachedSections() && RepairShipAttachedSections(pDevice, pShip, Ctx))
 		return;
 
-	//	Finally, see if we repair interior compartments
-
-		
 	DEBUG_CATCH
 	}
 

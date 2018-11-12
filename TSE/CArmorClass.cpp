@@ -842,7 +842,7 @@ Metric CArmorClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStat
 
 //	CalcBalanceDamageAdj
 //
-//	Calculates the balande contribution of damage adjustment. 0 = same as 
+//	Calculates the balance contribution of damage adjustment. 0 = same as 
 //	standard for level.
 
 	{
