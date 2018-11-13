@@ -1032,7 +1032,7 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 		}
 	}
 
-ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sPane, CString *retsError)
+ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, void *pScreen, DWORD dwScreenUNID, const CString &sScreen, const CString &sScreenName, const CString &sPane, CString *retsError)
 
 //	FireOnGlobalDockPaneInit
 //
@@ -1046,6 +1046,10 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 	Ctx.SetScreen(pScreen);
 	Ctx.DefineInteger(CONSTLIT("aScreenUNID"), dwScreenUNID);
 	Ctx.DefineString(CONSTLIT("aScreen"), sScreen);
+	if (!sScreenName.IsBlank())
+		Ctx.DefineString(CONSTLIT("aScreenName"), sScreenName);
+	else
+		Ctx.DefineNil(CONSTLIT("aScreenName"));
 	Ctx.DefineString(CONSTLIT("aPane"), sPane);
 
 	//	Run

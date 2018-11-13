@@ -910,6 +910,7 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 				pScreen,
 				dwRootUNID,
 				sScreenUNID,
+				sScreen,
 				sPane,
 				&sError) != NOERROR)
 			kernelDebugLogString(sError);
