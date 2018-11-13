@@ -676,8 +676,9 @@ class CShipPerformanceDesc
 		inline const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
         inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
         inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
+        inline const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_IntegralRotationDesc; }
         inline const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
-        inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
+        inline const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
 		inline bool HasShieldInterference (void) const { return (m_fShieldInterference ? true : false); }
         void Init (SShipPerformanceCtx &Ctx);
 		inline bool IsEmpty (void) const { return (m_fInitialized ? false : true); }
@@ -688,12 +689,13 @@ class CShipPerformanceDesc
         inline CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
         inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
         inline CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
-        inline CIntegralRotationDesc &GetRotationDesc (void) { return m_RotationDesc; }
+        inline CIntegralRotationDesc &GetIntegralRotationDesc (void) { return m_IntegralRotationDesc; }
 
 		inline static const CShipPerformanceDesc &Null (void) { return m_Null; }
 
     private:
-        CIntegralRotationDesc m_RotationDesc;
+		CRotationDesc m_RotationDesc;
+        CIntegralRotationDesc m_IntegralRotationDesc;
 		CReactorDesc m_ReactorDesc;
         CDriveDesc m_DriveDesc;
         CCargoDesc m_CargoDesc;

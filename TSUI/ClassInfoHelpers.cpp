@@ -252,7 +252,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 	//	Add maneuver speed
 
-    const CIntegralRotationDesc &RotationDesc = pClass->GetRotationDesc();
+    const CIntegralRotationDesc &RotationDesc = pClass->GetIntegralRotationDesc();
 	Metric rManeuver = g_SecondsPerUpdate * RotationDesc.GetMaxRotationSpeedDegrees();
 	int iManeuver = (int)((rManeuver * 100) + 0.5);
 	CString sManeuverNumber = strPatternSubst(CONSTLIT("%d.%d"), iManeuver / 100, ((iManeuver % 100) + 5) / 10);

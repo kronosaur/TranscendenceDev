@@ -867,104 +867,12 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 //	Computes the value of the hull based on its properties (in credits).
 
 	{
-	static constexpr Metric PARTIAL_SLOT_FACTOR = 0.67;
-	static constexpr Metric CARGO_PER_POINT = 100.0;
-	static constexpr Metric MAX_CARGO_PER_POINT = 200.0;
-	static constexpr int STD_ARMOR_SEGMENTS = 4;
-	static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
-	static constexpr Metric ARMOR_PER_POINT = 6000.0;
-	static constexpr int MAX_ARMOR_MASS = 20000;
-	static constexpr Metric MAX_ARMOR_PER_POINT = 12000.0;
-	static constexpr Metric MIN_SPEED = 15.0;
-	static constexpr Metric SPEED_PER_POINT = 6.0;
-	static constexpr Metric THRUST_RATIO_PER_POINT = 20.0;
-	static constexpr Metric MAX_ROTATION_PER_POINT = 12.0;
-	static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
-	static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.025;
-
-	static constexpr Metric PRICE_PER_TENTH_MW = 0.5;
-	static constexpr Metric POINT_BIAS = -10.0;
-	static constexpr Metric POINT_EXP = 1.5;
-
-	//	We need to have max reactor powe defined, or else we can't compute the
-	//	values.
-
-	if (m_Hull.GetMaxReactorPower() == 0)
-		{
-		if (retrPoints) *retrPoints = 0.0;
-		return 0;
-		}
-
-	//	We use a point system to sum of the value of the hull properties.
-
-	Metric rPoints = 0.0;
-
-	//	Start by adding up points for device slots.
-
-	int iFullSlots = Min(m_Hull.GetMaxWeapons(), m_Hull.GetMaxNonWeapons());
-	int iPartialSlots = m_Hull.GetMaxDevices() - iFullSlots;
-
-	rPoints += iFullSlots;
-	rPoints += (iPartialSlots * PARTIAL_SLOT_FACTOR);
-
-	//	Add up points for cargo space
-
-	rPoints += m_Hull.GetCargoSpace() / CARGO_PER_POINT;
-	rPoints += (m_Hull.GetMaxCargoSpace() - m_Hull.GetCargoSpace()) / MAX_CARGO_PER_POINT;
-
-	//	Add points for the number of armor segments and for max armor
-
-	rPoints += (m_Armor.GetCount() - STD_ARMOR_SEGMENTS) * POINTS_PER_ARMOR_SEGMENT;
-	rPoints += m_Hull.GetStdArmorMass() / ARMOR_PER_POINT;
-	rPoints += Min(MAX_ARMOR_MASS, m_Hull.GetMaxArmorMass()) / MAX_ARMOR_PER_POINT;
-
-	//	Points for max speed
-
-	rPoints += Max(0.0, ((100.0 * m_DriveDesc.GetMaxSpeed() / LIGHT_SPEED) - MIN_SPEED)) / SPEED_PER_POINT;
-
-	//	Points for thrust ratio
-
-	Metric rThrustRatio = m_rThrustRatio;
-	if (rThrustRatio <= 0.0)
-		rThrustRatio = CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_Hull.GetMass());
-
-	rPoints += rThrustRatio / THRUST_RATIO_PER_POINT;
-
-	//	Points for drive power consumption
-
-	rPoints += (STD_DRIVE_POWER_USE - m_DriveDesc.GetPowerUse()) * POINTS_PER_DRIVE_POWER_USE;
-
-	//	Points for maneuverability
-
-	rPoints += m_RotationDesc.GetMaxRotationPerTick() / MAX_ROTATION_PER_POINT;
-
-	//	Add any extra points added manually.
-
-	rPoints += m_Hull.GetExtraPoints();
-
-	//	Loop over all slots and see if we have special slots
-
-	if (m_pDeviceSlots)
-		rPoints += m_pDeviceSlots->CalcHullPoints();
-
-	//	Compute a price unit based on the maximum reactor power
-
-	Metric rUnitPrice = PRICE_PER_TENTH_MW * m_Hull.GetMaxReactorPower();
-
-	//	Scale points
-
-	Metric rScaledPoints = pow(rPoints + POINT_BIAS, POINT_EXP);
-
-	//	Compute price
-
-	Metric rPrice = rScaledPoints * rUnitPrice;
-
-	//	Done
+	CHullPointsCalculator Calc(*this);
 
 	if (retrPoints)
-		*retrPoints = rPoints;
+		*retrPoints = Calc.GetTotalPoints();
 
-	return (CurrencyValue)round(rPrice);
+	return Calc.GetValueInCredits();
 	}
 
 int CShipClass::CalcLevel (void) const
@@ -1356,7 +1264,7 @@ void CShipClass::ComputeMovementStats (int *retiSpeed, int *retiThrust, int *ret
 
 	//	Figure out the maneuverability of the ship
 
-    const CIntegralRotationDesc &RotationDesc = m_Perf.GetRotationDesc();
+    const CIntegralRotationDesc &RotationDesc = m_Perf.GetIntegralRotationDesc();
 	if (RotationDesc.GetMaxRotationTimeTicks() >= 90)
 		*retiManeuver = enumLow;
 	else if (RotationDesc.GetMaxRotationTimeTicks() > 30)
@@ -1664,7 +1572,7 @@ void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metr
 		int yPos = yCenter -(int)mathRound(vPos.GetY());
 
 		int cxScaledSize = (int)mathRound(rScale * pClass->m_Image.GetSimpleImage().GetImageWidth());
-		int iDirection = pClass->GetRotationDesc().GetFrameIndex(iRotation);
+		int iDirection = pClass->GetIntegralRotationDesc().GetFrameIndex(iRotation);
 
 		m_Image.GetSimpleImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 		}
@@ -1672,7 +1580,7 @@ void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metr
 	//	Blt the main image on top
 
 	int cxScaledSize = (int)mathRound(rScale * m_Image.GetSimpleImage().GetImageWidth());
-	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
+	int iDirection = GetIntegralRotationDesc().GetFrameIndex(iRotation);
 	m_Image.GetSimpleImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 	}
 
@@ -1738,7 +1646,7 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 		int yPos = yCenter -(int)mathRound(vPos.GetY());
 
 		int cxScaledSize = (int)mathRound(rScale * pClass->m_Image.GetSimpleImage().GetImageWidth());
-		int iDirection = pClass->GetRotationDesc().GetFrameIndex(iRotation);
+		int iDirection = pClass->GetIntegralRotationDesc().GetFrameIndex(iRotation);
 
 		pClass->m_Image.GetSimpleImage().PaintScaledImage(Dest, xPos, yPos, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 		}
@@ -1746,7 +1654,7 @@ void CShipClass::CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation
 	//	Blt the main image on top
 
 	int cxScaledSize = (int)mathRound(rScale * m_Image.GetSimpleImage().GetImageWidth());
-	int iDirection = GetRotationDesc().GetFrameIndex(iRotation);
+	int iDirection = GetIntegralRotationDesc().GetFrameIndex(iRotation);
 	m_Image.GetSimpleImage().PaintScaledImage(Dest, xOrigin, yOrigin, iTick, iDirection, cxScaledSize, cxScaledSize, CObjectImageArray::FLAG_CACHED);
 	}
 
@@ -1856,7 +1764,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(mathRound(CalcMass(m_AverageDevices)));
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
-		*retsValue = strFromInt(mathRound(GetRotationDesc().GetMaxRotationSpeedDegrees()));
+		*retsValue = strFromInt(mathRound(GetIntegralRotationDesc().GetMaxRotationSpeedDegrees()));
 	else if (strEquals(sField, FIELD_MAX_SPEED))
 		*retsValue = strFromInt((int)((100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED) + 0.5));
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
@@ -1997,7 +1905,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		Metric rManeuver = g_SecondsPerUpdate * GetRotationDesc().GetMaxRotationSpeedDegrees();
+		Metric rManeuver = g_SecondsPerUpdate * GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
@@ -3911,9 +3819,8 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_HULL_POINTS))
 		{
-		Metric rPoints;
-		CalcHullValue(&rPoints);
-		return ICCItemPtr(CC.CreateInteger(mathRound(rPoints * 10.0)));
+		CHullPointsCalculator Calc(*this);
+		return ICCItemPtr(CC.CreateInteger(mathRound(Calc.GetTotalPoints() * 10.0)));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
@@ -4335,7 +4242,7 @@ void CShipClass::PaintScaled (CG32bitImage &Dest,
 		Dest.Blt(0, 0, Image.GetWidth(), Image.GetHeight(), Image, x - (Image.GetWidth() / 2), y - (Image.GetHeight() / 2));
 		}
 	else
-		m_Image.GetSimpleImage().PaintScaledImage(Dest, x, y, iTick, GetRotationDesc().GetFrameIndex(iRotation), cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
+		m_Image.GetSimpleImage().PaintScaledImage(Dest, x, y, iTick, GetIntegralRotationDesc().GetFrameIndex(iRotation), cxWidth, cyHeight, CObjectImageArray::FLAG_CACHED);
 	}
 
 void CShipClass::PaintThrust (CG32bitImage &Dest, 

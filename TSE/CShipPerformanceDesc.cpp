@@ -30,7 +30,8 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
 
     //  Initialize our maneuvering performance
 
-    m_RotationDesc.InitFromDesc(Ctx.RotationDesc);
+	m_RotationDesc = Ctx.RotationDesc;
+    m_IntegralRotationDesc.InitFromDesc(Ctx.RotationDesc);
 
 	//	Initialize reactor desc
 

@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CShipClass;
+
 //	Hull Descriptor ------------------------------------------------------------
 
 class CHullDesc
@@ -68,6 +70,62 @@ class CHullDesc
 		int m_iCyberDefenseLevel = -1;		//	-1 = same as ship level
 
 		bool m_bTimeStopImmune = false;		//	If TRUE, we're immune to timestop
+	};
+
+class CHullPointsCalculator
+	{
+	public:
+		enum EHullPoints
+			{
+			fieldFullSlots			= 0,
+			fieldPartialSlots		= 1,
+			fieldCargoSpace			= 2,
+			fieldMaxCargoSpace		= 3,
+			fieldArmorCount			= 4,
+			fieldStdArmorMass		= 5,
+			fieldMaxArmorMass		= 6,
+			fieldMaxSpeed			= 7,
+			fieldThrustRatio		= 8,
+			fieldDrivePowerUse		= 9,
+			fieldManeuverability	= 10,
+			fieldDeviceSlots		= 11,
+			fieldExtra				= 12,
+
+			fieldCount				= 13,
+			};
+
+		static constexpr Metric PARTIAL_SLOT_FACTOR = 0.67;
+		static constexpr Metric CARGO_PER_POINT = 100.0;
+		static constexpr Metric MAX_CARGO_PER_POINT = 200.0;
+		static constexpr int STD_ARMOR_SEGMENTS = 4;
+		static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
+		static constexpr Metric ARMOR_PER_POINT = 6000.0;
+		static constexpr int MAX_ARMOR_MASS = 20000;
+		static constexpr Metric MAX_ARMOR_PER_POINT = 12000.0;
+		static constexpr Metric MIN_SPEED = 15.0;
+		static constexpr Metric SPEED_PER_POINT = 6.0;
+		static constexpr Metric THRUST_RATIO_PER_POINT = 20.0;
+		static constexpr Metric MAX_ROTATION_PER_POINT = 12.0;
+		static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
+		static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.025;
+
+		static constexpr Metric PRICE_PER_TENTH_MW = 0.5;
+		static constexpr Metric POINT_BIAS = -10.0;
+		static constexpr Metric POINT_EXP = 1.5;
+
+		CHullPointsCalculator (const CShipClass &Class);
+
+		inline Metric GetField (int iIndex) const { return m_Data[iIndex]; }
+		inline int GetFieldCount (void) const { return fieldCount; }
+		inline Metric GetTotalPoints (void) const { return m_rTotalPoints; }
+		CurrencyValue GetValueInCredits (void) const;
+
+		static CString GetFieldName (int iIndex);
+
+	private:
+		int m_iMaxReactorPower = 0;
+		Metric m_Data[fieldCount] = { 0.0 };
+		Metric m_rTotalPoints = 0.0;
 	};
 
 //	Wreck Descriptor -----------------------------------------------------------
@@ -183,8 +241,8 @@ class CShipClass : public CDesignType
 		CShipClass (void);
 		virtual ~CShipClass (void);
 
-		inline int Angle2Direction (int iAngle) const { return m_Perf.GetRotationDesc().GetFrameIndex(iAngle); }
-		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetRotationDesc().AlignToRotationAngle(iAngle); }
+		inline int Angle2Direction (int iAngle) const { return m_Perf.GetIntegralRotationDesc().GetFrameIndex(iAngle); }
+		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetIntegralRotationDesc().AlignToRotationAngle(iAngle); }
 		int CalcArmorSpeedBonus (int iTotalArmorMass) const;
 		Metric CalcFuelEfficiency (const CDeviceDescList &Devices) const;
 		inline int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
@@ -213,6 +271,7 @@ class CShipClass : public CDesignType
 		inline DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
 		inline CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
+		inline IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
 		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);
         const CDriveDesc &GetDriveDesc (const CItem **retpDriveItem = NULL) const;
@@ -223,7 +282,9 @@ class CShipClass : public CDesignType
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
         const CObjectImageArray &GetHeroImage (void);
 		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
+		inline const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
 		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
+		inline const CRotationDesc &GetHullRotationDesc (void) const { return m_RotationDesc; }
 		inline const CShipArmorSegmentDesc &GetHullSection (int iIndex) const { return m_Armor.GetSegment(iIndex); }
 		int GetHullSectionAtAngle (int iAngle);
 		inline int GetHullSectionCount (void) const { return m_Armor.GetCount(); }
@@ -231,6 +292,7 @@ class CShipClass : public CDesignType
 		CCurrencyAndValue GetHullValue (CShip *pShip = NULL) const;
 		const CObjectImageArray &GetImage (const CImageFilterStack *pFilters = NULL) const;
 		inline int GetImageViewportSize (void) const { return m_Image.GetSimpleImage().GetImageViewportSize(); }
+		inline const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
         inline const CAttributeDataBlock &GetInitialData (void) const { return m_InitialData; }
 		inline const CShipInteriorDesc &GetInteriorDesc (void) const { return m_Interior; }
 		int GetMaxStructuralHitPoints (void) const;
@@ -239,12 +301,13 @@ class CShipClass : public CDesignType
 		CVector GetPosOffset (int iAngle, int iRadius, int iPosZ, bool b3DPos = true);
 		inline IItemGenerator *GetRandomItemTable (void) const { return m_pItems; }
         const CReactorDesc &GetReactorDesc (const CItem **retpReactorItem = NULL) const;
-		inline int GetRotationAngle (void) { return m_Perf.GetRotationDesc().GetFrameAngle(); }
-		inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
-		inline int GetRotationRange (void) { return m_Perf.GetRotationDesc().GetFrameCount(); }
+		inline int GetRotationAngle (void) { return m_Perf.GetIntegralRotationDesc().GetFrameAngle(); }
+		inline const CRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
+		inline int GetRotationRange (void) { return m_Perf.GetIntegralRotationDesc().GetFrameCount(); }
 		inline int GetScore (void) { return m_iScore; }
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
+		inline Metric GetThrustRatio (void) const { return m_rThrustRatio; }
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
 		inline const CString &GetShipTypeName (void) const { return m_sTypeName; }
@@ -376,7 +439,7 @@ class CShipClass : public CDesignType
 		void FindBestMissile (CDeviceClass *pLauncher, IItemGenerator *pItems, CItemType **retpMissile) const;
 		void FindBestMissile (CDeviceClass *pLauncher, const CItemList &Items, CItemType **retpMissile) const;
 		CString GetGenericName (DWORD *retdwFlags = NULL) const;
-		inline int GetManeuverDelay (void) const { return m_Perf.GetRotationDesc().GetManeuverDelay(); }
+		inline int GetManeuverDelay (void) const { return m_Perf.GetIntegralRotationDesc().GetManeuverDelay(); }
 		void InitShipNamesIndices (void);
 
 		static int CalcDefaultSize (const CObjectImageArray &Image);
@@ -401,7 +464,7 @@ class CShipClass : public CDesignType
 
 		CHullDesc m_Hull;						//	Basic hull definitions
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
-		double m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
+		Metric m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
 		CDriveDesc m_DriveDesc;					//	Drive descriptor
 		CReactorDesc m_ReactorDesc;				//	Reactor descriptor
 		CShipwreckDesc m_WreckDesc;				//	Wreck descriptor

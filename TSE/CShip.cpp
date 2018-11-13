@@ -1516,7 +1516,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	pController->SetShipToControl(pShip);
 	pShip->m_pSovereign = pSovereign;
 	pShip->m_sName = pClass->GenerateShipName(&pShip->m_dwNameFlags);
-	pShip->m_Rotation.Init(pClass->GetRotationDesc(), iRotation);
+	pShip->m_Rotation.Init(pClass->GetIntegralRotationDesc(), iRotation);
 	pShip->m_iFireDelay = 0;
 	pShip->m_iMissileFireDelay = 0;
 	pShip->m_iContaminationTimer = 0;
@@ -2154,7 +2154,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
-		Metric rManeuver = g_SecondsPerUpdate * m_Perf.GetRotationDesc().GetMaxRotationSpeedDegrees();
+		Metric rManeuver = g_SecondsPerUpdate * m_Perf.GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
 		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
@@ -3176,7 +3176,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(GetRotation());
 
 	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
-		return CC.CreateDouble(m_Rotation.GetRotationSpeedDegrees(m_Perf.GetRotationDesc()));
+		return CC.CreateDouble(m_Rotation.GetRotationSpeedDegrees(m_Perf.GetIntegralRotationDesc()));
 
 	else if (strEquals(sName, PROPERTY_SELECTED_LAUNCHER))
 		{
@@ -5433,11 +5433,11 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Load rotation
 
 	if (Ctx.dwVersion >= 97)
-		m_Rotation.ReadFromStream(Ctx, m_pClass->GetRotationDesc());
+		m_Rotation.ReadFromStream(Ctx, m_pClass->GetIntegralRotationDesc());
 	else
 		{
 		Ctx.pStream->Read(dwLoad);
-		m_Rotation.Init(m_pClass->GetRotationDesc(), (int)LOWORD(dwLoad));
+		m_Rotation.Init(m_pClass->GetIntegralRotationDesc(), (int)LOWORD(dwLoad));
 		}
 
 	//	Load more
@@ -6099,7 +6099,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         //	Update rotation
 
-        m_Rotation.Update(m_Perf.GetRotationDesc(), m_pController->GetManeuver());
+        m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), m_pController->GetManeuver());
 
         //	See if we're accelerating
 
@@ -6128,7 +6128,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
             {
             //	Stop thrust is proportional to main engine thrust and maneuverability
 
-            Metric rManeuverAdj = Min((Metric)0.5, m_Perf.GetRotationDesc().GetManeuverRatio());
+            Metric rManeuverAdj = Min((Metric)0.5, m_Perf.GetIntegralRotationDesc().GetManeuverRatio());
             Metric rThrust = rManeuverAdj * GetThrust();
 
             AccelerateStop(rThrust, rSecondsPerTick);
@@ -6142,7 +6142,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         //	Rotate wildly
 
         if (!IsAnchored())
-            m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+            m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
 
         //	Slow down
 
@@ -6159,7 +6159,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
         //	Spin wildly
 
         if (!IsAnchored() && m_Overlays.GetConditions().IsSet(CConditionSet::cndSpinning))
-            m_Rotation.Update(m_Perf.GetRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
+            m_Rotation.Update(m_Perf.GetIntegralRotationDesc(), ((GetDestiny() % 2) ? RotateLeft : RotateRight));
         }
 
     //	Slow down if an overlay is imposing drag
@@ -7780,7 +7780,7 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_ROTATION_SPEED))
 		{
-		m_Rotation.SetRotationSpeedDegrees(m_Perf.GetRotationDesc(), pValue->GetDoubleValue());
+		m_Rotation.SetRotationSpeedDegrees(m_Perf.GetIntegralRotationDesc(), pValue->GetDoubleValue());
 		return true;
 		}
 

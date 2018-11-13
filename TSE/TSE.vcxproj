@@ -387,6 +387,7 @@
     <ClCompile Include="CGenericType.cpp" />
     <ClCompile Include="CHitCtx.cpp" />
     <ClCompile Include="CHullDesc.cpp" />
+    <ClCompile Include="CHullPointsCalculator.cpp" />
     <ClCompile Include="CImageFilterDesc.cpp" />
     <ClCompile Include="CImageFilterStack.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />

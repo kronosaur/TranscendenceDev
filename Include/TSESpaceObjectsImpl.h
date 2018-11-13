@@ -1032,16 +1032,16 @@ class CShip : public CSpaceObject
 		inline int Angle2Direction (int iAngle) const { return m_pClass->Angle2Direction(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_pClass->AlignToRotationAngle(iAngle); }
 		inline int GetRotationAngle (void) { return m_pClass->GetRotationAngle(); }
-        inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetRotationDesc(); }
+        inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
 		inline int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
 		inline const CIntegralRotation &GetRotationState (void) const { return m_Rotation; }
-		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetRotationDesc(), iAngle); }
+		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetIntegralRotationDesc(), iAngle); }
 		inline Metric GetThrust (void) const { return m_Perf.GetDriveDesc().GetThrust(); }
 		inline Metric GetThrustProperty (void) const { return m_Perf.GetDriveDesc().GetThrustProperty(); }
 		Metric GetMaxAcceleration (void);
 		inline bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
 		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
-		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetRotationDesc(), iAngle); }
+		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetIntegralRotationDesc(), iAngle); }
 		inline void SetMaxSpeedEmergency (void) { m_fHalfSpeed = false; m_fEmergencySpeed = true; m_fQuarterSpeed = false; CalcPerformance(); }
         inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
         inline void SetMaxSpeedQuarter (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = true; CalcPerformance(); }
@@ -1056,7 +1056,7 @@ class CShip : public CSpaceObject
 		inline void SetDestroyInGate (void) { m_fDestroyInGate = true; }
 		inline void SetEncounterInfo (CStationType *pEncounterInfo) { m_pEncounterInfo = pEncounterInfo; }
 		inline void SetPlayerWingman (bool bIsWingman) const { m_pController->SetPlayerWingman(bIsWingman); }
-		inline void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_Perf.GetRotationDesc(), iAngle); }
+		inline void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_Perf.GetIntegralRotationDesc(), iAngle); }
 		void Undock (void);
 
 		//	CSpaceObject virtuals
@@ -1130,7 +1130,7 @@ class CShip : public CSpaceObject
 		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
-		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetRotationDesc()); }
+		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
