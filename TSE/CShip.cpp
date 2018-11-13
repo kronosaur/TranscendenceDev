@@ -1849,8 +1849,10 @@ void CShip::DamageExternalDevice (int iDev, SDamageCtx &Ctx)
 	CInstalledDevice *pDevice = GetDevice(iDev);
 
 	//	If we're already damaged, then nothing more can happen
+	//	NOTE: This can only happen to external devices. We need this check 
+	//	because the overlay code relies on us to check.
 
-	if (pDevice->IsEmpty() || pDevice->IsDamaged())
+	if (pDevice->IsEmpty() || pDevice->IsDamaged() || !pDevice->IsExternal())
 		return;
 
 	//	If the device gets hit, see if it gets damaged
