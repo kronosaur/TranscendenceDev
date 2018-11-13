@@ -160,6 +160,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual ~CGroupOfDeviceGenerators (void);
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual Metric CalcHullPoints (void) const override;
 		virtual IDeviceGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pDevice; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual bool HasItemAttribute (const CString &sAttrib) const override;
@@ -1040,6 +1041,27 @@ void CGroupOfDeviceGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pDevice->AddTypesUsed(retTypesUsed);
+	}
+
+Metric CGroupOfDeviceGenerators::CalcHullPoints (void) const
+
+//	CalcHullPoints
+//
+//	Returns the number of hull points (which goes towards calculating hull value)
+//	from these device slots.
+
+	{
+	static const Metric CANNOT_BE_EMPTY_PENALTY = -0.2;
+
+	Metric rPoints = 0.0;
+
+	for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		if (m_SlotDesc[i].DefaultDesc.bCannotBeEmpty)
+			rPoints += CANNOT_BE_EMPTY_PENALTY;
+		}
+
+	return rPoints;
 	}
 
 bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const

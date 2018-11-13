@@ -867,22 +867,24 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 //	Computes the value of the hull based on its properties (in credits).
 
 	{
-	static const Metric PARTIAL_SLOT_FACTOR = 0.67;
-	static const Metric CARGO_PER_POINT = 100.0;
-	static const Metric MAX_CARGO_PER_POINT = 200.0;
-	static const int STD_ARMOR_SEGMENTS = 4;
-	static const Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
-	static const Metric ARMOR_PER_POINT = 6000.0;
-	static const int MAX_ARMOR_MASS = 20000;
-	static const Metric MAX_ARMOR_PER_POINT = 12000.0;
-	static const Metric MIN_SPEED = 15.0;
-	static const Metric SPEED_PER_POINT = 6.0;
-	static const Metric THRUST_RATIO_PER_POINT = 20.0;
-	static const Metric MAX_ROTATION_PER_POINT = 12.0;
+	static constexpr Metric PARTIAL_SLOT_FACTOR = 0.67;
+	static constexpr Metric CARGO_PER_POINT = 100.0;
+	static constexpr Metric MAX_CARGO_PER_POINT = 200.0;
+	static constexpr int STD_ARMOR_SEGMENTS = 4;
+	static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
+	static constexpr Metric ARMOR_PER_POINT = 6000.0;
+	static constexpr int MAX_ARMOR_MASS = 20000;
+	static constexpr Metric MAX_ARMOR_PER_POINT = 12000.0;
+	static constexpr Metric MIN_SPEED = 15.0;
+	static constexpr Metric SPEED_PER_POINT = 6.0;
+	static constexpr Metric THRUST_RATIO_PER_POINT = 20.0;
+	static constexpr Metric MAX_ROTATION_PER_POINT = 12.0;
+	static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
+	static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.025;
 
-	static const Metric PRICE_PER_TENTH_MW = 0.5;
-	static const Metric POINT_BIAS = -10.0;
-	static const Metric POINT_EXP = 1.5;
+	static constexpr Metric PRICE_PER_TENTH_MW = 0.5;
+	static constexpr Metric POINT_BIAS = -10.0;
+	static constexpr Metric POINT_EXP = 1.5;
 
 	//	We need to have max reactor powe defined, or else we can't compute the
 	//	values.
@@ -928,6 +930,10 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 
 	rPoints += rThrustRatio / THRUST_RATIO_PER_POINT;
 
+	//	Points for drive power consumption
+
+	rPoints += (STD_DRIVE_POWER_USE - m_DriveDesc.GetPowerUse()) * POINTS_PER_DRIVE_POWER_USE;
+
 	//	Points for maneuverability
 
 	rPoints += m_RotationDesc.GetMaxRotationPerTick() / MAX_ROTATION_PER_POINT;
@@ -935,6 +941,11 @@ CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
 	//	Add any extra points added manually.
 
 	rPoints += m_Hull.GetExtraPoints();
+
+	//	Loop over all slots and see if we have special slots
+
+	if (m_pDeviceSlots)
+		rPoints += m_pDeviceSlots->CalcHullPoints();
 
 	//	Compute a price unit based on the maximum reactor power
 

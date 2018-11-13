@@ -428,6 +428,7 @@ class IDeviceGenerator
 		virtual ~IDeviceGenerator (void) { }
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+		virtual Metric CalcHullPoints (void) const { return 0.0; }
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
