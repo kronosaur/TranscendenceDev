@@ -34,9 +34,9 @@ class CPower : public CDesignType
 			}
 
 //		inline ICCItem *GetCode (void) { return m_pCode; }
-		inline int GetInvokeCost (void) { return m_iInvokeCost; }
-		inline const CString &GetInvokeKey (void) { return m_sInvokeKey; }
-		inline const CString &GetName (void) { return m_sName; }
+		inline int GetInvokeCost (void) const { return m_iInvokeCost; }
+		inline const CString &GetInvokeKey (void) const { return m_sInvokeKey; }
+		inline const CString &GetName (void) const { return m_sName; }
 //		inline ICCItem *GetOnInvokedByPlayer (void) { return m_pOnInvokedByPlayer; }
 //		inline ICCItem *GetOnInvokedByNonPlayer (void) { return m_pOnInvokedByNonPlayer; }
 //		inline ICCItem *GetOnShow (void) { return m_pOnShow; }
@@ -54,6 +54,7 @@ class CPower : public CDesignType
 		//	CDesignType overrides
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 
 	private:
 		void InitOldStyleEvent (ECachedHandlers iEvent, ICCItem *pCode);

@@ -15,6 +15,8 @@
 #define KEY_ATTRIB								CONSTLIT("key")
 #define NAME_ATTRIB								CONSTLIT("name")
 
+#define PROPERTY_NAME							CONSTLIT("name")
+
 #define STR_A_CAUSE								CONSTLIT("aCause")
 #define STR_A_DESTROYER							CONSTLIT("aDestroyer")
 
@@ -292,6 +294,22 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	return (pResult->IsNil() ? false : true);
+	}
+
+ICCItemPtr CPower::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+
+//	OnGetProperty
+//
+//	Returns a property.
+
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	if (strEquals(sProperty, PROPERTY_NAME))
+		return ICCItemPtr(CC.CreateString(GetName()));
+
+	else
+		return NULL;
 	}
 
 bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *retsError)
