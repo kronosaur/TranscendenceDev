@@ -697,12 +697,12 @@ CString CDeviceClass::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFl
 		//	Non-standard slots
 
 		if (GetSlotsRequired() != 1)
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d Slots"), GetSlotsRequired()));
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d slots"), GetSlotsRequired()));
 
 		//	External devices
 
 		if (IsExternal() || (pDevice && pDevice->IsExternal()))
-			AppendReferenceString(&sReference, CONSTLIT("External"));
+			AppendReferenceString(&sReference, CONSTLIT("external"));
 		}
 
 	//	Combine with our subclass

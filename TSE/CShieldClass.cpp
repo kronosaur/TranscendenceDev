@@ -1584,7 +1584,7 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 
 	//	Compute the regeneration
 
-	sReference = strPatternSubst("Regen @ %s", 
+	sReference = strPatternSubst("regen @ %s", 
 			CLanguage::ComposeNumber(CLanguage::numberRegenRate, CalcRegen180(Ctx, FLAG_IGNORE_DISABLED)));
 
 	return sReference;

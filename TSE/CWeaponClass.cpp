@@ -4273,7 +4273,7 @@ CString CWeaponClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 				&& GetAmmoItemCount() == 1
 				&& (pAmmo = GetAmmoItem(0)))
 			{
-			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("Requires %s"), pAmmo->GetNounPhrase(0x02)));
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("requires %s"), pAmmo->GetNounPhrase(0x02)));
 			}
 		}
 

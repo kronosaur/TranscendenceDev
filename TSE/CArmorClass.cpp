@@ -162,6 +162,17 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	20000,	800000000,	14300,	160000000,	3000, },
 	};
 
+CArmorClass::SMassClassDesc CArmorClass::MASS_CLASS_TABLE[mcCount] =
+	{
+		{	"ultraLight",	"ultra-light",		1000	},
+		{	"light",		"light",			2500	},
+		{	"medium",		"medium",			3500	},
+		{	"heavy",		"heavy",			6000	},
+		{	"superHeavy",	"super-heavy",		9000	},
+		{	"massive",		"massive",			12000	},
+		{	"dreadnought",	"dreadnought",		100000	},
+	};
+
 static char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
@@ -1220,6 +1231,20 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
+CArmorClass::EMassClass CArmorClass::CalcMassClass (int iMassKg)
+
+//	CalcMassClass
+//
+//	Returns mass classification.
+
+	{
+	for (int i = 0; i < mcCount; i++)
+		if (iMassKg <= MASS_CLASS_TABLE[i].iMaxMassKg)
+			return (EMassClass)i;
+
+	return mcDreadnought;
+	}
+
 int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor)
 
 //	CalcPowerUsed
@@ -1960,13 +1985,19 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 
 	//	Mass
 
-	AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberMass, m_pItemType->GetMassKg(Ctx)));
+	int iMassKg = m_pItemType->GetMassKg(Ctx);
+	AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberMass, iMassKg));
+
+	//	Mass classification
+
+	EMassClass iMassClass = CalcMassClass(iMassKg);
+	AppendReferenceString(&sReference, CString(MASS_CLASS_TABLE[iMassClass].pszName));
 
 	//	Regeneration
 
 	Metric rRegen = CalcRegen180(Ctx);
 	if (rRegen > 0.0)
-		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("Regen @ %s"), CLanguage::ComposeNumber(CLanguage::numberRegenRate, rRegen)));
+		AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("regen @ %s"), CLanguage::ComposeNumber(CLanguage::numberRegenRate, rRegen)));
 
 	//	Done
 
