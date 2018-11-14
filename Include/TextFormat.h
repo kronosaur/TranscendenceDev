@@ -10,24 +10,16 @@
 
 struct STextFormatDesc
 	{
-	STextFormatDesc (void) :
-			sTypeface(CONSTLIT("Default")),
-			pFont(NULL),
-			iFontSize(10),
-			bBold(false),
-			bItalic(false),
-			rgbColor(0),
-			dwOpacity(255)
-		{ }
+	CString sTypeface = CONSTLIT("Default");	//	Typeface (use IFontTable to look up)
+	const CG16bitFont *pFont = NULL;			//	pFont (Use instead of sTypeface, if not NULL)
+	int iFontSize = 10;							//	Font size in points
+	bool bBold = false;							//	Bold
+	bool bItalic = false;						//	Italic
 
-	CString sTypeface;					//	Typeface (use IFontTable to look up)
-	const CG16bitFont *pFont;			//	pFont (Use instead of sTypeface, if not NULL)
-	int iFontSize;						//	Font size in points
-	bool bBold;							//	Bold
-	bool bItalic;						//	Italic
+	CG32bitPixel rgbColor = 0;					//	32-bit color
+	DWORD dwOpacity = 255;						//	8-bit alpha value
 
-	CG32bitPixel rgbColor;				//	32-bit color
-	DWORD dwOpacity;					//	8-bit alpha value
+	int iExtraLineSpacing = -1;					//	-1 = use defaults
 	};
 
 class IFontTable
@@ -45,36 +37,23 @@ class IFontTable
 
 struct STextFormat
 	{
-	STextFormat (void) :
-			pFont(NULL),
-			rgbColor(0),
-			dwOpacity(255)
-		{ }
+	const CG16bitFont *pFont = NULL;
+	CG32bitPixel rgbColor = 0;
+	DWORD dwOpacity = 255;
 
-	const CG16bitFont *pFont;
-	CG32bitPixel rgbColor;
-	DWORD dwOpacity;
+	int iExtraLineSpacing = -1;				//	-1 = use SBlockFormatDesc
 	};
 
 struct SBlockFormatDesc
 	{
-	SBlockFormatDesc (void) :
-			iHorzAlign(alignLeft),
-			iVertAlign(alignTop),
-			iExtraLineSpacing(0),
-			cxWidth(-1),
-			cyHeight(-1)
+	AlignmentStyles iHorzAlign = alignLeft;
+	AlignmentStyles iVertAlign = alignTop;
+	int iExtraLineSpacing = 0;				//	Pixels between lines
 
-		{ }
+	STextFormat DefaultFormat;				//	Default format
 
-	AlignmentStyles iHorzAlign;
-	AlignmentStyles iVertAlign;
-	int iExtraLineSpacing;				//	Pixels between lines
-
-	STextFormat DefaultFormat;			//	Default format
-
-	int cxWidth;						//	Width of block (in pixels). -1 = no fixed width.
-	int cyHeight;						//	Height of block (in pixels). -1 = no fixed height.
+	int cxWidth = -1;						//	Width of block (in pixels). -1 = no fixed width.
+	int cyHeight = -1;						//	Height of block (in pixels). -1 = no fixed height.
 	};
 
 struct SFormattedTextSpan

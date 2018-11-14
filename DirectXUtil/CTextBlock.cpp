@@ -34,6 +34,7 @@
 
 #define CODE_BOLD								CONSTLIT("b")
 #define CODE_COLOR								CONSTLIT("c")
+#define CODE_LINE_SPACING						CONSTLIT("lineSpacing")
 #define CODE_NEW_LINE							CONSTLIT("n")
 #define CODE_TYPEFACE							CONSTLIT("f")
 #define CODE_ITALIC								CONSTLIT("i")
@@ -265,9 +266,13 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 			int cyLineAscent = 0;
 			int cxLine = 0;
 			int cyLine = 0;
+			int iExtraSpacing = -1;
 
 			if (Line.GetCount() == 0)
+				{
 				cyLine = pSpan->Format.pFont->GetHeight();
+				iExtraSpacing = pSpan->Format.iExtraLineSpacing;
+				}
 			else
 				{
 				for (i = 0; i < Line.GetCount(); i++)
@@ -293,6 +298,11 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 					cxLine += Line[i].cx;
 					if (cyHeight > cyLine)
 						cyLine = cyHeight;
+
+					//	Always take the max
+
+					if (Line[i].Format.iExtraLineSpacing != -1 && (iExtraSpacing == -1 || Line[i].Format.iExtraLineSpacing > iExtraSpacing))
+						iExtraSpacing = Line[i].Format.iExtraLineSpacing;
 					}
 				}
 
@@ -328,7 +338,10 @@ void CTextBlock::Format (const SBlockFormatDesc &BlockFormat)
 
 			//	Advance the line
 
-			y += cyLine + BlockFormat.iExtraLineSpacing;
+			if (iExtraSpacing == -1)
+				iExtraSpacing = BlockFormat.iExtraLineSpacing;
+
+			y += cyLine + iExtraSpacing;
 			Line.DeleteAll();
 
 			cxLeft = BlockFormat.cxWidth;
@@ -497,6 +510,7 @@ void CRTFParser::AddSpan (const CString &sText, const STextFormatDesc &Desc, boo
 	Format.pFont = (Desc.pFont ? Desc.pFont : m_FontTable.GetFont(Desc));
 	Format.rgbColor = Desc.rgbColor;
 	Format.dwOpacity = Desc.dwOpacity;
+	Format.iExtraLineSpacing = Desc.iExtraLineSpacing;
 
 	m_pOutput->AddTextSpan(sText, Format, bEoP);
 	}
@@ -592,6 +606,10 @@ bool CRTFParser::ParseBlock (const STextFormatDesc &InitFormat, CString *retsErr
 								dwRGB = (DWORD)strToInt(sParam, 0);
 
 							Format.rgbColor = CG32bitPixel(GetRValue(dwRGB), GetGValue(dwRGB), GetBValue(dwRGB));
+							}
+						else if (strEquals(sCode, CODE_LINE_SPACING))
+							{
+							Format.iExtraLineSpacing = strToInt(sParam, -1);
 							}
 						else if (strEquals(sCode, CODE_TYPEFACE))
 							{
