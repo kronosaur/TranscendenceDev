@@ -884,7 +884,7 @@ void CDesignCollection::FireOnGlobalObjDestroyed (SDestroyCtx &Ctx)
 		}
 	}
 
-void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane)
+void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
 
 //	FireOnGlobalPaneInit
 //
@@ -912,6 +912,7 @@ void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot,
 				sScreenUNID,
 				sScreen,
 				sPane,
+				pData,
 				&sError) != NOERROR)
 			kernelDebugLogString(sError);
 		}
