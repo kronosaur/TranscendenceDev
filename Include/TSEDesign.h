@@ -299,8 +299,10 @@ class CDesignType
 		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
 		TSortMap<DWORD, DWORD> GetXMLMergeFlags (void) const;
 		bool HasAttribute (const CString &sAttrib) const;
+		inline bool HasCustomMapDescLanguage (void) const { return (m_fHasCustomMapDescLang ? true : false); }
 		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		bool HasLanguageBlock (void) const;
+		bool HasLanguageEntry (const CString &sID) const;
 		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
         inline ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
@@ -418,6 +420,8 @@ class CDesignType
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
 		bool m_bIsClone = false;						//	TRUE if we cloned this from another type
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
+
+		DWORD m_fHasCustomMapDescLang:1;				//	Cached for efficiency
 	};
 
 template <class CLASS> class CDesignTypeRef

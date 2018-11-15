@@ -93,6 +93,8 @@
 
 #define LANGID_CORE_MAP_DESC                    CONSTLIT("core.mapDesc")
 #define LANGID_CORE_MAP_DESC_ABANDONED          CONSTLIT("core.mapDescAbandoned")
+#define LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM	CONSTLIT("core.mapDescAbandonedCustom")
+#define LANGID_CORE_MAP_DESC_CUSTOM				CONSTLIT("core.mapDescCustom")
 #define LANGID_CORE_MAP_DESC_EXTRA              CONSTLIT("core.mapDescExtra")
 #define LANGID_CORE_MAP_DESC_MAIN				CONSTLIT("core.mapDescMain")
 
@@ -237,6 +239,10 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 				}
 			}
 		}
+
+	//	Cache some flags
+
+	m_fHasCustomMapDescLang = (HasLanguageEntry(LANGID_CORE_MAP_DESC_CUSTOM) || HasLanguageEntry(LANGID_CORE_MAP_DESC_ABANDONED_CUSTOM));
 
 	//	Type-specific
 
@@ -2179,6 +2185,22 @@ bool CDesignType::HasLanguageBlock (void) const
 		return true;
 
 	//	Not found
+
+	return false;
+	}
+
+bool CDesignType::HasLanguageEntry (const CString &sID) const
+
+//	HasLanguageEntry
+//
+//	Returns TRUE if we have the given language entry.
+
+	{
+	if (m_pExtra && m_pExtra->Language.HasEntry(sID))
+		return true;
+
+	if (m_pInheritFrom && m_pInheritFrom->HasLanguageEntry(sID))
+		return true;
 
 	return false;
 	}

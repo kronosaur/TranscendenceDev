@@ -127,6 +127,7 @@ class CLanguageDataBlock
 		void DeleteAll (void);
 		inline int GetCount (void) const { return m_Data.GetCount(); }
 		SEntryDesc GetEntry (int iIndex) const;
+		inline bool HasEntry (const CString &sID) const { return (m_Data.GetAt(sID) != NULL); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
