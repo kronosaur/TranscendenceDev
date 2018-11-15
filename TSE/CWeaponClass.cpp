@@ -3387,8 +3387,8 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 		//	or is a station (which cannot be paralyzed) then don't use this weapon.
 
 		if (pTarget->IsParalyzed() 
-				|| pTarget->GetArmorSystem()->IsImmune(pTarget, specialEMP)
-				|| pTarget->GetCategory() != CSpaceObject::catShip)
+				|| pTarget->GetCategory() != CSpaceObject::catShip
+				|| pTarget->IsImmuneTo(CConditionSet::cndParalyzed))
 			return -100;
 
 		iScore += 100;
@@ -3403,8 +3403,8 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 		//	a station, then don't bother with this weapon.
 
 		if (pTarget->IsBlind()
-				|| pTarget->GetArmorSystem()->IsImmune(pTarget, specialBlinding)
-				|| pTarget->GetCategory() != CSpaceObject::catShip)
+				|| pTarget->GetCategory() != CSpaceObject::catShip
+				|| pTarget->IsImmuneTo(CConditionSet::cndBlind))
 			return -100;
 
 		iScore += 100;
