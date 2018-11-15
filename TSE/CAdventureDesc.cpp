@@ -11,6 +11,7 @@
 
 #define ADVENTURE_UNID_ATTRIB					CONSTLIT("adventureUNID")
 #define BACKGROUND_ID_ATTRIB					CONSTLIT("backgroundID")
+#define DEFAULT_CURRENCY_ATTRIB					CONSTLIT("defaultCurrency")
 #define DESC_ATTRIB								CONSTLIT("desc")
 #define INCLUDE_10_STARTING_CLASSES_ATTRIB		CONSTLIT("include10StartingShips")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -387,6 +388,11 @@ ALERROR CAdventureDesc::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 
 	{
+	ALERROR error;
+
+	if (error = m_pDefaultCurrency.Bind(Ctx))
+		return error;
+
 	return NOERROR;
 	}
 
@@ -445,6 +451,10 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	if (!pDesc->FindAttribute(WELCOME_MESSAGE_ATTRIB, &m_sWelcomeMessage))
 		m_sWelcomeMessage = CONSTLIT("Welcome to Transcendence!");
+
+	//	Default currency
+
+	m_pDefaultCurrency.LoadUNID(pDesc->GetAttribute(DEFAULT_CURRENCY_ATTRIB));
 
 	//	Init some flags
 

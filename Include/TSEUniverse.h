@@ -289,6 +289,7 @@ class CUniverse
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
+		inline CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		inline CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		inline CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }

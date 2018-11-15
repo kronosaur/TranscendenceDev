@@ -14,6 +14,7 @@ class CAdventureDesc : public CDesignType
 		void FireOnGameStart (void);
 		inline const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { return &m_ArmorDamageAdj[iLevel - 1]; }
 		inline DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
+		inline CEconomyType *GetDefaultCurrency (void) { return m_pDefaultCurrency; }
 		CString GetDesc (void);
 		const CStationEncounterDesc *GetEncounterDesc (DWORD dwUNID) const;
 		inline DWORD GetExtensionUNID (void) { return m_dwExtensionUNID; }
@@ -66,6 +67,8 @@ class CAdventureDesc : public CDesignType
 
 		CXMLElement m_EncounterOverridesXML;
 		TSortMap<DWORD, CStationEncounterDesc> m_Encounters;
+
+		CEconomyTypeRef m_pDefaultCurrency;		//	Default currency (mostly used for UI)
 
 		DWORD m_fIsCurrentAdventure:1;			//	TRUE if this is the current adventure
 		DWORD m_fInDefaultResource:1;			//	TRUE if adventure is a module in the default resource
