@@ -1012,6 +1012,39 @@ bool CTradingDesc::FindServiceToOverride (const SServiceDesc &NewService, int *r
 	return false;
 	}
 
+bool CTradingDesc::HasConsumerService (void) const
+
+//	HasConsumerService
+//
+//	Returns TRUE if we have at least one service on which the player can spend
+//	money. Excludes donations, balance of trade services, etc.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		switch (m_List[i].iService)
+			{
+			case serviceBuy:
+			case serviceSell:
+			case serviceRefuel:
+			case serviceRepairArmor:
+			case serviceReplaceArmor:
+			case serviceInstallDevice:
+			case serviceRemoveDevice:
+			case serviceUpgradeDevice:
+			case serviceEnhanceItem:
+			case serviceRepairItem:
+			case serviceCustom:
+			case serviceBuyShip:
+			case serviceSellShip:
+				return true;
+
+			default:
+				break;
+			}
+	
+	return false;
+	}
+
 bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &S2)
 
 //	HasSameCriteria

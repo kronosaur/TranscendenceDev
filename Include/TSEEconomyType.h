@@ -27,6 +27,7 @@ class CEconomyType : public CDesignType
 		//	CDesignType overrides
 		static CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return m_sCurrencyName; }
 		virtual DesignTypes GetType (void) const override { return designEconomyType; }
 
 	protected:

@@ -107,6 +107,7 @@ class CTradingDesc
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
 		inline int GetServiceCount (void) const { return m_List.GetCount(); }
 		void GetServiceInfo (int iIndex, SServiceInfo &Result) const;
+		bool HasConsumerService (void) const;
 		bool HasService (ETradeServiceTypes iService, const SHasServiceOptions &Options = SHasServiceOptions()) const;
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
         inline bool HasServices (void) const { return (m_List.GetCount() > 0); }

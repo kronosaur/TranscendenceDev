@@ -386,12 +386,20 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 //	Returns attributes for the object.
 
 	{
-#if 0
-	CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();
-	pEntry->sText = CONSTLIT("Test");
-	pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
-	pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
-#endif
+	//	Add currency
+
+	CTradingDesc *pTrade = Obj.pType->GetTradingDesc();
+	if (pTrade && !Obj.fEnemy && pTrade->HasConsumerService())
+		{
+		CEconomyType *pCurrencyType = pTrade->GetEconomyType();
+		if (pCurrencyType)
+			{
+			CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();
+			pEntry->sText = pCurrencyType->GetCurrencyNamePlural();
+			pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
+			pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
+			}
+		}
 	}
 
 bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CString, SObjDesc> &Results) const
@@ -446,8 +454,11 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
 
         SObjDesc *pEntry = Results.SetAt(sSort);
         pEntry->iCount++;
-        pEntry->ObjData = Objs[i];
-		GetObjAttribs(Objs[i], pEntry->Attribs);
+		if (pEntry->iCount == 1)
+			{
+			pEntry->ObjData = Objs[i];
+			GetObjAttribs(Objs[i], pEntry->Attribs);
+			}
         }
 
     //  Done
