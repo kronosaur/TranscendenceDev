@@ -44,6 +44,7 @@
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
 #define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
+#define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
 #define UNID_ATTRIB								CONSTLIT("unid")
 
@@ -66,6 +67,8 @@ class CSingleDevice : public IDeviceGenerator
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
+		bool FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDeviceDesc &retSlotDesc) const;
+
 		//	Item creation parameters
 
 		CItemTypeRef m_pItemType;				//	Device for this slot
@@ -77,6 +80,8 @@ class CSingleDevice : public IDeviceGenerator
 		IItemGenerator *m_pExtraItems = NULL;	//	Extra items to add when device is added
 
 		//	Slot properties
+
+		CString m_sSlotID;						//	Place in the given slot ID (may be blank)
 
 		int m_iPosAngle = 0;					//	Slot position
 		int m_iPosRadius = 0;
@@ -171,6 +176,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 		virtual bool FindDefaultDesc (DeviceNames iDev, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (CSpaceObject *pObj, const CItem &Item, SDeviceDesc *retDesc) const override;
 		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CItem &Item, SDeviceDesc *retDesc) const override;
+		virtual bool FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const override;
 
 	private:
 		struct SEntry
@@ -354,7 +360,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		//	Find the default settings for the device slot for this device
 
 		SDeviceDesc SlotDesc;
-		bool bUseSlotDesc = (Ctx.pRoot ? Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, Desc.Item, &SlotDesc) : false);
+		bool bUseSlotDesc = FindSlot(Ctx, Desc.Item, SlotDesc);
 
 		//	Set the device position appropriately, either from the <Device> element,
 		//	from the slot descriptor at the root, or from defaults.
@@ -469,6 +475,44 @@ void CSingleDevice::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		m_pExtraItems->AddTypesUsed(retTypesUsed);
 	}
 
+bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDeviceDesc &retSlotDesc) const
+
+//	FindSlot
+//
+//	Finds an existing slot to put the new device in. If we find one, we return
+//	TRUE and retSlotDesc is initialized.
+
+	{
+	//	If no slot definitions, then we're done.
+
+	if (Ctx.pRoot == NULL)
+		return false;
+
+	//	If we have a slot ID, then we need to look for that slot.
+
+	else if (!m_sSlotID.IsBlank())
+		{
+		if (!Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, m_sSlotID, &retSlotDesc))
+			{
+			if (g_pUniverse->InDebugMode())
+				::kernelDebugLogPattern("WARNING: Unable to find device slot %s", m_sSlotID);
+			return false;
+			}
+
+		return true;
+		}
+
+	//	Otherwise, see if a slot wants this item
+
+	else if (Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, Item, &retSlotDesc))
+		return true;
+
+	//	Otherwise, not found
+
+	else
+		return false;
+	}
+
 bool CSingleDevice::HasItemAttribute (const CString &sAttrib) const
 
 //	HasItemAttribute
@@ -542,6 +586,10 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
     //  Level
 
     m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
+
+	//	Slot
+
+	m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
 
 	//	Load device position attributes
 
@@ -1195,6 +1243,43 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList,
 	//	Done
 
 	return true;
+	}
+
+bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList, const CString &sID, SDeviceDesc *retDesc) const
+
+//	FindDefaultDesc
+//
+//	Looks for a slot descriptor that matches the given ID and returns it.
+
+	{
+	int i;
+
+	//	Look for a matching slot
+
+	for (i = 0; i < m_SlotDesc.GetCount(); i++)
+		{
+		//	Skip if not the desired id
+
+		if (!strEquals(m_SlotDesc[i].DefaultDesc.sID, sID))
+			continue;
+
+		//	If this slot has an ID and maximum counts and if we've already 
+		//	exceeded those counts, then skip.
+
+		if (m_SlotDesc[i].iMaxCount != -1 
+				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
+				&& DescList.GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+			continue;
+
+		//	If we get this far, then this is a valid slot.
+
+		*retDesc = m_SlotDesc[i].DefaultDesc;
+		return true;
+		}
+
+	//	Not found
+
+	return false;
 	}
 
 CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const
