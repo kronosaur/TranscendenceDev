@@ -159,7 +159,8 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
 		{
 		int cyAttribs;
-		FormatDisplayAttributes(Attribs, rcDrawRect, &cyAttribs);
+		CCartoucheBlock AttribBlock;
+		FormatDisplayAttributes(Attribs, rcDrawRect, AttribBlock, &cyAttribs);
 		cyHeight += cyAttribs + ATTRIB_SPACING_Y;
 		}
 
@@ -774,72 +775,17 @@ void CUIHelper::CreateSessionWaitAnimation (const CString &sID, const CString &s
 		*retpControl = pRoot;
 	}
 
-void CUIHelper::FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, int *retcyHeight) const
+void CUIHelper::FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight) const
 
 //	FormatDisplayAttributes
 //
 //	Initializes the rcRect structure in all attribute entries.
 
 	{
-	int i;
-	const CG16bitFont &Medium = m_HI.GetVisuals().GetFont(fontMedium);
-
-	int cxLeft = RectWidth(rcRect);
-	int x = rcRect.left;
-	int y = rcRect.top;
-
-	for (i = 0; i < Attribs.GetCount(); i++)
-		{
-		int cxText = (ATTRIB_PADDING_X * 2) + Medium.MeasureText(Attribs[i].sText);
-		int cyText = (ATTRIB_PADDING_Y * 2) + Medium.GetHeight();
-		if (cxText > cxLeft && cxLeft != RectWidth(rcRect))
-			{
-			x = rcRect.left;
-			y += cyText + ATTRIB_SPACING_Y;
-			cxLeft = RectWidth(rcRect);
-			}
-
-		Attribs[i].rcRect.left = x;
-		Attribs[i].rcRect.top = y;
-		Attribs[i].rcRect.right = x + cxText;
-		Attribs[i].rcRect.bottom = y + cyText;
-
-		x += cxText + ATTRIB_SPACING_X;
-		cxLeft -= cxText + ATTRIB_SPACING_X;
-		}
-
-	y += (ATTRIB_PADDING_Y * 2) + Medium.GetHeight();
-
-	if (retcyHeight)
-		*retcyHeight = y - rcRect.top;
-	}
-
-void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const
-
-//	GenerateDockScreenRTF
-//
-//	Converts from plain text to RTF.
-
-	{
-	CRTFText::SAutoRTFOptions Options;
-	Options.rgbQuoteText = g_pHI->GetVisuals().GetColor(colorTextQuote);
-
-	*retsRTF = CRTFText::GenerateRTFText(sText, Options);
-	}
-
-void CUIHelper::PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttribute> &Attribs) const
-
-//	PaintDisplayAttributes
-//
-//	Paints all display attributes. We assume that FormatDisplayAttributes
-//	has already been called.
-
-	{
-	int i;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &Medium = VI.GetFont(fontMedium);
 
-	for (i = 0; i < Attribs.GetCount(); i++)
+	for (int i = 0; i < Attribs.GetCount(); i++)
 		{
 		CG32bitPixel rgbBackColor;
 		CG32bitPixel rgbTextColor;
@@ -866,24 +812,33 @@ void CUIHelper::PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttri
 				break;
 			}
 
-		//	Draw the background
+		//	Add to block
 
-		CGDraw::RoundedRect(Dest, 
-				Attribs[i].rcRect.left, 
-				Attribs[i].rcRect.top, 
-				RectWidth(Attribs[i].rcRect), 
-				RectHeight(Attribs[i].rcRect), 
-				4, 
-				rgbBackColor);
-
-		//	Draw the text
-
-		Medium.DrawText(Dest, 
-				Attribs[i].rcRect.left + ATTRIB_PADDING_X, 
-				Attribs[i].rcRect.top + ATTRIB_PADDING_Y, 
-				rgbTextColor, 
-				Attribs[i].sText);
+		retBlock.AddCartouche(Attribs[i].sText, rgbTextColor, rgbBackColor);
 		}
+
+	//	Format
+
+	retBlock.SetFont(&Medium);
+	retBlock.Format(RectWidth(rcRect));
+
+	//	Done
+
+	if (retcyHeight)
+		*retcyHeight = RectHeight(retBlock.GetBounds());
+	}
+
+void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const
+
+//	GenerateDockScreenRTF
+//
+//	Converts from plain text to RTF.
+
+	{
+	CRTFText::SAutoRTFOptions Options;
+	Options.rgbQuoteText = g_pHI->GetVisuals().GetColor(colorTextQuote);
+
+	*retsRTF = CRTFText::GenerateRTFText(sText, Options);
 	}
 
 void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const
@@ -967,8 +922,9 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	TArray<SDisplayAttribute> Attribs;
 	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
 		{
-		FormatDisplayAttributes(Attribs, rcDrawRect, &cyHeight);
-		PaintDisplayAttributes(Dest, Attribs);
+		CCartoucheBlock AttribBlock;
+		FormatDisplayAttributes(Attribs, rcDrawRect, AttribBlock, &cyHeight);
+		AttribBlock.Paint(Dest, rcDrawRect.left, rcDrawRect.top);
 		rcDrawRect.top += cyHeight + ATTRIB_SPACING_Y;
 		}
 

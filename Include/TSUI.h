@@ -526,6 +526,15 @@ class CVisualPalette : public IFontTable
 						   DWORD dwOptions,
 						   const CString &sLabel,
 						   IAnimatron **retpControl) const;
+		void CreateCartoucheArea (CAniSequencer *pContainer,
+								  const CString &sID,
+								  int x,
+								  int y,
+								  int cxWidth,
+								  const TArray<CCartoucheBlock::SCartoucheDesc> &List,
+								  const CG16bitFont &Font, 
+								  IAnimatron **retpControl = NULL,
+								  int *retcyHeight = NULL) const;
 		void CreateCheckbox (CAniSequencer *pContainer,
 							 const CString &sID,
 							 int x,

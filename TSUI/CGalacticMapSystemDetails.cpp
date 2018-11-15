@@ -37,6 +37,10 @@ const int ICON_SPACING_HORZ =                   16;
 const int LIST_PADDING_X =                      20;
 const int HEADER_PADDING_X =                    20;
 const int HEADER_PADDING_Y =                    20;
+const int ATTRIB_SPACING_Y =					2;
+
+static const CG32bitPixel RGB_MODIFIER_NORMAL_BACKGROUND =		CG32bitPixel(101,101,101);	//	H:0   S:0   B:40
+static const CG32bitPixel RGB_MODIFIER_NORMAL_TEXT =			CG32bitPixel(220,220,220);	//	H:0   S:0   B:86
 
 CGalacticMapSystemDetails::CGalacticMapSystemDetails (const CVisualPalette &VI, CReanimator &Reanimator, const RECT &rcPane) :
         m_VI(VI),
@@ -182,6 +186,16 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
 	pRoot->AddTrack(pName, 0);
     cyText += HeaderFont.GetHeight();
 
+	//	Add attributes, if necessary
+
+	IAnimatron *pAttribs = NULL;
+	int cyAttribs = 0;
+	if (Obj.Attribs.GetCount() > 0)
+		{
+		m_VI.CreateCartoucheArea(pRoot, NULL_STR, 0, 0, cxText, Obj.Attribs, TextFont, &pAttribs, &cyAttribs);
+		cyText += cyAttribs + ATTRIB_SPACING_Y;
+		}
+
     //  Add description
 
     IAnimatron *pDesc = NULL;
@@ -205,12 +219,16 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
     int cyEntry = Max((pIcon ? pIcon->GetHeight() : 0), cyText);
     int yText = (cyEntry - cyText) / 2;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
+	yText += HeaderFont.GetHeight();
+
+	if (pAttribs)
+		{
+		pAttribs->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
+		yText += cyAttribs + ATTRIB_SPACING_Y;
+		}
 
     if (pDesc)
-        {
-        yText += HeaderFont.GetHeight();
 	    pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, yText));
-        }
 
     //  Center the icon
 
@@ -298,21 +316,15 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
 //  Creates info about the system.
 
     {
+	SSystemHeader Header;
+	GetSystemHeaderData(pTopology, Header);
+
     const CG16bitFont &TitleFont = m_VI.GetFont(fontHeader);
     const CG16bitFont &DescFont = m_VI.GetFont(fontMedium);
 
     int x = HEADER_PADDING_X;
     int y = HEADER_PADDING_Y;
     int cxWidth = RectWidth(m_rcPane) - (2 * HEADER_PADDING_X);
-
-	//	Title is either the system name or "Unknown" if we don't know about this
-	//	system.
-
-	CString sTitle;
-	if (pTopology->IsKnown())
-		sTitle = pTopology->GetSystemName();
-	else
-		sTitle = CONSTLIT("Unknown");
 
     //  System name
 
@@ -323,44 +335,30 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             y,
             cxWidth,
             1000,
-            sTitle,
+            Header.sTitle,
             m_VI.GetColor(colorTextHighlight),
             TitleFont,
             NULL,
             &cyText);
     y += cyText;
 
-	//	Compuse import/export data
+	//	Attributes
 
-	CString sDetails;
-	if (pTopology->IsKnown())
-		sDetails = pTopology->GetTradingEconomy().GetDescription();
+	if (Header.Attribs.GetCount() > 0)
+		{
+		m_VI.CreateCartoucheArea(pContainer,
+				NULL_STR,
+				x,
+				y,
+				cxWidth,
+				Header.Attribs,
+				DescFont,
+				NULL,
+				&cyText);
+		y += cyText + ATTRIB_SPACING_Y;
+		}
 
-    //  Compose a string indicating when we visited.
-
-    CString sVisit;
-    DWORD dwLastVisit = pTopology->GetLastVisitedTime();
-    if (dwLastVisit == 0xffffffff)
-        sVisit = CONSTLIT("You've never visited this system.");
-    else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())
-        sVisit = CONSTLIT("You are currently in this system.");
-    else
-        {
-		CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(dwLastVisit);
-        sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
-        }
-
-	if (!sDetails.IsBlank())
-		sDetails = strPatternSubst(CONSTLIT("%s\n%s"), sDetails, sVisit);
-	else
-		sDetails = sVisit;
-
-	//	Add debug information, if necessary
-
-	if (g_pUniverse->InDebugMode())
-		sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), sDetails, pTopology->GetID(), pTopology->GetAttributes());
-
-	//	Add the details text
+	//	Details
 
     m_VI.CreateTextArea(pContainer, 
             NULL_STR,
@@ -368,7 +366,7 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
             y,
             cxWidth,
             1000,
-            sDetails,
+            Header.sDetails,
             m_VI.GetColor(colorTextNormal),
             DescFont,
             NULL,
@@ -380,6 +378,21 @@ void CGalacticMapSystemDetails::CreateSystemHeader (CAniSequencer *pContainer, C
 	if (retcyHeight)
 		*retcyHeight = y;
     }
+
+void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &Obj, TArray<CCartoucheBlock::SCartoucheDesc> &retAttribs) const
+
+//	GetObjAttribs
+//
+//	Returns attributes for the object.
+
+	{
+#if 0
+	CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();
+	pEntry->sText = CONSTLIT("Test");
+	pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
+	pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
+#endif
+	}
 
 bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CString, SObjDesc> &Results) const
 
@@ -434,9 +447,67 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
         SObjDesc *pEntry = Results.SetAt(sSort);
         pEntry->iCount++;
         pEntry->ObjData = Objs[i];
+		GetObjAttribs(Objs[i], pEntry->Attribs);
         }
 
     //  Done
 
     return true;
     }
+
+void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSystemHeader &Header) const
+
+//	GetSystemHeaderData
+//
+//	Returns data to show in the system header.
+
+	{
+	//	Title is either the system name or "Unknown" if we don't know about this
+	//	system.
+
+	if (pNode->IsKnown())
+		Header.sTitle = pNode->GetSystemName();
+	else
+		Header.sTitle = CONSTLIT("Unknown");
+
+	//	Compuse import/export data
+
+	if (pNode->IsKnown())
+		Header.sDetails = pNode->GetTradingEconomy().GetDescription();
+
+    //  Compose a string indicating when we visited.
+
+    CString sVisit;
+    DWORD dwLastVisit = pNode->GetLastVisitedTime();
+    if (dwLastVisit == 0xffffffff)
+        sVisit = CONSTLIT("You've never visited this system.");
+    else if (dwLastVisit == (DWORD)g_pUniverse->GetTicks())
+        sVisit = CONSTLIT("You are currently in this system.");
+    else
+        {
+		CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(dwLastVisit);
+        sVisit = strPatternSubst(CONSTLIT("Last visited %s ago."), Span.Format(NULL_STR));
+        }
+
+	if (!Header.sDetails.IsBlank())
+		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s"), Header.sDetails, sVisit);
+	else
+		Header.sDetails = sVisit;
+
+	//	Add debug information, if necessary
+
+	if (g_pUniverse->InDebugMode())
+		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), Header.sDetails, pNode->GetID(), pNode->GetAttributes());
+
+#if 0
+
+	//	Attributes
+
+	CCartoucheBlock::SCartoucheDesc *pEntry = Header.Attribs.Insert();
+	pEntry->sText = CONSTLIT("Test");
+	pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
+	pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
+
+#endif
+	}
+

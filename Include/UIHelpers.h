@@ -174,11 +174,10 @@ class CUIHelper
 								 IAnimatron **retpControl) const;
 		void CreateSessionWaitAnimation (const CString &sID, const CString &sText, IAnimatron **retpControl) const;
 
-		void FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, int *retcyHeight) const;
+		void FormatDisplayAttributes (TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight = NULL) const;
 
 		void GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const;
 
-		void PaintDisplayAttributes (CG32bitImage &Dest, TArray<SDisplayAttribute> &Attribs) const;
 		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
 		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
 		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;

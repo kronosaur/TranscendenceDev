@@ -1771,11 +1771,11 @@ class CObjectTracker
 					fInactive(false)
                 { }
 
-			CTopologyNode *pNode;
-			CDesignType *pType;
-			DWORD dwObjID;
+			CTopologyNode *pNode = NULL;
+			CDesignType *pType = NULL;
+			DWORD dwObjID = 0;
 			CString sName;
-			DWORD dwNameFlags;
+			DWORD dwNameFlags = 0;
             CCompositeImageSelector ImageSel;
             CString sNotes;
 
