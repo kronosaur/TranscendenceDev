@@ -540,18 +540,38 @@ class CAniVScroller : public IAnimatron
 
 //	Animatron Primitives -------------------------------------------------------
 
+class CAniCartoucheBlock : public IAnimatron
+	{
+	public:
+		CAniCartoucheBlock (void);
+
+		static void Create (const TArray<CCartoucheBlock::SCartoucheDesc> &Data,
+							const CVector &vPos,
+							int cxWidth,
+							const CG16bitFont *pFont,
+							IAnimatron **retpAni);
+
+		//	IAnimatron virtuals
+
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
+
+	private:
+		CCartoucheBlock m_Block;
+	};
+
 class CAniRichText : public IAnimatron
 	{
 	public:
 		CAniRichText (const IFontTable &FontTable);
 
 		//	IAnimatron virtuals
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	protected:
 		//	IAnimatron virtuals
-		virtual void OnPropertyChanged (const CString &sName);
+		virtual void OnPropertyChanged (const CString &sName) override;
 
 	private:
 		void Format (int cxWidth, int cyHeight);
@@ -576,8 +596,8 @@ class CAniText : public IAnimatron
 		inline void SetFontFlags (DWORD dwFlags) { m_dwFontFlags = dwFlags; }
 
 		//	IAnimatron virtuals
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	private:
 		DWORD m_dwFontFlags;
@@ -591,10 +611,10 @@ class CAniShape : public IAnimatron
 		CAniShape (void);
 		~CAniShape (void);
 
-		virtual IAniFillMethod *GetFillMethod (void);
-		virtual IAniLineMethod *GetLineMethod (void);
-		virtual void SetFillMethod (IAniFillMethod *pFill);
-		virtual void SetLineMethod (IAniLineMethod *pLine);
+		virtual IAniFillMethod *GetFillMethod (void) override;
+		virtual IAniLineMethod *GetLineMethod (void) override;
+		virtual void SetFillMethod (IAniFillMethod *pFill) override;
+		virtual void SetLineMethod (IAniLineMethod *pLine) override;
 
 	private:
 		IAniFillMethod *m_pFill;
@@ -607,9 +627,9 @@ class CAniPolygon : public CAniShape
 		CAniPolygon (TArray<CVector> &Points);
 
 		//	IAnimatron virtuals
-		virtual void GetContentRect (RECT *retrcRect);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetContentRect (RECT *retrcRect) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	private:
 		void Rasterize (const CVector &vScale, int iRotation);
@@ -633,9 +653,9 @@ class CAniRect : public CAniShape
 							IAnimatron **retpAni);
 
 		//	IAnimatron virtuals
-		virtual void GetContentRect (RECT *retrcRect);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetContentRect (RECT *retrcRect) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 	};
 
 class CAniRoundedRect : public CAniShape
@@ -651,9 +671,9 @@ class CAniRoundedRect : public CAniShape
 							IAnimatron **retpAni);
 
 		//	IAnimatron virtuals
-		virtual void GetContentRect (RECT *retrcRect);
-		virtual void GetSpacingRect (RECT *retrcRect);
-		virtual void Paint (SAniPaintCtx &Ctx);
+		virtual void GetContentRect (RECT *retrcRect) override;
+		virtual void GetSpacingRect (RECT *retrcRect) override;
+		virtual void Paint (SAniPaintCtx &Ctx) override;
 
 	private:
 		enum Corners
@@ -684,10 +704,10 @@ class CAniControl : public IAnimatron
 	public:
 		virtual ~CAniControl (void);
 
-		virtual void AddListener (const CString &sEvent, IAniCommand *pListener, const CString &sCmd = NULL_STR, DWORD dwData = 0);
-		virtual IAnimatron *GetStyle (const CString &sComponent) const;
-		virtual void RemoveListener (IAniCommand *pListener, const CString &sEvent = NULL_STR);
-		virtual void SetStyle (const CString &sComponent, IAnimatron *pImpl);
+		virtual void AddListener (const CString &sEvent, IAniCommand *pListener, const CString &sCmd = NULL_STR, DWORD dwData = 0) override;
+		virtual IAnimatron *GetStyle (const CString &sComponent) const override;
+		virtual void RemoveListener (IAniCommand *pListener, const CString &sEvent = NULL_STR) override;
+		virtual void SetStyle (const CString &sComponent, IAnimatron *pImpl) override;
 
 	protected:
 		//	CAniControl virtuals
@@ -884,8 +904,8 @@ class CLinearAnimator : public IPropertyAnimator
 		void SetParams (const CAniProperty &Start, const CAniProperty &End, int iAnimateTime, int iDuration = durationInfinite);
 
 		//	IPropertyAnimator virtuals
-		virtual int GetDuration (void) { return m_iDuration; }
-		virtual void SetProperty (int iFrame, CAniProperty &Property);
+		virtual int GetDuration (void) override { return m_iDuration; }
+		virtual void SetProperty (int iFrame, CAniProperty &Property) override;
 
 	private:
 		CAniProperty m_Start;
@@ -906,8 +926,8 @@ class CLinearFade : public IPropertyAnimator
 		void SetParams (int iDuration, int iFadeIn, int iFadeOut, DWORD dwMaxOpacity = 255);
 
 		//	IPropertyAnimator virtuals
-		virtual int GetDuration (void) { return m_iDuration; }
-		virtual void SetProperty (int iFrame, CAniProperty &Property);
+		virtual int GetDuration (void) override { return m_iDuration; }
+		virtual void SetProperty (int iFrame, CAniProperty &Property) override;
 
 	private:
 		int m_iDuration;
@@ -928,8 +948,8 @@ class CLinearMetric : public IPropertyAnimator
 		void SetParams (Metric rStart, Metric rEnd, Metric rIncrement);
 
 		//	IPropertyAnimator virtuals
-		virtual int GetDuration (void) { return m_iDuration; }
-		virtual void SetProperty (int iFrame, CAniProperty &Property);
+		virtual int GetDuration (void) override { return m_iDuration; }
+		virtual void SetProperty (int iFrame, CAniProperty &Property) override;
 
 	private:
 		Metric m_rStart;
@@ -951,8 +971,8 @@ class CLinearRotation : public IPropertyAnimator
 		void SetParams (Metric rStartAngle, Metric rRate, int iAnimateTime, int iDuration = durationInfinite);
 
 		//	IPropertyAnimator virtuals
-		virtual int GetDuration (void) { return m_iDuration; }
-		virtual void SetProperty (int iFrame, CAniProperty &Property);
+		virtual int GetDuration (void) override { return m_iDuration; }
+		virtual void SetProperty (int iFrame, CAniProperty &Property) override;
 
 	private:
 		Metric m_rStartAngle;			//	Starting angle (degrees)
@@ -976,8 +996,8 @@ class CListScroller : public IPropertyAnimator
 		void SetScrollToPos (int iPos, Metric rSpeed = 16.0);
 
 		//	IPropertyAnimator virtuals
-		virtual int GetDuration (void) { return m_iDuration; }
-		virtual void SetProperty (int iFrame, CAniProperty &Property);
+		virtual int GetDuration (void) override { return m_iDuration; }
+		virtual void SetProperty (int iFrame, CAniProperty &Property) override;
 
 	private:
 		struct SEntry
@@ -1008,11 +1028,11 @@ class CAniImageFill : public IAniFillMethod
 		virtual ~CAniImageFill (void);
 
 		//	IAniFillMethod
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHeight);
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleRasterLine> &Lines);
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const CG16bitBinaryRegion &Region);
-		virtual void InitDefaults (CAniPropertySet &Properties);
-		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties);
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHeight) override;
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleRasterLine> &Lines) override;
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const CG16bitBinaryRegion &Region) override;
+		virtual void InitDefaults (CAniPropertySet &Properties) override;
+		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties) override;
 
 	private:
 		void CalcTile (int x, int y, int *retxTile, int *retyTile);
@@ -1030,11 +1050,11 @@ class CAniSolidFill : public IAniFillMethod
 	{
 	public:
 		//	IAniFillMethod
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHeight);
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleRasterLine> &Lines);
-		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const CG16bitBinaryRegion &Region);
-		virtual void InitDefaults (CAniPropertySet &Properties);
-		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties);
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, int cxWidth, int cyHeight) override;
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleRasterLine> &Lines) override;
+		virtual void Fill (SAniPaintCtx &Ctx, int x, int y, const CG16bitBinaryRegion &Region) override;
+		virtual void InitDefaults (CAniPropertySet &Properties) override;
+		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties) override;
 
 	private:
 		CG32bitPixel m_rgbColor;
@@ -1051,11 +1071,11 @@ class CAniSolidLine : public IAniLineMethod
 	{
 	public:
 		//	IAniLineMethod
-		virtual void ArcCorner (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle);
-		virtual void Corner (SAniPaintCtx &Ctx, int xCenter, int yCenter);
-		virtual void InitDefaults (CAniPropertySet &Properties);
-		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties);
-		virtual void Line (SAniPaintCtx &Ctx, int xFrom, int yFrom, int xTo, int yTo);
+		virtual void ArcCorner (SAniPaintCtx &Ctx, int xCenter, int yCenter, int iRadius, int iStartAngle, int iEndAngle) override;
+		virtual void Corner (SAniPaintCtx &Ctx, int xCenter, int yCenter) override;
+		virtual void InitDefaults (CAniPropertySet &Properties) override;
+		virtual void InitPaint (SAniPaintCtx &Ctx, int xOrigin, int yOrigin, CAniPropertySet &Properties) override;
+		virtual void Line (SAniPaintCtx &Ctx, int xFrom, int yFrom, int xTo, int yTo) override;
 
 	private:
 		CG32bitPixel m_rgbColor;

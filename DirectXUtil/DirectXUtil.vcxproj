@@ -327,6 +327,8 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="BlendModes.cpp" />
+    <ClCompile Include="CAniCartoucheBlock.cpp" />
+    <ClCompile Include="CCartoucheBlock.cpp" />
     <ClCompile Include="CCloudGenerator.cpp" />
     <ClCompile Include="CDXBackgroundBlt.cpp" />
     <ClCompile Include="CDXMatrix.cpp" />

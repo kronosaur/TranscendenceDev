@@ -38,7 +38,7 @@ class IFontTable
 struct STextFormat
 	{
 	const CG16bitFont *pFont = NULL;
-	CG32bitPixel rgbColor = 0;
+	CG32bitPixel rgbColor = CG32bitPixel(0, 0, 0);
 	DWORD dwOpacity = 255;
 
 	int iExtraLineSpacing = -1;				//	-1 = use SBlockFormatDesc
@@ -97,4 +97,51 @@ class CTextBlock
 
 		TArray<STextSpan> m_Text;
 		TArray<SFormattedTextSpan> m_Formatted;
+	};
+
+class CCartoucheBlock
+	{
+	public:
+		struct SCartoucheDesc
+			{
+			CString sText;
+			CG32bitPixel rgbColor = CG32bitPixel(255, 255, 255);
+			CG32bitPixel rgbBack = CG32bitPixel(0, 0, 0);
+			};
+
+		void Add (const TArray<SCartoucheDesc> &List);
+		void AddCartouche (const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBack);
+		void Format (int cxWidth);
+		RECT GetBounds (void) const;
+		void Paint (CG32bitImage &Dest, int x, int y) const;
+		inline void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
+
+	private:
+		static constexpr int ATTRIB_PADDING_X =	4;
+		static constexpr int ATTRIB_PADDING_Y =	1;
+		static constexpr int ATTRIB_SPACING_X =	2;
+		static constexpr int ATTRIB_SPACING_Y =	2;
+		static constexpr int RADIUS = 4;
+
+		struct SCartouche
+			{
+			CString sText;
+			CG32bitPixel rgbColor = CG32bitPixel(255, 255, 255);
+			CG32bitPixel rgbBack = CG32bitPixel(0, 0, 0);
+			DWORD dwOpacity = 255;
+			
+			int x = 0;
+			int y = 0;
+			int cx = 0;
+			int cy = 0;
+			};
+
+		inline void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
+
+		TArray<SCartouche> m_Data;
+		const CG16bitFont *m_pFont = NULL;
+
+		bool m_bFormatted = false;
+		int m_cxWidth = 0;
+		int m_cyHeight = 0;
 	};

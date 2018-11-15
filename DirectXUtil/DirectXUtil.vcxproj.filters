@@ -413,5 +413,11 @@
     <ClCompile Include="CGPNG.cpp">
       <Filter>Source Files\PNG</Filter>
     </ClCompile>
+    <ClCompile Include="CCartoucheBlock.cpp">
+      <Filter>Source Files\TextFormat</Filter>
+    </ClCompile>
+    <ClCompile Include="CAniCartoucheBlock.cpp">
+      <Filter>Source Files\Reanimator</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
