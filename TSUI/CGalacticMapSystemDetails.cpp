@@ -203,7 +203,10 @@ void CGalacticMapSystemDetails::CreateObjEntry (const SObjDesc &Obj, int yPos, i
         {
         pDesc = new CAniText;
         pDesc->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
-        pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextNormal));
+		if (Obj.ObjData.fEnemy)
+			pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextDisadvantage));
+		else
+			pDesc->SetPropertyColor(PROP_COLOR, m_VI.GetColor(colorTextNormal));
         pDesc->SetPropertyFont(PROP_FONT, &TextFont);
         pDesc->SetPropertyString(PROP_TEXT, Obj.ObjData.sNotes);
 
@@ -427,9 +430,29 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
 
     for (i = 0; i < Objs.GetCount(); i++)
         {
-        //  Friendly stations go first, followed by neutral, followed by enemy
+        //  Sort stations into groups
 
-        int iDispSort = (Objs[i].fFriendly ? 1 : (Objs[i].fEnemy ? 3 : 2));
+        int iDispSort;
+
+		//	Abandoned enemy stations always show last
+
+		if (Objs[i].fEnemy && Objs[i].fShowDestroyed)
+			iDispSort = 4;
+
+		//	Friendly stations show first
+
+		else if (Objs[i].fFriendly)
+			iDispSort = 1;
+
+		//	Next are neutral stations
+
+		else if (!Objs[i].fEnemy)
+			iDispSort = 2;
+
+		//	And then enemy stations
+
+		else
+			iDispSort = 3;
 
         //  Higher level stations go first
 
