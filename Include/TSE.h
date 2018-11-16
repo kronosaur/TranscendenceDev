@@ -325,8 +325,6 @@ void DrawParticle (CG32bitImage &Dest,
 //	Helper functions
 
 CString ComposeDamageAdjReference (int *AdjRow, int *StdRow);
-void ComputePercentages (int iCount, int *pTable);
-
 CString ReactorPower2String (int iPower);
 
 int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
