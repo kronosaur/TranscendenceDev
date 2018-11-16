@@ -3090,10 +3090,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 						|| (Ctx.bEnhancedDisplay
 							&& (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							&& pObj->PosInBox(Ctx.vEnhancedUR, Ctx.vEnhancedLL)
-							&& Perception.IsVisibleInLRS(Ctx.pCenter, pObj)
-							&& !pObj->IsHidden());
+							&& Perception.IsVisibleInLRS(Ctx.pCenter, pObj));
 
 				if (bMarker
+						&& !pObj->IsHidden()
 						&& (!bInViewport || !pObj->HitSizeInBox(Ctx.vUR, Ctx.vLL)))
 					m_EnhancedDisplayObjs.FastAdd(pObj);
 				}

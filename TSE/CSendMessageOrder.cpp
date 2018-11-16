@@ -20,7 +20,7 @@ void CSendMessageOrder::OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx)
 
 	//	Send the message
 
-	if (pRecipient && Data.sData)
+	if (pRecipient && !Data.sData.IsBlank())
 		pRecipient->SendMessage(pShip, Data.sData);
 
 	//	Done with the order.

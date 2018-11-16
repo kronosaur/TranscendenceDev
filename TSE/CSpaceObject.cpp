@@ -124,6 +124,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_ID								CONSTLIT("id")
+#define PROPERTY_IDENTIFIED						CONSTLIT("identified")
 #define PROPERTY_INSTALL_ARMOR_MAX_LEVEL		CONSTLIT("installArmorMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
@@ -4586,6 +4587,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_ID))
 		return CC.CreateInteger(GetID());
 
+	else if (strEquals(sName, PROPERTY_IDENTIFIED))
+		return CC.CreateBool(IsIdentified());
+
 	else if (strEquals(sName, PROPERTY_INSTALL_ARMOR_MAX_LEVEL))
 		{
 		int iMaxLevel = GetTradeMaxLevel(serviceReplaceArmor);
@@ -7425,7 +7429,12 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 //	Sets an object property
 
 	{
-	if (strEquals(sName, PROPERTY_COMMS_KEY))
+	if (strEquals(sName, PROPERTY_IDENTIFIED))
+		{
+		SetIdentified(!pValue->IsNil());
+		return true;
+		}
+	else if (strEquals(sName, PROPERTY_COMMS_KEY))
 		{
 		CString sKey = pValue->GetStringValue();
 		m_iDesiredHighlightChar = *sKey.GetASCIIZPointer();

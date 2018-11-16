@@ -70,6 +70,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
+#define PROPERTY_EXIT_GATE_TIMER				CONSTLIT("exitGateTimer")
 #define PROPERTY_FUEL_LEFT      				CONSTLIT("fuelLeft")
 #define PROPERTY_FUEL_LEFT_EXACT				CONSTLIT("fuelLeftExact")
 #define PROPERTY_HEALER_LEFT        			CONSTLIT("healerLeft")
@@ -3095,17 +3096,20 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
     else if (strEquals(sName, PROPERTY_DOCKING_PORT_COUNT))
         return CC.CreateInteger(m_DockingPorts.GetPortCount(this));
 
-    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
-        return CC.CreateInteger(m_Armor.GetHealerLeft());
-
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
 		return CC.CreateBool(IsImmuneTo(CConditionSet::cndParalyzed));
+
+	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
+		return (IsInGate() ? CC.CreateInteger(m_iExitGateTimer) : CC.CreateNil());
 
     else if (strEquals(sName, PROPERTY_FUEL_LEFT))
         return CC.CreateInteger(mathRound(GetFuelLeft() / FUEL_UNITS_PER_STD_ROD));
 
     else if (strEquals(sName, PROPERTY_FUEL_LEFT_EXACT))
         return CC.CreateDouble(GetFuelLeft());
+
+    else if (strEquals(sName, PROPERTY_HEALER_LEFT))
+        return CC.CreateInteger(m_Armor.GetHealerLeft());
 
 	else if (strEquals(sName, PROPERTY_HP))
 		return CC.CreateInteger(GetTotalArmorHP());
@@ -7716,6 +7720,13 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 			m_pPowerUse->SetFuelLeft(Max(0.0, Min(pValue->GetDoubleValue(), GetMaxFuel())));
         return true;
         }
+
+	else if (strEquals(sName, PROPERTY_EXIT_GATE_TIMER))
+		{
+		if (IsInGate())
+			m_iExitGateTimer = Max(0, pValue->GetIntegerValue());
+		return true;
+		}
 
     else if (strEquals(sName, PROPERTY_HEALER_LEFT))
         {
