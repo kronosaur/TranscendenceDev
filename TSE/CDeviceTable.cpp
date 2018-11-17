@@ -19,6 +19,7 @@
 #define CANNOT_BE_EMPTY_ATTRIB					CONSTLIT("cannotBeEmpty")
 #define CATEGORIES_ATTRIB						CONSTLIT("categories")
 #define CHANCE_ATTRIB							CONSTLIT("chance")
+#define CHARGES_ATTRIB							CONSTLIT("charges")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define DAMAGED_ATTRIB							CONSTLIT("damaged")
@@ -78,6 +79,7 @@ class CSingleDevice : public IDeviceGenerator
 		int m_iDamaged = 0;						//	Chance device is damaged
 		CRandomEnhancementGenerator m_Enhanced;	//	Procedure for enhancing device item
 		IItemGenerator *m_pExtraItems = NULL;	//	Extra items to add when device is added
+		int m_iCharges = 0;						//	Set charges on device
 
 		//	Slot properties
 
@@ -350,6 +352,11 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
                 }
             }
 
+		//	Charges
+
+		if (m_iCharges)
+			Desc.Item.SetCharges(m_iCharges);
+
         //  Damage/enhancement
 
 		if (mathRandom(1, 100) <= m_iDamaged)
@@ -574,22 +581,17 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (m_Count.IsEmpty())
 		m_Count.SetConstant(1);
 
-	//	Load damage chance
-
-	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
-
 	//	Load enhancement chance
 
 	if (error = m_Enhanced.InitFromXML(Ctx, pDesc))
 		return error;
 
-    //  Level
+    //  Various properties 
 
+	m_iDamaged = pDesc->GetAttributeInteger(DAMAGED_ATTRIB);
     m_Level.LoadFromXML(pDesc->GetAttribute(LEVEL_ATTRIB));
-
-	//	Slot
-
 	m_sSlotID = pDesc->GetAttribute(SLOT_ID_ATTRIB);
+	m_iCharges = pDesc->GetAttributeIntegerBounded(CHARGES_ATTRIB, 0, -1, 0);
 
 	//	Load device position attributes
 
