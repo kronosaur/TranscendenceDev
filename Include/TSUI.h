@@ -508,6 +508,7 @@ class CVisualPalette : public IFontTable
 		inline const CG16bitFont &GetFont (int iIndex) const { return m_Font[iIndex]; }
 		const CG16bitFont &GetFont (const CString &sName, bool *retFound = NULL) const;
 		inline const CG32bitImage &GetImage (int iIndex) const { return m_Image[iIndex]; }
+		RECT GetScreenRect (void) const;
 		void GetWidescreenRect (RECT *retrcCenter, RECT *retrcFull = NULL) const;
 
 		//	Draw functions

@@ -330,6 +330,22 @@ const CG16bitFont &CVisualPalette::GetFont (const CString &sName, bool *retFound
 		}
 	}
 
+RECT CVisualPalette::GetScreenRect (void) const
+
+//	GetScreenRect
+//
+//	Returns the full screen rect.
+
+	{
+	RECT rcRect;
+	rcRect.left = 0;
+	rcRect.top = 0;
+	rcRect.right = g_pHI->GetScreenWidth();
+	rcRect.bottom = g_pHI->GetScreenHeight();
+
+	return rcRect;
+	}
+
 void CVisualPalette::GetWidescreenRect (RECT *retrcCenter, RECT *retrcFull) const
 
 //	GetWidescreenRect
