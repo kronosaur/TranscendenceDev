@@ -51,14 +51,6 @@ const Metric POTENTIAL_TO_POS_ADJ = 100.0;
 const Metric MAX_IMMOBILE_SPEED =		(1.0 * KLICKS_PER_PIXEL);
 const Metric MAX_IMMOBILE_SPEED2 =		MAX_IMMOBILE_SPEED * MAX_IMMOBILE_SPEED;
 
-#ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			{ pShip->Highlight(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(x))); }
-#else
-#define DEBUG_COMBAT_OUTPUT(x)
-#endif
-
-extern int g_iDebugLine;
-
 void CAIBehaviorCtx::CalcEscortFormation (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing)
 
 //	CalcEscortFormation
@@ -504,6 +496,17 @@ CVector CAIBehaviorCtx::CalcManeuverSpiralOut (CShip *pShip, const CVector &vTar
 	return PolarToVector(iAngle + iTrajectory, rRadius);
 	}
 
+void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, LPCSTR pText)
+
+//	DebugAIOutput
+//
+//	Output AI state
+
+	{
+	if (g_pUniverse->GetDebugOptions().IsShowAIDebugEnbled())
+		pShip->Highlight(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(pText)));
+	}
+
 void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj, bool bTurn)
 
 //	ImplementAttackNearestTarget
@@ -677,7 +680,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (IsWaitingForShieldsToRegen() && bFaster)
 				{
-				DEBUG_COMBAT_OUTPUT("Wait for shields");
+				DebugAIOutput(pShip, "Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
 				}
 
@@ -686,7 +689,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 > GetPrimaryAimRange2())
 				{
-				DEBUG_COMBAT_OUTPUT("Close on target");
+				DebugAIOutput(pShip, "Close on target");
 
 				//	Try to flank our target, if we are faster
 
@@ -728,7 +731,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
 					&& pTarget->GetMass() > 5000.0)
 				{
-				DEBUG_COMBAT_OUTPUT("Spiral away to avoid explosion");
+				DebugAIOutput(pShip, "Spiral away to avoid explosion");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -736,7 +739,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 < MIN_TARGET_DIST2)
 				{
-				DEBUG_COMBAT_OUTPUT("Spiral away");
+				DebugAIOutput(pShip, "Spiral away");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -745,7 +748,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			else if (pTarget->CanThrust()
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
-				DEBUG_COMBAT_OUTPUT("Speed away");
+				DebugAIOutput(pShip, "Speed away");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -789,7 +792,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& bWeAreFaster
 					&& pShip->GetController()->GetCurrentOrderEx() != IShipController::orderEscort)
 				{
-				DEBUG_COMBAT_OUTPUT("Wait for shields");
+				DebugAIOutput(pShip, "Wait for shields");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget, 75));
 				}
 
@@ -840,13 +843,13 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					CVector vPos;
 					if (m_fHasAvoidPotential)
 						{
-						DEBUG_COMBAT_OUTPUT("Avoid hazards");
+						DebugAIOutput(pShip, "Avoid hazards");
 
 						vPos = pShip->GetPos() + (POTENTIAL_TO_POS_ADJ * GetPotential());
 						}
 					else
 						{
-						DEBUG_COMBAT_OUTPUT("Close to aim point");
+						DebugAIOutput(pShip, "Close to aim point");
 
 						//	Pick a position at the flank distance between us and the target
 
@@ -867,7 +870,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 				else
 					{
-					DEBUG_COMBAT_OUTPUT("Close on target");
+					DebugAIOutput(pShip, "Close on target");
 					vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
 					}
 				}
@@ -879,7 +882,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
 					&& pTarget->GetMass() > 5000.0)
 				{
-				DEBUG_COMBAT_OUTPUT("Spiral away to avoid explosion");
+				DebugAIOutput(pShip, "Spiral away to avoid explosion");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -887,7 +890,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (rTargetDist2 < rMinDist2)
 				{
-				DEBUG_COMBAT_OUTPUT("Spiral away");
+				DebugAIOutput(pShip, "Spiral away");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -1020,7 +1023,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			if (rTargetDist2 > GetPrimaryAimRange2())
 				{
-				DEBUG_COMBAT_OUTPUT("Close on target");
+				DebugAIOutput(pShip, "Close on target");
 
 				//	Try to flank our target, if we are faster
 
@@ -1033,7 +1036,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			else if (pTarget->CanThrust()
 					&& (pShip->GetVel().Length2() < (0.01 * 0.01 * LIGHT_SPEED * LIGHT_SPEED)))
 				{
-				DEBUG_COMBAT_OUTPUT("Speed away");
+				DebugAIOutput(pShip, "Speed away");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
 				}
 
@@ -1394,7 +1397,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 			if (retiFireDir)
 				*retiFireDir = -1;
 
-			DEBUG_COMBAT_OUTPUT("Fire: No appropriate weapon found");
+			DebugAIOutput(pShip, "Fire: No appropriate weapon found");
 			return;
 			}
 
@@ -1445,7 +1448,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 
 				iAimAngle = -1;
 				bAimError = true;
-				DEBUG_COMBAT_OUTPUT("Aim error: hold fire when aligned");
+				DebugAIOutput(pShip, "Aim error: hold fire when aligned");
 				}
 			}
 		else if (iAimAngle != -1)
@@ -1457,7 +1460,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 					{
 					bAligned = true;
 					bAimError = true;
-					DEBUG_COMBAT_OUTPUT("Aim error: fire when not aligned");
+					DebugAIOutput(pShip, "Aim error: fire when not aligned");
 					}
 				}
 			}
@@ -1481,7 +1484,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 		else
 			wsprintf(szDebug, "%s: aligned", pWeapon->GetName().GetASCIIZPointer());
 
-		DEBUG_COMBAT_OUTPUT(szDebug);
+		DebugAIOutput(pShip, szDebug);
 		}
 #endif
 
@@ -1499,10 +1502,10 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 					{
 					if (!bDoNotShoot)
 						pShip->SetWeaponTriggered(pWeapon);
-					DEBUG_COMBAT_OUTPUT("FireOnTarget: Fire primary!");
+					DebugAIOutput(pShip, "FireOnTarget: Fire primary!");
 					}
 				else
-					DEBUG_COMBAT_OUTPUT("FireOnTarget: Friendlies in line of fire");
+					DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
 				}
 			else
 				{
@@ -1510,16 +1513,16 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 					{
 					if (!bDoNotShoot)
 						pShip->SetWeaponTriggered(pWeapon);
-					DEBUG_COMBAT_OUTPUT("FireOnTarget: Fire missile!");
+					DebugAIOutput(pShip, "FireOnTarget: Fire missile!");
 					}
 				else
-					DEBUG_COMBAT_OUTPUT("FireOnTarget: Friendlies in line of fire");
+					DebugAIOutput(pShip, "FireOnTarget: Friendlies in line of fire");
 				}
 			}
 		}
 	else
 		{
-		DEBUG_COMBAT_OUTPUT("Fire: Weapon NOT aligned");
+		DebugAIOutput(pShip, "Fire: Weapon NOT aligned");
 
 #ifdef DEBUG_SHIP
 		if (bDebug)

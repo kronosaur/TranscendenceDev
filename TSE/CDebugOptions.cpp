@@ -7,6 +7,7 @@
 
 #define PROPERTY_DEBUG_MODE					CONSTLIT("debugMode")
 #define PROPERTY_MEMORY_USE					CONSTLIT("memoryUse")
+#define PROPERTY_SHOW_AI_DEBUG				CONSTLIT("showAIDebug")
 #define PROPERTY_SHOW_BOUNDS				CONSTLIT("showBounds")
 #define PROPERTY_SHOW_FACINGS_ANGLE			CONSTLIT("showFacingsAngle")
 #define PROPERTY_SHOW_LINE_OF_FIRE			CONSTLIT("showLineOfFire")
@@ -52,6 +53,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_DEBUG_MODE))
 		return ICCItemPtr(CC.CreateBool(g_pUniverse->InDebugMode()));
 
+	else if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
+		return ICCItemPtr(CC.CreateBool(m_bShowAIDebug));
+
 	else if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
 		return ICCItemPtr(CC.CreateBool(m_bShowBounds));
 
@@ -89,7 +93,10 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	//	Set a property
 
-	if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
+	if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
+		m_bShowAIDebug = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
 		m_bShowBounds = !pValue->IsNil();
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_FACINGS_ANGLE))
