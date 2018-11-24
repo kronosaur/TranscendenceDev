@@ -1243,48 +1243,15 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 	if (pDevice == NULL)
 		return false;
 
+	//	If this is a repeating weapon then we only consume ammo on the first
+	//	shot (unless otherwise specified).
+
+	if (iRepeatingCount > 0 && !m_bContinuousConsumePerShot)
+		return true;
+
+	//	Figure out how much ammo we consume per shot.
+
 	int iAmmoConsumed = FireGetAmmoToConsume(ItemCtx, pShot, iRepeatingCount);
-
-	//	For repeating weapons, we check at the beginning and consume at the end.
-	
-	if (pShot->GetContinuous() > 0)
-		{
-		if ((iRepeatingCount == 0) || m_bContinuousConsumePerShot)
-			{
-			//	If ammo items...
-
-			if (pShot->GetAmmoType())
-				{
-				CItemListManipulator ItemList(pSource->GetItemList());
-				CItem Item(pShot->GetAmmoType(), iAmmoConsumed);
-				if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
-					return false;
-				if (ItemList.GetItemAtCursor().GetCount() < iAmmoConsumed)
-					return false;
-				}
-
-			//	If charges...
-
-			else if (m_bCharges)
-				{
-				if (pDevice->GetCharges(pSource) < iAmmoConsumed)
-					return false;
-				}
-
-			//	We don't consume yet (unless m_bContinuousConsumePerShot is true)
-			
-			if (!m_bContinuousConsumePerShot)
-				return true;
-			}
-		else if ((iRepeatingCount != pShot->GetContinuous()) && !m_bContinuousConsumePerShot)
-			{
-			//	We don't consume until the last shot, unless m_bContinuousConsumePerShot is true.
-
-			return true;
-			}
-
-		//	Fall through and consume ammo
-		}
 
 	//	Check based on the type of ammo
 
