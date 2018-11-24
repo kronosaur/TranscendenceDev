@@ -53,7 +53,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 			if (iRunLength > 0)
 				{
-				sOutput.Append(pRunStart, iRunLength);
+				sOutput.Append(pRunStart, iRunLength, CString::FLAG_ALLOC_EXTRA);
 				}
 
 			//	Check the actual pattern code
@@ -115,7 +115,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					if (iMinFieldWidth > 0)
 						WritePadding(sOutput, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - pParam->GetLength());
 
-					sOutput.Append(*pParam);
+					sOutput.Append(*pParam, CString::FLAG_ALLOC_EXTRA);
 
 					pArgs += AlignUp(sizeof(CString), sizeof(LPVOID)) / sizeof(LPVOID);
 					pPos++;
@@ -132,7 +132,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 						CString sNew = strFormatInteger(*pVar, iMinFieldWidth, dwFlags);
 
-						sOutput.Append(sNew);
+						sOutput.Append(sNew, CString::FLAG_ALLOC_EXTRA);
 
 						//	Remember the last integer (all we care about is whether it
 						//	is 1 or not, for pluralization).
@@ -153,7 +153,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 						CString sNew = strFormatInteger(*pInt, iMinFieldWidth, dwFlags);
 
-						sOutput.Append(sNew);
+						sOutput.Append(sNew, CString::FLAG_ALLOC_EXTRA);
 
 						//	Remember the last integer
 
@@ -176,7 +176,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					if (iMinFieldWidth > 0)
 						WritePadding(sOutput, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - iLen);
 
-					sOutput.Append(szBuffer, iLen);
+					sOutput.Append(szBuffer, iLen, CString::FLAG_ALLOC_EXTRA);
 
 					//	Remember the last integer
 
@@ -192,7 +192,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					{
 					if (iLastInteger != 1)
 						{
-						sOutput.Append("s", 1);
+						sOutput.Append("s", 1, CString::FLAG_ALLOC_EXTRA);
 						}
 
 					pPos++;
@@ -200,7 +200,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					}
 				else if (*pPos == '%')
 					{
-					sOutput.Append("%", 1);
+					sOutput.Append("%", 1, CString::FLAG_ALLOC_EXTRA);
 
 					pPos++;
 					iLength--;
@@ -222,7 +222,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 	if (iRunLength > 0)
 		{
-		sOutput.Append(pRunStart, iRunLength);
+		sOutput.Append(pRunStart, iRunLength, CString::FLAG_ALLOC_EXTRA);
 		}
 
 	//	Resize to the correct length
@@ -261,7 +261,7 @@ void WritePadding (CString &sOutput, char chChar, int iLen)
 		while (pPos < pEndPos)
 			*pPos++ = chChar;
 
-		sOutput.Append(pBuffer, iLen);
+		sOutput.Append(pBuffer, iLen, CString::FLAG_ALLOC_EXTRA);
 
 		if (pBuffer != szBuffer)
 			delete [] pBuffer;

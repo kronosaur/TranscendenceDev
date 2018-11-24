@@ -415,7 +415,7 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 	return pStore;
 	}
 
-void CString::Append (LPCSTR pString, int iLength)
+void CString::Append (LPCSTR pString, int iLength, DWORD dwFlags)
 
 //	Append
 //
@@ -425,9 +425,17 @@ void CString::Append (LPCSTR pString, int iLength)
 	if (iLength == -1)
 		iLength = strlen(pString);
 
-	int iStart = GetLength();
-	Size(GetLength() + iLength + 1, true);
+	//	Resize allocation
 
+	DWORD dwSizeFlags = FLAG_PRESERVE_CONTENTS;
+	if (dwFlags & FLAG_ALLOC_EXTRA)
+		dwSizeFlags |= FLAG_GEOMETRIC_GROWTH;
+
+	Size(GetLength() + iLength + 1, dwSizeFlags);
+
+	//	Append
+
+	int iStart = GetLength();
 	for (int i = 0; i < iLength; i++)
 		m_pStore->pString[iStart + i] = pString[i];
 
@@ -452,7 +460,7 @@ void CString::Capitalize (CapitalizeOptions iOption)
 
 	//	Make sure we have our own copy
 
-	Size(GetLength()+1, true);
+	Size(GetLength()+1, FLAG_PRESERVE_CONTENTS);
 	char *pPos = GetASCIIZPointer();
 
 	//	Capitalize
@@ -593,7 +601,7 @@ char *CString::GetWritePointer (int iLength)
 //	On return, the buffer is guaranteed to be at least iLength.
 
 	{
-	Size(iLength + 1, true);
+	Size(iLength + 1, FLAG_PRESERVE_CONTENTS);
 
 	m_pStore->iLength = iLength;
 	m_pStore->pString[iLength] = '\0';
@@ -609,7 +617,7 @@ void CString::GrowToFit (int iLength)
 
 	{
 	bool bInit = (m_pStore == NULL);
-	Size(iLength + 1, true);
+	Size(iLength + 1, FLAG_PRESERVE_CONTENTS);
 	if (bInit)
 		{
 		m_pStore->iLength = 0;
@@ -769,7 +777,7 @@ ALERROR CString::SaveHandler (CArchiver *pArchiver)
 	return NOERROR;
 	}
 
-void CString::Size (int iLength, bool bPreserveContents)
+void CString::Size (int iLength, DWORD dwFlags)
 
 //	Size
 //
@@ -800,7 +808,7 @@ void CString::Size (int iLength, bool bPreserveContents)
 
 		//	If we're supposed to preserve contents, copy the content over
 
-		if (bPreserveContents)
+		if (dwFlags & FLAG_PRESERVE_CONTENTS)
 			{
 			int i;
 			int iCopyLen = Min(m_pStore->iLength+1, iLength);
@@ -823,7 +831,11 @@ void CString::Size (int iLength, bool bPreserveContents)
 		{
 		char *pNewString;
 
-		int iNewAlloc = Max(iLength, m_pStore->iAllocSize * 2);
+		int iNewAlloc;
+		if (dwFlags & FLAG_GEOMETRIC_GROWTH)
+			iNewAlloc = Max(iLength, m_pStore->iAllocSize * 2);
+		else
+			iNewAlloc = iLength;
 
 		pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
 		if (pNewString == NULL)
@@ -831,7 +843,7 @@ void CString::Size (int iLength, bool bPreserveContents)
 
 		//	If we're supposed to preserve contents, copy the content over
 
-		if (bPreserveContents)
+		if (dwFlags & FLAG_PRESERVE_CONTENTS)
 			{
 			int i;
 			int iCopyLen = Min(m_pStore->iLength, iLength);
@@ -856,7 +868,7 @@ void CString::Size (int iLength, bool bPreserveContents)
 	ASSERT(m_pStore->iAllocSize >= iLength);
 	}
 
-ALERROR CString::Transcribe (const char *pString, int iLen)
+void CString::Transcribe (const char *pString, int iLen)
 
 //	Transcribe
 //
@@ -872,7 +884,7 @@ ALERROR CString::Transcribe (const char *pString, int iLen)
 		{
 		DecRefCount();
 		m_pStore = NULL;
-		return NOERROR;
+		return;
 		}
 
 	//	Handle ASCIIZ
@@ -886,7 +898,7 @@ ALERROR CString::Transcribe (const char *pString, int iLen)
 		{
 		DecRefCount();
 		m_pStore = NULL;
-		return NOERROR;
+		return;
 		}
 
 	//	Allocate size
@@ -901,8 +913,6 @@ ALERROR CString::Transcribe (const char *pString, int iLen)
 	//	NULL terminate
 
 	m_pStore->pString[iLen] = '\0';
-
-	return NOERROR;
 	}
 
 void CString::Truncate (int iLength)
@@ -924,7 +934,7 @@ void CString::Truncate (int iLength)
 
 	//	Call this just to make sure that we have our own copy
 
-	Size(iLength+1, true);
+	Size(iLength+1, FLAG_PRESERVE_CONTENTS);
 
 	//	Set the new length
 

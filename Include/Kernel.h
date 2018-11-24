@@ -551,8 +551,10 @@ class CString : public CObject
 		bool operator== (const CString &sValue) const;
 		bool operator!= (const CString &sValue) const;
 
-		void Append (LPCSTR pString, int iLength = -1);
-		inline void Append (const CString &sString) { Append(sString.GetPointer(), sString.GetLength()); }
+		static constexpr DWORD FLAG_ALLOC_EXTRA = 0x00000001;
+		void Append (LPCSTR pString, int iLength = -1, DWORD dwFlags = 0);
+		inline void Append (const CString &sString, DWORD dwFlags = 0) { Append(sString.GetPointer(), sString.GetLength(), dwFlags); }
+
 		void Capitalize (CapitalizeOptions iOption);
 		char *GetASCIIZPointer (void) const;
 		int GetLength (void) const;
@@ -562,7 +564,7 @@ class CString : public CObject
 		void GrowToFit (int iLength);
 		inline bool IsBlank (void) const { return (GetLength() == 0); }
 		void ReadFromStream (IReadStream *pStream);
-		ALERROR Transcribe (const char *pString, int iLen);
+		void Transcribe (const char *pString, int iLen);
 		void Truncate (int iLength);
 		void WriteToStream (IWriteStream *pStream) const;
 
@@ -623,7 +625,10 @@ class CString : public CObject
 		static void FreeStore (PSTORESTRUCT pStore);
 		inline void IncRefCount (void) { if (m_pStore) m_pStore->iRefCount++; }
 		inline BOOL IsExternalStorage (void) { return (m_pStore->iAllocSize < 0 ? TRUE : FALSE); }
-		void Size (int iLength, bool bPreserveContents = false);
+
+		static constexpr DWORD FLAG_PRESERVE_CONTENTS =		0x00000001;
+		static constexpr DWORD FLAG_GEOMETRIC_GROWTH =		0x00000002;
+		void Size (int iLength, DWORD dwFlags = 0);
 
 		static void InitLowerCaseAbsoluteTable (void);
 
