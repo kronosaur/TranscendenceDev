@@ -134,12 +134,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 
 			//	Now convert back to system code page
 
-			if (!Size(iUnicodeLen, FALSE))
-				{
-				delete [] szUnicode;
-				return;
-				}
-
+			Size(iUnicodeLen);
 			iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iUnicodeLen, NULL, NULL);
 
 			//	Deal with failure
@@ -159,7 +154,7 @@ CString::CString (CharacterSets iCharSet, const char *pString) :
 						return;
 						}
 
-					Size(iSystemLen, FALSE);
+					Size(iSystemLen);
 					iResult = ::WideCharToMultiByte(CP_ACP, 0, szUnicode, iUnicodeLen, m_pStore->pString, iSystemLen, NULL, NULL);
 					}
 				else
@@ -420,23 +415,20 @@ CString::PSTORESTRUCT CString::AllocStore (int iSize, BOOL bAllocString)
 	return pStore;
 	}
 
-ALERROR CString::Append (const CString &sString)
+void CString::Append (LPCSTR pString, int iLength)
 
 //	Append
 //
-//	Appends the given string
+//	Appends the given string.
 
 	{
-	int iLength = sString.GetLength();
-	char *pString = sString.GetPointer();
-	int i;
-	int iStart;
+	if (iLength == -1)
+		iLength = strlen(pString);
 
-	iStart = GetLength();
-	if (!Size(GetLength() + iLength+1, TRUE))
-		return ERR_MEMORY;
+	int iStart = GetLength();
+	Size(GetLength() + iLength + 1, true);
 
-	for (i = 0; i < iLength; i++)
+	for (int i = 0; i < iLength; i++)
 		m_pStore->pString[iStart + i] = pString[i];
 
 	m_pStore->iLength += iLength;
@@ -444,8 +436,6 @@ ALERROR CString::Append (const CString &sString)
 	//	NULL terminate
 
 	m_pStore->pString[GetLength()] = '\0';
-
-	return NOERROR;
 	}
 
 void CString::Capitalize (CapitalizeOptions iOption)
@@ -603,13 +593,28 @@ char *CString::GetWritePointer (int iLength)
 //	On return, the buffer is guaranteed to be at least iLength.
 
 	{
-	if (!Size(iLength + 1, TRUE))
-		return NULL;
+	Size(iLength + 1, true);
 
 	m_pStore->iLength = iLength;
 	m_pStore->pString[iLength] = '\0';
 
 	return m_pStore->pString;
+	}
+
+void CString::GrowToFit (int iLength)
+
+//	GrowToFit
+//
+//	Makes sure the string is allocated to at least the given length.
+
+	{
+	bool bInit = (m_pStore == NULL);
+	Size(iLength + 1, true);
+	if (bInit)
+		{
+		m_pStore->iLength = 0;
+		m_pStore->pString[0] = '\0';
+		}
 	}
 
 void CString::InitLowerCaseAbsoluteTable (void)
@@ -666,7 +671,7 @@ ALERROR CString::LoadHandler (CUnarchiver *pUnarchiver)
 
 	//	Size the string appropriately
 
-	Size(dwLength+1, FALSE);
+	Size(dwLength+1);
 
 	//	Load the string
 
@@ -709,7 +714,7 @@ void CString::ReadFromStream (IReadStream *pStream)
 		return;
 		}
 
-	Size(dwLength+1, FALSE);
+	Size(dwLength+1);
 
 	//	Load the string
 
@@ -764,7 +769,7 @@ ALERROR CString::SaveHandler (CArchiver *pArchiver)
 	return NOERROR;
 	}
 
-BOOL CString::Size (int iLength, BOOL bPreserveContents)
+void CString::Size (int iLength, bool bPreserveContents)
 
 //	Size
 //
@@ -780,7 +785,7 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 		{
 		m_pStore = AllocStore(iLength, TRUE);
 		if (m_pStore == NULL)
-			goto Fail;
+			throw CException(ERR_MEMORY);
 		}
 
 	//	If we're sharing the store with someone else, make our own copy
@@ -791,7 +796,7 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 
 		pNewStore = AllocStore(iLength, TRUE);
 		if (pNewStore == NULL)
-			goto Fail;
+			throw CException(ERR_MEMORY);
 
 		//	If we're supposed to preserve contents, copy the content over
 
@@ -818,9 +823,11 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 		{
 		char *pNewString;
 
-		pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iLength);
+		int iNewAlloc = Max(iLength, m_pStore->iAllocSize * 2);
+
+		pNewString = (char *)HeapAlloc(GetProcessHeap(), 0, iNewAlloc);
 		if (pNewString == NULL)
-			goto Fail;
+			throw CException(ERR_MEMORY);
 
 		//	If we're supposed to preserve contents, copy the content over
 
@@ -839,7 +846,7 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 			HeapFree(GetProcessHeap(), 0, m_pStore->pString);
 
 		m_pStore->pString = pNewString;
-		m_pStore->iAllocSize = iLength;
+		m_pStore->iAllocSize = iNewAlloc;
 		}
 
 	//	Done
@@ -847,12 +854,6 @@ BOOL CString::Size (int iLength, BOOL bPreserveContents)
 	ASSERT(m_pStore);
 	ASSERT(m_pStore->iRefCount == 1);
 	ASSERT(m_pStore->iAllocSize >= iLength);
-
-	return TRUE;
-
-Fail:
-
-	return FALSE;
 	}
 
 ALERROR CString::Transcribe (const char *pString, int iLen)
@@ -890,8 +891,7 @@ ALERROR CString::Transcribe (const char *pString, int iLen)
 
 	//	Allocate size
 
-	if (!Size(iLen+1, FALSE))
-		return ERR_MEMORY;
+	Size(iLen+1);
 
 	for (i = 0; i < iLen; i++)
 		m_pStore->pString[i] = pString[i];
@@ -924,7 +924,7 @@ void CString::Truncate (int iLength)
 
 	//	Call this just to make sure that we have our own copy
 
-	Size(iLength+1, TRUE);
+	Size(iLength+1, true);
 
 	//	Set the new length
 

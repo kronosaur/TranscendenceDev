@@ -551,13 +551,15 @@ class CString : public CObject
 		bool operator== (const CString &sValue) const;
 		bool operator!= (const CString &sValue) const;
 
-		ALERROR Append (const CString &sString);
+		void Append (LPCSTR pString, int iLength = -1);
+		inline void Append (const CString &sString) { Append(sString.GetPointer(), sString.GetLength()); }
 		void Capitalize (CapitalizeOptions iOption);
 		char *GetASCIIZPointer (void) const;
 		int GetLength (void) const;
 		int GetMemoryUsage (void) const;
 		char *GetPointer (void) const;
 		char *GetWritePointer (int iLength);
+		void GrowToFit (int iLength);
 		inline bool IsBlank (void) const { return (GetLength() == 0); }
 		void ReadFromStream (IReadStream *pStream);
 		ALERROR Transcribe (const char *pString, int iLen);
@@ -621,7 +623,7 @@ class CString : public CObject
 		static void FreeStore (PSTORESTRUCT pStore);
 		inline void IncRefCount (void) { if (m_pStore) m_pStore->iRefCount++; }
 		inline BOOL IsExternalStorage (void) { return (m_pStore->iAllocSize < 0 ? TRUE : FALSE); }
-		BOOL Size (int iLength, BOOL bPreserveContents);
+		void Size (int iLength, bool bPreserveContents = false);
 
 		static void InitLowerCaseAbsoluteTable (void);
 

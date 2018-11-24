@@ -21,7 +21,7 @@
 
 #include "Kernel.h"
 
-void WritePadding (CMemoryWriteStream &Stream, char chChar, int iLen);
+void WritePadding (CString &sOutput, char chChar, int iLen);
 
 CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
@@ -30,18 +30,13 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 //	Returns a string with a pattern substitution
 
 	{
-	ALERROR error;
-	CMemoryWriteStream Stream(0);
+	CString sOutput;
+	sOutput.GrowToFit(4000);
 	char *pPos = sPattern.GetPointer();
 	int iLength = sPattern.GetLength();
 	char *pRunStart;
 	int iRunLength;
 	int iLastInteger = 1;
-
-	//	Initialize the memory stream that will hold the result
-
-	if (error = Stream.Create())
-		return LITERAL("%ERROR");
 
 	//	Start
 
@@ -58,8 +53,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 			if (iRunLength > 0)
 				{
-				if (error = Stream.Write(pRunStart, iRunLength, NULL))
-					return LITERAL("%ERROR");
+				sOutput.Append(pRunStart, iRunLength);
 				}
 
 			//	Check the actual pattern code
@@ -119,10 +113,9 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					CString *pParam = (CString *)pArgs;
 
 					if (iMinFieldWidth > 0)
-						WritePadding(Stream, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - pParam->GetLength());
+						WritePadding(sOutput, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - pParam->GetLength());
 
-					if (error = Stream.Write(pParam->GetPointer(), pParam->GetLength(), NULL))
-						return LITERAL("%ERROR");
+					sOutput.Append(*pParam);
 
 					pArgs += AlignUp(sizeof(CString), sizeof(LPVOID)) / sizeof(LPVOID);
 					pPos++;
@@ -139,8 +132,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 						CString sNew = strFormatInteger(*pVar, iMinFieldWidth, dwFlags);
 
-						if (error = Stream.Write(sNew.GetPointer(), sNew.GetLength(), NULL))
-							return LITERAL("%ERROR");
+						sOutput.Append(sNew);
 
 						//	Remember the last integer (all we care about is whether it
 						//	is 1 or not, for pluralization).
@@ -161,8 +153,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 						CString sNew = strFormatInteger(*pInt, iMinFieldWidth, dwFlags);
 
-						if (error = Stream.Write(sNew.GetPointer(), sNew.GetLength(), NULL))
-							return LITERAL("%ERROR");
+						sOutput.Append(sNew);
 
 						//	Remember the last integer
 
@@ -183,10 +174,9 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					int iLen = wsprintf(szBuffer, (*pPos == 'x' ? "%x" : "%X"), *pInt);
 
 					if (iMinFieldWidth > 0)
-						WritePadding(Stream, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - iLen);
+						WritePadding(sOutput, (bPadWithZeros ? '0' : ' '), iMinFieldWidth - iLen);
 
-					if (error = Stream.Write(szBuffer, iLen, NULL))
-						return LITERAL("%ERROR");
+					sOutput.Append(szBuffer, iLen);
 
 					//	Remember the last integer
 
@@ -202,8 +192,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					{
 					if (iLastInteger != 1)
 						{
-						if (error = Stream.Write("s", 1, NULL))
-							return LITERAL("%ERROR");
+						sOutput.Append("s", 1);
 						}
 
 					pPos++;
@@ -211,8 +200,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 					}
 				else if (*pPos == '%')
 					{
-					if (error = Stream.Write("%", 1, NULL))
-						return LITERAL("%ERROR");
+					sOutput.Append("%", 1);
 
 					pPos++;
 					iLength--;
@@ -234,13 +222,12 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 
 	if (iRunLength > 0)
 		{
-		if (error = Stream.Write(pRunStart, iRunLength, NULL))
-			return LITERAL("%ERROR");
+		sOutput.Append(pRunStart, iRunLength);
 		}
 
-	//	Convert the stream to a string
+	//	Resize to the correct length
 
-	return CString(Stream.GetPointer(), Stream.GetLength());
+	return CString(sOutput.GetPointer(), sOutput.GetLength());
 	}
 
 CString strPatternSubst (CString sLine, ...)
@@ -258,7 +245,7 @@ CString strPatternSubst (CString sLine, ...)
 	return sParsedLine;
 	}
 
-void WritePadding (CMemoryWriteStream &Stream, char chChar, int iLen)
+void WritePadding (CString &sOutput, char chChar, int iLen)
 	{
 	if (iLen > 0)
 		{
@@ -274,7 +261,7 @@ void WritePadding (CMemoryWriteStream &Stream, char chChar, int iLen)
 		while (pPos < pEndPos)
 			*pPos++ = chChar;
 
-		Stream.Write(pBuffer, iLen, NULL);
+		sOutput.Append(pBuffer, iLen);
 
 		if (pBuffer != szBuffer)
 			delete [] pBuffer;
