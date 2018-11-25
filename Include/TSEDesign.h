@@ -1112,34 +1112,22 @@ class CDynamicDesignTable
 
 struct SDesignLoadCtx
 	{
-	SDesignLoadCtx (void) :
-			pResDb(NULL),
-			pExtension(NULL),
-			pType(NULL),
-			bBindAsNewGame(false),
-			bNoResources(false),
-            bLoopImages(false),
-			bLoadAdventureDesc(false),
-			bLoadModule(false),
-			dwInheritAPIVersion(0)
-		{ }
-
 	inline DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
 
 	//	Context
 	CString sResDb;							//	ResourceDb filespec
-	CResourceDb *pResDb;					//	Open ResourceDb object
+	CResourceDb *pResDb = NULL;				//	Open ResourceDb object
 	CString sFolder;						//	Folder context (used when loading images)
-	CExtension *pExtension;					//	Extension
-	CDesignType *pType;						//	Current type being loaded
-	bool bLoadAdventureDesc;				//	If TRUE, we are loading an adventure desc only
-	bool bLoadModule;						//	If TRUE, we are loading elements in a module
-	DWORD dwInheritAPIVersion;				//	APIVersion of parent (if base file)
+	CExtension *pExtension = NULL;			//	Extension
+	CDesignType *pType = NULL;				//	Current type being loaded
+	bool bLoadAdventureDesc = false;		//	If TRUE, we are loading an adventure desc only
+	bool bLoadModule = false;				//	If TRUE, we are loading elements in a module
+	DWORD dwInheritAPIVersion = 0;			//	APIVersion of parent (if base file)
 
 	//	Options
-	bool bBindAsNewGame;					//	If TRUE, then we are binding a new game
-	bool bNoResources;
-    bool bLoopImages;                       //  If TRUE, image effects loop by default
+	bool bBindAsNewGame = false;			//	If TRUE, then we are binding a new game
+	bool bNoResources = false;
+    bool bLoopImages = false;				//  If TRUE, image effects loop by default
 
 	//	Output
 	CString sError;

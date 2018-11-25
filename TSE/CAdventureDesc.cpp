@@ -281,8 +281,6 @@ void CAdventureDesc::InitDefaultDamageAdj (void)
 
 	if (!g_bDamageAdjInit)
 		{
-		SDesignLoadCtx Ctx;
-
 		for (i = 1; i <= MAX_ITEM_LEVEL; i++)
 			{
 			g_ArmorDamageAdj[i - 1].InitFromArray(g_StdArmorDamageAdj[i - 1]);
