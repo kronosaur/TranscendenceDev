@@ -204,18 +204,19 @@ struct SGenomeData
 	{
 	char *pszID;
 	char *pszName;
+	GenomeTypes iType;
 	};
 
 static SGenomeData g_Genome[] =
 	{
-		{	"",		""	},						//	genomeUnknown
-		{	"humanMale",			"human male"	},	//	genomeMale
-		{	"humanFemale",			"human female"	},	//	genomeFemale
-		{	"genderNeuter",			"neuter"		},	//	genderNeuter
+		{	"",						"",				genomeUnknown		},	//	genomeUnknown
+		{	"humanMale",			"human male",	genomeHumanMale		},	//	genomeMale
+		{	"humanFemale",			"human female",	genomeHumanFemale	},	//	genomeFemale
+		{	"genderNeuter",			"neuter",		genderNeuter		},	//	genderNeuter
 
-		{	"genderMale",			"male"			},	//	genomeMale
-		{	"genderFemale",			"female"		},	//	genomeFemale
-		{	"genderUnspecified",	"unspecified"	},	//	genomeUnknown
+		{	"genderMale",			"male",			genomeHumanMale		},	//	genomeMale
+		{	"genderFemale",			"female",		genomeHumanFemale	},	//	genomeFemale
+		{	"genderUnspecified",	"unspecified",	genomeUnknown		},	//	genomeUnknown
 	};
 
 #define GENOME_COUNT				(sizeof(g_Genome) / sizeof(g_Genome[0]))
@@ -2351,7 +2352,7 @@ GenomeTypes ParseGenomeID (const CString &sText)
 
 	for (i = 0; i < GENOME_COUNT; i++)
 		if (strEquals(sText, CString(g_Genome[i].pszID)))
-			return (GenomeTypes)i;
+			return g_Genome[i].iType;
 
 	return genomeUnknown;
 	}
