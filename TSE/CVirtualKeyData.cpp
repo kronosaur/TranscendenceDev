@@ -361,6 +361,11 @@ CString CVirtualKeyData::GetKeyID (DWORD dwVirtKey)
     if (dwVirtKey >= 256)
         return NULL_STR;
 
+	//	If no name, we represent as a hex value
+
+	if (m_VirtKeyData[dwVirtKey].pszName == NULL)
+		return strPatternSubst(CONSTLIT("0x%02x"), dwVirtKey);
+
 	return CString(m_VirtKeyData[dwVirtKey].pszName, -1, true);
 	}
 
