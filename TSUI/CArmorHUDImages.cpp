@@ -389,21 +389,8 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 		TArray<SDisplayAttribute> Attribs;
 		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 			{
-			const CString &sMods = Attribs[0].sText;
-			bool bDisadvantage = (Attribs[0].iType == attribWeakness);
-
-			int cx = SmallFont.MeasureText(sMods);
-			m_Buffer.Fill(ARMOR_ENHANCE_X - cx - 4,
-					pImage->yName + MediumFont.GetHeight() - HP_DISPLAY_HEIGHT,
-					cx + 8,
-					HP_DISPLAY_HEIGHT,
-					(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
-
-			SmallFont.DrawText(m_Buffer,
-					ARMOR_ENHANCE_X - cx,
-					pImage->yName + 3,
-					(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
-					sMods);
+			CUIHelper Helper(*g_pHI);
+			Helper.PaintDisplayAttribs(m_Buffer, ARMOR_ENHANCE_X, pImage->yName + MediumFont.GetHeight(), Attribs, CUIHelper::OPTION_ALIGN_BOTTOM | CUIHelper::OPTION_ALIGN_RIGHT);
 			}
 		}
 	}

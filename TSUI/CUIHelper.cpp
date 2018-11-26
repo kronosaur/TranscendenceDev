@@ -841,6 +841,124 @@ void CUIHelper::GenerateDockScreenRTF (const CString &sText, CString *retsRTF) c
 	*retsRTF = CRTFText::GenerateRTFText(sText, Options);
 	}
 
+void CUIHelper::PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TArray<SDisplayAttribute> &Attribs, DWORD dwOptions) const
+
+//	PaintDisplayAttribs
+//
+//	Paint item display attributes.
+
+	{
+	static constexpr int MARGIN_X = 2;
+	static constexpr int MARGIN_Y = 1;
+	static constexpr int PADDING_X = 2;
+	static constexpr int PADDING_Y = 1;
+
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &Font = VI.GetFont(fontSmall);
+
+	const int BOX_HEIGHT = Font.GetHeight() + (2 * PADDING_Y);
+
+	//	If we're aligned at the bottom, then the y position is the position of
+	//	the bottom of the rect.
+
+	int yOffset = 0;
+	if (dwOptions & OPTION_ALIGN_BOTTOM)
+		yOffset = -BOX_HEIGHT;
+
+	//	Paint attributes vertically.
+
+	if (dwOptions & OPTION_VERTICAL)
+		{
+		int yPos = y;
+
+		for (int i = 0; i < Attribs.GetCount(); i++)
+			{
+			const CString &sMods = Attribs[i].sText;
+			bool bDisadvantage = (Attribs[i].iType == attribWeakness);
+
+			int cx = Font.MeasureText(sMods);
+			int cxBox = cx + 2 * PADDING_X;
+			int xPos = x;
+			if (dwOptions & OPTION_ALIGN_RIGHT)
+				xPos -= cxBox;
+
+			Dest.Fill(xPos,
+				yPos,
+				cxBox,
+				BOX_HEIGHT,
+				(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+
+			Font.DrawText(Dest,
+				xPos + PADDING_X,
+				yPos + PADDING_Y,
+				(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
+				sMods);
+
+			yPos += BOX_HEIGHT + MARGIN_Y;
+			}
+		}
+
+	//	Paint attributes on a single line, aligned to the right.
+
+	else if (dwOptions & OPTION_ALIGN_RIGHT)
+		{
+		int xPos = x;
+		int yPos = y + yOffset;
+
+		for (int i = Attribs.GetCount() - 1; i >= 0; i--)
+			{
+			const CString &sMods = Attribs[i].sText;
+			bool bDisadvantage = (Attribs[i].iType == attribWeakness);
+
+			int cx = Font.MeasureText(sMods);
+			int cxBox = cx + 2 * PADDING_X;
+			Dest.Fill(xPos - cxBox,
+				yPos,
+				cxBox,
+				BOX_HEIGHT,
+				(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+
+			Font.DrawText(Dest,
+				xPos - cxBox + PADDING_X,
+				yPos + PADDING_Y,
+				(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
+				sMods);
+
+			xPos -= cxBox + (MARGIN_X);
+			}
+		}
+
+	//	Otherwise, paint on a single line, aligned to the left.
+
+	else
+		{
+		int xPos = x;
+		int yPos = y + yOffset;
+
+		for (int i = 0; i < Attribs.GetCount(); i++)
+			{
+			const CString &sMods = Attribs[i].sText;
+			bool bDisadvantage = (Attribs[i].iType == attribWeakness);
+
+			int cx = Font.MeasureText(sMods);
+			int cxBox = cx + 2 * PADDING_X;
+			Dest.Fill(xPos,
+				yPos,
+				cxBox,
+				BOX_HEIGHT,
+				(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+
+			Font.DrawText(Dest,
+				xPos + PADDING_X,
+				yPos + PADDING_Y,
+				(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
+				sMods);
+
+			xPos += cxBox + (MARGIN_X);
+			}
+		}
+	}
+
 void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const
 
 //	PaintItemEntry
