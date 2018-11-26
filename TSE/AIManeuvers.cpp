@@ -763,6 +763,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 		case aicombatAdvanced:
 			{
 			bool bWeAreFaster = (pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed());
+			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->IsAreaWeapon(pShip));
 
 			const int MAX_BRAVERY_TICKS = 300;				//	Number of ticks since last attack to be 100% brave
 			const Metric BRAVERY_DECAY_POWER = 2.0;
@@ -774,12 +775,25 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (g_pUniverse->GetTicks() - m_iLastAttack)));
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
+			//	Do we need to avoid getting too close?
+
+			bool bAvoidExplodingTarget = m_fAvoidExplodingStations
+					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
+					&& pTarget->GetMass() > 5000.0;
+
 			//	Compute the maximum distance at which we'll start firing. If we're feeling brave,
 			//	this will be close to the flank distance (which is often close). Otherwise, we'll
-			//	try to stack back.
+			//	try to stay back.
 
-			const Metric rMaxAimDist = GetFlankDist() + (EXTRA_RANGE * (1.0 - rBravery));
-			const Metric rMaxAimDist2 = (bWeAreFaster ? Min(GetPrimaryAimRange2(), rMaxAimDist * rMaxAimDist) : GetPrimaryAimRange2());
+			const Metric rFlankAimDist = GetFlankDist() + (EXTRA_RANGE * (1.0 - rBravery));
+
+			//	In certain cases, though, we pick a longer range.
+
+			Metric rMaxAimDist2;
+			if (bWeAreFaster && !bAvoidExplodingTarget && !bUsingStandOffWeapon)
+				rMaxAimDist2 = Min(GetPrimaryAimRange2(), rFlankAimDist * rFlankAimDist);
+			else
+				rMaxAimDist2 = GetPrimaryAimRange2();
 
 			//	Minimum distance is a never more than one-half the maximum distance.
 
@@ -834,7 +848,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				{
 				//	If we're faster, try to be clever
 
-				if (bWeAreFaster)
+				if (bWeAreFaster && !bAvoidExplodingTarget && !bUsingStandOffWeapon)
 					{
 					CVector vToTargetN = (pTarget->GetPos() - pShip->GetPos()).Normal();
 
@@ -853,7 +867,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 						//	Pick a position at the flank distance between us and the target
 
-						vPos = pTarget->GetPos() + (vToTargetN * -rMaxAimDist);
+						vPos = pTarget->GetPos() + (vToTargetN * -rFlankAimDist);
 						}
 
 					//	We want to end with a non-zero velocity. Otherwise, we'll be a
@@ -878,9 +892,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're attacking a station, then keep our distance so that
 			//	we don't get caught in the explosion
 
-			else if (m_fAvoidExplodingStations
-					&& rTargetDist2 < MIN_STATION_TARGET_DIST2 
-					&& pTarget->GetMass() > 5000.0)
+			else if (bAvoidExplodingTarget)
 				{
 				DebugAIOutput(pShip, "Spiral away to avoid explosion");
 				vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
