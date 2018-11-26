@@ -5768,20 +5768,12 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 	CSystem *pSystem = GetSystem();
 	SSpaceObjectGridEnumerator i;
 
-	//	For area weapons, we create a box around the source
+	//	Create a box around the path of the shot
 
-	if (bAreaWeapon)
-		pSystem->EnumObjectsInBoxStart(i, vSource, rDistance, gridNoBoxCheck);
-
-	//	Otherwise, we create a box around the path of the shot
-
-	else
-		{
-		CVector vEndPoint = vSource + PolarToVector(iAngle, rDistance);
-		CVector vLL = CVector(Min(vSource.GetX(), vEndPoint.GetX()), Min(vSource.GetY(), vEndPoint.GetY()));
-		CVector vUR = CVector(Max(vSource.GetX(), vEndPoint.GetX()), Max(vSource.GetY(), vEndPoint.GetY()));
-		pSystem->EnumObjectsInBoxStart(i, vUR, vLL, gridNoBoxCheck);
-		}
+	CVector vEndPoint = vSource + PolarToVector(iAngle, rDistance);
+	CVector vLL = CVector(Min(vSource.GetX(), vEndPoint.GetX()), Min(vSource.GetY(), vEndPoint.GetY()));
+	CVector vUR = CVector(Max(vSource.GetX(), vEndPoint.GetX()), Max(vSource.GetY(), vEndPoint.GetY()));
+	pSystem->EnumObjectsInBoxStart(i, vUR, vLL, gridNoBoxCheck);
 
 	//	Compute position of target
 
@@ -5857,15 +5849,6 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 			CVector vDist = pObj->GetPos() - vSource;
 			if (vDist.Length2() > rMaxDist2)
 				continue;
-
-			//	Area weapons cover all aspects, so a friendly ship would be hit here.
-
-			if (bAreaWeapon)
-				{
-				if (retpFriend) *retpFriend = pObj;
-				bResult = false;
-				break;
-				}
 
 			//	Figure out the object's bearing relative to us
 
