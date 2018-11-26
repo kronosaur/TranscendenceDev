@@ -131,7 +131,12 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 						sVar = ComposeGenderedWord(sVar, ParseGenomeID(pValue->GetStringValue()));
 						}
 					else
-						sVar = strPatternSubst(CONSTLIT("%s not found"), sParam);
+						{
+						if (g_pUniverse->InDebugMode())
+							sVar = strPatternSubst(CONSTLIT("[%s not found]"), sParam);
+						else
+							sVar = ComposeGenderedWord(sVar, genomeHumanMale);
+						}
 					}
 
 				//	Otherwise, we use the player's gender
