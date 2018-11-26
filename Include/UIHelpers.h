@@ -178,6 +178,10 @@ class CUIHelper
 
 		void GenerateDockScreenRTF (const CString &sText, CString *retsRTF) const;
 
+		static constexpr DWORD OPTION_ALIGN_RIGHT =		0x00000001;
+		static constexpr DWORD OPTION_ALIGN_BOTTOM =	0x00000002;
+		static constexpr DWORD OPTION_VERTICAL =		0x00000004;
+		void PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TArray<SDisplayAttribute> &Attribs, DWORD dwOptions = 0) const;
 		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
 		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
 		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;
