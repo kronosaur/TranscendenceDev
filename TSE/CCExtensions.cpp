@@ -965,6 +965,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options\n\n"
 			
+			"   'ignoreCharges\n"
+			"   'ignoreData\n"
+			"   'ignoreDisruption\n"
+			"   'ignoreEnhancements\n"
 			"   'ignoreInstalled",
 
 			"vv*",	0,	},
@@ -4891,22 +4895,12 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_IS_EQUAL:
 			{
-			int i;
 			CItem Item2 = GetItemFromArg(*pCC, pArgs->GetElement(1));
 
 			//	Options
 
-			DWORD dwFlags = 0;
 			ICCItem *pOptions = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
-			if (pOptions)
-				{
-				for (i = 0; i < pOptions->GetCount(); i++)
-					{
-					ICCItem *pOption = pOptions->GetElement(i);
-					if (strEquals(pOption->GetStringValue(), CONSTLIT("ignoreInstalled")))
-						dwFlags |= CItem::FLAG_IGNORE_INSTALLED;
-					}
-				}
+			DWORD dwFlags = CItem::ParseFlags(pOptions);
 
 			pResult = pCC->CreateBool(Item.IsEqual(Item2, dwFlags));
 			break;

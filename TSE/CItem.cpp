@@ -1731,9 +1731,10 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 
 	{
 	const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
+	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 	return (m_pItemType == Item.m_pItemType
-			&& m_dwFlags == Item.m_dwFlags
+			&& ((bIgnoreEnhancements && (m_dwFlags & ~flagEnhanced) == (Item.m_dwFlags & ~flagEnhanced)) || m_dwFlags == Item.m_dwFlags)
 			&& (bIgnoreInstalled || m_dwInstalled == Item.m_dwInstalled)
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
