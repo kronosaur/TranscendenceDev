@@ -390,7 +390,11 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
-			Helper.PaintDisplayAttribs(m_Buffer, ARMOR_ENHANCE_X, pImage->yName + MediumFont.GetHeight(), Attribs, CUIHelper::OPTION_ALIGN_BOTTOM | CUIHelper::OPTION_ALIGN_RIGHT);
+
+			DWORD dwOptions = CUIHelper::OPTION_ALIGN_BOTTOM 
+					| CUIHelper::OPTION_ALIGN_RIGHT;
+
+			Helper.PaintDisplayAttribs(m_Buffer, ARMOR_ENHANCE_X, pImage->yName + MediumFont.GetHeight(), Attribs, dwOptions);
 			}
 		}
 	}

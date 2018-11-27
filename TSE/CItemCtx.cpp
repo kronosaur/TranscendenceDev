@@ -169,12 +169,27 @@ bool CItemCtx::GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retLi
 //	Returns FALSE if there are none.
 
 	{
-	const CItemEnhancementStack *pEnhancements = GetEnhancementStack();
-	if (pEnhancements == NULL || pEnhancements->IsEmpty())
-		return false;
+	//	Get attributes from the enhancement stack
 
-	pEnhancements->AccumulateAttributes(*this, retList);
-	return (retList->GetCount() > 0);
+	const CItemEnhancementStack *pEnhancements = GetEnhancementStack();
+	if (pEnhancements && !pEnhancements->IsEmpty())
+		{
+		pEnhancements->AccumulateAttributes(*this, retList);
+		return (retList->GetCount() > 0);
+		}
+
+	//	Otherwise, if the item is enhanced, then return that
+
+	else if (GetItem().IsEnhanced())
+		{
+		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
+		return true;
+		}
+
+	//	Otherwise, not enhanced.
+
+	else
+		return false;
 	}
 
 TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)

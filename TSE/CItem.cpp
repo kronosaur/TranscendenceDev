@@ -1090,30 +1090,20 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 //	for this item.
 
 	{
-	CInstalledDevice *pDevice;
+	CItemCtx ItemCtx(this, pInstalled);
 
-	//	If this is a device, then ask the device to describe the
-	//	enhancements
-
-	if (pInstalled && IsInstalled() && (pDevice = pInstalled->FindDevice(*this)))
-		return pDevice->GetEnhancedDesc(pInstalled, this);
-
-	//	Deal with complex enhancements
-	//	(if a device happens to have the same type of enhancement, this
-	//	function will add the two enhancements together)
-
-	if (GetMods().IsNotEmpty())
-		return GetMods().GetEnhancedDesc(*this, pInstalled);
-
-	//	Otherwise, generic enhancement
-
-	else if (IsEnhanced())
-		return CONSTLIT("+enhanced");
-
-	//	Otherwise, not enhanced
-
-	else
+	TArray<SDisplayAttribute> Attribs;
+	if (!ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 		return NULL_STR;
+
+	CString sResult = Attribs[0].sText;
+	for (int i = 1; i < Attribs.GetCount(); i++)
+		{
+		sResult.Append(CONSTLIT(" "));
+		sResult.Append(Attribs[i].sText);
+		}
+
+	return sResult;
 	}
 
 int CItem::GetMassKg (void) const

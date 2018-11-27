@@ -848,14 +848,14 @@ void CUIHelper::PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TAr
 //	Paint item display attributes.
 
 	{
-	static constexpr int MARGIN_X = 2;
-	static constexpr int MARGIN_Y = 1;
 	static constexpr int PADDING_X = 2;
 	static constexpr int PADDING_Y = 1;
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &Font = VI.GetFont(fontSmall);
 
+	const int MARGIN_X = ((dwOptions & OPTION_NO_MARGIN) ? 0 : 2);
+	const int MARGIN_Y = ((dwOptions & OPTION_NO_MARGIN) ? 0 : 1);
 	const int BOX_HEIGHT = Font.GetHeight() + (2 * PADDING_Y);
 
 	//	If we're aligned at the bottom, then the y position is the position of
@@ -928,12 +928,37 @@ void CUIHelper::PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TAr
 			}
 		}
 
-	//	Otherwise, paint on a single line, aligned to the left.
+	//	Otherwise, paint on a single line, aligned to the left or to the center
 
 	else
 		{
-		int xPos = x;
+		//	Figure out where we start painting, depending on whether we are left-
+		//	aligned or centered.
+
+		int xPos;
+		if (dwOptions & OPTION_ALIGN_CENTER)
+			{
+			//	Measure all attributes.
+
+			int cxTotal = 0;
+			TArray<int> cx;
+			cx.InsertEmpty(Attribs.GetCount());
+			for (int i = 0; i < Attribs.GetCount(); i++)
+				{
+				cx[i] = Font.MeasureText(Attribs[i].sText);
+				cxTotal += cx[i];
+				}
+
+			cxTotal += MARGIN_X * (Attribs.GetCount() - 1);
+
+			xPos = x - (cxTotal / 2);
+			}
+		else
+			xPos = x;
+
 		int yPos = y + yOffset;
+
+		//	Paint all attributes on the line.
 
 		for (int i = 0; i < Attribs.GetCount(); i++)
 			{

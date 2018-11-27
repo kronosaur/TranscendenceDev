@@ -54,14 +54,17 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 
 	//	Get the armor name and mods
 
+	CItemCtx ItemCtx(pShip, pArmor);
 	CString sName = pArmor->GetClass()->GetShortName();
 	CItemListManipulator ItemList(pShip->GetItemList());
 	pShip->SetCursorAtArmor(ItemList, pArmor->GetSect());
-	CString sMods = ItemList.GetItemAtCursor().GetEnhancedDesc(pShip);
+
+	TArray<SDisplayAttribute> Attribs;
+	ItemCtx.GetEnhancementDisplayAttributes(&Attribs);
 
 	//	Draw it
 
-	DrawItemBox(Dest, iAngle, iRadius, sName, sMods, rgbBack, rgbColor);
+	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
 	}
 
 void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sText, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -177,7 +180,7 @@ void CArmorHUDRingSegments::DrawIntegrityBox (CG32bitImage &Dest, int iAngle, in
 				CGDraw::TEXT_ALIGN_CENTER);
 	}
 
-void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const CString &sMods, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
+void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRadius, const CString &sName, const TArray<SDisplayAttribute> &Attribs, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
 
 	//	DrawItemBox
 	//
@@ -214,9 +217,14 @@ void CArmorHUDRingSegments::DrawItemBox (CG32bitImage &Dest, int iAngle, int iRa
 
 	//	Paint modifier
 
-	int xMod = (int)vTextPos.GetX();
-	int yMod = (int)vTextPos.GetY() + cyText;
-	DrawModifier(Dest, xMod, yMod, sMods, locAlignCenter);
+	if (Attribs.GetCount() > 0)
+		{
+		CUIHelper Helper(*g_pHI);
+
+		DWORD dwOptions = CUIHelper::OPTION_ALIGN_CENTER;
+
+		Helper.PaintDisplayAttribs(Dest, (int)vTextPos.GetX(), (int)vTextPos.GetY() + cyText, Attribs, dwOptions);
+		}
 	}
 
 void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int iRadius, CShip *pShip, CInstalledDevice *pShields, CG32bitPixel rgbBack, CG32bitPixel rgbColor)
@@ -226,17 +234,14 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 //	Draws the name and mods for the shields
 
 	{
+	CItemCtx ItemCtx(pShip, pShields);
+
 	CString sName = pShields->GetClass()->GetName();
-	CString sMods;
 
-	if (pShields->GetEnhancementStack())
-		{
-		CItemListManipulator ItemList(pShip->GetItemList());
-		pShip->SetCursorAtNamedDevice(ItemList, devShields);
-		sMods = pShields->GetEnhancedDesc(pShip, &ItemList.GetItemAtCursor());
-		}
+	TArray<SDisplayAttribute> Attribs;
+	ItemCtx.GetEnhancementDisplayAttributes(&Attribs);
 
-	DrawItemBox(Dest, iAngle, iRadius, sName, sMods, rgbBack, rgbColor);
+	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
 	}
 
 void CArmorHUDRingSegments::GetBounds (int *retWidth, int *retHeight) const

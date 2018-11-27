@@ -192,6 +192,8 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 
 	if (pShield)
 		{
+		CItemCtx ItemCtx(pShip, pShield);
+
 		int cxWidth;
 
 		if (iMaxHP > 0)
@@ -240,27 +242,14 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 
 		//	Paint the modifiers
 
-		if (pShield->GetEnhancementStack())
+		TArray<SDisplayAttribute> Attribs;
+		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 			{
-			pShip->SetCursorAtNamedDevice(ItemList, devShields);
-			CString sMods = pShield->GetEnhancedDesc(pShip, &ItemList.GetItemAtCursor());
-			if (!sMods.IsBlank())
-				{
-				bool bDisadvantage = (*(sMods.GetASCIIZPointer()) == '-');
+			CUIHelper Helper(*g_pHI);
 
-				int cx = SmallFont.MeasureText(sMods);
-				Dest.Fill(x + SHIELD_HP_DISPLAY_X - cx - 8,
-						y + SHIELD_HP_DISPLAY_Y,
-						cx + 8,
-						SHIELD_HP_DISPLAY_HEIGHT,
-						(bDisadvantage ? VI.GetColor(colorAreaDisadvantage) : VI.GetColor(colorAreaAdvantage)));
+			DWORD dwOptions = CUIHelper::OPTION_ALIGN_RIGHT;
 
-				SmallFont.DrawText(Dest,
-						x + SHIELD_HP_DISPLAY_X - cx - 4,
-						y + SHIELD_HP_DISPLAY_Y + (SHIELD_HP_DISPLAY_HEIGHT - SmallFont.GetHeight()) / 2,
-						(bDisadvantage ? VI.GetColor(colorTextDisadvantage) : VI.GetColor(colorTextAdvantage)),
-						sMods);
-				}
+			Helper.PaintDisplayAttribs(Dest, x + SHIELD_HP_DISPLAY_X, y + SHIELD_HP_DISPLAY_Y, Attribs, dwOptions);
 			}
 		}
 

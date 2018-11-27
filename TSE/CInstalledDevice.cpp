@@ -158,32 +158,19 @@ CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *p
 
 	{
 	CItemCtx ItemCtx(pSource, this);
-	int iDamageBonus;
 
-	//	If the item is enhanced, then we show the enhancement
-	//	(if a device happens to have the same type of enhancement, this
-	//	function will add the two enhancements together)
-
-	if (GetMods().IsNotEmpty())
-		return GetMods().GetEnhancedDesc((pItem ? *pItem : pSource->GetItemForDevice(this)), pSource, this);
-
-	//	Describe enhancements from the device only (e.g., confered by other devices)
-
-	else if (GetActivateDelay(pSource) > m_pClass->GetActivateDelay(ItemCtx))
-		return CONSTLIT("-slow");
-	else if (GetActivateDelay(pSource) < m_pClass->GetActivateDelay(ItemCtx))
-		return CONSTLIT("+fast");
-	else if (iDamageBonus = (m_pEnhancements ? m_pEnhancements->GetBonus() : 0))
-		return (iDamageBonus > 0 ? strPatternSubst(CONSTLIT("+%d%%"), iDamageBonus) : strPatternSubst(CONSTLIT("%d%%"), iDamageBonus));
-	else if (m_pEnhancements && m_pEnhancements->IsTracking() && !m_pClass->IsTrackingWeapon(CItemCtx()))
-		return CONSTLIT("+tracking");
-
-	//	Other enhancements
-
-	else if (IsEnhanced())
-		return CONSTLIT("+enhanced");
-	else
+	TArray<SDisplayAttribute> Attribs;
+	if (!ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
 		return NULL_STR;
+
+	CString sResult = Attribs[0].sText;
+	for (int i = 1; i < Attribs.GetCount(); i++)
+		{
+		sResult.Append(CONSTLIT(" "));
+		sResult.Append(Attribs[i].sText);
+		}
+
+	return sResult;
 	}
 
 ItemFates CInstalledDevice::GetFate (void) const
