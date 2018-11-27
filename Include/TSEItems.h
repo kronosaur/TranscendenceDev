@@ -116,7 +116,6 @@ class CItemEnhancement
 		inline int GetDataB (void) const { return (int)(DWORD)((m_dwMods & etDataBMask) >> 16); }
 		inline int GetDataC (void) const { return (int)(DWORD)((m_dwMods & etDataCMask) >> 24); }
 		inline int GetDataX (void) const { return (int)(DWORD)((m_dwMods & etDataXMask) >> 16); }
-		CString GetEnhancedDesc (const CItem &Item, CSpaceObject *pInstalled, CInstalledDevice *pDevice = NULL) const;
 		int GetEnhancedRate (int iRate) const;
 		inline CItemType *GetEnhancementType (void) const { return m_pEnhancer; }
 		inline int GetExpireTime (void) const { return m_iExpireTime; }
