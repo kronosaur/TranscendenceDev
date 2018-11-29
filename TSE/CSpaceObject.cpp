@@ -151,6 +151,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
+#define SPECIAL_LOCATION						CONSTLIT("location:")
 #define SPECIAL_PROPERTY						CONSTLIT("property:")
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
@@ -5089,6 +5090,28 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 		//	Check value
 
 		return (bIsPlanet == strEquals(sValue, SPECIAL_VALUE_TRUE));
+		}
+	else if (strStartsWith(sAttrib, SPECIAL_LOCATION))
+		{
+		CString sLocationAttrib = strSubString(sAttrib, SPECIAL_LOCATION.GetLength());
+		CSystem *pSystem = GetSystem();
+		if (pSystem == NULL)
+			return false;
+
+		//	See if we have this as a system attribute or a territory attribute.
+
+		if (::HasModifier(pSystem->GetAttribsAtPos(GetPos()), sLocationAttrib))
+			return true;
+
+		//	See if we have this as a location
+
+		const CLocationDef *pLoc = pSystem->GetLocations().GetLocationByObjID(GetID());
+		if (pLoc && ::HasModifier(pLoc->GetAttributes(), sLocationAttrib))
+			return true;
+
+		//	Otherwise, we don't have this location attribute.
+
+		return false;
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
 		{

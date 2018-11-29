@@ -7,13 +7,6 @@
 
 const Metric OVERLAP_DIST =	25.0 * LIGHT_SECOND;
 
-CLocationList::CLocationList (void) : m_bMinDistCheck(false)
-
-//	CLocationList constructor
-
-	{
-	}
-
 void CLocationList::FillCloseLocations (void)
 
 //	FillCloseLocations
@@ -140,6 +133,33 @@ bool CLocationList::GetEmptyLocations (TArray<int> *retList)
 			retList->Insert(i);
 
 	return (retList->GetCount() > 0);
+	}
+
+const CLocationDef *CLocationList::GetLocationByObjID (DWORD dwObjID) const
+
+//	GetLocationByObjID
+//
+//	Returns a location definition from an object ID.
+
+	{
+	//	Rebuild the index if necessary
+
+	if (m_ObjIndex.GetCount() == 0)
+		{
+		for (int i = 0; i < m_List.GetCount(); i++)
+			{
+			if (m_List[i].GetObjID() != 0)
+				m_ObjIndex.SetAt(m_List[i].GetObjID(), i);
+			}
+		}
+
+	//	Do a look up.
+
+	int *pIndex = m_ObjIndex.GetAt(dwObjID);
+	if (pIndex == NULL)
+		return NULL;
+
+	return &m_List[*pIndex];
 	}
 
 CLocationDef *CLocationList::Insert (const CString &sID)

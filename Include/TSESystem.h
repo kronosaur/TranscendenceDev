@@ -365,23 +365,25 @@ class CLocationDef
 class CLocationList
 	{
 	public:
-		CLocationList (void);
-
 		void FillCloseLocations (void);
 		void FillOverlappingWith (CSpaceObject *pObj);
 		inline int GetCount (void) { return m_List.GetCount(); }
 		bool GetEmptyLocations (TArray<int> *retList);
 		inline CLocationDef *GetLocation (int iIndex) { return &m_List[iIndex]; }
+		const CLocationDef *GetLocationByObjID (DWORD dwObjID) const;
 		CLocationDef *Insert (const CString &sID = NULL_STR);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetBlocked (int iIndex) { m_List[iIndex].SetBlocked(); }
-		inline void SetObjID (int iIndex, DWORD dwObjID) { m_List[iIndex].SetObjID(dwObjID); }
+		inline void SetObjID (int iIndex, DWORD dwObjID) { m_List[iIndex].SetObjID(dwObjID); InvalidateObjIndex(); }
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
-		TArray<CLocationDef> m_List;
+		inline void InvalidateObjIndex (void) { m_ObjIndex.DeleteAll(); }
 
-		bool m_bMinDistCheck;				//	If TRUE, then we've checked all locations for min distance
+		TArray<CLocationDef> m_List;
+		mutable TSortMap<DWORD, int> m_ObjIndex;	//	Map from Obj ID to location definition//
+
+		bool m_bMinDistCheck = false;		//	If TRUE, then we've checked all locations for min distance
 	};
 
 class CTerritoryDef
@@ -768,6 +770,7 @@ class CSystem
 		inline DWORD GetID (void) { return m_dwID; }
 		inline int GetLastUpdated (void) { return m_iLastUpdated; }
 		int GetLevel (void);
+		inline const CLocationList &GetLocations (void) const { return m_Locations; }
 		CSpaceObject *GetNamedObject (const CString &sName);
 		inline const CString &GetName (void) { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);

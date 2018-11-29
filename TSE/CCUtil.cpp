@@ -923,6 +923,9 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 
 		else if (strEquals(sTag, CONSTLIT("location")))
 			{
+			//	LATER: At some point we should allow the result of
+			//	sysGetRandomLocation to be used here.
+
 			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 			if (pSystem == NULL)
 				return ERR_FAIL;
