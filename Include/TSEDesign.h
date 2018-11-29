@@ -253,6 +253,7 @@ class CDesignType
 		void FireOnGlobalIntroStarted (const SEventHandlerDesc &Event);
 		void FireOnGlobalMarkImages (const SEventHandlerDesc &Event);
 		void FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDestroyCtx &Ctx);
+		bool FireOnGlobalObjGateCheck (const SEventHandlerDesc &Event, CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		void FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CString *retsError = NULL);
 		ALERROR FireOnGlobalPlayerEnteredSystem (CString *retsError = NULL);
@@ -1151,22 +1152,23 @@ class CDesignCollection
 			evtOnGlobalMarkImages			= 7,
 			
 			evtOnGlobalObjDestroyed			= 8,
+			evtOnGlobalObjGateCheck			= 9,
 
-			evtOnGlobalPlayerBoughtItem		= 9,
-			evtOnGlobalPlayerSoldItem		= 10,
-			evtOnGlobalStartDiagnostics		= 11,
+			evtOnGlobalPlayerBoughtItem		= 10,
+			evtOnGlobalPlayerSoldItem		= 11,
+			evtOnGlobalStartDiagnostics		= 12,
 
-			evtOnGlobalSystemDiagnostics	= 12,
-			evtOnGlobalSystemStarted		= 13,
-			evtOnGlobalSystemStopped		= 14,
+			evtOnGlobalSystemDiagnostics	= 13,
+			evtOnGlobalSystemStarted		= 14,
+			evtOnGlobalSystemStopped		= 15,
 
-			evtOnGlobalUniverseCreated		= 15,
-			evtOnGlobalUniverseLoad			= 16,
-			evtOnGlobalUniverseSave			= 17,
+			evtOnGlobalUniverseCreated		= 16,
+			evtOnGlobalUniverseLoad			= 17,
+			evtOnGlobalUniverseSave			= 18,
 			
-			evtOnGlobalUpdate				= 18,
+			evtOnGlobalUpdate				= 19,
 
-			evtCount						= 19
+			evtCount						= 20
 			};
 
 		enum EFlags
@@ -1225,6 +1227,7 @@ class CDesignCollection
 		void FireOnGlobalIntroStarted (void);
 		void FireOnGlobalMarkImages (void);
 		void FireOnGlobalObjDestroyed (SDestroyCtx &Ctx);
+		bool FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj);
 		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData);
 		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip);

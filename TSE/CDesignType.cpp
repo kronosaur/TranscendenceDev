@@ -65,6 +65,7 @@
 #define ON_GLOBAL_INTRO_STARTED_EVENT			CONSTLIT("OnGlobalIntroStarted")
 #define ON_GLOBAL_MARK_IMAGES_EVENT				CONSTLIT("OnGlobalMarkImages")
 #define ON_GLOBAL_OBJ_DESTROYED_EVENT			CONSTLIT("OnGlobalObjDestroyed")
+#define ON_GLOBAL_OBJ_GATE_CHECK_EVENT			CONSTLIT("OnGlobalObjGateCheck")
 #define ON_GLOBAL_DOCK_PANE_INIT_EVENT			CONSTLIT("OnGlobalPaneInit")
 #define ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT		CONSTLIT("OnGlobalPlayerBoughtItem")
 #define ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT	CONSTLIT("OnGlobalPlayerChangedShips")
@@ -1228,6 +1229,35 @@ void CDesignType::FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDes
 		ReportEventError(ON_GLOBAL_OBJ_DESTROYED_EVENT, pResult);
 
 	CCCtx.Discard(pResult);
+	}
+
+bool CDesignType::FireOnGlobalObjGateCheck (const SEventHandlerDesc &Event, CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
+
+//	FireOnGlobalObjGateCheck
+//
+//	Asks whether the type will allow the player to gate.
+
+	{
+	CCodeChainCtx Ctx;
+	Ctx.DefineContainingType(this);
+
+	Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
+	Ctx.DefineSpaceObject(CONSTLIT("aGateObj"), pGateObj);
+	Ctx.DefineString(CONSTLIT("aDestNodeID"), (pDestNode ? pDestNode->GetID() : NULL_STR));
+	Ctx.DefineString(CONSTLIT("aDestEntryPoint"), sDestEntryPoint);
+
+	//	Execute
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		ReportEventError(ON_GLOBAL_OBJ_GATE_CHECK_EVENT, pResult);
+		return false;
+		}
+	else if (pResult->IsNil())
+		return false;
+	else
+		return true;
 	}
 
 ALERROR CDesignType::FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CString *retsError)

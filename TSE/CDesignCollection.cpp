@@ -30,6 +30,7 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 		"OnGlobalMarkImages",
 		
 		"OnGlobalObjDestroyed",
+		"OnGlobalObjGateCheck",
 
 		"OnGlobalPlayerBoughtItem",
 		"OnGlobalPlayerSoldItem",
@@ -882,6 +883,27 @@ void CDesignCollection::FireOnGlobalObjDestroyed (SDestroyCtx &Ctx)
 
 		pType->FireOnGlobalObjDestroyed(Event, Ctx);
 		}
+	}
+
+bool CDesignCollection::FireOnGlobalObjGateCheck (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
+
+//	FireOnGlobalObjGateCheck
+//
+//	Asks all types whether they will allow the player to gate.
+
+	{
+	bool bResult = true;
+
+	for (int i = 0; i < m_EventsCache[evtOnGlobalObjGateCheck]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalObjGateCheck]->GetEntry(i, &Event);
+
+		if (!pType->FireOnGlobalObjGateCheck(Event, pObj, pDestNode, sDestEntryPoint, pGateObj))
+			bResult = false;
+		}
+
+	return bResult;
 	}
 
 void CDesignCollection::FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData)
