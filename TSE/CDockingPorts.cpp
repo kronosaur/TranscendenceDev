@@ -142,6 +142,39 @@ void CDockingPorts::DeleteAll (CSpaceObject *pOwner)
 	CleanUp();
 	}
 
+bool CDockingPorts::DockAtPort (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort)
+
+//	DockAtPort
+//
+//	Docks at the given port and returns TRUE if successful.
+
+	{
+	//	Make sure this is a valid port to dock at.
+
+	if (iPort < 0 || iPort >= m_iPortCount || m_pPort[iPort].iStatus != psEmpty)
+		return false;
+
+	//	Dock
+
+	m_pPort[iPort].pObj = pObj;
+	m_pPort[iPort].iStatus = psInUse;
+
+	int iRotation;
+	pObj->Place(GetPortPos(pOwner, m_pPort[iPort], pObj, NULL, &iRotation));
+	pObj->OnDocked(pOwner);
+
+	//	Set the ship's rotation. We do this because this is only called
+	//	during set up
+
+	CShip *pShip = pObj->AsShip();
+	if (pShip)
+		pShip->SetRotation(iRotation);
+
+	//	Success!
+
+	return true;
+	}
+
 void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 
 //	DockAtRandomPort
@@ -149,11 +182,10 @@ void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 //	Dock the ship at a random port. This is used during setup
 
 	{
-	int i;
 	int iStart = mathRandom(0, m_iPortCount - 1);
 	int iDockingPort = -1;
 
-	for (i = 0; i < m_iPortCount; i++)
+	for (int i = 0; i < m_iPortCount; i++)
 		{
 		int iPort = (iStart + i) % m_iPortCount;
 		if (m_pPort[iPort].iStatus == psEmpty)
@@ -167,19 +199,7 @@ void CDockingPorts::DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj)
 
 	if (iDockingPort != -1)
 		{
-		m_pPort[iDockingPort].pObj = pObj;
-		m_pPort[iDockingPort].iStatus = psInUse;
-
-		int iRotation;
-		pObj->Place(GetPortPos(pOwner, m_pPort[iDockingPort], pObj, NULL, &iRotation));
-		pObj->OnDocked(pOwner);
-
-		//	Set the ship's rotation. We do this because this is only called
-		//	during set up
-
-		CShip *pShip = pObj->AsShip();
-		if (pShip)
-			pShip->SetRotation(iRotation);
+		DockAtPort(pOwner, pObj, iDockingPort);
 		}
 	else
 		{
@@ -656,7 +676,7 @@ void CDockingPorts::InitXYPortPos (int iRotation, int iScale) const
 	m_iLastRotation = iRotation;
 	}
 
-bool CDockingPorts::IsDocked (CSpaceObject *pObj)
+bool CDockingPorts::IsDocked (CSpaceObject *pObj, int *retiPort) const
 
 //	IsDocked
 //
@@ -666,7 +686,11 @@ bool CDockingPorts::IsDocked (CSpaceObject *pObj)
 	for (int i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].iStatus == psInUse)
 			if (pObj == m_pPort[i].pObj)
+				{
+				if (retiPort)
+					*retiPort = i;
 				return true;
+				}
 
 	return false;
 	}

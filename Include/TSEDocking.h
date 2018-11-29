@@ -16,6 +16,7 @@ class CDockingPorts
 
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iOwnerRotation, int iScale) const;
 		void DeleteAll (CSpaceObject *pOwner);
+		bool DockAtPort (CSpaceObject *pOwner, CSpaceObject *pObj, int iPort);
 		void DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj);
 		bool DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const;
 		int FindNearestEmptyPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, CVector *retvDistance = NULL, int *retiEmptyPortCount = NULL);
@@ -26,7 +27,7 @@ class CDockingPorts
 		void InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius);
 		void InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc);
 		void InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale = -1);
-		inline bool IsObjDocked (CSpaceObject *pObj) { return IsDocked(pObj); }
+		inline bool IsObjDocked (CSpaceObject *pObj, int *retiPort = NULL) const { return IsDocked(pObj, retiPort); }
 		inline bool IsObjDockedOrDocking (CSpaceObject *pObj) { return IsDockedOrDocking(pObj); }
 		inline bool IsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
 		void MoveAll (CSpaceObject *pOwner);
@@ -82,7 +83,7 @@ class CDockingPorts
 		CVector GetPortPosAtRotation (int iOwnerRotation, int iScale, int iPort, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		void InitXYPortPos (CSpaceObject *pOwner, int iScale = -1) const;
 		void InitXYPortPos (int iRotation, int iScale) const;
-		bool IsDocked (CSpaceObject *pObj);
+		bool IsDocked (CSpaceObject *pObj, int *retiPort = NULL) const;
 		bool IsDockedOrDocking (CSpaceObject *pObj);
 		bool ShipsNearPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, const CVector &vPortPos);
 		void UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &Port);
