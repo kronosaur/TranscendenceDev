@@ -228,14 +228,14 @@ void CShip::AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray
 	m_Devices.AccumulateEnhancementsToArmor(this, pArmor, EnhancementIDs, pEnhancements);
 	}
 
-void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifeLeft, DWORD *retdwID)
+void CShip::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
 
 //	AddOverlay
 //
 //	Adds an overlay to the ship
 
 	{
-	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iLifeLeft, retdwID);
+	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifeLeft, retdwID);
 
 	//	Recalc bonuses, etc.
 
@@ -1752,7 +1752,7 @@ void CShip::DamageCargo (SDamageCtx &Ctx)
 
 		//	Add the overlay (lasts 10-30 seconds real time)
 
-		AddOverlay(pOverlayType, iPosAngle, iPosRadius, iPosAngle, mathRandom(10 * g_TicksPerSecond, 30 * g_TicksPerSecond));
+		AddOverlay(pOverlayType, iPosAngle, iPosRadius, iPosAngle, 0, mathRandom(10 * g_TicksPerSecond, 30 * g_TicksPerSecond));
 		}
 	}
 
@@ -1772,7 +1772,7 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 
 	COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_SMALL);
 	if (pOverlayType)
-		CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, 9000);
+		CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, 0, 9000);
 	}
 
 void CShip::DamageDrive (SDamageCtx &Ctx)
@@ -1807,7 +1807,7 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 		COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_MEDIUM);
 		if (pOverlayType
 				&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DRIVE_DAMAGE_OVERLAY_COUNT)
-			CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, iDamageTime);
+			CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, 0, iDamageTime);
 
 		//	Update performance (which also updates effects).
 
@@ -4477,7 +4477,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
 			&& !IsTimeStopped())
 		{
-		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
+		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
 
 		//	No damage
 

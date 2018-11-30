@@ -101,6 +101,7 @@ void COverlayList::AddField (CSpaceObject *pSource,
 								 int iPosAngle,
 								 int iPosRadius,
 								 int iRotation,
+								 int iPosZ,
 								 int iLifeLeft, 
 								 DWORD *retdwID)
 
@@ -113,7 +114,8 @@ void COverlayList::AddField (CSpaceObject *pSource,
 	COverlay::CreateFromType(pType, 
 			iPosAngle, 
 			iPosRadius, 
-			iRotation, 
+			iRotation,
+			iPosZ,
 			iLifeLeft, 
 			&pField);
 

@@ -187,7 +187,7 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 	{
 	//	Adjust position, if necessary
 
-	if (m_iPosRadius)
+	if (m_iPosRadius || m_iPosZ)
 		{
 		//	Do we rotate with the source?
 
@@ -197,7 +197,7 @@ void COverlay::CalcOffset (int iScale, int iRotation, int *retxOffset, int *rety
 
 		//	Adjust based on position
 
-		C3DConversion::CalcCoord(iScale, iRotationOrigin + m_iPosAngle, m_iPosRadius, 0, retxOffset, retyOffset);
+		C3DConversion::CalcCoord(iScale, iRotationOrigin + m_iPosAngle, m_iPosRadius, m_iPosZ, retxOffset, retyOffset);
 		}
 
 	//	Otherwise, we're at the center
@@ -258,6 +258,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 								   int iPosAngle,
 								   int iPosRadius,
 								   int iRotation,
+								   int iPosZ,
 								   int iLifeLeft, 
 								   COverlay **retpField)
 
@@ -278,6 +279,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 	pField->m_iPosAngle = iPosAngle;
 	pField->m_iPosRadius = iPosRadius;
 	pField->m_iRotation = iRotation;
+	pField->m_iPosZ = iPosZ;
 	pField->m_iPaintHit = 0;
 
 	//	Create painters
@@ -934,6 +936,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 //	DWORD	m_iPosAngle
 //	DWORD	m_iPosRadius
 //	DWORD	m_iRotation
+//	DWORD	m_iPosZ
 //	DWORD	m_iDevice
 //	DWORD	Life left
 //	CAttributeDataBlock m_Data
@@ -964,6 +967,15 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 		m_iPosAngle = 0;
 		m_iPosRadius = 0;
 		m_iRotation = 0;
+		}
+
+	if (Ctx.dwVersion >= 167)
+		{
+		Ctx.pStream->Read((char *)&m_iPosZ, sizeof(DWORD));
+		}
+	else
+		{
+		m_iPosZ = 0;
 		}
 
 	if (Ctx.dwVersion >= 63)
@@ -1200,6 +1212,7 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 //	DWORD	m_iPosAngle
 //	DWORD	m_iPosRadius
 //	DWORD	m_iRotation
+//	DWORD	m_iPosZ
 //	DWORD	m_iDevice
 //	DWORD	m_iTick
 //	DWORD	Life left
@@ -1217,6 +1230,7 @@ void COverlay::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&m_iPosAngle, sizeof(DWORD));
 	pStream->Write((char *)&m_iPosRadius, sizeof(DWORD));
 	pStream->Write((char *)&m_iRotation, sizeof(DWORD));
+	pStream->Write((char *)&m_iPosZ, sizeof(DWORD));
 	pStream->Write((char *)&m_iDevice, sizeof(DWORD));
 	pStream->Write((char *)&m_iTick, sizeof(DWORD));
 	pStream->Write((char *)&m_iLifeLeft, sizeof(DWORD));

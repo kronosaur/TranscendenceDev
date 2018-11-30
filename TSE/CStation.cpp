@@ -146,14 +146,14 @@ CStation::~CStation (void)
 		delete m_pTrade;
 	}
 
-void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifeLeft, DWORD *retdwID)
+void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
 
 //	AddOverlay
 //
 //	Adds an overlay to the ship
 
 	{
-	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iLifeLeft, retdwID);
+	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifeLeft, retdwID);
 
 	//	Recalc bonuses, etc.
 
@@ -2146,7 +2146,7 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 			&& !IsImmuneTo(CConditionSet::cndTimeStopped)
 			&& !IsTimeStopped())
 		{
-		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
+		AddOverlay(UNID_TIME_STOP_OVERLAY, 0, 0, 0, 0, DEFAULT_TIME_STOP_TIME + mathRandom(0, 29));
 
 		//	No damage
 

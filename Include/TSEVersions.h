@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							43;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					167;
+constexpr DWORD SYSTEM_SAVE_VERSION =					168;
 
 //	Uncomment out the following define when building a stable release
 
@@ -613,3 +613,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					167;
 //
 //	167: 1.8 Beta 4
 //		m_dwBackgroundImageOverride in CSystemMap
+//
+//	168: 1.8 Beta 4
+//		m_iPosZ in COverlay

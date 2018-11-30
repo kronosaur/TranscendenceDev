@@ -1404,7 +1404,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		{	"objAddOverlay",				fnObjSet,		FN_OBJ_ADD_OVERLAY,
 			"(objAddOverlay obj overlayType [lifetime]) -> overlayID\n"
-			"(objAddOverlay obj overlayType pos rotation [lifetime]) -> overlayID",
+			"(objAddOverlay obj overlayType pos rotation [lifetime]) -> overlayID\n"
+			"(objAddOverlay obj overlayType pos rotation lifetime [posZ]) -> overlayID",
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objAddRandomItems",			fnObjAddRandomItems,	0,
@@ -7596,6 +7597,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int iPosAngle = 0;
 			int iPosRadius = 0;
 			int iRotation = 0;
+			int iPosZ = 0;
 
 			if (pArgs->GetCount() == 3)
 				iLifetime = pArgs->GetElement(2)->GetIntegerValue();
@@ -7619,12 +7621,17 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				int iArg = 4;
 				if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsInteger())
 					iLifetime = pArgs->GetElement(iArg++)->GetIntegerValue();
+
+				//	PosZ
+
+				if (pArgs->GetCount() > iArg && pArgs->GetElement(iArg)->IsInteger())
+					iPosZ = pArgs->GetElement(iArg++)->GetIntegerValue();
 				}
 
 			//	Add it
 
 			DWORD dwID;
-			pObj->AddOverlay(pField, iPosAngle, iPosRadius, iRotation, iLifetime, &dwID);
+			pObj->AddOverlay(pField, iPosAngle, iPosRadius, iRotation, iPosZ, iLifetime, &dwID);
 			if (dwID == 0)
 				return pCC->CreateNil();
 			else
@@ -10288,7 +10295,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pField == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown ship energy field"), NULL);
 
-			pShip->AddOverlay(pField, 0, 0, 0, iLifetime);
+			pShip->AddOverlay(pField, 0, 0, 0, 0, iLifetime);
 			pResult = pCC->CreateTrue();
 			break;
 			}

@@ -127,7 +127,7 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 	if (pOverlayType)
 		{
 		DWORD dwID;
-		pSource->AddOverlay(pOverlayType, GetPosAngle(), GetPosRadius(), 0, -1, &dwID);
+		pSource->AddOverlay(pOverlayType, GetPosAngle(), GetPosRadius(), 0, 0, -1, &dwID);
 
 		COverlay *pOverlay = pSource->GetOverlay(dwID);
 		if (pOverlay)

@@ -462,6 +462,7 @@ class COverlay
 									int iPosAngle,
 									int iPosRadius,
 									int iRotation,
+									int iPosZ,
 									int iLifeLeft, 
 									COverlay **retpField);
 
@@ -529,6 +530,7 @@ class COverlay
 		int m_iPosAngle;						//	Position relative to source (degrees)
 		int m_iPosRadius;						//	Position relative to source (pixels)
 		int m_iRotation;						//	Overlay orientation (degrees)
+		int m_iPosZ;							//  Overlay height (pixels)
 
 		CAttributeDataBlock m_Data;				//	data
 		int m_iCounter;							//	Arbitrary counter
@@ -557,6 +559,7 @@ class COverlayList
 					   int iPosAngle,
 					   int iPosRadius,
 					   int iRotation,
+					   int iPosZ,
 					   int iLifeLeft, 
 					   DWORD *retdwID = NULL);
 		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
@@ -1195,14 +1198,14 @@ class CSpaceObject : public CObject
 
 		//	Overlays
 
-		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
+		virtual void AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, int iPosZ, DWORD *retdwID = NULL) { if (retdwID) *retdwID = 0; }
 		virtual COverlayList *GetOverlays (void) { return NULL; }
 		virtual const COverlayList *GetOverlays (void) const { return NULL; }
 		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) { }
 		virtual void RemoveOverlay (DWORD dwID) { }
 
-		void AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iLifetime, DWORD *retdwID = NULL);
-		void AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID = NULL);
+		void AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID = NULL);
+		void AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID = NULL);
 		void CalcOverlayPos (COverlayType *pOverlayType, const CVector &vPos, int *retiPosAngle, int *retiPosRadius);
 		inline COverlay *GetOverlay (DWORD dwID) { COverlayList *pOverlays = GetOverlays(); return (pOverlays ? pOverlays->GetOverlay(dwID) : NULL); }
 		ICCItemPtr GetOverlayData (DWORD dwID, const CString &sAttrib) const;

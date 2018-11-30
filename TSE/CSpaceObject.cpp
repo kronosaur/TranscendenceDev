@@ -540,7 +540,7 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 	return iResult;
 	}
 
-void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iLifetime, DWORD *retdwID)
+void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID)
 
 //	AddOverlay
 //
@@ -555,10 +555,10 @@ void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRo
 			
 	//	Add the overlay
 
-	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iLifetime, retdwID);
+	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifetime, retdwID);
 	}
 
-void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int iRotation, int iLifetime, DWORD *retdwID)
+void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID)
 
 //	AddOverlay
 //
@@ -572,7 +572,7 @@ void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int 
 		return;
 		}
 
-	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iLifetime, retdwID);
+	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifetime, retdwID);
 	}
 
 ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
