@@ -969,7 +969,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 		m_iRotation = 0;
 		}
 
-	if (Ctx.dwVersion >= 167)
+	if (Ctx.dwVersion >= 168)
 		{
 		Ctx.pStream->Read((char *)&m_iPosZ, sizeof(DWORD));
 		}
