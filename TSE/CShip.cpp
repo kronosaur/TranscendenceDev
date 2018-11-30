@@ -1763,6 +1763,8 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 //	Damages the given device
 
 	{
+	ASSERT(pDevice);
+
 	//	Damage the device
 
 	DamageItem(pDevice);
@@ -1772,7 +1774,7 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 
 	COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_SMALL);
 	if (pOverlayType)
-		CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, 0, 9000);
+		AddOverlay(pOverlayType, pDevice->GetPosAngle(), pDevice->GetPosRadius(), 180, pDevice->GetPosZ(), 9000);
 	}
 
 void CShip::DamageDrive (SDamageCtx &Ctx)
