@@ -1986,7 +1986,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",		0,	},
 
 		{	"objGetSellPrice",				fnObjGet,		FN_OBJ_GET_SELL_PRICE,	
-			"(objGetSellPrice obj item ['noInventoryCheck]) -> price (at which obj sells item)",
+			"(objGetSellPrice obj item [options]) -> price (at which obj sells item)\n\n"
+			
+			"options:\n\n"
+			
+			"   'allowFree\n"
+			"   'noInventoryCheck",
+
 			"il*",		PPFLAG_SIDEEFFECTS,	},
 
 		{	"objGetShieldLevel",			fnObjGetOld,		FN_OBJ_SHIELD_LEVEL,
@@ -6763,7 +6769,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
             if (Item.IsEmpty())
                 return pCC->CreateNil();
 
-			bool bNoInventoryCheck = (pArgs->GetCount() >= 3 && !pArgs->GetElement(2)->IsNil());
+			ICCItem *pOptions = pArgs->GetElement(2);
+			bool bAllowFree = CTLispConvert::AsOption(pOptions, CONSTLIT("allowFree"));
+			bool bNoInventoryCheck = CTLispConvert::AsOption(pOptions, CONSTLIT("noInventoryCheck"));
 
 			int iValue;
 
@@ -6778,7 +6786,9 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				iValue = pObj->GetSellPrice(Item, (bNoInventoryCheck ? CTradingDesc::FLAG_NO_INVENTORY_CHECK : 0));
 
-			if (iValue > 0)
+			if (bAllowFree && iValue == 0)
+				return pCC->CreateInteger(0);
+			else if (iValue > 0)
 				return pCC->CreateInteger(iValue);
 			else
 				return pCC->CreateNil();
