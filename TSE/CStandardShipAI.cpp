@@ -677,7 +677,6 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 
 						pDock->OnComponentChanged(comCargo);
 						pDock->ItemsModified();
-						pDock->InvalidateItemListAddRemove();
 						m_pShip->InvalidateItemListAddRemove();
 						bGotLoot = true;
 						}

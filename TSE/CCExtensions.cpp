@@ -5339,7 +5339,6 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 
 	pObj->OnComponentChanged(comCargo);
 	pObj->ItemsModified();
-	pObj->InvalidateItemListAddRemove();
 
 	//	Done
 
@@ -7546,7 +7545,6 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ObjList.AddItem(Item);
 			pObj->OnComponentChanged(comCargo);
 			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
 
 			//	Return the item.
 
@@ -8769,7 +8767,6 @@ ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pObj->OnComponentChanged(comCargo);
 			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
 			return pCC->CreateTrue();
 			}
 
@@ -8834,7 +8831,6 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			pObj->OnComponentChanged(comCargo);
 			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
 			pResult = pCC->CreateTrue();
 			break;
 			}

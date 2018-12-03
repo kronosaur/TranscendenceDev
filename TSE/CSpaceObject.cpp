@@ -1326,7 +1326,6 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 
 		OnComponentChanged(comCargo);
 		ItemsModified();
-		InvalidateItemListAddRemove();
 		}
 
 	return NOERROR;
@@ -1372,7 +1371,6 @@ ALERROR CSpaceObject::CreateRandomItems (CXMLElement *pItems, CSystem *pSystem)
 
 	OnComponentChanged(comCargo);
 	ItemsModified();
-	InvalidateItemListAddRemove();
 
 	delete pGenerator;
 	return NOERROR;
@@ -5920,6 +5918,10 @@ void CSpaceObject::ItemsModified (void)
 //	Called whenever items have changed on this object
 	
 	{
+	//	Invalidate this, in case we added/removed/modified items
+
+	InvalidateItemListState();
+
 	//	If the player is docked with us, notify it that items have changed
 
 	if (IsPlayerDocked())

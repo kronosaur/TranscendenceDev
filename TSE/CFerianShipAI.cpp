@@ -172,7 +172,6 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 								ObjList.DeleteAtCursor(iOreToMine);
 								m_pTarget->OnComponentChanged(comCargo);
 								m_pTarget->ItemsModified();
-								m_pTarget->InvalidateItemListAddRemove();
 
 								//	Add to our ship (but not 100% of the time, to
 								//	simulate the ferians consuming some ore).
@@ -183,7 +182,6 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 									ShipList.AddItem(OreItem);
 									m_pShip->OnComponentChanged(comCargo);
 									m_pShip->ItemsModified();
-									m_pShip->InvalidateItemListAddRemove();
 									}
 
 								//	Done

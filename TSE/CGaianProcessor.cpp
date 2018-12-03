@@ -354,7 +354,6 @@ void CGaianProcessorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 							m_pShip->OnComponentChanged(comCargo);
 							m_pShip->ItemsModified();
-							m_pShip->InvalidateItemListAddRemove();
 							}
 						}
 					}
