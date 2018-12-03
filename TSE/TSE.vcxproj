@@ -248,6 +248,7 @@
     <ClInclude Include="..\Include\TSEDesignDefs.h" />
     <ClInclude Include="..\Include\TSEDevices.h" />
     <ClInclude Include="..\Include\TSEDocking.h" />
+    <ClInclude Include="..\Include\TSEDockScreenSession.h" />
     <ClInclude Include="..\Include\TSEDockScreenType.h" />
     <ClInclude Include="..\Include\TSEEconomyType.h" />
     <ClInclude Include="..\Include\TSEEffects.h" />
@@ -375,7 +376,9 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CDockScreenStack.cpp" />
     <ClCompile Include="CDockScreenVisuals.cpp" />
+    <ClCompile Include="CDockSession.cpp" />
     <ClCompile Include="CDriveDesc.cpp" />
     <ClCompile Include="CEffectParamDesc.cpp" />
     <ClCompile Include="CEnhancementDesc.cpp" />

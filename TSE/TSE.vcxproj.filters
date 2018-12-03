@@ -81,6 +81,9 @@
     <Filter Include="Source Files\Universe">
       <UniqueIdentifier>{3911c317-993f-4412-8f2d-ca00db69fe82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Dock Screens">
+      <UniqueIdentifier>{2576b8d3-42d3-4cff-9251-31ce0058931f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PreComp.h">
@@ -299,6 +302,9 @@
     <ClInclude Include="..\Include\TSEDesignDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEDockScreenSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -440,9 +446,6 @@
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
     <ClCompile Include="CDesignType.cpp">
-      <Filter>Source Files\DesignTypes</Filter>
-    </ClCompile>
-    <ClCompile Include="CDockScreenType.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
     <ClCompile Include="CDynamicDesignTable.cpp">
@@ -1257,6 +1260,15 @@
     </ClCompile>
     <ClCompile Include="CHullPointsCalculator.cpp">
       <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenType.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenStack.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockSession.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

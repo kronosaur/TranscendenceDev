@@ -2015,6 +2015,7 @@ class CListWrapper : public IListData
 
 //	Implementations ------------------------------------------------------------
 
+#include "TSEDockScreenSession.h"
 #include "TSEDeviceClassesImpl.h"
 #include "TSESpaceObjectsImpl.h"
 #include "TSEMissions.h"
