@@ -1579,6 +1579,7 @@ class IListData
 	public:
 		virtual ~IListData (void) { }
 		virtual void DeleteAtCursor (int iCount) { }
+		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
 		virtual int GetCount (void) { return 0; }
 		virtual int GetCursor (void) { return -1; }
 		virtual CString GetDescAtCursor (void) { return NULL_STR; }

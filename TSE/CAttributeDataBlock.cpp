@@ -635,7 +635,7 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, ICCItem *pItem)
 	{
 	//	If the value is Nil, then we delete the entry
 
-	if (pItem->IsNil())
+	if (pItem == NULL || pItem->IsNil())
 		{
 		m_Data.DeleteAt(sAttrib);
 		}

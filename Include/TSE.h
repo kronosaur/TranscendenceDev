@@ -161,6 +161,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
 #include "TSESystem.h"
+#include "TSEDockScreenSession.h"
 
 //	CResourceDb
 
@@ -784,7 +785,6 @@ class CSpaceObject : public CObject
 		virtual CSpaceObject *GetDockedObj (void) const { return NULL; }
 		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
-		virtual void OnDockedObjChanged (CSpaceObject *pLocation) { }
 		virtual void OnDockingPortDestroyed (void) { }
 
 		//	Docking Ports
@@ -840,6 +840,7 @@ class CSpaceObject : public CObject
 
 		//	Items
 
+		bool AddItem (const CItem &Item, CItem *retResult = NULL, CString *retsError = NULL);
 		EnhanceItemStatus AddItemEnhancement (const CItem &itemToEnhance, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
 		EnhanceItemStatus AddItemEnhancement (CItemListManipulator &ItemList, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
 		void DamageItem (CInstalledDevice *pDevice);
@@ -849,12 +850,14 @@ class CSpaceObject : public CObject
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		inline CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName);
+		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
 		void SetCursorAtArmor (CItemListManipulator &ItemList, CInstalledArmor *pArmor);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, int iDevSlot);
 		bool SetCursorAtDevice (CItemListManipulator &ItemList, CInstalledDevice *pDevice);
 		void SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit);
+		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
 		bool Translate (const CString &sID, ICCItem *pData, CString *retsText);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult);
@@ -862,8 +865,9 @@ class CSpaceObject : public CObject
 
 		inline void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
 		inline void InvalidateItemListState (void) { m_fItemEventsValid = false; }
-		void ItemsModified (void);
 		inline bool IsItemEventListValid (void) const { return (m_fItemEventsValid ? true : false); }
+		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item);
+		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result);
 
 		//	Joints
 		//
@@ -1967,6 +1971,7 @@ class CItemListWrapper : public IListData
 		CItemListWrapper (CItemList &ItemList);
 
 		virtual void DeleteAtCursor (int iCount) override { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
+		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) override { return m_ItemList.FindItem(Item, 0, retiCursor); }
 		virtual int GetCount (void) override { return m_ItemList.GetCount(); }
 		virtual int GetCursor (void) override { return m_ItemList.GetCursor(); }
 		virtual const CItem &GetItemAtCursor (void) override { return m_ItemList.GetItemAtCursor(); }
@@ -1975,7 +1980,7 @@ class CItemListWrapper : public IListData
 		virtual bool IsCursorValid (void) const override { return m_ItemList.IsCursorValid(); }
 		virtual bool MoveCursorBack (void) override { return m_ItemList.MoveCursorBack(); }
 		virtual bool MoveCursorForward (void) override { return m_ItemList.MoveCursorForward(); }
-		virtual void ResetCursor (void) override { m_ItemList.Refresh(CItem()); }
+		virtual void ResetCursor (void) override { m_ItemList.Refresh(CItem(), CItemListManipulator::FLAG_SORT_ITEMS); }
 		virtual void SetCursor (int iCursor) override { m_ItemList.SetCursor(iCursor); }
 		virtual void SetFilter (const CItemCriteria &Filter) override { m_ItemList.SetFilter(Filter); }
 		virtual void SyncCursor (void) override { m_ItemList.SyncCursor(); }
@@ -2015,7 +2020,6 @@ class CListWrapper : public IListData
 
 //	Implementations ------------------------------------------------------------
 
-#include "TSEDockScreenSession.h"
 #include "TSEDeviceClassesImpl.h"
 #include "TSESpaceObjectsImpl.h"
 #include "TSEMissions.h"

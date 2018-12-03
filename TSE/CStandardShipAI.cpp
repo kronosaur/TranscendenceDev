@@ -663,6 +663,16 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 					bool bGotLoot = false;
 					if (pDock->IsAbandoned())
 						{
+						//	Notify any dock screens that we might modify an item
+
+						IDockScreenUI::SModifyItemCtx ModifyCtx1;
+						pDock->OnModifyItemBegin(ModifyCtx1, CItem());
+
+						IDockScreenUI::SModifyItemCtx ModifyCtx2;
+						m_pShip->OnModifyItemBegin(ModifyCtx2, CItem());
+
+						//	Move items
+
 						CItemListManipulator Source(pDock->GetItemList());
 
 						Source.MoveCursorForward();
@@ -675,9 +685,12 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 						//	Tell the object that we've modified items in case
 						//	the player ship is docked with the same station.
 
+						pDock->OnModifyItemComplete(ModifyCtx1, CItem());
 						pDock->OnComponentChanged(comCargo);
-						pDock->ItemsModified();
-						m_pShip->InvalidateItemListAddRemove();
+
+						m_pShip->OnModifyItemComplete(ModifyCtx2, CItem());
+						m_pShip->OnComponentChanged(comCargo);
+
 						bGotLoot = true;
 						}
 

@@ -491,12 +491,16 @@ class CItemListManipulator
 		void AddItem (const CItem &Item);
 		bool AddItems (const CItemList &ItemList, int iChance = 100);
 
+		inline bool FindItem (const CItem &Item, DWORD dwFlags, int *retiCursor) 
+			{ int iCursor = FindItem(Item, dwFlags); if (iCursor == -1) return false; if (retiCursor) *retiCursor = iCursor; return true; }
 		inline int GetCount (void) { return m_ViewMap.GetCount(); }
 		inline int GetCursor (void) { return m_iCursor; }
 		inline void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
 		bool SetCursorAtItem (const CItem &Item, DWORD dwFlags = 0);
 		void SetFilter (const CItemCriteria &Filter);
-		bool Refresh (const CItem &Item);
+
+		static constexpr DWORD FLAG_SORT_ITEMS = 0x00000001;
+		bool Refresh (const CItem &Item, DWORD dwFlags = 0);
 
 		inline bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
 		bool MoveCursorBack (void);
@@ -524,7 +528,7 @@ class CItemListManipulator
 		void TransferAtCursor (int iCount, CItemList &DestList);
 
 	private:
-		int FindItem (const CItem &Item, DWORD dwFlags = 0);
+		int FindItem (const CItem &Item, DWORD dwFlags = 0) const;
 		void GenerateViewMap (void);
 		void MoveItemTo (const CItem &NewItem, const CItem &OldItem);
 

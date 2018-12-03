@@ -94,16 +94,11 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define ON_UPDATE_EVENT							CONSTLIT("OnUpdate")
 
 #define FIELD_ARMOR_INTEGRITY					CONSTLIT("armorIntegrity")
-#define FIELD_DESC_ID							CONSTLIT("descID")
-#define FIELD_CAN_INSTALL						CONSTLIT("canInstall")
-#define FIELD_CAN_REMOVE						CONSTLIT("canRemove")
 #define FIELD_HULL_INTEGRITY					CONSTLIT("hullIntegrity")
 #define FIELD_OBJ_ID							CONSTLIT("objID")
 #define FIELD_POS								CONSTLIT("pos")
-#define FIELD_PRICE								CONSTLIT("price")
 #define FIELD_SHIELD_LEVEL						CONSTLIT("shieldLevel")
 #define FIELD_STATUS							CONSTLIT("status")
-#define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
 #define LANGID_DOCKING_REQUEST_DENIED			CONSTLIT("core.dockingRequestDenied")
 
@@ -116,21 +111,15 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
 #define PROPERTY_DAMAGE_DESC					CONSTLIT("damageDesc")
-#define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESTINY						CONSTLIT("destiny")
 #define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
-#define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EVENT_SUBSCRIBERS				CONSTLIT("eventSubscribers")
 #define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
-#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_ID								CONSTLIT("id")
 #define PROPERTY_IDENTIFIED						CONSTLIT("identified")
 #define PROPERTY_INSTALL_ARMOR_MAX_LEVEL		CONSTLIT("installArmorMaxLevel")
 #define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
-#define PROPERTY_INSTALL_DEVICE_PRICE			CONSTLIT("installDevicePrice")
-#define PROPERTY_INSTALL_DEVICE_STATUS			CONSTLIT("installDeviceStatus")
 #define PROPERTY_INSTALL_DEVICE_UPGRADE_ONLY	CONSTLIT("installDeviceUpgradeOnly")
-#define PROPERTY_INSTALL_ITEM_STATUS			CONSTLIT("installItemStatus")
 #define PROPERTY_KNOWN							CONSTLIT("known")
 #define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_MASS							CONSTLIT("mass")
@@ -139,9 +128,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
 #define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
 #define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
-#define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
-#define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
@@ -1299,81 +1286,6 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	*retpObj = pObj;
 	Ctx.iLoadState = iOldLoadState;
-	}
-
-ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSystem)
-
-//	CreateRandomItems
-//
-//	Creates items based on item table
-//
-//	NOTE: We cannot call GetSystem() because it is not yet set up at the time
-//	that we call this (on create). Thus we rely on pSystem being passed in.
-
-	{
-	DEBUG_TRY
-
-	if (pItems)
-		{
-		CItemListManipulator ItemList(GetItemList());
-		SItemAddCtx Ctx(ItemList);
-		Ctx.pSystem = pSystem;
-		Ctx.pDest = this;
-		Ctx.vPos = GetPos();
-		Ctx.iLevel = (Ctx.pSystem ? Ctx.pSystem->GetLevel() : 1);
-
-		pItems->AddItems(Ctx);
-
-		OnComponentChanged(comCargo);
-		ItemsModified();
-		}
-
-	return NOERROR;
-
-	DEBUG_CATCH
-	}
-
-ALERROR CSpaceObject::CreateRandomItems (CXMLElement *pItems, CSystem *pSystem)
-
-//	CreateRandomItems
-//
-//	Creates items based on lookup
-
-	{
-	ALERROR error;
-
-	//	Load the table
-
-	SDesignLoadCtx Ctx;
-
-	IItemGenerator *pGenerator;
-	if (error = IItemGenerator::CreateFromXML(Ctx, pItems, &pGenerator))
-		return error;
-
-	if (error = pGenerator->OnDesignLoadComplete(Ctx))
-		{
-		CString sError = strPatternSubst(CONSTLIT("ERROR: Unable to create random items: %s\r\n"), Ctx.sError);
-		ReportCrashObj(&sError, this);
-		kernelDebugLogString(sError);
-		ASSERT(false);
-		return error;
-		}
-
-	//	Add the items
-
-	CItemListManipulator ItemList(GetItemList());
-	SItemAddCtx ItemCtx(ItemList);
-	ItemCtx.pSystem = pSystem;
-	ItemCtx.vPos = GetPos();
-	ItemCtx.iLevel = (ItemCtx.pSystem ? ItemCtx.pSystem->GetLevel() : 1);
-
-	pGenerator->AddItems(ItemCtx);
-
-	OnComponentChanged(comCargo);
-	ItemsModified();
-
-	delete pGenerator;
-	return NOERROR;
 	}
 
 EDamageResults CSpaceObject::Damage (SDamageCtx &Ctx)
@@ -3866,153 +3778,6 @@ int CSpaceObject::GetImageScale (void) const
 	return Image.GetImageViewportSize();
 	}
 
-CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
-
-//	GetItemForDevice
-//
-//	Returns the item for the given device
-
-	{
-	CItemListManipulator ItemList(GetItemList());
-	SetCursorAtDevice(ItemList, pDevice);
-	return ItemList.GetItemAtCursor();
-	}
-
-ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName)
-
-//	GetItemProperty
-//
-//	Returns an item property
-
-	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
-	//	Return the property
-
-	if (strEquals(sName, PROPERTY_INSTALL_DEVICE_PRICE))
-		{
-		int iPrice;
-		if (!GetDeviceInstallPrice(Item, 0, &iPrice))
-			return CC.CreateNil();
-
-		return CC.CreateInteger(iPrice);
-		}
-	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_STATUS))
-		{
-		//	We return a structure with the following fields:
-		//
-		//	canInstall: True or Nil
-		//	price: Install price
-		//	descID: Message ID for description of install attempt
-		//	upgradeInstallOnly: True if we only install on upgrade
-
-		CString sMessageID;
-		int iPrice;
-		DWORD dwPriceFlags;
-		bool bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
-
-		//	Create the structure
-
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
-		if (bCanInstall && (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
-
-		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-
-		return pResult;
-		}
-	else if (strEquals(sName, PROPERTY_INSTALL_ITEM_STATUS))
-		{
-		//	We return a structure with the following fields:
-		//
-		//	canInstall: True or Nil
-		//	price: Install price
-		//	descID: Message ID for description of install attempt
-		//	upgradeInstallOnly: True if we only install on upgrade
-
-		CString sMessageID;
-		int iPrice;
-		bool bCanInstall;
-		DWORD dwPriceFlags = 0;
-		if (Item.IsArmor())
-			bCanInstall = GetArmorInstallPrice(Item, 0, &iPrice, &sMessageID);
-		else if (Item.IsDevice())
-			bCanInstall = GetDeviceInstallPrice(Item, 0, &iPrice, &sMessageID, &dwPriceFlags);
-		else
-			bCanInstall = false;
-
-		//	Create the structure
-
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
-		if (bCanInstall 
-				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
-
-		//	NOTE: Message is valid even if we cannot install
-
-		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-
-		return pResult;
-		}
-	else if (strEquals(sName, PROPERTY_REMOVE_DEVICE_PRICE))
-		{
-		int iPrice;
-		if (!GetDeviceRemovePrice(Item, 0, &iPrice))
-			return CC.CreateNil();
-
-		return CC.CreateInteger(iPrice);
-		}
-	else if (strEquals(sName, PROPERTY_REMOVE_ITEM_STATUS))
-		{
-		//	We return a structure with the following fields:
-		//
-		//	canRemove: True or Nil
-		//	price: Remove price
-		//	descID: Message ID for description of remove attempt
-		//	upgradeInstallOnly: True if we only install/remove on upgrade
-
-		CString sMessageID;
-		int iPrice;
-		bool bCanRemove;
-		DWORD dwPriceFlags = 0;
-		if (Item.IsDevice())
-			bCanRemove = GetDeviceRemovePrice(Item, 0, &iPrice, &dwPriceFlags);
-		else
-			bCanRemove = false;
-
-		//	Create the structure
-
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanRemove ? iPrice : -1));
-		if (bCanRemove 
-				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
-
-		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
-
-		return pResult;
-		}
-	else
-		{
-		//	Select the item (to make sure that it is part of the object)
-
-		CItemListManipulator ItemList(GetItemList());
-		if (!ItemList.SetCursorAtItem(Item))
-			return CC.CreateError(CONSTLIT("Item not found on object."));
-
-		CItemCtx Ctx(&Item, this);
-		return Item.GetItemProperty(CCCtx, Ctx, sName);
-		}
-	}
-
 int CSpaceObject::GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort)
 
 //	GetNearestDockPort
@@ -5911,27 +5676,6 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 	return bResult;
 	}
 
-void CSpaceObject::ItemsModified (void)
-
-//	ItemsModified
-//
-//	Called whenever items have changed on this object
-	
-	{
-	//	Invalidate this, in case we added/removed/modified items
-
-	InvalidateItemListState();
-
-	//	If the player is docked with us, notify it that items have changed
-
-	if (IsPlayerDocked())
-		{
-		CSpaceObject *pPlayer = GetPlayerShip();
-		if (pPlayer)
-			pPlayer->OnDockedObjChanged(this);
-		}
-	}
-
 void CSpaceObject::Jump (const CVector &vPos)
 
 //	Jump
@@ -6391,6 +6135,27 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 			ASSERT(false);
 			return false;
 		}
+	}
+
+void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item)
+
+//	OnModifyItemBegin
+//
+//	The given Item (which must be part of the object) is about to be modified.
+
+	{
+	g_pUniverse->GetDockSession().OnModifyItemBegin(ModifyCtx, this, Item);
+	}
+
+void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result)
+
+//	OnModifyItemComplete
+//
+//	An item was modified. Result is the newly modified item.
+
+	{
+	InvalidateItemListState();
+	g_pUniverse->GetDockSession().OnModifyItemComplete(ModifyCtx, this, Result);
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -7192,175 +6957,6 @@ void CSpaceObject::SetGlobalData (const CString &sAttribute, ICCItem *pData)
 		return;
 
 	pType->SetGlobalData(sAttribute, pData);
-	}
-
-bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError)
-
-//	SetItemProperty
-//
-//	Sets the item property.
-//
-//	NOTE: pValue may be NULL.
-
-	{
-	//	Select the item to make sure it exists on this object.
-
-	CItemListManipulator ItemList(GetItemList());
-	if (!ItemList.SetCursorAtItem(Item))
-		{
-		*retsError = CONSTLIT("Item not found on object.");
-		return false;
-		}
-
-	//	We handle damage differently because we may need to remove enhancements,
-	//	etc.
-
-	if (strEquals(sName, PROPERTY_DAMAGED))
-		{
-		if (pValue && pValue->IsNil())
-			RepairItem(ItemList);
-		else
-			DamageItem(ItemList);
-		}
-
-	//	Enabling/disabling needs special handling
-
-	else if (strEquals(sName, PROPERTY_ENABLED))
-		{
-		CShip *pShip = AsShip();
-		if (pShip == NULL)
-			{
-			*retsError = CONSTLIT("Property not supported.");
-			return false;
-			}
-
-		if (!ItemList.GetItemAtCursor().IsInstalled())
-			{
-			*retsError = CONSTLIT("Device is not installed on object.");
-			return false;
-			}
-
-		//	Parse the parameter
-
-		bool bEnabled;
-		bool bSilent;
-		if (pValue == NULL)
-			{
-			bEnabled = true;
-			bSilent = false;
-			}
-		else if (pValue->IsIdentifier())
-			{
-			if (strEquals(pValue->GetStringValue(), CONSTLIT("silentDisabled")))
-				{
-				bEnabled = false;
-				bSilent = true;
-				}
-			else if (strEquals(pValue->GetStringValue(), CONSTLIT("silentEnabled")))
-				{
-				bEnabled = true;
-				bSilent = true;
-				}
-			else if (strEquals(pValue->GetStringValue(), CONSTLIT("disabled")))
-				{
-				bEnabled = false;
-				bSilent = false;
-				}
-			else
-				{
-				bEnabled = true;
-				bSilent = false;
-				}
-			}
-		else
-			{
-			bEnabled = !pValue->IsNil();
-			bSilent = false;
-			}
-
-		//	Do it.
-
-		pShip->EnableDevice(ItemList.GetItemAtCursor().GetInstalled(), bEnabled, bSilent);
-		}
-
-	else if (strEquals(sName, PROPERTY_HP))
-		{
-		int iHP = (pValue ? pValue->GetIntegerValue() : 0);
-
-		if (Item.IsInstalled())
-			{
-			if (Item.GetType()->GetArmorClass())
-				{
-				CShip *pShip = AsShip();
-
-				int iArmorSeg = Item.GetInstalled();
-				CInstalledArmor *pSection = pShip->GetArmorSection(iArmorSeg);
-				if (pSection == NULL)
-					{
-					*retsError = CONSTLIT("Unable to find armor segment on ship.");
-					return false;
-					}
-
-				iHP = Min(iHP, pSection->GetMaxHP(this));
-
-				if (iHP < pSection->GetHitPoints())
-					{
-					DamageDesc Damage(damageGeneric, DiceRange(0, 0, pSection->GetHitPoints() - iHP));
-					Damage.SetNoSRSFlash();
-					pShip->DamageArmor(iArmorSeg, Damage);
-					}
-				else if (iHP > pSection->GetHitPoints())
-					pShip->RepairArmor(iArmorSeg, iHP - pSection->GetHitPoints());
-				}
-			else if (Item.GetType()->GetDeviceClass())
-				{
-				//	Set the data
-				//
-				//	LATER: At some point we should move the code above that sets
-				//	armor HP to be handled by SetPropertyAtCursor. At that point,
-				//	we can delete this section and let it go to the default.
-
-				if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
-					return false;
-
-				//	Update the object
-
-				ItemEnhancementModified(ItemList);
-				}
-			else
-				{
-				*retsError = CONSTLIT("Unable to set hit points.");
-				return false;
-				}
-			}
-		else
-			{
-			*retsError = CONSTLIT("Unable to set hit points.");
-			return false;
-			}
-		}
-
-	//	Otherwise, just set the property, but pass enough context (this object)
-	//	so that it can find the appropriate device.
-
-	else
-		{
-		//	Set the data
-
-		if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
-			return false;
-
-		//	Update the object
-
-		ItemEnhancementModified(ItemList);
-		}
-
-	//	Done
-
-	if (retItem)
-		*retItem = ItemList.GetItemAtCursor();
-
-	return true;
 	}
 
 void CSpaceObject::SetOverride (CDesignType *pOverride)

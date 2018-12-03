@@ -44,6 +44,7 @@ bool CDockSession::ExitScreen (DWORD dwFlags)
 
 		//	Clean up
 
+		m_pDockScreenUI = NULL;
 		m_pDefaultScreensRoot = NULL;
 		m_DockFrames.DeleteAll();
 
@@ -150,7 +151,32 @@ bool CDockSession::FindScreenRoot (const CString &sScreen, CDesignType **retpRoo
 		return false;
 	}
 
-CSpaceObject *CDockSession::OnPlayerDocked (CSpaceObject *pObj)
+bool CDockSession::ModifyItemNotificationNeeded (CSpaceObject *pSource) const
+
+//	ModifyItemNotificationNeeded
+//
+//	Returns TRUE if we need to notify a dock screen UI that an item on the given
+//	source has been modified. We do this strictly for performance.
+
+	{
+	//	If not in a dock screen session, then we never need a notification.
+
+	if (m_pDockScreenUI == NULL || !InSession() || pSource == NULL)
+		return false;
+
+	//	If we've modified either the player ship or an object that we're docked
+	//	with, then we need a notification.
+
+	if (pSource == m_DockFrames.GetCurrent().pLocation
+			|| pSource == g_pUniverse->GetPlayerShip())
+		return true;
+
+	//	Otherwise, no notification.
+
+	return false;
+	}
+
+CSpaceObject *CDockSession::OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj)
 
 //	OnPlayerDocked
 //
@@ -158,6 +184,14 @@ CSpaceObject *CDockSession::OnPlayerDocked (CSpaceObject *pObj)
 //	actually docked with (in case of redirect).
 
 	{
+	ASSERT(!InSession());
+	if (InSession())
+		return m_DockFrames.GetCurrent().pLocation;
+
+	//	Remember the UI
+
+	m_pDockScreenUI = &DockScreenUI;
+
 	//	See if the object wants to redirect us. In that case, m_pStation
 	//	will remain the original object, but gSource and m_pLocation in the
 	//	dock screen will be set to the new object
@@ -178,3 +212,32 @@ CSpaceObject *CDockSession::OnPlayerDocked (CSpaceObject *pObj)
 
 	return pDock;
 	}
+
+void CDockSession::OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot)
+
+//	OnPlayerShowShipScreen
+//
+//	Player has invoked ship screen.
+
+	{
+	ASSERT(!InSession());
+	if (InSession())
+		return;
+
+	//	Remember the UI
+
+	m_pDockScreenUI = &DockScreenUI;
+
+	//	If the default root is passed in, use that. Otherwise, we pull local
+	//	screens from the ship class.
+
+	if (pDefaultScreensRoot)
+		m_pDefaultScreensRoot = pDefaultScreensRoot;
+	else
+		{
+		CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+		if (pPlayerShip)
+			m_pDefaultScreensRoot = pPlayerShip->GetType();
+		}
+	}
+

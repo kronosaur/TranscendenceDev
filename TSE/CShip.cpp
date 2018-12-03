@@ -4775,17 +4775,6 @@ void CShip::OnDocked (CSpaceObject *pObj)
 	m_pController->OnDocked(pObj);
 	}
 
-void CShip::OnDockedObjChanged (CSpaceObject *pLocation)
-
-//	OnDockedObjChanged
-//
-//	This is called when the object that we're currently docked
-//	with has changed the items that it has
-
-	{
-	m_pController->OnDockedObjChanged(pLocation);
-	}
-
 void CShip::OnDockingPortDestroyed (void)
 
 //	OnDockingPortDestroyed

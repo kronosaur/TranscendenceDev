@@ -1172,7 +1172,6 @@ class CShip : public CSpaceObject
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) override;
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
-		virtual void OnDockedObjChanged (CSpaceObject *pLocation) override;
 		virtual void OnDockingPortDestroyed (void) override;
 		virtual bool OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj) override;
 		virtual void OnHitByDeviceDamage (void) override;

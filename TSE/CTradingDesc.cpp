@@ -1876,6 +1876,14 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 	int i, j;
 	bool bCargoChanged = false;
 
+	//	Notify any dock screens that we might modify an item
+	//	Null item means preserve current selection.
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	pObj->OnModifyItemBegin(ModifyCtx, CItem());
+
+	//	Add
+
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		SServiceDesc &Service = m_List[i];
@@ -1940,7 +1948,10 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 		}
 
 	if (bCargoChanged)
-		pObj->ItemsModified();
+		{
+		pObj->OnComponentChanged(comCargo);
+		pObj->OnModifyItemComplete(ModifyCtx, CItem());
+		}
 
 	DEBUG_CATCH
 	}

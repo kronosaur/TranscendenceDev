@@ -5,6 +5,29 @@
 
 #pragma once
 
+class IDockScreenUI
+	{
+	public:
+		enum EListSelectChanges
+			{
+			selNone,						//	No change
+
+			selOriginal,					//	Select the original item
+			selModified,					//	Select the modified item
+			};
+
+		struct SModifyItemCtx
+			{
+			EListSelectChanges iSelChange = selNone;
+
+			CItem OriginalItem;
+			int iOriginalCursor = -1;
+			};
+
+		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { }
+		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { }
+	};
+
 struct SDockFrame
 	{
 	CSpaceObject *pLocation = NULL;			//	Current location
@@ -54,15 +77,21 @@ class CDockSession
 		static constexpr DWORD FLAG_FORCE_UNDOCK =	0x00000001;
 
 		//	FLAG_FORCE_UNDOCK
+
 		bool ExitScreen (DWORD dwFlags = 0);
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
-		CSpaceObject *OnPlayerDocked (CSpaceObject *pObj);
-		inline void SetDefaultScreenRoot (CDesignType *pType) { m_pDefaultScreensRoot = pType; }
+		inline bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
+		inline void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemBegin(Ctx, pSource, Item); }
+		inline void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemComplete(Ctx, pSource, Result); }
+		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
+		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
 
 	private:
+		bool ModifyItemNotificationNeeded (CSpaceObject *pSource) const;
+
+		IDockScreenUI *m_pDockScreenUI = NULL;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;	//	Default root to look for local screens
 		CDockScreenStack m_DockFrames;				//	Stack of dock screens
-		TArray<CXMLElement *> m_ScreensInited;		//	List of screens that have called OnInit this session
 	};
