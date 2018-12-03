@@ -8375,7 +8375,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Update the object
 
-			pObj->InvalidateItemListState();
+			pObj->ItemsModified();
 
 			//	Return the newly changed item
 
