@@ -1261,6 +1261,7 @@ class CDesignCollection
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
 		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
 		bool IsAdventureExtensionBound (DWORD dwUNID);
+		inline bool IsBindComplete (void) const { return !m_bInBindDesign; }
 		bool IsRegisteredGame (void);
 		void MarkGlobalImages (void);
 		void NotifyTopologyInit (void);

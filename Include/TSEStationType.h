@@ -312,7 +312,7 @@ class CStationType : public CDesignType
 		Metric GetLevelStrength (int iLevel);
 		inline const CString &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		inline Metric GetMass (void) { return m_rMass; }
-		inline Metric GetMaxEffectiveRange (void) { return m_rMaxAttackDistance; }
+		inline Metric GetMaxEffectiveRange (void) { if (m_fCalcMaxAttackDist) CalcMaxAttackDistance(); return m_rMaxAttackDistance; }
 		inline int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		inline int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		inline const CNameDesc &GetNameDesc (void) const { return m_Name; }
@@ -413,6 +413,7 @@ class CStationType : public CDesignType
 		Metric CalcBalance (void) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
+		Metric CalcMaxAttackDistance (void);
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
 		void InitStationDamage (void);
@@ -478,7 +479,7 @@ class CStationType : public CDesignType
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
-		DWORD m_fSpare5:1;
+		DWORD m_fCalcMaxAttackDist:1;					//	If TRUE, we need to compute m_rMaxAttackDistance
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

@@ -382,6 +382,37 @@ int CStationType::CalcHitsToDestroy (int iLevel) const
 	return (int)rTotalHits;
 	}
 
+Metric CStationType::CalcMaxAttackDistance (void)
+
+//	CalcMaxAttackDistance
+//
+//	Initializes m_rMaxAttackDistance, if necessary.
+
+	{
+	if (m_fCalcMaxAttackDist 
+			&& g_pUniverse->GetDesignCollection().IsBindComplete())
+		{
+		Metric rBestRange = MAX_ATTACK_DISTANCE;
+
+		for (int i = 0; i < m_iDevicesCount; i++)
+			{
+			if (m_Devices[i].GetCategory() == itemcatWeapon
+					|| m_Devices[i].GetCategory() == itemcatLauncher)
+				{
+				CItem Item(m_Devices[i].GetClass()->GetItemType(), 1);
+				Metric rRange = m_Devices[i].GetMaxRange(CItemCtx(Item));
+				if (rRange > rBestRange)
+					rBestRange = rRange;
+				}
+			}
+
+		m_rMaxAttackDistance = rBestRange;
+		m_fCalcMaxAttackDist = false;
+		}
+
+	return m_rMaxAttackDistance;
+	}
+
 Metric CStationType::CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance)
 
 //	CalcSatelliteHitsToDestroy
@@ -1111,22 +1142,17 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
     //  LATER: We shouldn't have CInstalledDevices here. We should use the same
     //  system that ships use.
 
-	Metric rBestRange = MAX_ATTACK_DISTANCE;
 	for (i = 0; i < m_iDevicesCount; i++)
 		{
 		if (error = m_Devices[i].OnDesignLoadComplete(Ctx))
 			goto Fail;
-
-		if (m_Devices[i].GetCategory() == itemcatWeapon
-				|| m_Devices[i].GetCategory() == itemcatLauncher)
-			{
-			CItem Item(m_Devices[i].GetClass()->GetItemType(), 1);
-			Metric rRange = m_Devices[i].GetMaxRange(CItemCtx(Item));
-			if (rRange > rBestRange)
-				rBestRange = rRange;
-			}
 		}
-	m_rMaxAttackDistance = rBestRange;
+
+	//	We'll recompute attack distance based on weapons later (on demand). We
+	//	can't compute it here because the weapons haven't necessarily bound yet.
+
+	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
+	m_fCalcMaxAttackDist = true;
 
 	//	Items
 
@@ -1272,6 +1298,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
+	m_fCalcMaxAttackDist = false;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
 	CString sLayer;
