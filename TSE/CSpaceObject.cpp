@@ -5012,7 +5012,8 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	}
 
 CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart, 
-											  Metric rThreshold, 
+											  Metric rMinThreshold, 
+											  Metric rMaxThreshold, 
 											  const DamageDesc &Damage, 
 											  CVector *retvHitPos, 
 											  int *retiHitDir)
@@ -5035,7 +5036,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 	//	Get the list of objects that intersect the object
 
 	SSpaceObjectGridEnumerator i;
-	GetSystem()->EnumObjectsInBoxStart(i, GetPos(), Max(rThreshold, g_SecondsPerUpdate * LIGHT_SECOND));
+	GetSystem()->EnumObjectsInBoxStart(i, GetPos(), Max(rMaxThreshold, g_SecondsPerUpdate * LIGHT_SECOND));
 
 	//	We need some variables for stepping
 
@@ -5044,7 +5045,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	//	We need some variables to track the closest object
 
-	Metric rClosestApproach = rThreshold;
+	Metric rClosestApproach = rMaxThreshold;
 	CVector vClosestPos;
 	CSpaceObject *pClosestHit = NULL;
 
@@ -5161,16 +5162,14 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 
 	pObj = NULL;
 
-	//	If we got inside the threshold radius for some object check to see if 
-	//	we are now farther away. If so, then we	reached the closest point.
-	//	(If not, then it means that next tick we will get closer still.)
+	//	See if we need to detonate
 
 	if (pClosestHit)
 		{
-		CVector vDist = GetPos() - pClosestHit->GetPos();
-		Metric rDist = vDist.Length() - (OBJ_RADIUS_ADJ * pClosestHit->GetHitSize());
+		//	If we're inside our minimum fragmentation radius, then we always
+		//	detonate, regardless of whether or not we get closer later.
 
-		if (rDist > rClosestApproach)
+		if (rClosestApproach <= rMinThreshold)
 			{
 			if (retvHitPos)
 				*retvHitPos = vClosestPos;
@@ -5179,6 +5178,27 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 				*retiHitDir = -1;
 
 			return pClosestHit;
+			}
+
+		//	If we got inside the threshold radius for some object check to see if 
+		//	we are now farther away. If so, then we	reached the closest point.
+		//	(If not, then it means that next tick we will get closer still.)
+
+		else
+			{
+			CVector vDist = GetPos() - pClosestHit->GetPos();
+			Metric rDist = vDist.Length() - (OBJ_RADIUS_ADJ * pClosestHit->GetHitSize());
+
+			if (rDist > rClosestApproach)
+				{
+				if (retvHitPos)
+					*retvHitPos = vClosestPos;
+
+				if (retiHitDir)
+					*retiHitDir = -1;
+
+				return pClosestHit;
+				}
 			}
 		}
 

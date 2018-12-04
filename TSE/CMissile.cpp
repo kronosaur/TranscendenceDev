@@ -776,11 +776,12 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 		{
 		//	Compute threshold
 
-		Metric rThreshold = m_pDesc->GetFragmentationThreshold();
+		Metric rMaxThreshold = m_pDesc->GetFragmentationMaxThreshold();
+		Metric rMinThreshold = m_pDesc->GetFragmentationMinThreshold();
 
 		//	Hit test
 
-		m_pHit = HitTestProximity(vOldPos, rThreshold, m_pDesc->GetDamage(), &m_vHitPos, &m_iHitDir);
+		m_pHit = HitTestProximity(vOldPos, rMinThreshold, rMaxThreshold, m_pDesc->GetDamage(), &m_vHitPos, &m_iHitDir);
 
 		//	Make sure we are not too close to the source when we trigger
 		//	a proximity blast.
@@ -791,7 +792,7 @@ void CMissile::OnMove (const CVector &vOldPos, Metric rSeconds)
 			CVector vDist = m_vHitPos - pSource->GetPos();
 			Metric rDist2 = vDist.Length2();
 
-			if (rDist2 < (rThreshold * rThreshold) / 4.0)
+			if (rDist2 < (rMaxThreshold * rMaxThreshold) / 4.0)
 				m_pHit = NULL;
 			}
 		}

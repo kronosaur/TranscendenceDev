@@ -34,6 +34,8 @@
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define FRAGMENT_COUNT_ATTRIB					CONSTLIT("fragmentCount")
 #define FRAGMENT_INTERVAL_ATTRIB				CONSTLIT("fragmentInterval")
+#define FRAGMENT_MAX_RADIUS_ATTRIB				CONSTLIT("fragmentMaxRadius")
+#define FRAGMENT_MIN_RADIUS_ATTRIB				CONSTLIT("fragmentMinRadius")
 #define FRAGMENT_RADIUS_ATTRIB					CONSTLIT("fragmentRadius")
 #define FRAGMENT_TARGET_ATTRIB					CONSTLIT("fragmentTarget")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
@@ -1619,7 +1621,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pFirstFragment = NULL;
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
-	m_rFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMinFragThreshold = 0.0;
 	m_FragInterval.SetConstant(0);
 
 	//	Effects
@@ -2125,7 +2128,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
-	m_rFragThreshold = LIGHT_SECOND * pDesc->GetAttributeDoubleBounded(FRAGMENT_RADIUS_ATTRIB, 0.0, -1.0, DEFAULT_FRAG_THRESHOLD);
+	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
 
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).
@@ -2141,6 +2145,24 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		//	Clear proximity blast flag.
 
 		m_fProximityBlast = false;
+		}
+
+	//	See if we have custom fragmentation thresholds
+
+	else
+		{
+		Metric rValue;
+
+		if (pDesc->FindAttributeDouble(FRAGMENT_MAX_RADIUS_ATTRIB, &rValue)
+				|| pDesc->FindAttributeDouble(FRAGMENT_RADIUS_ATTRIB, &rValue))
+			{
+			m_rMaxFragThreshold = LIGHT_SECOND * Max(0.0, rValue);
+
+			if (pDesc->FindAttributeDouble(FRAGMENT_MIN_RADIUS_ATTRIB, &rValue))
+				m_rMinFragThreshold = Min(LIGHT_SECOND * Max(0.0, rValue), m_rMaxFragThreshold);
+			else
+				m_rMinFragThreshold = 0.5 * m_rMaxFragThreshold;
+			}
 		}
 
 	//	Compute max effective range
