@@ -1038,14 +1038,6 @@ class CSpaceObject : public CObject
 		inline bool HasOnSubordinateAttackedEvent (void) const { return (m_fHasOnSubordinateAttackedEvent ? true : false); }
 		inline bool HasRandomEncounters (void) const { int iFreq; return (GetRandomEncounterTable(&iFreq) || iFreq > 0); }
 		void Highlight (const CString &sText = NULL_STR);
-		inline bool HitSizeInBox (const CVector &vUR, const CVector &vLL)
-			{
-			Metric rHalfSize = 0.5 * GetHitSize();
-			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
-					&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
-					&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
-					&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
-			}
 		bool InBarrier (const CVector &vPos);
 		inline bool InBox (const CVector &vUR, const CVector &vLL) const 
 			{ return (vUR.GetX() > m_vPos.GetX() - m_rBoundsX) 
@@ -1081,6 +1073,14 @@ class CSpaceObject : public CObject
 		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
 		inline bool IsMarked (void) const { return m_fMarked; }
 		inline bool IsNamed (void) const { return m_fHasName; }
+		inline bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
+			{
+			Metric rHalfSize = 0.25 * GetHitSize();
+			return (vUR.GetX() > m_vPos.GetX() - rHalfSize) 
+				&& (vUR.GetY() > m_vPos.GetY() - rHalfSize)
+				&& (vLL.GetX() < m_vPos.GetX() + rHalfSize)
+				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
+			}
 		bool IsPlayerAttackJustified (void) const;
 		inline bool IsPlayerDestination (void) { return m_fPlayerDestination; }
 		inline bool IsPlayerDocked (void) { return m_fPlayerDocked; }
