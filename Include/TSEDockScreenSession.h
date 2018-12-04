@@ -81,6 +81,7 @@ class CDockSession
 
 		bool ExitScreen (DWORD dwFlags = 0);
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
+		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
 		inline bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
