@@ -3004,7 +3004,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		{
 		if (pValue == NULL || pValue->IsNil())
 			{
-			*retsError = NULL_STR;
+			if (retsError) *retsError = NULL_STR;
 			return false;
 			}
 			
@@ -3031,7 +3031,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			SetCharges(GetCharges() + 1);
 		else if (pValue->IsNil())
 			{
-			*retsError = NULL_STR;
+			if (retsError) *retsError = NULL_STR;
 			return false;
 			}
 		else
@@ -3044,7 +3044,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			SetInstalled(-1);
 		else
 			{
-			*retsError = CONSTLIT("Unable to set installation flag on item.");
+			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
 			return false;
 			}
 		}
@@ -3086,7 +3086,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
 	else
 		{
-		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
 		return false;
 		}
 

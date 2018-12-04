@@ -169,22 +169,13 @@ void CFerianShipAI::Behavior (SUpdateCtx &Ctx)
 
 								//	Remove from asteroid
 
-								ObjList.DeleteAtCursor(iOreToMine);
-								m_pTarget->OnComponentChanged(comCargo);
-								m_pTarget->ItemsModified();
-								m_pTarget->InvalidateItemListAddRemove();
+								m_pTarget->RemoveItem(OreItem, 0);
 
 								//	Add to our ship (but not 100% of the time, to
 								//	simulate the ferians consuming some ore).
 
 								if (mathRandom(1, 100) <= 25)
-									{
-									CItemListManipulator ShipList(m_pShip->GetItemList());
-									ShipList.AddItem(OreItem);
-									m_pShip->OnComponentChanged(comCargo);
-									m_pShip->ItemsModified();
-									m_pShip->InvalidateItemListAddRemove();
-									}
+									m_pShip->AddItem(OreItem);
 
 								//	Done
 

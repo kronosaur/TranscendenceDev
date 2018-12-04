@@ -337,7 +337,7 @@ void CItemListManipulator::DeleteMarkedItems (void)
 		}
 	}
 
-int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags)
+int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags) const
 
 //	FindItem
 //
@@ -381,7 +381,9 @@ const CItem &CItemListManipulator::GetItemAtCursor (void)
 //	Returns the item at the cursor
 
 	{
-	ASSERT(m_iCursor != -1);
+	if (m_iCursor == -1)
+		return CItem::NullItem();
+
 	return m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	}
 
@@ -523,7 +525,7 @@ void CItemListManipulator::MoveItemTo (const CItem &NewItem, const CItem &OldIte
 		AddItem(NewItem);
 	}
 
-bool CItemListManipulator::Refresh (const CItem &Item)
+bool CItemListManipulator::Refresh (const CItem &Item, DWORD dwFlags)
 
 //	Refresh
 //
@@ -533,6 +535,9 @@ bool CItemListManipulator::Refresh (const CItem &Item)
 //	Returns TRUE if selection succeeded
 
 	{
+	if (dwFlags & FLAG_SORT_ITEMS)
+		m_ItemList.SortItems();
+
 	GenerateViewMap();
 
 	if (Item.GetType() == NULL)

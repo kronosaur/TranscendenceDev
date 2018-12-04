@@ -5322,6 +5322,12 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 	DWORD dwTableID = pArgs->GetElement(1)->GetIntegerValue();
 	int iCount = pArgs->GetElement(2)->GetIntegerValue();
 
+	//	Notify any dock screens that we might modify an item
+	//	Null item means preserve current selection.
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	pObj->OnModifyItemBegin(ModifyCtx, CItem());
+
 	//	Do it
 
 	CItemListManipulator theList(pObj->GetItemList());
@@ -5337,9 +5343,10 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 	for (int j = 0; j < iCount; j++)
 		pTable->AddItems(Ctx);
 
+	//	Update
+
 	pObj->OnComponentChanged(comCargo);
-	pObj->ItemsModified();
-	pObj->InvalidateItemListAddRemove();
+	pObj->OnModifyItemComplete(ModifyCtx, CItem());
 
 	//	Done
 
@@ -7540,17 +7547,20 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			//	Do not allow adding installed items
+
 			Item.SetInstalled(-1);
 
-			CItemListManipulator ObjList(pObj->GetItemList());
-			ObjList.AddItem(Item);
-			pObj->OnComponentChanged(comCargo);
-			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
+			//	Add the item
+
+			CItem Result;
+			CString sError;
+
+			if (!pObj->AddItem(Item, &Result, &sError))
+				return pCC->CreateError(sError, pArgs->GetElement(1));
 
 			//	Return the item.
 
-			return CreateListFromItem(*pCC, Item);
+			return CreateListFromItem(*pCC, Result);
 			}
 
 		case FN_OBJ_ADD_ITEM_ENHANCEMENT:
@@ -8360,28 +8370,22 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
 			int iCount = (pArgs->GetCount() > 4 ? Max(0, pArgs->GetElement(4)->GetIntegerValue()) : 1);
 
-			//	Select the item
+			//	Do it
 
-			CItemListManipulator ItemList(pObj->GetItemList());
-			if (!ItemList.SetCursorAtItem(Item))
+			CItem Result;
+			CString sError;
+
+			if (!pObj->SetItemData(Item, sAttrib, pArgs->GetElement(3), iCount, &Result, &sError))
 				{
 				if (pCtx->GetAPIVersion() >= 18)
-					return pCC->CreateError(CONSTLIT("Unable to find specified item in object."), pArgs->GetElement(1));
+					return pCC->CreateError(sError, pArgs->GetElement(1));
 				else
 					return pCC->CreateNil();
 				}
 
-			//	Set the data
-
-			ItemList.SetDataAtCursor(sAttrib, pArgs->GetElement(3), iCount);
-
-			//	Update the object
-
-			pObj->InvalidateItemListState();
-
 			//	Return the newly changed item
 
-			return CreateListFromItem(*pCC, ItemList.GetItemAtCursor());
+			return CreateListFromItem(*pCC, Result);
 			}
 
 		case FN_OBJ_SET_ITEM_PROPERTY:
@@ -8758,19 +8762,12 @@ ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Remove
 
-			CItemListManipulator ObjList(pObj->GetItemList());
-			if (!ObjList.SetCursorAtItem(Item, dwFlags))
-				return pCC->CreateNil();
+			CString sError;
+			int iRemoved;
+			if (!pObj->RemoveItem(Item, dwFlags, iCount, &iRemoved, &sError))
+				return pCC->CreateError(sError, pArgs->GetElement(1));
 
-			if (ObjList.GetItemAtCursor().IsInstalled())
-				return pCC->CreateError(CONSTLIT("Installed items cannot be removed; use (shpRemoveDevice) instead"));
-
-			ObjList.DeleteAtCursor(iCount);
-
-			pObj->OnComponentChanged(comCargo);
-			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
-			return pCC->CreateTrue();
+			return pCC->CreateBool(iRemoved > 0);
 			}
 
 		default:
@@ -8815,30 +8812,6 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 	switch (dwData)
 		{
-		case FN_OBJ_REMOVE_ITEM:
-			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			int iCount = Item.GetCount();
-			if (pArgs->GetElement(2))
-				iCount = pArgs->GetElement(2)->GetIntegerValue();
-			pArgs->Discard(pCC);
-
-			CItemListManipulator ObjList(pObj->GetItemList());
-			if (!ObjList.SetCursorAtItem(Item))
-				return pCC->CreateNil();
-
-			if (ObjList.GetItemAtCursor().IsInstalled())
-				return pCC->CreateError(CONSTLIT("Installed items cannot be removed; use (shpRemoveDevice) instead"));
-
-			ObjList.DeleteAtCursor(iCount);
-
-			pObj->OnComponentChanged(comCargo);
-			pObj->ItemsModified();
-			pObj->InvalidateItemListAddRemove();
-			pResult = pCC->CreateTrue();
-			break;
-			}
-
 		case FN_OBJ_ENUM_ITEMS:
 			{
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();

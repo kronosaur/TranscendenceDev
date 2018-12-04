@@ -349,12 +349,7 @@ void CGaianProcessorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 						if (m_dwAmmo)
 							{
 							CItem MoreAmmo(g_pUniverse->FindItemType(m_dwAmmo), 25);
-							CItemListManipulator ObjList(m_pShip->GetItemList());
-							ObjList.AddItem(MoreAmmo);
-
-							m_pShip->OnComponentChanged(comCargo);
-							m_pShip->ItemsModified();
-							m_pShip->InvalidateItemListAddRemove();
+							m_pShip->AddItem(MoreAmmo);
 							}
 						}
 					}

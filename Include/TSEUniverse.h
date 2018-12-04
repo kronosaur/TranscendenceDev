@@ -292,6 +292,8 @@ class CUniverse
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
 		inline CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
+		inline CDockSession &GetDockSession (void) { return m_DockSession; }
+		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		inline CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		inline CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
@@ -506,6 +508,8 @@ class CUniverse
 		CSystemEventList m_Events;				//	List of all global events
 		CObjectTracker m_Objects;				//	Objects across all systems
 		CObjectStats m_ObjStats;				//	Object stats (across all systems)
+
+		CDockSession m_DockSession;
 
 		//	Support structures
 
