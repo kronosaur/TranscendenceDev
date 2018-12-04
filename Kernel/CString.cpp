@@ -253,14 +253,19 @@ CString &CString::operator= (const CString &pString)
 //	Overrides the assignment operator
 
 	{
+	//	First bump up the new string's refcount, in case it happens to be the
+	//	exact same as ours.
+
+	if (pString.m_pStore)
+		pString.m_pStore->iRefCount++;
+
+	//	Now decrement our own.
+
 	DecRefCount();
 
+	//	Take it.
+
 	m_pStore = pString.m_pStore;
-
-	//	If we've got a storage, bump up the ref count
-
-	if (m_pStore)
-		m_pStore->iRefCount++;
 
 	return *this;
 	}
