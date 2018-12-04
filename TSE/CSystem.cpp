@@ -3094,7 +3094,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 				if (bMarker
 						&& !pObj->IsHidden()
-						&& (!bInViewport || !pObj->HitSizeInBox(Ctx.vUR, Ctx.vLL)))
+						&& (!bInViewport || !pObj->IsPartlyVisibleInBox(Ctx.vUR, Ctx.vLL)))
 					m_EnhancedDisplayObjs.FastAdd(pObj);
 				}
 			}
