@@ -14,6 +14,7 @@ class IDockScreenUI
 
 			selOriginal,					//	Select the original item
 			selModified,					//	Select the modified item
+			selReset,						//	Reset the list
 			};
 
 		struct SModifyItemCtx
