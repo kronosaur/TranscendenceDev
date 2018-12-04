@@ -101,7 +101,7 @@ void CBeam::OnMove (const CVector &vOldPos, Metric rSeconds)
 	//	See if the beam hit anything after the move
 
 	if (!m_fReflection || m_iTick > 1)
-		m_pHit = HitTest(vOldPos, 0.0, m_pDesc->GetDamage(), &m_vPaintTo, &m_iHitDir);
+		m_pHit = HitTest(vOldPos, m_pDesc->GetDamage(), &m_vPaintTo, &m_iHitDir);
 
 	if (m_pHit == NULL)
 		m_vPaintTo = GetPos();

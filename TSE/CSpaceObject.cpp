@@ -4909,7 +4909,6 @@ void CSpaceObject::Highlight (const CString &sText)
 	}
 
 CSpaceObject *CSpaceObject::HitTest (const CVector &vStart, 
-									 Metric rThreshold, 
 									 const DamageDesc &Damage, 
 									 CVector *retvHitPos, 
 									 int *retiHitDir)
@@ -4923,11 +4922,111 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	{
 	DEBUG_TRY_OBJ_LOOP
 
+	//	Get the interaction of this object
+
+	int iInteraction = GetInteraction();
+
+	//	Get the list of objects that intersect the object
+
+	SSpaceObjectGridEnumerator i;
+	GetSystem()->EnumObjectsInBoxStart(i, GetPos(), g_SecondsPerUpdate * LIGHT_SECOND);
+
+	//	We need some variables for stepping
+
+	int iSteps = 0;
+	CVector vStep;
+
+	//	See if the beam hit anything. We start with a crude first pass.
+	//	Any objects near the beam are then analyzed further to see if
+	//	the beam hit them.
+
+	int k;
+	while (GetSystem()->EnumObjectsInBoxHasMore(i))
+		{
+		pObj = GetSystem()->EnumObjectsInBoxGetNext(i);
+
+		//	Skip objects that we cannot hit
+
+		if (!CanHit(pObj)
+				|| !pObj->CanBeHitBy(Damage)
+				|| pObj == this)
+			continue;
+
+		//	Skip if we do not interact with this object.
+
+		int iInteractChance;
+		if (iInteraction < 100
+				&& (iInteractChance = Max(iInteraction, pObj->GetInteraction())) < 100
+				&& mathRandom(1, 100) > iInteractChance)
+			continue;
+
+		//	Step towards this object and see if we hit it. Start by computing 
+		//	the step vector, which should be 2 pixels long.
+
+		if (iSteps == 0)
+			{
+			CVector vMissileTravel = (GetPos() - vStart);
+			Metric rMissileTravel = vMissileTravel.Length();
+			iSteps = (int)(rMissileTravel / (2.0 * g_KlicksPerPixel)) + 1;
+			vStep = vMissileTravel / iSteps;
+			}
+
+		//	Prepare for point in object calculations
+
+		SPointInObjectCtx PiOCtx;
+		pObj->PointInObjectInit(PiOCtx);
+
+		//	Step
+
+		CVector vTest = vStart;
+		for (k = 0; k < iSteps; k++)
+			{
+			//	If we hit this object then we're done.
+
+			if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
+				{
+				if (retvHitPos)
+					*retvHitPos = vTest;
+
+				//	Figure out the direction that the hit came from
+
+				if (retiHitDir)
+					*retiHitDir = VectorToPolar(-vStep, NULL);
+
+				return pObj;
+				}
+
+			//	Next
+
+			vTest = vTest + vStep;
+			}
+		}
+
+	pObj = NULL;
+
+	//	We didn't hit anything.
+
+	return NULL;
+
+	DEBUG_CATCH_OBJ_LOOP
+	}
+
+CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart, 
+											  Metric rThreshold, 
+											  const DamageDesc &Damage, 
+											  CVector *retvHitPos, 
+											  int *retiHitDir)
+
+//	HitTest
+//
+//	Returns the object that the beam hit or NULL if no object was hit.
+//	If rThreshold > 0 and the object passes within the threshold distance
+//	to some target, then retiHitDir = -1 and retvHitPos is the nearest point.
+
+	{
+	DEBUG_TRY_OBJ_LOOP
+
 	const Metric OBJ_RADIUS_ADJ = 0.25;
-
-	//	Figure out if we need to compute a proximity hit
-
-	bool bCalcProximity = (rThreshold > 0.0);
 
 	//	Get the interaction of this object
 
@@ -4991,8 +5090,7 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 
 		//	Do we need to calculate proximity detonation for this object?
 
-		bool bCanTriggerDetonation = bCalcProximity
-				&& (pObj->GetScale() == scaleShip
+		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
 					|| pObj->GetScale() == scaleStructure)
 				&& IsAngryAt(pObj)
 				&& pObj->CanAttack();
@@ -5048,20 +5146,16 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		//
 		//	NOTE that in this case we do this for all objects (including asteroids, etc.).
 
-		if (bCalcProximity)
+		CVector vNextPos = GetPos() + (GetVel() * g_SecondsPerUpdate);
+		if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vNextPos))
 			{
-			CVector vNextPos = GetPos() + (GetVel() * g_SecondsPerUpdate);
+			if (retvHitPos)
+				*retvHitPos = GetPos();
 
-			if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vNextPos))
-				{
-				if (retvHitPos)
-					*retvHitPos = GetPos();
+			if (retiHitDir)
+				*retiHitDir = -1;
 
-				if (retiHitDir)
-					*retiHitDir = -1;
-
-				return pObj;
-				}
+			return pObj;
 			}
 		}
 
@@ -5071,7 +5165,7 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	//	we are now farther away. If so, then we	reached the closest point.
 	//	(If not, then it means that next tick we will get closer still.)
 
-	if (bCalcProximity && pClosestHit)
+	if (pClosestHit)
 		{
 		CVector vDist = GetPos() - pClosestHit->GetPos();
 		Metric rDist = vDist.Length() - (OBJ_RADIUS_ADJ * pClosestHit->GetHitSize());
