@@ -102,6 +102,7 @@ class AGScreen : public IAreaContainer
 		inline IScreenController *GetController (void) { return m_pController; }
 		inline void Invalidate (void) { m_rcInvalid.left = 0; m_rcInvalid.top = 0; m_rcInvalid.right = RectWidth(m_rcRect); m_rcInvalid.bottom = RectHeight(m_rcRect); }
 		inline void Invalidate (const RECT &rcInvalid) { UnionRect(&m_rcInvalid, &rcInvalid, &m_rcInvalid); }
+		void OnAreaAdded (AGArea *pArea);
 		inline void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackgroundColor = rgbColor; }
 		inline void SetController (IScreenController *pController) { m_pController = pController; }
 
@@ -124,22 +125,24 @@ class AGScreen : public IAreaContainer
 		void FireMouseMove (const POINT &pt);
 		inline int GetAreaIndex (AGArea *pArea) { int iIndex; if (m_Areas.Find(pArea, &iIndex)) return iIndex; else return -1; }
 		AGArea *HitTest (const POINT &pt);
+		void RefreshMouseOver (void);
 		void SetMouseOver (AGArea *pArea);
 
 		HWND m_hWnd;
-		RECT m_rcRect;							//	Rect of screen relative to Window
-		RECT m_rcInvalid;						//	Invalid rect relative to m_rcRect
-		IScreenController *m_pController;		//	Screen controller
+		RECT m_rcRect;								//	Rect of screen relative to Window
+		RECT m_rcInvalid;							//	Invalid rect relative to m_rcRect
+		IScreenController *m_pController = NULL;	//	Screen controller
 
 		TArray<AGArea *> m_Areas;
 
-		int m_xLastMousePos;					//	Last position of mouse
-		int m_yLastMousePos;
-		DWORD m_dwLastMouseTime;				//	Tick on which we captured last mouse pos
-		AGArea *m_pMouseCapture;				//	Area that has captured the mouse
-		AGArea *m_pMouseOver;					//	Area that the mouse is currently over
+		int m_xLastMousePos = 0;					//	Last position of mouse
+		int m_yLastMousePos = 0;
+		DWORD m_dwLastMouseTime = 0;				//	Tick on which we captured last mouse pos
+		AGArea *m_pMouseCapture = NULL;				//	Area that has captured the mouse
+		AGArea *m_pMouseOver = NULL;				//	Area that the mouse is currently over
+		bool m_bRefreshMouseOver = false;			//	Need to check if the mouse is over an area
 
-		CG32bitPixel m_rgbBackgroundColor;
+		CG32bitPixel m_rgbBackgroundColor = 0;
 
 		mutable CG16bitFont m_Wingdings;
 

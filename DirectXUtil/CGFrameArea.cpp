@@ -43,6 +43,7 @@ ALERROR CGFrameArea::AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag)
 	//	Add the area
 
 	m_Areas.Insert(pArea);
+	GetScreen()->OnAreaAdded(pArea);
 
 	return NOERROR;
 	}

@@ -19,12 +19,7 @@ AGScreen::~AGScreen (void)
 
 AGScreen::AGScreen (HWND hWnd, const RECT &rcRect) : 
 		m_hWnd(hWnd),
-		m_rcRect(rcRect),
-		m_pController(NULL),
-		m_dwLastMouseTime(0),
-		m_pMouseCapture(NULL),
-		m_pMouseOver(NULL),
-		m_rgbBackgroundColor(0)
+		m_rcRect(rcRect)
 
 //	AGScreen constructor
 
@@ -52,14 +47,7 @@ ALERROR AGScreen::AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag, bool 
 	//	Add the area
 
 	m_Areas.Insert(pArea, (bSendToBack ? 0 : -1));
-
-	//	Get the mouse position and fire mouse move, if appropriate
-
-	POINT pt;
-	GetMousePos(&pt);
-
-	if (HitTest(pt) == pArea)
-		SetMouseOver(pArea);
+	OnAreaAdded(pArea);
 
 	return NOERROR;
 	}
@@ -376,6 +364,16 @@ void AGScreen::MouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 		}
 	}
 
+void AGScreen::OnAreaAdded (AGArea *pArea)
+
+//	OnAreaAdded
+//
+//	An area has been added to the screen.
+
+	{
+	m_bRefreshMouseOver = true;
+	}
+
 void AGScreen::OnAreaSetRect (void)
 
 //	OnAreaSetRect
@@ -395,6 +393,8 @@ void AGScreen::Paint (CG32bitImage &Dest)
 
 	{
 	DEBUG_TRY
+
+	RefreshMouseOver();
 
 	if (!IsRectEmpty(&m_rcInvalid))
 		{
@@ -455,6 +455,27 @@ void AGScreen::Paint (CG32bitImage &Dest)
 #endif
 
 	DEBUG_CATCH
+	}
+
+void AGScreen::RefreshMouseOver (void)
+
+//	RefreshMouseOver
+//
+//	Check the position of the mouse and see if it is over some area.
+
+	{
+	if (!m_bRefreshMouseOver)
+		return;
+
+	//	Get the mouse position and fire mouse move, if appropriate
+
+	POINT pt;
+	GetMousePos(&pt);
+	FireMouseMove(pt);
+
+	//	Done
+
+	m_bRefreshMouseOver = false;
 	}
 
 void AGScreen::SetMouseOver (AGArea *pArea)
