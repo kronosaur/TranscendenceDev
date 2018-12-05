@@ -1169,6 +1169,49 @@ CPlayerGameStats::SSystemStats *CPlayerGameStats::GetSystemStats (const CString 
 	return pStats;
 	}
 
+int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
+
+//	IncItemStat
+//
+//	Increments a stat for the given item.
+
+	{
+	SItemTypeStats *pStats = GetItemStats(dwUNID);
+
+	if (strEquals(sStat, ITEMS_BOUGHT_COUNT_STAT))
+		{
+		pStats->iCountBought += Max(0, iInc);
+		return pStats->iCountBought;
+		}
+	else if (strEquals(sStat, ITEMS_BOUGHT_VALUE_STAT))
+		{
+		pStats->iValueBought += (CurrencyValue)Max(0, iInc);
+		return (int)pStats->iValueBought;
+		}
+	else if (strEquals(sStat, ITEMS_DAMAGED_HP_STAT))
+		{
+		pStats->iHPDamaged += Max(0, iInc);
+		return pStats->iHPDamaged;
+		}
+	else if (strEquals(sStat, ITEMS_FIRED_COUNT_STAT))
+		{
+		pStats->iCountFired += Max(0, iInc);
+		return pStats->iCountFired;
+		}
+	else if (strEquals(sStat, ITEMS_SOLD_COUNT_STAT))
+		{
+		pStats->iCountSold += Max(0, iInc);
+		return pStats->iCountSold;
+		}
+	else if (strEquals(sStat, ITEMS_SOLD_VALUE_STAT))
+		{
+		pStats->iValueSold += (CurrencyValue)Max(0, iInc);
+		return (int)pStats->iValueSold;
+		}
+	else
+		return 0;
+	}
+
 int CPlayerGameStats::IncStat (const CString &sStat, int iInc)
 
 //	IncStat

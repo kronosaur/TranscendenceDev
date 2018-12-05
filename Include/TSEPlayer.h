@@ -33,6 +33,7 @@ class CPlayerGameStats
 		CString GetStat (const CString &sStat) const;
 		DWORD GetSystemEnteredTime (const CString &sNodeID);
         DWORD GetSystemLastVisitedTime (const CString &sNodeID);
+		int IncItemStat (const CString &sStat, DWORD dwUNID, int iInc);
 		inline int IncScore (int iScore) { m_iScore = Max(0, m_iScore + iScore); return m_iScore; }
 		int IncStat (const CString &sStat, int iInc = 1);
         inline void OnFuelConsumed (CSpaceObject *pPlayer, Metric rFuel) { m_rFuelConsumed += rFuel; }
