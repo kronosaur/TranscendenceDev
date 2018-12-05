@@ -163,6 +163,17 @@ bool CObjectTracker::Find (const CString &sNodeID, const CObjectTrackerCriteria 
 	if (retResult)
 		retResult->DeleteAll();
 
+	//	If necessary, refresh current system so we get the latests data.
+
+	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	if (Criteria.NeedsRefresh()
+			&& pSystem
+			&& (sNodeID.IsBlank() 
+				|| (pSystem->GetTopology() && strEquals(sNodeID, pSystem->GetTopology()->GetID()))))
+		{
+		Refresh(pSystem);
+		}
+
 	//	If no node ID, then we look through all nodes
 
 	if (sNodeID.IsBlank())

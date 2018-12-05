@@ -1753,6 +1753,7 @@ class CObjectTrackerCriteria
 	{
 	public:
 		inline const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
+		inline bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly); }
 		bool ParseCriteria (const CString &sCriteria);
 		inline bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
 		inline bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
