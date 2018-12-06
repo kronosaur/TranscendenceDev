@@ -671,12 +671,59 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	ItemCategories iCategory = pDevice->GetCategory();
 
+	//	See how many device slots we need
+
+	int iSlotsRequired = pDevice->GetSlotsRequired();
+
+	//	Otherwise, check to make sure that we have enough slots.
+
+	bool bIsWeapon = (iCategory == itemcatWeapon || iCategory == itemcatLauncher);
+	bool bIsMisc = (iCategory == itemcatMiscDevice);
+
+	//	Count the number of slots being used up currently
+
+	int iWeapons;
+	int iNonWeapons;
+	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons);
+
+	//	See how many slots we would need to free in order to install this 
+	//	device.
+
+	int iAllSlotsNeeded = (iAll + iSlotsRequired) - Hull.GetMaxDevices();
+	int iWeaponSlotsNeeded = (bIsWeapon
+			&& (Hull.GetMaxWeapons() < Hull.GetMaxDevices())
+				? ((iWeapons + iSlotsRequired) - Hull.GetMaxWeapons())
+				: 0);
+	int iNonWeaponSlotsNeeded = (!bIsWeapon
+			&& (Hull.GetMaxNonWeapons() < Hull.GetMaxDevices())
+				? ((iNonWeapons + iSlotsRequired) - Hull.GetMaxNonWeapons())
+				: 0);
+
 	//	See if if this is a device with an assigned slot (like a shield generator
 	//	or cargo hold, etc.) and the slot is in use, then we need to replace it.
 
+	int iSingletonSlot;
 	if (IsSingletonDevice(iCategory)
-			&& !IsDeviceSlotAvailable(iCategory, retiSlot))
+			&& !IsDeviceSlotAvailable(iCategory, &iSingletonSlot))
 		{
+		if (retiSlot)
+			*retiSlot = iSingletonSlot;
+
+		//	Make sure we have enough slots left (not all devices have 1 slot)
+
+		int iSlotsFreed = m_Devices.GetDevice(iSingletonSlot).GetClass()->GetSlotsRequired();
+
+		if (iCategory == itemcatLauncher
+				&& (iWeaponSlotsNeeded - iSlotsFreed > 0))
+			return insNoWeaponSlotsLeft;
+		else if (iCategory != itemcatLauncher
+				&& (iNonWeaponSlotsNeeded - iSlotsFreed > 0))
+			return insNoNonWeaponSlotsLeft;
+		else if (iAllSlotsNeeded - iSlotsFreed > 0)
+			return insNoDeviceSlotsLeft;
+
+		//	Return the appropriate message
+
 		switch (iCategory)
 			{
 			case itemcatLauncher:
@@ -705,34 +752,6 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 	if (Hull.GetMaxDevices() == -1
 			&& iSuggestedSlot == -1)
 		return insOK;
-
-	//	See how many device slots we need
-
-	int iSlotsRequired = pDevice->GetSlotsRequired();
-
-	//	Otherwise, check to make sure that we have enough slots.
-
-	bool bIsWeapon = (iCategory == itemcatWeapon || iCategory == itemcatLauncher);
-	bool bIsMisc = (iCategory == itemcatMiscDevice);
-
-	//	Count the number of slots being used up currently
-
-	int iWeapons;
-	int iNonWeapons;
-	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons);
-
-	//	See how many slots we would need to free in order to install this 
-	//	device.
-
-	int iAllSlotsNeeded = (iAll + iSlotsRequired) - Hull.GetMaxDevices();
-	int iWeaponSlotsNeeded = (bIsWeapon
-			&& (Hull.GetMaxWeapons() < Hull.GetMaxDevices())
-				? ((iWeapons + iSlotsRequired) - Hull.GetMaxWeapons())
-				: 0);
-	int iNonWeaponSlotsNeeded = (!bIsWeapon
-			&& (Hull.GetMaxNonWeapons() < Hull.GetMaxDevices())
-				? ((iNonWeapons + iSlotsRequired) - Hull.GetMaxNonWeapons())
-				: 0);
 
 	//	If we have enough space, then we're done
 
