@@ -909,12 +909,17 @@ CString CItemType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) con
 	{
 	bool bActualName = (dwNounFormFlags & nounActual) != 0;
 
-	if (!IsKnown() && !bActualName && !m_sUnknownName.IsBlank())
+	if (!IsKnown() && !bActualName && m_pUnknownType)
 		{
-		if (retdwFlags)
-			*retdwFlags = 0;
+		if (!m_sUnknownName.IsBlank())
+			{
+			if (retdwFlags)
+				*retdwFlags = 0;
 
-		return m_sUnknownName;
+			return m_sUnknownName;
+			}
+		else
+			return m_pUnknownType->GetNamePattern(dwNounFormFlags, retdwFlags);
 		}
 
 	if (retdwFlags)
