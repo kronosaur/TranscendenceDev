@@ -96,10 +96,10 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Add the character name and current star system
 
-	bool bPermadeath = m_bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//We still show the Permadeath label if we don't force it
+	bool bPermadeath = m_bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//	We still show the Permadeath label if we don't force it
 	CString sHeading;
 	
-	sHeading = strPatternSubst(CONSTLIT("%s — %s%s"), GameFile.GetPlayerName(), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" — Permadeath") : NULL_STR);
+	sHeading = strPatternSubst(CONSTLIT("%s — %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, y));
@@ -113,28 +113,38 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Now add some additional information
 
-	CShipClass *pClass = g_pUniverse->FindShipClass(GameFile.GetPlayerShip());
-	CString sShipClass = (pClass ? pClass->GetNounPhrase(nounGeneric) : NULL_STR);
-	CString sGenome = strCapitalize(GetGenomeName(GameFile.GetPlayerGenome()));
+	TArray<CString> Info;
 
-	CString sState;
+	//	Permadeath
+
+	if (bPermadeath)
+		Info.Insert(CONSTLIT("Permadeath"));
+
+	//	Ship class
+
+	CShipClass *pClass = g_pUniverse->FindShipClass(GameFile.GetPlayerShip());
+	if (pClass)
+		Info.Insert(pClass->GetNounPhrase(nounGeneric));
+
+	//	Gender
+
+	Info.Insert(strCapitalize(GetGenomeName(GameFile.GetPlayerGenome())));
+
+	//	State
+
 	if (GameFile.IsEndGame())
-		sState = strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName());
+		Info.Insert(strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName()));
 	else if (GameFile.IsGameResurrect())
 		{
 		if(m_bFilterPermadeath)
-			sState = strPatternSubst(CONSTLIT("Died in the %s System"), GameFile.GetSystemName());
+			Info.Insert(strPatternSubst(CONSTLIT("Died in the %s System"), GameFile.GetSystemName()));
 		else
-			sState = strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR);
+			Info.Insert(strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR));
 		}
 	else
-		sState = strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName());
+		Info.Insert(strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName()));
 
-	CString sDesc;
-	if (!sGenome.IsBlank() && !sShipClass.IsBlank())
-		sDesc = strPatternSubst(CONSTLIT("%s — %s — %s"), sGenome, sShipClass, sState);
-	else
-		sDesc = sState;
+	CString sDesc = strJoin(Info, CONSTLIT(" — "));
 
 	IAnimatron *pDesc = new CAniText;
 	pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, y));
