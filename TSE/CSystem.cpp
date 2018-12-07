@@ -2731,10 +2731,11 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 
 		//	Skip any objects that cannot attack
 
-		if (pObj == NULL || !pObj->CanAttack())
+		if (pObj == NULL)
 			continue;
 
-		if (pObj->GetScale() != scaleStructure && pObj->GetEncounterInfo() == NULL)
+		if (pObj->GetScale() != scaleStructure 
+				&& (pObj->GetScale() != scaleShip || pObj->GetEncounterInfo() == NULL))
 			continue;
 
 		//	Get the exclusion zone for this object (because it may exclude more
@@ -2766,7 +2767,13 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 			{
 			rDist2 = (vPos - pObj->GetPos()).Length2();
 			if (rDist2 < Exclusion.rEnemyExclusionRadius2)
+				{
+#ifdef DEBUG_EXCLUSION_RADIUS
+				if (g_pUniverse->InDebugMode())
+					g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: %s too close to %s"), GetName(), pType->GetNounPhrase(), pObj->GetNounPhrase()));
+#endif
 				return false;
+				}
 			}
 
 		//	Otherwise, if we have an exclusion to all objects, check that 

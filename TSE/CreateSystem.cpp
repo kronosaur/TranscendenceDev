@@ -5,6 +5,8 @@
 #include "PreComp.h"
 #include "math.h"
 
+#define ALWAYS_SEPARATE_ENEMIES
+
 #ifdef DEBUG
 //#define DEBUG_STATION_TABLE_CACHE
 //#define DEBUG_STRESS_TEST
@@ -650,7 +652,11 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	CString sEnemyOnlyCriteria = (sStationCriteria.IsBlank() ? REQUIRE_ENEMY : strPatternSubst(CONSTLIT("%s,%s"), sStationCriteria, REQUIRE_ENEMY));
 	CString sFriendOnlyCriteria = (sStationCriteria.IsBlank() ? REQUIRE_FRIEND : strPatternSubst(CONSTLIT("%s,%s"), sStationCriteria, REQUIRE_FRIEND));
 
+#ifdef ALWAYS_SEPARATE_ENEMIES
+	bool bSeparateEnemies = true;
+#else
 	bool bSeparateEnemies = pDesc->GetAttributeBool(SEPARATE_ENEMIES_ATTRIB);
+#endif
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("FillLocations locationCriteria=%s stationCriteria=%s"), pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), sStationCriteria));
 
@@ -669,7 +675,12 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 			{
 			bool bEnemy;
 			if (error = CreateAppropriateStationAtRandomLocation(pCtx, LocationTable, sStationCriteria, bSeparateEnemies, &bEnemy))
+				{
+				if (error == ERR_NOTFOUND)
+					continue;
+
 				return error;
+				}
 
 			if (bEnemy)
 				iEnemies--;
@@ -679,14 +690,24 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 		else if (iEnemies)
 			{
 			if (error = CreateAppropriateStationAtRandomLocation(pCtx, LocationTable, sEnemyOnlyCriteria, bSeparateEnemies))
+				{
+				if (error == ERR_NOTFOUND)
+					continue;
+
 				return error;
+				}
 
 			iEnemies--;
 			}
 		else if (iFriends)
 			{
 			if (error = CreateAppropriateStationAtRandomLocation(pCtx, LocationTable, sFriendOnlyCriteria, bSeparateEnemies))
+				{
+				if (error == ERR_NOTFOUND)
+					continue;
+
 				return error;
+				}
 
 			iFriends--;
 			}
@@ -767,6 +788,9 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 				iTries--;
 
 				//	No more tries
+
+				if (iTries == 0)
+					return ERR_NOTFOUND;
 
 #ifdef DEBUG_FILL_LOCATIONS
 				if (iTries == 0 && g_pUniverse->InDebugMode())
@@ -1767,12 +1791,18 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	STATION_PLACEMENT_OUTPUT("CreateRandomStationAtAppropriateLocation\n");
 
 	CString sStationCriteria = pDesc->GetAttribute(STATION_CRITERIA_ATTRIB);
+
+#ifdef ALWAYS_SEPARATE_ENEMIES
+	bool bSeparateEnemies = true;
+#else
 	bool bSeparateEnemies = pDesc->GetAttributeBool(SEPARATE_ENEMIES_ATTRIB);
+#endif
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("PlaceRandomStation stationCriteria=%s"), sStationCriteria));
 
 	//	Keep trying for a while to make sure that we find something that fits
 
+	bool bSuccess = false;
 	int iTries = PLACE_RANDOM_STATION_MAX_TRIES;
 	while (iTries > 0)
 		{
@@ -1850,9 +1880,13 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		//	No more tries
 
+		bSuccess = true;
 		break;
 		}
 
+	if (!bSuccess && g_pUniverse->InDebugMode())
+		g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: Ran out of tries."), pCtx->pSystem->GetName()));
+		
 	PopDebugStack(pCtx);
 	return NOERROR;
 	}
@@ -3930,8 +3964,10 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 			DumpDebugStack(&Ctx);
 			}
 
+#ifdef DEBUG_EXCLUSION_RADIUS
 	if (g_pUniverse->InDebugMode())
 		pSystem->ValidateExclusionRadius();
+#endif
 
 	//	Done
 
