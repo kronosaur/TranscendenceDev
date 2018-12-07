@@ -1209,6 +1209,7 @@ class CShip : public CSpaceObject
         virtual void SetKnown (bool bKnown = true) override { m_fKnown = bKnown; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
+        virtual bool ShowMapLabel (void) const { return (m_fShowMapLabel ? true : false); }
 		virtual void Suspend (void) override { Undock(); m_fManualSuspended = true; SetCannotBeHit(); }
 		virtual void Undock (CSpaceObject *pObj) override;
 		virtual void UpdateArmorItems (void) override;
@@ -1544,6 +1545,7 @@ class CStation : public CSpaceObject
 		virtual void SetMapLabelPos (CMapLabelArranger::EPositions iPos) override { m_iMapLabelPos = iPos; m_sMapLabel = NULL_STR; }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
+        virtual bool ShowMapLabel (void) const { return (m_Scale != scaleStar && m_Scale != scaleWorld && m_pType->ShowsMapIcon() && !m_fNoMapLabel); }
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return m_Hull.IsWrecked(); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }

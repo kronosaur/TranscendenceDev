@@ -1491,6 +1491,7 @@ class CSpaceObject : public CObject
 		virtual bool IsAbandoned (void) const { return false; }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
+        virtual bool ShowMapLabel (void) const { return false; }
         virtual bool ShowMapOrbit (void) const { return false; }
         virtual bool ShowStationDamage (void) const { return false; }
 

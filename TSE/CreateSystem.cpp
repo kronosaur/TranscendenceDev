@@ -3844,10 +3844,6 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 						if (error == ERR_NOTFOUND)
 							{
-							CStationEncounterDesc::SExclusionDesc Exclusion;
-							pType->GetExclusionDesc(Exclusion);
-							Metric rExclusion2 = Max(DEFAULT_EXCLUSION2, Max(Exclusion.rAllExclusionRadius2, Exclusion.rEnemyExclusionRadius2));
-
 							GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
 							iLocation = -1;
 							}
@@ -3934,11 +3930,66 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 			DumpDebugStack(&Ctx);
 			}
 
+	if (g_pUniverse->InDebugMode())
+		pSystem->ValidateExclusionRadius();
+
 	//	Done
 
 	*retpSystem = pSystem;
 
 	return NOERROR;
+	}
+
+void CSystem::ValidateExclusionRadius (void) const
+
+//	ValidateExclusionRadius
+//
+//	Check to see if all objects have a proper exclusion radius, and logs any 
+//	that are not.
+
+	{
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj == NULL
+				|| !pObj->ShowMapLabel()
+				|| !pObj->CanAttack())
+			continue;
+
+		CStationType *pEncounter = pObj->GetEncounterInfo();
+		if (pEncounter == NULL)
+			continue;
+
+		CStationEncounterDesc::SExclusionDesc Exclusion;
+		pEncounter->GetExclusionDesc(Exclusion);
+		if (!Exclusion.bHasEnemyExclusion)
+			continue;
+
+		ValidateExclusionRadius(pObj, Exclusion);
+		}
+	}
+
+void CSystem::ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const
+
+//	ValidateExclusionRadius
+//
+//	Make sure this object is not too close to enemies.
+
+	{
+	for (int j = 0; j < GetObjectCount(); j++)
+		{
+		CSpaceObject *pEnemyObj = GetObject(j);
+		if (pEnemyObj == NULL
+				|| !pEnemyObj->CanAttack()
+				|| pEnemyObj->GetEncounterInfo() == NULL
+				|| !pObj->IsEnemy(pEnemyObj))
+			continue;
+
+		if (pObj->GetDistance2(pEnemyObj) < Exclusion.rEnemyExclusionRadius2)
+			{
+			g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: %s has enemies in radius (%d ls): %s."), GetName(), pObj->GetNounPhrase(), mathRound(pObj->GetDistance(pEnemyObj) / LIGHT_SECOND), pEnemyObj->GetNounPhrase()));
+			}
+		}
 	}
 
 ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, const COrbit &OrbitDesc, CXMLElement *pSubTables)

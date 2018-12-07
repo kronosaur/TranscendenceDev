@@ -772,7 +772,7 @@ class CSystem
 		int GetLevel (void);
 		inline const CLocationList &GetLocations (void) const { return m_Locations; }
 		CSpaceObject *GetNamedObject (const CString &sName);
-		inline const CString &GetName (void) { return m_sName; }
+		inline const CString &GetName (void) const { return m_sName; }
 		CNavigationPath *GetNavPath (CSovereign *pSovereign, CSpaceObject *pStart, CSpaceObject *pEnd);
 		CNavigationPath *GetNavPathByID (DWORD dwID);
 		inline CSpaceObject *GetObject (int iIndex) const { return m_AllObjects[iIndex]; }
@@ -839,6 +839,8 @@ class CSystem
 		void UnregisterEventHandler (CSpaceObject *pObj);
 		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
 		void UpdateExtended (const CTimeSpan &ExtraTime);
+		void ValidateExclusionRadius (void) const;
+		void ValidateExclusionRadius (CSpaceObject *pObj, const CStationEncounterDesc::SExclusionDesc &Exclusion) const;
 		void VectorToTile (const CVector &vPos, int *retx, int *rety) const;
 		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream, CSpaceObject *pReferrer = NULL);
 		void WriteSovereignRefToStream (CSovereign *pSovereign, IWriteStream *pStream);

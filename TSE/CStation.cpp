@@ -1549,7 +1549,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateBool(!m_fNoReinforcements);
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
-		return CC.CreateBool(m_Scale != scaleStar && m_Scale != scaleWorld && m_pType->ShowsMapIcon() && !m_fNoMapLabel);
+		return CC.CreateBool(ShowMapLabel());
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
 		return CC.CreateBool(m_pMapOrbit && m_fShowMapOrbit);
