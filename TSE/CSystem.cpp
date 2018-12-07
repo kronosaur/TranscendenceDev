@@ -2729,9 +2729,12 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 		{
 		CSpaceObject *pObj = GetObject(i);
 
-		//	Skip any non-structures
+		//	Skip any objects that cannot attack
 
-		if (pObj == NULL || pObj->GetScale() != scaleStructure)
+		if (pObj == NULL || !pObj->CanAttack())
+			continue;
+
+		if (pObj->GetScale() != scaleStructure && pObj->GetEncounterInfo() == NULL)
 			continue;
 
 		//	Get the exclusion zone for this object (because it may exclude more
