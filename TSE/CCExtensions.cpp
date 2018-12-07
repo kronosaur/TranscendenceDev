@@ -1877,6 +1877,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repairArmorMaxLevel\n"
 			"   'scale -> 'star | 'world | 'station | 'ship | 'flotsam\n"
 			"   'sovereign\n"
+			"   'suspended\n"
 			"   'stealth\n"
 			"   'underAttack\n"
 			"\n"
@@ -2708,6 +2709,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"   'controller\n"
 			"   'eventHandler\n"
+			"   'returnEscorts\n"
 			"   'target (for ship tables)\n"
 			"\n"
 			"controller:\n\n"

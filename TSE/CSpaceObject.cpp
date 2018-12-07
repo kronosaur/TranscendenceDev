@@ -133,6 +133,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
+#define PROPERTY_SUSPENDED						CONSTLIT("suspended")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
@@ -4455,6 +4456,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_STEALTH))
 		return CC.CreateInteger(GetStealth());
+
+	else if (strEquals(sName, PROPERTY_SUSPENDED))
+		return CC.CreateBool(IsSuspended());
 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
