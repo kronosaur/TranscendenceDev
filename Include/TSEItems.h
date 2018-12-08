@@ -573,6 +573,7 @@ class CItemCtx
 		bool IsDeviceDamaged (void);
 		bool IsDeviceDisrupted (void);
         bool IsDeviceEnabled (void);
+		bool IsDeviceWorking (void);
 		bool ResolveVariant (void);
         inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 

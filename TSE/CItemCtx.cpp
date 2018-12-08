@@ -365,6 +365,17 @@ bool CItemCtx::IsDeviceEnabled (void)
     return (GetDevice() == NULL || GetDevice()->IsEnabled());
     }
 
+bool CItemCtx::IsDeviceWorking (void)
+
+//  IsDeviceWorking
+//
+//  Returns TRUE if the device is working.
+//  NOTE: If we don't have a CInstalledDevice, we alway treat as working.
+    
+    {
+    return (GetDevice() == NULL || GetDevice()->IsWorking());
+    }
+
 bool CItemCtx::ResolveVariant (void)
 
 //	ResolveVariant

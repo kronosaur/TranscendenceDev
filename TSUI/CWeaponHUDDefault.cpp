@@ -188,7 +188,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 		//	Figure out what color to use
 
 		CG32bitPixel rgbColor;
-		if (pDevice->IsEnabled() && !pDevice->IsDamaged() && !pDevice->IsDisrupted())
+		if (pDevice->IsWorking())
 			rgbColor = VI.GetColor(colorTextHighlight);
 		else
 			rgbColor = DISABLED_LABEL_COLOR;

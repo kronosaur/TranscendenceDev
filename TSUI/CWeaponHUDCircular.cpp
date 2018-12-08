@@ -304,7 +304,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	//	Figure out what color to use
 
 	CG32bitPixel rgbColor;
-	if (pDevice->IsEnabled() && !pDevice->IsDamaged() && !pDevice->IsDisrupted())
+	if (pDevice->IsWorking())
 		rgbColor = m_rgbWeaponText;
 	else
 		rgbColor = DISABLED_LABEL_COLOR;

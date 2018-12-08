@@ -384,9 +384,7 @@ void CRepairerClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, S
 	CShip *pShip = pSource->AsShip();
 	if (pShip == NULL
 			|| (Ctx.iTick % REPAIR_CYCLE_TIME) != 0
-			|| !pDevice->IsEnabled() 
-			|| pDevice->IsDamaged()
-			|| pDevice->IsDisrupted())
+			|| !pDevice->IsWorking())
 		return;
 
 	//	Repair interior compartments first

@@ -507,6 +507,7 @@ class CInstalledDevice
 		inline bool IsReady (void) const { return (m_iTimeUntilReady == 0); }
 		inline bool IsRegenerating (void) const { return (m_fRegenerating ? true : false); }
 		inline bool IsTriggered (void) const { return (m_fTriggered ? true : false); }
+		inline bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		inline bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		inline void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }

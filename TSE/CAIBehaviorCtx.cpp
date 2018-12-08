@@ -223,7 +223,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 			//	If this weapon is not working, then skip it
 
-			if (pWeapon->IsEmpty() || pWeapon->IsDamaged() || pWeapon->IsDisrupted() || !pWeapon->IsEnabled())
+			if (pWeapon->IsEmpty() || !pWeapon->IsWorking())
 				continue;
 
 			//	If this is a secondary weapon, remember that we have some and 
@@ -428,7 +428,7 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 		{
 		CInstalledDevice *pDevice = pShip->GetDevice(i);
 
-		if (pDevice->IsEmpty() || pDevice->IsDamaged() || pDevice->IsDisrupted() || !pDevice->IsEnabled())
+		if (pDevice->IsEmpty() || !pDevice->IsWorking())
 			continue;
 
 		switch (pDevice->GetCategory())

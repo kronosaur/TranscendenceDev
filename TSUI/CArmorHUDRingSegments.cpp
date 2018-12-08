@@ -468,7 +468,7 @@ void CArmorHUDRingSegments::Realize (SHUDPaintCtx &Ctx)
 				m_rgbShieldsText);
 
 		CG32bitPixel rgbText;
-		if (pShield->IsEnabled() && !pShield->IsDamaged() && !pShield->IsDisrupted())
+		if (pShield->IsWorking())
 			rgbText = m_rgbShieldsText;
 		else
 			rgbText = DISABLED_LABEL_COLOR;

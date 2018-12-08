@@ -141,7 +141,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pT
 
 	//	See if we can enhance the target device
 
-	if (Device.IsDeviceEnabled() && !Device.IsDeviceDamaged() && !Device.IsDeviceDisrupted())
+	if (Device.IsDeviceWorking())
 		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 
 	//	Let sub-classes add their own
@@ -165,7 +165,7 @@ bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledDevice *p
 
 	//	See if we can enhance the target device
 
-	if (Device.IsDeviceEnabled() && !Device.IsDeviceDamaged() && !Device.IsDeviceDisrupted())
+	if (Device.IsDeviceWorking())
 		bEnhanced = m_Enhancements.Accumulate(Device, *pTarget->GetItem(), EnhancementIDs, pEnhancements);
 
 	//	Let sub-classes add their own
@@ -190,7 +190,7 @@ bool CDeviceClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx
 
 	//	If we install equipment, then add it.
 
-	if (ItemCtx.IsDeviceEnabled() && !ItemCtx.IsDeviceDamaged())
+	if (ItemCtx.IsDeviceWorking())
 		Ctx.Abilities.Set(m_Equipment);
 
     //  Let sub-classes handle it
@@ -756,6 +756,9 @@ bool CDeviceClass::OnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, c
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	if (pDevice == NULL || !pDevice->IsEnabled())
 		return true;
+
+	//	NOTE: We give damaged and disrupted devices a chance to handle this
+	//	event in case they want to do something special.
 
 	return ItemCtx.GetItem().FireOnDestroyCheck(ItemCtx, iCause, Attacker);
 	}

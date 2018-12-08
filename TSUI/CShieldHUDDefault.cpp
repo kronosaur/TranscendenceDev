@@ -222,7 +222,7 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 				VI.GetColor(colorAreaShields));
 
 		CG32bitPixel rgbColor;
-		if (pShield->IsEnabled() && !pShield->IsDamaged() && !pShield->IsDisrupted())
+		if (pShield->IsWorking())
 			rgbColor = VI.GetColor(colorTextShields);
 		else
 			rgbColor = DISABLED_TEXT_COLOR;

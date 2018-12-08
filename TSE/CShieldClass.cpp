@@ -391,7 +391,7 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
     int iType = pWeapon->GetDamageType(CItemCtx(pSource, pDevice));
 	if (iType != -1 
 			&& m_WeaponSuppress.InSet(iType)
-			&& pDevice->IsEnabled()
+			&& pDevice->IsWorking()
 			&& !IsDepleted(pDevice))
 		{
 		//	Create effect

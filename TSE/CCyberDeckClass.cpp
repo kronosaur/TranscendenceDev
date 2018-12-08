@@ -43,7 +43,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 
 	//	Won't work if not enabled
 
-	if (!pDevice->IsEnabled() || pDevice->IsDamaged() || pDevice->IsDisrupted())
+	if (!pDevice->IsWorking())
 		return false;
 
 	//	We better have a target
