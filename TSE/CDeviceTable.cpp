@@ -433,7 +433,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 		else
 			Desc.dwLinkedFireOptions = 0;
 
-		Desc.bSecondary = m_bSecondary;
+		Desc.bSecondary = m_bSecondary || (bUseSlotDesc && SlotDesc.bSecondary);
 
 		//	Enhancements
 
