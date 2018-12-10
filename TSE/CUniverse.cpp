@@ -2055,29 +2055,32 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 			CDesignType *pType = FindDesignType(dwLoad);
 			if (pType == NULL)
 				{
-#ifdef DEBUG_FILE_CORRUPTION
-				i++;
-				if (i < (int)dwCount)
+				if (Ctx.dwSystemVersion < 168 && dwLoad == 0x9101d5)
 					{
-					do
+					i++;
+					if (i < (int)dwCount)
 						{
-						pStream->Read((char *)&dwLoad, sizeof(DWORD));
-						pType = FindDesignType(dwLoad);
+						do
+							{
+							pStream->Read((char *)&dwLoad, sizeof(DWORD));
+							pType = FindDesignType(dwLoad);
+							}
+						while (pType == NULL);
 						}
-					while (pType == NULL);
-					}
 
-				if (pType == NULL)
+					if (pType == NULL)
+						{
+						*retsError = strPatternSubst(CONSTLIT("Unable to find type: %x (missing mod?)"), dwLoad);
+						return ERR_FAIL;
+						}
+
+					//	fall through
+					}
+				else
 					{
 					*retsError = strPatternSubst(CONSTLIT("Unable to find type: %x (missing mod?)"), dwLoad);
 					return ERR_FAIL;
 					}
-
-				//	fall through
-#else
-				*retsError = strPatternSubst(CONSTLIT("Unable to find type: %x (missing mod?)"), dwLoad);
-				return ERR_FAIL;
-#endif
 				}
 
 			try
