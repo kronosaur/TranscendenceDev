@@ -61,6 +61,7 @@
 #define FIELD_REPAIR_COST						CONSTLIT("repairCost")
 #define FIELD_SHIELD_INTERFERENCE				CONSTLIT("shieldInterference")
 
+#define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
 #define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
@@ -1854,7 +1855,10 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Get the property
 
-	if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
+	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
+		return CC.CreateString(CString(MASS_CLASS_TABLE[CalcMassClass(m_pItemType->GetMassKg(Ctx))].pszID));
+
+	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsImmune(Ctx, specialBlinding));
 
 	else if (strEquals(sName, PROPERTY_COMPLETE_HP))
