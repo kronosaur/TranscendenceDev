@@ -125,7 +125,6 @@
 #define SPECIAL_HAS_COMPONENTS					CONSTLIT("hasComponents:")
 #define SPECIAL_IS_LAUNCHER						CONSTLIT("isLauncher:")
 #define SPECIAL_LAUNCHED_BY						CONSTLIT("launchedBy:")
-#define SPECIAL_PROPERTY						CONSTLIT("property:")
 #define SPECIAL_UNKNOWN_TYPE					CONSTLIT("unknownType:")
 
 #define SPECIAL_TRUE							CONSTLIT("true")
@@ -1846,17 +1845,6 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 			return false;
 
 		return (pDevice->GetAmmoVariant(this) != -1);
-		}
-	else if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
-		{
-		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
-		CItem Item((CItemType *)this, 1);
-
-		ICCItem *pValue = Item.GetItemProperty(CCodeChainCtx(), CItemCtx(Item), sProperty);
-		bool bResult = !pValue->IsNil();
-		pValue->Discard(&g_pUniverse->GetCC());
-
-		return bResult;
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_UNKNOWN_TYPE))
 		{

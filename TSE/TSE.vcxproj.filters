@@ -1273,6 +1273,9 @@
     <ClCompile Include="CSpaceObjectItemList.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
+    <ClCompile Include="CPropertyCompare.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

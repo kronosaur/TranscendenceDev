@@ -39,6 +39,7 @@
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
@@ -476,6 +477,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         return CC.CreateInteger(iLevel);
         }
+
+    else if (strEquals(sName, PROPERTY_DEVICE_SLOTS))
+        return CC.CreateInteger(GetSlotsRequired());
 
     else if (strEquals(sName, PROPERTY_ENABLED))
         return (pDevice ? CC.CreateBool(pDevice->IsEnabled()) : CC.CreateNil());

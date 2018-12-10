@@ -44,6 +44,8 @@
 #define LANGID_CORE_CHARGES						CONSTLIT("core.charges")
 #define LANGID_CORE_REFERENCE					CONSTLIT("core.reference")
 
+#define SPECIAL_PROPERTY						CONSTLIT("property:")
+
 CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
 
@@ -1691,7 +1693,23 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 //	Returns TRUE if we have the given special attribute
 
 	{
-	return m_pItemType->HasSpecialAttribute(sAttrib);
+	if (strStartsWith(sAttrib, SPECIAL_PROPERTY))
+		{
+		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
+
+		CString sError;
+		CPropertyCompare Compare;
+		if (!Compare.Parse(sProperty, &sError))
+			{
+			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
+			return false;
+			}
+
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(), CItemCtx(*this), Compare.GetProperty()));
+		return Compare.Eval(pValue);
+		}
+	else
+		return m_pItemType->HasSpecialAttribute(sAttrib);
 	}
 
 bool CItem::HasUseItemScreen (void) const

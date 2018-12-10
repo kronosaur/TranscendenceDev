@@ -2261,16 +2261,16 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
 
-		CCodeChainCtx Ctx;
-		ICCItem *pValue = GetProperty(Ctx, sProperty);
-		if (pValue == NULL)
-			return false;
-		else
+		CString sError;
+		CPropertyCompare Compare;
+		if (!Compare.Parse(sProperty, &sError))
 			{
-			bool bResult = !pValue->IsNil();
-			pValue->Discard(&g_pUniverse->GetCC());
-			return bResult;
+			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
+			return false;
 			}
+
+		ICCItemPtr pValue = ICCItemPtr(GetProperty(CCodeChainCtx(), Compare.GetProperty()));
+		return Compare.Eval(pValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
 		{

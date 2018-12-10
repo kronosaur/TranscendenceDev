@@ -4884,12 +4884,16 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sProperty = strSubString(sAttrib, SPECIAL_PROPERTY.GetLength());
 
-		CCodeChainCtx Ctx;
-		ICCItem *pValue = ((CSpaceObject *)this)->GetProperty(Ctx, sProperty);
-		bool bResult = !pValue->IsNil();
-		pValue->Discard(&g_pUniverse->GetCC());
+		CString sError;
+		CPropertyCompare Compare;
+		if (!Compare.Parse(sProperty, &sError))
+			{
+			::kernelDebugLogPattern("ERROR: Unable to parse property expression: %s", sError);
+			return false;
+			}
 
-		return bResult;
+		ICCItemPtr pValue = ICCItemPtr(((CSpaceObject *)this)->GetProperty(CCodeChainCtx(), Compare.GetProperty()));
+		return Compare.Eval(pValue);
 		}
 	else
 		{
