@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+//#define DEBUG_FILE_CORRUPTION
+
 #define CONTROLLER_AUTON					CONSTLIT("auton")
 #define CONTROLLER_CREW						CONSTLIT("crew")
 #define CONTROLLER_FERIAN					CONSTLIT("ferian")
