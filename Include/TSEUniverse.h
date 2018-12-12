@@ -93,6 +93,7 @@ class CDebugOptions
 		inline bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
 		inline bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		inline bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
+		inline bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		
 	private:
@@ -103,6 +104,7 @@ class CDebugOptions
 		bool m_bShowLineOfFire = false;
 		bool m_bShowNavPaths = false;
 		bool m_bShowFacingsAngle = false;
+		bool m_bShowNodeAttributes = false;
 	};
 
 //	SFX Options ----------------------------------------------------------------

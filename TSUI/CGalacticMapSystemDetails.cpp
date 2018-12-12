@@ -530,7 +530,7 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSyst
 
 	//	Add debug information, if necessary
 
-	if (g_pUniverse->InDebugMode())
+	if (g_pUniverse->GetDebugOptions().IsShowNodeAttributesEnabled())
 		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), Header.sDetails, pNode->GetID(), pNode->GetAttributes());
 
 #if 0

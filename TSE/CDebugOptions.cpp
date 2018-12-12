@@ -12,6 +12,7 @@
 #define PROPERTY_SHOW_FACINGS_ANGLE			CONSTLIT("showFacingsAngle")
 #define PROPERTY_SHOW_LINE_OF_FIRE			CONSTLIT("showLineOfFire")
 #define PROPERTY_SHOW_NAV_PATHS				CONSTLIT("showNavPaths")
+#define PROPERTY_SHOW_NODE_INFO				CONSTLIT("showNodeInfo")
 
 #define ERR_MUST_BE_IN_DEBUG_MODE			CONSTLIT("Must be in debug mode to set a debug property.")
 
@@ -68,6 +69,9 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
 		return ICCItemPtr(CC.CreateBool(m_bShowNavPaths));
 
+	else if (strEquals(sProperty, PROPERTY_SHOW_NODE_INFO))
+		return ICCItemPtr(CC.CreateBool(m_bShowNodeAttributes));
+
 	else
 		return ICCItemPtr(CC.CreateNil());
 	}
@@ -107,6 +111,9 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
 		m_bShowNavPaths = !pValue->IsNil();
+
+	else if (strEquals(sProperty, PROPERTY_SHOW_NODE_INFO))
+		m_bShowNodeAttributes = !pValue->IsNil();
 
 	else
 		{
