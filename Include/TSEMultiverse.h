@@ -52,6 +52,7 @@ class CMultiverseCatalogEntry
 			statusDownloadInProgress,		//	Currently downloading the extension
 			statusLoaded,					//	Available and ready for use
 			statusCorrupt,					//	Loaded, but digest did not match
+			statusPlayerDisabled,			//	Player disabled from this computer
 
 			statusError,					//	Could not load for some reason
 			};

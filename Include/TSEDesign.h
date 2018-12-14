@@ -1008,7 +1008,7 @@ class CExtensionCollection
 		ALERROR ComputeAvailableExtensions (CExtension *pAdventure, DWORD dwFlags, const TArray<DWORD> &Extensions, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeBindOrder (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
 		void ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList);
-		bool ComputeDownloads (const CMultiverseCollection &Collection, const TSortMap<DWORD, bool> &DisabledExtensions, TArray<CMultiverseCatalogEntry *> &retNotFound);
+		bool ComputeDownloads (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> &retNotFound);
 		void DebugDump (void);
 		bool FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
 		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL);

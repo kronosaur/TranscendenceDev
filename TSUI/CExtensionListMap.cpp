@@ -284,9 +284,7 @@ ALERROR CExtensionListMap::WriteAsXML (IWriteStream *pOutput)
 
 	//	Open tag
 
-	CString sData;
-	sData = CONSTLIT("\t<Extensions>\r\n");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
+	if (error = pOutput->Write(CONSTLIT("\t<Extensions>\r\n")))
 		return error;
 
 	//	Adventure defaults
@@ -307,8 +305,7 @@ ALERROR CExtensionListMap::WriteAsXML (IWriteStream *pOutput)
 
 	//	Close tag
 
-	sData = CONSTLIT("\t</Extensions>\r\n");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
+	if (error = pOutput->Write(CONSTLIT("\t</Extensions>\r\n")))
 		return error;
 
 	return NOERROR;

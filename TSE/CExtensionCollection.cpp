@@ -821,7 +821,7 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 		}
 	}
 
-bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collection, const TSortMap<DWORD, bool> &DisabledExtensions, TArray<CMultiverseCatalogEntry *> &retNotFound)
+bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> &retNotFound)
 
 //	ComputeDownloads
 //
@@ -858,7 +858,7 @@ bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collec
 		//	If the user does not want to download the extension to this machine
 		//	then we skip.
 
-		if (DisabledExtensions.Find(pEntry->GetUNID()))
+		if (m_DisabledExtensions.Find(pEntry->GetUNID()))
 			continue;
 
 		//	If this is a library, and none of our other extensions need this library,
@@ -2131,6 +2131,7 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 	for (i = 0; i < Collection.GetCount(); i++)
 		{
 		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
+		CExtension *pExtension;
 
 		//	Figure out which folder to look in
 
@@ -2142,10 +2143,15 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
         else
 			iFolder = CExtension::folderCollection;
 
+		//	If this extension has been manually removed, then we mark it as 
+		//	such.
+
+		if (m_DisabledExtensions.Find(pEntry->GetUNID()))
+			pEntry->SetStatus(CMultiverseCatalogEntry::statusPlayerDisabled);
+
 		//	Look for this extension in our list.
 
-		CExtension *pExtension;
-		if (FindExtension(pEntry->GetUNID(), 0, iFolder, &pExtension))
+		else if (FindExtension(pEntry->GetUNID(), 0, iFolder, &pExtension))
 			{
 			if (pExtension->IsDisabled())
 				pEntry->SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
