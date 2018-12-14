@@ -221,11 +221,12 @@ void CEnhancementDesc::ReadFromStream (SLoadCtx &Ctx)
 		{
 		SEnhancerDesc &Enhancer = m_Enhancements[i];
 
-		Ctx.pStream->Read(Enhancer.sType);
+		Enhancer.sType.ReadFromStream(Ctx.pStream);
 
 		CString sCriteria;
-		Ctx.pStream->Read(sCriteria);
+		sCriteria.ReadFromStream(Ctx.pStream);
 		CItem::ParseCriteria(sCriteria, &Enhancer.Criteria);
+
 		Enhancer.LevelCheck.ReadFromStream(Ctx);
 		Enhancer.Enhancement.ReadFromStream(Ctx);
 		}
@@ -252,8 +253,8 @@ void CEnhancementDesc::WriteToStream (IWriteStream &Stream) const
 		{
 		const SEnhancerDesc &Enhancer = m_Enhancements[i];
 
-		Stream.Write(Enhancer.sType);
-		Stream.Write(CItem::GenerateCriteria(Enhancer.Criteria));
+		Enhancer.sType.WriteToStream(&Stream);
+		CItem::GenerateCriteria(Enhancer.Criteria).WriteToStream(&Stream);
 		Enhancer.LevelCheck.WriteToStream(Stream);
 		Enhancer.Enhancement.WriteToStream(&Stream);
 		}

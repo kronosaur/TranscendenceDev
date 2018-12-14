@@ -610,7 +610,7 @@ void CSystemMap::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 		if (Ctx.dwSystemVersion >= 154)
 			{
-			Ctx.pStream->Read(m_Annotations[i].sNodeID);
+			m_Annotations[i].sNodeID.ReadFromStream(Ctx.pStream);
 
 			DWORD dwFlags;
 			Ctx.pStream->Read(dwFlags);
@@ -706,7 +706,7 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 	for (i = 0; i < m_Annotations.GetCount(); i++)
 		{
 		pStream->Write(m_Annotations[i].dwID);
-		pStream->Write(m_Annotations[i].sNodeID);
+		m_Annotations[i].sNodeID.WriteToStream(pStream);
 
 		DWORD dwFlags = 0;
 		dwFlags |= (m_Annotations[i].fHideIfNodeUnknown ? 0x00000001 : 0);

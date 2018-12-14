@@ -239,7 +239,7 @@ void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 	for (i = 0; i < (int)dwLoad; i++)
 		{
 		CString sCriteria;
-		Ctx.pStream->Read(sCriteria);
+		sCriteria.ReadFromStream(Ctx.pStream);
 
 		SCriteriaEntry *pEntry = m_CriteriaImpact.SetAt(sCriteria);
 		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
@@ -267,7 +267,7 @@ void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 	for (i = 0; i < (int)dwLoad; i++)
 		{
 		CString sCriteria;
-		Ctx.pStream->Read(sCriteria);
+		sCriteria.ReadFromStream(Ctx.pStream);
 
 		SCriteriaEntry *pEntry = m_TradeImpact.SetAt(sCriteria);
 		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
@@ -454,7 +454,7 @@ void CTradingEconomy::WriteToStream (IWriteStream *pStream) const
 	pStream->Write(m_CriteriaImpact.GetCount());
 	for (i = 0; i < m_CriteriaImpact.GetCount(); i++)
 		{
-		pStream->Write(m_CriteriaImpact.GetKey(i));
+		m_CriteriaImpact.GetKey(i).WriteToStream(pStream);
 		pStream->Write(m_CriteriaImpact[i].iImpact);
 		}
 
@@ -468,7 +468,7 @@ void CTradingEconomy::WriteToStream (IWriteStream *pStream) const
 	pStream->Write(m_TradeImpact.GetCount());
 	for (i = 0; i < m_TradeImpact.GetCount(); i++)
 		{
-		pStream->Write(m_TradeImpact.GetKey(i));
+		m_TradeImpact.GetKey(i).WriteToStream(pStream);
 		pStream->Write(m_TradeImpact[i].iImpact);
 		}
 	}
