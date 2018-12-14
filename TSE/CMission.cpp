@@ -834,7 +834,8 @@ void CMission::OnPlayerEnteredSystem (CSpaceObject *pPlayer)
 
 	//	For active missions, fire event to reset player targets.
 
-	FireOnSetPlayerTarget(REASON_NEW_SYSTEM);
+	if (IsPlayerMission() && IsActive())
+		FireOnSetPlayerTarget(REASON_NEW_SYSTEM);
 	}
 
 void CMission::OnReadFromStream (SLoadCtx &Ctx)
