@@ -903,7 +903,7 @@ class IWriteStream
 		inline ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
 		inline ALERROR Write (DWORD dwValue) { return Write((char *)&dwValue, sizeof(DWORD)); }
 		inline ALERROR Write (double rValue) { return Write((char *)&rValue, sizeof(double)); }
-		inline ALERROR Write (const CString &sString) { sString.WriteToStream(this); return NOERROR; }
+		inline ALERROR Write (const CString &sString) { return Write(sString.GetPointer(), sString.GetLength()); }
 
 		ALERROR WriteChar (char chChar, int iLength = 1);
 		ALERROR WriteChars (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
@@ -919,7 +919,6 @@ class IReadStream
 		inline ALERROR Read (int &iValue) { return Read((char *)&iValue, sizeof(DWORD)); }
 		inline ALERROR Read (DWORD &dwValue) { return Read((char *)&dwValue, sizeof(DWORD)); }
 		inline ALERROR Read (double &rValue) { return Read((char *)&rValue, sizeof(double)); }
-		inline ALERROR Read (CString &sValue) { sValue.ReadFromStream(this); return NOERROR; }
 	};
 
 //	CMemoryWriteStream. This object is used to write variable length
