@@ -198,14 +198,22 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 	//	Add status, if necessary
 
 	CString sStatus;
+	CG32bitPixel rgbStatus;
 	switch (pCatalogEntry->GetStatus())
 		{
 		case CMultiverseCatalogEntry::statusCorrupt:
 			sStatus = CONSTLIT("Registration signature does not match.");
+			rgbStatus = VI.GetColor(colorTextDialogWarning);
 			break;
 
 		case CMultiverseCatalogEntry::statusError:
 			sStatus = pCatalogEntry->GetStatusText();
+			rgbStatus = VI.GetColor(colorTextDialogWarning);
+			break;
+
+		case CMultiverseCatalogEntry::statusPlayerDisabled:
+			sStatus = CONSTLIT("Disabled");
+			rgbStatus = VI.GetColor(colorTextNormal);
 			break;
 		}
 
@@ -214,7 +222,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 		IAnimatron *pStatus = new CAniText;
 		pStatus->SetPropertyVector(PROP_POSITION, CVector(xText, y));
 		pStatus->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
-		pStatus->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogWarning));
+		pStatus->SetPropertyColor(PROP_COLOR, rgbStatus);
 		pStatus->SetPropertyFont(PROP_FONT, &MediumFont);
 		pStatus->SetPropertyString(PROP_TEXT, sStatus);
 
