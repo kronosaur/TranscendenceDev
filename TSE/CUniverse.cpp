@@ -1201,7 +1201,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 		//	Load everything
 
-		if (error = m_Extensions.Load(sMainFilespec, dwFlags, retsError))
+		if (error = m_Extensions.Load(sMainFilespec, Ctx.DisabledExtensions, dwFlags, retsError))
 			return error;
 
 		//	Figure out the adventure to bind to.

@@ -841,6 +841,7 @@ class CExtension
 		void CleanUp (void);
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
 		ALERROR ExecuteGlobals (SDesignLoadCtx &Ctx);
+		bool IsLibraryInUse (DWORD dwUNID) const;
 		inline CAdventureDesc *GetAdventureDesc (void) const { return m_pAdventureDesc; }
 		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
 		inline DWORD GetAutoIncludeAPIVersion (void) const { return m_dwAutoIncludeAPIVersion; }
@@ -1007,6 +1008,7 @@ class CExtensionCollection
 		ALERROR ComputeAvailableExtensions (CExtension *pAdventure, DWORD dwFlags, const TArray<DWORD> &Extensions, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeBindOrder (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
 		void ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList);
+		bool ComputeDownloads (const CMultiverseCollection &Collection, const TSortMap<DWORD, bool> &DisabledExtensions, TArray<CMultiverseCatalogEntry *> &retNotFound);
 		void DebugDump (void);
 		bool FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
 		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
@@ -1020,11 +1022,11 @@ class CExtensionCollection
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
 		void InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver);
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
-		ALERROR Load (const CString &sFilespec, DWORD dwFlags, CString *retsError);
+		ALERROR Load (const CString &sFilespec, const TSortMap<DWORD, bool> &DisabledExtensions, DWORD dwFlags, CString *retsError);
 		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError);
 		inline void SetCollectionFolder (const CString &sFilespec) { m_sCollectionFolder = sFilespec; }
-		void SetRegisteredExtensions (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> *retNotFound);
+		void SetRegisteredExtensions (const CMultiverseCollection &Collection);
 		void SweepImages (void);
 		void UpdateCollectionStatus (CMultiverseCollection &Collection, int cxIconSize, int cyIconSize);
 
@@ -1037,6 +1039,7 @@ class CExtensionCollection
 		void ClearAllMarks (void);
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
+		bool IsLibraryInUse (DWORD dwUNID, TSortMap<DWORD, bool> &LibrariesChecked = TSortMap<DWORD, bool>()) const;
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);
@@ -1046,8 +1049,9 @@ class CExtensionCollection
 		EGameTypes m_iGame;					//	Game
 		CString m_sCollectionFolder;		//	Path to collection folder
 		TArray<CString> m_ExtensionFolders;	//	Paths to extension folders
+		TSortMap<DWORD, bool> m_DisabledExtensions;
 
-		CCriticalSection m_cs;				//	Protects modifications
+		mutable CCriticalSection m_cs;		//	Protects modifications
 		TArray<CExtension *> m_Extensions;	//	All loaded extensions
 		bool m_bReloadNeeded;				//	If TRUE we need to reload our folders
 		bool m_bLoadedInDebugMode;			//	If TRUE we loaded in debug mode

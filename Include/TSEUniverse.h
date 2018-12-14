@@ -200,6 +200,7 @@ class CUniverse
 			CString sCollectionFolder;					//	If non-blank, use this as Collection folder (and remember it)
 			TArray<CString> ExtensionFolders;			//	Add these as extension folders.
 			TSortMap<DWORD, bool> TypesUsed;			//	List of types used (bind these, even if obsolete).
+			TSortMap<DWORD, bool> DisabledExtensions;	//	Collection Extensions disabled locally by user
 			DWORD dwMinAPIVersion = API_VERSION;		//	Min API version (for compatibility)
 
 			//	Options
@@ -351,7 +352,6 @@ class CUniverse
 		bool SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
 		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
-		inline void SetRegisteredExtensions (const CMultiverseCollection &Catalog, TArray<CMultiverseCatalogEntry *> *retNotFound) { m_Extensions.SetRegisteredExtensions(Catalog, retNotFound); }
 		inline void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
 		inline void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
 		inline void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }

@@ -903,6 +903,22 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 	DEBUG_CATCH
 	}
 
+bool CExtension::IsLibraryInUse (DWORD dwUNID) const
+
+//	IsLibraryInUse
+//
+//	Returns TRUE if this extension is using the given library.
+
+	{
+	for (int i = 0; i < GetLibraryCount(); i++)
+		{
+		if (dwUNID == GetLibrary(i).dwUNID)
+			return true;
+		}
+
+	return false;
+	}
+
 CG32bitImage *CExtension::GetCoverImage (void) const
 
 //	GetCoverImage

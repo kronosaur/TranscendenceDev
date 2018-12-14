@@ -5,11 +5,17 @@
 
 #include "stdafx.h"
 
+#define DEFAULT_TAG							CONSTLIT("Default")
 #define DISABLED_TAG						CONSTLIT("Disabled")
 #define ENABLED_TAG							CONSTLIT("Enabled")
+#define OPTION_TAG							CONSTLIT("Option")
 
 #define DEBUG_MODE_ATTRIB					CONSTLIT("debugMode")
+#define NAME_ATTRIB							CONSTLIT("name")
 #define UNID_ATTRIB							CONSTLIT("unid")
+#define VALUE_ATTRIB						CONSTLIT("value")
+
+#define OPTION_DISABLED						CONSTLIT("disabled")
 
 void CExtensionListMap::GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const
 
@@ -93,6 +99,57 @@ void CExtensionListMap::GetList (DWORD dwAdventure, const TArray<CExtension *> &
 		}
 	}
 
+ALERROR CExtensionListMap::ReadDefault (CXMLElement *pEntry)
+
+//	ReadDefault
+//
+//	Reads the adventure defaults from XML.
+
+	{
+	DWORD dwAdventure = (DWORD)pEntry->GetAttributeInteger(UNID_ATTRIB);
+	bool bDebugMode = pEntry->GetAttributeBool(DEBUG_MODE_ATTRIB);
+
+	SEntry *pNewEntry = m_Map.SetAt(dwAdventure);
+	TSortMap<DWORD, bool> *pDest = (bDebugMode ? &pNewEntry->DebugList : &pNewEntry->List);
+
+	//	If we have sub-elements, then this is the new format
+
+	if (pEntry->GetContentElementCount() > 0)
+		{
+		CXMLElement *pEnabled = pEntry->GetContentElementByTag(ENABLED_TAG);
+		if (pEnabled)
+			{
+			if (ReadList(pEnabled->GetContentText(0), true, pDest) != NOERROR)
+				return ERR_FAIL;
+			}
+
+		CXMLElement *pDisabled = pEntry->GetContentElementByTag(DISABLED_TAG);
+		if (pDisabled)
+			{
+			if (ReadList(pDisabled->GetContentText(0), false, pDest, (bDebugMode ? &pNewEntry->m_bDisabledIfNotInDebugList : &pNewEntry->m_bDisabledIfNotInList)) != NOERROR)
+				return ERR_FAIL;
+			}
+		}
+
+	//	Otherwise, we load backwards compatibility mode
+
+	else
+		{
+		if (ReadList(pEntry->GetContentText(0), true, pDest) != NOERROR)
+			return ERR_FAIL;
+
+		//	In backwards compatibility mode, any extension not in our list
+		//	is disabled by default.
+
+		if (bDebugMode)
+			pNewEntry->m_bDisabledIfNotInDebugList = true;
+		else
+			pNewEntry->m_bDisabledIfNotInList = true;
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CExtensionListMap::ReadFromXML (CXMLElement *pDesc)
 
 //	ReadFromXML
@@ -100,54 +157,25 @@ ALERROR CExtensionListMap::ReadFromXML (CXMLElement *pDesc)
 //	Loads it from XML.
 
 	{
-	int i;
+	ALERROR error;
 
 	m_Map.DeleteAll();
 
 	//	Loop over all lists
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pEntry = pDesc->GetContentElement(i);
-		DWORD dwAdventure = (DWORD)pEntry->GetAttributeInteger(UNID_ATTRIB);
-		bool bDebugMode = pEntry->GetAttributeBool(DEBUG_MODE_ATTRIB);
 
-		SEntry *pNewEntry = m_Map.SetAt(dwAdventure);
-		TSortMap<DWORD, bool> *pDest = (bDebugMode ? &pNewEntry->DebugList : &pNewEntry->List);
-
-		//	If we have sub-elements, then this is the new format
-
-		if (pEntry->GetContentElementCount() > 0)
+		if (strEquals(pEntry->GetTag(), DEFAULT_TAG))
 			{
-			CXMLElement *pEnabled = pEntry->GetContentElementByTag(ENABLED_TAG);
-			if (pEnabled)
-				{
-				if (ReadList(pEnabled->GetContentText(0), true, pDest) != NOERROR)
-					return ERR_FAIL;
-				}
-
-			CXMLElement *pDisabled = pEntry->GetContentElementByTag(DISABLED_TAG);
-			if (pDisabled)
-				{
-				if (ReadList(pDisabled->GetContentText(0), false, pDest, (bDebugMode ? &pNewEntry->m_bDisabledIfNotInDebugList : &pNewEntry->m_bDisabledIfNotInList)) != NOERROR)
-					return ERR_FAIL;
-				}
+			if (error = ReadDefault(pEntry))
+				return error;
 			}
-
-		//	Otherwise, we load backwards compatibility mode
-
-		else
+		else if (strEquals(pEntry->GetTag(), OPTION_TAG))
 			{
-			if (ReadList(pEntry->GetContentText(0), true, pDest) != NOERROR)
-				return ERR_FAIL;
-
-			//	In backwards compatibility mode, any extension not in our list
-			//	is disabled by default.
-
-			if (bDebugMode)
-				pNewEntry->m_bDisabledIfNotInDebugList = true;
-			else
-				pNewEntry->m_bDisabledIfNotInList = true;
+			if (error = ReadOption(pEntry))
+				return error;
 			}
 		}
 
@@ -181,6 +209,28 @@ ALERROR CExtensionListMap::ReadList (const CString &sList, bool bEnabled, TSortM
 
 	for (i = 0; i < Values.GetCount(); i++)
 		retpList->SetAt(strToInt(Values[i], 0), bEnabled);
+
+	return NOERROR;
+	}
+
+ALERROR CExtensionListMap::ReadOption (CXMLElement *pEntry)
+
+//	ReadOption
+//
+//	Reads the given XML element as an option.
+
+	{
+	DWORD dwExtension = (DWORD)pEntry->GetAttributeInteger(UNID_ATTRIB);
+	CString sOption = pEntry->GetAttribute(NAME_ATTRIB);
+	CString sValue = pEntry->GetAttribute(VALUE_ATTRIB);
+
+	if (strEquals(sOption, OPTION_DISABLED))
+		{
+		if (CXMLElement::IsBoolTrueValue(sValue))
+			m_Disabled.SetAt(dwExtension, true);
+		}
+	else
+		return ERR_FAIL;
 
 	return NOERROR;
 	}
@@ -231,7 +281,6 @@ ALERROR CExtensionListMap::WriteAsXML (IWriteStream *pOutput)
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Open tag
 
@@ -240,28 +289,20 @@ ALERROR CExtensionListMap::WriteAsXML (IWriteStream *pOutput)
 	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength(), NULL))
 		return error;
 
-	//	Entries
+	//	Adventure defaults
 
-	for (i = 0; i < m_Map.GetCount(); i++)
+	for (int i = 0; i < m_Map.GetCount(); i++)
 		{
-		DWORD dwAdventure = m_Map.GetKey(i);
-		const SEntry &Entry = m_Map[i];
+		if (error = WriteDefault(*pOutput, m_Map.GetKey(i), m_Map[i]))
+			return error;
+		}
 
-		//	Write the non-debug
+	//	Extension options
 
-		if (Entry.List.GetCount() > 0)
-			{
-			if (error = WriteList(pOutput, dwAdventure, false, Entry.List, Entry.m_bDisabledIfNotInList))
-				return error;
-			}
-
-		//	Write the debug list
-
-		if (Entry.DebugList.GetCount() > 0)
-			{
-			if (error = WriteList(pOutput, dwAdventure, true, Entry.DebugList, Entry.m_bDisabledIfNotInDebugList))
-				return error;
-			}
+	for (int i = 0; i < m_Disabled.GetCount(); i++)
+		{
+		if (error = WriteOption(*pOutput, m_Disabled.GetKey(i), CONSTLIT("disabled"), CONSTLIT("true")))
+			return error;
 		}
 
 	//	Close tag
@@ -273,7 +314,37 @@ ALERROR CExtensionListMap::WriteAsXML (IWriteStream *pOutput)
 	return NOERROR;
 	}
 
-ALERROR CExtensionListMap::WriteList (IWriteStream *pOutput, DWORD dwAdventure, bool bDebugMode, const TSortMap<DWORD, bool> &List, bool bDisabledIfNotInList)
+ALERROR CExtensionListMap::WriteDefault (IWriteStream &Output, DWORD dwAdventure, const SEntry &Entry) const
+
+//	WriteDefault
+//
+//	Writes the defaults for an adventure
+
+	{
+	ALERROR error;
+
+	//	Write the non-debug
+
+	if (Entry.List.GetCount() > 0)
+		{
+		if (error = WriteList(Output, dwAdventure, false, Entry.List, Entry.m_bDisabledIfNotInList))
+			return error;
+		}
+
+	//	Write the debug list
+
+	if (Entry.DebugList.GetCount() > 0)
+		{
+		if (error = WriteList(Output, dwAdventure, true, Entry.DebugList, Entry.m_bDisabledIfNotInDebugList))
+			return error;
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR CExtensionListMap::WriteList (IWriteStream &Output, DWORD dwAdventure, bool bDebugMode, const TSortMap<DWORD, bool> &List, bool bDisabledIfNotInList) const
 
 //	WriteList
 //
@@ -289,13 +360,13 @@ ALERROR CExtensionListMap::WriteList (IWriteStream *pOutput, DWORD dwAdventure, 
 	else
 		sData = strPatternSubst(CONSTLIT("\t\t<Default unid=\"0x%x\">"), dwAdventure);
 
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	//	First we write out the list of enabled extensions
 
 	sData = CONSTLIT("<Enabled>");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	bool bFirstEntry = true;
@@ -312,25 +383,25 @@ ALERROR CExtensionListMap::WriteList (IWriteStream *pOutput, DWORD dwAdventure, 
 			else
 				sEntry = strPatternSubst(CONSTLIT(", 0x%x"), List.GetKey(i));
 
-			if (error = pOutput->Write(sEntry.GetPointer(), sEntry.GetLength()))
+			if (error = Output.Write(sEntry))
 				return error;
 			}
 		}
 
 	sData = CONSTLIT("</Enabled>");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	//	Now we write the disabled extensions
 
 	sData = CONSTLIT("<Disabled>");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	if (bDisabledIfNotInList)
 		{
 		sData = CONSTLIT("*");
-		if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+		if (error = Output.Write(sData))
 			return error;
 		}
 	else
@@ -349,21 +420,31 @@ ALERROR CExtensionListMap::WriteList (IWriteStream *pOutput, DWORD dwAdventure, 
 				else
 					sEntry = strPatternSubst(CONSTLIT(", 0x%x"), List.GetKey(i));
 
-				if (error = pOutput->Write(sEntry.GetPointer(), sEntry.GetLength()))
+				if (error = Output.Write(sEntry))
 					return error;
 				}
 			}
 		}
 
 	sData = CONSTLIT("</Disabled>");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	//	Done
 
 	sData = CONSTLIT("</Default>\r\n");
-	if (error = pOutput->Write(sData.GetPointer(), sData.GetLength()))
+	if (error = Output.Write(sData))
 		return error;
 
 	return NOERROR;
+	}
+
+ALERROR CExtensionListMap::WriteOption (IWriteStream &Output, DWORD dwExtension, const CString &sOption, const CString &sValue) const
+
+//	WriteOption
+//
+//	Writes an option.
+
+	{
+	return Output.Write(strPatternSubst(CONSTLIT("\t\t<Options unid=\"0x%08x\" name=\"%s\" value=\"%s\" />\r\n"), dwExtension, sOption, sValue));
 	}

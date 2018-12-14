@@ -10,6 +10,7 @@
 class CExtensionListMap
 	{
 	public:
+		inline const TSortMap<DWORD, bool> &GetDisabledExtensionList (void) const { return m_Disabled; }
 		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const;
 		void GetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const;
 		void SetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List);
@@ -30,10 +31,15 @@ class CExtensionListMap
 			bool m_bDisabledIfNotInDebugList;	//	If TRUE, extensions not in debug list should be disabled
 			};
 
+		ALERROR ReadDefault (CXMLElement *pEntry);
 		ALERROR ReadList (const CString &sList, bool bEnabled, TSortMap<DWORD, bool> *retpList, bool *retbDisabledIfNotInList = NULL);
-		ALERROR WriteList (IWriteStream *pOutput, DWORD dwAdventure, bool bDebugMode, const TSortMap<DWORD, bool> &List, bool bDisabledIfNotInList = false);
+		ALERROR ReadOption (CXMLElement *pEntry);
+		ALERROR WriteDefault (IWriteStream &Output, DWORD dwAdventure, const SEntry &Entry) const;
+		ALERROR WriteList (IWriteStream &Output, DWORD dwAdventure, bool bDebugMode, const TSortMap<DWORD, bool> &List, bool bDisabledIfNotInList = false) const;
+		ALERROR WriteOption (IWriteStream &Output, DWORD dwExtension, const CString &sOption, const CString &sValue) const;
 
 		TSortMap<DWORD, SEntry> m_Map;
+		TSortMap<DWORD, bool> m_Disabled;
 	};
 
 //	User Settings --------------------------------------------------------------

@@ -821,6 +821,83 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 		}
 	}
 
+bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collection, const TSortMap<DWORD, bool> &DisabledExtensions, TArray<CMultiverseCatalogEntry *> &retNotFound)
+
+//	ComputeDownloads
+//
+//	Given the user's collection, looks for the extension on the local machine
+//	and sees if we need to download a new version. If so, we add it to the list.
+//	We return TRUE if we have to download at least one extension.
+
+	{
+	CSmartLock Lock(m_cs);
+
+	TSortMap<DWORD, bool> LibrariesChecked;
+
+	retNotFound.DeleteAll();
+
+	for (int i = 0; i < Collection.GetCount(); i++)
+		{
+		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
+
+		//	Skip core entries
+
+		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+			continue;
+
+		//  Skip Steam UGC
+
+		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+			continue;
+
+		//	Steam versions don't need to be downloaded
+
+		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
+			continue;
+
+		//	If the user does not want to download the extension to this machine
+		//	then we skip.
+
+		if (DisabledExtensions.Find(pEntry->GetUNID()))
+			continue;
+
+		//	If this is a library, and none of our other extensions need this library,
+		//	then we skip it.
+
+		if (pEntry->GetType() == extLibrary
+				&& !IsLibraryInUse(pEntry->GetUNID(), LibrariesChecked))
+			continue;
+
+		//	Look for this extension in our list. If we found it then compare
+		//	the signature to make sure that we have the right version.
+
+		CExtension *pExtension;
+		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
+			{
+			//	Compare the digests. If they match, then this is a registered
+			//	extension and we don't need to download.
+
+			if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
+				continue;
+
+			//	If this is an unregistered version, then for now we skip (because we
+			//	don't know how to download).
+
+			else if (!pExtension->IsRegistered()
+				&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
+				continue;
+			}
+
+		//	Otherwise, we need to download
+
+		retNotFound.Insert(pEntry);
+		}
+
+	//	Done
+
+	return (retNotFound.GetCount() > 0);
+	}
+
 ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError)
 
 //	ComputeFilesToLoad
@@ -1287,6 +1364,68 @@ void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwF
 	retResolver->AddResolver(pExtension->GetEntities());
 	}
 
+bool CExtensionCollection::IsLibraryInUse (DWORD dwUNID, TSortMap<DWORD, bool> &LibrariesChecked) const
+
+//	IsLibraryIsUse
+//
+//	Returns TRUE if the given library is being used by some extension or 
+//	adventure.
+
+	{
+	CSmartLock Lock(m_cs);
+
+	//	If we've already checked this library, then we have an answer.
+
+	bool bNeedToInitialize;
+	bool *pInUse = LibrariesChecked.SetAt(dwUNID, &bNeedToInitialize);
+	if (!bNeedToInitialize)
+		return *pInUse;
+
+	//	Set value to FALSE in case we recurse.
+
+	*pInUse = false;
+
+	//	Otherwise, check all extensions.
+
+	bool bInUse = false;
+	for (int i = 0; i < m_Extensions.GetCount(); i++)
+		{
+		CExtension *pExtension = m_Extensions[i];
+
+		//	Skip ourselves
+
+		if (pExtension->GetUNID() == dwUNID)
+			continue;
+
+		//	Skip extensions that are not enabled.
+
+		if (pExtension->IsDisabled())
+			continue;
+
+		//	If this extension doesn't use this library, then nothing to do.
+
+		if (!pExtension->IsLibraryInUse(dwUNID))
+			continue;
+
+		//	If this is a library, then we need to recurse and see if the the
+		//	library we're interested in is used by this library.
+		//	If it is NOT used, then we can just skip it.
+
+		if (pExtension->GetType() == extLibrary
+				&& !IsLibraryInUse(pExtension->GetUNID(), LibrariesChecked))
+			continue;
+
+		//	If we get this far, then we know that the library is in use
+
+		*pInUse = true;
+		return true;
+		}
+
+	//	We've looped through all extensions and no one uses the library.
+
+	return false;
+	}
+
 bool CExtensionCollection::IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags)
 
 //	IsRegisteredGame
@@ -1316,7 +1455,7 @@ bool CExtensionCollection::IsRegisteredGame (CExtension *pAdventure, const TArra
 	return true;
 	}
 
-ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CString *retsError)
+ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWORD, bool> &DisabledExtensions, DWORD dwFlags, CString *retsError)
 
 //	Load
 //
@@ -1334,6 +1473,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, DWORD dwFlags, CSt
 		return NOERROR;
 
 	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
+	m_DisabledExtensions = DisabledExtensions;
 
 	//	Load base file
 
@@ -1761,6 +1901,16 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, &pExtension, retsError))
 			return error;
 
+		//	If we're in the Collection folder and this particular extension has been
+		//	disabled, then we exclude it.
+
+		if (iFolder == CExtension::folderCollection
+				&& m_DisabledExtensions.Find(pExtension->GetUNID()))
+			{
+			delete pExtension;
+			continue;
+			}
+
 		//	If this extension requires an API beyond our base file, then we disable it.
 		//	This can happen when we do TransData on older Transcendence.tdb.
 
@@ -1898,7 +2048,7 @@ bool CExtensionCollection::ReloadDisabledExtensions (DWORD dwFlags)
 	return bSuccess;
 	}
 
-void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> *retNotFound)
+void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection &Collection)
 
 //	SetRegisteredExtensions
 //
@@ -1908,8 +2058,6 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 	{
 	CSmartLock Lock(m_cs);
 	int i;
-
-	retNotFound->DeleteAll();
 
 	for (i = 0; i < Collection.GetCount(); i++)
 		{
@@ -1948,20 +2096,6 @@ void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection 
 			else if (!pExtension->IsRegistered()
 					&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
 				{ }
-			
-			//	Otherwise we assume that we have an old version and ask to download
-			//	the file again.
-
-			else
-				retNotFound->Insert(pEntry);
-			}
-
-		//	If we did not find the extension, then add it to the list of entries that
-		//	we need to download.
-
-		else
-			{
-			retNotFound->Insert(pEntry);
 			}
 		}
 	}

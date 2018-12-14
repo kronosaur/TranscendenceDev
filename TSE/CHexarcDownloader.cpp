@@ -48,21 +48,69 @@ void CHexarcDownloader::AddRequest (const CString &sAPI,
 //	AddRequest
 //
 //	Adds a request to download a file.
+//	NOTE: We check to make sure that we don't add the same request twice.
+
+	{
+	CSmartLock Lock(m_cs);
+	SRequest *pNewRequest;
+
+	//	If this same file is currently being downloaded, then we don't do 
+	//	anything.
+
+	if (m_pCurrent 
+			&& strEquals(sFilePath, m_pCurrent->sFilePath))
+		return;
+
+	//	See if the request is already in the queue. If it is, then we need to update
+	//	the request.
+
+	else if (FindRequest(sFilePath, &pNewRequest))
+		{
+		pNewRequest->sAPI = sAPI;
+		pNewRequest->sFilePath = sFilePath;
+		pNewRequest->AuthToken = AuthToken;
+		pNewRequest->sFilespec = sFilespec;
+		pNewRequest->FileDigest = FileDigest;
+		}
+
+	//	If not then we need to add it.
+
+	else
+		{
+		SRequest *pNewRequest = new SRequest;
+		pNewRequest->sAPI = sAPI;
+		pNewRequest->sFilePath = sFilePath;
+		pNewRequest->AuthToken = AuthToken;
+		pNewRequest->sFilespec = sFilespec;
+		pNewRequest->FileDigest = FileDigest;
+
+		pNewRequest->dwTotalLen = 0;
+		pNewRequest->dwDownload = 0;
+
+		m_Requests.TryEnqueue(pNewRequest);
+		}
+	}
+
+bool CHexarcDownloader::FindRequest (const CString &sFilePath, SRequest **retpRequest) const
+
+//	FindRequest
+//
+//	Looks for the given request by Multiverse file path. NOTE: We only look in 
+//	the queue; if the request has already been pulled, then we don't find it.
 
 	{
 	CSmartLock Lock(m_cs);
 
-	SRequest *pNewRequest = new SRequest;
-	pNewRequest->sAPI = sAPI;
-	pNewRequest->sFilePath = sFilePath;
-	pNewRequest->AuthToken = AuthToken;
-	pNewRequest->sFilespec = sFilespec;
-	pNewRequest->FileDigest = FileDigest;
+	for (int i = 0; i < m_Requests.GetCount(); i++)
+		if (strEquals(m_Requests[i]->sFilePath, sFilePath))
+			{
+			if (retpRequest)
+				*retpRequest = m_Requests[i];
 
-	pNewRequest->dwTotalLen = 0;
-	pNewRequest->dwDownload = 0;
+			return true;
+			}
 
-	m_Requests.TryEnqueue(pNewRequest);
+	return false;
 	}
 
 void CHexarcDownloader::GetStatus (SStatus *retStatus)
@@ -72,6 +120,8 @@ void CHexarcDownloader::GetStatus (SStatus *retStatus)
 //	Returns current status.
 
 	{
+	CSmartLock Lock(m_cs);
+
 	UpdateCurrent();
 
 	if (m_pCurrent == NULL)
@@ -110,6 +160,9 @@ ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, 
 		return ERR_NOTFOUND;
 
 	//	Put together a payload to request a piece of the file.
+	//
+	//	NOTE: It is OK for us to read m_pCurrent because nobody touches it 
+	//	outside of this function.
 
 	CJSONValue Result;
 	CJSONValue Payload(CJSONValue::typeObject);
@@ -135,16 +188,12 @@ ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, 
 
 	const CJSONValue &FileDesc = Result.GetElement(FIELD_FILE_DESC);
 
-	//	If necessary set the total size
+	//	Make sure the total size is valid.
 
-	if (m_pCurrent->dwTotalLen == 0)
+	if (m_pCurrent->dwTotalLen == 0 && FileDesc.GetElement(FIELD_SIZE).AsInt32() == 0)
 		{
-		m_pCurrent->dwTotalLen = FileDesc.GetElement(FIELD_SIZE).AsInt32();
-		if (m_pCurrent->dwTotalLen == 0)
-			{
-			*retsError = strPatternSubst(ERR_INVALID_FILE_SIZE, m_pCurrent->sFilePath);
-			return ERR_FAIL;
-			}
+		*retsError = strPatternSubst(ERR_INVALID_FILE_SIZE, m_pCurrent->sFilePath);
+		return ERR_FAIL;
 		}
 
 	//	Get the data
@@ -196,20 +245,8 @@ ALERROR CHexarcDownloader::Update (CHexarcSession &Session, SStatus *retStatus, 
 
 	//	Update state
 
-	m_pCurrent->dwDownload += sData.GetLength();
-	retStatus->sFilespec = m_pCurrent->sFilespec;
-	retStatus->iProgress = (int)(100 * (DWORDLONG)m_pCurrent->dwDownload / (DWORDLONG)m_pCurrent->dwTotalLen);
-	retStatus->FileDigest = m_pCurrent->FileDigest;
-
-	//	Are we done? If not, then ask for more
-
-	if (m_pCurrent->dwDownload < m_pCurrent->dwTotalLen)
+	if (!UpdateCurrentStatus(Result, sData, retStatus))
 		return ERR_MORE;
-
-	//	Otherwise, we're done. Clean up the current request.
-
-	delete m_pCurrent;
-	m_pCurrent = NULL;
 
 	return NOERROR;
 	}
@@ -228,4 +265,44 @@ void CHexarcDownloader::UpdateCurrent (void)
 		m_pCurrent = m_Requests.Head();
 		m_Requests.Dequeue();
 		}
+	}
+
+bool CHexarcDownloader::UpdateCurrentStatus (const CJSONValue &Result, const CString &sData, SStatus *retStatus)
+
+//	UpdateCurrentStatus
+//
+//	Updates m_pCurrent based on the new downloaded block. Returns the status of 
+//	the download. If download is complete, we return TRUE. Otherwise, we return
+//	FALSE if more data is needed.
+
+	{
+	CSmartLock Lock(m_cs);
+
+	//	Get the file descriptor
+
+	const CJSONValue &FileDesc = Result.GetElement(FIELD_FILE_DESC);
+
+	//	If necessary set the total size
+
+	if (m_pCurrent->dwTotalLen == 0)
+		m_pCurrent->dwTotalLen = FileDesc.GetElement(FIELD_SIZE).AsInt32();
+
+	//	Update the current status
+
+	m_pCurrent->dwDownload += sData.GetLength();
+	retStatus->sFilespec = m_pCurrent->sFilespec;
+	retStatus->iProgress = (int)(100 * (DWORDLONG)m_pCurrent->dwDownload / (DWORDLONG)m_pCurrent->dwTotalLen);
+	retStatus->FileDigest = m_pCurrent->FileDigest;
+
+	//	Are we done? If not, then ask for more
+
+	if (m_pCurrent->dwDownload < m_pCurrent->dwTotalLen)
+		return false;
+
+	//	Otherwise, we're done. Clean up the current request.
+
+	delete m_pCurrent;
+	m_pCurrent = NULL;
+
+	return true;
 	}

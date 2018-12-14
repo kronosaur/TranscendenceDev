@@ -384,9 +384,11 @@ class CHexarcDownloader
 			};
 
 		void CleanUp (void);
+		bool FindRequest (const CString &sFilePath, SRequest **retpRequest = NULL) const;
 		void UpdateCurrent (void);
+		bool UpdateCurrentStatus (const CJSONValue &Result, const CString &sData, SStatus *retStatus);
 
-		CCriticalSection m_cs;
+		mutable CCriticalSection m_cs;
 		TQueue<SRequest *> m_Requests;
 		SRequest *m_pCurrent;
 
