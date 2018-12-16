@@ -1906,15 +1906,12 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 
 		if (iFolder == CExtension::folderCollection
 				&& m_DisabledExtensions.Find(pExtension->GetUNID()))
-			{
-			delete pExtension;
-			continue;
-			}
+			pExtension->SetDisabled(CONSTLIT("Disabled"));
 
 		//	If this extension requires an API beyond our base file, then we disable it.
 		//	This can happen when we do TransData on older Transcendence.tdb.
 
-		if (!pExtension->IsDisabled()
+		else if (!pExtension->IsDisabled()
 				&& pExtension->GetAPIVersion() > m_pBase->GetAPIVersion())
 			pExtension->SetDisabled(CONSTLIT("Requires a newer version of Transcendence.tdb"));
 
@@ -2048,56 +2045,17 @@ bool CExtensionCollection::ReloadDisabledExtensions (DWORD dwFlags)
 	return bSuccess;
 	}
 
-void CExtensionCollection::SetRegisteredExtensions (const CMultiverseCollection &Collection)
+void CExtensionCollection::SetExtensionEnabled (DWORD dwUNID, bool bEnabled)
 
-//	SetRegisteredExtensions
+//	SetExtensionEnabled
 //
-//	Given the user's collection, set the registered bit on all appropriate
-//	extensions and return a list of extensions that need to be downloaded.
+//	Add or removes an extension from the disabled list.
 
 	{
-	CSmartLock Lock(m_cs);
-	int i;
-
-	for (i = 0; i < Collection.GetCount(); i++)
-		{
-		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
-
-		//	Skip core entries
-
-		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
-			continue;
-
-        //  Skip Steam UGC
-
-        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
-            continue;
-
-		//	Look for this extension in our list. If we found it then compare
-		//	the signature to make sure that we have the right version.
-
-		CExtension *pExtension;
-		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
-			{
-			//	Steam versions are always verified
-
-			if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
-				pExtension->SetVerified();
-
-			//	Compare the digests. If they match, then this is a registered
-			//	extension.
-
-			else if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
-				pExtension->SetVerified();
-
-			//	If this is an unregistered version, then check to see if the version
-			//	number is the same. If not, the we re-download.
-
-			else if (!pExtension->IsRegistered()
-					&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
-				{ }
-			}
-		}
+	if (bEnabled)
+		m_DisabledExtensions.DeleteAt(dwUNID);
+	else
+		m_DisabledExtensions.SetAt(dwUNID, true);
 	}
 
 void CExtensionCollection::SweepImages (void)
@@ -2118,7 +2076,7 @@ void CExtensionCollection::SweepImages (void)
 	DEBUG_CATCH
 	}
 
-void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collection, int cxIconSize, int cyIconSize)
+void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntry *> &Collection, int cxIconSize, int cyIconSize)
 
 //	UpdateCollectionStatus
 //
@@ -2130,7 +2088,7 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 	for (i = 0; i < Collection.GetCount(); i++)
 		{
-		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
+		CMultiverseCatalogEntry *pEntry = Collection[i];
 		CExtension *pExtension;
 
 		//	Figure out which folder to look in
@@ -2174,6 +2132,58 @@ void CExtensionCollection::UpdateCollectionStatus (CMultiverseCollection &Collec
 
 		else
 			pEntry->SetStatus(CMultiverseCatalogEntry::statusNotAvailable);
+		}
+	}
+
+void CExtensionCollection::UpdateRegistrationStatus (const TArray<CMultiverseCatalogEntry *> &Collection)
+
+//	UpdateRegistrationStatus
+//
+//	Given the user's collection, set the registered bit on all appropriate
+//	extensions and return a list of extensions that need to be downloaded.
+
+	{
+	CSmartLock Lock(m_cs);
+	int i;
+
+	for (i = 0; i < Collection.GetCount(); i++)
+		{
+		CMultiverseCatalogEntry *pEntry = Collection[i];
+
+		//	Skip core entries
+
+		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+			continue;
+
+        //  Skip Steam UGC
+
+        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+            continue;
+
+		//	Look for this extension in our list. If we found it then compare
+		//	the signature to make sure that we have the right version.
+
+		CExtension *pExtension;
+		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
+			{
+			//	Steam versions are always verified
+
+			if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
+				pExtension->SetVerified();
+
+			//	Compare the digests. If they match, then this is a registered
+			//	extension.
+
+			else if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
+				pExtension->SetVerified();
+
+			//	If this is an unregistered version, then check to see if the version
+			//	number is the same. If not, the we re-download.
+
+			else if (!pExtension->IsRegistered()
+					&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
+				{ }
+			}
 		}
 	}
 

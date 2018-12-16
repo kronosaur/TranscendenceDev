@@ -64,6 +64,7 @@ const CG32bitPixel RGB_MODIFIER_NORMAL_TEXT =			CG32bitPixel(220,220,220);	//	H:
 #define ID_DLG_INPUT_ERROR						CONSTLIT("uiHelperInputErrorMsg")
 
 #define PROP_COLOR								CONSTLIT("color")
+#define PROP_ENABLED							CONSTLIT("enabled")
 #define PROP_FILL_TYPE							CONSTLIT("fillType")
 #define PROP_FONT								CONSTLIT("font")
 #define PROP_LINE_COLOR							CONSTLIT("lineColor")
@@ -583,7 +584,6 @@ void CUIHelper::CreateSessionTitle (IHISession *pSession,
 //	Close button
 
 	{
-	int i;
 	const CVisualPalette &VI = m_HI.GetVisuals();
 	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
 
@@ -698,24 +698,7 @@ void CUIHelper::CreateSessionTitle (IHISession *pSession,
 	//	Add menu items, if necessary
 
 	if (pMenu)
-		{
-		//	Menu is to the left.
-
-		int xMenu = 0;
-		int yMenu = yBottomBar + (TITLE_BAR_HEIGHT - BUTTON_HEIGHT) / 2;
-
-		for (i = 0; i < pMenu->GetCount(); i++)
-			{
-			const SMenuEntry &Entry = pMenu->GetAt(i);
-
-			IAnimatron *pButton;
-			int cyHeight;
-			VI.CreateLink(pRoot, Entry.sCommand, xMenu, yMenu, Entry.sLabel, 0, &pButton, NULL, &cyHeight);
-			yMenu += cyHeight;
-
-			pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
-			}
-		}
+		RefreshMenu(pSession, pRoot, *pMenu);
 
 	//	Done
 
@@ -1367,6 +1350,66 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 			rgbText,
 			sRef,
 			0);
+	}
+
+void CUIHelper::RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArray<SMenuEntry> &Menu) const
+
+//	RefreshMenu
+//
+//	Refreshes a menu created with CreateSessionTitle. NOTE: All menu entries 
+//	be represented (though they may be hidden).
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	ASSERT(pRoot);
+	if (pRoot == NULL)
+		return;
+
+	RECT rcRect;
+	VI.GetWidescreenRect(&rcRect);
+
+	//	Delete all existing elements (if any)
+
+	for (int i = 0; i < Menu.GetCount(); i++)
+		pSession->HIGetReanimator().DeleteElement(Menu[i].sCommand);
+
+	//	Add command buttons at the bottom
+
+	int yBottomBar = TITLE_BAR_HEIGHT + RectHeight(rcRect);
+
+	//	Menu is to the left.
+
+	int xMenu = 0;
+	int yMenu = yBottomBar + (TITLE_BAR_HEIGHT - BUTTON_HEIGHT) / 2;
+
+	//	Add menus
+
+	for (int i = 0; i < Menu.GetCount(); i++)
+		{
+		const SMenuEntry &Entry = Menu.GetAt(i);
+
+		//	If this entry is hidden, then skip
+
+		if (Entry.dwFlags & MENU_HIDDEN)
+			continue;
+
+		//	Create
+
+		IAnimatron *pButton;
+		int cyHeight;
+		VI.CreateLink(pRoot, Entry.sCommand, xMenu, yMenu, Entry.sLabel, 0, &pButton, NULL, &cyHeight);
+		yMenu += cyHeight;
+
+		//	Disable if necessary
+
+		if (Entry.dwFlags & MENU_DISABLED)
+			pButton->SetPropertyBool(PROP_ENABLED, false);
+
+		//	Register for command
+
+		pSession->RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, Entry.sCommand);
+		}
 	}
 
 int CUIHelper::ScrollAnimationDecay (int iOffset)

@@ -698,7 +698,7 @@ void CVisualPalette::CreateImageButtonSmall (CAniSequencer *pContainer,
 		*retpControl = pButton;
 	}
 
-void CVisualPalette::CreateLink (CAniSequencer *pContainer,
+void CVisualPalette::CreateLink (IAnimatron *pContainer,
 								 const CString &sID,
 								 int x,
 								 int y,
@@ -765,7 +765,7 @@ void CVisualPalette::CreateLink (CAniSequencer *pContainer,
 	//	Add
 
 	if (pContainer)
-		pContainer->AddTrack(pButton, 0);
+		pContainer->AddElement(pButton, 0);
 
 	//	Compute height and width
 

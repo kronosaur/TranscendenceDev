@@ -235,6 +235,19 @@ ALERROR CExtensionListMap::ReadOption (CXMLElement *pEntry)
 	return NOERROR;
 	}
 
+void CExtensionListMap::SetExtensionEnabled (DWORD dwUNID, bool bEnabled)
+
+//	SetExtensionEnabled
+//
+//	Add or removes an extension from the disabled list.
+
+	{
+	if (bEnabled)
+		m_Disabled.DeleteAt(dwUNID);
+	else
+		m_Disabled.SetAt(dwUNID, true);
+	}
+
 void CExtensionListMap::SetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List)
 
 //	SetList
@@ -443,5 +456,5 @@ ALERROR CExtensionListMap::WriteOption (IWriteStream &Output, DWORD dwExtension,
 //	Writes an option.
 
 	{
-	return Output.Write(strPatternSubst(CONSTLIT("\t\t<Options unid=\"0x%08x\" name=\"%s\" value=\"%s\" />\r\n"), dwExtension, sOption, sValue));
+	return Output.Write(strPatternSubst(CONSTLIT("\t\t<Option unid=\"0x%08x\" name=\"%s\" value=\"%s\" />\r\n"), dwExtension, sOption, sValue));
 	}

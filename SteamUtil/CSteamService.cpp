@@ -230,7 +230,7 @@ ALERROR CSteamService::InitFromXML (CXMLElement *pDesc, bool *retbModified)
 	return NOERROR;
 	}
 
-ALERROR CSteamService::LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult)
+ALERROR CSteamService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult)
 
 //	LoadUserCollection
 //

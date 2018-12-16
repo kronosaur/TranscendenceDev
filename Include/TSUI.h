@@ -162,7 +162,7 @@ class IHISession : public IHICommand, public IAniCommand
 		//	Reanimator interface
 		inline void AddPerformance (IAnimatron *pAni, const CString &sID) { m_Reanimator.AddPerformance(pAni, sID); }
 		inline void DeleteElement (const CString &sID) { m_Reanimator.DeleteElement(sID); }
-		inline IAnimatron *GetElement (const CString &sID) { return m_Reanimator.GetElement(sID); }
+		inline IAnimatron *GetElement (const CString &sID) const { return m_Reanimator.GetElement(sID); }
 		inline IAnimatron *GetPerformance (const CString &sID, int *retiFrame = NULL) { return m_Reanimator.GetPerformance(sID, retiFrame); }
 		inline bool GetPropertyBool (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyBool(sID, sProp); }
 		inline CG32bitPixel GetPropertyColor (const CString &sID, const CString &sProp) { return m_Reanimator.GetPropertyColor(sID, sProp); }
@@ -593,7 +593,7 @@ class CVisualPalette : public IFontTable
 									 const CG32bitImage *pImage,
 									 DWORD dwOptions,
 									 IAnimatron **retpControl) const;
-		void CreateLink (CAniSequencer *pContainer,
+		void CreateLink (IAnimatron *pContainer,
 						 const CString &sID,
 						 int x,
 						 int y,

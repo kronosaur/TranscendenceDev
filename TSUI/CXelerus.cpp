@@ -16,11 +16,11 @@ class CXelerus : public ICIService
 	public:
 		CXelerus (CHumanInterface &HI) : ICIService(HI) { }
 
-		virtual CString GetTag (void);
-		virtual bool HasCapability (DWORD dwCapability) { return (dwCapability == ICIService::canPostGameRecord); }
-		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified);
-		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
-		virtual ALERROR WriteAsXML (IWriteStream *pOutput);
+		virtual CString GetTag (void) override;
+		virtual bool HasCapability (DWORD dwCapability) override { return (dwCapability == ICIService::canPostGameRecord); }
+		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified) override;
+		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) override;
+		virtual ALERROR WriteAsXML (IWriteStream *pOutput) override;
 
 	private:
 		CString m_sHost;

@@ -55,14 +55,14 @@ CListCollectionTask::CListCollectionTask (CHumanInterface &HI,
 										  CMultiverseModel &Multiverse, 
 										  CCloudService &Service, 
 										  int cxWidth,
-										  bool bNoCollectionRefresh,
-										  bool bDebugMode) : IHITask(HI), 
+										  DWORD dwFlags) : IHITask(HI), 
 		m_Extensions(Extensions),
 		m_Multiverse(Multiverse),
 		m_Service(Service),
 		m_cxWidth(cxWidth),
-		m_bNoCollectionRefresh(bNoCollectionRefresh),
-		m_bDebugMode(bDebugMode),
+		m_bNoCollectionRefresh((dwFlags & FLAG_NO_COLLECTION_REFRESH) ? true : false),
+		m_bLoadExtensions((dwFlags & FLAG_LOAD_EXTENSIONS) ? true : false),
+		m_bDebugMode((dwFlags & FLAG_DEBUG_MODE) ? true : false),
 		m_pList(NULL)
 
 //	CListCollectionTask constructor
@@ -215,6 +215,11 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 			sStatus = CONSTLIT("Disabled");
 			rgbStatus = VI.GetColor(colorTextNormal);
 			break;
+
+		case CMultiverseCatalogEntry::statusNotAvailable:
+			sStatus = CONSTLIT("Not loaded");
+			rgbStatus = VI.GetColor(colorTextNormal);
+			break;
 		}
 
 	if (!sStatus.IsBlank())
@@ -258,6 +263,15 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 		*retcyHeight = Max(ENTRY_ICON_HEIGHT, y);
 	}
 
+void CListCollectionTask::LoadCollectionExtensions (void)
+
+//	LoadCollectionExtensions
+//
+//	Make sure we load all extensions in the Collection folder.
+
+	{
+	}
+
 ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *retsResult)
 
 //	OnExecute
@@ -270,11 +284,18 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
+	//	Load all extensions, if requested
+
+	if (m_bLoadExtensions)
+		{
+		LoadCollectionExtensions();
+		}
+
 	//	Ask the Hexarc service to refresh the collection
 
 	if (!m_bNoCollectionRefresh)
 		{
-		if (error = m_Service.LoadUserCollection(pProcessor, m_Multiverse, retsResult))
+		if (error = m_Service.LoadUserCollection(pProcessor, m_Extensions, m_Multiverse, retsResult))
 			return error;
 		}
 
@@ -286,11 +307,6 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 		*retsResult = ERR_GET_COLLECTION_FAILED;
 		return ERR_FAIL;
 		}
-
-	//	Ask the local collection to give us the status for all the entries
-	//	in the collection.
-
-	m_Extensions.UpdateCollectionStatus(Collection, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT);
 
 	//	Sort the entries
 

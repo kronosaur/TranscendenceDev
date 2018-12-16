@@ -1026,9 +1026,10 @@ class CExtensionCollection
 		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError);
 		inline void SetCollectionFolder (const CString &sFilespec) { m_sCollectionFolder = sFilespec; }
-		void SetRegisteredExtensions (const CMultiverseCollection &Collection);
+		void SetExtensionEnabled (DWORD dwUNID, bool bEnabled);
 		void SweepImages (void);
-		void UpdateCollectionStatus (CMultiverseCollection &Collection, int cxIconSize, int cyIconSize);
+		void UpdateCollectionStatus (TArray<CMultiverseCatalogEntry *> &Collection, int cxIconSize, int cyIconSize);
+		void UpdateRegistrationStatus (const TArray<CMultiverseCatalogEntry *> &Collection);
 
 		static int Compare (CExtension *pExt1, CExtension *pExt2, bool bDebugMode);
 

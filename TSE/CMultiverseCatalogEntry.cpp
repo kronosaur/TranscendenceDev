@@ -27,39 +27,6 @@
 
 #define ERR_INVALID_UNID						CONSTLIT("Invalid UNID for catalog entry.")
 
-CMultiverseCatalogEntry::CMultiverseCatalogEntry (const CMultiverseCatalogEntry &Src)
-
-//	CMultiverseCatalogEntry constructor
-
-	{
-	m_sUNID = Src.m_sUNID;
-	m_dwRelease = Src.m_dwRelease;
-	m_dwVersion = Src.m_dwVersion;
-	m_iType = Src.m_iType;
-
-	m_sName = Src.m_sName;
-	m_sDesc = Src.m_sDesc;
-	m_TDBFile = Src.m_TDBFile;
-	m_iLicenseType = Src.m_iLicenseType;
-
-	m_dwUNID = Src.m_dwUNID;
-	m_iStatus = Src.m_iStatus;
-
-	//	This is initialized in a call to CExtensionCollection, so we don't bother
-	//	copying it here.
-
-	m_pIcon = NULL;
-	}
-
-CMultiverseCatalogEntry::~CMultiverseCatalogEntry (void)
-
-//	CMultiverseCatalogEntry destructor
-
-	{
-	if (m_pIcon)
-		delete m_pIcon;
-	}
-
 ALERROR CMultiverseCatalogEntry::CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult)
 
 //	CreateFromJSON
@@ -159,7 +126,6 @@ ALERROR CMultiverseCatalogEntry::CreateFromJSON (const CJSONValue &Entry, CMulti
 	//	Initialize status
 
 	pNewEntry->m_iStatus = statusUnknown;
-	pNewEntry->m_pIcon = NULL;
 
 	//	Done
 
@@ -189,7 +155,6 @@ ALERROR CMultiverseCatalogEntry::CreateBasicEntry (const SEntryCreate &Create, C
 	//	Initialize status
 
 	pNewEntry->m_iStatus = statusUnknown;
-	pNewEntry->m_pIcon = NULL;
 
 	//	Done
 
@@ -213,15 +178,13 @@ bool CMultiverseCatalogEntry::IsValid (void)
 	return true;
 	}
 
-void CMultiverseCatalogEntry::SetIcon (CG32bitImage *pImage)
+void CMultiverseCatalogEntry::SetIcon (CG32bitImage *&pImage)
 
 //	SetIcon
 //
 //	Sets the icon. We take ownership of the image
 
 	{
-	if (m_pIcon)
-		delete m_pIcon;
-
-	m_pIcon = pImage;
+	m_pIcon.TakeHandoff(pImage);
+	pImage = NULL;
 	}

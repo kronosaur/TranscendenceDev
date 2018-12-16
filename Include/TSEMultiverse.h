@@ -66,14 +66,17 @@ class CMultiverseCatalogEntry
 			CString sDesc;
 			};
 
-		CMultiverseCatalogEntry (const CMultiverseCatalogEntry &Src);
-		~CMultiverseCatalogEntry (void);
+		~CMultiverseCatalogEntry (void)
+			{
+			char *pPos = NULL;
+			}
+
 		static ALERROR CreateBasicEntry (const SEntryCreate &Create, CMultiverseCatalogEntry **retpEntry);
 		static ALERROR CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult);
 
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline CG32bitImage *GetIcon (void) const { return m_pIcon; }
-		inline CG32bitImage *GetIconHandoff (void) { CG32bitImage *pIcon = m_pIcon; m_pIcon = NULL; return pIcon; }
+		inline CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : new CG32bitImage()); }
 		inline ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline DWORD GetRelease (void) const { return m_dwRelease; }
@@ -86,34 +89,29 @@ class CMultiverseCatalogEntry
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		bool IsValid (void);
-		void SetIcon (CG32bitImage *pImage);
+		void SetIcon (CG32bitImage *&pImage);
 		inline void SetStatus (ELocalStatus iStatus, const CString &sStatus = NULL_STR) { m_iStatus = iStatus; m_sStatus = sStatus; }
 		inline void SetVersion (const CString &sVersion) { m_sVersion = sVersion; }
 
 	private:
-		CMultiverseCatalogEntry (void) : 
-				m_iLicenseType(licenseUnknown),
-				m_iStatus(statusUnknown),
-				m_pIcon(NULL)
-			{ }
 
-		CString m_sUNID;					//	Fully qualified UNID
-		DWORD m_dwRelease;					//	Catalog entry release
-		DWORD m_dwVersion;					//	Catalog entry version
-		CString m_sVersion;					//	User-visible version
-		EExtensionTypes m_iType;			//	Type of extension
+		CString m_sUNID;								//	Fully qualified UNID
+		DWORD m_dwRelease = 0;							//	Catalog entry release
+		DWORD m_dwVersion = 0;							//	Catalog entry version
+		CString m_sVersion;								//	User-visible version
+		EExtensionTypes m_iType = extUnknown;			//	Type of extension
 
-		CString m_sName;					//	Name of extension
-		CString m_sDesc;					//	Description
-		CMultiverseFileRef m_TDBFile;		//	Reference to TDB file.
-		ELicenseTypes m_iLicenseType;		//	Type of license
+		CString m_sName;								//	Name of extension
+		CString m_sDesc;								//	Description
+		CMultiverseFileRef m_TDBFile;					//	Reference to TDB file.
+		ELicenseTypes m_iLicenseType = licenseUnknown;	//	Type of license
 
 		TArray<CMultiverseFileRef> m_Resources;
 
-		DWORD m_dwUNID;						//	UNID
-		ELocalStatus m_iStatus;				//	Current status
-		CString m_sStatus;					//	Status message
-		CG32bitImage *m_pIcon;				//	200x100 image
+		DWORD m_dwUNID = 0;								//	UNID
+		ELocalStatus m_iStatus = statusUnknown;			//	Current status
+		CString m_sStatus;								//	Status message
+		TSharedPtr<CG32bitImage> m_pIcon;				//	200x100 image
 	};
 
 class CMultiverseCollection
@@ -235,6 +233,7 @@ class CMultiverseModel
 
 		CMultiverseModel (void);
 
+		bool FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntry = NULL) const;
 		ALERROR GetCollection (CMultiverseCollection *retCollection) const;
 		ALERROR GetEntry (DWORD dwUNID, DWORD dwRelease, CMultiverseCollection *retCollection) const;
 		CMultiverseNewsEntry *GetNextNewsEntry (void);
@@ -250,7 +249,7 @@ class CMultiverseModel
 		void OnUserSignedIn (const CString &sUsername);
 		void OnUserSignedOut (void);
 		ALERROR Save (const CString &sCacheFilespec, CString *retsResult = NULL) { return m_News.Save(sCacheFilespec, retsResult); }
-		ALERROR SetCollection (const CJSONValue &Data, CString *retsResult);
+		ALERROR SetCollection (const CJSONValue &Data, CExtensionCollection &Extensions, CString *retsResult);
 		ALERROR SetCollection (const TArray<CMultiverseCatalogEntry *> &NewCollection);
 		void SetDisabled (void);
 		ALERROR SetNews (const CJSONValue &Data, const CString &sCacheFilespec, TSortMap<CString, CString> *retDownloads, CString *retsResult);
@@ -269,6 +268,7 @@ class CMultiverseModel
 
 		void AddResources (const CMultiverseCatalogEntry &Entry);
 		void DeleteCollection (void);
+		bool LockCollection (void) const;
 		void SetUpgradeVersion (const CJSONValue &Entry);
 
 		mutable CCriticalSection m_cs;		//	Protects access to all data

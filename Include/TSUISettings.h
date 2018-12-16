@@ -13,6 +13,7 @@ class CExtensionListMap
 		inline const TSortMap<DWORD, bool> &GetDisabledExtensionList (void) const { return m_Disabled; }
 		void GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWORD> *retList) const;
 		void GetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, TArray<DWORD> *retList) const;
+		void SetExtensionEnabled (DWORD dwUNID, bool bEnabled);
 		void SetList (DWORD dwAdventure, const TArray<CExtension *> &Available, bool bDebugMode, const TArray<DWORD> &List);
 		ALERROR ReadFromXML (CXMLElement *pDesc);
 		ALERROR WriteAsXML (IWriteStream *pOutput);

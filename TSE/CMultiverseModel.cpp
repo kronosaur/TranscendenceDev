@@ -36,6 +36,9 @@
 
 #define TYPE_GAME_ENGINE						CONSTLIT("gameEngine")
 
+static constexpr int ENTRY_ICON_HEIGHT =		150;
+static constexpr int ENTRY_ICON_WIDTH =			300;
+
 CMultiverseModel::CMultiverseModel (void) :
 		m_fUserSignedIn(false),
 		m_fCollectionLoaded(false),
@@ -85,6 +88,38 @@ void CMultiverseModel::DeleteCollection (void)
 	m_fCollectionLoaded = false;
 	}
 
+bool CMultiverseModel::FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntry) const
+
+//	FindEntry
+//
+//	Finds the given entry.
+
+	{
+	//	Try to lock the collection
+
+	if (!LockCollection())
+		return false;
+
+	//	Look for the first entry in the catalog with the given UNID
+
+	for (int i = 0; i < m_Collection.GetCount(); i++)
+		{
+		if (m_Collection.GetEntry(i)->GetUNID() == dwUNID)
+			{
+			if (retEntry)
+				*retEntry = *m_Collection.GetEntry(i);
+
+			m_cs.Unlock();
+			return true;
+			}
+		}
+
+	//	Otherwise, not found
+
+	m_cs.Unlock();
+	return false;
+	}
+
 ALERROR CMultiverseModel::GetCollection (CMultiverseCollection *retCollection) const
 
 //	GetCollection
@@ -92,31 +127,15 @@ ALERROR CMultiverseModel::GetCollection (CMultiverseCollection *retCollection) c
 //	Returns the collection.
 
 	{
-	int i;
+	//	Try to lock the collection
 
-	//	If we're in the middle of getting the collection then wait a little bit
-
-	bool bSuccess = false;
-	for (i = 0; i < 30; i++)
-		{
-		m_cs.Lock();
-		if (!m_fLoadingCollection && m_fCollectionLoaded)
-			{
-			bSuccess = true;
-			break;
-			}
-		m_cs.Unlock();
-
-		::Sleep(100);
-		}
-
-	if (!bSuccess)
+	if (!LockCollection())
 		return ERR_FAIL;
 
 	//	Object is locked. Get the collection.
 
 	retCollection->DeleteAll();
-	for (i = 0; i < m_Collection.GetCount(); i++)
+	for (int i = 0; i < m_Collection.GetCount(); i++)
 		{
 		//	Clone a copy and add it to the result.
 
@@ -357,6 +376,34 @@ bool CMultiverseModel::IsLoadNewsNeeded (void) const
 	return !m_fNewsLoaded;
 	}
 
+bool CMultiverseModel::LockCollection (void) const
+
+//	LockCollection
+//
+//	Attempts to lock the collection and returns TRUE if successful.
+
+	{
+	//	If we're in the middle of getting the collection then wait a little bit
+
+	bool bSuccess = false;
+	for (int i = 0; i < 30; i++)
+		{
+		m_cs.Lock();
+		if (!m_fLoadingCollection && m_fCollectionLoaded)
+			{
+			bSuccess = true;
+			break;
+			}
+		m_cs.Unlock();
+
+		::Sleep(100);
+		}
+
+	//	Done. If we return TRUE, it is the caller's responsibility to unlock.
+
+	return bSuccess;
+	}
+
 void CMultiverseModel::OnCollectionLoadFailed (void)
 
 //	OnCollectionLoadFailed
@@ -456,7 +503,7 @@ ALERROR CMultiverseModel::SetCollection (const TArray<CMultiverseCatalogEntry *>
 	return NOERROR;
 	}
 
-ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CString *retsResult)
+ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CExtensionCollection &Extensions, CString *retsResult)
 
 //	SetCollection
 //
@@ -517,6 +564,15 @@ ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CString *retsRe
 		m_fLoadingCollection = false;
 		return ERR_FAIL;
 		}
+
+	//	Verify the signatures
+
+	Extensions.UpdateRegistrationStatus(NewCollection);
+
+	//	Ask the local collection to give us the status for all the entries
+	//	in the collection.
+
+	Extensions.UpdateCollectionStatus(NewCollection, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT);
 
 	//	Otherwise, replace our collection.
 

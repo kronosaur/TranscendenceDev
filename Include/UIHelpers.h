@@ -36,13 +36,16 @@ class CItemDataAnimatron : public IAnimatron
 class CListCollectionTask : public IHITask
 	{
 	public:
+		static constexpr DWORD FLAG_NO_COLLECTION_REFRESH =		0x00000001;
+		static constexpr DWORD FLAG_LOAD_EXTENSIONS =			0x00000002;
+		static constexpr DWORD FLAG_DEBUG_MODE =				0x00000004;
+
 		CListCollectionTask (CHumanInterface &HI, 
 							 CExtensionCollection &Extensions, 
 							 CMultiverseModel &Multiverse, 
 							 CCloudService &Service, 
 							 int cxWidth, 
-							 bool bNoCollectionRefresh = false,
-							 bool bDebugMode = false);
+							 DWORD dwFlags = 0);
 		~CListCollectionTask (void);
 
 		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
@@ -52,12 +55,14 @@ class CListCollectionTask : public IHITask
 
 	private:
 		void CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, int yStart, IAnimatron **retpEntry, int *retcyHeight);
+		void LoadCollectionExtensions (void);
 
 		CExtensionCollection &m_Extensions;
 		CMultiverseModel &m_Multiverse;
 		CCloudService &m_Service;
 		int m_cxWidth;
 		bool m_bNoCollectionRefresh;
+		bool m_bLoadExtensions;
 		bool m_bDebugMode;
 
 		CAniListBox *m_pList;
@@ -145,6 +150,8 @@ class CUIHelper
 		static constexpr DWORD MENU_ALIGN_CENTER =						0x00000002;		//	Align center
 		static constexpr DWORD MENU_ALIGN_LEFT =						0x00000004;		//	Align left
 		static constexpr DWORD MENU_ALIGN_RIGHT =						0x00000008;		//	Align right
+		static constexpr DWORD MENU_HIDDEN =							0x00000010;
+		static constexpr DWORD MENU_DISABLED =							0x00000020;
 
 		struct SMenuEntry
 			{
@@ -209,6 +216,7 @@ class CUIHelper
 		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
 		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
 		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;
+		void RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArray<SMenuEntry> &Menu) const;
 
 		static int ScrollAnimationDecay (int iOffset);
 

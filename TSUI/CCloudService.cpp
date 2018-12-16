@@ -329,7 +329,7 @@ ALERROR CCloudService::LoadNews (ITaskProcessor *pProcessor, CMultiverseModel &M
 	return NOERROR;
 	}
 
-ALERROR CCloudService::LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult)
+ALERROR CCloudService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult)
 
 //	LoadUserCollection
 //
@@ -343,7 +343,7 @@ ALERROR CCloudService::LoadUserCollection (ITaskProcessor *pProcessor, CMultiver
 			{
 			//	For now we only support a single service
 
-			return m_Services[i]->LoadUserCollection(pProcessor, Multiverse, retsResult);
+			return m_Services[i]->LoadUserCollection(pProcessor, Extensions, Multiverse, retsResult);
 			}
 
 	return NOERROR;

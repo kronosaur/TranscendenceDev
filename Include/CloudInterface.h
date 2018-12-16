@@ -59,7 +59,7 @@ class ICIService
 		virtual ALERROR InitFromXML (CXMLElement *pDesc, bool *retbModified) { *retbModified = false; return NOERROR; }
 		virtual ALERROR InitPrivateData (void) { return NOERROR; }
 		virtual ALERROR LoadNews (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, const SFileVersionInfo &AppVersion, const CString &sCacheFilespec, CString *retsResult = NULL) { return NOERROR; }
-		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult = NULL) { return NOERROR; }
+		virtual ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL) { return NOERROR; }
@@ -116,7 +116,7 @@ class CCloudService
 		ALERROR DownloadUpgrade (ITaskProcessor *pProcessor, const CString &sUpgradeURL, CString *retsResult = NULL);
 		ALERROR Housekeeping (ITaskProcessor *pProcessor);
 		ALERROR LoadNews (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, const SFileVersionInfo &AppVersion, const CString &sCacheFilespec, CString *retsResult = NULL);
-		ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CMultiverseModel &Multiverse, CString *retsResult = NULL);
+		ALERROR LoadUserCollection (ITaskProcessor *pProcessor, CExtensionCollection &Extensions, CMultiverseModel &Multiverse, CString *retsResult = NULL);
 		ALERROR PostCrashReport (ITaskProcessor *pProcessor, const CString &sCrash, CString *retsResult = NULL);
 		ALERROR PostGameRecord (ITaskProcessor *pProcessor, const CGameRecord &Record, const CGameStats &Stats, CString *retsResult = NULL);
 		ALERROR ProcessDownloads (ITaskProcessor *pProcessor, CString *retsResult = NULL);
@@ -141,12 +141,12 @@ class CCloudService
 class CHexarcServiceFactory : public ICIServiceFactory
 	{
 	public:
-		virtual ICIService *Create (CHumanInterface &HI);
+		virtual ICIService *Create (CHumanInterface &HI) override;
 	};
 
 class CXelerusServiceFactory : public ICIServiceFactory
 	{
 	public:
-		virtual ICIService *Create (CHumanInterface &HI);
+		virtual ICIService *Create (CHumanInterface &HI) override;
 	};
 
