@@ -114,7 +114,7 @@ class CG32bitPixel
 //
 //	AAAAAAAA RRRRRRRR GGGGGGGG BBBBBBBB
 
-class CG32bitImage : public CGImagePlane
+class CG32bitImage : public TImagePlane<CG32bitImage>
 	{
 	public:
 		enum EAlphaTypes

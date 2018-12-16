@@ -5,7 +5,7 @@
 
 #pragma once
 
-class CG8bitImage : public CGImagePlane
+class CG8bitImage : public TImagePlane<CG8bitImage>
 	{
 	public:
 		CG8bitImage (void);

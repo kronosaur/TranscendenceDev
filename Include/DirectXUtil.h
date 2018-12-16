@@ -108,32 +108,7 @@ struct SPoint
 
 inline int PointsToPixels (int iPoints, int iDPI = 96) { return ::MulDiv(iPoints, iDPI, 72); }
 
-class CGImagePlane
-	{
-	public:
-		CGImagePlane (void);
-
-		bool AdjustCoords (int *xSrc, int *ySrc, int cxSrc, int cySrc,
-						   int *xDest, int *yDest,
-						   int *cxWidth, int *cyHeight) const;
-		bool AdjustScaledCoords (Metric *xSrc, Metric *ySrc, int cxSrc, int cySrc,
-								 Metric xSrcInc, Metric ySrcInc,
-								 int *xDest, int *yDest,
-								 int *cxDest, int *cyDest);
-
-		inline const RECT &GetClipRect (void) const { return m_rcClip; }
-		inline int GetHeight (void) const { return m_cyHeight; }
-		inline int GetWidth (void) const { return m_cxWidth; }
-		void ResetClipRect (void);
-		void SetClipRect (const RECT &rcClip);
-
-	protected:
-		int m_cxWidth;
-		int m_cyHeight;
-
-		RECT m_rcClip;
-	};
-
+#include "TImagePlane.h"
 #include "DXImage32.h"
 #include "DXImageReal.h"
 #include "DXImage16.h"

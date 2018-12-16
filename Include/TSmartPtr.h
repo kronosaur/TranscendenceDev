@@ -180,6 +180,15 @@ template <class OBJ> class TUniquePtr
 			Src.m_pPtr = NULL;
 			}
 
+		void TakeHandoff (OBJ *&pPtr)
+			{
+			if (m_pPtr)
+				delete m_pPtr;
+
+			m_pPtr = pPtr;
+			pPtr = NULL;
+			}
+
 	private:
 		OBJ *m_pPtr;
 	};

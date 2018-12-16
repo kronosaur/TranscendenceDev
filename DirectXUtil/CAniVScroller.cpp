@@ -219,7 +219,7 @@ bool CAniVScroller::FindDynamicPropertyMetric (const CString &sName, Metric *ret
 		return false;
 	}
 
-bool CAniVScroller::FindElement (IAnimatron *pAni)
+bool CAniVScroller::FindElement (IAnimatron *pAni) const
 
 //	FindElement
 //
@@ -238,7 +238,7 @@ bool CAniVScroller::FindElement (IAnimatron *pAni)
 	return false;
 	}
 
-bool CAniVScroller::FindElement (const CString &sID, IAnimatron **retpAni)
+bool CAniVScroller::FindElement (const CString &sID, IAnimatron **retpAni) const
 
 //	FindElement
 //
@@ -250,7 +250,7 @@ bool CAniVScroller::FindElement (const CString &sID, IAnimatron **retpAni)
 	if (strEquals(sID, m_sID))
 		{
 		if (retpAni)
-			*retpAni = this;
+			*retpAni = (IAnimatron *)this;
 		return true;
 		}
 

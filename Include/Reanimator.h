@@ -298,9 +298,10 @@ class IAnimatron
 		inline void SetPropertyString (const CString &sName, const CString &sValue) { m_Properties.SetString(sName, sValue); OnPropertyChanged(sName); }
 		inline void SetPropertyVector (const CString &sName, const CVector &vValue) { m_Properties.SetVector(sName, vValue); OnPropertyChanged(sName); }
 
+		virtual void AddElement (IAnimatron *pAni, int iStartFrame = 0) { }
 		virtual bool DeleteElement (const CString &sID) { return false; }
-		virtual bool FindElement (IAnimatron *pAni) { return (pAni == this); }
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni = NULL) { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = this; return true; } else return false; }
+		virtual bool FindElement (IAnimatron *pAni) const { return (pAni == this); }
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni = NULL) const { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = const_cast<IAnimatron *>(this); return true; } else return false; }
 		virtual void GetContentRect (RECT *retrcRect) { GetSpacingRect(retrcRect); }
 		virtual int GetDuration (void) { return m_Properties.GetDuration(); }
 		virtual void GetFocusElements (TArray<IAnimatron *> *retList) { }
@@ -382,7 +383,7 @@ class CReanimator
 		inline CString GetPropertyString (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyString(sProp) : NULL_STR); }
 		inline CVector GetPropertyVector (const CString &sID, const CString &sProp) { IAnimatron *pAni = GetElement(sID); return (pAni ? pAni->GetPropertyVector(sProp) : NullVector); }
 		void DeletePerformance (DWORD dwID);
-		IAnimatron *GetElement (const CString &sID);
+		IAnimatron *GetElement (const CString &sID) const;
 		inline IAnimatron *GetPerformance (DWORD dwID) { SPerformance *pPerf = Find(dwID); if (pPerf) return pPerf->pAni; else return NULL; }
 		inline IAnimatron *GetPerformance (const CString &sID, int *retiFrame = NULL) { SPerformance *pPerf = Find(sID); if (pPerf) { if (retiFrame) *retiFrame = pPerf->iFrame; return pPerf->pAni; } else return NULL; }
 		void FFBurst (int iSpeed, int iCounter = -1) { m_iPlaySpeed = iSpeed; m_iFastPlayCounter = iCounter; }
@@ -469,9 +470,10 @@ class CAniSequencer : public IAnimatron
 		void AddTrack (IAnimatron *pAni, int iStartFrame);
 
 		//	IAnimatron virtuals
+		virtual void AddElement (IAnimatron *pAni, int iStartFrame = 0) override { AddTrack(pAni, iStartFrame); }
 		virtual bool DeleteElement (const CString &sID) override;
-		virtual bool FindElement (IAnimatron *pAni) override;
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override;
+		virtual bool FindElement (IAnimatron *pAni) const override;
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) const override;
 		virtual int GetDuration (void) override;
 		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
 		virtual void GetSpacingRect (RECT *retrcRect) override;
@@ -509,8 +511,8 @@ class CAniVScroller : public IAnimatron
 
 		//	IAnimatron virtuals
 		virtual bool DeleteElement (const CString &sID) override;
-		virtual bool FindElement (IAnimatron *pAni) override;
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override;
+		virtual bool FindElement (IAnimatron *pAni) const override;
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) const override;
 		virtual int GetDuration (void) override;
 		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
 		virtual void GetSpacingRect (RECT *retrcRect) override;
@@ -796,8 +798,8 @@ class CAniListBox : public CAniControl
 
 		//	IAnimatron virtuals
 		virtual bool DeleteElement (const CString &sID) override;
-		virtual bool FindElement (IAnimatron *pAni) override { if (pAni == this) return true; return m_pScroller->FindElement(pAni); }
-		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) override { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = this; return true; } return m_pScroller->FindElement(sID, retpAni); }
+		virtual bool FindElement (IAnimatron *pAni) const override { if (pAni == this) return true; return m_pScroller->FindElement(pAni); }
+		virtual bool FindElement (const CString &sID, IAnimatron **retpAni) const override { if (strEquals(sID, m_sID)) { if (retpAni) *retpAni = (IAnimatron *)this; return true; } return m_pScroller->FindElement(sID, retpAni); }
 		virtual int GetDuration (void) override { return m_pScroller->GetDuration(); }
 		virtual void GetFocusElements (TArray<IAnimatron *> *retList) override;
 		virtual void GetSpacingRect (RECT *retrcRect) override { return m_pScroller->GetSpacingRect(retrcRect); }

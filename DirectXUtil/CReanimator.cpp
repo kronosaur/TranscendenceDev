@@ -194,7 +194,7 @@ const CG16bitFont &CReanimator::GetDefaultFont (void)
 	return *m_pDefaultFont;
 	}
 
-IAnimatron *CReanimator::GetElement (const CString &sID)
+IAnimatron *CReanimator::GetElement (const CString &sID) const
 
 //	GetElement
 //

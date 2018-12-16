@@ -151,6 +151,8 @@ void CIntegerIP::Copy (const CIntegerIP &Src)
 		m_pNumber = new BYTE [m_iCount];
 		utlMemCopy((char *)Src.m_pNumber, (char *)m_pNumber, m_iCount);
 		}
+	else
+		m_pNumber = NULL;
 	}
 
 void CIntegerIP::TakeHandoff (CIntegerIP &Src)

@@ -98,7 +98,7 @@ bool CAniSequencer::DeleteElement (const CString &sID)
 	return false;
 	}
 
-bool CAniSequencer::FindElement (IAnimatron *pAni)
+bool CAniSequencer::FindElement (IAnimatron *pAni) const
 
 //	FindElement
 //
@@ -117,7 +117,7 @@ bool CAniSequencer::FindElement (IAnimatron *pAni)
 	return false;
 	}
 
-bool CAniSequencer::FindElement (const CString &sID, IAnimatron **retpAni)
+bool CAniSequencer::FindElement (const CString &sID, IAnimatron **retpAni) const
 
 //	FindElement
 //
@@ -129,7 +129,7 @@ bool CAniSequencer::FindElement (const CString &sID, IAnimatron **retpAni)
 	if (strEquals(sID, m_sID))
 		{
 		if (retpAni)
-			*retpAni = this;
+			*retpAni = (IAnimatron *)this;
 		return true;
 		}
 

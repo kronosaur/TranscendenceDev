@@ -70,7 +70,7 @@ class CGRealRGB
 		Metric m_rA;						//	Alpha: 0-1
 	};
 
-class CGRealChannel : public CGImagePlane
+class CGRealChannel : public TImagePlane<CGRealChannel>
 	{
 	public:
 		CGRealChannel (void);

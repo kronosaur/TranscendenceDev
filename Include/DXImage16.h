@@ -49,7 +49,7 @@ class CG16bitSprite
 		WORD **m_pLineIndex;
 	};
 
-class CG16bitImage : public CGImagePlane
+class CG16bitImage : public TImagePlane<CG16bitImage>
 	{
 	public:
 		enum Flags

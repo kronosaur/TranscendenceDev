@@ -51,6 +51,7 @@ const int INDEX_SELECTION =					12;
 #define PROP_SELECTION						CONSTLIT("selection")
 
 #define EVENT_ON_DOUBLE_CLICK				CONSTLIT("onDoubleClick")
+#define EVENT_ON_SELECTION_CHANGED			CONSTLIT("onSelectionChanged")
 
 #define PROP_SELECTION_ID					CONSTLIT("selectionID")
 
@@ -607,26 +608,31 @@ void CAniListBox::Select (int iEntry)
 
 	{
 	SetPropertyInteger(PROP_SELECTION, iEntry);
-	if (iEntry == -1)
-		return;
 
-	//	Scroll the viewport so that the selection is centered
-
-	int iMaxScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_MAX_SCROLL_POS);
-	int cyViewport = (int)m_pScroller->GetPropertyMetric(PROP_VIEWPORT_HEIGHT);
-	int iScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_SCROLL_POS);
-
-	//	Compute the new scroll position
-
-	CVector vEntryPos = m_Entries[iEntry].pAni->GetPropertyVector(PROP_POSITION);
-	int yEntry = (int)vEntryPos.GetY();
-	int cyEntry = RectHeight(m_Entries[iEntry].rcRect);
-
-	int iNewScrollPos = Max(0, Min(yEntry - ((cyViewport - cyEntry) / 2), iMaxScrollPos));
-
-	if (iNewScrollPos != iScrollPos)
+	if (iEntry != -1)
 		{
-		m_pScroller->RemoveAnimation(ID_SCROLL_ANIMATOR);
-		m_pScroller->AnimatePropertyLinear(ID_SCROLL_ANIMATOR, PROP_SCROLL_POS, CAniProperty((Metric)iScrollPos), CAniProperty((Metric)iNewScrollPos), 5, true);
+		//	Scroll the viewport so that the selection is centered
+
+		int iMaxScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_MAX_SCROLL_POS);
+		int cyViewport = (int)m_pScroller->GetPropertyMetric(PROP_VIEWPORT_HEIGHT);
+		int iScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_SCROLL_POS);
+
+		//	Compute the new scroll position
+
+		CVector vEntryPos = m_Entries[iEntry].pAni->GetPropertyVector(PROP_POSITION);
+		int yEntry = (int)vEntryPos.GetY();
+		int cyEntry = RectHeight(m_Entries[iEntry].rcRect);
+
+		int iNewScrollPos = Max(0, Min(yEntry - ((cyViewport - cyEntry) / 2), iMaxScrollPos));
+
+		if (iNewScrollPos != iScrollPos)
+			{
+			m_pScroller->RemoveAnimation(ID_SCROLL_ANIMATOR);
+			m_pScroller->AnimatePropertyLinear(ID_SCROLL_ANIMATOR, PROP_SCROLL_POS, CAniProperty((Metric)iScrollPos), CAniProperty((Metric)iNewScrollPos), 5, true);
+			}
 		}
+
+	//	Raise event
+
+	RaiseEvent(EVENT_ON_SELECTION_CHANGED);
 	}

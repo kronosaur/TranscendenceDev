@@ -263,6 +263,7 @@
     <ClInclude Include="..\Include\TCirclePainter.h" />
     <ClInclude Include="..\Include\TextFormat.h" />
     <ClInclude Include="..\Include\TFill.h" />
+    <ClInclude Include="..\Include\TImagePlane.h" />
     <ClInclude Include="..\Include\TLinePainter.h" />
     <ClInclude Include="..\Include\TRegionPainter.h" />
     <ClInclude Include="..\Include\TRoundedRectPainter.h" />
@@ -413,7 +414,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="CGImagePlane.cpp" />
     <ClCompile Include="CGlobalEdgeTable.cpp" />
     <ClCompile Include="CGlowingRingPainter.cpp" />
     <ClCompile Include="CGImageArea.cpp">

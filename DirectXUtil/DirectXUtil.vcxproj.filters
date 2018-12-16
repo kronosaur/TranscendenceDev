@@ -129,6 +129,9 @@
     <ClInclude Include="lodepng\lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TImagePlane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="8bitDrawCircle.cpp">
@@ -387,9 +390,6 @@
       <Filter>Source Files\AG</Filter>
     </ClCompile>
     <ClCompile Include="CGImageArea.cpp">
-      <Filter>Source Files\AG</Filter>
-    </ClCompile>
-    <ClCompile Include="CGImagePlane.cpp">
       <Filter>Source Files\AG</Filter>
     </ClCompile>
     <ClCompile Include="CGTextArea.cpp">
