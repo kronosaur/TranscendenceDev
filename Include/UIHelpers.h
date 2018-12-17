@@ -37,8 +37,7 @@ class CListCollectionTask : public IHITask
 	{
 	public:
 		static constexpr DWORD FLAG_NO_COLLECTION_REFRESH =		0x00000001;
-		static constexpr DWORD FLAG_LOAD_EXTENSIONS =			0x00000002;
-		static constexpr DWORD FLAG_DEBUG_MODE =				0x00000004;
+		static constexpr DWORD FLAG_DEBUG_MODE =				0x00000002;
 
 		CListCollectionTask (CHumanInterface &HI, 
 							 CExtensionCollection &Extensions, 
@@ -55,14 +54,12 @@ class CListCollectionTask : public IHITask
 
 	private:
 		void CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, int yStart, IAnimatron **retpEntry, int *retcyHeight);
-		void LoadCollectionExtensions (void);
 
 		CExtensionCollection &m_Extensions;
 		CMultiverseModel &m_Multiverse;
 		CCloudService &m_Service;
 		int m_cxWidth;
 		bool m_bNoCollectionRefresh;
-		bool m_bLoadExtensions;
 		bool m_bDebugMode;
 
 		CAniListBox *m_pList;

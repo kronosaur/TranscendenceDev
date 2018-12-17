@@ -61,7 +61,6 @@ CListCollectionTask::CListCollectionTask (CHumanInterface &HI,
 		m_Service(Service),
 		m_cxWidth(cxWidth),
 		m_bNoCollectionRefresh((dwFlags & FLAG_NO_COLLECTION_REFRESH) ? true : false),
-		m_bLoadExtensions((dwFlags & FLAG_LOAD_EXTENSIONS) ? true : false),
 		m_bDebugMode((dwFlags & FLAG_DEBUG_MODE) ? true : false),
 		m_pList(NULL)
 
@@ -263,15 +262,6 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 		*retcyHeight = Max(ENTRY_ICON_HEIGHT, y);
 	}
 
-void CListCollectionTask::LoadCollectionExtensions (void)
-
-//	LoadCollectionExtensions
-//
-//	Make sure we load all extensions in the Collection folder.
-
-	{
-	}
-
 ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *retsResult)
 
 //	OnExecute
@@ -283,13 +273,6 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 	int i;
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
-
-	//	Load all extensions, if requested
-
-	if (m_bLoadExtensions)
-		{
-		LoadCollectionExtensions();
-		}
 
 	//	Ask the Hexarc service to refresh the collection
 
