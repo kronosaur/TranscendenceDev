@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    243, 157, 105,  66,  81, 191,  60, 215, 105,  17,
-    107, 151, 185,  66, 190, 136, 201,  21,  59, 167,
+    26, 216, 116, 185, 221,  41,  23,  54, 134,   1,
+    66,  33, 250, 160, 132, 231,  24,   8, 204, 168,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -821,7 +821,7 @@ void CExtensionCollection::ComputeCoreLibraries (CExtension *pExtension, TArray<
 		}
 	}
 
-bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> &retNotFound)
+bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntry> &Collection, TArray<CMultiverseCatalogEntry> &retNotFound)
 
 //	ComputeDownloads
 //
@@ -838,59 +838,59 @@ bool CExtensionCollection::ComputeDownloads (const CMultiverseCollection &Collec
 
 	for (int i = 0; i < Collection.GetCount(); i++)
 		{
-		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
+		CMultiverseCatalogEntry &Entry = Collection[i];
 
 		//	Skip core entries
 
-		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+		if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
 			continue;
 
 		//  Skip Steam UGC
 
-		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+		if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
 			continue;
 
 		//	Steam versions don't need to be downloaded
 
-		if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
+		if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteam)
 			continue;
 
 		//	If the user does not want to download the extension to this machine
 		//	then we skip.
 
-		if (m_DisabledExtensions.Find(pEntry->GetUNID()))
+		if (m_DisabledExtensions.Find(Entry.GetUNID()))
 			continue;
 
 		//	If this is a library, and none of our other extensions need this library,
 		//	then we skip it.
 
-		if (pEntry->GetType() == extLibrary
-				&& !IsLibraryInUse(pEntry->GetUNID(), LibrariesChecked))
+		if (Entry.GetType() == extLibrary
+				&& !IsLibraryInUse(Entry.GetUNID(), LibrariesChecked))
 			continue;
 
 		//	Look for this extension in our list. If we found it then compare
 		//	the signature to make sure that we have the right version.
 
 		CExtension *pExtension;
-		if (FindExtension(pEntry->GetUNID(), pEntry->GetRelease(), CExtension::folderCollection, &pExtension))
+		if (FindExtension(Entry.GetUNID(), Entry.GetRelease(), CExtension::folderCollection, &pExtension))
 			{
 			//	Compare the digests. If they match, then this is a registered
 			//	extension and we don't need to download.
 
-			if (pEntry->GetTDBFileRef().GetDigest() == pExtension->GetDigest())
+			if (Entry.GetTDBFileRef().GetDigest() == pExtension->GetDigest())
 				continue;
 
 			//	If this is an unregistered version, then for now we skip (because we
 			//	don't know how to download).
 
 			else if (!pExtension->IsRegistered()
-				&& strEquals(pEntry->GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
+					&& strEquals(Entry.GetTDBFileRef().GetVersion(), pExtension->GetVersion()))
 				continue;
 			}
 
 		//	Otherwise, we need to download
 
-		retNotFound.Insert(pEntry);
+		retNotFound.Insert(Entry);
 		}
 
 	//	Done
@@ -2076,11 +2076,12 @@ void CExtensionCollection::SweepImages (void)
 	DEBUG_CATCH
 	}
 
-void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntry *> &Collection, int cxIconSize, int cyIconSize)
+void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntry> &Collection, const SCollectionStatusOptions &Options)
 
 //	UpdateCollectionStatus
 //
-//	Updates the local status of all entries in the collection
+//	Updates the status of the entries in the given collection based on our list 
+//	of local extensions.
 
 	{
 	CSmartLock Lock(m_cs);
@@ -2088,15 +2089,15 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 
 	for (i = 0; i < Collection.GetCount(); i++)
 		{
-		CMultiverseCatalogEntry *pEntry = Collection[i];
+		CMultiverseCatalogEntry &Entry = Collection[i];
 		CExtension *pExtension;
 
 		//	Figure out which folder to look in
 
 		CExtension::EFolderTypes iFolder;
-        if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
+        if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseCore)
             iFolder = CExtension::folderBase;
-        else if (pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
+        else if (Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC)
             iFolder = CExtension::folderExtensions;
         else
 			iFolder = CExtension::folderCollection;
@@ -2104,34 +2105,37 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 		//	If this extension has been manually removed, then we mark it as 
 		//	such.
 
-		if (m_DisabledExtensions.Find(pEntry->GetUNID()))
-			pEntry->SetStatus(CMultiverseCatalogEntry::statusPlayerDisabled);
+		if (m_DisabledExtensions.Find(Entry.GetUNID()))
+			Entry.SetStatus(CMultiverseCatalogEntry::statusPlayerDisabled);
 
 		//	Look for this extension in our list.
 
-		else if (FindExtension(pEntry->GetUNID(), 0, iFolder, &pExtension))
+		else if (FindExtension(Entry.GetUNID(), 0, iFolder, &pExtension))
 			{
 			if (pExtension->IsDisabled())
-				pEntry->SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
+				Entry.SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
 			else if (pExtension->IsRegistrationVerified()
-                    || pEntry->GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
+                    || Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
 					|| !pExtension->IsRegistered())
-				pEntry->SetStatus(CMultiverseCatalogEntry::statusLoaded);
+				Entry.SetStatus(CMultiverseCatalogEntry::statusLoaded);
 			else
-				pEntry->SetStatus(CMultiverseCatalogEntry::statusCorrupt);
+				Entry.SetStatus(CMultiverseCatalogEntry::statusCorrupt);
 
 			//	Set the icon
 
-			CG32bitImage *pIcon;
-			pExtension->CreateIcon(cxIconSize, cyIconSize, &pIcon);
-			pEntry->SetIcon(pIcon);
-			pEntry->SetVersion(pExtension->GetVersion());
+			if (Entry.GetIcon() == NULL)
+				{
+				CG32bitImage *pIcon;
+				pExtension->CreateIcon(Options.cxIconSize, Options.cyIconSize, &pIcon);
+				Entry.SetIcon(pIcon);
+				Entry.SetVersion(pExtension->GetVersion());
+				}
 			}
 
 		//	If we can't find it, then we know that it's not loaded
 
 		else
-			pEntry->SetStatus(CMultiverseCatalogEntry::statusNotAvailable);
+			Entry.SetStatus(CMultiverseCatalogEntry::statusNotAvailable);
 		}
 	}
 
@@ -2140,7 +2144,7 @@ void CExtensionCollection::UpdateRegistrationStatus (const TArray<CMultiverseCat
 //	UpdateRegistrationStatus
 //
 //	Given the user's collection, set the registered bit on all appropriate
-//	extensions and return a list of extensions that need to be downloaded.
+//	extensions.
 
 	{
 	CSmartLock Lock(m_cs);

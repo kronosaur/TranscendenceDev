@@ -282,21 +282,22 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 			return error;
 		}
 
-	//	Get the list of entries from the Multiverse
+	//	Get the list of entries from the Multiverse and update the status from 
+	//	the extensions.
 
-	CMultiverseCollection Collection;
-	if (error = m_Multiverse.GetCollection(&Collection))
-		{
-		*retsResult = ERR_GET_COLLECTION_FAILED;
-		return ERR_FAIL;
-		}
+	CExtensionCollection::SCollectionStatusOptions Options;
+	Options.cxIconSize = ENTRY_ICON_WIDTH;
+	Options.cyIconSize = ENTRY_ICON_HEIGHT;
+
+	m_Collection = m_Multiverse.GetCollection();
+	m_Extensions.UpdateCollectionStatus(m_Collection, Options);
 
 	//	Sort the entries
 
 	TSortMap<CString, CMultiverseCatalogEntry *> SortedList;
-	for (i = 0; i < Collection.GetCount(); i++)
+	for (i = 0; i < m_Collection.GetCount(); i++)
 		{
-		CMultiverseCatalogEntry *pEntry = Collection.GetEntry(i);
+		CMultiverseCatalogEntry *pEntry = &m_Collection[i];
 
 		//	Skip libraries unless in debug mode
 

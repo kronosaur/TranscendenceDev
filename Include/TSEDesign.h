@@ -999,6 +999,12 @@ class CExtensionCollection
 			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000800,
 			};
 
+		struct SCollectionStatusOptions
+			{
+			int cxIconSize = 300;
+			int cyIconSize = 150;
+			};
+
 		CExtensionCollection (void);
 		~CExtensionCollection (void);
 
@@ -1008,7 +1014,7 @@ class CExtensionCollection
 		ALERROR ComputeAvailableExtensions (CExtension *pAdventure, DWORD dwFlags, const TArray<DWORD> &Extensions, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeBindOrder (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
 		void ComputeCoreLibraries (CExtension *pExtension, TArray<CExtension *> *retList);
-		bool ComputeDownloads (const CMultiverseCollection &Collection, TArray<CMultiverseCatalogEntry *> &retNotFound);
+		bool ComputeDownloads (const TArray<CMultiverseCatalogEntry> &Collection, TArray<CMultiverseCatalogEntry> &retNotFound);
 		void DebugDump (void);
 		bool FindAdventureFromDesc (DWORD dwUNID, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
 		bool FindBestExtension (DWORD dwUNID, DWORD dwRelease = 0, DWORD dwFlags = 0, CExtension **retpExtension = NULL);
@@ -1028,7 +1034,7 @@ class CExtensionCollection
 		inline void SetCollectionFolder (const CString &sFilespec) { m_sCollectionFolder = sFilespec; }
 		void SetExtensionEnabled (DWORD dwUNID, bool bEnabled);
 		void SweepImages (void);
-		void UpdateCollectionStatus (TArray<CMultiverseCatalogEntry *> &Collection, int cxIconSize, int cyIconSize);
+		void UpdateCollectionStatus (TArray<CMultiverseCatalogEntry> &Collection, const SCollectionStatusOptions &Options);
 		void UpdateRegistrationStatus (const TArray<CMultiverseCatalogEntry *> &Collection);
 
 		static int Compare (CExtension *pExt1, CExtension *pExt2, bool bDebugMode);

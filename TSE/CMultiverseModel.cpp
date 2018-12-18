@@ -120,33 +120,25 @@ bool CMultiverseModel::FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntr
 	return false;
 	}
 
-ALERROR CMultiverseModel::GetCollection (CMultiverseCollection *retCollection) const
+TArray<CMultiverseCatalogEntry> CMultiverseModel::GetCollection (void) const
 
 //	GetCollection
 //
-//	Returns the collection.
+//	Returns the current list of catalog entries.
 
 	{
-	//	Try to lock the collection
+	CSmartLock Lock(m_cs);
 
-	if (!LockCollection())
-		return ERR_FAIL;
+	//	Make a copy of the current collection
 
-	//	Object is locked. Get the collection.
-
-	retCollection->DeleteAll();
+	TArray<CMultiverseCatalogEntry> Collection;
+	Collection.InsertEmpty(m_Collection.GetCount());
 	for (int i = 0; i < m_Collection.GetCount(); i++)
-		{
-		//	Clone a copy and add it to the result.
-
-		CMultiverseCatalogEntry *pEntry = new CMultiverseCatalogEntry(*m_Collection.GetEntry(i));
-		retCollection->Insert(pEntry);
-		}
+		Collection[i] = *m_Collection.GetEntry(i);
 
 	//	Done
 
-	m_cs.Unlock();
-	return NOERROR;
+	return Collection;
 	}
 
 ALERROR CMultiverseModel::GetEntry (DWORD dwUNID, DWORD dwRelease, CMultiverseCollection *retCollection) const
@@ -568,11 +560,6 @@ ALERROR CMultiverseModel::SetCollection (const CJSONValue &Data, CExtensionColle
 	//	Verify the signatures
 
 	Extensions.UpdateRegistrationStatus(NewCollection);
-
-	//	Ask the local collection to give us the status for all the entries
-	//	in the collection.
-
-	Extensions.UpdateCollectionStatus(NewCollection, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT);
 
 	//	Otherwise, replace our collection.
 

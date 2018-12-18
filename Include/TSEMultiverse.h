@@ -66,11 +66,6 @@ class CMultiverseCatalogEntry
 			CString sDesc;
 			};
 
-		~CMultiverseCatalogEntry (void)
-			{
-			char *pPos = NULL;
-			}
-
 		static ALERROR CreateBasicEntry (const SEntryCreate &Create, CMultiverseCatalogEntry **retpEntry);
 		static ALERROR CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult);
 
@@ -234,7 +229,7 @@ class CMultiverseModel
 		CMultiverseModel (void);
 
 		bool FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntry = NULL) const;
-		ALERROR GetCollection (CMultiverseCollection *retCollection) const;
+		TArray<CMultiverseCatalogEntry> GetCollection (void) const;
 		ALERROR GetEntry (DWORD dwUNID, DWORD dwRelease, CMultiverseCollection *retCollection) const;
 		CMultiverseNewsEntry *GetNextNewsEntry (void);
 		EOnlineStates GetOnlineState (CString *retsUsername = NULL, CString *retsDesc = NULL) const;

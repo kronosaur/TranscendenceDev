@@ -47,6 +47,7 @@ class CListCollectionTask : public IHITask
 							 DWORD dwFlags = 0);
 		~CListCollectionTask (void);
 
+		inline const TArray<CMultiverseCatalogEntry> &GetCollection (void) const { return m_Collection; }
 		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
 
 		//	IHITask virtuals
@@ -62,6 +63,7 @@ class CListCollectionTask : public IHITask
 		bool m_bNoCollectionRefresh;
 		bool m_bDebugMode;
 
+		TArray<CMultiverseCatalogEntry> m_Collection;
 		CAniListBox *m_pList;
 	};
 
