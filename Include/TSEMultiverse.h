@@ -91,6 +91,7 @@ class CMultiverseCatalogEntry
 	private:
 
 		CString m_sUNID;								//	Fully qualified UNID
+		DWORD m_dwUNID = 0;								//	UNID
 		DWORD m_dwRelease = 0;							//	Catalog entry release
 		DWORD m_dwVersion = 0;							//	Catalog entry version
 		CString m_sVersion;								//	User-visible version
@@ -103,7 +104,8 @@ class CMultiverseCatalogEntry
 
 		TArray<CMultiverseFileRef> m_Resources;
 
-		DWORD m_dwUNID = 0;								//	UNID
+		//	These members are not valid until a call to CExtensionCollection::UpdateCollectionStatus
+
 		ELocalStatus m_iStatus = statusUnknown;			//	Current status
 		CString m_sStatus;								//	Status message
 		TSharedPtr<CG32bitImage> m_pIcon;				//	200x100 image
@@ -230,7 +232,6 @@ class CMultiverseModel
 
 		bool FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntry = NULL) const;
 		TArray<CMultiverseCatalogEntry> GetCollection (void) const;
-		ALERROR GetEntry (DWORD dwUNID, DWORD dwRelease, CMultiverseCollection *retCollection) const;
 		CMultiverseNewsEntry *GetNextNewsEntry (void);
 		EOnlineStates GetOnlineState (CString *retsUsername = NULL, CString *retsDesc = NULL) const;
 		bool GetResourceFileRefs (const TArray<CString> &Filespecs, TArray<CMultiverseFileRef> *retFileRefs) const;

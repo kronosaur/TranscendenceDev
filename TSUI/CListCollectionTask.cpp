@@ -54,15 +54,11 @@ CListCollectionTask::CListCollectionTask (CHumanInterface &HI,
 										  CExtensionCollection &Extensions, 
 										  CMultiverseModel &Multiverse, 
 										  CCloudService &Service, 
-										  int cxWidth,
-										  DWORD dwFlags) : IHITask(HI), 
+										  const SOptions &Options) : IHITask(HI), 
 		m_Extensions(Extensions),
 		m_Multiverse(Multiverse),
 		m_Service(Service),
-		m_cxWidth(cxWidth),
-		m_bNoCollectionRefresh((dwFlags & FLAG_NO_COLLECTION_REFRESH) ? true : false),
-		m_bDebugMode((dwFlags & FLAG_DEBUG_MODE) ? true : false),
-		m_pList(NULL)
+		m_Options(Options)
 
 //	CListCollectionTask constructor
 
@@ -93,7 +89,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 	int x = 0;
 	int y = 0;
 	int xText = x + ENTRY_ICON_WIDTH + ICON_SPACING_HORZ;
-	int cxText = m_cxWidth - (ENTRY_ICON_WIDTH + ICON_SPACING_HORZ);
+	int cxText = m_Options.cxWidth - (ENTRY_ICON_WIDTH + ICON_SPACING_HORZ);
 
 	//	Start with a sequencer
 
@@ -102,7 +98,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 
 	//	Add the icon
 
-	CG32bitImage *pIcon = pCatalogEntry->GetIconHandoff();
+	CG32bitImage *pIcon = CreateEntryIcon(*pCatalogEntry);
 	if (pIcon)
 		{
 		int xOffset = (ENTRY_ICON_WIDTH - pIcon->GetWidth()) / 2;
@@ -262,6 +258,30 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 		*retcyHeight = Max(ENTRY_ICON_HEIGHT, y);
 	}
 
+CG32bitImage *CListCollectionTask::CreateEntryIcon (CMultiverseCatalogEntry &Entry) const
+
+//	CreateEntryIcon
+//
+//	Creates an appropriate icon for the given entry. Caller is responsible for
+//	freeing the result.
+
+	{
+	//	If the entry has an icon then we use that.
+
+	CG32bitImage *pIcon = Entry.GetIconHandoff();
+	if (pIcon)
+		return pIcon;
+
+	//	Otherwise, we load the generic icon image
+
+	if (m_Options.pGenericIcon)
+		return new CG32bitImage(*m_Options.pGenericIcon);
+
+	//	Otherwise, no icon
+
+	return NULL;
+	}
+
 ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *retsResult)
 
 //	OnExecute
@@ -269,18 +289,9 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 //	Execute the task
 	
 	{
-	ALERROR error;
 	int i;
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
-
-	//	Ask the Hexarc service to refresh the collection
-
-	if (!m_bNoCollectionRefresh)
-		{
-		if (error = m_Service.LoadUserCollection(pProcessor, m_Extensions, m_Multiverse, retsResult))
-			return error;
-		}
 
 	//	Get the list of entries from the Multiverse and update the status from 
 	//	the extensions.
@@ -301,7 +312,7 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 		//	Skip libraries unless in debug mode
 
-		if (!m_bDebugMode && pEntry->GetType() == extLibrary)
+		if (!m_Options.bDebugMode && pEntry->GetType() == extLibrary)
 			continue;
 
 		//	Sort key

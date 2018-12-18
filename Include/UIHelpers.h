@@ -36,15 +36,18 @@ class CItemDataAnimatron : public IAnimatron
 class CListCollectionTask : public IHITask
 	{
 	public:
-		static constexpr DWORD FLAG_NO_COLLECTION_REFRESH =		0x00000001;
-		static constexpr DWORD FLAG_DEBUG_MODE =				0x00000002;
+		struct SOptions
+			{
+			int cxWidth = 720;
+			TSharedPtr<CG32bitImage> pGenericIcon;
+			bool bDebugMode = false;
+			};
 
 		CListCollectionTask (CHumanInterface &HI, 
 							 CExtensionCollection &Extensions, 
 							 CMultiverseModel &Multiverse, 
 							 CCloudService &Service, 
-							 int cxWidth, 
-							 DWORD dwFlags = 0);
+							 const SOptions &Options = SOptions());
 		~CListCollectionTask (void);
 
 		inline const TArray<CMultiverseCatalogEntry> &GetCollection (void) const { return m_Collection; }
@@ -55,16 +58,15 @@ class CListCollectionTask : public IHITask
 
 	private:
 		void CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, int yStart, IAnimatron **retpEntry, int *retcyHeight);
+		CG32bitImage *CreateEntryIcon (CMultiverseCatalogEntry &Entry) const;
 
 		CExtensionCollection &m_Extensions;
 		CMultiverseModel &m_Multiverse;
 		CCloudService &m_Service;
-		int m_cxWidth;
-		bool m_bNoCollectionRefresh;
-		bool m_bDebugMode;
+		SOptions m_Options;
 
 		TArray<CMultiverseCatalogEntry> m_Collection;
-		CAniListBox *m_pList;
+		CAniListBox *m_pList = NULL;
 	};
 
 class CListSaveFilesTask : public IHITask
