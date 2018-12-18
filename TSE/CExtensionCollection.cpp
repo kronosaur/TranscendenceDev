@@ -544,6 +544,11 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 		if (ExtensionList[0]->GetType() != extExtension)
 			continue;
 
+		//	If this extension is disabled, then exclude it.
+
+		if (m_DisabledExtensions.Find(ExtensionList[0]->GetUNID()))
+			continue;
+
 		//	If this extension is not on our list, then skip it
 
 		if (!bAllExtensions 
@@ -1399,7 +1404,7 @@ bool CExtensionCollection::IsLibraryInUse (DWORD dwUNID, TSortMap<DWORD, bool> &
 
 		//	Skip extensions that are not enabled.
 
-		if (pExtension->IsDisabled())
+		if (m_DisabledExtensions.Find(pExtension->GetUNID()))
 			continue;
 
 		//	If this extension doesn't use this library, then nothing to do.
@@ -1516,6 +1521,15 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		CExtension::SLoadOptions LoadOptions;
 		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+
+		//	If this extension has been manually disabled, then don't bother with
+		//	the digest because it is expensive. We'll compute it later.
+
+		if (m_DisabledExtensions.Find(pExtension->GetUNID()))
+			LoadOptions.bNoDigestCheck = true;
+
+		//	Load the basic elements of the extension (we load the extension fully
+		//	only when we bind).
 
 		if (error = pExtension->Load(CExtension::loadAdventureDesc, 
 				&Resolver, 
@@ -1901,17 +1915,10 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, &pExtension, retsError))
 			return error;
 
-		//	If we're in the Collection folder and this particular extension has been
-		//	disabled, then we exclude it.
-
-		if (iFolder == CExtension::folderCollection
-				&& m_DisabledExtensions.Find(pExtension->GetUNID()))
-			pExtension->SetDisabled(CONSTLIT("Disabled"));
-
 		//	If this extension requires an API beyond our base file, then we disable it.
 		//	This can happen when we do TransData on older Transcendence.tdb.
 
-		else if (!pExtension->IsDisabled()
+		if (!pExtension->IsDisabled()
 				&& pExtension->GetAPIVersion() > m_pBase->GetAPIVersion())
 			pExtension->SetDisabled(CONSTLIT("Requires a newer version of Transcendence.tdb"));
 

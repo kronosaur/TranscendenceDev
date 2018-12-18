@@ -1024,7 +1024,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			{
 			if (iDesiredState == loadNone || iDesiredState == loadEntities)
 				return NOERROR;
-			else if (iDesiredState == loadAdventureDesc && m_iLoadState == loadAdventureDesc)
+			else if (iDesiredState == m_iLoadState)
 				return NOERROR;
 
 			//	Open the file
@@ -1040,7 +1040,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			Ctx.sResDb = m_sFilespec;
 			Ctx.pResDb = &ExtDb;
 			Ctx.bNoResources = Options.bNoResources;
-			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc && m_iType == extAdventure);
+			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc);
 			Ctx.sErrorFilespec = m_sFilespec;
 
 			//	If this is a registered extension then compute a digest for the
@@ -1116,7 +1116,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 			//	Done
 
-			m_iLoadState = (m_iType == extAdventure ? iDesiredState : loadComplete);
+			m_iLoadState = iDesiredState;
 
 			//	If we get this far and we have no libraries, then include the 
 			//	compatibility library.
