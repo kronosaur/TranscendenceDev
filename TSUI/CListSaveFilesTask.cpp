@@ -5,6 +5,8 @@
 
 #include "stdafx.h"
 
+#define DEBUG_LIST
+
 #define ALIGN_CENTER							CONSTLIT("center")
 #define ALIGN_RIGHT								CONSTLIT("right")
 
@@ -291,6 +293,10 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 	bool bAtLeastOneFolder = false;
 	for (i = 0; i < m_Folders.GetCount(); i++)
 		{
+#ifdef DEBUG_LIST
+		::kernelDebugLogPattern("Folder: %s", m_Folders[i]);
+#endif
+
 		if (!fileGetFileList(m_Folders[i], NULL_STR, CONSTLIT("*.sav"), 0, &SaveFiles))
 			::kernelDebugLogPattern("Unable to read from save file folder: %s", m_Folders[i]);
 		else
@@ -330,24 +336,56 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 		//	Ignore files that we can't open
 
 		if (GameFile.Open(sFilename, CGameFile::FLAG_NO_UPGRADE) != NOERROR)
+#ifdef DEBUG_LIST
+			{
+			::kernelDebugLogPattern("ERROR: Can't open: %s", sFilename);
 			continue;
+			}
+#else
+			continue;
+#endif
 
 		//	If the universe is not valid, then this is not a proper save file
 		//	(this can happen in the first system).
 
 		if (!GameFile.IsUniverseValid())
+#ifdef DEBUG_LIST
+			{
+			::kernelDebugLogPattern("ERROR: Save file invalid: %s", sFilename);
 			continue;
+			}
+#else
+			continue;
+#endif
 
 		//	If we're signed in, then we only show games for the given user
 		//	(or unregistered games).
 
 		if (GameFile.IsRegistered() && !strEquals(GameFile.GetUsername(), m_sUsername))
+#ifdef DEBUG_LIST
+			{
+			::kernelDebugLogPattern("ERROR: Registered to %s [%s signed in]: %s", GameFile.GetUsername(), m_sUsername, sFilename);
 			continue;
+			}
+#else
+			continue;
+#endif
 
 		//	If we're filtering permadeath, then we only show permadeath games
 
 		if (m_bFilterPermadeath && GameFile.GetResurrectCount() > 0)
+#ifdef DEBUG_LIST
+			{
+			::kernelDebugLogPattern("ERROR: Excluding permadeath games: %s", sFilename);
 			continue;
+			}
+#else
+			continue;
+#endif
+
+#ifdef DEBUG_LIST
+		::kernelDebugLogPattern("Save File: %s", sFilename);
+#endif
 
 		//	Generate a record for the file
 
