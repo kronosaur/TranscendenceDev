@@ -266,20 +266,39 @@ CG32bitImage *CListCollectionTask::CreateEntryIcon (CMultiverseCatalogEntry &Ent
 //	freeing the result.
 
 	{
-	//	If the entry has an icon then we use that.
+	//	Get the icon for the extension or the generic icon.
 
-	CG32bitImage *pIcon = Entry.GetIconHandoff();
-	if (pIcon)
-		return pIcon;
+	CG32bitImage *pIcon = Entry.GetIcon();
+	if (pIcon == NULL)
+		pIcon = m_Options.pGenericIcon;
+	if (pIcon == NULL)
+		return NULL;
 
-	//	Otherwise, we load the generic icon image
+	//	In some cases we need to gray out the icon
 
-	if (m_Options.pGenericIcon)
-		return new CG32bitImage(*m_Options.pGenericIcon);
+	switch (Entry.GetStatus())
+		{
+		//	For disabled, etc., we gray out the icon
 
-	//	Otherwise, no icon
+		case CMultiverseCatalogEntry::statusCorrupt:
+		case CMultiverseCatalogEntry::statusDownloadInProgress:
+		case CMultiverseCatalogEntry::statusError:
+		case CMultiverseCatalogEntry::statusNotAvailable:
+		case CMultiverseCatalogEntry::statusPlayerDisabled:
+		case CMultiverseCatalogEntry::statusUnknown:
+			{
+			CG32bitImage *pNewIcon = new CG32bitImage;
+			pNewIcon->Create(pIcon->GetWidth(), pIcon->GetHeight(), pIcon->GetAlphaType());
+			CGDraw::BltGray(*pNewIcon, 0, 0, *pIcon, 0, 0, pIcon->GetWidth(), pIcon->GetHeight(), 0x80);
 
-	return NULL;
+			return pNewIcon;
+			}
+
+		//	Otherwise, normal icon
+
+		default:
+			return new CG32bitImage(*pIcon);
+		}
 	}
 
 ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *retsResult)

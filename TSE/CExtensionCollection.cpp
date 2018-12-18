@@ -2123,13 +2123,16 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 
 			//	Set the icon
 
-			if (Entry.GetIcon() == NULL)
+			if (Entry.GetIcon() == NULL && pExtension->HasIcon())
 				{
 				CG32bitImage *pIcon;
 				pExtension->CreateIcon(Options.cxIconSize, Options.cyIconSize, &pIcon);
 				Entry.SetIcon(pIcon);
-				Entry.SetVersion(pExtension->GetVersion());
 				}
+
+			//	Set version
+
+			Entry.SetVersion(pExtension->GetVersion());
 			}
 
 		//	If we can't find it, then we know that it's not loaded

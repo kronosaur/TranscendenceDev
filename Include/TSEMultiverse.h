@@ -71,7 +71,7 @@ class CMultiverseCatalogEntry
 
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline CG32bitImage *GetIcon (void) const { return m_pIcon; }
-		inline CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : new CG32bitImage()); }
+		inline CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : NULL); }
 		inline ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline DWORD GetRelease (void) const { return m_dwRelease; }

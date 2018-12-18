@@ -868,6 +868,7 @@ class CExtension
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		size_t GetXMLMemoryUsage (void) const;
+		inline bool HasIcon (void) const { CG32bitImage *pIcon = GetCoverImage(); return (pIcon && pIcon->GetWidth() > 0 && pIcon->GetHeight() > 0); }
 		inline bool IsAutoInclude (void) const { return m_bAutoInclude; }
 		inline bool IsDebugOnly (void) const { return m_bDebugOnly; }
 		inline bool IsDisabled (void) const { return m_bDisabled; }
