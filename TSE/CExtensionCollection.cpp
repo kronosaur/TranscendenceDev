@@ -243,7 +243,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	//	If the extension is already disabled (probably because it is a later version)
 	//	then we exclude it.
 
-	if (pExtension->IsDisabled())
+	if (pExtension->IsDisabled() || m_DisabledExtensions.Find(pExtension->GetUNID()))
 		return NOERROR;
 
 	//	Create load options
@@ -466,6 +466,11 @@ ALERROR CExtensionCollection::ComputeAvailableAdventures (DWORD dwFlags, TArray<
 		//	releases, so we only need to check once).
 
 		if (ExtensionList[0]->GetType() != extAdventure)
+			continue;
+
+		//	If manually disabled, then exclude
+
+		if (m_DisabledExtensions.Find(ExtensionList[0]->GetUNID()))
 			continue;
 
 		//	Out of all the releases, select the latest version.
@@ -1312,6 +1317,7 @@ bool CExtensionCollection::GetRequiredResources (TArray<CString> *retFilespecs)
 				|| pExtension->GetFolderType() != CExtension::folderCollection
 				|| pExtension->GetLoadState() != CExtension::loadComplete
 				|| pExtension->IsDisabled()
+				|| m_DisabledExtensions.Find(pExtension->GetUNID())
 				|| !pExtension->IsRegistrationVerified())
 			continue;
 
@@ -1479,6 +1485,11 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 
 	m_bLoadedInDebugMode = ((dwFlags & FLAG_DEBUG_MODE) == FLAG_DEBUG_MODE);
 	m_DisabledExtensions = DisabledExtensions;
+
+	//	Default adventure can never be disabled.
+
+	if (m_DisabledExtensions.Find(DEFAULT_ADVENTURE_EXTENSION_UNID))
+		m_DisabledExtensions.DeleteAt(DEFAULT_ADVENTURE_EXTENSION_UNID);
 
 	//	Load base file
 
@@ -2062,7 +2073,16 @@ void CExtensionCollection::SetExtensionEnabled (DWORD dwUNID, bool bEnabled)
 	if (bEnabled)
 		m_DisabledExtensions.DeleteAt(dwUNID);
 	else
+		{
+		//	Default adventure cannot be disabled.
+
+		if (dwUNID == DEFAULT_ADVENTURE_EXTENSION_UNID)
+			return;
+
+		//	Add to list.
+
 		m_DisabledExtensions.SetAt(dwUNID, true);
+		}
 	}
 
 void CExtensionCollection::SweepImages (void)

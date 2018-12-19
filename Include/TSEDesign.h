@@ -1028,6 +1028,7 @@ class CExtensionCollection
 		EGameTypes GetGame (void) const { return m_iGame; }
 		bool GetRequiredResources (TArray<CString> *retFilespecs);
 		void InitEntityResolver (CExtension *pExtension, DWORD dwFlags, CEntityResolverList *retResolver);
+		bool IsExtensionDisabledManually (DWORD dwUNID) const { return m_DisabledExtensions.Find(dwUNID); }
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
 		ALERROR Load (const CString &sFilespec, const TSortMap<DWORD, bool> &DisabledExtensions, DWORD dwFlags, CString *retsError);
 		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }

@@ -1212,7 +1212,8 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			DWORD dwFindFlags = dwFlags | CExtensionCollection::FLAG_ADVENTURE_ONLY;
 
-			if (!m_Extensions.FindBestExtension(Ctx.dwAdventure, 0, dwFindFlags, &Ctx.pAdventure))
+			if (!m_Extensions.FindBestExtension(Ctx.dwAdventure, 0, dwFindFlags, &Ctx.pAdventure)
+					|| m_Extensions.IsExtensionDisabledManually(Ctx.dwAdventure))
 				{
 				//	Try to recover, if necessary
 
@@ -1903,7 +1904,12 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 		if (pExtension->IsDisabled())
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to load extension %s (%08x): %s"), pExtension->GetName(), pExtension->GetUNID(), pExtension->GetDisabledReason());
+			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): %s"), pExtension->GetName(), pExtension->GetUNID(), pExtension->GetDisabledReason());
+			return ERR_FAIL;
+			}
+		else if (m_Extensions.IsExtensionDisabledManually(pExtension->GetUNID()))
+			{
+			*retsError = strPatternSubst(CONSTLIT("Required extension %s (%08x) is disabled. Go to Mod Collection and enable it."), pExtension->GetName(), pExtension->GetUNID());
 			return ERR_FAIL;
 			}
 
@@ -1923,6 +1929,16 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
+			return ERR_FAIL;
+			}
+		else if (InitCtx.pAdventure->IsDisabled())
+			{
+			*retsError = strPatternSubst(CONSTLIT("Unable to load %s (%08x): %s"), InitCtx.pAdventure->GetName(), InitCtx.pAdventure->GetUNID(), InitCtx.pAdventure->GetDisabledReason());
+			return ERR_FAIL;
+			}
+		else if (m_Extensions.IsExtensionDisabledManually(Desc.dwUNID))
+			{
+			*retsError = strPatternSubst(CONSTLIT("%s (%08x) is disabled. Go to Mod Collection and enable it."), InitCtx.pAdventure->GetName(), InitCtx.pAdventure->GetUNID());
 			return ERR_FAIL;
 			}
 		}
