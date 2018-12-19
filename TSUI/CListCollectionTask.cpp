@@ -337,10 +337,23 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 		//	Sort key
 
-		CString sSortKey = strPatternSubst(CONSTLIT("%s:%s"),
-				(pEntry->GetType() == extAdventure ? CONSTLIT("01") : (pEntry->GetType() == extExtension ? CONSTLIT("02") : CONSTLIT("03"))),
-				pEntry->GetName()
-				);
+		CString sDomain;
+		if (IsOfficialUNID(pEntry->GetUNID()))
+			sDomain = CONSTLIT("01");
+		else if (IsRegisteredUNID(pEntry->GetUNID()))
+			sDomain = CONSTLIT("02");
+		else
+			sDomain = CONSTLIT("03");
+
+		CString sType;
+		if (pEntry->GetType() == extAdventure)
+			sType = CONSTLIT("01");
+		else if (pEntry->GetType() == extExtension)
+			sType = CONSTLIT("02");
+		else
+			sType = CONSTLIT("03");
+
+		CString sSortKey = strPatternSubst(CONSTLIT("%s:%s:%s"), sDomain, sType, pEntry->GetName());
 
 		//	Add
 
