@@ -795,6 +795,7 @@ class CAniListBox : public CAniControl
 		~CAniListBox (void);
 
 		void AddEntry (const CString &sID, IAnimatron *pEntry);
+		void SetSelection (const CString &sID, bool bAnimate = false);
 
 		//	IAnimatron virtuals
 		virtual bool DeleteElement (const CString &sID) override;
@@ -840,6 +841,7 @@ class CAniListBox : public CAniControl
 			RECT rcRect;
 			};
 
+		int FindEntry (const CString &sID) const;
 		int GetRowAtPos (int x, int y);
 		bool GetRowRect (int iRow, RECT *retrcRect);
 		void Select (int iEntry);

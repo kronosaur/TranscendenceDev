@@ -204,6 +204,24 @@ bool CAniListBox::FindDynamicPropertyString (const CString &sName, CString *rets
 	return false;
 	}
 	
+int CAniListBox::FindEntry (const CString &sID) const
+
+//	FindEntry
+//
+//	Returns the index of the given entry (or -1).
+
+	{
+	for (int i = 0; i < m_Entries.GetCount(); i++)
+		{
+		if (strEquals(m_Entries[i].pAni->GetID(), sID))
+			return i;
+		}
+
+	//	Not found
+
+	return -1;
+	}
+
 void CAniListBox::GetFocusElements (TArray<IAnimatron *> *retList)
 
 //	GetFocusElements
@@ -635,4 +653,46 @@ void CAniListBox::Select (int iEntry)
 	//	Raise event
 
 	RaiseEvent(EVENT_ON_SELECTION_CHANGED);
+	}
+
+void CAniListBox::SetSelection (const CString &sID, bool bAnimate)
+
+//	SetSelection
+//
+//	Sets the given selection
+
+	{
+	int iEntry = FindEntry(sID);
+	if (iEntry == -1)
+		return;
+
+	SetPropertyInteger(PROP_SELECTION, iEntry);
+
+	//	Scroll the viewport so that the selection is centered
+
+	int iMaxScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_MAX_SCROLL_POS);
+	int cyViewport = (int)m_pScroller->GetPropertyMetric(PROP_VIEWPORT_HEIGHT);
+	int iScrollPos = (int)m_pScroller->GetPropertyMetric(PROP_SCROLL_POS);
+
+	//	Compute the new scroll position
+
+	CVector vEntryPos = m_Entries[iEntry].pAni->GetPropertyVector(PROP_POSITION);
+	int yEntry = (int)vEntryPos.GetY();
+	int cyEntry = RectHeight(m_Entries[iEntry].rcRect);
+
+	int iNewScrollPos = Max(0, Min(yEntry - ((cyViewport - cyEntry) / 2), iMaxScrollPos));
+
+	if (iNewScrollPos != iScrollPos)
+		{
+		if (bAnimate)
+			{
+			m_pScroller->RemoveAnimation(ID_SCROLL_ANIMATOR);
+			m_pScroller->AnimatePropertyLinear(ID_SCROLL_ANIMATOR, PROP_SCROLL_POS, CAniProperty((Metric)iScrollPos), CAniProperty((Metric)iNewScrollPos), 5, true);
+			}
+		else
+			{
+			m_pScroller->RemoveAnimation(ID_SCROLL_ANIMATOR);
+			m_pScroller->SetPropertyMetric(PROP_SCROLL_POS, (Metric)iNewScrollPos);
+			}
+		}
 	}
