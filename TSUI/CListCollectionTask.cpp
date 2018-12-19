@@ -332,7 +332,7 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 		//	Skip libraries unless in debug mode
 
-		if (!m_Options.bDebugMode && pEntry->GetType() == extLibrary)
+		if (!m_Options.bShowLibraries && pEntry->GetType() == extLibrary)
 			continue;
 
 		//	Sort key

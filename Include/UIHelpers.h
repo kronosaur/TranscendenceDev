@@ -43,7 +43,7 @@ class CListCollectionTask : public IHITask
 			RECT rcRect = { 0 };
 			TSharedPtr<CG32bitImage> pGenericIcon;
 
-			bool bDebugMode = false;
+			bool bShowLibraries = false;
 			};
 
 		CListCollectionTask (CHumanInterface &HI, 
