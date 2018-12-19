@@ -38,8 +38,11 @@ class CListCollectionTask : public IHITask
 	public:
 		struct SOptions
 			{
-			int cxWidth = 720;
+			DWORD dwSelectUNID = 0;
+
+			RECT rcRect = { 0 };
 			TSharedPtr<CG32bitImage> pGenericIcon;
+
 			bool bDebugMode = false;
 			};
 

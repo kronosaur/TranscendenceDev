@@ -31,6 +31,7 @@
 #define PROP_TEXT_ALIGN_HORZ					CONSTLIT("textAlignHorz")
 #define PROP_UL_RADIUS							CONSTLIT("ulRadius")
 #define PROP_UR_RADIUS							CONSTLIT("urRadius")
+#define PROP_VIEWPORT_HEIGHT					CONSTLIT("viewportHeight")
 
 #define STYLE_SELECTION							CONSTLIT("selection")
 #define STYLE_SELECTION_FOCUS					CONSTLIT("selectionFocus")
@@ -89,7 +90,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 	int x = 0;
 	int y = 0;
 	int xText = x + ENTRY_ICON_WIDTH + ICON_SPACING_HORZ;
-	int cxText = m_Options.cxWidth - (ENTRY_ICON_WIDTH + ICON_SPACING_HORZ);
+	int cxText = RectWidth(m_Options.rcRect) - (ENTRY_ICON_WIDTH + ICON_SPACING_HORZ);
 
 	//	Start with a sequencer
 
@@ -356,6 +357,7 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 
 	//	Loop over all entries in the collection and add them to the list
 
+	CString sSelection;
 	int y = MAJOR_PADDING_TOP;
 	for (i = 0; i < SortedList.GetCount(); i++)
 		{
@@ -367,9 +369,26 @@ ALERROR CListCollectionTask::OnExecute (ITaskProcessor *pProcessor, CString *ret
 		int cyHeight;
 		CreateEntry(pCatalogEntry, y, &pEntry, &cyHeight);
 
-		m_pList->AddEntry(strFromInt(pCatalogEntry->GetUNID()), pEntry);
+		CString sID = strFromInt(pCatalogEntry->GetUNID());
+		m_pList->AddEntry(sID, pEntry);
 		y += cyHeight + INTER_LINE_SPACING;
+
+		//	If we want to select this entry, then remember the index
+
+		if (m_Options.dwSelectUNID && pCatalogEntry->GetUNID() == m_Options.dwSelectUNID)
+			sSelection = sID;
 		}
+
+	//	Position the list
+
+	m_pList->SetPropertyVector(PROP_POSITION, CVector(m_Options.rcRect.left, m_Options.rcRect.top));
+	m_pList->SetPropertyVector(PROP_SCALE, CVector(RectWidth(m_Options.rcRect), RectHeight(m_Options.rcRect)));
+	m_pList->SetPropertyMetric(PROP_VIEWPORT_HEIGHT, (Metric)RectHeight(m_Options.rcRect));
+
+	//	Select
+
+	if (!sSelection.IsBlank())
+		m_pList->SetSelection(sSelection);
 
 	g_pUniverse->SetLogImageLoad(true);
 
