@@ -304,6 +304,8 @@ class CItem
 			FLAG_IGNORE_DATA =				0x00000004,
 			FLAG_IGNORE_DISRUPTED =			0x00000008,
 			FLAG_IGNORE_ENHANCEMENTS =		0x00000010,
+
+			FLAG_FIND_MIN_CHARGES =			0x00010000,	//	Item with least number of charges
 			};
 
 		CItem (void);
@@ -340,7 +342,6 @@ class CItem
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
 		inline CEconomyType *GetCurrencyType (void) const;
-//		inline CString GetData (const CString &sAttrib) const { return (m_pExtra ? m_pExtra->m_Data.GetData(sAttrib) : NULL_STR); }
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;

@@ -345,12 +345,34 @@ int CItemListManipulator::FindItem (const CItem &Item, DWORD dwFlags) const
 //	the index in the list of the item or -1 if not found.
 
 	{
-	for (int i = 0; i < m_ViewMap.GetCount(); i++)
+	if (dwFlags & CItem::FLAG_FIND_MIN_CHARGES)
 		{
-		CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
+		int iBestItem = -1;
+		int iBestCharges;
 
-		if (ThisItem.IsEqual(Item, dwFlags))
-			return i;
+		for (int i = 0; i < m_ViewMap.GetCount(); i++)
+			{
+			CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
+
+			if (ThisItem.IsEqual(Item, dwFlags)
+					&& (iBestItem == -1 || ThisItem.GetCharges() < iBestCharges))
+				{
+				iBestItem = i;
+				iBestCharges = ThisItem.GetCharges();
+				}
+			}
+
+		return iBestItem;
+		}
+	else
+		{
+		for (int i = 0; i < m_ViewMap.GetCount(); i++)
+			{
+			CItem &ThisItem = m_ItemList.GetItem(m_ViewMap[i]);
+
+			if (ThisItem.IsEqual(Item, dwFlags))
+				return i;
+			}
 		}
 
 	return -1;

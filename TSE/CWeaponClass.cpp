@@ -1258,13 +1258,22 @@ bool CWeaponClass::ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int i
 	bool bNextVariant = false;
 	if (pShot->GetAmmoType())
 		{
+		CItemListManipulator ItemList(pSource->GetItemList());
+		CItem Item(pShot->GetAmmoType(), iAmmoConsumed);
+
+		//	We look for the ammo item. If we're using magazines, then look for
+		//	the item with the least charges (use those up first).
+
+		DWORD dwFlags = CItem::FLAG_IGNORE_CHARGES;
+		if (pShot->GetAmmoType()->AreChargesAmmo())
+			dwFlags |= CItem::FLAG_FIND_MIN_CHARGES;
+
 		//	Select the ammo. If we could not select it, then it means that we
 		//	have none, so we fail.
 
-		CItemListManipulator ItemList(pSource->GetItemList());
-		CItem Item(pShot->GetAmmoType(), iAmmoConsumed);
-		if (!ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
+		if (!ItemList.SetCursorAtItem(Item, dwFlags))
 			return false;
+
 		if (ItemList.GetItemAtCursor().GetCount() < iAmmoConsumed)
 			return false;
 
