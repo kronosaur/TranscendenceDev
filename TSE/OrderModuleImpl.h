@@ -323,6 +323,25 @@ class CSentryOrder : public IOrderModule
 		DWORD m_dwSpare:24;
 	};
 
+class CSimpleOrder : public IOrderModule
+	{
+	public:
+		CSimpleOrder (IShipController::OrderTypes iOrder) : IOrderModule(0),
+				m_iOrder(iOrder)
+			{ }
+
+	protected:
+		//	IOrderModule virtuals
+		virtual void OnBehavior (CShip *pShip, CAIBehaviorCtx &Ctx) override;
+		virtual IShipController::OrderTypes OnGetOrder (void) override { return m_iOrder; }
+
+	private:
+		void OrderFireWeapon (CShip *pShip, CAIBehaviorCtx &Ctx) const;
+		void OrderUseItem (CShip *pShip, CAIBehaviorCtx &Ctx) const;
+
+		IShipController::OrderTypes m_iOrder;
+	};
+
 class CWaitOrder : public IOrderModule
 	{
 	public:

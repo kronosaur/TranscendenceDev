@@ -7241,6 +7241,29 @@ DeviceNames CShip::SelectWeapon (int iDev, int iVariant)
 	return iNamed;
 	}
 
+DeviceNames CShip::SelectWeapon (const CItem &Item)
+
+//	SelectWeaopn
+//
+//	Selects the given weapon to fire as follows:
+//
+//	If Item matches an installed weapon (or launcher) then we select that 
+//	weapon.
+//
+//	Else, if there is an installed weapon that matches the type of Item,
+//	then we select that weapon.
+//
+//	Else, if there is a weapon that fires Item as ammo, then we select that
+//	weapon and that ammo.
+
+	{
+	int iDev, iVariant;
+	if (!m_Devices.FindWeaponByItem(Item, &iDev, &iVariant))
+		return devNone;
+
+	return SelectWeapon(iDev, iVariant);
+	}
+
 void CShip::SendMessage (CSpaceObject *pSender, const CString &sMsg)
 
 //	SendMessage
@@ -7653,7 +7676,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 			//	If this order requires a target, make sure we have one
 
 			bool bTargetRequired;
-			OrderHasTarget(Ctx.iOrder, &bTargetRequired);
+			IShipController::OrderHasTarget(Ctx.iOrder, &bTargetRequired);
 			if (bTargetRequired && pOrderTarget == NULL)
 				kernelDebugLogPattern("Unable to add ship order %d to ship class %x; no target specified", Ctx.iOrder, GetType()->GetUNID());
 

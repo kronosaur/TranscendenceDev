@@ -95,10 +95,16 @@ class CDeviceSystem
 		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const;
 		void CleanUp (void);
 		CInstalledDevice *FindDevice (const CItem &Item);
+
+		static constexpr DWORD FLAG_VALIDATE_ITEM =	0x00000001;
+		static constexpr DWORD FLAG_MATCH_BY_TYPE =	0x00000002;
+		int FindDeviceIndex (const CItem &Item, DWORD dwFlags = 0) const;
+
 		int FindFreeSlot (void);
 		int FindNamedIndex (const CItem &Item) const;
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
+		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
 		inline int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
 		inline CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }

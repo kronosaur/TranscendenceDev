@@ -146,6 +146,68 @@ CInstalledDevice *CDeviceSystem::FindDevice (const CItem &Item)
 		return NULL;
 	}
 
+int CDeviceSystem::FindDeviceIndex (const CItem &Item, DWORD dwFlags) const
+
+//	FindDeviceIndex
+//
+//	Finds the given device (or -1).
+
+	{
+	//	Must have a type
+
+	CItemType *pType;
+	if ((pType = Item.GetType()) == NULL)
+		return -1;
+
+	//	If the item is installed, then look for this exact item.
+
+	else if (Item.IsInstalled())
+		{
+		if (!pType->IsDevice())
+			return -1;
+
+		int iDevSlot = Item.GetInstalled();
+
+		//	Validate if necessary
+
+		if (dwFlags & FLAG_VALIDATE_ITEM)
+			{
+			if (iDevSlot < 0 || iDevSlot >= m_Devices.GetCount() || m_Devices[iDevSlot].IsEmpty() || m_Devices[iDevSlot].GetItem() == NULL)
+				return -1;
+
+			if (!Item.IsEqual(*m_Devices[iDevSlot].GetItem()))
+				return -1;
+			}
+
+		//	Found
+
+		return iDevSlot;
+		}
+
+	//	Look for a device of the given type
+
+	else if (dwFlags & FLAG_MATCH_BY_TYPE)
+		{
+		for (int i = 0; i < GetCount(); i++)
+			{
+			const CInstalledDevice &Device = GetDevice(i);
+			if (!Device.IsEmpty() 
+					&& Device.GetItem()
+					&& Device.GetItem()->GetType() == pType)
+				{
+				return i;
+				}
+			}
+
+		return -1;
+		}
+
+	//	Not found
+
+	else
+		return -1;
+	}
+
 int CDeviceSystem::FindFreeSlot (void)
 
 //	FindFreeSlot
@@ -257,6 +319,60 @@ int CDeviceSystem::FindRandomIndex (bool bEnabledOnly) const
 			}
 
 	return -1;
+	}
+
+bool CDeviceSystem::FindWeaponByItem (const CItem &Item, int *retiIndex, int *retiVariant) const
+
+//	FindWeaponByItem
+//
+//	Finds a weapon and variant.
+
+	{
+	CItemType *pType = Item.GetType();
+	if (pType == NULL)
+		return false;
+
+	CDeviceClass *pClass = pType->GetDeviceClass();
+
+	//	If the item is not a device, then see if it is ammo.
+
+	if (pClass == NULL)
+		{
+		for (int i = 0; i < GetCount(); i++)
+			{
+			const CInstalledDevice &Device = GetDevice(i);
+			if (Device.IsEmpty())
+				continue;
+
+			int iVariant = Device.GetClass()->GetAmmoVariant(pType);
+			if (iVariant == -1)
+				continue;
+
+			if (retiIndex) *retiIndex = i;
+			if (retiVariant) *retiVariant = iVariant;
+			return true;
+			}
+
+		return false;
+		}
+
+	//	Otherwise, if this is a weapon or launcher, then look for it.
+
+	else if (pClass->GetCategory() == itemcatWeapon || pClass->GetCategory() == itemcatLauncher)
+		{
+		int iDevSlot = FindDeviceIndex(Item, FLAG_VALIDATE_ITEM | FLAG_MATCH_BY_TYPE);
+		if (iDevSlot == -1)
+			return false;
+
+		if (retiIndex) *retiIndex = iDevSlot;
+		if (retiVariant) *retiVariant = 0;
+		return true;
+		}
+
+	//	Otherwise, not found
+
+	else
+		return false;
 	}
 
 int CDeviceSystem::GetCountByID (const CString &sID) const

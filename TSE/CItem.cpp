@@ -3191,7 +3191,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 	return pResult;
 	}
 
-void CItem::WriteToStream (IWriteStream *pStream)
+void CItem::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //
@@ -3210,20 +3210,20 @@ void CItem::WriteToStream (IWriteStream *pStream)
 
 	{
 	DWORD dwSave = m_pItemType->GetUNID();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	dwSave = MAKELONG(m_dwCount, MAKEWORD(m_dwFlags, m_dwInstalled));
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Save SExtra
 
 	dwSave = (m_pExtra ? 0xffffffff : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	if (m_pExtra)
 		{
-		pStream->Write((char *)&m_pExtra->m_dwCharges, sizeof(DWORD));
-		pStream->Write((char *)&m_pExtra->m_dwVariant, sizeof(DWORD));
-		pStream->Write((char *)&m_pExtra->m_dwDisruptedTime, sizeof(DWORD));
+		pStream->Write(m_pExtra->m_dwCharges);
+		pStream->Write(m_pExtra->m_dwVariant);
+		pStream->Write(m_pExtra->m_dwDisruptedTime);
 
 		m_pExtra->m_Mods.WriteToStream(pStream);
 

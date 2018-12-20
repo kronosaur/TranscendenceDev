@@ -7930,7 +7930,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CItemType::SUseDesc UseDesc;
 			if (!pType->GetUseDesc(&UseDesc)
 					|| !UseDesc.bUsableInCockpit)
-				return pCC->CreateNil();;
+				return pCC->CreateNil();
 
 			CString sError;
 			pObj->UseItem(Item, &sError);
@@ -9518,13 +9518,13 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Add order name
 
-			ICCItem *pItem = pCC->CreateString(GetOrderName(iOrder));
+			ICCItem *pItem = pCC->CreateString(IShipController::GetOrderName(iOrder));
 			pList->Append(*pCC, pItem);
 			pItem->Discard(pCC);
 
 			//	Add the target
 
-			if (::OrderHasTarget(iOrder))
+			if (IShipController::OrderHasTarget(iOrder))
 				{
 				pItem = pCC->CreateInteger((int)pTarget);
 				pList->Append(*pCC, pItem);
@@ -9538,6 +9538,14 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				case IShipController::dataInteger:
 					pList->AppendInteger(*pCC, Data.dwData1);
 					break;
+
+				case IShipController::dataItem:
+					{
+					ICCItem *pItem = ::CreateListFromItem(*pCC, Data.Item);
+					pList->Append(*pCC, pItem);
+					pItem->Discard(pCC);
+					break;
+					}
 
 				case IShipController::dataPair:
 					pList->AppendInteger(*pCC, Data.dwData1);
@@ -9728,7 +9736,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			IShipController *pController = pShip->GetController();
 			if (pController)
 				{
-				CString sOrder = GetOrderName(pController->GetCurrentOrderEx());
+				CString sOrder = IShipController::GetOrderName(pController->GetCurrentOrderEx());
 				if (!sOrder.IsBlank())
 					pResult = pCC->CreateString(sOrder);
 				else
@@ -9746,7 +9754,7 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				CSpaceObject *pTarget;
 				IShipController::OrderTypes iOrder = pController->GetCurrentOrderEx(&pTarget);
-				if (::OrderHasTarget(iOrder) && pTarget)
+				if (IShipController::OrderHasTarget(iOrder) && pTarget)
 					pResult = pCC->CreateInteger((int)pTarget);
 				else
 					pResult = pCC->CreateNil();
@@ -10027,7 +10035,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_ORDER:
 		case FN_SHIP_ORDER_IMMEDIATE:
 			{
-			IShipController::OrderTypes iOrder = GetOrderType(pArgs->GetElement(1)->GetStringValue());
+			IShipController::OrderTypes iOrder = IShipController::GetOrderType(pArgs->GetElement(1)->GetStringValue());
 			if (iOrder == IShipController::orderNone)
 				return pCC->CreateError(CONSTLIT("Unknown order"), pArgs->GetElement(1));
 
@@ -10037,7 +10045,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CSpaceObject *pTarget = NULL;
 			bool bRequiredTarget;
-			bool bHasTarget = OrderHasTarget(iOrder, &bRequiredTarget);
+			bool bHasTarget = IShipController::OrderHasTarget(iOrder, &bRequiredTarget);
 			if (pArgs->GetCount() > 2)
 				{
 				if (bHasTarget || pArgs->GetElement(iArg)->IsNil())
@@ -10087,19 +10095,26 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else if (pArgs->GetCount() > iArg)
 				{
+				IShipController::EDataTypes iDataType = IShipController::GetOrderDataType(iOrder);
+
 				if (pArgs->GetElement(iArg)->IsNil())
 					{
 					//	Nil argument is empty. We treat this the same as if the
 					//	caller specified no argument.
 					}
-				else if (OrderHasDataString(iOrder))
+				else if (iDataType == IShipController::dataItem)
 					{
-					Data.iDataType = IShipController::dataString;
+					Data.iDataType = iDataType;
+					Data.Item = GetItemFromArg(*pCC, pArgs->GetElement(iArg));
+					}
+				else if (iDataType == IShipController::dataString)
+					{
+					Data.iDataType = iDataType;
 					Data.sData = pArgs->GetElement(iArg)->GetStringValue();
 					}
-				else if (OrderHasDataVector(iOrder))
+				else if (iDataType == IShipController::dataVector)
 					{
-					Data.iDataType = IShipController::dataVector;
+					Data.iDataType = iDataType;
 					Data.vData = ::CreateVectorFromList(*pCC, pArgs->GetElement(iArg));
 					}
 				else

@@ -56,80 +56,6 @@
 #define STORAGE_SERVICE_EXTENSION			CONSTLIT("serviceExtension")
 #define STORAGE_SERVICE_USER				CONSTLIT("serviceUser")
 
-struct SOrderTypeData
-	{
-	char *szName;
-	char *szTarget;
-	//	-		no target
-	//	*		optional target
-	//	o		required target
-
-	char *szData;
-	//	-		no data
-	//	i		integer (may be optional)
-	//	2		two integers (encoded in a DWORD)
-	//  s		string data
-	//	v		vector data
-
-	DWORD dwFlags;
-	};
-
-static const SOrderTypeData g_OrderTypes[] =
-	{
-		//	name						target	data
-		{	"",							"-",	"-",	0	 },
-
-		{	"guard",					"o",	"-",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED },
-		{	"dock",						"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"attack",					"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP | ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS },
-		{	"wait",						"-",	"i",	0 },
-		{	"gate",						"*",	"-",	0 },
-
-		{	"gateOnThreat",				"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"gateOnStationDestroyed",	"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"patrol",					"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP	},
-		{	"escort",					"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP	},
-		{	"scavenge",					"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-
-		{	"followPlayerThroughGate",	"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-		{	"attackNearestEnemy",		"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"tradeRoute",				"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"wander",					"-",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"loot",						"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-
-		{	"hold",						"-",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"mine",						"o",	"-",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"waitForPlayer",			"-",	"-",	0 },
-		{	"attackPlayerOnReturn",		"-",	"-",	0 },
-		{	"follow",					"o",	"-",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-
-		{	"navPath",					"-",	"i",	0	},
-		{	"goto",						"o",	"-",	0 },
-		{	"waitForTarget",			"o",	"2",	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-		{	"waitForEnemy",				"-",	"i",	0 },
-		{	"bombard",					"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED },
-
-		{	"approach",					"o",	"i",	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-		{	"aim",						"o",	"-",	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-		{	"orbit",					"o",	"2",	ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP },
-		{	"holdCourse",				"-",	"2",	0 },
-		{	"turnTo",					"-",	"i",	0 },
-
-		{	"attackHold",				"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP | ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS },
-		{	"attackStation",			"o",	"i",	ORDER_FLAG_DELETE_ON_STATION_DESTROYED },
-		{	"fireEvent",				"o",	"s",	0 },
-		{	"waitForUndock",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"sendMessage",				"o",	"s",	0 },
-
-		{	"attackArea",				"o",	"2",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-		{	"holdAndAttack",			"o",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED | ORDER_FLAG_UPDATE_ON_NEW_PLAYER_SHIP | ORDER_FLAG_DELETE_ON_OLD_SHIP_WAITS },
-		{	"gotoPos",					"-",	"v",	0 },
-		{	"waitForThreat",			"-",	"i",	0 },
-		{	"sentry",					"*",	"i",	ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED },
-	};
-
-#define ORDER_TYPES_COUNT		(sizeof(g_OrderTypes) / sizeof(g_OrderTypes[0]))
-
 static char *g_pszDestructionCauses[killedCount] =
 	{
 	"removedFromSystem",
@@ -1542,26 +1468,6 @@ MessageTypes GetMessageFromID (const CString &sID)
 	return msgNone;
 	}
 
-DWORD GetOrderFlags (IShipController::OrderTypes iOrder)
-
-//	GetOrderFlags
-//
-//	Returns flags
-
-	{
-	return g_OrderTypes[iOrder].dwFlags;
-	}
-
-CString GetOrderName (IShipController::OrderTypes iOrder)
-
-//	GetOrderName
-//
-//	Returns the name of the order
-
-	{
-	return CString(g_OrderTypes[iOrder].szName);
-	}
-
 CString GetPaintLayerID (CSystem::LayerEnum iPaintLayer)
 
 //	GetPaintLayerID
@@ -1602,79 +1508,6 @@ CString GetRGBColor (CG32bitPixel rgbColor)
 
 	{
 	return strPatternSubst(CONSTLIT("#%02x%02x%02x"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
-	}
-
-int OrderGetDataCount (IShipController::OrderTypes iOrder)
-
-//	OrderGetDataCount
-//
-//	Returns the number of data args
-
-	{
-	switch (g_OrderTypes[iOrder].szData[0])
-		{
-		case '-':
-			return 0;
-
-		case 'i':
-		case 's':
-			return 1;
-		
-		case '2':
-			return 2;
-
-		default:
-			return 0;
-		}
-	}
-
-bool OrderHasDataString (IShipController::OrderTypes iOrder)
-
-//	OrderHasDataString
-//
-//	Returns TRUE if the given order requires string data
-
-	{
-	return (*g_OrderTypes[iOrder].szData == 's');
-	}
-
-bool OrderHasDataVector (IShipController::OrderTypes iOrder)
-
-//	OrderHasDataVector
-//
-//	Returns TRUE if the given order requires string data
-
-	{
-	return (*g_OrderTypes[iOrder].szData == 'v');
-	}
-
-bool OrderHasTarget (IShipController::OrderTypes iOrder, bool *retbRequired)
-
-//	OrderHasTarget
-//
-//	Returns TRUE if the given order has a target
-
-	{
-	if (retbRequired)
-		*retbRequired = (*g_OrderTypes[iOrder].szTarget == 'o');
-
-	return (*g_OrderTypes[iOrder].szTarget != '-');
-	}
-
-IShipController::OrderTypes GetOrderType (const CString &sString)
-
-//	GetOrderType
-//
-//	Loads an order type
-
-	{
-	int iType;
-
-	for (iType = 0; iType < ORDER_TYPES_COUNT; iType++)
-		if (strEquals(sString, CString(g_OrderTypes[iType].szName)))
-			return (IShipController::OrderTypes)iType;
-
-	return IShipController::orderNone;
 	}
 
 bool HasModifier (const CString &sModifierList, const CString &sModifier)
@@ -2448,82 +2281,6 @@ void ParseKeyValuePair (const CString &sString, DWORD dwFlags, CString *retsKey,
 
 	if (retsValue)
 		*retsValue = sValue;
-	}
-
-bool ParseOrderString (const CString &sValue, IShipController::OrderTypes *retiOrder, IShipController::SData *retData)
-
-//	ParseOrderString
-//
-//	Parses an order string of the form:
-//
-//	{order}:{d1}:{d2}
-
-	{
-	char *pPos = sValue.GetASCIIZPointer();
-
-	//	Parse the order name
-
-	char *pStart = pPos;
-	while (*pPos != '\0' && *pPos != ':')
-		pPos++;
-
-	CString sOrder(pStart, (int)(pPos - pStart));
-
-	//	For backwards compatibility we handle some special names.
-
-	IShipController::OrderTypes iOrder;
-	if (strEquals(sOrder, CONSTLIT("trade route")))
-		iOrder = IShipController::orderTradeRoute;
-	else
-		{
-		iOrder = GetOrderType(sOrder);
-
-		//	Check for error
-
-		if (iOrder == IShipController::orderNone && !sOrder.IsBlank())
-			return false;
-		}
-
-	//	Get additional data
-
-	if (retData)
-		{
-		DWORD dwData1 = 0;
-		DWORD dwData2 = 0;
-
-		if (*pPos != ':')
-			*retData = IShipController::SData();
-		else
-			{
-			pPos++;
-			pStart = pPos;
-			while (*pPos != '\0' && *pPos != ':')
-				pPos++;
-
-			CString sData(pStart, (int)(pPos - pStart));
-			dwData1 = strToInt(sData, 0);
-
-			if (*pPos != ':')
-				*retData = IShipController::SData(dwData1);
-			else
-				{
-				pPos++;
-				pStart = pPos;
-				while (*pPos != '\0')
-					pPos++;
-
-				CString sData(pStart, (int)(pPos - pStart));
-				dwData2 = strToInt(sData, 0);
-
-				*retData = IShipController::SData(dwData1, dwData2);
-				}
-			}
-		}
-
-	//	Done
-
-	*retiOrder = iOrder;
-	return true;
 	}
 
 CSystem::LayerEnum ParsePaintLayerID (const CString &sID)

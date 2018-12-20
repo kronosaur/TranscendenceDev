@@ -379,7 +379,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 					m_bDockedWithSource = true;
 				else
 					{
-					m_iOrder = ::GetOrderType(sAttrib);
+					m_iOrder = IShipController::GetOrderType(sAttrib);
 					if (m_iOrder == IShipController::orderNone)
 						::kernelDebugLogPattern("Invalid sysFindObject order: %s", sAttrib);
 					}

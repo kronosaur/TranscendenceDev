@@ -7530,7 +7530,7 @@ void CSpaceObject::UpdatePlayerTarget (SUpdateCtx &Ctx)
 		}
 	}
 
-void CSpaceObject::UseItem (CItem &Item, CString *retsError)
+bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 //	UseItem
 //
@@ -7553,16 +7553,16 @@ void CSpaceObject::UseItem (CItem &Item, CString *retsError)
 
 			if (!pDevice->IsEnabled())
 				{
-				*retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
-				return;
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
+				return false;
 				}
 
 			//	If the device is not ready, then we can't use it
 
 			if (!pDevice->IsReady())
 				{
-				*retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
-				return;
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
+				return false;
 				}
 
 			//	Reset the activation delay, if necessary
@@ -7593,17 +7593,15 @@ void CSpaceObject::UseItem (CItem &Item, CString *retsError)
 
 		//	Invoke
 
-		ICCItem *pResult = Ctx.Run(UseDesc.pCode);
-		if (retsError)
+		ICCItemPtr pResult = Ctx.RunCode(UseDesc.pCode);
+		if (pResult->IsError())
 			{
-			if (pResult->IsError())
-				*retsError = pResult->GetStringValue();
-			else
-				*retsError = NULL_STR;
+			if (retsError) *retsError = pResult->GetStringValue();
+			return false;
 			}
-
-		Ctx.Discard(pResult);
 		}
+
+	return true;
 	}
 
 void CSpaceObject::WriteToStream (IWriteStream *pStream)

@@ -67,6 +67,14 @@ void COrderList::CleanUp (SOrderEntry *pEntry)
 	{
 	switch (pEntry->dwDataType)
 		{
+		case IShipController::dataItem:
+			if (pEntry->dwData)
+				{
+				delete (CItem *)pEntry->dwData;
+				pEntry->dwData = 0;
+				}
+			break;
+
 		case IShipController::dataString:
 			if (pEntry->dwData)
 				{
@@ -105,6 +113,10 @@ IShipController::OrderTypes COrderList::GetOrder (int iIndex, CSpaceObject **ret
 			{
 			case IShipController::dataInteger:
 				retData->dwData1 = Entry.dwData;
+				break;
+
+			case IShipController::dataItem:
+				retData->Item = (Entry.dwData ? *(CItem *)Entry.dwData : CItem::NullItem());
 				break;
 
 			case IShipController::dataPair:
@@ -230,7 +242,7 @@ void COrderList::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceObject *pNe
 		{
 		SOrderEntry *pEntry = &m_List[i];
 		IShipController::OrderTypes iOrder = GetOrder(i);
-		DWORD dwFlags = ::GetOrderFlags(iOrder);
+		DWORD dwFlags = IShipController::GetOrderFlags(iOrder);
 
 		//	If the old ship is waiting, then we keep autons with the old ships
 		//	but cancel attacks.
@@ -288,7 +300,7 @@ void COrderList::OnStationDestroyed (CSpaceObject *pObj, bool *retbCurrentChange
 		{
 		SOrderEntry *pEntry = &m_List[i];
 		IShipController::OrderTypes iOrder = GetOrder(i);
-		DWORD dwFlags = ::GetOrderFlags(iOrder);
+		DWORD dwFlags = IShipController::GetOrderFlags(iOrder);
 
 		if (pEntry->pTarget == pObj
 				&& (dwFlags & ORDER_FLAG_DELETE_ON_STATION_DESTROYED))
@@ -347,6 +359,14 @@ void COrderList::ReadFromStream (SLoadCtx &Ctx)
 				case IShipController::dataPair:
 					Ctx.pStream->Read((char *)&pEntry->dwData, sizeof(DWORD));
 					break;
+
+				case IShipController::dataItem:
+					{
+					CItem *pItem = new CItem;
+					pItem->ReadFromStream(Ctx);
+					pEntry->dwData = (DWORD)pItem;
+					break;
+					}
 
 				case IShipController::dataString:
 					{
@@ -411,6 +431,10 @@ void COrderList::SetEntryData (SOrderEntry *pEntry, const IShipController::SData
 			pEntry->dwData = Data.dwData1;
 			break;
 
+		case IShipController::dataItem:
+			pEntry->dwData = (DWORD)(new CItem(Data.Item));
+			break;
+
 		case IShipController::dataPair:
 			pEntry->dwData = MAKELONG(Data.dwData1, Data.dwData2);
 			break;
@@ -465,6 +489,16 @@ void COrderList::WriteToStream (IWriteStream *pStream, CSystem *pSystem)
 			case IShipController::dataPair:
 				pStream->Write((char *)&pEntry->dwData, sizeof(DWORD));
 				break;
+
+			case IShipController::dataItem:
+				{
+				CItem *pItem = (CItem *)pEntry->dwData;
+				if (pItem)
+					pItem->WriteToStream(pStream);
+				else
+					CItem::NullItem().WriteToStream(pStream);
+				break;
+				}
 
 			case IShipController::dataString:
 				{

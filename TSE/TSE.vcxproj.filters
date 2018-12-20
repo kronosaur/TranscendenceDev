@@ -1276,6 +1276,12 @@
     <ClCompile Include="CPropertyCompare.cpp">
       <Filter>Source Files\TransLISP</Filter>
     </ClCompile>
+    <ClCompile Include="IShipController.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CSimpleOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

@@ -861,7 +861,7 @@ class CSpaceObject : public CObject
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
 		bool Translate (const CString &sID, ICCItem *pData, CString *retsText);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult);
-		void UseItem (CItem &Item, CString *retsError = NULL);
+		bool UseItem (const CItem &Item, CString *retsError = NULL);
 
 		inline void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
 		inline void InvalidateItemListState (void) { m_fItemEventsValid = false; }
@@ -2063,14 +2063,6 @@ CString GetMessageID (MessageTypes iMessage);
 
 CSpaceObject::InterSystemResults GetInterSystemResult (const CString &sString);
 
-DWORD GetOrderFlags (IShipController::OrderTypes iOrder);
-CString GetOrderName (IShipController::OrderTypes iOrder);
-IShipController::OrderTypes GetOrderType (const CString &sString);
-int OrderGetDataCount (IShipController::OrderTypes iOrder);
-bool OrderHasDataString (IShipController::OrderTypes iOrder);
-bool OrderHasDataVector (IShipController::OrderTypes iOrder);
-bool OrderHasTarget (IShipController::OrderTypes iOrder, bool *retbRequired = NULL);
-bool ParseOrderString (const CString &sValue, IShipController::OrderTypes *retiOrder, IShipController::SData *retData = NULL);
 
 EStorageScopes ParseStorageScopeID (const CString &sID);
 

@@ -995,6 +995,7 @@ class CShip : public CSpaceObject
 		int GetMissileCount (void);
 		ALERROR RemoveItemAsDevice (CItemListManipulator &ItemList);
 		DeviceNames SelectWeapon (int iDev, int iVariant);
+		DeviceNames SelectWeapon (const CItem &Item);
 		void SetCursorAtDevice (CItemListManipulator &ItemList, int iDev);
 		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev);
 		void SetWeaponTriggered (DeviceNames iDev, bool bTriggered = true);

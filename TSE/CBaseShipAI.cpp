@@ -1369,7 +1369,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 	//	In some cases we ignore the notification because the station still
 	//	exists
 
-	DWORD dwFlags = GetOrderFlags(GetCurrentOrder());
+	DWORD dwFlags = IShipController::GetOrderFlags(GetCurrentOrder());
 	if (dwFlags & (ORDER_FLAG_DELETE_ON_STATION_DESTROYED | ORDER_FLAG_NOTIFY_ON_STATION_DESTROYED))
 		{
 		if (m_pOrderModule)

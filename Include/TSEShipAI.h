@@ -152,6 +152,7 @@ class IShipController
 			dataPair,						//	dwData is two 16-bit integers
 			dataString,						//	dwData is a pointer to a CString
 			dataVector,						//	dwData is a pointer to a CVector
+			dataItem,						//	dwData is a pointer to a CItem
 			};
 
 		struct SData
@@ -176,8 +177,13 @@ class IShipController
 					vData(vDataArg)
 				{ }
 
+			SData (const CItem &ItemArg) : iDataType(dataItem),
+					Item(ItemArg)
+				{ }
+
 			inline DWORD AsInteger (void) const { if (iDataType == dataInteger || iDataType == dataPair) return dwData1; else return 0; }
 			inline DWORD AsInteger2 (void) const { if (iDataType == dataPair) return dwData2; else return 0; }
+			inline const CItem &AsItem (void) const { if (iDataType == dataItem) return Item; else return CItem::NullItem(); }
 			inline bool IsIntegerOrPair (void) const { return (iDataType == dataInteger || iDataType == dataPair); }
 
 			EDataTypes iDataType;
@@ -186,11 +192,17 @@ class IShipController
 			DWORD dwData2;
 			CString sData;
 			CVector vData;
+			CItem Item;
 			};
 
-		//	When adding a new order, also add to:
+		//	TO ADD A NEW ORDER:
 		//
-		//	g_OrderTypes in Utilities.cpp
+		//	1.	Add an order to the end of the list (do not add in the middle,
+		//		because numbers are stored in save file).
+		//
+		//	2.	Add order data to m_OrderTypes in IShipController.cpp
+		//
+		//	3.	Add handler in IOrderModule::Create
 
 		enum OrderTypes
 			{
@@ -243,6 +255,9 @@ class IShipController
 			orderGoToPos,				//	dwData = vector destination
 			orderWaitForThreat,			//	dwData = seconds to wait (0 == indefinitely)
 			orderSentry,				//	Sentry mode (for turrets) pTarget = obj to guard (optional); dwData = timer (0 == indefinitely)
+
+			orderFireWeapon,			//	Data = weapon item to fire
+			orderUseItem,				//	Data = item to use
 			};
 
 		enum EShipStatusNotifications
@@ -351,6 +366,36 @@ class IShipController
 		virtual void OnUpdatePlayer (SUpdateCtx &Ctx) { }
 		virtual void OnWeaponStatusChanged (void) { }
 		virtual void OnWreckCreated (CSpaceObject *pWreck) { }
+
+		static EDataTypes GetOrderDataType (OrderTypes iOrder);
+		inline static DWORD GetOrderFlags (OrderTypes iOrder) { return m_OrderTypes[iOrder].dwFlags; }
+		inline static CString GetOrderName (OrderTypes iOrder) { return CString(m_OrderTypes[iOrder].szName); }
+		static OrderTypes GetOrderType (const CString &sString);
+		static bool OrderHasTarget (OrderTypes iOrder, bool *retbRequired = NULL);
+		static bool ParseOrderString (const CString &sValue, OrderTypes *retiOrder, IShipController::SData *retData = NULL);
+
+	private:
+		struct SOrderTypeData
+			{
+			char *szName;
+			char *szTarget;
+			//	-		no target
+			//	*		optional target
+			//	o		required target
+
+			char *szData;
+			//	-		no data
+			//	i		integer (may be optional)
+			//	I		CItem
+			//	2		two integers (encoded in a DWORD)
+			//  s		string data
+			//	v		vector data
+
+			DWORD dwFlags;
+			};
+
+		static const SOrderTypeData m_OrderTypes[];
+		static const int ORDER_TYPES_COUNT;
 	};
 
 class CShipAIHelper

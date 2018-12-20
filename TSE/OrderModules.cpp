@@ -125,6 +125,10 @@ IOrderModule *IOrderModule::Create (IShipController::OrderTypes iOrder)
 		case IShipController::orderSentry:
 			return new CSentryOrder;
 
+		case IShipController::orderFireWeapon:
+		case IShipController::orderUseItem:
+			return new CSimpleOrder(iOrder);
+
 		case IShipController::orderHold:
 		case IShipController::orderWait:
 		case IShipController::orderWaitForEnemy:

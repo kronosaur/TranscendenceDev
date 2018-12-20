@@ -405,7 +405,7 @@ class CItem
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 
 		void ReadFromStream (SLoadCtx &Ctx);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 		void ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer);
 		ICCItem *WriteToCCItem (CCodeChain &CC) const;
