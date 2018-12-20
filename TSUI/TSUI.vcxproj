@@ -180,7 +180,7 @@
     <ClCompile Include="CShieldHUDDefault.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CAutomataEffectPainter.cpp" />
-	<ClCompile Include="CStargateEffectPainter.cpp" />
+    <ClCompile Include="CStargateEffectPainter.cpp" />
     <ClCompile Include="CTimerRegistry.cpp" />
     <ClCompile Include="CUserSettings.cpp" />
     <ClCompile Include="CVisualPalette.cpp" />

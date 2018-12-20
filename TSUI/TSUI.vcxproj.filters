@@ -138,7 +138,7 @@
     <ClCompile Include="CAutomataEffectPainter.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
-	<ClCompile Include="CStargateEffectPainter.cpp">
+    <ClCompile Include="CStargateEffectPainter.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
     <ClCompile Include="CMapLegendPainter.cpp">
