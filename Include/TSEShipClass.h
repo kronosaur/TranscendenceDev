@@ -100,11 +100,11 @@ class CHullPointsCalculator
 		static constexpr int STD_ARMOR_SEGMENTS = 4;
 		static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
 		static constexpr Metric ARMOR_PER_POINT = 6000.0;
-		static constexpr int MAX_ARMOR_MASS = 20000;
-		static constexpr Metric MAX_ARMOR_PER_POINT = 12000.0;
+		static constexpr int MAX_ARMOR_MASS = 16000;
+		static constexpr Metric MAX_ARMOR_PER_POINT = 16000.0;
 		static constexpr Metric MIN_SPEED = 15.0;
 		static constexpr Metric SPEED_PER_POINT = 6.0;
-		static constexpr Metric THRUST_RATIO_PER_POINT = 20.0;
+		static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
 		static constexpr Metric MAX_ROTATION_PER_POINT = 12.0;
 		static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
 		static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.025;
