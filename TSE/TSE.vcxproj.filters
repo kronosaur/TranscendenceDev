@@ -1282,6 +1282,9 @@
     <ClCompile Include="CSimpleOrder.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
+    <ClCompile Include="CArmorLimits.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.gitignore">

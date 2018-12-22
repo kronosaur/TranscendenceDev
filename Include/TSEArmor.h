@@ -29,6 +29,8 @@ class CArmorClass
 
 		enum EMassClass
 			{
+			mcNone						= -1,
+
 			mcUltraLight				= 0,
 			mcLight						= 1,
 			mcMedium					= 2,

@@ -7,14 +7,48 @@
 
 class CShipClass;
 
+//	Armor Limits
+
+class CArmorLimits
+	{
+	public:
+		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
+		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
+		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
+		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
+
+	private:
+		struct SArmorLimit
+			{
+			CArmorClass::EMassClass iClass = CArmorClass::mcNone;
+			TUniquePtr<CItemCriteria> pCriteria;
+
+			int iSpeedAdj = 0;				//	Change to speed for this armor class
+			};
+
+		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
+
+		TArray<SArmorLimit> m_ArmorLimits;	//	Indexed by CArmorClass::EMassClass
+
+		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
+		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
+		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
+		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+	};
+
 //	Hull Descriptor ------------------------------------------------------------
 
 class CHullDesc
 	{
 	public:
+
+		inline int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const { return m_ArmorLimits.CalcArmorSpeedBonus(iSegmentCount, iTotalArmorMass); }
+		inline ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const { return m_ArmorLimits.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed); }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
-		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
-		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
 		inline int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
@@ -22,20 +56,20 @@ class CHullDesc
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
 		inline int GetMass (void) const { return m_iMass; }
-		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
-		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
+		inline int GetMaxArmorMass (void) const { return m_ArmorLimits.GetMaxArmorMass(); }
+		inline int GetMaxArmorSpeedPenalty (void) const { return m_ArmorLimits.GetMaxArmorSpeedPenalty(); }
 		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		inline int GetMaxCounter(void) const { return m_iMaxCounter; }
 		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
 		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
 		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
-		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		inline int GetMinArmorSpeedBonus (void) const { return m_ArmorLimits.GetMinArmorSpeedBonus(); }
 		inline int GetSize (void) const { return m_iSize; }
-		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		inline int GetStdArmorMass (void) const { return m_ArmorLimits.GetStdArmorMass(); }
 		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
 		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
-		void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio);
+		inline void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
 		inline void SetSize (int iSize) { m_iSize = iSize; }
@@ -43,7 +77,6 @@ class CHullDesc
 		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
 
 	private:
-		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
 
 		int m_iSize = 0;					//	Length of ship in meters
 		int m_iMass = 0;					//	Empty hull mass (tons)
@@ -53,10 +86,7 @@ class CHullDesc
 
 		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
-		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
-		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
-		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
-		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor
 
 		int m_iMaxCargoSpace = 0;			//	Max amount of cargo space with expansion (tons)
 		int m_iMaxCounter = 0;				//  Max value of counter (used for temperature or capacitor)
