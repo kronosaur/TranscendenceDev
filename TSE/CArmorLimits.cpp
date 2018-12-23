@@ -5,11 +5,14 @@
 
 #include "PreComp.h"
 
+#define CRITERIA_ATTRIB							CONSTLIT("criteria")
+#define MASS_CLASS_ATTRIB						CONSTLIT("massClass")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
 #define MAX_ARMOR_SPEED_ATTRIB					CONSTLIT("maxArmorSpeed")
 #define MAX_ARMOR_SPEED_PENALTY_ATTRIB			CONSTLIT("maxArmorSpeedAdj")
 #define MIN_ARMOR_SPEED_ATTRIB					CONSTLIT("minArmorSpeed")
 #define MIN_ARMOR_SPEED_BONUS_ATTRIB			CONSTLIT("minArmorSpeedAdj")
+#define SPEED_ADJ_ATTRIB						CONSTLIT("speedAdj")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 
 bool CArmorLimits::CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus) const
@@ -313,6 +316,31 @@ bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retp
 	return false;
 	}
 
+int CArmorLimits::GetStdArmorMass (void) const
+
+//	GetStdArmorMass
+//
+//	Returns armor mass at which we incur no penalty or bonus.
+
+	{
+	if (HasTableLimits())
+		{
+		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+			{
+			if (m_ArmorLimits[i].iSpeedAdj == 0)
+				return CArmorClass::GetMaxArmorMass((CArmorClass::EMassClass)i);
+			}
+
+		//	Otherwise, not found
+
+		return 0;
+		}
+	else if (HasCompatibleLimits())
+		return m_iStdArmorMass;
+	else
+		return 0;
+	}
+
 void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
 
 //	InitDefaultArmorLimits
@@ -362,6 +390,46 @@ void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThr
 	m_iMinArmorSpeedBonus = iSpeedInc;
 	}
 
+ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits)
+
+//	InitArmorLimitsFromXML
+//
+//	Adds an <ArmorLimits> element.
+
+	{
+	CArmorClass::EMassClass iMassClass = CArmorClass::ParseMassClassID(pLimits->GetAttribute(MASS_CLASS_ATTRIB));
+	if (iMassClass == CArmorClass::mcNone)
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid mass class: %s"), pLimits->GetAttribute(MASS_CLASS_ATTRIB));
+		return ERR_FAIL;
+		}
+
+	//	Criteria
+
+	CString sCriteria = pLimits->GetAttribute(CRITERIA_ATTRIB);
+
+	//	Limits
+
+	int iSpeedAdj = pLimits->GetAttributeInteger(SPEED_ADJ_ATTRIB);
+
+	//	Now that we have all elements, create the entry.
+
+	SArmorLimits &NewLimits = *m_ArmorLimits.Insert();
+	NewLimits.iClass = iMassClass;
+
+	if (!sCriteria.IsBlank())
+		{
+		NewLimits.pCriteria.Set(new CItemCriteria);
+		CItem::ParseCriteria(sCriteria, NewLimits.pCriteria);
+		}
+
+	NewLimits.iSpeedAdj = iSpeedAdj;
+
+	//	Done
+
+	return NOERROR;
+	}
+
 ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed)
 
 //	InitFromXML
@@ -369,21 +437,43 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 //	Initializes from <Hull> element.
 
 	{
-	m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
-	m_iStdArmorMass = pDesc->GetAttributeIntegerBounded(STD_ARMOR_ATTRIB, 0, m_iMaxArmorMass, m_iMaxArmorMass / 2);
+	//	If we've already got a table of armor limits then we're using that method.
 
-	//	Speed bonus/penalty
+	if (HasTableLimits())
+		{
+		//	Find the highest armor mass that we can handle (and cache it).
 
-	int iValue;
-	if (pDesc->FindAttributeInteger(MAX_ARMOR_SPEED_PENALTY_ATTRIB, &iValue))
-		m_iMaxArmorSpeedPenalty = Max(Min(iValue, 0), -iMaxSpeed);
+		m_iMaxArmorMass = 0;
+		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+			{
+			int iMass = CArmorClass::GetMaxArmorMass((CArmorClass::EMassClass)i);
+			if (iMass > m_iMaxArmorMass)
+				m_iMaxArmorMass = iMass;
+			}
+		}
+
+	//	Otherwise, load the older method.
+
 	else
-		m_iMaxArmorSpeedPenalty = pDesc->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
+		{
+		//	Parse max armor
 
-	if (pDesc->FindAttributeInteger(MIN_ARMOR_SPEED_BONUS_ATTRIB, &iValue))
-		m_iMinArmorSpeedBonus = Min(Max(0, iValue), 100 - iMaxSpeed);
-	else
-		m_iMinArmorSpeedBonus = pDesc->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
+		m_iMaxArmorMass = pDesc->GetAttributeInteger(MAX_ARMOR_ATTRIB);
+		m_iStdArmorMass = pDesc->GetAttributeIntegerBounded(STD_ARMOR_ATTRIB, 0, m_iMaxArmorMass, m_iMaxArmorMass / 2);
+
+		//	Speed bonus/penalty
+
+		int iValue;
+		if (pDesc->FindAttributeInteger(MAX_ARMOR_SPEED_PENALTY_ATTRIB, &iValue))
+			m_iMaxArmorSpeedPenalty = Max(Min(iValue, 0), -iMaxSpeed);
+		else
+			m_iMaxArmorSpeedPenalty = pDesc->GetAttributeIntegerBounded(MAX_ARMOR_SPEED_ATTRIB, 0, iMaxSpeed, iMaxSpeed) - iMaxSpeed;
+
+		if (pDesc->FindAttributeInteger(MIN_ARMOR_SPEED_BONUS_ATTRIB, &iValue))
+			m_iMinArmorSpeedBonus = Min(Max(0, iValue), 100 - iMaxSpeed);
+		else
+			m_iMinArmorSpeedBonus = pDesc->GetAttributeIntegerBounded(MIN_ARMOR_SPEED_ATTRIB, iMaxSpeed, 100, iMaxSpeed) - iMaxSpeed;
+		}
 
 	return NOERROR;
 	}

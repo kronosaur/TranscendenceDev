@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ARMOR_LIMITS_TAG						CONSTLIT("ArmorLimits")
 #define HULL_TAG								CONSTLIT("Hull")
 
 #define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
@@ -84,11 +85,6 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	m_iMaxCargoSpace = pHull->GetAttributeIntegerBounded(MAX_CARGO_SPACE_ATTRIB, m_iCargoSpace, -1, m_iCargoSpace);
 	m_iMaxReactorPower = pHull->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 
-	//	Armor limits
-
-	if (error = m_ArmorLimits.InitFromXML(Ctx, pHull, iMaxSpeed))
-		return error;
-
 	//	Device limits
 
 	m_iMaxDevices = pHull->GetAttributeIntegerBounded(MAX_DEVICES_ATTRIB, 0, -1, -1);
@@ -121,6 +117,28 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	
 	m_iCounterIncrementRate = pHull->GetAttributeInteger(COUNTER_INCREMENT_RATE_ATTRIB);
 	m_iMaxCounter = pHull->GetAttributeInteger(MAX_COUNTER_ATTRIB);
+
+	//	If we've got our own element (<Hull>) then parse any children
+
+	if (pHull != pDesc)
+		{
+		for (int i = 0; i < pHull->GetContentElementCount(); i++)
+			{
+			CXMLElement *pItem = pHull->GetContentElement(i);
+
+			if (strEquals(pItem->GetTag(), ARMOR_LIMITS_TAG))
+				{
+				if (error = m_ArmorLimits.InitArmorLimitsFromXML(Ctx, pItem))
+					return error;
+				}
+			}
+		}
+
+	//	Armor limits. We load this AFTER we've check to see if we have <ArmorLimits>
+	//	because then we won't need to load the old-style armor checks.
+
+	if (error = m_ArmorLimits.InitFromXML(Ctx, pHull, iMaxSpeed))
+		return error;
 
 	//	Done
 

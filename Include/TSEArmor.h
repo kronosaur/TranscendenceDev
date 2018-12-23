@@ -149,12 +149,14 @@ class CArmorClass
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
 		static EMassClass CalcMassClass (int iMassKg);
+		static int GetMaxArmorMass (EMassClass iMassClass);
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
 		static int GetStdEffectiveHP (int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdMass (int iLevel);
         static const SStdStats &GetStdStats (int iLevel);
+		static EMassClass ParseMassClassID (const CString &sValue);
 
 	private:
 

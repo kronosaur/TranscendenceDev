@@ -1944,6 +1944,19 @@ CArmorClass::EMassClass CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
 	return CalcMassClass(m_pItemType->GetMassKg(ItemCtx));
 	}
 
+int CArmorClass::GetMaxArmorMass (EMassClass iMassClass)
+
+//	GetMaxArmorMass
+//
+//	Returns the maximum armor mass for the given class (in kilos).
+
+	{
+	if (iMassClass < 0 || iMassClass >= mcCount)
+		return 0;
+
+	return MASS_CLASS_TABLE[iMassClass].iMaxMassKg;
+	}
+
 int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 //	GetMaxHP
@@ -2328,6 +2341,22 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	pType->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return NOERROR;
+	}
+
+CArmorClass::EMassClass CArmorClass::ParseMassClassID (const CString &sValue)
+
+//	ParseMassClassID
+//
+//	Parses a mass class ID. If we fail, we return mcNone.
+
+	{
+	for (int i = 0; i < mcCount; i++)
+		if (strEquals(sValue, CString(MASS_CLASS_TABLE[i].pszID)))
+			return (EMassClass)i;
+
+	//	Not found
+
+	return mcNone;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

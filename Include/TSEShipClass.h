@@ -18,8 +18,9 @@ class CArmorLimits
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
-		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		int GetStdArmorMass (void) const;
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
+		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 
 	private:
