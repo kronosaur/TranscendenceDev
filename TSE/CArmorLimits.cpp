@@ -80,7 +80,8 @@ int CArmorLimits::CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const
 //	Computes the speed bonus based on the given set of installed armor segments.
 
 	{
-	ASSERT(Armor.GetCount() > 0);
+	//	Short-circuit. This can happen for virtual classes, etc.
+
 	if (Armor.GetCount() == 0)
 		return 0;
 
