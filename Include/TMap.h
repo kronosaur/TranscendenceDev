@@ -371,6 +371,30 @@ template <class KEY, class VALUE> class TSortMap
 			m_Index.GrowToFit(iCount);
 			}
 
+		const VALUE &IncAt (const KEY &key, const VALUE &incValue)
+			{
+			int iIndex;
+
+			if (FindPos(key, &iIndex))
+				{
+				m_Array[m_Index[iIndex]].theValue += incValue;
+				return m_Array[m_Index[iIndex]].theValue;
+				}
+			else
+				{
+				int iPos;
+				SEntry *pEntry = InsertEntry(&iPos);
+
+				//	Do it
+
+				m_Index.Insert(iPos, iIndex);
+				pEntry->theKey = key;
+				pEntry->theValue = incValue;
+
+				return pEntry->theValue;
+				}
+			}
+
 		VALUE *Insert (const KEY &newKey)
 			{
 			return atom_Insert(newKey);
