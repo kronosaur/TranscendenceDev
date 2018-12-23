@@ -12,7 +12,8 @@ class CShipClass;
 class CArmorLimits
 	{
 	public:
-		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
+		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
+		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
@@ -22,7 +23,7 @@ class CArmorLimits
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 
 	private:
-		struct SArmorLimit
+		struct SArmorLimits
 			{
 			CArmorClass::EMassClass iClass = CArmorClass::mcNone;
 			TUniquePtr<CItemCriteria> pCriteria;
@@ -30,9 +31,13 @@ class CArmorLimits
 			int iSpeedAdj = 0;				//	Change to speed for this armor class
 			};
 
+		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
 		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
+		bool FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL) const;
+		inline bool HasCompatibleLimits (void) const { return (m_iMaxArmorSpeedPenalty != 0 || m_iMinArmorSpeedBonus != 0); }
+		inline bool HasTableLimits (void) const { return (m_ArmorLimits.GetCount() > 0); }
 
-		TArray<SArmorLimit> m_ArmorLimits;	//	Indexed by CArmorClass::EMassClass
+		TArray<SArmorLimits> m_ArmorLimits;	//	Indexed by CArmorClass::EMassClass
 
 		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
 		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
@@ -46,7 +51,8 @@ class CHullDesc
 	{
 	public:
 
-		inline int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const { return m_ArmorLimits.CalcArmorSpeedBonus(iSegmentCount, iTotalArmorMass); }
+		inline bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const { return m_ArmorLimits.CalcArmorSpeedBonus(ArmorItem, iSegmentCount, retiBonus); }
+		inline int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const { return m_ArmorLimits.CalcArmorSpeedBonus(Armor); }
 		inline ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const { return m_ArmorLimits.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed); }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
@@ -273,7 +279,6 @@ class CShipClass : public CDesignType
 
 		inline int Angle2Direction (int iAngle) const { return m_Perf.GetIntegralRotationDesc().GetFrameIndex(iAngle); }
 		inline int AlignToRotationAngle (int iAngle) const { return m_Perf.GetIntegralRotationDesc().AlignToRotationAngle(iAngle); }
-		int CalcArmorSpeedBonus (int iTotalArmorMass) const;
 		Metric CalcFuelEfficiency (const CDeviceDescList &Devices) const;
 		inline int CalcImageSize (void) const { return m_Interior.CalcImageSize(const_cast<CShipClass *>(this)); }
 		Metric CalcMass (const CDeviceDescList &Devices) const;

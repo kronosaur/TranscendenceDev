@@ -558,9 +558,9 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
-	//	Increment total armor mass
+	//	Keep track of armor so that we can adjust ship speed
 
-	Ctx.iArmorMass += ItemCtx.GetItem().GetMassKg();
+	Ctx.Armor.Insert(ItemCtx);
 
     //  Adjust max speed.
 
@@ -1934,6 +1934,16 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return NULL;
 	}
 
+CArmorClass::EMassClass CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
+
+//	GetMassClass
+//
+//	Computes and returns the armor's mass classification.
+
+	{
+	return CalcMassClass(m_pItemType->GetMassKg(ItemCtx));
+	}
+
 int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 //	GetMaxHP
@@ -2039,7 +2049,10 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 
 //	GetReferenceSpeedBonus
 //
-//	Returns the speed bonus/penalty (both intrinsic and due to mass).
+//	Returns the speed bonus/penalty (both intrinsic and due to mass). We return
+//	TRUE if we have a reference bonus/penalty to show. If the armor cannot be
+//	installed, we return TRUE, but a bonus of 0. If the armor does not need a
+//	speed bonus reference, we return FALSE.
 
 	{
 	int iBonus = m_iMaxSpeedInc;
@@ -2049,13 +2062,12 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 	const CShipClass *pShipClass;
 	if (pShipClass = Ctx.GetSourceShipClass())
 		{
-		int iArmorMass = m_pItemType->GetMassKg(Ctx);
-
-		//	If this armor is too heavy to be installed in the ship class, then
-		//	we return TRUE, but speed bonus = 0.
-
-		if (iArmorMass > pShipClass->GetHullDesc().GetMaxArmorMass())
+		int iMassBonus;
+		if (!pShipClass->GetHullDesc().CalcArmorSpeedBonus(Ctx, pShipClass->GetArmorDesc().GetCount(), &iMassBonus))
 			{
+			//	If this armor is too heavy to be installed in the ship class, then
+			//	we return TRUE, but speed bonus = 0.
+
 			if (retiSpeedBonus)
 				*retiSpeedBonus = 0;
 			return true;
@@ -2063,7 +2075,7 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 
 		//	Otherwise, add to bonus
 
-		iBonus += pShipClass->CalcArmorSpeedBonus(iArmorMass * pShipClass->GetArmorDesc().GetCount());
+		iBonus += iMassBonus;
 		}
 
 	//	Done

@@ -650,7 +650,7 @@ struct SShipPerformanceCtx
 	CShipClass *pClass = NULL;				//	Class (required)
     CShip *pShip = NULL;					//  Target ship (may be NULL, if computing class perf)
     Metric rSingleArmorFraction = 0.0;		//  Fraction of all armor segments represented by 1 segment (= 1/segment-count)
-	int iArmorMass = 0;						//	Total mass of all armor segments (kg)
+	TArray<CItemCtx> Armor;					//	Armor installed on ship
 
 	CAbilitySet Abilities;					//	Equipment installed
 

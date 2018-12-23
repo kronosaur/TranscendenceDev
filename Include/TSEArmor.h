@@ -127,6 +127,7 @@ class CArmorClass
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
+		EMassClass GetMassClass (CItemCtx &ItemCtx) const;
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);

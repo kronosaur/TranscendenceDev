@@ -330,16 +330,6 @@ Metric CShipClass::GetStdCombatStrength (int iLevel)
 	return k1 * pow(k0, iLevel - 1);
 	}
 
-int CShipClass::CalcArmorSpeedBonus (int iTotalArmorMass) const
-
-//	CalcArmorSpeedBonus
-//
-//	Computes addition/penalty to max speed based on the total armor mass.
-
-	{
-	return m_Hull.CalcArmorSpeedBonus(m_Armor.GetCount(), iTotalArmorMass);
-	}
-
 CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc, Metric *retrCombatStrength) const
 
 //	CalcBalanceType

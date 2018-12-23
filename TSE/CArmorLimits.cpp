@@ -12,6 +12,128 @@
 #define MIN_ARMOR_SPEED_BONUS_ATTRIB			CONSTLIT("minArmorSpeedAdj")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 
+bool CArmorLimits::CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus) const
+
+//	CalcArmorSpeedBonus
+//
+//	Figures out the speed bonus if the ship class had the given armor segment
+//	installed. If the armor segment is too heavy for the class, we return FALSE.
+
+	{
+	//	If we use mass class limits, then consider those.
+
+	if (HasTableLimits())
+		{
+		//	Look for this armor in the table (by mass class). If not found, then 
+		//	it means that we can't mount this kind of armor.
+
+		const SArmorLimits *pLimits;
+		if (!FindArmorLimits(ArmorItem, &pLimits))
+			return false;
+
+		//	Return the speed bonus (or penalty)
+
+		if (retiBonus)
+			*retiBonus = pLimits->iSpeedAdj;
+
+		return true;
+		}
+
+	//	If we use old-style armor mass limits, then check those
+
+	else if (HasCompatibleLimits())
+		{
+		int iArmorMass = ArmorItem.GetItem().GetMassKg();
+
+		//	Too heavy?
+
+		if (iArmorMass > GetMaxArmorMass())
+			return false;
+
+		//	Add up the total armor mass
+
+		int iTotalArmorMass = iSegmentCount * iArmorMass;
+
+		//	Calculate speed bonus
+
+		if (retiBonus)
+			*retiBonus = CalcArmorSpeedBonus(iSegmentCount, iTotalArmorMass);
+
+		return true;
+		}
+
+	//	Otherwise, no speed bonus.
+
+	else
+		{
+		if (retiBonus)
+			*retiBonus = 0;
+
+		return true;
+		}
+	}
+
+int CArmorLimits::CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const
+
+//	CalcArmorSpeedBonus
+//
+//	Computes the speed bonus based on the given set of installed armor segments.
+
+	{
+	ASSERT(Armor.GetCount() > 0);
+	if (Armor.GetCount() == 0)
+		return 0;
+
+	//	If we use mass class limits, then consider those.
+
+	else if (HasTableLimits())
+		{
+		//	Loop over all armor segments and compute the speed adjustment.
+
+		int iTotalSpeedAdj = 0;
+		for (int i = 0; i < Armor.GetCount(); i++)
+			{
+			//	Look for this armor in the table (by mass class). If not found, then 
+			//	it means that we can't mount this kind of armor.
+
+			const SArmorLimits *pLimits;
+			if (!FindArmorLimits(Armor[i], &pLimits))
+				{
+				//	This should never happen. It means that an armor segment got
+				//	installed that should not have been installed. We ignore it.
+
+				continue;
+				}
+
+			iTotalSpeedAdj += pLimits->iSpeedAdj;
+			}
+
+		//	Average out the speed bonus
+
+		return mathRound((Metric)iTotalSpeedAdj / (Metric)Armor.GetCount());
+		}
+
+	//	If we use old-style armor mass limits, then check those
+
+	else if (HasCompatibleLimits())
+		{
+		//	Add up the armor mass
+
+		int iTotalArmorMass = 0;
+		for (int i = 0; i < Armor.GetCount(); i++)
+			iTotalArmorMass += Armor[i].GetItem().GetMassKg();
+
+		//	Calculate speed bonus
+
+		return CalcArmorSpeedBonus(Armor.GetCount(), iTotalArmorMass);
+		}
+
+	//	Otherwise, no speed bonus.
+
+	else
+		return 0;
+	}
+
 int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const
 
 //	CalcArmorSpeedBonus
@@ -147,6 +269,47 @@ int CArmorLimits::CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const
 		int iDiff = iSpeed - iStdSpeed;
 		return m_iStdArmorMass - (iBonusMassPerPoint * iDiff);
 		}
+	}
+
+bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits) const
+
+//	FindArmorLimits
+//
+//	Finds the armor limit descriptor for this armor item.
+
+	{
+	const CItem &ArmorItem = ItemCtx.GetItem();
+	CArmorClass *pArmor = ItemCtx.GetArmorClass();
+	if (pArmor == NULL)
+		return false;
+
+	CArmorClass::EMassClass iMassClass = pArmor->GetMassClass(ItemCtx);
+
+	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+		{
+		const SArmorLimits *pLimits = &m_ArmorLimits[i];
+
+		//	Skip if the wrong mass class
+
+		if (pLimits->iClass != iMassClass)
+			continue;
+
+		//	Make sure we match criteria
+
+		if (pLimits->pCriteria && !ArmorItem.MatchesCriteria(*pLimits->pCriteria))
+			continue;
+
+		//	Found
+
+		if (retpLimits)
+			*retpLimits = pLimits;
+
+		return true;
+		}
+
+	//	If we get this far, then not found.
+
+	return false;
 	}
 
 void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
