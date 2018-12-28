@@ -322,6 +322,7 @@
     <ClCompile Include="CAISettings.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
     <ClCompile Include="CArmorLimits.cpp" />
+    <ClCompile Include="CArmorMassDefinitions.cpp" />
     <ClCompile Include="CArmorSystem.cpp" />
     <ClCompile Include="CArtifactAwakening.cpp" />
     <ClCompile Include="CArtifactProgram.cpp" />

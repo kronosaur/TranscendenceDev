@@ -200,3 +200,37 @@ class CDisplayAttributeDefinitions
 		TArray<SItemEntry> m_ItemAttribs;
 	};
 
+class CArmorMassDefinitions
+	{
+	public:
+		void Append (const CArmorMassDefinitions &Src);
+		inline void DeleteAll (void) { m_Definitions.DeleteAll(); }
+		const CString &GetMassClassID (const CItem &Item) const;
+		const CString &GetMassClassLabel (const CString &sID) const;
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		inline bool IsEmpty (void) const { return (m_Definitions.GetCount() > 0); }
+		inline void OnInitDone (void) { CalcByIDIndex(); }
+
+		static const CArmorMassDefinitions Null;
+
+	private:
+
+		struct SArmorMassEntry
+			{
+			CString sID;					//	Required ID
+			int iMaxMass = 0;				//	Maximum mass (kg)
+			CString sText;					//	Text to display on item
+			};
+
+		struct SArmorMassDefinition
+			{
+			CItemCriteria Criteria;			//	Criteria for armor
+			TSortMap<int, SArmorMassEntry> Classes;
+			};
+
+		void CalcByIDIndex (void);
+		const SArmorMassEntry *FindMassEntry (const CItem &Item) const;
+
+		TSortMap<CString, SArmorMassDefinition> m_Definitions;
+		TSortMap<CString, SArmorMassEntry> m_ByID;
+	};

@@ -151,6 +151,7 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 		//	Bind
 
 		SDesignLoadCtx Ctx;
+		Ctx.pDesign = this;
 		Ctx.pExtension = pExtension;
 		Ctx.bBindAsNewGame = false;
 
@@ -252,6 +253,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//	Create a design load context
 
 	SDesignLoadCtx Ctx;
+	Ctx.pDesign = this;
 	Ctx.bBindAsNewGame = bNewGame;
 	Ctx.bNoResources = bNoResources;
 
@@ -404,6 +406,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//	to bind. We also use it to set up the inheritence hierarchy, which means
 	//	that we rely on the map from UNID to valid design type (m_AllTypes)
 
+	m_ArmorDefinitions.DeleteAll();
 	m_DisplayAttribs.DeleteAll();
 
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
@@ -419,10 +422,19 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		//	We take this opportunity to build a list of display attributes
 		//	defined by each type.
 
+		const CArmorMassDefinitions &ArmorDefinitions = pEntry->GetArmorMassDefinitions();
+		if (!ArmorDefinitions.IsEmpty())
+			m_ArmorDefinitions.Append(ArmorDefinitions);
+
 		const CDisplayAttributeDefinitions &Attribs = pEntry->GetDisplayAttributes();
 		if (!Attribs.IsEmpty())
 			m_DisplayAttribs.Append(Attribs);
 		}
+
+	//	Tell our armor mass definitions that we're done so that we can calculate
+	//	some indices
+
+	m_ArmorDefinitions.OnInitDone();
 
 	//	Now call Bind on all active design entries
 
@@ -1296,7 +1308,10 @@ CG32bitImage *CDesignCollection::GetImage (DWORD dwUNID, DWORD dwFlags)
 		//	this call is guaranteed to succeed.
 
 		if (dwFlags & FLAG_IMAGE_LOCK)
-			pImage->Lock(SDesignLoadCtx());
+			{
+			SDesignLoadCtx LoadCtx;
+			pImage->Lock(LoadCtx);
+			}
 
 		//	Done
 

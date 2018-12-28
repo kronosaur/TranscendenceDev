@@ -9,6 +9,7 @@ class CCommunicationsHandler;
 class CCompositeImageDesc;
 class CCreatePainterCtx;
 class CCurrencyAndValue;
+class CDesignCollection;
 class CDockScreen;
 class CDockingPorts;
 class CDynamicDesignTable;
@@ -274,6 +275,7 @@ class CDesignType
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		size_t GetAllocMemoryUsage (void) const;
 		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
+		inline const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
@@ -389,6 +391,7 @@ class CDesignType
 			CAttributeDataBlock InitGlobalData;			//	Initial global data
 			CLanguageDataBlock Language;				//	Language data
 			CXMLElement *pLocalScreens = NULL;			//	Local dock screen
+			CArmorMassDefinitions ArmorDefinitions;		//	Armor mass definitions
 			CDisplayAttributeDefinitions DisplayAttribs;	//	Display attribute definitions
 
 			SEventHandlerDesc EventsCache[evtCount];	//	Cached events
@@ -1129,6 +1132,7 @@ struct SDesignLoadCtx
 	inline DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
 
 	//	Context
+	CDesignCollection *pDesign = NULL;		//	Design collection
 	CString sResDb;							//	ResourceDb filespec
 	CResourceDb *pResDb = NULL;				//	Open ResourceDb object
 	CString sFolder;						//	Folder context (used when loading images)
@@ -1259,6 +1263,7 @@ class CDesignCollection
 		void FireOnGlobalUpdate (int iTick);
 		inline DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
 		inline DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
+		inline const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
 		inline int GetCount (void) const { return m_AllTypes.GetCount(); }
 		inline int GetCount (DesignTypes iType) const { return m_ByType[iType].GetCount(); }
 		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
@@ -1308,6 +1313,7 @@ class CDesignCollection
 		CExtension *m_pAdventureExtension;
 		CAdventureDesc *m_pAdventureDesc;
 		TSortMap<CString, CEconomyType *> m_EconomyIndex;
+		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
 

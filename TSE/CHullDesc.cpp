@@ -8,7 +8,6 @@
 #define ARMOR_LIMITS_TAG						CONSTLIT("ArmorLimits")
 #define HULL_TAG								CONSTLIT("Hull")
 
-#define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define CARGO_SPACE_ATTRIB						CONSTLIT("cargoSpace")
 #define COUNTER_INCREMENT_RATE_ATTRIB			CONSTLIT("counterIncrementRate")
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
@@ -69,14 +68,9 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 			return error;
 		}
 
-	//	Armor and device criteria
+	//	Device criteria
 
 	CString sCriteria;
-	if (pHull->FindAttribute(ARMOR_CRITERIA_ATTRIB, &sCriteria))
-		CItem::ParseCriteria(sCriteria, &m_ArmorCriteria);
-	else
-		CItem::InitCriteriaAll(&m_ArmorCriteria);
-
 	if (pHull->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
 		CItem::ParseCriteria(sCriteria, &m_DeviceCriteria);
 	else

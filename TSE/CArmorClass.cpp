@@ -1232,20 +1232,6 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
-CArmorClass::EMassClass CArmorClass::CalcMassClass (int iMassKg)
-
-//	CalcMassClass
-//
-//	Returns mass classification.
-
-	{
-	for (int i = 0; i < mcCount; i++)
-		if (iMassKg <= MASS_CLASS_TABLE[i].iMaxMassKg)
-			return (EMassClass)i;
-
-	return mcDreadnought;
-	}
-
 int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor)
 
 //	CalcPowerUsed
@@ -1856,7 +1842,7 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	//	Get the property
 
 	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
-		return CC.CreateString(CString(MASS_CLASS_TABLE[CalcMassClass(m_pItemType->GetMassKg(Ctx))].pszID));
+		return CC.CreateString(m_sMassClass);
 
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return CC.CreateBool(IsImmune(Ctx, specialBlinding));
@@ -1934,14 +1920,27 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return NULL;
 	}
 
-CArmorClass::EMassClass CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
+const CString &CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
 
 //	GetMassClass
 //
 //	Computes and returns the armor's mass classification.
 
 	{
-	return CalcMassClass(m_pItemType->GetMassKg(ItemCtx));
+	return m_sMassClass;
+	}
+
+CString CArmorClass::GetMassClassID (EMassClass iMassClass)
+
+//	GetMassClassID
+//
+//	Returns the string ID.
+
+	{
+	if (iMassClass < 0 || iMassClass >= mcCount)
+		return NULL_STR;
+
+	return CString(MASS_CLASS_TABLE[iMassClass].pszID);
 	}
 
 int CArmorClass::GetMaxArmorMass (EMassClass iMassClass)
@@ -2017,8 +2016,9 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 
 	//	Mass classification
 
-	EMassClass iMassClass = CalcMassClass(iMassKg);
-	AppendReferenceString(&sReference, CString(MASS_CLASS_TABLE[iMassClass].pszName));
+	CString sMassClass = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
+	if (!sMassClass.IsBlank())
+		AppendReferenceString(&sReference, sMassClass);
 
 	//	Regeneration
 
@@ -2339,6 +2339,11 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	CItemType *pType = GetItemType();
 	pType->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
+
+	//	Compute (and cache) the mass class
+
+	if (Ctx.pDesign)
+		m_sMassClass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassID(CItem(m_pItemType, 1));
 
 	return NOERROR;
 	}

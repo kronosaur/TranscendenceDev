@@ -127,7 +127,7 @@ class CArmorClass
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
-		EMassClass GetMassClass (CItemCtx &ItemCtx) const;
+		const CString &GetMassClass (CItemCtx &ItemCtx) const;
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
@@ -148,7 +148,7 @@ class CArmorClass
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
-		static EMassClass CalcMassClass (int iMassKg);
+		static CString GetMassClassID (EMassClass iMassClass);
 		static int GetMaxArmorMass (EMassClass iMassClass);
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
@@ -222,6 +222,7 @@ class CArmorClass
 		CItemCriteria m_DeviceCriteria;			//	Only enhances devices that match criteria
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
+		CString m_sMassClass;					//	Computed mass class (computed in Bind)
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields

@@ -1028,11 +1028,11 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 	if (Item.IsArmor())
 		{
-		int iMaxArmor = Hull.GetMaxArmorMass();
+		CArmorLimits::EResults iCanInstall = Hull.CanInstallArmor(Item);
 
 		//	See if we are compatible
 
-		if (!Item.MatchesCriteria(Hull.GetArmorCriteria()))
+		if (iCanInstall == CArmorLimits::resultIncompatible)
 			iResult = insNotCompatible;
 
 		//	Ask the object if we can install this item
@@ -1042,7 +1042,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 		//	See if the armor is too heavy
 
-		else if (iMaxArmor && Item.GetMassKg() > iMaxArmor)
+		else if (iCanInstall == CArmorLimits::resultTooHeavy)
 			iResult = insArmorTooHeavy;
 
 		//	Fire CanBeInstalled to check for custom conditions

@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define ARMOR_CRITERIA_ATTRIB					CONSTLIT("armorCriteria")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
 #define MASS_CLASS_ATTRIB						CONSTLIT("massClass")
 #define MAX_ARMOR_ATTRIB						CONSTLIT("maxArmor")
@@ -197,8 +198,6 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 //	If there is no variation in speed, we return a single speed value.
 
 	{
-	int i;
-
 	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItem *pResult = CC.CreateSymbolTable();
 
@@ -207,6 +206,17 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 	if (m_iMaxArmorMass == 0 || (m_iMaxArmorSpeedPenalty == 0 && m_iMinArmorSpeedBonus == 0))
 		pResult->SetAt(CC, strFromInt(iStdSpeed), CC.CreateNil());
 
+	//	For table limits we return an entry for each mass class
+
+	else if (HasTableLimits())
+		{
+		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+			{
+			int iSpeed = iStdSpeed + m_ArmorLimits[i].iSpeedAdj;
+			pResult->SetAt(CC, strFromInt(iSpeed), CC.CreateString(m_ArmorLimits[i].sClass));
+			}
+		}
+
 	//	Otherwise, loop over every speed.
 
 	else
@@ -214,7 +224,7 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 		int iMinSpeed = iStdSpeed + m_iMaxArmorSpeedPenalty;
 		int iMaxSpeed = iStdSpeed + m_iMinArmorSpeedBonus;
 
-		for (i = iMinSpeed; i <= iMaxSpeed; i++)
+		for (int i = iMinSpeed; i <= iMaxSpeed; i++)
 			{
 			CString sLine;
 
@@ -275,19 +285,69 @@ int CArmorLimits::CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const
 		}
 	}
 
-bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits) const
+CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
+
+//	CanInstallArmor
+//
+//	Determines whether we can install the armor.
+
+	{
+	//	If we don't match the criteria, then we fail.
+
+	if (!Item.MatchesCriteria(m_ArmorCriteria))
+		return resultIncompatible;
+
+	//	Check mass
+
+	else if (HasTableLimits())
+		{
+		//	Look up this armor segment. If we don't find a match, then it means
+		//	the armor is incompatible.
+
+		bool bFoundClass;
+		if (!FindArmorLimits(CItemCtx(Item), NULL, &bFoundClass))
+			{
+			//	If we found an entry for the mass class, then it means that we 
+			//	normally could handle the mass class but that we failed for a 
+			//	different (custom) reason.
+
+			if (bFoundClass)
+				return resultIncompatible;
+
+			//	Otherwise, it means that we're too heavy.
+
+			else
+				return resultTooHeavy;
+			}
+
+		return resultOK;
+		}
+	else if (HasCompatibleLimits())
+		{
+		if (Item.GetMassKg() > GetMaxArmorMass())
+			return resultTooHeavy;
+
+		return resultOK;
+		}
+	else
+		return resultOK;
+	}
+
+bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits, bool *retbClassFound) const
 
 //	FindArmorLimits
 //
 //	Finds the armor limit descriptor for this armor item.
 
 	{
+	if (retbClassFound) *retbClassFound = false;
+
 	const CItem &ArmorItem = ItemCtx.GetItem();
 	CArmorClass *pArmor = ItemCtx.GetArmorClass();
 	if (pArmor == NULL)
 		return false;
 
-	CArmorClass::EMassClass iMassClass = pArmor->GetMassClass(ItemCtx);
+	const CString &sMassClass = pArmor->GetMassClass(ItemCtx);
 
 	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 		{
@@ -295,8 +355,14 @@ bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retp
 
 		//	Skip if the wrong mass class
 
-		if (pLimits->iClass != iMassClass)
+		if (!strEquals(pLimits->sClass, sMassClass))
 			continue;
+
+		//	We at least found an entry for this class. We need this to tell 
+		//	whether we failed due to incompatibility or beacuse it was too heavy.
+
+		if (retbClassFound)
+			*retbClassFound = true;
 
 		//	Make sure we match criteria
 
@@ -314,31 +380,6 @@ bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retp
 	//	If we get this far, then not found.
 
 	return false;
-	}
-
-int CArmorLimits::GetStdArmorMass (void) const
-
-//	GetStdArmorMass
-//
-//	Returns armor mass at which we incur no penalty or bonus.
-
-	{
-	if (HasTableLimits())
-		{
-		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
-			{
-			if (m_ArmorLimits[i].iSpeedAdj == 0)
-				return CArmorClass::GetMaxArmorMass((CArmorClass::EMassClass)i);
-			}
-
-		//	Otherwise, not found
-
-		return 0;
-		}
-	else if (HasCompatibleLimits())
-		return m_iStdArmorMass;
-	else
-		return 0;
 	}
 
 void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
@@ -397,10 +438,10 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 //	Adds an <ArmorLimits> element.
 
 	{
-	CArmorClass::EMassClass iMassClass = CArmorClass::ParseMassClassID(pLimits->GetAttribute(MASS_CLASS_ATTRIB));
-	if (iMassClass == CArmorClass::mcNone)
+	CString sMassClass = pLimits->GetAttribute(MASS_CLASS_ATTRIB);
+	if (sMassClass.IsBlank())
 		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Invalid mass class: %s"), pLimits->GetAttribute(MASS_CLASS_ATTRIB));
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid mass class: %s"), sMassClass);
 		return ERR_FAIL;
 		}
 
@@ -415,7 +456,7 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 	//	Now that we have all elements, create the entry.
 
 	SArmorLimits &NewLimits = *m_ArmorLimits.Insert();
-	NewLimits.iClass = iMassClass;
+	NewLimits.sClass = sMassClass;
 
 	if (!sCriteria.IsBlank())
 		{
@@ -437,18 +478,54 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 //	Initializes from <Hull> element.
 
 	{
+	//	Armor criteria is valid for all
+
+	CString sCriteria;
+	if (pDesc->FindAttribute(ARMOR_CRITERIA_ATTRIB, &sCriteria))
+		CItem::ParseCriteria(sCriteria, &m_ArmorCriteria);
+	else
+		CItem::InitCriteriaAll(&m_ArmorCriteria);
+
 	//	If we've already got a table of armor limits then we're using that method.
 
 	if (HasTableLimits())
 		{
-		//	Find the highest armor mass that we can handle (and cache it).
+		//	Calculate and cache armor mass limits
 
 		m_iMaxArmorMass = 0;
+		m_iStdArmorMass = 0;
+		m_iMaxArmorSpeedPenalty = 0;
+		m_iMinArmorSpeedBonus = 0;
 		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 			{
 			int iMass = CArmorClass::GetMaxArmorMass((CArmorClass::EMassClass)i);
+
+			//	Max armor mass that we can support.
+
 			if (iMass > m_iMaxArmorMass)
 				m_iMaxArmorMass = iMass;
+
+			//	Standard mass is the armor mass at which we have no bonus or
+			//	penalty.
+
+			if (m_ArmorLimits[i].iSpeedAdj == 0)
+				{
+				if (iMass > m_iStdArmorMass)
+					m_iStdArmorMass = iMass;
+				}
+
+			//	Keep track of the highest penalty/bonus
+
+			else if (m_ArmorLimits[i].iSpeedAdj < 0)
+				{
+				if (m_ArmorLimits[i].iSpeedAdj < m_iMaxArmorSpeedPenalty)
+					m_iMaxArmorSpeedPenalty = m_ArmorLimits[i].iSpeedAdj;
+				}
+			else
+				{
+				if (m_ArmorLimits[i].iSpeedAdj > m_iMinArmorSpeedBonus)
+					m_iMinArmorSpeedBonus = m_ArmorLimits[i].iSpeedAdj;
+				}
 			}
 		}
 

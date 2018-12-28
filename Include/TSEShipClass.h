@@ -12,13 +12,21 @@ class CShipClass;
 class CArmorLimits
 	{
 	public:
+		enum EResults
+			{
+			resultOK,
+			resultTooHeavy,
+			resultIncompatible,
+			};
+
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		EResults CanInstallArmor (const CItem &Item) const;
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
-		int GetStdArmorMass (void) const;
+		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
@@ -26,7 +34,7 @@ class CArmorLimits
 	private:
 		struct SArmorLimits
 			{
-			CArmorClass::EMassClass iClass = CArmorClass::mcNone;
+			CString sClass;
 			TUniquePtr<CItemCriteria> pCriteria;
 
 			int iSpeedAdj = 0;				//	Change to speed for this armor class
@@ -34,12 +42,13 @@ class CArmorLimits
 
 		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
 		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
-		bool FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL) const;
-		inline bool HasCompatibleLimits (void) const { return (m_iMaxArmorSpeedPenalty != 0 || m_iMinArmorSpeedBonus != 0); }
+		bool FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL, bool *retbClassFound = NULL) const;
+		inline bool HasCompatibleLimits (void) const { return (!HasTableLimits() && (m_iMaxArmorSpeedPenalty != 0 || m_iMinArmorSpeedBonus != 0)); }
 		inline bool HasTableLimits (void) const { return (m_ArmorLimits.GetCount() > 0); }
 
 		TArray<SArmorLimits> m_ArmorLimits;	//	Indexed by CArmorClass::EMassClass
 
+		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
 		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
 		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
@@ -55,8 +64,8 @@ class CHullDesc
 		inline bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const { return m_ArmorLimits.CalcArmorSpeedBonus(ArmorItem, iSegmentCount, retiBonus); }
 		inline int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const { return m_ArmorLimits.CalcArmorSpeedBonus(Armor); }
 		inline ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const { return m_ArmorLimits.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed); }
+		inline CArmorLimits::EResults CanInstallArmor (const CItem &Item) const { return m_ArmorLimits.CanInstallArmor(Item); }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
-		inline const CItemCriteria &GetArmorCriteria (void) const { return m_ArmorCriteria; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
 		inline int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
 		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
@@ -91,7 +100,6 @@ class CHullDesc
 		int m_iCargoSpace = 0;				//	Default cargo space (tons)
 		int m_iCounterIncrementRate = 0;	//  Value by which temperature/capacitor counter is updated every tick
 
-		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		CItemCriteria m_DeviceCriteria;		//	Allowable devices
 		CArmorLimits m_ArmorLimits;			//	Adjustments based on armor
 

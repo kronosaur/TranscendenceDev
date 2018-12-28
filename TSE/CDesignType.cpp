@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ADVENTURE_DESC_TAG						CONSTLIT("AdventureDesc")
+#define ARMOR_MASS_DESC_TAG						CONSTLIT("ArmorMassDesc")
 #define ATTRIBUTE_DESC_TAG						CONSTLIT("AttributeDesc")
 #define DATA_TAG						    	CONSTLIT("Data")
 #define DISPLAY_ATTRIBUTES_TAG					CONSTLIT("DisplayAttributes")
@@ -2484,6 +2485,14 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 				|| strEquals(pItem->GetTag(), ATTRIBUTE_DESC_TAG))
 			{
 			if (error = SetExtra()->DisplayAttribs.InitFromXML(Ctx, pItem))
+				{
+				Ctx.pType = NULL;
+				return ComposeLoadError(Ctx, Ctx.sError);
+				}
+			}
+		else if (strEquals(pItem->GetTag(), ARMOR_MASS_DESC_TAG))
+			{
+			if (error = SetExtra()->ArmorDefinitions.InitFromXML(Ctx, pItem))
 				{
 				Ctx.pType = NULL;
 				return ComposeLoadError(Ctx, Ctx.sError);

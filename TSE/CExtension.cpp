@@ -1037,6 +1037,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Setup
 
 			SDesignLoadCtx Ctx;
+			Ctx.pExtension = this;
 			Ctx.sResDb = m_sFilespec;
 			Ctx.pResDb = &ExtDb;
 			Ctx.bNoResources = Options.bNoResources;
@@ -1088,10 +1089,6 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 					return NOERROR;
 					}
 				}
-
-			//	Set up context
-
-			Ctx.pExtension = this;
 
 			//	Load all the design elements
 
