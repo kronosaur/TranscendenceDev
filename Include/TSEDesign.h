@@ -1263,6 +1263,7 @@ class CDesignCollection
 		void FireOnGlobalUpdate (int iTick);
 		inline DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
 		inline DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
+		inline CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
 		inline const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
 		inline int GetCount (void) const { return m_AllTypes.GetCount(); }
 		inline int GetCount (DesignTypes iType) const { return m_ByType[iType].GetCount(); }

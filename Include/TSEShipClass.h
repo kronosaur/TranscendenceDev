@@ -28,6 +28,7 @@ class CArmorLimits
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
 		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
+		inline bool HasArmorLimits (void) const { return (HasTableLimits() || HasCompatibleLimits()); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
@@ -85,6 +86,7 @@ class CHullDesc
 		inline int GetSize (void) const { return m_iSize; }
 		inline int GetStdArmorMass (void) const { return m_ArmorLimits.GetStdArmorMass(); }
 		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
+		inline bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
 		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
 		inline void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
@@ -146,8 +148,8 @@ class CHullPointsCalculator
 		static constexpr int STD_ARMOR_SEGMENTS = 4;
 		static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
 		static constexpr Metric ARMOR_PER_POINT = 6000.0;
-		static constexpr int MAX_ARMOR_MASS = 16000;
-		static constexpr Metric MAX_ARMOR_PER_POINT = 16000.0;
+		static constexpr int MAX_ARMOR_MASS = 20000;
+		static constexpr Metric MAX_ARMOR_PER_POINT = 20000.0;
 		static constexpr Metric MIN_SPEED = 15.0;
 		static constexpr Metric SPEED_PER_POINT = 6.0;
 		static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;

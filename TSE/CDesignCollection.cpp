@@ -432,7 +432,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		}
 
 	//	Tell our armor mass definitions that we're done so that we can calculate
-	//	some indices
+	//	some indices. This must be called before Bind for armor.
 
 	m_ArmorDefinitions.OnInitDone();
 

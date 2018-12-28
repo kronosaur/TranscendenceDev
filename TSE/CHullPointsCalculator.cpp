@@ -52,8 +52,17 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	const CShipArmorDesc &Armor = Class.GetArmorDesc();
 	m_Data[fieldArmorCount] = (Armor.GetCount() - STD_ARMOR_SEGMENTS) * POINTS_PER_ARMOR_SEGMENT;
-	m_Data[fieldStdArmorMass] = Hull.GetStdArmorMass() / ARMOR_PER_POINT;
-	m_Data[fieldMaxArmorMass] = Min(MAX_ARMOR_MASS, Hull.GetMaxArmorMass()) / MAX_ARMOR_PER_POINT;
+
+	if (Hull.HasArmorLimits())
+		{
+		m_Data[fieldStdArmorMass] = Hull.GetStdArmorMass() / ARMOR_PER_POINT;
+		m_Data[fieldMaxArmorMass] = Min(MAX_ARMOR_MASS, Hull.GetMaxArmorMass()) / MAX_ARMOR_PER_POINT;
+		}
+	else
+		{
+		m_Data[fieldStdArmorMass] = MAX_ARMOR_MASS / ARMOR_PER_POINT;
+		m_Data[fieldMaxArmorMass] = MAX_ARMOR_MASS / MAX_ARMOR_PER_POINT;
+		}
 
 	//	Points for max speed
 
