@@ -27,21 +27,6 @@ class CArmorClass
 			evtCount					= 3,
 			};
 
-		enum EMassClass
-			{
-			mcNone						= -1,
-
-			mcUltraLight				= 0,
-			mcLight						= 1,
-			mcMedium					= 2,
-			mcHeavy						= 3,
-			mcSuperHeavy				= 4,
-			mcMassive					= 5,
-			mcDreadnought				= 6,
-
-			mcCount						= 7,
-			};
-
 		struct SMassClassDesc
 			{
 			char *pszID;
@@ -148,15 +133,12 @@ class CArmorClass
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
-		static CString GetMassClassID (EMassClass iMassClass);
-		static int GetMaxArmorMass (EMassClass iMassClass);
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
 		static int GetStdEffectiveHP (int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdMass (int iLevel);
         static const SStdStats &GetStdStats (int iLevel);
-		static EMassClass ParseMassClassID (const CString &sValue);
 
 	private:
 
@@ -241,8 +223,6 @@ class CArmorClass
         SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
-
-		static SMassClassDesc MASS_CLASS_TABLE[mcCount];
 	};
 
 //  Ship Armor Segments --------------------------------------------------------

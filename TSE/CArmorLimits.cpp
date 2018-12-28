@@ -16,6 +16,64 @@
 #define SPEED_ADJ_ATTRIB						CONSTLIT("speedAdj")
 #define STD_ARMOR_ATTRIB						CONSTLIT("stdArmor")
 
+ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
+
+//	Bind
+//
+//	Bind now that we have all design types.
+
+	{
+	ASSERT(Ctx.pDesign);
+	if (Ctx.pDesign == NULL) return ERR_FAIL;
+
+	//	If we're using table limits, then compute some values
+
+	if (HasTableLimits())
+		{
+		//	Calculate and cache armor mass limits
+
+		m_iMaxArmorMass = 0;
+		m_iStdArmorMass = 0;
+		m_iMaxArmorSpeedPenalty = 0;
+		m_iMinArmorSpeedBonus = 0;
+		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+			{
+			int iMass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassMass(m_ArmorLimits[i].sClass);
+
+			//	Max armor mass that we can support.
+
+			if (iMass > m_iMaxArmorMass)
+				m_iMaxArmorMass = iMass;
+
+			//	Standard mass is the armor mass at which we have no bonus or
+			//	penalty.
+
+			if (m_ArmorLimits[i].iSpeedAdj == 0)
+				{
+				if (iMass > m_iStdArmorMass)
+					m_iStdArmorMass = iMass;
+				}
+
+			//	Keep track of the highest penalty/bonus
+
+			else if (m_ArmorLimits[i].iSpeedAdj < 0)
+				{
+				if (m_ArmorLimits[i].iSpeedAdj < m_iMaxArmorSpeedPenalty)
+					m_iMaxArmorSpeedPenalty = m_ArmorLimits[i].iSpeedAdj;
+				}
+			else
+				{
+				if (m_ArmorLimits[i].iSpeedAdj > m_iMinArmorSpeedBonus)
+					m_iMinArmorSpeedBonus = m_ArmorLimits[i].iSpeedAdj;
+				}
+			}
+		}
+
+	//	Done
+
+	return NOERROR;
+	}
+
 bool CArmorLimits::CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus) const
 
 //	CalcArmorSpeedBonus
@@ -490,43 +548,6 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 
 	if (HasTableLimits())
 		{
-		//	Calculate and cache armor mass limits
-
-		m_iMaxArmorMass = 0;
-		m_iStdArmorMass = 0;
-		m_iMaxArmorSpeedPenalty = 0;
-		m_iMinArmorSpeedBonus = 0;
-		for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
-			{
-			int iMass = CArmorClass::GetMaxArmorMass((CArmorClass::EMassClass)i);
-
-			//	Max armor mass that we can support.
-
-			if (iMass > m_iMaxArmorMass)
-				m_iMaxArmorMass = iMass;
-
-			//	Standard mass is the armor mass at which we have no bonus or
-			//	penalty.
-
-			if (m_ArmorLimits[i].iSpeedAdj == 0)
-				{
-				if (iMass > m_iStdArmorMass)
-					m_iStdArmorMass = iMass;
-				}
-
-			//	Keep track of the highest penalty/bonus
-
-			else if (m_ArmorLimits[i].iSpeedAdj < 0)
-				{
-				if (m_ArmorLimits[i].iSpeedAdj < m_iMaxArmorSpeedPenalty)
-					m_iMaxArmorSpeedPenalty = m_ArmorLimits[i].iSpeedAdj;
-				}
-			else
-				{
-				if (m_ArmorLimits[i].iSpeedAdj > m_iMinArmorSpeedBonus)
-					m_iMinArmorSpeedBonus = m_ArmorLimits[i].iSpeedAdj;
-				}
-			}
 		}
 
 	//	Otherwise, load the older method.

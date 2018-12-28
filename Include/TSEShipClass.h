@@ -19,6 +19,7 @@ class CArmorLimits
 			resultIncompatible,
 			};
 
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
@@ -46,7 +47,7 @@ class CArmorLimits
 		inline bool HasCompatibleLimits (void) const { return (!HasTableLimits() && (m_iMaxArmorSpeedPenalty != 0 || m_iMinArmorSpeedBonus != 0)); }
 		inline bool HasTableLimits (void) const { return (m_ArmorLimits.GetCount() > 0); }
 
-		TArray<SArmorLimits> m_ArmorLimits;	//	Indexed by CArmorClass::EMassClass
+		TArray<SArmorLimits> m_ArmorLimits;	//	List of limits by armor class for ship
 
 		CItemCriteria m_ArmorCriteria;		//	Allowable armor
 		int m_iStdArmorMass = 0;			//	No penalty at this armor mass

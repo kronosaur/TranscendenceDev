@@ -21,8 +21,7 @@ void CArmorMassDefinitions::Append (const CArmorMassDefinitions &Src)
 	{
 	//	Copy all definitions from source to us.
 
-	for (int i = 0; i < Src.m_Definitions.GetCount(); i++)
-		m_Definitions.SetAt(Src.m_Definitions.GetKey(i), m_Definitions[i]);
+	m_Definitions.Merge(Src.m_Definitions);
 	}
 
 void CArmorMassDefinitions::CalcByIDIndex (void)
@@ -110,6 +109,20 @@ const CString &CArmorMassDefinitions::GetMassClassLabel (const CString &sID) con
 		return NULL_STR;
 
 	return pEntry->sText;
+	}
+
+int CArmorMassDefinitions::GetMassClassMass (const CString &sID) const
+
+//	GetMassClassMass
+//
+//	Returns the mass for the given mass class.
+
+	{
+	SArmorMassEntry *pEntry = m_ByID.GetAt(sID);
+	if (pEntry == NULL)
+		return 0;
+
+	return pEntry->iMaxMass;
 	}
 
 ALERROR CArmorMassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)

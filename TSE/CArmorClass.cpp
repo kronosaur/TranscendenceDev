@@ -163,17 +163,6 @@ static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 		{	20000,	800000000,	14300,	160000000,	3000, },
 	};
 
-CArmorClass::SMassClassDesc CArmorClass::MASS_CLASS_TABLE[mcCount] =
-	{
-		{	"ultraLight",	"ultra-light",		1000	},
-		{	"light",		"light",			2500	},
-		{	"medium",		"medium",			3500	},
-		{	"heavy",		"heavy",			6000	},
-		{	"superHeavy",	"super-heavy",		9000	},
-		{	"massive",		"massive",			12000	},
-		{	"dreadnought",	"dreadnought",		100000	},
-	};
-
 static char *CACHED_EVENTS[CArmorClass::evtCount] =
 	{
 		"GetMaxHP",
@@ -1930,32 +1919,6 @@ const CString &CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
 	return m_sMassClass;
 	}
 
-CString CArmorClass::GetMassClassID (EMassClass iMassClass)
-
-//	GetMassClassID
-//
-//	Returns the string ID.
-
-	{
-	if (iMassClass < 0 || iMassClass >= mcCount)
-		return NULL_STR;
-
-	return CString(MASS_CLASS_TABLE[iMassClass].pszID);
-	}
-
-int CArmorClass::GetMaxArmorMass (EMassClass iMassClass)
-
-//	GetMaxArmorMass
-//
-//	Returns the maximum armor mass for the given class (in kilos).
-
-	{
-	if (iMassClass < 0 || iMassClass >= mcCount)
-		return 0;
-
-	return MASS_CLASS_TABLE[iMassClass].iMaxMassKg;
-	}
-
 int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 //	GetMaxHP
@@ -2317,6 +2280,9 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	{
 	ALERROR error;
 
+	ASSERT(Ctx.pDesign);
+	if (Ctx.pDesign == NULL) return ERR_FAIL;
+
 	//	Compute armor damage adjustments
 
 	if (error = m_Stats.DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(m_iDamageAdjLevel)))
@@ -2342,26 +2308,9 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Compute (and cache) the mass class
 
-	if (Ctx.pDesign)
-		m_sMassClass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassID(CItem(m_pItemType, 1));
+	m_sMassClass = Ctx.pDesign->GetArmorMassDefinitions().GetMassClassID(CItem(m_pItemType, 1));
 
 	return NOERROR;
-	}
-
-CArmorClass::EMassClass CArmorClass::ParseMassClassID (const CString &sValue)
-
-//	ParseMassClassID
-//
-//	Parses a mass class ID. If we fail, we return mcNone.
-
-	{
-	for (int i = 0; i < mcCount; i++)
-		if (strEquals(sValue, CString(MASS_CLASS_TABLE[i].pszID)))
-			return (EMassClass)i;
-
-	//	Not found
-
-	return mcNone;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

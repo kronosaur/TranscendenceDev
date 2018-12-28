@@ -207,8 +207,9 @@ class CArmorMassDefinitions
 		inline void DeleteAll (void) { m_Definitions.DeleteAll(); }
 		const CString &GetMassClassID (const CItem &Item) const;
 		const CString &GetMassClassLabel (const CString &sID) const;
+		int GetMassClassMass (const CString &sID) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_Definitions.GetCount() > 0); }
+		inline bool IsEmpty (void) const { return (m_Definitions.GetCount() == 0); }
 		inline void OnInitDone (void) { CalcByIDIndex(); }
 
 		static const CArmorMassDefinitions Null;

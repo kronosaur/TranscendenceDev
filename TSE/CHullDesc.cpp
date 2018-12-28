@@ -37,6 +37,9 @@ ALERROR CHullDesc::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_Value.Bind(Ctx))
 		return error;
 
+	if (error = m_ArmorLimits.Bind(Ctx))
+		return error;
+
 	return NOERROR;
 	}
 
