@@ -386,11 +386,11 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	m_EconomyIndex.DeleteAll();
 	for (i = 0; i < GetCount(designEconomyType); i++)
 		{
-		CEconomyType *pEcon = CEconomyType::AsType(GetEntry(designEconomyType, i));
+		const CEconomyType *pEcon = CEconomyType::AsType(GetEntry(designEconomyType, i));
 		const CString &sName = pEcon->GetSID();
 
 		bool bUnique;
-		CEconomyType **ppDest = m_EconomyIndex.SetAt(sName, &bUnique);
+		const CEconomyType **ppDest = m_EconomyIndex.SetAt(sName, &bUnique);
 		if (!bUnique)
 			{
 			pEcon->ComposeLoadError(Ctx, CONSTLIT("Currency ID must be unique"));

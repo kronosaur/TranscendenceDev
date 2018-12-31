@@ -97,7 +97,7 @@ class CItemType : public CDesignType
 		inline int GetChargesLimit (void) const { return m_iMaxCharges; }
 		inline const CItemList &GetComponents (void) const { return m_Components; }
         CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
-		inline CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
+		inline const CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
 		inline const CString &GetData (void) const { return m_sData; }
 		const CString &GetDesc (bool bActual = false) const;
 		inline CDeviceClass *GetDeviceClass (void) const { return m_pDevice; }

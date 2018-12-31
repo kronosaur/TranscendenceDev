@@ -727,7 +727,7 @@ CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg)
 		return NULL;
 	}
 
-CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
+const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 	{
 	//	If we have an UNID, then look up
 
@@ -740,7 +740,7 @@ CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 	return g_pUniverse->FindEconomyType(sCurrency);
 	}
 
-CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem)
+const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem)
 	{
 	if (pItem == NULL || pItem->IsNil())
 		return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
@@ -769,7 +769,7 @@ ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNI
 		}
 	else
 		{
-		CEconomyType *pEconomy = g_pUniverse->FindEconomyType(pItem->GetStringValue());
+		const CEconomyType *pEconomy = g_pUniverse->FindEconomyType(pItem->GetStringValue());
 		if (pEconomy == NULL)
 			return ERR_FAIL;
 

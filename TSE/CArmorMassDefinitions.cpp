@@ -73,6 +73,9 @@ Metric CArmorMassDefinitions::GetFrequencyMax (const CString &sID) const
 //
 //	E.g., if sID == "heavy" then we return the percent of all armor types that
 //	are either ultraLight, light, medium, or heavy.
+//
+//	NOTE: This call is only valid after all armor types have been bound. You may
+//	call this from FinishBindDesign or later.
 
 	{
 	//	Find the armor class by ID

@@ -10,22 +10,24 @@ class CEconomyType : public CDesignType
 	public:
 		CEconomyType (void) { }
 
-		CurrencyValue Exchange (CEconomyType *pFrom, CurrencyValue iAmount);
-		inline CurrencyValue Exchange (const CCurrencyAndValue &Value) { return Exchange(Value.GetCurrencyType(), Value.GetValue()); }
-		inline const CString &GetCurrencyNamePlural (void) { return m_sCurrencyPlural; }
-		inline const CString &GetCurrencyNameSingular (void) { return m_sCurrencySingular; }
-		inline const CString &GetSID (void) { return m_sSID; }
-		inline bool IsCreditEquivalent (void) { return (m_iCreditConversion == 100); }
+		CurrencyValue Exchange (const CEconomyType *pFrom, CurrencyValue iAmount) const;
+		inline CurrencyValue Exchange (const CCurrencyAndValue &Value) const { return Exchange(Value.GetCurrencyType(), Value.GetValue()); }
+		inline CCurrencyAndValue ExchangeFrom (const CEconomyType *pFrom, CurrencyValue iAmount) const { return CCurrencyAndValue(Exchange(pFrom, iAmount), this); }
+		inline CCurrencyAndValue ExchangeFrom (const CCurrencyAndValue &Value) const { return CCurrencyAndValue(Exchange(Value), this); }
+		inline const CString &GetCurrencyNamePlural (void) const { return m_sCurrencyPlural; }
+		inline const CString &GetCurrencyNameSingular (void) const { return m_sCurrencySingular; }
+		inline const CString &GetSID (void) const { return m_sSID; }
+		inline bool IsCreditEquivalent (void) const { return (m_iCreditConversion == 100); }
 
-		static CEconomyType *Default (void);
-		static CurrencyValue ExchangeToCredits (CEconomyType *pFrom, CurrencyValue iAmount);
+		static const CEconomyType *Default (void);
+		static CurrencyValue ExchangeToCredits (const CEconomyType *pFrom, CurrencyValue iAmount);
 		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value);
 		static CString RinHackGet (CSpaceObject *pObj);
 		static CurrencyValue RinHackInc (CSpaceObject *pObj, CurrencyValue iInc);
 		static void RinHackSet (CSpaceObject *pObj, const CString &sData);
 
 		//	CDesignType overrides
-		static CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
+		static const CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return m_sCurrencyName; }
 		virtual DesignTypes GetType (void) const override { return designEconomyType; }

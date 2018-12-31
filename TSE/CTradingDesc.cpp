@@ -438,7 +438,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 	//	Get the raw price from the item
 
 	int iBasePrice;
-	CEconomyType *pBaseEconomy;
+	const CEconomyType *pBaseEconomy;
 	switch (Commodity.iService)
 		{
 		case serviceRepairArmor:

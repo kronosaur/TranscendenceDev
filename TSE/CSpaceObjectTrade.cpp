@@ -235,7 +235,7 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 	return -1;
 	}
 
-CEconomyType *CSpaceObject::GetDefaultEconomy (void)
+const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 
 //	GetDefaultEconomy
 //
@@ -260,7 +260,7 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void)
 //	Returns the default economy
 	
 	{
-	CEconomyType *pCurrency = GetDefaultEconomy();
+	const CEconomyType *pCurrency = GetDefaultEconomy();
 	if (pCurrency)
 		return pCurrency->GetUNID();
 
@@ -712,7 +712,7 @@ bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService)
 	return false;
 	}
 
-void CSpaceObject::SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)
+void CSpaceObject::SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency)
 
 //	SetTradeDesc
 //

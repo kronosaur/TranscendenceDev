@@ -294,7 +294,7 @@ class CUniverse
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
-		inline CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
+		inline const CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
 		inline CDockSession &GetDockSession (void) { return m_DockSession; }
 		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
@@ -366,7 +366,7 @@ class CUniverse
 		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
-		inline CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
+		inline const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
 		inline CEffectCreator *FindEffectType (DWORD dwUNID) { return CEffectCreator::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CShipTable *FindEncounterTable (DWORD dwUNID) { return CShipTable::AsType(m_Design.FindEntry(dwUNID)); }
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension **retpExtension = NULL) { return m_Extensions.FindBestExtension(dwUNID, dwRelease, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retpExtension); }

@@ -4066,11 +4066,11 @@ ICCItem *fnCurrency (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			int iValue = pArgs->GetElement(0)->GetIntegerValue();
 
-			CEconomyType *pEconFrom = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
+			const CEconomyType *pEconFrom = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
 			if (pEconFrom == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(1));
 
-			CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(2));
+			const CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(2));
 			if (pEconTo == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(2));
 
@@ -4550,7 +4550,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_CURRENCY:
 			{
-			CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(0));
+			const CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(0));
 			if (pEcon == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(0));
 
@@ -4880,9 +4880,9 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(iCost);
 			else
 				{
-				CEconomyType *pEconFrom = pType->GetCurrencyType();
+				const CEconomyType *pEconFrom = pType->GetCurrencyType();
 
-				CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
+				const CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
 				if (pEconTo == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(1));
 
@@ -4972,9 +4972,9 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pResult = pCC->CreateInteger(iPrice);
 			else
 				{
-				CEconomyType *pEconFrom = pType->GetCurrencyType();
+				const CEconomyType *pEconFrom = pType->GetCurrencyType();
 
-				CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
+				const CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
 				if (pEconTo == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(1));
 
@@ -8452,7 +8452,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_TRADE_DESC:
 			{
-			CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
+			const CEconomyType *pEcon = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
 			if (pEcon == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(1));
 

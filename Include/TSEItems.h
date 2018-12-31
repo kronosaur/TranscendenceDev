@@ -341,7 +341,7 @@ class CItem
 		inline int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
-		inline CEconomyType *GetCurrencyType (void) const;
+		inline const CEconomyType *GetCurrencyType (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;

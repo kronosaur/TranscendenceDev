@@ -14,9 +14,9 @@
 #define FIELD_STANDARD							CONSTLIT("standard")
 #define FIELD_X									CONSTLIT("x")
 
-static CEconomyType *g_pDefaultEconomy = NULL;
+static const CEconomyType *g_pDefaultEconomy = NULL;
 
-CEconomyType *CEconomyType::Default (void)
+const CEconomyType *CEconomyType::Default (void)
 
 //	Default
 //
@@ -29,7 +29,7 @@ CEconomyType *CEconomyType::Default (void)
 	return g_pDefaultEconomy;
 	}
 
-CurrencyValue CEconomyType::Exchange (CEconomyType *pFrom, CurrencyValue iAmount)
+CurrencyValue CEconomyType::Exchange (const CEconomyType *pFrom, CurrencyValue iAmount) const
 
 //	Exchange
 //
@@ -67,7 +67,7 @@ CurrencyValue CEconomyType::Exchange (CEconomyType *pFrom, CurrencyValue iAmount
 		}
 	}
 
-CurrencyValue CEconomyType::ExchangeToCredits (CEconomyType *pFrom, CurrencyValue iAmount)
+CurrencyValue CEconomyType::ExchangeToCredits (const CEconomyType *pFrom, CurrencyValue iAmount)
 
 //	ExchangeToCredits
 //
@@ -229,7 +229,7 @@ void CEconomyTypeRef::Set (DWORD dwUNID)
 
 //	CCurrencyAndValue ----------------------------------------------------------
 
-CCurrencyAndValue::CCurrencyAndValue (CurrencyValue iValue, CEconomyType *pCurrency)
+CCurrencyAndValue::CCurrencyAndValue (CurrencyValue iValue, const CEconomyType *pCurrency)
 
 //	CCurrencyAndValue constructor
 

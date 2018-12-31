@@ -30,7 +30,7 @@ CurrencyValue CCurrencyBlock::GetCredits (const CString &sCurrency)
 	{
 	ASSERT(!sCurrency.IsBlank());
 
-	CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
+	const CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
 	if (pEcon == NULL)
 		return 0;
 
@@ -66,7 +66,7 @@ CurrencyValue CCurrencyBlock::IncCredits (const CString &sCurrency, CurrencyValu
 	{
 	ASSERT(!sCurrency.IsBlank());
 
-	CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
+	const CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
 	if (pEcon == NULL)
 		return 0;
 
@@ -133,7 +133,7 @@ void CCurrencyBlock::SetCredits (const CString &sCurrency, CurrencyValue iValue)
 	{
 	ASSERT(!sCurrency.IsBlank());
 
-	CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
+	const CEconomyType *pEcon = g_pUniverse->FindEconomyType(sCurrency);
 	if (pEcon == NULL)
 		return;
 

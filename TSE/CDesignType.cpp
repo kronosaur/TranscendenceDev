@@ -263,7 +263,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	return error;
 	}
 
-ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError)
+ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const
 
 //	ComposeLoadError
 //
@@ -2049,7 +2049,7 @@ void CDesignType::AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retIn
 		m_pInheritFrom->AddUniqueHandlers(retInheritedHandlers);
 	}
 
-CEconomyType *CDesignType::GetEconomyType (void) const
+const CEconomyType *CDesignType::GetEconomyType (void) const
 
 //	GetEconomyType
 //

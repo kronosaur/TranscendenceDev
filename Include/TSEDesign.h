@@ -212,7 +212,7 @@ class CDesignType
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType);
 
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
-		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError);
+		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
@@ -334,7 +334,7 @@ class CDesignType
 		virtual void Delete (void) { delete this; }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
 		virtual CCommunicationsHandler *GetCommsHandler (void) { return NULL; }
-		virtual CEconomyType *GetEconomyType (void) const;
+		virtual const CEconomyType *GetEconomyType (void) const;
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const;
@@ -545,18 +545,18 @@ class CEconomyTypeRef
 	public:
 		CEconomyTypeRef (void) : m_pType(NULL) { }
 
-		inline operator CEconomyType *() const { return m_pType; }
-		inline CEconomyType * operator->() const { return m_pType; }
+		inline operator const CEconomyType *() const { return m_pType; }
+		inline const CEconomyType * operator->() const { return m_pType; }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
 		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
 		void Set (DWORD dwUNID);
-		inline void Set (CEconomyType *pType) { m_pType = pType; }
+		inline void Set (const CEconomyType *pType) { m_pType = pType; }
 
 	private:
 		CString m_sUNID;
-		CEconomyType *m_pType;
+		const CEconomyType *m_pType;
 	};
 
 class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
@@ -1229,7 +1229,7 @@ class CDesignCollection
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
-		inline CEconomyType *FindEconomyType (const CString &sID) { CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
+		inline const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
 		inline CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
@@ -1313,7 +1313,7 @@ class CDesignCollection
 		CTopologyDescTable *m_pTopology;
 		CExtension *m_pAdventureExtension;
 		CAdventureDesc *m_pAdventureDesc;
-		TSortMap<CString, CEconomyType *> m_EconomyIndex;
+		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
@@ -1373,7 +1373,7 @@ inline bool CInstalledDevice::IsSecondaryWeapon (void) const
 
 inline bool CItem::IsArmor (void) const { return (m_pItemType && m_pItemType->GetArmorClass()); }
 inline bool CItem::IsDevice (void) const { return (m_pItemType && m_pItemType->GetDeviceClass()); }
-inline CEconomyType *CItem::GetCurrencyType (void) const { return m_pItemType->GetCurrencyType(); }
+inline const CEconomyType *CItem::GetCurrencyType (void) const { return m_pItemType->GetCurrencyType(); }
 inline int CItem::GetLevel (void) const { return m_pItemType->GetLevel(CItemCtx(*this)); }
 
 inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const { return m_List[iIndex].Item.GetType()->GetDeviceClass(); }

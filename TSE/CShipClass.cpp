@@ -2238,7 +2238,7 @@ const CDriveDesc &CShipClass::GetDriveDesc (const CItem **retpDriveItem) const
     return m_Perf.GetDriveDesc();
     }
 
-CEconomyType *CShipClass::GetEconomyType (void) const
+const CEconomyType *CShipClass::GetEconomyType (void) const
 
 //	GetEconomyType
 //
@@ -2253,7 +2253,7 @@ CEconomyType *CShipClass::GetEconomyType (void) const
 
 	//	Otherwise, see if we have a hull price from the player settings
 
-	CEconomyType *pCurrency = m_Hull.GetValue().GetCurrencyType();
+	const CEconomyType *pCurrency = m_Hull.GetValue().GetCurrencyType();
 	if (pCurrency)
 		return pCurrency;
 

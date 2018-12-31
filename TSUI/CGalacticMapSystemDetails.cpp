@@ -394,7 +394,7 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 	CTradingDesc *pTrade = Obj.pType->GetTradingDesc();
 	if (pTrade && !Obj.fEnemy && pTrade->HasConsumerService())
 		{
-		CEconomyType *pCurrencyType = pTrade->GetEconomyType();
+		const CEconomyType *pCurrencyType = pTrade->GetEconomyType();
 		if (pCurrencyType && pCurrencyType != g_pUniverse->GetDefaultCurrency())
 			{
 			CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();

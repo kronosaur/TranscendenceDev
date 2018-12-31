@@ -1262,7 +1262,7 @@ class CSpaceObject : public CObject
 		bool GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice);
 		CurrencyValue GetBalance (DWORD dwEconomyUNID);
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
-		CEconomyType *GetDefaultEconomy (void);
+		const CEconomyType *GetDefaultEconomy (void);
 		DWORD GetDefaultEconomyUNID (void);
 		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL);
 		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL);
@@ -1276,7 +1276,7 @@ class CSpaceObject : public CObject
 		bool HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions());
 		bool HasTradeUpgradeOnly (ETradeServiceTypes iService);
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
-		void SetTradeDesc (CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
+		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
 		//	Ships
 
@@ -2111,8 +2111,8 @@ CInstalledArmor *GetArmorSectionArg (CCodeChain &CC, ICCItem *pArg, CSpaceObject
 CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg);
 DamageTypes GetDamageTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem *pArg);
-CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
-CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
+const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
+const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
 ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNID);
 void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
