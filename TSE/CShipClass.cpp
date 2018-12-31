@@ -3265,20 +3265,6 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	if (error = m_Interior.BindDesign(Ctx))
 		goto Fail;
 
-	//	If we calculated hull value, and if we don't have a trading desc (which
-	//	sets currency) then we set our currency based on any installed items.
-
-	if (m_fAutoCalcHullValue 
-			&& GetTradingDesc() == NULL
-			&& m_AverageDevices.GetCount() > 0)
-		{
-		CEconomyType *pCurrency = m_AverageDevices.GetDeviceClass(0)->GetItemType()->GetCurrencyType();
-		if (pCurrency && m_Hull.GetValue().GetCurrencyType() != pCurrency)
-			{
-			m_Hull.SetValue(CCurrencyAndValue(pCurrency->Exchange(m_Hull.GetValue()), pCurrency));
-			}
-		}
-
     //  Compute performance based on average devices
 
     CalcPerformance();
@@ -3308,6 +3294,23 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 	m_iLevelType = CalcBalanceType(NULL, &m_rCombatStrength);
 
 	m_Hull.InitCyberDefenseLevel(m_iLevel);
+
+	//	Compute hull value, if necessary
+
+	if (!m_fHullValueOverride && !IsVirtual())
+		{
+		//	Figure out the currency to use from either the trade descriptor or
+		//	the currency used by installed devices.
+
+		const CEconomyType *pCurrency = (GetTradingDesc() ? pCurrency = GetTradingDesc()->GetEconomyType() : NULL);
+		if (pCurrency == NULL)
+			pCurrency = (m_AverageDevices.GetCount() > 0 ? m_AverageDevices.GetDeviceClass(0)->GetItemType()->GetCurrencyType() : NULL);
+		if (pCurrency == NULL)
+			pCurrency = g_pUniverse->GetDefaultCurrency();
+
+		if (pCurrency)
+			m_Hull.SetValue(pCurrency->ExchangeFrom(g_pUniverse->GetDefaultCurrency(), CalcHullValue()));
+		}
 
 	//	Done
 
@@ -3343,6 +3346,7 @@ void CShipClass::OnInitFromClone (CDesignType *pSource)
 	m_iLevel = pClass->m_iLevel;
 	m_fScoreOverride = pClass->m_fScoreOverride;
 	m_fLevelOverride = pClass->m_fLevelOverride;
+	m_fHullValueOverride = pClass->m_fHullValueOverride;
 	//	m_iLevelType and m_rCombatStrength will get computed during Bind.
 
 	m_fShipCompartment = pClass->m_fShipCompartment;
@@ -3492,6 +3496,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_Hull.InitFromXML(Ctx, pDesc, iMaxSpeed))
 		return ComposeLoadError(Ctx, Ctx.sError);
+
+	m_fHullValueOverride = !m_Hull.GetValue().IsEmpty();
 
 	//	If 0 size, come up with a reasonable default based on image size.
 
@@ -3714,17 +3720,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
         if (error = m_pPlayerSettings->InitFromXML(Ctx, this, pPlayer))
             return ComposeLoadError(Ctx, Ctx.sError);
         }
-
-	//	If we don't have a hull value, compute it now.
-
-	if (m_Hull.GetValue().IsEmpty())
-		{
-		//	Defaults to credits
-		m_Hull.SetValue(CCurrencyAndValue(CalcHullValue()));
-		m_fAutoCalcHullValue = true;
-		}
-	else
-		m_fAutoCalcHullValue = false;
 
 	//	Done
 
