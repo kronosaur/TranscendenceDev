@@ -22,6 +22,32 @@ static LPCSTR FIELD_NAME_TABLE[CHullPointsCalculator::fieldCount] =
 	"extra"
 	};
 
+static constexpr Metric PARTIAL_SLOT_FACTOR = 0.75;
+static constexpr Metric CARGO_SCALE_K0 = -7.0;
+static constexpr Metric CARGO_SCALE_K0_MAX = -10.0;
+static constexpr Metric CARGO_SCALE_K1 = 0.15;
+static constexpr Metric CARGO_SCALE_K1_MAX = 0.15;
+static constexpr Metric CARGO_SCALE_K2 = 0.5;
+static constexpr int MAX_CARGO_SPACE = 1000;
+static constexpr int STD_ARMOR_SEGMENTS = 4;
+static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
+static constexpr Metric STD_ARMOR_FREQUENCY_FACTOR = 1.0;
+static constexpr Metric MAX_ARMOR_FREQUENCY_FACTOR = 0.5;
+static constexpr Metric ARMOR_SPEED_BONUS_FACTOR = 0.2;
+static constexpr Metric ARMOR_SPEED_PENALTY_FACTOR = 0.1;
+static constexpr Metric MIN_ARMOR_FREQUENCY = 0.5;
+static constexpr Metric MIN_SPEED = 15.0;
+static constexpr Metric SPEED_PER_POINT = 8.0;
+static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
+static constexpr Metric MAX_ROTATION_PER_POINT = 18.0;
+static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
+static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.0125;
+
+static constexpr Metric PRICE_PER_TENTH_MW = 0.011;
+static constexpr Metric POINT_BIAS = -5.0;
+static constexpr Metric POINT_EXP = 3.0;
+static constexpr Metric MIN_PRICE = 2000.0;
+
 CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 //	CHullPointsCalculator constructor
@@ -45,8 +71,14 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	//	Points for cargo space
 
-	m_Data[fieldCargoSpace] = CARGO_SCALE_K1 * (pow((Metric)Min(MAX_CARGO_SPACE, Hull.GetCargoSpace()), CARGO_SCALE_K2) + CARGO_SCALE_K0);
-	m_Data[fieldMaxCargoSpace] = CARGO_SCALE_K1_MAX * (pow((Metric)Min(MAX_CARGO_SPACE, Hull.GetMaxCargoSpace()), CARGO_SCALE_K2) + CARGO_SCALE_K0_MAX);
+	m_Data[fieldCargoSpace] = Max(0.0, CARGO_SCALE_K1 * (pow((Metric)Min(MAX_CARGO_SPACE, Hull.GetCargoSpace()), CARGO_SCALE_K2) + CARGO_SCALE_K0));
+	m_Data[fieldMaxCargoSpace] = Max(0.0, CARGO_SCALE_K1_MAX * (pow((Metric)Min(MAX_CARGO_SPACE, Hull.GetMaxCargoSpace()), CARGO_SCALE_K2) + CARGO_SCALE_K0_MAX));
+
+	//	For ships that have a large built-in cargo hold, we ignore the max 
+	//	cargo space rating.
+
+	if (m_Data[fieldCargoSpace] > m_Data[fieldMaxCargoSpace])
+		m_Data[fieldMaxCargoSpace] = 0.0;
 
 	//	Points for the number of armor segments and for max armor
 
@@ -144,7 +176,7 @@ CurrencyValue CHullPointsCalculator::GetValueInCredits (void) const
 
 	//	Compute price
 
-	Metric rPrice = rScaledPoints * rUnitPrice;
+	Metric rPrice = MIN_PRICE + (rScaledPoints * rUnitPrice);
 
 	//	Done
 

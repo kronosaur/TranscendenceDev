@@ -158,31 +158,6 @@ class CHullPointsCalculator
 			fieldCount				= 13,
 			};
 
-		static constexpr Metric PARTIAL_SLOT_FACTOR = 0.75;
-		static constexpr Metric CARGO_SCALE_K0 = -7.0;
-		static constexpr Metric CARGO_SCALE_K0_MAX = -10.0;
-		static constexpr Metric CARGO_SCALE_K1 = 0.15;
-		static constexpr Metric CARGO_SCALE_K1_MAX = 0.15;
-		static constexpr Metric CARGO_SCALE_K2 = 0.5;
-		static constexpr int MAX_CARGO_SPACE = 1000;
-		static constexpr int STD_ARMOR_SEGMENTS = 4;
-		static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
-		static constexpr Metric STD_ARMOR_FREQUENCY_FACTOR = 1.0;
-		static constexpr Metric MAX_ARMOR_FREQUENCY_FACTOR = 0.5;
-		static constexpr Metric ARMOR_SPEED_BONUS_FACTOR = 0.2;
-		static constexpr Metric ARMOR_SPEED_PENALTY_FACTOR = 0.1;
-		static constexpr Metric MIN_ARMOR_FREQUENCY = 0.5;
-		static constexpr Metric MIN_SPEED = 15.0;
-		static constexpr Metric SPEED_PER_POINT = 8.0;
-		static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
-		static constexpr Metric MAX_ROTATION_PER_POINT = 18.0;
-		static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
-		static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.0125;
-
-		static constexpr Metric PRICE_PER_TENTH_MW = 0.5;
-		static constexpr Metric POINT_BIAS = -8.0;
-		static constexpr Metric POINT_EXP = 1.5;
-
 		CHullPointsCalculator (const CShipClass &Class);
 
 		inline Metric GetField (int iIndex) const { return m_Data[iIndex]; }
