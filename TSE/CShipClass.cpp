@@ -181,6 +181,7 @@
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
+#define PROPERTY_MAX_ARMOR_CLASS				CONSTLIT("maxArmorClass")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
@@ -189,6 +190,7 @@
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_RATED_POWER					CONSTLIT("ratedPower")
+#define PROPERTY_STD_ARMOR_CLASS				CONSTLIT("stdArmorClass")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
@@ -1000,7 +1002,7 @@ ICCItem *CShipClass::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const
 
 	{
 	int iStdSpeed = mathRound(100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED);
-	return m_Hull.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed);
+	return m_Hull.GetArmorLimits().CalcMaxSpeedByArmorMass(Ctx, iStdSpeed);
 	}
 
 void CShipClass::CalcPerformance (void)
@@ -1958,7 +1960,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_GENERIC_NAME))
 		*retsValue = GetGenericName();
 	else if (strEquals(sField, FIELD_MAX_ARMOR_MASS))
-		*retsValue = strFromInt(m_Hull.GetMaxArmorMass());
+		*retsValue = strFromInt(m_Hull.GetArmorLimits().GetMaxArmorMass());
 	else if (strEquals(sField, FIELD_HULL_MASS))
 		*retsValue = strFromInt(m_Hull.GetMass());
 	else if (strEquals(sField, FIELD_DEVICE_SLOTS))
@@ -3506,7 +3508,7 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	If we have no max armor limit, then we compute default values.
 
-	if (m_Hull.GetMaxArmorMass() == 0)
+	if (m_Hull.NeedsDefaultArmorLimits())
 		m_Hull.InitDefaultArmorLimits(iMaxSpeed, (m_rThrustRatio > 0.0 ? m_rThrustRatio : CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_Hull.GetMass())));
 
 	//	Wreck descriptor
@@ -3811,14 +3813,17 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
 		return CTLispConvert::CreateCurrencyValue(CC, GetEconomyType()->Exchange(m_Hull.GetValue()));
 
+	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_CLASS))
+		return (!m_Hull.GetArmorLimits().GetMaxArmorClass().IsBlank() ? ICCItemPtr(CC.CreateString(m_Hull.GetArmorLimits().GetMaxArmorClass())) : ICCItemPtr(CC.CreateNil()));
+
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
-		return (m_Hull.GetMaxArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetMaxArmorMass())) : ICCItemPtr(CC.CreateNil()));
+		return (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetArmorLimits().GetMaxArmorMass())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MAX_ARMOR))
-		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMaxArmorSpeedPenalty()));
+		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetArmorLimits().GetMaxArmorSpeedPenalty()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_AT_MIN_ARMOR))
-		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetMinArmorSpeedBonus()));
+		return ICCItemPtr(CC.CreateInteger(m_Perf.GetDriveDesc().GetMaxSpeedFrac() + m_Hull.GetArmorLimits().GetMinArmorSpeedBonus()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
 		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
@@ -3829,8 +3834,11 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_RATED_POWER))
 		return ICCItemPtr(CC.CreateInteger(CalcRatedPowerUse(m_AverageDevices)));
 
+	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_CLASS))
+		return (!m_Hull.GetArmorLimits().GetStdArmorClass().IsBlank() ? ICCItemPtr(CC.CreateString(m_Hull.GetArmorLimits().GetStdArmorClass())) : ICCItemPtr(CC.CreateNil()));
+
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
-		return (m_Hull.GetStdArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetStdArmorMass())) : ICCItemPtr(CC.CreateNil()));
+		return (m_Hull.GetArmorLimits().GetStdArmorMass() > 0 ? ICCItemPtr(CC.CreateInteger(m_Hull.GetArmorLimits().GetStdArmorMass())) : ICCItemPtr(CC.CreateNil()));
 
 	else if (strEquals(sProperty, PROPERTY_WRECK_STRUCTURAL_HP))
 		return ICCItemPtr(CC.CreateInteger(GetMaxStructuralHitPoints()));
