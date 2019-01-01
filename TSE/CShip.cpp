@@ -1028,7 +1028,7 @@ bool CShip::CanInstallItem (const CItem &Item, int iSlot, InstallItemResults *re
 
 	if (Item.IsArmor())
 		{
-		CArmorLimits::EResults iCanInstall = Hull.CanInstallArmor(Item);
+		CArmorLimits::EResults iCanInstall = Hull.GetArmorLimits().CanInstallArmor(Item);
 
 		//	See if we are compatible
 

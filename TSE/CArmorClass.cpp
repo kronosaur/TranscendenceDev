@@ -2039,7 +2039,7 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 	if (pShipClass = Ctx.GetSourceShipClass())
 		{
 		int iMassBonus;
-		if (!pShipClass->GetHullDesc().CalcArmorSpeedBonus(Ctx, pShipClass->GetArmorDesc().GetCount(), &iMassBonus))
+		if (!pShipClass->GetHullDesc().GetArmorLimits().CalcArmorSpeedBonus(Ctx, pShipClass->GetArmorDesc().GetCount(), &iMassBonus))
 			{
 			//	If this armor is too heavy to be installed in the ship class, then
 			//	we return TRUE, but speed bonus = 0.

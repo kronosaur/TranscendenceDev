@@ -36,9 +36,11 @@ class CArmorLimits
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
+		inline const CString &GetMaxArmorClass (void) const { return (m_pMaxArmorLimits ? m_pMaxArmorLimits->sClass : NULL_STR); }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		inline const CString &GetStdArmorClass (void) const { return (m_pStdArmorLimits ? m_pStdArmorLimits->sClass : NULL_STR); }
 		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
 		inline bool HasArmorLimits (void) const { return (HasTableLimits() || HasCompatibleLimits()); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
@@ -78,35 +80,28 @@ class CHullDesc
 	{
 	public:
 
-		inline void CalcArmorLimitsSummary (const CArmorMassDefinitions &Defs, CArmorLimits::SSummary &retSummary) const { m_ArmorLimits.CalcSummary(Defs, retSummary); }
-		inline bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const { return m_ArmorLimits.CalcArmorSpeedBonus(ArmorItem, iSegmentCount, retiBonus); }
-		inline int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const { return m_ArmorLimits.CalcArmorSpeedBonus(Armor); }
-		inline ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const { return m_ArmorLimits.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed); }
-		inline CArmorLimits::EResults CanInstallArmor (const CItem &Item) const { return m_ArmorLimits.CanInstallArmor(Item); }
 		ALERROR Bind (SDesignLoadCtx &Ctx);
+		inline const CArmorLimits &GetArmorLimits (void) const { return m_ArmorLimits; }
 		inline int GetCargoSpace (void) const { return m_iCargoSpace; }
 		inline int GetCounterIncrementRate(void) const { return m_iCounterIncrementRate; }
 		inline int GetCyberDefenseLevel (void) const { return m_iCyberDefenseLevel; }
 		inline const CItemCriteria &GetDeviceCriteria (void) const { return m_DeviceCriteria; }
 		inline Metric GetExtraPoints (void) const { return m_rExtraPoints; }
 		inline int GetMass (void) const { return m_iMass; }
-		inline int GetMaxArmorMass (void) const { return m_ArmorLimits.GetMaxArmorMass(); }
-		inline int GetMaxArmorSpeedPenalty (void) const { return m_ArmorLimits.GetMaxArmorSpeedPenalty(); }
 		inline int GetMaxCargoSpace (void) const { return m_iMaxCargoSpace; }
 		inline int GetMaxCounter(void) const { return m_iMaxCounter; }
 		inline int GetMaxDevices (void) const { return m_iMaxDevices; }
 		inline int GetMaxNonWeapons (void) const { return m_iMaxNonWeapons; }
 		inline int GetMaxReactorPower (void) const { return m_iMaxReactorPower; }
 		inline int GetMaxWeapons (void) const { return m_iMaxWeapons; }
-		inline int GetMinArmorSpeedBonus (void) const { return m_ArmorLimits.GetMinArmorSpeedBonus(); }
 		inline int GetSize (void) const { return m_iSize; }
-		inline int GetStdArmorMass (void) const { return m_ArmorLimits.GetStdArmorMass(); }
 		inline const CCurrencyAndValue &GetValue (void) const { return m_Value; }
 		inline bool HasArmorLimits (void) const { return m_ArmorLimits.HasArmorLimits(); }
 		inline void InitCyberDefenseLevel (int iLevel) { if (m_iCyberDefenseLevel == -1) m_iCyberDefenseLevel = iLevel; }
 		inline void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
+		inline bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorMass() == 0 && GetMass() > 0 && GetMass() < 1000); }
 		inline void SetSize (int iSize) { m_iSize = iSize; }
 		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
 		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }

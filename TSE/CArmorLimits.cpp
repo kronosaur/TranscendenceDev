@@ -458,7 +458,7 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 
 		return resultOK;
 		}
-	else if (HasCompatibleLimits())
+	else if (GetMaxArmorMass() > 0)
 		{
 		if (Item.GetMassKg() > GetMaxArmorMass())
 			return resultTooHeavy;
@@ -528,7 +528,7 @@ void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThr
 	{
 	//	If we're 1000 tons or more, then no limits
 
-	if (iMass >= 1000)
+	if (iMass == 0 || iMass >= 1000)
 		return;
 
 	//	Compute the heaviest segment of armor we can install.

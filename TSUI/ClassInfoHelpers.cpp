@@ -55,11 +55,12 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 
 	//	Compute the max armor limit
 
+	int iMaxArmorMass = pClass->GetHullDesc().GetArmorLimits().GetMaxArmorMass();
 	CString sMaxArmor;
-	if ((pClass->GetHullDesc().GetMaxArmorMass() % 1000) == 0)
-		sMaxArmor = strPatternSubst(CONSTLIT("%d"), pClass->GetHullDesc().GetMaxArmorMass() / 1000);
+	if ((iMaxArmorMass % 1000) == 0)
+		sMaxArmor = strPatternSubst(CONSTLIT("%d"), iMaxArmorMass / 1000);
 	else
-		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), pClass->GetHullDesc().GetMaxArmorMass() / 1000, ((pClass->GetHullDesc().GetMaxArmorMass() % 1000) + 50) / 100);
+		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), iMaxArmorMass / 1000, ((iMaxArmorMass % 1000) + 50) / 100);
 
 	//	Info
 

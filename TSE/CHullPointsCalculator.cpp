@@ -57,6 +57,7 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 	//	values.
 
 	const CHullDesc &Hull = Class.GetHullDesc();
+	const CArmorLimits &ArmorLimits = Hull.GetArmorLimits();
 	m_iMaxReactorPower = Hull.GetMaxReactorPower();
 	if (m_iMaxReactorPower == 0)
 		return;
@@ -87,22 +88,22 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	//	Compute points for armor limits
 
-	CArmorLimits::SSummary ArmorLimits;
-	Hull.CalcArmorLimitsSummary(g_pUniverse->GetDesignCollection().GetArmorMassDefinitions(), ArmorLimits);
+	CArmorLimits::SSummary ArmorSummary;
+	ArmorLimits.CalcSummary(g_pUniverse->GetDesignCollection().GetArmorMassDefinitions(), ArmorSummary);
 
 	//	These factors control how important it is to have lots of armor choices.
 	//	If we get a speed bonus below std armor mass, then we get a bonus. 
 	//	Similarly, if we have a penalty for armor above standard, then we get
 	//	less of a benefit.
 
-	Metric rStdArmorFactor = STD_ARMOR_FREQUENCY_FACTOR * (1.0 + (ArmorLimits.iMaxSpeedBonus * ARMOR_SPEED_BONUS_FACTOR));
-	Metric rMaxArmorFactor = MAX_ARMOR_FREQUENCY_FACTOR * (1.0 + (ArmorLimits.iMaxSpeedPenalty * ARMOR_SPEED_PENALTY_FACTOR));
+	Metric rStdArmorFactor = STD_ARMOR_FREQUENCY_FACTOR * (1.0 + (ArmorSummary.iMaxSpeedBonus * ARMOR_SPEED_BONUS_FACTOR));
+	Metric rMaxArmorFactor = MAX_ARMOR_FREQUENCY_FACTOR * (1.0 + (ArmorSummary.iMaxSpeedPenalty * ARMOR_SPEED_PENALTY_FACTOR));
 
 	//	Frequency is the fraction of armor types that are available to the ship
 	//	class. We focus on levels from 0.5 to 1.0 and scale it to 0 to 1.0).
 
-	Metric rAdjStdFrequency = (1.0 / (1.0 - MIN_ARMOR_FREQUENCY)) * Max(0.0, ArmorLimits.rStdArmorFrequency - MIN_ARMOR_FREQUENCY);
-	Metric rAdjMaxFrequency = (1.0 / (1.0 - MIN_ARMOR_FREQUENCY)) * Max(0.0, ArmorLimits.rMaxArmorFrequency - MIN_ARMOR_FREQUENCY);
+	Metric rAdjStdFrequency = (1.0 / (1.0 - MIN_ARMOR_FREQUENCY)) * Max(0.0, ArmorSummary.rStdArmorFrequency - MIN_ARMOR_FREQUENCY);
+	Metric rAdjMaxFrequency = (1.0 / (1.0 - MIN_ARMOR_FREQUENCY)) * Max(0.0, ArmorSummary.rMaxArmorFrequency - MIN_ARMOR_FREQUENCY);
 
 	m_Data[fieldStdArmorMass] = rAdjStdFrequency * rStdArmorFactor;
 	m_Data[fieldMaxArmorMass] = (rAdjMaxFrequency - rAdjStdFrequency) * rMaxArmorFactor;

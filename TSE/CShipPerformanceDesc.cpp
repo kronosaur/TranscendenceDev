@@ -17,7 +17,7 @@ void CShipPerformanceDesc::Init (SShipPerformanceCtx &Ctx)
     {
 	//	Adjust speed if our armor is too heavy or too light
 
-	Ctx.rArmorSpeedBonus = Ctx.pClass->GetHullDesc().CalcArmorSpeedBonus(Ctx.Armor) * LIGHT_SPEED * 0.01;
+	Ctx.rArmorSpeedBonus = Ctx.pClass->GetHullDesc().GetArmorLimits().CalcArmorSpeedBonus(Ctx.Armor) * LIGHT_SPEED * 0.01;
 
 	//	If this is positive (a bonus) then increase the speed limit.
 
