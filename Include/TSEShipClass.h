@@ -19,10 +19,22 @@ class CArmorLimits
 			resultIncompatible,
 			};
 
+		struct SSummary
+			{
+			int iMaxArmorMass = 0;				//	Max armor mass that can be installed
+			int iStdArmorMass = 0;				//	Max armor mass that has no penalty
+			int iMaxSpeedBonus = 0;				//	Largest speed bonus (i.e., at min armor)
+			int iMaxSpeedPenalty = 0;			//	Largest speed penalty (negative value, at max armor)
+
+			Metric rMaxArmorFrequency = 0.0;	//	Fraction of all armor types that can be installed
+			Metric rStdArmorFrequency = 0.0;	//	Fraction of all armor types that have no penalty
+			};
+
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
+		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
@@ -55,6 +67,9 @@ class CArmorLimits
 		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
 		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
 		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+
+		const SArmorLimits *m_pMaxArmorLimits = NULL;
+		const SArmorLimits *m_pStdArmorLimits = NULL;
 	};
 
 //	Hull Descriptor ------------------------------------------------------------
@@ -63,6 +78,7 @@ class CHullDesc
 	{
 	public:
 
+		inline void CalcArmorLimitsSummary (const CArmorMassDefinitions &Defs, CArmorLimits::SSummary &retSummary) const { m_ArmorLimits.CalcSummary(Defs, retSummary); }
 		inline bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const { return m_ArmorLimits.CalcArmorSpeedBonus(ArmorItem, iSegmentCount, retiBonus); }
 		inline int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const { return m_ArmorLimits.CalcArmorSpeedBonus(Armor); }
 		inline ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const { return m_ArmorLimits.CalcMaxSpeedByArmorMass(Ctx, iStdSpeed); }
@@ -142,23 +158,29 @@ class CHullPointsCalculator
 			fieldCount				= 13,
 			};
 
-		static constexpr Metric PARTIAL_SLOT_FACTOR = 0.67;
-		static constexpr Metric CARGO_PER_POINT = 100.0;
-		static constexpr Metric MAX_CARGO_PER_POINT = 200.0;
+		static constexpr Metric PARTIAL_SLOT_FACTOR = 0.75;
+		static constexpr Metric CARGO_SCALE_K0 = -7.0;
+		static constexpr Metric CARGO_SCALE_K0_MAX = -10.0;
+		static constexpr Metric CARGO_SCALE_K1 = 0.15;
+		static constexpr Metric CARGO_SCALE_K1_MAX = 0.15;
+		static constexpr Metric CARGO_SCALE_K2 = 0.5;
+		static constexpr int MAX_CARGO_SPACE = 1000;
 		static constexpr int STD_ARMOR_SEGMENTS = 4;
 		static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
-		static constexpr Metric ARMOR_PER_POINT = 6000.0;
-		static constexpr int MAX_ARMOR_MASS = 20000;
-		static constexpr Metric MAX_ARMOR_PER_POINT = 20000.0;
+		static constexpr Metric STD_ARMOR_FREQUENCY_FACTOR = 1.0;
+		static constexpr Metric MAX_ARMOR_FREQUENCY_FACTOR = 0.5;
+		static constexpr Metric ARMOR_SPEED_BONUS_FACTOR = 0.2;
+		static constexpr Metric ARMOR_SPEED_PENALTY_FACTOR = 0.1;
+		static constexpr Metric MIN_ARMOR_FREQUENCY = 0.5;
 		static constexpr Metric MIN_SPEED = 15.0;
-		static constexpr Metric SPEED_PER_POINT = 6.0;
+		static constexpr Metric SPEED_PER_POINT = 8.0;
 		static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
-		static constexpr Metric MAX_ROTATION_PER_POINT = 12.0;
+		static constexpr Metric MAX_ROTATION_PER_POINT = 18.0;
 		static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
-		static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.025;
+		static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.0125;
 
 		static constexpr Metric PRICE_PER_TENTH_MW = 0.5;
-		static constexpr Metric POINT_BIAS = -10.0;
+		static constexpr Metric POINT_BIAS = -8.0;
 		static constexpr Metric POINT_EXP = 1.5;
 
 		CHullPointsCalculator (const CShipClass &Class);

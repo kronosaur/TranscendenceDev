@@ -43,7 +43,10 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 			//	Max armor mass that we can support.
 
 			if (iMass > m_iMaxArmorMass)
+				{
 				m_iMaxArmorMass = iMass;
+				m_pMaxArmorLimits = &m_ArmorLimits[i];
+				}
 
 			//	Standard mass is the armor mass at which we have no bonus or
 			//	penalty.
@@ -51,7 +54,10 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 			if (m_ArmorLimits[i].iSpeedAdj == 0)
 				{
 				if (iMass > m_iStdArmorMass)
+					{
 					m_iStdArmorMass = iMass;
+					m_pStdArmorLimits = &m_ArmorLimits[i];
+					}
 				}
 
 			//	Keep track of the highest penalty/bonus
@@ -340,6 +346,78 @@ int CArmorLimits::CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const
 		{
 		int iDiff = iSpeed - iStdSpeed;
 		return m_iStdArmorMass - (iBonusMassPerPoint * iDiff);
+		}
+	}
+
+void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const
+
+//	CalcSummary
+//
+//	Calculate some summary values about the limits.
+
+	{
+	if (HasTableLimits())
+		{
+		Summary.iMaxArmorMass = GetMaxArmorMass();
+		Summary.iStdArmorMass = GetStdArmorMass();
+		Summary.iMaxSpeedBonus = GetMinArmorSpeedBonus();
+		Summary.iMaxSpeedPenalty = GetMaxArmorSpeedPenalty();
+
+		if (m_pMaxArmorLimits)
+			Summary.rMaxArmorFrequency = Defs.GetFrequencyMax(m_pMaxArmorLimits->sClass);
+		else
+			Summary.rMaxArmorFrequency = 0.0;
+
+		if (m_pStdArmorLimits)
+			Summary.rStdArmorFrequency = Defs.GetFrequencyMax(m_pStdArmorLimits->sClass);
+		else
+			Summary.rStdArmorFrequency = 0.0;
+		}
+	else if (HasCompatibleLimits())
+		{
+		Summary.iMaxArmorMass = GetMaxArmorMass();
+		Summary.iStdArmorMass = GetStdArmorMass();
+		Summary.iMaxSpeedBonus = GetMinArmorSpeedBonus();
+		Summary.iMaxSpeedPenalty = GetMaxArmorSpeedPenalty();
+
+		int iTotalArmor = 0;
+		int iTotalMaxArmor = 0;
+		int iTotalStdArmor = 0;
+		for (int i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+			{
+			CItemType *pItemType = g_pUniverse->GetItemType(i);
+			if (!pItemType->IsArmor())
+				continue;
+
+			int iMass = pItemType->GetMassKg(CItemCtx());
+			iTotalArmor++;
+
+			if (iMass <= Summary.iStdArmorMass)
+				iTotalStdArmor++;
+
+			if (iMass <= Summary.iMaxArmorMass)
+				iTotalMaxArmor++;
+			}
+
+		if (iTotalArmor > 0)
+			{
+			Summary.rMaxArmorFrequency = (Metric)iTotalMaxArmor / (Metric)iTotalArmor;
+			Summary.rStdArmorFrequency = (Metric)iTotalStdArmor / (Metric)iTotalArmor;
+			}
+		else
+			{
+			Summary.rMaxArmorFrequency = 0.0;
+			Summary.rStdArmorFrequency = 0.0;
+			}
+		}
+	else
+		{
+		Summary.iMaxArmorMass = 100000;
+		Summary.iStdArmorMass = 100000;
+		Summary.iMaxSpeedBonus = 0;
+		Summary.iMaxSpeedPenalty = 0;
+		Summary.rMaxArmorFrequency = 1.0;
+		Summary.rStdArmorFrequency = 1.0;
 		}
 	}
 
