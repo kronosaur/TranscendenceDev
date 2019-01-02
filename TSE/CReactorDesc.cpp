@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+#define REACTOR_TAG								CONSTLIT("Reactor")
+
 #define FUEL_CAPACITY_ATTRIB					CONSTLIT("fuelCapacity")
 #define FUEL_CRITERIA_ATTRIB					CONSTLIT("fuelCriteria")
 #define FUEL_EFFICIENCY_ATTRIB					CONSTLIT("fuelEfficiency")
@@ -264,6 +266,60 @@ const CReactorDesc::SStdStats &CReactorDesc::GetStdStats (int iLevel)
     ASSERT(iLevel >= 0 && iLevel <= MAX_ITEM_LEVEL);
     return m_Stats[iLevel];
     }
+
+ALERROR CReactorDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID)
+
+//	InitFromShipClassXML
+//
+//	Initializes from a <ShipClass> element.
+
+	{
+    CleanUp();
+
+    m_dwUNID = dwUNID;
+	m_fNoFuel = false;
+
+	//	If we have a <Reactor> element, use that.
+
+	CXMLElement *pReactor = pDesc->GetContentElementByTag(REACTOR_TAG);
+	if (pReactor)
+		pDesc = pReactor;
+
+	//	Load basic values
+
+	m_iMaxPower = pDesc->GetAttributeIntegerBounded(REACTOR_POWER_ATTRIB, 0, -1, 0);
+	m_rMaxFuel = pDesc->GetAttributeDoubleBounded(FUEL_CAPACITY_ATTRIB, 0.0, -1.0, m_iMaxPower * 250.0);
+	m_rPowerPerFuelUnit = pDesc->GetAttributeDoubleBounded(REACTOR_EFFICIENCY_ATTRIB, 0.0, -1.0, g_MWPerFuelUnit);
+
+	//	Load the fuel criteria
+
+	CString sCriteria;
+	if (pDesc->FindAttribute(FUEL_CRITERIA_ATTRIB, &sCriteria))
+		{
+		m_pFuelCriteria = new CItemCriteria;
+		m_fFreeFuelCriteria = true;
+
+		CItem::ParseCriteria(sCriteria, m_pFuelCriteria);
+
+		m_iMinFuelLevel = -1;
+		m_iMaxFuelLevel = -1;
+
+		//	Warn if older method is used
+
+		if (pDesc->AttributeExists(MIN_FUEL_TECH_ATTRIB) || pDesc->AttributeExists(MAX_FUEL_TECH_ATTRIB))
+			::kernelDebugLogPattern("Warning: minFuelTech and maxFuelTech ignored if fuelCriteria specified.");
+		}
+
+	//	If we have no fuel criteria, then use the older method
+
+	else
+		{
+		m_iMinFuelLevel = pDesc->GetAttributeIntegerBounded(MIN_FUEL_TECH_ATTRIB, 1, MAX_ITEM_LEVEL, 1);
+		m_iMaxFuelLevel = pDesc->GetAttributeIntegerBounded(MAX_FUEL_TECH_ATTRIB, m_iMinFuelLevel, MAX_ITEM_LEVEL, 3);
+		}
+
+	return NOERROR;
+	}
 
 ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass)
 

@@ -3494,6 +3494,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = m_DriveDesc.InitFromShipClassXML(Ctx, pDesc, GetUNID(), &m_rThrustRatio, &iMaxSpeed))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
+	//	Reactor
+
+	if (error = m_ReactorDesc.InitFromShipClassXML(Ctx, pDesc, GetUNID()))
+		return ComposeLoadError(Ctx, Ctx.sError);
+
 	//	Hull descriptor
 
 	if (error = m_Hull.InitFromXML(Ctx, pDesc, iMaxSpeed))
@@ -3526,11 +3531,6 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 				pEffects))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
-
-	//	Other devices
-
-	if (error = m_ReactorDesc.InitFromXML(Ctx, pDesc, GetUNID(), true))
-		return error;
 
 	//	Load armor
 
