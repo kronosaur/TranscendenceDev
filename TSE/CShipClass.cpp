@@ -172,6 +172,7 @@
 #define ERR_UNKNOWN_EQUIPMENT					CONSTLIT("unknown equipment: %s")
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
+#define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
@@ -3314,6 +3315,15 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 			m_Hull.SetValue(pCurrency->ExchangeFrom(g_pUniverse->GetDefaultCurrency(), CalcHullValue()));
 		}
 
+	//	In debug mode, warn if we're installing armor that is beyond the current
+	//	armor limits.
+
+	if (g_pUniverse->InDebugMode() 
+			&& m_Armor.GetCount() > 0
+			&& m_Hull.HasArmorLimits()
+			&& m_Hull.GetArmorLimits().CanInstallArmor(CItem(m_Armor.GetSegment(0).GetArmorClass()->GetItemType(), 1)) != CArmorLimits::resultOK)
+		::kernelDebugLogPattern("WARNING: %s armor not compatible with ship class %s (%08x)", m_Armor.GetSegment(0).GetArmorClass()->GetName(), GetNounPhrase(), GetUNID());
+
 	//	Done
 
 	return NOERROR;
@@ -3786,7 +3796,27 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_CURRENCY))
+	if (strEquals(sProperty, PROPERTY_ARMOR_SPEED_ADJ))
+		{
+		TArray<CItemCtx> Armor;
+		Armor.InsertEmpty(m_Armor.GetCount());
+		for (int i = 0; i < Armor.GetCount(); i++)
+			{
+			CItem ArmorItem(m_Armor.GetSegment(i).GetArmorClass()->GetItemType(), 1);
+			if (m_Hull.GetArmorLimits().CanInstallArmor(ArmorItem) != CArmorLimits::resultOK)
+				return ICCItemPtr(CC.CreateString(CONSTLIT("[Armor incompatible]")));
+
+			Armor[i] = CItemCtx(ArmorItem);
+			}
+
+		int iBonus = m_Hull.GetArmorLimits().CalcArmorSpeedBonus(Armor);
+		if (iBonus)
+			return ICCItemPtr(CC.CreateInteger(iBonus));
+		else
+			return ICCItemPtr(CC.CreateNil());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_CURRENCY))
 		return ICCItemPtr(CC.CreateInteger(GetEconomyType()->GetUNID()));
 		
 	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
