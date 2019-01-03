@@ -15,6 +15,7 @@ enum ParseCmdState
 	{
 	stateStart,
 	stateSwitch,
+	stateSwitchEscape,
 	stateParam,
 	stateParamStart,
 	stateParamQuoted,
@@ -77,6 +78,7 @@ ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **r
 					if (*pPos == '/' || *pPos == '-')
 						{
 						iState = stateSwitch;
+						sToken = NULL_STR;
 						pPos++;
 						pStart = pPos;
 						}
@@ -102,7 +104,7 @@ ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **r
 					{
 					if (*pPos == '/' || *pPos == ' ' || *pPos == '\0')
 						{
-						sToken = CString(pStart, (pPos - pStart));
+						sToken.Append(CString(pStart, (pPos - pStart)));
 						if (strEquals(sToken, CONSTLIT("?"))
 								|| strEquals(sToken, CONSTLIT("help")))
 							{
@@ -116,14 +118,47 @@ ALERROR CreateXMLElementFromCommandLine (int argc, char *argv[], CXMLElement **r
 							}
 						iState = stateStart;
 						}
+					else if (*pPos == '\\')
+						{
+						sToken.Append(CString(pStart, (pPos - pStart)));
+						iState = stateSwitchEscape;
+						pPos++;
+						}
 					else if (*pPos == ':')
 						{
-						sToken = CString(pStart, (pPos - pStart));
+						sToken.Append(CString(pStart, (pPos - pStart)));
 						iState = stateParamStart;
 						pPos++;
 						}
 					else
 						pPos++;
+					break;
+					}
+
+				case stateSwitchEscape:
+					{
+					if (*pPos == '\0')
+						{
+						if (strEquals(sToken, CONSTLIT("?"))
+								|| strEquals(sToken, CONSTLIT("help")))
+							{
+							pCmdLine->AddAttribute(CONSTLIT("help"), CONSTLIT("true"));
+							bNoArgs = false;
+							}
+						else if (!sToken.IsBlank())
+							{
+							pCmdLine->AddAttribute(sToken, CONSTLIT("true"));
+							bNoArgs = false;
+							}
+						iState = stateStart;
+						}
+					else
+						{
+						sToken.Append(CString(pPos, 1));
+						iState = stateSwitch;
+						pPos++;
+						pStart = pPos;
+						}
 					break;
 					}
 
