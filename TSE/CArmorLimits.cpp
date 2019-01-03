@@ -518,6 +518,41 @@ bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retp
 	return false;
 	}
 
+int CArmorLimits::GetSpeedBonus (const CString &sArmorClassID) const
+
+//	GetSpeedBonus
+//
+//	Returns the speed bonus (or penalty) for the given armor class. We return
+//	INVALID_SPEED_BONUS if the armor class cannot be installed.
+
+	{
+	//	If no table, then assume no limits
+
+	if (m_ArmorLimits.GetCount() == 0)
+		return 0;
+
+	//	Search
+
+	for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
+		{
+		const SArmorLimits *pLimits = &m_ArmorLimits[i];
+
+		//	Skip if the wrong mass class
+
+		if (!strEquals(pLimits->sClass, sArmorClassID))
+			continue;
+
+		//	Found
+
+		return pLimits->iSpeedAdj;
+		}
+
+	//	If we get this far, then it means that we cannot install this armor 
+	//	class.
+
+	return INVALID_SPEED_BONUS;
+	}
+
 void CArmorLimits::InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio)
 
 //	InitDefaultArmorLimits

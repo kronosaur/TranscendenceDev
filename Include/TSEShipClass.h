@@ -17,6 +17,8 @@ class CShipClass;
 class CArmorLimits
 	{
 	public:
+		static constexpr int INVALID_SPEED_BONUS = -100;
+
 		enum EResults
 			{
 			resultOK,
@@ -45,9 +47,10 @@ class CArmorLimits
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
+		int GetSpeedBonus (const CString &sArmorClassID) const;
 		inline const CString &GetStdArmorClass (void) const { return (m_pStdArmorLimits ? m_pStdArmorLimits->sClass : NULL_STR); }
 		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
-		inline bool HasArmorLimits (void) const { return (HasTableLimits() || HasCompatibleLimits()); }
+		inline bool HasArmorLimits (void) const { return (HasTableLimits() || HasCompatibleLimits() || m_iMaxArmorMass > 0); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);

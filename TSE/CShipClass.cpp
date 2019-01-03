@@ -173,6 +173,7 @@
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
 #define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
+#define PROPERTY_ARMOR_SPEED_ADJ_PARAM			CONSTLIT("armorSpeedAdj:")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
@@ -3816,6 +3817,21 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 			return ICCItemPtr(CC.CreateInteger(iBonus));
 		else
 			return ICCItemPtr(CC.CreateNil());
+		}
+
+	else if (strStartsWith(sProperty, PROPERTY_ARMOR_SPEED_ADJ_PARAM))
+		{
+		const CArmorLimits &ArmorLimits = m_Hull.GetArmorLimits();
+		if (!ArmorLimits.HasArmorLimits())
+			return ICCItemPtr(CC.CreateNil());
+
+		CString sArmorClassID = strSubString(sProperty, PROPERTY_ARMOR_SPEED_ADJ_PARAM.GetLength());
+
+		int iSpeedAdj = m_Hull.GetArmorLimits().GetSpeedBonus(sArmorClassID);
+		if (iSpeedAdj == CArmorLimits::INVALID_SPEED_BONUS)
+			return ICCItemPtr(CC.CreateString(CONSTLIT("[Armor incompatible]")));
+		else
+			return ICCItemPtr(CC.CreateInteger(iSpeedAdj));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
