@@ -3522,6 +3522,8 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_Hull.SetSize(CalcDefaultSize(m_Image.GetSimpleImage()));
 
 	//	If we have no max armor limit, then we compute default values.
+	//
+	//	NOTE: For now we never set default armor limits. See TSEShipClass.h
 
 	if (m_Hull.NeedsDefaultArmorLimits())
 		m_Hull.InitDefaultArmorLimits(iMaxSpeed, (m_rThrustRatio > 0.0 ? m_rThrustRatio : CDriveDesc::CalcThrustRatio(m_DriveDesc.GetThrust(), m_Hull.GetMass())));

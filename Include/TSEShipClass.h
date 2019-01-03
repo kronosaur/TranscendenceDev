@@ -5,6 +5,11 @@
 
 #pragma once
 
+//	NOTE: We don't add default armor limits. Ship classes without explicit
+//	armor limits have no limitation.
+//
+//#define APPLY_DEFAULT_ARMOR_LIMITS
+
 class CShipClass;
 
 //	Armor Limits
@@ -101,7 +106,11 @@ class CHullDesc
 		inline void InitDefaultArmorLimits (int iMaxSpeed, Metric rThrustRatio) { m_ArmorLimits.InitDefaultArmorLimits(m_iMass, iMaxSpeed, rThrustRatio); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
 		inline bool IsTimeStopImmune (void) const { return m_bTimeStopImmune; }
+#ifdef APPLY_DEFAULT_ARMOR_LIMITS
 		inline bool NeedsDefaultArmorLimits (void) const { return (m_ArmorLimits.GetMaxArmorMass() == 0 && GetMass() > 0 && GetMass() < 1000); }
+#else
+		inline bool NeedsDefaultArmorLimits (void) const { return false; }
+#endif
 		inline void SetSize (int iSize) { m_iSize = iSize; }
 		inline void SetMaxCargoSpace (int iCargoSpace) { m_iMaxCargoSpace = iCargoSpace; }
 		inline void SetValue (const CCurrencyAndValue &Value) { m_Value = Value; }
