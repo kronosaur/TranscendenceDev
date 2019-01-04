@@ -63,6 +63,55 @@ CArmorMassDefinitions::SArmorMassEntry *CArmorMassDefinitions::FindMassEntryActu
 	return NULL;
 	}
 
+bool CArmorMassDefinitions::FindPreviousMassClass (const CString &sID, CString *retsPrevID, int *retiPrevMass) const
+
+//	FindPreviousMassClass
+//
+//	Finds the largest mass definition that is smaller than the given mass class.
+
+	{
+	//	Find the armor class by ID
+
+	SArmorMassEntry *pMax;
+	if (!m_ByID.Find(sID, &pMax))
+		return false;
+
+	//	Now find the definition where this came from
+
+	SArmorMassDefinition *pDef = m_Definitions.GetAt(pMax->sDefinition);
+	if (pDef == NULL)
+		return false;
+
+	//	Look through the definition for the previous class.
+
+	int iBest = -1;
+	int iBestMass = 0;
+	for (int i = 0; i < pDef->Classes.GetCount(); i++)
+		{
+		const SArmorMassEntry &Entry = pDef->Classes[i];
+
+		if (Entry.iMaxMass < pMax->iMaxMass
+				&& (iBest == -1 || Entry.iMaxMass > iBestMass))
+			{
+			iBest = i;
+			iBestMass = Entry.iMaxMass;
+			}
+		}
+
+	//	Done
+
+	if (iBest == -1)
+		return false;
+
+	if (retsPrevID)
+		*retsPrevID = pDef->Classes[iBest].sID;
+
+	if (retiPrevMass)
+		*retiPrevMass = pDef->Classes[iBest].iMaxMass;
+
+	return true;
+	}
+
 Metric CArmorMassDefinitions::GetFrequencyMax (const CString &sID) const
 
 //	GetFrequencyMax

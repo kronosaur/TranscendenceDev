@@ -3827,11 +3827,11 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 		CString sArmorClassID = strSubString(sProperty, PROPERTY_ARMOR_SPEED_ADJ_PARAM.GetLength());
 
-		int iSpeedAdj = m_Hull.GetArmorLimits().GetSpeedBonus(sArmorClassID);
-		if (iSpeedAdj == CArmorLimits::INVALID_SPEED_BONUS)
+		int iSpeedAdj;
+		if (!m_Hull.GetArmorLimits().CalcArmorSpeedBonus(sArmorClassID, m_Armor.GetCount(), &iSpeedAdj))
 			return ICCItemPtr(CC.CreateString(CONSTLIT("[Armor incompatible]")));
-		else
-			return ICCItemPtr(CC.CreateInteger(iSpeedAdj));
+
+		return ICCItemPtr(CC.CreateInteger(iSpeedAdj));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))

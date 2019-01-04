@@ -205,6 +205,7 @@ class CArmorMassDefinitions
 	public:
 		void Append (const CArmorMassDefinitions &Src);
 		inline void DeleteAll (void) { m_Definitions.DeleteAll(); InvalidateIDIndex(); }
+		bool FindPreviousMassClass (const CString &sID, CString *retsPrevID = NULL, int *retiPrevMass = NULL) const;
 		Metric GetFrequencyMax (const CString &sID) const;
 		const CString &GetMassClassID (const CItem &Item) const;
 		const CString &GetMassClassLabel (const CString &sID) const;

@@ -134,7 +134,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	//	Armor limits. We load this AFTER we've check to see if we have <ArmorLimits>
 	//	because then we won't need to load the old-style armor checks.
 
-	if (error = m_ArmorLimits.InitFromXML(Ctx, pHull, iMaxSpeed))
+	if (error = m_ArmorLimits.InitFromXML(Ctx, pHull, m_iMass, iMaxSpeed))
 		return error;
 
 	//	Done

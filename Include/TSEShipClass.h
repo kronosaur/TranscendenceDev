@@ -40,43 +40,57 @@ class CArmorLimits
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const;
 		bool CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, int *retiBonus = NULL) const;
+		bool CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegmentCount, int *retiBonus = NULL) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpeed) const;
 		void CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Summary) const;
 		EResults CanInstallArmor (const CItem &Item) const;
-		inline const CString &GetMaxArmorClass (void) const { return (m_pMaxArmorLimits ? m_pMaxArmorLimits->sClass : NULL_STR); }
+		inline const CString &GetMaxArmorClass (void) const { return m_sMaxArmorClass; }
 		inline int GetMaxArmorMass (void) const { return m_iMaxArmorMass; }
 		inline int GetMaxArmorSpeedPenalty (void) const { return m_iMaxArmorSpeedPenalty; }
 		inline int GetMinArmorSpeedBonus (void) const { return m_iMinArmorSpeedBonus; }
-		int GetSpeedBonus (const CString &sArmorClassID) const;
-		inline const CString &GetStdArmorClass (void) const { return (m_pStdArmorLimits ? m_pStdArmorLimits->sClass : NULL_STR); }
+		inline const CString &GetStdArmorClass (void) const { return m_sStdArmorClass; }
 		inline int GetStdArmorMass (void) const { return m_iStdArmorMass; }
-		inline bool HasArmorLimits (void) const { return (HasTableLimits() || HasCompatibleLimits() || m_iMaxArmorMass > 0); }
+		inline bool HasArmorLimits (void) const { return (m_iType != typeNone); }
 		void InitDefaultArmorLimits (int iMass, int iMaxSpeed, Metric rThrustRatio);
 		ALERROR InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pLimits);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMaxSpeed);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iHullMass, int iMaxSpeed);
 
 	private:
+		enum ETypes
+			{
+			typeNone,							//	No armor limits (any armor is valid; no speed adj)
+
+			typeAuto,							//	Specify standard and max armor mass and compute speed adj
+			typeTable,							//	Use an explicit table to set speed adj
+			typeCompatible,						//	Specify standard, max, and speed bonus/penalties
+			};
+
 		struct SArmorLimits
 			{
 			CString sClass;
 			TUniquePtr<CItemCriteria> pCriteria;
 
-			int iSpeedAdj = 0;				//	Change to speed for this armor class
+			int iSpeedAdj = 0;					//	Change to speed for this armor class
 			};
 
+		int CalcArmorMass (CItemCtx &ArmorItem) const;
 		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
 		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
 		bool FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL, bool *retbClassFound = NULL) const;
-		inline bool HasCompatibleLimits (void) const { return (!HasTableLimits() && (m_iMaxArmorSpeedPenalty != 0 || m_iMinArmorSpeedBonus != 0)); }
-		inline bool HasTableLimits (void) const { return (m_ArmorLimits.GetCount() > 0); }
 
-		TArray<SArmorLimits> m_ArmorLimits;	//	List of limits by armor class for ship
+		ETypes m_iType = typeNone;
+		CItemCriteria m_ArmorCriteria;			//	Allowable armor
 
-		CItemCriteria m_ArmorCriteria;		//	Allowable armor
-		int m_iStdArmorMass = 0;			//	No penalty at this armor mass
-		int m_iMaxArmorMass = 0;			//	Max mass of single armor segment
-		int m_iMaxArmorSpeedPenalty = 0;	//	Change to speed at max armor mass (1/100th light-speed)
-		int m_iMinArmorSpeedBonus = 0;		//	Change to speed at 1/2 std armor mass
+		CString m_sStdArmorClass;
+		CString m_sMaxArmorClass;
+		int m_iStdArmorMass = 0;				//	No penalty at this armor mass
+		int m_iMaxArmorMass = 0;				//	Max mass of single armor segment
+		int m_iMaxArmorSpeedPenalty = 0;		//	Change to speed at max armor mass (1/100th light-speed)
+		int m_iMinArmorSpeedBonus = 0;			//	Change to speed at 1/2 std armor mass
+
+		TArray<SArmorLimits> m_ArmorLimits;		//	List of limits by armor class for ship
+
+		int m_iHullMass = 0;					//	Cached and used in various calculations
 
 		const SArmorLimits *m_pMaxArmorLimits = NULL;
 		const SArmorLimits *m_pStdArmorLimits = NULL;
