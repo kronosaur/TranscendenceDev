@@ -201,7 +201,7 @@ void CItemEventDispatcher::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pD
 
 	int i;
 
-	//	Make a list of all items that have an OnObjDestroyed event.
+	//	Make a list of all items that have an OnDocked event.
 
 	TArray<CItem *> Items;
 	CItemListManipulator Search(pSource->GetItemList());
