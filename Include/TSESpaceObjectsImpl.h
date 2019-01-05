@@ -1411,6 +1411,7 @@ class CStation : public CSpaceObject
 				CString *retsError = NULL);
 		virtual ~CStation (void);
 
+		void Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL);
 		inline void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
 		inline void ClearReconned (void) { m_fReconned = false; }
 		inline const CStationHull &GetHull (void) const { return m_Hull; }

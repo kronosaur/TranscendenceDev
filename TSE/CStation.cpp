@@ -146,6 +146,120 @@ CStation::~CStation (void)
 		delete m_pTrade;
 	}
 
+void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc)
+
+//	Abandon
+//
+//	Abandon the station.
+
+	{
+	//	Only works for stations that can be abandoned.
+
+	if (IsDestroyed() || IsImmutable() || IsAbandoned())
+		return;
+
+	m_Hull.SetHitPoints(0);
+
+	SDestroyCtx DestroyCtx;
+	DestroyCtx.pObj = this;
+	DestroyCtx.pDesc = pWeaponDesc;
+	DestroyCtx.Attacker = Attacker;
+	DestroyCtx.pWreck = this;
+	DestroyCtx.iCause = iCause;
+
+	//	Run OnDestroy script
+
+	m_Overlays.FireOnObjDestroyed(this, DestroyCtx);
+	FireItemOnObjDestroyed(DestroyCtx);
+	FireOnDestroy(DestroyCtx);
+
+	//	Station is destroyed. Take all the installed devices and turn
+	//	them into normal damaged items
+
+	CItemListManipulator Items(GetItemList());
+	while (Items.MoveCursorForward())
+		{
+		CItem Item = Items.GetItemAtCursor();
+
+		if (Item.IsInstalled())
+			{
+			//	Uninstall the device
+
+			int iDevSlot = Item.GetInstalled();
+			CInstalledDevice *pDevice = &m_pDevices[iDevSlot];
+			pDevice->Uninstall(this, Items);
+
+			//	Chance that the item is destroyed
+
+			if (Item.GetType()->IsVirtual() || mathRandom(1, 100) <= 50)
+				Items.DeleteAtCursor(1);
+			else
+				Items.SetDamagedAtCursor(true);
+
+			//	Reset cursor because we may have changed position
+
+			Items.ResetCursor();
+			}
+		}
+
+	InvalidateItemListAddRemove();
+
+	//	Alert others and retaliate, if necessary.
+	//
+	//	NOTE: We need to do this before <OnObjDestroyed> because we want 
+	//	that event to be able to override this behavior.
+	//	because we want those events to be able to override this behavior.
+
+	CSpaceObject *pOrderGiver = Attacker.GetOrderGiver();
+	if (pOrderGiver && pOrderGiver->CanAttack())
+		{
+		//	If we're a subordinate of some base, then let it handle the
+		//	retaliation.
+
+		if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
+			m_pBase->OnSubordinateDestroyed(DestroyCtx);
+
+		//	We also retailiate
+
+		if (!IsAngryAt(pOrderGiver))
+			OnDestroyedByFriendlyFire(Attacker.GetObj(), pOrderGiver);
+		else
+			OnDestroyedByHostileFire(Attacker.GetObj(), pOrderGiver);
+		}
+
+	//	Tell all objects that we've been destroyed
+
+	for (int i = 0; i < GetSystem()->GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetSystem()->GetObject(i);
+
+		if (pObj && pObj != this)
+			pObj->OnStationDestroyed(DestroyCtx);
+		}
+
+	//	Tell the system to notify events that we've been destroyed
+
+	GetSystem()->OnStationDestroyed(DestroyCtx);
+
+	//	NOTE: We fire <OnObjDestroyed> AFTER OnStationDestroyed
+	//	so that script inside <OnObjDestroyed> can add orders
+	//	about the station (without getting clobbered in 
+	//	OnStationDestroyed).
+
+	NotifyOnObjDestroyed(DestroyCtx);
+
+	//	Tell the system and universe that a station has been destroyed so
+	//	that they handle timed events, etc.
+
+	GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
+	g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
+
+	//	Clear destination
+
+	if (IsAutoClearDestinationOnDestroy())
+		ClearPlayerDestination();
+	}
+
 void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, int iRotation, int iPosZ, int iLifeLeft, DWORD *retdwID)
 
 //	AddOverlay
@@ -2166,110 +2280,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	else
 		{
-		m_Hull.SetHitPoints(0);
-
-		SDestroyCtx DestroyCtx;
-		DestroyCtx.pObj = this;
-		DestroyCtx.pDesc = Ctx.pDesc;
-		DestroyCtx.Attacker = Ctx.Attacker;
-		DestroyCtx.pWreck = this;
-		DestroyCtx.iCause = Ctx.Damage.GetCause();
-
-		//	Run OnDestroy script
-
-		m_Overlays.FireOnObjDestroyed(this, DestroyCtx);
-		FireItemOnObjDestroyed(DestroyCtx);
-		FireOnDestroy(DestroyCtx);
-
-		//	Station is destroyed. Take all the installed devices and turn
-		//	them into normal damaged items
-
-		CItemListManipulator Items(GetItemList());
-		while (Items.MoveCursorForward())
-			{
-			CItem Item = Items.GetItemAtCursor();
-
-			if (Item.IsInstalled())
-				{
-				//	Uninstall the device
-
-				int iDevSlot = Item.GetInstalled();
-				CInstalledDevice *pDevice = &m_pDevices[iDevSlot];
-				pDevice->Uninstall(this, Items);
-
-				//	Chance that the item is destroyed
-
-				if (Item.GetType()->IsVirtual() || mathRandom(1, 100) <= 50)
-					Items.DeleteAtCursor(1);
-				else
-					Items.SetDamagedAtCursor(true);
-
-				//	Reset cursor because we may have changed position
-
-				Items.ResetCursor();
-				}
-			}
-
-		InvalidateItemListAddRemove();
-
-		//	Alert others and retaliate, if necessary.
-		//
-		//	NOTE: We need to do this before <OnObjDestroyed> because we want 
-		//	that event to be able to override this behavior.
-		//	because we want those events to be able to override this behavior.
-
-		if (pOrderGiver && pOrderGiver->CanAttack())
-			{
-			//	If we're a subordinate of some base, then let it handle the
-			//	retaliation.
-
-			if (m_pBase && !m_pBase->IsAbandoned() && !m_pBase->IsDestroyed())
-				m_pBase->OnSubordinateDestroyed(DestroyCtx);
-
-			//	We also retailiate
-
-			if (!IsAngryAt(pOrderGiver))
-				OnDestroyedByFriendlyFire(Ctx.Attacker.GetObj(), pOrderGiver);
-			else
-				OnDestroyedByHostileFire(Ctx.Attacker.GetObj(), pOrderGiver);
-			}
-
-		//	Tell all objects that we've been destroyed
-
-		for (int i = 0; i < GetSystem()->GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = GetSystem()->GetObject(i);
-
-			if (pObj && pObj != this)
-				pObj->OnStationDestroyed(DestroyCtx);
-			}
-
-		//	Tell the system to notify events that we've been destroyed
-
-		GetSystem()->OnStationDestroyed(DestroyCtx);
-
-		//	NOTE: We fire <OnObjDestroyed> AFTER OnStationDestroyed
-		//	so that script inside <OnObjDestroyed> can add orders
-		//	about the station (without getting clobbered in 
-		//	OnStationDestroyed).
-
-		NotifyOnObjDestroyed(DestroyCtx);
-
-		//	Tell the system and universe that a station has been destroyed so
-		//	that they handle timed events, etc.
-
-		GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
-		g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
-
-		//	Clear destination
-
-		if (IsAutoClearDestinationOnDestroy())
-			ClearPlayerDestination();
-
-		//	Explosion effect
-
+		Abandon(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc);
 		CreateDestructionEffect();
-
 		return damageDestroyedAbandoned;
 		}
 

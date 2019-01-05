@@ -239,6 +239,7 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_SET_CHARACTER_DATA	132
 #define FN_OBJ_HAS_SERVICE			133
 #define FN_OBJ_CONDITION			134
+#define FN_OBJ_ABANDON				135
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2357,6 +2358,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Station functions
 		//	-----------------
+
+		{	"staAbandon",					fnStationSet,		FN_OBJ_ABANDON,
+			"(staAbandon obj [objSource]) -> True/Nil",
+			"i*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"staClearFireReconEvent",		fnStationGetOld,	FN_STATION_CLEAR_FIRE_RECON,
 			"(staClearFireReconEvent station)",
@@ -11063,6 +11068,16 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_OBJ_ABANDON:
+			{
+			CDamageSource DamageSource(NULL, killedByDamage);
+			if (pArgs->GetCount() > 1)
+				DamageSource = GetDamageSourceArg(*pCC, pArgs->GetElement(1));
+
+			pStation->Abandon(DamageSource.GetCause(), DamageSource);
+			return pCC->CreateTrue();
+			}
+
 		case FN_STATION_SET_ACTIVE:
 			if (pArgs->GetCount() < 2 || !pArgs->GetElement(1)->IsNil())
 				pStation->SetActive();
