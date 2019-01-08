@@ -190,6 +190,9 @@ void CSoundMgr::Delete (int iChannel)
 //	Deletes the given channel
 
 	{
+	if (m_pDS == NULL)
+		return;
+
 	CleanUpChannel(m_Channels[iChannel]);
 	}
 
