@@ -278,7 +278,12 @@ void CFerianShipAI::BehaviorStart (void)
 		case IShipController::orderNone:
 			{
 			if (m_pShip->GetDockedObj() == NULL)
-				AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				{
+				FireOnOrdersCompleted();
+
+				if (GetCurrentOrder() == IShipController::orderNone)
+					AddOrder(IShipController::orderGate, NULL, IShipController::SData());
+				}
 			break;
 			}
 
@@ -539,6 +544,10 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 			{
 			if (Ctx.pObj == GetCurrentOrderTarget())
 				{
+				//	Stop mining
+
+				CancelCurrentOrder();
+
 				//	Avenge the base
 
 				CSpaceObject *pTarget;
@@ -548,12 +557,6 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 					AddOrder(orderDestroyTarget, pTarget, SData());
 				else if (m_State == stateAttackingThreat)
 					AddOrder(orderDestroyTarget, m_pTarget, SData());
-				else
-					AddOrder(orderAttackNearestEnemy, NULL, SData());
-
-				//	Stop mining
-
-				CancelCurrentOrder();
 				}
 			break;
 			}
