@@ -68,6 +68,7 @@ CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) :
 		m_fEnemiesInSRS(false),
 		m_fPlayerUnderAttack(false),
 		m_fLocationsBlocked(false),
+		m_fFlushEventHandlers(false),
 		m_pThreadPool(NULL),
 		m_ObjGrid(GRID_SIZE, CELL_SIZE, CELL_BORDER)
 
@@ -2125,6 +2126,14 @@ void CSystem::FlushDeletedObjects (void)
 		}
 
 	m_DeletedObjects.DeleteAll();
+
+	//	Event handlers
+
+	if (m_fFlushEventHandlers)
+		{
+		m_EventHandlers.FlushDeletedObjs();
+		m_fFlushEventHandlers = false;
+		}
 	}
 
 void CSystem::FlushEnemyObjectCache (void)
@@ -3920,6 +3929,9 @@ void CSystem::RegisterEventHandler (CSpaceObject *pObj, Metric rRange)
 //	Register the object as a handler of system events
 
 	{
+	if (pObj == NULL || pObj->IsDestroyed())
+		return;
+
 	//	See if the object is already registered. If so, then we just
 	//	take the new range and return.
 
@@ -4007,7 +4019,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	//	Deal with event handlers
 
 	m_TimedEvents.OnObjDestroyed(Ctx.pObj);
-	m_EventHandlers.ObjDestroyed(Ctx.pObj);
+	if (m_EventHandlers.ObjDestroyed(Ctx.pObj))
+		m_fFlushEventHandlers = true;
 
 	//	If this is the player and we're resurrecting, then remove the player from
 	//	the grid. We need to do this because resurrecting player ships don't have
@@ -4291,6 +4304,7 @@ ALERROR CSystem::SaveToStream (IWriteStream *pStream)
 
 	//	Save event handlers
 
+	m_EventHandlers.FlushDeletedObjs();
 	m_EventHandlers.WriteToStream(this, pStream);
 
 	//	Save all objects in the system
@@ -4588,10 +4602,14 @@ void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
 	CSystemEventHandler *pNext = m_EventHandlers.GetNext();
 	while (pNext)
 		{
-		if (pNext->GetObj() == pObj)
+		if (pNext->OnUnregister(pObj))
 			{
-			m_EventHandlers.Remove(pNext);
-			break;
+			m_fFlushEventHandlers = true;
+
+			//	NOTE: We can guarantee that this object is only in the list once
+			//	because we check at register time.
+
+			return;
 			}
 
 		pNext = pNext->GetNext();

@@ -4,13 +4,6 @@
 
 #include "PreComp.h"
 
-CSystemEventHandler::CSystemEventHandler (void) : m_pHandler(NULL)
-
-//	CSystemEventHandler constructor
-
-	{
-	}
-
 void CSystemEventHandler::Create (CSpaceObject *pObj, Metric rMaxRange, CSystemEventHandler **retpHandler)
 
 //	Create
@@ -18,6 +11,9 @@ void CSystemEventHandler::Create (CSpaceObject *pObj, Metric rMaxRange, CSystemE
 //	Create a new object
 
 	{
+	if (pObj == NULL)
+		throw CException(ERR_FAIL);
+
 	CSystemEventHandler *pHandler = new CSystemEventHandler;
 
 	pHandler->m_pHandler = pObj;
@@ -33,17 +29,33 @@ bool CSystemEventHandler::InRange (const CVector &vPos) const
 //	Returns TRUE if this event handler is in range of an event at the given pos
 
 	{
+	if (m_pHandler == NULL)
+		return false;
+
 	return (m_pHandler->GetPos() - vPos).Length2() < m_rMaxRange2; 
 	}
 
-void CSystemEventHandler::OnObjDestroyed (CSpaceObject *pObjDestroyed, bool *retbRemoveNode)
+bool CSystemEventHandler::OnObjDestroyed (CSpaceObject *pObjDestroyed)
 
 //	OnObjDestroyed
 //
-//	Notification that an object has been destroyed
+//	Notification that an object has been destroyed. Returns TRUE if we referred
+//	to the deleted object.
 
 	{
-	*retbRemoveNode = (pObjDestroyed == m_pHandler);
+	//	We clear out the object instead of deleting the entry because we might
+	//	be inside a traversal of the linked list.
+	//
+	//	Callers must be ready to deal with a NULL object and the system must
+	//	clean up these NULL entries at some point.
+
+	if (pObjDestroyed == m_pHandler)
+		{
+		m_pHandler = NULL;
+		return true;
+		}
+	else
+		return false;
 	}
 
 void CSystemEventHandler::OnReadFromStream (SLoadCtx &Ctx)
@@ -56,6 +68,24 @@ void CSystemEventHandler::OnReadFromStream (SLoadCtx &Ctx)
 	{
 	CSystem::ReadObjRefFromStream(Ctx, &m_pHandler);
 	Ctx.pStream->Read((char *)&m_rMaxRange2, sizeof(Metric));
+	}
+
+bool CSystemEventHandler::OnUnregister (CSpaceObject *pObj)
+
+//	OnUnregister
+//
+//	Unregister ourselves. We behave as if the object was destroyed for similar
+//	reasons: If we're traversing the linked-list, then we don't want to touch
+//	the list until later.
+
+	{
+	if (pObj == m_pHandler)
+		{
+		m_pHandler = NULL;
+		return true;
+		}
+	else
+		return false;
 	}
 
 void CSystemEventHandler::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const

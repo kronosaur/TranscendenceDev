@@ -1163,6 +1163,29 @@ template <class TYPE> class TSEListNode
 				}
 			}
 
+		void FlushDeletedObjs (void)
+			{
+			TSEListNode<TYPE> *pPrev = this;
+			TYPE *pNext = GetNext();
+			while (pNext)
+				{
+				if (pNext->IsDeleted())
+					{
+					pPrev->m_pNext = pNext->GetNext();
+					TYPE *pDelete = pNext;
+					pNext = pNext->GetNext();
+
+					pDelete->m_pNext = NULL;
+					delete pDelete;
+					}
+				else
+					{
+					pPrev = pNext;
+					pNext = pNext->GetNext();
+					}
+				}
+			}
+
 		int GetCount (void)
 			{
 			int iCount = 0;
@@ -1188,29 +1211,20 @@ template <class TYPE> class TSEListNode
 			return (m_pNext == NULL);
 			}
 
-		void ObjDestroyed (CSpaceObject *pObj)
+		bool ObjDestroyed (CSpaceObject *pObj)
 			{
-			TSEListNode<TYPE> *pPrev = this;
+			bool bDeleted = false;
+
 			TYPE *pNext = GetNext();
 			while (pNext)
 				{
-				bool bRemoveNode;
-				pNext->OnObjDestroyed(pObj, &bRemoveNode);
-				if (bRemoveNode)
-					{
-					pPrev->m_pNext = pNext->GetNext();
-					TYPE *pDelete = pNext;
-					pNext = pNext->GetNext();
+				if (pNext->OnObjDestroyed(pObj))
+					bDeleted = true;
 
-					pDelete->m_pNext = NULL;
-					delete pDelete;
-					}
-				else
-					{
-					pPrev = pNext;
-					pNext = pNext->GetNext();
-					}
+				pNext = pNext->GetNext();
 				}
+
+			return bDeleted;
 			}
 
 		void ReadFromStream (SLoadCtx &Ctx)
@@ -1226,30 +1240,6 @@ template <class TYPE> class TSEListNode
 				pNew->OnReadFromStream(Ctx);
 				pInsertAt->Insert(pNew);
 				pInsertAt = pNew;
-				}
-			}
-
-		void Remove (TSEListNode<TYPE> *pNodeToRemove)
-			{
-			TSEListNode<TYPE> *pPrev = this;
-			TYPE *pNext = GetNext();
-			while (pNext)
-				{
-				if (pNext == pNodeToRemove)
-					{
-					pPrev->m_pNext = pNext->GetNext();
-					TYPE *pDelete = pNext;
-					pNext = pNext->GetNext();
-
-					pDelete->m_pNext = NULL;
-					delete pDelete;
-					break;
-					}
-				else
-					{
-					pPrev = pNext;
-					pNext = pNext->GetNext();
-					}
 				}
 			}
 

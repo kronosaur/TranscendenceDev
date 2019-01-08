@@ -62,20 +62,20 @@ typedef TSEListNode<CNavigationPath> CNavigationPathNode;
 class CSystemEventHandler : public TSEListNode<CSystemEventHandler>
 	{
 	public:
-		CSystemEventHandler (void);
-
 		static void Create (CSpaceObject *pObj, Metric rMaxRange, CSystemEventHandler **retpHandler);
 
 		inline CSpaceObject *GetObj (void) const { return m_pHandler; }
 		bool InRange (const CVector &vPos) const;
-		void OnObjDestroyed (CSpaceObject *pObjDestroyed, bool *retbRemoveNode);
+		inline bool IsDeleted (void) const { return (m_pHandler == NULL); }
+		bool OnObjDestroyed (CSpaceObject *pObjDestroyed);
 		void OnReadFromStream (SLoadCtx &Ctx);
+		bool OnUnregister (CSpaceObject *pObj);
 		void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) const;
 		inline void SetRange (Metric rMaxRange) { m_rMaxRange2 = rMaxRange * rMaxRange; }
 
 	private:
-		CSpaceObject *m_pHandler;				//	Event handler
-		Metric m_rMaxRange2;					//	Beyond this range from handler, no events seen
+		CSpaceObject *m_pHandler = NULL;		//	Event handler (may be NULL if object destroyed)
+		Metric m_rMaxRange2 = 0.0;				//	Beyond this range from handler, no events seen
 	};
 
 typedef TSEListNode<CSystemEventHandler> CSystemEventHandlerNode;
@@ -948,7 +948,16 @@ class CSystem
 		DWORD m_fPlayerUnderAttack:1;			//	TRUE if at least one object has player as target
 		DWORD m_fLocationsBlocked:1;			//	TRUE if we're already computed overlapping locations
 
-		DWORD m_fSpare:24;
+		DWORD m_fFlushEventHandlers:1;			//	TRUE if we need to flush m_EventHandlers
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_fSpare:16;
 
 		//	Support structures
 
