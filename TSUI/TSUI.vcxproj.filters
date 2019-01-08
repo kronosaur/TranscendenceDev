@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\CloudInterface Files">
+      <UniqueIdentifier>{3e59c5c5-ea70-4259-b58e-f67d87aa2b4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UIHelpers">
+      <UniqueIdentifier>{723456dd-7fd3-425e-9185-a329fc262abd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Settings">
+      <UniqueIdentifier>{62b976ce-63ed-4564-b7ac-886ce3348d52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Soundtrack">
+      <UniqueIdentifier>{a56f585b-f7ff-46e4-ae9f-4db580bec931}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\HUD">
+      <UniqueIdentifier>{d58776d7-da50-422b-a327-fae452d83c21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Painters">
+      <UniqueIdentifier>{d9e99aff-db2d-46f9-a935-bf702824968c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Map Painters">
+      <UniqueIdentifier>{f0d3cd2c-8d96-4564-a449-5126db4e82ce}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CBackgroundProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CHumanInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CTimerRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CVisualPalette.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HardCrash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IHIController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IHISession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TSUICodeChain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CCloudService.cpp">
+      <Filter>Source Files\CloudInterface Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarcService.cpp">
+      <Filter>Source Files\CloudInterface Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarcServiceStub.cpp">
+      <Filter>Source Files\CloudInterface Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CXelerus.cpp">
+      <Filter>Source Files\CloudInterface Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemDataAnimatron.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassInfoHelpers.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="CListSaveFilesTask.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="CReadProfileTask.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="CUIHelper.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="CListCollectionTask.cpp">
+      <Filter>Source Files\UIHelpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Run.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CUserSettings.cpp">
+      <Filter>Source Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="CExtensionListMap.cpp">
+      <Filter>Source Files\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="CMessageSession.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSoundtrackManager.cpp">
+      <Filter>Source Files\Soundtrack</Filter>
+    </ClCompile>
+    <ClCompile Include="CMCIMixer.cpp">
+      <Filter>Source Files\Soundtrack</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDImages.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CShieldHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="IHUDPainter.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDRingSegments.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponHUDCircular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorHUDDefault.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorHUDCircular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutomataEffectPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargateEffectPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLegendPainter.cpp">
+      <Filter>Source Files\Map Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapScaleCounter.cpp">
+      <Filter>Source Files\Map Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CGalacticMapSystemDetails.cpp">
+      <Filter>Source Files\Map Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CHoverDescriptionPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDRectangular.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorHUDShaped.cpp">
+      <Filter>Source Files\HUD</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\CloudInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Painters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Soundtrack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\UIHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUISettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUISessions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUIHUD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HUDImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSUIMapPainters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,1305 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{5b7d1b95-ec4d-45de-96cf-c89198391d2d}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{365806d6-8c25-425f-ad2c-bc3bb3be6264}</UniqueIdentifier>
+      <Extensions>cpp</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ShipAI">
+      <UniqueIdentifier>{5e07b5b7-bb1a-4bc3-902e-2d064be3a596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SFX">
+      <UniqueIdentifier>{15745ca2-351c-4d90-bee6-732814b02273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\DesignTypes">
+      <UniqueIdentifier>{45dd5eb8-8522-4345-bda8-05865897e18d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{0614c2a9-dbdd-4bbc-96f4-9b8e44b98658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Items">
+      <UniqueIdentifier>{29b5d97d-be2e-4edc-8690-9a95a4346e95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Topology">
+      <UniqueIdentifier>{9bbd529b-d64c-4889-8db0-2c62f4383f11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\StarSystem">
+      <UniqueIdentifier>{aac9a1a6-0de8-4df8-889d-2641b781aebc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Images">
+      <UniqueIdentifier>{9ba52a15-71f0-4fd2-9fe1-4b771f842a7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TransLISP">
+      <UniqueIdentifier>{e6f75494-d58d-4357-bbf8-ed2c977d7299}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SpaceObjects">
+      <UniqueIdentifier>{14ee9bf9-560e-444c-ad20-e23095a605dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Multiverse">
+      <UniqueIdentifier>{09b42baa-8339-46f8-8c88-c102263a8481}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Missions">
+      <UniqueIdentifier>{89d53c3d-c95d-4433-9d43-15892b39fc94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sound">
+      <UniqueIdentifier>{2090b34e-be38-44e4-b7c3-4abe3d0e51ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Ships">
+      <UniqueIdentifier>{cf0514bc-e424-404e-a805-0331b997edaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Notes and Documents">
+      <UniqueIdentifier>{bc46a20a-e8b5-477b-9bb2-1882b15ca0c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ParticleSystem">
+      <UniqueIdentifier>{f2098d42-18ad-4eec-b83d-44945622abff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Artifact Awakening">
+      <UniqueIdentifier>{dfe4b145-536e-44d7-9da9-b85686275143}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Overlays">
+      <UniqueIdentifier>{331f5312-6f2a-462f-a276-15ffb747f4c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Stations">
+      <UniqueIdentifier>{ef3b50ba-f448-4d87-bde8-e87dabfcf8ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{a023d886-b4dc-4e47-b336-17dcc88f249c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Language">
+      <UniqueIdentifier>{f2da3398-611e-4ffd-8ba3-992dfed6f45a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Trading">
+      <UniqueIdentifier>{e6057710-b4bc-4ff2-bdb5-ded4d11dd4ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Painting">
+      <UniqueIdentifier>{6ce5c7e7-4073-4204-a558-60c3b5b70fdf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Universe">
+      <UniqueIdentifier>{3911c317-993f-4412-8f2d-ca00db69fe82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Dock Screens">
+      <UniqueIdentifier>{2576b8d3-42d3-4cff-9251-31ce0058931f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PreComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDesign.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDeviceClassesImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEMissions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEMultiverse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESpaceObjectsImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEStorage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETransLisp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LegacyAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CrewAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShipAIImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OrderModuleImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SFXImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopologyProcessorsImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PsycheDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SFXFractalImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEParticleSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPlayerSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipSystems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEItems.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEImages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEArmor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SFXRayImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEArtifactAwakening.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEWeaponFireDesc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEEventsImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEComms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPhysics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEObjectJoints.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDocking.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSELanguage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LanguageDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETrade.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDevices.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEStationType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETopology.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEGameRecords.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEItemType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEItemDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPaintUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPaint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSECurrency.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEOverlayType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESystemType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDockScreenType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEEconomyType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESovereign.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEPower.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESpaceEnvironment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEMissionType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEAdventureDesc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESystemMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEVersions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEUniverse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEShipEquipment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEMapPainters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopologyDescImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEObjectCriteria.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSETransLispUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDesignDefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEDockScreenSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CAdventureRecord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameRecord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameStats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CResourceDb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CUserProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Damage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AIManeuvers.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CAIBehaviorCtx.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CAIShipControls.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutonAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CBaseShipAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CFerianShipAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CFleetCommandAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CFleetShipAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CGaianProcessor.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CGladiatorAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CStandardShipAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CZoanthropeAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="OrderModules.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffectCreator.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffectGroupCreator.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXBeam.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXBolt.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXEllipse.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXFlare.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXImage.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXImageAndTail.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXImageFracture.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXLightningShockwave.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXMoltenBolt.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticleCloud.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticleExplosion.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXPlasmaSphere.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXPolyflash.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXSequencer.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXShape.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXShockwave.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXSingleParticle.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXSmokeTrail.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXStarbust.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXText.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXVariants.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CAdventureDesc.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDesignCollection.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDesignTable.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDesignType.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDynamicDesignTable.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CEconomyType.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CExtension.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CExtensionCollection.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CPower.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CSovereign.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="C3DConversion.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAStarPathFinder.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttackDetector.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttributeCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttributeDataBlock.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CComplexArea.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CCurrencyBlock.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDamageAdjDesc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDamageSource.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceStorage.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CEventHandler.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CFormulaText.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameTimeKeeper.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlobalEventCache.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="ContantsUtilities.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectGrid.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectList.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectTable.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CTileMap.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CZoneGrid.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="I2DFunction.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Utilities.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoDefenseClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CCargoSpaceClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CCyberDeckClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceTable.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CDriveClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CEnhancerClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CInstalledArmor.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemEnhancement.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemEventDispatcher.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemList.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemListManipulator.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemTable.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemType.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CMiscellaneousClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CRepairerClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CShieldClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CSolarDeviceClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponClass.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CWeaponFireDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="Devices.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CApplySystemProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CConquerNodesProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CDistributeNodesProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CFillNodesProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CGroupTopologyProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CLocateNodesProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CPartitionNodesProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomPointsProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemMap.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTableTopologyProc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopology.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyDesc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyDescTable.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyNode.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyNodeList.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="ITopologyProcessor.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CLocationDef.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CLocationList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="COrbit.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateSystem.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceEnvironmentType.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystem.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemCreateEvents.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemCreateStats.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemEventHandler.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemTable.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemType.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CTerritoryDef.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CTerritoryList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CCompositeImageDesc.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CCompositeImageSelector.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectImage.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectImageArray.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CCExtensions.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CCodeChainCtx.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CCUtil.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CFunctionContextWrapper.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CAreaDamage.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CBeam.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CBoundaryMarker.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CDisintegrationEffect.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffect.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CFractureEffect.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CMissile.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CRadiusDamage.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CSequencerEffect.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObject.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CStaticEffect.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Markers.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarc.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarcDownloader.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CHexarcSession.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseCatalogEntry.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseCollection.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseFileRef.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseModel.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlobalSpaceObject.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CMission.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="CMissionList.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="CTimedMissionEvent.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="CEnvironmentGrid.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CMissionType.cpp">
+      <Filter>Source Files\Missions</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTracker.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="COrderList.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectStats.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectAddressResolver.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAscendedObjectList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CWaveGenerator.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CImageArranger.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationTableCache.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXRay.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffectParamDesc.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CCreatePainterCtx.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CSoundRef.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemEnhancementStack.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CInstalledDevice.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CCompositeImageModifiers.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="IListData.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDisplayAttributeDefinitions.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseNews.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CMultiverseNewsEntry.cpp">
+      <Filter>Source Files\Multiverse</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipClass.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShip.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CAISettings.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipInterior.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipInteriorDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CRegenDesc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipTable.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayerSettings.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntegralRotation.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectEffectDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectEffectList.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapViewportCtx.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXOrb.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemCtx.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttackOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CAttackStationOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CEscortOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CFireEventOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CSendMessageOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CWaitOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CApproachOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapGridPainter.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CCXMLWrapper.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectTrade.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXLightningStorm.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="IPlayerController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CNavigateOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CCrewAI.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CCrewPsyche.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemSpacePainter.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CVolumetricShadowPainter.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CAdventureHighScoreList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CCompositeImageType.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CFractalTextureLibrary.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CSphericalTextureMapper.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CCircleRadiusDisruptor.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CExplosionColorizer.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticleSystem.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleArray.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleSystemDesc.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleDamage.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticleEffect.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CDesignTypeCriteria.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipArmorSegmentDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipArmorDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CReactorDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CRotationDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntegralRotationDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipPerformanceDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CDriveDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenVisuals.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorSystem.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CLightningBundlePainter.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CCargoDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayerGameStats.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CPerceptionCalc.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CArtifactAwakening.cpp">
+      <Filter>Source Files\Artifact Awakening</Filter>
+    </ClCompile>
+    <ClCompile Include="CArtifactProgram.cpp">
+      <Filter>Source Files\Artifact Awakening</Filter>
+    </ClCompile>
+    <ClCompile Include="CMusicResource.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="CSoundResource.cpp">
+      <Filter>Source Files\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlay.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayList.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="COverlayType.cpp">
+      <Filter>Source Files\Overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationType.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStation.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockingPorts.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommunicationsHandler.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CMoveCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CShockwaveHitTest.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CNavigationPath.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationEncounterCtx.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationEncounterDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CContinuousBeam.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemEventList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CRangeTypeEvent.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSentryOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CHitCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommunicationsStack.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CGenericType.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhysicsContact.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhysicsContactResolver.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectJointList.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectJoint.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="C3DObjectPos.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CPowerConsumption.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="SUpdateCtx.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CFailureDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CFireAndSmokePainter.cpp">
+      <Filter>Source Files\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CLanguage.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CLanguageDataBlock.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CNameDesc.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipChallengeDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXParticlePattern.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipAIHelper.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationHullDesc.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationHull.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CEnhancementDesc.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemPriceTracker.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingDesc.cpp">
+      <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingEconomy.cpp">
+      <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="ICCItemPtr.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="CAbilitySet.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CTradingComputer.cpp">
+      <Filter>Source Files\Trading</Filter>
+    </ClCompile>
+    <ClCompile Include="CSystemMapThumbnails.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CGalacticMapPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="IElementGenerator.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CRandomTopologyCreator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyCreateCtx.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CNetworkTopologyCreator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologySystemDesc.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CDelaunayStargateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CSimplePathStargateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CTreePathStagateGenerator.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CHullDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CTLispConvert.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="PaintUtilities.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CPaintHelper.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CRTFText.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceSystem.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTrackerCriteria.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemLevelCriteria.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CUniverse.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="XMLLoader.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDebugOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CSFXOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CShipwreckDesc.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXDisintegrate.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="CVirtualKeyData.cpp">
+      <Filter>Source Files\Language</Filter>
+    </ClCompile>
+    <ClCompile Include="CImageFilterDesc.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CImageFilterStack.cpp">
+      <Filter>Source Files\Images</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemTypeProbabilityTable.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectCriteria.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SDamageCtx.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CConditionSet.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelArranger.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectPool.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CHullPointsCalculator.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenType.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenStack.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockSession.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectItemList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CPropertyCompare.cpp">
+      <Filter>Source Files\TransLISP</Filter>
+    </ClCompile>
+    <ClCompile Include="IShipController.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CSimpleOrder.cpp">
+      <Filter>Source Files\ShipAI</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorLimits.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmorMassDefinitions.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\.gitignore">
+      <Filter>Notes and Documents</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\README">
+      <Filter>Notes and Documents</Filter>
+    </Text>
+    <Text Include="..\LICENSE">
+      <Filter>Notes and Documents</Filter>
+    </Text>
+  </ItemGroup>
+</Project>
