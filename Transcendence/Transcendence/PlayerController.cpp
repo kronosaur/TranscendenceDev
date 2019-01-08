@@ -2826,6 +2826,8 @@ void CPlayerShipController::Update (int iTick)
 //	Updates each tick
 
 	{
+	DEBUG_TRY
+
 	//	Update help
 
 	if ((iTick % UPDATE_HELP_TIME) == 0)
@@ -2845,6 +2847,8 @@ void CPlayerShipController::Update (int iTick)
 			::kernelDebugLogPattern("Target %d: %s (%x)", i, pObj->GetNounPhrase(), (DWORD)pObj);
 		}
 #endif
+
+	DEBUG_CATCH
 	}
 
 void CPlayerShipController::UpdateHelp (int iTick)

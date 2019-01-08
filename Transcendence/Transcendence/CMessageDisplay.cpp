@@ -208,6 +208,8 @@ void CMessageDisplay::Update (void)
 //	Update the display
 
 	{
+	DEBUG_TRY
+
 	int iMsg = Prev(m_iNextMessage);
 	while (Next(iMsg) != m_iFirstMessage)
 		{
@@ -246,4 +248,6 @@ void CMessageDisplay::Update (void)
 
 		iMsg = Prev(iMsg);
 		}
+
+	DEBUG_CATCH
 	}

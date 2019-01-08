@@ -522,6 +522,8 @@ void CCommandLineDisplay::Paint (CG32bitImage &Dest)
 //	Paint display
 
 	{
+	DEBUG_TRY
+
 	if (!m_bEnabled)
 		return;
 
@@ -554,6 +556,8 @@ void CCommandLineDisplay::Paint (CG32bitImage &Dest)
 			m_rcRect.top);
 
 	m_iCounter++;
+
+	DEBUG_CATCH
 	}
 
 void CCommandLineDisplay::Update (void)

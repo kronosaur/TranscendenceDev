@@ -414,6 +414,8 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 //	Paints the main screen
 
 	{
+	DEBUG_TRY
+
 	//	Figure out some stats
 
 	DWORD dwViewportFlags = 0;
@@ -469,5 +471,7 @@ void CGameSession::PaintSRS (CG32bitImage &Screen)
 
 	if (m_iDamageFlash > 0)
 		m_iDamageFlash--;
+
+	DEBUG_CATCH
 	}
 

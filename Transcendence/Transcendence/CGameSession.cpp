@@ -391,6 +391,8 @@ void CGameSession::PaintSoundtrackTitles (CG32bitImage &Dest)
 //	Paints the info about the currently playing soundtrack.
 
 	{
+	DEBUG_TRY
+
 	int iPos;
 	CMusicResource *pTrack = m_Soundtrack.GetCurrentTrack(&iPos);
 	if (pTrack == NULL)
@@ -415,6 +417,8 @@ void CGameSession::PaintSoundtrackTitles (CG32bitImage &Dest)
 	//	Paint
 
 	PaintInfoText(Dest, pTrack->GetTitle(), Desc, true);
+
+	DEBUG_CATCH
 	}
 
 bool CGameSession::ShowMenu (EMenuTypes iMenu)

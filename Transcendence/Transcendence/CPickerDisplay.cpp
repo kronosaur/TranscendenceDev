@@ -176,6 +176,8 @@ void CPickerDisplay::Paint (CG32bitImage &Dest)
 //	Paint the display
 
 	{
+	DEBUG_TRY
+
 	Update();
 
 	Dest.Blt(0,
@@ -186,6 +188,8 @@ void CPickerDisplay::Paint (CG32bitImage &Dest)
 			m_Buffer,
 			m_rcRect.left,
 			m_rcRect.top);
+
+	DEBUG_CATCH
 	}
 
 void CPickerDisplay::PaintSelection (CG32bitImage &Dest, int x, int y)

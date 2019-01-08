@@ -113,6 +113,8 @@ void CMenuDisplay::Paint (CG32bitImage &Dest)
 //	Paint the buffer
 
 	{
+	DEBUG_TRY
+
 	//	Paint a transparent background
 
 	if (m_pMenu)
@@ -132,6 +134,8 @@ void CMenuDisplay::Paint (CG32bitImage &Dest)
 				m_rcRect.left,
 				m_rcRect.top);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CMenuDisplay::Update (void)
