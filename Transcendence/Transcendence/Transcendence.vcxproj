@@ -738,6 +738,11 @@
   <ItemGroup>
     <None Include="..\..\..\SteamBuild\ContentBuilder\scripts\app_build_1000.vdf" />
     <None Include="..\..\..\SteamBuild\ContentBuilder\scripts\depot_build_1001.vdf" />
+    <None Include="..\..\.editorconfig" />
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\LICENSE" />
+    <None Include="..\..\README" />
     <None Include="..\Game\Readme.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
@@ -747,9 +752,6 @@
     <None Include="..\Game\ReadmeStub.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
-    <None Include="..\.gitignore" />
-    <None Include="..\LICENSE" />
-    <None Include="..\README" />
     <None Include="Resources\Header.dxfn" />
     <None Include="Resources\HeaderBold.dxfn" />
     <None Include="Resources\LogoTitle.dxfn" />

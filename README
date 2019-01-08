@@ -1,6 +1,6 @@
 TRANSCENDENCE SOURCE CODE
 
-Copyright (c) 2016 by Kronosaur Productions, LLC.
+Copyright (c) 2003-2019 by Kronosaur Productions, LLC.
 http://transcendence.kronosaur.com
 transcendence@kronosaur.com
 @Transcendence
@@ -9,12 +9,6 @@ This package contains the source code for building the Transcendence.exe client,
 which is used to run any Transcendence adventure, including "Domina & Oracus".
 
 BUILD INSTRUCTIONS
-
-This project depends on two other repos, which must be placed at the same level,
-under a folder hereby referred to as <root dir>:
-
-https://github.com/kronosaur/Alchemy
-https://github.com/kronosaur/Mammoth
 
 If you are downloading the repos in order to submit future pull requests, it is 
 worthwhile to keep repositories synced with kronosaur:
@@ -69,9 +63,6 @@ without it, however, as long as you add CHexarcServiceStub.cpp to the build.
 In Visual Studio, find the CHexarcServiceStub.cpp file in the TSUI project under 
 the \Source Files\CloudInterface Files folder. Bring up the Properties page for 
 the file and under General properties set "Exclude from Build" to "No".
-
-Alternatively, under the <root dir>\Mammoth\TSUI folder, copy 
-CHexarcServiceStub.cpp as CHexarcService.cpp.
 
 LICENSE
 

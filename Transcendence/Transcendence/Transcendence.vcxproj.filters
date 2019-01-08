@@ -348,15 +348,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\.gitignore">
-      <Filter>Notes and Documents</Filter>
-    </None>
-    <None Include="..\LICENSE">
-      <Filter>Notes and Documents</Filter>
-    </None>
-    <None Include="..\README">
-      <Filter>Notes and Documents</Filter>
-    </None>
     <None Include="..\Game\Readme.htm">
       <Filter>Notes and Documents</Filter>
     </None>
@@ -392,6 +383,21 @@
     </None>
     <None Include="..\..\..\SteamBuild\ContentBuilder\scripts\depot_build_1001.vdf">
       <Filter>SteamBuild</Filter>
+    </None>
+    <None Include="..\..\.gitignore">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\.editorconfig">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\.gitattributes">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\LICENSE">
+      <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\..\README">
+      <Filter>Notes and Documents</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -240,10 +240,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\CalcConvexHull.cpp" />
-    <ClCompile Include="..\CSphericalCoordinates.cpp" />
-    <ClCompile Include="..\CXForm3D.cpp" />
     <ClCompile Include="..\Include\CMatrix.cpp" />
+    <ClCompile Include="CalcConvexHull.cpp" />
     <ClCompile Include="CArchiver.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -493,6 +491,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CSphericalCoordinates.cpp" />
     <ClCompile Include="CStackBase.cpp" />
     <ClCompile Include="CStepIncrementor.cpp" />
     <ClCompile Include="CString.cpp">
@@ -548,6 +547,7 @@
     </ClCompile>
     <ClCompile Include="CThreadPool.cpp" />
     <ClCompile Include="CVoronoiTessellation.cpp" />
+    <ClCompile Include="CXForm3D.cpp" />
     <ClCompile Include="Kernel.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -718,9 +718,6 @@
     <ProjectReference Include="..\zlib-1.2.7\contrib\vstudio\vc10\zlibstat.vcxproj">
       <Project>{745dec58-ebb3-47a9-a9b8-4c6627c01bf8}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.gitignore" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE" />

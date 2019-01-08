@@ -205,17 +205,8 @@
     <ClCompile Include="..\Include\CMatrix.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
-    <ClCompile Include="..\CSphericalCoordinates.cpp">
-      <Filter>Source Files\Euclid</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CXForm3D.cpp">
-      <Filter>Source Files\Euclid</Filter>
-    </ClCompile>
     <ClCompile Include="quickhull\QuickHull.cpp">
       <Filter>Source Files\quickhull</Filter>
-    </ClCompile>
-    <ClCompile Include="..\CalcConvexHull.cpp">
-      <Filter>Source Files\Euclid</Filter>
     </ClCompile>
     <ClCompile Include="CProjection3D.cpp">
       <Filter>Source Files\Euclid</Filter>
@@ -234,6 +225,15 @@
     </ClCompile>
     <ClCompile Include="CException.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CalcConvexHull.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="CSphericalCoordinates.cpp">
+      <Filter>Source Files\Euclid</Filter>
+    </ClCompile>
+    <ClCompile Include="CXForm3D.cpp">
+      <Filter>Source Files\Euclid</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -324,11 +324,6 @@
     <ClInclude Include="VoronoiGenerator.h">
       <Filter>Source Files\Euclid</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.gitignore">
-      <Filter>Notes and Documents</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE">

@@ -1613,13 +1613,6 @@
       <Project>{482b1658-7f28-4e62-94b6-ed71259c5f44}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\.gitignore" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\LICENSE" />
-    <Text Include="..\README" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -8,7 +8,7 @@
 
 #include "Euclid.h"
 
-#include "Kernel\quickhull\QuickHull.hpp"
+#include "quickhull\QuickHull.hpp"
 
 using namespace quickhull;
 
