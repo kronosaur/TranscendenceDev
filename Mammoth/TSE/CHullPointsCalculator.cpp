@@ -7,6 +7,12 @@
 
 static LPCSTR FIELD_NAME_TABLE[CHullPointsCalculator::fieldCount] = 
 	{
+	"deviceSlots",
+	"armor",
+	"drive",
+	"cargo",
+	"misc",
+
 	"fullSlots",
 	"partialSlots",
 	"cargoSpace",
@@ -30,7 +36,7 @@ static constexpr Metric CARGO_SCALE_K1_MAX = 0.15;
 static constexpr Metric CARGO_SCALE_K2 = 0.5;
 static constexpr int MAX_CARGO_SPACE = 1000;
 static constexpr int STD_ARMOR_SEGMENTS = 4;
-static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.25;
+static constexpr Metric POINTS_PER_ARMOR_SEGMENT = 0.125;
 static constexpr Metric STD_ARMOR_FREQUENCY_FACTOR = 1.0;
 static constexpr Metric MAX_ARMOR_FREQUENCY_FACTOR = 0.5;
 static constexpr Metric ARMOR_SPEED_BONUS_FACTOR = 0.2;
@@ -140,10 +146,18 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	m_Data[fieldExtra] = Hull.GetExtraPoints();
 
+	//	Add up sums
+
+	m_Data[fieldSlotSum] = m_Data[fieldFullSlots] + m_Data[fieldPartialSlots];
+	m_Data[fieldCargoSum] = m_Data[fieldCargoSpace] + m_Data[fieldMaxCargoSpace];
+	m_Data[fieldArmorSum] = m_Data[fieldArmorCount] + m_Data[fieldStdArmorMass] + m_Data[fieldMaxArmorMass];
+	m_Data[fieldDriveSum] = m_Data[fieldMaxSpeed] + m_Data[fieldManeuverability] + m_Data[fieldThrustRatio];
+	m_Data[fieldOtherSum] = m_Data[fieldDrivePowerUse] + m_Data[fieldExtra] + m_Data[fieldDeviceSlots];
+
 	//	Compute total points
 
 	m_rTotalPoints = 0.0;
-	for (int i = 0; i < fieldCount; i++)
+	for (int i = fieldFullSlots; i < fieldCount; i++)
 		m_rTotalPoints += m_Data[i];
 	}
 

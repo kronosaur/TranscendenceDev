@@ -162,21 +162,27 @@ class CHullPointsCalculator
 	public:
 		enum EHullPoints
 			{
-			fieldFullSlots			= 0,
-			fieldPartialSlots		= 1,
-			fieldCargoSpace			= 2,
-			fieldMaxCargoSpace		= 3,
-			fieldArmorCount			= 4,
-			fieldStdArmorMass		= 5,
-			fieldMaxArmorMass		= 6,
-			fieldMaxSpeed			= 7,
-			fieldThrustRatio		= 8,
-			fieldDrivePowerUse		= 9,
-			fieldManeuverability	= 10,
-			fieldDeviceSlots		= 11,
-			fieldExtra				= 12,
+			fieldSlotSum			= 0,
+			fieldArmorSum			= 1,
+			fieldDriveSum			= 2,
+			fieldCargoSum			= 3,
+			fieldOtherSum			= 4,
 
-			fieldCount				= 13,
+			fieldFullSlots			= 5,
+			fieldPartialSlots		= 6,
+			fieldCargoSpace			= 7,
+			fieldMaxCargoSpace		= 8,
+			fieldArmorCount			= 9,
+			fieldStdArmorMass		= 10,
+			fieldMaxArmorMass		= 11,
+			fieldMaxSpeed			= 12,
+			fieldThrustRatio		= 13,
+			fieldDrivePowerUse		= 14,
+			fieldManeuverability	= 15,
+			fieldDeviceSlots		= 16,
+			fieldExtra				= 17,
+
+			fieldCount				= 18,
 			};
 
 		CHullPointsCalculator (const CShipClass &Class);
