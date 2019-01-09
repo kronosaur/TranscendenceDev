@@ -252,7 +252,7 @@
 			numberAppearing=	"1d4"
 
 			value=				"260"
-			mass=				"4000"
+			mass=				"5000"
 			  
 			description=		"An improved version of ceramic armor, this armor is very effective against laser and particle damage."
 			>
@@ -260,7 +260,7 @@
 		<Image imageID="&rsItems3;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"60"
+				hitPoints=	"75"
 				hpBonus=	"+100,  +0, +50,  +0"
 				/>
 
@@ -358,7 +358,7 @@
 			numberAppearing=	"1d6"
 
 			value=				"350"
-			mass=				"4000"
+			mass=				"3500"
 			  
 			description=		"This is a radiation-immune version of the popular reactive armor plate."
 			>
@@ -366,7 +366,7 @@
 		<Image imageID="&rsItems3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"60"
+				hitPoints=	"55"
 				hpBonus=	"  +0,+100,  +0, +50"
 				
 				blindingDamageAdj=	"0"
@@ -388,7 +388,7 @@
 			numberAppearing=	"1d4"
 
 			value=				"260"
-			mass=				"4000"
+			mass=				"5000"
 			  
 			description=		"This heavier version of reactive armor can withstand more than 60 units of kinetic damage."
 			>
@@ -396,7 +396,7 @@
 		<Image imageID="&rsItems3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"60"
+				hitPoints=	"75"
 				hpBonus=	"  +0,+100,  +0, +50"
 				/>
 
@@ -631,7 +631,7 @@
 			numberAppearing=	"1d6"
 
 			value=				"1100"
-			mass=				"4000"
+			mass=				"3500"
 			  
 			description=		"This segment of plasteel armor has been specially modified to resist radiation."
 			>
@@ -661,7 +661,7 @@
 			numberAppearing=	"1d6"
 
 			value=				"800"
-			mass=				"4000"
+			mass=				"5000"
 			  
 			description=		"This is a stronger plate of the popular plasteel armor."
 			>
@@ -669,7 +669,7 @@
 		<Image imageID="&rsItems5;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"120"
+				hitPoints=	"140"
 				/>
 
 	</ItemType>
@@ -744,7 +744,7 @@
 			numberAppearing=	"1d4"
 
 			value=				"2000"
-			mass=				"4500"
+			mass=				"5000"
 			  
 			description=		"This is a heavier version of the innovative ceramic-based alloy."
 			>
@@ -910,7 +910,7 @@
 			numberAppearing=	"1d6"
 
 			value=				"4500"
-			mass=				"4500"
+			mass=				"5000"
 			  
 			description=		"This armor is made out of a plasteel alloy designed to resist missile damage."
 			>
@@ -1331,7 +1331,7 @@
 			numberAppearing=	"1d4"
 
 			value=				"8000"
-			mass=				"4000"
+			mass=				"3500"
 			  
 			description=		"The V300 is a military version of Rasiermesser's powered armor. Each segment draws 2 MWs of power."
 			>

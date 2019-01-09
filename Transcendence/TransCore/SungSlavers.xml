@@ -1269,7 +1269,7 @@
 			value=				"600"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			mass=				"2500"
+			mass=				"3000"
 			attributes=			"MinorItem; NotForSale; sungSlavers; TiledArmor"
 
 			description=		"This blast-resistant tiled armor can be cannibalized to repair other Sung armor segments."
