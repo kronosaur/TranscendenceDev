@@ -4043,7 +4043,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(pArmor->GetRepairCost(CItemCtx(&ArmorItem)));
 
 		case FN_ARM_REPAIRTECH:
-			return pCC->CreateInteger(pArmor->GetRepairTech());
+			return pCC->CreateInteger(pArmor->GetRepairLevel(CItemCtx(&ArmorItem)));
 
 		case FN_ARM_IS_RADIATION_IMMUNE:
 			return pCC->CreateBool(pArmor->IsImmune(CItemCtx(&ArmorItem), specialRadiation));

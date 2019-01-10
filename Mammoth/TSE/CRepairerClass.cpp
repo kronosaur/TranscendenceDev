@@ -49,7 +49,8 @@ void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSe
 
 	//	Get the armor class for this segment
 
-	CArmorClass *pArmorClass = pShip->GetArmorSection(iSegment)->GetClass();
+	CItemCtx ArmorCtx(pShip, pShip->GetArmorSection(iSegment));
+	CArmorClass *pArmorClass = ArmorCtx.GetArmorClass();
 	if (pArmorClass == NULL)
 		{
 		*retiHP = iRegenHP;
@@ -59,7 +60,7 @@ void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSe
 
 	//	Compute the default regen and power consumption based on descriptor
 
-	int iArmorTech = pArmorClass->GetRepairTech();
+	int iArmorTech = pArmorClass->GetRepairLevel(ArmorCtx);
 	if (iArmorTech - 1 < m_Repair.GetCount())
 		{
 		iRegenHP = m_Repair[iArmorTech - 1].GetRegen(iTick, REPAIR_CYCLE_TIME);
@@ -192,7 +193,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 	//	We make a list of all armor class types for the ship.
 
-	TArray<const CArmorClass *> Armor;
+	TArray<CItemCtx> ArmorCtx;
 	CSpaceObject *pSource = Ctx.GetSource();
 	CShip *pShip = (pSource ? pSource->AsShip() : NULL);
 	const CShipClass *pClass;
@@ -201,18 +202,18 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 	if (pShip)
 		{
-		Armor.InsertEmpty(pShip->GetArmorSectionCount());
+		ArmorCtx.InsertEmpty(pShip->GetArmorSectionCount());
 		for (int i = 0; i < pShip->GetArmorSectionCount(); i++)
-			Armor[i] = pShip->GetArmorSection(i)->GetClass();
+			ArmorCtx[i] = CItemCtx(pShip, pShip->GetArmorSection(i));
 		}
 
 	//	Otherwise, see if we have a ship class
 
 	else if (pClass = Ctx.GetSourceShipClass())
 		{
-		Armor.InsertEmpty(pClass->GetArmorDesc().GetCount());
+		ArmorCtx.InsertEmpty(pClass->GetArmorDesc().GetCount());
 		for (int i = 0; i < pClass->GetArmorDesc().GetCount(); i++)
-			Armor[i] = pClass->GetArmorDesc().GetSegment(i).GetArmorClass();
+			ArmorCtx[i] = CItemCtx(pClass->GetArmorDesc().GetSegment(i).GetArmorItem());
 		}
 
 	//	Otherwise, standard rating
@@ -226,16 +227,17 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 
 	int iTotalPowerUse = 0;
 
-	for (int i = 0; i < Armor.GetCount(); i++)
+	for (int i = 0; i < ArmorCtx.GetCount(); i++)
 		{
 		int iPowerUse = 0;
 
-		if (Armor[i] == NULL)
+		CArmorClass *pClass = ArmorCtx[i].GetArmorClass();
+		if (pClass == NULL)
 			continue;
 
 		//	First compute the standard power
 
-		int iArmorTech = Armor[i]->GetRepairTech();
+		int iArmorTech = pClass->GetRepairLevel(ArmorCtx[i]);
 		if (iArmorTech - 1 < m_Repair.GetCount())
 			{
 			iPowerUse = (m_Repair[iArmorTech - 1].GetHPPerEra() > 0 ? m_iPowerUse : 0);
@@ -252,7 +254,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 			CCCtx.SaveAndDefineSourceVar(pShip);
 			CCCtx.SaveAndDefineItemVar(Ctx.GetItem());
 			CCCtx.DefineInteger(CONSTLIT("aArmorSeg"), i);
-			CCCtx.DefineItemType(CONSTLIT("aArmorType"), Armor[i]->GetItemType());
+			CCCtx.DefineItemType(CONSTLIT("aArmorType"), pClass->GetItemType());
 
 			ICCItemPtr pResult = CCCtx.RunCode(Event);
 			if (pResult->IsError())

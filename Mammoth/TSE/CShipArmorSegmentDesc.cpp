@@ -76,6 +76,21 @@ bool CShipArmorSegmentDesc::CreateArmorItem (CItem *retItem, CString *retsError)
     return true;
     }
 
+CItem CShipArmorSegmentDesc::GetArmorItem (void) const
+
+//	GetArmorItem
+//
+//	Creates an armor item.
+
+	{
+	CItem ArmorItem(m_pArmor->GetItemType(), 1);
+	m_Enhanced.EnhanceItem(ArmorItem);
+	if (m_iLevel != -1)
+		ArmorItem.SetLevel(m_iLevel);
+
+	return ArmorItem;
+	}
+
 int CShipArmorSegmentDesc::GetLevel (void) const
 
 //  GetLevel

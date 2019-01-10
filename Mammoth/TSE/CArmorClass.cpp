@@ -343,8 +343,8 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	//	If we require a higher level to repair
 
-	if (GetRepairTech() != Stats.iLevel)
-		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("repair level %d"), GetRepairTech())));
+	if (GetRepairLevel(ItemCtx) != Stats.iLevel)
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("repair level %d"), GetRepairLevel(ItemCtx))));
 
 	//	Radiation 
 
@@ -1897,7 +1897,7 @@ ICCItem *CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(GetRepairCost(Ctx));
 
 	else if (strEquals(sName, PROPERTY_REPAIR_LEVEL))
-		return CC.CreateInteger(GetRepairTech());
+		return CC.CreateInteger(GetRepairLevel(Ctx));
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(IsImmune(Ctx, specialShatter));
@@ -2063,6 +2063,23 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 		*retiSpeedBonus = iBonus;
 
 	return true;
+	}
+
+int CArmorClass::GetRepairLevel (CItemCtx &ItemCtx) const
+
+//	GetRepairLevel
+//
+//	Returns the tech level required to repair this armor segment.
+
+	{
+	if (m_pScalable == NULL || ItemCtx.IsItemNull())
+		return m_iRepairTech;
+
+	int iActualLevel = ItemCtx.GetItem().GetLevel();
+	int iBaseLevel = m_pItemType->GetLevel();
+	int iScaledRepairLevel = Max(1, Min(m_iRepairTech + (iActualLevel - iBaseLevel), MAX_ITEM_LEVEL));
+
+	return iScaledRepairLevel;
 	}
 
 Metric CArmorClass::GetScaledCostAdj (CItemCtx &ItemCtx) const

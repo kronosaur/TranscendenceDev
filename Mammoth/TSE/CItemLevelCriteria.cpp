@@ -69,7 +69,7 @@ bool CItemLevelCriteria::MatchesCriteria (int iLevel, const CItem &Item) const
 			if (pArmor == NULL)
 				return false;
 
-			iItemLevel = pArmor->GetRepairTech();
+			iItemLevel = pArmor->GetRepairLevel(CItemCtx(Item));
 			break;
 			}
 

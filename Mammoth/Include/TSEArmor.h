@@ -120,7 +120,7 @@ class CArmorClass
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
 		inline int GetRepairCost (CItemCtx &Ctx) const;
-		inline int GetRepairTech (void) const { return m_iRepairTech; }
+		int GetRepairLevel (CItemCtx &ItemCtx) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
@@ -236,7 +236,8 @@ class CShipArmorSegmentDesc
         bool AngleInSegment (int iAngle) const;
         ALERROR Bind (SDesignLoadCtx &Ctx);
         bool CreateArmorItem (CItem *retItem, CString *retsError = NULL) const;
-        inline CArmorClass *GetArmorClass (void) const { return m_pArmor;  }
+        inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
+		CItem GetArmorItem (void) const;
         inline int GetCenterAngle (void) const { return AngleMod(m_iStartAt + m_iSpan / 2); }
         DWORD GetCriticalArea (void) const { return m_dwAreaSet; }
         int GetLevel (void) const;
