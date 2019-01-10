@@ -13,6 +13,72 @@ ICCItemPtr::ICCItemPtr (const ICCItemPtr &Src)
 		m_pPtr = NULL;
 	}
 
+ICCItemPtr::ICCItemPtr (ICCItem::ValueTypes iType)
+	{
+	CCodeChain &CC = g_pUniverse->GetCC();
+
+	switch (iType)
+		{
+		case ICCItem::Nil:
+			m_pPtr = CC.CreateNil();
+			break;
+
+		case ICCItem::True:
+			m_pPtr = CC.CreateTrue();
+			break;
+
+		case ICCItem::Integer:
+			m_pPtr = CC.CreateInteger(0);
+			break;
+
+		case ICCItem::String:
+			m_pPtr = CC.CreateString(NULL_STR);
+			break;
+
+		case ICCItem::List:
+			m_pPtr = CC.CreateLinkedList();
+			break;
+
+		case ICCItem::Double:
+			m_pPtr = CC.CreateDouble(0.0);
+			break;
+
+		case ICCItem::SymbolTable:
+			m_pPtr = CC.CreateSymbolTable();
+			break;
+
+		default:
+			ASSERT(false);
+			m_pPtr = CC.CreateError(CONSTLIT("Invalid type"));
+			break;
+		}
+	}
+
+ICCItemPtr::ICCItemPtr (const CString &sValue)
+	{
+	m_pPtr = g_pUniverse->GetCC().CreateString(sValue);
+	}
+
+ICCItemPtr::ICCItemPtr (int iValue)
+	{
+	m_pPtr = g_pUniverse->GetCC().CreateInteger(iValue);
+	}
+
+ICCItemPtr::ICCItemPtr (DWORD dwValue)
+	{
+	m_pPtr = g_pUniverse->GetCC().CreateInteger((int)dwValue);
+	}
+
+ICCItemPtr::ICCItemPtr (double rValue)
+	{
+	m_pPtr = g_pUniverse->GetCC().CreateDouble(rValue);
+	}
+
+ICCItemPtr::ICCItemPtr (bool bValue)
+	{
+	m_pPtr = g_pUniverse->GetCC().CreateBool(bValue);
+	}
+
 ICCItemPtr::~ICCItemPtr (void)
 	{
 	if (m_pPtr)

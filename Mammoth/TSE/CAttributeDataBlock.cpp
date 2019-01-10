@@ -234,7 +234,7 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 
     SDataEntry *pEntry = m_Data.GetAt(sAttrib);
     if (pEntry == NULL)
-        return ICCItemPtr(CC.CreateNil());
+        return ICCItemPtr(ICCItem::Nil);
 
 	return ICCItemPtr(pEntry->pData->CloneContainer(&CC));
 	}
@@ -296,9 +296,9 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
 		ICCItem *pOriginal = pEntry->pData;
 
         if (pOriginal->IsDouble() || pValue->IsDouble())
-            pResult = ICCItemPtr(CC.CreateDouble(pOriginal->GetDoubleValue() + pValue->GetDoubleValue()));
+            pResult = ICCItemPtr(pOriginal->GetDoubleValue() + pValue->GetDoubleValue());
         else
-            pResult = ICCItemPtr(CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue()));
+            pResult = ICCItemPtr(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
         }
 
     //  Store

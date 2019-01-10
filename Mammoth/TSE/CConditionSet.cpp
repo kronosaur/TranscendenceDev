@@ -96,7 +96,7 @@ ICCItemPtr CConditionSet::WriteAsCCItem (void) const
 		}
 
 	if (pResult->GetCount() == 0)
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	else
 		return pResult;
 	}

@@ -168,6 +168,13 @@ class ICCItemPtr
 
 		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
 
+		explicit ICCItemPtr (ICCItem::ValueTypes iType);
+		explicit ICCItemPtr (const CString &sValue);
+		explicit ICCItemPtr (int iValue);
+		explicit ICCItemPtr (DWORD dwValue);
+		explicit ICCItemPtr (double rValue);
+		explicit ICCItemPtr (bool bValue);
+
 		ICCItemPtr (const ICCItemPtr &Src);
 
 		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)

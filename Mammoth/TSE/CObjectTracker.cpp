@@ -265,7 +265,7 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
 	//	Compose a data block which has the default description.
 
 	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItemPtr pData = ICCItemPtr(CC.CreateSymbolTable());
+	ICCItemPtr pData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add the default trade description, in case we need it.
 

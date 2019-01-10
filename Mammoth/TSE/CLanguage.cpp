@@ -514,7 +514,7 @@ ICCItemPtr CLanguage::GetNounFlags (DWORD dwFlags)
 		}
 
 	if (pResult->GetCount() == 0)
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 
 	return pResult;
 	}

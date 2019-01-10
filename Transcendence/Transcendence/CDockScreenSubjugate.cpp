@@ -107,23 +107,23 @@ ICCItemPtr CDockScreenSubjugate::OnGetProperty (const CString &sProperty) const
 		switch (m_Artifact.GetStatus())
 			{
 			case CArtifactAwakening::resultNone:
-				return ICCItemPtr(CC.CreateString(CONSTLIT("notStarted")));
+				return ICCItemPtr(CONSTLIT("notStarted"));
 
 			case CArtifactAwakening::resultArtifactSubdued:
-				return ICCItemPtr(CC.CreateString(CONSTLIT("subdued")));
+				return ICCItemPtr(CONSTLIT("subdued"));
 
 			case CArtifactAwakening::resultPlayerFailed:
-				return ICCItemPtr(CC.CreateString(CONSTLIT("failed")));
+				return ICCItemPtr(CONSTLIT("failed"));
 
 			case CArtifactAwakening::resultBattleContinues:
-				return ICCItemPtr(CC.CreateString(CONSTLIT("inProgress")));
+				return ICCItemPtr(CONSTLIT("inProgress"));
 
 			default:
-				return ICCItemPtr(CC.CreateString(CONSTLIT("unknown")));
+				return ICCItemPtr(CONSTLIT("unknown"));
 			}
 		}
 	else
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 IDockScreenDisplay::EResults CDockScreenSubjugate::OnHandleKeyDown (int iVirtKey)

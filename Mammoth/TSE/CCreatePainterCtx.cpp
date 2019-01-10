@@ -47,7 +47,7 @@ ICCItem *CCreatePainterCtx::GetData (void)
 	//	Initialize
 
 	CCodeChain &CC = g_pUniverse->GetCC();
-	m_pData = ICCItemPtr(CC.CreateSymbolTable());
+	m_pData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add data
 

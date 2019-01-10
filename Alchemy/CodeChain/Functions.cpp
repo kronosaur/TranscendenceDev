@@ -5131,15 +5131,9 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 		{
 		switch (pFirst->GetValueType())
 			{
-			case ICCItem::Boolean:
-				{
-				if (pFirst->IsNil() == pSecond->IsNil())
-					return 0;
-				else if (pFirst->IsNil())
-					return -1;
-				else
-					return 1;
-				}
+			case ICCItem::Nil:
+			case ICCItem::True:
+				return 0;
 
 			case ICCItem::Integer:
 				{
@@ -5225,8 +5219,11 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			{
 			switch (pSecond->GetValueType())
 				{
-				case ICCItem::Boolean:
-					return (pSecond->IsNil() ? 0 : -1);
+				case ICCItem::Nil:
+					return 0;
+
+				case ICCItem::True:
+					return -1;
 
 				case ICCItem::Integer:
 				case ICCItem::Double:
@@ -5336,8 +5333,11 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 			{
 			switch (pSecond->GetValueType())
 				{
-				case ICCItem::Boolean:
-					return (pSecond->IsNil() ? 0 : -1);
+				case ICCItem::Nil:
+					return 0;
+
+				case ICCItem::True:
+					return -1;
 
 				case ICCItem::Integer:
 					{

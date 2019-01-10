@@ -614,25 +614,25 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 
 	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 
 	if (strEquals(sProperty, PROPERTY_DEST_GATE_ID))
-		return ICCItemPtr(CC.CreateString(pDesc->sDestEntryPoint));
+		return ICCItemPtr(pDesc->sDestEntryPoint);
 
 	else if (strEquals(sProperty, PROPERTY_DEST_ID))
-		return ICCItemPtr(CC.CreateString(pDesc->sDestNode));
+		return ICCItemPtr(pDesc->sDestNode);
 
 	else if (strEquals(sProperty, PROPERTY_GATE_ID))
-		return ICCItemPtr(CC.CreateString(sName));
+		return ICCItemPtr(sName);
 
 	else if (strEquals(sProperty, PROPERTY_NODE_ID))
-		return ICCItemPtr(CC.CreateString(GetID()));
+		return ICCItemPtr(GetID());
 
 	else if (strEquals(sProperty, PROPERTY_UNCHARTED))
-		return ICCItemPtr(CC.CreateBool(pDesc->fUncharted));
+		return ICCItemPtr((bool)pDesc->fUncharted);
 
 	else
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc)

@@ -177,33 +177,33 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
-		return ICCItemPtr(CC.CreateBool(CanBeDeclined()));
+		return ICCItemPtr(CanBeDeclined());
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_DELETED))
-		return ICCItemPtr(CC.CreateBool(CanBeDeleted()));
+		return ICCItemPtr(CanBeDeleted());
 
 	else if (strEquals(sProperty, PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF))
-		return ICCItemPtr(CC.CreateBool(ForceUndockAfterDebrief()));
+		return ICCItemPtr(ForceUndockAfterDebrief());
 
 	else if (strEquals(sProperty, PROPERTY_HAS_DEBRIEF))
-		return ICCItemPtr(CC.CreateBool(HasDebrief()));
+		return ICCItemPtr(HasDebrief());
 
 	else if (strEquals(sProperty, PROPERTY_PRIORITY))
-		return ICCItemPtr(CC.CreateInteger(GetPriority()));
+		return ICCItemPtr(GetPriority());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_APPEARING))
 		{
 		if (m_iMaxAppearing != -1)
-			return ICCItemPtr(CC.CreateInteger(m_iMaxAppearing));
+			return ICCItemPtr(m_iMaxAppearing);
 		else
-			return ICCItemPtr(CC.CreateNil());
+			return ICCItemPtr(ICCItem::Nil);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_TOTAL_ACCEPTED))
-		return ICCItemPtr(CC.CreateInteger(m_iAccepted));
+		return ICCItemPtr(m_iAccepted);
 
 	else if (strEquals(sProperty, PROPERTY_TOTAL_EXISTING))
-		return ICCItemPtr(CC.CreateInteger(m_iExisting));
+		return ICCItemPtr(m_iExisting);
 
 	else
 		return NULL;

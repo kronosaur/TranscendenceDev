@@ -728,19 +728,19 @@ ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
-		return ICCItemPtr(CC.CreateString(GetNounPhrase()));
+		return ICCItemPtr(GetNounPhrase());
 
 	else if (strEquals(sProperty, PROPERTY_PLAYER_THREAT_LEVEL))
-		return ICCItemPtr(CC.CreateInteger((int)GetPlayerThreatLevel()));
+		return ICCItemPtr((int)GetPlayerThreatLevel());
 
 	else if (strEquals(sProperty, PROPERTY_PLURAL))
-		return ICCItemPtr(CC.CreateBool(m_bPluralForm));
+		return ICCItemPtr(m_bPluralForm);
 
 	else if (strEquals(sProperty, PROPERTY_SHIPS_DESTROYED_BY_PLAYER))
-		return ICCItemPtr(CC.CreateInteger(m_iShipsDestroyedByPlayer));
+		return ICCItemPtr(m_iShipsDestroyedByPlayer);
 
 	else if (strEquals(sProperty, PROPERTY_STATIONS_DESTROYED_BY_PLAYER))
-		return ICCItemPtr(CC.CreateInteger(m_iStationsDestroyedByPlayer));
+		return ICCItemPtr(m_iStationsDestroyedByPlayer);
 
 	else
 		return NULL;

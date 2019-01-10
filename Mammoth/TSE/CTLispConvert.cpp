@@ -162,9 +162,22 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Val
 
 	{
 	if (Value > (CurrencyValue)0x7fffffff)
-		return ICCItemPtr(CC.CreateDouble((double)Value));
+		return ICCItemPtr((double)Value);
 	else
-		return ICCItemPtr(CC.CreateInteger((int)Value));
+		return ICCItemPtr((int)Value);
+	}
+
+ICCItemPtr CTLispConvert::CreatePowerResultMW (CCodeChain &CC, int iPower)
+
+//	CreatePowerResultMW
+//
+//	Returns power in MWs. iPower is the power in 1/10th MWs.
+
+	{
+	if (iPower % 10)
+		return ICCItemPtr((double)iPower / 10.0);
+	else
+		return ICCItemPtr(iPower / 10);
 	}
 
 ICCItemPtr CTLispConvert::GetElementAt (ICCItem *pItem, const CString &sField)

@@ -304,7 +304,7 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 
 	CCodeChain &CC = g_pUniverse->GetCC();
 	if (m_Sel.GetCount() == 0)
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 
 	ICCItemPtr pSel(CC.CreateLinkedList());
 	for (i = 0; i < m_Sel.GetCount(); i++)

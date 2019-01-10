@@ -273,7 +273,7 @@ void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
 
 	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
 	if (!Frame.pStoredData)
-		Frame.pStoredData = ICCItemPtr(CC.CreateSymbolTable());
+		Frame.pStoredData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add the entry
 
@@ -325,7 +325,7 @@ void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
 
 	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 2];
 	if (!Frame.pReturnData)
-		Frame.pReturnData = ICCItemPtr(CC.CreateSymbolTable());
+		Frame.pReturnData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add the entry
 

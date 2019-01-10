@@ -25,7 +25,7 @@ ICCItemPtr CDebugOptions::GetMemoryUse (void) const
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	ICCItemPtr pResult = ICCItemPtr(CC.CreateSymbolTable());
+	ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Design collection stats
 
@@ -52,28 +52,28 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 		return GetMemoryUse();
 
 	else if (strEquals(sProperty, PROPERTY_DEBUG_MODE))
-		return ICCItemPtr(CC.CreateBool(g_pUniverse->InDebugMode()));
+		return ICCItemPtr(g_pUniverse->InDebugMode());
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_AI_DEBUG))
-		return ICCItemPtr(CC.CreateBool(m_bShowAIDebug));
+		return ICCItemPtr(m_bShowAIDebug);
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_BOUNDS))
-		return ICCItemPtr(CC.CreateBool(m_bShowBounds));
+		return ICCItemPtr(m_bShowBounds);
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_FACINGS_ANGLE))
-		return ICCItemPtr(CC.CreateBool(m_bShowFacingsAngle));
+		return ICCItemPtr(m_bShowFacingsAngle);
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_LINE_OF_FIRE))
-		return ICCItemPtr(CC.CreateBool(m_bShowLineOfFire));
+		return ICCItemPtr(m_bShowLineOfFire);
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_NAV_PATHS))
-		return ICCItemPtr(CC.CreateBool(m_bShowNavPaths));
+		return ICCItemPtr(m_bShowNavPaths);
 
 	else if (strEquals(sProperty, PROPERTY_SHOW_NODE_INFO))
-		return ICCItemPtr(CC.CreateBool(m_bShowNodeAttributes));
+		return ICCItemPtr(m_bShowNodeAttributes);
 
 	else
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)

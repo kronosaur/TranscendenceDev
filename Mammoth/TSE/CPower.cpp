@@ -306,7 +306,7 @@ ICCItemPtr CPower::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) 
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
-		return ICCItemPtr(CC.CreateString(GetName()));
+		return ICCItemPtr(GetName());
 
 	else
 		return NULL;

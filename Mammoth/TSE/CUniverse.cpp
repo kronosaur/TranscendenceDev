@@ -996,11 +996,13 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	CCodeChain &CC = GetCC();
 
 	if (strEquals(sProperty, PROPERTY_API_VERSION))
-		return ICCItemPtr(CC.CreateInteger(API_VERSION));
+		return ICCItemPtr(API_VERSION);
+
 	else if (strEquals(sProperty, PROPERTY_MIN_API_VERSION))
-		return ICCItemPtr(CC.CreateInteger(m_Design.GetAPIVersion()));
+		return ICCItemPtr(m_Design.GetAPIVersion());
+
 	else
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 void CUniverse::GetRandomLevelEncounter (int iLevel, 

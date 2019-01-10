@@ -7045,7 +7045,7 @@ void CSpaceObject::SetDataInteger (const CString &sAttrib, int iValue)
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItemPtr pValue = ICCItemPtr(CC.CreateInteger(iValue));
+	ICCItemPtr pValue(iValue);
 	SetData(sAttrib, pValue);
 	}
 

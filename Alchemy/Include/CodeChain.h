@@ -94,7 +94,8 @@ class ICCItem : public CObject
 	public:
 		enum ValueTypes
 			{
-			Boolean,
+			Nil,
+			True,
 			Integer,
 			String,
 			List,
@@ -349,7 +350,7 @@ class CCNil : public ICCAtom
 		virtual int GetCount (void) override { return 0; }
 		virtual int GetIntegerValue (void) override { return 0; }
 		virtual CString GetStringValue (void) override { return LITERAL("Nil"); }
-		virtual ValueTypes GetValueType (void) override { return Boolean; }
+		virtual ValueTypes GetValueType (void) override { return Nil; }
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsInteger (void) override { return true; }
 		virtual bool IsDouble(void) override { return false; }
@@ -376,7 +377,7 @@ class CCTrue : public ICCAtom
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual int GetIntegerValue (void) override { return 1; }
 		virtual CString GetStringValue (void) override { return LITERAL("True"); }
-		virtual ValueTypes GetValueType (void) override { return Boolean; }
+		virtual ValueTypes GetValueType (void) override { return True; }
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsTrue (void) override { return true; }

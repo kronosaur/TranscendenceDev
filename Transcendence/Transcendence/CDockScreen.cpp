@@ -765,16 +765,16 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 	//	See if this is a generic property.
 
 	if (strEquals(sProperty, PROPERTY_COUNTER))
-		return ICCItemPtr(CC.CreateInteger(GetCounter()));
+		return ICCItemPtr(GetCounter());
 
 	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
-		return ICCItemPtr(CC.CreateString(GetDescription()));
+		return ICCItemPtr(GetDescription());
 
 	else if (strEquals(sProperty, PROPERTY_IN_FIRST_ON_INIT))
-		return ICCItemPtr(CC.CreateBool(IsFirstOnInit()));
+		return ICCItemPtr(IsFirstOnInit());
 
 	else if (strEquals(sProperty, PROPERTY_INPUT))
-		return ICCItemPtr(CC.CreateString(GetTextInput()));
+		return ICCItemPtr(GetTextInput());
 
 	//	Otherwise, ask the display
 
@@ -784,7 +784,7 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 	//	Otherwise, Nil
 
 	else
-		return ICCItemPtr(CC.CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 CDesignType *CDockScreen::GetResolvedRoot (CString *retsResolveScreen) const

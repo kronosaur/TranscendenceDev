@@ -205,9 +205,9 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 		{
 		CSpaceObject *pObj = GetSource();
 		if (pObj == NULL)
-			return ICCItemPtr(CC.CreateNil());
+			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CC.CreateInteger((int)pObj));
+		return ICCItemPtr((int)pObj);
 		}
 	else
 		return OnGetProperty(sProperty);

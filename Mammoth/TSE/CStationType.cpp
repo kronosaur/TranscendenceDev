@@ -1723,18 +1723,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
-		return ICCItemPtr(CC.CreateString(m_RandomPlacement.GetLevelFrequency()));
+		return ICCItemPtr(m_RandomPlacement.GetLevelFrequency());
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
-		return ICCItemPtr(CC.CreateBool(ShowsUnexploredAnnotation()));
+		return ICCItemPtr(ShowsUnexploredAnnotation());
 
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN))
-		return (m_pSovereign ? ICCItemPtr(CC.CreateInteger(m_pSovereign->GetUNID())) : ICCItemPtr(CC.CreateNil()));
+		return (m_pSovereign ? ICCItemPtr(m_pSovereign->GetUNID()) : ICCItemPtr(ICCItem::Nil));
 
 	else if (strEquals(sProperty, PROPERTY_SOVEREIGN_NAME))
 		{
 		if (m_pSovereign == NULL)
-			return ICCItemPtr(CC.CreateNil());
+			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(m_pSovereign->GetProperty(Ctx, PROPERTY_NAME));
 		}
@@ -1742,12 +1742,12 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		{
         const CTopologyNode::SCriteria *pSystemCriteria;
         if (!m_RandomPlacement.HasSystemCriteria(&pSystemCriteria))
-			return ICCItemPtr(CC.CreateNil());
+			return ICCItemPtr(ICCItem::Nil);
 
 		if (pSystemCriteria->AttribCriteria.IsEmpty())
-			return ICCItemPtr(CC.CreateNil());
+			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CC.CreateString(pSystemCriteria->AttribCriteria.AsString()));
+		return ICCItemPtr(pSystemCriteria->AttribCriteria.AsString());
 		}
 
 	else
