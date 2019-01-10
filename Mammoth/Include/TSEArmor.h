@@ -104,7 +104,7 @@ class CArmorClass
 			return true;
 			}
 
-		ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sProperty);
+		ICCItemPtr FindItemProperty (CItemCtx &Ctx, const CString &sProperty);
         inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		inline int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
         inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
@@ -116,6 +116,8 @@ class CArmorClass
 		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
+		int GetPowerOutput (CItemCtx &ItemCtx) const;
+		int GetPowerRating (CItemCtx &ItemCtx) const;
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem());
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;

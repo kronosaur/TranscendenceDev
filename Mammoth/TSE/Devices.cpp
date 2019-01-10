@@ -49,6 +49,8 @@
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_POWER							CONSTLIT("power")
+#define PROPERTY_POWER_OUTPUT					CONSTLIT("powerOutput")
+#define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SLOT_ID						CONSTLIT("slotID")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
@@ -523,10 +525,16 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_POWER))
 		{
 		if (GetCategory() == itemcatReactor)
-			return CreatePowerResult(CC, GetPowerOutput(Ctx) * 100.0);
+			return CTLispConvert::CreatePowerResultMW(CC, GetPowerOutput(Ctx))->Reference();
 		else
-			return CreatePowerResult(CC, GetPowerRating(Ctx) * 100.0);
+			return CTLispConvert::CreatePowerResultMW(CC, GetPowerRating(Ctx))->Reference();
 		}
+
+	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
+		return CreatePowerResult(CC, GetPowerOutput(Ctx) * 100.0);
+
+	else if (strEquals(sName, PROPERTY_POWER_USE))
+		return CreatePowerResult(CC, GetPowerRating(Ctx) * 100.0);
 
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());

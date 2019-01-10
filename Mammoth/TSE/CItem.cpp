@@ -1360,8 +1360,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 		else if (pArmor = GetType()->GetArmorClass())
 			{
-			if (pResult = pArmor->FindItemProperty(Ctx, sProperty))
-				return pResult;
+			ICCItemPtr pResult = pArmor->FindItemProperty(Ctx, sProperty);
+			if (pResult)
+				return pResult->Reference();
 			}
 
 		//	If this is a missile, then pass it to the weapon.
