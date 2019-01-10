@@ -122,6 +122,10 @@
 									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
 									'repairLevel
 									)														result:5	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'powerUse
+									)														result:40	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

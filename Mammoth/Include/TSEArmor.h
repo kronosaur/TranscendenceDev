@@ -87,12 +87,12 @@ class CArmorClass
 		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
 		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
+		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
 		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
 		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		int CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
 		bool FindDataField (const CString &sField, CString *retsValue);
 		inline bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
@@ -117,7 +117,7 @@ class CArmorClass
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
 		inline CString GetName (void);
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
-		int GetPowerRating (CItemCtx &ItemCtx) const;
+		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem());
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
@@ -185,7 +185,7 @@ class CArmorClass
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		int UpdateCustom(CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event);
+		int UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const;
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 

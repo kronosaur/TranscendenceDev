@@ -20,6 +20,7 @@
 		<Armor
 				hitPoints=		    "100"
                 regen=              "24"
+				powerUse=			"100"
 				/>
 	</ItemType>
     

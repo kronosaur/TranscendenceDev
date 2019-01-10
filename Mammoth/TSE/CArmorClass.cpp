@@ -603,6 +603,67 @@ bool CArmorClass::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx 
     return bModified;
     }
 
+void CArmorClass::AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const
+
+//	AccumulatePowerUsed
+//
+//	Consume and generate power.
+
+	{
+	//	Short-circuit if we're not powered.
+
+	if (m_iPowerUse == 0 && m_iPowerGen == 0 && !FindEventHandlerArmorClass(evtOnArmorConsumePower))
+		return;
+
+	CSpaceObject *pSource = ItemCtx.GetSource();
+	if (pSource == NULL)
+		return;
+
+	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+	if (pArmor == NULL)
+		return;
+
+	//	Get our power stats
+
+	int iIdlePowerUse;
+	int iPowerUse = GetPowerRating(ItemCtx, &iIdlePowerUse);
+
+	//	If we did work (regenerated), then we use full power. Otherwise, we use
+	//	idle power.
+	//
+	//	NOTE: By default, idle power is the same as full power, but some armors
+	//	have different values.
+
+	if (pArmor->ConsumedPower())
+		iPowerUsed += iPowerUse;
+	else
+		iPowerUsed += iIdlePowerUse;
+
+	//	See if we generate solar power
+
+	if (m_iPowerGen > 0)
+		{
+		if (m_fPhotoRecharge)
+			{
+			iPowerGenerated += (m_iPowerGen * Ctx.GetLightIntensity(pSource) / 100);
+			}
+		else
+			iPowerGenerated += m_iPowerGen;
+		}
+
+	//  See if we have some custom behavior designated in OnArmorConsumePower
+
+	SEventHandlerDesc Event;
+	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
+		{
+		int iCustomPowerUse = UpdateCustom(pArmor, pSource, Event);
+		if (iCustomPowerUse > 0)
+			{
+			iPowerUsed += iCustomPowerUse;
+			}
+		}
+	}
+
 void CArmorClass::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	AddTypesUsed
@@ -1223,56 +1284,6 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
-int CArmorClass::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource, CInstalledArmor *pArmor)
-
-//	CalcPowerUsed
-//
-//	Computes the amount of power used by this armor segment (this
-//	only applies to powered armor). Negative numbers mean we generate power.
-
-	{
-	int iTotalPower = 0;
-
-	//	If we did work (regenerated), then we use full power. Otherwise, we use
-	//	idle power.
-	//
-	//	NOTE: By default, idle power is the same as full power, but some armors
-	//	have different values.
-
-	if (pArmor->ConsumedPower())
-		iTotalPower = m_iPowerUse;
-	else
-		iTotalPower = m_iIdlePowerUse;
-
-	//	See if we generate solar power
-
-	if (m_iPowerGen > 0)
-		{
-		if (m_fPhotoRecharge)
-			{
-			iTotalPower -= (m_iPowerGen * Ctx.GetLightIntensity(pSource) / 100);
-			}
-		else
-			iTotalPower -= m_iPowerGen;
-		}
-
-	//  See if we have some custom behavior designated in OnArmorConsumePower
-
-	SEventHandlerDesc Event;
-	if (FindEventHandlerArmorClass(evtOnArmorConsumePower, &Event))
-		{
-		int iCustomPowerUse = UpdateCustom(pArmor, pSource, Event);
-		if (iCustomPowerUse > 0)
-			{
-			iTotalPower += iCustomPowerUse;
-			}
-		}
-
-	//	Done
-
-	return iTotalPower;
-	}
-
 Metric CArmorClass::CalcRegen180 (CItemCtx &ItemCtx) const
 
 //	CalcRegen180
@@ -1826,14 +1837,46 @@ int CArmorClass::GetPowerOutput (CItemCtx &ItemCtx) const
 	return m_iPowerGen;
 	}
 
-int CArmorClass::GetPowerRating (CItemCtx &ItemCtx) const
+int CArmorClass::GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower) const
 
 //	GetPowerRating
 //
 //	Returns the maximum amount of power consumed by the armor (in 1/10th of a MW).
 
 	{
-	return m_iPowerUse;
+	//	No power consumption
+
+	if (m_iPowerUse == 0)
+		{
+		if (retiIdlePower) *retiIdlePower = 0;
+		return 0;
+		}
+
+	//	Armor is not scaled, so power consumption does not change
+
+    else if (m_pScalable == NULL || ItemCtx.IsItemNull())
+		{
+		if (retiIdlePower) *retiIdlePower = m_iIdlePowerUse;
+		return m_iPowerUse;
+		}
+
+	//	Otherwise, we need to scale power consumption based on level
+
+	else
+		{
+		int iScaledLevel = ItemCtx.GetItem().GetLevel();
+		int iBaseLevel = m_pItemType->GetLevel();
+
+		const CWeaponClass::SStdStats &Base = CWeaponClass::GetStdStats(iBaseLevel);
+		const CWeaponClass::SStdStats &Scaled = CWeaponClass::GetStdStats(iScaledLevel);
+
+		Metric rPowerAdj = (Metric)Scaled.iPower / (Metric)Base.iPower;
+
+		if (retiIdlePower)
+			*retiIdlePower = mathRound(rPowerAdj * m_iIdlePowerUse);
+
+		return mathRound(rPowerAdj * m_iPowerUse);
+		}
 	}
 
 ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
@@ -2433,7 +2476,7 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 	DEBUG_CATCH
 	}
 
-int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event)
+int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const
 
 //	UpdateCustom
 //
