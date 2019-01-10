@@ -34,6 +34,7 @@
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_REFERENCE						CONSTLIT("reference")
 #define PROPERTY_ROOT_NAME						CONSTLIT("rootName")
 #define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
@@ -1296,6 +1297,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetType()->GetLevel(Ctx));
+
+	else if (strEquals(sProperty, PROPERTY_PRICE))
+		return CC.CreateInteger(GetTradePrice(NULL, true));
 
 	else if (strEquals(sProperty, PROPERTY_REFERENCE))
 		{
