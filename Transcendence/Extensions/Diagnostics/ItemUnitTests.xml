@@ -99,6 +99,29 @@
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots&lt;=1;")	result:True	}
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=1;")		result:Nil	}
 						{	test:'(itmMatches testItem1 "w +property:deviceSlots!=3;")		result:True	}
+
+						;	Test Scaled Armor ----------------------------------
+
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'level
+									)														result:5	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'hp
+									)														result:166	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'price
+									)														result:4000	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'repairCost
+									)														result:3	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itTestArmorScaled; 1) 'level 5)
+									'repairLevel
+									)														result:5	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

@@ -11,6 +11,7 @@
 	<!-- 0040-007F TEST ITEMS -->
 
 	<!ENTITY itTestDriveDualSlot		"0xA0010040">
+	<!ENTITY itTestArmorScaled			"0xA0010041">
 
 	<!-- OTHER -->
 

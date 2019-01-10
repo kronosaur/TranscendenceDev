@@ -2,6 +2,27 @@
 
 <TranscendenceModule>
 
+	<ItemType UNID="&itTestArmorScaled;"
+			name=				"[segment(s) of ]scaled armor"
+			attributes=			"testItem"
+              
+			level=				"3-8"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+              
+			description=		"Test armor: scaled."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="672" imageWidth="96" imageHeight="96"/>
+        
+		<Armor
+				hitPoints=		    "100"
+                regen=              "24"
+				/>
+	</ItemType>
+    
 	<ItemType UNID="&itTestDriveDualSlot;"
 			name=				"test drive (dual slot)"
 			attributes=			"testItem"
