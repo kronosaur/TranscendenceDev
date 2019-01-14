@@ -1,11 +1,9 @@
 //	Debug.cpp
 //
 //	Debugging routines
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-
+#include "PreComp.h"
 void DebugOutputPixelFormat (DDPIXELFORMAT &format)
 
 //	DebugOutputPixelFormat

@@ -3,8 +3,7 @@
 //	JSON parser
 //	Copyright (c) 2011 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
+#include "PreComp.h"
 #include "JSONUtil.h"
 
 class CJSONParser

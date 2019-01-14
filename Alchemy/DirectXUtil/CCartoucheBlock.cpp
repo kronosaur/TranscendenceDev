@@ -3,12 +3,7 @@
 //	CCartoucheBlock class
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
-
+#include "PreComp.h"
 #include "TextFormat.h"
 
 void CCartoucheBlock::Add (const TArray<SCartoucheDesc> &List)

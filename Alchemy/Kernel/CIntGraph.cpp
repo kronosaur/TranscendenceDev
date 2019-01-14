@@ -3,9 +3,7 @@
 //	Implements CIntGraph class
 //	Copyright (c) 2011 by George Moromisato. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 
 const int MAX_DIST2 = 2147483647;

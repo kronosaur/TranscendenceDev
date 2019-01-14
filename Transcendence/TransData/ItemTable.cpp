@@ -1,13 +1,9 @@
 //	ItemTable.cpp
 //
 //	Generate basic stats about items
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define BY_ATTRIBUTE_ATTRIB					CONSTLIT("byAttribute")
 #define BY_COMPONENT_ATTRIB					CONSTLIT("byComponent")

@@ -182,6 +182,9 @@
     <ClInclude Include="ItemBenchmarks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PreComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TransData.rc">

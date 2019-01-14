@@ -1,10 +1,9 @@
 //	Kernel.cpp
 //
 //	Kernel boot
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include <process.h>
 #include "eh.h"
 
@@ -27,7 +26,7 @@ void InitAPIFlags (void);
 DWORD WINAPI kernelThreadProc (LPVOID pData);
 void kernelHandleWin32Exception (unsigned code, EXCEPTION_POINTERS* info);
 
-BOOL kernelInit (DWORD dwFlags)
+BOOL Kernel::kernelInit (DWORD dwFlags)
 
 //	kernelInit
 //
@@ -86,7 +85,7 @@ BOOL kernelInit (DWORD dwFlags)
 	return TRUE;
 	}
 
-void kernelCleanUp (void)
+void Kernel::kernelCleanUp (void)
 
 //	KernelCleanUp
 //
@@ -114,7 +113,7 @@ void kernelCleanUp (void)
 	ASSERT(g_iGlobalInit >= 0);
 	}
 
-DWORD sysGetAPIFlags (void)
+DWORD Kernel::sysGetAPIFlags (void)
 
 //	sysGetAPIFlags
 //
@@ -168,7 +167,7 @@ void InitAPIFlags (void)
 	DeleteObject(hMaskBmp);
 	}
 
-void kernelClearDebugLog (void)
+void Kernel::kernelClearDebugLog (void)
 
 //	kernerClearDebugLog
 //
@@ -178,7 +177,7 @@ void kernelClearDebugLog (void)
 	kernelSetDebugLog(NULL);
 	}
 
-CString kernelGetSessionDebugLog (void)
+CString Kernel::kernelGetSessionDebugLog (void)
 
 //	kernetGetSessionDebugLog
 //
@@ -191,7 +190,7 @@ CString kernelGetSessionDebugLog (void)
 	return g_pDebugLog->GetSessionLog();
 	}
 
-ALERROR kernelSetDebugLog (const CString &sFilespec, bool bAppend)
+ALERROR Kernel::kernelSetDebugLog (const CString &sFilespec, bool bAppend)
 
 //	kernelSetDebugLog
 //
@@ -202,7 +201,7 @@ ALERROR kernelSetDebugLog (const CString &sFilespec, bool bAppend)
 	return kernelSetDebugLog(pLog, bAppend, true);
 	}
 
-ALERROR kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeLog)
+ALERROR Kernel::kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeLog)
 
 //	kernelSetDebugLog
 //
@@ -256,7 +255,7 @@ ALERROR kernelSetDebugLog (CTextFileLog *pLog, bool bAppend, bool bFreeLog)
 	return NOERROR;
 	}
 
-void kernelDebugLogPattern (char *pszLine, ...)
+void Kernel::kernelDebugLogPattern (char *pszLine, ...)
 
 //	kernelDebugLogPattern
 //
@@ -278,7 +277,7 @@ void kernelDebugLogPattern (char *pszLine, ...)
 	LeaveCriticalSection(&g_csKernel);
 	}
 
-void kernelDebugLogString (const CString &sLine)
+void Kernel::kernelDebugLogString (const CString &sLine)
 
 //	kernelDebugLogString
 //
@@ -293,7 +292,7 @@ void kernelDebugLogString (const CString &sLine)
 	LeaveCriticalSection(&g_csKernel);
 	}
 
-HANDLE kernelCreateThread (LPTHREAD_START_ROUTINE pfStart, LPVOID pData)
+HANDLE Kernel::kernelCreateThread (LPTHREAD_START_ROUTINE pfStart, LPVOID pData)
 
 //	kernelCreateThread
 //
@@ -325,7 +324,7 @@ HANDLE kernelCreateThread (LPTHREAD_START_ROUTINE pfStart, LPVOID pData)
 	return hThread;
 	}
 
-bool kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout)
+bool Kernel::kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout)
 
 //	kernelDispatchUntilEventSet
 //
@@ -408,9 +407,6 @@ DWORD WINAPI kernelThreadProc (LPVOID pData)
 
 	return dwResult;
 	};
-
-DWORD sysGetVersion (void)
-	{ return 0x00060002; }
 
 void kernelHandleWin32Exception (unsigned code, EXCEPTION_POINTERS* info)
 	{

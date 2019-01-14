@@ -1,10 +1,9 @@
 //	CMarkovWordGenerator.cpp
 //
 //	CMarkovWordGenerator class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Lingua.h"
 
 CMarkovWordGenerator::~CMarkovWordGenerator (void)

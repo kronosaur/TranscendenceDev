@@ -1,10 +1,9 @@
 //	AGArea.cpp
 //
 //	Implementation of AGArea class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 AGArea::AGArea (void) : 
 		m_pScreen(NULL),

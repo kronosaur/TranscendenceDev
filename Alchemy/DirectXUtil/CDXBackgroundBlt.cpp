@@ -3,10 +3,7 @@
 //	CDXBackgroundBlt class
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <dsound.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 CDXBackgroundBlt::CDXBackgroundBlt (CDXScreen &DX) :
 		m_DX(DX),

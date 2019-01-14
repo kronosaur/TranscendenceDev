@@ -3,9 +3,7 @@
 //	CG16bitLinePainter class
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 CG16bitLinePainter::ESlopeTypes CG16bitLinePainter::CalcIntermediates (const CG16bitImage &Image, int x1, int y1, int x2, int y2, int iWidth)
 

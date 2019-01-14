@@ -1,9 +1,9 @@
 //	CLargeSet.cpp
 //
 //	CLargeSet class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 const int BITS_PER_DWORD =						32;
 

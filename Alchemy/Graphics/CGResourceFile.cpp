@@ -1,13 +1,9 @@
 //	CGResourceFile.cpp
 //
 //	Implements CGResourceFile class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <MMSystem.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
+#include "PreComp.h"
 
 #ifdef OBSOLETE
 

@@ -24,12 +24,7 @@
 //	{		open brace
 //	}		close brace
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
-
+#include "PreComp.h"
 #include "TextFormat.h"
 
 #define CODE_BOLD								CONSTLIT("b")

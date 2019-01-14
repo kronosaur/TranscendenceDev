@@ -1,11 +1,9 @@
 //	CScreenMgr.cpp
 //
 //	CScreenMgr class
+//	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <dsound.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 const int EXCLUSIVE_BACK_BUFFERS = 2;
 

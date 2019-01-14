@@ -1,11 +1,12 @@
 //	Utilities.cpp
 //
 //	Miscellaneous utility functions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
+#include "PreComp.h"
 #include <cstring>
 
-DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
+DWORD Kernel::sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
 
 //	sysGetTicksElapsed
 //
@@ -22,7 +23,7 @@ DWORD sysGetTicksElapsed (DWORD dwTick, DWORD *retdwNow)
 		return dwNow - dwTick;
 	}
 
-int sysGetProcessorCount (void)
+int Kernel::sysGetProcessorCount (void)
 
 //	sysGetProcessorCount
 //
@@ -34,7 +35,7 @@ int sysGetProcessorCount (void)
 	return si.dwNumberOfProcessors;
 	}
 
-CString sysGetUserName (void)
+CString Kernel::sysGetUserName (void)
 
 //	sysGetUserName
 //
@@ -51,7 +52,7 @@ CString sysGetUserName (void)
 	return sName;
 	}
 
-bool sysIsBigEndian (void)
+bool Kernel::sysIsBigEndian (void)
 
 //	sysIsBigEndian
 //
@@ -61,7 +62,7 @@ bool sysIsBigEndian (void)
 	return ((*(unsigned short *) ("#S") >> 8) == '#');
 	}
 
-bool sysOpenURL (const CString &sURL)
+bool Kernel::sysOpenURL (const CString &sURL)
 
 //	sysOpenURL
 //
@@ -93,7 +94,7 @@ bool sysOpenURL (const CString &sURL)
 	c -= a; c -= b; c ^= (b>>15); \
 	}
 
-DWORD utlHashFunctionCase (BYTE *pKey, int iKeyLen)
+DWORD Kernel::utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 
 //	utlHashFunction
 //
@@ -150,7 +151,7 @@ DWORD utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 
 #undef mix
 
-void utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
+void Kernel::utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
 
 //	utlMemSet
 //
@@ -165,7 +166,7 @@ void utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
 	std::memset(pDest, Value, Count);
 	}
 
-void utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
+void Kernel::utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
 
 //	utlMemCopy
 //
@@ -180,7 +181,7 @@ void utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
 	std::memcpy(pDest, pSource, dwCount);
 	}
 
-BOOL utlMemCompare (char *pSource, char *pDest, DWORD dwCount)
+BOOL Kernel::utlMemCompare (char *pSource, char *pDest, DWORD dwCount)
 
 //	utlMemCompare
 //

@@ -1,10 +1,9 @@
 //	CGFrameArea.cpp
 //
 //	Implementation of CGFrameArea class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 CGFrameArea::CGFrameArea (void) : m_pMouseCapture(NULL),
 		m_pMouseOver(NULL)

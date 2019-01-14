@@ -1,14 +1,9 @@
 //	Noise.cpp
 //
 //	Noise code
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-
-#include <math.h>
-#include <stdio.h>
-#include "NoiseImpl.h"
+#include "PreComp.h"
 
 const int RAND_MASK =					0x7fffffff;
 

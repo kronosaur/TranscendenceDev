@@ -1,10 +1,9 @@
 //	PolygonSimple.cpp
 //
 //	Polygon code
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 #define SIGNUM(a) ((a>0)?1:((a<0)?-1:0))
 

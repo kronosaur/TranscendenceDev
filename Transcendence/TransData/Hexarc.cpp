@@ -1,14 +1,9 @@
 //	Hexarc.cpp
 //
 //	Hexarc function tests
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
-
+#include "PreComp.h"
 #include "Internets.h"
 #include "Crypto.h"
 #include "JSONUtil.h"

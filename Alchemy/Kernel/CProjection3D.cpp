@@ -3,9 +3,7 @@
 //	CProjection3D Class
 //	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 
 TArray<CVector> CProjection3D::Transform (const CXForm3D &Xform, const TArray<CVector3D> &Points) const

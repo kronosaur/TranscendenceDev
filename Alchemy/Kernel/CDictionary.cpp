@@ -1,9 +1,9 @@
 //	CDictionaryArray.cpp
 //
 //	Implementation of a sorted dictionary
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 static DATADESCSTRUCT g_DataDesc[] =
 	{	{ DATADESC_OPCODE_EMBED_OBJ,	1,	0 },		//	m_Array

@@ -1,10 +1,9 @@
 //	CGTextArea.cpp
 //
 //	Implementation of CGTextArea class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 #define RGB_CURSOR								(CG32bitPixel(255,255,255))
 

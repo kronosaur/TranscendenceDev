@@ -1,6 +1,5 @@
 //	PreComp.h
 
-#include <windows.h>
 #include "Alchemy.h"
 #include "DirectXUtil.h"
 #include "TSE.h"

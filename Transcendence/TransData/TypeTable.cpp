@@ -1,13 +1,9 @@
 //	TypeTable.cpp
 //
 //	Generate basic stats about any type
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
 

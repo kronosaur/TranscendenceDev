@@ -324,6 +324,12 @@
     <ClInclude Include="VoronoiGenerator.h">
       <Filter>Source Files\Euclid</Filter>
     </ClInclude>
+    <ClInclude Include="PreComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Alchemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE">

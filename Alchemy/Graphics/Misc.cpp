@@ -1,13 +1,9 @@
 //	Misc.cpp
 //
 //	Implements miscellaneous functions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <MMSystem.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
+#include "PreComp.h"
 
 COLORREF strToCOLORREF(const CString &sColor)
 

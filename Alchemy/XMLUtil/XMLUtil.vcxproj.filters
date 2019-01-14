@@ -43,5 +43,8 @@
     <ClInclude Include="..\Include\XMLUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PreComp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,8 +3,7 @@
 //	CManualEvent class
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 void CManualEvent::Create (void)
 

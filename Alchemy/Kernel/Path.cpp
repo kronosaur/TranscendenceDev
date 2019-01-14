@@ -1,9 +1,9 @@
 //	Path.cpp
 //
 //	Path routines
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 #include "shlobj.h"
 
 #define STR_PATH_SEPARATOR				CONSTLIT("\\")
@@ -20,7 +20,7 @@
 void FreePIDL (LPITEMIDLIST pidl);
 CString GetVersionString (char *pData, WORD *pLangInfo, const CString &sString);
 
-bool fileCopy (const CString &sSourceFilespec, const CString &sDestFilespec)
+bool Kernel::fileCopy (const CString &sSourceFilespec, const CString &sDestFilespec)
 
 //	fileMove
 //
@@ -33,7 +33,7 @@ bool fileCopy (const CString &sSourceFilespec, const CString &sDestFilespec)
 	return true;
 	}
 
-bool fileDelete (const CString &sFilespec, bool bRecycle)
+bool Kernel::fileDelete (const CString &sFilespec, bool bRecycle)
 
 //	fileDelete
 //
@@ -70,7 +70,7 @@ bool fileDelete (const CString &sFilespec, bool bRecycle)
 	return true;
 	}
 
-bool fileGetFileList (const CString &sRoot, const CString &sPath, const CString &sSearch, DWORD dwFlags, TArray<CString> *retFiles)
+bool Kernel::fileGetFileList (const CString &sRoot, const CString &sPath, const CString &sSearch, DWORD dwFlags, TArray<CString> *retFiles)
 
 //	fileGetFileList
 //
@@ -143,7 +143,7 @@ bool fileGetFileList (const CString &sRoot, const CString &sPath, const CString 
 	return true;
 	}
 
-CTimeDate fileGetModifiedTime (const CString &sFilespec)
+CTimeDate Kernel::fileGetModifiedTime (const CString &sFilespec)
 
 //	fileGetModifiedTime
 //
@@ -180,7 +180,7 @@ CTimeDate fileGetModifiedTime (const CString &sFilespec)
 	return CTimeDate(SystemTime);
 	}
 
-CString fileGetProductName (void)
+CString Kernel::fileGetProductName (void)
 
 //	fileGetProductName
 //
@@ -192,7 +192,7 @@ CString fileGetProductName (void)
 	return VerInfo.sProductName;
 	}
 
-DWORD fileGetProductVersion (void)
+DWORD Kernel::fileGetProductVersion (void)
 
 //	fileGetProductVersion
 //
@@ -213,7 +213,7 @@ DWORD fileGetProductVersion (void)
 	return MAKELONG(MAKEWORD(b4, b3), MAKEWORD(b2, b1));
 	}
 
-ALERROR fileGetVersionInfo (const CString &sFilename, SFileVersionInfo *retInfo)
+ALERROR Kernel::fileGetVersionInfo (const CString &sFilename, SFileVersionInfo *retInfo)
 
 //	fileGetVersionInfo
 //
@@ -274,7 +274,7 @@ ALERROR fileGetVersionInfo (const CString &sFilename, SFileVersionInfo *retInfo)
 	return NOERROR;
 	}
 
-bool fileMove (const CString &sSourceFilespec, const CString &sDestFilespec)
+bool Kernel::fileMove (const CString &sSourceFilespec, const CString &sDestFilespec)
 
 //	fileMove
 //
@@ -287,7 +287,7 @@ bool fileMove (const CString &sSourceFilespec, const CString &sDestFilespec)
 	return true;
 	}
 
-bool fileOpen (const CString &sFile, const CString &sParameters, const CString &sCurrentFolder, CString *retsError)
+bool Kernel::fileOpen (const CString &sFile, const CString &sParameters, const CString &sCurrentFolder, CString *retsError)
 
 //	fileOpen
 //
@@ -309,7 +309,7 @@ bool fileOpen (const CString &sFile, const CString &sParameters, const CString &
 	return true;
 	}
 
-CString pathAddComponent (const CString &sPath, const CString &sComponent)
+CString Kernel::pathAddComponent (const CString &sPath, const CString &sComponent)
 
 //	pathAddComponent
 //
@@ -343,7 +343,7 @@ CString pathAddComponent (const CString &sPath, const CString &sComponent)
 		}
 	}
 
-CString pathAddExtensionIfNecessary (const CString &sPath, const CString &sExtension)
+CString Kernel::pathAddExtensionIfNecessary (const CString &sPath, const CString &sExtension)
 
 //	pathAddExtensionIfNecessary
 //
@@ -367,7 +367,7 @@ CString pathAddExtensionIfNecessary (const CString &sPath, const CString &sExten
 		return strPatternSubst(CONSTLIT("%s.%s"), sPath, sExtension);
 	}
 
-bool pathCreate (const CString &sPath)
+bool Kernel::pathCreate (const CString &sPath)
 
 //	pathCreate
 //
@@ -411,7 +411,7 @@ bool pathCreate (const CString &sPath)
 	return true;
 	}
 
-bool pathDeleteAll (const CString &sPath)
+bool Kernel::pathDeleteAll (const CString &sPath)
 
 //  pathDeleteAll
 //
@@ -467,7 +467,7 @@ bool pathDeleteAll (const CString &sPath)
     return true;
     }
 
-CString pathGetExecutablePath (HINSTANCE hInstance)
+CString Kernel::pathGetExecutablePath (HINSTANCE hInstance)
 
 //	pathGetExecutablePath
 //
@@ -498,7 +498,7 @@ CString pathGetExecutablePath (HINSTANCE hInstance)
 	return sPath;
 	}
 
-CString pathGetTempPath (void)
+CString Kernel::pathGetTempPath (void)
 
 //  pathGetTempPath
 //
@@ -513,7 +513,7 @@ CString pathGetTempPath (void)
     return CString(szBuffer);
     }
 
-bool pathExists (const CString &sPath)
+bool Kernel::pathExists (const CString &sPath)
 
 //	pathExists
 //
@@ -524,7 +524,7 @@ bool pathExists (const CString &sPath)
 	return (dwResult != 0xffffffff);
 	}
 
-CString pathGetExtension (const CString &sPath)
+CString Kernel::pathGetExtension (const CString &sPath)
 
 //	pathGetExtension
 //
@@ -554,7 +554,7 @@ CString pathGetExtension (const CString &sPath)
 		return strSubString(sPath, iLength + 1, -1);
 	}
 
-CString pathGetFilename (const CString &sPath)
+CString Kernel::pathGetFilename (const CString &sPath)
 
 //	pathGetFilename
 //
@@ -572,7 +572,7 @@ CString pathGetFilename (const CString &sPath)
 	return CString(pPos);
 	}
 
-CString pathGetPath (const CString &sPath)
+CString Kernel::pathGetPath (const CString &sPath)
 
 //	pathGetPath
 //
@@ -590,7 +590,7 @@ CString pathGetPath (const CString &sPath)
 	return CString(pStart, pPos - pStart);
 	}
 
-CString pathGetResourcePath (char *pszResID)
+CString Kernel::pathGetResourcePath (char *pszResID)
 
 //	pathGetResourcePath
 //
@@ -610,7 +610,7 @@ CString pathGetResourcePath (char *pszResID)
 		return strPatternSubst(CONSTLIT("resID:\\%s"), CString(pszResID));
 	}
 
-CString pathGetSpecialFolder (ESpecialFolders iFolder)
+CString Kernel::pathGetSpecialFolder (ESpecialFolders iFolder)
 
 //	pathGetSpecialFolder
 //
@@ -660,7 +660,7 @@ CString pathGetSpecialFolder (ESpecialFolders iFolder)
 	return sPath;
 	}
 
-bool pathIsAbsolute (const CString &sPath)
+bool Kernel::pathIsAbsolute (const CString &sPath)
 
 //	pathIsAbsolute
 //
@@ -691,7 +691,7 @@ bool pathIsAbsolute (const CString &sPath)
 		return false;
 	}
 
-bool pathIsFolder (const CString &sFilespec)
+bool Kernel::pathIsFolder (const CString &sFilespec)
 
 //	pathIsFolder
 //
@@ -703,7 +703,7 @@ bool pathIsFolder (const CString &sFilespec)
 			&& (dwResult & FILE_ATTRIBUTE_DIRECTORY));
 	}
 
-bool pathIsResourcePath (const CString &sPath, char **retpszResID)
+bool Kernel::pathIsResourcePath (const CString &sPath, char **retpszResID)
 
 //	pathIsResourcePath
 //
@@ -726,7 +726,7 @@ bool pathIsResourcePath (const CString &sPath, char **retpszResID)
 		return false;
 	}
 
-bool pathIsWritable (const CString &sFilespec)
+bool Kernel::pathIsWritable (const CString &sFilespec)
 
 //	pathIsWritable
 //
@@ -785,7 +785,7 @@ bool pathIsWritable (const CString &sFilespec)
 		}
 	}
 
-CString pathMakeAbsolute (const CString &sPath, const CString &sRoot)
+CString Kernel::pathMakeAbsolute (const CString &sPath, const CString &sRoot)
 
 //	pathMakeAbsolute
 //
@@ -810,7 +810,7 @@ CString pathMakeAbsolute (const CString &sPath, const CString &sRoot)
 	return sResult;
 	}
 
-CString pathMakeRelative (const CString &sFilespec, const CString &sRoot, bool bNoCheck)
+CString Kernel::pathMakeRelative (const CString &sFilespec, const CString &sRoot, bool bNoCheck)
 
 //	pathMakeRelative
 //
@@ -835,7 +835,7 @@ CString pathMakeRelative (const CString &sFilespec, const CString &sRoot, bool b
 	return CString(pPos);
 	}
 
-CString pathStripExtension (const CString &sPath)
+CString Kernel::pathStripExtension (const CString &sPath)
 
 //	pathStripExtension
 //
@@ -865,7 +865,7 @@ CString pathStripExtension (const CString &sPath)
 	return strSubString(sPath, 0, iLength);
 	}
 
-bool pathValidateFilename (const CString &sFilename, CString *retsValidFilename)
+bool Kernel::pathValidateFilename (const CString &sFilename, CString *retsValidFilename)
 
 //	pathValidateFilename
 //

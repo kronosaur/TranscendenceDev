@@ -3,9 +3,7 @@
 //	Implements random function
 //	Portions copyright (c) 2012 by George Moromisato. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Crypto.h"
 
 void cryptoRandom (int iCount, CIntegerIP *retx)

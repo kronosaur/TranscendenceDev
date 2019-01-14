@@ -1,13 +1,11 @@
 //	16bitImageDrawing.cpp
 //
 //	Drawing routines such as lines and text
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 #include <math.h>
 #include <stdio.h>
-#include "DrawImpl.h"
 
 #define SMALL_SQUARE_SIZE					2
 #define MEDIUM_SQUARE_SIZE					4

@@ -1,9 +1,9 @@
 //	CINTDynamicArray.cpp
 //
 //	Implementation of dynamic array of bytes
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CINTDynamicArray::CINTDynamicArray (void) :
 		m_iLength(0),

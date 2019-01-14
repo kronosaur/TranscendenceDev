@@ -3,8 +3,7 @@
 //	CStepIncrementor class
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 #include "Euclid.h"
 
 CStepIncrementor::CStepIncrementor (EStyle iStyle, Metric rStart, Metric rEnd, int iSteps) :

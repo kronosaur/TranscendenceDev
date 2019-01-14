@@ -1,12 +1,9 @@
 //	8bitImageDrawing.cpp
 //
 //	Drawing routines for 8-bit masks
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
+#include "PreComp.h"
 
 void CreateRoundedRectAlpha (int cxWidth, int cyHeight, int iRadius, CG16bitImage *retImage)
 

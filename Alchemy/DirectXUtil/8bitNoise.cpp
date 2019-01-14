@@ -1,10 +1,9 @@
 //	8bitNoise.cpp
 //
 //	Drawing routines for noise and turbulence
+//	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 #include <math.h>
 #include <stdio.h>
 

@@ -3,9 +3,7 @@
 //	CG16bitRegion class
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 const DWORD ALLOC_GRANULARITY =				4096;
 

@@ -30,9 +30,7 @@
 //	SHA or whether it's simply a bandaid which fixes the problem with a minimum of
 //	effort (for example the reengineering of a great many Capstone chips).
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Crypto.h"
 
 //	Some basic defines needed by the implementation

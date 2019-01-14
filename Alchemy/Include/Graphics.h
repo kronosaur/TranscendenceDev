@@ -3,8 +3,7 @@
 //	This module contains primitive graphics routines below the level
 //	of the GUI.
 
-#ifndef INCL_GRAPHICS
-#define INCL_GRAPHICS
+#pragma once
 
 class IGMediaDb;
 
@@ -190,5 +189,3 @@ ALERROR rgnCreateFromBitmap (HBITMAP hBitmap, HRGN *rethRgn);
 //	Miscellaneous functions
 
 COLORREF strToCOLORREF(const CString &sColor);
-
-#endif

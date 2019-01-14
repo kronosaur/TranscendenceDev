@@ -1,10 +1,9 @@
 //	CG16bitSprite.cpp
 //
 //	Implementation of raw 16-bit sprite object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 CG16bitSprite::CG16bitSprite (void) :
 		m_pCode(NULL),

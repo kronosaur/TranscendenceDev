@@ -1,14 +1,11 @@
 //	Raw.cpp
 //
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
+//
 //	Contains routines to manipulate the raw image format (DWORD per pixel,
 //	8bits each for RGB, plus 8bits for transparency information
 
-#include <windows.h>
-#include <MMSystem.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
+#include "PreComp.h"
 
 ALERROR rawConvertToDDB (int cxWidth, int cyHeight, RAWPIXEL *pRaw, DWORD dwFlags, HPALETTE hPalette, HBITMAP *rethBitmap)
 

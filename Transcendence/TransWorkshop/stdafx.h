@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 
-#include <windows.h>
 #include "Alchemy.h"
 #include "IntelJPEGUtil.h"
 #include "Crypto.h"

@@ -1,9 +1,9 @@
 //	CResourceReadBlock.cpp
 //
 //	Implements CResourceReadBlock object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 static CObjectClass<CResourceReadBlock>g_Class(OBJID_CRESOURCEREADBLOCK, NULL);
 

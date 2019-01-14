@@ -1,6 +1,7 @@
 //	CArchiver.cpp
 //
 //	Implements CArchiver object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 //
 //	The structure of the archive is:
 //
@@ -8,8 +9,7 @@
 //		[external refs]
 //		[objects]
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 #define ARCHIVE_SIGNATURE					'ALOA'
 #define ARCHIVE_VERSION						1

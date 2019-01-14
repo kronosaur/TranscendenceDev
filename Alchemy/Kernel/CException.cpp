@@ -3,8 +3,7 @@
 //	Implements CException object
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CString CException::GetErrorMessage (void) const
 

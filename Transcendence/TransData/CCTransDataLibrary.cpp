@@ -3,12 +3,7 @@
 //	Functions and placeholders defined by TransData
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 

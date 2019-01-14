@@ -1,9 +1,9 @@
 //	Base64.cpp
 //
 //	Base64 encoding/decoding
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-
+#include "PreComp.h"
 #include "Internets.h"
 
 BYTE g_Table64[64] =

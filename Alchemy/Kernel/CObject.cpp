@@ -1,9 +1,9 @@
 //	CObject.cpp
 //
 //	Methods for basic objects and class objects
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 //	For now we hard-code the maximum number of object classes
 

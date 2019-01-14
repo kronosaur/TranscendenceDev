@@ -1,9 +1,9 @@
 //	CMemoryStream.cpp
 //
 //	Implements CMemoryWriteStream and CMemoryReadStream object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 #define ALLOC_SIZE							4096
 

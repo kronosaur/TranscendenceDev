@@ -3,9 +3,7 @@
 //	CVoronoiTessellation class
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 
 const double POINT_IDENTITY_EPSILON =			1.0e-05;

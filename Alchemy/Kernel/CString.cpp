@@ -1,9 +1,9 @@
 //	CString.cpp
 //
 //	Implementation of standard string class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 #include <float.h>
 
 #define STORE_SIZE_INIT						256
@@ -19,13 +19,13 @@ CString::PSTORESTRUCT CString::g_pStore;
 int CString::g_iStoreSize;
 CString::PSTORESTRUCT CString::g_pFreeStore;
 CRITICAL_SECTION g_csStore;
-const CString NULL_STR;
+const CString Kernel::NULL_STR;
 
 #ifdef DEBUG_STRING_LEAKS
 int g_iStoreCount = 0;
 #endif
 
-char g_LowerCaseAbsoluteTable[256];
+char Kernel::g_LowerCaseAbsoluteTable[256];
 
 //	List of English prepositions. The short list only includes prepositions that
 //	might be found in noun phrases.
@@ -975,7 +975,7 @@ void CString::WriteToStream (IWriteStream *pStream) const
 		}
 	}
 
-int strCompare (const CString &sString1, const CString &sString2)
+int Kernel::strCompare (const CString &sString1, const CString &sString2)
 
 //	strCompare
 //
@@ -1017,7 +1017,7 @@ int strCompare (const CString &sString1, const CString &sString2)
 		return 0;
 	}
 
-int strCompareAbsolute (const CString &sString1, const CString &sString2)
+int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2)
 
 //	strCompareAbsolute
 //
@@ -1062,7 +1062,7 @@ int strCompareAbsolute (const CString &sString1, const CString &sString2)
 		return 0;
 	}
 
-int strCompareAbsolute (const char *pS1, const char *pS2)
+int Kernel::strCompareAbsolute (const char *pS1, const char *pS2)
 	{
 	while (*pS1 != '\0' && *pS2 != '\0')
 		{
@@ -1086,7 +1086,7 @@ int strCompareAbsolute (const char *pS1, const char *pS2)
 		return -1;
 	}
 
-ALERROR strDelimitEx (const CString &sString, 
+ALERROR Kernel::strDelimitEx (const CString &sString, 
 					  char cDelim, 
 					  DWORD dwFlags,
 					  int iMinParts, 
@@ -1245,7 +1245,7 @@ ALERROR strDelimitEx (const CString &sString,
 	return NOERROR;
 	}
 
-int strDelimitCount (const CString &sString, char cDelim, DWORD dwFlags)
+int Kernel::strDelimitCount (const CString &sString, char cDelim, DWORD dwFlags)
 
 //	strDelimitCount
 //
@@ -1289,7 +1289,7 @@ int strDelimitCount (const CString &sString, char cDelim, DWORD dwFlags)
 	return iCount;
 	}
 
-CString strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int iIndex)
+CString Kernel::strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int iIndex)
 
 //	strDelimitGet
 //
@@ -1361,7 +1361,7 @@ CString strDelimitGet (const CString &sString, char cDelim, DWORD dwFlags, int i
 		return NULL_STR;
 	}
 
-bool strEquals (const CString &sString1, const CString &sString2)
+bool Kernel::strEquals (const CString &sString1, const CString &sString2)
 
 //	strEquals
 //
@@ -1392,7 +1392,7 @@ bool strEquals (const CString &sString1, const CString &sString2)
 	return true;
 	}
 
-bool strEqualsCase (const CString &sString1, const CString &sString2)
+bool Kernel::strEqualsCase (const CString &sString1, const CString &sString2)
 
 //	strEqualsCase
 //
@@ -1420,7 +1420,7 @@ bool strEqualsCase (const CString &sString1, const CString &sString2)
 	return true;
 	}
 
-int strFind (const CString &sString, const CString &sStringToFind)
+int Kernel::strFind (const CString &sString, const CString &sStringToFind)
 
 //	strFind
 //
@@ -1458,7 +1458,7 @@ int strFind (const CString &sString, const CString &sStringToFind)
 	return -1;
 	}
 
-CString strFormatBytes (DWORD dwBytes)
+CString Kernel::strFormatBytes (DWORD dwBytes)
 
 //	strFormatBytes
 //
@@ -1492,7 +1492,7 @@ CString strFormatBytes (DWORD dwBytes)
 		}
 	}
 
-CString strFormatInteger (int iValue, int iMinFieldWidth, DWORD dwFlags)
+CString Kernel::strFormatInteger (int iValue, int iMinFieldWidth, DWORD dwFlags)
 
 //	strFormatInteger
 //
@@ -1566,7 +1566,7 @@ CString strFormatInteger (int iValue, int iMinFieldWidth, DWORD dwFlags)
 	return sResult;
 	}
 
-CString strFormatInteger (INT64 iValue, int iMinFieldWidth, DWORD dwFlags)
+CString Kernel::strFormatInteger (INT64 iValue, int iMinFieldWidth, DWORD dwFlags)
 
 //	strFormatInteger
 //
@@ -1640,7 +1640,7 @@ CString strFormatInteger (INT64 iValue, int iMinFieldWidth, DWORD dwFlags)
 	return sResult;
 	}
 
-CString strFromDouble (double rValue, int iDecimals)
+CString Kernel::strFromDouble (double rValue, int iDecimals)
 
 //	strFromDouble
 //
@@ -1730,7 +1730,7 @@ CString strFromDouble (double rValue, int iDecimals)
 	return sResult;
 	}
 
-CString strFromInt (int iInteger, bool bSigned)
+CString Kernel::strFromInt (int iInteger, bool bSigned)
 
 //	CStringFromInt
 //
@@ -1772,7 +1772,7 @@ ALERROR CString::INTStringInit (void)
 	return NOERROR;
 	}
 
-CString strCapitalize (const CString &sString, int iOffset)
+CString Kernel::strCapitalize (const CString &sString, int iOffset)
 
 //	strCapitalize
 //
@@ -1784,7 +1784,7 @@ CString strCapitalize (const CString &sString, int iOffset)
 	return sUpper;
 	}
 
-CString strCapitalizeWords (const CString &sString)
+CString Kernel::strCapitalizeWords (const CString &sString)
 
 //	strCapitalizeWords
 //
@@ -1814,7 +1814,7 @@ CString strCapitalizeWords (const CString &sString)
 	return sUpper;
 	}
 
-CString strCat (const CString &sString1, const CString &sString2)
+CString Kernel::strCat (const CString &sString1, const CString &sString2)
 
 //	strCat
 //
@@ -1828,7 +1828,7 @@ CString strCat (const CString &sString1, const CString &sString2)
 	return sCat;
 	}
 
-CString strCEscapeCodes (const CString &sString)
+CString Kernel::strCEscapeCodes (const CString &sString)
 
 //	strCEscapeCodes
 //
@@ -1904,7 +1904,7 @@ CString strCEscapeCodes (const CString &sString)
 	return sResult;
 	}
 
-CString strConvertToToken (const CString &sString, bool bLowercase)
+CString Kernel::strConvertToToken (const CString &sString, bool bLowercase)
 
 //	strConvertToToken
 //
@@ -1936,7 +1936,7 @@ CString strConvertToToken (const CString &sString, bool bLowercase)
 	return sResult;
 	}
 
-bool strEndsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strEndsWith (const CString &sString, const CString &sStringToFind)
 
 //	strEndsWith
 //
@@ -1961,7 +1961,7 @@ bool strEndsWith (const CString &sString, const CString &sStringToFind)
 	return true;
 	}
 
-CString strFormatMicroseconds (DWORD dwMicroseconds)
+CString Kernel::strFormatMicroseconds (DWORD dwMicroseconds)
 
 //	strFormatMicroseconds
 //
@@ -1979,7 +1979,7 @@ CString strFormatMicroseconds (DWORD dwMicroseconds)
 		return strPatternSubst("%d \xb5s", dwMicroseconds);
 	}
 
-CString strFormatMilliseconds (DWORD dwMilliseconds)
+CString Kernel::strFormatMilliseconds (DWORD dwMilliseconds)
 
 //	strFormatMilliseconds
 //
@@ -1995,7 +1995,7 @@ CString strFormatMilliseconds (DWORD dwMilliseconds)
 		return strPatternSubst("%d ms", dwMilliseconds);
 	}
 
-int strGetHexDigit (char *pPos)
+int Kernel::strGetHexDigit (char *pPos)
 
 //	strGetHexDigit
 //
@@ -2012,7 +2012,7 @@ int strGetHexDigit (char *pPos)
 		return 0;
 	}
 
-char strGetHexDigit (int iDigit)
+char Kernel::strGetHexDigit (int iDigit)
 	{
 	if (iDigit >= 0 && iDigit < 10)
 		return '0' + iDigit;
@@ -2022,7 +2022,7 @@ char strGetHexDigit (int iDigit)
 		return '0';
 	}
 
-bool strIsASCIISymbol (char *pPos)
+bool Kernel::strIsASCIISymbol (char *pPos)
 
 //	strIsASCIISymbol
 //
@@ -2070,7 +2070,7 @@ bool strIsASCIISymbol (char *pPos)
 		}
 	}
 
-bool strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
+bool Kernel::strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
 
 //	strIsInt
 //
@@ -2087,7 +2087,7 @@ bool strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
 	return (!bError && (int)(pPosEnd - pPos) == sValue.GetLength());
 	}
 
-CString strJoin (const TArray<CString> &List, const CString &sConjunction)
+CString Kernel::strJoin (const TArray<CString> &List, const CString &sConjunction)
 
 //	strJoin
 //
@@ -2193,7 +2193,7 @@ CString strJoin (const TArray<CString> &List, const CString &sConjunction)
 		}
 	}
 
-bool strNeedsEscapeCodes (const CString &sString)
+bool Kernel::strNeedsEscapeCodes (const CString &sString)
 	{
 	char *pPos = sString.GetPointer();
 	char *pEndPos = pPos + sString.GetLength();
@@ -2206,7 +2206,7 @@ bool strNeedsEscapeCodes (const CString &sString)
 	return false;
 	}
 
-CString strLoadFromRes (HINSTANCE hInst, int iResID)
+CString Kernel::strLoadFromRes (HINSTANCE hInst, int iResID)
 
 //	strLoadFromRes
 //
@@ -2222,7 +2222,7 @@ CString strLoadFromRes (HINSTANCE hInst, int iResID)
 	return sString;
 	}
 
-double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue)
+double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue)
 
 //  strParseDouble
 //
@@ -2341,7 +2341,7 @@ double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *r
     return atof(szBuffer);
     }
 
-int strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd, bool *retbNullValue)
+int Kernel::strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd, bool *retbNullValue)
 
 //	strParseInt
 //
@@ -2475,7 +2475,7 @@ int strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd, b
 	return iInt;
 	}
 
-int strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd, bool *retbNullValue)
+int Kernel::strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd, bool *retbNullValue)
 
 //	strParseIntOfBase
 //
@@ -2588,7 +2588,7 @@ int strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd,
 	return iInt;
 	}
 
-void strParseWhitespace (char *pPos, char **retpPos)
+void Kernel::strParseWhitespace (char *pPos, char **retpPos)
 
 //	strParseWhitespace
 //
@@ -2602,7 +2602,7 @@ void strParseWhitespace (char *pPos, char **retpPos)
 		*retpPos = pPos;
 	}
 
-CString strProcess (const CString &sValue, DWORD dwFlags)
+CString Kernel::strProcess (const CString &sValue, DWORD dwFlags)
 
 //	strProcess
 //
@@ -2646,7 +2646,7 @@ CString strProcess (const CString &sValue, DWORD dwFlags)
 	return sResult;
 	}
 
-CString strRepeat (const CString &sString, int iCount)
+CString Kernel::strRepeat (const CString &sString, int iCount)
 	{
 	ASSERT(iCount >= 0);
 
@@ -2665,7 +2665,7 @@ CString strRepeat (const CString &sString, int iCount)
 	return sResult;
 	}
 
-bool strStartsWith (const CString &sString, const CString &sStringToFind)
+bool Kernel::strStartsWith (const CString &sString, const CString &sStringToFind)
 
 //	strStartsWith
 //
@@ -2690,7 +2690,7 @@ bool strStartsWith (const CString &sString, const CString &sStringToFind)
 	return true;
 	}
 
-CString strTitleCapitalize (const CString &sString, const char **pExceptions, int iExceptionsCount)
+CString Kernel::strTitleCapitalize (const CString &sString, const char **pExceptions, int iExceptionsCount)
 
 //	strTitleCapitalize
 //
@@ -2818,7 +2818,7 @@ CString RomanNumeralBase (int iNumber, char *szTens, char *szFives, char *szSing
 		}
 	}
 
-CString strRomanNumeral (int i)
+CString Kernel::strRomanNumeral (int i)
 
 //	strRomanNumeral
 //
@@ -2840,7 +2840,7 @@ CString strRomanNumeral (int i)
 		}
 	}
 
-double strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
+double Kernel::strToDouble (const CString &sString, double rFailResult, bool *retbFailed)
 
 //	strToDouble
 //
@@ -2876,7 +2876,7 @@ double strToDouble (const CString &sString, double rFailResult, bool *retbFailed
 	return rResult;
 	}
 
-CString strToFilename (const CString &sString)
+CString Kernel::strToFilename (const CString &sString)
 
 //	strToFilename
 //
@@ -2910,7 +2910,7 @@ CString strToFilename (const CString &sString)
 	return sResult;
 	}
 
-int strToInt (const CString &sString, int iFailResult, bool *retbFailed)
+int Kernel::strToInt (const CString &sString, int iFailResult, bool *retbFailed)
 
 //	CStringToInt
 //
@@ -2920,7 +2920,7 @@ int strToInt (const CString &sString, int iFailResult, bool *retbFailed)
 	return strParseInt(sString.GetASCIIZPointer(), iFailResult, NULL, retbFailed);
 	}
 
-CString strToLower (const CString &sString)
+CString Kernel::strToLower (const CString &sString)
 
 //	strToLower
 //
@@ -2932,7 +2932,7 @@ CString strToLower (const CString &sString)
 	return sResult;
 	}
 
-CString strToUpper (const CString &sString)
+CString Kernel::strToUpper (const CString &sString)
 
 //	strToUpper
 //
@@ -2944,7 +2944,7 @@ CString strToUpper (const CString &sString)
 	return sUpper;
 	}
 
-CString strToXMLText (const CString &sText, bool bInBody)
+CString Kernel::strToXMLText (const CString &sText, bool bInBody)
 
 //	strToXMLText
 //
@@ -3084,7 +3084,7 @@ CString strToXMLText (const CString &sText, bool bInBody)
 	return sResult;
 	}
 
-CString strTrimWhitespace (const CString &sString, bool bLeading, bool bTrailing)
+CString Kernel::strTrimWhitespace (const CString &sString, bool bLeading, bool bTrailing)
 
 //	strTrimWhitespace
 //
@@ -3111,7 +3111,7 @@ CString strTrimWhitespace (const CString &sString, bool bLeading, bool bTrailing
 	return CString(pStart, pEnd - pStart);
 	}
 
-CString strSubString (const CString &sString, int iOffset, int iLength)
+CString Kernel::strSubString (const CString &sString, int iOffset, int iLength)
 
 //	strSubString
 //
@@ -3132,7 +3132,7 @@ CString strSubString (const CString &sString, int iOffset, int iLength)
 		}
 	}
 
-CString strWord (const CString &sString, int iWordPos)
+CString Kernel::strWord (const CString &sString, int iWordPos)
 
 //	strWord
 //

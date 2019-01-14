@@ -3,8 +3,7 @@
 //	Implements compression functions
 //	Portions copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 #include "Zip.h"
 
 #define ZLIB_WINAPI

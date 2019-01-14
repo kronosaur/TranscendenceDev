@@ -1,9 +1,9 @@
 //	CArrayBase.cpp
 //
 //	Implements CArrayBase object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 #ifdef DEBUG_ARRAY_STATS
 DWORD g_dwArraysCreated = 0;
@@ -12,7 +12,7 @@ DWORD g_dwTotalBytesMoved = 0;
 DWORD g_dwArraysResized = 0;
 #endif
 
-placement_new_class placement_new;
+::placement_new_class placement_new;
 
 CArrayBase::CArrayBase (HANDLE hHeap, int iGranularity) : m_pBlock(NULL)
 

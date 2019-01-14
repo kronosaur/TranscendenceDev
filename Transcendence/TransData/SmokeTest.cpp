@@ -1,13 +1,9 @@
 //	SmokeTest.cpp
 //
 //	Test system creation
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define DEFAULT_SYSTEM_SAMPLE				100
 #define DEFAULT_UPDATES						1000

@@ -1,9 +1,9 @@
 //	CFileReadBlock.cpp
 //
 //	Implements CFileReadBlock object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 static CObjectClass<CFileReadBlock>g_Class(OBJID_CFILEREADBLOCK, NULL);
 

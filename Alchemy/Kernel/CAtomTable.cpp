@@ -1,9 +1,9 @@
 //	CAtomTable.cpp
 //
 //	Implementation of an atom table
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 static DATADESCSTRUCT g_DataDesc[] =
 	{	{ DATADESC_OPCODE_INT,			1,	0 },		//	m_iHashSize

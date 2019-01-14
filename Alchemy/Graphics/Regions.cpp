@@ -1,13 +1,9 @@
 //	Regions.cpp
 //
 //	Contains routines to manipulate regions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <MMSystem.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
+#include "PreComp.h"
 
 inline bool PixelAt (DWORD *pLine, int x)
 	{

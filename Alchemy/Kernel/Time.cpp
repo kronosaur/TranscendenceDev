@@ -1,8 +1,9 @@
 //	Time.cpp
 //
 //	Time package
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
+#include "PreComp.h"
 
 #define FORMAT_INTERNET							CONSTLIT("internet")
 
@@ -912,7 +913,7 @@ void CTimeSpan::WriteToStream (IWriteStream *pStream) const
 
 //	Functions -----------------------------------------------------------------
 
-const CTimeSpan operator+ (const CTimeSpan &op1, const CTimeSpan &op2)
+const CTimeSpan Kernel::operator+ (const CTimeSpan &op1, const CTimeSpan &op2)
 
 //	Operator -
 //
@@ -926,7 +927,7 @@ const CTimeSpan operator+ (const CTimeSpan &op1, const CTimeSpan &op2)
 	return CTimeSpan((int)(result / (SECONDS_PER_DAY * 1000)), (int)(result % (SECONDS_PER_DAY * 1000)));
 	}
 
-const CTimeSpan operator- (const CTimeSpan &op1, const CTimeSpan &op2)
+const CTimeSpan Kernel::operator- (const CTimeSpan &op1, const CTimeSpan &op2)
 
 //	Operator -
 //
@@ -940,7 +941,7 @@ const CTimeSpan operator- (const CTimeSpan &op1, const CTimeSpan &op2)
 	return CTimeSpan((int)(result / (SECONDS_PER_DAY * 1000)), (int)(result % (SECONDS_PER_DAY * 1000)));
 	}
 
-CTimeDate timeAddTime (const CTimeDate &StartTime, const CTimeSpan &Addition)
+CTimeDate Kernel::timeAddTime (const CTimeDate &StartTime, const CTimeSpan &Addition)
 
 //	timeAddTime
 //
@@ -963,7 +964,7 @@ CTimeDate timeAddTime (const CTimeDate &StartTime, const CTimeSpan &Addition)
 	return CTimeDate(iDaysSince1AD, iMillisecondsSinceMidnight);
 	}
 
-bool timeIsLeapYear (int iYear)
+bool Kernel::timeIsLeapYear (int iYear)
 
 //	timeIsLeapYear
 //
@@ -974,7 +975,7 @@ bool timeIsLeapYear (int iYear)
 			&& (((iYear % 100) != 0) || ((iYear % 400) == 0));
 	}
 
-CTimeSpan timeSpan (const CTimeDate &StartTime, const CTimeDate &EndTime)
+CTimeSpan Kernel::timeSpan (const CTimeDate &StartTime, const CTimeDate &EndTime)
 
 //	timeSpan
 //
@@ -1007,7 +1008,7 @@ CTimeSpan timeSpan (const CTimeDate &StartTime, const CTimeDate &EndTime)
 	return CTimeSpan(iDays, iMilliseconds);
 	}
 
-CTimeDate timeSubtractTime (const CTimeDate &StartTime, const CTimeSpan &Subtraction)
+CTimeDate Kernel::timeSubtractTime (const CTimeDate &StartTime, const CTimeSpan &Subtraction)
 
 //	timeSubtractTime
 //

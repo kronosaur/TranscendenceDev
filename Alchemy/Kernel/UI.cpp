@@ -1,10 +1,11 @@
 //	UI.cpp
 //
 //	Miscellaneous UI functions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
+#include "PreComp.h"
 
-ALERROR uiCopyTextToClipboard (HWND hWnd, const CString &sText)
+ALERROR Kernel::uiCopyTextToClipboard (HWND hWnd, const CString &sText)
 
 //	uiCopyTextToClipboard
 //
@@ -52,7 +53,7 @@ ALERROR uiCopyTextToClipboard (HWND hWnd, const CString &sText)
 	return NOERROR;
 	}
 
-void uiGetCenteredWindowRect (int cxWidth, 
+void Kernel::uiGetCenteredWindowRect (int cxWidth, 
 							  int cyHeight, 
 							  RECT *retrcRect,
 							  bool bClip)

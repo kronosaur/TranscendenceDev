@@ -1,10 +1,9 @@
 //	CG16bitBinaryRegion.cpp
 //
 //	Implementation of raw 16-bit image region
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 inline int IndexForward (int iIndex, int iCount) { return ((iIndex + 1) % iCount); }
 inline int IndexBackward (int iIndex, int iCount) { return ((iIndex - 1 + iCount) % iCount); }

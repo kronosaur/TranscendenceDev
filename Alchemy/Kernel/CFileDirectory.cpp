@@ -1,9 +1,9 @@
 //	CFileDirectory.cpp
 //
 //	Implements CFileDirectory object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CFileDirectory::CFileDirectory (const CString &sFilespec) :
 		m_sFilespec(sFilespec),

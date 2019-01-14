@@ -3,9 +3,7 @@
 //	CLabelArranger class
 //	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 
 static CVector DIR[8] =

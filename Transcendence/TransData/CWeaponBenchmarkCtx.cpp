@@ -3,12 +3,7 @@
 //	CWeaponBenchmarkCtx class
 //  Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define PROPERTY_DAMAGE		        		CONSTLIT("damage")
 #define PROPERTY_DAMAGE_TYPE        		CONSTLIT("damageType")

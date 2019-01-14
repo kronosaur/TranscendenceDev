@@ -3,9 +3,7 @@
 //	Implementation of CGButtonArea class
 //	Copyright (c) 2016 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 #define RGB_DISABLED_TEXT						(CG32bitPixel(128,128,128))
 

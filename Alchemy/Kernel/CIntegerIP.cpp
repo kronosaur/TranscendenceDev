@@ -3,9 +3,7 @@
 //	Implements CIntegerIP class
 //	Copyright (c) 2012 by George Moromisato. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 #include "Internets.h"
 

@@ -1,9 +1,9 @@
 //	Unicode.cpp
 //
 //	Implementation of standard string class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 DWORD g_CP1252[128] =
 	{
@@ -17,7 +17,7 @@ DWORD g_CP1252[128] =
 	0x00f0, 0x00f1, 0x00f2, 0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7, 0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff, 
 	};
 
-CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP)
+CString Kernel::strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP)
 
 //	strConvert
 //
@@ -107,7 +107,7 @@ CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP)
 	return sResult;
 	}
 
-CString strEncodeUTF8Char (DWORD dwCodePoint)
+CString Kernel::strEncodeUTF8Char (DWORD dwCodePoint)
 
 //	strEncodeUTF8Char
 //
@@ -144,7 +144,7 @@ CString strEncodeUTF8Char (DWORD dwCodePoint)
 		}
 	}
 
-CString strEncodeW1252ToUTF8Char (char chChar)
+CString Kernel::strEncodeW1252ToUTF8Char (char chChar)
 
 //	strEncodeW1252ToUTF8Char
 //

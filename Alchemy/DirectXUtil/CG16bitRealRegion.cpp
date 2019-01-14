@@ -1,10 +1,9 @@
 //	CG16bitRealRegion.cpp
 //
 //	Implementation of raw 16-bit image region
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 int g_iCG16bitRealRegionDummy = 0;
 

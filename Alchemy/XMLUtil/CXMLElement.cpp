@@ -1,10 +1,9 @@
 //	CXMLElement.cpp
 //
 //	CXMLElement class
+//	Copyright (c) 2019 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
+#include "PreComp.h"
 
 CAtomizer CXMLElement::m_Keywords;
 

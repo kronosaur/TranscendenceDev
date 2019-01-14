@@ -3,13 +3,9 @@
 //	Drawing routines for gradients
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-
+#include "PreComp.h"
 #include <math.h>
 #include <stdio.h>
-#include "NoiseImpl.h"
 
 void DrawGradientRectHorz (CG16bitImage &Dest,
 						   int xDest,

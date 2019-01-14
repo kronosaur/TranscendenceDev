@@ -1,15 +1,9 @@
 //	Load.cpp
 //
 //	Implements loading JPEGs with Intel JPEG library
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
-#include "IntelJPEGUtil.h"
-
-#include "ijl.h"
+#include "PreComp.h"
 
 ALERROR JPEGLoadFromFile (CString sFilename, DWORD dwFlags, HPALETTE hPalette, HBITMAP *rethBitmap)
 

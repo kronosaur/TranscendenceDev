@@ -2,9 +2,7 @@
 //
 //	Basic 2D Geometry
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 #include "math.h"
 

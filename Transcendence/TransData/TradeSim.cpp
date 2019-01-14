@@ -3,12 +3,7 @@
 //	Generate statistics about buy/sell prices.
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define NO_LOGO_SWITCH						CONSTLIT("nologo")
 

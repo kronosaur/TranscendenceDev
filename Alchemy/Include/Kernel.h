@@ -14,6 +14,14 @@
 #define _CRT_RAND_S
 #define NOMINMAX
 #include <windows.h>
+#include <mmsystem.h>
+
+//	Explicit placement operator
+struct placement_new_class { };
+extern placement_new_class placement_new;
+inline void *operator new (size_t, ::placement_new_class, void *p) { return p; }
+
+namespace Kernel {
 
 //	Debugging defines
 
@@ -123,6 +131,24 @@ template <class VALUE> void Swap (VALUE &a, VALUE &b)
 	a = b;
 	b = temp;
 	}
+
+template <class VALUE> VALUE max (VALUE a, VALUE b)
+	{
+	return (a > b ? a : b);
+	}
+template <class VALUE> VALUE min (VALUE a, VALUE b)
+	{
+	return (a < b ? a : b);
+	}
+
+inline int max (int a, LONG b) { return (a > b ? a : b); }
+inline int max (LONG a, int b) { return (a > b ? a : b); }
+inline int max (int a, size_t b) { return (a > (int)b ? a : b); }
+inline int max (size_t a, int b) { return ((int)a > b ? a : b); }
+inline int min (int a, LONG b) { return (a < b ? a : b); }
+inline int min (LONG a, int b) { return (a < b ? a : b); }
+inline int min (int a, size_t b) { return (a < (int)b ? a : b); }
+inline int min (size_t a, int b) { return ((int)a < b ? a : b); }
 
 inline int RectHeight(RECT *pRect) { return pRect->bottom - pRect->top; }
 inline int RectHeight(const RECT &Rect) { return Rect.bottom - Rect.top; }
@@ -1612,3 +1638,4 @@ template<class KEY> int KeyCompare (const KEY &Key1, const KEY &Key2)
  
 #define NoEmptyFile()   namespace { char NoEmptyFileDummy##__LINE__; } 
 
+};

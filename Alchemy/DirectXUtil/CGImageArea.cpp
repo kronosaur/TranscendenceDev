@@ -1,10 +1,9 @@
 //	CGImageArea.cpp
 //
 //	Implementation of CGImageArea class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 CGImageArea::CGImageArea (void) : m_pImage(NULL),
 		m_rgbBackColor(CG32bitPixel(0,0,0)),

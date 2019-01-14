@@ -3,8 +3,7 @@
 //	Implements CStackBase object
 //	Copyright (c) 2011 by George Moromisato. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 const int PAGE_SIZE = 4096;
 

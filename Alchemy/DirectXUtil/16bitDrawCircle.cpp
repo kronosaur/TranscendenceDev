@@ -1,15 +1,11 @@
 //	16bitDrawCircle.cpp
 //
 //	Drawing routines for circles
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-
+#include "PreComp.h"
 #include <math.h>
 #include <stdio.h>
-#include "NoiseImpl.h"
-#include "DrawImpl.h"
 
 const DWORD RED_BLUE_COUNT =						(1 << 5);
 const DWORD GREEN_COUNT =							(1 << 6);

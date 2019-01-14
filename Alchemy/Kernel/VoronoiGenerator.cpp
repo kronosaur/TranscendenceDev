@@ -23,7 +23,7 @@ email: shaneosullivan1@gmail.com
 /* Lightly modified by George Moromisato for incorporation into Hexarc
 */
 
-#include "Kernel.h"
+#include "PreComp.h"
 #include "VoronoiGenerator.h"
 
 VoronoiDiagramGenerator::VoronoiDiagramGenerator()

@@ -3,8 +3,7 @@
 //	This file contains a list of all object IDs implemented by
 //	this module
 
-#ifndef INCL_KERNELOBJID
-#define INCL_KERNELOBJID
+#pragma once
 
 #define	OBJID_CSTRING					MakeOBJCLASSIDExt(OBJCLASS_MODULE_KERNEL, 1)
 #define OBJID_CINTARRAY					MakeOBJCLASSIDExt(OBJCLASS_MODULE_KERNEL, 2)
@@ -56,6 +55,4 @@
 
 #ifndef INCL_GLOBALOBJID
 #include "GlobalObjID.h"
-#endif
-
 #endif

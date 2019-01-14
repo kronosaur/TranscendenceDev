@@ -3,14 +3,7 @@
 //	Implements saving JPEGs with Intel JPEG library
 //	Copyright (c) 2017 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
-#include "IntelJPEGUtil.h"
-
-#include "ijl.h"
+#include "PreComp.h"
 
 ALERROR JPEGSaveToMemory (HBITMAP hBitmap, int iQuality, CString *retsData)
 

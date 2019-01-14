@@ -1,12 +1,9 @@
 //	8bitDrawCircle.cpp
 //
 //	Drawing routines for circles
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
+#include "PreComp.h"
 
 struct SGradientCircleLineCtx
 	{

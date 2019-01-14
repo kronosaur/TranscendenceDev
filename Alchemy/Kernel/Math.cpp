@@ -1,13 +1,14 @@
 //	Math.cpp
 //
 //	Integer math package
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
+#include "PreComp.h"
 #include <math.h>
 
 DWORD g_Seed = 0;
 
-int mathAdjust (int iValue, int iPercent)
+int Kernel::mathAdjust (int iValue, int iPercent)
 
 //	mathAdjust
 //
@@ -32,7 +33,7 @@ int mathAdjust (int iValue, int iPercent)
 		}
 	}
 
-DWORD mathGetSeed (void)
+DWORD Kernel::mathGetSeed (void)
 
 //	mathGetSeed
 //
@@ -42,7 +43,7 @@ DWORD mathGetSeed (void)
 	return g_Seed;
 	}
 
-DWORD mathMakeSeed (DWORD dwValue)
+DWORD Kernel::mathMakeSeed (DWORD dwValue)
 	{
 	DWORD a = 1103515245;
 	DWORD c = 12345;
@@ -53,7 +54,7 @@ DWORD mathMakeSeed (DWORD dwValue)
 	return dwSeed;
 	}
 
-int mathNearestPowerOf2 (int x)
+int Kernel::mathNearestPowerOf2 (int x)
 
 //	mathNearestPowerOf2
 //
@@ -74,7 +75,7 @@ int mathNearestPowerOf2 (int x)
 	return iResult >> 1;
 	}
 
-int mathPower (int x, int n)
+int Kernel::mathPower (int x, int n)
 
 //	mathPower
 //
@@ -109,7 +110,7 @@ int mathPower (int x, int n)
 		return 0;
 	}
 
-DWORD mathRandom (void)
+DWORD Kernel::mathRandom (void)
 
 //	mathRandom
 //
@@ -156,7 +157,7 @@ DWORD mathRandom (void)
 	return g_Seed;
 	}
 
-int mathRandom (int iFrom, int iTo)
+int Kernel::mathRandom (int iFrom, int iTo)
 
 //	mathRandom
 //
@@ -181,7 +182,7 @@ int mathRandom (int iFrom, int iTo)
 	return iRandom + iFrom;
 	}
 
-double mathRandomMinusOneToOne (void)
+double Kernel::mathRandomMinusOneToOne (void)
 	{
 	DWORD dwValue = mathRandom();
 
@@ -191,7 +192,7 @@ double mathRandomMinusOneToOne (void)
 		return ((dwValue >> 1) / -1073741824.0);
 	}
 
-double mathRandomGaussian (void)
+double Kernel::mathRandomGaussian (void)
 
 //	mathRandomGaussian
 //
@@ -218,7 +219,7 @@ double mathRandomGaussian (void)
 	return x1 * w;
 	}
 
-int mathRound (double x)
+int Kernel::mathRound (double x)
 
 //	mathRound
 //
@@ -251,7 +252,7 @@ int mathRound (double x)
 	return (i);
 	}
 
-int mathRoundStochastic (double x)
+int Kernel::mathRoundStochastic (double x)
 
 //	mathRoundStochastic
 //
@@ -268,7 +269,7 @@ int mathRoundStochastic (double x)
 		return (int)rInt;
 	}
 
-int mathSeededRandom (int iSeed, int iFrom, int iTo)
+int Kernel::mathSeededRandom (int iSeed, int iFrom, int iTo)
 
 //	mathSeededRandom
 //
@@ -286,7 +287,7 @@ int mathSeededRandom (int iSeed, int iFrom, int iTo)
 	return iFrom + (Absolute(iRandom) % iRange);
 	}
 
-void mathSetSeed (DWORD dwSeed)
+void Kernel::mathSetSeed (DWORD dwSeed)
 
 //	mathSetSeed
 //
@@ -298,7 +299,7 @@ void mathSetSeed (DWORD dwSeed)
 	g_Seed = (dwSeed &= 0x7fffffff);
 	}
 
-int mathSqrt (int x)
+int Kernel::mathSqrt (int x)
 
 //	mathSqrt
 //

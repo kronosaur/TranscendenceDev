@@ -1,6 +1,7 @@
 //	CHTMLForm.cpp
 //
 //	CHTMLForm class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 //
 //	The encoding is as follows:
 //
@@ -10,9 +11,7 @@
 //	4.	Key value pairs are separated by '&'
 //	5.	Duplicate keys are allowed.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Internets.h"
 
 void CHTMLForm::AddField (const CString &sKey, const CString &sValue)

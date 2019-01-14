@@ -1,15 +1,16 @@
 //	RunLengthCompression.cpp
 //
 //	Run-Length Compression functions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
+#include "PreComp.h"
 
 const int MIN_LONG_RUN =						3;
 const int MAX_RUN_LENGTH_BYTE =					254;
 const BYTE RUN_CODE_MIXED =						255;
 const BYTE RUN_CODE_END =						0;
 
-void CompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput)
+void Kernel::CompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput)
 
 //	CompressRunLengthByte
 //
@@ -127,7 +128,7 @@ void CompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput)
 	pOutput->Write((char *)&byCode, 1);
 	}
 
-void UncompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput)
+void Kernel::UncompressRunLengthByte (IWriteStream *pOutput, IReadBlock *pInput)
 
 //	UncompressRunLengthByte
 //

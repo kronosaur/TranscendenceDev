@@ -1,13 +1,9 @@
 //	Compile.cpp
 //
 //	Functions to manipulate .tdb files
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 ALERROR ExtractFile (const CString &sDest, const CString &sData);
 

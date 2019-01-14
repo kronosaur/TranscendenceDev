@@ -15,12 +15,7 @@ enum ESortOptions
 #undef new
 #endif
 
-//	Explicit placement operator
-struct placement_new_class { };
-extern placement_new_class placement_new;
-inline void *operator new (size_t, placement_new_class, void *p) { return p; }
-
-const int DEFAULT_ARRAY_GRANULARITY = 10;
+static constexpr int DEFAULT_ARRAY_GRANULARITY = 10;
 
 class CArrayBase
 	{
@@ -49,7 +44,7 @@ class CArrayBase
 		void CopyOptions (const CArrayBase &Src);
 		void DeleteBytes (int iOffset, int iLength);
 		inline char *GetBytes (void) const { return (m_pBlock ? (char *)(&m_pBlock[1]) : NULL); }
-		inline int GetGranularity (void) const { return (m_pBlock ? m_pBlock->m_iGranularity : DEFAULT_ARRAY_GRANULARITY); }
+		inline int GetGranularity (void) const { return (m_pBlock ? m_pBlock->m_iGranularity : Kernel::DEFAULT_ARRAY_GRANULARITY); }
 		inline HANDLE GetHeap (void) const { return (m_pBlock ? m_pBlock->m_hHeap : ::GetProcessHeap()); }
 		inline int GetSize (void) const { return (m_pBlock ? m_pBlock->m_iSize : 0); }
 		void InsertBytes (int iOffset, void *pData, int iLength, int iAllocQuantum);
@@ -132,7 +127,7 @@ template <class VALUE> class TRawArray : public CArrayBase
 		int m_iExtraBytes;
 	};
 
-template <class VALUE> class TArray : public CArrayBase
+template <class VALUE> class TArray : public Kernel::CArrayBase
 	{
 	public:
 		TArray (void) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY) { }
@@ -300,7 +295,7 @@ template <class VALUE> class TArray : public CArrayBase
 				}
 			}
 
-		void InsertSorted (const VALUE &Value, ESortOptions Order = AscendingSort)
+		void InsertSorted (const VALUE &Value, Kernel::ESortOptions Order = AscendingSort)
 			{
 			int iCount = GetCount();
 			int iMin = 0;
@@ -385,7 +380,7 @@ template <class VALUE> class TArray : public CArrayBase
 				}
 			}
 
-		void Sort (ESortOptions Order = AscendingSort)
+		void Sort (Kernel::ESortOptions Order = AscendingSort)
 			{
 			if (GetCount() < 2)
 				return;
@@ -413,7 +408,7 @@ template <class VALUE> class TArray : public CArrayBase
 			}
 
 	private:
-		void SortRange (ESortOptions Order, int iLeft, int iRight, TArray<int> &Result)
+		void SortRange (Kernel::ESortOptions Order, int iLeft, int iRight, TArray<int> &Result)
 			{
 			if (iLeft == iRight)
 				Result.Insert(iLeft);

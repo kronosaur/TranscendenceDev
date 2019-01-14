@@ -1,9 +1,9 @@
 //	CIntArray.cpp
 //
 //	Implementation of dynamic array of integers
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 #define ALLOC_INCREMENT					128
 

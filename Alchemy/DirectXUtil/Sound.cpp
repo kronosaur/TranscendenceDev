@@ -1,11 +1,10 @@
 //	Sound.cpp
 //
 //	Functions to help with DirectSound
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
+#include "PreComp.h"
 #include <dsound.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
 
 const int MAX_VOLUME = 0;
 const int MIN_VOLUME = -10000;

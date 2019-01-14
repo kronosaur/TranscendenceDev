@@ -1,6 +1,7 @@
 //	Effects.cpp
 //
 //	Generate basic stats about effects
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 //
 //	An Effect Render File describes the set of effects to render. It has the
 //	following format:
@@ -18,12 +19,7 @@
 //		</Render>
 //	</TranscendenceRender>
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 struct SEffectRender
 	{

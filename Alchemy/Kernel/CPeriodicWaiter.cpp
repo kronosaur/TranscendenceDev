@@ -3,8 +3,7 @@
 //	Implements CPeriodicWaiter object
 //	Copyright (c) 2010 by George Moromisato. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CPeriodicWaiter::CPeriodicWaiter (DWORD dwPeriod) : m_dwPeriod(dwPeriod)
 

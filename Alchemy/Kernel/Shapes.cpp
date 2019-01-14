@@ -3,9 +3,7 @@
 //	Simple shapes
 //	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 #include "math.h"
 

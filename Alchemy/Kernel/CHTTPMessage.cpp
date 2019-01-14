@@ -1,10 +1,9 @@
 //	CHTTPMessage.cpp
 //
 //	CHTTPMessage class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Internets.h"
 
 bool ReadLine (IReadStream &Stream, CString *retsLine);

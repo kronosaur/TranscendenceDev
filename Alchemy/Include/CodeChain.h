@@ -14,8 +14,7 @@
 //	2.	When passing in ICCItem *, the called routine is responsible for
 //		incrementing the refcount if it decides to keep a reference
 
-#ifndef INCL_CODECHAIN
-#define INCL_CODECHAIN
+#pragma once
 
 class CCodeChain;
 class CEvalContext;
@@ -964,4 +963,3 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags =
 int HelperCompareItemsLists (ICCItem *pFirst, ICCItem *pSecond, int iKeyIndex, bool bCoerce = true);
 int HelperCompareItemsStructs (ICCItem *pFirst, ICCItem *pSecond, const CString &sSortKey, bool bCoerce = true);
 
-#endif

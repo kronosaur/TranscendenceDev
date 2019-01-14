@@ -3,12 +3,7 @@
 //	CAniCartoucheBlock class
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
-
+#include "PreComp.h"
 #include "Reanimator.h"
 
 const int INDEX_VISIBLE =					0;

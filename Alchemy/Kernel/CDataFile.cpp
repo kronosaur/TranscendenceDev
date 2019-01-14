@@ -1,9 +1,9 @@
 //	CDataFile.cpp
 //
 //	Implements CDataFile object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 #define DATAFILE_SIGNATURE					'ALDF'
 #define DATAFILE_VERSION					2

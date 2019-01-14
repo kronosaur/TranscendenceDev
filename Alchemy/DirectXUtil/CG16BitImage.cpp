@@ -1,11 +1,9 @@
 //	CG16bitImage.cpp
 //
 //	Implementation of raw 16-bit image object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "JPEGUtil.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 //#define DEBUG_TIME
 

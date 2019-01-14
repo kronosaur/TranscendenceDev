@@ -25,6 +25,9 @@
     <ClInclude Include="..\Include\IntelJPEGUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PreComp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="ijl15l.lib" />

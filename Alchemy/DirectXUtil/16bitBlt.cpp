@@ -1,15 +1,12 @@
 //	16bitBlt.cpp
 //
 //	Blt routines
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-
+#include "PreComp.h"
 #include <math.h>
 #include <stdio.h>
 #include "Euclid.h"
-#include "NoiseImpl.h"
 
 #define INTERPOLATE(pos,lineInc,XYFloat,xInt,yInt,result)		\
 	{															\

@@ -1,9 +1,9 @@
 //	CMapBase.cpp
 //
 //	Implements CMapBase object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CMapBase::CMapBase (int iTableSize) : m_iTableSize(iTableSize), m_pTable(NULL), m_iCount(0)
 
@@ -202,17 +202,17 @@ void CMapBase::Reset (CMapIterator &Iterator) const
 	Iterator.m_iTableEntry = 0;
 	}
 
-bool MapKeyEquals (const CString &sKey1, const CString &sKey2)
+bool Kernel::MapKeyEquals (const CString &sKey1, const CString &sKey2)
 	{
 	return strEquals(sKey1, sKey2);
 	}
 
-void *MapKeyHashData (const CString &Key)
+void *Kernel::MapKeyHashData (const CString &Key)
 	{
 	return Key.GetASCIIZPointer(); 
 	}
 
-int MapKeyHashDataSize (const CString &Key)
+int Kernel::MapKeyHashDataSize (const CString &Key)
 	{
 	return Key.GetLength() + 1; 
 	}

@@ -1,9 +1,9 @@
 //	InternetsUtil.cpp
 //
 //	Miscellaneous utility functions
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-
+#include "PreComp.h"
 #include "Internets.h"
 
 #define PROTOCOL_HTTP									CONSTLIT("http")

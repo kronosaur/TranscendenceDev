@@ -1,10 +1,9 @@
 //	CG16bitFont.cpp
 //
 //	Implementation of raw 16-bit image font object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 const int FONT_SAVE_VERSION =					1;
 

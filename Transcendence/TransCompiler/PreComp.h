@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 
-#include <windows.h>
 #include "Alchemy.h"
 #include "Crypto.h"
 #include "XMLUtil.h"

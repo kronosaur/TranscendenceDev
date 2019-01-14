@@ -5,7 +5,7 @@
 //
 //	Pattern format:
 
-#include "Kernel.h"
+#include "PreComp.h"
 
 #define SPECIAL_ALPHA							CONSTLIT("A")
 #define SPECIAL_ANY								CONSTLIT("?")
@@ -117,7 +117,7 @@ class CNFA
 	};
 
 
-bool strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMatches, char **retpEnd)
+bool Kernel::strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMatches, char **retpEnd)
 
 //	strRegEx
 //

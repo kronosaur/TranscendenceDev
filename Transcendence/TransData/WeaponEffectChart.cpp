@@ -3,12 +3,7 @@
 //	Generate a poster of weapon effects.
 //	Copyright (c) 2013 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
 #define SHIP_UNID_ATTRIB					CONSTLIT("shipClass")

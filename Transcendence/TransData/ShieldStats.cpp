@@ -1,13 +1,9 @@
 //	ShieldStats.cpp
 //
 //	Generate statistics about shields
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <stdio.h>
-
-#include <windows.h>
-#include "Alchemy.h"
-#include "XMLUtil.h"
-#include "TransData.h"
+#include "PreComp.h"
 
 #define FIELD_HP							CONSTLIT("hp")
 #define FIELD_REGEN							CONSTLIT("regen")

@@ -3,11 +3,7 @@
 //	CScreenMgr3D class
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <dsound.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include "DX3DImpl.h"
+#include "PreComp.h"
 
 CScreenMgr3D::CScreenMgr3D (void) :
 		m_hWnd(NULL),

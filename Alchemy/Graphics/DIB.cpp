@@ -1,13 +1,9 @@
 //	DIB.cpp
 //
 //	Contains routines to manipulate DIBs
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include <MMSystem.h>
-
-#include "Kernel.h"
-#include "KernelObjID.h"
-#include "Graphics.h"
+#include "PreComp.h"
 
 #define BFT_BITMAP 0x4d42   //	'BM'
 #define WIDTHBYTES(i)   ((i+31)/32*4)

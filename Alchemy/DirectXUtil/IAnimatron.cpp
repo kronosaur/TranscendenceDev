@@ -1,13 +1,9 @@
 //	IAnimatron.cpp
 //
 //	IAnimatron class
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
-
+#include "PreComp.h"
 #include "Reanimator.h"
 
 #define ID_SCROLL_ANIMATION						CONSTLIT("idAniScroll")

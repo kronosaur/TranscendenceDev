@@ -1,16 +1,15 @@
 //	Polygon.cpp
 //
 //	Polygon code
+//	Copyright (c) 2012 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
+#include "PreComp.h"
 
 const int INIT_ARRAY_ALLOC =						100;
 
-struct SEdgeState
+struct SPolyEdgeState
 	{
-    SEdgeState *pNextEdge;
+    SPolyEdgeState *pNextEdge;
     int x;
     int yStart;
     int xWholePixelMove;
@@ -22,13 +21,13 @@ struct SEdgeState
 	};
 
 static void AdvanceAET (void);
-static void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SEdgeState *NextFreeEdgeStruc);
+static void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SPolyEdgeState *NextFreeEdgeStruc);
 static void MoveXSortedToAET (int YToMove);
 static void ScanOutAET (int YToScan);
 static void XSortAET (void);
 
-static SEdgeState *g_pGET;
-static SEdgeState *g_pAET;
+static SPolyEdgeState *g_pGET;
+static SPolyEdgeState *g_pAET;
 static int g_iRunCount;
 static int g_iRunAlloc;
 static CG16bitBinaryRegion::SRun *g_pRuns;
@@ -59,7 +58,7 @@ int CreateScanLinesFromPolygon (int iVertexCount, SPoint *pVertexList, CG16bitBi
 
 	//	Build the global edge table. This initializes g_pGET.
 
-	SEdgeState *EdgeTableBuffer = new SEdgeState [iVertexCount];
+	SPolyEdgeState *EdgeTableBuffer = new SPolyEdgeState [iVertexCount];
 	BuildGlobalEdgeTable(iVertexCount, pVertexList, EdgeTableBuffer);
 	if (g_pGET == NULL)
 		{
@@ -118,7 +117,7 @@ void AdvanceAET (void)
 //	Removes edges that have been fully scanned.
 	
 	{
-	SEdgeState *CurrentEdge, **CurrentEdgePtr;
+	SPolyEdgeState *CurrentEdge, **CurrentEdgePtr;
 
 	//	Count down and remove or advance each edge in the AET
 
@@ -153,7 +152,7 @@ void AdvanceAET (void)
 		}
 	}
 
-void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SEdgeState *NextFreeEdgeStruc)
+void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SPolyEdgeState *NextFreeEdgeStruc)
 
 //	BuildGlobalEdgeTable
 //
@@ -165,8 +164,8 @@ void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SEdgeState *Ne
 
 	{
     int i, StartX, StartY, EndX, EndY, DeltaY, DeltaX, Width;
-    SEdgeState *NewEdgePtr;
-    SEdgeState *FollowingEdge, **FollowingEdgeLink;
+    SPolyEdgeState *NewEdgePtr;
+    SPolyEdgeState *FollowingEdge, **FollowingEdgeLink;
     SPoint *VertexPtr;
 
 	//	Initialize the global edge table to empty
@@ -269,7 +268,7 @@ void MoveXSortedToAET (int YToMove)
 //	GET to the AET, maintaining the X sorting of the AET.
 
 	{
-	SEdgeState *AETEdge, **AETEdgePtr, *TempEdge;
+	SPolyEdgeState *AETEdge, **AETEdgePtr, *TempEdge;
 	int CurrentX;
 
 	//	The GET is Y sorted. Any edges that start at the desired Y
@@ -314,7 +313,7 @@ void ScanOutAET (int YToScan)
 //	Adds new runs to the scanline structure
 	{
 	int LeftX;
-	SEdgeState *CurrentEdge;
+	SPolyEdgeState *CurrentEdge;
 
 	//	Scan through the AET, drawing line segments as each pair of edge
 	//	crossings is encountered. The nearest pixel on or to the right
@@ -363,7 +362,7 @@ void XSortAET (void)
 //	order of current X coordinates
 
 	{
-    SEdgeState *CurrentEdge, **CurrentEdgePtr, *TempEdge;
+    SPolyEdgeState *CurrentEdge, **CurrentEdgePtr, *TempEdge;
     int SwapOccurred;
 
 	//	Scan through the AET and swap any adjacent edges for which the

@@ -1,6 +1,7 @@
 //	Pattern.cpp
 //
 //	String pattern package
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 //
 //	Pattern format:
 //
@@ -19,11 +20,11 @@
 //
 //	x	Argument is an unsigned 32-bit integer. The hex value is substituted
 
-#include "Kernel.h"
+#include "PreComp.h"
 
 void WritePadding (CString &sOutput, char chChar, int iLen);
 
-CString strPattern (const CString &sPattern, LPVOID *pArgs)
+CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 //	strPattern
 //
@@ -230,7 +231,7 @@ CString strPattern (const CString &sPattern, LPVOID *pArgs)
 	return CString(sOutput.GetPointer(), sOutput.GetLength());
 	}
 
-CString strPatternSubst (CString sLine, ...)
+CString Kernel::strPatternSubst (CString sLine, ...)
 
 //	strPatternSubst
 //

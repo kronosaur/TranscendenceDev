@@ -3,8 +3,7 @@
 //	CRegKey class
 //	Copyright (c) 2003 by NeuroHack, Inc. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
+#include "PreComp.h"
 
 CRegKey::CRegKey (void) : m_hKey(NULL)
 

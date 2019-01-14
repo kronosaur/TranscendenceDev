@@ -3,12 +3,7 @@
 //	CAniControl class
 //	Copyright (c) 2011 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#include <windows.h>
-#include "Alchemy.h"
-#include "DirectXUtil.h"
-#include <math.h>
-#include <stdio.h>
-
+#include "PreComp.h"
 #include "Reanimator.h"
 
 CAniControl::~CAniControl (void)

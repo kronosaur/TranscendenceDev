@@ -1,10 +1,9 @@
 //	CVector.cpp
 //
 //	Implements CVector object
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
-#include "Kernel.h"
-#include "KernelObjID.h"
-
+#include "PreComp.h"
 #include "Euclid.h"
 
 bool CVector::Clip (Metric rLength)
