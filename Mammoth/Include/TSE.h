@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Alchemy.h"
 #include "Euclid.h"
 #include "Lingua.h"
 #include "Internets.h"

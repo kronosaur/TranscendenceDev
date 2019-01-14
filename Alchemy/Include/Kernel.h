@@ -7,6 +7,8 @@
 
 #include <cstddef>
 
+#ifndef _WINDOWS_
+
 #ifndef _WIN32_WINNT		// Allow use of features specific to Windows XP or later.                   
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
 #endif						
@@ -14,6 +16,9 @@
 #define _CRT_RAND_S
 #define NOMINMAX
 #include <windows.h>
+
+#endif
+
 #include <mmsystem.h>
 
 //	Explicit placement operator
@@ -132,6 +137,7 @@ template <class VALUE> void Swap (VALUE &a, VALUE &b)
 	b = temp;
 	}
 
+#ifdef NOMINMAX
 template <class VALUE> VALUE max (VALUE a, VALUE b)
 	{
 	return (a > b ? a : b);
@@ -149,6 +155,7 @@ inline int min (int a, LONG b) { return (a < b ? a : b); }
 inline int min (LONG a, int b) { return (a < b ? a : b); }
 inline int min (int a, size_t b) { return (a < (int)b ? a : b); }
 inline int min (size_t a, int b) { return ((int)a < b ? a : b); }
+#endif
 
 inline int RectHeight(RECT *pRect) { return pRect->bottom - pRect->top; }
 inline int RectHeight(const RECT &Rect) { return Rect.bottom - Rect.top; }
