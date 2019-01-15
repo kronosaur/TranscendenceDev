@@ -232,7 +232,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	for (i = 0; i < designCount; i++)
 		m_ByType[i].DeleteAll();
 
-	m_CreatedTypes.DeleteAll(true);
+	m_CreatedTypes.DeleteAll();
 	m_OverrideTypes.DeleteAll();
 
 	//	Reset
@@ -532,7 +532,7 @@ void CDesignCollection::CleanUp (void)
 //	Free all entries so that we don't hold on to any resources.
 
 	{
-	m_CreatedTypes.DeleteAll(true);
+	m_CreatedTypes.DeleteAll();
 	m_DynamicTypes.DeleteAll();
 	m_HierarchyTypes.DeleteAll();
 
@@ -1638,11 +1638,9 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 //	Resolve all overrides
 
 	{
-	int i;
-
 	//	Apply all overrides
 
-	for (i = 0; i < m_OverrideTypes.GetCount(); i++)
+	for (int i = 0; i < m_OverrideTypes.GetCount(); i++)
 		{
 		CDesignType *pOverride = m_OverrideTypes.GetEntry(i);
 
@@ -1650,8 +1648,8 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 		//	then just continue without error (it means we're trying to override
 		//	a type that doesn't currently exist).
 
-		CDesignType *pType = m_AllTypes.FindByUNID(pOverride->GetUNID());
-		if (pType == NULL)
+		CDesignType *pAncestor = m_AllTypes.FindByUNID(pOverride->GetUNID());
+		if (pAncestor == NULL)
 			{
 			//	In previous versions, we sometimes saved these overrides, so if
 			//	we find it in TypesUsed, then it means we need it.
@@ -1663,6 +1661,8 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 
 			continue;
 			}
+
+#ifdef OVERRIDE_CLONE
 
 		//	If this type is not already a clone then we need to clone it first
 		//	(Because we never modify the original loaded type).
@@ -1684,6 +1684,56 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 		//	Replace the original
 
 		m_AllTypes.AddOrReplaceEntry(pType);
+
+#else
+
+		//	If the ancestor is a different type, then this is an error.
+
+		if (pAncestor->GetType() != designGenericType && pAncestor->GetType() != pOverride->GetType())
+			return pOverride->ComposeLoadError(Ctx, CONSTLIT("Cannot override a different type."));
+
+		//	Generate a merged XML so that we inherit appropriate XML from our
+		//	ancestor.
+
+		CXMLElement *pNewXML = new CXMLElement;
+		bool bMerged;
+		pNewXML->InitFromMerge(*pAncestor->GetXMLElement(), *pOverride->GetXMLElement(), pOverride->GetXMLMergeFlags(), &bMerged);
+
+		//	If we did not merge anything from our ancestor then no need to create
+		//	a new type.
+
+		if (!bMerged)
+			{
+			delete pNewXML;
+			continue;
+			}
+
+		//	Define the type (m_CreatedTypes takes ownership of pNewXML).
+		//
+		//	NOTE: We need to support the case where we define multiple types for
+		//	the same UNID. We never use m_CreatedTypes to lookup by UNID, so
+		//	this should work as long as DefineType keeps both UNIDs.
+		//
+		//	LATER: m_CreatedTypes should be a normal CDesignList.
+
+		CDesignType *pNewType;
+		if (m_CreatedTypes.DefineType(pOverride->GetExtension(), pOverride->GetUNID(), pNewXML, &pNewType, &Ctx.sError) != NOERROR)
+			{
+			delete pNewXML;
+			return pOverride->ComposeLoadError(Ctx, Ctx.sError);
+			}
+
+		//	We set inheritence on the new type
+
+		pNewType->SetModification();
+		pNewType->SetMerged();
+		pNewType->SetInheritFrom(pAncestor);
+
+		//	Now replace the original
+
+		m_AllTypes.AddOrReplaceEntry(pNewType);
+
+#endif
 		}
 
 	//	Done

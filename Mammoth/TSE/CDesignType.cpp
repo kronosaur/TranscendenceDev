@@ -230,7 +230,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_pInheritFrom)
 		{
-		ASSERT(m_pInheritFrom->GetUNID() != GetUNID());
+		ASSERT(IsModification() || m_pInheritFrom->GetUNID() != GetUNID());
 		for (i = 0; i < evtCount; i++)
 			{
 			if (!HasCachedEvent((ECachedHandlers)i))
@@ -2088,6 +2088,31 @@ void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap
 	*retpHandlers = NULL;
 	retInheritedHandlers->DeleteAll();
 	AddUniqueHandlers(retInheritedHandlers);
+	}
+
+CXMLElement *CDesignType::GetLocalScreens (void) const
+
+//	GetLocalScreens
+//
+//	Returns the local screens.
+//
+//	NOTE: Local screens are not inherited except when a descendant has no local
+//	screens and an ancestor does.
+
+	{
+	//	If we have local screens, return them
+
+	if (m_pExtra && m_pExtra->pLocalScreens)
+		return m_pExtra->pLocalScreens;
+
+	//	Otherwise, see if our ancestor does
+
+	if (m_pInheritFrom)
+		return m_pInheritFrom->GetLocalScreens();
+
+	//	Otherwise, no screens.
+
+	return NULL;
 	}
 
 CLanguageDataBlock CDesignType::GetMergedLanguageBlock (void) const

@@ -287,7 +287,7 @@ class CDesignType
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
 		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		inline DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
-		inline CXMLElement *GetLocalScreens (void) const { return (m_pExtra ? m_pExtra->pLocalScreens : NULL); }
+		CXMLElement *GetLocalScreens (void) const;
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
@@ -319,6 +319,7 @@ class CDesignType
 		inline void SetGlobalData (const CString &sAttrib, ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
+		inline void SetModification (bool bValue = true) { m_bIsModification = true; }
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
@@ -1309,7 +1310,6 @@ class CDesignCollection
 		CDesignTable m_AllTypes;
 		CDesignList m_ByType[designCount];
 		CDesignList m_OverrideTypes;
-		CDesignList m_CreatedTypes;
 		CTopologyDescTable *m_pTopology;
 		CExtension *m_pAdventureExtension;
 		CAdventureDesc *m_pAdventureDesc;
@@ -1322,6 +1322,7 @@ class CDesignCollection
 
 		CDynamicDesignTable m_DynamicTypes;
 		CDynamicDesignTable m_HierarchyTypes;
+		CDynamicDesignTable m_CreatedTypes;
 		TSortMap<CString, CDesignType *> m_DynamicUNIDs;
 
 		//	State
