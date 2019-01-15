@@ -50,7 +50,7 @@
 				levelFrequency=			"----- rcur- ----- ----- -----"
 
 				locationCriteria=		"-asteroids"
-				enemyExclusionRaduis=	"80"
+				enemyExclusionRadius=	"80"
 				/>
 
 		<Encounters frequency="common">
