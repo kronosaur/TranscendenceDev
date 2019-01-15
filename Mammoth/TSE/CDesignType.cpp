@@ -33,6 +33,7 @@
 #define SHIP_CLASS_OVERRIDE_TAG					CONSTLIT("ShipClassOverride")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
 #define SHIP_TABLE_TAG							CONSTLIT("ShipTable")
+#define SHIP_TABLE_OVERRIDE_TAG					CONSTLIT("ShipTableOverride")
 #define SOUND_TAG								CONSTLIT("Sound")
 #define SOUNDTRACK_TAG							CONSTLIT("Soundtrack")
 #define SOVEREIGN_TAG							CONSTLIT("Sovereign")
@@ -118,6 +119,8 @@
 #define FIELD_VERSION							CONSTLIT("version")
 
 #define FIELD_ATTRIB_PREFIX						CONSTLIT("attrib-")
+
+#define STR_OVERRIDE							CONSTLIT("Override")
 
 static char DESIGN_CHAR[designCount] =
 	{
@@ -288,57 +291,71 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 	try
 		{
 		ALERROR error;
-		CDesignType *pType = NULL;
-		bool bOverride = false;
 
-		if (strEquals(pDesc->GetTag(), ITEM_TYPE_TAG))
+		//	The tag determines the type
+
+		CString sTag = pDesc->GetTag();
+
+		//	If the tag ends in "Override" then this is an override.
+
+		bool bOverride = false;
+		if (strEndsWith(sTag, STR_OVERRIDE))
+			{
+			sTag = strSubString(sTag, 0, sTag.GetLength() - STR_OVERRIDE.GetLength());
+			bOverride = true;
+			}
+
+		//	Create the type
+
+		CDesignType *pType = NULL;
+		if (strEquals(sTag, ITEM_TYPE_TAG))
 			pType = new CItemType;
-		else if (strEquals(pDesc->GetTag(), ITEM_TABLE_TAG))
+		else if (strEquals(sTag, ITEM_TABLE_TAG))
 			pType = new CItemTable;
-		else if (strEquals(pDesc->GetTag(), SHIP_CLASS_TAG))
+		else if (strEquals(sTag, SHIP_CLASS_TAG))
 			pType = new CShipClass;
-		else if (strEquals(pDesc->GetTag(), SHIP_ENERGY_FIELD_TYPE_TAG))
+		else if (strEquals(sTag, SHIP_ENERGY_FIELD_TYPE_TAG))
 			pType = new COverlayType;
-		else if (strEquals(pDesc->GetTag(), MISSION_TYPE_TAG))
+		else if (strEquals(sTag, MISSION_TYPE_TAG))
 			pType = new CMissionType;
-		else if (strEquals(pDesc->GetTag(), OVERLAY_TYPE_TAG))
+		else if (strEquals(sTag, OVERLAY_TYPE_TAG))
 			pType = new COverlayType;
-		else if (strEquals(pDesc->GetTag(), SYSTEM_TYPE_TAG))
+		else if (strEquals(sTag, SYSTEM_TYPE_TAG))
 			pType = new CSystemType;
-		else if (strEquals(pDesc->GetTag(), STATION_TYPE_TAG)
-				|| strEquals(pDesc->GetTag(), ENCOUNTER_TYPE_TAG))
+		else if (strEquals(sTag, STATION_TYPE_TAG)
+				|| strEquals(sTag, ENCOUNTER_TYPE_TAG))
 			pType = new CStationType;
-		else if (strEquals(pDesc->GetTag(), SOUNDTRACK_TAG))
+		else if (strEquals(sTag, SOUNDTRACK_TAG))
 			pType = new CMusicResource;
-		else if (strEquals(pDesc->GetTag(), SOVEREIGN_TAG))
+		else if (strEquals(sTag, SOVEREIGN_TAG))
 			pType = new CSovereign;
-		else if (strEquals(pDesc->GetTag(), DOCK_SCREEN_TAG))
+		else if (strEquals(sTag, DOCK_SCREEN_TAG))
 			pType = new CDockScreenType;
-		else if (strEquals(pDesc->GetTag(), POWER_TAG))
+		else if (strEquals(sTag, POWER_TAG))
 			pType = new CPower;
-		else if (strEquals(pDesc->GetTag(), SPACE_ENVIRONMENT_TYPE_TAG))
+		else if (strEquals(sTag, SPACE_ENVIRONMENT_TYPE_TAG))
 			pType = new CSpaceEnvironmentType;
-		else if (strEquals(pDesc->GetTag(), ENCOUNTER_TABLE_TAG))
+		else if (strEquals(sTag, ENCOUNTER_TABLE_TAG))
 			pType = new CShipTable;
-		else if (strEquals(pDesc->GetTag(), SHIP_TABLE_TAG))
+		else if (strEquals(sTag, SHIP_TABLE_TAG))
 			pType = new CShipTable;
-		else if (strEquals(pDesc->GetTag(), SOUND_TAG))
+		else if (strEquals(sTag, SOUND_TAG))
 			pType = new CSoundResource;
-		else if (strEquals(pDesc->GetTag(), SYSTEM_FRAGMENT_TABLE_TAG))
+		else if (strEquals(sTag, SYSTEM_FRAGMENT_TABLE_TAG))
 			pType = new CSystemTable;
-		else if (strEquals(pDesc->GetTag(), SYSTEM_MAP_TAG))
+		else if (strEquals(sTag, SYSTEM_MAP_TAG))
 			pType = new CSystemMap;
-		else if (strEquals(pDesc->GetTag(), IMAGE_TAG))
+		else if (strEquals(sTag, IMAGE_TAG))
 			pType = new CObjectImage;
-		else if (strEquals(pDesc->GetTag(), ECONOMY_TYPE_TAG))
+		else if (strEquals(sTag, ECONOMY_TYPE_TAG))
 			pType = new CEconomyType;
-		else if (strEquals(pDesc->GetTag(), TEMPLATE_TYPE_TAG))
+		else if (strEquals(sTag, TEMPLATE_TYPE_TAG))
 			pType = new CTemplateType;
-		else if (strEquals(pDesc->GetTag(), TYPE_TAG))
+		else if (strEquals(sTag, TYPE_TAG))
 			pType = new CGenericType;
-		else if (strEquals(pDesc->GetTag(), IMAGE_COMPOSITE_TAG))
+		else if (strEquals(sTag, IMAGE_COMPOSITE_TAG))
 			pType = new CCompositeImageType;
-		else if (strEquals(pDesc->GetTag(), ADVENTURE_DESC_TAG))
+		else if (strEquals(sTag, ADVENTURE_DESC_TAG))
 			{
 			//	Only valid if we are inside an Adventure
 
@@ -350,7 +367,7 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 
 			pType = new CAdventureDesc;
 			}
-		else if (strEquals(pDesc->GetTag(), EFFECT_TAG))
+		else if (strEquals(sTag, EFFECT_TAG))
 			{
 			//	Load UNID
 
@@ -375,17 +392,12 @@ ALERROR CDesignType::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 
 			return NOERROR;
 			}
-		else if (strEquals(pDesc->GetTag(), EFFECT_TYPE_TAG))
+		else if (strEquals(sTag, EFFECT_TYPE_TAG))
 			{
 			//	This is a full effect type. The actual class depends on the content
 
 			if (error = CEffectCreator::CreateTypeFromXML(Ctx, pDesc, (CEffectCreator **)&pType))
 				return error;
-			}
-		else if (strEquals(pDesc->GetTag(), SHIP_CLASS_OVERRIDE_TAG))
-			{
-			pType = new CShipClass;
-			bOverride = true;
 			}
 		else
 			{
