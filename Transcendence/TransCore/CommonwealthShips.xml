@@ -1456,7 +1456,6 @@
 			<Ship levelFrequency="-rrcc crr--" count="1" class="&scIAVMedium;" orders="guard"/>
 			<Ship levelFrequency="-ruuc curr-" count="1" class="&scCenturionBlock1;" orders="guard"/>
 			<Ship levelFrequency="--vru ccurr" count="1" class="&scCenturionBlock2;" orders="guard"/>
-
 		</LevelTable>
 	</ShipTable>
 	

@@ -1005,7 +1005,8 @@
 	<!ENTITY stTempusLab				"0x00172002">
 	<!ENTITY stBlackMarketShipyard		"0x00172003">
 
-	<!ENTITY scMolotok					"0x00173001">
+	<!ENTITY scMolotokB					"0x00173001">
+	<!ENTITY scMolotok					"0x00173001">	<!-- Backwards compatibility -->
 
 	<!ENTITY itBlackMarketContainer		"0x00174001">
 	
@@ -1855,8 +1856,14 @@
 	<!ENTITY dsBlackMarketDelivery		"0x00100203">
 	<!ENTITY msBlackMarketHotelMeet		"0x00100204">
     <!ENTITY baBlackMarketStation       "0x00100205">
-    <!ENTITY rsMolotokHD			    "0x00100206">
+    <!ENTITY rsMolotokB				    "0x00100206">
+    <!ENTITY rsMolotokHD			    "0x00100206">	<!-- Backwards compatibility -->
     <!ENTITY rsMolotokHero			    "0x00100207">
+    <!ENTITY rsMolotokBHero			    "0x00100207">	<!-- Backwards compatibility -->
+    <!ENTITY scMolotokA				    "0x00100208">
+    <!ENTITY rsMolotokA				    "0x00100209">
+    <!ENTITY rsMolotokAHero			    "0x0010020A">
+    <!ENTITY tbBlackMarketBountyHunters	"0x0010020B">
 
 	<!-- 0210-022F PENITENTS -->
 	
