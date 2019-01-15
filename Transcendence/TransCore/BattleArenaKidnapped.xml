@@ -78,30 +78,31 @@
 				(block (
 					(arenaObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 					(destObj (objGetObjByID (msnGetData gSource 'stationID)))
-					(targetObj (sysFindObject destObj "sAN O:guard; +unid:&scMolotok;;"))
 					kateMorgentalObj anchorObj
+					targetObj
 					)
 
 					;	Disable reinforcements and make sure there is just one defender
+					;	(which we will create)
+
 					(objSetProperty destObj 'shipReinforcementEnabled Nil)
 					(enum (sysFindObject destObj "sAJ O:guard;") theObj
-						(if (!= theObj targetObj)
-							(objDestroy theObj)
-							)
+						(objDestroy theObj)
 						)
-					(if (not targetObj)
-						(block Nil
-							(setq targetObj (sysCreateShip &scMolotok; destObj &svBlackMarket;))
-							(shpOrder targetObj 'guard destObj)
-							)
-						)
+
+					;	Create a single guard
+
+					(setq targetObj (sysCreateShip &scMolotokA; destObj &svBlackMarket;))
+					(shpOrder targetObj 'guard destObj)
 					(msnSetData gSource 'targetID (objGetID targetObj))
 
 					;	Create a marker for the cruiser
+
 					(setq anchorObj (sysCreateMarker "Morgental cruiser anchor" (sysVectorPolarOffset arenaObj 270 20) &svCorporate;))
 					(msnSetData gSource 'anchorID (objGetID anchorObj))
 
 					;	Create Morgental's cruiser
+
 					(setq kateMorgentalObj
 						(rpgCharacterCreateShip
 							&unidKateMorgental;
@@ -111,6 +112,7 @@
 						)
 
 					;	Orbit the black market station waiting for the player
+
 					(shpCancelOrders kateMorgentalObj)
 					(shpOrder kateMorgentalObj 'approach destObj 180)
 					(shpOrder kateMorgentalObj 'fireEvent gSource 'OnKateInPosition)
@@ -310,6 +312,8 @@
 		</Events>
 		
 		<Language>
+			<!-- DIALOG -->
+
 			<Text id="Name">Katami Kidnapped</Text>
 			<Text id="Summary">
 				(msnTranslate gSource 'textSummary {
@@ -317,68 +321,101 @@
 					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
 					})
 			</Text>
-			<Text id="textSummary">
-				Mr. Katami has been captured by the Black Market.
-				Help Kate Morgental rescue him.
-
-				System: %systemName%\n
-				Payment: %payment%
-			</Text>
 			<Text id="Intro">
 				(if (rpgCharacterGetQuickRel &unidKateMorgental;)
 					(msnTranslate gSource "Intro:knowKate")
 					(msnTranslate gSource "Intro:meetKate")
 					)
 			</Text>
-			<Text id="Intro:knowKate">
-				You enter the gladiators' quarters but there is no sign of Mr. Katami.
-				You see Kate Morgental in his office looking through his files. She turns to you:
 
-				"%name%, Mr. Katami is gone! He's been taken by the Black Market. I found a message that says that
-				they will kill him if you go ahead with the fight with The Slicer!"
+			<!-- INTRO -->
+
+			<Text id="textSummary">
+
+				Mr. Katami has been captured by the Black Market. Destroy the
+				Molotok guarding the Black Market base, then wait for Kate
+				Morgental to rescue Katami.
+
+				System: %systemName%\n
+				Payment: %payment%
+
+			</Text>
+			<Text id="Intro:knowKate">
+
+				You enter the gladiators' quarters but there is no sign of 
+				Mr. Katami. You see Kate Morgental in his office looking through 
+				his files. She turns to you:
+
+				"%name%, Mr. Katami is gone! He's been taken by the Black Market. 
+				I found a message saying they will kill him if you fight and
+				defeat The Slicer!"
+
 			</Text>
 			<Text id="Intro:meetKate">
-				You enter the gladiators' quarters but there is no sign of Mr. Katami.
-				A woman in an expensive suit is looking through Katami's files. She turns to you:
 
-				"You must be %name%; I'm glad you're here. I'm Kate Morgental. I received a message from
-				the Black Market: They have captured Katami and they're threatening to kill him if you fight The Slicer!"
+				You enter the gladiators' quarters but there is no sign of 
+				Mr. Katami.	A woman in an expensive suit is looking through 
+				Katami's files. She turns to you:
+
+				"You must be %name%; I'm glad you're here. I'm Kate Morgental.
+				I received a message from the Black Market: They've captured 
+				Katami and threaten to kill him if you fight The Slicer!"
+
 			</Text>
 			<Text id="Briefing">
-				"Katami was my old trainer and he means a lot to me. And the Black Market doesn't scare me; they're
-				just the parasites of the Corporate universe."
 
-				"Help me to rescue him and you'll be able to defeat The Slicer without risking Katami's life."
+				"Katami was my old trainer and he means a lot to me. And the 
+				Black Market doesn't scare me; they're just the parasites of 
+				the Corporate universe."
+
+				"Help me rescue him and you'll be able to defeat The Slicer 
+				without risking Katami's life."
+
 			</Text>
 			<String id="AcceptLabel">"I'll [h]elp you."</String>
 			<String id="DeclineLabel">"Katami can [t]ake care of himself."</String>
 			<Text id="AcceptReply">
-				"I knew you would agree! I will not forget this."
 
-				"They're keeping Katami at the Black Market station in the outer asteroid field. Go to those
-				coordinates and destroy the Molotok guarding the base. When you've cleared the area I'll
-				blast the station and rescue Katami! Deal?"
+				"I knew you would agree! I will not forget this.
+
+				"They're keeping Katami at the Black Market station in the outer
+				asteroid field. They might kill him if they see me coming, but
+				if you destroy the Molotok guarding the base, it will keep them
+				distracted.
+
+				"Then I'll blast the station and rescue Katami! Deal?
 
 				"Alright, let's go!"
+
 			</Text>
 			<Text id="DeclineReply">
-				Kate looks deflated, but quickly composes herself. She gives you a sharp look.
 
-				"Nothing in it for you, huh? I clearly misjudged you. Go take care of yourself! I don't need your help!"
+				Kate looks deflated, but quickly composes herself. She gives you
+				a sharp look.
+
+				"Nothing in it for you, huh? I clearly misjudged you. Go take 
+				care of yourself! I don't need your help!"
+
 			</Text>
 			<Text id="InProgress">
+
 				You receive a message from Kate:
 
-				"Are you on your way? Get to the Black Market station and clear out those defenders!"
+				"Are you on your way? Get to the Black Market station and destroy
+				that Molotok guard!"
+
 			</Text>
 			<Text id="FailureDebrief">
 				LATER: Failure message
 			</Text>
 			<Text id="SuccessDebrief">
+
 				Mr. Katami meets you at the docking bay.
 
-				"I owe you my life! The only way I can begin to repay you is to help you to defeat The Slicer.
-				Here, take this ROM biosoft. It may save your life."
+				"I owe you my life! The only way I can begin to repay you is to 
+				help you to defeat The Slicer. Here, take this ROM biosoft. It 
+				may save your life."
+
 			</Text>
 
 			<Text id="msgKateInPosition">
@@ -389,23 +426,29 @@
 			</Text>
 
 			<Text id="bmMsgWarning">
+
 				Men grab you and take you before the station boss:
 
 				"There's no need to talk; you know what you need to do.
 				Just stay out of the Arena and your friend will be fine."
 				He turns towards his bodyguards, "Get %him% out of here!"
+
 			</Text>
 			<Text id="bmMsgWait">
+
 				You see movement in the smoking remains of the station. Any survivors are
 				unlikely to want to talk first so you decide to wait for Kate.
+
 			</Text>
 			<Text id="bmMsgRescue">
+
 				You enter the smoking remains of the station. You follow the sounds of
 				gunfire and find Kate Morgental leading a team of armored men. They are
 				unbinding Mr. Katami, who seems to be weak but otherwise unharmed.
 
 				Kate flashes you a thumbs up: "Thanks for your help&mdash;we'll get him
 				back safely! See you back at the Arena: You've got a date with The Slicer!"
+
 			</Text>
 		</Language>
 	</MissionType>
