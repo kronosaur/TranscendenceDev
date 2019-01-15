@@ -1662,31 +1662,6 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 			continue;
 			}
 
-#ifdef OVERRIDE_CLONE
-
-		//	If this type is not already a clone then we need to clone it first
-		//	(Because we never modify the original loaded type).
-
-		if (!pType->IsClone())
-			{
-			CDesignType *pClone;
-			pType->CreateClone(&pClone);
-
-			m_CreatedTypes.AddEntry(pClone);
-
-			pType = pClone;
-			}
-
-		//	Now modify the type with the override
-
-		pType->MergeType(pOverride);
-
-		//	Replace the original
-
-		m_AllTypes.AddOrReplaceEntry(pType);
-
-#else
-
 		//	If the ancestor is a different type, then this is an error.
 
 		if (pAncestor->GetType() != designGenericType && pAncestor->GetType() != pOverride->GetType())
@@ -1732,8 +1707,6 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 		//	Now replace the original
 
 		m_AllTypes.AddOrReplaceEntry(pNewType);
-
-#endif
 		}
 
 	//	Done

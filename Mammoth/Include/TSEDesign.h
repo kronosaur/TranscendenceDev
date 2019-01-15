@@ -208,7 +208,6 @@ class CDesignType
 			size_t dwWreckGraphicsMemory = 0;
 			};
 
-		void CreateClone (CDesignType **retpType);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDesignType **retpType);
 
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
@@ -217,7 +216,6 @@ class CDesignType
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
-		void MergeType (CDesignType *pSource);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
 		inline void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
@@ -311,7 +309,6 @@ class CDesignType
         inline ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
-		inline bool IsClone (void) const { return m_bIsClone; }
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
@@ -367,9 +364,7 @@ class CDesignType
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }
-		virtual void OnInitFromClone (CDesignType *pSource) { ASSERT(false); }
 		virtual void OnMarkImages (void) { }
-		virtual void OnMergeType (CDesignType *pSource) { ASSERT(false); }
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual void OnPrepareReinit (void) { }
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
@@ -423,7 +418,6 @@ class CDesignType
 														//		allocate when necessary).
 
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
-		bool m_bIsClone = false;						//	TRUE if we cloned this from another type
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
 
 		DWORD m_fHasCustomMapDescLang:1;				//	Cached for efficiency

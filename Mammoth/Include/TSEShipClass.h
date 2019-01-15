@@ -462,9 +462,7 @@ class CShipClass : public CDesignType
         virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
-		virtual void OnInitFromClone (CDesignType *pSource) override;
 		virtual void OnMarkImages (void) override { MarkImages(true); }
-		virtual void OnMergeType (CDesignType *pSource) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
 		virtual void OnSweep (void) override;
