@@ -257,6 +257,17 @@ CShipTable::~CShipTable (void)
 		delete m_pGenerator;
 	}
 
+void CShipTable::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
+
+//	OnAccumulateXMLMergeFlags
+//
+//	Returns flags to determine how we merge from inherited types.
+
+	{
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(LEVEL_TABLE_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(TABLE_TAG), CXMLElement::MERGE_APPEND_CHILDREN);
+	}
+
 ALERROR CShipTable::OnBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnBindDesign
