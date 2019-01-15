@@ -42,6 +42,7 @@
 		<Events>
 			<OnGlobalStartDiagnostics>
 				(block ()
+					(diagTestAutonBay)
 					(diagTestDeviceSlots)
 					)
 			</OnGlobalStartDiagnostics>
@@ -67,6 +68,61 @@
 	<Globals>
 	(block ()
 		;	TESTS --------------------------------------------------------------
+
+		(setq diagTestAutonBay (lambda ()
+			(block ()
+
+				;	Initialize some vars
+
+				(setq gScreen Nil)
+
+				;	Run tests
+
+				(diagRun (list
+
+					;	Create ship
+
+					(lambda () (diagCreatePlayerShip))
+
+					;	Create an auton
+
+					(lambda ()
+						(setq autonObj (sysCreateShip &sc1MBattleAuton; (objGetPos gPlayerShip) &svCommonwealth;))
+						)
+
+					;	Install a weapon
+
+					(lambda ()
+						(block (result)
+
+							(setq result (rpgInstallDevicePrep {
+								item: (itmCreate &itBallistaCannon; 1)
+								targetObj: autonObj
+								installerObj: gPlayerShip
+								totalPrice: 0
+								noCargoCheck: True
+								}))
+
+							(if (not (@ result 'canInstall))
+								(error (@ result 'desc))
+								)
+							)
+						)
+
+					;	Done with the player ship and auton
+
+					(lambda () 
+						(block ()
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+
+							(objDestroy autonObj)
+							(setq autonObj Nil)
+							)
+						)
+					))
+				)
+			))
 
 		(setq diagTestDeviceSlots (lambda ()
 			(block ()
