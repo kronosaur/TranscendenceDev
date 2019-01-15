@@ -47,6 +47,7 @@ class CSpaceObjectCriteria
 		CSpaceObjectCriteria (const CString &sCriteria);
 		CSpaceObjectCriteria (CSpaceObject *pSourceArg, const CString &sCriteria);
 
+		inline bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
 		inline bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
 		inline bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }
 		inline CriteriaSortTypes GetSort (void) const { return m_iSort; }
@@ -112,6 +113,7 @@ class CSpaceObjectCriteria
 		bool m_bDockedWithSource = false;			//	Only objects currently docked with source
 		bool m_bExcludePlayer = false;				//	Exclude the player
 		bool m_bTargetIsSource = false;				//	Only objects whose target is the source
+		bool m_bIncludeIntangible = false;			//	Include intangible objects
 
 		bool m_bPerceivableOnly = false;			//	Only objects that can be perceived by the source
 		int m_iPerception = 0;						//	Cached perception of pSource

@@ -12514,8 +12514,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		//	them if they match.
 
 		if (pObj 
-				&& pObj->MatchesCriteria(Ctx, Criteria)
-				&& (!pObj->IsIntangible() || pObj->IsVirtual()))
+				&& pObj->MatchesCriteria(Ctx, Criteria))
 			{
 			if (bGenerateOurOwnList)
 				pList->AppendInteger(*pCC, (int)pObj);

@@ -5936,6 +5936,13 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 	if (Crit.ExcludesVirtual() && IsVirtual())
 		return false;
 
+	//	Virtual objects are also intangible, so if we want to find virtual 
+	//	objects (but not all intangible objects) then we need the extra check
+	//	about !IsVirtual.
+
+	if (Crit.ExcludesIntangible() && IsIntangible() && !IsVirtual())
+		return false;
+
 	//	With a particular order
 
 	if (!Crit.MatchesOrder(pSource, *this))

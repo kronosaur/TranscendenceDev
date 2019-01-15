@@ -196,6 +196,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		m			Include missiles
 //		s			Include ships
 //		t			Include stations (including planets)
+//		v			Include intangible objects
 //		z			Include the player
 //
 //		A			Active objects only (i.e., objects that can attack)
@@ -444,6 +445,11 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 				m_bStructureScaleOnly = true;
 				break;
 				}
+
+			case 'v':
+				m_bIncludeIntangible = true;
+				m_bIncludeVirtual = true;
+				break;
 
 			case 'V':
 				m_bIncludeVirtual = true;
