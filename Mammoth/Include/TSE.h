@@ -327,7 +327,6 @@ void DrawParticle (CG32bitImage &Dest,
 //	Helper functions
 
 CString ComposeDamageAdjReference (int *AdjRow, int *StdRow);
-CString ReactorPower2String (int iPower);
 
 int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
 void NLSplit (const CString &sPhrase, TArray<CString> *retArray);

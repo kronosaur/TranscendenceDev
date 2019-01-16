@@ -733,28 +733,16 @@ CString CDeviceClass::GetReferencePower (CItemCtx &Ctx)
 	{
 	int iPower = GetPowerRating(Ctx);
 
-	//	Compute the power units
+	//	Callers rely on the fact that we return NULL_STR for power if we don't
+	//	consume any power (so they know not to show the reference).
 
-	CString sUnit;
 	if (iPower == 0)
 		return NULL_STR;
-	else if (iPower >= 10000)
-		{
-		sUnit = CONSTLIT("GW");
-		iPower = iPower / 1000;
-		}
-	else
-		sUnit = CONSTLIT("MW");
 
-	//	Decimal
+	//	GetPowerRating returns power in 1/10ths of a MW, but ComposeNumber wants
+	//	power in KWs.
 
-	int iMW = iPower / 10;
-	int iMWDecimal = iPower % 10;
-
-	if (iMW >= 100 || iMWDecimal == 0)
-		return strPatternSubst(CONSTLIT("%d %s"), iMW, sUnit);
-	else
-		return strPatternSubst(CONSTLIT("%d.%d %s"), iMW, iMWDecimal, sUnit);
+	return CLanguage::ComposeNumber(CLanguage::numberPower, iPower * 100.0);
 	}
 
 bool CDeviceClass::OnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker)

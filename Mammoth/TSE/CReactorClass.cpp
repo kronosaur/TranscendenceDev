@@ -264,7 +264,8 @@ CString CReactorClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD d
 
 	//	Power output
 
-	sReference = strPatternSubst(CONSTLIT("%s max output"), ReactorPower2String(iMaxPower));
+	sReference = strPatternSubst(CONSTLIT("%s max output"),	
+			CLanguage::ComposeNumber(CLanguage::numberPower, iMaxPower * 100.0));
 
 	//	Fuel level
 

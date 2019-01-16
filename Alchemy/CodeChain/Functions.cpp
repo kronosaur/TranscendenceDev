@@ -5267,8 +5267,10 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					double rSecondValue = strToDouble(pSecond->GetStringValue(), 0.0, &bFailed);
-					if (bFailed)
+					char *pEnd;
+					CString sSecond = pSecond->GetStringValue();
+					double rSecondValue = strParseDouble(sSecond.GetASCIIZPointer(), 0.0, &pEnd, &bFailed);
+					if (bFailed || *pEnd != '\0')
 						return -2;
 					else if (pFirst->GetDoubleValue() == rSecondValue)
 						return 0;
@@ -5299,8 +5301,11 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					int iSecondValue = strToInt(pSecond->GetStringValue(), 0, &bFailed);
-					if (bFailed)
+					char *pEnd;
+					CString sSecond = pSecond->GetStringValue();
+					int iSecondValue = strParseInt(sSecond.GetASCIIZPointer(), 0, &pEnd, &bFailed);
+
+					if (bFailed || *pEnd != '\0')
 						return -2;
 					else if (pFirst->GetIntegerValue() == iSecondValue)
 						return 0;

@@ -457,7 +457,7 @@ void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)
 
 	CString sReactorName = strPatternSubst(CONSTLIT("%s (%s)"), 
 			Stats.sReactorName,
-			ReactorPower2String(Stats.iReactorPower));
+			CLanguage::ComposeNumber(CLanguage::numberPower, Stats.iReactorPower * 100.0));
 
 	int cyHeight;
 	int cxWidth = MediumFont.MeasureText(sReactorName, &cyHeight) + 4 * RING_SPACING;

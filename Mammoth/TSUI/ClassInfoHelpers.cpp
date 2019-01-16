@@ -438,7 +438,7 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 
 	CString sText = strPatternSubst(CONSTLIT("{/rtf {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}}"),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			CTextBlock::Escape(ReactorPower2String(ReactorDesc.GetMaxPower())),
+			CTextBlock::Escape(CLanguage::ComposeNumber(CLanguage::numberPower, ReactorDesc.GetMaxPower() * 100.0)),
 			(COLORREF)VI.GetColor(colorTextDialogInput),
 			sHeader);
 

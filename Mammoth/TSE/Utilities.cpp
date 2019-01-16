@@ -2406,29 +2406,6 @@ void ParseUNIDList (const CString &sList, DWORD dwFlags, TArray<DWORD> *retList)
 		}
 	}
 
-CString ReactorPower2String (int iPower)
-
-//	ReactorPower2String
-//
-//	Generates a string for reactor power
-
-	{
-	int iReactorPower = (iPower + 5) / 10;
-
-	if (iReactorPower < 1000)
-		return strPatternSubst(CONSTLIT("%dMW"), iReactorPower);
-	else
-		{
-		int iGW = iReactorPower / 1000;
-		int iMW = iReactorPower % 1000;
-
-		if (iMW == 0)
-			return strPatternSubst(CONSTLIT("%dGW"), iGW);
-		else
-			return strPatternSubst(CONSTLIT("%d.%dGW"),	iGW, (iMW + 50) / 100);
-		}
-	}
-
 void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj)
 
 //	ReportCrashObj

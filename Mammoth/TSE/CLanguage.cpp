@@ -15,6 +15,61 @@
 #define SECOND_PLURAL_ATTRIB				CONSTLIT("secondPlural")
 #define VOWEL_ARTICLE_ATTRIB				CONSTLIT("reverseArticle")
 
+int CLanguage::CalcMetricNumber (Metric rNumber, int *retiWhole, int *retiDecimal)
+
+//	CalcMetricNumber
+//
+//	This is a helper function for formatting decimal numbers. We start with a
+//	float and convert into a whole number between 0 and 990 and a decimal number
+//	between 0 and 9. We return the number of times that we had to divide
+//	the original number by 1,000.
+
+	{
+	//	Short-circuit
+
+	if (rNumber <= 0.0)
+		{
+		if (retiWhole) *retiWhole = 0;
+		if (retiDecimal) *retiDecimal = 0;
+		return 0;
+		}
+
+	//	Handle values less than 10
+
+	else if (rNumber < 10.0)
+		{
+		int iNumber = mathRound(rNumber * 10);
+		if (retiWhole) *retiWhole = iNumber / 10;
+		if (retiDecimal) *retiDecimal = iNumber % 10;
+		return 0;
+		}
+
+	//	Values less than 100
+
+	else if (rNumber < 100.0)
+		{
+		int iNumber = mathRound(rNumber);
+		if (retiWhole) *retiWhole = iNumber;
+		if (retiDecimal) *retiDecimal = 0;
+		return 0;
+		}
+
+	//	Values less than 1000
+
+	else if (rNumber < 1000.0)
+		{
+		int iNumber = mathRound(rNumber / 10.0);
+		if (retiWhole) *retiWhole = iNumber * 10;
+		if (retiDecimal) *retiDecimal = 0;
+		return 0;
+		}
+
+	//	Otherwise, we go up to the next scale
+
+	else
+		return CalcMetricNumber(rNumber / 1000.0, retiWhole, retiDecimal) + 1;
+	}
+
 CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 
 //	Compose
@@ -414,15 +469,46 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 		//	For power, we assume the value in in KWs.
 
 		case numberPower:
-			if (rNumber < 9950.0)
-				return strPatternSubst(CONSTLIT("%s MW"), strFromDouble(rNumber / 1000.0, 1));
-			else if (rNumber < 999500.0)
-				return strPatternSubst(CONSTLIT("%d MW"), mathRound(rNumber / 1000.0));
-			else if (rNumber < 9950000.0)
-				return strPatternSubst(CONSTLIT("%s GW"), strFromDouble(rNumber / 1000000.0, 1));
+			{
+			int iWhole, iDecimal;
+			int iScale = CalcMetricNumber(rNumber / 1000.0, &iWhole, &iDecimal);
+
+			if (iDecimal == 0)
+				{
+				switch (iScale)
+					{
+					case 0:
+						return strPatternSubst(CONSTLIT("%d MW"), iWhole);
+
+					case 1:
+						return strPatternSubst(CONSTLIT("%d GW"), iWhole);
+
+					case 2:
+						return strPatternSubst(CONSTLIT("%d TW"), iWhole);
+
+					default:
+						return CONSTLIT("infinite");
+					}
+				}
 			else
-				return strPatternSubst(CONSTLIT("%d GW"), mathRound(rNumber / 1000000.0));
+				{
+				switch (iScale)
+					{
+					case 0:
+						return strPatternSubst(CONSTLIT("%d.%d MW"), iWhole, iDecimal);
+
+					case 1:
+						return strPatternSubst(CONSTLIT("%d.%d GW"), iWhole, iDecimal);
+
+					case 2:
+						return strPatternSubst(CONSTLIT("%d.%d TW"), iWhole, iDecimal);
+
+					default:
+						return CONSTLIT("infinite");
+					}
+				}
 			break;
+			}
 
 		case numberRegenRate:
 			{

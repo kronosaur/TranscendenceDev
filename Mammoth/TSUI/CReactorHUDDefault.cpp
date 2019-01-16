@@ -414,7 +414,7 @@ void CReactorHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	CString sReactorName = strPatternSubst(CONSTLIT("%s (%s)"), 
 			Stats.sReactorName,
-			ReactorPower2String(Stats.iReactorPower));
+			CLanguage::ComposeNumber(CLanguage::numberPower, Stats.iReactorPower * 100.0));
 
 	MediumFont.DrawText(m_Buffer,
 			m_rcReactorText.left,
