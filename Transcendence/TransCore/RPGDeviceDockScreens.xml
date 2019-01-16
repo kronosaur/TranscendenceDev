@@ -408,7 +408,7 @@
 		</Panes>
 	
 		<Language>
-			<Text id="actionInstall">"[I]nstall"</Text>
+			<Text id="actionInstall">[I]nstall</Text>
 		</Language>
 	</DockScreen>
 
@@ -437,10 +437,13 @@
 
 	noItemsText:		Text to show if itemList is empty
 
+	noSuccessPane:		If True, we don't show a success pane.
+
 -->
 
 	<DockScreen UNID="&dsRPGInstallDeviceFromList;"
 			type=           "customItemPicker"
+			inherit=		"&dsDockScreenBase;"
 			nestedScreen=   "true"
 			>
 
@@ -451,27 +454,71 @@
         <Panes>
             <Default>
                 <onPaneInit>
-					(block (result)
-						(setq gItem (scrGetItem gScreen))
-
-						(if gItem
-							(block (result)
-								(setq gCost
-									(add
-										(rpgAdjustPrice gSource gItem (@ gData 'priceAdj) (objGetDefaultCurrency gSource) 'noInventoryCheck)
-										(rpgAdjustInstallPrice gSource gItem (@ gData 'installPriceAdj) (objGetDefaultCurrency gSource))
-										)
-									)
-
+					(block (
+						(theItem (scrGetItem gScreen))
+						(currencyUsed (objGetDefaultCurrency gSource))
+						currentItem
+						result
+						)
+						(if theItem
+							(block (
+								(itemCategory (itmGetProperty theItem 'category))
+								result
+								)
 								(setq result (rpgInstallDevicePrep {
-									item: gItem
-									totalPrice: gCost
-									currencyUsed: (objGetDefaultCurrency gSource)
+									item: theItem
+									totalPrice: 
+										(if (@ gData 'priceAdj)
+											(add
+												(rpgAdjustPrice gSource theItem (@ gData 'priceAdj) currencyUsed 'noInventoryCheck)
+												(rpgAdjustInstallPrice gSource theItem (@ gData 'installPriceAdj) currencyUsed)
+												)
+											)
+									buyAndInstall: (not (@ gData 'priceAdj))
+									installPriceAdj: (@ gData 'installPriceAdj)
+									currencyUsed: currencyUsed
+									maxTechLevel: 25	;	This accepts all items in list, even if station cannot install them
 									checkMilitaryID: (@ gData 'checkMilitaryID)
 									}))
 
+								(scrSetData gScreen 'result result)
+								(scrSetData gScreen 'theItem theItem)
+
+								;	Show the current device
+						
+								(switch
+									(@ result 'itemToReplace)
+										(scrSetControlValue gScreen 'currentItem {
+											source: gPlayerShip
+											item: (@ result 'itemToReplace)
+											})
+
+									(and (= itemCategory 'launcher)
+											(setq currentItem (@ (objGetItems gPlayerShip "lI") 0))
+											)
+										(scrSetControlValue gScreen 'currentItem {
+											source: gPlayerShip
+											item: currentItem
+											})
+
+									(and (= itemCategory 'shields)
+											(setq currentItem (@ (objGetItems gPlayerShip "sI") 0))
+											)
+										(scrSetControlValue gScreen 'currentItem {
+											source: gPlayerShip
+											item: currentItem
+											})
+
+									(scrSetControlValue gScreen 'currentItem Nil)
+									)
+
+								;	Enable/disable action
+
 								(scrSetDesc gScreen (@ result 'desc))
-								(scrEnableAction gScreen 0 (@ result 'canInstall))
+								(scrEnableAction gScreen 'actionInstall (@ result 'canInstall))
+								(if (gr (@ result 'price) 0)
+									(scrSetActionLabel gScreen 'actionInstall (scrTranslate gScreen 'actionBuyAndInstall))
+									)
 								)
 
 							; No items in list
@@ -482,24 +529,42 @@
 										"You cannot install any items."
 										)
 									)
-								(scrEnableAction gScreen 0 Nil)
+								(scrEnableAction gScreen 'actionInstall Nil)
 								)
 							)
 						)
                 </onPaneInit>
 
+				<Controls>
+					<ItemDisplay id="currentItem"/>
+					<Text id="desc"/>
+				</Controls>
+
                 <Actions>
-                    <Action name="Buy &amp; Install this item" default="1" key="B">
-						(block Nil
-							(rpgBuyItem gSource gItem gCost (objGetDefaultCurrency gSource))
-							(shpInstallDevice gPlayerShip gItem)
+                    <Action id="actionInstall" default="1">
+						(block (
+							(theItem (scrGetData gScreen 'theItem))
+							(result (scrGetData gScreen 'result))
+							(cost (@ result 'price))
+							)
+							(rpgBuyItem gSource theItem cost (objGetDefaultCurrency gSource))
+							(shpInstallDevice gPlayerShip theItem)
 							(typSetData &svPlayer; 'tutorialInstalled True)
-							(scrShowPane gScreen "InstallSuccess")
+
+							(scrSetReturnData gScreen 'installed True)
+
+							(if (@ gData 'noSuccessPane)
+		                        (scrExitScreen gScreen)
+								(scrShowPane gScreen "InstallSuccess")
+								)
 							)
                     </Action>
 
                     <Action name="Cancel" cancel="1" key="C">
-                        (scrExitScreen gScreen)
+						(block ()
+							(scrSetReturnData gScreen 'installed Nil)
+							(scrExitScreen gScreen)
+							)
                     </Action>
                 </Actions>
             </Default>
@@ -508,9 +573,11 @@
 					noListNavigation="true"
 					>
 				<OnPaneInit>
-					(block Nil
+					(block (
+						(theItem (scrGetData gScreen 'theItem))
+						)
 						(scrSetDesc gScreen
-							(cat (itmGetName gItem 0x01) " installed successfully.")
+							(cat (itmGetName theItem 0x01) " installed successfully.")
 							)
 						)
 				</OnPaneInit>
@@ -522,6 +589,11 @@
 				</Actions>
 			</InstallSuccess>
         </Panes>
+
+		<Language>
+			<Text id="actionInstall">[I]nstall</Text>
+			<Text id="actionBuyAndInstall">[B]uy and Install</Text>
+		</Language>
     </DockScreen>
 
 <!-- UPGRADE DEVICE SCREEN =====================================================
@@ -656,7 +728,7 @@
 		</Panes>
 	
 		<Language>
-			<Text id="actionBuyAndInstall">"[B]uy and Install"</Text>
+			<Text id="actionBuyAndInstall">[B]uy and Install</Text>
 		</Language>
 	</DockScreen>
 

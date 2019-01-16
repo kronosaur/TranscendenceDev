@@ -192,75 +192,45 @@ PLAYER DATA
 							</Action>
 
 							<Action id="actionWantWeapon">
-								(if (ls (objGetData gPlayerShip "blackMarketWeapon") (objGetData gPlayerShip "blackMarketLevel"))
-									(block (level)
-										(setq level (objGetData gPlayerShip "blackMarketLevel"))
-
-										(setq gCost 0)
-										(switch
-											(eq level 6)
-												(block Nil
-													(setq gItem (itmCreate &itRasiermesserLauncher; 1))
-													(setq gAmmo (itmCreate &itGotha400Seeker; 50))
-													)
-
-											(eq level 5)
-												(block Nil
-													(setq gItem (itmCreate &itHanzoBlaster; 1))
-													(setq gAmmo Nil)
-													)
-
-											(eq level 4)
-												(block Nil
-													(setq gItem (itmCreate &itDragonflyMissileSystem; 1))
-													(setq gAmmo (itmCreate &itDragonflyCartridge; 150))
-													)
-
-											(block Nil
-												(setq gItem (itmCreate &itMAGLauncher; 1))
-												(setq gAmmo (itmCreate &itZG24ClusterMAG; 100))
-												)
-											)
-										(setq gCheckMilitaryID Nil)
-										
-										(scrShowPane gScreen "UpgradeWeaponComplete")
-										(scrShowScreen gScreen "&dsInstallSpecificDevice;" { buyAndInstall:True })
+								(if (ls (objGetData gPlayerShip 'blackMarketWeapon) (objGetData gPlayerShip 'blackMarketLevel))
+									(block (
+										(reward (objFireEvent gSource 'GetRewardUpgrade { type:'weapon }))
 										)
-									(scrShowPane gScreen "NoUpgrade")
+										(scrSetData gScreen 'reward reward)
+
+										(scrShowPane gScreen 'UpgradeComplete)
+										(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
+											itemList: (list (@ reward 'device))
+											priceAdj: 0
+											installPriceAdj: 0
+											noSuccessPane: True
+											})
+										)
+									(scrShowPane gScreen 'NoUpgrade)
 									)
 							</Action>
 
 							<Action id="actionWantShields">
-								(if (ls (objGetData gPlayerShip "blackMarketShields") (objGetData gPlayerShip "blackMarketLevel"))
-									(block (level)
-										(setq level (objGetData gPlayerShip "blackMarketLevel"))
-
-										(setq gCost 0)
-										(switch
-											(eq level 6)
-												(setq gItem (itmCreate &itPlasmaShieldGenerator; 1))
-
-											(eq level 5)
-												(setq gItem (itmCreate &itYoroiMX; 1))
-
-											(eq level 4)
-												(setq gItem (itmCreate &itYoroiS500; 1))
-
-											(eq level 3)
-												(setq gItem (itmCreate &itYoroiS100; 1))
-
-											(setq gItem (itmCreate &itClass3Deflector; 1))
-											)
-										(setq gCheckMilitaryID Nil)
-										(scrShowPane gScreen "UpgradeShieldsComplete")
-										(scrShowScreen gScreen "&dsInstallSpecificDevice;" { buyAndInstall:True })
+								(if (ls (objGetData gPlayerShip 'blackMarketShields) (objGetData gPlayerShip 'blackMarketLevel))
+									(block (
+										(reward (objFireEvent gSource 'GetRewardUpgrade { type:'shields }))
 										)
-									(scrShowPane gScreen "NoUpgrade")
+										(scrSetData gScreen 'reward reward)
+
+										(scrShowPane gScreen 'UpgradeComplete)
+										(scrShowScreen gScreen &dsRPGInstallDeviceFromList; {
+											itemList: (list (@ reward 'device))
+											priceAdj: 0
+											installPriceAdj: 0
+											noSuccessPane: True
+											})
+										)
+									(scrShowPane gScreen 'NoUpgrade)
 									)
 							</Action>
 
 							<Action id="actionLeave" cancel="1">
-								(scrShowScreen gScreen "Main")
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</MemberBoss>
@@ -268,7 +238,7 @@ PLAYER DATA
 					<LordBoss descID="descLordBoss">
 						<Actions>
 							<Action id="actionLeave" cancel="1">
-								(scrShowScreen gScreen "Main")
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</LordBoss>
@@ -276,7 +246,7 @@ PLAYER DATA
 					<NoAccess descID="descNoBoss">
 						<Actions>
 							<Action id="actionContinue" cancel="1" default="1">
-								(scrShowScreen gScreen "Main")
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</NoAccess>
@@ -284,54 +254,57 @@ PLAYER DATA
 					<NoUpgrade descID="descNoUpgrade">
 						<Actions>
 							<Action id="actionContinue" cancel="1" default="1">
-								(scrShowScreen gScreen "Main")
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</NoUpgrade>
 
-					<UpgradeWeaponComplete>
+					<UpgradeComplete>
 						<OnPaneInit>
-							(if gResult
-								(scrSetDesc gScreen "The dark-haired woman smiles as the crew installs your new weapon: \"Enjoy your new toy.\"")
-								(scrSetDesc gScreen "The dark-haired woman frowns in disappointment.")
+							(block (
+								(reward (scrGetData gScreen 'reward))
+								(rewardType (@ reward 'type))
+								)
+								(switch
+									(not (scrGetReturnData gScreen 'installed))
+										(scrSetDescTranslate gScreen 'descInstallCancel)
+
+									(= rewardType 'weapon)
+										(scrSetDescTranslate gScreen 'descInstalledWeapon)
+
+									(scrSetDescTranslate gScreen 'descInstalledShields)
+									)
 								)
 						</OnPaneInit>
 
 						<Actions>
 							<Action id="actionContinue" cancel="1" default="1">
-								(block Nil
-									(if gResult
-										(block Nil
-											(objAddItem gPlayerShip gAmmo)
-											(objSetData gPlayerShip "blackMarketWeapon" (objGetData gPlayerShip "blackMarketLevel"))
+								(block ()
+									(if (scrGetReturnData gScreen 'installed)
+										(block (
+											(reward (scrGetData gScreen 'reward))
+											(rewardType (@ reward 'type))
+											(ammo (@ reward 'ammo))
+											)
+											(if ammo
+												(objAddItem gPlayerShip ammo)
+												)
+
+											(switch
+												(= rewardType 'shields)
+													(objSetData gPlayerShip 'blackMarketShields (objGetData gPlayerShip 'blackMarketLevel))
+
+												(= rewardType 'weapon)
+													(objSetData gPlayerShip 'blackMarketWeapon (objGetData gPlayerShip 'blackMarketLevel))
+												)
 											)
 										)
-									(scrShowScreen gScreen "Main")
+
+									(scrShowScreen gScreen 'Main)
 									)
 							</Action>
 						</Actions>
-					</UpgradeWeaponComplete>
-
-					<UpgradeShieldsComplete>
-						<OnPaneInit>
-							(if gResult
-								(scrSetDesc gScreen "The dark-haired woman smiles as the crew installs your new shield generator: \"Enjoy your new toy.\"")
-								(scrSetDesc gScreen "The dark-haired woman frowns in disappointment.")
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionContinue" cancel="1" default="1">
-								(block Nil
-									(if gResult
-										(objSetData gPlayerShip "blackMarketShields" (objGetData gPlayerShip "blackMarketLevel"))
-										)
-									(scrShowScreen gScreen "Main")
-									)
-							</Action>
-						</Actions>
-					</UpgradeShieldsComplete>
-
+					</UpgradeComplete>
 				</Panes>
 			</Boss>
 		</DockScreens>
@@ -339,6 +312,76 @@ PLAYER DATA
 		<!-- Events and Data -->
 		
 		<Events>
+			<GetRewardUpgrade>
+				(block (
+					(level (objGetData gPlayerShip 'blackMarketLevel))
+					(rewardType (@ gData 'type))
+					)
+					(switch
+						(= rewardType 'shields)
+							(switch
+								(geq level 6)
+									{
+										type: 'shields
+										device: (itmCreate &itPlasmaShieldGenerator; 1)
+										}
+
+								(= level 5)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiMX; 1)
+										}
+
+								(= level 4)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiS500; 1)
+										}
+
+								(= level 3)
+									{
+										type: 'shields
+										device: (itmCreate &itYoroiS100; 1)
+										}
+
+								{
+									type: 'shields
+									device: (itmCreate &itClass3Deflector; 1)
+									}
+								)
+
+						(= rewardType 'weapon)
+							(switch
+								(geq level 6)
+									{
+										type: 'weapon
+										device: (itmCreate &itRasiermesserLauncher; 1)
+										ammo: (itmCreate &itGotha400Seeker; 50)
+										}
+
+								(= level 5)
+									{
+										type: 'weapon
+										device: (itmCreate &itHanzoBlaster; 1)
+										}
+
+								(= level 4)
+									{
+										type: 'weapon
+										device: (itmCreate &itDragonflyMissileSystem; 1)
+										ammo: (itmCreate &itDragonflyCartridge; 150)
+										}
+
+								{
+									type: 'weapon
+									device: (itmCreate &itMAGLauncher; 1)
+									ammo: (itmCreate &itZG24ClusterMAG; 100)
+									}
+								)
+						)
+					)
+			</GetRewardUpgrade>
+
 			<GetRumors>
 				{
 					attributes: "commonwealthPub"
@@ -397,6 +440,25 @@ PLAYER DATA
 			<Text id="descLordBoss">
 
 				You try to see Lord Mikho, but he is indisposed.
+
+			</Text>
+			<Text id="descInstallCancel">
+
+				The dark-haired woman frowns in disappointment.
+
+			</Text>
+			<Text id="descInstalledWeapon">
+
+				The dark-haired woman smiles as the crew installs your new weapon:
+				
+				"Enjoy your new toy."
+			
+			</Text>
+			<Text id="descInstalledShields">
+
+				The dark-haired woman smiles as the crew installs your new shield generator:
+				
+				"Enjoy your new toy."
 
 			</Text>
 			<Text id="descNoUpgrade">
