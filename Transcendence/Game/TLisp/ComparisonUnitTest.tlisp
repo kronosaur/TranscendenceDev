@@ -5,7 +5,7 @@
 
 (setq TEST_SUITE (list
 
-	;	For backgwards compatibility, we don't coerce strings to numbers
+	;	For backwards compatibility, we don't coerce strings to numbers
 
 	{	code: '(eq)				result: True }
 	{	code: '(eq 1)			result: True }

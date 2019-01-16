@@ -801,5 +801,8 @@
     <Xml Include="CoreSamples.xml">
       <Filter>Core Types</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidCCComparisonTests;">
+		<Events>
+			<OnGlobalStartDiagnostics><![CDATA[
+				(diagEval (list
+
+					;	For backwards compatibility, we don't coerce strings to numbers
+
+					{	test: '(eq)				result: True }
+					{	test: '(eq 1)			result: True }
+					{	test: '(eq 1 1)			result: True }
+					{	test: '(eq 1 2)			result: Nil }
+					{	test: '(eq 1 1 1 1)		result: True }
+					{	test: '(eq 0 1 1 1)		result: Nil }
+					{	test: '(eq 1 1 1 0)			result: Nil }
+					{	test: '(eq 1.0 1)			result: True }
+					{	test: '(eq 2.0 2)			result: True }
+					{	test: '(eq "a" "a")			result: True }
+					{	test: '(eq "A" "a")			result: True }
+					{	test: '(eq "a" "A")			result: True }
+					{	test: '(eq "b" "A")			result: Nil }
+					{	test: '(eq "a" "A" "a")			result: True }
+					{	test: '(eq "1" 1)			result: Nil }
+					{	test: '(eq "0.1" 0.1)			result: Nil }
+					{	test: '(eq "0.100" 0.1)			result: Nil }
+					{	test: '(eq "1e-1" 0.1)			result: Nil }
+					{	test: '(eq 1 "1")			result: Nil }
+					{	test: '(eq "asdf" 0)			result: Nil }
+					{	test: '(eq "asdf" "asdf")			result: True }
+					{	test: '(eq "ASDF" "asdf")			result: True }
+
+					;	For backwards compatibility, for all comparisons, anything less
+					;	than two arguments always returns True.
+
+					{	test: '(ls)			result: True }
+					{	test: '(ls 1)			result: True }
+					{	test: '(ls 0)			result: True }
+					{	test: '(ls -1)			result: True }
+					{	test: '(ls 1 1)			result: Nil }
+					{	test: '(ls 1 2)			result: True }
+					{	test: '(ls -1 2)			result: True }
+					{	test: '(ls 1 2 3 4 5.0 6 7)			result: True }
+					{	test: '(ls 1 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(ls 1 2 3.0 4 5 6 7 0)		result: Nil }
+					{	test: '(ls 8 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(ls "")			result: True }
+					{	test: '(ls "a")			result: True }
+					{	test: '(ls "a" "a")			result: Nil }
+					{	test: '(ls "a" "b")			result: True }
+					{	test: '(ls "a" "B")			result: True }
+					{	test: '(ls "a" "B" "c")			result: True }
+
+					{	test: '(gr)			result: True }
+					{	test: '(gr 1)			result: True }
+					{	test: '(gr 0)			result: True }
+					{	test: '(gr -1)			result: True }
+					{	test: '(gr 1 1)			result: Nil }
+					{	test: '(gr 2 1)			result: True }
+					{	test: '(gr 2 -1)			result: True }
+					{	test: '(gr 7 6 5 4 3 2.5 1)			result: True }
+					{	test: '(gr 7 6 5 5 4 3 2 1)			result: Nil }
+					{	test: '(gr 0 7.5 6 5 4 3 2 1)		result: Nil }
+					{	test: '(gr 7 6 5 4 3 2 1 8)			result: Nil }
+					{	test: '(gr "")			result: True }
+					{	test: '(gr "a")			result: True }
+					{	test: '(gr "a" "a")			result: Nil }
+					{	test: '(gr "b" "a")			result: True }
+					{	test: '(gr "B" "a")			result: True }
+					{	test: '(gr "c" "B" "a")			result: True }
+
+					{	test: '(leq)			result: True }
+					{	test: '(leq 1)			result: True }
+					{	test: '(leq 0)			result: True }
+					{	test: '(leq -1)			result: True }
+					{	test: '(leq 1 1)			result: True }
+					{	test: '(leq 1 2)			result: True }
+					{	test: '(leq -1 2)			result: True }
+					{	test: '(leq 1 1 2 3 4 4 5 6 7 7)			result: True }
+					{	test: '(leq 1 2 3 4 5 6 7 0)			result: Nil }
+					{	test: '(leq 8 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(leq "")			result: True }
+					{	test: '(leq "a")			result: True }
+					{	test: '(leq "a" "a")			result: True }
+					{	test: '(leq "a" "b")			result: True }
+					{	test: '(leq "a" "B")			result: True }
+					{	test: '(leq "a" "B" "c")			result: True }
+					{	test: '(leq "a" "d" "c")			result: Nil }
+
+					{	test: '(geq)			result: True }
+					{	test: '(geq 1)			result: True }
+					{	test: '(geq 0)			result: True }
+					{	test: '(geq -1)			result: True }
+					{	test: '(geq 1 1)			result: True }
+					{	test: '(geq 2 1)			result: True }
+					{	test: '(geq 2 -1)			result: True }
+					{	test: '(geq 7 7 6 5 4 4 3 2 1 1)			result: True }
+					{	test: '(geq 0 7 6 5 4 3 2 1)			result: Nil }
+					{	test: '(geq 7 6 5 4 3 2 1 8)			result: Nil }
+					{	test: '(geq "")			result: True }
+					{	test: '(geq "a")			result: True }
+					{	test: '(geq "a" "a")			result: True }
+					{	test: '(geq "b" "a")			result: True }
+					{	test: '(geq "B" "a")			result: True }
+					{	test: '(geq "c" "B" "a")			result: True }
+					{	test: '(geq "a" "d" "c")			result: Nil }
+
+					{	test: '(eq nil nil)			result: True }
+					{	test: '(eq nil "")			result: Nil }
+					{	test: '(eq "" nil)			result: Nil }
+					{	test: '(eq "" (list))			result: Nil }
+					{	test: '(eq nil (list))			result: True }
+					{	test: '(eq nil '())				result: True }
+					{	test: '(eq (list) nil)			result: True }
+					{	test: '(eq (list) "")			result: Nil }
+					{	test: '(eq '() nil)				result: True }
+					{	test: '(eq { } nil)				result: True }
+					{	test: '(eq nil { })				result: True }
+					{	test: '(eq '(1 2 3) '(1 2 3))			result: True }
+					{	test: '(eq '(1 3 3) '(1 2 3))			result: Nil }
+					{	test: '(eq nil '(1 2 3))			result: Nil }
+					{	test: '(neq nil '(1 2 3))			result: True }
+
+					;	When comparing less than two arguments, we always compare to
+					;	Nil. Nil is equal to an empty list and it is equal to a blank string
+					;	but it is less than everything else.
+
+					{	test: '(=)				result: True }
+					{	test: '(= 1)			result: Nil }
+					{	test: '(= 1 1)			result: True }
+					{	test: '(= 1 2)			result: Nil }
+					{	test: '(= 1 1 1 1)		result: True }
+					{	test: '(= 0 1 1 1)		result: Nil }
+					{	test: '(= 1 1 1 0)			result: Nil }
+					{	test: '(= 1.0 1)			result: True }
+					{	test: '(= 2.0 2)			result: True }
+					{	test: '(= "a" "a")			result: True }
+					{	test: '(= "A" "a")			result: True }
+					{	test: '(= "a" "A")			result: True }
+					{	test: '(= "b" "A")			result: Nil }
+					{	test: '(= "a" "A" "a")			result: True }
+					{	test: '(= "1" 1)			result: True }
+					{	test: '(= "0.1" 0.1)			result: True }
+					{	test: '(= "0.100" 0.1)			result: True }
+					{	test: '(= "1e-1" 0.1)			result: True }
+					{	test: '(= 1 "1")			result: True }
+					{	test: '(= "" nil)			result: Nil }
+					{	test: '(= "" (list))		result: Nil }
+					{	test: '(= "asdf" 0)			result: Nil }
+					{	test: '(= "asdf" "asdf")			result: True }
+					{	test: '(= "ASDF" "asdf")			result: True }
+
+					{	test: '(= 0 "0.123")		result: Nil }
+					{	test: '(= "0.123" 0)		result: Nil }
+					{	test: '(= "0.123" 0.0)		result: Nil }
+					{	test: '(= "0hjh" 0)		result: Nil }
+					{	test: '(= 0 "0hjh")		result: Nil }
+					{	test: '(eq 0 "0.123")		result: Nil }
+					{	test: '(eq "0.123" 0)		result: Nil }
+					{	test: '(eq "0.123" 0.0)		result: Nil }
+					{	test: '(eq "0hjh" 0)		result: Nil }
+					{	test: '(eq 0 "0hjh")		result: Nil }
+					{	test: '(= 0.123 "0.123ABC")		result: Nil }
+					{	test: '(= "0.123ABC" 0.123)		result: Nil }
+					{	test: '(= "0hjh" 0.0)		result: Nil }
+					{	test: '(= 0.0 "0hjh")		result: Nil }
+
+					{	test: '(<)			result: Nil }
+					{	test: '(< 1)			result: True }
+					{	test: '(< 0)			result: True }
+					{	test: '(< -1)			result: True }
+					{	test: '(< 1 1)			result: Nil }
+					{	test: '(< 1 2)			result: True }
+					{	test: '(< -1 2)			result: True }
+					{	test: '(< 1 2 3 4 5.0 6 7)			result: True }
+					{	test: '(< 1 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(< 1 2 3.0 4 5 6 7 0)		result: Nil }
+					{	test: '(< 8 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(< "")			result: True }
+					{	test: '(< "a")			result: True }
+					{	test: '(< "a" "a")			result: Nil }
+					{	test: '(< "a" "b")			result: True }
+					{	test: '(< "a" "B")			result: True }
+					{	test: '(< "a" "B" "c")			result: True }
+
+					{	test: '(>)			result: Nil }
+					{	test: '(> 1)			result: Nil }
+					{	test: '(> 0)			result: Nil }
+					{	test: '(> -1)			result: Nil }
+					{	test: '(> 1 1)			result: Nil }
+					{	test: '(> 2 1)			result: True }
+					{	test: '(> 2 -1)			result: True }
+					{	test: '(> 7 6 5 4 3 2.5 1)			result: True }
+					{	test: '(> 7 6 5 5 4 3 2 1)			result: Nil }
+					{	test: '(> 0 7.5 6 5 4 3 2 1)		result: Nil }
+					{	test: '(> 7 6 5 4 3 2 1 8)			result: Nil }
+					{	test: '(> "")			result: Nil }
+					{	test: '(> "a")			result: Nil }
+					{	test: '(> "a" "a")			result: Nil }
+					{	test: '(> "b" "a")			result: True }
+					{	test: '(> "B" "a")			result: True }
+					{	test: '(> "c" "B" "a")			result: True }
+
+					{	test: '(<=)			result: True }
+					{	test: '(<= 1)			result: True }
+					{	test: '(<= 0)			result: True }
+					{	test: '(<= -1)			result: True }
+					{	test: '(<= 1 1)			result: True }
+					{	test: '(<= 1 2)			result: True }
+					{	test: '(<= -1 2)			result: True }
+					{	test: '(<= 1 1 2 3 4 4 5 6 7 7)			result: True }
+					{	test: '(<= 1 2 3 4 5 6 7 0)			result: Nil }
+					{	test: '(<= 8 1 2 3 4 5 6 7)			result: Nil }
+					{	test: '(<= "")			result: True }
+					{	test: '(<= "a")			result: True }
+					{	test: '(<= "a" "a")			result: True }
+					{	test: '(<= "a" "b")			result: True }
+					{	test: '(<= "a" "B")			result: True }
+					{	test: '(<= "a" "B" "c")			result: True }
+					{	test: '(<= "a" "d" "c")			result: Nil }
+
+					{	test: '(>=)			result: True }
+					{	test: '(>= 1)			result: Nil }
+					{	test: '(>= 0)			result: Nil }
+					{	test: '(>= -1)			result: Nil }
+					{	test: '(>= 1 1)			result: True }
+					{	test: '(>= 2 1)			result: True }
+					{	test: '(>= 2 -1)			result: True }
+					{	test: '(>= 7 7 6 5 4 4 3 2 1 1)			result: True }
+					{	test: '(>= 0 7 6 5 4 3 2 1)			result: Nil }
+					{	test: '(>= 7 6 5 4 3 2 1 8)			result: Nil }
+					{	test: '(>= "")			result: Nil }
+					{	test: '(>= "a")			result: Nil }
+					{	test: '(>= "a" "a")			result: True }
+					{	test: '(>= "b" "a")			result: True }
+					{	test: '(>= "B" "a")			result: True }
+					{	test: '(>= "c" "B" "a")			result: True }
+					{	test: '(<= "a" "d" "c")			result: Nil }
+
+					{	test: '(= nil nil)			result: True }
+					{	test: '(= nil "")			result: Nil }
+					{	test: '(= nil (list))			result: True }
+					{	test: '(= (list) nil)			result: True }
+					{	test: '(= (list) "")			result: Nil }
+					{	test: '(= nil '())				result: True }
+					{	test: '(= '() nil)				result: True }
+					{	test: '(= { } nil)			result: True }
+					{	test: '(= nil { })			result: True }
+					{	test: '(= '(1 2 3) '(1 2 3))			result: True }
+					{	test: '(= '(1 3 3) '(1 2 3))			result: Nil }
+					{	test: '(= nil '(1 2 3))			result: Nil }
+					{	test: '(!= nil '(1 2 3))			result: True }
+
+					;	Conversion code
+
+					{	test: '(convertTo 'int32 5)			result: 5 }
+					{	test: '(convertTo 'int32 -5)		result: -5 }
+					{	test: '(convertTo 'int32 5.5)		result: 5 }
+					{	test: '(convertTo 'int32 5.1)		result: 5 }
+					{	test: '(convertTo 'int32 5.9)		result: 5 }
+					{	test: '(convertTo 'int32 -5.9)		result: -5 }
+					{	test: '(convertTo 'int32 "5")		result: 5 }
+					{	test: '(convertTo 'int32 "5.5")		result: 5 }
+					{	test: '(convertTo 'int32 "0x10")	result: 16 }
+					{	test: '(convertTo 'real 5)			result: 5.0 }
+					{	test: '(convertTo 'real 5.0)		result: 5.0 }
+					{	test: '(convertTo 'real 5.1)		result: 5.1 }
+					{	test: '(convertTo 'real "5")		result: 5.0 }
+					{	test: '(convertTo 'real "5.5")		result: 5.5 }
+					{	test: '(convertTo 'real "0x10")		result: 16.0 }
+					{	test: '(convertTo 'string 5)		result: "5" }
+					{	test: '(convertTo 'string 5.5)		result: "5.5" }
+					{	test: '(convertTo 'list 5)			result: '(5) }
+
+					;	Nil tests
+
+					{	test: '(if "" 1)					result: 1 }
+					{	test: '(if (list) 1)				result: Nil }
+					{	test: '(if nil 1)					result: Nil }
+
+					))
+				]]>
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+	<Type unid="&unidLanguageTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
+
+					;	fmtCompose ---------------------------------------------
+
+					{	test: '(fmtCompose "Test")							result: "Test"	}
+
+					{	test: '(fmtCompose "%test%")						result: "%test%"	}
+					{	test: '(fmtCompose "Test %test%")					result: "Test %test%"	}
+					{	test: '(fmtCompose "Test %test% TEST")				result: "Test %test% TEST"	}
+					{	test: '(fmtCompose "Test%test%TEST")				result: "Test%test%TEST"	}
+					{	test: '(fmtCompose "%test%" { test:'foo })			result: "foo"	}
+					{	test: '(fmtCompose "Test %test%" { test:'foo })		result: "Test foo"	}
+					{	test: '(fmtCompose "Test%test%TEST" { test:'foo })	result: "TestfooTEST"	}
+
+					{	test: '(fmtCompose "Test % TEST")					result: "Test % TEST"	}
+					{	test: '(fmtCompose "% TEST")						result: "% TEST"	}
+					{	test: '(fmtCompose "TEST %")						result: "TEST %"	}
+					{	test: '(fmtCompose "%")								result: "%"	}
+					{	test: '(fmtCompose "%test%%" { test:'foo })			result: "foo%"	}
+					{	test: '(fmtCompose "%%test%%" { test:'foo })		result: "%test%"	}
+
+					{	test: '(fmtCompose "%he:gender% is testing" { gender:'humanMale })	result: "he is testing"	}
+					{	test: '(fmtCompose "%he:gender% is testing" { gender:'humanFemale })	result: "she is testing"	}
+
+					{	test: '(fmtCompose "% test %" { test:'foo })		result: "% test %"	}
+					{	test: '(fmtCompose "% test: test %" { test:'foo })	result: "% test: test %"	}
+
+					;	For backwards compatibility, a double percent is translated to a single
+					;	percent. But in practice, you should use a single percent where needed.
+
+					{	test: '(fmtCompose "%%")							result: "%"	}
+
+					;	fmtNumber ----------------------------------------------
+
+					{	test:'(fmtNumber 'power 0)				result:"0 MW"	}
+					{	test:'(fmtNumber 'power 3)				result:"0 MW"	}
+					{	test:'(fmtNumber 'power 11)				result:"0 MW"	}
+					{	test:'(fmtNumber 'power 49)				result:"0 MW"	}
+					{	test:'(fmtNumber 'power 50)				result:"0.1 MW"	}
+					{	test:'(fmtNumber 'power 99)				result:"0.1 MW"	}
+					{	test:'(fmtNumber 'power 100)			result:"0.1 MW"	}
+					{	test:'(fmtNumber 'power 949)			result:"0.9 MW"	}
+					{	test:'(fmtNumber 'power 950)			result:"1 MW"	}
+					{	test:'(fmtNumber 'power 951)			result:"1 MW"	}
+					{	test:'(fmtNumber 'power 999)			result:"1 MW"	}
+					{	test:'(fmtNumber 'power 1000)			result:"1 MW"	}
+					{	test:'(fmtNumber 'power 1300)			result:"1.3 MW"	}
+					{	test:'(fmtNumber 'power 10000)			result:"10 MW"	}
+					{	test:'(fmtNumber 'power 15000)			result:"15 MW"	}
+					{	test:'(fmtNumber 'power 15800)			result:"16 MW"	}
+					{	test:'(fmtNumber 'power 100000)			result:"100 MW"	}
+					{	test:'(fmtNumber 'power 1000000)		result:"1 GW"	}
+					{	test:'(fmtNumber 'power 3000000)		result:"3 GW"	}
+					{	test:'(fmtNumber 'power 3500000)		result:"3.5 GW"	}
+
+					;	strCapitalize ------------------------------------------
+
+					{	test: '(strCapitalize "test")						result: "Test"	}
+					{	test: '(strCapitalize "this is a test")				result: "This is a test"	}
+					{	test: '(strCapitalize "")							result: ""	}
+					{	test: '(strCapitalize Nil)							result: ""	}
+					))
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>
+

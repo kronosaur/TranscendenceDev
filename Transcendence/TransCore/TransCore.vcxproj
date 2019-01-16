@@ -178,6 +178,7 @@
     </None>
     <Xml Include="..\Extensions\Diagnostics\Diagnostics.xml" />
     <Xml Include="..\Extensions\Diagnostics\DockScreenTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
