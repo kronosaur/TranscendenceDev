@@ -1691,6 +1691,18 @@
 			<Text id="actionUpgrade:noTech">We do not have the technology to upgrade a level %itemLevel% device.</Text>
 			<Text id="actionUpgrade.noNewItems">We do not have anything better than your %itemName%.</Text>"
 
+			<Text id="actionUpgrade.noUpgradeInstall">
+				(scrTranslate gScreen (cat "actionUpgrade.noUpgradeInstall." (@ gData 'category)) gData)
+			</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.armor">We do not install armor.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.cargoHold">We do not install cargo holds.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.drive">We do not install drive upgrades.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.launcher">We do not install launchers.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.reactor">We do not install reactors.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.shields">We do not install shields.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.weapon">We do not install weapons.</Text>
+			<Text id="actionUpgrade.noUpgradeInstall.device">We do not install devices.</Text>
+
 			<Text id="descRefuelConfirm:onlyAffordOne">
 				Each %itemSingle% costs %cost%. You can only afford a single one.
 			</Text>

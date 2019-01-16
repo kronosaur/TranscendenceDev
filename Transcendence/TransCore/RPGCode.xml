@@ -903,15 +903,20 @@
 					
 					(and (not theItem) (!= (@ options 'category) 'armor))
 						(block (
-							(itemsForSale 
-								(filter (objGetItems dockObj (@ options 'criteria)) theItemToBuy
-									(and (objGetSellPrice dockObj theItemToBuy)
-											(objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
+							(allItems (objGetItems dockObj (@ options 'criteria)))
+							(itemsForSale
+								(filter allItems theItemToBuy
+									(objGetSellPrice dockObj theItemToBuy)
+									)
+								)
+							(itemsForUpgrade 
+								(filter itemsForSale theItemToBuy
+									(and (objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
 											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
 											)
 									)
 								)
-							(maxLevel (map itemsForSale 'reduceMax theItem (itmGetLevel theItem)))
+							(maxLevel (map itemsForUpgrade 'reduceMax theItem (itmGetLevel theItem)))
 							)
 							
 							(switch
@@ -932,6 +937,13 @@
                                                 (scrTranslate gScreen "actionUpgrade:noItemForSale" { category:(@ options 'category) })
                                                 )
 										}
+
+								(not itemsForUpgrade)
+									{
+										visible: True
+										enabled: Nil
+										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
+										}
 					
 								{
 									visible: True
@@ -948,17 +960,22 @@
 					
 					(itmMatches theItem "aI")
 						(block (
-							(itemsForSale 
-								(filter (objGetItems dockObj (@ options 'criteria)) theItemToBuy
-									(and (objGetSellPrice dockObj theItemToBuy)
-											(objGetArmorReplacePrice dockObj theItemToBuy)
+							(allItems (objGetItems dockObj (@ options 'criteria)))
+							(itemsForSale
+								(filter allItems theItemToBuy
+									(objGetSellPrice dockObj theItemToBuy)
+									)
+								)
+							(itemsForUpgrade 
+								(filter itemsForSale theItemToBuy
+									(and (objGetArmorReplacePrice dockObj theItemToBuy)
 											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
 											)
 									)
 								)
-							(maxLevel (map itemsForSale 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
+							(maxLevel (map itemsForUpgrade 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
 							(maxLevelUpgrade
-								(map itemsForSale 'reduceMax theItemToBuy 
+								(map itemsForUpgrade 'reduceMax theItemToBuy 
 									(if (not (itmIsEqual theItemToBuy theItem 'ignoreInstalled))
 										(itmGetLevel theItemToBuy)
 										0
@@ -977,6 +994,13 @@
                                                 )
 										}
 										
+								(not itemsForUpgrade)
+									{
+										visible: True
+										enabled: Nil
+										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
+										}
+					
 								(ls maxLevelUpgrade (itmGetLevel theItem))
 									{
 										visible: True
@@ -1003,17 +1027,22 @@
 							(!= (@ options 'category) 'device)
 							)
 						(block (
-							(itemsForSale 
-								(filter (objGetItems dockObj (@ options 'criteria)) theItemToBuy
-									(and (objGetSellPrice dockObj theItemToBuy)
-											(objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
+							(allItems (objGetItems dockObj (@ options 'criteria)))
+							(itemsForSale
+								(filter allItems theItemToBuy
+									(objGetSellPrice dockObj theItemToBuy)
+									)
+								)
+							(itemsForUpgrade 
+								(filter itemsForSale theItemToBuy
+									(and (objGetItemProperty dockObj theItemToBuy 'installDevicePrice)
 											(!= (@ (objCanInstallItem shipObj theItemToBuy) 1) 'notCompatible)
 											)
 									)
 								)
-							(maxLevel (map itemsForSale 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
+							(maxLevel (map itemsForUpgrade 'reduceMax theItemToBuy (itmGetLevel theItemToBuy)))
 							(maxLevelUpgrade
-								(map itemsForSale 'reduceMax theItemToBuy 
+								(map itemsForUpgrade 'reduceMax theItemToBuy 
 									(if (not (itmIsEqual theItemToBuy theItem 'ignoreInstalled))
 										(itmGetLevel theItemToBuy)
 										0
@@ -1065,6 +1094,13 @@
                                                 )
 										}
 								
+								(not itemsForUpgrade)
+									{
+										visible: True
+										enabled: Nil
+										desc: (scrTranslate gScreen 'actionUpgrade.noUpgradeInstall { category:(@ options 'category) })
+										}
+					
 								(and (ls maxLevelUpgrade (itmGetLevel theItem))
 										(!= (@ options 'category) 'cargoHold)
 										)
@@ -1088,7 +1124,7 @@
 								;	If we don't have any upgrade items except what the ship already has,
 								;	then we don't allow upgrade.
 
-								(not (filter itemsForSale saleItem (not (itmIsEqual saleItem theItem 'ignoreInstalled))))
+								(not (filter itemsForUpgrade saleItem (not (itmIsEqual saleItem theItem 'ignoreInstalled))))
 									{
 										visible: True
 										enabled: Nil
