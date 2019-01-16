@@ -451,7 +451,7 @@
 						<Station type="&stVolcanicTerrestrialSizeH;" name="Zheling I"	showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="10-14" angle="random">
+					<Orbitals distance="2d6+10" angle="random">
 						<Lookup table="StargateOutbound"/>
 					</Orbitals>
 				</Group>
@@ -465,11 +465,11 @@
 						<Station type="&stDesertTerrestrialSizeH;" name="Zheling II" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="7-12" angle="random">
+					<Orbitals distance="2d6+10" angle="random">
 						<Lookup table="StargateInbound"/>
 					</Orbitals>
 
-					<Orbitals distance="18-24" angle="random">
+					<Orbitals distance="2d8+30" angle="random">
 						<Station type="&stRockyPlanetoidSizeF;"/>
 					</Orbitals>
 
@@ -484,7 +484,7 @@
 						<Station type="&stGreenhouseTerrestrialSizeI;" name="Zheling III" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals distance="10-16" angle="random">
+					<Orbitals distance="2d6+10" angle="random">
 						<Station type="&stAresCommune;"/>
 					</Orbitals>
 
