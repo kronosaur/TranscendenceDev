@@ -709,30 +709,80 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 			}
 		}
 
-    //  Compute top alignment
+	//	Sometimes we need to measure all lines.
 
-	int y = rcRect.top;
+	TArray<int> LineWidths;
+	int cxWidth = 0;
+	if ((dwFlags & AlignCenter)
+			|| (dwFlags & AlignRight)
+			|| (dwFlags & AdjustToFit))
+		{
+		LineWidths.InsertEmpty(iLines);
+
+		for (i = 0; i < iLines; i++)
+			{
+			LineWidths[i] = MeasureText(Lines[i]);
+
+			//	Compute the largest width
+
+			if (LineWidths[i] > cxWidth)
+				cxWidth = LineWidths[i];
+			}
+		}
+
+    //  Compute alignment
+
+	int xPos;
+	if (dwFlags & AlignCenter)
+		xPos = rcRect.left + RectWidth(rcRect) / 2;
+	else if (dwFlags & AlignRight)
+		xPos = rcRect.right;
+	else
+		xPos = rcRect.left;
+
+	int yPos;
     if (dwFlags & AlignMiddle)
-        {
-        y += (RectHeight(rcRect) - cyHeight) / 2;
-        }
+        yPos = rcRect.top + (RectHeight(rcRect) - cyHeight) / 2;
+	else
+		yPos = rcRect.top;
+
+	//	If we need to fit in the clip region, adjust
+
+	if (dwFlags & AdjustToFit)
+		{
+		const RECT &rcClip = Dest.GetClipRect();
+
+		if (dwFlags & AlignCenter)
+			xPos = Min(Max((int)rcClip.left + (cxWidth / 2), xPos), (int)rcClip.right - (cxWidth / 2));
+
+		else if (dwFlags & AlignRight)
+			xPos = Min(Max((int)rcClip.left + cxWidth, xPos), (int)rcClip.right);
+
+		else
+			xPos = Min(Max((int)rcClip.left, xPos), (int)rcClip.right - cxWidth);
+
+		if (dwFlags & AlignMiddle)
+			yPos = Min(Max((int)rcClip.top + (cyHeight / 2), yPos), (int)rcClip.bottom - (cyHeight / 2));
+
+		else
+			yPos = Min(Max((int)rcClip.top, yPos), (int)rcClip.bottom - cyHeight);
+		}
 
     //  Paint each line
 
+	int y = yPos;
 	for (i = 0; i < iLines; i++)
 		{
-		int x = rcRect.left;
+		int x;
 
 		if (dwFlags & AlignCenter)
-			{
-			int cxWidth = MeasureText(Lines[i]);
-			x = rcRect.left + (RectWidth(rcRect) - cxWidth) / 2;
-			}
+			x = xPos - (LineWidths[i] / 2);
+
 		else if (dwFlags & AlignRight)
-			{
-			int cxWidth = MeasureText(Lines[i]);
-			x = rcRect.right - cxWidth;
-			}
+			x = xPos - LineWidths[i];
+
+		else
+			x = xPos;
 
 		if (!(dwFlags & MeasureOnly))
 			DrawText(Dest, x, y, rgbColor, Lines[i]);
@@ -743,7 +793,7 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
     //  Done
 
 	if (retcyHeight)
-		*retcyHeight = y - rcRect.top;
+		*retcyHeight = y - yPos;
 	}
 
 void CG16bitFont::DrawText (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor, const TArray<CString> &Lines, int iLineAdj, DWORD dwFlags, int *rety) const

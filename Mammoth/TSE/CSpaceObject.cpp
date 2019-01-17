@@ -4916,6 +4916,21 @@ void CSpaceObject::Highlight (const CString &sText)
 	m_iHighlightCountdown = HIGHLIGHT_TIMER;
 	}
 
+void CSpaceObject::HighlightAppend (const CString &sText)
+
+//	HighlightAppend
+//
+//	Appends highlight.
+
+	{
+	if (m_sHighlightText.IsBlank())
+		m_sHighlightText = sText;
+	else
+		m_sHighlightText = strPatternSubst(CONSTLIT("%s\n%s"), m_sHighlightText, sText);
+
+	m_iHighlightCountdown = HIGHLIGHT_TIMER;
+	}
+
 CSpaceObject *CSpaceObject::HitTest (const CVector &vStart, 
 									 const DamageDesc &Damage, 
 									 CVector *retvHitPos, 
@@ -6581,6 +6596,12 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 
 	if (!m_sHighlightText.IsBlank())
 		{
+		RECT rcRect;
+		rcRect.left = x - 1000;
+		rcRect.right = x + 1000;
+		rcRect.top = y;
+		rcRect.bottom = y + 1000;
+
 		//	Paint message
 
 		CG32bitPixel rgbMessageColor;
@@ -6595,14 +6616,16 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 		else
 			dwOpacity = 255;
 
-		MessageFont.DrawText(Dest, 
-				x,
-				y, 
+		int cyHeight;
+		MessageFont.DrawText(Dest,
+				rcRect,
 				CG32bitPixel(rgbMessageColor, (BYTE)dwOpacity),
 				m_sHighlightText,
-				dwFontFlags);
+				0,
+				dwFontFlags,
+				&cyHeight);
 
-		y += MessageFont.GetHeight();
+		y += cyHeight;
 		}
 
 	//	Paint the highlight key
