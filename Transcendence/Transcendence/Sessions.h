@@ -106,7 +106,7 @@ class CGalacticMapSession : public IHISession
             CTopologyNode *pCurNode;        //  Node at the time we saved options
             };
 
-        CGalacticMapSession (CHumanInterface &HI, CGameSettings &Settings, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
+        CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
 
 		//	IHISession virtuals
         virtual void OnChar (char chChar, DWORD dwKeyData) override;
@@ -118,6 +118,7 @@ class CGalacticMapSession : public IHISession
         virtual void OnMouseMove (int x, int y, DWORD dwFlags) override;
         virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) override;
 		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid) override;
+		virtual bool OnPaintReanimator (CG32bitImage &Screen) override;
 		virtual void OnReportHardCrash (CString *retsMessage) override;
 		virtual void OnUpdate (bool bTopMost);
 
@@ -127,6 +128,7 @@ class CGalacticMapSession : public IHISession
         void SetTargetScale (void);
 
         CGameSettings &m_Settings;
+		CCommandLineDisplay &m_DebugConsole;
         CSystemMapThumbnails &m_SystemMapThumbnails;
         SOptions &m_SavedState;
 		CSystemMap *m_pMap;

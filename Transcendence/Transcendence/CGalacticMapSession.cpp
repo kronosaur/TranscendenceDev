@@ -49,13 +49,14 @@ static CMapLegendPainter::SScaleEntry LEGEND_SCALE[] =
 
 const int LEGEND_SCALE_COUNT = (sizeof(LEGEND_SCALE) / sizeof(LEGEND_SCALE[0]));
 
-CGalacticMapSession::CGalacticMapSession (CHumanInterface &HI, CGameSettings &Settings, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState) : IHISession(HI), 
-        m_Settings(Settings),
+CGalacticMapSession::CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState) : IHISession(*CreateCtx.pHI), 
+        m_Settings(*CreateCtx.pSettings),
+		m_DebugConsole(*CreateCtx.pDebugConsole),
         m_SystemMapThumbnails(SystemMapThumbnails),
         m_SavedState(SavedState),
         m_pMap(NULL), 
         m_pPainter(NULL),
-        m_HelpPainter(HI.GetVisuals(), LEGEND_SCALE, LEGEND_SCALE_COUNT),
+        m_HelpPainter(CreateCtx.pHI->GetVisuals(), LEGEND_SCALE, LEGEND_SCALE_COUNT),
         m_bDragging(false)
 
 //  CGalacticMapSession constructor
@@ -70,25 +71,33 @@ void CGalacticMapSession::OnChar (char chChar, DWORD dwKeyData)
 //  Handle character
 
     {
+	//	Handle debug console
+
+	if (m_DebugConsole.OnChar(chChar, dwKeyData))
+		NULL;
+
     //  We handle certain commands
 
-	CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommandFromChar(chChar);
-    switch (iCommand)
-        {
-        //  Switch back to system map
+	else
+		{
+		CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommandFromChar(chChar);
+		switch (iCommand)
+			{
+			//  Switch back to system map
 
-        case CGameKeys::keyShowMap:
-            SaveState();
-            m_HI.HICommand(CMD_UI_SWITCH_TO_SYSTEM_MAP);
-            break;
+			case CGameKeys::keyShowMap:
+				SaveState();
+				m_HI.HICommand(CMD_UI_SWITCH_TO_SYSTEM_MAP);
+				break;
 
-        //  If we hit the galactic map key again, we close this window
+			//  If we hit the galactic map key again, we close this window
 
-        case CGameKeys::keyShowGalacticMap:
-            SaveState();
-            m_HI.ClosePopupSession();
-            break;
-        }
+			case CGameKeys::keyShowGalacticMap:
+				SaveState();
+				m_HI.ClosePopupSession();
+				break;
+			}
+		}
     }
 
 void CGalacticMapSession::OnCleanUp (void)
@@ -200,76 +209,107 @@ void CGalacticMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 //	KeyDown
 
 	{
-	switch (iVirtKey)
+	DWORD dwTVirtKey = CVirtualKeyData::TranslateVirtKey(iVirtKey, dwKeyData);
+	CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommand(dwTVirtKey);
+
+	if (m_bDragging)
 		{
-		case 'C':
-			if (uiIsControlDown() && m_pPainter)
-				::CopyGalacticMapToClipboard(m_HI.GetHWND(), m_pPainter);
-			break;
+		//	If we're dragging the map, then ignore key commands
+		}
 
-		case VK_ADD:
-		case VK_OEM_PLUS:
-            if (m_Scale.CanZoomIn())
-                {
-				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-                m_Scale.ZoomIn();
-                SetTargetScale();
-                }
-			break;
-
-		case VK_CONTROL:
-			break;
-
-		case VK_DOWN:
-			m_pPainter->AdjustCenter(m_xCenter, m_yCenter - (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
-
-        case VK_ESCAPE:
-            SaveState();
-			m_HI.ClosePopupSession();
-            break;
-
-		case VK_HOME:
-		case VK_END:
+	else if (m_DebugConsole.IsEnabled())
+		{
+		if (iVirtKey == VK_ESCAPE || iCommand == CGameKeys::keyShowConsole)
 			{
-			CTopologyNode *pNode = g_pUniverse->GetCurrentTopologyNode();
-			if (pNode)
-				{
-				pNode->GetDisplayPos(&m_xTargetCenter, &m_yTargetCenter);
-				m_pPainter->AdjustCenter(m_xTargetCenter, m_yTargetCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-				}
-			break;
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			m_DebugConsole.SetEnabled(false);
 			}
+		else
+			m_DebugConsole.OnKeyDown(iVirtKey, dwKeyData);
+		}
 
-		case VK_LEFT:
-			m_pPainter->AdjustCenter(m_xCenter - (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_yCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
+	else if (iCommand == CGameKeys::keyShowConsole)
+		{
+		if (m_Settings.GetBoolean(CGameSettings::debugMode))
+			{
+			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+			m_DebugConsole.SetEnabled(true);
+			}
+		}
 
-		case VK_NEXT:
-			m_pPainter->AdjustCenter(m_xCenter, m_yCenter - (300 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
+	else
+		{
+		switch (iVirtKey)
+			{
+			case 'C':
+				if (uiIsControlDown() && m_pPainter)
+					::CopyGalacticMapToClipboard(m_HI.GetHWND(), m_pPainter);
+				break;
 
-		case VK_PRIOR:
-			m_pPainter->AdjustCenter(m_xCenter, m_yCenter + (300 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
+			case VK_ADD:
+			case VK_OEM_PLUS:
+				if (m_Scale.CanZoomIn())
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					m_Scale.ZoomIn();
+					SetTargetScale();
+					}
+				break;
 
-		case VK_RIGHT:
-			m_pPainter->AdjustCenter(m_xCenter + (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_yCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
+			case VK_CONTROL:
+				break;
 
-		case VK_SUBTRACT:
-		case VK_OEM_MINUS:
-            if (m_Scale.CanZoomOut())
-                {
-				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-                m_Scale.ZoomOut();
-                SetTargetScale();
-                }
-            break;
+			case VK_DOWN:
+				m_pPainter->AdjustCenter(m_xCenter, m_yCenter - (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
 
-		case VK_UP:
-			m_pPainter->AdjustCenter(m_xCenter, m_yCenter + (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
-			break;
+			case VK_ESCAPE:
+				SaveState();
+				m_HI.ClosePopupSession();
+				break;
+
+			case VK_HOME:
+			case VK_END:
+				{
+				CTopologyNode *pNode = g_pUniverse->GetCurrentTopologyNode();
+				if (pNode)
+					{
+					pNode->GetDisplayPos(&m_xTargetCenter, &m_yTargetCenter);
+					m_pPainter->AdjustCenter(m_xTargetCenter, m_yTargetCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+					}
+				break;
+				}
+
+			case VK_LEFT:
+				m_pPainter->AdjustCenter(m_xCenter - (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_yCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
+
+			case VK_NEXT:
+				m_pPainter->AdjustCenter(m_xCenter, m_yCenter - (300 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
+
+			case VK_PRIOR:
+				m_pPainter->AdjustCenter(m_xCenter, m_yCenter + (300 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
+
+			case VK_RIGHT:
+				m_pPainter->AdjustCenter(m_xCenter + (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_yCenter, m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
+
+			case VK_SUBTRACT:
+			case VK_OEM_MINUS:
+				if (m_Scale.CanZoomOut())
+					{
+					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+					m_Scale.ZoomOut();
+					SetTargetScale();
+					}
+				break;
+
+			case VK_UP:
+				m_pPainter->AdjustCenter(m_xCenter, m_yCenter + (100 * SCROLL_STEP / m_Scale.GetTargetScale()), m_Scale.GetTargetScale(), &m_xTargetCenter, &m_yTargetCenter);
+				break;
+			}
 		}
 	}
 
@@ -321,10 +361,14 @@ void CGalacticMapSession::OnLButtonDown (int x, int y, DWORD dwFlags, bool *retb
 //	LButtonDown
 
 	{
+    CGalacticMapPainter::SSelectResult Selection;
+
+	if (m_DebugConsole.IsEnabled())
+		{ }
+
     //  If we clicked on a node, then select
 
-    CGalacticMapPainter::SSelectResult Selection;
-    if (m_pPainter->HitTest(x, y, Selection)
+    else if (m_pPainter->HitTest(x, y, Selection)
             && Selection.pNode)
         {
         Select(Selection.pNode);
@@ -350,7 +394,10 @@ void CGalacticMapSession::OnLButtonUp (int x, int y, DWORD dwFlags)
 //  LButtonUp
 
     {
-    if (m_bDragging)
+	if (m_DebugConsole.IsEnabled())
+		{ }
+
+	else if (m_bDragging)
         {
         int xNewPos, yNewPos;
         m_pPainter->ViewToGalactic(x, y, m_xAnchorCenter, m_yAnchorCenter, m_Scale.GetTargetScale(), &xNewPos, &yNewPos);
@@ -371,7 +418,10 @@ void CGalacticMapSession::OnMouseMove (int x, int y, DWORD dwFlags)
 //  Mouse move
 
     {
-    if (m_bDragging)
+	if (m_DebugConsole.IsEnabled())
+		{ }
+
+    else if (m_bDragging)
         {
         int xNewPos, yNewPos;
         m_pPainter->ViewToGalactic(x, y, m_xAnchorCenter, m_yAnchorCenter, m_Scale.GetTargetScale(), &xNewPos, &yNewPos);
@@ -386,8 +436,14 @@ void CGalacticMapSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 //  Zoom in/out
 
     {
-    m_Scale.ZoomWheel(iDelta);
-    SetTargetScale();
+	if (m_DebugConsole.IsEnabled())
+		{ }
+
+	else
+		{
+		m_Scale.ZoomWheel(iDelta);
+		SetTargetScale();
+		}
     }
 
 void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
@@ -432,6 +488,23 @@ void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
     m_HelpPainter.Paint(Screen, 
             m_rcView.left + SCREEN_BORDER_X, 
             m_rcView.bottom - (SCREEN_BORDER_Y + m_HelpPainter.GetHeight()));
+	}
+
+bool CGalacticMapSession::OnPaintReanimator (CG32bitImage &Screen)
+
+//	OnPaintReanimator
+//
+//	Paint reanimator and console
+
+	{
+	bool bAnimate = false;
+
+	if (GetReanimator().PaintFrame(Screen))
+		bAnimate = true;
+
+	m_DebugConsole.Paint(Screen);
+
+	return bAnimate;
 	}
 
 void CGalacticMapSession::OnReportHardCrash (CString *retsMessage)

@@ -48,7 +48,7 @@ void IHISession::DefaultOnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 	//	Paint animations on top
 
-	if (m_Reanimator.PaintFrame(Screen))
+	if (OnPaintReanimator(Screen))
 		bHasAnimation = true;
 
 	//	Done

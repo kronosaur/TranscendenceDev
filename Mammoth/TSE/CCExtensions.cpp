@@ -642,11 +642,13 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property:\n\n"
 			
 			"   'debugMode\n"
+			"   'memoryUse\n"
 			"   'showAIDebug\n"
 			"   'showBounds\n"
 			"   'showFacingsAngle\n"
 			"   'showLineOfFire\n"
-			"   'showNavPaths\n",
+			"   'showNavPaths\n"
+			"   'showNodeInfo\n",
 
 			"s",	0, },
 
@@ -671,7 +673,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'showBounds True/Nil\n"
 			"   'showFacingsAngle True/Nil\n"
 			"   'showLineOfFire True/Nil\n"
-			"   'showNavPaths True/Nil\n",
+			"   'showNavPaths True/Nil\n"
+			"   'showNodeInfo True/Nil\n",
 
 			"sv",	PPFLAG_SIDEEFFECTS, },
 

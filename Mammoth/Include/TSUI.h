@@ -206,6 +206,7 @@ class IHISession : public IHICommand, public IAniCommand
 		virtual void OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags) { }
 		virtual void OnMove (int x, int y) { }
 		virtual void OnPaint (CG32bitImage &Screen, const RECT &rcInvalid) { }
+		virtual bool OnPaintReanimator (CG32bitImage &Screen) { return m_Reanimator.PaintFrame(Screen); }
 		virtual void OnRButtonDblClick (int x, int y, DWORD dwFlags) { }
 		virtual void OnRButtonDown (int x, int y, DWORD dwFlags) { }
 		virtual void OnRButtonUp (int x, int y, DWORD dwFlags) { }

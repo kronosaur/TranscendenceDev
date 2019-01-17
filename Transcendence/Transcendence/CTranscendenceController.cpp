@@ -1321,7 +1321,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Show the map session
 
-		CGalacticMapSession *pSession = new CGalacticMapSession(m_HI, m_Settings, m_Model.GetSystemMapThumbnails(), m_pGameSession->GetGalacticMapSettings());
+		CGalacticMapSession *pSession = new CGalacticMapSession(m_SessionCtx, m_Model.GetSystemMapThumbnails(), m_pGameSession->GetGalacticMapSettings());
 		if (error = m_HI.OpenPopupSession(pSession))
 			return error;
 
