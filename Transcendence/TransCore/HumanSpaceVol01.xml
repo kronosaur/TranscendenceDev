@@ -2087,6 +2087,8 @@
 	<!ENTITY dsLamplighterInstall		"0x001004CA">
 	<!ENTITY tbCSCAresAttack			"0x001004CB">
 	<!ENTITY smCSCOperationsSpace		"0x001004CC">
+	<!ENTITY tbCSCRefugeeConvoyPrincipal	"0x001004CD">
+	<!ENTITY tbCSCRefugeeConvoyEscort	"0x001004CE">
 
 	<!-- 04D0-04EF NAMI CORPORATION -->
 

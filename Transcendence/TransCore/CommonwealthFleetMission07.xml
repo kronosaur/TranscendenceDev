@@ -34,9 +34,9 @@
 		<StaticData>
 			<Data id="convoy">
 				(
-					{	principalType: &scScarabFreighter;	escortTypes: (&scEI100; &scEI100; &scEI100;) }
-					{	principalType: &scScarabFreighter;	escortTypes: (&scEI100; &scEI100; &scEI100;) }
-					{	principalType: &scScarabFreighter;	escortTypes: (&scEI100; &scEI100;) }
+					{	principalType: &tbCSCRefugeeConvoyPrincipal;	escortTypes: (&tbCSCRefugeeConvoyEscort; &tbCSCRefugeeConvoyEscort; &tbCSCRefugeeConvoyEscort;) }
+					{	principalType: &tbCSCRefugeeConvoyPrincipal;	escortTypes: (&tbCSCRefugeeConvoyEscort; &tbCSCRefugeeConvoyEscort; &tbCSCRefugeeConvoyEscort;) }
+					{	principalType: &tbCSCRefugeeConvoyPrincipal;	escortTypes: (&tbCSCRefugeeConvoyEscort; &tbCSCRefugeeConvoyEscort;) }
 					)
 			</Data>
 		</StaticData>
@@ -154,7 +154,7 @@
 								(block (escortObj)
 									(setq escortObj (sysCreateShip theType gate1 &svCommonwealth;))
 									(objSetData escortObj 'noPiracyCheck True)
-									(shpOrder escortObj 'escort shipObj)
+									(shpOrder escortObj 'follow shipObj)
 									(shpOrder escortObj 'gate gate2)
 									(msnRegisterForEvents gSource escortObj)
 									(lnkAppend secondaryList escortObj)
@@ -258,4 +258,22 @@
 		</Language>
 	</MissionType>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbCSCRefugeeConvoyPrincipal;">
+		<LevelTable>
+			<Ship levelFrequency="vrccu urv--" count="1" class="&scAntaresV;"/>
+			<Ship levelFrequency="--rcc uurv-" count="1" class="&scEI7000;"/>
+			<Ship levelFrequency="---rc cuurv" count="1" class="&scScarabFreighter;"/>
+		</LevelTable>
+	</ShipTable>
+	
+	<ShipTable unid="&tbCSCRefugeeConvoyEscort;">
+		<LevelTable>
+			<Ship levelFrequency="vrccu urv--" count="1" class="&scEI200;"/>
+			<Ship levelFrequency="--rcc uurv-" count="1" class="&scEI500;"/>
+			<Ship levelFrequency="---rc cuurv" count="1" class="&scArmstrongTransport;"/>
+		</LevelTable>
+	</ShipTable>
+	
 </TranscendenceModule>
