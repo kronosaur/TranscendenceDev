@@ -83,6 +83,7 @@ class CTextBlock
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 
 		static CString Escape (const CString &sText);
+		static bool IsRTFText (const CString &sText);
 		static CString LoadAsRichText (const CString &sText);
 
 	private:

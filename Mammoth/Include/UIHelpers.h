@@ -220,6 +220,7 @@ class CUIHelper
 		void PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const;
 		void PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const;
 		void PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText) const;
+		void PaintRTFText (CG32bitImage &Dest, const RECT &rcRect, const CString &sRTFText, const CG16bitFont &DefaultFont, CG32bitPixel rgbDefaultColor, int *retcyHeight = NULL) const;
 		void RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArray<SMenuEntry> &Menu) const;
 
 		static int ScrollAnimationDecay (int iOffset);

@@ -442,6 +442,16 @@ bool CTextBlock::InitFromRTF (const CString &RTF, const IFontTable &FontTable, c
 	return bSuccess;
 	}
 
+bool CTextBlock::IsRTFText (const CString &sText)
+
+//	IsRTFText
+//
+//	Returns TRUE if this is RTF text
+
+	{
+	return (strStartsWith(sText, CONSTLIT("{\\rtf")) || strStartsWith(sText, CONSTLIT("{/rtf")));
+	}
+
 CString CTextBlock::LoadAsRichText (const CString &sText)
 
 //	LoadAsRichText
@@ -452,7 +462,7 @@ CString CTextBlock::LoadAsRichText (const CString &sText)
 	{
 	//	If this is already an RTF string, just return it.
 
-	if (strStartsWith(sText, CONSTLIT("{\\rtf")) || strStartsWith(sText, CONSTLIT("{/rtf")))
+	if (IsRTFText(sText))
 		return sText;
 
 	//	Otherwise, escape the string

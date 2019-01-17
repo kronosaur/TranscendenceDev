@@ -1129,24 +1129,40 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		int iSpeedBonus;
 		if (!bNoArmorSpeedDisplay && Item.GetReferenceSpeedBonus(BonusCtx, dwRefFlags, &iSpeedBonus))
 			{
-			int cx = rcDrawRect.left;
-			sReference = strPatternSubst(CONSTLIT("%s — "), sReference);
-			cx += Medium.MeasureText(sReference);
+			//	Figure out what kind of bonus we want.
 
-			Medium.DrawText(Dest,
-					rcDrawRect,
-					rgbColorRef,
-					sReference,
-					0,
-					0,
-					&cyHeight);
-
+			CG32bitPixel rgbBonus = rgbColorRef;
+			CString sBonus;
 			if (iSpeedBonus == 0)
-				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisadvantage, CONSTLIT("too heavy"), iSpeedBonus);
+				{
+				sBonus = CONSTLIT("too heavy");
+				rgbBonus = rgbDisadvantage;
+				}
 			else if (iSpeedBonus > 0)
-				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbColorRef, strPatternSubst(CONSTLIT("+.%02dc bonus"), iSpeedBonus));
+				{
+				sBonus = strPatternSubst(CONSTLIT("+.%02dc bonus"), iSpeedBonus);
+				}
 			else
-				Medium.DrawText(Dest, cx, rcDrawRect.top, rgbDisadvantage, strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus));
+				{
+				sBonus = strPatternSubst(CONSTLIT("-.%02dc penalty"), -iSpeedBonus);
+				rgbBonus = rgbDisadvantage;
+				}
+
+			//	If we have a different color, then paint with RTF; otherwise,
+			//	normal paint.
+
+			if (rgbBonus != rgbColorRef)
+				{
+				sReference = strPatternSubst(CONSTLIT("{/rtf %s — {/c:%d; %s}}"), CTextBlock::Escape(sReference), (COLORREF)rgbBonus, CTextBlock::Escape(sBonus));
+				PaintRTFText(Dest, rcDrawRect, sReference, Medium, rgbColorRef, &cyHeight);
+				}
+			else
+				{
+				sReference = strPatternSubst(CONSTLIT("%s — %s"), sReference, sBonus);
+				Medium.DrawText(Dest, rcDrawRect, rgbColorRef, sReference, 0, 0, &cyHeight);
+				}
+
+			//	Height
 
 			rcDrawRect.top += cyHeight;
 			}
@@ -1350,6 +1366,75 @@ void CUIHelper::PaintReferenceDamageType (CG32bitImage &Dest, int x, int y, int 
 			rgbText,
 			sRef,
 			0);
+	}
+
+void CUIHelper::PaintRTFText (CG32bitImage &Dest, const RECT &rcRect, const CString &sRTFText, const CG16bitFont &DefaultFont, CG32bitPixel rgbDefaultColor, int *retcyHeight) const
+
+//	PaintRTFText
+//
+//	Paints a block of RTF text. This function is slightly slower then using 
+//	CTextBlock directly, but sometimes this is more convenient.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	//	Short-circuit.
+
+	if (sRTFText.IsBlank())
+		{ }
+
+	//	If not RTF text, then we just use the normal painting
+
+	else if (!CTextBlock::IsRTFText(sRTFText))
+		{
+		DefaultFont.DrawText(Dest,
+				rcRect,
+				rgbDefaultColor,
+				sRTFText,
+				0,
+				0,
+				retcyHeight
+				);
+		}
+
+	//	Otherwise, paint RTF text
+
+	else
+		{
+		CTextBlock RTF;
+
+		//	Format the text
+
+		SBlockFormatDesc BlockFormat;
+		BlockFormat.cxWidth = RectWidth(rcRect);
+		BlockFormat.cyHeight = -1;
+		BlockFormat.iHorzAlign = alignLeft;
+		BlockFormat.iVertAlign = alignTop;
+		BlockFormat.iExtraLineSpacing = 0;
+
+		BlockFormat.DefaultFormat.rgbColor = rgbDefaultColor;
+		BlockFormat.DefaultFormat.pFont = &DefaultFont;
+
+		CString sError;
+		if (!RTF.InitFromRTF(sRTFText, VI, BlockFormat, &sError))
+			{
+			PaintRTFText(Dest, rcRect, sError, DefaultFont, rgbDefaultColor, retcyHeight);
+			return;
+			}
+
+		//	Paint
+
+		RTF.Paint(Dest, rcRect.left, rcRect.top);
+
+		//	Compute bounds
+
+		if (retcyHeight)
+			{
+			RECT rcBounds;
+			RTF.GetBounds(&rcBounds);
+			*retcyHeight = RectHeight(rcBounds);
+			}
+		}
 	}
 
 void CUIHelper::RefreshMenu (IHISession *pSession, IAnimatron *pRoot, const TArray<SMenuEntry> &Menu) const
