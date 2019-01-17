@@ -1101,7 +1101,7 @@ void CAIBehaviorCtx::Undock (CShip *pShip)
 		pShip->Undock();
 	}
 
-void CAIBehaviorCtx::Update (void)
+void CAIBehaviorCtx::Update (CShip *pShip)
 
 //	Update
 //
@@ -1116,6 +1116,11 @@ void CAIBehaviorCtx::Update (void)
 
 	if (m_iBarrierClock != -1)
 		m_iBarrierClock--;
+
+	//	Clear debug highlight
+
+	if (g_pUniverse->GetDebugOptions().IsShowAIDebugEnbled())
+		pShip->Highlight();
 	}
 
 void CAIBehaviorCtx::WriteToStream (CSystem *pSystem, IWriteStream *pStream)

@@ -1588,7 +1588,7 @@ void CBaseShipAI::ResetBehavior (void)
 //	Resets fire and motion
 
 	{
-	m_AICtx.Update();
+	m_AICtx.Update(m_pShip);
 	m_pShip->ClearAllTriggered();
 	m_Blacklist.Update(g_pUniverse->GetTicks());
 	}

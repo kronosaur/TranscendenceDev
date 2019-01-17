@@ -106,7 +106,7 @@ class CAIBehaviorCtx
 		inline void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
 		inline void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
 		inline bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
-		void Update (void);
+		void Update (CShip *pShip);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 		//	Maneuvers

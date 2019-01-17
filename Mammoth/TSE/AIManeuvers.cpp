@@ -20,7 +20,7 @@ const Metric MAX_GATE_DISTANCE =		(90.0 * KLICKS_PER_PIXEL);
 const Metric MAX_IN_FORMATION_DELTA	=	(2.0 * KLICKS_PER_PIXEL);
 const Metric MAX_TARGET_OF_OPPORTUNITY_RANGE = (20.0 * LIGHT_SECOND);
 const int MAX_TARGETS =					10;
-const Metric MIN_FLYBY_SPEED =			(2.0 * KLICKS_PER_PIXEL);
+const Metric MIN_FLYBY_SPEED =			(0.2 * LIGHT_SPEED);
 const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL* KLICKS_PER_PIXEL * 25.0);
 const Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
 const Metric MIN_TARGET_DIST =			(3.0 * LIGHT_SECOND);
@@ -504,7 +504,7 @@ void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, LPCSTR pText)
 
 	{
 	if (g_pUniverse->GetDebugOptions().IsShowAIDebugEnbled())
-		pShip->Highlight(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(pText)));
+		pShip->HighlightAppend(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(pText)));
 	}
 
 void CAIBehaviorCtx::ImplementAttackNearestTarget (CShip *pShip, Metric rMaxRange, CSpaceObject **iopTarget, CSpaceObject *pExcludeObj, bool bTurn)
@@ -991,22 +991,9 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	If we're beyond our weapon's effective range, then close on target
 
 			if (rTargetDist2 > GetPrimaryAimRange2())
-				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
-
-			//	If we're too close to the target, move
-
-			else if (rTargetDist2 < rCloseRange2)
 				{
-				//	Compute our bearing from the target's perspective
-
-				int iBearing = VectorToPolar(-vTarget);
-
-				//	If the target is facing us, then spiral away
-
-				if (AreAnglesAligned(iBearing, pTarget->GetRotation(), 90))
-					vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
-				else
-					vDirection = GetPotential();
+				vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
+				DebugAIOutput(pShip, "Flyby: Out of range");
 				}
 
 			//	Otherwise, make sure we are moving wrt to the target
@@ -1016,13 +1003,36 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 				CVector vVDelta = pTarget->GetVel() - pShip->GetVel();
 				if (vVDelta.Length2() < MIN_FLYBY_SPEED2)
 					{
-					if (pShip->GetDestiny() > 180)
-						vDirection = CombinePotential(CalcManeuverSpiralIn(pShip, vTarget));
+					//	If we're very close and the target is facing us, then we 
+					//	spiral away.
+
+					if (rTargetDist2 < rCloseRange2)
+						{
+						if (AreAnglesAligned(VectorToPolar(-vTarget), pTarget->GetRotation(), 90))
+							{
+							vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
+							DebugAIOutput(pShip, "Flyby: Target facing us, keep going");
+							}
+						else
+							{
+							vDirection = CombinePotential(CalcManeuverSpiralOut(pShip, vTarget));
+							DebugAIOutput(pShip, "Flyby: Target not facing us, spiral away");
+							}
+						}
+
+					//	Otherwise we move closer to the target.
+
 					else
+						{
 						vDirection = CombinePotential(CalcManeuverCloseOnTarget(pShip, pTarget, vTarget, rTargetDist2));
+						DebugAIOutput(pShip, "Flyby: Get closer to target");
+						}
 					}
 				else
+					{
 					vDirection = GetPotential();
+					DebugAIOutput(pShip, "Flyby: Moving fast enough");
+					}
 				}
 
 			break;
