@@ -531,17 +531,17 @@ void CGalacticMapSystemDetails::GetSystemHeaderData (CTopologyNode *pNode, SSyst
 	//	Add debug information, if necessary
 
 	if (g_pUniverse->GetDebugOptions().IsShowNodeAttributesEnabled())
+		{
+		//	System level
+
+		CCartoucheBlock::SCartoucheDesc *pEntry = Header.Attribs.Insert();
+		pEntry->sText = strPatternSubst(CONSTLIT("Level %d"), pNode->GetLevel());
+		pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
+		pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
+
+		//	Details
+
 		Header.sDetails = strPatternSubst(CONSTLIT("%s\n%s: %s"), Header.sDetails, pNode->GetID(), pNode->GetAttributes());
-
-#if 0
-
-	//	Attributes
-
-	CCartoucheBlock::SCartoucheDesc *pEntry = Header.Attribs.Insert();
-	pEntry->sText = CONSTLIT("Test");
-	pEntry->rgbBack = RGB_MODIFIER_NORMAL_BACKGROUND;
-	pEntry->rgbColor = RGB_MODIFIER_NORMAL_TEXT;
-
-#endif
+		}
 	}
 
