@@ -71,16 +71,22 @@ void CGalacticMapSession::OnChar (char chChar, DWORD dwKeyData)
 //  Handle character
 
     {
+	if (m_bDragging)
+		{
+		//	If we're dragging the map, then ignore key commands
+		}
+
 	//	Handle debug console
 
-	if (m_DebugConsole.OnChar(chChar, dwKeyData))
-		NULL;
+	else if (m_DebugConsole.OnChar(chChar, dwKeyData))
+		{ }
 
     //  We handle certain commands
 
 	else
 		{
 		CGameKeys::Keys iCommand = m_Settings.GetKeyMap().GetGameCommandFromChar(chChar);
+
 		switch (iCommand)
 			{
 			//  Switch back to system map
@@ -217,23 +223,27 @@ void CGalacticMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		//	If we're dragging the map, then ignore key commands
 		}
 
-	else if (m_DebugConsole.IsEnabled())
-		{
-		if (iVirtKey == VK_ESCAPE || iCommand == CGameKeys::keyShowConsole)
-			{
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			m_DebugConsole.SetEnabled(false);
-			}
-		else
-			m_DebugConsole.OnKeyDown(iVirtKey, dwKeyData);
-		}
-
 	else if (iCommand == CGameKeys::keyShowConsole)
 		{
 		if (m_Settings.GetBoolean(CGameSettings::debugMode))
 			{
 			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
-			m_DebugConsole.SetEnabled(true);
+			m_DebugConsole.SetEnabled(!m_DebugConsole.IsEnabled());
+			}
+		}
+
+	else if (m_DebugConsole.IsEnabled())
+		{
+		switch (iVirtKey)
+			{
+			case VK_ESCAPE:
+				g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_SELECT));
+				m_DebugConsole.SetEnabled(false);
+				break;
+
+			default:
+				m_DebugConsole.OnKeyDown(iVirtKey, dwKeyData);
+				break;
 			}
 		}
 
