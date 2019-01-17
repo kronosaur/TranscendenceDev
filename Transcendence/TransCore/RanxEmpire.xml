@@ -414,7 +414,7 @@
 			name=				"kiloton cannon shell"
 			attributes=			"consumable, military, missile, ranx, specialty"
 			  
-			level=				"6"
+			level=				"7"
 			frequency=			"common"
 			numberAppearing=	"1d20"
 

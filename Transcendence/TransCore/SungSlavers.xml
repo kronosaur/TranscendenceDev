@@ -1185,6 +1185,25 @@
 		</Weapon>
 	</ItemType>
 
+	<!-- Particle bolt cartridge -->
+
+	<ItemType UNID="&itParticleBoltCartridge;"
+			name=				"Nandao bolt cartridge"
+			level=				"6"
+			value=				"35"
+			mass=				"10"
+			frequency=			"common"
+			numberAppearing=	"20d40"
+			attributes=			"Consumable; Missile; NotForSale; sungSlavers"
+
+			description=		"This energy cartridge is used by the Nandao bolt cannon."
+
+			sortName=			"~.Nandao bolt cartridge"
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
 	<!-- Segment of Heavy Sung Armor -->
 
 	<ItemType UNID="&itHeavySungArmor;"
@@ -1239,25 +1258,6 @@
 				programName=	"Brok3nArms 1.1"
 				/>
 
-	</ItemType>
-
-	<!-- Particle bolt cartridge -->
-
-	<ItemType UNID="&itParticleBoltCartridge;"
-			name=				"Nandao bolt cartridge"
-			level=				"5"
-			value=				"35"
-			mass=				"10"
-			frequency=			"common"
-			numberAppearing=	"20d40"
-			attributes=			"Consumable; Missile; NotForSale; sungSlavers"
-
-			description=		"This energy cartridge is used by the Nandao bolt cannon."
-
-			sortName=			"~.Nandao bolt cartridge"
-			>
-
-		<Image imageID="&rsItems1;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Segment of Sung Armor -->

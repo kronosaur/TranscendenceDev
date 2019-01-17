@@ -3757,11 +3757,11 @@
 			name=				"SmartCannon round"
 			attributes=			"basicAmmo, commonwealth, consumable, missile, rasiermesser"
 			  
-			level=				"2"
+			level=				"3"
 			frequency=			"uncommon"
 			numberAppearing=	"12d40"
 
-			value=				"1"
+			value=				"2"
 			mass=				"10"
 			  
 			description=		"SmartCannons are recoilless weapons modified to shoot special tracking shells. A SmartCannon round can adjust its path to strike a designated target."
@@ -3776,7 +3776,7 @@
 			name=				"Akan 30 cannon shell cartridge"
 			attributes=			"commonwealth, consumable, missile, rasiermesser"
 			  
-			level=				"4"
+			level=				"5"
 			frequency=			"common"
 			numberAppearing=	"10d40"
 

@@ -439,11 +439,11 @@
 
 <!-- AMMO ITEMS -->
 
-	<!-- Level 7: Micronuke -->
+	<!-- Level 8: Micronuke -->
 
 	<ItemType UNID="&itMicronuke;"
 			name=				"Ares micronuke"
-			level=				"7"
+			level=				"8"
 			value=				"60"
 			mass=				"10"
 			attributes=			"Ares; Consumable; Military; Missile; NotForSale;"
