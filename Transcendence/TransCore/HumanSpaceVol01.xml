@@ -2176,6 +2176,11 @@
 
 	<!ENTITY baDominaPower				"0x00100640">
 
+	<!-- 0660-06BF COMMONWEALTH FLEET III -->
+
+	<!ENTITY tbCSCEscort2AresAmbush		"0x00100660">
+	<!ENTITY tbCSCEscort2RogueAmbush	"0x00100661">
+
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	

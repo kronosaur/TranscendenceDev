@@ -107,12 +107,8 @@
 						(if (= (random 1 3) 1) gPlayerShip shipObj)
 						(random
 							(list
-								&etAresAmbush1;
-								&etAresAmbush2;
-								&etAresAmbush2;
-								&etRogueAmbush1;
-								&etRogueAmbush1;
-								&etRogueAmbush2;
+								&tbCSCEscort2AresAmbush;
+								&tbCSCEscort2RogueAmbush;
 								)
 							)
 						(random 120 200)
@@ -191,4 +187,50 @@
 		</Language>
 	</MissionType>
 
+<!-- TABLES -->
+
+	<ShipTable unid="&tbCSCEscort2AresAmbush;">
+		<LevelTable>
+			<Ship levelFrequency="vvvrc rv---"	count="1d2+2"	class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----r crv--"	count="1d4+2"	class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- rcrv-"	count="2d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- -rcrv"	count="3d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- -rcrv"	count="1"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- --rcr"	count="2"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- ---rc"	count="1"		class="&scChasm;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
+		</LevelTable>
+	</ShipTable>
+	
+	<ShipTable unid="&tbCSCEscort2RogueAmbush;">
+		<LevelTable>
+			<Ship levelFrequency="vvvrc rv---"	count="1d2+2"	class="&scCenturionRogue;"	orders="attack"	sovereign="&svRogueFleet;"/>
+			<Ship levelFrequency="----r crv--"	count="1d4+2"	class="&scCenturionRogue;"	orders="attack"	sovereign="&svRogueFleet;"/>
+			<Ship levelFrequency="----- rcrv-"	count="2d6"		class="&scCenturionRogue;"	orders="attack"	sovereign="&svRogueFleet;"/>
+			<Ship levelFrequency="----- -rcrv"	count="3d6"		class="&scCenturionRogue;"	orders="attack"	sovereign="&svRogueFleet;"/>
+			<Ship levelFrequency="----- -rcrv"	count="1"		class="&scCenturionXRogue;"	orders="attack"	sovereign="&svRogueFleet;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scCenturionRogue;"	orders="escort"	sovereign="&svRogueFleet;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- --rcr"	count="2"		class="&scCenturionXRogue;"	orders="attack"	sovereign="&svRogueFleet;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scCenturionRogue;"	orders="escort"	sovereign="&svRogueFleet;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- ---rc"	count="1d2+2"	class="&scCenturionXRogue;"	orders="attack"	sovereign="&svRogueFleet;"/>
+		</LevelTable>
+	</ShipTable>
+	
 </TranscendenceModule>
