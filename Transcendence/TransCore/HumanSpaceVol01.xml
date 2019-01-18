@@ -2089,6 +2089,7 @@
 	<!ENTITY smCSCOperationsSpace		"0x001004CC">
 	<!ENTITY tbCSCRefugeeConvoyPrincipal	"0x001004CD">
 	<!ENTITY tbCSCRefugeeConvoyEscort	"0x001004CE">
+	<!ENTITY tbCSCRefugeeConvoyAmbush	"0x001004CF">
 
 	<!-- 04D0-04EF NAMI CORPORATION -->
 

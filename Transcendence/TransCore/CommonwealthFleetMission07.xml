@@ -116,15 +116,21 @@
 						)
 
 					(switch
+						;	If we've still got ships, then the mission continues
+
+						(or principleList secondaryList)
+							Nil
+
 						;	If we've lost too many ships then failure
+
 						(or	(gr (msnGetData gSource 'principleDestroyed) 1)
 							(gr (msnGetData gSource 'secondaryDestroyed) 4)
 							)
 							(msnFailure gSource)
 
-						;	Otherwise, if there are no ships left then success
-						(not (or principleList secondaryList))
-							(msnSuccess gSource)
+						;	Otherwise, success!
+
+						(msnSuccess gSource)
 						)
 					)
 			</OnObjDestroyed>
@@ -176,7 +182,7 @@
 						(sysAddEncounterEventAtDist 
 							(* timeStep (+ (* i 4) (random 1 3)))
 							(if (= (random 1 3) 1) gPlayerShip (@ principleList i))
-							&etAresAmbush1; 
+							&tbCSCRefugeeConvoyAmbush; 
 							(random 120 200)
 							)
 						)
@@ -250,7 +256,12 @@
 				"What is your major malfunction!? Get back out there and complete your mission!"
 			</String>
 			<String id="FailureDebrief">
-				"You screwed that mission all the way to Sol and back. You better hit the sims, pilot!"
+				
+				"Pathetic! Those refugees were counting on us to protect them!
+				Now they'll start their new life with a bunch of funerals.
+
+				"Get out of here, pilot!"
+
 			</String>
 			<String id="SuccessDebrief">
 				"Outstanding mission! Those refugees have a chance to start a new life away from the war zone."
@@ -262,9 +273,16 @@
 
 	<ShipTable unid="&tbCSCRefugeeConvoyPrincipal;">
 		<LevelTable>
-			<Ship levelFrequency="vrccu urv--" count="1" class="&scAntaresV;"/>
-			<Ship levelFrequency="--rcc uurv-" count="1" class="&scEI7000;"/>
-			<Ship levelFrequency="---rc cuurv" count="1" class="&scScarabFreighter;"/>
+			<!--
+				NOTE: For now we only handle one freighter type because if we
+				don't have the same freighter for all 3 groups, then they
+				start to separate (because they proceed at different speeds).
+				
+				In the future we should have a function that just returns the
+				ship class from a table and use that for all three groups.
+			-->
+
+			<Ship levelFrequency="vvvrc cuurv" count="1" class="&scScarabFreighter;"/>
 		</LevelTable>
 	</ShipTable>
 	
@@ -273,6 +291,30 @@
 			<Ship levelFrequency="vrccu urv--" count="1" class="&scEI200;"/>
 			<Ship levelFrequency="--rcc uurv-" count="1" class="&scEI500;"/>
 			<Ship levelFrequency="---rc cuurv" count="1" class="&scArmstrongTransport;"/>
+		</LevelTable>
+	</ShipTable>
+	
+	<ShipTable unid="&tbCSCRefugeeConvoyAmbush;">
+		<LevelTable>
+			<Ship levelFrequency="vvvrc rv---"	count="1d2+2"	class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----r crv--"	count="1d4+2"	class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- rcrv-"	count="2d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- -rcrv"	count="3d6"		class="&scSandstorm;"	orders="attack"	sovereign="&svAres;"/>
+			<Ship levelFrequency="----- -rcrv"	count="1"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- --rcr"	count="2"		class="&scTundra;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
+			<Ship levelFrequency="----- ---rc"	count="1"		class="&scChasm;"		orders="attack"	sovereign="&svAres;">
+				<Escorts>
+					<Ship						count="1d6"		class="&scSandstorm;"	orders="escort"	sovereign="&svAres;"/>
+				</Escorts>
+			</Ship>
 		</LevelTable>
 	</ShipTable>
 	
