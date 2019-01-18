@@ -29,8 +29,8 @@ void CAniSolidFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 //	Files the set of lines
 
 	{
-	SSimpleRasterLine *pLine = &Lines[0];
-	SSimpleRasterLine *pLineEnd = pLine + Lines.GetCount();
+	const SSimpleRasterLine *pLine = &Lines[0];
+	const SSimpleRasterLine *pLineEnd = pLine + Lines.GetCount();
 
 	if (m_dwOpacity == 255)
 		{

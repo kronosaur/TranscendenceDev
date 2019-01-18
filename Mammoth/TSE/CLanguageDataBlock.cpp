@@ -606,7 +606,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (CSpaceObject
 	{
 	//	If we can't find this ID then we can't translate
 
-	SEntry *pEntry = m_Data.GetAt(sID);
+	const SEntry *pEntry = m_Data.GetAt(sID);
 	if (pEntry == NULL)
 		return resultNotFound;
 
@@ -652,7 +652,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::Translate (const CItem 
 	{
 	//	If we can't find this ID then we can't translate
 
-	SEntry *pEntry = m_Data.GetAt(sID);
+	const SEntry *pEntry = m_Data.GetAt(sID);
 	if (pEntry == NULL)
 		return resultNotFound;
 

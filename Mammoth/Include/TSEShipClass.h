@@ -73,10 +73,10 @@ class CArmorLimits
 			int iSpeedAdj = 0;					//	Change to speed for this armor class
 			};
 
-		int CalcArmorMass (CItemCtx &ArmorItem) const;
+		int CalcArmorMass (const CItemCtx &ArmorItem) const;
 		int CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) const;
 		int CalcMinArmorMassForSpeed (int iSpeed, int iStdSpeed) const;
-		bool FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL, bool *retbClassFound = NULL) const;
+		bool FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits **retpLimits = NULL, bool *retbClassFound = NULL) const;
 
 		ETypes m_iType = typeNone;
 		CItemCriteria m_ArmorCriteria;			//	Allowable armor

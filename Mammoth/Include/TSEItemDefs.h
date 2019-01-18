@@ -236,8 +236,8 @@ class CArmorMassDefinitions
 			TSortMap<int, SArmorMassEntry> Classes;
 			};
 
-		inline const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return FindMassEntryActual(Item); }
-		SArmorMassEntry *FindMassEntryActual (const CItem &Item) const;
+		inline const SArmorMassEntry *FindMassEntry (const CItem &Item) const { return const_cast<CArmorMassDefinitions *>(this)->FindMassEntryActual(Item); }
+		SArmorMassEntry *FindMassEntryActual (const CItem &Item);
 		inline void InvalidateIDIndex (void) { m_ByID.DeleteAll(); }
 
 		TSortMap<CString, SArmorMassDefinition> m_Definitions;

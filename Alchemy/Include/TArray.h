@@ -61,7 +61,8 @@ template <class VALUE> class TRawArray : public CArrayBase
 		TRawArray (void) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY), m_iExtraBytes(0) { }
 		TRawArray (int iExtraBytes) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY), m_iExtraBytes(iExtraBytes) { }
 
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -80,7 +81,13 @@ template <class VALUE> class TRawArray : public CArrayBase
 			CleanUpBlock();
 			}
 
-		inline VALUE &GetAt (int iIndex) const
+		inline const VALUE &GetAt (int iIndex) const
+			{
+			const VALUE *pElement = (VALUE *)(GetBytes() + iIndex * GetElementSize());
+			return *pElement;
+			}
+
+		inline VALUE &GetAt (int iIndex)
 			{
 			VALUE *pElement = (VALUE *)(GetBytes() + iIndex * GetElementSize());
 			return *pElement;
@@ -164,7 +171,8 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return *this;
 			}
 
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -221,7 +229,14 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return false;
 			}
 
-		inline VALUE &GetAt (int iIndex) const
+		inline const VALUE &GetAt (int iIndex) const
+			{
+			ASSERT(iIndex >= 0 && iIndex < GetCount());
+			const VALUE *pElement = (VALUE *)(GetBytes() + iIndex * sizeof(VALUE));
+			return *pElement;
+			}
+
+		inline VALUE &GetAt (int iIndex)
 			{
 			ASSERT(iIndex >= 0 && iIndex < GetCount());
 			VALUE *pElement = (VALUE *)(GetBytes() + iIndex * sizeof(VALUE));
@@ -477,7 +492,8 @@ template <class VALUE> class TProbabilityTable
 				m_iTotalChance(0)
 			{ }
 
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -491,7 +507,8 @@ template <class VALUE> class TProbabilityTable
 			m_iTotalChance = 0;
 			}
 
-		inline VALUE &GetAt (int iIndex) const { return m_Table[iIndex].Value; }
+		inline const VALUE &GetAt (int iIndex) const { return m_Table[iIndex].Value; }
+		inline VALUE &GetAt (int iIndex) { return m_Table[iIndex].Value; }
 
 		inline int GetChance (int iIndex) const { return m_Table[iIndex].iChance; }
 

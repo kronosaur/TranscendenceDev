@@ -96,7 +96,31 @@ void CAniPropertySet::DeleteAnimator (const CString &sID)
 			}
 	}
 
-CAniPropertySet::SProperty *CAniPropertySet::Find (const CString &sName, int *retiIndex) const
+const CAniPropertySet::SProperty *CAniPropertySet::Find (const CString &sName, int *retiIndex) const
+
+//	Find
+//
+//	Finds the property
+
+	{
+	int i;
+
+	for (i = 0; i < m_Properties.GetCount(); i++)
+		if (strEquals(m_Properties[i].sName, sName))
+			{
+			if (retiIndex)
+				*retiIndex = i;
+
+			return &m_Properties[i];
+			}
+
+	if (retiIndex)
+		*retiIndex = -1;
+
+	return NULL;
+	}
+
+CAniPropertySet::SProperty *CAniPropertySet::Find (const CString &sName, int *retiIndex)
 
 //	Find
 //
@@ -158,7 +182,7 @@ bool CAniPropertySet::GetBool (const CString &sName) const
 //	GetBool
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetBool();
 	else
@@ -170,7 +194,7 @@ CG32bitPixel CAniPropertySet::GetColor (const CString &sName) const
 //	GetColor
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetColor();
 	else
@@ -182,7 +206,7 @@ const CG16bitFont *CAniPropertySet::GetFont (const CString &sName) const
 //	GetFont
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetFont();
 	else
@@ -221,7 +245,7 @@ int CAniPropertySet::GetInteger (const CString &sName) const
 //	GetInteger
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetInteger();
 	else
@@ -233,7 +257,7 @@ Metric CAniPropertySet::GetMetric (const CString &sName) const
 //	GetMetric
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetMetric();
 	else
@@ -245,7 +269,7 @@ DWORD CAniPropertySet::GetOpacity (const CString &sName) const
 //	GetOpacity
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetOpacity();
 	else
@@ -257,7 +281,7 @@ CString CAniPropertySet::GetString (const CString &sName) const
 //	GetString
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetString();
 	else
@@ -269,7 +293,7 @@ CVector CAniPropertySet::GetVector (const CString &sName) const
 //	GetVector
 
 	{
-	SProperty *pProp;
+	const SProperty *pProp;
 	if (pProp = Find(sName))
 		return pProp->CurrentValue.GetVector();
 	else

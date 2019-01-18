@@ -566,7 +566,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		ALERROR CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
-		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator = NULL);
+		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator = NULL) const;
 		inline bool IsEmpty (void) const { return (m_dwUNID == 0 && m_pType == NULL); }
 		ALERROR LoadEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc, const CString &sAttrib);
 		ALERROR LoadSimpleEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
@@ -574,7 +574,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 
 	private:
         CAttributeDataBlock m_Data;
-		IEffectPainter *m_pSingleton;
+		mutable IEffectPainter *m_pSingleton;
 		bool m_bDelete;
 	};
 
@@ -1117,7 +1117,7 @@ class CDynamicDesignTable
 		void CleanUp (void);
 		ALERROR Compile (SEntry *pEntry, CString *retsError = NULL);
 		ALERROR CreateType (SEntry *pEntry, CXMLElement *pDesc, CDesignType **retpType, CString *retsError = NULL);
-		inline SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
+		inline const SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
 
 		TSortMap<DWORD, SEntry> m_Table;
 	};
@@ -1356,7 +1356,7 @@ bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx) { return m_pArmorClass->AbsorbDamage(CItemCtx(pSource, this), Ctx); }
 inline int CInstalledArmor::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return m_pArmorClass->GetDamageEffectiveness(pAttacker, pWeapon); }
 inline int CInstalledArmor::GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetItemType()->GetLevel()); }
-inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) { return m_pArmorClass->GetMaxHP(CItemCtx(pSource, this)); }
+inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) const { return m_pArmorClass->GetMaxHP(CItemCtx(pSource, this)); }
 
 inline bool CInstalledDevice::IsSecondaryWeapon (void) const 
 	{

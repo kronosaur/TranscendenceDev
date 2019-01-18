@@ -172,6 +172,7 @@
 #define ERR_UNKNOWN_EQUIPMENT					CONSTLIT("unknown equipment: %s")
 #define ERR_UNKNOWN_EQUIPMENT_DIRECTIVE			CONSTLIT("unknown equipment directive: %s")
 
+#define PROPERTY_ARMOR_ITEM						CONSTLIT("armorItem")
 #define PROPERTY_ARMOR_SPEED_ADJ				CONSTLIT("armorSpeedAdj")
 #define PROPERTY_ARMOR_SPEED_ADJ_PARAM			CONSTLIT("armorSpeedAdj:")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
@@ -183,21 +184,25 @@
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
 #define PROPERTY_HULL_POINTS					CONSTLIT("hullPoints")
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
+#define PROPERTY_LAUNCHER_ITEM					CONSTLIT("launcherItem")
 #define PROPERTY_MAX_ARMOR_CLASS				CONSTLIT("maxArmorClass")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
 #define PROPERTY_MAX_SPEED_AT_MIN_ARMOR			CONSTLIT("maxSpeedAtMinArmor")
 #define PROPERTY_MAX_SPEED_BY_ARMOR_MASS		CONSTLIT("maxSpeedByArmorMass")
+#define PROPERTY_MISC_DEVICE_ITEMS				CONSTLIT("miscDeviceItems")
 #define PROPERTY_POWER							CONSTLIT("power")
 #define PROPERTY_PRICE							CONSTLIT("price")
 #define PROPERTY_RATED_POWER					CONSTLIT("ratedPower")
+#define PROPERTY_SHIELD_ITEM					CONSTLIT("shieldItem")
 #define PROPERTY_STD_ARMOR_CLASS				CONSTLIT("stdArmorClass")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_THRUSTER_POWER					CONSTLIT("thrusterPower")
+#define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
 #define SPECIAL_IS_PLAYER_CLASS					CONSTLIT("isPlayerClass:")
@@ -3688,7 +3693,14 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	if (strEquals(sProperty, PROPERTY_ARMOR_SPEED_ADJ))
+	if (strEquals(sProperty, PROPERTY_ARMOR_ITEM))
+		{
+		if (m_Armor.GetCount() == 0)
+			return ICCItemPtr(ICCItem::Nil);
+		
+		return ICCItemPtr(CreateListFromItem(CC, m_Armor.GetSegment(0).GetArmorItem()));
+		}
+	else if (strEquals(sProperty, PROPERTY_ARMOR_SPEED_ADJ))
 		{
 		TArray<CItemCtx> Armor;
 		Armor.InsertEmpty(m_Armor.GetCount());
@@ -3747,6 +3759,15 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		return ICCItemPtr(mathRound(Calc.GetTotalPoints() * 10.0));
 		}
 
+	else if (strEquals(sProperty, PROPERTY_LAUNCHER_ITEM))
+		{
+		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devMissileWeapon);
+		if (pDesc == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(CreateListFromItem(CC, pDesc->Item));
+		}
+
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
 		return CTLispConvert::CreateCurrencyValue(CC, GetEconomyType()->Exchange(m_Hull.GetValue()));
 
@@ -3765,11 +3786,36 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_MAX_SPEED_BY_ARMOR_MASS))
 		return ICCItemPtr(CalcMaxSpeedByArmorMass(Ctx));
 
+	else if (strEquals(sProperty, PROPERTY_MISC_DEVICE_ITEMS))
+		{
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
+			{
+			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
+			if (Desc.Item.GetType()->GetCategory() == itemcatMiscDevice)
+				{
+				ICCItemPtr pItem(CreateListFromItem(CC, Desc.Item));
+				pResult->Append(CC, pItem);
+				}
+			}
+
+		return pResult;
+		}
+
 	else if (strEquals(sProperty, PROPERTY_PRICE))
 		return ICCItemPtr((int)GetTradePrice(NULL, true).GetValue());
 
 	else if (strEquals(sProperty, PROPERTY_RATED_POWER))
 		return ICCItemPtr(CalcRatedPowerUse(m_AverageDevices));
+
+	else if (strEquals(sProperty, PROPERTY_SHIELD_ITEM))
+		{
+		const SDeviceDesc *pDesc = m_AverageDevices.GetDeviceDescByName(devShields);
+		if (pDesc == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(CreateListFromItem(CC, pDesc->Item));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_CLASS))
 		return (!m_Hull.GetArmorLimits().GetStdArmorClass().IsBlank() ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorClass()) : ICCItemPtr(ICCItem::Nil));
@@ -3793,6 +3839,21 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		Metric rMass = CalcMass(m_AverageDevices);
 		Metric rRatio = 2.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0);
 		return ICCItemPtr((double)mathRound(rRatio * 10.0) / 10.0);
+		}
+	else if (strEquals(sProperty, PROPERTY_WEAPON_ITEMS))
+		{
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
+			{
+			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
+			if (Desc.Item.GetType()->GetCategory() == itemcatWeapon)
+				{
+				ICCItemPtr pWeapon(CreateListFromItem(CC, Desc.Item));
+				pResult->Append(CC, pWeapon);
+				}
+			}
+
+		return pResult;
 		}
 	else if (strEquals(sProperty, PROPERTY_THRUSTER_POWER))
 		{

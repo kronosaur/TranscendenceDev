@@ -326,6 +326,7 @@ class CDockPane
 					bReplaceInput(false)
 				{ }
 
+			inline const CGTextArea *AsTextArea (void) const { return (const CGTextArea *)pArea; }
 			inline CGTextArea *AsTextArea (void) { return (CGTextArea *)pArea; }
 			inline CGItemDisplayArea *AsItemDisplayArea (void) { return (iType == controlItemDisplay ? (CGItemDisplayArea *)pArea : NULL); }
 			inline CGItemListDisplayArea *AsItemListDisplayArea (void) { return (iType == controlItemListDisplay ? (CGItemListDisplayArea *)pArea : NULL); }
@@ -353,9 +354,11 @@ class CDockPane
 		void CreateControl (EControlTypes iType, const CString &sID, const CString &sStyle, RECT rcPane);
 		ALERROR CreateControls (RECT rcPane, CString *retsError);
 		void ExecuteAction (int iAction);
-		bool FindControl (const CString &sID, SControl **retpControl = NULL) const;
-		CGTextArea *GetTextControlByType (EControlTypes iType) const;
-		SControl *GetControlByType (EControlTypes iType) const;
+		bool FindControl (const CString &sID, const SControl **retpControl = NULL) const;
+		bool FindControl (const CString &sID, SControl **retpControl = NULL);
+		const CGTextArea *GetTextControlByType (EControlTypes iType) const;
+		const SControl *GetControlByType (EControlTypes iType) const;
+		SControl *GetControlByType (EControlTypes iType);
 		void GetControlStyle (const CString &sStyle, SControlStyle *retStyle) const;
 		bool InitLayout (const CString &sLayout, const RECT &rcFullRect, CString *retsError = NULL);
 		void JustifyControls (int *retcyTotalHeight = NULL);

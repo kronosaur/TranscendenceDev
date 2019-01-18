@@ -275,7 +275,7 @@ class CGTextArea : public AGArea
 	public:
 		CGTextArea (void);
 
-		inline const CString &GetText (void) { return m_sText; }
+		inline const CString &GetText (void) const { return m_sText; }
 		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
 		inline void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
 		inline void SetColor (CG32bitPixel rgbColor) { m_rgbColor = rgbColor; }

@@ -299,7 +299,7 @@ void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<S
 
 	//	Look in the index of nodes
 
-	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     if (pNodeData == NULL)
         return;
 
@@ -364,7 +364,7 @@ CObjectTracker::SObjList *CObjectTracker::GetList (CTopologyNode *pNode, CDesign
 
 	//	Look in the index of nodes
 
-	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     if (pNodeData == NULL)
         return NULL;
 
@@ -394,7 +394,7 @@ void CObjectTracker::GetSystemBackgroundObjects (const CTopologyNode *pNode, TSo
     Results.DeleteAll();
     Results.GrowToFit(1000);
 
-    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     if (pNodeData == NULL)
         return;
 
@@ -429,7 +429,7 @@ void CObjectTracker::GetSystemStarObjects (const CTopologyNode *pNode, TArray<SB
 
     Results.DeleteAll();
 
-    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     if (pNodeData == NULL)
         return;
 
@@ -460,7 +460,7 @@ const TArray<COrbit> &CObjectTracker::GetSystemOrbits (const CTopologyNode *pNod
 //  Returns a list of orbits for the system.
 
     {
-    SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+    const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     ASSERT(pNodeData);
 
     return pNodeData->Orbits;
@@ -482,7 +482,7 @@ void CObjectTracker::GetTradingObjects (const CTopologyNode *pNode, TArray<SObjE
 
 	//	Look in the index of nodes
 
-	SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
     if (pNodeData == NULL)
         return;
 

@@ -156,7 +156,7 @@ int CDisplayAttributeDefinitions::GetLocationAttribFrequency (const CString &sAt
 //	Returns the percent of locations in the universe with the given attribute.
 
 	{
-	SAttribDesc *pEntry = m_Attribs.GetAt(sAttrib);
+	const SAttribDesc *pEntry = m_Attribs.GetAt(sAttrib);
 	if (pEntry == NULL)
 		return DEFAULT_LOCATION_FREQUENCY;
 

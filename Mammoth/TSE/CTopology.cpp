@@ -1168,7 +1168,7 @@ CTopologyNode *CTopology::FindTopologyNode (const CString &sID) const
 //	Look for the given node
 
 	{
-	int *pPos = m_IDToNode.GetAt(sID);
+	int const *pPos = m_IDToNode.GetAt(sID);
 	if (pPos == NULL)
 		return NULL;
 

@@ -418,7 +418,7 @@ void CDockPane::ExecuteShowPane (const CString &sPane, bool bDeferIfNecessary)
 	m_Actions.ExecuteShowPane(sPane);
 	}
 
-bool CDockPane::FindControl (const CString &sID, SControl **retpControl) const
+bool CDockPane::FindControl (const CString &sID, const SControl **retpControl) const
 
 //	FindControl
 //
@@ -438,7 +438,59 @@ bool CDockPane::FindControl (const CString &sID, SControl **retpControl) const
 	return false;
 	}
 
-CDockPane::SControl *CDockPane::GetControlByType (EControlTypes iType) const
+bool CDockPane::FindControl (const CString &sID, SControl **retpControl)
+
+//	FindControl
+//
+//	Looks for the control by ID. Returns FALSE if not found.
+
+	{
+	int i;
+
+	for (i = 0; i < m_Controls.GetCount(); i++)
+		if (strEquals(sID, m_Controls[i].sID))
+			{
+			if (retpControl)
+				*retpControl = &m_Controls[i];
+			return true;
+			}
+
+	return false;
+	}
+
+const CDockPane::SControl *CDockPane::GetControlByType (EControlTypes iType) const
+
+//	GetControlByType
+//
+//	Returns the control entry
+
+	{
+	int i;
+
+    //  If we're looking for the desc control, look by default ID also, since
+    //  we might have multiple descriptor controls.
+
+	const SControl *pControl = NULL;
+    switch (iType)
+        {
+        case controlDesc:
+            {
+            if (FindControl(DEFAULT_DESC_ID, &pControl))
+                return pControl;
+            break;
+            }
+        }
+
+    //  Look for the first control that matches the type
+
+	for (i = 0; i < m_Controls.GetCount(); i++)
+		if (m_Controls[i].iType == iType)
+			return &m_Controls[i];
+
+	return NULL;
+	}
+
+CDockPane::SControl *CDockPane::GetControlByType (EControlTypes iType)
 
 //	GetControlByType
 //
@@ -477,7 +529,7 @@ int CDockPane::GetCounterValue (void) const
 //	Returns the value of the counter.
 
 	{
-	CGTextArea *pCounter;
+	const CGTextArea *pCounter;
 	if (pCounter = GetTextControlByType(controlCounter))
 		{
 		int iValue = strToInt(pCounter->GetText(), 0, NULL);
@@ -497,7 +549,7 @@ const CString &CDockPane::GetDescriptionString (void) const
 //	Returns the current description
 
 	{
-	CGTextArea *pDesc = GetTextControlByType(controlDesc);
+	const CGTextArea *pDesc = GetTextControlByType(controlDesc);
 	if (pDesc == NULL)
 		return NULL_STR;
 
@@ -528,7 +580,7 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 		}
 	}
 
-CGTextArea *CDockPane::GetTextControlByType (EControlTypes iType) const
+const CGTextArea *CDockPane::GetTextControlByType (EControlTypes iType) const
 
 //	GetTextControlByType
 //
@@ -540,7 +592,7 @@ CGTextArea *CDockPane::GetTextControlByType (EControlTypes iType) const
 		case controlCounter:
 		case controlDesc:
 		case controlTextInput:
-            SControl *pControl = GetControlByType(iType);
+            const SControl *pControl = GetControlByType(iType);
             if (pControl == NULL)
                 return NULL;
 
@@ -557,7 +609,7 @@ CString CDockPane::GetTextInputValue (void) const
 //	Returns the current value of the input control
 
 	{
-	CGTextArea *pControl;
+	const CGTextArea *pControl;
 	if (pControl = GetTextControlByType(controlTextInput))
 		return pControl->GetText();
 	else

@@ -320,7 +320,7 @@ void CSystemCreateStats::AddStationTable (CSystem *pSystem, const CString &sStat
 		}
 	}
 
-bool CSystemCreateStats::FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable) const
+bool CSystemCreateStats::FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable)
 
 //	FindEncounterTable
 //

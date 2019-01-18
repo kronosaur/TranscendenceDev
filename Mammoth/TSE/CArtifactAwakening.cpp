@@ -669,7 +669,7 @@ void CArtifactAwakening::RunAttacks (CArtifactProgram &Program, TArray<CArtifact
 
 	for (i = 0; i < Program.GetEffects().GetCount(); i++)
 		{
-		CArtifactProgram::SEffectDesc &Effect = Program.GetEffects()[i];
+		const CArtifactProgram::SEffectDesc &Effect = Program.GetEffects()[i];
 
 		switch (Effect.iType)
 			{
@@ -716,7 +716,7 @@ void CArtifactAwakening::RunPatchEffects (CArtifactProgram &Program, TArray<CArt
 
 	for (i = 0; i < Program.GetEffects().GetCount(); i++)
 		{
-		CArtifactProgram::SEffectDesc &Effect = Program.GetEffects()[i];
+		const CArtifactProgram::SEffectDesc &Effect = Program.GetEffects()[i];
 
 		switch (Effect.iType)
 			{

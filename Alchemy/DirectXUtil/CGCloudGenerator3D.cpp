@@ -73,7 +73,7 @@ Metric CGCloudGenerator3D::GetAtPeriodic (int x, int y, int z) const
 	Metric rValue = 0.0;
 	for (i = 0; i < m_Frequencies.GetCount(); i++)
 		{
-		SFreq &Freq = m_Frequencies[i];
+		const SFreq &Freq = m_Frequencies[i];
 
 		//	Generate points in noise coordinates
 

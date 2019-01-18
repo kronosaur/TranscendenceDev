@@ -848,7 +848,7 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 
 	for (int i = 0; i < Collection.GetCount(); i++)
 		{
-		CMultiverseCatalogEntry &Entry = Collection[i];
+		const CMultiverseCatalogEntry &Entry = Collection[i];
 
 		//	Skip core entries
 

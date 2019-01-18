@@ -140,8 +140,9 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 			{
 			IItemGenerator *pEntry;
 			CString sLevelFrequency;
-			int iChance;
 			DiceRange Count;
+
+			mutable int iChance;
 			};
 
 		TArray<SEntry> m_Table;
@@ -173,8 +174,9 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 			{
 			IItemGenerator *pEntry;
 			CAttributeCriteria Criteria;
-			int iChance;
 			DiceRange Count;
+
+			mutable int iChance;
 			};
 
 		TArray<SEntry> m_Table;

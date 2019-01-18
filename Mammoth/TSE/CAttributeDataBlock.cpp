@@ -98,7 +98,7 @@ void CAttributeDataBlock::Copy (const CAttributeDataBlock &Src, const TSortMap<C
 
     for (i = 0; i < Src.m_Data.GetCount(); i++)
         {
-        STransferDesc *pDesc = Options.GetAt(Src.m_Data.GetKey(i));
+		const STransferDesc *pDesc = Options.GetAt(Src.m_Data.GetKey(i));
         ETransferOptions iTrans = (pDesc ? pDesc->iOption : transCopy);
 
         switch (iTrans)
@@ -178,7 +178,7 @@ bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pR
 //	if the data is not found.
 
 	{
-    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
     if (pEntry == NULL)
         return false;
 
@@ -232,7 +232,7 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+	const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
     if (pEntry == NULL)
         return ICCItemPtr(ICCItem::Nil);
 
@@ -318,7 +318,7 @@ bool CAttributeDataBlock::IsDataNil (const CString &sAttrib) const
 //	Returns TRUE if the given attribute is Nil (or missing)
 
 	{
-    SDataEntry *pEntry = m_Data.GetAt(sAttrib);
+    const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
     if (pEntry == NULL || !pEntry->pData || pEntry->pData->IsNil())
         return true;
 

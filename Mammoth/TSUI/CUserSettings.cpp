@@ -22,7 +22,7 @@ bool CUserSettings::GetValueBoolean (const CString &sID) const
 //	Returns a boolean option
 
 	{
-	SOption *pOption = m_Options.GetAt(sID);
+	const SOption *pOption = m_Options.GetAt(sID);
 	if (pOption == NULL)
 		return false;
 

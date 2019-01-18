@@ -76,7 +76,7 @@ class CPhysicsContactResolver
 		void Update (void);
 
 	private:
-		CPhysicsContact *FindContactToResolve (void) const;
+		CPhysicsContact *FindContactToResolve (void);
 		void RecalcContacts (CPhysicsContact *pChanged);
 
 		TArray<CPhysicsContact> m_Contacts;

@@ -178,7 +178,8 @@ class CAniPropertySet
 			};
 
 		SProperty *Add (const CString &sName, int *retiIndex = NULL);
-		SProperty *Find (const CString &sName, int *retiIndex = NULL) const;
+		const SProperty *Find (const CString &sName, int *retiIndex = NULL) const;
+		SProperty *Find (const CString &sName, int *retiIndex = NULL);
 		SProperty *FindOrAdd (const CString &sName, int *retiIndex = NULL);
 
 		TArray<SProperty> m_Properties;

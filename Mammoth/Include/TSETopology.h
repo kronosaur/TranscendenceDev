@@ -211,7 +211,7 @@ class CTopologyNode
 			DWORD fSpare8:1;
 			DWORD dwSpare:24;
 
-			CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
+			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};
 
 		CString m_sID;							//	ID of node

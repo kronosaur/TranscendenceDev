@@ -198,7 +198,7 @@ class CSystemCreateStats
 		void AddEntryPermutations (const CString &sPrefix, const TArray<CString> &Attribs, int iPos);
 		void AddLabelAttributes (const CString &sAttributes);
 		void AddLabelExpansion (const CString &sAttributes, const CString &sPrefix = NULL_STR);
-		bool FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable) const;
+		bool FindEncounterTable (TArray<CStationTableCache::SEntry> &Src, SEncounterTable **retpTable);
 
 		//	Label stats
 

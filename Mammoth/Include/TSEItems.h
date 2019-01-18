@@ -553,16 +553,19 @@ class CItemCtx
 		CItemCtx (CSpaceObject *pSource, CInstalledArmor *pArmor) : m_pSource(pSource), m_pArmor(pArmor) { }
 		CItemCtx (CSpaceObject *pSource, CInstalledDevice *pDevice) : m_pSource(pSource), m_pDevice(pDevice) { }
 
+		CItemCtx (const CSpaceObject *pSource, const CInstalledArmor *pArmor) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pArmor(const_cast<CInstalledArmor *>(pArmor)) { }
+		CItemCtx (const CSpaceObject *pSource, const CInstalledDevice *pDevice) : m_pSource(const_cast<CSpaceObject *>(pSource)), m_pDevice(const_cast<CInstalledDevice *>(pDevice)) { }
+
 		void ClearItemCache (void);
 		ICCItem *CreateItemVariable (CCodeChain &CC);
-		CInstalledArmor *GetArmor (void);
-		CArmorClass *GetArmorClass (void);
+		CInstalledArmor *GetArmor (void) const;
+		CArmorClass *GetArmorClass (void) const;
 		CInstalledDevice *GetDevice (void);
 		CDeviceClass *GetDeviceClass (void);
 		bool GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
-		const CItem &GetItem (void);
+		const CItem &GetItem (void) const;
 		int GetItemCharges (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
@@ -579,13 +582,13 @@ class CItemCtx
         inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 
 	private:
-		const CItem *GetItemPointer (void);
+		const CItem *GetItemPointer (void) const;
 
-		const CItem *m_pItem = NULL;			//	The item
-		CItem m_Item;							//	A cached item, if we need to cons one up.
+		mutable const CItem *m_pItem = NULL;	//	The item
+		mutable CItem m_Item;					//	A cached item, if we need to cons one up.
 		CSpaceObject *m_pSource = NULL;			//	Where the item is installed (may be NULL)
 		const CShipClass *m_pSourceShipClass = NULL;	//	For some ship class functions
-		CInstalledArmor *m_pArmor = NULL;		//	Installation structure (may be NULL)
+		mutable CInstalledArmor *m_pArmor = NULL;		//	Installation structure (may be NULL)
 		CInstalledDevice *m_pDevice = NULL;		//	Installation structure (may be NULL)
 
         CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
@@ -622,7 +625,7 @@ class CItemTypeProbabilityTable
 		inline void DeleteAll (void) { m_Table.DeleteAll(); }
 		inline int GetCount (void) const { return m_Table.GetCount(); }
 		inline Metric GetProbability (int iIndex) const { return m_Table[iIndex]; }
-		inline Metric GetProbability (CItemType *pType) const { Metric *pProb = m_Table.GetAt(pType); return (pProb ? *pProb : 0.0); }
+		inline Metric GetProbability (CItemType *pType) const { const Metric *pProb = m_Table.GetAt(pType); return (pProb ? *pProb : 0.0); }
 		inline CItemType *GetType (int iIndex) const { return m_Table.GetKey(iIndex); }
 		void Scale (Metric rProbability);
 		void Union (CItemType *pType, Metric rProbability = 1.0);

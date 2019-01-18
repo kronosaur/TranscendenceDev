@@ -191,10 +191,10 @@ class CArtifactMessagePainter
 			};
 
 
-		void PaintBlinkIn (CG32bitImage &Dest, SEntry &Entry) const;
-		void PaintFadeOut (CG32bitImage &Dest, SEntry &Entry) const;
-		void PaintNormal (CG32bitImage &Dest, SEntry &Entry) const;
-		void PaintTTYIn (CG32bitImage &Dest, SEntry &Entry) const;
+		void PaintBlinkIn (CG32bitImage &Dest, const SEntry &Entry) const;
+		void PaintFadeOut (CG32bitImage &Dest, const SEntry &Entry) const;
+		void PaintNormal (CG32bitImage &Dest, const SEntry &Entry) const;
+		void PaintTTYIn (CG32bitImage &Dest, const SEntry &Entry) const;
 		void UpdateNextState (SEntry &Entry) const;
 
 		const CVisualPalette &m_VI;

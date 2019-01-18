@@ -139,7 +139,7 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-int CArmorLimits::CalcArmorMass (CItemCtx &ArmorItem) const
+int CArmorLimits::CalcArmorMass (const CItemCtx &ArmorItem) const
 
 //	CalcArmorMass
 //
@@ -701,7 +701,7 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 		}
 	}
 
-bool CArmorLimits::FindArmorLimits (CItemCtx &ItemCtx, const SArmorLimits **retpLimits, bool *retbClassFound) const
+bool CArmorLimits::FindArmorLimits (const CItemCtx &ItemCtx, const SArmorLimits **retpLimits, bool *retbClassFound) const
 
 //	FindArmorLimits
 //

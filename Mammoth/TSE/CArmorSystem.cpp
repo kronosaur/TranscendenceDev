@@ -112,7 +112,7 @@ bool CArmorSystem::IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDama
 
 	for (i = 0; i < m_Segments.GetCount(); i++)
 		{
-		CInstalledArmor &Segment = m_Segments[i];
+		const CInstalledArmor &Segment = m_Segments[i];
 		if (!Segment.GetClass()->IsImmune(CItemCtx(pObj, &Segment), iSpecialDamage))
 			return false;
 		}

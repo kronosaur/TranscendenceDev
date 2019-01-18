@@ -117,8 +117,8 @@ void CAniImageFill::Fill (SAniPaintCtx &Ctx, int x, int y, const TArray<SSimpleR
 	if (m_pImage == NULL)
 		return;
 
-	SSimpleRasterLine *pLine = &Lines[0];
-	SSimpleRasterLine *pLineEnd = pLine + Lines.GetCount();
+	const SSimpleRasterLine *pLine = &Lines[0];
+	const SSimpleRasterLine *pLineEnd = pLine + Lines.GetCount();
 
 	while (pLine < pLineEnd)
 		{

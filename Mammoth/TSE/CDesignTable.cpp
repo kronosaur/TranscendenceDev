@@ -82,7 +82,7 @@ CDesignType *CDesignTable::FindByUNID (DWORD dwUNID) const
 //	Returns a pointer to the given entry or NULL
 
 	{
-	CDesignType **pObj = m_Table.GetAt(dwUNID);
+	CDesignType * const *pObj = m_Table.GetAt(dwUNID);
 	return (pObj ? *pObj : NULL);
 	}
 

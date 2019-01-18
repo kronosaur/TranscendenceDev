@@ -194,7 +194,7 @@ class CGroupOfDeviceGenerators : public IDeviceGenerator
 			int iMaxCount;
 			};
 
-		SSlotDesc *FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const;
+		const SSlotDesc *FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const;
 
 		DiceRange m_Count;
 
@@ -1284,7 +1284,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (const CDeviceDescList &DescList,
 	return false;
 	}
 
-CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const
+const CGroupOfDeviceGenerators::SSlotDesc *CGroupOfDeviceGenerators::FindSlotDesc (CSpaceObject *pObj, const CItem &Item) const
 
 //	FindSlotDesc
 //

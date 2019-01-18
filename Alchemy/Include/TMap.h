@@ -246,7 +246,8 @@ template <class KEY, class VALUE> class TSortMap
 	public:
 		TSortMap (ESortOptions iOrder = AscendingSort) : m_iOrder(iOrder) { }
 
-		inline VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
+		inline const VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
+		inline VALUE &operator [] (int iIndex) { return GetValue(iIndex); }
 
 		TSortMap<KEY, VALUE> &operator= (const TSortMap<KEY, VALUE> &Obj)
 			{
@@ -334,7 +335,16 @@ template <class KEY, class VALUE> class TSortMap
 			return false;
 			}
 
-		VALUE *GetAt (const KEY &key) const
+		const VALUE *GetAt (const KEY &key) const
+			{
+			int iPos;
+			if (!FindPos(key, &iPos))
+				return NULL;
+
+			return &m_Array[m_Index[iPos]].theValue;
+			}
+
+		VALUE *GetAt (const KEY &key)
 			{
 			int iPos;
 			if (!FindPos(key, &iPos))
@@ -353,7 +363,12 @@ template <class KEY, class VALUE> class TSortMap
 			return m_Array[m_Index[iIndex]].theKey;
 			}
 
-		VALUE &GetValue (int iIndex) const
+		const VALUE &GetValue (int iIndex) const
+			{
+			return m_Array[m_Index[iIndex]].theValue;
+			}
+
+		VALUE &GetValue (int iIndex)
 			{
 			return m_Array[m_Index[iIndex]].theValue;
 			}
@@ -853,7 +868,7 @@ template <class VALUE> class TProbabilityMap
 
 		int GetChanceByValue (const VALUE &ToFind) const
 			{
-			int *pChance = m_Table.GetAt(ToFind);
+			int const *pChance = m_Table.GetAt(ToFind);
 			if (pChance == NULL)
 				return 0;
 

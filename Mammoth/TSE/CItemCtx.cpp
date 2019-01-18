@@ -33,7 +33,7 @@ void CItemCtx::ClearItemCache (void)
 		m_pItem = NULL;
 	}
 
-ICCItem *CItemCtx::CreateItemVariable(CCodeChain &CC)
+ICCItem *CItemCtx::CreateItemVariable (CCodeChain &CC)
 
 //	CreateItemVariable
 //
@@ -47,7 +47,7 @@ ICCItem *CItemCtx::CreateItemVariable(CCodeChain &CC)
 	return CreateListFromItem(CC, *pItem);
 	}
 
-CInstalledArmor *CItemCtx::GetArmor(void)
+CInstalledArmor *CItemCtx::GetArmor (void) const
 
 //	GetArmor
 //
@@ -79,7 +79,7 @@ CInstalledArmor *CItemCtx::GetArmor(void)
 	return NULL;
 	}
 
-CArmorClass *CItemCtx::GetArmorClass(void)
+CArmorClass *CItemCtx::GetArmorClass (void) const
 
 //	GetArmorClass
 //
@@ -105,7 +105,7 @@ CArmorClass *CItemCtx::GetArmorClass(void)
 	return NULL;
 	}
 
-CInstalledDevice *CItemCtx::GetDevice(void)
+CInstalledDevice *CItemCtx::GetDevice (void)
 
 //	GetDevice
 //
@@ -135,7 +135,7 @@ CInstalledDevice *CItemCtx::GetDevice(void)
 	return NULL;
 	}
 
-CDeviceClass *CItemCtx::GetDeviceClass(void)
+CDeviceClass *CItemCtx::GetDeviceClass (void)
 
 //	GetDeviceClass
 //
@@ -227,7 +227,7 @@ TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 	return m_pEnhancements;
 	}
 
-const CItem &CItemCtx::GetItem (void)
+const CItem &CItemCtx::GetItem (void) const
 
 //	GetItem
 //
@@ -270,7 +270,7 @@ int CItemCtx::GetItemCharges (void)
 	return Item.GetCharges();
 	}
 
-const CItem *CItemCtx::GetItemPointer(void)
+const CItem *CItemCtx::GetItemPointer(void) const
 
 //	GetItemPointer
 //

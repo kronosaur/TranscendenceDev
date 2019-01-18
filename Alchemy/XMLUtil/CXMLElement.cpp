@@ -240,7 +240,7 @@ bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) cons
 //	Otherwise, returns FALSE
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return false;
 
@@ -256,7 +256,7 @@ bool CXMLElement::FindAttributeDouble (const CString &sName, double *retrValue) 
 //	Finds an attribute.
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return false;
 
@@ -273,7 +273,7 @@ bool CXMLElement::FindAttributeInteger (const CString &sName, int *retiValue) co
 //	Otherwise, returns FALSE
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return false;
 
@@ -289,7 +289,7 @@ CString CXMLElement::GetAttribute (const CString &sName) const
 //	Returns the attribute
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return NULL_STR;
 
@@ -303,7 +303,7 @@ bool CXMLElement::GetAttributeBool (const CString &sName) const
 //	Returns TRUE or FALSE for the attribute
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return false;
 
@@ -515,7 +515,7 @@ int CXMLElement::GetAttributeTriState (const CString &sName) const
 //	1: Attribute is found and is TRUE.
 
 	{
-	CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
+	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
 	if (pValue == NULL)
 		return -1;
 

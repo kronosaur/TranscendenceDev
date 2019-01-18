@@ -201,7 +201,7 @@ IAnimatron *CReanimator::GetElement (const CString &sID) const
 
 	for (i = 0; i < m_Library.GetCount(); i++)
 		{
-		SPerformance *pPerf = &m_Library[i];
+		const SPerformance *pPerf = &m_Library[i];
 		if (pPerf->iFrame != -1)
 			{
 			IAnimatron *pElement;

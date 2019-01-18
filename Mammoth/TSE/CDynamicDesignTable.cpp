@@ -300,7 +300,7 @@ void CDynamicDesignTable::WriteToStream (IWriteStream *pStream)
 
 	for (i = 0; i < GetCount(); i++)
 		{
-		SEntry *pEntry = GetEntry(i);
+		const SEntry *pEntry = GetEntry(i);
 
 		pStream->Write((char *)&pEntry->dwUNID, sizeof(DWORD));
 

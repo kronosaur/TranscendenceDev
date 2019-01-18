@@ -167,7 +167,7 @@ int CStationEncounterCtx::GetCountInSystem (CSystem *pSystem, CStationType *pSta
 	if (pNode == NULL)
 		return 0;
 
-	SEncounterStats *pCount = m_ByNode.GetAt(pNode->GetID());
+	const SEncounterStats *pCount = m_ByNode.GetAt(pNode->GetID());
 	if (pCount == NULL)
 		return 0;
 

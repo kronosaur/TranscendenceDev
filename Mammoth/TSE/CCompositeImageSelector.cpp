@@ -20,8 +20,8 @@ bool CCompositeImageSelector::operator== (const CCompositeImageSelector &Val) co
 
 	for (i = 0; i < m_Sel.GetCount(); i++)
 		{
-		SEntry *pThis = &m_Sel[i];
-		SEntry *pVal = &Val.m_Sel[i];
+		const SEntry *pThis = &m_Sel[i];
+		const SEntry *pVal = &Val.m_Sel[i];
 
 		if (pThis->dwID != pVal->dwID)
 			return false;
@@ -77,7 +77,7 @@ void CCompositeImageSelector::AddVariant (DWORD dwID, int iVariant)
 	pEntry->dwExtra = 0;
 	}
 
-CCompositeImageSelector::SEntry *CCompositeImageSelector::FindEntry (DWORD dwID) const
+const CCompositeImageSelector::SEntry *CCompositeImageSelector::FindEntry (DWORD dwID) const
 
 //	FindEntry
 //
@@ -129,7 +129,7 @@ CItemType *CCompositeImageSelector::GetFlotsamType (DWORD dwID) const
 //	Returns the flotsam type
 
 	{
-	SEntry *pEntry = FindEntry(dwID);
+	const SEntry *pEntry = FindEntry(dwID);
 	if (pEntry == NULL || GetEntryType(*pEntry) != typeItemType)
 		return NULL;
 
@@ -172,7 +172,7 @@ CShipClass *CCompositeImageSelector::GetShipwreckClass (DWORD dwID) const
 //	Returns the shipwreck class for the given selection
 
 	{
-	SEntry *pEntry = FindEntry(dwID);
+	const SEntry *pEntry = FindEntry(dwID);
 	if (pEntry == NULL || GetEntryType(*pEntry) != typeShipClass)
 		return NULL;
 
@@ -186,7 +186,7 @@ CCompositeImageSelector::ETypes CCompositeImageSelector::GetType (DWORD dwID) co
 //	Returns the type of selector
 
 	{
-	SEntry *pEntry = FindEntry(dwID);
+	const SEntry *pEntry = FindEntry(dwID);
 	if (pEntry == NULL)
 		return typeNone;
 
@@ -200,7 +200,7 @@ int CCompositeImageSelector::GetVariant (DWORD dwID) const
 //	Returns the variant for the given selection
 
 	{
-	SEntry *pEntry = FindEntry(dwID);
+	const SEntry *pEntry = FindEntry(dwID);
 	if (pEntry == NULL)
 		return 0;
 

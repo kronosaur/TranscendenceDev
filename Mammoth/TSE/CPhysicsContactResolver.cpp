@@ -57,7 +57,7 @@ void CPhysicsContactResolver::BeginUpdate (void)
 	m_Contacts.GrowToFit(MAX_CONTACTS);
 	}
 
-CPhysicsContact *CPhysicsContactResolver::FindContactToResolve (void) const
+CPhysicsContact *CPhysicsContactResolver::FindContactToResolve (void)
 
 //	FindContactToResolve
 //

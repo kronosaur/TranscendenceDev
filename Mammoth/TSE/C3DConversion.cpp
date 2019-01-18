@@ -408,7 +408,7 @@ void C3DConversion::GetCoord (int iRotation, int *retx, int *rety) const
 		return;
 		}
 
-	SEntry *pEntry = &m_Cache[Angle2Direction(iRotation, m_Cache.GetCount())];
+	const SEntry *pEntry = &m_Cache[Angle2Direction(iRotation, m_Cache.GetCount())];
 	*retx = pEntry->x;
 	*rety = pEntry->y;
 	}
@@ -427,7 +427,7 @@ void C3DConversion::GetCoordFromDir (int iDirection, int *retx, int *rety) const
 		return;
 		}
 
-	SEntry *pEntry = &m_Cache[iDirection];
+	const SEntry *pEntry = &m_Cache[iDirection];
 	*retx = pEntry->x;
 	*rety = pEntry->y;
 	}

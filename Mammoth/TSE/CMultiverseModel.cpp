@@ -251,7 +251,7 @@ bool CMultiverseModel::GetResourceFileRefs (const TArray<CString> &Filespecs, TA
 
 		//	Look up the resource
 
-		SResourceDesc *pDesc = m_Resources.GetAt(sFilename);
+		const SResourceDesc *pDesc = m_Resources.GetAt(sFilename);
 		if (pDesc == NULL)
 			{
 			::kernelDebugLogPattern("Unable to find TDB resource file: %s.", sFilename);

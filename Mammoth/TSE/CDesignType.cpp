@@ -2952,7 +2952,7 @@ ALERROR CEffectCreatorRef::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator)
+IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator) const
 
 //	CreatePainter
 //

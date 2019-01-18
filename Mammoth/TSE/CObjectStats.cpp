@@ -14,7 +14,7 @@ const CObjectStats::SEntry &CObjectStats::GetEntry (DWORD dwObjID) const
 //	Get the entry for the given object ID
 
 	{
-	SEntry *pEntry = m_Stats.GetAt(dwObjID);
+	const SEntry *pEntry = m_Stats.GetAt(dwObjID);
 	if (pEntry == NULL)
 		return m_Null;
 

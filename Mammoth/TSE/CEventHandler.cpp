@@ -112,7 +112,7 @@ bool CEventHandler::FindEvent (const CString &sEvent, ICCItem **retpCode) const
 //	Finds the event handler by name
 
 	{
-	ICCItem **pCode = m_Handlers.GetAt(sEvent);
+	ICCItem * const *pCode = m_Handlers.GetAt(sEvent);
 	if (pCode)
 		{
 		if (retpCode)

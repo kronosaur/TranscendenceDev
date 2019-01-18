@@ -134,7 +134,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 			int iIndex = (int)(BYTE)chChar - g_iStartChar;
 			iIndex = max(0, iIndex);
 
-			CharMetrics &Metrics = m_Metrics[iIndex];
+			const CharMetrics &Metrics = m_Metrics[iIndex];
 
 			//	Does the character fit in the line?
 
@@ -513,7 +513,7 @@ void CG16bitFont::DrawText (CG16bitImage &Dest,
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics &Metrics = m_Metrics[iIndex];
+		const CharMetrics &Metrics = m_Metrics[iIndex];
 
 		//	Paint
 
@@ -627,7 +627,7 @@ void CG16bitFont::DrawText (CG32bitImage &Dest,
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics &Metrics = m_Metrics[iIndex];
+		const CharMetrics &Metrics = m_Metrics[iIndex];
 
 		//	Paint
 
@@ -936,7 +936,7 @@ const CG16bitImage &CG16bitFont::GetCharacterImage (char chChar, int *retx, int 
 	int iIndex = (int)(BYTE)(chChar) - g_iStartChar;
 	iIndex = Max(0, iIndex);
 
-	CharMetrics &Metrics = m_Metrics[iIndex];
+	const CharMetrics &Metrics = m_Metrics[iIndex];
 
 	//	Paint
 
@@ -1003,7 +1003,7 @@ int CG16bitFont::MeasureText (const CString &sText, int *retcyHeight, bool bAlwa
 		int iIndex = (int)(BYTE)(*pPos) - g_iStartChar;
 		iIndex = max(0, iIndex);
 
-		CharMetrics &Metrics = m_Metrics[iIndex];
+		const CharMetrics &Metrics = m_Metrics[iIndex];
 
 		pPos++;
 

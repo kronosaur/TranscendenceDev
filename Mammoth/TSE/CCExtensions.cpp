@@ -515,6 +515,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_ADD_TIMER             17
 #define FN_DESIGN_ADD_RECURRING_TIMER   18
 #define FN_DESIGN_CANCEL_TIMER          19
+#define FN_DESIGN_GET_NAME				20
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3363,6 +3364,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"",
 			"is",	0,	},
 
+		{	"typGetName",					fnDesignGet,		FN_DESIGN_GET_NAME,
+			"(typGetName unid [flags]) -> name",
+			"i*",	0,	},
+
 		{	"typGetProperty",				fnDesignGet,		FN_DESIGN_GET_PROPERTY,
 			"(typGetProperty unid property) -> value\n\n"
 			
@@ -4410,6 +4415,17 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_DESIGN_GET_GLOBAL_DATA:
 			return pType->GetGlobalData(pArgs->GetElement(1)->GetStringValue())->Reference();
+
+		case FN_DESIGN_GET_NAME:
+			{
+			DWORD dwFlags;
+			if (pArgs->GetCount() > 1)
+				dwFlags = pCtx->AsNameFlags(pArgs->GetElement(1));
+			else
+				dwFlags = 0;
+
+			return pCC->CreateString(pType->GetNounPhrase(dwFlags));
+			}
 
 		case FN_DESIGN_GET_PROPERTY:
 			return pType->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue());
@@ -9373,7 +9389,7 @@ ICCItem *fnShipClass (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pOptions = pArgs->GetElement(1);
 				if (pOptions->IsSymbolTable())
 					{
-					iRotation = pOptions->GetIntegerAt(FIELD_ROTATION);
+					iRotation = pClass->Angle2Direction(pOptions->GetIntegerAt(FIELD_ROTATION));
 					CString sType = pOptions->GetStringAt(FIELD_TYPE);
 					if (strEquals(sType, TYPE_SCHEMATIC))
 						bHeroImage = true;

@@ -25,7 +25,7 @@ void CArmorMassDefinitions::Append (const CArmorMassDefinitions &Src)
 	InvalidateIDIndex();
 	}
 
-CArmorMassDefinitions::SArmorMassEntry *CArmorMassDefinitions::FindMassEntryActual (const CItem &Item) const
+CArmorMassDefinitions::SArmorMassEntry *CArmorMassDefinitions::FindMassEntryActual (const CItem &Item)
 
 //	FindMassEntryActual
 //
@@ -41,7 +41,7 @@ CArmorMassDefinitions::SArmorMassEntry *CArmorMassDefinitions::FindMassEntryActu
 		if (m_Definitions.GetKey(i).IsBlank())
 			continue;
 
-		const SArmorMassDefinition &Def = m_Definitions[i];
+		SArmorMassDefinition &Def = m_Definitions[i];
 		if (!Item.MatchesCriteria(Def.Criteria))
 			continue;
 
@@ -52,7 +52,7 @@ CArmorMassDefinitions::SArmorMassEntry *CArmorMassDefinitions::FindMassEntryActu
 
 	//	If not found, look for the default definition
 
-	const SArmorMassDefinition *pDef = m_Definitions.GetAt(NULL_STR);
+	SArmorMassDefinition *pDef = m_Definitions.GetAt(NULL_STR);
 	if (pDef == NULL)
 		return NULL;
 
@@ -78,7 +78,7 @@ bool CArmorMassDefinitions::FindPreviousMassClass (const CString &sID, CString *
 
 	//	Now find the definition where this came from
 
-	SArmorMassDefinition *pDef = m_Definitions.GetAt(pMax->sDefinition);
+	const SArmorMassDefinition *pDef = m_Definitions.GetAt(pMax->sDefinition);
 	if (pDef == NULL)
 		return false;
 
@@ -137,7 +137,7 @@ Metric CArmorMassDefinitions::GetFrequencyMax (const CString &sID) const
 
 	//	Now find the definition where this came from
 
-	SArmorMassDefinition *pDef = m_Definitions.GetAt(pMax->sDefinition);
+	const SArmorMassDefinition *pDef = m_Definitions.GetAt(pMax->sDefinition);
 	if (pDef == NULL)
 		return 0.0;
 

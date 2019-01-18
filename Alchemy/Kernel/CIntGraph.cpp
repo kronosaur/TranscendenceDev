@@ -54,7 +54,7 @@ void CIntGraph::AddGraph (CIntGraph &Source)
 		SNode *pNode = Source.GetNode(i);
 		if (!NodeIsFree(pNode))
 			{
-			SConnection *pConnection = Source.GetForwardConnection(pNode);
+			const SConnection *pConnection = Source.GetForwardConnection(pNode);
 			while (pConnection)
 				{
 				Connect(SourceToDest[i], SourceToDest[pConnection->iTo]);
@@ -433,8 +433,8 @@ int CIntGraph::GetNodeConnections (DWORD dwID, TArray<DWORD> *retConnections) co
 	{
 	ASSERT(dwID >= 0 && dwID < (DWORD)m_Nodes.GetCount());
 
-	SNode *pNode = GetNode(dwID);
-	SConnection *pConnection = GetForwardConnection(pNode);
+	const SNode *pNode = GetNode(dwID);
+	const SConnection *pConnection = GetForwardConnection(pNode);
 	while (pConnection)
 		{
 		retConnections->Insert(pConnection->iTo);
@@ -476,8 +476,8 @@ int CIntGraph::GetNodeForwardConnections (DWORD dwID, TArray<DWORD> *retConnecti
 	{
 	ASSERT(dwID >= 0 && dwID < (DWORD)m_Nodes.GetCount());
 
-	SNode *pNode = GetNode(dwID);
-	SConnection *pConnection = GetForwardConnection(pNode);
+	const SNode *pNode = GetNode(dwID);
+	const SConnection *pConnection = GetForwardConnection(pNode);
 	while (pConnection)
 		{
 		retConnections->Insert(pConnection->iTo);

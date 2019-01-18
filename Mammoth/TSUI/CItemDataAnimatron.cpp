@@ -306,7 +306,7 @@ int CItemDataAnimatron::MeasureDamageAdj (const CG16bitFont &Font, const TArray<
 	int cx = 0;
 	for (i = 0; i < DamageAdj.GetCount(); i++)
 		{
-		SDamageAdjCell *pCell = &DamageAdj[i];
+		const SDamageAdjCell *pCell = &DamageAdj[i];
 
 		//	Spacing, if necessary
 

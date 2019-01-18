@@ -1980,7 +1980,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return NULL;
 	}
 
-const CString &CArmorClass::GetMassClass (CItemCtx &ItemCtx) const
+const CString &CArmorClass::GetMassClass (const CItemCtx &ItemCtx) const
 
 //	GetMassClass
 //

@@ -364,7 +364,7 @@ class CCompositeImageSelector
 			DWORD dwExtra;					//	Either 0 or a pointer to CItemType or CShipClass.
 			};
 
-		SEntry *FindEntry (DWORD dwID) const;
+		const SEntry *FindEntry (DWORD dwID) const;
 		ETypes GetEntryType (const SEntry &Entry) const;
         DWORD GetHash (const SEntry &Entry) const;
 

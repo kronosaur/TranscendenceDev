@@ -81,7 +81,7 @@ void CArtifactMessagePainter::Paint (CG32bitImage &Dest) const
 		}
 	}
 
-void CArtifactMessagePainter::PaintBlinkIn (CG32bitImage &Dest, SEntry &Entry) const
+void CArtifactMessagePainter::PaintBlinkIn (CG32bitImage &Dest, const SEntry &Entry) const
 
 //	PaintBlinkIn
 //
@@ -90,7 +90,7 @@ void CArtifactMessagePainter::PaintBlinkIn (CG32bitImage &Dest, SEntry &Entry) c
 	{
 	}
 
-void CArtifactMessagePainter::PaintFadeOut (CG32bitImage &Dest, SEntry &Entry) const
+void CArtifactMessagePainter::PaintFadeOut (CG32bitImage &Dest, const SEntry &Entry) const
 
 //	PaintFadeOut
 //
@@ -99,7 +99,7 @@ void CArtifactMessagePainter::PaintFadeOut (CG32bitImage &Dest, SEntry &Entry) c
 	{
 	}
 
-void CArtifactMessagePainter::PaintNormal (CG32bitImage &Dest, SEntry &Entry) const
+void CArtifactMessagePainter::PaintNormal (CG32bitImage &Dest, const SEntry &Entry) const
 
 //	PaintNormal
 //
@@ -109,7 +109,7 @@ void CArtifactMessagePainter::PaintNormal (CG32bitImage &Dest, SEntry &Entry) co
 	Entry.pFont->DrawText(Dest, Entry.x, Entry.y, Entry.rgbText, Entry.sText);
 	}
 
-void CArtifactMessagePainter::PaintTTYIn (CG32bitImage &Dest, SEntry &Entry) const
+void CArtifactMessagePainter::PaintTTYIn (CG32bitImage &Dest, const SEntry &Entry) const
 
 //	PaintTTYIn
 //

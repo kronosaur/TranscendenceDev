@@ -29,10 +29,10 @@ void CExtensionListMap::GetList (DWORD dwAdventure, bool bDebugMode, TArray<DWOR
 
 	retList->DeleteAll();
 
-	SEntry *pEntry = m_Map.GetAt(dwAdventure);
+	const SEntry *pEntry = m_Map.GetAt(dwAdventure);
 	if (pEntry)
 		{
-		TSortMap<DWORD, bool> *pSource = (bDebugMode ? &pEntry->DebugList : &pEntry->List);
+		const TSortMap<DWORD, bool> *pSource = (bDebugMode ? &pEntry->DebugList : &pEntry->List);
 
 		//	Loop over all extensions and add the ones that are enabled.
 
@@ -53,16 +53,16 @@ void CExtensionListMap::GetList (DWORD dwAdventure, const TArray<CExtension *> &
 
 	retList->DeleteAll();
 
-	SEntry *pEntry = m_Map.GetAt(dwAdventure);
+	const SEntry *pEntry = m_Map.GetAt(dwAdventure);
 	if (pEntry)
 		{
-		TSortMap<DWORD, bool> *pSource = (bDebugMode ? &pEntry->DebugList : &pEntry->List);
+		const TSortMap<DWORD, bool> *pSource = (bDebugMode ? &pEntry->DebugList : &pEntry->List);
 
 		//	Look up each available extension in our list
 
 		for (i = 0; i < Available.GetCount(); i++)
 			{
-			bool *pEnabled = pSource->GetAt(Available[i]->GetUNID());
+			bool const *pEnabled = pSource->GetAt(Available[i]->GetUNID());
 
 			//	If we don't know about this extension, then it means that it is 
 			//	a new extension, so we enabled it by default unless we're in 

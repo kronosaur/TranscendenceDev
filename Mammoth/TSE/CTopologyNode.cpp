@@ -593,7 +593,7 @@ CTopologyNode *CTopologyNode::GetStargateDest (int iIndex, CString *retsEntryPoi
 //	Returns the destination node for the given stargate
 
 	{
-	SStargateEntry *pDesc = &m_NamedGates[iIndex];
+	const SStargateEntry *pDesc = &m_NamedGates[iIndex];
 	if (retsEntryPoint)
 		*retsEntryPoint = pDesc->sDestEntryPoint;
 
@@ -612,7 +612,7 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
+	const SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		return ICCItemPtr(ICCItem::Nil);
 
