@@ -1544,6 +1544,37 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_HEX:
+			{
+			ICCItem *pValue = pArgs->GetElement(0);
+			if (pValue->IsIdentifier())
+				{
+				CString sValue = pValue->GetStringValue();
+				char *pEnd;
+				bool bFailed;
+				int iValue = strParseIntOfBase(sValue.GetASCIIZPointer(), 16, 0, &pEnd, &bFailed);
+				if (bFailed || *pEnd != '\0')
+					return pCC->CreateNil();
+
+				return pCC->CreateInteger(iValue);
+				}
+			else
+				{
+				CString sPattern;
+
+				ICCItem *pFieldSize = pArgs->GetElement(1);
+				if (pFieldSize && !pFieldSize->IsNil())
+					{
+					int iFieldSize = Min(Max(0, pFieldSize->GetIntegerValue()), 100);
+					sPattern = strPatternSubst(CONSTLIT("%%0%dX"), iFieldSize);
+					}
+				else
+					sPattern = CONSTLIT("%X");
+
+				return pCC->CreateString(strPatternSubst(sPattern, pValue->GetIntegerValue()));
+				}
+			}
+
 		case FN_ITEM:
 			{
 			ICCItem *pList = pArgs->GetElement(0);

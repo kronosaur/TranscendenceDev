@@ -193,6 +193,11 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"(help 'function-name) -> help on function-name\n",
 			"*",	0,	},
 
+		{	"hex",				fnItem,			FN_HEX,
+			"(hex x [fieldSize]) -> hex-string\n"
+			"(hex hex-string) -> value",
+			"v*",	0,	},
+
 		{	"if",				fnIf,			0,						"(if condition exp1 [exp2]) -> exp1 if condition True, otherwise exp2",		NULL,	0,	},
 		{	"int",				fnItemInfo,		FN_ITEMINFO_ASINT,		"(int x) -> x as an integer",						NULL,	0,	},
 		{	"double",			fnItemInfo,		FN_ITEMINFO_ASDOUBLE,	"(double x) -> x as a double",						NULL,	0,  },
