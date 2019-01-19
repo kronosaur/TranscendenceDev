@@ -361,7 +361,7 @@
 	<!-- Slaver, Wind -->
 
 	<ShipClass UNID="&scWindSlaver;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Wind slaver"
 			type=				""
 			defaultSovereign=	"&svSung;"
@@ -415,7 +415,7 @@
 	<!-- Slaver, Steel -->
 
 	<ShipClass UNID="&scSteelSlaver;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Steel slaver"
 			type=				""
 			defaultSovereign=	"&svSung;"
@@ -477,7 +477,7 @@
 	<!-- Slaver, Earth -->
 
 	<ShipClass UNID="&scEarthSlaver;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Earth Slaver"
 			type=				""
 			defaultSovereign=	"&svSung;"
@@ -575,7 +575,7 @@
 	-->
 
 	<ShipClass UNID="&scCarrierEarthSlaver;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Earth Slaver"
 			type=				""
 
@@ -778,7 +778,7 @@
 	<!-- Slaver, Dragon -->
 
 	<ShipClass UNID="&scDragonSlaver;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Dragon Slaver"
 			type=				""
 			defaultSovereign=	"&svSung;"
@@ -880,7 +880,7 @@
 	<!-- Sung Transport -->
 
 	<ShipClass UNID="&scSungTransport;"
-			manufacturer=		"Sung Slavers"
+			manufacturer=		"Sung Empire"
 			class=				"Sung transport"
 			type=				""
 			defaultSovereign=	"&svSung;"

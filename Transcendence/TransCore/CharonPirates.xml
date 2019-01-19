@@ -619,7 +619,7 @@
 	<!-- Level 1: Corsair-class Gunship -->
 
 	<ShipClass UNID="&scCorsair;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Corsair"
 			type=				"gunship"
 			defaultSovereign=	"&svPirates;"
@@ -667,7 +667,7 @@
 	<!-- Level 3: Corsair II-class Gunship -->
 
 	<ShipClass UNID="&scCorsair-II;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Corsair II"
 			type=				"gunship"
 			defaultSovereign=	"&svPirates;"
@@ -730,7 +730,7 @@
 	<!-- Level 3: Drake-class Missileship -->
 
 	<ShipClass UNID="&scDrake;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Drake"
 			type=				"missileship"
 			defaultSovereign=	"&svPirates;"
@@ -839,7 +839,7 @@
 	<!-- Level 2: Viking-class Gunship -->
 
 	<ShipClass UNID="&scViking;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Viking"
 			type=				"gunship"
 			defaultSovereign=	"&svPirates;"
@@ -916,7 +916,7 @@
 	<!-- Level 4: Viking II-class Gunship -->
 
 	<ShipClass UNID="&scViking-II;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Viking II"
 			type=				"gunship"
 			defaultSovereign=	"&svPirates;"
@@ -993,7 +993,7 @@
 	<!-- Level 4: Charon Frigate -->
 
 	<ShipClass UNID="&scCharonFrigateStock;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Charon frigate"
 			type=				""
 			defaultSovereign=	"&svPirates;"
@@ -1154,7 +1154,7 @@
 	-->
 
 	<ShipClass UNID="&scCharonFrigateRaider;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Charon frigate"
 			type=				""
 			defaultSovereign=	"&svPirates;"

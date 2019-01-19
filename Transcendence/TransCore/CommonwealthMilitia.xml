@@ -240,6 +240,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsRPGDialog; (objTranslate gSource 'militia.info))
+							</Action>
+
 							<Action id="actionCommandCenter" default="1">
 								(block (
 									(rank (typGetData &unidCommonwealthMilitia; 'rank))
@@ -269,13 +273,6 @@
 									)
 							</Action>
 
-							<Action id="actionOfficersClub">
-								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
-									(scrShowPane gScreen "OfficersClub")
-									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoOfficersClubAccess })
-									)
-							</Action>
-
 							<Action id="actionDockServices">
 								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
 									(rpgDockServices gPlayerShip {
@@ -292,6 +289,13 @@
 										checkMilitaryID: True
 										})
 									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoShipBrokerAccess })
+									)
+							</Action>
+
+							<Action id="actionOfficersClub">
+								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
+									(scrShowPane gScreen "OfficersClub")
+									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoOfficersClubAccess })
 									)
 							</Action>
 
@@ -357,7 +361,6 @@
 					</OfficersClub>
 				</Panes>
 			</Main>
-
 		</DockScreens>
 
 		<!-- Events and Data -->
@@ -429,6 +432,7 @@
 			<Text id="actionCommandCenter">[C]ommand Center</Text>
 			<Text id="actionOfficersClub">[O]fficers' Club</Text>
 			<Text id="actionBar">[S]it at the Bar</Text>
+			<Text id="actionInformation">[I]nformation</Text>
 
 			<Text id="rumor.commonwealthMilitiaOC.1">
 				A man with a prosthetic arm sits next to you:
@@ -585,8 +589,243 @@
 			<Text id="descBarBlacklisted">"You spend 5 credits on drinks, but everyone avoids you. You feel out of place here."</Text>
 			<Text id="descBarEmpty">"You spend 5 credits on drinks, but there aren't too many people here that you want to talk to."</Text>
 
+			<Text id="descLibraryComputer">
+
+				A set of booths along the wall give you access to a holographic
+				computer system. You sit down at one of them and access the
+				data banks.
+
+			</Text>
+
+			<Text id="militia.info">
+				(list
+					{	id: 'welcome
+						descID: 'textInfo1
+						actions: (list
+							{	labelID: 'actionOurMission			nextPage:'ourMission	}
+							{	labelID: 'actionUngoverned			nextPage:'ungoverned	}
+							{	labelID: 'actionEnemyIntel			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&scMarauderRaidPlatform;	}
+											{	shipClass:&scCorsair-II;	}
+											{	shipClass:&scViking-II;	}
+											{	shipClass:&scBarbary;	}
+											{	shipClass:&scDrake;	}
+											{	shipClass:&scTripoli;	}
+
+											{	shipClass:&scWindSlaver;	}
+											{	shipClass:&scSteelSlaver;	}
+											{	shipClass:&scEarthSlaver;	}
+											{	shipClass:&scSungTransport;	}
+											{	shipClass:&scDragonSlaver;	}
+
+											{	shipClass:&scDwargRaider;	}
+											{	shipClass:&scDwargMaster;	}
+											{	shipClass:&scDwargBehemoth;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionDone				nextPage:'exitScreen	}
+							)
+						}
+					{	id: 'ourMission
+						descID: 'textOurMission1		labelID: 'actionDone	nextPage: 'welcome 
+						}
+					{	id: 'ungoverned
+						descID: 'textUngoverned1		labelID: 'actionDone	nextPage: 'welcome 
+						}
+					)
+			</Text>
+
+			<Text id="textInfo1">
+
+				The Commonwealth Militia has served the people for over three 
+				hundred years.
+
+			</Text>
+			<Text id="actionOurMission">Our [M]ission</Text>
+			<Text id="actionUngoverned">The [U]ngoverned Territories</Text>
+			<Text id="actionEnemyIntel">[E]nemy Intelligence</Text>
+
+			<Text id="textOurMission1">
+			
+				Our mission	is to defend Commonwealth stations from predation 
+				by marauders, outlaws, and slavers.
+
+				The Sung Empire is our primary enemy. Their technological
+				achievements, built on a hideous slave industry, threaten to
+				overwhelm our defenses. But the Commonwealth Militia has always
+				risen to the occasion, and our citizens in the Territories 
+				remain safe.
+
+				Lesser threats are no less important, and the Militia is 
+				committed to safeguarding navigation and trade from piracy
+				and marauders.
+
+			</Text>
+			<Text id="textUngoverned1">
+
+				Beyond St. Katharine's Star, the systems of the Ungoverned
+				Territories are crisscrossed with competing claims. The
+				Commonwealth was the first sovereign to colonize the region,
+				but we were never able to control such a vast area.
+
+				Warlords and empires rise and fall, but the Militia
+				has always kept the chaos at bay. Someday the Commonwealth will
+				grow to displace the lawless sovereigns of the Territories.
+
+				Until then the Militia will keep watch.
+				
+			</Text>
+
+			<!-- Marauder Ships -->
+			
+			<Text id="rpg.shipClassDesc.&scMarauderRaidPlatform;">
+
+				Marauders roam the Ungoverned Territories raiding isolated mines
+				and colonies.
+
+				These raid platforms serve as mobile bases from which to launch
+				attacks. Don't be fooled by their seemingly ad hoc construction;
+				they are heavily armored, and boast a pair of turbolasers.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCorsair-II;">
+				
+				Upgraded Corsairs have killed more Militia members than almost 
+				any	other class. They are cheap enough to be produced in large
+				numbers, but carry the same KM100 missiles used by our Ronins.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scViking-II;">
+				
+				These heavy gunships are the backbone of the marauder fleet. 
+				They are robust enough to handle a few hits, but still fast
+				enough to serve as effective raiders.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scBarbary;">
+				
+				Outlaw engineers at Neptune's Forge designed this deadly gunship
+				specially for raiding. Its EMP cannon can disable ships in an
+				instant, leaving them paralyzed and defenseless.
+
+				Shields can absorb the disabling pulse, but are greatly weakened
+				by it. Some higher level armors are immune to EMP. But if your
+				ship is vulnerable, your best option is to run.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDrake;">
+
+				The common Drake is an underestimated capital ship. Though less
+				capable than a Charon frigate, the Drake is nevertheless a
+				powerful adversary. Its large supply of missiles and heavy armor
+				allow it to hold its ground against all but the strongest
+				gunships.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scTripoli;">
+				
+				The Tripoli class is the deadliest ship in the marauder fleet.
+				More powerful even than a Charon frigate, each of these ships 
+				serves as the command center for the leader of a marauder cell.
+
+			</Text>
+
+			<!-- Sung Slaver Ships -->
+
+			<Text id="rpg.shipClassDesc.&scWindSlaver;">
+
+				Sung Slavers displaced the Huari Empire in the twenty-third
+				century, and their fortresses and citadels have bloomed across
+				the Ungoverned Territories.
+
+				The ubiquitous Wind Slaver is a fast gunship, designed to be
+				produced in large numbers. Each is piloted by a slave encased
+				in a cybernetic coffin, which accounts for its unnatural
+				speed and maneuverability.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scSteelSlaver;">
+
+				Steel Slavers are the heavy gunships of the Sung fleet. They 
+				are crewed by four Sung officers, and often serve as command and
+				control for a Wind Slaver squadron.
+
+				Steel Slavers carry cybernetic equiment (augmented by multiple
+				slave coffins) that can remotely disable weapons on targets by
+				exploiting various software vulnernerabilities.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scEarthSlaver;">
+
+				These massive ships are the biggest threat to the Commonwealth
+				in the Territories. Their axis-aligned supercannon is designed
+				for one purpose alone: to demolish stations.
+
+				The Sung have so far refrained from destroying a station, knowing
+				that it would result in all-out war.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scSungTransport;">
+
+				These sleek transports ply the nav routes of the Ungoverned
+				Territories, no different than the other freighters	that supply
+				the stations of Human Space.
+
+				But whereas other freighters might carry fuel or consumer goods,
+				these transports are likely to be carrying slave coffins.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDragonSlaver;">
+
+				Sung technology easily matches that of the Commonwealth. Nowhere
+				is this clearer than in their development of the Dragon Slaver.
+				This capital ship is equipped with an antimatter cannon&mdash;the
+				ultimate destructive force known to us.
+
+				Fortunately, very few of these ships have been built, and the 
+				cost of deploying them keeps them a rare sight.
+
+			</Text>
+
+			<!-- Dwarg Ships -->
+
+			<Text id="rpg.shipClassDesc.&scDwargRaider;">
+
+				The mysterious Dwarg are an emerging threat in the Ungoverned
+				Territories. Their entire industry is based on genetically-engineered
+				zoanthropes: human beings reduced to animal intellect.
+
+				These raiders are light gunships with zoanthrope pilots.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDwargMaster;">
+
+				Dwarg masters command legions of zoanthropes, who will fight to
+				the death to protect their master.
+				
+				These ships also possess a tracking missile-weapon that can 
+				deliver an EMP pulse to its targets.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDwargBehemoth;">
+
+				These massive ships are heavily armed and armored, but are 
+				nonetheless controlled by a zoanthrope.
+
+			</Text>
+
 			<Text id="core.mapDescMain">
-				"Commonwealth Militia HQ"
+				Commonwealth Militia HQ
 			</Text>
 		</Language>
 	</StationType>

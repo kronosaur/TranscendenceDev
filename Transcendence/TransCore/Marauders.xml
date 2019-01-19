@@ -310,7 +310,7 @@
 	<!-- Barbary-class Gunship -->
 
 	<ShipClass UNID="&scBarbary;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Barbary"
 			type=				"gunship"
 			defaultSovereign=	"&svMarauders;"
@@ -372,9 +372,9 @@
 	<!-- Level 5: Marauder Raid Platform (Stock) -->
 
 	<ShipClass UNID="&scMarauderRaidPlatformStock;"
-			manufacturer=		"Marauder"
-			class=				""
-			type=				"raid platform"
+			manufacturer=		"Neptune's Forge"
+			class=				"Marauder raid platform"
+			type=				""
 			defaultSovereign=	"&svMarauders;"
 
 			attributes=			"marauders"
@@ -456,9 +456,9 @@
 	<!-- Level 5: Marauder Raid Platform -->
 
 	<ShipClass UNID="&scMarauderRaidPlatform;"
-			manufacturer=		"Marauder"
-			class=				""
-			type=				"raid platform"
+			manufacturer=		"Neptune's Forge"
+			class=				"Marauder raid platform"
+			type=				""
 			defaultSovereign=	"&svMarauders;"
 
 			attributes=			"genericClass, marauders"
@@ -517,7 +517,7 @@
 	<!-- Level 7: Tripoli-class Destroyer -->
 
 	<ShipClass UNID="&scTripoli;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Tripoli"
 			type=				"destroyer"
 			defaultSovereign=	"&svMarauders;"

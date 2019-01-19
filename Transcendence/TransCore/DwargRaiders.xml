@@ -339,7 +339,7 @@
 	<!-- Dwarg Raider -->
 
 	<ShipClass UNID="&scDwargRaider;"
-			manufacturer=		""
+			manufacturer=		"Dwarg"
 			class=				"Zoanthrope raider"
 			type=				""
 			defaultSovereign=	"&svDwargRaiders;"
@@ -386,7 +386,7 @@
 	<!-- Dwarg Master -->
 
 	<ShipClass UNID="&scDwargMaster;"
-			manufacturer=		""
+			manufacturer=		"Dwarg"
 			class=				"Dwarg master"
 			type=				""
 			defaultSovereign=	"&svDwargRaiders;"
@@ -441,7 +441,7 @@
 	<!-- Dwarg Behemoth -->
 
 	<ShipClass UNID="&scDwargBehemoth;"
-			manufacturer=		""
+			manufacturer=		"Dwarg"
 			class=				"Zoanthrope behemoth"
 			type=				""
 			defaultSovereign=	"&svDwargRaiders;"
