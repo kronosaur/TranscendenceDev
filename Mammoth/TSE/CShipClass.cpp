@@ -3842,15 +3842,32 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		}
 	else if (strEquals(sProperty, PROPERTY_WEAPON_ITEMS))
 		{
-		ICCItemPtr pResult(ICCItem::List);
+		//	First make a list of all weapons and organize by type
+		//	(so that weapons of the same type are bundled together).
+
+		TSortMap<CString, CItem> Weapons;
 		for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 			{
 			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
 			if (Desc.Item.GetType()->GetCategory() == itemcatWeapon)
 				{
-				ICCItemPtr pWeapon(CreateListFromItem(CC, Desc.Item));
-				pResult->Append(CC, pWeapon);
+				bool bNew;
+				CString sSort = strPatternSubst(CONSTLIT("%02d-%08x"), MAX_ITEM_LEVEL - Desc.Item.GetLevel(), Desc.Item.GetType()->GetUNID());
+				CItem *pWeapon = Weapons.SetAt(sSort, &bNew);
+				if (bNew)
+					*pWeapon = Desc.Item;
+				else
+					pWeapon->SetCount(pWeapon->GetCount() + 1);
 				}
+			}
+
+		//	Now generate the list
+
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < Weapons.GetCount(); i++)
+			{
+			ICCItemPtr pWeapon(CreateListFromItem(CC, Weapons[i]));
+			pResult->Append(CC, pWeapon);
 			}
 
 		return pResult;
