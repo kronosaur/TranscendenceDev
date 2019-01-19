@@ -2,6 +2,39 @@
 
 <TranscendenceModule>
 
+	<Type unid="&unidCCStringTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
+
+					;	hex ----------------------------------------------------
+
+					{	test: '(hex 0)				result: "0" }
+					{	test: '(hex 1)				result: "1" }
+					{	test: '(hex 10)				result: "A" }
+					{	test: '(hex 15)				result: "F" }
+					{	test: '(hex 16)				result: "10" }
+					{	test: '(hex 255)			result: "FF" }
+					{	test: '(hex 256)			result: "100" }
+					{	test: '(hex 0x7fffffff)		result: "7FFFFFFF" }
+					{	test: '(hex 0x80000000)		result: "80000000" }
+					{	test: '(hex 0xffffffff)		result: "FFFFFFFF" }
+
+					{	test: '(hex 65535 8)		result: "0000FFFF" }
+					{	test: '(hex 65535 0)		result: "FFFF" }
+					{	test: '(hex 65535 -10)		result: "FFFF" }
+					{	test: '(hex -1)     		result: "FFFFFFFF" }
+
+					{	test: '(hex "a")			result: 10 }
+					{	test: '(hex "0xa")			result: 10 }
+					{	test: '(hex "0xffff")		result: 65535 }
+					{	test: '(hex "0xffffffff")	result: -1 }
+					{	test: '(hex "0xffffffff")	result: 0xFFFFFFFF }
+					))
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
 	<Type unid="&unidCCComparisonTests;">
 		<Events>
 			<OnGlobalStartDiagnostics><![CDATA[

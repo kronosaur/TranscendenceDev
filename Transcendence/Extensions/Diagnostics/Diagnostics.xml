@@ -18,6 +18,7 @@
 	<!ENTITY unidCCComparisonTests		"0xA0010080">
 	<!ENTITY unidLanguageTests			"0xA0010081">
 	<!ENTITY unidMathTests				"0xA0010082">
+	<!ENTITY unidCCStringTests			"0xA0010083">
 
 	<!-- OTHER -->
 
