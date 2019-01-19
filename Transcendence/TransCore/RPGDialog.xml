@@ -426,7 +426,7 @@
 												)
 											)
 										)
-										
+
 								;	If we're continuing, then go to the next page.
 								
 								(or (not nextPage) (= nextPage 'nextPage))
@@ -498,7 +498,17 @@
 												)
 											)
 										)
-								
+
+								;	Sometimes we just want the code to execute and not 
+								;	navigate
+
+								(= nextPage 'code)
+									(scrAddAction theScreen actionID Nil actionLabel Nil actionAccel
+										(lambda ()
+											(if actionCode (actionCode))
+											)
+										)
+										
 								;	If we have onNavigate, invoke that
 								
 								(@ options 'onNavigate)

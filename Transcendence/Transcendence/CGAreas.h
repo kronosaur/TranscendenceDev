@@ -9,10 +9,19 @@
 class CDetailList
 	{
 	public:
+		static constexpr DWORD FORMAT_ALIGN_TOP =			0x00000000;	//	Defaults to this
+		static constexpr DWORD FORMAT_ALIGN_BOTTOM =		0x00000001;	//	Details aligned to bottom of area
+		static constexpr DWORD FORMAT_ALIGN_CENTER =		0x00000002;	//	Details aligned to center of area
+		static constexpr DWORD FORMAT_PLACE_TOP =			0x00000000;	//	Defaults to this
+		static constexpr DWORD FORMAT_PLACE_BOTTOM =		0x00000004;	//	Area placed at bottom of rect
+		static constexpr DWORD FORMAT_PLACE_CENTER =		0x00000008;	//	Area placed at center of rect
+		static constexpr DWORD FORMAT_ANTI_MIRROR_COLUMNS =	0x00000010;	//	Detail icons are outside
+		static constexpr DWORD FORMAT_MIRROR_COLUMNS =		0x00000020;	//	Detail icons are on center line
+
 		CDetailList (const CVisualPalette &VI) : m_VI(VI)
 			{ }
 
-		void Format (const RECT &rcRect, int *retcyHeight = NULL);
+		void Format (const RECT &rcRect, DWORD dwFlags = 0, int *retcyHeight = NULL);
 		void Load (ICCItem *pDetails);
 		void Paint (CG32bitImage &Dest) const;
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
@@ -31,14 +40,61 @@ class CDetailList
 			int cyRect = 0;
 			};
 
-		static const int DETAIL_ICON_HEIGHT = 48;
-		static const int DETAIL_ICON_WIDTH = 48;
-		static const int SPACING_X = 8;
-		static const int SPACING_Y = 8;
+		static constexpr int SPACING_X = 8;
+		static constexpr int SPACING_Y = 8;
+		static constexpr int DETAIL_ICON_HEIGHT = 48;
+		static constexpr int DETAIL_ICON_WIDTH = 48;
+
+		static constexpr DWORD FORMAT_LEFT_COLUMN =			0x00000000;
+		static constexpr DWORD FORMAT_RIGHT_COLUMN =		0x10000000;
+
+		void CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const;
+		void CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int cyCol, DWORD dwFlags, RECT &retCol) const;
+		void FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags);
 
 		const CVisualPalette &m_VI;
         CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
 		TArray<SDetailEntry> m_List;
+	};
+
+class CDetailArea
+	{
+	public:
+		CDetailArea (CUniverse &Universe, const CVisualPalette &VI) :
+				m_Universe(Universe),
+				m_VI(VI)
+			{ }
+
+		void Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData);
+        inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBack = rgbColor; }
+        inline void SetColor (CG32bitPixel rgbColor) { m_rgbText = rgbColor; }
+
+	private:
+		static constexpr int BORDER_RADIUS = 4;
+		static constexpr int DEFAULT_LARGE_ICON_HEIGHT = 320;
+		static constexpr int DEFAULT_LARGE_ICON_WIDTH = 320;
+		static constexpr int SPACING_X = 8;
+		static constexpr int SPACING_Y = 8;
+
+		enum EStyles
+			{
+			styleDefault,
+			styleStacked,
+			};
+
+		EStyles GetStyle (ICCItem *pData);
+		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor);
+		void PaintBackgroundFrame (CG32bitImage &Dest, const RECT &rcRect);
+		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc);
+		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc);
+
+		CUniverse &m_Universe;
+		const CVisualPalette &m_VI;
+
+		CG32bitPixel m_rgbText = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbBack = CG32bitPixel(0, 0, 0);
+		int m_cxLargeIcon = DEFAULT_LARGE_ICON_WIDTH;
+		int m_cyLargeIcon = DEFAULT_LARGE_ICON_HEIGHT;
 	};
 
 class CGCarouselArea : public AGArea
@@ -48,8 +104,8 @@ class CGCarouselArea : public AGArea
 			{
 			styleNone,
 
-			styleShipList,					//	Optimized for list of ship classes
 			styleShipCompare,				//	Compare two ship classes
+			styleShipList,					//	Optimized for list of ship to purchase
 			};
 
 		CGCarouselArea (const CVisualPalette &VI);

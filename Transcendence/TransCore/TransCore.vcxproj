@@ -603,6 +603,7 @@
     </Xml>
     <Xml Include="RPGTradingComputer.xml" />
     <Xml Include="RPGUsefulItems.xml" />
+    <Xml Include="RPGViewers.xml" />
     <Xml Include="Salvagers.xml" />
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />

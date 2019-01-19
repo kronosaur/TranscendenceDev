@@ -201,6 +201,17 @@ void CGCarouselArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	RECT rcList = rcRect;
 	rcList.bottom = rcList.top + m_cySelector;
 
+	//	Paint the background of the list area
+
+    CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBackColor, 220), 220);
+	CGDraw::RoundedRect(Dest,
+			rcList.left,
+			rcList.top,
+			RectWidth(rcList),
+			RectHeight(rcList),
+			BORDER_RADIUS + 1,
+			rgbFadeBackColor);
+
 	//	If there are no items here, then say so
 
 	if (!m_pListData || !m_pListData->IsCursorValid())
@@ -268,89 +279,21 @@ void CGCarouselArea::PaintContent (CG32bitImage &Dest, const RECT &rcRect) const
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
 
-	//	Colors and metrics
+	//	Get the list entry
 
-    CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBackColor, 220), 185);
-
-	//	Now paint the selected content
-
+	ICCItem *pData;
 	if (m_pListData && m_pListData->IsCursorValid())
-		{
-		ICCItem *pEntry = m_pListData->GetEntryAtCursor(CC);
-
-		//	Figure out some metrics about details.
-
-		CDetailList Details(m_VI);
-		Details.SetColor(m_rgbTextColor);
-
-		ICCItem *pDetails = (pEntry ? pEntry->GetElement(FIELD_DETAILS) : NULL);
-		if (pDetails)
-			Details.Load(pDetails);
-
-		int cyDetails;
-		Details.Format(rcRect, &cyDetails);
-		int cyPaneSplit = (cyDetails ? RectHeight(rcRect) - (cyDetails + SPACING_Y) : 0);
-
-		//	Paint the large icon first (we paint the background on top so that 
-		//	the details show up.
-
-		ICCItem *pLargeIcon = (pEntry ? pEntry->GetElement(FIELD_LARGE_ICON) : NULL);
-		if (pLargeIcon)
-			{
-			RECT rcImage;
-			DWORD dwImage = CTLispConvert::AsImageDesc(pLargeIcon, &rcImage);
-			CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(dwImage);
-
-			int cxImage = RectWidth(rcImage);
-			int cyImage = RectHeight(rcImage);
-
-			if (pImage)
-				{
-				int x = rcRect.left + (RectWidth(rcRect) - m_cxLargeIcon) / 2;
-				int y = rcRect.top;
-
-				CPaintHelper::PaintScaledImage(Dest, x, y, m_cxLargeIcon, m_cyLargeIcon, *pImage, rcImage);
-				}
-			}
-
-		//	Paint background
-
-		CGDraw::RoundedRect(Dest,
-				rcRect.left,
-				rcRect.top,
-				RectWidth(rcRect),
-				RectHeight(rcRect),
-				BORDER_RADIUS + 1,
-				rgbFadeBackColor);
-
-		//	Paint the details
-
-		Details.Paint(Dest);
-		}
-
-	//	Otherwise, just paint a blank area
-
+		pData = m_pListData->GetEntryAtCursor(CC);
 	else
-		{
-		CGDraw::RoundedRect(Dest,
-				rcRect.left,
-				rcRect.top,
-				RectWidth(rcRect),
-				RectHeight(rcRect),
-				BORDER_RADIUS + 1,
-				rgbFadeBackColor);
-		}
+		pData = NULL;
 
-	//	Paint a frame
+	//	Paint as content
 
-	CGDraw::RoundedRectOutline(Dest,
-			rcRect.left,
-			rcRect.top,
-			RectWidth(rcRect),
-			RectHeight(rcRect),
-			BORDER_RADIUS,
-			1,
-			CG32bitPixel(80,80,80));
+	CDetailArea Painter(*g_pUniverse, m_VI);
+	Painter.SetBackColor(m_rgbBackColor);
+	Painter.SetColor(m_rgbTextColor);
+
+	Painter.Paint(Dest, rcRect, pData);
 	}
 
 void CGCarouselArea::PaintList (CG32bitImage &Dest, const RECT &rcRect)
@@ -492,6 +435,17 @@ void CGCarouselArea::PaintList (CG32bitImage &Dest, const RECT &rcRect)
 	m_pListData->SetCursor(iCursor);
 	Dest.SetClipRect(rcOldClip);
 
+	//	Paint a frame
+
+	CGDraw::RoundedRectOutline(Dest,
+			rcRect.left,
+			rcRect.top,
+			RectWidth(rcRect),
+			RectHeight(rcRect),
+			BORDER_RADIUS,
+			1,
+			CG32bitPixel(80,80,80));
+
 	//	Now paint the cursor
 
 	if (bPaintCursor)
@@ -612,6 +566,17 @@ void CGCarouselArea::PaintListShipCompare (CG32bitImage &Dest, const RECT &rcRec
 
 	m_pListData->SetCursor(iCursor);
 	Dest.SetClipRect(rcOldClip);
+
+	//	Paint a frame
+
+	CGDraw::RoundedRectOutline(Dest,
+			rcRect.left,
+			rcRect.top,
+			RectWidth(rcRect),
+			RectHeight(rcRect),
+			BORDER_RADIUS,
+			1,
+			CG32bitPixel(80,80,80));
 
 	//	Now paint the cursor
 

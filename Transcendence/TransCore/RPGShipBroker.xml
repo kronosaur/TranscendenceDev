@@ -44,7 +44,7 @@
 						)
 						{
 						title: (objGetName shipObj 'generic)
-						icon: (shpGetImageDesc shipClass { rotation:0 })
+						icon: (shpGetImageDesc shipClass { rotation:90 })
 
 						largeIcon: (shpGetImageDesc shipClass { type:'schematic })
 						details: 
@@ -370,7 +370,7 @@
 						)
 						{
 						title: (objGetName shipObj 'generic)
-						icon: (shpGetImageDesc shipClass { rotation:0 })
+						icon: (shpGetImageDesc shipClass { rotation:90 })
 
 						largeIcon: (shpGetImageDesc shipClass { type:'schematic })
 						details:
@@ -690,7 +690,7 @@
 						)
 						{
 						title: (objGetName wingmanObj 0)
-						icon: (objGetImageDesc wingmanObj)
+						icon: (objGetImageDesc wingmanObj { rotation:90 })
 						desc: 
 							(scrTranslate gScreen 'descWingmanPrice {
 								shipClass:(objGetName wingmanObj 'generic)
@@ -1242,8 +1242,8 @@
 							(cat
 								"{/rtf "
 									"{/f:MediumBold;/c:#79828c; manufacturer:} " (objGetProperty shipObj 'manufacturer) "\n"
-									"{/f:MediumBold;/c:#79828c; size:} " (objGetProperty shipObj 'size) " meters\n"
-									"{/f:MediumBold;/c:#79828c; mass:} " (objGetProperty shipObj 'hullMass) " tons\n"
+									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (objGetProperty shipObj 'size)) " meters\n"
+									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber (objGetProperty shipObj 'hullMass)) " tons\n"
 								"}"
 								)
 						}
@@ -1281,7 +1281,7 @@
 							(cat
 								"{/rtf "
 									"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber (objGetProperty shipObj 'cargoSpace)) " tons\n"
-									"{/f:MediumBold;/c:#79828c; max. expansion:} " (objGetProperty shipObj 'maxCargoSpace) " tons\n"
+									"{/f:MediumBold;/c:#79828c; max. expansion:} " (fmtNumber (objGetProperty shipObj 'maxCargoSpace)) " tons\n"
 								"}"
 								)
 						}
@@ -1380,6 +1380,147 @@
 								"}"
 								)
 						})
+					)
+				))
+				
+			(setq rpgGetShipClassDetails (lambda (shipClass options)
+				(block (
+					(showDevices (not (@ options 'noDevices)))
+
+					;	Drive Stats
+					
+					(driveText (cat (typGetName shipClass '(short generic)) " drive"))
+					(driveIcon (resCreateImageDesc &rsItems1; 96 384 96 96))
+					
+					;	Cargo Stats
+					
+					(cargoIcon (resCreateImageDesc &rsItems1; 96 192 96 96))
+
+					;	Armor
+
+					(armorItem (typGetProperty shipClass 'armorItem))
+
+					;	Shields
+
+					(shieldItem (typGetProperty shipClass 'shieldItem))
+
+					;	Weapons
+
+					(allWeapons (typGetProperty shipClass 'weaponItems))
+					(weaponItem1 (@ allWeapons 0))
+					(weaponItem2 (@ allWeapons 1))
+					(weaponItem3 (@ allWeapons 2))
+
+					;	Launcher
+
+					(launcherItem (typGetProperty shipClass 'launcherItem))
+
+					;	Misc devices
+
+					(allMisc (typGetProperty shipClass 'miscDeviceItems))
+					(miscItem1 (@ allMisc 0))
+					)
+
+					(list 
+						{
+						icon: (shpGetImageDesc shipclass 0)
+						desc:
+							(cat
+								"{/rtf "
+									"{/f:MediumBold;/c:#79828c; manufacturer:} " (typGetProperty shipClass 'manufacturer) "\n"
+									"{/f:MediumBold;/c:#79828c; size:} " (fmtNumber (typGetProperty shipClass 'size)) " meters\n"
+									"{/f:MediumBold;/c:#79828c; mass:} " (fmtNumber (typGetProperty shipClass 'mass)) " tons\n"
+									"\n"
+									"{/f:MediumBold;/c:#79828c; max. speed:} " (fmtNumber 'speed (typGetProperty shipClass 'maxSpeed)) "\n"
+									"{/f:MediumBold;/c:#79828c; thrust//mass:} " (fmtNumber 'real (/ (typGetProperty shipClass 'thrustToWeight) 1000)) "\n"
+									"{/f:MediumBold;/c:#79828c; maneuverability:} " (fmtNumber 'real (/ (typGetProperty shipClass 'maneuver) 1000)) "\n"
+									"\n"
+									"{/f:MediumBold;/c:#79828c; cargo space:} " (fmtNumber (typGetProperty shipClass 'cargoSpace)) " tons\n"
+								"}"
+								)
+						}
+
+						(if showDevices
+							{
+							icon: (itmGetImageDesc armorItem)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName armorItem '(short actual)) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel armorItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and shieldItem showDevices) {
+							icon: (itmGetImageDesc shieldItem)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName shieldItem '(short actual)) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel shieldItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem1 showDevices) {
+							icon: (itmGetImageDesc weaponItem1)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName weaponItem1 '(short actual))
+										(if (gr (itmGetCount weaponItem1) 1) (cat " (&times;" (itmGetCount weaponItem1) ")")) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem1) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem2 showDevices) {
+							icon: (itmGetImageDesc weaponItem2)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName weaponItem2 '(short actual))
+										(if (gr (itmGetCount weaponItem2) 1) (cat " (&times;" (itmGetCount weaponItem2) ")")) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem2) "\n"
+									"}"
+									)
+							})
+
+						(if (and weaponItem3 (not launcherItem) showDevices) {
+							icon: (itmGetImageDesc weaponItem3)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName weaponItem3 '(short actual))
+										(if (gr (itmGetCount weaponItem3) 1) (cat " (&times;" (itmGetCount weaponItem3) ")")) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel weaponItem3) "\n"
+									"}"
+									)
+							})
+
+						(if (and launcherItem showDevices) {
+							icon: (itmGetImageDesc launcherItem)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName launcherItem '(short actual)) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel launcherItem) "\n"
+									"}"
+									)
+							})
+
+						(if (and miscItem1 showDevices) {
+							icon: (itmGetImageDesc miscItem1)
+							desc:
+								(cat
+									"{/rtf "
+										(itmGetName miscItem1 '(short actual)) "\n"
+										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel miscItem1) "\n"
+									"}"
+									)
+							})
+						)
 					)
 				))
 				

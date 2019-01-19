@@ -17,6 +17,7 @@
 			<Text id="actionDonate">[D]onate</Text>
 			<Text id="actionDonateThisItem">[D]onate this Item</Text>
 			<Text id="actionDone">[D]one</Text>
+			<Text id="actionExit">E[x]it</Text>
 			<Text id="actionJettison">[J]ettison</Text>
 			<Text id="actionLeave">[L]eave</Text>
 			<Text id="actionLoot">[L]oot</Text>

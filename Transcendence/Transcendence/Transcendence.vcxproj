@@ -382,6 +382,7 @@
     <ClCompile Include="CDaimonList.cpp" />
     <ClCompile Include="CDaimonListPainter.cpp" />
     <ClCompile Include="CDetailList.cpp" />
+    <ClCompile Include="CDetailArea.cpp" />
     <ClCompile Include="CDockPane.cpp" />
     <ClCompile Include="CDockScreenCarousel.cpp" />
     <ClCompile Include="CDockScreenCustomItemList.cpp" />

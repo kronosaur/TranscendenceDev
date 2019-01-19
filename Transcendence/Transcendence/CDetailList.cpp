@@ -12,7 +12,72 @@
 #define FIELD_LARGE_ICON					CONSTLIT("largeIcon")
 #define FIELD_TITLE							CONSTLIT("title")
 
-void CDetailList::Format (const RECT &rcRect, int *retcyHeight)
+void CDetailList::CalcColumnRect (const RECT &rcArea, int xCol, int cxCol, int cyCol, DWORD dwFlags, RECT &retCol) const
+
+//	CalcColumnRect
+//
+//	Computes the rect for a column based on alignment flags.
+
+	{
+	retCol.left = xCol;
+	retCol.right = xCol + cxCol;
+
+	if (dwFlags & FORMAT_ALIGN_BOTTOM)
+		{
+		retCol.bottom = rcArea.bottom;
+		retCol.top = retCol.bottom - cyCol;
+		}
+	else if (dwFlags & FORMAT_ALIGN_CENTER)
+		{
+		retCol.top = rcArea.top + (RectHeight(rcArea) - cyCol) / 2;
+		retCol.bottom = retCol.top + cyCol;
+		}
+	else
+		{
+		retCol.top = rcArea.top;
+		retCol.bottom = retCol.top + cyCol;
+		}
+	}
+
+void CDetailList::CalcColumnRects (const RECT &rcRect, int cxCol, int cyCol1, int cyCol2, DWORD dwFlags, RECT &retCol1, RECT &retCol2) const
+
+//	CalcColumnRects
+//
+//	Computes the rect for the two columns based on the content height and the
+//	format flags.
+
+	{
+	//	First figure out the area where the columns will go relative to the full
+	//	rect.
+
+	int cyArea = Max(cyCol1, cyCol2);
+	RECT rcArea;
+	rcArea.left = rcRect.left;
+	rcArea.right = rcRect.right;
+
+	if (dwFlags & FORMAT_PLACE_BOTTOM)
+		{
+		rcArea.bottom = rcRect.bottom;
+		rcArea.top = rcRect.bottom - cyArea;
+		}
+	else if (dwFlags & FORMAT_PLACE_CENTER)
+		{
+		rcArea.top = rcRect.top + (RectHeight(rcRect) - cyArea) / 2;
+		rcArea.bottom = rcArea.top + cyArea;
+		}
+	else
+		{
+		rcArea.top = rcRect.top;
+		rcArea.bottom = rcArea.top + cyArea;
+		}
+
+	//	Now calculate the two columns
+
+	CalcColumnRect(rcArea, rcArea.left + SPACING_X, cxCol, cyCol1, dwFlags, retCol1);
+	CalcColumnRect(rcArea, rcArea.right - SPACING_X - cxCol, cxCol, cyCol2, dwFlags, retCol2);
+	}
+
+void CDetailList::Format (const RECT &rcRect, DWORD dwFlags, int *retcyHeight)
 
 //	Format
 //
@@ -74,7 +139,7 @@ void CDetailList::Format (const RECT &rcRect, int *retcyHeight)
 
 	int iBreakAt = (m_List.GetCount() + 1) / 2;
 
-	//	Add up the total height of each column. NOTE: For this calculationg we
+	//	Add up the total height of each column. NOTE: For this calculation we
 	//	ignore any spacing between entries.
 
 	int cyCol1 = 0;
@@ -120,42 +185,64 @@ void CDetailList::Format (const RECT &rcRect, int *retcyHeight)
 	cyCol2 += ((m_List.GetCount() - iBreakAt) * SPACING_Y) + SPACING_Y;
 	cyMax = Max(cyCol1, cyCol2);
 
+	RECT rcCol1;
+	RECT rcCol2;
+	CalcColumnRects(rcRect, cxColumn, cyCol1, cyCol2, dwFlags, rcCol1, rcCol2);
+
 	//	Now format all entries. Start with the first column.
 
-	int yCol1 = rcRect.bottom - cyCol1;
-	for (i = 0; i < iBreakAt; i++)
-		{
-		m_List[i].bAlignRight = false;
-		m_List[i].Desc.SetAlignment(alignLeft);
-
-		m_List[i].rcRect.left = rcRect.left + SPACING_X;
-		m_List[i].rcRect.right = rcRect.left + SPACING_X + cxColumn;
-		m_List[i].rcRect.top = yCol1;
-		m_List[i].rcRect.bottom = yCol1 + m_List[i].cyRect;
-
-		yCol1 += m_List[i].cyRect + SPACING_Y;
-		}
-
-	//	Now format the entries in the second column.
-
-	int yCol2 = rcRect.bottom - cyCol2;
-	for (i = iBreakAt; i < m_List.GetCount(); i++)
-		{
-		m_List[i].bAlignRight = true;
-		m_List[i].Desc.SetAlignment(alignRight);
-
-		m_List[i].rcRect.left = rcRect.right - SPACING_X - cxColumn;
-		m_List[i].rcRect.right = rcRect.right - SPACING_X;
-		m_List[i].rcRect.top = yCol2;
-		m_List[i].rcRect.bottom = yCol2 + m_List[i].cyRect;
-
-		yCol2 += m_List[i].cyRect + SPACING_Y;
-		}
+	FormatColumn(0, iBreakAt, rcCol1, dwFlags | FORMAT_LEFT_COLUMN);
+	FormatColumn(iBreakAt, m_List.GetCount(), rcCol2, dwFlags | FORMAT_RIGHT_COLUMN);
 
 	//	Return the max column height.
 
 	if (retcyHeight)
 		*retcyHeight = cyMax;
+	}
+
+void CDetailList::FormatColumn (int iStart, int iEnd, const RECT &rcRect, DWORD dwFlags)
+
+//	FormatColumn
+//
+//	Formats the given column
+
+	{
+	bool bAlignRight;
+	AlignmentStyles iTextAlign;
+
+	//	Left/right alignment depends on flags
+
+	if (dwFlags & FORMAT_ANTI_MIRROR_COLUMNS)
+		{
+		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) != 0);
+		iTextAlign = (bAlignRight ? alignRight : alignLeft);
+		}
+	else if (dwFlags & FORMAT_MIRROR_COLUMNS)
+		{
+		bAlignRight = ((dwFlags & FORMAT_RIGHT_COLUMN) == 0);
+		iTextAlign = (bAlignRight ? alignRight : alignLeft);
+		}
+	else
+		{
+		bAlignRight = false;
+		iTextAlign = alignLeft;
+		}
+
+	//	Format
+
+	int y = rcRect.top;
+	for (int i = iStart; i < iEnd; i++)
+		{
+		m_List[i].bAlignRight = bAlignRight;
+		m_List[i].Desc.SetAlignment(iTextAlign);
+
+		m_List[i].rcRect.left = rcRect.left;
+		m_List[i].rcRect.right = rcRect.right;
+		m_List[i].rcRect.top = y;
+		m_List[i].rcRect.bottom = y + m_List[i].cyRect;
+
+		y += m_List[i].cyRect + SPACING_Y;
+		}
 	}
 
 void CDetailList::Load (ICCItem *pDetails)

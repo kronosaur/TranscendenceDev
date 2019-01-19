@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<DockScreen UNID="&dsRPGShipClassViewer;"
+			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
+			>
+
+		<Display type="carouselSelector"
+				style="shipList"
+				>
+			<OnDisplayInit>
+				(map (@ gData 'list) entry
+					(block (
+						(shipClass (@ entry 'shipClass))
+						)
+						{
+						title: (typGetName shipClass '(generic))
+						icon: (shpGetImageDesc shipClass { rotation:0 })
+
+						largeIcon: (shpGetImageDesc shipClass { rotation:0 })
+						details: (rpgGetShipClassDetails shipClass { })
+						detailsStyle: 'stacked
+
+						shipClass: shipClass
+						description: (@ entry 'description)
+						}
+						)
+					)
+			</OnDisplayInit>
+		</Display>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (
+						(entry (scrGetListEntry gScreen))
+						)
+						(switch
+							(@ entry 'descID)
+								(scrSetDescTranslate gScreen (@ entry 'descID) entry)
+
+							(@ entry 'description)
+								(scrSetDesc gScreen (@ entry 'description))
+
+							(scrSetDescTranslate gScreen (cat 'rpg.shipClassDesc.0x (hex (@ entry 'shipClass) 8)))
+							)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionDone" default="1" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
+				</Actions>
+			</Default>
+		</Panes>
+	</DockScreen>
+	
+</TranscendenceModule>
