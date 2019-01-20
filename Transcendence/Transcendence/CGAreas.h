@@ -86,7 +86,7 @@ class CDetailArea
 		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor);
 		void PaintBackgroundFrame (CG32bitImage &Dest, const RECT &rcRect);
 		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc);
-		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc);
+		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0);
 
 		CUniverse &m_Universe;
 		const CVisualPalette &m_VI;

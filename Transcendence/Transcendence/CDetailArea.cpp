@@ -9,6 +9,7 @@
 #define FIELD_DETAILS						CONSTLIT("details")
 #define FIELD_DETAILS_STYLE					CONSTLIT("detailsStyle")
 #define FIELD_LARGE_ICON					CONSTLIT("largeIcon")
+#define FIELD_LARGE_ICON_SCALE				CONSTLIT("largeIconScale")
 #define FIELD_TITLE							CONSTLIT("title")
 
 #define STYLE_STACKED						CONSTLIT("stacked")
@@ -83,7 +84,9 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 			int x = rcRect.left + RectWidth(rcRect) / 2;
 			int y = rcRect.top + RectHeight(rcRect) / 4;
 			ICCItem *pLargeIcon = pData->GetElement(FIELD_LARGE_ICON);
-			PaintStackedImage(Dest, x, y, pLargeIcon);
+			Metric rScale = pData->GetDoubleAt(FIELD_LARGE_ICON_SCALE, 1.0);
+
+			PaintStackedImage(Dest, x, y, pLargeIcon, rScale);
 
 			//	Paint the title
 
@@ -180,7 +183,7 @@ void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, 
 	CPaintHelper::PaintScaledImage(Dest, x, y, m_cxLargeIcon, m_cyLargeIcon, *pImage, rcImage);
 	}
 
-void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc)
+void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale)
 
 //	PaintStackedImage
 //
@@ -199,8 +202,17 @@ void CDetailArea::PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *
 	int cxImage = RectWidth(rcImage);
 	int cyImage = RectHeight(rcImage);
 
-	int xPos = x - cxImage / 2;
-	int yPos = y - cyImage / 2;
+	//	Scale, if necessary
 
-	Dest.Blt(rcImage.left, rcImage.top, cxImage, cyImage, *pImage, xPos, yPos);
+	if (rScale != 1.0)
+		{
+		CPaintHelper::PaintScaledImage(Dest, x, y, 0, 0, *pImage, rcImage, rScale);
+		}
+	else
+		{
+		int xPos = x - cxImage / 2;
+		int yPos = y - cyImage / 2;
+
+		Dest.Blt(rcImage.left, rcImage.top, cxImage, cyImage, *pImage, xPos, yPos);
+		}
 	}
