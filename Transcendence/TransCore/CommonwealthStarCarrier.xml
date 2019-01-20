@@ -2,55 +2,322 @@
 
 <TranscendenceModule>
 
-<!-- SHIP CLASSES -->
+<!-- CARRIERS -->
 
-	<!-- CSC Hospital -->
+	<!-- CSC America -->
 
-	<ShipClass UNID="&scCSCHospital;"
+	<ShipClass UNID="&scCSCAmerica;"
 			manufacturer=		"Earth Industries"
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
-			inherit=			"&baCSCBase;"
-			   
-			size=				"400"
-			mass=				"200000"
-			cargoSpace=			"5000"
-			thrustRatio=		"0.5"
-			maxSpeed=			"2"
-			cyberDefenseLevel=	"6"
-			   
-			explosionType=		"&vtPlasmaExplosion2;"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
 			>
 
-		<!-- Configuration -->
-		
-		<Armor
-			armorID=			"&itP1000HexphaseArmor;"
-			count=				"20"
+		<Names>:the CSC America</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 320 0 320 240)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC America:
+				
+				"The Ares have been ruthless. When we lost the CSC Europa, the 
+				damn Martians deliberately targeted the emergency capsules.
+				
+				"We taught them a lesson after that, though: we torched several 
+				of their communes."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Arctica -->
+
+	<ShipClass UNID="&scCSCArctica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCSupportStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Arctica</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
+			</Data>
+
+			<Data id="csc.giftTable">
+				(	; donation	item						count	unique
+					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
+					(5000		&itInvincibleDeflector;		1		'Gift2)
+					(2500		&itR5Deflector;				1		'Gift3)
+					(1250		&itEMPImmuneCoating;		4		'Gift4)
+					(0			&itKobeWater;				1		Nil)
+					)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				The captain of the CSC Arctica welcomes you aboard:
+				
+				"How are things going back in the Commonwealth? I haven't been 
+				to St. Katharine's in more than five years&mdash;had an amazing 
+				time at this little bar in the inner system.
+				
+				"You really should check it out&mdash;if you make it back, I mean."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Asia -->
+
+	<ShipClass UNID="&scCSCAsia;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Asia</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 0 240 320 240)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+				
+				You talk to the captain of the CSC Asia:
+				
+				"When the Antarctica went rogue, Admiral Decker just about 
+				pissed acid. He was furious! He took it as a personal betrayal."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Atlantica -->
+
+	<ShipClass UNID="&scCSCAtlantica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Atlantica</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 320 240 320 240)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC Atlantica:
+				
+				"This war has been tough on the troops. We've had to start 
+				scavenging for vital supplies. I'm not surprised that the 
+				discipline in some units has deteriorated."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC India -->
+
+	<ShipClass UNID="&scCSCIndia;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC India</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 0 480 320 240)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+				
+				You talk to the captain of the CSC India:
+				
+				"If you ever get back to the Commonwealth, you've got to tell 
+				them to send more ships. We're getting killed out here and I 
+				don't even know if anyone back home cares."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Pacifica -->
+
+	<ShipClass UNID="&scCSCPacifica;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCTaskForceStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Pacifica</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 320 480 320 240)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				You talk to the captain of the CSC Pacifica:
+				
+				"You ever meet a Martian? Not the meek little Syrtians&mdash;I 
+				mean the Ares clones. They all have this smug look of 
+				superiority that cranks me up.
+				
+				"They look better in the crosshairs of a TeV 9, that's for 
+				sure!"
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+	<!-- CSC Sahara -->
+
+	<ShipClass UNID="&scCSCSahara;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCSupportStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<Names>:the CSC Sahara</Names>
+
+		<StaticData>
+			<Data id="csc.emblem">
+				(resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
+			</Data>
+
+			<Data id="csc.giftTable">
+				(	; donation	item						count	unique
+					(10000		&itMammoth100Deflector;		1		'Gift1)
+					(5000		&itBlueEtheriumCrystal;		1		'Gift2)
+					(2500		&itPatchSpider;				1		'Gift3)
+					(1250		&itR1Deflector;				1		'Gift4)
+					(0			&itEuropanIceVodka;			1		Nil)
+					)
+			</Data>
+		</StaticData>
+
+		<Language>
+			<Text id="csc.captainsWelcome">
+
+				The captain of the CSC Sahara welcomes you aboard:
+				
+				"I hope you will be able to help our good doctor to obtain 
+				medical supplies. This damn war has made more invalids than 
+				heroes."
+
+			</Text>
+		</Language>
+	</ShipClass>
+
+<!-- BASE CLASSES -->
+
+	<!-- CSC (Stock) -->
+
+	<ShipClass UNID="&scCSCStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+			defaultSovereign=	"&svCommonwealthFleet;"
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&baCSCBase;"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"400"
+			mass=				"200000"
+			cargoSpace=			"5000"
+			cyberDefenseLevel=	"6"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"5000"
+			maxDevices=			"20"
 			/>
-		
-		<Devices>
-			<Device deviceID="&itTeV9Blaster;" secondaryWeapon="true" minFireArc="270" maxFireArc="90"  posAngle="0" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itTeV9Blaster;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itTeV9Blaster;" secondaryWeapon="true" omnidirectional="true" posAngle="90" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itTeV9Blaster;" secondaryWeapon="true" omnidirectional="true" posAngle="270" posRadius="98" posZ="-5"/>
-			
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
-			<Device deviceID="&vtDamageControlParty;"/>
-		</Devices>
+
+		<Drive
+			maxSpeed=			"2"
+			thrust=				"100000"
+			/>
 
 		<Maneuver
 			maxRotationRate=	"1"
 			rotationAccel=		"0.1"
 			/>
 
+		<DeviceSlots>
+			<DeviceSlot id="w1"		criteria="w"	posAngle="0"   posRadius="98" posZ="-5"		fireAngle="0"   fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w2"		criteria="w"	posAngle="90"  posRadius="98" posZ="-5"		fireAngle="90"  fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w3"		criteria="w"	posAngle="-90" posRadius="98" posZ="-5"		fireAngle="-90" fireArc="200"	secondaryWeapon="true" />
+			<DeviceSlot id="w4"		criteria="w"	posAngle="180" posRadius="98" posZ="-5"		fireAngle="180" fireArc="200"	secondaryWeapon="true" />
+
+			<DeviceSlot id="omni1"	criteria="l"	posAngle="0"   posRadius="30" posZ="20"		omnidirectional="true" />
+			<DeviceSlot id="omni2"	criteria="d"	posAngle="180" posRadius="30" posZ="20"		omnidirectional="true" />
+		</DeviceSlots>
+
 		<Interior>
 			<Compartment name="interior"
-					hitPoints=	"400"
+					hitPoints=	"600"
 					/>
 			
 			<Compartment name="main drive"
@@ -64,19 +331,19 @@
 					/>
 		</Interior>
 		
-		<Items>
-			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
-			
-			<!-- Some upgrades for sale -->
-			
-			<RandomItem count="1d3" criteria="r -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
-			
-			<Item count="3d4"	item="&itBlastPlate;"/>
-			<Item count="3d4"	item="&itP120HexphaseArmor;"/>
-			<Item count="1d4"	item="&itTeV9Blaster;"/>
-			<Item count="1d4"	item="&itR1Deflector;"/>
-		</Items>
+		<Wreck
+			explosionType=		"&vtPlasmaExplosion2;"
+			/>
 
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+
+		<!-- Image and Effects -->
+		
 		<Image imageID="&rsCSCHD;" imageWidth="370" imageHeight="370" rotationCount="120" rotationColumns="12" viewportRatio="0.03"/>
 
 		<Effects>
@@ -95,11 +362,61 @@
 			<Port posAngle="315"  posRadius="105"  posZ="0"	bringToFront="*"/>
 		</DockingPorts>
 
+		<!-- AI and Behavior -->
+
 		<AISettings
 			fireRateAdj=		"15"
 			fireAccuracy=		"95"
 			perception=			"4"
 			/>
+
+	</ShipClass>
+
+	<!-- CSC Support (Stock)
+	
+		Descendants from this class must define the following data elementss:
+
+		STATIC DATA
+
+		csc.emblem: Code to generate the ship's emblem.
+		csc.giftTable: Table of items to give as gifts.
+
+		LANGUAGE
+
+		csc.captainsWelcome: Text when player meets captain.
+	
+	-->
+
+	<ShipClass UNID="&scCSCSupportStock;"
+			manufacturer=		"Earth Industries"
+			class=				"Commonwealth Star Carrier"
+			type=				""
+			defaultSovereign=	"&svCommonwealthFleet;"
+
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			inherit=			"&scCSCStock;"
+
+			dockScreen=			"Main"
+			>
+
+		<!-- Configuration -->
+		
+		<Armor
+			armorID=			"&itP1000HexphaseArmor;"
+			count=				"20"
+			/>
+		
+		<Devices>
+			<Device slotID="w1"		deviceID="&itTeV9Blaster;" />
+			<Device slotID="w2"		deviceID="&itTeV9Blaster;" />
+			<Device slotID="w3"		deviceID="&itTeV9Blaster;" />
+			<Device slotID="w4"		deviceID="&itTeV9Blaster;" />
+			
+			<Device slotID="omni2"	deviceID="&itMissileDefense;" />
+			<Device					deviceID="&vtDamageControlParty;"/>
+		</Devices>
+
+		<!-- Items and Trading -->
 
 		<Trade currency="credit" max="100000" replenish="5000">
 			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
@@ -112,63 +429,26 @@
 			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
 		</Trade>
 		
-		<Events>
-			<OnLoad>
-				(switch
-					(eq (objGetData gSource 'CSC) 'arctica)
-						(objSetData gSource 'CSCData {
-							name: "CSC Arctica"
-							emblem: (resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
-							})
-							
-					(eq (objGetData gSource 'CSC) 'sahara)
-						(objSetData gSource 'CSCData {
-							name: "CSC Sahara"
-							emblem: (resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
-							})
-					)
-			</OnLoad>
-		</Events>
+		<Items>
+			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
+			
+			<!-- Some upgrades for sale -->
+			
+			<RandomItem count="1d3" criteria="r -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
+			
+			<Item count="3d4"	item="&itBlastPlate;"/>
+			<Item count="3d4"	item="&itP120HexphaseArmor;"/>
+			<Item count="1d4"	item="&itTeV9Blaster;"/>
+			<Item count="1d4"	item="&itR1Deflector;"/>
+		</Items>
 
-		<StaticData>
-			<arcticaCaptainWelcome>
-				(
-					"The captain of the CSC Arctica welcomes you aboard: \"How are things going back in the Commonwealth? I haven't been to St. Katharine's in more than five years&#x97;had an amazing time at this little bar in the inner system. You really should check it out&#x97;if you make it back, I mean.\""
-					)
-			</arcticaCaptainWelcome>
-
-			<arcticaGiftTable>
-				(	; donation	item						count	unique
-					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
-					(5000		&itInvincibleDeflector;		1		'Gift2)
-					(2500		&itR5Deflector;				1		'Gift3)
-					(1250		&itEMPImmuneCoating;		4		'Gift4)
-					(0			&itKobeWater;				1		Nil)
-					)
-			</arcticaGiftTable>
-
-			<saharaCaptainWelcome>
-				(
-					"The captain of the CSC Sahara welcomes you aboard: \"I hope you will be able to help our good doctor to obtain medical supplies. This damn war has made more invalids than heroes.\""
-					)
-			</saharaCaptainWelcome>
-
-			<saharaGiftTable>
-				(	; donation	item						count	unique
-					(10000		&itMammoth100Deflector;		1		'Gift1)
-					(5000		&itBlueEtheriumCrystal;		1		'Gift2)
-					(2500		&itPatchSpider;				1		'Gift3)
-					(1250		&itR1Deflector;				1		'Gift4)
-					(0			&itEuropanIceVodka;			1		Nil)
-					)
-			</saharaGiftTable>
-		</StaticData>
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main backgroundID="none">
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 				
@@ -181,7 +461,7 @@
 						<Actions>
 							<Action id="actionBridge" default="1">
 								(block Nil
-									(scrShowScreen gScreen "Bridge")
+									(scrShowScreen gScreen 'Bridge)
 								
 									; If see if we got promoted
 									(if (intFleetPromotion)
@@ -191,7 +471,7 @@
 							</Action>
 
 							<Action id="actionInfirmary">
-								(scrShowScreen gScreen "Infirmary")
+								(scrShowScreen gScreen 'Infirmary)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -216,14 +496,14 @@
 
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 				
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(scrSetDesc gScreen (intRandomMessage gSource (cat (objGetData gSource "CSC") "CaptainWelcome") "arcticaCaptainWelcome"))
+							(scrSetDescTranslate gScreen 'csc.captainsWelcome)
 						</OnPaneInit>
 
 						<Actions>
@@ -243,7 +523,7 @@
 
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 				
@@ -299,29 +579,16 @@
 								; Set the description
 								(if (eq (count gItem) 1)
 									; Only one item
-									(scrSetDesc gScreen 
-										"\"Welcome to the Infirmary, %sir%! We are in desperate need of medical supplies. "
-										"I'm prepared to offer you " gCost " credits for the " (itmGetName (item gItem 0) 16) " in your cargo hold. "
-										"What do you say?\""
-										)
+									(scrSetDescTranslate gScreen 'descOffer {
+										cost: (fmtCurrency 'credit gCost)
+										itemName: (itmGetName (item gItem 0) 'countOnly)
+										})
 
 									; Multiple items
-									(block (medicalItem itemListDesc)
-										(enum gItem medicalItem
-											(if itemListDesc
-												(setq itemListDesc (cat itemListDesc ", " (itmGetName medicalItem 8)))
-												(setq itemListDesc (cat "(" (itmGetName medicalItem 8)))
-												)
-											)
-
-										(setq itemListDesc (cat itemListDesc ")"))
-
-										(scrSetDesc gScreen 
-											"\"Welcome to the Infirmary, %sir%! We are in desperate need of medical supplies. "
-											"I'm prepared to offer you " gCost " credits for all the medical items in your cargo hold: " itemListDesc 
-											". What do you say?\""
-											)
-										)
+									(scrSetDescTranslate gScreen 'descOfferMultiple {
+										cost: (fmtCurrency 'credit gCost)
+										itemListDesc: (strItemList gItem 'count)
+										})
 									)
 								)
 						</OnPaneInit>
@@ -366,7 +633,6 @@
 								(scrShowPane gScreen "Default")
 							</Action>
 						</Actions>
-
 					</SellMedicalItems>
 
 					<DoneSelling descID="descDoneSelling">
@@ -375,17 +641,13 @@
 								(scrShowPane gScreen "Default")
 							</Action>
 						</Actions>
-
 					</DoneSelling>
 
 					<Donate>
 						<OnPaneInit>
 							(block (gift giftTable fleetXP xpGain maxGain)
 								; Get the gift table
-								(setq giftTable (objGetStaticData gSource (cat (objGetData gSource "CSC") "GiftTable")))
-								(if (not giftTable)
-									(setq giftTable (objGetStaticData gSource "arcticaGiftTable"))
-									)
+								(setq giftTable (objGetStaticData gSource 'csc.giftTable))
 
 								; Find the appropriate gift based on the donation. The donation amount
 								; must be greater than the minimum for the gift and the gift must have
@@ -407,7 +669,9 @@
 									)
 
 								; Describe the gift
-								(scrSetDesc gScreen (cat "\"Your generosity humbles me! When I was posted in the front-lines I came across " (itmGetName gift 8) ". I would be honored if you would accept it as a gift.\""))
+								(scrSetDescTranslate gScreen 'descGift {
+									itemName: (itmGetName gift 'count)
+									})
 
 								; Give the gift to the player
 								(objAddItem gPlayerShip gift)
@@ -442,12 +706,21 @@
 							</Action>
 						</Actions>
 					</Donate>
-
 				</Panes>
-
 			</Infirmary>
-
 		</DockScreens>
+
+		<StaticData>
+			<Data id="csc.giftTable">
+				(	; donation	item						count	unique
+					(10000		&itPlasmaShieldGenerator;	1		'Gift1)
+					(5000		&itInvincibleDeflector;		1		'Gift2)
+					(2500		&itR5Deflector;				1		'Gift3)
+					(1250		&itEMPImmuneCoating;		4		'Gift4)
+					(0			&itKobeWater;				1		Nil)
+					)
+			</Data>
+		</StaticData>
 
 		<Language>
 			<Text id="actionBridge">[B]ridge</Text>
@@ -479,56 +752,63 @@
 				reinforcements, nothing!"
 
 			</Text>
+			<Text id="descOffer">
+
+				"Welcome to the Infirmary, %sir%! We're in desperate need of 
+				medical supplies. I'm prepared to offer you %cost% for the 
+				%itemName%  in your cargo hold.
+
+				"What do you say?"
+			
+			</Text>
+			<Text id="descOfferMultiple">
+
+				"Welcome to the Infirmary, %sir%! We are in desperate need of 
+				medical supplies. I'm prepared to offer you %cost% for all the 
+				medical items in your cargo hold:
+				
+				"%ItemListDesc%.
+				
+				"What do you say?"
+
+			</Text>
 			<String id="descDoneSelling">
 
 				"Thank you, those supplies are really going to help these troopers."
 
 			</String>
-		</Language>
+			<Text id="descGift">
 
+				"Your generosity humbles me! When I was posted in the front-lines
+				I came across %itemName%. I would be honored if you would accept
+				it as a gift."
+			
+			</Text>
+		</Language>
 	</ShipClass>
 
-	<!-- CSC Task Force
+	<!-- CSC Task Force (Stock)
 	
-	GLOBAL DATA
-	
-	missionsAccepted:	Total missions accepted
-	missionsCompleted:	Total missions completed successfully
-	missionsFailed:		Total missions failed
+		Descendants from this class must define the following data elementss:
 
-	EXTRA DATA
-	
-	MissionID:			ID of current mission
-	MissionStatus:		Current status of mission:
-							Nil					= no mission in progress
-							'inprogress			= mission in progress
-							'success			= mission succeeded
-							'failure			= mission failed
+		STATIC DATA
 
-	PLAYER SHIP EXTRA
-	
-	fleetTFSuccess:		Total number of successful missions
-	fleetTFFailure:		Total number of failed missions
+		csc.emblem: Code to generate the ship's emblem.
 
+		LANGUAGE
+
+		csc.captainsWelcome: Text when player meets captain.
+	
 	-->
 
-	<ShipClass UNID="&scCSCTaskForce;"
+	<ShipClass UNID="&scCSCTaskForceStock;"
 			manufacturer=		"Earth Industries"
 			class=				"Commonwealth Star Carrier"
 			type=				""
 			defaultSovereign=	"&svCommonwealthFleet;"
 
 			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, fleetLaw, majorShip, pacificDefense"
-			inherit=			"&baCSCBase;"
-			   
-			size=				"400"
-			mass=				"200000"
-			thrustRatio=		"0.5"
-			maxSpeed=			"2"
-			cargoSpace=			"5000"
-			cyberDefenseLevel=	"8"
-			   
-			explosionType=		"&vtPlasmaExplosion2;"
+			inherit=			"&scCSCStock;"
 
 			dockScreen=			"Main"
 			>
@@ -541,35 +821,27 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itSAR40Cannon;" secondaryWeapon="true" minFireArc="270" maxFireArc="90"  posAngle="0" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR40Cannon;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR40Cannon;" secondaryWeapon="true" omnidirectional="true" posAngle="90" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR40Cannon;" secondaryWeapon="true" omnidirectional="true" posAngle="270" posRadius="98" posZ="-5"/>
+			<Device slotID="w1"		deviceID="&itSAR40Cannon;"/>
+			<Device slotID="w2"		deviceID="&itSAR40Cannon;"/>
+			<Device slotID="w3"		deviceID="&itSAR40Cannon;"/>
+			<Device slotID="w4"		deviceID="&itSAR40Cannon;"/>
 			
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
-			<Device deviceID="&vtDamageControlParty;"/>
+			<Device slotID="omni2"	deviceID="&itMissileDefense;"/>
+			<Device					deviceID="&vtDamageControlParty;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"1"
-			rotationAccel=		"0.1"
-			/>
+		<!-- Trade and Items -->
 
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"600"
-					/>
+		<Trade currency="credit" max="100000" replenish="5000">
+			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			
-			<Compartment name="main drive"
-					type=		"mainDrive"
-					hitPoints=	"200"
-
-					posX=		"-56"
-					posY=		"0"
-					sizeX=		"42"
-					sizeY=		"60"
-					/>
-		</Interior>
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+		</Trade>
 
 		<Items>
 			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
@@ -586,60 +858,13 @@
 			<Item count="1d4"	item="&itR5BDeflector;"/>
 		</Items>
 
-		<!-- Image and Effects -->
-
-		<Image imageID="&rsCSCHD;" imageWidth="370" imageHeight="370" rotationCount="120" rotationColumns="12" viewportRatio="0.03"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="114"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-		</Effects>
-			
-		<DockingPorts>
-			<Port posAngle="90"   posRadius="105"  posZ="0" />
-			<Port posAngle="-90"  posRadius="105"  posZ="0" />
-
-			<Port posAngle="45"   posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="135"  posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="225"  posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="315"  posRadius="105"  posZ="0"	bringToFront="*"/>
-		</DockingPorts>
-
-		<!-- AI and Behavior -->
-
-		<AISettings
-			fireRateAdj=		"20"
-			fireAccuracy=		"95"
-			perception=			"6"
-			/>
-		
-		<Trade currency="credit" max="100000" replenish="5000">
-			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-			
-			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
-			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
-			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
-			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
-		</Trade>
-
-		<Events>
-			<OnLoad>
-				(block (
-					(dataEntry (@ (typGetStaticData &stCSCTaskForceEncounter; 'CSCData) (objGetData gSource 'CSC)))
-					)
-					(objSetData gSource 'CSCData (eval dataEntry))
-					)
-			</OnLoad>
-		</Events>
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main backgroundID="none">
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 
@@ -679,31 +904,14 @@
 
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 				
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(switch
-								(eq (objGetData gSource "CSC") "america")
-									(scrSetDesc gScreen "You talk to the captain of the CSC America. \"The Ares have been ruthless. When we lost the CSC Europa, the damn Martians deliberately targeted the emergency capsules. We taught them a lesson after that, though: we torched several of their communes.\"")
-
-								(eq (objGetData gSource "CSC") "india")
-									(scrSetDesc gScreen "You talk to the captain of the CSC India. \"If you ever get back to the Commonwealth, you've got to tell them to send more ships. We're getting killed out here and I don't even know if anyone back home cares.\"")
-
-								(eq (objGetData gSource "CSC") "atlantica")
-									(scrSetDesc gScreen "You talk to the captain of the CSC Atlantica. \"This war has been tough on the troops. We've had to start scavenging for vital supplies. I'm not surprised that the discipline in some units has deteriorated.\"")
-
-								(eq (objGetData gSource "CSC") "asia")
-									(scrSetDesc gScreen "You talk to the captain of the CSC Asia. \"When the Antarctica went rogue, Admiral Decker just about pissed acid. He was furious! He took it as a personal betrayal.\"")
-
-								(eq (objGetData gSource "CSC") "pacifica")
-									(scrSetDesc gScreen "You talk to the captain of the CSC Pacifica. \"You ever meet a Martian? Not the meek little Syrtians&#x97;I mean the Ares clones. They all have this smug look of superiority that cranks me up. They look better in the crosshairs of TeV 9, that's for sure!\"")
-
-								(scrSetDesc gScreen "The captain welcomes you aboard.")
-								)
+							(scrSetDescTranslate gScreen 'csc.captainsWelcome)
 						</OnPaneInit>
 
 						<Actions>
@@ -723,36 +931,32 @@
 
 				<Display>
 					<Image left="140" top="144" width="320" height="240" transparent="true">
-						(@ (objGetData gSource 'CSCData) 'emblem)
+						(eval (objGetStaticData gSource 'csc.emblem))
 					</Image>
 				</Display>
 				
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(block (behavior rank)
-								(setq behavior (objGetData gSource "behavior"))
-								(setq rank (objGetData gPlayerShip "fleetLevel"))
+							(block (
+								(behavior (objGetData gSource "behavior"))
+								(rank (objGetData gPlayerShip "fleetLevel"))
+								)
 								
 								(switch
 									(eq behavior 'moving)
-										(scrSetDesc gScreen
-											"You are on the flight deck of " (objGetName gSource 'article) ". "
-											"The ship is on maneuvers and the XO is giving orders to the astrogator and the sensor chief."
-											)
+										(scrSetDescTranslate gScreen 'descFlightDeckMoving {
+											shipName: (objGetName gSource 'article)
+											})
 											
 									(eq rank 1)
-										(scrSetDesc gScreen
-											"The flight deck of " (objGetName gSource 'article) 
-											" hums with the activity of men and women working at terminals and holocharts. "
-											"The XO is giving orders to a squadron out on a mission."
-											)
+										(scrSetDescTranslate gScreen 'descFlightDeck.rank.1 {
+											shipName: (objGetName gSource 'article)
+											})
 
-									(scrSetDesc gScreen
-										"You are on the flight deck of " (objGetName gSource 'article) ". "
-										"Men and women work at terminals planning missions and communicating with squadrons on patrol. "
-										"The XO is near a holochart, listening to a report."
-										)
+									(scrSetDescTranslate gScreen 'descFlightDeck {
+										shipName: (objGetName gSource 'article)
+										})
 									)
 								)
 						</OnPaneInit>
@@ -781,13 +985,7 @@
 						</Actions>
 					</Default>
 					
-					<ShipMoving>
-						<OnPaneInit>
-							(scrSetDesc gScreen
-								"The XO is too busy to talk to you right now. He waves you away while he concentrates on the maneuvers."
-								)
-						</OnPaneInit>
-						
+					<ShipMoving descID="descShipMoving">
 						<Actions>
 							<Action id="actionLeave" default="1" cancel="1">
 								(scrShowScreen gScreen "Main")
@@ -796,7 +994,6 @@
 					</ShipMoving>
 				</Panes>
 			</FlightDeck>
-
 		</DockScreens>
 
 		<Language>
@@ -810,10 +1007,42 @@
 
 			</Text>
 
-			<Text id="descNoMissions">
+			<String id="descNoMissions">
 
 				"Sorry, there are no missions available for you."
 
+			</String>
+			<Text id="csc.captainsWelcome">
+
+				The captain welcomes you aboard.
+
+			</Text>
+			<Text id="descFlightDeckMoving">
+
+				You are on the flight deck of %shipName%. The ship is on 
+				maneuvers and the XO is giving orders to the astrogator and the 
+				sensor chief.
+				
+			</Text>
+			<Text id="descFlightDeck.rank.1">
+
+				The flight deck of %shipName% hums with the activity of men and 
+				women working at terminals and holocharts. The XO is giving 
+				orders to a squadron out on a mission.
+				
+			</Text>
+			<Text id="descFlightDeck">
+
+				You are on the flight deck of %shipName%. Men and women work at 
+				terminals planning missions and communicating with squadrons on 
+				patrol. The XO is near a holochart, listening to a report.
+				
+			</Text>
+			<Text id="descShipMoving">
+
+				The XO is too busy to talk to you right now. He waves you away 
+				while he concentrates on the maneuvers.
+			
 			</Text>
 		</Language>
 

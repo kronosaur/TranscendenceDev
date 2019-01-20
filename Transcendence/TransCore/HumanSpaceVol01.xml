@@ -2180,6 +2180,16 @@
 
 	<!ENTITY tbCSCEscort2AresAmbush		"0x00100660">
 	<!ENTITY tbCSCEscort2RogueAmbush	"0x00100661">
+	<!ENTITY scCSCStock					"0x00100662">
+	<!ENTITY scCSCSupportStock			"0x00100663">
+	<!ENTITY scCSCTaskForceStock		"0x00100664">
+	<!ENTITY scCSCArctica				"0x00100665">
+	<!ENTITY scCSCSahara				"0x00100666">
+	<!ENTITY scCSCAmerica				"0x00100667">
+	<!ENTITY scCSCAtlantica				"0x00100668">
+	<!ENTITY scCSCAsia					"0x00100669">
+	<!ENTITY scCSCIndia					"0x0010066A">
+	<!ENTITY scCSCPacifica				"0x0010066B">
 
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

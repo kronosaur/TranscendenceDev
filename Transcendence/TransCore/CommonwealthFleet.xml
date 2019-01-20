@@ -210,37 +210,6 @@ PLAYER DATA
 				unique=					"inSystem"
 				/>
 
-		<StaticData>
-			<CSCData>
-				{
-					america:
-						{	name: "CSC America" 
-							emblem: (resCreateImageDesc &rsFleetEmblems; 320 0 320 240)
-							}
-							
-					atlantica:
-						{	name: "CSC Atlantica" 
-							emblem: (resCreateImageDesc &rsFleetEmblems; 320 240 320 240)
-							}
-							
-					asia:
-						{	name: "CSC Asia" 
-							emblem: (resCreateImageDesc &rsFleetEmblems; 0 240 320 240)
-							}
-							
-					india:
-						{	name: "CSC India" 
-							emblem: (resCreateImageDesc &rsFleetEmblems; 0 480 320 240)
-							}
-							
-					pacifica:	
-						{	name: "CSC Pacifica" 
-							emblem: (resCreateImageDesc &rsFleetEmblems; 320 480 320 240)
-							}
-					}
-			</CSCData>
-		</StaticData>
-
 		<GlobalData>
 			<shipsLeft>
 				("america" "atlantica" "asia" "india" "pacifica")
@@ -248,29 +217,40 @@ PLAYER DATA
 		</GlobalData>
 
 		<Ships>
-			<Ship	count="1"	class="&scCSCTaskForce;" orders="hold">
-				<OnCreate>
-					(block (shipsLeft shipToCreate dataEntry)
+			<Ship	count="1"	class="&scCSCAmerica;" orders="hold">
+				<GetParameters>
+					(block (
+						;	Pick a random ship
 
-						; Pick a random ship
-						(setq shipsLeft (typGetData &stCSCTaskForceEncounter; 'shipsLeft))
-						(setq shipToCreate (if (not shipsLeft) "america" (random shipsLeft)))
-						(setq dataEntry (@ (typGetStaticData &stCSCTaskForceEncounter; 'CSCData) shipToCreate))
+						(shipsLeft (typGetData &stCSCTaskForceEncounter; 'shipsLeft))
+						(shipToCreate (if (not shipsLeft) "america" (random shipsLeft)))
+						(cscTable {
+							america: &scCSCAmerica;
+							asia: &scCSCAsia;
+							atlantica: &scCSCAtlantica;
+							india: &scCSCIndia;
+							pacifica: &scCSCPacifica;
+							})
+						)
 
-						; Remove from list
+						;	Remove from list
+						;	LATER: We shouldn't modify the list inside here, since
+						;	this should not have side-effects. In the future we should
+						;	modify the list in an OnCreate event (or something).
+
 						(typSetData &stCSCTaskForceEncounter; 'shipsLeft 
 							(filter shipsLeft theShip 
 								(not (eq theShip shipToCreate))
 								)
 							)
 
-						; Name the ship
+						;	Return the CSC class
 
-						(objSetName gSource (@ dataEntry 'name) 0x01)
-						(objSetData gSource 'CSC shipToCreate)
-						(objSetData gSource 'CSCData (eval dataEntry))
+						{
+							class: (@ cscTable shipToCreate)
+							}
 						)
-				</OnCreate>
+				</GetParameters>
 
 				<Escorts>
 					<Ship					count="1"	class="&scCenturionM;"	orders="guard" controller="fleetcommand">
@@ -311,18 +291,7 @@ PLAYER DATA
 				/>
 
 		<Ships>
-			<Ship	count="1"	class="&scCSCHospital;" orders="hold">
-				<OnCreate>
-					(block Nil
-						(objSetName gSource "CSC Arctica" 0x01)
-						(objSetData gSource 'CSC 'arctica)
-						(objSetData gSource 'CSCData {
-							name: "CSC Arctica"
-							emblem: (resCreateImageDesc &rsFleetEmblems; 960 0 320 240)
-							})
-						)
-				</OnCreate>
-
+			<Ship	count="1"	class="&scCSCArctica;" orders="hold">
 				<Escorts>
 					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
 				</Escorts>
@@ -353,18 +322,7 @@ PLAYER DATA
 				/>
 
 		<Ships>
-			<Ship	count="1"	class="&scCSCHospital;" orders="hold">
-				<OnCreate>
-					(block Nil
-						(objSetName gSource "CSC Sahara" 0x01)
-						(objSetData gSource 'CSC 'sahara)
-						(objSetData gSource 'CSCData {
-							name: "CSC Sahara"
-							emblem: (resCreateImageDesc &rsFleetEmblems; 640 480 320 240)
-							})
-						)
-				</OnCreate>
-
+			<Ship	count="1"	class="&scCSCSahara;" orders="hold">
 				<Escorts>
 					<Ship     count="2d6"	class="&scCenturionM;"	orders="patrol" patrolDist="15"/>
 				</Escorts>

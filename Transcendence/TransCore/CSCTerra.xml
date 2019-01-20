@@ -9,22 +9,13 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, cscTerra"
-			inherit=			"&baCSCBase;"
-			   
-			size=				"400"
-			mass=				"200000"
-			cargoSpace=			"5000"
-			thrustRatio=		"0.5"
-			maxSpeed=			"2"
-			cyberDefenseLevel=	"6"
-			   
-			explosionType=		"&vtPlasmaExplosion2;"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, cscTerra"
+			inherit=			"&scCSCStock;"
 
 			dockScreen=			"Main"
 			>
 
-		<Names definiteArticle="true">CSC Terra</Names>
+		<Names>:the CSC Terra</Names>
 
 		<!-- Configuration -->
 		
@@ -34,39 +25,36 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itSAR200AdvancedCannon;" secondaryWeapon="true" minFireArc="270" maxFireArc="90"  posAngle="0" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR200AdvancedCannon;" secondaryWeapon="true" minFireArc="90"  maxFireArc="270" posAngle="180" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR200AdvancedCannon;" secondaryWeapon="true" omnidirectional="true" posAngle="90" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itSAR200AdvancedCannon;" secondaryWeapon="true" omnidirectional="true" posAngle="270" posRadius="98" posZ="-5"/>
-			<Device deviceID="&itNAMIHeavyLauncher;" omnidirectional="true"/>
+			<Device slotID="w1"		deviceID="&itSAR200AdvancedCannon;"/>
+			<Device slotID="w2"		deviceID="&itSAR200AdvancedCannon;"/>
+			<Device slotID="w3"		deviceID="&itSAR200AdvancedCannon;"/>
+			<Device slotID="w4"		deviceID="&itSAR200AdvancedCannon;"/>
 
-			<Device deviceID="&itMissileDefense;" omnidirectional="true" />
-			<Device deviceID="&vtDamageControlParty;"/>
+			<Device slotID="omni1"	deviceID="&itNAMIHeavyLauncher;">
+				<Items>
+					<Item count="300"	item="&itM2Missile;"/>
+				</Items>
+			</Device>
+			<Device slotID="omni2"	deviceID="&itMissileDefense;"/>
+			<Device					deviceID="&vtDamageControlParty;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"1"
-			rotationAccel=		"0.1"
-			/>
+		<!-- Trade and Items -->
 
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"600"
-					/>
+		<Trade currency="credit" max="100000" replenish="5000">
+			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			
-			<Compartment name="main drive"
-					type=		"mainDrive"
-					hitPoints=	"200"
+			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="90"/>
+			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<InstallDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
+			<RemoveDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
+		</Trade>
 
-					posX=		"-56"
-					posY=		"0"
-					sizeX=		"42"
-					sizeY=		"60"
-					/>
-		</Interior>
-		
 		<Items>
-			<Item				count="300"		item="&itM2Missile;"/>
 			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
 			
 			<!-- Some upgrades for sale -->
@@ -81,42 +69,7 @@
 			<Item count="1d4"	item="&itR5BDeflector;"/>
 		</Items>
 
-		<Image imageID="&rsCSCHD;" imageWidth="370" imageHeight="370" rotationCount="120" rotationColumns="12" viewportRatio="0.03"/>
-
-		<Effects>
-			<Effect type="thrustMain"		posAngle="166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="114"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-166"	posRadius="116"	posZ="-10"	rotation="180"	effect="&efMainThrusterLarge;"/>
-		</Effects>
-			
-		<DockingPorts>
-			<Port posAngle="90"   posRadius="105"  posZ="0" />
-			<Port posAngle="-90"  posRadius="105"  posZ="0" />
-
-			<Port posAngle="45"   posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="135"  posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="225"  posRadius="105"  posZ="0"	bringToFront="*"/>
-			<Port posAngle="315"  posRadius="105"  posZ="0"	bringToFront="*"/>
-		</DockingPorts>
-
-		<AISettings
-			fireRateAdj=		"15"
-			fireAccuracy=		"95"
-			perception=			"4"
-			/>
-
-		<Trade currency="credit" max="100000" replenish="5000">
-			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
-			
-			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="90"/>
-			<RepairArmor	criteria="a L:1-10;" priceAdj="100"/>
-			<ReplaceArmor	criteria="a L:1-10;" priceAdj="100"/>
-			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
-			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
-			<InstallDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
-			<RemoveDevice	criteria="d +unid:&itLamplighter;;" priceAdj="100"/>
-		</Trade>
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main backgroundID="none">
