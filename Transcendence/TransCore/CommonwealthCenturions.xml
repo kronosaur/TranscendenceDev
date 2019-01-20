@@ -7,7 +7,7 @@
 	<!-- Level 5: Centurion-class Heavy Gunship Block 1 -->
 
 	<ShipClass UNID="&scCenturionBlock1;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
@@ -86,7 +86,7 @@
 	<!-- Level 6: Centurion-class Heavy Gunship Block 2 -->
 
 	<ShipClass UNID="&scCenturionBlock2;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
@@ -166,7 +166,7 @@
 	<!-- Level 7: Centurion/M-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionM;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion/M"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
@@ -245,7 +245,7 @@
 	<!-- Level 7: Centurion/X-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionX;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion/X"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"

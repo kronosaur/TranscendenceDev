@@ -453,7 +453,7 @@
 	-->
 
 	<ShipClass UNID="&scRoninCharonBuster;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/C"
 			type=				"gunship"
 

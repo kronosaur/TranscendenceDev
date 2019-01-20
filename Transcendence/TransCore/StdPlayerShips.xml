@@ -7,7 +7,7 @@
 	<!-- Level 6: Centurion-class Heavy Gunship Block 2 -->
 
 	<ShipClass UNID="&scCenturionBlock2PlayerL6;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion"
 			type=				"heavy gunship"
 
@@ -45,7 +45,7 @@
 	<!-- Level 7: Centurion/X-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionXPlayerL7;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion/X"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
@@ -540,7 +540,7 @@
 	<!-- Level 3: Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfenPlayerL3;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 
@@ -579,7 +579,7 @@
 	<!-- Level 6: Wolfen-class Gunship (Variant A) -->
 
 	<ShipClass UNID="&scWolfenPlayerL6A;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 
@@ -619,7 +619,7 @@
 	<!-- Level 6: Wolfen-class Gunship (Variant B) -->
 
 	<ShipClass UNID="&scWolfenPlayerL6B;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 
@@ -659,7 +659,7 @@
 	<!-- Level 6: Wolfen-class Gunship (Variant C) -->
 
 	<ShipClass UNID="&scWolfenPlayerL6C;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 

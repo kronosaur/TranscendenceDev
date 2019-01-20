@@ -577,7 +577,7 @@
 	<!-- Level 4: Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfen;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"

@@ -157,7 +157,7 @@
 	<!-- Light IAV -->
 
 	<ShipClass UNID="&scIAVLightG1;"
-			manufacturer=		""
+			manufacturer=		"(Various)"
 			class=				"light IAV"
 			type=				""
 
@@ -214,7 +214,7 @@
 	<!-- Ronin A-class Gunship -->
 
 	<ShipClass UNID="&scRoninG1;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/A"
 			type=				"gunship"
 
@@ -427,7 +427,7 @@
 	<!-- Medium IAV G2 -->
 
 	<ShipClass UNID="&scIAVMediumG2;"
-			manufacturer=		""
+			manufacturer=		"(Various)"
 			class=				"medium IAV"
 			type=				""
 
@@ -481,7 +481,7 @@
 	<!-- Heavy IAV G2 -->
 
 	<ShipClass UNID="&scIAVHeavyG2;"
-			manufacturer=		""
+			manufacturer=		"(Various)"
 			class=				"heavy IAV"
 			type=				""
 			level=				"2"
@@ -523,7 +523,7 @@
 	<!-- Ronin A-class Gunship -->
 
 	<ShipClass UNID="&scRoninG2;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/A"
 			type=				"gunship"
 
@@ -668,7 +668,7 @@
 	<!-- Heavy IAV G3 -->
 
 	<ShipClass UNID="&scIAVHeavyG3;"
-			manufacturer=		""
+			manufacturer=		"(Various)"
 			class=				"heavy IAV"
 			type=				""
 
@@ -717,7 +717,7 @@
 	<!-- Ronin B-class Gunship -->
 
 	<ShipClass UNID="&scRoninG3;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/B"
 			type=				"gunship"
 
@@ -1053,7 +1053,7 @@
 	<!-- Ronin C-class Gunship -->
 
 	<ShipClass UNID="&scRoninG4;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/C"
 			type=				"gunship"
 
@@ -1178,7 +1178,7 @@
 	<!-- Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfenG4;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 
@@ -1230,7 +1230,7 @@
 	<!-- Centurion-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionG5;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion"
 			type=				"heavy gunship"
 			level=				"5"
@@ -1418,7 +1418,7 @@
 	<!-- Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfenG5;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 
@@ -1469,7 +1469,7 @@
 	<!-- Centurion-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionG6;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion"
 			type=				"heavy gunship"
 
@@ -1615,7 +1615,7 @@
 	<!-- Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfenG6;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 

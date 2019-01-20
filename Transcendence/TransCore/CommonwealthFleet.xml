@@ -335,7 +335,7 @@ PLAYER DATA
 	<!-- Level 7: Aurochs Transport -->
 
 	<ShipClass UNID="&scAurochs;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Aurochs"
 			type=				"transport"
 			defaultSovereign=	"&svCommonwealthFleet;"
@@ -451,7 +451,7 @@ PLAYER DATA
 	<!-- Level 7: Britannia-class Heavy Gunship -->
 
 	<ShipClass UNID="&scBritannia;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Britannia"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealthFleet;"
@@ -663,7 +663,7 @@ PLAYER DATA
 	<!-- Level 9: Aquila-class Cruiser -->
 
 	<ShipClass UNID="&scAquilaCruiser;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Aquila"
 			type=				"cruiser"
 			defaultSovereign=	"&svCommonwealthFleet;"

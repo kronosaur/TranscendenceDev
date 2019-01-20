@@ -7,7 +7,7 @@
 	<!-- Level 2: Ronin A-class Gunship -->
 
 	<ShipClass UNID="&scRoninA;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/A"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
@@ -75,7 +75,7 @@
 	<!-- Level 2: Ronin B-class Gunship -->
 
 	<ShipClass UNID="&scRoninB;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/B"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
@@ -157,7 +157,7 @@
 	<!-- Level 4: Ronin C-class Gunship -->
 
 	<ShipClass UNID="&scRoninC;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/C"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"

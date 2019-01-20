@@ -99,7 +99,7 @@
 	<!-- Player Ship: Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfenPlayer;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Wolfen"
 			type=				"gunship"
 

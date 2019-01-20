@@ -142,7 +142,7 @@
 	<!-- Stormhound's COMSOC HQ -->
 
 	<ShipClass UNID="&scStormhoundAquila;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Aquila"
 			type=				"cruiser"
 

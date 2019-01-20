@@ -5,7 +5,7 @@
 	<!-- Rama's Centurion-class Heavy Gunship -->
 
 	<ShipClass UNID="&scCenturionRama;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Centurion/X"
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"

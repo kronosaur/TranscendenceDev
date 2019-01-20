@@ -5,7 +5,7 @@
 	<!-- Jenna's Ronin Gunship	-->
 
 	<ShipClass UNID="&scRoninJenna;"
-			manufacturer=		"Pacific Defense Corporation"
+			manufacturer=		"Pacific Defense"
 			class=				"Ronin/C"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"

@@ -168,9 +168,9 @@
 	-->
 
 	<ShipClass UNID="&scSvalbardExplorer;"
-			manufacturer=		"corporate"
-			class=				""
-			type=				"explorer"
+			manufacturer=		"Rasiermesser"
+			class=				"corporate explorer"
+			type=				""
 
 			attributes=			"capitalShip, corporate, kateMorgental, majorShip, svalbardExplorer"
 			character=			"&unidKateMorgental;"

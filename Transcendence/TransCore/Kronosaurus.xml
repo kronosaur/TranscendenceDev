@@ -25,7 +25,7 @@
 	<!-- The Kronosaurus -->
 
 	<ShipClass UNID="&scCharonFrigateKronosaurus;"
-			manufacturer=		"Charon Pirates"
+			manufacturer=		"Neptune's Forge"
 			class=				"Charon frigate"
 			type=				""
 			   
