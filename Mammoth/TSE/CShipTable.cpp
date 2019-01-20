@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define ESCORTS_TAG					CONSTLIT("Escorts")
+#define GET_PARAMETERS_TAG			CONSTLIT("GetParameters")
 #define GROUP_TAG					CONSTLIT("Group")
 #define INITIAL_DATA_TAG			CONSTLIT("InitialData")
 #define ITEMS_TAG					CONSTLIT("Items")
@@ -32,6 +33,8 @@
 #define SOVEREIGN_ATTRIB			CONSTLIT("sovereign")
 #define TABLE_ATTRIB				CONSTLIT("table")
 #define UNID_ATTRIB					CONSTLIT("unid")
+
+#define FIELD_CLASS					CONSTLIT("class")
 
 class CLevelTableOfShipGenerators : public IShipGenerator
 	{
@@ -112,6 +115,7 @@ class CSingleShip : public IShipGenerator
 		IShipGenerator *m_pEscorts;					//	Random table of escorts (or NULL)
 		CAttributeDataBlock m_InitialData;			//	Initial data for ship
 		ICCItem *m_pOnCreate;						//	Create call
+		ICCItemPtr m_pGetParameters;				//	<GetParameters>
 		bool m_bBuild = false;						//	If TRUE, build on Ctx.pBase instead of gating in
 
 		CDesignTypeRef<CDesignType> m_pOverride;	//	Override (event handler)
@@ -601,7 +605,7 @@ void CSingleShip::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 //	Adds types used by the table
 
 	{
-	retTypesUsed->SetAt(m_pShipClass->GetUNID(), true);
+	retTypesUsed->SetAt(m_pShipClass.GetUNID(), true);
 
 	if (m_pItems)
 		m_pItems->AddTypesUsed(retTypesUsed);
@@ -625,10 +629,34 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	int i;
 
-	ASSERT(m_pShipClass);
 	ASSERT(pSovereign);
 
-	DWORD dwClass = m_pShipClass->GetUNID();
+	DWORD dwClass = m_pShipClass.GetUNID();
+
+	//	If necessary, we need to call <GetParameters> to get the class.
+
+	if (m_pGetParameters)
+		{
+		CCodeChainCtx CCCtx;
+		ICCItemPtr pResult = CCCtx.RunCode(m_pGetParameters);
+		if (pResult->IsError())
+			{
+			if (retpShip)
+				*retpShip = NULL;
+			return;
+			}
+
+		DWORD dwClassOverride = pResult->GetIntegerAt(FIELD_CLASS);
+		if (dwClassOverride)
+			dwClass = dwClassOverride;
+		}
+
+	if (dwClass == 0)
+		{
+		if (retpShip)
+			*retpShip = NULL;
+		return;
+		}
 
 	//	If we've got a maximum, then see if we've already got too many ships of this
 	//	ship class.
@@ -870,6 +898,9 @@ Metric CSingleShip::GetAverageLevelStrength (int iLevel)
 //	standard).
 
 	{
+	if (!m_pShipClass)
+		return 0.0;
+
 	//	Compute based on the level of the ship relative to the input level.
 
 	Metric rTotal = m_Count.GetAveValueFloat() * ::CalcLevelDiffStrength(m_pShipClass->GetLevel() - iLevel);
@@ -920,19 +951,13 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (error = m_pShipClass.LoadUNID(Ctx, pDesc->GetAttribute(CLASS_ATTRIB)))
 		return error;
 
-	if (m_pShipClass.GetUNID() == 0)
-		{
-		Ctx.sError = CONSTLIT("Invalid or missing ship class.");
-		return ERR_FAIL;
-		}
-
 	if (error = m_pSovereign.LoadUNID(Ctx, pDesc->GetAttribute(SOVEREIGN_ATTRIB)))
 		return error;
 
 	if (error = m_pOverride.LoadUNID(Ctx, pDesc->GetAttribute(EVENT_HANDLER_ATTRIB)))
 		return error;
 
-	//	Load OnCreate code
+	//	Load code
 
 	CXMLElement *pHandler = pDesc->GetContentElementByTag(ON_CREATE_TAG);
 	if (pHandler)
@@ -941,6 +966,18 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		if (m_pOnCreate->IsError())
 			{
 			Ctx.sError = strPatternSubst("<OnCreate> in <Ship>: &s", m_pOnCreate->GetStringValue());
+			return ERR_FAIL;
+			}
+		}
+
+	pHandler = pDesc->GetContentElementByTag(GET_PARAMETERS_TAG);
+	if (pHandler)
+		{
+		CCodeChainCtx CCCtx;
+		m_pGetParameters = CCCtx.LinkCode(pHandler->GetContentText(0));
+		if (m_pGetParameters->IsError())
+			{
+			Ctx.sError = strPatternSubst("<OnCreate> in <Ship>: &s", m_pGetParameters->GetStringValue());
 			return ERR_FAIL;
 			}
 		}
@@ -1021,6 +1058,14 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Options
 
 	m_bBuild = pDesc->GetAttributeBool(BUILD_ATTRIB);
+
+	//	Validate
+
+	if (m_pShipClass.GetUNID() == 0 && !m_pGetParameters)
+		{
+		Ctx.sError = CONSTLIT("Invalid or missing ship class.");
+		return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}
