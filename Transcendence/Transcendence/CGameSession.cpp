@@ -194,6 +194,17 @@ void CGameSession::OnCleanUp (void)
 
     {
 	HideMenu();
+
+	//	If we have dock screens up, keep hitting the cancel action
+	//	until we're done.
+
+	int iMaxLoops = 100;
+	CDockScreenStack &Stack = m_Model.GetUniverse().GetDockSession().GetFrameStack();
+	while (!Stack.IsEmpty() && iMaxLoops-- > 0)
+		GetDockScreen().ExecuteCancelAction();
+
+	if (!Stack.IsEmpty())
+		m_Model.ExitScreenSession(true);
     }
 
 ALERROR CGameSession::OnInit (CString *retsError)

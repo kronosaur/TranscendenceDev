@@ -573,30 +573,12 @@ ALERROR CTranscendenceModel::EndGameClose (CString *retsError)
 		{
 		case stateInGame:
 			{
-	        CGameSession *pSession = GetPlayer()->GetGameSession();
-			if (pSession == NULL)
-				{
-				ASSERT(false);
-				break;
-				}
-			
-			int iMaxLoops = 100;
+			//	By the time we get here, the game session has been destroyed,
+			//	which means we better have exited all our screen.
 
-			//	If we have dock screens up, keep hitting the cancel action
-			//	until we're done.
+			ASSERT(GetScreenStack().IsEmpty());
 
-			while (!GetScreenStack().IsEmpty() && iMaxLoops-- > 0)
-				pSession->GetDockScreen().ExecuteCancelAction();
-
-			if (!GetScreenStack().IsEmpty())
-				ExitScreenSession(true);
-
-			//	If we're dead after this, then recurse
-
-			if (m_iState != stateInGame)
-				return EndGameClose(retsError);
-
-			//	Otherwise, save the game
+			//	Save the game
 
 			if (error = EndGameSave(retsError))
 				return error;
