@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define MESSAGE_TAG								CONSTLIT("Message")
+#define RTF_TAG									CONSTLIT("RTF")
 #define STRING_TAG								CONSTLIT("String")
 #define TEXT_TAG								CONSTLIT("Text")
 
@@ -312,6 +313,16 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				{
 				pEntry->pCode = NULL;
 				pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
+				}
+			}
+		else if (strEquals(pItem->GetTag(), RTF_TAG))
+			{
+			pEntry->pCode = NULL;
+			pEntry->sText = ParseTextBlock(pItem->GetContentText(0));
+			if (!CTextBlock::IsRTFText(pEntry->sText))
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Language id: %s : Expected RTF text"), sID);
+				return ERR_FAIL;
 				}
 			}
 		else if (strEquals(pItem->GetTag(), STRING_TAG))

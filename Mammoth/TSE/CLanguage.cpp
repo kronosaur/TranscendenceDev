@@ -96,6 +96,7 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 	//	If pArgs is a structure, then we look up variable names in it.
 
 	bool bHasData = (pArgs && pArgs->IsSymbolTable());
+	bool bIsRTF = CTextBlock::IsRTFText(sString);
 
 	//	Compose. Loop once for each segment that we need to add
 
@@ -236,6 +237,11 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 
 			if (bCapitalize)
 				sVar = strCapitalize(sVar);
+
+			//	Escape, if necessary
+
+			if (bIsRTF)
+				sVar = CTextBlock::Escape(sVar);
 
 			//	Setup segment
 
