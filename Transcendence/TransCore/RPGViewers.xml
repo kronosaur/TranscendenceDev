@@ -20,6 +20,7 @@
 						icon: (shpGetImageDesc shipClass { rotation:0 })
 
 						largeIcon: (shpGetImageDesc shipClass { rotation:0 })
+						largeIconScale: (@ entry 'largeIconScale)
 						details: (rpgGetShipClassDetails shipClass { })
 						detailsStyle: 'stacked
 

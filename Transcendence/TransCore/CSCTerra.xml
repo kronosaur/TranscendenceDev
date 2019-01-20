@@ -92,6 +92,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
 							<Action id="actionBridge" default="1">
 								(block (
 									(rank (objGetData gPlayerShip 'fleetLevel))

@@ -270,7 +270,12 @@
 
 <!-- BASE CLASSES -->
 
-	<!-- CSC (Stock) -->
+	<!-- CSC (Stock)
+	
+		This base class defines the basic hull, including device slot placements.
+		All CSCs should descend from this, either directly or via another class.
+
+	-->
 
 	<ShipClass UNID="&scCSCStock;"
 			manufacturer=		"Earth Industries"
@@ -373,8 +378,9 @@
 	</ShipClass>
 
 	<!-- CSC Support (Stock)
-	
-		Descendants from this class must define the following data elementss:
+
+		This class defines a standard CSC hospital ship (support ship).	
+		Descendants from this class must define the following data elements:
 
 		STATIC DATA
 
@@ -459,6 +465,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
 							<Action id="actionBridge" default="1">
 								(block Nil
 									(scrShowScreen gScreen 'Bridge)
@@ -723,6 +733,7 @@
 		</StaticData>
 
 		<Language>
+			<Text id="actionInformation">I[n]formation</Text>
 			<Text id="actionBridge">[B]ridge</Text>
 			<Text id="actionInfirmary">[I]nfirmary</Text>
 			<Text id="actionTalkMedical">Talk to [M]edical Officer</Text>
@@ -784,11 +795,23 @@
 				it as a gift."
 			
 			</Text>
+
+			<Text id="textInfo1">
+			
+				The Commonwealth Star Carrier is the backbone of the Fleet, and 
+				our greatest asset in the war against the Ares. Twelve of these 
+				magnificent monsters were built in the 2350s, and most are 
+				still serving with distinction today.
+
+			</Text>
 		</Language>
 	</ShipClass>
 
 	<!-- CSC Task Force (Stock)
 	
+		This class defines a standard CSC Task Force ship (an active CSC on
+		patrol in the Outer Realm).
+
 		Descendants from this class must define the following data elementss:
 
 		STATIC DATA
@@ -875,6 +898,10 @@
 						</OnPaneInit>
 
 						<Actions>
+							<Action id="actionInformation">
+								(scrShowScreen gScreen &dsRPGDialog; (objTranslate gSource 'csc.info))
+							</Action>
+
 							<Action id="actionBridge" default="1">
 								(scrShowScreen gScreen "Bridge")
 							</Action>
@@ -1276,6 +1303,305 @@
 					)
 			</OnOrdersCompleted>
 		</Events>
+
+		<Language>
+			<Text id="csc.info">
+				(list
+					{	id: 'welcome
+						descID: 'textInfo1
+						actions: (list
+							{	labelID: 'actionOuterRealm			nextPage:'outerRealm	}
+							{	labelID: 'actionAresWar				nextPage:'aresWar	}
+							{	labelID: 'actionRogueFleet			nextPage:'rogueFleet	}
+							{	labelID: 'actionOurShips			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&scCenturionM;	}
+											{	shipClass:&scCenturionX;	}
+											{	shipClass:&scBritannia;		}
+											{	shipClass:&scMinotaurM;		}
+											{	shipClass:&scAurochs;		}
+											{	shipClass:&scScarabFreighter;		}
+											{	shipClass:&scAquilaCruiser;	}
+											{	shipClass:&scCSCTaskForceStock;		largeIconScale: 0.625 }
+											)
+										})
+									)
+								}
+							{	labelID: 'actionEnemyIntel			nextPage:'code
+								code: (lambda ()
+									(scrShowScreen gScreen &dsRPGShipClassViewer; {
+										list: (list
+
+											;	NOTE: If you add items to the list, make sure
+											;	you add a description in the Language section.
+
+											{	shipClass:&scSandstorm;	}
+											{	shipClass:&scTundra;	}
+											{	shipClass:&scChasm;		}
+											{	shipClass:&scPolar;		}
+											{	shipClass:&scCometfall;	}
+											{	shipClass:&scDeimos;	}
+											{	shipClass:&scPhobos;	}
+
+											{	shipClass:&scCenturionRogue;	}
+											{	shipClass:&scCenturionXRogue;	}
+											{	shipClass:&scRogueMineLayer;	}
+											)
+										})
+									)
+								}
+
+							{	labelID: 'actionDone				nextPage:'exitScreen	}
+							)
+						}
+
+					{	id: 'aresWar		descID: 'textAresWar1		labelID: 'actionDone	nextPage: 'welcome 	}
+
+					{	id: 'rogueFleet		descID: 'textRogueFleet1	labelID: 'actionDone	nextPage: 'welcome 	}
+
+					{	id: 'outerRealm		descID: 'textOuterRealm1	}
+					{	id: 'outerRealm		descID: 'textOuterRealm2	labelID: 'actionDone	nextPage: 'welcome 	}
+					)
+			</Text>
+			<Text id="textInfo1">
+			
+				Out here on the outskirts of Human Space, it doesn't matter who
+				you are. All that matters is who you become. This is where you
+				test your limits, build your strength, and fulfill your potential.
+
+				Become a part of something bigger. Join the Commonwealth Fleet!
+
+			</Text>
+			<Text id="actionAresWar">The [A]res War</Text>
+			<Text id="actionOuterRealm">The [O]uter Realm</Text>
+			<Text id="actionRogueFleet">The [R]ouge Fleet</Text>
+			<Text id="actionOurShips">Our [S]hips</Text>
+			<Text id="actionEnemyIntel">[E]nemy Intelligence</Text>
+
+			<Text id="textOuterRealm1">
+			
+				We are explorers. Once we walked out of Africa and colonized an 
+				entire world. Today we're colonizing the galaxy and the Outer 
+				Realm is the new frontier.
+
+				Commonwealth settlers are mining new asteroid fields, but they
+				are not alone. The Ranx Empire and the Ares Orthodoxy have 
+				militarized the region, hoping to claim the natural riches for
+				themselves.
+
+			</Text>
+			<Text id="textOuterRealm2">
+
+				Here in the Outer Realm, the Fleet is the only thing protecting
+				our stations from destruction.
+
+				Aboard the CSC Terra, Admiral Decker directs a group of strike
+				carriers in operations against the Ares Orthodoxy.
+
+				Older carriers like the CSC Arctica and the CSC Sahara defend
+				Commonwealth settlements and manage supply lines.
+			
+			</Text>
+			<Text id="textAresWar1">
+			
+				After the Ares destroyed our fortress of Point Pallas, the Fleet
+				was forced to retreat. But our strength and resilience has kept
+				the Ares from making further gains.
+
+				Our Star Carriers move freely throughout the Outer Realm, 
+				striking at will and hiding in the black. So long as the Fleet
+				survives, the settlements of the Commonwealth will be safe.
+
+			</Text>
+			<Text id="textRogueFleet1">
+
+				The Fleet is tasked with fighting enemies both foreign and 
+				domestic. Sadly, a group of traitorous officers have deserted 
+				and formed a lawless fleet of outlaws.
+
+				Admiral Decker vows to bring these renegades to justice, and
+				he reminds every Commonwealth citizen that helping a deserter in
+				a time of war is treason.
+
+				There will be no mercy for citizens who raise arms against the 
+				Fleet.
+
+			</Text>
+
+			<!-- Commonwealth Fleet -->
+
+			<Text id="rpg.shipClassDesc.&scCenturionM;">
+
+				For over a hundred years, Pacific Defense has designed and built
+				gunships for the Fleet. Today's Centurion/Ms are state-of-the-art
+				weapons platforms incorporating lessons from the Fleet's long
+				history.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCenturionX;">
+
+				After renewed Ares hostilities in the 2370s, the Fleet ordered
+				a crash program to improve the venerable Centurions. The 
+				result was the Centurion/X.
+
+				The Centurion/X was eventually displaced by the clean-sheet 
+				design of the Britannia class, but some pilots still prefer the
+				comfortable feel and handling of the traditional Centurion.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scBritannia;">
+
+				Fleet gunship design has evolved to respond to changing
+				threats. The Britannia blurs the distinction between gunships
+				and missile ships, a necessary step to counter the effectiveness
+				the Cometfall heavy bomber.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scMinotaurM;">
+
+				The Minotaur was once designed as a heavy bomber, but has since
+				been repurposed as an escort corvette to defend the Fleet's
+				extensive supply lines.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAurochs;">
+
+				Aurochs transports are a common sight in the Outer Realm. They
+				are armored enough to survive in a combat zone, and flexible
+				enough to serve as either bulk freighter or troop carrier.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scScarabFreighter;">
+
+				These giant freighters supply the bulk of the Fleets needs. They
+				carry immense quantities of fuel and ammunition, but they cannot
+				survive without a significant escort.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scAquilaCruiser;">
+
+				The Commonwealth Parliament only reluctantly approved the huge
+				budget required for the Star Carrier program. After losing the
+				Australia and the Amazonia, legislators refused to fund 
+				replacements.
+
+				Instead they opted to develop the Aquila class. Though the Fleet
+				was initially resistant to integrating these cruisers into 
+				carrier operations, they have lately proved to be valuable in 
+				their own right.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCSCTaskForceStock;">
+
+				Every Fleet member remembers the first time they saw a Star 
+				Carrier in person. The sight of these moving fortresses on 
+				approach bring relief to our friends and dread to our enemies.
+
+			</Text>
+
+			<!-- Ares Ships -->
+			
+			<Text id="rpg.shipClassDesc.&scSandstorm;">
+
+				One-on-one, fast and light Sandstorms are no match for our 
+				Centurions, but in every recent battle our gunships have been
+				greatly outnumbered.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scTundra;">
+
+				Don't be fooled by the small size of these gunships. They are
+				heavy armored and fire micronukes.
+
+				Tundras are particularly effective against slow targets like
+				freighters and carriers. Do not let these ships get inside their
+				defense zone.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scChasm;">
+
+				The newest Ares gunship is the Chasm. With its superior positron
+				cannon, it is more than a match for our Britannias, and easily
+				surpasses our Centurions.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scPolar;">
+
+				Ares freighters are big and dumb, but they are usually escorted
+				by a Sandstorm squadron and carry an omnidirectional ion weapon.
+				
+				There are rumors that a Polar-II class has been developed, 
+				mounting a positron weapon. If so, it will be much harder for us
+				to disrupt Ares supply lines.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCometfall;">
+
+				Cometfalls are heavy bombers designed to destroy stations and
+				carriers. In 2372 a squadron of Cometfalls destroyed Point Vesta.
+				The following year, Cometfalls destroyed the CSC Amazonia and 
+				the CSC Australia.
+
+				Since then, we've evolved our tactics to integrate the Britannia
+				class, which can destroy Cometfalls long before they reach their
+				targets.
+
+				Nevertheless, these ships remain dangerous and must not be
+				underestimated.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scDeimos;">
+
+				While the Deimos class is no match for our Aquilas, it is a
+				formidable anti-gunship platform. Its lightning turret can swat
+				away a whole squadron, while its thermonuclear Hecates cannon
+				can punch through heavy armor at range.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scPhobos;">
+
+				The development of the Phobos dreadnought has changed the 
+				balance of power in the Outer Realm. Its new plasma archcannon
+				is the pinnacle of weapon technology, and obsoletes much of the
+				armor technology defending our stations and carriers.
+
+				Nevertheless, new tactics developed by Admiral Decker, and the
+				bravery of our men and women, have risen to the challenge. Even
+				now, our scientists are hard at work on advanced technologies 
+				that will surpass the dreaded Phobos.
+
+			</Text>
+
+			<!-- Rogue Fleet -->
+
+			<Text id="rpg.shipClassDesc.&scCenturionRogue;">
+
+				The Rogue Fleet stole reserve Centurions and keep them running 
+				with black market parts. Though similar in most respects to our
+				front-line Centurions, these older models use a TeV 9 cannon 
+				instead of the modern SARs.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scCenturionXRogue;">
+
+				Rogue Centurion/Xs are identical to the Fleet's version, and are
+				just as deadly.
+
+			</Text>
+			<Text id="rpg.shipClassDesc.&scRogueMineLayer;">
+
+				The Rogue Fleet raids freighter convoys to obtain supplies. It 
+				has outfitted Aurochs transports with mine laying equipment to
+				ambush unsuspecting ships.
+
+			</Text>
+		</Language>
 	</Type>
 
 <!-- RESOURCES -->
