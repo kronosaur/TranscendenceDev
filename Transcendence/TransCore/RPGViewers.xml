@@ -56,6 +56,158 @@
 				</Actions>
 			</Default>
 		</Panes>
+
+		<Language>
+			<RTF id="rtfBasics">
+				{/rtf
+					{/f:MediumBold;/c:#79828c; manufacturer:} %manufacturer%\n
+					{/f:MediumBold;/c:#79828c; size:} %size% meters\n
+					{/f:MediumBold;/c:#79828c; mass:} %mass% tons
+
+					{/f:MediumBold;/c:#79828c; max. speed:} %maxSpeed%\n
+					{/f:MediumBold;/c:#79828c; thrust//mass:} %thrust%\n
+					{/f:MediumBold;/c:#79828c; maneuverability:} %maneuver%\n
+
+					{/f:MediumBold;/c:#79828c; cargo space:} %cargoSpace% tons
+				}
+			</RTF>
+			<RTF id="rtfArmor">
+				{/rtf 
+					%itemName%\n
+					{/f:MediumBold;/c:#79828c; level:} %level%
+				}
+			</RTF>
+			<RTF id="rtfDevice">
+				{/rtf 
+					%itemName% %count%\n
+					{/f:MediumBold;/c:#79828c; level:} %level%
+				}
+			</RTF>
+		</Language>
 	</DockScreen>
+
+<!-- GLOBALS -->
+	
+	<Globals>
+		(block Nil
+			(setq rpgGetShipClassDetails (lambda (shipClass options)
+				(block (
+					(showDevices (not (@ options 'noDevices)))
+
+					;	Drive Stats
+					
+					(driveText (cat (typGetName shipClass '(short generic)) " drive"))
+					(driveIcon (resCreateImageDesc &rsItems1; 96 384 96 96))
+					
+					;	Cargo Stats
+					
+					(cargoIcon (resCreateImageDesc &rsItems1; 96 192 96 96))
+
+					;	Armor
+
+					(armorItem (typGetProperty shipClass 'armorItem))
+
+					;	Shields
+
+					(shieldItem (typGetProperty shipClass 'shieldItem))
+
+					;	Weapons
+
+					(allWeapons (typGetProperty shipClass 'weaponItems))
+					(weaponItem1 (@ allWeapons 0))
+					(weaponItem2 (@ allWeapons 1))
+					(weaponItem3 (@ allWeapons 2))
+
+					;	Launcher
+
+					(launcherItem (typGetProperty shipClass 'launcherItem))
+
+					;	Misc devices
+
+					(allMisc (typGetProperty shipClass 'miscDeviceItems))
+					(miscItem1 (@ allMisc 0))
+					)
+
+					(list 
+						{
+						icon: (shpGetImageDesc shipclass 0)
+						desc: (typTranslate &dsRPGShipClassViewer; 'rtfBasics {
+							manufacturer: (typGetProperty shipClass 'manufacturer)
+							size: (fmtNumber (typGetProperty shipClass 'size))
+							mass: (fmtNumber (typGetProperty shipClass 'mass))
+							maxSpeed: (fmtNumber 'speed (typGetProperty shipClass 'maxSpeed))
+							thrust: (fmtNumber 'real (/ (typGetProperty shipClass 'thrustToWeight) 1000))
+							maneuver: (fmtNumber 'real (/ (typGetProperty shipClass 'maneuver) 1000))
+							cargoSpace: (fmtNumber (typGetProperty shipClass 'cargoSpace))
+							})
+						}
+
+						(if showDevices
+							{
+							icon: (itmGetImageDesc armorItem)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfArmor {
+								itemName: (itmGetName armorItem '(short actual))
+								level: (itmGetLevel armorItem)
+								})
+							})
+
+						(if (and shieldItem showDevices) {
+							icon: (itmGetImageDesc shieldItem)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName shieldItem '(short actual))
+								count: ""
+								level: (itmGetLevel shieldItem)
+								})
+							})
+
+						(if (and weaponItem1 showDevices) {
+							icon: (itmGetImageDesc weaponItem1)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName weaponItem1 '(short actual))
+								count: (if (gr (itmGetCount weaponItem1) 1) (cat " (&times;" (itmGetCount weaponItem1) ")") "")
+								level: (itmGetLevel weaponItem1)
+								})
+							})
+
+						(if (and weaponItem2 showDevices) {
+							icon: (itmGetImageDesc weaponItem2)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName weaponItem2 '(short actual))
+								count: (if (gr (itmGetCount weaponItem2) 1) (cat " (&times;" (itmGetCount weaponItem2) ")") "")
+								level: (itmGetLevel weaponItem2)
+								})
+							})
+
+						(if (and weaponItem3 (not launcherItem) showDevices) {
+							icon: (itmGetImageDesc weaponItem3)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName weaponItem3 '(short actual))
+								count: (if (gr (itmGetCount weaponItem3) 1) (cat " (&times;" (itmGetCount weaponItem3) ")") "")
+								level: (itmGetLevel weaponItem3)
+								})
+							})
+
+						(if (and launcherItem showDevices) {
+							icon: (itmGetImageDesc launcherItem)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName launcherItem '(short actual))
+								count: ""
+								level: (itmGetLevel launcherItem)
+								})
+							})
+
+						(if (and miscItem1 showDevices) {
+							icon: (itmGetImageDesc miscItem1)
+							desc: (typTranslate &dsRPGShipClassViewer; 'rtfDevice {
+								itemName: (itmGetName miscItem1 '(short actual))
+								count: ""
+								level: (itmGetLevel miscItem1)
+								})
+							})
+						)
+					)
+				))
+			)
+	</Globals>
 	
 </TranscendenceModule>
