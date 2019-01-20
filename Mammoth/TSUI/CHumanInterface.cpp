@@ -141,6 +141,8 @@ void CHumanInterface::CleanUp (EHIShutdownReasons iShutdownCode)
 //	Clean up interface
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	//	Wait for all background tasks to end
@@ -181,6 +183,8 @@ void CHumanInterface::CleanUp (EHIShutdownReasons iShutdownCode)
 	m_BackgroundLowPriority.CleanUp();
 	m_ScreenMgr.CleanUp();
 	m_SoundMgr.CleanUp();
+
+	DEBUG_CATCH
 	}
 
 void CHumanInterface::ClosePopupSession (void)

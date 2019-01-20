@@ -567,6 +567,8 @@ ALERROR CTranscendenceModel::EndGameClose (CString *retsError)
 //	Player has closed the app and we need to save
 
 	{
+	DEBUG_TRY
+
 	ALERROR error;
 
 	switch (m_iState)
@@ -614,6 +616,8 @@ ALERROR CTranscendenceModel::EndGameClose (CString *retsError)
 		return error;
 
 	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 ALERROR CTranscendenceModel::EndGameDelete (CString *retsError)

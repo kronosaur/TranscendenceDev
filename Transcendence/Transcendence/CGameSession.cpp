@@ -193,6 +193,8 @@ void CGameSession::OnCleanUp (void)
 //  We're going away
 
     {
+	DEBUG_TRY
+
 	HideMenu();
 
 	//	If we have dock screens up, keep hitting the cancel action
@@ -205,6 +207,8 @@ void CGameSession::OnCleanUp (void)
 
 	if (!Stack.IsEmpty())
 		m_Model.ExitScreenSession(true);
+
+	DEBUG_CATCH
     }
 
 ALERROR CGameSession::OnInit (CString *retsError)

@@ -2100,6 +2100,8 @@ void CTranscendenceController::OnShutdown (EHIShutdownReasons iShutdownCode)
 //	The game is shutting down
 
 	{
+	DEBUG_TRY
+
 	//	Stop music
 
 	m_HI.GetSoundMgr().StopMusic();
@@ -2128,6 +2130,8 @@ void CTranscendenceController::OnShutdown (EHIShutdownReasons iShutdownCode)
 		m_Multiverse.Save(pathAddComponent(m_Settings.GetAppDataFolder(), FILESPEC_DOWNLOADS_FOLDER));
 		m_Settings.Save(SETTINGS_FILENAME);
 		}
+
+	DEBUG_CATCH
 	}
 
 void CTranscendenceController::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen)
