@@ -99,7 +99,7 @@ void CDeviceCounterDisplay::PaintDevice (CInstalledDevice *pDevice, int x)
 	//	Figure out title and level colors
 
 	CDeviceClass::CounterTypes iType;
-	int iLevel = pDevice->GetCounter(pShip, &iType);
+	int iLevel = Max(0, pDevice->GetCounter(pShip, &iType));
 
 	CString sTitle;
     CG32bitPixel rgbLevelColor;
