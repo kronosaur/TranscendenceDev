@@ -499,12 +499,14 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 		//	We can't open the log until see if we want a log file, but if we get an error
 		//	loading settings then we have to open the log file.
 
-		kernelSetDebugLog(DEBUG_LOG_FILENAME);
-		bLogFileOpened = true;
+		if (kernelSetDebugLog(DEBUG_LOG_FILENAME) == NOERROR)
+			{
+			bLogFileOpened = true;
 
-		//	Report to Debug.log but otherwise continue
+			//	Report to Debug.log but otherwise continue
 
-		kernelDebugLogPattern("Error loading %s: %s", SETTINGS_FILENAME, sError);
+			kernelDebugLogPattern("Error loading %s: %s", SETTINGS_FILENAME, sError);
+			}
 		}
 
 	//	Allow the command line to override some options
@@ -520,7 +522,20 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	if (!bLogFileOpened && !m_Settings.GetBoolean(CGameSettings::noDebugLog))
 		if (error = kernelSetDebugLog(pathAddComponent(m_Settings.GetAppDataFolder(), DEBUG_LOG_FILENAME)))
 			{
-			if (retsError) *retsError = CONSTLIT("Unable to set debug log file.");
+			if (retsError)
+				{
+				switch (error)
+					{
+					case ERR_FILE_IN_USE:
+						*retsError = CONSTLIT("Transcendence is already running (or debug log file is in use).");
+						break;
+
+					default:
+						*retsError = CONSTLIT("Unable to set debug log file.");
+						break;
+					}
+				}
+
 			return error;
 			}
 

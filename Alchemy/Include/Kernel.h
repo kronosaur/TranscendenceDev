@@ -88,6 +88,7 @@ typedef DWORD ALERROR;
 #define ERR_MORE								9	//	More needed
 #define ERR_WIN32_EXCEPTION						10	//	Win32 exception
 #define ERR_OUTOFROOM							11	//	Unable to insert
+#define ERR_FILE_IN_USE							12	//	File is in use
 
 #define ERR_MODULE						0x00010000	//	First module error message (see GlobalErr.h)
 #define ERR_APPL						0x01000000	//	First application error message

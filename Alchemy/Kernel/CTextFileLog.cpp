@@ -53,7 +53,9 @@ ALERROR CTextFileLog::Create (BOOL bAppend)
 
 //	Create
 //
-//	Create a new log file
+//	Create a new log file.
+//
+//	NOTE: If the log file is open by another process, we return ERR_FILE_IN_USE.
 
 	{
 	ASSERT(m_hFile == NULL);
@@ -67,9 +69,15 @@ ALERROR CTextFileLog::Create (BOOL bAppend)
 			NULL);
 	if (m_hFile == INVALID_HANDLE_VALUE)
 		{
-		DWORD dwError = ::GetLastError();
 		m_hFile = NULL;
-		return ERR_FAIL;
+
+		//	If the file is open by another process, then return a different error.
+
+		DWORD dwError = ::GetLastError();
+		if (dwError == ERROR_SHARING_VIOLATION)
+			return ERR_FILE_IN_USE;
+		else
+			return ERR_FAIL;
 		}
 
 	//	If we're appending to an existing log file, move the file pointer
