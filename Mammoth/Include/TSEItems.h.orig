@@ -370,7 +370,6 @@ class CItem
 		inline CItemType *GetType (void) const { return m_pItemType; }
         int GetVariantHigh (void) const { return (m_pExtra ? (int)HIWORD(m_pExtra->m_dwVariant) : 0); }
         int GetVariantLow (void) const { return (m_pExtra ? (int)LOWORD(m_pExtra->m_dwVariant) : 0); }
-		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
@@ -398,7 +397,6 @@ class CItem
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
         void SetVariantHigh (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG(LOWORD(m_pExtra->m_dwVariant), (WORD)(short)iValue); }
         void SetVariantLow (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG((WORD)(short)iValue, HIWORD(m_pExtra->m_dwVariant)); }
-		void SetVariantNumber (int iVariantCounter);
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
 		static void InitCriteriaAll (CItemCriteria *retCriteria);
@@ -429,7 +427,6 @@ class CItem
 			DWORD m_dwCharges;					//	Charges for items
 			DWORD m_dwVariant;					//	Affects stats based on type (e.g., for armor, this is maxHP)
 			DWORD m_dwDisruptedTime;			//	If >0, the tick on which disruption expires
-			DWORD m_dwVariantCounter;			//	Counter for setting variants
 
 			CItemEnhancement m_Mods;			//	Class-specific modifications (e.g., armor enhancements)
 
@@ -570,7 +567,6 @@ class CItemCtx
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void) const;
 		int GetItemCharges (void);
-		int GetItemVariantNumber (void);
 		const CItemEnhancement &GetMods (void);
 		inline CSpaceObject *GetSource (void) { return m_pSource; }
 		const CShipClass *GetSourceShipClass (void) const;

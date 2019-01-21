@@ -1,0 +1,10 @@
+--- Include/TSEDeviceClassesImpl.h
++++ Include/TSEDeviceClassesImpl.h
+@@ -800,6 +800,7 @@ class CWeaponClass : public CDeviceClass
+ 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
+ 		bool m_bOmnidirectional;				//	Omnidirectional
+ 		bool m_bMIRV;							//	Each shot seeks an independent target
++		bool m_bNoFireWhenBlind;				//	Disallow firing this weapon if blinded
+ 		bool m_bReportAmmo;						//	Report count of ammo shot even if not a launcher
+ 		int m_iMinFireArc;						//	Min angle of fire arc (degrees)
+ 		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
