@@ -72,7 +72,10 @@ void CMission::CloseMission (void)
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 	if (pSystem)
+		{
 		RemoveAllEventSubscriptions(pSystem);
+		pSystem->UnregisterEventHandler(this);
+		}
 
 	//	Cancel all timer events
 

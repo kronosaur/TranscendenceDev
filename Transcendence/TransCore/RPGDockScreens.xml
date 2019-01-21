@@ -436,7 +436,6 @@
 							(block (itemsToLoot)
 								(setq itemsToLoot (scrRemoveItem gScreen 1))
 								(objAddItem gPlayerShip itemsToLoot)
-								(typSetData &svPlayer; 'tutorialLooted True)
 								(scrShowPane gScreen "Default")
 								)
 							)
@@ -444,6 +443,13 @@
 
 					<Action id="actionDone" cancel="1">
 						(block Nil
+							;	As long as the player gets to this screen, we count it
+							;	as a success, whether or not they actually loot something.
+							;
+							;	(This allows us to plant fake loot in the Benedict 
+							;	mission without the player noticing.)
+
+							(typSetData &svPlayer; 'tutorialLooted True)
 							(scrExitScreen gScreen (@ gData 'forceUndock))
 
 							(if (@ gData 'nextScreen)
@@ -478,7 +484,6 @@
 								(block (itemsToLoot)
 									(setq itemsToLoot (scrRemoveItem gScreen count))
 									(objAddItem gPlayerShip itemsToLoot)
-									(typSetData &svPlayer; 'tutorialLooted True)
 									(scrShowPane gScreen "Default")
 									)
 								)

@@ -150,6 +150,7 @@
 
 										(and (eq (sysGetNode) 'SE)
 												(setq targetObj (sysFindObject gPlayerShip "TAN +unid:&stCommonwealthSlums;;"))
+												(not (msnFind "* +commonwealthHabitat"))
 												(not (typGetData &msBenedictTraining; 'trainingHabitatMission))
 												)
 											(block Nil
@@ -454,6 +455,7 @@
 								;	a habitat mission, then we're done
 								
 								(or (msnFind "r +commonwealthHabitat")
+										(msnFind "* +commonwealthHabitat; +property:isDeclined;")
 										(and (plyGetStat gPlayer 'enemyStationsDestroyed)
 											(not (msnFind "a +commonwealthHabitat;"))
 											)
