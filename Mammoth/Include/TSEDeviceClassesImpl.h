@@ -782,6 +782,7 @@ class CWeaponClass : public CDeviceClass
 		inline bool IsCounterEnabled (void) { return (m_Counter != cntNone); }
 		inline bool IsLauncher (void) const { return (m_iVariantType == varLauncher); }
 		inline bool IsLauncherWithAmmo (void) const { return (IsLauncher() && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
+		bool IsSinglePointOrigin (void) const;
 		inline bool IsTemperatureEnabled (void) { return (m_Counter == cntTemperature); }
 		bool IsTracking (CItemCtx &ItemCtx, CWeaponFireDesc *pShot) const;
 		bool UpdateShipCounter(CItemCtx &ItemCtx, CWeaponFireDesc *pShot);

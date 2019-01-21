@@ -98,6 +98,7 @@
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SHIP_COUNTER_PER_SHOT			CONSTLIT("shipCounterPerShot")
+#define PROPERTY_SINGLE_POINT_ORIGIN			CONSTLIT("singlePointOrigin")
 #define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
@@ -2467,6 +2468,10 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		{
 		return CC.CreateInteger(m_iCounterPerShot);
 		}
+
+	else if (strEquals(sProperty, PROPERTY_SINGLE_POINT_ORIGIN))
+		return CC.CreateBool(IsSinglePointOrigin());
+
     else if (strEquals(sProperty, PROPERTY_STD_COST))
         {
         const SStdStats &Stats = STD_WEAPON_STATS[CalcLevel(pShot) - 1];
@@ -3673,6 +3678,49 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 		return true;
 
 	return false;
+	}
+
+bool CWeaponClass::IsSinglePointOrigin (void) const
+
+//	IsSinglePointOrigin
+//
+//	Returns TRUE if the shots come from the origin.
+
+	{
+	switch (m_Configuration)
+		{
+		case ctSingle:
+			return true;
+
+		case ctDual:
+		case ctDualAlternating:
+			return false;
+
+		case ctWall:
+			return false;
+
+		case ctSpread2:
+		case ctSpread3:
+		case ctSpread5:
+			return true;
+
+		case ctCustom:
+			{
+			for (int i = 0; i < m_iConfigCount; i++)
+				{
+				if (m_pConfig[i].rPosRadius != 0.0)
+					return false;
+				}
+
+			return true;
+			}
+
+		default:
+			{
+			ASSERT(false);
+			return false;
+			}
+		}
 	}
 
 bool CWeaponClass::IsStdDamageType (DamageTypes iDamageType, int iLevel)
