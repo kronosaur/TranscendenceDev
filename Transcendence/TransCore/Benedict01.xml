@@ -741,6 +741,14 @@
 						)
 
 					(switch
+						;	If the player already has a SmartCannon or some other
+						;	powerful weapon, then no need to tell them about looting.
+
+						(or (objGetItems gPlayerShip "w +unid:&itSmartCannon;;")
+								(objGetItems gPlayerShip "wI L:4-")
+								)
+							(msnTranslate gSource "attackHiddenEnemy:Begin:NoLooting")
+
 						;   If the player doesn't have a launcher installed, tell them
 						;   to get one.
 
@@ -784,6 +792,15 @@
 				and fear all outsiders.
 
 				"I want you to go out there and destroy their outpost."
+
+			</Text>
+			<Text id="attackHiddenEnemy:Begin:NoLooting">
+
+				"Take your time on this mission. Your target is well-defended and very
+				dangerous. If you can, upgrade your weapons before you go. Either way,
+				make sure your armor is fully repaired.
+
+				"Ready? Good hunting!"
 
 			</Text>
 			<Text id="attackHiddenEnemy:Begin:GetLauncher">
@@ -942,8 +959,6 @@
 
 				"You'll pass through civilian areas,
 				so be careful discharging your weapons.
-
-				"Too bad you don't have that SmartCannon you found. You could have used it.
 
 				"You are ready for this, %name%. Training is over."
 
