@@ -802,6 +802,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iRecoil;							//	0-7 (as per momentum damage)
 		int m_iFailureChance;					//	Chance of failure
 
+		bool m_bBurstTracksTargets;				//  If the weapon is continuous, whether or not to track the target during the entire burst
 		bool m_bContinuousConsumePerShot;		//	If a continuous weapon, consume ammunition for every shot in burst
 		int m_iCounterPerShot;					//	How much to increment the ship's counter by per shot
 		bool m_bOmnidirectional;				//	Omnidirectional
