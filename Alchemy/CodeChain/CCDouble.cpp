@@ -86,33 +86,3 @@ void CCDouble::Reset (void)
 	this->SetValue(0.0);
 	}
 
-ICCItem *CCDouble::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Write((char *)&m_dValue, sizeof(m_dValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCDouble::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Read((char *)&m_dValue, sizeof(m_dValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-

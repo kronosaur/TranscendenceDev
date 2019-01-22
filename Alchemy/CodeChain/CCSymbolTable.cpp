@@ -95,8 +95,6 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 	if (pPrevEntry)
 		pPrevEntry->Discard(pCC);
 
-	SetModified();
-
 	return pCC->CreateTrue();
 	}
 
@@ -288,8 +286,6 @@ void CCSymbolTable::DeleteEntry (CCodeChain *pCC, ICCItem *pKey)
 
 	ICCItem *pPrevEntry = (ICCItem *)pOldEntry;
 	pPrevEntry->Discard(pCC);
-
-	SetModified();
 	}
 
 void CCSymbolTable::DestroyItem (CCodeChain *pCC)
@@ -654,117 +650,3 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retb
 	return pBinding->Reference();
 	}
 
-ICCItem *CCSymbolTable::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-	int iCount;
-	int i;
-
-	//	Write out the count
-
-	iCount = m_Symbols.GetCount();
-	if (error = pStream->Write((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out each of the items in the list
-
-	for (i = 0; i < iCount; i++)
-		{
-		CString sKey = m_Symbols.GetKey(i);
-		CObject *pValue = m_Symbols.GetValue(i);
-		ICCItem *pItem = (ICCItem *)pValue;
-		ICCItem *pKey;
-		ICCItem *pError;
-
-		//	Write out the key
-
-		pKey = pCC->CreateString(sKey);
-		if (pKey->IsError())
-			return pKey;
-
-		pError = pCC->StreamItem(pKey, pStream);
-		pKey->Discard(pCC);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		//	Write out the value
-
-		pError = pCC->StreamItem(pItem, pStream);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		//	Note that there is no need to discard pItem
-		//	since we did not increase its refcount
-		}
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCSymbolTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-	int i, iCount;
-
-	//	Read the count
-
-	if (error = pStream->Read((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read all the items
-
-	for (i = 0; i < iCount; i++)
-		{
-		ICCItem *pItem;
-		CString sKey;
-		CObject *pOldEntry;
-
-		//	Load the key
-
-		pItem = pCC->UnstreamItem(pStream);
-		if (pItem->IsError())
-			return pItem;
-
-		sKey = pItem->GetStringValue();
-		pItem->Discard(pCC);
-
-		//	Now load the value
-
-		pItem = pCC->UnstreamItem(pStream);
-
-		//	Note that we don't abort in case of an error
-		//	because the list might contain errors
-
-		//	Append the item to the symbol table
-
-		if (m_Symbols.ReplaceEntry(sKey, pItem, true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
-
-		//	No need to discard pItem because we're adding it to the
-		//	symbol table.
-
-		//	If we have a previous entry, decrement its refcount since we're
-		//	throwing it away
-
-		ASSERT(pOldEntry == NULL);
-		}
-
-	//	We are never a local symbol table
-
-	m_bLocalFrame = false;
-
-	return pCC->CreateTrue();
-	}

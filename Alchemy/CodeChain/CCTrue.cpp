@@ -43,22 +43,3 @@ void CCTrue::DestroyItem (CCodeChain *pCC)
 	{
 	}
 
-ICCItem *CCTrue::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCTrue::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}

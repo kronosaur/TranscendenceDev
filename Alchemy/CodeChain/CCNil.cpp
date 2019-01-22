@@ -33,22 +33,3 @@ void CCNil::DestroyItem (CCodeChain *pCC)
 	{
 	}
 
-ICCItem *CCNil::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCNil::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}

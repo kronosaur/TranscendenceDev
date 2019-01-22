@@ -158,8 +158,6 @@ class CFunctionContextWrapper : public ICCAtom
 	protected:
 		//	ICCItem virtuals
 		virtual void DestroyItem (CCodeChain *pCC) override;
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		ICCItem *m_pFunction;
@@ -201,8 +199,6 @@ class CCXMLWrapper : public ICCAtom
 
 	protected:
 		virtual void DestroyItem (CCodeChain *pCC) override;
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
 
 	private:
 		CXMLElement *m_pXML;

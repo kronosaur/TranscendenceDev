@@ -958,40 +958,6 @@ void CCLinkedList::Sort (CCodeChain *pCC, int iOrder, ICCItem *pSortIndex)
 	UpdateLinksFromIndex();
 	}
 
-ICCItem *CCLinkedList::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-	CCons *pCons;
-
-	//	Write out the count
-
-	if (error = pStream->Write((char *)&m_iCount, sizeof(m_iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out each of the items in the list
-
-	pCons = m_pFirst;
-	while (pCons)
-		{
-		ICCItem *pError;
-
-		pError = pCC->StreamItem(pCons->m_pItem, pStream);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		pCons = pCons->m_pNext;
-		}
-
-	return pCC->CreateTrue();
-	}
-
 ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 //	Tail
@@ -1028,41 +994,6 @@ ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 		return pTail;
 		}
-	}
-
-ICCItem *CCLinkedList::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-	int i, iCount;
-
-	//	Read the count
-
-	if (error = pStream->Read((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read all the items
-
-	for (i = 0; i < iCount; i++)
-		{
-		ICCItem *pItem;
-
-		pItem = pCC->UnstreamItem(pStream);
-
-		//	Note that we don't abort in case of an error
-		//	because the list might contain errors
-
-		//	Append the item to the list
-
-		Append(*pCC, pItem);
-		pItem->Discard(pCC);
-		}
-
-	return pCC->CreateTrue();
 	}
 
 void CCLinkedList::UpdateLinksFromIndex (void)

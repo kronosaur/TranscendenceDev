@@ -86,33 +86,3 @@ void CCInteger::Reset (void)
 	m_iValue = 0;
 	}
 
-ICCItem *CCInteger::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Write((char *)&m_iValue, sizeof(m_iValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCInteger::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Read((char *)&m_iValue, sizeof(m_iValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-

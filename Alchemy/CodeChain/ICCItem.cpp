@@ -4,12 +4,6 @@
 
 #include "PreComp.h"
 
-#define ITEM_FLAG_QUOTED					0x00000001
-#define ITEM_FLAG_ERROR						0x00000002
-#define ITEM_FLAG_PARTOFLIST				0x00000004
-#define ITEM_FLAG_NO_REF_COUNT				0x00000008
-#define ITEM_FLAG_READ_ONLY					0x00000010
-
 ICCItem::ICCItem (IObjectClass *pClass) : CObject(pClass)
 
 //	ICCItem constructor
@@ -84,9 +78,6 @@ void ICCItem::CloneItem (ICCItem *pItem)
 	{
 	//	No need to set the refcount because it has already
 	//	been set to 1
-
-	m_bModified = false;
-	m_bReadOnly = false;
 
 	m_bQuoted = pItem->m_bQuoted;
 	m_bError = pItem->m_bError;
@@ -287,9 +278,7 @@ void ICCItem::ResetItem (void)
 	m_dwRefCount = 0;
 	m_bQuoted = false;
 	m_bError = false;
-	m_bModified = false;
 	m_bNoRefCount = false;
-	m_bReadOnly = false;
 	}
 
 void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
@@ -346,39 +335,6 @@ void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &s
 	pValue->Discard(&CC);
 	}
 
-ICCItem *ICCItem::Stream (CCodeChain *pCC, IWriteStream *pStream)
-
-//	Stream
-//
-//	Stream the item
-
-	{
-	ALERROR error;
-	DWORD dwFlags = 0;
-
-	//	Convert the flags into a single DWORD
-	//	We do not save PartOfList because streamed elements are
-	//	never part of a list until they are loaded back
-
-	if (m_bQuoted)
-		dwFlags |= ITEM_FLAG_QUOTED;
-	if (m_bError)
-		dwFlags |= ITEM_FLAG_ERROR;
-	if (m_bNoRefCount)
-		dwFlags |= ITEM_FLAG_NO_REF_COUNT;
-	if (m_bReadOnly)
-		dwFlags |= ITEM_FLAG_READ_ONLY;
-
-	//	Save the flags
-
-	if (error = pStream->Write((char *)&dwFlags, sizeof(dwFlags), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Save the sub-class specific stuff
-
-	return StreamItem(pCC, pStream);
-	}
-
 ICCItem *ICCAtom::Enum (CEvalContext *pCtx, ICCItem *pCode)
 
 //	Enum
@@ -397,37 +353,6 @@ ICCItem *ICCAtom::Tail (CCodeChain *pCC)
 
 	{
 	return pCC->CreateNil();
-	}
-
-ICCItem *ICCItem::Unstream (CCodeChain *pCC, IReadStream *pStream)
-
-//	Unstream
-//
-//	Unstream the item
-
-	{
-	ALERROR error;
-	DWORD dwFlags;
-
-	//	Read the flags
-
-	if (error = pStream->Read((char *)&dwFlags, sizeof(dwFlags), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Map flags
-
-	m_bQuoted = ((dwFlags & ITEM_FLAG_QUOTED) ? true : false);
-	m_bError = ((dwFlags & ITEM_FLAG_ERROR) ? true : false);
-	m_bNoRefCount = ((dwFlags & ITEM_FLAG_NO_REF_COUNT) ? true : false);
-	m_bReadOnly = ((dwFlags & ITEM_FLAG_READ_ONLY) ? true : false);
-
-	//	Clear modified
-
-	m_bModified = false;
-
-	//	Load the item specific stuff
-
-	return UnstreamItem(pCC, pStream);
 	}
 
 //	IItemTransform -------------------------------------------------------------

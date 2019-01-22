@@ -22,11 +22,7 @@ template class CCItemPool<CCAtomTable>;
 template class CCItemPool<CCVector>;
 
 template <class ItemClass>
-CCItemPool<ItemClass>::CCItemPool (void) :
-		m_pFreeList(NULL),
-		m_pBackbone(NULL),
-		m_iBackboneSize(0),
-		m_iCount(0)
+CCItemPool<ItemClass>::CCItemPool (void)
 
 //	CCItemPool constructor
 
@@ -68,6 +64,8 @@ ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 //	Creates an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 	int i;
 	ICCItem *pItem;
 
@@ -130,13 +128,15 @@ ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 	}
 
 template <class ItemClass>
-void CCItemPool<ItemClass>::DestroyItem (CCodeChain *pCC, ICCItem *pItem)
+void CCItemPool<ItemClass>::DestroyItem (ICCItem *pItem)
 
 //	DestroyItem
 //
 //	Destroys an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 #ifdef DEBUG
 	ItemClass *pClass = dynamic_cast<ItemClass *>(pItem);
 	ASSERT(pClass);

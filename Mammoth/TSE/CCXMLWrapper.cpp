@@ -59,26 +59,3 @@ void CCXMLWrapper::DestroyItem (CCodeChain *pCC)
 	delete this;
 	}
 
-ICCItem *CCXMLWrapper::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}
-
-ICCItem *CCXMLWrapper::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}

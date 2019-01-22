@@ -345,19 +345,19 @@ void CCVectorOld::DestroyItem (CCodeChain *pCC)
 	pCC->DestroyVector(this);
 	}
 
-void CCVector::DestroyItem(CCodeChain *pCC)
+void CCVector::DestroyItem (CCodeChain *pCC)
 
 //	DestroyItem
 //
 //	Destroy this item
 
-{
+	{
 	//	No need to call delete on members of CCVector, because
 	//	none were allocated using new
 
 	//	We need to destroy the reference to the vector in pCC though
 	pCC->DestroyVector(this);
-}
+	}
 
 ICCItem *CCVectorOld::Enum (CEvalContext *pCtx, ICCItem *pCode)
 
@@ -799,99 +799,37 @@ ICCItem *CCVector::SetDataArraySize(CCodeChain *pCC, int iNewSize)
 	return pCC->CreateTrue();
 	}
 
-ICCItem *CCVector::SetShapeArraySize(CCodeChain *pCC, int iNewSize)
+ICCItem *CCVector::SetShapeArraySize (CCodeChain *pCC, int iNewSize)
+
 //	SetShapeArraySize
 //
 //	Sets the size of the shape vector, preserving any previous data
 
-{
+	{
 	ALERROR allocationError;
 	int iExpansion;
 
 	int iCurrentSize = m_vShape.GetCount();
 
 	if (iNewSize <= iCurrentSize)
-	{
+		{
 		return pCC->CreateNil();
-	}
+		}
 	else
-	{
+		{
 		iExpansion = iNewSize - iCurrentSize;
-	};
+		}
 
 	//  confirm that this is the right function to use
 	m_vShape.InsertEmpty(iExpansion);
 	if (allocationError = NOERROR)
-	{
+		{
 		return pCC->CreateTrue();
-	}
+		}
 	else
-	{
+		{
 		return pCC->CreateMemoryError();
-	};
-}
-
-ICCItem *CCVectorOld::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-//	StreamItem
-//
-//	Streams the vector to a stream
-
-	{
-	ALERROR error;
-
-	//	Write out the count
-
-	if (error = pStream->Write((char *)&m_iCount, sizeof(m_iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out the data
-
-	if (m_pData)
-		{
-		if (error = pStream->Write((char *)m_pData, m_iCount * sizeof(DWORD), NULL))
-			return pCC->CreateSystemError(error);
 		}
-
-	//	Done
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCVector::StreamItem(CCodeChain *pCC, IWriteStream *pStream)
-//	StreamItem
-//
-//	Streams the vector to a stream
-
-	{
-	ALERROR error;
-	int iDataCount = this->GetCount();
-	int iShapeCount = this->GetShapeCount();
-
-	//  Write out the shape count
-	if (error = pStream->Write((char *)&iShapeCount, sizeof(iShapeCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out the data count
-	if (error = pStream->Write((char *)&iDataCount, sizeof(iDataCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out the shape
-	if (&m_vShape)
-		{
-		if (error = pStream->Write((char *)&(m_vShape[0]), (iDataCount * sizeof(int), NULL)))
-			return pCC->CreateSystemError(error);
-		}
-
-	//	Write out the data
-	if (&m_vData)
-		{
-		if (error = pStream->Write((char *)&(m_vData[0]), (iDataCount * sizeof(double), NULL)))
-			return pCC->CreateSystemError(error);
-		}
-
-	//	Done
-
-	return pCC->CreateTrue();
 	}
 
 ICCItem *CCVectorOld::Tail(CCodeChain *pCC)
@@ -911,93 +849,3 @@ ICCItem *CCVector::Tail(CCodeChain *pCC)
 	return pCC->CreateNil();
 	}
 
-ICCItem *CCVectorOld::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Reads the vector from a stream
-
-	{
-	ALERROR error;
-	int iCount;
-	ICCItem *pError;
-
-	//	Read the count
-
-	if (error = pStream->Read((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Resize the vector
-
-	pError = SetSize(pCC, iCount);
-	if (pError->IsError())
-		return pError;
-
-	pError->Discard(pCC);
-
-	//	Read the data
-
-	if (m_pData)
-		{
-		if (error = pStream->Read((char *)m_pData, iCount * sizeof(DWORD), NULL))
-			return pCC->CreateSystemError(error);
-		}
-
-	//	Done
-
-	m_iCount = iCount;
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCVector::UnstreamItem(CCodeChain *pCC, IReadStream *pStream)
-//	UnstreamItem
-//
-//	Reads the vector from a stream
-
-	{
-	ALERROR error;
-	int iDataCount;
-	int iShapeCount;
-	ICCItem *pError;
-
-	//	Read the shape count
-	if (error = pStream->Read((char *)&iShapeCount, sizeof(iShapeCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read the data count
-	if (error = pStream->Read((char *)&iDataCount, sizeof(iDataCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//  Set size of the shape array
-	pError = this->SetShapeArraySize(pCC, iShapeCount);
-	if (pError->IsError())
-		return pError;
-
-	pError->Discard(pCC);
-
-	//	Read the data
-	if (&m_vShape)
-		{
-		if (error = pStream->Read((char *)&(m_vShape[0]), iDataCount * sizeof(int), NULL))
-			return pCC->CreateSystemError(error);
-		}
-
-	//	Set size of the data array
-	pError = this->SetDataArraySize(pCC, iDataCount);
-	if (pError->IsError())
-		return pError;
-
-	pError->Discard(pCC);
-
-	//	Read the data
-	if (&m_vData)
-		{
-		if (error = pStream->Read((char *)&(m_vData[0]), iDataCount * sizeof(double), NULL))
-			return pCC->CreateSystemError(error);
-		}
-
-	//	Done
-
-	return pCC->CreateTrue();
-	}
