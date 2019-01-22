@@ -82,13 +82,13 @@ ICCItemPtr::ICCItemPtr (bool bValue)
 ICCItemPtr::~ICCItemPtr (void)
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 	}
 
 ICCItemPtr &ICCItemPtr::operator= (const ICCItemPtr &Src)
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 
 	if (Src.m_pPtr)
 		m_pPtr = Src.m_pPtr->Reference();
@@ -101,7 +101,7 @@ ICCItemPtr &ICCItemPtr::operator= (const ICCItemPtr &Src)
 ICCItemPtr &ICCItemPtr::operator= (ICCItem *pSrc)
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 
 	if (pSrc)
 		m_pPtr = pSrc->Reference();
@@ -119,7 +119,7 @@ void ICCItemPtr::Delete (void)
 
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 
 	m_pPtr = NULL;
 	}
@@ -147,7 +147,7 @@ bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 		if (retsError)
 			*retsError = pCode->GetStringValue();
 
-		pCode->Discard(&g_pUniverse->GetCC());
+		pCode->Discard();
 		return false;
 		}
 
@@ -160,7 +160,7 @@ bool ICCItemPtr::Load (const CString &sCode, CString *retsError)
 void ICCItemPtr::TakeHandoff (ICCItem *pPtr)
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 
 	m_pPtr = pPtr;
 	}
@@ -168,7 +168,7 @@ void ICCItemPtr::TakeHandoff (ICCItem *pPtr)
 void ICCItemPtr::TakeHandoff (ICCItemPtr &Src)
 	{
 	if (m_pPtr)
-		m_pPtr->Discard(&g_pUniverse->GetCC());
+		m_pPtr->Discard();
 
 	m_pPtr = Src.m_pPtr;
 	Src.m_pPtr = NULL;

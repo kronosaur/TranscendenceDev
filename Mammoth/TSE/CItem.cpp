@@ -1423,7 +1423,7 @@ Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const 
 		return 0.0;
 
 	Metric rValue = pResult->GetDoubleValue();
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return rValue;
 	}
 
@@ -1440,7 +1440,7 @@ int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CS
 		return 0;
 
 	int iValue = pResult->GetIntegerValue();
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return iValue;
 	}
 
@@ -1462,7 +1462,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	else
 		sValue = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return sValue;
 	}
 
@@ -3207,14 +3207,14 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 	pInt = CC.CreateInteger(GetType()->GetUNID());
 	pList->Append(CC, pInt);
-	pInt->Discard(&CC);
+	pInt->Discard();
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
 	pInt = CC.CreateInteger(pSource[1]);
 	pList->Append(CC, pInt);
-	pInt->Discard(&CC);
+	pInt->Discard();
 
 	//	Save extra
 
@@ -3224,19 +3224,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 		pInt = CC.CreateInteger(CSystem::GetSaveVersion());
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//	Charges
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwCharges);
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//	Condition
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwLevel);
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//	Mods
 
@@ -3247,7 +3247,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//	Attribute data block
 
@@ -3257,19 +3257,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//	Disrupted time
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwDisruptedTime);
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 
 		//  Variant number
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwVariantCounter);
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 		}
 
 	return pResult;
@@ -3372,7 +3372,7 @@ CItemCriteria &CItemCriteria::operator= (const CItemCriteria &Copy)
 
 	{
 	if (pFilter)
-		pFilter->Discard(&g_pUniverse->GetCC());
+		pFilter->Discard();
 
 	dwItemCategories = Copy.dwItemCategories;
 	dwExcludeCategories = Copy.dwExcludeCategories;
@@ -3416,7 +3416,7 @@ CItemCriteria::~CItemCriteria (void)
 
 	{
 	if (pFilter)
-		pFilter->Discard(&g_pUniverse->GetCC());
+		pFilter->Discard();
 	}
 
 bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const

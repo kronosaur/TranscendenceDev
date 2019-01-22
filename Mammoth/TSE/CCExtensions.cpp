@@ -4285,7 +4285,7 @@ ICCItem *fnDesignFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pUNID = pCC->CreateInteger(pType->GetUNID());
 			pList->Append(*pCC, pUNID);
-			pUNID->Discard(pCC);
+			pUNID->Discard();
 			}
 		}
 
@@ -4819,13 +4819,13 @@ ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pItem = pCC->CreateInteger(pType->GetUNID());
 			pList->Append(*pCC, pItem);
-			pItem->Discard(pCC);
+			pItem->Discard();
 			}
 		}
 
 	if (pList->GetCount() == 0)
 		{
-		pList->Discard(pCC);
+		pList->Discard();
 		return pCC->CreateNil();
 		}
 	else
@@ -5361,7 +5361,7 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -5398,7 +5398,7 @@ ICCItem *fnObjAddRandomItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pCC->CreateTrue();
 	}
 
@@ -5440,7 +5440,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		pStationType = pCtx->GetUniverse().FindStationType(pArgs->GetElement(0)->GetIntegerValue());
 		if (pStationType == NULL)
 			{
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pCC->CreateError(CONSTLIT("Unknown station type"), pArgs->GetElement(0));
 			}
 		}
@@ -5449,7 +5449,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 		if (pObj == NULL)
 			{
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pCC->CreateNil();
 			}
 		}
@@ -5465,28 +5465,28 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_GETDATA:
 			{
 			pResult = pObj->GetData(sAttrib)->Reference();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_OBJ_GET_STATIC_DATA:
 			{
 			pResult = pObj->GetStaticData(sAttrib)->Reference();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_OBJ_GET_STATIC_DATA_FOR_STATION_TYPE:
 			{
 			pResult = pStationType->GetStaticData(sAttrib)->Reference();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_OBJ_GET_GLOBAL_DATA:
 			{
 			pResult = pObj->GetGlobalData(sAttrib)->Reference();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -5503,7 +5503,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 					if (pTest)
 						{
 						DebugBreak();
-						pArgs->Discard(pCC);
+						pArgs->Discard();
 						pResult = pCC->CreateError(CONSTLIT("Use objSetObjRefData for objects"), NULL);
 						break;
 						}
@@ -5515,7 +5515,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			//	Done
 
 			pResult = pCC->CreateTrue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -5523,14 +5523,14 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			{
 			pObj->SetGlobalData(sAttrib, pArgs->GetElement(2));
 			pResult = pCC->CreateTrue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_OBJ_INCREMENT_DATA:
 			{
 			pResult = pObj->IncData(sAttrib, (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL))->Reference();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -5541,7 +5541,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				pResult = pCC->CreateInteger((int)pRef);
 			else
 				pResult = pCC->CreateNil();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -5556,7 +5556,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				pObj->SetObjRefData(sAttrib, NULL);
 
 			pResult = pCC->CreateTrue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -5656,7 +5656,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -5671,7 +5671,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 	pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pLocalSymbols;
 		}
 
@@ -5680,11 +5680,11 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pError;
 		}
 
-	pError->Discard(pCC);
+	pError->Discard();
 
 	//	Setup the context
 
@@ -5721,13 +5721,13 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 		{
 		//	Clean up the previous result
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 
 		//	Set the element
 
 		ICCItem *pItem = CreateListFromItem(*pCC, pTempList[i]);
 		pLocalSymbols->AddByOffset(pCC, iVarOffset, pItem);
-		pItem->Discard(pCC);
+		pItem->Discard();
 
 		//	Eval
 
@@ -5740,11 +5740,11 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 
 	delete [] pTempList;
 	pEvalCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -5767,7 +5767,7 @@ ICCItem *fnObjGateTo (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -5781,7 +5781,7 @@ ICCItem *fnObjGateTo (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		pEffect = pCtx->GetUniverse().FindEffectType(dwEffectUNID);
 		}
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Find the node
 	//
@@ -5848,7 +5848,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pLocalSymbols;
 		}
 
@@ -5857,11 +5857,11 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pError;
 		}
 
-	pError->Discard(pCC);
+	pError->Discard();
 
 	//	Setup the context
 
@@ -5894,11 +5894,11 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 			ICCItem *pItem = CreateListFromItem(*pCC, Item);
 			pLocalSymbols->AddByOffset(pCC, iVarOffset, pItem);
-			pItem->Discard(pCC);
+			pItem->Discard();
 
 			//	Clean up the previous result
 
-			pResult->Discard(pCC);
+			pResult->Discard();
 
 			//	Eval
 
@@ -5911,11 +5911,11 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	//	Clean up
 
 	pEvalCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -5944,7 +5944,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 	CShip *pShip = CreateShipObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pShip == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -5962,7 +5962,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 			}
 		else
 			{
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pCC->CreateNil();
 			}
 		}
@@ -5973,7 +5973,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 			pSection = pShip->GetArmorSection(iArmorSeg);
 		if (pSection == NULL)
 			{
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pCC->CreateNil();
 			}
 		}
@@ -5986,7 +5986,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 
 	//	No longer needed
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -6279,7 +6279,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem *pItem = CreateListFromItem(*pCC, ItemToReplace);
 				pList->Append(*pCC, pItem);
-				pItem->Discard(pCC);
+				pItem->Discard();
 				}
 
 			//	Done
@@ -6609,7 +6609,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						{
 						ICCItem *pItem = CreateListFromItem(*pCC, theItem);
 						pList->Append(*pCC, pItem);
-						pItem->Discard(pCC);
+						pItem->Discard();
 						}
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_LAUNCHER))
@@ -6619,7 +6619,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						{
 						ICCItem *pItem = CreateListFromItem(*pCC, theItem);
 						pList->Append(*pCC, pItem);
-						pItem->Discard(pCC);
+						pItem->Discard();
 						}
 					}
 				else if (strEquals(sName, NAMED_ITEM_SELECTED_MISSILE))
@@ -6639,7 +6639,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 									{
 									ICCItem *pItem = CreateListFromItem(*pCC, theItem);
 									pList->Append(*pCC, pItem);
-									pItem->Discard(pCC);
+									pItem->Discard();
 									}
 								}
 							else
@@ -6649,7 +6649,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 									{
 									ICCItem *pItem = CreateListFromItem(*pCC, theItem);
 									pList->Append(*pCC, CreateListFromItem(*pCC, theItem));
-									pItem->Discard(pCC);
+									pItem->Discard();
 									}
 								}
 							}
@@ -6663,7 +6663,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pList;
 			else
 				{
-				pList->Discard(pCC);
+				pList->Discard();
 				return pCC->CreateNil();
 				}
 			}
@@ -6812,7 +6812,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ASSERT(pFuelType);
 			ICCItem *pFuelItem = CreateListFromItem(*pCC, CItem(pFuelType, 1));
 			pList->Append(*pCC, pFuelItem);
-			pFuelItem->Discard(pCC);
+			pFuelItem->Discard();
 
 			//	Add the price
 
@@ -7215,7 +7215,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (bRequireValidObj && pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -7232,7 +7232,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			pObj2 = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			if (pObj2 == NULL)
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pCC->CreateNil();
 				}
 			}
@@ -7251,7 +7251,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	No longer needed
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -8564,7 +8564,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -8575,7 +8575,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_ADD_SUBORDINATE:
 			{
 			CSpaceObject *pSubordinate = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pSubordinate && !pSubordinate->IsDestroyed())
 				{
@@ -8613,7 +8613,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				pObj->SetName(pArgs->GetElement(1)->GetStringValue(), dwFlags);
 				}
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -8624,7 +8624,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			CVector vPos;
 			ALERROR error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (error)
 				{
@@ -8645,7 +8645,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_PARALYSIS:
 			{
 			int iTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			pObj->SetCondition(CConditionSet::cndParalyzed, iTime);
 			pResult = pCC->CreateTrue();
@@ -8658,7 +8658,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			CVector vPos;
 			ALERROR error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos);
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (error)
 				{
@@ -8676,7 +8676,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_REGISTER_EVENTS:
 			{
 			CSpaceObject *pObj2 = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj2)
 				{
@@ -8691,7 +8691,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_SOVEREIGN:
 			{
 			DWORD dwSovereignID = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			CSovereign *pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
 			if (pSovereign)
@@ -8708,7 +8708,7 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_OBJ_UNREGISTER_EVENTS:
 			{
 			CSpaceObject *pObj2 = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			pObj2->RemoveEventSubscriber(pObj);
 			pResult = pCC->CreateTrue();
@@ -8840,7 +8840,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -8851,7 +8851,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_OBJ_ENUM_ITEMS:
 			{
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			CItemCriteria Criteria;
 			CItem::ParseCriteria(sCriteria, &Criteria);
@@ -8870,7 +8870,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 					{
 					ICCItem *pItem = CreateListFromItem(*pCC, ObjList.GetItemAtCursor());
 					pList->Append(*pCC, pItem);
-					pItem->Discard(pCC);
+					pItem->Discard();
 					}
 				}
 			break;
@@ -8901,14 +8901,14 @@ ICCItem *fnProgramDamage (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pObj == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
 	CSpaceObject *pHacker = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 	if (pHacker == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -8927,7 +8927,7 @@ ICCItem *fnProgramDamage (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pCC->CreateTrue();
 	}
 
@@ -9567,7 +9567,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItem *pItem = pCC->CreateString(IShipController::GetOrderName(iOrder));
 			pList->Append(*pCC, pItem);
-			pItem->Discard(pCC);
+			pItem->Discard();
 
 			//	Add the target
 
@@ -9575,7 +9575,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				pItem = pCC->CreateInteger((int)pTarget);
 				pList->Append(*pCC, pItem);
-				pItem->Discard(pCC);
+				pItem->Discard();
 				}
 
 			//	Add order data
@@ -9590,7 +9590,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pItem = ::CreateListFromItem(*pCC, Data.Item);
 					pList->Append(*pCC, pItem);
-					pItem->Discard(pCC);
+					pItem->Discard();
 					break;
 					}
 
@@ -9607,7 +9607,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pVector = ::CreateListFromVector(*pCC, Data.vData);
 					pList->Append(*pCC, pVector);
-					pVector->Discard(pCC);
+					pVector->Discard();
 					break;
 					}
 				}
@@ -9646,13 +9646,13 @@ ICCItem *fnShipGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 	CShip *pShip = CreateShipObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pShip == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
 	//	No longer needed
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -10314,7 +10314,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 	CShip *pShip = CreateShipObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pShip == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -10326,7 +10326,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			{
 			DWORD dwUNID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
 			int iLifetime = pArgs->GetElement(2)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			COverlayType *pField = pCtx->GetUniverse().FindShipEnergyFieldType(dwUNID);
 			if (pField == NULL)
@@ -10353,7 +10353,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					if (pCtx->GetAPIVersion() >= 18)
 						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 					else
@@ -10363,7 +10363,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pItemList = &ItemList;
 				}
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			//	If no list, then we're done
 
@@ -10390,7 +10390,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_REFUEL_FROM_ITEM:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			//	Do it
 
@@ -10418,7 +10418,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ITEM_DEVICE_NAME:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateInteger(pShip->GetItemDeviceName(Item));
 			break;
 			}
@@ -10426,7 +10426,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_IS_FUEL_COMPATIBLE:
 			{
 			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateBool(pShip->IsFuelCompatible(Item));
 			break;
 			}
@@ -10434,7 +10434,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_ATTACK:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10449,7 +10449,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_DOCK:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10467,7 +10467,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			DWORD dwFormation = 0;
 			if (pArgs->GetCount() > 2)
 				dwFormation = pArgs->GetElement(2)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10482,7 +10482,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_FOLLOW:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10499,7 +10499,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CSpaceObject *pGate = NULL;
 			if (pArgs->GetCount() == 2)
 				pGate = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pGate == NULL || !pGate->IsDestroyed())
 				{
@@ -10516,7 +10516,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_GUARD:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10531,7 +10531,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_LOOT:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10546,7 +10546,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_MINE:
 			{
 			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pObj && !pObj->IsDestroyed())
 				{
@@ -10564,7 +10564,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				CSpaceObject *pCenter = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 				int iRadius = pArgs->GetElement(2)->GetIntegerValue();
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 
 				if (pCenter && !pCenter->IsDestroyed())
 					{
@@ -10583,7 +10583,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_ORDER_WAIT:
 			{
 			int iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pShip->GetController()->AddOrder(IShipController::orderWait, NULL, IShipController::SData(iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
@@ -10594,7 +10594,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			int iWaitTime = 0;
 			if (pArgs->GetCount() >= 2)
 				iWaitTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pShip->GetController()->AddOrder(IShipController::orderHold, NULL, IShipController::SData(iWaitTime));
 			pResult = pCC->CreateTrue();
 			break;
@@ -10603,7 +10603,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_BLINDNESS:
 			{
 			int iBlindTime = pArgs->GetElement(1)->GetIntegerValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			pShip->SetAbility(ablShortRangeScanner, ablDamage, iBlindTime, 0);
 			pResult = pCC->CreateTrue();
@@ -10625,7 +10625,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			else
 				pResult = pCC->CreateTrue();
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
@@ -10635,7 +10635,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			if (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil())
 				sController = pArgs->GetElement(1)->GetStringValue();
 			IShipController *pController = pCtx->GetUniverse().CreateShipController(sController);
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			if (pController)
 				{
@@ -10663,7 +10663,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					if (pCtx->GetAPIVersion() >= 18)
 						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 					else
@@ -10681,7 +10681,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				{
 				if (Mods.InitFromDesc(pArgs->GetElement(2), &sError) != NOERROR)
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					pResult = pCC->CreateError(sError);
 					break;
 					}
@@ -10689,13 +10689,13 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 			if (pItemList == NULL)
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				pResult = pCC->CreateNil();
 				}
 			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
 				{
 				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				pResult = pCC->CreateInteger(iResult);
 				}
 			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
@@ -10704,13 +10704,13 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 					Mods = CItemEnhancement(etBinaryEnhancement);
 
 				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				pResult = pCC->CreateInteger(iResult);
 				}
 			else
 				{
 				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				pResult = pCC->CreateTrue();
 				}
 			break;
@@ -10732,7 +10732,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					if (pCtx->GetAPIVersion() >= 18)
 						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
 					else
@@ -10742,7 +10742,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pItemList = &ItemList;
 				}
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 
 			//	If no list, then we're done
 
@@ -10774,11 +10774,11 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				else
 					pResult = pCC->CreateError(sError);
 
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				break;
 				}
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -10975,11 +10975,11 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	CStation *pStation = CreateStationObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pStation == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -11009,7 +11009,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 					{
 					ICCItem *pInt = pCC->CreateInteger((int)pShip);
 					pList->Append(*pCC, pInt);
-					pInt->Discard(pCC);
+					pInt->Discard();
 					}
 				}
 
@@ -11033,7 +11033,7 @@ ICCItem *fnStationGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 					{
 					ICCItem *pInt = pCC->CreateInteger((int)pShip);
 					pList->Append(*pCC, pInt);
-					pInt->Discard(pCC);
+					pInt->Discard();
 					}
 				}
 
@@ -11161,7 +11161,7 @@ ICCItem *fnStationSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	CStation *pStation = CreateStationObjFromItem(*pCC, pArgs->GetElement(0));
 	if (pStation == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -11180,14 +11180,14 @@ ICCItem *fnStationSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 			else
 				pResult = pCC->CreateError(strPatternSubst(CONSTLIT("Invalid variant: %d"), iVariant));
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_STATION_STRUCTURAL_HP:
 			{
 			pStation->SetStructuralHitPoints(pArgs->GetElement(1)->GetIntegerValue());
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -12095,7 +12095,7 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	DWORD dwSovereignID = pArgs->GetElement(2)->GetIntegerValue();
 	CSovereign *pSovereign = pCtx->GetUniverse().FindSovereign(dwSovereignID);
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Create
 
@@ -12814,11 +12814,11 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult = pCC->CreateLinkedList();
 			ICCItem *pObjItem = ::CreateObjPointer(*pCC, pHitObj);
 			pResult->Append(*pCC, pObjItem);
-			pObjItem->Discard(pCC);
+			pObjItem->Discard();
 
 			ICCItem *pVector = CreateListFromVector(*pCC, vHitPos);
 			pResult->Append(*pCC, pVector);
-			pVector->Discard(pCC);
+			pVector->Discard();
 
 			//	Done
 
@@ -13006,9 +13006,9 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pResult = pCC->CreateSymbolTable();
 			pResult->SetStringAt(*pCC, FIELD_ATTRIBS, Loc.GetAttributes());
 			pResult->SetAt(*pCC, FIELD_POS, pPos);
-			pPos->Discard(pCC);
+			pPos->Discard();
 			pResult->SetAt(*pCC, FIELD_ORBIT, pOrbit);
-			pOrbit->Discard(pCC);
+			pOrbit->Discard();
 
 			//	If necessary, remove the location
 
@@ -13417,7 +13417,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem *pValue = pCC->CreateString(pNode->GetStargate(i));
 				pList->Append(*pCC, pValue);
-				pValue->Discard(pCC);
+				pValue->Discard();
 				}
 
 			return pResult;
@@ -14055,7 +14055,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 					else
 						vOffset = PolarToVector(mathRandom(0, 359), LIGHT_SECOND * pResult->GetDoubleValue());
 
-					pResult->Discard(pCC);
+					pResult->Discard();
 					}
 				else
 					vOffset = PolarToVector(mathRandom(0, 359), rRadius);
@@ -14167,7 +14167,7 @@ ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 	Metric rAngle = pArgs->GetElement(1)->GetDoubleValue();
 	Metric rRadius = LIGHT_SECOND * pArgs->GetElement(2)->GetDoubleValue();
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Compute
 
@@ -14300,7 +14300,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pEntry = pCC->CreateLinkedList();
 				if (pEntry->IsError())
 					{
-					pEntry->Discard(pCC);
+					pEntry->Discard();
 					continue;
 					}
 
@@ -14312,7 +14312,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pEntryList->AppendInteger(*pCC, Result[i].dwNameFlags);
 
 				pList->Append(*pCC, pEntry);
-				pEntry->Discard(pCC);
+				pEntry->Discard();
 				}
 
 			//	Done
@@ -14380,15 +14380,15 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItem *pValue = pCC->CreateInteger(Date.Year());
 			pList->Append(*pCC, pValue);
-			pValue->Discard(pCC);
+			pValue->Discard();
 
 			pValue = pCC->CreateInteger(Date.Month());
 			pList->Append(*pCC, pValue);
-			pValue->Discard(pCC);
+			pValue->Discard();
 
 			pValue = pCC->CreateInteger(Date.Day());
 			pList->Append(*pCC, pValue);
-			pValue->Discard(pCC);
+			pValue->Discard();
 			break;
 			}
 
@@ -14556,15 +14556,15 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				ICCItem *pValue = pCC->CreateInteger(dwUNID);
 				pList->Append(*pCC, pValue);
-				pValue->Discard(pCC);
+				pValue->Discard();
 
 				pValue = pCC->CreateString(sType);
 				pList->Append(*pCC, pValue);
-				pValue->Discard(pCC);
+				pValue->Discard();
 
 				pValue = pCC->CreateString(sName);
 				pList->Append(*pCC, pValue);
-				pValue->Discard(pCC);
+				pValue->Discard();
 				}
 			else
 				pResult = pCC->CreateNil();
@@ -14764,7 +14764,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						{
 						CCXMLWrapper *pNewItem = new CCXMLWrapper(pSub, pWrapper);
 						pList->Append(*pCC, pNewItem);
-						pNewItem->Discard(pCC);
+						pNewItem->Discard();
 						}
 					}
 				}
@@ -14778,7 +14778,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					CXMLElement *pSub = pXML->GetContentElement(i);
 					CCXMLWrapper *pNewItem = new CCXMLWrapper(pSub, pWrapper);
 					pList->Append(*pCC, pNewItem);
-					pNewItem->Discard(pCC);
+					pNewItem->Discard();
 					}
 				}
 
@@ -14786,7 +14786,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pList->GetCount() == 0)
 				{
-				pResult->Discard(pCC);
+				pResult->Discard();
 				return pCC->CreateNil();
 				}
 

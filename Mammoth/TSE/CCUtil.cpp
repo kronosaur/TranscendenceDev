@@ -154,7 +154,7 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 		ICCItem *pItem = List[i].WriteToCCItem(CC);
 		if (pItem->IsError())
 			{
-			pItem->Discard(&CC);
+			pItem->Discard();
 			return NULL_STR;
 			}
 
@@ -162,7 +162,7 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 		Output.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 		Output.Write(" ", 1);
 
-		pItem->Discard(&CC);
+		pItem->Discard();
 		}
 	Output.Write(")", 1);
 	Output.Close();
@@ -230,7 +230,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 		{
 		ICCItem *pInt = CC.CreateInteger(*pSource++);
 		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt->Discard();
 		}
 
 	return pResult;
@@ -253,7 +253,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 
 	ICCItem *pValue = CC.CreateInteger(Image.GetBitmapUNID());
 	pList->Append(CC, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 
 	//	Get the rect
 
@@ -263,25 +263,25 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 
 	pValue = CC.CreateInteger(rcRect.left);
 	pList->Append(CC, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 
 	//	Add the y coordinate
 
 	pValue = CC.CreateInteger(rcRect.top);
 	pList->Append(CC, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 
 	//	Add width
 
 	pValue = CC.CreateInteger(RectWidth(rcRect));
 	pList->Append(CC, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 
 	//	Add height
 
 	pValue = CC.CreateInteger(RectHeight(rcRect));
 	pList->Append(CC, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 
 	//	Done
 
@@ -1097,7 +1097,7 @@ void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item)
 	{
 	ICCItem *pItem = CreateListFromItem(CC, Item);
 	CC.DefineGlobal(sVar, pItem);
-	pItem->Discard(&CC);
+	pItem->Discard();
 	}
 
 void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj)
@@ -1114,7 +1114,7 @@ void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceO
 		{
 		ICCItem *pValue = CC.CreateNil();
 		CC.DefineGlobal(sVar, pValue);
-		pValue->Discard(&CC);
+		pValue->Discard();
 		}
 	}
 
@@ -1127,7 +1127,7 @@ void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVe
 	{
 	ICCItem *pValue = CreateListFromVector(CC, vVector);
 	CC.DefineGlobal(sVar, pValue);
-	pValue->Discard(&CC);
+	pValue->Discard();
 	}
 
 void DefineGlobalWeaponType (CCodeChain &CC, const CString &sVar, CItemType *pWeaponType)

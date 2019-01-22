@@ -99,7 +99,7 @@ void CEventHandler::DeleteAll (void)
 	for (int i = 0; i < m_Handlers.GetCount(); i++)
 		{
 		ICCItem *pItem = m_Handlers[i];
-		pItem->Discard(&g_pUniverse->GetCC());
+		pItem->Discard();
 		}
 
 	m_Handlers.DeleteAll();
@@ -204,7 +204,7 @@ void CEventHandler::MergeFrom (const CEventHandler &Src)
 		ICCItem **ppCode = m_Handlers.GetAt(Src.m_Handlers.GetKey(i));
 		if (ppCode)
 			{
-			(*ppCode)->Discard(&CC);
+			(*ppCode)->Discard();
 			(*ppCode) = Src.m_Handlers.GetValue(i)->Reference();
 			}
 		else

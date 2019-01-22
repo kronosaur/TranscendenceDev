@@ -114,7 +114,7 @@ CUniverse::~CUniverse (void)
 	m_pPlayerShip = NULL;
 
 	if (m_pSavedGlobalSymbols)
-		m_pSavedGlobalSymbols->Discard(&m_CC);
+		m_pSavedGlobalSymbols->Discard();
 
 	//	Destroy all star systems. We do this here because we want to
 	//	guarantee that we destroy all objects before we destruct
@@ -1129,7 +1129,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			ICCItem *pNewGlobals = m_pSavedGlobalSymbols->Clone(&m_CC);
 			m_CC.SetGlobals(pNewGlobals);
-			pNewGlobals->Discard(&m_CC);
+			pNewGlobals->Discard();
 			}
 
 		//	Load texture library

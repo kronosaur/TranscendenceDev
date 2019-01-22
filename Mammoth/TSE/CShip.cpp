@@ -2375,7 +2375,7 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 	if (m_pDeferredOrders)
 		{
 		if (m_pDeferredOrders->pOnCreate)
-			m_pDeferredOrders->pOnCreate->Discard(&GetUniverse().GetCC());
+			m_pDeferredOrders->pOnCreate->Discard();
 
 		delete m_pDeferredOrders;
 		m_pDeferredOrders = NULL;

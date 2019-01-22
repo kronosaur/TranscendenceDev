@@ -2827,7 +2827,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		if (pCode->IsError())
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("<Code>: %s"), pCode->GetStringValue());
-			pCode->Discard(&g_pUniverse->GetCC());
+			pCode->Discard();
 			return ERR_FAIL;
 			}
 
@@ -2837,13 +2837,13 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		if (error = pCtx->pSystem->GetType()->FireSystemCreateCode(*pCtx, pCode, OrbitDesc, &sError))
 			{
 			pCtx->sError = strPatternSubst(CONSTLIT("<Code>: %s"), sError);
-			pCode->Discard(&g_pUniverse->GetCC());
+			pCode->Discard();
 			return error;
 			}
 
 		//	Done
 
-		pCode->Discard(&g_pUniverse->GetCC());
+		pCode->Discard();
 		PopDebugStack(pCtx);
 		}
 	else if (strEquals(sTag, NULL_TAG))

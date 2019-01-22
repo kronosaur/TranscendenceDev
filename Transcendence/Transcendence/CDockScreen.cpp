@@ -444,7 +444,7 @@ void CDockScreen::CleanUpScreen (void)
 
 	if (m_pOnScreenUpdate)
 		{
-		m_pOnScreenUpdate->Discard(&g_pUniverse->GetCC());
+		m_pOnScreenUpdate->Discard();
 		m_pOnScreenUpdate = NULL;
 		}
 

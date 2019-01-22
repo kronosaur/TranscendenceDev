@@ -1653,7 +1653,7 @@ ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsEr
 		if (retsError)
 			*retsError = pCode->GetStringValue();
 
-		pCode->Discard(&g_pUniverse->GetCC());
+		pCode->Discard();
 		return ERR_FAIL;
 		}
 

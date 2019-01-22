@@ -32,14 +32,14 @@ ICCItem *CCInteger::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCInteger::DestroyItem (CCodeChain *pCC)
+void CCInteger::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroys the item
 
 	{
-	pCC->DestroyInteger(this);
+	CCodeChain::DestroyInteger(this);
 	}
 
 CString CCInteger::Print (CCodeChain *pCC, DWORD dwFlags)

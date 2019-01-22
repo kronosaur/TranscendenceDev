@@ -189,7 +189,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				    printf(sValue.GetASCIIZPointer());
 				    }
 
-                pResult->Discard(&g_pUniverse->GetCC());
+                pResult->Discard();
 				}
 
 			printf("\n");

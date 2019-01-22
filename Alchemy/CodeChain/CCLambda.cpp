@@ -94,7 +94,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 
 	if (pBody == NULL)
 		{
-		m_pArgList->Discard(pCC);
+		m_pArgList->Discard();
 		m_pArgList = NULL;
 		return pCC->CreateError(LITERAL("Code expected"), pList);
 		}
@@ -107,7 +107,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 	return pCC->CreateTrue();
 	}
 
-void CCLambda::DestroyItem (CCodeChain *pCC)
+void CCLambda::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -117,17 +117,17 @@ void CCLambda::DestroyItem (CCodeChain *pCC)
 	//	Delete our references
 
 	if (m_pArgList)
-		m_pArgList->Discard(pCC);
+		m_pArgList->Discard();
 
 	if (m_pCode)
-		m_pCode->Discard(pCC);
+		m_pCode->Discard();
 
 	if (m_pLocalSymbols)
-		m_pLocalSymbols->Discard(pCC);
+		m_pLocalSymbols->Discard();
 
 	//	Done
 
-	pCC->DestroyLambda(this);
+	CCodeChain::DestroyLambda(this);
 	}
 
 ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
@@ -190,7 +190,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 				pVarArgs = pCC->CreateLinkedList();
 				if (pVarArgs->IsError())
 					{
-					pLocalSymbols->Discard(pCC);
+					pLocalSymbols->Discard();
 					return pVarArgs;
 					}
 				pList = (CCLinkedList *)pVarArgs;
@@ -207,7 +207,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 						pResult = pCC->Eval(pCtx, pArg);
 
 					pList->Append(*pCC, pResult);
-					pResult->Discard(pCC);
+					pResult->Discard();
 					}
 				}
 			else
@@ -216,7 +216,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 			//	Add to the local symbol table
 
 			pItem = pLocalSymbols->AddEntry(pCC, pVar, pVarArgs);
-			pVarArgs->Discard(pCC);
+			pVarArgs->Discard();
 			}
 
 		//	Bind the variable to the argument
@@ -243,24 +243,24 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 				if (pResult->IsError()
 						&& strStartsWith(pResult->GetStringValue(), CONSTLIT("Function name expected")))
 					{
-					pLocalSymbols->Discard(pCC);
+					pLocalSymbols->Discard();
 					return pResult;
 					}
 				}
 
 			pItem = pLocalSymbols->AddEntry(pCC, pVar, pResult);
-			pResult->Discard(pCC);
+			pResult->Discard();
 			}
 
 		//	Check for error
 
 		if (pItem->IsError())
 			{
-			pLocalSymbols->Discard(pCC);
+			pLocalSymbols->Discard();
 			return pItem;
 			}
 
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Setup the context. If the lambda expression has a local symbol scope
@@ -281,7 +281,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	return pResult;
 	}
@@ -337,7 +337,7 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 
 	{
 	if (m_pLocalSymbols)
-		m_pLocalSymbols->Discard(pCC);
+		m_pLocalSymbols->Discard();
 
 #ifdef TRUE_CLOSURES
 	//	For closures to work, we need a reference to our parent's local symbols

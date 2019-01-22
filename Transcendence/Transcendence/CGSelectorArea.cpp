@@ -511,7 +511,7 @@ ICCItem *CGSelectorArea::GetEntryAtCursor (void)
 
 			ICCItem *pItem = ::CreateListFromItem(CC, Entry.pItemCtx->GetItem());
 			pStruct->SetValue(CC, CONSTLIT("item"), pItem);
-			pItem->Discard(&CC);
+			pItem->Discard();
 
 			pStruct->SetStringAt(CC, CONSTLIT("category"), GetItemCategoryID(Entry.pItemCtx->GetItem().GetType()->GetCategory()));
 

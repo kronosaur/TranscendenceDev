@@ -25,7 +25,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	//	If not new then we need to free the code block
 
 	if (!bIsNew && pEntry->pCode)
-		pEntry->pCode->Discard(&g_pUniverse->GetCC());
+		pEntry->pCode->Discard();
 
 	//	Init
 
@@ -252,7 +252,7 @@ void CLanguageDataBlock::DeleteAll (void)
 
 	for (i = 0; i < m_Data.GetCount(); i++)
 		if (m_Data[i].pCode)
-			m_Data[i].pCode->Discard(pCC);
+			m_Data[i].pCode->Discard();
 
 	m_Data.DeleteAll();
 	}

@@ -478,7 +478,7 @@ class CDockScreen : public IScreenController,
 				{
 				CCodeChain &CC = g_pUniverse->GetCC();
 				if (pCode)
-					pCode->Discard(&CC);
+					pCode->Discard();
 				}
 
 			EControlTypes iType;

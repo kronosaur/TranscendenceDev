@@ -1180,7 +1180,7 @@ bool CMission::Reward (ICCItem *pData, ICCItem **retpResult)
 	ICCItem *pResult = FireOnReward(pData);
 	if (retpResult == NULL || (pResult && !pResult->IsSymbolTable()))
 		{
-		pResult->Discard(&GetUniverse().GetCC());
+		pResult->Discard();
 		pResult = NULL;
 		}
 
@@ -1281,7 +1281,7 @@ bool CMission::SetDeclined (ICCItem **retpResult)
 	ICCItem *pResult = FireOnDeclined();
 	if (retpResult == NULL || (pResult && !pResult->IsSymbolTable()))
 		{
-		pResult->Discard(&GetUniverse().GetCC());
+		pResult->Discard();
 		pResult = NULL;
 		}
 

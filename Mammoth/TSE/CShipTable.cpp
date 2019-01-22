@@ -595,7 +595,7 @@ CSingleShip::~CSingleShip (void)
 		delete m_pEscorts;
 
 	if (m_pOnCreate)
-		m_pOnCreate->Discard(&g_pUniverse->GetCC());
+		m_pOnCreate->Discard();
 	}
 
 void CSingleShip::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)

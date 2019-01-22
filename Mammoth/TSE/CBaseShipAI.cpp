@@ -68,7 +68,7 @@ CBaseShipAI::~CBaseShipAI (void)
 
 	{
 	if (m_pCommandCode)
-		m_pCommandCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCommandCode->Discard();
 
 	if (m_pOrderModule)
 		delete m_pOrderModule;
@@ -1663,7 +1663,7 @@ void CBaseShipAI::SetCommandCode (ICCItem *pCode)
 	{
 	if (m_pCommandCode)
 		{
-		m_pCommandCode->Discard(&(m_pShip->GetUniverse().GetCC()));
+		m_pCommandCode->Discard();
 		m_pCommandCode = NULL;
 		}
 

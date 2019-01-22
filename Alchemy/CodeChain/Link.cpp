@@ -112,7 +112,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 		pPos = SkipWhiteSpace(pPos, &iCurLine);
 		if (*pPos == SYMBOL_CLOSEPAREN)
 			{
-			pList->Discard(this);
+			pList->Discard();
 			pResult = CreateNil();
 			pPos++;
 			}
@@ -133,7 +133,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				//	Add the item to the list
 
 				pList->Append(*this, pItem);
-				pItem->Discard(this);
+				pItem->Discard();
 
 				//	Move the position
 
@@ -154,7 +154,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				}
 			else
 				{
-				pList->Discard(this);
+				pList->Discard();
 				pResult = CreateParseError(iCurLine, CONSTLIT("Mismatched open parenthesis"));
 				}
 			}
@@ -201,7 +201,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				pKey = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pKey->IsError())
 					{
-					pTable->Discard(this);
+					pTable->Discard();
 					return pKey;
 					}
 
@@ -211,8 +211,8 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				pPos = SkipWhiteSpace(pPos, &iCurLine);
 				if (*pPos != SYMBOL_COLON)
 					{
-					pKey->Discard(this);
-					pTable->Discard(this);
+					pKey->Discard();
+					pTable->Discard();
 					return CreateParseError(iCurLine, CONSTLIT("Struct value not found."));
 					}
 
@@ -225,8 +225,8 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				pValue = LinkFragment(sString, iOffset + (pPos - pStart), &iLinked, &iCurLine);
 				if (pValue->IsError())
 					{
-					pKey->Discard(this);
-					pTable->Discard(this);
+					pKey->Discard();
+					pTable->Discard();
 					return pValue;
 					}
 
@@ -237,11 +237,11 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				//	Add the item to the table
 
 				pResult = pTable->AddEntry(this, pKey, pValue);
-				pKey->Discard(this);
-				pValue->Discard(this);
+				pKey->Discard();
+				pValue->Discard();
 				if (pResult->IsError())
 					{
-					pTable->Discard(this);
+					pTable->Discard();
 					return pResult;
 					}
 
@@ -261,7 +261,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 				}
 			else
 				{
-				pTable->Discard(this);
+				pTable->Discard();
 				pResult = CreateParseError(iCurLine, CONSTLIT("Mismatched open brace"));
 				}
 			}

@@ -18,6 +18,17 @@
 
 #define POOL_COUNT									9
 
+CCItemPool<CCInteger> CCodeChain::m_IntegerPool;
+CCItemPool<CCDouble> CCodeChain::m_DoublePool;
+CCItemPool<CCString> CCodeChain::m_StringPool;
+CCItemPool<CCLinkedList> CCodeChain::m_ListPool;
+CCItemPool<CCPrimitive> CCodeChain::m_PrimitivePool;
+CCItemPool<CCAtomTable> CCodeChain::m_AtomTablePool;
+CCItemPool<CCSymbolTable> CCodeChain::m_SymbolTablePool;
+CCItemPool<CCLambda> CCodeChain::m_LambdaPool;
+CCItemPool<CCVector> CCodeChain::m_VectorPool;
+CConsPool CCodeChain::m_ConsPool;
+
 CCodeChain::CCodeChain (void) :
 		m_pGlobalSymbols(NULL)
 
@@ -74,11 +85,6 @@ ALERROR CCodeChain::Boot (void)
 	int i;
 	ICCItem *pItem;
 
-	//	Initialize memory error
-
-	m_sMemoryError.SetError();
-	m_sMemoryError.SetValue(LITERAL("Out of memory"));
-
 	//	Initialize Nil
 
 	pItem = new CCNil;
@@ -121,14 +127,9 @@ void CCodeChain::CleanUp (void)
 	{
 	if (m_pGlobalSymbols)
 		{
-		m_pGlobalSymbols->Discard(this);
+		m_pGlobalSymbols->Discard();
 		m_pGlobalSymbols = NULL;
 		}
-
-	//	Free strings, because if CCodeChain is global, its destructor
-	//	might get called after strings have terminated.
-
-	m_sMemoryError.SetValue(NULL_STR);
 	}
 
 ICCItem *CCodeChain::CreateAtomTable (void)
@@ -279,7 +280,7 @@ ICCItem *CCodeChain::CreateLambda (ICCItem *pList, bool bArgsOnly)
 			return pItem;
 			}
 
-		pItem->Discard(this);
+		pItem->Discard();
 		}
 
 	//	Done
@@ -582,7 +583,7 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 
 	pVector = new CCVectorOld(this);
 	if (pVector == NULL)
-		return CreateMemoryError();
+		throw CException(ERR_MEMORY);
 
 	pError = pVector->SetSize(this, iSize);
 	if (pError->IsError())
@@ -591,7 +592,7 @@ ICCItem *CCodeChain::CreateVectorOld (int iSize)
 		return pError;
 		}
 
-	pError->Discard(this);
+	pError->Discard();
 
 	//	Done
 
@@ -643,7 +644,7 @@ ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 	pVector->SetArrayData(this, vContentArray);
 
 	
-	pError->Discard(this);
+	pError->Discard();
 	//	Done
 	return pVector->Reference();
 }
@@ -672,7 +673,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 	pItem = pContentList->GetFlattened(this, NULL);
 	if (pItem->IsError())
 	{ 
-		pVector->Discard(this);
+		pVector->Discard();
 		return pItem;
 	};
 	CCLinkedList *pFlattenedContentList = dynamic_cast<CCLinkedList *>(pItem);
@@ -685,7 +686,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 	pVector->SetArrayData(this, vDataArray);
 
 	//	Done
-	pFlattenedContentList->Discard(this);
+	pFlattenedContentList->Discard();
 	return pVector->Reference();
 }
 
@@ -726,7 +727,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, TArray<double>
 	pVector->SetArrayData(this, vContentArray);
 
 	//	Done
-	pError->Discard(this);
+	pError->Discard();
 	return pVector->Reference();
 }
 
@@ -747,7 +748,7 @@ ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 
 	ICCItem *pError;
 	pError = m_pGlobalSymbols->AddEntry(this, pVar, pValue);
-	pVar->Discard(this);
+	pVar->Discard();
 
 	//	Check for error
 
@@ -756,7 +757,7 @@ ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 	else
 		error = NOERROR;
 
-	pError->Discard(this);
+	pError->Discard();
 
 	return error;
 	}
@@ -766,7 +767,7 @@ ALERROR CCodeChain::DefineGlobalInteger (const CString &sVar, int iValue)
 	ALERROR error;
 	ICCItem *pValue = CreateInteger(iValue);
 	error = DefineGlobal(sVar, pValue);
-	pValue->Discard(this);
+	pValue->Discard();
 	return error;
 	}
 
@@ -775,7 +776,7 @@ ALERROR CCodeChain::DefineGlobalString (const CString &sVar, const CString &sVal
 	ALERROR error;
 	ICCItem *pValue = CreateString(sValue);
 	error = DefineGlobal(sVar, pValue);
-	pValue->Discard(this);
+	pValue->Discard();
 	return error;
 	}
 
@@ -869,7 +870,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 
 		if (!pFunction->IsFunction())
 			{
-			pFunction->Discard(this);
+			pFunction->Discard();
 			return CreateError(LITERAL("Function name expected"), pFunctionName);
 			}
 
@@ -903,8 +904,8 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 
 		//	Done
 
-		pFunction->Discard(this);
-		pArgs->Discard(this);
+		pFunction->Discard();
+		pArgs->Discard();
 		return pResult;
 		}
 	
@@ -945,16 +946,16 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
 		ICCItem *pResult = pNewTable->AddEntry(this, pNewKey, pNewValue);
-		pNewKey->Discard(this);
-		pNewValue->Discard(this);
+		pNewKey->Discard();
+		pNewValue->Discard();
 
 		if (pResult->IsError())
 			{
-			pNewTable->Discard(this);
+			pNewTable->Discard();
 			return pResult;
 			}
 
-		pResult->Discard(this);
+		pResult->Discard();
 		}
 
 	//	Done
@@ -1003,7 +1004,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 	int iVarArgs = pArgs->GetCount() - (sArgValidation.GetLength() - 1);
 	if (iVarArgs < 0)
 		{
-		pEvalList->Discard(this);
+		pEvalList->Discard();
 		return CreateError(LITERAL("Insufficient arguments"), NULL);
 		}
 
@@ -1050,7 +1051,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				{
 				if (pResult->IsError())
 					{
-					pEvalList->Discard(this);
+					pEvalList->Discard();
 					return pResult;
 					}
 				}
@@ -1067,8 +1068,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsNil() && !pResult->IsFunction())
 					{
 					pError = CreateError(LITERAL("Function expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1096,12 +1097,12 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 						if (bFailed)
 							{
 							pError = CreateError(LITERAL("Numeral expected"), pResult);
-							pResult->Discard(this);
-							pEvalList->Discard(this);
+							pResult->Discard();
+							pEvalList->Discard();
 							return pError;
 							}
 
-						pResult->Discard(this);
+						pResult->Discard();
 						pResult = CreateInteger(iValue);
 						}
 					else
@@ -1111,20 +1112,20 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 						if (bFailed)
 							{
 							pError = CreateError(LITERAL("Numeral expected"), pResult);
-							pResult->Discard(this);
-							pEvalList->Discard(this);
+							pResult->Discard();
+							pEvalList->Discard();
 							return pError;
 							}
 
-						pResult->Discard(this);
+						pResult->Discard();
 						pResult = CreateDouble(rValue);
 						}
 					}
 				else if (!pResult->IsNil() && !pResult->IsNumber())
 					{
 					pError = CreateError(LITERAL("Numeral expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1141,19 +1142,19 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 					if (bFailed)
 						{
 						pError = CreateError(LITERAL("Numeral expected"), pResult);
-						pResult->Discard(this);
-						pEvalList->Discard(this);
+						pResult->Discard();
+						pEvalList->Discard();
 						return pError;
 						}
 
-					pResult->Discard(this);
+					pResult->Discard();
 					pResult = CreateDouble(rValue);
 					}
 				else if (!pResult->IsNil() && !pResult->IsDouble())
 					{
 					pError = CreateError(LITERAL("Double expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1166,8 +1167,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!(pResult->GetValueType() == ICCItem::Vector))
 					{
 					pError = CreateError(LITERAL("Vector expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1180,8 +1181,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (pResult->GetClass()->GetObjID() != OBJID_CCLINKEDLIST)
 					{
 					pError = CreateError(LITERAL("Linked-list expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1194,8 +1195,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsList())
 					{
 					pError = CreateError(LITERAL("List expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1208,8 +1209,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsNil() && !pResult->IsIdentifier())
 					{
 					pError = CreateError(LITERAL("Identifier expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1220,8 +1221,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsIdentifier())
 					{
 					pError = CreateError(LITERAL("Identifier expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1234,8 +1235,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsAtomTable())
 					{
 					pError = CreateError(LITERAL("Atom table expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1248,8 +1249,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 				if (!pResult->IsNil() && !pResult->IsSymbolTable())
 					{
 					pError = CreateError(LITERAL("Symbol table expected"), pResult);
-					pResult->Discard(this);
-					pEvalList->Discard(this);
+					pResult->Discard();
+					pEvalList->Discard();
 					return pError;
 					}
 				break;
@@ -1272,8 +1273,8 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 			case '\0':
 				{
 				pError = CreateError(LITERAL("Too many arguments"), NULL);
-				pResult->Discard(this);
-				pEvalList->Discard(this);
+				pResult->Discard();
+				pEvalList->Discard();
 				return pError;
 				}
 
@@ -1284,7 +1285,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 		//	Add the result to the list
 
 		pEvalList->Append(*this, pResult);
-		pResult->Discard(this);
+		pResult->Discard();
 
 		//	Next validation sequence (note that *pValidation can never
 		//	be '\0' because we return above if we find it)
@@ -1298,7 +1299,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 	if (*pValidation != '\0' && *pValidation != '*')
 		{
 		pError = CreateError(LITERAL("Insufficient arguments"), NULL);
-		pEvalList->Discard(this);
+		pEvalList->Discard();
 		return pError;
 		}
 
@@ -1384,7 +1385,7 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 			pBinding = pStart->SimpleLookup(this, pItem, &bFound, &iOffset);
 			if (!bFound)
 				{
-				pBinding->Discard(this);
+				pBinding->Discard();
 				pBinding = NULL;
 				pStart = pStart->GetParent();
 				iFrame++;
@@ -1403,7 +1404,7 @@ ICCItem *CCodeChain::Lookup (CEvalContext *pCtx, ICCItem *pItem)
 	if (!bFound)
 		{
 		ASSERT(pBinding == NULL);
-		//pBinding->Discard(this);
+		//pBinding->Discard();
 		pBinding = CreateError(LITERAL("No binding for symbol"), pItem);
 		}
 
@@ -1438,7 +1439,7 @@ ICCItem *CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem *pName)
 
 	if (pCtx)
 		{
-		pBinding->Discard(this);
+		pBinding->Discard();
 		pBinding = Lookup(pCtx, pName);
 		if (!pBinding->IsError())
 			//	We don't set a function binding because local variables often change
@@ -1448,7 +1449,7 @@ ICCItem *CCodeChain::LookupFunction (CEvalContext *pCtx, ICCItem *pName)
 
 	//	If we get this far then we could not find it
 
-	pBinding->Discard(this);
+	pBinding->Discard();
 	pBinding = CreateError(LITERAL("Unknown function"), pName);
 	return pBinding;
 	}
@@ -1478,7 +1479,7 @@ ICCItem *CCodeChain::LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx)
 		return pItem;
 
 	pResult = Lookup(&EvalCtx, pItem);
-	pItem->Discard(this);
+	pItem->Discard();
 	return pResult;
 	}
 
@@ -1525,7 +1526,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 		//	Add the item to the list
 
 		pList->Append(*this, pItem);
-		pItem->Discard(this);
+		pItem->Discard();
 		}
 
 	return pList;
@@ -1567,7 +1568,7 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 	pDefinition = CreatePrimitive(pDef, pImpl);
 	if (pDefinition->IsError())
 		{
-		pDefinition->Discard(this);
+		pDefinition->Discard();
 		return ERR_FAIL;
 		}
 
@@ -1576,14 +1577,14 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 	pError = m_pGlobalSymbols->AddEntry(this, pDefinition, pDefinition);
 	if (pError->IsError())
 		{
-		pError->Discard(this);
+		pError->Discard();
 		return ERR_FAIL;
 		}
 
 	//	Don't need these anymore; AddEntry keeps a reference
 
-	pError->Discard(this);
-	pDefinition->Discard(this);
+	pError->Discard();
+	pDefinition->Discard();
 
 	return NOERROR;
 	}

@@ -26,14 +26,14 @@ ICCItem *CFunctionContextWrapper::Clone (CCodeChain *pCC)
 	return NULL;
 	}
 
-void CFunctionContextWrapper::DestroyItem (CCodeChain *pCC)
+void CFunctionContextWrapper::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroy
 
 	{
-	m_pFunction->Discard(pCC);
+	m_pFunction->Discard();
 	delete this;
 	}
 

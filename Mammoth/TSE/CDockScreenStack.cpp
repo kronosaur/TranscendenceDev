@@ -53,7 +53,7 @@ ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
 		pResult = Frame.pStoredData->Lookup(&CC, pKey);
 		if (pResult->IsError())
 			{
-			pResult->Discard(&CC);
+			pResult->Discard();
 			pResult = NULL;
 			}
 		}
@@ -63,12 +63,12 @@ ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
 		pResult = Frame.pInitialData->Lookup(&CC, pKey);
 		if (pResult->IsError())
 			{
-			pResult->Discard(&CC);
+			pResult->Discard();
 			pResult = NULL;
 			}
 		}
 
-	pKey->Discard(&CC);
+	pKey->Discard();
 
 	if (pResult == NULL)
 		pResult = CC.CreateNil();
@@ -242,7 +242,7 @@ void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem
             pResult = CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
         }
 
-    pOriginal->Discard(&CC);
+    pOriginal->Discard();
 
     //  Store
 
@@ -253,9 +253,9 @@ void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem
     if (retpResult)
         *retpResult = pResult;
     else
-        pResult->Discard(&CC);
+        pResult->Discard();
 
-    pValue->Discard(&CC);
+    pValue->Discard();
 	}
 
 void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
@@ -279,8 +279,8 @@ void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
 
 	ICCItem *pKey = CC.CreateString(sAttrib);
 	ICCItem *pResult = Frame.pStoredData->AddEntry(&CC, pKey, pData);
-	pResult->Discard(&CC);
-	pKey->Discard(&CC);
+	pResult->Discard();
+	pKey->Discard();
 	}
 
 void CDockScreenStack::SetDisplayData (const CString &sID, const CString &sData)

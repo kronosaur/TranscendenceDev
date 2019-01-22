@@ -1102,23 +1102,23 @@ static void AddEffectItem (CCodeChain &CC, CCLinkedList *pList, const CString &s
 	CCLinkedList *pNewItem = (CCLinkedList *)CC.CreateLinkedList();
 	if (pNewItem->IsError())
 		{
-		pNewItem->Discard(&CC);
+		pNewItem->Discard();
 		return;
 		}
 
 	ICCItem *pField = CC.CreateString(sEffect);
 	pNewItem->Append(CC, pField);
-	pField->Discard(&CC);
+	pField->Discard();
 
 	if (iTime != -1)
 		{
 		pField = CC.CreateInteger(iTime);
 		pNewItem->Append(CC, pField);
-		pField->Discard(&CC);
+		pField->Discard();
 		}
 
 	pList->Append(CC, pNewItem);
-	pNewItem->Discard(&CC);
+	pNewItem->Discard();
 	}
 
 ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)

@@ -1796,7 +1796,7 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 		return 0;
 
 	int iResult = pItem->GetIntegerValue();
-	pItem->Discard(&CC);
+	pItem->Discard();
 	return iResult;
 	}
 
@@ -1815,7 +1815,7 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 		return NULL_STR;
 
 	CString sResult = pItem->GetStringValue();
-	pItem->Discard(&CC);
+	pItem->Discard();
 	return sResult;
 	}
 

@@ -32,14 +32,14 @@ ICCItem *CCDouble::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCDouble::DestroyItem (CCodeChain *pCC)
+void CCDouble::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroys the item
 
 	{
-	pCC->DestroyDouble(this);
+	CCodeChain::DestroyDouble(this);
 	}
 
 CString CCDouble::Print (CCodeChain *pCC, DWORD dwFlags)

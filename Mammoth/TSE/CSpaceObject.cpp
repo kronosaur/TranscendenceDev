@@ -4154,7 +4154,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 			ICCItem *pValue = ::CreateListFromVector(CC, pPorts->GetPortPos(this, i, NULL));
 			pPortDesc->SetAt(CC, FIELD_POS, pValue);
-			pValue->Discard(&CC);
+			pValue->Discard();
 
 			//	ObjectID
 
@@ -4165,7 +4165,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			//	Add to list
 
 			pList->Append(CC, pPortDesc);
-			pPortDesc->Discard(&CC);
+			pPortDesc->Discard();
 			}
 
 		return pList;
@@ -4183,7 +4183,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		if (pResult->GetCount() == 0)
 			{
-			pResult->Discard(&CC);
+			pResult->Discard();
 			return CC.CreateNil();
 			}
 		else

@@ -76,12 +76,12 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 					{
 					if (!(pElement->GetElement(j)->IsInteger()))
 						{
-						pArrayIndices->Discard(pCC);
+						pArrayIndices->Discard();
 						return pCC->CreateError(CONSTLIT("An element of the index list is not an integer, list of integers, or Nil."));
 						}
 					else if (pElement->GetElement(j)->GetIntegerValue() >= vShape[i])
 						{
-						pArrayIndices->Discard(pCC);
+						pArrayIndices->Discard();
 						return pCC->CreateError(CONSTLIT("Out of bounds."));
 						}
 					}
@@ -95,14 +95,14 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 				{
 				if (pElement->GetIntegerValue() >= vShape[i])
 					{
-					pArrayIndices->Discard(pCC);
+					pArrayIndices->Discard();
 					return pCC->CreateError(CONSTLIT("Out of bounds."));
 					}
 				pArrayIndices->AppendInteger(*pCC, pElement->GetIntegerValue()*iSkipCount);
 				}
 			else
 				{
-				pArrayIndices->Discard(pCC);
+				pArrayIndices->Discard();
 				return pCC->CreateError(CONSTLIT("An element of the index list is not an integer, list of integers, or Nil."));
 				}
 			}
@@ -125,14 +125,14 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 					{
 					if (!(pElement->GetElement(j)->IsInteger()))
 						{
-						pArrayIndices->Discard(pCC);
-						pNewArrayIndices->Discard(pCC);
+						pArrayIndices->Discard();
+						pNewArrayIndices->Discard();
 						return pCC->CreateError(CONSTLIT("An element of the index list is not an integer, list of integers, or Nil."));
 						}
 					else if (pElement->GetElement(j)->GetIntegerValue() >= vShape[i])
 						{
-						pArrayIndices->Discard(pCC);
-						pNewArrayIndices->Discard(pCC);
+						pArrayIndices->Discard();
+						pNewArrayIndices->Discard();
 						return pCC->CreateError(CONSTLIT("Out of bounds."));
 						}
 					}
@@ -149,8 +149,8 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 				{
 				if (pElement->GetIntegerValue() >= vShape[i])
 					{
-					pArrayIndices->Discard(pCC);
-					pNewArrayIndices->Discard(pCC);
+					pArrayIndices->Discard();
+					pNewArrayIndices->Discard();
 					return pCC->CreateError(CONSTLIT("Out of bounds."));
 					}
 
@@ -161,12 +161,12 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 				}
 			else
 				{
-				pArrayIndices->Discard(pCC);
-				pNewArrayIndices->Discard(pCC);
+				pArrayIndices->Discard();
+				pNewArrayIndices->Discard();
 				return pCC->CreateError(CONSTLIT("An element of the index list is not an integer, list of integers, or Nil."));
 				}
 
-			pArrayIndices->Discard(pCC);
+			pArrayIndices->Discard();
 			pArrayIndices = pNewArrayIndices;
 			}
 		}
@@ -243,7 +243,7 @@ ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
 
 	pNewVector = new CCVectorOld(pCC);
 	if (pNewVector == NULL)
-		return pCC->CreateMemoryError();
+		throw CException(ERR_MEMORY);
 
 	//	Initialize
 
@@ -254,7 +254,7 @@ ICCItem *CCVectorOld::Clone (CCodeChain *pCC)
 		return pError;
 		}
 
-	pError->Discard(pCC);
+	pError->Discard();
 
 	//	Copy the vector
 
@@ -288,7 +288,7 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 
 	pNewVector = new CCVector(m_pCC);
 	if (pNewVector == NULL)
-		return m_pCC->CreateMemoryError();
+		throw CException(ERR_MEMORY);
 	pNewVector->SetContext(m_pCC);
 
 	pError = pNewVector->SetDataArraySize(m_pCC, iSize);
@@ -321,11 +321,11 @@ ICCItem *CCVector::Clone(CCodeChain *pCC)
 	//	Done
 
 	//  if we have gotten this far, then we are all done
-	pError->Discard(m_pCC);
+	pError->Discard();
 	return pNewVector->Reference();
 	}
 
-void CCVectorOld::DestroyItem (CCodeChain *pCC)
+void CCVectorOld::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -342,10 +342,10 @@ void CCVectorOld::DestroyItem (CCodeChain *pCC)
 
 	//	Delete ourselves
 
-	pCC->DestroyVector(this);
+	CCodeChain::DestroyVector(this);
 	}
 
-void CCVector::DestroyItem (CCodeChain *pCC)
+void CCVector::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -356,7 +356,7 @@ void CCVector::DestroyItem (CCodeChain *pCC)
 	//	none were allocated using new
 
 	//	We need to destroy the reference to the vector in pCC though
-	pCC->DestroyVector(this);
+	CCodeChain::DestroyVector(this);
 	}
 
 ICCItem *CCVectorOld::Enum (CEvalContext *pCtx, ICCItem *pCode)
@@ -532,12 +532,12 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
 	TArray <int> vNewShape = GetExtractedVectorShape(pCC, this->GetShapeArray(), dynamic_cast <CCLinkedList *> (pIndices));
 	if (vNewShape.GetCount() == 0 && (pIndexExtractionResult->GetCount() == 1))
 		{
-		pIndexExtractionResult->Discard(pCC);
+		pIndexExtractionResult->Discard();
 		return pCC->CreateDouble(m_vData[pIndexExtractionResult->GetElement(0)->GetIntegerValue()]);
 		}
 	else if (vNewShape.GetCount() == 0)
 		{
-		pIndexExtractionResult->Discard(pCC);
+		pIndexExtractionResult->Discard();
 		return pCC->CreateError(CONSTLIT("Error determining shape of extracted vector."));
 		}
 
@@ -555,17 +555,17 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
 		pItem = pCC->CreateVectorGivenContent(vNewShape, vContentArray);
 		if (pItem->IsError())
 			{
-			pIndexExtractionResult->Discard(pCC);
+			pIndexExtractionResult->Discard();
 			return pItem;
 			}
 
-		pIndexExtractionResult->Discard(pCC);
+		pIndexExtractionResult->Discard();
 		return pItem;
 		}
 	else
 		{
 		pItem = pCC->CreateDouble(m_vData[pIndexExtractionResult->Head(pCC)->GetIntegerValue()]);
-		pIndexExtractionResult->Discard(pCC);
+		pIndexExtractionResult->Discard();
 		return pItem;
 		}
 	}
@@ -619,9 +619,9 @@ CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 			ICCItem *pSubVector = IndexVector(pCC, pIndices);
 			if (pSubVector->IsError())
 				{
-				pIndices->Discard(pCC);
+				pIndices->Discard();
 				sPrintedVector = strPatternSubst(LITERAL("Error printing vector: %s"), pSubVector->GetStringValue());
-				pSubVector->Discard(pCC);
+				pSubVector->Discard();
 				return sPrintedVector;
 				}
 
@@ -636,8 +636,8 @@ CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 			if (i != m_vShape[0] - 1)
 				sPrintedVector.Append(LITERAL(", "));
 
-			pSubVector->Discard(pCC);
-			pIndices->Discard(pCC);
+			pSubVector->Discard();
+			pIndices->Discard();
 			};
 		sPrintedVector.Append(LITERAL(" )"));
 
@@ -726,7 +726,7 @@ ICCItem *CCVectorOld::SetSize (CCodeChain *pCC, int iNewSize)
 
 		pNewData = (int *)MemAlloc(iNewSize * sizeof(DWORD));
 		if (pNewData == NULL)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	Copy the old array
 
@@ -793,7 +793,7 @@ ICCItem *CCVector::SetDataArraySize(CCodeChain *pCC, int iNewSize)
 		}
 	catch (...)
 		{
-			return pCC->CreateMemoryError();
+		throw CException(ERR_MEMORY);
 		}
 	
 	return pCC->CreateTrue();
@@ -828,7 +828,7 @@ ICCItem *CCVector::SetShapeArraySize (CCodeChain *pCC, int iNewSize)
 		}
 	else
 		{
-		return pCC->CreateMemoryError();
+		throw CException(ERR_MEMORY);
 		}
 	}
 

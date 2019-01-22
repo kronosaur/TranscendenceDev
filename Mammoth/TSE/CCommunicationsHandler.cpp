@@ -61,10 +61,10 @@ void CCommunicationsHandler::DeleteAll (void)
 	for (int i = 0; i < GetCount(); i++)
 		{
 		if (m_Messages[i].InvokeEvent.pCode)
-			m_Messages[i].InvokeEvent.pCode->Discard(&g_pUniverse->GetCC());
+			m_Messages[i].InvokeEvent.pCode->Discard();
 
 		if (m_Messages[i].OnShowEvent.pCode)
-			m_Messages[i].OnShowEvent.pCode->Discard(&g_pUniverse->GetCC());
+			m_Messages[i].OnShowEvent.pCode->Discard();
 		}
 
 	m_Messages.DeleteAll(); 

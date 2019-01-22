@@ -261,7 +261,7 @@ void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
 	{
 	ICCItem *pItem = CreateItemFromDamageEffects(m_CC, Ctx);
 	m_CC.DefineGlobal(sVar, pItem);
-	pItem->Discard(&m_CC);
+	pItem->Discard();
 	}
 
 void CCodeChainCtx::DefineContainingType (const CDesignType *pType)
@@ -313,7 +313,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, CItemCtx &ItemCtx)
 	{
 	ICCItem *pItem = ItemCtx.CreateItemVariable(m_CC);
 	m_CC.DefineGlobal(sVar, pItem);
-	pItem->Discard(&m_CC);
+	pItem->Discard();
 	}
 
 void CCodeChainCtx::DefineItem (const CItem &Item)
@@ -337,7 +337,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 		{
 		ICCItem *pItem = CreateListFromItem(m_CC, Item);
 		m_CC.DefineGlobal(sVar, pItem);
-		pItem->Discard(&m_CC);
+		pItem->Discard();
 		}
 	else
 		m_CC.DefineGlobal(sVar, m_CC.CreateNil());
@@ -365,7 +365,7 @@ void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
 	{
 	ICCItem *pValue = CreateListFromOrbit(m_CC, OrbitDesc);
 	m_CC.DefineGlobal(sVar, pValue);
-	pValue->Discard(&m_CC);
+	pValue->Discard();
 	}
 
 void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
@@ -391,7 +391,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
 		{
 		ICCItem *pValue = m_CC.CreateNil();
 		m_CC.DefineGlobal(sVar, pValue);
-		pValue->Discard(&m_CC);
+		pValue->Discard();
 		}
 	}
 
@@ -404,7 +404,7 @@ void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
 	{
 	ICCItem *pValue = CreateListFromVector(m_CC, vVector);
 	m_CC.DefineGlobal(sVar, pValue);
-	pValue->Discard(&m_CC);
+	pValue->Discard();
 	}
 
 DWORD CCodeChainCtx::GetAPIVersion (void) const
@@ -465,35 +465,35 @@ void CCodeChainCtx::RestoreVars (void)
 	if (m_pOldItem)
 		{
 		m_CC.DefineGlobal(STR_G_ITEM, m_pOldItem);
-		m_pOldItem->Discard(&m_CC);
+		m_pOldItem->Discard();
 		m_pOldItem = NULL;
 		}
 
 	if (m_pOldSource)
 		{
 		m_CC.DefineGlobal(STR_G_SOURCE, m_pOldSource);
-		m_pOldSource->Discard(&m_CC);
+		m_pOldSource->Discard();
 		m_pOldSource = NULL;
 		}
 
 	if (m_pOldData)
 		{
 		m_CC.DefineGlobal(STR_G_DATA, m_pOldData);
-		m_pOldData->Discard(&m_CC);
+		m_pOldData->Discard();
 		m_pOldData = NULL;
 		}
 
 	if (m_pOldOverlayID)
 		{
 		m_CC.DefineGlobal(STR_A_OVERLAY_ID, m_pOldOverlayID);
-		m_pOldOverlayID->Discard(&m_CC);
+		m_pOldOverlayID->Discard();
 		m_pOldOverlayID = NULL;
 		}
 
 	if (m_pOldType)
 		{
 		m_CC.DefineGlobal(STR_G_TYPE, m_pOldType);
-		m_pOldType->Discard(&m_CC);
+		m_pOldType->Discard();
 		m_pOldType = NULL;
 		}
 	}

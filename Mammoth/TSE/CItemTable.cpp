@@ -2184,7 +2184,7 @@ CRandomEnhancementGenerator::~CRandomEnhancementGenerator (void)
 
 	{
 	if (m_pCode)
-		m_pCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCode->Discard();
 	}
 
 CRandomEnhancementGenerator &CRandomEnhancementGenerator::operator= (const CRandomEnhancementGenerator &Src)
@@ -2234,7 +2234,7 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();
-			m_pCode->Discard(&CC);
+			m_pCode->Discard();
 			return ERR_FAIL;
 			}
 

@@ -135,7 +135,7 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 		m_pType->FireCustomEvent(m_sEvent, eventNone, pData);
 
-		pData->Discard(&CC);
+		pData->Discard();
 		}
 
 	SetDestroyed();

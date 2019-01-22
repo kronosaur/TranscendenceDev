@@ -241,14 +241,14 @@ void CDockScreenActions::CleanUp (void)
 	for (i = 0; i < m_Actions.GetCount(); i++)
 		{
 		if (m_Actions[i].pCode)
-			m_Actions[i].pCode->Discard(&g_pUniverse->GetCC());
+			m_Actions[i].pCode->Discard();
 		}
 
 	m_Actions.DeleteAll();
 
 	if (m_pData)
 		{
-		m_pData->Discard(&g_pUniverse->GetCC());
+		m_pData->Discard();
 		m_pData = NULL;
 		}
 	}
@@ -383,7 +383,7 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 
 		//	Done
 
-		pExp->Discard(&g_pUniverse->GetCC());
+		pExp->Discard();
 		}
 	}
 
@@ -821,7 +821,7 @@ ALERROR CDockScreenActions::RemoveAction (int iAction)
 	SActionDesc *pAction = &m_Actions[iAction];
 	if (pAction->pCode)
 		{
-		pAction->pCode->Discard(&g_pUniverse->GetCC());
+		pAction->pCode->Discard();
 		pAction->pCode = NULL;
 		}
 

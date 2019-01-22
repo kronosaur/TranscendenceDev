@@ -34,7 +34,7 @@ ICCItem *CCTrue::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCTrue::DestroyItem (CCodeChain *pCC)
+void CCTrue::DestroyItem (void)
 
 //	DestroyItem
 //

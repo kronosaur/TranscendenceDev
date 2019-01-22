@@ -26,14 +26,14 @@ ICCItem *CCAtomTable::AddEntry (CCodeChain *pCC, ICCItem *pAtom, ICCItem *pEntry
 	bool bAdded;
 
 	if (m_Table.ReplaceEntry(pAtom->GetIntegerValue(), (int)pEntry->Reference(), true, &bAdded, &iOldEntry) != NOERROR)
-		return pCC->CreateMemoryError();
+		throw CException(ERR_MEMORY);
 
 	//	If we have a previous entry, decrement its refcount since we're
 	//	throwing it away
 
 	pPrevEntry = (ICCItem *)iOldEntry;
 	if (!bAdded && pPrevEntry)
-		pPrevEntry->Discard(pCC);
+		pPrevEntry->Discard();
 
 	return pCC->CreateTrue();
 	}
@@ -49,7 +49,7 @@ ICCItem *CCAtomTable::Clone (CCodeChain *pCC)
 	return pCC->CreateNil();
 	}
 
-void CCAtomTable::DestroyItem (CCodeChain *pCC)
+void CCAtomTable::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -67,7 +67,7 @@ void CCAtomTable::DestroyItem (CCodeChain *pCC)
 
 		m_Table.GetEntry(i, &iKey, &iValue);
 		pItem = (ICCItem *)iValue;
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Remove all symbols
@@ -76,7 +76,7 @@ void CCAtomTable::DestroyItem (CCodeChain *pCC)
 
 	//	Destroy this item
 
-	pCC->DestroyAtomTable(this);
+	CCodeChain::DestroyAtomTable(this);
 	}
 
 ICCItem *CCAtomTable::ListSymbols (CCodeChain *pCC)
@@ -119,7 +119,7 @@ ICCItem *CCAtomTable::ListSymbols (CCodeChain *pCC)
 			//	Add the item to the list
 
 			pList->Append(*pCC, pItem);
-			pItem->Discard(pCC);
+			pItem->Discard();
 			}
 
 		return pList;
@@ -159,7 +159,7 @@ ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound
 			return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 			}
 		else
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 		}
 
 	pBinding = (ICCItem *)iValue;

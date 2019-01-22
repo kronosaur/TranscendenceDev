@@ -53,7 +53,7 @@ class CCodeChainCtx
 		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
-		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }
+		inline void Discard (ICCItem *pItem) { pItem->Discard(); }
 		DWORD GetAPIVersion (void) const;
 		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
 		inline CCodeChain &GetCC (void) { return m_CC; }
@@ -157,7 +157,7 @@ class CFunctionContextWrapper : public ICCAtom
 
 	protected:
 		//	ICCItem virtuals
-		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual void DestroyItem (void) override;
 
 	private:
 		ICCItem *m_pFunction;
@@ -198,7 +198,7 @@ class CCXMLWrapper : public ICCAtom
 		virtual void Reset (void) override { }
 
 	protected:
-		virtual void DestroyItem (CCodeChain *pCC) override;
+		virtual void DestroyItem (void) override;
 
 	private:
 		CXMLElement *m_pXML;

@@ -217,7 +217,7 @@ CItemType::~CItemType (void)
 		delete m_pComponents;
 
 	if (m_pUseCode)
-		m_pUseCode->Discard(&g_pUniverse->GetCC());
+		m_pUseCode->Discard();
 
 	if (m_pArmor)
 		delete m_pArmor;
@@ -521,7 +521,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 			{
 			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
 			pList->Append(CC, pEntry);
-			pEntry->Discard(&CC);
+			pEntry->Discard();
 			}
 
 		return pList;

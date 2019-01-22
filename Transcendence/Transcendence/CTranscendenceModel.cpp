@@ -2935,7 +2935,7 @@ void CTranscendenceModel::UseItem (CItem &Item)
 
 		ICCItem *pItem = CreateListFromItem(CC, Item);
 		CC.DefineGlobal(CONSTLIT("gItem"), pItem);
-		pItem->Discard(&CC);
+		pItem->Discard();
 
 		//	Show the dock screen
 

@@ -40,7 +40,7 @@ ICCItem *CCString::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCString::DestroyItem (CCodeChain *pCC)
+void CCString::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -49,7 +49,7 @@ void CCString::DestroyItem (CCodeChain *pCC)
 	{
 	if (m_pBinding)
 		{
-		m_pBinding->Discard(pCC);
+		m_pBinding->Discard();
 		m_pBinding = NULL;
 		}
 
@@ -58,7 +58,7 @@ void CCString::DestroyItem (CCodeChain *pCC)
 	//	appear to be leaked.
 	m_sValue = CString();
 #endif
-	pCC->DestroyString(this);
+	CCodeChain::DestroyString(this);
 	}
 
 bool CCString::GetBinding (int *retiFrame, int *retiOffset)
@@ -273,7 +273,7 @@ void CCString::SetFunctionBinding (CCodeChain *pCC, ICCItem *pBinding)
 
 	{
 	if (m_pBinding)
-		m_pBinding->Discard(pCC);
+		m_pBinding->Discard();
 
 	m_pBinding = pBinding->Reference();
 	}

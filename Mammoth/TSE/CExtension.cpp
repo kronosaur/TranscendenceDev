@@ -308,7 +308,7 @@ void CExtension::CleanUp (void)
 
 	CCodeChain *pCC = &GetUniverse().GetCC();
 	for (i = 0; i < m_Globals.GetCount(); i++)
-		m_Globals[i].pCode->Discard(pCC);
+		m_Globals[i].pCode->Discard();
 
 	m_Globals.DeleteAll();
 

@@ -30,7 +30,7 @@ void CCSymbolTable::AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry)
 
 	//	Discard old entry
 
-	((ICCItem *)pOldEntry)->Discard(pCC);
+	((ICCItem *)pOldEntry)->Discard();
 	}
 
 ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
@@ -60,7 +60,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		CObject *pOldEntry;
 
 		if (m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	If we have a previous entry, decrement its refcount since we're
 		//	throwing it away
@@ -79,11 +79,11 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		if (error == ERR_NOTFOUND)
 			{
 			ICCItem *pResult = m_pParent->AddEntry(pCC, pKey, pTransformed);
-			pTransformed->Discard(pCC);
+			pTransformed->Discard();
 			return pResult;
 			}
 		else if (error != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	Get the previous entry
 
@@ -93,7 +93,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 	//	Delete old entry
 
 	if (pPrevEntry)
-		pPrevEntry->Discard(pCC);
+		pPrevEntry->Discard();
 
 	return pCC->CreateTrue();
 	}
@@ -123,7 +123,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 
 		CObject *pOldEntry;
 		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->Reference(), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -177,7 +177,7 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 
 		CObject *pOldEntry;
 		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(pCC), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -213,7 +213,7 @@ ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)
 
 		CObject *pOldEntry;
 		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneDeep(pCC), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -260,7 +260,7 @@ void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 #ifdef DEBUG
 		::kernelDebugLogString(m_Symbols.GetKey(i));
 #endif
-		pItem->Discard(pCC);
+		pItem->Discard();
 		m_Symbols.RemoveEntry(i);
 		i--;
 		}
@@ -285,10 +285,10 @@ void CCSymbolTable::DeleteEntry (CCodeChain *pCC, ICCItem *pKey)
 	//	throwing it away
 
 	ICCItem *pPrevEntry = (ICCItem *)pOldEntry;
-	pPrevEntry->Discard(pCC);
+	pPrevEntry->Discard();
 	}
 
-void CCSymbolTable::DestroyItem (CCodeChain *pCC)
+void CCSymbolTable::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -300,7 +300,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 	//	Release our parent reference
 
 	if (m_pParent)
-		m_pParent->Discard(pCC);
+		m_pParent->Discard();
 
 	//	Release all the entries
 
@@ -309,7 +309,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 		CObject *pValue = m_Symbols.GetValue(i);
 		ICCItem *pItem = (ICCItem *)pValue;
 
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Remove all symbols
@@ -318,7 +318,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 
 	//	Destroy this item
 
-	pCC->DestroySymbolTable(this);
+	CCodeChain::DestroySymbolTable(this);
 	}
 
 int CCSymbolTable::FindOffset (CCodeChain *pCC, ICCItem *pKey)
@@ -416,7 +416,7 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	
 	ICCItem *pKey = pCC->CreateString(m_Symbols.GetKey(iIndex));
 	pList->Append(*pCC, pKey);
-	pKey->Discard(pCC);
+	pKey->Discard();
 
 	pList->Append(*pCC, GetElement(iIndex));
 
@@ -484,7 +484,7 @@ ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
 			//	Add the item to the list
 
 			pList->Append(*pCC, pItem);
-			pItem->Discard(pCC);
+			pItem->Discard();
 			}
 
 		return pList;
@@ -532,7 +532,7 @@ ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, bool *retbFoun
 				}
 			}
 		else
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 		}
 
 	pBinding = dynamic_cast<ICCItem *>(pNew);
@@ -634,7 +634,7 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retb
 			return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 			}
 		else
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 		}
 
 	pNew = m_Symbols.GetValue(iOffset);

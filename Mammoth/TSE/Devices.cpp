@@ -283,7 +283,7 @@ bool CDeviceClass::GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, co
         return false;
 
     bool bValue = !pValue->IsNil();
-    pValue->Discard(&GetUniverse().GetCC());
+    pValue->Discard();
     return bValue;
     }
 
@@ -299,7 +299,7 @@ Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo
         return 0.0;
 
     Metric rValue = pValue->GetDoubleValue(); 
-    pValue->Discard(&GetUniverse().GetCC());
+    pValue->Discard();
     return rValue; 
     }
 

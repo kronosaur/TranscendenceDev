@@ -25,14 +25,14 @@ ICCItem *CCPrimitive::Clone (CCodeChain *pCC)
 	return NULL;
 	}
 
-void CCPrimitive::DestroyItem (CCodeChain *pCC)
+void CCPrimitive::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroy this item
 
 	{
-	pCC->DestroyPrimitive(this);
+	CCodeChain::DestroyPrimitive(this);
 	}
 
 ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
@@ -94,7 +94,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	//	Done
 
 	if (!bCustomArgEval)
-		pEvalArgs->Discard(pCtx->pCC);
+		pEvalArgs->Discard();
 
 	return pResult;
 	}

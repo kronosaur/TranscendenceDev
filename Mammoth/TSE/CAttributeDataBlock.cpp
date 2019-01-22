@@ -307,7 +307,7 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
 
     //  Done
 
-    pValue->Discard(&CC);
+    pValue->Discard();
 	return pResult;
     }
 

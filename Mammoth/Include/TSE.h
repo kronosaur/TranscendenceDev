@@ -2014,7 +2014,7 @@ class CListWrapper : public IListData
 	{
 	public:
 		CListWrapper (CCodeChain *pCC, ICCItem *pList);
-		virtual ~CListWrapper (void) { m_pList->Discard(m_pCC); }
+		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
 		virtual int GetCount (void) override { return m_pList->GetCount(); }
 		virtual int GetCursor (void) override { return m_iCursor; }

@@ -40,7 +40,7 @@ void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 		pList->Append(CC, pValue);
 
 		SetAt(CC, sKey, pList);
-		pList->Discard(&CC);
+		pList->Discard();
 		}
 	}
 
@@ -53,7 +53,7 @@ void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
 	{
 	ICCItem *pItem = CC.CreateInteger(iValue);
 	Append(CC, pItem);
-	pItem->Discard(&CC);
+	pItem->Discard();
 	}
 
 void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
@@ -65,7 +65,7 @@ void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
 	{
 	ICCItem *pItem = CC.CreateString(sValue);
 	Append(CC, pItem);
-	pItem->Discard(&CC);
+	pItem->Discard();
 	}
 
 void ICCItem::CloneItem (ICCItem *pItem)
@@ -94,7 +94,7 @@ int ICCItem::Compare (ICCItem *pFirst, ICCItem *pSecond)
 	return HelperCompareItems(pFirst, pSecond, HELPER_COMPARE_COERCE_FULL);
 	}
 
-void ICCItem::Discard (CCodeChain *pCC)
+void ICCItem::Discard (void)
 
 //	Discard
 //
@@ -111,7 +111,7 @@ void ICCItem::Discard (CCodeChain *pCC)
 		{
 		//	Let subclasses handle this
 
-		DestroyItem(pCC);
+		DestroyItem();
 		}
 	}
 
@@ -290,7 +290,7 @@ void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 	{
 	ICCItem *pKey = CC.CreateString(sKey);
 	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
+	pKey->Discard();
 	}
 
 void ICCItem::SetBooleanAt (CCodeChain &CC, const CString &sKey, bool bValue)
@@ -317,8 +317,8 @@ void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = CC.CreateInteger(iValue);
 	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
-	pValue->Discard(&CC);
+	pKey->Discard();
+	pValue->Discard();
 	}
 
 void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue)
@@ -331,8 +331,8 @@ void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &s
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = CC.CreateString(sValue);
 	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
-	pValue->Discard(&CC);
+	pKey->Discard();
+	pValue->Discard();
 	}
 
 ICCItem *ICCAtom::Enum (CEvalContext *pCtx, ICCItem *pCode)

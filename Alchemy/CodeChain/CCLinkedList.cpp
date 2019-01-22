@@ -133,7 +133,7 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 		{
 		ICCItem *pItemClone = pCons->m_pItem->CloneContainer(pCC);
 		pClone->Append(*pCC, pItemClone);
-		pItemClone->Discard(pCC);
+		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
 		}
@@ -166,7 +166,7 @@ ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
 		{
 		ICCItem *pItemClone = pCons->m_pItem->CloneDeep(pCC);
 		pClone->Append(*pCC, pItemClone);
-		pItemClone->Discard(pCC);
+		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
 		}
@@ -201,7 +201,7 @@ void CCLinkedList::CreateIndex (void)
 		}
 	}
 
-void CCLinkedList::DestroyItem (CCodeChain *pCC)
+void CCLinkedList::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -216,8 +216,8 @@ void CCLinkedList::DestroyItem (CCodeChain *pCC)
 	while (pCons)
 		{
 		CCons *pNext = pCons->m_pNext;
-		pCons->m_pItem->Discard(pCC);
-		pCC->DestroyCons(pCons);
+		pCons->m_pItem->Discard();
+		CCodeChain::DestroyCons(pCons);
 		pCons = pNext;
 		}
 
@@ -228,7 +228,7 @@ void CCLinkedList::DestroyItem (CCodeChain *pCC)
 
 	//	Give the item back
 
-	pCC->DestroyLinkedList(this);
+	CCodeChain::DestroyLinkedList(this);
 	}
 
 ICCItem *CCLinkedList::Enum (CEvalContext *pCtx, ICCItem *pCode)
@@ -372,8 +372,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	in the hierarchy is not uniform
 			if (GetElement(i)->GetValueType() != ICCItem::List)
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data type is not homogeneous."), NULL);
 				return pError;
@@ -384,8 +384,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	head, then this is not valid vector content
 			if (pListElement->GetCount() != iHeadCount)
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
@@ -395,8 +395,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			pListElementShapeList = (dynamic_cast <CCLinkedList *> (pListElement))->IsValidVectorContent(pCC);
 			if (pListElementShapeList->IsError())
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				return pListElementShapeList;
 			};
@@ -415,9 +415,9 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			}
 			else
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
-				pListElementShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
+				pListElementShapeList->Discard();
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};
@@ -430,7 +430,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			pShapeList->AppendInteger(*pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
 		};
 
-		pLowerLevelShapeList->Discard(pCC);
+		pLowerLevelShapeList->Discard();
 		return pShapeList;
 	}
 	else if (pHead->GetValueType() == ICCItem::Integer || pHead->GetValueType() == ICCItem::Double)
@@ -441,7 +441,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			elementValueType = this->GetElement(i)->GetValueType();
 			if (elementValueType != ICCItem::Integer && elementValueType != ICCItem::Double)
 			{
-				pShapeList->Discard(pCC);
+				pShapeList->Discard();
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
 				return pError;
 			};
@@ -453,7 +453,7 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 	}
 	else
 	{
-		pShapeList->Discard(pCC);
+		pShapeList->Discard();
 		ICCItem *pError = pCC->CreateError(CONSTLIT("Content list contains non-numeric or non-list types."), pHead);
 		return pError;
 	};
@@ -827,7 +827,7 @@ void CCLinkedList::RemoveElement (CCodeChain *pCC, int iIndex)
 
 	//	Discard cons
 
-	pCons->m_pItem->Discard(pCC);
+	pCons->m_pItem->Discard();
 	pCC->DestroyCons(pCons);
 
 	//	Discard index since we've changed things
@@ -871,7 +871,7 @@ void CCLinkedList::ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewIte
 
 	//	Change the link
 
-	pCons->m_pItem->Discard(pCC);
+	pCons->m_pItem->Discard();
 	pCons->m_pItem = pNewItem->Reference();
 	}
 

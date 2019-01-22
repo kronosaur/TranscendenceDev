@@ -24,7 +24,7 @@ ICCItem *CCNil::Clone (CCodeChain *pCC)
 	return Reference();
 	}
 
-void CCNil::DestroyItem (CCodeChain *pCC)
+void CCNil::DestroyItem (void)
 
 //	DestroyItem
 //
