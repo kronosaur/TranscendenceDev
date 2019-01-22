@@ -265,7 +265,7 @@ void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 		//	Load the extension
 
-		if (!g_pUniverse->FindExtension(dwExtensionUNID, dwRelease, &pEntry->pExtension))
+		if (!Ctx.GetUniverse().FindExtension(dwExtensionUNID, dwRelease, &pEntry->pExtension))
 			//	LATER: Need to return error
 			pEntry->pExtension = NULL;
 

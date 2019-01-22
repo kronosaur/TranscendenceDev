@@ -503,7 +503,7 @@ void CAIBehaviorCtx::DebugAIOutput (CShip *pShip, LPCSTR pText)
 //	Output AI state
 
 	{
-	if (g_pUniverse->GetDebugOptions().IsShowAIDebugEnbled())
+	if (pShip->GetUniverse().GetDebugOptions().IsShowAIDebugEnbled())
 		pShip->HighlightAppend(strPatternSubst(CONSTLIT("%d: %s"), pShip->GetID(), CString(pText)));
 	}
 
@@ -701,7 +701,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (!pTarget->CanThrust())
 				{
-				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
+				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
 				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
@@ -772,7 +772,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	Compute how brave we are based on the last time we got hit.
 			//	rBravery goes from 0.0 (scared) to 1.0 (brave)
 
-			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (g_pUniverse->GetTicks() - m_iLastAttack)));
+			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (pShip->GetUniverse().GetTicks() - m_iLastAttack)));
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
 			//	Do we need to avoid getting too close?
@@ -818,7 +818,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 
 			else if (!pTarget->CanThrust())
 				{
-				int iClock = g_pUniverse->GetTicks() / (170 + pShip->GetDestiny() / 3);
+				int iClock = pShip->GetUniverse().GetTicks() / (170 + pShip->GetDestiny() / 3);
 				int iAngle = pShip->AlignToRotationAngle((pShip->GetDestiny() + (iClock * 141 * (1 + pShip->GetDestiny()))) % 360);
 				Metric rRadius = Max(MIN_STATION_TARGET_DIST, pTarget->GetHitSize()) + (LIGHT_SECOND * (pShip->GetDestiny() % 100) / 10.0);
 
@@ -1182,7 +1182,7 @@ void CAIBehaviorCtx::ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget
 
 #ifdef DEBUG_SHIP
 		if (bDebug)
-			g_pUniverse->DebugOutput("Adjust for distance: %d at %d%%c", 
+			pShip->GetUniverse().DebugOutput("Adjust for distance: %d at %d%%c", 
 					(int)(vTarget.Length() / LIGHT_SECOND),
 					(int)(100.0 * rClosingSpeed / LIGHT_SPEED));
 #endif
@@ -1200,7 +1200,7 @@ void CAIBehaviorCtx::ImplementCloseOnTarget (CShip *pShip, CSpaceObject *pTarget
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
-				g_pUniverse->DebugOutput("Flank target");
+				pShip->GetUniverse().DebugOutput("Flank target");
 #endif
 			}
 		}
@@ -1548,7 +1548,7 @@ void CAIBehaviorCtx::ImplementFireWeaponOnTarget (CShip *pShip,
 
 #ifdef DEBUG_SHIP
 		if (bDebug)
-			g_pUniverse->DebugOutput("Face target at distance: %d moving at: %d%%c", 
+			pShip->GetUniverse().DebugOutput("Face target at distance: %d moving at: %d%%c", 
 					(int)(vTarget.Length() / LIGHT_SECOND),
 					(int)(100.0 * 0 / LIGHT_SPEED));
 #endif
@@ -1880,7 +1880,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 							SetManeuver(RotateRight);
 #ifdef DEBUG_SHIP
 						if (bDebug)
-							g_pUniverse->DebugOutput("Reverse direction");
+							pShip->GetUniverse().DebugOutput("Reverse direction");
 #endif
 						}
 					}
@@ -1888,7 +1888,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
-				g_pUniverse->DebugOutput("Turn: %s (%d -> %d)",
+				pShip->GetUniverse().DebugOutput("Turn: %s (%d -> %d)",
 						(GetManeuver() == RotateRight ? "right" : 
 							(GetManeuver() == RotateLeft ? "left" : "none")),
 						iCurrentDir,
@@ -1910,7 +1910,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 
 #ifdef DEBUG_SHIP
 			if (bDebug)
-				g_pUniverse->DebugOutput("Turn: none (%d)", iDir);
+				pShip->GetUniverse().DebugOutput("Turn: none (%d)", iDir);
 #endif
 			}
 		}
@@ -1923,7 +1923,7 @@ void CAIBehaviorCtx::ImplementManeuver (CShip *pShip, int iDir, bool bThrust, bo
 
 #ifdef DEBUG_SHIP
 		if (bDebug)
-			g_pUniverse->DebugOutput("Turn: none");
+			pShip->GetUniverse().DebugOutput("Turn: none");
 #endif
 		}
 	}

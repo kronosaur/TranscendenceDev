@@ -535,7 +535,7 @@ ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_LIFE_LEFT))
 		return (m_fDestroyOnAnimationDone ? CC.CreateInteger(0) : CC.CreateInteger(m_iLifeLeft));
@@ -685,7 +685,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	if (m_pDesc->GetHitPoints() >= 10)
 		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 					NULL,
@@ -1526,7 +1526,7 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 //	Sets an object property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
     if (strEquals(sName, PROPERTY_LIFE_LEFT))
         {

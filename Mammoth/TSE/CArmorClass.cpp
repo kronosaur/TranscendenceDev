@@ -710,7 +710,7 @@ ALERROR CArmorClass::BindScaledParams (SDesignLoadCtx &Ctx)
         {
         SScalableStats &Stats = m_pScalable[i];
 
-        if (error = Stats.DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(Stats.iLevel)))
+        if (error = Stats.DamageAdj.Bind(Ctx, GetUniverse().GetArmorDamageAdj(Stats.iLevel)))
             return error;
 
 	    if (error = Stats.RepairCost.Bind(Ctx))
@@ -1906,7 +1906,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	Returns armor property. NOTE: We DO NOT return generic item properties.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
     const SScalableStats &Stats = GetScaledStats(Ctx);
 
 	//	Enhancements
@@ -2070,7 +2070,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 
 	//	Mass classification
 
-	CString sMassClass = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
+	CString sMassClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
 	if (!sMassClass.IsBlank())
 		AppendReferenceString(&sReference, sMassClass);
 
@@ -2403,7 +2403,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Compute armor damage adjustments
 
-	if (error = m_Stats.DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(m_iDamageAdjLevel)))
+	if (error = m_Stats.DamageAdj.Bind(Ctx, Ctx.GetUniverse().GetArmorDamageAdj(m_iDamageAdjLevel)))
 		return error;
 
 	//	Prices

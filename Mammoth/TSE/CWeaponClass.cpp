@@ -1653,7 +1653,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		*retsValue = strFromInt(pShot->GetContinuous() + 1);
 	else if (strEquals(sField, FIELD_CONFIGURATION))
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
+		CCodeChain &CC = GetUniverse().GetCC();
 		CVector ShotPos[MAX_SHOT_COUNT];
 		int ShotDir[MAX_SHOT_COUNT];
 		int iShotCount = CalcConfiguration(CItemCtx(), pShot, 0, ShotPos, ShotDir, false);
@@ -2292,7 +2292,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
     {
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Make sure we actually fire the given ammo. We need to check here because
 	//	GetWeaponFireDesc doesn't check.

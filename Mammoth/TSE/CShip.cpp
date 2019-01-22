@@ -202,7 +202,7 @@ bool CShip::AbsorbWeaponFire (CInstalledDevice *pWeapon)
 		{
 		//	We need to create our own default effect.
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ShieldEffectUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ShieldEffectUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 					this,
@@ -292,7 +292,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 		if (Ctx.pPlayer 
 				&& (pTarget = GetTarget(CItemCtx()))
 				&& Ctx.pPlayer->IsEnemy(this)
-				&& (g_pUniverse->GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
+				&& (GetUniverse().GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
 				&& (pTarget == Ctx.pPlayer || pTarget->IsPlayerEscortTarget(Ctx.pPlayer)))
 			Ctx.pSystem->SetPlayerUnderAttack();
 		}
@@ -1390,7 +1390,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	//	Otherwise, if we died from disintegration, then create that explosion
 
 	else if (Ctx.iCause == killedByDisintegration)
-		Explosion.pDesc = g_pUniverse->FindWeaponFireDesc(strFromInt(UNID_DISINTEGRATION_EXPLOSION, false));
+		Explosion.pDesc = GetUniverse().FindWeaponFireDesc(strFromInt(UNID_DISINTEGRATION_EXPLOSION, false));
 
 	//	Otherwise, we need the default from the class
 
@@ -1432,7 +1432,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		else
 			dwEffectID = g_ExplosionUNID;
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(dwEffectID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(dwEffectID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 					Ctx.pWreck,
@@ -1483,7 +1483,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 
 	//	Always play default sound
 
-	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_ShipExplosionSoundUNID));
+	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 
 	DEBUG_CATCH
 	}
@@ -1757,7 +1757,7 @@ void CShip::DamageCargo (SDamageCtx &Ctx)
 	//	Create an overlay to spew smoke
 
 	DWORD dwDamageUNID = (mathRandom(1, 100) <= 20 ? UNID_DAMAGED_SITE_SMALL : UNID_DEPREZ_SITE_SMALL);
-	COverlayType *pOverlayType = g_pUniverse->FindOverlayType(dwDamageUNID);
+	COverlayType *pOverlayType = GetUniverse().FindOverlayType(dwDamageUNID);
 	if (pOverlayType
 			&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DAMAGE_OVERLAY_COUNT)
 		{
@@ -1789,7 +1789,7 @@ void CShip::DamageDevice (CInstalledDevice *pDevice, SDamageCtx &Ctx)
 
 	//	Create an overlay to spew smoke
 
-	COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_SMALL);
+	COverlayType *pOverlayType = GetUniverse().FindOverlayType(UNID_DAMAGED_SITE_SMALL);
 	if (pOverlayType)
 		AddOverlay(pOverlayType, pDevice->GetPosAngle(), pDevice->GetPosRadius(), 180, pDevice->GetPosZ(), 9000);
 	}
@@ -1823,7 +1823,7 @@ void CShip::DamageDrive (SDamageCtx &Ctx)
 
 		//	Create an overlay to spew smoke
 
-		COverlayType *pOverlayType = g_pUniverse->FindOverlayType(UNID_DAMAGED_SITE_MEDIUM);
+		COverlayType *pOverlayType = GetUniverse().FindOverlayType(UNID_DAMAGED_SITE_MEDIUM);
 		if (pOverlayType
 				&& m_Overlays.GetCountOfType(pOverlayType) < MAX_DRIVE_DAMAGE_OVERLAY_COUNT)
 			CSpaceObject::AddOverlay(pOverlayType, Ctx.vHitPos, 180, 0, iDamageTime);
@@ -2102,7 +2102,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -2128,7 +2128,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_SHIELD))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_SHIELD_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_SHIELD_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -2144,7 +2144,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_LAUNCHER))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_LAUNCHER_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_LAUNCHER_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -2160,7 +2160,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -2188,7 +2188,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
 		{
 		int iRange = 0;
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -2204,7 +2204,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE_ADJ))
 		{
 		int iRange = 0;
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -2375,7 +2375,7 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 	if (m_pDeferredOrders)
 		{
 		if (m_pDeferredOrders->pOnCreate)
-			m_pDeferredOrders->pOnCreate->Discard(&g_pUniverse->GetCC());
+			m_pDeferredOrders->pOnCreate->Discard(&GetUniverse().GetCC());
 
 		delete m_pDeferredOrders;
 		m_pDeferredOrders = NULL;
@@ -2389,7 +2389,7 @@ void CShip::FinishCreation (SShipGeneratorCtx *pCtx, SSystemCreateCtx *pSysCreat
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
+	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
 	DEBUG_CATCH
 	}
@@ -2433,7 +2433,7 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 
 	if (IsPlayer())
 		{
-		g_pUniverse->FireOnGlobalPlayerLeftSystem();
+		GetUniverse().FireOnGlobalPlayerLeftSystem();
 
 		//	The player can be destroyed in this event, in which case, we exit
 
@@ -2450,7 +2450,7 @@ void CShip::GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, 
 	//	to the controller).
 
 	if (IsPlayer())
-		g_pUniverse->NotifyOnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
+		GetUniverse().NotifyOnPlayerEnteredGate(pDestNode, sDestEntryPoint, pStargate);
 	}
 
 AbilityStatus CShip::GetAbility (Abilities iAbility) const
@@ -3041,7 +3041,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
     ICCItem *pResult;
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
@@ -4300,7 +4300,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	We're hit
 
-	m_iLastHitTime = g_pUniverse->GetTicks();
+	m_iLastHitTime = GetUniverse().GetTicks();
 
 	//	Map the direction that we got hit from to a ship-relative
 	//	direction (i.e., adjust for the ship's rotation)
@@ -4755,7 +4755,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 					pEffect->SetAttractor(Ctx.Attacker.GetObj());
 				}
 
-			g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_ShipExplosionSoundUNID));
+			GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 			break;
 			}
 
@@ -4848,7 +4848,7 @@ bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoin
 
 	//	Global event
 
-	if (!g_pUniverse->GetDesignCollection().FireOnGlobalObjGateCheck(this, pDestNode, sDestEntryPoint, pGateObj))
+	if (!GetUniverse().GetDesignCollection().FireOnGlobalObjGateCheck(this, pDestNode, sDestEntryPoint, pGateObj))
 		return false;
 
 	//	OK to gate
@@ -5113,7 +5113,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	//	Set up context
 
 	CViewportPaintCtxSmartSave Save(Ctx);
-	Ctx.iTick = (IsTimeStopped() ? GetDestiny() : g_pUniverse->GetTicks());
+	Ctx.iTick = (IsTimeStopped() ? GetDestiny() : GetUniverse().GetTicks());
 	Ctx.iVariant = m_Rotation.GetFrameIndex();
 	Ctx.iRotation = GetRotation();
 	Ctx.iDestiny = GetDestiny();
@@ -5260,7 +5260,7 @@ void CShip::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaint
 
 	if (Ctx.bShowFacingsAngle)
 		{
-		const CG16bitFont &MessageFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSMessage);
+		const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
 		CString sText = strPatternSubst(CONSTLIT("Facing: %d Angle: %d"), m_Rotation.GetFrameIndex(), GetRotation());
 		MessageFont.DrawText(Dest,
 				x,
@@ -5315,12 +5315,12 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 		if (m_sMapLabel.IsBlank())
 			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
-		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+		GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 				x + MAP_LABEL_X + 1, 
 				y + MAP_LABEL_Y + 1, 
 				0,
 				m_sMapLabel);
-		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+		GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 				x + MAP_LABEL_X, 
 				y + MAP_LABEL_Y, 
 				RGB_MAP_LABEL,
@@ -6683,7 +6683,7 @@ void CShip::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewport
 		if (m_sMapLabel.IsBlank())
 			m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
 
-		g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+		GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 				x + MAP_LABEL_X, 
 				y + MAP_LABEL_Y, 
 				RGB_LRS_LABEL,
@@ -7300,7 +7300,7 @@ void CShip::SendMessage (CSpaceObject *pSender, const CString &sMsg)
 
 	if (IsPlayer())
 		{
-		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		IPlayerController *pPlayer = GetUniverse().GetPlayer();
 		if (pPlayer)
 			pPlayer->OnMessageFromObj(pSender, sMsg);
 		}
@@ -7730,7 +7730,7 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 //	Sets an object property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		{
@@ -7753,7 +7753,7 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 			m_pCharacter = NULL;
 		else
 			{
-			CGenericType *pCharacter = g_pUniverse->FindGenericType((DWORD)pValue->GetIntegerValue());
+			CGenericType *pCharacter = GetUniverse().FindGenericType((DWORD)pValue->GetIntegerValue());
 			if (pCharacter == NULL)
 				{
 				*retsError = CONSTLIT("Unknown character UNID");

@@ -265,7 +265,7 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 
 		//	Done
 
-		return COverlayType::AsType(g_pUniverse->FindDesignType(dwUNID));
+		return COverlayType::AsType(GetUniverse().FindDesignType(dwUNID));
 		}
 	else
 		return GetOverlayType();
@@ -283,7 +283,7 @@ bool CDeviceClass::GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, co
         return false;
 
     bool bValue = !pValue->IsNil();
-    pValue->Discard(&g_pUniverse->GetCC());
+    pValue->Discard(&GetUniverse().GetCC());
     return bValue;
     }
 
@@ -299,7 +299,7 @@ Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo
         return 0.0;
 
     Metric rValue = pValue->GetDoubleValue(); 
-    pValue->Discard(&g_pUniverse->GetCC());
+    pValue->Discard(&GetUniverse().GetCC());
     return rValue; 
     }
 
@@ -460,7 +460,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	item properties.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
     CString sFieldValue;
 
 	//	Get the device

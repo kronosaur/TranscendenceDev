@@ -217,6 +217,8 @@ class ICCItemPtr
 
 struct SUniverseLoadCtx
 	{
+	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+
 	DWORD dwVersion;					//	See CUniverse.cpp for version history
 	DWORD dwSystemVersion;				//	System version when universe was saved
 

@@ -139,7 +139,7 @@ class CArtifactProgram
 			statusWiped,					//	Wiped from the core
 			};
 
-		CUniverse &GetUniverse (void) { return *g_pUniverse; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 		EProgramTypes m_iType;
 		EProgramStatus m_iStatus;

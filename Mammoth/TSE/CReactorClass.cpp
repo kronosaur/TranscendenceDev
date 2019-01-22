@@ -100,7 +100,7 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	const CReactorDesc &Desc = *GetReactorDesc(Ctx);
     ICCItem *pResult;
 

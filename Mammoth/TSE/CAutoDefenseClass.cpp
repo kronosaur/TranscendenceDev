@@ -204,7 +204,7 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CDeviceClass *pWeapon;
 	CInstalledDevice *pDevice = Ctx.GetDevice();
 

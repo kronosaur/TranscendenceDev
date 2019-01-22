@@ -193,7 +193,7 @@ DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)
 	//	Otherwise, if we don't have an ID, set it now
 
 	else if (m_pExtra->m_Mods.GetID() == OBJID_NULL)
-		m_pExtra->m_Mods.SetID(g_pUniverse->CreateGlobalID());
+		m_pExtra->m_Mods.SetID(GetUniverse().CreateGlobalID());
 
 	return m_pExtra->m_Mods.GetID();
 	}
@@ -886,7 +886,7 @@ ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 	if (m_pExtra)
 		return m_pExtra->m_Data.GetDataAsItem(sAttrib);
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
 CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
@@ -948,7 +948,7 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		//	Add display attributes
 
-		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
+		GetUniverse().GetAttributeDesc().AccumulateAttributes(*this, retList);
 
 		CArmorClass *pArmor;
 		CDeviceClass *pDevice;
@@ -1034,7 +1034,7 @@ DWORD CItem::GetDisruptedDuration (void) const
 		return INFINITE_TICK;
 	else
 		{
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime <= dwNow)
 			return 0;
 		else
@@ -1064,7 +1064,7 @@ bool CItem::GetDisruptedStatus (DWORD *retdwTimeLeft, bool *retbRepairedEvent) c
 		}
 	else
 		{
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime < dwNow)
 			{
 			bRepairedEvent = (m_pExtra->m_dwDisruptedTime + 1 == dwNow);
@@ -1282,7 +1282,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 //		never return NULL (we always handle it).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	int i;
 
@@ -1417,7 +1417,7 @@ Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const 
 //	Returns a double.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0.0;
@@ -1434,7 +1434,7 @@ int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CS
 //	Returns an integer property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0;
@@ -1451,7 +1451,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 //	Returns a string property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0;
@@ -1460,7 +1460,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	if (pResult->IsNil())
 		sValue = NULL_STR;
 	else
-		sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+		sValue = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 
 	pResult->Discard(&CC);
 	return sValue;
@@ -1924,7 +1924,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	else if (!Criteria.sLookup.IsBlank())
 		{
-		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
+		const CItemCriteria *pCriteria = GetUniverse().GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
 		if (pCriteria == NULL)
 			return false;
 
@@ -3024,7 +3024,7 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		{
 		//	Disruption time is cumulative
 
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime <= dwNow)
 			m_pExtra->m_dwDisruptedTime = dwNow + dwDuration;
 		else
@@ -3065,7 +3065,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 //	retsError is blank then we cannot set the property because the value is Nil.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CInstalledDevice *pDevice;
 
 	if (IsEmpty())

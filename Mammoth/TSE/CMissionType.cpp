@@ -177,7 +177,7 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 //	Returns a property (or NULL if not found).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
 		return ICCItemPtr(CanBeDeclined());

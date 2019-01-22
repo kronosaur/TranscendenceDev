@@ -228,8 +228,8 @@ CG32bitImage *CObjectImage::GetRawImage (const CString &sLoadReason, CString *re
 
 		//	Open the database
 
-		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
-		ResDb.SetDebugMode(g_pUniverse->InDebugMode());
+		CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, GetUniverse().GetResourceDb()));
+		ResDb.SetDebugMode(GetUniverse().InDebugMode());
 		if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, retsError) != NOERROR)
 			{
 			::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);
@@ -305,7 +305,7 @@ CG32bitImage *CObjectImage::LoadImageFromDb (CResourceDb &ResDb, const CString &
 	//	If necessary we log that we had to load an image (we generally do this
 	//	to debug issues with loading images in the middle of play).
 
-	if (g_pUniverse->InDebugMode() && g_pUniverse->LogImageLoad())
+	if (GetUniverse().InDebugMode() && GetUniverse().LogImageLoad())
 		kernelDebugLogPattern("Loading image %s for %s.", m_sBitmap, sLoadReason);
 
 	//	Load the images
@@ -330,8 +330,8 @@ bool CObjectImage::LoadMask(const CString &sFilespec, CG32bitImage **retpImage)
 
 	//	Open the database
 
-	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
-	ResDb.SetDebugMode(g_pUniverse->InDebugMode());
+	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, GetUniverse().GetResourceDb()));
+	ResDb.SetDebugMode(GetUniverse().InDebugMode());
 	if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 		{
 		::kernelDebugLogPattern("Unable to load %s: %s", sFilespec, sError);

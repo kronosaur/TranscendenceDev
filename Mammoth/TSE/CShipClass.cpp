@@ -1806,7 +1806,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_ARMOR_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1832,7 +1832,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_SHIELD))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_SHIELD_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_SHIELD_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1869,14 +1869,14 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 			{
 			*retsValue = pPlayer->GetStartingNode();
 			if (retsValue->IsBlank())
-				*retsValue = g_pUniverse->GetCurrentAdventureDesc()->GetStartingNodeID();
+				*retsValue = GetUniverse().GetCurrentAdventureDesc()->GetStartingNodeID();
 			}
 		else
 			*retsValue = NULL_STR;
 		}
 	else if (strEquals(sField, FIELD_LAUNCHER))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_LAUNCHER_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_LAUNCHER_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1892,7 +1892,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON))
 		{
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			*retsValue = pItem->GetNounPhrase(0x80);
 		else
@@ -1911,7 +1911,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		CWeaponFireDesc *pExplosionType;
 		if (pExplosionType = GetExplosionType(NULL))
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(pExplosionType->GetUNID(), 0));
+			CDeviceClass *pClass = GetUniverse().FindDeviceClass((DWORD)strToInt(pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -1954,7 +1954,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
 		{
 		int iRange = 0;
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -1970,7 +1970,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE_ADJ))
 		{
 		int iRange = 0;
-		CItemType *pItem = g_pUniverse->FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
+		CItemType *pItem = GetUniverse().FindItemType(strToInt(GetDataField(FIELD_PRIMARY_WEAPON_UNID), 0));
 		if (pItem)
 			{
 			CDeviceClass *pDevice = pItem->GetDeviceClass();
@@ -2333,7 +2333,7 @@ const CEconomyType *CShipClass::GetEconomyType (void) const
 
 	//	Otherwise, default to credits
 
-	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
 	}
 
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const
@@ -2518,7 +2518,7 @@ const CObjectImageArray &CShipClass::GetHeroImage (void)
     if (m_HeroImage.IsEmpty()
             && (pPlayerSettings = GetPlayerSettings())
             && (dwImageUNID = pPlayerSettings->GetLargeImage())
-            && (pLargeImageObj = g_pUniverse->FindLibraryImage(dwImageUNID))
+            && (pLargeImageObj = GetUniverse().FindLibraryImage(dwImageUNID))
 			&& (pLargeImage = pLargeImageObj->GetRawImage(strPatternSubst(CONSTLIT("%08x hero image"), GetUNID())))
             && !pLargeImage->IsEmpty())
         {
@@ -3400,7 +3400,7 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 		if (pCurrency == NULL)
 			pCurrency = (m_AverageDevices.GetCount() > 0 ? m_AverageDevices.GetDeviceClass(0)->GetItemType()->GetCurrencyType() : NULL);
 		if (pCurrency == NULL)
-			pCurrency = g_pUniverse->GetDefaultCurrency();
+			pCurrency = GetUniverse().GetDefaultCurrency();
 
 		if (pCurrency)
 			{
@@ -3414,7 +3414,7 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 	//	In debug mode, warn if we're installing armor that is beyond the current
 	//	armor limits.
 
-	if (g_pUniverse->InDebugMode() 
+	if (GetUniverse().InDebugMode() 
 			&& m_Armor.GetCount() > 0
 			&& m_Hull.HasArmorLimits()
 			&& m_Hull.GetArmorLimits().CanInstallArmor(CItem(m_Armor.GetSegment(0).GetArmorClass()->GetItemType(), 1)) != CArmorLimits::resultOK)
@@ -3791,7 +3791,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 //	Returns a property of the ship class
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sProperty, PROPERTY_ARMOR_ITEM))
 		{

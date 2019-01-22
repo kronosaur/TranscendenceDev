@@ -650,10 +650,10 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	Do not bother updating everything if we are far from the POV
 
 	bool bFarAway = false;
-	if (g_pUniverse->GetPOV() 
-			&& g_pUniverse->GetCurrentSystem() == GetSystem())
+	if (GetUniverse().GetPOV() 
+			&& GetUniverse().GetCurrentSystem() == GetSystem())
 		{
-		Metric rPOVDist2 = (GetPos() - g_pUniverse->GetPOV()->GetPos()).Length2();
+		Metric rPOVDist2 = (GetPos() - GetUniverse().GetPOV()->GetPos()).Length2();
 		Metric rMaxUpdateDist2 = LIGHT_SECOND * LIGHT_SECOND * 3600;
 		bFarAway = (rPOVDist2 > rMaxUpdateDist2);
 		}

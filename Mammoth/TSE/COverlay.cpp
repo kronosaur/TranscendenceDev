@@ -272,7 +272,7 @@ void COverlay::CreateFromType (COverlayType *pType,
 	COverlay *pField = new COverlay;
 
 	pField->m_pType = pType;
-	pField->m_dwID = g_pUniverse->CreateGlobalID();
+	pField->m_dwID = pType->GetUniverse().CreateGlobalID();
 	pField->m_iDevice = -1;
 	pField->m_iLifeLeft = iLifeLeft;
 	pField->m_iTick = 0;
@@ -368,7 +368,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 			Ctx.Discard(pResult);
 		}
 	else if (retpResult)
-		*retpResult = g_pUniverse->GetCC().CreateNil();
+		*retpResult = GetUniverse().GetCC().CreateNil();
 	}
 
 bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
@@ -693,7 +693,7 @@ ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, co
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_COUNTER))
 		return CC.CreateInteger(m_iCounter);
@@ -783,7 +783,7 @@ void COverlay::PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPain
 			CPaintHelper::PaintStatusBar(Dest,
 					x,
 					Ctx.yAnnotations,
-					g_pUniverse->GetPaintTick(),
+					GetUniverse().GetPaintTick(),
 					rgbColor,
 					(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel()),
 					Min(Max(0, m_iCounter), m_pType->GetCounterMax()),
@@ -818,7 +818,7 @@ void COverlay::PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaint
 
 			if (!m_sMessage.IsBlank())
 				{
-				const CG16bitFont &TextFont = g_pUniverse->GetFont(CONSTLIT("SubTitle"));
+				const CG16bitFont &TextFont = GetUniverse().GetFont(CONSTLIT("SubTitle"));
 				CG32bitPixel rgbTextColor = CG32bitPixel::Blend(rgbColor, CG32bitPixel(255, 255, 255), (BYTE)128);
 
 				int yText = y + (m_iCounter / 2) - TextFont.GetHeight();
@@ -882,7 +882,7 @@ void COverlay::PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage
 		{
 		case COverlayType::counterFlag:
 			{
-			const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel);
+			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
 			CG32bitPixel rgbColor = m_pType->GetCounterColor();
 
@@ -910,7 +910,7 @@ void COverlay::PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, in
 		{
 		case COverlayType::counterFlag:
 			{
-			const CG16bitFont &CounterFont = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel);
+			const CG16bitFont &CounterFont = GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
 			CG32bitPixel rgbColor = m_pType->GetCounterColor();
 
@@ -1055,7 +1055,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 //	Sets the property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_COUNTER))
 		{

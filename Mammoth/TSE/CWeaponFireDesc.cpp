@@ -339,7 +339,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		CCreatePainterCtx Ctx;
 		Ctx.SetWeaponFireDesc(this);
 
-		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType()));
+		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, GetUniverse().FindDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
 			return;
 
@@ -373,7 +373,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetDamageCtx(DamageCtx);
 
-	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultHitEffect(m_Damage.GetDamageType()));
+	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, GetUniverse().FindDefaultHitEffect(m_Damage.GetDamageType()));
 	if (pPainter == NULL)
 		return;
 
@@ -653,7 +653,7 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 //	Finds a property. We return NULL if not found.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	CString sValue;
 	SpecialDamageTypes iSpecial;
@@ -1321,7 +1321,7 @@ CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
 	//	Otherwise, see if the universe has a default effect for this damage 
 	//	type.
 
-	return g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType());
+	return GetUniverse().FindDefaultFireEffect(m_Damage.GetDamageType());
 	}
 
 Metric CWeaponFireDesc::GetInitialSpeed (void) const
@@ -1462,7 +1462,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 	//	Get the type
 
-	CItemType *pItemType = g_pUniverse->FindItemType(dwUNID);
+	CItemType *pItemType = GetUniverse().FindItemType(dwUNID);
 	if (pItemType == NULL)
 		return NULL;
 

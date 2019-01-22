@@ -1119,7 +1119,7 @@ void CAIBehaviorCtx::Update (CShip *pShip)
 
 	//	Clear debug highlight
 
-	if (g_pUniverse->GetDebugOptions().IsShowAIDebugEnbled())
+	if (pShip->GetUniverse().GetDebugOptions().IsShowAIDebugEnbled())
 		pShip->Highlight();
 	}
 

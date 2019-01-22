@@ -37,7 +37,7 @@ const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
 #define MAX_IN_FORMATION_DELTA2			(MAX_IN_FORMATION_DELTA * MAX_IN_FORMATION_DELTA)
 
 #ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			if (m_pShip->IsSelected()) g_pUniverse->DebugOutput("%d> %s", g_iDebugLine++, x)
+#define DEBUG_COMBAT_OUTPUT(x)			if (m_pShip->IsSelected()) m_pShip->GetUniverse().DebugOutput("%d> %s", g_iDebugLine++, x)
 #else
 #define DEBUG_COMBAT_OUTPUT(x)
 #endif
@@ -734,7 +734,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 
 	{
 	if (m_fIsPlayerWingman)
-		return g_pUniverse->GetPlayerShip();
+		return m_pShip->GetUniverse().GetPlayerShip();
 
 	switch (GetCurrentOrder())
 		{
@@ -1042,7 +1042,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
+	m_AICtx.SetLastAttack(m_pShip->GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}
@@ -1291,7 +1291,7 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedSh
 	{
 	//	Get the new player ship
 
-	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayerShip = m_pShip->GetUniverse().GetPlayerShip();
 	if (pPlayerShip == NULL)
 		{
 		ASSERT(false);
@@ -1613,7 +1613,7 @@ void CBaseShipAI::ResetBehavior (void)
 	{
 	m_AICtx.Update(m_pShip);
 	m_pShip->ClearAllTriggered();
-	m_Blacklist.Update(g_pUniverse->GetTicks());
+	m_Blacklist.Update(m_pShip->GetUniverse().GetTicks());
 	}
 
 int CBaseShipAI::SetAISettingInteger (const CString &sSetting, int iValue)
@@ -1663,7 +1663,7 @@ void CBaseShipAI::SetCommandCode (ICCItem *pCode)
 	{
 	if (m_pCommandCode)
 		{
-		m_pCommandCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCommandCode->Discard(&(m_pShip->GetUniverse().GetCC()));
 		m_pCommandCode = NULL;
 		}
 
@@ -1868,7 +1868,7 @@ void CBaseShipAI::UseItemsBehavior (void)
 		{
 		//	Look for superconducting coils
 
-		CItemType *pType = g_pUniverse->FindItemType(g_SuperconductingCoilUNID);
+		CItemType *pType = m_pShip->GetUniverse().FindItemType(g_SuperconductingCoilUNID);
 		if (pType)
 			{
 			CItem Coils(pType, 1);

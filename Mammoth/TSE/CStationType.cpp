@@ -393,7 +393,7 @@ Metric CStationType::CalcMaxAttackDistance (void)
 
 	{
 	if (m_fCalcMaxAttackDist 
-			&& g_pUniverse->GetDesignCollection().IsBindComplete())
+			&& GetUniverse().GetDesignCollection().IsBindComplete())
 		{
 		Metric rBestRange = MAX_ATTACK_DISTANCE;
 
@@ -749,7 +749,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		{
 		if (m_pExplosionType)
 			{
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass((DWORD)strToInt(m_pExplosionType->GetUNID(), 0));
+			CDeviceClass *pClass = GetUniverse().FindDeviceClass((DWORD)strToInt(m_pExplosionType->GetUNID(), 0));
 			CWeaponClass *pWeapon = (pClass ? pClass->AsWeaponClass() : NULL);
 			if (pWeapon)
 				{
@@ -842,7 +842,7 @@ const CStationEncounterDesc &CStationType::GetEncounterDesc (void) const
 	{
 	//	See if the adventure overrides our encounter descriptor
 
-	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
+	CAdventureDesc *pAdventure = GetUniverse().GetCurrentAdventureDesc();
 	const CStationEncounterDesc *pDesc = (pAdventure ? pAdventure->GetEncounterDesc(GetUNID()) : NULL);
 	if (pDesc)
 		return *pDesc;
@@ -1723,7 +1723,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(m_RandomPlacement.GetLevelFrequency());
@@ -1768,7 +1768,7 @@ bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sValue = strSubString(sAttrib, SPECIAL_IS_ENEMY_OF.GetLength());
 		DWORD dwSovereign = (DWORD)strToInt(sValue, 0);
-		CSovereign *pSovereign = g_pUniverse->FindSovereign(dwSovereign);
+		CSovereign *pSovereign = GetUniverse().FindSovereign(dwSovereign);
 		if (pSovereign == NULL)
 			return false;
 
@@ -2113,7 +2113,7 @@ void CStationType::SetImageSelector (SSelectorInitCtx &InitCtx, CCompositeImageS
 	if (m_ShipWrecks.GetCount())
 		{
 		DWORD dwShipwreckID = m_ShipWrecks[mathRandom(0, m_ShipWrecks.GetCount()-1)];
-		CShipClass *pClass = g_pUniverse->FindShipClass(dwShipwreckID);
+		CShipClass *pClass = GetUniverse().FindShipClass(dwShipwreckID);
 		if (pClass == NULL)
 			return;
 

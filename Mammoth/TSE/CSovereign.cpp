@@ -327,7 +327,7 @@ IPlayerController *CSovereign::GetController (void)
 
 	{
 	if (GetUNID() == g_PlayerSovereignUNID)
-		return g_pUniverse->GetPlayer();
+		return GetUniverse().GetPlayer();
 	else
 		return NULL;
 	}
@@ -580,7 +580,7 @@ void CSovereign::InitRelationships (void)
 
 			else if (pRelDesc->FindAttribute(SOVEREIGN_ATTRIB, &sTarget))
 				{
-				CSovereign *pTarget = g_pUniverse->FindSovereign(strToInt(sTarget, 0));
+				CSovereign *pTarget = GetUniverse().FindSovereign(strToInt(sTarget, 0));
 				if (pTarget == NULL)
 					{
 					::kernelDebugLogPattern("[%08x]: Unknown sovereign: %s.", GetUNID(), sTarget);
@@ -613,7 +613,7 @@ void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
 
 	if (GetUNID() == g_PlayerSovereignUNID)
 		{
-		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		IPlayerController *pPlayer = GetUniverse().GetPlayer();
 		if (pPlayer == NULL)
 			return;
 
@@ -657,7 +657,7 @@ void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		for (i = 0; i < m_pInitialRelationships->GetContentElementCount(); i++)
 			{
 			CXMLElement *pRelDesc = m_pInitialRelationships->GetContentElement(i);
-			CSovereign *pTarget = g_pUniverse->FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
+			CSovereign *pTarget = GetUniverse().FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
 			if (pTarget)
 				retTypesUsed->SetAt(pTarget->GetUNID(), true);
 			}
@@ -736,7 +736,7 @@ ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 //	Returns the given property (or NULL if not found)
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
 		return ICCItemPtr(GetNounPhrase());
@@ -821,7 +821,7 @@ void CSovereign::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	while (dwUNID)
 		{
 		SRelationship *pRel = new SRelationship;
-		pRel->pSovereign = g_pUniverse->FindSovereign(dwUNID);
+		pRel->pSovereign = GetUniverse().FindSovereign(dwUNID);
 
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		pRel->iDisp = (Disposition)dwLoad;
@@ -1020,9 +1020,9 @@ void CSovereign::SetDispositionTowards (Alignments iAlignment, Disposition iDisp
 	{
 	int i;
 
-	for (i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+	for (i = 0; i < GetUniverse().GetSovereignCount(); i++)
 		{
-		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		CSovereign *pTarget = GetUniverse().GetSovereign(i);
 		if (pTarget->GetAlignment() != iAlignment
 				|| pTarget == this)
 			continue;
@@ -1046,9 +1046,9 @@ void CSovereign::SetDispositionTowardsFlag (DWORD dwAlignmentFlag, Disposition i
 //	Sets disposition towards all sovereigns that have the given flag.
 
 	{
-	for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+	for (int i = 0; i < GetUniverse().GetSovereignCount(); i++)
 		{
-		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		CSovereign *pTarget = GetUniverse().GetSovereign(i);
 		Alignments iAlignment = pTarget->GetAlignment();
 		if (iAlignment == alignUnknown
 				|| pTarget == this

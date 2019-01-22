@@ -438,7 +438,7 @@ template <class CLASS> class CDesignTypeRef
 			{
 			if (m_dwUNID)
 				{
-				CDesignType *pBaseType = g_pUniverse->FindDesignType(m_dwUNID);
+				CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
 				if (pBaseType == NULL)
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), m_dwUNID);
@@ -1053,6 +1053,7 @@ class CExtensionCollection
 		void ClearAllMarks (void);
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);

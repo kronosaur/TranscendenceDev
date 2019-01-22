@@ -254,7 +254,7 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	const SScalableStats *pDesc = GetDesc(Ctx);
     if (pDesc == NULL)
         return CDeviceClass::FindItemProperty(Ctx, sProperty);

@@ -253,7 +253,7 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 	//	that they handle timed events, etc.
 
 	GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
-	g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
+	GetUniverse().NotifyOnObjDestroyed(DestroyCtx);
 
 	//	Clear destination
 
@@ -676,7 +676,7 @@ void CStation::CreateDestructionEffect (void)
 
 	//	Sound effects
 
-	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_StationExplosionSoundUNID));
+	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_StationExplosionSoundUNID));
 	}
 
 void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage)
@@ -1284,7 +1284,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				PartImage,
 				NULL);
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 				NULL,
@@ -1293,7 +1293,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				0);
 		}
 
-	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_ShipExplosionSoundUNID));
+	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 	}
 
 CString CStation::DebugCrashInfo (void)
@@ -1386,7 +1386,7 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
+	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 	}
 
 Metric CStation::GetAttackDistance (void) const
@@ -1604,7 +1604,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
@@ -1786,7 +1786,7 @@ CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 	//	Otherwise, see if the player is in range, if so, then it is our target.
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer == NULL)
 		return NULL;
 
@@ -1808,7 +1808,7 @@ CDesignType *CStation::GetWreckType (void) const
 	if (m_dwWreckUNID == 0)
 		return NULL;
 
-	return g_pUniverse->FindDesignType(m_dwWreckUNID);
+	return GetUniverse().FindDesignType(m_dwWreckUNID);
 	}
 
 bool CStation::HasAttribute (const CString &sAttribute) const
@@ -2583,7 +2583,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 				m_Targets.Add(pTarget);
 
 #ifdef DEBUG_ALERTS
-				g_pUniverse->DebugOutput("%d: Received msgDestroyBroadcast", this);
+				GetUniverse().DebugOutput("%d: Received msgDestroyBroadcast", this);
 #endif
 
 				//	Order out some number of subordinates to attack
@@ -2599,7 +2599,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 						{
 						iLeft--;
 #ifdef DEBUG_ALERTS
-						g_pUniverse->DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
+						GetUniverse().DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
 #endif
 						}
 					}
@@ -2955,7 +2955,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		rcRect.right = x + 40;
 		rcRect.bottom = y + 20;
 
-		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetNounPhrase(), -2);
+		GetUniverse().GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetNounPhrase(), -2);
 		}
 
 	//	Paint overlays
@@ -3196,12 +3196,12 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 			InitMapLabel();
 
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel + 1, 
 					y + m_yMapLabel + 1, 
 					0,
 					m_sMapLabel);
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
 					y + m_yMapLabel, 
 					RGB_MAP_LABEL,
@@ -4366,7 +4366,7 @@ void CStation::RaiseAlert (CSpaceObject *pTarget)
 	m_Targets.Add(pTarget);
 
 #ifdef DEBUG_ALERTS
-	g_pUniverse->DebugOutput("%d: Raising alert...", this);
+	GetUniverse().DebugOutput("%d: Raising alert...", this);
 #endif
 
 	//	Tell all other friendly stations in the system that they
@@ -4422,7 +4422,7 @@ bool CStation::RequestGate (CSpaceObject *pObj)
 	//	This is used by ships that "gate" back into their carrier or their
 	//	station.)
 
-	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode);
+	CTopologyNode *pNode = GetUniverse().FindTopologyNode(m_sStargateDestNode);
 
 	//	For the player, ask all objects if they want to allow the player to 
 	//	enter a gate.
@@ -4490,7 +4490,7 @@ void CStation::SetKnown (bool bKnown)
 		CTopologyNode *pDestNode;
 		if (bKnown
 				&& IsStargate()
-				&& (pDestNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode)))
+				&& (pDestNode = GetUniverse().FindTopologyNode(m_sStargateDestNode)))
 			pDestNode->SetKnown();
 
 		//  If we have a virtual base, then set it to be known. This handles the
@@ -4656,7 +4656,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 //	Sets a station property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CString sError;
 
 	if (strEquals(sName, PROPERTY_ACTIVE))
@@ -4763,7 +4763,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		{
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 
 		if (pValue->IsNil())
 			ClearBlacklist(pPlayer);
@@ -5059,7 +5059,7 @@ void CStation::UpdateReinforcements (int iTick)
 		int i;
 
 #ifdef DEBUG_ALERTS
-		g_pUniverse->DebugOutput("%d: Attack target list", this);
+		GetUniverse().DebugOutput("%d: Attack target list", this);
 #endif
 
 		for (i = 0; i < m_Targets.GetCount(); i++)
@@ -5076,7 +5076,7 @@ void CStation::UpdateReinforcements (int iTick)
 					{
 					iLeft--;
 #ifdef DEBUG_ALERTS
-					g_pUniverse->DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
+					GetUniverse().DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
 #endif
 					}
 				}
@@ -5104,7 +5104,7 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 
 	if (m_Blacklist.IsBlacklisted())
 		{
-		CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip();
 		Metric rDist2;
 		if (pPlayerShip
 				&& (rDist2 = GetDistance2(pPlayerShip)) <= rAttackRange2

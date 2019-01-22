@@ -306,7 +306,7 @@ void CExtension::CleanUp (void)
 
 	//	Delete global functions
 
-	CCodeChain *pCC = &g_pUniverse->GetCC();
+	CCodeChain *pCC = &GetUniverse().GetCC();
 	for (i = 0; i < m_Globals.GetCount(); i++)
 		m_Globals[i].pCode->Discard(pCC);
 
@@ -949,9 +949,9 @@ CG32bitImage *CExtension::GetCoverImage (void) const
 
 	//	Load the image
 
-	g_pUniverse->SetLogImageLoad(false);
+	GetUniverse().SetLogImageLoad(false);
 	m_pCoverImage = pObjImage->CreateCopy();
-	g_pUniverse->SetLogImageLoad(true);
+	GetUniverse().SetLogImageLoad(true);
 
 	//	Done
 
@@ -1050,7 +1050,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Open the file
 
 			CResourceDb ExtDb(m_sFilespec, true);
-			ExtDb.SetDebugMode(g_pUniverse->InDebugMode());
+			ExtDb.SetDebugMode(GetUniverse().InDebugMode());
 			if (error = ExtDb.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 				return ERR_FAIL;
 
@@ -1093,7 +1093,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 				{
 				//	If we're in debug mode then this is a real error.
 
-				if (g_pUniverse->InDebugMode()
+				if (GetUniverse().InDebugMode()
 						&& !ExtDb.IsTDB()
 						&& error != ERR_CANCEL)
 					{
@@ -1119,7 +1119,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 				if (error = LoadDesignElement(Ctx, pItem))
 					{
-					if (g_pUniverse->InDebugMode()
+					if (GetUniverse().InDebugMode()
 							&& !ExtDb.IsTDB())
 						return ComposeLoadError(Ctx, retsError);
 

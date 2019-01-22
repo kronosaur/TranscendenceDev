@@ -498,7 +498,7 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 
 	//	Compute expire time
 
-	int iExpireTime = (iLifetime != -1 ? g_pUniverse->GetTicks() + iLifetime : -1);
+	int iExpireTime = (iLifetime != -1 ? GetUniverse().GetTicks() + iLifetime : -1);
 
 	//	Add the item enhancement
 
@@ -553,7 +553,7 @@ void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int 
 //	Adds an overly by UNID
 
 	{
-	COverlayType *pType = g_pUniverse->FindOverlayType(dwUNID);
+	COverlayType *pType = GetUniverse().FindOverlayType(dwUNID);
 	if (pType == NULL)
 		{
 		if (retdwID) *retdwID = 0;
@@ -1496,7 +1496,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 				//	an event might set a target for the player and if the
 				//	target is destroyed, we would never get an OnObjDestroyed message
 
-				g_pUniverse->SetPlayerShip(NULL);
+				GetUniverse().SetPlayerShip(NULL);
 
 				//	The player will be deleted at higher layers, but
 				//	it is out of the system now.
@@ -1988,7 +1988,7 @@ void CSpaceObject::FireCustomOverlayEvent (const CString &sEvent, DWORD dwOverla
 //	Fires a custom event on an overlay
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Find the overlay
 
@@ -2131,7 +2131,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 
 		//	Return
 
-		retExplosion->pDesc = (dwUNID ? g_pUniverse->FindWeaponFireDesc(strPatternSubst(CONSTLIT("%d/0"), dwUNID)) : NULL);
+		retExplosion->pDesc = (dwUNID ? GetUniverse().FindWeaponFireDesc(strPatternSubst(CONSTLIT("%d/0"), dwUNID)) : NULL);
 		retExplosion->iBonus = iBonus;
 		retExplosion->iCause = iCause;
 
@@ -3414,7 +3414,7 @@ void CSpaceObject::FireOnSystemWeaponFire (CSpaceObject *pShot, CSpaceObject *pS
 		Ctx.DefineSpaceObject(CONSTLIT("aWeaponObj"), pSource);
 		Ctx.DefineInteger(CONSTLIT("aWeaponUNID"), dwItemUNID);
 		Ctx.DefineVector(CONSTLIT("aWeaponPos"), pShot->GetPos());
-		Ctx.DefineItemType(CONSTLIT("aWeaponType"), (pShot->GetWeaponFireDesc() ? pShot->GetWeaponFireDesc()->GetWeaponType() : g_pUniverse->GetItemType(dwItemUNID)));
+		Ctx.DefineItemType(CONSTLIT("aWeaponType"), (pShot->GetWeaponFireDesc() ? pShot->GetWeaponFireDesc()->GetWeaponType() : GetUniverse().GetItemType(dwItemUNID)));
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -3646,12 +3646,12 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 //	NOTE: Caller must discard *retpData.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
-	if (!g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, 0, &Screen))
+	if (!GetUniverse().GetDesignCollection().FireGetGlobalDockScreen(this, 0, &Screen))
 		Screen.iPriority = -1;
 
 	//	See if any overlays have dock screens
@@ -3708,7 +3708,7 @@ ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 	{
 	CDesignType *pType = GetType();
 	if (pType == NULL)
-		return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+		return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 
 	return pType->GetGlobalData(sAttribute);
 	}
@@ -4004,7 +4004,7 @@ ICCItemPtr CSpaceObject::GetOverlayData (DWORD dwID, const CString &sAttrib) con
 	{
 	const COverlayList *pOverlays = GetOverlays();
 	if (pOverlays == NULL)
-		return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+		return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 
 	return pOverlays->GetData(dwID, sAttrib);
 	}
@@ -4021,7 +4021,7 @@ ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, co
 		return pOverlays->GetProperty(pCCCtx, this, dwID, sName);
 	else
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
+		CCodeChain &CC = GetUniverse().GetCC();
 		return CC.CreateNil();
 		}
 	}
@@ -4055,7 +4055,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CDesignType *pType;
 
 	if (strEquals(sName, PROPERTY_ASCENDED))
@@ -4237,7 +4237,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_PLAYER_MISSIONS_GIVEN))
 		{
-		int iCount = g_pUniverse->GetObjStats(GetID()).iPlayerMissionsGiven;
+		int iCount = GetUniverse().GetObjStats(GetID()).iPlayerMissionsGiven;
 		if (iCount > 0)
 			return CC.CreateInteger(iCount);
 		else
@@ -4382,7 +4382,7 @@ ICCItemPtr CSpaceObject::GetStaticData (const CString &sAttrib)
 	
 	//	Not found
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
 CG32bitPixel CSpaceObject::GetSymbolColor (void)
@@ -4392,14 +4392,14 @@ CG32bitPixel CSpaceObject::GetSymbolColor (void)
 //	Returns the color to paint this object in the player's scanner
 
 	{
-	CSovereign *pPlayer = g_pUniverse->GetPlayerSovereign();
+	CSovereign *pPlayer = GetUniverse().GetPlayerSovereign();
 	CSpaceObject *pPlayerShip;
 
 	if (GetSovereign() == pPlayer)
 		return CG32bitPixel(255, 255, 255);
 	else if (IsWreck())
 		return CG32bitPixel(0, 192, 0);
-	else if ((pPlayerShip = g_pUniverse->GetPlayerShip()) 
+	else if ((pPlayerShip = GetUniverse().GetPlayerShip()) 
 			&& IsAngryAt(pPlayerShip))
 		return CG32bitPixel(255, 80, 80);
 	else if (GetCategory() == CSpaceObject::catShip)
@@ -4484,7 +4484,7 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
 		iAggressorThreshold = -1;
 	else
-		iAggressorThreshold = g_pUniverse->GetTicks() - AGGRESSOR_THRESHOLD;
+		iAggressorThreshold = GetUniverse().GetTicks() - AGGRESSOR_THRESHOLD;
 
 	//	Get the list of enemy objects
 
@@ -4600,7 +4600,7 @@ bool CSpaceObject::HasBeenHitLately (int iTicks)
 	if (iLastHit == 0)
 		return false;
 
-	int iNow = g_pUniverse->GetTicks();
+	int iNow = GetUniverse().GetTicks();
 	if ((iNow - iLastHit) <= iTicks)
 		return true;
 
@@ -4633,7 +4633,7 @@ bool CSpaceObject::HasDockScreen (void) const
 	//	If we don't do this, then some ships would automatically get screens
 	//	because we auto-create docking ports for ships if they have screens.
 
-	if (g_pUniverse->GetDesignCollection().FireGetGlobalDockScreen(this, CDesignCollection::FLAG_NO_OVERRIDE))
+	if (GetUniverse().GetDesignCollection().FireGetGlobalDockScreen(this, CDesignCollection::FLAG_NO_OVERRIDE))
 		return true;
 
 	return false;
@@ -4650,7 +4650,7 @@ bool CSpaceObject::HasFiredLately (int iTicks)
 	if (iLastFire == 0)
 		return false;
 
-	int iNow = g_pUniverse->GetTicks();
+	int iNow = GetUniverse().GetTicks();
 	if ((iNow - iLastFire) <= iTicks)
 		return true;
 
@@ -5301,7 +5301,7 @@ bool CSpaceObject::IsPlayerEscortTarget (CSpaceObject *pPlayer)
 
 	if (pPlayer == NULL)
 		{
-		pPlayer = g_pUniverse->GetPlayerShip();
+		pPlayer = GetUniverse().GetPlayerShip();
 		if (pPlayer == NULL)
 			return false;
 		}
@@ -5479,7 +5479,7 @@ bool CSpaceObject::IsDestinyTime (int iCycle, int iOffset)
 //	depending on its destiny.
  
 	{
-	return (((g_pUniverse->GetTicks() + GetDestiny()) % iCycle) == iOffset);
+	return (((GetUniverse().GetTicks() + GetDestiny()) % iCycle) == iOffset);
 	}
 
 bool CSpaceObject::IsEnemy (const CSpaceObject *pObj) const
@@ -5702,7 +5702,7 @@ void CSpaceObject::Jump (const CVector &vPos)
 	{
 	//	Create a gate effect at the old position
 
-	CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StargateInUNID);
+	CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StargateInUNID);
 	if (pEffect)
 		pEffect->CreateEffect(m_pSystem,
 				NULL,
@@ -5720,7 +5720,7 @@ void CSpaceObject::Jump (const CVector &vPos)
 
 	//	Create a gate effect at the destination
 
-	pEffect = g_pUniverse->FindEffectType(g_StargateOutUNID);
+	pEffect = GetUniverse().FindEffectType(g_StargateOutUNID);
 	if (pEffect)
 		pEffect->CreateEffect(m_pSystem,
 				NULL,
@@ -6172,7 +6172,7 @@ void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, 
 //	The given Item (which must be part of the object) is about to be modified.
 
 	{
-	g_pUniverse->GetDockSession().OnModifyItemBegin(ModifyCtx, this, Item);
+	GetUniverse().GetDockSession().OnModifyItemBegin(ModifyCtx, this, Item);
 	}
 
 void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result)
@@ -6183,7 +6183,7 @@ void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCt
 
 	{
 	InvalidateItemListState();
-	g_pUniverse->GetDockSession().OnModifyItemComplete(ModifyCtx, this, Result);
+	GetUniverse().GetDockSession().OnModifyItemComplete(ModifyCtx, this, Result);
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -6299,7 +6299,7 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 			CPaintHelper::PaintStatusBar(Dest,
 					x,
 					Ctx.yAnnotations,
-					g_pUniverse->GetPaintTick(),
+					GetUniverse().GetPaintTick(),
 					GetSymbolColor(),
 					NULL_STR,
 					100 - GetVisibleDamage(),
@@ -6424,8 +6424,8 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 	int yOriginal = y;
 
 	const int KEY_BOX_SIZE = 18;
-	const CG16bitFont &NameFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjName);
-	const CG16bitFont &MessageFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSMessage);
+	const CG16bitFont &NameFont = GetUniverse().GetNamedFont(CUniverse::fontSRSObjName);
+	const CG16bitFont &MessageFont = GetUniverse().GetNamedFont(CUniverse::fontSRSMessage);
 	const RECT &rcClip = Dest.GetClipRect();
 
 	if (iAlign & alignBottom)
@@ -6520,7 +6520,7 @@ void CSpaceObject::PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewpo
 
 	if (m_iHighlightChar)
 		{
-		const CG16bitFont &KeyFont = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjName);
+		const CG16bitFont &KeyFont = GetUniverse().GetNamedFont(CUniverse::fontSRSObjName);
 		char chChar = (char)m_iHighlightChar;
 		CString sKey = CString(&chChar, 1);
 
@@ -6569,7 +6569,7 @@ void CSpaceObject::PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, in
 
 	if (IsPlayerDestination() || (IsHighlighted() && !m_sHighlightText.IsBlank()))
 		{
-		int iTick = g_pUniverse->GetPaintTick();
+		int iTick = GetUniverse().GetPaintTick();
 		int iRadius = 10;
 		int iRingSpacing = 4;
 		CG32bitPixel rgbColor = GetSymbolColor();
@@ -6593,7 +6593,7 @@ void CSpaceObject::PaintTargetHighlight (CG32bitImage &Dest, int x, int y, SView
 //	Paints an animated highlight
 
 	{
-	int iTick = g_pUniverse->GetPaintTick();
+	int iTick = GetUniverse().GetPaintTick();
 	int iRadius = (int)(0.5 * GetHitSize() / g_KlicksPerPixel);
 	int iRingSpacing = 10;
 	CG32bitPixel rgbColor = GetSymbolColor();
@@ -6643,7 +6643,7 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 		//	If the player is buying, then allow types to keep track
 		//	(e.g., Black Market gives out experience points).
 
-		g_pUniverse->FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price);
+		GetUniverse().FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price);
 		}
 
 	//	Otherwise, if the seller is the player, record it as the player
@@ -6657,7 +6657,7 @@ void CSpaceObject::RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, c
 
 		//	If the player is selling, then allow types to keep track.
 
-		g_pUniverse->FireOnGlobalPlayerSoldItem(this, Item, Price);
+		GetUniverse().FireOnGlobalPlayerSoldItem(this, Item, Price);
 		}
 	}
 
@@ -6684,7 +6684,7 @@ void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacke
 
 		CSpaceObject::Categories iCategory = GetCategory();
 		if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-			g_pUniverse->GetGlobalObjects().Delete(this);
+			GetUniverse().GetGlobalObjects().Delete(this);
 
 		//	Remove
 
@@ -6774,7 +6774,7 @@ void CSpaceObject::RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID
 
 	if (bExpiredOnly)
 		{
-		if (Mod.GetExpireTime() > g_pUniverse->GetTicks())
+		if (Mod.GetExpireTime() > GetUniverse().GetTicks())
 			return;
 		}
 
@@ -6829,7 +6829,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) con
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetNounPhrase(), pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(const_cast<CSpaceObject *>(this), sError);
 
@@ -6962,7 +6962,7 @@ void CSpaceObject::SetDataInteger (const CString &sAttrib, int iValue)
 //	Set integer value
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItemPtr pValue(iValue);
 	SetData(sAttrib, pValue);
 	}
@@ -7119,7 +7119,7 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		}
 	else if (strEquals(sName, PROPERTY_SOVEREIGN))
 		{
-		CSovereign *pSovereign = g_pUniverse->FindSovereign(pValue->GetIntegerValue());
+		CSovereign *pSovereign = GetUniverse().FindSovereign(pValue->GetIntegerValue());
 		if (pSovereign == NULL)
 			{
 			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown sovereign: %s."), pValue->GetStringValue());

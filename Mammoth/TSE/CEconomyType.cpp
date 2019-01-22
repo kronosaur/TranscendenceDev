@@ -200,7 +200,7 @@ ALERROR CEconomyTypeRef::Bind (SDesignLoadCtx &Ctx)
 	if (m_sUNID.IsBlank())
 		{
 		if (g_pDefaultEconomy == NULL)
-			g_pDefaultEconomy = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+			g_pDefaultEconomy = CEconomyType::AsType(Ctx.GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
 
 		m_pType = g_pDefaultEconomy;
 		}

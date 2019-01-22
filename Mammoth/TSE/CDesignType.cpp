@@ -435,7 +435,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CString sValue;
 	ICCItem *pResult;
 	ICCItemPtr pValue;
@@ -1461,7 +1461,7 @@ ALERROR CDesignType::FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event)
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
-	if (g_pUniverse->InResurrectMode())
+	if (GetUniverse().InResurrectMode())
 		Ctx.DefineString(CONSTLIT("aReason"), CONSTLIT("resurrect"));
 	else
 		Ctx.DefineNil(CONSTLIT("aReason"));
@@ -1604,7 +1604,7 @@ ICCItemPtr CDesignType::GetGlobalData (const CString &sAttrib) const
 	if (m_pExtra)
 		return m_pExtra->GlobalData.GetDataAsItem(sAttrib);
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
 SEventHandlerDesc *CDesignType::GetInheritedCachedEvent (ECachedHandlers iEvent) const
@@ -1671,7 +1671,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         //  If we have both main and trade descriptors, combine them.
 
         if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
-            return strPatternSubst(CONSTLIT("%s — %s"), sMainDesc, sTradeDesc);
+            return strPatternSubst(CONSTLIT("%s ï¿½ %s"), sMainDesc, sTradeDesc);
 
         //  If all we have is main desc, return that.
 
@@ -1761,7 +1761,7 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 //	must be discarded by the caller).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	ICCItemPtr pResultPtr;
 
@@ -1788,7 +1788,7 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 //	Returns an integer property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CCodeChainCtx Ctx(GetUniverse());
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
@@ -1807,7 +1807,7 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 //	Returns a string property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CCodeChainCtx Ctx(GetUniverse());
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
@@ -1967,7 +1967,7 @@ const CEconomyType *CDesignType::GetEconomyType (void) const
 	if (pTrade)
 		return pTrade->GetEconomyType();
 
-	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
 	}
 
 void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers)
@@ -2073,7 +2073,7 @@ ICCItemPtr CDesignType::GetStaticData (const CString &sAttrib) const
 	if (m_pInheritFrom)
 		return m_pInheritFrom->GetStaticData(sAttrib);
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
 void CDesignType::GetStats (SStats &Stats) const
@@ -2208,7 +2208,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		{
 		//	Must have a current system.
 
-		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+		CSystem *pSystem = GetUniverse().GetCurrentSystem();
 		if (pSystem == NULL)
 			return false;
 
@@ -2458,7 +2458,7 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 //	Returns TRUE if the inheritance chain loops above this type
 
 	{
-	CDesignType *pParent = g_pUniverse->FindDesignType(pType->m_dwInheritFrom);
+	CDesignType *pParent = GetUniverse().FindDesignType(pType->m_dwInheritFrom);
 	while (pParent)
 		{
 		if (pParent->m_dwUNID == pType->m_dwUNID)
@@ -2467,7 +2467,7 @@ bool CDesignType::InSelfReference (CDesignType *pType)
 		if (InSelfReference(pParent))
 			return true;
 
-		pParent = g_pUniverse->FindDesignType(pParent->m_dwInheritFrom);
+		pParent = GetUniverse().FindDesignType(pParent->m_dwInheritFrom);
 		}
 
 	return false;
@@ -2616,11 +2616,11 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 
 	{
 	CString sError = strPatternSubst(CONSTLIT("%s [%x]: %s"), sEvent, m_dwUNID, pError->GetStringValue());
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer)
 		pPlayer->SendMessage(NULL, sError);
 
-	g_pUniverse->LogOutput(sError);
+	GetUniverse().LogOutput(sError);
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
@@ -2810,7 +2810,7 @@ ALERROR CArmorClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = g_pUniverse->FindDesignType(m_dwUNID);
+		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
 		if (pBaseType == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown armor design type: %x"), m_dwUNID);
@@ -2841,7 +2841,7 @@ ALERROR CDeviceClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = g_pUniverse->FindDesignType(m_dwUNID);
+		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
 		if (pBaseType == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown device design type: %x"), m_dwUNID);
@@ -2886,7 +2886,7 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-        CItemType *pItemType = g_pUniverse->FindItemType(m_dwUNID);
+        CItemType *pItemType = Ctx.GetUniverse().FindItemType(m_dwUNID);
 		if (pItemType == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %08x"), m_dwUNID);

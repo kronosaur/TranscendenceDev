@@ -88,7 +88,7 @@ ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
     if (strEquals(sName, PROPERTY_STYLE))
         {
@@ -120,7 +120,7 @@ void CMarker::OnObjLeaveGate (CSpaceObject *pObj)
 //	Object leaves a gate
 
 	{
-	CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StargateOutUNID);
+	CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StargateOutUNID);
 	if (pEffect)
 		pEffect->CreateEffect(GetSystem(),
 				NULL,
@@ -248,7 +248,7 @@ bool CMarker::SetProperty (const CString &sName, ICCItem *pValue, CString *retsE
 //	Sets an object property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_STYLE))
 		{
@@ -321,7 +321,7 @@ CSovereign *CPOVMarker::GetSovereign (void) const
 	{
 	//	Return player
 
-	return g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+	return GetUniverse().FindSovereign(g_PlayerSovereignUNID);
 	}
 
 void CPOVMarker::OnLosePOV (void)
