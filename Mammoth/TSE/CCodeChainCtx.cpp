@@ -218,6 +218,20 @@ CVector CCodeChainCtx::AsVector (ICCItem *pItem)
 	return CreateVectorFromList(m_CC, pItem);
 	}
 
+ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
+
+//	Create
+//
+//	Creates an entry
+
+	{
+	ICCItemPtr pValue = ICCItemPtr(iType);
+	if (pValue->IsError())
+		throw CException(ERR_MEMORY);
+
+	return pValue;
+	}
+
 void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
 
 //	DefineDamageCtx
@@ -582,6 +596,35 @@ ICCItem *CCodeChainCtx::RunLambda (ICCItem *pCode)
 		pResult = m_CC.Apply(pCode, m_CC.CreateNil(), this);
 	else
 		pResult = m_CC.TopLevel(pCode, this);
+
+	//	Done
+
+	RemoveFrame();
+
+	return pResult;
+
+	DEBUG_CATCH
+	}
+
+ICCItemPtr CCodeChainCtx::RunLambdaCode (ICCItem *pCode, ICCItem *pArgs)
+
+//	RunLambdaCode
+//
+//	Runs a piece of code or a lambda expression.
+
+	{
+	DEBUG_TRY
+
+	AddFrame();
+
+	//	If this is a lambda expression, then eval as if
+	//	it were an expression with no arguments
+
+	ICCItemPtr pResult;
+	if (pCode->IsFunction())
+		pResult = ICCItemPtr(m_CC.Apply(pCode, (pArgs ? pArgs : m_CC.CreateNil()), this));
+	else
+		pResult = ICCItemPtr(m_CC.TopLevel(pCode, this));
 
 	//	Done
 

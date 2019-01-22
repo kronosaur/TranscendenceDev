@@ -32,6 +32,7 @@ class CCodeChainCtx
 		CCodeChainCtx (void);
 		~CCodeChainCtx (void);
 
+		ICCItemPtr Create (ICCItem::ValueTypes iType);
 		void DefineContainingType (const CDesignType *pType);
 		void DefineContainingType (const CItem &Item);
 		void DefineContainingType (const COverlay *pOverlay);
@@ -55,6 +56,7 @@ class CCodeChainCtx
 		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }
 		DWORD GetAPIVersion (void) const;
 		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
+		inline CCodeChain &GetCC (void) { return m_CC; }
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
@@ -68,6 +70,7 @@ class CCodeChainCtx
 		ICCItemPtr RunCode (const SEventHandlerDesc &Event);
 		bool RunEvalString (const CString &sString, bool bPlain, CString *retsResult);
 		ICCItem *RunLambda (ICCItem *pCode);
+		ICCItemPtr RunLambdaCode (ICCItem *pCode, ICCItem *pArgs = NULL);
 		void SaveAndDefineDataVar (ICCItem *pData);
 		void SaveAndDefineItemVar (const CItem &Item);
 		void SaveAndDefineItemVar (CItemCtx &ItemCtx);

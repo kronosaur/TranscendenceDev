@@ -1867,34 +1867,21 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	if (Criteria.pFilter)
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
+		CCodeChainCtx CCCtx;
 
 		//	Create a list representing this item
 
-		ICCItem *pItem = ::CreateListFromItem(CC, *this);
+		ICCItemPtr pItem(::CreateListFromItem(CCCtx.GetCC(), *this));
 
 		//	Create an argument list consisting of the item
 
-		ICCItem *pArgs = CC.CreateLinkedList();
-		if (pArgs->IsError())
-			{
-			ASSERT(false);
-			return false;
-			}
-
-		CCLinkedList *pList = (CCLinkedList *)pArgs;
-		pList->Append(CC, pItem);
+		ICCItemPtr pArgs = CCCtx.Create(ICCItem::List);
+		pArgs->Append(CCCtx.GetCC(), pItem);
 
 		//	Apply the function to the arg list
 
-		ICCItem *pResult = CC.Apply(Criteria.pFilter, pArgs, &g_pUniverse);
+		ICCItemPtr pResult = CCCtx.RunLambdaCode(Criteria.pFilter, pArgs);
 		bool bMatches = !pResult->IsNil();
-
-		//	Done
-
-		pResult->Discard(&CC);
-		pArgs->Discard(&CC);
-		pItem->Discard(&CC);
 
 		return bMatches;
 		}
