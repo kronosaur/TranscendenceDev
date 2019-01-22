@@ -312,7 +312,7 @@
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="50000" replenish="2500">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
@@ -472,7 +472,7 @@
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-10;" priceAdj="120"/>
 			<ReplaceArmor	criteria="a L:1-10;" priceAdj="120"/>
@@ -622,7 +622,7 @@
 			<Item				count="1d6"		item="&itEuropanIceVodka;" />
 		</Items>
 
-		<Trade currency="rin" max="100000" replenish="5000">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
 			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
@@ -767,7 +767,7 @@
 			</Table>
 		</Items>
 
-		<Trade currency="credit" max="50000" replenish="2500">
+		<Trade currency="credit">
 			<AcceptDonation	criteria="* -ID; -questItem;" priceAdj="100" actualPrice="true"/>
 		</Trade>
 
@@ -907,7 +907,7 @@
 			<Item	count="6d12" item="&itPteracniumFuelRod;"/>
 		</Items>
 
-		<Trade currency="rin" max="50000" replenish="2500">
+		<Trade currency="rin">
 			<Refuel			criteria="f +unid:&itPteracniumFuelRod;;" priceAdj="100"/>
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-11;" priceAdj="120"/>

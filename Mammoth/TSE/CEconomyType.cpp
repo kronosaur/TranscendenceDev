@@ -33,25 +33,28 @@ CurrencyValue CEconomyType::Exchange (const CEconomyType *pFrom, CurrencyValue i
 
 //	Exchange
 //
-//	Exchange from the given currency to this one
+//	Exchange from the given currency to this one.
+//	NOTE: If pFrom is NULL, then we assume iAmount is in credits.
 
 	{
 	ASSERT(sizeof(CurrencyValue) == sizeof(LONGLONG));
 
+	CurrencyValue iFromConversion = (pFrom ? pFrom->m_iCreditConversion : 100);
+
 	//	If we're the same rate, then done
 
-	if (pFrom->m_iCreditConversion == m_iCreditConversion)
+	if (iFromConversion == m_iCreditConversion)
 		return iAmount;
 
 	//	If converting from credits, then it is simpler
 
-	else if (pFrom->m_iCreditConversion == 100)
+	else if (iFromConversion == 100)
 		return 100 * iAmount / m_iCreditConversion;
 
 	//	If converting to credits, then it is simpler
 
 	else if (m_iCreditConversion == 100)
-		return pFrom->m_iCreditConversion * iAmount / 100;
+		return iFromConversion * iAmount / 100;
 
 	//	Otherwise we need to do both conversion
 
@@ -59,7 +62,7 @@ CurrencyValue CEconomyType::Exchange (const CEconomyType *pFrom, CurrencyValue i
 		{
 		//	First convert to Commonwealth credits
 
-		CurrencyValue iCredits = pFrom->m_iCreditConversion * iAmount / 100;
+		CurrencyValue iCredits = iFromConversion * iAmount / 100;
 
 		//	Now convert back to this currency
 

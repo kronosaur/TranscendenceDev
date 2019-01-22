@@ -71,7 +71,7 @@
 					/>
 		</Items>
 
-		<Trade currency="rin" max="50000" replenish="2500">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
 			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
 			<Sell	criteria="*NU +alien;"							priceAdj="120"/>
@@ -488,7 +488,7 @@
 					/>
 		</Items>
 
-		<Trade currency="rin" max="50000" replenish="2500">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
 			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
 			<Sell	criteria="*NU +alien;"							priceAdj="120"/>
@@ -615,7 +615,7 @@
 					/>
 		</Items>
 
-		<Trade currency="rin" max="50000" replenish="2500">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +soul;"							priceAdj="unavailable"/>
 			<Sell	criteria="*NU +ringerValuable;"					priceAdj="250"/>
 			<Sell	criteria="*NU +alien;"							priceAdj="120"/>

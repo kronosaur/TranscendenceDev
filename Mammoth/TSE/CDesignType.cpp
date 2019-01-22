@@ -104,8 +104,11 @@
 #define PROPERTY_API_VERSION					CONSTLIT("apiVersion")
 #define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_CLASS							CONSTLIT("class")
+#define PROPERTY_DEFAULT_CURRENCY				CONSTLIT("defaultCurrency")
+#define PROPERTY_DEFAULT_CURRENCY_EXCHANGE		CONSTLIT("defaultCurrencyExchange")
 #define PROPERTY_EXTENSION						CONSTLIT("extension")
 #define PROPERTY_MAP_DESCRIPTION				CONSTLIT("mapDescription")
+#define PROPERTY_MAX_BALANCE					CONSTLIT("maxBalance")
 #define PROPERTY_MERGED							CONSTLIT("merged")
 #define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
 #define PROPERTY_OBSOLETE_VERSION				CONSTLIT("obsoleteVersion")
@@ -457,6 +460,32 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_CLASS))
 		return CC.CreateString(GetTypeClassName());
 
+	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade == NULL)
+			return CC.CreateNil();
+
+		const CEconomyType *pCurrency = pTrade->GetEconomyType();
+		if (pCurrency == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateString(pCurrency->GetSID());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY_EXCHANGE))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade == NULL)
+			return CC.CreateNil();
+
+		const CEconomyType *pCurrency = pTrade->GetEconomyType();
+		if (pCurrency == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateInteger((int)pCurrency->GetCreditConversion());
+		}
+
 	else if (strEquals(sProperty, PROPERTY_EXTENSION))
 		{
 		if (m_pExtension)
@@ -467,6 +496,15 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
     else if (strEquals(sProperty, PROPERTY_MAP_DESCRIPTION))
         return CC.CreateString(GetMapDescription(SMapDescriptionCtx()));
+
+	else if (strEquals(sProperty, PROPERTY_MAX_BALANCE))
+		{
+		const CTradingDesc *pTrade = GetTradingDesc();
+		if (pTrade == NULL)
+			return CC.CreateNil();
+
+		return CC.CreateInteger((int)pTrade->GetMaxBalance(GetLevel()));
+		}
 
     else if (strEquals(sProperty, PROPERTY_MERGED))
         return CC.CreateBool(m_bIsMerged);

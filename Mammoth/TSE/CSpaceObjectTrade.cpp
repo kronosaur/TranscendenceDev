@@ -724,8 +724,8 @@ void CSpaceObject::SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency
 		return;
 
 	pTradeOverride->SetEconomyType(pCurrency);
-	pTradeOverride->SetMaxCurrency(iMaxCurrency);
-	pTradeOverride->SetReplenishCurrency(iReplenishCurrency);
+	pTradeOverride->SetDefaultMaxBalance(iMaxCurrency);
+	pTradeOverride->SetDefaultReplenish(iReplenishCurrency);
 
 	//	This call will set up the currency.
 

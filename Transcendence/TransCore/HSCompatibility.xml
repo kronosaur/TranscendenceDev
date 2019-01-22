@@ -1420,7 +1420,7 @@
 			<Port x="-98"	y="122" />
 		</DockingPorts>
 
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="*NU -illegal; -notForSale; -notStandard;"	priceAdj="100" noDescription="true"/>
 			
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
@@ -1868,7 +1868,7 @@
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="50000" replenish="2500">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"	priceAdj="50"/>
@@ -3015,7 +3015,7 @@
 			<Device deviceID="&itSlamCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
 		</Devices>
 
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="m +military; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU +Illegal; -ID; -NotForSale;"	priceAdj="110"/>
@@ -3524,7 +3524,7 @@
 			perception=			"4"
 			/>
 
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			
@@ -4020,7 +4020,7 @@
 			perception=			"6"
 			/>
 		
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; +military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			

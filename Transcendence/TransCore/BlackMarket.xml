@@ -53,7 +53,7 @@ PLAYER DATA
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="m +military; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="100" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU +Illegal; -ID; -NotForSale;"	priceAdj="110"/>
@@ -512,7 +512,7 @@ PLAYER DATA
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="m +military; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU +Illegal; -ID; -NotForSale;"	priceAdj="110"/>
@@ -680,7 +680,7 @@ PLAYER DATA
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="50000" replenish="2500">
+		<Trade currency="credit">
 			<Sell	criteria="*NU +Illegal; -ID"	priceAdj="75"/>
 		</Trade>
 

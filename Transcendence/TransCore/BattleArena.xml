@@ -100,7 +100,7 @@
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-6;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-6;" priceAdj="100"/>

@@ -64,7 +64,7 @@
 					/>
 		</Items>
 
-		<Trade currency="credit" max="250000" replenish="12500">
+		<Trade currency="credit">
 			<Sell	criteria="*NU -Illegal; -NotForSale; -ID;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>

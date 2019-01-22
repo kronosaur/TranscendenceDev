@@ -307,9 +307,7 @@ CTradingDesc *CStation::AllocTradeDescOverride (void)
 		CTradingDesc *pBaseTrade = m_pType->GetTradingDesc();
 		if (pBaseTrade)
 			{
-			m_pTrade->SetEconomyType(pBaseTrade->GetEconomyType());
-			m_pTrade->SetMaxCurrency(pBaseTrade->GetMaxCurrency());
-			m_pTrade->SetReplenishCurrency(pBaseTrade->GetReplenishCurrency());
+			m_pTrade->Init(*pBaseTrade);
 			}
 		}
 

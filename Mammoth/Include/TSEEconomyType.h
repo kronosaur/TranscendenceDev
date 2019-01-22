@@ -14,6 +14,7 @@ class CEconomyType : public CDesignType
 		inline CurrencyValue Exchange (const CCurrencyAndValue &Value) const { return Exchange(Value.GetCurrencyType(), Value.GetValue()); }
 		inline CCurrencyAndValue ExchangeFrom (const CEconomyType *pFrom, CurrencyValue iAmount) const { return CCurrencyAndValue(Exchange(pFrom, iAmount), this); }
 		inline CCurrencyAndValue ExchangeFrom (const CCurrencyAndValue &Value) const { return CCurrencyAndValue(Exchange(Value), this); }
+		inline CurrencyValue GetCreditConversion (void) const { return m_iCreditConversion; }
 		inline const CString &GetCurrencyNamePlural (void) const { return m_sCurrencyPlural; }
 		inline const CString &GetCurrencyNameSingular (void) const { return m_sCurrencySingular; }
 		inline const CString &GetSID (void) const { return m_sSID; }

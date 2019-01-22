@@ -100,8 +100,9 @@ class CTradingDesc
 		bool GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
 		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
 		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
-		inline const CEconomyType *GetEconomyType (void) { return m_pCurrency; }
-		inline int GetMaxCurrency (void) { return m_iMaxCurrency; }
+		inline const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
+		inline CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
+		inline CurrencyValue GetMaxBalance (int iLevel) const { return CalcMaxBalance(iLevel, m_pCurrency); }
 		int GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
@@ -111,12 +112,13 @@ class CTradingDesc
 		bool HasService (ETradeServiceTypes iService, const SHasServiceOptions &Options = SHasServiceOptions()) const;
 		bool HasServiceUpgradeOnly (ETradeServiceTypes iService) const;
         inline bool HasServices (void) const { return (m_List.GetCount() > 0); }
+		void Init (const CTradingDesc &Src);
 		bool Sells (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CShipClass *pClass, DWORD dwFlags, int *retiPrice = NULL);
 		bool SellsShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
-		void SetEconomyType (const CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
-		void SetMaxCurrency (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
-		void SetReplenishCurrency (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
+		inline void SetEconomyType (const CEconomyType *pCurrency) { m_pCurrency.Set(pCurrency); }
+		inline void SetDefaultMaxBalance (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
+		inline void SetDefaultReplenish (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
 
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CTradingDesc **retpTrade);
 		void OnCreate (CSpaceObject *pObj);
@@ -127,6 +129,7 @@ class CTradingDesc
 		void WriteToStream (IWriteStream *pStream);
 
 		static int CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags);
+		static CurrencyValue CalcMaxBalance (int iLevel, const CEconomyType *pCurrency = NULL);
 		static CString ServiceToString (ETradeServiceTypes iService);
 		static bool ParseHasServiceOptions (ICCItem *pOptions, SHasServiceOptions &retOptions);
 		static ETradeServiceTypes ParseService (const CString &sService);
@@ -176,7 +179,7 @@ class CTradingDesc
 
 		void AddOrder (CItemType *pItemType, const CString &sCriteria, int iPriceAdj, DWORD dwFlags);
 		CString ComputeID (ETradeServiceTypes iService, DWORD dwUNID, const CString &sCriteria, DWORD dwFlags);
-		int ComputeMaxCurrency (CSpaceObject *pObj);
+		CurrencyValue CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *retReplenish = NULL) const;
 		int ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags);
 		bool FindByID (const CString &sID, int *retiIndex = NULL) const;
 		bool FindService (ETradeServiceTypes iService, const CItem &Item, const SServiceDesc **retpDesc);
@@ -195,8 +198,8 @@ class CTradingDesc
 		static bool HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &S2);
 
 		CEconomyTypeRef m_pCurrency;
-		int m_iMaxCurrency;
-		int m_iReplenishCurrency;
+		int m_iMaxCurrency = 0;					//	Max balance for object (0 = use defaults)
+		int m_iReplenishCurrency = 0;			//	Replenish if below balance (0 = use defaults)
 
 		TArray<SServiceDesc> m_List;
 	};

@@ -68,9 +68,42 @@ static SServiceData SERVICE_DATA[serviceCount] =
 		{	"balanceTrade",				"Tb",	"BalanceTrade"	},	//	serviceTrade
 	};
 
-CTradingDesc::CTradingDesc (void) : 
-		m_iMaxCurrency(0),
-		m_iReplenishCurrency(0)
+static CurrencyValue MAX_BALANCE_CREDITS[MAX_SYSTEM_LEVEL + 1] =
+	{
+		            0,
+
+		       10'000,		//	Level 1
+		       25'000,
+		       25'000,
+		       50'000,
+		       50'000,
+
+		      100'000,		//	Level 6
+		      200'000,
+		      400'000,
+		      800'000,
+		    1'500'000,
+
+		    3'000'000,		//	Level 11
+		    6'000'000,
+		   12'000'000,
+		   25'000'000,
+		   50'000'000,
+
+		  100'000'000,		//	Level 16
+		  200'000'000,
+		  400'000'000,
+		  800'000'000,
+		 1'500'000'000,
+
+		 3'000'000'000,		//	Level 21
+		 6'000'000'000,
+		12'000'000'000,
+		25'000'000'000,
+		50'000'000'000,
+	};
+
+CTradingDesc::CTradingDesc (void)
 
 //	CTradingDesc constructor
 
@@ -208,6 +241,43 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 		return iPrice;
 
 	return iPrice * iAdj / 100;
+	}
+
+CurrencyValue CTradingDesc::CalcMaxBalance (int iLevel, const CEconomyType *pCurrency)
+
+//	CalcMaxBalance
+//
+//	Compute the max balance for a station of the given level (in the given
+//	currency).
+
+	{
+	ASSERT(iLevel >= 1 && iLevel <= MAX_SYSTEM_LEVEL);
+
+	CurrencyValue iMaxBalanceCredits = MAX_BALANCE_CREDITS[Min(Max(0, iLevel), MAX_SYSTEM_LEVEL)];
+	if (pCurrency)
+		return pCurrency->Exchange(NULL, iMaxBalanceCredits);
+	else
+		return iMaxBalanceCredits;
+	}
+
+CurrencyValue CTradingDesc::CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *retReplenish) const
+
+//	ComputeMaxCurrency
+//
+//	Computes max balance
+
+	{
+	CurrencyValue iMaxBalance = (m_iMaxCurrency ? m_iMaxCurrency : CalcMaxBalance(pObj->GetLevel(), m_pCurrency));
+
+	if (retReplenish)
+		{
+		if (m_iReplenishCurrency)
+			*retReplenish = m_iReplenishCurrency;
+		else
+			*retReplenish = iMaxBalance / 20;
+		}
+
+	return iMaxBalance * (90 + ((pObj->GetDestiny() + 9) / 18)) / 100;
 	}
 
 int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
@@ -368,16 +438,6 @@ CString CTradingDesc::ComputeID (ETradeServiceTypes iService, DWORD dwUNID, cons
 		return strPatternSubst(CONSTLIT("%s:%x"), sService, dwUNID);
 	else
 		return strPatternSubst(CONSTLIT("%s:%s"), sService, sCriteria);
-	}
-
-int CTradingDesc::ComputeMaxCurrency (CSpaceObject *pObj)
-
-//	ComputeMaxCurrency
-//
-//	Computes max balance
-
-	{
-	return m_iMaxCurrency * (90 + ((pObj->GetDestiny() + 9) / 18)) / 100;
 	}
 
 int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, DWORD dwFlags)
@@ -885,10 +945,7 @@ int CTradingDesc::Charge (CSpaceObject *pObj, int iCharge)
 //	Charge out of the station's balance
 
 	{
-	if (m_iMaxCurrency)
-		return (int)pObj->ChargeMoney(m_pCurrency->GetUNID(), iCharge);
-	else
-		return 0;
+	return (int)pObj->ChargeMoney(m_pCurrency->GetUNID(), iCharge);
 	}
 
 bool CTradingDesc::FindByID (const CString &sID, int *retiIndex) const
@@ -1546,6 +1603,18 @@ bool CTradingDesc::HasServiceDescription (ETradeServiceTypes iService) const
 	return false;
 	}
 
+void CTradingDesc::Init (const CTradingDesc &Src)
+
+//	Init
+//
+//	Initializes from another descriptor
+
+	{
+	m_pCurrency.Set(Src.GetEconomyType());
+	m_iMaxCurrency = Src.m_iMaxCurrency;
+	m_iReplenishCurrency = Src.m_iReplenishCurrency;
+	}
+
 bool CTradingDesc::Matches (const CItem &Item, const SServiceDesc &Commodity) const
 
 //	Matches
@@ -1627,11 +1696,8 @@ void CTradingDesc::OnCreate (CSpaceObject *pObj)
 	{
 	//	Give the station a limited amount of money
 
-	if (m_iMaxCurrency)
-		{
-		int iMaxCurrency = ComputeMaxCurrency(pObj);
-		pObj->CreditMoney(m_pCurrency->GetUNID(), iMaxCurrency);
-		}
+	CurrencyValue iMaxCurrency = CalcMaxBalance(pObj);
+	pObj->CreditMoney(m_pCurrency->GetUNID(), iMaxCurrency);
 	}
 
 ALERROR CTradingDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1663,14 +1729,12 @@ void CTradingDesc::OnUpdate (CSpaceObject *pObj)
 	{
 	DEBUG_TRY
 
-	if (m_iMaxCurrency && m_iReplenishCurrency)
-		{
-		int iBalance = (int)pObj->GetBalance(m_pCurrency->GetUNID());
-		int iMaxCurrency = ComputeMaxCurrency(pObj);
+	CurrencyValue iReplenish;
+	CurrencyValue iBalance = pObj->GetBalance(m_pCurrency->GetUNID());
+	CurrencyValue iMaxCurrency = CalcMaxBalance(pObj, &iReplenish);
 
-		if (iBalance < iMaxCurrency)
-			pObj->CreditMoney(m_pCurrency->GetUNID(), m_iReplenishCurrency);
-		}
+	if (iBalance < iMaxCurrency && iReplenish)
+		pObj->CreditMoney(m_pCurrency->GetUNID(), iReplenish);
 
 	DEBUG_CATCH
 	}

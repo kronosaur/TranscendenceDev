@@ -46,7 +46,7 @@
 		
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="200000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
@@ -197,7 +197,7 @@
 
 		<!-- Trade and Items -->
 		
-		<Trade currency="credit" max="200000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>

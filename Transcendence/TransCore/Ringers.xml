@@ -97,7 +97,7 @@
 
 		<!-- Trade and Items -->
 
-		<Trade currency="rin" max="100000" replenish="5000">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
 			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
@@ -285,7 +285,7 @@
 
 		<!-- Trade and items -->
 
-		<Trade currency="rin" max="100000" replenish="5000">
+		<Trade currency="rin">
 			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
 			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>

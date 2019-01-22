@@ -150,7 +150,7 @@
 					/>
 		</Items>
 
-		<Trade currency="credit" max="50000" replenish="2500">
+		<Trade currency="credit">
 			<Sell	criteria="m +rasiermesser; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
@@ -297,7 +297,7 @@
 			<Item chance="95" count="4"			item="&itV300PoweredArmor;" />
 		</Items>
 
-		<Trade currency="credit" max="100000" replenish="5000">
+		<Trade currency="credit">
 			<Sell	criteria="m +rasiermesser; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
 			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
