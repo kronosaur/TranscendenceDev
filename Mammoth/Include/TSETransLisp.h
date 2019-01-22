@@ -29,7 +29,7 @@ enum ECodeChainEvents
 class CCodeChainCtx
 	{
 	public:
-		CCodeChainCtx (void);
+		CCodeChainCtx (CUniverse &Universe);
 		~CCodeChainCtx (void);
 
 		ICCItemPtr Create (ICCItem::ValueTypes iType);
@@ -110,26 +110,27 @@ class CCodeChainCtx
 		void AddFrame (void);
 		void RemoveFrame (void);
 
-		CCodeChain &m_CC;					//	CodeChain
-		ECodeChainEvents m_iEvent;			//	Event raised
-		void *m_pScreen;					//	Cast to CDockScreen by upper-levels (may be NULL)
-		CG32bitImage *m_pCanvas;			//	Used for dock screen canvas (may be NULL)
-		CItemType *m_pItemType;				//	Used for item events (may be NULL)
-		CDesignType *m_pScreensRoot;		//	Used to resolve local screens (may be NULL)
-		SSystemCreateCtx *m_pSysCreateCtx;	//	Used during system create (may be NULL)
-		CExtension *m_pExtension;			//	Extension that defined this code
+		CUniverse &m_Universe;						//	Universe
+		CCodeChain &m_CC;							//	CodeChain
+		ECodeChainEvents m_iEvent = eventNone;		//	Event raised
+		void *m_pScreen = NULL;						//	Cast to CDockScreen by upper-levels (may be NULL)
+		CG32bitImage *m_pCanvas = NULL;				//	Used for dock screen canvas (may be NULL)
+		CItemType *m_pItemType = NULL;				//	Used for item events (may be NULL)
+		CDesignType *m_pScreensRoot = NULL;			//	Used to resolve local screens (may be NULL)
+		SSystemCreateCtx *m_pSysCreateCtx = NULL;	//	Used during system create (may be NULL)
+		CExtension *m_pExtension = NULL;			//	Extension that defined this code
 
-		IListData *m_pListData;
+		IListData *m_pListData = NULL;
 
 		//	Saved variables
-		ICCItem *m_pOldData;
-		ICCItem *m_pOldSource;
-		ICCItem *m_pOldItem;
-		ICCItem *m_pOldOverlayID;
-		ICCItem *m_pOldType;
+		ICCItem *m_pOldData = NULL;
+		ICCItem *m_pOldSource = NULL;
+		ICCItem *m_pOldItem = NULL;
+		ICCItem *m_pOldOverlayID = NULL;
+		ICCItem *m_pOldType = NULL;
 
-		bool m_bRestoreGlobalDefineHook;
-		IItemTransform *m_pOldGlobalDefineHook;
+		bool m_bRestoreGlobalDefineHook = false;
+		IItemTransform *m_pOldGlobalDefineHook = NULL;
 
 		static TArray<SInvokeFrame> g_Invocations;
 	};

@@ -19,8 +19,9 @@
 
 TArray<CCodeChainCtx::SInvokeFrame> CCodeChainCtx::g_Invocations;
 
-CCodeChainCtx::CCodeChainCtx (void) :
-		m_CC(g_pUniverse->GetCC()),
+CCodeChainCtx::CCodeChainCtx (CUniverse &Universe) :
+		m_Universe(Universe),
+		m_CC(Universe.GetCC()),
 		m_iEvent(eventNone),
 		m_pScreen(NULL),
 		m_pCanvas(NULL),
