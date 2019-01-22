@@ -570,7 +570,7 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
 		}
 	}
 
-CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCVectorOld::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -582,7 +582,7 @@ CString CCVectorOld::Print (CCodeChain *pCC, DWORD dwFlags)
 	return strPatternSubst(LITERAL("[vector with (%d) elements]"), m_iCount);
 	}
 
-CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
+CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags)
 	{
 	int i;
 	double dData;
@@ -609,7 +609,7 @@ CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 		sPrintedVector.Append(LITERAL("( "));
 		for (i = 0; i < m_vShape[0]; i++)
 			{
-			ICCItem *pIndices = pCC->CreateLinkedList();
+			ICCItem *pIndices = CCodeChain::CreateLinkedList();
 			if (pIndices->IsError())
 				{
 				return LITERAL("Error printing vector: memory could not be allocated for temporary index list.");
@@ -627,7 +627,7 @@ CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 
 			CString sPrintedSubVector;
 			if (pSubVector->IsDouble())
-				sPrintedSubVector = pSubVector->Print(pCC, dwFlags);
+				sPrintedSubVector = pSubVector->Print(dwFlags);
 			else
 				sPrintedSubVector = (dynamic_cast <CCVector *> (pSubVector))->PrintWithoutShape(pCC, dwFlags);
 
@@ -649,7 +649,7 @@ CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags)
 		}
 	}
 
-CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
+CString CCVector::Print (DWORD dwFlags)
 	//	Print
 	//
 	//	Print a user-visible message
@@ -671,7 +671,7 @@ CString CCVector::Print(CCodeChain *pCC, DWORD dwFlags)
 		}
 	sPrintedVector.Append(LITERAL(")\n"));
 
-	sPrintedVector.Append(this->PrintWithoutShape(pCC, dwFlags));
+	sPrintedVector.Append(this->PrintWithoutShape(NULL, dwFlags));
 
 	return sPrintedVector;
 	}

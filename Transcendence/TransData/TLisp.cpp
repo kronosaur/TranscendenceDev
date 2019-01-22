@@ -66,7 +66,7 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		CString sOutput;
 		if (pResult->IsIdentifier())
-			sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+			sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 		else
 			sOutput = CC.Unlink(pResult);
 
@@ -131,7 +131,7 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 				CString sOutput;
 				if (pResult->IsIdentifier())
-					sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+					sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				else
 					sOutput = CC.Unlink(pResult);
 
@@ -195,7 +195,7 @@ void RunFile (const CString &sFilespec, bool bNoLogo)
 		//	Compose output
 
 		if (pResult->IsIdentifier())
-			sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+			sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 		else
 			sOutput = CC.Unlink(pResult);
 		}

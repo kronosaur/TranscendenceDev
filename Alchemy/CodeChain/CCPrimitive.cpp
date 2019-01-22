@@ -79,7 +79,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 		CString sArgs;
 		try
 			{
-			sArgs = pEvalArgs->Print(pCtx->pCC);
+			sArgs = pEvalArgs->Print();
 			}
 		catch (...)
 			{
@@ -99,7 +99,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pResult;
 	}
 
-CString CCPrimitive::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCPrimitive::Print (DWORD dwFlags)
 
 //	Print
 //

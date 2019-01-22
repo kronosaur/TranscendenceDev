@@ -1460,7 +1460,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	if (pResult->IsNil())
 		sValue = NULL_STR;
 	else
-		sValue = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+		sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 
 	pResult->Discard();
 	return sValue;

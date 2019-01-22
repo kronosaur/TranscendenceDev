@@ -1670,7 +1670,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 				return false;
 
 			Output.Write("(", 1);
-			CString sItem = pPos->Print(&CC);
+			CString sItem = pPos->Print();
 			Output.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 			Output.Write(" ", 1);
 

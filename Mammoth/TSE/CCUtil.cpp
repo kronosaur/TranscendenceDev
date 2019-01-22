@@ -158,7 +158,7 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 			return NULL_STR;
 			}
 
-		CString sItem = pItem->Print(&CC);
+		CString sItem = pItem->Print();
 		Output.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 		Output.Write(" ", 1);
 

@@ -42,7 +42,7 @@ void CCDouble::DestroyItem (void)
 	CCodeChain::DestroyDouble(this);
 	}
 
-CString CCDouble::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCDouble::Print (DWORD dwFlags)
 
 //	Print
 //

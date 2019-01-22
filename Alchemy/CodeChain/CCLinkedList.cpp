@@ -482,7 +482,7 @@ bool CCLinkedList::HasReferenceTo (ICCItem *pSrc)
 	return false;
 	}
 
-CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCLinkedList::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -511,7 +511,7 @@ CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 		while (pNext)
 			{
-			CString sItem = pNext->m_pItem->Print(pCC);
+			CString sItem = pNext->m_pItem->Print();
 			Stream.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 
 			pNext = pNext->m_pNext;
@@ -541,7 +541,7 @@ CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 		while (pNext)
 			{
-			sString.Append(pNext->m_pItem->Print(pCC));
+			sString.Append(pNext->m_pItem->Print());
 
 			pNext = pNext->m_pNext;
 

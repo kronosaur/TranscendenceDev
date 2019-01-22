@@ -83,7 +83,7 @@ bool CCString::GetBinding (int *retiFrame, int *retiOffset)
 		}
 	}
 
-CString CCString::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCString::Print (DWORD dwFlags)
 
 //	Print
 //

@@ -57,7 +57,7 @@ void CCItemPool<ItemClass>::CleanUp (void)
 	}
 
 template <class ItemClass>
-ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
+ICCItem *CCItemPool<ItemClass>::CreateItem (void)
 
 //	CreateItem
 //

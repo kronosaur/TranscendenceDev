@@ -42,7 +42,7 @@ void CCInteger::DestroyItem (void)
 	CCodeChain::DestroyInteger(this);
 	}
 
-CString CCInteger::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCInteger::Print (DWORD dwFlags)
 
 //	Print
 //

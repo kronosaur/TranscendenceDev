@@ -4226,7 +4226,7 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (pArgs->GetElement(i)->IsList() && !pArgs->GetElement(i)->IsSymbolTable())
 					sResult.Append(pCC->Unlink(pArgs->GetElement(i)));
 				else
-					sResult.Append(pArgs->GetElement(i)->Print(pCC, PRFLAG_ENCODE_FOR_DISPLAY));
+					sResult.Append(pArgs->GetElement(i)->Print(PRFLAG_ENCODE_FOR_DISPLAY));
 				}
 
 			//	Output to console or log
@@ -12323,7 +12323,7 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 		if (error == ERR_NOTFOUND)
 			{
 			if (pCtx->GetUniverse().InDebugMode())
-				::kernelDebugLogPattern("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(pCC), pSystem->GetName());
+				::kernelDebugLogPattern("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(), pSystem->GetName());
 			return pCC->CreateNil();
 			}
 

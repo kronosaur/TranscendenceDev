@@ -104,7 +104,7 @@ void ICCItem::Discard (void)
 	//	By checking for very-high reference counts we can
 	//	also prevent discarding items that are already in the free list
 	//	(because we use the refcount field to store the free list chain)
-	ASSERT(m_bNoRefCount || (m_dwRefCount > 0 && m_dwRefCount < 0x00010000));
+	ASSERT(m_dwRefCount > 0 && m_dwRefCount < 0x00010000);
 
 	m_dwRefCount--;
 	if (m_dwRefCount == 0)

@@ -171,7 +171,7 @@ ICCItem *CCAtomTable::LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound
 	return pBinding->Reference();
 	}
 
-CString CCAtomTable::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCAtomTable::Print (DWORD dwFlags)
 
 //	Print
 //

@@ -152,7 +152,7 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual bool IsFunction (void) override { return true; }
 		virtual bool IsLambdaFunction (void) override { return true; }
 		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return m_pFunction->Print(pCC, dwFlags); }
+		virtual CString Print (DWORD dwFlags = 0) override { return m_pFunction->Print(dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:
@@ -194,7 +194,7 @@ class CCXMLWrapper : public ICCAtom
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
+		virtual CString Print (DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:

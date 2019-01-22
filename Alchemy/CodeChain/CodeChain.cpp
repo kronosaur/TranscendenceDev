@@ -18,6 +18,8 @@
 
 #define POOL_COUNT									9
 
+CCNil CCodeChain::m_Nil;
+CCTrue CCodeChain::m_True;
 CCItemPool<CCInteger> CCodeChain::m_IntegerPool;
 CCItemPool<CCDouble> CCodeChain::m_DoublePool;
 CCItemPool<CCString> CCodeChain::m_StringPool;
@@ -85,22 +87,6 @@ ALERROR CCodeChain::Boot (void)
 	int i;
 	ICCItem *pItem;
 
-	//	Initialize Nil
-
-	pItem = new CCNil;
-	if (pItem == NULL)
-		return ERR_FAIL;
-
-	m_pNil = pItem->Reference();
-
-	//	Initialize True
-
-	pItem = new CCTrue;
-	if (pItem == NULL)
-		return ERR_FAIL;
-
-	m_pTrue = pItem->Reference();
-
 	//	Initialize global symbol table
 
 	pItem = CreateSymbolTable();
@@ -141,7 +127,7 @@ ICCItem *CCodeChain::CreateAtomTable (void)
 	{
 	ICCItem *pItem;
 
-	pItem = m_AtomTablePool.CreateItem(this);
+	pItem = m_AtomTablePool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -180,7 +166,7 @@ ICCItem *CCodeChain::CreateError (const CString &sError, ICCItem *pData)
 
 	if (pData)
 		{
-		sArg = pData->Print(this);
+		sArg = pData->Print();
 		sErrorLine = strPatternSubst(LITERAL("%s [%s]"), sError, sArg);
 		}
 	else
@@ -219,7 +205,7 @@ ICCItem *CCodeChain::CreateDouble (double dValue)
 	ICCItem *pItem;
 	CCDouble *pDouble;
 
-	pItem = m_DoublePool.CreateItem(this);
+	pItem = m_DoublePool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -240,7 +226,7 @@ ICCItem *CCodeChain::CreateInteger (int iValue)
 	ICCItem *pItem;
 	CCInteger *pInteger;
 
-	pItem = m_IntegerPool.CreateItem(this);
+	pItem = m_IntegerPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -262,7 +248,7 @@ ICCItem *CCodeChain::CreateLambda (ICCItem *pList, bool bArgsOnly)
 	ICCItem *pItem;
 	CCLambda *pLambda;
 
-	pItem = m_LambdaPool.CreateItem(this);
+	pItem = m_LambdaPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -273,7 +259,7 @@ ICCItem *CCodeChain::CreateLambda (ICCItem *pList, bool bArgsOnly)
 
 	if (pList)
 		{
-		pItem = pLambda->CreateFromList(this, pList, bArgsOnly);
+		pItem = pLambda->CreateFromList(pList, bArgsOnly);
 		if (pItem->IsError())
 			{
 			DestroyLambda(pLambda);
@@ -297,7 +283,7 @@ ICCItem *CCodeChain::CreateLinkedList (void)
 	{
 	ICCItem *pItem;
 
-	pItem = m_ListPool.CreateItem(this);
+	pItem = m_ListPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -467,7 +453,7 @@ ICCItem *CCodeChain::CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pI
 	ICCItem *pItem;
 	CCPrimitive *pPrimitive;
 
-	pItem = m_PrimitivePool.CreateItem(this);
+	pItem = m_PrimitivePool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -486,7 +472,7 @@ ICCItem *CCodeChain::CreateString (const CString &sString)
 	ICCItem *pItem;
 	CCString *pString;
 
-	pItem = m_StringPool.CreateItem(this);
+	pItem = m_StringPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -505,7 +491,7 @@ ICCItem *CCodeChain::CreateSymbolTable (void)
 	{
 	ICCItem *pItem;
 
-	pItem = m_SymbolTablePool.CreateItem(this);
+	pItem = m_SymbolTablePool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 
@@ -620,7 +606,7 @@ ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 			iSize = iSize*vShape[i];
 	};
 
-	pItem = m_VectorPool.CreateItem(this);
+	pItem = m_VectorPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 	pItem->Reset();
@@ -649,7 +635,7 @@ ICCItem *CCodeChain::CreateFilledVector(double dScalar, TArray<int> vShape)
 	return pVector->Reference();
 }
 
-ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *pContentList)
+ICCItem *CCodeChain::CreateVectorGivenContent (TArray<int> vShape, CCLinkedList *pContentList)
 
 //	CreateVectorGivenContent (new)
 //
@@ -660,7 +646,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, CCLinkedList *
 	CCVector *pVector;
 	ICCItem *pItem;
 
-	pItem = m_VectorPool.CreateItem(this);
+	pItem = m_VectorPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 	pItem->Reset();
@@ -708,7 +694,7 @@ ICCItem *CCodeChain::CreateVectorGivenContent(TArray<int> vShape, TArray<double>
 		iSize = iSize * vShape[i];
 	};
 
-	pItem = m_VectorPool.CreateItem(this);
+	pItem = m_VectorPool.CreateItem();
 	if (pItem->IsError())
 		return pItem;
 	pItem->Reset();
@@ -895,7 +881,7 @@ ICCItem *CCodeChain::Eval (CEvalContext *pEvalCtx, ICCItem *pItem)
 					char *pPos = sError.GetASCIIZPointer() + sError.GetLength() - 1;
 					if (*pPos != '#')
 						{
-						sError.Append(strPatternSubst(CONSTLIT(" ### %s ###"), pItem->Print(this)));
+						sError.Append(strPatternSubst(CONSTLIT(" ### %s ###"), pItem->Print()));
 						pError->SetValue(sError);
 						}
 					}

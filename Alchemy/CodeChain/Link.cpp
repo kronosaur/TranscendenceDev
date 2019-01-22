@@ -515,5 +515,5 @@ CString CCodeChain::Unlink (ICCItem *pItem)
 //	string.
 
 	{
-	return pItem->Print(this);
+	return pItem->Print();
 	}

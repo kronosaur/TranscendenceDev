@@ -185,7 +185,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 					}
 				else
 				    {
-				    CString sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+				    CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				    printf(sValue.GetASCIIZPointer());
 				    }
 

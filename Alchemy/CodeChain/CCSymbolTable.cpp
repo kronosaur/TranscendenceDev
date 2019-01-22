@@ -560,7 +560,7 @@ ICCItem *CCSymbolTable::LookupByOffset (CCodeChain *pCC, int iOffset)
 		return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 	}
 
-CString CCSymbolTable::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCSymbolTable::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -586,7 +586,7 @@ CString CCSymbolTable::Print (CCodeChain *pCC, DWORD dwFlags)
 		Stream.Write(":", 1);
 
 		ICCItem *pValue = dynamic_cast<ICCItem *>(m_Symbols.GetValue(i));
-		CString sValue = pValue->Print(pCC);
+		CString sValue = pValue->Print();
 		Stream.Write(sValue.GetASCIIZPointer(), sValue.GetLength());
 
 		Stream.Write(" ", 1);

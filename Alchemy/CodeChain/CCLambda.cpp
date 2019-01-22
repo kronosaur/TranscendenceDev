@@ -52,7 +52,7 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOnly)
+ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 
 //	CreateFromList
 //
@@ -77,7 +77,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 		{
 		pArgs = pList->GetElement(0);
 		if (pArgs == NULL || !pArgs->IsLambdaSymbol())
-			return pCC->CreateError(LITERAL("Lambda symbol expected"), pArgs);
+			return CCodeChain::CreateError(LITERAL("Lambda symbol expected"), pArgs);
 
 		pArgs = pList->GetElement(1);
 		pBody = pList->GetElement(2);
@@ -86,7 +86,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 	//	The next item must be a list of arguments
 
 	if (pArgs == NULL || !pArgs->IsList())
-		return pCC->CreateError(LITERAL("Argument list expected"), pArgs);
+		return CCodeChain::CreateError(LITERAL("Argument list expected"), pArgs);
 
 	m_pArgList = pArgs->Reference();
 
@@ -96,7 +96,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 		{
 		m_pArgList->Discard();
 		m_pArgList = NULL;
-		return pCC->CreateError(LITERAL("Code expected"), pList);
+		return CCodeChain::CreateError(LITERAL("Code expected"), pList);
 		}
 
 	m_pCode = pBody->Reference();
@@ -104,7 +104,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 
 	//	Done
 
-	return pCC->CreateTrue();
+	return CCodeChain::CreateTrue();
 	}
 
 void CCLambda::DestroyItem (void)
@@ -286,7 +286,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pResult;
 	}
 
-CString CCLambda::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCLambda::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -304,12 +304,12 @@ CString CCLambda::Print (CCodeChain *pCC, DWORD dwFlags)
 
 	//	Add arguments
 
-	sString.Append(m_pArgList->Print(pCC, dwFlags));
+	sString.Append(m_pArgList->Print(dwFlags));
 	sString.Append(CONSTLIT(" "));
 
 	//	Add code
 
-	sString.Append(m_pCode->Print(pCC, dwFlags));
+	sString.Append(m_pCode->Print(dwFlags));
 	
 	//	Done
 

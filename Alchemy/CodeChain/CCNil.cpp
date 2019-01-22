@@ -21,7 +21,7 @@ ICCItem *CCNil::Clone (CCodeChain *pCC)
 //	Returns a new item with a single ref-count
 
 	{
-	return Reference();
+	return this;
 	}
 
 void CCNil::DestroyItem (void)
