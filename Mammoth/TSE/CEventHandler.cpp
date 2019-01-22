@@ -74,7 +74,7 @@ ALERROR CEventHandler::AddEvent (const CString &sEvent, const CString &sCode, CS
 //	Adds an event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	ICCItemPtr pCode = Ctx.LinkCode(sCode);
 	if (pCode->IsError())

@@ -637,7 +637,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (m_pGetParameters)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(Ctx.GetUniverse());
 		ICCItemPtr pResult = CCCtx.RunCode(m_pGetParameters);
 		if (pResult->IsError())
 			{
@@ -974,7 +974,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	pHandler = pDesc->GetContentElementByTag(GET_PARAMETERS_TAG);
 	if (pHandler)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(Ctx.GetUniverse());
 		m_pGetParameters = CCCtx.LinkCode(pHandler->GetContentText(0));
 		if (m_pGetParameters->IsError())
 			{

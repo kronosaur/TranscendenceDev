@@ -5283,7 +5283,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 
 	//	Do not paint ships on the map unless we are the point of view
 
-	if (GetUniverse()->GetPOV() == this)
+	if (GetUniverse().GetPOV() == this)
 		{
 		if (m_fHasShipCompartments)
 			PaintMapShipCompartments(Dest, x, y, Ctx);
@@ -5304,7 +5304,7 @@ void CShip::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y)
 	else if (m_fKnown && m_fShowMapLabel)
 		{
 		CG32bitPixel rgbColor;
-		if (IsEnemy(GetUniverse()->GetPOV()))
+		if (IsEnemy(GetUniverse().GetPOV()))
 			rgbColor = CG32bitPixel(255, 0, 0);
 		else
 			rgbColor = CG32bitPixel(0, 192, 0);
@@ -7102,7 +7102,7 @@ void CShip::Refuel (const CItem &Fuel)
 	SEventHandlerDesc Event;
 	if (pFuelType->FindEventHandlerItemType(CItemType::evtOnRefuel, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Define parameters
 
@@ -7578,7 +7578,7 @@ void CShip::SetOrdersFromGenerator (SShipGeneratorCtx &Ctx)
 
 	if (Ctx.pOnCreate)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);

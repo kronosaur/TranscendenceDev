@@ -1895,7 +1895,7 @@ void CStationType::OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceOb
 
 	if (FindEventHandler(ON_CREATE_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetSystemCreateCtx(&CreateCtx);
 
 		Ctx.DefineContainingType(this);

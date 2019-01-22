@@ -61,7 +61,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(&m_DockScreen);
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);

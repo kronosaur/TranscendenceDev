@@ -2595,7 +2595,7 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 //	Returns the value of just the hull.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	SEventHandlerDesc Event;
 
 	//	If we're already inside the <GetHullValue> event, of if we don't have 

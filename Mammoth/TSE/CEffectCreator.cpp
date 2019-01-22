@@ -576,7 +576,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 	if (FindEventHandlerEffectType(evtGetParameters, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.SaveAndDefineDataVar(Ctx.GetData());
 

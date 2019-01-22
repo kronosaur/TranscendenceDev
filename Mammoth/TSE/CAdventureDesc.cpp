@@ -138,7 +138,7 @@ void CAdventureDesc::FireOnGameEnd (const CGameRecord &Game, const SBasicGameSta
 
 	if (FindEventHandler(ON_GAME_END_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Initialize variables
 
@@ -177,7 +177,7 @@ void CAdventureDesc::FireOnGameStart (void)
 
 	if (FindEventHandler(ON_GAME_START_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Run code
 

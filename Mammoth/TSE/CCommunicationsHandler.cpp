@@ -166,7 +166,7 @@ void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj,
 
 	//	Run
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	//	Define parameters
 

@@ -119,7 +119,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Output table
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(*g_pUniverse);
 	for (i = 0; i < Table.GetCount(); i++)
 		{
 		CShipClass *pClass = (CShipClass *)Table.GetValue(i);

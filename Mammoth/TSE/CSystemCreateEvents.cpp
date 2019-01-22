@@ -25,7 +25,7 @@ ALERROR CSystemCreateEvents::FireDeferredEvent (const CString &sEvent, CString *
 
 	{
 	int i;
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	for (i = 0; i < m_Events.GetCount(); i++)
 		{

@@ -113,7 +113,7 @@ void GenerateTypeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Output each row
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(*g_pUniverse);
 		for (i = 0; i < Table.GetCount(); i++)
 			{
 			CDesignType *pType = Table[i];

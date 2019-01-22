@@ -369,6 +369,7 @@ class CItem
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
 		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		CUniverse &GetUniverse (void) const;
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;

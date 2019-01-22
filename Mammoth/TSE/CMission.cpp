@@ -304,7 +304,7 @@ void CMission::FireCustomEvent (const CString &sEvent, ICCItem *pData)
 
 	if (FindEventHandler(sEvent, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventDoEvent);
 		Ctx.DefineContainingType(this);
@@ -329,7 +329,7 @@ void CMission::FireOnAccepted (void)
 
 	if (FindEventHandler(EVENT_ON_ACCEPTED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -355,7 +355,7 @@ ICCItem *CMission::FireOnDeclined (void)
 
 	if (FindEventHandler(EVENT_ON_DECLINED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -387,7 +387,7 @@ ICCItem *CMission::FireOnReward (ICCItem *pData)
 
 	if (FindEventHandler(EVENT_ON_REWARD, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -418,7 +418,7 @@ void CMission::FireOnSetPlayerTarget (const CString &sReason)
 
 	if (FindEventHandler(EVENT_ON_SET_PLAYER_TARGET, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -442,7 +442,7 @@ void CMission::FireOnStart (void)
 
 	if (FindEventHandler(EVENT_ON_STARTED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -465,7 +465,7 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 
 	if (FindEventHandler(EVENT_ON_COMPLETED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);

@@ -574,7 +574,7 @@ ALERROR CDesignCollection::CreateTemplateTypes (SDesignLoadCtx &Ctx)
 
 	//	Create an appropriate context for running code
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Loop over all active types looking for templates.
 	//	NOTE: We cannot use the type-specific arrays because they have not been

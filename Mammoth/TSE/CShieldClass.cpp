@@ -957,7 +957,7 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 		ASSERT(pSource);
 		ASSERT(pDevice);
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -988,7 +988,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(GetItemType());
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
@@ -1080,7 +1080,7 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDown, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);

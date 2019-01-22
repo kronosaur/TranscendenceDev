@@ -549,7 +549,7 @@ ALERROR CSpaceEnvironmentType::FireOnUpdate (CSpaceObject *pObj, CString *retsEr
 	SEventHandlerDesc Event;
 	if (FindEventHandler(ON_OBJ_UPDATE_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
 

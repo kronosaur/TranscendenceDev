@@ -417,7 +417,7 @@ void CCommandLineDisplay::OnKeyDown (int iVirtKey, DWORD dwKeyState)
 
 				InputEnter();
 
-				CCodeChainCtx Ctx;
+				CCodeChainCtx Ctx(GetUniverse());
 				ICCItemPtr pCode = Ctx.LinkCode(sInput);
 				ICCItemPtr pResult = Ctx.RunCode(pCode);
 

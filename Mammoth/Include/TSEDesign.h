@@ -213,6 +213,7 @@ class CDesignType
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
@@ -867,6 +868,7 @@ class CExtension
 		inline EExtensionTypes GetType (void) const { return m_iType; }
 		inline CString GetTypeName (void) const { return GetTypeName(GetType()); }
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		size_t GetXMLMemoryUsage (void) const;
 		inline bool HasIcon (void) const { CG32bitImage *pIcon = GetCoverImage(); return (pIcon && pIcon->GetWidth() > 0 && pIcon->GetHeight() > 0); }
@@ -1129,6 +1131,7 @@ class CDynamicDesignTable
 struct SDesignLoadCtx
 	{
 	inline DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
+	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 	//	Context
 	CDesignCollection *pDesign = NULL;		//	Design collection
@@ -1277,6 +1280,7 @@ class CDesignCollection
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
 		bool IsAdventureExtensionBound (DWORD dwUNID);
 		inline bool IsBindComplete (void) const { return !m_bInBindDesign; }

@@ -347,7 +347,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(sEvent, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(pSource->GetUniverse());
 		
 		//	Setup 
 
@@ -382,7 +382,7 @@ bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelect
 	if (!m_pType->FindEventHandler(EVENT_GET_DOCK_SCREEN, &Event))
 		return false;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pSource->GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.SaveAndDefineOverlayID(m_dwID);
@@ -407,7 +407,7 @@ void COverlay::FireOnCreate (CSpaceObject *pSource)
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(ON_CREATE_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(pSource->GetUniverse());
 		
 		//	Setup 
 
@@ -439,7 +439,7 @@ bool COverlay::FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(ON_DAMAGE_EVENT, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(pSource->GetUniverse());
 		
 		//	Setup 
 
@@ -486,7 +486,7 @@ void COverlay::FireOnDestroy (CSpaceObject *pSource)
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(ON_DESTROY_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(pSource->GetUniverse());
 
 		//	Setup 
 
@@ -518,7 +518,7 @@ void COverlay::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(ON_OBJ_DESTROYED_EVENT, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(pSource->GetUniverse());
 
 		//	Setup
 
@@ -556,7 +556,7 @@ void COverlay::FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) cons
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(EVENT_ON_OBJ_DOCKED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(pSource->GetUniverse());
 
 		Ctx.SetEvent(eventOverlayEvent);
 		Ctx.DefineContainingType(this);
@@ -582,7 +582,7 @@ void COverlay::FireOnUpdate (CSpaceObject *pSource)
 	SEventHandlerDesc Event;
 	if (m_pType->FindEventHandler(CDesignType::evtOnUpdate, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(pSource->GetUniverse());
 
 		//	Setup 
 

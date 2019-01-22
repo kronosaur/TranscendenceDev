@@ -313,7 +313,7 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				{
 				//	Link the code
 
-				CCodeChainCtx CCCtx;
+				CCodeChainCtx CCCtx(Ctx.GetUniverse());
 				ICCItemPtr pCode = CCCtx.LinkCode(pItem->GetContentText(0));
 
 				//	Nil means blank

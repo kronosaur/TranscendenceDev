@@ -248,7 +248,7 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		{
 		//	Setup arguments
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -318,6 +318,16 @@ int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 		return -1;
 
 	return (int)m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
+	}
+
+CUniverse &CDeviceClass::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
 	}
 
 ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)

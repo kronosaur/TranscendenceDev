@@ -2291,7 +2291,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 	if (m_pCode)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(Item.GetUniverse());
 
 		//	Save the previous value of gItem
 

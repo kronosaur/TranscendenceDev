@@ -140,7 +140,7 @@ void CItem::AccumulateCustomAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	if (!m_pItemType->FindEventHandlerItemType(CItemType::evtGetDisplayAttributes, &Event))
 		return;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	Ctx.SetItemType(GetType());
 	Ctx.DefineContainingType(m_pItemType);
@@ -464,7 +464,7 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(CAN_BE_INSTALLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -529,7 +529,7 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(CAN_BE_UNINSTALLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -567,7 +567,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 //	Triggers the given event.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	SEventHandlerDesc Event;
 	if (GetType()->FindEventHandler(sEvent, &Event))
@@ -614,7 +614,7 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_ADDED_AS_ENHANCEMENT_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -636,7 +636,7 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 //	if we avoid destruction.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	//	If we have code, call it.
 
@@ -676,7 +676,7 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_DISABLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -699,7 +699,7 @@ void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnDocked, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -724,7 +724,7 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnEnabled, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -747,7 +747,7 @@ void CItem::FireOnInstall (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnInstall, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -771,7 +771,7 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 
 	if (m_pItemType->FindEventHandler(CDesignType::evtOnObjDestroyed, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(pSource);
@@ -800,7 +800,7 @@ bool CItem::FireOnReactorOverload (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_REACTOR_OVERLOAD_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		bool bHandled = false;
 
 		Ctx.DefineContainingType(m_pItemType);
@@ -830,7 +830,7 @@ void CItem::FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &Item
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_REMOVED_AS_ENHANCEMENT_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -853,7 +853,7 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_UNINSTALL_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -904,7 +904,7 @@ CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetDescription, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetDescription);
 		Ctx.SetItemType(GetType());
@@ -1165,7 +1165,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
 			&& !(dwFlags & nounNoEvent))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetName);
 		Ctx.SetItemType(GetType());
@@ -1495,7 +1495,7 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 		SEventHandlerDesc Event;
 		if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetReferenceText, &Event))
 			{
-			CCodeChainCtx Ctx;
+			CCodeChainCtx Ctx(GetUniverse());
 
 			Ctx.SetEvent(eventGetReferenceText);
 			Ctx.SetItemType(GetType());
@@ -1641,7 +1641,7 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetTradePrice, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetTradePrice);
 		Ctx.SetItemType(GetType());
@@ -1660,6 +1660,16 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 		}
 	else
 		return GetValue(bActual);
+	}
+
+CUniverse &CItem::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
 	}
 
 int CItem::GetValue (bool bActual) const
@@ -1732,7 +1742,7 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(), CItemCtx(*this), Compare.GetProperty()));
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty()));
 		return Compare.Eval(pValue);
 		}
 	else
@@ -1891,7 +1901,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	if (Criteria.pFilter)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		//	Create a list representing this item
 

@@ -139,6 +139,8 @@ class CArtifactProgram
 			statusWiped,					//	Wiped from the core
 			};
 
+		CUniverse &GetUniverse (void) { return *g_pUniverse; }
+
 		EProgramTypes m_iType;
 		EProgramStatus m_iStatus;
 		int m_iTurnDeployed;			//	Turn on which it was deployed

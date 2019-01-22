@@ -150,7 +150,7 @@ void CObjectJoint::ApplyOptions (ICCItem *pOptions)
 //	limit2: { min:n max:n }
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	if (pOptions == NULL)
 		return;

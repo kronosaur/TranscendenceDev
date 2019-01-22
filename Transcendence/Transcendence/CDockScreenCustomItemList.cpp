@@ -22,7 +22,7 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(Ctx.pDockScreen);
 	CCCtx.SaveAndDefineSourceVar(Ctx.pLocation);
 	CCCtx.SaveAndDefineDataVar(Ctx.pData);

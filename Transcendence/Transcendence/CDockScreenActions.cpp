@@ -394,7 +394,7 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 //	Executes this block of code
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pScreen->GetUniverse());
 	Ctx.SetExtension(pExtension);
 	Ctx.SaveAndDefineDataVar(m_pData);
 	Ctx.DefineString(CONSTLIT("aActionID"), sID);

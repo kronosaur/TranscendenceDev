@@ -866,7 +866,7 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
@@ -895,7 +895,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -939,7 +939,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -983,7 +983,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -1028,7 +1028,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CItemListManipulator ItemList(Ctx.pObj->GetItemList());
 		CShip *pShip = Ctx.pObj->AsShip();
@@ -1159,7 +1159,7 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.Attacker.GetObj());
@@ -1193,7 +1193,7 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
@@ -1222,7 +1222,7 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);

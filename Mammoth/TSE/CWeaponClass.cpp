@@ -1739,7 +1739,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pSho
 	SEventHandlerDesc Event;
 	if (FindEventHandlerWeaponClass(evtGetAmmoToConsume, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		int iResult;
 	
 		Ctx.DefineContainingType(GetItemType());
@@ -1796,7 +1796,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 
 	retResult = SShotFireResult();
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
 
 	Ctx.DefineContainingType(GetItemType());

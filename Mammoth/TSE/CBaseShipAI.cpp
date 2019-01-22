@@ -160,7 +160,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 		if (m_pCommandCode)
 			{
-			CCodeChainCtx Ctx;
+			CCodeChainCtx Ctx(GetUniverse());
 			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 

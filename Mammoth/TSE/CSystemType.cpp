@@ -57,7 +57,7 @@ ALERROR CSystemType::FireOnCreate (SSystemCreateCtx &SysCreateCtx, CString *rets
 	SEventHandlerDesc Event;
 	if (FindEventHandler(ON_CREATE_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetSystemCreateCtx(&SysCreateCtx);
 
 		ICCItem *pResult = Ctx.Run(Event);
@@ -85,7 +85,7 @@ bool CSystemType::FireOnObjJumpPosAdj (CSpaceObject *pObj, CVector *iovPos)
 	SEventHandlerDesc Event;
 	if (FindEventHandlerSystemType(evtOnObjJumpPosAdj, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(pObj);
@@ -127,7 +127,7 @@ ALERROR CSystemType::FireSystemCreateCode (SSystemCreateCtx &SysCreateCtx, ICCIt
 //	Runs a bit of code at system create time.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetExtension(GetExtension());	//	This code always comes from the SystemType (never inherited).
 	Ctx.SetSystemCreateCtx(&SysCreateCtx);
 	Ctx.DefineOrbit(CONSTLIT("aOrbit"), OrbitDesc);

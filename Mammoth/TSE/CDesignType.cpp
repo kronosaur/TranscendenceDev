@@ -682,7 +682,7 @@ void CDesignType::FireCustomEvent (const CString &sEvent, ECodeChainEvents iEven
 //	Fires a custom event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	SEventHandlerDesc Event;
 	if (FindEventHandler(sEvent, &Event))
@@ -722,7 +722,7 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 
 	if (FindEventHandler(GET_CREATE_POS_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.DefineSpaceObject(CONSTLIT("aBaseObj"), pBase);
 		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
@@ -768,7 +768,7 @@ void CDesignType::FireGetGlobalAchievements (CGameStats &Stats)
 	SEventHandlerDesc Event;
 	if (FindEventHandler(GET_GLOBAL_ACHIEVEMENTS_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		//	Run code
@@ -818,7 +818,7 @@ bool CDesignType::FireGetGlobalDockScreen (const SEventHandlerDesc &Event, const
 	{
 	//	Set up
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pObj);
 
@@ -841,7 +841,7 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 //	Fires event to allow types to modify prices charged to the player.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	//	Set up
 
@@ -896,7 +896,7 @@ int CDesignType::FireGetGlobalResurrectPotential (void)
 	SEventHandlerDesc Event;
 	if (FindEventHandler(GET_GLOBAL_RESURRECT_POTENTIAL_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		//	Run code
 
@@ -919,7 +919,7 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 //	Fires a named event and optionally returns result
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	SEventHandlerDesc Event;
 	if (FindEventHandler(sEvent, &Event))
@@ -953,7 +953,7 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 //	Dock pane initialized
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineDataVar(pData);
 
@@ -988,7 +988,7 @@ void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.DefineString(CONSTLIT("aCommand"), sCommand);
 
@@ -1010,7 +1010,7 @@ void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Run code
@@ -1031,7 +1031,7 @@ void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, 
 //	Player bought an item
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Set up
@@ -1057,7 +1057,7 @@ void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CS
 //	Player sold an item
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Set up
@@ -1083,7 +1083,7 @@ void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
 //	Fires OnGlobalEndDiagnostics
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Run code
 
@@ -1101,7 +1101,7 @@ void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)
 //	Fires OnGlobalMarkImages
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Run code
 
@@ -1119,7 +1119,7 @@ void CDesignType::FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDes
 //	Fires OnGlobalObjDestroyed
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.DefineContainingType(this);
 
 	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
@@ -1145,7 +1145,7 @@ bool CDesignType::FireOnGlobalObjGateCheck (const SEventHandlerDesc &Event, CSpa
 //	Asks whether the type will allow the player to gate.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	Ctx.DefineSpaceObject(CONSTLIT("aObj"), pObj);
@@ -1178,7 +1178,7 @@ ALERROR CDesignType::FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CSt
 
 	if (FindEventHandler(ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		Ctx.DefineSpaceObject(CONSTLIT("aOldPlayerShip"), pOldShip);
@@ -1206,7 +1206,7 @@ ALERROR CDesignType::FireOnGlobalPlayerEnteredSystem (CString *retsError)
 
 	if (FindEventHandler(ON_GLOBAL_PLAYER_ENTERED_SYSTEM_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		//	Run code
@@ -1232,7 +1232,7 @@ ALERROR CDesignType::FireOnGlobalPlayerLeftSystem (CString *retsError)
 
 	if (FindEventHandler(ON_GLOBAL_PLAYER_LEFT_SYSTEM_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		//	Run code
@@ -1258,7 +1258,7 @@ ALERROR CDesignType::FireOnGlobalResurrect (CString *retsError)
 
 	if (FindEventHandler(ON_GLOBAL_RESURRECT_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		//	Run code
@@ -1280,7 +1280,7 @@ void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
 //	Fires OnGlobalStartDiagnostics
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Run code
 
@@ -1298,7 +1298,7 @@ void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
 //	Fires OnGlobalSystemDiagnostics
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Run code
 
@@ -1320,7 +1320,7 @@ ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, 
 
 	if (FindEventHandler(ON_GLOBAL_SYSTEM_CREATED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SetSystemCreateCtx(&SysCreateCtx);
 
@@ -1343,7 +1343,7 @@ void CDesignType::FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWO
 //	System has started
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.DefineContainingType(this);
 	CCCtx.DefineInteger(CONSTLIT("aElapsedTime"), dwElapsedTime);
 
@@ -1363,7 +1363,7 @@ void CDesignType::FireOnGlobalSystemStopped (const SEventHandlerDesc &Event)
 //	System has stopped
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.DefineContainingType(this);
 
 	//	Run code
@@ -1386,7 +1386,7 @@ ALERROR CDesignType::FireOnGlobalTopologyCreated (CString *retsError)
 
 	if (FindEventHandler(ON_GLOBAL_TOPOLOGY_CREATED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 
 		//	Run code
@@ -1412,7 +1412,7 @@ ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 
 	if (FindEventHandler(evtOnGlobalTypesInit, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
 		CCCtx.SetEvent(eventOnGlobalTypesInit);
 
@@ -1436,7 +1436,7 @@ ALERROR CDesignType::FireOnGlobalUniverseCreated (const SEventHandlerDesc &Event
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Run code
@@ -1458,7 +1458,7 @@ ALERROR CDesignType::FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event)
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	if (g_pUniverse->InResurrectMode())
@@ -1485,7 +1485,7 @@ ALERROR CDesignType::FireOnGlobalUniverseSave (const SEventHandlerDesc &Event)
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Run code
@@ -1507,7 +1507,7 @@ void CDesignType::FireOnGlobalUpdate (const SEventHandlerDesc &Event)
 //	Fire event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 
 	//	Run code
@@ -1532,7 +1532,7 @@ void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
 
 	if (FindEventHandler(ON_RANDOM_ENCOUNTER_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(pObj);
 
@@ -1789,7 +1789,7 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
 	if (pItem == NULL || pItem->IsNil())
@@ -1808,7 +1808,7 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 
 	{
 	CCodeChain &CC = g_pUniverse->GetCC();
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	ICCItem *pItem = GetProperty(Ctx, sProperty);
 	if (pItem == NULL || pItem->IsNil())
@@ -2201,7 +2201,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetProperty(CCodeChainCtx(), Compare.GetProperty()));
+		ICCItemPtr pValue = ICCItemPtr(GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty()));
 		return Compare.Eval(pValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))
@@ -2747,7 +2747,7 @@ bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICC
 	ICCItemPtr pValue = GetStaticData(CONSTLIT("Language"));
 	if (!pValue->IsNil())
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		for (i = 0; i < pValue->GetCount(); i++)
 			{

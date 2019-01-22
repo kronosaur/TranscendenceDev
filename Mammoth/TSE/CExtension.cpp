@@ -874,7 +874,7 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 	DEBUG_TRY
 
 	int i;
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Add a hook so that all lambda expressions defined in this global block
 	//	are wrapped with something that sets the extension UNID to the context.
@@ -1386,7 +1386,7 @@ ALERROR CExtension::LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 //	Loads <Globals>
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Parse the code and keep it
 

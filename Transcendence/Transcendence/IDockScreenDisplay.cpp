@@ -220,7 +220,7 @@ bool IDockScreenDisplay::EvalBool (const CString &sCode, bool *retbResult, CStri
 //	Evaluates the given string
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -254,7 +254,7 @@ CSpaceObject *IDockScreenDisplay::EvalListSource (const CString &sString, CStrin
 
 	if (*pPos == '=')
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
@@ -300,7 +300,7 @@ bool IDockScreenDisplay::EvalString (const CString &sString, bool bPlain, ECodeC
 //	Evaluates the given string.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);

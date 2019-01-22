@@ -821,7 +821,7 @@ bool CDockScreen::EvalBool (const CString &sCode)
 //	Evaluates the given CodeChain code.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(this);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -867,7 +867,7 @@ CString CDockScreen::EvalInitialPane (CSpaceObject *pSource, ICCItem *pData)
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -898,7 +898,7 @@ bool CDockScreen::EvalString (const CString &sString, ICCItem *pData, bool bPlai
 //	Returns TRUE if successful. Otherwise, retsResult is an error.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(this);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
@@ -950,7 +950,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -1477,7 +1477,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	CXMLElement *pOnUpdate = m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG);
 	if (pOnUpdate)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		ICCItemPtr pCode = Ctx.LinkCode(pOnUpdate->GetContentText(0));
 		if (pCode->IsError())
 			{
@@ -1617,7 +1617,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1658,7 +1658,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1700,7 +1700,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1743,7 +1743,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -2075,7 +2075,7 @@ void CDockScreen::Update (int iTick)
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);

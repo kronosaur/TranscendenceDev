@@ -28,7 +28,7 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
 
     CItem WeaponItem(pWeaponItem, 1);
     CItemCtx Ctx(WeaponItem);
-    CCodeChainCtx TLispCtx;
+    CCodeChainCtx TLispCtx(*g_pUniverse);
 
     Metric rDamage180 = WeaponItem.GetItemPropertyDouble(TLispCtx, Ctx, PROPERTY_DAMAGE);
     DamageTypes iDamageType = (DamageTypes)WeaponItem.GetItemPropertyInteger(TLispCtx, Ctx, PROPERTY_DAMAGE_TYPE);

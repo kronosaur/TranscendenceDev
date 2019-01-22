@@ -56,7 +56,7 @@ bool CMissionType::FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) co
 
 	//	Fire the event
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineDataVar(pCreateData);
 	Ctx.DefineSpaceObject(CONSTLIT("aOwnerObj"), pOwner);

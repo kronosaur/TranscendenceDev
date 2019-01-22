@@ -1636,7 +1636,7 @@ int CArmorClass::FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const
 		{
 		//	Setup arguments
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -1670,7 +1670,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
@@ -2291,6 +2291,16 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
     return STD_STATS[iLevel - 1];
     }
 
+CUniverse &CArmorClass::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
+	}
+
 bool CArmorClass::IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const
 
 //	IsImmune
@@ -2504,7 +2514,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 //	is added to the currently calculated power.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(m_pItemType);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.SaveAndDefineItemVar(*pArmor->GetItem());

@@ -1125,7 +1125,7 @@ void CSovereign::Update (int iTick, CSystem *pSystem)
 	if (FindEventHandler(evtOnUpdate, &Event)
 			&& (((DWORD)iTick + GetUNID()) % OBJECT_ON_UPDATE_CYCLE) == 0)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Setup 
 

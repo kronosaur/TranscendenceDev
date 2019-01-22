@@ -446,7 +446,7 @@ IDockScreenDisplay::EResults CDockScreenList::OnResetList (CSpaceObject *pLocati
 		//	getting called here. So we need to always set up the same environment
 		//	that the filter code expects.
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(&m_DockScreen);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);

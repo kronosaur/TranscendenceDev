@@ -68,7 +68,7 @@ void CPower::Invoke (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 	if (!FindEventHandler(evtCode, &Event))
 		return;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
@@ -92,7 +92,7 @@ void CPower::InvokeByPlayer (CSpaceObject *pSource, CSpaceObject *pTarget, CStri
 	{
 	if (retsError) *retsError = NULL_STR;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
@@ -142,7 +142,7 @@ void CPower::InvokeByNonPlayer(CSpaceObject *pSource, CSpaceObject *pTarget, CSt
 	{
 	if (retsError) *retsError = NULL_STR;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);
@@ -284,7 +284,7 @@ bool CPower::OnDestroyCheck (CSpaceObject *pSource, DestructionTypes iCause, con
 
 	//	Set up parameters
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(STR_A_DESTROYER, Attacker.GetObj());
@@ -325,7 +325,7 @@ bool CPower::OnShow (CSpaceObject *pSource, CSpaceObject *pTarget, CString *rets
 
 	//	Set up parameters
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.DefineSpaceObject(CONSTLIT("gTarget"), pTarget);

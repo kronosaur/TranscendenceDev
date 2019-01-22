@@ -3134,7 +3134,7 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 		//	Figure out the color
 
 		CG32bitPixel rgbColor;
-		if (IsEnemy(GetUniverse()->GetPOV()))
+		if (IsEnemy(GetUniverse().GetPOV()))
 			rgbColor = CG32bitPixel(255, 0, 0);
 		else
 			rgbColor = CG32bitPixel(0, 192, 0);

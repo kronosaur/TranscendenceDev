@@ -60,7 +60,7 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	else if (!sCommand.IsBlank() && !strEquals(sCommand, CONSTLIT("True")))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(*g_pUniverse);
 		ICCItemPtr pCode = Ctx.LinkCode(sCommand);
 		ICCItemPtr pResult = Ctx.RunCode(pCode);
 
@@ -125,7 +125,7 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 			else
 				{
-				CCodeChainCtx Ctx;
+				CCodeChainCtx Ctx(*g_pUniverse);
 				ICCItemPtr pCode = Ctx.LinkCode(sCommand);
 				ICCItemPtr pResult = Ctx.RunCode(pCode);
 
@@ -147,7 +147,7 @@ void RunFile (const CString &sFilespec, bool bNoLogo)
 	{
 	ALERROR error;
 	CCodeChain &CC = g_pUniverse->GetCC();
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	//	Verify the file
 
