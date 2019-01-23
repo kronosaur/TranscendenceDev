@@ -73,9 +73,9 @@ static CurrencyValue MAX_BALANCE_CREDITS[MAX_SYSTEM_LEVEL + 1] =
 		            0,
 
 		       10'000,		//	Level 1
-		       25'000,
-		       25'000,
-		       50'000,
+		       20'000,
+		       30'000,
+		       40'000,
 		       50'000,
 
 		      100'000,		//	Level 6
