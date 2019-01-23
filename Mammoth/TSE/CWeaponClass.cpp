@@ -14,6 +14,7 @@
 #define ALTERNATING_ATTRIB						CONSTLIT("alternating")
 #define AMMO_ID_ATTRIB							CONSTLIT("ammoID")
 #define ANGLE_ATTRIB							CONSTLIT("angle")
+#define BURST_TRACKS_TARGETS_ATTRIB				CONSTLIT("burstTracksTargets")
 #define CHARGES_ATTRIB							CONSTLIT("charges")
 #define CONFIGURATION_ATTRIB					CONSTLIT("configuration")
 #define CONTINUOUS_CONSUME_PERSHOT_ATTRIB		CONSTLIT("consumeAmmoPerRepeatingShot")
@@ -272,6 +273,12 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	//	Fire the weapon
 
 	bool bSuccess = FireWeapon(pDevice, pShot, pSource, pTarget, 0, &bSourceDestroyed, retbConsumedItems);
+
+	//  Store the target object if we need to
+	if (m_bBurstTracksTargets)
+		{
+		pDevice->SetLastTarget(pTarget);
+		}
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -1416,6 +1423,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bTargetStationsOnly = pDesc->GetAttributeBool(TARGET_STATIONS_ONLY_ATTRIB);
 	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
 	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0);
+	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 
 
 	//	Configuration
@@ -1948,10 +1956,15 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	int iFireAngle = pDevice->GetFireAngle();
 
 	//	If the fire angle is -1 then we need to calc it ourselves
+	//  If we need to recalculate for all shots in a repeating burst,
+	//  then do so (since the AI only sets firing angle on first shot in burst).
 
-	if (iFireAngle == -1)
+	if (iFireAngle == -1 || (iRepeatingCount != 0 && m_bBurstTracksTargets))
 		{
 		bool bOutOfArc;
+		CSpaceObject *pStoredTarget = pDevice->GetLastTarget();
+		if (iRepeatingCount != 0 && m_bBurstTracksTargets && pTarget == NULL && pStoredTarget != NULL)
+			pTarget = pStoredTarget;
 		iFireAngle = CalcFireAngle(ItemCtx, rSpeed, pTarget, &bOutOfArc);
 		}
 
