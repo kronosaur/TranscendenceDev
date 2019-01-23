@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define CHECK_LINE_OF_FIRE_ATTRIB				CONSTLIT("checkLineOfFire")
 #define RECHARGE_TIME_ATTRIB					CONSTLIT("rechargeTime")
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define INTERCEPT_RANGE_ATTRIB					CONSTLIT("interceptRange")
@@ -91,7 +92,7 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						&& pObj->GetCategory() == CSpaceObject::catMissile
 						&& !pObj->GetDamageSource().IsEqual(pSource)
 						&& !pObj->IsIntangible()
-						&& pSource->IsEnemy(pObj->GetDamageSource())
+						&& pSource->IsAngryAt(pObj->GetDamageSource())
 						&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
 							isOmniDirectional))
 					{
@@ -318,6 +319,34 @@ bool CAutoDefenseClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo
 		return false;
 	}
 
+Metric CAutoDefenseClass::GetShotSpeed (CItemCtx &Ctx) const
+
+//	GetShotSpeed
+//
+//	Returns the speed of the shot.
+
+	{
+	CDeviceClass *pWeapon = GetWeapon();
+	if (pWeapon == NULL)
+		return 0.0;
+
+	return pWeapon->GetShotSpeed(Ctx);
+	}
+
+bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
+
+//	IsAreaWeapon
+//
+//	Returns TRUE if this is an area weapon.
+
+	{
+	CDeviceClass *pWeapon = GetWeapon();
+	if (pWeapon == NULL)
+		return false;
+
+	return pWeapon->IsAreaWeapon(pSource, pDevice);
+	}
+
 void CAutoDefenseClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 //	OnAddTypesUsed
@@ -440,7 +469,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 	DEBUG_TRY
 
 	CDeviceClass *pWeapon = GetWeapon();
-	if (pWeapon == NULL)
+	if (pWeapon == NULL || pDevice == NULL || pSource == NULL)
 		return;
 
 	//	Update the weapon
@@ -461,6 +490,11 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 			|| pSource->GetCondition(CConditionSet::cndDisarmed))
 		return;
 
+	//	If we're docked with a station, then we do not fire.
+
+	if (m_bCheckLineOfFire && pSource->GetDockedObj())
+		return;
+
 	//	Look for a target; if none, then skip.
 
 	CSpaceObject *pTarget = FindTarget(pDevice, pSource);
@@ -470,24 +504,30 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 	//	Shoot at target
 
 	int iFireAngle = pWeapon->CalcFireSolution(pDevice, pSource, pTarget);
-	if (iFireAngle != -1)
-		{
-		//	Since we're using this as a target, set the destroy notify flag
-		//	(Normally beams don't notify, so we need to override this).
+	if (iFireAngle == -1)
+		return;
 
-		pTarget->SetDestructionNotify();
+	//	If friendlies are in the way, don't shoot
 
-		//	Fire
+	if (m_bCheckLineOfFire
+			&& !pSource->IsLineOfFireClear(pDevice, pTarget, iFireAngle, pSource->GetDistance(pTarget)))
+		return;
 
-		pDevice->SetFireAngle(iFireAngle);
-		pWeapon->Activate(pDevice, pSource, pTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
-		pDevice->SetTimeUntilReady(m_iRechargeTicks);
+	//	Since we're using this as a target, set the destroy notify flag
+	//	(Normally beams don't notify, so we need to override this).
 
-		//	Identify
+	pTarget->SetDestructionNotify();
 
-		if (pSource->IsPlayer())
-			GetItemType()->SetKnown();
-		}
+	//	Fire
+
+	pDevice->SetFireAngle(iFireAngle);
+	pWeapon->Activate(pDevice, pSource, pTarget, &Ctx.bSourceDestroyed, &Ctx.bConsumedItems);
+	pDevice->SetTimeUntilReady(m_iRechargeTicks);
+
+	//	Identify
+
+	if (pSource->IsPlayer())
+		GetItemType()->SetKnown();
 
 	DEBUG_CATCH
 	}
@@ -560,6 +600,10 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
 	int iInterceptRange = pDesc->GetAttributeIntegerBounded(INTERCEPT_RANGE_ATTRIB, 0, -1, DEFAULT_INTERCEPT_RANGE);
 	pDevice->m_rInterceptRange = (Metric)(iInterceptRange * LIGHT_SECOND);
+
+	//	Options
+
+	pDevice->m_bCheckLineOfFire = pDesc->GetAttributeBool(CHECK_LINE_OF_FIRE_ATTRIB);
 
 	//	Done
 

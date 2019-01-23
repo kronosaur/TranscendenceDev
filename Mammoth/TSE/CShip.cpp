@@ -3877,9 +3877,6 @@ bool CShip::IsAngryAt (CSpaceObject *pObj) const
 //	Returns true if the ship is angry at the given object
 
 	{
-	if (IsEnemy(pObj))
-		return true;
-
 	return m_pController->IsAngryAt(pObj);
 	}
 

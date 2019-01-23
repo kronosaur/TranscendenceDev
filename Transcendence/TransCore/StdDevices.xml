@@ -347,6 +347,8 @@
 				target=			"missiles"
 				weapon=			"&vtICXLaserCannon;"
 				fireRate=		"15"
+
+				checkLineOfFire="true"
 				/>
 	</ItemType>
 
@@ -738,6 +740,8 @@
 				weapon=			"&vtLongreachI;"
 				interceptRange=	"15"
 				fireRate=		"15"
+
+				checkLineOfFire="true"
 				/>
 
 	</ItemType>

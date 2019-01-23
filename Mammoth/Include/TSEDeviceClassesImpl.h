@@ -17,8 +17,10 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override;
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatMiscDevice; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
+		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
+		virtual bool IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
@@ -30,6 +32,8 @@ class CAutoDefenseClass : public CDeviceClass
 	private:
 		enum TargetingSystemTypes
 			{
+			trgNone,
+
 			trgMissiles,				//	Target nearest missile
 			trgCriteria,				//	Target nearest object that matches criteria
 			trgFunction,				//	Target computed by a function
@@ -42,14 +46,16 @@ class CAutoDefenseClass : public CDeviceClass
 		bool IsOmniDirectional (CInstalledDevice *pDevice);
 		CSpaceObject *FindTarget (CInstalledDevice *pDevice, CSpaceObject *pSource);
 
-		TargetingSystemTypes m_iTargeting;
+		TargetingSystemTypes m_iTargeting = trgNone;
 		CSpaceObjectCriteria m_TargetCriteria;
-		Metric m_rInterceptRange;
+		Metric m_rInterceptRange = 0.0;
+		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
 
-		bool m_bOmnidirectional;				//	Omnidirectional
-		int m_iMinFireArc;						//	Min angle of fire arc (degrees)
-		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
-		int m_iRechargeTicks;
+		bool m_bOmnidirectional = false;		//	Omnidirectional
+		int m_iMinFireArc = 0;					//	Min angle of fire arc (degrees)
+		int m_iMaxFireArc = 0;					//	Max angle of fire arc (degrees)
+		int m_iRechargeTicks = 0;
+
 		CDeviceClassRef m_pWeapon;
 	};
 

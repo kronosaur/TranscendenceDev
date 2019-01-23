@@ -958,6 +958,25 @@ void CPlayerShipController::InsuranceClaim (void)
 		}
 	}
 
+bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
+
+//	IsAngryAt
+//
+//	Returns TRUE if we are angry at the given object.
+
+	{
+	//	We're always angry at enemies
+
+	if (m_pShip->IsEnemy(pObj))
+		return true;
+
+	//	If the object is angry at us, we reciprocate.
+	//	NOTE: If pObj == m_pShip then we could recurse infinitely, so we check
+	//	it explicitly.
+
+	return (pObj != m_pShip && pObj->IsAngryAt(m_pShip));
+	}
+
 void CPlayerShipController::OnAbilityChanged (Abilities iAbility, AbilityModifications iChange, bool bNoMessage)
 
 //	OnAbilityChanged

@@ -5309,6 +5309,24 @@ bool CSpaceObject::InteractsWith (int iInteraction) const
 	return (iInteraction > 0 && mathRandom(1, 100) <= iInteraction);
 	}
 
+bool CSpaceObject::IsAngryAt (const CDamageSource &Obj) const
+
+//	IsAngryAt
+//
+//	Returns TRUE if we're angry at the given objet
+
+	{
+	//	If we have a real object, then we can ask about it.
+
+	CSpaceObject *pObj = Obj.GetObj();
+	if (pObj)
+		return IsAngryAt(pObj);
+
+	//	Otherwise we just go by the sovereign relationship.
+
+	return IsEnemy(Obj);
+	}
+
 bool CSpaceObject::IsEnemyInRange (Metric rMaxRange, bool bIncludeStations)
 
 //	IsEnemyInRange

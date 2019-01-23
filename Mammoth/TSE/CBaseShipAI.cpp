@@ -917,6 +917,11 @@ bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
 //	Returns TRUE if we're angry at the given object
 
 	{
+	//	We're always angry at enemies
+
+	if (m_pShip->IsEnemy(pObj))
+		return true;
+
 	//	If we're attacking the object, then we're angry at it.
 
 	if (GetTarget(CItemCtx()) == pObj)

@@ -15,6 +15,7 @@
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
+const int MIN_MISSILE_INTERACTION =				10;
 
 static CObjectClass<CMissile>g_Class(OBJID_CMISSILE, NULL);
 
@@ -496,7 +497,7 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	{
 	//	We count as a beam if we're type="beam"
 
-	return (m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam ? catBeam : catMissile);
+	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
 int CMissile::GetManeuverRate (void) const
@@ -596,6 +597,9 @@ bool CMissile::IsAngryAt (CSpaceObject *pObj) const
 		return false;
 
 	//	If this object is angry at the player, then we are angry at it.
+	//
+	//	NOTE: We exit above if pSource == pObj, otherwise we might recurse
+	//	infinitely below.
 
 	if (pObj->IsAngryAt(pSource))
 		return true;

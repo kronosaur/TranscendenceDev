@@ -493,7 +493,7 @@ class CMissile : public CSpaceObject
 		//	CSpaceObject virtuals
 
 		virtual CMissile *AsMissile (void) override { return this; }
-		virtual bool CanThrust (void) const { return (m_pDesc->GetManeuverRate() > 0); }
+		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
 		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
@@ -518,7 +518,7 @@ class CMissile : public CSpaceObject
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
-		virtual bool IsIntangible (void) const { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
+		virtual bool IsIntangible (void) const override { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
@@ -592,7 +592,7 @@ class CParticleDamage : public CSpaceObject
 
 		//	CSpaceObject virtuals
 
-		virtual bool CanThrust (void) const { return (m_pDesc->GetManeuverRate() > 0); }
+		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
@@ -603,6 +603,8 @@ class CParticleDamage : public CSpaceObject
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
+		virtual bool IsInactive (void) const override { return (m_fPainterFade ? true : false); }
+		virtual bool IsIntangible (void) const override { return ((m_fPainterFade || IsDestroyed()) ? true : false); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual bool PointInObject (const CVector &vObjPos, const CVector &vPointPos) const override;
 
@@ -1157,7 +1159,7 @@ class CShip : public CSpaceObject
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0); }
-		virtual bool IsIntangible (void) const { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
+		virtual bool IsIntangible (void) const override { return (m_fManualSuspended || m_iExitGateTimer > 0 || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsPlayer (void) const override;
@@ -1514,7 +1516,7 @@ class CStation : public CSpaceObject
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanAttack(); }
-		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
+		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
