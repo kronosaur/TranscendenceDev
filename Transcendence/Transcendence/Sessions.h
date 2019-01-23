@@ -399,7 +399,7 @@ class CLoginSession : public IHISession
 class CLoadGameSession : public IHISession
 	{
 	public:
-		CLoadGameSession (CHumanInterface &HI, CCloudService &Service, const TArray<CString> &Folders, bool m_bFilterPermadeath);
+		CLoadGameSession (CHumanInterface &HI, CCloudService &Service, const TArray<CString> &Folders, CGameSettings &Settings);
 
 		//	IHISession virtuals
 		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override;
@@ -415,8 +415,8 @@ class CLoadGameSession : public IHISession
 		void CmdReadComplete (CListSaveFilesTask *pTask);
 
 		CCloudService &m_Service;
+		CGameSettings &m_Settings;
 		TArray<CString> m_Folders;
-		bool m_bFilterPermadeath;
 	};
 
 class CModExchangeSession : public IHISession

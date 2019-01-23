@@ -93,6 +93,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		//	Debug options
 		{	"debugMode",				optionBoolean,	"false",	0	},
 		{	"debugGame",				optionBoolean,	"false",	0	},
+		{	"debugSaveFiles",			optionBoolean,	"false",	0	},
 		{	"noDebugLog",				optionBoolean,	"false",	0	},
 		{	"debugVideo",				optionBoolean,	"false",	0	},
 		{	"noCrashPost",				optionBoolean,	"false",	0	},
@@ -117,6 +118,7 @@ SCommandLineData g_CommandLineData[] =
 		{	"debug",				CGameSettings::debugGame,			0 },
 		{	"nolog",				CGameSettings::noDebugLog,			0 },
 		{	"debugVideo",			CGameSettings::debugVideo,			0 },
+		{	"debugSaveFiles",		CGameSettings::debugSaveFiles,		0 },
 		{	"debugSoundtrack",		CGameSettings::debugSoundtrack,		0 },
 	};
 

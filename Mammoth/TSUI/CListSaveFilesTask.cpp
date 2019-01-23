@@ -5,8 +5,6 @@
 
 #include "stdafx.h"
 
-#define DEBUG_LIST
-
 #define ALIGN_CENTER							CONSTLIT("center")
 #define ALIGN_RIGHT								CONSTLIT("right")
 
@@ -54,12 +52,9 @@ const int ICON_RADIUS =							6;
 const int SELECTION_BORDER_WIDTH =				1;
 const int SELECTION_CORNER_RADIUS =				8;
 
-CListSaveFilesTask::CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, bool bFilterPermadeath, int cxWidth) : IHITask(HI),
+CListSaveFilesTask::CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const SOptions &Options) : IHITask(HI),
 		m_Folders(Folders),
-		m_sUsername(sUsername),
-		m_bFilterPermadeath(bFilterPermadeath),
-		m_cxWidth(cxWidth),
-		m_pList(NULL)
+		m_Options(Options)
 
 //	CListSaveFilesTask constructor
 
@@ -89,7 +84,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	int x = 0;
 	int y = 0;
 	int xText = x + ADVENTURE_ICON_WIDTH + ICON_SPACING_HORZ;
-	int cxText = m_cxWidth - (ADVENTURE_ICON_WIDTH + 2 * ICON_SPACING_HORZ + SHIP_IMAGE_WIDTH);
+	int cxText = m_Options.cxWidth - (ADVENTURE_ICON_WIDTH + 2 * ICON_SPACING_HORZ + SHIP_IMAGE_WIDTH);
 
 	//	Start with a sequencer
 
@@ -98,7 +93,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Add the character name and current star system
 
-	bool bPermadeath = m_bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//	We still show the Permadeath label if we don't force it
+	bool bPermadeath = m_Options.bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//	We still show the Permadeath label if we don't force it
 	CString sHeading;
 	
 	sHeading = strPatternSubst(CONSTLIT("%s — %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
@@ -138,7 +133,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 		Info.Insert(strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName()));
 	else if (GameFile.IsGameResurrect())
 		{
-		if(m_bFilterPermadeath)
+		if(m_Options.bFilterPermadeath)
 			Info.Insert(strPatternSubst(CONSTLIT("Died in the %s System"), GameFile.GetSystemName()));
 		else
 			Info.Insert(strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR));
@@ -219,7 +214,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 		//	Position
 
-		int xImage = x + m_cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - cxIcon) / 2;
+		int xImage = x + m_Options.cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - cxIcon) / 2;
 		int yImage = (SHIP_IMAGE_HEIGHT - cxIcon) / 2;
 
 		//	New image frame
@@ -293,9 +288,8 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 	bool bAtLeastOneFolder = false;
 	for (i = 0; i < m_Folders.GetCount(); i++)
 		{
-#ifdef DEBUG_LIST
-		::kernelDebugLogPattern("Folder: %s", m_Folders[i]);
-#endif
+		if (m_Options.bDebugSaveFiles)
+			::kernelDebugLogPattern("Folder: %s", m_Folders[i]);
 
 		if (!fileGetFileList(m_Folders[i], NULL_STR, CONSTLIT("*.sav"), 0, &SaveFiles))
 			::kernelDebugLogPattern("Unable to read from save file folder: %s", m_Folders[i]);
@@ -336,56 +330,43 @@ ALERROR CListSaveFilesTask::OnExecute (ITaskProcessor *pProcessor, CString *rets
 		//	Ignore files that we can't open
 
 		if (GameFile.Open(sFilename, CGameFile::FLAG_NO_UPGRADE) != NOERROR)
-#ifdef DEBUG_LIST
 			{
-			::kernelDebugLogPattern("ERROR: Can't open: %s", sFilename);
+			if (m_Options.bDebugSaveFiles)
+				::kernelDebugLogPattern("ERROR: Can't open: %s", sFilename);
 			continue;
 			}
-#else
-			continue;
-#endif
 
 		//	If the universe is not valid, then this is not a proper save file
 		//	(this can happen in the first system).
 
 		if (!GameFile.IsUniverseValid())
-#ifdef DEBUG_LIST
 			{
-			::kernelDebugLogPattern("ERROR: Save file invalid: %s", sFilename);
+			if (m_Options.bDebugSaveFiles)
+				::kernelDebugLogPattern("ERROR: Save file invalid: %s", sFilename);
 			continue;
 			}
-#else
-			continue;
-#endif
 
 		//	If we're signed in, then we only show games for the given user
 		//	(or unregistered games).
 
-		if (GameFile.IsRegistered() && !strEquals(GameFile.GetUsername(), m_sUsername))
-#ifdef DEBUG_LIST
+		if (GameFile.IsRegistered() && !strEquals(GameFile.GetUsername(), m_Options.sUsername))
 			{
-			::kernelDebugLogPattern("ERROR: Registered to %s [%s signed in]: %s", GameFile.GetUsername(), m_sUsername, sFilename);
+			if (m_Options.bDebugSaveFiles)
+				::kernelDebugLogPattern("ERROR: Registered to %s [%s signed in]: %s", GameFile.GetUsername(), m_Options.sUsername, sFilename);
 			continue;
 			}
-#else
-			continue;
-#endif
 
 		//	If we're filtering permadeath, then we only show permadeath games
 
-		if (m_bFilterPermadeath && GameFile.GetResurrectCount() > 0)
-#ifdef DEBUG_LIST
+		if (m_Options.bFilterPermadeath && GameFile.GetResurrectCount() > 0)
 			{
-			::kernelDebugLogPattern("ERROR: Excluding permadeath games: %s", sFilename);
+			if (m_Options.bDebugSaveFiles)
+				::kernelDebugLogPattern("ERROR: Excluding permadeath games: %s", sFilename);
 			continue;
 			}
-#else
-			continue;
-#endif
 
-#ifdef DEBUG_LIST
-		::kernelDebugLogPattern("Save File: %s", sFilename);
-#endif
+		if (m_Options.bDebugSaveFiles)
+			::kernelDebugLogPattern("Save File: %s", sFilename);
 
 		//	Generate a record for the file
 

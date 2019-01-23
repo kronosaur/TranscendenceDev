@@ -75,7 +75,17 @@ class CListCollectionTask : public IHITask
 class CListSaveFilesTask : public IHITask
 	{
 	public:
-		CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const CString &sUsername, bool bFilterPermadeath, int cxWidth);
+		static constexpr int DEFAULT_WIDTH = 720;
+
+		struct SOptions
+			{
+			CString sUsername;					//	Sign-in player
+			int cxWidth = DEFAULT_WIDTH;		//	Width of area
+			bool bFilterPermadeath = false;		//	Don't show non-permadeath games
+			bool bDebugSaveFiles = false;		//	Add debug info
+			};
+
+		CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const SOptions &Options = SOptions());
 		~CListSaveFilesTask (void);
 
 		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
@@ -87,11 +97,9 @@ class CListSaveFilesTask : public IHITask
 		void CreateFileEntry (CGameFile &GameFile, const CTimeDate &ModifiedTime, int yStart, IAnimatron **retpEntry, int *retcyHeight);
 
 		TArray<CString> m_Folders;
-		CString m_sUsername;
-		bool m_bFilterPermadeath;
-		int m_cxWidth;
+		SOptions m_Options;
 
-		CAniListBox *m_pList;
+		CAniListBox *m_pList = NULL;
 	};
 
 class CReadProfileTask : public IHITask

@@ -238,6 +238,7 @@ class CGameSettings
 			//	Debug options
 			debugMode,						//	Program in debug mode
 			debugGame,						//	Game instance in debug mode
+			debugSaveFiles,					//	Adds debug info to game load screen
 			noDebugLog,						//	Do not write out a debug log
 			debugVideo,						//	Write out video information
 			noCrashPost,					//	Do not post crash log to Multiverse
@@ -247,7 +248,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 41,
+			OPTIONS_COUNT = 42,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }
