@@ -480,6 +480,7 @@ class CInstalledDevice
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		inline const CString &GetID (void) const { return m_sID; }
 		inline CItem *GetItem (void) const { return m_pItem; }
+		inline CSpaceObject *GetLastTarget(void) const { return m_pLastTarget; }
 		DWORD GetLinkedFireOptions (void) const;
         inline int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		inline int GetMinFireArc (void) const { return m_iMinFireArc; }
@@ -521,6 +522,7 @@ class CInstalledDevice
 		inline void SetFireArc (int iMinFireArc, int iMaxFireArc) { m_iMinFireArc = iMinFireArc; m_iMaxFireArc = iMaxFireArc; }
 		inline void SetID (const CString &sID) { m_sID = sID; }
 		inline void SetLastActivateSuccessful (bool bSuccessful) { m_fLastActivateSuccessful = bSuccessful; }
+		inline void SetLastTarget(CSpaceObject *pTarget) { m_pLastTarget = pTarget; }
 		void SetLinkedFireOptions (DWORD dwOptions);
 		inline void SetOmniDirectional (bool bOmnidirectional = true) { m_fOmniDirectional = bOmnidirectional; }
 		inline void SetOptimized (bool bOptimized) { m_fOptimized = bOptimized; }
@@ -673,4 +675,6 @@ class CInstalledDevice
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;
+
+		CSpaceObject *m_pLastTarget;
 	};
