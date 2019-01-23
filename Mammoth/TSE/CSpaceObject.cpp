@@ -6218,6 +6218,8 @@ void CSpaceObject::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 //	Notify subscribers OnObjDestroyed
 
 	{
+	DEBUG_TRY
+
 	m_SubscribedObjs.NotifyOnObjDestroyed(Ctx);
 
 	//	Notify any docked objects that their dock target got destroyed.
@@ -6225,6 +6227,8 @@ void CSpaceObject::NotifyOnObjDestroyed (SDestroyCtx &Ctx)
 	CDockingPorts *pPorts = GetDockingPorts();
 	if (pPorts)
 		pPorts->OnDockObjDestroyed(this, Ctx);
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::NotifyOnObjDocked (CSpaceObject *pDockTarget)
@@ -6327,6 +6331,8 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 //	Called whenever another object in the system is destroyed
 
 	{
+	DEBUG_TRY
+
 	//	Give our subclasses a chance to do something (note that we need
 	//	to do this before we NULL-out the references because some objects
 	//	need to check their references.
@@ -6341,6 +6347,8 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	Remove the object if it had a subscription to us
 
 	m_SubscribedObjs.Delete(Ctx.pObj);
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObject::SetCondition (CConditionSet::ETypes iCondition, int iTimer)

@@ -98,6 +98,8 @@ void CObjectJointList::ObjDestroyed (CSpaceObject *pObj)
 //	Delete any joints for the given object.
 
 	{
+	DEBUG_TRY
+
 	CObjectJoint *pNext = pObj->GetFirstJoint();
 	while (pNext)
 		{
@@ -117,6 +119,8 @@ void CObjectJointList::ObjDestroyed (CSpaceObject *pObj)
 	//	This object has no joints (since it is destroyed).
 
 	pObj->SetFirstJoint(NULL);
+
+	DEBUG_CATCH
 	}
 
 void CObjectJointList::Paint (CG32bitImage &Dest, SViewportPaintCtx &Ctx)

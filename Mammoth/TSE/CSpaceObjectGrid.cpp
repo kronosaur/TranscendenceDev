@@ -77,6 +77,8 @@ void CSpaceObjectGrid::Delete (CSpaceObject *pObj)
 //	operation, so we only do it when we really need to.
 
 	{
+	DEBUG_TRY
+
 	int iTotal = m_iGridSize * m_iGridSize;
 	for (int i = 0; i < iTotal; i++)
 		{
@@ -92,6 +94,8 @@ void CSpaceObjectGrid::Delete (CSpaceObject *pObj)
 	//	If we get this far, then try to delete from the outer list.
 
 	m_Outer.pList = m_Pool.DeleteObj(m_Outer.pList, pObj);
+
+	DEBUG_CATCH
 	}
 
 void CSpaceObjectGrid::DeleteAll (void)

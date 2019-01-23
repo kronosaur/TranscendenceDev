@@ -2034,6 +2034,8 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 //	Fires OnSystemObjDestroyed event to all handlers
 
 	{
+	DEBUG_TRY
+
 	CSystemEventHandler *pHandler = m_EventHandlers.GetNext();
 	while (pHandler)
 		{
@@ -2042,6 +2044,8 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 
 		pHandler = pHandler->GetNext();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSystem::FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount)
@@ -4111,6 +4115,8 @@ void CSystem::RemoveVolumetricShadow (CSpaceObject *pObj)
 //	delete an object at runtime.
 
 	{
+	DEBUG_TRY
+
 	int i, j;
 
 	//	Loop over all stars
@@ -4192,6 +4198,8 @@ void CSystem::RemoveVolumetricShadow (CSpaceObject *pObj)
 
 		m_Stars[i].VolumetricMask.ResetClipRect();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CSystem::RestartTime (void)
