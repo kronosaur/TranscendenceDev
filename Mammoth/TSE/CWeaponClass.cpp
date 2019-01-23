@@ -274,12 +274,6 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 
 	bool bSuccess = FireWeapon(pDevice, pShot, pSource, pTarget, 0, &bSourceDestroyed, retbConsumedItems);
 
-	//  Store the target object if we need to
-	if (m_bBurstTracksTargets)
-		{
-		pDevice->SetLastTarget(pTarget);
-		}
-
 	//	If firing the weapon destroyed the ship, then we bail out
 
 	if (bSourceDestroyed)
@@ -1947,7 +1941,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && IsTracking(ItemCtx, pShot))
+	if (pTarget == NULL && (IsTracking(ItemCtx, pShot) || m_bBurstTracksTargets))
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -1962,9 +1956,6 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	if (iFireAngle == -1 || (iRepeatingCount != 0 && m_bBurstTracksTargets))
 		{
 		bool bOutOfArc;
-		CSpaceObject *pStoredTarget = pDevice->GetLastTarget();
-		if (iRepeatingCount != 0 && m_bBurstTracksTargets && pTarget == NULL && pStoredTarget != NULL)
-			pTarget = pStoredTarget;
 		iFireAngle = CalcFireAngle(ItemCtx, rSpeed, pTarget, &bOutOfArc);
 		}
 
