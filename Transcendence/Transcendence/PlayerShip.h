@@ -243,7 +243,6 @@ class CPlayerShipController : public IShipController
 
 	private:
 		void ClearFireAngle (void);
-		CSpaceObject *FindAutoTarget (CItemCtx &ItemCtx) const;
 		CSpaceObject *FindDockTarget (void);
 		bool HasCommsTarget (void);
 		void InitTargetList (TargetTypes iTargetType, bool bUpdate = false);

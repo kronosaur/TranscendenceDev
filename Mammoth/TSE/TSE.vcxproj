@@ -280,6 +280,7 @@
     <ClInclude Include="..\Include\TSESounds.h" />
     <ClInclude Include="..\Include\TSESovereign.h" />
     <ClInclude Include="..\Include\TSESpaceEnvironment.h" />
+    <ClInclude Include="..\Include\TSESpaceObjectsEnum.h" />
     <ClInclude Include="..\Include\TSEStationType.h" />
     <ClInclude Include="..\Include\TSESystem.h" />
     <ClInclude Include="..\Include\TSESystemMap.h" />

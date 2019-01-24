@@ -2036,6 +2036,8 @@ class CListWrapper : public IListData
 
 #include "TSEUniverse.h"
 
+#include "TSESpaceObjectsEnum.h"
+
 //	String-Constant Helpers
 
 Abilities AbilityDecode (const CString &sString);

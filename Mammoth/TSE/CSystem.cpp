@@ -1872,50 +1872,25 @@ CSpaceObject *CSystem::FindObjectInRange (const CVector &vCenter, Metric rRange,
 //	the range.
 
 	{
-	Metric rRange2 = rRange * rRange;
-
 	//	If we have a criteria, we need to check.
 
 	if (!Criteria.IsEmpty())
 		{
-		CSpaceObjectCriteria::SCtx Ctx(Criteria);
+		CCriteriaObjSelector Selector(Criteria);
+		CNearestInRadiusRange Range(vCenter, rRange);
 
-		SSpaceObjectGridEnumerator i;
-		EnumObjectsInBoxStart(i, vCenter, rRange, gridNoBoxCheck);
-		while (EnumObjectsInBoxHasMore(i))
-			{
-			CSpaceObject *pObj = EnumObjectsInBoxGetNextFast(i);
-			if (pObj->MatchesCriteria(Ctx, Criteria)
-					&& (!pObj->IsIntangible() || pObj->IsVirtual()))
-				{
-				Metric rDist2 = (pObj->GetPos() - vCenter).Length2();
-				if (rDist2 < rRange2)
-					return pObj;
-				}
-			}
+		return CSpaceObjectEnum::FindObjInRange(*this, Range, Selector);
 		}
 
 	//	If we don't have a criteria, then we can do this faster.
 
 	else 
 		{
-		SSpaceObjectGridEnumerator i;
-		EnumObjectsInBoxStart(i, vCenter, rRange, gridNoBoxCheck);
-		while (EnumObjectsInBoxHasMore(i))
-			{
-			CSpaceObject *pObj = EnumObjectsInBoxGetNextFast(i);
-			if (!pObj->IsIntangible() || pObj->IsVirtual())
-				{
-				Metric rDist2 = (pObj->GetPos() - vCenter).Length2();
-				if (rDist2 < rRange2)
-					return pObj;
-				}
-			}
+		CAnyObjSelector Selector;
+		CNearestInRadiusRange Range(vCenter, rRange);
+
+		return CSpaceObjectEnum::FindObjInRange(*this, Range, Selector);
 		}
-
-	//	Not found
-
-	return NULL;
 	}
 
 CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const

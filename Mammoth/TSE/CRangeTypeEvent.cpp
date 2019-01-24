@@ -98,26 +98,10 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 			m_bCriteriaInit = true;
 			}
 
-		CSpaceObjectCriteria::SCtx Ctx(m_Criteria);
+		CCriteriaObjSelector Selector(m_Criteria);
+		CNearestInRadiusRange Range(vCenter, m_rRadius);
 
-		//	See if there are any objects in range
-
-		SSpaceObjectGridEnumerator i;
-		pSystem->EnumObjectsInBoxStart(i, vCenter, m_rRadius, gridNoBoxCheck);
-		while (pSystem->EnumObjectsInBoxHasMore(i))
-			{
-			CSpaceObject *pObj = pSystem->EnumObjectsInBoxGetNextFast(i);
-			if (pObj->MatchesCriteria(Ctx, m_Criteria)
-					&& (!pObj->IsIntangible() || pObj->IsVirtual()))
-				{
-				Metric rDist2 = (pObj->GetPos() - vCenter).Length2();
-				if (rDist2 < m_rRadius2)
-					{
-					pFound = pObj;
-					break;
-					}
-				}
-			}
+		pFound = CSpaceObjectEnum::FindObjInRange(*pSystem, Range, Selector);
 		}
 
 	//	Otherwise, all we care about is the player ship.

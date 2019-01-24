@@ -176,13 +176,28 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 	i.vLL = vLL;
 	i.vUR = vUR;
 	i.bCheckBox = ((dwFlags & gridNoBoxCheck) ? false : true);
+	if (i.pGridIndexList)
+		{
+		delete [] i.pGridIndexList;
+		i.pGridIndexList = NULL;
+		}
 
-	//	First we need to generate a box that will contain enough grid cells
-	//	so that we can find the objects even if their center is outside
-	//	the input range
+	//	Figure out coordinates relative to the origin of the grid
 
-	CVector vGridLL = vLL - m_vLL - CVector(m_rCellBorder, m_rCellBorder);
-	CVector vGridUR = vUR - m_vLL + CVector(m_rCellBorder, m_rCellBorder);
+	CVector vGridLL = vLL - m_vLL;
+	CVector vGridUR = vUR - m_vLL;
+
+	//	If requested we add an extra border to the search square because we want
+	//	to find objects if their center of just outside the search square.
+
+	if (!(dwFlags & gridNoCellBorder))
+		{
+		CVector vBorder(m_rCellBorder, m_rCellBorder);
+		vGridLL = vGridLL - vBorder;
+		vGridUR = vGridUR + vBorder;
+		}
+
+	//	Convert to integral grid coordinates
 
 	int xStart = (int)(vGridLL.GetX() / m_rCellSize);
 	int yStart = (int)(vGridLL.GetY() / m_rCellSize);
@@ -190,53 +205,91 @@ void CSpaceObjectGrid::EnumStart (SSpaceObjectGridEnumerator &i, const CVector &
 	int xEnd = (int)(vGridUR.GetX() / m_rCellSize);
 	int yEnd = (int)(vGridUR.GetY() / m_rCellSize);
 
-	//	Generate a list of all grid cells to traverse
+	//	If we're completely off the grid, then we just add the outer cell.
 
-	int iMaxSize = (xEnd - xStart + 1) * (yEnd - yStart + 1);
-	i.pGridIndexList = new const SList * [iMaxSize];
-	i.iGridIndexCount = 0;
-	bool bOuterAdded = (m_Outer.pList == NULL);
-
-	//	Always start with the center cell
-
-	int xCenter = xStart + (xEnd - xStart) / 2;
-	int yCenter = yStart + (yEnd - yStart) / 2;
-	if (xCenter >= 0 && yCenter >= 0 && xCenter < m_iGridSize && yCenter < m_iGridSize)
+	if (xStart >= m_iGridSize || yStart >= m_iGridSize || xEnd < 0 || yEnd < 0)
 		{
+		i.pGridIndexList = new const SList * [1];
+		i.pGridIndexList[0] = &m_Outer;
+		i.iGridIndexCount = 1;
+
+		i.bMore = (m_Outer.pList != NULL);
+		}
+
+	//	Otherwise we allocate each grid to the list
+
+	else
+		{
+		int iMaxSize;
+		bool bNeedOuter;
+
+		//	Remember the center cell, because we start there.
+
+		int xCenter = xStart + (xEnd - xStart) / 2;
+		int yCenter = yStart + (yEnd - yStart) / 2;
+
+		//	Clip the search square to the grid, and if we're partly outside the
+		//	grid, remember to include the outer cell.
+
+		if (xStart >= 0 && xEnd < m_iGridSize && yStart >= 0 && yEnd < m_iGridSize)
+			{
+			iMaxSize = (xEnd - xStart + 1) * (yEnd - yStart + 1);
+			bNeedOuter = false;
+			}
+		else
+			{
+			xStart = Max(0, xStart);
+			xEnd = Min(xEnd, m_iGridSize - 1);
+			yStart = Max(0, yStart);
+			yEnd = Min(yEnd, m_iGridSize - 1);
+
+			//	+1 because we need outer cell
+
+			iMaxSize = (xEnd - xStart + 1) * (yEnd - yStart + 1) + 1;
+			bNeedOuter = true;
+
+			//	We should also adjust the center cell to be in bounds.
+
+			xCenter = Max(0, Min(xCenter, m_iGridSize - 1));
+			yCenter = Max(0, Min(yCenter, m_iGridSize - 1));
+			}
+
+		//	Generate a list of all grid cells to traverse
+
+		i.pGridIndexList = new const SList * [iMaxSize];
+		i.iGridIndexCount = 0;
+
 		const CSpaceObjectGrid::SList *pList = &GetList(xCenter, yCenter);
 		if (pList->pList)
 			i.pGridIndexList[i.iGridIndexCount++] = pList;
-		}
-	else if (!bOuterAdded)
-		{
-		i.pGridIndexList[i.iGridIndexCount++] = &m_Outer;
-		bOuterAdded = true;
-		}
 
-	//	Add the remaining cells
+		//	Add the remaining cells
 
-	for (int y = yStart; y <= yEnd; y++)
-		for (int x = xStart; x <= xEnd; x++)
-			if (x == xCenter && y == yCenter)
-				NULL;
-			else if (x >= 0 && y >= 0 && x < m_iGridSize && y < m_iGridSize)
-				{
-				const CSpaceObjectGrid::SList *pList = &GetList(x, y);
-				if (pList->pList)
-					i.pGridIndexList[i.iGridIndexCount++] = pList;
-				}
-			else if (!bOuterAdded)
-				{
-				i.pGridIndexList[i.iGridIndexCount++] = &m_Outer;
-				bOuterAdded = true;
-				}
+		for (int y = yStart; y <= yEnd; y++)
+			for (int x = xStart; x <= xEnd; x++)
+				if (x == xCenter && y == yCenter)
+					NULL;
+				else
+					{
+					const CSpaceObjectGrid::SList *pList = &GetList(x, y);
+					if (pList->pList)
+						i.pGridIndexList[i.iGridIndexCount++] = pList;
+					}
+
+		//	Add the outer cell last
+
+		if (bNeedOuter && m_Outer.pList)
+			{
+			i.pGridIndexList[i.iGridIndexCount++] = &m_Outer;
+			}
+
+		//	Initialize
+
+		ASSERT(i.iGridIndexCount <= iMaxSize);
+		i.bMore = (i.iGridIndexCount > 0);
+		}
 
 	//	Initialize
-
-	ASSERT(i.iGridIndexCount <= iMaxSize);
-	i.bMore = (i.iGridIndexCount > 0);
-
-	//	Set the initial list
 
 	if (i.bMore)
 		{

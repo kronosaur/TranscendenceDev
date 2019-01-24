@@ -3999,80 +3999,17 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 //	Returns the nearest enemy that is visible to the given center point.
 
 	{
-	int i;
-
-	CVector vCenter = GetPos();
-
-	//	Get the sovereign
-
-	CSovereign *pSovereign = GetSovereignToDefend();
-	if (pSovereign == NULL || GetSystem() == NULL)
+	CSystem *pSystem = GetSystem();
+	if (pSystem == NULL)
 		return NULL;
 
-	//	Get the list of enemy objects
+	CVisibleEnemyObjSelector Selector(this);
+	Selector.SetIncludeStations(bIncludeStations);
+	Selector.SetExcludeObj(pExcludeObj);
 
-	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
+	CNearestInRadiusRange Range(GetPos(), rMaxRange);
 
-	//	Compute this object's perception and perception range
-
-	CPerceptionCalc Perception(GetPerception());
-
-	//	Loop over all objects finding the nearest visible enemy
-
-	CSpaceObject *pBestObj = NULL;
-	Metric rBestDist2 = Perception.GetRange2(0);
-
-	//	If the caller has specified a max range, then use that
-
-	Metric rMaxRange2 = rMaxRange * rMaxRange;
-	if (rMaxRange2 < rBestDist2)
-		rBestDist2 = rMaxRange2;
-
-	int iObjCount = ObjList.GetCount();
-	for (i = 0; i < iObjCount; i++)
-		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
-
-		if ((pObj->GetCategory() == catShip
-					|| (bIncludeStations && pObj->GetCategory() == catStation))
-				&& pObj->CanAttack()
-				&& !pObj->IsDestroyed()
-				&& pObj != this)
-			{
-			CVector vDist = vCenter - pObj->GetPos();
-			Metric rDist2 = vDist.Length2();
-
-			if (rDist2 < rBestDist2
-					&& Perception.CanBeTargeted(pObj, rDist2)
-					&& pObj != pExcludeObj
-					&& !pObj->IsEscortingFriendOf(this))
-				{
-				rBestDist2 = rDist2;
-				pBestObj = pObj;
-				}
-			}
-		}
-
-	//	If we're angry at the player, add her to the list.
-
-	CSpaceObject *pPlayer = GetPlayerShip();
-	if (pPlayer 
-			&& !IsEnemy(pPlayer) 
-			&& IsAngryAt(pPlayer)
-			&& pPlayer != pExcludeObj
-			&& !pPlayer->IsEscortingFriendOf(this))
-		{
-		CVector vDist = GetPos() - pPlayer->GetPos();
-		Metric rDist2 = vDist.Length2();
-		if (rDist2 < rBestDist2
-				&& Perception.CanBeTargeted(pPlayer, rDist2))
-			{
-			rBestDist2 = rDist2;
-			pBestObj = pPlayer;
-			}
-		}
-
-	return pBestObj;
+	return CSpaceObjectEnum::FindNearestObj(*pSystem, Range, Selector);
 	}
 
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)
@@ -4083,61 +4020,17 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 //	arc.
 
 	{
-	int i;
+	CSystem *pSystem = GetSystem();
+	if (pSystem == NULL)
+		return NULL;
 
-	CVector vCenter = GetPos();
+	CVisibleEnemyObjSelector Selector(this);
+	Selector.SetIncludeStations(bIncludeStations);
+	Selector.SetExcludeObj(pExcludeObj);
 
-	//	Get the sovereign
+	CNearestInArcAndRadiusRange Range(GetPos(), rMaxRange, iMinFireArc, iMaxFireArc);
 
-	CSovereign *pSovereign = GetSovereignToDefend();
-	if (pSovereign == NULL || GetSystem() == NULL)
-		return 0;
-
-	//	Get the list of enemy objects
-
-	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
-
-	//	Compute this object's perception and perception range
-
-	CPerceptionCalc Perception(GetPerception());
-
-	//	Loop over all objects finding the nearest visible enemy
-
-	CSpaceObject *pBestObj = NULL;
-	Metric rBestDist = Perception.GetRange(0);
-
-	//	If the caller has specified a max range, then use that
-
-	if (rMaxRange < rBestDist)
-		rBestDist = rMaxRange;
-
-	int iObjCount = ObjList.GetCount();
-	for (i = 0; i < iObjCount; i++)
-		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
-
-		if ((pObj->GetCategory() == catShip
-					|| (bIncludeStations && pObj->GetCategory() == catStation))
-				&& pObj->CanAttack()
-				&& !pObj->IsDestroyed()
-				&& pObj != this)
-			{
-			CVector vDist = vCenter - pObj->GetPos();
-			Metric rDist;
-			int iAngle = VectorToPolar(vDist, &rDist);
-
-			if (rDist < rBestDist
-					&& Perception.CanBeTargetedAtDist(pObj, rDist)
-					&& pObj != pExcludeObj
-					&& !pObj->IsEscortingFriendOf(this))
-				{
-				rBestDist = rDist;
-				pBestObj = pObj;
-				}
-			}
-		}
-
-	return pBestObj;
+	return CSpaceObjectEnum::FindNearestObj(*pSystem, Range, Selector);
 	}
 
 CString CSpaceObject::GetNounPhrase (DWORD dwFlags) const

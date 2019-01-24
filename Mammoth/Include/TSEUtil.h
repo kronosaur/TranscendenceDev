@@ -1038,6 +1038,7 @@ class CTileMap
 enum SpaceObjectGridFlags
 	{
 	gridNoBoxCheck			= 0x00000001,	//	Do not check for objects in the box
+	gridNoCellBorder		= 0x00000002,	//	Do not add an extra border when checking
 	};
 
 class CSpaceObjectPool

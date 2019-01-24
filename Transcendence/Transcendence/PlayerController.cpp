@@ -409,38 +409,6 @@ void CPlayerShipController::EnableAllDevices (bool bEnable)
 		}
 	}
 
-CSpaceObject *CPlayerShipController::FindAutoTarget (CItemCtx &ItemCtx) const
-
-//	FindAutoTarget
-//
-//	Returns the best target to shoot at if we have an omni weapons, etc.
-
-	{
-	//	If the weapon is directional, then we look for the best target within
-	//	our fire arc.
-
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
-	int iMinFireArc;
-	int iMaxFireArc;
-	if ((pWeapon = ItemCtx.GetDeviceClass()) 
-			&& pWeapon->GetRotationType(ItemCtx, &iMinFireArc, &iMaxFireArc) == CDeviceClass::rotSwivel)
-		{
-		//	Adjust for ship rotation
-
-		iMinFireArc = AngleMod(m_pShip->GetRotation() + iMinFireArc);
-		iMaxFireArc = AngleMod(m_pShip->GetRotation() + iMaxFireArc);
-
-		//	Find ships
-
-		return m_pShip->GetNearestVisibleEnemyInArc(iMinFireArc, iMaxFireArc, MAX_AUTO_TARGET_DISTANCE, true);
-		}
-
-	//	Otherwise, we return the nearest visible enemy
-
-	else
-		return m_pShip->GetNearestVisibleEnemy(MAX_AUTO_TARGET_DISTANCE, true);
-	}
-
 CSpaceObject *CPlayerShipController::FindDockTarget (void)
 
 //	FindDockTarget
