@@ -11,9 +11,6 @@ static Metric g_rK2 =							cos(g_rViewAngle);
 static Metric g_MinZg =							0.1;
 
 #define BRING_TO_FRONT_ATTRIB					CONSTLIT("bringToFront")
-#define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
-#define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
-#define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define SEND_TO_BACK_ATTRIB						CONSTLIT("sendToBack")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
@@ -191,36 +188,13 @@ ALERROR C3DConversion::Init (CXMLElement *pDesc)
 //	NOTE: Must call InitComplete to finish initialization
 
 	{
-	//	Initialize based on which of the formats we've got. If we have posAngle
-	//	then we have polar coordinates.
+	C3DObjectPos Pos;
 
-	if (pDesc->FindAttributeInteger(POS_ANGLE_ATTRIB, &m_iAngle))
-		{
-		m_iRadius = pDesc->GetAttributeInteger(POS_RADIUS_ATTRIB);
-		m_iZ = pDesc->GetAttributeInteger(POS_Z_ATTRIB);
-		m_bUseCompatible = false;
-		}
-
-	//	Otherwise, we expect Cartessian coordinates
-
-	else
-		{
-		//	Get the position
-
-		int x = pDesc->GetAttributeInteger(X_ATTRIB);
-		int y = -pDesc->GetAttributeInteger(Y_ATTRIB);
-
-		//	Convert to polar coordinates
-
-		m_iAngle = IntVectorToPolar(x, y, &m_iRadius);
-
-		//	If we have a z attribute then user the new 3D conversion.
-
-		m_bUseCompatible = !pDesc->FindAttributeInteger(Z_ATTRIB, &m_iZ);
-		if (m_bUseCompatible)
-			m_iZ = 0;
-		}
-
+	Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &m_bUseCompatible);
+	m_iAngle = Pos.GetAngle();
+	m_iRadius = Pos.GetRadius();
+	m_iZ = Pos.GetZ();
+		
 	//	Read the sendToBack and bringToFront attributes
 
 	m_sBringToFront = pDesc->GetAttribute(BRING_TO_FRONT_ATTRIB);

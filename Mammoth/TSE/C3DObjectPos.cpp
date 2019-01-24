@@ -178,7 +178,7 @@ void C3DObjectPos::InitPosZFromXML (CXMLElement *pDesc, bool *retb3DPos)
 
 	{
 	int iPosZ;
-	if (pDesc->FindAttributeInteger(POS_Z_ATTRIB, &iPosZ))
+	if (pDesc->FindAttributeInteger(POS_Z_ATTRIB, &iPosZ) || pDesc->FindAttributeInteger(Z_ATTRIB, &iPosZ))
 		{
 		m_iPosZ = iPosZ;
 		if (retb3DPos) *retb3DPos = true;

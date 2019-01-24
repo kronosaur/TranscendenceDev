@@ -11,9 +11,6 @@
 
 #define MANEUVER_ATTRIB							CONSTLIT("maneuver")
 #define MAX_ROTATION_RATE_ATTRIB				CONSTLIT("maxRotationRate")
-#define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
-#define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
-#define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define ROTATION_ATTRIB							CONSTLIT("rotation")
 #define ROTATION_ACCEL_ATTRIB					CONSTLIT("rotationAccel")
 #define ROTATION_STOP_ACCEL_ATTRIB				CONSTLIT("rotationStopAccel")
