@@ -9,6 +9,8 @@
 #define ORIGIN_Y_ATTRIB							CONSTLIT("originY")
 #define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
+#define POS_X_ATTRIB							CONSTLIT("posX")
+#define POS_Y_ATTRIB							CONSTLIT("posY")
 #define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
@@ -71,7 +73,7 @@ bool C3DObjectPos::InitFromXY (int iScale, const CVector &vPos, int iZ)
 	return true;
 	}
 
-bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
+bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags, bool *retb3DPos)
 
 //	InitFromXML
 //
@@ -92,7 +94,7 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
 		{
 		m_iPosAngle = AngleMod(iAngle);
 		m_iPosRadius = pDesc->GetAttributeIntegerBounded(POS_RADIUS_ATTRIB, 0, -1);
-		m_iPosZ = pDesc->GetAttributeInteger(POS_Z_ATTRIB);
+		InitPosZFromXML(pDesc, retb3DPos);
 		}
 
 	//	If we don't support x,y coords, then we're done
@@ -102,6 +104,7 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
 		m_iPosAngle = 0;
 		m_iPosRadius = 0;
 		m_iPosZ = 0;
+		if (retb3DPos) *retb3DPos = false;
 		return false;
 		}
 
@@ -111,16 +114,42 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
 		{
 		//	Get the position
 
-		int x = pDesc->GetAttributeInteger(X_ATTRIB);
-		int y = -pDesc->GetAttributeInteger(Y_ATTRIB);
+		int x;
+		if (!pDesc->FindAttributeInteger(POS_X_ATTRIB, &x) && !pDesc->FindAttributeInteger(X_ATTRIB, &x))
+			{
+			m_iPosAngle = 0;
+			m_iPosRadius = 0;
+			m_iPosZ = 0;
+			if (retb3DPos) *retb3DPos = false;
+			return false;
+			}
+
+		int y;
+		if (!pDesc->FindAttributeInteger(POS_Y_ATTRIB, &y) && !pDesc->FindAttributeInteger(Y_ATTRIB, &y))
+			y = 0;
+		else
+			y = -y;
+
+		InitPosZFromXML(pDesc, retb3DPos);
 
 		//	Convert to polar coordinates
 
-		int iRadius;
-		m_iPosAngle = IntVectorToPolar(x, y, &iRadius);
-		m_iPosRadius = iRadius;
+		if (dwFlags & FLAG_CALC_POLAR)
+			{
+			CVector vPos(x * g_KlicksPerPixel, y * g_KlicksPerPixel);
+			Metric rAngle;
+			Metric rRadius;
+			C3DConversion::CalcPolar(C3DConversion::DEFAULT_SCALE, vPos, m_iPosZ, &rAngle, &rRadius);
 
-		m_iPosZ = pDesc->GetAttributeInteger(Z_ATTRIB);
+			m_iPosAngle = mathRound(mathRadiansToDegrees(rAngle));
+			m_iPosRadius = mathRound(rRadius);
+			}
+		else
+			{
+			int iRadius;
+			m_iPosAngle = IntVectorToPolar(x, y, &iRadius);
+			m_iPosRadius = iRadius;
+			}
 		}
 
 	//	If we have an origin, then adjust the position.
@@ -139,6 +168,26 @@ bool C3DObjectPos::InitFromXML (CXMLElement *pDesc, DWORD dwFlags)
 		}
 
 	return true;
+	}
+
+void C3DObjectPos::InitPosZFromXML (CXMLElement *pDesc, bool *retb3DPos)
+
+//	InitPosZFromXML
+//
+//	Helper to load a Z position
+
+	{
+	int iPosZ;
+	if (pDesc->FindAttributeInteger(POS_Z_ATTRIB, &iPosZ))
+		{
+		m_iPosZ = iPosZ;
+		if (retb3DPos) *retb3DPos = true;
+		}
+	else
+		{
+		m_iPosZ = 0;
+		if (retb3DPos) *retb3DPos = false;
+		}
 	}
 
 void C3DObjectPos::ReadFromStream (SLoadCtx &Ctx)

@@ -41,9 +41,6 @@
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
-#define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
-#define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
-#define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
 #define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
@@ -250,10 +247,21 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 	ALERROR error;
 
 	retDesc->sID = pDesc->GetAttribute(ID_ATTRIB);
-	retDesc->iPosAngle = AngleMod(pDesc->GetAttributeInteger(POS_ANGLE_ATTRIB));
-	retDesc->iPosRadius = pDesc->GetAttributeInteger(POS_RADIUS_ATTRIB);
-	if (!(retDesc->b3DPosition = pDesc->FindAttributeInteger(POS_Z_ATTRIB, &retDesc->iPosZ)))
+
+	C3DObjectPos Pos;
+	if (Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &retDesc->b3DPosition))
+		{
+		retDesc->iPosAngle = Pos.GetAngle();
+		retDesc->iPosRadius = Pos.GetRadius();
+		retDesc->iPosZ = Pos.GetZ();
+		}
+	else
+		{
+		retDesc->iPosAngle = 0;
+		retDesc->iPosRadius = 0;
 		retDesc->iPosZ = 0;
+		retDesc->b3DPosition = false;
+		}
 
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
 	retDesc->bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
@@ -595,19 +603,12 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Load device position attributes
 
-	if (pDesc->FindAttributeInteger(POS_Z_ATTRIB, &m_iPosZ))
+	C3DObjectPos Pos;
+	if (Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &m_b3DPosition))
 		{
-		m_iPosAngle = AngleMod(pDesc->GetAttributeInteger(POS_ANGLE_ATTRIB));
-		m_iPosRadius = pDesc->GetAttributeInteger(POS_RADIUS_ATTRIB);
-		m_b3DPosition = true;
-		m_bDefaultPos = false;
-		}
-	else if (pDesc->FindAttributeInteger(POS_ANGLE_ATTRIB, &m_iPosAngle))
-		{
-		m_iPosAngle = AngleMod(m_iPosAngle);
-		m_iPosRadius = pDesc->GetAttributeInteger(POS_RADIUS_ATTRIB);
-		m_iPosZ = 0;
-		m_b3DPosition = false;
+		m_iPosAngle = Pos.GetAngle();
+		m_iPosRadius = Pos.GetRadius();
+		m_iPosZ = Pos.GetZ();
 		m_bDefaultPos = false;
 		}
 	else

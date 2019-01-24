@@ -1454,10 +1454,8 @@ class CComplexArea
 class C3DObjectPos
 	{
 	public:
-		enum EFlags
-			{
-			FLAG_NO_XY =					0x00000001,
-			};
+		static constexpr DWORD FLAG_NO_XY =				0x00000001;
+		static constexpr DWORD FLAG_CALC_POLAR =		0x00000002;	//	Convert X,Y to polar using C3DConversion
 
 		C3DObjectPos (int iAngle = 0, int iRadius = 0, int iZ = 0) :
 				m_iPosAngle(iAngle),
@@ -1473,13 +1471,15 @@ class C3DObjectPos
 		inline int GetRadius (void) const { return m_iPosRadius; }
 		inline int GetZ (void) const { return m_iPosZ; }
 		bool InitFromXY (int iScale, const CVector &vPos, int iZ = 0);
-		bool InitFromXML (CXMLElement *pDesc, DWORD dwFlags = 0);
+		bool InitFromXML (CXMLElement *pDesc, DWORD dwFlags = 0, bool *retb3DPos = NULL);
 		inline bool IsEmpty (void) const { return m_iPosRadius == 0; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetAngle (int iAngle) { m_iPosAngle = AngleMod(iAngle); }
 		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
+		void InitPosZFromXML (CXMLElement *pDesc, bool *retb3DPos = NULL);
+
 		int m_iPosAngle:16;					//	Angle relative to obj center (degrees)
 		int m_iPosRadius:16;				//	Distance relative to obj center (pixels)
 		int m_iPosZ:16;						//	Height relative to obj center
@@ -1488,6 +1488,8 @@ class C3DObjectPos
 class C3DConversion
 	{
 	public:
+		static constexpr int DEFAULT_SCALE = 256;
+
 		static void CalcCoord (int iScale, int iAngle, int iRadius, int iZ, int *retx, int *rety);
 		static void CalcCoord (int iScale, int iAngle, int iRadius, int iZ, CVector *retvPos);
 		static void CalcCoord (Metric rScale, const CVector &vPos, Metric rPosZ, CVector *retvPos);
