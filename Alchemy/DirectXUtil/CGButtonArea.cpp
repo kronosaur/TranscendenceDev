@@ -134,6 +134,26 @@ void CGButtonArea::OnSetRect (void)
 	//	If the mouse is over our area, then set state
 	}
 
+CG32bitPixel CGButtonArea::CalcBackColor (void) const
+
+//	CalcBackColor
+//
+//	Returns the color to use when painting the background.
+
+	{
+	if (m_bDisabled)
+		{
+		if (!m_rgbBackColor.IsNull())
+			return CG32bitPixel(m_rgbBackColor, 0xC0);
+		else
+			return m_rgbBackColor;
+		}
+	else if (m_bMouseOver)
+		return m_rgbBackColorHover;
+	else
+		return m_rgbBackColor;
+	}
+
 void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 //	Paint
@@ -147,7 +167,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 	//	Paint the background
 
-	CG32bitPixel rgbBackColor = ((m_bMouseOver && !m_bDisabled) ? m_rgbBackColorHover : (m_bDisabled ? CG32bitPixel(m_rgbBackColor, 0xC0) : m_rgbBackColor));
+	CG32bitPixel rgbBackColor = CalcBackColor();
 	if (!rgbBackColor.IsNull())
 		{
 		if (m_iBorderRadius > 0)
@@ -165,21 +185,17 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	int yPaint = rcRect.top + m_rcPadding.top;
 	if (m_pLabelFont)
 		{
-		//	If we're disabled, paint gray
-
-		if (m_bDisabled)
-			Dest.DrawText(xPaint,
-					yPaint,
-					*m_pLabelFont,
-					RGB_DISABLED_TEXT,
-					m_sLabel);
-
 		//	If we have a prefix accelerator, draw that
 
-		else if (!m_sAccelerator.IsBlank())
+		if (!m_sAccelerator.IsBlank())
 			{
 			CString sLabel;
 			const CG16bitFont *pLabelFont;
+
+			//	Colors
+
+			CG32bitPixel rgbAccel = (m_bDisabled ? RGB_DISABLED_TEXT : m_rgbAccelColor);
+			CG32bitPixel rgbText = (m_bDisabled ? RGB_DISABLED_TEXT : m_rgbLabelColor);
 
 			//	Some accelerator names are special; we draw symbols
 
@@ -208,7 +224,7 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			int cxBox = cxAccel + (2 * ACCEL_INNER_PADDING);
 			int cyBox = cyAccel + 1;
-			CGDraw::RoundedRect(Dest, xPaint, yPaint, cxBox, cyBox, ACCEL_BORDER_RADIUS, m_rgbAccelColor);
+			CGDraw::RoundedRect(Dest, xPaint, yPaint, cxBox, cyBox, ACCEL_BORDER_RADIUS, rgbAccel);
 
 			//	Draw the text
 
@@ -216,7 +232,18 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			//	Now draw the rest of the label
 
-			Dest.DrawText(xPaint + cxBox + (2 * ACCEL_INNER_PADDING), yPaint, *m_pLabelFont, m_rgbLabelColor, m_sLabel);
+			Dest.DrawText(xPaint + cxBox + (2 * ACCEL_INNER_PADDING), yPaint, *m_pLabelFont, rgbText, m_sLabel);
+			}
+
+		//	If we're disabled, paint gray
+
+		else if (m_bDisabled)
+			{
+			Dest.DrawText(xPaint,
+					yPaint,
+					*m_pLabelFont,
+					RGB_DISABLED_TEXT,
+					m_sLabel);
 			}
 
 		//	If we have an accelerator, paint in pieces

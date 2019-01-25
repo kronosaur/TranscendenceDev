@@ -219,6 +219,7 @@ class CGButtonArea : public AGArea
 		virtual void OnSetRect (void) override;
 
 	private:
+		CG32bitPixel CalcBackColor (void) const;
 		RECT CalcTextRect (const RECT &rcRect);
 
 		CString m_sLabel;
