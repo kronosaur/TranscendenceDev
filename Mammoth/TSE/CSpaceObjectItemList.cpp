@@ -38,15 +38,15 @@ bool CSpaceObject::AddItem (const CItem &Item, CItem *retResult, CString *retsEr
 	CItemListManipulator ObjList(GetItemList());
 	ObjList.AddItem(Item);
 
-	//	Update the object
-
-	OnComponentChanged(comCargo);
-	OnModifyItemComplete(ModifyCtx, Item);
-
 	//	Return the item.
 
 	if (retResult)
 		*retResult = ObjList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnComponentChanged(comCargo);
+	OnModifyItemComplete(ModifyCtx, Item);
 
 	return true;
 	}
@@ -346,14 +346,16 @@ bool CSpaceObject::SetItemData (const CItem &Item, const CString &sField, ICCIte
 
 	ItemList.SetDataAtCursor(sField, pValue, iCount);
 
-	//	Update the object
-
-	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
-
-	//	Return the newly changed item
+	//	Return the newly changed item. We do this before the notification 
+	//	because the notification might change the underlying item list (because
+	//	it sorts).
 
 	if (retItem)
 		*retItem = ItemList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
 
 	return true;
 	}
