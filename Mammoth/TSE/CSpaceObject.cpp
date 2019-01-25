@@ -4003,13 +4003,13 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleEnemyObjSelector Selector(this);
+	CVisibleObjSelector Selector(this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 
 	CNearestInRadiusRange Range(GetPos(), rMaxRange);
 
-	return CSpaceObjectEnum::FindNearestObj(*pSystem, Range, Selector);
+	return CSpaceObjectEnum::FindNearestEnemyObj(*pSystem, *this, Range, Selector);
 	}
 
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)
@@ -4024,13 +4024,13 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleEnemyObjSelector Selector(this);
+	CVisibleObjSelector Selector(this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 
 	CNearestInArcAndRadiusRange Range(GetPos(), rMaxRange, iMinFireArc, iMaxFireArc);
 
-	return CSpaceObjectEnum::FindNearestObj(*pSystem, Range, Selector);
+	return CSpaceObjectEnum::FindNearestEnemyObj(*pSystem, *this, Range, Selector);
 	}
 
 CString CSpaceObject::GetNounPhrase (DWORD dwFlags) const

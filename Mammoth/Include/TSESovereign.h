@@ -73,15 +73,16 @@ class CSovereign : public CDesignType
 		void DeleteRelationships (void);
 		inline void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);
-		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true);
-		inline const CSpaceObjectList &GetEnemyObjectList (CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
+		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true) const;
+		inline const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
 		EThreatLevels GetPlayerThreatLevel (void) const;
 		bool GetPropertyInteger (const CString &sProperty, int *retiValue);
 		bool GetPropertyItemList (const CString &sProperty, CItemList *retItemList);
 		bool GetPropertyString (const CString &sProperty, CString *retsValue);
 		CString GetText (MessageTypes iMsg);
-		inline bool IsEnemy (CSovereign *pSovereign) { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
-		inline bool IsFriend (CSovereign *pSovereign) { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
+		inline bool IsEnemy (CSovereign *pSovereign) const { return (m_bSelfRel || (pSovereign != this)) && (GetDispositionTowards(pSovereign) == dispEnemy); }
+		inline bool IsFriend (CSovereign *pSovereign) const { return (!m_bSelfRel && (pSovereign == this)) || (GetDispositionTowards(pSovereign) == dispFriend); }
+		inline bool IsPlayer (void) const { return (GetUNID() == g_PlayerSovereignUNID); }
 		void MessageFromObj (CSpaceObject *pSender, const CString &sText);
 		void OnObjDestroyedByPlayer (CSpaceObject *pObj);
 		static Alignments ParseAlignment (const CString &sAlign);
@@ -125,9 +126,10 @@ class CSovereign : public CDesignType
 			};
 
 		bool CalcSelfRel (void);
+		const SRelationship *FindRelationship (CSovereign *pSovereign, bool bCheckParent = false) const;
 		SRelationship *FindRelationship (CSovereign *pSovereign, bool bCheckParent = false);
-		inline Alignments GetAlignment (void) { return m_iAlignment; }
-		void InitEnemyObjectList (CSystem *pSystem);
+		inline Alignments GetAlignment (void) const { return m_iAlignment; }
+		void InitEnemyObjectList (const CSystem *pSystem) const;
 		void InitRelationships (void);
 
 		CString m_sName;						//	":the United States of America"
@@ -145,7 +147,7 @@ class CSovereign : public CDesignType
 		int m_iShipsDestroyedByPlayer;			//	Number of our ships destroyed by the player
 
 		bool m_bSelfRel;						//	TRUE if relationship with itself is not friendly
-		CSystem *m_pEnemyObjectsSystem;			//	System that we've cached enemy objects
-		CSpaceObjectList m_EnemyObjects;		//	List of enemy objects that can attack
+		mutable const CSystem *m_pEnemyObjectsSystem;		//	System that we've cached enemy objects
+		mutable CSpaceObjectList m_EnemyObjects;	//	List of enemy objects that can attack
 	};
 

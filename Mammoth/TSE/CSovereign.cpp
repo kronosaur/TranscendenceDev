@@ -282,6 +282,17 @@ bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
+const CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent) const
+
+//	FindRelationship
+//
+//	Finds a specific relationship with the given sovereign (or NULL
+//	if none is found)
+
+	{
+	return const_cast<CSovereign *>(this)->FindRelationship(pSovereign, bCheckParent);
+	}
+
 CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent)
 
 //	FindRelationship
@@ -321,7 +332,7 @@ IPlayerController *CSovereign::GetController (void)
 		return NULL;
 	}
 
-CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent)
+CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent) const
 
 //	GetDispositionTowards
 //
@@ -336,7 +347,7 @@ CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereig
 	//	See if we have a specific relationship. If so, then return the
 	//	disposition there.
 
-	SRelationship *pRel = FindRelationship(pSovereign, bCheckParent);
+	const SRelationship *pRel = FindRelationship(pSovereign, bCheckParent);
 	if (pRel)
 		return pRel->iDisp;
 
@@ -484,7 +495,7 @@ CString CSovereign::GetText (MessageTypes iMsg)
 		return g_pDefaultText[0];
 	}
 
-void CSovereign::InitEnemyObjectList (CSystem *pSystem)
+void CSovereign::InitEnemyObjectList (const CSystem *pSystem) const
 
 //	InitEnemyObjectList
 //

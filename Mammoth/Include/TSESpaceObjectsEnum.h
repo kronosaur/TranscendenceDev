@@ -189,6 +189,46 @@ class CVisibleEnemyObjSelector
 				&& m_Perception.CanBeTargeted(pObj, rDist2)
 				&& !pObj->IsDestroyed()
 				&& pObj != m_pSource
+				&& pObj != m_pExcludeObj
+				&& !pObj->IsEscortingFriendOf(m_pSource));
+			}
+
+		inline bool MatchesCategory (CSpaceObject *pObj) const
+			{
+			return (pObj->GetCategory() == CSpaceObject::catShip
+						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation));
+			}
+
+		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+
+	private:
+		CPerceptionCalc m_Perception;
+		CSpaceObject *m_pSource = NULL;
+		CSpaceObject *m_pExcludeObj = NULL;
+		bool m_bIncludeStations = false;
+	};
+
+class CVisibleObjSelector
+	{
+	public:
+		CVisibleObjSelector (CSpaceObject *pSource) :
+				m_pSource(pSource),
+				m_Perception(pSource->GetPerception())
+			{ }
+
+		inline Metric GetMaxRange (void) const
+			{
+			return m_Perception.GetRange(0);
+			}
+
+		inline bool Matches (CSpaceObject *pObj, Metric rDist2) const
+			{
+			return (pObj->CanAttack()
+				&& m_Perception.CanBeTargeted(pObj, rDist2)
+				&& !pObj->IsDestroyed()
+				&& pObj != m_pSource
+				&& pObj != m_pExcludeObj
 				&& !pObj->IsEscortingFriendOf(m_pSource));
 			}
 
@@ -211,6 +251,90 @@ class CVisibleEnemyObjSelector
 class CSpaceObjectEnum
 	{
 	public:
+		template <class RANGE, class SELECTOR> static CSpaceObject *FindNearestEnemyObj (const CSystem &System, CSpaceObject &SourceObj, RANGE &Range, SELECTOR &Selector)
+			{
+			CSpaceObject *pBestObj = NULL;
+
+			//	Get the sovereign
+
+			CSovereign *pSovereign = SourceObj.GetSovereignToDefend();
+			if (pSovereign == NULL)
+				return NULL;
+
+			//	Adjust range if Selector has a shorter range (e.g., because of
+			//	perception).
+
+			Range.ReduceRadius(Selector.GetMaxRange());
+
+			//	If we're the player, then we can't use the sovereign enemy list
+			//	because it doesn't handle angry objects.
+
+			if (pSovereign->IsPlayer())
+				{
+				const CSpaceObjectGrid &Grid = System.GetObjectGrid();
+				SSpaceObjectGridEnumerator i;
+				Grid.EnumStart(i, Range.GetUR(), Range.GetLL(), gridNoBoxCheck);
+
+				while (Grid.EnumHasMore(i))
+					{
+					CSpaceObject *pObj = Grid.EnumGetNextFast(i);
+
+					Metric rDist2;
+					if (Selector.MatchesCategory(pObj)
+							&& Range.Matches(pObj, &rDist2)
+							&& SourceObj.IsAngryAt(pObj)
+							&& Selector.Matches(pObj, rDist2))
+						{
+						Range.SetBestDist2(rDist2);
+						pBestObj = pObj;
+						}
+					}
+
+				return pBestObj;
+				}
+
+			//	Otherwise, we use the list of enemies of the sovereign, because
+			//	it is faster than the grid.
+
+			else
+				{
+				Metric rDist2;
+
+				//	Start with the player ship, if we're angry at it.
+
+				CSpaceObject *pPlayer = System.GetPlayerShip();
+				if (pPlayer 
+						&& Selector.MatchesCategory(pPlayer)
+						&& !SourceObj.IsEnemy(pPlayer) 
+						&& SourceObj.IsAngryAt(pPlayer)
+						&& Range.Matches(pPlayer, &rDist2)
+						&& Selector.Matches(pPlayer, rDist2))
+					{
+					Range.SetBestDist2(rDist2);
+					pBestObj = pPlayer;
+					}
+
+				//	Get the list of enemy objects
+
+				const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(&System);
+
+				for (int i = 0; i < ObjList.GetCount(); i++)
+					{
+					CSpaceObject *pObj = ObjList.GetObj(i);
+
+					if (Selector.MatchesCategory(pObj)
+							&& Range.Matches(pObj, &rDist2)
+							&& Selector.Matches(pObj, rDist2))
+						{
+						Range.SetBestDist2(rDist2);
+						pBestObj = pObj;
+						}
+					}
+
+				return pBestObj;
+				}
+			}
+
 		template <class RANGE, class SELECTOR> static CSpaceObject *FindNearestObj (const CSystem &System, RANGE &Range, SELECTOR &Selector)
 			{
 			const CSpaceObjectGrid &Grid = System.GetObjectGrid();
