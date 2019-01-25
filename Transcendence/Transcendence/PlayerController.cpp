@@ -825,7 +825,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsEnemy(pObj) && pObj->CanAttack()))
+			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanAttack()))
 				{
 				if (iTargetType == targetEnemies)
 					{
@@ -1557,7 +1557,8 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 		{
 		m_Stats.OnObjDestroyedByPlayer(Ctx, m_pShip);
 
-		//	If this is a major station then add it to the list of key events
+		//	If this is a major station then add it to the list of key events.
+		//	NOTE: Here we care about enemy instead of angry.
 
 		if (bIsMajorStation)
 			m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
@@ -1948,8 +1949,7 @@ void CPlayerShipController::OnObjDamaged (const SDamageCtx &Ctx)
 
 	if (Ctx.pObj 
 			&& !Ctx.pObj->IsDestroyed()
-			&& (m_pShip->IsEnemy(Ctx.pObj)
-				|| Ctx.pObj->IsAngryAt(m_pShip))
+			&& m_pShip->IsAngryAt(Ctx.pObj)
 			&& (Ctx.pObj->GetCategory() == CSpaceObject::catStation
 				|| Ctx.pObj->IsMultiHull()))
 		{
@@ -1984,9 +1984,13 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 			m_Stats.OnObjDestroyedByPlayer(Ctx, m_pShip);
 
 			if (bIsMajorShip)
+				{
+			//	NOTE: Here we care about enemy instead of angry.
+
 				m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
 						Ctx.pObj,
 						Ctx.Attacker.GetSovereignUNID());
+				}
 			}
 		else if (bIsMajorShip)
 			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
@@ -2087,7 +2091,10 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 		NULL;
 
 	//	We calculate the best port to dock with at this moment. We start by 
-	//	seeing if the player has targeted a friendly station:
+	//	seeing if the player has targeted a friendly station.
+	//
+	//	NOTE: In this case, we use IsEnemy instead of IsAngryAt because we want
+	//	the station to tell the player that they refused ("Docking Request Denied")
 
 	else if (m_pTarget 
 			&& m_pTarget != m_pShip 
@@ -2550,7 +2557,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 	//	If a friendly is already selected, then cycle
 	//	to the next friendly.
 
-	if (m_pTarget && !(m_pShip->IsEnemy(m_pTarget) && m_pTarget->CanAttack()))
+	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack()))
 		{
 		InitTargetList(targetFriendlies, true);
 
@@ -2618,7 +2625,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 	//	If an enemy target is already selected, then cycle
 	//	to the next enemy.
 
-	if (m_pTarget && m_pShip->IsEnemy(m_pTarget) && m_pTarget->CanAttack())
+	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack())
 		{
 		InitTargetList(targetEnemies, true);
 
