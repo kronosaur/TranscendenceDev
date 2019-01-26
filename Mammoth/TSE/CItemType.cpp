@@ -1566,6 +1566,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		else if (strEquals(pSubDesc->GetTag(), COCKPIT_USE_TAG))
 			{
 			m_pUseCode = g_pUniverse->GetCC().Link(pSubDesc->GetContentText(0));
+			if (m_pUseCode->IsError())
+				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Invoke> event: %s"), m_pUseCode->GetStringValue()));
 
 			//	These are also set in the main desc; we only override if we find them here
 
