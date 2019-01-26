@@ -1610,6 +1610,9 @@ class CStation : public CSpaceObject
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
 		void InitMapLabel (void);
 		bool IsBlacklisted (CSpaceObject *pObj = NULL) const;
+		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
+		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);
+		EDamageResults OnDamageNormal (SDamageCtx &Ctx);
 		void OnDestroyedByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);

@@ -2029,138 +2029,167 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	Ctx.iArmorHitDamage = Ctx.iDamage;
 	if (IsImmutable())
-		{
-		//	If we don't have ejecta, then decrease damage to 0.
-        //
-        //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
-        //  because even level 0 has some WMD. But for this case we only case
-        //  about "real" WMD.
-
-        if (m_pType->GetEjectaAdj() == 0
-                || Ctx.Damage.GetMassDestructionLevel() == 0)
-            Ctx.iDamage = 0;
-
-        //	Otherwise, adjust for WMD
-
-        else
-            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
-
-		//	Hit effect
-
-		if (!Ctx.bNoHitEffect)
-			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
-
-		//	Ejecta
-
-		if (Ctx.iDamage > 0)
-			CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
-
-		return damageNoDamageNoPassthrough;
-		}
+		return OnDamageImmutable(Ctx);
 
 	//	We go through a different path if we're already abandoned
 	//	(i.e., there is no life on the station)
 
-	if (IsAbandoned())
-		{
-		EDamageResults iResult = damageNoDamageNoPassthrough;
-
-		//	Let custom weapons get a chance
-
-		Ctx.pDesc->FireOnDamageAbandoned(Ctx);
-		if (IsDestroyed())
-			return damageDestroyed;
-
-		//	If this is a paralysis attack then no damage
-
-		int iEMP = Ctx.Damage.GetEMPDamage();
-		if (iEMP)
-			Ctx.iDamage = 0;
-
-		//	If this is blinding attack then no damage
-
-		int iBlinding = Ctx.Damage.GetBlindingDamage();
-		if (iBlinding)
-			Ctx.iDamage = 0;
-
-		//	If this is a radioactive attack then there is a chance that we will
-		//	be contaminated. (Note: We can only be contaminated by an attack if
-		//	we're abandoned)
-
-		int iRadioactive = Ctx.Damage.GetRadiationDamage();
-		if (iRadioactive 
-				&& GetScale() != scaleStar
-				&& GetScale() != scaleWorld)
-			{
-			int iChance = 4 * iRadioactive * iRadioactive;
-			if (mathRandom(1, 100) <= iChance)
-				SetCondition(CConditionSet::cndRadioactive);
-			}
-
-		//	If we have mining damage then call OnMining
-
-		if (Ctx.Damage.GetMiningAdj())
-			FireOnMining(Ctx);
-
-		//	Once the station is abandoned, only WMD damage can destroy it.
-        //  NOTE: We check level (which is 0 for no WMD) rather than 
-        //  MassDestructionAdj, because we always have a little WMD. But for 
-        //  this case, we want "real" WMD.
-
-        if (Ctx.Damage.GetMassDestructionLevel() > 0)
-            Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
-		else
-			Ctx.iDamage = 0;
-
-		//	Hit effect
-
-		if (!Ctx.bNoHitEffect)
-			Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
-
-		//	Give events a chance to change the damage
-
-		if (HasOnDamageEvent())
-			Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
-
-		//	Take damage
-
-		if (Ctx.iDamage > 0)
-			{
-			//	See if this hit destroyed us
-
-			if (m_Hull.GetStructuralHP() > 0 && m_Hull.GetStructuralHP() <= Ctx.iDamage)
-				{
-				//	Destroy
-
-				Destroy(Ctx);
-				iResult = damageDestroyed;
-				}
-
-			//	Otherwise, take damage
-
-			else
-				{
-				//	See if we should generate ejecta
-
-				CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
-
-				//	If we can be destroyed, subtract from hp
-
-				if (m_Hull.GetStructuralHP() > 0)
-					{
-					m_Hull.IncStructuralHP(-Ctx.iDamage);
-					iResult = damageStructuralHit;
-					}
-				}
-			}
-
-		//	Done
-
-		return iResult;
-		}
+	else if (IsAbandoned())
+		return OnDamageAbandoned(Ctx);
 
 	//	If we're not abandoned, we go through a completely different code-path
 
+	else
+		return OnDamageNormal(Ctx);
+
+	DEBUG_CATCH_OBJ(this)
+	}
+
+EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
+
+//	OnDamageAbandoned
+//
+//	An abandoned station is damaged
+
+	{
+	EDamageResults iResult = damageNoDamageNoPassthrough;
+
+	//	Let custom weapons get a chance
+
+	Ctx.pDesc->FireOnDamageAbandoned(Ctx);
+	if (IsDestroyed())
+		return damageDestroyed;
+
+	//	If this is a paralysis attack then no damage
+
+	int iEMP = Ctx.Damage.GetEMPDamage();
+	if (iEMP)
+		Ctx.iDamage = 0;
+
+	//	If this is blinding attack then no damage
+
+	int iBlinding = Ctx.Damage.GetBlindingDamage();
+	if (iBlinding)
+		Ctx.iDamage = 0;
+
+	//	If this is a radioactive attack then there is a chance that we will
+	//	be contaminated. (Note: We can only be contaminated by an attack if
+	//	we're abandoned)
+
+	int iRadioactive = Ctx.Damage.GetRadiationDamage();
+	if (iRadioactive 
+			&& GetScale() != scaleStar
+			&& GetScale() != scaleWorld)
+		{
+		int iChance = 4 * iRadioactive * iRadioactive;
+		if (mathRandom(1, 100) <= iChance)
+			SetCondition(CConditionSet::cndRadioactive);
+		}
+
+	//	If we have mining damage then call OnMining
+
+	if (Ctx.Damage.GetMiningAdj())
+		FireOnMining(Ctx);
+
+	//	Once the station is abandoned, only WMD damage can destroy it.
+    //  NOTE: We check level (which is 0 for no WMD) rather than 
+    //  MassDestructionAdj, because we always have a little WMD. But for 
+    //  this case, we want "real" WMD.
+
+    if (Ctx.Damage.GetMassDestructionLevel() > 0)
+        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+	else
+		Ctx.iDamage = 0;
+
+	//	Give events a chance to change the damage
+
+	if (HasOnDamageEvent())
+		Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
+
+	//	Hit effect
+
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+
+	//	Take damage
+
+	if (Ctx.iDamage > 0)
+		{
+		//	See if this hit destroyed us
+
+		if (m_Hull.GetStructuralHP() > 0 && m_Hull.GetStructuralHP() <= Ctx.iDamage)
+			{
+			//	Destroy
+
+			Destroy(Ctx);
+			iResult = damageDestroyed;
+			}
+
+		//	Otherwise, take damage
+
+		else
+			{
+			//	See if we should generate ejecta
+
+			CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
+
+			//	If we can be destroyed, subtract from hp
+
+			if (m_Hull.GetStructuralHP() > 0)
+				{
+				m_Hull.IncStructuralHP(-Ctx.iDamage);
+				iResult = damageStructuralHit;
+				}
+			}
+		}
+
+	//	Done
+
+	return iResult;
+	}
+
+EDamageResults CStation::OnDamageImmutable (SDamageCtx &Ctx)
+
+//	OnDamageImmutable
+//
+//	An immutable station is damaged
+
+	{
+	//	If we don't have ejecta, then decrease damage to 0.
+    //
+    //  NOTE: We check MassDestructionLevel (instead of MassDestructionAdj) 
+    //  because even level 0 has some WMD. But for this case we only case
+    //  about "real" WMD.
+
+    if (m_pType->GetEjectaAdj() == 0
+            || Ctx.Damage.GetMassDestructionLevel() == 0)
+        Ctx.iDamage = 0;
+
+    //	Otherwise, adjust for WMD
+
+    else
+        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+
+	//	Hit effect
+
+	if (!Ctx.bNoHitEffect)
+		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
+
+	//	Ejecta
+
+	if (Ctx.iDamage > 0)
+		CreateEjectaFromDamage(Ctx.iDamage, Ctx.vHitPos, Ctx.iDirection, Ctx.Damage);
+
+	return damageNoDamageNoPassthrough;
+	}
+
+EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
+
+//	OnDamageNormal
+//
+//	A normal station, neither abandoned nor immutable, is damaged.
+
+	{
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 
 	if (pOrderGiver 
@@ -2232,6 +2261,11 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
     if (Ctx.iDamage > 0 && m_Hull.IsMultiHull())
         Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
 
+	//	Give events a chance to change the damage
+
+	if (HasOnDamageEvent() && (Ctx.iDamage > 0 || bCustomDamage))
+		Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
+
 	//	Hit effect
 
 	if (!Ctx.bNoHitEffect)
@@ -2241,11 +2275,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	if (Ctx.iDamage == 0 && !bCustomDamage)
 		return damageNoDamage;
-
-	//	Give events a chance to change the damage
-
-	if (HasOnDamageEvent())
-		Ctx.iDamage = FireOnDamage(Ctx, Ctx.iDamage);
 
 	//	Tell our attacker that we got hit
 
@@ -2282,8 +2311,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 		CreateDestructionEffect();
 		return damageDestroyedAbandoned;
 		}
-
-	DEBUG_CATCH_OBJ(this)
 	}
 
 void CStation::OnDestroyed (SDestroyCtx &Ctx)
