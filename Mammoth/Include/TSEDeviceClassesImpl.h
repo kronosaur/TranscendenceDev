@@ -751,6 +751,15 @@ class CWeaponClass : public CDeviceClass
 			CONTINUOUS_START = 0xff,
 			};
 
+		struct SShotFireResult
+			{
+			bool bNoShotFired = false;			//	If TRUE, no shot was fired
+
+			bool bNoFireEffect = false;			//	If TRUE, do not create fire effect
+			bool bNoSoundEffect = false;		//	If TRUE, do not create sound effect
+			bool bNoRecoil = false;				//	If TRUE, do not create recoil
+			};
+
 		CWeaponClass (void);
 
 		int CalcActivateDelay (CItemCtx &ItemCtx) const;
@@ -766,12 +775,13 @@ class CWeaponClass : public CDeviceClass
 		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
 							  CWeaponFireDesc *pShot,
 							  int iRepeatingCount);
-		EOnFireWeaponResults FireOnFireWeapon (CItemCtx &ItemCtx, 
-											   CWeaponFireDesc *pShot,
-											   const CVector &vSource,
-											   CSpaceObject *pTarget,
-											   int iFireAngle,
-											   int iRepeatingCount);
+		bool FireOnFireWeapon (CItemCtx &ItemCtx, 
+							   CWeaponFireDesc *pShot,
+							   const CVector &vSource,
+							   CSpaceObject *pTarget,
+							   int iFireAngle,
+							   int iRepeatingCount,
+							   SShotFireResult &retResult);
 		bool FireWeapon (CInstalledDevice *pDevice, 
 						 CWeaponFireDesc *pShot, 
 						 CSpaceObject *pSource, 
@@ -779,6 +789,15 @@ class CWeaponClass : public CDeviceClass
 						 int iRepeatingCount,
 						 bool *retbSourceDestroyed,
 						 bool *retbConsumedItems);
+		void FireWeaponShot (CSpaceObject *pSource, 
+							 CInstalledDevice *pDevice, 
+							 CWeaponFireDesc *pShot, 
+							 const CVector &vShotPos, 
+							 int iShotDir, 
+							 Metric rShotSpeed, 
+							 CSpaceObject *pTarget,
+							 int iRepeatingCount,
+							 int iShotNumber);
 		int GetFireDelay (CWeaponFireDesc *pShot) const;
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;

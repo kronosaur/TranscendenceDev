@@ -1770,16 +1770,19 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pSho
 		return 1;
 	}
 
-CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
-																   CWeaponFireDesc *pShot,
-																   const CVector &vSource,
-																   CSpaceObject *pTarget,
-																   int iFireAngle,
-																   int iRepeatingCount)
+bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx, 
+									 CWeaponFireDesc *pShot,
+									 const CVector &vSource,
+									 CSpaceObject *pTarget,
+									 int iFireAngle,
+									 int iRepeatingCount,
+									 SShotFireResult &retResult)
 
 //	FireOnFireWeapon
 //
-//	Fires OnFireWeapon event
+//	Fires OnFireWeapon event. We return FALSE if we should still fire the
+//	weapon as normal. TRUE means that we handled the weapon and that retResult
+//	is initialized with further options.
 //
 //	default (or Nil) = fire weapon as normal
 //	noShot = do not consume power or ammo
@@ -1787,49 +1790,49 @@ CWeaponClass::EOnFireWeaponResults CWeaponClass::FireOnFireWeapon (CItemCtx &Ite
 
 	{
 	SEventHandlerDesc Event;
-	if (FindEventHandlerWeaponClass(evtOnFireWeapon, &Event))
+	if (!FindEventHandlerWeaponClass(evtOnFireWeapon, &Event))
+		return false;
+
+	retResult = SShotFireResult();
+
+	CCodeChainCtx Ctx;
+	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
+
+	Ctx.DefineContainingType(GetItemType());
+	Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
+	Ctx.SaveAndDefineItemVar(ItemCtx);
+	Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
+	Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
+	Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
+	Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
+	Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
+	Ctx.DefineItemType(CONSTLIT("aWeaponType"), pShot->GetWeaponType());
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
 		{
-		CCodeChainCtx Ctx;
-		EOnFireWeaponResults iResult;
-		TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
-
-		Ctx.DefineContainingType(GetItemType());
-		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
-		Ctx.SaveAndDefineItemVar(ItemCtx);
-		Ctx.DefineInteger(CONSTLIT("aFireAngle"), iFireAngle);
-		Ctx.DefineVector(CONSTLIT("aFirePos"), vSource);
-		Ctx.DefineInteger(CONSTLIT("aFireRepeat"), iRepeatingCount);
-		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
-		Ctx.DefineInteger(CONSTLIT("aWeaponBonus"), (pEnhancements ? pEnhancements->GetBonus() : 0));
-		Ctx.DefineItemType(CONSTLIT("aWeaponType"), pShot->GetWeaponType());
-
-		ICCItem *pResult = Ctx.Run(Event);
-		if (pResult->IsError())
-			ItemCtx.GetSource()->ReportEventError(ON_FIRE_WEAPON_EVENT, pResult);
-
-		if (pResult->IsNil())
-			iResult = resDefault;
-		else
-			{
-			CString sValue = pResult->GetStringValue();
-			if (strEquals(sValue, CONSTLIT("shotFired")))
-				return resShotFired;
-			else if (strEquals(sValue, CONSTLIT("noShot")))
-				return resNoShot;
-			else if (strEquals(sValue, CONSTLIT("default")))
-				return resDefault;
-			else
-				return resShotFired;
-			}
-
-		Ctx.Discard(pResult);
-
-		//	Done
-
-		return iResult;
+		ItemCtx.GetSource()->ReportEventError(ON_FIRE_WEAPON_EVENT, pResult);
+		return true;
 		}
+	else if (pResult->IsNil())
+		return false;
+
+	else if (pResult->IsTrue() || pResult->GetBooleanAt(CONSTLIT("shotFired")))
+		return true;
+
 	else
-		return resDefault;
+		{
+		retResult.bNoShotFired = pResult->GetBooleanAt(CONSTLIT("noShot"));
+		retResult.bNoFireEffect = retResult.bNoShotFired || pResult->GetBooleanAt("noFireEffect");
+		retResult.bNoSoundEffect = retResult.bNoShotFired || pResult->GetBooleanAt("noSoundEffect");
+		retResult.bNoRecoil = retResult.bNoShotFired || pResult->GetBooleanAt("noRecoil");
+
+		return true;
+		}
+
+	//	Done
+
+	return true;
 	}
 
 bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice, 
@@ -2023,123 +2026,79 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
             }
 		}
 
-	//	Create barrel flash effect
-
-	for (i = 0; i < iShotCount; i++)
-		pShot->CreateFireEffect(pSource->GetSystem(), pSource, ShotPos[i], CVector(), ShotDir[i]);
-
 	//	Create all the shots
 
 	CVector vRecoil;
-	bool bNoShotsFired = true;
+	bool bShotsFired = false;
+	bool bSoundEffect = false;
+	bool bRecoil = false;
 
 	if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam && !pDevice->HasLastShots())
 		pDevice->SetLastShotCount(iShotCount);
 
 	for (i = 0; i < iShotCount; i++)
 		{
+		SShotFireResult Result;
+
 		//	Fire out to event, if the weapon has one.
 		//	Otherwise, we create weapon fire
 
-		EOnFireWeaponResults iResult;
-		iResult = FireOnFireWeapon(ItemCtx, 
+		if (FireOnFireWeapon(ItemCtx, 
 				pShot, 
 				ShotPos[i], 
 				(m_bMIRV ? MIRVTarget[i] : pTarget),
 				ShotDir[i], 
-				iRepeatingCount);
-
-		//	Did we destroy the source?
-
-		if (pSource->IsDestroyed())
-			*retbSourceDestroyed = true;
-
-		//	If we didn't fire a shot in the event handler, do it now
-
-		if (iResult == resDefault)
+				iRepeatingCount,
+				Result))
 			{
-			CSpaceObject *pNewObj;
-			CDamageSource Source(pSource, killedByDamage);
+			//	Did we destroy the source?
 
-			//	If this shot was created by automated weapon fire, then set flag
-
-			if (pDevice->IsAutomatedWeapon())
-				Source.SetAutomatedWeapon();
-
-			//	Flags for the type of shot
-
-			DWORD dwFlags = SShotCreateCtx::CWF_WEAPON_FIRE;
-			if (i == 0)
-				dwFlags |= SShotCreateCtx::CWF_PRIMARY;
-
-			if (iRepeatingCount != 0)
-				dwFlags |= SShotCreateCtx::CWF_REPEAT;
-
-			//	If this is a continuous beam, then we need special code.
-
-			if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam
-					&& (pNewObj = pDevice->GetLastShot(pSource, i))
-					&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == ShotDir[i]))
-				{
-				pNewObj->AddContinuousBeam(ShotPos[i],
-						pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed),
-						ShotDir[i]);
-
-				//	Fire system events, which are normally fired inside CreateWeaponFireDesc
-
-				pSource->GetSystem()->FireSystemWeaponEvents(pNewObj, pShot, Source, iRepeatingCount, dwFlags);
-				}
-
-			//	Otherwise, create a shot
-
-			else
-				{
-				//	Create
-
-				SShotCreateCtx Ctx;
-				Ctx.pDesc = pShot;
-				Ctx.pEnhancements = pDevice->GetEnhancementStack();
-				Ctx.Source = Source;
-				Ctx.vPos = ShotPos[i];
-				Ctx.vVel = pSource->GetVel() + PolarToVector(ShotDir[i], rSpeed);
-				Ctx.iDirection = ShotDir[i];
-				Ctx.iRepeatingCount = iRepeatingCount;
-				Ctx.pTarget = (m_bMIRV ? MIRVTarget[i] : pTarget);
-				Ctx.dwFlags = dwFlags;
-				pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
-
-				//	Remember the shot, if necessary
-
-				if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam)
-					pDevice->SetLastShot(pNewObj, i);
-				}
-
-			bNoShotsFired = false;
+			if (pSource->IsDestroyed())
+				*retbSourceDestroyed = true;
 			}
 
-		//	This result means that OnFireWeapon fired a shot
+		//	Otherwise, fire default
 
-		else if (iResult == resShotFired)
-			bNoShotsFired = false;
+		else
+			FireWeaponShot(pSource, pDevice, pShot, ShotPos[i], ShotDir[i], rSpeed, (m_bMIRV ? MIRVTarget[i] : pTarget), iRepeatingCount, i);
 
-		//	Add up all the shot directions to end up with a recoil dir
+		//	Create the barrel flash effect, unless canceled
 
-		if (m_iRecoil && iResult != resNoShot)
+		if (!Result.bNoFireEffect)
+			pShot->CreateFireEffect(pSource->GetSystem(), pSource, ShotPos[i], CVector(), ShotDir[i]);
+
+		//	Create the sound effect, if necessary
+
+		if (!Result.bNoSoundEffect)
+			bSoundEffect = true;
+
+		//	Recoil
+
+		if (m_iRecoil && !Result.bNoRecoil)
+			{
 			vRecoil = vRecoil + PolarToVector(ShotDir[i], 1.0);
+			bRecoil = true;
+			}
+
+		//	If we fired, then remember that.
+
+		if (!Result.bNoShotFired)
+			bShotsFired = true;
 		}
 
 	//	If no shots were fired, then we're done
 
-	if (bNoShotsFired)
+	if (!bShotsFired)
 		return false;
 
 	//	Sound effect
 
-	pShot->PlayFireSound(pSource);
+	if (bSoundEffect)
+		pShot->PlayFireSound(pSource);
 
 	//	Recoil
 
-	if (m_iRecoil)
+	if (bRecoil)
 		{
 		CVector vAccel = vRecoil.Normal() * (Metric)(-10 * m_iRecoil * m_iRecoil);
 		pSource->Accelerate(vAccel, g_MomentumConstant);
@@ -2149,6 +2108,78 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	Done!
 
 	return true;
+	}
+
+void CWeaponClass::FireWeaponShot (CSpaceObject *pSource, 
+								   CInstalledDevice *pDevice, 
+								   CWeaponFireDesc *pShot, 
+								   const CVector &vShotPos, 
+								   int iShotDir, 
+								   Metric rShotSpeed, 
+								   CSpaceObject *pTarget,
+								   int iRepeatingCount,
+								   int iShotNumber)
+
+//	FireWeaponShot
+//
+//	Fires an actual shot.
+
+	{
+	CDamageSource Source(pSource, killedByDamage);
+	CSpaceObject *pNewObj;
+
+	//	If this shot was created by automated weapon fire, then set flag
+
+	if (pDevice->IsAutomatedWeapon())
+		Source.SetAutomatedWeapon();
+
+	//	Flags for the type of shot
+
+	DWORD dwFlags = SShotCreateCtx::CWF_WEAPON_FIRE;
+	if (iShotNumber == 0)
+		dwFlags |= SShotCreateCtx::CWF_PRIMARY;
+
+	if (iRepeatingCount != 0)
+		dwFlags |= SShotCreateCtx::CWF_REPEAT;
+
+	//	If this is a continuous beam, then we need special code.
+
+	if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam
+			&& (pNewObj = pDevice->GetLastShot(pSource, iShotNumber))
+			&& (pShot->IsCurvedBeam() || pNewObj->GetRotation() == iShotDir))
+		{
+		pNewObj->AddContinuousBeam(vShotPos,
+				pSource->GetVel() + PolarToVector(iShotDir, rShotSpeed),
+				iShotDir);
+
+		//	Fire system events, which are normally fired inside CreateWeaponFireDesc
+
+		pSource->GetSystem()->FireSystemWeaponEvents(pNewObj, pShot, Source, iRepeatingCount, dwFlags);
+		}
+
+	//	Otherwise, create a shot
+
+	else
+		{
+		//	Create
+
+		SShotCreateCtx Ctx;
+		Ctx.pDesc = pShot;
+		Ctx.pEnhancements = pDevice->GetEnhancementStack();
+		Ctx.Source = Source;
+		Ctx.vPos = vShotPos;
+		Ctx.vVel = pSource->GetVel() + PolarToVector(iShotDir, rShotSpeed);
+		Ctx.iDirection = iShotDir;
+		Ctx.iRepeatingCount = iRepeatingCount;
+		Ctx.pTarget = pTarget;
+		Ctx.dwFlags = dwFlags;
+		pSource->GetSystem()->CreateWeaponFire(Ctx, &pNewObj);
+
+		//	Remember the shot, if necessary
+
+		if (pShot->GetFireType() == CWeaponFireDesc::ftContinuousBeam)
+			pDevice->SetLastShot(pNewObj, iShotNumber);
+		}
 	}
 
 int CWeaponClass::GetActivateDelay (CItemCtx &ItemCtx) const
