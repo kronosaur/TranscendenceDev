@@ -16,8 +16,6 @@ static DWORD g_dwTotalTime = 0;
 
 #define MAX_DISTANCE							(700.0 * g_KlicksPerPixel)
 
-const int AGGRESSOR_THRESHOLD =					(30 * 30);
-
 const int ITEM_UPDATE_CYCLE =					30;
 const int HIGHLIGHT_TIMER =						200;
 const int HIGHLIGHT_BLINK =						110;
@@ -844,9 +842,10 @@ bool CSpaceObject::CanCommunicateWith (CSpaceObject *pSender)
 	if (!IsKnown())
 		return false;
 
-	//	We can't communicate if we're intangible (unless we're virual)
+	//	We can't communicate if we're suspended, etc. (But it's OK if we're
+	//	virtual.)
 
-	if (IsIntangible() && !IsVirtual())
+	if (IsUnreal())
 		return false;
 
 	//	Can't communicate if we're part of a different object
@@ -3896,100 +3895,26 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 //	NOTE: We append to the list because callers may have added their own.
 
 	{
-	int i;
-	Metric rWorstDist2 = rMaxDist * rMaxDist;
+	CSystem *pSystem = GetSystem();
+	if (pSystem == NULL)
+		return NULL;
 
-	//	Get the sovereign
+	CNearestInRadiusRange Range(GetPos(), rMaxDist);
 
-	CSovereign *pSovereign = GetSovereignToDefend();
-	if (pSovereign == NULL || GetSystem() == NULL)
-		return 0;
-
-	//	Get the list of enemy objects
-
-	const CSpaceObjectList &ObjList = pSovereign->GetEnemyObjectList(GetSystem());
-
-	//	Compute this object's perception and perception range
-
-	CPerceptionCalc Perception(GetPerception());
-
-	//	Allocate sorted array
-
-	TSortMap<Metric, CSpaceObject *> Sorted;
-
-	//	If a ship has fired its weapon after this time, then it counts
-	//	as an aggressor
-
-	int iAggressorThreshold;
 	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
-		iAggressorThreshold = -1;
+		{
+		CVisibleObjSelector Selector(this);
+		Selector.SetExcludeObj(pExcludeObj);
+
+		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
+		}
 	else
-		iAggressorThreshold = g_pUniverse->GetTicks() - AGGRESSOR_THRESHOLD;
-
-	//	Loop over all enemies
-
-	int iObjCount = ObjList.GetCount();
-	for (i = 0; i < iObjCount; i++)
 		{
-		CSpaceObject *pObj = ObjList.GetObj(i);
+		CVisibleAggressorObjSelector Selector(this);
+		Selector.SetExcludeObj(pExcludeObj);
 
-		if ((pObj->GetCategory() == catShip 
-					|| ((dwFlags & FLAG_INCLUDE_STATIONS) && pObj->GetCategory() == catStation))
-				&& pObj->CanAttack()
-				&& pObj != this)
-			{
-			CVector vDist = GetPos() - pObj->GetPos();
-			Metric rDist2 = vDist.Length2();
-
-			if (rDist2 < rWorstDist2
-					&& Perception.CanBeTargeted(pObj, rDist2)
-					&& pObj != pExcludeObj
-					&& pObj->GetLastFireTime() > iAggressorThreshold
-					&& !pObj->IsEscortingFriendOf(this))
-				{
-				//	Add the object to the list.
-
-				Sorted.Insert(rDist2, pObj);
-
-				//	If we've already got enough objects, then set a new worst 
-				//	distance.
-
-				if (Sorted.GetCount() >= iMaxEnemies)
-					rWorstDist2 = Sorted.GetKey(Sorted.GetCount() - 1);
-				}
-			}
+		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
 		}
-
-	//	If we're angry at the player, add her to the list.
-	//	(Skip if we're an enemy of the player, since we would have added her 
-	//	above.)
-
-	CSpaceObject *pPlayer = GetPlayerShip();
-	if (pPlayer 
-			&& !IsEnemy(pPlayer)
-			&& IsAngryAt(pPlayer)
-			&& pPlayer != pExcludeObj
-			&& pPlayer->GetLastFireTime() > iAggressorThreshold
-			&& !pPlayer->IsEscortingFriendOf(this))
-		{
-		CVector vDist = GetPos() - pPlayer->GetPos();
-		Metric rDist2 = vDist.Length2();
-		if (rDist2 < rWorstDist2
-				&& Perception.CanBeTargeted(pPlayer, rDist2))
-			Sorted.Insert(rDist2, pPlayer);
-		}
-
-	//	Add each of the entries in the array to the
-	//	output
-
-	int iFound = Min(Sorted.GetCount(), iMaxEnemies);
-	pretList->GrowToFit(iFound);
-	for (i = 0; i < iFound; i++)
-		pretList->Insert(Sorted[i]);
-
-	//	Return the number of enemies found
-
-	return iFound;
 	}
 
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)

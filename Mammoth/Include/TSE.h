@@ -638,6 +638,8 @@ class COverlayList
 class CSpaceObject : public CObject
 	{
 	public:
+		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
+
 		enum Categories
 			{
 			catShip =			0x00000001,
@@ -1377,6 +1379,7 @@ class CSpaceObject : public CObject
 		virtual bool IsInactive (void) const { return IsSuspended(); }
 		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsSuspended (void) const { return false; }
+		virtual bool IsUnreal (void) const { return (IsSuspended() || IsDestroyed()); }
 
 		//	...for active/intelligent objects (ships, stations, etc.)
 
