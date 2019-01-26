@@ -1440,17 +1440,17 @@
 						(switch
 							(eq roll 0)
 								(block Nil
-									(setq gItem (random (objGetItems gPlayerShip "vI &lt;7 -Alien;")))
+									(setq gItem (random (objGetItems gPlayerShip "vI &lt;7 -alien;")))
 									(setq course "starship engines")
 									)
 							(eq roll 1)
 								(block Nil
-									(setq gItem (random (objGetItems gPlayerShip "rI &lt;7 -Alien;")))
+									(setq gItem (random (objGetItems gPlayerShip "rI &lt;7 -alien;")))
 									(setq course "starship reactors") 
 									)
 							(eq roll 2)
 								(block Nil
-									(setq gItem (random (objGetItems gPlayerShip "sI &lt;7 -Alien;")))
+									(setq gItem (random (objGetItems gPlayerShip "sI &lt;7 -alien; -nonEnergyShields;")))
 									(setq course "shield generators")
 									)
 							(setq gItem Nil)

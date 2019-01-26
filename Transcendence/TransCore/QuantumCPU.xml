@@ -45,63 +45,96 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Invoke>
-			(switch
-				; If we don't have a quantum CPU
-				(not (progHasQuantumCPU gSource))
-					(objSendMessage gSource Nil "Quantum CPU required")
+			(block (
+				(shieldItem (@ (objGetItems gSource "sI") 0))
+				(consumeItem True)
+				)
+				(switch
+					;	No Quantum CPU
 
-				; Enhance shield generator
-				(block (notFound)
-					; Install
-					(setq notFound True)
-					(objEnumItems gPlayerShip "sI" theItem
-						(block (shieldItem)
-							(setq shieldItem theItem)
-							(if notFound
-								(block Nil
-									(switch
-										; If the shield generator is not advanced enough, then nothing happens
-										(ls (itmGetLevel shieldItem) 4)
-											(objSendMessage gSource Nil "Shield generator is too primitive for ShieldPower algorithm")
+					(not (progHasQuantumCPU gSource))
+						(block ()
+							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
+							(setq consumeItem Nil)
+							)
 
-										; If the shield generator is too advanced, then nothing happens
-										(gr (itmGetLevel shieldItem) 9)
-											(objSendMessage gSource Nil "Shield generator is too advanced for ShieldPower algorithm")
+					;	No shield generator
 
-										; If the item is damaged, we cannot do anything
-										(itmIsDamaged shieldItem)
-											(objSendMessage gSource Nil "Shield generator is too damaged for optimization")
+					(not shieldItem)
+						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
+						
+					;	Non-energy shields cannot be enhanced
 
-										; 10% chance of enhancing the shield generator (otherwise, a bug)
-										(if (leq (random 1 100) 10)
-											(block (result)
-												(setq result (shpEnhanceItem gSource theItem 0x0102))
-												(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more powerful" "shield generator"))
-												)
-											(block (result)
-												(setq result (shpEnhanceItem gSource theItem 0x8102))
-												(objSendMessage gSource Nil (intItemEnhanceStatus result "ShieldPower: qbit indeterminacy exception [#!800A410!]" "shield generator"))
-												)
-											)
-										)
-									(setq notFound Nil)
+					(itmMatches shieldItem "s +nonEnergyShields")
+						(objSendMessage gSource Nil 
+							(typTranslate gType 'msgCannotEnhance { 
+								itemName:(itmGetName shieldItem '(article short))
+								})
+							)
+
+					;	If the shield generator is not advanced enough, then nothing happens
+
+					(ls (itmGetLevel shieldItem) 4)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
+
+					;	If the shield generator is too advanced, then nothing happens
+
+					(gr (itmGetLevel shieldItem) 9)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+
+					;	If the item is damaged, we cannot do anything
+
+					(itmIsDamaged shieldItem)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooDamaged))
+
+					;	10% chance of enhancing the shield generator
+
+					(leq (random 1 100) 10)
+						(block (result)
+							(setq result (shpEnhanceItem gSource shieldItem 0x0102))
+							(objSendMessage gSource Nil 
+								(intItemEnhanceStatus result
+									(typTranslate gType 'msgSuccess)
+									(typTranslate gType 'nounShieldGenerator)
 									)
 								)
 							)
+
+					;	Otherwise, a bug
+
+					(block (result)
+						(setq result (shpEnhanceItem gSource shieldItem 0x8102))
+						(objSendMessage gSource Nil 
+							(intItemEnhanceStatus result
+								(typTranslate gType 'msgShieldError)
+								(typTranslate gType 'nounShieldGenerator)
+								)
+							)
 						)
+					)
 
-					(if notFound
-						(objSendMessage gSource Nil "Shield generator required")
+				;	Consume the cube
+
+				(if consumeItem
+					(block ()
+						(itmSetKnown gItem)
+						(objRemoveItem gSource gItem 1)
 						)
-
-					; Identify the item
-					(itmSetKnown gItem)
-
-					; Remove ROM
-					(objRemoveItem gSource gItem 1)
 					)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
+			<Text id="msgNoShields">Shield generator required</Text>
+			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
+			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
+			<Text id="msgTooDamaged">Shield generator is too damaged for optimization</Text>
+			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
+			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
+			<Text id="msgSuccess">Your shields are more powerful</Text>
+			<Text id="nounShieldGenerator">shield generator</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Level 5: Shield Optimizer Cube -->
@@ -121,60 +154,82 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Invoke>
-			(switch
-				; If we don't have a quantum CPU
-				(not (progHasQuantumCPU gSource))
-					(objSendMessage gSource Nil "Quantum CPU required")
+			(block (
+				(shieldItem (@ (objGetItems gSource "sI") 0))
+				(consumeItem True)
+				)
+				(switch
+					;	No Quantum CPU
 
-				; Enhance shield generator
-				(block (notFound)
-					; Install
-					(setq notFound True)
-					(objEnumItems gSource "sI" theItem
-						(block (shieldItem)
-							(setq shieldItem theItem)
-							(if notFound
-								(block Nil
-									(switch
-										; If the shield generator is not advanced enough, then nothing happens
-										(ls (itmGetLevel shieldItem) 4)
-											(objSendMessage gSource Nil "Shield generator is too primitive for ShieldPower algorithm")
+					(not (progHasQuantumCPU gSource))
+						(block ()
+							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
+							(setq consumeItem Nil)
+							)
 
-										; If the shield generator is too advanced, then nothing happens
-										(gr (itmGetLevel shieldItem) 9)
-											(objSendMessage gSource Nil "Shield generator is too advanced for ShieldPower algorithm")
+					;	No shield generator
 
-										; If the item is damaged, we repair it
-										(itmIsDamaged shieldItem)
-											(block Nil
-												(shpRepairItem gSource theItem)
-												(objSendMessage gSource Nil "Shield generator has been repaired")
-												)
+					(not shieldItem)
+						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
+						
+					;	Non-energy shields cannot be enhanced
 
-										; Enhance the shield generator
-										(block (result)
-											(setq result (shpEnhanceItem gSource theItem 0x0102))
-											(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more powerful" "shield generator"))
-											)
-										)
-									(setq notFound Nil)
-									)
+					(itmMatches shieldItem "s +nonEnergyShields")
+						(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+					;	If the shield generator is not advanced enough, then nothing happens
+
+					(ls (itmGetLevel shieldItem) 4)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
+
+					;	If the shield generator is too advanced, then nothing happens
+
+					(gr (itmGetLevel shieldItem) 9)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+
+					;	If the item is damaged, we repair it
+
+					(itmIsDamaged shieldItem)
+						(block Nil
+							(shpRepairItem gSource shieldItem)
+							(objSendMessage gSource Nil (typTranslate gType 'msgShieldsRepaired))
+							)
+
+					;	Shields enhanced
+
+					(block (result)
+						(setq result (shpEnhanceItem gSource shieldItem 0x0102))
+						(objSendMessage gSource Nil 
+							(intItemEnhanceStatus result 
+								(typTranslate gType 'msgSuccess)
+								(typTranslate gType 'nounShieldGenerator)
 								)
 							)
 						)
+					)
 
-					(if notFound
-						(objSendMessage gSource Nil "Shield generator required")
+				;	Consume the cube
+
+				(if consumeItem
+					(block ()
+						(itmSetKnown gItem)
+						(objRemoveItem gSource gItem 1)
 						)
-
-					; Identify the item
-					(itmSetKnown gItem)
-
-					; Remove ROM
-					(objRemoveItem gSource gItem 1)
 					)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
+			<Text id="msgNoShields">Shield generator required</Text>
+			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
+			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
+			<Text id="msgShieldsRepaired">Shield generator has been repaired</Text>
+			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
+			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
+			<Text id="msgSuccess">Your shields are more powerful</Text>
+			<Text id="nounShieldGenerator">shield generator</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Level 6: Scramble Algorithm -->
@@ -236,60 +291,82 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Invoke>
-			(switch
-				; If we don't have a quantum CPU
-				(not (progHasQuantumCPU gSource))
-					(objSendMessage gSource Nil "Quantum CPU required")
+			(block (
+				(shieldItem (@ (objGetItems gSource "sI") 0))
+				(consumeItem True)
+				)
+				(switch
+					;	No Quantum CPU
 
-				; Enhance shield generator
-				(block (notFound)
-					; Install
-					(setq notFound True)
-					(objEnumItems gSource "sI" theItem
-						(block (shieldItem)
-							(setq shieldItem theItem)
-							(if notFound
-								(block Nil
-									(switch
-										; If the shield generator is not advanced enough, then nothing happens
-										(ls (itmGetLevel shieldItem) 4)
-											(objSendMessage gSource Nil "Shield generator is too primitive for ShieldEfficiency algorithm")
+					(not (progHasQuantumCPU gSource))
+						(block ()
+							(objSendMessage gSource Nil (typTranslate gType 'msgQuantumCPURequired))
+							(setq consumeItem Nil)
+							)
 
-										; If the shield generator is too advanced, then nothing happens
-										(gr (itmGetLevel shieldItem) 9)
-											(objSendMessage gSource Nil "Shield generator is too advanced for ShieldEfficiency algorithm")
+					;	No shield generator
 
-										; If the item is damaged, we repair it
-										(itmIsDamaged shieldItem)
-											(block Nil
-												(shpRepairItem gSource theItem)
-												(objSendMessage gSource Nil "Shield generator has been repaired")
-												)
+					(not shieldItem)
+						(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
+						
+					;	Non-energy shields cannot be enhanced
 
-										; Enhance the shield generator
-										(block (result)
-											(setq result (shpEnhanceItem gSource theItem 0x0f02))
-											(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more efficient" "shield generator"))
-											)
-										)
-									(setq notFound Nil)
-									)
+					(itmMatches shieldItem "s +nonEnergyShields")
+						(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+					;	If the shield generator is not advanced enough, then nothing happens
+
+					(ls (itmGetLevel shieldItem) 4)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooPrimitive))
+
+					;	If the shield generator is too advanced, then nothing happens
+
+					(gr (itmGetLevel shieldItem) 9)
+						(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+
+					;	If the item is damaged, we repair it
+
+					(itmIsDamaged shieldItem)
+						(block Nil
+							(shpRepairItem gSource shieldItem)
+							(objSendMessage gSource Nil (typTranslate gType 'msgShieldsRepaired))
+							)
+
+					;	Shields enhanced
+
+					(block (result)
+						(setq result (shpEnhanceItem gSource shieldItem 0x0f02))
+						(objSendMessage gSource Nil 
+							(intItemEnhanceStatus result 
+								(typTranslate gType 'msgSuccess)
+								(typTranslate gType 'nounShieldGenerator)
 								)
 							)
 						)
+					)
 
-					(if notFound
-						(objSendMessage gSource Nil "Shield generator required")
+				;	Consume the cube
+
+				(if consumeItem
+					(block ()
+						(itmSetKnown gItem)
+						(objRemoveItem gSource gItem 1)
 						)
-
-					; Identify the item
-					(itmSetKnown gItem)
-
-					; Remove ROM
-					(objRemoveItem gSource gItem 1)
 					)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgQuantumCPURequired">Quantum CPU required</Text>
+			<Text id="msgNoShields">Shield generator required</Text>
+			<Text id="msgCannotEnhance">The algorithm cannot enhance %itemName%</Text>
+			<Text id="msgTooAdvanced">Shield generator is too advanced for ShieldPower algorithm</Text>
+			<Text id="msgShieldsRepaired">Shield generator has been repaired</Text>
+			<Text id="msgTooPrimitive">Shield generator is too primitive for ShieldPower algorithm</Text>
+			<Text id="msgShieldError">ShieldPower: qbit indeterminacy exception [#!800A410!]</Text>
+			<Text id="msgSuccess">Your shields are more efficient</Text>
+			<Text id="nounShieldGenerator">shield generator</Text>
+		</Language>
 	</ItemType>
 
 <!-- GLOBALS -->

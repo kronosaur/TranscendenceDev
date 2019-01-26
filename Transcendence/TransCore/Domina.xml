@@ -153,7 +153,7 @@
 			
 					;	Fully recharge any enabled undamaged installed shield.
 				
-					(if (filter (objGetItems gSource "sIN") theShield (objGetItemProperty gSource theShield 'enabled))
+					(if (filter (objGetItems gSource "sIN -nonEnergyShields;") theShield (objGetItemProperty gSource theShield 'enabled))
 						(block ()
 							(if (setq shieldDamage (shpGetShieldDamage gSource)) (setq restored True))
 							(setq pointsLeft (/ (- 1000 shieldDamage) 2))
@@ -435,7 +435,7 @@
 
 								(itemToImprove
 									(item
-										(filter (objGetItems gSource "sI") theItem
+										(filter (objGetItems gSource "sI -nonEnergyShields;") theItem
 											(and (not (itmIsDamaged theItem)) (not (itmIsEnhanced theItem)))
 											)
 										0

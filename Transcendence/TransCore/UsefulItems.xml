@@ -1810,6 +1810,10 @@
 									(itmHasAttribute shieldItem "Alien")
 										(objSendMessage gSource Nil "Shield generator is too alien for the ROM to enhance")
 
+									; Novaya repairers cannot be enhanced
+									(itmHasAttribute shieldItem 'nonEnergyShields)
+										(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
 									; If the shield generator is too advanced, then nothing happens
 									(gr (itmGetLevel shieldItem) 6)
 										(objSendMessage gSource Nil "Shield generator is too advanced for the ROM to enhance")
@@ -1844,6 +1848,10 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgCannotEnhance">The ROM cannot enhance %itemName%</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Diamond field crystal -->
@@ -2015,6 +2023,10 @@
 				(objSendMessage gSource Nil "Green etherium crystal has burned out")
 			</OnRemovedAsEnhancement>
 		</Events>
+
+		<Language>
+			<Text id="msgCannotEnhance">Field crystal not compatibile with %itemName%</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Field Crystal, Unknown -->
@@ -2249,7 +2261,7 @@
 			unknownType=		"&itUnknownROM;"
 			attributes=			"info, minorItem, notForSale, shieldEnhance"
 
-			description=		"One of Hiro's first creations, this ROM can increase the strength of any shield generator up to tech level VI."
+			description=		"One of Hiro's first creations, this ROM can increase the strength of any shield generator up to tech level 6."
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -2264,6 +2276,10 @@
 						(if notFound
 							(block Nil
 								(switch
+									; Novaya repairers cannot be enhanced
+									(itmHasAttribute shieldItem 'nonEnergyShields)
+										(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
 									; If the shield generator is too advanced, then nothing happens
 									(gr (itmGetLevel shieldItem) 6)
 										(objSendMessage gSource Nil "Hiro: Shield tech too high. ROM abort.")
@@ -2298,6 +2314,10 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgCannotEnhance">Hiro: Non-energy shield found. ROM abort.</Text>
+		</Language>
 	</ItemType>
 	
 <!-- DOCK SCREENS -->
@@ -2864,7 +2884,11 @@
 						; Must have a shield generator
 						(not (setq theShields (item (objGetItems gSource "sI") 0)))
 							(objSendMessage gSource Nil "Shield generator required")
-							
+
+						; Novaya repairers cannot be enhanced
+						(itmHasAttribute theShields 'nonEnergyShields)
+							(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName theShields '(article short)) }))
+
 						; If the shield generator is not advanced enough, then nothing happens
 						(ls (itmGetLevel theShields) 7)
 							(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
@@ -2904,6 +2928,10 @@
 							(if notFound
 								(block Nil
 									(switch
+										; Novaya repairers cannot be enhanced
+										(itmHasAttribute shieldItem 'nonEnergyShields)
+											(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
 										; If the shield generator is not advanced enough, then nothing happens
 										(ls (itmGetLevel shieldItem) 7)
 											(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
