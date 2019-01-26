@@ -212,6 +212,16 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 //	Returns damageShattered if source should be shattered
 //
 //	Sets Ctx.iDamage to the amount of hit points left after damage absorption.
+//
+//	When we enter this function, Ctx.iDamage is the damage that got through
+//	shields, etc. and reached the armor.
+//
+//	Ctx.iArmorDamage is the adjusted damage that will subtract from armor hit 
+//	points (after damage adj, etc.).
+//
+//	When we leave this function, Ctx.iDamage is the HP that got past the armor.
+//	Ctx.iArmorAbsorb is what the armor absorbed: the difference between 
+//	Ctx.iDamage at the beginning and at the end.
 
 	{
 	DEBUG_TRY
@@ -291,12 +301,6 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	if (Ctx.IsDeviceDisrupted())
 		pSource->OnHitByDeviceDisruptDamage(Ctx.GetDeviceDisruptTime());
 
-	//	Create a hit effect. (Many weapons show an effect even if no damage was
-	//	done.)
-
-	if (!Ctx.bNoHitEffect && Ctx.pDesc)
-		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
-
 	//	Give source events a chance to change the damage before we
 	//	subtract from armor.
 
@@ -305,6 +309,22 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iArmorDamage = pSource->FireOnDamage(Ctx, Ctx.iArmorDamage);
 		if (pSource->IsDestroyed())
 			return damageDestroyed;
+		}
+
+	//	Create a hit effect. (Many weapons show an effect even if no damage was
+	//	done.)
+
+	if (!Ctx.bNoHitEffect && Ctx.pDesc)
+		{
+		//	Hit effect is based on how much damage the armor took, so we need to
+		//	temporarily store that in Ctx.iDamage.
+
+		int iSavedDamage = Ctx.iDamage;
+		Ctx.iDamage = Ctx.iArmorDamage;
+
+		Ctx.pDesc->CreateHitEffect(pSource->GetSystem(), Ctx);
+
+		Ctx.iDamage = iSavedDamage;
 		}
 
 	//	Compute how much damage the armor absorbs based on how much damage it
