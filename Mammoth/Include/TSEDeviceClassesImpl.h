@@ -722,6 +722,7 @@ class CWeaponClass : public CDeviceClass
 			varSingleLevelScaling,	//	Single CWeaponFireDesc, scales to levels
 			varLevelScaling,		//	Explicit definitions for each level
 			varCharges,				//	Current charge determines definition
+			varCounter,				//	Current counter value determines definition
 			};
 
 		struct SConfigDesc
