@@ -1653,21 +1653,22 @@
 	<StationType UNID="&stManufacturingPlant;"
 			name=				"corporate manufacturing plant"
 			sovereign=			"&svCorporate;"
+
+			attributes=			"corporate, corporateCustoms, friendly, independent, generic, human, majorStation, populated"
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsAbandonedStation;"
-			dockingPorts=		"8"
-			canAttack=			"true"
 
-			multiHull=			"true"
+			size=				"325"
 			armorID=			"&itCeralloyArmor;"
 			hitPoints=			"630"
+			multiHull=			"true"
 			regen=              "6"
+
+			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"corporate, corporateCustoms, friendly, independent, generic, human, majorStation, populated"
 			>
 			
 		<!-- Encounter Info -->
@@ -1692,15 +1693,63 @@
 			Ventabot Manufacturing; WIZ Manufacturing; Yollensgard Industrials; Z%1 Manufacturing
 		</Names>
 
-		<Image			imageID="&rsManufacturingPlant;" imageWidth="150" imageHeight="220"/>
+		<!-- Trade and Items -->
+
+		<Trade currency="credit">
+		</Trade>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Lookup count="1d4+2" table="&tbCommPrivateCrafts;"/>
 		</Ships>
 
-		<Trade currency="credit">
-		</Trade>
+		<!-- Image and Effects -->
 
+		<Image			imageID="&rsCorporateManufacturing;" imageWidth="270" imageHeight="560" viewportRatio="0.02125"/>
+
+		<DockingPorts
+				portCount=		"12"
+				portAngle=		"-15"
+				portRadius=		"145"
+				>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default>
+						<OnPaneInit>
+							(scrSetDescTranslate gScreen 'descWelcome {
+								consumeDesc: (objGetData gSource "itemsConsumedDesc")
+								})
+						</OnPaneInit>
+
+						<Actions>
+							<Action id="actionBuyItems" default="1">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
+									checkMilitaryID: True
+									})
+							</Action>
+							
+							<Action id="actionSellItems">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
+									})
+							</Action>
+							
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Behavior -->
+		
 		<Events>
 			<OnContractGenerate>
 				(intGenerateIndustrialRequestContract1)
@@ -1786,12 +1835,19 @@
 							(objAddBuyOrder gSource theType (random '(150 130 120 120 115 115 115 110)))
 							
 							; Compose a line telling the player what we will buy
-							(if (eq i 1)
-								(setq buyDesc (cat "We are looking to buy " (itmGetName (itmCreate theType 1) 0x82)))
-								(setq buyDesc (cat buyDesc
-									(if (eq i totalItems) " and " ", ")
-									(itmGetName (itmCreate theType 1) 0x82)
-									(if (eq i totalItems) "." "")
+							(switch
+								(eq i 1)
+									(setq buyDesc 
+										(typTranslate gType 'descWantToBuy { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
+										)
+
+								(eq i totalItems)
+									(setq (cat buyDesc 
+										(typTranslate gType 'descWantToBuyEnd { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
+										))
+
+								(setq (cat buyDesc 
+									(typTranslate gType 'descWantToBuyComma { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
 									))
 								)
 							)
@@ -1840,55 +1896,25 @@
 			</OnManufacture>
 		</Events>
 
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default>
-					
-						<OnPaneInit>
-							(scrSetDesc gScreen
-								"You are in the docking level of a corporate manufacturing plant. The station master greets you:\n\n"
-								"\"Welcome to our manufacturing facilities! "
-								(objGetData gSource "itemsConsumedDesc")
-								"\""
-								)
-						</OnPaneInit>
-
-						<Actions>
-							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
-							</Action>
-							
-							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
-							</Action>
-							
-							<Action id="actionUndock" cancel="1">
-								<Exit/>
-							</Action>
-
-						</Actions>
-
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<DockingPorts>
-			<Port x="0"		y="101" />
-			<Port x="67"	y="56" />
-			<Port x="99"	y="-9" />
-			<Port x="72"	y="-84" />
-			<Port x="0"		y="-108" />
-			<Port x="-72"	y="-84" />
-			<Port x="-99"	y="-9" />
-			<Port x="-67"	y="56" />
-		</DockingPorts>
-
         <Language>
+			<Text id="descWelcome">
+
+				You are in the docking level of a corporate manufacturing plant.
+				The station master greets you:
+
+				"Welcome to our manufacturing facilities! %consumeDesc%"
+
+			</Text>
+			<Text id="descWantToBuy">
+				"We are looking to buy %itemName%"
+			</Text>
+			<Text id="descWantToBuyComma">
+				", %itemName%"
+			</Text>
+			<Text id="descWantToBuyEnd">
+				" and %itemName%."
+			</Text>
+
             <Text id="core.mapDescCustom">
                 (block (
                     (itemsConsumed (objGetData gSource 'itemsConsumed))
@@ -2872,11 +2898,11 @@
 	<Image UNID="&rsCorporateArmsDealer;"	bitmap="Resources\CorporateArmsDealer.jpg" bitmask="Resources\CorporateArmsDealerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateEnclave;"		bitmap="Resources\CorporateEnclave.jpg" bitmask="Resources\CorporateEnclaveMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCorporateFuelDepot;"	bitmap="Resources\CorporateFuelDepot.jpg" bitmask="Resources\CorporateFuelDepotMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCorporateManufacturing;"	bitmap="Resources\CorporateManufacturing.jpg" bitmask="Resources\CorporateManufacturingMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIceFarmIce;"			bitmap="Resources\IceFarmIce.jpg" bitmask="Resources\IceFarmIceMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIceFarmPrimordial;"		bitmap="Resources\IceFarmPrimordial.jpg" bitmask="Resources\IceFarmPrimordialMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIceFarmRocky;"			bitmap="Resources\IceFarmRocky.jpg" bitmask="Resources\IceFarmRockyMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsMakayevFactory;"		bitmap="Resources\MakayevFactory.jpg" bitmask="Resources\MakayevFactoryMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsManufacturingPlant;"	bitmap="Resources\ManufacturingPlant.jpg" bitmask="Resources\ManufacturingPlantMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsCorporateCruiserHD;"	bitmap="Resources\CorporateCruiserHD.jpg" bitmask="Resources\CorporateCruiserHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsCorporateCruiserHero;"	bitmap="Resources\CorporateCruiserLarge.jpg" bitmask="Resources\CorporateCruiserLargeMask.bmp"  loadOnUse="true"/>

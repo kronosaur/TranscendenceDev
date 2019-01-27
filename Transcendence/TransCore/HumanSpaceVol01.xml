@@ -1601,6 +1601,7 @@
 	<!ENTITY smCorporateSpace			"0x0010004D">
 	<!ENTITY tbCorporateDeliveryTransport		"0x0010004E">
 	<!ENTITY rsCorporateCruiserHero		"0x0010004F">
+	<!ENTITY rsCorporateManufacturing	"0x00100050">
 	
 	<!-- 0060-007F COMMONWEALTH FLEET -->
 	
