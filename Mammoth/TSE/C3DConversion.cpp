@@ -189,11 +189,13 @@ ALERROR C3DConversion::Init (CXMLElement *pDesc)
 
 	{
 	C3DObjectPos Pos;
+	bool b3DPos;
 
-	Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &m_bUseCompatible);
+	Pos.InitFromXML(pDesc, C3DObjectPos::FLAG_CALC_POLAR, &b3DPos);
 	m_iAngle = Pos.GetAngle();
 	m_iRadius = Pos.GetRadius();
 	m_iZ = Pos.GetZ();
+	m_bUseCompatible = !b3DPos;
 		
 	//	Read the sendToBack and bringToFront attributes
 
