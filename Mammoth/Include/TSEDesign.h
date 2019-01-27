@@ -1369,7 +1369,6 @@ inline bool CInstalledDevice::IsSecondaryWeapon (void) const
 inline bool CItem::IsArmor (void) const { return (m_pItemType && m_pItemType->GetArmorClass()); }
 inline bool CItem::IsDevice (void) const { return (m_pItemType && m_pItemType->GetDeviceClass()); }
 inline const CEconomyType *CItem::GetCurrencyType (void) const { return m_pItemType->GetCurrencyType(); }
-inline int CItem::GetLevel (void) const { return m_pItemType->GetLevel(CItemCtx(*this)); }
 
 inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const { return m_List[iIndex].Item.GetType()->GetDeviceClass(); }
 

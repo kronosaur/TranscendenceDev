@@ -52,11 +52,9 @@ CItemEnhancement CItem::m_NullMod;
 CItem CItem::m_NullItem;
 
 CItem::CItem (void) : 
-		m_pItemType(NULL), 
 		m_dwCount(0),
 		m_dwFlags(0),
-		m_dwInstalled(0xff),
-		m_pExtra(NULL)
+		m_dwInstalled(0xff)
 
 //	CItem constructor
 
@@ -453,13 +451,7 @@ void CItem::Extra (void)
 
 	{
 	if (m_pExtra == NULL)
-		{
 		m_pExtra = new SExtra;
-		m_pExtra->m_dwCharges = 0;
-		m_pExtra->m_dwVariant = 0;
-		m_pExtra->m_dwDisruptedTime = 0;
-		m_pExtra->m_dwVariantCounter = 0;
-		}
 	}
 
 bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const
@@ -1109,6 +1101,23 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 		}
 
 	return sResult;
+	}
+
+int CItem::GetLevel (void) const
+
+//	GetLevel
+//
+//	Returns the current level.
+
+	{
+	if (IsEmpty())
+		return 0;
+
+	else if (GetType()->IsScalable())
+        return Max(GetType()->GetMinLevel(), Min(GetType()->GetMinLevel() + GetScalableLevel(), GetType()->GetMaxLevel()));
+
+	else
+		return GetType()->GetMinLevel();
 	}
 
 int CItem::GetMassKg (void) const
@@ -1781,7 +1790,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
 	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
-			&& pExtra->m_dwVariant == 0
+			&& pExtra->m_dwLevel == 0
 			&& pExtra->m_dwVariantCounter == 0
 			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks()))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
@@ -1805,7 +1814,7 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 		const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
-				&& m_pExtra->m_dwVariant == pSrc->m_dwVariant
+				&& m_pExtra->m_dwLevel == pSrc->m_dwLevel
 				&& m_pExtra->m_dwVariantCounter == pSrc->m_dwVariantCounter
 				&& (bIgnoreDisrupted || IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
 				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
@@ -2793,7 +2802,7 @@ void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)
 				{
 				Extra();
 				m_pExtra->m_dwCharges = LOBYTE(LOWORD(dwLoad));
-				m_pExtra->m_dwVariant = 0;
+				m_pExtra->m_dwLevel = 0;
 				m_pExtra->m_dwDisruptedTime = 0;
 				m_pExtra->m_Mods = CItemEnhancement(HIWORD(dwLoad));
 				}
@@ -2820,7 +2829,16 @@ void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)
 			//	Charges
 
 			m_pExtra->m_dwCharges = (DWORD)pBuffer->GetElement(iStart)->GetIntegerValue();
-			m_pExtra->m_dwVariant = (DWORD)pBuffer->GetElement(iStart+1)->GetIntegerValue();
+
+			//	Level
+
+			if (dwVersion >= 170)
+				m_pExtra->m_dwLevel = (DWORD)pBuffer->GetElement(iStart+1)->GetIntegerValue();
+			else
+				{
+				DWORD dwVariant = (DWORD)pBuffer->GetElement(iStart+1)->GetIntegerValue();
+				m_pExtra->m_dwLevel = HIWORD(dwVariant);
+				}
 
 			//	Mods
 
@@ -2864,10 +2882,10 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 
 	{
 	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_pItemType = g_pUniverse->FindItemType(dwLoad);
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_dwCount = LOWORD(dwLoad);
 	m_dwFlags = LOBYTE(HIWORD(dwLoad));
 	m_dwInstalled = HIBYTE(HIWORD(dwLoad));
@@ -2876,44 +2894,52 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 
 	if (Ctx.dwVersion >= 23)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad)
 			{
 			m_pExtra = new SExtra;
 
 			if (Ctx.dwVersion >= 71)
 				{
-				Ctx.pStream->Read((char *)&m_pExtra->m_dwCharges, sizeof(DWORD));
-				Ctx.pStream->Read((char *)&m_pExtra->m_dwVariant, sizeof(DWORD));
+				Ctx.pStream->Read(m_pExtra->m_dwCharges);
+
+				if (Ctx.dwVersion >= 170)
+					Ctx.pStream->Read(m_pExtra->m_dwLevel);
+				else
+					{
+					DWORD dwVariant;
+					Ctx.pStream->Read(dwVariant);
+					m_pExtra->m_dwLevel = HIWORD(dwVariant);
+					}
 				}
 			else
 				{
-				Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+				Ctx.pStream->Read(dwLoad);
 				m_pExtra->m_dwCharges = LOWORD(dwLoad);
-				m_pExtra->m_dwVariant = 0;
+				m_pExtra->m_dwLevel = 0;
 				}
 
 			if (Ctx.dwVersion >= 58)
-				Ctx.pStream->Read((char *)&m_pExtra->m_dwDisruptedTime, sizeof(DWORD));
+				Ctx.pStream->Read(m_pExtra->m_dwDisruptedTime);
 			else
 				m_pExtra->m_dwDisruptedTime = 0;
 
 			m_pExtra->m_Mods.ReadFromStream(Ctx);
 			m_pExtra->m_Data.ReadFromStream(Ctx);
+
 			if (Ctx.dwVersion >= 169)
 				{
-				Ctx.pStream->Read((char *)&m_pExtra->m_dwVariantCounter, sizeof(DWORD));
+				Ctx.pStream->Read(m_pExtra->m_dwVariantCounter);
 				}
 			else
 				m_pExtra->m_dwVariantCounter = 0;
-
 			}
 		else
 			m_pExtra = NULL;
 		}
 	else
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		DWORD dwCharges = LOBYTE(LOWORD(dwLoad));
 		DWORD dwCondition = HIBYTE(LOWORD(dwLoad));
 		DWORD dwMods = HIWORD(dwLoad);
@@ -2922,7 +2948,7 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			{
 			m_pExtra = new SExtra;
 			m_pExtra->m_dwCharges = dwCharges;
-			m_pExtra->m_dwVariant = 0;
+			m_pExtra->m_dwLevel = 0;
 			m_pExtra->m_dwDisruptedTime = 0;
 			m_pExtra->m_dwVariantCounter = 0;
 			}
@@ -3002,14 +3028,14 @@ bool CItem::SetLevel (int iLevel, CString *retsError)
         return false;
         }
 
-    if (iLevel < GetType()->GetLevel() || iLevel > GetType()->GetMaxLevel())
+    if (iLevel < GetType()->GetMinLevel() || iLevel > GetType()->GetMaxLevel())
         {
         if (retsError)
             *retsError = strPatternSubst(CONSTLIT("Item [%08x] cannot be scaled to level %d."), GetType()->GetUNID(), iLevel);
         return false;
         }
 
-    SetVariantHigh(iLevel - GetType()->GetLevel());
+    SetScalableLevel(iLevel - GetType()->GetMinLevel());
     return true;
     }
 
@@ -3190,7 +3216,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 		//	Condition
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwVariant);
+		pInt = CC.CreateInteger(m_pExtra->m_dwLevel);
 		pList->Append(CC, pInt);
 		pInt->Discard(&CC);
 
@@ -3263,16 +3289,19 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 	if (m_pExtra)
 		{
 		pStream->Write(m_pExtra->m_dwCharges);
-		pStream->Write(m_pExtra->m_dwVariant);
+		pStream->Write(m_pExtra->m_dwLevel);
 		pStream->Write(m_pExtra->m_dwDisruptedTime);
 
 		m_pExtra->m_Mods.WriteToStream(pStream);
 
+		//	Save TLisp data.
 		//	Note: Currently does not support saving object references
 
 		m_pExtra->m_Data.WriteToStream(pStream);
-		pStream->Write((char *)&m_pExtra->m_dwVariantCounter, sizeof(DWORD));
 
+		//	More variables
+
+		pStream->Write(m_pExtra->m_dwVariantCounter);
 		}
 	}
 

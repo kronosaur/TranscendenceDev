@@ -2200,7 +2200,7 @@ const CArmorClass::SScalableStats &CArmorClass::GetScaledStats (CItemCtx &ItemCt
     if (m_pScalable == NULL || ItemCtx.IsItemNull())
         return m_Stats;
 
-    int iLevel = Min(ItemCtx.GetItem().GetVariantHigh(), m_iScaledLevels);
+    int iLevel = Max(0, Min(ItemCtx.GetItem().GetLevel() - ItemCtx.GetItem().GetType()->GetMinLevel(), m_iScaledLevels));
     if (iLevel <= 0)
         return m_Stats;
 

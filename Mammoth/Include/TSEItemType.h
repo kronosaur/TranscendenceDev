@@ -115,6 +115,7 @@ class CItemType : public CDesignType
 		int GetMaxHPBonus (void) const;
 		inline int GetMaxInitialCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
         inline int GetMaxLevel (void) const { return m_iMaxLevel; }
+		inline int GetMinLevel (void) const { return m_iLevel; }
 		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
 		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }

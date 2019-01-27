@@ -861,7 +861,7 @@ int CItemType::GetLevel (CItemCtx &Ctx) const
 
     {
     if (IsScalable() && !Ctx.IsItemNull())
-        return Max(1, Min(m_iLevel + Ctx.GetItem().GetVariantHigh(), m_iMaxLevel));
+        return Ctx.GetItem().GetLevel();
     else
         return m_iLevel;
     }

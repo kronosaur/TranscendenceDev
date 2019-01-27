@@ -353,7 +353,7 @@ class CItem
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
-        inline int GetLevel (void) const;
+        int GetLevel (void) const;
 		inline Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
 		int GetMaxCharges (void) const;
@@ -368,8 +368,6 @@ class CItem
 		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
-        int GetVariantHigh (void) const { return (m_pExtra ? (int)HIWORD(m_pExtra->m_dwVariant) : 0); }
-        int GetVariantLow (void) const { return (m_pExtra ? (int)LOWORD(m_pExtra->m_dwVariant) : 0); }
 		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
@@ -396,8 +394,6 @@ class CItem
 		inline void SetInstalled (int iInstalled) { m_dwInstalled = (BYTE)(char)iInstalled; }
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
-        void SetVariantHigh (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG(LOWORD(m_pExtra->m_dwVariant), (WORD)(short)iValue); }
-        void SetVariantLow (int iValue) { Extra(); m_pExtra->m_dwVariant = MAKELONG((WORD)(short)iValue, HIWORD(m_pExtra->m_dwVariant)); }
 		void SetVariantNumber (int iVariantCounter);
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
@@ -426,10 +422,10 @@ class CItem
 
 		struct SExtra
 			{
-			DWORD m_dwCharges;					//	Charges for items
-			DWORD m_dwVariant;					//	Affects stats based on type (e.g., for armor, this is maxHP)
-			DWORD m_dwDisruptedTime;			//	If >0, the tick on which disruption expires
-			DWORD m_dwVariantCounter;			//	Counter for setting variants
+			DWORD m_dwCharges = 0;				//	Charges for items
+			DWORD m_dwLevel = 0;				//	For scalable items, this stores the level
+			DWORD m_dwDisruptedTime = 0;		//	If >0, the tick on which disruption expires
+			DWORD m_dwVariantCounter = 0;		//	Counter for setting variants
 
 			CItemEnhancement m_Mods;			//	Class-specific modifications (e.g., armor enhancements)
 
@@ -438,19 +434,21 @@ class CItem
 
 		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
+        int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
+        void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
 		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
 		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags);
 
-		CItemType *m_pItemType;
+		CItemType *m_pItemType = NULL;
 
 		DWORD m_dwCount:16;						//	Number of items
 		DWORD m_dwFlags:8;						//	Miscellaneous flags
 		DWORD m_dwInstalled:8;					//	Location where item is installed
 
-		SExtra *m_pExtra;						//	Extra data (may be NULL)
+		SExtra *m_pExtra = NULL;				//	Extra data (may be NULL)
 
 		static CItem m_NullItem;
 		static CItemEnhancement m_NullMod;

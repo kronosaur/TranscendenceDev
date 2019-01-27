@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							43;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					169;
+constexpr DWORD SYSTEM_SAVE_VERSION =					170;
 
 //	Uncomment out the following define when building a stable release
 
@@ -616,3 +616,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					169;
 //
 //	168: 1.8 Beta 4
 //		m_iPosZ in COverlay
+//
+//	169: 1.8 Beta 5
+//		m_dwVariantCounter in CItem::SExtra
+//
+//	170: 1.8 Beta 5
+//		m_dwVariant changed to m_dwLevel in CItem::SExtra
