@@ -98,6 +98,7 @@ void GenerateEncounterCount (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateEncounterFrequency (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine);
+void GenerateExtensionTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateImageChart (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateItemFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine);
 void GenerateItemTable (CUniverse &Universe, CXMLElement *pCmdLine);

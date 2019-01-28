@@ -984,6 +984,26 @@ CString CExtension::GetEntityName (DWORD dwUNID) const
 	return *pName;
 	}
 
+CString CExtension::GetTypeName (EExtensionTypes iType)
+
+//	GetTypeName
+//
+//	Returns the type name
+
+	{
+	switch (iType)
+		{
+		case extAdventure:
+			return CONSTLIT("Adventure");
+
+		case extLibrary:
+			return CONSTLIT("Library");
+
+		default:
+			return CONSTLIT("Expansion");
+		}
+	}
+
 size_t CExtension::GetXMLMemoryUsage (void) const
 
 //	GetXMLMemoryUsage

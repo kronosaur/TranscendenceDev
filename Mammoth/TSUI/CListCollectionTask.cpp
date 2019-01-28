@@ -131,20 +131,7 @@ void CListCollectionTask::CreateEntry (CMultiverseCatalogEntry *pCatalogEntry, i
 
 	//	Add the type of extension
 
-	CString sType;
-	switch (pCatalogEntry->GetType())
-		{
-		case extAdventure:
-			sType = CONSTLIT("Adventure");
-			break;
-
-		case extLibrary:
-			sType = CONSTLIT("Library");
-			break;
-
-		default:
-			sType = CONSTLIT("Expansion");
-		}
+	CString sType = CExtension::GetTypeName(pCatalogEntry->GetType());
 
 	int cxTypeBackground = TypeFont.MeasureText(sType) + 2 * TYPE_CORNER_RADIUS;
 	int cyTypeBackground = TypeFont.GetHeight() + 2 * TYPE_CORNER_RADIUS;

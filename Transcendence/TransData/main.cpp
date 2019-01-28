@@ -31,6 +31,7 @@
 #define ENCOUNTER_TABLE_SWITCH				CONSTLIT("encountertable")
 #define ENTITIES_SWITCH						CONSTLIT("entitiesReference")
 #define EXTENSION_FOLDER_ATTRIB				CONSTLIT("extensionFolder")
+#define EXTENSION_TABLE_SWITCH				CONSTLIT("extensionTable")
 #define EXTENSIONS_ATTRIB					CONSTLIT("extensions")
 #define HEXARC_TEST_SWITCH					CONSTLIT("hexarcTest")
 #define ITEM_FREQUENCY_SWITCH				CONSTLIT("itemsim")
@@ -322,6 +323,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateEncounterFrequency(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_TABLE_SWITCH))
 		GenerateEncounterTable(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(EXTENSION_TABLE_SWITCH))
+		GenerateExtensionTable(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(IMAGES_SWITCH))
 		GenerateImageChart(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(ITEM_FREQUENCY_SWITCH))

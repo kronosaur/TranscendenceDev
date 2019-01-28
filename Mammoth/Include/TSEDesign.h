@@ -863,6 +863,7 @@ class CExtension
 		inline CTopologyDescTable &GetTopology (void) { return m_Topology; }
 		inline DWORD GetRelease (void) const { return m_dwRelease; }
 		inline EExtensionTypes GetType (void) const { return m_iType; }
+		inline CString GetTypeName (void) const { return GetTypeName(GetType()); }
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		size_t GetXMLMemoryUsage (void) const;
@@ -890,6 +891,7 @@ class CExtension
 
 		static ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError);
 		static void DebugDump (CExtension *pExtension, bool bFull = false);
+		static CString GetTypeName (EExtensionTypes iType);
 
 	private:
 		struct SGlobalsEntry

@@ -325,6 +325,7 @@
     <ClCompile Include="EncounterSim.cpp" />
     <ClCompile Include="EncounterTable.cpp" />
     <ClCompile Include="Entities.cpp" />
+    <ClCompile Include="ExtensionTable.cpp" />
     <ClCompile Include="Help.cpp" />
     <ClCompile Include="Hexarc.cpp" />
     <ClCompile Include="ImageChart.cpp" />
