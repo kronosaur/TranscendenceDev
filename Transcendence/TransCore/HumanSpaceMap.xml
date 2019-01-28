@@ -388,14 +388,14 @@
 		
 		<NodeGroup ID="OuterRealmMainline">
 			<Stargate from="A1:Outbound"	to="EC:Inbound"/>
-			<Stargate from="EC:Outbound"	to="A3:Inbound"/>
 			<StargateTable>
 				<Group chance="50">
+					<Stargate from="EC:Outbound" to="A3:Inbound"/>
 					<Stargate from="A3:Outbound" to="A3A:Inbound"/>
-					<Stargate from="A3A:Outbound" to="PJ:Inbound"/>
 				</Group>
-				<Stargate chance="50" from="A3:Outbound" to="PJ:Inbound"/>
+				<Stargate chance="50" from="EC:Outbound" to="A3A:Inbound"/>
 			</StargateTable>
+			<Stargate from="A3A:Outbound"	to="PJ:Inbound"/>
 			<Stargate from="PJ:Outbound"	to="A5:Inbound"/>
 			<Stargate from="A5:Outbound"	to="A7:Inbound"/>
 			<Stargate from="A7:Outbound"	to="G1:Inbound"/>
@@ -481,7 +481,7 @@
 			</System>
 		</Node>
 
-		<Node ID="A3" x="-253" y="-23" initialState="positionKnown">
+		<Node ID="A3" x="-253" y="-23" initialState="unknown">
 			<System
 					level=				"8"
 					attributes=			"humanSpace, mainline, outerRealm"
@@ -496,7 +496,7 @@
 			</System>
 		</Node>
 
-		<Node ID="A3A" x="-205" y="-66" initialState="unknown">
+		<Node ID="A3A" x="-205" y="-66" initialState="positionKnown">
 			<System
 					level=				"8"
 					attributes=			"humanSpace, mainline, outerRealm"
