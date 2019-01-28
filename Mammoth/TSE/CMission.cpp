@@ -116,7 +116,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 			if (pPlayer)
 				{
 				CString sMessage;
-				if (!Translate(CONSTLIT("FailureMsg"), NULL, &sMessage))
+				if (!TranslateText(CONSTLIT("FailureMsg"), NULL, &sMessage))
 					sMessage = CONSTLIT("Mission failed!");
 
 				pPlayer->SendMessage(NULL, sMessage);
@@ -144,7 +144,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 			if (pPlayer)
 				{
 				CString sMessage;
-				if (!Translate(CONSTLIT("SuccessMsg"), NULL, &sMessage))
+				if (!TranslateText(CONSTLIT("SuccessMsg"), NULL, &sMessage))
 					sMessage = CONSTLIT("Mission complete!");
 
 				pPlayer->SendMessage(NULL, sMessage);
@@ -1142,10 +1142,10 @@ bool CMission::RefreshSummary (void)
 	{
 	bool bSuccess = true;
 
-	if (!Translate(CONSTLIT("Name"), NULL, &m_sTitle))
+	if (!TranslateText(CONSTLIT("Name"), NULL, &m_sTitle))
 		m_sTitle = m_pType->GetName();
 
-	if (!Translate(CONSTLIT("Summary"), NULL, &m_sInstructions))
+	if (!TranslateText(CONSTLIT("Summary"), NULL, &m_sInstructions))
 		{
 		m_sInstructions = NULL_STR;
 		bSuccess = false;

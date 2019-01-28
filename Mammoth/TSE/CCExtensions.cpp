@@ -4503,8 +4503,8 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Translate
 
-			ICCItem *pResult;
-			if (!pType->Translate(NULL, sText, pData, &pResult) || pResult->IsNil())
+			ICCItemPtr pResult;
+			if (!pType->Translate(sText, pData, pResult) || pResult->IsNil())
 				{
 				if (pDefault)
 					return pDefault->Reference();
@@ -4512,7 +4512,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 				}
 
-			return pResult;
+			return pResult->Reference();
 			}
 
 		default:
@@ -7122,8 +7122,8 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Translate
 
-			ICCItem *pResult;
-			if (!pObj->Translate(sText, pData, &pResult) || pResult->IsNil())
+			ICCItemPtr pResult;
+			if (!pObj->Translate(sText, pData, pResult) || pResult->IsNil())
 				{
 				if (pDefault)
 					return pDefault->Reference();
@@ -7131,7 +7131,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 				}
 
-			return pResult;
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_VELOCITY:
@@ -7447,12 +7447,11 @@ ICCItem *fnObjSendMessage (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Translate
 
-			ICCItem *pResult;
-			if (!pTranslator->Translate(sMessageID, pData, &pResult) || pResult->IsNil())
+			ICCItemPtr pResult;
+			if (!pTranslator->Translate(sMessageID, pData, pResult) || pResult->IsNil())
 				return pCC->CreateNil();
 
 			CString sMessage = pResult->GetStringValue();
-			pResult->Discard(pCC);
 
 			//	If target is nil, then send to player
 

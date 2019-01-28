@@ -321,7 +321,8 @@ class CDesignType
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const;
+		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
@@ -398,7 +399,7 @@ class CDesignType
 		inline bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
-		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const;
+		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const;
 		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
 		DWORD m_dwUNID = 0;

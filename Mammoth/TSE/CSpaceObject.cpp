@@ -5370,7 +5370,7 @@ bool CSpaceObject::IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, C
 	if (Msg.sMessage.IsBlank() && !Msg.sID.IsBlank())
 		{
 		CString sLabelDesc;
-		if (Translate(Msg.sID, NULL, &sLabelDesc))
+		if (TranslateText(Msg.sID, NULL, &sLabelDesc))
 			{
 			CLanguage::ParseLabelDesc(sLabelDesc, retsMsg, retsKey);
 
@@ -6107,7 +6107,7 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 		case dockingDenied:
 			{
 			CString sText;
-			if (!pObj->Translate(LANGID_DOCKING_REQUEST_DENIED, NULL, &sText))
+			if (!pObj->TranslateText(LANGID_DOCKING_REQUEST_DENIED, NULL, &sText))
 				sText = CONSTLIT("Docking request denied");
 
 			pObj->SendMessage(this, sText);
@@ -7078,7 +7078,7 @@ void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 		pSystem->FlushEnemyObjectCache();
 	}
 
-bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult)
+bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult)
 
 //	Translate
 //
@@ -7088,19 +7088,19 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retp
 	{
 	//	First we ask the override
 
-	if (m_pOverride && m_pOverride->Translate(this, sID, pData, retpResult))
+	if (m_pOverride && m_pOverride->Translate(this, sID, pData, retResult))
 		return true;
 
 	//	Ask the type
 
 	CDesignType *pType = GetType();
-	if (pType && pType->Translate(this, sID, pData, retpResult))
+	if (pType && pType->Translate(this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, see if the sovereign has it
 
 	CSovereign *pSovereign = GetSovereign();
-	if (pSovereign && pSovereign->Translate(this, sID, pData, retpResult))
+	if (pSovereign && pSovereign->Translate(this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, we can't find it.
@@ -7108,7 +7108,7 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItem **retp
 	return false;
 	}
 
-bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, CString *retsText)
+bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *retsText)
 
 //	Translate
 //

@@ -2121,20 +2121,13 @@ bool CTranscendenceModel::ScreenTranslate (const CString &sID, ICCItem *pData, I
 
 	//	First ask the current docking location to translate
 
-	ICCItem *pRawResult;
-	if (Frame.pLocation && Frame.pLocation->Translate(sID, pData, &pRawResult))
-		{
-		pResult = ICCItemPtr(pRawResult);
+	if (Frame.pLocation && Frame.pLocation->Translate(sID, pData, pResult))
 		return true;
-		}
 
 	//	Otherwise, let the screen translate
 
-	if (Frame.pResolvedRoot && Frame.pResolvedRoot->Translate(Frame.pLocation, sID, pData, &pRawResult))
-		{
-		pResult = ICCItemPtr(pRawResult);
+	if (Frame.pResolvedRoot && Frame.pResolvedRoot->Translate(Frame.pLocation, sID, pData, pResult))
 		return true;
-		}
 
 	//	Otherwise, we have no translation
 

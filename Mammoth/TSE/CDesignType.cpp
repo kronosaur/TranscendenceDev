@@ -2623,7 +2623,25 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 	g_pUniverse->LogOutput(sError);
 	}
 
-bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItem **retpResult) const
+bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+
+//	Translate
+//
+//	Translate from a <Language> block to a CodeChain item.
+
+	{
+	if (m_pExtra && m_pExtra->Language.Translate(*this, sID, pData, retResult))
+		return true;
+
+	if (m_pInheritFrom && m_pInheritFrom->Translate(sID, pData, retResult))
+		return true;
+
+	//	Not found
+
+	return false;
+	}
+
+bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2632,15 +2650,15 @@ bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pD
 //	NOTE: Caller is responsible for discarding the result (if we return TRUE).
 	
 	{
-	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retpResult))
+	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retResult))
 		return true;
 
-	if (m_pInheritFrom && m_pInheritFrom->Translate(pObj, sID, pData, retpResult))
+	if (m_pInheritFrom && m_pInheritFrom->Translate(pObj, sID, pData, retResult))
 		return true;
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 && TranslateVersion2(pObj, sID, retpResult))
+	if (GetVersion() <= 2 && TranslateVersion2(pObj, sID, retResult))
 		return true;
 
 	//	Not found
@@ -2655,7 +2673,7 @@ bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem
 //	Translate from a <Language> block to text.
 
 	{
-	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retsText))
+	if (m_pExtra && m_pExtra->Language.TranslateText(pObj, sID, pData, retsText))
 		return true;
 
 	if (m_pInheritFrom && m_pInheritFrom->TranslateText(pObj, sID, pData, retsText))
@@ -2665,14 +2683,13 @@ bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem
 
 	if (GetVersion() <= 2)
 		{
-		ICCItem *pItem;
-		if (!TranslateVersion2(pObj, sID, &pItem))
+		ICCItemPtr pItem;
+		if (!TranslateVersion2(pObj, sID, pItem))
 			return false;
 
 		if (retsText)
 			*retsText = pItem->GetStringValue();
 
-		pItem->Discard(&g_pUniverse->GetCC());
 		return true;
 		}
 
@@ -2688,7 +2705,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 //	Translate from a <Language> block on an item to text.
 
 	{
-	if (m_pExtra && m_pExtra->Language.Translate(Item, sID, pData, retsText))
+	if (m_pExtra && m_pExtra->Language.TranslateText(Item, sID, pData, retsText))
 		return true;
 
 	if (m_pInheritFrom && m_pInheritFrom->TranslateText(Item, sID, pData, retsText))
@@ -2697,7 +2714,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 	return false;
 	}
 
-bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItem **retpResult) const
+bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
 
 //	TranslateVersion2
 //
@@ -2719,7 +2736,7 @@ bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICC
 			ICCItem *pEntry = pValue->GetElement(i);
 			if (pEntry->GetCount() == 2 && strEquals(sID, pEntry->GetElement(0)->GetStringValue()))
 				{
-				*retpResult = Ctx.Run(pEntry->GetElement(1));	//	LATER:Event
+				retResult = Ctx.RunCode(pEntry->GetElement(1));	//	LATER:Event
 				return true;
 				}
 			}

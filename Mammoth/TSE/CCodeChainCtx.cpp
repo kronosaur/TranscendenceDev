@@ -300,7 +300,7 @@ void CCodeChainCtx::DefineContainingType (const CSpaceObject *pObj)
 //	Defines an containing type
 
 	{
-	DefineContainingType(pObj->GetType());
+	DefineContainingType(pObj ? pObj->GetType() : (const CDesignType *)NULL);
 	}
 
 void CCodeChainCtx::DefineItem (const CString &sVar, CItemCtx &ItemCtx)

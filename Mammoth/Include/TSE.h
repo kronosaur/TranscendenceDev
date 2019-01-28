@@ -861,8 +861,8 @@ class CSpaceObject : public CObject
 		void SetCursorAtRandomItem (CItemListManipulator &ItemList, const CItemCriteria &Crit);
 		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
-		bool Translate (const CString &sID, ICCItem *pData, CString *retsText);
-		bool Translate (const CString &sID, ICCItem *pData, ICCItem **retpResult);
+		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult);
+		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText);
 		bool UseItem (const CItem &Item, CString *retsError = NULL);
 
 		inline void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
