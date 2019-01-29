@@ -666,6 +666,16 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 		}
 	}
 
+void CSystem::CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent)
+
+//	CancelTimedEvent
+//
+//	Cancel all events for this object.
+
+	{
+	m_TimedEvents.CancelEvent(pSource, bInDoEvent);
+	}
+
 void CSystem::CancelTimedEvent (CSpaceObject *pSource, const CString &sEvent, bool bInDoEvent)
 
 //	CancelTimedEvent

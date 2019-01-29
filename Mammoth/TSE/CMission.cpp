@@ -75,11 +75,16 @@ void CMission::CloseMission (void)
 		{
 		RemoveAllEventSubscriptions(pSystem);
 		pSystem->UnregisterEventHandler(this);
+
+		//	NOTE: We say that we are inside of DoEvent because we might have
+		//	closed the mission from inside such an event.
+
+		pSystem->CancelTimedEvent(this, true);
 		}
 
 	//	Cancel all timer events
 
-	g_pUniverse->CancelEvent(this);
+	g_pUniverse->CancelEvent(this, true);
 
 	//	If this is a player mission then refresh another player mission
 
