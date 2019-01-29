@@ -19,20 +19,20 @@ const Metric SHIP_SEPARATION_DISTANCE = (10.0 * LIGHT_SECOND);
 #define VIEWER_ATTRIB						CONSTLIT("viewer")
 
 enum EResults
-{
+	{
 	resultError,
 
 	resultAttackersDestroyed,
 	resultDefendersDestroyed,
 	resultTimeout,
-};
+	};
 
 EResults RunEncounter(CUniverse &Universe, CSimViewer &Viewer, const TArray<CShipClass *> &vDefenderClasses, const TArray<CShipClass *> &vAttackerClasses, int iDefenderMultiplier, int iAttackerMultiplier, CSovereign *pDefenderSovereign, CSovereign *pAttackerSovereign);
-ALERROR FindShipClasses(CUniverse &Universe, CXMLElement *pCmdLine, const Kernel::CString &attribute, TArray<CShipClass *> *vShipClasses);
+ALERROR FindShipClasses(CUniverse &Universe, CXMLElement *pCmdLine, const CString &attribute, TArray<CShipClass *> *vShipClasses);
 CSovereign *GetAttackerSovereign(CUniverse &Universe, CShipClass *pDefenderClass);
 
 void RunBattleSim(CUniverse &Universe, CXMLElement *pCmdLine)
-{
+	{
 	int iRuns = pCmdLine->GetAttributeIntegerBounded(COUNT_ATTRIB, 1, -1, DEFAULT_RUN_COUNT);
 	int iDefenderMultiplier = pCmdLine->GetAttributeIntegerBounded(DEFENDER_MULTIPLIER_ATTRIB, 1, -1, 1);
 	int iAttackerMultiplier = pCmdLine->GetAttributeIntegerBounded(ATTACKER_MULTIPLIER_ATTRIB, 1, -1, 1);
@@ -104,19 +104,19 @@ void RunBattleSim(CUniverse &Universe, CXMLElement *pCmdLine)
 	if (iDefendersWin + iAttackersWin > 0)
 		printf("Win percentage: %d\n", 100 * iAttackersWin / (iDefendersWin + iAttackersWin));
 	Viewer.Destroy();
-}
+	}
 
-ALERROR FindShipClasses(CUniverse &Universe, CXMLElement *pCmdLine, const Kernel::CString &attribute, TArray<CShipClass *> *vShipClasses)
+ALERROR FindShipClasses(CUniverse &Universe, CXMLElement *pCmdLine, const CString &attribute, TArray<CShipClass *> *vShipClasses)
 	{
 	TArray<DWORD> vShipUUIDs;
 	if (pCmdLine->GetAttributeIntegerList(attribute, &vShipUUIDs) != NOERROR)
 		{
-		printf("ERROR: Error parsing the %s UUIDs.\n", attribute.GetASCIIZPointer());
+		printf("ERROR: Error parsing the %s UNIDs.\n", attribute.GetASCIIZPointer());
 		return ERR_FAIL;
 		}
 	if (vShipUUIDs.GetCount() == 0)
 		{
-		printf("ERROR: Need at least one UUID specified for %s.\n", attribute.GetASCIIZPointer());
+		printf("ERROR: Need at least one UNID specified for %s.\n", attribute.GetASCIIZPointer());
 		return ERR_FAIL;
 		}
 	int i;
@@ -125,7 +125,7 @@ ALERROR FindShipClasses(CUniverse &Universe, CXMLElement *pCmdLine, const Kernel
 		CShipClass *pShipClass = Universe.FindShipClass(vShipUUIDs[i]);
 		if (!pShipClass)
 			{
-			printf("ERROR: Couldn't find ship class %x\n", vShipUUIDs[i]);
+			printf("ERROR: Couldn't find ship class %08x\n", vShipUUIDs[i]);
 			return ERR_FAIL;
 			}
 		vShipClasses->Insert(pShipClass);
@@ -139,14 +139,14 @@ CSovereign *GetAttackerSovereign(CUniverse &Universe, CShipClass *pDefenderClass
 
 	CSovereign *pDefenderSovereign = pDefenderClass->GetDefaultSovereign();
 	if (pDefenderSovereign)
-	{
-		for (i = 0; i < Universe.GetSovereignCount(); i++)
 		{
+		for (i = 0; i < Universe.GetSovereignCount(); i++)
+			{
 			CSovereign *pSovereign = Universe.GetSovereign(i);
 			if (pDefenderSovereign->IsEnemy(pSovereign))
 				return pSovereign;
+			}
 		}
-	}
 
 	return NULL;
 	}
