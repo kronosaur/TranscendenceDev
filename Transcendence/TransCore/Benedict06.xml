@@ -820,6 +820,7 @@
 			<Relationship sovereign="&svPlayer;" disposition="friend" mutual="true"/>
 			<Relationship sovereign="&svSistersOfDomina;" disposition="friend" mutual="true"/>
 			<Relationship sovereign="&svCommonwealth;" disposition="neutral" mutual="true"/>
+			<Relationship sovereign="&svCorporate;" disposition="neutral" mutual="true"/>
 		</Relationships>
 	</Sovereign>
 
