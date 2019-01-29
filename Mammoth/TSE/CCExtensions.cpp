@@ -9164,8 +9164,11 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	See if we run on all systems or just this one.
 
 			CString sNodeID;
-			if (CTLispConvert::AsOption(pOptions, CONSTLIT("allSystems")))
-				sNodeID = (pSystem->GetTopology() ? pSystem->GetTopology()->GetID() : NULL_STR);
+			if (CTLispConvert::AsOption(pOptions, CONSTLIT("allSystems")) 
+					|| pSystem->GetTopology() == NULL)
+				{ }
+			else
+				sNodeID = pSystem->GetTopology()->GetID();
 
 			//	Create the event
 
