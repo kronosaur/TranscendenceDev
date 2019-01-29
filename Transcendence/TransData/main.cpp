@@ -28,6 +28,7 @@
 #define ENCOUNTER_COUNT_SWITCH				CONSTLIT("encountercount")
 #define ENCOUNTER_FREQ_SWITCH				CONSTLIT("encounterfreq")
 #define ENCOUNTER_SIM_SWITCH				CONSTLIT("encountersim")
+#define BATTLE_SIM_SWITCH					CONSTLIT("battlesim")
 #define ENCOUNTER_TABLE_SWITCH				CONSTLIT("encountertable")
 #define ENTITIES_SWITCH						CONSTLIT("entitiesReference")
 #define EXTENSION_FOLDER_ATTRIB				CONSTLIT("extensionFolder")
@@ -391,6 +392,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateAttributeList(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(PERF_TEST_SWITCH))
 		PerformanceTest(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(BATTLE_SIM_SWITCH))
+		RunBattleSim(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_SIM_SWITCH))
 		RunEncounterSim(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(TYPE_DEPENDENCIES_SWITCH))
@@ -506,6 +509,8 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 			|| pCmdLine->GetAttributeBool(SNAPSHOT_SWITCH)
 			|| pCmdLine->GetAttributeBool(TOPOLOGY_MAP_SWITCH)
 			|| pCmdLine->GetAttributeBool(WEAPON_IMAGES_SWITCH) 
+			|| pCmdLine->GetAttributeBool(BATTLE_SIM_SWITCH)
+			|| pCmdLine->GetAttributeBool(ENCOUNTER_SIM_SWITCH)
 			|| pCmdLine->GetAttributeBool(WORLD_IMAGES_SWITCH))
 		;
 	else

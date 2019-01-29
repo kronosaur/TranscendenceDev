@@ -6,6 +6,7 @@
 #include "PreComp.h"
 
 #define ARMOR_TABLE_SWITCH					CONSTLIT("armortable")
+#define BATTLE_SIM_SWITCH					CONSTLIT("battlesim")
 #define CLEAR_REGISTERED_SWITCH				CONSTLIT("clearRegistered")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DEBUG_SWITCH						CONSTLIT("debug")
@@ -59,6 +60,18 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("      [/all]                include non-random stations.\n");
 		printf("      [/count]              Number of games to create.\n");
 		}
+	else if (pCmdLine->GetAttributeBool(BATTLE_SIM_SWITCH))
+	{
+		printf("  /battlesim         Simulate a battle between two teams of ships.\n");
+		printf("      [/adventure:n]        Load the given adventure (by UNID).\n");
+		printf("      /attackers:xxx        Comma-separated UNIDs of attacker ships.\n");
+		printf("      [/attackerMultiplier  Make this many duplicates of attacker ships.\n");
+		printf("      /defender:xxx         Comma-separated UNIDs of defender ships.\n");
+		printf("      [/defenderMultiplier  Make this many duplicates of defender ships\n");
+		printf("\n");
+		printf("      [/count]              Number of runs.\n");
+		printf("      [/viewer]             Open viewer to watch the battle.\n");
+	}
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_SIM_SWITCH))
 		{
 		printf("  /encountersim         Simulate an attack on the station.\n");
@@ -434,6 +447,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		if (bDebug)
 			printf("  /itemsim              Simulation of items encountered.\n");
 		printf("  /itemtable            Item table.\n");
+		printf("  /battlesim            Simulate a battle between two teams of ships.\n");
 		printf("  /encountercount       Counts encounters in a game.\n");
 		printf("  /encounterFreq        Outputs encounter tables.\n");
 		printf("  /encountersim         Simulate an attack on the station.\n");

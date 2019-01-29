@@ -132,6 +132,7 @@ void GenerateWorldImageChart (CUniverse &Universe, CXMLElement *pCmdLine);
 void HexarcTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void PerformanceTest (CUniverse &Universe, CXMLElement *pCmdLine);
 void Run (CUniverse &Universe, CXMLElement *pCmdLine);
+void RunBattleSim(CUniverse &Universe, CXMLElement *pCmdLine);
 void RunEncounterSim (CUniverse &Universe, CXMLElement *pCmdLine);
 void RunFile (const CString &sFilespec, bool bNoLogo);
 void WordGenerator (CXMLElement *pCmdLine);
