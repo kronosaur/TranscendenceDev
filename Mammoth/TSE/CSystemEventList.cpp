@@ -172,7 +172,7 @@ void CSystemEventList::ReadFromStream (SLoadCtx &Ctx)
 		}
 	}
 
-void CSystemEventList::Update (DWORD dwTick, CSystem *pSystem)
+void CSystemEventList::Update (DWORD dwTick, CSystem &System)
 
 //	Update
 //
@@ -181,22 +181,20 @@ void CSystemEventList::Update (DWORD dwTick, CSystem *pSystem)
 	{
 	DEBUG_TRY
 
-	int i;
-
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		SetProgramEvent(pEvent);
 
 		if (!pEvent->IsDestroyed() && pEvent->GetTick() <= dwTick)
-			pEvent->DoEvent(dwTick, pSystem);
+			pEvent->DoEvent(dwTick, System);
 		}
 
 	SetProgramEvent(NULL);
 
 	//	Delete events that were destroyed
 
-	for (i = 0; i < GetCount(); i++)
+	for (int i = 0; i < GetCount(); i++)
 		{
 		CSystemEvent *pEvent = GetEvent(i);
 		if (pEvent->IsDestroyed())

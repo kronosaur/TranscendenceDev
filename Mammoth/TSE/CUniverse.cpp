@@ -2886,7 +2886,7 @@ void CUniverse::Update (SSystemUpdateCtx &Ctx)
 
 	//	Fire timed events
 
-	m_Events.Update(m_iTick, m_pCurrentSystem);
+	m_Events.Update(m_iTick, *m_pCurrentSystem);
 
 	//	Update missions
 

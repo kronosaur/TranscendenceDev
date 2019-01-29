@@ -75,7 +75,7 @@ CString CRangeTypeEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //
@@ -101,14 +101,14 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 		CCriteriaObjSelector Selector(m_Criteria);
 		CNearestInRadiusRange Range(vCenter, m_rRadius);
 
-		pFound = CSpaceObjectEnum::FindObjInRange(*pSystem, Range, Selector);
+		pFound = CSpaceObjectEnum::FindObjInRange(System, Range, Selector);
 		}
 
 	//	Otherwise, all we care about is the player ship.
 
 	else
 		{
-		CSpaceObject *pPlayerShip = pSystem->GetPlayerShip();
+		CSpaceObject *pPlayerShip = System.GetPlayerShip();
 		if (pPlayerShip)
 			{
 			Metric rDist2 = (pPlayerShip->GetPos() - vCenter).Length2();

@@ -261,7 +261,7 @@ CString CTimedEncounterEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //
@@ -280,7 +280,7 @@ void CTimedEncounterEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	CSpaceObject *pTarget = m_Targets.GetRandomObj();
 
 	SShipCreateCtx Ctx;
-	Ctx.pSystem = pSystem;
+	Ctx.pSystem = &System;
 	Ctx.pTarget = pTarget;
 	Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY;
 
@@ -398,7 +398,7 @@ CString CTimedCustomEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CTimedCustomEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CTimedCustomEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //
@@ -487,7 +487,7 @@ CString CTimedRecurringEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CTimedRecurringEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CTimedRecurringEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //
@@ -584,7 +584,7 @@ CString CTimedTypeEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //

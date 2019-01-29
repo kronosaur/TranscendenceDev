@@ -32,7 +32,7 @@ class CSystemEvent
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) = 0;
+		virtual void DoEvent (DWORD dwTick, CSystem &System) = 0;
 		virtual CString GetEventHandlerName (void) { return NULL_STR; }
 		virtual CSpaceObject *GetEventHandlerObj (void) { return NULL; }
 		virtual CDesignType *GetEventHandlerType (void) { return NULL; }
@@ -66,7 +66,7 @@ class CSystemEventList
 		void OnStationDestroyed (CSpaceObject *pObj);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }
-		void Update (DWORD dwTick, CSystem *pSystem);
+		void Update (DWORD dwTick, CSystem &System);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 	private:

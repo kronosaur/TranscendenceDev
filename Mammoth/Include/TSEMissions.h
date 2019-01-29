@@ -180,7 +180,7 @@ class CTimedMissionEvent : public CSystemEvent
 		CTimedMissionEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
-		virtual void DoEvent (DWORD dwTick, CSystem *pSystem) override;
+		virtual void DoEvent (DWORD dwTick, CSystem &System) override;
 		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
 		virtual CSpaceObject *GetEventHandlerObj (void) override { return m_pMission; }
 

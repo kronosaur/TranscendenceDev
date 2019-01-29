@@ -53,7 +53,7 @@ CString CTimedMissionEvent::DebugCrashInfo (void)
 	return sResult;
 	}
 
-void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
+void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 //	DoEvent
 //
@@ -65,8 +65,8 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	//	If we're not in the right system, then we don't run.
 
 	if (!m_sNode.IsBlank() 
-			&& pSystem && pSystem->GetTopology() 
-			&& !strEquals(pSystem->GetTopology()->GetID(), m_sNode))
+			&& System.GetTopology() 
+			&& !strEquals(System.GetTopology()->GetID(), m_sNode))
 		{
 		//	Reset our time so that we're not firing every tick
 

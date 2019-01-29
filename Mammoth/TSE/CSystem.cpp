@@ -4661,7 +4661,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	SetProgramState(psUpdatingEvents);
 	if (!IsTimeStopped() && (g_pUniverse->GetPlayerShip() || SystemCtx.bForceEventFiring))
-		m_TimedEvents.Update(m_iTick, this);
+		m_TimedEvents.Update(m_iTick, *this);
 
 	//	If necessary, mark as painted so that objects update correctly.
 
