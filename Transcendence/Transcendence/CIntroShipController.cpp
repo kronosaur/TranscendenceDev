@@ -20,7 +20,7 @@ CIntroShipController::~CIntroShipController (void)
 
 	{
 	if (m_pDelegate)
-		delete dynamic_cast<CObject *>(m_pDelegate);
+		delete m_pDelegate;
 	}
 
 CIntroShipController::CIntroShipController (IShipController *pDelegate) : 

@@ -2053,6 +2053,7 @@ void CRandomItems::InitTable (const CString &sLevelFrequency) const
 		{
 		m_iCount = 0;
 		m_Table = NULL;
+		delete [] pTable;
 		return;
 		}
 

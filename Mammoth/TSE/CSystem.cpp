@@ -1197,6 +1197,8 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 	if (pType->GetType() == designShipTable)
 		{
+		//	Get the table
+
 		CShipTable *pTable = CShipTable::AsType(pType);
 		if (pTable == NULL)
 			return ERR_FAIL;
@@ -1224,6 +1226,11 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 		if (retpShipList)
 			*retpShipList = CreateCtx.Result;
+
+		//	On this path, we don't need the controller.
+
+		if (pController)
+			delete pController;
 
 		return NOERROR;
 		}

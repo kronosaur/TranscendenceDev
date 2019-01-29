@@ -134,8 +134,12 @@ DWORD Kernel::mathRandom (void)
 
 	if (g_Seed == 0)
 		{
+#ifdef DEBUG_MEMORY_LEAKS
+		g_Seed = 1;
+#else
 		g_Seed = MAKELONG(rand() % 0x10000, rand() % 0x10000);
 		g_Seed *= ::GetTickCount();
+#endif
 		}
 
 	//	Random

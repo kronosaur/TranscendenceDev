@@ -2737,6 +2737,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		if (error = pGenerator->OnDesignLoadComplete(Ctx))
 			{
+			delete pGenerator;
 			pCtx->sError = strPatternSubst(CONSTLIT("Unable to create ship: %s"), Ctx.sError);
 			return error;
 			}
@@ -2761,6 +2762,10 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		if (CreateCtx.Result.GetCount() > 0)
 			pCtx->dwLastObjID = CreateCtx.Result.GetObj(0)->GetID();
+
+		//	Done
+
+		delete pGenerator;
 
 		PopDebugStack(pCtx);
 		}
@@ -4245,6 +4250,8 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 
 		if (error = pGenerator->OnDesignLoadComplete(Ctx))
 			{
+			delete pGenerator;
+
 			if (retsError)
 				*retsError = strPatternSubst(CONSTLIT("Unable to create ship for %s: %s"), pType->GetNounPhrase(), Ctx.sError);
 			return error;
@@ -4260,6 +4267,11 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		ShipCreateCtx.dwFlags = SShipCreateCtx::RETURN_RESULT;
 
 		pGenerator->CreateShips(ShipCreateCtx);
+
+		//	Clean up
+
+		delete pGenerator;
+		pGenerator = NULL;
 
 		//	If no ships are created we return
 

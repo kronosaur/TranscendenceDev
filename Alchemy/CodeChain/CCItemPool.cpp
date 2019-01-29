@@ -21,7 +21,8 @@ template class CCItemPool<CCLambda>;
 template class CCItemPool<CCAtomTable>;
 template class CCItemPool<CCVector>;
 
-template <class ItemClass>CCItemPool<ItemClass>::CCItemPool (void) :
+template <class ItemClass>
+CCItemPool<ItemClass>::CCItemPool (void) :
 		m_pFreeList(NULL),
 		m_pBackbone(NULL),
 		m_iBackboneSize(0),
@@ -32,14 +33,35 @@ template <class ItemClass>CCItemPool<ItemClass>::CCItemPool (void) :
 	{
 	}
 
-template <class ItemClass>CCItemPool<ItemClass>::~CCItemPool (void)
+template <class ItemClass>
+CCItemPool<ItemClass>::~CCItemPool (void)
 
 //	CCItemPool destructor
 
 	{
+	CleanUp();
 	}
 
-template <class ItemClass> ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
+template <class ItemClass>
+void CCItemPool<ItemClass>::CleanUp (void)
+
+//	CleanUp
+//
+//	Free up allocation
+
+	{
+	if (m_pBackbone)
+		{
+		for (int i = 0; i < m_iBackboneSize; i++)
+			delete [] m_pBackbone[i];
+
+		delete [] m_pBackbone;
+		m_pBackbone = NULL;
+		}
+	}
+
+template <class ItemClass>
+ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 
 //	CreateItem
 //
@@ -107,7 +129,8 @@ template <class ItemClass> ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChai
 	return pItem;
 	}
 
-template <class ItemClass> void CCItemPool<ItemClass>::DestroyItem (CCodeChain *pCC, ICCItem *pItem)
+template <class ItemClass>
+void CCItemPool<ItemClass>::DestroyItem (CCodeChain *pCC, ICCItem *pItem)
 
 //	DestroyItem
 //

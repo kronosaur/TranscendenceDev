@@ -6,6 +6,10 @@
 #ifndef INCL_TSTACK
 #define INCL_TSTACK
 
+#ifdef DEBUG_MEMORY_LEAKS
+#undef new
+#endif
+
 class CStackBase
 	{
 	protected:
@@ -105,6 +109,10 @@ template <class VALUE> class TStack : public CStackBase
 			}
 	};
 #pragma warning(default:4291)
+
+#ifdef DEBUG_MEMORY_LEAKS
+#define new DEBUG_NEW
+#endif
 
 #endif
 

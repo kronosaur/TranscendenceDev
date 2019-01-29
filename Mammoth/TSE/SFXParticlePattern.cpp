@@ -131,6 +131,9 @@ CParticlePatternEffectCreator::~CParticlePatternEffectCreator (void)
 	{
 	if (m_pSingleton)
 		delete m_pSingleton;
+
+	if (m_pParticleEffect)
+		delete m_pParticleEffect;
 	}
 
 const TArray<CVector> &CParticlePatternEffectCreator::GetSplinePoints (void)

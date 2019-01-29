@@ -80,7 +80,11 @@ BOOL Kernel::kernelInit (DWORD dwFlags)
 	//	runtime library, which keeps separate context for
 	//	each thread.
 
+#ifdef DEBUG_MEMORY_LEAKS
+	srand(1);
+#else
 	srand((int)GetTickCount());
+#endif
 
 	return TRUE;
 	}

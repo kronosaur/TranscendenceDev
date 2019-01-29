@@ -787,6 +787,7 @@ class CCItemPool
 		CCItemPool (void);
 		~CCItemPool (void);
 
+		void CleanUp (void);
 		ICCItem *CreateItem (CCodeChain *pCC);
 		void DestroyItem (CCodeChain *pCC, ICCItem *pItem);
 		inline int GetCount (void) { return m_iCount; }
@@ -804,6 +805,7 @@ class CConsPool
 		CConsPool (void);
 		~CConsPool (void);
 
+		void CleanUp (void);
 		CCons *CreateCons (void);
 		void DestroyCons (CCons *pCons);
 		inline int GetCount (void) { return m_iCount; }

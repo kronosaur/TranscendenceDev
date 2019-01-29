@@ -157,7 +157,7 @@ CShip::~CShip (void)
 	int i;
 
 	if (m_pController)
-		delete dynamic_cast<CObject *>(m_pController);
+		delete m_pController;
 
 	if (m_pIrradiatedBy)
 		delete m_pIrradiatedBy;
@@ -7427,7 +7427,7 @@ void CShip::SetController (IShipController *pController, bool bFreeOldController
 	ASSERT(pController);
 
 	if (bFreeOldController && m_pController)
-		delete dynamic_cast<CObject *>(m_pController);
+		delete m_pController;
 
 	m_pController = pController;
 	m_pController->SetShipToControl(this);

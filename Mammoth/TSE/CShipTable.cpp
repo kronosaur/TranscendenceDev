@@ -745,6 +745,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 			&GeneratorCtx,
 			&pShip) != NOERROR)
 		{
+		delete pController;
 		kernelDebugLogPattern("Error creating ship: %x", dwClass);
 		if (retpShip)
 			*retpShip = NULL;

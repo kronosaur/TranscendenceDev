@@ -110,6 +110,9 @@ CParticleSystemEffectCreator::~CParticleSystemEffectCreator (void)
 	{
 	if (m_pSingleton)
 		delete m_pSingleton;
+
+	if (m_pParticleEffect)
+		delete m_pParticleEffect;
 	}
 
 IEffectPainter *CParticleSystemEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)

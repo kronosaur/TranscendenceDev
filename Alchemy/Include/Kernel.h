@@ -21,13 +21,6 @@
 
 #include <mmsystem.h>
 
-//	Explicit placement operator
-struct placement_new_class { };
-extern placement_new_class placement_new;
-inline void *operator new (size_t, ::placement_new_class, void *p) { return p; }
-
-namespace Kernel {
-
 //	Debugging defines
 
 #ifdef DEBUG
@@ -36,11 +29,18 @@ namespace Kernel {
 //#define DEBUG_ARRAY_STATS
 #endif
 
+//	Explicit placement operator
+struct placement_new_class { };
+extern placement_new_class placement_new;
+inline void *operator new (size_t, ::placement_new_class, void *p) { return p; }
+
 #ifdef DEBUG_MEMORY_LEAKS
 #include <crtdbg.h>
 #define DEBUG_NEW new(_NORMAL_BLOCK, __FILE__, __LINE__)
 #define new DEBUG_NEW
 #endif
+
+namespace Kernel {
 
 //	HACK: Declare _alloca so that we don't have to include malloc.h
 extern "C" void *          __cdecl _alloca(size_t);

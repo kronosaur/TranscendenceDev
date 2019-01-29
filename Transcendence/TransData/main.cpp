@@ -90,7 +90,11 @@ int main (int argc, char *argv[ ], char *envp[ ])
 	::SetConsoleOutputCP(1252);
 
 #ifdef DEBUG_MEMORY_LEAKS
-	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+	int iFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+	iFlag = _CrtSetDbgFlag(iFlag | _CRTDBG_ALLOC_MEM_DF);
+	iFlag = _CrtSetDbgFlag(iFlag | _CRTDBG_LEAK_CHECK_DF);
+
+	_CrtSetBreakAlloc(1137987);
 #endif
 
 	if (!kernelInit(KERNEL_FLAG_INTERNETS))
@@ -165,6 +169,7 @@ int main (int argc, char *argv[ ], char *envp[ ])
 	//	Done
 
 	kernelCleanUp();
+
 	return 0;
 	}
 

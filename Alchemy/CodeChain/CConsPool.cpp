@@ -23,6 +23,24 @@ CConsPool::~CConsPool (void)
 //	CConsPool destructor
 
 	{
+	CleanUp();
+	}
+
+void CConsPool::CleanUp (void)
+
+//	CleanUp
+//
+//	Free up allocation
+
+	{
+	if (m_pBackbone)
+		{
+		for (int i = 0; i < m_iBackboneSize; i++)
+			delete [] m_pBackbone[i];
+
+		delete [] m_pBackbone;
+		m_pBackbone = NULL;
+		}
 	}
 
 CCons *CConsPool::CreateCons (void)

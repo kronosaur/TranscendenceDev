@@ -289,6 +289,9 @@ CStationType::~CStationType (void)
 	if (m_pReinforcements)
 		delete m_pReinforcements;
 
+	if (m_pConstruction)
+		delete m_pConstruction;
+
 	if (m_pEncounters)
 		delete m_pEncounters;
 
