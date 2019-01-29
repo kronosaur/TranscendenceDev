@@ -85,48 +85,107 @@
 			</Text>
 			<Text id="SuccessDebrief:FirstMission">
 				
-				"Excellent work, captain! You seem to have the aptitude to handle these missions.
-				Every time you successfully escort a freighter you will earn money and increase your skills.
+				"Excellent work, captain! You seem to have the aptitude to 
+				handle these missions. Every time you successfully escort a 
+				freighter you will earn money and increase your skills.
 				
 				"We've deposited %reward% in your account."
 				
 			</Text>
 			<Text id="SuccessDebrief:Apprentice:1">
-				(cat
-					"\"Excellent work, captain! Your skills are improving rapidly. "
-					(random
-						'(	"During your apprenticeship you will escort small freighters such as the EI100. When you become a Journeyman, you will be rated to escort larger freighters with more valuable cargo."
-							"But here is some advice: Remember that pirates seek out the most valuable cargo; pirates will send out larger and more powerful attacks against expensive cargos. Always be vigilant."
-							"But don't get cocky; escorting a fast EI200 or EI100 is much easier than protecting a slow and defenseless Antares-class."
-							"But don't lower your guard; the pirates will keep coming&mdash;at least until we wipe out their primary stronghold in the system."
-							"After a few more successful missions you will be ready for a promotion to Journeyman&mdash;and ready for a greater challenge!"
-							)
-						)
-					"\n\n\"We've deposited %reward% in your account.\""
-					)
+				(scrTranslate gScreen (cat "textSuccessApprentice.1." (random 1 5)))
 			</Text>
+			<Text id="textSuccessApprentice.1.1">
+
+				"Excellent work, captain! Your skills are improving rapidly.
+
+				"During your apprenticeship you will escort small freighters 
+				such as the EI100. When you become a Journeyman, you will be 
+				rated to escort larger freighters with more valuable cargo.
+
+				"We've deposited %reward% in your account."
+
+			</Text>
+			<Text id="textSuccessApprentice.1.2">
+
+				"Excellent work, captain! Your skills are improving rapidly.
+
+				"But here is some advice: Remember that pirates seek out the 
+				most valuable cargo; pirates will send out larger and more 
+				powerful attacks against expensive cargos. Always be vigilant.
+
+				"We've deposited %reward% in your account."
+
+			</Text>
+			<Text id="textSuccessApprentice.1.3">
+
+				"Excellent work, captain! Your skills are improving rapidly.
+
+				"But don't get cocky; escorting a fast EI200 or EI100 is much 
+				easier than protecting a slow and defenseless Antares-class.
+
+				"We've deposited %reward% in your account."
+
+			</Text>
+			<Text id="textSuccessApprentice.1.4">
+
+				"Excellent work, captain! Your skills are improving rapidly.
+
+				"But don't lower your guard; the pirates will keep 
+				coming&mdash;at least until we wipe out their primary stronghold
+				in the system.
+
+				"We've deposited %reward% in your account."
+
+			</Text>
+			<Text id="textSuccessApprentice.1.5">
+
+				"Excellent work, captain! Your skills are improving rapidly.
+
+				"After a few more successful missions you will be ready for a 
+				promotion to Journeyman&mdash;and ready for a greater challenge!
+
+				"We've deposited %reward% in your account."
+
+			</Text>
+
 			<Text id="SuccessDebrief:Apprentice:2">
+
 				"Excellent work, captain! Your apprenticeship is almost complete.
 				If you can successfully complete the next escort mission,
 				we will be confident in your skills and promote you.
 
 				"We've deposited %reward% in your account."
+
 			</Text>
 			<Text id="SuccessDebrief:Apprentice:3">
-				"Excellent work, captain! I knew from the beginning that you had the skills to succeed.
+
+				"Excellent work, captain! I knew from the beginning that you had
+				the skills to succeed.
 
 				"We've deposited %reward% in your account."
+
 			</Text>
 			<Text id="SuccessDebrief:Kronosaurus">
-				"Your skills are truly impressive! But the news that you've destroyed several Charon frigates has alarmed the pirates.
-				They're sending the Kronosaurus after you! It is the deadliest frigate in the Charon fleet and it will not stop until you are destroyed.
 
-				"We've deposited %reward% in your account. You better spend them wisely!"
+				"Your skills are truly impressive! But the news that you've 
+				destroyed several Charon frigates has alarmed the pirates.
+
+				"They're sending the Kronosaurus after you! It is the deadliest 
+				frigate in the Charon fleet and it will not stop until you are 
+				destroyed.
+
+				"We've deposited %reward% in your account. You better spend 
+				them wisely!"
+
 			</Text>
 			<Text id="SuccessDebrief:Default">
-				"Well done, captain! You've shown skill and bravery in facing those pirates.
+
+				"Well done, captain! You've shown skill and bravery in facing
+				those pirates.
 
 				"We've deposited %reward% in your account."
+
 			</Text>
 
 			<Text id="rpg.missionTypeDesc">Korolov shipping missions</Text>
@@ -768,93 +827,149 @@
 			<Text id="descNoDockServicesAccess">The dock services area is restricted to members only.</Text>
 			
 			<Text id="descWelcome">
-				(cat
-					"You are in the main hall of a Korolov Shipping Company station. "
-					(block (
-						(level (korGetPlayerLevel))
-						)
+				(block (
+					(level (korGetPlayerLevel))
+					)
+					(cat
+						(scrTranslate gScreen 'descWelcomeStart) " "
 						(switch
-							(= level -1) ; Blacklisted
-								"Conversations stop as you enter the room. Whispered condemnations make it clear that you are not welcome among the freighter crews and captains."
-							(= level 1) ; Apprentice
-								"The walls are decorated with holopanes honoring the men and women who have died defending Korolov freighters."
-							(= level 2) ; Journeyman
-								"The freighter captains welcome you as you enter."
-							(= level 3) ; Master
-								"The more experienced escort captains welcome you as you enter; you are treated with deference and respect."
-							(= level 4) ; Legend
-								"Murmured excitement ripples across the hall as you enter; everyone crowds around to greet you."
-							; Default
-							"The walls are decorated with holopanes honoring the men and women who have died defending Korolov freighters."
+							(= level -1)
+								(scrTranslate gScreen 'descWelcome.blacklisted)
+
+							(and (geq level 1) (leq level 4))
+								(scrTranslate gScreen (cat "descWelcome." level))
+
+							(scrTranslate gScreen 'descWelcome.1)
 							)
 						)
 					)
+			</Text>
+			<Text id="descWelcomeStart">
+				You are in the main hall of a Korolov Shipping Company station.
+			</Text>
+			<Text id="descWelcome.blacklisted">
+
+				Conversations stop as you enter the room. Whispered 
+				condemnations make it clear that you are not welcome among the 
+				freighter crews and captains.
+
+			</Text>
+			<Text id="descWelcome.1">
+
+				The walls are decorated with holopanes honoring the men and 
+				women who have died defending Korolov freighters.
+
+			</Text>
+			<Text id="descWelcome.2">
+
+				The freighter captains welcome you as you enter.
+
+			</Text>
+			<Text id="descWelcome.3">
+
+				The more experienced escort captains welcome you as you enter;
+				you are treated with deference and respect.
+
+			</Text>
+			<Text id="descWelcome.4">
+
+				Murmured excitement ripples across the hall as you enter; 
+				everyone crowds around to greet you.
+
 			</Text>
 
 			<String id="descNoMissions">
 				"Sorry, there are no missions currently available."
 			</String>
 			<Text id="descTooManyFailures">
+
 				"Sorry, captain, but your escort record is terrible. 
 				No freighter wants to be defended by you."
+
 			</Text>
 			<Text id="descAlreadyALegend">
+
 				"Sorry, but Director Hammil doesn't want to risk your life. 
 				The other shipping companies don't have a legendary pilot like you!"
+
 			</Text>
 			<Text id="descNoEscortsNeeded">
+
 				"Sorry, there is no need for your escort skills now that the Charon base 
 				in the system has been destroyed. I bet other systems could use your help, though."
+
 			</Text>
 			<Text id="descFreightersGrounded">
+
 				"Sorry, all freighters are grounded. The Charon stronghold in 
 				this system is too strong."
+
 			</Text>
 			<Text id="descFortressDestroyed">
+
 				"Sorry, there is no need for your escort skills now that 
 				the Fortress of the Charon Pirates has been destroyed."
+
 			</Text>
 			
 			<Text id="descSelectOption">Select an option:</Text>
 
 			<Text id="korolov.shipDesc.1454081">
+
 				The backbone of the Charon Pirate fleet consists of these fast and
 				deadly gunships. Piloted by young and somewhat inexperienced pirates,
 				they are nonetheless dangerous in large numbers.
+
 			</Text>
 			<Text id="korolov.shipDesc.1454082">
+
 				The Viking-class gunship is powerful and well-armored. It is slower
 				than a Corsair, but more than fast enough to chase down a freighter.
+
 			</Text>
 			<Text id="korolov.shipDesc.1454083">
+
 				More than an upgrade, the Corsair-II sports shields and a missile launcher.
+
 			</Text>
 			<Text id="korolov.shipDesc.134414405">
+
 				The Viking-II is an upgraded version with shields and dual turbolasers.
+
 			</Text>
 			<Text id="korolov.shipDesc.134414404">
+
 				The Drake is the pirates' mobile battering ram. Heavily armored and loaded
 				with missiles, the Drake will pummel you to pieces from long range.
+
 			</Text>
 			<Text id="korolov.shipDesc.1454084">
+
 				The sight of these frigates brings fear to most freighter pilots. Fast,
 				silent, and loaded with hurt, a Charon frigate can destroy a small fleet of
 				escort ships. Do not challenge these ships unless you know what you're doing.
+
 			</Text>
 
 			<Text id="rumor.commonwealthPub.norank">
+
 				You spend 5 credits on drinks. You talk to a couple of freighter pilots
 				who try to convince you to fly escort missions for Korolov Shipping.
+
 			</Text>
 			<Text id="rumor.commonwealthPub.blacklisted">
+
 				A group of freighter pilots point in your direction, talking about how
 				you blew your escort mission. You settle up a 5 credit tab and get ready
 				to leave.
+
 			</Text>
 			<Text id="rumor.commonwealthPub.member">
+
 				A group of freighter pilots welcome you into their group. You tell various
 				stories about your run-ins with the Charon pirates, but in the end you still
 				get stuck with the 5 credit tab.
+
 			</Text>
 
             <Text id="core.mapDescMain">
@@ -993,31 +1108,39 @@
 			<Text id="actionEscortFreighter">[E]scort Freighter</Text>
 			
 			<Text id="descOperationsIntro">
+
 				The operations level is filled with traffic controllers and ship captains
 				coordinating freighter shipments across the system.
 				
 				A manager walks over to you: "There are some freighters looking for escorts. Check
 				the display to your left."
+
 			</Text>
 			<Text id="descOperationsIntroNoFreighters">
+
 				The operations level is filled with traffic controllers and ship captains
 				coordinating freighter shipments across the system.
 				
 				A manager walks over to you: "All our freighters are out, but if you come back 
 				later perhaps some will have returned."
+
 			</Text>
 
 			<Text id="descNoMissions">
+
 				A manager walks over to you:
 
 				"All our freighters are out, but if you come back later perhaps some will have
 				returned."
+
 			</Text>
 			<Text id="descNotRated">
+
 				You are not rated to escort this class of freighter.
 				
 				Once you gain experience escorting other freighters, you will
 				be promoted.
+
 			</Text>
 			<Text id="descTooSlow">
 				Unfortunately, your ship is too slow to escort this class of freighter.
