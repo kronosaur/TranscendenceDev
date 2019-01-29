@@ -93,7 +93,7 @@
 				
 			</Text>
 			<Text id="SuccessDebrief:Apprentice:1">
-				(scrTranslate gScreen (cat "textSuccessApprentice.1." (random 1 5)))
+				(typTranslate gType (cat "textSuccessApprentice.1." (random 1 5)))
 			</Text>
 			<Text id="textSuccessApprentice.1.1">
 
@@ -110,9 +110,9 @@
 
 				"Excellent work, captain! Your skills are improving rapidly.
 
-				"But here is some advice: Remember that pirates seek out the 
-				most valuable cargo; pirates will send out larger and more 
-				powerful attacks against expensive cargos. Always be vigilant.
+				"But here's some advice: Pirates seek out the most valuable 
+				cargo; they'll send out larger and more powerful attacks against
+				expensive cargos. Always be vigilant.
 
 				"We've deposited %reward% in your account."
 
@@ -143,7 +143,7 @@
 				"Excellent work, captain! Your skills are improving rapidly.
 
 				"After a few more successful missions you will be ready for a 
-				promotion to Journeyman&mdash;and ready for a greater challenge!
+				promotion to Journeyman&mdash;and ready for greater challenges!
 
 				"We've deposited %reward% in your account."
 
@@ -152,8 +152,8 @@
 			<Text id="SuccessDebrief:Apprentice:2">
 
 				"Excellent work, captain! Your apprenticeship is almost complete.
-				If you can successfully complete the next escort mission,
-				we will be confident in your skills and promote you.
+				If you successfully complete the next escort mission, we'll be 
+				confident in your skills and promote you.
 
 				"We've deposited %reward% in your account."
 
@@ -831,7 +831,7 @@
 					(level (korGetPlayerLevel))
 					)
 					(cat
-						(scrTranslate gScreen 'descWelcomeStart) " "
+						(scrTranslate gScreen 'descWelcomeStart) "\n\n"
 						(switch
 							(= level -1)
 								(scrTranslate gScreen 'descWelcome.blacklisted)
@@ -857,7 +857,7 @@
 			<Text id="descWelcome.1">
 
 				The walls are decorated with holopanes honoring the men and 
-				women who have died defending Korolov freighters.
+				women who died defending Korolov freighters.
 
 			</Text>
 			<Text id="descWelcome.2">

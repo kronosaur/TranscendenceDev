@@ -1338,57 +1338,57 @@
 	</ShipTable>
 
 	<EncounterTable UNID="&etPirateAmbush1;">
-		<Group>
-			<Ship class="&scCorsair;"	count="1d3" orders="attack"	sovereign="&svPirates;"/>
-			<Table>
-				<Ship chance="75" count="1"		class="&scCorsair;"	orders="attack"	sovereign="&svPirates;"/>
-				<Ship chance="25" count="1"		class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
-			</Table>
-		</Group>
+		<Table>
+			<Ship	chance="60"		count="3-5"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="40">
+				<Ship				count="1-2"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="1"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
+			</Group>
+		</Table>
 	</EncounterTable>
 
 	<EncounterTable UNID="&etPirateAmbush2;">
 		<Table>
-			<Ship chance="40" count="2d3"	class="&scCorsair;"	orders="attack"	sovereign="&svPirates;"/>
-			<Group chance="30">
-				<Ship         count="1d4+1"	class="&scCorsair;"	orders="attack"	sovereign="&svPirates;"/>
-				<Ship         count="1"		class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="40"		count="5-7"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="30">
+				<Ship		        count="3-5"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="1"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
 			</Group>
-			<Ship chance="30" count="2"	class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="30"		count="2"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
 		</Table>
 	</EncounterTable>
 
 	<EncounterTable UNID="&etPirateAmbush3;">
 		<Table>
-			<Ship chance="10" count="2d6"	class="&scCorsair;" orders="attack"	sovereign="&svPirates;"/>
-			<Group chance="10">
-				<Ship		  count="1d6"	class="&scCorsair;"	orders="attack"	sovereign="&svPirates;"/>
-				<Ship		  count="1d4"	class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="10"		count="8-12"	class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="10">
+				<Ship				count="3-5"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="2"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
 			</Group>
-			<Ship chance="15" count="2d3"	class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
-			<Group chance="25">
-				<Ship		  count="1d6"	class="&scCorsair;"	orders="attack"	sovereign="&svPirates;"/>
-				<Ship		  count="1d2"	class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="15"		count="3-4"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="25">
+				<Ship				count="2-4"		class="&scCorsair;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="1"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
 			</Group>
-			<Group chance="25">
-				<Ship		  count="1d4"	class="&scViking;"	orders="attack"	sovereign="&svPirates;"/>
-				<Ship		  count="1"		class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="25">
+				<Ship				count="2"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="1"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
 			</Group>
-			<Ship chance="15" count="1d4"	class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="15"		count="2"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
 		</Table>
 	</EncounterTable>
 
 	<EncounterTable UNID="&etPirateAmbush4;">
 		<Table>
-			<Ship chance="15" count="2d6"   class="&scViking;" orders="attack"	sovereign="&svPirates;"/>
-			<Group chance="25">
-				<Ship		  count="1d6"	class="&scViking;" orders="attack"	sovereign="&svPirates;"/>
-				<Ship		  count="1d4"	class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="15"		count="8-12"	class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="25">
+				<Ship				count="3-5"		class="&scViking;"		orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="2"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
 			</Group>
-			<Ship chance="30" count="2d3"	class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
-			<Group chance="30">
-				<Ship		  count="1d4"	class="&scCorsair-II;" orders="attack"	sovereign="&svPirates;"/>
-				<Ship		  count="1"		class="&scDrake;" orders="attack"	sovereign="&svPirates;"/>
+			<Ship	chance="30"		count="3-4"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
+			<Group	chance="30">
+				<Ship				count="2"		class="&scCorsair-II;"	orders="attack"	sovereign="&svPirates;"/>
+				<Ship				count="1"		class="&scDrake;"		orders="attack"	sovereign="&svPirates;"/>
 			</Group>
 		</Table>
 	</EncounterTable>
@@ -2106,7 +2106,7 @@
 					;(dbgOutput "Freighter travel time: " travelTime)
 
 					(switch
-						(leq cargoValue 50000)
+						(leq cargoValue 25000)
 							(block Nil
 								; Raiding parties half way
 								(sysAddEncounterEventAtDist 
@@ -2128,6 +2128,34 @@
 									)
 								)
 
+						(leq cargoValue 50000)
+							(block Nil
+								; Raiding parties half way
+								(sysAddEncounterEventAtDist 
+									(divide (multiply (random 30 45) travelTime) 100)
+									transportObj
+									(random '(&etPirateAmbush1; &etPirateAmbush2;))
+									110
+									)
+
+								(sysAddEncounterEventAtDist 
+									(divide (multiply (random 50 65) travelTime) 100)
+									transportObj
+									(random '(&etPirateAmbush1; &etPirateAmbush2;))
+									110
+									)
+
+								; 80% chance of a raiding party on the way back
+								(if (and roundTrip (leq (random 1 100) 80))
+									(sysAddEncounterEventAtDist 
+										(divide (multiply (random 145 175) travelTime) 100)
+										transportObj
+										(random '(&etPirateAmbush1; &etPirateAmbush2;))
+										110
+										)
+									)
+								)
+
 						(leq cargoValue 100000)
 							(block Nil
 								(if (leq (random 1 100) 50)
@@ -2139,13 +2167,13 @@
 										(sysAddEncounterEventAtDist 
 											(divide (multiply (random 25 40) travelTime) 100)
 											transportObj
-											(random '(&etPirateAmbush1; &etPirateAmbush2;))
+											&etPirateAmbush2;
 											110
 											)
 										(sysAddEncounterEventAtDist 
 											(divide (multiply (random 60 75) travelTime) 100)
 											transportObj
-											(random '(&etPirateAmbush1; &etPirateAmbush2;))
+											&etPirateAmbush2;
 											110
 											)
 										)
@@ -2155,7 +2183,9 @@
 								(if (and roundTrip (leq (random 1 100) 60))
 									(sysAddEncounterEventAtDist 
 										(divide (multiply (random 145 175) travelTime) 100)
-										transportObj &etPirateAmbush1; 110
+										transportObj
+										&etPirateAmbush2;
+										110
 										)
 									)
 								)
@@ -2178,7 +2208,7 @@
 								(if (and roundTrip (leq (random 1 100) 70))
 									(sysAddEncounterEventAtDist 
 										(divide (multiply (random 145 175) travelTime) 100)
-										transportObj &etPirateAmbush1; 110
+										transportObj &etPirateAmbush2; 110
 										)
 									)
 								)
