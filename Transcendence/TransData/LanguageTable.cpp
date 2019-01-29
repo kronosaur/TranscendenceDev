@@ -5,14 +5,22 @@
 
 #include "PreComp.h"
 
+#define CODE_ATTRIB							CONSTLIT("code")
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
 
 #define FIELD_ID							CONSTLIT("id")
 #define FIELD_TEXT							CONSTLIT("text")
 #define FIELD_UNID							CONSTLIT("unid")
 
-void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols);
-void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols);
+static constexpr int MAX_CODE_LENGTH =		256;
+
+struct SLanguageTableOptions
+	{
+	bool bShowCode = false;
+	};
+
+void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
+void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols, const SLanguageTableOptions &Options);
 
 void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
@@ -32,6 +40,11 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		printf("ERROR: Unable to parse criteria.\n");
 		return;
 		}
+
+	//	Options
+
+	SLanguageTableOptions Options;
+	Options.bShowCode = pCmdLine->GetAttributeBool(CODE_ATTRIB);
 
 	//	Generate a table of all matching types
 
@@ -94,13 +107,13 @@ void GenerateLanguageTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		{
 		CDesignType *pType = Table[i];
 
-		OutputLanguageBlock(pType, Cols);
+		OutputLanguageBlock(pType, Cols, Options);
 		}
 
 	printf("\n");
 	}
 
-void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols)
+void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols, const SLanguageTableOptions &Options)
 	{
 	int i;
 
@@ -108,14 +121,30 @@ void OutputLanguageBlock (CDesignType *pType, const TArray<CString> &Cols)
 	for (i = 0; i < Language.GetCount(); i++)
 		{
 		CLanguageDataBlock::SEntryDesc Entry = Language.GetEntry(i);
-		if (Entry.sText.IsBlank())
-			continue;
 
-		OutputLanguageEntry(pType, Entry, Cols);
+		//	In code mode we only show entries with code.
+
+		if (Options.bShowCode)
+			{
+			if (!Entry.pCode)
+				continue;
+
+			OutputLanguageEntry(pType, Entry, Cols, Options);
+			}
+
+		//	Otherwise we show entries with text.
+
+		else
+			{
+			if (Entry.sText.IsBlank())
+				continue;
+
+			OutputLanguageEntry(pType, Entry, Cols, Options);
+			}
 		}
 	}
 
-void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols)
+void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDesc &Entry, const TArray<CString> &Cols, const SLanguageTableOptions &Options)
 	{
 	int i;
 	
@@ -124,7 +153,17 @@ void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDe
 		if (strEquals(Cols[i], FIELD_ID))
 			printf((LPSTR)Entry.sID);
 		else if (strEquals(Cols[i], FIELD_TEXT))
-			printf("%s", (LPSTR)Entry.sText);
+			{
+			if (Options.bShowCode)
+				{
+				CCodeChain &CC = g_pUniverse->GetCC();
+				CString sCode = CC.Unlink(Entry.pCode);
+
+				printf("%s", (LPSTR)strSubString(sCode, 0, MAX_CODE_LENGTH));
+				}
+			else
+				printf("%s", (LPSTR)Entry.sText);
+			}
 		else if (strEquals(Cols[i], FIELD_UNID))
 			printf("%0x8", pType->GetUNID());
 
