@@ -8,11 +8,13 @@
 CTimedMissionEvent::CTimedMissionEvent (int iTick,
 										int iInterval,
 										CMission *pMission,
-										const CString &sEvent) :
+										const CString &sEvent,
+										const CString &sNode) :
 		CSystemEvent(iTick),
 		m_iInterval(iInterval),
 		m_pMission(pMission),
-		m_sEvent(sEvent)
+		m_sEvent(sEvent),
+		m_sNode(sNode)
 
 //	CTimedMissionEvent constructor
 
@@ -25,11 +27,15 @@ CTimedMissionEvent::CTimedMissionEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 
 	{
 	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+
+	Ctx.pStream->Read(dwLoad);
 	m_pMission = g_pUniverse->FindMission(dwLoad);
 
 	m_sEvent.ReadFromStream(Ctx.pStream);
-	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));
+	Ctx.pStream->Read(m_iInterval);
+
+	if (Ctx.dwVersion >= 171)
+		m_sNode.ReadFromStream(Ctx.pStream);
 	}
 
 CString CTimedMissionEvent::DebugCrashInfo (void)
@@ -56,8 +62,24 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem *pSystem)
 	{
 	DEBUG_TRY
 
+	//	If we're not in the right system, then we don't run.
+
+	if (!m_sNode.IsBlank() 
+			&& pSystem && pSystem->GetTopology() 
+			&& !strEquals(pSystem->GetTopology()->GetID(), m_sNode))
+		{
+		//	Reset our time so that we're not firing every tick
+
+		SetTick(dwTick + 30);
+		return;
+		}
+
+	//	Run
+
 	if (m_pMission)
 		m_pMission->FireCustomEvent(m_sEvent, NULL);
+
+	//	Next run
 
 	if (m_iInterval)
 		SetTick(dwTick + m_iInterval);
@@ -76,13 +98,15 @@ void CTimedMissionEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStrea
 //	DWORD		m_pType (UNID)
 //	CString		m_sEvent
 //	DWORD		m_iInterval
+//	CString		m_sNode
 
 	{
 	DWORD dwSave;
 
 	dwSave = (m_pMission ? m_pMission->GetID() : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	m_sEvent.WriteToStream(pStream);
-	pStream->Write((char *)&m_iInterval, sizeof(DWORD));
+	pStream->Write(m_iInterval);
+	m_sNode.WriteToStream(pStream);
 	}

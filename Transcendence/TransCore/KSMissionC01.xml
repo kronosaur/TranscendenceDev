@@ -42,8 +42,11 @@
 						(enum pirateStations theObj (msnRegisterForEvents gSource theObj))
 						(msnSetData gSource 'stationsLeft (count pirateStations))
 
-						(msnAddTimerEvent gSource 500 'OnTimerAttack1)
-						(msnAddTimerEvent gSource 850 'OnTimerAttack2)
+						;	Timer fires in all systems because the attack happens whether or
+						;	not the player is in the system.
+
+						(msnAddTimerEvent gSource 500 'OnTimerAttack1 { allSystems:True })
+						(msnAddTimerEvent gSource 850 'OnTimerAttack2 { allSystems:True })
 
 						;	Choose a random mission reward
 						(msnSetData gSource 'rewardItem (randomTable

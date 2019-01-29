@@ -31,7 +31,7 @@
 
 			allowPlayerDelete=			"false"
 			debriefAfterOutOfSystem=	"false"
-			failureAfterOutOfSystem=	"false"
+			failureAfterOutOfSystem=	"-1"
 			forceUndockAfterDebrief=	"false"
 			noDebrief=					"false"
 			noDecline=					"false"

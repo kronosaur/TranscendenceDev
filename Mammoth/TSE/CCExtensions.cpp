@@ -2419,18 +2419,26 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnAddTimerEvent",				fnMissionSet,		FN_MISSION_ADD_TIMER,
-			"(msnAddTimerEvent missionObj delay event)\n\n"
+			"(msnAddTimerEvent missionObj delay event [options])\n\n"
 			
-			"delay in ticks",
+			"delay in ticks\n\n"
+			
+			"options:\n\n"
+			
+			"   'allSystems: Timer fires in all systems.",
 
-			"iis",	PPFLAG_SIDEEFFECTS,	},
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnAddRecurringTimerEvent",	fnMissionSet,		FN_MISSION_ADD_RECURRING_TIMER,	
-			"(msnAddRecurringTimerEvent missionObj interval event)\n\n"
+			"(msnAddRecurringTimerEvent missionObj interval event [options])\n\n"
 			
-			"interval in ticks",
+			"interval in ticks\n\n"
+			
+			"options:\n\n"
+			
+			"   'allSystems: Timer fires in all systems.",
 
-			"iis",	PPFLAG_SIDEEFFECTS,	},
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnCancelTimerEvent",				fnMissionSet,	FN_MISSION_CANCEL_TIMER,
 			"(msnCancelTimerEvent missionObj event) -> True/Nil",
@@ -9141,6 +9149,7 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid recurring time"), pArgs->GetElement(1));
 
 			CString sEvent = pArgs->GetElement(2)->GetStringValue();
+			ICCItem *pOptions = pArgs->GetElement(3);
 
 			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 			if (pSystem == NULL)
@@ -9152,6 +9161,12 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pMission->IsClosed())
 				return pCC->CreateError(CONSTLIT("Mission already closed"), pArgs->GetElement(0));
 
+			//	See if we run on all systems or just this one.
+
+			CString sNodeID;
+			if (CTLispConvert::AsOption(pOptions, CONSTLIT("allSystems")))
+				sNodeID = (pSystem->GetTopology() ? pSystem->GetTopology()->GetID() : NULL_STR);
+
 			//	Create the event
 
 			CSystemEvent *pEvent;
@@ -9160,13 +9175,15 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 						Max(0, g_pUniverse->GetTicks() + iTime),
 						0,
 						pMission,
-						sEvent);
+						sEvent,
+						sNodeID);
 			else
 				pEvent = new CTimedMissionEvent(
 						Max(0, g_pUniverse->GetTicks() + mathRandom(0, iTime)),
 						iTime,
 						pMission,
-						sEvent);
+						sEvent,
+						sNodeID);
 
 			g_pUniverse->AddEvent(pEvent);
 

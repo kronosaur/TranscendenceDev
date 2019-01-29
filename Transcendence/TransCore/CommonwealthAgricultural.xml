@@ -189,6 +189,7 @@
 
 			maxAppearing=		"1"
 			noDebrief=			"true"
+			failureAfterOutOfSystem="0"
 			>
 
 		<StaticData>

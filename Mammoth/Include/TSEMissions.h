@@ -175,7 +175,8 @@ class CTimedMissionEvent : public CSystemEvent
 		CTimedMissionEvent (int iTick,
 							int iInterval,
 							CMission *pMission,
-							const CString &sEvent);
+							const CString &sEvent,
+							const CString &sNode);
 		CTimedMissionEvent (SLoadCtx &Ctx);
 
 		virtual CString DebugCrashInfo (void) override;
@@ -191,5 +192,7 @@ class CTimedMissionEvent : public CSystemEvent
 		int m_iInterval;			//	0 = not recurring
 		CMission *m_pMission;
 		CString m_sEvent;
+
+		CString m_sNode;			//	Fire only in this node (blank = all nodes)
 	};
 
