@@ -272,13 +272,13 @@
 					)
 					(switch
 						(leq cargoValue 75000)
-							(setq num (random 4 6))
+							(setq num (random 3 4))
 						(leq cargoValue 150000)
-							(setq num (random 5 8))
+							(setq num (random 5 7))
 						(leq cargoValue 300000)
-							(setq num (random 6 10))
+							(setq num (random 7 9))
 						(leq cargoValue 600000)
-							(setq num (random 7 12))
+							(setq num (random 7 11))
 						(setq num (random 8 14))
 						)
 
