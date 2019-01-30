@@ -42,22 +42,26 @@
 					(block (
 						(sourceObj (@ gData 'sourceObj))
 						(sourceTyp (@ gData 'sourceType))
-						(rumorIntro (objTranslate gSource 'rumor.intro))
+						(translateData (struct 
+							(@ gData 'data) 
+							{ rumorGiver: (@ gData 'rumorGiver)	}
+							))
+						(rumorIntro (objTranslate gSource 'rumor.intro translateData))
 						(descID (or (@ gData 'descID) (@ gData 'textID)))
 
 						(theRumor (switch
 							;	If we have a dialogID then translate from sourceObj
 							;	This could be a complex multi-page RPGDialog case
 							(@ gData 'dialogID)
-								(objTranslate sourceObj (@ gData 'dialogID))
+								(objTranslate sourceObj (@ gData 'dialogID) translateData)
 
 							;	If the station showing the rumor has an intro then prepend it
 							rumorIntro
 								{
 									desc: (cat rumorIntro
 										(or
-											(objTranslate sourceObj descID (@ gData 'data))
-											(typTranslate sourceTyp descID (@ gData 'data))
+											(objTranslate sourceObj descID translateData)
+											(typTranslate sourceTyp descID translateData)
 											(@ gData 'desc)
 											)
 										)
@@ -67,7 +71,7 @@
 							sourceTyp
 								{
 									desc: (or
-										(typTranslate sourceTyp descID (@ gData 'data))
+										(typTranslate sourceTyp descID translateData)
 										(@ gData 'desc)
 										)
 									}
@@ -158,6 +162,10 @@
 				;		rumorCriteria: Criteria used to find suitable rumors. If not
 				;				supplied then fallback to mission/display criteria
 				;
+				;		rumorGiver: The character info for the character giving the 
+				;				rumor (as returned by rpgCharacterGetInfo). This is passed
+				;				as a field in gData when translating text.
+				;
 				;		actionDoneID: Action ID to use for the done button (defaults to
 				;				'actionContinue).
 
@@ -233,6 +241,15 @@
 					(if (and theRumor (@ options 'actionDoneID))
 						(set@ theRumor 'actionDoneID (@ options 'actionDoneID))
 						)
+
+					(switch
+						(@ options 'rumorGiver)
+							(set@ theRumor 'rumorGiver (@ options 'rumorGiver))
+
+						(@ options 'missionGiver)
+							(set@ theRumor 'rumorGiver (@ options 'missionGiver))
+						)
+
 					theRumor
 					)
 				))

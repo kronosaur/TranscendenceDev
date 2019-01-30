@@ -106,6 +106,19 @@ class CLanguage
 		static DWORD ParseNounFlags (const CString &sValue);
 		static CString ParseNounForm (const CString &sNoun, const CString &sModifier, DWORD dwNounFlags, bool bPluralize, bool bShortName, SNounDesc *retDesc = NULL);
 		static ENumberFormatTypes ParseNumberFormat (const CString &sValue);
+
+	private:
+		struct SVarInfo
+			{
+			CString sParam;
+			bool bCharacter = false;
+			bool bCapitalize = false;
+			bool bDone = false;
+			};
+
+		static CString ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData);
+		static CString ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData);
+		static CString ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos);
 	};
 
 class CLanguageDataBlock
@@ -134,6 +147,7 @@ class CLanguageDataBlock
 		void MergeFrom (const CLanguageDataBlock &Source);
 		bool Translate (const CDesignType &Type, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 

@@ -85,6 +85,14 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 //		%man%				man or woman (matching case)
 //		%brother%			brother or sister (matching case)
 //		%%					%
+//
+//		%he:charGender%		Looks up charGender in pArgs to get the gender and
+//							then translates the gendered word appropriately.
+//
+//		%he@char%			Looks up char in pArgs and expects a character info
+//							structure (as returned by rpgCharacterGetInfo). Then
+//							we use the gender of the character to translate the
+//							gendered word.
 
 	{
 	//	Prepare output
@@ -111,55 +119,35 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 
 		if (bVar)
 			{
-			ICCItem *pValue;
-
-			int iArg;
 			ASSERT(*pPos == '%');
 
-			//	Skip %
+			//	Parse the variable and associated info
 
 			pPos++;
 			char *pStart = pPos;
-			while (*pPos != '%' && *pPos != ':' && *pPos != '\0')
-				pPos++;
 
-			sVar = CString(pStart, pPos - pStart);
+			SVarInfo VarInfo;
+			sVar = ParseVar(pPos, VarInfo, &pPos);
 
-			//	If we've got a colon, then we take the remainder as a parameter
+			bVar = false;
+			bDone = VarInfo.bDone;
 
-			CString sParam;
-			if (*pPos == ':')
-				{
-				pPos++;
-				char *pParamStart = pPos;
-				while (*pPos != '%' && *pPos != '\0')
-					pPos++;
-
-				sParam = CString(pParamStart, pPos - pParamStart);
-				}
-
-			//	Skip the closing %
-
-			if (*pPos == '%')
-				{
-				pPos++;
-				bVar = false;
-				}
-			else
-				bDone = true;
-
-			//	If the variable is capitalized, then we capitalize the result.
-
-			bool bCapitalize = (*sVar.GetASCIIZPointer() >= 'A' && *sVar.GetASCIIZPointer() <= 'Z');
-
-			//	Used if this is a gendered word.
+			//	These variables are used to figure out how to translate the variable.
 
 			const SStaticGenderWord *pGenderedWord = NULL;
+			ICCItem *pValue = NULL;
+			int iArg = 0;
 
 			//	Setup the segment depending on the variable
 
 			if (sVar.IsBlank())
 				sVar = CONSTLIT("%");
+
+			//	If this is a character reference, then we go through a different
+			//	path.
+
+			else if (VarInfo.bCharacter)
+				sVar = ComposeCharacterReference(*g_pUniverse, VarInfo.sParam, sVar, (bHasData ? pArgs : NULL));
 
 			//	Check to see if this is a variable referencing gData.
 
@@ -174,32 +162,7 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 			//	Is this a gendered word?
 
 			else if (pGenderedWord = GENDER_WORD_TABLE.GetAt(sVar))
-				{
-				//	If we have a parameter then we expect it to be a variable in gData
-				//	with the gender.
-
-				if (!sParam.IsBlank())
-					{
-					if (bHasData 
-							&& (pValue = pArgs->GetElement(sParam)) 
-							&& !pValue->IsNil())
-						{
-						sVar = ComposeGenderedWord(sVar, ParseGenomeID(pValue->GetStringValue()));
-						}
-					else
-						{
-						if (g_pUniverse->InDebugMode())
-							sVar = strPatternSubst(CONSTLIT("[%s not found]"), sParam);
-						else
-							sVar = ComposeGenderedWord(sVar, genomeHumanMale);
-						}
-					}
-
-				//	Otherwise, we use the player's gender
-
-				else
-					sVar = ComposeGenderedWord(sVar, g_pUniverse->GetPlayerGenome());
-				}
+				sVar = ComposeGenderedWordHelper(*g_pUniverse, sVar, VarInfo.sParam, (bHasData ? pArgs : NULL));
 
 			//	If we still haven't found it, then assume this is an index into 
 			//	and array of values.
@@ -213,7 +176,7 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 				if (iArg < 0)
 					{
 					iArg = -iArg;
-					bCapitalize = true;
+					VarInfo.bCapitalize = true;
 					}
 
 				ICCItem *pArg = pArgs->GetElement(iArg + 1);
@@ -230,12 +193,12 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 				pPos = pStart;
 				bDone = (*pPos == '\0');
 				bVar = false;
-				bCapitalize = false;
+				VarInfo.bCapitalize = false;
 				}
 
 			//	Capitalize, if necessary
 
-			if (bCapitalize)
+			if (VarInfo.bCapitalize)
 				sVar = strCapitalize(sVar);
 
 			//	Escape, if necessary
@@ -294,6 +257,74 @@ CString CLanguage::Compose (const CString &sString, ICCItem *pArgs)
 	return sOutput;
 	}
 
+CString CLanguage::ComposeCharacterReference (CUniverse &Universe, const CString &sCharacter, const CString &sField, ICCItem *pData)
+
+//	ComposeCharacterReference
+//
+//	Translates to a character-based word or phrase. sCharacter is the field in
+//	gData that contains character info (as returned by rpgCharacterGetInfo).
+//	sField is the FIELD of the character that we want.
+//
+//	We support the following kinds of fields:
+//
+//	*	If FIELD is a gendered word, then we lookup the gender of the character
+//		and return the appropriate word.
+//
+//	*	If FIELD is fullName, friendlyName, or formalName, we lookup that field
+//		in the character info.
+//
+//	*	Otherwise, we assume FIELD is a language ID in the source type for the
+//		character (sourceType field in character info).
+
+	{
+	ICCItem *pCharInfo;
+
+	if (sField.IsBlank())
+		return CONSTLIT("[expected a character reference]");
+
+	else if (pData == NULL || (pCharInfo = pData->GetElement(sCharacter)) == NULL || pCharInfo->IsNil())
+		return strPatternSubst(CONSTLIT("[character %s not found]"), sCharacter);
+
+	CString sCharID = pCharInfo->GetStringAt(CONSTLIT("id"));
+	if (sCharID.IsBlank())
+		return strPatternSubst(CONSTLIT("[character %s invalid: no ID]"), sCharacter);
+
+	//	See if we need to translate a gendered word
+
+	const SStaticGenderWord *pGenderedWord = GENDER_WORD_TABLE.GetAt(sField);
+	if (pGenderedWord)
+		{
+		ICCItem *pGender = pCharInfo->GetElement(CONSTLIT("gender"));
+		if (pGender == NULL)
+			return strPatternSubst(CONSTLIT("[no gender for character %s]"), sCharID);
+
+		return ComposeGenderedWord(sField, ParseGenomeID(pGender->GetStringValue()));
+		}
+
+	//	See if we want the name of the character
+
+	else if (strEquals(sField, CONSTLIT("friendlyName"))
+			|| strEquals(sField, CONSTLIT("formalName"))
+			|| strEquals(sField, CONSTLIT("fullName"))
+			|| strEquals(sField, CONSTLIT("titledName")))
+		return pCharInfo->GetStringAt(sField);
+
+	//	Otherwise, we get the source type and translate.
+
+	else
+		{
+		CDesignType *pSourceType = Universe.FindDesignType(pCharInfo->GetIntegerAt(CONSTLIT("sourceType")));
+		if (pSourceType == NULL)
+			return strPatternSubst(CONSTLIT("[no sourceType for character %s]"), sCharID);
+
+		CString sText;
+		if (!pSourceType->TranslateText(sField, pData, &sText))
+			return strPatternSubst(CONSTLIT("[cannot translate text ID %s for character %s]"), sField, sCharID);
+
+		return sText;
+		}
+	}
+
 CString CLanguage::ComposeGenderedWord (const CString &sWord, GenomeTypes iGender)
 
 //	ComposeGenderedWord
@@ -306,6 +337,41 @@ CString CLanguage::ComposeGenderedWord (const CString &sWord, GenomeTypes iGende
 		return sWord;
 
 	return pEntry->pszText[iGender];
+	}
+
+CString CLanguage::ComposeGenderedWordHelper (CUniverse &Universe, const CString &sWord, const CString &sField, ICCItem *pData)
+
+//	ComposeGenderedWordHelper
+//
+//	Helper for CLanguage::Compose
+
+	{
+	//	If we have a field then we expect it to be a variable in gData
+	//	with the gender.
+
+	if (!sField.IsBlank())
+		{
+		ICCItem *pValue;
+
+		if (pData
+				&& (pValue = pData->GetElement(sField)) 
+				&& !pValue->IsNil())
+			{
+			return ComposeGenderedWord(sWord, ParseGenomeID(pValue->GetStringValue()));
+			}
+		else
+			{
+			if (Universe.InDebugMode())
+				return strPatternSubst(CONSTLIT("[%s not found]"), sField);
+			else
+				return ComposeGenderedWord(sWord, genomeHumanMale);
+			}
+		}
+
+	//	Otherwise, we use the player's gender
+
+	else
+		return ComposeGenderedWord(sWord, Universe.GetPlayerGenome());
 	}
 
 CString CLanguage::ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags)
@@ -1278,4 +1344,63 @@ CLanguage::ENumberFormatTypes CLanguage::ParseNumberFormat (const CString &sValu
 		return numberError;
 
 	return pEntry->Value;
+	}
+
+CString CLanguage::ParseVar (char *pPos, SVarInfo &retVarInfo, char **retpPos)
+
+//	ParseVar
+//
+//	Parses a variable in CLanguage::Compose
+
+	{
+	char *pStart = pPos;
+
+	//	If we've got whitespace, then this is definitely not a variable.
+
+	if (strIsWhitespace(pPos))
+		{
+		if (retpPos) *retpPos = pPos;
+		return NULL_STR;
+		}
+
+	//	Parse until we find a delimiter
+
+	while (*pPos != '%' && *pPos != ':' && *pPos != '@' && *pPos != '\0')
+		pPos++;
+
+	CString sVar = CString(pStart, pPos - pStart);
+
+	//	If we've got a colon, then we take the remainder as a parameter
+
+	retVarInfo.bCharacter = false;
+	if (*pPos == ':' || *pPos == '@')
+		{
+		retVarInfo.bCharacter = (*pPos == '@');
+		pPos++;
+		char *pParamStart = pPos;
+		while (*pPos != '%' && *pPos != '\0')
+			pPos++;
+
+		retVarInfo.sParam = CString(pParamStart, pPos - pParamStart);
+		}
+
+	//	Skip the closing %
+
+	if (*pPos == '%')
+		{
+		pPos++;
+		retVarInfo.bDone = false;
+		}
+	else
+		retVarInfo.bDone = true;
+
+	//	If the variable is capitalized, then we capitalize the result.
+
+	retVarInfo.bCapitalize = (*sVar.GetASCIIZPointer() >= 'A' && *sVar.GetASCIIZPointer() <= 'Z');
+
+	//	Done
+
+	if (retpPos) *retpPos = pPos;
+
+	return sVar;
 	}

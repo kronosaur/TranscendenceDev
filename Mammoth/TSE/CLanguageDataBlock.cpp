@@ -679,6 +679,20 @@ bool CLanguageDataBlock::Translate (CSpaceObject *pObj, const CString &sID, ICCI
 	return ComposeCCResult(iResult, pData, List, sText, pResult, retResult);
 	}
 
+bool CLanguageDataBlock::TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const
+
+//	TranslateText
+//
+//	Translates to text. If not found, returns FALSE.
+
+	{
+	TArray<CString> List;
+
+	ETranslateResult iResult = TranslateFull(Type, sID, pData, &List, retsText);
+
+	return ComposeTextResult(iResult, List, retsText);
+	}
+
 bool CLanguageDataBlock::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	TranslateText

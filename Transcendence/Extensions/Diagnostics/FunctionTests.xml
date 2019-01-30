@@ -349,6 +349,21 @@
 					{	test: '(fmtCompose "% test %" { test:'foo })		result: "% test %"	}
 					{	test: '(fmtCompose "% test: test %" { test:'foo })	result: "% test: test %"	}
 
+					{	test: '(fmtCompose "%he@char% is testing" {
+							char: {
+								id: 'lukeSkywalker
+								gender: 'genderMale
+								}
+							})												result: "he is testing" }
+					{	test: '(fmtCompose "%friendlyName@char% is testing" {
+							char: {
+								id: 'lukeSkywalker
+								friendlyName: "Luke"
+								}
+							})												result: "Luke is testing" }
+
+					{	test: '(fmtCompose "% TEST@TEST")					result: "% TEST@TEST"	}
+
 					;	For backwards compatibility, a double percent is translated to a single
 					;	percent. But in practice, you should use a single percent where needed.
 

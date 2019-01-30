@@ -901,6 +901,10 @@
 				;
 				;		missionCriteria: Criteria used to create new missions. [Required]
 				;
+				;		missionGiver: The character info for the character giving the 
+				;				mission (as returned by rpgCharacterGetInfo). This is passed
+				;				as a field in gData when translating text.
+				;
 				;		noMissionTextID: Language ID to display if there is no mission
 				;				available at this station. [Required]
 				;
@@ -918,7 +922,10 @@
 					(switch
 						;	Call rpgMissionGetAssignment to see if we have a mission.
 						(setq theMission (rpgMissionGetAssignment options))
-							(scrShowScreen gScreen &dsRPGMission; {	missionObj: theMission })
+							(scrShowScreen gScreen &dsRPGMission; {
+								missionObj: theMission
+								missionGiver: (@ options 'missionGiver)
+								})
 
 						;	Check if we can show a rumor instead
 						(setq theRumor (rpgGetRumor options))
@@ -926,7 +933,11 @@
 
 						; Otherwise, nothing
 
-						(scrShowScreen gScreen &dsRPGMessage; { desc:(scrTranslate gScreen noMissionTextID) })
+						(scrShowScreen gScreen &dsRPGMessage; {
+							desc:(scrTranslate gScreen noMissionTextID {
+								missionGiver: (@ options 'missionGiver)
+								})
+							})
 						)
 					)
 				))

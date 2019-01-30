@@ -323,6 +323,7 @@ class CDesignType
 		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 

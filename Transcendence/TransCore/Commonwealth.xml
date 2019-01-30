@@ -1111,6 +1111,7 @@
 									maxActive: 1
 									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									noMissionTextID: 'descNoMissions
+									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
 									})
 							</Action>
 
@@ -1147,8 +1148,8 @@
 			</Text>
 			<Text id="descNoMissions">
 
-				The colony supervisor is working at his station. The comms channels
-				are quiet and he stops to chat:
+				The station master is working at %his@missionGiver% station. The comms channels
+				are quiet and %he@missionGiver% stops to chat:
 
 				"It's calm now, but I've been hearing a lot of military chatter lately."
 
@@ -1157,7 +1158,7 @@
 
 			<Text id="rumor.intro">
 
-				The station master is working at his console. He stops to chat:\n\n
+				The station master is working at %his@rumorGiver% console. %He@rumorGiver% stops to chat:\n\n
 
 			</Text>
 			<String id="rumor.commonwealthHabitat.1">

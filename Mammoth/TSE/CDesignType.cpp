@@ -2666,6 +2666,24 @@ bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pD
 	return false;
 	}
 
+bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const
+
+//	TranslateText
+//
+//	Translate from a <Language> block to text.
+
+	{
+	if (m_pExtra && m_pExtra->Language.TranslateText(*this, sID, pData, retsText))
+		return true;
+
+	if (m_pInheritFrom && m_pInheritFrom->TranslateText(sID, pData, retsText))
+		return true;
+
+	//	Not found
+
+	return false;
+	}
+	
 bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate

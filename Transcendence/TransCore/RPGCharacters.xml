@@ -795,7 +795,7 @@
 
 					(characterTable (typGetStaticData theType 'CharacterTable))
 					)
-					(@ characterTable theID)
+					(struct (@ characterTable theID) { sourceType:theType })
 					)
 				))
 
