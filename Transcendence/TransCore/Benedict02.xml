@@ -6,10 +6,22 @@
 
 	EXTRA DATA
 
-	attackersLeft:			Number of attackers left.
-	freighterID:			Target ID to escort.
-	playerDestroyedFreighter: If True, player destroyed the freighter.
-	stargateID:				Stargate to wait at.
+	attackersLeft: Number of attackers left.
+
+	freighterID: Target ID to escort.
+
+	result:	Once mission is completed, this indicates the result. One of:
+		Nil: Normal result
+		'gotFiona: Freighter was destroyed, but player brought back Fiona
+		'playerDestroyedFreighter
+
+	stargateID:	Stargate to wait at.
+
+	status: Current mission status
+		Nil: Defend freighter
+		'pickupFiona: Dock with freighter wreck and pick up Fiona
+
+	wreckID: If the freighter is destroyed, this is the wreck ID.
 
 	======================================================================== -->
 	
@@ -82,6 +94,11 @@
 			
 			<OnSetPlayerTarget>
 				(switch
+					;	If we need to pick up Fiona, then point to the wreck
+
+					(= (msnGetData gSource 'status) 'pickUpFiona)
+						(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'wreckID)) 'dock)
+
 					;	If we have a freighter ID, then escort it.
 
 					(msnGetData gSource 'freighterID)
@@ -93,14 +110,167 @@
 					)
 			</OnSetPlayerTarget>
 			
+			<OnFreighterArrives>
+				(block (
+					(stargateObj (objGetObjByID (msnGetData gSource 'stargateID)))
+					(destObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					(enemies (list
+						{	class:&scAtonement; maxMissiles:4 treasure:&itJewelOfContemplation; }
+						{	class:&scRepentant; }
+						{	class:&scRepentant; }
+						))
+
+					freighterObj
+					)
+
+					(plyMessage gPlayer "Freighter arrived!")
+
+					;	Create the freighter and have it exit the gate towards the sisters
+
+					(setq freighterObj (sysCreateShip &scEI7000; stargateObj &svCommonwealth;))
+					(shpOrder freighterObj 'dock destObj)
+					(msnRegisterForEvents gSource freighterObj)
+					(msnSetData gSource 'freighterID (objGetID freighterObj))
+					(objSetProperty freighterObj 'alwaysLeaveWreck True)
+
+					;	Create the enemies and set them to attack the freighter
+
+					(enum enemies enemyDesc
+						(block (enemyObj)
+							(setq enemyObj (sysCreateShip (@ enemyDesc 'class) stargateObj &svPenitents;))
+							(shpOrder enemyObj 'attack freighterObj)
+							(objSetData enemyObj 'mission (msnGetProperty gSource 'id))
+							(msnRegisterForEvents gSource enemyObj)
+
+							;	Set the ships so they don't retreat when shields drop
+
+							(shpSetAISetting enemyObj 'ignoreShieldsDown True)
+                            
+                            ;   Atonement only gets a few missiles (otherwise the 
+                            ;   mission is too hard).
+                            
+                            (if (@ enemyDesc 'maxMissiles)
+                                (enum (objGetItems enemyObj "M") theMissiles
+                                    (if (gr (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles))
+                                        (objRemoveItem enemyObj theMissiles (- (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles)))
+                                        )
+                                    )
+                                )
+
+							;	Add treasure, if necessary
+
+							(if (@ enemyDesc 'treasure)
+								(block ()
+									(objAddItem enemyObj (itmCreate (@ enemyDesc 'treasure) 1))
+									(objSetProperty enemyObj 'alwaysLeaveWreck True)
+									)
+								)
+							)
+						)
+
+					(msnSetData gSource 'attackersLeft 3)
+
+					;	Refresh the target
+
+					(msnSetPlayerTarget gSource)
+					)
+			</OnFreighterArrives>
+
+			<OnObjDestroyed>
+				(switch
+					(eq (objGetID aObjDestroyed) (msnGetData gSource 'freighterID))
+						(switch
+							;	Player destroyed the freighter
+
+							(and gPlayerShip (eq aOrderGiver gPlayerShip))
+								(msnFailure gSource { result:'playerDestroyedFreighter })
+
+							;	Otherwise, the player needs to dock with the freighter to 
+							;	rescue Fiona
+
+							(block ()
+								(objSetEventHandler aWreckObj &evBenedict02FionaWreck;)
+								(objSetProperty aWreckObj 'maxStructuralHP 0)
+								(msnSetData gSource 'wreckID (objGetID aWreckObj))
+								(msnRegisterForEvents gSource aWreckObj)
+
+								(msnSetData gSource 'status 'pickUpFiona)
+								(msnSetPlayerTarget gSource)
+								)
+							)
+
+					(eq (objGetData aObjDestroyed 'mission) (msnGetProperty gSource 'id))
+						(block (
+							(freighterObj (objGetObjByID (msnGetData gSource 'freighterID)))
+							attackersLeft
+							)
+							
+							(setq attackersLeft (msnIncData gSource 'attackersLeft -1))
+							
+							(switch
+								(not freighterObj)
+									Nil
+									
+								(eq attackersLeft 0)
+									(objSendMessage gPlayerShip freighterObj (msnTranslate gSource "Freighter:AllClear"))
+									
+								(objSendMessage gPlayerShip freighterObj
+									(msnTranslate gSource (cat "Freighter:PenitentDestroyed:" (random 1 5)) {
+										attackersLeft: (strNumber attackersLeft)
+										})
+									)
+								)
+							)
+					)
+			</OnObjDestroyed>
+
+			<OnObjDocked>
+				(switch
+					(eq (objGetID aObjDocked) (msnGetData gSource 'freighterID))
+						(block Nil
+							;	Mission success
+
+							(msnSuccess gSource)
+
+							;	Attacking ships retreat
+
+							(enum (sysFindObject aObjDocked "sO:attack") enemyObj
+								(shpCancelOrders enemyObj)
+								)
+							)
+					)
+			</OnObjDocked>
+
 			<OnCompleted>
-				(block (achievementText)
+				(block (
+					(result (@ gData 'result))
+					achievementText
+					)
+					(msnSetData gSource 'result result)
 				
 					;	Handle result and set Benedict's relationship to the
 					;	player based on it.
 					
 					(switch
 					
+						;	Player failed to defend freighter but was able to
+						;	rescue Fiona.
+
+						(= result 'gotFiona)
+							(block Nil
+								(rpgCharacterChangeRel &unidBenedict; 'aid)
+								(setq achievementText 'AchievementRescue)
+								)
+
+						;	Player deliberately destroyed freighter
+						
+						(= result 'playerDestroyedFreighter)
+							(block Nil
+								(rpgCharacterChangeRel &unidBenedict; 'betrayal)
+								(rpgCharacterSetStatus &unidFiona; 'dead)
+								(setq achievementText 'AchievementBetrayal)
+								)
+								
 						;	Player succeeded in defending the freighter
 						
 						(eq aReason 'success)
@@ -109,16 +279,8 @@
 								(setq achievementText 'AchievementSuccess)
 								)
 								
-						;	Player deliberately destroyed freighter
-						
-						(msnGetData gSource 'playerDestroyedFreighter)
-							(block Nil
-								(rpgCharacterChangeRel &unidBenedict; 'betrayal)
-								(rpgCharacterSetStatus &unidFiona; 'dead)
-								(setq achievementText 'AchievementBetrayal)
-								)
-								
-						;	Player failed to defend freighter
+						;	Failure (this no longer happens, but we keep it just
+						;	in case).
 
 						(block Nil
 							(rpgCharacterChangeRel &unidBenedict; 'failure)
@@ -163,112 +325,6 @@
 					)
 			</OnReward>
 
-			<OnFreighterArrives>
-				(block (
-					(stargateObj (objGetObjByID (msnGetData gSource 'stargateID)))
-					(destObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
-					(enemies (list
-						{	class:&scAtonement; maxMissiles:4 }
-						{	class:&scRepentant; }
-						{	class:&scRepentant; }
-						))
-
-					freighterObj
-					)
-
-					(plyMessage gPlayer "Freighter arrived!")
-
-					;	Create the freighter and have it exit the gate towards the sisters
-
-					(setq freighterObj (sysCreateShip &scEI7000; stargateObj &svCommonwealth;))
-					(shpOrder freighterObj 'dock destObj)
-					(msnRegisterForEvents gSource freighterObj)
-					(msnSetData gSource 'freighterID (objGetID freighterObj))
-
-					;	Create the enemies and set them to attack the freighter
-
-					(enum enemies enemyDesc
-						(block (enemyObj)
-							(setq enemyObj (sysCreateShip (@ enemyDesc 'class) stargateObj &svPenitents;))
-							(shpOrder enemyObj 'attack freighterObj)
-							(objSetData enemyObj 'mission (msnGetProperty gSource 'id))
-							(msnRegisterForEvents gSource enemyObj)
-
-							;	Set the ships so they don't retreat when shields drop
-
-							(shpSetAISetting enemyObj 'ignoreShieldsDown True)
-                            
-                            ;   Atonement only gets a few missiles (otherwise the 
-                            ;   mission is too hard).
-                            
-                            (if (@ enemyDesc 'maxMissiles)
-                                (enum (objGetItems enemyObj "M") theMissiles
-                                    (if (gr (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles))
-                                        (objRemoveItem enemyObj theMissiles (- (itmGetCount theMissiles) (@ enemyDesc 'maxMissiles)))
-                                        )
-                                    )
-                                )
-							)
-						)
-
-					(msnSetData gSource 'attackersLeft 3)
-
-					;	Refresh the target
-
-					(msnSetPlayerTarget gSource)
-					)
-			</OnFreighterArrives>
-
-			<OnObjDestroyed>
-				(switch
-					(eq (objGetID aObjDestroyed) (msnGetData gSource 'freighterID))
-						(block Nil
-							(msnSetData gSource 'playerDestroyedFreighter (and gPlayerShip (eq aOrderGiver gPlayerShip)))
-							(msnFailure gSource)
-							)
-
-					(eq (objGetData aObjDestroyed 'mission) (msnGetProperty gSource 'id))
-						(block (
-							(freighterObj (objGetObjByID (msnGetData gSource 'freighterID)))
-							attackersLeft
-							)
-							
-							(setq attackersLeft (msnIncData gSource 'attackersLeft -1))
-							
-							(switch
-								(not freighterObj)
-									Nil
-									
-								(eq attackersLeft 0)
-									(objSendMessage gPlayerShip freighterObj (msnTranslate gSource "Freighter:AllClear"))
-									
-								(objSendMessage gPlayerShip freighterObj
-									(msnTranslate gSource (cat "Freighter:PenitentDestroyed:" (random 1 5)) {
-										attackersLeft: (strNumber attackersLeft)
-										})
-									)
-								)
-							)
-					)
-			</OnObjDestroyed>
-
-			<OnObjDocked>
-				(switch
-					(eq (objGetID aObjDocked) (msnGetData gSource 'freighterID))
-						(block Nil
-							;	Mission success
-
-							(msnSuccess gSource)
-
-							;	Attacking ships retreat
-
-							(enum (sysFindObject aObjDocked "sO:attack") enemyObj
-								(shpCancelOrders enemyObj)
-								)
-							)
-					)
-			</OnObjDocked>
-			
 			<GetGlobalAchievements>
 				(typGetData &msBenedictAndFiona; 'achievements)
 			</GetGlobalAchievements>
@@ -320,7 +376,10 @@
 					(korolovMsn (msnFind "Pa +unid:&msBenedictToKorolov;;"))
 					)
 					(list
-						{	descID: 'SuccessDebrief1	}
+						(if (= (msnGetData gSource 'result) 'gotFiona) 
+							{	descID: 'SuccessDebrief1a	}
+							{	descID: 'SuccessDebrief1	}
+							)
 						{	descID: 'SuccessDebrief2	labelID: 'actionSuccess2	}
 						{	descID: 'SuccessDebrief3	labelID: 'actionSuccess3	}
 						{	descID: 'SuccessDebrief4
@@ -345,12 +404,26 @@
 				Benedict and the abbess talk with the freighter's captain.
 
 				"...the Penitents hit them hard," says the captain.
-				"There was no trace of the explorer ship; we just found
+				"There was no trace of the patrol ship; we just found
 				her drifting in space. She must have ejected..."
 
 				Behind them you see cardinal-robed medics maneuver a
 				rejuv tank through the bay. Inside you see an unconscious
 				woman, her long black hair waving in the tank's fluid.
+
+			</Text>
+			<Text id="SuccessDebrief1a">
+
+				The docking bay swarms with activity. Benedict rushes to look
+				at Fiona in her rejuv tank until cardinal-robed medics pry him
+				away.
+
+				The captain of the doomed freighter sits on the deck talking to
+				the abbess:
+
+				"First they attack Fiona's patrol ship, then they attack our
+				freighter! But why? I've never seen the Penitents attack for no
+				reason."
 
 			</Text>
 			<Text id="SuccessDebrief2">
@@ -411,11 +484,15 @@
 				"Mission complete!"
 			</Text>
 			<Text id="FailureDebrief">
-				(switch
-					(msnGetData gSource 'playerDestroyedFreighter)
-						(msnTranslate gSource 'FailureDebriefBetrayal)
+				(block (
+					(result (msnGetData gSource 'result))
+					)
+					(switch
+						(= result 'playerDestroyedFreighter)
+							(msnTranslate gSource 'FailureDebriefBetrayal)
 						
-					(msnTranslate gSource 'FailureDebriefFailure)
+						(msnTranslate gSource 'FailureDebriefFailure)
+						)
 					)
 			</Text>
 			<Text id="FailureDebriefBetrayal">
@@ -439,13 +516,77 @@
 			<Text id="AchievementSuccess">
 				Defended Fiona's freighter from Penitents
 			</Text>
+			<Text id="AchievementRescue">
+				Rescued Fiona from destroyed freighter
+			</Text>
 			<Text id="AchievementFailure">
 				Failed to defend Fiona's freighter from Penitents
 			</Text>
 			<Text id="AchievementBetrayal">
 				Destroyed Fiona's freighter
 			</Text>
+
+			<Text id="dlgRescueFiona">
+				(list
+					{
+						descID: 'dlgRescueFiona1
+						nextPage: 'forceUndock
+						code: (lambda ()
+							(block (
+								(missionObj (@ (msnFind "a +unid:&msBenedictAndFiona;;") 0))
+								)
+								(msnSetData missionObj 'status Nil)
+								(msnSuccess missionObj { result:'gotFiona })
+								)
+							)
+						}
+					)
+			</Text>
+			<Text id="dlgRescueFiona1">
+				
+				The deck of the freighter is smashed and filled with acrid smoke.
+				The captain and three crewmembers stand around a rejuv tank. He
+				montions you to enter:
+
+				"Quickly! Help us get her back to the station!"
+
+				They maneuver the tank into your cargo hold. Inside you see an 
+				unconscious	woman, her long black hair waving in the tank's 
+				fluid.
+
+			</Text>
 		</Language>
 	</MissionType>
+
+<!-- BEHAVIORS -->
+
+	<Type UNID="&evBenedict02FionaWreck;">
+		<Events>
+			<GetDockScreen>
+				(block (
+					(missionObj (@ (msnFind "a +unid:&msBenedictAndFiona;;") 0))
+					)
+				
+					(switch
+						;	If no mission, or mission already completed, nothing to do.
+						
+						(or (not missionObj)
+								(msnGetProperty missionObj 'isCompleted)
+								)
+							Nil
+							
+						;	If Fiona has already been rescued from the wreck, nothing to do
+						
+						(!= (msnGetData missionObj 'status) 'pickUpFiona)
+							Nil
+							
+						;	Rescue script
+						
+						(list &dsRPGDialog; { translateType:&msBenedictAndFiona; dialogID:'dlgRescueFiona } 10)
+						)
+					)
+			</GetDockScreen>
+		</Events>
+	</Type>
 
 </TranscendenceModule>
