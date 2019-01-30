@@ -784,7 +784,7 @@
 					)
 				))
 
-			(setq rpgCharacterGetInfo (lambda (sourceObj role)
+			(setq rpgCharacterGetInfo (lambda (sourceObj role defaultType)
 				(block (
 					(characterRole (or role "npc"))
 					(characterVar (cat "rpgCharacter." characterRole))
@@ -795,7 +795,13 @@
 
 					(characterTable (typGetStaticData theType 'CharacterTable))
 					)
-					(struct (@ characterTable theID) { sourceType:theType })
+					(switch
+						(@ characterTable theID)
+							(struct (@ characterTable theID) { sourceType:theType })
+
+						defaultType
+							(struct (@ (typGetStaticData defaultType 'CharacterTable) 'default) { sourceType:defaultType })
+						)
 					)
 				))
 

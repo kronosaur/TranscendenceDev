@@ -212,9 +212,8 @@
 		<Events>
 			<OnCreate>
 				(block ()
-					;	Every station is overseen by a different AD
-
-					(objSetData gSource 'assistantDirector (korNextDirector))
+					;	Initialize our characters
+					(rpgCharacterAssignRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
 					)
 			</OnCreate>
 		</Events>

@@ -14,7 +14,7 @@
 	targetID:		Primary Charon stronghold
 	leaderID:		Leader of attack squadron
 
-	director:		Name of Korlov station director
+	director:		Character info for Korolov director
 	dist:			Distance to stronghold
 
 	leaderLost:		True if the squadron leader is destroyed
@@ -73,7 +73,7 @@
 
 							;	Data for briefing
 
-							(msnSetData gSource 'director (objGetData aOwnerObj 'assistantDirector))
+							(msnSetData gSource 'director (rpgCharacterGetInfo aOwnerObj 'assistantDirector &chKorolovAssistantDirectors;))
 							(msnSetData gSource 'dist (objGetDistance aOwnerObj targetObj))
 							)
 						)
@@ -272,14 +272,18 @@
 
 			<Text id="Intro">
 				(msnTranslate gSource 'textIntro {
-					director: (msnGetData gSource 'director)
+					AD: (msnGetData gSource 'director)
 					})
 			</Text>
 			<Text id="textIntro">
-				As you enter the operations level, you see several people gathered around a central display table.
 
-				Assistant Director %director% approaches you, "We're planning an operation to
-				destroy the primary Charon stronghold in the system; we could use your help."
+				As you enter the operations level, you see several people 
+				gathered around a central display table. %titledName@AD% 
+				approaches you:
+				
+				"We're planning an operation to	destroy the primary Charon 
+				stronghold in the system; we could use your help."
+
 			</Text>
 
 			<Text id="Briefing">

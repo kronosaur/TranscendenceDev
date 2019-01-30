@@ -28,25 +28,6 @@
 	-->
 
 	<Type UNID="&unidKorolovShipping;">
-		<StaticData>
-			<assistantDirectorTable>
-				(	; last name
-					("Ash" )
-					("Burke" )
-					("Czerniawski" )
-					("Gordievsky" )
-					("Jones" )
-					("Leung" )
-					("Price" )
-					("Penkovsky" )
-					("Reagan" )
-					("Sheppard" )
-					("Sorge" )
-					("Valerii" )
-					)
-			</assistantDirectorTable>
-		</StaticData>
-
 		<Events>
 			<GetGlobalAchievements>
 				(append
@@ -747,11 +728,11 @@
 		<Events>
 			<OnCreate>
 				(block (charonStronghold)
+					;	Initialize our characters
+					(rpgCharacterAssignRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
+
 					; Register a recurring event
 					(sysAddObjRecurringTimerEvent 240 gSource "OnTrafficControl")
-
-					; Every station is overseen by a different AD
-					(objSetData gSource 'assistantDirector (korNextDirector))
 
 					; Allow a finite number of escort missions from each station
 					(objSetData gSource 'remainingMissions (+ 3 (modulo (objGetDestiny gSource) 7)))
@@ -1161,7 +1142,7 @@
 			<Default>
 				<OnPaneInit>
 					(scrSetDescTranslate gScreen (cat "Promotion:" (korGetPlayerLevel)) {
-						assistantDirector: (objGetData gSource 'assistantDirector)
+						AD: (rpgCharacterGetInfo gSource 'assistantDirector &chKorolovAssistantDirectors;)
 						escortCount: (strNumber (count (msnFind "r +korolov; +escort; +property:isSuccess;")))
 						})
 				</OnPaneInit>
@@ -1222,8 +1203,8 @@
 			</Text>
 			<Text id="Promotion:2">
 
-				"After reviewing your record, I have recommended to Assistant 
-				Director %assistantDirector% that you be granted the rights and 
+				"After reviewing your record, I have recommended to 
+				%titledName@AD%	that you be granted the rights and 
 				responsibilities of a Journeyman of the Korolov Shipping 
 				Corporation. Congratulations!
 
@@ -1232,8 +1213,7 @@
 			</Text>
 			<Text id="Promotion:3">
 
-				Assistant Director %assistantDirector% talks to you after the 
-				mission:
+				%titledName@AD%	talks to you after the mission:
 
 				"You are one of our best pilots, and I'm happy to tell you that
 				the executive board has promoted you to the rank of Master. 
@@ -1559,20 +1539,6 @@
 					)
 				))
 
-			; Return the next assistant director
-			(setq korNextDirector (lambda ()
-				(block (
-					(directors (typGetGlobalData &unidKorolovShipping; 'nextAssistantDirector))
-					)
-					; If this is the first call, or more than 12 stations, then shuffle the table
-					(if (not directors)
-						(setq directors (shuffle (typGetStaticData &unidKorolovShipping; 'assistantDirectorTable)))
-						)
-					(typSetGlobalData &unidKorolovShipping; 'nextAssistantDirector (subset directors 1))
-					(@ (@ directors 0) 0)
-					)
-				))
-
 			(setq korComputePlayerLevel (lambda ()
 				(block (
 					(xp (typGetData &unidKorolovShipping; 'xp))
@@ -1862,7 +1828,136 @@
 			)
 	</Globals>
 
-	<!-- Resources -->
+<!-- CHARACTERS -->
+
+	<Type unid="&chKorolovAssistantDirectors;"
+			attributes="assistantDirector, korolov"
+			>
+		<StaticData>
+			<Data id="characterTable">
+				{
+					ash: {
+						id: 'ash
+						fullName: "Theodore Ash"
+						formalName: "AD Ash"
+						titledName: "Assistant Director Ash"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					burke: {
+						id: 'burke
+						fullName: "Saladin Burke"
+						formalName: "AD Burke"
+						titledName: "Assistant Director Burke"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					czerniawski: {
+						id: 'czerniawski
+						fullName: "Lori Czerniawski"
+						formalName: "AD Czerniawski"
+						titledName: "Assistant Director Czerniawski"
+						genome: 'human
+						gender: 'genderFemale
+						}
+
+					gordievsky: {
+						id: 'gordievsky
+						fullName: "Petyr Gordievsky"
+						formalName: "AD Gordievsky"
+						titledName: "Assistant Director Gordievsky"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					jones: {
+						id: 'jones
+						fullName: "Selena Miranda Jones"
+						formalName: "AD Jones"
+						titledName: "Assistant Director Jones"
+						genome: 'human
+						gender: 'genderFemale
+						}
+
+					leung: {
+						id: 'leung
+						fullName: "Lien Hua Leung"
+						formalName: "AD Leung"
+						titledName: "Assistant Director Leung"
+						genome: 'human
+						gender: 'genderFemale
+						}
+
+					price: {
+						id: 'price
+						fullName: "Arden Price"
+						formalName: "AD Price"
+						titledName: "Assistant Director Price"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					penkovsky: {
+						id: 'penkovsky
+						fullName: "Gideon Penkovsky"
+						formalName: "AD Penkovsky"
+						titledName: "Assistant Director Penkovsky"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					reagan: {
+						id: 'reagan
+						fullName: "Sarah Elizabeth Reagan"
+						formalName: "AD Reagan"
+						titledName: "Assistant Director Reagan"
+						genome: 'human
+						gender: 'genderFemale
+						}
+
+					sheppard: {
+						id: 'sheppard
+						fullName: "Matthew Sheppard"
+						formalName: "AD Sheppard"
+						titledName: "Assistant Director Sheppard"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					sorge: {
+						id: 'sorge
+						fullName: "Wolfgang Sorge"
+						formalName: "AD Sorge"
+						titledName: "Assistant Director Sorge"
+						genome: 'human
+						gender: 'genderMale
+						}
+
+					valerii: {
+						id: 'valerii
+						fullName: "Jordan Valerii"
+						formalName: "AD Valerii"
+						titledName: "Assistant Director Valerii"
+						genome: 'human
+						gender: 'genderFemale
+						}
+
+					default: {
+						id: 'default
+						fullName: "Joe Johnson"
+						formalName: "AD Johnson"
+						titledName: "Assistant Director Johnson"
+						genome: 'human
+						gender: 'genderFemale
+						}
+					}
+			</Data>
+		</StaticData>
+	</Type>
+
+<!-- RESOURCES -->
 
 	<Image UNID="&rsKorolovInsignia;"	bitmap="Resources\KorolovInsignia.jpg" bitmask="Resources\KorolovInsigniaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsKorolovLogo;"		bitmap="Resources\KorolovLogo.jpg" bitmask="Resources\KorolovLogoMask.bmp" loadOnUse="true"/>

@@ -185,31 +185,38 @@
 				Mission complete!
 			</Text>
 			<Text id="SuccessDebrief">
-				(if (msnGetData gSource 'destroyedByPlayer)
-					(msnTranslate gSource "SuccessDebrief:player" {
-						director: (objGetData (objGetObjByID (msnGetProperty gSource 'debrieferID)) 'assistantDirector)
-						})
-					(msnTranslate gSource "SuccessDebrief:other" {
-						destroyedBy: (msnGetData gSource 'destroyedBy)
-						})
+				(block (
+					(stationObj (objGetObjByID (msnGetProperty gSource 'debrieferID)))
+					(adInfo (rpgCharacterGetInfo stationObj 'assistantDirector &chKorolovAssistantDirectors;))
+					)
+					(if (msnGetData gSource 'destroyedByPlayer)
+						(msnTranslate gSource "SuccessDebrief:player" {
+							AD: adInfo
+							})
+						(msnTranslate gSource "SuccessDebrief:other" {
+							AD: adInfo
+							destroyedBy: (msnGetData gSource 'destroyedBy)
+							})
+						)
 					)
 			</Text>
 			<Text id="SuccessDebrief:player">
 
-				A crowd gathers around you as you enter the docking bay.
-				Assistant Director %director% shakes your hand:
+				A crowd gathers around you as you enter the docking bay. 
+				%titledName@AD%	shakes your hand:
 
-				"I never thought I'd see the day! You've destroyed the Kronosaurus!
-				The deadliest ship in the Charon fleet! This day and your
-				accomplishments will be remembered always."
+				"I never thought I'd see the day! You've destroyed the 
+				Kronosaurus! The deadliest ship in the Charon fleet! This day 
+				and your accomplishments will be remembered always."
 
 			</Text>
 			<Text id="SuccessDebrief:other">
 
-				There is a crowd celebrating in the main hall.
-				One of the freighter captains approaches you:
+				There is a crowd celebrating in the main hall. One of the 
+				freighter captains approaches you:
 
-				"Did you hear, the Kronosaurus has been destroyed by %destroyedBy%!"
+				"Did you hear, the Kronosaurus has been destroyed by 
+				%destroyedBy%!"
 
 			</Text>
 
