@@ -1013,6 +1013,8 @@ class CShip : public CSpaceObject
 		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
 		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
+		inline bool HasManualLeaveWreck (void) const { return (m_fAlwaysLeaveWreck ? true : false); }
+
 		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
 

@@ -304,6 +304,13 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 	if ((pShip && pShip->IsRadioactive()) || IsRadioactive())
 		pWreck->SetCondition(CConditionSet::cndRadioactive);
 
+	//	If the ship has been explicitly set to leave a wreck, then we assume
+	//	that it has something important, so we set the wreck to have the flag
+	//	to prevent salvage.
+
+	if (pShip && pShip->HasManualLeaveWreck())
+		pWreck->SetData(CONSTLIT("core.noSalvage"), ICCItemPtr(ICCItem::True));
+
 	//	Done
 
 	if (retpWreck)
