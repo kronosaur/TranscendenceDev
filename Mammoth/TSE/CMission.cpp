@@ -944,7 +944,11 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	DEBUG_TRY
 
-	ASSERT(IsActive());
+	//	If no longer active, then exit. This can happen if we succeed/fail in
+	//	an <OnUpdate> event.
+
+	if (!IsActive() || IsDestroyed())
+		return;
 
 	//	If we're out of the system then see if we've failed the mission.
 	//	NOTE: It is OK to leave the system if we've completed the mission
