@@ -55,6 +55,7 @@
 #define PROPERTY_STRUCTURAL_HP					CONSTLIT("structuralHP")
 #define PROPERTY_SUBORDINATES					CONSTLIT("subordinates")
 #define PROPERTY_SUPERIOR						CONSTLIT("superior")
+#define PROPERTY_WRECK_TYPE						CONSTLIT("wreckType")
 
 #define STR_TRUE								CONSTLIT("true")
 
@@ -1696,6 +1697,14 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SUPERIOR))
 		return CreateObjPointer(CC, GetBase());
+
+	else if (strEquals(sName, PROPERTY_WRECK_TYPE))
+		{
+		if (m_dwWreckUNID == 0)
+			return CC.CreateNil();
+		else
+			return CC.CreateInteger(m_dwWreckUNID);
+		}
 
 	else if (pResult = m_Hull.FindProperty(sName))
 		return pResult;
