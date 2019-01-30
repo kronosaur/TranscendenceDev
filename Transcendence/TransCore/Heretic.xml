@@ -587,8 +587,6 @@
 			definiteArticle=	"true"
 			>
 
-		<Image			imageID="&rsStations6;" imageX="0" imageY="256" imageWidth="160" imageHeight="192"/>
-
 		<Ships>
 			<Table count="1d4">
 				<Ship chance="50"	count="1" class="&scCenturionM;" orders="gateOnThreat" />
@@ -640,6 +638,24 @@
 			</Table>
 		</Reinforcements>
 
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsRingersCollective;" imageWidth="200" imageHeight="300" viewportRatio="0.04125"/>
+
+		<DockingPorts>
+			<Port posAngle="16"		posRadius="113" posZ="46"/>
+			<Port posAngle="45"		posRadius="106" posZ="110"/>
+			<Port posAngle="122"	posRadius="105" posZ="30"/>
+			<Port posAngle="-171"	posRadius="121" posZ="100"/>
+
+			<Port posAngle="-149"	posRadius="118" posZ="-110"/>
+			<Port posAngle="-112"	posRadius="98"  posZ="-60"/>
+			<Port posAngle="-65"	posRadius="90"  posZ="-30"/>
+			<Port posAngle="-22"	posRadius="104" posZ="-46"/>
+		</DockingPorts>
+
+		<!-- Dock Screens -->
+
 		<DockScreens>
 			<Main>
 				<Panes>
@@ -684,17 +700,6 @@
 				</Panes>
 			</Main>
 		</DockScreens>
-
-		<DockingPorts>
-			<Port x="66"	y="94" />
-			<Port x="-66"	y="94" />
-			<Port x="107"	y="30" />
-			<Port x="-107"	y="30" />
-			<Port x="86"	y="-34" />
-			<Port x="-86"	y="-34" />
-			<Port x="39"	y="-72" />
-			<Port x="-39"	y="-72" />
-		</DockingPorts>
 
 		<Language>
 			<Text id="actionCommoditiesExchange">[S]upplies</Text>
