@@ -79,6 +79,8 @@
 										(plyMessage gPlayer (msnTranslate gSource 'msgUnderAttack {
 											station: (objGetName theTarget 'capitalize)
 											}))
+
+										(objSetProperty theTarget 'known True)
 										(objSetShowAsDestination theTarget Nil 'autoclear)
 										(msnSetData gSource 'status 'distressSignal)
 										(msnCreate &msHereticIocrymAttackMsg; theTarget)
@@ -158,7 +160,8 @@
 					;	If sentinels destroyed the target, then go to another target
 					(= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
 						(block (
-							(delayTime (random 20 60))
+							;	Time between attacks (in real seconds)
+							(delayTime (random 60 120))
 							(theStar (sysFindObject Nil "tN +star;"))
 							)
 							;	Tell the player
@@ -204,12 +207,12 @@
 								;	Wait a bit before the next attack. 
 								(msnSetData gSource 'status 'waiting)
 
-								;	We wait ~40 * 90 ticks (2 minutes) or 80 * 90 ticks
+								;	We wait ~60 * 90 ticks (3 minutes) or 120 * 90 ticks
 								;	if all iocrym outposts are destroyed
 								(msnSetData gSource 'attackTimer
 									(if (sysFindObject Nil "TA +iocrymOutpost;")
-										(random 34 46)
-										(random 68 92)
+										(random 54 66)
+										(random 112 128)
 										)
 									)
 
@@ -266,25 +269,41 @@
 
 		<Events>
 			<OnCreate>
-				(msnSetData gSource 'briefingID (switch
-					(objHasAttribute aOwnerObj 'commonResearch)
-						'textBriefingCommonwealth
+				(block ()
+					(msnSetData gSource 'briefingID (switch
+						(objHasAttribute aOwnerObj 'commonResearch)
+							'textBriefingCommonwealth
 
-					(objHasAttribute aOwnerObj 'ringers)
-						'textBriefingRingers
+						(objHasAttribute aOwnerObj 'ringers)
+							'textBriefingRingers
 
-					(objHasAttribute aOwnerObj 'sistersOfDomina)
-						'textBriefingSisters
+						(objHasAttribute aOwnerObj 'sistersOfDomina)
+							'textBriefingSisters
 
-					(objHasAttribute aOwnerObj 'corporate)
-						'textBriefingTaikon
+						(objHasAttribute aOwnerObj 'corporate)
+							'textBriefingTaikon
 
-					(objHasAttribute aOwnerObj 'ares)
-						'textBriefingAres
+						(objHasAttribute aOwnerObj 'ares)
+							'textBriefingAres
 
-					'textBriefing
-					))
+						'textBriefing
+						))
+
+					;	Register for events so that we can send out messages to the player
+
+					(msnAddRecurringTimerEvent gSource 150 'OnSendDistressCall)
+					)
 			</OnCreate>
+
+			<OnSendDistressCall>
+				(block (
+					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(if (not (sysFindObject stationObj "zN:20"))
+						(objSendMessage gPlayerShip stationObj (msnTranslate gSource 'msgDistress))
+						)
+					)
+			</OnSendDistressCall>
 		</Events>
 
 		<Language>
@@ -307,38 +326,55 @@
 				Iocrym Attack
 			</Text>
 			<Text id="textBriefingCommonwealth">
+
 				Nervous scientists approach you as you enter:
 
 				"We're being attacked by Iocrym sentinels! You must stop them before they
 				destroy all our work!"
+
 			</Text>
 			<Text id="textBriefingRingers">
+
 				A young ringer approaches you as you enter:
 
 				"Earthican! Iocrym sentinels attack our home. We seek safety and protection from
 				their attacks!"
+
 			</Text>
 			<Text id="textBriefingSisters">
+
 				"The Iocrym attack! Do not let them destroy our good work!
 				Protect us!"
+
 			</Text>
 			<Text id="textBriefingTaikon">
+
 				A tall man in corporate suit approaches you:
 
 				"We're under attack! The Iocrym have finally decided to kick us out of the system.
 				Help us! The longer we can survive, the better chance we have of discovering how to
 				defeat them!"
+
 			</Text>
 			<Text id="textBriefingAres">
+
 				An Ares scientist approaches you:
 
 				"Help us, Human! The Iocrym are our common enemy! Defend us from their sentinels."
+
 			</Text>
 			<Text id="textBriefing">
+
 				The station master approaches you:
 
 				"We're being attacked by Iocrym sentinels! You must stop them before they
 				destroy us!"
+
+			</Text>
+			<Text id="msgDistress">
+				
+				We're under attack!
+
 			</Text>
 		</Language>
 	</MissionType>
