@@ -202,6 +202,7 @@
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_THRUSTER_POWER					CONSTLIT("thrusterPower")
+#define PROPERTY_TREASURE_ITEM_NAMES			CONSTLIT("treasureItemNames")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
@@ -3878,6 +3879,31 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		int iThrustersPerSide = Max(1, Effects.GetEffectCount(CObjectEffectDesc::effectThrustLeft));
 		int iThrusterPower = Max(1, mathRound((m_Hull.GetMass() / iThrustersPerSide) * m_RotationDesc.GetRotationAccelPerTick()));
 		return ICCItemPtr(iThrusterPower);
+		}
+	else if (strEquals(sProperty, PROPERTY_TREASURE_ITEM_NAMES))
+		{
+		if (m_pItems == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		//	Generate sample treasure
+
+		CItemList SampleItems;
+		CItemListManipulator SampleList(SampleItems);
+		SItemAddCtx AddCtx(SampleList);
+		AddCtx.iLevel = GetLevel();
+
+		m_pItems->AddItems(AddCtx);
+
+		//	Output as a list of item names.
+
+		TArray<CString> Items;
+		Items.InsertEmpty(SampleItems.GetCount());
+		for (int i = 0; i < SampleItems.GetCount(); i++)
+			{
+			Items[i] = SampleItems.GetItem(i).GetNounPhrase(CItemCtx());
+			}
+
+		return ICCItemPtr(strJoin(Items, CONSTLIT("oxfordComma")));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DRIVE_POWER)
