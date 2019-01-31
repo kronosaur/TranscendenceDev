@@ -266,6 +266,7 @@ class CShipClass : public CDesignType
 			typeStandard,
 			typeElite,
 			typeBoss,
+			typeCapitalShip,
 			typeNonCombatant,
 
 			typeTooWeak,

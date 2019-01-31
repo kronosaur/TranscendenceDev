@@ -411,6 +411,14 @@ CShipClass::EBalanceTypes CShipClass::CalcBalanceType (CString *retsDesc, Metric
 		return typeElite;
 		}
 
+	//	Boss-level ships with interior compartments count as capital ships
+
+	else if (m_Interior.IsMultiHull())
+		{
+		if (retsDesc) *retsDesc = CONSTLIT("capital ship");
+		return typeCapitalShip;
+		}
+
 	//	If we're less than 4 times standard then we're a boss
 
 	else
