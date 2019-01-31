@@ -105,6 +105,7 @@
 #define FIELD_ARMOR_ITEMS						CONSTLIT("armorItems")
 #define FIELD_BALANCE_TYPE						CONSTLIT("balanceType")
 #define FIELD_CARGO_SPACE						CONSTLIT("cargoSpace")
+#define FIELD_COMBAT_STD						CONSTLIT("combatStd")				//	Standard combat value for the ship level
 #define FIELD_COMBAT_STRENGTH					CONSTLIT("combatStrength")			//	value reflecting combat power (attack and defense)
 #define FIELD_DAMAGE_RATE						CONSTLIT("damage")					//	damage per 180 ticks
 #define FIELD_DEFENSE_RATE						CONSTLIT("defenseStrength")			//	value reflecting difficulty killing
@@ -651,7 +652,7 @@ Metric CShipClass::CalcDamageRate (int *retiAveWeaponLevel, int *retiMaxWeaponLe
 	//	Compute average level, if necessary
 
 	if (retiAveWeaponLevel)
-		*retiAveWeaponLevel = (rTotalDamageRate > 0.0 ? (int)((rTotalDamageLevels / rTotalDamageRate) + 0.5) : 0);
+		*retiAveWeaponLevel = (rTotalDamageRate > 0.0 ? mathRound((rTotalDamageLevels / rTotalDamageRate)) : 0);
 
 	if (retiMaxWeaponLevel)
 		*retiMaxWeaponLevel = iMaxWeaponLevel;
@@ -1449,7 +1450,7 @@ int CShipClass::ComputeScore (int iArmorLevel,
 
 	//	Add bonus if weapon is omnidirectional
 
-	iSpecial += (int)((iDirectionalBonus / 270.0) + 0.5);
+	iSpecial += mathRound(iDirectionalBonus / 270.0);
 
 	//	Checkout AI settings
 
@@ -1732,6 +1733,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 
 	if (strEquals(sField, FIELD_ARMOR_COUNT))
 		*retsValue = strFromInt(GetHullSectionCount());
+
 	else if (strEquals(sField, FIELD_ARMOR_HP))
 		{
 		const CShipArmorSegmentDesc *pSection = (GetHullSectionCount() > 0 ? &GetHullSection(0) : NULL);
@@ -1743,14 +1745,22 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_BALANCE_TYPE))
 		CalcBalanceType(retsValue);
+
 	else if (strEquals(sField, FIELD_CARGO_SPACE))
 		*retsValue = strFromInt(GetCargoDesc().GetCargoSpace());
+
+	else if (strEquals(sField, FIELD_COMBAT_STD))
+		*retsValue = strFromInt(mathRound(GetStdCombatStrength(GetLevel())));
+
 	else if (strEquals(sField, FIELD_COMBAT_STRENGTH))
-		*retsValue = strFromInt((int)(CalcCombatStrength() + 0.5));
+		*retsValue = strFromInt(mathRound(CalcCombatStrength()));
+
 	else if (strEquals(sField, FIELD_DAMAGE_RATE))
-		*retsValue = strFromInt((int)(CalcDamageRate() + 0.5));
+		*retsValue = strFromInt(mathRound(CalcDamageRate()));
+
 	else if (strEquals(sField, FIELD_DEFENSE_RATE))
-		*retsValue = strFromInt((int)(CalcDefenseRate() + 0.5));
+		*retsValue = strFromInt(mathRound(CalcDefenseRate()));
+
 	else if (strEquals(sField, FIELD_DOCK_SERVICES_SCREEN))
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
@@ -1769,16 +1779,22 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_MANUFACTURER))
 		*retsValue = m_sManufacturer;
+
 	else if (strEquals(sField, FIELD_MASS))
 		*retsValue = strFromInt(mathRound(CalcMass(m_AverageDevices)));
+
 	else if (strEquals(sField, FIELD_MAX_ROTATION))
 		*retsValue = strFromInt(mathRound(GetIntegralRotationDesc().GetMaxRotationSpeedDegrees()));
+
 	else if (strEquals(sField, FIELD_MAX_SPEED))
-		*retsValue = strFromInt((int)((100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		*retsValue = strFromInt(mathRound((100.0 * m_Perf.GetDriveDesc().GetMaxSpeed() / LIGHT_SPEED)));
+
 	else if (strEquals(sField, FIELD_MAX_STRUCTURAL_HP))
 		*retsValue = strFromInt(m_Interior.GetHitPoints());
+
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase(nounGeneric);
+
 	else if (strEquals(sField, FIELD_PLAYER_DESC))
 		{
 		const CPlayerSettings *pPlayer = GetPlayerSettings();
@@ -1907,25 +1923,29 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_FIRE_ACCURACY))
 		*retsValue = strFromInt(m_AISettings.GetFireAccuracy());
+
 	else if (strEquals(sField, FIELD_FIRE_RANGE_ADJ))
 		*retsValue = strFromInt(m_AISettings.GetFireRangeAdj());
+
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
-		*retsValue = strFromInt((int)((1000.0 / m_AISettings.GetFireRateAdj()) + 0.5));
+		*retsValue = strFromInt(mathRound((1000.0 / m_AISettings.GetFireRateAdj())));
+
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
 		Metric rManeuver = g_SecondsPerUpdate * GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
-		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
+		*retsValue = strFromInt(mathRound((rManeuver * 1000.0)));
 		}
 	else if (strEquals(sField, FIELD_THRUST))
 		*retsValue = strFromInt(m_Perf.GetDriveDesc().GetThrust());
+
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = mathRound((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)));
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt(m_pItems ? (int)m_pItems->GetAverageValue(GetLevel()) : 0);
+		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(GetLevel())) : 0);
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
 		*retsValue = strFromInt(m_WreckDesc.GetWreckChance());
@@ -1941,7 +1961,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 				{
 				CWeaponClass *pWeapon = pDevice->AsWeaponClass();
 				if (pWeapon)
-					iRange = (int)((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND) + 0.5);
+					iRange = mathRound((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND));
 				}
 			}
 		*retsValue = strFromInt(iRange);
@@ -1958,7 +1978,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 				CWeaponClass *pWeapon = pDevice->AsWeaponClass();
 				if (pWeapon)
 					{
-					iRange = (int)((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND) + 0.5);
+					iRange = mathRound((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND));
 					iRange = iRange * m_AISettings.GetFireRangeAdj() / 100;
 					}
 				}
@@ -1967,18 +1987,25 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		}
 	else if (strEquals(sField, FIELD_SCORE))
 		*retsValue = strFromInt(m_iScore);
+
 	else if (strEquals(sField, FIELD_SIZE))
 		*retsValue = strFromInt(m_Hull.GetSize());
+
 	else if (strEquals(sField, FIELD_LEVEL))
 		*retsValue = strFromInt(m_iLevel);
+
 	else if (strEquals(sField, FIELD_MAX_CARGO_SPACE))
 		*retsValue = strFromInt(m_Hull.GetMaxCargoSpace());
+
 	else if (strEquals(sField, FIELD_GENERIC_NAME))
 		*retsValue = GetGenericName();
+
 	else if (strEquals(sField, FIELD_MAX_ARMOR_MASS))
 		*retsValue = strFromInt(m_Hull.GetArmorLimits().GetMaxArmorMass());
+
 	else if (strEquals(sField, FIELD_HULL_MASS))
 		*retsValue = strFromInt(m_Hull.GetMass());
+
 	else if (strEquals(sField, FIELD_DEVICE_SLOTS))
 		{
 		int iSlots = m_Hull.GetMaxDevices();
@@ -3840,7 +3867,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = CalcMass(m_AverageDevices);
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = mathRound((200.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0)));
 		return ICCItemPtr(10 * iRatio);
 		}
 	else if (strEquals(sProperty, PROPERTY_THRUST_RATIO))
