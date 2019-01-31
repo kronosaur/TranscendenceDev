@@ -218,7 +218,7 @@
 
 	</ShipClass>
 
-	<!-- Ranx Dreadnought -->
+	<!-- Level 9: Ranx Dreadnought -->
 
 	<ShipClass UNID="&scRanxDreadnought;"
 			manufacturer=		"Ranx"
@@ -226,6 +226,7 @@
 			type=				"dreadnought"
 			defaultSovereign=	"&svRanxEmpire;"
 
+			level=				"9"
 			attributes=			"capitalShip, genericClass, majorShip, ranx"
 			   
 			size=				"350"

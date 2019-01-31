@@ -474,7 +474,7 @@
 
 	</ShipClass>
 
-	<!-- Slaver, Earth -->
+	<!-- Level 6: Slaver, Earth -->
 
 	<ShipClass UNID="&scEarthSlaver;"
 			manufacturer=		"Sung Empire"
@@ -558,7 +558,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
+			fireRateAdj=		"24"
 			fireAccuracy=		"95"
 			perception=			"5"
 
@@ -795,6 +795,7 @@
 			thrustRatio=		"2.5"
 			maxSpeed=			"18"
 
+			level=				"10"
 			cyberDefenseLevel=	"8"
 
 			explosionType=		"&vtThermoExplosion2;"

@@ -424,7 +424,7 @@
 			/>
 	</ShipClass>
 
-	<!-- Level 6: Excruciator-class Destroyer -->
+	<!-- Level 9: Excruciator-class Destroyer -->
 
 	<ShipClass UNID="&scExcruciatorDestroyer;"
 			manufacturer=		"Penitents"
@@ -432,6 +432,7 @@
 			type=				"destroyer"
 			defaultSovereign=	"&svPenitents;"
 
+			level=				"9"
 			attributes=			"capitalShip, genericClass, penitents"
 
 			size=				"195"

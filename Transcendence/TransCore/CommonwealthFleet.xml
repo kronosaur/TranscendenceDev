@@ -604,7 +604,7 @@ PLAYER DATA
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -651,7 +651,7 @@ PLAYER DATA
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"15"
+			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
@@ -677,6 +677,7 @@ PLAYER DATA
 			cyberDefenseLevel=	"8"
 			explosionType=		"&vtThermoExplosion3;"
 
+			level=				"10"
 			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, pacificDefense"
 			>
 

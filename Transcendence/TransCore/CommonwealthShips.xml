@@ -575,7 +575,7 @@
 
 	</ShipClass>
 	
-	<!-- Level 4: Wolfen-class Gunship -->
+	<!-- Level 5: Wolfen-class Gunship -->
 
 	<ShipClass UNID="&scWolfen;"
 			manufacturer=		"Pacific Defense"
@@ -583,6 +583,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
+			level=				"5"
 			attributes=			"commonwealth, genericClass, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 			>
@@ -1269,6 +1270,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
+			level=				"7"
 			attributes=			"commonwealth, genericClass, makayev"
 			inherit=			"&baHumanTechShip;"
 			>
@@ -1343,7 +1345,7 @@
 				</Group>
 
 				<Group chance="25">
-					<Device item="&itMoskvaLightTurret;" secondaryWeapon="true"/>
+					<Device item="&itMoskvaLightTurret;"/>
 					<Device item="&itArmorRepairDevice;"/>
 				</Group>
 			</Table>

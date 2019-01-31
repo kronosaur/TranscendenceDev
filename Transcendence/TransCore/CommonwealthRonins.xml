@@ -72,7 +72,7 @@
 
 	</ShipClass>
 
-	<!-- Level 2: Ronin B-class Gunship -->
+	<!-- Level 3: Ronin B-class Gunship -->
 
 	<ShipClass UNID="&scRoninB;"
 			manufacturer=		"Pacific Defense"
@@ -80,6 +80,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
+			level=				"3"
 			attributes=			"commonwealth, genericClass, pacificDefense"
 			inherit=			"&baHumanTechShip;"
 			>
@@ -229,7 +230,7 @@
 		<!-- AI and Behavior -->
 
 		<AISettings
-			fireRateAdj=		"20"
+			fireRateAdj=		"25"
 			fireAccuracy=		"90"
 			perception=			"4"
 			
