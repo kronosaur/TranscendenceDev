@@ -113,6 +113,7 @@
 		<Maneuver
 			maxRotationRate=	"9.0"
 			rotationAccel=		"2.0"
+			rotationStopAccel=	"9.0"
 			/>
 
 		<DeviceSlots>
