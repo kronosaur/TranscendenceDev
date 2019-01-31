@@ -395,7 +395,11 @@
 		
 		<Devices>
 			<Device deviceID="&itPlasmaThrower;" posAngle="0" posRadius="96" minFireArc="330" maxFireArc="30"/>
-			<Device deviceID="&itQuantumsphereDisintegrator;" omnidirectional="true"/>
+			<Device deviceID="&itQuantumsphereDisintegrator;" omnidirectional="true">
+				<Items>
+					<Item count="500" item="&itQuantumsphereShell;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itIocrymRepeller;" secondaryWeapon="true" omnidirectional="true" posAngle="64" posRadius="78"/>
 			<Device deviceID="&itIocrymRepeller;" secondaryWeapon="true" omnidirectional="true" posAngle="117" posRadius="79"/>
 			<Device deviceID="&itIocrymRepeller;" secondaryWeapon="true" omnidirectional="true" posAngle="222" posRadius="46"/>
@@ -417,7 +421,6 @@
 		</Interior>
 		
 		<Items>
-			<Item count="500" item="&itQuantumsphereShell;"/>
 		</Items>
 
 		<!-- Image and Effects -->

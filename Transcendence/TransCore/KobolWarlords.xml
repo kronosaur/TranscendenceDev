@@ -216,7 +216,12 @@
 		</Armor>
 
 		<Devices>
-			<Device deviceID="&itRasiermesserLauncher;" posAngle="90" posRadius="20"/>
+			<Device deviceID="&itRasiermesserLauncher;" posAngle="90" posRadius="20">
+				<Items>
+					<Item chance="50"	count="1d12" item="&itGotha400Seeker;"/>
+					<Item				count="4d12" item="&itGotha10Missile;"/>
+				</Items>
+			</Device>
 		</Devices>
 
 		<Maneuver
@@ -226,8 +231,6 @@
 
 		<Items>
 			<Item count="2d6" item="&itXenotiteFuelRod;"/>
-			<Item chance="50" count="1d12" item="&itGotha400Seeker;"/>
-			<Item count="4d12" item="&itGotha10Missile;"/>
 		</Items>
 
 		<Image imageID="&rsKobolGunshipMissilesHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />

@@ -120,7 +120,11 @@
 		
 		<Devices>
 			<Device deviceID="&itGaianDemolitionCannon;" omnidirectional="true" />
-			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="315" maxFireArc="45" posAngle="0" posRadius="40"/>
+			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="315" maxFireArc="45" posAngle="0" posRadius="40">
+				<Items>
+					<Item	count="100"		item="&itThermoCannonShell;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="45"  maxFireArc="135" posAngle="90" posRadius="30"/>
 			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="135" maxFireArc="225" posAngle="180" posRadius="40"/>
 			<Device deviceID="&itThermoCannon;" secondaryWeapon="true" minFireArc="225" maxFireArc="315" posAngle="270" posRadius="30"/>
@@ -151,7 +155,6 @@
 		
 		<Items>
 			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
-			<Item				count="100"		item="&itThermoCannonShell;"/>
 			<Table>
 				<Lookup chance="50"	count="1d4"		table="&trConsumables8;"/>
 				<Lookup chance="35"	count="1"		table="&trMinorItem8;"/>

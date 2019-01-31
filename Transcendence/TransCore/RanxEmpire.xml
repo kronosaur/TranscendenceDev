@@ -179,7 +179,11 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itAkan30Cannon;"/>
+			<Device deviceID="&itAkan30Cannon;">
+				<Items>
+					<Item count="20d20"	item="&itAkan30CannonShell;" />
+				</Items>
+			</Device>
 			<Device deviceID="&itMonopoleDeflector;"/>
 		</Devices>
 
@@ -189,7 +193,6 @@
 			/>
 
 		<Items>
-			<Item count="20d20"	item="&itAkan30CannonShell;" />
 			<Table>
 				<Item chance="60" count="2d6" item="&itHeliumAssembly;"/>
 				<Item chance="30" count="1d2" item="&itLightArmorRepair;"/>
@@ -244,8 +247,16 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itKilotonCannon;"						omnidirectional="true"				posAngle="180" posRadius="61" posZ="20"/>
-			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="225" maxFireArc="340"	posAngle="270" posRadius="20" posZ="0"/>
+			<Device deviceID="&itKilotonCannon;"						omnidirectional="true"				posAngle="180" posRadius="61" posZ="20">
+				<Items>
+					<Item	count="80-160"		item="&itKilotonCannonShell;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="225" maxFireArc="340"	posAngle="270" posRadius="20" posZ="0">
+				<Items>
+					<Item	count="1000-1200"	item="&itAkan30CannonShell;" />
+				</Items>
+			</Device>
 			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="20"  maxFireArc="135"	posAngle="90"  posRadius="20" posZ="0"/>
 			<Device deviceID="&itAkan30Cannon;"	 secondaryWeapon="true" minFireArc="100" maxFireArc="260"	posAngle="180" posRadius="90" posZ="10"/>
 			<Device deviceID="&itPatchSpider;"/>
@@ -274,8 +285,6 @@
 		</Interior>
 
 		<Items>
-			<Item	count="80-160"		item="&itKilotonCannonShell;"/>
-			<Item	count="1000-1200"	item="&itAkan30CannonShell;" />
 			<Item	count="2d12"		item="&itPteracniumFuelRod;"/>
 			<Table>
 				<Lookup	chance="40"	count="1d4"		table="&trConsumables8;"/>

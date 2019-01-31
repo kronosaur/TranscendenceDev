@@ -586,7 +586,15 @@
 			/>
 		
 		<Devices>
-			<Device slotID="omni1"		deviceID="&itNAMIMissileLauncher;"/>
+			<Device slotID="omni1"		deviceID="&itNAMIMissileLauncher;">
+				<Items>
+					<Table>
+						<Item chance="80" count="10d40" item="&itFragmentationMissile;"/>
+						<Item chance="10" count="10d40" item="&itKM500Missile;"/>
+						<Item chance="10" count="10d40" item="&itKM550Missile;"/>
+					</Table>
+				</Items>
+			</Device>
 			<Device slotID="port1"		deviceID="&itTurbolaserCannon;"/>
 			<Device slotID="port2"		deviceID="&itTurbolaserCannon;"/>
 			<Device slotID="starboard1"	deviceID="&itTurbolaserCannon;"/>
@@ -597,11 +605,6 @@
 
 		<Items>
 			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
-			<Table>
-				<Item chance="80" count="10d40" item="&itFragmentationMissile;"/>
-				<Item chance="10" count="10d40" item="&itKM500Missile;"/>
-				<Item chance="10" count="10d40" item="&itKM550Missile;"/>
-			</Table>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>

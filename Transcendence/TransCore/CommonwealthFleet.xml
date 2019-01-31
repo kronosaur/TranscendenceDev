@@ -690,7 +690,11 @@ PLAYER DATA
 		<Devices>
 			<Device deviceID="&itStarCannon;" secondaryWeapon="true" minFireArc="355" maxFireArc="175" posAngle="90" posRadius="24" posZ="8"/>
 			<Device deviceID="&itStarCannon;" secondaryWeapon="true" minFireArc="185" maxFireArc="5" posAngle="-90" posRadius="24" posZ="8"/>
-			<Device deviceID="&itNAMIHeavyLauncher;" omnidirectional="true"/>
+			<Device deviceID="&itNAMIHeavyLauncher;" omnidirectional="true">
+				<Items>
+					<Item count="4d20" item="&itM2Missile;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itR9Deflector;"/>
 		</Devices>
 
@@ -724,7 +728,6 @@ PLAYER DATA
 		</Effects>
 
 		<Items>
-			<Item count="4d20" item="&itM2Missile;"/>
 		</Items>
 
 		<AISettings

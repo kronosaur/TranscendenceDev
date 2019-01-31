@@ -273,7 +273,11 @@
 		
 		<Devices>
 			<Device deviceID="&itLightningCannon;"/>
-			<Device deviceID="&itMicronukeCannon;"/>
+			<Device deviceID="&itMicronukeCannon;">
+				<Items>
+					<Item count="3d20" item="&itMicronuke;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
 
@@ -283,7 +287,6 @@
 			/>
 
 		<Items>
-			<Item count="3d20" item="&itMicronuke;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -445,7 +448,12 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itAresLauncher;"/>
+			<Device deviceID="&itAresLauncher;">
+				<Items>
+					<Item count="3d20" item="&itWarhammerNuke;"/>
+					<Item count="12d20" item="&itMicronuke;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itLightningCannon;" secondaryWeapon="true" omnidirectional="true" posAngle="0" posRadius="12" posZ="20" />
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
@@ -472,8 +480,6 @@
 		</Interior>
 
 		<Items>
-			<Item count="3d20" item="&itWarhammerNuke;"/>
-			<Item count="12d20" item="&itMicronuke;"/>
 			<Item count="1d12" item="&itPteracniumFuelRod;"/>
 		</Items>
 

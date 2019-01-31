@@ -691,7 +691,11 @@
 		
 		<Devices>
 			<Device deviceID="&itDualLaserCannon;"/>
-			<Device deviceID="&itNAMIMissileLauncher;"/>
+			<Device deviceID="&itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&itKM100Missile;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itAClassDefenseScreen;"/>
 		</Devices>
 
@@ -699,10 +703,6 @@
 			maxRotationRate=	"9.0"
 			rotationAccel=		"2.0"
 			/>
-
-		<Items>
-			<Item count="2d6" item="&itKM100Missile;"/>
-		</Items>
 
 		<!-- Image and Effects -->
 		

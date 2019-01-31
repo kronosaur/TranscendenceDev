@@ -2605,13 +2605,16 @@
 			/>
 		
 		<Devices>
-			<Device slotID="portArm1"		deviceID="&itRasiermesserLauncher;"/>
+			<Device slotID="portArm1"		deviceID="&itRasiermesserLauncher;">
+				<Items>
+					<Item count="40d20" item="&itGotha10Missile;"/>
+				</Items>
+			</Device>
 			<Device slotID="starboardArm1"	deviceID="&itRasiermesserLauncher;"/>
 			<Device deviceID="&itPlasmaShieldGenerator;"/>
 		</Devices>
 
 		<Items>
-			<Item count="40d20" item="&itGotha10Missile;"/>
 			<Item count="2d12" item="&itPteracniumFuelRod;"/>
 		</Items>
 

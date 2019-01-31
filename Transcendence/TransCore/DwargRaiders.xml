@@ -408,7 +408,11 @@
 		</Armor>
 
 		<Devices>
-			<Device deviceID="&itDwargCnidocystCannon;" omnidirectional="true"/>
+			<Device deviceID="&itDwargCnidocystCannon;" omnidirectional="true">
+				<Items>
+					<Item count="4d20" item="&itDwargCnidocystNodule;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" omnidirectional="true"/>
 		</Devices>
 
@@ -418,7 +422,6 @@
 			/>
 
 		<Items>
-			<Item count="4d20" item="&itDwargCnidocystNodule;"/>
 			<Item count="5d6" item="&itHeliumAssembly;"/>
 		</Items>
 

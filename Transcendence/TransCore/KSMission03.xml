@@ -461,38 +461,10 @@
 			class=				"Ronin/C"
 			type=				"gunship"
 
-			mass=				"60"
-			cargoSpace=			"50"
-			thrustRatio=		"5.5"
-			maxSpeed=			"20"
-
 			attributes=			"commonwealth"
-
-			inherit=			"&baCharonBuster;"
+			inherit=			"&scRoninC;"
+			eventHandler=		"&baCharonBuster;"
 			>
-
-		<Armor>
-			<ArmorSection start="315" span="90" armorID="&itCeramicPlate;" areaSet="0,2" />
-			<ArmorSection start="225" span="90" armorID="&itCeramicPlate;" areaSet="3,4" />
-			<ArmorSection start="135" span="90" armorID="&itCeramicPlate;" areaSet="1,6" />
-			<ArmorSection start="45"  span="90" armorID="&itCeramicPlate;" areaSet="7,13" />
-		</Armor>
-
-		<Devices>
-			<Device deviceID="&itParticleBeamWeapon;"/>
-			<Device deviceID="&itNAMIMissileLauncher;"/>
-			<Device deviceID="&itClass2Deflector;"/>
-		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"9.0"
-			rotationAccel=		"1.0"
-			/>
-
-		<Items>
-			<Item count="2d6" item="&itFragmentationMissile;"/>
-			<Item count="3d6" item="&itHelium3FuelRod;"/>
-		</Items>
 
 		<Names definiteArticle="true">
 			gunship Ahab; gunship Bastille; gunship Centaurus Prime;
@@ -506,21 +478,22 @@
 			gunship Yellow Emperor; gunship Zanzibar
 		</Names>
 
-		<Image imageID="&rsRoninC;" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" viewportRatio="0.00275"/>
-		<HeroImage imageID="&rsRoninCHero;" imageWidth="320" imageHeight="320"/>
+		<!-- Configuration -->
 
-		<Effects>
-			<Effect type="thrustMain"		posAngle="148"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-148"	posRadius="20"	posZ="0"	rotation="180"/>
-		</Effects>
-		
-		<AISettings
-			fireRateAdj=		"20"
-			fireAccuracy=		"90"
-			perception=			"4"
-			
-			combatStyle=		"advanced"
+		<Armor
+			armorID=			"&itHeavyCeramicPlate;"
+			count=				"4"
 			/>
+		
+		<Devices>
+			<Device deviceID="&itParticleBeamWeapon;"/>
+			<Device deviceID="&itNAMIMissileLauncher;">
+				<Items>
+					<Item count="2d6" item="&itFragmentationMissile;"/>
+				</Items>
+			</Device>
+			<Device deviceID="&itClass2Deflector;"/>
+		</Devices>
 	</ShipClass>
 
 	<!-- EI200 Freighter Leader

@@ -503,7 +503,11 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itParticleBoltCannon;"/>
+			<Device deviceID="&itParticleBoltCannon;">
+				<Items>
+					<Item  count="20d20"	item="&itParticleBoltCartridge;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itCyberDeckLowerShields;"/>
 			<Device deviceID="&itParticleBeamWeapon;" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="102" posRadius="54" posZ="0"/>
 			<Device deviceID="&itParticleBeamWeapon;" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="-102" posRadius="54" posZ="0"/>
@@ -533,7 +537,6 @@
 
 		<Items>
 			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
-			<Item				  count="20d20"	item="&itParticleBoltCartridge;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>
@@ -601,7 +604,11 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itParticleBoltCannon;"/>
+			<Device deviceID="&itParticleBoltCannon;">
+				<Items>
+					<Item  count="20d20"	item="&itParticleBoltCartridge;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itCyberDeckLowerShields;"/>
 			<Device deviceID="&itParticleBeamWeapon;" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="102" posRadius="54" posZ="0"/>
 			<Device deviceID="&itParticleBeamWeapon;" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="-102" posRadius="54" posZ="0"/>
@@ -631,7 +638,6 @@
 
 		<Items>
 			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
-			<Item				  count="20d20"	item="&itParticleBoltCartridge;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>

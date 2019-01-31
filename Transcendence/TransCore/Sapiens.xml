@@ -273,7 +273,11 @@
 		</Armor>
 
 		<Devices>
-			<Device deviceID="&itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60" posAngle="0" posRadius="16"/>
+			<Device deviceID="&itNAMIMissileLauncher;" minFireArc="300" maxFireArc="60" posAngle="0" posRadius="16">
+				<Items>
+					<Item count="4d6" item="&itXM300Missile;"/>
+				</Items>
+			</Device>
 			<Device deviceID="&itOmniPartisanCannon;" secondaryWeapon="true"/>
 		</Devices>
 
@@ -283,7 +287,6 @@
 			/>
 
 		<Items>
-			<Item count="4d6" item="&itXM300Missile;"/>
 			<Item count="4d6" item="&itHelium3FuelRod;"/>
 		</Items>
 
