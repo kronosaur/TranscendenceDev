@@ -910,6 +910,10 @@
 			rotationAccel=		"2.0"
 			/>
 
+		<Items>
+			<Item count="4d6" item="&itHelium3FuelRod;"/>
+		</Items>
+
 		<Image imageID="&rsHammerhead2HD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
 
 		<Effects>

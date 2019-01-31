@@ -343,7 +343,7 @@
 			/>
 
 		<Items>
-			<Item chance="50"	count="2d6"		item="&itHeliumAssembly;"/>
+			<Item count="2d6"	item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -604,7 +604,7 @@
 		</Devices>
 
 		<Items>
-			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
+			<Item				  count="1d6"	item="&itPteracniumFuelRod;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>

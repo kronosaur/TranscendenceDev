@@ -56,7 +56,7 @@
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<AISettings

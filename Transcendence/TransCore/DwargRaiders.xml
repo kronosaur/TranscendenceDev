@@ -422,7 +422,7 @@
 			/>
 
 		<Items>
-			<Item count="5d6" item="&itHeliumAssembly;"/>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<Image imageID="&rsMediumShips3;" imageX="672" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -494,7 +494,7 @@
 		</Interior>
 		
 		<Items>
-			<Item				  count="2d6"	item="&itXenotiteFuelRod;"/>
+			<Item				  count="1d6"	item="&itPteracniumFuelRod;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>

@@ -206,6 +206,12 @@
 			<Device deviceID="&itR1Deflector;"/>
 		</Devices>
 
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
+		</Items>
+
 		<!-- Image and Effects -->
 
 		<Image imageID="&rsCenturionRogue;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
@@ -224,6 +230,12 @@
 			attributes=			"genericClass, rogueFLeet"
 			inherit=			"&scCenturionX;"
 			>
+
+		<!-- Treasure -->
+
+		<Items>
+			<Item count="2d6" item="&itPteracniumFuelRod;"/>
+		</Items>
 
 		<!-- Image and Effects -->
 

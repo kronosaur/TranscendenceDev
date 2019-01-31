@@ -449,7 +449,7 @@
 			/>
 
 		<Items>
-			<Item chance="50"	count="2d6"		item="&itHeliumAssembly;"/>
+			<Item chance="50"	count="1d6"		item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -536,7 +536,7 @@
 		</Interior>
 
 		<Items>
-			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
+			<Item				  count="4d6"	item="&itXenotiteFuelRod;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>
@@ -637,7 +637,7 @@
 		</Interior>
 
 		<Items>
-			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
+			<Item				  count="4d6"	item="&itXenotiteFuelRod;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>
@@ -843,7 +843,7 @@
 		</Interior>
 		
 		<Items>
-			<Item				  count="2d6"	item="&itPteracniumFuelRod;"/>
+			<Item				  count="2d6"	item="&itHadronVacuumFuelCell;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables6;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem6;"/>
@@ -945,6 +945,10 @@
 					sizeY=		"30"
 					/>
 		</Interior>
+
+		<Items>
+			<Item	count="2d6"		item="&itXenotiteFuelRod;"/>
+		</Items>
 
 		<Image imageID="&rsSungTransport;" imageWidth="216" imageHeight="216"/>
 

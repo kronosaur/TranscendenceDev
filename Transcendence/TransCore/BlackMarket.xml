@@ -841,7 +841,7 @@ PLAYER DATA
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHeliumAssembly;"/>
+			<Item count="2d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<Image imageID="&rsMolotokA;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004875"/>
@@ -921,7 +921,7 @@ PLAYER DATA
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHeliumAssembly;"/>
+			<Item count="4d6" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<Image imageID="&rsMolotokB;" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" viewportRatio="0.004875"/>

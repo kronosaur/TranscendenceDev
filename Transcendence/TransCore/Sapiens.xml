@@ -228,6 +228,10 @@
 			rotationAccel=		"1.0"
 			/>
 
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
 		<Image imageID="&rsPlagueHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
 
 		<Effects>
@@ -287,7 +291,7 @@
 			/>
 
 		<Items>
-			<Item count="4d6" item="&itHelium3FuelRod;"/>
+			<Item count="2d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<Image imageID="&rsRevelationsHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />

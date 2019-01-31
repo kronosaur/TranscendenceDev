@@ -144,7 +144,7 @@
 		</Interior>
 
 		<Items>
-			<Item				count="2d12"	item="&itPteracniumFuelRod;"/>
+			<Item				count="4d6"		item="&itPteracniumFuelRod;"/>
 			<Item chance="20"	count="1d4"		item="&itIonResistCoating;"/>
 		</Items>
 

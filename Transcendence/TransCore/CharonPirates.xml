@@ -704,6 +704,10 @@
 			rotationAccel=		"2.0"
 			/>
 
+		<Items>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
+		</Items>
+
 		<!-- Image and Effects -->
 		
 		<Image imageID="&rsCorsairHD;" imageWidth="52" imageHeight="52" rotationCount="120" rotationColumns="12" viewportRatio="0.00375" rotationOffset="-10" />
@@ -810,7 +814,7 @@
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -964,7 +968,7 @@
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -1198,7 +1202,7 @@
 		</Devices>
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="2d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- AI and Behavior -->

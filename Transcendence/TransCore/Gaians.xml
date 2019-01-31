@@ -154,7 +154,7 @@
 		</Interior>
 		
 		<Items>
-			<Item				count="6d12"	item="&itPteracniumFuelRod;"/>
+			<Item				count="2d6"	item="&itHadronVacuumFuelCell;"/>
 			<Table>
 				<Lookup chance="50"	count="1d4"		table="&trConsumables8;"/>
 				<Lookup chance="35"	count="1"		table="&trMinorItem8;"/>

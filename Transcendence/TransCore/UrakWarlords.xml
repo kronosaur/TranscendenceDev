@@ -278,9 +278,6 @@
 			rotationAccel=		"6.0"
 			/>
 
-		<Items>
-		</Items>
-
 		<Image imageID="&rsUrakSentinelHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
 
 		<AISettings
@@ -351,7 +348,7 @@
 		</Interior>
 
 		<Items>
-			<Item				  count="2d6"	item="&itHeliumAssembly;"/>
+			<Item				  count="2d6"	item="&itXenotiteFuelRod;"/>
 			<Table>
 				<Lookup chance="40" count="1" table="&trConsumables5;"/>
 				<Lookup chance="40" count="1" table="&trMinorItem5;"/>

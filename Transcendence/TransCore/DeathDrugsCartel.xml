@@ -152,10 +152,6 @@
 			rotationAccel=		"1.0"
 			/>
 
-		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
-		</Items>
-
 		<Image imageID="&rsMethEnforcerHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
 
 		<Effects>

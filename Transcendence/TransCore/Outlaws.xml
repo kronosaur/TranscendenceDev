@@ -411,7 +411,7 @@
 			/>
 
 		<Items>
-			<Item count="1d6" item="&itHelium3FuelRod;"/>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -469,7 +469,7 @@
 			/>
 
 		<Items>
-			<Item count="3d6" item="&itHelium3FuelRod;"/>
+			<Item count="2d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -549,7 +549,7 @@
 		<!-- Treasure -->
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="1d6" item="&itHelium3FuelRod;"/>
 		</Items>
 
 		<!-- Image and Effects -->
@@ -629,7 +629,7 @@
 		<!-- Treasure -->
 
 		<Items>
-			<Item count="2d6" item="&itHelium3FuelRod;"/>
+			<Item count="1d6" item="&itHeliumAssembly;"/>
 		</Items>
 
 		<!-- Image and Effects -->

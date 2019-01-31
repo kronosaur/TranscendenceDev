@@ -411,7 +411,7 @@
 		<!-- Trade and Items -->
 		
 		<Items>
-			<Item count="1d6" item="&itXenotiteFuelRod;"/>
+			<Item count="1d2" item="&itXenotiteFuelRod;"/>
 		</Items>
 
 		<!-- Image and Effects -->
