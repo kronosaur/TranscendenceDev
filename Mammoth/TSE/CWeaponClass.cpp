@@ -1403,7 +1403,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	//	Basics
 
 	int iFireRateSecs = pDesc->GetAttributeIntegerBounded(FIRE_RATE_ATTRIB, 0, -1, 16);
-	pWeapon->m_iFireRate = (int)((iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
+	pWeapon->m_iFireRate = mathRound(iFireRateSecs / STD_SECONDS_PER_UPDATE);
 	pWeapon->m_iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, 0);
 	pWeapon->m_iIdlePowerUse = pDesc->GetAttributeIntegerBounded(IDLE_POWER_USE_ATTRIB, 0, -1, pWeapon->m_iPowerUse / 10);
 	pWeapon->m_iRecoil = pDesc->GetAttributeInteger(RECOIL_ATTRIB);
@@ -1628,12 +1628,12 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(pShot);
 		int iFireRate = GetFireDelay(pShot);
-		*retsValue = (iFireRate > 0 ? strFromInt((int)((rDamagePerShot * 180.0 / iFireRate) + 0.5)) : strFromInt((int)(rDamagePerShot + 0.5)));
+		*retsValue = (iFireRate > 0 ? strFromInt(mathRound(rDamagePerShot * 180.0 / iFireRate)) : strFromInt(mathRound(rDamagePerShot)));
 		}
 	else if (strEquals(sField, FIELD_POWER))
 		*retsValue = strFromInt(m_iPowerUse * 100);
 	else if (strEquals(sField, FIELD_POWER_PER_SHOT))
-		*retsValue = strFromInt((int)(((GetFireDelay(pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0) + 0.5));
+		*retsValue = strFromInt(mathRound((GetFireDelay(pShot) * m_iPowerUse * STD_SECONDS_PER_UPDATE * 1000) / 600.0));
     else if (strEquals(sField, FIELD_BALANCE))
         {
         CItem Item(GetItemType(), 1);
@@ -1642,11 +1642,11 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		*retsValue = strFromInt(CalcBalance(ItemCtx, Balance));
         }
 	else if (strEquals(sField, FIELD_RANGE))
-		*retsValue = strFromInt((int)((pShot->GetMaxRange() / LIGHT_SECOND) + 0.5));
+		*retsValue = strFromInt(mathRound(pShot->GetMaxRange() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_RECOIL))
 		*retsValue = (m_iRecoil ? strFromInt((int)(m_iRecoil * m_iRecoil * 10 * g_MomentumConstant / g_SecondsPerUpdate)) : NULL_STR);
 	else if (strEquals(sField, FIELD_SPEED))
-		*retsValue = strFromInt((int)((100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND) + 0.5));
+		*retsValue = strFromInt(mathRound(100.0 * pShot->GetRatedSpeed() / LIGHT_SECOND));
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
 		*retsValue = strFromInt(GetSelectVariantCount());
 	else if (strEquals(sField, FIELD_REPEAT_COUNT))
@@ -2356,7 +2356,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
         Metric rDamage = Balance.rStdDamage180 - (Balance.rStdDamage180 * rDelta / 100.0);
 
-        return CC.CreateInteger((int)(rDamage + 0.5));
+        return CC.CreateInteger(mathRound(rDamage));
         }
     else if (strEquals(sProperty, PROPERTY_BALANCE_COST))
         {
@@ -2391,7 +2391,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements);
 		int iDelay = CalcActivateDelay(Ctx);
-		return CC.CreateInteger(iDelay > 0 ? (int)((rDamagePerShot * 180.0 / iDelay) + 0.5) : (int)(rDamagePerShot + 0.5));
+		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
@@ -2401,7 +2401,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		{
 		Metric rDamagePerShot = CalcDamagePerShot(pShot, pEnhancements, DamageDesc::flagWMDAdj);
 		int iDelay = CalcActivateDelay(Ctx);
-		return CC.CreateInteger(iDelay > 0 ? (int)((rDamagePerShot * 180.0 / iDelay) + 0.5) : (int)(rDamagePerShot + 0.5));
+		return CC.CreateInteger(iDelay > 0 ? mathRound(rDamagePerShot * 180.0 / iDelay) : mathRound(rDamagePerShot));
 		}
 
     else if (strEquals(sProperty, PROPERTY_EFFECTIVE_RANGE))
@@ -2856,11 +2856,11 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Calculate the radius of the shockwave
 
-			int iRadius = (int)(((pShot->GetAveExpansionSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate) / LIGHT_SECOND) + 0.5);
+			int iRadius = mathRound((pShot->GetAveExpansionSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate) / LIGHT_SECOND);
 
 			//	Compute result
 
-			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
 
@@ -2878,7 +2878,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Calculate the radius
 
-			int iRadius = (int)((pShot->GetMaxRadius() / LIGHT_SECOND) + 0.5);
+			int iRadius = mathRound(pShot->GetMaxRadius() / LIGHT_SECOND);
 
 			//	Compute result
 
@@ -2903,7 +2903,7 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Compute result
 
-			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
 
@@ -2923,11 +2923,11 @@ bool CWeaponClass::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, Dam
 
 			//	Compute radius
 
-			int iRadius = (int)((pShot->GetRatedSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate / LIGHT_SECOND) + 0.5);
+			int iRadius = mathRound(pShot->GetRatedSpeed() * pShot->GetAveLifetime() * g_SecondsPerUpdate / LIGHT_SECOND);
 
 			//	Compute result
 
-			int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+			int iDamage10 = mathRound(rDamage * 10.0);
 			int iDamage = iDamage10 / 10;
 			int iDamageTenth = iDamage10 % 10;
 

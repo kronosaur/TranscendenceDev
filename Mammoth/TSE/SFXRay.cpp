@@ -1352,8 +1352,8 @@ void CRayEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
 	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -CalcLength(Ctx));
-	int xTo = x + (int)(vFrom.GetX() + 0.5);
-	int yTo = y - (int)(vFrom.GetY() + 0.5);
+	int xTo = x + mathRound(vFrom.GetX());
+	int yTo = y - mathRound(vFrom.GetY());
 	int xFrom = x;
 	int yFrom = y;
 
@@ -1378,8 +1378,8 @@ void CRayEffectPainter::PaintHit (CG32bitImage &Dest, int x, int y, const CVecto
 	//	Compute the two end points of the line. We paint from the head to the tail.
 
 	CVector vFrom = PolarToVector(AngleMod(Ctx.iRotation + m_iXformRotation), -CalcLength(Ctx));
-	int xTo = x + (int)(vFrom.GetX() + 0.5);
-	int yTo = y - (int)(vFrom.GetY() + 0.5);
+	int xTo = x + mathRound(vFrom.GetX());
+	int yTo = y - mathRound(vFrom.GetY());
 
 	int xFrom;
 	int yFrom;

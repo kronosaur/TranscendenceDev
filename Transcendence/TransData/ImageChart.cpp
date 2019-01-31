@@ -573,7 +573,7 @@ void GenerateImageChart (CUniverse &Universe, CXMLElement *pCmdLine)
 				Metric rRadius;
 				for (rRadius = rGridSize; rRadius <= rMaxRadius; rRadius += rGridSize)
 					{
-					int iRadius = (int)((rRadius / g_KlicksPerPixel) + 0.5);
+					int iRadius = mathRound(rRadius / g_KlicksPerPixel);
 					const int iGridAngle = 8;
 					int iPrevAngle = 0;
 					int iAngle;

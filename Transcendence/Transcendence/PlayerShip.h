@@ -110,7 +110,7 @@ class CPlayerShipController : public IShipController
 		void GenerateGameStats (CGameStats &Stats, bool bGameOver);
 		inline int GetBestEnemyShipsDestroyed (DWORD *retdwUNID = NULL) { return m_Stats.GetBestEnemyShipsDestroyed(retdwUNID); }
 		inline CurrencyValue GetCredits (DWORD dwEconUNID) { return m_Credits.GetCredits(dwEconUNID); }
-		inline int GetCargoSpace (void) { return (int)(m_pShip->GetCargoSpaceLeft() + 0.5); }
+		inline int GetCargoSpace (void) { return mathRound(m_pShip->GetCargoSpaceLeft()); }
 		inline int GetEndGameScore (void) { return m_Stats.CalcEndGameScore(); }
 		inline int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("enemyShipsDestroyed")), 0); }
         inline CGameSession *GetGameSession (void) { return m_pSession; }
@@ -200,7 +200,7 @@ class CPlayerShipController : public IShipController
 		virtual CSpaceObject *GetOrderGiver (void) override { return m_pShip; }
 		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
 		virtual bool GetDeviceActivate (void) override;
-		virtual int GetFireDelay (void) override { return (int)((5.0 / STD_SECONDS_PER_UPDATE) + 0.5); }
+		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }

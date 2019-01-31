@@ -95,7 +95,7 @@ void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, ICCItem *pTable, SDama
 
 	pTable->SetIntegerAt(CC, FIELD_HIT_DIR, DamageCtx.iDirection);
 	pTable->SetIntegerAt(CC, FIELD_DAMAGE_HP, DamageCtx.iDamage);
-	pTable->SetIntegerAt(CC, FIELD_AVERAGE_DAMAGE_HP, (int)(DamageCtx.pDesc->GetAveDamage() + 0.5));
+	pTable->SetIntegerAt(CC, FIELD_AVERAGE_DAMAGE_HP, mathRound(DamageCtx.pDesc->GetAveDamage()));
 	pTable->SetStringAt(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(DamageCtx.Damage.GetDamageType()));
 
 	CItemType *pWeapon = DamageCtx.pDesc->GetWeaponType();
@@ -139,11 +139,11 @@ void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, ICCItem *pTable, 
 //	Sets the data from a weapon fire desc to the data block.
 
 	{
-	pTable->SetIntegerAt(CC, FIELD_DAMAGE_HP, (int)(pDesc->GetAveDamage() + 0.5));
+	pTable->SetIntegerAt(CC, FIELD_DAMAGE_HP, mathRound(pDesc->GetAveDamage()));
 	pTable->SetStringAt(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(pDesc->GetDamageType()));
-	pTable->SetIntegerAt(CC, FIELD_SPEED, (int)((100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED) + 0.5));
+	pTable->SetIntegerAt(CC, FIELD_SPEED, mathRound(100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED));
 	if (pDesc->GetType() == CWeaponFireDesc::ftParticles)
-		pTable->SetIntegerAt(CC, FIELD_PARTICLE_COUNT, (int)(pDesc->GetAveParticleCount() + 0.5));
+		pTable->SetIntegerAt(CC, FIELD_PARTICLE_COUNT, mathRound(pDesc->GetAveParticleCount()));
 
 	CItemType *pWeapon = pDesc->GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);

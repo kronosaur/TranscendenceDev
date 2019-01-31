@@ -320,7 +320,7 @@ void CScreenMgr::DebugOutputStats (void)
 		if (m_bExclusiveMode)
 			kernelDebugLogPattern("exclusive mode");
 		kernelDebugLogPattern("Screen: %d x %d (%d-bit color)", m_cxScreen, m_cyScreen, m_iColorDepth);
-		kernelDebugLogPattern("Scale: %d.%02d", (int)m_rScale, (int)(((m_rScale - floor(m_rScale)) * 100.0) + 0.5));
+		kernelDebugLogPattern("Scale: %d.%02d", (int)m_rScale, mathRound((m_rScale - floor(m_rScale)) * 100.0));
 		if (m_PrimaryType == r5g5b5)
 			kernelDebugLogPattern("Pixels: 5-5-5");
 		else
@@ -426,7 +426,7 @@ ALERROR CScreenMgr::Init (SScreenMgrOptions &Options, CString *retsError)
 		{
 		m_rScale = (Metric)Options.m_cyMaxScreen / m_cyScreen;
 
-		m_cxScreen = (int)((m_rScale * m_cxScreen) + 0.5);
+		m_cxScreen = mathRound(m_rScale * m_cxScreen);
 		m_cyScreen = Options.m_cyMaxScreen;
 		}
 	else

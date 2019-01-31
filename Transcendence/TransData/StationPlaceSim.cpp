@@ -122,7 +122,7 @@ void GenerateStationPlaceSim (CUniverse &Universe, CXMLElement *pCmdLine)
 								ASSERT(iDist < DIST_BUCKET_COUNT && iDist >= 0);
 								pSystemEntry->iEnemies[iDist]++;
 
-								int iLSDist = (int)((rDist / LIGHT_SECOND) + 0.5);
+								int iLSDist = mathRound(rDist / LIGHT_SECOND);
 								if (iLSDist < 30)
 									{
 									printf("%s: %s (%x) and %s (%x) within %d ls\n",

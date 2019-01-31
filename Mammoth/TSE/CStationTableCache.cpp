@@ -49,5 +49,5 @@ int CStationTableCache::GetCacheHitRate (void) const
 
 	{
 	int iTotal = m_iCacheHits + m_iCacheMisses;
-	return (iTotal > 0 ? (int)((100.0 * (double)m_iCacheHits / iTotal) + 0.5) : 100);
+	return (iTotal > 0 ? mathRound(100.0 * (double)m_iCacheHits / iTotal) : 100);
 	}

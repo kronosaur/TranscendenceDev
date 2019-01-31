@@ -563,7 +563,7 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	pDevice->m_bOmnidirectional = (pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB) ||
 		((pDevice->m_iMaxFireArc == pDevice->m_iMinFireArc) && pDevice->m_iMaxFireArc == 0));
 
-	pDevice->m_iRechargeTicks = (int)((iFireRate / STD_SECONDS_PER_UPDATE) + 0.5);
+	pDevice->m_iRechargeTicks = mathRound(iFireRate / STD_SECONDS_PER_UPDATE);
 	if (error = pDevice->m_pWeapon.LoadUNID(Ctx, pDesc->GetAttribute(WEAPON_ATTRIB)))
 		return error;
 

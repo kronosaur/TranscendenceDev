@@ -73,8 +73,8 @@ void CImageAndTailEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewp
 
 	if (m_iWidth >= 3)
 		{
-		xStart = x - (int)(vTail.GetX() + 0.5);
-		yStart = y + (int)(vTail.GetY() + 0.5);
+		xStart = x - mathRound(vTail.GetX());
+		yStart = y + mathRound(vTail.GetY());
 
 		rgbStart = CG32bitPixel(m_rgbSecondaryColor, 155);
 		rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 0);
@@ -82,8 +82,8 @@ void CImageAndTailEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewp
 		}
 
 	vTail = vTail / 2.0;
-	xStart = x - (int)(vTail.GetX() + 0.5);
-	yStart = y + (int)(vTail.GetY() + 0.5);
+	xStart = x - mathRound(vTail.GetX());
+	yStart = y + mathRound(vTail.GetY());
 
 	rgbStart = m_rgbPrimaryColor;
 	rgbEnd = CG32bitPixel(m_rgbSecondaryColor, 200);

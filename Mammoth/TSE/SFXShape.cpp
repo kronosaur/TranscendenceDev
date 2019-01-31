@@ -145,8 +145,8 @@ void CShapeEffectCreator::CreateShapeRegion (int iAngle, int iLength, int iWidth
 		{
 		Metric x, y;
 		Trans.Transform(m_Points[i].x, m_Points[i].y, &x, &y);
-		m_TransBuffer[i].x = (int)(x + 0.5);
-		m_TransBuffer[i].y = -(int)(y + 0.5);
+		m_TransBuffer[i].x = mathRound(x);
+		m_TransBuffer[i].y = -mathRound(y);
 		}
 
 	//	Create the region

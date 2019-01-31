@@ -139,7 +139,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		Metric rObjRadius = 0.5 * pObj->GetHitSize();
 		CVector vHitPos = pObj->GetPos() - PolarToVector(iAngle, rObjRadius);
 		CVector vInc = PolarToVector(iAngle, 2.0 * g_KlicksPerPixel);
-		int iMax = (int)((2.0 * rObjRadius / (2.0 * g_KlicksPerPixel)) + 0.5);
+		int iMax = mathRound(2.0 * rObjRadius / (2.0 * g_KlicksPerPixel));
 		while (!pObj->PointInObject(pObj->GetPos(), vHitPos) && iMax-- > 0)
 			vHitPos = vHitPos + vInc;
 
@@ -156,7 +156,7 @@ void CRadiusDamage::DamageAll (SUpdateCtx &Ctx)
 		if (rHitDist > rMinRadius && rRadiusRange > 0.0)
 			{
 			Metric rMult = (rRadiusRange - (rHitDist - rMinRadius)) / rRadiusRange;
-			iDamage = (int)(rMult * (Metric)m_pDesc->GetDamage().RollDamage() + 0.5);
+			iDamage = mathRound(rMult * (Metric)m_pDesc->GetDamage().RollDamage());
 			}
 		else
 			iDamage = m_pDesc->GetDamage().RollDamage();

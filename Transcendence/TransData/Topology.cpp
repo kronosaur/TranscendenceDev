@@ -46,7 +46,7 @@ struct SStat
 	inline void Print (const CString &sStat, int iCount, int iTotal)
 		{
 		int iAverage = m_iTotal / iCount;
-		int iPercent = (int)((100.0 * (Metric)iAverage / (Metric)iTotal) + 0.5f);
+		int iPercent = mathRound(100.0 * (Metric)iAverage / (Metric)iTotal);
 
 		if (m_iMin == m_iMax)
 			printf("%s:\t%d\t%d%%\n", sStat.GetASCIIZPointer(), m_iMin, iPercent);

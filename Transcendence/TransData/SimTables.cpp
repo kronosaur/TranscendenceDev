@@ -223,10 +223,10 @@ ALERROR OutputTypeTable (DWORD dwAdventureUNID, TSortMap<DWORD, STypeStats> &All
 		Stats.PerGame.CalcHistogram(&Histogram);
 
 		CString sLine;
-		sLine = strPatternSubst("0x%x\t%d\t%d", dwUNID, (int)((Stats.PerGame.GetMean() * 1000.0) + 0.5), Histogram.GetCount());
+		sLine = strPatternSubst("0x%x\t%d\t%d", dwUNID, mathRound(Stats.PerGame.GetMean() * 1000.0), Histogram.GetCount());
 
 		for (j = 0; j < Histogram.GetCount(); j++)
-			sLine.Append(strPatternSubst("\t%d\t%d", Histogram[j].iValue, (int)(Histogram[j].rPercent * 100.0 + 0.5)));
+			sLine.Append(strPatternSubst("\t%d\t%d", Histogram[j].iValue, mathRound(Histogram[j].rPercent * 100.0)));
 
 		Output.LogOutput(0, sLine);
 		}

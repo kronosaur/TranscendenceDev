@@ -47,8 +47,8 @@ void CMoltenBoltEffectCreator::CreateBoltShape (int iAngle, int iLength, int iWi
 		{
 		Metric x, y;
 		Trans.Transform(g_Shape[i].x, g_Shape[i].y, &x, &y);
-		Poly[i].x = (int)(x + 0.5);
-		Poly[i].y = -(int)(y + 0.5);
+		Poly[i].x = mathRound(x);
+		Poly[i].y = -mathRound(y);
 		}
 	}
 

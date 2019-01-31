@@ -3500,9 +3500,9 @@ void CG16bitImage::SetRealPixel (Metric rX, Metric rY, const RealPixel &Value, b
 	else
 		{
 		COLORREF rgbValue = RGB(
-				(int)((Value.rRed * 255.0) + 0.5),
-				(int)((Value.rGreen * 255.0) + 0.5),
-				(int)((Value.rBlue * 255.0) + 0.5));
+				mathRound(Value.rRed * 255.0),
+				mathRound(Value.rGreen * 255.0),
+				mathRound(Value.rBlue * 255.0));
 
 		WORD wPixel = (WORD)PixelFromRGB(rgbValue);
 		if (bNotBlack && wPixel == 0)

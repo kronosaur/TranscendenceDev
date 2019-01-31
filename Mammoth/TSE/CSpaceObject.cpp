@@ -394,8 +394,8 @@ void CSpaceObject::AddEffect (IEffectPainter *pPainter, const CVector &vPos, int
 //	Adds an effect to the object
 
 	{
-	int xOffset = (int)(((vPos.GetX() - m_vPos.GetX()) / g_KlicksPerPixel) + 0.5);
-	int yOffset = (int)(((m_vPos.GetY() - vPos.GetY()) / g_KlicksPerPixel) + 0.5);
+	int xOffset = mathRound((vPos.GetX() - m_vPos.GetX()) / g_KlicksPerPixel);
+	int yOffset = mathRound((m_vPos.GetY() - vPos.GetY()) / g_KlicksPerPixel);
 
 	AddEffect(pPainter, xOffset, yOffset, iTick, iRotation);
 	}
@@ -5061,8 +5061,8 @@ bool CSpaceObject::ImagesIntersect (const CObjectImageArray &Image1, int iTick1,
 	//	Compute the offset of Image2 relative to Image1 in pixels
 
 	CVector vOffset = vPos2 - vPos1;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 	
 	//	Images intersect
 

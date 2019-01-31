@@ -147,7 +147,7 @@ int CDriveDesc::CalcThrust (Metric rThrustRatio, Metric rMassInTons)
 //	Computes the given thrust from a thrust ratio
 
 	{
-	return (int)(((rThrustRatio * rMassInTons) / 2.0) + 0.5);
+	return mathRound((rThrustRatio * rMassInTons) / 2.0);
 	}
 
 Metric CDriveDesc::CalcThrustRatio (int iThrust, Metric rMassInTons)

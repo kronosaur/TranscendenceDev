@@ -234,7 +234,7 @@ void CReactorHUDCircular::PaintCounterGauge(CShip *pShip)
 	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), rCounterIsHeat ? CONSTLIT("Heat") : CONSTLIT("Energy"), CG16bitFont::AlignRight);
 	yText += SmallFont.GetHeight();
 
-	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rCounterValue) + 0.5)), CG16bitFont::AlignRight);
+	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rCounterValue)), CG16bitFont::AlignRight);
 	}
 
 void CReactorHUDCircular::PaintFuelGauge (const SReactorStats &Stats, bool bCounterGaugePresent)
@@ -303,7 +303,7 @@ void CReactorHUDCircular::PaintFuelGauge (const SReactorStats &Stats, bool bCoun
 	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), CONSTLIT("Fuel"), CG16bitFont::AlignRight);
 	yText += SmallFont.GetHeight();
 
-	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rFuelLevel) + 0.5)), CG16bitFont::AlignRight);
+	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rFuelLevel)), CG16bitFont::AlignRight);
 	}
 
 void CReactorHUDCircular::PaintPowerGauge (const SReactorStats &Stats)
@@ -432,7 +432,7 @@ void CReactorHUDCircular::PaintPowerGauge (const SReactorStats &Stats)
 	SmallFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextDialogLabel), CONSTLIT("Power"));
 	yText += SmallFont.GetHeight();
 
-	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), (int)((100.0 * rPowerLevel) + 0.5)));
+	MediumFont.DrawText(m_Buffer, xText, yText, VI.GetColor(colorTextHighlight), strPatternSubst(CONSTLIT("%d%%"), mathRound(100.0 * rPowerLevel)));
 	}
 
 void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)

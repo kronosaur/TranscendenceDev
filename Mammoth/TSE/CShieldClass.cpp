@@ -1370,7 +1370,7 @@ bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pIns
 			if (iAdj == 0)
 				retArray[i] = -1;
 			else
-				retArray[i] = (int)((iMaxHP * 100.0 / iAdj) + 0.5);
+				retArray[i] = mathRound(iMaxHP * 100.0 / iAdj);
 			}
 		}
 

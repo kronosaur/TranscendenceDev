@@ -63,7 +63,7 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
         //  Compute number of ticks to destroy the armor
 
         Metric rAdjDamage180 = rDamage180 * rDamageAdj / 100.0;
-        int iTicks = (rAdjDamage180 > 0.0 ? (int)((180.0 * rHP / rAdjDamage180) + 0.5) : -1);
+        int iTicks = (rAdjDamage180 > 0.0 ? mathRound(180.0 * rHP / rAdjDamage180) : -1);
 
         //  Add to our table
 
@@ -100,7 +100,7 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
     //  Compute average
 
     if (iArmorCount > 0)
-        retStats.iAverageTime = (int)(((Metric)iTotalTime / (Metric)iArmorCount) + 0.5);
+        retStats.iAverageTime = mathRound((Metric)iTotalTime / (Metric)iArmorCount);
     else
         retStats.iAverageTime = 0;
 

@@ -400,7 +400,7 @@ ALERROR CReactorDesc::InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, 
     //  We increase power output proportionally to scale
 
     Metric rPowerAdj = (Metric)ScaledStats.iMaxPower / (Metric)BaseStats.iMaxPower;
-    m_iMaxPower = (int)((m_iMaxPower * rPowerAdj) + 0.5);
+    m_iMaxPower = mathRound(m_iMaxPower * rPowerAdj);
 
     //  We increase fuel capacity in the same way.
 

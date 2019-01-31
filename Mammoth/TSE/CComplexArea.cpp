@@ -367,8 +367,8 @@ bool CComplexArea::InRect (SRect &Rect, int x, int y)
 	if (Rect.iRotation > 0)
 		{
 		int iAngle = 360 - Rect.iRotation;
-		int xRot = (int)((x * g_Cosine[iAngle] - y * g_Sine[iAngle]) + 0.5);
-		int yRot = (int)((x * g_Sine[iAngle] + y * g_Cosine[iAngle]) + 0.5);
+		int xRot = mathRound(x * g_Cosine[iAngle] - y * g_Sine[iAngle]);
+		int yRot = mathRound(x * g_Sine[iAngle] + y * g_Cosine[iAngle]);
 		return (xRot >= 0 && xRot < Rect.cxWidth && yRot >= 0 && yRot < Rect.cyHeight);
 		}
 	else

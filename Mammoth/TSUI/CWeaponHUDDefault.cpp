@@ -393,7 +393,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 		//	Paint the range
 
 		CVector vDist = pTarget->GetPos() - pShip->GetPos();
-		int iDist = (int)((vDist.Length() / LIGHT_SECOND) + 0.5);
+		int iDist = mathRound(vDist.Length() / LIGHT_SECOND);
 
 		PaintStat(xStat, yStat, CONSTLIT("Range"), strFormatInteger(iDist, -1, FORMAT_THOUSAND_SEPARATOR), TARGET_NAME_COLOR);
 		xStat += STAT_WIDTH;

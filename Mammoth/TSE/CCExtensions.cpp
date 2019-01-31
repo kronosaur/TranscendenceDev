@@ -7351,7 +7351,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			else
 				rDist = pObj->GetPos().Length();
 
-			int iDistInLightSeconds = (int)((rDist / LIGHT_SECOND) + 0.5);
+			int iDistInLightSeconds = mathRound(rDist / LIGHT_SECOND);
 			pResult = pCC->CreateInteger(iDistInLightSeconds);
 			break;
 			}
@@ -9532,7 +9532,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_SHIP_MAX_SPEED:
-			return pCC->CreateInteger((int)((100.0 * pShip->GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+			return pCC->CreateInteger(mathRound(100.0 * pShip->GetMaxSpeed() / LIGHT_SPEED));
 
 		case FN_SHIP_ORDER_COUNT:
 			return pCC->CreateInteger(pShip->GetController()->GetOrderCount());
@@ -10398,7 +10398,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 				Metric rFuelNeeded = Max(0.0, pShip->GetMaxFuel() - pShip->GetFuelLeft());
 				Metric rUnits = (rFuelNeeded / rFuelPerItem);
-				int iWhole = (int)(rUnits + 0.5);
+				int iWhole = mathRound(rUnits);
 
 				pResult = pCC->CreateInteger(iWhole);
 				}
@@ -12757,7 +12757,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (iLevel <= 0 || iLevel > MAX_SYSTEM_LEVEL)
 				return pCC->CreateNil();
 
-			return pCC->CreateInteger((int)(CShipClass::GetStdCombatStrength(iLevel) + 0.5));
+			return pCC->CreateInteger(mathRound(CShipClass::GetStdCombatStrength(iLevel)));
 			}
 
 		case FN_SYS_HIT_SCAN:
@@ -13032,7 +13032,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (rTime < 0.0)
 				return pCC->CreateError(CONSTLIT("Time cannot be negative"), pArgs->GetElement(1));
 
-			return pCC->CreateInteger((int)((rSpeed * rTime) + 0.5));
+			return pCC->CreateInteger(mathRound(rSpeed * rTime));
 			}
 
 		case FN_SYS_GET_TRAVEL_TIME:
@@ -13047,7 +13047,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else if (rSpeed == 0.0)
 				return pCC->CreateNil();
 
-			return pCC->CreateInteger((int)((rDistance / rSpeed) + 0.5));
+			return pCC->CreateInteger(mathRound(rDistance / rSpeed));
 			}
 
 		case FN_SYS_INC_DATA:
@@ -13986,7 +13986,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				}
 
 			CVector vDist = vPos1 - vPos2;
-			return pCC->CreateInteger((int)((vDist.Length() / LIGHT_SECOND) + 0.5));
+			return pCC->CreateInteger(mathRound(vDist.Length() / LIGHT_SECOND));
 			}
 
 		case FN_VECTOR_DISTANCE_EXACT:
@@ -14017,7 +14017,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		case FN_VECTOR_SPEED:
 			{
 			CVector vPos(CreateVectorFromList(*pCC, pArgs->GetElement(0)));
-			return pCC->CreateInteger((int)(vPos.Length() * (100.0 / LIGHT_SPEED) + 0.5));
+			return pCC->CreateInteger(mathRound(vPos.Length() * (100.0 / LIGHT_SPEED)));
 			}
 
 		default:

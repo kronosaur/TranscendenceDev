@@ -1240,7 +1240,7 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	if (pDesc->FindAttributeDouble(VIEWPORT_RATIO_ATTRIB, &rViewportRatio))
 		{
 		if (rViewportRatio > 0.0)
-			m_iViewportSize = Max(1, (int)((RectWidth(m_rcImage) / (2.0 * rViewportRatio)) + 0.5));
+			m_iViewportSize = Max(1, mathRound(RectWidth(m_rcImage) / (2.0 * rViewportRatio)));
 		else
 			m_iViewportSize = Max(1, RectWidth(m_rcImage));
 		}

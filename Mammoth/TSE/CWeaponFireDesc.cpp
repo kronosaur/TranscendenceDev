@@ -1724,7 +1724,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	if (iFireRateSecs == -1)
 		m_iFireRate = -1;
 	else
-		m_iFireRate = (int)((iFireRateSecs / STD_SECONDS_PER_UPDATE) + 0.5);
+		m_iFireRate = mathRound(iFireRateSecs / STD_SECONDS_PER_UPDATE);
 
 	//	Power use
 

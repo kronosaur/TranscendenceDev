@@ -4301,8 +4301,8 @@ bool CStation::PointInObject (const CVector &vObjPos, const CVector &vPointPos) 
 	//	ship, in pixels.
 
 	CVector vOffset = vPointPos - vObjPos;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 
 	//	Ask the image if the point is inside or not
 
@@ -4327,8 +4327,8 @@ bool CStation::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, co
 	//	ship, in pixels.
 
 	CVector vOffset = vPointPos - vObjPos;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 
 	return Ctx.pObjImage->PointInImage(Ctx, x, y);
 

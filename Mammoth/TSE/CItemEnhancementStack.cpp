@@ -119,7 +119,7 @@ int CItemEnhancementStack::ApplyDamageAdj (const DamageDesc &Damage, int iDamage
 	if (rValue > CDamageAdjDesc::MAX_DAMAGE_ADJ)
 		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 void CItemEnhancementStack::ApplySpecialDamage (DamageDesc *pDamage) const
@@ -180,7 +180,7 @@ int CItemEnhancementStack::CalcActivateDelay (CItemCtx &DeviceCtx) const
 			}
 		}
 
-	return (int)(rDelay + 0.5);
+	return mathRound(rDelay);
 	}
 
 Metric CItemEnhancementStack::CalcRegen180 (CItemCtx &ItemCtx, int iTicksPerUpdate) const
@@ -256,7 +256,7 @@ int CItemEnhancementStack::GetAbsorbAdj (const DamageDesc &Damage) const
 			rValue = iAdj * rValue / 100.0;
 		}
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 int CItemEnhancementStack::GetActivateDelayAdj (void) const
@@ -280,7 +280,7 @@ int CItemEnhancementStack::GetActivateDelayAdj (void) const
 			rDelay = iAdj * rDelay / 100.0;
 		}
 
-	return (int)(rDelay + 0.5);
+	return mathRound(rDelay);
 	}
 
 int CItemEnhancementStack::GetBonus (void) const
@@ -334,7 +334,7 @@ int CItemEnhancementStack::GetDamageAdj (const DamageDesc &Damage) const
 	if (rValue > CDamageAdjDesc::MAX_DAMAGE_ADJ)
 		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 int CItemEnhancementStack::GetFireArc (void) const
@@ -400,7 +400,7 @@ int CItemEnhancementStack::GetPowerAdj (void) const
 			rValue = iAdj * rValue / 100.0;
 		}
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 int CItemEnhancementStack::GetResistDamageAdj (DamageTypes iDamage) const
@@ -422,7 +422,7 @@ int CItemEnhancementStack::GetResistDamageAdj (DamageTypes iDamage) const
 			rValue = iAdj * rValue / 100.0;
 		}
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 int CItemEnhancementStack::GetResistEnergyAdj (void) const
@@ -446,7 +446,7 @@ int CItemEnhancementStack::GetResistEnergyAdj (void) const
 			rValue = iAdj * rValue / 100.0;
 		}
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 int CItemEnhancementStack::GetResistMatterAdj (void) const
@@ -470,7 +470,7 @@ int CItemEnhancementStack::GetResistMatterAdj (void) const
 			rValue = iAdj * rValue / 100.0;
 		}
 
-	return (int)(rValue + 0.5);
+	return mathRound(rValue);
 	}
 
 void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)

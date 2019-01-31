@@ -145,7 +145,7 @@ bool CStationHullDesc::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(m_iHitPoints);
 	else if (strEquals(sField, FIELD_REGEN))
-		*retsValue = strFromInt((int)(m_Regen.GetHPPer180(STATION_REPAIR_FREQUENCY) + 0.5));
+		*retsValue = strFromInt(mathRound(m_Regen.GetHPPer180(STATION_REPAIR_FREQUENCY)));
 	else
 		return false;
 

@@ -108,7 +108,7 @@ int CRegenDesc::GetRegen (int iTick, int iTicksPerCycle) const
 
 		//	Compute the number of HP that we gain on each burst.
 
-		int iHPPerBurst = (int)((GetHPPerEra() * rBurstTime) + 0.5);
+		int iHPPerBurst = mathRound(GetHPPerEra() * rBurstTime);
 
 		//	See if it is time to burst
 
@@ -140,7 +140,7 @@ void CRegenDesc::InitFromRegen (double rRegen, int iTicksPerCycle)
 //	Initializes from a regen value
 
 	{
-	int iHPPerEra = (int)((rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD) + 0.5);
+	int iHPPerEra = mathRound(rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD);
 	Init(iHPPerEra);
 	}
 
@@ -152,7 +152,7 @@ ALERROR CRegenDesc::InitFromRegenString (SDesignLoadCtx &Ctx, const CString &sRe
 
 	{
 	Metric rRegen = strToDouble(sRegen, 0.0);
-	int iHPPerEra = (int)((rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD) + 0.5);
+	int iHPPerEra = mathRound(rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD);
 	Init(iHPPerEra);
 
 	return NOERROR;
@@ -233,7 +233,7 @@ ALERROR CRegenDesc::InitFromXML (SDesignLoadCtx &Ctx,
 		{
 		Metric rRegen = strToDouble(sRegen, 0.0);
 
-		iHPPerEra = (int)((rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD) + 0.5);
+		iHPPerEra = mathRound(rRegen * (CYCLES_PER_ERA * iTicksPerCycle) / STANDARD_REGEN_PERIOD);
 		}
 	else if (!sRegenRate.IsBlank())
 		{

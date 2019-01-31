@@ -191,7 +191,7 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
         return false;
 
 	if (strEquals(sField, FIELD_MAX_SPEED))
-		*retsValue = strFromInt((int)((100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		*retsValue = strFromInt(mathRound(100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED));
 	else if (strEquals(sField, FIELD_THRUST))
 		*retsValue = strFromInt(pDesc->DriveDesc.GetThrust());
 	else if (strEquals(sField, FIELD_POWER))
@@ -260,7 +260,7 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
         return CDeviceClass::FindItemProperty(Ctx, sProperty);
 
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
-		return CC.CreateInteger((int)((100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		return CC.CreateInteger(mathRound(100.0 * pDesc->DriveDesc.GetMaxSpeed() / LIGHT_SPEED));
 
 	else if (strEquals(sProperty, PROPERTY_THRUST))
 		return CC.CreateInteger(pDesc->DriveDesc.GetThrustProperty());
@@ -302,7 +302,7 @@ ICCItem *CDriveClass::GetDriveProperty (const CDriveDesc &Desc, const CString &s
 	CCodeChain &CC = g_pUniverse->GetCC();
 
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
-		return CC.CreateInteger((int)((100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		return CC.CreateInteger(mathRound(100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED));
 
 	else if (strEquals(sProperty, PROPERTY_THRUST))
 		return CC.CreateInteger(Desc.GetThrustProperty());

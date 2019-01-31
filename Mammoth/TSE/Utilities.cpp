@@ -438,18 +438,18 @@ void DiceRange::Scale (Metric rScale)
 
 	{
 	if (m_iCount == 0)
-		m_iBonus = (int)(m_iBonus * rScale + 0.5);
+		m_iBonus = mathRound(m_iBonus * rScale);
 	else if (m_iCount == 1)
 		{
 		Metric rNewMid = (m_iBonus + (m_iFaces + 1) / 2.0) * rScale;
 
-		m_iFaces = (int)(m_iFaces * rScale + 0.5);
-		m_iBonus = (int)((rNewMid - (m_iFaces + 1) / 2.0) + 0.5);
+		m_iFaces = mathRound(m_iFaces * rScale);
+		m_iBonus = mathRound((rNewMid - (m_iFaces + 1) / 2.0));
 		}
 	else
 		{
-		m_iCount = (int)(m_iCount * rScale + 0.5);
-		m_iBonus = (int)(m_iBonus * rScale + 0.5);
+		m_iCount = mathRound(m_iCount * rScale);
+		m_iBonus = mathRound(m_iBonus * rScale);
 		}
 	}
 
@@ -545,7 +545,7 @@ int CalcEffectiveHP (int iLevel, int iHP, int *iHPbyDamageType)
 	//	Done
 
 	if (rTotalWeight > 0.0)
-		return (int)((rTotalHP / rTotalWeight) + 0.5);
+		return mathRound(rTotalHP / rTotalWeight);
 	else
 		return 0;
 	}

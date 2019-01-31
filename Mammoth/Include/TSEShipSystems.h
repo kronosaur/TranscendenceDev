@@ -352,7 +352,7 @@ class CIntegralRotationDesc
 
         inline int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
-		inline int GetFrameAngle (void) const { return (m_iCount > 0 ? (int)((360.0 / m_iCount) + 0.5) : 0); }
+		inline int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
 		inline int GetFrameCount (void) const { return m_iCount; }
 		inline int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
 		int GetManeuverDelay (void) const;

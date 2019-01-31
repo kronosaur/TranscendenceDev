@@ -579,7 +579,7 @@ void CHumanInterface::PaintFrameRate (void)
 	{
 	CG32bitImage &Screen = GetScreen();
 
-	int iRate = (int)(m_FrameRate.GetFrameRate() + 0.5f);
+	int iRate = mathRound(m_FrameRate.GetFrameRate());
 	CString sText = strPatternSubst(CONSTLIT("Frame rate: %d"), iRate);
 
 	const CG16bitFont &TitleFont = m_Visuals.GetFont(fontSubTitle);

@@ -2141,4 +2141,4 @@ inline bool CItem::IsDisrupted (void) const { return (m_pExtra ? (m_pExtra->m_dw
 
 
 inline int CalcHPDamageAdj (int iHP, int iDamageAdj)
-	{ return (iDamageAdj == 0 ? -1 : (int)((iHP * 100.0 / iDamageAdj) + 0.5)); }
+	{ return (iDamageAdj == 0 ? -1 : mathRound(iHP * 100.0 / iDamageAdj)); }

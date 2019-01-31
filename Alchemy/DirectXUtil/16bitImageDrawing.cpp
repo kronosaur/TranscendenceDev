@@ -1498,7 +1498,7 @@ void DrawOctaRectOutline (CG16bitImage &Dest, int x, int y, int cxWidth, int cyH
 
 	//	Now paint the corners
 
-	int cxCornerLine = (int)((1.414 * iLineWidth) + 0.5);
+	int cxCornerLine = mathRound(1.414 * iLineWidth);
 	int cyRows = iCorner + (cxCornerLine - iLineWidth);
 	for (i = 0; i < cyRows; i++)
 		{
@@ -1540,7 +1540,7 @@ void DrawOctaRectOutlineAlpha (CG16bitImage &Dest, int x, int y, int cxWidth, in
 
 	//	Now paint the corners
 
-	int cxCornerLine = (int)((1.414 * iLineWidth) + 0.5);
+	int cxCornerLine = mathRound(1.414 * iLineWidth);
 	int cyRows = iCorner + (cxCornerLine - iLineWidth);
 	for (i = 0; i < cyRows; i++)
 		{

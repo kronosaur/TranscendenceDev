@@ -672,7 +672,7 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	else if (strEquals(sParam, SPEED_ATTRIB))
 		{
 		m_iSpeed = Value.EvalIntegerBounded(0, 100, 20);
-		m_iRadiusInc = Max(1, (int)((m_iSpeed * LIGHT_SPEED * g_SecondsPerUpdate / (100.0 * g_KlicksPerPixel)) + 0.5));
+		m_iRadiusInc = Max(1, mathRound(m_iSpeed * LIGHT_SPEED * g_SecondsPerUpdate / (100.0 * g_KlicksPerPixel)));
 		}
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleImage);

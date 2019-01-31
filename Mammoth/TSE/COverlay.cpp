@@ -1064,7 +1064,7 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 		if (m_pType->GetCounterStyle() == COverlayType::counterRadius)
 			{
 			Metric rRadius = ParseDistance(pValue->GetStringValue(), LIGHT_SECOND);
-			m_iCounter = (int)((rRadius / g_KlicksPerPixel) + 0.5);
+			m_iCounter = mathRound(rRadius / g_KlicksPerPixel);
 			pSource->RefreshBounds();
 			}
 

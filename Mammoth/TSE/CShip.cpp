@@ -2095,7 +2095,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = strFromInt(CalcMaxCargoSpace());
 
 	else if (strEquals(sField, FIELD_MAX_SPEED))
-		*retsValue = strFromInt((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5), false);
+		*retsValue = strFromInt(mathRound(100.0 * GetMaxSpeed() / LIGHT_SPEED), false);
 
 	else if (strEquals(sField, FIELD_NAME))
 		*retsValue = GetNounPhrase();
@@ -2177,12 +2177,12 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 	else if (strEquals(sField, FIELD_MANEUVER))
 		{
 		Metric rManeuver = g_SecondsPerUpdate * m_Perf.GetIntegralRotationDesc().GetMaxRotationSpeedDegrees();
-		*retsValue = strFromInt((int)((rManeuver * 1000.0) + 0.5));
+		*retsValue = strFromInt(mathRound(rManeuver * 1000.0));
 		}
 	else if (strEquals(sField, FIELD_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = GetMass();
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = mathRound(200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0));
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_WEAPON_RANGE))
@@ -2196,7 +2196,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 				{
 				CWeaponClass *pWeapon = pDevice->AsWeaponClass();
 				if (pWeapon)
-					iRange = (int)((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND) + 0.5);
+					iRange = mathRound(pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND);
 				}
 			}
 		*retsValue = strFromInt(iRange);
@@ -2213,7 +2213,7 @@ bool CShip::FindDataField (const CString &sField, CString *retsValue)
 				CWeaponClass *pWeapon = pDevice->AsWeaponClass();
 				if (pWeapon)
 					{
-					iRange = (int)((pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND) + 0.5);
+					iRange = mathRound(pWeapon->GetMaxEffectiveRange(NULL, NULL, NULL) / LIGHT_SECOND);
 					iRange = iRange * m_pClass->GetAISettings().GetFireRangeAdj() / 100;
 					}
 				}
@@ -3264,7 +3264,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateInteger(m_Perf.GetDriveDesc().GetPowerUse() * 100);
 
 	else if (strEquals(sName, PROPERTY_MAX_SPEED))
-		return CC.CreateInteger((int)((100.0 * GetMaxSpeed() / LIGHT_SPEED) + 0.5));
+		return CC.CreateInteger(mathRound(100.0 * GetMaxSpeed() / LIGHT_SPEED));
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
@@ -3278,7 +3278,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_THRUST_TO_WEIGHT))
 		{
 		Metric rMass = GetMass();
-		int iRatio = (int)((200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0)) + 0.5);
+		int iRatio = mathRound(200.0 * (rMass > 0.0 ? GetThrust() / rMass : 0.0));
 		return CC.CreateInteger(10 * iRatio);
 		}
 
@@ -6795,8 +6795,8 @@ bool CShip::PointInObject (const CVector &vObjPos, const CVector &vPointPos) con
 	//	ship, in pixels.
 
 	CVector vOffset = vPointPos - vObjPos;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 
 	//	Ask the image if the point is inside or not
 
@@ -6818,8 +6818,8 @@ bool CShip::PointInObject (SPointInObjectCtx &Ctx, const CVector &vObjPos, const
 	//	ship, in pixels.
 
 	CVector vOffset = vPointPos - vObjPos;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 
 	//	Ask the image if the point is inside or not
 

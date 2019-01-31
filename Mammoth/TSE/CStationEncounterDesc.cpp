@@ -96,7 +96,7 @@ int CStationEncounterDesc::CalcLevelFromFrequency (void) const
 
 	//	Compute the level by averaging things out
 
-	return (iCount > 0 ? (int)(((double)iTotal / (double)iCount) + 0.5) : 0);
+	return (iCount > 0 ? mathRound((double)iTotal / (double)iCount) : 0);
 	}
 
 int CStationEncounterDesc::GetCountOfRandomEncounterLevels (void) const

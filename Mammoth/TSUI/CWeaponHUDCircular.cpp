@@ -199,7 +199,7 @@ void CWeaponHUDCircular::PaintTarget (SHUDPaintCtx &Ctx, CShip *pShip, CSpaceObj
 	//	Paint some stats
 
 	CVector vDist = pTarget->GetPos() - pShip->GetPos();
-	int iDist = (int)((vDist.Length() / LIGHT_SECOND) + 0.5);
+	int iDist = mathRound(vDist.Length() / LIGHT_SECOND);
 	RangeFont.DrawText(m_Buffer,
 			xText + RANGE_OFFSET_X,
 			yText,

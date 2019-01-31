@@ -206,8 +206,8 @@ void CStarburstEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewport
 			for (i = 0; i < 3; i++)
 				{
 				CVector vTail = PolarToVector(Ctx.iRotation + mathRandom(-10, 10) + 360, 2 * m_SpikeLength.GetMaxValue());
-				int xStart = x - (int)(vTail.GetX() + 0.5);
-				int yStart = y + (int)(vTail.GetY() + 0.5);
+				int xStart = x - mathRound(vTail.GetX());
+				int yStart = y + mathRound(vTail.GetY());
 
 				DrawLightning(Dest,
 						xStart,

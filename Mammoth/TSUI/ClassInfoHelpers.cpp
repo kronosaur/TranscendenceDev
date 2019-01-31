@@ -233,10 +233,10 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 	CString sSpeedNumber;
 	if (rMaxSpeed < LIGHT_SECOND)
-		sSpeedNumber = strPatternSubst(CONSTLIT(".%02dc"), (int)((100.0 * rMaxSpeed / LIGHT_SECOND) + 0.5));
+		sSpeedNumber = strPatternSubst(CONSTLIT(".%02dc"), mathRound(100.0 * rMaxSpeed / LIGHT_SECOND));
 	else
 		{
-		int iTotal = (int)((100.0 * rMaxSpeed / LIGHT_SECOND) + 0.5);
+		int iTotal = mathRound(100.0 * rMaxSpeed / LIGHT_SECOND);
 		int iFTL = iTotal / 100;
 		int iFrac = iTotal % 100;
 		sSpeedNumber = strPatternSubst(CONSTLIT("%d.%02dc"), iFTL, iFrac);
@@ -247,7 +247,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 	//	Add thrust/mass ratio
 
 	Metric rMass = pClass->CalcMass(Devices);
-	int iRatio = (int)((200.0 * (rMass > 0.0 ? iThrust / rMass : 0.0)) + 0.5);
+	int iRatio = mathRound(200.0 * (rMass > 0.0 ? iThrust / rMass : 0.0));
 
 	CString sThrustNumber = strPatternSubst(CONSTLIT("%d.%d"), iRatio / 100, ((iRatio % 100) + 5) / 10);
 
@@ -255,7 +255,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
     const CIntegralRotationDesc &RotationDesc = pClass->GetIntegralRotationDesc();
 	Metric rManeuver = g_SecondsPerUpdate * RotationDesc.GetMaxRotationSpeedDegrees();
-	int iManeuver = (int)((rManeuver * 100) + 0.5);
+	int iManeuver = mathRound(rManeuver * 100);
 	CString sManeuverNumber = strPatternSubst(CONSTLIT("%d.%d"), iManeuver / 100, ((iManeuver % 100) + 5) / 10);
 
 	//	Compose the text

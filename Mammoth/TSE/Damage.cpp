@@ -548,7 +548,7 @@ CString DamageDesc::GetDesc (DWORD dwFlags)
 
 		//	Compute result
 
-		int iDamage10 = (int)((rDamage * 10.0) + 0.5);
+		int iDamage10 = mathRound(rDamage * 10.0);
 		int iDamage = iDamage10 / 10;
 		int iDamageTenth = iDamage10 % 10;
 

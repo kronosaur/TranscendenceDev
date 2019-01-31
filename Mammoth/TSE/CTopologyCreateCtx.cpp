@@ -31,8 +31,8 @@ void STopologyCreateCtx::GetAbsoluteDisplayPos (int x, int y, int *retx, int *re
 		if (*retiRotation != 0)
 			{
 			CVector vPos = CVector(x, y).Rotate(*retiRotation);
-			x = (int)(vPos.GetX() + 0.5);
-			y = (int)(vPos.GetY() + 0.5);
+			x = mathRound(vPos.GetX());
+			y = mathRound(vPos.GetY());
 			}
 
 		*retx = x + xOffset;
@@ -66,8 +66,8 @@ void STopologyCreateCtx::GetFragmentDisplayPos (CTopologyNode *pNode, int *retx,
 		if (iRotation != 0)
 			{
 			CVector vPos = CVector(x, y).Rotate(360 - iRotation);
-			x = (int)(vPos.GetX() + 0.5);
-			y = (int)(vPos.GetY() + 0.5);
+			x = mathRound(vPos.GetX());
+			y = mathRound(vPos.GetY());
 			}
 		}
 

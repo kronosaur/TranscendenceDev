@@ -330,7 +330,7 @@ void CAreaDamage::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Vi
 		{
 		int i;
 		Metric rRadius = m_pPainter->GetRadius(m_iTick);
-		int iRadius = (int)((rRadius / g_KlicksPerPixel) + 0.5);
+		int iRadius = mathRound(rRadius / g_KlicksPerPixel);
 		int iCount = Min(64, 3 * iRadius);
 
 		for (i = 0; i < iCount; i++)

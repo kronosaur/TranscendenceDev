@@ -4349,7 +4349,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 					&& (pEnemy->IsEnemy(pStation) || pStation->IsEnemy(pEnemy)))
 				{
 				Metric rDist = pStation->GetDistance(pEnemy);
-				int iLSDist = (int)((rDist / LIGHT_SECOND) + 0.5);
+				int iLSDist = mathRound(rDist / LIGHT_SECOND);
 				if (iLSDist < 30)
 					{
 					::kernelDebugLogPattern("%s: %s (%x) and %s (%x) within %d ls.",

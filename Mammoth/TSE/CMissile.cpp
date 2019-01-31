@@ -1465,8 +1465,8 @@ bool CMissile::PointInObject (const CVector &vObjPos, const CVector &vPointPos) 
 	//	object, in pixels.
 
 	CVector vOffset = vPointPos - vObjPos;
-	int x = (int)((vOffset.GetX() / g_KlicksPerPixel) + 0.5);
-	int y = -(int)((vOffset.GetY() / g_KlicksPerPixel) + 0.5);
+	int x = mathRound(vOffset.GetX() / g_KlicksPerPixel);
+	int y = -mathRound(vOffset.GetY() / g_KlicksPerPixel);
 
 	if (m_pPainter)
 		return m_pPainter->PointInImage(x, y, m_iTick, 0, m_iRotation);

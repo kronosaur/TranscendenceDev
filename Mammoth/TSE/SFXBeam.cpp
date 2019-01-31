@@ -624,8 +624,8 @@ void CBeamEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPaint
 	Metric rLength = 1.0 + (LIGHT_SPEED * g_SecondsPerUpdate / g_KlicksPerPixel);
 	CVector vFrom = PolarToVector(Ctx.iRotation, -rLength);
 
-	Line.xFrom = x + (int)(vFrom.GetX() + 0.5);
-	Line.yFrom = y - (int)(vFrom.GetY() + 0.5);
+	Line.xFrom = x + mathRound(vFrom.GetX());
+	Line.yFrom = y - mathRound(vFrom.GetY());
 	Line.xTo = x;
 	Line.yTo = y;
 
@@ -643,8 +643,8 @@ void CBeamEffectCreator::PaintHit (CG32bitImage &Dest, int x, int y, const CVect
 	Metric rLength = LIGHT_SPEED * g_SecondsPerUpdate / g_KlicksPerPixel;
 	CVector vFrom = PolarToVector(Ctx.iRotation, -rLength);
 
-	Line.xFrom = x + (int)(vFrom.GetX() + 0.5);
-	Line.yFrom = y - (int)(vFrom.GetY() + 0.5);
+	Line.xFrom = x + mathRound(vFrom.GetX());
+	Line.yFrom = y - mathRound(vFrom.GetY());
 	Ctx.XFormRel.Transform(vHitPos, &Line.xTo, &Line.yTo);
 
 	DrawBeam(Dest, Line, Ctx);

@@ -190,7 +190,7 @@ ALERROR CScreenMgr3D::Init (SScreenMgrOptions &Options, CString *retsError)
 			{
 			m_rScale = (Metric)Options.m_cyMaxScreen / m_cyScreen;
 
-			m_cxScreen = (int)((m_rScale * m_cxScreen) + 0.5);
+			m_cxScreen = mathRound(m_rScale * m_cxScreen);
 			m_cyScreen = Options.m_cyMaxScreen;
 			}
 		else

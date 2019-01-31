@@ -124,8 +124,8 @@ EDamageResults CShipInterior::Damage (CShip *pShip, const CShipInteriorDesc &Des
 
 	SHitTestCtx HitCtx(pShip, Desc);
 	CVector vPos = (Ctx.vHitPos - pShip->GetPos()).Rotate(-pShip->GetRotation() + 360);
-	int xHitPos = (int)((vPos.GetX() / g_KlicksPerPixel) + 0.5);
-	int yHitPos = -(int)((vPos.GetY() / g_KlicksPerPixel) + 0.5);
+	int xHitPos = mathRound(vPos.GetX() / g_KlicksPerPixel);
+	int yHitPos = -mathRound(vPos.GetY() / g_KlicksPerPixel);
 
 	//	See if we hit a device on the ship
 

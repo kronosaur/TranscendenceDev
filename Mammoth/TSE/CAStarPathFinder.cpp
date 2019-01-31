@@ -6,7 +6,7 @@
 
 const int ADJACENT_NODE_AXIS_COST =						8;
 
-const int ADJACENT_NODE_DIAG_COST =						(int)((1.4142 * ADJACENT_NODE_AXIS_COST) + 0.5);
+const int ADJACENT_NODE_DIAG_COST =						mathRound(1.4142 * ADJACENT_NODE_AXIS_COST);
 const Metric ADJACENT_NODE_DIST =						(ADJACENT_NODE_AXIS_COST * LIGHT_SECOND);
 
 const int MAP_SIZE =									30;

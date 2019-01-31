@@ -822,7 +822,7 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 
 	//	Return average
 
-	return (iCount > 0 ? (int)((rTotalAdj / iCount) + 0.5) : 100);
+	return (iCount > 0 ? mathRound(rTotalAdj / iCount) : 100);
 	}
 
 int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const

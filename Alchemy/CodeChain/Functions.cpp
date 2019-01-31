@@ -3340,14 +3340,14 @@ ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			double rResult = pow(rX, rY);
 
 			if (rResultDenom == 1.0)
-				return pCC->CreateInteger((int)(rResult + 0.5));
+				return pCC->CreateInteger(mathRound(rResult));
 			else
 				{
 				ICCItem *pResult = pCC->CreateLinkedList();
 				CCLinkedList *pList = (CCLinkedList *)pResult;
 
-				pList->AppendInteger(*pCC, (int)((rResult * rResultDenom) + 0.5));
-				pList->AppendInteger(*pCC, (int)(rResultDenom + 0.5));
+				pList->AppendInteger(*pCC, mathRound(rResult * rResultDenom));
+				pList->AppendInteger(*pCC, mathRound(rResultDenom));
 
 				return pResult;
 				}
@@ -3555,9 +3555,9 @@ ICCItem *fnRandom (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	Scale to proper value
 
 			if (rValue >= 0.0)
-				return pCC->CreateInteger((int)floor(rMid + rValue * rHighRange + 0.5));
+				return pCC->CreateInteger(mathRound(rMid + rValue * rHighRange));
 			else
-				return pCC->CreateInteger((int)floor(rMid + rValue * rLowRange + 0.5));
+				return pCC->CreateInteger(mathRound(rMid + rValue * rLowRange));
 			}
 
 		default:

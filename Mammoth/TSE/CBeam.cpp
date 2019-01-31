@@ -43,8 +43,8 @@ void CBeam::ComputeOffsets (void)
 	Metric rLength = LIGHT_SPEED * g_SecondsPerUpdate / g_KlicksPerPixel;
 	CVector vFrom = PolarToVector(m_iRotation, -rLength);
 
-	m_xFromOffset = (int)(vFrom.GetX() + 0.5);
-	m_yFromOffset = -(int)(vFrom.GetY() + 0.5);
+	m_xFromOffset = mathRound(vFrom.GetX());
+	m_yFromOffset = -mathRound(vFrom.GetY());
 	m_xToOffset = 0;
 	m_yToOffset = 0;
 	}

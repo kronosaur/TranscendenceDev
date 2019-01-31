@@ -141,7 +141,7 @@ int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault)
 	if (iDamageAdj == 0)
 		return -100;
 
-	int iBonus = (int)((100.0 * (iDefault - iDamageAdj) / iDamageAdj) + 0.5);
+	int iBonus = mathRound(100.0 * (iDefault - iDamageAdj) / iDamageAdj);
 
 	//	Prettify. Because of rounding-error, sometimes a bonus of +25 or -25 comes out as
 	//	+24 or -24. This is because we store a damage adjustment not the bonus.

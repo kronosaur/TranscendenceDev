@@ -857,7 +857,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 					{
 					//	Compute the distance in light-seconds
 
-					int iDist = (int)((vDist.Length() / LIGHT_SECOND) + 0.5);
+					int iDist = mathRound(vDist.Length() / LIGHT_SECOND);
 
 					//	Compute the sort order based on the main key and the distance
 
