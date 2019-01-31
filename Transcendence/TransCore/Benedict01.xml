@@ -1103,8 +1103,10 @@
 			</Text>
 			<Text id="SuccessDebrief">
 			</Text>
+
 			<Text id="SuccessMsg">
-				"Mission complete!"
+				<!-- No need for a success message because we go right into the
+					Fiona freighter mission. -->
 			</Text>
 		</Language>
 	</MissionType>

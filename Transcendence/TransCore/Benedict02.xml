@@ -161,6 +161,14 @@
 
 							(if (@ enemyDesc 'treasure)
 								(block ()
+									;	Remove existing fuel (because we don't want too much treasure)
+
+									(enum (objGetItems enemyObj "f") theFuel
+										(objRemoveItem enemyObj theFuel)
+										)
+
+									;	Add treasure
+
 									(objAddItem enemyObj (itmCreate (@ enemyDesc 'treasure) 1))
 									(objSetProperty enemyObj 'alwaysLeaveWreck True)
 									)
