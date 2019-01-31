@@ -51,6 +51,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 			Cols.Insert(CONSTLIT("combatStrength"));
 			Cols.Insert(CONSTLIT("damage"));
 			Cols.Insert(CONSTLIT("defenseStrength"));
+			Cols.Insert(CONSTLIT("combatStd"));
 			}
 		else if (!IsMainCommandParam(sAttrib)
 				&& !strEquals(sAttrib, CONSTLIT("shiptable")))
