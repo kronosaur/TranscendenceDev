@@ -141,13 +141,19 @@
 
 			<Text id="descWelcome">You are in the docking bay of the %objName%.</Text>
 			<Text id="descAccessDenied">
-				Two armed guards block your path, "I'm sorry, %sir%, only Fleet
-				the admiral does not like to be disturbed by junior officers."
+
+				Two armed guards block your path:
+				
+				"I'm sorry, %sir%, the admiral does not like to be disturbed by 
+				junior officers."
+
 			</Text>
 			<Text id="descShipMoving">
+
 				The bridge of the CSC Terra is busy with activity. Admiral Decker
 				is leaning over a holochart as the massive ship maneuvers through
 				the system.
+
 			</Text>
 			<String id="descNoMissions">
 
