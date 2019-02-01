@@ -985,21 +985,22 @@ class CExtensionCollection
 												//		(due to missing dependencies, etc.)
             FLAG_NO_COLLECTION =		0x00000010, //  Do not load collection
 			FLAG_NO_COLLECTION_CHECK =	0x00000020,	//	Do not check signatures on collection
+			FLAG_DIAGNOSTICS =			0x00000040,	//	Allow diagnostics extension to be loaded
 
 			//	FindExtension
 
-			FLAG_ADVENTURE_ONLY =		0x00000040,	//	Must be an adventure (not found otherwise)
+			FLAG_ADVENTURE_ONLY =		0x00000080,	//	Must be an adventure (not found otherwise)
 
 			//	ComputeAvailableExtension
 
-			FLAG_INCLUDE_AUTO =			0x00000080,	//	Include extensions that are automatic
-			FLAG_AUTO_ONLY =			0x00000100,	//	Only include extensions that are automatic
-			FLAG_ACCUMULATE =			0x00000200,	//	Add to result list
-			FLAG_REGISTERED_ONLY =		0x00000400,	//	Only registered extensions
+			FLAG_INCLUDE_AUTO =			0x00000100,	//	Include extensions that are automatic
+			FLAG_AUTO_ONLY =			0x00000200,	//	Only include extensions that are automatic
+			FLAG_ACCUMULATE =			0x00000400,	//	Add to result list
+			FLAG_REGISTERED_ONLY =		0x00000800,	//	Only registered extensions
 
 			//	ComputeBindOrder
 
-			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00000800,
+			FLAG_FORCE_COMPATIBILITY_LIBRARY = 0x00001000,
 			};
 
 		struct SCollectionStatusOptions

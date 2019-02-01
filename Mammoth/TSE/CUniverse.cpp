@@ -1187,6 +1187,11 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (m_bDebugMode)
 			dwFlags |= CExtensionCollection::FLAG_DEBUG_MODE;
 
+		//	Only include diagnostics if we explicitly asked for them.
+
+		if (Ctx.bDiagnostics)
+			dwFlags |= CExtensionCollection::FLAG_DIAGNOSTICS;
+
 		//	If requested we don't load resources
 
 		if (Ctx.bNoResources)

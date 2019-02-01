@@ -531,6 +531,7 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 	bool bAutoOnly = ((dwFlags & FLAG_AUTO_ONLY) == FLAG_AUTO_ONLY);
 	bool bIncludeAuto = bAutoOnly || ((dwFlags & FLAG_INCLUDE_AUTO) == FLAG_INCLUDE_AUTO);
 	bool bRegisteredOnly = ((dwFlags & FLAG_REGISTERED_ONLY) == FLAG_REGISTERED_ONLY);
+	bool bNoDiagnostics = !((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 	if (!(dwFlags & FLAG_ACCUMULATE))
 		retList->DeleteAll();
@@ -543,22 +544,34 @@ ALERROR CExtensionCollection::ComputeAvailableExtensions (CExtension *pAdventure
 		if (ExtensionList.GetCount() == 0)
 			continue;
 
+		//	We can do a lot of matching on just the first extension in the list
+		//	because some things should not change across releases.
+
+		CExtension *pExtension = ExtensionList[0];
+
 		//	We only consider extensions (this property does not change across
 		//	releases, so we only need to check once).
 
-		if (ExtensionList[0]->GetType() != extExtension)
+		if (pExtension->GetType() != extExtension)
 			continue;
 
 		//	If this extension is disabled, then exclude it.
 
-		if (m_DisabledExtensions.Find(ExtensionList[0]->GetUNID()))
+		if (m_DisabledExtensions.Find(pExtension->GetUNID()))
 			continue;
 
 		//	If this extension is not on our list, then skip it
 
 		if (!bAllExtensions 
-				&& !Extensions.Find(ExtensionList[0]->GetUNID())
-				&& (!bIncludeAuto || !ExtensionList[0]->IsAutoInclude()))
+				&& !Extensions.Find(pExtension->GetUNID())
+				&& (!bIncludeAuto || !pExtension->IsAutoInclude()))
+			continue;
+
+		//	If this is the diagnostics extension and we don't want diagnostics,
+		//	then skip it.
+
+		if (bNoDiagnostics
+				&& pExtension->GetUNID() == UNID_DIAGNOSTICS_EXTENSION)
 			continue;
 
 		//	Out of all the releases, select the latest version.

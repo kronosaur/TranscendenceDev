@@ -516,6 +516,12 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 	else
 		Ctx.bNoResources = true;
 
+	//	If we're not in diagnostics mode, take out the diagnostics extension.
+	//	[Otherwise we get some extraneous items in our item lists.]
+
+	Ctx.bDiagnostics = pCmdLine->GetAttributeBool(DIAGNOSTICS_SWITCH)
+			|| pCmdLine->GetAttributeBool(SMOKE_TEST_SWITCH);
+
 	//	API version
 
 	Ctx.dwMinAPIVersion = pCmdLine->GetAttributeIntegerBounded(API_VERSION_SWITCH, 0, API_VERSION, API_VERSION);

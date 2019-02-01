@@ -209,6 +209,7 @@ class CUniverse
 			bool bNoResources = false;					//	If TRUE, do not bother loaded images
 			bool bNoReload = false;						//	If TRUE, do not reload extensions
 			bool bDebugMode = false;					//	Initialize in debug mode
+			bool bDiagnostics = false;					//	If TRUE, we allow the diagnostics extension
 			bool bDefaultExtensions = false;			//	If TRUE, we include all appropriate extensions
 			bool bForceTDB = false;						//	If TRUE, use Transcendence.tdb even if XMLs exist
 			bool bNoCollectionLoad = false;				//  If TRUE, don't load collection (only in debug mode)
