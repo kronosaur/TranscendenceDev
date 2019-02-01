@@ -496,6 +496,7 @@ class CShieldClass : public CDeviceClass
 		int GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const;
 		int GetHPLeft (CItemCtx &Ctx) const;
 		int GetMaxHP (CItemCtx &Ctx) const;
+		int GetReferenceDepletionDelay (void) const;
 		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);

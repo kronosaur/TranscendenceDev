@@ -1568,6 +1568,29 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 		}
 	}
 
+int CShieldClass::GetReferenceDepletionDelay (void) const
+
+//	GetReferenceDepletionDelay
+//
+//	If the shield's depletion delay is longer than standard, we return the 
+//	percent increase. For example, if the depletion delay is twice as long, we
+//	return 100 (100% longer).
+//
+//	If the depletion delay is shorter, we return the percent decrease as a 
+//	negative number. For example, if we decrease from 360 to 270 then we are
+//	25% shorter and return -25.
+//
+//	If we have no depletion delay, we return 0.
+
+	{
+	if (m_iDepletionTicks > STD_DEPLETION_DELAY)
+		return mathRound(100.0 * (m_iDepletionTicks - STD_DEPLETION_DELAY) / STD_DEPLETION_DELAY);
+	else if (m_iDepletionTicks > 0)
+		return -mathRound(100.0 * (STD_DEPLETION_DELAY - m_iDepletionTicks) / STD_DEPLETION_DELAY);
+	else
+		return 0;
+	}
+
 CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags)
 
 //	GetReference
@@ -1586,6 +1609,27 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 
 	sReference = strPatternSubst("regen @ %s", 
 			CLanguage::ComposeNumber(CLanguage::numberRegenRate, CalcRegen180(Ctx, FLAG_IGNORE_DISABLED)));
+
+	//	If we have a non-standard depletion delay, show that.
+
+	if (m_iDepletionTicks != STD_DEPLETION_DELAY)
+		{
+		int iPercent = GetReferenceDepletionDelay();
+		if (iPercent == 0)
+			AppendReferenceString(&sReference, CONSTLIT("instant recovery time"));
+		else if (iPercent >= 100)
+			{
+			int iMultiple10 = mathRound(10.0 * (iPercent + 100.0) / 100.0);
+			if ((iMultiple10 % 10) == 0)
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d× longer recovery"), iMultiple10 / 10));
+			else
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d× longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
+			}
+		else if (iPercent > 0)
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% longer recovery"), iPercent));
+		else
+			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% shorter recovery"), -iPercent));
+		}
 
 	return sReference;
 	}
