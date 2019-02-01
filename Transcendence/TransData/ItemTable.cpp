@@ -750,7 +750,7 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 				    printf("%.2f", rCount);
 				    }
 			    else
-				    printf(sValue.GetASCIIZPointer());
+				    printf("%s", sValue.GetASCIIZPointer());
                 }
 			}
 
