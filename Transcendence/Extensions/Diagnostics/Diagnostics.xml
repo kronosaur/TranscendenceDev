@@ -58,6 +58,8 @@
 			<OnGlobalSystemDiagnostics>
 				(block ()
 					(diagTestStationItemInstall)
+
+					; (diagDebugOreTable)
 					)
 			</OnGlobalSystemDiagnostics>
 
@@ -251,6 +253,37 @@
 
 				(objDestroy gPlayerShip)
 				(setq gPlayerShip Nil)
+				)
+			))
+
+		;	DEBUGGING ----------------------------------------------------------
+
+		(setq diagDebugOreTable (lambda ()
+			(block (oreTable totalOrePrice oreCount)
+
+				(sysGetRandomOreType)
+				(setq oreTable (sysGetData "08040003_oreTable"))
+
+				(setq oreCount (- (count oreTable) 1))
+				(setq aveOrePrice
+					(map oreTable '(excludeNil reduceAverage) theEntry
+						(if (@ theEntry 1)
+							(itmGetPrice (itmCreate (@ theEntry 1) 1))
+							)
+						)
+					)
+
+				(print "System " (sysGetNode) " Level " (sysGetLevel) " Count " oreCount " Average Price " aveOrePrice)
+				(print "-----------------------------------------------------------")
+				(print (join
+					(map oreTable 'excludeNil theEntry
+						(if (@ theEntry 1)
+							(itmGetName (itmCreate (@ theEntry 1) (@ theEntry 0)) '(short count))
+							)
+						)
+					'oxfordComma
+					))
+				(print " ")
 				)
 			))
 
