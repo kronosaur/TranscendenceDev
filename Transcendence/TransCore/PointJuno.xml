@@ -291,7 +291,7 @@
 		<Events>
 			<OnCreate>
 				(block (codes)
-					(setq codes '(anvil boson cloud dour enigma fallen gollem heavy ice joust kilo labor metal neverland outpost proxy quasar rom sensor toxic ultra vial wren xavier yoke zone))
+					(setq codes '(anvil boson cloud dour enigma fallen golem heavy ice joust kilo labor metal neverland outpost proxy quasar rom sensor toxic ultra vial wren xavier yoke zone))
 					(typSetGlobalData &stCSCEuropaWreck; "VaultCode" (cat (random codes) " " (random codes) " " (random 1 999)))
 					)
 			</OnCreate>
