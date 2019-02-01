@@ -126,7 +126,6 @@
 				hitPoints=		"130"
 				hpBonus=		"  +0,  +0,  +0,  +0,+100,  +0"
 				regen=			"40"
-				depletionDelay=	"360"
 				powerUse=		"300"
 				/>
 

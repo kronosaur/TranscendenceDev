@@ -24,7 +24,7 @@
 		<Shields
 				hitPoints=		"25"
 				regen=			"6"
-				depletionDelay=	"300"
+				depletionDelay=	"288"
 				powerUse=		"5"
 				/>
 	</ItemType>
@@ -50,7 +50,7 @@
 		<Shields
 				hitPoints=		"35"
 				regen=			"12"
-				depletionDelay=	"300"
+				depletionDelay=	"288"
 				powerUse=		"10"
 				/>
 	</ItemType>
@@ -74,7 +74,6 @@
 		<Shields
 				hitPoints=		"60"
 				regen=			"6"
-				depletionDelay=	"360"
 				powerUse=		"10"
 				/>
 	</ItemType>
@@ -99,7 +98,6 @@
 				hitPoints=		"30"
 				hpBonus=		"+200,  +0,  +0,  +0"
 				regen=			"6"
-				depletionDelay=	"360"
 				powerUse=		"10"
 				/>
 	</ItemType>
@@ -125,7 +123,7 @@
 		<Shields
 				hitPoints=		"45"
 				regen=			"16"
-				depletionDelay=	"300"
+				depletionDelay=	"288"
 				powerUse=		"20"
 				/>
 	</ItemType>
@@ -151,7 +149,6 @@
 				armorShield=	"15"
 				hpBonus=		"  -5,+200, -25, +25"
 				regen=			"16"
-				depletionDelay=	"360"
 				powerUse=		"40"
 				/>
 	</ItemType>
@@ -176,7 +173,6 @@
 		<Shields
 				hitPoints=		"120"
 				regen=			"8"
-				depletionDelay=	"360"
 				powerUse=		"40"
 				/>
 	</ItemType>
@@ -200,7 +196,6 @@
 				hitPoints=		"60"
 				hpBonus=		" -10,+125, -25, +25"
 				regen=			"20"
-				depletionDelay=	"360"
 				powerUse=		"50"
 				/>
 	</ItemType>
@@ -224,7 +219,6 @@
 				hitPoints=		"60"
 				hpBonus=		"+650, +25, -25, -25"
 				regen=			"20"
-				depletionDelay=	"360"
 				powerUse=		"50"
 				weaponSuppress=	"laser"
 				/>
@@ -251,7 +245,6 @@
 				hitPoints=		"65"
 				hpBonus=		"   +0, +50,  +0,+200,  +0, +25"
 				regen=			"20"
-				depletionDelay=	"360"
 				powerUse=		"100"
 				/>
 
@@ -275,7 +268,7 @@
 		<Shields
 				hitPoints=		"80"
 				regen=			"28"
-				depletionDelay=	"300"
+				depletionDelay=	"288"
 				powerUse=		"100"
 				/>
 
@@ -299,7 +292,6 @@
 		<Shields
 				hitPoints=		"160"
 				regen=			"12"
-				depletionDelay=	"360"
 				powerUse=		"80"
 				/>
 
@@ -324,7 +316,6 @@
 				hitPoints=		"90"
 				hpBonus=		" -25, -25,  +0,  +0, +75, +25"
 				regen=			"32"
-				depletionDelay=	"360"
 				powerUse=		"100"
 				/>
 
@@ -351,7 +342,6 @@
 				hitPoints=		"100"
 				hpBonus=		"  +0,  +0,+100,  +0, +75,  +0"
 				regen=			"25"
-				depletionDelay=	"360"
 				powerUse=		"200"
 				/>
 
@@ -455,7 +445,6 @@
 		<Shields
 				hitPoints=		"120"
 				regen=			"36"
-				depletionDelay=	"360"
 				powerUse=		"200"
 				/>
 
@@ -482,7 +471,6 @@
 				hitPoints=		"135"
 				hpBonus=		"  +0,  +0,  +0,+100,  +0,+200,  +0, +50"
 				regen=			"24"
-				depletionDelay=	"360"
 				powerUse=		"300"
 				/>
 
@@ -568,7 +556,6 @@
 		<Shields
 				hitPoints=		"80"
 				regen=			"45"
-				depletionDelay=	"360"
 				powerUse=		"300"
 				/>
 
@@ -609,7 +596,6 @@
 				hitPoints=		"135"
 				hpBonus=		"  +0,  +0,  +0,  +0, +75, +25"
 				regen=			"46"
-				depletionDelay=	"360"
 				powerUse=		"320"
 				/>
 
@@ -635,7 +621,6 @@
 		<Shields
 				hitPoints=		"160"
 				regen=			"46"
-				depletionDelay=	"360"
 				powerUse=		"300"
 				/>
 
@@ -688,7 +673,6 @@
 				hitPoints=		"200"
 				hpBonus=		"  +0,  +0, -25,+100, -25, +50"
 				regen=			"60"
-				depletionDelay=	"360"
 				powerUse=		"500"
 				/>
 
@@ -739,7 +723,6 @@
 		<Shields
 				hitPoints=		"220"
 				regen=			"60"
-				depletionDelay=	"360"
 				powerUse=		"500"
 				/>
 	</ItemType>
@@ -765,7 +748,6 @@
 				hitPoints=		"160"
 				reflect=		"ion"
 				regen=			"60"
-				depletionDelay=	"360"
 				powerUse=		"1300"
 				/>
 	</ItemType>
@@ -816,7 +798,6 @@
 		<Shields
 				hitPoints=		"140"
 				regen=			"80"
-				depletionDelay=	"360"
 				powerUse=		"1000"
 				/>
 
@@ -856,7 +837,6 @@
 		<Shields
 				hitPoints=		"260"
 				regen=			"80"
-				depletionDelay=	"360"
 				powerUse=		"1000"
 				/>
 
@@ -881,7 +861,6 @@
 				hitPoints=		"400"
 				hpBonus=		"  +0,  +0,  +0,  +0, +25, +25"
 				regen=			"70"
-				depletionDelay=	"360"
 				powerUse=		"1500"
 				/>
 
@@ -906,7 +885,6 @@
 				hitPoints=		"250"
 				hpBonus=		"  +0,  +0,  +0,  +0, -25,+100, -25, +25"
 				regen=			"70"
-				depletionDelay=	"360"
 				powerUse=		"1000"
 				/>
 
@@ -933,7 +911,6 @@
 		<Shields
 				hitPoints=		"100"
 				regen=			"100"
-				depletionDelay=	"360"
 				powerUse=		"1200"
 
 				HPBonusPerCharge=	"100"
@@ -976,7 +953,6 @@
 				hitPoints=		"220"
 				hpBonus=		"  +0,  +0,  +0,  +0, +75, -25,+100, -25"
 				regen=			"100"
-				depletionDelay=	"360"
 				powerUse=		"1500"
 				/>
 
@@ -1001,9 +977,8 @@
 
 		<Shields
 				hitPoints=		"60"
-				regenTime=		"10"
-				regenHP=		"12"
-				depletionDelay=	"5"
+				regen=			"432"
+				depletionDelay=	"72"
 				powerUse=		"9000"
 				/>
 
@@ -1028,7 +1003,6 @@
 				hitPoints=		"420"
 				hpBonus=		"  +0,  +0,  +0,  +0, -25,+100, -25, +25"
 				regen=			"120"
-				depletionDelay=	"360"
 				powerUse=		"1900"
 				/>
 

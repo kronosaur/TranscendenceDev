@@ -32,7 +32,7 @@
 		<Shields
 				hitPoints=		"520"
 				regen=			"290"
-				depletionDelay=	"1500"
+				depletionDelay=	"1440"
 				powerUse=		"10000"
 				/>
 	</ItemType>
@@ -348,7 +348,6 @@
 				hitPoints=		"250"
 				hpBonus=		"  +0,  +0, +50, +50, +75, +75,  +0,  +0"
 				regen=			"80"
-				depletionDelay=	"360"
 				powerUse=		"2200"
 				/>
 
