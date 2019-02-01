@@ -1585,7 +1585,7 @@ int CShieldClass::GetReferenceDepletionDelay (void) const
 	{
 	if (m_iDepletionTicks > STD_DEPLETION_DELAY)
 		return mathRound(100.0 * (m_iDepletionTicks - STD_DEPLETION_DELAY) / STD_DEPLETION_DELAY);
-	else if (m_iDepletionTicks > 0)
+	else if (m_iDepletionTicks > 1)
 		return -mathRound(100.0 * (STD_DEPLETION_DELAY - m_iDepletionTicks) / STD_DEPLETION_DELAY);
 	else
 		return 0;
@@ -1607,12 +1607,15 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 
 	//	Compute the regeneration
 
-	sReference = strPatternSubst("regen @ %s", 
-			CLanguage::ComposeNumber(CLanguage::numberRegenRate, CalcRegen180(Ctx, FLAG_IGNORE_DISABLED)));
+	Metric rRegen = CalcRegen180(Ctx, FLAG_IGNORE_DISABLED);
+	if (rRegen <= 0.0)
+		sReference = CONSTLIT("manual regen");
+	else
+		sReference = strPatternSubst("regen @ %s", CLanguage::ComposeNumber(CLanguage::numberRegenRate, rRegen));
 
 	//	If we have a non-standard depletion delay, show that.
 
-	if (m_iDepletionTicks != STD_DEPLETION_DELAY)
+	if (m_iDepletionTicks != STD_DEPLETION_DELAY && rRegen > 0.0)
 		{
 		int iPercent = GetReferenceDepletionDelay();
 		if (iPercent == 0)
