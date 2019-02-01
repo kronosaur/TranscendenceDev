@@ -93,7 +93,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Nuclear; Ore; Res; rockyComp"
+			attributes=			"Consumable; Nuclear; Ore; Res; waterComp"
 
 			description=		"This exotic fissionable material is used as a catalyst in high-energy fusion reactors."
 
@@ -112,7 +112,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; Res; waterComp"
+			attributes=			"Consumable; Ore; Res; rockyComp"
 
 			description=		"Palladium is a critical element as a catalyst in various industrial processes."
 
@@ -192,7 +192,7 @@
 			mass=				"1000"
 			frequency=			"uncommon"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; metallicComp, Ore; Res; Armor;"
+			attributes=			"Consumable; organicComp, Ore; Res; Armor;"
 
 			description=		"Duranium ore is a mixture of titanium, hexanium, and other exotic metals. Duranium is the primary component of Duralloy steel."
 
@@ -230,7 +230,7 @@
 			mass=				"1000"
 			frequency=			"rare"
 			numberAppearing=	"1d8"
-			attributes=			"AntiMatter; Consumable; Ore; Res; rockyComp"
+			attributes=			"AntiMatter; Consumable; Ore; Res; waterComp"
 
 			description=		"Pteracnium is one of the only transuranic elements that is stable under normal conditions. When bombarded with high-energy particles, pteracnium releases a cascade of anti-protons that can sustain a starship engine."
 
@@ -332,7 +332,7 @@
 			mass=				"1000"
 			frequency=			"common"
 			numberAppearing=	"1d8"
-			attributes=			"Consumable; Ore; Res, rockyComp"
+			attributes=			"Consumable; Ore; Res, organicComp"
 
 			description=		"Tetramite is a rare mineral used by Ringers and Teratons for many of their advanced industries."
 
