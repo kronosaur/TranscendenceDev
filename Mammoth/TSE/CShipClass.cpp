@@ -3374,7 +3374,12 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 			pCurrency = g_pUniverse->GetDefaultCurrency();
 
 		if (pCurrency)
-			m_Hull.SetValue(pCurrency->ExchangeFrom(g_pUniverse->GetDefaultCurrency(), CalcHullValue(GetStandard())));
+			{
+			//	CalcHullValue always returns value in credits (which is not 
+			//	always the default currency).
+
+			m_Hull.SetValue(pCurrency->ExchangeFrom(NULL, CalcHullValue(GetStandard())));
+			}
 		}
 
 	//	In debug mode, warn if we're installing armor that is beyond the current
