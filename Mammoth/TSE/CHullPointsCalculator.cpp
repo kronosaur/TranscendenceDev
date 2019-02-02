@@ -179,7 +179,7 @@ CurrencyValue CHullPointsCalculator::GetValueInCredits (void) const
 	{
 	//	Scale points
 
-	Metric rScaledPoints = pow(GetTotalPoints() + POINT_BIAS, POINT_EXP);
+	Metric rScaledPoints = Max(0.0, pow(GetTotalPoints() + POINT_BIAS, POINT_EXP));
 
 	//	Compute price
 
