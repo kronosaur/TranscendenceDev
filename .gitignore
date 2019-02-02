@@ -19,6 +19,7 @@ Transcendence/Game/[Tt]emp[0-9].txt
 Transcendence/Game/*.dll
 Transcendence/Game/*.exe
 Transcendence/Game/*.exe.manifest
+Transcendence/Game/*.lnk
 Transcendence/Game/*.tdb
 
 # Don't include Hexarc keys
