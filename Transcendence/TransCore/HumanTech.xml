@@ -5,6 +5,25 @@
 	<ShipClass unid="&baHumanTechShip;"
 			virtual="true">
 
+		<!-- Ship Standard
+
+			This element defines standard constants for calculating various 
+			ship defaults, such as hull price. For example, we define the 
+			standard power consumed by a drive as 2 MW. Ship that consume more
+			than that cost less.
+
+			Vault of the Galaxy has completely different defaults, to reflect
+			a different scale.
+
+		-->
+
+		<ShipStandard
+			drivePowerUse=		"20"
+			pricePerHullPoint=	"110"
+			/>
+
+		<!-- Player Settings -->
+
 		<PlayerSettings>
 
 			<ArmorDisplay 
@@ -34,6 +53,8 @@
 				<FuelLevelText x="62" y="51" width="154" height="9"/>
 			</ReactorDisplay>
 		</PlayerSettings>
+
+		<!-- Events and Behavior -->
 
 		<Events>
 			<CanUpgradeTo>

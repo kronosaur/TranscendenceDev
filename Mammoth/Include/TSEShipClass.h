@@ -12,6 +12,47 @@
 
 class CShipClass;
 
+//	Standard Metrics
+
+class CShipStandard : public TRefCounted<CShipStandard>
+	{
+	public:
+		enum EFields
+			{
+			//	These values should never be saved. It is OK to re-order and
+			//	re-number them.
+
+			fieldDrivePowerUse =		0,	//	Std drive power use (in 1/10th MWs)
+			fieldPricePerHullPoint =	1,	//	Price per hull point (in credits)
+
+			fieldCount =				2,
+			};
+
+		class TInitDefaults { };
+
+		CShipStandard (void) { }
+		CShipStandard (const TInitDefaults &Src);
+
+		inline Metric GetValue (EFields iField) const { return m_rValue[iField]; }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement &Desc);
+
+		static const CShipStandard &GetDefaults (void) { return m_Default; }
+
+	private:
+		struct SFieldDesc
+			{
+			const char *pszFieldID;
+			Metric rMin;
+			Metric rMax;
+			Metric rDefault;
+			};
+
+		Metric m_rValue[fieldCount] = { 0.0 };
+
+		static SFieldDesc m_FieldDesc[fieldCount];
+		static CShipStandard m_Default;
+	};
+
 //	Armor Limits
 
 class CArmorLimits
@@ -185,7 +226,7 @@ class CHullPointsCalculator
 			fieldCount				= 18,
 			};
 
-		CHullPointsCalculator (const CShipClass &Class);
+		CHullPointsCalculator (const CShipClass &Class, const CShipStandard &Standard);
 
 		inline Metric GetField (int iIndex) const { return m_Data[iIndex]; }
 		inline int GetFieldCount (void) const { return fieldCount; }
@@ -195,7 +236,7 @@ class CHullPointsCalculator
 		static CString GetFieldName (int iIndex);
 
 	private:
-		int m_iMaxReactorPower = 0;
+		Metric m_rPricePerPoint = 0.0;
 		Metric m_Data[fieldCount] = { 0.0 };
 		Metric m_rTotalPoints = 0.0;
 	};
@@ -379,6 +420,7 @@ class CShipClass : public CDesignType
 		inline int GetScore (void) { return m_iScore; }
 		inline DWORD GetShipNameFlags (void) { return m_dwShipNameFlags; }
 		CString GetShortName (void) const;
+		const CShipStandard &GetStandard (void) const;
 		inline Metric GetThrustRatio (void) const { return m_rThrustRatio; }
 		inline const CString &GetClassName (void) const { return m_sName; }
 		inline const CString &GetManufacturerName (void) const { return m_sManufacturer; }
@@ -493,7 +535,7 @@ class CShipClass : public CDesignType
 		Metric CalcDamageRate (int *retiAveWeaponLevel = NULL, int *retiMaxWeaponLevel = NULL) const;
 		Metric CalcDefenseRate (void) const;
 		inline Metric CalcDodgeRate (void) const { return CalcManeuverValue(true); }
-		CurrencyValue CalcHullValue (Metric *retrPoints = NULL) const;
+		CurrencyValue CalcHullValue (const CShipStandard &Standard, Metric *retrPoints = NULL) const;
 		int CalcLevel (void) const;
 		Metric CalcManeuverValue (bool bDodge = false) const;
 		ICCItem *CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx) const;
@@ -532,6 +574,7 @@ class CShipClass : public CDesignType
 
         //  Hull properties
 
+		TSharedPtr<CShipStandard> m_pStandard;	//	Standard for metrics, etc.
 		CHullDesc m_Hull;						//	Basic hull definitions
 		CRotationDesc m_RotationDesc;	        //	Rotation and maneuverability
 		Metric m_rThrustRatio;					//	If non-zero, then m_DriveDesc thrust is set based on this.
@@ -605,7 +648,7 @@ class CShipClass : public CDesignType
 		DWORD m_fShipCompartment:1;				//	TRUE if we represent an attached compartment/segment
 		DWORD m_fInheritedDeviceSlots:1;		//	TRUE if m_pDeviceSlots is inherited from another class
 		DWORD m_fHullValueOverride:1;			//	TRUE if hull value is specifed in XML
-		DWORD m_fSpare5:1;
+		DWORD m_fInheritedStandard:1;			//	TRUE if m_pStandard is inherited from another class
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

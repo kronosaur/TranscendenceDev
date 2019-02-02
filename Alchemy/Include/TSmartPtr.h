@@ -5,6 +5,25 @@
 
 #pragma once
 
+template <class OBJ> class TRefCounted
+	{
+	public:
+		OBJ *AddRef (void)
+			{
+			m_dwRefCount++;
+			return (OBJ *)this; 
+			}
+
+		void Delete (void)
+			{
+			if (--m_dwRefCount <= 0)
+				delete (OBJ *)this;
+			}
+
+	private:
+		DWORD m_dwRefCount = 1;
+	};
+
 template <class OBJ> class TSharedPtr
 	{
 	public:

@@ -141,7 +141,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				printf("%d", pClass->CalcScore());
 			else if (strEquals(sField, FIELD_HULL_POINTS_STATS))
 				{
-				CHullPointsCalculator Calc(*pClass);
+				CHullPointsCalculator Calc(*pClass, pClass->GetStandard());
 
 				for (int k = 0; k < Calc.GetFieldCount(); k++)
 					{

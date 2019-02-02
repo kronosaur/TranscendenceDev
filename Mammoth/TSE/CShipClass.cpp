@@ -35,6 +35,7 @@
 #define REACTOR_TEXT_TAG						CONSTLIT("ReactorText")
 #define REMOVE_TAG								CONSTLIT("Remove")
 #define SHIELD_DISPLAY_TAG						CONSTLIT("ShieldDisplay")
+#define SHIP_STANDARD_TAG						CONSTLIT("ShipStandard")
 #define TRADE_TAG								CONSTLIT("Trade")
 #define WRECK_IMAGE_TAG							CONSTLIT("WreckImage")
 
@@ -45,7 +46,6 @@
 #define CHARACTER_CLASS_ATTRIB					CONSTLIT("characterClass")
 #define COUNT_ATTRIB							CONSTLIT("count")
 #define CYBER_DEFENSE_LEVEL_ATTRIB				CONSTLIT("cyberDefenseLevel")
-#define DEBUG_ONLY_ATTRIB						CONSTLIT("debugOnly")
 #define DEFAULT_BACKGROUND_ID_ATTRIB			CONSTLIT("defaultBackgroundID")
 #define DEFAULT_SOVEREIGN_ATTRIB				CONSTLIT("defaultSovereign")
 #define DESC_ATTRIB								CONSTLIT("desc")
@@ -298,7 +298,8 @@ CShipClass::CShipClass (void) :
 		m_fInheritedEscorts(false),
 		m_fInheritedTrade(false),
         m_fOwnPlayerSettings(false),
-        m_fInheritedDeviceSlots(false)
+        m_fInheritedDeviceSlots(false),
+		m_fInheritedStandard(false)
 
 //	CShipClass constructor
 
@@ -869,14 +870,14 @@ Metric CShipClass::CalcFuelEfficiency (const CDeviceDescList &Devices) const
 	return 10.0 * FUEL_UNITS_PER_STD_ROD / rFuelPerTick;
 	}
 
-CurrencyValue CShipClass::CalcHullValue (Metric *retrPoints) const
+CurrencyValue CShipClass::CalcHullValue (const CShipStandard &Standard, Metric *retrPoints) const
 
 //	CalcHullValue
 //
 //	Computes the value of the hull based on its properties (in credits).
 
 	{
-	CHullPointsCalculator Calc(*this);
+	CHullPointsCalculator Calc(*this, Standard);
 
 	if (retrPoints)
 		*retrPoints = Calc.GetTotalPoints();
@@ -2819,6 +2820,24 @@ CString CShipClass::GetShortName (void) const
 		return GetClassName();
 	}
 
+const CShipStandard &CShipClass::GetStandard (void) const
+
+//	GetStandard
+//
+//	Returns the standard metrics used to evaluate the ship. E.g., we use these
+//	to compute the hull value.
+
+	{
+	CShipClass *pBaseType;
+
+	if (m_pStandard)
+		return *m_pStandard;
+	else if (GetInheritFrom() && (pBaseType = CShipClass::AsType(GetInheritFrom())))
+		return pBaseType->GetStandard();
+	else
+		return CShipStandard::GetDefaults();
+	}
+
 CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
@@ -3097,8 +3116,9 @@ void CShipClass::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) 
 	//	We know how to handle these tags through the inheritance hierarchy.
 
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(COMMUNICATIONS_TAG), CXMLElement::MERGE_OVERRIDE);
-	MergeFlags.SetAt(CXMLElement::GetKeywordID(PLAYER_SETTINGS_TAG), CXMLElement::MERGE_OVERRIDE);
 	MergeFlags.SetAt(CXMLElement::GetKeywordID(EQUIPMENT_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(PLAYER_SETTINGS_TAG), CXMLElement::MERGE_OVERRIDE);
+	MergeFlags.SetAt(CXMLElement::GetKeywordID(SHIP_STANDARD_TAG), CXMLElement::MERGE_OVERRIDE);
 	}
 
 void CShipClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -3354,7 +3374,7 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 			pCurrency = g_pUniverse->GetDefaultCurrency();
 
 		if (pCurrency)
-			m_Hull.SetValue(pCurrency->ExchangeFrom(g_pUniverse->GetDefaultCurrency(), CalcHullValue()));
+			m_Hull.SetValue(pCurrency->ExchangeFrom(g_pUniverse->GetDefaultCurrency(), CalcHullValue(GetStandard())));
 		}
 
 	//	In debug mode, warn if we're installing armor that is beyond the current
@@ -3393,6 +3413,16 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
 		return error;
+
+	//	Ship standard
+
+	CXMLElement *pStandard = pDesc->GetContentElementByTag(SHIP_STANDARD_TAG);
+	if (pStandard)
+		{
+		m_pStandard = TSharedPtr<CShipStandard>(new CShipStandard);
+		if (error = m_pStandard->InitFromXML(Ctx, *pStandard))
+			return ComposeLoadError(Ctx, Ctx.sError);
+		}
 
 	//	Score and level
 
@@ -3791,7 +3821,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_HULL_POINTS))
 		{
-		CHullPointsCalculator Calc(*this);
+		CHullPointsCalculator Calc(*this, GetStandard());
 		return ICCItemPtr(mathRound(Calc.GetTotalPoints() * 10.0));
 		}
 

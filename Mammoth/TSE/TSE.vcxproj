@@ -476,6 +476,7 @@
     <ClCompile Include="CShipInterior.cpp" />
     <ClCompile Include="CShipInteriorDesc.cpp" />
     <ClCompile Include="CShipPerformanceDesc.cpp" />
+    <ClCompile Include="CShipStandard.cpp" />
     <ClCompile Include="CShipTable.cpp" />
     <ClCompile Include="CShipwreckDesc.cpp" />
     <ClCompile Include="CShockwaveHitTest.cpp" />

@@ -46,30 +46,24 @@ static constexpr Metric MIN_SPEED = 15.0;
 static constexpr Metric SPEED_PER_POINT = 8.0;
 static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
 static constexpr Metric MAX_ROTATION_PER_POINT = 18.0;
-static constexpr Metric STD_DRIVE_POWER_USE = 20.0;
 static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.0125;
 
-static constexpr Metric PRICE_PER_TENTH_MW = 0.011;
 static constexpr Metric POINT_BIAS = -5.0;
 static constexpr Metric POINT_EXP = 3.0;
 static constexpr Metric MIN_PRICE = 2000.0;
 
-CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
+CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CShipStandard &Standard)
 
 //	CHullPointsCalculator constructor
 
 	{
-	//	We need to have max reactor power defined, or else we can't compute the
-	//	values.
-
-	const CHullDesc &Hull = Class.GetHullDesc();
-	const CArmorLimits &ArmorLimits = Hull.GetArmorLimits();
-	m_iMaxReactorPower = Hull.GetMaxReactorPower();
-	if (m_iMaxReactorPower == 0)
+	m_rPricePerPoint = Standard.GetValue(CShipStandard::fieldPricePerHullPoint);
+	if (m_rPricePerPoint <= 0.0)
 		return;
 
 	//	Start by initializing points for device slots
 
+	const CHullDesc &Hull = Class.GetHullDesc();
 	int iFullSlots = Min(Hull.GetMaxWeapons(), Hull.GetMaxNonWeapons());
 	int iPartialSlots = Hull.GetMaxDevices() - iFullSlots;
 
@@ -94,6 +88,7 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	//	Compute points for armor limits
 
+	const CArmorLimits &ArmorLimits = Hull.GetArmorLimits();
 	CArmorLimits::SSummary ArmorSummary;
 	ArmorLimits.CalcSummary(g_pUniverse->GetDesignCollection().GetArmorMassDefinitions(), ArmorSummary);
 
@@ -129,7 +124,8 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class)
 
 	//	Points for drive power consumption
 
-	m_Data[fieldDrivePowerUse] = (STD_DRIVE_POWER_USE - Drive.GetPowerUse()) * POINTS_PER_DRIVE_POWER_USE;
+	Metric rStdDrivePowerUse = Standard.GetValue(CShipStandard::fieldDrivePowerUse);
+	m_Data[fieldDrivePowerUse] = (rStdDrivePowerUse - Drive.GetPowerUse()) * POINTS_PER_DRIVE_POWER_USE;
 
 	//	Points for maneuverability
 
@@ -181,17 +177,13 @@ CurrencyValue CHullPointsCalculator::GetValueInCredits (void) const
 //	Returns the credit value based on hull points.
 
 	{
-	//	Compute a price unit based on the maximum reactor power
-
-	Metric rUnitPrice = PRICE_PER_TENTH_MW * m_iMaxReactorPower;
-
 	//	Scale points
 
 	Metric rScaledPoints = pow(GetTotalPoints() + POINT_BIAS, POINT_EXP);
 
 	//	Compute price
 
-	Metric rPrice = MIN_PRICE + (rScaledPoints * rUnitPrice);
+	Metric rPrice = MIN_PRICE + (rScaledPoints * m_rPricePerPoint);
 
 	//	Done
 

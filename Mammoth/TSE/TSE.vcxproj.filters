@@ -1291,5 +1291,8 @@
     <ClCompile Include="CArmorMassDefinitions.cpp">
       <Filter>Source Files\DesignTypes</Filter>
     </ClCompile>
+    <ClCompile Include="CShipStandard.cpp">
+      <Filter>Source Files\Ships</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
