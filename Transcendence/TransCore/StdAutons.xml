@@ -12,7 +12,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -84,7 +84,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -183,7 +183,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -273,7 +273,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -348,7 +348,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, cargoAuton, genericClass, omniDefense, utilityAuton"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -468,7 +468,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -570,7 +570,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, omniDefense"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -644,7 +644,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass, taikon"
+			attributes=			"auton, explorerAuton, genericClass, taikon, utilityAuton"
 			inherit=			"&baStdAutonBase;"
 			>
 
@@ -842,7 +842,7 @@
 
 	<ItemType UNID="&itAutoSentinel;"
 			name=				"AutoSentinel&#xae;| AutoSentinels&#xae;"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"3"
@@ -868,7 +868,7 @@
 
 	<ItemType UNID="&it300DDefenderAuton;"
 			name=				"300D defender auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"
@@ -894,7 +894,7 @@
 
 	<ItemType UNID="&it310AAegisAuton;"
 			name=				"310A aegis auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"
@@ -920,7 +920,7 @@
 
 	<ItemType UNID="&itMuleAuton;"
 			name=				"330M mule auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, cargoAuton, commonwealth, minorItem, omniDefense, utilityAuton"
 			inherit=			"&baAutonItemBase;"
 
 			level=				"4"
@@ -946,7 +946,7 @@
 
 	<ItemType UNID="&itDefectiveAuton;"
 			name=				"defective auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"
@@ -972,7 +972,7 @@
 
 	<ItemType UNID="&it1MBattleAuton;"
 			name=				"1M battle auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"5"
@@ -998,7 +998,7 @@
 
 	<ItemType UNID="&itExplorerAuton;"
 			name=				"TX3 explorer auton"
-			attributes=			"auton, commonwealth, minorItem, taikon"
+			attributes=			"auton, explorerAuton, commonwealth, minorItem, taikon, utilityAuton"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"5"
@@ -1024,7 +1024,7 @@
 
 	<ItemType UNID="&it1MiBattleAuton;"
 			name=				"1M/i battle auton"
-			attributes=			"auton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 
 			level=				"6"

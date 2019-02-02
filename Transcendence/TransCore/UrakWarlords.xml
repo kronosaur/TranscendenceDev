@@ -261,7 +261,7 @@
 			thrustRatio=		"4"
 			maxSpeed=			"16"
 
-			attributes=			"auton, genericClass, urak"
+			attributes=			"auton, combatAuton, genericClass, urak"
 			>
 
 		<Armor>

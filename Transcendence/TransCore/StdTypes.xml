@@ -977,7 +977,7 @@
 			type=				"sentinel"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"auton, genericClass"
+			attributes=			"auton, combatAuton, genericClass, tenhoveDefense"
 
 			size=				"13"
 			mass=				"2"
