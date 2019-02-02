@@ -978,7 +978,7 @@
 		<Shields
 				hitPoints=		"60"
 				regen=			"432"
-				depletionDelay=	"72"
+				depletionDelay=	"0"
 				powerUse=		"9000"
 				/>
 
