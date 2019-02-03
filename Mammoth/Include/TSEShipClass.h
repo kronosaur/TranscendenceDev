@@ -20,12 +20,14 @@ class CShipStandard : public TRefCounted<CShipStandard>
 		enum EFields
 			{
 			//	These values should never be saved. It is OK to re-order and
-			//	re-number them.
+			//	re-number them. Make sure you update m_FieldDesc when you add
+			//	an entry here.
 
 			fieldDrivePowerUse =		0,	//	Std drive power use (in 1/10th MWs)
-			fieldPricePerHullPoint =	1,	//	Price per hull point (in credits)
+			fieldMinHullPrice =			1,	//	Minimum price for hull (in credits)
+			fieldPricePerHullPoint =	2,	//	Price per hull point (in credits)
 
-			fieldCount =				2,
+			fieldCount =				3,
 			};
 
 		class TInitDefaults { };
@@ -236,6 +238,7 @@ class CHullPointsCalculator
 		static CString GetFieldName (int iIndex);
 
 	private:
+		Metric m_rMinPrice = 0.0;
 		Metric m_rPricePerPoint = 0.0;
 		Metric m_Data[fieldCount] = { 0.0 };
 		Metric m_rTotalPoints = 0.0;

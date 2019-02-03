@@ -46,11 +46,10 @@ static constexpr Metric MIN_SPEED = 15.0;
 static constexpr Metric SPEED_PER_POINT = 8.0;
 static constexpr Metric THRUST_RATIO_PER_POINT = 25.0;
 static constexpr Metric MAX_ROTATION_PER_POINT = 18.0;
-static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.0125;
+static constexpr Metric POINTS_PER_DRIVE_POWER_USE = 0.25;
 
 static constexpr Metric POINT_BIAS = -5.0;
 static constexpr Metric POINT_EXP = 3.0;
-static constexpr Metric MIN_PRICE = 2000.0;
 
 CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CShipStandard &Standard)
 
@@ -60,6 +59,8 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CSh
 	m_rPricePerPoint = Standard.GetValue(CShipStandard::fieldPricePerHullPoint);
 	if (m_rPricePerPoint <= 0.0)
 		return;
+
+	m_rMinPrice = Standard.GetValue(CShipStandard::fieldMinHullPrice);
 
 	//	Start by initializing points for device slots
 
@@ -125,7 +126,10 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CSh
 	//	Points for drive power consumption
 
 	Metric rStdDrivePowerUse = Standard.GetValue(CShipStandard::fieldDrivePowerUse);
-	m_Data[fieldDrivePowerUse] = (rStdDrivePowerUse - Drive.GetPowerUse()) * POINTS_PER_DRIVE_POWER_USE;
+	if (rStdDrivePowerUse > 0.0)
+		m_Data[fieldDrivePowerUse] = ((rStdDrivePowerUse - Drive.GetPowerUse()) / rStdDrivePowerUse) * POINTS_PER_DRIVE_POWER_USE;
+	else
+		m_Data[fieldDrivePowerUse] = 0.0;
 
 	//	Points for maneuverability
 
@@ -183,7 +187,7 @@ CurrencyValue CHullPointsCalculator::GetValueInCredits (void) const
 
 	//	Compute price
 
-	Metric rPrice = MIN_PRICE + (rScaledPoints * m_rPricePerPoint);
+	Metric rPrice = m_rMinPrice + (rScaledPoints * m_rPricePerPoint);
 
 	//	Done
 

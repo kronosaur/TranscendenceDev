@@ -19,6 +19,7 @@
 
 		<ShipStandard
 			drivePowerUse=		"20"
+			minHullPrice=		"2000"
 			pricePerHullPoint=	"110"
 			/>
 

@@ -9,6 +9,7 @@ CShipStandard::SFieldDesc CShipStandard::m_FieldDesc[fieldCount] =
 	{
 		//	fieldID					Min			Max			Default
 		{	"drivePowerUse",		0.0,		-1.0,		20.0	},
+		{	"minHullPrice",			0.0,		-1.0,		2000.0	},
 		{	"pricePerHullPoint",	0.0,		-1.0,		110.0	},
 	};
 
