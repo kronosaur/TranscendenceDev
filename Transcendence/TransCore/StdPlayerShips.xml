@@ -11,7 +11,7 @@
 			class=				"Centurion"
 			type=				"heavy gunship"
 
-			attributes=			"commonwealth, military, pacificDefense, shipBroker"
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scCenturionBlock2;"
 			>
 
@@ -50,7 +50,7 @@
 			type=				"heavy gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
-			attributes=			"commonwealth, military, pacificDefense, shipBroker"
+			attributes=			"commonwealth, military, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scCenturionX;"
 			>
 
@@ -91,7 +91,7 @@
 			type=				"freighter"
 
 			level=				"4"
-			attributes=			"commonwealth, corporate, EI, shipBroker"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
 			inherit=			"&scEI200Stock;"
 			>
 
@@ -154,7 +154,7 @@
 			type=				"freighter"
 
 			level=				"3"
-			attributes=			"commonwealth, corporate, EI, shipBroker"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
 			inherit=			"&scEI500Stock;"
 			>
 
@@ -197,7 +197,7 @@
 			type=				"freighter"
 
 			level=				"4"
-			attributes=			"commonwealth, corporate, EI, shipBroker"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
 			inherit=			"&scEI500Stock;"
 			>
 
@@ -234,7 +234,7 @@
 			type=				"freighter"
 
 			level=				"4"
-			attributes=			"commonwealth, corporate, EI, shipBroker"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
 			inherit=			"&scEI500Stock;"
 			>
 
@@ -271,7 +271,7 @@
 			type=				"freighter"
 
 			level=				"4"
-			attributes=			"commonwealth, corporate, EI, shipBroker"
+			attributes=			"commonwealth, corporate, EI, playerClass, shipBroker"
 			inherit=			"&scEI500Stock;"
 			>
 
@@ -315,7 +315,7 @@
 			class=				"Minotaur"
 			type=				"corvette"
 
-			attributes=			"commonwealth, military, nami, shipBroker"
+			attributes=			"commonwealth, military, nami, playerClass, shipBroker"
 			inherit=			"&scMinotaur;"
 			>
 
@@ -353,7 +353,7 @@
 			class=				"Minotaur/M"
 			type=				"corvette"
 
-			attributes=			"commonwealth, military, nami, shipBroker"
+			attributes=			"commonwealth, military, nami, playerClass, shipBroker"
 			inherit=			"&scMinotaurM;"
 			>
 
@@ -393,7 +393,7 @@
 			class=				"Sapphire"
 			type=				"yacht"
 
-			attributes=			"commonwealth, corporate, shipBroker, zubrin"
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
 			inherit=			"&scSapphireYacht;"
 			>
 
@@ -429,7 +429,7 @@
 			class=				"Sapphire"
 			type=				"yacht"
 
-			attributes=			"commonwealth, corporate, shipBroker, zubrin"
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
 			inherit=			"&scSapphireYacht;"
 			>
 
@@ -464,7 +464,7 @@
 			class=				"Sapphire"
 			type=				"yacht"
 
-			attributes=			"commonwealth, corporate, shipBroker, zubrin"
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
 			inherit=			"&scSapphireYacht;"
 			>
 
@@ -503,7 +503,7 @@
 			class=				"Sapphire"
 			type=				"yacht"
 
-			attributes=			"commonwealth, corporate, shipBroker, zubrin"
+			attributes=			"commonwealth, corporate, playerClass, shipBroker, zubrin"
 			inherit=			"&scSapphireYacht;"
 			>
 
@@ -544,7 +544,7 @@
 			class=				"Wolfen"
 			type=				"gunship"
 
-			attributes=			"commonwealth, corporate, pacificDefense, shipBroker"
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scWolfen;"
 			>
 
@@ -583,7 +583,7 @@
 			class=				"Wolfen"
 			type=				"gunship"
 
-			attributes=			"commonwealth, corporate, pacificDefense, shipBroker"
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scWolfen;"
 			>
 
@@ -623,7 +623,7 @@
 			class=				"Wolfen"
 			type=				"gunship"
 
-			attributes=			"commonwealth, corporate, pacificDefense, shipBroker"
+			attributes=			"commonwealth, corporate, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scWolfen;"
 			>
 
@@ -663,7 +663,7 @@
 			class=				"Wolfen"
 			type=				"gunship"
 
-			attributes=			"commonwealth, corporate, military, pacificDefense, shipBroker"
+			attributes=			"commonwealth, corporate, military, pacificDefense, playerClass, shipBroker"
 			inherit=			"&scWolfen;"
 			>
 
