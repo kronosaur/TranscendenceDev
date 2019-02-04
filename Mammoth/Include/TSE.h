@@ -907,13 +907,11 @@ class CSpaceObject : public CObject
 		bool CanCommunicateWith (CSpaceObject *pSender);
 		inline bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
 		inline void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
-		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fAutoClearDestinationOnGate = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
 		inline void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
 		inline void ClearPlayerTarget (void) { m_fPlayerTarget = false; }
 		inline void ClearPOVLRS (void) { m_fInPOVLRS = false; }
 		inline void ClearSelection (void) { m_fSelected = false; }
 		inline void ClearShowDamageBar (void) { m_fShowDamageBar = false; }
-		inline void ClearShowDistanceAndBearing (void) { m_fShowDistanceAndBearing = false; }
 		void CommsMessageFrom (CSpaceObject *pSender, int iIndex);
 		inline DWORD Communicate (CSpaceObject *pReceiver, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0) { return pReceiver->OnCommunicate(this, iMessage, pParam1, dwParam2); }
 		void CopyDataFromObj (CSpaceObject *pSource);
@@ -1065,10 +1063,6 @@ class CSpaceObject : public CObject
 		inline ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		bool InteractsWith (int iInteraction) const;
 		bool IsAngryAt (const CDamageSource &Obj) const;
-		inline bool IsAutoClearDestination (void) const { return m_fAutoClearDestination; }
-		inline bool IsAutoClearDestinationOnDestroy (void) const { return m_fAutoClearDestinationOnDestroy; }
-		inline bool IsAutoClearDestinationOnDock (void) const { return m_fAutoClearDestinationOnDock; }
-		inline bool IsAutoClearDestinationOnGate (void) const { return m_fAutoClearDestinationOnGate; }
 		inline bool IsBarrier (void) const { return (m_fIsBarrier ? true : false); }
 		inline bool IsCollisionTestNeeded (void) const { return m_fCollisionTestNeeded; }
 		bool IsCommsMessageValidFrom (CSpaceObject *pSender, int iIndex, CString *retsMsg = NULL, CString *retsKey = NULL);
@@ -1096,14 +1090,11 @@ class CSpaceObject : public CObject
 				&& (vLL.GetY() < m_vPos.GetY() + rHalfSize);
 			}
 		bool IsPlayerAttackJustified (void) const;
-		inline bool IsPlayerDestination (void) { return m_fPlayerDestination; }
 		inline bool IsPlayerDocked (void) { return m_fPlayerDocked; }
 		bool IsPlayerEscortTarget (CSpaceObject *pPlayer = NULL);
 		inline bool IsPlayerTarget (void) const { return m_fPlayerTarget; }
 		inline bool IsSelected (void) const { return m_fSelected; }
 		inline bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
-		inline bool IsShowingDistanceAndBearing (void) const { return m_fShowDistanceAndBearing; }
-		inline bool IsShowingHighlight (void) const { return m_fShowHighlight; }
 		bool IsStargateInRange (Metric rMaxRange);
 		inline bool IsSubscribedToEvents (CSpaceObject *pObj) const { return m_SubscribedObjs.FindObj(pObj); }
 		bool IsUnderAttack (void);
@@ -1152,7 +1143,7 @@ class CSpaceObject : public CObject
 		inline void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 		inline void SetOutOfPlaneObj (bool bValue = true) { m_fOutOfPlaneObj = bValue; }
 		void SetOverride (CDesignType *pOverride);
-		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
+
 		inline void SetPlayerDocked (void) { m_fPlayerDocked = true; }
 		inline void SetPlayerTarget (void) { m_fPlayerTarget = true; }
 		inline bool SetPOVLRS (void)
@@ -1252,6 +1243,18 @@ class CSpaceObject : public CObject
 		inline void SetPainted (void) { m_fPainted = true; }
 		inline void SetPaintNeeded (void) { m_fPaintNeeded = true; }
 		inline bool WasPainted (void) const { return m_fPainted; }
+
+		//	Player Destination
+
+		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fAutoClearDestinationOnGate = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
+		inline bool IsAutoClearDestination (void) const { return m_fAutoClearDestination; }
+		inline bool IsAutoClearDestinationOnDestroy (void) const { return m_fAutoClearDestinationOnDestroy; }
+		inline bool IsAutoClearDestinationOnDock (void) const { return m_fAutoClearDestinationOnDock; }
+		inline bool IsAutoClearDestinationOnGate (void) const { return m_fAutoClearDestinationOnGate; }
+		inline bool IsPlayerDestination (void) const { return m_fPlayerDestination; }
+		inline bool IsShowingDistanceAndBearing (void) const { return m_fShowDistanceAndBearing; }
+		inline bool IsShowingHighlight (void) const { return m_fShowHighlight; }
+		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
 
 		//	Trade
 
