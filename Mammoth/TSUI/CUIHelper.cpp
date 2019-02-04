@@ -138,8 +138,6 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 			rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
 		}
 
-	int iLevel = (bActual ? pType->GetLevel(Ctx) : pType->GetApparentLevel(Ctx));
-
 	//	Compute the height of the row
 
 	int cyHeight = 0;

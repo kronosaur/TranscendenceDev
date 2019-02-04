@@ -938,14 +938,16 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 	if (m_pItemType == NULL)
 		return false;
 
-	//	Always add level
-
-	retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d"), m_pItemType->GetApparentLevel(Ctx))));
-
 	//	Add additional custom attributes
 
 	if (m_pItemType->IsKnown() || bActual)
 		{
+		//	Add the level
+
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d"), m_pItemType->GetLevel(Ctx))));
+
+		//	Add display attributes
+
 		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
 
 		CArmorClass *pArmor;
@@ -997,6 +999,12 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 		CString sNoun;
 		if (m_pItemType->TranslateText(*this, LANGID_CORE_CHARGES, NULL, &sNoun))
 			retList->Insert(SDisplayAttribute(attribNeutral, CLanguage::ComposeNounPhrase(sNoun, GetCharges(), NULL_STR, 0, nounCountAlways)));
+		}
+	else
+		{
+		//	We show the level, but indicate that we're not sure.
+
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("level %d?"), m_pItemType->GetApparentLevel(Ctx))));
 		}
 
 	//	Add various engine-based attributes (these are shown even if the item 
