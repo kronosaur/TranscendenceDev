@@ -671,6 +671,9 @@
 						
 						; Set the description
 						(scrSetDesc gScreen (@ theResult 'desc))
+						(if (@ theResult 'descWarning)
+							(scrSetControlValue gScreen 'descWarning (@ theResult 'descWarning))
+							)
 
 						; Disable actions
 						(scrEnableAction gScreen 'actionBuyAndInstall (@ theResult 'canInstall))
@@ -680,6 +683,7 @@
 				<Controls>
 					<ItemDisplay id="currentItem"/>
 					<Text id="desc"/>
+					<Text id="descWarning" style="warning"/>
 				</Controls>
 				
 				<Actions>

@@ -47,6 +47,11 @@
 			<Text id="listAnd">" and "</Text>
 			<Text id="listComma">", "</Text>
 			<Text id="listCommaAnd">", and "</Text>
+			<Text id="the">the</Text>
+			<Text id="we">we</Text>
+			<Text id="you">you</Text>
+			<Text id="your">your</Text>
+			<Text id="yourShip">your ship</Text>
 			
 			<!-- Common Noun Phrases -->
 			

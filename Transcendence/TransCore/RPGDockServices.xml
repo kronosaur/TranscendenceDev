@@ -1735,6 +1735,7 @@
 					(scrTranslate gScreen "rpg.noCompatibleDeviceInCargo:device")
 					)
 			</Text>
+
 			<Text id="rpg.noCompatibleDeviceInCargo:cargoHold">You do not have any compatible cargo expansions in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:drive">You do not have any compatible drive upgrades in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:launcher">You do not have any compatible launchers in your cargo hold.</Text>
@@ -1742,6 +1743,17 @@
 			<Text id="rpg.noCompatibleDeviceInCargo:shields">You do not have any compatible shield generators in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:weapon">You do not have any compatible weapons in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:device">You do not have any compatible devices in your cargo hold.</Text>
+
+			<Text id="rpg.warningLevelDowngrade">
+				Note: Your currently installed %itemName% is higher level.
+			</Text>
+			<Text id="rpg.warningReactorPowerDowngrade">
+				Note: Your currently installed %itemName% generates more power.
+			</Text>
+
+			<Text id="rpg.noDevicesToInstall">
+				You do not have any devices that can be installed.
+			</Text>
 		</Language>
 	</DockScreen>
 	

@@ -1711,9 +1711,19 @@
 
 					;	If the target object is not the player's ship, then we need to modify
 					;	some text
-					(textYourShip (if (= targetObj gPlayerShip) "your ship" (objGetName targetObj 'demonstrative)))
-					(textWe (if (= installerObj gPlayerShip) "you" "we"))
-					(textYour (if (= targetObj gPlayerShip) "your" "the"))
+
+					(textYourShip (if (= targetObj gPlayerShip) (typTranslate &unidCommonText; 'yourShip) (objGetName targetObj 'demonstrative)))
+					(textWe (if (= installerObj gPlayerShip) (typTranslate &unidCommonText; 'you) (typTranslate &unidCommonText; 'we)))
+					(textYour (if (= targetObj gPlayerShip) (typTranslate &unidCommonText; 'your) (typTranslate &unidCommonText; 'the)))
+
+					;	Translate helper
+
+					(translate (lambda (installerObj textID data)
+						(or (and installerObj (objTranslate installerObj textID data))
+							(scrTranslate gScreen textID data)
+							(typTranslate &dsRPGDockServicesBase; textID data)
+							)
+						))
 					)
 
 					(if thisItem
@@ -2155,20 +2165,38 @@
 									)
 								)
 
-							;	See if we are downgrading
+							;	See if we need warning
 
-							(if (and canInstall
-									itemToReplace
-									(ls (itmGetLevel thisItem) (itmGetLevel itemToReplace))
-									(= (itmGetProperty thisItem 'category) (itmGetProperty itemToReplace 'category))
-									(!= (itmGetProperty thisItem 'category) 'device)
-									(!= (itmGetProperty thisItem 'category) 'cargoHold)
-									)
-								(setq descWarning (cat "Note: Your currently installed " (itmGetName itemToReplace 0x00) " is higher level."))
+							(switch
+								;	If we're installing a device that is lower level than the current,
+								;	then warn the player.
+
+								(and canInstall
+										itemToReplace
+										(ls (itmGetLevel thisItem) (itmGetLevel itemToReplace))
+										(= (itmGetProperty thisItem 'category) (itmGetProperty itemToReplace 'category))
+										(!= (itmGetProperty thisItem 'category) 'device)
+										(!= (itmGetProperty thisItem 'category) 'cargoHold)
+										)
+									(setq descWarning (translate installerObj 'rpg.warningLevelDowngrade {
+										itemName: (itmGetName itemToReplace 0x00)
+										}))
+
+								;	If this is a reactor and the power level is lower, then we
+								;	show a warning.
+
+								(and canInstall
+										itemToReplace
+										(= (itmGetProperty itemToReplace 'category) 'reactor)
+										(gr (itmGetProperty itemToReplace 'maxPower) (itmGetProperty thisItem 'maxPower))
+										)
+									(setq descWarning (translate installerObj 'rpg.warningReactorPowerDowngrade {
+										itemName: (itmGetName itemToReplace 0x00)
+										}))
 								)
 							)
 
-						(setq desc "You do not have any devices that can be installed.")
+						(setq desc (translate installerObj 'rpg.noDevicesToInstall))
 						)
 
 					; Return variables
