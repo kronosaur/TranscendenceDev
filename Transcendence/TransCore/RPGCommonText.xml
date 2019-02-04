@@ -56,7 +56,7 @@
 			<!-- Common Errors -->
 
 			<Text id="rpg.mustHaveAMilitaryIDToUseItem">
-				You must have a %militaryID% to use %itemName%.
+				You must have %militaryID% to use %itemName%.
 			</Text>
 		</Language>
 	</Type>
