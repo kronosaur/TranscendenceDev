@@ -7986,8 +7986,9 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->FireCustomOverlayEvent(pArgs->GetElement(2)->GetStringValue(), dwOverlayID, pData, &pResult);
 			return pResult;
 			}
+
 		case FN_OBJ_FIRE_POWER_INVOKE:
-		{
+			{
 			DWORD dwPowerUNID = pArgs->GetElement(1)->GetIntegerValue();
 			CPower *pPower = g_pUniverse->FindPower(dwPowerUNID);
 
