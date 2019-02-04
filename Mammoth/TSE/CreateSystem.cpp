@@ -380,12 +380,12 @@ ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx,
 
 	if (retOrbitDesc || retsAttribs)
 		{
-		CLocationDef *pLoc = pCtx->pSystem->GetLocation(iLocID);
+		CLocationDef &Loc = pCtx->pSystem->GetLocation(iLocID);
 		if (retOrbitDesc)
-			*retOrbitDesc = pLoc->GetOrbit();
+			*retOrbitDesc = Loc.GetOrbit();
 
 		if (retsAttribs)
-			*retsAttribs = pLoc->GetAttributes();
+			*retsAttribs = Loc.GetAttributes();
 		}
 
 	if (retiLabelPos)
@@ -765,7 +765,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 			return NOERROR;
 
 		int iLocID = LocationTable[iTablePos];
-		CLocationDef *pLoc = pCtx->pSystem->GetLocation(iLocID);
+		CLocationDef &Loc = pCtx->pSystem->GetLocation(iLocID);
 
 		//	Now look for the most appropriate station to place at the location
 
@@ -773,8 +773,8 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		TArray<CStationTableCache::SEntry> *pStationTable;
 		if (error = ChooseRandomStation(pCtx, 
 				sStationCriteria, 
-				pLoc->GetAttributes(),
-				pLoc->GetOrbit().GetObjectPos(),
+				Loc.GetAttributes(),
+				Loc.GetOrbit().GetObjectPos(),
 				bSeparateEnemies,
 				false,
 				&pType,
@@ -859,9 +859,9 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		//	Create the station at the location
 
 		SObjCreateCtx CreateCtx(*pCtx);
-		CreateCtx.vPos = pLoc->GetOrbit().GetObjectPos();
-		CreateCtx.pLoc = pLoc;
-		CreateCtx.pOrbit = &pLoc->GetOrbit();
+		CreateCtx.vPos = Loc.GetOrbit().GetObjectPos();
+		CreateCtx.pLoc = &Loc;
+		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 
 		if (error = pCtx->pSystem->CreateStation(pCtx, pType, CreateCtx))
@@ -1204,18 +1204,18 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 		int iRollPos = Table.RollPos();
 		int iLocID = Table[iRollPos];
-		CLocationDef *pLoc = pCtx->pSystem->GetLocation(iLocID);
+		CLocationDef &Loc = pCtx->pSystem->GetLocation(iLocID);
 
 		//	Create a superset of location attributes
 
-		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, pLoc->GetAttributes());
+		pCtx->sLocationAttribs = ::AppendModifiers(sSavedLocationAttribs, Loc.GetAttributes());
 
 		//	Create the object
 
 		DWORD dwSavedLastObjID = pCtx->dwLastObjID;
 		pCtx->dwLastObjID = 0;
 
-		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), pLoc->GetOrbit()))
+		if (error = CreateSystemObject(pCtx, pDesc->GetContentElement(i % iChildCount), Loc.GetOrbit()))
 			return error;
 
 		//	If we actually created an object, then remove the label
@@ -1866,7 +1866,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		SObjCreateCtx CreateCtx(*pCtx);
 		CreateCtx.vPos = OrbitDesc.GetObjectPos();
-		CreateCtx.pLoc = pCtx->pSystem->GetLocation(iLocation);
+		CreateCtx.pLoc = &pCtx->pSystem->GetLocation(iLocation);
 		CreateCtx.pOrbit = &OrbitDesc;
 		CreateCtx.bCreateSatellites = true;
 
@@ -3579,8 +3579,8 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 		pCtx->pSystem->GetEmptyLocations(&EmptyLocations);
 		for (j = 0; j < EmptyLocations.GetCount(); j++)
 			{
-			CLocationDef *pLoc = pCtx->pSystem->GetLocation(EmptyLocations[j]);
-			CVector vDist = vPos - pLoc->GetOrbit().GetObjectPos();
+			CLocationDef &Loc = pCtx->pSystem->GetLocation(EmptyLocations[j]);
+			CVector vDist = vPos - Loc.GetOrbit().GetObjectPos();
 			Metric rDist2 = vDist.Length2();
 
 			if (rDist2 < rExclusionDist2)
@@ -3899,7 +3899,7 @@ ALERROR CSystem::CreateFromXML (CUniverse *pUniv,
 
 					SObjCreateCtx CreateCtx(Ctx);
 					CreateCtx.vPos = OrbitDesc.GetObjectPos();
-					CreateCtx.pLoc = (iLocation != -1 ? Ctx.pSystem->GetLocation(iLocation) : NULL);
+					CreateCtx.pLoc = (iLocation != -1 ? &Ctx.pSystem->GetLocation(iLocation) : NULL);
 					CreateCtx.pOrbit = &OrbitDesc;
 					CreateCtx.bCreateSatellites = true;
 

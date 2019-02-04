@@ -12380,12 +12380,12 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 	CSpaceObject *pStation;
 	if (pSysCreateCtx && iLocID != -1)
 		{
-		CLocationDef *pLoc = pSystem->GetLocation(iLocID);
+		CLocationDef &Loc = pSystem->GetLocation(iLocID);
 
 		SObjCreateCtx CreateCtx(*pSysCreateCtx);
 		CreateCtx.vPos = vPos;
-		CreateCtx.pLoc = pLoc;
-		CreateCtx.pOrbit = &pLoc->GetOrbit();
+		CreateCtx.pLoc = &Loc;
+		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
 		CreateCtx.pEventHandler = pEventHandler;
 
@@ -12950,14 +12950,14 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the data
 
-			CLocationDef *pLoc = pSystem->GetLocation(iLocID);
-			ICCItem *pPos = CreateListFromVector(*pCC, pLoc->GetOrbit().GetObjectPos());
-			ICCItem *pOrbit = CreateListFromOrbit(*pCC, pLoc->GetOrbit());
+			CLocationDef &Loc = pSystem->GetLocation(iLocID);
+			ICCItem *pPos = CreateListFromVector(*pCC, Loc.GetOrbit().GetObjectPos());
+			ICCItem *pOrbit = CreateListFromOrbit(*pCC, Loc.GetOrbit());
 
 			//	Prepare a result
 
 			ICCItem *pResult = pCC->CreateSymbolTable();
-			pResult->SetStringAt(*pCC, FIELD_ATTRIBS, pLoc->GetAttributes());
+			pResult->SetStringAt(*pCC, FIELD_ATTRIBS, Loc.GetAttributes());
 			pResult->SetAt(*pCC, FIELD_POS, pPos);
 			pPos->Discard(pCC);
 			pResult->SetAt(*pCC, FIELD_ORBIT, pOrbit);
@@ -12966,7 +12966,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	If necessary, remove the location
 
 			if (bRemoveLoc)
-				pLoc->SetBlocked();
+				Loc.SetBlocked();
 
 			//	Done
 

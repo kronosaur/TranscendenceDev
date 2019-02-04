@@ -947,8 +947,8 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 
 			//	Return the position
 
-			CLocationDef *pLoc = pSystem->GetLocation(iLocID);
-			vPos = pLoc->GetOrbit().GetObjectPos();
+			const CLocationDef &Loc = pSystem->GetLocation(iLocID);
+			vPos = Loc.GetOrbit().GetObjectPos();
 			}
 
 		//	Otherwise, we assume a vector

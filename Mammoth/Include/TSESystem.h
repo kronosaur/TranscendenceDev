@@ -369,7 +369,8 @@ class CLocationList
 		void FillOverlappingWith (CSpaceObject *pObj);
 		inline int GetCount (void) { return m_List.GetCount(); }
 		bool GetEmptyLocations (TArray<int> *retList);
-		inline CLocationDef *GetLocation (int iIndex) { return &m_List[iIndex]; }
+		inline const CLocationDef &GetLocation (int iIndex) const { return m_List[iIndex]; }
+		inline CLocationDef &GetLocation (int iIndex) { return m_List[iIndex]; }
 		const CLocationDef *GetLocationByObjID (DWORD dwObjID) const;
 		CLocationDef *Insert (const CString &sID = NULL_STR);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -855,7 +856,8 @@ class CSystem
 		int GetEmptyLocationCount (void);
 		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, TProbabilityTable<int> *retTable);
 		inline bool GetEmptyLocations (TArray<int> *retList) { return m_Locations.GetEmptyLocations(retList); }
-		inline CLocationDef *GetLocation (int iLocID) { return m_Locations.GetLocation(iLocID); }
+		inline const CLocationDef &GetLocation (int iLocID) const { return m_Locations.GetLocation(iLocID); }
+		inline CLocationDef &GetLocation (int iLocID) { return m_Locations.GetLocation(iLocID); }
 		inline int GetLocationCount (void) { return m_Locations.GetCount(); }
 		bool IsExclusionZoneClear (const CVector &vPos, CStationType *pType = NULL);
 		inline void SetLocationObjID (int iLocID, DWORD dwObjID) { m_Locations.SetObjID(iLocID, dwObjID); }

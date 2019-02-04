@@ -26,28 +26,28 @@ void CLocationList::FillCloseLocations (void)
 
 		for (i = 0; i < m_List.GetCount(); i++)
 			{
-			CLocationDef *pL1 = GetLocation(i);
+			CLocationDef &L1 = GetLocation(i);
 
 			//	If this location is already blocked, then it means that
 			//	it can't block any others (since no object will be placed here).
 
-			if (pL1->IsBlocked())
+			if (L1.IsBlocked())
 				continue;
 
 			//	Loop over all other locations that we haven't yet compared
 
 			for (j = i + 1; j < m_List.GetCount(); j++)
 				{
-				CLocationDef *pL2 = GetLocation(j);
+				CLocationDef &L2 = GetLocation(j);
 
 				//	A blocked location can't block us
 
-				if (pL2->IsBlocked())
+				if (L2.IsBlocked())
 					continue;
 
 				//	Compute the distance between the two locations
 
-				CVector vDist = pL2->GetOrbit().GetObjectPos() - pL1->GetOrbit().GetObjectPos();
+				CVector vDist = L2.GetOrbit().GetObjectPos() - L1.GetOrbit().GetObjectPos();
 				if (vDist.Length2() < rMinDist2)
 					{
 					//	pL1 and pL2 are two locations that are too close to each other
@@ -55,20 +55,20 @@ void CLocationList::FillCloseLocations (void)
 					//
 					//	If both locations are currently empty, then block one at random
 
-					if (pL1->IsEmpty() && pL2->IsEmpty())
+					if (L1.IsEmpty() && L2.IsEmpty())
 						{
 						if (mathRandom(1, 100) <= 50)
-							pL1->SetBlocked();
+							L1.SetBlocked();
 						else
-							pL2->SetBlocked();
+							L2.SetBlocked();
 						}
 
 					//	Otherwise, block the non-empty one
 
-					else if (pL1->IsEmpty())
-						pL1->SetBlocked();
-					else if (pL2->IsEmpty())
-						pL2->SetBlocked();
+					else if (L1.IsEmpty())
+						L1.SetBlocked();
+					else if (L2.IsEmpty())
+						L2.SetBlocked();
 
 					//	If neither is empty, then there is nothing we can do
 
@@ -81,7 +81,7 @@ void CLocationList::FillCloseLocations (void)
 					//	Continue looping, since there could be another location that is
 					//	in range of pL1. [But not if pL1 is blocked.]
 
-					if (pL1->IsBlocked())
+					if (L1.IsBlocked())
 						break;
 					}
 				}
@@ -102,16 +102,16 @@ void CLocationList::FillOverlappingWith (CSpaceObject *pObj)
 
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
-		CLocationDef *pLoc = GetLocation(i);
-		if (pLoc->IsBlocked() || !pLoc->IsEmpty())
+		CLocationDef &Loc = GetLocation(i);
+		if (Loc.IsBlocked() || !Loc.IsEmpty())
 			continue;
 
-		CVector vPos = pLoc->GetOrbit().GetObjectPos();
+		CVector vPos = Loc.GetOrbit().GetObjectPos();
 
 		if (pObj->PointInHitSizeBox(vPos)
 				&& pObj->PointInObject(pObj->GetPos(), vPos))
 			{
-			pLoc->SetBlocked();
+			Loc.SetBlocked();
 
 #ifdef DEBUG
 			::kernelDebugLogPattern("[%s]: Blocked location because it overlaps %s.", pObj->GetSystem()->GetName(), pObj->GetNounPhrase(0));

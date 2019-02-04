@@ -2277,16 +2277,16 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 	for (i = 0; i < m_Locations.GetCount(); i++)
 		{
-		CLocationDef *pLoc = m_Locations.GetLocation(i);
+		CLocationDef &Loc = m_Locations.GetLocation(i);
 
 		//	Skip locations that are not empty.
 
-		if (!pLoc->IsEmpty())
+		if (!Loc.IsEmpty())
 			continue;
 
 		//	Compute the probability based on attributes
 
-		int iChance = CalcLocationWeight(pLoc, Criteria.AttribCriteria);
+		int iChance = CalcLocationWeight(&Loc, Criteria.AttribCriteria);
 		if (iChance == 0)
 			continue;
 
@@ -2294,7 +2294,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 		if (bCheckMin || bCheckMax)
 			{
-			CVector vDist = pLoc->GetOrbit().GetObjectPos() - vCenter;
+			CVector vDist = Loc.GetOrbit().GetObjectPos() - vCenter;
 			Metric rDist2 = vDist.Length2();
 
 			if (bCheckMin && rDist2 < rMinDist2)
@@ -2307,7 +2307,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 		if (pStationToPlace)
 			{
-			if (!IsExclusionZoneClear(pLoc->GetOrbit().GetObjectPos(), pStationToPlace))
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), pStationToPlace))
 				continue;
 			}
 

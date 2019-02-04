@@ -153,9 +153,9 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 		for (j = 0; j < LocationTable.GetCount(); j++)
 			{
 			int iLocID = LocationTable[j];
-			CLocationDef *pLoc = pSystem->GetLocation(iLocID);
+			CLocationDef &Loc = pSystem->GetLocation(iLocID);
 
-			iTotal += LocationCriteria.AdjLocationWeight(pSystem, pLoc);
+			iTotal += LocationCriteria.AdjLocationWeight(pSystem, &Loc);
 			}
 
 		int iAverageChance = iTotal / LocationTable.GetCount();
