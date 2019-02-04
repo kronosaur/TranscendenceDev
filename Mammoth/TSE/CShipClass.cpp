@@ -2574,7 +2574,8 @@ CCurrencyAndValue CShipClass::GetHullValue (CShip *pShip) const
 	//	such an event, then just return the raw value.
 
 	if (!FindEventHandler(CONSTLIT("GetHullValue"), &Event)
-			|| Ctx.InEvent(eventGetHullPrice))
+			|| Ctx.InEvent(eventGetHullPrice)
+			|| pShip == NULL)
 		return GetHullDesc().GetValue();
 
 	//	We pass the raw value in
