@@ -482,6 +482,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_GET_POV					36
 #define FN_SYS_ITEM_BUY_PRICE			37
 #define FN_SYS_STARGATE_PROPERTY		38
+#define FN_SYS_LOCATIONS				39
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2861,6 +2862,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetLightIntensity",			fnSystemGet,	FN_SYS_LIGHT_INTENSITY,
 			"(sysGetLightIntensity pos) -> intensity (0-100)",
 			"v",	0,	},
+
+		{	"sysGetLocations",				fnSystemGet,	FN_SYS_LOCATIONS,
+			"(sysGetLocations) -> list of locations",
+			"*",	0,	},
 
 		{	"sysGetName",					fnSystemGet,	FN_SYS_NAME,
 			"(sysGetName [nodeID]) -> name",
@@ -12913,6 +12918,40 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateInteger(iPrice);
+			}
+
+		case FN_SYS_LOCATIONS:
+			{
+			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			if (pSystem == NULL)
+				return StdErrorNoSystem(*pCC);
+
+			//	Get the list of all locations
+
+			TArray<int> Table;
+			if (!pSystem->GetEmptyLocations(&Table))
+				return pCC->CreateNil();
+
+			//	Generate a list with the results.
+
+			ICCItemPtr pResult(ICCItem::List);
+			for (int i = 0; i < Table.GetCount(); i++)
+				{
+				const CLocationDef &Loc = pSystem->GetLocation(Table[i]);
+
+				ICCItemPtr pEntry(ICCItem::SymbolTable);
+				pEntry->SetStringAt(*pCC, FIELD_ATTRIBS, Loc.GetAttributes());
+
+				ICCItemPtr pPos(CreateListFromVector(*pCC, Loc.GetOrbit().GetObjectPos()));
+				pEntry->SetAt(*pCC, FIELD_POS, pPos);
+
+				ICCItemPtr pOrbit(CreateListFromOrbit(*pCC, Loc.GetOrbit()));
+				pEntry->SetAt(*pCC, FIELD_ORBIT, pOrbit);
+
+				pResult->Append(*pCC, pEntry);
+				}
+
+			return pResult->Reference();
 			}
 
 		case FN_SYS_RANDOM_LOCATION:
