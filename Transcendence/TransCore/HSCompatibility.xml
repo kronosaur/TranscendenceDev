@@ -4221,11 +4221,26 @@
 
 	<SystemMap unid="&smSpawnCompatibility;"
 			displayOn="&smHumanSpace;"
-			obsoleteVersion="43"
+			obsoleteVersion="1"
 			>
+		<!-- This particular solution (add attributes to all systems) has too
+			many disadvantages. In particular, it means that extensions like 
+			TBR, which has been updated, begin to fail if the player includes an
+			old extension.
+
+			As of API 44, we've decided to remove the backwards compatibility
+			code and just deal with the fallout.
+
+			If we really need to fix this, we would have to do the following:
+
+			1. Keep track of the API version for each node created.
+			2. Add a TopologyProcessor criteria to select nodes of a give API
+			   version range.
+
 		<TopologyProcessor priority="primaryColony">
 			<System attributes="abbasidSpace, anarchistSpace, aresSpace, centauriWarlordsSpace, commonwealthCore, commonwealthSpace, corporateCore, corporateSpace, cscOperationsSpace, dwargSpace, ferianSpace, gaianSpace, heliotropeSpace, himalSpace, kobolSpace, luminousSpace, outlawSpace, penitentSpace, ranxSpace, ringerSpace, rogueFleetSpace, salvagerSpace, sapiensSpace, sungSpace, teratonSpace, tinkerSpace, urakSpace, ventariSpace, xenophobeSpace"/>
 		</TopologyProcessor>
+		-->
 	</SystemMap>
 
 	<!-- Old Image -->
