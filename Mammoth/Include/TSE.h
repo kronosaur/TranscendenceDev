@@ -725,6 +725,16 @@ class CSpaceObject : public CObject
 			const COrbit *pOrbit;
 			};
 
+		struct SPlayerDestinationOptions
+			{
+			bool bShowDistanceAndBearing = false;
+			bool bAutoClearDestination = false;
+			bool bAutoClearOnDestroy = false;
+			bool bAutoClearOnDock = false;
+			bool bAutoClearOnGate = false;
+			bool bShowHighlight = false;
+			};
+
 		//	Creation and Lifetime
 
 		CSpaceObject (IObjectClass *pClass);
@@ -1120,10 +1130,6 @@ class CSpaceObject : public CObject
 		inline void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Delete(pObj); }
 		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 		inline void RestartTime (void) { m_fTimeStop = false; }
-		inline void SetAutoClearDestination (void) { m_fAutoClearDestination = true; }
-		inline void SetAutoClearDestinationOnDestroy (void) { m_fAutoClearDestinationOnDestroy = true; }
-		inline void SetAutoClearDestinationOnDock (void) { m_fAutoClearDestinationOnDock = true; }
-		inline void SetAutoClearDestinationOnGate (void) { m_fAutoClearDestinationOnGate = true; }
 		inline void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
 		inline void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
 		inline void SetDataFromDataBlock (const CAttributeDataBlock &Block) { m_Data.MergeFrom(Block); }
@@ -1146,7 +1152,7 @@ class CSpaceObject : public CObject
 		inline void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
 		inline void SetOutOfPlaneObj (bool bValue = true) { m_fOutOfPlaneObj = bValue; }
 		void SetOverride (CDesignType *pOverride);
-		inline void SetPlayerDestination (void) { m_fPlayerDestination = true; }
+		void SetPlayerDestination (const SPlayerDestinationOptions &Options);
 		inline void SetPlayerDocked (void) { m_fPlayerDocked = true; }
 		inline void SetPlayerTarget (void) { m_fPlayerTarget = true; }
 		inline bool SetPOVLRS (void)
@@ -1159,8 +1165,6 @@ class CSpaceObject : public CObject
 			}
 		inline void SetSelection (void) { m_fSelected = true; }
 		inline void SetShowDamageBar (void) { m_fShowDamageBar = true; }
-		inline void SetShowDistanceAndBearing (void) { m_fShowDistanceAndBearing = true; }
-		inline void SetShowHighlight (void) { m_fShowHighlight = true; }
 		inline void StopTime (void) { m_fTimeStop = true; }
 		void Update (SUpdateCtx &Ctx);
 		void UpdateExtended (const CTimeSpan &ExtraTime);

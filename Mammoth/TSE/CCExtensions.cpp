@@ -8300,12 +8300,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_SET_AS_DESTINATION:
 			{
-			bool bShowDistanceAndBearing = false;
-			bool bAutoClearDestination = false;
-			bool bAutoClearOnDestroy = false;
-			bool bAutoClearOnDock = false;
-			bool bAutoClearOnGate = false;
-			bool bShowHighlight = false;
+			CSpaceObject::SPlayerDestinationOptions Options;
 
 			//	If we have an extra argument then it is either a boolean (which
 			//	is old-style) or it is a string or list of string.
@@ -8316,15 +8311,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				if (!pOptions->IsNil() 
 						&& (pOptions->IsIdentifier() || pOptions->IsList() || pOptions->IsSymbolTable()))
 					{
-					bAutoClearDestination = pOptions->GetBooleanAt(CONSTLIT("autoClear"));
-					bAutoClearOnDestroy = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDestroy"));
-					bAutoClearOnDock = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDock"));
-					bAutoClearOnGate = pOptions->GetBooleanAt(CONSTLIT("autoClearOnGate"));
-					bShowDistanceAndBearing = pOptions->GetBooleanAt(CONSTLIT("showDistance"));
-					bShowHighlight = pOptions->GetBooleanAt(CONSTLIT("showHighlight"));
+					Options.bAutoClearDestination = pOptions->GetBooleanAt(CONSTLIT("autoClear"));
+					Options.bAutoClearOnDestroy = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDestroy"));
+					Options.bAutoClearOnDock = pOptions->GetBooleanAt(CONSTLIT("autoClearOnDock"));
+					Options.bAutoClearOnGate = pOptions->GetBooleanAt(CONSTLIT("autoClearOnGate"));
+					Options.bShowDistanceAndBearing = pOptions->GetBooleanAt(CONSTLIT("showDistance"));
+					Options.bShowHighlight = pOptions->GetBooleanAt(CONSTLIT("showHighlight"));
 					}
 				else
-					bShowDistanceAndBearing = !pOptions->IsNil();
+					Options.bShowDistanceAndBearing = !pOptions->IsNil();
 				}
 
 			//	Otherwise, if we have more than two arguments, then we expect the
@@ -8332,26 +8327,13 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			else if (pArgs->GetCount() > 2)
 				{
-				bShowDistanceAndBearing = !pArgs->GetElement(1)->IsNil();
-				bAutoClearDestination = !pArgs->GetElement(2)->IsNil();
+				Options.bShowDistanceAndBearing = !pArgs->GetElement(1)->IsNil();
+				Options.bAutoClearDestination = !pArgs->GetElement(2)->IsNil();
 				}
 
 			//	Set the options
 
-			pObj->SetPlayerDestination();
-			if (bShowDistanceAndBearing)
-				pObj->SetShowDistanceAndBearing();
-			if (bAutoClearDestination)
-				pObj->SetAutoClearDestination();
-			if (bAutoClearOnDestroy)
-				pObj->SetAutoClearDestinationOnDestroy();
-			if (bAutoClearOnDock)
-				pObj->SetAutoClearDestinationOnDock();
-			if (bAutoClearOnGate)
-				pObj->SetAutoClearDestinationOnGate();
-			if (bShowHighlight)
-				pObj->SetShowHighlight();
-
+			pObj->SetPlayerDestination(Options);
 			return pCC->CreateTrue();
 			}
 

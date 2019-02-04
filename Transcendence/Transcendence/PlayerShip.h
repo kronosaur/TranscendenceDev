@@ -144,7 +144,6 @@ class CPlayerShipController : public IShipController
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyNextMissile (int iDir = 1);
 		inline void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
-		void SetDestination (CSpaceObject *pTarget);
         inline void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
 		inline void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
 		inline void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
@@ -251,6 +250,10 @@ class CPlayerShipController : public IShipController
 		void PaintDockingPortIndicators (SViewportPaintCtx &Ctx, CG32bitImage &Dest) const;
 		void PaintTargetingReticle (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject *pTarget);
 		void Reset (void);
+
+		static constexpr DWORD OPTION_HIGHLIGHT = 0x00000001;
+		void SetDestination (CSpaceObject *pTarget, DWORD dwOptions = 0);
+
 		void UpdateHelp (int iTick);
 
 		CTranscendenceWnd *m_pTrans;

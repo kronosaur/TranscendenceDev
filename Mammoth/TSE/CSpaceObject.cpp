@@ -7022,6 +7022,34 @@ void CSpaceObject::SetOverride (CDesignType *pOverride)
 		}
 	}
 
+void CSpaceObject::SetPlayerDestination (const SPlayerDestinationOptions &Options)
+
+//	SetPlayerDestination
+//
+//	Sets the object as a player destination.
+
+	{
+	m_fPlayerDestination = true;
+
+	if (Options.bShowDistanceAndBearing)
+		m_fShowDistanceAndBearing = true;
+
+	if (Options.bAutoClearDestination)
+		m_fAutoClearDestination = true;
+
+	if (Options.bAutoClearOnDestroy)
+		m_fAutoClearDestinationOnDestroy = true;
+
+	if (Options.bAutoClearOnDock)
+		m_fAutoClearDestinationOnDock = true;
+
+	if (Options.bAutoClearOnGate)
+		m_fAutoClearDestinationOnGate = true;
+
+	if (Options.bShowHighlight)
+		m_fShowHighlight = true;
+	}
+
 bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
 
 //	SetProperty

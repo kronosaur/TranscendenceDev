@@ -104,9 +104,7 @@ void CPlayerShipController::AddOrder (OrderTypes Order, CSpaceObject *pTarget, c
 
 		case orderDock:
 		case orderGate:
-			SetDestination(pTarget);
-			if (pTarget)
-				pTarget->SetShowHighlight();
+			SetDestination(pTarget, OPTION_HIGHLIGHT);
 			break;
 
 		case orderAimAtTarget:
@@ -114,9 +112,7 @@ void CPlayerShipController::AddOrder (OrderTypes Order, CSpaceObject *pTarget, c
 			if (m_pShip->HasTargetingComputer())
 				SetTarget(pTarget);
 
-			SetDestination(pTarget);
-			if (pTarget)
-				pTarget->SetShowHighlight();
+			SetDestination(pTarget, OPTION_HIGHLIGHT);
 			break;
 		}
 
@@ -2470,7 +2466,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 		SetTarget(NULL);
 	}
 
-void CPlayerShipController::SetDestination (CSpaceObject *pTarget)
+void CPlayerShipController::SetDestination (CSpaceObject *pTarget, DWORD dwOptions)
 
 //	SetDestination
 //
@@ -2485,7 +2481,13 @@ void CPlayerShipController::SetDestination (CSpaceObject *pTarget)
 	m_pDestination = pTarget;
 
 	if (m_pDestination)
-		m_pDestination->SetPlayerDestination();
+		{
+		CSpaceObject::SPlayerDestinationOptions Options;
+		if (dwOptions & OPTION_HIGHLIGHT)
+			Options.bShowHighlight = true;
+
+		m_pDestination->SetPlayerDestination(Options);
+		}
 	}
 
 void CPlayerShipController::SetFireMain (bool bFire)
