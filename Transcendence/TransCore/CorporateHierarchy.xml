@@ -1842,11 +1842,11 @@
 										)
 
 								(eq i totalItems)
-									(setq (cat buyDesc 
+									(setq buyDesc (cat buyDesc 
 										(typTranslate gType 'descWantToBuyEnd { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
 										))
 
-								(setq (cat buyDesc 
+								(setq buyDesc (cat buyDesc 
 									(typTranslate gType 'descWantToBuyComma { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
 									))
 								)
