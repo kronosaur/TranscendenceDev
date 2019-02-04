@@ -7969,8 +7969,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 
 			CString sError;
-			pObj->UseItem(Item, &sError);
-			if (sError.IsBlank())
+			if (!pObj->UseItem(Item, &sError))
 				{
 				::kernelDebugLogPattern("[%s %s Invoke]: %s", pObj->GetNounPhrase(), pType->GetNounPhrase(), sError);
 				return pCC->CreateNil();
