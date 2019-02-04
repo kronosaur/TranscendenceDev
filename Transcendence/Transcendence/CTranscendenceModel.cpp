@@ -1410,7 +1410,12 @@ ALERROR CTranscendenceModel::LoadGameStats (const CString &sFilespec, CGameStats
 	return NOERROR;
 	}
 
-ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder, const TArray<CString> &ExtensionFolders, DWORD dwAdventure, const TArray<DWORD> &Extensions, const TSortMap<DWORD, bool> &DisabledExtensions, CString *retsError)
+ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder, 
+										   const TArray<CString> &ExtensionFolders, 
+										   DWORD dwAdventure, 
+										   const TArray<DWORD> &Extensions, 
+										   const TSortMap<DWORD, bool> &DisabledExtensions, 
+										   CString *retsError)
 
 //	LoadUniverse
 //
@@ -1456,7 +1461,18 @@ ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder, con
 		//	Initialize the universe
 
 		if (error = m_Universe.Init(Ctx, retsError))
-			return error;
+			{
+			//	If we didn't have any extensions loaded and we failed, then
+			//	there's nothing we can do and we need to abort.
+
+			if (Extensions.GetCount() == 0)
+				return error;
+
+			//	Otherwise, we try to recover by loading with no extensions.
+
+			else
+				return LoadUniverse(sCollectionFolder, ExtensionFolders, dwAdventure, TArray<DWORD>(), DisabledExtensions, retsError);
+			}
 
 		return NOERROR;
 		}
