@@ -79,6 +79,13 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	else
 		CItem::InitCriteriaAll(&m_DeviceCriteria);
 
+	//	Always allow virtual items, because we often use them and we don't want
+	//	to force the modder to always include them in the criteria.
+
+	m_DeviceCriteria.bExcludeVirtual = false;
+
+	//	Maximums
+
 	m_iMaxCargoSpace = pHull->GetAttributeIntegerBounded(MAX_CARGO_SPACE_ATTRIB, m_iCargoSpace, -1, m_iCargoSpace);
 	m_iMaxReactorPower = pHull->GetAttributeInteger(MAX_REACTOR_POWER_ATTRIB);
 

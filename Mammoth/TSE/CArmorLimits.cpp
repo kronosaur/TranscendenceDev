@@ -859,6 +859,11 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 	else
 		CItem::InitCriteriaAll(&m_ArmorCriteria);
 
+	//	We never exclude virtual items because it is common for (e.g., biotech)
+	//	classes to have virtual armor.
+
+	m_ArmorCriteria.bExcludeVirtual = false;
+
 	//	If we've already got a table of armor limits then we're using that method.
 
 	if (m_ArmorLimits.GetCount() > 0)
