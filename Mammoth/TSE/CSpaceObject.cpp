@@ -129,6 +129,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_SCALE							CONSTLIT("scale")
+#define PROPERTY_SHOW_AS_DESTINATION			CONSTLIT("showAsDestination")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_SUSPENDED						CONSTLIT("suspended")
@@ -4024,6 +4025,27 @@ ICCItem *CSpaceObject::GetOverlayProperty (CCodeChainCtx *pCCCtx, DWORD dwID, co
 		}
 	}
 
+bool CSpaceObject::GetPlayerDestinationOptions (SPlayerDestinationOptions &retOptions) const
+
+//	GetPlayerDestinationOptions
+//
+//	If this option is a player destination, we return TRUE and fill in 
+//	retOptions appropriately. Otherwise, we return FALSE.
+
+	{
+	if (!m_fPlayerDestination)
+		return false;
+
+	retOptions.bShowDistanceAndBearing = (m_fShowDistanceAndBearing ? true : false);
+	retOptions.bAutoClearDestination = (m_fAutoClearDestination ? true : false);
+	retOptions.bAutoClearOnDestroy = (m_fAutoClearDestinationOnDestroy ? true : false);
+	retOptions.bAutoClearOnDock = (m_fAutoClearDestinationOnDock ? true : false);
+	retOptions.bAutoClearOnGate = (m_fAutoClearDestinationOnGate ? true : false);
+	retOptions.bShowHighlight = (m_fShowHighlight ? true : false);
+
+	return true;
+	}
+
 ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 //	GetProperty
@@ -4261,6 +4283,24 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			default:
 				return CC.CreateNil();
 			}
+		}
+
+	else if (strEquals(sName, PROPERTY_SHOW_AS_DESTINATION))
+		{
+		if (!IsPlayerDestination())
+			return CC.CreateNil();
+
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+		pResult->SetBooleanAt(CC, CONSTLIT("showDestination"), true);
+
+		if (m_fAutoClearDestination)			pResult->SetBooleanAt(CC, CONSTLIT("autoClear"), true);
+		if (m_fAutoClearDestinationOnDestroy)	pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnDestroy"), true);
+		if (m_fAutoClearDestinationOnDock)		pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnDock"), true);
+		if (m_fAutoClearDestinationOnGate)		pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnGate"), true);
+		if (m_fShowDistanceAndBearing)			pResult->SetBooleanAt(CC, CONSTLIT("showDistance"), true);
+		if (m_fShowHighlight)					pResult->SetBooleanAt(CC, CONSTLIT("showHighlight"), true);
+
+		return pResult->Reference();
 		}
 
 	else if (strEquals(sName, PROPERTY_SOVEREIGN))

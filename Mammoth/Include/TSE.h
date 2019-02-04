@@ -1247,6 +1247,7 @@ class CSpaceObject : public CObject
 		//	Player Destination
 
 		inline void ClearPlayerDestination (void) { m_fPlayerDestination = false; m_fAutoClearDestination = false; m_fAutoClearDestinationOnDock = false; m_fAutoClearDestinationOnDestroy = false; m_fAutoClearDestinationOnGate = false; m_fShowDistanceAndBearing = false; m_fShowHighlight = false; }
+		bool GetPlayerDestinationOptions (SPlayerDestinationOptions &retOptions) const;
 		inline bool IsAutoClearDestination (void) const { return m_fAutoClearDestination; }
 		inline bool IsAutoClearDestinationOnDestroy (void) const { return m_fAutoClearDestinationOnDestroy; }
 		inline bool IsAutoClearDestinationOnDock (void) const { return m_fAutoClearDestinationOnDock; }
