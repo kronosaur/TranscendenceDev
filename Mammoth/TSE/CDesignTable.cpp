@@ -148,30 +148,12 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 		//	If this is an optional type then we need to figure out whether we're 
 		//	going to include it or not.
 
+		bool bMustExist = false;
+		bool bExcluded = false;
 		if (pNewType->IsOptional())
 			{
-			//	If we have a list of types used then that is the authoritative answer 
-			//	(because it comes from the saved file).
-
-			if (TypesUsed.GetCount() > 0)
-				{
-				if (!TypesUsed.Find(pNewType->GetUNID()))
-					{
-					iSrcPos++;
-					continue;
-					}
-				}
-
-			//	Otherwise, if we exclude this type because of API of extension
-			//	requirements, then skip.
-
-			else if (!pNewType->IsIncluded(dwAPIVersion, ExtensionsIncluded))
-				{
-				iSrcPos++;
-				continue;
-				}
-
-			//	Otherwise, we do include it.
+			bMustExist = (TypesUsed.GetCount() > 0 && TypesUsed.Find(pNewType->GetUNID()));
+			bExcluded = !pNewType->IsIncluded(dwAPIVersion, ExtensionsIncluded);
 			}
 
 		//	If this is an override type, then we add to a special table.
@@ -181,7 +163,13 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 		if (pNewType->IsModification())
 			{
-			Override.AddEntry(pNewType);
+			//	Modifications always rely on some underlying type, so if we're
+			//	excluding this modification, we can skip it, even if the type
+			//	itself is required by the save file.
+
+			if (!bExcluded)
+				Override.AddEntry(pNewType);
+
 			iSrcPos++;
 			}
 
@@ -189,11 +177,18 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 		else if (iDestPos == m_Table.GetCount())
 			{
-			m_Table.InsertSorted(pNewType->GetUNID(), pNewType);
+			//	Do not add excluded type, unless required by the save file.
+			//	The latter can happen if we make a type optional after a save 
+			//	file has been created.
+
+			if (!bExcluded || bMustExist)
+				{
+				m_Table.InsertSorted(pNewType->GetUNID(), pNewType);
+				iDestPos++;
+				}
 
 			//	Advance
 
-			iDestPos++;
 			iSrcPos++;
 			}
 
@@ -207,21 +202,34 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 			if (iCompare == 0)
 				{
-				//	If we have to free our originals, then remember them here.
+				//	We found the UNID in the destination table, so we don't have 
+				//	to worry about the type existing--it does.
 
-				if (m_bFreeTypes)
+				if (!bExcluded)
 					{
-					CDesignType *pOriginalType = m_Table.GetValue(iDestPos);
-					Replaced.Insert(pOriginalType);
+					//	If we have to free our originals, then remember them here.
+
+					if (m_bFreeTypes)
+						{
+						CDesignType *pOriginalType = m_Table.GetValue(iDestPos);
+						Replaced.Insert(pOriginalType);
+						}
+
+					//	If the new type is different than the original, then warn
+					//	LATER: This should probably be an error.
+
+					if (m_Table.GetValue(iDestPos)->GetType() != pNewType->GetType())
+						::kernelDebugLogPattern("WARNING: Override of %08x is changing the type.", pNewType->GetUNID());
+
+					//	Replace
+
+					m_Table.GetValue(iDestPos) = pNewType;
+
+					//	Advance
+
+					iDestPos++;
 					}
 
-				//	Replace
-
-				m_Table.GetValue(iDestPos) = pNewType;
-
-				//	Advance
-
-				iDestPos++;
 				iSrcPos++;
 				}
 
@@ -230,17 +238,24 @@ ALERROR CDesignTable::Merge (const CDesignTable &Source, CDesignList &Override, 
 
 			else if (iCompare == 1)
 				{
-				m_Table.InsertSorted(pNewType->GetUNID(), pNewType, iDestPos);
+				if (!bExcluded || bMustExist)
+					{
+					m_Table.InsertSorted(pNewType->GetUNID(), pNewType, iDestPos);
+					iDestPos++;
+					}
 
 				//	Advance
 
-				iDestPos++;
 				iSrcPos++;
 				}
 
 			//	Otherwise, go to the next destination slot
 
 			else
+				//	LATER: We could optimize this case by skipping ahead in an
+				//	inner loop. Otherwise we're recalculating pNewType and all 
+				//	its state (particularly for optional types).
+
 				iDestPos++;
 			}
 		}
