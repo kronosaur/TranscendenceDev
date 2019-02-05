@@ -108,7 +108,7 @@
 	<!-- Segment of heavy Iocrym Plate -->
 
 	<ItemType UNID="&itIocrymPlate;"
-			name=				"[segment(s) of ]heavy Iocrym armor"
+			name=				"[segment(s) of ]massive Iocrym armor"
 			level=				"12"
 			value=				"100000"
 			mass=				"12000"
