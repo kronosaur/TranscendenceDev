@@ -147,7 +147,7 @@
 			mass=				"100"
 			frequency=			"notRandom"
 			numberAppearing=	"3d6"
-			attributes=			"basicFuel, consumable, fuel, notStandard"
+			attributes=			"notStandard"
 
 			data=				"2500"
 
@@ -166,7 +166,7 @@
 			value=				"250"
 			mass=				"1000"
 			frequency=			"notRandom"
-			attributes=			"energyWeapon, majorItem, notStandard"
+			attributes=			"notStandard"
 
 			description=		"A popular weapon for light freighters and fast gunships. This weapon is manufactured by the Earth Industries Conglomerate."
 			>
@@ -195,7 +195,7 @@
 			value=				"3500"
 			mass=				"6000"
 			frequency=			"notRandom"
-			attributes=			"majorItem, notStandard"
+			attributes=			"notStandard"
 
 			description=		"The largest kinetic mass driver created by NAMI, the Ballista cannon can pummel a medium-sized station."
 			>
@@ -226,7 +226,7 @@
 			level=				"5"
 			value=				"800"
 			mass=				"3000"
-			attributes=			"minorItem, notStandard"
+			attributes=			"notStandard"
 			frequency=			"notRandom"
 			numberAppearing=	"1d4"
 
@@ -241,6 +241,31 @@
 				hitPoints=	"120"
 				/>
 
+	</ItemType>
+
+	<!-- Tritium Propulsion Upgrade -->
+
+	<ItemType UNID="&itTritiumPropulsionUpgrade;"
+			name=				"tritium propulsion upgrade"
+			attributes=			"notStandard"
+			  
+			level=				"3"
+			frequency=			"notRandom"
+
+			value=				"1600"
+			mass=				"2000"
+			  
+			description=		"Most small and medium sized ships use a fusion drive for propulsion. This device upgrade mixes-in a powerful tritium plasma to increase the thrust of the engines."
+			>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<DriveDevice
+				maxSpeedInc=	"2"
+				maxSpeed=		"20"
+				thrust=			"200"
+				powerUse=		"30"
+				/>
 	</ItemType>
 
 <!-- MISCELLANEOUS =============================================================

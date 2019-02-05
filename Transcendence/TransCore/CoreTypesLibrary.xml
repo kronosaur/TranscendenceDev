@@ -89,6 +89,7 @@
 	<!ENTITY itHeavyPlasteelPlate		"0x00004008">
 	<!ENTITY itLaserCannon				"0x0000400D">
 	<!ENTITY itHelium3FuelRod			"0x0000403C">
+	<!ENTITY itTritiumPropulsionUpgrade	"0x0000404B">
 	<!ENTITY itBallistaCannon			"0x000041A2">
 	
 	<!ENTITY vtWreckEjecta				"0x00005004">
