@@ -1830,7 +1830,7 @@
 
 								stationCannotInstall
 									(if (@ status 'descID)
-										(setq desc (objTranslate installerObj (@ status 'descID) { item:thisItem targetObj:targetObj }))
+										(setq desc (objTranslate installerObj (@ status 'descID) { item:thisItem itemName:(itmGetName thisItem 'article) targetObj:targetObj }))
 										(setq desc (or
 											(objTranslate installerObj 'rpg.noTechToInstallDevice { item:thisItem targetObj:targetObj })
 											(scrTranslate gScreen 'rpg.noTechToInstallDevice { item:thisItem targetObj:targetObj })
