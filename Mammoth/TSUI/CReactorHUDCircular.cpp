@@ -463,6 +463,9 @@ void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)
 	int cxWidth = MediumFont.MeasureText(sReactorName, &cyHeight) + 4 * RING_SPACING;
 	cyHeight += RING_SPACING;
 
+	if (Stats.Enhancements.GetCount() > 0)
+		cyHeight += MediumFont.GetHeight();
+
 	CVector vInnerPos = CVector::FromPolarInv(0.0, m_iGaugeRadius + RING_SPACING + m_iGaugeWidth + RING_SPACING);
 	CVector vOuterPos = vInnerPos + CVector(Min(cxWidth, RIGHT_CONTROL_WIDTH), 0.0);
 
@@ -482,6 +485,14 @@ void CReactorHUDCircular::PaintReactorItem (const SReactorStats &Stats)
 			yText,
 			rgbColor,
 			sReactorName);
+
+	if (Stats.Enhancements.GetCount() > 0)
+		{
+		CUIHelper Helper(*g_pHI);
+
+		DWORD dwOptions = CUIHelper::OPTION_ALIGN_CENTER;
+		Helper.PaintDisplayAttribs(m_Buffer, xText + (cxWidth / 2), yText + MediumFont.GetHeight(), Stats.Enhancements, dwOptions);
+		}
 	}
 
 void CReactorHUDCircular::Realize (SHUDPaintCtx &Ctx)

@@ -285,7 +285,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	CString sVariant;
 	int iAmmoLeft;
 	pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
-	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier);
+	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier | nounNoModifiers);
 	CString sName = (sVariant.IsBlank() ? sDevName : sVariant);
 
 	//	Figure out metrics for the background
@@ -322,9 +322,15 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 
 	//	Paint enhancement
 
-	CString sBonus = pDevice->GetEnhancedDesc(pShip);
-	if (sBonus.IsBlank())
-		DrawModifier(m_Buffer, xText - 2, yText + MediumFont.GetHeight(), sBonus, locAlignRight);
+	TArray<SDisplayAttribute> Attribs;
+	ItemCtx.GetEnhancementDisplayAttributes(&Attribs);
+	if (Attribs.GetCount() > 0)
+		{
+		CUIHelper Helper(*g_pHI);
+
+		DWORD dwOptions = CUIHelper::OPTION_ALIGN_RIGHT;
+		Helper.PaintDisplayAttribs(m_Buffer, xText - 2, yText + MediumFont.GetHeight(), Attribs, dwOptions);
+		}
 
 	//	Paint the ammo count
 
