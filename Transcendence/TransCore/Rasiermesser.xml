@@ -177,17 +177,24 @@
 
 		<Language>
 			<Text id="descNoInstall">
-				(cat
-					"We only install Rasiermesser items. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install Rasiermesser items. We cannot install %itemName%
+				on your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install Rasiermesser items up to tech level %maxLevel%.
+
 			</Text>
             
 			<Text id="core.mapDesc">
-				Repairs armor up to level 7 &mdash; Installs Rasiermesser armor up to level 7 &mdash; Installs Rasiermesser devices up to level 7 &mdash; Sells Rasiermesser products
+
+				Repairs armor up to level 7 &mdash;
+				Installs Rasiermesser armor up to level 7 &mdash;
+				Installs Rasiermesser devices up to level 7 &mdash;
+				Sells Rasiermesser products
+
 			</Text>
 		</Language>
 	</StationType>
@@ -679,10 +686,10 @@
 
 			</Text>
 			<Text id="descNoInstall">
-				(cat
-					"We only install Rasiermesser items. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install Rasiermesser items. We cannot install %itemName%
+				on your ship.
+
 			</Text>
 			<Text id="descSecondaryLab">
 
@@ -691,19 +698,32 @@
 
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install Rasiermesser items up to tech level %maxLevel%.
+
 			</Text>
             
             <Text id="core.mapDescCustom">
-                (cat
-                    (if (objGetData gSource "Dvalin")
-                        "Dvalin's Research Lab &mdash; "
-                        )
-                    "Refuels up to level 9 &mdash; Repairs armor up to level 9 &mdash; Installs Rasiermesser armor up to level 8 &mdash; Installs Rasiermesser devices up to level 9 &mdash; Sells Rasiermesser products"
-                    )
+				(if (objGetData gSource 'Dvalin)
+					(cat (typTranslate gType 'mapDescDvalin) " "
+						(typTranslate gType 'core.mapDesc)
+						)
+					(typTranslate gType 'core.mapDesc)
+					)
             </Text>
+			<Text id="mapDescDvalin">
+
+				Dvalin's Research Lab &mdash;
+
+			</Text>
             <Text id="core.mapDesc">
-                "Refuels up to level 9 &mdash; Repairs armor up to level 9 &mdash; Installs Rasiermesser armor up to level 8 &mdash; Installs Rasiermesser devices up to level 9 &mdash; Sells Rasiermesser products"
+
+                Refuels up to level 9 &mdash; 
+				Repairs armor up to level 9 &mdash;
+				Installs Rasiermesser armor up to level 8 &mdash;
+				Installs Rasiermesser devices up to level 9 &mdash;
+				Sells Rasiermesser products"
+
             </Text>
 		</Language>
 

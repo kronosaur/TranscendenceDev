@@ -442,10 +442,10 @@
 
 			</Text>
 			<Text id="descNoInstall">
-				(cat
-					"We only install mining equipment. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install mining equipment. We cannot install %itemName% 
+				on your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
 				We install mining equipment up to tech level %maxLevel%.

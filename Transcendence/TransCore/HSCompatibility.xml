@@ -3123,10 +3123,7 @@
 
 		<Language>
 			<Text id="descNoInstall">
-				(cat
-					"We only install smuggler's equipment. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+				We only install smuggler's equipment. We cannot install %itemName% on your ship.
 			</Text>
 			<Text id="dockServices:installAbility">
 				We install smuggler's equipment up to tech level %maxLevel%.

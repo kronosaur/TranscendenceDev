@@ -405,26 +405,32 @@ PLAYER DATA
 			<String id="actionWantShields">"I need better [s]hields."</String>
 
 			<Text id="descNoMissions">
+
 				The dark-haired woman frowns for a second,
 				"I'm sorry, but we don't have any use for you right now."
+
 			</Text>
 			<Text id="descNoInstall">
-				(cat
-					"We only install smuggler's equipment. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install smuggler's equipment. We cannot install 
+				%itemName% on your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install smuggler's equipment up to tech level %maxLevel%.
+
 			</Text>
 
 			<Text id="rumor.commonwealthPub">
+
 				A woman dressed in a fancy neolinen suit talks to you:
 
 				"Do you know how to get a contact at the black market station?
 				You look like you might know."
 
 				You spend 5 credits on drinks.
+
 			</Text>
 
 			<Text id="descMemberBoss">
@@ -449,14 +455,16 @@ PLAYER DATA
 			</Text>
 			<Text id="descInstalledWeapon">
 
-				The dark-haired woman smiles as the crew installs your new weapon:
+				The dark-haired woman smiles as the crew installs your new 
+				weapon:
 				
 				"Enjoy your new toy."
 			
 			</Text>
 			<Text id="descInstalledShields">
 
-				The dark-haired woman smiles as the crew installs your new shield generator:
+				The dark-haired woman smiles as the crew installs your new 
+				shield generator:
 				
 				"Enjoy your new toy."
 
@@ -470,7 +478,12 @@ PLAYER DATA
 			</Text>
             
             <Text id="core.mapDesc">
-                "Refuels up to level 6 &mdash; Repairs/installs armor up to level 6 &mdash; Installs purchased devices up to level 6 &mdash; Buys and sells illegal and military items"
+
+                Refuels up to level 6 &mdash;
+				Repairs/installs armor up to level 6 &mdash;
+				Installs purchased devices up to level 6 &mdash;
+				Buys and sells illegal and military items
+
             </Text>
 		</Language>
 	</StationType>

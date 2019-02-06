@@ -700,17 +700,24 @@
 
 		<Language>
 			<Text id="descNoInstall">
-				(cat
-					"We only install Makayev items. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install Makayev items. We cannot install %itemName% on 
+				your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install Makayev items up to tech level %maxLevel%.
+
 			</Text>
 
 			<Text id="core.mapDesc">
-				Repairs armor up to level 8 &mdash; Installs Makayev armor up to level 7 &mdash; Installs Makayev devices up to level 7 &mdash; Sells Makayev products
+
+				Repairs armor up to level 8 &mdash;
+				Installs Makayev armor up to level 7 &mdash;
+				Installs Makayev devices up to level 7 &mdash;
+				Sells Makayev products
+
 			</Text>
 		</Language>
 	</StationType>
@@ -822,17 +829,24 @@
 
 		<Language>
 			<Text id="descNoInstall">
-				(cat
-					"We only install Bushido items. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install Bushido items. We cannot install %itemName% on 
+				your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install Bushido items up to tech level %maxLevel%.
+
 			</Text>
 
 			<Text id="core.mapDesc">
-				Repairs armor up to level 9 &mdash; Installs Bushido armor up to level 10 &mdash; Installs Bushido devices up to level 10 &mdash; Sells Bushido products
+
+				Repairs armor up to level 9 &mdash;
+				Installs Bushido armor up to level 10 &mdash;
+				Installs Bushido devices up to level 10 &mdash;
+				Sells Bushido products
+
 			</Text>
 		</Language>
 
@@ -1623,17 +1637,24 @@
 				Welcome to Makayev-Energia!
 			</Text>
 			<Text id="descNoInstall">
-				(cat
-					"We only install Makayev items. "
-					"We cannot install " (itmGetName (@ gData 'item) 0x04) " on your ship."
-					)
+
+				We only install Makayev items. We cannot install %itemName% on 
+				your ship.
+
 			</Text>
 			<Text id="dockServices:installAbility">
+
 				We install Makayev items up to tech level %maxLevel%.
+
 			</Text>
             
 			<Text id="core.mapDesc">
-				Refuels up to level 10 &mdash; Repairs/installs Makayev armor up to level 9 &mdash; Installs Makayev devices up to level 9 &mdash; Sells Makayev weapons and ammo
+
+				Refuels up to level 10 &mdash;
+				Repairs/installs Makayev armor up to level 9 &mdash;
+				Installs Makayev devices up to level 9 &mdash;
+				Sells Makayev weapons and ammo
+
 			</Text>
 		</Language>
 
