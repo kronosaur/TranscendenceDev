@@ -679,7 +679,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	The principal target is always first.
 
-		CSpaceObject *pMainTarget = GetTarget(ItemCtx, true);
+		CSpaceObject *pMainTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
 		if (pMainTarget)
 			TargetingCtx.Targets.Insert(pMainTarget);
 
@@ -1844,14 +1844,14 @@ bool CPlayerShipController::GetDeviceActivate (void)
 	return m_bActivate;
 	}
 
-CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //
 //	Returns the target for the player ship
 
 	{
-	if (bNoAutoTarget)
+	if (dwFlags & FLAG_ACTUAL_TARGET)
 		return m_pTarget;
 
 	//	Use the player's designated target if it's in range and it's not a friend,
@@ -1864,7 +1864,7 @@ CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, bool bNoAutoT
 
 	//	Otherwise, we use the auto-target.
 
-	else
+	else if (!(dwFlags & FLAG_NO_AUTO_TARGET))
 		{
 		//	Return the autotarget
 
@@ -1891,6 +1891,11 @@ CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, bool bNoAutoT
 
 		return ((m_pAutoTarget && !m_pAutoTarget->IsDestroyed()) ? m_pAutoTarget : NULL);
 		}
+
+	//	Otherwise, no target
+
+	else
+		return NULL;
 	}
 
 void CPlayerShipController::OnDocked (CSpaceObject *pObj)

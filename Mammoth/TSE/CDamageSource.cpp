@@ -49,7 +49,7 @@ bool CDamageSource::CanHit (CSpaceObject *pTarget) const
 
 	//	If we're deliberately targeting pTarget, then we allow the hit.
 
-	if (pObj->GetTarget(CItemCtx(), true) == pTarget)
+	if (pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET) == pTarget)
 		return true;
 
 	//	Otherwise, pTarget should not be hit by us.

@@ -418,7 +418,7 @@ CSpaceObject *CFerianShipAI::FindRandomAsteroid (void)
 		return Table[mathRandom(0, iCount-1)];
 	}
 
-CSpaceObject *CFerianShipAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CFerianShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //

@@ -2209,7 +2209,7 @@ CSpaceObject *CStandardShipAI::OnGetBase (void) const
 		}
 	}
 
-CSpaceObject *CStandardShipAI::OnGetTarget (bool bNoAutoTarget) const
+CSpaceObject *CStandardShipAI::OnGetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //

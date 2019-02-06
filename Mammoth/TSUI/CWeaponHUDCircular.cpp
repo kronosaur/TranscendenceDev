@@ -358,7 +358,7 @@ void CWeaponHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	//	Get the current target
 
-	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), true);
+	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
 
 	//	Set up some metrics
 

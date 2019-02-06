@@ -337,7 +337,7 @@ class CBaseShipAI : public IShipController
 		virtual bool GetReverseThrust (void) override { return false; }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return false; }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
@@ -415,7 +415,7 @@ class CBaseShipAI : public IShipController
 		virtual bool OnGetAISettingInteger (const CString &sSetting, int *retiValue) { return false; }
 		virtual bool OnGetAISettingString (const CString &sSetting, CString *retsValue) { return false; }
 		virtual CSpaceObject *OnGetBase (void) const { return NULL; }
-		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const { return NULL; }
+		virtual CSpaceObject *OnGetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos);
 		virtual void OnNewSystemNotify (void) { }
 		virtual void OnOrderChanged (void) { }

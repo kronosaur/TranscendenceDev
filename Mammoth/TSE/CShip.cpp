@@ -3049,7 +3049,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_AUTO_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), false);
+		CSpaceObject *pTarget = GetTarget(CItemCtx(), 0);
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3268,7 +3268,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), true);
+		CSpaceObject *pTarget = GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3396,14 +3396,14 @@ int CShip::GetStealth (void) const
 	return Min((int)stealthMax, iStealth);
 	}
 
-CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //
 //	Returns the target that this ship is attacking
 
 	{
-	return m_pController->GetTarget(ItemCtx, bNoAutoTarget);
+	return m_pController->GetTarget(ItemCtx, dwFlags);
 	}
 
 int CShip::GetTotalArmorHP (int *retiMaxHP) const

@@ -313,7 +313,7 @@ CSpaceObject *CZoanthropeAI::GetBase (void) const
 		}
 	}
 
-CSpaceObject *CZoanthropeAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CZoanthropeAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //

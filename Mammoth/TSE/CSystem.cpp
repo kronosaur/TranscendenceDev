@@ -355,7 +355,7 @@ void CSystem::CalcAutoTarget (SUpdateCtx &Ctx)
 	if (Ctx.pPlayer == NULL)
 		return;
 
-	Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), true);
+	Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
 
 	//	Check to see if the primary weapon requires autotargetting
 

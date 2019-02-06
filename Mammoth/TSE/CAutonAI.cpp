@@ -176,7 +176,7 @@ CString CAutonAI::DebugCrashInfo (void)
 	return sResult;
 	}
 
-CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CAutonAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //

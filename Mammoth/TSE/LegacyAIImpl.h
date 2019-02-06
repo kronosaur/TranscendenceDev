@@ -14,7 +14,7 @@ class CAutonAI : public CBaseShipAI
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("auton"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
@@ -54,7 +54,7 @@ class CFerianShipAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual CString GetClass (void) override { return CONSTLIT("ferian"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
@@ -98,7 +98,7 @@ class CFleetCommandAI : public CBaseShipAI
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("fleetcommand"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pTarget; }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override { return m_pTarget; }
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
@@ -194,7 +194,7 @@ class CFleetShipAI : public CBaseShipAI
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("fleet"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
@@ -249,7 +249,7 @@ class CGaianProcessorAI : public CBaseShipAI
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("gaianprocessor"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 
 	protected:
@@ -294,7 +294,7 @@ class CGladiatorAI : public CBaseShipAI
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual CString GetClass (void) override { return CONSTLIT("gladiator"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 
 	protected:
 		//	CBaseShipAI overrides
@@ -340,7 +340,7 @@ class CStandardShipAI : public CBaseShipAI
 		virtual void OnDockedEvent (CSpaceObject *pObj) override;
 		virtual void OnDestroyedNotify (SDestroyCtx &Ctx) override;
 		virtual CSpaceObject *OnGetBase (void) const override;
-		virtual CSpaceObject *OnGetTarget (bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *OnGetTarget (DWORD dwFlags = 0) const override;
 		virtual void OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
 		virtual void OnOrderChanged (void) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -437,7 +437,7 @@ class CZoanthropeAI : public CBaseShipAI
 		virtual CString DebugCrashInfo (void) override;
 		virtual CSpaceObject *GetBase (void) const override;
 		virtual CString GetClass (void) override { return CONSTLIT("zoanthrope"); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 

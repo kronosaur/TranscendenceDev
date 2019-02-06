@@ -1772,7 +1772,7 @@ int CStation::GetStealth (void) const
 		return m_pType->GetStealth();
 	}
 
-CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //

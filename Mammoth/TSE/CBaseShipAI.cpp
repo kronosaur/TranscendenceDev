@@ -777,7 +777,7 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 		//	If we've got a target, add it to the list. Sometimes this will be 
 		//	a duplicate, but that's OK.
 
-		CSpaceObject *pTarget = GetTarget(ItemCtx, true);
+		CSpaceObject *pTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
 		if (pTarget)
 			TargetingCtx.Targets.Insert(pTarget);
 
@@ -870,7 +870,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) const
+CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -880,7 +880,7 @@ CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget) con
 	if (m_pOrderModule)
 		return m_pOrderModule->GetTarget();
 	else
-		return OnGetTarget(bNoAutoTarget);
+		return OnGetTarget(dwFlags);
 	}
 
 void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver)

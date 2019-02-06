@@ -326,7 +326,7 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 	bool bResult = CShipAIHelper::CalcFormationParams(pShip, vDestPos, vDestVel, retvRecommendedVel, retrDeltaPos2, retrDeltaVel2);
 
 	if (g_pUniverse->GetPlayerShip() 
-			&& g_pUniverse->GetPlayerShip()->GetTarget(CItemCtx(), true) == pShip
+			&& g_pUniverse->GetPlayerShip()->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET) == pShip
 			&& m_pUpdateCtx->pAnnotations)
 		{
 		m_pUpdateCtx->pAnnotations->bDebugFormation = true;

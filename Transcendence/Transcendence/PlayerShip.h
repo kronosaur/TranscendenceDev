@@ -192,7 +192,7 @@ class CPlayerShipController : public IShipController
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
 		virtual EManeuverTypes GetManeuver (void) override;
 		virtual bool GetThrust (void) override;
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override;
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual bool GetReverseThrust (void) override;
 		virtual bool GetStopThrust (void) override;
 		virtual OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const override;

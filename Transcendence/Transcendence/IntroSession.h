@@ -163,7 +163,7 @@ class CIntroShipController : public IShipController
 		virtual bool GetReverseThrust (void) override { return m_pDelegate->GetReverseThrust(); }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, bool bNoAutoTarget = false) const override { return m_pDelegate->GetTarget(ItemCtx, bNoAutoTarget); }
+		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const override { return m_pDelegate->GetTarget(ItemCtx, dwFlags); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(TargetingCtx, ItemCtx, retpTarget, retiFireSolution); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }
@@ -193,6 +193,7 @@ class CIntroShipController : public IShipController
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) override { return m_pDelegate->OnDestroyCheck(iCause, Attacker); }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnDocked (CSpaceObject *pObj) override { m_pDelegate->OnDocked(pObj); }
+		virtual void OnDockingStop (void) override { m_pDelegate->OnDockingStop(); }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override { m_pDelegate->OnEnterGate(pDestNode, sDestEntryPoint, pStargate, bAscend); }
         virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override { m_pDelegate->OnFuelConsumed(rFuel, iUse); }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) override { m_pDelegate->OnHitBarrier(pBarrierObj, vPos); }
