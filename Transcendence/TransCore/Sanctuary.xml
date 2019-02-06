@@ -13,7 +13,7 @@
 			attributes=			"envAir, envAvoidsFire, friendly, generic, human, majorStation, populated, religious, sistersOfDomina"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"8"				 
 			size=				"565"

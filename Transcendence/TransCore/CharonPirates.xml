@@ -19,7 +19,7 @@
 	<StationType UNID="&stCharonPirateOutpost;"
 			name=				"Charon Pirates cache"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -82,7 +82,7 @@
 	<StationType UNID="&stCharonPirateOutpost2;"
 			name=				"Charon Pirates outpost"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -159,7 +159,7 @@
 	<StationType UNID="&stCharonPirateOutpost2a;"
 			name=				"Charon Pirates outpost"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -230,7 +230,7 @@
 	<StationType UNID="&stCharonPirateOutpost3;"
 			name=				"Charon Pirates stronghold"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -357,7 +357,7 @@
 	<StationType UNID="&stCharonPrimaryStronghold1;"
 			name=				"Charon Pirates stronghold"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -433,7 +433,7 @@
 	<StationType UNID="&stCharonPrimaryStronghold2;"
 			name=				"Charon Pirates stronghold"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -526,7 +526,7 @@
 	<StationType UNID="&stCharonPrimaryStronghold3;"
 			name=				"Charon Pirates stronghold"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

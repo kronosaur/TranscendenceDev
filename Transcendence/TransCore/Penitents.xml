@@ -32,7 +32,7 @@
 				 
 			attributes=			"enemy, envAir, envAvoidsFire, generic, human, penitents, populated, religious"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itLightBlastPlate;"
 			hitPoints=			"210"
@@ -127,7 +127,7 @@
 				 
 			attributes=			"enemy, envAir, envAvoidsFire, generic, human, penitents, populated, religious"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itBlastPlate;"
 			hitPoints=			"700"
@@ -202,7 +202,7 @@
 				 
 			attributes=			"enemy, envAir, envAvoidsFire, generic, human, penitents, populated, religious"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itHeavyBlastPlate;"
 			hitPoints=			"1800"

@@ -233,7 +233,7 @@
 			name=				"Huari fortress(es)"
 			sovereign=			"&svHuariEmpire;"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -416,7 +416,7 @@
 			name=				"Huari habitat"
 			sovereign=			"&svHuariEmpire;"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

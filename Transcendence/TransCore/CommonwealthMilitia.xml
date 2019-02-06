@@ -134,7 +134,7 @@
 			attributes=			"commonwealth, commonwealthArmory, commonwealthCustoms, commonwealthMilitary, commonMilitary, fleetDelivery, friendly, generic, human, majorStation, primary, populated"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"6"
 			size=				"450"

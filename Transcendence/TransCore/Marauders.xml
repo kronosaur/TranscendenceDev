@@ -24,7 +24,7 @@
 
 			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, pirates, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"78"
 			armorID=			"&itLightPlasteelPlate;"
@@ -104,7 +104,7 @@
 
 			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderCompound, pirates, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"144"
 			armorID=			"&itPlasteelPlate;"
@@ -205,7 +205,7 @@
 
 			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, human, lombardMarauders, marauderStronghold, pirates,populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"251"
 			armorID=			"&itPlasteelPlate;"

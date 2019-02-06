@@ -149,7 +149,7 @@
 				 
             level=              "4"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			size=				"390"
 			armorID=			"&itPlasteelPlate;"

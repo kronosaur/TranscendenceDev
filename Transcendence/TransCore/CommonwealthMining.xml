@@ -156,7 +156,7 @@
 			attributes=			"asteroidBase, commonwealth, commonwealthCustoms, envEarth, envAvoidsAir, friendly, generic, human, mining, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"300"
 			armorID=			"&itPlasteelPlate;"

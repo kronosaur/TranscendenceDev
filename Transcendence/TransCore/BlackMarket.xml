@@ -27,7 +27,7 @@ PLAYER DATA
 			attributes=			"blackMarket, friendly, envEarth, envAvoidsAir, generic, human, majorStation, outlaws, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itBlastPlate;"
 			hitPoints=			"320"
@@ -498,7 +498,7 @@ PLAYER DATA
 			attributes=			"blackMarket, envEarth, majorStation, envAvoidsAir, friendly, generic, human, outlaws, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itBlastPlate;"
 			hitPoints=			"1100"
@@ -669,7 +669,7 @@ PLAYER DATA
 			attributes=			"blackMarket, friendly, envAir, envAvoidsFire, generic, human, outlaws, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"250"

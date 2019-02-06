@@ -32,7 +32,7 @@
 
 			attributes=			"asteroidBase, enemy, envAir, envAvoidsFire, generic, himal, human, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"78"
 			armorID=			"&itLightPlasteelPlate;"

@@ -12,7 +12,7 @@
 
 			attributes=			"enemy, envAir, envEarth, envFire, envWater, generic, human, populated, sungSlaveCamp, sungSlavers"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 
 			armorID=			"&itSungArmor;"

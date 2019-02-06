@@ -24,7 +24,7 @@
 	<StationType UNID="&stAnarchistCell;"
 			name=				"Anarchist habitat"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
 			canAttack=			"true"
 
@@ -89,7 +89,7 @@
 	<StationType UNID="&stAnarchistGathering;"
 			name=				"Anarchist gathering"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
 			canAttack=			"true"
 
@@ -161,7 +161,7 @@
 	<StationType UNID="&stAnarchistGatheringSat;"
 			name=				"Anarchist gathering"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			canAttack=			"true"
@@ -218,7 +218,7 @@
 	<StationType UNID="&stAnarchistSettlement;"
 			name=				"Anarchist settlement"
 			sovereign=			"&svAnarchists;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

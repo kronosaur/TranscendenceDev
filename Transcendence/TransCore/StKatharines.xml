@@ -440,7 +440,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -474,7 +474,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -508,7 +508,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -542,7 +542,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -576,7 +576,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -610,7 +610,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -644,7 +644,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -678,7 +678,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -712,7 +712,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -746,7 +746,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -780,7 +780,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -814,7 +814,7 @@
 			name=				"New Victoria arcology segment"
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -853,7 +853,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			defaultBackgroundID="&rsIocrymMonumentScreen;"
 
 			multiHull=			"true"

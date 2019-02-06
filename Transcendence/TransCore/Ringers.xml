@@ -70,7 +70,7 @@
 			attributes=			"envEarth, envAvoidsAir, friendly, generic, independent, majorStation, neoHuman, populated, ringers"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"329"
 			armorID=			"&itDiamondLatticeArmor;"
@@ -258,7 +258,7 @@
 			attributes=			"envEarth, envAvoidsAir, friendly, generic, independent, majorStation, neoHuman, populated, ringers"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"564"
 			armorID=			"&itDiamondLatticeArmor;"

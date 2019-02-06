@@ -27,7 +27,7 @@
 
 			attributes=			"ares, enemy, envAir, envEarth, envFire, envWater, generic, neoHuman, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itLightTharsisPlate;"
 			hitPoints=			"370"
@@ -104,7 +104,7 @@
 
 			attributes=			"ares, aresMajor, enemy, envAir, envEarth, envFire, envWater, generic, majorStation, neoHuman, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itTharsisPlate;"
 			hitPoints=			"2400"
@@ -196,7 +196,7 @@
 
 			attributes=			"ares, aresMajor, enemy, envAir, envEarth, envFire, envWater, generic, majorStation, neoHuman, populated"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itMassiveTharsisPlate;"
 			hitPoints=			"3600"

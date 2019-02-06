@@ -29,7 +29,7 @@
 	<StationType UNID="&stRanxOutpost;"
 			name=				"Ranx outpost"
 			sovereign=			"&svRanxEmpire;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -88,7 +88,7 @@
 	<StationType UNID="&stRanxFortress;"
 			name=				"Ranx fortress(es)"
 			sovereign=			"&svRanxEmpire;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

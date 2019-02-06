@@ -27,7 +27,7 @@
 	<StationType UNID="&stRogueFleetCache;"
 			name=				"Rogue Fleet cache"
 			sovereign=			"&svRogueFleet;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -90,7 +90,7 @@
 				 
 			attributes=			"enemy, envAir, envAvoidsFire, generic, human, populated, rogue, rogueFleet"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itP120HexphaseArmor;"
 			hitPoints=			"950"

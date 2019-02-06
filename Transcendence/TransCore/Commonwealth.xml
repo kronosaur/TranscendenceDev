@@ -164,7 +164,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, primary, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"390"
@@ -349,7 +349,7 @@
 			sovereign=			"&svCommonwealth;"
 			inherit=			"&dsDockScreenBase;"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
@@ -413,7 +413,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, fleetDelivery, friendly, generic, human, majorStation, primary, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"390"
 			armorID=			"&itP120HexphaseArmor;"
@@ -617,7 +617,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, fleetDelivery, friendly, generic, human, majorStation, populated"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"5"
 			size=				"511"
@@ -782,7 +782,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"390"
@@ -933,7 +933,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"390"
@@ -1022,7 +1022,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"3"
@@ -1244,7 +1244,7 @@
 			inherit=			"&baCommonwealthStation;"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"4"
@@ -1469,7 +1469,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, fleetDelivery, friendly, generic, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			
 			size=				"390"
 			armorID=			"&itP120HexphaseArmor;"

@@ -79,7 +79,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"&dsArmsDealerSpecial;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"4"
@@ -221,7 +221,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

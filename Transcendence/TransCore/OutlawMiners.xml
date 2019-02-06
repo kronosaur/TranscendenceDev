@@ -23,7 +23,7 @@
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itCeramicPlate;"
 			hitPoints=			"75"
@@ -143,7 +143,7 @@
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itHeavyCeramicPlate;"
 			hitPoints=			"90"
@@ -259,7 +259,7 @@
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
@@ -371,7 +371,7 @@
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"150"
@@ -500,7 +500,7 @@
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, generic, human, outlawMiners, outlaws, populated, settlers"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itCeralloyArmor;"
 			hitPoints=			"250"
@@ -630,7 +630,7 @@
 			name=				"Outlaw defense turret"
 			sovereign=			"&svOutlawMiners;"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			mass=				"2000"
 			armorID=			"&itCeralloyArmor;"

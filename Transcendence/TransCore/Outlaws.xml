@@ -128,7 +128,7 @@
 	<StationType UNID="&stOutlawBase;"
 			name=				"outlaw camp"
 			sovereign=			"&svOutlaw;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -208,7 +208,7 @@
 	<StationType UNID="&stOutlawBase2;"
 			name=				"outlaw base"
 			sovereign=			"&svOutlaw;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -281,7 +281,7 @@
 	<StationType UNID="&stOutlawHaven;"
 			name=				"outlaw haven"
 			sovereign=			"&svOutlaw;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"

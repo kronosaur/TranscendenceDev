@@ -72,7 +72,7 @@
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, ferian, generic, neoHuman, miners, populated, zoanthrope"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itAdvancedPlasteelPlate;"
 			hitPoints=			"500"

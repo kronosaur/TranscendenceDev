@@ -29,7 +29,7 @@
 	<StationType UNID="&stVentariColony;"
 			name=				"Ventari colony|Ventari colonies"
 			sovereign=			"&svVentariSettlers;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

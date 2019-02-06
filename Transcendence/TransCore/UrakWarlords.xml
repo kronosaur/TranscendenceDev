@@ -28,7 +28,7 @@
 	<StationType UNID="&stUrakOutpost;"
 			name=				"Urak outpost"
 			sovereign=			"&svUrakWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -100,7 +100,7 @@
 	<StationType UNID="&stUrakMine;"
 			name=				"Urak mine"
 			sovereign=			"&svUrakWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -173,7 +173,7 @@
 	<StationType UNID="&stUrakFortress;"
 			name=				"Urak fortress(es)"
 			sovereign=			"&svUrakWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

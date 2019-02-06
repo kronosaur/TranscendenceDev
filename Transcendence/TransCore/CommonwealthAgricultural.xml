@@ -12,7 +12,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			level=				"3"
 			size=				"390"

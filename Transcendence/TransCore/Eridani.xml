@@ -13,7 +13,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, startonEridani"
 				 
 			dockScreen=			"&dsCommonwealthStation;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"670"
 			armorID=			"&itPlasteelPlate;"
@@ -276,7 +276,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"390"

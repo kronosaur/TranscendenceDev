@@ -19,7 +19,7 @@
 	<StationType UNID="&stDrugCartelOutpost;"
 			name=				"Death Drug Cartel outpost"
 			sovereign=			"&svDeathDrugsCartel;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

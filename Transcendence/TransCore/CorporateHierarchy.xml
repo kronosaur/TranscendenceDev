@@ -106,7 +106,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -266,7 +266,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"155"
@@ -437,7 +437,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"149"
@@ -597,7 +597,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"&dsArmsDealerSpecial;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"5"
@@ -730,7 +730,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"&dsArmsDealerSpecial;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -860,7 +860,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -1069,7 +1069,7 @@
 			attributes=			"corporate, corporateCustoms, friendly, independent, generic, human, majorStation, populated"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"430"
@@ -1313,7 +1313,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"184"
@@ -1467,7 +1467,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -1679,7 +1679,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"325"
 			armorID=			"&itCeralloyArmor;"
@@ -1959,7 +1959,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"4"
@@ -2129,7 +2129,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			size=				"150"
 			armorID=			"&itPlasteelPlate;"
@@ -2277,7 +2277,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			armorID=			"&itQuadroCarbideArmor;"
 			hitPoints=			"470"
@@ -2435,7 +2435,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

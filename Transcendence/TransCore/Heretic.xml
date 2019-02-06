@@ -295,7 +295,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			
 			size=				"390"
 			armorID=			"&itP120HexphaseArmor;"
@@ -452,7 +452,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, commonResearch, friendly, hereticStation, human, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			size=				"390"
 			armorID=			"&itP120HexphaseArmor;"
@@ -570,7 +570,7 @@
 			inherit=			"&baRingersStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noBlacklist=		"true"
 
@@ -739,7 +739,7 @@
 			sovereign=			"&svSistersOfDomina;"
 			inherit=			"&unidCommonText;"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noBlacklist=		"true"
 
@@ -874,7 +874,7 @@
 			inherit=			"&baCorporateStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 			noBlacklist=		"true"
@@ -991,7 +991,7 @@
 			sovereign=			"&svAresHeretic;"
 			inherit=			"&unidCommonText;"
 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
 			dockingPorts=		"8"
 			canAttack=			"true"

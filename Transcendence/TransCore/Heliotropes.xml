@@ -33,7 +33,7 @@
 				 
 			attributes=			"enemy, envFire, envAvoidsWater, generic, heliotropes, human, populated"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itSolarArmor;"
 			hitPoints=			"420"
@@ -109,7 +109,7 @@
 				 
 			attributes=			"enemy, envFire, envAvoidsWater, generic, heliotropes, human, populated"
 				 
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			armorID=			"&itHeavyCeramicPlate;"
 			hitPoints=			"120"

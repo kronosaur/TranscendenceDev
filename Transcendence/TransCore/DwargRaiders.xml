@@ -35,7 +35,7 @@
 	<StationType UNID="&stDwargColony;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -94,7 +94,7 @@
 	<StationType UNID="&stDwargGathering;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"
@@ -193,7 +193,7 @@
 	<StationType UNID="&stDwargGatheringSat;"
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 			noMapLabel=			"true"
 
@@ -243,7 +243,7 @@
 	<StationType UNID="&stDwargFortress;"
 			name=				"Dwarg fortress(es)"
 			sovereign=			"&svDwargRaiders;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"

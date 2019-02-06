@@ -191,7 +191,7 @@
 			attributes=			"corporate, corporateCustoms, corporateDecon, envAir, envEarth, envFire, envWater, friendly, generic, human, majorStation, korolovShipping, populated"
 				 
 			dockScreen=			"Dispatch"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"4"
 			size=				"390"

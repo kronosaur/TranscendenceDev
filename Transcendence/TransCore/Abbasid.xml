@@ -30,7 +30,7 @@
 	<StationType UNID="&stAbbasidOutpost;"
 			name=				"Abbasid outpost"
 			sovereign=			"&svAbbasid;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

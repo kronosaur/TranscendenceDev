@@ -65,7 +65,7 @@
 			attributes=			"envEarth, envAvoidsAir, friendly, generic, human, independent, majorStation, populated, tinkers"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"5"
 			size=				"110"

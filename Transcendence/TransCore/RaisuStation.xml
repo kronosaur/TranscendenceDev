@@ -10,7 +10,7 @@
 			inherit=			"&baCommonwealthStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			level=				"3"

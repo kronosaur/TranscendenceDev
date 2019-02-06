@@ -30,7 +30,7 @@
 	<StationType UNID="&stTerroristCamp;"
 			name=				"Sapiens camp"
 			sovereign=			"&svSapiens;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -115,7 +115,7 @@
 	<StationType UNID="&stTerroristCompound;"
 			name=				"Sapiens compound"
 			sovereign=			"&svSapiens;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

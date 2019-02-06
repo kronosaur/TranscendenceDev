@@ -12,7 +12,7 @@
 			inherit=			"&baCommonwealthStation;"
 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"8"
 			size=				"590"

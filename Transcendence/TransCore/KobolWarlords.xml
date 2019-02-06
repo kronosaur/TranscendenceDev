@@ -29,7 +29,7 @@
 	<StationType UNID="&stKobolWarlordCamp;"
 			name=				"Kobol warlord camp"
 			sovereign=			"&svKobolWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

@@ -12,7 +12,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, primary, populated"
 
 			dockScreen=			"&dsCommonwealthStation;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
             level=              "5"
 			size=				"670"
@@ -163,7 +163,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, fleetDelivery, friendly, generic, human, majorStation, primary, populated"
 				 
 			dockScreen=			"&dsCommonwealthStation;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			level=				"7"
 			size=				"670"

@@ -1778,7 +1778,7 @@
 
 				<OnScreenInit>
 					(if (not (eq (objGetData gSource "MissionStatus") "destroyed"))
-						(scrShowScreen gScreen "&dsAbandonedStation;")
+						(scrShowScreen gScreen "&dsRPGAbandonedStation;")
 						)
 				</OnScreenInit>
 
@@ -1847,7 +1847,7 @@
 			attributes=			"commonwealth, commonwealthCustoms, fleetDelivery, friendly, human, majorStation, populated"
 				 
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 				 
 			size=				"390"
 			armorID=			"&itP120HexphaseArmor;"

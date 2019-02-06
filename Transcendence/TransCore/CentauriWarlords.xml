@@ -31,7 +31,7 @@
 				 
 			controllingSovereign="&svCentauriWarlords;"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
 			canAttack=			"true"
 			noBlacklist=		"true"
@@ -260,7 +260,7 @@
 	<StationType UNID="&stCentauriCamp;"
 			name=				"Centauri warlord camp"
 			sovereign=			"&svCentauriWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
@@ -316,7 +316,7 @@
 	<StationType UNID="&stCentauriStronghold;"
 			name=				"Centauri warlord stronghold"
 			sovereign=			"&svCentauriWarlords;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

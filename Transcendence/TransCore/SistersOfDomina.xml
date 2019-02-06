@@ -59,7 +59,7 @@
 			name=				":the Sisters of Domina|Sisters of Domina"
 			sovereign=			"&svSistersOfDomina;"
 			dockScreen=			"Main"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
 			multiHull=			"true"

@@ -189,7 +189,7 @@
 	<StationType UNID="&stSungFortressInHuaramarca;"
 			name=				"Sung fortress(es)"
 			sovereign=			"&svSung;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 

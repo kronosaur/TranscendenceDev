@@ -15,7 +15,7 @@
 	<StationType UNID="&stCharonPirateFortress;"
 			name=				"Fortress of the Charon Pirates"
 			sovereign=			"&svPirates;"
-			abandonedScreen=	"&dsAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
 			canAttack=			"true"
 
