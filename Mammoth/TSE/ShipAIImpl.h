@@ -347,6 +347,7 @@ class CBaseShipAI : public IShipController
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
+		virtual void OnDockingStop (void) override;
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;
 		virtual void OnWeaponStatusChanged (void) override { m_AICtx.ClearBestWeapon(); }

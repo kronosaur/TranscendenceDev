@@ -340,6 +340,7 @@ class IShipController
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) { return true; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
 		virtual void OnDocked (CSpaceObject *pObj) { }
+		virtual void OnDockingStop (void) { }
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { }
         virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) { }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) { CancelDocking(); }

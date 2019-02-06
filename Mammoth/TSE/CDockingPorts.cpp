@@ -131,11 +131,10 @@ void CDockingPorts::DeleteAll (CSpaceObject *pOwner)
 	for (int i = 0; i < m_iPortCount; i++)
 		if (m_pPort[i].iStatus == psDocking)
 			{
-			m_pPort[i].pObj->UnfreezeControls();
+			m_pPort[i].pObj->OnDockingStop();
 			}
 		else if (m_pPort[i].iStatus == psInUse)
 			{
-			m_pPort[i].pObj->UnfreezeControls();
 			m_pPort[i].pObj->OnDockingPortDestroyed();
 			}
 
@@ -741,13 +740,13 @@ void CDockingPorts::OnDestroyed (void)
 	DEBUG_TRY
 
 	for (int i = 0; i < m_iPortCount; i++)
+		{
 		if (m_pPort[i].iStatus == psDocking)
-			{
-			m_pPort[i].pObj->UnfreezeControls();
+			m_pPort[i].pObj->OnDockingStop();
 
-			m_pPort[i].iStatus = psEmpty;
-			m_pPort[i].pObj = NULL;
-			}
+		m_pPort[i].iStatus = psEmpty;
+		m_pPort[i].pObj = NULL;
+		}
 
 	DEBUG_CATCH
 	}
@@ -782,7 +781,8 @@ void CDockingPorts::OnNewSystem (CSystem *pNewSystem)
 		if (m_pPort[i].pObj != NULL
 				&& m_pPort[i].pObj->GetSystem() != pNewSystem)
 			{
-			m_pPort[i].pObj->UnfreezeControls();
+			if (m_pPort[i].iStatus == psDocking)
+				m_pPort[i].pObj->OnDockingStop();
 
 			m_pPort[i].iStatus = psEmpty;
 			m_pPort[i].pObj = NULL;
@@ -935,7 +935,7 @@ bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int i
 	//	Commence docking 
 
 	pOwner->Communicate(pObj, msgDockingSequenceEngaged);
-	pObj->FreezeControls();
+	pObj->OnDockingStart();
 
 	m_pPort[iPort].iStatus = psDocking;
 	m_pPort[iPort].pObj = pObj;
@@ -995,7 +995,7 @@ void CDockingPorts::Undock (CSpaceObject *pOwner, CSpaceObject *pObj, bool *retb
 			//	Unfreeze controls if we're trying to dock
 
 			if (m_pPort[i].iStatus == psDocking)
-				pObj->UnfreezeControls();
+				pObj->OnDockingStop();
 
 			m_pPort[i].iStatus = psEmpty;
 			m_pPort[i].pObj = NULL;
@@ -1128,7 +1128,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 			&& (pShip == g_pUniverse->GetPlayerShip() || pShip->IsPointingTo(iPortRotation)))
 		{
 		pShip->Place(vDest);
-		pShip->UnfreezeControls();
+		pShip->OnDockingStop();
 		IShipController *pController = pShip->GetController();
 		pController->SetManeuver(NoRotation);
 

@@ -4802,6 +4802,33 @@ void CShip::OnDockingPortDestroyed (void)
 	m_pDocked = NULL;
 	}
 
+void CShip::OnDockingStart (void)
+
+//	OnDockingStart
+//
+//	We've requested docking and automated docking maneuvers have started. 
+//	Callers must guarantee that they will always call OnDockingStop.
+
+	{
+	FreezeControls();
+	}
+
+void CShip::OnDockingStop (void)
+
+//	OnDockingStop
+//
+//	Docking maneuvers have ended, either because we've completed a hard-dock or
+//	because we canceled.
+
+	{
+	UnfreezeControls();
+
+	//	AI controller keeps state when it requests docking, so we need to tell
+	//	it that docking maneuvers have ended, so that it can keep its state.
+
+	m_pController->OnDockingStop();
+	}
+
 bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
 
 //	OnGateCheck

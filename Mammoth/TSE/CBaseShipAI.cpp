@@ -1086,6 +1086,17 @@ void CBaseShipAI::OnDocked (CSpaceObject *pObj)
 	OnDockedEvent(pObj);
 	}
 
+void CBaseShipAI::OnDockingStop (void)
+
+//	OnDockingStop
+//
+//	Docking maneuvers have ended, either because we docked or because we 
+//	aborted docking.
+
+	{
+	m_AICtx.SetDockingRequested(false);
+	}
+
 void CBaseShipAI::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)
 
 //	OnEnterGate

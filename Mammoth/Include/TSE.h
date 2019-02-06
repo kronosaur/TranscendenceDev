@@ -798,6 +798,8 @@ class CSpaceObject : public CObject
 		virtual CVector GetDockingPortOffset (int iRotation) { return NullVector; }
 		virtual void OnDocked (CSpaceObject *pObj) { }
 		virtual void OnDockingPortDestroyed (void) { }
+		virtual void OnDockingStart (void) { }
+		virtual void OnDockingStop (void) { }
 
 		//	Docking Ports
 
@@ -824,12 +826,6 @@ class CSpaceObject : public CObject
 		CDesignType *GetFirstDockScreen (CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
 		inline bool HasDefaultDockScreen (void) const { return (GetDefaultDockScreen() != NULL); }
 		bool HasDockScreen (void) const;
-
-		//	Freeze controls
-
-		inline bool CanBeControlled (void) { return m_iControlsFrozen == 0; }
-		inline void FreezeControls (void) { m_iControlsFrozen++; }
-		inline void UnfreezeControls (void) { m_iControlsFrozen--; }
 
 		//	Fuel
 
@@ -1557,6 +1553,12 @@ class CSpaceObject : public CObject
 		virtual void OnWriteToStream (IWriteStream *pStream) { }
 		virtual bool OrientationChanged (void) { return false; }
 		virtual void RevertOrientationChange (void) { }
+
+		//	Freeze controls (used for docking)
+
+		inline bool CanBeControlled (void) { return m_iControlsFrozen == 0; }
+		inline void FreezeControls (void) { m_iControlsFrozen++; }
+		inline void UnfreezeControls (void) { m_iControlsFrozen--; }
 
 		//	Helper functions
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
