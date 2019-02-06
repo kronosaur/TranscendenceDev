@@ -387,6 +387,7 @@ class CShipClass : public CDesignType
 		inline DWORD GetDefaultBkgnd (void) const { return m_dwDefaultBkgnd; }
 		inline CDesignType *GetDefaultEventHandler (void) const { return m_EventHandler; }
 		inline CSovereign *GetDefaultSovereign (void) const { return m_pDefaultSovereign; }
+		CString GetDesc (void) const;
 		inline IDeviceGenerator *GetDeviceSlots (void) const { return m_pDeviceSlots; }
 		inline const CDockingPorts &GetDockingPorts (void) { return m_DockingPorts; }
 		CVector GetDockingPortOffset (int iRotation);

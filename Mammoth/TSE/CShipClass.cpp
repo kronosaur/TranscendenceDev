@@ -158,6 +158,8 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WRECK_CHANCE						CONSTLIT("wreckChance")
 
+#define LANG_CORE_DESC							CONSTLIT("core.desc")
+
 #define ERR_OUT_OF_MEMORY						CONSTLIT("out of memory")
 #define ERR_BAD_IMAGE							CONSTLIT("invalid ship image")
 #define ERR_MISSING_ARMOR_TAG					CONSTLIT("missing <Armor> element")
@@ -1798,10 +1800,8 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_PLAYER_DESC))
 		{
-		const CPlayerSettings *pPlayer = GetPlayerSettings();
-		if (pPlayer)
-			*retsValue = pPlayer->GetDesc();
-		else
+		*retsValue = GetDesc();
+		if (retsValue->IsBlank())
 			*retsValue = CONSTLIT("none");
 		}
 	else if (strEquals(sField, FIELD_PRIMARY_ARMOR))
@@ -2246,6 +2246,34 @@ CCommunicationsHandler *CShipClass::GetCommsHandler (void)
 		}
 	else
 		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
+	}
+
+CString CShipClass::GetDesc (void) const
+
+//	GetDesc
+//
+//	Returns the standard description of this ship class.
+
+	{
+	//	First, see if we have a translation
+
+	CString sText;
+	if (TranslateText(LANG_CORE_DESC, NULL, &sText))
+		return sText;
+
+	//	If the player settings has this, get it from there.
+
+	const CPlayerSettings *pPlayer = GetPlayerSettings();
+	if (pPlayer)
+		{
+		const CString &sDesc = pPlayer->GetDesc();
+		if (!sDesc.IsBlank())
+			return sDesc;
+		}
+
+	//	Otherwise, no description
+
+	return NULL_STR;
 	}
 
 CVector CShipClass::GetDockingPortOffset (int iRotation)

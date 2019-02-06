@@ -773,7 +773,7 @@ void CNewGameSession::SetShipClass (CShipClass *pClass, int x, int y, int cxWidt
 	//	Ship class name
 
 	SetShipClassName(pClass->GetNounPhrase(nounGeneric), x, y, cxWidth);
-	SetShipClassDesc(pPlayerSettings->GetDesc(), x, y, cxWidth);
+	SetShipClassDesc(pClass->GetDesc(), x, y, cxWidth);
 
 	//	Offset
 
