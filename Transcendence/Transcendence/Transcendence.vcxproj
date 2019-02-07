@@ -805,6 +805,7 @@
     <Image Include="Resources\Game Stats Screen.jpg" />
     <Image Include="Resources\GameButtonIcons.jpg" />
     <Image Include="Resources\GameButtonIconsMask.bmp" />
+    <Image Include="Resources\GenericExtensionSmall.jpg" />
     <Image Include="Resources\Help Screen.jpg" />
     <Image Include="Resources\IconDisplay.JPG" />
     <Image Include="Resources\SelectShipIcons.jpg" />

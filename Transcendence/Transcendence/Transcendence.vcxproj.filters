@@ -468,5 +468,6 @@
     <Image Include="Resources\UIIconsMask.bmp">
       <Filter>Resources</Filter>
     </Image>
+    <Image Include="Resources\GenericExtensionSmall.jpg" />
   </ItemGroup>
 </Project>

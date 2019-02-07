@@ -493,7 +493,7 @@
     <None Include="..\Game\TransData.xml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Readme.htm">
+    <None Include="TransDataReadme.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
   </ItemGroup>

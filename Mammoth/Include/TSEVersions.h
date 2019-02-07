@@ -5,7 +5,7 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							43;
+constexpr DWORD API_VERSION =							44;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
 constexpr DWORD SYSTEM_SAVE_VERSION =					171;
 

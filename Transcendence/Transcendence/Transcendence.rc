@@ -65,8 +65,8 @@ VS_VERSION_INFO$(MULTIVERSE_BUILD) VERSIONINFO
 #else
 VS_VERSION_INFO VERSIONINFO
 #endif
- FILEVERSION 1,8,204,2
- PRODUCTVERSION 1,8,204,2
+ FILEVERSION 1,8,205,0
+ PRODUCTVERSION 1,8,205,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -83,13 +83,13 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Kronosaur Productions, LLC"
             VALUE "FileDescription", "Transcendence"
-            VALUE "FileVersion", "1.8.204.2"
+            VALUE "FileVersion", "1.8.205.0"
             VALUE "InternalName", "Transcendence"
-            VALUE "LegalCopyright", "Copyright © 2003-2018 Kronosaur Productions, LLC. All Rights Reserved."
+            VALUE "LegalCopyright", "Copyright © 2003-2019 Kronosaur Productions, LLC. All Rights Reserved."
             VALUE "LegalTrademarks", "Transcendence is a registered trademark of Kronosaur Productions, LLC."
             VALUE "OriginalFilename", "Transcendence.exe"
             VALUE "ProductName", "Transcendence"
-            VALUE "ProductVersion", "1.8 Beta 4.2"
+            VALUE "ProductVersion", "1.8 Beta 5"
         END
     END
     BLOCK "VarFileInfo"
@@ -105,8 +105,8 @@ VS_VERSION_INFO$(STEAM_BUILD) VERSIONINFO
 #else
 VS_VERSION_INFO VERSIONINFO
 #endif
- FILEVERSION 1,8,204,2
- PRODUCTVERSION 1,8,204,2
+ FILEVERSION 1,8,205,0
+ PRODUCTVERSION 1,8,205,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -123,13 +123,13 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Kronosaur Productions, LLC"
             VALUE "FileDescription", "Transcendence"
-            VALUE "FileVersion", "1.8.204.2"
+            VALUE "FileVersion", "1.8.205.0"
             VALUE "InternalName", "Transcendence"
-            VALUE "LegalCopyright", "Copyright © 2003-2018 Kronosaur Productions, LLC. All Rights Reserved."
+            VALUE "LegalCopyright", "Copyright © 2003-2019 Kronosaur Productions, LLC. All Rights Reserved."
             VALUE "LegalTrademarks", "Transcendence is a registered trademark of Kronosaur Productions, LLC."
             VALUE "OriginalFilename", "Transcendence.exe"
             VALUE "ProductName", "Transcendence"
-            VALUE "ProductVersion", "1.8 Beta 4.2 Steam"
+            VALUE "ProductVersion", "1.8 Beta 5 Steam"
         END
     END
     BLOCK "VarFileInfo"
@@ -151,7 +151,7 @@ IDR_STARGATE_IMAGE      JPEG                    "Resources\\Stargate.JPG"
 
 IDR_GAME_BUTTONS_IMAGE  JPEG                    "Resources\\GameButtonIcons.jpg"
 
-IDR_GENERIC_EXTENSION_SMALL JPEG                "Resources\\GenericExtensionSmall.jpg"
+IDR_GENERIC_EXTENSION_SMALL JPEG                    "Resources\\GenericExtensionSmall.jpg"
 
 IDR_ICON_DISPLAY_IMAGE  JPEG                    "Resources\\IconDisplay.jpg"
 
