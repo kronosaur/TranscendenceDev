@@ -1094,7 +1094,8 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 				//	If we're in debug mode then this is a real error.
 
 				if (g_pUniverse->InDebugMode()
-						&& !ExtDb.IsTDB())
+						&& !ExtDb.IsTDB()
+						&& error != ERR_CANCEL)
 					{
 					if (retsError) *retsError = strPatternSubst(CONSTLIT("Error parsing %s: %s"), m_sFilespec, *retsError);
 					return ERR_FAIL;

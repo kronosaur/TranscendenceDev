@@ -72,6 +72,7 @@ class CMultiverseCatalogEntry
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline CG32bitImage *GetIcon (void) const { return m_pIcon; }
 		inline CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : NULL); }
+		bool GetLibrariesUsed (TSortMap<DWORD, bool> &retLibrariesUsed) const;
 		inline ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
 		inline const CString &GetName (void) const { return m_sName; }
 		inline DWORD GetRelease (void) const { return m_dwRelease; }
@@ -88,6 +89,8 @@ class CMultiverseCatalogEntry
 		inline void SetStatus (ELocalStatus iStatus, const CString &sStatus = NULL_STR) { m_iStatus = iStatus; m_sStatus = sStatus; }
 		inline void SetVersion (const CString &sVersion) { m_sVersion = sVersion; }
 
+		static DWORD ParseFullUNID (const CJSONValue &Value);
+
 	private:
 
 		CString m_sUNID;								//	Fully qualified UNID
@@ -102,6 +105,7 @@ class CMultiverseCatalogEntry
 		CMultiverseFileRef m_TDBFile;					//	Reference to TDB file.
 		ELicenseTypes m_iLicenseType = licenseUnknown;	//	Type of license
 
+		TArray<DWORD> m_Dependencies;					//	Libraries that we need
 		TArray<CMultiverseFileRef> m_Resources;
 
 		//	These members are not valid until a call to CExtensionCollection::UpdateCollectionStatus

@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define FIELD_DEPENDENCIES						CONSTLIT("dependencies")
 #define FIELD_DESCRIPTION						CONSTLIT("description")
 #define FIELD_FILE_TDB							CONSTLIT("fileTDB")
 #define FIELD_LICENSE_TYPE						CONSTLIT("licenseType")
@@ -54,17 +55,8 @@ ALERROR CMultiverseCatalogEntry::CreateFromJSON (const CJSONValue &Entry, CMulti
 
 	//	Parse the fully qualified UNID and get just the hex UNID.
 
-	if (strStartsWith(pNewEntry->m_sUNID, STR_UNID_PREFIX))
-		{
-		pNewEntry->m_dwUNID = strParseIntOfBase(pNewEntry->m_sUNID.GetASCIIZPointer() + STR_UNID_PREFIX.GetLength(), 16, 0);
-		if (pNewEntry->m_dwUNID == 0)
-			{
-			delete pNewEntry;
-			*retsResult = ERR_INVALID_UNID;
-			return ERR_FAIL;
-			}
-		}
-	else
+	pNewEntry->m_dwUNID = ParseFullUNID(pNewEntry->m_sUNID);
+	if (pNewEntry->m_dwUNID == 0)
 		{
 		delete pNewEntry;
 		*retsResult = ERR_INVALID_UNID;
@@ -103,6 +95,19 @@ ALERROR CMultiverseCatalogEntry::CreateFromJSON (const CJSONValue &Entry, CMulti
 			{
 			delete pNewEntry;
 			return ERR_FAIL;
+			}
+		}
+
+	//	Library dependencies
+
+	const CJSONValue &Dependencies = Entry.GetElement(FIELD_DEPENDENCIES);
+	if (Dependencies.GetType() == CJSONValue::typeArray)
+		{
+		pNewEntry->m_Dependencies.InsertEmpty(Dependencies.GetCount());
+
+		for (i = 0; i < Dependencies.GetCount(); i++)
+			{
+			pNewEntry->m_Dependencies[i] = ParseFullUNID(Dependencies.GetElement(i));
 			}
 		}
 
@@ -162,6 +167,23 @@ ALERROR CMultiverseCatalogEntry::CreateBasicEntry (const SEntryCreate &Create, C
 	return NOERROR;
 	}
 
+bool CMultiverseCatalogEntry::GetLibrariesUsed (TSortMap<DWORD, bool> &retLibrariesUsed) const
+
+//	GetLibrariesUsed
+//
+//	Adds the libraries used by this entry to the map. Returns FALSE if we don't
+//	use any libraries.
+
+	{
+	if (m_Dependencies.GetCount() == 0)
+		return false;
+
+	for (int i = 0; i < m_Dependencies.GetCount(); i++)
+		retLibrariesUsed.SetAt(m_Dependencies[i], true);
+
+	return true;
+	}
+
 bool CMultiverseCatalogEntry::IsValid (void)
 
 //	IsValid
@@ -176,6 +198,27 @@ bool CMultiverseCatalogEntry::IsValid (void)
 		return false;
 
 	return true;
+	}
+
+DWORD CMultiverseCatalogEntry::ParseFullUNID (const CJSONValue &Value)
+
+//	ParseFullUNID
+//
+//	Parses a Multiverse UNID of the form:
+//
+//	Transcendence:0x00000000
+//
+//	If parsing fails, we return 0.
+
+	{
+	CString sUNID = Value.AsString();
+	if (sUNID.IsBlank())
+		return 0;
+
+	if (!strStartsWith(sUNID, STR_UNID_PREFIX))
+		return 0;
+
+	return strParseIntOfBase(sUNID.GetASCIIZPointer() + STR_UNID_PREFIX.GetLength(), 16, 0);
 	}
 
 void CMultiverseCatalogEntry::SetIcon (CG32bitImage *&pImage)

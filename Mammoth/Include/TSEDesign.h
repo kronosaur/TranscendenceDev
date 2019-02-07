@@ -1051,7 +1051,6 @@ class CExtensionCollection
 		void ClearAllMarks (void);
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
-		bool IsLibraryInUse (DWORD dwUNID, TSortMap<DWORD, bool> &LibrariesChecked = TSortMap<DWORD, bool>()) const;
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);

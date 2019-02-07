@@ -855,9 +855,28 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 	{
 	CSmartLock Lock(m_cs);
 
-	TSortMap<DWORD, bool> LibrariesChecked;
-
 	retNotFound.DeleteAll();
+
+	//	First we make a list of all libraries that are needed by extensions in 
+	//	our collection.
+
+	TSortMap<DWORD, bool> LibrariesUsed;
+	for (int i = 0; i < Collection.GetCount(); i++)
+		{
+		const CMultiverseCatalogEntry &Entry = Collection[i];
+
+		//	If this extension is disabled, then we don't need its dependencies
+		//	either.
+
+		if (m_DisabledExtensions.Find(Entry.GetUNID()))
+			continue;
+
+		//	Add libraries
+
+		Entry.GetLibrariesUsed(LibrariesUsed);
+		}
+
+	//	Now loop through the collection and figure out what to download.
 
 	for (int i = 0; i < Collection.GetCount(); i++)
 		{
@@ -888,7 +907,7 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 		//	then we skip it.
 
 		if (Entry.GetType() == extLibrary
-				&& !IsLibraryInUse(Entry.GetUNID(), LibrariesChecked))
+				&& !LibrariesUsed.Find(Entry.GetUNID()))
 			continue;
 
 		//	Look for this extension in our list. If we found it then compare
@@ -1386,68 +1405,6 @@ void CExtensionCollection::InitEntityResolver (CExtension *pExtension, DWORD dwF
 	//	Finally, add entities defined in the extension
 
 	retResolver->AddResolver(pExtension->GetEntities());
-	}
-
-bool CExtensionCollection::IsLibraryInUse (DWORD dwUNID, TSortMap<DWORD, bool> &LibrariesChecked) const
-
-//	IsLibraryIsUse
-//
-//	Returns TRUE if the given library is being used by some extension or 
-//	adventure.
-
-	{
-	CSmartLock Lock(m_cs);
-
-	//	If we've already checked this library, then we have an answer.
-
-	bool bNeedToInitialize;
-	bool *pInUse = LibrariesChecked.SetAt(dwUNID, &bNeedToInitialize);
-	if (!bNeedToInitialize)
-		return *pInUse;
-
-	//	Set value to FALSE in case we recurse.
-
-	*pInUse = false;
-
-	//	Otherwise, check all extensions.
-
-	bool bInUse = false;
-	for (int i = 0; i < m_Extensions.GetCount(); i++)
-		{
-		CExtension *pExtension = m_Extensions[i];
-
-		//	Skip ourselves
-
-		if (pExtension->GetUNID() == dwUNID)
-			continue;
-
-		//	Skip extensions that are not enabled.
-
-		if (m_DisabledExtensions.Find(pExtension->GetUNID()))
-			continue;
-
-		//	If this extension doesn't use this library, then nothing to do.
-
-		if (!pExtension->IsLibraryInUse(dwUNID))
-			continue;
-
-		//	If this is a library, then we need to recurse and see if the the
-		//	library we're interested in is used by this library.
-		//	If it is NOT used, then we can just skip it.
-
-		if (pExtension->GetType() == extLibrary
-				&& !IsLibraryInUse(pExtension->GetUNID(), LibrariesChecked))
-			continue;
-
-		//	If we get this far, then we know that the library is in use
-
-		*pInUse = true;
-		return true;
-		}
-
-	//	We've looped through all extensions and no one uses the library.
-
-	return false;
 	}
 
 bool CExtensionCollection::IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags)
@@ -2279,7 +2236,11 @@ ALERROR CLibraryResolver::AddLibrary (DWORD dwUNID, DWORD dwRelease, bool bOptio
 		//	Otherwise, ERROR
 
 		*retsError = strPatternSubst(CONSTLIT("Unable to find library: %08x"), dwUNID);
-		return ERR_FAIL;
+
+		//	We return ERR_CANCEL to indicate that we should continue loading,
+		//	even in debug mode.
+
+		return ERR_CANCEL;
 		}
 
 	//	Is this a library?
