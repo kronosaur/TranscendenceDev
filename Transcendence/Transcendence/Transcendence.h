@@ -1160,16 +1160,17 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 		void SetOptionInteger (int iOption, int iValue);
 
 		//	IHICommand virtuals
-		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError);
-		virtual void OnCleanUp (void);
-		virtual bool OnClose (void);
-		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL);
-		virtual ALERROR OnInit (CString *retsError);
-		virtual void OnShutdown (EHIShutdownReasons iShutdownCode);
+		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError) override;
+		virtual void OnCleanUp (void) override;
+		virtual bool OnClose (void) override;
+		virtual ALERROR OnCommand (const CString &sCmd, void *pData = NULL) override;
+		virtual ALERROR OnInit (CString *retsError) override;
+		virtual void OnShutdown (EHIShutdownReasons iShutdownCode) override;
+		virtual void OnUpdate (void) override;
 
 		//	IExtraSettingsHandler
-		virtual ALERROR OnLoadSettings (CXMLElement *pDesc, bool *retbModified);
-		virtual ALERROR OnSaveSettings (IWriteStream *pOutput);
+		virtual ALERROR OnLoadSettings (CXMLElement *pDesc, bool *retbModified) override;
+		virtual ALERROR OnSaveSettings (IWriteStream *pOutput) override;
 
 	private:
 		enum States
@@ -1198,8 +1199,9 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 			stateDownloadingResource,		//	Downloading a resource file
 			};
 
-		void CleanUpUpgrade (void);
 		bool CheckAndRunUpgrade (void);
+		void CleanUpUpgrade (void);
+		bool CmdInstallUpgrade (void);
 		void DisplayMultiverseStatus (const CString &sStatus, bool bError = false);
 		void InitDebugConsole (void);
 		bool InstallUpgrade (CString *retsError);
@@ -1216,7 +1218,8 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 		CCloudService m_Service;
 		CMultiverseModel m_Multiverse;
 		CSoundtrackManager m_Soundtrack;
-		bool m_bUpgradeDownloaded = false;
+		bool m_bUpgradeDownloaded = false;		//	Kicked off a download
+		bool m_bUpgradeDeferred = false;		//	Waiting to install upgrade
 
 		CCommandLineDisplay m_DebugConsole;		//	CodeChain debugging console
 

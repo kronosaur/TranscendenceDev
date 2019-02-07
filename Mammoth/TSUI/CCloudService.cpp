@@ -97,7 +97,7 @@ ALERROR CCloudService::DownloadUpgrade (ITaskProcessor *pProcessor, const CStrin
 
 	//	Return the body up our controller (it takes ownership of it).
 
-	m_pHI->HICommand(CMD_SERVICE_UPGRADE_READY, pBody);
+	m_pHI->HIPostCommand(CMD_SERVICE_UPGRADE_READY, pBody);
 
 	return NOERROR;
 	}

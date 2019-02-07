@@ -82,14 +82,16 @@ class IHIController : public IHICommand
 		IHIController (void) : IHICommand(CreateHI()) { }
 		virtual ~IHIController (void) { }
 
-		ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError = NULL) { return OnBoot(pszCommandLine, retOptions, retsError); }
-		bool HIClose (void) { return OnClose(); }
-		void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
+		inline ALERROR HIBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError = NULL) { return OnBoot(pszCommandLine, retOptions, retsError); }
+		inline bool HIClose (void) { return OnClose(); }
+		inline void HIShutdown (EHIShutdownReasons iShutdownCode) { OnShutdown(iShutdownCode); }
+		inline void HIUpdate (void) { OnUpdate(); }
 
 	protected:
 		virtual ALERROR OnBoot (char *pszCommandLine, SHIOptions *retOptions, CString *retsError);
 		virtual bool OnClose (void) { return true; }
 		virtual void OnShutdown (EHIShutdownReasons iShutdownCode) { }
+		virtual void OnUpdate (void) { }
 
 	private:
 		static CHumanInterface &CreateHI (void);

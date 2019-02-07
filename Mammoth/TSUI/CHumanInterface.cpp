@@ -481,6 +481,11 @@ void CHumanInterface::OnAnimate (void)
 		BltScreen();
 		FlipScreen();
 		}
+
+	//	Update controller
+
+	if (m_pController)
+		m_pController->HIUpdate();
 	}
 
 void CHumanInterface::OnPostCommand (LPARAM pData)

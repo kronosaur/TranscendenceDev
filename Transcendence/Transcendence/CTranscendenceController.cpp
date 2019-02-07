@@ -171,26 +171,6 @@ const DWORD SERVICE_HOUSEKEEPING_INTERVAL =		1000 * 60;
 
 CTranscendenceWnd *g_pTrans = NULL;
 
-void CTranscendenceController::CleanUpUpgrade (void)
-
-//	CleanUpUpgrade
-//
-//	Clean up files from an upgrade.
-
-	{
-	int i;
-
-	//	Delete any previous upgrade files
-
-	TArray<CString> FilesToDelete;
-	if (!fileGetFileList(m_Settings.GetAppDataFolder(), NULL_STR, CONSTLIT("Delete_*.*"), 0, &FilesToDelete))
-		::kernelDebugLogPattern("Unable to list files to delete from previous upgrade.");
-
-	for (i = 0; i < FilesToDelete.GetCount(); i++)
-		if (!fileDelete(FilesToDelete[i]))
-			::kernelDebugLogPattern("Unable to delete file: %s.", FilesToDelete[i]);
-	}
-
 bool CTranscendenceController::CheckAndRunUpgrade (void)
 
 //	CheckAndRunUpgrade
@@ -223,6 +203,57 @@ bool CTranscendenceController::CheckAndRunUpgrade (void)
 
 	//	TRUE means we exit this process.
 
+	return true;
+	}
+
+void CTranscendenceController::CleanUpUpgrade (void)
+
+//	CleanUpUpgrade
+//
+//	Clean up files from an upgrade.
+
+	{
+	int i;
+
+	//	If we have a previous zip file, delete it.
+
+	CString sOldUpgrade = pathAddComponent(m_Settings.GetAppDataFolder(), FILESPEC_UPGRADE_FILE);
+	if (pathExists(sOldUpgrade))
+		fileDelete(sOldUpgrade);
+
+	//	Delete any previous upgrade files
+
+	TArray<CString> FilesToDelete;
+	if (!fileGetFileList(m_Settings.GetAppDataFolder(), NULL_STR, CONSTLIT("Delete_*.*"), 0, &FilesToDelete))
+		::kernelDebugLogPattern("Unable to list files to delete from previous upgrade.");
+
+	for (i = 0; i < FilesToDelete.GetCount(); i++)
+		if (!fileDelete(FilesToDelete[i]))
+			::kernelDebugLogPattern("Unable to delete file: %s.", FilesToDelete[i]);
+	}
+
+bool CTranscendenceController::CmdInstallUpgrade (void)
+
+//	CmdInstallUpgrade
+//
+//	Install the update
+
+	{
+	//	Install
+
+	CString sError;
+	DisplayMultiverseStatus(CONSTLIT("Installing upgrade..."));
+	if (!InstallUpgrade(&sError))
+		{
+		m_Multiverse.SetServiceStatus(NULL_STR);
+		DisplayMultiverseStatus(sError, true);
+		return false;
+		}
+
+	//	Success
+
+	m_Multiverse.SetServiceStatus(CONSTLIT("Please restart to upgrade."));
+	DisplayMultiverseStatus(CONSTLIT("Please restart to upgrade."));
 	return true;
 	}
 
@@ -1640,20 +1671,22 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			return error;
 			}
 
-		//	Install
+		//	If we're not in the intro, then we set a flag and wait until we're
+		//	back to the intro. We don't want to change Transcendence.tdb while
+		//	we're using it.
 
-		DisplayMultiverseStatus(CONSTLIT("Installing upgrade..."));
-		if (!InstallUpgrade(&sError))
+		if (m_iState != stateIntro)
 			{
 			m_Multiverse.SetServiceStatus(NULL_STR);
-			DisplayMultiverseStatus(sError, true);
-			return ERR_FAIL;
+			DisplayMultiverseStatus(NULL_STR);
+			m_bUpgradeDeferred = true;
+			return NOERROR;
 			}
 
-		//	Success
+		//	Install
 
-		m_Multiverse.SetServiceStatus(CONSTLIT("Please restart to upgrade."));
-		DisplayMultiverseStatus(CONSTLIT("Please restart to upgrade."));
+		if (!CmdInstallUpgrade())
+			return ERR_FAIL;
 		}
 
 	//	Service status
@@ -2147,6 +2180,23 @@ void CTranscendenceController::OnShutdown (EHIShutdownReasons iShutdownCode)
 		}
 
 	DEBUG_CATCH
+	}
+
+void CTranscendenceController::OnUpdate (void)
+
+//	OnUpdate
+//
+//	Updates once a frame
+
+	{
+	//	If we wanted to defer an upgrade and if we're in the intro, then we do
+	//	it now.
+
+	if (m_bUpgradeDeferred && m_iState == stateIntro)
+		{
+		m_bUpgradeDeferred = false;
+		CmdInstallUpgrade();
+		}
 	}
 
 void CTranscendenceController::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen)
