@@ -262,6 +262,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				m_CurrentDock.Update(g_pTrans->m_iTick);
 				g_pTrans->m_iTick++;
 
+				//	Never let message redirection last beyond a frame. We do 
+				//	this in case a mod forgets to reset it.
+
+				g_pTrans->RedirectDisplayMessage(false);
+
 				//	Note: We need to invalidate the whole screen because we're
 				//	flipping between two buffers and we need to make sure both
 				//	buffers get painted.
