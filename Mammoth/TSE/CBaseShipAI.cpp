@@ -425,7 +425,7 @@ bool CBaseShipAI::CancelOrder (int iIndex)
 		return false;
 	}
 
-bool CBaseShipAI::CanObjRequestDock (void) const
+bool CBaseShipAI::CanObjRequestDock (CSpaceObject *pObj) const
 
 //	CanObjRequestDock
 //
@@ -452,6 +452,13 @@ bool CBaseShipAI::CanObjRequestDock (void) const
 		case orderWaitForThreat:
 		case orderWaitForUndock:
 			return true;
+
+		//	If we're escorting or following a principal and we're a non-
+		//	combatant, then we allow docking.
+
+		case orderEscort:
+		case orderFollow:
+			return (pObj && pObj == GetCurrentOrderTarget() && m_AICtx.IsNonCombatant());
 
 		//	Otherwise, if we're immobile, then it doesn't matter what our orders.
 		//	But if we're mobile, then we're maneuvering, so we can't allow 

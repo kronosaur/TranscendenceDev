@@ -279,7 +279,7 @@ class IShipController
 		virtual void AccumulateCrewMetrics (SCrewMetrics &Metrics) { }
 		virtual void Behavior (SUpdateCtx &Ctx) { }
 		virtual void CancelDocking (void) { }
-		virtual bool CanObjRequestDock (void) const { return true; }
+		virtual bool CanObjRequestDock (CSpaceObject *pObj = NULL) const { return true; }
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
 		virtual void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { }
         virtual ICCItem *FindProperty (const CString &sProperty) { return NULL; }

@@ -350,6 +350,8 @@
 
 			attributes=			"auton, cargoAuton, genericClass, omniDefense, utilityAuton"
 			inherit=			"&baStdAutonBase;"
+
+			dockScreen=			"Main"
 			>
 
 		<!-- Hull -->
