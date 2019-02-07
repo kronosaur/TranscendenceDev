@@ -865,6 +865,13 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 		{
 		const CMultiverseCatalogEntry &Entry = Collection[i];
 
+		//	Skip libraries because we expect an extension/library to list all
+		//	dependencies (including dependencies of its libraries). Moreover, 
+		//	we don't disable libraries separately (there is no UI).
+
+		if (Entry.GetType() == extLibrary)
+			continue;
+
 		//	If this extension is disabled, then we don't need its dependencies
 		//	either.
 
