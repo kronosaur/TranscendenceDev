@@ -37,18 +37,19 @@
 	<StationType UNID="&stLuminousAssembler;"
 			name=				"Luminous Assembler"
 			sovereign=			"&svLuminous;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
-			canAttack=			"true"
-
-			multiHull=			"true"
-			armorID=			"&itLuminousArmature;"
-			hitPoints=			"600"
-            regen=              "3.0"
-			explosionType=		"&vtThermoExplosion3;"
-			ejectaType=			"&vtWreckEjecta;"
 
 			attributes=			"ai, enemy, envWater, envAvoidsEarth, generic, luminous, score"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			armorID=			"&itLuminousArmature;"
+			hitPoints=			"600"
+			multiHull=			"true"
+            regen=              "3.0"
+
+			canAttack=			"true"
+			explosionType=		"&vtThermoExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<!-- Encounter Info -->
@@ -62,10 +63,7 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsStations8;" imageX="0" imageY="0" imageWidth="192" imageHeight="192"/>
-
-		<Devices>
-		</Devices>
+		<!-- Treasure -->
 
 		<Items>
 			<Group value="standard:level=8:x=1.4">
@@ -80,16 +78,18 @@
 			</Group>
 		</Items>
 
+		<!-- Configuration -->
+
+		<Devices>
+		</Devices>
+
+		<!-- Satellites -->
+
+		<!-- Ships and Defenses -->
+
 		<Ships>
 			<Ship			count="1d6"	class="&scLuminousDrone;"	orders="patrol" patrolDist="5"/>
 		</Ships>
-
-		<GlobalData>
-			<Resist>
-				; particle  blast  ion  thermo  total
-				(1 1 1 1 4)
-			</Resist>
-		</GlobalData>
 
 		<Construction constructionRate="500" maxConstruction="12">
 			<Table>
@@ -97,6 +97,17 @@
 			</Table>
 		</Construction>
 
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsStations8;" imageX="0" imageY="0" imageWidth="192" imageHeight="192"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portRadius=		"100"
+				/>
+
+		<!-- Random Encounters -->
+		
 		<Encounters frequency="common">
 			<Ship							   count="1"	 class="&scLuminousDrone;" eventHandler="&evStdPatrolEncounterBehavior;">
 				<Escorts>
@@ -104,6 +115,15 @@
 				</Escorts>
 			</Ship>
 		</Encounters>
+
+		<!-- Events and Data -->
+
+		<GlobalData>
+			<Resist>
+				; particle  blast  ion  thermo  total
+				(1 1 1 1 4)
+			</Resist>
+		</GlobalData>
 
 		<Language>
 			<Text id="core.abandonedStationDesc">
