@@ -1155,7 +1155,10 @@ ALERROR CLevelTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 			pNewEntry->Count.SetConstant(1);
 
 		if (error = IItemGenerator::CreateFromXML(Ctx, pEntry, &pNewEntry->pEntry))
+			{
+			m_Table.Delete(m_Table.GetCount() - 1);
 			return error;
+			}
 		}
 
 	m_iComputedLevel = -1;
