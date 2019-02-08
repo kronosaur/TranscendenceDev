@@ -2192,6 +2192,7 @@
 	<!ENTITY scCSCAsia					"0x00100669">
 	<!ENTITY scCSCIndia					"0x0010066A">
 	<!ENTITY scCSCPacifica				"0x0010066B">
+	<!ENTITY tbCommonwealthFleetItems	"0x0010066C">
 
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

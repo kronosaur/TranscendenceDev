@@ -431,8 +431,8 @@
 			<Refuel			criteria="f +BasicFuel; L:1-9;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-9;" priceAdj="100"/>
-			<InstallDevice	criteria="d L:1-8;" priceAdj="100"/>
-			<RemoveDevice	criteria="d L:1-8;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-9;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"/>
 		</Trade>
 		
 		<Items>
@@ -441,11 +441,7 @@
 			<!-- Some upgrades for sale -->
 			
 			<RandomItem count="1d3" criteria="r -illegal; -notForSale; -notStandard; L:6-8;"		levelFrequency="systemLevel:ru|c|curv"/>
-			
-			<Item count="3d4"	item="&itBlastPlate;"/>
-			<Item count="3d4"	item="&itP120HexphaseArmor;"/>
-			<Item count="1d4"	item="&itTeV9Blaster;"/>
-			<Item count="1d4"	item="&itR1Deflector;"/>
+			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 
 		<!-- Dock Screens -->
@@ -872,13 +868,7 @@
 			<!-- Some upgrades for sale -->
 			
 			<RandomItem count="1d4" criteria="r -illegal; -notForSale; -notStandard; L:6-9;"		levelFrequency="systemLevel:ru|c|curv"/>
-			
-			<Item count="3d4"	item="&itBlastPlate;"/>
-			<Item count="3d4"	item="&itP120HexphaseArmor;"/>
-			<Item count="1d4"	item="&itStarCannon;"/>
-			<Item count="1d4"	item="&itTeV9Blaster;"/>
-			<Item count="1d4"	item="&itR1Deflector;"/>
-			<Item count="1d4"	item="&itR5BDeflector;"/>
+			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 
 		<!-- Dock Screens -->

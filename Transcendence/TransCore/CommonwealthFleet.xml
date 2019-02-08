@@ -1522,6 +1522,39 @@ PLAYER DATA
 		</Table>
 	</EncounterTable>
 
+	<ItemTable unid="&tbCommonwealthFleetItems;">
+		<Table>
+			<LevelTable chance="40">
+				<Item levelFrequency="vvruc curv-"	count="2d4" item="&itBlastPlate;"/>
+				<Item levelFrequency="--vru ccurv"	count="2d4" item="&itAdvancedCeralloyArmor;"/>
+				<Item levelFrequency="--vru ccurv"	count="2d4" item="&itP120HexphaseArmor;"/>
+				<Item levelFrequency="---vr uccur"	count="2d4" item="&itOrthoSteel;"/>
+				<Item levelFrequency="---vr uccur"	count="1d4" item="&itP210HexphaseArmor;"/>
+				<Item levelFrequency="----v ruccu"	count="1d4" item="&itHexacarbideArmor;"/>
+			</LevelTable>
+
+			<LevelTable chance="40">
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&itTeV9Blaster;"/>
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&itSAR10Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itDualSAR10Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itSAR40Cannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itOmniTeV9Blaster;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itStarCannon;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itNM900MissilePod;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&itFusionfireHowitzer;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&itIonBlaster;"/>
+				<Item levelFrequency="----v ruccu"	count="1"	item="&itNAMIHeavyLauncher;"/>
+				<Item levelFrequency="----v ruccu"	count="1"	item="&itSAR200AdvancedCannon;"/>
+			</LevelTable>
+
+			<LevelTable chance="20">
+				<Item levelFrequency="vvruc curv-"	count="1"	item="&itR5Deflector;"/>
+				<Item levelFrequency="--vru ccurv"	count="1"	item="&itR5BDeflector;"/>
+				<Item levelFrequency="---vr uccur"	count="1"	item="&itR9Deflector;"/>
+			</LevelTable>
+		</Table>
+	</ItemTable>
+
 <!-- RESOURCES -->
 
 	<Image UNID="&rsAurochs;"				bitmap="Resources\Aurochs.jpg" bitmask="Resources\AurochsMask.bmp" loadOnUse="true"/>
