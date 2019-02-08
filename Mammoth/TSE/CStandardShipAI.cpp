@@ -908,6 +908,8 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 				m_AICtx.ImplementSpiralIn(m_pShip, vTarget);
 			else if (rTargetDist2 < (rMinDist * rMinDist))
 				m_AICtx.ImplementSpiralOut(m_pShip, vTarget);
+			else
+				m_AICtx.ImplementSpiralOut(m_pShip, vTarget, 0);
 
 			m_AICtx.ImplementAttackNearestTarget(m_pShip, m_AICtx.GetMaxWeaponRange(), &m_pTarget, m_pDest);
 			m_AICtx.ImplementFireOnTargetsOfOpportunity(m_pShip, m_pTarget, m_pDest);
