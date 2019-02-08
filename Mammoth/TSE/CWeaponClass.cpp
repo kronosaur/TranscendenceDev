@@ -667,6 +667,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 	int i;
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	double rShotSeparationScale = pDevice->GetShotSeparationScale();
 
 	//	Compute the source position
 
@@ -689,7 +690,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 			//	Compute a normal perpendicular to the direction of fire
 
 			CVector Perp = PolarToVector(iFireAngle, (g_KlicksPerPixel * g_DualShotSeparation));
-			Perp = Perp.Perpendicular();
+			Perp = Perp.Perpendicular() * rShotSeparationScale;
 
 			//	Create two shots
 
@@ -708,7 +709,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 			//	Compute a normal perpendicular to the direction of fire
 
 			CVector Perp = PolarToVector(iFireAngle, (g_KlicksPerPixel * g_DualShotSeparation));
-			Perp = Perp.Perpendicular();
+			Perp = Perp.Perpendicular() * rShotSeparationScale;
 
 			//	If we have a device, the alternate
 
@@ -748,7 +749,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 			//	Compute a normal perpendicular to the direction of fire
 
 			CVector Perp = PolarToVector(iFireAngle, (g_KlicksPerPixel * g_DualShotSeparation));
-			Perp = Perp.Perpendicular();
+			Perp = Perp.Perpendicular() * rShotSeparationScale;
 
 			//	Create five shots
 
@@ -813,7 +814,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 				int iShot = Max(0, Min(GetAlternatingPos(pDevice), m_iConfigCount));
 
 				iShotCount = 1;
-				ShotPos[0] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[iShot].iPosAngle), m_pConfig[iShot].rPosRadius);
+				ShotPos[0] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[iShot].iPosAngle), m_pConfig[iShot].rPosRadius) * rShotSeparationScale;
 				ShotDir[0] = AngleMod(iFireAngle + m_pConfig[iShot].Angle.Roll());
 
 				//	Next shot in sequence
@@ -827,7 +828,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 
 				for (i = 0; i < iShotCount; i++)
 					{
-					ShotPos[i] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[i].iPosAngle), m_pConfig[i].rPosRadius);
+					ShotPos[i] = vSource + PolarToVector(AngleMod(iFireAngle + m_pConfig[i].iPosAngle), m_pConfig[i].rPosRadius) * rShotSeparationScale;
 					ShotDir[i] = AngleMod(iFireAngle + m_pConfig[i].Angle.Roll());
 					}
 				}

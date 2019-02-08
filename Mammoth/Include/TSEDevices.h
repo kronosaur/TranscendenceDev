@@ -385,6 +385,7 @@ struct SDeviceDesc
 
 	CEnhancementDesc Enhancements;				//	Slot enhancements to installed device
 	int iSlotBonus = 0;
+	double rShotSeparationScale = 1.;			//	Governs scaling of shot separation for dual etc weapons
 	};
 
 class CDeviceDescList
@@ -490,6 +491,7 @@ class CInstalledDevice
 		inline int GetPosZ (void) const { return m_iPosZ; }
 		inline int GetRotation (void) const { return AngleMiddle(m_iMinFireArc, m_iMaxFireArc); }
 		inline const CEnhancementDesc &GetSlotEnhancements (void) const { return m_SlotEnhancements; }
+		inline double GetShotSeparationScale(void) const { return (double)m_iShotSeparationScale / 32767.0; }
 		inline int GetSlotPosIndex (void) const { return m_iSlotPosIndex; }
 		inline int GetTemperature (void) const { return m_iTemperature; }
 		inline int GetTimeUntilReady (void) const { return m_iTimeUntilReady; }
@@ -637,6 +639,9 @@ class CInstalledDevice
 		int m_iMinFireArc:16;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
 
+		unsigned int m_iShotSeparationScale:16;	//	Out of 32767. Governs scaling of shot separation for dual etc weapons
+		DWORD m_dwSpare1:16;
+
 		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
 		int m_iFireAngle:16;					//	Last fire angle
 
@@ -672,5 +677,5 @@ class CInstalledDevice
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
-		DWORD m_dwSpare:8;
+		DWORD m_dwSpare2:8;
 	};

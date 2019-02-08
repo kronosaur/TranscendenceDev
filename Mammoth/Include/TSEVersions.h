@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							44;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					35;
-constexpr DWORD SYSTEM_SAVE_VERSION =					171;
+constexpr DWORD SYSTEM_SAVE_VERSION =					172;
 
 //	Uncomment out the following define when building a stable release
 
@@ -625,3 +625,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					171;
 //
 //	171: 1.8 Beta 5
 //		Added m_sNode to CTimedMissionEvent
+//
+//	172: 1.8 Beta 5
+//		Added m_iShotSeparationScale to CInstalledDevice.
