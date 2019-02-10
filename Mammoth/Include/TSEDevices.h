@@ -639,7 +639,7 @@ class CInstalledDevice
 		int m_iMinFireArc:16;					//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc:16;					//	Max angle of fire arc (degrees)
 
-		unsigned int m_iShotSeparationScale:16;	//	Out of 32767. Governs scaling of shot separation for dual etc weapons
+		int m_iShotSeparationScale:16;			//	Scaled by 32767. Governs scaling of shot separation for dual etc weapons
 		DWORD m_dwSpare1:16;
 
 		int m_iTimeUntilReady:16;				//	Timer counting down until ready to activate
