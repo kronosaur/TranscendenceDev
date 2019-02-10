@@ -266,7 +266,7 @@ void CShipwreckDesc::ClearMarks (void)
 		m_WreckImages[i].ClearMark();
 	}
 
-bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const
+bool CShipwreckDesc::CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const
 
 //	CreateEmptyWreck
 //
@@ -279,7 +279,7 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 
 	DEBUG_TRY
 
-	SSystemCreateCtx Ctx(*pSystem);
+	SSystemCreateCtx Ctx(System);
 
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
@@ -292,7 +292,7 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 	//	Create the wreck
 
 	CStation *pWreck;
-	if (CStation::CreateFromType(pSystem,
+	if (CStation::CreateFromType(System,
 			GetWreckType(),
 			CreateCtx,
 			&pWreck) != NOERROR)
@@ -330,10 +330,13 @@ bool CShipwreckDesc::CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const
 	{
 	DEBUG_TRY
 
+	if (pShip == NULL || pShip->GetSystem() == NULL)
+		return false;
+
 	//	Create the wreck
 
 	CStation *pWreck;
-	if (!CreateEmptyWreck(pShip->GetSystem(),
+	if (!CreateEmptyWreck(*pShip->GetSystem(),
 			pShip->GetClass(),
 			pShip,
 			pShip->GetPos(),

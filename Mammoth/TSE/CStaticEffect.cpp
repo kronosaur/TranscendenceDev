@@ -4,10 +4,8 @@
 
 #include "PreComp.h"
 
-
-static CObjectClass<CStaticEffect>g_Class(OBJID_CSTATICEFFECT, NULL);
-
-CStaticEffect::CStaticEffect (void) : CSpaceObject(&g_Class), m_pPainter(NULL)
+CStaticEffect::CStaticEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
+		m_pPainter(NULL)
 
 //	CStaticEffect constructor
 
@@ -24,7 +22,7 @@ CStaticEffect::~CStaticEffect (void)
 	}
 
 ALERROR CStaticEffect::Create (CEffectCreator *pType,
-				CSystem *pSystem,
+				CSystem &System,
 				const CVector &vPos,
 				CStaticEffect **retpEffect)
 
@@ -36,7 +34,7 @@ ALERROR CStaticEffect::Create (CEffectCreator *pType,
 	ALERROR error;
 	CStaticEffect *pEffect;
 
-	pEffect = new CStaticEffect;
+	pEffect = new CStaticEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -52,7 +50,7 @@ ALERROR CStaticEffect::Create (CEffectCreator *pType,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(&System))
 		{
 		delete pEffect;
 		return error;

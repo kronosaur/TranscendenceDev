@@ -12104,7 +12104,7 @@ ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 		return StdErrorNoSystem(*pCC);
 
 	CMarker *pObj;
-	if (error = CMarker::Create(pSystem,
+	if (error = CMarker::Create(*pSystem,
 			pSovereign,
 			vPos,
 			NullVector,
@@ -13357,7 +13357,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				CPOVMarker *pMarker;
-				if (CPOVMarker::Create(pSystem, vCenter, NullVector, &pMarker) != NOERROR)
+				if (CPOVMarker::Create(*pSystem, vCenter, NullVector, &pMarker) != NOERROR)
 					return pCC->CreateError(CONSTLIT("Out of memory."));
 
 				pCtx->GetUniverse().SetPOV(pMarker);

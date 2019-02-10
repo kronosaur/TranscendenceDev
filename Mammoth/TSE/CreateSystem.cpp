@@ -2274,7 +2274,7 @@ ALERROR CreateSpaceEnvironment (SSystemCreateCtx *pCtx, CXMLElement *pDesc, cons
 						g_KlicksPerPixel * (mathRandom(0, iTileSize) - (iTileSize / 2)));
 
 				CStaticEffect::Create(pPatchType,
-						&pCtx->System,
+						pCtx->System,
 						vPos + vOffset,
 						NULL);
 				}
@@ -2340,7 +2340,7 @@ void CreateSpaceEnvironmentTile (SSystemCreateCtx *pCtx,
 				g_KlicksPerPixel * (mathRandom(0, iTileSize) - (iTileSize / 2)));
 
 		CStaticEffect::Create(pPatch,
-				&pCtx->System,
+				pCtx->System,
 				vPos + vOffset,
 				NULL);
 		}
@@ -4117,7 +4117,7 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 	//	Create the marker
 
 	CMarker *pMarker;
-	if (error = CMarker::Create(this,
+	if (error = CMarker::Create(*this,
 			NULL,
 			oOrbit.GetObjectPos(),
 			NullVector,
@@ -4160,7 +4160,7 @@ ALERROR CSystem::CreateParticles (CXMLElement *pDesc, const COrbit &oOrbit, CPar
 	//	Create the field
 
 	CParticleEffect *pParticles;
-	if (error = CParticleEffect::Create(this,
+	if (error = CParticleEffect::Create(*this,
 			pDesc,
 			oOrbit.GetObjectPos(),
 			NullVector,
@@ -4302,7 +4302,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		//	Create the station
 
 		CString sError;
-		if (error = CStation::CreateFromType(this,
+		if (error = CStation::CreateFromType(*this,
 				pType,
 				CreateCtx,
 				(CStation **)&pStation,
@@ -4321,7 +4321,7 @@ ALERROR CSystem::CreateStationInt (SSystemCreateCtx *pCtx,
 		//	Create the station
 
 		CString sError;
-		if (error = CStation::CreateFromType(this,
+		if (error = CStation::CreateFromType(*this,
 				pType,
 				CreateCtx,
 				(CStation **)&pStation,

@@ -4,9 +4,8 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CEffect>g_Class(OBJID_CEFFECT, NULL);
-
-CEffect::CEffect (void) : CSpaceObject(&g_Class), m_pPainter(NULL)
+CEffect::CEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
+		m_pPainter(NULL)
 
 //	CEffect constructor
 
@@ -23,7 +22,7 @@ CEffect::~CEffect (void)
 	}
 
 ALERROR CEffect::Create (IEffectPainter *pPainter,
-				CSystem *pSystem,
+				CSystem &System,
 				CSpaceObject *pAnchor,
 				const CVector &vPos,
 				const CVector &vVel,
@@ -45,7 +44,7 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	//	Create the effect object
 
-	pEffect = new CEffect;
+	pEffect = new CEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -60,7 +59,7 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(&System))
 		{
 		//	If we fail create, caller is responsible for free painter.
 

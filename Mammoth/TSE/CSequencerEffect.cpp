@@ -4,9 +4,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CSequencerEffect>g_Class(OBJID_CSEQUENCEREFFECT, NULL);
-
-CSequencerEffect::CSequencerEffect (void) : CSpaceObject(&g_Class),
+CSequencerEffect::CSequencerEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pType(NULL),
 		m_pAnchor(NULL),
 		m_iStartTime(0)
@@ -16,7 +14,7 @@ CSequencerEffect::CSequencerEffect (void) : CSpaceObject(&g_Class),
 	{
 	}
 
-ALERROR CSequencerEffect::Create (CSystem *pSystem,
+ALERROR CSequencerEffect::Create (CSystem &System,
 								  CEffectSequencerCreator *pType,
 								  CSpaceObject *pAnchor,
 								  const CVector &vPos,
@@ -31,7 +29,7 @@ ALERROR CSequencerEffect::Create (CSystem *pSystem,
 	ALERROR error;
 	CSequencerEffect *pEffect;
 
-	pEffect = new CSequencerEffect;
+	pEffect = new CSequencerEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -52,7 +50,7 @@ ALERROR CSequencerEffect::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(&System))
 		{
 		delete pEffect;
 		return error;

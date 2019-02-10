@@ -4,9 +4,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CBoundaryMarker>g_BoundaryMarkerClass(OBJID_CBOUNDARYMARKER, NULL);
-
-CBoundaryMarker::CBoundaryMarker (void) : CSpaceObject(&g_BoundaryMarkerClass)
+CBoundaryMarker::CBoundaryMarker (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CBoundaryMarker constructor
 
@@ -32,7 +30,7 @@ void CBoundaryMarker::CloseBoundary (void)
 	{
 	}
 
-ALERROR CBoundaryMarker::Create (CSystem *pSystem,
+ALERROR CBoundaryMarker::Create (CSystem &System,
 								 const CVector &vStartPos,
 								 CBoundaryMarker **retpMarker)
 
@@ -44,7 +42,7 @@ ALERROR CBoundaryMarker::Create (CSystem *pSystem,
 	ALERROR error;
 	CBoundaryMarker *pMarker;
 
-	pMarker = new CBoundaryMarker;
+	pMarker = new CBoundaryMarker(System.GetUniverse());
 	if (pMarker == NULL)
 		return ERR_MEMORY;
 
@@ -57,7 +55,7 @@ ALERROR CBoundaryMarker::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(pSystem))
+	if (error = pMarker->AddToSystem(&System))
 		{
 		delete pMarker;
 		return error;

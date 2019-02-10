@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
-
 #define EVENT_ON_ACCEPTED						CONSTLIT("OnAccepted")
 #define EVENT_ON_COMPLETED						CONSTLIT("OnCompleted")
 #define EVENT_ON_DECLINED						CONSTLIT("OnDeclined")
@@ -54,7 +52,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 
 #define STR_A_REASON							CONSTLIT("aReason")
 
-CMission::CMission (void) : CSpaceObject(&g_MissionClass)
+CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CMission constructor
 
@@ -193,7 +191,8 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		}
 	}
 
-ALERROR CMission::Create (CMissionType *pType,
+ALERROR CMission::Create (CUniverse &Universe,
+						  CMissionType *pType,
 						  CSpaceObject *pOwner,
 						  ICCItem *pCreateData,
 					      CMission **retpMission,
@@ -214,7 +213,7 @@ ALERROR CMission::Create (CMissionType *pType,
 
 	//	Create the new object
 
-	pMission = new CMission;
+	pMission = new CMission(Universe);
 	if (pMission == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory");

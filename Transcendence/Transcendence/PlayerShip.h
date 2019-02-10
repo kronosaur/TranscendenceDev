@@ -263,7 +263,7 @@ class CPlayerShipController : public IShipController
 		OrderTypes m_iOrder;					//	Last order
 		CSpaceObject *m_pTarget;
 		CSpaceObject *m_pDestination;
-		CSpaceObjectTable m_TargetList;
+		TSortMap<CString, CSpaceObject *> m_TargetList;
 
 		CSpaceObject *m_pStation;				//	Station that player is docked with
 		bool m_bSignalDock;						//	Tell the model to switch to dock screen

@@ -78,7 +78,7 @@ class CItemType : public CDesignType
 		inline bool CanBeSoldIfUsed (void) const { return (m_fNoSaleIfUsed ? false : true); }
 		inline void ClearKnown (void) { m_fKnown = false; }
 		inline void ClearShowReference (void) { m_fReference = false; }
-		void CreateEmptyFlotsam (CSystem *pSystem, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
+		void CreateEmptyFlotsam (CSystem &System, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
 		inline bool FindEventHandlerItemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)

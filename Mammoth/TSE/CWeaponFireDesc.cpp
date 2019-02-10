@@ -367,6 +367,9 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 //	Creates an effect when the weapon hits an object
 
 	{
+	if (pSystem == NULL)
+		return;
+
 	//	Create the hit effect painter.
 
 	CCreatePainterCtx Ctx;
@@ -380,7 +383,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 	//	Now create the effect
 
 	if (CEffect::Create(pPainter,
-			pSystem,
+			*pSystem,
 			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
 			DamageCtx.vHitPos,
 			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),

@@ -175,7 +175,7 @@ void GenerateSystemImages (CUniverse &Universe, CXMLElement *pCmdLine)
 		//	Create a POV marker
 
 		CMarker *pPOV;
-		if (CMarker::Create(pSystem,
+		if (CMarker::Create(*pSystem,
 				Universe.FindSovereign(g_PlayerSovereignUNID),
 				NullVector,
 				NullVector,

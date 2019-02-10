@@ -1678,7 +1678,7 @@ void CTranscendenceModel::OnPlayerEnteredGate (CTopologyNode *pDestNode, const C
 	//	object will be destroyed when the POV changes)
 
 	CPOVMarker *pMarker;
-	CPOVMarker::Create(m_pOldSystem, pShip->GetPos(), NullVector, &pMarker);
+	CPOVMarker::Create(*m_pOldSystem, pShip->GetPos(), NullVector, &pMarker);
 	m_Universe.SetPOV(pMarker);
 
 	//	Remove the ship from the system
@@ -1850,7 +1850,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 		if (pStart == NULL)
 			{
 			CMarker *pMarker;
-			if (CMarker::Create(pNewSystem,
+			if (CMarker::Create(*pNewSystem,
 					NULL,
 					NullVector,
 					NullVector,

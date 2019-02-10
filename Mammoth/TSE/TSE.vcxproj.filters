@@ -520,9 +520,6 @@
     <ClCompile Include="CSpaceObjectList.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="CSpaceObjectTable.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CTileMap.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>

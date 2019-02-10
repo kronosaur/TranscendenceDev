@@ -265,7 +265,6 @@ struct SLoadCtx
 			dwVersion(SYSTEM_SAVE_VERSION),
 			pStream(NULL),
 			pSystem(NULL),
-			ObjMap(FALSE, TRUE),
 			iLoadState(loadStateUnknown),
 			dwObjClassID(0)
 		{ }
@@ -275,7 +274,6 @@ struct SLoadCtx
 			dwVersion(Ctx.dwSystemVersion),
 			pStream(Ctx.pStream),
 			pSystem(NULL),
-			ObjMap(FALSE, TRUE),
 			iLoadState(loadStateUnknown),
 			dwObjClassID(0)
 		{ }
@@ -287,7 +285,7 @@ struct SLoadCtx
 	IReadStream *pStream;				//	Stream to load from
 	CSystem *pSystem;					//	System to load into
 
-	CIDTable ObjMap;					//	Map of ID to objects.
+	TSortMap<DWORD, CSpaceObject *> ObjMap;			//	Map of ID to objects.
 	CSpaceObjectAddressResolver ForwardReferences;
 
 	//	For backwards compatibility we keep track of the list of objects
@@ -923,23 +921,6 @@ class CSpaceObjectList
 		static void ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj);
 
 		TArray<CSpaceObject *> m_List;
-	};
-
-class CSpaceObjectTable
-	{
-	public:
-		CSpaceObjectTable (void);
-
-		void Add (const CString &sKey, CSpaceObject *pObj);
-		bool Find (CSpaceObject *pObj, int *retiIndex = NULL);
-		inline int GetCount (void) { return m_Table.GetCount(); }
-		inline CSpaceObject *Get (int iIndex) { return (CSpaceObject *)m_Table.GetValue(iIndex); }
-		inline void Remove (int iIndex) { m_Table.RemoveEntry(m_Table.GetKey(iIndex), NULL); }
-		bool Remove (CSpaceObject *pObj);
-		inline void RemoveAll (void) { m_Table.RemoveAll(); }
-
-	private:
-		CSymbolTable m_Table;
 	};
 
 struct SDeviceEnhancementDesc

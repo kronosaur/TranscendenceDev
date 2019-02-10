@@ -99,7 +99,7 @@ CUniverse::CUniverse (void) :
 	//	(Otherwise, the CBeam code would be optimized out, and need it
 	//	because an older version might load one).
 
-	CBeam *pDummy = new CBeam;
+	CBeam *pDummy = new CBeam(*this);
 	delete pDummy;
 	}
 
@@ -244,7 +244,7 @@ ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICC
 	//	Create the mission object
 
 	CMission *pMission;
-	if (error = CMission::Create(pType, pOwner, pCreateData, &pMission, retsError))
+	if (error = CMission::Create(*this, pType, pOwner, pCreateData, &pMission, retsError))
 		return error;
 
 	//	Add the mission 

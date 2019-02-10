@@ -1506,7 +1506,7 @@ int CShipClass::ComputeScore (int iArmorLevel,
 	return iScore;
 	}
 
-bool CShipClass::CreateEmptyWreck (CSystem *pSystem, 
+bool CShipClass::CreateEmptyWreck (CSystem &System, 
 								   CShip *pShip,
 								   const CVector &vPos, 
 								   const CVector &vVel,
@@ -1518,7 +1518,7 @@ bool CShipClass::CreateEmptyWreck (CSystem *pSystem,
 //	Create an empty wreck of the given ship class
 
 	{
-	return m_WreckDesc.CreateEmptyWreck(pSystem, this, pShip, vPos, vVel, pSovereign, retpWreck);
+	return m_WreckDesc.CreateEmptyWreck(System, this, pShip, vPos, vVel, pSovereign, retpWreck);
 	}
 
 void CShipClass::CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale)

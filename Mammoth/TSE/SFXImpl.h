@@ -1074,10 +1074,12 @@ class CTextEffectCreator : public CEffectCreator
 
 //	Space Object Implementations -----------------------------------------------
 
-class CSequencerEffect : public CSpaceObject
+class CSequencerEffect : public TSpaceObjectImpl<OBJID_CSEQUENCEREFFECT>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
+		CSequencerEffect (CUniverse &Universe);
+
+		static ALERROR Create (CSystem &System,
 							   CEffectSequencerCreator *pType,
 							   CSpaceObject *pAnchor,
 							   const CVector &vPos,
@@ -1096,7 +1098,6 @@ class CSequencerEffect : public CSpaceObject
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
 	private:
-		CSequencerEffect (void);
 
 		CEffectSequencerCreator *m_pType;
 		CSpaceObject *m_pAnchor;

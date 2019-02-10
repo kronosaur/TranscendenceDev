@@ -5,7 +5,7 @@
 
 #pragma once
 
-class CMission : public CSpaceObject
+class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 	{
 	public:
 		enum EStatus
@@ -37,11 +37,15 @@ class CMission : public CSpaceObject
 			TArray<CString> SpecialNotAllowed;	//	Special excluding attributes
 			};
 
-		static ALERROR Create (CMissionType *pType,
+		CMission (CUniverse &Universe);
+
+		static ALERROR Create (CUniverse &Universe,
+							   CMissionType *pType,
 							   CSpaceObject *pOwner,
 							   ICCItem *pCreateData,
 							   CMission **retpMission,
 							   CString *retsError);
+
 		void FireCustomEvent (const CString &sEvent, ICCItem *pData);
 		inline bool CleanNonPlayer (void) const { return m_pType->CleanNonPlayer(); }
 		inline DWORD GetAcceptedOn (void) const { return m_dwAcceptedOn; }
@@ -104,8 +108,6 @@ class CMission : public CSpaceObject
 			completeDestroyed,
 			};
 
-		CMission (void);
-
 		void CloseMission (void);
 		void CompleteMission (ECompletedReasons iReason);
 		void FireOnAccepted (void);
@@ -139,8 +141,6 @@ class CMission : public CSpaceObject
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
-
-	friend CObjectClass<CMission>;
 	};
 
 class CMissionList

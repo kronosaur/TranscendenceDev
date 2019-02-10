@@ -5,9 +5,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CContinuousBeam>g_Class(OBJID_CCONTINUOUSBEAM, NULL);
-
-CContinuousBeam::CContinuousBeam (void) : CSpaceObject(&g_Class),
+CContinuousBeam::CContinuousBeam (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pPainter(NULL)
 
 //	CContinuousBeam constructor
@@ -112,7 +110,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	pPseudoSegment->fAlive = false;
 	}
 
-ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinuousBeam **retpObj)
+ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuousBeam **retpObj)
 
 //	Create
 //
@@ -128,7 +126,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinu
 
 	//	Create the object
 
-	CContinuousBeam *pBeam = new CContinuousBeam;
+	CContinuousBeam *pBeam = new CContinuousBeam(System.GetUniverse());
 	if (pBeam == NULL)
 		return ERR_MEMORY;
 
@@ -171,7 +169,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinu
 
 	//	Add to system
 
-	if (error = pBeam->AddToSystem(pSystem))
+	if (error = pBeam->AddToSystem(&System))
 		{
 		delete pBeam;
 		return error;

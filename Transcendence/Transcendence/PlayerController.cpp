@@ -309,7 +309,7 @@ CString CPlayerShipController::DebugCrashInfo (void)
 	sResult.Append(strPatternSubst(CONSTLIT("m_pDestination: %s\r\n"), CSpaceObject::DebugDescribe(m_pDestination)));
 
 	for (i = 0; i < m_TargetList.GetCount(); i++)
-		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList.Get(i))));
+		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList[i])));
 
 	return sResult;
 	}
@@ -785,7 +785,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 	//	Make a list of all targets
 
 	if (!bUpdate)
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 
 	//	Make sure we're valid
 
@@ -793,7 +793,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 	if (m_pShip == NULL
 			|| (pSystem = m_pShip->GetSystem()) == NULL)
 		{
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 		return;
 		}
 
@@ -867,21 +867,21 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			if (bUpdate)
 				{
 				int iIndex;
-				bool bFound = m_TargetList.Find(pObj, &iIndex);
+				bool bFound = m_TargetList.FindPos(CString(szBuffer), &iIndex);
 
 				if (bInList)
 					{
 					if (!bFound)
-						m_TargetList.Add(CString(szBuffer), pObj);
+						m_TargetList.Insert(CString(szBuffer), pObj);
 					}
 				else
 					{
 					if (bFound)
-						m_TargetList.Remove(iIndex);
+						m_TargetList.Delete(iIndex);
 					}
 				}
 			else if (bInList)
-				m_TargetList.Add(CString(szBuffer), pObj);
+				m_TargetList.Insert(CString(szBuffer), pObj);
 			}
 		}
 	}
@@ -2043,7 +2043,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Clear out the target list
 
-	m_TargetList.Remove(Ctx.pObj);
+	int iIndex;
+	if (m_TargetList.FindByValue(Ctx.pObj, &iIndex))
+		m_TargetList.Delete(iIndex);
 
 	//	Let the UI deal with destroyed objects
 
@@ -2434,7 +2436,7 @@ void CPlayerShipController::Reset (void)
 
 	//	Clear target list
 
-	m_TargetList.RemoveAll();
+	m_TargetList.DeleteAll();
 
 	//	Clear orders
 
@@ -2475,7 +2477,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 
 	InitTargetList(targetEnemies);
 	if (m_TargetList.GetCount() > 0)
-		SetTarget(m_TargetList.Get(0));
+		SetTarget(m_TargetList[0]);
 	else
 		SetTarget(NULL);
 	}
@@ -2548,7 +2550,7 @@ void CPlayerShipController::SetTarget (CSpaceObject *pTarget)
 		}
 	else
 		{
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 		ClearFireAngle();
 		}
 
@@ -2591,20 +2593,20 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 				//	Look for the current target
 
 				int iIndex;
-				if (m_TargetList.Find(m_pTarget, &iIndex))
+				if (m_TargetList.FindByValue(m_pTarget, &iIndex))
 					{
 					iIndex += iDir;
 
 					if (iIndex >= 0 && iIndex < m_TargetList.GetCount())
-						SetTarget(m_TargetList.Get(iIndex));
+						SetTarget(m_TargetList[iIndex]);
 					else
-						SetTarget(m_TargetList.Get(iDefault));
+						SetTarget(m_TargetList[iDefault]);
 					}
 				else
-					SetTarget(m_TargetList.Get(iDefault));
+					SetTarget(m_TargetList[iDefault]);
 				}
 			else
-				SetTarget(m_TargetList.Get(iDefault));
+				SetTarget(m_TargetList[iDefault]);
 			}
 		else
 			SetTarget(NULL);
@@ -2617,7 +2619,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 		InitTargetList(targetFriendlies);
 
 		if (m_TargetList.GetCount() > 0)
-			SetTarget(m_TargetList.Get(iDir == 1 ? 0 : m_TargetList.GetCount() - 1));
+			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
 		else
 			SetTarget(NULL);
 		}
@@ -2659,20 +2661,20 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 				//	Look for the current target
 
 				int iIndex;
-				if (m_TargetList.Find(m_pTarget, &iIndex))
+				if (m_TargetList.FindByValue(m_pTarget, &iIndex))
 					{
 					iIndex += iDir;
 
 					if (iIndex >= 0 && iIndex < m_TargetList.GetCount())
-						SetTarget(m_TargetList.Get(iIndex));
+						SetTarget(m_TargetList[iIndex]);
 					else
-						SetTarget(m_TargetList.Get(iDefault));
+						SetTarget(m_TargetList[iDefault]);
 					}
 				else
-					SetTarget(m_TargetList.Get(iDefault));
+					SetTarget(m_TargetList[iDefault]);
 				}
 			else
-				SetTarget(m_TargetList.Get(iDefault));
+				SetTarget(m_TargetList[iDefault]);
 			}
 		else
 			SetTarget(NULL);
@@ -2685,7 +2687,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 		InitTargetList(targetEnemies);
 
 		if (m_TargetList.GetCount() > 0)
-			SetTarget(m_TargetList.Get(iDir == 1 ? 0 : m_TargetList.GetCount() - 1));
+			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
 		else
 			SetTarget(NULL);
 		}

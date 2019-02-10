@@ -4,9 +4,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CRadiusDamage>g_Class(OBJID_CRADIUSDAMAGE, NULL);
-
-CRadiusDamage::CRadiusDamage (void) : CSpaceObject(&g_Class),
+CRadiusDamage::CRadiusDamage (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pPainter(NULL)
 
 //	CRadiusDamage constructor
@@ -23,7 +21,7 @@ CRadiusDamage::~CRadiusDamage (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDamage **retpObj)
+ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDamage **retpObj)
 
 //	Create
 //
@@ -39,7 +37,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDam
 
 	//	Create the area
 
-	CRadiusDamage *pArea = new CRadiusDamage;
+	CRadiusDamage *pArea = new CRadiusDamage(System.GetUniverse());
 	if (pArea == NULL)
 		return ERR_MEMORY;
 
@@ -86,7 +84,7 @@ ALERROR CRadiusDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDam
 
 	//	Add to system
 
-	if (error = pArea->AddToSystem(pSystem))
+	if (error = pArea->AddToSystem(&System))
 		{
 		delete pArea;
 		return error;

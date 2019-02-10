@@ -246,7 +246,7 @@ bool CItemType::IsAmmunition (void) const
 	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
 	}
 
-void CItemType::CreateEmptyFlotsam (CSystem *pSystem, 
+void CItemType::CreateEmptyFlotsam (CSystem &System, 
 									const CVector &vPos, 
 									const CVector &vVel, 
 									CSovereign *pSovereign, 
@@ -257,14 +257,14 @@ void CItemType::CreateEmptyFlotsam (CSystem *pSystem,
 //	Creates an empty flotsam station
 
 	{
-	SSystemCreateCtx Ctx(*pSystem);
+	SSystemCreateCtx Ctx(System);
 
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
 
 	CStation *pFlotsam;
-	CStation::CreateFromType(pSystem,
+	CStation::CreateFromType(System,
 			GetFlotsamStationType(),
 			CreateCtx,
 			&pFlotsam);

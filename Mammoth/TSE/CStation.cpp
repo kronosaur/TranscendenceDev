@@ -84,8 +84,6 @@ const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
 const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =		CG32bitPixel(165, 140, 83);
 
-static CObjectClass<CStation>g_Class(OBJID_CSTATION);
-
 static char g_ImageTag[] = "Image";
 static char g_ShipsTag[] = "Ships";
 static char g_DockScreensTag[] = "DockScreens";
@@ -108,7 +106,7 @@ const int g_iMapScale = 5;
 
 const int DEFAULT_TIME_STOP_TIME =				150;
 
-CStation::CStation (void) : CSpaceObject(&g_Class),
+CStation::CStation (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_fArmed(false),
 		m_dwSpare(0),
 		m_pType(NULL),
@@ -611,6 +609,9 @@ void CStation::CreateDestructionEffect (void)
 //	Create the effect when the station is destroyed
 
 	{
+	if (GetSystem() == NULL)
+		return;
+
 	//	Start destruction animation
 
 	m_iDestroyedAnimation = 60;
@@ -643,7 +644,7 @@ void CStation::CreateDestructionEffect (void)
 	//	Some air leaks
 
 	CParticleEffect *pEffect;
-	CParticleEffect::CreateEmpty(GetSystem(),
+	CParticleEffect::CreateEmpty(*GetSystem(),
 			this,
 			GetPos(),
 			GetVel(),
@@ -686,7 +687,8 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 //	Create ejecta when hit by damage
 
 	{
-	int i;
+	if (GetSystem() == NULL)
+		return;
 
 	int iEjectaAdj;
 	if (iEjectaAdj = m_pType->GetEjectaAdj())
@@ -717,7 +719,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		//	Generate ejecta
 
 		CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
-		for (i = 0; i < iCount; i++)
+		for (int i = 0; i < iCount; i++)
 			{
 			SShotCreateCtx Ctx;
 
@@ -735,7 +737,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 
 		//	Create geyser effect
 
-		CParticleEffect::CreateGeyser(GetSystem(),
+		CParticleEffect::CreateGeyser(*GetSystem(),
 				this,
 				vHitPos,
 				NullVector,
@@ -750,7 +752,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		}
 	}
 
-ALERROR CStation::CreateFromType (CSystem *pSystem,
+ALERROR CStation::CreateFromType (CSystem &System,
 								  CStationType *pType,
 								  SObjCreateCtx &CreateCtx,
 								  CStation **retpStation,
@@ -777,7 +779,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Create the new station
 
-	pStation = new CStation;
+	pStation = new CStation(System.GetUniverse());
 	if (pStation == NULL)
 		{
 		if (retsError)
@@ -898,7 +900,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	necessary or the variant (if appropriate).
 
 	SSelectorInitCtx InitCtx;
-	InitCtx.pSystem = pSystem;
+	InitCtx.pSystem = &System;
 	InitCtx.vObjPos = CreateCtx.vPos;
 	InitCtx.sLocAttribs = (CreateCtx.pLoc ? CreateCtx.pLoc->GetAttributes() : NULL_STR);
 
@@ -934,7 +936,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Create any items on the station
 
-	if (error = pStation->CreateRandomItems(pType->GetRandomItemTable(), pSystem))
+	if (error = pStation->CreateRandomItems(pType->GetRandomItemTable(), &System))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to create random items");
@@ -1018,7 +1020,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
 
-	if (error = pStation->AddToSystem(pSystem, true))
+	if (error = pStation->AddToSystem(&System, true))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to add to system.");
@@ -1049,7 +1051,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	This type has now been encountered
 
-	pType->SetEncountered(pSystem);
+	pType->SetEncountered(&System);
 
 	//	Fire events on devices
 
@@ -1070,7 +1072,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	If we're not in the middle of creating the system, call OnCreate
 	//	(otherwise we will call OnCreate in OnSystemCreated)
 
-	if (!pSystem->IsCreationInProgress())
+	if (!System.IsCreationInProgress())
 		{
 		pStation->FinishCreation();
 		pStation->CalcInsideBarrier();
@@ -1080,13 +1082,13 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 		//	Make sure we get an OnSystemCreated (and that we get it after
 		//	our subordinates).
 
-		pSystem->RegisterForOnSystemCreated(pStation);
+		System.RegisterForOnSystemCreated(pStation);
 		}
 
 	//	If this is a stargate, tell the system that we've got a stargate
 
 	if (!pStation->m_sStargateDestNode.IsBlank())
-		pSystem->StargateCreated(pStation, NULL_STR, pStation->m_sStargateDestNode, pStation->m_sStargateDestEntryPoint);
+		System.StargateCreated(pStation, NULL_STR, pStation->m_sStargateDestNode, pStation->m_sStargateDestEntryPoint);
 
 	//	Return station
 
@@ -1218,6 +1220,9 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 //	Create effect when station structure is destroyed
 
 	{
+	if (GetSystem() == NULL)
+		return;
+
 	//	Create fracture effect
 
 	int iTick, iVariant;
@@ -1225,7 +1230,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	if (Image.IsLoaded())
 		{
-		CFractureEffect::CreateExplosion(GetSystem(),
+		CFractureEffect::CreateExplosion(*GetSystem(),
 				GetPos(),
 				GetVel(),
 				Image,
@@ -1273,7 +1278,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				8,
 				3);
 
-		CParticleEffect::CreateExplosion(GetSystem(),
+		CParticleEffect::CreateExplosion(*GetSystem(),
 				NULL,
 				GetPos(),
 				GetVel(),

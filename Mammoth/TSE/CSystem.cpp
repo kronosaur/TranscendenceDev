@@ -785,7 +785,7 @@ ALERROR CSystem::CreateFlotsam (const CItem &Item,
 	//	Create the station
 
 	CStation *pFlotsam;
-	pItemType->CreateEmptyFlotsam(this, vPos, vVel, pSovereign, &pFlotsam);
+	pItemType->CreateEmptyFlotsam(*this, vPos, vVel, pSovereign, &pFlotsam);
 
 	//	Add the items to the station
 
@@ -866,7 +866,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 	for (i = 0; i < Universe.GetMissionCount(); i++)
 		{
 		CMission *pMission = Universe.GetMission(i);
-		Ctx.ObjMap.AddEntry(pMission->GetID(), pMission);
+		Ctx.ObjMap.Insert(pMission->GetID(), pMission);
 		}
 
 	//	Create the new star system
@@ -969,7 +969,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 		//	Add this object to the map
 
 		DWORD dwID = (Ctx.dwVersion >= 41 ? pObj->GetID() : pObj->GetIndex());
-		Ctx.ObjMap.AddEntry(dwID, pObj);
+		Ctx.ObjMap.Insert(dwID, pObj);
 
 		//	Update any previous objects that are waiting for this reference
 
@@ -1024,7 +1024,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		CSpaceObject *pObj;
-		if (Ctx.ObjMap.Lookup(dwLoad, (CObject **)&pObj) != NOERROR)
+		if (!Ctx.ObjMap.Find(dwLoad, &pObj))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Save file error: Unable to find named object: %s [%x]"), sName, dwLoad);
 			return ERR_FAIL;
@@ -1075,7 +1075,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 
 	if (retpObj)
 		{
-		if (Ctx.ObjMap.Lookup(dwObjID, (CObject **)retpObj) != NOERROR)
+		if (!Ctx.ObjMap.Find(dwObjID, retpObj))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find POV object: %x"), dwObjID);
 
@@ -1264,7 +1264,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 	//	Create a new ship based on the class
 
 	CShip *pShip;
-	if (error = CShip::CreateFromClass(this, 
+	if (error = CShip::CreateFromClass(*this, 
 			pClass, 
 			pController, 
 			pOverride,
@@ -1347,7 +1347,7 @@ ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
 //	Creates an empty ship wreck of the given class
 
 	{
-	if (!pClass->CreateEmptyWreck(this,
+	if (!pClass->CreateEmptyWreck(*this,
 			NULL,
 			vPos,
 			vVel,
@@ -1553,7 +1553,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CMissile *pMissile;
 
-			CMissile::Create(this, Ctx, &pMissile);
+			CMissile::Create(*this, Ctx, &pMissile);
 
 			pShot = pMissile;
 			break;
@@ -1563,7 +1563,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CContinuousBeam *pBeam;
 
-			CContinuousBeam::Create(this, Ctx, &pBeam);
+			CContinuousBeam::Create(*this, Ctx, &pBeam);
 
 			pShot = pBeam;
 			break;
@@ -1573,7 +1573,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CAreaDamage *pArea;
 
-			CAreaDamage::Create(this, Ctx, &pArea);
+			CAreaDamage::Create(*this, Ctx, &pArea);
 
 			pShot = pArea;
 			break;
@@ -1583,7 +1583,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CParticleDamage *pParticles;
 
-			CParticleDamage::Create(this, Ctx, &pParticles);
+			CParticleDamage::Create(*this, Ctx, &pParticles);
 
 			pShot = pParticles;
 			break;
@@ -1593,7 +1593,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CRadiusDamage *pRadius;
 
-			CRadiusDamage::Create(this, Ctx, &pRadius);
+			CRadiusDamage::Create(*this, Ctx, &pRadius);
 
 			pShot = pRadius;
 			break;
@@ -3839,7 +3839,7 @@ void CSystem::GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj
 
 	//	Lookup the ID in the map
 
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)retpObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, retpObj))
 		return;
 
 	//	If we could not find it, add the return pointer as a reference
@@ -3867,7 +3867,7 @@ void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	Lookup the ID in the map
 
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)retpObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, retpObj))
 		return;
 
 	//	If we could not find it, add the return pointer as a reference
@@ -3892,7 +3892,7 @@ void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC
 	//	Lookup the ID in the map. If we find it, then resolve it now.
 
 	CSpaceObject *pObj;
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)&pObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, &pObj))
 		(pfnResolveProc)(pCtx, dwID, pObj);
 
 	//	If we could not find it, add the return pointer as a reference
@@ -4047,7 +4047,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		else
 			{
 			CPOVMarker *pMarker;
-			CPOVMarker::Create(this, Ctx.pObj->GetPos(), NullVector, &pMarker);
+			CPOVMarker::Create(*this, Ctx.pObj->GetPos(), NullVector, &pMarker);
 			m_Universe.SetPOV(pMarker);
 			}
 		}

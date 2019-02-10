@@ -17,11 +17,9 @@ struct SBeamDrawCtx
 	CG32bitPixel rgbSecondaryColor;
 	};
 
-static CObjectClass<CBeam>g_Class(OBJID_CBEAM, NULL);
-
 void DrawLaserBeam (CG32bitImage &Dest, const SBeamDrawCtx &Ctx);
 
-CBeam::CBeam (void) : CSpaceObject(&g_Class),
+CBeam::CBeam (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 //		m_xPaintFrom(0),
 //		m_yPaintFrom(0),
 		m_pHit(NULL),

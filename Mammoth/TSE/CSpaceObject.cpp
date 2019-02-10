@@ -32,8 +32,6 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define BOUNDS_CHECK_DIST 						(256.0 * g_KlicksPerPixel)
 #define BOUNDS_CHECK_DIST2						(BOUNDS_CHECK_DIST * BOUNDS_CHECK_DIST)
 
-static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
-
 #define HIGHLIGHT_CORNER_WIDTH					8
 #define HIGHLIGHT_CORNER_HEIGHT					8
 
@@ -214,14 +212,8 @@ bool CSpaceObject::m_bObjDestroyed = false;
 
 CString ParseParam (char **ioPos);
 
-CSpaceObject::CSpaceObject (void) : CObject(&g_Class)
-
-//	CSpaceObject constructor
-
-	{
-	}
-
-CSpaceObject::CSpaceObject (IObjectClass *pClass) : CObject(pClass),
+CSpaceObject::CSpaceObject (CUniverse &Universe) : 
+		m_Universe(Universe),
 		m_pSystem(NULL),
 		m_iIndex(-1),
 		m_rBoundsX(0.0),
@@ -1080,6 +1072,74 @@ void CSpaceObject::CopyDataFromObj (CSpaceObject *pSource)
     m_Data.Copy(pSource->m_Data, Options);
 	}
 
+CSpaceObject *CSpaceObject::CreateFromClassID (CUniverse &Universe, DWORD dwClass)
+
+//	CreateFromClassID
+//
+//	Creates a new object of the specified class.
+
+	{
+	switch (dwClass)
+		{
+		case CAreaDamage::ClassID():
+			return new CAreaDamage(Universe);
+
+		case CBeam::ClassID():
+			return new CBeam(Universe);
+
+		case CBoundaryMarker::ClassID():
+			return new CBoundaryMarker(Universe);
+
+		case CContinuousBeam::ClassID():
+			return new CContinuousBeam(Universe);
+
+		case CDisintegrationEffect::ClassID():
+			return new CDisintegrationEffect(Universe);
+
+		case CEffect::ClassID():
+			return new CEffect(Universe);
+
+		case CFractureEffect::ClassID():
+			return new CFractureEffect(Universe);
+
+		case CMarker::ClassID():
+			return new CMarker(Universe);
+
+		case CMissile::ClassID():
+			return new CMissile(Universe);
+
+		case CMission::ClassID():
+			return new CMission(Universe);
+
+		case CParticleDamage::ClassID():
+			return new CParticleDamage(Universe);
+
+		case CParticleEffect::ClassID():
+			return new CParticleEffect(Universe);
+
+		case CPOVMarker::ClassID():
+			return new CPOVMarker(Universe);
+
+		case CRadiusDamage::ClassID():
+			return new CRadiusDamage(Universe);
+
+		case CSequencerEffect::ClassID():
+			return new CSequencerEffect(Universe);
+
+		case CShip::ClassID():
+			return new CShip(Universe);
+
+		case CStaticEffect::ClassID():
+			return new CStaticEffect(Universe);
+
+		case CStation::ClassID():
+			return new CStation(Universe);
+			
+		default:
+			throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Invalid CSpaceObject class: %08x"), dwClass));
+		}
+	}
+
 void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 //	CreateFromStream
@@ -1116,7 +1176,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	CSpaceObject *pObj = dynamic_cast<CSpaceObject *>(CObjectClassFactory::Create((OBJCLASSID)dwLoad));
+	CSpaceObject *pObj = CreateFromClassID(Ctx.GetUniverse(), dwLoad);
 
 	//	Remember the type of object that we're loading (in case of crash)
 
@@ -7583,7 +7643,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	{
 	//	Write out the Kernel object ID
 
-	DWORD dwSave = (DWORD)GetClass()->GetObjID();
+	DWORD dwSave = GetClassID();
 
 	//	Save out stuff
 

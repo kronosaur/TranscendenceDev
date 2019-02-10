@@ -636,7 +636,7 @@ class COverlayList
 //	Intangible: If TRUE, this object is not a physical object in the system.
 //		Virtual and hidden objects are intangible. So are missiles fading out.
 
-class CSpaceObject : public CObject
+class CSpaceObject
 	{
 	public:
 		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
@@ -739,7 +739,7 @@ class CSpaceObject : public CObject
 
 		//	Creation and Lifetime
 
-		CSpaceObject (IObjectClass *pClass);
+		CSpaceObject (CUniverse &Universe);
 		virtual ~CSpaceObject (void);
 
 		static void CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
@@ -1521,6 +1521,7 @@ class CSpaceObject : public CObject
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
+		virtual DWORD GetClassID (void) const = 0;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual CDesignType *GetDefaultOverride (void) const { return NULL; }
@@ -1626,13 +1627,14 @@ class CSpaceObject : public CObject
 			SEffectNode *pNext;
 			};
 
-		CSpaceObject (void);
-
 		inline void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
 		void UpdateEffects (void);
 		void UpdatePlayerTarget (SUpdateCtx &Ctx);
 
-		CSystem *m_pSystem;						//	Current system
+		static CSpaceObject *CreateFromClassID (CUniverse &Universe, DWORD dwClass);
+
+		CUniverse &m_Universe;					//	Our universe
+		CSystem *m_pSystem;						//	Current system (may be NULL)
 		int m_iIndex;							//	Index in system
 		DWORD m_dwID;							//	Universal ID
 		int m_iDestiny;							//	Random number 0..DestinyRange-1
@@ -1733,8 +1735,6 @@ class CSpaceObject : public CObject
 		//	Empty list of overlays
 
 		static COverlayList m_NullOverlays;
-
-	friend CObjectClass<CSpaceObject>;
 	};
 
 class CGlobalSpaceObject

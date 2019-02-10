@@ -17,9 +17,7 @@ const DWORD VAPOR_TRAIL_OPACITY =				80;
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
 const int MIN_MISSILE_INTERACTION =				10;
 
-static CObjectClass<CMissile>g_Class(OBJID_CMISSILE, NULL);
-
-CMissile::CMissile (void) : CSpaceObject(&g_Class),
+CMissile::CMissile (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pExhaust(NULL),
 		m_pPainter(NULL),
 		m_pVaporTrailRegions(NULL),
@@ -203,7 +201,7 @@ int CMissile::ComputeVaporTrail (void)
 		}
 	}
 
-ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retpMissile)
+ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpMissile)
 
 //	Create
 //
@@ -213,7 +211,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 	ALERROR error;
 	CMissile *pMissile;
 
-	pMissile = new CMissile;
+	pMissile = new CMissile(System.GetUniverse());
 	if (pMissile == NULL)
 		return ERR_MEMORY;
 
@@ -299,7 +297,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 
 	//	Add to system
 
-	if (error = pMissile->AddToSystem(pSystem))
+	if (error = pMissile->AddToSystem(&System))
 		{
 		delete pMissile;
 		return error;
@@ -383,7 +381,8 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 //	in the given direction.
 
 	{
-	CMissile *pReflection;
+	if (GetSystem() == NULL)
+		return;
 
 	SShotCreateCtx ReflectCtx;
 	ReflectCtx.pDesc = m_pDesc;
@@ -393,7 +392,8 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 	ReflectCtx.vVel = PolarToVector(iDirection, GetVel().Length());
 	ReflectCtx.iDirection = iDirection;
 
-	Create(GetSystem(), ReflectCtx, &pReflection);
+	CMissile *pReflection;
+	Create(*GetSystem(), ReflectCtx, &pReflection);
 
 	pReflection->m_fReflection = true;
 	if (retpReflection)

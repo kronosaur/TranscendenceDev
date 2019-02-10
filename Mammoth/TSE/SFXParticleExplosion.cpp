@@ -27,10 +27,13 @@ ALERROR CParticleExplosionEffectCreator::CreateEffect (CSystem *pSystem,
 	{
 	ALERROR error;
 
+	if (pSystem == NULL)
+		return ERR_FAIL;
+
 	//	Create the effect
 
 	CParticleEffect *pObj;
-	if (error = CParticleEffect::CreateExplosion(pSystem,
+	if (error = CParticleEffect::CreateExplosion(*pSystem,
 			pAnchor,
 			vPos,
 			vVel,

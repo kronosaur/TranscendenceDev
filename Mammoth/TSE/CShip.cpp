@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CShip>g_Class(OBJID_CSHIP, NULL);
-
 #define FUEL_CHECK_CYCLE						4
 #define LIFESUPPORT_FUEL_USE_PER_CYCLE			1
 #define GATE_ANIMATION_LENGTH					30
@@ -133,7 +131,7 @@ const DWORD CONTROLLER_PLAYERSHIP =				0x100000 + 100;
 
 const int DEFAULT_TIME_STOP_TIME =				150;
 
-CShip::CShip (void) : CSpaceObject(&g_Class),
+CShip::CShip (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pDocked(NULL),
 		m_pController(NULL),
 		m_pEncounterInfo(NULL),
@@ -1370,6 +1368,9 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	if (GetSystem() == NULL)
+		return;
+
 	//	Figure out what explosion to use
 
 	SExplosionType Explosion;
@@ -1453,7 +1454,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 				8,
 				3);
 
-		CParticleEffect::CreateExplosion(GetSystem(),
+		CParticleEffect::CreateExplosion(*GetSystem(),
 				//pWreck,
 				NULL,
 				GetPos(),
@@ -1468,7 +1469,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		//	HACK: No image means paint smoke particles
 
 		CObjectImageArray Dummy;
-		CParticleEffect::CreateExplosion(GetSystem(),
+		CParticleEffect::CreateExplosion(*GetSystem(),
 				//pWreck,
 				NULL,
 				GetPos(),
@@ -1488,7 +1489,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-ALERROR CShip::CreateFromClass (CSystem *pSystem, 
+ALERROR CShip::CreateFromClass (CSystem &System, 
 								CShipClass *pClass,
 								IShipController *pController,
 								CDesignType *pOverride,
@@ -1511,12 +1512,12 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	ALERROR error;
     CString sError;
 	CShip *pShip;
-	CUniverse &Universe = pSystem->GetUniverse();
+	CUniverse &Universe = System.GetUniverse();
 
 	ASSERT(pClass);
 	ASSERT(pController);
 
-	pShip = new CShip;
+	pShip = new CShip(Universe);
 	if (pShip == NULL)
 		return ERR_MEMORY;
 
@@ -1597,7 +1598,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Create items
 
-	if (error = pShip->CreateRandomItems(pClass->GetRandomItemTable(), pSystem))
+	if (error = pShip->CreateRandomItems(pClass->GetRandomItemTable(), &System))
 		return error;
 
 	//	Initialize the armor from the class
@@ -1607,7 +1608,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	//	Devices
 
 	CDeviceDescList Devices;
-	pClass->GenerateDevices(pSystem->GetLevel(), Devices);
+	pClass->GenerateDevices(System.GetLevel(), Devices);
 
 	pShip->m_Devices.Init(pShip, Devices, pClass->GetHullDesc().GetMaxDevices());
 
@@ -1618,7 +1619,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	//	Add the ship to the system (but don't add it to the universe
 	//	list--we will add it later in FinishCreation).
 
-	if (error = pShip->AddToSystem(pSystem, true))
+	if (error = pShip->AddToSystem(&System, true))
 		{
 		delete pShip;
 		return error;
@@ -1689,7 +1690,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 		if (pCtx->pItems)
 			{
-            if (pShip->CreateRandomItems(pCtx->pItems, pSystem) != NOERROR)
+            if (pShip->CreateRandomItems(pCtx->pItems, &System) != NOERROR)
                 pShip->ReportCreateError(CONSTLIT("Unable to create items"));
 			}
 
@@ -1713,7 +1714,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 
 	//	Fire OnCreate
 
-	if (!pSystem->IsCreationInProgress())
+	if (!System.IsCreationInProgress())
 		pShip->FinishCreation(pCtx);
 
 	//	If creation is in progress and we have a generator context then we need
@@ -1734,7 +1735,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 		//	Make sure we get an OnSystemCreated (and that we get it in the 
 		//	proper order relative to our station).
 
-		pSystem->RegisterForOnSystemCreated(pShip);
+		System.RegisterForOnSystemCreated(pShip);
 		}
 
 	//	Done
@@ -4664,6 +4665,9 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 	{
 	DEBUG_TRY
 
+	if (GetSystem() == NULL)
+		return;
+
 	//	Figure out if we're creating a wreck or not
 
 	bool bCreateWreck = (Ctx.iCause != removedFromSystem)
@@ -4743,7 +4747,7 @@ void CShip::OnDestroyed (SDestroyCtx &Ctx)
 				{
 				CFractureEffect *pEffect;
 
-				CFractureEffect::CreateExplosion(GetSystem(),
+				CFractureEffect::CreateExplosion(*GetSystem(),
 						GetPos(),
 						GetVel(),
 						Image,
