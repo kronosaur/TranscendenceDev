@@ -45,7 +45,7 @@ CRangeTypeEvent::CRangeTypeEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	{
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pType = g_pUniverse->FindDesignType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindDesignType(dwLoad);
 
 	m_sEvent.ReadFromStream(Ctx.pStream);
 

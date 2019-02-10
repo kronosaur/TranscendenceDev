@@ -18,15 +18,19 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 //	Arranges labels for objects in the system.
 
 	{
+	if (pSystem == NULL)
+		return;
+
 	int i;
 	const int MAX_LABELS = 100;
 	int iLabelCount = 0;
 	SLabelEntry Labels[MAX_LABELS];
+	const CG16bitFont &MapLabelFont = pSystem->GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
 
 	//	Compute some font metrics
 
-	int cxChar = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).GetAverageWidth();
-	int cyChar = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).GetHeight();
+	int cxChar = MapLabelFont.GetAverageWidth();
+	int cyChar = MapLabelFont.GetHeight();
 
 	//	Compute a transform for map coordinate
 
@@ -46,7 +50,7 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 			{
 			Labels[iLabelCount].pObj = pObj;
 			Trans.Transform(pObj->GetPos(), &Labels[iLabelCount].x, &Labels[iLabelCount].y);
-			Labels[iLabelCount].cxLabel = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).MeasureText(pObj->GetNounPhrase(nounTitleCapitalize));
+			Labels[iLabelCount].cxLabel = MapLabelFont.MeasureText(pObj->GetNounPhrase(nounTitleCapitalize));
 
 			SetLabelLeft(Labels[iLabelCount], cyChar);
 

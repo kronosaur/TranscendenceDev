@@ -12919,7 +12919,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the item price (in item's default currency)
 
-			int iPrice = CTradingComputer::GetItemBuyPrice(*g_pUniverse, pNode, Criteria, Item);
+			int iPrice = CTradingComputer::GetItemBuyPrice(pCtx->GetUniverse(), pNode, Criteria, Item);
 			if (iPrice == 0)
 				return pCC->CreateNil();
 
@@ -12930,7 +12930,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_LOCATIONS:
 			{
-			CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+			CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
 			if (pSystem == NULL)
 				return StdErrorNoSystem(*pCC);
 

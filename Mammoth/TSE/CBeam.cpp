@@ -187,7 +187,7 @@ void CBeam::OnReadFromStream (SLoadCtx &Ctx)
 
 	CString sDescUNID;
 	sDescUNID.ReadFromStream(Ctx.pStream);
-	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
+	m_pDesc = Ctx.GetUniverse().FindWeaponFireDesc(sDescUNID);
 
 	Ctx.pStream->Read((char *)&m_iBonus, sizeof(DWORD));
 	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)

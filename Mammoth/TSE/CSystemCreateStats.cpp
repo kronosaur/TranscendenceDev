@@ -94,6 +94,9 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	{
 	int i, j;
 
+	if (pSystem == NULL)
+		return;
+
 	if (LocationTable.GetCount() == 0 || pSystem->GetTopology() == NULL)
 		return;
 
@@ -129,9 +132,9 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	//	relative to the system.
 
 	TProbabilityTable<CStationType *> BaseProb;
-	for (i = 0; i < g_pUniverse->GetStationTypeCount(); i++)
+	for (i = 0; i < pSystem->GetUniverse().GetStationTypeCount(); i++)
 		{
-		CStationType *pType = g_pUniverse->GetStationType(i);
+		CStationType *pType = pSystem->GetUniverse().GetStationType(i);
 		int iSystemChance = (1000 * pType->GetFrequencyForSystem(pSystem) / ftCommon);
 		if (iSystemChance == 0)
 			continue;

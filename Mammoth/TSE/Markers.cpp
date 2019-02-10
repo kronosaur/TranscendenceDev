@@ -57,7 +57,7 @@ ALERROR CMarker::Create (CSystem &System,
 	pMarker->m_sName = sName;
 	pMarker->m_pSovereign = pSovereign;
 	if (pMarker->m_pSovereign == NULL)
-		pMarker->m_pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		pMarker->m_pSovereign = System.GetUniverse().FindSovereign(g_PlayerSovereignUNID);
 
     //  Basic properties
 

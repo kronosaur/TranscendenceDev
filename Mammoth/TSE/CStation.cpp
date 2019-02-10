@@ -959,7 +959,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 			DWORD dwDeviceID = pDeviceDesc->GetAttributeInteger(DEVICE_ID_ATTRIB);
 			if (dwDeviceID == 0)
 				dwDeviceID = pDeviceDesc->GetAttributeInteger(ITEM_ATTRIB);
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass(dwDeviceID);
+			CDeviceClass *pClass = System.GetUniverse().FindDeviceClass(dwDeviceID);
 			if (pClass == NULL)
 				{
 				if (retsError)
@@ -3323,7 +3323,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Station type
 
 	Ctx.pStream->Read(dwLoad);
-	m_pType = g_pUniverse->FindStationType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindStationType(dwLoad);
 
 	//	Read name
 
@@ -3609,7 +3609,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (m_dwWreckUNID && Ctx.dwVersion < 61)
 		{
-		CShipClass *pClass = g_pUniverse->FindShipClass(m_dwWreckUNID);
+		CShipClass *pClass = Ctx.GetUniverse().FindShipClass(m_dwWreckUNID);
 		if (pClass)
 			{
 			m_ImageSelector.DeleteAll();
@@ -3917,7 +3917,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		const CObjectImageArray &Image = GetImage(false);
 		int cxWidth = RectWidth(Image.GetImageRect());
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StationDestroyedUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
 		if (pEffect)
 			{
 			for (int i = 0; i < mathRandom(1, 3); i++)
@@ -4217,7 +4217,7 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 			{
 			InitMapLabel();
 
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
 					y + m_yMapLabel, 
 					RGB_LRS_LABEL,

@@ -260,7 +260,7 @@ void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **ret
 		{
 		DWORD dwMapUNID;
 		Ctx.pStream->Read((char *)&dwMapUNID, sizeof(DWORD));
-		pMap = CSystemMap::AsType(g_pUniverse->FindDesignType(dwMapUNID));
+		pMap = CSystemMap::AsType(Ctx.GetUniverse().FindDesignType(dwMapUNID));
 		}
 	else
 		pMap = NULL;

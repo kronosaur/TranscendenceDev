@@ -250,7 +250,7 @@ const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 	if (pType)
 		return pType->GetEconomyType();
 
-	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
 	}
 
 DWORD CSpaceObject::GetDefaultEconomyUNID (void)
@@ -385,9 +385,9 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		int iBestPrice = 0;
 		CItemType *pBestItem = NULL;
 
-		for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+		for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 			{
-			CItemType *pType = g_pUniverse->GetItemType(i);
+			CItemType *pType = GetUniverse().GetItemType(i);
 			CItem Item(pType, 1);
 
 			if (pShipToRefuel->IsFuelCompatible(Item))

@@ -255,7 +255,7 @@ void CSystemType::OnMarkImages (void)
 	{
 	if (m_dwBackgroundUNID != 0)
 		{
-		TSharedPtr<CObjectImage> pImage = g_pUniverse->FindLibraryImage(m_dwBackgroundUNID);
+		TSharedPtr<CObjectImage> pImage = GetUniverse().FindLibraryImage(m_dwBackgroundUNID);
 		if (pImage)
 			pImage->Mark();
 		}

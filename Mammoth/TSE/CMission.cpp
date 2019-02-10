@@ -236,11 +236,11 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	CTopologyNode *pNode = NULL;
 	CSystem *pSystem = NULL;
-	if ((pSystem = (pOwner ? pOwner->GetSystem() : g_pUniverse->GetCurrentSystem()))
+	if ((pSystem = (pOwner ? pOwner->GetSystem() : Universe.GetCurrentSystem()))
 			&& (pNode = pSystem->GetTopology()))
 		pMission->m_sNodeID = pNode->GetID();
 
-	pMission->m_dwCreatedOn = g_pUniverse->GetTicks();
+	pMission->m_dwCreatedOn = Universe.GetTicks();
 	pMission->m_fInMissionSystem = true;
 	pMission->m_dwAcceptedOn = 0;
 	pMission->m_dwLeftSystemOn = 0;
@@ -868,7 +868,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read(dwLoad);
-	m_pType = CMissionType::AsType(g_pUniverse->FindDesignType(dwLoad));
+	m_pType = CMissionType::AsType(Ctx.GetUniverse().FindDesignType(dwLoad));
 	if (m_pType == NULL)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined mission type: %08x"), dwLoad));
 

@@ -722,7 +722,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	//	Get the controller
 
-	IShipController *pController = g_pUniverse->CreateShipController(m_sController);
+	IShipController *pController = Ctx.GetUniverse().CreateShipController(m_sController);
 	if (pController == NULL)
 		{
 		kernelDebugLogPattern("Cannot create ship %x; invalid controller: %s", dwClass, m_sController);

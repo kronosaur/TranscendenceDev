@@ -40,7 +40,7 @@ ALERROR CSequencerEffect::Create (CSystem &System,
 	//	Settings
 
 	pEffect->m_pType = pType;
-	pEffect->m_iStartTime = g_pUniverse->GetTicks();
+	pEffect->m_iStartTime = System.GetUniverse().GetTicks();
 	pEffect->m_iTimeCursor = pEffect->m_iStartTime - 1;
 	if (pAnchor)
 		{
@@ -142,7 +142,7 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Convert start and end time relative to 0.
 
 		int iStartTime = m_iTimeCursor - m_iStartTime;
-		int iEndTime = g_pUniverse->GetTicks() - m_iStartTime;
+		int iEndTime = GetUniverse().GetTicks() - m_iStartTime;
 		CVector vPos = (m_pAnchor ? m_pAnchor->GetPos() + m_vAnchorOffset : GetPos());
 		CVector vVel = (m_pAnchor ? m_pAnchor->GetVel() : GetVel());
 
@@ -172,7 +172,7 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Remember the last time we got called. We need this in case
 		//	the system is not updated for a while.
 
-		m_iTimeCursor = g_pUniverse->GetTicks();
+		m_iTimeCursor = GetUniverse().GetTicks();
 		}
 
 	//	If we have no more events, then we can destroy this object

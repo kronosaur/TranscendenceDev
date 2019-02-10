@@ -5433,7 +5433,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 	//	Load class
 
 	Ctx.pStream->Read(dwLoad);
-	m_pClass = g_pUniverse->FindShipClass(dwLoad);
+	m_pClass = Ctx.GetUniverse().FindShipClass(dwLoad);
 
 	//	In 144 we started saving the power consumption members in a separate
 	//	structure. We load the old fields if necessary.
@@ -5454,7 +5454,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		while (iCount-- > 0 && m_pClass == NULL)
 			{
 			Ctx.pStream->Read(dwLoad);
-			m_pClass = g_pUniverse->FindShipClass(dwLoad);
+			m_pClass = Ctx.GetUniverse().FindShipClass(dwLoad);
 			}
 		}
 
@@ -5670,7 +5670,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		Ctx.pStream->Read(dwLoad);
 		if (dwLoad)
-			m_pCharacter = g_pUniverse->FindGenericType(dwLoad);
+			m_pCharacter = Ctx.GetUniverse().FindGenericType(dwLoad);
 		else
 			m_pCharacter = NULL;
 		}
@@ -5745,7 +5745,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		Ctx.pStream->Read(dwLoad);
 		if (dwLoad)
-			m_pEncounterInfo = g_pUniverse->FindStationType(dwLoad);
+			m_pEncounterInfo = Ctx.GetUniverse().FindStationType(dwLoad);
 		}
 
 	//	Calculate item mass, if appropriate. We do this for previous versions
@@ -5770,7 +5770,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		CString sAI;
 		sAI.ReadFromStream(Ctx.pStream);
-		m_pController = g_pUniverse->CreateShipController(sAI);
+		m_pController = Ctx.GetUniverse().CreateShipController(sAI);
 		}
 	else
 		{
@@ -5813,7 +5813,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 				break;
 
 			case CONTROLLER_PLAYERSHIP:
-				m_pController = g_pUniverse->CreateShipController(CONSTLIT("player"));
+				m_pController = Ctx.GetUniverse().CreateShipController(CONSTLIT("player"));
 				break;
 
 			default:
@@ -6132,7 +6132,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                         //	Remember the last time we fired a weapon
 
                         if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
-                            m_iLastFireTime = g_pUniverse->GetTicks();
+                            m_iLastFireTime = GetUniverse().GetTicks();
 
                         //	Set delay for next activation
 

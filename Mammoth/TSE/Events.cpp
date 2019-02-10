@@ -563,7 +563,7 @@ CTimedTypeEvent::CTimedTypeEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	{
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pType = g_pUniverse->FindDesignType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindDesignType(dwLoad);
 
 	m_sEvent.ReadFromStream(Ctx.pStream);
 	Ctx.pStream->Read((char *)&m_iInterval, sizeof(DWORD));

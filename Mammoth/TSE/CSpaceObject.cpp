@@ -281,7 +281,7 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 
 	{
 	m_iDestiny = mathRandom(0, g_DestinyRange - 1);
-	m_dwID = g_pUniverse->CreateGlobalID();
+	m_dwID = Universe.CreateGlobalID();
 	}
 
 CSpaceObject::~CSpaceObject (void)
@@ -567,6 +567,8 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 	//	We can get here with m_pSystem already set during load
 
 	ASSERT(m_pSystem == NULL || m_pSystem == pSystem);
+	if (pSystem == NULL)
+		return ERR_FAIL;
 
 	//	Clear the destroyed bit
 
@@ -582,7 +584,7 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 	//	If this is a ship or station then add to the global list
 
 	if (!bNoGlobalInsert)
-		g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
+		pSystem->GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
 	return NOERROR;
 	}
@@ -1194,7 +1196,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	if (Ctx.dwVersion >= 13)
 		Ctx.pStream->Read((char *)&pObj->m_dwID, sizeof(DWORD));
 	else
-		pObj->m_dwID = g_pUniverse->CreateGlobalID();
+		pObj->m_dwID = Ctx.GetUniverse().CreateGlobalID();
 
 	//	Set the system as soon as possible because we rely on it during loading
 
@@ -1219,7 +1221,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	if (Ctx.dwVersion >= 48
 			&& Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD)) == NOERROR
 			&& dwLoad != 0)
-		pObj->m_pOverride = g_pUniverse->FindDesignType(dwLoad);
+		pObj->m_pOverride = Ctx.GetUniverse().FindDesignType(dwLoad);
 	else
 		pObj->m_pOverride = NULL;
 
@@ -1524,7 +1526,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	CSpaceObject::Categories iCategory = GetCategory();
 	if (iCategory == CSpaceObject::catStation || iCategory == CSpaceObject::catShip)
-		g_pUniverse->GetGlobalObjects().Delete(this);
+		GetUniverse().GetGlobalObjects().Delete(this);
 
 	//	Remove from system. This will call OnObjDestroyed to all other
 	//	interested objects

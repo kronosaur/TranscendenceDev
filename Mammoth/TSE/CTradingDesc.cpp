@@ -1848,7 +1848,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			Commodity.sID.ReadFromStream(Ctx.pStream);
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-			Commodity.pItemType = g_pUniverse->FindItemType(dwLoad);
+			Commodity.pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 			CString sCriteria;
 			sCriteria.ReadFromStream(Ctx.pStream);
@@ -1937,6 +1937,9 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 	{
 	DEBUG_TRY
 
+	if (pObj == NULL)
+		return;
+
 	int i, j;
 	bool bCargoChanged = false;
 
@@ -1964,9 +1967,9 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 		//	criteria.
 
 		TArray<CItemType *> ItemTable;
-		for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
+		for (j = 0; j < pObj->GetUniverse().GetItemTypeCount(); j++)
 			{
-			CItemType *pType = g_pUniverse->GetItemType(j);
+			CItemType *pType = pObj->GetUniverse().GetItemType(j);
 			CItem theItem(pType, 1);
 			if (theItem.MatchesCriteria(Service.ItemCriteria))
 				ItemTable.Insert(pType);

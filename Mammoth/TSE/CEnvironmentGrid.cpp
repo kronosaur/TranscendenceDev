@@ -739,7 +739,7 @@ void CEnvironmentGrid::ReadFromStream (SLoadCtx &Ctx)
 			DWORD dwUNID;
 			Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
 
-			CSpaceEnvironmentType *pEnv = g_pUniverse->FindSpaceEnvironment(dwUNID);
+			CSpaceEnvironmentType *pEnv = Ctx.GetUniverse().FindSpaceEnvironment(dwUNID);
 			DWORD dwAtom;
 			m_EnvList.atom_Insert(pEnv, &dwAtom);
 			ASSERT(dwAtom == i);
