@@ -210,7 +210,7 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	ALERROR error;
 	CSystem *pSystem;
 
-	if (error = CSystem::CreateEmpty(this, NULL, &pSystem))
+	if (error = CSystem::CreateEmpty(*this, NULL, &pSystem))
 		return error;
 
     //  Set a unique ID
@@ -442,7 +442,7 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	CString sError;
 
 	SetLogImageLoad(false);
-	error = CSystem::CreateFromXML(this, pSystemType, pTopology, &pSystem, &sError, pStats);
+	error = CSystem::CreateFromXML(*this, pSystemType, pTopology, &pSystem, &sError, pStats);
 	SetLogImageLoad(true);
 
 	if (error)
@@ -1840,7 +1840,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	CString sError;
 	CUniverse::SInitDesc InitCtx;
-	InitCtx.bDebugMode = g_pUniverse->InDebugMode();
+	InitCtx.bDebugMode = InDebugMode();
 	InitCtx.bInLoadGame = true;
 
 	//	Load list of extensions used in this game
@@ -1901,7 +1901,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 		if (!m_Extensions.FindBestExtension(ExtensionList[i].dwUNID,
 				ExtensionList[i].dwRelease,
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&pExtension))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i]);
@@ -1933,7 +1933,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 		if (!m_Extensions.FindBestExtension(Desc.dwUNID,
 				Desc.dwRelease,
-				CExtensionCollection::FLAG_ADVENTURE_ONLY | (g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				CExtensionCollection::FLAG_ADVENTURE_ONLY | (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
@@ -1955,7 +1955,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 		pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
 		if (!m_Extensions.FindAdventureFromDesc(dwLoad, 
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), dwLoad);
@@ -1966,7 +1966,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 		{
 		if (!m_Extensions.FindBestExtension(DEFAULT_ADVENTURE_EXTENSION_UNID, 
 				0,
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find default adventure: %08x"), DEFAULT_ADVENTURE_EXTENSION_UNID);
@@ -2028,7 +2028,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 17)
 		{
-		SLoadCtx ObjCtx;
+		SLoadCtx ObjCtx(*this);
 		ObjCtx.dwVersion = Ctx.dwSystemVersion;
 		ObjCtx.pStream = pStream;
 
@@ -2191,7 +2191,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Make sure we initialize adventure encounter overrides
 
-	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
+	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
 	if (pAdventure)
 		pAdventure->InitEncounterOverrides();
 

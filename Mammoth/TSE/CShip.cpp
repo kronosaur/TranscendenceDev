@@ -1511,7 +1511,7 @@ ALERROR CShip::CreateFromClass (CSystem *pSystem,
 	ALERROR error;
     CString sError;
 	CShip *pShip;
-	CUniverse *pUniv = pSystem->GetUniverse();
+	CUniverse &Universe = pSystem->GetUniverse();
 
 	ASSERT(pClass);
 	ASSERT(pController);

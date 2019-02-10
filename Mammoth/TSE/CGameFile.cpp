@@ -452,7 +452,7 @@ ALERROR CGameFile::LoadSystem (DWORD dwUNID,
 
 	CString sError;
 	g_pUniverse->SetLogImageLoad(false);
-	error = CSystem::CreateFromStream(g_pUniverse, 
+	error = CSystem::CreateFromStream(*g_pUniverse, 
 			&Stream, 
 			retpSystem,
 			&sError,

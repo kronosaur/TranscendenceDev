@@ -750,7 +750,7 @@ class CSpaceObject : public CObject
 		inline void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, Ctx.pDesc); }
 		void Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL, CSpaceObject **retpWreck = NULL);
 		inline CSystem *GetSystem (void) const { return m_pSystem; }
-		inline CUniverse &GetUniverse (void) const { return (m_pSystem ? *m_pSystem->GetUniverse() : *g_pUniverse); }
+		inline CUniverse &GetUniverse (void) const { return (m_pSystem ? m_pSystem->GetUniverse() : *g_pUniverse); }
 		inline bool IsAscended (void) const { return m_fAscended; }
 		void Remove (DestructionTypes iCause, const CDamageSource &Attacker, bool bRemovedByOwner = false);
 		inline void SetAscended (bool bAscended = true) { m_fAscended = bAscended; }

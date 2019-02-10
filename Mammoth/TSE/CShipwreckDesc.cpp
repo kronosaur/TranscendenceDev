@@ -279,7 +279,7 @@ bool CShipwreckDesc::CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CSh
 
 	DEBUG_TRY
 
-	SSystemCreateCtx Ctx(pSystem);
+	SSystemCreateCtx Ctx(*pSystem);
 
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;

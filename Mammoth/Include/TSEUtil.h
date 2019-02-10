@@ -260,7 +260,8 @@ class CSpaceObjectAddressResolver
 
 struct SLoadCtx
 	{
-	SLoadCtx (void) : 
+	SLoadCtx (CUniverse &UniverseArg) : 
+			m_Universe(UniverseArg),
 			dwVersion(SYSTEM_SAVE_VERSION),
 			pStream(NULL),
 			pSystem(NULL),
@@ -270,6 +271,7 @@ struct SLoadCtx
 		{ }
 
 	SLoadCtx (const SUniverseLoadCtx &Ctx) :
+			m_Universe(Ctx.GetUniverse()),
 			dwVersion(Ctx.dwSystemVersion),
 			pStream(Ctx.pStream),
 			pSystem(NULL),
@@ -277,6 +279,8 @@ struct SLoadCtx
 			iLoadState(loadStateUnknown),
 			dwObjClassID(0)
 		{ }
+
+	inline CUniverse &GetUniverse (void) { return m_Universe; }
 
 	DWORD dwVersion;					//	See CSystem.cpp for version history
 
@@ -296,6 +300,9 @@ struct SLoadCtx
 	ELoadStates iLoadState;				//	Current load state
 	DWORD dwObjClassID;					//	ClassID that we're trying to load
 	CString sEffectUNID;				//	UNID of effect we're loading
+
+	private:
+		CUniverse &m_Universe;
 	};
 
 struct SViewportAnnotations

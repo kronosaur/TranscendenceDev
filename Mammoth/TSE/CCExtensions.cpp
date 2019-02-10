@@ -11721,7 +11721,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Create
 
-			if (error = pSysCreateCtx->pSystem->CreateLookup(pSysCreateCtx, sTableName, OrbitDesc, NULL))
+			if (error = pSysCreateCtx->System.CreateLookup(pSysCreateCtx, sTableName, OrbitDesc, NULL))
 				{
 				//	If we can't find the table, we fail without an error (because
 				//	we might be creating an optional object).

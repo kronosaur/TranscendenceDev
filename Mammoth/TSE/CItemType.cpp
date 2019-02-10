@@ -257,7 +257,7 @@ void CItemType::CreateEmptyFlotsam (CSystem *pSystem,
 //	Creates an empty flotsam station
 
 	{
-	SSystemCreateCtx Ctx(pSystem);
+	SSystemCreateCtx Ctx(*pSystem);
 
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
