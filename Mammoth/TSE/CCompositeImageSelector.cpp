@@ -286,9 +286,9 @@ void CCompositeImageSelector::ReadFromStream (SLoadCtx &Ctx)
 			if (dwLoad == 0)
 				m_Sel[i].dwExtra = 0;
 			else if (m_Sel[i].iVariant == -1)
-				m_Sel[i].dwExtra = (DWORD)g_pUniverse->FindItemType(dwLoad);
+				m_Sel[i].dwExtra = (DWORD)Ctx.GetUniverse().FindItemType(dwLoad);
 			else
-				m_Sel[i].dwExtra = (DWORD)g_pUniverse->FindShipClass(dwLoad);
+				m_Sel[i].dwExtra = (DWORD)Ctx.GetUniverse().FindShipClass(dwLoad);
 			}
 		}
 	}

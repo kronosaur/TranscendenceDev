@@ -150,32 +150,6 @@ void CUniverse::AddEvent (CSystemEvent *pEvent)
 	m_Events.AddEvent(pEvent);
 	}
 
-#ifdef OLD_SOUND
-void CUniverse::AddSound (DWORD dwUNID, int iChannel)
-
-//	AddSound
-//
-//	Adds a sound to the design
-
-	{
-	if (m_pSoundMgr == NULL)
-		return;
-
-	//	If this UNID is already in the list, then delete it
-
-	int iOldChannel = FindSound(dwUNID);
-	if (iOldChannel != -1)
-		{
-		m_pSoundMgr->Delete(iOldChannel);
-		m_Sounds.RemoveEntry(dwUNID, NULL);
-		}
-
-	//	Add the new one
-
-	m_Sounds.AddEntry((int)dwUNID, (CObject *)iChannel);
-	}
-#endif
-
 ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 
 //	AddStarSystem

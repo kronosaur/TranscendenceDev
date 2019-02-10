@@ -2139,7 +2139,7 @@ void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dw
 
 	if (m_pDevices)
 		{
-		SDeviceGenerateCtx Ctx;
+		SDeviceGenerateCtx Ctx(GetUniverse());
 		Ctx.iLevel = iLevel;
 
 		if (!(dwFlags & GDFLAG_NO_DEVICE_SLOT_SEARCH))

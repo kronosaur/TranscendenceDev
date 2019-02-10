@@ -684,7 +684,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	return NOERROR;
 	}
 
-ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, CExtension **retpExtension, CString *retsError)
+ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, DWORD dwFlags, CExtension **retpExtension, CString *retsError)
 
 //	CreateExtensionStub
 //
@@ -693,10 +693,12 @@ ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes 
 	{
 	ALERROR error;
 
+	bool bDebugMode = ((dwFlags & CExtensionCollection::FLAG_DEBUG_MODE) ? true : false);
+
 	//	Open up the file
 
 	CResourceDb Resources(sFilespec, true);
-	Resources.SetDebugMode(g_pUniverse->InDebugMode());
+	Resources.SetDebugMode(bDebugMode);
 	if (error = Resources.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 		return error;
 
@@ -1300,13 +1302,6 @@ ALERROR CExtension::LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			return error;
 		}
 
-#ifdef OLD_SOUND
-	//	<Sound>
-
-	else if (strEquals(pDesc->GetTag(), SOUND_TAG))
-		return LoadSoundElement(Ctx, pDesc);
-#endif
-
 	//	<Globals>
 
 	else if (strEquals(pDesc->GetTag(), GLOBALS_TAG))
@@ -1538,80 +1533,6 @@ ALERROR CExtension::LoadModulesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	return NOERROR;
 	}
-
-#ifdef OLD_SOUND
-ALERROR CExtension::LoadSoundElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadSoundElement
-//
-//	Loads <Sound> element
-
-	{
-	ALERROR error;
-
-	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
-		return NOERROR;
-
-	DWORD dwUNID;
-	if (error = LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
-		return error;
-
-	CString sFilename = pDesc->GetAttribute(FILENAME_ATTRIB);
-
-	//	Load the sound
-
-	int iChannel;
-	if (error = Ctx.pResDb->LoadSound(*g_pUniverse->GetSoundMgr(), Ctx.sFolder, sFilename, &iChannel))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Unable to load sound: %s"), sFilename);
-		return error;
-		}
-
-	g_pUniverse->AddSound(dwUNID, iChannel);
-
-	return NOERROR;
-	}
-
-ALERROR CExtension::LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadSoundsElement
-//
-//	Loads <Sounds> element
-//	(For backwards compatibility)
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Nothing to do if we don't want sound resources
-
-	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
-		return NOERROR;
-
-	//	Figure out if we've got a special folder for the resources
-
-	CString sOldFolder = Ctx.sFolder;
-	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
-	if (!sFolder.IsBlank())
-		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
-
-	//	Loop over all sound resources
-
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
-		{
-		CXMLElement *pItem = pDesc->GetContentElement(i);
-
-		if (error = LoadSoundElement(Ctx, pItem))
-			return error;
-		}
-
-	//	Restore folder
-
-	Ctx.sFolder = sOldFolder;
-
-	return NOERROR;
-	}
-#endif
 
 ALERROR CExtension::LoadResourcesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 

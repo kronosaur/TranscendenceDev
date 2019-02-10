@@ -409,16 +409,17 @@ class CDeviceDescList
 
 struct SDeviceGenerateCtx
 	{
-	SDeviceGenerateCtx (void) :
-			iLevel(1),
-			pRoot(NULL),
-			pResult(NULL)
+	SDeviceGenerateCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg)
 		{ }
 
-	int iLevel;
-	IDeviceGenerator *pRoot;
+	inline CUniverse &GetUniverse (void) const { return Universe; }
 
-	CDeviceDescList *pResult;
+	CUniverse &Universe;
+	int iLevel = 1;
+	IDeviceGenerator *pRoot = NULL;
+
+	CDeviceDescList *pResult = NULL;
 	};
 
 class IDeviceGenerator

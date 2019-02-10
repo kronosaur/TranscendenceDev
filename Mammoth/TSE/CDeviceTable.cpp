@@ -355,7 +355,7 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
             CString sError;
             if (!Desc.Item.SetLevel(m_Level.Roll(), &sError))
                 {
-                if (g_pUniverse->InDebugMode())
+                if (Ctx.GetUniverse().InDebugMode())
                     ::kernelDebugLogString(sError);
                 }
             }
@@ -509,7 +509,7 @@ bool CSingleDevice::FindSlot (SDeviceGenerateCtx &Ctx, const CItem &Item, SDevic
 		{
 		if (!Ctx.pRoot->FindDefaultDesc(*Ctx.pResult, m_sSlotID, &retSlotDesc))
 			{
-			if (g_pUniverse->InDebugMode())
+			if (Ctx.GetUniverse().InDebugMode())
 				::kernelDebugLogPattern("WARNING: Unable to find device slot %s", m_sSlotID);
 			return false;
 			}

@@ -165,7 +165,7 @@ ALERROR CDockScreenTypeRef::Bind (SDesignLoadCtx &Ctx, CXMLElement *pLocalScreen
 
 		else
 			{
-			CDesignType *pBaseType = g_pUniverse->FindDesignType(dwUNID);
+			CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(dwUNID);
 			if (pBaseType == NULL)
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Unknown dock screen design type: %x"), dwUNID);
