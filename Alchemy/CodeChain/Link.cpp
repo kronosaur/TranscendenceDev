@@ -132,7 +132,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 				//	Add the item to the list
 
-				pList->Append(*this, pItem);
+				pList->Append(pItem);
 				pItem->Discard();
 
 				//	Move the position
@@ -236,7 +236,7 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 				//	Add the item to the table
 
-				pResult = pTable->AddEntry(this, pKey, pValue);
+				pResult = pTable->AddEntry(pKey, pValue);
 				pKey->Discard();
 				pValue->Discard();
 				if (pResult->IsError())

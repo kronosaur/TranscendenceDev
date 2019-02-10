@@ -310,7 +310,7 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 	for (i = 0; i < m_Sel.GetCount(); i++)
 		{
 		ICCItemPtr pEntry(CC.CreateSymbolTable());
-		pSel->Append(CC, pEntry);
+		pSel->Append(pEntry);
 
 		pEntry->SetIntegerAt(CC, CONSTLIT("id"), m_Sel[i].dwID);
 		pEntry->SetIntegerAt(CC, CONSTLIT("variant"), m_Sel[i].iVariant);

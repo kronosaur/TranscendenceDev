@@ -26,7 +26,7 @@ CCLinkedList::~CCLinkedList (void)
 	{
 	}
 
-void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
+void CCLinkedList::Append (ICCItem *pValue)
 
 //	Append
 //
@@ -37,7 +37,7 @@ void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
 
 	//	Create a new cons
 
-	pCons = CC.CreateCons();
+	pCons = CCodeChain::CreateCons();
 	if (pCons == NULL)
 		return;
 
@@ -64,20 +64,6 @@ void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
 		}
 	}
 
-#if 0
-void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
-
-//	Append
-//
-//	Appends the item to the list
-
-	{
-	Append(*pCC, pItem);
-	if (retpError)
-		*retpError = pCC->CreateTrue();
-	}
-#endif
-
 ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 
 //	Clone
@@ -101,7 +87,7 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	pCons = m_pFirst;
 	while (pCons)
 		{
-		pClone->Append(*pCC, pCons->m_pItem);
+		pClone->Append(pCons->m_pItem);
 		pCons = pCons->m_pNext;
 		}
 
@@ -132,7 +118,7 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 	while (pCons)
 		{
 		ICCItem *pItemClone = pCons->m_pItem->CloneContainer(pCC);
-		pClone->Append(*pCC, pItemClone);
+		pClone->Append(pItemClone);
 		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
@@ -165,7 +151,7 @@ ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
 	while (pCons)
 		{
 		ICCItem *pItemClone = pCons->m_pItem->CloneDeep(pCC);
-		pClone->Append(*pCC, pItemClone);
+		pClone->Append(pItemClone);
 		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
@@ -314,7 +300,7 @@ ICCItem *CCLinkedList::GetFlattened(CCodeChain *pCC, ICCItem *pResult = NULL)
 		}
 		else
 		{
-			pResult->Append(*pCC, pCurrentElement);
+			pResult->Append(pCurrentElement);
 		};
 	};
 
@@ -986,7 +972,7 @@ ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 		while (pNext)
 			{
-			pTail->Append(*pCC, pNext->m_pItem);
+			pTail->Append(pNext->m_pItem);
 			pNext = pNext->m_pNext;
 			}
 

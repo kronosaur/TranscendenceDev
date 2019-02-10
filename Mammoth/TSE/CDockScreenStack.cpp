@@ -278,7 +278,7 @@ void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
 	//	Add the entry
 
 	ICCItem *pKey = CC.CreateString(sAttrib);
-	ICCItem *pResult = Frame.pStoredData->AddEntry(&CC, pKey, pData);
+	ICCItem *pResult = Frame.pStoredData->AddEntry(pKey, pData);
 	pResult->Discard();
 	pKey->Discard();
 	}

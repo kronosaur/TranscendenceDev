@@ -49,7 +49,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 			{
 			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
 			ICCItemPtr pKey = ICCItemPtr(pValue->GetKey(i));
-			pResult->AddEntry(&CC, pKey, pElement);
+			pResult->AddEntry(pKey, pElement);
 			}
 
 		return pResult;
@@ -65,7 +65,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 		for (int i = 0; i < pValue->GetCount(); i++)
 			{
 			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
-			pResult->Append(CC, pElement);
+			pResult->Append(pElement);
 			}
 
 		return pResult;

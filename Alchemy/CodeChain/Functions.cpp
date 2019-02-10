@@ -122,14 +122,14 @@ ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	If the item is a symbol table, then treat it like an atom
 
 		if (pItem->IsSymbolTable())
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 
 		//	Otherwise, add each of the elements
 
 		else
 			{
 			for (j = 0; j < pItem->GetCount(); j++)
-				pList->Append(*pCC, pItem->GetElement(j));
+				pList->Append(pItem->GetElement(j));
 			}
 		}
 
@@ -196,12 +196,12 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Add each of the arguments except the last
 
 	for (i = 1; i < pArgs->GetCount() - 1; i++)
-		pList->Append(*pCC, pArgs->GetElement(i));
+		pList->Append(pArgs->GetElement(i));
 
 	//	Add each of the elements of the last list
 
 	for (i = 0; i < pLast->GetCount(); i++)
-		pList->Append(*pCC, pLast->GetElement(i));
+		pList->Append(pLast->GetElement(i));
 
 	//	Set the literal flag to indicate that the arguments should
 	//	not be evaluated.
@@ -268,7 +268,7 @@ ICCItem *fnAtmCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Get the atom and the entry
 		
-		pResult = pAtomTable->AddEntry(pCC, pPair->GetElement(0), pPair->GetElement(1));
+		pResult = pAtomTable->AddEntry(pPair->GetElement(0), pPair->GetElement(1));
 		if (pResult->IsError())
 			{
 			pAtomTable->Discard();
@@ -327,7 +327,7 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pCC, pSymbol, pEntry);
+			pResult = pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
@@ -474,7 +474,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pVar->IsIdentifier())
 				{
-				pItem = pLocalSymbols->AddEntry(pCC, pVar, pValue, true);
+				pItem = pLocalSymbols->AddEntry(pVar, pValue, true);
 				pValue->Discard();
 				if (pItem->IsError())
 					{
@@ -532,7 +532,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				pVar = pLocals->Head(pCC);
 				if (pVar->IsIdentifier())
 					{
-					pItem = pLocalSymbols->AddEntry(pCC, pVar, pResult);
+					pItem = pLocalSymbols->AddEntry(pVar, pResult);
 					pItem->Discard();
 					}
 
@@ -703,7 +703,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Associate the enumeration variable
 
-	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pArgs->Discard();
@@ -989,7 +989,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pLocalSymbols->Discard();
@@ -1037,7 +1037,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!pSelect->IsNil())
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 
 		pSelect->Discard();
 		}
@@ -1263,7 +1263,7 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pArgs->Discard();
@@ -1645,7 +1645,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			else if (strEquals(sType, CONSTLIT("list")))
 				{
 				ICCItem *pList = pCC->CreateLinkedList();
-				pList->Append(*pCC, pValue);
+				pList->Append(pValue);
 				return pList;
 				}
 			else if (strEquals(sType, CONSTLIT("true")))
@@ -1838,7 +1838,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
 
-					ICCItem *pError = pTarget->AddEntry(pCC, pKey, pItem);
+					ICCItem *pError = pTarget->AddEntry(pKey, pItem);
 					pKey->Discard();
 					if (pError->IsError())
 						{
@@ -1876,7 +1876,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				else
 					{
-					ICCItem *pError = pTarget->AddEntry(pCC, pKey, pValue);
+					ICCItem *pError = pTarget->AddEntry(pKey, pValue);
 					if (pError->IsError())
 						{
 						pTarget->Discard();
@@ -2313,7 +2313,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Copy the elements
 
 		for (i = 0; i < pList->GetCount(); i++)
-			pLinkedList->Append(*pCC, pList->GetElement(i));
+			pLinkedList->Append(pList->GetElement(i));
 
 		//	Done with the original list
 
@@ -2331,14 +2331,14 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	if (pItemToAdd->HasReferenceTo(pLinkedList))
 		{
 		pItemToAdd = pItemToAdd->CloneDeep(pCC);
-		pLinkedList->Append(*pCC, pItemToAdd);
+		pLinkedList->Append(pItemToAdd);
 		pItemToAdd->Discard();
 		}
 
 	//	Otherwise, we can just append the item
 
 	else
-		pLinkedList->Append(*pCC, pItemToAdd);
+		pLinkedList->Append(pItemToAdd);
 
 	return pLinkedList;
 	}
@@ -2673,7 +2673,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumeration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pLocalSymbols->Discard();
@@ -2759,12 +2759,12 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (bOriginal)
 				{
 				if (bIsStruct)
-					pResult->AddEntry(pCC, pMapped, pItem->GetElement(1));
+					pResult->AddEntry(pMapped, pItem->GetElement(1));
 				else
-					pResult->AddEntry(pCC, pMapped, pItem);
+					pResult->AddEntry(pMapped, pItem);
 				}
 			else
-				pResult->AddEntry(pCC, pMapped, pMapped);
+				pResult->AddEntry(pMapped, pMapped);
 			}
 
 		//	Add the mapped value to the result
@@ -2774,16 +2774,16 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (bMapToStruct)
 				{
 				if (bOriginal)
-					pResult->AddEntry(pCC, pItem->GetElement(0), pItem->GetElement(1));
+					pResult->AddEntry(pItem->GetElement(0), pItem->GetElement(1));
 				else
-					pResult->AddEntry(pCC, pMapped->GetElement(0), pMapped->GetElement(1));
+					pResult->AddEntry(pMapped->GetElement(0), pMapped->GetElement(1));
 				}
 			else
 				{
 				if (bOriginal)
-					pResult->Append(*pCC, pItem);
+					pResult->Append(pItem);
 				else
-					pResult->Append(*pCC, pMapped);
+					pResult->Append(pMapped);
 				}
 			}
 
@@ -2837,7 +2837,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pListResult = pCC->CreateLinkedList();
 			for (i = 0; i < pResult->GetCount(); i++)
-				pListResult->Append(*pCC, pResult->GetElement(i));
+				pListResult->Append(pResult->GetElement(i));
 
 			pResult->Discard();
 			return pListResult;
@@ -2884,7 +2884,7 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pLocalSymbols->Discard();
@@ -3821,7 +3821,7 @@ ICCItem *fnShuffle (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	ICCItem *pSource = pArgs->GetElement(0);
 	for (i = 0; i < pSource->GetCount(); i++)
-		pList->Append(*pCC, pSource->GetElement(i));
+		pList->Append(pSource->GetElement(i));
 
 	//	Shuffle the new list
 
@@ -3882,7 +3882,7 @@ ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	Copy the list
 
 			for (i = 0; i < pSource->GetCount(); i++)
-				pList->Append(*pCC, pSource->GetElement(i));
+				pList->Append(pSource->GetElement(i));
 
 			//	Sort the list
 
@@ -4221,7 +4221,7 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop and add to result list
 
 		for (i = iStart; i < iStart + iCount; i++)
-			pList->Append(*pCC, pSource->GetElement(i));
+			pList->Append(pSource->GetElement(i));
 
 		//	Done
 
@@ -4449,7 +4449,7 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pCC, pSymbol, pEntry);
+			pResult = pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
@@ -5513,7 +5513,7 @@ ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem 
 		}
 	else
 		{
-		*retpError = pSymTable->AddEntry(pCC, pVar, pValue);
+		*retpError = pSymTable->AddEntry(pVar, pValue);
 
 		//	Check for error
 

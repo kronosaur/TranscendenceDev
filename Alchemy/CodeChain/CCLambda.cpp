@@ -206,7 +206,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 					else
 						pResult = pCC->Eval(pCtx, pArg);
 
-					pList->Append(*pCC, pResult);
+					pList->Append(pResult);
 					pResult->Discard();
 					}
 				}
@@ -215,14 +215,14 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 
 			//	Add to the local symbol table
 
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pVarArgs);
+			pItem = pLocalSymbols->AddEntry(pVar, pVarArgs);
 			pVarArgs->Discard();
 			}
 
 		//	Bind the variable to the argument
 
 		else if (pArg == NULL)
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+			pItem = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 		else
 			{
 			ICCItem *pResult;
@@ -248,7 +248,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 					}
 				}
 
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pResult);
+			pItem = pLocalSymbols->AddEntry(pVar, pResult);
 			pResult->Discard();
 			}
 

@@ -158,55 +158,6 @@ inline void DebugStopTimer (char *szTiming) { }
 
 #define TRY(f)	{try { error = f; } catch (...) { error = ERR_FAIL; }}
 
-//	ICCItem SmartPtr
-
-class ICCItemPtr
-	{
-	public:
-		constexpr ICCItemPtr (void) : m_pPtr(NULL) { }
-		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
-
-		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
-
-		explicit ICCItemPtr (ICCItem::ValueTypes iType);
-		explicit ICCItemPtr (const CString &sValue);
-		explicit ICCItemPtr (int iValue);
-		explicit ICCItemPtr (DWORD dwValue);
-		explicit ICCItemPtr (double rValue);
-		explicit ICCItemPtr (bool bValue);
-
-		ICCItemPtr (const ICCItemPtr &Src);
-
-		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
-			{
-			Src.m_pPtr = NULL;
-			}
-
-		~ICCItemPtr (void);
-
-		ICCItemPtr &operator= (const ICCItemPtr &Src);
-		ICCItemPtr &operator= (ICCItem *pSrc);
-		operator ICCItem *() const { return m_pPtr; }
-		ICCItem * operator->() const { return m_pPtr; }
-
-		explicit operator bool() const { return (m_pPtr != NULL); }
-
-		void Delete (void);
-
-		bool Load (const CString &sCode, CString *retsError);
-
-		void TakeHandoff (ICCItem *pPtr);
-		void TakeHandoff (ICCItemPtr &Src);
-
-		void Set (const ICCItemPtr &Src)
-			{
-			*this = Src;
-			}
-
-	private:
-		ICCItem *m_pPtr;
-	};
-
 //	Game load/save structures
 
 #ifdef TRANSCENDENCE_STABLE_RELEASE

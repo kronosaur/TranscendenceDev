@@ -88,7 +88,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 	if (pError->IsError())
 		{
 		pLocalSymbols->Discard();
@@ -144,7 +144,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!bExcludeNil || !pMapped->IsNil())
-			pList->Append(*pCC, pMapped);
+			pList->Append(pMapped);
 
 		pItem->Discard();
 		pMapped->Discard();
@@ -226,7 +226,7 @@ ICCItem *fnPageGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (iStart == 0)
 			{
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 			iCount--;
 			}
 		else

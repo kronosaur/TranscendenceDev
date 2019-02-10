@@ -1107,17 +1107,17 @@ static void AddEffectItem (CCodeChain &CC, CCLinkedList *pList, const CString &s
 		}
 
 	ICCItem *pField = CC.CreateString(sEffect);
-	pNewItem->Append(CC, pField);
+	pNewItem->Append(pField);
 	pField->Discard();
 
 	if (iTime != -1)
 		{
 		pField = CC.CreateInteger(iTime);
-		pNewItem->Append(CC, pField);
+		pNewItem->Append(pField);
 		pField->Discard();
 		}
 
-	pList->Append(CC, pNewItem);
+	pList->Append(pNewItem);
 	pNewItem->Discard();
 	}
 

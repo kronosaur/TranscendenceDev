@@ -1910,7 +1910,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		//	Create an argument list consisting of the item
 
 		ICCItemPtr pArgs = CCCtx.Create(ICCItem::List);
-		pArgs->Append(CCCtx.GetCC(), pItem);
+		pArgs->Append(pItem);
 
 		//	Apply the function to the arg list
 
@@ -3206,14 +3206,14 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 	//	Next integer is the item UNID
 
 	pInt = CC.CreateInteger(GetType()->GetUNID());
-	pList->Append(CC, pInt);
+	pList->Append(pInt);
 	pInt->Discard();
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
 	pInt = CC.CreateInteger(pSource[1]);
-	pList->Append(CC, pInt);
+	pList->Append(pInt);
 	pInt->Discard();
 
 	//	Save extra
@@ -3223,19 +3223,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		//	Save the version (starting in v45)
 
 		pInt = CC.CreateInteger(CSystem::GetSaveVersion());
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Charges
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwCharges);
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Condition
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwLevel);
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Mods
@@ -3246,7 +3246,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		Stream.Close();
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Attribute data block
@@ -3256,19 +3256,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		Stream.Close();
 
 		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Disrupted time
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwDisruptedTime);
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 
 		//  Variant number
 
 		pInt = CC.CreateInteger(m_pExtra->m_dwVariantCounter);
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 		}
 

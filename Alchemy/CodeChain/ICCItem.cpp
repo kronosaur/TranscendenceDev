@@ -29,15 +29,15 @@ void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 	//	If this is a list, append to it.
 
 	else if (pExisting->GetValueType() == List)
-		pExisting->Append(CC, pValue);
+		pExisting->Append(pValue);
 
 	//	Otherwise, convert into a list
 
 	else
 		{
 		ICCItem *pList = CC.CreateLinkedList();
-		pList->Append(CC, pExisting);
-		pList->Append(CC, pValue);
+		pList->Append(pExisting);
+		pList->Append(pValue);
 
 		SetAt(CC, sKey, pList);
 		pList->Discard();
@@ -52,7 +52,7 @@ void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
 
 	{
 	ICCItem *pItem = CC.CreateInteger(iValue);
-	Append(CC, pItem);
+	Append(pItem);
 	pItem->Discard();
 	}
 
@@ -64,7 +64,7 @@ void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
 
 	{
 	ICCItem *pItem = CC.CreateString(sValue);
-	Append(CC, pItem);
+	Append(pItem);
 	pItem->Discard();
 	}
 
@@ -258,14 +258,14 @@ bool ICCItem::IsLambdaSymbol (void)
 	return (IsIdentifier() && strCompareAbsolute(GetStringValue(), CONSTLIT("lambda")) == 0);
 	}
 
-ICCItem *ICCItem::NotASymbolTable(CCodeChain *pCC)
+ICCItem *ICCItem::NotASymbolTable (void)
 
 //	NotASymbolTable
 //
 //	Returns an error when item is not a symbol table
 
 	{
-	return pCC->CreateError(LITERAL("Not a symbol table"));
+	return CCodeChain::CreateError(LITERAL("Not a symbol table"));
 	}
 
 void ICCItem::ResetItem (void)
@@ -289,7 +289,7 @@ void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 
 	{
 	ICCItem *pKey = CC.CreateString(sKey);
-	AddEntry(&CC, pKey, pValue);
+	AddEntry(pKey, pValue);
 	pKey->Discard();
 	}
 
@@ -302,7 +302,7 @@ void ICCItem::SetBooleanAt (CCodeChain &CC, const CString &sKey, bool bValue)
 	{
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = (bValue ? CC.CreateTrue() : CC.CreateNil());
-	AddEntry(&CC, pKey, pValue);
+	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();
 	}
@@ -316,7 +316,7 @@ void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
 	{
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = CC.CreateInteger(iValue);
-	AddEntry(&CC, pKey, pValue);
+	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();
 	}
@@ -330,7 +330,7 @@ void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &s
 	{
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = CC.CreateString(sValue);
-	AddEntry(&CC, pKey, pValue);
+	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();
 	}
@@ -357,7 +357,7 @@ ICCItem *ICCAtom::Tail (CCodeChain *pCC)
 
 //	IItemTransform -------------------------------------------------------------
 
-ICCItem *IItemTransform::Transform (CCodeChain &CC, ICCItem *pItem)
+ICCItem *IItemTransform::Transform (ICCItem *pItem)
 	{
 	return pItem->Reference();
 	}

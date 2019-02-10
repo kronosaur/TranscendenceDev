@@ -82,7 +82,7 @@ class IItemTransform
 	public:
 		virtual ~IItemTransform (void) { }
 
-		virtual ICCItem *Transform (CCodeChain &CC, ICCItem *pItem);
+		virtual ICCItem *Transform (ICCItem *pItem);
 	};
 
 //	An item is a generic element of a list. This is the basic unit of
@@ -122,7 +122,7 @@ class ICCItem : public CObject
 		void AppendInteger (CCodeChain &CC, int iValue);
 		void AppendString (CCodeChain &CC, const CString &sValue);
 
-		virtual void Append (CCodeChain &CC, ICCItem *pValue) { }
+		virtual void Append (ICCItem *pValue) { }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) = 0;
 		virtual int GetCount (void) = 0;
 		virtual ICCItem *GetElement (int iIndex) = 0;
@@ -191,7 +191,7 @@ class ICCItem : public CObject
 		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
 		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);
 
-		virtual ICCItem *AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { return NotASymbolTable(pCC); }
+		virtual ICCItem *AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { return NotASymbolTable(); }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
 		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) { }
@@ -200,14 +200,14 @@ class ICCItem : public CObject
 		virtual IItemTransform *GetDefineHook (void) { return NULL; }
 		virtual ICCItem *GetParent (void) { return NULL; }
 		virtual bool IsLocalFrame (void) { return false; }
-		virtual ICCItem *ListSymbols (CCodeChain *pCC) { return NotASymbolTable(pCC); }
-		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pKey) { return NotASymbolTable(pCC); }
-		virtual ICCItem *LookupByOffset (CCodeChain *pCC, int iOffset) { return NotASymbolTable(pCC); }
-		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pKey, bool *retbFound) { return NotASymbolTable(pCC); }
+		virtual ICCItem *ListSymbols (CCodeChain *pCC) { return NotASymbolTable(); }
+		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pKey) { return NotASymbolTable(); }
+		virtual ICCItem *LookupByOffset (CCodeChain *pCC, int iOffset) { return NotASymbolTable(); }
+		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pKey, bool *retbFound) { return NotASymbolTable(); }
 		virtual void SetDefineHook (IItemTransform *pHook) { }
 		virtual void SetParent (ICCItem *pParent) { ASSERT(false); }
 		virtual void SetLocalFrame (void) { ASSERT(false); }
-		virtual ICCItem *SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retbFound, int *retiOffset) { return NotASymbolTable(pCC); }
+		virtual ICCItem *SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retbFound, int *retiOffset) { return NotASymbolTable(); }
 
 		//	Pool access
 
@@ -221,13 +221,62 @@ class ICCItem : public CObject
 
 		virtual void DestroyItem (void) { }
 
-		ICCItem *NotASymbolTable(CCodeChain *pCC);
+		ICCItem *NotASymbolTable (void);
 
 		DWORD m_dwRefCount;						//	Number of references to this item
 
 		DWORD m_bQuoted:1;						//	TRUE if quoted
 		DWORD m_bError:1;						//	TRUE if it represents a runtime error
 		DWORD m_bNoRefCount:1;					//	TRUE if we don't care about ref count
+	};
+
+//	ICCItem SmartPtr
+
+class ICCItemPtr
+	{
+	public:
+		constexpr ICCItemPtr (void) : m_pPtr(NULL) { }
+		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
+
+		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
+
+		explicit ICCItemPtr (ICCItem::ValueTypes iType);
+		explicit ICCItemPtr (const CString &sValue);
+		explicit ICCItemPtr (int iValue);
+		explicit ICCItemPtr (DWORD dwValue);
+		explicit ICCItemPtr (double rValue);
+		explicit ICCItemPtr (bool bValue);
+
+		ICCItemPtr (const ICCItemPtr &Src);
+
+		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
+			{
+			Src.m_pPtr = NULL;
+			}
+
+		~ICCItemPtr (void);
+
+		ICCItemPtr &operator= (const ICCItemPtr &Src);
+		ICCItemPtr &operator= (ICCItem *pSrc);
+		operator ICCItem *() const { return m_pPtr; }
+		ICCItem * operator->() const { return m_pPtr; }
+
+		explicit operator bool() const { return (m_pPtr != NULL); }
+
+		void Delete (void);
+
+		bool Load (const CString &sCode, CString *retsError);
+
+		void TakeHandoff (ICCItem *pPtr);
+		void TakeHandoff (ICCItemPtr &Src);
+
+		void Set (const ICCItemPtr &Src)
+			{
+			*this = Src;
+			}
+
+	private:
+		ICCItem *m_pPtr;
 	};
 
 //	An atom is a single value
@@ -518,7 +567,7 @@ class CCLinkedList : public ICCList
 		
 		//	ICCItem virtuals
 
-		virtual void Append (CCodeChain &CC, ICCItem *pValue) override;
+		virtual void Append (ICCItem *pValue) override;
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *CloneContainer (CCodeChain *pCC) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
@@ -617,8 +666,8 @@ class CCVector : public ICCVector
 		void SetArrayData(CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
 		CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags);
 		
-		void Append(CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
-		void Sort(CCodeChain *pCC, int iOrder, int iIndex = -1);
+		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
+		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
 
 		//	ICCItem virtuals
 
@@ -655,18 +704,18 @@ class CCAtomTable : public ICCAtom
 
 		//	ICCItem virtuals
 
-		virtual ICCItem *Clone (CCodeChain *pCC);
-		virtual ValueTypes GetValueType (void) { return Complex; }
-		virtual bool IsIdentifier (void) { return false; }
-		virtual bool IsFunction (void) { return false; }
-		virtual bool IsAtomTable (void) { return true; }
-		virtual CString Print (DWORD dwFlags = 0);
-		virtual void Reset (void);
+		virtual ICCItem *Clone (CCodeChain *pCC) override;
+		virtual ValueTypes GetValueType (void) override { return Complex; }
+		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsFunction (void) override { return false; }
+		virtual bool IsAtomTable (void) override { return true; }
+		virtual CString Print (DWORD dwFlags = 0) override;
+		virtual void Reset (void) override;
 
-		virtual ICCItem *AddEntry (CCodeChain *pCC, ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false);
-		virtual ICCItem *ListSymbols (CCodeChain *pCC);
-		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pAtom);
-		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound);
+		virtual ICCItem *AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual ICCItem *ListSymbols (CCodeChain *pCC) override;
+		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pAtom) override;
+		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound) override;
 
 	protected:
 		virtual void DestroyItem (void);
@@ -716,7 +765,7 @@ class CCSymbolTable : public ICCList
 		//	Symbols
 
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) override;
-		virtual ICCItem *AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual ICCItem *AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) override;
 		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) override;
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) override;
@@ -858,7 +907,7 @@ class CCodeChain
 		inline ICCItem *GetNil (void) { return &m_Nil; }
 		inline ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
-		ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
+		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
 		CString Unlink (ICCItem *pItem);
@@ -887,11 +936,11 @@ class CCodeChain
 	private:
 		static ICCItem *CreateDoubleIfPossible (const CString &sString);
 		static ICCItem *CreateIntegerIfPossible (const CString &sString);
-		ICCItem *CreateParseError (int iLine, const CString &sError);
+		static ICCItem *CreateParseError (int iLine, const CString &sError);
 		ICCItem *EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem);
-		ICCItem *LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
+		static ICCItem *LinkFragment (const CString &sString, int iOffset = 0, int *retiLinked = NULL, int *ioiCurLine = NULL);
 		ICCItem *Lookup (CEvalContext *pCtx, ICCItem *pItem);
-		char *SkipWhiteSpace (char *pPos, int *ioiLine);
+		static char *SkipWhiteSpace (char *pPos, int *ioiLine);
 
 		ICCItem *m_pGlobalSymbols;
 

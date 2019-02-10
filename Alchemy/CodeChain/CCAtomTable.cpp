@@ -13,7 +13,7 @@ CCAtomTable::CCAtomTable (void) : ICCAtom(&g_Class)
 	{
 	}
 
-ICCItem *CCAtomTable::AddEntry (CCodeChain *pCC, ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd)
+ICCItem *CCAtomTable::AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd)
 
 //	AddEntry
 //
@@ -35,7 +35,7 @@ ICCItem *CCAtomTable::AddEntry (CCodeChain *pCC, ICCItem *pAtom, ICCItem *pEntry
 	if (!bAdded && pPrevEntry)
 		pPrevEntry->Discard();
 
-	return pCC->CreateTrue();
+	return CCodeChain::CreateTrue();
 	}
 
 ICCItem *CCAtomTable::Clone (CCodeChain *pCC)
@@ -118,7 +118,7 @@ ICCItem *CCAtomTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 			pItem->Discard();
 			}
 

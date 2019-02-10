@@ -4221,7 +4221,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 			//	Add to list
 
-			pList->Append(CC, pPortDesc);
+			pList->Append(pPortDesc);
 			pPortDesc->Discard();
 			}
 

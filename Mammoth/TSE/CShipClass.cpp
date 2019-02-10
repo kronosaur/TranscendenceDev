@@ -3895,7 +3895,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 			if (Desc.Item.GetType()->GetCategory() == itemcatMiscDevice)
 				{
 				ICCItemPtr pItem(CreateListFromItem(CC, Desc.Item));
-				pResult->Append(CC, pItem);
+				pResult->Append(pItem);
 				}
 			}
 
@@ -3967,7 +3967,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		for (int i = 0; i < Weapons.GetCount(); i++)
 			{
 			ICCItemPtr pWeapon(CreateListFromItem(CC, Weapons[i]));
-			pResult->Append(CC, pWeapon);
+			pResult->Append(pWeapon);
 			}
 
 		return pResult;

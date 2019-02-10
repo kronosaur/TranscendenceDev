@@ -63,7 +63,7 @@ ICCItem *CFunctionContextWrapper::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 
 //	CAddFunctionContextWrapper -------------------------------------------------
 
-ICCItem *CAddFunctionContextWrapper::Transform (CCodeChain &CC, ICCItem *pItem)
+ICCItem *CAddFunctionContextWrapper::Transform (ICCItem *pItem)
 
 //	Transform
 //

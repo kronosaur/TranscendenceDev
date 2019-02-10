@@ -33,7 +33,7 @@ void CCSymbolTable::AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry)
 	((ICCItem *)pOldEntry)->Discard();
 	}
 
-ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
+ICCItem *CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
 
 //	AddEntry
 //
@@ -48,7 +48,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 
 	ICCItem *pTransformed;
 	if (m_pDefineHook)
-		pTransformed = m_pDefineHook->Transform(*pCC, pEntry);
+		pTransformed = m_pDefineHook->Transform(pEntry);
 	else
 		pTransformed = pEntry->Reference();
 
@@ -78,7 +78,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		error = m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, false, &pOldEntry);
 		if (error == ERR_NOTFOUND)
 			{
-			ICCItem *pResult = m_pParent->AddEntry(pCC, pKey, pTransformed);
+			ICCItem *pResult = m_pParent->AddEntry(pKey, pTransformed);
 			pTransformed->Discard();
 			return pResult;
 			}
@@ -95,7 +95,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 	if (pPrevEntry)
 		pPrevEntry->Discard();
 
-	return pCC->CreateTrue();
+	return CCodeChain::CreateTrue();
 	}
 
 ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
@@ -415,10 +415,10 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	CCLinkedList *pList = (CCLinkedList *)pCC->CreateLinkedList();
 	
 	ICCItem *pKey = pCC->CreateString(m_Symbols.GetKey(iIndex));
-	pList->Append(*pCC, pKey);
+	pList->Append(pKey);
 	pKey->Discard();
 
-	pList->Append(*pCC, GetElement(iIndex));
+	pList->Append(GetElement(iIndex));
 
 	//	Done
 
@@ -483,7 +483,7 @@ ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 			pItem->Discard();
 			}
 

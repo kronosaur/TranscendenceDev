@@ -1693,7 +1693,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		for (i = 0; i < GetSubordinateCount(); i++)
 			{
 			ICCItem *pItem = CreateObjPointer(CC, GetSubordinate(i));
-			pResult->Append(CC, pItem);
+			pResult->Append(pItem);
 			pItem->Discard();
 			}
 

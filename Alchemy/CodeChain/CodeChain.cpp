@@ -733,7 +733,7 @@ ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 	//	Add the symbol
 
 	ICCItem *pError;
-	pError = m_pGlobalSymbols->AddEntry(this, pVar, pValue);
+	pError = m_pGlobalSymbols->AddEntry(pVar, pValue);
 	pVar->Discard();
 
 	//	Check for error
@@ -931,7 +931,7 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewKey = CreateString(sKey);
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
-		ICCItem *pResult = pNewTable->AddEntry(this, pNewKey, pNewValue);
+		ICCItem *pResult = pNewTable->AddEntry(pNewKey, pNewValue);
 		pNewKey->Discard();
 		pNewValue->Discard();
 
@@ -1270,7 +1270,7 @@ ICCItem *CCodeChain::EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CSt
 
 		//	Add the result to the list
 
-		pEvalList->Append(*this, pResult);
+		pEvalList->Append(pResult);
 		pResult->Discard();
 
 		//	Next validation sequence (note that *pValidation can never
@@ -1511,7 +1511,7 @@ ICCItem *CCodeChain::PoolUsage (void)
 
 		//	Add the item to the list
 
-		pList->Append(*this, pItem);
+		pList->Append(pItem);
 		pItem->Discard();
 		}
 
@@ -1560,7 +1560,7 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 
 	//	Add to global symbol table
 
-	pError = m_pGlobalSymbols->AddEntry(this, pDefinition, pDefinition);
+	pError = m_pGlobalSymbols->AddEntry(pDefinition, pDefinition);
 	if (pError->IsError())
 		{
 		pError->Discard();

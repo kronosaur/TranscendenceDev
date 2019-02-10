@@ -172,7 +172,7 @@ class CAddFunctionContextWrapper : public IItemTransform
 		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 
 		//	IItemTransform
-		virtual ICCItem *Transform (CCodeChain &CC, ICCItem *pItem);
+		virtual ICCItem *Transform (ICCItem *pItem) override;
 
 	private:
 		CExtension *m_pExtension;

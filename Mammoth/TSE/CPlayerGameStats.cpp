@@ -265,7 +265,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
             if (pStats->dwTotalTime != INVALID_TIME)
                 pSysData->SetIntegerAt(CC, CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
 
-            pResult->Append(CC, pSysData);
+            pResult->Append(pSysData);
             pSysData->Discard();
 			}
 

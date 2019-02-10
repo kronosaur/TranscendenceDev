@@ -45,7 +45,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 		iDifference = vShape.GetCount() - pIndices->GetCount();
 		for (i = 0; i < iDifference; i++)
 			{
-			pIndices->Append(*pCC, pCC->CreateNil());
+			pIndices->Append(pCC->CreateNil());
 			};
 		}
 

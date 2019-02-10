@@ -229,7 +229,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 	for (int i = 0; i < iCount; i++)
 		{
 		ICCItem *pInt = CC.CreateInteger(*pSource++);
-		pList->Append(CC, pInt);
+		pList->Append(pInt);
 		pInt->Discard();
 		}
 
@@ -252,7 +252,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 	//	Add the bitmap UNID
 
 	ICCItem *pValue = CC.CreateInteger(Image.GetBitmapUNID());
-	pList->Append(CC, pValue);
+	pList->Append(pValue);
 	pValue->Discard();
 
 	//	Get the rect
@@ -262,25 +262,25 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 	//	Add the x coordinate
 
 	pValue = CC.CreateInteger(rcRect.left);
-	pList->Append(CC, pValue);
+	pList->Append(pValue);
 	pValue->Discard();
 
 	//	Add the y coordinate
 
 	pValue = CC.CreateInteger(rcRect.top);
-	pList->Append(CC, pValue);
+	pList->Append(pValue);
 	pValue->Discard();
 
 	//	Add width
 
 	pValue = CC.CreateInteger(RectWidth(rcRect));
-	pList->Append(CC, pValue);
+	pList->Append(pValue);
 	pValue->Discard();
 
 	//	Add height
 
 	pValue = CC.CreateInteger(RectHeight(rcRect));
-	pList->Append(CC, pValue);
+	pList->Append(pValue);
 	pValue->Discard();
 
 	//	Done
