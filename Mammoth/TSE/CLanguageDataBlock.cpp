@@ -737,7 +737,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CD
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(Type.GetUniverse());
 	Ctx.DefineContainingType(&Type);
 	Ctx.SaveAndDefineSourceVar(NULL);
 	Ctx.DefineString(CONSTLIT("aTextID"), sID);
@@ -763,7 +763,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (CSpaceOb
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pObj ? pObj->GetUniverse() : *g_pUniverse);
 	Ctx.DefineContainingType(pObj);
 	Ctx.SaveAndDefineSourceVar(pObj);
 	Ctx.DefineString(CONSTLIT("aTextID"), sID);
@@ -789,7 +789,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CI
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(Item.GetUniverse());
 	Ctx.DefineContainingType(Item);
 	Ctx.SaveAndDefineSourceVar(NULL);
 	Ctx.SaveAndDefineItemVar(Item);

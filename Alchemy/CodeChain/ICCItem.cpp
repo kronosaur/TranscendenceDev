@@ -303,8 +303,8 @@ void ICCItem::SetBooleanAt (CCodeChain &CC, const CString &sKey, bool bValue)
 	ICCItem *pKey = CC.CreateString(sKey);
 	ICCItem *pValue = (bValue ? CC.CreateTrue() : CC.CreateNil());
 	AddEntry(&CC, pKey, pValue);
-	pKey->Discard(&CC);
-	pValue->Discard(&CC);
+	pKey->Discard();
+	pValue->Discard();
 	}
 
 void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
