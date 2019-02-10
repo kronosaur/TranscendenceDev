@@ -19,6 +19,7 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+#define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
 //	CInstalledDevice class
 
@@ -1125,6 +1126,11 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
             return false;
             }
         }
+	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
+		{
+		double rShotSeparationScale = Clamp(pValue->GetDoubleValue(), -1.0, 1.0);
+		SetShotSeparationScale(rShotSeparationScale);
+		}
 
 	//	Otherwise, let any sub-classes handle it.
 
