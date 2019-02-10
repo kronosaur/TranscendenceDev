@@ -13,7 +13,7 @@ CCAtomTable::CCAtomTable (void) : ICCAtom(&g_Class)
 	{
 	}
 
-ICCItem *CCAtomTable::AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd)
+void CCAtomTable::AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd)
 
 //	AddEntry
 //
@@ -34,8 +34,6 @@ ICCItem *CCAtomTable::AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLoca
 	pPrevEntry = (ICCItem *)iOldEntry;
 	if (!bAdded && pPrevEntry)
 		pPrevEntry->Discard();
-
-	return CCodeChain::CreateTrue();
 	}
 
 ICCItem *CCAtomTable::Clone (CCodeChain *pCC)

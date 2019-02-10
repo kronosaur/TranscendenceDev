@@ -191,7 +191,7 @@ class ICCItem : public CObject
 		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
 		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);
 
-		virtual ICCItem *AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { return NotASymbolTable(); }
+		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
 		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) { }
@@ -712,7 +712,7 @@ class CCAtomTable : public ICCAtom
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual void Reset (void) override;
 
-		virtual ICCItem *AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual void AddEntry (ICCItem *pAtom, ICCItem *pEntry, bool bForceLocalAdd = false) override;
 		virtual ICCItem *ListSymbols (CCodeChain *pCC) override;
 		virtual ICCItem *Lookup (CCodeChain *pCC, ICCItem *pAtom) override;
 		virtual ICCItem *LookupEx (CCodeChain *pCC, ICCItem *pAtom, bool *retbFound) override;
@@ -765,7 +765,7 @@ class CCSymbolTable : public ICCList
 		//	Symbols
 
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) override;
-		virtual ICCItem *AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
+		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) override;
 		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) override;
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) override;

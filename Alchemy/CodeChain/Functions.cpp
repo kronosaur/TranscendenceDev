@@ -256,7 +256,6 @@ ICCItem *fnAtmCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	for (i = 0; i < pList->GetCount(); i++)
 		{
 		ICCItem *pPair = pList->GetElement(i);
-		ICCItem *pResult;
 
 		//	Make sure we have two elements
 
@@ -268,14 +267,7 @@ ICCItem *fnAtmCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Get the atom and the entry
 		
-		pResult = pAtomTable->AddEntry(pPair->GetElement(0), pPair->GetElement(1));
-		if (pResult->IsError())
-			{
-			pAtomTable->Discard();
-			return pResult;
-			}
-
-		pResult->Discard();
+		pAtomTable->AddEntry(pPair->GetElement(0), pPair->GetElement(1));
 		}
 
 	//	Done
@@ -327,16 +319,11 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pSymbol, pEntry);
+			pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
-			if (!pResult->IsError())
-				{
-				pResult->Discard();
-				pResult = pEntry->Reference();
-				}
-
+			pResult = pEntry->Reference();
 			break;
 			}
 
@@ -433,7 +420,6 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		for (i = 0; i < pLocals->GetCount(); i++)
 			{
-			ICCItem *pItem;
 			ICCItem *pLocal;
 			ICCItem *pValue;
 
@@ -474,19 +460,10 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pVar->IsIdentifier())
 				{
-				pItem = pLocalSymbols->AddEntry(pVar, pValue, true);
+				pLocalSymbols->AddEntry(pVar, pValue, true);
 				pValue->Discard();
-				if (pItem->IsError())
-					{
-					pCtx->pLocalSymbols = pOldSymbols;
-					pLocalSymbols->Discard();
-					return pItem;
-					}
-
-				pItem->Discard();
 				}
 			}
-
 		}
 	else
 		{
@@ -525,15 +502,12 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (dwData == FN_BLOCK_ERRBLOCK)
 				{
-				ICCItem *pItem;
-
 				//	Set the first local variable to be the error result
 
 				pVar = pLocals->Head(pCC);
 				if (pVar->IsIdentifier())
 					{
-					pItem = pLocalSymbols->AddEntry(pVar, pResult);
-					pItem->Discard();
+					pLocalSymbols->AddEntry(pVar, pResult);
 					}
 
 				pResult->Discard();
@@ -656,7 +630,6 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pCondition;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int i, iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -703,14 +676,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Associate the enumeration variable
 
-	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -989,15 +955,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard();
-		pResult->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -1238,7 +1196,6 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pBody;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int i, iFrom, iTo, iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -1263,14 +1220,7 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -1838,15 +1788,8 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
 
-					ICCItem *pError = pTarget->AddEntry(pKey, pItem);
+					pTarget->AddEntry(pKey, pItem);
 					pKey->Discard();
-					if (pError->IsError())
-						{
-						pTarget->Discard();
-						return pError;
-						}
-
-					pError->Discard();
 					}
 
 				return pTarget;
@@ -1876,14 +1819,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				else
 					{
-					ICCItem *pError = pTarget->AddEntry(pKey, pValue);
-					if (pError->IsError())
-						{
-						pTarget->Discard();
-						return pError;
-						}
-
-					pError->Discard();
+					pTarget->AddEntry(pKey, pValue);
 					}
 
 				return pTarget;
@@ -2673,15 +2609,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumeration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard();
-		pResult->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -2884,14 +2812,7 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -4449,16 +4370,11 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pSymbol, pEntry);
+			pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
-			if (!pResult->IsError())
-				{
-				pResult->Discard();
-				pResult = pEntry->Reference();
-				}
-
+			pResult = pEntry->Reference();
 			break;
 			}
 
@@ -5513,14 +5429,7 @@ ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem 
 		}
 	else
 		{
-		*retpError = pSymTable->AddEntry(pVar, pValue);
-
-		//	Check for error
-
-		if ((*retpError)->IsError())
-			return ERR_FAIL;
-
-		(*retpError)->Discard();
+		pSymTable->AddEntry(pVar, pValue);
 		}
 
 	return NOERROR;

@@ -724,28 +724,16 @@ ALERROR CCodeChain::DefineGlobal (const CString &sVar, ICCItem *pValue)
 //	Defines a global variable programmatically
 
 	{
-	ALERROR error;
-
 	//	Create a string item
 
 	ICCItem *pVar = CreateString(sVar);
 
 	//	Add the symbol
 
-	ICCItem *pError;
-	pError = m_pGlobalSymbols->AddEntry(pVar, pValue);
+	m_pGlobalSymbols->AddEntry(pVar, pValue);
 	pVar->Discard();
 
-	//	Check for error
-
-	if (pError->IsError())
-		error = ERR_FAIL;
-	else
-		error = NOERROR;
-
-	pError->Discard();
-
-	return error;
+	return NOERROR;
 	}
 
 ALERROR CCodeChain::DefineGlobalInteger (const CString &sVar, int iValue)
@@ -931,17 +919,9 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewKey = CreateString(sKey);
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
-		ICCItem *pResult = pNewTable->AddEntry(pNewKey, pNewValue);
+		pNewTable->AddEntry(pNewKey, pNewValue);
 		pNewKey->Discard();
 		pNewValue->Discard();
-
-		if (pResult->IsError())
-			{
-			pNewTable->Discard();
-			return pResult;
-			}
-
-		pResult->Discard();
 		}
 
 	//	Done
@@ -1546,7 +1526,6 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 //	Registers a primitive function implemented in C
 
 	{
-	ICCItem *pError;
 	ICCItem *pDefinition;
 
 	//	Create a primitive definition
@@ -1560,16 +1539,10 @@ ALERROR CCodeChain::RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *p
 
 	//	Add to global symbol table
 
-	pError = m_pGlobalSymbols->AddEntry(pDefinition, pDefinition);
-	if (pError->IsError())
-		{
-		pError->Discard();
-		return ERR_FAIL;
-		}
+	m_pGlobalSymbols->AddEntry(pDefinition, pDefinition);
 
 	//	Don't need these anymore; AddEntry keeps a reference
 
-	pError->Discard();
 	pDefinition->Discard();
 
 	return NOERROR;

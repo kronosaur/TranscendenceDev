@@ -236,14 +236,10 @@ ICCItem *CCodeChain::LinkFragment (const CString &sString, int iOffset, int *ret
 
 				//	Add the item to the table
 
-				pResult = pTable->AddEntry(pKey, pValue);
+				pTable->AddEntry( pKey, pValue);
 				pKey->Discard();
 				pValue->Discard();
-				if (pResult->IsError())
-					{
-					pTable->Discard();
-					return pResult;
-					}
+				pResult = CCodeChain::CreateTrue();
 
 				//	Skip whitespace because otherwise we won't know whether we
 				//	hit the end brace.

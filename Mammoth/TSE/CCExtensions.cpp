@@ -5644,7 +5644,6 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 	ICCItem *pBody;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -5677,14 +5676,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 
 	//	Associate the enumaration variable
 
-	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -5828,7 +5820,6 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	ICCItem *pBody;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -5854,14 +5845,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 
 	//	Associate the enumaration variable
 
-	pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard();
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 

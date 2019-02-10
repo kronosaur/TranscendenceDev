@@ -215,14 +215,18 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 
 			//	Add to the local symbol table
 
-			pItem = pLocalSymbols->AddEntry(pVar, pVarArgs);
+			pLocalSymbols->AddEntry(pVar, pVarArgs);
 			pVarArgs->Discard();
+			pItem = CCodeChain::CreateTrue();
 			}
 
 		//	Bind the variable to the argument
 
 		else if (pArg == NULL)
-			pItem = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+			{
+			pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+			pItem = CCodeChain::CreateTrue();
+			}
 		else
 			{
 			ICCItem *pResult;
@@ -248,8 +252,9 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 					}
 				}
 
-			pItem = pLocalSymbols->AddEntry(pVar, pResult);
+			pLocalSymbols->AddEntry(pVar, pResult);
 			pResult->Discard();
+			pItem = CCodeChain::CreateTrue();
 			}
 
 		//	Check for error

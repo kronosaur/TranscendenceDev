@@ -88,16 +88,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard();
-		pResult->Discard();
-		g_PM.ClosePage(pPage);
-		return pError;
-		}
-
-	pError->Discard();
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
