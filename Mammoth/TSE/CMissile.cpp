@@ -297,7 +297,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 
 	//	Add to system
 
-	if (error = pMissile->AddToSystem(&System))
+	if (error = pMissile->AddToSystem(System))
 		{
 		delete pMissile;
 		return error;

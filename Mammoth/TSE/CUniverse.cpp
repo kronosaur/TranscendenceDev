@@ -2311,6 +2311,8 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 	{
 	ASSERT(m_pCurrentSystem);
 	ASSERT(pPlayerShip->GetSystem() == NULL);
+	if (m_pCurrentSystem == NULL)
+		return;
 
 	//	Clear the time-stop flag if necessary
 
@@ -2320,7 +2322,7 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 	//	Place the player in the new system
 
 	pPlayerShip->Place(vPos);
-	pPlayerShip->AddToSystem(m_pCurrentSystem);
+	pPlayerShip->AddToSystem(*m_pCurrentSystem);
 	pPlayerShip->OnNewSystem(m_pCurrentSystem);
 
 	//	Restore timer events

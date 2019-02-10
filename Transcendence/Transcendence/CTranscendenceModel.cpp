@@ -2799,6 +2799,9 @@ void CTranscendenceModel::TransferGateFollowers (CSystem *pOldSystem, CSystem *p
 	{
 	int i;
 
+	if (pSystem == NULL)
+		return;
+
 	//	Convert all the gate followers from ObjIDs to pointers. We wait until now because
 	//	the gate followers could have gotten destroyed in the mean time
 
@@ -2856,7 +2859,7 @@ void CTranscendenceModel::TransferGateFollowers (CSystem *pOldSystem, CSystem *p
 
 		pFollower->Resume();
 		pFollower->Place(vPos);
-		pFollower->AddToSystem(pSystem);
+		pFollower->AddToSystem(*pSystem);
 
 		//	Move obj events to the new system
 

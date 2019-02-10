@@ -744,7 +744,7 @@ class CSpaceObject
 
 		static void CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
 
-		ALERROR AddToSystem (CSystem *pSystem, bool bNoGlobalInsert = false);
+		ALERROR AddToSystem (CSystem &System, bool bNoGlobalInsert = false);
 		void Ascend (void);
 		inline void Destroy (SDamageCtx &Ctx) { Destroy(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc); }
 		inline void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, Ctx.pDesc); }

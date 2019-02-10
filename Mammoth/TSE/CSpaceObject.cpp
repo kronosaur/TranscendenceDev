@@ -308,23 +308,20 @@ CSpaceObject::~CSpaceObject (void)
 		}
 
 #ifdef DEBUG_ENEMY_CACHE_BUG
-	if (g_pUniverse)
-		{
-		for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
-			g_pUniverse->GetSovereign(i)->DebugObjDeleted(this);
+	for (int i = 0; i < GetUniverse().GetSovereignCount(); i++)
+		GetUniverse().GetSovereign(i)->DebugObjDeleted(this);
 
-		CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-		if (pSystem)
-			pSystem->GetObjectGrid().DebugObjDeleted(this);
-		}
+	CSystem *pSystem = GetUniverse().GetCurrentSystem();
+	if (pSystem)
+		pSystem->GetObjectGrid().DebugObjDeleted(this);
 #endif
 
 #ifdef DEBUG_OBJ_REFERENCES
 	//	Make sure the object is not being held by anyone else
 
-	if (g_pUniverse && g_pUniverse->GetPOV())
+	if (GetUniverse().GetPOV())
 		{
-		CSystem *pSystem = g_pUniverse->GetPOV()->GetSystem();
+		CSystem *pSystem = GetUniverse().GetPOV()->GetSystem();
 		for (int i = 0; i < pSystem->GetObjectCount(); i++)
 			{
 			CSpaceObject *pObj = pSystem->GetObject(i);
@@ -555,7 +552,7 @@ void CSpaceObject::AddOverlay (DWORD dwUNID, int iPosAngle, int iPosRadius, int 
 	AddOverlay(pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifetime, retdwID);
 	}
 
-ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
+ALERROR CSpaceObject::AddToSystem (CSystem &System, bool bNoGlobalInsert)
 
 //	AddToSystem
 //
@@ -566,9 +563,7 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 
 	//	We can get here with m_pSystem already set during load
 
-	ASSERT(m_pSystem == NULL || m_pSystem == pSystem);
-	if (pSystem == NULL)
-		return ERR_FAIL;
+	ASSERT(m_pSystem == NULL || m_pSystem == &System);
 
 	//	Clear the destroyed bit
 
@@ -576,15 +571,15 @@ ALERROR CSpaceObject::AddToSystem (CSystem *pSystem, bool bNoGlobalInsert)
 
 	//	Add to system
 
-	if (error = pSystem->AddToSystem(this, &m_iIndex))
+	if (error = System.AddToSystem(this, &m_iIndex))
 		return error;
 
-	m_pSystem = pSystem;
+	m_pSystem = &System;
 
 	//	If this is a ship or station then add to the global list
 
 	if (!bNoGlobalInsert)
-		pSystem->GetUniverse().GetGlobalObjects().InsertIfTracked(this);
+		System.GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
 	return NOERROR;
 	}

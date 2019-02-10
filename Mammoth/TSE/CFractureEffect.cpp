@@ -73,7 +73,7 @@ ALERROR CFractureEffect::CreateExplosion (CSystem &System,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(&System))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;
@@ -137,7 +137,7 @@ ALERROR CFractureEffect::CreateLinearSweep (CSystem &System,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(&System))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;

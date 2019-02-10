@@ -910,7 +910,7 @@ void CPlayerShipController::InsuranceClaim (void)
 
 	//	Place the ship back in the system
 
-	m_pShip->AddToSystem(pSystem);
+	m_pShip->AddToSystem(*pSystem);
 	m_pShip->OnNewSystem(pSystem);
 
 	//	Empty out the wreck

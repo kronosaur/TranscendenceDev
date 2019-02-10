@@ -1619,7 +1619,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 	//	Add the ship to the system (but don't add it to the universe
 	//	list--we will add it later in FinishCreation).
 
-	if (error = pShip->AddToSystem(&System, true))
+	if (error = pShip->AddToSystem(System, true))
 		{
 		delete pShip;
 		return error;
@@ -8218,7 +8218,7 @@ void CShip::UpdateDestroyInGate (void)
         if (pSystem)
             {
             Remove(enteredStargate, CDamageSource());
-            AddToSystem(pSystem);
+            AddToSystem(*pSystem);
 			OnNewSystem(pSystem);
             m_fDestroyInGate = false;
             }

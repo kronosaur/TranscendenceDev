@@ -65,7 +65,7 @@ ALERROR CMarker::Create (CSystem &System,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(&System))
+	if (error = pMarker->AddToSystem(System))
 		{
 		delete pMarker;
 		return error;
@@ -299,7 +299,7 @@ ALERROR CPOVMarker::Create (CSystem &System,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(&System))
+	if (error = pMarker->AddToSystem(System))
 		{
 		delete pMarker;
 		return error;

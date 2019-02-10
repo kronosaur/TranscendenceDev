@@ -84,7 +84,7 @@ ALERROR CRadiusDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDama
 
 	//	Add to system
 
-	if (error = pArea->AddToSystem(&System))
+	if (error = pArea->AddToSystem(System))
 		{
 		delete pArea;
 		return error;

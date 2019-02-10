@@ -163,7 +163,7 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(&System))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;

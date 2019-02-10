@@ -978,7 +978,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 		//	Set the system (note: this will change the index to the new
 		//	system)
 
-		pObj->AddToSystem(Ctx.pSystem, true);
+		pObj->AddToSystem(*Ctx.pSystem, true);
 		}
 
 	//	If we have old style registrations then we need to convert to subscriptions
@@ -1850,7 +1850,7 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	//	Place the ship at the gate in the new system
 
 	pObj->Place(vPos);
-	pObj->AddToSystem(this);
+	pObj->AddToSystem(*this);
 	pObj->NotifyOnNewSystem(this);
 	pObj->Resume();
 

@@ -55,7 +55,7 @@ ALERROR CBoundaryMarker::Create (CSystem &System,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(&System))
+	if (error = pMarker->AddToSystem(System))
 		{
 		delete pMarker;
 		return error;

@@ -169,7 +169,7 @@ ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuo
 
 	//	Add to system
 
-	if (error = pBeam->AddToSystem(&System))
+	if (error = pBeam->AddToSystem(System))
 		{
 		delete pBeam;
 		return error;

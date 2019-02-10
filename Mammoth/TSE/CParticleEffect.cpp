@@ -146,7 +146,7 @@ ALERROR CParticleEffect::Create (CSystem &System,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(&System))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -184,7 +184,7 @@ ALERROR CParticleEffect::CreateEmpty (CSystem &System,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(&System))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -267,7 +267,7 @@ ALERROR CParticleEffect::CreateExplosion (CSystem &System,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(&System))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -335,7 +335,7 @@ ALERROR CParticleEffect::CreateGeyser (CSystem &System,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(&System))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;

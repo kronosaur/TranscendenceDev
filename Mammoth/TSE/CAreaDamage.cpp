@@ -69,7 +69,7 @@ ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage *
 
 	//	Add to system
 
-	if (error = pArea->AddToSystem(&System))
+	if (error = pArea->AddToSystem(System))
 		{
 		delete pArea;
 		return error;

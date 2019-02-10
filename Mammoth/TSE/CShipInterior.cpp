@@ -529,6 +529,9 @@ void CShipInterior::OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInte
 	{
 	int i;
 
+	if (pSystem == NULL)
+		return;
+
 	for (i = 0; i < Desc.GetCount(); i++)
 		{
 		const SCompartmentDesc &Comp = Desc.GetCompartment(i);
@@ -544,7 +547,7 @@ void CShipInterior::OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInte
 		//	Place the object
 
 		m_Compartments[i].pAttached->Place(vPos, pShip->GetVel());
-		m_Compartments[i].pAttached->AddToSystem(pSystem);
+		m_Compartments[i].pAttached->AddToSystem(*pSystem);
 
 		//	Create a joint
 

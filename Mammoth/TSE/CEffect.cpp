@@ -59,7 +59,7 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(&System))
+	if (error = pEffect->AddToSystem(System))
 		{
 		//	If we fail create, caller is responsible for free painter.
 

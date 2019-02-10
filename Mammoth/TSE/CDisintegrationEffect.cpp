@@ -77,7 +77,7 @@ ALERROR CDisintegrationEffect::Create (CSystem &System,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(&System))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;

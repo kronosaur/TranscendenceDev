@@ -1020,7 +1020,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
 
-	if (error = pStation->AddToSystem(&System, true))
+	if (error = pStation->AddToSystem(System, true))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to add to system.");
