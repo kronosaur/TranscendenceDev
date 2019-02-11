@@ -47,14 +47,17 @@ int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CT
 //	negative number. If we cannot reach such a node, we return -100.
 
 	{
-	int iDist = g_pUniverse->GetTopology().GetDistanceToCriteria(pNode, Criteria);
+	if (pNode == NULL)
+		return 100;
+
+	int iDist = pNode->GetTopology().GetDistanceToCriteria(pNode, Criteria);
 	if (iDist == -1)
 		return 100;
 	else if (iDist > 0)
 		return iDist;
 	else
 		{
-		iDist = g_pUniverse->GetTopology().GetDistanceToCriteriaNoMatch(pNode, Criteria);
+		iDist = pNode->GetTopology().GetDistanceToCriteriaNoMatch(pNode, Criteria);
 		if (iDist == -1)
 			return -100;
 		else

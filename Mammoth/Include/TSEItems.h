@@ -320,7 +320,7 @@ class CItem
 		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
-		static CItem CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
+		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;

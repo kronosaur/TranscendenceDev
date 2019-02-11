@@ -2547,7 +2547,7 @@ ALERROR CTranscendenceModel::StartNewGame (const CString &sUsername, const SNewG
 	//	by the ship once we pass it to CreateShip)
 
 	ASSERT(m_pPlayer == NULL);
-	m_pPlayer = new CPlayerShipController;
+	m_pPlayer = new CPlayerShipController(m_Universe);
 	if (m_pPlayer == NULL)
 		{
 		*retsError = CONSTLIT("Unable to create CPlayerShipController");

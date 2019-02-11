@@ -4732,6 +4732,7 @@ ICCItem *fnItemCreateByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	CString sCriteria = pArgs->GetElement(0)->GetStringValue();
 	CString sName = pArgs->GetElement(1)->GetStringValue();
@@ -4746,7 +4747,7 @@ ICCItem *fnItemCreateByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	//	Create the item
 
-	CItem Item = CItem::CreateItemByName(sName, Criteria, true);
+	CItem Item = CItem::CreateItemByName(pCtx->GetUniverse(), sName, Criteria, true);
 	if (iCount > 0)
 		Item.SetCount(iCount);
 
@@ -14496,7 +14497,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				CItemCriteria Crit;
 				CItem::InitCriteriaAll(&Crit);
-				CItem Item = CItem::CreateItemByName(sName, Crit, true);
+				CItem Item = CItem::CreateItemByName(pCtx->GetUniverse(), sName, Crit, true);
 				if (Item.GetType())
 					{
 					bFound = true;

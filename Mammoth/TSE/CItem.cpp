@@ -354,7 +354,7 @@ bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
 	return true;
 	}
 
-CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
+CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName)
 
 //	CreateItemByName
 //
@@ -380,9 +380,9 @@ CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criter
 
 	int iBestMatch = -1000;
 	int iBestNonCriteriaMatch = -1000;
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
 
 		//	Compare names
@@ -2901,7 +2901,7 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 	Ctx.pStream->Read(dwLoad);
-	m_pItemType = g_pUniverse->FindItemType(dwLoad);
+	m_pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 	Ctx.pStream->Read(dwLoad);
 	m_dwCount = LOWORD(dwLoad);

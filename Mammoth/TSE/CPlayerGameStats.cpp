@@ -61,11 +61,8 @@ class CStatCounterArray
 
 void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
 
-CPlayerGameStats::CPlayerGameStats (void) : m_iScore(0),
-		m_iResurrectCount(0),
-        m_rFuelConsumed(0.0),
-		m_iExtraSystemsVisited(0),
-		m_iExtraEnemyShipsDestroyed(0)
+CPlayerGameStats::CPlayerGameStats (CUniverse &Universe) : 
+		m_Universe(Universe)
 
 //	CPlayerGameStats constructor
 
@@ -85,7 +82,7 @@ bool CPlayerGameStats::AddMatchingKeyEvents (const CString &sNodeID, const CDesi
 		{
 		SKeyEventStats *pStats = &pEventList->GetAt(i);
 
-		CDesignType *pType = g_pUniverse->FindDesignType(pStats->dwObjUNID);
+		CDesignType *pType = m_Universe.FindDesignType(pStats->dwObjUNID);
 		if (pType == NULL)
 			continue;
 
@@ -165,7 +162,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
         }
     else if (strEquals(sProperty, ENEMY_STATIONS_DESTROYED_STAT))
         {
-        CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+        CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
         if (pPlayerSovereign == NULL)
             return CCodeChain::CreateInteger(0);
 
@@ -176,7 +173,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
             {
             SStationTypeStats *pStats;
             DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-            CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+            CStationType *pType = m_Universe.FindStationType(dwUNID);
             if (pType == NULL)
                 continue;
 
@@ -206,7 +203,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 		}
 	else if (strEquals(sProperty, FRIENDLY_STATIONS_DESTROYED_STAT))
 		{
-		CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 		if (pPlayerSovereign == NULL)
 			return CCodeChain::CreateInteger(0);
 
@@ -217,7 +214,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 			{
 			SStationTypeStats *pStats;
 			DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-			CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+			CStationType *pType = m_Universe.FindStationType(dwUNID);
 			if (pType == NULL)
 				continue;
 
@@ -302,13 +299,13 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 	if (pShip == NULL)
 		return;
 
-	CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+	CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 	if (pPlayerSovereign == NULL)
 		return;
 
 	//	Base stats
 
-	Stats.Insert(CONSTLIT("Gender"), strCapitalize(GetGenomeName(g_pUniverse->GetPlayerGenome())));
+	Stats.Insert(CONSTLIT("Gender"), strCapitalize(GetGenomeName(m_Universe.GetPlayerGenome())));
 	Stats.Insert(CONSTLIT("Score"), strFormatInteger(CalcEndGameScore(), -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED));
 	Stats.Insert(CONSTLIT("Ship class"), pShip->GetNounPhrase(0));
 
@@ -350,7 +347,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 		{
 		SStationTypeStats *pStats;
 		DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-		CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+		CStationType *pType = m_Universe.FindStationType(dwUNID);
 		if (pType == NULL)
 			continue;
 
@@ -373,7 +370,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 		{
 		SShipClassStats *pStats;
 		DWORD dwUNID = m_ShipStats.GetNext(i, &pStats);
-		CShipClass *pClass = g_pUniverse->FindShipClass(dwUNID);
+		CShipClass *pClass = m_Universe.FindShipClass(dwUNID);
 		if (pClass == NULL)
 			continue;
 
@@ -396,7 +393,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 		{
 		SItemTypeStats *pStats;
 		DWORD dwUNID = m_ItemStats.GetNext(i, &pStats);
-		CItemType *pItemType = g_pUniverse->FindItemType(dwUNID);
+		CItemType *pItemType = m_Universe.FindItemType(dwUNID);
 		if (pItemType == NULL)
 			continue;
 
@@ -622,7 +619,7 @@ int CPlayerGameStats::GetBestEnemyShipsDestroyed (DWORD *retdwUNID) const
 		{
 		SShipClassStats *pStats;
 		DWORD dwUNID = m_ShipStats.GetNext(i, &pStats);
-		CShipClass *pClass = g_pUniverse->FindShipClass(dwUNID);
+		CShipClass *pClass = m_Universe.FindShipClass(dwUNID);
 		if (pClass)
 			{
 			int iScore = pClass->GetScore();
@@ -652,7 +649,7 @@ CTimeSpan CPlayerGameStats::GetGameTime (void) const
 //  Returns the amount of real time spent playing
     
     {
-    return (!m_GameTime.IsBlank() ? m_GameTime : g_pUniverse->GetElapsedGameTime());
+    return (!m_GameTime.IsBlank() ? m_GameTime : m_Universe.GetElapsedGameTime());
     }
 
 CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const
@@ -684,7 +681,7 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 		if (FindItemStats(dwUNID, &pStats))
 			{
 			SEntry *pEntry = List.Insert();
-			pEntry->pType = g_pUniverse->FindItemType(dwUNID);
+			pEntry->pType = m_Universe.FindItemType(dwUNID);
 			pEntry->pStats = pStats;
 			}
 		}
@@ -702,7 +699,7 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 			{
 			SItemTypeStats *pStats;
 			DWORD dwUNID = m_ItemStats.GetNext(i, &pStats);
-			CItemType *pType = g_pUniverse->FindItemType(dwUNID);
+			CItemType *pType = m_Universe.FindItemType(dwUNID);
 			if (pType == NULL)
 				continue;
 
@@ -906,7 +903,7 @@ CTimeSpan CPlayerGameStats::GetPlayTime (void) const
 //  Returns the amount of real-time spent playing
     
     {
-    return (!m_PlayTime.IsBlank() ? m_PlayTime : g_pUniverse->StopGameTime());
+    return (!m_PlayTime.IsBlank() ? m_PlayTime : m_Universe.StopGameTime());
     }
 
 CPlayerGameStats::SShipClassStats *CPlayerGameStats::GetShipStats (DWORD dwUNID)
@@ -963,7 +960,7 @@ CString CPlayerGameStats::GetStat (const CString &sStat) const
 		}
 	else if (strEquals(sStat, ENEMY_STATIONS_DESTROYED_STAT))
 		{
-		CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 		if (pPlayerSovereign == NULL)
 			return NULL_STR;
 
@@ -974,7 +971,7 @@ CString CPlayerGameStats::GetStat (const CString &sStat) const
 			{
 			SStationTypeStats *pStats;
 			DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-			CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+			CStationType *pType = m_Universe.FindStationType(dwUNID);
 			if (pType == NULL)
 				continue;
 
@@ -1007,7 +1004,7 @@ CString CPlayerGameStats::GetStat (const CString &sStat) const
 		}
 	else if (strEquals(sStat, FRIENDLY_STATIONS_DESTROYED_STAT))
 		{
-		CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		CSovereign *pPlayerSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 		if (pPlayerSovereign == NULL)
 			return NULL_STR;
 
@@ -1018,7 +1015,7 @@ CString CPlayerGameStats::GetStat (const CString &sStat) const
 			{
 			SStationTypeStats *pStats;
 			DWORD dwUNID = m_StationStats.GetNext(i, &pStats);
-			CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+			CStationType *pType = m_Universe.FindStationType(dwUNID);
 			if (pType == NULL)
 				continue;
 
@@ -1140,7 +1137,7 @@ DWORD CPlayerGameStats::GetSystemLastVisitedTime (const CString &sNodeID)
     //  value, then we are still in the system.
 
     if (pStats->dwLastEntered != INVALID_TIME)
-        return g_pUniverse->GetTicks();
+        return m_Universe.GetTicks();
 
     //  Otherwise, we have never been here
 
@@ -1232,12 +1229,12 @@ void CPlayerGameStats::OnGameEnd (CSpaceObject *pPlayer)
 	{
 	//	Mark how long we spent playing the game
 
-	m_GameTime = g_pUniverse->GetElapsedGameTime();
-	m_PlayTime = g_pUniverse->StopGameTime();
+	m_GameTime = m_Universe.GetElapsedGameTime();
+	m_PlayTime = m_Universe.StopGameTime();
 
 	//	This counts as leaving the system
 
-	OnSystemLeft(g_pUniverse->GetCurrentSystem());
+	OnSystemLeft(m_Universe.GetCurrentSystem());
 
 	//	Set the final time for all installed items
 	}
@@ -1290,7 +1287,7 @@ void CPlayerGameStats::OnItemInstalled (const CItem &Item)
 
 	if (pStats->iCountInstalled == 0)
 		{
-		pStats->dwLastInstalled = g_pUniverse->GetTicks();
+		pStats->dwLastInstalled = m_Universe.GetTicks();
 		if (pStats->dwFirstInstalled == INVALID_TIME)
 			pStats->dwFirstInstalled = pStats->dwLastInstalled;
 		pStats->dwLastUninstalled = INVALID_TIME;
@@ -1339,7 +1336,7 @@ void CPlayerGameStats::OnItemUninstalled (const CItem &Item)
 		{
 		ASSERT(pStats->dwLastInstalled != INVALID_TIME);
 
-		pStats->dwLastUninstalled = g_pUniverse->GetTicks();
+		pStats->dwLastUninstalled = m_Universe.GetTicks();
 		pStats->dwTotalInstalledTime += (pStats->dwLastUninstalled - pStats->dwLastInstalled);
 		}
 	}
@@ -1356,7 +1353,7 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	CSystem *pSystem = pObj->GetSystem();
 	if (pSystem == NULL)
 		{
-		pSystem = g_pUniverse->GetCurrentSystem();
+		pSystem = m_Universe.GetCurrentSystem();
 		if (pSystem == NULL)
 			return;
 		}
@@ -1394,7 +1391,7 @@ void CPlayerGameStats::OnKeyEvent (EEventTypes iType, CSpaceObject *pObj, DWORD 
 	TArray<SKeyEventStats> *pEventList = m_KeyEventStats.Set(sNodeID);
 	SKeyEventStats *pStats = pEventList->Insert();
 	pStats->iType = iType;
-	pStats->dwTime = g_pUniverse->GetTicks();
+	pStats->dwTime = m_Universe.GetTicks();
 	pStats->dwObjUNID = pType->GetUNID();
 	pStats->sObjName = sName;
 	pStats->dwObjNameFlags = dwNameFlags;
@@ -1470,7 +1467,7 @@ void CPlayerGameStats::OnSystemEntered (CSystem *pSystem, int *retiLastVisit)
 		}
 
 	SSystemStats *pStats = GetSystemStats(pNode->GetID());
-	pStats->dwLastEntered = g_pUniverse->GetTicks();
+	pStats->dwLastEntered = m_Universe.GetTicks();
 	if (pStats->dwFirstEntered == INVALID_TIME)
 		{
 		pStats->dwFirstEntered = pStats->dwLastEntered;
@@ -1499,7 +1496,7 @@ void CPlayerGameStats::OnSystemLeft (CSystem *pSystem)
 
 	SSystemStats *pStats = GetSystemStats(pNode->GetID());
 	ASSERT(pStats->dwLastEntered != INVALID_TIME);
-	pStats->dwLastLeft = g_pUniverse->GetTicks();
+	pStats->dwLastLeft = m_Universe.GetTicks();
 	pStats->dwTotalTime += pStats->dwLastLeft - pStats->dwLastEntered;
 	}
 
