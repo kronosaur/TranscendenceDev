@@ -567,8 +567,8 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 
 		CCLinkedList *pList = (CCLinkedList *)pResult;
 
-		pList->AppendInteger(CC, m_xPos);
-		pList->AppendInteger(CC, m_yPos);
+		pList->AppendInteger(m_xPos);
+		pList->AppendInteger(m_yPos);
 
 		return pResult;
 		}

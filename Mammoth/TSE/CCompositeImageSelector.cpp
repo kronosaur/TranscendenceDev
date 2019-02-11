@@ -216,8 +216,6 @@ void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	m_Sel.DeleteAll();
 	if (pData->IsNil() || pData->GetCount() == 0 || !pData->IsList())
 		return;
@@ -302,14 +300,13 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
 	if (m_Sel.GetCount() == 0)
 		return ICCItemPtr(ICCItem::Nil);
 
-	ICCItemPtr pSel(CC.CreateLinkedList());
+	ICCItemPtr pSel(ICCItem::List);
 	for (i = 0; i < m_Sel.GetCount(); i++)
 		{
-		ICCItemPtr pEntry(CC.CreateSymbolTable());
+		ICCItemPtr pEntry(ICCItem::SymbolTable);
 		pSel->Append(pEntry);
 
 		pEntry->SetIntegerAt(CONSTLIT("id"), m_Sel[i].dwID);

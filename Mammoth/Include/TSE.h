@@ -2112,7 +2112,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
 ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector);
-ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW);
+ICCItem *CreatePowerResult (double rPowerInKW);
 CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList);
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags = 0);
 ICCItem *CreateObjPointer (CCodeChain &CC, CSpaceObject *pObj);

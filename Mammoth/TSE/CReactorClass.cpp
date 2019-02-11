@@ -109,17 +109,17 @@ ICCItem *CReactorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_MAX_POWER))
 		{
 		if (m_iExtraPowerPerCharge == 0 || Ctx.IsItemNull())
-			return CreatePowerResult(CC, 100.0 * GetMaxPower(Ctx, Desc));
+			return CreatePowerResult(100.0 * GetMaxPower(Ctx, Desc));
 		else
 			{
 			int iMaxCharges = Ctx.GetItem().GetType()->GetMaxCharges();
 			int iMaxPower = Desc.GetMaxPower() + (iMaxCharges * m_iExtraPowerPerCharge);
-			return CreatePowerResult(CC, 100.0 * iMaxPower);
+			return CreatePowerResult(100.0 * iMaxPower);
 			}
 		}
 
 	else if (strEquals(sName, PROPERTY_POWER))
-		return CreatePowerResult(CC, 100.0 * GetMaxPower(Ctx, Desc));
+		return CreatePowerResult(100.0 * GetMaxPower(Ctx, Desc));
 
 	//	Ask the descriptor
 

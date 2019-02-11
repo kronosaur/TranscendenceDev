@@ -44,26 +44,26 @@ void ICCItem::AppendAt (const CString &sKey, ICCItem *pValue)
 		}
 	}
 
-void ICCItem::AppendInteger (CCodeChain &CC, int iValue)
+void ICCItem::AppendInteger (int iValue)
 
 //	AppendInteger
 //
 //	Inserts an element in a list
 
 	{
-	ICCItem *pItem = CC.CreateInteger(iValue);
+	ICCItem *pItem = CCodeChain::CreateInteger(iValue);
 	Append(pItem);
 	pItem->Discard();
 	}
 
-void ICCItem::AppendString (CCodeChain &CC, const CString &sValue)
+void ICCItem::AppendString (const CString &sValue)
 
 //	AppendString
 //
 //	Inserts an element in a list
 
 	{
-	ICCItem *pItem = CC.CreateString(sValue);
+	ICCItem *pItem = CCodeChain::CreateString(sValue);
 	Append(pItem);
 	pItem->Discard();
 	}

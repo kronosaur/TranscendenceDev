@@ -219,7 +219,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 	//	Add a class, if provided
 
 	if (!sClass.IsBlank())
-		pList->AppendString(CC, sClass);
+		pList->AppendString(sClass);
 
 	//	Add binary bytes in DWORD chunks.
 
@@ -391,7 +391,7 @@ bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc)
 		}
 	}
 
-ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW)
+ICCItem *CreatePowerResult (double rPowerInKW)
 
 //	CreatePowerResult
 //
@@ -400,9 +400,9 @@ ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW)
 
 	{
 	if (rPowerInKW > 2000000000.0)
-		return CC.CreateDouble(rPowerInKW);
+		return CCodeChain::CreateDouble(rPowerInKW);
 	else
-		return CC.CreateInteger((int)rPowerInKW);
+		return CCodeChain::CreateInteger((int)rPowerInKW);
 	}
 
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)

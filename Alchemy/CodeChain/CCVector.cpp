@@ -67,7 +67,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 				{
 				for (j = 0; j < vShape[i]; j++)
 					{
-					pArrayIndices->AppendInteger(*pCC, j*iSkipCount);
+					pArrayIndices->AppendInteger(j*iSkipCount);
 					}
 				}
 			else if (pElement->IsList())
@@ -88,7 +88,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 
 				for (j = 0; j < pElement->GetCount(); j++)
 					{
-					pArrayIndices->AppendInteger(*pCC, pElement->GetElement(j)->GetIntegerValue()*iSkipCount);
+					pArrayIndices->AppendInteger(pElement->GetElement(j)->GetIntegerValue()*iSkipCount);
 					}
 				}
 			else if (pElement->IsInteger())
@@ -98,7 +98,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 					pArrayIndices->Discard();
 					return pCC->CreateError(CONSTLIT("Out of bounds."));
 					}
-				pArrayIndices->AppendInteger(*pCC, pElement->GetIntegerValue()*iSkipCount);
+				pArrayIndices->AppendInteger(pElement->GetIntegerValue()*iSkipCount);
 				}
 			else
 				{
@@ -115,7 +115,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 					{
 					for (k = 0; k < vShape[i]; k++)
 						{
-						pNewArrayIndices->AppendInteger(*pCC, pArrayIndices->GetElement(j)->GetIntegerValue() + iSkipCount*k);
+						pNewArrayIndices->AppendInteger(pArrayIndices->GetElement(j)->GetIntegerValue() + iSkipCount*k);
 						}
 					}
 				}
@@ -141,7 +141,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 					{
 					for (k = 0; k < pElement->GetCount(); k++)
 						{
-						pNewArrayIndices->AppendInteger(*pCC, pArrayIndices->GetElement(j)->GetIntegerValue() + iSkipCount*pElement->GetElement(k)->GetIntegerValue());
+						pNewArrayIndices->AppendInteger(pArrayIndices->GetElement(j)->GetIntegerValue() + iSkipCount*pElement->GetElement(k)->GetIntegerValue());
 						}
 					}
 				}
@@ -156,7 +156,7 @@ ICCItem *GetRelevantArrayIndices(CCodeChain *pCC, TArray <int> vShape, ICCItem *
 
 				for (j = 0; j < pArrayIndices->GetCount(); j++)
 					{
-					pNewArrayIndices->AppendInteger(*pCC, pArrayIndices->GetElement(j)->GetIntegerValue() + pElement->GetIntegerValue()*iSkipCount);
+					pNewArrayIndices->AppendInteger(pArrayIndices->GetElement(j)->GetIntegerValue() + pElement->GetIntegerValue()*iSkipCount);
 					}
 				}
 			else
@@ -614,7 +614,7 @@ CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags)
 				{
 				return LITERAL("Error printing vector: memory could not be allocated for temporary index list.");
 				};
-			pIndices->AppendInteger(*pCC, i);
+			pIndices->AppendInteger(i);
 
 			ICCItem *pSubVector = IndexVector(pCC, pIndices);
 			if (pSubVector->IsError())

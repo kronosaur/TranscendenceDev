@@ -452,7 +452,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 		pResult = CC.CreateLinkedList();
 		for (i = 0; i < Attribs.GetCount(); i++)
-			pResult->AppendString(CC, Attribs[i]);
+			pResult->AppendString(Attribs[i]);
 
 		return pResult;
 		}

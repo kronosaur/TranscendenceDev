@@ -1537,7 +1537,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pResult = pCC->CreateLinkedList();
 					for (i = 0; i < pList->GetCount(); i++)
-						pResult->AppendString(*pCC, pList->GetKey(i));
+						pResult->AppendString(pList->GetKey(i));
 
 					return pResult;
 					}
@@ -2349,12 +2349,12 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				if (iInc < 0)
 					{
 					for (i = iStart; i >= iEnd; i += iInc)
-						pList->AppendInteger(*pCC, i);
+						pList->AppendInteger(i);
 					}
 				else
 					{
 					for (i = iStart; i <= iEnd; i += iInc)
-						pList->AppendInteger(*pCC, i);
+						pList->AppendInteger(i);
 					}
 
 				return pList;
@@ -3267,8 +3267,8 @@ ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pResult = pCC->CreateLinkedList();
 				CCLinkedList *pList = (CCLinkedList *)pResult;
 
-				pList->AppendInteger(*pCC, mathRound(rResult * rResultDenom));
-				pList->AppendInteger(*pCC, mathRound(rResultDenom));
+				pList->AppendInteger(mathRound(rResult * rResultDenom));
+				pList->AppendInteger(mathRound(rResultDenom));
 
 				return pResult;
 				}
@@ -3619,7 +3619,7 @@ ICCItem *fnRegEx (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop over all arguments and add to result list
 
 		for (i = 0; i < Result.GetCount(); i++)
-			pList->AppendString(*pCC, Result[i].sMatch);
+			pList->AppendString(Result[i].sMatch);
 
 		return pResult;
 		}
@@ -3904,7 +3904,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (bIsDelimeter)
 				{
-				pList->AppendString(*pCC, strTrimWhitespace(CString(pStart, (int)(pPos - pStart))));
+				pList->AppendString(strTrimWhitespace(CString(pStart, (int)(pPos - pStart))));
 				bInWord = false;
 				}
 			}
@@ -3925,7 +3925,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	Last word
 
 	if (bInWord)
-		pList->AppendString(*pCC, CString(pStart, (int)(pPos - pStart)));
+		pList->AppendString(CString(pStart, (int)(pPos - pStart)));
 
 	//	Done
 

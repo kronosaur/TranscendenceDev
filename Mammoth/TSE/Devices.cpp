@@ -519,10 +519,10 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         //	List contains angle, radius, and optional z
 
-        pList->AppendInteger(CC, pDevice->GetPosAngle());
-        pList->AppendInteger(CC, pDevice->GetPosRadius());
+        pList->AppendInteger(pDevice->GetPosAngle());
+        pList->AppendInteger(pDevice->GetPosRadius());
         if (pDevice->GetPosZ() != 0)
-            pList->AppendInteger(CC, pDevice->GetPosZ());
+            pList->AppendInteger(pDevice->GetPosZ());
 
         //	Done
 
@@ -538,10 +538,10 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		}
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
-		return CreatePowerResult(CC, GetPowerOutput(Ctx) * 100.0);
+		return CreatePowerResult(GetPowerOutput(Ctx) * 100.0);
 
 	else if (strEquals(sName, PROPERTY_POWER_USE))
-		return CreatePowerResult(CC, GetPowerRating(Ctx) * 100.0);
+		return CreatePowerResult(GetPowerRating(Ctx) * 100.0);
 
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());

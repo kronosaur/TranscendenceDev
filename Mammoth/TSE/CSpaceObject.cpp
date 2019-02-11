@@ -4235,7 +4235,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			{
 			CSpaceObject *pObj = m_SubscribedObjs.GetObj(i);
 			if (!pObj->IsDestroyed())
-				pResult->AppendInteger(CC, (int)pObj);
+				pResult->AppendInteger((int)pObj);
 			}
 
 		if (pResult->GetCount() == 0)

@@ -97,7 +97,7 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 			retResult = ICCItemPtr(ICCItem::List);
 
 			for (int i = 0; i < List.GetCount(); i++)
-				retResult->AppendString(g_pUniverse->GetCC(), List[i]);
+				retResult->AppendString(List[i]);
 
 			return true;
 			}

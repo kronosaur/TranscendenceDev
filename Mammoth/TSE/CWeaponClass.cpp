@@ -2319,7 +2319,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			pResult = CC.CreateLinkedList();
 			for (i = 0; i < m_ShotData.GetCount(); i++)
 				if (m_ShotData[i].pDesc->GetAmmoType())
-					pResult->AppendInteger(CC, m_ShotData[i].pDesc->GetAmmoType()->GetUNID());
+					pResult->AppendInteger(m_ShotData[i].pDesc->GetAmmoType()->GetUNID());
 
 			return pResult;
 			}
@@ -2425,8 +2425,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 				if (pResult->IsError())
 					return pResult;
 
-				pResult->AppendInteger(CC, iMinFireArc);
-				pResult->AppendInteger(CC, iMaxFireArc);
+				pResult->AppendInteger(iMinFireArc);
+				pResult->AppendInteger(iMaxFireArc);
 
 				return pResult;
 				}
@@ -2472,11 +2472,11 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		//	Add options
 
 		if (dwOptions & CDeviceClass::lkfAlways)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
 		else if (dwOptions & CDeviceClass::lkfTargetInRange)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
 		else if (dwOptions & CDeviceClass::lkfEnemyInRange)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
 
 		//	Done
 

@@ -119,8 +119,8 @@ class ICCItem : public CObject
 
 		//	List interface
 
-		void AppendInteger (CCodeChain &CC, int iValue);
-		void AppendString (CCodeChain &CC, const CString &sValue);
+		void AppendInteger (int iValue);
+		void AppendString (const CString &sValue);
 
 		virtual void Append (ICCItem *pValue) { }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) = 0;

@@ -92,7 +92,7 @@ ICCItemPtr CConditionSet::WriteAsCCItem (void) const
 	for (int i = 0; i < CONDITION_TABLE.GetCount(); i++)
 		{
 		if (m_dwSet & CONDITION_TABLE[i].Value)
-			pResult->AppendString(CC, CString(CONDITION_TABLE.GetKey(i)));
+			pResult->AppendString(CString(CONDITION_TABLE.GetKey(i)));
 		}
 
 	if (pResult->GetCount() == 0)

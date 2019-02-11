@@ -253,8 +253,8 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 
-			pList->AppendInteger(CC, iMinFireArc);
-			pList->AppendInteger(CC, iMaxFireArc);
+			pList->AppendInteger(iMinFireArc);
+			pList->AppendInteger(iMaxFireArc);
 
 			return pResult;
 			}

@@ -568,7 +568,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 			{
 			ICCItem *pResult = CC.CreateLinkedList();
 			for (i = 0; i < GetLaunchWeapons().GetCount(); i++)
-				pResult->AppendInteger(CC, GetLaunchWeapons()[i]->GetUNID());
+				pResult->AppendInteger(GetLaunchWeapons()[i]->GetUNID());
 
 			return pResult;
 			}
