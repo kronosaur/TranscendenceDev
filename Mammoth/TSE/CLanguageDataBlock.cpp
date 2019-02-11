@@ -33,7 +33,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	pEntry->pCode = NULL;
 	}
 
-ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, ICCItem *pData) const
+ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) const
 
 //	ComposeCCItem
 //
@@ -47,7 +47,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 
 		for (int i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
+			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
 			ICCItemPtr pKey = ICCItemPtr(pValue->GetKey(i));
 			pResult->AddEntry(pKey, pElement);
 			}
@@ -64,7 +64,7 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 
 		for (int i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
+			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
 			pResult->Append(pElement);
 			}
 
@@ -104,7 +104,7 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 
 		case resultCCItem:
 			{
-			retResult = ComposeCCItem(g_pUniverse->GetCC(), pCCResult, pData);
+			retResult = ComposeCCItem(pCCResult, pData);
 			return true;
 			}
 
@@ -247,10 +247,7 @@ void CLanguageDataBlock::DeleteAll (void)
 //	Deletes all entries
 
 	{
-	int i;
-	CCodeChain *pCC = &g_pUniverse->GetCC();
-
-	for (i = 0; i < m_Data.GetCount(); i++)
+	for (int i = 0; i < m_Data.GetCount(); i++)
 		if (m_Data[i].pCode)
 			m_Data[i].pCode->Discard();
 

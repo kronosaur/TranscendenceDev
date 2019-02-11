@@ -402,7 +402,7 @@ void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
 //	Defines a global CVector variable
 
 	{
-	ICCItem *pValue = CreateListFromVector(m_CC, vVector);
+	ICCItem *pValue = CreateListFromVector(vVector);
 	m_CC.DefineGlobal(sVar, pValue);
 	pValue->Discard();
 	}

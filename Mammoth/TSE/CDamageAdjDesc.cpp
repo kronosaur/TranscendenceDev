@@ -218,8 +218,7 @@ ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnh
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 
 	for (i = 0; i < damageCount; i++)
 		{
@@ -247,8 +246,7 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 
 	for (i = 0; i < damageCount; i++)
 		{

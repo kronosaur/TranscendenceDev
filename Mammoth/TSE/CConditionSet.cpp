@@ -86,8 +86,7 @@ ICCItemPtr CConditionSet::WriteAsCCItem (void) const
 //	Returns a CC list with all conditions (or Nil if none).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItemPtr pResult(CC.CreateLinkedList());
+	ICCItemPtr pResult(ICCItem::List);
 
 	for (int i = 0; i < CONDITION_TABLE.GetCount(); i++)
 		{

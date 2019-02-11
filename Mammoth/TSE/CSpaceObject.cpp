@@ -4209,7 +4209,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 			//	Position
 
-			ICCItem *pValue = ::CreateListFromVector(CC, pPorts->GetPortPos(this, i, NULL));
+			ICCItem *pValue = ::CreateListFromVector(pPorts->GetPortPos(this, i, NULL));
 			pPortDesc->SetAt(FIELD_POS, pValue);
 			pValue->Discard();
 

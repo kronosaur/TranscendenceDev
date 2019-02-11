@@ -35,25 +35,23 @@ ICCItem *CStationHull::FindProperty (const CString &sProperty) const
 //	Returns the property (or NULL if not found).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_CANNOT_BE_HIT))
-		return CC.CreateBool(!CanBeHit());
+		return CCodeChain::CreateBool(!CanBeHit());
 
 	else if (strEquals(sProperty, PROPERTY_HP))
-		return CC.CreateInteger(m_iHitPoints);
+		return CCodeChain::CreateInteger(m_iHitPoints);
 
 	else if (strEquals(sProperty, PROPERTY_IMMUTABLE))
-		return CC.CreateBool(IsImmutable());
+		return CCodeChain::CreateBool(IsImmutable());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_HP))
-		return CC.CreateInteger(m_iMaxHitPoints);
+		return CCodeChain::CreateInteger(m_iMaxHitPoints);
 
 	else if (strEquals(sProperty, PROPERTY_MAX_STRUCTURAL_HP))
-		return CC.CreateInteger(m_iMaxStructuralHP);
+		return CCodeChain::CreateInteger(m_iMaxStructuralHP);
 
 	else if (strEquals(sProperty, PROPERTY_STRUCTURAL_HP))
-		return CC.CreateInteger(m_iStructuralHP);
+		return CCodeChain::CreateInteger(m_iStructuralHP);
 
 	else
 		return NULL;

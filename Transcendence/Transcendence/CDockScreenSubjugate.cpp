@@ -100,8 +100,6 @@ ICCItemPtr CDockScreenSubjugate::OnGetProperty (const CString &sProperty) const
 //	Returns the given property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_AWAKENING_STATUS))
 		{
 		switch (m_Artifact.GetStatus())

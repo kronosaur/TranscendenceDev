@@ -524,44 +524,42 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 //	Get topology node property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sName, PROPERTY_KNOWN))
-		return CC.CreateBool(IsKnown());
+		return CCodeChain::CreateBool(IsKnown());
 
 	else if (strEquals(sName, PROPERTY_LAST_VISITED_GAME_SECONDS))
 		{
 		DWORD dwLastVisited = GetLastVisitedTime();
 		if (dwLastVisited == 0xffffffff)
-			return CC.CreateNil();
+			return CCodeChain::CreateNil();
 
 		CTimeSpan Span = g_pUniverse->GetElapsedGameTimeAt(g_pUniverse->GetTicks()) - g_pUniverse->GetElapsedGameTimeAt(GetLastVisitedTime());
-		return CC.CreateInteger(Span.Seconds());
+		return CCodeChain::CreateInteger(Span.Seconds());
 		}
 	else if (strEquals(sName, PROPERTY_LAST_VISITED_ON))
 		{
 		DWORD dwLastVisited = GetLastVisitedTime();
 		if (dwLastVisited == 0xffffffff)
-			return CC.CreateNil();
+			return CCodeChain::CreateNil();
 		else
-			return CC.CreateInteger(dwLastVisited);
+			return CCodeChain::CreateInteger(dwLastVisited);
 		}
 	else if (strEquals(sName, PROPERTY_LEVEL))
-		return CC.CreateInteger(GetLevel());
+		return CCodeChain::CreateInteger(GetLevel());
 
 	else if (strEquals(sName, PROPERTY_NAME))
-		return CC.CreateString(GetSystemName());
+		return CCodeChain::CreateString(GetSystemName());
 
 	else if (strEquals(sName, PROPERTY_POS))
 		{
 		//	If no map, then no position
 
 		if (m_pMap == NULL)
-			return CC.CreateNil();
+			return CCodeChain::CreateNil();
 
 		//	Create a list
 
-		ICCItem *pResult = CC.CreateLinkedList();
+		ICCItem *pResult = CCodeChain::CreateLinkedList();
 		if (pResult->IsError())
 			return pResult;
 
@@ -573,7 +571,7 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 		return pResult;
 		}
 	else
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 	}
 
 CString CTopologyNode::GetStargate (int iIndex)
@@ -610,8 +608,6 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 //	Returns a property of the given stargate.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	const SStargateEntry *pDesc = m_NamedGates.GetAt(sName);
 	if (pDesc == NULL)
 		return ICCItemPtr(ICCItem::Nil);
@@ -1283,8 +1279,6 @@ bool CTopologyNode::SetProperty (const CString &sName, ICCItem *pValue, CString 
 //	Set topology node property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sName, PROPERTY_KNOWN))
 		SetKnown(!pValue->IsNil());
 

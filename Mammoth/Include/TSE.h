@@ -2019,7 +2019,7 @@ class CListWrapper : public IListData
 		virtual int GetCount (void) override { return m_pList->GetCount(); }
 		virtual int GetCursor (void) override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) override;
-		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC) override;
+		virtual ICCItem *GetEntryAtCursor (void) override;
 		virtual CString GetTitleAtCursor (void) override;
 		virtual bool IsCursorValid (void) const override { return (m_iCursor != -1); }
 		virtual bool MoveCursorBack (void) override;
@@ -2111,7 +2111,7 @@ ICCItem *CreateDisposition (CCodeChain &CC, CSovereign::Disposition iDisp);
 ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, int iRotation = 0);
 ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
-ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector);
+ICCItem *CreateListFromVector (const CVector &vVector);
 ICCItem *CreatePowerResult (double rPowerInKW);
 CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList);
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags = 0);

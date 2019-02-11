@@ -230,7 +230,7 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 		if (pMessage->GetContentElementCount() == 0)
 			{
 			m_Messages[i].InvokeEvent.pExtension = NULL;
-			m_Messages[i].InvokeEvent.pCode = g_pUniverse->GetCC().Link(pMessage->GetContentText(0));
+			m_Messages[i].InvokeEvent.pCode = CCodeChain::Link(pMessage->GetContentText(0));
 
 			m_Messages[i].OnShowEvent.pExtension = NULL;
 			m_Messages[i].OnShowEvent.pCode = NULL;
@@ -255,12 +255,12 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 				if (strEquals(pItem->GetTag(), ON_SHOW_TAG))
 					{
 					m_Messages[i].OnShowEvent.pExtension = NULL;
-					m_Messages[i].OnShowEvent.pCode = g_pUniverse->GetCC().Link(pItem->GetContentText(0));
+					m_Messages[i].OnShowEvent.pCode = CCodeChain::Link(pItem->GetContentText(0));
 					}
 				else if (strEquals(pItem->GetTag(), INVOKE_TAG) || strEquals(pItem->GetTag(), CODE_TAG))
 					{
 					m_Messages[i].InvokeEvent.pExtension = NULL;
-					m_Messages[i].InvokeEvent.pCode = g_pUniverse->GetCC().Link(pItem->GetContentText(0));
+					m_Messages[i].InvokeEvent.pCode = CCodeChain::Link(pItem->GetContentText(0));
 					}
 				else
 					{

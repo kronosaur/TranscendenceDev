@@ -216,8 +216,8 @@ class CCreatePainterCtx
 			int iValue;
 			};
 
-		void SetDamageCtxData (CCodeChain &CC, ICCItem *pTable, SDamageCtx &DamageCtx) const;
-		void SetWeaponFireDescData (CCodeChain &CC, ICCItem *pTable, CWeaponFireDesc *pDesc) const;
+		void SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx) const;
+		void SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const;
 
 		CSpaceObject *m_pAnchor = NULL;					//	Optional anchor (e.g., for effects that need an object to operate)
 		CVector m_vPos;									//	Optional position of effect

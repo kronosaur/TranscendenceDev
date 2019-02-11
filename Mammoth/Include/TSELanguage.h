@@ -169,7 +169,7 @@ class CLanguageDataBlock
 			};
 
 		inline void CleanUp (void) { DeleteAll(); }
-		ICCItemPtr ComposeCCItem (CCodeChain &CC, ICCItem *pValue, ICCItem *pData) const;
+		ICCItemPtr ComposeCCItem (ICCItem *pValue, ICCItem *pData) const;
 		bool ComposeCCResult (ETranslateResult iResult, ICCItem *pData, const TArray<CString> &List, const CString &sText, ICCItem *pCCResult, ICCItemPtr &retResult) const;
 		ETranslateResult ComposeResult (ICCItem *pResult, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		bool ComposeTextResult (ETranslateResult iResult, const TArray<CString> &List, CString *retsText) const;

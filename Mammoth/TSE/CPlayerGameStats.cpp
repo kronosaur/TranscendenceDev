@@ -136,16 +136,14 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 //  Returns a the given property (or NULL).
 
     {
-    CCodeChain &CC = g_pUniverse->GetCC();
-
     if (strEquals(sProperty, BEST_ENEMY_SHIPS_DESTROYED_STATS))
         {
         DWORD dwUNID;
         int iCount = GetBestEnemyShipsDestroyed(&dwUNID);
         if (iCount == 0)
-            return CC.CreateNil();
+            return CCodeChain::CreateNil();
 
-        ICCItem *pResult = CC.CreateSymbolTable();
+        ICCItem *pResult = CCodeChain::CreateSymbolTable();
         pResult->SetIntegerAt(CONSTLIT("unid"), dwUNID);
         pResult->SetIntegerAt(CONSTLIT("count"), iCount);
         return pResult;
@@ -163,13 +161,13 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
             iCount += pStats->iEnemyDestroyed;
             }
 
-        return CC.CreateInteger(iCount + m_iExtraEnemyShipsDestroyed);
+        return CCodeChain::CreateInteger(iCount + m_iExtraEnemyShipsDestroyed);
         }
     else if (strEquals(sProperty, ENEMY_STATIONS_DESTROYED_STAT))
         {
         CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
         if (pPlayerSovereign == NULL)
-            return CC.CreateInteger(0);
+            return CCodeChain::CreateInteger(0);
 
         CMapIterator i;
         int iCount = 0;
@@ -186,10 +184,10 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
                 iCount += pStats->iDestroyed;
             }
 
-        return CC.CreateInteger(iCount);
+        return CCodeChain::CreateInteger(iCount);
         }
     else if (strEquals(sProperty, PROPERTY_FUEL_CONSUMED))
-        return CC.CreateDouble(m_rFuelConsumed);
+        return CCodeChain::CreateDouble(m_rFuelConsumed);
 
 	else if (strEquals(sProperty, FRIENDLY_SHIPS_DESTROYED_STAT))
 		{
@@ -204,13 +202,13 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 			iCount += pStats->iFriendDestroyed;
 			}
 
-		return CC.CreateInteger(iCount);
+		return CCodeChain::CreateInteger(iCount);
 		}
 	else if (strEquals(sProperty, FRIENDLY_STATIONS_DESTROYED_STAT))
 		{
 		CSovereign *pPlayerSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
 		if (pPlayerSovereign == NULL)
-			return CC.CreateInteger(0);
+			return CCodeChain::CreateInteger(0);
 
 		CMapIterator i;
 		int iCount = 0;
@@ -227,21 +225,21 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 				iCount += pStats->iDestroyed;
 			}
 
-		return CC.CreateInteger(iCount);
+		return CCodeChain::CreateInteger(iCount);
 		}
 	else if (strEquals(sProperty, RESURRECT_COUNT_STAT))
-		return CC.CreateInteger(m_iResurrectCount);
+		return CCodeChain::CreateInteger(m_iResurrectCount);
 
 	else if (strEquals(sProperty, SCORE_STAT))
-		return CC.CreateInteger(m_iScore);
+		return CCodeChain::CreateInteger(m_iScore);
 
 	else if (strEquals(sProperty, PROPERTY_SYSTEMS_VISITED))
 		{
 		CMemoryWriteStream Output;
         if (Output.Create() != NOERROR)
-            return CC.CreateNil();
+            return CCodeChain::CreateNil();
 
-        ICCItem *pResult = CC.CreateLinkedList();
+        ICCItem *pResult = CCodeChain::CreateLinkedList();
 
 		CMapIterator i;
 		m_SystemStats.Reset(i);
@@ -250,7 +248,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 			SSystemStats *pStats;
 			const CString &sNodeID = m_SystemStats.GetNext(i, &pStats);
 
-            ICCItem *pSysData = CC.CreateSymbolTable();
+            ICCItem *pSysData = CCodeChain::CreateSymbolTable();
             pSysData->SetStringAt(CONSTLIT("nodeID"), sNodeID);
 
             if (pStats->dwFirstEntered != INVALID_TIME)
@@ -285,7 +283,7 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 				iCount++;
 			}
 
-		return CC.CreateInteger(iCount + m_iExtraSystemsVisited);
+		return CCodeChain::CreateInteger(iCount + m_iExtraSystemsVisited);
 		}
 	else
         return NULL;

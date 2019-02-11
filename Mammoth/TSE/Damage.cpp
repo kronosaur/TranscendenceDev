@@ -268,13 +268,11 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 //	Returns the given damage property (or NULL for unknown properties).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	See if this is one of the special damage properties
 
 	SpecialDamageTypes iSpecial;
 	if ((iSpecial = ConvertPropertyToSpecialDamageTypes(sName)) != specialNone)
-		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+		return CCodeChain::CreateInteger(GetSpecialDamage(iSpecial));
 
 	//	Otherwise, not found
 

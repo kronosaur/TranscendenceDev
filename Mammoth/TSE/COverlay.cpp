@@ -702,7 +702,7 @@ ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, co
 		return CC.CreateString(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel());
 
 	else if (strEquals(sName, PROPERTY_POS))
-		return CreateListFromVector(CC, GetPos(pSource));
+		return CreateListFromVector(GetPos(pSource));
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		return CC.CreateInteger(GetRotation());

@@ -471,7 +471,6 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
 //  Read the m_Data table.
 
     {
-	CCodeChain &CC = g_pUniverse->GetCC();
     int i;
 
 	//	Load the sentinel string, which is either "ADB" or a flattened table
@@ -500,7 +499,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
             sData.ReadFromStream(pStream);
 
             SDataEntry *pEntry = m_Data.SetAt(sKey);
-			pEntry->pData = ICCItemPtr(CC.Link(sData));
+			pEntry->pData = ICCItemPtr(CCodeChain::Link(sData));
             }
         }
 
@@ -516,7 +515,7 @@ void CAttributeDataBlock::ReadDataEntries (IReadStream *pStream)
                 {
                 SDataEntry *pEntry = m_Data.SetAt(pData->GetKey(i));
                 CString *pDest = (CString *)pData->GetValue(i);
-				pEntry->pData = ICCItemPtr(CC.Link(*pDest));
+				pEntry->pData = ICCItemPtr(CCodeChain::Link(*pDest));
                 }
 
             delete pData;
@@ -658,8 +657,6 @@ void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
 	{
 	if (pData)
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
-
 		for (int i = 0; i < pData->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pData->GetContentElement(i);
@@ -688,7 +685,7 @@ void CAttributeDataBlock::SetFromXML (CXMLElement *pData)
 			//	Store
 
 			SDataEntry *pEntry = m_Data.SetAt(sID);
-			pEntry->pData = ICCItemPtr(CC.Link(sData));
+			pEntry->pData = ICCItemPtr(CCodeChain::Link(sData));
 			}
 		}
 	}

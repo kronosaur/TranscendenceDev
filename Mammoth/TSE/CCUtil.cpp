@@ -203,14 +203,14 @@ CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList)
 	return NewItem;
 	}
 
-ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const *pvSource, int iLengthBytes)
+ICCItem *CreateListFromBinary (const CString &sClass, void const *pvSource, int iLengthBytes)
 
 //	CreateListFromBinary
 //
 //	Creates a code chain list from a block of memory
 
 	{
-	ICCItem *pResult = CC.CreateLinkedList();
+	ICCItem *pResult = CCodeChain::CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
 
@@ -228,7 +228,7 @@ ICCItem *CreateListFromBinary (CCodeChain &CC, const CString &sClass, void const
 
 	for (int i = 0; i < iCount; i++)
 		{
-		ICCItem *pInt = CC.CreateInteger(*pSource++);
+		ICCItem *pInt = CCodeChain::CreateInteger(*pSource++);
 		pList->Append(pInt);
 		pInt->Discard();
 		}
@@ -308,17 +308,17 @@ ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc)
 //	Encodes a COrbit object into a code chain list.
 
 	{
-	return CreateListFromBinary(CC, CLASS_CORBIT, &OrbitDesc, sizeof(OrbitDesc));
+	return CreateListFromBinary(CLASS_CORBIT, &OrbitDesc, sizeof(OrbitDesc));
 	}
 
-ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector)
+ICCItem *CreateListFromVector (const CVector &vVector)
 
 //	CreateListFromVector
 //
 //	Creates a code chain list from a vector
 
 	{
-	return CreateListFromBinary(CC, NULL_STR, &vVector, sizeof(vVector));
+	return CreateListFromBinary(NULL_STR, &vVector, sizeof(vVector));
 	}
 
 CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags)
@@ -1125,7 +1125,7 @@ void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVe
 //	Defines a global variable and assigns it the given vector
 
 	{
-	ICCItem *pValue = CreateListFromVector(CC, vVector);
+	ICCItem *pValue = CreateListFromVector(vVector);
 	CC.DefineGlobal(sVar, pValue);
 	pValue->Discard();
 	}

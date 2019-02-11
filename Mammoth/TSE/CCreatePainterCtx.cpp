@@ -46,7 +46,6 @@ ICCItem *CCreatePainterCtx::GetData (void)
 
 	//	Initialize
 
-	CCodeChain &CC = g_pUniverse->GetCC();
 	m_pData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add data
@@ -57,20 +56,20 @@ ICCItem *CCreatePainterCtx::GetData (void)
 	//	Set values depending on what we have in context
 
 	if (m_pDamageCtx)
-		SetDamageCtxData(CC, m_pData, *m_pDamageCtx);
+		SetDamageCtxData(m_pData, *m_pDamageCtx);
 
 	//	NOTE: If we have a damage context, we don't set weaponfire data because
 	//	it might overwrite it.
 
 	else if (m_pWeaponFireDesc)
-		SetWeaponFireDescData(CC, m_pData, m_pWeaponFireDesc);
+		SetWeaponFireDescData(m_pData, m_pWeaponFireDesc);
 
 	//	Done
 
 	return m_pData;
 	}
 
-void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, ICCItem *pTable, SDamageCtx &DamageCtx) const
+void CCreatePainterCtx::SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx) const
 
 //	SetDamageCtxData
 //
@@ -90,7 +89,7 @@ void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, ICCItem *pTable, SDama
 	if (pOrderGiver)
 		pTable->SetIntegerAt(FIELD_ORDER_GIVER, (int)pAttacker);
 
-	ICCItemPtr pHitPos(CreateListFromVector(CC, DamageCtx.vHitPos));
+	ICCItemPtr pHitPos(CreateListFromVector(DamageCtx.vHitPos));
 	pTable->SetAt(FIELD_HIT_POS, pHitPos);
 
 	pTable->SetIntegerAt(FIELD_HIT_DIR, DamageCtx.iDirection);
@@ -132,7 +131,7 @@ void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
 		m_dwAPIVersion = pType->GetAPIVersion();
 	}
 
-void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, ICCItem *pTable, CWeaponFireDesc *pDesc) const
+void CCreatePainterCtx::SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const
 
 //	SetWeaponFireDescData
 //

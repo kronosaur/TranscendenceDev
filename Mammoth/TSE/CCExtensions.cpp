@@ -6662,7 +6662,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_OVERLAY_POS:
 			{
 			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
-			return CreateListFromVector(*pCC, pObj->GetOverlayPos(dwID));
+			return CreateListFromVector(pObj->GetOverlayPos(dwID));
 			}
 
 		case FN_OBJ_GET_OVERLAY_PROPERTY:
@@ -7145,7 +7145,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_OBJ_VELOCITY:
-			return CreateListFromVector(*pCC, pObj->GetVel());
+			return CreateListFromVector(pObj->GetVel());
 
 		case FN_OBJ_TYPE:
 			{
@@ -7309,7 +7309,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			break;
 
 		case FN_OBJ_POSITION:
-			pResult = CreateListFromVector(*pCC, pObj->GetPos());
+			pResult = CreateListFromVector(pObj->GetPos());
 			break;
 
 		case FN_OBJ_SOVEREIGN:
@@ -7518,7 +7518,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pObj->Accelerate(vAccel, rTime);
 			pObj->ClipSpeed(pObj->GetMaxSpeed());
 
-			return CreateListFromVector(*pCC, pObj->GetVel());
+			return CreateListFromVector(pObj->GetVel());
 			}
 
 		case FN_OBJ_ADD_BUY_ORDER:
@@ -8131,7 +8131,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Return the resulting speed
 
-			return CreateListFromVector(*pCC, vNewVel);
+			return CreateListFromVector(vNewVel);
 			}
 
 		case FN_OBJ_POSITION:
@@ -8516,7 +8516,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Return the resulting speed
 
-			return CreateListFromVector(*pCC, pObj->GetVel());
+			return CreateListFromVector(pObj->GetVel());
 			}
 
 		default:
@@ -9589,7 +9589,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				case IShipController::dataVector:
 					{
-					ICCItem *pVector = ::CreateListFromVector(*pCC, Data.vData);
+					ICCItem *pVector = ::CreateListFromVector(Data.vData);
 					pList->Append(pVector);
 					pVector->Discard();
 					break;
@@ -12800,7 +12800,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			pResult->Append(pObjItem);
 			pObjItem->Discard();
 
-			ICCItem *pVector = CreateListFromVector(*pCC, vHitPos);
+			ICCItem *pVector = CreateListFromVector(vHitPos);
 			pResult->Append(pVector);
 			pVector->Discard();
 
@@ -12934,7 +12934,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItemPtr pEntry(ICCItem::SymbolTable);
 				pEntry->SetStringAt(FIELD_ATTRIBS, Loc.GetAttributes());
 
-				ICCItemPtr pPos(CreateListFromVector(*pCC, Loc.GetOrbit().GetObjectPos()));
+				ICCItemPtr pPos(CreateListFromVector(Loc.GetOrbit().GetObjectPos()));
 				pEntry->SetAt(FIELD_POS, pPos);
 
 				ICCItemPtr pOrbit(CreateListFromOrbit(*pCC, Loc.GetOrbit()));
@@ -12982,7 +12982,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Get the data
 
 			CLocationDef &Loc = pSystem->GetLocation(iLocID);
-			ICCItem *pPos = CreateListFromVector(*pCC, Loc.GetOrbit().GetObjectPos());
+			ICCItem *pPos = CreateListFromVector(Loc.GetOrbit().GetObjectPos());
 			ICCItem *pOrbit = CreateListFromOrbit(*pCC, Loc.GetOrbit());
 
 			//	Prepare a result
@@ -13607,7 +13607,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pStart = CreateObjFromItem(*pCC, pArgs->GetElement(1));
 			CSpaceObject *pEnd = CreateObjFromItem(*pCC, pArgs->GetElement(2));
 			if (pStart == NULL || pEnd == NULL)
-				return CreateListFromVector(*pCC, CVector());
+				return CreateListFromVector(CVector());
 			int iPercent = pArgs->GetElement(3)->GetIntegerValue();
 			iPercent = Max(0, Min(iPercent, 100));
 
@@ -13615,13 +13615,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CNavigationPath *pNavPath = pSystem->GetNavPath(pSovereign, pStart, pEnd);
 			if (pNavPath == NULL)
-				return CreateListFromVector(*pCC, pStart->GetPos());
+				return CreateListFromVector(pStart->GetPos());
 
 			//	Compute the point on the path
 
 			Metric rPathLen = pNavPath->ComputePathLength(pSystem);
 			CVector vPos = pNavPath->ComputePointOnPath(pSystem, rPathLen * (iPercent / 100.0));
-			return CreateListFromVector(*pCC, vPos);
+			return CreateListFromVector(vPos);
 			}
 
 		case FN_SYS_NODE:
@@ -13836,7 +13836,7 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Optimize case where we have no options.
 
 			if (pOptions == NULL)
-				return CreateListFromVector(*pCC, OrbitDesc.GetObjectPos());
+				return CreateListFromVector(OrbitDesc.GetObjectPos());
 
 			//	Get options
 
@@ -13876,7 +13876,7 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Done
 
-			return CreateListFromVector(*pCC, NewOrbitDesc.GetObjectPos());
+			return CreateListFromVector(NewOrbitDesc.GetObjectPos());
 			}
 
 		default:
@@ -13910,7 +13910,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
-			return CreateListFromVector(*pCC, vPos1 + vPos2);
+			return CreateListFromVector(vPos1 + vPos2);
 			}
 
 		case FN_VECTOR_ANGLE:
@@ -13947,7 +13947,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (rFactor == 0.0)
 				return pCC->CreateError(CONSTLIT("division by zero"), NULL);
 
-			return CreateListFromVector(*pCC, vPos1 / rFactor);
+			return CreateListFromVector(vPos1 / rFactor);
 			}
 
 		case FN_VECTOR_MULTIPLY:
@@ -13958,7 +13958,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			Metric rFactor = pArgs->GetElement(1)->GetDoubleValue();
 
-			return CreateListFromVector(*pCC, vPos1 * rFactor);
+			return CreateListFromVector(vPos1 * rFactor);
 			}
 
 		case FN_VECTOR_PIXEL_OFFSET:
@@ -13976,7 +13976,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 			//	Return the vector
 
-			return CreateListFromVector(*pCC, vCenter + CVector(xOffset * g_KlicksPerPixel, yOffset * g_KlicksPerPixel));
+			return CreateListFromVector(vCenter + CVector(xOffset * g_KlicksPerPixel, yOffset * g_KlicksPerPixel));
 			}
 
 		case FN_VECTOR_RANDOM:
@@ -14055,7 +14055,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 				//	Otherwise, use the vector
 
-				return CreateListFromVector(*pCC, vTry);
+				return CreateListFromVector(vTry);
 				}
 			}
 
@@ -14069,7 +14069,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos2) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 
-			return CreateListFromVector(*pCC, vPos1 - vPos2);
+			return CreateListFromVector(vPos1 - vPos2);
 			}
 
 		case FN_VECTOR_DISTANCE:
@@ -14111,7 +14111,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			Metric rAngle = pArgs->GetElement(0)->GetDoubleValue();
 			Metric rSpeed = (Metric)(LIGHT_SPEED / 100.0) * pArgs->GetElement(1)->GetDoubleValue();
 
-			return CreateListFromVector(*pCC, PolarToVector((int)rAngle, rSpeed));
+			return CreateListFromVector(PolarToVector((int)rAngle, rSpeed));
 			}
 
 		case FN_VECTOR_SPEED:
@@ -14159,7 +14159,7 @@ ICCItem *fnSystemVectorOffset (CEvalContext *pEvalCtx, ICCItem *pArguments, DWOR
 
 	//	Done
 
-	return CreateListFromVector(*pCC, vVec);
+	return CreateListFromVector(vVec);
 	}
 
 ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)

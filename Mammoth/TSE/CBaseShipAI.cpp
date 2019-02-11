@@ -1548,7 +1548,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		CString sCode;
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
-			m_pCommandCode = g_pUniverse->GetCC().Link(sCode);
+			m_pCommandCode = CCodeChain::Link(sCode);
 		else
 			m_pCommandCode = NULL;
 		}

@@ -207,12 +207,10 @@ ICCItem *CGItemListArea::GetEntryAtCursor (void)
 //	Returns the current entry
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (m_pListData == NULL)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
-	return m_pListData->GetEntryAtCursor(CC);
+	return m_pListData->GetEntryAtCursor();
 	}
 
 bool CGItemListArea::GetNextTab (DWORD *retdwID) const

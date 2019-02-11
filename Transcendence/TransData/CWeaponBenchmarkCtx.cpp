@@ -17,7 +17,6 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
 
     {
     int i;
-    CCodeChain &CC = g_pUniverse->GetCC();
 
     retStats.TimeTable.DeleteAll();
 

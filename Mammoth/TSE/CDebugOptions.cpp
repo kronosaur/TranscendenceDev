@@ -23,8 +23,6 @@ ICCItemPtr CDebugOptions::GetMemoryUse (void) const
 //	Returns current memory stats
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Design collection stats
@@ -46,8 +44,6 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_MEMORY_USE))
 		return GetMemoryUse();
 

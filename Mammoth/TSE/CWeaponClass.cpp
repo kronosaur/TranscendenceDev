@@ -1665,7 +1665,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		Output.Write("='(", 3);
 		for (i = 0; i < iShotCount; i++)
 			{
-			ICCItem *pPos = CreateListFromVector(CC, ShotPos[i]);
+			ICCItem *pPos = CreateListFromVector(ShotPos[i]);
 			if (pPos == NULL || pPos->IsError())
 				return false;
 

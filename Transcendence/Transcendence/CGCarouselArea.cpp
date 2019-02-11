@@ -83,12 +83,10 @@ ICCItem *CGCarouselArea::GetEntryAtCursor (void)
 //	Returns the current entry
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (!m_pListData)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
-	return m_pListData->GetEntryAtCursor(CC);
+	return m_pListData->GetEntryAtCursor();
 	}
 
 bool CGCarouselArea::LButtonDown (int x, int y)
@@ -277,13 +275,11 @@ void CGCarouselArea::PaintContent (CG32bitImage &Dest, const RECT &rcRect) const
 //	Paints the content area for the current selection.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	Get the list entry
 
 	ICCItem *pData;
 	if (m_pListData && m_pListData->IsCursorValid())
-		pData = m_pListData->GetEntryAtCursor(CC);
+		pData = m_pListData->GetEntryAtCursor();
 	else
 		pData = NULL;
 

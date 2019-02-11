@@ -1524,7 +1524,7 @@ class IListData
 		virtual int GetCount (void) { return 0; }
 		virtual int GetCursor (void) { return -1; }
 		virtual CString GetDescAtCursor (void) { return NULL_STR; }
-		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC) { return CC.CreateNil(); }
+		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
 		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
 		virtual CSpaceObject *GetSource (void) { return NULL; }
