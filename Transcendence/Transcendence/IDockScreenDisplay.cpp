@@ -480,7 +480,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 		else if (strEquals(sType, TYPE_HERO))
 			{
 			retDesc->iType = backgroundObjHeroImage;
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 			}
@@ -500,7 +500,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 			}
 		else if (strEquals(sType, TYPE_OBJECT))
 			{
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 
@@ -512,7 +512,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 		else if (strEquals(sType, TYPE_SCHEMATIC))
 			{
 			retDesc->iType = backgroundObjSchematicImage;
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 			}

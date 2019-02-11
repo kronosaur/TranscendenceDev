@@ -43,7 +43,7 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 		{
 		ICCItem *pItem = pResult->GetElement(i);
 
-		CItem NewItem = CreateItemFromList(CC, pItem);
+		CItem NewItem = CreateItemFromList(pItem);
 		if (NewItem.GetType() != NULL)
 			m_CustomItems.AddItem(NewItem);
 		}

@@ -916,7 +916,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			if (pScreen->IsCurrentItemValid())
 				{
 				Result = pScreen->GetCurrentItem();
-				pResult = CreateListFromItem(*pCC, Result);
+				pResult = CreateListFromItem(Result);
 				}
 			else
 				pResult = pCC->CreateNil();
@@ -934,7 +934,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				iToDelete = min(iToDelete, Result.GetCount());
 				pScreen->DeleteCurrentItem(iToDelete);
 				Result.SetCount(iToDelete);
-				pResult = CreateListFromItem(*pCC, Result);
+				pResult = CreateListFromItem(Result);
 				}
 			else
 				pResult = pCC->CreateNil();
@@ -945,7 +945,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_SCR_REFRESH_ITEM:
 			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
 			pArgs->Discard();
 			CItemListManipulator *pItemList = &pScreen->GetItemListManipulator();
 			pItemList->Refresh(Item);
@@ -1162,7 +1162,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_PLY_CHANGE_SHIPS:
 			{
-			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1));
 			if (pObj == NULL || pObj->IsDestroyed())
 				return pCC->CreateError(CONSTLIT("Invalid object"), pArgs->GetElement(1));
 
@@ -1278,7 +1278,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The item that we sold or bought
 
-			CItem Item = CreateItemFromList(*pCC, pArgs->GetElement(iArg));
+			CItem Item = CreateItemFromList(pArgs->GetElement(iArg));
 			iArg++;
 
 			//	The currency
@@ -1323,7 +1323,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_PLY_USE_ITEM:
 			{
-			CItem Item = CreateItemFromList(*pCC, pArgs->GetElement(1));
+			CItem Item = CreateItemFromList(pArgs->GetElement(1));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
@@ -1987,7 +1987,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_SHOW_ITEM_SCREEN:
 			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
 			if (!Item.HasUseItemScreen())
 				return pCC->CreateNil();
 

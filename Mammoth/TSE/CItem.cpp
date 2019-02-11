@@ -1905,7 +1905,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 		//	Create a list representing this item
 
-		ICCItemPtr pItem(::CreateListFromItem(CCCtx.GetCC(), *this));
+		ICCItemPtr pItem(::CreateListFromItem(*this));
 
 		//	Create an argument list consisting of the item
 
@@ -2784,7 +2784,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)
+void CItem::ReadFromCCItem (ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //
@@ -3189,14 +3189,14 @@ void CItem::SetVariantNumber(int iVariantCounter)
 	}
 
 
-ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
+ICCItem *CItem::WriteToCCItem (void) const
 
 //	WriteToCCItem
 //
 //	Converts item to a ICCItem
 
 	{
-	ICCItem *pResult = CC.CreateLinkedList();
+	ICCItem *pResult = CCodeChain::CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
 
@@ -3205,14 +3205,14 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 	//	Next integer is the item UNID
 
-	pInt = CC.CreateInteger(GetType()->GetUNID());
+	pInt = CCodeChain::CreateInteger(GetType()->GetUNID());
 	pList->Append(pInt);
 	pInt->Discard();
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
-	pInt = CC.CreateInteger(pSource[1]);
+	pInt = CCodeChain::CreateInteger(pSource[1]);
 	pList->Append(pInt);
 	pInt->Discard();
 
@@ -3222,19 +3222,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		{
 		//	Save the version (starting in v45)
 
-		pInt = CC.CreateInteger(CSystem::GetSaveVersion());
+		pInt = CCodeChain::CreateInteger(CSystem::GetSaveVersion());
 		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Charges
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwCharges);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwCharges);
 		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Condition
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwLevel);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwLevel);
 		pList->Append(pInt);
 		pInt->Discard();
 
@@ -3245,7 +3245,7 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		m_pExtra->m_Mods.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
+		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
 		pList->Append(pInt);
 		pInt->Discard();
 
@@ -3255,19 +3255,19 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		m_pExtra->m_Data.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
+		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
 		pList->Append(pInt);
 		pInt->Discard();
 
 		//	Disrupted time
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwDisruptedTime);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwDisruptedTime);
 		pList->Append(pInt);
 		pInt->Discard();
 
 		//  Variant number
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwVariantCounter);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwVariantCounter);
 		pList->Append(pInt);
 		pInt->Discard();
 		}

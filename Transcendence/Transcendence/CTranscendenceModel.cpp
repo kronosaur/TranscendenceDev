@@ -2936,7 +2936,7 @@ void CTranscendenceModel::UseItem (CItem &Item)
 		{
 		CCodeChain &CC = m_Universe.GetCC();
 
-		ICCItem *pItem = CreateListFromItem(CC, Item);
+		ICCItem *pItem = CreateListFromItem(Item);
 		CC.DefineGlobal(CONSTLIT("gItem"), pItem);
 		pItem->Discard();
 

@@ -459,13 +459,12 @@ ICCItem *CGSelectorArea::GetEntryAtCursor (void)
 //	deviceSlot: The device slot number
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
 	if (m_iCursor == -1)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
 	const SEntry &Entry = m_Regions[m_iCursor];
 
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 	CCSymbolTable *pStruct = (CCSymbolTable *)pResult;
 
 	switch (Entry.iType)
@@ -509,7 +508,7 @@ ICCItem *CGSelectorArea::GetEntryAtCursor (void)
 			{
 			pStruct->SetStringAt(CONSTLIT("type"), CONSTLIT("installedItem"));
 
-			ICCItem *pItem = ::CreateListFromItem(CC, Entry.pItemCtx->GetItem());
+			ICCItem *pItem = ::CreateListFromItem(Entry.pItemCtx->GetItem());
 			pStruct->SetAt(CONSTLIT("item"), pItem);
 			pItem->Discard();
 
@@ -523,7 +522,7 @@ ICCItem *CGSelectorArea::GetEntryAtCursor (void)
 
 		default:
 			ASSERT(false);
-			return CC.CreateNil();
+			return CCodeChain::CreateNil();
 		}
 
 	return pResult;

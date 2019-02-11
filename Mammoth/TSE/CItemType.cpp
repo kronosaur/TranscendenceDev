@@ -519,7 +519,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 		ICCItem *pList = CC.CreateLinkedList();
 		for (i = 0; i < Components.GetCount(); i++)
 			{
-			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
+			ICCItem *pEntry = CreateListFromItem(Components.GetItem(i));
 			pList->Append(pEntry);
 			pEntry->Discard();
 			}

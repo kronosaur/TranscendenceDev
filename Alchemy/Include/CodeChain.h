@@ -904,7 +904,7 @@ class CCodeChain
 		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
 		ICCItem *TopLevel (ICCItem *pItem, LPVOID pExternalCtx);
-		CString Unlink (ICCItem *pItem);
+		static CString Unlink (ICCItem *pItem);
 
 		//	Extensions
 

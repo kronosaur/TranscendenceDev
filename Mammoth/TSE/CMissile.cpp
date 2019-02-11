@@ -1552,7 +1552,7 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
-		m_pTarget = ::CreateObjFromItem(CC, pValue, CCUTIL_FLAG_CHECK_DESTROYED);
+		m_pTarget = ::CreateObjFromItem(pValue, CCUTIL_FLAG_CHECK_DESTROYED);
 		return true;
 		}
 

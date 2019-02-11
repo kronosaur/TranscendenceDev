@@ -142,7 +142,6 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 
 	CMemoryWriteStream Output(10000);
 	if (Output.Create() != NOERROR)
@@ -151,7 +150,7 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 	Output.Write("='(", 3);
 	for (i = 0; i < List.GetCount(); i++)
 		{
-		ICCItem *pItem = List[i].WriteToCCItem(CC);
+		ICCItem *pItem = List[i].WriteToCCItem();
 		if (pItem->IsError())
 			{
 			pItem->Discard();
@@ -191,7 +190,7 @@ CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem)
 	return sData;
 	}
 
-CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList)
+CItem CreateItemFromList (ICCItem *pList)
 
 //	CreateItemFromList
 //
@@ -199,7 +198,7 @@ CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList)
 
 	{
 	CItem NewItem;
-	NewItem.ReadFromCCItem(CC, pList);
+	NewItem.ReadFromCCItem(pList);
 	return NewItem;
 	}
 
@@ -288,7 +287,7 @@ ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, in
 	return pResult;
 	}
 
-ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item)
+ICCItem *CreateListFromItem (const CItem &Item)
 
 //	CreateListFromItem
 //
@@ -296,9 +295,9 @@ ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item)
 
 	{
 	if (Item.GetType() == NULL)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
-	return Item.WriteToCCItem(CC);
+	return Item.WriteToCCItem();
 	}
 
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc)
@@ -321,7 +320,7 @@ ICCItem *CreateListFromVector (const CVector &vVector)
 	return CreateListFromBinary(NULL_STR, &vVector, sizeof(vVector));
 	}
 
-CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags)
+CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags)
 	{
 	if (pItem == NULL)
 		return NULL;
@@ -453,13 +452,13 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 
 CShip *CreateShipObjFromItem (CCodeChain &CC, ICCItem *pArg) 
 	{
-	CSpaceObject *pObj = CreateObjFromItem(CC, pArg);
+	CSpaceObject *pObj = CreateObjFromItem(pArg);
 	return (pObj ? pObj->AsShip() : NULL);
 	}
 
 CStation *CreateStationObjFromItem (CCodeChain &CC, ICCItem *pArg) 
 	{
-	CSpaceObject *pObj = CreateObjFromItem(CC, pArg);
+	CSpaceObject *pObj = CreateObjFromItem(pArg);
 	return (pObj ? pObj->AsStation() : NULL);
 	}
 
@@ -476,7 +475,7 @@ CVector CreateVectorFromList (CCodeChain &CC, ICCItem *pList)
 		CreateBinaryFromList(CC, NULL_STR, pList, &vVec);
 	else if (pList->IsInteger())
 		{
-		CSpaceObject *pObj = CreateObjFromItem(CC, pList);
+		CSpaceObject *pObj = CreateObjFromItem(pList);
 		if (pObj)
 			vVec = pObj->GetPos();
 		}
@@ -539,7 +538,7 @@ CInstalledArmor *GetArmorSectionArg (CCodeChain &CC, ICCItem *pArg, CSpaceObject
 	int iArmorSeg;
 	if (pArg->IsList())
 		{
-		CItem Item = CreateItemFromList(CC, pArg);
+		CItem Item = CreateItemFromList(pArg);
 		if (Item.GetType() && Item.GetType()->GetArmorClass() && Item.IsInstalled())
 			iArmorSeg = Item.GetInstalled();
 		else
@@ -575,7 +574,7 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 		//	NOTE: CDamageSource knows how to deal with destroyed objects, so it
 		//	is OK if we don't bother checking here whether pSource is destroyed.
 
-		CSpaceObject *pSource = CreateObjFromItem(CC, pArg);
+		CSpaceObject *pSource = CreateObjFromItem(pArg);
 		return CDamageSource(pSource, killedByDamage);
 		}
 
@@ -609,8 +608,8 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 
 	else if (pArg->IsSymbolTable())
 		{
-		CSpaceObject *pSource = CreateObjFromItem(CC, pArg->GetElement(CONSTLIT("obj")));
-		CSpaceObject *pSecondarySource = CreateObjFromItem(CC, pArg->GetElement(CONSTLIT("secondaryObj")));
+		CSpaceObject *pSource = CreateObjFromItem(pArg->GetElement(CONSTLIT("obj")));
+		CSpaceObject *pSecondarySource = CreateObjFromItem(pArg->GetElement(CONSTLIT("secondaryObj")));
 
 		CString sSourceName;
 		ICCItem *pValue = pArg->GetElement(CONSTLIT("sourceName"));
@@ -639,13 +638,13 @@ CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg)
 		DestructionTypes iCause = killedByDamage;
 
 		if (pArg->GetCount() >= 1)
-			pSource = CreateObjFromItem(CC, pArg->GetElement(0));
+			pSource = CreateObjFromItem(pArg->GetElement(0));
 
 		if (pArg->GetCount() >= 2)
 			iCause = ::GetDestructionCause(pArg->GetElement(1)->GetStringValue());
 
 		if (pArg->GetCount() >= 3)
-			pSecondarySource = CreateObjFromItem(CC, pArg->GetElement(2));
+			pSecondarySource = CreateObjFromItem(pArg->GetElement(2));
 
 		if (pArg->GetCount() >= 4)
 			sSourceName = pArg->GetElement(3)->GetStringValue();
@@ -687,7 +686,7 @@ CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem
 	{
 	//	Get the item
 
-	CItem Item(CreateItemFromList(CC, pArg));
+	CItem Item(CreateItemFromList(pArg));
 
 	//	Make sure the item is on the object
 
@@ -712,7 +711,7 @@ CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg)
 
 	if (pArg->IsList())
 		{
-		CItem Item(CreateItemFromList(CC, pArg));
+		CItem Item(CreateItemFromList(pArg));
 		return Item.GetType();
 		}
 
@@ -836,7 +835,7 @@ CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg)
 
 	{
 	if (pArg->IsList())
-		return CreateItemFromList(CC, pArg);
+		return CreateItemFromList(pArg);
 	else if (pArg->IsInteger())
 		{
 		CItemType *pType = g_pUniverse->FindItemType(pArg->GetIntegerValue());
@@ -958,7 +957,7 @@ ALERROR GetPosOrObject (CEvalContext *pEvalCtx,
 		}
 	else
 		{
-		pObj = CreateObjFromItem(CC, pArg);
+		pObj = CreateObjFromItem(pArg);
 		if (pObj)
 			vPos = pObj->GetPos();
 		}
@@ -1006,7 +1005,7 @@ CWeaponFireDesc *GetWeaponFireDescArg (CCodeChain &CC, ICCItem *pArg)
 
 	else if (pArg->IsList() && pArg->GetCount() >= 2 && pArg->GetElement(1)->GetIntegerValue() != 0)
 		{
-		CItem Item = CreateItemFromList(CC, pArg);
+		CItem Item = CreateItemFromList(pArg);
 		if (Item.IsEmpty())
 			return NULL;
 
@@ -1095,7 +1094,7 @@ void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item)
 //	Defines a global variable and assigns it the given item
 
 	{
-	ICCItem *pItem = CreateListFromItem(CC, Item);
+	ICCItem *pItem = CreateListFromItem(Item);
 	CC.DefineGlobal(sVar, pItem);
 	pItem->Discard();
 	}

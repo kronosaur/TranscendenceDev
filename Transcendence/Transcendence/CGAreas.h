@@ -263,7 +263,7 @@ class CGItemListDisplayArea : public AGArea
 	public:
 		CGItemListDisplayArea (void);
 
-		bool InitFromDesc (CCodeChain &CC, ICCItem *pDesc);
+		bool InitFromDesc (ICCItem *pDesc);
         inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetItemList (CSpaceObject *pSource, const CItemList &ItemList);
@@ -284,7 +284,7 @@ class CGItemListDisplayArea : public AGArea
 			bool bGrayed;
 			};
 
-		bool InitFromItemList (CCodeChain &CC, ICCItem *pItemList);
+		bool InitFromItemList (ICCItem *pItemList);
 		void SortItemList (void);
 
 		CSpaceObject *m_pSource;

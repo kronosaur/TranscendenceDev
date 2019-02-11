@@ -335,7 +335,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 	{
 	if (Item.GetType())
 		{
-		ICCItem *pItem = CreateListFromItem(m_CC, Item);
+		ICCItem *pItem = CreateListFromItem(Item);
 		m_CC.DefineGlobal(sVar, pItem);
 		pItem->Discard();
 		}

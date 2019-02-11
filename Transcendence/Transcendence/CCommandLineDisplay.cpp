@@ -413,8 +413,6 @@ void CCommandLineDisplay::OnKeyDown (int iVirtKey, DWORD dwKeyState)
 			CString sInput = GetInput();
 			if (!sInput.IsBlank())
 				{
-				CCodeChain &CC = g_pUniverse->GetCC();
-
 				InputEnter();
 
 				CCodeChainCtx Ctx(GetUniverse());
@@ -425,7 +423,7 @@ void CCommandLineDisplay::OnKeyDown (int iVirtKey, DWORD dwKeyState)
 				if (pResult->IsIdentifier())
 					sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				else
-					sOutput = CC.Unlink(pResult);
+					sOutput = CCodeChain::Unlink(pResult);
 
 				Output(sOutput);
 				}

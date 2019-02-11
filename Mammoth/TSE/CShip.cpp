@@ -3210,7 +3210,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
-		return CreateListFromItem(CC, theItem);
+		return CreateListFromItem(theItem);
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_MISSILE))
 		{
@@ -3230,7 +3230,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			if (!ItemList.SetCursorAtItem(theItem))
 				return CC.CreateNil();
 
-			return CreateListFromItem(CC, ItemList.GetItemAtCursor());
+			return CreateListFromItem(ItemList.GetItemAtCursor());
 			}
 
 		//	Sometimes a launcher has no ammo (e.g., a disposable missile
@@ -3242,7 +3242,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			if (theItem.GetType() == NULL)
 				return CC.CreateNil();
 
-			return CreateListFromItem(CC, theItem);
+			return CreateListFromItem(theItem);
 			}
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
@@ -3251,7 +3251,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		if (theItem.GetType() == NULL)
 			return CC.CreateNil();
 
-		return CreateListFromItem(CC, theItem);
+		return CreateListFromItem(theItem);
 		}
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return CC.CreateBool(m_Armor.IsImmune(this, specialShatter));

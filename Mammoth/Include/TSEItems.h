@@ -407,8 +407,8 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer);
-		ICCItem *WriteToCCItem (CCodeChain &CC) const;
+		void ReadFromCCItem (ICCItem *pBuffer);
+		ICCItem *WriteToCCItem (void) const;
 
 	private:
 		enum PFlags

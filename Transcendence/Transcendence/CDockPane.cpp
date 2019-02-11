@@ -1207,8 +1207,6 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 //	control of the given ID.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	SControl *pControl;
 	if (!FindControl(sID, &pControl))
 		return false;
@@ -1285,12 +1283,12 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 					return true;
 					}
 
-				CItem Item = ::CreateItemFromList(CC, pItemCC);
+				CItem Item = ::CreateItemFromList(pItemCC);
 
 				CSpaceObject *pSource = NULL;
 				ICCItem *pSourceCC = pValue->GetElement(CONSTLIT("source"));
 				if (pSourceCC)
-					pSource = ::CreateObjFromItem(CC, pSourceCC);
+					pSource = ::CreateObjFromItem(pSourceCC);
 
 				pItemDisplayArea->SetItem(pSource, Item);
 				return true;
@@ -1300,7 +1298,7 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 
 			else if (pValue->IsList())
 				{
-				CItem Item = ::CreateItemFromList(CC, pValue);
+				CItem Item = ::CreateItemFromList(pValue);
 				pItemDisplayArea->SetItem(NULL, Item);
 				return true;
 				}
@@ -1311,7 +1309,7 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 		case controlItemListDisplay:
 			{
 			CGItemListDisplayArea *pDisplayArea = pControl->AsItemListDisplayArea();
-			return pDisplayArea->InitFromDesc(CC, pValue);
+			return pDisplayArea->InitFromDesc(pValue);
 			}
 
 		case controlTextInput:

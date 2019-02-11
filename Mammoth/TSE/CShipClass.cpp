@@ -3798,7 +3798,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		if (m_Armor.GetCount() == 0)
 			return ICCItemPtr(ICCItem::Nil);
 		
-		return ICCItemPtr(CreateListFromItem(CC, m_Armor.GetSegment(0).GetArmorItem()));
+		return ICCItemPtr(CreateListFromItem(m_Armor.GetSegment(0).GetArmorItem()));
 		}
 	else if (strEquals(sProperty, PROPERTY_ARMOR_SPEED_ADJ))
 		{
@@ -3865,7 +3865,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		if (pDesc == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CreateListFromItem(CC, pDesc->Item));
+		return ICCItemPtr(CreateListFromItem(pDesc->Item));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
@@ -3894,7 +3894,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 			const SDeviceDesc &Desc = m_AverageDevices.GetDeviceDesc(i);
 			if (Desc.Item.GetType()->GetCategory() == itemcatMiscDevice)
 				{
-				ICCItemPtr pItem(CreateListFromItem(CC, Desc.Item));
+				ICCItemPtr pItem(CreateListFromItem(Desc.Item));
 				pResult->Append(pItem);
 				}
 			}
@@ -3914,7 +3914,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		if (pDesc == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(CreateListFromItem(CC, pDesc->Item));
+		return ICCItemPtr(CreateListFromItem(pDesc->Item));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_CLASS))
@@ -3966,7 +3966,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		ICCItemPtr pResult(ICCItem::List);
 		for (int i = 0; i < Weapons.GetCount(); i++)
 			{
-			ICCItemPtr pWeapon(CreateListFromItem(CC, Weapons[i]));
+			ICCItemPtr pWeapon(CreateListFromItem(Weapons[i]));
 			pResult->Append(pWeapon);
 			}
 
