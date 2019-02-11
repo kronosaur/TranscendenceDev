@@ -2125,8 +2125,6 @@ bool CTranscendenceModel::ScreenTranslate (const CString &sID, ICCItem *pData, I
 //	Translates a text ID. We return Nil if we could not find the text ID.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	If not in a screen session, then nothing
 
 	if (!InScreenSession())

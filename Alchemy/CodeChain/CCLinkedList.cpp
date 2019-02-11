@@ -94,7 +94,7 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
+ICCItem *CCLinkedList::CloneContainer (void)
 
 //	CloneContainer
 //
@@ -105,7 +105,7 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 	CCLinkedList *pClone;
 	CCons *pCons;
 
-	pNew = pCC->CreateLinkedList();
+	pNew = CCodeChain::CreateLinkedList();
 	if (pNew->IsError())
 		return pNew;
 
@@ -117,7 +117,7 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 	pCons = m_pFirst;
 	while (pCons)
 		{
-		ICCItem *pItemClone = pCons->m_pItem->CloneContainer(pCC);
+		ICCItem *pItemClone = pCons->m_pItem->CloneContainer();
 		pClone->Append(pItemClone);
 		pItemClone->Discard();
 

@@ -1940,7 +1940,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 
 	CString sCode;
 	if (m_pCommandCode)
-		sCode = g_pUniverse->GetCC().Unlink(m_pCommandCode);
+		sCode = CCodeChain::Unlink(m_pCommandCode);
 	sCode.WriteToStream(pStream);
 
 	//	Flags

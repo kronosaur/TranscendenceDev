@@ -504,7 +504,7 @@ ALERROR CIntroSession::CreateRandomShip (CSystem *pSystem, DWORD dwClass, CSover
 		CIntroShipController *pNewController = new CIntroShipController(pShip->GetController());
 		pShip->SetController(pNewController, false);
 		pNewController->SetShip(pShip);
-		pShip->SetData(OBJ_DATA_INTRO_CONTROLLER, ICCItemPtr(g_pUniverse->GetCC().CreateTrue()));
+		pShip->SetData(OBJ_DATA_INTRO_CONTROLLER, ICCItemPtr(ICCItem::True));
 
 		*retpShip = pShip;
 		}

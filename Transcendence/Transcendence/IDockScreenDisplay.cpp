@@ -199,8 +199,6 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_LIST_SOURCE))
 		{
 		CSpaceObject *pObj = GetSource();
@@ -350,7 +348,7 @@ ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 //	Default has no properties
 
 	{
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(ICCItem::Nil);
 	}
 
 void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
@@ -462,8 +460,6 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 //	Parses a descriptor. Returns TRUE if successful.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	Nil means no default value
 
 	if (pDesc->IsNil())

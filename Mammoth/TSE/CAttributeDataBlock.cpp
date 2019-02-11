@@ -182,8 +182,7 @@ bool CAttributeDataBlock::FindDataAsItem (const CString &sAttrib, ICCItemPtr &pR
     if (pEntry == NULL)
         return false;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	pResult = ICCItemPtr(pEntry->pData->CloneContainer(&CC));
+	pResult = ICCItemPtr(pEntry->pData->CloneContainer());
 	return true;
 	}
 
@@ -230,13 +229,11 @@ ICCItemPtr CAttributeDataBlock::GetDataAsItem (const CString &sAttrib) const
 //	not found, we return Nil.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	const SDataEntry *pEntry = m_Data.GetAt(sAttrib);
     if (pEntry == NULL)
         return ICCItemPtr(ICCItem::Nil);
 
-	return ICCItemPtr(pEntry->pData->CloneContainer(&CC));
+	return ICCItemPtr(pEntry->pData->CloneContainer());
 	}
 
 CSpaceObject *CAttributeDataBlock::GetObjRefData (const CString &sAttrib) const
@@ -272,7 +269,6 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
 //  caller).
 
     {
-    CCodeChain &CC = g_pUniverse->GetCC();
     SDataEntry *pEntry = m_Data.SetAt(sAttrib);
 	ICCItemPtr pResult;
 
@@ -280,7 +276,7 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
     //  we can discard unconditionally.
 
     if (pValue == NULL)
-        pValue = CC.CreateInteger(1);
+        pValue = CCodeChain::CreateInteger(1);
     else
         pValue->Reference();
 
@@ -644,7 +640,7 @@ void CAttributeDataBlock::SetData (const CString &sAttrib, ICCItem *pItem)
 	else
 		{
 		SDataEntry *pEntry = m_Data.SetAt(sAttrib);
-		pEntry->pData = ICCItemPtr(pItem->CloneContainer(&g_pUniverse->GetCC()));
+		pEntry->pData = ICCItemPtr(pItem->CloneContainer());
 		}
 	}
 
@@ -736,7 +732,6 @@ void CAttributeDataBlock::WriteToStream (IWriteStream *pStream, CSystem *pSystem
 //	DWORD		ref: pointer (CSpaceObject ref)
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
     int i;
     DWORD dwCount;
 
@@ -761,7 +756,7 @@ void CAttributeDataBlock::WriteToStream (IWriteStream *pStream, CSystem *pSystem
         for (i = 0; i < m_Data.GetCount(); i++)
             {
             m_Data.GetKey(i).WriteToStream(pStream);
-			CString sData = CreateDataFromItem(CC, m_Data[i].pData);
+			CString sData = CreateDataFromItem(m_Data[i].pData);
             sData.WriteToStream(pStream);
             }
         }

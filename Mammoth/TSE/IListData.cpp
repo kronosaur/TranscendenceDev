@@ -55,8 +55,7 @@ const int TITLE_INDEX =			0;
 const int ICON_INDEX =			1;
 const int DESC_INDEX =			2;
 
-CListWrapper::CListWrapper (CCodeChain *pCC, ICCItem *pList) :
-		m_pCC(pCC),
+CListWrapper::CListWrapper (ICCItem *pList) :
 		m_pList(pList->Reference()),
 		m_iCursor(-1)
 

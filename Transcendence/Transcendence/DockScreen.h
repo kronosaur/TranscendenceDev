@@ -476,7 +476,6 @@ class CDockScreen : public IScreenController,
 
 			~SDisplayControl (void)
 				{
-				CCodeChain &CC = g_pUniverse->GetCC();
 				if (pCode)
 					pCode->Discard();
 				}

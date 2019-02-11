@@ -169,7 +169,7 @@ CString CreateDataFieldFromItemList (const TArray<CItem> &List)
 	return CString(Output.GetPointer(), Output.GetLength());
 	}
 
-CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem)
+CString CreateDataFromItem (ICCItem *pItem)
 
 //	CreateDataFromItem
 //
@@ -183,7 +183,7 @@ CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem)
 
 	bool bOldQuoted = (pItem->IsQuoted() ? true : false);
 	pItem->SetQuoted();
-	CString sData = CC.Unlink(pItem);
+	CString sData = CCodeChain::Unlink(pItem);
 	if (!bOldQuoted)
 		pItem->ClearQuoted();
 
@@ -779,7 +779,7 @@ ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNI
 	return NOERROR;
 	}
 
-void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect)
+void GetImageDescFromList (ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect)
 
 //	GetImageDescFromList
 //

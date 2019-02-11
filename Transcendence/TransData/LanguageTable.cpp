@@ -156,8 +156,7 @@ void OutputLanguageEntry (CDesignType *pType, const CLanguageDataBlock::SEntryDe
 			{
 			if (Options.bShowCode)
 				{
-				CCodeChain &CC = g_pUniverse->GetCC();
-				CString sCode = CC.Unlink(Entry.pCode);
+				CString sCode = CCodeChain::Unlink(Entry.pCode);
 
 				printf("%s", (LPSTR)strSubString(sCode, 0, MAX_CODE_LENGTH));
 				}

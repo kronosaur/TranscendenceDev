@@ -192,7 +192,6 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 	SDisplayControl *pDControl = m_Controls.Insert();
 
 	//	Set basic attribs
@@ -247,7 +246,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), IMAGE_TAG))
 		{
@@ -281,7 +280,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the code that returns the image
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), CANVAS_TAG))
 		{
@@ -294,7 +293,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the draw code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), GROUP_TAG))
 		{
@@ -315,7 +314,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 
 	//	Done
@@ -726,11 +725,11 @@ ICCItem *CDockScreen::GetCurrentListEntry (void)
 
 	{
 	if (m_pDisplay == NULL)
-		return g_pUniverse->GetCC().CreateNil();
+		return CCodeChain::CreateNil();
 
 	ICCItem *pResult = m_pDisplay->GetCurrentListEntry();
 	if (pResult == NULL)
-		return g_pUniverse->GetCC().CreateNil();
+		return CCodeChain::CreateNil();
 
 	return pResult;
 	}
@@ -760,8 +759,6 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 //	Returns the given screen property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	See if this is a generic property.
 
 	if (strEquals(sProperty, PROPERTY_COUNTER))
@@ -1066,7 +1063,7 @@ ALERROR CDockScreen::InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pSt
 //	LATER: We should define variables inside of Eval...
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Define some globals
 
@@ -1086,7 +1083,6 @@ ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, 
 	DEBUG_TRY
 
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 
 	ASSERT(m_Controls.GetCount() == 0);
 
@@ -1586,7 +1582,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 
 	//	Run initialize
 
@@ -1640,7 +1635,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 					CG32bitImage *pImage;
 					RECT rcImage;
-					GetImageDescFromList(CC, pResult, &pImage, &rcImage);
+					GetImageDescFromList(pResult, &pImage, &rcImage);
 					if (pImage)
 						pControl->SetImage(pImage, rcImage);
 

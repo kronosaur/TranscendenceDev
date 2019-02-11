@@ -477,10 +477,8 @@ ICCItem *CPlayerShipController::FindProperty (const CString &sProperty)
 //  discarding the result if not NULL.
 
     {
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_CHARACTER_CLASS))
-		return (m_pCharacterClass ? CC.CreateInteger(m_pCharacterClass->GetUNID()) : CC.CreateNil());
+		return (m_pCharacterClass ? CCodeChain::CreateInteger(m_pCharacterClass->GetUNID()) : CCodeChain::CreateNil());
 	else
 		return m_Stats.FindProperty(sProperty);
     }

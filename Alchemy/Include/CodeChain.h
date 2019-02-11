@@ -110,7 +110,7 @@ class ICCItem : public CObject
 		//	Increment and decrement ref counts
 
 		virtual ICCItem *Clone (CCodeChain *pCC) = 0;
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) = 0;
+		virtual ICCItem *CloneContainer (void) = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
 		inline ICCItem *Reference (void) { m_dwRefCount++; return this; }
@@ -288,7 +288,7 @@ class ICCAtom : public ICCItem
 
 		//	ICCItem virtuals
 
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }
+		virtual ICCItem *CloneContainer (void) override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual ICCItem *GetElement (int iIndex) override { return (iIndex == 0 ? Reference() : NULL); }
 		virtual int GetCount (void) override { return 1; }
@@ -569,7 +569,7 @@ class CCLinkedList : public ICCList
 
 		virtual void Append (ICCItem *pValue) override;
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (void) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual int GetCount (void) override { return m_iCount; }
@@ -612,7 +612,7 @@ class CCVectorOld : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }	//	LATER
+		virtual ICCItem *CloneContainer (void) override { return Reference(); }	//	LATER
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual int GetCount (void) override { return m_iCount; }
 		virtual ICCItem *GetElement (int iIndex) override;
@@ -640,13 +640,13 @@ public:
 
 	//	ICCItem virtuals
 
-	virtual ValueTypes GetValueType(void) override { return Vector; }
-	virtual bool IsAtom(void) override { return false; }
-	virtual bool IsFunction(void) override { return false; }
-	virtual bool IsIdentifier(void) override { return false; }
-	virtual bool IsInteger(void) override { return false; }
-	virtual bool IsDouble(void) override { return false; }
-	virtual bool IsNil(void) override { return (GetCount() == 0); }
+	virtual ValueTypes GetValueType (void) override { return Vector; }
+	virtual bool IsAtom (void) override { return false; }
+	virtual bool IsFunction (void) override { return false; }
+	virtual bool IsIdentifier (void) override { return false; }
+	virtual bool IsInteger (void) override { return false; }
+	virtual bool IsDouble (void) override { return false; }
+	virtual bool IsNil (void) override { return (GetCount() == 0); }
 };
 
 class CCVector : public ICCVector
@@ -656,15 +656,15 @@ class CCVector : public ICCVector
 		CCVector (CCodeChain *pCC);
 		virtual ~CCVector (void);
 
-		TArray<double> GetDataArray(void) { return m_vData; }
-		TArray<int> GetShapeArray(void) { return m_vShape; }
-		ICCItem *SetElementsByIndices(CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
+		TArray<double> GetDataArray (void) { return m_vData; }
+		TArray<int> GetShapeArray (void) { return m_vShape; }
+		ICCItem *SetElementsByIndices (CCodeChain *pCC, CCLinkedList *pIndices, CCLinkedList *pData);
 		ICCItem *SetDataArraySize (CCodeChain *pCC, int iNewSize);
 		ICCItem *SetShapeArraySize (CCodeChain *pCC, int iNewSize);
-		void SetContext(CCodeChain *pCC) { m_pCC = pCC;  }
-		void SetShape(CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
-		void SetArrayData(CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
-		CString CCVector::PrintWithoutShape(CCodeChain *pCC, DWORD dwFlags);
+		void SetContext (CCodeChain *pCC) { m_pCC = pCC;  }
+		void SetShape (CCodeChain *pCC, TArray<int> vNewShape) { m_vShape = vNewShape; }
+		void SetArrayData (CCodeChain *pCC, TArray<double> vNewData) { m_vData = vNewData; }
+		CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags);
 		
 		void Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError = NULL);
 		void Sort (CCodeChain *pCC, int iOrder, int iIndex = -1);
@@ -672,17 +672,17 @@ class CCVector : public ICCVector
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) override { return Reference(); }
-		virtual ICCItem *Enum(CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual ICCItem *GetElement(int iIndex) override;
-		virtual ICCItem *Head(CCodeChain *pCC) override { return GetElement(0); }
+		virtual ICCItem *CloneContainer (void) override { return Reference(); }
+		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
+		virtual ICCItem *GetElement (int iIndex) override;
+		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual ICCItem *Tail (CCodeChain *pCC) override;
 		virtual void Reset (void) override;
 
 		virtual int GetCount (void) { return m_vData.GetCount(); }
-		virtual int GetShapeCount(void) { return m_vShape.GetCount(); }
-		virtual int GetDimension(void) { return m_vShape.GetCount(); }
+		virtual int GetShapeCount (void) { return m_vShape.GetCount(); }
+		virtual int GetDimension (void) { return m_vShape.GetCount(); }
 		virtual ICCItem *SetElement (int iIndex, double dValue);
 		virtual ICCItem *IndexVector (CCodeChain *pCC, ICCItem *pIndices);
 
@@ -734,7 +734,7 @@ class CCSymbolTable : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (CCodeChain *pCC) override;
+		virtual ICCItem *CloneContainer (void) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ValueTypes GetValueType (void) override { return SymbolTable; }
 		virtual bool IsIdentifier (void) override { return false; }

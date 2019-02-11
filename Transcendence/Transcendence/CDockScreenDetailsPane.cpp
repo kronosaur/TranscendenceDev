@@ -56,8 +56,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Get the list to show
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pExp = CC.Link(Options.sCode);
+	ICCItem *pExp = CCodeChain::Link(Options.sCode);
 
 	//	Evaluate the function
 
@@ -77,7 +76,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Set this expression as the list
 
-	m_pControl->SetData(CC, pResult);
+	m_pControl->SetData(pResult);
 	CCCtx.Discard(pResult);
 
 	return NOERROR;

@@ -81,8 +81,6 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 //	Otherwise, we return TRUE.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	NOTE: This only works in debug mode.
 
 	if (!g_pUniverse->InDebugMode())

@@ -914,7 +914,7 @@ void CGItemListArea::SetList (CItemList &ItemList)
 	Invalidate();
 	}
 
-void CGItemListArea::SetList (CCodeChain &CC, ICCItem *pList)
+void CGItemListArea::SetList (ICCItem *pList)
 
 //	SetList
 //
@@ -925,7 +925,7 @@ void CGItemListArea::SetList (CCodeChain &CC, ICCItem *pList)
 
 	//	Create the new data source
 
-	m_pListData = new CListWrapper(&CC, pList);
+	m_pListData = new CListWrapper(pList);
 	m_iType = listCustom;
 
 	//	Done

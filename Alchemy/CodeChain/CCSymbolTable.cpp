@@ -149,7 +149,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
-ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
+ICCItem *CCSymbolTable::CloneContainer (void)
 
 //	CloneContainer
 //
@@ -158,7 +158,7 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 	{
 	int i;
 
-	ICCItem *pNew = pCC->CreateSymbolTable();
+	ICCItem *pNew = CCodeChain::CreateSymbolTable();
 	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
 	pNewTable->CloneItem(this);
 	ASSERT(pNewTable);
@@ -174,7 +174,7 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 		//	Add to the new table
 
 		CObject *pOldEntry;
-		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(pCC), true, &pOldEntry) != NOERROR)
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(), true, &pOldEntry) != NOERROR)
 			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol

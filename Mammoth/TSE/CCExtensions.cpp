@@ -14388,7 +14388,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else if (iScope == storeServiceExtension || iScope == storeServiceUser)
 				return pCC->CreateError(CONSTLIT("Service scope not yet implemented"), pArgs->GetElement(0));
 
-			if (!pCtx->GetUniverse().SetExtensionData(iScope, pExtension->GetUNID(), pArgs->GetElement(1)->GetStringValue(), CreateDataFromItem(*pCC, pArgs->GetElement(2))))
+			if (!pCtx->GetUniverse().SetExtensionData(iScope, pExtension->GetUNID(), pArgs->GetElement(1)->GetStringValue(), CreateDataFromItem(pArgs->GetElement(2))))
 				return pCC->CreateError(CONSTLIT("Unable to store data"), pArgs->GetElement(1));
 
 			//	Result

@@ -677,7 +677,7 @@ ICCItem *fnCanvas (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int y = pArgs->GetElement(1)->GetIntegerValue();
 			CG32bitImage *pImage;
 			RECT rcImage;
-			GetImageDescFromList(*pCC, pArgs->GetElement(2), &pImage, &rcImage);
+			GetImageDescFromList(pArgs->GetElement(2), &pImage, &rcImage);
 			if (pImage == NULL)
 				return pCC->CreateNil();
 			CG32bitImage *pCanvas = GetCanvasArg(pEvalCtx, pArgs, 3);

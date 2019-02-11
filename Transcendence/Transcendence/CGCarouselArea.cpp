@@ -618,7 +618,7 @@ void CGCarouselArea::PaintSelector (CG32bitImage &Dest, const RECT &rcRect, bool
 			CG16bitFont::AlignCenter | CG16bitFont::TruncateBlock);
 	}
 
-void CGCarouselArea::SetList (CCodeChain &CC, ICCItem *pList)
+void CGCarouselArea::SetList (ICCItem *pList)
 
 //	SetList
 //
@@ -629,7 +629,7 @@ void CGCarouselArea::SetList (CCodeChain &CC, ICCItem *pList)
 
 	//	Create the new data source
 
-	m_pListData.Set(new CListWrapper(&CC, pList));
+	m_pListData.Set(new CListWrapper(pList));
 
 	//	Done
 

@@ -2013,7 +2013,7 @@ class CItemListWrapper : public IListData
 class CListWrapper : public IListData
 	{
 	public:
-		CListWrapper (CCodeChain *pCC, ICCItem *pList);
+		CListWrapper (ICCItem *pList);
 		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
 		virtual int GetCount (void) override { return m_pList->GetCount(); }
@@ -2032,7 +2032,6 @@ class CListWrapper : public IListData
 	private:
 		DWORD GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) const;
 
-		CCodeChain *m_pCC;
 		ICCItem *m_pList;
 
 		int m_iCursor;
@@ -2106,7 +2105,7 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
 Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem);
 ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source);
 CString CreateDataFieldFromItemList (const TArray<CItem> &List);
-CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem);
+CString CreateDataFromItem (ICCItem *pItem);
 ICCItem *CreateDisposition (CCodeChain &CC, CSovereign::Disposition iDisp);
 ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, int iRotation = 0);
 ICCItem *CreateListFromItem (const CItem &Item);
@@ -2133,7 +2132,7 @@ CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem
 const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
 const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
 ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNID);
-void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
+void GetImageDescFromList (ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
 CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
