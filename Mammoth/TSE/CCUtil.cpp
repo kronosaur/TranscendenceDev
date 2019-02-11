@@ -117,18 +117,18 @@ ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source)
 	ICCItem *pResult = CC.CreateSymbolTable();
 
 	if (Source.GetObj())
-		pResult->SetIntegerAt(CC, CONSTLIT("obj"), (int)Source.GetObj());
+		pResult->SetIntegerAt(CONSTLIT("obj"), (int)Source.GetObj());
 
-	pResult->SetStringAt(CC, CONSTLIT("cause"), GetDestructionName(Source.GetCause()));
+	pResult->SetStringAt(CONSTLIT("cause"), GetDestructionName(Source.GetCause()));
 
 	if (Source.GetSecondaryObj())
-		pResult->SetIntegerAt(CC, CONSTLIT("secondaryObj"), (int)Source.GetSecondaryObj());
+		pResult->SetIntegerAt(CONSTLIT("secondaryObj"), (int)Source.GetSecondaryObj());
 
 	if (Source.GetObj() == NULL)
 		{
 		DWORD dwFlags;
-		pResult->SetStringAt(CC, CONSTLIT("sourceName"), Source.GetSourceName(&dwFlags));
-		pResult->SetIntegerAt(CC, CONSTLIT("sourceNameFlags"), dwFlags);
+		pResult->SetStringAt(CONSTLIT("sourceName"), Source.GetSourceName(&dwFlags));
+		pResult->SetIntegerAt(CONSTLIT("sourceNameFlags"), dwFlags);
 		}
 
 	return pResult;

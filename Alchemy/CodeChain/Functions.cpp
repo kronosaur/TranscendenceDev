@@ -4022,9 +4022,9 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 ICCItem *pValue = pArg->GetElement(i);
 
 				if (bAppend)
-					pResult->AppendAt(*pCC, sKey, pValue);
+					pResult->AppendAt(sKey, pValue);
 				else
-					pResult->SetAt(*pCC, sKey, pValue);
+					pResult->SetAt(sKey, pValue);
                 }
 
             iArg++;
@@ -4044,9 +4044,9 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 }
 
 			if (bAppend)
-				pResult->AppendAt(*pCC, sKey, pArg->GetElement(1));
+				pResult->AppendAt(sKey, pArg->GetElement(1));
 			else
-				pResult->SetAt(*pCC, sKey, pArg->GetElement(1));
+				pResult->SetAt(sKey, pArg->GetElement(1));
             iArg++;
             }
 
@@ -4072,9 +4072,9 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 }
 
 			if (bAppend)
-				pResult->AppendAt(*pCC, sKey, pArgs->GetElement(iArg));
+				pResult->AppendAt(sKey, pArgs->GetElement(iArg));
 			else
-				pResult->SetAt(*pCC, sKey, pArgs->GetElement(iArg));
+				pResult->SetAt(sKey, pArgs->GetElement(iArg));
             iArg++;
             }
 

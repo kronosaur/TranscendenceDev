@@ -513,8 +513,8 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		{
 		pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
-		pResult->SetStringAt(CC, CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
-		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
+		pResult->SetStringAt(CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
+		pResult->SetIntegerAt(CONSTLIT("flags"), dwFlags);
 		return pResult;
 		}
 

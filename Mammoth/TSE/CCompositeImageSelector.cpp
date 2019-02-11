@@ -312,8 +312,8 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 		ICCItemPtr pEntry(CC.CreateSymbolTable());
 		pSel->Append(pEntry);
 
-		pEntry->SetIntegerAt(CC, CONSTLIT("id"), m_Sel[i].dwID);
-		pEntry->SetIntegerAt(CC, CONSTLIT("variant"), m_Sel[i].iVariant);
+		pEntry->SetIntegerAt(CONSTLIT("id"), m_Sel[i].dwID);
+		pEntry->SetIntegerAt(CONSTLIT("variant"), m_Sel[i].iVariant);
 
 		ETypes iType = GetEntryType(m_Sel[i]);
 		switch (iType)
@@ -321,14 +321,14 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 			case typeItemType:
 				{
 				CItemType *pItemType = (CItemType *)m_Sel[i].dwExtra;
-				pEntry->SetIntegerAt(CC, CONSTLIT("itemType"), pItemType->GetUNID());
+				pEntry->SetIntegerAt(CONSTLIT("itemType"), pItemType->GetUNID());
 				break;
 				}
 
 			case typeShipClass:
 				{
 				CShipClass *pWreckClass = (CShipClass *)m_Sel[i].dwExtra;
-				pEntry->SetIntegerAt(CC, CONSTLIT("shipClass"), pWreckClass->GetUNID());
+				pEntry->SetIntegerAt(CONSTLIT("shipClass"), pWreckClass->GetUNID());
 				break;
 				}
 			}

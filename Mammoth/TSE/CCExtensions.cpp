@@ -6399,11 +6399,11 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				ICCItem *pResult = pCC->CreateSymbolTable();
 
-				pResult->SetStringAt(*pCC, CONSTLIT("result"), GetDamageResultsName(result));
-				pResult->SetIntegerAt(*pCC, CONSTLIT("armorSeg"), DamageCtx.iSectHit);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("overlayHitDamage"), DamageCtx.iOverlayHitDamage);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("shieldHitDamage"), DamageCtx.iShieldHitDamage);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("armorHitDamage"), DamageCtx.iArmorHitDamage);
+				pResult->SetStringAt(CONSTLIT("result"), GetDamageResultsName(result));
+				pResult->SetIntegerAt(CONSTLIT("armorSeg"), DamageCtx.iSectHit);
+				pResult->SetIntegerAt(CONSTLIT("overlayHitDamage"), DamageCtx.iOverlayHitDamage);
+				pResult->SetIntegerAt(CONSTLIT("shieldHitDamage"), DamageCtx.iShieldHitDamage);
+				pResult->SetIntegerAt(CONSTLIT("armorHitDamage"), DamageCtx.iArmorHitDamage);
 
 				return pResult;
 				}
@@ -12932,13 +12932,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				const CLocationDef &Loc = pSystem->GetLocation(Table[i]);
 
 				ICCItemPtr pEntry(ICCItem::SymbolTable);
-				pEntry->SetStringAt(*pCC, FIELD_ATTRIBS, Loc.GetAttributes());
+				pEntry->SetStringAt(FIELD_ATTRIBS, Loc.GetAttributes());
 
 				ICCItemPtr pPos(CreateListFromVector(*pCC, Loc.GetOrbit().GetObjectPos()));
-				pEntry->SetAt(*pCC, FIELD_POS, pPos);
+				pEntry->SetAt(FIELD_POS, pPos);
 
 				ICCItemPtr pOrbit(CreateListFromOrbit(*pCC, Loc.GetOrbit()));
-				pEntry->SetAt(*pCC, FIELD_ORBIT, pOrbit);
+				pEntry->SetAt(FIELD_ORBIT, pOrbit);
 
 				pResult->Append(pEntry);
 				}
@@ -12988,10 +12988,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Prepare a result
 
 			ICCItem *pResult = pCC->CreateSymbolTable();
-			pResult->SetStringAt(*pCC, FIELD_ATTRIBS, Loc.GetAttributes());
-			pResult->SetAt(*pCC, FIELD_POS, pPos);
+			pResult->SetStringAt(FIELD_ATTRIBS, Loc.GetAttributes());
+			pResult->SetAt(FIELD_POS, pPos);
 			pPos->Discard();
-			pResult->SetAt(*pCC, FIELD_ORBIT, pOrbit);
+			pResult->SetAt(FIELD_ORBIT, pOrbit);
 			pOrbit->Discard();
 
 			//	If necessary, remove the location

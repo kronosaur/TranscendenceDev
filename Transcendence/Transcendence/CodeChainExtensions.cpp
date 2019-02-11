@@ -1491,12 +1491,12 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
             ICCItem *pResult = pCC->CreateSymbolTable();
 
-			pResult->SetIntegerAt(*pCC, CONSTLIT("type"), dwRootUNID);
+			pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
 
 			if (sScreen.IsBlank())
 				{
-                pResult->SetIntegerAt(*pCC, CONSTLIT("screen"), dwRootUNID);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("screenType"), dwRootUNID);
+                pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
+				pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
 				}
 			else
 				{
@@ -1504,19 +1504,19 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
 				if (bNotUNID)
 					{
-					pResult->SetStringAt(*pCC, CONSTLIT("screen"), sScreen);
-					pResult->SetStringAt(*pCC, CONSTLIT("screenName"), sScreen);
+					pResult->SetStringAt(CONSTLIT("screen"), sScreen);
+					pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
 					}
 				else
 					{
-					pResult->SetIntegerAt(*pCC, CONSTLIT("screen"), dwScreen);
-					pResult->SetIntegerAt(*pCC, CONSTLIT("screenType"), dwScreen);
+					pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
+					pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
 					}
 				}
 
-            pResult->SetStringAt(*pCC, CONSTLIT("pane"), CurFrame.sPane);
+            pResult->SetStringAt(CONSTLIT("pane"), CurFrame.sPane);
             if (CurFrame.pStoredData)
-                pResult->SetAt(*pCC, CONSTLIT("data"), CurFrame.pStoredData);
+                pResult->SetAt(CONSTLIT("data"), CurFrame.pStoredData);
 
             return pResult;
             }

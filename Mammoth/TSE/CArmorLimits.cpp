@@ -482,7 +482,7 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 	switch (m_iType)
 		{
 		case typeNone:
-			pResult->SetAt(CC, strFromInt(iStdSpeed), CC.CreateNil());
+			pResult->SetAt(strFromInt(iStdSpeed), CC.CreateNil());
 			break;
 
 		case typeAuto:
@@ -509,7 +509,7 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 				else
 					sLine = strPatternSubst(CONSTLIT("%d-%d"), CalcMinArmorMassForSpeed(i, iStdSpeed), CalcMinArmorMassForSpeed(i - 1, iStdSpeed) - 1);
 
-				pResult->SetStringAt(CC, strFromInt(i), sLine);
+				pResult->SetStringAt(strFromInt(i), sLine);
 				}
 			break;
 			}
@@ -519,7 +519,7 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 			for (int i = 0; i < m_ArmorLimits.GetCount(); i++)
 				{
 				int iSpeed = iStdSpeed + m_ArmorLimits[i].iSpeedAdj;
-				pResult->SetAt(CC, strFromInt(iSpeed), CC.CreateString(m_ArmorLimits[i].sClass));
+				pResult->SetAt(strFromInt(iSpeed), CC.CreateString(m_ArmorLimits[i].sClass));
 				}
 			break;
 			}

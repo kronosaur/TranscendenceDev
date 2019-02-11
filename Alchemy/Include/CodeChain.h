@@ -181,15 +181,15 @@ class ICCItem : public CObject
 
 		//	Symbol/Atom table functions
 
-		void AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
+		void AppendAt (const CString &sKey, ICCItem *pValue);
 		bool GetBooleanAt (const CString &sKey);
 		double GetDoubleAt (const CString &sKey, double rDefault = 0.0);
 		int GetIntegerAt (const CString &sKey, int iDefault = 0);
 		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR);
-		void SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue);
-		void SetBooleanAt (CCodeChain &CC, const CString &sKey, bool bValue);
-		void SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue);
-		void SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue);
+		void SetAt (const CString &sKey, ICCItem *pValue);
+		void SetBooleanAt (const CString &sKey, bool bValue);
+		void SetIntegerAt (const CString &sKey, int iValue);
+		void SetStringAt (const CString &sKey, const CString &sValue);
 
 		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
@@ -730,12 +730,6 @@ class CCSymbolTable : public ICCList
 	{
 	public:
 		CCSymbolTable (void);
-
-		//	LATER: These are deprecated. Should remove them (and replace callers with SetAt versions).
-
-		inline void SetIntegerValue (CCodeChain &CC, const CString &sKey, int iValue) { SetIntegerAt(CC, sKey, iValue); }
-		inline void SetStringValue (CCodeChain &CC, const CString &sKey, const CString &sValue) { SetStringAt(CC, sKey, sValue); }
-		inline void SetValue (CCodeChain &CC, const CString &sKey, ICCItem *pValue) { SetAt(CC, sKey, pValue); }
 
 		//	ICCItem virtuals
 

@@ -4175,13 +4175,13 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		GetVisibleDamageDesc(Damage);
 
 		if (Damage.iShieldLevel != -1)
-			pResult->SetIntegerAt(CC, FIELD_SHIELD_LEVEL, Damage.iShieldLevel);
+			pResult->SetIntegerAt(FIELD_SHIELD_LEVEL, Damage.iShieldLevel);
 
 		if (Damage.iArmorLevel != -1)
-			pResult->SetIntegerAt(CC, FIELD_ARMOR_INTEGRITY, Damage.iArmorLevel);
+			pResult->SetIntegerAt(FIELD_ARMOR_INTEGRITY, Damage.iArmorLevel);
 
 		if (Damage.iHullLevel != -1)
-			pResult->SetIntegerAt(CC, FIELD_HULL_INTEGRITY, Damage.iHullLevel);
+			pResult->SetIntegerAt(FIELD_HULL_INTEGRITY, Damage.iHullLevel);
 
 		return pResult;
 		}
@@ -4203,21 +4203,21 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			//	Status
 
 			if (pPorts->IsPortEmpty(this, i))
-				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("empty"));
+				pPortDesc->SetStringAt(FIELD_STATUS, CONSTLIT("empty"));
 			else
-				pPortDesc->SetStringAt(CC, FIELD_STATUS, CONSTLIT("inUse"));
+				pPortDesc->SetStringAt(FIELD_STATUS, CONSTLIT("inUse"));
 
 			//	Position
 
 			ICCItem *pValue = ::CreateListFromVector(CC, pPorts->GetPortPos(this, i, NULL));
-			pPortDesc->SetAt(CC, FIELD_POS, pValue);
+			pPortDesc->SetAt(FIELD_POS, pValue);
 			pValue->Discard();
 
 			//	ObjectID
 
 			CSpaceObject *pObj = pPorts->GetPortObj(this, i);
 			if (pObj)
-				pPortDesc->SetIntegerAt(CC, FIELD_OBJ_ID, pObj->GetID());
+				pPortDesc->SetIntegerAt(FIELD_OBJ_ID, pObj->GetID());
 
 			//	Add to list
 
@@ -4284,8 +4284,8 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		{
 		ICCItem *pResult = CC.CreateSymbolTable();
 		DWORD dwFlags;
-		pResult->SetStringAt(CC, CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
-		pResult->SetIntegerAt(CC, CONSTLIT("flags"), dwFlags);
+		pResult->SetStringAt(CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
+		pResult->SetIntegerAt(CONSTLIT("flags"), dwFlags);
 		return pResult;
 		}
 
@@ -4352,14 +4352,14 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 			return CC.CreateNil();
 
 		ICCItemPtr pResult(ICCItem::SymbolTable);
-		pResult->SetBooleanAt(CC, CONSTLIT("showDestination"), true);
+		pResult->SetBooleanAt(CONSTLIT("showDestination"), true);
 
-		if (m_fAutoClearDestination)			pResult->SetBooleanAt(CC, CONSTLIT("autoClear"), true);
-		if (m_fAutoClearDestinationOnDestroy)	pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnDestroy"), true);
-		if (m_fAutoClearDestinationOnDock)		pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnDock"), true);
-		if (m_fAutoClearDestinationOnGate)		pResult->SetBooleanAt(CC, CONSTLIT("autoClearOnGate"), true);
-		if (m_fShowDistanceAndBearing)			pResult->SetBooleanAt(CC, CONSTLIT("showDistance"), true);
-		if (m_fShowHighlight)					pResult->SetBooleanAt(CC, CONSTLIT("showHighlight"), true);
+		if (m_fAutoClearDestination)			pResult->SetBooleanAt(CONSTLIT("autoClear"), true);
+		if (m_fAutoClearDestinationOnDestroy)	pResult->SetBooleanAt(CONSTLIT("autoClearOnDestroy"), true);
+		if (m_fAutoClearDestinationOnDock)		pResult->SetBooleanAt(CONSTLIT("autoClearOnDock"), true);
+		if (m_fAutoClearDestinationOnGate)		pResult->SetBooleanAt(CONSTLIT("autoClearOnGate"), true);
+		if (m_fShowDistanceAndBearing)			pResult->SetBooleanAt(CONSTLIT("showDistance"), true);
+		if (m_fShowHighlight)					pResult->SetBooleanAt(CONSTLIT("showHighlight"), true);
 
 		return pResult->Reference();
 		}

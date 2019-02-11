@@ -232,7 +232,7 @@ ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnh
 		if (pEnhancements)
 			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
 
-		pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iDamageAdj);
+		pResult->SetIntegerAt(::GetDamageType(iDamageType), iDamageAdj);
 		}
 
 	return pResult;
@@ -263,9 +263,9 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 
 		int iBonus = GetBonusFromAdj(iDamageAdj, iDefault);
 		if (iBonus == -100)
-			pResult->SetStringAt(CC, ::GetDamageType(iDamageType), CONSTLIT("immune"));
+			pResult->SetStringAt(::GetDamageType(iDamageType), CONSTLIT("immune"));
 		else
-			pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iBonus);
+			pResult->SetIntegerAt(::GetDamageType(iDamageType), iBonus);
 		}
 
 	return pResult;

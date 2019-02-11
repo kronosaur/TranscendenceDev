@@ -146,8 +146,8 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
             return CC.CreateNil();
 
         ICCItem *pResult = CC.CreateSymbolTable();
-        pResult->SetIntegerAt(CC, CONSTLIT("unid"), dwUNID);
-        pResult->SetIntegerAt(CC, CONSTLIT("count"), iCount);
+        pResult->SetIntegerAt(CONSTLIT("unid"), dwUNID);
+        pResult->SetIntegerAt(CONSTLIT("count"), iCount);
         return pResult;
         }
     else if (strEquals(sProperty, ENEMY_SHIPS_DESTROYED_STAT))
@@ -251,19 +251,19 @@ ICCItem *CPlayerGameStats::FindProperty (const CString &sProperty) const
 			const CString &sNodeID = m_SystemStats.GetNext(i, &pStats);
 
             ICCItem *pSysData = CC.CreateSymbolTable();
-            pSysData->SetStringAt(CC, CONSTLIT("nodeID"), sNodeID);
+            pSysData->SetStringAt(CONSTLIT("nodeID"), sNodeID);
 
             if (pStats->dwFirstEntered != INVALID_TIME)
-                pSysData->SetIntegerAt(CC, CONSTLIT("firstEnteredOn"), pStats->dwFirstEntered);
+                pSysData->SetIntegerAt(CONSTLIT("firstEnteredOn"), pStats->dwFirstEntered);
 
             if (pStats->dwLastEntered != INVALID_TIME)
-                pSysData->SetIntegerAt(CC, CONSTLIT("lastEnteredOn"), pStats->dwLastEntered);
+                pSysData->SetIntegerAt(CONSTLIT("lastEnteredOn"), pStats->dwLastEntered);
 
             if (pStats->dwLastLeft != INVALID_TIME)
-                pSysData->SetIntegerAt(CC, CONSTLIT("lastLeftOn"), pStats->dwLastLeft);
+                pSysData->SetIntegerAt(CONSTLIT("lastLeftOn"), pStats->dwLastLeft);
 
             if (pStats->dwTotalTime != INVALID_TIME)
-                pSysData->SetIntegerAt(CC, CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
+                pSysData->SetIntegerAt(CONSTLIT("totalTimeSpent"), pStats->dwTotalTime);
 
             pResult->Append(pSysData);
             pSysData->Discard();

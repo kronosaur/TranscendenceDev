@@ -12,7 +12,7 @@ ICCItem::ICCItem (IObjectClass *pClass) : CObject(pClass)
 	ResetItem();
 	}
 
-void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
+void ICCItem::AppendAt (const CString &sKey, ICCItem *pValue)
 
 //	AppendAt
 //
@@ -24,7 +24,7 @@ void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 	//	If an entry does not exist, just add it.
 
 	if (pExisting == NULL)
-		SetAt(CC, sKey, pValue);
+		SetAt(sKey, pValue);
 
 	//	If this is a list, append to it.
 
@@ -35,11 +35,11 @@ void ICCItem::AppendAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
 
 	else
 		{
-		ICCItem *pList = CC.CreateLinkedList();
+		ICCItem *pList = CCodeChain::CreateLinkedList();
 		pList->Append(pExisting);
 		pList->Append(pValue);
 
-		SetAt(CC, sKey, pList);
+		SetAt(sKey, pList);
 		pList->Discard();
 		}
 	}
@@ -281,55 +281,55 @@ void ICCItem::ResetItem (void)
 	m_bNoRefCount = false;
 	}
 
-void ICCItem::SetAt (CCodeChain &CC, const CString &sKey, ICCItem *pValue)
+void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 //	SetAt
 //
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CC.CreateString(sKey);
+	ICCItem *pKey = CCodeChain::CreateString(sKey);
 	AddEntry(pKey, pValue);
 	pKey->Discard();
 	}
 
-void ICCItem::SetBooleanAt (CCodeChain &CC, const CString &sKey, bool bValue)
+void ICCItem::SetBooleanAt (const CString &sKey, bool bValue)
 
 //	SetBooleanAt
 //
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	ICCItem *pValue = (bValue ? CC.CreateTrue() : CC.CreateNil());
+	ICCItem *pKey = CCodeChain::CreateString(sKey);
+	ICCItem *pValue = (bValue ? CCodeChain::CreateTrue() : CCodeChain::CreateNil());
 	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();
 	}
 
-void ICCItem::SetIntegerAt (CCodeChain &CC, const CString &sKey, int iValue)
+void ICCItem::SetIntegerAt (const CString &sKey, int iValue)
 
 //	SetIntegerAt
 //
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	ICCItem *pValue = CC.CreateInteger(iValue);
+	ICCItem *pKey = CCodeChain::CreateString(sKey);
+	ICCItem *pValue = CCodeChain::CreateInteger(iValue);
 	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();
 	}
 
-void ICCItem::SetStringAt (CCodeChain &CC, const CString &sKey, const CString &sValue)
+void ICCItem::SetStringAt (const CString &sKey, const CString &sValue)
 
 //	SetStringAt
 //
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CC.CreateString(sKey);
-	ICCItem *pValue = CC.CreateString(sValue);
+	ICCItem *pKey = CCodeChain::CreateString(sKey);
+	ICCItem *pValue = CCodeChain::CreateString(sValue);
 	AddEntry(pKey, pValue);
 	pKey->Discard();
 	pValue->Discard();

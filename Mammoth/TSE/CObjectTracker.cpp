@@ -275,7 +275,7 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
 			&& (pTrade = pType->GetTradingDesc())
 			&& pTrade->ComposeDescription(&sTradeDesc))
 		{
-		pData->SetStringAt(CC, CONSTLIT("tradeDesc"), sTradeDesc);
+		pData->SetStringAt(CONSTLIT("tradeDesc"), sTradeDesc);
 		}
 
 	//	Translate

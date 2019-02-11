@@ -32,9 +32,9 @@ ICCItemPtr CDebugOptions::GetMemoryUse (void) const
 	CDesignCollection::SStats Stats;
 	g_pUniverse->GetDesignCollection().GetStats(Stats);
 
-	pResult->SetIntegerAt(CC, CONSTLIT("graphicsTotal"), (int)(DWORD)Stats.dwGraphicsMemory);
-	pResult->SetIntegerAt(CC, CONSTLIT("graphicsWrecks"), (int)(DWORD)Stats.dwWreckGraphicsMemory);
-	pResult->SetIntegerAt(CC, CONSTLIT("XML"), (int)(DWORD)Stats.dwTotalXMLMemory);
+	pResult->SetIntegerAt(CONSTLIT("graphicsTotal"), (int)(DWORD)Stats.dwGraphicsMemory);
+	pResult->SetIntegerAt(CONSTLIT("graphicsWrecks"), (int)(DWORD)Stats.dwWreckGraphicsMemory);
+	pResult->SetIntegerAt(CONSTLIT("XML"), (int)(DWORD)Stats.dwTotalXMLMemory);
 
 	return pResult;
 	}

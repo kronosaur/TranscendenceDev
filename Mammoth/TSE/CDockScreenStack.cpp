@@ -328,5 +328,5 @@ void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
 
 	//	Add the entry
 
-	Frame.pReturnData->SetAt(CC, sAttrib, pData);
+	Frame.pReturnData->SetAt(sAttrib, pData);
 	}
