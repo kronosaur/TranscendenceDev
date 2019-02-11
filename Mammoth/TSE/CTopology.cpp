@@ -49,7 +49,8 @@
 
 const int DEFAULT_MIN_SEPARATION =				40;
 
-CTopology::CTopology (void)
+CTopology::CTopology (CUniverse &Universe) :
+		m_Universe(Universe)
 
 //	CTopology constructor
 
@@ -528,7 +529,7 @@ ALERROR CTopology::AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, b
 
 	//	If this is a debugOnly gate then only add it in debug mode
 
-	if (pGateDesc->GetAttributeBool(DEBUG_ONLY_ATTRIB) && !g_pUniverse->InDebugMode())
+	if (pGateDesc->GetAttributeBool(DEBUG_ONLY_ATTRIB) && !m_Universe.InDebugMode())
 		return NOERROR;
 
 	//	There are two ways in which we get gate data:
@@ -779,7 +780,7 @@ ALERROR CTopology::AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNod
 
 		//	Create a topology node and add it to the universe list
 
-		CTopologyNode *pNewNode = new CTopologyNode(sFullID, END_GAME_SYSTEM_UNID, Ctx.pMap);
+		CTopologyNode *pNewNode = new CTopologyNode(*this, sFullID, END_GAME_SYSTEM_UNID, Ctx.pMap);
 		AddTopologyNode(sFullID, pNewNode);
 		if (Ctx.pNodesAdded)
 			Ctx.pNodesAdded->Insert(pNewNode);
@@ -987,7 +988,7 @@ ALERROR CTopology::CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &s
 
 	//	Create a topology node and add it to the universe list
 
-	CTopologyNode *pNewNode = new CTopologyNode(sID, 0, pDestMap);
+	CTopologyNode *pNewNode = new CTopologyNode(*this, sID, 0, pDestMap);
 	AddTopologyNode(sID, pNewNode);
 	if (Ctx.pNodesAdded)
 		Ctx.pNodesAdded->Insert(pNewNode);
@@ -1490,6 +1491,16 @@ ALERROR CTopology::GetOrAddTopologyNode (STopologyCreateCtx &Ctx,
 		*retpNode = pNode;
 
 	return NOERROR;
+	}
+
+bool CTopology::InDebugMode (void) const
+
+//	InDebugMode
+//
+//	Returns TRUE if we're in debug mode.
+
+	{
+	return m_Universe.InDebugMode();
 	}
 
 ALERROR CTopology::InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx, CTopologyNode **iopExit)

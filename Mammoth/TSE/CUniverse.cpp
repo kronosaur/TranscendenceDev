@@ -77,6 +77,7 @@ CUniverse::CUniverse (void) :
 		m_pPlayerShip(NULL),
 		m_pCurrentSystem(NULL),
 		m_dwNextID(1),
+		m_Topology(*this),
 		m_AllMissions(true),
 
 		m_pSoundMgr(NULL),

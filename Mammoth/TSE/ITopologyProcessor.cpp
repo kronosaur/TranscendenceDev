@@ -102,8 +102,7 @@ CTopologyNodeList *ITopologyProcessor::FilterNodes (CTopology &Topology, CTopolo
 		{
 		//	Context
 
-		CTopologyNode::SCriteriaCtx Ctx;
-		Ctx.pTopology = &Topology;
+		CTopologyNode::SCriteriaCtx Ctx(Topology);
 
 		//	Filter
 

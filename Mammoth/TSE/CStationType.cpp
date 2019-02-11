@@ -1922,7 +1922,7 @@ void CStationType::OnTopologyInitialized (void)
 	//	We take this opportunity to resolve the level of certain encounters
 	//	(now that we know the topology).
 
-	m_RandomPlacement.InitLevelFrequency();
+	m_RandomPlacement.InitLevelFrequency(GetUniverse().GetTopology());
 	}
 
 void CStationType::OnUnbindDesign (void)

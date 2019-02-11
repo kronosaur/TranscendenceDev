@@ -352,7 +352,7 @@ bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
 		//	recreate them at load time (i.e., we run through this code at load
 		//	time again).
 
-		pNewDesc->InitLevelFrequency();
+		pNewDesc->InitLevelFrequency(GetUniverse().GetTopology());
 		}
 
 	//	Done

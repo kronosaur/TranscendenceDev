@@ -13237,8 +13237,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
 
-			CTopologyNode::SCriteriaCtx CriteriaCtx;
-			CriteriaCtx.pTopology = &pCtx->GetUniverse().GetTopology();
+			CTopologyNode::SCriteriaCtx CriteriaCtx(pCtx->GetUniverse().GetTopology());
 			return pCC->CreateBool(pNode->MatchesCriteria(CriteriaCtx, Criteria));
 			}
 
@@ -13667,12 +13666,12 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				CTopologyNode::SCriteria Criteria;
 
 				CString sError;
-				if (CTopologyNode::ParseCriteria(pCriteria, Criteria, &sError) != NOERROR)
+				if (CTopologyNode::ParseCriteria(pCtx->GetUniverse(), pCriteria, Criteria, &sError) != NOERROR)
 					return pCC->CreateError(sError, pCriteria);
 
 				//	Loop
 
-				CTopologyNode::SCriteriaCtx Ctx;
+				CTopologyNode::SCriteriaCtx Ctx(pCtx->GetUniverse().GetTopology());
 				CTopologyNode::InitCriteriaCtx(Ctx, Criteria);
 
 				for (i = 0; i < pCtx->GetUniverse().GetTopologyNodeCount(); i++)

@@ -80,8 +80,7 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 
 	CTopologyNodeList Remaining;
 
-	CTopologyNode::SCriteriaCtx MatchCtx;
-	MatchCtx.pTopology = &Ctx.Topology;
+	CTopologyNode::SCriteriaCtx MatchCtx(Ctx.Topology);
 
 	//	Apply system properties to all nodes in list
 

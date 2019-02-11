@@ -110,6 +110,9 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 //  descriptor and the node.
 
     {
+	if (pNode == NULL)
+		return 0;
+
     //  See if we've got a cached value for this node. (Even if not, we need
     //  the structure so we can cache it.)
 
@@ -128,8 +131,7 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
             {
             //  Compute the criteria for this node and cache it.
 
-            CTopologyNode::SCriteriaCtx Ctx;
-            Ctx.pTopology = &g_pUniverse->GetTopology();
+            CTopologyNode::SCriteriaCtx Ctx(pNode->GetTopology());
             if (!pNode->MatchesCriteria(Ctx, *pSystemCriteria))
                 pStats->iNodeCriteria = 0;
             }
