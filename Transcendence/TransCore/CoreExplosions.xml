@@ -711,7 +711,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -780,7 +780,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -849,7 +849,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -875,7 +875,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -943,7 +943,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -969,7 +969,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave2;"
 								imageX=				"0"
 								imageY=				"0"
@@ -1036,7 +1036,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave3;"
 								imageX=				"0"
 								imageY=				"0"
@@ -1062,7 +1062,7 @@
 					<Shockwave
 							fadeStart=	"70"
 							blendMode=	"screen"
-						>
+							>
 						<Image imageID=				"&rsShockwave2;"
 								imageX=				"0"
 								imageY=				"0"
@@ -1374,7 +1374,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"120"
 							intensity=		"20"
@@ -1431,7 +1430,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"180"
 							intensity=		"20"
@@ -1488,7 +1486,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"180"
 							intensity=		"20"
@@ -1545,7 +1542,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"240"
 							intensity=		"20"
@@ -1602,7 +1598,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"240"
 							intensity=		"20"
@@ -1659,7 +1654,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"60"
 							intensity=		"20"
@@ -1716,7 +1710,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"90"
 							intensity=		"20"
@@ -1773,7 +1766,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"90"
 							intensity=		"20"
@@ -1830,7 +1822,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"120"
 							intensity=		"20"
@@ -1887,7 +1878,6 @@
 
 				<Effect>
 					<Shockwave
-							instance=		"owner"
 							style=			"cloud"
 							width=			"120"
 							intensity=		"20"

@@ -503,7 +503,7 @@
 				<Effect>
 					<Shockwave
 							fadeStart=	"70"
-									>
+							>
 						<Image imageID=				"&rsShockwave2;"
 								imageX=				"0"
 								imageY=				"0"
@@ -580,7 +580,7 @@
 				<Effect>
 					<Shockwave
 							fadeStart=	"70"
-									>
+							>
 						<Image imageID=				"&rsShockwave2;"
 								imageX=				"0"
 								imageY=				"0"
