@@ -486,10 +486,23 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
-				m_TextureFrame.InsertEmpty(iLifetime);
 
 				if (UsesColorTable2())
 					m_ColorTable2.InsertEmpty(iLifetime);
+
+				//	For cloud and Fireblast we need a repeating animation
+
+				if (UsesTextures())
+					{
+					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+					m_TextureFrame.InsertEmpty(iFrames);
+					for (i = 0; i < iFrames; i++)
+						m_TextureFrame[i] = i;
+					}
+				else
+					m_TextureFrame.InsertEmpty(iLifetime);
 
 				for (i = 0; i < iLifetime; i++)
 					{
@@ -502,22 +515,11 @@ bool COrbEffectPainter::CalcIntermediates (void)
 					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
-					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
+					if (!UsesTextures())
+						m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 					if (UsesColorTable2())
 						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
-					}
-
-				//	For cloud and Fireblast we need a repeating animation
-
-				if (UsesTextures())
-					{
-					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
-					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
-
-					m_TextureFrame.InsertEmpty(iFrames);
-					for (i = 0; i < iFrames; i++)
-						m_TextureFrame[i] = i;
 					}
 
 				break;
@@ -531,10 +533,21 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 				m_ColorTable.InsertEmpty(iLifetime);
 				m_FlareDesc.InsertEmpty(iLifetime);
-				m_TextureFrame.InsertEmpty(iLifetime);
 
 				if (UsesColorTable2())
 					m_ColorTable2.InsertEmpty(iLifetime);
+
+				//	For cloud and Fireblast we need a repeating animation
+
+				if (UsesTextures())
+					{
+					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+					m_TextureFrame.InsertEmpty(iFrames);
+					for (i = 0; i < iFrames; i++)
+						m_TextureFrame[i] = i;
+					}
 
 				for (i = 0; i < iLifetime; i++)
 					{
@@ -549,18 +562,6 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 					if (UsesColorTable2())
 						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
-					}
-
-				//	For cloud and Fireblast we need a repeating animation
-
-				if (UsesTextures())
-					{
-					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
-					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
-
-					m_TextureFrame.InsertEmpty(iFrames);
-					for (i = 0; i < iFrames; i++)
-						m_TextureFrame[i] = i;
 					}
 
 				break;
