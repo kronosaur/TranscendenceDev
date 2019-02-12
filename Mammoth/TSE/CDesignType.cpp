@@ -3036,7 +3036,7 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 
 	//	If we have a singleton, then return that.
 
-	if (m_pSingleton)
+	if (m_pSingleton && Ctx.CanCreateSingleton())
 		return m_pSingleton;
 
 	//	Figure out the creator
@@ -3065,7 +3065,8 @@ IEffectPainter *CEffectCreatorRef::CreatePainter (CCreatePainterCtx &Ctx, CEffec
 	//	If we're an owner singleton then we only need to create this once.
 
 	if (pCreator->GetInstance() == CEffectCreator::instOwner
-			&& !pPainter->IsSingleton())
+			&& !pPainter->IsSingleton()
+			&& Ctx.CanCreateSingleton())
 		{
 		pPainter->SetSingleton(true);
 		m_pSingleton = pPainter;

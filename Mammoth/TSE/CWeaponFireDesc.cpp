@@ -460,6 +460,7 @@ IEffectPainter *CWeaponFireDesc::CreateShockwavePainter (bool bTrackingObj, bool
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetTrackingObject(bTrackingObj);
 	Ctx.SetUseObjectCenter(bUseObjectCenter);
+	Ctx.SetNoSingleton(true);
 
 	//	We need to match the expansion speed
 

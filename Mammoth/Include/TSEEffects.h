@@ -181,6 +181,7 @@ class CCreatePainterCtx
 	{
 	public:
 		void AddDataInteger (const CString &sField, int iValue);
+		inline bool CanCreateSingleton (void) const { return !m_bNoSingleton; }
 		inline bool FindDefaultParam (const CString &sParam, CEffectParamDesc *retValue) const { return (m_pDefaultParams ? m_pDefaultParams->FindParam(sParam, retValue) : false); }
 		inline CSpaceObject *GetAnchor (void) const { return m_pAnchor; }
 		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
@@ -199,6 +200,7 @@ class CCreatePainterCtx
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
 		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
 		inline void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
+		inline void SetNoSingleton (bool bValue = true) { m_bNoSingleton = bValue; }
 		inline void SetParams (ICCItem *pParams) { m_pParams = pParams; }
 		inline void SetPos (const CVector &vPos) { m_vPos = vPos; }
 		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
@@ -230,6 +232,7 @@ class CCreatePainterCtx
 		bool m_bUseObjectCenter = false;				//	If TRUE, particle clouds always use the object as center
 		bool m_bTracking = false;						//	If TRUE, object sets velocity
 		bool m_bRaw = false;							//	We want a raw painter (default parameters).
+		bool m_bNoSingleton = false;					//	Always create a new object
 
 		ICCItemPtr m_pData;								//	Generated data (for <GetParameters> event)
 		ICCItemPtr m_pParams;							//	Parameters (if set by sysCreateEffect).

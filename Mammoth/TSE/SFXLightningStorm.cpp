@@ -119,7 +119,7 @@ IEffectPainter *CLightningStormEffectCreator::OnCreatePainter (CCreatePainterCtx
 	{
 	//	If we have a singleton, return that
 
-	if (m_pSingleton)
+	if (m_pSingleton && Ctx.CanCreateSingleton())
 		return m_pSingleton;
 
 	//	Otherwise we need to create a painter with the actual
@@ -141,7 +141,8 @@ IEffectPainter *CLightningStormEffectCreator::OnCreatePainter (CCreatePainterCtx
 
 	//	If we are a singleton, then we only need to create this once.
 
-	if (GetInstance() == instGame)
+	if (GetInstance() == instGame
+			&& Ctx.CanCreateSingleton())
 		{
 		pPainter->SetSingleton(true);
 		m_pSingleton = pPainter;
