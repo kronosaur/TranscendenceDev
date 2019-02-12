@@ -897,6 +897,8 @@ void CPlayerShipController::InsuranceClaim (void)
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
 	ASSERT(pSystem);
+	if (pSystem == NULL)
+		return;
 
 	//	If necessary, remove the ship from the system first. This can happen if
 	//	we are imprisoned by a station (instead of destroyed)
@@ -1611,13 +1613,14 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 //	Paints line of fire for all ships.
 
 	{
-	int i;
+	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	if (pSystem == NULL)
+		return;
 
 	static const Metric DIST = 50.0 * LIGHT_SECOND;
 	static const Metric DIST2 = DIST * DIST;
 
-	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 

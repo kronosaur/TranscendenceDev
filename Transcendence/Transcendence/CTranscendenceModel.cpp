@@ -1546,6 +1546,8 @@ void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceOb
 
 	CSystem *pSystem = m_Universe.GetCurrentSystem();
 	ASSERT(pSystem);
+	if (pSystem == NULL)
+		return;
 
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{

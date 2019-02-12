@@ -575,7 +575,13 @@ void CTranscendenceWnd::ReportCrashSystem (CString *retsMessage) const
 	{
 	CSystem *pSystem = (g_pUniverse ? g_pUniverse->GetCurrentSystem() : NULL);
 	if (pSystem == NULL)
+		{
+		if (g_pUniverse)
+			retsMessage->Append(CONSTLIT("system: NULL\r\n"));
+		else
+			retsMessage->Append(CONSTLIT("universe: NULL\r\n"));
 		return;
+		}
 
 	CString sSystemNode;
 	CString sSystemName;

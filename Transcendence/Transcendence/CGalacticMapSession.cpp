@@ -472,9 +472,11 @@ void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 	const CG16bitFont &HeaderFont = VI.GetFont(fontHeader);
 	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 
+	CTopologyNode *pNode = g_pUniverse->GetCurrentTopologyNode();
+
 	//	Paint the actual map
 
-	if (m_pPainter)
+	if (m_pPainter && pNode)
 		{
 		m_pPainter->Paint(Screen);
 
@@ -484,7 +486,7 @@ void CGalacticMapSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 		if (pPlayer)
 			{
 			int xPos, yPos;
-			g_pUniverse->GetCurrentSystem()->GetTopology()->GetDisplayPos(&xPos, &yPos);
+			pNode->GetDisplayPos(&xPos, &yPos);
 
 			int xShip, yShip;
 			m_pPainter->GalacticToView(xPos, yPos, m_xCenter, m_yCenter, m_Scale.GetScale(), &xShip, &yShip);

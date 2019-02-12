@@ -2924,6 +2924,8 @@ void CUniverse::UpdateExtended (void)
 
 	CSystem *pSystem = GetCurrentSystem();
 	ASSERT(pSystem);
+	if (pSystem == NULL)
+		return;
 
 	//	Calculate the amount of time that has elapsed from the last time the
 	//	system was updated.
