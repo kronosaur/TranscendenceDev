@@ -223,6 +223,8 @@ void CTranscendenceWnd::PaintFrameRate (void)
 //	Paints the frame rate
 
 	{
+	DEBUG_TRY
+
 	int i;
 	CG32bitImage &TheScreen = g_pHI->GetScreen();
 
@@ -275,6 +277,8 @@ void CTranscendenceWnd::PaintFrameRate (void)
 		m_iFrameCount++;
 		m_iStartAnimation = iNow;
 		}
+
+	DEBUG_CATCH
 	}
 
 void CTranscendenceWnd::PlayerEndGame (void)

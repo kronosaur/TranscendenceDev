@@ -390,7 +390,11 @@ void CScreenMgr3D::Render (void)
 //	Blt the current image to the screen
 
 	{
+	DEBUG_TRY
+
 	m_Blitter.Render();
+
+	DEBUG_CATCH
 	}
 
 void CScreenMgr3D::StopDX (void)

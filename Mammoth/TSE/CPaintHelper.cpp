@@ -59,6 +59,8 @@ void CPaintHelper::PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection,
 //	Paints an arrow with the tip at x, y and pointing towards iDirection.
 
 	{
+	DEBUG_TRY
+
 	iDirection += 180;
 
 	//	Generate a set of points for the directional indicator
@@ -96,6 +98,8 @@ void CPaintHelper::PaintArrow (CG32bitImage &Dest, int x, int y, int iDirection,
 	CG16bitBinaryRegion Region;
 	Region.CreateFromConvexPolygon(5, Poly);
 	Region.Fill(Dest, x, y, rgbColor);
+
+	DEBUG_CATCH
 	}
 
 void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirection, const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor)
@@ -105,6 +109,8 @@ void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirect
 //	Paints some text associated with an arrow.
 
 	{
+	DEBUG_TRY
+
 	int i;
 
 	TArray<CString> Text;
@@ -125,6 +131,8 @@ void CPaintHelper::PaintArrowText (CG32bitImage &Dest, int x, int y, int iDirect
 		Font.DrawText(Dest, xText, yText, rgbColor, Text[i], CG16bitFont::AlignCenter);
 		yText += Font.GetHeight();
 		}
+
+	DEBUG_CATCH
 	}
 
 void CPaintHelper::PaintScaledImage (CG32bitImage &Dest, int xDest, int yDest, int cxDest, int cyDest, CG32bitImage &Src, const RECT &rcSrc, Metric rScale)

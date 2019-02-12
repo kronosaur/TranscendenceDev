@@ -15,6 +15,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 //  Paint once per frame
 
     {
+	DEBUG_TRY
+
     CSmartLock Lock(g_pUniverse->GetSem());
 
 	bool bFailed = false;
@@ -410,6 +412,8 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 		g_pHI->GetScreenMgr().StopDX();
 		g_pTrans->ReportCrash();
 		}
+
+	DEBUG_CATCH
     }
 
 void CGameSession::PaintSRS (CG32bitImage &Screen)

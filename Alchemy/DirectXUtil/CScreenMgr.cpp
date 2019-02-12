@@ -371,6 +371,8 @@ void CScreenMgr::FlipInt (void)
 //	Flips DX surfaces in exclusive mode
 
 	{
+	DEBUG_TRY
+
 	ASSERT(m_pDD);
 	ASSERT(m_bExclusiveMode);
 	ASSERT(m_pPrimary);
@@ -378,6 +380,8 @@ void CScreenMgr::FlipInt (void)
 	HRESULT hr = m_pPrimary->Flip(NULL, DDFLIP_WAIT);
 	if (FAILED(hr))
 		kernelDebugLogPattern("Flip failed: %x", hr);
+
+	DEBUG_CATCH
 	}
 
 void CScreenMgr::GlobalToLocal (int x, int y, int *retx, int *rety)

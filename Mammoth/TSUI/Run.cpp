@@ -221,6 +221,8 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 //	Main window proc
 
 	{
+	DEBUG_TRY
+
 	switch (message)
 		{
 		case WM_ACTIVATEAPP:
@@ -342,6 +344,8 @@ LONG APIENTRY CHumanInterface::MainWndProc (HWND hWnd, UINT message, UINT wParam
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
+
+	DEBUG_CATCH
 	}
 
 LONG CHumanInterface::WMActivateApp (bool bActivate)

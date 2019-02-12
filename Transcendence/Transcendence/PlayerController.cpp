@@ -893,6 +893,8 @@ void CPlayerShipController::InsuranceClaim (void)
 //	Repair the ship and update insurance claim
 
 	{
+	DEBUG_TRY
+
 	ASSERT(m_pShip);
 
 	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
@@ -922,6 +924,8 @@ void CPlayerShipController::InsuranceClaim (void)
 			pWreck->InvalidateItemListAddRemove();
 			}
 		}
+
+	DEBUG_CATCH
 	}
 
 bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
@@ -1593,7 +1597,9 @@ void CPlayerShipController::OnWreckCreated (CSpaceObject *pWreck)
 //	created.
 
 	{
-	ASSERT(pWreck);
+	ASSERT(pWreck && !pWreck->IsDestroyed());
+	if (pWreck == NULL || pWreck->IsDestroyed())
+		return;
 
 	//	Change our POV to the wreck
 
