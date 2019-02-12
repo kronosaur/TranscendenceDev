@@ -1173,7 +1173,7 @@
 
 			<OnDestroy>
 				(block (
-					;	Remeber original wreck obj because it might get
+					;	Remember original wreck obj because it might get
 					;	wiped by a call to objDestroy
 
 					(wreckObj aWreckObj)
@@ -1450,7 +1450,7 @@
 				Fleet gunship design has evolved to respond to changing
 				threats. The Britannia blurs the distinction between gunships
 				and missile ships, a necessary step to counter the effectiveness
-				the Cometfall heavy bomber.
+				of the Cometfall heavy bomber.
 
 			</Text>
 			<Text id="rpg.shipClassDesc.&scMinotaurM;">

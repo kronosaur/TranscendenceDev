@@ -208,7 +208,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	ALERROR error;
 	int i;
 
-	//	Remeber that we're in bind design
+	//	Remember that we're in bind design
 
 	m_bInBindDesign = true;
 
