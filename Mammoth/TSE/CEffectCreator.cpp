@@ -974,7 +974,7 @@ void IEffectPainter::OnWriteToStream (IWriteStream *pStream)
 	int i;
 
 	TArray<CString> Params;
-	if (!m_bSingleton && GetParamList(&Params))
+	if (GetParamList(&Params))
 		{
 		//	Write the count of parameters
 
