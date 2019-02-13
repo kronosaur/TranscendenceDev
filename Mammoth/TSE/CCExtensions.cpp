@@ -2958,8 +2958,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"*",	0,	},
 
 		{	"sysGetTopologyDistance",		fnSystemGet,	FN_SYS_TOPOLOGY_DISTANCE,
-			"(sysGetTopologyDistance fromID toID) -> distance (or Nil)",
-			"ss",	0,	},
+			"(sysGetTopologyDistance fromID [toID]) -> distance (or Nil)",
+			"s*",	0,	},
 
 		{	"sysHasAttribute",				fnSystemGet,	FN_SYS_HAS_ATTRIBUTE,
 			"(sysHasAttribute [nodeID] attrib) -> True/Nil",
@@ -13495,15 +13495,38 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (g_pUniverse->FindTopologyNode(sSource) == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown topology node"), pArgs->GetElement(0));
 
-			CString sDest = pArgs->GetElement(1)->GetStringValue();
-			if (g_pUniverse->FindTopologyNode(sDest) == NULL)
-				return pCC->CreateError(CONSTLIT("Unknown topology node"), pArgs->GetElement(1));
+			//	If we only have one parameter, then we return distance from the
+			//	given node to all nodes.
 
-			int iDist = g_pUniverse->GetTopology().GetDistance(sSource, sDest);
-			if (iDist >= 0)
-				return pCC->CreateInteger(iDist);
+			if (pArgs->GetCount() == 1)
+				{
+				CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sSource);
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+					
+				TSortMap<CString, int> Distances;
+				g_pUniverse->GetTopology().CalcDistances(pNode, Distances);
+
+				ICCItemPtr pResult(ICCItem::SymbolTable);
+				for (int i = 0; i < Distances.GetCount(); i++)
+					{
+					pResult->SetIntegerAt(*pCC, Distances.GetKey(i), Distances[i]);
+					}
+
+				return pResult->Reference();
+				}
 			else
-				return pCC->CreateNil();
+				{
+				CString sDest = pArgs->GetElement(1)->GetStringValue();
+				if (g_pUniverse->FindTopologyNode(sDest) == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown topology node"), pArgs->GetElement(1));
+
+				int iDist = g_pUniverse->GetTopology().GetDistance(sSource, sDest);
+				if (iDist >= 0)
+					return pCC->CreateInteger(iDist);
+				else
+					return pCC->CreateNil();
+				}
 			}
 
 		case FN_SYS_HAS_ATTRIBUTE:
