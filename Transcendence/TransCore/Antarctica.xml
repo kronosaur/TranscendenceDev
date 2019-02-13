@@ -128,13 +128,7 @@
 			<Lookup count="8-12" table="&tbCommonwealthFleetItems;"/>
 		</Items>
 
-		<Events>
-			<OnDestroy>
-				(if aWreckObj
-					(rpgDestroyItems aWreckObj)
-					)
-			</OnDestroy>
-		</Events>
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main backgroundID="none">
@@ -174,6 +168,25 @@
 				</Panes>
 			</Main>
 		</DockScreens>
+
+		<!-- Events and Language -->
+
+		<Events>
+			<OnCreate>
+				;	We override the base class's OnCreate because we don't want
+				;	the normal behavior or the Britannia squadron.
+
+			</OnCreate>
+
+			<OnDestroy>
+				;	We override the base class's OnDestroy because we don't want
+				;	the automatic retaliation, etc.
+
+				(if aWreckObj
+					(rpgDestroyItems aWreckObj)
+					)
+			</OnDestroy>
+		</Events>
 
 		<Language>
 			<Text id="actionBridge">[B]ridge</Text>

@@ -688,13 +688,6 @@
 					)
 			</OnAttackedByPlayer>
 
-			<OnOrdersCompleted>
-				(block Nil
-					(shpOrder gSource 'hold)
-					(objSetData gSource 'behavior Nil)
-					)
-			</OnOrdersCompleted>
-
 			<OnLaunchPatrol>
 				(switch
 					;	If there is a patrol out there, recall it
