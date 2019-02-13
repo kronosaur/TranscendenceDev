@@ -926,6 +926,9 @@ void CTopology::CalcDistances (const CTopologyNode *pSrc, TSortMap<CString, int>
 	for (i = 0; i < GetTopologyNodeCount(); i++)
 		{
 		CTopologyNode *pNode = GetTopologyNode(i);
+		if (pNode->IsEndGame())
+			continue;
+
 		retDistances.SetAt(pNode->GetID(), pNode->GetCalcDistance());
 		pNode->SetMarked(OldMarks.IsSet(i));
 		}
@@ -1386,7 +1389,7 @@ int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 	//	systems.
 
 	bool bDistKnown = false;
-	iNewBestDist = INFINITE_DISTANCE;
+	iNewBestDist = iBestDist;
 	for (i = 0; i < pSource->GetStargateCount(); i++)
 		{
 		CTopologyNode *pDest = pSource->GetStargateDest(i);
@@ -1397,7 +1400,7 @@ int CTopology::GetDistance (const CTopologyNode *pSource, int iBestDist) const
 
 		if (!pDest->IsMarked())
 			{
-			int iDist = GetDistance(pDest, iNewBestDist - 1);
+			int iDist = GetDistance(pDest, (iNewBestDist == INFINITE_DISTANCE ? INFINITE_DISTANCE : iNewBestDist - 1));
 			if (iDist < iNewBestDist)
 				{
 				iNewBestDist = iDist;
