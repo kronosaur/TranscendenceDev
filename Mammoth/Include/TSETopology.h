@@ -406,6 +406,8 @@ struct STopologyCreateCtx
 class CTopology
 	{
 	public:
+		static const int UNKNOWN_DISTANCE =	-1;
+
 		struct SNodeCreateCtx
 			{
 			SNodeCreateCtx (void) :
@@ -438,16 +440,17 @@ class CTopology
 		ALERROR AddTopologyDesc (STopologyCreateCtx &Ctx, CTopologyDesc *pNode, CTopologyNode **retpNewNode = NULL);
 		ALERROR AddTopologyNode (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyNode **retpNewNode = NULL);
 		void CalcDistances (const CTopologyNode *pSrc, TSortMap<CString, int> &retDistances) const;
+		void CalcDistances (const TArray<const CTopologyNode *> &Src, TSortMap<CString, int> &retDistances) const;
 		ALERROR CreateTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, SNodeCreateCtx &NodeCtx, CTopologyNode **retpNode = NULL);
 		void DeleteAll (void);
 		bool FindNearestNodeCreatedBy (const CString &sID, CTopologyNode *pNode, CTopologyNode **retpNewNode = NULL) const;
 		bool FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode) const;
 		CTopologyNode *FindTopologyNode (const CString &sID) const;
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
-		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pDest) const;
-		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
+		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
-		int GetDistanceNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
+		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
+		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
 		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
@@ -474,7 +477,6 @@ class CTopology
 		ALERROR AddStargate (STopologyCreateCtx &Ctx, CTopologyNode *pNode, bool bRootNode, CXMLElement *pGateDesc);
 		ALERROR AddTopologyNode (const CString &sID, CTopologyNode *pNode);
 		bool FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType) const;
-		int GetDistance (const CTopologyNode *pSource, int iBestDist = -1) const;
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode **retpNode);
 
 		CTopologyNodeList m_Topology;

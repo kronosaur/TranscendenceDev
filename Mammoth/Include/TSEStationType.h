@@ -190,6 +190,8 @@ class CStationEncounterCtx
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream);
 
+		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria);
+
 	private:
 		struct SEncounterStats
 			{
@@ -209,8 +211,6 @@ class CStationEncounterCtx
 
 		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
 		int GetCountInSystem (CSystem *pSystem, CStationType *pStationType) const;
-
-		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria);
 
 		SEncounterStats m_Total;			//	Encounters in entire game
 		TSortMap<int, SEncounterStats> m_ByLevel;	//	Encounters by system level

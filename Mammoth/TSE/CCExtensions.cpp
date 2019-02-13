@@ -483,6 +483,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_ITEM_BUY_PRICE			37
 #define FN_SYS_STARGATE_PROPERTY		38
 #define FN_SYS_LOCATIONS				39
+#define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -2960,6 +2961,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"sysGetTopologyDistance",		fnSystemGet,	FN_SYS_TOPOLOGY_DISTANCE,
 			"(sysGetTopologyDistance fromID [toID]) -> distance (or Nil)",
 			"s*",	0,	},
+
+		{	"sysGetTopologyDistanceToCriteria",		fnSystemGet,	FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA,
+			"(sysGetTopologyDistanceToCriteria [fromID] criteria) -> distance (or Nil)",
+			"ss",	0,	},
 
 		{	"sysHasAttribute",				fnSystemGet,	FN_SYS_HAS_ATTRIBUTE,
 			"(sysHasAttribute [nodeID] attrib) -> True/Nil",
@@ -13510,7 +13515,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItemPtr pResult(ICCItem::SymbolTable);
 				for (int i = 0; i < Distances.GetCount(); i++)
 					{
-					pResult->SetIntegerAt(*pCC, Distances.GetKey(i), Distances[i]);
+					if (Distances[i] == CTopology::UNKNOWN_DISTANCE)
+						pResult->SetBooleanAt(*pCC, Distances.GetKey(i), false);
+					else
+						pResult->SetIntegerAt(*pCC, Distances.GetKey(i), Distances[i]);
 					}
 
 				return pResult->Reference();
@@ -13527,6 +13535,40 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else
 					return pCC->CreateNil();
 				}
+			}
+
+		case FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA:
+			{
+			int iArg = 0;
+
+			//	Get the topology node
+
+			CTopologyNode *pNode;
+			if (pArgs->GetCount() == 1)
+				{
+				pNode = g_pUniverse->GetCurrentTopologyNode();
+				if (pNode == NULL)
+					return pCC->CreateNil();
+				}
+			else
+				{
+				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				if (pNode == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
+				}
+
+			//	Parse criteria
+
+			CTopologyNode::SCriteria Criteria;
+			CString sError;
+			if (CTopologyNode::ParseCriteria(pArgs->GetElement(iArg++)->GetStringValue(), &Criteria, &sError) != NOERROR)
+				return pCC->CreateError(sError);
+
+			int iDist = CStationEncounterCtx::CalcDistanceToCriteria(pNode, Criteria.AttribCriteria);
+			if (iDist == -100)
+				return pCC->CreateNil();
+			else
+				return pCC->CreateInteger(iDist);
 			}
 
 		case FN_SYS_HAS_ATTRIBUTE:

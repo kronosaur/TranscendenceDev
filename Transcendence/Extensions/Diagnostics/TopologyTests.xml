@@ -18,15 +18,13 @@
 
 					(diagRun (list
 
-						;	Set up
-
 						(lambda ()
 							(block (
-								;	Compute the distance from every system to SE.
+								;	Compute the distance from SE to every system.
 
 								(test1 (apply struct 
 									(map (sysGetNodes) theNode 
-										(list theNode (sysGetTopologyDistance theNode 'SE))
+										(list theNode (sysGetTopologyDistance 'SE theNode))
 										)
 									))
 
@@ -41,6 +39,63 @@
 									(if (!= (@ test1 theNode) (@ test2 theNode))
 										(error (cat "sysGetTopologyDistance failed from " theNode " to SE"))
 										)
+									)
+								)
+							)
+
+						(lambda ()
+							(block (
+								;	Compute the distance from SE to SK
+
+								(test1 (sysGetTopologyDistance 'SE 'SK))
+
+								;	Now get the distance a different way
+
+								(test2 (sysGetTopologyDistanceToCriteria 'SE "+stKatharine"))
+								)
+
+								;	If the result of the two tests is not equal, then we fail.
+
+								(if (!= test1 test2)
+									(error "sysGetTopologyDistanceToCriteria failed")
+									)
+								)
+							)
+
+						(lambda ()
+							(block (
+								;	Compute the distance from SE to SK
+
+								(test1 (sysGetTopologyDistance 'SE 'SK))
+
+								;	Now get the distance a different way
+
+								(test2 (sysGetTopologyDistanceToCriteria 'SE "+newBeyond"))
+								)
+
+								;	If the result of the two tests is not equal, then we fail.
+
+								(if (!= test1 (- test2))
+									(error "sysGetTopologyDistanceToCriteria failed")
+									)
+								)
+							)
+
+						(lambda ()
+							(block (
+								;	Compute the distance from SE to SK
+
+								(test1 (sysGetTopologyDistance 'CP 'SK))
+
+								;	Now get the distance a different way
+
+								(test2 (sysGetTopologyDistanceToCriteria 'CP "+newBeyond"))
+								)
+
+								;	If the result of the two tests is not equal, then we fail.
+
+								(if (!= test1 (- test2))
+									(error "sysGetTopologyDistanceToCriteria failed")
 									)
 								)
 							)
