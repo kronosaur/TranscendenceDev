@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTopologyTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Topology
+
+					(diagEval (list
+						{	test:'(sysGetTopologyDistance 'SE 'Elysium)			result:Nil	}
+						{	test:'(sysGetTopologyDistance 'Elysium 'SE)			result:1	}
+						))
+
+					;	Topology Tests
+
+					(diagRun (list
+
+						;	Set up
+
+						(lambda ()
+							(block (
+								;	Compute the distance from every system to SE.
+
+								(test1 (apply struct 
+									(map (sysGetNodes) theNode 
+										(list theNode (sysGetTopologyDistance theNode 'SE))
+										)
+									))
+
+								;	Now get the distance the built-in way
+
+								(test2 (sysGetTopologyDistance 'SE))
+								)
+
+								;	If the result of the two tests is not equal, then we fail.
+
+								(enum (sysGetNodes) theNode
+									(if (!= (@ test1 theNode) (@ test2 theNode))
+										(error (cat "sysGetTopologyDistance failed from " theNode " to SE"))
+										)
+									)
+								)
+							)
+						))
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

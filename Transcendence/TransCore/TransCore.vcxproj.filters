@@ -807,5 +807,8 @@
     <Xml Include="RPGViewers.xml">
       <Filter>RPG Library</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

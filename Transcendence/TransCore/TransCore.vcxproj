@@ -182,6 +182,7 @@
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
     <Xml Include="Analyzers.xml" />
     <Xml Include="Anarchists.xml" />
