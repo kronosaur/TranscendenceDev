@@ -232,12 +232,11 @@
 
 					;	Chance of rumor being selected is proportional to its priority
 					;	If all priorities are equal this is equivalent to (random rumorList)
-					(theRoll (random 1 (+ (map filteredRumors theRumor (@ theRumor 'priority)))))
+					(theRoll (random 1 (+ (map filteredRumors theRumor (or (@ theRumor 'priority) 10)))))
 					(theRumor (match filteredRumors theRumor
-						(ls (setq theRoll (- theRoll (@ theRumor 'priority))) 1)
+						(ls (setq theRoll (- theRoll (or (@ theRumor 'priority) 10))) 1)
 						))
 					)
-
 					(if (and theRumor (@ options 'actionDoneID))
 						(set@ theRumor 'actionDoneID (@ options 'actionDoneID))
 						)
