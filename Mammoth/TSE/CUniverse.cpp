@@ -828,7 +828,8 @@ void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &C
 	for (i = 0; i < m_AllMissions.GetCount(); i++)
 		{
 		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->MatchesCriteria(pSource, Criteria))
+		if (pMission->MatchesCriteria(pSource, Criteria) 
+				&& !pMission->IsDestroyed())
 			retList->Insert(pMission);
 		}
 	}

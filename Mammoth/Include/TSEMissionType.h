@@ -95,6 +95,15 @@ class CMissionType : public CDesignType
 		DWORD m_fNoDecline:1;				//	If TRUE, mission cannot be declined once offered.
 		DWORD m_fRecordNonPlayer:1;			//	If TRUE, non-player missions will not be deleted after completion
 
-		DWORD m_dwSpare:24;
+		DWORD m_fDestroyOnDecline:1;		//	If TRUE, destroy mission if player declines.
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:16;
 	};
 

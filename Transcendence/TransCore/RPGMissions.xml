@@ -389,6 +389,15 @@
 							
 										(setq aScreenType 'DeclineFollowUp)
 										(setq screenOptions (msnFireEvent missionObj "OnGetNextScreen"))
+
+										;	If the mission wants to be destroyed at this point,
+										;	do it now.
+
+										(if (msnGetProperty missionObj 'destroyOnDecline)
+											(msnDestroy missionObj)
+											)
+
+										;	Navigate
 							
 										(switch
 											(eq (@ screenOptions 'nextScreen) 'forceUndock)

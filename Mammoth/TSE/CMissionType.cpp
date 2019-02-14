@@ -6,6 +6,7 @@
 
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
 #define DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("debriefAfterOutOfSystem")
+#define DESTROY_ON_DECLINE_ATTRIB				CONSTLIT("destroyOnDecline")
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
 #define FAILURE_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("failureAfterOutOfSystem")
 #define FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB		CONSTLIT("forceUndockAfterDebrief")
@@ -26,6 +27,7 @@
 
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
+#define PROPERTY_DESTROY_ON_DECLINE				CONSTLIT("destroyOnDecline")
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
 #define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
@@ -126,6 +128,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fCloseIfOutOfSystem = pDesc->GetAttributeBool(DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB);
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
 	m_fAllowDelete = pDesc->GetAttributeBool(ALLOW_PLAYER_DELETE_ATTRIB);
+	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
 
 	CString sAttrib;
 	if (pDesc->FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
@@ -181,6 +184,9 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_DELETED))
 		return ICCItemPtr(CanBeDeleted());
+
+	else if (strEquals(sProperty, PROPERTY_DESTROY_ON_DECLINE))
+		return ICCItemPtr(m_fDestroyOnDecline ? true : false);
 
 	else if (strEquals(sProperty, PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF))
 		return ICCItemPtr(ForceUndockAfterDebrief());

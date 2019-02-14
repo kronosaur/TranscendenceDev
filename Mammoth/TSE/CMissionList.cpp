@@ -88,7 +88,8 @@ CMission *CMissionList::GetMissionByID (DWORD dwID) const
 	int i;
 
 	for (i = 0; i < m_List.GetCount(); i++)
-		if (m_List[i]->GetID() == dwID)
+		if (m_List[i]->GetID() == dwID
+				&& !m_List[i]->IsDestroyed())
 			return m_List[i];
 
 	return NULL;
