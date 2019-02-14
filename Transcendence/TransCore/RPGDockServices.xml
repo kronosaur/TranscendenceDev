@@ -9,9 +9,16 @@
 	will offer.
 	
 	gData uses the following fields:
-	
+
 		checkMilitaryID: If True, we check for military ID before installing
 				any military items. We also refuse to install Illegal items.
+
+		dockMasterMissions: Optional struct to use to get missions from the
+				dockmaster. Same as options for rpgMissionAssignment
+
+		dockMasterLabel: Label for talking with dockmaster
+
+		dockMasterDesc: Description for talking with dockmaster
 		
 		reactorUpgrade: If non-Nil, this must be a list generate with
 				rpgGetReactorUpgradeList. Otherwise, we do not offer a reactor
@@ -110,6 +117,21 @@
 								}
 							))
 						)
+
+						;	Dock master
+
+						(if (@ gData 'dockMasterMissions)
+							(block ()
+								(scrShowAction gScreen 'actionDockMaster True)
+								(if (@ gData 'dockMasterLabel)
+									(scrSetActionLabel gScreen 'actionDockMaster (@ gData 'dockMasterLabel))
+									)
+								(if (@ gData 'dockMasterDesc)
+									(scrSetActionDesc gScreen 'actionDockMaster (@ gData 'dockMasterDesc))
+									)
+								)
+							(scrShowAction gScreen 'actionDockMaster Nil)
+							)
 						
 						;	Refuel services
 						
@@ -185,6 +207,10 @@
 				</OnPaneInit>
 				
 				<Actions>
+					<Action id="actionDockMaster">
+						(rpgMissionAssignment (@ gData 'dockMasterMissions))
+					</Action>
+
 					<Action id="actionRefuel">
 						(if (= (scrGetData gScreen 'fuelCost) 0)
 							(block Nil
@@ -293,7 +319,8 @@
 		</Panes>
 		
 		<Language>
-			<Text id="actionDone">"[Escape] Done"</Text>
+			<Text id="actionDockMaster">[T]alk with Dockmaster</Text>
+			<Text id="actionDone">[Escape] Done</Text>
 			
 			<Text id="actionMiscDevices">[M]iscellaneous Devices</Text>
 			<Text id="actionMiscDevices:nothing">We don't have miscellaneous devices to install.</Text>
