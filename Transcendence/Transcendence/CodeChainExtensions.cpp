@@ -383,8 +383,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"options:\n\n"
 
+			"   'identifyInstalled\n"
 			"   'noOrderTransfer\n"
 			"   'oldShipWaits\n"
+			"   'transferCargo\n"
 			"   'transferEquipment\n"
 				,
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
@@ -1187,7 +1189,9 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				Options.bNoOrderTransfer = pOptions->GetBooleanAt(CONSTLIT("noOrderTransfer"));
 				Options.bOldShipWaits = pOptions->GetBooleanAt(CONSTLIT("oldShipWaits"));
 				Options.bTakeDockingPort = pOptions->GetBooleanAt(CONSTLIT("takeDockingPort"));
+				Options.bTransferCargo = pOptions->GetBooleanAt(CONSTLIT("transferCargo"));
 				Options.bTransferEquipment = pOptions->GetBooleanAt(CONSTLIT("transferEquipment"));
+				Options.bIdentifyInstalled = pOptions->GetBooleanAt(CONSTLIT("identifyInstalled"));
 				}
 
 			//	Change ships

@@ -2761,6 +2761,26 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	pOldShip->TrackFuel(false);
     pOldShip->TrackMass(false);
 
+	//	Transfer cargo from the old ship to the new one
+
+	if (Options.bTransferCargo)
+		{
+		CItemListManipulator Src(pOldShip->GetItemList());
+		CItemListManipulator Dest(pNewShip->GetItemList());
+
+		Src.ResetCursor();
+		while (Src.MoveCursorForward())
+			{
+			CItem Item = Src.GetItemAtCursor();
+			if (Item.IsInstalled() || Item.IsVirtual())
+				continue;
+
+			Dest.AddItem(Item);
+			Src.DeleteAtCursor(Item.GetCount());
+			Src.MoveCursorBack();
+			}
+		}
+
 	//	Transfer equipment from the old ship to the new one (if necessary).
 	//
 	//	NOTE: This transfers equipment such as targeting computers that are 
@@ -2770,6 +2790,20 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	if (Options.bTransferEquipment)
 		{
 		pNewShip->GetNativeAbilities().Set(pOldShip->GetNativeAbilities());
+		}
+
+	//	Identify items on the new ship
+
+	if (Options.bIdentifyInstalled)
+		{
+		CItemListManipulator Dest(pNewShip->GetItemList());
+		Dest.ResetCursor();
+		while (Dest.MoveCursorForward())
+			{
+			CItem Item = Dest.GetItemAtCursor();
+			if (Item.IsInstalled())
+				Item.GetType()->SetKnown(true);
+			}
 		}
 
 	//	Now set this controller to drive the new ship. gPlayer and gPlayerShip
