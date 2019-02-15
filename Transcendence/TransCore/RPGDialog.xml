@@ -203,6 +203,8 @@
 				;
 				;		translateType: Use this type for translations
 				;
+				;		translateData: Use this data for translations
+				;
 				;		missionObj: Required if 'onAcceptDecline is defined.
 				;
 				;		onAcceptDecline: (lambda (theScreen acceptDecline pageDesc options) ...)
@@ -222,6 +224,7 @@
 
 					(firstPageDesc (rpgPageDesc textDesc 0))
 					(translateID (or (@ firstPageDesc 'translateType) (@ options 'translateType)))
+					(translateData (or (@ pageDesc 'data) (@ options 'translateData) gData))
 					(descID (or (@ pageDesc 'descID) (@ pageDesc 'textID)))
 					
 					(actions (@ pageDesc 'actions))
@@ -236,9 +239,9 @@
 
 					(if descID
 						(scrSetDesc theScreen (or
-							(and missionObj (msnTranslate missionObj descID (or (@ pageDesc 'data) gData)))
-							(and translateID (typTranslate translateID descID (or (@ pageDesc 'data) gData)))
-							(scrTranslate theScreen descID (or (@ pageDesc 'data) gData))
+							(and missionObj (msnTranslate missionObj descID translateData))
+							(and translateID (typTranslate translateID descID translateData))
+							(scrTranslate theScreen descID translateData)
 							))
 						(scrSetDesc theScreen (@ pageDesc 'desc))
 						)
