@@ -1305,8 +1305,8 @@
 
 		<DeviceSlots>
 			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="0" posRadius="5" posZ="10"/>
-			<DeviceSlot criteria="p +property:singleShotOrigin;" posAngle="40" posRadius="37" posZ="0"/>
-			<DeviceSlot criteria="l +property:singleShotOrigin;" posAngle="-40" posRadius="37" posZ="0"/>
+			<DeviceSlot criteria="p +property:singlePointOrigin;" posAngle="40" posRadius="37" posZ="0"/>
+			<DeviceSlot criteria="l +property:singlePointOrigin;" posAngle="-40" posRadius="37" posZ="0"/>
 			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
 			<DeviceSlot criteria="s">
 				<EnhancementAbilities>
