@@ -148,6 +148,7 @@ static CObjectClass<CSpaceObject>g_Class(OBJID_CSPACEOBJECT);
 #define CATEGORY_EFFECT							CONSTLIT("effect")
 #define CATEGORY_MARKER							CONSTLIT("marker")
 #define CATEGORY_MISSILE						CONSTLIT("missile")
+#define CATEGORY_MISSION						CONSTLIT("mission")
 #define CATEGORY_SHIP							CONSTLIT("ship")
 #define CATEGORY_STATION						CONSTLIT("station")
 
@@ -4075,6 +4076,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 			case catMissile:
 				return CC.CreateString(CATEGORY_MISSILE);
+
+			case catMission:
+				return CC.CreateString(CATEGORY_MISSION);
 
 			case catMarker:
 				return CC.CreateString(CATEGORY_MARKER);

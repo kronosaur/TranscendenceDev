@@ -648,6 +648,7 @@ class CSpaceObject : public CObject
 			catMissile =		0x00000008,
 			catFractureEffect =	0x00000010,
 			catMarker =			0x00000020,
+			catMission =		0x00000040,
 			catOther =			0x80000000,
 			};
 

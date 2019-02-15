@@ -1854,7 +1854,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (all)\n\n"
 
 			"   'ascended\n"
-			"   'category -> 'beam | 'effect | 'marker | 'missile | 'ship | 'station\n"
+			"   'category -> 'beam | 'effect | 'marker | 'missile | 'mission | 'ship | 'station\n"
 			"   'commsKey\n"
 			"   'currency -> currency type UNID\n"
 			"   'currencyName\n"
