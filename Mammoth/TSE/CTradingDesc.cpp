@@ -1809,9 +1809,9 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 62)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_pCurrency.Set(dwLoad);
+		m_pCurrency.Set(Ctx.GetUniverse(), dwLoad);
 		if (m_pCurrency == NULL)
-			m_pCurrency.Set(DEFAULT_ECONOMY_UNID);
+			m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 	else
 		{
@@ -1821,7 +1821,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 		//	Previous versions are always credits
 
-		m_pCurrency.Set(DEFAULT_ECONOMY_UNID);
+		m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 
 	Ctx.pStream->Read((char *)&m_iMaxCurrency, sizeof(DWORD));

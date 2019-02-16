@@ -549,7 +549,7 @@ class CEconomyTypeRef
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
 		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
-		void Set (DWORD dwUNID);
+		void Set (CUniverse &Universe, DWORD dwUNID);
 		inline void Set (const CEconomyType *pType) { m_pType = pType; }
 
 	private:

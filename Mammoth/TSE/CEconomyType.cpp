@@ -202,14 +202,14 @@ ALERROR CEconomyTypeRef::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CEconomyTypeRef::Set (DWORD dwUNID)
+void CEconomyTypeRef::Set (CUniverse &Universe, DWORD dwUNID)
 
 //	Set
 //
 //	Set
 
 	{
-	m_pType = CEconomyType::AsType(g_pUniverse->FindDesignType(dwUNID));
+	m_pType = CEconomyType::AsType(Universe.FindDesignType(dwUNID));
 	}
 
 //	CCurrencyAndValue ----------------------------------------------------------
