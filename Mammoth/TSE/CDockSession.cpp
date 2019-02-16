@@ -69,7 +69,7 @@ bool CDockSession::FindScreenRoot (const CString &sScreen, CDesignType **retpRoo
 	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
 	if (!bNotANumber)
 		{
-		CDesignType *pRoot = GetUniverse().FindSharedDockScreen(dwUNID);
+		CDesignType *pRoot = GetUniverse().GetDesignCollection().FindDockScreen(dwUNID);
 		if (pRoot == NULL)
 			return false;
 

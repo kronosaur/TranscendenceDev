@@ -1714,6 +1714,43 @@ ALERROR CDesignCollection::ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap
 	return NOERROR;
 	}
 
+CDesignType *CDesignCollection::ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual, bool *retbIsLocal)
+
+//	ResolveDockScreen
+//
+//	Resolves a string screen name.
+//
+//	If the screen name is an UNID then we return the docks screen type
+//	Otherwise, we return pLocalScreen and the screen name.
+//
+//	NULL means that the screen was not found.
+
+	{
+	bool bNotANumber;
+	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
+
+	if (bNotANumber)
+		{
+		if (retbIsLocal)
+			*retbIsLocal = true;
+
+		if (retsScreenActual)
+			*retsScreenActual = sScreen;
+
+		return pLocalScreen;
+		}
+	else
+		{
+		if (retbIsLocal)
+			*retbIsLocal = false;
+
+		if (retsScreenActual)
+			*retsScreenActual = NULL_STR;
+
+		return CDockScreenType::AsType(FindEntry(dwUNID));
+		}
+	}
+
 ALERROR CDesignCollection::ResolveTypeHierarchy (SDesignLoadCtx &Ctx)
 
 //	ResolveTypeHierarchy

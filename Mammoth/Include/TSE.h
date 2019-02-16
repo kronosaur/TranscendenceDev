@@ -749,6 +749,7 @@ class CSpaceObject
 		inline void Destroy (SDamageCtx &Ctx) { Destroy(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc); }
 		inline void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, Ctx.pDesc); }
 		void Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL, CSpaceObject **retpWreck = NULL);
+		CDesignCollection &GetDesign (void) const;
 		inline CSystem *GetSystem (void) const { return m_pSystem; }
 		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		inline bool IsAscended (void) const { return m_fAscended; }

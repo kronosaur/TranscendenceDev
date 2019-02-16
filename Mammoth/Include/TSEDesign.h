@@ -1294,6 +1294,11 @@ class CDesignCollection
 		void SweepImages (void);
 		void WriteDynamicTypes (IWriteStream *pStream);
 
+		//	Dock Screens
+
+		inline CDockScreenType *FindDockScreen (DWORD dwUNID) { return CDockScreenType::AsType(FindEntry(dwUNID)); }
+		CDesignType *ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
+
 	private:
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);

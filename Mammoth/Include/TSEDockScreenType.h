@@ -14,7 +14,6 @@ class CDockScreenType : public CDesignType
 		static CString GetStringUNID (CDesignType *pRoot, const CString &sScreen);
 		inline CXMLElement *GetDesc (void) { return m_pDesc; }
 		CXMLElement *GetPane (const CString &sPane);
-		static CDesignType *ResolveScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 		//	CDesignType overrides
 		static CDockScreenType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designDockScreen) ? (CDockScreenType *)pType : NULL); }

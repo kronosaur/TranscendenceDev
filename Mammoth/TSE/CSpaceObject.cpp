@@ -3641,6 +3641,16 @@ int CSpaceObject::GetDataInteger (const CString &sAttrib) const
 	return pValue->GetIntegerValue();
 	}
 
+CDesignCollection &CSpaceObject::GetDesign (void) const
+
+//	GetDesign
+//
+//	Returns the design collection.
+
+	{
+	return GetUniverse().GetDesignCollection();
+	}
+
 CString CSpaceObject::GetDesiredCommsKey (void) const
 
 //	GetDesiredCommsKey
@@ -3703,12 +3713,10 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 //	NOTE: Caller must discard *retpData.
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
 	//	First see if any global types override this
 
 	CDockScreenSys::SSelector Screen;
-	if (!GetUniverse().GetDesignCollection().FireGetGlobalDockScreen(this, 0, &Screen))
+	if (!GetDesign().FireGetGlobalDockScreen(this, 0, &Screen))
 		Screen.iPriority = -1;
 
 	//	See if any overlays have dock screens
@@ -3734,7 +3742,7 @@ CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *
 
 	if (Screen.iPriority != -1)
 		{
-		CDesignType *pScreen = CDockScreenType::ResolveScreen(GetType(), Screen.sScreen, retsScreen);
+		CDesignType *pScreen = GetDesign().ResolveDockScreen(GetType(), Screen.sScreen, retsScreen);
 		if (pScreen)
 			{
 			if (retpData)
@@ -3765,7 +3773,7 @@ ICCItemPtr CSpaceObject::GetGlobalData (const CString &sAttribute) const
 	{
 	CDesignType *pType = GetType();
 	if (pType == NULL)
-		return ICCItemPtr(GetUniverse().GetCC().CreateNil());
+		return ICCItemPtr(ICCItem::Nil);
 
 	return pType->GetGlobalData(sAttribute);
 	}
@@ -4690,7 +4698,7 @@ bool CSpaceObject::HasDockScreen (void) const
 	//	If we don't do this, then some ships would automatically get screens
 	//	because we auto-create docking ports for ships if they have screens.
 
-	if (GetUniverse().GetDesignCollection().FireGetGlobalDockScreen(this, CDesignCollection::FLAG_NO_OVERRIDE))
+	if (GetDesign().FireGetGlobalDockScreen(this, CDesignCollection::FLAG_NO_OVERRIDE))
 		return true;
 
 	return false;

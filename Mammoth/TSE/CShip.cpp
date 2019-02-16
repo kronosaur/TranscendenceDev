@@ -4852,7 +4852,7 @@ bool CShip::OnGateCheck (CTopologyNode *pDestNode, const CString &sDestEntryPoin
 
 	//	Global event
 
-	if (!GetUniverse().GetDesignCollection().FireOnGlobalObjGateCheck(this, pDestNode, sDestEntryPoint, pGateObj))
+	if (!GetDesign().FireOnGlobalObjGateCheck(this, pDestNode, sDestEntryPoint, pGateObj))
 		return false;
 
 	//	OK to gate
