@@ -199,6 +199,19 @@ const CDamageAdjDesc *CAdventureDesc::GetDefaultArmorDamageAdj (int iLevel)
 	return &g_ArmorDamageAdj[iLevel - 1];
 	}
 
+const CEconomyType &CAdventureDesc::GetDefaultCurrency (void) const
+
+//	GetDefaultCurrency
+//
+//	Returns the default currency for the adventure.
+
+	{
+	if (m_pDefaultCurrency)
+		return *m_pDefaultCurrency;
+
+	return GetUniverse().GetCreditCurrency();
+	}
+
 const CDamageAdjDesc *CAdventureDesc::GetDefaultShieldDamageAdj (int iLevel)
 
 //	GetDefaultShieldDamageAdj

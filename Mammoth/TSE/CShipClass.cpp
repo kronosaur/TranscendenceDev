@@ -3400,7 +3400,7 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 		if (pCurrency == NULL)
 			pCurrency = (m_AverageDevices.GetCount() > 0 ? m_AverageDevices.GetDeviceClass(0)->GetItemType()->GetCurrencyType() : NULL);
 		if (pCurrency == NULL)
-			pCurrency = GetUniverse().GetDefaultCurrency();
+			pCurrency = &GetUniverse().GetDefaultCurrency();
 
 		if (pCurrency)
 			{

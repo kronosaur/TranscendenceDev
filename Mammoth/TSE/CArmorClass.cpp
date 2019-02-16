@@ -1190,7 +1190,7 @@ Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &
 	//	Adjust for repair cost
 
 	Metric rStdCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
-	Metric rDiff = rStdCost - (Metric)CEconomyType::Default()->Exchange(m_Stats.RepairCost);
+	Metric rDiff = rStdCost - (Metric)GetUniverse().GetCreditCurrency().Exchange(m_Stats.RepairCost);
 	if (rDiff < 0.0)
 		rTotalBalance += Max(-40.0, 10.0 * rDiff / rStdCost);
 	else if (rDiff > 0.0)

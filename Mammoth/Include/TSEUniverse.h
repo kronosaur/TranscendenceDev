@@ -293,9 +293,10 @@ class CUniverse
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
+		const CEconomyType &GetCreditCurrency (void) const;
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
-		inline const CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
+		inline const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
 		inline CDockSession &GetDockSession (void) { return m_DockSession; }
 		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
@@ -365,6 +366,7 @@ class CUniverse
 		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
 		CEffectCreator *FindDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
+		inline const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
 		inline const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
@@ -384,7 +386,8 @@ class CUniverse
 		inline int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
 		inline CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		inline const CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		inline CSovereign *FindSovereign (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) { return m_Design.FindSystemFragment(sName, retpTable); }
@@ -529,6 +532,7 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		mutable const CEconomyType *m_pCreditCurrency = NULL;
 
 		//	Debugging structures
 

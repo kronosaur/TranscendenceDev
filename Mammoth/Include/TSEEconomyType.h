@@ -20,7 +20,6 @@ class CEconomyType : public CDesignType
 		inline const CString &GetSID (void) const { return m_sSID; }
 		inline bool IsCreditEquivalent (void) const { return (m_iCreditConversion == 100); }
 
-		static const CEconomyType *Default (void);
 		static CurrencyValue ExchangeToCredits (const CEconomyType *pFrom, CurrencyValue iAmount);
 		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value);
 		static CString RinHackGet (CSpaceObject *pObj);
@@ -28,7 +27,7 @@ class CEconomyType : public CDesignType
 		static void RinHackSet (CSpaceObject *pObj, const CString &sData);
 
 		//	CDesignType overrides
-		static const CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
+		static const CEconomyType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (const CEconomyType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return m_sCurrencyName; }
 		virtual DesignTypes GetType (void) const override { return designEconomyType; }

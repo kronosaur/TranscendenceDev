@@ -95,6 +95,7 @@ class CSovereign : public CDesignType
 		void Update (int iTick, CSystem *pSystem);
 
 		//	CDesignType overrides
+		static const CSovereign *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
 		static CSovereign *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSovereign) ? (CSovereign *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;

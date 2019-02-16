@@ -762,6 +762,23 @@ const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const
 		return CAdventureDesc::GetDefaultArmorDamageAdj(iLevel);
 	}
 
+const CEconomyType &CUniverse::GetCreditCurrency (void) const
+
+//	GetCreditCurrency
+//
+//	Returns the default credit economy definition.
+
+	{
+	if (m_pCreditCurrency == NULL)
+		{
+		m_pCreditCurrency = CEconomyType::AsType(FindDesignType(DEFAULT_ECONOMY_UNID));
+		if (m_pCreditCurrency == NULL)
+			throw CException(ERR_FAIL);
+		}
+
+	return *m_pCreditCurrency;
+	}
+
 CMission *CUniverse::GetCurrentMission (void)
 
 //	GetCurrentMission
@@ -2390,6 +2407,7 @@ ALERROR CUniverse::Reinit (void)
 
 	m_Design.Reinit();
 	g_bDefaultEffectsInit = false;
+	m_pCreditCurrency = NULL;
 
 	//	Clear the topology nodes
 

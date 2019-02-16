@@ -317,7 +317,7 @@ int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 	if (pStats == NULL)
 		return -1;
 
-	return (int)m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
+	return (int)m_pItemType->GetCurrencyType()->Exchange(NULL, pStats->iInstallCost);
 	}
 
 CUniverse &CDeviceClass::GetUniverse (void) const
