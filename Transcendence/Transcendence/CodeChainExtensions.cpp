@@ -1148,6 +1148,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pResult;
 
 	//	Convert the first argument into a player controller
@@ -1245,7 +1246,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_PLY_INC_ITEM_STAT:
 			{
 			CString sStat = pArgs->GetElement(1)->GetStringValue();
-			CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(2));
+			CItemType *pType = pCtx->AsItemType(pArgs->GetElement(2));
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), pArgs->GetElement(2));
 

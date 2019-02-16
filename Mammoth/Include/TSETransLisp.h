@@ -61,7 +61,7 @@ class CCodeChainCtx
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options = CCodeChain::SLinkOptions());
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
@@ -92,6 +92,7 @@ class CCodeChainCtx
 
 		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
+		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);

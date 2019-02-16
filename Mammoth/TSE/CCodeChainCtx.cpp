@@ -166,6 +166,35 @@ bool CCodeChainCtx::AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, boo
 	return true;
 	}
 
+CItemType *CCodeChainCtx::AsItemType (ICCItem *pItem) const
+
+//	AsItemType
+//
+//	Get an item type
+
+	{
+	if (pItem == NULL || pItem->IsNil())
+		return NULL;
+
+	//	If this is a list, then expect an item
+
+	else if (pItem->IsList())
+		{
+		CItem Item(CreateItemFromList(pItem));
+		return Item.GetType();
+		}
+
+	//	Otherwise, expect an UNID
+
+	else if (pItem->IsInteger())
+		return m_Universe.FindItemType((DWORD)pItem->GetIntegerValue());
+
+	//	Otherwise, we don't know
+
+	else
+		return NULL;
+	}
+
 DWORD CCodeChainCtx::AsNameFlags (ICCItem *pItem)
 
 //	AsNameFlags

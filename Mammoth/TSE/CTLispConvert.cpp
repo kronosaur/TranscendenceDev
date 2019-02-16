@@ -154,7 +154,7 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 		return false;
 	}
 
-ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Value)
+ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 
 //	CreateCurrencyValue
 //
@@ -167,7 +167,7 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CCodeChain &CC, CurrencyValue Val
 		return ICCItemPtr((int)Value);
 	}
 
-ICCItemPtr CTLispConvert::CreatePowerResultMW (CCodeChain &CC, int iPower)
+ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 
 //	CreatePowerResultMW
 //

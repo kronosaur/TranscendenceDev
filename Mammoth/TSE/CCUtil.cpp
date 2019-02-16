@@ -700,32 +700,6 @@ CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem
 	return pDevice;
 	}
 
-CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg)
-
-//	GetItemTypeFromArg
-//
-//	Get an item type
-
-	{
-	//	If this is a list, then expect an item
-
-	if (pArg->IsList())
-		{
-		CItem Item(CreateItemFromList(pArg));
-		return Item.GetType();
-		}
-
-	//	Otherwise, expect an UNID
-
-	else if (pArg->IsInteger())
-		return g_pUniverse->FindItemType((DWORD)pArg->GetIntegerValue());
-
-	//	Otherwise, we don't know
-
-	else
-		return NULL;
-	}
-
 const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 	{
 	//	If we have an UNID, then look up

@@ -2135,7 +2135,6 @@ ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNI
 void GetImageDescFromList (ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
 CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
-CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);
 ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
 CWeaponFireDesc *GetWeaponFireDescArg (CCodeChain &CC, ICCItem *pArg);

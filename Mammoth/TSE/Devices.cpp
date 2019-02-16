@@ -532,9 +532,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_POWER))
 		{
 		if (GetCategory() == itemcatReactor)
-			return CTLispConvert::CreatePowerResultMW(CC, GetPowerOutput(Ctx))->Reference();
+			return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx))->Reference();
 		else
-			return CTLispConvert::CreatePowerResultMW(CC, GetPowerRating(Ctx))->Reference();
+			return CTLispConvert::CreatePowerResultMW(GetPowerRating(Ctx))->Reference();
 		}
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))

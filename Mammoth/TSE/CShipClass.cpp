@@ -3869,7 +3869,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		}
 
 	else if (strEquals(sProperty, PROPERTY_HULL_VALUE))
-		return CTLispConvert::CreateCurrencyValue(CC, GetEconomyType()->Exchange(m_Hull.GetValue()));
+		return CTLispConvert::CreateCurrencyValue(GetEconomyType()->Exchange(m_Hull.GetValue()));
 
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_CLASS))
 		return (!m_Hull.GetArmorLimits().GetMaxArmorClass().IsBlank() ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorClass()) : ICCItemPtr(ICCItem::Nil));

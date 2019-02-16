@@ -1964,10 +1964,10 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(GetMaxHP(Ctx));
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
-		return CTLispConvert::CreatePowerResultMW(CC, GetPowerOutput(Ctx));
+		return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx));
 
 	else if (strEquals(sName, PROPERTY_POWER_USE))
-		return CTLispConvert::CreatePowerResultMW(CC, GetPowerRating(Ctx));
+		return CTLispConvert::CreatePowerResultMW(GetPowerRating(Ctx));
 
 	else if (strEquals(sName, PROPERTY_PRIME_SEGMENT))
 		{

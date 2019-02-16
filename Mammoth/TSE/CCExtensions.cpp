@@ -4042,10 +4042,11 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	//	Convert the first argument into an armor type
 
-	CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(0));
+	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
 	if (pType == NULL)
 		return pCC->CreateError(CONSTLIT("Invalid armor type"), pArgs->GetElement(0));
 
@@ -4712,8 +4713,9 @@ ICCItem *fnItemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
-	CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(0));
+	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
 	if (pType == NULL)
 		return pCC->CreateError(CONSTLIT("Unknown item type"), pArgs->GetElement(0));
 
@@ -5268,10 +5270,11 @@ ICCItem *fnItemTypeGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
-	//	Convert the first argument into an item type
+	//	Convert the first argument into an armor type
 
-	CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(0));
+	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
 	if (pType == NULL)
 		return pCC->CreateError(CONSTLIT("Invalid item type"), pArgs->GetElement(0));
 
@@ -5302,10 +5305,11 @@ ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
-	//	Convert the first argument into an item type
+	//	Convert the first argument into an armor type
 
-	CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(0));
+	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
 	if (pType == NULL)
 		return pCC->CreateError(CONSTLIT("Invalid item type"), pArgs->GetElement(0));
 
@@ -7534,7 +7538,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				sCriteria = pArgs->GetElement(1)->GetStringValue();
 			else
 				{
-				pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(1));
+				pType = pCtx->AsItemType(pArgs->GetElement(1));
 				if (pType == NULL)
 					return pCC->CreateNil();
 				}
@@ -7606,7 +7610,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Find the enhancement type
 
-			CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(2));
+			CItemType *pType = pCtx->AsItemType(pArgs->GetElement(2));
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), NULL);
 
@@ -7705,7 +7709,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				{
-				pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(2));
+				pType = pCtx->AsItemType(pArgs->GetElement(2));
 				if (pType == NULL)
 					return pCC->CreateNil();
 				}
