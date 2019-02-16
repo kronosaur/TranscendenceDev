@@ -12723,13 +12723,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pArgs->GetCount() == 1)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
@@ -13016,13 +13016,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSystem *pSystem = NULL;
 			if (pArgs->GetCount() <= 2)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
@@ -13090,7 +13090,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() >= 3)
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
@@ -13099,7 +13099,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			else
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
@@ -13130,13 +13130,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if ((pArgs->GetCount() == 1 && dwData == FN_SYS_GET_DATA)
 					|| (pArgs->GetCount() == 2 && dwData == FN_SYS_SET_DATA))
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
@@ -13167,7 +13167,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				//	OK if system has no topology. This can happen in the intro
 				//	system.
 
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
@@ -13227,7 +13227,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 1)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
@@ -13280,7 +13280,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pArgs->GetCount() == 0)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 
@@ -13357,13 +13357,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 0)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
@@ -13376,13 +13376,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 0)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
@@ -13413,7 +13413,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 2)
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 
@@ -13421,7 +13421,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 
@@ -13453,7 +13453,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 2)
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(0)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 
@@ -13461,7 +13461,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 			else
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 
@@ -13510,20 +13510,20 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (pArgs->GetCount() == 1)
 				{
-				CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sSource);
+				CTopologyNode *pNode = pCtx->GetUniverse().FindTopologyNode(sSource);
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 					
 				TSortMap<CString, int> Distances;
-				g_pUniverse->GetTopology().CalcDistances(pNode, Distances);
+				pCtx->GetUniverse().GetTopology().CalcDistances(pNode, Distances);
 
 				ICCItemPtr pResult(ICCItem::SymbolTable);
 				for (int i = 0; i < Distances.GetCount(); i++)
 					{
 					if (Distances[i] == CTopology::UNKNOWN_DISTANCE)
-						pResult->SetBooleanAt(*pCC, Distances.GetKey(i), false);
+						pResult->SetBooleanAt(Distances.GetKey(i), false);
 					else
-						pResult->SetIntegerAt(*pCC, Distances.GetKey(i), Distances[i]);
+						pResult->SetIntegerAt(Distances.GetKey(i), Distances[i]);
 					}
 
 				return pResult->Reference();
@@ -13531,10 +13531,10 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			else
 				{
 				CString sDest = pArgs->GetElement(1)->GetStringValue();
-				if (g_pUniverse->FindTopologyNode(sDest) == NULL)
+				if (pCtx->GetUniverse().FindTopologyNode(sDest) == NULL)
 					return pCC->CreateError(CONSTLIT("Unknown topology node"), pArgs->GetElement(1));
 
-				int iDist = g_pUniverse->GetTopology().GetDistance(sSource, sDest);
+				int iDist = pCtx->GetUniverse().GetTopology().GetDistance(sSource, sDest);
 				if (iDist >= 0)
 					return pCC->CreateInteger(iDist);
 				else
@@ -13551,13 +13551,13 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CTopologyNode *pNode;
 			if (pArgs->GetCount() == 1)
 				{
-				pNode = g_pUniverse->GetCurrentTopologyNode();
+				pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					return pCC->CreateNil();
 				}
 			else
 				{
-				pNode = g_pUniverse->FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
+				pNode = pCtx->GetUniverse().FindTopologyNode(pArgs->GetElement(iArg++)->GetStringValue());
 				if (pNode == NULL)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 				}
@@ -13580,7 +13580,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (pArgs->GetCount() == 1)
 				{
-				CTopologyNode *pNode = g_pUniverse->GetCurrentTopologyNode();
+				CTopologyNode *pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 				if (pNode == NULL)
 					{
 					//	HACK: If we have no node then we must be in the intro screen.
@@ -13626,7 +13626,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_NODE:
 			{
-			CTopologyNode *pNode = g_pUniverse->GetCurrentTopologyNode();
+			CTopologyNode *pNode = pCtx->GetUniverse().GetCurrentTopologyNode();
 			if (pNode == NULL)
 				return pCC->CreateNil();
 
