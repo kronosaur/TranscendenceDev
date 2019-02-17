@@ -2030,7 +2030,7 @@
 									)
 								)
 								
-							(if (ls bestDist 480)
+							(if (ls bestDist 360)
 								(setq bestDist (random 480 600))
 								(setq bestDist (add bestDist (random 120 240)))
 								)
