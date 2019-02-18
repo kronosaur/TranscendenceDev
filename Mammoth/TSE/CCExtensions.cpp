@@ -9168,14 +9168,14 @@ ICCItem *fnMissionSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSystemEvent *pEvent;
 			if (dwData == FN_MISSION_ADD_TIMER)
 				pEvent = new CTimedMissionEvent(
-						Max(0, pCtx->GetUniverse().GetTicks() + iTime),
+						Max(0, (int)pCtx->GetUniverse().GetTicks() + iTime),
 						0,
 						pMission,
 						sEvent,
 						sNodeID);
 			else
 				pEvent = new CTimedMissionEvent(
-						Max(0, pCtx->GetUniverse().GetTicks() + mathRandom(0, iTime)),
+						Max(0, (int)pCtx->GetUniverse().GetTicks() + mathRandom(0, iTime)),
 						iTime,
 						pMission,
 						sEvent,

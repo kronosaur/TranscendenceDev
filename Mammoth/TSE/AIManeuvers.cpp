@@ -772,7 +772,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 			//	Compute how brave we are based on the last time we got hit.
 			//	rBravery goes from 0.0 (scared) to 1.0 (brave)
 
-			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, (pShip->GetUniverse().GetTicks() - m_iLastAttack)));
+			int iLastHit = Max(0, Min(MAX_BRAVERY_TICKS, ((int)pShip->GetUniverse().GetTicks() - m_iLastAttack)));
 			const Metric rBravery = pow((Metric)iLastHit / (Metric)MAX_BRAVERY_TICKS, BRAVERY_DECAY_POWER);
 
 			//	Do we need to avoid getting too close?

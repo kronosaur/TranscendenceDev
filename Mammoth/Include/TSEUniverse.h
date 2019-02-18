@@ -449,7 +449,7 @@ class CUniverse
 		CString GetPlayerName (void) const;
 		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		CSovereign *GetPlayerSovereign (void) const;
-		inline int GetTicks (void) { return m_iTick; }
+		inline DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
 		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);

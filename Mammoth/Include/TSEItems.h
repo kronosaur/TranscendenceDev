@@ -118,7 +118,7 @@ class CItemEnhancement
 		inline int GetDataX (void) const { return (int)(DWORD)((m_dwMods & etDataXMask) >> 16); }
 		int GetEnhancedRate (int iRate) const;
 		inline CItemType *GetEnhancementType (void) const { return m_pEnhancer; }
-		inline int GetExpireTime (void) const { return m_iExpireTime; }
+		inline DWORD GetExpireTime (void) const { return (DWORD)m_iExpireTime; }
 		int GetFireArc (void) const;
 		int GetHPAdj (void) const;
 		int GetHPBonus (void) const;

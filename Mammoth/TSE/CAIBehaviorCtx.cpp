@@ -942,14 +942,14 @@ void CAIBehaviorCtx::DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewport
 		m_pNavPath->DebugPaintInfo(Dest, x, y, Ctx.XForm);
 	}
 
-bool CAIBehaviorCtx::IsBeingAttacked (int iThreshold) const 
+bool CAIBehaviorCtx::IsBeingAttacked (DWORD dwThreshold) const 
 
 //	IsBeingAttacked
 //
 //	Returns TRUE if we've been attacked recently.
 
 	{
-	return (g_pUniverse->GetTicks() - m_iLastAttack) <= iThreshold;
+	return (g_pUniverse->GetTicks() - (DWORD)m_iLastAttack) <= dwThreshold;
 	}
 
 bool CAIBehaviorCtx::IsSecondAttack (void) const

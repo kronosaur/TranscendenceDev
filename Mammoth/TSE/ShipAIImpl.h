@@ -74,7 +74,7 @@ class CAIBehaviorCtx
 		inline bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
 		inline bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
 		inline bool IsAggressor (void) const { return m_AISettings.IsAggressor(); }
-		bool IsBeingAttacked (int iThreshold = 150) const;
+		bool IsBeingAttacked (DWORD dwThreshold = 150) const;
 		inline bool IsDockingRequested (void) const { return m_fDockingRequested; }
 		inline bool IsImmobile (void) const { return m_fImmobile; }
 		inline bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
