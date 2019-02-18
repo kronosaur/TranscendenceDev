@@ -2907,9 +2907,8 @@ void CSystem::MarkImages (void)
 
 	for (i = 0; i < damageCount; i++)
 		{
-		CEffectCreator *pEffect = m_Universe.FindDefaultHitEffect((DamageTypes)i);
-		if (pEffect)
-			pEffect->MarkImages();
+		CEffectCreator &Effect = m_Universe.GetDefaultHitEffect((DamageTypes)i);
+		Effect.MarkImages();
 		}
 
 	//	Done

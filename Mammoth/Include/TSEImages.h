@@ -431,10 +431,7 @@ class CCompositeImageModifiers
 		inline void SetRotation (int iRotation) { m_iRotation = AngleMod(iRotation); }
 		inline void SetStationDamage (bool bValue = true) { m_fStationDamage = bValue; }
 
-		static void Reinit (void);
-
 	private:
-		static void InitDamagePainters (void);
 		static void PaintDamage (CG32bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter);
 
 		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;

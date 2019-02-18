@@ -30,17 +30,10 @@ struct SExtensionSaveDesc
 
 const DWORD UNIVERSE_VERSION_MARKER =					0xffffffff;
 
-const DWORD UNID_FIRST_DEFAULT_EFFECT =					0x00000010;
-const DWORD UNID_FIRST_DEFAULT_FIRE_EFFECT =			0x00000070;
-
 CUniverse *g_pUniverse = NULL;
 Metric g_KlicksPerPixel = KLICKS_PER_PIXEL;
 Metric g_TimeScale = TIME_SCALE;
 Metric g_SecondsPerUpdate =	g_TimeScale / g_TicksPerSecond;
-
-CEffectCreator *g_DefaultFireEffect[damageCount];
-CEffectCreator *g_DefaultHitEffect[damageCount];
-bool g_bDefaultEffectsInit = false;
 
 #ifdef DEBUG_PROGRAMSTATE
 ProgramStates g_iProgramState = psUnknown;
@@ -540,34 +533,6 @@ CObject *CUniverse::FindByUNID (CIDTable &Table, DWORD dwUNID)
 		return NULL;
 	}
 
-CEffectCreator *CUniverse::FindDefaultFireEffect (DamageTypes iDamage)
-
-//	FindDefaultFireEffect
-//
-//	Returns the default hit effect for the given damage type
-
-	{
-	if (iDamage < damageLaser || iDamage >= damageCount)
-		return NULL;
-
-	InitDefaultEffects();
-	return g_DefaultFireEffect[iDamage];
-	}
-
-CEffectCreator *CUniverse::FindDefaultHitEffect (DamageTypes iDamage)
-
-//	FindDefaultHitEffect
-//
-//	Returns the default hit effect for the given damage type
-
-	{
-	if (iDamage < damageLaser || iDamage >= damageCount)
-		return FindEffectType(g_HitEffectUNID);
-
-	InitDefaultEffects();
-	return g_DefaultHitEffect[iDamage];
-	}
-
 CDeviceClass *CUniverse::FindDeviceClass (DWORD dwUNID)
 
 //	FindDeviceClass
@@ -808,6 +773,32 @@ CMission *CUniverse::GetCurrentMission (void)
 		}
 
 	return pCurrentMission;
+	}
+
+CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
+
+//	GetDefaultFireEffect
+//
+//	Returns the default hit effect for the given damage type
+
+	{
+	if (iDamage < damageGeneric || iDamage >= damageCount)
+		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
+
+	return m_NamedEffects.GetFireEffect(m_Design, iDamage);
+	}
+
+CEffectCreator &CUniverse::GetDefaultHitEffect (DamageTypes iDamage)
+
+//	GetDefaultHitEffect
+//
+//	Returns the default hit effect for the given damage type
+
+	{
+	if (iDamage < damageGeneric || iDamage >= damageCount)
+		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
+
+	return m_NamedEffects.GetHitEffect(m_Design, iDamage);
 	}
 
 void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList)
@@ -1407,35 +1398,6 @@ ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError
 	//	Done
 
 	return NOERROR;
-	}
-
-void CUniverse::InitDefaultEffects (void)
-
-//	InitDefaultHitEffects
-//
-//	Initializes the default hit effects array
-
-	{
-	int i;
-
-	if (!g_bDefaultEffectsInit)
-		{
-		for (i = 0; i < damageCount; i++)
-			{
-			//	Find a default hit effect. Default to some standard.
-
-			g_DefaultHitEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_EFFECT + i);
-			if (g_DefaultHitEffect[i] == NULL)
-				g_DefaultHitEffect[i] = FindEffectType(g_HitEffectUNID);
-
-			//	Find a default fire effect. OK if NULL, we have no effect in that
-			//	case.
-
-			g_DefaultFireEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_FIRE_EFFECT + i);
-			}
-
-		g_bDefaultEffectsInit = true;
-		}
 	}
 
 ALERROR CUniverse::InitFonts (void)
@@ -2367,8 +2329,6 @@ ALERROR CUniverse::Reinit (void)
 //	Reinitializes the universe
 
 	{
-    int i;
-
 	DEBUG_TRY
 
 	//	We start at tick 1 because sometimes we need to start with some things
@@ -2384,7 +2344,7 @@ ALERROR CUniverse::Reinit (void)
 	m_Time.DeleteAll();
 	m_pPOV = NULL;
 	SetCurrentSystem(NULL);
-    for (i = 0; i < m_StarSystems.GetCount(); i++)
+    for (int i = 0; i < m_StarSystems.GetCount(); i++)
         delete m_StarSystems[i];
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
@@ -2392,10 +2352,6 @@ ALERROR CUniverse::Reinit (void)
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
-
-	//	Reinitialize some global classes
-
-	CCompositeImageModifiers::Reinit();
 
 	//	Clean up global missions
 
@@ -2409,8 +2365,11 @@ ALERROR CUniverse::Reinit (void)
 	//	Reinitialize types
 
 	m_Design.Reinit();
-	g_bDefaultEffectsInit = false;
+
+	//	Clear out some cached entries
+
 	m_pCreditCurrency = NULL;
+	m_NamedEffects.CleanUp();
 
 	//	Clear the topology nodes
 

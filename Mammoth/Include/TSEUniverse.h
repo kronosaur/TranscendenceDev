@@ -148,6 +148,50 @@ class CSFXOptions
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
 	};
 
+//	Named Painters -------------------------------------------------------------
+
+class CNamedEffects
+	{
+	public:
+		enum ETypes
+			{
+			painterNone =					-1,
+
+			painterMediumStationDamage =	0,
+			painterLargeStationDamage =		1,
+
+			painterCount =					2,
+			};
+
+		CNamedEffects (void) { }
+		CNamedEffects (const CNamedEffects &Src) = delete;
+		CNamedEffects (CNamedEffects &&Src);
+		~CNamedEffects (void) { CleanUp(); }
+		CNamedEffects &operator= (const CNamedEffects &Src) = delete;
+		CNamedEffects &operator= (CNamedEffects &&Src);
+
+		void CleanUp (void);
+		CEffectCreator &GetFireEffect (CDesignCollection &Design, DamageTypes iDamage) const;
+		CEffectCreator &GetHitEffect (CDesignCollection &Design, DamageTypes iDamage) const;
+		CEffectCreator &GetNullEffect (CDesignCollection &Design) const;
+		IEffectPainter &GetPainter (CDesignCollection &Design, ETypes iType) const;
+
+	private:
+		static const DWORD UNID_FIRST_DEFAULT_EFFECT =			0x00000010;
+		static const DWORD UNID_FIRST_DEFAULT_FIRE_EFFECT =		0x00000070;
+		static const DWORD UNID_BASIC_HIT_EFFECT =				0x00009003;
+		static const DWORD UNID_NULL_EFFECT =					0x00030003;
+
+		void Move (CNamedEffects &Src);
+
+		mutable CEffectCreator *m_pDefaultFireEffect[damageCount] = { NULL };
+		mutable CEffectCreator *m_pDefaultHitEffect[damageCount] = { NULL };
+		mutable IEffectPainter *m_pNamedPainter[painterCount] = { NULL };
+		mutable CEffectCreator *m_pNullEffect = NULL;
+
+		static DWORD m_NamedPainterUNID[painterCount];
+	};
+
 //	The Universe ---------------------------------------------------------------
 //
 //	CREATING THE UNIVERSE
@@ -297,6 +341,8 @@ class CUniverse
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
 		inline const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
+		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
+		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
 		inline CDockSession &GetDockSession (void) { return m_DockSession; }
 		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
@@ -315,6 +361,7 @@ class CUniverse
 		inline CMissionList &GetMissions (void) { return m_AllMissions; }
 		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		inline const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
+		inline IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		inline const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
 		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
@@ -364,8 +411,6 @@ class CUniverse
 
 		CArmorClass *FindArmor (DWORD dwUNID);
 		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
-		CEffectCreator *FindDefaultFireEffect (DamageTypes iDamage);
-		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
 		inline const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
@@ -469,7 +514,6 @@ class CUniverse
 		CObject *FindByUNID (CIDTable &Table, DWORD dwUNID);
 		ALERROR InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives);
 		ALERROR InitCodeChainPrimitives (void);
-		void InitDefaultEffects (void);
 		ALERROR InitDeviceStorage (CString *retsError);
 		ALERROR InitFonts (void);
 		ALERROR InitLevelEncounterTables (void);
@@ -531,12 +575,17 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+
+		//	Cached singletons
+
 		mutable const CEconomyType *m_pCreditCurrency = NULL;
+		CNamedEffects m_NamedEffects;
 
 		//	Debugging structures
 
 		bool m_bDebugMode;
 		bool m_bNoSound;
 		int m_iLogImageLoad;					//	If >0 we disable image load logging
+
 	};
 

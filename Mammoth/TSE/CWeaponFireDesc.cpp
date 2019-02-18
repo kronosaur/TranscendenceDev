@@ -339,7 +339,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		CCreatePainterCtx Ctx;
 		Ctx.SetWeaponFireDesc(this);
 
-		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, GetUniverse().FindDefaultFireEffect(m_Damage.GetDamageType()));
+		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
 			return;
 
@@ -376,7 +376,7 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetDamageCtx(DamageCtx);
 
-	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, GetUniverse().FindDefaultHitEffect(m_Damage.GetDamageType()));
+	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultHitEffect(m_Damage.GetDamageType()));
 	if (pPainter == NULL)
 		return;
 
@@ -1324,7 +1324,7 @@ CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
 	//	Otherwise, see if the universe has a default effect for this damage 
 	//	type.
 
-	return GetUniverse().FindDefaultFireEffect(m_Damage.GetDamageType());
+	return &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType());
 	}
 
 Metric CWeaponFireDesc::GetInitialSpeed (void) const

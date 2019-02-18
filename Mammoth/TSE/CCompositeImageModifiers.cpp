@@ -5,9 +5,6 @@
 
 #include "PreComp.h"
 
-static IEffectPainter *g_pMediumDamage = NULL;
-static IEffectPainter *g_pLargeDamage = NULL;
-
 bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) const
 
 //	operator ==
@@ -35,8 +32,6 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (m_fStationDamage)
 		{
-		InitDamagePainters();
-
 		//	Create a blank bitmap
 
 		if (pNewDest == NULL)
@@ -51,12 +46,12 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		//	Add some large damage
 
 		int iCount = (pNewDest->GetWidth() / 32) * (pNewDest->GetHeight() / 32);
-		PaintDamage(*pNewDest, rcNewImage, iCount, g_pLargeDamage);
+		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterLargeStationDamage));
 
 		//	Add some medium damage
 
 		iCount = (pNewDest->GetWidth() / 4) + (pNewDest->GetHeight() / 4);
-		PaintDamage(*pNewDest, rcNewImage, iCount, g_pMediumDamage);
+		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterMediumStationDamage));
 
 		//	Reapply the mask to our image
 
@@ -154,28 +149,6 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 		}
 	}
 
-void CCompositeImageModifiers::InitDamagePainters (void)
-
-//	InitDamagePainters
-//
-//	Initializes station damage bitmaps
-
-	{
-	if (g_pMediumDamage == NULL)
-		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(MEDIUM_STATION_DAMAGE_UNID);
-		if (pEffect)
-			g_pMediumDamage = pEffect->CreatePainter(CCreatePainterCtx());
-		}
-
-	if (g_pLargeDamage == NULL)
-		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(LARGE_STATION_DAMAGE_UNID);
-		if (pEffect)
-			g_pLargeDamage = pEffect->CreatePainter(CCreatePainterCtx());
-		}
-	}
-
 void CCompositeImageModifiers::PaintDamage (CG32bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter)
 
 //	PaintDamage
@@ -221,24 +194,3 @@ void CCompositeImageModifiers::PaintDamage (CG32bitImage &Dest, const RECT &rcDe
 		pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}
-
-void CCompositeImageModifiers::Reinit (void)
-
-//	Reinit
-//
-//	Reinitialize global data
-
-	{
-	if (g_pMediumDamage)
-		{
-		g_pMediumDamage->Delete();
-		g_pMediumDamage = NULL;
-		}
-
-	if (g_pLargeDamage)
-		{
-		g_pLargeDamage->Delete();
-		g_pLargeDamage = NULL;
-		}
-	}
-

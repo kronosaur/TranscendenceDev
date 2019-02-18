@@ -1288,5 +1288,8 @@
     <ClCompile Include="CShipStandard.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
+    <ClCompile Include="CNamedEffects.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
