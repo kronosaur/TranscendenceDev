@@ -1268,7 +1268,7 @@ ALERROR CObjectImageArray::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 		return error;
 
 	if (bResolveNow)
-		m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+		m_pImage = Ctx.GetUniverse().FindLibraryImage(m_dwBitmapUNID);
 	else
 		m_pImage = NULL;
 
@@ -1314,7 +1314,7 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	if (m_dwBitmapUNID)
 		{
-		m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+		m_pImage = Ctx.GetUniverse().FindLibraryImage(m_dwBitmapUNID);
 		if (m_pImage == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown image: %x"), m_dwBitmapUNID);
@@ -1889,7 +1889,7 @@ void CObjectImageArray::ReadFromStream (SLoadCtx &Ctx)
 	{
 	Ctx.pStream->Read((char *)&m_dwBitmapUNID, sizeof(DWORD));
 	if (m_dwBitmapUNID)
-		m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+		m_pImage = Ctx.GetUniverse().FindLibraryImage(m_dwBitmapUNID);
 	else
 		m_pImage = NULL;
 	Ctx.pStream->Read((char *)&m_rcImage, sizeof(RECT));
