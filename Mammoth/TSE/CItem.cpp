@@ -1763,7 +1763,7 @@ bool CItem::HasUseItemScreen (void) const
 	return (m_pItemType->GetUseDesc(&Desc) && !Desc.bUsableInCockpit && Desc.pScreenRoot != NULL);
 	}
 
-bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
+bool CItem::IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2)
 
 //	IsDisruptionEqual
 //
@@ -1773,7 +1773,6 @@ bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
 	if (dwD1 == dwD2)
 		return true;
 
-	DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
 	return (dwD1 < dwNow && dwD2 < dwNow);
 	}
 
@@ -1794,7 +1793,7 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
 
-bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
+bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 
 //	IsExtraEmpty
 //
@@ -1810,7 +1809,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwLevel == 0
 			&& pExtra->m_dwVariantCounter == 0
-			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks()))
+			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
 	}
@@ -1822,9 +1821,12 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 //	Returns TRUE if this item's Extra struct is the same as the source
 
 	{
+	if (IsEmpty())
+		return (pSrc == NULL || IsExtraEmpty(pSrc, dwFlags, GetUniverse().GetTicks()));
+
 	//	Both have extra struct
 
-	if (m_pExtra && pSrc)
+	else if (m_pExtra && pSrc)
 		{
 		const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
 		const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
@@ -1834,7 +1836,7 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwLevel == pSrc->m_dwLevel
 				&& m_pExtra->m_dwVariantCounter == pSrc->m_dwVariantCounter
-				&& (bIgnoreDisrupted || IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
+				&& (bIgnoreDisrupted || IsDisruptionEqual(GetUniverse().GetTicks(), m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
 				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
 				&& (bIgnoreData || m_pExtra->m_Data.IsEqual(pSrc->m_Data)));
 		}
@@ -1847,9 +1849,9 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 	//	One has extra struct, but it's empty
 
 	else if (m_pExtra == NULL)
-		return IsExtraEmpty(pSrc, dwFlags);
+		return IsExtraEmpty(pSrc, dwFlags, GetUniverse().GetTicks());
 	else if (pSrc == NULL)
-		return IsExtraEmpty(m_pExtra, dwFlags);
+		return IsExtraEmpty(m_pExtra, dwFlags, GetUniverse().GetTicks());
 
 	//	Extra structs don't match at all
 
@@ -2784,7 +2786,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (ICCItem *pBuffer)
+void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //
@@ -2802,7 +2804,7 @@ void CItem::ReadFromCCItem (ICCItem *pBuffer)
 		//	Load the item type
 
 		DWORD dwUNID = (DWORD)pBuffer->GetElement(0)->GetIntegerValue();
-		m_pItemType = g_pUniverse->FindItemType(dwUNID);
+		m_pItemType = CItemType::AsType(Design.FindEntry(dwUNID));
 		if (m_pItemType == NULL)
 			return;
 

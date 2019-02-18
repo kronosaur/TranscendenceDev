@@ -13,7 +13,8 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 //	Initialize list
 
 	{
-	int i;
+	if (Ctx.pDockScreen == NULL)
+		return ERR_FAIL;
 
 	//	Get the list to show
 
@@ -38,11 +39,12 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 	//	We expect a list of item structures. Load them into an item list
 
 	m_CustomItems.DeleteAll();
-	for (i = 0; i < pResult->GetCount(); i++)
+	for (int i = 0; i < pResult->GetCount(); i++)
 		{
 		ICCItem *pItem = pResult->GetElement(i);
 
-		CItem NewItem = CreateItemFromList(pItem);
+		CCodeChainCtx CCCtx(Ctx.pDockScreen->GetUniverse());
+		CItem NewItem = CCCtx.AsItem(pItem);
 		if (NewItem.GetType() != NULL)
 			m_CustomItems.AddItem(NewItem);
 		}

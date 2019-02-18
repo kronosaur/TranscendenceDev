@@ -4853,7 +4853,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(0));
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -4952,7 +4952,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_IS_EQUAL:
 			{
-			CItem Item2 = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			CItem Item2 = pCtx->AsItem(pArgs->GetElement(1));
 
 			//	Options
 
@@ -5167,10 +5167,11 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	//	Convert the first argument into an item
 
-	CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(0));
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5919,6 +5920,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -5943,7 +5945,7 @@ ICCItem *fnObjGetArmor (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDat
 	CInstalledArmor *pSection = NULL;
 	if (pArgs->GetElement(1)->IsList())
 		{
-		CItem Item = CreateItemFromList(pArgs->GetElement(1));
+		CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 		if (Item.GetType() && Item.IsInstalled())
 			{
 			iArmorSeg = Item.GetInstalled();
@@ -6073,7 +6075,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_OBJ_ARMOR_CRITICALITY:
 			{
-			CInstalledArmor *pSection = GetArmorSectionArg(*pCC, pArgs->GetElement(1), pObj);
+			CInstalledArmor *pSection = pCtx->AsInstalledArmor(pObj, pArgs->GetElement(1));
 			if (pSection == NULL)
 				return pCC->CreateNil();
 
@@ -6096,7 +6098,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_LEVEL:
 			{
-			CInstalledArmor *pSection = GetArmorSectionArg(*pCC, pArgs->GetElement(1), pObj);
+			CInstalledArmor *pSection = pCtx->AsInstalledArmor(pObj, pArgs->GetElement(1));
 			if (pSection == NULL)
 				return pCC->CreateNil();
 
@@ -6122,7 +6124,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
             //  Get the armor item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(iArg++)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(iArg++)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
@@ -6144,7 +6146,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_REPLACE_PRICE:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
@@ -6161,7 +6163,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ARMOR_TYPE:
 			{
-			CInstalledArmor *pSection = GetArmorSectionArg(*pCC, pArgs->GetElement(1), pObj);
+			CInstalledArmor *pSection = pCtx->AsInstalledArmor(pObj, pArgs->GetElement(1));
 			if (pSection == NULL)
 				return pCC->CreateNil();
 
@@ -6226,7 +6228,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
@@ -6320,7 +6322,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Weapon fire desc
 
-			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(*pCC, pArgs->GetElement(1));
+			CWeaponFireDesc *pDesc = pCtx->AsWeaponFireDesc(pArgs->GetElement(1));
 			if (pDesc == NULL)
 				return pCC->CreateNil();
 
@@ -6424,19 +6426,19 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_DEVICE_FIRE_ARC:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"));
 			}
 
 		case FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"));
 			}
 
 		case FN_OBJ_DEVICE_POS:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"));
 			}
 
@@ -6470,7 +6472,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_GET_BUY_PRICE:
 			{
 			int i;
-			CItem Item = CreateItemFromList(pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 			ICCItem *pOptions = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
 			//	Parse options
@@ -6561,7 +6563,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
@@ -6814,7 +6816,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_GET_SELL_PRICE:
 			{
-			CItem Item = CreateItemFromList(pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
             if (Item.IsEmpty())
                 return pCC->CreateNil();
 
@@ -6992,7 +6994,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the device
 
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -7177,6 +7179,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -7235,7 +7238,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		sAttribute = pArgs->GetElement(1)->GetStringValue();
 	else if (dwData == FN_OBJ_INSTALLED_ITEM_DESC)
 		{
-		Item = CreateItemFromList(pArgs->GetElement(1));
+		Item = pCtx->AsItem(pArgs->GetElement(1));
 		}
 
 	//	No longer needed
@@ -7580,7 +7583,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ADD_ITEM:
 			{
-			CItem Item(GetItemFromArg(*pCC, pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (2 < pArgs->GetCount())
 				Item.SetCount(pArgs->GetElement(2)->GetIntegerValue());
 
@@ -7606,7 +7609,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_ADD_ITEM_ENHANCEMENT:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	Find the enhancement type
 
@@ -7803,7 +7806,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the device
 
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -7823,7 +7826,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the device
 
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -7874,7 +7877,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the device
 
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -7898,7 +7901,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the device
 
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -7952,7 +7955,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_FIRE_ITEM_EVENT:
 			{
 			ICCItem *pResult;
-			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 			ICCItem *pData = (pArgs->GetCount() >= 4 ? pArgs->GetElement(3) : NULL);
 
 			pObj->FireCustomItemEvent(pArgs->GetElement(2)->GetStringValue(), Item, pData, &pResult);
@@ -7961,7 +7964,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIRE_ITEM_INVOKE:
 			{
-			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 			CItemType *pType = Item.GetType();
 			if (pType == NULL)
 				return pCC->CreateNil();
@@ -8023,7 +8026,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_OBJ_FIRE_WEAPON:
 			{
-			CInstalledDevice *pDevice = GetDeviceFromItem(*pCC, pObj, pArgs->GetElement(1));
+			CInstalledDevice *pDevice = pCtx->AsInstalledDevice(pObj, pArgs->GetElement(1));
 			if (pDevice == NULL)
 				return pCC->CreateError(CONSTLIT("Item is not an installed device on object"), pArgs->GetElement(1));
 
@@ -8064,7 +8067,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pCtx->DefineInteger(CONSTLIT("aFireRepeat"), p_OldFireRepeat->GetIntegerValue());
 				pCtx->DefineSpaceObject(CONSTLIT("aTargetObj"), CreateObjFromItem(p_OldTargetObj));
 				pCtx->DefineInteger(CONSTLIT("aWeaponBonus"), p_OldWeaponBonus->GetIntegerValue());
-				pCtx->DefineItemType(CONSTLIT("aWeaponType"), GetItemFromArg(*pCC, p_OldWeaponType).GetType());
+				pCtx->DefineItemType(CONSTLIT("aWeaponType"), pCtx->AsItem(p_OldWeaponType).GetType());
 				}
 
 			if (bSourceDestroyed)
@@ -8104,7 +8107,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	Get the count
 
@@ -8170,7 +8173,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pSellerObj == NULL)
 				return pCC->CreateNil();
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(iArg++)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(iArg++)));
 
 			CCurrencyAndValue Value;
 			if (pArgs->GetCount() >= 5)
@@ -8202,7 +8205,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Item and enhancement ID
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			DWORD dwID = (DWORD)pArgs->GetElement(2)->GetIntegerValue();
 
 			//	Remove
@@ -8360,7 +8363,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	Get the (optional) count
 
@@ -8386,7 +8389,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	Get the attribute
 
@@ -8415,7 +8418,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (Item.GetType() == NULL)
 				return pCC->CreateNil();
 
@@ -8729,7 +8732,7 @@ ICCItem *fnObjItem (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Second argument is an item
 
-	CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+	CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 	if (Item.IsEmpty())
 		return pCC->CreateNil();
 
@@ -9441,6 +9444,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	//	Get the ship arg
 
@@ -9504,7 +9508,7 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (pArgs->GetCount() > 1)
 				{
-				CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(1));
+				CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 				CItemType *pType = Item.GetType();
 				if (pType == NULL)
 					return pCC->CreateNil();
@@ -9866,7 +9870,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_SHIP_CAN_INSTALL_ARMOR:
 		case FN_SHIP_CAN_INSTALL_DEVICE:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			int iSlot = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
 
 			//	Check standard conditions
@@ -9883,7 +9887,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_CAN_REMOVE_DEVICE:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	See if we can remove it
 
@@ -9930,7 +9934,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_DAMAGE_ARMOR:
 			{
-			CInstalledArmor *pArmor = GetArmorSectionArg(*pCC, pArgs->GetElement(1), pShip);
+			CInstalledArmor *pArmor = pCtx->AsInstalledArmor(pShip, pArgs->GetElement(1));
 			if (pArmor == NULL)
 				return pCC->CreateError("Invalid armor segment", pArgs->GetElement(1));
 
@@ -9971,7 +9975,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SHIP_INSTALL_ARMOR:
 			{
-			CItem ArmorItem = GetItemFromArg(*pCC, pArgs->GetElement(1));
+			CItem ArmorItem = pCtx->AsItem(pArgs->GetElement(1));
 			int iSegment = pArgs->GetElement(2)->GetIntegerValue();
 
 			//	Validate the armor item
@@ -10012,7 +10016,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	If the argument is a list then it is an item (which means we have to find
 			//	the item in the manipulator).
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (!ItemList.SetCursorAtItem(Item))
 				{
 				if (pCtx->GetAPIVersion() >= 18)
@@ -10141,7 +10145,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else if (iDataType == IShipController::dataItem)
 					{
 					Data.iDataType = iDataType;
-					Data.Item = GetItemFromArg(*pCC, pArgs->GetElement(iArg));
+					Data.Item = pCtx->AsItem(pArgs->GetElement(iArg));
 					}
 				else if (iDataType == IShipController::dataString)
 					{
@@ -10221,7 +10225,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
 			else
 				{
-				CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
 					if (pCtx->GetAPIVersion() >= 18)
@@ -10339,7 +10343,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
 			else
 				{
-				CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
 					pArgs->Discard();
@@ -10378,7 +10382,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 		case FN_SHIP_FUEL_NEEDED:
 		case FN_SHIP_REFUEL_FROM_ITEM:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			pArgs->Discard();
 
 			//	Do it
@@ -10406,7 +10410,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_ITEM_DEVICE_NAME:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			pArgs->Discard();
 			pResult = pCC->CreateInteger(pShip->GetItemDeviceName(Item));
 			break;
@@ -10414,7 +10418,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_IS_FUEL_COMPATIBLE:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			pArgs->Discard();
 			pResult = pCC->CreateBool(pShip->IsFuelCompatible(Item));
 			break;
@@ -10601,7 +10605,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 
 		case FN_SHIP_DAMAGE_ITEM:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			CString sError;
 			if (!pShip->SetItemProperty(Item, CONSTLIT("damaged"), NULL, 1, NULL, &sError))
@@ -10649,7 +10653,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
 			else
 				{
-				CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
 					pArgs->Discard();
@@ -10718,7 +10722,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
 			else
 				{
-				CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 				if (!ItemList.SetCursorAtItem(Item))
 					{
 					pArgs->Discard();
@@ -10751,7 +10755,7 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			{
 			//	Get the item
 
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 
 			//	Set the charges
 
@@ -11628,7 +11632,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get parameters
 
-			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(0));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(0));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), pArgs->GetElement(0));
 
@@ -11826,7 +11830,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get parameters
 
-			CWeaponFireDesc *pDesc = GetWeaponFireDescArg(*pCC, pArgs->GetElement(0));
+			CWeaponFireDesc *pDesc = pCtx->AsWeaponFireDesc(pArgs->GetElement(0));
 			if (pDesc == NULL)
 				return pCC->CreateError(CONSTLIT("Unable to find specified weapon"));
 
@@ -12888,7 +12892,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the item type
 
-			CItem Item = GetItemFromArg(*pCC, pArgs->GetElement(iArg++));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(iArg++));
 			CItemType *pType = Item.GetType();
 			if (pType == NULL)
 				return pCC->CreateNil();

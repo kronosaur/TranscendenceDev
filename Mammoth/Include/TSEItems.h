@@ -407,7 +407,7 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (ICCItem *pBuffer);
+		void ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer);
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
@@ -440,8 +440,8 @@ class CItem
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
         void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
-		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
-		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags);
+		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);
+		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow);
 
 		CItemType *m_pItemType = NULL;
 

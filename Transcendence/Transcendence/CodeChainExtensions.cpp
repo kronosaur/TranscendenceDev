@@ -883,6 +883,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -945,7 +946,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_SCR_REFRESH_ITEM:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			pArgs->Discard();
 			CItemListManipulator *pItemList = &pScreen->GetItemListManipulator();
 			pItemList->Refresh(Item);
@@ -1279,7 +1280,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The item that we sold or bought
 
-			CItem Item = CreateItemFromList(pArgs->GetElement(iArg));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(iArg));
 			iArg++;
 
 			//	The currency
@@ -1324,7 +1325,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_PLY_USE_ITEM:
 			{
-			CItem Item = CreateItemFromList(pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
@@ -1988,7 +1989,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_SHOW_ITEM_SCREEN:
 			{
-			CItem Item(CreateItemFromList(pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (!Item.HasUseItemScreen())
 				return pCC->CreateNil();
 

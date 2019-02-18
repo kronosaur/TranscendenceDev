@@ -284,6 +284,7 @@ class CGItemListDisplayArea : public AGArea
 			bool bGrayed;
 			};
 
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		bool InitFromItemList (ICCItem *pItemList);
 		void SortItemList (void);
 

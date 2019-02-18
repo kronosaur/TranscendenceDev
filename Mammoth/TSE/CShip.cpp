@@ -7878,7 +7878,8 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 			return false;
 			}
 
-		CItem Item = GetItemFromArg(CC, pValue);
+		CCodeChainCtx Ctx(GetUniverse());
+		CItem Item = Ctx.AsItem(pValue);
 		CItemListManipulator ShipItems(GetItemList());
 		if (!ShipItems.SetCursorAtItem(Item))
 			{
@@ -7906,13 +7907,15 @@ bool CShip::SetProperty (const CString &sName, ICCItem *pValue, CString *retsErr
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_WEAPON))
 		{
+
 		//	Nil means that we don't want to make a change
 
 		if (pValue->IsNil())
 			return true;
 
+		CCodeChainCtx Ctx(GetUniverse());
 		int iDev;
-		if (!FindInstalledDeviceSlot(GetItemFromArg(CC, pValue), &iDev))
+		if (!FindInstalledDeviceSlot(Ctx.AsItem(pValue), &iDev))
 			{
 			*retsError = CONSTLIT("Item is not an installed device on ship.");
 			return false;

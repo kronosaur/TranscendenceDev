@@ -166,6 +166,94 @@ bool CCodeChainCtx::AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, boo
 	return true;
 	}
 
+CInstalledArmor *CCodeChainCtx::AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const
+
+//	AsInstalledArmor
+//
+//	Returns a pointer to an installed item structure (or NULL).
+
+	{
+	//	Get the ship 
+
+	CShip *pShip = pObj->AsShip();
+	if (pShip == NULL)
+		return NULL;
+
+	//	Set the armor segment
+
+	int iArmorSeg;
+	if (pItem->IsList())
+		{
+		CItem Item = AsItem(pItem);
+		if (Item.GetType() && Item.GetType()->GetArmorClass() && Item.IsInstalled())
+			iArmorSeg = Item.GetInstalled();
+		else
+			return NULL;
+		}
+	else
+		iArmorSeg = pItem->GetIntegerValue();
+
+	//	Some error checking
+
+	if (iArmorSeg < 0 || iArmorSeg >= pShip->GetArmorSectionCount())
+		return NULL;
+
+	//	Done
+
+	return pShip->GetArmorSection(iArmorSeg);
+	}
+
+CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const
+
+//	AsInstalledDevice
+//
+//	Returns a device struct from an item struct (or NULL if not found)
+
+	{
+	//	Get the item
+
+	CItem Item(AsItem(pItem));
+
+	//	Make sure the item is on the object
+
+	CItemListManipulator ItemList(pObj->GetItemList());
+	if (!ItemList.SetCursorAtItem(Item))
+		return NULL;
+
+	//	Get the installed device from the item
+
+	CInstalledDevice *pDevice = pObj->FindDevice(Item);
+	return pDevice;
+	}
+
+CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+
+//	AsItem
+//
+//	Get an item
+
+	{
+	if (pItem == NULL || pItem->IsNil())
+		return CItem();
+
+	else if (pItem->IsList())
+		{
+		CItem NewItem;
+		NewItem.ReadFromCCItem(GetUniverse().GetDesignCollection(), pItem);
+		return NewItem;
+		}
+	else if (pItem->IsInteger())
+		{
+		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
+		if (pType == NULL)
+			return CItem();
+
+		return CItem(pType, 1);
+		}
+	else
+		return CItem();
+	}
+
 CItemType *CCodeChainCtx::AsItemType (ICCItem *pItem) const
 
 //	AsItemType
@@ -180,7 +268,7 @@ CItemType *CCodeChainCtx::AsItemType (ICCItem *pItem) const
 
 	else if (pItem->IsList())
 		{
-		CItem Item(CreateItemFromList(pItem));
+		CItem Item(AsItem(pItem));
 		return Item.GetType();
 		}
 
@@ -246,6 +334,100 @@ CVector CCodeChainCtx::AsVector (ICCItem *pItem)
 
 	{
 	return CreateVectorFromList(m_CC, pItem);
+	}
+
+CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
+
+//	AsWeaponFireDesc
+//
+//	If pItem is a weapon UNID, then we return the first weapon desc
+//	If pItem is a missile, then we return the first weapon desc we find for the missile
+//	If pItem is a list, then the first is a weapon UNID and the second is a missile UNID
+//	Returns NULL on error
+
+	{
+	CItemType *pType;
+	CItemType *pMissileType;
+
+	//	If we have a list with exactly two arguments, and if the first is a
+	//	launcher UNID and the second is a missile UNID, then we assume that's 
+	//	the intent.
+
+	if (pItem->IsList() 
+			&& pItem->GetCount() == 2
+			&& (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
+			&& (pMissileType = GetUniverse().FindItemType(pItem->GetElement(1)->GetIntegerValue())))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+		}
+
+	//	Otherwise, if we have a list, we expect an item.
+
+	else if (pItem->IsList() && pItem->GetCount() >= 2 && pItem->GetElement(1)->GetIntegerValue() != 0)
+		{
+		CItem Item = AsItem(pItem);
+		if (Item.IsEmpty())
+			return NULL;
+
+		return Item.GetType()->GetWeaponFireDesc(CItemCtx(Item));
+		}
+
+	//	Otherwise we expect an integer value.
+
+	else if (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx());
+		}
+
+	//	Otherwise, error
+
+	else
+		return NULL;
+
+#if 0
+	DWORD dwWeaponUNID;
+	DWORD dwVariantUNID;
+
+	//	If the argument is a list, then we get the weapon UNID and the variant
+	//	from the list.
+
+	if (pArg->IsList() && pArg->GetCount() >= 2)
+		{
+		dwWeaponUNID = (DWORD)pArg->GetElement(0)->GetIntegerValue();
+		dwVariantUNID = (DWORD)pArg->GetElement(1)->GetIntegerValue();
+		}
+
+	//	Otherwise, get the first variant of the weapon
+
+	else
+		{
+		dwWeaponUNID = (DWORD)pArg->GetIntegerValue();
+		dwVariantUNID = 0;
+		}
+
+	//	Get the item associated with the UNID
+
+	CItemType *pType = g_pUniverse->FindItemType(dwWeaponUNID);
+	if (pType == NULL)
+		return NULL;
+
+	//	If variant UNID is 0, then pType is either a weapon or a missile and 
+    //  this will return its descriptor.
+
+    if (dwVariantUNID == 0)
+        return pType->GetWeaponFireDesc(CItemCtx());
+
+    //  Otherwise, get the missile type
+
+    else
+        {
+	    CItemType *pMissileType = g_pUniverse->FindItemType(dwVariantUNID);
+	    if (pMissileType == NULL)
+		    return NULL;
+
+        return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+        }
+#endif
 	}
 
 ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)

@@ -5,6 +5,9 @@
 
 #pragma once
 
+class CInstalledArmor;
+class CInstalledDevice;
+
 //	CodeChain context
 
 enum ECodeChainEvents
@@ -92,10 +95,14 @@ class CCodeChainCtx
 
 		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
+		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
+		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
+		CItem AsItem (ICCItem *pItem) const;
 		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);
+		CWeaponFireDesc *AsWeaponFireDesc (ICCItem *pItem) const;
 
 		static bool InEvent (ECodeChainEvents iEvent);
 

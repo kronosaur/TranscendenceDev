@@ -1207,6 +1207,9 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 //	control of the given ID.
 
 	{
+	if (m_pDockScreen == NULL)
+		return false;
+
 	SControl *pControl;
 	if (!FindControl(sID, &pControl))
 		return false;
@@ -1283,7 +1286,8 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 					return true;
 					}
 
-				CItem Item = ::CreateItemFromList(pItemCC);
+				CCodeChainCtx Ctx(m_pDockScreen->GetUniverse());
+				CItem Item = Ctx.AsItem(pItemCC);
 
 				CSpaceObject *pSource = NULL;
 				ICCItem *pSourceCC = pValue->GetElement(CONSTLIT("source"));
@@ -1298,7 +1302,8 @@ bool CDockPane::SetControlValue (const CString &sID, ICCItem *pValue)
 
 			else if (pValue->IsList())
 				{
-				CItem Item = ::CreateItemFromList(pValue);
+				CCodeChainCtx Ctx(m_pDockScreen->GetUniverse());
+				CItem Item = Ctx.AsItem(pValue);
 				pItemDisplayArea->SetItem(NULL, Item);
 				return true;
 				}
