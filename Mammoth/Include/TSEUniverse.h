@@ -586,6 +586,5 @@ class CUniverse
 		bool m_bDebugMode;
 		bool m_bNoSound;
 		int m_iLogImageLoad;					//	If >0 we disable image load logging
-
 	};
 

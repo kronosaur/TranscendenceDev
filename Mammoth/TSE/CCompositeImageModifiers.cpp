@@ -14,8 +14,8 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 			&& m_pFilters == Val.m_pFilters
 			&& m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
-			&& m_fStationDamage == Val.m_fStationDamage
-			&& m_fFullImage == Val.m_fFullImage);
+			&& m_bStationDamage == Val.m_bStationDamage
+			&& m_bFullImage == Val.m_bFullImage);
 	}
 
 void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
@@ -30,7 +30,7 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	//	Station damage
 
-	if (m_fStationDamage)
+	if (m_bStationDamage)
 		{
 		//	Create a blank bitmap
 
@@ -97,7 +97,7 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (pNewDest)
 		{
-		if (m_fFullImage || retImage->IsAnimated())
+		if (m_bFullImage || retImage->IsAnimated())
 			retImage->SetImage(TSharedPtr<CObjectImage>(new CObjectImage(pNewDest, true)));
 		else
 			retImage->InitFromBitmap(pNewDest, rcNewImage, 0, 0, true);
@@ -111,7 +111,7 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 //	Creates a copy of the given image. Caller is reponsible for freeing.
 
 	{
-	if (m_fFullImage || pImage->IsAnimated())
+	if (m_bFullImage || pImage->IsAnimated())
 		{
 		CG32bitImage *pNewImage = new CG32bitImage(pImage->GetImage(NULL_STR));
 
