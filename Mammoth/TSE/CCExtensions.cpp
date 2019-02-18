@@ -5504,7 +5504,7 @@ ICCItem *fnObjData (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 				if (CObject::IsValidPointer((CObject *)pArgs->GetElement(2)->GetIntegerValue()))
 					{
-					CSpaceObject *pTest = dynamic_cast<CSpaceObject *>((CObject *)pArgs->GetElement(2)->GetIntegerValue());
+					CSpaceObject *pTest = reinterpret_cast<CSpaceObject *>(pArgs->GetElement(2)->GetIntegerValue());
 					if (pTest)
 						{
 						DebugBreak();

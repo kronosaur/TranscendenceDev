@@ -229,7 +229,7 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	CSpaceObject *pObj;
 	try
 		{
-		pObj = dynamic_cast<CSpaceObject *>((CObject *)pItem->GetIntegerValue());
+		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
 		}
 	catch (...)
 		{

@@ -332,7 +332,7 @@ CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags)
 	CSpaceObject *pObj;
 	try
 		{
-		pObj = dynamic_cast<CSpaceObject *>((CObject *)iArg);
+		pObj = reinterpret_cast<CSpaceObject *>(iArg);
 		}
 	catch (...)
 		{
