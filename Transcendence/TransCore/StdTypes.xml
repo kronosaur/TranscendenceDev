@@ -24,18 +24,6 @@
 				imageTicksPerFrame="2"/>
 	</Effect>
 
-	<Effect UNID="&efSmallExplosion1;"
-			sound="&snArmorHit1;"
-			>
-		<Image imageID="&rsMediumHit;" 
-				imageX="0" 
-				imageY="0" 
-				imageWidth="32" 
-				imageHeight="32"
-				imageFrameCount="12"
-				imageTicksPerFrame="1"/>
-	</Effect>
-
 	<Effect UNID="&efBattleArenaWallHit;">
 		<Image imageID="&rsShieldHit;" 
 				imageX="0" 

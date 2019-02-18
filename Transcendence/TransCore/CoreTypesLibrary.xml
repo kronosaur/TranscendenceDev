@@ -112,6 +112,7 @@
 	<!ENTITY vtRadioactiveExplosion1	"0x00005017">
 	<!ENTITY vtRadioactiveExplosion2	"0x00005018">
 	
+	<!ENTITY efSmallExplosion1			"0x00009003">
 	<!ENTITY efShieldHit1				"0x00009004">
 	<!ENTITY efLargeStationDamage		"0x0000900E">
 	<!ENTITY efMediumStationDamage		"0x0000900F">
@@ -151,6 +152,7 @@
 	<!ENTITY unidCoreTypesLibrary		"0x00030000">
 	<!ENTITY rsDeepSpace				"0x00030001">
 	<!ENTITY unidCoreCriteria			"0x00030002">
+	<!ENTITY efNullEffect				"0x00030003">
 	
 	<!-- 0020-002F PROJECTILE EFFECTS -->
 	

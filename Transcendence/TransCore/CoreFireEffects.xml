@@ -479,4 +479,28 @@
 		</Effect>
 	</EffectType>
 
+	<EffectType unid="&efDarkSteelFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
+	<EffectType unid="&efDarkLightningFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
+	<EffectType unid="&efDarkFireFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
 </TranscendenceModule>
