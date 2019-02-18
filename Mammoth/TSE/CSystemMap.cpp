@@ -114,6 +114,26 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 	return true;
 	}
 
+bool CSystemMap::DebugShowAttributes (void) const
+
+//	DebugShowAttributes
+//
+//	Returns TRUE if we should show node attributes on the map
+
+	{
+	return (m_bDebugShowAttributes && GetUniverse().InDebugMode());
+	}
+
+bool CSystemMap::DebugShowIntermediatePoints (void) const
+
+//	DebugShowIntermediatePoints
+//
+//	Returns TRUE if we should show intermediate points on curved stargate paths.
+
+	{
+	return GetUniverse().InDebugMode();
+	}
+
 ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
 
 //	GenerateTopology

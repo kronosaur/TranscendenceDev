@@ -50,7 +50,7 @@ void CSystemMapThumbnails::CleanUp (void)
     m_pSystemData = NULL;
     }
 
-bool CSystemMapThumbnails::CreateThumbnail (CTopologyNode *pNode, bool bFullSystem, CG32bitImage &Result) const
+bool CSystemMapThumbnails::CreateThumbnail (const CTopologyNode *pNode, bool bFullSystem, CG32bitImage &Result) const
 
 //  CreateThumbnail
 //
@@ -118,7 +118,7 @@ bool CSystemMapThumbnails::CreateThumbnail (CTopologyNode *pNode, bool bFullSyst
     return true;
     }
 
-bool CSystemMapThumbnails::CreateThumbnailStars (CTopologyNode *pNode, TArray<SStarDesc> &Result) const
+bool CSystemMapThumbnails::CreateThumbnailStars (const CTopologyNode *pNode, TArray<SStarDesc> &Result) const
 
 //  CreateThumbnailStars
 //
@@ -184,7 +184,7 @@ bool CSystemMapThumbnails::CreateThumbnailStars (CTopologyNode *pNode, TArray<SS
     return true;
     }
 
-void CSystemMapThumbnails::DrawThumbnail (CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, bool bFullSystem, Metric rScale) const
+void CSystemMapThumbnails::DrawThumbnail (const CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, bool bFullSystem, Metric rScale) const
 
 //  DrawThumbnail
 //
@@ -310,7 +310,7 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
     return pImage;
     }
 
-CG32bitImage *CSystemMapThumbnails::GetThumbnail (CTopologyNode *pNode, bool bFullSystem) const
+CG32bitImage *CSystemMapThumbnails::GetThumbnail (const CTopologyNode *pNode, bool bFullSystem) const
 
 //  GetThumbnail
 //
@@ -363,7 +363,7 @@ CG32bitImage *CSystemMapThumbnails::GetThumbnail (CTopologyNode *pNode, bool bFu
     return pImage;
     }
 
-const TArray<CSystemMapThumbnails::SStarDesc> &CSystemMapThumbnails::GetThumbnailStars (CTopologyNode *pNode) const
+const TArray<CSystemMapThumbnails::SStarDesc> &CSystemMapThumbnails::GetThumbnailStars (const CTopologyNode *pNode) const
 
 //  GetThumbnailStars
 //

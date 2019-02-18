@@ -141,8 +141,8 @@ class CTopologyNode
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
 		inline CSystem *GetSystem (void) { return m_pSystem; }
 		inline DWORD GetSystemID (void) { return m_dwID; }
-		inline const CString &GetSystemName (void) { return m_sName; }
-		inline DWORD GetSystemTypeUNID (void) { return m_SystemUNID; }
+		inline const CString &GetSystemName (void) const { return m_sName; }
+		inline DWORD GetSystemTypeUNID (void) const { return m_SystemUNID; }
 		inline CTopology &GetTopology (void) const { return m_Topology; }
 		inline CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
 		inline const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }

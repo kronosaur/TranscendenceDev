@@ -641,7 +641,7 @@ void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRou
 //	Returns route description
 
 	{
-	SStargateEntry *pDesc = &m_NamedGates[iIndex];
+	const SStargateEntry *pDesc = &m_NamedGates[iIndex];
 
 	retRouteDesc->pFromNode = this;
 	retRouteDesc->sFromName = m_NamedGates.GetKey(iIndex);

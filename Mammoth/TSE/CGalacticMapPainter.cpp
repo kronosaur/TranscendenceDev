@@ -101,7 +101,7 @@ void CGalacticMapPainter::AdjustCenter (int xCenter, int yCenter, int iScale, in
 		*retyCenter = (cyHeight / 2) - yMapCenter;
 	}
 
-void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
+void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
 
 //	DrawNode
 //
@@ -140,7 +140,7 @@ void CGalacticMapPainter::DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, in
 
 	//	Debug info
 
-	if (g_pUniverse->InDebugMode() && m_pMap->DebugShowAttributes())
+	if (m_pMap && m_pMap->DebugShowAttributes())
 		{
 		CString sLine = pNode->GetAttributes();
 #if 0
@@ -226,7 +226,7 @@ void CGalacticMapPainter::DrawNodeConnections (CG32bitImage &Dest, CTopologyNode
 
 				//	If in debug mode, paint all the intermediate nodes
 
-				if (g_pUniverse->InDebugMode())
+				if (m_pMap && m_pMap->DebugShowIntermediatePoints())
 					{
 					for (j = 0; j < RouteDesc.MidPoints.GetCount(); j++)
 						{
@@ -266,7 +266,7 @@ void CGalacticMapPainter::DrawSelection (CG32bitImage &Dest, int x, int y, CG32b
     m_iSelectAngle = AngleMod(m_iSelectAngle + 1);
     }
 
-void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
+void CGalacticMapPainter::DrawUnknownNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const
 
 //	DrawUnknownNode
 //
@@ -319,7 +319,7 @@ bool CGalacticMapPainter::HitTest (int x, int y, SSelectResult &Result) const
 //  Returns TRUE if we clicked on a node
 
     {
-    int i;
+    const CTopology &Topology = m_Universe.GetTopology();
 
     //  Convert to galactic coordinates
 
@@ -328,9 +328,9 @@ bool CGalacticMapPainter::HitTest (int x, int y, SSelectResult &Result) const
 
     //  See if we hit a node
 
-    for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+    for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
         {
-        CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+        CTopologyNode *pNode = Topology.GetTopologyNode(i);
         int xNode, yNode;
         if (!pNode->IsPositionKnown()
                 || pNode->IsEndGame()
@@ -358,7 +358,7 @@ void CGalacticMapPainter::Init (void)
 //	Initialize what we need to paint.
 
 	{
-	int i;
+	const CTopology &Topology = m_Universe.GetTopology();
 
 	if (m_cxMap == -1)
 		{
@@ -375,9 +375,9 @@ void CGalacticMapPainter::Init (void)
 		int yMin = 0;
 		int yMax = 0;
 
-		for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
-			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+			CTopologyNode *pNode = Topology.GetTopologyNode(i);
 			
 			int xPos, yPos;
 			if (pNode->GetDisplayPos(&xPos, &yPos) == m_pMap 
@@ -414,7 +414,7 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 //	iScale 400 = x4
 
 	{
-	int i;
+	const CTopology &Topology = m_Universe.GetTopology();
 
 	ASSERT(m_iScale > 0);
 
@@ -486,9 +486,9 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 		//	Loop over all nodes and clear marks on the ones that we need to draw
 
-		for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
-			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+			CTopologyNode *pNode = Topology.GetTopologyNode(i);
 			
 			int xPos, yPos;
 			pNode->SetMarked(pNode->GetDisplayPos(&xPos, &yPos) != m_pMap 
@@ -498,9 +498,9 @@ void CGalacticMapPainter::Paint (CG32bitImage &Dest) const
 
 		//	Paint the nodes
 
-		for (i = 0; i < g_pUniverse->GetTopologyNodeCount(); i++)
+		for (int i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
-			CTopologyNode *pNode = g_pUniverse->GetTopologyNode(i);
+			CTopologyNode *pNode = Topology.GetTopologyNode(i);
 			if (pNode->IsMarked())
 				continue;
 
