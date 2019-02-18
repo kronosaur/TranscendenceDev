@@ -688,6 +688,9 @@ void CUniverse::FlushStarSystem (CTopologyNode *pTopology)
     int iPos;
     if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
         {
+		if (m_StarSystems[iPos] == m_pCurrentSystem)
+			SetPOV(NULL);
+
         delete m_StarSystems[iPos];
         m_StarSystems.Delete(iPos);
         }
