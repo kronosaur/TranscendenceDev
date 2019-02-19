@@ -369,6 +369,14 @@
 		</Effect>
 	</EffectType>
 
+	<EffectType unid="&efNanoFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
 	<EffectType UNID="&efGravitonFireDefault;"
 			instance=			"owner"
 			>
