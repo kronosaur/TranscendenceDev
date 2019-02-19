@@ -1121,12 +1121,23 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 				if (error = LoadDesignElement(Ctx, pItem))
 					{
+					//	We always mark the extension as disabled, so we don't 
+					//	try to load it or use it again.
+
+					SetDisabled(Ctx.sError);
+
+					//	If we're in debug mode, then return an error. This will 
+					//	block loading.
+
 					if (GetUniverse().InDebugMode()
 							&& !ExtDb.IsTDB())
 						return ComposeLoadError(Ctx, retsError);
 
-					SetDisabled(Ctx.sError);
-					return NOERROR;
+					//	Otherwise, we allow loading to continue as if nothing
+					//	had happened.
+
+					else
+						return NOERROR;
 					}
 				}
 
@@ -1350,6 +1361,8 @@ ALERROR CExtension::LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 
 				if (Ctx.GetAPIVersion() >= 12)
 					{
+					CDesignType *pConflict = m_DesignTypes.FindByUNID(dwUNID);
+
 					Ctx.sError = strPatternSubst(CONSTLIT("Duplicate UNID: %x"), dwUNID);
 					return error;
 					}

@@ -1465,13 +1465,14 @@ ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder,
 			//	If we didn't have any extensions loaded and we failed, then
 			//	there's nothing we can do and we need to abort.
 
-			if (Extensions.GetCount() == 0)
+			if (m_bDebugMode || (dwAdventure == DEFAULT_ADVENTURE_EXTENSION_UNID && Extensions.GetCount() == 0))
 				return error;
 
-			//	Otherwise, we try to recover by loading with no extensions.
+			//	Otherwise, we try to recover by loading with the default 
+			//	adventure no extensions.
 
 			else
-				return LoadUniverse(sCollectionFolder, ExtensionFolders, dwAdventure, TArray<DWORD>(), DisabledExtensions, retsError);
+				return LoadUniverse(sCollectionFolder, ExtensionFolders, DEFAULT_ADVENTURE_EXTENSION_UNID, TArray<DWORD>(), DisabledExtensions, retsError);
 			}
 
 		return NOERROR;
