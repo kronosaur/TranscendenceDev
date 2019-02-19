@@ -815,13 +815,13 @@
 
 			<!-- MESSAGES -->
 
-			<Text id="msgBenedictDead1">"\"Nooooo!\""</Text>
-			<Text id="msgBenedictDead2">"\"Let's get the hell out of here.\""</Text>
-			<Text id="msgBenedictDead3">"\"Sorry, kid, you're on your own.\""</Text>
-			<Text id="msgCoverYou">"\"I'll cover you! Get Benedict!\""</Text>
-			<Text id="msgCoverYouGetFiona">"\"I'll cover you! Get Fiona!\""</Text>
-			<Text id="msgDidIt">"\"We got it!\""</Text>
-			<Text id="msgFionaWrecked">"\"I'm OK! Proceed with the mission!\""</Text>
+			<Text id="msgBenedictDead1">Nooooo!</Text>
+			<Text id="msgBenedictDead2">Let's get the hell out of here.</Text>
+			<Text id="msgBenedictDead3">Sorry, kid, you're on your own.</Text>
+			<Text id="msgCoverYou">I'll cover you! Get Benedict!</Text>
+			<Text id="msgCoverYouGetFiona">I'll cover you! Get Fiona!</Text>
+			<Text id="msgDidIt">We got it!</Text>
+			<Text id="msgFionaWrecked">I'm OK! Proceed with the mission!</Text>
 		</Language>
 	</MissionType>
 	

@@ -323,7 +323,7 @@
 					))
 			</Text>
 			<Text id="msgKamikaze">
-				"Freighter on suicide run! Destroy it now!"
+				Freighter on suicide run! Destroy it now!
 			</Text>
 		</Language>
 	</MissionType>

@@ -402,8 +402,8 @@
 		</Events>
 	
 		<Language>
-			<Text id="msgNoOreFound">"No ore found"</Text>
-			<Text id="msgScanning">"Scanning..."</Text>
+			<Text id="msgNoOreFound">No ore found</Text>
+			<Text id="msgScanning">Scanning...</Text>
 			<Text id="msgTonsOfOre">
 				(if (= (@ gData 'count) 1)
 					"ton of ore"

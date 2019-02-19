@@ -529,7 +529,7 @@
 
 			</Text>
 
-			<String id="msgStopThatShip">"Destroy that ship!"</String>
+			<String id="msgStopThatShip">Destroy that ship!</String>
 		</Language>
 	</MissionType>
 	

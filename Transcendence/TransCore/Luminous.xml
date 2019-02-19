@@ -17,7 +17,7 @@
 			alignment="archivist"
 			>
 		<Language>
-			<String id="WatchYourTargets">"Drone damaged"</String>
+			<String id="WatchYourTargets">Drone damaged</String>
 			<Text id="NiceShooting"></Text>
 		</Language>
 	</Sovereign>

@@ -677,7 +677,7 @@
 		</Events>
 		
 		<Language>
-			<Text id="msgWaiting">"Armed"</Text>
+			<Text id="msgWaiting">Armed</Text>
 		</Language>
 	</ItemType>
 	
