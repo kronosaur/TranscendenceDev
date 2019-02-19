@@ -100,6 +100,7 @@ class CSovereign : public CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		virtual DesignTypes GetType (void) const override { return designSovereign; }
+		virtual bool IsVirtual (void) const override { return m_bVirtual; }
 
 		static DWORD ParseAlignmentFlag (const CString &sValue);
 		static Disposition ParseDisposition (const CString &sValue);
@@ -139,16 +140,17 @@ class CSovereign : public CDesignType
 		CString m_sDemonym;						//	":an American(s)"
 		bool m_bPluralForm;						//	"The United States ARE..."
 
-		Alignments m_iAlignment;
-		CXMLElement *m_pInitialRelationships;
+		Alignments m_iAlignment = alignUnknown;
+		CXMLElement *m_pInitialRelationships = NULL;
 
-		SRelationship *m_pFirstRelationship;	//	List of individual relationships
+		SRelationship *m_pFirstRelationship = NULL;		//	List of individual relationships
 
-		int m_iStationsDestroyedByPlayer;		//	Number of our stations destroyed by the player
-		int m_iShipsDestroyedByPlayer;			//	Number of our ships destroyed by the player
+		int m_iStationsDestroyedByPlayer = 0;			//	Number of our stations destroyed by the player
+		int m_iShipsDestroyedByPlayer = 0;				//	Number of our ships destroyed by the player
 
-		bool m_bSelfRel;						//	TRUE if relationship with itself is not friendly
-		mutable const CSystem *m_pEnemyObjectsSystem;		//	System that we've cached enemy objects
-		mutable CSpaceObjectList m_EnemyObjects;	//	List of enemy objects that can attack
+		bool m_bSelfRel = false;						//	TRUE if relationship with itself is not friendly
+		bool m_bVirtual = false;						//	TRUE if this is a virtual sovereign (usually a base class)
+		mutable const CSystem *m_pEnemyObjectsSystem = NULL;	//	System that we've cached enemy objects
+		mutable CSpaceObjectList m_EnemyObjects;		//	List of enemy objects that can attack
 	};
 

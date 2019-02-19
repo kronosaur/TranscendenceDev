@@ -603,6 +603,8 @@ class CShipTableRef : public CDesignTypeRef<CShipTable>
 
 class CSovereignRef : public CDesignTypeRef<CSovereign>
 	{
+	public:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 	};
 
 class CStationTypeRef : public CDesignTypeRef<CStationType>

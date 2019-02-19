@@ -19,6 +19,7 @@
 #define TEXT_ATTRIB								CONSTLIT("text")
 #define SHORT_NAME_ATTRIB						CONSTLIT("shortName")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
+#define VIRTUAL_ATTRIB							CONSTLIT("virtual")
 
 #define CONSTRUCTIVE_CHAOS_ALIGN				CONSTLIT("constructive chaos")
 #define CONSTRUCTIVE_ORDER_ALIGN				CONSTLIT("constructive order")
@@ -193,13 +194,7 @@ static SAlignData ALIGN_DATA[CSovereign::alignCount] =
 		{	CONSTDEF("predator"),		alignDestructiveChaos,		ALIGN_FLAG_DESTRUCTIVE },
 	};
 
-CSovereign::CSovereign (void) : 
-		m_pEnemyObjectsSystem(NULL),
-		m_pFirstRelationship(NULL),
-		m_pInitialRelationships(NULL),
-		m_iStationsDestroyedByPlayer(0),
-		m_iShipsDestroyedByPlayer(0),
-		m_bSelfRel(false)
+CSovereign::CSovereign (void)
 
 //	CSovereign constructor
 
@@ -502,25 +497,26 @@ void CSovereign::InitEnemyObjectList (const CSystem *pSystem) const
 //	Compiles and caches a list of enemy objects in the system
 
 	{
-	int i;
+	if (m_pEnemyObjectsSystem == pSystem
+			|| IsVirtual())
+		return;
 
-	if (m_pEnemyObjectsSystem != pSystem)
+	//	Initialize
+
+	m_EnemyObjects.SetAllocSize(pSystem->GetObjectCount());
+
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
-		m_EnemyObjects.SetAllocSize(pSystem->GetObjectCount());
+		CSpaceObject *pObj = pSystem->GetObject(i);
 
-		for (i = 0; i < pSystem->GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = pSystem->GetObject(i);
-
-			if (pObj 
-					&& pObj->ClassCanAttack()
-					&& !pObj->IsDestroyed()
-					&& IsEnemy(pObj->GetSovereign()))
-				m_EnemyObjects.FastAdd(pObj);
-			}
-
-		m_pEnemyObjectsSystem = pSystem;
+		if (pObj 
+				&& pObj->ClassCanAttack()
+				&& !pObj->IsDestroyed()
+				&& IsEnemy(pObj->GetSovereign()))
+			m_EnemyObjects.FastAdd(pObj);
 		}
+
+	m_pEnemyObjectsSystem = pSystem;
 	}
 
 void CSovereign::InitRelationships (void)
@@ -685,6 +681,7 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Initialize
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
+	m_bVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 
 	if (!pDesc->FindAttribute(SHORT_NAME_ATTRIB, &m_sShortName))
 		m_sShortName = m_sName;
@@ -716,6 +713,8 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_iAlignment = alignEmpire;
 		else if (strEquals(sAlignment, DESTRUCTIVE_CHAOS_ALIGN))
 			m_iAlignment = alignMegalomaniac;
+		else if (m_bVirtual)
+			m_iAlignment = alignUnorganized;
 		else
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown alignment: %s"), sAlignment));
 		}
@@ -1142,4 +1141,41 @@ void CSovereign::Update (int iTick, CSystem *pSystem)
 
 		Ctx.Discard(pResult);
 		}
+	}
+
+//	CSovereignRef --------------------------------------------------------------
+
+ALERROR CSovereignRef::Bind (SDesignLoadCtx &Ctx)
+
+//	Bind
+//
+//	Bind design
+
+	{
+	if (m_dwUNID)
+		{
+		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
+		if (pBaseType == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+
+		m_pType = CSovereign::AsType(pBaseType);
+		if (m_pType == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+
+		//	Cannot reference virtual sovereigns
+
+		if (m_pType->IsVirtual())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Cannot refer to virtual sovereign: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
 	}
