@@ -595,7 +595,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"darkAcid:2d8; WMD1"
 				fireRate=			"30"
@@ -648,7 +648,7 @@
 				sound=			"&snMissileLauncher;"
 				>
 			<Fragment
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"darkAcid:2d8; WMD1"
 					expansionSpeed=	"15"

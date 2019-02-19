@@ -85,12 +85,13 @@
 #define FIELD_PARTICLE_COUNT					CONSTLIT("particleCount")
 #define FIELD_SOUND								CONSTLIT("sound")
 
+#define FIRE_TYPE_AREA							CONSTLIT("area")
 #define FIRE_TYPE_BEAM							CONSTLIT("beam")
 #define FIRE_TYPE_CONTINUOUS_BEAM				CONSTLIT("continuousBeam")
 #define FIRE_TYPE_MISSILE						CONSTLIT("missile")
-#define FIRE_TYPE_AREA							CONSTLIT("area")
 #define FIRE_TYPE_PARTICLES						CONSTLIT("particles")
 #define FIRE_TYPE_RADIUS						CONSTLIT("radius")
+#define FIRE_TYPE_SHOCKWAVE						CONSTLIT("shockwave")
 
 #define ON_CREATE_SHOT_EVENT					CONSTLIT("OnCreateShot")
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
@@ -1696,7 +1697,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		m_iFireType = ftMissile;
 	else if (strEquals(sValue, FIRE_TYPE_BEAM))
 		m_iFireType = ftBeam;
-	else if (strEquals(sValue, FIRE_TYPE_AREA))
+	else if (strEquals(sValue, FIRE_TYPE_AREA) || strEquals(sValue, FIRE_TYPE_SHOCKWAVE))
 		m_iFireType = ftArea;
 	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
 		m_iFireType = ftContinuousBeam;
