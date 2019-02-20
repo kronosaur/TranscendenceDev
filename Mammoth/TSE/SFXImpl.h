@@ -375,12 +375,14 @@ class CGlowEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
+		CEffectParamDesc m_Style;			//	style: Effect style
 		CEffectParamDesc m_Radius;			//	radius: Radius of glow (pixels)
 		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
 		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
 		CEffectParamDesc m_BlendMode;		//	blendMode: Blend mode
 
 		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
+		CEffectParamDesc m_Animate;			//	animate: Animation style
 
 		IEffectPainter *m_pSingleton = NULL;
 	};

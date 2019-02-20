@@ -5,11 +5,13 @@
 
 #include "PreComp.h"
 
+#define ANIMATE_ATTRIB					CONSTLIT("animate")
 #define BLEND_MODE_ATTRIB				CONSTLIT("blendMode")
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
 #define PRIMARY_COLOR_ATTRIB			CONSTLIT("primaryColor")
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define SECONDARY_COLOR_ATTRIB			CONSTLIT("secondaryColor")
+#define STYLE_ATTRIB					CONSTLIT("style")
 
 class CGlowEffectPainter : public IEffectPainter
 	{
@@ -31,6 +33,30 @@ class CGlowEffectPainter : public IEffectPainter
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
+		enum EAnimationTypes
+			{
+			//	Do not change order; IDs saved in save file
+
+			animateNone =			0,
+
+			animateExplode =		1,
+			animateFade =			2,
+
+			animateMax =			2,
+			};
+
+		enum EStyles
+			{
+			//	Do not change order; IDs saved in save file
+
+			styleUnknown =			0,
+
+			styleFull =				1,
+			styleOutline =			2,
+
+			styleMax =				2,
+			};
+
 		struct SCacheEntry
 			{
 			CG32bitImage GlowImage;
@@ -44,15 +70,40 @@ class CGlowEffectPainter : public IEffectPainter
 
 		CEffectCreator *m_pCreator = NULL;
 
+		EStyles m_iStyle = styleFull;
 		int m_iRadius = 10;
 		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
 		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
 		CGDraw::EBlendModes m_iBlendMode = CGDraw::blendNormal;
 
 		int m_iLifetime = 0;
+		EAnimationTypes m_iAnimate = animateNone;
 
 		mutable TSortMap<DWORDLONG, SCacheEntry> m_Cache;
 	};
+
+static LPSTR ANIMATION_TABLE[] =
+	{
+	//	Must be same order as EAnimationTypes
+		"",
+
+		"explode",
+		"fade",
+
+		NULL
+	};
+
+static LPSTR STYLE_TABLE[] =
+	{
+	//	Must be same order as EStyles
+		"",
+
+		"full",
+		"outline",
+
+		NULL,
+	};
+
 
 CGlowEffectCreator::~CGlowEffectCreator (void)
 
@@ -82,11 +133,13 @@ IEffectPainter *CGlowEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 
 	//	Initialize the painter parameters
 
+	pPainter->SetParam(Ctx, ANIMATE_ATTRIB, m_Animate);
 	pPainter->SetParam(Ctx, BLEND_MODE_ATTRIB, m_BlendMode);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
 	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
 	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
+	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
 
 	//	Initialize via GetParameters, if necessary
 
@@ -112,6 +165,9 @@ ALERROR CGlowEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElem
 
 	{
 	ALERROR error;
+
+	if (error = m_Animate.InitIdentifierFromXML(Ctx, pDesc->GetAttribute(ANIMATE_ATTRIB), ANIMATION_TABLE))
+		return error;
 
 	if (error = m_BlendMode.InitBlendModeFromXML(Ctx, pDesc->GetAttribute(BLEND_MODE_ATTRIB)))
 		return error;
@@ -262,7 +318,10 @@ void CGlowEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retV
 //	Returns the parameter
 
 	{
-	if (strEquals(sParam, BLEND_MODE_ATTRIB))
+	if (strEquals(sParam, ANIMATE_ATTRIB))
+		retValue->InitInteger(m_iAnimate);
+
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
 		retValue->InitInteger(m_iBlendMode);
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
@@ -277,6 +336,9 @@ void CGlowEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retV
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		retValue->InitColor(m_rgbSecondaryColor);
 	
+	else if (strEquals(sParam, STYLE_ATTRIB))
+		retValue->InitInteger(m_iStyle);
+
 	else
 		retValue->InitNull();
 	}
@@ -369,7 +431,10 @@ void CGlowEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPar
 //	Sets parameters
 
 	{
-	if (strEquals(sParam, BLEND_MODE_ATTRIB))
+	if (strEquals(sParam, ANIMATE_ATTRIB))
+		m_iAnimate = (EAnimationTypes)Value.EvalIdentifier(ANIMATION_TABLE, animateMax, animateNone);
+
+	else if (strEquals(sParam, BLEND_MODE_ATTRIB))
 		m_iBlendMode = Value.EvalBlendMode();
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
@@ -383,4 +448,7 @@ void CGlowEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPar
 
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		m_rgbSecondaryColor = Value.EvalColor();
+
+	else if (strEquals(sParam, ANIMATE_ATTRIB))
+		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleFull);
 	}
