@@ -602,10 +602,19 @@
 							)
 							
 						(scrShowAction gScreen 'actionRemoveMission (msnGetProperty theMission 'canBeDeleted))
+						(scrShowAction gScreen 'actionSetTarget (typHasEvent (msnGetProperty theMission 'unid) 'OnSetPlayerTarget))
+						(scrEnableAction gScreen 'actionSetTarget (neq theMission (scrGetData gScreen 'targetMission)))
 						)
 				</OnPaneInit>
 
 				<Actions>
+					<Action id="actionSetTarget" default="1">
+						(block ((theMission (@ (scrGetListEntry gScreen) 3)))
+							(msnSetPlayerTarget theMission)
+							(scrSetData gScreen 'targetMission theMission)
+							(scrSetListCursor gScreen (scrGetListCursor gScreen)) ;  Refresh to disable action
+							)
+					</Action>
 					<Action id="actionRemoveMission">
 						(block (theEntry theMission)
 							(setq theEntry (scrGetListEntry gScreen))
@@ -625,6 +634,7 @@
 
 		<Language>
 			<Text id="actionRemoveMission">[R]emove Mission</Text>
+			<Text id="actionSetTarget">[S]et Target</Text>
 
 			<Text id="descNoMissions">You have no missions to complete.</Text>
 		</Language>
