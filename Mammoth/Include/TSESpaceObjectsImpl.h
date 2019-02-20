@@ -1117,7 +1117,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
         virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
-		virtual const CObjectImageArray &GetImage (void) const override;
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override;
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
 		virtual Metric GetInvMass (void) const override;
 		virtual int GetLastFireTime (void) const override { return m_iLastFireTime; }
@@ -1136,6 +1136,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetPerception (void) override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
+		virtual int GetRotationFrameIndex (void) const override { return m_Rotation.GetFrameIndex(); }
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
@@ -1473,7 +1474,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
 		virtual Metric GetGravity (Metric *retrRadius) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(CCompositeImageSelector(), CCompositeImageModifiers()); }
-		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override { if (retiRotationFrameIndex) *retiRotationFrameIndex = 0; return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
         virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
 		virtual Metric GetInvMass (void) const override;
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }

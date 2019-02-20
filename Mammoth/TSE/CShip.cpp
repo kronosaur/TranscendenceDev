@@ -2749,13 +2749,16 @@ CCurrencyAndValue CShip::GetHullValue (void) const
 	return m_pClass->GetHullValue(const_cast<CShip *>(this));
 	}
 
-const CObjectImageArray &CShip::GetImage (void) const
+const CObjectImageArray &CShip::GetImage (int *retiRotationFrameIndex) const
 
 //	GetImage
 //
 //	Returns the ship image
 
 	{
+	if (retiRotationFrameIndex)
+		*retiRotationFrameIndex = GetRotationState().GetFrameIndex();
+
 	return m_pClass->GetImage(GetSystemFilters());
 	}
 

@@ -351,6 +351,40 @@ class CFlareEffectCreator : public CEffectCreator
 		CG32bitPixel m_rgbSecondaryColor;
 	};
 
+class CGlowEffectCreator : public CEffectCreator
+	{
+	public:
+		CGlowEffectCreator (void) { }
+		CGlowEffectCreator (const CGlowEffectCreator &Src) = delete;
+		CGlowEffectCreator (CGlowEffectCreator &&Src) = delete;
+		~CGlowEffectCreator (void);
+
+		CGlowEffectCreator &operator= (CGlowEffectCreator &&Src) = delete;
+		CGlowEffectCreator &operator= (const CGlowEffectCreator &Src) = delete;
+			
+		virtual CString GetTag (void) override { return GetClassTag(); }
+
+		//	CEffectCreator virtuals
+		virtual int GetLifetime (void) override { return 0; }
+
+		static CString GetClassTag (void) { return CONSTLIT("Glow"); }
+
+	protected:
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) override;
+		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
+		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
+
+	private:
+		CEffectParamDesc m_Radius;			//	radius: Radius of glow (pixels)
+		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
+		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
+		CEffectParamDesc m_BlendMode;		//	blendMode: Blend mode
+
+		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
+
+		IEffectPainter *m_pSingleton = NULL;
+	};
+
 class CImageEffectCreator : public CEffectCreator,
 		public IEffectPainter
 	{

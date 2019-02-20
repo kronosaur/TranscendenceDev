@@ -241,6 +241,33 @@ template <class BLENDER> class TBltImageNormal : public TImagePainter<TBltImageN
 	friend TImagePainter;
 	};
 
+template <class BLENDER> class TBltImageTrans : public TImagePainter<TBltImageNormal<BLENDER>, BLENDER>
+	{
+	public:
+		TBltImageTrans (BYTE byOpacity) :
+				m_byOpacity(byOpacity)
+			{ }
+
+	private:
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+			{
+			BYTE byAlpha = rgbSrc.GetAlpha();
+
+			if (byAlpha == 0x00)
+				return rgbSrc;
+
+			else if (byAlpha == 0xff)
+				return CG32bitPixel(CG32bitPixel::Blend(0, rgbSrc, m_byOpacity), m_byOpacity);
+
+			else
+				return CG32bitPixel(CG32bitPixel::Blend(0, rgbSrc, m_byOpacity), CG32bitPixel::BlendAlpha(byAlpha, m_byOpacity));
+			}
+
+		BYTE m_byOpacity;
+
+	friend TImagePainter;
+	};
+
 template <class BLENDER> class TFillImageSolid : public TImagePainter<TFillImageSolid<BLENDER>, BLENDER>
 	{
 	public:

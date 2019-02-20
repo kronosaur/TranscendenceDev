@@ -503,6 +503,7 @@
     <ClCompile Include="DrawText.cpp" />
     <ClCompile Include="Files.cpp" />
     <ClCompile Include="FilterBlur.cpp" />
+    <ClCompile Include="FilterMinMax.cpp" />
     <ClCompile Include="FilterThreshold.cpp" />
     <ClCompile Include="IPropertyAnimator.cpp" />
     <ClCompile Include="lodepng\lodepng.cpp">

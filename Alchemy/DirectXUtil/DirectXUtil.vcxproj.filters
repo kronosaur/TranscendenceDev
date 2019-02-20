@@ -419,5 +419,8 @@
     <ClCompile Include="CAniCartoucheBlock.cpp">
       <Filter>Source Files\Reanimator</Filter>
     </ClCompile>
+    <ClCompile Include="FilterMinMax.cpp">
+      <Filter>Source Files\32bit</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

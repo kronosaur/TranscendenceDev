@@ -31,6 +31,8 @@ class CG8bitImage : public TImagePlane<CG8bitImage>
 		//	Basic Drawing Interface
 
 		void Blt (int xSrc, int ySrc, int cxWidth, int cyHeight, const CGRealChannel &Src, int xDest, int yDest);
+		void Copy (const CG8bitImage &Src, int xSrc, int ySrc, int cxWidth, int cyHeight, int xDest = 0, int yDest = 0);
+		void CopyChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc, int ySrc, int cxWidth, int cyHeight, int xDest = 0, int yDest = 0);
 		void Fill (int x, int y, int cxWidth, int cyHeight, BYTE Value);
 		inline void FillColumn (int x, int y, int cyHeight, BYTE Value) { Fill(x, y, 1, cyHeight, Value); }
 		inline void FillLine (int x, int y, int cxWidth, BYTE Value) { Fill(x, y, cxWidth, 1, Value); }

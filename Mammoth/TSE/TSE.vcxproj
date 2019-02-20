@@ -569,6 +569,7 @@
     <ClCompile Include="IShipController.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
+    <ClCompile Include="SFXGlow.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />

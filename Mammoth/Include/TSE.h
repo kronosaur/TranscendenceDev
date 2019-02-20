@@ -843,7 +843,7 @@ class CSpaceObject
 
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
-		virtual const CObjectImageArray &GetImage (void) const;
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const;
         virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual void MarkImages (void) { }
 
@@ -1491,6 +1491,7 @@ class CSpaceObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
+		virtual int GetRotationFrameIndex (void) const { return 0; }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }

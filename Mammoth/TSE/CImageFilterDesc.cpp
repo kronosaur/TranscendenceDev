@@ -15,7 +15,7 @@
 #define WHITE_POINT_ATTRIB						CONSTLIT("whitePoint")
 
 constexpr int DEFAULT_BLOOM_POINT =		220;
-constexpr Metric BLOOM_BLUR_RADIUS =	48.0;
+constexpr Metric BLOOM_BLUR_RADIUS =	14.0;
 
 static TStaticStringTable<TStaticStringEntry<CImageFilterDesc::ETypes>, 4> TYPE_TABLE = {
 	"Bloom",				CImageFilterDesc::filterBloom,

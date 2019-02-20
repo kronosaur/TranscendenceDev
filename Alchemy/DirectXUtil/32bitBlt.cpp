@@ -879,6 +879,73 @@ void CG32bitImage::IntersectMask (int xMask, int yMask, int cxMask, int cyMask, 
 
 //	CGDraw ---------------------------------------------------------------------
 
+void CGDraw::Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity, EBlendModes iMode)
+
+	{
+	switch (iMode)
+		{
+		case blendNormal:
+			{
+			if (byOpacity == 0xff)
+				{
+				TBltImageNormal<CGBlendBlend> Painter;
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			else
+				{
+				TBltImageTrans<CGBlendBlend> Painter(byOpacity);
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			break;
+			}
+
+		case blendHardLight:
+			{
+			if (byOpacity == 0xff)
+				{
+				TBltImageNormal<CGBlendHardLight> Painter;
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			else
+				{
+				TBltImageTrans<CGBlendHardLight> Painter(byOpacity);
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			break;
+			}
+
+		case blendScreen:
+			{
+			if (byOpacity == 0xff)
+				{
+				TBltImageNormal<CGBlendScreen> Painter;
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			else
+				{
+				TBltImageTrans<CGBlendScreen> Painter(byOpacity);
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			break;
+			}
+
+		case blendCompositeNormal:
+			{
+			if (byOpacity == 0xff)
+				{
+				TBltImageNormal<CGBlendComposite> Painter;
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			else
+				{
+				TBltImageTrans<CGBlendComposite> Painter(byOpacity);
+				Painter.Blt(Dest, xDest, yDest, Src, xSrc, ySrc, cxSrc, cySrc);
+				}
+			break;
+			}
+		}
+	}
+
 void CGDraw::BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity)
 
 	{

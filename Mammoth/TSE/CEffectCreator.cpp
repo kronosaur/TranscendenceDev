@@ -168,6 +168,8 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 		pCreator = new CBeamEffectCreator;
 	else if (strEquals(sTag, CBoltEffectCreator::GetClassTag()))
 		pCreator = new CBoltEffectCreator;
+	else if (strEquals(sTag, CGlowEffectCreator::GetClassTag()))
+		pCreator = new CGlowEffectCreator;
 	else if (strEquals(sTag, CMoltenBoltEffectCreator::GetClassTag()))
 		pCreator = new CMoltenBoltEffectCreator;
 	else if (strEquals(sTag, CParticleExplosionEffectCreator::GetClassTag()))

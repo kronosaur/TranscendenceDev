@@ -3820,7 +3820,7 @@ Metric CSpaceObject::GetMaxGateDist2 (void) const
 	return (0.25 * rHitSize * rHitSize);
 	}
 
-const CObjectImageArray &CSpaceObject::GetImage (void) const
+const CObjectImageArray &CSpaceObject::GetImage (int *retiRotationFrameIndex) const
 
 //	GetImage
 //
@@ -3828,6 +3828,10 @@ const CObjectImageArray &CSpaceObject::GetImage (void) const
 
 	{
 	static CObjectImageArray NullImage;
+
+	if (retiRotationFrameIndex)
+		*retiRotationFrameIndex = 0;
+
 	return NullImage;
 	}
 

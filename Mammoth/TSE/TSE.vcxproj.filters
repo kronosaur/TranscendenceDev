@@ -1291,5 +1291,8 @@
     <ClCompile Include="CNamedEffects.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="SFXGlow.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

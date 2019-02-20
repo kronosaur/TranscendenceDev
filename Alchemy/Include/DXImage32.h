@@ -267,6 +267,7 @@ class CGDraw
 
 		//	Blts
 
+		static void Blt (CG32bitImage &Dest, int xDest, int yDest, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff, EBlendModes iMode = blendNormal);
 		static void BltGray (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, BYTE byOpacity = 0xff);
 		static void BltLighten (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc);
 		static void BltMask (CG32bitImage &Dest, int xDest, int yDest, CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, CG8bitImage &Mask, EBlendModes iMode = blendNormal);
@@ -368,11 +369,17 @@ class CGFilter
 
 		static void Blur (CG8bitImage &Src, const RECT &rcSrc, Metric rRadius, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
 
+		static void MaxPixel (const CG8bitImage &Src, const RECT &rcSrc, int iRadius, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
+		static void MinPixel (const CG8bitImage &Src, const RECT &rcSrc, int iRadius, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
+
 		static void Threshold (CG32bitImage &Src, const RECT &rcSrc, BYTE byThreshold, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
 		static void Threshold (CG32bitImage &Src, const RECT &rcSrc, BYTE byThreshold, CG32bitImage &Dest, int xDest = 0, int yDest = 0);
 
 	private:
 		static void CreateBlur (CGRealChannel &Src, Metric rRadius, CGRealChannel &Dest);
+		template <class T> static void MinMaxPixel (const CG8bitImage &Src, const RECT &rcSrc, int iRadius, CG8bitImage &Dest, int xDest = 0, int yDest = 0);
+		template <class T> static void MinMaxPixelCols (const CG8bitImage &Src, int xSrc, int ySrc, int cxWidth, int cyHeight, int iRadius, CG8bitImage &Dest);
+		template <class T> static void MinMaxPixelRows (const CG8bitImage &Src, int xSrc, int ySrc, int cxWidth, int cyHeight, int iRadius, CG8bitImage &Dest);
 	};
 
 //	Blending Classes -----------------------------------------------------------
