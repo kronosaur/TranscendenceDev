@@ -1594,6 +1594,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
+		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		int CalcNumberOfShips (void);
 		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }

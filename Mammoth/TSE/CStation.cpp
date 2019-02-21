@@ -271,6 +271,7 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
+	CalcDeviceBonus();
 	}
 
 void CStation::AddSubordinate (CSpaceObject *pSubordinate)
@@ -390,6 +391,119 @@ void CStation::CalcBounds (void)
 	//	Set it
 
 	SetBounds(rcBounds, GetParallaxDist());
+	}
+
+void CStation::CalcDeviceBonus (void)
+
+//	CalcDeviceBonus
+//
+//	Computes device bonuses.
+
+	{
+	DEBUG_TRY
+
+	//	Short-circuit if no devices
+
+	if (m_pDevices == NULL)
+		return;
+
+	//	Enhancements from system
+
+	const CEnhancementDesc *pSystemEnhancements = GetSystemEnhancements();
+
+	//	Keep track of duplicate installed devices
+
+	TSortMap<DWORD, int> DeviceTypes;
+
+	//	Loop over all devices
+
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		CInstalledDevice &Device = *GetDevice(i);
+		if (Device.IsEmpty())
+			continue;
+
+        CItemCtx ItemCtx(this, &Device);
+
+		//	Keep track of device types to see if we have duplicates
+
+		bool bNewDevice;
+		int *pCount = DeviceTypes.SetAt(Device.GetClass()->GetUNID(), &bNewDevice);
+		if (bNewDevice)
+			*pCount = 1;
+		else
+			*pCount += 1;
+
+		//	Keep an enhancement stack for this device
+
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		TArray<CString> EnhancementIDs;
+
+		//	Add any enhancements on the item itself
+
+		const CItemEnhancement &Mods = ItemCtx.GetMods();
+		if (!Mods.IsEmpty())
+			pEnhancements->Insert(Mods);
+
+		//	Add enhancements from the slot
+
+		Device.AccumulateSlotEnhancements(this, EnhancementIDs, pEnhancements);
+
+		//	Add enhancements from other devices
+
+		for (int j = 0; j < GetDeviceCount(); j++)
+			{
+			CInstalledDevice &OtherDev = *GetDevice(j);
+			if (i != j && !OtherDev.IsEmpty())
+				{
+				OtherDev.AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements);
+				}
+			}
+
+		//	Add enhancements from system
+
+		if (pSystemEnhancements)
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+
+		//	Deal with class specific stuff
+
+		switch (Device.GetCategory())
+			{
+			case itemcatLauncher:
+			case itemcatWeapon:
+				{
+				//	Overlays add a bonus
+
+				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
+				if (iBonus != 0)
+					pEnhancements->InsertHPBonus(iBonus);
+				break;
+				}
+			}
+
+		//	Set the bonuses
+		//	Note that these include any bonuses confered by item enhancements
+
+		Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
+
+		//	Take ownership of the stack.
+
+		Device.SetEnhancements(pEnhancements);
+		}
+
+	//	Mark devices as duplicate (or not)
+
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		CInstalledDevice &Device = *GetDevice(i);
+		if (!Device.IsEmpty())
+			{
+			int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
+			Device.SetDuplicate(*pCount > 1);
+			}
+		}
+
+	DEBUG_CATCH
 	}
 
 void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick) const
@@ -998,6 +1112,10 @@ ALERROR CStation::CreateFromType (CSystem &System,
 				pStation->m_pDevices[i].SelectFirstVariant(pStation);
 				}
 			}
+
+		//	Compute bonuses
+
+		pStation->CalcDeviceBonus();
 		}
 
 	//	Get notifications when other objects are destroyed
@@ -3482,6 +3600,11 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 		for (i = 0; i < (int)dwLoad; i++)
 			m_pDevices[i].ReadFromStream(this, Ctx);
+
+		//	In debug mode, recalc weapon bonus in case anything has changed.
+
+		if (Ctx.GetUniverse().InDebugMode())
+			CalcDeviceBonus();
 		}
 
 	//	Overlays
@@ -3871,6 +3994,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	DEBUG_TRY
 
 	int i;
+    bool bCalcBounds = false;
+	bool bCalcDeviceBonus = false;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
 
 	//	If we need to destroy this station, do it now
@@ -3907,6 +4032,18 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			m_pDevices[i].Update(this, DeviceCtx);
 			if (DeviceCtx.bSourceDestroyed)
 				return;
+
+			//	If the device was repaired or disabled, we need to update
+
+			if (DeviceCtx.bRepaired)
+				{
+				bCalcDeviceBonus = true;
+				}
+
+			if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
+				{
+				bCalcDeviceBonus = true;
+				}
 			}
 		}
 
@@ -3961,8 +4098,19 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (CSpaceObject::IsDestroyedInUpdate())
 			return;
 		else if (bModified)
-			CalcBounds();
+			{
+			bCalcBounds = true;
+			bCalcDeviceBonus = true;
+			}
 		}
+
+	//	Update as necessary
+
+    if (bCalcDeviceBonus)
+        CalcDeviceBonus();
+
+	if (bCalcBounds)
+		CalcBounds();
 
 	DEBUG_CATCH
 	}
@@ -4403,6 +4551,7 @@ void CStation::RemoveOverlay (DWORD dwID)
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
+	CalcDeviceBonus();
 	}
 
 bool CStation::RemoveSubordinate (CSpaceObject *pSubordinate)
