@@ -596,6 +596,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		//	CSpaceObject virtuals
 
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
+		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }

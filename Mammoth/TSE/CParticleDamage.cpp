@@ -6,6 +6,8 @@
 
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
 
+const int MIN_MISSILE_INTERACTION =				10;
+
 CParticleDamage::CParticleDamage (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pEffectPainter(NULL),
 		m_pParticlePainter(NULL)
@@ -175,6 +177,18 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 		*retpObj = pParticles;
 
 	return NOERROR;
+	}
+
+CSpaceObject::Categories CParticleDamage::GetCategory (void) const
+
+//	GetCategory
+//
+//	Returns the category of the object.
+
+	{
+	//	We count as a beam if have low interaction levels
+
+	return ((m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
 CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const

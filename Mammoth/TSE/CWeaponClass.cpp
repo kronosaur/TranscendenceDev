@@ -1176,6 +1176,11 @@ int CWeaponClass::CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSo
 	CVector vTarget = pTarget->GetPos() - vSource;
 	CVector vTargetVel = pTarget->GetVel() - pSource->GetVel();
 
+	//	For area weapons, we just point to the target
+
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
+		return VectorToPolar(vTarget);
+
 	//	Figure out intercept time
 
 	Metric rDist;
