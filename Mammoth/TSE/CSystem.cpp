@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 #include "math.h"
+#include "SystemPaintImpl.h"
 
 #define ENHANCED_SRS_BLOCK_SIZE			6
 
@@ -3013,9 +3014,6 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	{
 	DEBUG_TRY
 
-	int i;
-	int iLayer;
-
 	ASSERT(pCenter);
 
 	//	Initialize the viewport context
@@ -3027,10 +3025,6 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Keep track of the player object because sometimes we do special processing
 
 	CSpaceObject *pPlayerCenter = (pCenter->IsPlayer() ? pCenter : NULL);
-
-	//	Paint the background
-
-	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
 
 	//	Compute the bounds relative to the center
 
@@ -3046,14 +3040,33 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 	//	Generate lists of all objects to paint by layer
 
-	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
-		m_LayerObjs[iLayer].DeleteAll();
+	const Metric MAX_OBJ_SIZE_PIXELS = g_KlicksPerPixel * 2048.0;
+	Metric rTopEdge = Ctx.vUR.Y() + MAX_OBJ_SIZE_PIXELS;
+	Metric rBottomEdge = Ctx.vLL.Y() + MAX_OBJ_SIZE_PIXELS;
 
-	m_BackgroundObjs.DeleteAll();
-	m_ForegroundObjs.DeleteAll();
-	m_EnhancedDisplayObjs.DeleteAll();
+	//	We create the following paint layer and paint them in this order:
 
-	for (i = 0; i < GetObjectCount(); i++)
+	CParallaxPaintList ParallaxBackground;
+	CDepthPaintList MainBackground(rTopEdge);
+	CDepthPaintList MainSpace(rTopEdge);
+	CDepthPaintList MainStations(rTopEdge);
+	CUnorderedPaintList MainShips;
+	CUnorderedPaintList MainEffects;
+	CUnorderedPaintList MainOverhang;
+	CParallaxPaintList ParallaxForeground;
+	CMarkerPaintList EnhancedDisplay(rcBounds);
+
+	IPaintList *MainLayer[layerCount];
+	MainLayer[layerBackground] = &MainBackground;
+	MainLayer[layerSpace] = &MainSpace;
+	MainLayer[layerStations] = &MainStations;
+	MainLayer[layerShips] = &MainShips;
+	MainLayer[layerEffects] = &MainEffects;
+	MainLayer[layerOverhang] = &MainOverhang;
+
+	//	Add all objects to one of the above layers, as appropriate.
+
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj 
@@ -3075,12 +3088,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 				if (pObj->InBox(vParallaxUR, vParallaxLL))
 					{
-					pObj->SetPaintNeeded();
-
 					if (rParallaxDist > 1.0)
-						m_BackgroundObjs.FastAdd(pObj);
+						ParallaxBackground.Insert(*pObj);
 					else
-						m_ForegroundObjs.FastAdd(pObj);
+						ParallaxForeground.Insert(*pObj);
 					}
 				}
 			else
@@ -3090,10 +3101,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				//	If we're in the viewport, then we need to paint on the main screen
 
 				if (bInViewport)
-					{
-					m_LayerObjs[pObj->GetPaintLayer()].FastAdd(pObj);
-					pObj->SetPaintNeeded();
-					}
+					MainLayer[pObj->GetPaintLayer()]->Insert(*pObj);
 
 				//	See if we need to paint a marker. Note that sometimes we end up 
 				//	painting both because we might be in-bounds (because of effects)
@@ -3110,7 +3118,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				if (bMarker
 						&& !pObj->IsHidden()
 						&& (!bInViewport || !pObj->IsPartlyVisibleInBox(Ctx.vUR, Ctx.vLL)))
-					m_EnhancedDisplayObjs.FastAdd(pObj);
+					EnhancedDisplay.Insert(*pObj);
 				}
 			}
 		}
@@ -3118,80 +3126,25 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Always add the player at the end (so we paint on top of our layer)
 
 	if (pPlayerCenter)
-		{
-		m_LayerObjs[pPlayerCenter->GetPaintLayer()].FastAdd(pPlayerCenter);
-		pPlayerCenter->SetPaintNeeded();
-		}
+		MainLayer[pPlayerCenter->GetPaintLayer()]->Insert(*pPlayerCenter);
+
+	//	Paint the background
+
+	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
 
 	//	Paint background objects
 
-	ViewportTransform SavedXForm = Ctx.XForm;
-	for (i = 0; i < m_BackgroundObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_BackgroundObjs.GetObj(i);
+	ParallaxBackground.Paint(Dest, Ctx);
 
-		//	Adjust the transform to deal with parallax
-
-		Ctx.XForm = ViewportTransform(Ctx.vCenterPos, pObj->GetParallaxDist() * g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
-		Ctx.XFormRel = Ctx.XForm;
-
-		//	Figure out the position of the object in pixels
-
-		int x, y;
-		Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-		//	Paint the object in the viewport
-
-		SetProgramState(psPaintingSRS, pObj);
-
-		Ctx.pObj = pObj;
-		pObj->Paint(Dest, 
-				x,
-				y,
-				Ctx);
-
-		SetProgramState(psPaintingSRS);
-		}
-	Ctx.XForm = SavedXForm;
-	Ctx.XFormRel = Ctx.XForm;
-
-	//	Paint any space environment
+	//	Paint any space environment (e.g., nebulae)
 
 	if (m_pEnvironment)
 		m_pEnvironment->Paint(Ctx, Dest);
 
 	//	Paint all the objects by layer
 
-	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
-		for (i = 0; i < m_LayerObjs[iLayer].GetCount(); i++)
-			{
-			CSpaceObject *pObj = m_LayerObjs[iLayer].GetObj(i);
-
-			if (pObj->IsPaintNeeded())
-				{
-				//	Figure out the position of the object in pixels
-
-				int x, y;
-				Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-				//	Paint the object in the viewport
-
-				SetProgramState(psPaintingSRS, pObj);
-
-				Ctx.pObj = pObj;
-				pObj->Paint(Dest, 
-						x,
-						y,
-						Ctx);
-
-				SetProgramState(psPaintingSRS);
-				}
-
-			//	Clear destination, if necessary
-
-			if (pObj->IsAutoClearDestination())
-				pObj->ClearPlayerDestination();
-			}
+	for (int i = 0; i < layerCount; i++)
+		MainLayer[i]->Paint(Dest, Ctx);
 
 	//	Paint all joints
 
@@ -3199,105 +3152,11 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 	//	Paint foreground objects
 
-	SavedXForm = Ctx.XForm;
-	for (i = 0; i < m_ForegroundObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_ForegroundObjs.GetObj(i);
-
-		//	Compute the transform
-
-		Ctx.XForm = ViewportTransform(Ctx.vCenterPos, pObj->GetParallaxDist() * g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
-		Ctx.XFormRel = Ctx.XForm;
-
-		//	Figure out the position of the object in pixels
-
-		int x, y;
-		Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-		//	Paint the object in the viewport
-
-		SetProgramState(psPaintingSRS, pObj);
-
-		Ctx.pObj = pObj;
-		pObj->Paint(Dest, 
-				x,
-				y,
-				Ctx);
-
-		SetProgramState(psPaintingSRS);
-		}
-	Ctx.XForm = SavedXForm;
-	Ctx.XFormRel = Ctx.XForm;
+	ParallaxForeground.Paint(Dest, Ctx);
 
 	//	Paint all the enhanced display markers
 
-	for (i = 0; i < m_EnhancedDisplayObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_EnhancedDisplayObjs.GetObj(i);
-
-		//	If this is a destination marker then we paint it at the circumference
-		//	of a circle around the center.
-
-		if (pObj->IsPlayerTarget()
-				|| pObj->IsPlayerDestination()
-				|| pObj->IsHighlighted())
-			{
-			CVector vDir = (pObj->GetPos() - Ctx.vCenterPos).Normal();
-
-			PaintDestinationMarker(Ctx,
-					Dest, 
-					Ctx.xCenter + (int)(Ctx.rIndicatorRadius * vDir.GetX()), 
-					Ctx.yCenter - (int)(Ctx.rIndicatorRadius * vDir.GetY()),
-					pObj);
-			}
-
-		//	Otherwise we paint this as a block at the edge of the screen
-
-		else
-			{
-			//	Figure out the position of the object in pixels
-			//	relative to the center of the screen
-
-			int x, y;
-			Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-			x = x - Ctx.xCenter;
-			y = y - Ctx.yCenter;
-
-			//	Now clip the position to the side of the screen
-
-			if (x >= rcBounds.right)
-				{
-				y = y * (rcBounds.right - 1) / x;
-				x = rcBounds.right - 1;
-				}
-			else if (x < rcBounds.left)
-				{
-				y = y * (rcBounds.left) / x;
-				x = rcBounds.left;
-				}
-
-			if (y >= rcBounds.bottom)
-				{
-				x = x * (rcBounds.bottom - 1) / y;
-				y = rcBounds.bottom - 1;
-				}
-			else if (y < rcBounds.top)
-				{
-				x = x * rcBounds.top / y;
-				y = rcBounds.top;
-				}
-
-			//	Draw the indicator
-
-			CG32bitPixel rgbColor = pObj->GetSymbolColor();
-
-			Dest.Fill(Ctx.xCenter + x - (ENHANCED_SRS_BLOCK_SIZE / 2), 
-					Ctx.yCenter + y - (ENHANCED_SRS_BLOCK_SIZE / 2),
-					ENHANCED_SRS_BLOCK_SIZE, 
-					ENHANCED_SRS_BLOCK_SIZE, 
-					rgbColor);
-			}
-		}
+	EnhancedDisplay.Paint(Dest, Ctx);
 
 	//	Let the POV paint any other enhanced displays
 

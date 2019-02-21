@@ -1226,7 +1226,7 @@ class CSpaceObject
 
 		//	Painting
 
-		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const { return CSystem::layerStations; }
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 

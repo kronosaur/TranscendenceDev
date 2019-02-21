@@ -33,7 +33,7 @@ class CAreaDamage : public TSpaceObjectImpl<OBJID_CAREADAMAGE>
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetAveExpansionSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CAreaDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -81,7 +81,7 @@ class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerStations; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerStations; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
@@ -170,7 +170,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual int GetRotation (void) const override { return m_iLastDirection; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -272,7 +272,7 @@ class CDisintegrationEffect : public TSpaceObjectImpl<OBJID_CDISINTEGRATIONEFFEC
 		//	CSpaceObject virtuals
 
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CDisintegrationEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 
 	protected:
 
@@ -329,7 +329,7 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		virtual bool CanMove (void) const { return true; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 
 	protected:
 
@@ -386,7 +386,7 @@ class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
 
 		virtual Categories GetCategory (void) const override { return catFractureEffect; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CFractureEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual void MarkImages (void) override { m_Image.MarkImage(); }
 		virtual void SetAttractor (CSpaceObject *pObj) override;
 
@@ -454,7 +454,7 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual Categories GetCategory (void) const override { return catMarker; }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual bool IsAnchored (void) const override { return true; }
 		virtual bool IsMarker (void) override { return true; }
@@ -510,7 +510,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -602,7 +602,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -779,7 +779,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 		virtual bool CanMove (void) const { return true; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerSpace; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerSpace; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 
@@ -882,7 +882,7 @@ class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CRadiusDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -1133,7 +1133,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
@@ -1387,7 +1387,7 @@ class CStaticEffect : public TSpaceObjectImpl<OBJID_CSTATICEFFECT>
 		//	CSpaceObject virtuals
 
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStaticEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual bool IsAnchored (void) const override { return true; }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
@@ -1487,7 +1487,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override;
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override;
 		virtual Metric GetParallaxDist (void) override { return m_rParallaxDist; }
 		virtual EDamageResults GetPassthroughDefault (void) override { return m_Hull.GetPassthroughDefault(); }
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }

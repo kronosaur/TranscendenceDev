@@ -312,6 +312,7 @@
     <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="SFXRayImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
+    <ClInclude Include="SystemPaintImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
@@ -565,6 +566,7 @@
     </ClCompile>
     <ClCompile Include="IElementGenerator.cpp" />
     <ClCompile Include="IListData.cpp" />
+    <ClCompile Include="IPaintList.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="IShipController.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />

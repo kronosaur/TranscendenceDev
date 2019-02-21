@@ -308,6 +308,9 @@
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemPaintImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1293,6 +1296,9 @@
     </ClCompile>
     <ClCompile Include="SFXGlow.cpp">
       <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="IPaintList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

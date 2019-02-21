@@ -974,10 +974,6 @@ class CSystem
 		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
-		CSpaceObjectList m_LayerObjs[layerCount];	//	List of objects by layer
-		CSpaceObjectList m_EnhancedDisplayObjs;	//	List of objects to show in viewport periphery
-		CSpaceObjectList m_BackgroundObjs;		//	List of background objects to paint in viewport
-		CSpaceObjectList m_ForegroundObjs;		//	List of foreground objects to paint in viewport
 		TArray<SDeferredOnCreateCtx> m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid

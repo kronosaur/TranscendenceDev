@@ -1689,7 +1689,7 @@ CString CStation::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) co
 	return m_sName;
 	}
 
-CSystem::LayerEnum CStation::GetPaintLayer (void)
+CSystem::LayerEnum CStation::GetPaintLayer (void) const
 
 //	GetPaintLayer
 //
