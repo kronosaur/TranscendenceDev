@@ -241,7 +241,7 @@ template <class BLENDER> class TBltImageNormal : public TImagePainter<TBltImageN
 	friend TImagePainter;
 	};
 
-template <class BLENDER> class TBltImageTrans : public TImagePainter<TBltImageNormal<BLENDER>, BLENDER>
+template <class BLENDER> class TBltImageTrans : public TImagePainter<TBltImageTrans<BLENDER>, BLENDER>
 	{
 	public:
 		TBltImageTrans (BYTE byOpacity) :

@@ -41,8 +41,9 @@ class CGlowEffectPainter : public IEffectPainter
 
 			animateExplode =		1,
 			animateFade =			2,
+			animateChargeUp =		3,
 
-			animateMax =			2,
+			animateMax =			3,
 			};
 
 		enum EStyles
@@ -64,6 +65,7 @@ class CGlowEffectPainter : public IEffectPainter
 			int yOffset;
 			};
 		
+		bool CalcIntermediates (void) const;
 		const SCacheEntry &GetGlowImage (CSpaceObject &Source) const;
 
 		static DWORDLONG MakeCacheKey (DWORD dwSourceID, int iSourceRotation);
@@ -79,7 +81,12 @@ class CGlowEffectPainter : public IEffectPainter
 		int m_iLifetime = 0;
 		EAnimationTypes m_iAnimate = animateNone;
 
+		//	Temporary variables during painting
+
+		mutable bool m_bInitialized = false;
+
 		mutable TSortMap<DWORDLONG, SCacheEntry> m_Cache;
+		mutable TArray<BYTE> m_OpacityTable;
 	};
 
 static LPSTR ANIMATION_TABLE[] =
@@ -89,6 +96,7 @@ static LPSTR ANIMATION_TABLE[] =
 
 		"explode",
 		"fade",
+		"chargeUp",
 
 		NULL
 	};
@@ -222,6 +230,69 @@ CGlowEffectPainter::~CGlowEffectPainter (void)
 	{
 	}
 
+bool CGlowEffectPainter::CalcIntermediates (void) const
+
+//	CalcIntermediates
+//
+//	Calculates some intermediate values, such as color tables before painting.
+//	Returns FALSE if we do not need to paint.
+
+	{
+	if (m_bInitialized)
+		return true;
+
+	//	Calculate the opacity table
+
+	switch (m_iAnimate)
+		{
+		case animateChargeUp:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			CStepIncrementor Opacity(CStepIncrementor::styleLinear, 0, 255, iLifetime);
+
+			m_OpacityTable.InsertEmpty(iLifetime);
+			for (int i = 0; i < iLifetime; i++)
+				m_OpacityTable[i] = (BYTE)mathRound(Opacity.GetAt(i));
+
+			break;
+			}
+
+		case animateExplode:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			int iPeak = mathRound(0.2 * iLifetime);
+			CStepIncrementor RampUp(CStepIncrementor::styleSquareRoot, 0, 255, iPeak);
+
+			m_OpacityTable.InsertEmpty(iLifetime);
+			for (int i = 0; i < iPeak; i++)
+				m_OpacityTable[i] = (BYTE)mathRound(RampUp.GetAt(i));
+
+			CStepIncrementor RampDown(CStepIncrementor::styleSquareRoot, 255, 0, iLifetime - iPeak);
+			for (int i = iPeak; i < iLifetime; i++)
+				m_OpacityTable[i] = (BYTE)mathRound(RampDown.GetAt(i - iPeak));
+
+			break;
+			}
+
+		case animateFade:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			CStepIncrementor Opacity(CStepIncrementor::styleSquareRoot, 255, 0, iLifetime);
+
+			m_OpacityTable.InsertEmpty(iLifetime);
+			for (int i = 0; i < iLifetime; i++)
+				m_OpacityTable[i] = (BYTE)mathRound(Opacity.GetAt(i));
+
+			break;
+			}
+		}
+
+	//	Done
+
+	m_bInitialized = true;
+	return true;
+	}
+
 const CGlowEffectPainter::SCacheEntry &CGlowEffectPainter::GetGlowImage (CSpaceObject &Source) const
 
 //	GetGlowImage
@@ -267,7 +338,7 @@ const CGlowEffectPainter::SCacheEntry &CGlowEffectPainter::GetGlowImage (CSpaceO
 	rcGlowMask.right = cxWidth;
 	rcGlowMask.bottom = cyHeight;
 
-#if 0
+#if 1
 	int iBlur = Max(0, m_iRadius);
 	CGFilter::Blur(GlowMask, rcGlowMask, iBlur, GlowMask);
 #else
@@ -399,15 +470,28 @@ void CGlowEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaint
 	if (pSource == NULL)
 		return;
 
+	//	Compute some values, such as color table
+
+	if (!CalcIntermediates())
+		return;
+
 	//	Get the glow image, creating if necessary.
 
 	const SCacheEntry &Entry = GetGlowImage(*pSource);
 	if (Entry.GlowImage.IsEmpty())
 		return;
 
+	//	Compute some values
+
+	BYTE byOpacity;
+	if (m_OpacityTable.GetCount() > 0)
+		byOpacity = m_OpacityTable[Ctx.iTick % m_OpacityTable.GetCount()];
+	else
+		byOpacity = 0xff;
+
 	//	Paint the glow
 
-	CGDraw::Blt(Dest, x + Entry.xOffset, y + Entry.yOffset, Entry.GlowImage, 0, 0, Entry.GlowImage.GetWidth(), Entry.GlowImage.GetHeight(), 0xff, m_iBlendMode);
+	CGDraw::Blt(Dest, x + Entry.xOffset, y + Entry.yOffset, Entry.GlowImage, 0, 0, Entry.GlowImage.GetWidth(), Entry.GlowImage.GetHeight(), byOpacity, m_iBlendMode);
 	}
 
 bool CGlowEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int iRotation) const
