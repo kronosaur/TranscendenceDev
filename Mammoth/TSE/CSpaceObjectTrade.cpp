@@ -379,7 +379,8 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		if (pShipToRefuel == NULL)
 			return false;
 
-		//	Find the highest-level item that can be used by the ship
+		//	Find the lowest-level item that can be used by the ship. The lowest
+		//	level item will be the cheapest item per fuel unit.
 
 		int iBestLevel = 0;
 		int iBestPrice = 0;
@@ -392,7 +393,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 
 			if (pShipToRefuel->IsFuelCompatible(Item))
 				{
-				if (pBestItem == NULL || pType->GetLevel() > iBestLevel)
+				if (pBestItem == NULL || pType->GetLevel() < iBestLevel)
 					{
 					//	Compute the price, because if we don't sell it, then we
 					//	skip it.

@@ -1377,8 +1377,9 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 			int iBestMetric = 0;
 			CItemType *pBestItem = NULL;
 
-			//	Find the highest-level item that matches the given criteria.
-			//	If we find it, then we use it.
+			//	Find the lowest-level item that matches the given criteria.
+			//	If we find it, then we use it. We use the lowest-level item 
+			//	because we want the cheapest price per fuel.
 
 			for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
 				{
@@ -1399,7 +1400,7 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 					Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
 					Metric rItemsToFillShip = rMaxFuel / rFuelPerItem;
 
-					int iMetric = ((rItemsToFillShip >= 10.0) ? 100 : 0) + pType->GetLevel();
+					int iMetric = ((rItemsToFillShip >= 10.0) ? 100 : 0) + (MAX_ITEM_LEVEL - pType->GetLevel());
 					if (pBestItem == NULL || iMetric > iBestMetric)
 						{
 						//	Compute the price, because if we don't sell it, then we
