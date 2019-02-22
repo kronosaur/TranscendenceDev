@@ -58,7 +58,7 @@
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel"
 
-			data=				"25000"
+			data=				"37500"
 			description=		"Starship reactors larger than 100MW need a denser fuel than helium. Highly-enriched xenotite, an exotic antimatter mineral, is a common alternative."
 			>
 
@@ -78,7 +78,7 @@
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel"
 
-			data=				"62500"
+			data=				"112500"
 			description=		"Pteracnium is a stable transuranic compound of immense energy density. Refined and packaged as fuel rods this compound is ideal for gigawatt-class reactors."
 			>
 
@@ -98,7 +98,7 @@
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel; ZeroPoint"
 
-			data=				"250000"
+			data=				"525000"
 			description=		"These zero-point fuel cells are designed to refuel the 1GW Hyperion reactor."
 			>
 

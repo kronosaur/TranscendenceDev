@@ -66,8 +66,9 @@ PLAYER DATA
 			<Refuel			criteria="f +BasicFuel; L:1-6;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-6;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a L:1-6;" priceAdj="100"/>
-			<InstallDevice	criteria="c +Illegal; L:1-8" priceAdj="100"	upgradeInstallOnly="true"/>
-			<RemoveDevice	criteria="c L:1-8;" priceAdj="100" upgradeInstallOnly="true"/>
+			<InstallDevice	criteria="d +Illegal; L:1-8" priceAdj="100"	upgradeInstallOnly="true"/>
+			<InstallDevice	criteria="d +Military; L:1-8" priceAdj="100"	upgradeInstallOnly="true"/>
+			<RemoveDevice	criteria="d L:1-8;" priceAdj="100" upgradeInstallOnly="true"/>
 			
 			<InstallDevice	criteria="d L:1-8;" priceAdj="unavailable"	messageID="descNoInstall"/>
 		</Trade>
@@ -412,13 +413,13 @@ PLAYER DATA
 			</Text>
 			<Text id="descNoInstall">
 
-				We only install smuggler's equipment. We cannot install 
+				We only install illegal or military equipment. We won't install 
 				%itemName% on your ship.
 
 			</Text>
 			<Text id="dockServices:installAbility">
 
-				We install smuggler's equipment up to tech level %maxLevel%.
+				We install illegal or military equipment up to tech level %maxLevel%.
 
 			</Text>
 

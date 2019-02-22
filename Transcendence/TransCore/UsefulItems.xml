@@ -2218,34 +2218,42 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Invoke>
-			(block (notFound)
-				; Install
-				(setq notFound True)
-				(objEnumItems gPlayerShip "wI" theItem
-					(block (weaponItem)
-						(setq weaponItem theItem)
-						(if (and notFound 
-								(eq (shpGetItemDeviceName gSource weaponItem) 0))
-							(block Nil
-								(shpDamageItem gSource theItem)
-								(objSendMessage gSource Nil (cat (itmGetName weaponItem 33) " damaged by defective ROM"))
-								(setq notFound Nil)
-								)
+			(block (
+				(theWeapon (objGetProperty gSource 'selectedWeapon))
+				(data { weapon:(itmGetName theWeapon 'noModifiers) } )
+				)
+				(if theWeapon
+					(block Nil
+						(switch
+							(itmGetProperty theWeapon 'damaged)
+								(objSendMessage gSource Nil (typTranslate gType 'msgAlreadyDamaged data))
+								
+							(itmIsEnhanced theWeapon)
+								(objSendMessage gSource Nil (typTranslate gType 'msgEnhancementLost data))
+							
+							(objSendMessage gSource Nil (typTranslate gType 'msgWeaponDamaged data))
 							)
+							
+						(shpDamageItem gSource theWeapon)
+						
+						; Identify the item
+						(itmSetKnown gItem)
+
+						; Remove ROM
+						(objRemoveItem gSource gItem 1)
 						)
+					
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoPrimary))
 					)
-
-				(if notFound
-					(objSendMessage gSource Nil "Primary weapon required")
-					)
-
-				; Identify the item
-				(itmSetKnown gItem)
-
-				; Remove ROM
-				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+		
+		<Language>
+			<Text id="msgAlreadyDamaged">The defective ROM had no effect on your damaged %weapon%</Text>
+			<Text id="msgEnhancementLost">Your %weapon% lost its enhancement due to a defective ROM</Text>
+			<Text id="msgWeaponDamaged">Your %weapon% was damaged by a defective ROM</Text>
+			<Text id="msgNoPrimary">Primary weapon required</Text>
+		</Language>
 	</ItemType>
 
 <!-- HIRO'S ALGORITHMS -->

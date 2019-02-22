@@ -363,14 +363,11 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Shields
-				hitPoints=		"0"
+				hitPoints=		"200"
 				hpBonus=		"+200,+200, +50, +50"
 				regen=			"0"
 				depletionDelay=	"0"
 				powerUse=		"50"
-
-				hasNonRegenHP=	"true"
-				maxCharges=		"200"
 				/>
 
 	</ItemType>
@@ -392,28 +389,22 @@
 		<Image imageID="&rsItems1;" imageX="288" imageY="480" imageWidth="96" imageHeight="96"/>
 
 		<Invoke key="L">
-			(block (
-				(shieldItem (@ (objGetItems gSource "sI") 0))
-				(maxCharges (objGetItemProperty gSource shieldItem 'maxCharges))
-				(charges (objGetItemProperty gSource shieldItem 'charges))
-				)
-				(switch
-					; Does the ship have a superconducting shield? If not
-					; then we can't do anything.
-					(!= (itmGetType shieldItem) &itSuperconductingShields;)
-						(objSendMessage gSource Nil (typTranslate gType 'msgSSRequired))
+			(switch
+				; Does the ship have a superconducting shield? If not
+				; then we can't do anything.
+				(not (eq (shpGetShieldItemUNID gSource) &itSuperconductingShields;))
+					(objSendMessage gSource Nil (typTranslate gType 'msgSSRequired))
 
-					; Are the shields fully charged? If they are, then this
-					; won't do anything.
-					(geq charges maxCharges)
-						(objSendMessage gSource Nil (typTranslate gType 'msgSSFull))
+				; Are the shields fully charged? If they are, then this
+				; won't do anything.
+				(eq (shpGetShieldDamage gSource) 0)
+					(objSendMessage gSource Nil (typTranslate gType 'msgSSFull))
 
-					; Charge the shields
-					(block Nil
-						(objSetItemProperty gSource shieldItem 'incCharges (random 40 60))
-						(objRemoveItem gSource gItem 1)
-						(objSendMessage gSource Nil (typTranslate gType 'msgSSRecharged))
-						)
+				; Charge the shields
+				(block Nil
+					(shpRechargeShield gSource (random 40 60))
+					(objRemoveItem gSource gItem 1)
+					(objSendMessage gSource Nil (typTranslate gType 'msgSSRecharged))
 					)
 				)
 		</Invoke>
@@ -978,7 +969,7 @@
 		<Shields
 				hitPoints=		"60"
 				regen=			"432"
-				depletionDelay=	"72"
+				depletionDelay=	"0"
 				powerUse=		"9000"
 				/>
 
