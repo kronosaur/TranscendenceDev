@@ -52,13 +52,13 @@
 	<ItemType UNID="&itXenotiteFuelRod;"
 			name=				"xenotite fuel rod"
 			level=				"5"
-			value=				"375"
-			mass=				"100"
+			value=				"200"
+			mass=				"120"
 			frequency=			"common"
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel"
 
-			data=				"25000"
+			data=				"20000"
 			description=		"Starship reactors larger than 100MW need a denser fuel than helium. Highly-enriched xenotite, an exotic antimatter mineral, is a common alternative."
 			>
 
@@ -72,13 +72,13 @@
 	<ItemType UNID="&itPteracniumFuelRod;"
 			name=				"pteracnium fuel rod"
 			level=				"7"
-			value=				"1125"
-			mass=				"100"
+			value=				"500"
+			mass=				"120"
 			frequency=			"common"
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel"
 
-			data=				"62500"
+			data=				"50000"
 			description=		"Pteracnium is a stable transuranic compound of immense energy density. Refined and packaged as fuel rods this compound is ideal for gigawatt-class reactors."
 			>
 
@@ -92,8 +92,8 @@
 	<ItemType UNID="&itHadronVacuumFuelCell;"
 			name=				"hadron-vacuum fuel cell"
 			level=				"9"
-			value=				"5250"
-			mass=				"100"
+			value=				"2500"
+			mass=				"200"
 			frequency=			"common"
 			numberAppearing=	"3d6"
 			attributes=			"BasicFuel; Consumable; Fuel; ZeroPoint"
