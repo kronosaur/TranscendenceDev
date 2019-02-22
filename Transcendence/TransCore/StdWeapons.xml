@@ -949,7 +949,7 @@
 	<!-- Omni Partisan Cannon -->
 
 	<ItemType UNID="&itOmniPartisanCannon;"
-			name=				"RK15 Partisan turret"
+			name=				":an RK15 Partisan turret"
 			attributes=			"commonwealth, majorItem, NAMI"
 			  
 			level=				"4"
