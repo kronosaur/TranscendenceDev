@@ -51,6 +51,7 @@
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_SLOT_ID						CONSTLIT("slotID")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+#define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
 const int MAX_COUNTER =					        100;
 
@@ -560,6 +561,11 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         return CC.CreateInteger(iLevel);
         }
+
+	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
+		{
+		return (pDevice ? CC.CreateDouble(pDevice->GetShotSeparationScale()) : CC.CreateNil());
+		}
 
     else
         return NULL;

@@ -19,6 +19,7 @@
 #define PROPERTY_POS							CONSTLIT("pos")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
 #define PROPERTY_TEMPERATURE      				CONSTLIT("temperature")
+#define PROPERTY_SHOT_SEPARATION_SCALE			CONSTLIT("shotSeparationScale")
 
 //	CInstalledDevice class
 
@@ -32,6 +33,7 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_iPosZ(0),
 		m_iMinFireArc(0),
 		m_iMaxFireArc(0),
+		m_iShotSeparationScale(32767),
 
 		m_iTimeUntilReady(0),
 		m_iFireAngle(0),
@@ -315,6 +317,7 @@ void CInstalledDevice::InitFromDesc (const SDeviceDesc &Desc)
 	m_iPosZ = Desc.iPosZ;
 	m_fExternal = Desc.bExternal;
 	m_fCannotBeEmpty = Desc.bCannotBeEmpty;
+	m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
 
 	SetLinkedFireOptions(Desc.dwLinkedFireOptions);
 	SetFate(Desc.iFate);
@@ -424,6 +427,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		m_iPosZ = Desc.iPosZ;
 		m_f3DPosition = Desc.b3DPosition;
 		m_fCannotBeEmpty = Desc.bCannotBeEmpty;
+		m_iShotSeparationScale = (unsigned int)(Desc.rShotSeparationScale * 32767);
 
 		SetFate(Desc.iFate);
 
@@ -596,6 +600,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 //	DWORD		device: low = m_iSlotPosIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -712,6 +717,16 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		{
 		CItemEnhancement Dummy;
 		Dummy.ReadFromStream(Ctx);
+		}
+
+	if (Ctx.dwVersion >= 172)
+		{
+		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		m_iShotSeparationScale = (int)LOWORD(dwLoad);
+		}
+	else
+		{
+		m_iShotSeparationScale = 32767;
 		}
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
@@ -1110,6 +1125,11 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
             return false;
             }
         }
+	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
+		{
+		double rShotSeparationScale = Clamp(pValue->GetDoubleValue(), -1.0, 1.0);
+		SetShotSeparationScale(rShotSeparationScale);
+		}
 
 	//	Otherwise, let any sub-classes handle it.
 
@@ -1241,6 +1261,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 //	DWORD		device: low = m_iSlotIndex; hi = m_iTemperature
 //	DWORD		device: low = m_iSlotBonus; hi = m_iDeviceSlot
 //	DWORD		device: low = m_iActivateDelay; hi = m_iPosZ
+//	DWORD		device: low = m_iShotSeparationScale; hi = UNUSED
 //	DWORD		device: flags
 //
 //	CItemEnhancementStack
@@ -1281,6 +1302,9 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = MAKELONG(m_iActivateDelay, m_iPosZ);
+	pStream->Write((char *)&dwSave, sizeof(DWORD));
+
+	dwSave = MAKELONG(m_iShotSeparationScale, 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	dwSave = 0;

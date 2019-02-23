@@ -841,6 +841,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'canBeDisrupted\n"
 			"   'external\n"
 			"   'power\n"
+			"   'shotSeparationScale\n"
 			"\n"
 			"property (weapon)\n\n"
 			"   'ammoTypes\n"
@@ -1022,6 +1023,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'incCharges charges\n"
 			"   'installed [True|Nil]"
 			"   'level level",
+			"   'shotSeparationScale separation\n"
 
 			"vs*",	0,	},
 

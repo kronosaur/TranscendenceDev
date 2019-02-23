@@ -42,6 +42,7 @@
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
+#define SHOT_SEPARATION_SCALE_ATTRIB			CONSTLIT("shotSeparationScale")
 #define SLOT_ID_ATTRIB							CONSTLIT("slotID")
 #define TABLE_ATTRIB							CONSTLIT("table")
 #define UNID_ATTRIB								CONSTLIT("unid")
@@ -104,6 +105,8 @@ class CSingleDevice : public IDeviceGenerator
 		CEnhancementDesc m_Enhancements;		//	This slot enhances the installed device
 		int m_iSlotBonus = 0;					//	HP bonus to devices in this slot
 		bool m_bDefaultSlotBonus = false;		//	This slot does not define a bonus
+		double m_rShotSeparationScale = 1.;		//	Governs scaling of shot separation for dual etc weapons
+
 	};
 
 class CLevelTableOfDeviceGenerators : public IDeviceGenerator
@@ -263,6 +266,8 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		retDesc->b3DPosition = false;
 		}
 
+	retDesc->rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
+
 	retDesc->bExternal = pDesc->GetAttributeBool(EXTERNAL_ATTRIB);
 	retDesc->bCannotBeEmpty = pDesc->GetAttributeBool(CANNOT_BE_EMPTY_ATTRIB);
 	retDesc->bOmnidirectional = pDesc->GetAttributeBool(OMNIDIRECTIONAL_ATTRIB);
@@ -395,6 +400,11 @@ void CSingleDevice::AddDevices (SDeviceGenerateCtx &Ctx)
 			Desc.iPosZ = SlotDesc.iPosZ;
 			Desc.b3DPosition = SlotDesc.b3DPosition;
 			}
+
+		if (bUseSlotDesc)
+			Desc.rShotSeparationScale = SlotDesc.rShotSeparationScale;
+		else
+			Desc.rShotSeparationScale = m_rShotSeparationScale;
 
 		//	External
 
@@ -619,6 +629,8 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_b3DPosition = false;
 		m_bDefaultPos = true;
 		}
+
+	m_rShotSeparationScale = pDesc->GetAttributeDoubleBounded(SHOT_SEPARATION_SCALE_ATTRIB, -1.0, 1.0, 1.0);
 
 	//	Load fire arc attributes
 
