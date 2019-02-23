@@ -327,10 +327,7 @@
 			</OnBehavior>
 
 			<OnCreate>
-				(block Nil
-					(objSetData gSource "homeSystem" (sysGetNode))
-					(sysAddObjRecurringTimerEvent 60 gSource "OnBehavior")
-					)
+				(objSetData gSource "homeSystem" (sysGetNode))
 			</OnCreate>
 
 			<OnDestroy>
@@ -375,6 +372,10 @@
 						)
 					)
 			</OnEnteredSystem>
+			
+			<OnEventHandlerInit>
+				(sysAddObjRecurringTimerEvent 60 gSource "OnBehavior")
+			</OnEventHandlerInit>
 
 			<OnOrdersCompleted>
 				(block (behavior)
