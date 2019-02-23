@@ -11,7 +11,7 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					171;
 
 //	Uncomment out the following define when building a stable release
 
-#define TRANSCENDENCE_STABLE_RELEASE
+//#define TRANSCENDENCE_STABLE_RELEASE
 
 //	UNIVERSE VERSION HISTORY ---------------------------------------------------
 //
