@@ -1051,6 +1051,10 @@
 
 					(objSetEventHandler newShipObj (objGetEventHandler oldShipObj))
 					(objSetEventHandler oldShipObj Nil)
+					
+					;	Transfer data
+					
+					(objSetData newShipObj 'homeSystem (objGetData oldShipObj 'homeSystem))
 
 					;	Transfer wingman flag
 
