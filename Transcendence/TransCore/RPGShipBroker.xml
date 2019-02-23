@@ -1052,10 +1052,6 @@
 					(objSetEventHandler newShipObj (objGetEventHandler oldShipObj))
 					(objSetEventHandler oldShipObj Nil)
 					
-					;	Transfer data
-					
-					(objSetData newShipObj 'homeSystem (objGetData oldShipObj 'homeSystem))
-
 					;	Transfer wingman flag
 
 					(objSetProperty newShipObj 'playerWingman (objGetProperty oldShipObj 'playerWingman))
@@ -1071,6 +1067,12 @@
 					(setq namePattern (objGetProperty oldShipObj 'namePattern))
 					(objSetName newShipObj (@ namePattern 'pattern) (@ namePattern 'flags))
 					(objSetName oldShipObj Nil)
+
+					;	Raise an event to give the class a chance to move any 
+					;	other data it needs.
+
+					(objFireEvent oldShipObj 'OnNPCLeftShip { newShipObj:newShipObj })
+					(objFireEvent newShipObj 'OnNPCEnteredShip { oldShipObj:oldShipObj })
 					)
 				))
 

@@ -441,6 +441,16 @@
 						)
 					)
 			</OnPlayerLeftSystem>
+
+			<OnNPCEnteredShip>
+				(block (
+					(oldShipObj (@ gData 'oldShipObj))
+					)
+					;	Transfer data from the old ship
+					
+					(objSetData gSource 'homeSystem (objGetData oldShipObj 'homeSystem))
+					)
+			</OnNPCEnteredShip>
 			
 			<OnTranslateMessage>
 				(switch
