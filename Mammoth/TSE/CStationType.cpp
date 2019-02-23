@@ -990,7 +990,8 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector, const CC
 //	Marks images used by the station
 
 	{
-	m_Image.MarkImage(Selector, Modifiers);
+	SGetImageCtx Ctx(GetUniverse());
+	m_Image.MarkImage(Ctx, Selector, Modifiers);
 
 	//	Cache the destroyed station image, if necessary
 
@@ -998,7 +999,7 @@ void CStationType::MarkImages (const CCompositeImageSelector &Selector, const CC
 		{
 		CCompositeImageModifiers Modifiers;
 		Modifiers.SetStationDamage();
-		m_Image.MarkImage(Selector, Modifiers);
+		m_Image.MarkImage(Ctx, Selector, Modifiers);
 		}
 
 	//	Explosions and other effects

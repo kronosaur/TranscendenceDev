@@ -2645,12 +2645,14 @@ const CObjectImageArray &CShipClass::GetImage (const CImageFilterStack *pFilters
 	{
 	if (pFilters == NULL)
 		return m_Image.GetSimpleImage();
+
+	SGetImageCtx Ctx(GetUniverse());
 	
 	CCompositeImageModifiers Modifiers;
 	Modifiers.SetFullImage();
 	Modifiers.SetFilters(pFilters);
 
-	return m_Image.GetImage(CCompositeImageSelector::Null(), Modifiers);
+	return m_Image.GetImage(Ctx, CCompositeImageSelector::Null(), Modifiers);
 	}
 
 int CShipClass::GetMaxStructuralHitPoints (void) const

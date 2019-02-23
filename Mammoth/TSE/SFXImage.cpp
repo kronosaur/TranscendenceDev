@@ -55,8 +55,10 @@ bool CImageEffectCreator::GetParticlePaintDesc (SParticlePaintDesc *retDesc)
 //	Returns particle painting descriptor for optimized painting
 
 	{
+	SGetImageCtx Ctx(GetUniverse());
+
 	retDesc->iStyle = paintImage;
-	retDesc->pImage = &m_Image.GetImage(CCompositeImageSelector());
+	retDesc->pImage = &m_Image.GetImage(Ctx, CCompositeImageSelector());
 	retDesc->iVariants = m_iVariants;
 	retDesc->bDirectional = m_bDirectional;
 	retDesc->bRandomStartFrame = m_bRandomStartFrame;
@@ -71,7 +73,9 @@ void CImageEffectCreator::GetRect (RECT *retRect) const
 //	Returns the image rect
 	
 	{
-	CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+	SGetImageCtx Ctx(GetUniverse());
+
+	CObjectImageArray &Image = m_Image.GetImage(Ctx, CCompositeImageSelector());
 	*retRect = Image.GetImageRect();
 	}
 
@@ -143,6 +147,8 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 //	Paint the effect
 
 	{
+	SGetImageCtx ImageCtx(GetUniverse());
+
 	//	Calculate the tick.
 
 	int iTick = Ctx.iTick;
@@ -157,7 +163,7 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 		CCompositeImageModifiers Modifiers;
 		Modifiers.SetRotation(Ctx.iRotation);
 
-		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector(), Modifiers);
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector(), Modifiers);
 		Image.PaintImage(Dest, x, y, iTick, 0);
 		}
 
@@ -165,7 +171,7 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 
 	else if (m_bRotateImage)
 		{
-		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
 		Image.PaintRotatedImage(Dest, x, y, iTick, Ctx.iRotation);
 		}
 
@@ -173,7 +179,7 @@ void CImageEffectCreator::Paint (CG32bitImage &Dest, int x, int y, SViewportPain
 
 	else
 		{
-		CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+		CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
 		int iFrame = (m_bDirectional ? Angle2Direction(Ctx.iRotation, m_iVariants) : (Ctx.iVariant % m_iVariants));
 
 		Image.PaintImage(Dest, x, y, iTick, iFrame);
@@ -187,7 +193,9 @@ void CImageEffectCreator::PaintComposite (CG32bitImage &Dest, int x, int y, SVie
 //	Paint the effect
 
 	{
-	CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+	SGetImageCtx ImageCtx(GetUniverse());
+
+	CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
 
 	int iTick = Ctx.iTick;
 	if (m_bRandomStartFrame)
@@ -210,8 +218,9 @@ bool CImageEffectCreator::PointInImage (int x, int y, int iTick, int iVariant, i
 //	Returns TRUE if the given point is in the image
 
 	{
-	CObjectImageArray &Image = m_Image.GetImage(CCompositeImageSelector());
+	SGetImageCtx ImageCtx(GetUniverse());
 
+	CObjectImageArray &Image = m_Image.GetImage(ImageCtx, CCompositeImageSelector());
 	return Image.PointInImage(x, y, iTick, (iVariant % m_iVariants));
 	}
 
@@ -250,7 +259,8 @@ bool CImagePainter::GetParticlePaintDesc (SParticlePaintDesc *retDesc)
 //	Returns the particle paint descriptor
 
 	{
-	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(m_Sel);
+	SGetImageCtx ImageCtx(PainterGetUniverse());
+	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(ImageCtx, m_Sel);
 
 	retDesc->iStyle = paintImage;
 	retDesc->pImage = &Image;
@@ -268,7 +278,8 @@ void CImagePainter::GetRect (RECT *retRect) const
 //	Returns the rect of the image
 
 	{
-	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(m_Sel);
+	SGetImageCtx ImageCtx(PainterGetUniverse());
+	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(ImageCtx, m_Sel);
 	*retRect = Image.GetImageRect();
 	}
 
@@ -314,7 +325,8 @@ void CImagePainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &
 //	Paint image
 
 	{
-	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(m_Sel);
+	SGetImageCtx ImageCtx(PainterGetUniverse());
+	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(ImageCtx, m_Sel);
 
 	int iTick = Ctx.iTick;
 	if (m_pCreator->HasRandomStartFrame())
@@ -338,7 +350,8 @@ bool CImagePainter::PointInImage (int x, int y, int iTick, int iVariant, int iRo
 //	Returns TRUE if point is in the image
 
 	{
-	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(m_Sel);
+	SGetImageCtx ImageCtx(PainterGetUniverse());
+	CObjectImageArray &Image = m_pCreator->GetImage().GetImage(ImageCtx, m_Sel);
 	int iVariants = m_pCreator->GetVariants();
 	return Image.PointInImage(x, y, iTick, (iVariant % iVariants));
 	}

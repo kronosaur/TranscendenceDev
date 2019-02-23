@@ -250,6 +250,9 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
 //  get an image, we return NULL.
 
     {
+	if (ObjEntry.pType == NULL)
+		return NULL;
+
     //  Generate a hash for the object's image and see if we've got it already 
     //  in the cache.
 
@@ -262,8 +265,9 @@ CG32bitImage *CSystemMapThumbnails::GetObjImage (const CObjectTracker::SBackgrou
 
     CCompositeImageSelector ImageSel;
 	CCompositeImageModifiers Modifiers;
+	SGetImageCtx ImageCtx(ObjEntry.pType->GetUniverse());
     int iVariant;
-    const CObjectImageArray &FullImage = ObjEntry.pType->GetTypeImage().GetImage((ObjEntry.pImageSel ? *ObjEntry.pImageSel : ImageSel), Modifiers, &iVariant);
+    const CObjectImageArray &FullImage = ObjEntry.pType->GetTypeImage().GetImage(ImageCtx, (ObjEntry.pImageSel ? *ObjEntry.pImageSel : ImageSel), Modifiers, &iVariant);
     CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("System thumbnail")) : NULL);
     if (pBmpImage == NULL)
         return NULL;

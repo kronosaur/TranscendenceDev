@@ -207,7 +207,7 @@ int CCompositeImageSelector::GetVariant (DWORD dwID) const
 	return pEntry->iVariant;
 	}
 
-void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
+void CCompositeImageSelector::ReadFromItem (const CDesignCollection &Design, ICCItemPtr pData)
 
 //	ReadFromItem
 //
@@ -232,7 +232,7 @@ void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
 		DWORD dwUNID = (DWORD)pEntry->GetIntegerAt(CONSTLIT("itemType"));
 		if (dwUNID)
 			{
-			CItemType *pItemType = g_pUniverse->FindItemType(dwUNID);
+			const CItemType *pItemType = CItemType::AsType(Design.FindEntry(dwUNID));
 			if (pItemType)
 				m_Sel[i].dwExtra = (DWORD)pItemType;
 			else
@@ -243,7 +243,7 @@ void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
 			dwUNID = (DWORD)pEntry->GetIntegerAt(CONSTLIT("shipClass"));
 			if (dwUNID)
 				{
-				CShipClass *pShipClass = g_pUniverse->FindShipClass(dwUNID);
+				const CShipClass *pShipClass = CShipClass::AsType(Design.FindEntry(dwUNID));
 				if (pShipClass)
 					m_Sel[i].dwExtra = (DWORD)pShipClass;
 				else

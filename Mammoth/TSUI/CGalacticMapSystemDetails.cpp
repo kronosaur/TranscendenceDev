@@ -257,12 +257,17 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
 //  icon.
 
     {
+	if (Obj.pType == NULL)
+		return false;
+
+	SGetImageCtx ImageCtx(Obj.pType->GetUniverse());
+
 	CCompositeImageModifiers Modifiers;
     if (Obj.fShowDestroyed)
         Modifiers.SetStationDamage(true);
 
     int iVariant;
-    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(Obj.ImageSel, Modifiers, &iVariant);
+    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(ImageCtx, Obj.ImageSel, Modifiers, &iVariant);
     CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("Galactic map")) : NULL);
 	RECT rcBmpImage = FullImage.GetImageRect(0, iVariant);
     if (pBmpImage == NULL)

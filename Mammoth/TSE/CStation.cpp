@@ -4844,7 +4844,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_IMAGE_SELECTOR))
 		{
-		m_ImageSelector.ReadFromItem(ICCItemPtr(pValue->Reference()));
+		m_ImageSelector.ReadFromItem(GetUniverse().GetDesignCollection(), ICCItemPtr(pValue->Reference()));
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))

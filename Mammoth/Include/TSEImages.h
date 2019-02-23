@@ -8,6 +8,18 @@
 class CCompositeImageModifiers;
 class CSystemType;
 
+struct SGetImageCtx
+	{
+	SGetImageCtx (CUniverse &UniverseArg) :
+			m_Universe(UniverseArg)
+		{ }
+
+	inline CUniverse &GetUniverse (void) const { return m_Universe; }
+
+	private:
+		CUniverse &m_Universe;
+	};
+
 struct SPointInObjectCtx
 	{
 	SPointInObjectCtx (void) :
@@ -349,7 +361,7 @@ class CCompositeImageSelector
 		ETypes GetType (DWORD dwID) const;
 		int GetVariant (DWORD dwID) const;
 		inline bool IsEmpty (void) const { return (m_Sel.GetCount() == 0); }
-		void ReadFromItem (ICCItemPtr pData);
+		void ReadFromItem (const CDesignCollection &Design, ICCItemPtr pData);
 		void ReadFromStream (SLoadCtx &Ctx);
 		ICCItemPtr WriteToItem (void) const;
 		void WriteToStream (IWriteStream *pStream) const;
@@ -418,7 +430,7 @@ class CCompositeImageModifiers
 
 		bool operator== (const CCompositeImageModifiers &Val) const;
 
-		void Apply (CObjectImageArray *retImage) const;
+		void Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const;
 		inline const CImageFilterStack *GetFilters (void) const { return m_pFilters; }
 		inline int GetRotation (void) const { return m_iRotation; }
 		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_bStationDamage && m_pFilters == NULL); }
@@ -454,7 +466,7 @@ class CCompositeImageDesc
 
 		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { if (m_pRoot) m_pRoot->AddTypesUsed(retTypesUsed); }
 		inline int GetActualRotation (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers()) const { return (m_pRoot ? m_pRoot->GetActualRotation(Selector, Modifiers) : 0); }
-		CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
+		CObjectImageArray &GetImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers(), int *retiFrameIndex = NULL) const;
 		int GetMaxLifetime (void) const;
 		size_t GetMemoryUsage (void) const;
 		inline IImageEntry *GetRoot (void) const { return m_pRoot; }
@@ -471,7 +483,7 @@ class CCompositeImageDesc
 		inline bool IsEmpty (void) const { return (GetVariantCount() == 0); }
 		inline bool IsRotatable (void) const { return (m_pRoot ? m_pRoot->IsRotatable() : false); }
 		void MarkImage (void);
-		void MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
+		void MarkImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers = CCompositeImageModifiers());
 		bool NeedsShipwreckClass (void) const;
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void Reinit (void);

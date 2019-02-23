@@ -394,7 +394,7 @@ CCompositeImageDesc::SCacheEntry *CCompositeImageDesc::FindCacheEntry (const CCo
 	return NULL;
 	}
 
-CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiFrameIndex) const
+CObjectImageArray &CCompositeImageDesc::GetImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiFrameIndex) const
 
 //	GetImage
 //
@@ -444,7 +444,7 @@ CObjectImageArray &CCompositeImageDesc::GetImage (const CCompositeImageSelector 
 		//	Apply modifiers
 
 		if (!Modifiers.IsEmpty())
-			Modifiers.Apply(&pEntry->Image);
+			Modifiers.Apply(Ctx, &pEntry->Image);
 
 		//	Done
 
@@ -716,7 +716,7 @@ void CCompositeImageDesc::MarkImage (void)
 	m_pRoot->MarkImage(CCompositeImageSelector(), CCompositeImageModifiers());
 	}
 
-void CCompositeImageDesc::MarkImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
+void CCompositeImageDesc::MarkImage (SGetImageCtx &Ctx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers)
 
 //	MarkImage
 //
@@ -726,7 +726,7 @@ void CCompositeImageDesc::MarkImage (const CCompositeImageSelector &Selector, co
 	if (m_pRoot)
 		m_pRoot->MarkImage(Selector, Modifiers);
 
-	GetImage(Selector, Modifiers).MarkImage();
+	GetImage(Ctx, Selector, Modifiers).MarkImage();
 	}
 
 bool CCompositeImageDesc::NeedsShipwreckClass (void) const

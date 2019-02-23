@@ -317,6 +317,8 @@ class IEffectPainter
 		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) { }
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
+		CUniverse &PainterGetUniverse (void) const { return *g_pUniverse; }
+
 	private:
 		int GetInitialLifetime (void);
 

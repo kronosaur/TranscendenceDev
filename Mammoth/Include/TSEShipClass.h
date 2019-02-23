@@ -480,6 +480,7 @@ class CShipClass : public CDesignType
 		inline bool ShowsMapLabel (void) const { return HasDockingPorts(); }
 
 		//	CDesignType overrides
+		static const CShipClass *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
 		static CShipClass *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designShipClass) ? (CShipClass *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CCommunicationsHandler *GetCommsHandler (void) override;

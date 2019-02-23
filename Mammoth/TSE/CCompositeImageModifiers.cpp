@@ -18,7 +18,7 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 			&& m_bFullImage == Val.m_bFullImage);
 	}
 
-void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
+void CCompositeImageModifiers::Apply (SGetImageCtx &Ctx, CObjectImageArray *retImage) const
 
 //	Apply
 //
@@ -46,12 +46,12 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		//	Add some large damage
 
 		int iCount = (pNewDest->GetWidth() / 32) * (pNewDest->GetHeight() / 32);
-		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterLargeStationDamage));
+		PaintDamage(*pNewDest, rcNewImage, iCount, &Ctx.GetUniverse().GetNamedPainter(CNamedEffects::painterLargeStationDamage));
 
 		//	Add some medium damage
 
 		iCount = (pNewDest->GetWidth() / 4) + (pNewDest->GetHeight() / 4);
-		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterMediumStationDamage));
+		PaintDamage(*pNewDest, rcNewImage, iCount, &Ctx.GetUniverse().GetNamedPainter(CNamedEffects::painterMediumStationDamage));
 
 		//	Reapply the mask to our image
 
