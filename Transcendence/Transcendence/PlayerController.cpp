@@ -839,7 +839,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			if (bUpdate)
 				{
 				int iIndex;
-				bool bFound = m_TargetList.FindPos(CString(szBuffer), &iIndex);
+				bool bFound = m_TargetList.FindByValue(pObj, &iIndex);
 
 				if (bInList)
 					{
