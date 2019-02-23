@@ -118,7 +118,7 @@ class CItemEnhancement
 		inline int GetDataX (void) const { return (int)(DWORD)((m_dwMods & etDataXMask) >> 16); }
 		int GetEnhancedRate (int iRate) const;
 		inline CItemType *GetEnhancementType (void) const { return m_pEnhancer; }
-		inline int GetExpireTime (void) const { return m_iExpireTime; }
+		inline DWORD GetExpireTime (void) const { return (DWORD)m_iExpireTime; }
 		int GetFireArc (void) const;
 		int GetHPAdj (void) const;
 		int GetHPBonus (void) const;
@@ -320,7 +320,7 @@ class CItem
 		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
-		static CItem CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
+		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
@@ -369,6 +369,7 @@ class CItem
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
 		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		CUniverse &GetUniverse (void) const;
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
@@ -406,8 +407,8 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer);
-		ICCItem *WriteToCCItem (CCodeChain &CC) const;
+		void ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer);
+		ICCItem *WriteToCCItem (void) const;
 
 	private:
 		enum PFlags
@@ -439,8 +440,8 @@ class CItem
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
         void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
-		static bool IsDisruptionEqual (DWORD dwD1, DWORD dwD2);
-		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags);
+		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);
+		static bool IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow);
 
 		CItemType *m_pItemType = NULL;
 

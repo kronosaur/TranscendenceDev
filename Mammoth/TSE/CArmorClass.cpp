@@ -710,7 +710,7 @@ ALERROR CArmorClass::BindScaledParams (SDesignLoadCtx &Ctx)
         {
         SScalableStats &Stats = m_pScalable[i];
 
-        if (error = Stats.DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(Stats.iLevel)))
+        if (error = Stats.DamageAdj.Bind(Ctx, GetUniverse().GetArmorDamageAdj(Stats.iLevel)))
             return error;
 
 	    if (error = Stats.RepairCost.Bind(Ctx))
@@ -1190,7 +1190,7 @@ Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &
 	//	Adjust for repair cost
 
 	Metric rStdCost = STD_STATS[m_iRepairTech - 1].iRepairCost;
-	Metric rDiff = rStdCost - (Metric)CEconomyType::Default()->Exchange(m_Stats.RepairCost);
+	Metric rDiff = rStdCost - (Metric)GetUniverse().GetCreditCurrency().Exchange(m_Stats.RepairCost);
 	if (rDiff < 0.0)
 		rTotalBalance += Max(-40.0, 10.0 * rDiff / rStdCost);
 	else if (rDiff > 0.0)
@@ -1636,7 +1636,7 @@ int CArmorClass::FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const
 		{
 		//	Setup arguments
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -1670,7 +1670,7 @@ void CArmorClass::FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
@@ -1906,7 +1906,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	Returns armor property. NOTE: We DO NOT return generic item properties.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
     const SScalableStats &Stats = GetScaledStats(Ctx);
 
 	//	Enhancements
@@ -1964,10 +1964,10 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(GetMaxHP(Ctx));
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
-		return CTLispConvert::CreatePowerResultMW(CC, GetPowerOutput(Ctx));
+		return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx));
 
 	else if (strEquals(sName, PROPERTY_POWER_USE))
-		return CTLispConvert::CreatePowerResultMW(CC, GetPowerRating(Ctx));
+		return CTLispConvert::CreatePowerResultMW(GetPowerRating(Ctx));
 
 	else if (strEquals(sName, PROPERTY_PRIME_SEGMENT))
 		{
@@ -2070,7 +2070,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 
 	//	Mass classification
 
-	CString sMassClass = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
+	CString sMassClass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassLabel(m_sMassClass);
 	if (!sMassClass.IsBlank())
 		AppendReferenceString(&sReference, sMassClass);
 
@@ -2291,6 +2291,16 @@ const CArmorClass::SStdStats &CArmorClass::GetStdStats (int iLevel)
     return STD_STATS[iLevel - 1];
     }
 
+CUniverse &CArmorClass::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
+	}
+
 bool CArmorClass::IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const
 
 //	IsImmune
@@ -2393,7 +2403,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Compute armor damage adjustments
 
-	if (error = m_Stats.DamageAdj.Bind(Ctx, g_pUniverse->GetArmorDamageAdj(m_iDamageAdjLevel)))
+	if (error = m_Stats.DamageAdj.Bind(Ctx, Ctx.GetUniverse().GetArmorDamageAdj(m_iDamageAdjLevel)))
 		return error;
 
 	//	Prices
@@ -2504,7 +2514,7 @@ int CArmorClass::UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, S
 //	is added to the currently calculated power.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(m_pItemType);
 	Ctx.SaveAndDefineSourceVar(pSource);
 	Ctx.SaveAndDefineItemVar(*pArmor->GetItem());

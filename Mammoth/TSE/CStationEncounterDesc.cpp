@@ -443,7 +443,7 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 	return NOERROR;
 	}
 
-void CStationEncounterDesc::InitLevelFrequency (void)
+void CStationEncounterDesc::InitLevelFrequency (CTopology &Topology)
 
 //	InitLevelFrequency
 //
@@ -463,8 +463,7 @@ void CStationEncounterDesc::InitLevelFrequency (void)
 		//	Loop over all nodes and check to see if we appear at the node.
 		//	If we do, we mark that level 'common.'
 
-		CTopologyNode::SCriteriaCtx Ctx;
-		CTopology &Topology = g_pUniverse->GetTopology();
+		CTopologyNode::SCriteriaCtx Ctx(Topology);
 		for (i = 0; i < Topology.GetTopologyNodeCount(); i++)
 			{
 			CTopologyNode *pNode = Topology.GetTopologyNode(i);

@@ -5,6 +5,9 @@
 
 #pragma once
 
+class CInstalledArmor;
+class CInstalledDevice;
+
 //	CodeChain context
 
 enum ECodeChainEvents
@@ -29,7 +32,7 @@ enum ECodeChainEvents
 class CCodeChainCtx
 	{
 	public:
-		CCodeChainCtx (void);
+		CCodeChainCtx (CUniverse &Universe);
 		~CCodeChainCtx (void);
 
 		ICCItemPtr Create (ICCItem::ValueTypes iType);
@@ -53,7 +56,7 @@ class CCodeChainCtx
 		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
-		inline void Discard (ICCItem *pItem) { pItem->Discard(&m_CC); }
+		inline void Discard (ICCItem *pItem) { pItem->Discard(); }
 		DWORD GetAPIVersion (void) const;
 		inline CG32bitImage *GetCanvas (void) const { return m_pCanvas; }
 		inline CCodeChain &GetCC (void) { return m_CC; }
@@ -61,7 +64,7 @@ class CCodeChainCtx
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		inline CDesignType *GetScreensRoot (void) const { return m_pScreensRoot; }
 		inline SSystemCreateCtx *GetSystemCreateCtx (void) const { return m_pSysCreateCtx; }
-		inline CUniverse &GetUniverse (void) { return *g_pUniverse; }
+		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		ICCItemPtr LinkCode (const CString &sString, CCodeChain::SLinkOptions &Options = CCodeChain::SLinkOptions());
 		void RestoreVars (void);
 		ICCItem *Run (ICCItem *pCode);
@@ -92,9 +95,14 @@ class CCodeChainCtx
 
 		C3DObjectPos As3DObjectPos (CSpaceObject *pObj, ICCItem *pItem, bool bAsoluteRotation = false);
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
+		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
+		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
+		CItem AsItem (ICCItem *pItem) const;
+		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
 		CVector AsVector (ICCItem *pItem);
+		CWeaponFireDesc *AsWeaponFireDesc (ICCItem *pItem) const;
 
 		static bool InEvent (ECodeChainEvents iEvent);
 
@@ -110,26 +118,27 @@ class CCodeChainCtx
 		void AddFrame (void);
 		void RemoveFrame (void);
 
-		CCodeChain &m_CC;					//	CodeChain
-		ECodeChainEvents m_iEvent;			//	Event raised
-		void *m_pScreen;					//	Cast to CDockScreen by upper-levels (may be NULL)
-		CG32bitImage *m_pCanvas;			//	Used for dock screen canvas (may be NULL)
-		CItemType *m_pItemType;				//	Used for item events (may be NULL)
-		CDesignType *m_pScreensRoot;		//	Used to resolve local screens (may be NULL)
-		SSystemCreateCtx *m_pSysCreateCtx;	//	Used during system create (may be NULL)
-		CExtension *m_pExtension;			//	Extension that defined this code
+		CUniverse &m_Universe;						//	Universe
+		CCodeChain &m_CC;							//	CodeChain
+		ECodeChainEvents m_iEvent = eventNone;		//	Event raised
+		void *m_pScreen = NULL;						//	Cast to CDockScreen by upper-levels (may be NULL)
+		CG32bitImage *m_pCanvas = NULL;				//	Used for dock screen canvas (may be NULL)
+		CItemType *m_pItemType = NULL;				//	Used for item events (may be NULL)
+		CDesignType *m_pScreensRoot = NULL;			//	Used to resolve local screens (may be NULL)
+		SSystemCreateCtx *m_pSysCreateCtx = NULL;	//	Used during system create (may be NULL)
+		CExtension *m_pExtension = NULL;			//	Extension that defined this code
 
-		IListData *m_pListData;
+		IListData *m_pListData = NULL;
 
 		//	Saved variables
-		ICCItem *m_pOldData;
-		ICCItem *m_pOldSource;
-		ICCItem *m_pOldItem;
-		ICCItem *m_pOldOverlayID;
-		ICCItem *m_pOldType;
+		ICCItem *m_pOldData = NULL;
+		ICCItem *m_pOldSource = NULL;
+		ICCItem *m_pOldItem = NULL;
+		ICCItem *m_pOldOverlayID = NULL;
+		ICCItem *m_pOldType = NULL;
 
-		bool m_bRestoreGlobalDefineHook;
-		IItemTransform *m_pOldGlobalDefineHook;
+		bool m_bRestoreGlobalDefineHook = false;
+		IItemTransform *m_pOldGlobalDefineHook = NULL;
 
 		static TArray<SInvokeFrame> g_Invocations;
 	};
@@ -151,14 +160,12 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual bool IsFunction (void) override { return true; }
 		virtual bool IsLambdaFunction (void) override { return true; }
 		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return m_pFunction->Print(pCC, dwFlags); }
+		virtual CString Print (DWORD dwFlags = 0) override { return m_pFunction->Print(dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:
 		//	ICCItem virtuals
-		virtual void DestroyItem (CCodeChain *pCC) override;
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
+		virtual void DestroyItem (void) override;
 
 	private:
 		ICCItem *m_pFunction;
@@ -173,7 +180,7 @@ class CAddFunctionContextWrapper : public IItemTransform
 		inline void SetExtension (CExtension *pExtension) { m_pExtension = pExtension; }
 
 		//	IItemTransform
-		virtual ICCItem *Transform (CCodeChain &CC, ICCItem *pItem);
+		virtual ICCItem *Transform (ICCItem *pItem) override;
 
 	private:
 		CExtension *m_pExtension;
@@ -195,13 +202,11 @@ class CCXMLWrapper : public ICCAtom
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsPrimitive (void) override { return false; }
-		virtual CString Print (CCodeChain *pCC, DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
+		virtual CString Print (DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
 		virtual void Reset (void) override { }
 
 	protected:
-		virtual void DestroyItem (CCodeChain *pCC) override;
-		virtual ICCItem *StreamItem (CCodeChain *pCC, IWriteStream *pStream) override;
-		virtual ICCItem *UnstreamItem (CCodeChain *pCC, IReadStream *pStream) override;
+		virtual void DestroyItem (void) override;
 
 	private:
 		CXMLElement *m_pXML;

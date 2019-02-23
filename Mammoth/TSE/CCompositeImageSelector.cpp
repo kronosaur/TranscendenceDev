@@ -216,8 +216,6 @@ void CCompositeImageSelector::ReadFromItem (ICCItemPtr pData)
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	m_Sel.DeleteAll();
 	if (pData->IsNil() || pData->GetCount() == 0 || !pData->IsList())
 		return;
@@ -286,9 +284,9 @@ void CCompositeImageSelector::ReadFromStream (SLoadCtx &Ctx)
 			if (dwLoad == 0)
 				m_Sel[i].dwExtra = 0;
 			else if (m_Sel[i].iVariant == -1)
-				m_Sel[i].dwExtra = (DWORD)g_pUniverse->FindItemType(dwLoad);
+				m_Sel[i].dwExtra = (DWORD)Ctx.GetUniverse().FindItemType(dwLoad);
 			else
-				m_Sel[i].dwExtra = (DWORD)g_pUniverse->FindShipClass(dwLoad);
+				m_Sel[i].dwExtra = (DWORD)Ctx.GetUniverse().FindShipClass(dwLoad);
 			}
 		}
 	}
@@ -302,18 +300,17 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
 	if (m_Sel.GetCount() == 0)
 		return ICCItemPtr(ICCItem::Nil);
 
-	ICCItemPtr pSel(CC.CreateLinkedList());
+	ICCItemPtr pSel(ICCItem::List);
 	for (i = 0; i < m_Sel.GetCount(); i++)
 		{
-		ICCItemPtr pEntry(CC.CreateSymbolTable());
-		pSel->Append(CC, pEntry);
+		ICCItemPtr pEntry(ICCItem::SymbolTable);
+		pSel->Append(pEntry);
 
-		pEntry->SetIntegerAt(CC, CONSTLIT("id"), m_Sel[i].dwID);
-		pEntry->SetIntegerAt(CC, CONSTLIT("variant"), m_Sel[i].iVariant);
+		pEntry->SetIntegerAt(CONSTLIT("id"), m_Sel[i].dwID);
+		pEntry->SetIntegerAt(CONSTLIT("variant"), m_Sel[i].iVariant);
 
 		ETypes iType = GetEntryType(m_Sel[i]);
 		switch (iType)
@@ -321,14 +318,14 @@ ICCItemPtr CCompositeImageSelector::WriteToItem (void) const
 			case typeItemType:
 				{
 				CItemType *pItemType = (CItemType *)m_Sel[i].dwExtra;
-				pEntry->SetIntegerAt(CC, CONSTLIT("itemType"), pItemType->GetUNID());
+				pEntry->SetIntegerAt(CONSTLIT("itemType"), pItemType->GetUNID());
 				break;
 				}
 
 			case typeShipClass:
 				{
 				CShipClass *pWreckClass = (CShipClass *)m_Sel[i].dwExtra;
-				pEntry->SetIntegerAt(CC, CONSTLIT("shipClass"), pWreckClass->GetUNID());
+				pEntry->SetIntegerAt(CONSTLIT("shipClass"), pWreckClass->GetUNID());
 				break;
 				}
 			}

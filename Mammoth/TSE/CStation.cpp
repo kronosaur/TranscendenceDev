@@ -84,8 +84,6 @@ const CG32bitPixel RGB_ORBIT_LINE =		CG32bitPixel(115, 149, 229);
 const CG32bitPixel RGB_MAP_LABEL =		CG32bitPixel(255, 217, 128);
 const CG32bitPixel RGB_LRS_LABEL =		CG32bitPixel(165, 140, 83);
 
-static CObjectClass<CStation>g_Class(OBJID_CSTATION);
-
 static char g_ImageTag[] = "Image";
 static char g_ShipsTag[] = "Ships";
 static char g_DockScreensTag[] = "DockScreens";
@@ -108,7 +106,7 @@ const int g_iMapScale = 5;
 
 const int DEFAULT_TIME_STOP_TIME =				150;
 
-CStation::CStation (void) : CSpaceObject(&g_Class),
+CStation::CStation (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_fArmed(false),
 		m_dwSpare(0),
 		m_pType(NULL),
@@ -253,7 +251,7 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 	//	that they handle timed events, etc.
 
 	GetSystem()->FireOnSystemObjDestroyed(DestroyCtx);
-	g_pUniverse->NotifyOnObjDestroyed(DestroyCtx);
+	GetUniverse().NotifyOnObjDestroyed(DestroyCtx);
 
 	//	Clear destination
 
@@ -273,6 +271,7 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
+	CalcDeviceBonus();
 	}
 
 void CStation::AddSubordinate (CSpaceObject *pSubordinate)
@@ -392,6 +391,119 @@ void CStation::CalcBounds (void)
 	//	Set it
 
 	SetBounds(rcBounds, GetParallaxDist());
+	}
+
+void CStation::CalcDeviceBonus (void)
+
+//	CalcDeviceBonus
+//
+//	Computes device bonuses.
+
+	{
+	DEBUG_TRY
+
+	//	Short-circuit if no devices
+
+	if (m_pDevices == NULL)
+		return;
+
+	//	Enhancements from system
+
+	const CEnhancementDesc *pSystemEnhancements = GetSystemEnhancements();
+
+	//	Keep track of duplicate installed devices
+
+	TSortMap<DWORD, int> DeviceTypes;
+
+	//	Loop over all devices
+
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		CInstalledDevice &Device = *GetDevice(i);
+		if (Device.IsEmpty())
+			continue;
+
+        CItemCtx ItemCtx(this, &Device);
+
+		//	Keep track of device types to see if we have duplicates
+
+		bool bNewDevice;
+		int *pCount = DeviceTypes.SetAt(Device.GetClass()->GetUNID(), &bNewDevice);
+		if (bNewDevice)
+			*pCount = 1;
+		else
+			*pCount += 1;
+
+		//	Keep an enhancement stack for this device
+
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		TArray<CString> EnhancementIDs;
+
+		//	Add any enhancements on the item itself
+
+		const CItemEnhancement &Mods = ItemCtx.GetMods();
+		if (!Mods.IsEmpty())
+			pEnhancements->Insert(Mods);
+
+		//	Add enhancements from the slot
+
+		Device.AccumulateSlotEnhancements(this, EnhancementIDs, pEnhancements);
+
+		//	Add enhancements from other devices
+
+		for (int j = 0; j < GetDeviceCount(); j++)
+			{
+			CInstalledDevice &OtherDev = *GetDevice(j);
+			if (i != j && !OtherDev.IsEmpty())
+				{
+				OtherDev.AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements);
+				}
+			}
+
+		//	Add enhancements from system
+
+		if (pSystemEnhancements)
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+
+		//	Deal with class specific stuff
+
+		switch (Device.GetCategory())
+			{
+			case itemcatLauncher:
+			case itemcatWeapon:
+				{
+				//	Overlays add a bonus
+
+				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
+				if (iBonus != 0)
+					pEnhancements->InsertHPBonus(iBonus);
+				break;
+				}
+			}
+
+		//	Set the bonuses
+		//	Note that these include any bonuses confered by item enhancements
+
+		Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
+
+		//	Take ownership of the stack.
+
+		Device.SetEnhancements(pEnhancements);
+		}
+
+	//	Mark devices as duplicate (or not)
+
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		CInstalledDevice &Device = *GetDevice(i);
+		if (!Device.IsEmpty())
+			{
+			int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
+			Device.SetDuplicate(*pCount > 1);
+			}
+		}
+
+	DEBUG_CATCH
 	}
 
 void CStation::CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick) const
@@ -611,6 +723,9 @@ void CStation::CreateDestructionEffect (void)
 //	Create the effect when the station is destroyed
 
 	{
+	if (GetSystem() == NULL)
+		return;
+
 	//	Start destruction animation
 
 	m_iDestroyedAnimation = 60;
@@ -643,7 +758,7 @@ void CStation::CreateDestructionEffect (void)
 	//	Some air leaks
 
 	CParticleEffect *pEffect;
-	CParticleEffect::CreateEmpty(GetSystem(),
+	CParticleEffect::CreateEmpty(*GetSystem(),
 			this,
 			GetPos(),
 			GetVel(),
@@ -676,7 +791,7 @@ void CStation::CreateDestructionEffect (void)
 
 	//	Sound effects
 
-	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_StationExplosionSoundUNID));
+	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_StationExplosionSoundUNID));
 	}
 
 void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage)
@@ -686,7 +801,8 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 //	Create ejecta when hit by damage
 
 	{
-	int i;
+	if (GetSystem() == NULL)
+		return;
 
 	int iEjectaAdj;
 	if (iEjectaAdj = m_pType->GetEjectaAdj())
@@ -717,7 +833,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		//	Generate ejecta
 
 		CWeaponFireDesc *pEjectaType = m_pType->GetEjectaType();
-		for (i = 0; i < iCount; i++)
+		for (int i = 0; i < iCount; i++)
 			{
 			SShotCreateCtx Ctx;
 
@@ -735,7 +851,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 
 		//	Create geyser effect
 
-		CParticleEffect::CreateGeyser(GetSystem(),
+		CParticleEffect::CreateGeyser(*GetSystem(),
 				this,
 				vHitPos,
 				NullVector,
@@ -750,7 +866,7 @@ void CStation::CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int 
 		}
 	}
 
-ALERROR CStation::CreateFromType (CSystem *pSystem,
+ALERROR CStation::CreateFromType (CSystem &System,
 								  CStationType *pType,
 								  SObjCreateCtx &CreateCtx,
 								  CStation **retpStation,
@@ -777,7 +893,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Create the new station
 
-	pStation = new CStation;
+	pStation = new CStation(System.GetUniverse());
 	if (pStation == NULL)
 		{
 		if (retsError)
@@ -898,7 +1014,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	necessary or the variant (if appropriate).
 
 	SSelectorInitCtx InitCtx;
-	InitCtx.pSystem = pSystem;
+	InitCtx.pSystem = &System;
 	InitCtx.vObjPos = CreateCtx.vPos;
 	InitCtx.sLocAttribs = (CreateCtx.pLoc ? CreateCtx.pLoc->GetAttributes() : NULL_STR);
 
@@ -934,7 +1050,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	Create any items on the station
 
-	if (error = pStation->CreateRandomItems(pType->GetRandomItemTable(), pSystem))
+	if (error = pStation->CreateRandomItems(pType->GetRandomItemTable(), &System))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to create random items");
@@ -957,7 +1073,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 			DWORD dwDeviceID = pDeviceDesc->GetAttributeInteger(DEVICE_ID_ATTRIB);
 			if (dwDeviceID == 0)
 				dwDeviceID = pDeviceDesc->GetAttributeInteger(ITEM_ATTRIB);
-			CDeviceClass *pClass = g_pUniverse->FindDeviceClass(dwDeviceID);
+			CDeviceClass *pClass = System.GetUniverse().FindDeviceClass(dwDeviceID);
 			if (pClass == NULL)
 				{
 				if (retsError)
@@ -996,6 +1112,10 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 				pStation->m_pDevices[i].SelectFirstVariant(pStation);
 				}
 			}
+
+		//	Compute bonuses
+
+		pStation->CalcDeviceBonus();
 		}
 
 	//	Get notifications when other objects are destroyed
@@ -1018,7 +1138,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	Add to system (note that we must add the station to the system
 	//	before creating any ships).
 
-	if (error = pStation->AddToSystem(pSystem, true))
+	if (error = pStation->AddToSystem(System, true))
 		{
 		if (retsError)
 			*retsError = CONSTLIT("Unable to add to system.");
@@ -1049,7 +1169,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 
 	//	This type has now been encountered
 
-	pType->SetEncountered(pSystem);
+	pType->SetEncountered(&System);
 
 	//	Fire events on devices
 
@@ -1070,7 +1190,7 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 	//	If we're not in the middle of creating the system, call OnCreate
 	//	(otherwise we will call OnCreate in OnSystemCreated)
 
-	if (!pSystem->IsCreationInProgress())
+	if (!System.IsCreationInProgress())
 		{
 		pStation->FinishCreation();
 		pStation->CalcInsideBarrier();
@@ -1080,13 +1200,13 @@ ALERROR CStation::CreateFromType (CSystem *pSystem,
 		//	Make sure we get an OnSystemCreated (and that we get it after
 		//	our subordinates).
 
-		pSystem->RegisterForOnSystemCreated(pStation);
+		System.RegisterForOnSystemCreated(pStation);
 		}
 
 	//	If this is a stargate, tell the system that we've got a stargate
 
 	if (!pStation->m_sStargateDestNode.IsBlank())
-		pSystem->StargateCreated(pStation, NULL_STR, pStation->m_sStargateDestNode, pStation->m_sStargateDestEntryPoint);
+		System.StargateCreated(pStation, NULL_STR, pStation->m_sStargateDestNode, pStation->m_sStargateDestEntryPoint);
 
 	//	Return station
 
@@ -1218,6 +1338,9 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 //	Create effect when station structure is destroyed
 
 	{
+	if (GetSystem() == NULL)
+		return;
+
 	//	Create fracture effect
 
 	int iTick, iVariant;
@@ -1225,7 +1348,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 
 	if (Image.IsLoaded())
 		{
-		CFractureEffect::CreateExplosion(GetSystem(),
+		CFractureEffect::CreateExplosion(*GetSystem(),
 				GetPos(),
 				GetVel(),
 				Image,
@@ -1273,7 +1396,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				8,
 				3);
 
-		CParticleEffect::CreateExplosion(GetSystem(),
+		CParticleEffect::CreateExplosion(*GetSystem(),
 				NULL,
 				GetPos(),
 				GetVel(),
@@ -1284,7 +1407,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				PartImage,
 				NULL);
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 				NULL,
@@ -1293,7 +1416,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 				0);
 		}
 
-	g_pUniverse->PlaySound(this, g_pUniverse->FindSound(g_ShipExplosionSoundUNID));
+	GetUniverse().PlaySound(this, GetUniverse().FindSound(g_ShipExplosionSoundUNID));
 	}
 
 CString CStation::DebugCrashInfo (void)
@@ -1386,7 +1509,7 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	//	Add the object to the universe. We wait until the end in case
 	//	OnCreate ends up setting the name (or something).
 
-	g_pUniverse->GetGlobalObjects().InsertIfTracked(this);
+	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 	}
 
 Metric CStation::GetAttackDistance (void) const
@@ -1566,7 +1689,7 @@ CString CStation::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) co
 	return m_sName;
 	}
 
-CSystem::LayerEnum CStation::GetPaintLayer (void)
+CSystem::LayerEnum CStation::GetPaintLayer (void) const
 
 //	GetPaintLayer
 //
@@ -1604,7 +1727,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 
 	if (strEquals(sName, PROPERTY_ABANDONED))
@@ -1688,8 +1811,8 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		for (i = 0; i < GetSubordinateCount(); i++)
 			{
 			ICCItem *pItem = CreateObjPointer(CC, GetSubordinate(i));
-			pResult->Append(CC, pItem);
-			pItem->Discard(&CC);
+			pResult->Append(pItem);
+			pItem->Discard();
 			}
 
 		return pResult;
@@ -1786,7 +1909,7 @@ CSpaceObject *CStation::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
 
 	//	Otherwise, see if the player is in range, if so, then it is our target.
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer == NULL)
 		return NULL;
 
@@ -1808,7 +1931,7 @@ CDesignType *CStation::GetWreckType (void) const
 	if (m_dwWreckUNID == 0)
 		return NULL;
 
-	return g_pUniverse->FindDesignType(m_dwWreckUNID);
+	return GetUniverse().FindDesignType(m_dwWreckUNID);
 	}
 
 bool CStation::HasAttribute (const CString &sAttribute) const
@@ -2583,7 +2706,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 				m_Targets.Add(pTarget);
 
 #ifdef DEBUG_ALERTS
-				g_pUniverse->DebugOutput("%d: Received msgDestroyBroadcast", this);
+				GetUniverse().DebugOutput("%d: Received msgDestroyBroadcast", this);
 #endif
 
 				//	Order out some number of subordinates to attack
@@ -2599,7 +2722,7 @@ DWORD CStation::OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSp
 						{
 						iLeft--;
 #ifdef DEBUG_ALERTS
-						g_pUniverse->DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
+						GetUniverse().DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
 #endif
 						}
 					}
@@ -2955,7 +3078,7 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 		rcRect.right = x + 40;
 		rcRect.bottom = y + 20;
 
-		g_pUniverse->GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetNounPhrase(), -2);
+		GetUniverse().GetNamedFont(CUniverse::fontSign).DrawText(Dest, rcRect, RGB_SIGN_COLOR, GetNounPhrase(), -2);
 		}
 
 	//	Paint overlays
@@ -3133,11 +3256,7 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 		{
 		//	Figure out the color
 
-		CG32bitPixel rgbColor;
-		if (IsEnemy(GetUniverse()->GetPOV()))
-			rgbColor = CG32bitPixel(255, 0, 0);
-		else
-			rgbColor = CG32bitPixel(0, 192, 0);
+		CG32bitPixel rgbColor = GetSymbolColor();
 
 		//	Paint the marker
 
@@ -3196,12 +3315,12 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 			InitMapLabel();
 
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel + 1, 
 					y + m_yMapLabel + 1, 
 					0,
 					m_sMapLabel);
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
 					y + m_yMapLabel, 
 					RGB_MAP_LABEL,
@@ -3318,7 +3437,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Station type
 
 	Ctx.pStream->Read(dwLoad);
-	m_pType = g_pUniverse->FindStationType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindStationType(dwLoad);
 
 	//	Read name
 
@@ -3477,6 +3596,11 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 		for (i = 0; i < (int)dwLoad; i++)
 			m_pDevices[i].ReadFromStream(this, Ctx);
+
+		//	In debug mode, recalc weapon bonus in case anything has changed.
+
+		if (Ctx.GetUniverse().InDebugMode())
+			CalcDeviceBonus();
 		}
 
 	//	Overlays
@@ -3604,7 +3728,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	if (m_dwWreckUNID && Ctx.dwVersion < 61)
 		{
-		CShipClass *pClass = g_pUniverse->FindShipClass(m_dwWreckUNID);
+		CShipClass *pClass = Ctx.GetUniverse().FindShipClass(m_dwWreckUNID);
 		if (pClass)
 			{
 			m_ImageSelector.DeleteAll();
@@ -3866,6 +3990,8 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	DEBUG_TRY
 
 	int i;
+    bool bCalcBounds = false;
+	bool bCalcDeviceBonus = false;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
 
 	//	If we need to destroy this station, do it now
@@ -3902,6 +4028,18 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			m_pDevices[i].Update(this, DeviceCtx);
 			if (DeviceCtx.bSourceDestroyed)
 				return;
+
+			//	If the device was repaired or disabled, we need to update
+
+			if (DeviceCtx.bRepaired)
+				{
+				bCalcDeviceBonus = true;
+				}
+
+			if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
+				{
+				bCalcDeviceBonus = true;
+				}
 			}
 		}
 
@@ -3912,7 +4050,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		const CObjectImageArray &Image = GetImage(false);
 		int cxWidth = RectWidth(Image.GetImageRect());
 
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StationDestroyedUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
 		if (pEffect)
 			{
 			for (int i = 0; i < mathRandom(1, 3); i++)
@@ -3956,8 +4094,19 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		if (CSpaceObject::IsDestroyedInUpdate())
 			return;
 		else if (bModified)
-			CalcBounds();
+			{
+			bCalcBounds = true;
+			bCalcDeviceBonus = true;
+			}
 		}
+
+	//	Update as necessary
+
+    if (bCalcDeviceBonus)
+        CalcDeviceBonus();
+
+	if (bCalcBounds)
+		CalcBounds();
 
 	DEBUG_CATCH
 	}
@@ -4212,7 +4361,7 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 			{
 			InitMapLabel();
 
-			g_pUniverse->GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
+			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
 					x + m_xMapLabel, 
 					y + m_yMapLabel, 
 					RGB_LRS_LABEL,
@@ -4366,7 +4515,7 @@ void CStation::RaiseAlert (CSpaceObject *pTarget)
 	m_Targets.Add(pTarget);
 
 #ifdef DEBUG_ALERTS
-	g_pUniverse->DebugOutput("%d: Raising alert...", this);
+	GetUniverse().DebugOutput("%d: Raising alert...", this);
 #endif
 
 	//	Tell all other friendly stations in the system that they
@@ -4398,6 +4547,7 @@ void CStation::RemoveOverlay (DWORD dwID)
 	//	Recalc bonuses, etc.
 
 	CalcBounds();
+	CalcDeviceBonus();
 	}
 
 bool CStation::RemoveSubordinate (CSpaceObject *pSubordinate)
@@ -4422,7 +4572,7 @@ bool CStation::RequestGate (CSpaceObject *pObj)
 	//	This is used by ships that "gate" back into their carrier or their
 	//	station.)
 
-	CTopologyNode *pNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode);
+	CTopologyNode *pNode = GetUniverse().FindTopologyNode(m_sStargateDestNode);
 
 	//	For the player, ask all objects if they want to allow the player to 
 	//	enter a gate.
@@ -4490,7 +4640,7 @@ void CStation::SetKnown (bool bKnown)
 		CTopologyNode *pDestNode;
 		if (bKnown
 				&& IsStargate()
-				&& (pDestNode = g_pUniverse->FindTopologyNode(m_sStargateDestNode)))
+				&& (pDestNode = GetUniverse().FindTopologyNode(m_sStargateDestNode)))
 			pDestNode->SetKnown();
 
 		//  If we have a virtual base, then set it to be known. This handles the
@@ -4656,7 +4806,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 //	Sets a station property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CString sError;
 
 	if (strEquals(sName, PROPERTY_ACTIVE))
@@ -4763,7 +4913,7 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		{
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 
 		if (pValue->IsNil())
 			ClearBlacklist(pPlayer);
@@ -5059,7 +5209,7 @@ void CStation::UpdateReinforcements (int iTick)
 		int i;
 
 #ifdef DEBUG_ALERTS
-		g_pUniverse->DebugOutput("%d: Attack target list", this);
+		GetUniverse().DebugOutput("%d: Attack target list", this);
 #endif
 
 		for (i = 0; i < m_Targets.GetCount(); i++)
@@ -5076,7 +5226,7 @@ void CStation::UpdateReinforcements (int iTick)
 					{
 					iLeft--;
 #ifdef DEBUG_ALERTS
-					g_pUniverse->DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
+					GetUniverse().DebugOutput("   %d acknowledges attack order", m_Subordinates.GetObj(i));
 #endif
 					}
 				}
@@ -5104,7 +5254,7 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 
 	if (m_Blacklist.IsBlacklisted())
 		{
-		CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip();
 		Metric rDist2;
 		if (pPlayerShip
 				&& (rDist2 = GetDistance2(pPlayerShip)) <= rAttackRange2

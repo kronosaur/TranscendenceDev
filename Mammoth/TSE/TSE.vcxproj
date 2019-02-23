@@ -312,6 +312,7 @@
     <ClInclude Include="SFXImpl.h" />
     <ClInclude Include="SFXRayImpl.h" />
     <ClInclude Include="ShipAIImpl.h" />
+    <ClInclude Include="SystemPaintImpl.h" />
     <ClInclude Include="TopologyDescImpl.h" />
     <ClInclude Include="TopologyProcessorsImpl.h" />
   </ItemGroup>
@@ -404,6 +405,7 @@
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CNameDesc.cpp" />
+    <ClCompile Include="CNamedEffects.cpp" />
     <ClCompile Include="CNetworkTopologyCreator.cpp" />
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
@@ -562,13 +564,14 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="ICCItemPtr.cpp" />
     <ClCompile Include="IElementGenerator.cpp" />
     <ClCompile Include="IListData.cpp" />
+    <ClCompile Include="IPaintList.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="IShipController.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
+    <ClCompile Include="SFXGlow.cpp" />
     <ClCompile Include="SFXLightningStorm.cpp" />
     <ClCompile Include="SFXOrb.cpp" />
     <ClCompile Include="SFXParticleSystem.cpp" />
@@ -919,7 +922,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="CSpaceObjectTable.cpp" />
     <ClCompile Include="CTileMap.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

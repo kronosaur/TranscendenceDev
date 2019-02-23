@@ -179,29 +179,27 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 //  discard the result if non-NULL.
 
     {
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_POWER))
-		return CreatePowerResult(CC, 100.0 * m_iMaxPower);
+		return CreatePowerResult(100.0 * m_iMaxPower);
 
 	else if (strEquals(sProperty, PROPERTY_FUEL_CRITERIA))
 		{
 		if (m_pFuelCriteria)
-			return CC.CreateString(CItem::GenerateCriteria(*m_pFuelCriteria));
+			return CCodeChain::CreateString(CItem::GenerateCriteria(*m_pFuelCriteria));
 		else
-			return CC.CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel));
+			return CCodeChain::CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel));
 		}
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY))
-		return CC.CreateInteger(mathRound(m_rPowerPerFuelUnit));
+		return CCodeChain::CreateInteger(mathRound(m_rPowerPerFuelUnit));
 
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY_BONUS))
-		return CC.CreateInteger(GetEfficiencyBonus());
+		return CCodeChain::CreateInteger(GetEfficiencyBonus());
 
     else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY))
-        return CC.CreateInteger(mathRound(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
+        return CCodeChain::CreateInteger(mathRound(m_rMaxFuel / FUEL_UNITS_PER_STD_ROD));
 
     else if (strEquals(sProperty, PROPERTY_FUEL_CAPACITY_EXACT))
-        return CC.CreateDouble(m_rMaxFuel);
+        return CCodeChain::CreateDouble(m_rMaxFuel);
 
     else
         return NULL;

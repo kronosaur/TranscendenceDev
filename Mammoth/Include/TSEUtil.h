@@ -158,55 +158,6 @@ inline void DebugStopTimer (char *szTiming) { }
 
 #define TRY(f)	{try { error = f; } catch (...) { error = ERR_FAIL; }}
 
-//	ICCItem SmartPtr
-
-class ICCItemPtr
-	{
-	public:
-		constexpr ICCItemPtr (void) : m_pPtr(NULL) { }
-		constexpr ICCItemPtr (std::nullptr_t) : m_pPtr(NULL) { }
-
-		explicit ICCItemPtr (ICCItem *pPtr) : m_pPtr(pPtr) { }
-
-		explicit ICCItemPtr (ICCItem::ValueTypes iType);
-		explicit ICCItemPtr (const CString &sValue);
-		explicit ICCItemPtr (int iValue);
-		explicit ICCItemPtr (DWORD dwValue);
-		explicit ICCItemPtr (double rValue);
-		explicit ICCItemPtr (bool bValue);
-
-		ICCItemPtr (const ICCItemPtr &Src);
-
-		ICCItemPtr (ICCItemPtr &&Src) : m_pPtr(Src.m_pPtr)
-			{
-			Src.m_pPtr = NULL;
-			}
-
-		~ICCItemPtr (void);
-
-		ICCItemPtr &operator= (const ICCItemPtr &Src);
-		ICCItemPtr &operator= (ICCItem *pSrc);
-		operator ICCItem *() const { return m_pPtr; }
-		ICCItem * operator->() const { return m_pPtr; }
-
-		explicit operator bool() const { return (m_pPtr != NULL); }
-
-		void Delete (void);
-
-		bool Load (const CString &sCode, CString *retsError);
-
-		void TakeHandoff (ICCItem *pPtr);
-		void TakeHandoff (ICCItemPtr &Src);
-
-		void Set (const ICCItemPtr &Src)
-			{
-			*this = Src;
-			}
-
-	private:
-		ICCItem *m_pPtr;
-	};
-
 //	Game load/save structures
 
 #ifdef TRANSCENDENCE_STABLE_RELEASE
@@ -217,6 +168,8 @@ class ICCItemPtr
 
 struct SUniverseLoadCtx
 	{
+	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+
 	DWORD dwVersion;					//	See CUniverse.cpp for version history
 	DWORD dwSystemVersion;				//	System version when universe was saved
 
@@ -258,30 +211,32 @@ class CSpaceObjectAddressResolver
 
 struct SLoadCtx
 	{
-	SLoadCtx (void) : 
+	SLoadCtx (CUniverse &UniverseArg) : 
+			m_Universe(UniverseArg),
 			dwVersion(SYSTEM_SAVE_VERSION),
 			pStream(NULL),
 			pSystem(NULL),
-			ObjMap(FALSE, TRUE),
 			iLoadState(loadStateUnknown),
 			dwObjClassID(0)
 		{ }
 
 	SLoadCtx (const SUniverseLoadCtx &Ctx) :
+			m_Universe(Ctx.GetUniverse()),
 			dwVersion(Ctx.dwSystemVersion),
 			pStream(Ctx.pStream),
 			pSystem(NULL),
-			ObjMap(FALSE, TRUE),
 			iLoadState(loadStateUnknown),
 			dwObjClassID(0)
 		{ }
+
+	inline CUniverse &GetUniverse (void) { return m_Universe; }
 
 	DWORD dwVersion;					//	See CSystem.cpp for version history
 
 	IReadStream *pStream;				//	Stream to load from
 	CSystem *pSystem;					//	System to load into
 
-	CIDTable ObjMap;					//	Map of ID to objects.
+	TSortMap<DWORD, CSpaceObject *> ObjMap;			//	Map of ID to objects.
 	CSpaceObjectAddressResolver ForwardReferences;
 
 	//	For backwards compatibility we keep track of the list of objects
@@ -294,6 +249,9 @@ struct SLoadCtx
 	ELoadStates iLoadState;				//	Current load state
 	DWORD dwObjClassID;					//	ClassID that we're trying to load
 	CString sEffectUNID;				//	UNID of effect we're loading
+
+	private:
+		CUniverse &m_Universe;
 	};
 
 struct SViewportAnnotations
@@ -914,23 +872,6 @@ class CSpaceObjectList
 		static void ResolveObjProc (void *pCtx, DWORD dwObjID, CSpaceObject *pObj);
 
 		TArray<CSpaceObject *> m_List;
-	};
-
-class CSpaceObjectTable
-	{
-	public:
-		CSpaceObjectTable (void);
-
-		void Add (const CString &sKey, CSpaceObject *pObj);
-		bool Find (CSpaceObject *pObj, int *retiIndex = NULL);
-		inline int GetCount (void) { return m_Table.GetCount(); }
-		inline CSpaceObject *Get (int iIndex) { return (CSpaceObject *)m_Table.GetValue(iIndex); }
-		inline void Remove (int iIndex) { m_Table.RemoveEntry(m_Table.GetKey(iIndex), NULL); }
-		bool Remove (CSpaceObject *pObj);
-		inline void RemoveAll (void) { m_Table.RemoveAll(); }
-
-	private:
-		CSymbolTable m_Table;
 	};
 
 struct SDeviceEnhancementDesc
@@ -1583,7 +1524,7 @@ class IListData
 		virtual int GetCount (void) { return 0; }
 		virtual int GetCursor (void) { return -1; }
 		virtual CString GetDescAtCursor (void) { return NULL_STR; }
-		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC) { return CC.CreateNil(); }
+		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
 		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
 		virtual CItemListManipulator &GetItemListManipulator (void) { return g_DummyItemListManipulator; }
 		virtual CSpaceObject *GetSource (void) { return NULL; }

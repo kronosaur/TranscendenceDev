@@ -148,7 +148,7 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 //	Returns an item property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Return the property
 
@@ -177,13 +177,13 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		//	Create the structure
 
 		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
+		pResult->SetAt(FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
+		pResult->SetIntegerAt(FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (bCanInstall && (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
 
 		return pResult;
 		}
@@ -210,16 +210,16 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		//	Create the structure
 
 		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanInstall ? iPrice : -1));
+		pResult->SetAt(FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
+		pResult->SetIntegerAt(FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (bCanInstall 
 				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		//	NOTE: Message is valid even if we cannot install
 
 		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
 
 		return pResult;
 		}
@@ -252,14 +252,14 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		//	Create the structure
 
 		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(CC, FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
-		pResult->SetIntegerAt(CC, FIELD_PRICE, (bCanRemove ? iPrice : -1));
+		pResult->SetAt(FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
+		pResult->SetIntegerAt(FIELD_PRICE, (bCanRemove ? iPrice : -1));
 		if (bCanRemove 
 				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(CC, FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
 
 		if (!sMessageID.IsBlank())
-			pResult->SetStringAt(CC, FIELD_DESC_ID, sMessageID);
+			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
 
 		return pResult;
 		}

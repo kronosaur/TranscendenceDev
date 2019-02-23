@@ -207,12 +207,10 @@ ICCItem *CGItemListArea::GetEntryAtCursor (void)
 //	Returns the current entry
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (m_pListData == NULL)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
-	return m_pListData->GetEntryAtCursor(CC);
+	return m_pListData->GetEntryAtCursor();
 	}
 
 bool CGItemListArea::GetNextTab (DWORD *retdwID) const
@@ -916,7 +914,7 @@ void CGItemListArea::SetList (CItemList &ItemList)
 	Invalidate();
 	}
 
-void CGItemListArea::SetList (CCodeChain &CC, ICCItem *pList)
+void CGItemListArea::SetList (ICCItem *pList)
 
 //	SetList
 //
@@ -927,7 +925,7 @@ void CGItemListArea::SetList (CCodeChain &CC, ICCItem *pList)
 
 	//	Create the new data source
 
-	m_pListData = new CListWrapper(&CC, pList);
+	m_pListData = new CListWrapper(pList);
 	m_iType = listCustom;
 
 	//	Done

@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 #include "math.h"
+#include "SystemPaintImpl.h"
 
 #define ENHANCED_SRS_BLOCK_SIZE			6
 
@@ -50,7 +51,8 @@ const Metric SAME_POS_THRESHOLD2 =						(g_KlicksPerPixel * g_KlicksPerPixel);
 
 const Metric MAP_GRID_SIZE =							3000.0 * LIGHT_SECOND;
 
-CSystem::CSystem (CUniverse *pUniv, CTopologyNode *pTopology) : 
+CSystem::CSystem (CUniverse &Universe, CTopologyNode *pTopology) : 
+		m_Universe(Universe),
 		m_dwID(OBJID_NULL),
 		m_pTopology(pTopology),
 		m_pEnvironment(NULL),
@@ -276,7 +278,7 @@ bool CSystem::AscendObject (CSpaceObject *pObj, CString *retsError)
 
 	//	Add to the list of ascended objects
 
-	g_pUniverse->AddAscendedObj(pObj);
+	m_Universe.AddAscendedObj(pObj);
 
 	//	Done
 
@@ -507,7 +509,7 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 
 		//	Compute the frequency of the given attribute
 
-		int iAttribFreq = g_pUniverse->GetAttributeDesc().GetLocationAttribFrequency(sAttrib);
+		int iAttribFreq = m_Universe.GetAttributeDesc().GetLocationAttribFrequency(sAttrib);
 
 		//	Adjust probability based on the match strength
 
@@ -587,14 +589,14 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.bEnhancedDisplay = ((dwFlags & VWP_ENHANCED_DISPLAY) ? true : false);
 	Ctx.bShowUnexploredAnnotation = ((dwFlags & VWP_MINING_DISPLAY) ? true : false);
 	Ctx.fNoStarfield = ((dwFlags & VWP_NO_STAR_FIELD) ? true : false);
-	Ctx.fShowManeuverEffects = g_pUniverse->GetSFXOptions().IsManeuveringEffectEnabled();
-	Ctx.fNoStarshine = !g_pUniverse->GetSFXOptions().IsStarshineEnabled();
-	Ctx.fNoSpaceBackground = !g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled();
+	Ctx.fShowManeuverEffects = m_Universe.GetSFXOptions().IsManeuveringEffectEnabled();
+	Ctx.fNoStarshine = !m_Universe.GetSFXOptions().IsStarshineEnabled();
+	Ctx.fNoSpaceBackground = !m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled();
 
 	//	Debug options
 
-	Ctx.bShowBounds = g_pUniverse->GetDebugOptions().IsShowBoundsEnabled();
-	Ctx.bShowFacingsAngle = g_pUniverse->GetDebugOptions().IsShowFacingsAngleEnabled();
+	Ctx.bShowBounds = m_Universe.GetDebugOptions().IsShowBoundsEnabled();
+	Ctx.bShowFacingsAngle = m_Universe.GetDebugOptions().IsShowFacingsAngleEnabled();
 
 	//	Figure out what color space should be. Space gets lighter as we get
 	//	near the central star
@@ -784,7 +786,7 @@ ALERROR CSystem::CreateFlotsam (const CItem &Item,
 	//	Create the station
 
 	CStation *pFlotsam;
-	pItemType->CreateEmptyFlotsam(this, vPos, vVel, pSovereign, &pFlotsam);
+	pItemType->CreateEmptyFlotsam(*this, vPos, vVel, pSovereign, &pFlotsam);
 
 	//	Add the items to the station
 
@@ -799,7 +801,7 @@ ALERROR CSystem::CreateFlotsam (const CItem &Item,
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateFromStream (CUniverse *pUniv, 
+ALERROR CSystem::CreateFromStream (CUniverse &Universe, 
 								   IReadStream *pStream, 
 								   CSystem **retpSystem,
 								   CString *retsError,
@@ -856,21 +858,21 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	//	Create a context block for loading
 
-	SLoadCtx Ctx;
+	SLoadCtx Ctx(Universe);
 	Ctx.dwVersion = 0;	//	Default to 0
 	Ctx.pStream = pStream;
 
 	//	Add all missions to the map so that they can be resolved
 
-	for (i = 0; i < pUniv->GetMissionCount(); i++)
+	for (i = 0; i < Universe.GetMissionCount(); i++)
 		{
-		CMission *pMission = pUniv->GetMission(i);
-		Ctx.ObjMap.AddEntry(pMission->GetID(), pMission);
+		CMission *pMission = Universe.GetMission(i);
+		Ctx.ObjMap.Insert(pMission->GetID(), pMission);
 		}
 
 	//	Create the new star system
 
-	Ctx.pSystem = new CSystem(pUniv, NULL);
+	Ctx.pSystem = new CSystem(Universe, NULL);
 	if (Ctx.pSystem == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");
@@ -888,8 +890,8 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	CString sNodeID;
 	sNodeID.ReadFromStream(Ctx.pStream);
-	Ctx.pSystem->m_pTopology = pUniv->FindTopologyNode(sNodeID);
-	Ctx.pSystem->m_pType = pUniv->FindSystemType(Ctx.pSystem->m_pTopology->GetSystemTypeUNID());
+	Ctx.pSystem->m_pTopology = Universe.FindTopologyNode(sNodeID);
+	Ctx.pSystem->m_pType = Universe.FindSystemType(Ctx.pSystem->m_pTopology->GetSystemTypeUNID());
 
 	//	More misc info
 
@@ -968,7 +970,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 		//	Add this object to the map
 
 		DWORD dwID = (Ctx.dwVersion >= 41 ? pObj->GetID() : pObj->GetIndex());
-		Ctx.ObjMap.AddEntry(dwID, pObj);
+		Ctx.ObjMap.Insert(dwID, pObj);
 
 		//	Update any previous objects that are waiting for this reference
 
@@ -977,7 +979,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 		//	Set the system (note: this will change the index to the new
 		//	system)
 
-		pObj->AddToSystem(Ctx.pSystem, true);
+		pObj->AddToSystem(*Ctx.pSystem, true);
 		}
 
 	//	If we have old style registrations then we need to convert to subscriptions
@@ -1023,7 +1025,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		CSpaceObject *pObj;
-		if (Ctx.ObjMap.Lookup(dwLoad, (CObject **)&pObj) != NOERROR)
+		if (!Ctx.ObjMap.Find(dwLoad, &pObj))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Save file error: Unable to find named object: %s [%x]"), sName, dwLoad);
 			return ERR_FAIL;
@@ -1074,7 +1076,7 @@ ALERROR CSystem::CreateFromStream (CUniverse *pUniv,
 
 	if (retpObj)
 		{
-		if (Ctx.ObjMap.Lookup(dwObjID, (CObject **)retpObj) != NOERROR)
+		if (!Ctx.ObjMap.Find(dwObjID, retpObj))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find POV object: %x"), dwObjID);
 
@@ -1199,7 +1201,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 	DEBUG_TRY
 
 	ALERROR error;
-	CDesignType *pType = g_pUniverse->FindDesignType(dwClassID);
+	CDesignType *pType = m_Universe.FindDesignType(dwClassID);
 	if (pType == NULL)
 		return ERR_FAIL;
 
@@ -1263,7 +1265,7 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 	//	Create a new ship based on the class
 
 	CShip *pShip;
-	if (error = CShip::CreateFromClass(this, 
+	if (error = CShip::CreateFromClass(*this, 
 			pClass, 
 			pController, 
 			pOverride,
@@ -1289,9 +1291,9 @@ ALERROR CSystem::CreateShip (DWORD dwClassID,
 
 	if (!IsCreationInProgress())
 		{
-		g_pUniverse->SetLogImageLoad(false);
+		m_Universe.SetLogImageLoad(false);
 		pShip->MarkImages();
-		g_pUniverse->SetLogImageLoad(true);
+		m_Universe.SetLogImageLoad(true);
 		}
 
 	//	Create escorts, if necessary
@@ -1346,7 +1348,7 @@ ALERROR CSystem::CreateShipwreck (CShipClass *pClass,
 //	Creates an empty ship wreck of the given class
 
 	{
-	if (!pClass->CreateEmptyWreck(this,
+	if (!pClass->CreateEmptyWreck(*this,
 			NULL,
 			vPos,
 			vVel,
@@ -1420,7 +1422,7 @@ ALERROR CSystem::CreateStargate (CStationType *pType,
 	ALERROR error;
 	CStation *pStation;
 
-	CTopologyNode *pDestNode = g_pUniverse->FindTopologyNode(sDestNodeID);
+	CTopologyNode *pDestNode = m_Universe.FindTopologyNode(sDestNodeID);
 	if (pDestNode == NULL)
 		return ERR_FAIL;
 
@@ -1472,7 +1474,7 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 	//	Generate context block
 
-	SSystemCreateCtx Ctx(this);
+	SSystemCreateCtx Ctx(*this);
 
 	CXMLElement *pLocalTable = (m_pType ? m_pType->GetLocalSystemTables() : NULL);
 	if (pLocalTable)
@@ -1552,7 +1554,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CMissile *pMissile;
 
-			CMissile::Create(this, Ctx, &pMissile);
+			CMissile::Create(*this, Ctx, &pMissile);
 
 			pShot = pMissile;
 			break;
@@ -1562,7 +1564,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CContinuousBeam *pBeam;
 
-			CContinuousBeam::Create(this, Ctx, &pBeam);
+			CContinuousBeam::Create(*this, Ctx, &pBeam);
 
 			pShot = pBeam;
 			break;
@@ -1572,7 +1574,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CAreaDamage *pArea;
 
-			CAreaDamage::Create(this, Ctx, &pArea);
+			CAreaDamage::Create(*this, Ctx, &pArea);
 
 			pShot = pArea;
 			break;
@@ -1582,7 +1584,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CParticleDamage *pParticles;
 
-			CParticleDamage::Create(this, Ctx, &pParticles);
+			CParticleDamage::Create(*this, Ctx, &pParticles);
 
 			pShot = pParticles;
 			break;
@@ -1592,7 +1594,7 @@ ALERROR CSystem::CreateWeaponFire (SShotCreateCtx &Ctx, CSpaceObject **retpShot)
 			{
 			CRadiusDamage *pRadius;
 
-			CRadiusDamage::Create(this, Ctx, &pRadius);
+			CRadiusDamage::Create(*this, Ctx, &pRadius);
 
 			pShot = pRadius;
 			break;
@@ -1815,12 +1817,12 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 //	Descends the object back to the system.
 
 	{
-	CSpaceObject *pObj = g_pUniverse->RemoveAscendedObj(dwObjID);
+	CSpaceObject *pObj = m_Universe.RemoveAscendedObj(dwObjID);
 	if (pObj == NULL)
 		{
 		//	See if this object is already descended. Then we succeed.
 
-		pObj = g_pUniverse->FindObject(dwObjID);
+		pObj = m_Universe.FindObject(dwObjID);
 		if (pObj && pObj->GetSystem() == this && !pObj->IsAscended())
 			{
 			if (retpObj)
@@ -1849,7 +1851,7 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	//	Place the ship at the gate in the new system
 
 	pObj->Place(vPos);
-	pObj->AddToSystem(this);
+	pObj->AddToSystem(*this);
 	pObj->NotifyOnNewSystem(this);
 	pObj->Resume();
 
@@ -2141,8 +2143,8 @@ void CSystem::FlushEnemyObjectCache (void)
 	{
 	int i;
 
-	for (i = 0; i < g_pUniverse->GetSovereignCount(); i++)
-		g_pUniverse->GetSovereign(i)->FlushEnemyObjectCache();
+	for (i = 0; i < m_Universe.GetSovereignCount(); i++)
+		m_Universe.GetSovereign(i)->FlushEnemyObjectCache();
 	}
 
 CString CSystem::GetAttribsAtPos (const CVector &vPos)
@@ -2402,7 +2404,7 @@ CSpaceObject *CSystem::GetPlayerShip (void) const
 //	Returns the player ship, if she is in the system (NULL otherwise)
 
 	{
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = m_Universe.GetPlayerShip();
 	if (pPlayer && pPlayer->GetSystem() == this)
 		return pPlayer;
 	else
@@ -2774,8 +2776,8 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 			if (rDist2 < Exclusion.rEnemyExclusionRadius2)
 				{
 #ifdef DEBUG_EXCLUSION_RADIUS
-				if (g_pUniverse->InDebugMode())
-					g_pUniverse->LogOutput(strPatternSubst(CONSTLIT("%s: %s too close to %s"), GetName(), pType->GetNounPhrase(), pObj->GetNounPhrase()));
+				if (m_Universe.InDebugMode())
+					m_Universe.LogOutput(strPatternSubst(CONSTLIT("%s: %s too close to %s"), GetName(), pType->GetNounPhrase(), pObj->GetNounPhrase()));
 #endif
 				return false;
 				}
@@ -2852,7 +2854,7 @@ void CSystem::MarkImages (void)
 
 	int i;
 
-	g_pUniverse->SetLogImageLoad(false);
+	m_Universe.SetLogImageLoad(false);
 
 	//	Mark images for all objects that currently exist in the system.
 
@@ -2879,41 +2881,40 @@ void CSystem::MarkImages (void)
 		//	If we have no type, then mark the default space background because
 		//	we use it by default for the intro.
 
-		TSharedPtr<CObjectImage> pDefault = g_pUniverse->FindLibraryImage(UNID_DEFAULT_SYSTEM_BACKGROUND);
+		TSharedPtr<CObjectImage> pDefault = m_Universe.FindLibraryImage(UNID_DEFAULT_SYSTEM_BACKGROUND);
 		if (pDefault)
 			pDefault->Mark();
 		}
 
 	//	Initialize the volumetric mask
 
-	if (g_pUniverse->GetSFXOptions().IsStarshineEnabled())
+	if (m_Universe.GetSFXOptions().IsStarshineEnabled())
 		InitVolumetricMask();
 
 	//	We mark some default effects, which are very commonly used (e.g., for
 	//	ship explosions).
 
-	CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_LargeExplosionUNID);
+	CEffectCreator *pEffect = m_Universe.FindEffectType(g_LargeExplosionUNID);
 	if (pEffect)
 		pEffect->MarkImages();
 
-	pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+	pEffect = m_Universe.FindEffectType(g_ExplosionUNID);
 	if (pEffect)
 		pEffect->MarkImages();
 
-	TSharedPtr<CObjectImage> pImage = g_pUniverse->FindLibraryImage(g_ShipExplosionParticlesUNID);
+	TSharedPtr<CObjectImage> pImage = m_Universe.FindLibraryImage(g_ShipExplosionParticlesUNID);
 	if (pImage)
 		pImage->Mark();
 
 	for (i = 0; i < damageCount; i++)
 		{
-		CEffectCreator *pEffect = g_pUniverse->FindDefaultHitEffect((DamageTypes)i);
-		if (pEffect)
-			pEffect->MarkImages();
+		CEffectCreator &Effect = m_Universe.GetDefaultHitEffect((DamageTypes)i);
+		Effect.MarkImages();
 		}
 
 	//	Done
 
-	g_pUniverse->SetLogImageLoad(true);
+	m_Universe.SetLogImageLoad(true);
 
 	DEBUG_CATCH
 	}
@@ -2981,7 +2982,7 @@ void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest
 
 	//	Paint the text
 
-	const CG16bitFont &Font = g_pUniverse->GetNamedFont(CUniverse::fontSRSObjName);
+	const CG16bitFont &Font = m_Universe.GetNamedFont(CUniverse::fontSRSObjName);
 	vPos = PolarToVector(iBearing, 5 * ENHANCED_SRS_BLOCK_SIZE);
 	int xText = x - (int)vPos.GetX();
 	int yText = y + (int)vPos.GetY();
@@ -3013,9 +3014,6 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	{
 	DEBUG_TRY
 
-	int i;
-	int iLayer;
-
 	ASSERT(pCenter);
 
 	//	Initialize the viewport context
@@ -3027,10 +3025,6 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Keep track of the player object because sometimes we do special processing
 
 	CSpaceObject *pPlayerCenter = (pCenter->IsPlayer() ? pCenter : NULL);
-
-	//	Paint the background
-
-	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
 
 	//	Compute the bounds relative to the center
 
@@ -3046,14 +3040,33 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 	//	Generate lists of all objects to paint by layer
 
-	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
-		m_LayerObjs[iLayer].DeleteAll();
+	const Metric MAX_OBJ_SIZE_PIXELS = g_KlicksPerPixel * 2048.0;
+	Metric rTopEdge = Ctx.vUR.Y() + MAX_OBJ_SIZE_PIXELS;
+	Metric rBottomEdge = Ctx.vLL.Y() + MAX_OBJ_SIZE_PIXELS;
 
-	m_BackgroundObjs.DeleteAll();
-	m_ForegroundObjs.DeleteAll();
-	m_EnhancedDisplayObjs.DeleteAll();
+	//	We create the following paint layer and paint them in this order:
 
-	for (i = 0; i < GetObjectCount(); i++)
+	CParallaxPaintList ParallaxBackground;
+	CDepthPaintList MainBackground(rTopEdge);
+	CDepthPaintList MainSpace(rTopEdge);
+	CDepthPaintList MainStations(rTopEdge);
+	CUnorderedPaintList MainShips;
+	CUnorderedPaintList MainEffects;
+	CUnorderedPaintList MainOverhang;
+	CParallaxPaintList ParallaxForeground;
+	CMarkerPaintList EnhancedDisplay(rcBounds);
+
+	IPaintList *MainLayer[layerCount];
+	MainLayer[layerBackground] = &MainBackground;
+	MainLayer[layerSpace] = &MainSpace;
+	MainLayer[layerStations] = &MainStations;
+	MainLayer[layerShips] = &MainShips;
+	MainLayer[layerEffects] = &MainEffects;
+	MainLayer[layerOverhang] = &MainOverhang;
+
+	//	Add all objects to one of the above layers, as appropriate.
+
+	for (int i = 0; i < GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj 
@@ -3075,12 +3088,10 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 				if (pObj->InBox(vParallaxUR, vParallaxLL))
 					{
-					pObj->SetPaintNeeded();
-
 					if (rParallaxDist > 1.0)
-						m_BackgroundObjs.FastAdd(pObj);
+						ParallaxBackground.Insert(*pObj);
 					else
-						m_ForegroundObjs.FastAdd(pObj);
+						ParallaxForeground.Insert(*pObj);
 					}
 				}
 			else
@@ -3090,10 +3101,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				//	If we're in the viewport, then we need to paint on the main screen
 
 				if (bInViewport)
-					{
-					m_LayerObjs[pObj->GetPaintLayer()].FastAdd(pObj);
-					pObj->SetPaintNeeded();
-					}
+					MainLayer[pObj->GetPaintLayer()]->Insert(*pObj);
 
 				//	See if we need to paint a marker. Note that sometimes we end up 
 				//	painting both because we might be in-bounds (because of effects)
@@ -3110,7 +3118,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 				if (bMarker
 						&& !pObj->IsHidden()
 						&& (!bInViewport || !pObj->IsPartlyVisibleInBox(Ctx.vUR, Ctx.vLL)))
-					m_EnhancedDisplayObjs.FastAdd(pObj);
+					EnhancedDisplay.Insert(*pObj);
 				}
 			}
 		}
@@ -3118,80 +3126,25 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Always add the player at the end (so we paint on top of our layer)
 
 	if (pPlayerCenter)
-		{
-		m_LayerObjs[pPlayerCenter->GetPaintLayer()].FastAdd(pPlayerCenter);
-		pPlayerCenter->SetPaintNeeded();
-		}
+		MainLayer[pPlayerCenter->GetPaintLayer()]->Insert(*pPlayerCenter);
+
+	//	Paint the background
+
+	m_SpacePainter.PaintViewport(Dest, GetType(), Ctx);
 
 	//	Paint background objects
 
-	ViewportTransform SavedXForm = Ctx.XForm;
-	for (i = 0; i < m_BackgroundObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_BackgroundObjs.GetObj(i);
+	ParallaxBackground.Paint(Dest, Ctx);
 
-		//	Adjust the transform to deal with parallax
-
-		Ctx.XForm = ViewportTransform(Ctx.vCenterPos, pObj->GetParallaxDist() * g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
-		Ctx.XFormRel = Ctx.XForm;
-
-		//	Figure out the position of the object in pixels
-
-		int x, y;
-		Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-		//	Paint the object in the viewport
-
-		SetProgramState(psPaintingSRS, pObj);
-
-		Ctx.pObj = pObj;
-		pObj->Paint(Dest, 
-				x,
-				y,
-				Ctx);
-
-		SetProgramState(psPaintingSRS);
-		}
-	Ctx.XForm = SavedXForm;
-	Ctx.XFormRel = Ctx.XForm;
-
-	//	Paint any space environment
+	//	Paint any space environment (e.g., nebulae)
 
 	if (m_pEnvironment)
 		m_pEnvironment->Paint(Ctx, Dest);
 
 	//	Paint all the objects by layer
 
-	for (iLayer = layerSpace; iLayer < layerCount; iLayer++)
-		for (i = 0; i < m_LayerObjs[iLayer].GetCount(); i++)
-			{
-			CSpaceObject *pObj = m_LayerObjs[iLayer].GetObj(i);
-
-			if (pObj->IsPaintNeeded())
-				{
-				//	Figure out the position of the object in pixels
-
-				int x, y;
-				Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-				//	Paint the object in the viewport
-
-				SetProgramState(psPaintingSRS, pObj);
-
-				Ctx.pObj = pObj;
-				pObj->Paint(Dest, 
-						x,
-						y,
-						Ctx);
-
-				SetProgramState(psPaintingSRS);
-				}
-
-			//	Clear destination, if necessary
-
-			if (pObj->IsAutoClearDestination())
-				pObj->ClearPlayerDestination();
-			}
+	for (int i = 0; i < layerCount; i++)
+		MainLayer[i]->Paint(Dest, Ctx);
 
 	//	Paint all joints
 
@@ -3199,105 +3152,11 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 
 	//	Paint foreground objects
 
-	SavedXForm = Ctx.XForm;
-	for (i = 0; i < m_ForegroundObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_ForegroundObjs.GetObj(i);
-
-		//	Compute the transform
-
-		Ctx.XForm = ViewportTransform(Ctx.vCenterPos, pObj->GetParallaxDist() * g_KlicksPerPixel, Ctx.xCenter, Ctx.yCenter);
-		Ctx.XFormRel = Ctx.XForm;
-
-		//	Figure out the position of the object in pixels
-
-		int x, y;
-		Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-
-		//	Paint the object in the viewport
-
-		SetProgramState(psPaintingSRS, pObj);
-
-		Ctx.pObj = pObj;
-		pObj->Paint(Dest, 
-				x,
-				y,
-				Ctx);
-
-		SetProgramState(psPaintingSRS);
-		}
-	Ctx.XForm = SavedXForm;
-	Ctx.XFormRel = Ctx.XForm;
+	ParallaxForeground.Paint(Dest, Ctx);
 
 	//	Paint all the enhanced display markers
 
-	for (i = 0; i < m_EnhancedDisplayObjs.GetCount(); i++)
-		{
-		CSpaceObject *pObj = m_EnhancedDisplayObjs.GetObj(i);
-
-		//	If this is a destination marker then we paint it at the circumference
-		//	of a circle around the center.
-
-		if (pObj->IsPlayerTarget()
-				|| pObj->IsPlayerDestination()
-				|| pObj->IsHighlighted())
-			{
-			CVector vDir = (pObj->GetPos() - Ctx.vCenterPos).Normal();
-
-			PaintDestinationMarker(Ctx,
-					Dest, 
-					Ctx.xCenter + (int)(Ctx.rIndicatorRadius * vDir.GetX()), 
-					Ctx.yCenter - (int)(Ctx.rIndicatorRadius * vDir.GetY()),
-					pObj);
-			}
-
-		//	Otherwise we paint this as a block at the edge of the screen
-
-		else
-			{
-			//	Figure out the position of the object in pixels
-			//	relative to the center of the screen
-
-			int x, y;
-			Ctx.XForm.Transform(pObj->GetPos(), &x, &y);
-			x = x - Ctx.xCenter;
-			y = y - Ctx.yCenter;
-
-			//	Now clip the position to the side of the screen
-
-			if (x >= rcBounds.right)
-				{
-				y = y * (rcBounds.right - 1) / x;
-				x = rcBounds.right - 1;
-				}
-			else if (x < rcBounds.left)
-				{
-				y = y * (rcBounds.left) / x;
-				x = rcBounds.left;
-				}
-
-			if (y >= rcBounds.bottom)
-				{
-				x = x * (rcBounds.bottom - 1) / y;
-				y = rcBounds.bottom - 1;
-				}
-			else if (y < rcBounds.top)
-				{
-				x = x * rcBounds.top / y;
-				y = rcBounds.top;
-				}
-
-			//	Draw the indicator
-
-			CG32bitPixel rgbColor = pObj->GetSymbolColor();
-
-			Dest.Fill(Ctx.xCenter + x - (ENHANCED_SRS_BLOCK_SIZE / 2), 
-					Ctx.yCenter + y - (ENHANCED_SRS_BLOCK_SIZE / 2),
-					ENHANCED_SRS_BLOCK_SIZE, 
-					ENHANCED_SRS_BLOCK_SIZE, 
-					rgbColor);
-			}
-		}
+	EnhancedDisplay.Paint(Dest, Ctx);
 
 	//	Let the POV paint any other enhanced displays
 
@@ -3622,8 +3481,8 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	Initialize context
 
 	CMapViewportCtx Ctx(pCenter, rcView, rMapScale);
-	Ctx.Set3DMapEnabled(g_pUniverse->GetSFXOptions().Is3DSystemMapEnabled());
-	Ctx.SetSpaceBackgroundEnabled(g_pUniverse->GetSFXOptions().IsSpaceBackgroundEnabled());
+	Ctx.Set3DMapEnabled(m_Universe.GetSFXOptions().Is3DSystemMapEnabled());
+	Ctx.SetSpaceBackgroundEnabled(m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled());
 
 	//	In the future we should paint station images if the zoom level is greater
 	//	than a certain value. NOTE: We would need to improve the current scaling
@@ -3659,7 +3518,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Paint the glow from all stars
 
-	if (g_pUniverse->GetSFXOptions().IsStarGlowEnabled())
+	if (m_Universe.GetSFXOptions().IsStarGlowEnabled())
 		{
 		for (i = 0; i < m_Stars.GetCount(); i++)
 			{
@@ -3723,7 +3582,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 	//	Paint NavPaths
 
-	if (g_pUniverse->GetDebugOptions().IsShowNavPathsEnabled())
+	if (m_Universe.GetDebugOptions().IsShowNavPathsEnabled())
 		{
 		CNavigationPath *pNext = m_NavPaths.GetNext();
 		while (pNext)
@@ -3838,7 +3697,7 @@ void CSystem::GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj
 
 	//	Lookup the ID in the map
 
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)retpObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, retpObj))
 		return;
 
 	//	If we could not find it, add the return pointer as a reference
@@ -3866,7 +3725,7 @@ void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	Lookup the ID in the map
 
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)retpObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, retpObj))
 		return;
 
 	//	If we could not find it, add the return pointer as a reference
@@ -3891,7 +3750,7 @@ void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC
 	//	Lookup the ID in the map. If we find it, then resolve it now.
 
 	CSpaceObject *pObj;
-	if (Ctx.ObjMap.Lookup(dwID, (CObject **)&pObj) == NOERROR)
+	if (Ctx.ObjMap.Find(dwID, &pObj))
 		(pfnResolveProc)(pCtx, dwID, pObj);
 
 	//	If we could not find it, add the return pointer as a reference
@@ -3915,7 +3774,7 @@ void CSystem::ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovere
 		return;
 		}
 
-	*retpSovereign = g_pUniverse->FindSovereign(dwUNID);
+	*retpSovereign = Ctx.GetUniverse().FindSovereign(dwUNID);
 	}
 
 void CSystem::RegisterEventHandler (CSpaceObject *pObj, Metric rRange)
@@ -4006,7 +3865,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		if (iObjCat == CSpaceObject::catShip || iObjCat == CSpaceObject::catStation)
 			{
 			FireOnSystemObjDestroyed(Ctx);
-			g_pUniverse->NotifyOnObjDestroyed(Ctx);
+			m_Universe.NotifyOnObjDestroyed(Ctx);
 			}
 
 		DEBUG_RESTORE_PROGRAMSTATE;
@@ -4034,20 +3893,20 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	//	Check to see if this was the POV
 
-	if (Ctx.pObj == g_pUniverse->GetPOV())
+	if (Ctx.pObj == m_Universe.GetPOV())
 		{
 		//	If this was not the player, then set back to the player
 
-		if (Ctx.pObj != g_pUniverse->GetPlayerShip() && g_pUniverse->GetPlayerShip() && !g_pUniverse->GetPlayerShip()->IsDestroyed())
-			g_pUniverse->SetPOV(g_pUniverse->GetPlayerShip());
+		if (Ctx.pObj != m_Universe.GetPlayerShip() && m_Universe.GetPlayerShip() && !m_Universe.GetPlayerShip()->IsDestroyed())
+			m_Universe.SetPOV(m_Universe.GetPlayerShip());
 
 		//	Otherwise, set to a marker
 
 		else
 			{
 			CPOVMarker *pMarker;
-			CPOVMarker::Create(this, Ctx.pObj->GetPos(), NullVector, &pMarker);
-			g_pUniverse->SetPOV(pMarker);
+			CPOVMarker::Create(*this, Ctx.pObj->GetPos(), NullVector, &pMarker);
+			m_Universe.SetPOV(pMarker);
 			}
 		}
 
@@ -4067,14 +3926,14 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	if (Ctx.pObj->GetScale() == scaleStar)
 		{
 		ComputeStars();
-		if (g_pUniverse->GetSFXOptions().IsStarshineEnabled())
+		if (m_Universe.GetSFXOptions().IsStarshineEnabled())
 			InitVolumetricMask();
 		}
 
 	//	If this object has a volumetric shadow, then we need to remove it.
 
 	if (Ctx.pObj->HasVolumetricShadow()
-			&& g_pUniverse->GetSFXOptions().IsStarshineEnabled())
+			&& m_Universe.GetSFXOptions().IsStarshineEnabled())
 		RemoveVolumetricShadow(Ctx.pObj);
 
 	//	Debug code to see if we ever delete a barrier in the middle of move
@@ -4378,7 +4237,7 @@ void CSystem::SetLastUpdated (void)
 //	We use this to figure out how much time passed since we last updated
 
 	{
-	m_iLastUpdated = g_pUniverse->GetTicks();
+	m_iLastUpdated = m_Universe.GetTicks();
 	}
 
 void CSystem::SetPainted (void)
@@ -4660,7 +4519,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	create the universe.
 
 	SetProgramState(psUpdatingEvents);
-	if (!IsTimeStopped() && (g_pUniverse->GetPlayerShip() || SystemCtx.bForceEventFiring))
+	if (!IsTimeStopped() && (m_Universe.GetPlayerShip() || SystemCtx.bForceEventFiring))
 		m_TimedEvents.Update(m_iTick, *this);
 
 	//	If necessary, mark as painted so that objects update correctly.
@@ -4792,7 +4651,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 	//	Update the player controller
 
-	IPlayerController *pPlayerController = g_pUniverse->GetPlayer();
+	IPlayerController *pPlayerController = m_Universe.GetPlayer();
 	if (pPlayerController)
 		pPlayerController->Update(Ctx);
 
@@ -5054,7 +4913,7 @@ void CSystem::UpdateRandomEncounters (void)
 	//	time, the encounter is based on the stations in this system.
 
 	if (mathRandom(1, 100) <= LEVEL_ENCOUNTER_CHANCE)
-		g_pUniverse->GetRandomLevelEncounter(GetLevel(), &pType, &pTable, &pBaseSovereign);
+		m_Universe.GetRandomLevelEncounter(GetLevel(), &pType, &pTable, &pBaseSovereign);
 	else
 		{
 		//	Compute the list of all objects that have encounters (and cache it)

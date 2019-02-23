@@ -109,7 +109,7 @@ IShipController *CTranscendenceWnd::CreateShipController (const CString &sContro
 
 	{
 	if (strEquals(sController, CONTROLLER_PLAYER))
-		return new CPlayerShipController;
+		return new CPlayerShipController(*g_pUniverse);
 	else
 		return NULL;
 	}

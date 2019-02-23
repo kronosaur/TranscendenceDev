@@ -1027,7 +1027,7 @@ ALERROR CExtensionCollection::ComputeFilesToLoad (const CString &sFilespec, CExt
 		//	Open the file
 
 		CResourceDb ExtDb(sFilepath, true);
-		ExtDb.SetDebugMode(g_pUniverse->InDebugMode());
+		ExtDb.SetDebugMode(GetUniverse().InDebugMode());
 		if (error = ExtDb.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 			{
 			//	If this is a TDB then ignore the error--we assume that we will try to 
@@ -1551,7 +1551,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	//	Open up the file
 
 	CResourceDb Resources(sFilespec);
-	Resources.SetDebugMode(g_pUniverse->InDebugMode());
+	Resources.SetDebugMode(GetUniverse().InDebugMode());
 	if (error = Resources.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 		return error;
 
@@ -1778,7 +1778,7 @@ ALERROR CExtensionCollection::LoadFile (const CString &sFilespec, CExtension::EF
 	//	Create the extension
 
 	CExtension *pExtension;
-	if (error = CExtension::CreateExtensionStub(sFilespec, iFolder, &pExtension, retsError))
+	if (error = CExtension::CreateExtensionStub(sFilespec, iFolder, dwFlags, &pExtension, retsError))
 		return error;
 
 	//	Generate a resolver so that we can look up entities. We always add
@@ -1900,7 +1900,7 @@ ALERROR CExtensionCollection::LoadFolderStubsOnly (const CString &sFilespec, CEx
 
 		//	Create the extension
 
-		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, &pExtension, retsError))
+		if (error = CExtension::CreateExtensionStub(sExtensionFilespec, iFolder, dwFlags, &pExtension, retsError))
 			return error;
 
 		//	If this extension requires an API beyond our base file, then we disable it.
@@ -1947,8 +1947,12 @@ ALERROR CExtensionCollection::LoadNewExtension (const CString &sFilespec, const 
 
 		//	Load the file
 
+		DWORD dwFlags = FLAG_DESC_ONLY;
+		if (GetUniverse().InDebugMode())
+			dwFlags |= FLAG_DEBUG_MODE;
+
 		bool bReload;
-		if (LoadFile(sNewFilespec, CExtension::folderCollection, FLAG_DESC_ONLY, FileDigest, &bReload, retsError) != NOERROR)
+		if (LoadFile(sNewFilespec, CExtension::folderCollection, dwFlags, FileDigest, &bReload, retsError) != NOERROR)
 			return ERR_FAIL;
 
 		//	If necessary, try reloading other extensions that might become enabled after
@@ -1957,7 +1961,7 @@ ALERROR CExtensionCollection::LoadNewExtension (const CString &sFilespec, const 
 
 		if (bReload)
 			{
-			while (ReloadDisabledExtensions(FLAG_DESC_ONLY))
+			while (ReloadDisabledExtensions(dwFlags))
 				;
 			}
 
@@ -2024,7 +2028,7 @@ bool CExtensionCollection::ReloadDisabledExtensions (DWORD dwFlags)
 
 		if (LoadFile(Entry.sFilespec, 
 				Entry.iFolder, 
-				FLAG_DESC_ONLY | FLAG_ERROR_ON_DISABLE, 
+				dwFlags | FLAG_DESC_ONLY | FLAG_ERROR_ON_DISABLE, 
 				Entry.FileDigest, 
 				NULL, 
 				NULL) != NOERROR)

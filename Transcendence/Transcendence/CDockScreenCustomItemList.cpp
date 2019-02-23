@@ -13,16 +13,16 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 //	Initialize list
 
 	{
-	int i;
+	if (Ctx.pDockScreen == NULL)
+		return ERR_FAIL;
 
 	//	Get the list to show
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pExp = CC.Link(Options.sCode);
+	ICCItem *pExp = CCodeChain::Link(Options.sCode);
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(Ctx.pDockScreen);
 	CCCtx.SaveAndDefineSourceVar(Ctx.pLocation);
 	CCCtx.SaveAndDefineDataVar(Ctx.pData);
@@ -39,11 +39,12 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 	//	We expect a list of item structures. Load them into an item list
 
 	m_CustomItems.DeleteAll();
-	for (i = 0; i < pResult->GetCount(); i++)
+	for (int i = 0; i < pResult->GetCount(); i++)
 		{
 		ICCItem *pItem = pResult->GetElement(i);
 
-		CItem NewItem = CreateItemFromList(CC, pItem);
+		CCodeChainCtx CCCtx(Ctx.pDockScreen->GetUniverse());
+		CItem NewItem = CCCtx.AsItem(pItem);
 		if (NewItem.GetType() != NULL)
 			m_CustomItems.AddItem(NewItem);
 		}

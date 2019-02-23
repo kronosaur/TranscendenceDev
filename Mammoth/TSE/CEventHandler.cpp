@@ -74,7 +74,7 @@ ALERROR CEventHandler::AddEvent (const CString &sEvent, const CString &sCode, CS
 //	Adds an event
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	ICCItemPtr pCode = Ctx.LinkCode(sCode);
 	if (pCode->IsError())
@@ -99,7 +99,7 @@ void CEventHandler::DeleteAll (void)
 	for (int i = 0; i < m_Handlers.GetCount(); i++)
 		{
 		ICCItem *pItem = m_Handlers[i];
-		pItem->Discard(&g_pUniverse->GetCC());
+		pItem->Discard();
 		}
 
 	m_Handlers.DeleteAll();
@@ -153,7 +153,7 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		CCodeChain::SLinkOptions Options;
 		Options.bNullIfEmpty = true;
 
-		ICCItemPtr pCode = ICCItemPtr(g_pUniverse->GetCC().Link(pHandler->GetContentText(0), Options));
+		ICCItemPtr pCode = ICCItemPtr(CCodeChain::Link(pHandler->GetContentText(0), Options));
 
 		//	If Link returns NULL, then it means that this was just whitespace
 		//	or comments only.
@@ -174,7 +174,7 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		if (Ctx.GetAPIVersion() < 2)
 			{
-			if (g_pUniverse->GetCC().HasIdentifier(pCode, CONSTLIT("gStation")))
+			if (Ctx.GetUniverse().GetCC().HasIdentifier(pCode, CONSTLIT("gStation")))
 				{
 				Ctx.sError = CONSTLIT("gStation variable has been deprecated--use gSource instead.");
 				return ERR_FAIL;
@@ -196,15 +196,12 @@ void CEventHandler::MergeFrom (const CEventHandler &Src)
 //	Merges from the source
 
 	{
-	int i;
-	CCodeChain &CC(g_pUniverse->GetCC());
-
-	for (i = 0; i < Src.GetCount(); i++)
+	for (int i = 0; i < Src.GetCount(); i++)
 		{
 		ICCItem **ppCode = m_Handlers.GetAt(Src.m_Handlers.GetKey(i));
 		if (ppCode)
 			{
-			(*ppCode)->Discard(&CC);
+			(*ppCode)->Discard();
 			(*ppCode) = Src.m_Handlers.GetValue(i)->Reference();
 			}
 		else

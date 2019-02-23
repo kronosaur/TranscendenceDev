@@ -400,6 +400,11 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 
 		SetProgramState(psUnknown);
 		}
+	catch (CException e)
+		{
+		::kernelDebugLogPattern("CException: %s", e.GetErrorMessage());
+		bFailed = true;
+		}
 	catch (...)
 		{
 		bFailed = true;

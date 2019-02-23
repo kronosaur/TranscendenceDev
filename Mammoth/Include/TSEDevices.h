@@ -319,6 +319,7 @@ class CDeviceClass
 	protected:
 		inline ItemCategories GetDefinedSlotCategory (void) { return m_iSlotCategory; }
 		virtual ItemCategories GetImplCategory (void) const = 0;
+		CUniverse &GetUniverse (void) const;
 		ALERROR InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType);
 
 		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) { }
@@ -408,16 +409,17 @@ class CDeviceDescList
 
 struct SDeviceGenerateCtx
 	{
-	SDeviceGenerateCtx (void) :
-			iLevel(1),
-			pRoot(NULL),
-			pResult(NULL)
+	SDeviceGenerateCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg)
 		{ }
 
-	int iLevel;
-	IDeviceGenerator *pRoot;
+	inline CUniverse &GetUniverse (void) const { return Universe; }
 
-	CDeviceDescList *pResult;
+	CUniverse &Universe;
+	int iLevel = 1;
+	IDeviceGenerator *pRoot = NULL;
+
+	CDeviceDescList *pResult = NULL;
 	};
 
 class IDeviceGenerator

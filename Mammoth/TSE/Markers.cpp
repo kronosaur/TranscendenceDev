@@ -12,9 +12,7 @@ const CG32bitPixel RGB_ORBIT_LINE =		        CG32bitPixel(115, 149, 229);
 
 //	CMarker -------------------------------------------------------------------
 
-static CObjectClass<CMarker>g_MarkerClass(OBJID_CMARKER, NULL);
-
-CMarker::CMarker (void) : CSpaceObject(&g_MarkerClass),
+CMarker::CMarker (CUniverse &Universe) : TSpaceObjectImpl(Universe),
         m_pMapOrbit(NULL)
 
 //	CMarker constructor
@@ -31,7 +29,7 @@ CMarker::~CMarker (void)
         delete m_pMapOrbit;
     }
 
-ALERROR CMarker::Create (CSystem *pSystem,
+ALERROR CMarker::Create (CSystem &System,
 						 CSovereign *pSovereign,
 						 const CVector &vPos,
 						 const CVector &vVel,
@@ -46,7 +44,7 @@ ALERROR CMarker::Create (CSystem *pSystem,
 	ALERROR error;
 	CMarker *pMarker;
 
-	pMarker = new CMarker;
+	pMarker = new CMarker(System.GetUniverse());
 	if (pMarker == NULL)
 		return ERR_MEMORY;
 
@@ -59,7 +57,7 @@ ALERROR CMarker::Create (CSystem *pSystem,
 	pMarker->m_sName = sName;
 	pMarker->m_pSovereign = pSovereign;
 	if (pMarker->m_pSovereign == NULL)
-		pMarker->m_pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+		pMarker->m_pSovereign = System.GetUniverse().FindSovereign(g_PlayerSovereignUNID);
 
     //  Basic properties
 
@@ -67,7 +65,7 @@ ALERROR CMarker::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(pSystem))
+	if (error = pMarker->AddToSystem(System))
 		{
 		delete pMarker;
 		return error;
@@ -88,7 +86,7 @@ ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
     if (strEquals(sName, PROPERTY_STYLE))
         {
@@ -120,7 +118,7 @@ void CMarker::OnObjLeaveGate (CSpaceObject *pObj)
 //	Object leaves a gate
 
 	{
-	CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_StargateOutUNID);
+	CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StargateOutUNID);
 	if (pEffect)
 		pEffect->CreateEffect(GetSystem(),
 				NULL,
@@ -248,7 +246,7 @@ bool CMarker::SetProperty (const CString &sName, ICCItem *pValue, CString *retsE
 //	Sets an object property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_STYLE))
 		{
@@ -271,16 +269,14 @@ bool CMarker::SetProperty (const CString &sName, ICCItem *pValue, CString *retsE
 
 //	CPOVMarker ----------------------------------------------------------------
 
-static CObjectClass<CPOVMarker>g_POVMarkerClass(OBJID_CPOVMARKER, NULL);
-
-CPOVMarker::CPOVMarker (void) : CSpaceObject(&g_POVMarkerClass)
+CPOVMarker::CPOVMarker (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CPOVMarker constructor
 
 	{
 	}
 
-ALERROR CPOVMarker::Create (CSystem *pSystem,
+ALERROR CPOVMarker::Create (CSystem &System,
 							const CVector &vPos,
 							const CVector &vVel,
 							CPOVMarker **retpMarker)
@@ -293,7 +289,7 @@ ALERROR CPOVMarker::Create (CSystem *pSystem,
 	ALERROR error;
 	CPOVMarker *pMarker;
 
-	pMarker = new CPOVMarker;
+	pMarker = new CPOVMarker(System.GetUniverse());
 	if (pMarker == NULL)
 		return ERR_MEMORY;
 
@@ -303,7 +299,7 @@ ALERROR CPOVMarker::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pMarker->AddToSystem(pSystem))
+	if (error = pMarker->AddToSystem(System))
 		{
 		delete pMarker;
 		return error;
@@ -321,7 +317,7 @@ CSovereign *CPOVMarker::GetSovereign (void) const
 	{
 	//	Return player
 
-	return g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+	return GetUniverse().FindSovereign(g_PlayerSovereignUNID);
 	}
 
 void CPOVMarker::OnLosePOV (void)

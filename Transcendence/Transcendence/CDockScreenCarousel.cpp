@@ -173,12 +173,11 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	//	Get the list to show
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pExp = CC.Link(Options.sCode);
+	ICCItem *pExp = CCodeChain::Link(Options.sCode);
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(&m_DockScreen);
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);
@@ -194,7 +193,7 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	//	Set this expression as the list
 
-	m_pControl->SetList(CC, pResult);
+	m_pControl->SetList(pResult);
 	CCCtx.Discard(pResult);
 
 	//	Position the cursor on the next relevant item

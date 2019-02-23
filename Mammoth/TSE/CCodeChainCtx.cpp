@@ -19,8 +19,9 @@
 
 TArray<CCodeChainCtx::SInvokeFrame> CCodeChainCtx::g_Invocations;
 
-CCodeChainCtx::CCodeChainCtx (void) :
-		m_CC(g_pUniverse->GetCC()),
+CCodeChainCtx::CCodeChainCtx (CUniverse &Universe) :
+		m_Universe(Universe),
+		m_CC(Universe.GetCC()),
 		m_iEvent(eventNone),
 		m_pScreen(NULL),
 		m_pCanvas(NULL),
@@ -165,6 +166,123 @@ bool CCodeChainCtx::AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, boo
 	return true;
 	}
 
+CInstalledArmor *CCodeChainCtx::AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const
+
+//	AsInstalledArmor
+//
+//	Returns a pointer to an installed item structure (or NULL).
+
+	{
+	//	Get the ship 
+
+	CShip *pShip = pObj->AsShip();
+	if (pShip == NULL)
+		return NULL;
+
+	//	Set the armor segment
+
+	int iArmorSeg;
+	if (pItem->IsList())
+		{
+		CItem Item = AsItem(pItem);
+		if (Item.GetType() && Item.GetType()->GetArmorClass() && Item.IsInstalled())
+			iArmorSeg = Item.GetInstalled();
+		else
+			return NULL;
+		}
+	else
+		iArmorSeg = pItem->GetIntegerValue();
+
+	//	Some error checking
+
+	if (iArmorSeg < 0 || iArmorSeg >= pShip->GetArmorSectionCount())
+		return NULL;
+
+	//	Done
+
+	return pShip->GetArmorSection(iArmorSeg);
+	}
+
+CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const
+
+//	AsInstalledDevice
+//
+//	Returns a device struct from an item struct (or NULL if not found)
+
+	{
+	//	Get the item
+
+	CItem Item(AsItem(pItem));
+
+	//	Make sure the item is on the object
+
+	CItemListManipulator ItemList(pObj->GetItemList());
+	if (!ItemList.SetCursorAtItem(Item))
+		return NULL;
+
+	//	Get the installed device from the item
+
+	CInstalledDevice *pDevice = pObj->FindDevice(Item);
+	return pDevice;
+	}
+
+CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+
+//	AsItem
+//
+//	Get an item
+
+	{
+	if (pItem == NULL || pItem->IsNil())
+		return CItem();
+
+	else if (pItem->IsList())
+		{
+		CItem NewItem;
+		NewItem.ReadFromCCItem(GetUniverse().GetDesignCollection(), pItem);
+		return NewItem;
+		}
+	else if (pItem->IsInteger())
+		{
+		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
+		if (pType == NULL)
+			return CItem();
+
+		return CItem(pType, 1);
+		}
+	else
+		return CItem();
+	}
+
+CItemType *CCodeChainCtx::AsItemType (ICCItem *pItem) const
+
+//	AsItemType
+//
+//	Get an item type
+
+	{
+	if (pItem == NULL || pItem->IsNil())
+		return NULL;
+
+	//	If this is a list, then expect an item
+
+	else if (pItem->IsList())
+		{
+		CItem Item(AsItem(pItem));
+		return Item.GetType();
+		}
+
+	//	Otherwise, expect an UNID
+
+	else if (pItem->IsInteger())
+		return m_Universe.FindItemType((DWORD)pItem->GetIntegerValue());
+
+	//	Otherwise, we don't know
+
+	else
+		return NULL;
+	}
+
 DWORD CCodeChainCtx::AsNameFlags (ICCItem *pItem)
 
 //	AsNameFlags
@@ -199,7 +317,7 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	CSpaceObject *pObj;
 	try
 		{
-		pObj = dynamic_cast<CSpaceObject *>((CObject *)pItem->GetIntegerValue());
+		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
 		}
 	catch (...)
 		{
@@ -216,6 +334,100 @@ CVector CCodeChainCtx::AsVector (ICCItem *pItem)
 
 	{
 	return CreateVectorFromList(m_CC, pItem);
+	}
+
+CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
+
+//	AsWeaponFireDesc
+//
+//	If pItem is a weapon UNID, then we return the first weapon desc
+//	If pItem is a missile, then we return the first weapon desc we find for the missile
+//	If pItem is a list, then the first is a weapon UNID and the second is a missile UNID
+//	Returns NULL on error
+
+	{
+	CItemType *pType;
+	CItemType *pMissileType;
+
+	//	If we have a list with exactly two arguments, and if the first is a
+	//	launcher UNID and the second is a missile UNID, then we assume that's 
+	//	the intent.
+
+	if (pItem->IsList() 
+			&& pItem->GetCount() == 2
+			&& (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
+			&& (pMissileType = GetUniverse().FindItemType(pItem->GetElement(1)->GetIntegerValue())))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+		}
+
+	//	Otherwise, if we have a list, we expect an item.
+
+	else if (pItem->IsList() && pItem->GetCount() >= 2 && pItem->GetElement(1)->GetIntegerValue() != 0)
+		{
+		CItem Item = AsItem(pItem);
+		if (Item.IsEmpty())
+			return NULL;
+
+		return Item.GetType()->GetWeaponFireDesc(CItemCtx(Item));
+		}
+
+	//	Otherwise we expect an integer value.
+
+	else if (pType = GetUniverse().FindItemType(pItem->GetElement(0)->GetIntegerValue()))
+		{
+		return pType->GetWeaponFireDesc(CItemCtx());
+		}
+
+	//	Otherwise, error
+
+	else
+		return NULL;
+
+#if 0
+	DWORD dwWeaponUNID;
+	DWORD dwVariantUNID;
+
+	//	If the argument is a list, then we get the weapon UNID and the variant
+	//	from the list.
+
+	if (pArg->IsList() && pArg->GetCount() >= 2)
+		{
+		dwWeaponUNID = (DWORD)pArg->GetElement(0)->GetIntegerValue();
+		dwVariantUNID = (DWORD)pArg->GetElement(1)->GetIntegerValue();
+		}
+
+	//	Otherwise, get the first variant of the weapon
+
+	else
+		{
+		dwWeaponUNID = (DWORD)pArg->GetIntegerValue();
+		dwVariantUNID = 0;
+		}
+
+	//	Get the item associated with the UNID
+
+	CItemType *pType = g_pUniverse->FindItemType(dwWeaponUNID);
+	if (pType == NULL)
+		return NULL;
+
+	//	If variant UNID is 0, then pType is either a weapon or a missile and 
+    //  this will return its descriptor.
+
+    if (dwVariantUNID == 0)
+        return pType->GetWeaponFireDesc(CItemCtx());
+
+    //  Otherwise, get the missile type
+
+    else
+        {
+	    CItemType *pMissileType = g_pUniverse->FindItemType(dwVariantUNID);
+	    if (pMissileType == NULL)
+		    return NULL;
+
+        return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
+        }
+#endif
 	}
 
 ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
@@ -260,7 +472,7 @@ void CCodeChainCtx::DefineDamageEffects (const CString &sVar, SDamageCtx &Ctx)
 	{
 	ICCItem *pItem = CreateItemFromDamageEffects(m_CC, Ctx);
 	m_CC.DefineGlobal(sVar, pItem);
-	pItem->Discard(&m_CC);
+	pItem->Discard();
 	}
 
 void CCodeChainCtx::DefineContainingType (const CDesignType *pType)
@@ -312,7 +524,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, CItemCtx &ItemCtx)
 	{
 	ICCItem *pItem = ItemCtx.CreateItemVariable(m_CC);
 	m_CC.DefineGlobal(sVar, pItem);
-	pItem->Discard(&m_CC);
+	pItem->Discard();
 	}
 
 void CCodeChainCtx::DefineItem (const CItem &Item)
@@ -334,9 +546,9 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 	{
 	if (Item.GetType())
 		{
-		ICCItem *pItem = CreateListFromItem(m_CC, Item);
+		ICCItem *pItem = CreateListFromItem(Item);
 		m_CC.DefineGlobal(sVar, pItem);
-		pItem->Discard(&m_CC);
+		pItem->Discard();
 		}
 	else
 		m_CC.DefineGlobal(sVar, m_CC.CreateNil());
@@ -364,7 +576,7 @@ void CCodeChainCtx::DefineOrbit (const CString &sVar, const COrbit &OrbitDesc)
 	{
 	ICCItem *pValue = CreateListFromOrbit(m_CC, OrbitDesc);
 	m_CC.DefineGlobal(sVar, pValue);
-	pValue->Discard(&m_CC);
+	pValue->Discard();
 	}
 
 void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
@@ -390,7 +602,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
 		{
 		ICCItem *pValue = m_CC.CreateNil();
 		m_CC.DefineGlobal(sVar, pValue);
-		pValue->Discard(&m_CC);
+		pValue->Discard();
 		}
 	}
 
@@ -401,9 +613,9 @@ void CCodeChainCtx::DefineVector (const CString &sVar, const CVector &vVector)
 //	Defines a global CVector variable
 
 	{
-	ICCItem *pValue = CreateListFromVector(m_CC, vVector);
+	ICCItem *pValue = CreateListFromVector(vVector);
 	m_CC.DefineGlobal(sVar, pValue);
-	pValue->Discard(&m_CC);
+	pValue->Discard();
 	}
 
 DWORD CCodeChainCtx::GetAPIVersion (void) const
@@ -464,35 +676,35 @@ void CCodeChainCtx::RestoreVars (void)
 	if (m_pOldItem)
 		{
 		m_CC.DefineGlobal(STR_G_ITEM, m_pOldItem);
-		m_pOldItem->Discard(&m_CC);
+		m_pOldItem->Discard();
 		m_pOldItem = NULL;
 		}
 
 	if (m_pOldSource)
 		{
 		m_CC.DefineGlobal(STR_G_SOURCE, m_pOldSource);
-		m_pOldSource->Discard(&m_CC);
+		m_pOldSource->Discard();
 		m_pOldSource = NULL;
 		}
 
 	if (m_pOldData)
 		{
 		m_CC.DefineGlobal(STR_G_DATA, m_pOldData);
-		m_pOldData->Discard(&m_CC);
+		m_pOldData->Discard();
 		m_pOldData = NULL;
 		}
 
 	if (m_pOldOverlayID)
 		{
 		m_CC.DefineGlobal(STR_A_OVERLAY_ID, m_pOldOverlayID);
-		m_pOldOverlayID->Discard(&m_CC);
+		m_pOldOverlayID->Discard();
 		m_pOldOverlayID = NULL;
 		}
 
 	if (m_pOldType)
 		{
 		m_CC.DefineGlobal(STR_G_TYPE, m_pOldType);
-		m_pOldType->Discard(&m_CC);
+		m_pOldType->Discard();
 		m_pOldType = NULL;
 		}
 	}

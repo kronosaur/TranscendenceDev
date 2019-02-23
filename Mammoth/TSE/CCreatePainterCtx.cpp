@@ -46,61 +46,60 @@ ICCItem *CCreatePainterCtx::GetData (void)
 
 	//	Initialize
 
-	CCodeChain &CC = g_pUniverse->GetCC();
 	m_pData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add data
 
 	for (i = 0; i < m_Data.GetCount(); i++)
-		m_pData->SetIntegerAt(CC, m_Data[i].sField, m_Data[i].iValue);
+		m_pData->SetIntegerAt(m_Data[i].sField, m_Data[i].iValue);
 
 	//	Set values depending on what we have in context
 
 	if (m_pDamageCtx)
-		SetDamageCtxData(CC, m_pData, *m_pDamageCtx);
+		SetDamageCtxData(m_pData, *m_pDamageCtx);
 
 	//	NOTE: If we have a damage context, we don't set weaponfire data because
 	//	it might overwrite it.
 
 	else if (m_pWeaponFireDesc)
-		SetWeaponFireDescData(CC, m_pData, m_pWeaponFireDesc);
+		SetWeaponFireDescData(m_pData, m_pWeaponFireDesc);
 
 	//	Done
 
 	return m_pData;
 	}
 
-void CCreatePainterCtx::SetDamageCtxData (CCodeChain &CC, ICCItem *pTable, SDamageCtx &DamageCtx) const
+void CCreatePainterCtx::SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx) const
 
 //	SetDamageCtxData
 //
 //	Sets the data from a damage context to the data block
 
 	{
-	pTable->SetIntegerAt(CC, FIELD_OBJ_HIT, (int)DamageCtx.pObj);
-	pTable->SetIntegerAt(CC, FIELD_ARMOR_SEG, DamageCtx.iSectHit);
+	pTable->SetIntegerAt(FIELD_OBJ_HIT, (int)DamageCtx.pObj);
+	pTable->SetIntegerAt(FIELD_ARMOR_SEG, DamageCtx.iSectHit);
 	if (DamageCtx.pCause)
-		pTable->SetIntegerAt(CC, FIELD_CAUSE, (int)DamageCtx.pCause);
+		pTable->SetIntegerAt(FIELD_CAUSE, (int)DamageCtx.pCause);
 
 	CSpaceObject *pAttacker = DamageCtx.Attacker.GetObj();
 	if (pAttacker)
-		pTable->SetIntegerAt(CC, FIELD_ATTACKER, (int)pAttacker);
+		pTable->SetIntegerAt(FIELD_ATTACKER, (int)pAttacker);
 
 	CSpaceObject *pOrderGiver = DamageCtx.GetOrderGiver();
 	if (pOrderGiver)
-		pTable->SetIntegerAt(CC, FIELD_ORDER_GIVER, (int)pAttacker);
+		pTable->SetIntegerAt(FIELD_ORDER_GIVER, (int)pAttacker);
 
-	ICCItemPtr pHitPos(CreateListFromVector(CC, DamageCtx.vHitPos));
-	pTable->SetAt(CC, FIELD_HIT_POS, pHitPos);
+	ICCItemPtr pHitPos(CreateListFromVector(DamageCtx.vHitPos));
+	pTable->SetAt(FIELD_HIT_POS, pHitPos);
 
-	pTable->SetIntegerAt(CC, FIELD_HIT_DIR, DamageCtx.iDirection);
-	pTable->SetIntegerAt(CC, FIELD_DAMAGE_HP, DamageCtx.iDamage);
-	pTable->SetIntegerAt(CC, FIELD_AVERAGE_DAMAGE_HP, mathRound(DamageCtx.pDesc->GetAveDamage()));
-	pTable->SetStringAt(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(DamageCtx.Damage.GetDamageType()));
+	pTable->SetIntegerAt(FIELD_HIT_DIR, DamageCtx.iDirection);
+	pTable->SetIntegerAt(FIELD_DAMAGE_HP, DamageCtx.iDamage);
+	pTable->SetIntegerAt(FIELD_AVERAGE_DAMAGE_HP, mathRound(DamageCtx.pDesc->GetAveDamage()));
+	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(DamageCtx.Damage.GetDamageType()));
 
 	CItemType *pWeapon = DamageCtx.pDesc->GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);
-	pTable->SetIntegerAt(CC, FIELD_WEAPON_UNID, dwWeaponUNID);
+	pTable->SetIntegerAt(FIELD_WEAPON_UNID, dwWeaponUNID);
 	}
 
 void CCreatePainterCtx::SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value)
@@ -132,20 +131,20 @@ void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
 		m_dwAPIVersion = pType->GetAPIVersion();
 	}
 
-void CCreatePainterCtx::SetWeaponFireDescData (CCodeChain &CC, ICCItem *pTable, CWeaponFireDesc *pDesc) const
+void CCreatePainterCtx::SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const
 
 //	SetWeaponFireDescData
 //
 //	Sets the data from a weapon fire desc to the data block.
 
 	{
-	pTable->SetIntegerAt(CC, FIELD_DAMAGE_HP, mathRound(pDesc->GetAveDamage()));
-	pTable->SetStringAt(CC, FIELD_DAMAGE_TYPE, GetDamageShortName(pDesc->GetDamageType()));
-	pTable->SetIntegerAt(CC, FIELD_SPEED, mathRound(100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED));
+	pTable->SetIntegerAt(FIELD_DAMAGE_HP, mathRound(pDesc->GetAveDamage()));
+	pTable->SetStringAt(FIELD_DAMAGE_TYPE, GetDamageShortName(pDesc->GetDamageType()));
+	pTable->SetIntegerAt(FIELD_SPEED, mathRound(100.0 * pDesc->GetAveInitialSpeed() / LIGHT_SPEED));
 	if (pDesc->GetType() == CWeaponFireDesc::ftParticles)
-		pTable->SetIntegerAt(CC, FIELD_PARTICLE_COUNT, mathRound(pDesc->GetAveParticleCount()));
+		pTable->SetIntegerAt(FIELD_PARTICLE_COUNT, mathRound(pDesc->GetAveParticleCount()));
 
 	CItemType *pWeapon = pDesc->GetWeaponType();
 	DWORD dwWeaponUNID = (pWeapon ? pWeapon->GetUNID() : 0);
-	pTable->SetIntegerAt(CC, FIELD_WEAPON_UNID, dwWeaponUNID);
+	pTable->SetIntegerAt(FIELD_WEAPON_UNID, dwWeaponUNID);
 	}

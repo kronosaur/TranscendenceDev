@@ -6,9 +6,7 @@
 
 #define SPEED_PARAM								CONSTLIT("speed")
 
-static CObjectClass<CAreaDamage>g_Class(OBJID_CAREADAMAGE, NULL);
-
-CAreaDamage::CAreaDamage (void) : CSpaceObject(&g_Class),
+CAreaDamage::CAreaDamage (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pPainter(NULL)
 
 //	CAreaDamage constructor
@@ -25,7 +23,7 @@ CAreaDamage::~CAreaDamage (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CAreaDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage **retpObj)
+ALERROR CAreaDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage **retpObj)
 
 //	Create
 //
@@ -40,7 +38,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage 
 
 	//	Create the area
 
-	CAreaDamage *pArea = new CAreaDamage;
+	CAreaDamage *pArea = new CAreaDamage(System.GetUniverse());
 	if (pArea == NULL)
 		return ERR_MEMORY;
 
@@ -71,7 +69,7 @@ ALERROR CAreaDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage 
 
 	//	Add to system
 
-	if (error = pArea->AddToSystem(pSystem))
+	if (error = pArea->AddToSystem(System))
 		{
 		delete pArea;
 		return error;
@@ -182,7 +180,7 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 
 	CString sDescUNID;
 	sDescUNID.ReadFromStream(Ctx.pStream);
-	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
+	m_pDesc = Ctx.GetUniverse().FindWeaponFireDesc(sDescUNID);
 
 	//	Old style bonus
 

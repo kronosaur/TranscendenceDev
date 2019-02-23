@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
-
 #define EVENT_ON_ACCEPTED						CONSTLIT("OnAccepted")
 #define EVENT_ON_COMPLETED						CONSTLIT("OnCompleted")
 #define EVENT_ON_DECLINED						CONSTLIT("OnDeclined")
@@ -54,7 +52,7 @@ static CObjectClass<CMission>g_MissionClass(OBJID_CMISSION, NULL);
 
 #define STR_A_REASON							CONSTLIT("aReason")
 
-CMission::CMission (void) : CSpaceObject(&g_MissionClass)
+CMission::CMission (CUniverse &Universe) : TSpaceObjectImpl(Universe)
 
 //	CMission constructor
 
@@ -70,7 +68,7 @@ void CMission::CloseMission (void)
 	{
 	//	Remove all subscriptions
 
-	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	CSystem *pSystem = GetUniverse().GetCurrentSystem();
 	if (pSystem)
 		{
 		RemoveAllEventSubscriptions(pSystem);
@@ -84,12 +82,12 @@ void CMission::CloseMission (void)
 
 	//	Cancel all timer events
 
-	g_pUniverse->CancelEvent(this, true);
+	GetUniverse().CancelEvent(this, true);
 
 	//	If this is a player mission then refresh another player mission
 
 	if (m_fAcceptedByPlayer)
-		g_pUniverse->RefreshCurrentMission();
+		GetUniverse().RefreshCurrentMission();
 	}
 
 void CMission::CompleteMission (ECompletedReasons iReason)
@@ -103,7 +101,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		return;
 
 	bool bIsPlayerMission = (m_iStatus == statusAccepted);
-	m_dwCompletedOn = g_pUniverse->GetTicks();
+	m_dwCompletedOn = GetUniverse().GetTicks();
 
 	//	Handle player missions differently
 
@@ -117,7 +115,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Tell the player that we failed
 
-			CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+			CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 			if (pPlayer)
 				{
 				CString sMessage;
@@ -145,7 +143,7 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Tell the player that we succeeded
 
-			CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+			CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 			if (pPlayer)
 				{
 				CString sMessage;
@@ -193,7 +191,8 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 		}
 	}
 
-ALERROR CMission::Create (CMissionType *pType,
+ALERROR CMission::Create (CUniverse &Universe,
+						  CMissionType *pType,
 						  CSpaceObject *pOwner,
 						  ICCItem *pCreateData,
 					      CMission **retpMission,
@@ -214,7 +213,7 @@ ALERROR CMission::Create (CMissionType *pType,
 
 	//	Create the new object
 
-	pMission = new CMission;
+	pMission = new CMission(Universe);
 	if (pMission == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory");
@@ -237,11 +236,11 @@ ALERROR CMission::Create (CMissionType *pType,
 
 	CTopologyNode *pNode = NULL;
 	CSystem *pSystem = NULL;
-	if ((pSystem = (pOwner ? pOwner->GetSystem() : g_pUniverse->GetCurrentSystem()))
+	if ((pSystem = (pOwner ? pOwner->GetSystem() : Universe.GetCurrentSystem()))
 			&& (pNode = pSystem->GetTopology()))
 		pMission->m_sNodeID = pNode->GetID();
 
-	pMission->m_dwCreatedOn = g_pUniverse->GetTicks();
+	pMission->m_dwCreatedOn = Universe.GetTicks();
 	pMission->m_fInMissionSystem = true;
 	pMission->m_dwAcceptedOn = 0;
 	pMission->m_dwLeftSystemOn = 0;
@@ -304,7 +303,7 @@ void CMission::FireCustomEvent (const CString &sEvent, ICCItem *pData)
 
 	if (FindEventHandler(sEvent, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventDoEvent);
 		Ctx.DefineContainingType(this);
@@ -329,7 +328,7 @@ void CMission::FireOnAccepted (void)
 
 	if (FindEventHandler(EVENT_ON_ACCEPTED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -355,7 +354,7 @@ ICCItem *CMission::FireOnDeclined (void)
 
 	if (FindEventHandler(EVENT_ON_DECLINED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -387,7 +386,7 @@ ICCItem *CMission::FireOnReward (ICCItem *pData)
 
 	if (FindEventHandler(EVENT_ON_REWARD, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -418,7 +417,7 @@ void CMission::FireOnSetPlayerTarget (const CString &sReason)
 
 	if (FindEventHandler(EVENT_ON_SET_PLAYER_TARGET, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -442,7 +441,7 @@ void CMission::FireOnStart (void)
 
 	if (FindEventHandler(EVENT_ON_STARTED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -465,7 +464,7 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 
 	if (FindEventHandler(EVENT_ON_COMPLETED, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
@@ -486,7 +485,7 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_ACCEPTED_ON))
 		return (m_fAcceptedByPlayer ? CC.CreateInteger(m_dwAcceptedOn) : CC.CreateNil());
@@ -764,7 +763,7 @@ void CMission::OnNewSystem (CSystem *pSystem)
 			//	track of when we left.
 
 			if (m_fInMissionSystem)
-				m_dwLeftSystemOn = g_pUniverse->GetTicks();
+				m_dwLeftSystemOn = GetUniverse().GetTicks();
 
 			m_fInMissionSystem = false;
 			}
@@ -869,7 +868,7 @@ void CMission::OnReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read(dwLoad);
-	m_pType = CMissionType::AsType(g_pUniverse->FindDesignType(dwLoad));
+	m_pType = CMissionType::AsType(Ctx.GetUniverse().FindDesignType(dwLoad));
 	if (m_pType == NULL)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined mission type: %08x"), dwLoad));
 
@@ -959,7 +958,7 @@ void CMission::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			&& IsAccepted()
 			&& (iTimeout = m_pType->GetOutOfSystemTimeOut()) != -1)
 		{
-		if (m_dwLeftSystemOn + iTimeout < (DWORD)g_pUniverse->GetTicks())
+		if (m_dwLeftSystemOn + iTimeout < (DWORD)GetUniverse().GetTicks())
 			{
 			SetFailure(NULL);
 
@@ -1180,7 +1179,7 @@ bool CMission::Reward (ICCItem *pData, ICCItem **retpResult)
 	ICCItem *pResult = FireOnReward(pData);
 	if (retpResult == NULL || (pResult && !pResult->IsSymbolTable()))
 		{
-		pResult->Discard(&g_pUniverse->GetCC());
+		pResult->Discard();
 		pResult = NULL;
 		}
 
@@ -1213,7 +1212,7 @@ bool CMission::SetAccepted (void)
 	//	Remember that we accepted
 
 	m_fAcceptedByPlayer = true;
-	m_dwAcceptedOn = g_pUniverse->GetTicks();
+	m_dwAcceptedOn = GetUniverse().GetTicks();
 	m_pType->IncAccepted();
 
 	//	Player accepts the mission
@@ -1226,7 +1225,7 @@ bool CMission::SetAccepted (void)
 		//	Track mission accept stats
 
 		if (KeepsStats())
-			g_pUniverse->GetObjStatsActual(pOwner->GetID()).iPlayerMissionsGiven++;
+			GetUniverse().GetObjStatsActual(pOwner->GetID()).iPlayerMissionsGiven++;
 
 		//	Let the mission given know
 
@@ -1281,7 +1280,7 @@ bool CMission::SetDeclined (ICCItem **retpResult)
 	ICCItem *pResult = FireOnDeclined();
 	if (retpResult == NULL || (pResult && !pResult->IsSymbolTable()))
 		{
-		pResult->Discard(&g_pUniverse->GetCC());
+		pResult->Discard();
 		pResult = NULL;
 		}
 
@@ -1478,7 +1477,7 @@ void CMission::UpdateExpiration (int iTick)
 		{
 		//	But only if the player is not docked with the mission object
 
-		CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 		if (pPlayer && !m_pOwner.IsEmpty() && m_pOwner->IsObjDocked(pPlayer))
 			return;
 

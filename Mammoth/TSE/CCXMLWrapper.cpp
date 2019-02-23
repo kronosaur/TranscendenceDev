@@ -41,7 +41,7 @@ ICCItem *CCXMLWrapper::Clone (CCodeChain *pCC)
 	return new CCXMLWrapper(m_pXML);
 	}
 
-void CCXMLWrapper::DestroyItem (CCodeChain *pCC)
+void CCXMLWrapper::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -49,7 +49,7 @@ void CCXMLWrapper::DestroyItem (CCodeChain *pCC)
 
 	{
 	if (m_pRef)
-		m_pRef->Discard(pCC);
+		m_pRef->Discard();
 
 	//	Otherwise we also need to delete the XML
 
@@ -59,26 +59,3 @@ void CCXMLWrapper::DestroyItem (CCodeChain *pCC)
 	delete this;
 	}
 
-ICCItem *CCXMLWrapper::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}
-
-ICCItem *CCXMLWrapper::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}

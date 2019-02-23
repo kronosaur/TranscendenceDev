@@ -158,7 +158,7 @@ bool CPropertyCompare::Parse (const CString &sExpression, CString *retsError)
 			return false;
 			}
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(*g_pUniverse);
 		pValue = CCCtx.LinkCode(sValue);
 		if (pValue->IsError())
 			{

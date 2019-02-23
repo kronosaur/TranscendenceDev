@@ -93,7 +93,7 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 	//	Create the annotation.
 
 	SMapAnnotation *pAnnotation = m_Annotations.Insert();
-	pAnnotation->dwID = g_pUniverse->CreateGlobalID();
+	pAnnotation->dwID = GetUniverse().CreateGlobalID();
 	pAnnotation->sNodeID = sNodeID;
 	pAnnotation->pPainter = pPainter;
 	pAnnotation->xOffset = x;
@@ -112,6 +112,26 @@ bool CSystemMap::AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect,
 		*retdwID = pAnnotation->dwID;
 
 	return true;
+	}
+
+bool CSystemMap::DebugShowAttributes (void) const
+
+//	DebugShowAttributes
+//
+//	Returns TRUE if we should show node attributes on the map
+
+	{
+	return (m_bDebugShowAttributes && GetUniverse().InDebugMode());
+	}
+
+bool CSystemMap::DebugShowIntermediatePoints (void) const
+
+//	DebugShowIntermediatePoints
+//
+//	Returns TRUE if we should show intermediate points on curved stargate paths.
+
+	{
+	return GetUniverse().InDebugMode();
 	}
 
 ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError)
@@ -195,7 +215,7 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (Metric *retrImageScale)
 	{
 	int i;
 
-	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmapCopy(GetBackgroundImageUNID());
+	CG32bitImage *pImage = GetUniverse().GetLibraryBitmapCopy(GetBackgroundImageUNID());
 	if (pImage == NULL)
 		return NULL;
 
@@ -218,7 +238,7 @@ CG32bitImage *CSystemMap::CreateBackgroundImage (Metric *retrImageScale)
 			if (!pAnnotation->sNodeID.IsBlank()
 					&& pAnnotation->fHideIfNodeUnknown)
 				{
-				CTopologyNode *pNode = g_pUniverse->FindTopologyNode(pAnnotation->sNodeID);
+				CTopologyNode *pNode = GetUniverse().FindTopologyNode(pAnnotation->sNodeID);
 				if (pNode == NULL
 						|| !pNode->IsKnown())
 					continue;
@@ -324,7 +344,7 @@ void CSystemMap::GetBackgroundImageSize (int *retcx, int *retcy)
 //	Returns the size of the background image (in galactic coordinates).
 
 	{
-	CG32bitImage *pImage = g_pUniverse->GetLibraryBitmap(GetBackgroundImageUNID());
+	CG32bitImage *pImage = GetUniverse().GetLibraryBitmap(GetBackgroundImageUNID());
 	if (pImage)
 		{
 		*retcx = (int)(pImage->GetWidth() / m_rBackgroundImageScale);

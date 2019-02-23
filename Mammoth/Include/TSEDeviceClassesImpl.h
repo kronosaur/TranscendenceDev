@@ -49,6 +49,7 @@ class CAutoDefenseClass : public CDeviceClass
 		TargetingSystemTypes m_iTargeting = trgNone;
 		CSpaceObjectCriteria m_TargetCriteria;
 		Metric m_rInterceptRange = 0.0;
+		Metric m_rMinSourceRange2 = 0.0;
 		bool m_bCheckLineOfFire = false;		//	Check line of fire for friendlies
 
 		bool m_bOmnidirectional = false;		//	Omnidirectional

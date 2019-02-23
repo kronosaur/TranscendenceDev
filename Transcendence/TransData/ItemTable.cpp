@@ -734,7 +734,7 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 
             else
                 {
-			    CCodeChainCtx CCCtx;
+			    CCodeChainCtx CCCtx(*g_pUniverse);
 			    CString sValue = Item.GetItemPropertyString(CCCtx, ItemCtx, sField);
 
 			    //	Format the value

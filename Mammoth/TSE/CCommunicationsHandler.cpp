@@ -61,10 +61,10 @@ void CCommunicationsHandler::DeleteAll (void)
 	for (int i = 0; i < GetCount(); i++)
 		{
 		if (m_Messages[i].InvokeEvent.pCode)
-			m_Messages[i].InvokeEvent.pCode->Discard(&g_pUniverse->GetCC());
+			m_Messages[i].InvokeEvent.pCode->Discard();
 
 		if (m_Messages[i].OnShowEvent.pCode)
-			m_Messages[i].OnShowEvent.pCode->Discard(&g_pUniverse->GetCC());
+			m_Messages[i].OnShowEvent.pCode->Discard();
 		}
 
 	m_Messages.DeleteAll(); 
@@ -166,7 +166,7 @@ void CCommunicationsHandler::FireInvoke (const CString &sID, CSpaceObject *pObj,
 
 	//	Run
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	//	Define parameters
 
@@ -230,7 +230,7 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 		if (pMessage->GetContentElementCount() == 0)
 			{
 			m_Messages[i].InvokeEvent.pExtension = NULL;
-			m_Messages[i].InvokeEvent.pCode = g_pUniverse->GetCC().Link(pMessage->GetContentText(0));
+			m_Messages[i].InvokeEvent.pCode = CCodeChain::Link(pMessage->GetContentText(0));
 
 			m_Messages[i].OnShowEvent.pExtension = NULL;
 			m_Messages[i].OnShowEvent.pCode = NULL;
@@ -255,12 +255,12 @@ ALERROR CCommunicationsHandler::InitFromXML (CXMLElement *pDesc, CString *retsEr
 				if (strEquals(pItem->GetTag(), ON_SHOW_TAG))
 					{
 					m_Messages[i].OnShowEvent.pExtension = NULL;
-					m_Messages[i].OnShowEvent.pCode = g_pUniverse->GetCC().Link(pItem->GetContentText(0));
+					m_Messages[i].OnShowEvent.pCode = CCodeChain::Link(pItem->GetContentText(0));
 					}
 				else if (strEquals(pItem->GetTag(), INVOKE_TAG) || strEquals(pItem->GetTag(), CODE_TAG))
 					{
 					m_Messages[i].InvokeEvent.pExtension = NULL;
-					m_Messages[i].InvokeEvent.pCode = g_pUniverse->GetCC().Link(pItem->GetContentText(0));
+					m_Messages[i].InvokeEvent.pCode = CCodeChain::Link(pItem->GetContentText(0));
 					}
 				else
 					{

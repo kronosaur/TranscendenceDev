@@ -957,7 +957,7 @@ int CShieldClass::FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource
 		ASSERT(pSource);
 		ASSERT(pDevice);
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -988,7 +988,7 @@ void CShieldClass::FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(GetItemType());
 		CCCtx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		CCCtx.SaveAndDefineItemVar(ItemCtx);
@@ -1080,7 +1080,7 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 	SEventHandlerDesc Event;
 	if (FindEventHandlerShieldClass(evtOnShieldDown, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -1222,7 +1222,7 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Enhancements
 
@@ -1520,7 +1520,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	//	Compute shield damage adjustments
 
-	if (error = m_DamageAdj.Bind(Ctx, g_pUniverse->GetShieldDamageAdj(m_iDamageAdjLevel)))
+	if (error = m_DamageAdj.Bind(Ctx, GetUniverse().GetShieldDamageAdj(m_iDamageAdjLevel)))
 		return error;
 
 	//	Load events
@@ -1536,7 +1536,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If the hit effect is NULL, then use default
 
 	if (m_pHitEffect == NULL)
-		m_pHitEffect.Set(g_pUniverse->FindEffectType(g_ShieldEffectUNID));
+		m_pHitEffect.Set(GetUniverse().FindEffectType(g_ShieldEffectUNID));
 
 	return NOERROR;
 	}

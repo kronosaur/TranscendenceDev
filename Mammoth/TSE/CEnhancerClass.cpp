@@ -229,7 +229,7 @@ ICCItem *CEnhancerClass::FindEnhancementProperty (CItemCtx &Ctx, const CItemEnha
 //	Returns a property of the given enhancement. Return NULL if not found.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_ENHANCEMENT_DAMAGE_TYPE))
 		{
@@ -254,7 +254,7 @@ ICCItem *CEnhancerClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	Returns a property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	const SScalableStats *pStats = GetStats(Ctx);
 
 	//	We don't support this for old-style definitions.

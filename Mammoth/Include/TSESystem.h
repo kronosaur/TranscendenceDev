@@ -251,13 +251,16 @@ struct SSystemCreateCtx
 		checkOverlapAsteroids,				//	Don't overlap asteroids or planets
 		};
 
-	SSystemCreateCtx (CSystem *pSystemArg);
+	SSystemCreateCtx (CSystem &SystemArg);
+
+	inline CSystem &GetSystem (void) { return System; }
+	inline CUniverse &GetUniverse (void);
 
 	//	Context
 
 	CExtension *pExtension;					//	Extension from which the current desc came
 	CTopologyNode *pTopologyNode;			//	Topology node
-	CSystem *pSystem;						//	System that we're creating
+	CSystem &System;						//	System that we're creating
 
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
 	TSortMap<CString, CString> NameParams;	//	Parameters passed in to CNameDesc
@@ -672,15 +675,15 @@ class CSystem
 
 		//	System methods
 
-		static ALERROR CreateEmpty (CUniverse *pUniv, CTopologyNode *pTopology, CSystem **retpSystem);
-		static ALERROR CreateFromStream (CUniverse *pUniv, 
+		static ALERROR CreateEmpty (CUniverse &Universe, CTopologyNode *pTopology, CSystem **retpSystem);
+		static ALERROR CreateFromStream (CUniverse &Universe, 
 										 IReadStream *pStream, 
 										 CSystem **retpSystem,
 										 CString *retsError,
 										 DWORD dwObjID = OBJID_NULL,
 										 CSpaceObject **retpObj = NULL,
 										 CSpaceObject *pPlayerShip = NULL);
-		static ALERROR CreateFromXML (CUniverse *pUniv, 
+		static ALERROR CreateFromXML (CUniverse &Universe, 
 									  CSystemType *pType, 
 									  CTopologyNode *pTopology, 
 									  CSystem **retpSystem,
@@ -799,7 +802,7 @@ class CSystem
 		CSpaceEnvironmentType *GetSpaceEnvironment (int xTile, int yTile);
 		CSpaceEnvironmentType *GetSpaceEnvironment (const CVector &vPos, int *retxTile = NULL, int *retyTile = NULL);
 		CTopologyNode *GetStargateDestination (const CString &sStargate, CString *retsEntryPoint);
-		inline CUniverse *GetUniverse (void) const { return g_pUniverse; }
+		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		bool HasAttribute (const CVector &vPos, const CString &sAttrib);
 		CSpaceObject *HitScan (CSpaceObject *pExclude, const CVector &vStart, const CVector &vEnd, bool bExcludeWorlds, CVector *retvHitPos = NULL);
 		CSpaceObject *HitTest (CSpaceObject *pExclude, const CVector &vPos, bool bExcludeWorlds);
@@ -828,6 +831,7 @@ class CSystem
 		ALERROR SaveToStream (IWriteStream *pStream);
 		inline void SetID (DWORD dwID) { m_dwID = dwID; }
 		void SetLastUpdated (void);
+		inline void SetName (const CString &sName) { m_sName = sName; }
 		inline void SetPlayerUnderAttack (void) { m_fPlayerUnderAttack = true; }
 		void SetPOVLRS (CSpaceObject *pCenter);
 		void SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *pEnvironment);
@@ -892,7 +896,7 @@ class CSystem
 			COrbit Orbit;					//	Only for ship encounters
 			};
 
-		CSystem (CUniverse *pUniv, CTopologyNode *pTopology);
+		CSystem (CUniverse &Universe, CTopologyNode *pTopology);
 
 		void CalcAutoTarget (SUpdateCtx &Ctx);
 		void CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags);
@@ -919,6 +923,7 @@ class CSystem
 
 		//	Game instance data
 
+		CUniverse &m_Universe;					//	Universe that we belong to
 		DWORD m_dwID;							//	System ID
 		CSystemType *m_pType;					//	System type definition
 		CString m_sName;						//	Name of system
@@ -969,10 +974,6 @@ class CSystem
 		TArray<SStarDesc> m_Stars;				//	List of stars in the system
 		CSpaceObjectGrid m_ObjGrid;				//	Grid to help us hit test
 		CSpaceObjectList m_DeletedObjects;		//	List of objects deleted in the current update
-		CSpaceObjectList m_LayerObjs[layerCount];	//	List of objects by layer
-		CSpaceObjectList m_EnhancedDisplayObjs;	//	List of objects to show in viewport periphery
-		CSpaceObjectList m_BackgroundObjs;		//	List of background objects to paint in viewport
-		CSpaceObjectList m_ForegroundObjs;		//	List of foreground objects to paint in viewport
 		TArray<SDeferredOnCreateCtx> m_DeferredOnCreate;	//	Ordered list of objects that need an OnSystemCreated call
 		CSystemSpacePainter m_SpacePainter;		//	Paints space background
 		CMapGridPainter m_GridPainter;			//	Structure to paint a grid
@@ -981,3 +982,4 @@ class CSystem
 		static const Metric g_MetersPerKlick;
 	};
 
+inline CUniverse &SSystemCreateCtx::GetUniverse (void) { return System.GetUniverse(); }

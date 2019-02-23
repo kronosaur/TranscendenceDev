@@ -33,7 +33,7 @@ int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CSt
 
 	if (*pPos == '=')
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(*g_pUniverse);
 
 		//	Save old gSource variable
 

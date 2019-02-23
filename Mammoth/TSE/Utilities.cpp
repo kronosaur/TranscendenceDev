@@ -1647,13 +1647,13 @@ ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsEr
 
 	//	Compile the code
 
-	ICCItem *pCode = g_pUniverse->GetCC().Link(sCode);
+	ICCItem *pCode = CCodeChain::Link(sCode);
 	if (pCode->IsError())
 		{
 		if (retsError)
 			*retsError = pCode->GetStringValue();
 
-		pCode->Discard(&g_pUniverse->GetCC());
+		pCode->Discard();
 		return ERR_FAIL;
 		}
 

@@ -20,7 +20,7 @@ class CPlayerGameStats
 			eventMissionFailure =				6,		//	The player failed a mission
 			};
 
-		CPlayerGameStats (void);
+		CPlayerGameStats (CUniverse &Universe);
 
 		int CalcEndGameScore (void) const;
         ICCItem *FindProperty (const CString &sProperty) const;
@@ -116,11 +116,12 @@ class CPlayerGameStats
 		SStationTypeStats *GetStationStats (DWORD dwUNID);
 		SSystemStats *GetSystemStats (const CString &sNodeID);
 
-		int m_iScore;							//	Total score for player
-		int m_iResurrectCount;					//	Number of times player has resurrected a game
+		CUniverse &m_Universe;
+		int m_iScore = 0;						//	Total score for player
+		int m_iResurrectCount = 0;				//	Number of times player has resurrected a game
 		CTimeSpan m_PlayTime;					//	Total time spent playing the game
 		CTimeSpan m_GameTime;					//	Total elapsed time in the game
-        Metric m_rFuelConsumed;                 //  Total fuel consumed (fuel units)
+        Metric m_rFuelConsumed = 0.0;			//  Total fuel consumed (fuel units)
 
 		TMap<DWORD, SItemTypeStats> m_ItemStats;
 		TMap<DWORD, SShipClassStats> m_ShipStats;
@@ -128,8 +129,8 @@ class CPlayerGameStats
 		TMap<CString, SSystemStats> m_SystemStats;
 		TMap<CString, TArray<SKeyEventStats>> m_KeyEventStats;
 
-		int m_iExtraSystemsVisited;				//	For backwards compatibility
-		int m_iExtraEnemyShipsDestroyed;		//	For backwards compatibility
+		int m_iExtraSystemsVisited = 0;			//	For backwards compatibility
+		int m_iExtraEnemyShipsDestroyed = 0;	//	For backwards compatibility
 	};
 
 class IPlayerController

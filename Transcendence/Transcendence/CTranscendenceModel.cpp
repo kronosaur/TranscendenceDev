@@ -1465,13 +1465,14 @@ ALERROR CTranscendenceModel::LoadUniverse (const CString &sCollectionFolder,
 			//	If we didn't have any extensions loaded and we failed, then
 			//	there's nothing we can do and we need to abort.
 
-			if (Extensions.GetCount() == 0)
+			if (m_bDebugMode || (dwAdventure == DEFAULT_ADVENTURE_EXTENSION_UNID && Extensions.GetCount() == 0))
 				return error;
 
-			//	Otherwise, we try to recover by loading with no extensions.
+			//	Otherwise, we try to recover by loading with the default 
+			//	adventure no extensions.
 
 			else
-				return LoadUniverse(sCollectionFolder, ExtensionFolders, dwAdventure, TArray<DWORD>(), DisabledExtensions, retsError);
+				return LoadUniverse(sCollectionFolder, ExtensionFolders, DEFAULT_ADVENTURE_EXTENSION_UNID, TArray<DWORD>(), DisabledExtensions, retsError);
 			}
 
 		return NOERROR;
@@ -1678,7 +1679,7 @@ void CTranscendenceModel::OnPlayerEnteredGate (CTopologyNode *pDestNode, const C
 	//	object will be destroyed when the POV changes)
 
 	CPOVMarker *pMarker;
-	CPOVMarker::Create(m_pOldSystem, pShip->GetPos(), NullVector, &pMarker);
+	CPOVMarker::Create(*m_pOldSystem, pShip->GetPos(), NullVector, &pMarker);
 	m_Universe.SetPOV(pMarker);
 
 	//	Remove the ship from the system
@@ -1850,7 +1851,7 @@ void CTranscendenceModel::OnPlayerTraveledThroughGate (void)
 		if (pStart == NULL)
 			{
 			CMarker *pMarker;
-			if (CMarker::Create(pNewSystem,
+			if (CMarker::Create(*pNewSystem,
 					NULL,
 					NullVector,
 					NullVector,
@@ -2125,8 +2126,6 @@ bool CTranscendenceModel::ScreenTranslate (const CString &sID, ICCItem *pData, I
 //	Translates a text ID. We return Nil if we could not find the text ID.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	If not in a screen session, then nothing
 
 	if (!InScreenSession())
@@ -2549,7 +2548,7 @@ ALERROR CTranscendenceModel::StartNewGame (const CString &sUsername, const SNewG
 	//	by the ship once we pass it to CreateShip)
 
 	ASSERT(m_pPlayer == NULL);
-	m_pPlayer = new CPlayerShipController;
+	m_pPlayer = new CPlayerShipController(m_Universe);
 	if (m_pPlayer == NULL)
 		{
 		*retsError = CONSTLIT("Unable to create CPlayerShipController");
@@ -2799,6 +2798,9 @@ void CTranscendenceModel::TransferGateFollowers (CSystem *pOldSystem, CSystem *p
 	{
 	int i;
 
+	if (pSystem == NULL)
+		return;
+
 	//	Convert all the gate followers from ObjIDs to pointers. We wait until now because
 	//	the gate followers could have gotten destroyed in the mean time
 
@@ -2856,7 +2858,7 @@ void CTranscendenceModel::TransferGateFollowers (CSystem *pOldSystem, CSystem *p
 
 		pFollower->Resume();
 		pFollower->Place(vPos);
-		pFollower->AddToSystem(pSystem);
+		pFollower->AddToSystem(*pSystem);
 
 		//	Move obj events to the new system
 
@@ -2933,9 +2935,9 @@ void CTranscendenceModel::UseItem (CItem &Item)
 		{
 		CCodeChain &CC = m_Universe.GetCC();
 
-		ICCItem *pItem = CreateListFromItem(CC, Item);
+		ICCItem *pItem = CreateListFromItem(Item);
 		CC.DefineGlobal(CONSTLIT("gItem"), pItem);
-		pItem->Discard(&CC);
+		pItem->Discard();
 
 		//	Show the dock screen
 

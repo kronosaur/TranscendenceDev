@@ -40,7 +40,7 @@ ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
 //	discarding this data.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	if (IsEmpty())
 		return CC.CreateNil();
 
@@ -53,7 +53,7 @@ ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
 		pResult = Frame.pStoredData->Lookup(&CC, pKey);
 		if (pResult->IsError())
 			{
-			pResult->Discard(&CC);
+			pResult->Discard();
 			pResult = NULL;
 			}
 		}
@@ -63,12 +63,12 @@ ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
 		pResult = Frame.pInitialData->Lookup(&CC, pKey);
 		if (pResult->IsError())
 			{
-			pResult->Discard(&CC);
+			pResult->Discard();
 			pResult = NULL;
 			}
 		}
 
-	pKey->Discard(&CC);
+	pKey->Discard();
 
 	if (pResult == NULL)
 		pResult = CC.CreateNil();
@@ -102,7 +102,7 @@ ICCItem *CDockScreenStack::GetReturnData (const CString &sAttrib)
 //	discarding this data.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	if (IsEmpty())
 		return CC.CreateNil();
 
@@ -210,7 +210,7 @@ void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem
 //	Increments data
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	if (IsEmpty())
 		{
 		if (retpResult) *retpResult = CC.CreateNil();
@@ -242,7 +242,7 @@ void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem
             pResult = CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
         }
 
-    pOriginal->Discard(&CC);
+    pOriginal->Discard();
 
     //  Store
 
@@ -253,9 +253,9 @@ void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem
     if (retpResult)
         *retpResult = pResult;
     else
-        pResult->Discard(&CC);
+        pResult->Discard();
 
-    pValue->Discard(&CC);
+    pValue->Discard();
 	}
 
 void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
@@ -265,7 +265,7 @@ void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
 //	Sets data associated with the current frame
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	if (IsEmpty())
 		return;
 
@@ -278,9 +278,8 @@ void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
 	//	Add the entry
 
 	ICCItem *pKey = CC.CreateString(sAttrib);
-	ICCItem *pResult = Frame.pStoredData->AddEntry(&CC, pKey, pData);
-	pResult->Discard(&CC);
-	pKey->Discard(&CC);
+	Frame.pStoredData->AddEntry(pKey, pData);
+	pKey->Discard();
 	}
 
 void CDockScreenStack::SetDisplayData (const CString &sID, const CString &sData)
@@ -317,7 +316,7 @@ void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
 //	Sets data associated with previous frame.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	if (m_Stack.GetCount() < 2)
 		return;
 
@@ -329,5 +328,5 @@ void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
 
 	//	Add the entry
 
-	Frame.pReturnData->SetAt(CC, sAttrib, pData);
+	Frame.pReturnData->SetAt(sAttrib, pData);
 	}

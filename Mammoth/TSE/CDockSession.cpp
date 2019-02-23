@@ -69,7 +69,7 @@ bool CDockSession::FindScreenRoot (const CString &sScreen, CDesignType **retpRoo
 	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
 	if (!bNotANumber)
 		{
-		CDesignType *pRoot = g_pUniverse->FindSharedDockScreen(dwUNID);
+		CDesignType *pRoot = GetUniverse().GetDesignCollection().FindDockScreen(dwUNID);
 		if (pRoot == NULL)
 			return false;
 
@@ -131,7 +131,7 @@ bool CDockSession::FindScreenRoot (const CString &sScreen, CDesignType **retpRoo
 
 	//	Otherwise, use the player ship
 
-	else if (pPlayerShip = g_pUniverse->GetPlayerShip())
+	else if (pPlayerShip = GetUniverse().GetPlayerShip())
 		{
 		if (retpRoot)
 			*retpRoot = pPlayerShip->GetType();
@@ -168,7 +168,7 @@ bool CDockSession::ModifyItemNotificationNeeded (CSpaceObject *pSource) const
 	//	with, then we need a notification.
 
 	if (pSource == m_DockFrames.GetCurrent().pLocation
-			|| pSource == g_pUniverse->GetPlayerShip())
+			|| pSource == GetUniverse().GetPlayerShip())
 		return true;
 
 	//	Otherwise, no notification.
@@ -235,7 +235,7 @@ void CDockSession::OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignT
 		m_pDefaultScreensRoot = pDefaultScreensRoot;
 	else
 		{
-		CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+		CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip();
 		if (pPlayerShip)
 			m_pDefaultScreensRoot = pPlayerShip->GetType();
 		}

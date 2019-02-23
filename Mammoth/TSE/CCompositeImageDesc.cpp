@@ -612,7 +612,7 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
 		{
 		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
-		CCompositeImageType *pEntry = g_pUniverse->FindCompositeImageType(dwUNID);
+		CCompositeImageType *pEntry = Ctx.GetUniverse().FindCompositeImageType(dwUNID);
 		if (pEntry == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find composite image type: %08x."), dwUNID);

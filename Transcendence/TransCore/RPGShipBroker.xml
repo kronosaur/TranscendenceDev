@@ -1031,10 +1031,10 @@
 		</Events>
 
 		<Language>
-			<String id="FormUpAck">"Order acknowledged"</String>
+			<String id="FormUpAck">			Order acknowledged</String>
 			<String id="NiceShooting"></String>
-			<String id="UnableToComply">"Unable to comply"</String>
-			<String id="WaitAck">"Order acknowledged"</String>
+			<String id="UnableToComply">	Unable to comply</String>
+			<String id="WaitAck">			Order acknowledged</String>
 			<String id="WatchYourTargets"></String>
 		</Language>
 	</Type>

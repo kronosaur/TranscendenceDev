@@ -1176,6 +1176,11 @@ int CWeaponClass::CalcFireSolution (CInstalledDevice *pDevice, CSpaceObject *pSo
 	CVector vTarget = pTarget->GetPos() - vSource;
 	CVector vTargetVel = pTarget->GetVel() - pSource->GetVel();
 
+	//	For area weapons, we just point to the target
+
+	if (pShot->GetType() == CWeaponFireDesc::ftArea)
+		return VectorToPolar(vTarget);
+
 	//	Figure out intercept time
 
 	Metric rDist;
@@ -1653,7 +1658,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		*retsValue = strFromInt(pShot->GetContinuous() + 1);
 	else if (strEquals(sField, FIELD_CONFIGURATION))
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
+		CCodeChain &CC = GetUniverse().GetCC();
 		CVector ShotPos[MAX_SHOT_COUNT];
 		int ShotDir[MAX_SHOT_COUNT];
 		int iShotCount = CalcConfiguration(CItemCtx(), pShot, 0, ShotPos, ShotDir, false);
@@ -1665,12 +1670,12 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 		Output.Write("='(", 3);
 		for (i = 0; i < iShotCount; i++)
 			{
-			ICCItem *pPos = CreateListFromVector(CC, ShotPos[i]);
+			ICCItem *pPos = CreateListFromVector(ShotPos[i]);
 			if (pPos == NULL || pPos->IsError())
 				return false;
 
 			Output.Write("(", 1);
-			CString sItem = pPos->Print(&CC);
+			CString sItem = pPos->Print();
 			Output.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 			Output.Write(" ", 1);
 
@@ -1678,7 +1683,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 			Output.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 			Output.Write(") ", 2);
 
-			pPos->Discard(&CC);
+			pPos->Discard();
 			}
 		Output.Write(")", 1);
 		Output.Close();
@@ -1739,7 +1744,7 @@ int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pSho
 	SEventHandlerDesc Event;
 	if (FindEventHandlerWeaponClass(evtGetAmmoToConsume, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		int iResult;
 	
 		Ctx.DefineContainingType(GetItemType());
@@ -1796,7 +1801,7 @@ bool CWeaponClass::FireOnFireWeapon (CItemCtx &ItemCtx,
 
 	retResult = SShotFireResult();
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	TSharedPtr<CItemEnhancementStack> pEnhancements = ItemCtx.GetEnhancementStack();
 
 	Ctx.DefineContainingType(GetItemType());
@@ -2292,7 +2297,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
     {
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Make sure we actually fire the given ammo. We need to check here because
 	//	GetWeaponFireDesc doesn't check.
@@ -2319,7 +2324,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			pResult = CC.CreateLinkedList();
 			for (i = 0; i < m_ShotData.GetCount(); i++)
 				if (m_ShotData[i].pDesc->GetAmmoType())
-					pResult->AppendInteger(CC, m_ShotData[i].pDesc->GetAmmoType()->GetUNID());
+					pResult->AppendInteger(m_ShotData[i].pDesc->GetAmmoType()->GetUNID());
 
 			return pResult;
 			}
@@ -2376,7 +2381,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
         Metric rCostDelta = -rBalance / BALANCE_COST_RATIO;
         Metric rCostCredits = Stats.rCost + (Stats.rCost * rCostDelta / 100.0);
 
-        return CC.CreateInteger((int)GetItemType()->GetCurrencyType()->Exchange(CEconomyType::Default(), (CurrencyValue)rCostCredits));
+        return CC.CreateInteger((int)GetItemType()->GetCurrencyType()->Exchange(NULL, (CurrencyValue)rCostCredits));
         }
     else if (strEquals(sProperty, PROPERTY_BALANCE_EXCLUDE_COST))
         {
@@ -2425,8 +2430,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 				if (pResult->IsError())
 					return pResult;
 
-				pResult->AppendInteger(CC, iMinFireArc);
-				pResult->AppendInteger(CC, iMaxFireArc);
+				pResult->AppendInteger(iMinFireArc);
+				pResult->AppendInteger(iMaxFireArc);
 
 				return pResult;
 				}
@@ -2472,11 +2477,11 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		//	Add options
 
 		if (dwOptions & CDeviceClass::lkfAlways)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfAlways));
 		else if (dwOptions & CDeviceClass::lkfTargetInRange)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfTargetInRange));
 		else if (dwOptions & CDeviceClass::lkfEnemyInRange)
-			pList->AppendString(CC, CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
 
 		//	Done
 

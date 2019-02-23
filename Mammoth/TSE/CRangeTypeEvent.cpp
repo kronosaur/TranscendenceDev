@@ -45,7 +45,7 @@ CRangeTypeEvent::CRangeTypeEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	{
 	DWORD dwLoad;
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pType = g_pUniverse->FindDesignType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindDesignType(dwLoad);
 
 	m_sEvent.ReadFromStream(Ctx.pStream);
 
@@ -129,13 +129,12 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 
 	if (m_pType)
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
-		ICCItem *pData = CC.CreateSymbolTable();
-		pData->SetIntegerAt(CC, FIELD_OBJ, (int)pFound);
+		ICCItem *pData = CCodeChain::CreateSymbolTable();
+		pData->SetIntegerAt(FIELD_OBJ, (int)pFound);
 
 		m_pType->FireCustomEvent(m_sEvent, eventNone, pData);
 
-		pData->Discard(&CC);
+		pData->Discard();
 		}
 
 	SetDestroyed();

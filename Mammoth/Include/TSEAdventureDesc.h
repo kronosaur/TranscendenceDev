@@ -14,7 +14,7 @@ class CAdventureDesc : public CDesignType
 		void FireOnGameStart (void);
 		inline const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { return &m_ArmorDamageAdj[iLevel - 1]; }
 		inline DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
-		inline const CEconomyType *GetDefaultCurrency (void) { return m_pDefaultCurrency; }
+		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
 		const CStationEncounterDesc *GetEncounterDesc (DWORD dwUNID) const;
 		inline DWORD GetExtensionUNID (void) { return m_dwExtensionUNID; }

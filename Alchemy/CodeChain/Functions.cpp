@@ -122,14 +122,14 @@ ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	If the item is a symbol table, then treat it like an atom
 
 		if (pItem->IsSymbolTable())
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 
 		//	Otherwise, add each of the elements
 
 		else
 			{
 			for (j = 0; j < pItem->GetCount(); j++)
-				pList->Append(*pCC, pItem->GetElement(j));
+				pList->Append(pItem->GetElement(j));
 			}
 		}
 
@@ -165,7 +165,7 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	if (pArgs->GetCount() < 2)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(CONSTLIT("apply needs a function and a list of arguments"));
 		}
 
@@ -174,7 +174,7 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	pLast = pArgs->GetElement(pArgs->GetCount() - 1);
 	if (!pLast->IsList())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(CONSTLIT("Last argument for apply must be a list"));
 		}
 
@@ -187,7 +187,7 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	pResult = pCC->CreateLinkedList();
 	if (pResult->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pResult;
 		}
 
@@ -196,12 +196,12 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Add each of the arguments except the last
 
 	for (i = 1; i < pArgs->GetCount() - 1; i++)
-		pList->Append(*pCC, pArgs->GetElement(i));
+		pList->Append(pArgs->GetElement(i));
 
 	//	Add each of the elements of the last list
 
 	for (i = 0; i < pLast->GetCount(); i++)
-		pList->Append(*pCC, pLast->GetElement(i));
+		pList->Append(pLast->GetElement(i));
 
 	//	Set the literal flag to indicate that the arguments should
 	//	not be evaluated.
@@ -215,11 +215,11 @@ ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	else
 		pResult = pFunction->Reference();
 
-	pList->Discard(pCC);
+	pList->Discard();
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -256,31 +256,23 @@ ICCItem *fnAtmCreate (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	for (i = 0; i < pList->GetCount(); i++)
 		{
 		ICCItem *pPair = pList->GetElement(i);
-		ICCItem *pResult;
 
 		//	Make sure we have two elements
 
 		if (pPair->GetCount() != 2)
 			{
-			pAtomTable->Discard(pCC);
+			pAtomTable->Discard();
 			return pCC->CreateError(CONSTLIT("Invalid format for atom table entry"), pPair);
 			}
 
 		//	Get the atom and the entry
 		
-		pResult = pAtomTable->AddEntry(pCC, pPair->GetElement(0), pPair->GetElement(1));
-		if (pResult->IsError())
-			{
-			pAtomTable->Discard(pCC);
-			return pResult;
-			}
-
-		pResult->Discard(pCC);
+		pAtomTable->AddEntry(pPair->GetElement(0), pPair->GetElement(1));
 		}
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pAtomTable;
 	}
 
@@ -327,16 +319,11 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pCC, pSymbol, pEntry);
+			pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
-			if (!pResult->IsError())
-				{
-				pResult->Discard(pCC);
-				pResult = pEntry->Reference();
-				}
-
+			pResult = pEntry->Reference();
 			break;
 			}
 
@@ -366,7 +353,7 @@ ICCItem *fnAtmTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -433,7 +420,6 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		for (i = 0; i < pLocals->GetCount(); i++)
 			{
-			ICCItem *pItem;
 			ICCItem *pLocal;
 			ICCItem *pValue;
 
@@ -454,7 +440,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 					//	Clean up
 
 					pCtx->pLocalSymbols = pOldSymbols;
-					pLocalSymbols->Discard(pCC);
+					pLocalSymbols->Discard();
 
 					//	Done
 
@@ -474,19 +460,10 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pVar->IsIdentifier())
 				{
-				pItem = pLocalSymbols->AddEntry(pCC, pVar, pValue, true);
-				pValue->Discard(pCC);
-				if (pItem->IsError())
-					{
-					pCtx->pLocalSymbols = pOldSymbols;
-					pLocalSymbols->Discard(pCC);
-					return pItem;
-					}
-
-				pItem->Discard(pCC);
+				pLocalSymbols->AddEntry(pVar, pValue, true);
+				pValue->Discard();
 				}
 			}
-
 		}
 	else
 		{
@@ -513,7 +490,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Evaluate the expression
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 		pResult = pCC->Eval(pCtx, pExp);
 
 		//	If we got an error, handle it
@@ -525,18 +502,15 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (dwData == FN_BLOCK_ERRBLOCK)
 				{
-				ICCItem *pItem;
-
 				//	Set the first local variable to be the error result
 
 				pVar = pLocals->Head(pCC);
 				if (pVar->IsIdentifier())
 					{
-					pItem = pLocalSymbols->AddEntry(pCC, pVar, pResult);
-					pItem->Discard(pCC);
+					pLocalSymbols->AddEntry(pVar, pResult);
 					}
 
-				pResult->Discard(pCC);
+				pResult->Discard();
 
 				//	Find the last expression
 
@@ -558,7 +532,7 @@ ICCItem *fnBlock (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	if (pLocalSymbols)
 		{
 		pCtx->pLocalSymbols = pOldSymbols;
-		pLocalSymbols->Discard(pCC);
+		pLocalSymbols->Discard();
 		}
 
 	//	Done
@@ -597,7 +571,7 @@ ICCItem *fnCat (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -633,7 +607,7 @@ ICCItem *fnCount (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -656,7 +630,6 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pCondition;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int i, iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -688,7 +661,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	if (pList->GetCount() == 0)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -697,20 +670,13 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pLocalSymbols;
 		}
 
 	//	Associate the enumeration variable
 
-	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard(pCC);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -745,7 +711,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pEval = pCC->Eval(pCtx, pCondition);
 			if (pEval->IsError())
 				{
-				pResult->Discard(pCC);
+				pResult->Discard();
 				pResult = pEval;
 				break;
 				}
@@ -754,7 +720,7 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pEval->IsNil())
 				{
-				pEval->Discard(pCC);
+				pEval->Discard();
 				break;
 				}
 			}
@@ -763,12 +729,12 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Clean up the previous result
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 
 		//	Set the element
 
 		pLocalSymbols->AddByOffset(pCC, iVarOffset, pItem);
-		pItem->Discard(pCC);
+		pItem->Discard();
 
 		//	Eval
 
@@ -780,11 +746,11 @@ ICCItem *fnEnum (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -871,7 +837,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 			if (pExp->IsError())
 				{
 				pExp->Reference();
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pExp;
 				}
 
@@ -894,7 +860,7 @@ ICCItem *EqualityHelper (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData, 
 
 	//	If we get here, then all items are ok
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	pResult = pCC->CreateBool(bOk);
 
 	//	Done
@@ -945,7 +911,7 @@ ICCItem *fnEval (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -983,21 +949,13 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	ICCItem *pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		return pLocalSymbols;
 		}
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard(pCC);
-		pResult->Discard(pCC);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -1028,7 +986,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		ICCItem *pSelect = pCC->Eval(pCtx, pBody);
 		if (pSelect->IsError())
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			pResult = pSelect;
 			break;
 			}
@@ -1037,15 +995,15 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!pSelect->IsNil())
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 
-		pSelect->Discard(pCC);
+		pSelect->Discard();
 		}
 
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
@@ -1053,7 +1011,7 @@ ICCItem *fnFilter (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		return pResult;
 	else
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		return pCC->CreateNil();
 		}
 	}
@@ -1238,7 +1196,6 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pBody;
 	ICCItem *pLocalSymbols;
 	ICCItem *pOldSymbols;
-	ICCItem *pError;
 	int i, iFrom, iTo, iVarOffset;
 
 	//	Evaluate the arguments and validate them
@@ -1257,20 +1214,13 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pLocalSymbols;
 		}
 
 	//	Associate the enumaration variable
 
-	pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pArgs->Discard(pCC);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -1298,12 +1248,12 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Clean up the previous result
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 
 		//	Set the element
 
 		pLocalSymbols->AddByOffset(pCC, iVarOffset, pItem);
-		pItem->Discard(pCC);
+		pItem->Discard();
 
 		//	Eval
 
@@ -1315,11 +1265,11 @@ ICCItem *fnForLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -1516,7 +1466,7 @@ ICCItem *fnIf (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		{
 		if (pElse)
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			return pCC->Eval(pCtx, pElse);
 			}
 		else
@@ -1525,7 +1475,7 @@ ICCItem *fnIf (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Otherwise, evaluate the then expression
 
-	pResult->Discard(pCC);
+	pResult->Discard();
 	return pCC->Eval(pCtx, pThen);
 	}
 
@@ -1587,7 +1537,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					{
 					ICCItem *pResult = pCC->CreateLinkedList();
 					for (i = 0; i < pList->GetCount(); i++)
-						pResult->AppendString(*pCC, pList->GetKey(i));
+						pResult->AppendString(pList->GetKey(i));
 
 					return pResult;
 					}
@@ -1608,7 +1558,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pResult = pList->LookupEx(pCC, pArgs->GetElement(1), &bFound);
 				if (!bFound)
 					{
-					pResult->Discard(pCC);
+					pResult->Discard();
 					return pCC->CreateNil();
 					}
 
@@ -1645,7 +1595,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			else if (strEquals(sType, CONSTLIT("list")))
 				{
 				ICCItem *pList = pCC->CreateLinkedList();
-				pList->Append(*pCC, pValue);
+				pList->Append(pValue);
 				return pList;
 				}
 			else if (strEquals(sType, CONSTLIT("true")))
@@ -1765,7 +1715,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			else if (pTarget->IsError() || pTarget->IsNil())
 				{
-				pTarget->Discard(pCC);
+				pTarget->Discard();
 
 				if (bUseArray)
 					{
@@ -1787,14 +1737,14 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					ICCItem *pError;
 					if (HelperSetq(pCtx, pArgs->GetElement(0), pTarget, &pError) != NOERROR)
 						{
-						pTarget->Discard(pCC);
+						pTarget->Discard();
 						return pError;
 						}
 					}
 				}
 			else
 				{
-				pTarget->Discard(pCC);
+				pTarget->Discard();
 				return pCC->CreateError(CONSTLIT("List or struct expected"));
 				}
 
@@ -1807,7 +1757,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (pArgs->GetCount() < 3)
 					{
-					pTarget->Discard(pCC);
+					pTarget->Discard();
 					return pCC->CreateError(CONSTLIT("Not enough parameters for set@. Value expected."));
 					}
 
@@ -1818,7 +1768,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (iIndex < 0 || iIndex >= pLinkedList->GetCount())
 					{
-					pTarget->Discard(pCC);
+					pTarget->Discard();
 					return pCC->CreateError(CONSTLIT("Index out of range"), pArgs->GetElement(1));
 					}
 
@@ -1838,15 +1788,8 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
 
-					ICCItem *pError = pTarget->AddEntry(pCC, pKey, pItem);
-					pKey->Discard(pCC);
-					if (pError->IsError())
-						{
-						pTarget->Discard(pCC);
-						return pError;
-						}
-
-					pError->Discard(pCC);
+					pTarget->AddEntry(pKey, pItem);
+					pKey->Discard();
 					}
 
 				return pTarget;
@@ -1858,7 +1801,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				if (pArgs->GetCount() < 3)
 					{
-					pTarget->Discard(pCC);
+					pTarget->Discard();
 					return pCC->CreateError(CONSTLIT("Not enough parameters for set@. Value expected."));
 					}
 
@@ -1876,14 +1819,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				else
 					{
-					ICCItem *pError = pTarget->AddEntry(pCC, pKey, pValue);
-					if (pError->IsError())
-						{
-						pTarget->Discard(pCC);
-						return pError;
-						}
-
-					pError->Discard(pCC);
+					pTarget->AddEntry(pKey, pValue);
 					}
 
 				return pTarget;
@@ -2021,7 +1957,7 @@ ICCItem *fnItemInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -2113,11 +2049,11 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		pLinkedList = (CCLinkedList *)pList;
 	else if (pList->IsError() || pList->IsNil())
 		{
-		pList->Discard(pCC);
+		pList->Discard();
 		pList = pCC->CreateLinkedList();
 		if (pList->IsError())
 			{
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pList;
 			}
 		pLinkedList = (CCLinkedList *)pList;
@@ -2129,16 +2065,16 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			ICCItem *pError;
 			if (HelperSetq(pCtx, pArguments->GetElement(0), pList, &pError) != NOERROR)
 				{
-				pList->Discard(pCC);
-				pArgs->Discard(pCC);
+				pList->Discard();
+				pArgs->Discard();
 				return pError;
 				}
 			}
 		}
 	else
 		{
-		pList->Discard(pCC);
-		pArgs->Discard(pCC);
+		pList->Discard();
+		pArgs->Discard();
 		return pCC->CreateError(CONSTLIT("Linked-list expected"));
 		}
 
@@ -2164,7 +2100,7 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 				if (iIndex < 0 || iIndex >= pLinkedList->GetCount())
 					{
-					pLinkedList->Discard(pCC);
+					pLinkedList->Discard();
 					pResult = pCC->CreateError(CONSTLIT("Index out of range"), pArgs->GetElement(1));
 					}
 				else
@@ -2215,7 +2151,7 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 				if (iIndex < 0 || iIndex >= pLinkedList->GetCount())
 					{
-					pLinkedList->Discard(pCC);
+					pLinkedList->Discard();
 					pResult = pCC->CreateError(CONSTLIT("Index out of range"), pArgs->GetElement(1));
 					}
 				else
@@ -2235,7 +2171,7 @@ ICCItem *fnLinkedList (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -2274,7 +2210,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		else if (pList->IsError() || pList->IsNil())
 			{
-			pList->Discard(pCC);
+			pList->Discard();
 
 			pLinkedList = (CCLinkedList *)pCC->CreateLinkedList();
 			if (pLinkedList->IsError())
@@ -2283,7 +2219,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			ICCItem *pError;
 			if (HelperSetq(pCtx, pArgs->GetElement(0), pLinkedList, &pError) != NOERROR)
 				{
-				pLinkedList->Discard(pCC);
+				pLinkedList->Discard();
 				return pError;
 				}
 			}
@@ -2292,7 +2228,7 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 		else
 			{
-			pList->Discard(pCC);
+			pList->Discard();
 			return pCC->CreateError(CONSTLIT("Linked-list expected"), pArgs->GetElement(0));
 			}
 		}
@@ -2313,11 +2249,11 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Copy the elements
 
 		for (i = 0; i < pList->GetCount(); i++)
-			pLinkedList->Append(*pCC, pList->GetElement(i));
+			pLinkedList->Append(pList->GetElement(i));
 
 		//	Done with the original list
 
-		pList->Discard(pCC);
+		pList->Discard();
 		}
 
 	//	At this point pLinkedList is a linked list and it has a ref count
@@ -2331,14 +2267,14 @@ ICCItem *fnLinkedListAppend (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	if (pItemToAdd->HasReferenceTo(pLinkedList))
 		{
 		pItemToAdd = pItemToAdd->CloneDeep(pCC);
-		pLinkedList->Append(*pCC, pItemToAdd);
-		pItemToAdd->Discard(pCC);
+		pLinkedList->Append(pItemToAdd);
+		pItemToAdd->Discard();
 		}
 
 	//	Otherwise, we can just append the item
 
 	else
-		pLinkedList->Append(*pCC, pItemToAdd);
+		pLinkedList->Append(pItemToAdd);
 
 	return pLinkedList;
 	}
@@ -2413,12 +2349,12 @@ ICCItem *fnList (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				if (iInc < 0)
 					{
 					for (i = iStart; i >= iEnd; i += iInc)
-						pList->AppendInteger(*pCC, i);
+						pList->AppendInteger(i);
 					}
 				else
 					{
 					for (i = iStart; i <= iEnd; i += iInc)
-						pList->AppendInteger(*pCC, i);
+						pList->AppendInteger(i);
 					}
 
 				return pList;
@@ -2471,12 +2407,12 @@ ICCItem *fnLogical (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			{
 			if (pResult->IsNil())
 				{
-				pResult->Discard(pCC);
+				pResult->Discard();
 				return pCC->CreateTrue();
 				}
 			else
 				{
-				pResult->Discard(pCC);
+				pResult->Discard();
 				return pCC->CreateNil();
 				}
 			}
@@ -2502,7 +2438,7 @@ ICCItem *fnLogical (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Otherwise, we continue
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 		}
 
 	//	If we get here then all the operands are the same (either all
@@ -2563,7 +2499,7 @@ ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		if (pEval->IsNil())
 			{
-			pEval->Discard(pCC);
+			pEval->Discard();
 			bDone = true;
 			}
 
@@ -2571,11 +2507,11 @@ ICCItem *fnLoop (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		else
 			{
-			pEval->Discard(pCC);
+			pEval->Discard();
 
 			//	Clean up the old result
 
-			pResult->Discard(pCC);
+			pResult->Discard();
 
 			//	Evaluate the body
 
@@ -2667,21 +2603,13 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	ICCItem *pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		return pLocalSymbols;
 		}
 
 	//	Associate the enumeration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard(pCC);
-		pResult->Discard(pCC);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -2709,14 +2637,14 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Set the element
 
 		pLocalSymbols->AddByOffset(pCC, iVarOffset, pItem);
-		pItem->Discard(pCC);
+		pItem->Discard();
 
 		//	Eval
 
 		ICCItem *pMapped = pCC->Eval(pCtx, pBody);
 		if (pMapped->IsError())
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			pResult = pMapped;
 			break;
 			}
@@ -2759,12 +2687,12 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (bOriginal)
 				{
 				if (bIsStruct)
-					pResult->AddEntry(pCC, pMapped, pItem->GetElement(1));
+					pResult->AddEntry(pMapped, pItem->GetElement(1));
 				else
-					pResult->AddEntry(pCC, pMapped, pItem);
+					pResult->AddEntry(pMapped, pItem);
 				}
 			else
-				pResult->AddEntry(pCC, pMapped, pMapped);
+				pResult->AddEntry(pMapped, pMapped);
 			}
 
 		//	Add the mapped value to the result
@@ -2774,34 +2702,34 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (bMapToStruct)
 				{
 				if (bOriginal)
-					pResult->AddEntry(pCC, pItem->GetElement(0), pItem->GetElement(1));
+					pResult->AddEntry(pItem->GetElement(0), pItem->GetElement(1));
 				else
-					pResult->AddEntry(pCC, pMapped->GetElement(0), pMapped->GetElement(1));
+					pResult->AddEntry(pMapped->GetElement(0), pMapped->GetElement(1));
 				}
 			else
 				{
 				if (bOriginal)
-					pResult->Append(*pCC, pItem);
+					pResult->Append(pItem);
 				else
-					pResult->Append(*pCC, pMapped);
+					pResult->Append(pMapped);
 				}
 			}
 
 		//	Next
 
-		pMapped->Discard(pCC);
+		pMapped->Discard();
 		}
 
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
 	if (bReduceMax || bReduceMin)
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		if (iBestItem == -1)
 			return pCC->CreateNil();
 
@@ -2828,7 +2756,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		if (pResult->GetCount() == 0)
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			return pCC->CreateNil();
 			}
 		else if (bMapToStruct)
@@ -2837,9 +2765,9 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			ICCItem *pListResult = pCC->CreateLinkedList();
 			for (i = 0; i < pResult->GetCount(); i++)
-				pListResult->Append(*pCC, pResult->GetElement(i));
+				pListResult->Append(pResult->GetElement(i));
 
-			pResult->Discard(pCC);
+			pResult->Discard();
 			return pListResult;
 			}
 		}
@@ -2849,7 +2777,7 @@ ICCItem *fnMap (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			return pResult;
 		else
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			return pCC->CreateNil();
 			}
 		}
@@ -2884,14 +2812,7 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard(pCC);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -2935,20 +2856,20 @@ ICCItem *fnMatch (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		else if (!pSelect->IsNil())
 			{
 			pResult = pItem->Reference();
-			pSelect->Discard(pCC);
+			pSelect->Discard();
 			break;
 			}
 
 		//	Otherwise, keep looping
 
 		else
-			pSelect->Discard(pCC);
+			pSelect->Discard();
 		}
 
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	//	Done
 
@@ -3346,8 +3267,8 @@ ICCItem *fnMathFractions (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItem *pResult = pCC->CreateLinkedList();
 				CCLinkedList *pList = (CCLinkedList *)pResult;
 
-				pList->AppendInteger(*pCC, mathRound(rResult * rResultDenom));
-				pList->AppendInteger(*pCC, mathRound(rResultDenom));
+				pList->AppendInteger(mathRound(rResult * rResultDenom));
+				pList->AppendInteger(mathRound(rResultDenom));
 
 				return pResult;
 				}
@@ -3464,7 +3385,7 @@ ICCItem *fnMathOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done with arguments
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Compute
 
@@ -3598,7 +3519,7 @@ ICCItem *fnRandomTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		pTable[i] = pResult->GetIntegerValue();
 		iTotal += pTable[i];
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 		}
 
 	//	Now roll
@@ -3698,7 +3619,7 @@ ICCItem *fnRegEx (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop over all arguments and add to result list
 
 		for (i = 0; i < Result.GetCount(); i++)
-			pList->AppendString(*pCC, Result[i].sMatch);
+			pList->AppendString(Result[i].sMatch);
 
 		return pResult;
 		}
@@ -3779,7 +3700,7 @@ ICCItem *fnSet (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	ICCItem *pError;
 	if (HelperSetq(pCtx, pVar, pValue, &pError) != NOERROR)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pError;
 		}
 
@@ -3789,7 +3710,7 @@ ICCItem *fnSet (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done with these
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Done
 
@@ -3821,7 +3742,7 @@ ICCItem *fnShuffle (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 	ICCItem *pSource = pArgs->GetElement(0);
 	for (i = 0; i < pSource->GetCount(); i++)
-		pList->Append(*pCC, pSource->GetElement(i));
+		pList->Append(pSource->GetElement(i));
 
 	//	Shuffle the new list
 
@@ -3882,7 +3803,7 @@ ICCItem *fnSort (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			//	Copy the list
 
 			for (i = 0; i < pSource->GetCount(); i++)
-				pList->Append(*pCC, pSource->GetElement(i));
+				pList->Append(pSource->GetElement(i));
 
 			//	Sort the list
 
@@ -3983,7 +3904,7 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			if (bIsDelimeter)
 				{
-				pList->AppendString(*pCC, strTrimWhitespace(CString(pStart, (int)(pPos - pStart))));
+				pList->AppendString(strTrimWhitespace(CString(pStart, (int)(pPos - pStart))));
 				bInWord = false;
 				}
 			}
@@ -4004,13 +3925,13 @@ ICCItem *fnSplit (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	//	Last word
 
 	if (bInWord)
-		pList->AppendString(*pCC, CString(pStart, (int)(pPos - pStart)));
+		pList->AppendString(CString(pStart, (int)(pPos - pStart)));
 
 	//	Done
 
 	if (pList->GetCount() == 0)
 		{
-		pList->Discard(pCC);
+		pList->Discard();
 		return pCC->CreateNil();
 		}
 	else
@@ -4041,7 +3962,7 @@ ICCItem *fnStrCapitalize (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	if (!pText->IsNil())
 		sString = pText->GetStringValue();
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Done
 
@@ -4101,9 +4022,9 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 ICCItem *pValue = pArg->GetElement(i);
 
 				if (bAppend)
-					pResult->AppendAt(*pCC, sKey, pValue);
+					pResult->AppendAt(sKey, pValue);
 				else
-					pResult->SetAt(*pCC, sKey, pValue);
+					pResult->SetAt(sKey, pValue);
                 }
 
             iArg++;
@@ -4117,15 +4038,15 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             CString sKey = pArg->GetElement(0)->GetStringValue();
             if (sKey.IsBlank())
                 {
-                pResult->Discard(pCC);
+                pResult->Discard();
                 pResult = pCC->CreateError(CONSTLIT("Key cannot be Nil."));
                 break;
                 }
 
 			if (bAppend)
-				pResult->AppendAt(*pCC, sKey, pArg->GetElement(1));
+				pResult->AppendAt(sKey, pArg->GetElement(1));
 			else
-				pResult->SetAt(*pCC, sKey, pArg->GetElement(1));
+				pResult->SetAt(sKey, pArg->GetElement(1));
             iArg++;
             }
 
@@ -4137,7 +4058,7 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             CString sKey = pArg->GetStringValue();
             if (sKey.IsBlank())
                 {
-                pResult->Discard(pCC);
+                pResult->Discard();
                 pResult = pCC->CreateError(CONSTLIT("Key cannot be Nil."));
                 break;
                 }
@@ -4145,15 +4066,15 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             iArg++;
             if (iArg >= pArgs->GetCount())
                 {
-                pResult->Discard(pCC);
+                pResult->Discard();
                 pResult = pCC->CreateError(CONSTLIT("Insufficient arguments."));
                 break;
                 }
 
 			if (bAppend)
-				pResult->AppendAt(*pCC, sKey, pArgs->GetElement(iArg));
+				pResult->AppendAt(sKey, pArgs->GetElement(iArg));
 			else
-				pResult->SetAt(*pCC, sKey, pArgs->GetElement(iArg));
+				pResult->SetAt(sKey, pArgs->GetElement(iArg));
             iArg++;
             }
 
@@ -4161,7 +4082,7 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
         else
             {
-            pResult->Discard(pCC);
+            pResult->Discard();
             pResult = pCC->CreateError(CONSTLIT("Invalid argument"), pArg);
             break;
             }
@@ -4171,7 +4092,7 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
     if (pResult->GetCount() == 0)
         {
-        pResult->Discard(pCC);
+        pResult->Discard();
         return pCC->CreateNil();
         }
 
@@ -4221,7 +4142,7 @@ ICCItem *fnSubset (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 		//	Loop and add to result list
 
 		for (i = iStart; i < iStart + iCount; i++)
-			pList->Append(*pCC, pSource->GetElement(i));
+			pList->Append(pSource->GetElement(i));
 
 		//	Done
 
@@ -4305,7 +4226,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 					bool bFound;
 					ICCItem *pResult = pStruct->LookupEx(pCC, pKey, &bFound);
-					pKey->Discard(pCC);
+					pKey->Discard();
 					if (bFound)
 						{
 						CString sParam = pResult->GetStringValue();
@@ -4321,7 +4242,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 						Stream.Write("%", 1);
 						}
 
-					pResult->Discard(pCC);
+					pResult->Discard();
 					}
 
 				if (*pPos == '%')
@@ -4369,13 +4290,13 @@ ICCItem *fnSwitch (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		if (!pResult->IsNil())
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			return pCC->Eval(pCtx, pThen);
 			}
 
 		//	Otherwise, continue with the loop
 
-		pResult->Discard(pCC);
+		pResult->Discard();
 		iArgPos += 2;
 		}
 
@@ -4449,16 +4370,11 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			pSymbol = pArgs->GetElement(1);
 			pEntry = pArgs->GetElement(2);
-			pResult = pSymTable->AddEntry(pCC, pSymbol, pEntry);
+			pSymTable->AddEntry(pSymbol, pEntry);
 
 			//	If we succeeded, return the entry
 
-			if (!pResult->IsError())
-				{
-				pResult->Discard(pCC);
-				pResult = pEntry->Reference();
-				}
-
+			pResult = pEntry->Reference();
 			break;
 			}
 
@@ -4483,7 +4399,7 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (pResult->IsError() && pResult->IsInteger() && pResult->GetIntegerValue() == CCRESULT_NOTFOUND)
 				{
-				pResult->Discard(pCC);
+				pResult->Discard();
 				pResult = pCC->CreateNil();
 				}
 
@@ -4497,7 +4413,7 @@ ICCItem *fnSymTable (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pResult;
 	}
 
@@ -4556,7 +4472,7 @@ ICCItem *fnVecCreateOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pVector;
 	}
 
@@ -4604,7 +4520,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				else
 				{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Shape list must only contain integers."), pArgs->GetElement(i));
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					return pError;
 				};
 			};
@@ -4614,7 +4530,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			//	Done
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pVector;
 		}
 
@@ -4635,7 +4551,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			ICCItem *pShapeList = pContentList->IsValidVectorContent(pCC);
 			if (pShapeList->IsError())
 			{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pShapeList;
 			};
 
@@ -4652,7 +4568,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				else
 				{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Shape list must only contain integers."), pArgs->GetElement(i));
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					return pError;
 				};
 			};
@@ -4661,7 +4577,7 @@ ICCItem *fnVecCreate(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pVector = pCC->CreateVectorGivenContent(vShape, pContentList);
 
 			//	Done
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pVector;
 		}
 
@@ -4699,7 +4615,7 @@ ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 	if (pVector == NULL)
 		{
 		ICCItem *pError = pCC->CreateError(CONSTLIT("Vector expected"), pArgs->GetElement(0));
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pError;
 		}
 
@@ -4710,13 +4626,13 @@ ICCItem *fnVectorOld (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 	if (!bOk)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(CONSTLIT("Unable to set vector element"), NULL);
 		}
 
 	//	Done
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 	return pCC->CreateTrue();
 	}
 
@@ -4832,7 +4748,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pItem = pVector->Clone(pCC);
 			if (pItem->IsError())
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pItem;
 				}
 			CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
@@ -4842,7 +4758,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				pItem = pVector->GetElement(i);
 				if (pItem->IsError())
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					return pItem;
 					}
 
@@ -4850,18 +4766,18 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				if (pSuccess->IsNil())
 					{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-					pArgs->Discard(pCC);
-					pResultVector->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pArgs->Discard();
+					pResultVector->Discard();
+					pSuccess->Discard();
 					return pError;
 					}
 				else
 					{
-					pSuccess->Discard(pCC);
+					pSuccess->Discard();
 					};
 				};
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pResultVector;
 			}
 
@@ -4880,7 +4796,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
 				{
 				pError = pCC->CreateError(CONSTLIT("Dot product is undefined for vectors that do not have the same shape."));
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pError;
 				};
 
@@ -4892,19 +4808,19 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 					dResult += pVector0->GetElement(i)->GetDoubleValue()*pVector1->GetElement(i)->GetDoubleValue();
 					}
 
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pCC->CreateDouble(dResult);
 				}
 			else
 				{
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Dot product is only defined for rank 1 vectors (write function in TLisp for dot product of rank 2 vectors, or tensor product of rank 3 vectors and above."), NULL);
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pError;
 				}
 
 			if (pItem->IsError())
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pItem;
 				}
 			}
@@ -4927,7 +4843,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pItem = pCC->CreateFilledVector(0.0, pVector0->GetShapeArray());
 			if (pItem->IsError())
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pItem;
 				}
 			CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
@@ -4941,20 +4857,20 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				if (pSuccess->IsNil())
 					{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-					pArgs->Discard(pCC);
-					pResultVector->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pArgs->Discard();
+					pResultVector->Discard();
+					pSuccess->Discard();
 					return pError;
 					}
 				else
 					{
-					pNum0->Discard(pCC);
-					pNum1->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pNum0->Discard();
+					pNum1->Discard();
+					pSuccess->Discard();
 					};
 				};
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pResultVector;
 			}
 
@@ -4976,7 +4892,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pItem = pCC->CreateFilledVector(0.0, pVector0->GetShapeArray());
 			if (pItem->IsError())
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pItem;
 				}
 			CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
@@ -4990,16 +4906,16 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				if (pSuccess->IsNil())
 					{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-					pArgs->Discard(pCC);
-					pResultVector->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pArgs->Discard();
+					pResultVector->Discard();
+					pSuccess->Discard();
 					return pError;
 					}
 				else
 					{
-					pNum0->Discard(pCC);
-					pNum1->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pNum0->Discard();
+					pNum1->Discard();
+					pSuccess->Discard();
 					};
 				};
 
@@ -5021,7 +4937,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				pItem = pCC->CreateFilledVector(0.0, pVector0->GetShapeArray());
 				if (pItem->IsError())
 					{
-					pArgs->Discard(pCC);
+					pArgs->Discard();
 					return pItem;
 					}
 				CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
@@ -5035,21 +4951,21 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 					if (pSuccess->IsNil())
 						{
 						ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-						pArgs->Discard(pCC);
-						pResultVector->Discard(pCC);
-						pSuccess->Discard(pCC);
+						pArgs->Discard();
+						pResultVector->Discard();
+						pSuccess->Discard();
 						return pError;
 						}
 					else
 						{
-						pNum0->Discard(pCC);
-						pNum1->Discard(pCC);
-						pSuccess->Discard(pCC);
+						pNum0->Discard();
+						pNum1->Discard();
+						pSuccess->Discard();
 						};
 					};
 				};
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pResultVector;
 			}
 
@@ -5071,7 +4987,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 			pItem = pCC->CreateFilledVector(0.0, pVector0->GetShapeArray());
 			if (pItem->IsError())
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pItem;
 				}
 			CCVector *pResultVector = dynamic_cast <CCVector *> (pItem);
@@ -5085,20 +5001,20 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 				if (pSuccess->IsNil())
 					{
 					ICCItem *pError = pCC->CreateError(CONSTLIT("Unsuccessful in setting vector element."));
-					pArgs->Discard(pCC);
-					pResultVector->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pArgs->Discard();
+					pResultVector->Discard();
+					pSuccess->Discard();
 					return pError;
 					}
 				else
 					{
-					pNum0->Discard(pCC);
-					pNum1->Discard(pCC);
-					pSuccess->Discard(pCC);
+					pNum0->Discard();
+					pNum1->Discard();
+					pSuccess->Discard();
 					};
 				};
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pResultVector;
 			}
 
@@ -5114,7 +5030,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 			if (!CompareShapeArrays(pVector0->GetShapeArray(), pVector1->GetShapeArray()))
 				{
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pCC->CreateNil();
 				};
 
@@ -5129,7 +5045,7 @@ ICCItem *fnVecMath(CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 					}
 				};
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			return pCC->CreateTrue();
 			}
 
@@ -5513,14 +5429,7 @@ ALERROR HelperSetq (CEvalContext *pCtx, ICCItem *pVar, ICCItem *pValue, ICCItem 
 		}
 	else
 		{
-		*retpError = pSymTable->AddEntry(pCC, pVar, pValue);
-
-		//	Check for error
-
-		if ((*retpError)->IsError())
-			return ERR_FAIL;
-
-		(*retpError)->Discard(pCC);
+		pSymTable->AddEntry(pVar, pValue);
 		}
 
 	return NOERROR;

@@ -113,7 +113,7 @@ void GenerateTypeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	Output each row
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(*g_pUniverse);
 		for (i = 0; i < Table.GetCount(); i++)
 			{
 			CDesignType *pType = Table[i];
@@ -141,8 +141,8 @@ void GenerateTypeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				else
 					{
 					ICCItem *pResult = pType->GetProperty(CCCtx, sField);
-					CString sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
-					pResult->Discard(&g_pUniverse->GetCC());
+					CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+					pResult->Discard();
 
 					printf(sValue.GetASCIIZPointer());
 					}

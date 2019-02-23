@@ -23,8 +23,6 @@ ICCItemPtr CDebugOptions::GetMemoryUse (void) const
 //	Returns current memory stats
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Design collection stats
@@ -32,9 +30,9 @@ ICCItemPtr CDebugOptions::GetMemoryUse (void) const
 	CDesignCollection::SStats Stats;
 	g_pUniverse->GetDesignCollection().GetStats(Stats);
 
-	pResult->SetIntegerAt(CC, CONSTLIT("graphicsTotal"), (int)(DWORD)Stats.dwGraphicsMemory);
-	pResult->SetIntegerAt(CC, CONSTLIT("graphicsWrecks"), (int)(DWORD)Stats.dwWreckGraphicsMemory);
-	pResult->SetIntegerAt(CC, CONSTLIT("XML"), (int)(DWORD)Stats.dwTotalXMLMemory);
+	pResult->SetIntegerAt(CONSTLIT("graphicsTotal"), (int)(DWORD)Stats.dwGraphicsMemory);
+	pResult->SetIntegerAt(CONSTLIT("graphicsWrecks"), (int)(DWORD)Stats.dwWreckGraphicsMemory);
+	pResult->SetIntegerAt(CONSTLIT("XML"), (int)(DWORD)Stats.dwTotalXMLMemory);
 
 	return pResult;
 	}
@@ -46,8 +44,6 @@ ICCItemPtr CDebugOptions::GetProperty (const CString &sProperty) const
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_MEMORY_USE))
 		return GetMemoryUse();
 
@@ -85,8 +81,6 @@ bool CDebugOptions::SetProperty (const CString &sProperty, ICCItem *pValue, CStr
 //	Otherwise, we return TRUE.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	NOTE: This only works in debug mode.
 
 	if (!g_pUniverse->InDebugMode())

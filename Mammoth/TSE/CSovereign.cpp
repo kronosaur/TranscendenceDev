@@ -19,6 +19,7 @@
 #define TEXT_ATTRIB								CONSTLIT("text")
 #define SHORT_NAME_ATTRIB						CONSTLIT("shortName")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
+#define VIRTUAL_ATTRIB							CONSTLIT("virtual")
 
 #define CONSTRUCTIVE_CHAOS_ALIGN				CONSTLIT("constructive chaos")
 #define CONSTRUCTIVE_ORDER_ALIGN				CONSTLIT("constructive order")
@@ -193,13 +194,7 @@ static SAlignData ALIGN_DATA[CSovereign::alignCount] =
 		{	CONSTDEF("predator"),		alignDestructiveChaos,		ALIGN_FLAG_DESTRUCTIVE },
 	};
 
-CSovereign::CSovereign (void) : 
-		m_pEnemyObjectsSystem(NULL),
-		m_pFirstRelationship(NULL),
-		m_pInitialRelationships(NULL),
-		m_iStationsDestroyedByPlayer(0),
-		m_iShipsDestroyedByPlayer(0),
-		m_bSelfRel(false)
+CSovereign::CSovereign (void)
 
 //	CSovereign constructor
 
@@ -327,7 +322,7 @@ IPlayerController *CSovereign::GetController (void)
 
 	{
 	if (GetUNID() == g_PlayerSovereignUNID)
-		return g_pUniverse->GetPlayer();
+		return GetUniverse().GetPlayer();
 	else
 		return NULL;
 	}
@@ -502,25 +497,26 @@ void CSovereign::InitEnemyObjectList (const CSystem *pSystem) const
 //	Compiles and caches a list of enemy objects in the system
 
 	{
-	int i;
+	if (m_pEnemyObjectsSystem == pSystem
+			|| IsVirtual())
+		return;
 
-	if (m_pEnemyObjectsSystem != pSystem)
+	//	Initialize
+
+	m_EnemyObjects.SetAllocSize(pSystem->GetObjectCount());
+
+	for (int i = 0; i < pSystem->GetObjectCount(); i++)
 		{
-		m_EnemyObjects.SetAllocSize(pSystem->GetObjectCount());
+		CSpaceObject *pObj = pSystem->GetObject(i);
 
-		for (i = 0; i < pSystem->GetObjectCount(); i++)
-			{
-			CSpaceObject *pObj = pSystem->GetObject(i);
-
-			if (pObj 
-					&& pObj->ClassCanAttack()
-					&& !pObj->IsDestroyed()
-					&& IsEnemy(pObj->GetSovereign()))
-				m_EnemyObjects.FastAdd(pObj);
-			}
-
-		m_pEnemyObjectsSystem = pSystem;
+		if (pObj 
+				&& pObj->ClassCanAttack()
+				&& !pObj->IsDestroyed()
+				&& IsEnemy(pObj->GetSovereign()))
+			m_EnemyObjects.FastAdd(pObj);
 		}
+
+	m_pEnemyObjectsSystem = pSystem;
 	}
 
 void CSovereign::InitRelationships (void)
@@ -580,7 +576,7 @@ void CSovereign::InitRelationships (void)
 
 			else if (pRelDesc->FindAttribute(SOVEREIGN_ATTRIB, &sTarget))
 				{
-				CSovereign *pTarget = g_pUniverse->FindSovereign(strToInt(sTarget, 0));
+				CSovereign *pTarget = GetUniverse().FindSovereign(strToInt(sTarget, 0));
 				if (pTarget == NULL)
 					{
 					::kernelDebugLogPattern("[%08x]: Unknown sovereign: %s.", GetUNID(), sTarget);
@@ -613,7 +609,7 @@ void CSovereign::MessageFromObj (CSpaceObject *pSender, const CString &sText)
 
 	if (GetUNID() == g_PlayerSovereignUNID)
 		{
-		IPlayerController *pPlayer = g_pUniverse->GetPlayer();
+		IPlayerController *pPlayer = GetUniverse().GetPlayer();
 		if (pPlayer == NULL)
 			return;
 
@@ -657,7 +653,7 @@ void CSovereign::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 		for (i = 0; i < m_pInitialRelationships->GetContentElementCount(); i++)
 			{
 			CXMLElement *pRelDesc = m_pInitialRelationships->GetContentElement(i);
-			CSovereign *pTarget = g_pUniverse->FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
+			CSovereign *pTarget = GetUniverse().FindSovereign(pRelDesc->GetAttributeInteger(SOVEREIGN_ATTRIB));
 			if (pTarget)
 				retTypesUsed->SetAt(pTarget->GetUNID(), true);
 			}
@@ -685,6 +681,7 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	//	Initialize
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
+	m_bVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 
 	if (!pDesc->FindAttribute(SHORT_NAME_ATTRIB, &m_sShortName))
 		m_sShortName = m_sName;
@@ -716,6 +713,8 @@ ALERROR CSovereign::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 			m_iAlignment = alignEmpire;
 		else if (strEquals(sAlignment, DESTRUCTIVE_CHAOS_ALIGN))
 			m_iAlignment = alignMegalomaniac;
+		else if (m_bVirtual)
+			m_iAlignment = alignUnorganized;
 		else
 			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Unknown alignment: %s"), sAlignment));
 		}
@@ -736,7 +735,7 @@ ICCItemPtr CSovereign::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 //	Returns the given property (or NULL if not found)
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sProperty, PROPERTY_NAME))
 		return ICCItemPtr(GetNounPhrase());
@@ -821,7 +820,7 @@ void CSovereign::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	while (dwUNID)
 		{
 		SRelationship *pRel = new SRelationship;
-		pRel->pSovereign = g_pUniverse->FindSovereign(dwUNID);
+		pRel->pSovereign = GetUniverse().FindSovereign(dwUNID);
 
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
 		pRel->iDisp = (Disposition)dwLoad;
@@ -1020,9 +1019,9 @@ void CSovereign::SetDispositionTowards (Alignments iAlignment, Disposition iDisp
 	{
 	int i;
 
-	for (i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+	for (i = 0; i < GetUniverse().GetSovereignCount(); i++)
 		{
-		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		CSovereign *pTarget = GetUniverse().GetSovereign(i);
 		if (pTarget->GetAlignment() != iAlignment
 				|| pTarget == this)
 			continue;
@@ -1046,9 +1045,9 @@ void CSovereign::SetDispositionTowardsFlag (DWORD dwAlignmentFlag, Disposition i
 //	Sets disposition towards all sovereigns that have the given flag.
 
 	{
-	for (int i = 0; i < g_pUniverse->GetSovereignCount(); i++)
+	for (int i = 0; i < GetUniverse().GetSovereignCount(); i++)
 		{
-		CSovereign *pTarget = g_pUniverse->GetSovereign(i);
+		CSovereign *pTarget = GetUniverse().GetSovereign(i);
 		Alignments iAlignment = pTarget->GetAlignment();
 		if (iAlignment == alignUnknown
 				|| pTarget == this
@@ -1125,7 +1124,7 @@ void CSovereign::Update (int iTick, CSystem *pSystem)
 	if (FindEventHandler(evtOnUpdate, &Event)
 			&& (((DWORD)iTick + GetUNID()) % OBJECT_ON_UPDATE_CYCLE) == 0)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Setup 
 
@@ -1142,4 +1141,41 @@ void CSovereign::Update (int iTick, CSystem *pSystem)
 
 		Ctx.Discard(pResult);
 		}
+	}
+
+//	CSovereignRef --------------------------------------------------------------
+
+ALERROR CSovereignRef::Bind (SDesignLoadCtx &Ctx)
+
+//	Bind
+//
+//	Bind design
+
+	{
+	if (m_dwUNID)
+		{
+		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
+		if (pBaseType == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+
+		m_pType = CSovereign::AsType(pBaseType);
+		if (m_pType == NULL)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+
+		//	Cannot reference virtual sovereigns
+
+		if (m_pType->IsVirtual())
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Cannot refer to virtual sovereign: %08x"), m_dwUNID);
+			return ERR_FAIL;
+			}
+		}
+
+	return NOERROR;
 	}

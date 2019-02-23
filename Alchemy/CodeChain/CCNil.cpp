@@ -21,10 +21,10 @@ ICCItem *CCNil::Clone (CCodeChain *pCC)
 //	Returns a new item with a single ref-count
 
 	{
-	return Reference();
+	return this;
 	}
 
-void CCNil::DestroyItem (CCodeChain *pCC)
+void CCNil::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -33,22 +33,3 @@ void CCNil::DestroyItem (CCodeChain *pCC)
 	{
 	}
 
-ICCItem *CCNil::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCNil::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	return pCC->CreateTrue();
-	}

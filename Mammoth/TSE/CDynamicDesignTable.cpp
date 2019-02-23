@@ -30,7 +30,7 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	CEntityResolverList Resolver;
 	if (pEntry->pExtension)
-		g_pUniverse->InitEntityResolver(pEntry->pExtension, &Resolver);
+		pEntry->pExtension->GetUniverse().InitEntityResolver(pEntry->pExtension, &Resolver);
 
 	//	Parse the XML
 
@@ -40,7 +40,7 @@ ALERROR CDynamicDesignTable::Compile (SEntry *pEntry, CString *retsError)
 
 	CXMLElement::SParseOptions Options;
 	Options.pController = &Resolver;
-	Options.bNoTagCharCheck = !g_pUniverse->InDebugMode();
+	Options.bNoTagCharCheck = !(pEntry->pExtension && pEntry->pExtension->GetUniverse().InDebugMode());
 
 	CXMLElement *pDesc;
 	if (error = CXMLElement::ParseXML(Source, Options, &pDesc, retsError))
@@ -265,7 +265,7 @@ void CDynamicDesignTable::ReadFromStream (SUniverseLoadCtx &Ctx)
 
 		//	Load the extension
 
-		if (!g_pUniverse->FindExtension(dwExtensionUNID, dwRelease, &pEntry->pExtension))
+		if (!Ctx.GetUniverse().FindExtension(dwExtensionUNID, dwRelease, &pEntry->pExtension))
 			//	LATER: Need to return error
 			pEntry->pExtension = NULL;
 

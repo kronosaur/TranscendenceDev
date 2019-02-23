@@ -38,7 +38,7 @@ CGItemListDisplayArea::CGItemListDisplayArea (void) :
 	{
 	}
 
-bool CGItemListDisplayArea::InitFromDesc (CCodeChain &CC, ICCItem *pDesc)
+bool CGItemListDisplayArea::InitFromDesc (ICCItem *pDesc)
 
 //	InitFromDesc
 //
@@ -52,7 +52,7 @@ bool CGItemListDisplayArea::InitFromDesc (CCodeChain &CC, ICCItem *pDesc)
 
 	else if (pDesc->IsList())
 		{
-		if (!InitFromItemList(CC, pDesc))
+		if (!InitFromItemList(pDesc))
 			return false;
 		}
 	else
@@ -61,18 +61,18 @@ bool CGItemListDisplayArea::InitFromDesc (CCodeChain &CC, ICCItem *pDesc)
 	return true;
 	}
 
-bool CGItemListDisplayArea::InitFromItemList (CCodeChain &CC, ICCItem *pItemList)
+bool CGItemListDisplayArea::InitFromItemList (ICCItem *pItemList)
 
 //	InitFromItemList
 //
 //	Expects a list of items or a list of structs.
 
 	{
-	int i;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	m_ItemList.DeleteAll();
 
-	for (i = 0; i < pItemList->GetCount(); i++)
+	for (int i = 0; i < pItemList->GetCount(); i++)
 		{
 		SEntry *pEntry = m_ItemList.Insert();
 
@@ -81,13 +81,13 @@ bool CGItemListDisplayArea::InitFromItemList (CCodeChain &CC, ICCItem *pItemList
 			{
 			ICCItem *pItem = pItemDesc->GetElement(FIELD_ITEM);
 			if (pItem)
-				pEntry->Item = ::CreateItemFromList(CC, pItem);
+				pEntry->Item = Ctx.AsItem(pItem);
 
 			ICCItem *pEnabled = pItemDesc->GetElement(FIELD_ENABLED);
 			pEntry->bGrayed = (pEnabled && pEnabled->IsNil());
 			}
 		else
-			pEntry->Item = ::CreateItemFromList(CC, pItemDesc);
+			pEntry->Item = Ctx.AsItem(pItemDesc);
 
 		//	Make sure this is a valid item
 

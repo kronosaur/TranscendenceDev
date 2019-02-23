@@ -252,7 +252,7 @@ void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 		{
 		DWORD dwUNID;
 		Ctx.pStream->Read(dwUNID);
-		CItemType *pType = g_pUniverse->FindItemType(dwUNID);
+		CItemType *pType = Ctx.GetUniverse().FindItemType(dwUNID);
 
 		int iImpact;
 		Ctx.pStream->Read(iImpact);

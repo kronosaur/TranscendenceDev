@@ -52,7 +52,7 @@ ICCItem *CCLambda::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOnly)
+ICCItem *CCLambda::CreateFromList (ICCItem *pList, bool bArgsOnly)
 
 //	CreateFromList
 //
@@ -77,7 +77,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 		{
 		pArgs = pList->GetElement(0);
 		if (pArgs == NULL || !pArgs->IsLambdaSymbol())
-			return pCC->CreateError(LITERAL("Lambda symbol expected"), pArgs);
+			return CCodeChain::CreateError(LITERAL("Lambda symbol expected"), pArgs);
 
 		pArgs = pList->GetElement(1);
 		pBody = pList->GetElement(2);
@@ -86,7 +86,7 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 	//	The next item must be a list of arguments
 
 	if (pArgs == NULL || !pArgs->IsList())
-		return pCC->CreateError(LITERAL("Argument list expected"), pArgs);
+		return CCodeChain::CreateError(LITERAL("Argument list expected"), pArgs);
 
 	m_pArgList = pArgs->Reference();
 
@@ -94,9 +94,9 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 
 	if (pBody == NULL)
 		{
-		m_pArgList->Discard(pCC);
+		m_pArgList->Discard();
 		m_pArgList = NULL;
-		return pCC->CreateError(LITERAL("Code expected"), pList);
+		return CCodeChain::CreateError(LITERAL("Code expected"), pList);
 		}
 
 	m_pCode = pBody->Reference();
@@ -104,10 +104,10 @@ ICCItem *CCLambda::CreateFromList (CCodeChain *pCC, ICCItem *pList, bool bArgsOn
 
 	//	Done
 
-	return pCC->CreateTrue();
+	return CCodeChain::CreateTrue();
 	}
 
-void CCLambda::DestroyItem (CCodeChain *pCC)
+void CCLambda::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -117,17 +117,17 @@ void CCLambda::DestroyItem (CCodeChain *pCC)
 	//	Delete our references
 
 	if (m_pArgList)
-		m_pArgList->Discard(pCC);
+		m_pArgList->Discard();
 
 	if (m_pCode)
-		m_pCode->Discard(pCC);
+		m_pCode->Discard();
 
 	if (m_pLocalSymbols)
-		m_pLocalSymbols->Discard(pCC);
+		m_pLocalSymbols->Discard();
 
 	//	Done
 
-	pCC->DestroyLambda(this);
+	CCodeChain::DestroyLambda(this);
 	}
 
 ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
@@ -190,7 +190,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 				pVarArgs = pCC->CreateLinkedList();
 				if (pVarArgs->IsError())
 					{
-					pLocalSymbols->Discard(pCC);
+					pLocalSymbols->Discard();
 					return pVarArgs;
 					}
 				pList = (CCLinkedList *)pVarArgs;
@@ -206,8 +206,8 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 					else
 						pResult = pCC->Eval(pCtx, pArg);
 
-					pList->Append(*pCC, pResult);
-					pResult->Discard(pCC);
+					pList->Append(pResult);
+					pResult->Discard();
 					}
 				}
 			else
@@ -215,14 +215,18 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 
 			//	Add to the local symbol table
 
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pVarArgs);
-			pVarArgs->Discard(pCC);
+			pLocalSymbols->AddEntry(pVar, pVarArgs);
+			pVarArgs->Discard();
+			pItem = CCodeChain::CreateTrue();
 			}
 
 		//	Bind the variable to the argument
 
 		else if (pArg == NULL)
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
+			{
+			pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
+			pItem = CCodeChain::CreateTrue();
+			}
 		else
 			{
 			ICCItem *pResult;
@@ -243,24 +247,25 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 				if (pResult->IsError()
 						&& strStartsWith(pResult->GetStringValue(), CONSTLIT("Function name expected")))
 					{
-					pLocalSymbols->Discard(pCC);
+					pLocalSymbols->Discard();
 					return pResult;
 					}
 				}
 
-			pItem = pLocalSymbols->AddEntry(pCC, pVar, pResult);
-			pResult->Discard(pCC);
+			pLocalSymbols->AddEntry(pVar, pResult);
+			pResult->Discard();
+			pItem = CCodeChain::CreateTrue();
 			}
 
 		//	Check for error
 
 		if (pItem->IsError())
 			{
-			pLocalSymbols->Discard(pCC);
+			pLocalSymbols->Discard();
 			return pItem;
 			}
 
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Setup the context. If the lambda expression has a local symbol scope
@@ -281,12 +286,12 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	//	Clean up
 
 	pCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 
 	return pResult;
 	}
 
-CString CCLambda::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCLambda::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -304,12 +309,12 @@ CString CCLambda::Print (CCodeChain *pCC, DWORD dwFlags)
 
 	//	Add arguments
 
-	sString.Append(m_pArgList->Print(pCC, dwFlags));
+	sString.Append(m_pArgList->Print(dwFlags));
 	sString.Append(CONSTLIT(" "));
 
 	//	Add code
 
-	sString.Append(m_pCode->Print(pCC, dwFlags));
+	sString.Append(m_pCode->Print(dwFlags));
 	
 	//	Done
 
@@ -337,7 +342,7 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 
 	{
 	if (m_pLocalSymbols)
-		m_pLocalSymbols->Discard(pCC);
+		m_pLocalSymbols->Discard();
 
 #ifdef TRUE_CLOSURES
 	//	For closures to work, we need a reference to our parent's local symbols
@@ -352,75 +357,3 @@ void CCLambda::SetLocalSymbols (CCodeChain *pCC, ICCItem *pSymbols)
 #endif
 	}
 
-ICCItem *CCLambda::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ICCItem *pError;
-
-	//	If we don't have both of these, then it is because we're trying
-	//	to save an uninitialized lambda structure
-
-	ASSERT(m_pArgList);
-	ASSERT(m_pCode);
-
-	//	Write out the argument list
-
-	pError = pCC->StreamItem(m_pArgList, pStream);
-	if (pError->IsError())
-		return pError;
-
-	pError->Discard(pCC);
-
-	//	Write out the local symbols
-
-	if (m_pLocalSymbols)
-		pError = pCC->StreamItem(m_pLocalSymbols, pStream);
-	else
-		pError = pCC->StreamItem(pCC->CreateNil(), pStream);
-
-	if (pError->IsError())
-		return pError;
-
-	//	Write out the code
-
-	return pCC->StreamItem(m_pCode, pStream);
-	}
-
-ICCItem *CCLambda::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	//	First read the arg list (Note that we keep a
-	//	reference even on error because it will get cleaned
-	//	up in DestroyItem anyway)
-
-	m_pArgList = pCC->UnstreamItem(pStream);
-	if (m_pArgList->IsError())
-		return m_pArgList->Reference();
-
-	//	Read local symbols
-
-	m_pLocalSymbols = pCC->UnstreamItem(pStream);
-	if (m_pLocalSymbols->IsError())
-		return m_pLocalSymbols->Reference();
-	else if (m_pLocalSymbols->IsNil())
-		{
-		m_pLocalSymbols->Discard(pCC);
-		m_pLocalSymbols = NULL;
-		}
-
-	//	Read the code
-
-	m_pCode = pCC->UnstreamItem(pStream);
-	if (m_pCode->IsError())
-		return m_pCode->Reference();
-
-	return pCC->CreateTrue();
-	}

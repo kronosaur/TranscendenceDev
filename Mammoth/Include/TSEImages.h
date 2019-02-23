@@ -413,9 +413,7 @@ class IImageEntry
 class CCompositeImageModifiers
 	{
 	public:
-		CCompositeImageModifiers (void) :
-				m_fStationDamage(false),
-				m_fFullImage(false)
+		CCompositeImageModifiers (void)
 			{ }
 
 		bool operator== (const CCompositeImageModifiers &Val) const;
@@ -423,18 +421,15 @@ class CCompositeImageModifiers
 		void Apply (CObjectImageArray *retImage) const;
 		inline const CImageFilterStack *GetFilters (void) const { return m_pFilters; }
 		inline int GetRotation (void) const { return m_iRotation; }
-		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_fStationDamage && m_pFilters == NULL); }
-		inline bool ReturnFullImage (void) const { return (m_fFullImage ? true : false); }
+		inline bool IsEmpty (void) const { return (m_wFadeOpacity == 0 && !m_bStationDamage && m_pFilters == NULL); }
+		inline bool ReturnFullImage (void) const { return m_bFullImage; }
 		inline void SetFadeColor (CG32bitPixel rgbColor, DWORD dwOpacity) { m_rgbFadeColor = rgbColor; m_wFadeOpacity = (WORD)dwOpacity; }
 		inline void SetFilters (const CImageFilterStack *pFilters) { m_pFilters = pFilters; }
-		inline void SetFullImage (bool bValue = true) { m_fFullImage = bValue; }
+		inline void SetFullImage (bool bValue = true) { m_bFullImage = bValue; }
 		inline void SetRotation (int iRotation) { m_iRotation = AngleMod(iRotation); }
-		inline void SetStationDamage (bool bValue = true) { m_fStationDamage = bValue; }
-
-		static void Reinit (void);
+		inline void SetStationDamage (bool bValue = true) { m_bStationDamage = bValue; }
 
 	private:
-		static void InitDamagePainters (void);
 		static void PaintDamage (CG32bitImage &Dest, const RECT &rcDest, int iCount, IEffectPainter *pPainter);
 
 		CG32bitImage *CreateCopy (CObjectImageArray *pImage, RECT *retrcNewImage) const;
@@ -444,9 +439,8 @@ class CCompositeImageModifiers
 		CG32bitPixel m_rgbFadeColor = 0;	//	Apply a wash on top of image
 		WORD m_wFadeOpacity = 0;			//		0 = no wash
 
-		DWORD m_fStationDamage:1;			//	Apply station damage to image
-		DWORD m_fFullImage:1;				//	Return full image even if we have rotations
-		DWORD m_dwSpare:30;
+		bool m_bStationDamage = false;		//	Apply station damage to image
+		bool m_bFullImage = false;			//	Return full image even if we have rotations
 	};
 
 class CCompositeImageDesc

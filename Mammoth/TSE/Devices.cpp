@@ -248,7 +248,7 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 		{
 		//	Setup arguments
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
 		Ctx.SaveAndDefineItemVar(ItemCtx);
@@ -265,7 +265,7 @@ COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
 
 		//	Done
 
-		return COverlayType::AsType(g_pUniverse->FindDesignType(dwUNID));
+		return COverlayType::AsType(GetUniverse().FindDesignType(dwUNID));
 		}
 	else
 		return GetOverlayType();
@@ -283,7 +283,7 @@ bool CDeviceClass::GetAmmoItemPropertyBool (CItemCtx &Ctx, const CItem &Ammo, co
         return false;
 
     bool bValue = !pValue->IsNil();
-    pValue->Discard(&g_pUniverse->GetCC());
+    pValue->Discard();
     return bValue;
     }
 
@@ -299,7 +299,7 @@ Metric CDeviceClass::GetAmmoItemPropertyDouble (CItemCtx &Ctx, const CItem &Ammo
         return 0.0;
 
     Metric rValue = pValue->GetDoubleValue(); 
-    pValue->Discard(&g_pUniverse->GetCC());
+    pValue->Discard();
     return rValue; 
     }
 
@@ -317,7 +317,17 @@ int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 	if (pStats == NULL)
 		return -1;
 
-	return (int)m_pItemType->GetCurrencyType()->Exchange(CEconomyType::Default(), pStats->iInstallCost);
+	return (int)m_pItemType->GetCurrencyType()->Exchange(NULL, pStats->iInstallCost);
+	}
+
+CUniverse &CDeviceClass::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
 	}
 
 ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType)
@@ -450,7 +460,7 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 //	item properties.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
     CString sFieldValue;
 
 	//	Get the device
@@ -509,10 +519,10 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         //	List contains angle, radius, and optional z
 
-        pList->AppendInteger(CC, pDevice->GetPosAngle());
-        pList->AppendInteger(CC, pDevice->GetPosRadius());
+        pList->AppendInteger(pDevice->GetPosAngle());
+        pList->AppendInteger(pDevice->GetPosRadius());
         if (pDevice->GetPosZ() != 0)
-            pList->AppendInteger(CC, pDevice->GetPosZ());
+            pList->AppendInteger(pDevice->GetPosZ());
 
         //	Done
 
@@ -522,16 +532,16 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_POWER))
 		{
 		if (GetCategory() == itemcatReactor)
-			return CTLispConvert::CreatePowerResultMW(CC, GetPowerOutput(Ctx))->Reference();
+			return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx))->Reference();
 		else
-			return CTLispConvert::CreatePowerResultMW(CC, GetPowerRating(Ctx))->Reference();
+			return CTLispConvert::CreatePowerResultMW(GetPowerRating(Ctx))->Reference();
 		}
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
-		return CreatePowerResult(CC, GetPowerOutput(Ctx) * 100.0);
+		return CreatePowerResult(GetPowerOutput(Ctx) * 100.0);
 
 	else if (strEquals(sName, PROPERTY_POWER_USE))
-		return CreatePowerResult(CC, GetPowerRating(Ctx) * 100.0);
+		return CreatePowerResult(GetPowerRating(Ctx) * 100.0);
 
     else if (strEquals(sName, PROPERTY_SECONDARY))
         return (pDevice ? CC.CreateBool(pDevice->IsSecondaryWeapon()) : CC.CreateNil());

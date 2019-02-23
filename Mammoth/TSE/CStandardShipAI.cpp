@@ -80,7 +80,7 @@
 #endif
 
 #ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			if (bDebug) g_pUniverse->DebugOutput("%d> %s", g_iDebugLine++, x)
+#define DEBUG_COMBAT_OUTPUT(x)			if (bDebug) m_pShip->GetUniverse().DebugOutput("%d> %s", g_iDebugLine++, x)
 #else
 #define DEBUG_COMBAT_OUTPUT(x)
 #endif
@@ -700,7 +700,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 						{
 						//	Mark so we don't loot this object again
 
-						ICCItemPtr pValue(g_pUniverse->GetCC().CreateString(CONSTLIT("l")));
+						ICCItemPtr pValue(m_pShip->GetUniverse().GetCC().CreateString(CONSTLIT("l")));
 						pDock->SetData(FIELD_SCAVENGE, pValue);
 
 						//	Undock
@@ -2486,9 +2486,9 @@ void CStandardShipAI::OnReadFromStream (SLoadCtx &Ctx)
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
 			{
-			ICCItem *pItem = g_pUniverse->GetCC().Link(sCode);
+			ICCItem *pItem = m_pShip->GetUniverse().GetCC().Link(sCode);
 			SetCommandCode(pItem);
-			pItem->Discard(&g_pUniverse->GetCC());
+			pItem->Discard();
 			}
 		}
 

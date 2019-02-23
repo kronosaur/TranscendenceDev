@@ -192,7 +192,6 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 	SDisplayControl *pDControl = m_Controls.Insert();
 
 	//	Set basic attribs
@@ -247,7 +246,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), IMAGE_TAG))
 		{
@@ -281,7 +280,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the code that returns the image
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), CANVAS_TAG))
 		{
@@ -294,7 +293,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the draw code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 	else if (strEquals(pDesc->GetTag(), GROUP_TAG))
 		{
@@ -315,7 +314,7 @@ void CDockScreen::AddDisplayControl (CXMLElement *pDesc,
 		//	Load the text code
 
 		const CString &sCode = pDesc->GetContentText(0);
-		pDControl->pCode = (!sCode.IsBlank() ? CC.Link(sCode) : NULL);
+		pDControl->pCode = (!sCode.IsBlank() ? CCodeChain::Link(sCode) : NULL);
 		}
 
 	//	Done
@@ -444,7 +443,7 @@ void CDockScreen::CleanUpScreen (void)
 
 	if (m_pOnScreenUpdate)
 		{
-		m_pOnScreenUpdate->Discard(&g_pUniverse->GetCC());
+		m_pOnScreenUpdate->Discard();
 		m_pOnScreenUpdate = NULL;
 		}
 
@@ -726,11 +725,11 @@ ICCItem *CDockScreen::GetCurrentListEntry (void)
 
 	{
 	if (m_pDisplay == NULL)
-		return g_pUniverse->GetCC().CreateNil();
+		return CCodeChain::CreateNil();
 
 	ICCItem *pResult = m_pDisplay->GetCurrentListEntry();
 	if (pResult == NULL)
-		return g_pUniverse->GetCC().CreateNil();
+		return CCodeChain::CreateNil();
 
 	return pResult;
 	}
@@ -760,8 +759,6 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 //	Returns the given screen property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	See if this is a generic property.
 
 	if (strEquals(sProperty, PROPERTY_COUNTER))
@@ -821,7 +818,7 @@ bool CDockScreen::EvalBool (const CString &sCode)
 //	Evaluates the given CodeChain code.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(this);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -867,7 +864,7 @@ CString CDockScreen::EvalInitialPane (CSpaceObject *pSource, ICCItem *pData)
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -898,7 +895,7 @@ bool CDockScreen::EvalString (const CString &sString, ICCItem *pData, bool bPlai
 //	Returns TRUE if successful. Otherwise, retsResult is an error.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(this);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
@@ -950,7 +947,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
@@ -1066,7 +1063,7 @@ ALERROR CDockScreen::InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pSt
 //	LATER: We should define variables inside of Eval...
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	//	Define some globals
 
@@ -1086,7 +1083,6 @@ ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, 
 	DEBUG_TRY
 
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 
 	ASSERT(m_Controls.GetCount() == 0);
 
@@ -1477,7 +1473,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	CXMLElement *pOnUpdate = m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG);
 	if (pOnUpdate)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		ICCItemPtr pCode = Ctx.LinkCode(pOnUpdate->GetContentText(0));
 		if (pCode->IsError())
 			{
@@ -1586,7 +1582,6 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 	{
 	int i;
-	CCodeChain &CC = g_pUniverse->GetCC();
 
 	//	Run initialize
 
@@ -1617,7 +1612,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1640,7 +1635,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 					CG32bitImage *pImage;
 					RECT rcImage;
-					GetImageDescFromList(CC, pResult, &pImage, &rcImage);
+					GetImageDescFromList(pResult, &pImage, &rcImage);
 					if (pImage)
 						pControl->SetImage(pImage, rcImage);
 
@@ -1658,7 +1653,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1700,7 +1695,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -1743,7 +1738,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 
 				if (m_Controls[i].pCode)
 					{
-					CCodeChainCtx Ctx;
+					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
@@ -2075,7 +2070,7 @@ void CDockScreen::Update (int iTick)
 
 		//	Execute
 
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);

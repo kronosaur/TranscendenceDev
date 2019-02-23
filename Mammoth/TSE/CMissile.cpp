@@ -17,9 +17,7 @@ const DWORD VAPOR_TRAIL_OPACITY =				80;
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
 const int MIN_MISSILE_INTERACTION =				10;
 
-static CObjectClass<CMissile>g_Class(OBJID_CMISSILE, NULL);
-
-CMissile::CMissile (void) : CSpaceObject(&g_Class),
+CMissile::CMissile (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pExhaust(NULL),
 		m_pPainter(NULL),
 		m_pVaporTrailRegions(NULL),
@@ -203,7 +201,7 @@ int CMissile::ComputeVaporTrail (void)
 		}
 	}
 
-ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retpMissile)
+ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpMissile)
 
 //	Create
 //
@@ -213,7 +211,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 	ALERROR error;
 	CMissile *pMissile;
 
-	pMissile = new CMissile;
+	pMissile = new CMissile(System.GetUniverse());
 	if (pMissile == NULL)
 		return ERR_MEMORY;
 
@@ -299,7 +297,7 @@ ALERROR CMissile::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retp
 
 	//	Add to system
 
-	if (error = pMissile->AddToSystem(pSystem))
+	if (error = pMissile->AddToSystem(System))
 		{
 		delete pMissile;
 		return error;
@@ -383,7 +381,8 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 //	in the given direction.
 
 	{
-	CMissile *pReflection;
+	if (GetSystem() == NULL)
+		return;
 
 	SShotCreateCtx ReflectCtx;
 	ReflectCtx.pDesc = m_pDesc;
@@ -393,7 +392,8 @@ void CMissile::CreateReflection (const CVector &vPos, int iDirection, CMissile *
 	ReflectCtx.vVel = PolarToVector(iDirection, GetVel().Length());
 	ReflectCtx.iDirection = iDirection;
 
-	Create(GetSystem(), ReflectCtx, &pReflection);
+	CMissile *pReflection;
+	Create(*GetSystem(), ReflectCtx, &pReflection);
 
 	pReflection->m_fReflection = true;
 	if (retpReflection)
@@ -535,7 +535,7 @@ ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
 	if (strEquals(sName, PROPERTY_LIFE_LEFT))
 		return (m_fDestroyOnAnimationDone ? CC.CreateInteger(0) : CC.CreateInteger(m_iLifeLeft));
@@ -685,7 +685,7 @@ EDamageResults CMissile::OnDamage (SDamageCtx &Ctx)
 
 	if (m_pDesc->GetHitPoints() >= 10)
 		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(g_ExplosionUNID);
+		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_ExplosionUNID);
 		if (pEffect)
 			pEffect->CreateEffect(GetSystem(),
 					NULL,
@@ -984,7 +984,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 
 	CString sDescUNID;
 	sDescUNID.ReadFromStream(Ctx.pStream);
-	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
+	m_pDesc = Ctx.GetUniverse().FindWeaponFireDesc(sDescUNID);
 
 	//	Old style bonus
 
@@ -1526,7 +1526,7 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 //	Sets an object property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 
     if (strEquals(sName, PROPERTY_LIFE_LEFT))
         {
@@ -1552,7 +1552,7 @@ bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
-		m_pTarget = ::CreateObjFromItem(CC, pValue, CCUTIL_FLAG_CHECK_DESTROYED);
+		m_pTarget = ::CreateObjFromItem(pValue, CCUTIL_FLAG_CHECK_DESTROYED);
 		return true;
 		}
 

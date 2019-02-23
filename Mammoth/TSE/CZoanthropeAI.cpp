@@ -450,7 +450,7 @@ void CZoanthropeAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damag
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
+	m_AICtx.SetLastAttack(m_pShip->GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}

@@ -369,6 +369,14 @@
 		</Effect>
 	</EffectType>
 
+	<EffectType unid="&efNanoFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
 	<EffectType UNID="&efGravitonFireDefault;"
 			instance=			"owner"
 			>
@@ -476,6 +484,30 @@
 					</GetParameters>
 				</Events>
 			</Orb>
+		</Effect>
+	</EffectType>
+
+	<EffectType unid="&efDarkSteelFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
+	<EffectType unid="&efDarkLightningFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
+		</Effect>
+	</EffectType>
+
+	<EffectType unid="&efDarkFireFireDefault;"
+			instance=			"owner"
+			>
+		<Effect>
+			<Null/>
 		</Effect>
 	</EffectType>
 

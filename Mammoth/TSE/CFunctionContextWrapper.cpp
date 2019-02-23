@@ -26,14 +26,14 @@ ICCItem *CFunctionContextWrapper::Clone (CCodeChain *pCC)
 	return NULL;
 	}
 
-void CFunctionContextWrapper::DestroyItem (CCodeChain *pCC)
+void CFunctionContextWrapper::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroy
 
 	{
-	m_pFunction->Discard(pCC);
+	m_pFunction->Discard();
 	delete this;
 	}
 
@@ -61,33 +61,9 @@ ICCItem *CFunctionContextWrapper::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pResult;
 	}
 
-ICCItem *CFunctionContextWrapper::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}
-
-ICCItem *CFunctionContextWrapper::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the item
-
-	{
-	//	Not implemented
-	ASSERT(false);
-	return NULL;
-	}
-
 //	CAddFunctionContextWrapper -------------------------------------------------
 
-ICCItem *CAddFunctionContextWrapper::Transform (CCodeChain &CC, ICCItem *pItem)
+ICCItem *CAddFunctionContextWrapper::Transform (ICCItem *pItem)
 
 //	Transform
 //

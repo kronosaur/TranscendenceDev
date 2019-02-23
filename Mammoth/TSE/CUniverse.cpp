@@ -30,17 +30,10 @@ struct SExtensionSaveDesc
 
 const DWORD UNIVERSE_VERSION_MARKER =					0xffffffff;
 
-const DWORD UNID_FIRST_DEFAULT_EFFECT =					0x00000010;
-const DWORD UNID_FIRST_DEFAULT_FIRE_EFFECT =			0x00000070;
-
 CUniverse *g_pUniverse = NULL;
 Metric g_KlicksPerPixel = KLICKS_PER_PIXEL;
 Metric g_TimeScale = TIME_SCALE;
 Metric g_SecondsPerUpdate =	g_TimeScale / g_TicksPerSecond;
-
-CEffectCreator *g_DefaultFireEffect[damageCount];
-CEffectCreator *g_DefaultHitEffect[damageCount];
-bool g_bDefaultEffectsInit = false;
 
 #ifdef DEBUG_PROGRAMSTATE
 ProgramStates g_iProgramState = psUnknown;
@@ -77,6 +70,7 @@ CUniverse::CUniverse (void) :
 		m_pPlayerShip(NULL),
 		m_pCurrentSystem(NULL),
 		m_dwNextID(1),
+		m_Topology(*this),
 		m_AllMissions(true),
 
 		m_pSoundMgr(NULL),
@@ -99,7 +93,7 @@ CUniverse::CUniverse (void) :
 	//	(Otherwise, the CBeam code would be optimized out, and need it
 	//	because an older version might load one).
 
-	CBeam *pDummy = new CBeam;
+	CBeam *pDummy = new CBeam(*this);
 	delete pDummy;
 	}
 
@@ -114,7 +108,7 @@ CUniverse::~CUniverse (void)
 	m_pPlayerShip = NULL;
 
 	if (m_pSavedGlobalSymbols)
-		m_pSavedGlobalSymbols->Discard(&m_CC);
+		m_pSavedGlobalSymbols->Discard();
 
 	//	Destroy all star systems. We do this here because we want to
 	//	guarantee that we destroy all objects before we destruct
@@ -150,32 +144,6 @@ void CUniverse::AddEvent (CSystemEvent *pEvent)
 	m_Events.AddEvent(pEvent);
 	}
 
-#ifdef OLD_SOUND
-void CUniverse::AddSound (DWORD dwUNID, int iChannel)
-
-//	AddSound
-//
-//	Adds a sound to the design
-
-	{
-	if (m_pSoundMgr == NULL)
-		return;
-
-	//	If this UNID is already in the list, then delete it
-
-	int iOldChannel = FindSound(dwUNID);
-	if (iOldChannel != -1)
-		{
-		m_pSoundMgr->Delete(iOldChannel);
-		m_Sounds.RemoveEntry(dwUNID, NULL);
-		}
-
-	//	Add the new one
-
-	m_Sounds.AddEntry((int)dwUNID, (CObject *)iChannel);
-	}
-#endif
-
 ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 
 //	AddStarSystem
@@ -210,7 +178,7 @@ ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 	ALERROR error;
 	CSystem *pSystem;
 
-	if (error = CSystem::CreateEmpty(this, NULL, &pSystem))
+	if (error = CSystem::CreateEmpty(*this, NULL, &pSystem))
 		return error;
 
     //  Set a unique ID
@@ -244,7 +212,7 @@ ALERROR CUniverse::CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICC
 	//	Create the mission object
 
 	CMission *pMission;
-	if (error = CMission::Create(pType, pOwner, pCreateData, &pMission, retsError))
+	if (error = CMission::Create(*this, pType, pOwner, pCreateData, &pMission, retsError))
 		return error;
 
 	//	Add the mission 
@@ -442,7 +410,7 @@ ALERROR CUniverse::CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSys
 	CString sError;
 
 	SetLogImageLoad(false);
-	error = CSystem::CreateFromXML(this, pSystemType, pTopology, &pSystem, &sError, pStats);
+	error = CSystem::CreateFromXML(*this, pSystemType, pTopology, &pSystem, &sError, pStats);
 	SetLogImageLoad(true);
 
 	if (error)
@@ -565,34 +533,6 @@ CObject *CUniverse::FindByUNID (CIDTable &Table, DWORD dwUNID)
 		return NULL;
 	}
 
-CEffectCreator *CUniverse::FindDefaultFireEffect (DamageTypes iDamage)
-
-//	FindDefaultFireEffect
-//
-//	Returns the default hit effect for the given damage type
-
-	{
-	if (iDamage < damageLaser || iDamage >= damageCount)
-		return NULL;
-
-	InitDefaultEffects();
-	return g_DefaultFireEffect[iDamage];
-	}
-
-CEffectCreator *CUniverse::FindDefaultHitEffect (DamageTypes iDamage)
-
-//	FindDefaultHitEffect
-//
-//	Returns the default hit effect for the given damage type
-
-	{
-	if (iDamage < damageLaser || iDamage >= damageCount)
-		return FindEffectType(g_HitEffectUNID);
-
-	InitDefaultEffects();
-	return g_DefaultHitEffect[iDamage];
-	}
-
 CDeviceClass *CUniverse::FindDeviceClass (DWORD dwUNID)
 
 //	FindDeviceClass
@@ -713,6 +653,9 @@ void CUniverse::FlushStarSystem (CTopologyNode *pTopology)
     int iPos;
     if (m_StarSystems.FindPos(pTopology->GetSystemID(), &iPos))
         {
+		if (m_StarSystems[iPos] == m_pCurrentSystem)
+			SetPOV(NULL);
+
         delete m_StarSystems[iPos];
         m_StarSystems.Delete(iPos);
         }
@@ -787,6 +730,23 @@ const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const
 		return CAdventureDesc::GetDefaultArmorDamageAdj(iLevel);
 	}
 
+const CEconomyType &CUniverse::GetCreditCurrency (void) const
+
+//	GetCreditCurrency
+//
+//	Returns the default credit economy definition.
+
+	{
+	if (m_pCreditCurrency == NULL)
+		{
+		m_pCreditCurrency = CEconomyType::AsType(FindDesignType(DEFAULT_ECONOMY_UNID));
+		if (m_pCreditCurrency == NULL)
+			throw CException(ERR_FAIL);
+		}
+
+	return *m_pCreditCurrency;
+	}
+
 CMission *CUniverse::GetCurrentMission (void)
 
 //	GetCurrentMission
@@ -815,6 +775,32 @@ CMission *CUniverse::GetCurrentMission (void)
 	return pCurrentMission;
 	}
 
+CEffectCreator &CUniverse::GetDefaultFireEffect (DamageTypes iDamage)
+
+//	GetDefaultFireEffect
+//
+//	Returns the default hit effect for the given damage type
+
+	{
+	if (iDamage < damageGeneric || iDamage >= damageCount)
+		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
+
+	return m_NamedEffects.GetFireEffect(m_Design, iDamage);
+	}
+
+CEffectCreator &CUniverse::GetDefaultHitEffect (DamageTypes iDamage)
+
+//	GetDefaultHitEffect
+//
+//	Returns the default hit effect for the given damage type
+
+	{
+	if (iDamage < damageGeneric || iDamage >= damageCount)
+		throw CException(ERR_FAIL, CONSTLIT("DamageTypes value out of range."));
+
+	return m_NamedEffects.GetHitEffect(m_Design, iDamage);
+	}
+
 void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList)
 
 //	GetMissions
@@ -828,7 +814,8 @@ void CUniverse::GetMissions (CSpaceObject *pSource, const CMission::SCriteria &C
 	for (i = 0; i < m_AllMissions.GetCount(); i++)
 		{
 		CMission *pMission = m_AllMissions.GetMission(i);
-		if (pMission->MatchesCriteria(pSource, Criteria))
+		if (pMission->MatchesCriteria(pSource, Criteria) 
+				&& !pMission->IsDestroyed())
 			retList->Insert(pMission);
 		}
 	}
@@ -1128,7 +1115,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 
 			ICCItem *pNewGlobals = m_pSavedGlobalSymbols->Clone(&m_CC);
 			m_CC.SetGlobals(pNewGlobals);
-			pNewGlobals->Discard(&m_CC);
+			pNewGlobals->Discard();
 			}
 
 		//	Load texture library
@@ -1411,35 +1398,6 @@ ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError
 	//	Done
 
 	return NOERROR;
-	}
-
-void CUniverse::InitDefaultEffects (void)
-
-//	InitDefaultHitEffects
-//
-//	Initializes the default hit effects array
-
-	{
-	int i;
-
-	if (!g_bDefaultEffectsInit)
-		{
-		for (i = 0; i < damageCount; i++)
-			{
-			//	Find a default hit effect. Default to some standard.
-
-			g_DefaultHitEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_EFFECT + i);
-			if (g_DefaultHitEffect[i] == NULL)
-				g_DefaultHitEffect[i] = FindEffectType(g_HitEffectUNID);
-
-			//	Find a default fire effect. OK if NULL, we have no effect in that
-			//	case.
-
-			g_DefaultFireEffect[i] = FindEffectType(UNID_FIRST_DEFAULT_FIRE_EFFECT + i);
-			}
-
-		g_bDefaultEffectsInit = true;
-		}
 	}
 
 ALERROR CUniverse::InitFonts (void)
@@ -1839,7 +1797,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	CString sError;
 	CUniverse::SInitDesc InitCtx;
-	InitCtx.bDebugMode = g_pUniverse->InDebugMode();
+	InitCtx.bDebugMode = InDebugMode();
 	InitCtx.bInLoadGame = true;
 
 	//	Load list of extensions used in this game
@@ -1900,7 +1858,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 		if (!m_Extensions.FindBestExtension(ExtensionList[i].dwUNID,
 				ExtensionList[i].dwRelease,
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&pExtension))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find extension: %08x"), ExtensionList[i]);
@@ -1932,7 +1890,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 		if (!m_Extensions.FindBestExtension(Desc.dwUNID,
 				Desc.dwRelease,
-				CExtensionCollection::FLAG_ADVENTURE_ONLY | (g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				CExtensionCollection::FLAG_ADVENTURE_ONLY | (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), Desc.dwUNID);
@@ -1954,7 +1912,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 		pStream->Read((char *)&dwLoad, sizeof(DWORD));
 
 		if (!m_Extensions.FindAdventureFromDesc(dwLoad, 
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find adventure: %08x"), dwLoad);
@@ -1965,7 +1923,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 		{
 		if (!m_Extensions.FindBestExtension(DEFAULT_ADVENTURE_EXTENSION_UNID, 
 				0,
-				(g_pUniverse->InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
+				(InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0),
 				&InitCtx.pAdventure))
 			{
 			*retsError = strPatternSubst(CONSTLIT("Unable to find default adventure: %08x"), DEFAULT_ADVENTURE_EXTENSION_UNID);
@@ -2027,7 +1985,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 17)
 		{
-		SLoadCtx ObjCtx;
+		SLoadCtx ObjCtx(*this);
 		ObjCtx.dwVersion = Ctx.dwSystemVersion;
 		ObjCtx.pStream = pStream;
 
@@ -2190,7 +2148,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Make sure we initialize adventure encounter overrides
 
-	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
+	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
 	if (pAdventure)
 		pAdventure->InitEncounterOverrides();
 
@@ -2310,6 +2268,8 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 	{
 	ASSERT(m_pCurrentSystem);
 	ASSERT(pPlayerShip->GetSystem() == NULL);
+	if (m_pCurrentSystem == NULL)
+		return;
 
 	//	Clear the time-stop flag if necessary
 
@@ -2319,7 +2279,7 @@ void CUniverse::PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSys
 	//	Place the player in the new system
 
 	pPlayerShip->Place(vPos);
-	pPlayerShip->AddToSystem(m_pCurrentSystem);
+	pPlayerShip->AddToSystem(*m_pCurrentSystem);
 	pPlayerShip->OnNewSystem(m_pCurrentSystem);
 
 	//	Restore timer events
@@ -2369,8 +2329,6 @@ ALERROR CUniverse::Reinit (void)
 //	Reinitializes the universe
 
 	{
-    int i;
-
 	DEBUG_TRY
 
 	//	We start at tick 1 because sometimes we need to start with some things
@@ -2386,7 +2344,7 @@ ALERROR CUniverse::Reinit (void)
 	m_Time.DeleteAll();
 	m_pPOV = NULL;
 	SetCurrentSystem(NULL);
-    for (i = 0; i < m_StarSystems.GetCount(); i++)
+    for (int i = 0; i < m_StarSystems.GetCount(); i++)
         delete m_StarSystems[i];
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
@@ -2394,10 +2352,6 @@ ALERROR CUniverse::Reinit (void)
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
-
-	//	Reinitialize some global classes
-
-	CCompositeImageModifiers::Reinit();
 
 	//	Clean up global missions
 
@@ -2411,7 +2365,11 @@ ALERROR CUniverse::Reinit (void)
 	//	Reinitialize types
 
 	m_Design.Reinit();
-	g_bDefaultEffectsInit = false;
+
+	//	Clear out some cached entries
+
+	m_pCreditCurrency = NULL;
+	m_NamedEffects.CleanUp();
 
 	//	Clear the topology nodes
 

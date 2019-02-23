@@ -17,7 +17,6 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
 
     {
     int i;
-    CCodeChain &CC = g_pUniverse->GetCC();
 
     retStats.TimeTable.DeleteAll();
 
@@ -28,7 +27,7 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
 
     CItem WeaponItem(pWeaponItem, 1);
     CItemCtx Ctx(WeaponItem);
-    CCodeChainCtx TLispCtx;
+    CCodeChainCtx TLispCtx(*g_pUniverse);
 
     Metric rDamage180 = WeaponItem.GetItemPropertyDouble(TLispCtx, Ctx, PROPERTY_DAMAGE);
     DamageTypes iDamageType = (DamageTypes)WeaponItem.GetItemPropertyInteger(TLispCtx, Ctx, PROPERTY_DAMAGE_TYPE);

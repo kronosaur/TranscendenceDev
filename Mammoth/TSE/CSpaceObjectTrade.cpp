@@ -250,7 +250,7 @@ const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 	if (pType)
 		return pType->GetEconomyType();
 
-	return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
 	}
 
 DWORD CSpaceObject::GetDefaultEconomyUNID (void)
@@ -379,20 +379,21 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		if (pShipToRefuel == NULL)
 			return false;
 
-		//	Find the highest-level item that can be used by the ship
+		//	Find the lowest-level item that can be used by the ship. The lowest
+		//	level item will be the cheapest item per fuel unit.
 
 		int iBestLevel = 0;
 		int iBestPrice = 0;
 		CItemType *pBestItem = NULL;
 
-		for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+		for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 			{
-			CItemType *pType = g_pUniverse->GetItemType(i);
+			CItemType *pType = GetUniverse().GetItemType(i);
 			CItem Item(pType, 1);
 
 			if (pShipToRefuel->IsFuelCompatible(Item))
 				{
-				if (pBestItem == NULL || pType->GetLevel() > iBestLevel)
+				if (pBestItem == NULL || pType->GetLevel() < iBestLevel)
 					{
 					//	Compute the price, because if we don't sell it, then we
 					//	skip it.

@@ -4,9 +4,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CSequencerEffect>g_Class(OBJID_CSEQUENCEREFFECT, NULL);
-
-CSequencerEffect::CSequencerEffect (void) : CSpaceObject(&g_Class),
+CSequencerEffect::CSequencerEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pType(NULL),
 		m_pAnchor(NULL),
 		m_iStartTime(0)
@@ -16,7 +14,7 @@ CSequencerEffect::CSequencerEffect (void) : CSpaceObject(&g_Class),
 	{
 	}
 
-ALERROR CSequencerEffect::Create (CSystem *pSystem,
+ALERROR CSequencerEffect::Create (CSystem &System,
 								  CEffectSequencerCreator *pType,
 								  CSpaceObject *pAnchor,
 								  const CVector &vPos,
@@ -31,7 +29,7 @@ ALERROR CSequencerEffect::Create (CSystem *pSystem,
 	ALERROR error;
 	CSequencerEffect *pEffect;
 
-	pEffect = new CSequencerEffect;
+	pEffect = new CSequencerEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -42,7 +40,7 @@ ALERROR CSequencerEffect::Create (CSystem *pSystem,
 	//	Settings
 
 	pEffect->m_pType = pType;
-	pEffect->m_iStartTime = g_pUniverse->GetTicks();
+	pEffect->m_iStartTime = System.GetUniverse().GetTicks();
 	pEffect->m_iTimeCursor = pEffect->m_iStartTime - 1;
 	if (pAnchor)
 		{
@@ -52,7 +50,7 @@ ALERROR CSequencerEffect::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;
@@ -144,7 +142,7 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Convert start and end time relative to 0.
 
 		int iStartTime = m_iTimeCursor - m_iStartTime;
-		int iEndTime = g_pUniverse->GetTicks() - m_iStartTime;
+		int iEndTime = GetUniverse().GetTicks() - m_iStartTime;
 		CVector vPos = (m_pAnchor ? m_pAnchor->GetPos() + m_vAnchorOffset : GetPos());
 		CVector vVel = (m_pAnchor ? m_pAnchor->GetVel() : GetVel());
 
@@ -174,7 +172,7 @@ void CSequencerEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Remember the last time we got called. We need this in case
 		//	the system is not updated for a while.
 
-		m_iTimeCursor = g_pUniverse->GetTicks();
+		m_iTimeCursor = GetUniverse().GetTicks();
 		}
 
 	//	If we have no more events, then we can destroy this object

@@ -306,9 +306,9 @@ void CExtension::CleanUp (void)
 
 	//	Delete global functions
 
-	CCodeChain *pCC = &g_pUniverse->GetCC();
+	CCodeChain *pCC = &GetUniverse().GetCC();
 	for (i = 0; i < m_Globals.GetCount(); i++)
-		m_Globals[i].pCode->Discard(pCC);
+		m_Globals[i].pCode->Discard();
 
 	m_Globals.DeleteAll();
 
@@ -684,7 +684,7 @@ ALERROR CExtension::CreateExtensionFromRoot (const CString &sFilespec, CXMLEleme
 	return NOERROR;
 	}
 
-ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, CExtension **retpExtension, CString *retsError)
+ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, DWORD dwFlags, CExtension **retpExtension, CString *retsError)
 
 //	CreateExtensionStub
 //
@@ -693,10 +693,12 @@ ALERROR CExtension::CreateExtensionStub (const CString &sFilespec, EFolderTypes 
 	{
 	ALERROR error;
 
+	bool bDebugMode = ((dwFlags & CExtensionCollection::FLAG_DEBUG_MODE) ? true : false);
+
 	//	Open up the file
 
 	CResourceDb Resources(sFilespec, true);
-	Resources.SetDebugMode(g_pUniverse->InDebugMode());
+	Resources.SetDebugMode(bDebugMode);
 	if (error = Resources.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 		return error;
 
@@ -874,7 +876,7 @@ ALERROR CExtension::ExecuteGlobals (SDesignLoadCtx &Ctx)
 	DEBUG_TRY
 
 	int i;
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Add a hook so that all lambda expressions defined in this global block
 	//	are wrapped with something that sets the extension UNID to the context.
@@ -949,9 +951,9 @@ CG32bitImage *CExtension::GetCoverImage (void) const
 
 	//	Load the image
 
-	g_pUniverse->SetLogImageLoad(false);
+	GetUniverse().SetLogImageLoad(false);
 	m_pCoverImage = pObjImage->CreateCopy();
-	g_pUniverse->SetLogImageLoad(true);
+	GetUniverse().SetLogImageLoad(true);
 
 	//	Done
 
@@ -1050,7 +1052,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			//	Open the file
 
 			CResourceDb ExtDb(m_sFilespec, true);
-			ExtDb.SetDebugMode(g_pUniverse->InDebugMode());
+			ExtDb.SetDebugMode(GetUniverse().InDebugMode());
 			if (error = ExtDb.Open(DFOPEN_FLAG_READ_ONLY, retsError))
 				return ERR_FAIL;
 
@@ -1093,7 +1095,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 				{
 				//	If we're in debug mode then this is a real error.
 
-				if (g_pUniverse->InDebugMode()
+				if (GetUniverse().InDebugMode()
 						&& !ExtDb.IsTDB()
 						&& error != ERR_CANCEL)
 					{
@@ -1119,12 +1121,23 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 
 				if (error = LoadDesignElement(Ctx, pItem))
 					{
-					if (g_pUniverse->InDebugMode()
+					//	We always mark the extension as disabled, so we don't 
+					//	try to load it or use it again.
+
+					SetDisabled(Ctx.sError);
+
+					//	If we're in debug mode, then return an error. This will 
+					//	block loading.
+
+					if (GetUniverse().InDebugMode()
 							&& !ExtDb.IsTDB())
 						return ComposeLoadError(Ctx, retsError);
 
-					SetDisabled(Ctx.sError);
-					return NOERROR;
+					//	Otherwise, we allow loading to continue as if nothing
+					//	had happened.
+
+					else
+						return NOERROR;
 					}
 				}
 
@@ -1300,13 +1313,6 @@ ALERROR CExtension::LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 			return error;
 		}
 
-#ifdef OLD_SOUND
-	//	<Sound>
-
-	else if (strEquals(pDesc->GetTag(), SOUND_TAG))
-		return LoadSoundElement(Ctx, pDesc);
-#endif
-
 	//	<Globals>
 
 	else if (strEquals(pDesc->GetTag(), GLOBALS_TAG))
@@ -1355,6 +1361,8 @@ ALERROR CExtension::LoadDesignType (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CDe
 
 				if (Ctx.GetAPIVersion() >= 12)
 					{
+					CDesignType *pConflict = m_DesignTypes.FindByUNID(dwUNID);
+
 					Ctx.sError = strPatternSubst(CONSTLIT("Duplicate UNID: %x"), dwUNID);
 					return error;
 					}
@@ -1386,7 +1394,7 @@ ALERROR CExtension::LoadGlobalsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 //	Loads <Globals>
 
 	{
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 
 	//	Parse the code and keep it
 
@@ -1538,80 +1546,6 @@ ALERROR CExtension::LoadModulesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	return NOERROR;
 	}
-
-#ifdef OLD_SOUND
-ALERROR CExtension::LoadSoundElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadSoundElement
-//
-//	Loads <Sound> element
-
-	{
-	ALERROR error;
-
-	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
-		return NOERROR;
-
-	DWORD dwUNID;
-	if (error = LoadUNID(Ctx, pDesc->GetAttribute(UNID_ATTRIB), &dwUNID))
-		return error;
-
-	CString sFilename = pDesc->GetAttribute(FILENAME_ATTRIB);
-
-	//	Load the sound
-
-	int iChannel;
-	if (error = Ctx.pResDb->LoadSound(*g_pUniverse->GetSoundMgr(), Ctx.sFolder, sFilename, &iChannel))
-		{
-		Ctx.sError = strPatternSubst(CONSTLIT("Unable to load sound: %s"), sFilename);
-		return error;
-		}
-
-	g_pUniverse->AddSound(dwUNID, iChannel);
-
-	return NOERROR;
-	}
-
-ALERROR CExtension::LoadSoundsElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
-
-//	LoadSoundsElement
-//
-//	Loads <Sounds> element
-//	(For backwards compatibility)
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Nothing to do if we don't want sound resources
-
-	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
-		return NOERROR;
-
-	//	Figure out if we've got a special folder for the resources
-
-	CString sOldFolder = Ctx.sFolder;
-	CString sFolder = pDesc->GetAttribute(FOLDER_ATTRIB);
-	if (!sFolder.IsBlank())
-		Ctx.sFolder = pathAddComponent(Ctx.sFolder, sFolder);
-
-	//	Loop over all sound resources
-
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
-		{
-		CXMLElement *pItem = pDesc->GetContentElement(i);
-
-		if (error = LoadSoundElement(Ctx, pItem))
-			return error;
-		}
-
-	//	Restore folder
-
-	Ctx.sFolder = sOldFolder;
-
-	return NOERROR;
-	}
-#endif
 
 ALERROR CExtension::LoadResourcesElement (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 

@@ -218,8 +218,7 @@ ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnh
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 
 	for (i = 0; i < damageCount; i++)
 		{
@@ -232,7 +231,7 @@ ICCItem *CDamageAdjDesc::GetDamageAdjProperty (const CItemEnhancementStack *pEnh
 		if (pEnhancements)
 			iDamageAdj = iDamageAdj * pEnhancements->GetDamageAdj(Damage) / 100;
 
-		pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iDamageAdj);
+		pResult->SetIntegerAt(::GetDamageType(iDamageType), iDamageAdj);
 		}
 
 	return pResult;
@@ -247,8 +246,7 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 	{
 	int i;
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 
 	for (i = 0; i < damageCount; i++)
 		{
@@ -263,9 +261,9 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 
 		int iBonus = GetBonusFromAdj(iDamageAdj, iDefault);
 		if (iBonus == -100)
-			pResult->SetStringAt(CC, ::GetDamageType(iDamageType), CONSTLIT("immune"));
+			pResult->SetStringAt(::GetDamageType(iDamageType), CONSTLIT("immune"));
 		else
-			pResult->SetIntegerAt(CC, ::GetDamageType(iDamageType), iBonus);
+			pResult->SetIntegerAt(::GetDamageType(iDamageType), iBonus);
 		}
 
 	return pResult;

@@ -735,8 +735,8 @@
 		</Events>
 
 		<Language>
-			<String id="msgAttackPlayer">"So be it!"</String>
-			<String id="msgPlayerBetrayal">"We will never forget your betrayal!"</String>
+			<String id="msgAttackPlayer">So be it!</String>
+			<String id="msgPlayerBetrayal">We will never forget your betrayal!</String>
 		</Language>
 	</Type>
 

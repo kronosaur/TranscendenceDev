@@ -166,7 +166,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"blast:3d6"
 				fireRate=			"30"
@@ -243,7 +243,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"blast:4d6; mining:5"
 				fireRate=			"30"
@@ -328,7 +328,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"blast:6d6; mining:6"
 				fireRate=			"30"
@@ -415,7 +415,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"blast:5d6"
 				fireRate=			"30"
@@ -533,7 +533,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"thermo:8d12; mining:7"
 				fireRate=			"30"
@@ -677,7 +677,7 @@
 		</Events>
 		
 		<Language>
-			<Text id="msgWaiting">"Armed"</Text>
+			<Text id="msgWaiting">Armed</Text>
 		</Language>
 	</ItemType>
 	

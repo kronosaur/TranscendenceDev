@@ -689,10 +689,10 @@
 		
 		<Language>
 			<Text id="msgStartScan">
-				"\"Starting my scan...Keep the area clear!\""
+				Starting my scan...Keep the area clear!
 			</Text>
 			<Text id="msgRestartScan">
-				"\"Restarting scan...Keep the area clear!\""
+				Restarting scan...Keep the area clear!
 			</Text>
 			<Text id="msgScanning">
 				(cat "Scanning..." (@ gData 'percent) "%")

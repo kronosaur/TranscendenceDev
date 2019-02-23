@@ -48,12 +48,23 @@
 							))
 						(rumorIntro (objTranslate gSource 'rumor.intro translateData))
 						(descID (or (@ gData 'descID) (@ gData 'textID)))
+						(missionObj 
+							(if (= (objGetProperty sourceObj 'category) 'mission) 
+								sourceObj
+								)
+							)
 
 						(theRumor (switch
 							;	If we have a dialogID then translate from sourceObj
 							;	This could be a complex multi-page RPGDialog case
 							(@ gData 'dialogID)
-								(objTranslate sourceObj (@ gData 'dialogID) translateData)
+								(switch
+									sourceObj
+										(objTranslate sourceObj (@ gData 'dialogID) translateData)
+
+									sourceTyp
+										(typTranslate sourceTyp (@ gData 'dialogID) translateData)
+									)
 
 							;	If the station showing the rumor has an intro then prepend it
 							rumorIntro
@@ -86,7 +97,9 @@
 								actionDoneID: (or (@ gData 'actionDoneID) 'actionContinue)
 								;	sourceObj may be either mission or space object, but
 								;	objTranslate and msnTranslate are identical so this works
-								missionObj: sourceObj
+								missionObj: missionObj
+								translateType: (if sourceTyp sourceTyp (objGetType sourceObj))
+								translateData: translateData
 								rumorObj: gData
 								onExitPane: (lambda (theScreen pageDesc options)
 									(block (
@@ -221,7 +234,7 @@
 
 					(filteredRumors (map allRumors '(original excludeNil) theRumor
 						(block (
-							(attributes (split (@ theRumor 'attributes " ,;")))
+							(attributes (split (@ theRumor 'attributes) " ,;"))
 							)
 							(and
 								(apply and (map (@ rumorAttributes 'require) attr (find attributes attr)))
@@ -232,11 +245,18 @@
 
 					;	Chance of rumor being selected is proportional to its priority
 					;	If all priorities are equal this is equivalent to (random rumorList)
-					(theRoll (random 1 (+ (map filteredRumors theRumor (@ theRumor 'priority)))))
+					(theRoll (random 1 (+ (map filteredRumors theRumor (or (@ theRumor 'priority) 10)))))
 					(theRumor (match filteredRumors theRumor
-						(ls (setq theRoll (- theRoll (@ theRumor 'priority))) 1)
+						(ls (setq theRoll (- theRoll (or (@ theRumor 'priority) 10))) 1)
 						))
 					)
+					(if (@ options 'debug)
+						(block ()
+							(dbgOutput "All: " allRumors)
+							(dbgOutput "Filtered: " filteredRumors)
+							(dbgOutput "Rumor: " theRumor)
+							)
+						)
 
 					(if (and theRumor (@ options 'actionDoneID))
 						(set@ theRumor 'actionDoneID (@ options 'actionDoneID))

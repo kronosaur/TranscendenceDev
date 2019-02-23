@@ -67,6 +67,8 @@ class CDockScreenStack
 		void SetReturnData (const CString &sAttrib, ICCItem *pData);
 
 	private:
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+
 		TArray<SDockFrame> m_Stack;
 
 		static const SDockFrame m_NullFrame;
@@ -84,6 +86,7 @@ class CDockSession
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		inline bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
 		inline void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemBegin(Ctx, pSource, Item); }
 		inline void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemComplete(Ctx, pSource, Result); }

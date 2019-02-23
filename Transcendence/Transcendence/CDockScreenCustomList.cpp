@@ -35,12 +35,11 @@ ALERROR CDockScreenCustomList::OnInitList (SInitCtx &Ctx, const SDisplayOptions 
 
 	//	Get the list to show
 
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItem *pExp = CC.Link(Options.sCode);
+	ICCItem *pExp = CCodeChain::Link(Options.sCode);
 
 	//	Evaluate the function
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(&m_DockScreen);
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);
@@ -56,7 +55,7 @@ ALERROR CDockScreenCustomList::OnInitList (SInitCtx &Ctx, const SDisplayOptions 
 
 	//	Set this expression as the list
 
-	m_pItemListControl->SetList(CC, pResult);
+	m_pItemListControl->SetList(pResult);
 	CCCtx.Discard(pResult);
 
 	//	Position the cursor on the next relevant item

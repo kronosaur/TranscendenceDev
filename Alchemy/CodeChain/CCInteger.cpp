@@ -32,17 +32,17 @@ ICCItem *CCInteger::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCInteger::DestroyItem (CCodeChain *pCC)
+void CCInteger::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroys the item
 
 	{
-	pCC->DestroyInteger(this);
+	CCodeChain::DestroyInteger(this);
 	}
 
-CString CCInteger::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCInteger::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -84,35 +84,5 @@ void CCInteger::Reset (void)
 	{
 	ASSERT(m_dwRefCount == 0);
 	m_iValue = 0;
-	}
-
-ICCItem *CCInteger::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Write((char *)&m_iValue, sizeof(m_iValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCInteger::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Read((char *)&m_iValue, sizeof(m_iValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
 	}
 

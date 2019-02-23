@@ -217,7 +217,7 @@ CItemType::~CItemType (void)
 		delete m_pComponents;
 
 	if (m_pUseCode)
-		m_pUseCode->Discard(&g_pUniverse->GetCC());
+		m_pUseCode->Discard();
 
 	if (m_pArmor)
 		delete m_pArmor;
@@ -246,7 +246,7 @@ bool CItemType::IsAmmunition (void) const
 	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
 	}
 
-void CItemType::CreateEmptyFlotsam (CSystem *pSystem, 
+void CItemType::CreateEmptyFlotsam (CSystem &System, 
 									const CVector &vPos, 
 									const CVector &vVel, 
 									CSovereign *pSovereign, 
@@ -257,14 +257,14 @@ void CItemType::CreateEmptyFlotsam (CSystem *pSystem,
 //	Creates an empty flotsam station
 
 	{
-	SSystemCreateCtx Ctx(pSystem);
+	SSystemCreateCtx Ctx(System);
 
 	SObjCreateCtx CreateCtx(Ctx);
 	CreateCtx.vPos = vPos;
 	CreateCtx.vVel = vVel;
 
 	CStation *pFlotsam;
-	CStation::CreateFromType(pSystem,
+	CStation::CreateFromType(System,
 			GetFlotsamStationType(),
 			CreateCtx,
 			&pFlotsam);
@@ -491,7 +491,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 //	We return NULL if we do not understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	int i;
 
@@ -519,9 +519,9 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 		ICCItem *pList = CC.CreateLinkedList();
 		for (i = 0; i < Components.GetCount(); i++)
 			{
-			ICCItem *pEntry = CreateListFromItem(CC, Components.GetItem(i));
-			pList->Append(CC, pEntry);
-			pEntry->Discard(&CC);
+			ICCItem *pEntry = CreateListFromItem(Components.GetItem(i));
+			pList->Append(pEntry);
+			pEntry->Discard();
 			}
 
 		return pList;
@@ -568,7 +568,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 			{
 			ICCItem *pResult = CC.CreateLinkedList();
 			for (i = 0; i < GetLaunchWeapons().GetCount(); i++)
-				pResult->AppendInteger(CC, GetLaunchWeapons()[i]->GetUNID());
+				pResult->AppendInteger(GetLaunchWeapons()[i]->GetUNID());
 
 			return pResult;
 			}
@@ -590,9 +590,9 @@ CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
 	{
 	int i;
 
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItemType *pType = GetUniverse().GetItemType(i);
 		CDeviceClass *pWeapon;
 
 		if (pType->IsDevice() 
@@ -751,7 +751,7 @@ CStationType *CItemType::GetFlotsamStationType (void)
 
 	{
 	if (g_pFlotsamStationType == NULL)
-		g_pFlotsamStationType = g_pUniverse->FindStationType(FLOTSAM_UNID);
+		g_pFlotsamStationType = GetUniverse().FindStationType(FLOTSAM_UNID);
 
 	return g_pFlotsamStationType;
 	}
@@ -1287,9 +1287,9 @@ void CItemType::InitRandomNames (void)
 	//	unknown placeholder.
 
 	int j = 0;
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItemType *pType = GetUniverse().GetItemType(i);
 		if (pType->m_pUnknownType.GetUNID() == GetUNID())
 			{
 			CString sTemplate = m_UnknownNames[Randomize[j % iCount]];
@@ -1565,7 +1565,7 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else if (strEquals(pSubDesc->GetTag(), COCKPIT_USE_TAG))
 			{
-			m_pUseCode = g_pUniverse->GetCC().Link(pSubDesc->GetContentText(0));
+			m_pUseCode = GetUniverse().GetCC().Link(pSubDesc->GetContentText(0));
 			if (m_pUseCode->IsError())
 				return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("<Invoke> event: %s"), m_pUseCode->GetStringValue()));
 
@@ -1842,7 +1842,7 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		if (dwLauncher == 0 || !IsMissile())
 			return false;
 
-		CDeviceClass *pDevice = g_pUniverse->FindDeviceClass(dwLauncher);
+		CDeviceClass *pDevice = GetUniverse().FindDeviceClass(dwLauncher);
 		if (pDevice == NULL)
 			return false;
 

@@ -889,6 +889,9 @@ bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int i
 //	RequestDock 
 
 	{
+	if (pOwner == NULL)
+		return false;
+
 	//	If the requested dock is full, then we fail.
 
 	if (iPort != -1 && m_pPort[iPort].iStatus != psEmpty)
@@ -921,7 +924,7 @@ bool CDockingPorts::RequestDock (CSpaceObject *pOwner, CSpaceObject *pObj, int i
 	//	[We also make an exception for any ship that the player is escorting,
 	//	or for any of the player's wingmen.]
 
-	CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayer = pOwner->GetUniverse().GetPlayerShip();
 	if (iEmptyPortsLeft < 2
 			&& pPlayer
 			&& pObj != pPlayer
@@ -1109,7 +1112,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 	CShip *pShip = Port.pObj->AsShip();
 
 	ASSERT(pShip);
-	if (pShip == NULL)
+	if (pOwner == NULL || pShip == NULL)
 		return;
 
 	int iPortRotation;
@@ -1125,7 +1128,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 
 	Metric rDelta2 = vDelta.Length2();
 	if (rDelta2 < DOCKING_THRESHOLD2 
-			&& (pShip == g_pUniverse->GetPlayerShip() || pShip->IsPointingTo(iPortRotation)))
+			&& (pShip == pOwner->GetUniverse().GetPlayerShip() || pShip->IsPointingTo(iPortRotation)))
 		{
 		pShip->Place(vDest);
 		pShip->OnDockingStop();

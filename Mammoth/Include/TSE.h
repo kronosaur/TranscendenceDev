@@ -521,6 +521,7 @@ class COverlay
 		void CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
 		void FireOnUpdate (CSpaceObject *pSource);
 		void CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx);
+		inline CUniverse &GetUniverse (void) const { return (m_pType ? m_pType->GetUniverse() : *g_pUniverse); }
 
 		COverlayType *m_pType;					//	Type of field
 		DWORD m_dwID;							//	Universal ID
@@ -635,7 +636,7 @@ class COverlayList
 //	Intangible: If TRUE, this object is not a physical object in the system.
 //		Virtual and hidden objects are intangible. So are missiles fading out.
 
-class CSpaceObject : public CObject
+class CSpaceObject
 	{
 	public:
 		static constexpr DWORD AGGRESSOR_THRESHOLD = 30 * 30;
@@ -648,6 +649,7 @@ class CSpaceObject : public CObject
 			catMissile =		0x00000008,
 			catFractureEffect =	0x00000010,
 			catMarker =			0x00000020,
+			catMission =		0x00000040,
 			catOther =			0x80000000,
 			};
 
@@ -737,18 +739,19 @@ class CSpaceObject : public CObject
 
 		//	Creation and Lifetime
 
-		CSpaceObject (IObjectClass *pClass);
+		CSpaceObject (CUniverse &Universe);
 		virtual ~CSpaceObject (void);
 
 		static void CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
 
-		ALERROR AddToSystem (CSystem *pSystem, bool bNoGlobalInsert = false);
+		ALERROR AddToSystem (CSystem &System, bool bNoGlobalInsert = false);
 		void Ascend (void);
 		inline void Destroy (SDamageCtx &Ctx) { Destroy(Ctx.Damage.GetCause(), Ctx.Attacker, Ctx.pDesc); }
 		inline void Destroy (DestructionTypes iCause, SDamageCtx &Ctx) { Destroy(iCause, Ctx.Attacker, Ctx.pDesc); }
 		void Destroy (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL, CSpaceObject **retpWreck = NULL);
+		CDesignCollection &GetDesign (void) const;
 		inline CSystem *GetSystem (void) const { return m_pSystem; }
-		inline CUniverse *GetUniverse (void) const { return m_pSystem->GetUniverse(); }
+		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		inline bool IsAscended (void) const { return m_fAscended; }
 		void Remove (DestructionTypes iCause, const CDamageSource &Attacker, bool bRemovedByOwner = false);
 		inline void SetAscended (bool bAscended = true) { m_fAscended = bAscended; }
@@ -840,7 +843,7 @@ class CSpaceObject : public CObject
 
 		virtual void CreateStarlightImage (int iStarAngle, Metric rStarDist) { }
 		virtual const CObjectImageArray &GetHeroImage (void) const { static CObjectImageArray NullImage; return NullImage; }
-		virtual const CObjectImageArray &GetImage (void) const;
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const;
         virtual const CCompositeImageSelector &GetImageSelector (void) const { return CCompositeImageSelector::Null(); }
 		virtual void MarkImages (void) { }
 
@@ -1223,7 +1226,7 @@ class CSpaceObject : public CObject
 
 		//	Painting
 
-		virtual CSystem::LayerEnum GetPaintLayer (void) { return CSystem::layerStations; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const { return CSystem::layerStations; }
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
@@ -1488,6 +1491,7 @@ class CSpaceObject : public CObject
 		virtual bool FollowsObjThroughGate (CSpaceObject *pLeader = NULL) { return false; }
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual int GetRotation (void) const { return 0; }
+		virtual int GetRotationFrameIndex (void) const { return 0; }
 		virtual void RepairDamage (int iHitPoints) { }
 		virtual void Resume (void) { }
 		virtual void Suspend (void) { }
@@ -1519,6 +1523,7 @@ class CSpaceObject : public CObject
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
 		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
+		virtual DWORD GetClassID (void) const = 0;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual CDesignType *GetDefaultOverride (void) const { return NULL; }
@@ -1624,13 +1629,14 @@ class CSpaceObject : public CObject
 			SEffectNode *pNext;
 			};
 
-		CSpaceObject (void);
-
 		inline void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
 		void UpdateEffects (void);
 		void UpdatePlayerTarget (SUpdateCtx &Ctx);
 
-		CSystem *m_pSystem;						//	Current system
+		static CSpaceObject *CreateFromClassID (CUniverse &Universe, DWORD dwClass);
+
+		CUniverse &m_Universe;					//	Our universe
+		CSystem *m_pSystem;						//	Current system (may be NULL)
 		int m_iIndex;							//	Index in system
 		DWORD m_dwID;							//	Universal ID
 		int m_iDestiny;							//	Random number 0..DestinyRange-1
@@ -1731,8 +1737,6 @@ class CSpaceObject : public CObject
 		//	Empty list of overlays
 
 		static COverlayList m_NullOverlays;
-
-	friend CObjectClass<CSpaceObject>;
 	};
 
 class CGlobalSpaceObject
@@ -2011,13 +2015,13 @@ class CItemListWrapper : public IListData
 class CListWrapper : public IListData
 	{
 	public:
-		CListWrapper (CCodeChain *pCC, ICCItem *pList);
-		virtual ~CListWrapper (void) { m_pList->Discard(m_pCC); }
+		CListWrapper (ICCItem *pList);
+		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
 		virtual int GetCount (void) override { return m_pList->GetCount(); }
 		virtual int GetCursor (void) override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) override;
-		virtual ICCItem *GetEntryAtCursor (CCodeChain &CC) override;
+		virtual ICCItem *GetEntryAtCursor (void) override;
 		virtual CString GetTitleAtCursor (void) override;
 		virtual bool IsCursorValid (void) const override { return (m_iCursor != -1); }
 		virtual bool MoveCursorBack (void) override;
@@ -2030,7 +2034,6 @@ class CListWrapper : public IListData
 	private:
 		DWORD GetImageDescAtCursor (RECT *retrcImage, Metric *retrScale) const;
 
-		CCodeChain *m_pCC;
 		ICCItem *m_pList;
 
 		int m_iCursor;
@@ -2104,15 +2107,14 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
 Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem);
 ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source);
 CString CreateDataFieldFromItemList (const TArray<CItem> &List);
-CString CreateDataFromItem (CCodeChain &CC, ICCItem *pItem);
+CString CreateDataFromItem (ICCItem *pItem);
 ICCItem *CreateDisposition (CCodeChain &CC, CSovereign::Disposition iDisp);
 ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, int iRotation = 0);
-ICCItem *CreateListFromItem (CCodeChain &CC, const CItem &Item);
+ICCItem *CreateListFromItem (const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);
-ICCItem *CreateListFromVector (CCodeChain &CC, const CVector &vVector);
-ICCItem *CreatePowerResult (CCodeChain &CC, double rPowerInKW);
-CItem CreateItemFromList (CCodeChain &CC, ICCItem *pList);
-CSpaceObject *CreateObjFromItem (CCodeChain &CC, ICCItem *pItem, DWORD dwFlags = 0);
+ICCItem *CreateListFromVector (const CVector &vVector);
+ICCItem *CreatePowerResult (double rPowerInKW);
+CSpaceObject *CreateObjFromItem (ICCItem *pItem, DWORD dwFlags = 0);
 ICCItem *CreateObjPointer (CCodeChain &CC, CSpaceObject *pObj);
 bool CreateOrbitFromList (CCodeChain &CC, ICCItem *pList, COrbit *retOrbitDesc);
 ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue);
@@ -2124,20 +2126,15 @@ void DefineGlobalItem (CCodeChain &CC, const CString &sVar, const CItem &Item);
 void DefineGlobalSpaceObject (CCodeChain &CC, const CString &sVar, const CSpaceObject *pObj);
 void DefineGlobalVector (CCodeChain &CC, const CString &sVar, const CVector &vVector);
 void DefineGlobalWeaponType (CCodeChain &CC, const CString &sVar, CItemType *pWeaponType);
-CInstalledArmor *GetArmorSectionArg (CCodeChain &CC, ICCItem *pArg, CSpaceObject *pObj);
 CDamageSource GetDamageSourceArg (CCodeChain &CC, ICCItem *pArg);
 DamageTypes GetDamageTypeFromArg (CCodeChain &CC, ICCItem *pArg);
-CInstalledDevice *GetDeviceFromItem (CCodeChain &CC, CSpaceObject *pObj, ICCItem *pArg);
 const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem);
 const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency);
 ALERROR GetEconomyUNIDOrDefault (CCodeChain &CC, ICCItem *pItem, DWORD *retdwUNID);
-void GetImageDescFromList (CCodeChain &CC, ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
+void GetImageDescFromList (ICCItem *pList, CG32bitImage **retpBitmap, RECT *retrcRect);
 ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CString &sProperty);
-CItem GetItemFromArg (CCodeChain &CC, ICCItem *pArg);
-CItemType *GetItemTypeFromArg (CCodeChain &CC, ICCItem *pArg);
 bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError);
 ALERROR GetPosOrObject (CEvalContext *pEvalCtx, ICCItem *pArg, CVector *retvPos, CSpaceObject **retpObj = NULL, int *retiLocID = NULL);
-CWeaponFireDesc *GetWeaponFireDescArg (CCodeChain &CC, ICCItem *pArg);
 bool IsVectorItem (ICCItem *pItem);
 ALERROR LoadCodeBlock (const CString &sCode, ICCItem **retpCode, CString *retsError = NULL);
 ICCItem *StdErrorNoSystem (CCodeChain &CC);
@@ -2147,7 +2144,7 @@ ICCItem *StdErrorNoSystem (CCodeChain &CC);
 inline CSpaceObject *CInstalledDevice::GetTarget (CSpaceObject *pSource) const { return ((m_dwTargetID && pSource) ? pSource->GetSystem()->FindObject(m_dwTargetID) : NULL); }
 inline void CInstalledDevice::SetTarget (CSpaceObject *pObj) { m_dwTargetID = (pObj ? pObj->GetID() : 0); }
 
-inline bool CItem::IsDisrupted (void) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= (DWORD)g_pUniverse->GetTicks()) : false); }
+inline bool CItem::IsDisrupted (void) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= (DWORD)GetUniverse().GetTicks()) : false); }
 
 
 inline int CalcHPDamageAdj (int iHP, int iDamageAdj)

@@ -183,6 +183,7 @@ class CArmorClass
 		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
         const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
+		CUniverse &GetUniverse (void) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const;

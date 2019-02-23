@@ -14,9 +14,7 @@
 #define NO_WAKE_ATTRIB							CONSTLIT("noWake")
 #define RADIUS_ATTRIB							CONSTLIT("radius")
 
-static CObjectClass<CParticleEffect>g_Class(OBJID_CPARTICLEEFFECT, NULL);
-
-CParticleEffect::CParticleEffect (void) : CSpaceObject(&g_Class),
+CParticleEffect::CParticleEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pFirstGroup(NULL),
 		m_pAnchor(NULL)
 
@@ -70,7 +68,7 @@ bool CParticleEffect::CanBeHitBy (const DamageDesc &Damage)
 			|| Damage.GetDamageType() == damagePositron);
 	}
 
-ALERROR CParticleEffect::Create (CSystem *pSystem,
+ALERROR CParticleEffect::Create (CSystem &System,
 								 CXMLElement *pDesc,
 								 const CVector &vPos,
 								 const CVector &vVel,
@@ -84,7 +82,7 @@ ALERROR CParticleEffect::Create (CSystem *pSystem,
 	ALERROR error;
 	CParticleEffect *pParticles;
 
-	pParticles = new CParticleEffect;
+	pParticles = new CParticleEffect(System.GetUniverse());
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
@@ -148,7 +146,7 @@ ALERROR CParticleEffect::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(pSystem))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -162,7 +160,7 @@ ALERROR CParticleEffect::Create (CSystem *pSystem,
 	return NOERROR;
 	}
 
-ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
+ALERROR CParticleEffect::CreateEmpty (CSystem &System,
 									  CSpaceObject *pAnchor,
 									  const CVector &vPos,
 									  const CVector &vVel,
@@ -176,7 +174,7 @@ ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
 	ALERROR error;
 	CParticleEffect *pParticles;
 
-	pParticles = new CParticleEffect;
+	pParticles = new CParticleEffect(System.GetUniverse());
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
@@ -186,7 +184,7 @@ ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(pSystem))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -200,7 +198,7 @@ ALERROR CParticleEffect::CreateEmpty (CSystem *pSystem,
 	return NOERROR;
 	}
 
-ALERROR CParticleEffect::CreateExplosion (CSystem *pSystem,
+ALERROR CParticleEffect::CreateExplosion (CSystem &System,
 										  CSpaceObject *pAnchor,
 										  const CVector &vPos,
 										  const CVector &vVel,
@@ -219,7 +217,7 @@ ALERROR CParticleEffect::CreateExplosion (CSystem *pSystem,
 	ALERROR error;
 	CParticleEffect *pParticles;
 
-	pParticles = new CParticleEffect;
+	pParticles = new CParticleEffect(System.GetUniverse());
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
@@ -269,7 +267,7 @@ ALERROR CParticleEffect::CreateExplosion (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(pSystem))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -283,7 +281,7 @@ ALERROR CParticleEffect::CreateExplosion (CSystem *pSystem,
 	return NOERROR;
 	}
 
-ALERROR CParticleEffect::CreateGeyser (CSystem *pSystem,
+ALERROR CParticleEffect::CreateGeyser (CSystem &System,
 									   CSpaceObject *pAnchor,
 									   const CVector &vPos,
 									   const CVector &vVel,
@@ -304,7 +302,7 @@ ALERROR CParticleEffect::CreateGeyser (CSystem *pSystem,
 	ALERROR error;
 	CParticleEffect *pParticles;
 
-	pParticles = new CParticleEffect;
+	pParticles = new CParticleEffect(System.GetUniverse());
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
@@ -337,7 +335,7 @@ ALERROR CParticleEffect::CreateGeyser (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(pSystem))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -650,10 +648,10 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	//	Do not bother updating everything if we are far from the POV
 
 	bool bFarAway = false;
-	if (g_pUniverse->GetPOV() 
-			&& g_pUniverse->GetCurrentSystem() == GetSystem())
+	if (GetUniverse().GetPOV() 
+			&& GetUniverse().GetCurrentSystem() == GetSystem())
 		{
-		Metric rPOVDist2 = (GetPos() - g_pUniverse->GetPOV()->GetPos()).Length2();
+		Metric rPOVDist2 = (GetPos() - GetUniverse().GetPOV()->GetPos()).Length2();
 		Metric rMaxUpdateDist2 = LIGHT_SECOND * LIGHT_SECOND * 3600;
 		bFarAway = (rPOVDist2 > rMaxUpdateDist2);
 		}

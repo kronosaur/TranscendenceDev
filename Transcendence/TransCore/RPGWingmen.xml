@@ -209,33 +209,33 @@
 					""
 					)
 			</Text>
-			<String id="FormUpAck">Acknowledged</String>
-			<String id="IcantAttackFriends">Unable to comply</String>
-			<String id="IcantAttackMyself">Unable to comply</String>
-			<String id="ImFarFromHome">I'm far from home</String>
-			<String id="ImGoingHome">Going home</String>
-			<String id="ImRepairingArmor">Docking to repair armor</String>
-			<String id="ImTooFarFromHome">I'm too far from home</String>
-			<String id="MyArmorNeedsRepair">Armor repair needed</String>
-			<String id="NiceShooting">Nice shooting!</String>
-			<String id="NoTarget">No target selected</String>
-			<String id="NoTargetInRange">No target in range</String>
-			<String id="Status100Percent">No damage</String>
-			<String id="StatusArmorDamaged">Armor is %armorDamage%% damaged</String>
-			<String id="StatusAttackingTarget">Engaging target</String>
-			<String id="StatusGoingHome">Returning home</String>
-			<String id="StatusRepairingArmor">Repairing armor</String>
-			<String id="StatusShieldsDamaged">Shields down to %shieldLevel%%</String>
-			<String id="StatusWaiting">Waiting</String>
-			<String id="WaitAck">Acknowledged</String>
-			<String id="WatchYourTargets">Watch your targets!</String>
-			<String id="WingmanJoined">Ready</String>
-			<String id="WingmanKilled">Wingman killed</String>
+			<String id="FormUpAck">				Acknowledged</String>
+			<String id="IcantAttackFriends">	Unable to comply</String>
+			<String id="IcantAttackMyself">		Unable to comply</String>
+			<String id="ImFarFromHome">			I'm far from home</String>
+			<String id="ImGoingHome">			Going home</String>
+			<String id="ImRepairingArmor">		Docking to repair armor</String>
+			<String id="ImTooFarFromHome">		I'm too far from home</String>
+			<String id="MyArmorNeedsRepair">	Armor repair needed</String>
+			<String id="NiceShooting">			Nice shooting!</String>
+			<String id="NoTarget">				No target selected</String>
+			<String id="NoTargetInRange">		No target in range</String>
+			<String id="Status100Percent">		No damage</String>
+			<String id="StatusArmorDamaged">	Armor is %armorDamage%% damaged</String>
+			<String id="StatusAttackingTarget">	Engaging target</String>
+			<String id="StatusGoingHome">		Returning home</String>
+			<String id="StatusRepairingArmor">	Repairing armor</String>
+			<String id="StatusShieldsDamaged">	Shields down to %shieldLevel%%</String>
+			<String id="StatusWaiting">			Waiting</String>
+			<String id="WaitAck">				Acknowledged</String>
+			<String id="WatchYourTargets">		Watch your targets!</String>
+			<String id="WingmanJoined">			Ready</String>
+			<String id="WingmanKilled">			Wingman killed</String>
 
-			<String id="msgNoDamage">No damage</String>
-			<String id="msgArmorDamage">Armor integrity at %armorIntegrity%%</String>
-			<String id="msgShieldDamage">Shields at %shieldLevel%%</String>
-			<String id="msgHullDamage">Hull integrity at %hullIntegrity%%</String>
+			<String id="msgNoDamage">			No damage</String>
+			<String id="msgArmorDamage">		Armor integrity at %armorIntegrity%%</String>
+			<String id="msgShieldDamage">		Shields at %shieldLevel%%</String>
+			<String id="msgHullDamage">			Hull integrity at %hullIntegrity%%</String>
 
 			<Text id="msgRefusesToDowngradeShip">
 

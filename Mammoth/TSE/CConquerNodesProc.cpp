@@ -61,8 +61,10 @@ int CConquerNodesProc::CalcNodeWeight (CTopologyNode *pNode, TArray<SNodeWeight>
 	{
 	int i;
 
-	CTopologyNode::SCriteriaCtx Ctx;
-	Ctx.pTopology = NULL;
+	if (pNode == NULL)
+		return 0;
+
+	CTopologyNode::SCriteriaCtx Ctx(pNode->GetTopology());
 
 	for (i = 0; i < Weights.GetCount(); i++)
 		{

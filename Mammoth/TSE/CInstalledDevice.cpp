@@ -954,7 +954,6 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 //	the property for some reason.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("No device installed.");

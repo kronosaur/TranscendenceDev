@@ -25,7 +25,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	//	If not new then we need to free the code block
 
 	if (!bIsNew && pEntry->pCode)
-		pEntry->pCode->Discard(&g_pUniverse->GetCC());
+		pEntry->pCode->Discard();
 
 	//	Init
 
@@ -33,7 +33,7 @@ void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 	pEntry->pCode = NULL;
 	}
 
-ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, ICCItem *pData) const
+ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) const
 
 //	ComposeCCItem
 //
@@ -47,9 +47,9 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 
 		for (int i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
+			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
 			ICCItemPtr pKey = ICCItemPtr(pValue->GetKey(i));
-			pResult->AddEntry(&CC, pKey, pElement);
+			pResult->AddEntry(pKey, pElement);
 			}
 
 		return pResult;
@@ -64,8 +64,8 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (CCodeChain &CC, ICCItem *pValue, I
 
 		for (int i = 0; i < pValue->GetCount(); i++)
 			{
-			ICCItemPtr pElement = ComposeCCItem(CC, pValue->GetElement(i), pData);
-			pResult->Append(CC, pElement);
+			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
+			pResult->Append(pElement);
 			}
 
 		return pResult;
@@ -97,14 +97,14 @@ bool CLanguageDataBlock::ComposeCCResult (ETranslateResult iResult, ICCItem *pDa
 			retResult = ICCItemPtr(ICCItem::List);
 
 			for (int i = 0; i < List.GetCount(); i++)
-				retResult->AppendString(g_pUniverse->GetCC(), List[i]);
+				retResult->AppendString(List[i]);
 
 			return true;
 			}
 
 		case resultCCItem:
 			{
-			retResult = ComposeCCItem(g_pUniverse->GetCC(), pCCResult, pData);
+			retResult = ComposeCCItem(pCCResult, pData);
 			return true;
 			}
 
@@ -247,12 +247,9 @@ void CLanguageDataBlock::DeleteAll (void)
 //	Deletes all entries
 
 	{
-	int i;
-	CCodeChain *pCC = &g_pUniverse->GetCC();
-
-	for (i = 0; i < m_Data.GetCount(); i++)
+	for (int i = 0; i < m_Data.GetCount(); i++)
 		if (m_Data[i].pCode)
-			m_Data[i].pCode->Discard(pCC);
+			m_Data[i].pCode->Discard();
 
 	m_Data.DeleteAll();
 	}
@@ -313,7 +310,7 @@ ALERROR CLanguageDataBlock::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 				{
 				//	Link the code
 
-				CCodeChainCtx CCCtx;
+				CCodeChainCtx CCCtx(Ctx.GetUniverse());
 				ICCItemPtr pCode = CCCtx.LinkCode(pItem->GetContentText(0));
 
 				//	Nil means blank
@@ -737,7 +734,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CD
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(Type.GetUniverse());
 	Ctx.DefineContainingType(&Type);
 	Ctx.SaveAndDefineSourceVar(NULL);
 	Ctx.DefineString(CONSTLIT("aTextID"), sID);
@@ -763,7 +760,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (CSpaceOb
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pObj ? pObj->GetUniverse() : *g_pUniverse);
 	Ctx.DefineContainingType(pObj);
 	Ctx.SaveAndDefineSourceVar(pObj);
 	Ctx.DefineString(CONSTLIT("aTextID"), sID);
@@ -789,7 +786,7 @@ CLanguageDataBlock::ETranslateResult CLanguageDataBlock::TranslateFull (const CI
 
 	//	Otherwise we have to run some code
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(Item.GetUniverse());
 	Ctx.DefineContainingType(Item);
 	Ctx.SaveAndDefineSourceVar(NULL);
 	Ctx.SaveAndDefineItemVar(Item);

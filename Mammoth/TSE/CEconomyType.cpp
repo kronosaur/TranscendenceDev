@@ -14,21 +14,6 @@
 #define FIELD_STANDARD							CONSTLIT("standard")
 #define FIELD_X									CONSTLIT("x")
 
-static const CEconomyType *g_pDefaultEconomy = NULL;
-
-const CEconomyType *CEconomyType::Default (void)
-
-//	Default
-//
-//	Returns the default economy (credits)
-
-	{
-	if (g_pDefaultEconomy == NULL)
-		g_pDefaultEconomy = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-
-	return g_pDefaultEconomy;
-	}
-
 CurrencyValue CEconomyType::Exchange (const CEconomyType *pFrom, CurrencyValue iAmount) const
 
 //	Exchange
@@ -199,10 +184,7 @@ ALERROR CEconomyTypeRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_sUNID.IsBlank())
 		{
-		if (g_pDefaultEconomy == NULL)
-			g_pDefaultEconomy = CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
-
-		m_pType = g_pDefaultEconomy;
+		m_pType = &Ctx.GetUniverse().GetCreditCurrency();
 		}
 	else
 		{
@@ -220,14 +202,14 @@ ALERROR CEconomyTypeRef::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-void CEconomyTypeRef::Set (DWORD dwUNID)
+void CEconomyTypeRef::Set (CUniverse &Universe, DWORD dwUNID)
 
 //	Set
 //
 //	Set
 
 	{
-	m_pType = CEconomyType::AsType(g_pUniverse->FindDesignType(dwUNID));
+	m_pType = CEconomyType::AsType(Universe.FindDesignType(dwUNID));
 	}
 
 //	CCurrencyAndValue ----------------------------------------------------------

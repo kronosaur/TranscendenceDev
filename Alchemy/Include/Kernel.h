@@ -323,11 +323,11 @@ typedef DWORD OBJCLASSID;
 #define OBJCLASS_MODULE_GLOBAL					2
 #define OBJCLASS_MODULE_COUNT					3
 
-inline OBJCLASSID MakeOBJCLASSIDExt (int iModule, int iID) { return (((DWORD)iModule) << OBJCLASS_MODULE_SHIFT) + (DWORD)iID; }
-inline OBJCLASSID MakeOBJCLASSID (int iID) { return MakeOBJCLASSIDExt(OBJCLASS_MODULE_APPLICATION, iID); }
-inline OBJCLASSID MakeGlobalOBJCLASSID (int iID) { return MakeOBJCLASSIDExt(OBJCLASS_MODULE_GLOBAL, iID); }
-inline int OBJCLASSIDGetID (OBJCLASSID ObjID) { return (int)(ObjID & ~OBJCLASS_MODULE_MASK); }
-inline int OBJCLASSIDGetModule (OBJCLASSID ObjID) { return (int)((ObjID & OBJCLASS_MODULE_MASK) >> OBJCLASS_MODULE_SHIFT); }
+inline constexpr OBJCLASSID MakeOBJCLASSIDExt (int iModule, int iID) { return (((DWORD)iModule) << OBJCLASS_MODULE_SHIFT) + (DWORD)iID; }
+inline constexpr OBJCLASSID MakeOBJCLASSID (int iID) { return MakeOBJCLASSIDExt(OBJCLASS_MODULE_APPLICATION, iID); }
+inline constexpr OBJCLASSID MakeGlobalOBJCLASSID (int iID) { return MakeOBJCLASSIDExt(OBJCLASS_MODULE_GLOBAL, iID); }
+inline constexpr int OBJCLASSIDGetID (OBJCLASSID ObjID) { return (int)(ObjID & ~OBJCLASS_MODULE_MASK); }
+inline constexpr int OBJCLASSIDGetModule (OBJCLASSID ObjID) { return (int)((ObjID & OBJCLASS_MODULE_MASK) >> OBJCLASS_MODULE_SHIFT); }
 
 //	Object data description
 

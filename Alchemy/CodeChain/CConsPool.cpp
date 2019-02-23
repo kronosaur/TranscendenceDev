@@ -50,6 +50,8 @@ CCons *CConsPool::CreateCons (void)
 //	Creates an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 	int i;
 	CCons *pCons;
 
@@ -117,6 +119,8 @@ void CConsPool::DestroyCons (CCons *pCons)
 //	Destroys an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 	//	Add the item back to the free list
 
 	pCons->m_pNext = m_pFreeList;

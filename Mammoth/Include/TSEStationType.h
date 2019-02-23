@@ -119,7 +119,7 @@ class CStationEncounterDesc
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		void InitLevelFrequency (void);
+		void InitLevelFrequency (CTopology &Topology);
 		inline bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
 		int GetCountOfRandomEncounterLevels (void) const;
 		inline const CTopologyNode::SAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }

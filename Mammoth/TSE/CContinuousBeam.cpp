@@ -5,9 +5,7 @@
 
 #include "PreComp.h"
 
-static CObjectClass<CContinuousBeam>g_Class(OBJID_CCONTINUOUSBEAM, NULL);
-
-CContinuousBeam::CContinuousBeam (void) : CSpaceObject(&g_Class),
+CContinuousBeam::CContinuousBeam (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pPainter(NULL)
 
 //	CContinuousBeam constructor
@@ -49,7 +47,7 @@ void CContinuousBeam::AddContinuousBeam (const CVector &vPos, const CVector &vVe
 
 	pNewSegment->vPos = vPos;
 	pNewSegment->vDeltaPos = (vVelRel + vSourceVel) * g_SecondsPerUpdate;
-	pNewSegment->dwGeneration = g_pUniverse->GetTicks();
+	pNewSegment->dwGeneration = GetUniverse().GetTicks();
 	pNewSegment->iDamage = m_pDesc->GetDamage().RollDamage();
 	pNewSegment->fAlive = true;
 	pNewSegment->fHit = false;
@@ -93,7 +91,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 
 	pNewSegment->vPos = vPos;
 	pNewSegment->vDeltaPos = vVel * g_SecondsPerUpdate;
-	pNewSegment->dwGeneration = g_pUniverse->GetTicks();
+	pNewSegment->dwGeneration = GetUniverse().GetTicks();
 	pNewSegment->iDamage = iDamage;
 	pNewSegment->fAlive = true;
 	pNewSegment->fHit = false;
@@ -112,7 +110,7 @@ void CContinuousBeam::AddSegment (const CVector &vPos, const CVector &vVel, int 
 	pPseudoSegment->fAlive = false;
 	}
 
-ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinuousBeam **retpObj)
+ALERROR CContinuousBeam::Create (CSystem &System, SShotCreateCtx &Ctx, CContinuousBeam **retpObj)
 
 //	Create
 //
@@ -128,7 +126,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinu
 
 	//	Create the object
 
-	CContinuousBeam *pBeam = new CContinuousBeam;
+	CContinuousBeam *pBeam = new CContinuousBeam(System.GetUniverse());
 	if (pBeam == NULL)
 		return ERR_MEMORY;
 
@@ -171,7 +169,7 @@ ALERROR CContinuousBeam::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinu
 
 	//	Add to system
 
-	if (error = pBeam->AddToSystem(pSystem))
+	if (error = pBeam->AddToSystem(System))
 		{
 		delete pBeam;
 		return error;
@@ -569,7 +567,7 @@ void CContinuousBeam::OnReadFromStream (SLoadCtx &Ctx)
 
 	CString sDescUNID;
 	sDescUNID.ReadFromStream(Ctx.pStream);
-	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
+	m_pDesc = Ctx.GetUniverse().FindWeaponFireDesc(sDescUNID);
 
 	Ctx.pStream->Read((char *)&m_iLifetime, sizeof(m_iLifetime));
 	m_Source.ReadFromStream(Ctx);
@@ -645,7 +643,7 @@ void CContinuousBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	int i;
 
-	DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+	DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 	m_iTick++;
 
 	//	Update the effect painter

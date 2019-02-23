@@ -25,14 +25,14 @@ ICCItem *CCPrimitive::Clone (CCodeChain *pCC)
 	return NULL;
 	}
 
-void CCPrimitive::DestroyItem (CCodeChain *pCC)
+void CCPrimitive::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroy this item
 
 	{
-	pCC->DestroyPrimitive(this);
+	CCodeChain::DestroyPrimitive(this);
 	}
 
 ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
@@ -79,7 +79,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 		CString sArgs;
 		try
 			{
-			sArgs = pEvalArgs->Print(pCtx->pCC);
+			sArgs = pEvalArgs->Print();
 			}
 		catch (...)
 			{
@@ -94,12 +94,12 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	//	Done
 
 	if (!bCustomArgEval)
-		pEvalArgs->Discard(pCtx->pCC);
+		pEvalArgs->Discard();
 
 	return pResult;
 	}
 
-CString CCPrimitive::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCPrimitive::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -154,51 +154,3 @@ void CCPrimitive::SetProc (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl)
 		m_pfFunction = pDef->pfFunction;
 	}
 
-ICCItem *CCPrimitive::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ICCItem *pName;
-	ICCItem *pError;
-
-	//	Save out the name of the function
-
-	pName = pCC->CreateString(m_sName);
-	if (pName->IsError())
-		return pName;
-
-	pError = pCC->StreamItem(pName, pStream);
-	if (pError->IsError())
-		return pError;
-
-	pError->Discard(pCC);
-
-	return pName;
-	}
-
-ICCItem *CCPrimitive::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ICCItem *pName;
-	ICCItem *pFunction;
-
-	//	Load the function name
-
-	pName = pCC->UnstreamItem(pStream);
-	if (pName->IsError())
-		return pName;
-
-	//	Look up the function name
-
-	pFunction = pCC->LookupFunction(NULL, pName);
-	pName->Discard(pCC);
-
-	return pFunction;
-	}

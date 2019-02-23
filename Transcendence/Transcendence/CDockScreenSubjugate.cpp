@@ -67,7 +67,7 @@ void CDockScreenSubjugate::FireOnCompleted (const CString &sReason)
 	if (!m_Events.FindEvent(ON_COMPLETED_EVENT, &pCode))
 		return;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -100,8 +100,6 @@ ICCItemPtr CDockScreenSubjugate::OnGetProperty (const CString &sProperty) const
 //	Returns the given property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_AWAKENING_STATUS))
 		{
 		switch (m_Artifact.GetStatus())

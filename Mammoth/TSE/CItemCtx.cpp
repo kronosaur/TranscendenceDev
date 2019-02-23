@@ -44,7 +44,7 @@ ICCItem *CItemCtx::CreateItemVariable (CCodeChain &CC)
 	if (pItem == NULL)
 		return CC.CreateNil();
 
-	return CreateListFromItem(CC, *pItem);
+	return CreateListFromItem(*pItem);
 	}
 
 CInstalledArmor *CItemCtx::GetArmor (void) const

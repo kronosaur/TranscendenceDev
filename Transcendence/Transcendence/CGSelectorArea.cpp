@@ -459,71 +459,70 @@ ICCItem *CGSelectorArea::GetEntryAtCursor (void)
 //	deviceSlot: The device slot number
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
 	if (m_iCursor == -1)
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 
 	const SEntry &Entry = m_Regions[m_iCursor];
 
-	ICCItem *pResult = CC.CreateSymbolTable();
+	ICCItem *pResult = CCodeChain::CreateSymbolTable();
 	CCSymbolTable *pStruct = (CCSymbolTable *)pResult;
 
 	switch (Entry.iType)
 		{
 		case typeEmptySlot:
-			pStruct->SetStringValue(CC, CONSTLIT("type"), CONSTLIT("emptySlot"));
+			pStruct->SetStringAt(CONSTLIT("type"), CONSTLIT("emptySlot"));
 			switch (Entry.iSlotType)
 				{
 				case devPrimaryWeapon:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatWeapon));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatWeapon));
 					break;
 
 				case devMissileWeapon:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatLauncher));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatLauncher));
 					break;
 
 				case devShields:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatShields));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatShields));
 					break;
 
 				case devDrive:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatDrive));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatDrive));
 					break;
 
 				case devCargo:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatCargoHold));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatCargoHold));
 					break;
 
 				case devReactor:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatReactor));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatReactor));
 					break;
 
 				default:
-					pStruct->SetStringValue(CC, CONSTLIT("category"), GetItemCategoryID(itemcatMiscDevice));
+					pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(itemcatMiscDevice));
 				}
 			if (Entry.iSlotPosIndex != -1)
-				pStruct->SetIntegerAt(CC, CONSTLIT("slotPosIndex"), Entry.iSlotPosIndex);
+				pStruct->SetIntegerAt(CONSTLIT("slotPosIndex"), Entry.iSlotPosIndex);
 			break;
 
 		case typeInstalledItem:
 			{
-			pStruct->SetStringValue(CC, CONSTLIT("type"), CONSTLIT("installedItem"));
+			pStruct->SetStringAt(CONSTLIT("type"), CONSTLIT("installedItem"));
 
-			ICCItem *pItem = ::CreateListFromItem(CC, Entry.pItemCtx->GetItem());
-			pStruct->SetValue(CC, CONSTLIT("item"), pItem);
-			pItem->Discard(&CC);
+			ICCItem *pItem = ::CreateListFromItem(Entry.pItemCtx->GetItem());
+			pStruct->SetAt(CONSTLIT("item"), pItem);
+			pItem->Discard();
 
-			pStruct->SetStringAt(CC, CONSTLIT("category"), GetItemCategoryID(Entry.pItemCtx->GetItem().GetType()->GetCategory()));
+			pStruct->SetStringAt(CONSTLIT("category"), GetItemCategoryID(Entry.pItemCtx->GetItem().GetType()->GetCategory()));
 
 			if (!Entry.sSlotID.IsBlank())
-				pStruct->SetStringAt(CC, CONSTLIT("id"), Entry.sSlotID);
+				pStruct->SetStringAt(CONSTLIT("id"), Entry.sSlotID);
 
 			break;
 			}
 
 		default:
 			ASSERT(false);
-			return CC.CreateNil();
+			return CCodeChain::CreateNil();
 		}
 
 	return pResult;

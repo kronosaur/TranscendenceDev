@@ -75,7 +75,7 @@ void CGFilter::CreateBlur (CGRealChannel &Src, Metric rRadius, CGRealChannel &De
 
 	//	Compute some constants
 
-	Metric rSigma = rRadius / 3.5;
+	Metric rSigma = rRadius;
 
 	Metric q =
 		(rSigma >= 2.5	? 0.98711 * rSigma - 0.96330

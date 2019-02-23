@@ -32,17 +32,17 @@ ICCItem *CCDouble::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCDouble::DestroyItem (CCodeChain *pCC)
+void CCDouble::DestroyItem (void)
 
 //	DestroyItem
 //
 //	Destroys the item
 
 	{
-	pCC->DestroyDouble(this);
+	CCodeChain::DestroyDouble(this);
 	}
 
-CString CCDouble::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCDouble::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -84,35 +84,5 @@ void CCDouble::Reset (void)
 	{
 	ASSERT(m_dwRefCount == 0);
 	this->SetValue(0.0);
-	}
-
-ICCItem *CCDouble::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Write((char *)&m_dValue, sizeof(m_dValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCDouble::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-
-	if (error = pStream->Read((char *)&m_dValue, sizeof(m_dValue), NULL))
-		return pCC->CreateSystemError(error);
-
-	return pCC->CreateTrue();
 	}
 

@@ -536,16 +536,17 @@
 		</Events>
 		
 		<Language>
-			<String id="AttackTargetAck">"Auton order acknowledged"</String>
 			<Text id="DeployAck">(objTranslate gSource 'DeployAckString { autonName:(objGetName auton 0x01) } )</Text>
-			<String id="DeployAckString">"%autonName% online"</String>
-			<String id="ErrNoSpaceToReturn">"Not enough space in cargo hold to return to ship"</String>
-			<String id="FormUpAck">"Auton order acknowledged"</String>
+
+			<String id="AttackTargetAck">		Auton order acknowledged</String>
+			<String id="DeployAckString">		%autonName% online</String>
+			<String id="ErrNoSpaceToReturn">	Not enough space in cargo hold to return to ship</String>
+			<String id="FormUpAck">				Auton order acknowledged</String>
 			<String id="NiceShooting"></String>
-			<String id="NoTargetInRange">"No target in range"</String>
-			<String id="ReturnAck">"Auton order acknowledged"</String>
-			<String id="UnableToComply">"Unable to comply"</String>
-			<String id="WaitAck">"Auton order acknowledged"</String>
+			<String id="NoTargetInRange">		No target in range</String>
+			<String id="ReturnAck">				Auton order acknowledged</String>
+			<String id="UnableToComply">		Unable to comply</String>
+			<String id="WaitAck">				Auton order acknowledged</String>
 			<String id="WatchYourTargets"></String>
 		</Language>
 	</Type>

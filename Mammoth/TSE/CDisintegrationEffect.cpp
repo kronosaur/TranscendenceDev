@@ -14,9 +14,7 @@
 
 #define FIXED_POINT								256
 
-static CObjectClass<CDisintegrationEffect>g_Class(OBJID_CDISINTEGRATIONEFFECT, NULL);
-
-CDisintegrationEffect::CDisintegrationEffect (void) : CSpaceObject(&g_Class),
+CDisintegrationEffect::CDisintegrationEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pParticles(NULL),
 		m_iParticleCount(0)
 
@@ -34,7 +32,7 @@ CDisintegrationEffect::~CDisintegrationEffect (void)
 		delete [] m_pParticles;
 	}
 
-ALERROR CDisintegrationEffect::Create (CSystem *pSystem,
+ALERROR CDisintegrationEffect::Create (CSystem &System,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &MaskImage,
@@ -52,7 +50,7 @@ ALERROR CDisintegrationEffect::Create (CSystem *pSystem,
 	ALERROR error;
 	CDisintegrationEffect *pEffect;
 
-	pEffect = new CDisintegrationEffect;
+	pEffect = new CDisintegrationEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -79,7 +77,7 @@ ALERROR CDisintegrationEffect::Create (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;

@@ -253,7 +253,7 @@ class CShipwreckDesc
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		void CleanUp (void);
 		void ClearMarks (void);
-		bool CreateEmptyWreck (CSystem *pSystem, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
+		bool CreateEmptyWreck (CSystem &System, CShipClass *pClass, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck) const;
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck) const;
 		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
 		size_t GetMemoryUsage (void) const;
@@ -365,7 +365,7 @@ class CShipClass : public CDesignType
 		Metric CalcMass (const CDeviceDescList &Devices) const;
 		int CalcRatedPowerUse (const CDeviceDescList &Devices) const;
 		int CalcScore (void);
-		bool CreateEmptyWreck (CSystem *pSystem, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
+		bool CreateEmptyWreck (CSystem &System, CShip *pShip, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpWreck);
 		void CreateImage (CG32bitImage &Dest, int iTick, int iRotation, Metric rScale = 1.0);
 		void CreateScaledImage (CG32bitImage &Dest, int iTick, int iRotation, int cxWidth, int cyHeight);
 		bool CreateWreck (CShip *pShip, CSpaceObject **retpWreck = NULL);

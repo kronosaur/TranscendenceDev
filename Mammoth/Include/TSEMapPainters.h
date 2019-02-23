@@ -40,10 +40,10 @@ class CGalacticMapPainter
         void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
-		void DrawNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
+		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		void DrawNodeConnections (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
-		void DrawUnknownNode (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
+		void DrawUnknownNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
 		inline int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
 		inline int GetImageGalacticWidth (void) const { return (m_pImage ? (int)(m_pImage->GetWidth() / m_rImageScale) : 0); }
 		void Init (void);
@@ -64,7 +64,7 @@ class CGalacticMapPainter
 
 		//	Painting options
 
-        CTopologyNode *m_pSelected;         //  Selected node (may be NULL)
+        CTopologyNode *m_pSelected;			//  Selected node (may be NULL)
         mutable int m_iSelectAngle;         //  Animate selection
 
 		int m_iScale;                       //  Scale to paint at 100 = normal; 200 = 2x size
@@ -83,7 +83,7 @@ class CSystemMapThumbnails
         ~CSystemMapThumbnails (void);
 
         void CleanUp (void);
-        void DrawThumbnail (CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, bool bFullSystem = true, Metric rScale = 1.0) const;
+        void DrawThumbnail (const CTopologyNode *pNode, CG32bitImage &Dest, int x, int y, bool bFullSystem = true, Metric rScale = 1.0) const;
         void Init (CObjectTracker &SystemData, int cxThumb = SYSTEM_MAP_THUMB_WIDTH, int cyThumb = SYSTEM_MAP_THUMB_HEIGHT);
 
     private:
@@ -115,11 +115,11 @@ class CSystemMapThumbnails
             TArray<SStarDesc> Stars;
             };
 
-        bool CreateThumbnail (CTopologyNode *pNode, bool bFullSystem, CG32bitImage &Result) const;
-        bool CreateThumbnailStars (CTopologyNode *pNode, TArray<SStarDesc> &Result) const;
+        bool CreateThumbnail (const CTopologyNode *pNode, bool bFullSystem, CG32bitImage &Result) const;
+        bool CreateThumbnailStars (const CTopologyNode *pNode, TArray<SStarDesc> &Result) const;
         CG32bitImage *GetObjImage (const CObjectTracker::SBackgroundObjEntry &ObjEntry) const;
-        CG32bitImage *GetThumbnail (CTopologyNode *pNode, bool bFullSystem = true) const;
-        const TArray<SStarDesc> &GetThumbnailStars (CTopologyNode *pNode) const;
+        CG32bitImage *GetThumbnail (const CTopologyNode *pNode, bool bFullSystem = true) const;
+        const TArray<SStarDesc> &GetThumbnailStars (const CTopologyNode *pNode) const;
 
         CObjectTracker *m_pSystemData;
         int m_cxThumb;                      //  Size of thumbnail
@@ -130,6 +130,6 @@ class CSystemMapThumbnails
         int m_iMaxImage;
         int m_iMinImage;
 
-        mutable TSortMap<CTopologyNode *, SThumbnailCacheEntry> m_Cache;
+        mutable TSortMap<const CTopologyNode *, SThumbnailCacheEntry> m_Cache;
         mutable TSortMap<DWORDLONG, CG32bitImage *> m_ObjImageCache;
     };

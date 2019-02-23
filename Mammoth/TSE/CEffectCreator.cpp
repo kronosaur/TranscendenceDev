@@ -103,6 +103,9 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 	ALERROR error;
 	CEffect *pEffect;
 
+	if (pSystem == NULL)
+		return ERR_FAIL;
+
 	//	Create a painter
 
 	CCreatePainterCtx CreateCtx;
@@ -117,7 +120,7 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 	//	Create the effect object
 
 	if (error = CEffect::Create(pPainter,
-			pSystem,
+			*pSystem,
 			pAnchor,
 			vPos,
 			vVel,
@@ -165,6 +168,8 @@ ALERROR CEffectCreator::CreateFromTag (const CString &sTag, CEffectCreator **ret
 		pCreator = new CBeamEffectCreator;
 	else if (strEquals(sTag, CBoltEffectCreator::GetClassTag()))
 		pCreator = new CBoltEffectCreator;
+	else if (strEquals(sTag, CGlowEffectCreator::GetClassTag()))
+		pCreator = new CGlowEffectCreator;
 	else if (strEquals(sTag, CMoltenBoltEffectCreator::GetClassTag()))
 		pCreator = new CMoltenBoltEffectCreator;
 	else if (strEquals(sTag, CParticleExplosionEffectCreator::GetClassTag()))
@@ -576,7 +581,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 	if (FindEventHandlerEffectType(evtGetParameters, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.SaveAndDefineDataVar(Ctx.GetData());
 

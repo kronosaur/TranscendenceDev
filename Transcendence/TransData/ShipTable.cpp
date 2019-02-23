@@ -119,7 +119,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Output table
 
-	CCodeChainCtx CCCtx;
+	CCodeChainCtx CCCtx(*g_pUniverse);
 	for (i = 0; i < Table.GetCount(); i++)
 		{
 		CShipClass *pClass = (CShipClass *)Table.GetValue(i);
@@ -153,11 +153,11 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				}
 			else
 				{
-				CString sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+				CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				printf(sValue.GetASCIIZPointer());
 				}
 
-            pResult->Discard(&g_pUniverse->GetCC());
+            pResult->Discard();
 			}
 
 		printf("\n");

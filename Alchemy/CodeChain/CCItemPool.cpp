@@ -22,11 +22,7 @@ template class CCItemPool<CCAtomTable>;
 template class CCItemPool<CCVector>;
 
 template <class ItemClass>
-CCItemPool<ItemClass>::CCItemPool (void) :
-		m_pFreeList(NULL),
-		m_pBackbone(NULL),
-		m_iBackboneSize(0),
-		m_iCount(0)
+CCItemPool<ItemClass>::CCItemPool (void)
 
 //	CCItemPool constructor
 
@@ -61,13 +57,15 @@ void CCItemPool<ItemClass>::CleanUp (void)
 	}
 
 template <class ItemClass>
-ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
+ICCItem *CCItemPool<ItemClass>::CreateItem (void)
 
 //	CreateItem
 //
 //	Creates an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 	int i;
 	ICCItem *pItem;
 
@@ -79,7 +77,7 @@ ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 		if (m_pBackbone == NULL)
 			{
 			::kernelDebugLogPattern("CCodeChain: Out of memory creating item.");
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 			}
 
 		m_iBackboneSize = 0;
@@ -95,14 +93,14 @@ ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 		if (m_iBackboneSize == BACKBONE_SIZE)
 			{
 			::kernelDebugLogPattern("CCodeChain: Backbone filled up.");
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 			}
 
 		pSegment = new ItemClass[SEGMENT_SIZE];
 		if (pSegment == NULL)
 			{
 			::kernelDebugLogPattern("CCodeChain: Out of memory creating segment.");
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 			}
 
 		m_pBackbone[m_iBackboneSize] = pSegment;
@@ -130,13 +128,15 @@ ICCItem *CCItemPool<ItemClass>::CreateItem (CCodeChain *pCC)
 	}
 
 template <class ItemClass>
-void CCItemPool<ItemClass>::DestroyItem (CCodeChain *pCC, ICCItem *pItem)
+void CCItemPool<ItemClass>::DestroyItem (ICCItem *pItem)
 
 //	DestroyItem
 //
 //	Destroys an item in the pool
 
 	{
+	CSmartLock Lock(m_cs);
+
 #ifdef DEBUG
 	ItemClass *pClass = dynamic_cast<ItemClass *>(pItem);
 	ASSERT(pClass);

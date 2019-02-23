@@ -26,7 +26,7 @@ CCLinkedList::~CCLinkedList (void)
 	{
 	}
 
-void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
+void CCLinkedList::Append (ICCItem *pValue)
 
 //	Append
 //
@@ -37,7 +37,7 @@ void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
 
 	//	Create a new cons
 
-	pCons = CC.CreateCons();
+	pCons = CCodeChain::CreateCons();
 	if (pCons == NULL)
 		return;
 
@@ -64,20 +64,6 @@ void CCLinkedList::Append (CCodeChain &CC, ICCItem *pValue)
 		}
 	}
 
-#if 0
-void CCLinkedList::Append (CCodeChain *pCC, ICCItem *pItem, ICCItem **retpError)
-
-//	Append
-//
-//	Appends the item to the list
-
-	{
-	Append(*pCC, pItem);
-	if (retpError)
-		*retpError = pCC->CreateTrue();
-	}
-#endif
-
 ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 
 //	Clone
@@ -101,14 +87,14 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	pCons = m_pFirst;
 	while (pCons)
 		{
-		pClone->Append(*pCC, pCons->m_pItem);
+		pClone->Append(pCons->m_pItem);
 		pCons = pCons->m_pNext;
 		}
 
 	return pClone;
 	}
 
-ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
+ICCItem *CCLinkedList::CloneContainer (void)
 
 //	CloneContainer
 //
@@ -119,7 +105,7 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 	CCLinkedList *pClone;
 	CCons *pCons;
 
-	pNew = pCC->CreateLinkedList();
+	pNew = CCodeChain::CreateLinkedList();
 	if (pNew->IsError())
 		return pNew;
 
@@ -131,9 +117,9 @@ ICCItem *CCLinkedList::CloneContainer (CCodeChain *pCC)
 	pCons = m_pFirst;
 	while (pCons)
 		{
-		ICCItem *pItemClone = pCons->m_pItem->CloneContainer(pCC);
-		pClone->Append(*pCC, pItemClone);
-		pItemClone->Discard(pCC);
+		ICCItem *pItemClone = pCons->m_pItem->CloneContainer();
+		pClone->Append(pItemClone);
+		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
 		}
@@ -165,8 +151,8 @@ ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
 	while (pCons)
 		{
 		ICCItem *pItemClone = pCons->m_pItem->CloneDeep(pCC);
-		pClone->Append(*pCC, pItemClone);
-		pItemClone->Discard(pCC);
+		pClone->Append(pItemClone);
+		pItemClone->Discard();
 
 		pCons = pCons->m_pNext;
 		}
@@ -201,7 +187,7 @@ void CCLinkedList::CreateIndex (void)
 		}
 	}
 
-void CCLinkedList::DestroyItem (CCodeChain *pCC)
+void CCLinkedList::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -216,8 +202,8 @@ void CCLinkedList::DestroyItem (CCodeChain *pCC)
 	while (pCons)
 		{
 		CCons *pNext = pCons->m_pNext;
-		pCons->m_pItem->Discard(pCC);
-		pCC->DestroyCons(pCons);
+		pCons->m_pItem->Discard();
+		CCodeChain::DestroyCons(pCons);
 		pCons = pNext;
 		}
 
@@ -228,7 +214,7 @@ void CCLinkedList::DestroyItem (CCodeChain *pCC)
 
 	//	Give the item back
 
-	pCC->DestroyLinkedList(this);
+	CCodeChain::DestroyLinkedList(this);
 	}
 
 ICCItem *CCLinkedList::Enum (CEvalContext *pCtx, ICCItem *pCode)
@@ -314,7 +300,7 @@ ICCItem *CCLinkedList::GetFlattened(CCodeChain *pCC, ICCItem *pResult = NULL)
 		}
 		else
 		{
-			pResult->Append(*pCC, pCurrentElement);
+			pResult->Append(pCurrentElement);
 		};
 	};
 
@@ -372,8 +358,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	in the hierarchy is not uniform
 			if (GetElement(i)->GetValueType() != ICCItem::List)
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data type is not homogeneous."), NULL);
 				return pError;
@@ -384,8 +370,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			//	head, then this is not valid vector content
 			if (pListElement->GetCount() != iHeadCount)
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
@@ -395,8 +381,8 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			pListElementShapeList = (dynamic_cast <CCLinkedList *> (pListElement))->IsValidVectorContent(pCC);
 			if (pListElementShapeList->IsError())
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
 
 				return pListElementShapeList;
 			};
@@ -415,22 +401,22 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			}
 			else
 			{
-				pShapeList->Discard(pCC);
-				pLowerLevelShapeList->Discard(pCC);
-				pListElementShapeList->Discard(pCC);
+				pShapeList->Discard();
+				pLowerLevelShapeList->Discard();
+				pListElementShapeList->Discard();
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content data is not of the same size."), NULL);
 				return pError;
 			};
 		};
 
 		//	we have passed all the checks, so now we create pShapeList
-		pShapeList->AppendInteger(*pCC, this->GetCount());
+		pShapeList->AppendInteger(this->GetCount());
 		for (i = 0; i < pLowerLevelShapeList->GetCount(); i++)
 		{
-			pShapeList->AppendInteger(*pCC, pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
+			pShapeList->AppendInteger(pLowerLevelShapeList->GetElement(i)->GetIntegerValue());
 		};
 
-		pLowerLevelShapeList->Discard(pCC);
+		pLowerLevelShapeList->Discard();
 		return pShapeList;
 	}
 	else if (pHead->GetValueType() == ICCItem::Integer || pHead->GetValueType() == ICCItem::Double)
@@ -441,19 +427,19 @@ ICCItem *CCLinkedList::IsValidVectorContent(CCodeChain *pCC)
 			elementValueType = this->GetElement(i)->GetValueType();
 			if (elementValueType != ICCItem::Integer && elementValueType != ICCItem::Double)
 			{
-				pShapeList->Discard(pCC);
+				pShapeList->Discard();
 				ICCItem *pError = pCC->CreateError(CONSTLIT("Content list data type is not homogenous."), NULL);
 				return pError;
 			};
 		};
 
 		//	Done -- so put a value into pShapeList
-		pShapeList->AppendInteger(*pCC, this->GetCount());
+		pShapeList->AppendInteger(this->GetCount());
 		return pShapeList;
 	}
 	else
 	{
-		pShapeList->Discard(pCC);
+		pShapeList->Discard();
 		ICCItem *pError = pCC->CreateError(CONSTLIT("Content list contains non-numeric or non-list types."), pHead);
 		return pError;
 	};
@@ -482,7 +468,7 @@ bool CCLinkedList::HasReferenceTo (ICCItem *pSrc)
 	return false;
 	}
 
-CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCLinkedList::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -511,7 +497,7 @@ CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 		while (pNext)
 			{
-			CString sItem = pNext->m_pItem->Print(pCC);
+			CString sItem = pNext->m_pItem->Print();
 			Stream.Write(sItem.GetASCIIZPointer(), sItem.GetLength());
 
 			pNext = pNext->m_pNext;
@@ -541,7 +527,7 @@ CString CCLinkedList::Print (CCodeChain *pCC, DWORD dwFlags)
 
 		while (pNext)
 			{
-			sString.Append(pNext->m_pItem->Print(pCC));
+			sString.Append(pNext->m_pItem->Print());
 
 			pNext = pNext->m_pNext;
 
@@ -827,7 +813,7 @@ void CCLinkedList::RemoveElement (CCodeChain *pCC, int iIndex)
 
 	//	Discard cons
 
-	pCons->m_pItem->Discard(pCC);
+	pCons->m_pItem->Discard();
 	pCC->DestroyCons(pCons);
 
 	//	Discard index since we've changed things
@@ -871,7 +857,7 @@ void CCLinkedList::ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewIte
 
 	//	Change the link
 
-	pCons->m_pItem->Discard(pCC);
+	pCons->m_pItem->Discard();
 	pCons->m_pItem = pNewItem->Reference();
 	}
 
@@ -958,40 +944,6 @@ void CCLinkedList::Sort (CCodeChain *pCC, int iOrder, ICCItem *pSortIndex)
 	UpdateLinksFromIndex();
 	}
 
-ICCItem *CCLinkedList::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-	CCons *pCons;
-
-	//	Write out the count
-
-	if (error = pStream->Write((char *)&m_iCount, sizeof(m_iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out each of the items in the list
-
-	pCons = m_pFirst;
-	while (pCons)
-		{
-		ICCItem *pError;
-
-		pError = pCC->StreamItem(pCons->m_pItem, pStream);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		pCons = pCons->m_pNext;
-		}
-
-	return pCC->CreateTrue();
-	}
-
 ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 //	Tail
@@ -1020,7 +972,7 @@ ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 		while (pNext)
 			{
-			pTail->Append(*pCC, pNext->m_pItem);
+			pTail->Append(pNext->m_pItem);
 			pNext = pNext->m_pNext;
 			}
 
@@ -1028,41 +980,6 @@ ICCItem *CCLinkedList::Tail (CCodeChain *pCC)
 
 		return pTail;
 		}
-	}
-
-ICCItem *CCLinkedList::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-	int i, iCount;
-
-	//	Read the count
-
-	if (error = pStream->Read((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read all the items
-
-	for (i = 0; i < iCount; i++)
-		{
-		ICCItem *pItem;
-
-		pItem = pCC->UnstreamItem(pStream);
-
-		//	Note that we don't abort in case of an error
-		//	because the list might contain errors
-
-		//	Append the item to the list
-
-		Append(*pCC, pItem);
-		pItem->Discard(pCC);
-		}
-
-	return pCC->CreateTrue();
 	}
 
 void CCLinkedList::UpdateLinksFromIndex (void)

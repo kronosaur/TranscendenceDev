@@ -21,13 +21,16 @@ ALERROR CImageFractureEffectCreator::CreateEffect (CSystem *pSystem,
 
 	{
 	ALERROR error;
-	CFractureEffect *pObj = NULL;
+
+	if (pSystem == NULL)
+		return ERR_FAIL;
 
 	//	Create the effect
 
+	CFractureEffect *pObj = NULL;
 	if (m_Image.IsLoaded())
 		{
-		if (error = CFractureEffect::CreateExplosion(pSystem,
+		if (error = CFractureEffect::CreateExplosion(*pSystem,
 				vPos,
 				vVel,
 				m_Image,

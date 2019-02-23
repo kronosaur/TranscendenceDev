@@ -140,7 +140,7 @@ void CItem::AccumulateCustomAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 	if (!m_pItemType->FindEventHandlerItemType(CItemType::evtGetDisplayAttributes, &Event))
 		return;
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	Ctx.SetItemType(GetType());
 	Ctx.DefineContainingType(m_pItemType);
@@ -193,7 +193,7 @@ DWORD CItem::AddEnhancement (const CItemEnhancement &Enhancement)
 	//	Otherwise, if we don't have an ID, set it now
 
 	else if (m_pExtra->m_Mods.GetID() == OBJID_NULL)
-		m_pExtra->m_Mods.SetID(g_pUniverse->CreateGlobalID());
+		m_pExtra->m_Mods.SetID(GetUniverse().CreateGlobalID());
 
 	return m_pExtra->m_Mods.GetID();
 	}
@@ -354,7 +354,7 @@ bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
 	return true;
 	}
 
-CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criteria, bool bActualName)
+CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName)
 
 //	CreateItemByName
 //
@@ -380,9 +380,9 @@ CItem CItem::CreateItemByName (const CString &sName, const CItemCriteria &Criter
 
 	int iBestMatch = -1000;
 	int iBestNonCriteriaMatch = -1000;
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
 
 		//	Compare names
@@ -464,7 +464,7 @@ bool CItem::FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsE
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(CAN_BE_INSTALLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -529,7 +529,7 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(CAN_BE_UNINSTALLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -567,7 +567,7 @@ void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *
 //	Triggers the given event.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	SEventHandlerDesc Event;
 	if (GetType()->FindEventHandler(sEvent, &Event))
@@ -614,7 +614,7 @@ void CItem::FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEn
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_ADDED_AS_ENHANCEMENT_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -636,7 +636,7 @@ bool CItem::FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, cons
 //	if we avoid destruction.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	//	If we have code, call it.
 
@@ -676,7 +676,7 @@ void CItem::FireOnDisabled (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_DISABLED_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -699,7 +699,7 @@ void CItem::FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnDocked, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -724,7 +724,7 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnEnabled, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -747,7 +747,7 @@ void CItem::FireOnInstall (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtOnInstall, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -771,7 +771,7 @@ void CItem::FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) c
 
 	if (m_pItemType->FindEventHandler(CDesignType::evtOnObjDestroyed, &Event))
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(m_pItemType);
 		CCCtx.SaveAndDefineSourceVar(pSource);
@@ -800,7 +800,7 @@ bool CItem::FireOnReactorOverload (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_REACTOR_OVERLOAD_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		bool bHandled = false;
 
 		Ctx.DefineContainingType(m_pItemType);
@@ -830,7 +830,7 @@ void CItem::FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &Item
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_REMOVED_AS_ENHANCEMENT_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -853,7 +853,7 @@ void CItem::FireOnUninstall (CSpaceObject *pSource) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandler(ON_UNINSTALL_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(m_pItemType);
 		Ctx.SaveAndDefineSourceVar(pSource);
@@ -886,7 +886,7 @@ ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 	if (m_pExtra)
 		return m_pExtra->m_Data.GetDataAsItem(sAttrib);
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
 	}
 
 CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
@@ -904,7 +904,7 @@ CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetDescription, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetDescription);
 		Ctx.SetItemType(GetType());
@@ -948,7 +948,7 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 		//	Add display attributes
 
-		g_pUniverse->GetAttributeDesc().AccumulateAttributes(*this, retList);
+		GetUniverse().GetAttributeDesc().AccumulateAttributes(*this, retList);
 
 		CArmorClass *pArmor;
 		CDeviceClass *pDevice;
@@ -1034,7 +1034,7 @@ DWORD CItem::GetDisruptedDuration (void) const
 		return INFINITE_TICK;
 	else
 		{
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime <= dwNow)
 			return 0;
 		else
@@ -1064,7 +1064,7 @@ bool CItem::GetDisruptedStatus (DWORD *retdwTimeLeft, bool *retbRepairedEvent) c
 		}
 	else
 		{
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime < dwNow)
 			{
 			bRepairedEvent = (m_pExtra->m_dwDisruptedTime + 1 == dwNow);
@@ -1165,7 +1165,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
 			&& !(dwFlags & nounNoEvent))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetName);
 		Ctx.SetItemType(GetType());
@@ -1282,7 +1282,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 //		never return NULL (we always handle it).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	int i;
 
@@ -1417,13 +1417,13 @@ Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const 
 //	Returns a double.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0.0;
 
 	Metric rValue = pResult->GetDoubleValue();
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return rValue;
 	}
 
@@ -1434,13 +1434,13 @@ int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CS
 //	Returns an integer property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0;
 
 	int iValue = pResult->GetIntegerValue();
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return iValue;
 	}
 
@@ -1451,7 +1451,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 //	Returns a string property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
 	if (pResult == NULL)
 		return 0;
@@ -1460,9 +1460,9 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 	if (pResult->IsNil())
 		sValue = NULL_STR;
 	else
-		sValue = pResult->Print(&g_pUniverse->GetCC(), PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+		sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 
-	pResult->Discard(&CC);
+	pResult->Discard();
 	return sValue;
 	}
 
@@ -1495,7 +1495,7 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 		SEventHandlerDesc Event;
 		if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetReferenceText, &Event))
 			{
-			CCodeChainCtx Ctx;
+			CCodeChainCtx Ctx(GetUniverse());
 
 			Ctx.SetEvent(eventGetReferenceText);
 			Ctx.SetItemType(GetType());
@@ -1641,7 +1641,7 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetTradePrice, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.SetEvent(eventGetTradePrice);
 		Ctx.SetItemType(GetType());
@@ -1660,6 +1660,16 @@ int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
 		}
 	else
 		return GetValue(bActual);
+	}
+
+CUniverse &CItem::GetUniverse (void) const
+
+//	GetUniverse
+//
+//	Returns the universe object.
+
+	{
+	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
 	}
 
 int CItem::GetValue (bool bActual) const
@@ -1732,7 +1742,7 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(), CItemCtx(*this), Compare.GetProperty()));
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty()));
 		return Compare.Eval(pValue);
 		}
 	else
@@ -1753,7 +1763,7 @@ bool CItem::HasUseItemScreen (void) const
 	return (m_pItemType->GetUseDesc(&Desc) && !Desc.bUsableInCockpit && Desc.pScreenRoot != NULL);
 	}
 
-bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
+bool CItem::IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2)
 
 //	IsDisruptionEqual
 //
@@ -1763,7 +1773,6 @@ bool CItem::IsDisruptionEqual (DWORD dwD1, DWORD dwD2)
 	if (dwD1 == dwD2)
 		return true;
 
-	DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
 	return (dwD1 < dwNow && dwD2 < dwNow);
 	}
 
@@ -1784,7 +1793,7 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
 
-bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
+bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 
 //	IsExtraEmpty
 //
@@ -1800,7 +1809,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags)
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwLevel == 0
 			&& pExtra->m_dwVariantCounter == 0
-			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < (DWORD)g_pUniverse->GetTicks()))
+			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
 	}
@@ -1812,9 +1821,12 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 //	Returns TRUE if this item's Extra struct is the same as the source
 
 	{
+	if (IsEmpty())
+		return (pSrc == NULL || IsExtraEmpty(pSrc, dwFlags, GetUniverse().GetTicks()));
+
 	//	Both have extra struct
 
-	if (m_pExtra && pSrc)
+	else if (m_pExtra && pSrc)
 		{
 		const bool bIgnoreCharges = (dwFlags & FLAG_IGNORE_CHARGES ? true : false);
 		const bool bIgnoreData = (dwFlags & FLAG_IGNORE_DATA ? true : false);
@@ -1824,7 +1836,7 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwLevel == pSrc->m_dwLevel
 				&& m_pExtra->m_dwVariantCounter == pSrc->m_dwVariantCounter
-				&& (bIgnoreDisrupted || IsDisruptionEqual(m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
+				&& (bIgnoreDisrupted || IsDisruptionEqual(GetUniverse().GetTicks(), m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
 				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
 				&& (bIgnoreData || m_pExtra->m_Data.IsEqual(pSrc->m_Data)));
 		}
@@ -1837,9 +1849,9 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 	//	One has extra struct, but it's empty
 
 	else if (m_pExtra == NULL)
-		return IsExtraEmpty(pSrc, dwFlags);
+		return IsExtraEmpty(pSrc, dwFlags, GetUniverse().GetTicks());
 	else if (pSrc == NULL)
-		return IsExtraEmpty(m_pExtra, dwFlags);
+		return IsExtraEmpty(m_pExtra, dwFlags, GetUniverse().GetTicks());
 
 	//	Extra structs don't match at all
 
@@ -1891,16 +1903,16 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	if (Criteria.pFilter)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		//	Create a list representing this item
 
-		ICCItemPtr pItem(::CreateListFromItem(CCCtx.GetCC(), *this));
+		ICCItemPtr pItem(::CreateListFromItem(*this));
 
 		//	Create an argument list consisting of the item
 
 		ICCItemPtr pArgs = CCCtx.Create(ICCItem::List);
-		pArgs->Append(CCCtx.GetCC(), pItem);
+		pArgs->Append(pItem);
 
 		//	Apply the function to the arg list
 
@@ -1914,7 +1926,7 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 	else if (!Criteria.sLookup.IsBlank())
 		{
-		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
+		const CItemCriteria *pCriteria = GetUniverse().GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
 		if (pCriteria == NULL)
 			return false;
 
@@ -2774,7 +2786,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)
+void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //
@@ -2792,7 +2804,7 @@ void CItem::ReadFromCCItem (CCodeChain &CC, ICCItem *pBuffer)
 		//	Load the item type
 
 		DWORD dwUNID = (DWORD)pBuffer->GetElement(0)->GetIntegerValue();
-		m_pItemType = g_pUniverse->FindItemType(dwUNID);
+		m_pItemType = CItemType::AsType(Design.FindEntry(dwUNID));
 		if (m_pItemType == NULL)
 			return;
 
@@ -2891,7 +2903,7 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 	{
 	DWORD dwLoad;
 	Ctx.pStream->Read(dwLoad);
-	m_pItemType = g_pUniverse->FindItemType(dwLoad);
+	m_pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 	Ctx.pStream->Read(dwLoad);
 	m_dwCount = LOWORD(dwLoad);
@@ -3014,7 +3026,7 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		{
 		//	Disruption time is cumulative
 
-		DWORD dwNow = (DWORD)g_pUniverse->GetTicks();
+		DWORD dwNow = (DWORD)GetUniverse().GetTicks();
 		if (m_pExtra->m_dwDisruptedTime <= dwNow)
 			m_pExtra->m_dwDisruptedTime = dwNow + dwDuration;
 		else
@@ -3055,7 +3067,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 //	retsError is blank then we cannot set the property because the value is Nil.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CInstalledDevice *pDevice;
 
 	if (IsEmpty())
@@ -3179,14 +3191,14 @@ void CItem::SetVariantNumber(int iVariantCounter)
 	}
 
 
-ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
+ICCItem *CItem::WriteToCCItem (void) const
 
 //	WriteToCCItem
 //
 //	Converts item to a ICCItem
 
 	{
-	ICCItem *pResult = CC.CreateLinkedList();
+	ICCItem *pResult = CCodeChain::CreateLinkedList();
 	if (pResult->IsError())
 		return pResult;
 
@@ -3195,16 +3207,16 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 
 	//	Next integer is the item UNID
 
-	pInt = CC.CreateInteger(GetType()->GetUNID());
-	pList->Append(CC, pInt);
-	pInt->Discard(&CC);
+	pInt = CCodeChain::CreateInteger(GetType()->GetUNID());
+	pList->Append(pInt);
+	pInt->Discard();
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
-	pInt = CC.CreateInteger(pSource[1]);
-	pList->Append(CC, pInt);
-	pInt->Discard(&CC);
+	pInt = CCodeChain::CreateInteger(pSource[1]);
+	pList->Append(pInt);
+	pInt->Discard();
 
 	//	Save extra
 
@@ -3212,21 +3224,21 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		{
 		//	Save the version (starting in v45)
 
-		pInt = CC.CreateInteger(CSystem::GetSaveVersion());
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateInteger(CSystem::GetSaveVersion());
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//	Charges
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwCharges);
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwCharges);
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//	Condition
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwLevel);
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwLevel);
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//	Mods
 
@@ -3235,9 +3247,9 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		m_pExtra->m_Mods.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//	Attribute data block
 
@@ -3245,21 +3257,21 @@ ICCItem *CItem::WriteToCCItem (CCodeChain &CC) const
 		m_pExtra->m_Data.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CC.CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//	Disrupted time
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwDisruptedTime);
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwDisruptedTime);
+		pList->Append(pInt);
+		pInt->Discard();
 
 		//  Variant number
 
-		pInt = CC.CreateInteger(m_pExtra->m_dwVariantCounter);
-		pList->Append(CC, pInt);
-		pInt->Discard(&CC);
+		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwVariantCounter);
+		pList->Append(pInt);
+		pInt->Discard();
 		}
 
 	return pResult;
@@ -3362,7 +3374,7 @@ CItemCriteria &CItemCriteria::operator= (const CItemCriteria &Copy)
 
 	{
 	if (pFilter)
-		pFilter->Discard(&g_pUniverse->GetCC());
+		pFilter->Discard();
 
 	dwItemCategories = Copy.dwItemCategories;
 	dwExcludeCategories = Copy.dwExcludeCategories;
@@ -3406,7 +3418,7 @@ CItemCriteria::~CItemCriteria (void)
 
 	{
 	if (pFilter)
-		pFilter->Discard(&g_pUniverse->GetCC());
+		pFilter->Discard();
 	}
 
 bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const

@@ -462,7 +462,7 @@
 					)
 			</Text>
 			
-			<Text id="msgTargetDestroyed">"Good work! We're inbound!"</Text>
+			<Text id="msgTargetDestroyed">Good work! We're inbound!</Text>
 		</Language>
 	</MissionType>
 	

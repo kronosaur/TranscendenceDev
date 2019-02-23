@@ -148,6 +148,50 @@ class CSFXOptions
 		bool m_bDockScreenTransparent;		//	Show SRS behind dock screen
 	};
 
+//	Named Painters -------------------------------------------------------------
+
+class CNamedEffects
+	{
+	public:
+		enum ETypes
+			{
+			painterNone =					-1,
+
+			painterMediumStationDamage =	0,
+			painterLargeStationDamage =		1,
+
+			painterCount =					2,
+			};
+
+		CNamedEffects (void) { }
+		CNamedEffects (const CNamedEffects &Src) = delete;
+		CNamedEffects (CNamedEffects &&Src);
+		~CNamedEffects (void) { CleanUp(); }
+		CNamedEffects &operator= (const CNamedEffects &Src) = delete;
+		CNamedEffects &operator= (CNamedEffects &&Src);
+
+		void CleanUp (void);
+		CEffectCreator &GetFireEffect (CDesignCollection &Design, DamageTypes iDamage) const;
+		CEffectCreator &GetHitEffect (CDesignCollection &Design, DamageTypes iDamage) const;
+		CEffectCreator &GetNullEffect (CDesignCollection &Design) const;
+		IEffectPainter &GetPainter (CDesignCollection &Design, ETypes iType) const;
+
+	private:
+		static const DWORD UNID_FIRST_DEFAULT_EFFECT =			0x00000010;
+		static const DWORD UNID_FIRST_DEFAULT_FIRE_EFFECT =		0x00000070;
+		static const DWORD UNID_BASIC_HIT_EFFECT =				0x00009003;
+		static const DWORD UNID_NULL_EFFECT =					0x00030003;
+
+		void Move (CNamedEffects &Src);
+
+		mutable CEffectCreator *m_pDefaultFireEffect[damageCount] = { NULL };
+		mutable CEffectCreator *m_pDefaultHitEffect[damageCount] = { NULL };
+		mutable IEffectPainter *m_pNamedPainter[painterCount] = { NULL };
+		mutable CEffectCreator *m_pNullEffect = NULL;
+
+		static DWORD m_NamedPainterUNID[painterCount];
+	};
+
 //	The Universe ---------------------------------------------------------------
 //
 //	CREATING THE UNIVERSE
@@ -293,9 +337,12 @@ class CUniverse
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
+		const CEconomyType &GetCreditCurrency (void) const;
 		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
-		inline const CEconomyType *GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : CEconomyType::Default()); }
+		inline const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
+		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
+		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
 		inline CDockSession &GetDockSession (void) { return m_DockSession; }
 		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
 		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
@@ -314,6 +361,7 @@ class CUniverse
 		inline CMissionList &GetMissions (void) { return m_AllMissions; }
 		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
 		inline const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
+		inline IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
 		inline const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
 		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
@@ -363,8 +411,7 @@ class CUniverse
 
 		CArmorClass *FindArmor (DWORD dwUNID);
 		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
-		CEffectCreator *FindDefaultFireEffect (DamageTypes iDamage);
-		CEffectCreator *FindDefaultHitEffect (DamageTypes iDamage);
+		inline const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
 		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
 		inline const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
@@ -377,14 +424,14 @@ class CUniverse
 		inline CMissionType *FindMissionType (DWORD dwUNID) { return CMissionType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline COverlayType *FindOverlayType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CPower *FindPower (DWORD dwUNID) { return CPower::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CDockScreenType *FindSharedDockScreen (DWORD dwUNID) { return CDockScreenType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CShipClass *FindShipClass (DWORD dwUNID) { return CShipClass::AsType(m_Design.FindEntry(dwUNID)); }
 		CShipClass *FindShipClassByName (const CString &sName);
 		inline COverlayType *FindShipEnergyFieldType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
 		inline CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		inline const CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		inline CSovereign *FindSovereign (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
 		inline CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) { return m_Design.FindSystemFragment(sName, retpTable); }
@@ -402,7 +449,7 @@ class CUniverse
 		CString GetPlayerName (void) const;
 		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		CSovereign *GetPlayerSovereign (void) const;
-		inline int GetTicks (void) { return m_iTick; }
+		inline DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
 		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);
@@ -467,7 +514,6 @@ class CUniverse
 		CObject *FindByUNID (CIDTable &Table, DWORD dwUNID);
 		ALERROR InitCodeChain (const TArray<SPrimitiveDefTable> &CCPrimitives);
 		ALERROR InitCodeChainPrimitives (void);
-		void InitDefaultEffects (void);
 		ALERROR InitDeviceStorage (CString *retsError);
 		ALERROR InitFonts (void);
 		ALERROR InitLevelEncounterTables (void);
@@ -529,6 +575,11 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+
+		//	Cached singletons
+
+		mutable const CEconomyType *m_pCreditCurrency = NULL;
+		CNamedEffects m_NamedEffects;
 
 		//	Debugging structures
 

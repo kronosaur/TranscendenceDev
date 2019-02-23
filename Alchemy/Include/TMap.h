@@ -297,6 +297,19 @@ template <class KEY, class VALUE> class TSortMap
 			return true;
 			}
 
+		bool FindByValue (const VALUE &Value, int *retiPos = NULL) const
+			{
+			for (int i = 0; i < GetCount(); i++)
+				if (GetValue(i) == Value)
+					{
+					if (retiPos)
+						*retiPos = i;
+					return true;
+					}
+
+			return false;
+			}
+
 		bool FindPos (const KEY &key, int *retiPos = NULL) const
 			{
 			int iCount = m_Index.GetCount();

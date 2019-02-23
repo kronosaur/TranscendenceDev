@@ -19,7 +19,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 		{
 		CItemCriteria Crit;
 		CItem::InitCriteriaAll(&Crit);
-		CItem Item = CItem::CreateItemByName(sUNID, Crit);
+		CItem Item = CItem::CreateItemByName(Universe, sUNID, Crit);
 		pItem = Item.GetType();
 
 		if (pItem == NULL)

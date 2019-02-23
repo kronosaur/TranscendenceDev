@@ -610,7 +610,6 @@
 
 	<!ENTITY efMediumExplosion1			"0x00009001">
 	<!ENTITY efLargeExplosion1			"0x00009002">
-	<!ENTITY efSmallExplosion1			"0x00009003">
 	<!ENTITY efFragmentationExplosion	"0x00009007">
 	<!ENTITY efBattleArenaWallHit		"0x00009008">
 	<!ENTITY efStationExplosion			"0x00009009">

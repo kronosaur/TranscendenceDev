@@ -595,7 +595,7 @@ CSingleShip::~CSingleShip (void)
 		delete m_pEscorts;
 
 	if (m_pOnCreate)
-		m_pOnCreate->Discard(&g_pUniverse->GetCC());
+		m_pOnCreate->Discard();
 	}
 
 void CSingleShip::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
@@ -637,7 +637,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	if (m_pGetParameters)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(Ctx.GetUniverse());
 		ICCItemPtr pResult = CCCtx.RunCode(m_pGetParameters);
 		if (pResult->IsError())
 			{
@@ -722,7 +722,7 @@ void CSingleShip::CreateShip (SShipCreateCtx &Ctx,
 
 	//	Get the controller
 
-	IShipController *pController = g_pUniverse->CreateShipController(m_sController);
+	IShipController *pController = Ctx.GetUniverse().CreateShipController(m_sController);
 	if (pController == NULL)
 		{
 		kernelDebugLogPattern("Cannot create ship %x; invalid controller: %s", dwClass, m_sController);
@@ -963,7 +963,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pHandler = pDesc->GetContentElementByTag(ON_CREATE_TAG);
 	if (pHandler)
 		{
-		m_pOnCreate = g_pUniverse->GetCC().Link(pHandler->GetContentText(0));
+		m_pOnCreate = CCodeChain::Link(pHandler->GetContentText(0));
 		if (m_pOnCreate->IsError())
 			{
 			Ctx.sError = strPatternSubst("<OnCreate> in <Ship>: &s", m_pOnCreate->GetStringValue());
@@ -974,7 +974,7 @@ ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	pHandler = pDesc->GetContentElementByTag(GET_PARAMETERS_TAG);
 	if (pHandler)
 		{
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(Ctx.GetUniverse());
 		m_pGetParameters = CCCtx.LinkCode(pHandler->GetContentText(0));
 		if (m_pGetParameters->IsError())
 			{

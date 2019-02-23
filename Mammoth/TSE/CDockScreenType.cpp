@@ -91,43 +91,6 @@ ALERROR CDockScreenType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	return NOERROR;
 	}
 
-CDesignType *CDockScreenType::ResolveScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual, bool *retbIsLocal)
-
-//	ResolveScreen
-//
-//	Resolves a string screen name.
-//
-//	If the screen name is an UNID then we return the docks screen type
-//	Otherwise, we return pLocalScreen and the screen name.
-//
-//	NULL means that the screen was not found.
-
-	{
-	bool bNotANumber;
-	DWORD dwUNID = (DWORD)strToInt(sScreen, 0, &bNotANumber);
-
-	if (bNotANumber)
-		{
-		if (retbIsLocal)
-			*retbIsLocal = true;
-
-		if (retsScreenActual)
-			*retsScreenActual = sScreen;
-
-		return pLocalScreen;
-		}
-	else
-		{
-		if (retbIsLocal)
-			*retbIsLocal = false;
-
-		if (retsScreenActual)
-			*retsScreenActual = NULL_STR;
-
-		return g_pUniverse->FindSharedDockScreen(dwUNID);
-		}
-	}
-
 //	CDockScreenTypeRef --------------------------------------------------------
 
 ALERROR CDockScreenTypeRef::Bind (CXMLElement *pLocalScreens)
@@ -165,7 +128,7 @@ ALERROR CDockScreenTypeRef::Bind (SDesignLoadCtx &Ctx, CXMLElement *pLocalScreen
 
 		else
 			{
-			CDesignType *pBaseType = g_pUniverse->FindDesignType(dwUNID);
+			CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(dwUNID);
 			if (pBaseType == NULL)
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Unknown dock screen design type: %x"), dwUNID);

@@ -85,12 +85,13 @@
 #define FIELD_PARTICLE_COUNT					CONSTLIT("particleCount")
 #define FIELD_SOUND								CONSTLIT("sound")
 
+#define FIRE_TYPE_AREA							CONSTLIT("area")
 #define FIRE_TYPE_BEAM							CONSTLIT("beam")
 #define FIRE_TYPE_CONTINUOUS_BEAM				CONSTLIT("continuousBeam")
 #define FIRE_TYPE_MISSILE						CONSTLIT("missile")
-#define FIRE_TYPE_AREA							CONSTLIT("area")
 #define FIRE_TYPE_PARTICLES						CONSTLIT("particles")
 #define FIRE_TYPE_RADIUS						CONSTLIT("radius")
+#define FIRE_TYPE_SHOCKWAVE						CONSTLIT("shockwave")
 
 #define ON_CREATE_SHOT_EVENT					CONSTLIT("OnCreateShot")
 #define ON_DAMAGE_OVERLAY_EVENT					CONSTLIT("OnDamageOverlay")
@@ -339,7 +340,7 @@ void CWeaponFireDesc::CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource,
 		CCreatePainterCtx Ctx;
 		Ctx.SetWeaponFireDesc(this);
 
-		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType()));
+		IEffectPainter *pPainter = m_pFireEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType()));
 		if (pPainter == NULL)
 			return;
 
@@ -367,20 +368,23 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 //	Creates an effect when the weapon hits an object
 
 	{
+	if (pSystem == NULL)
+		return;
+
 	//	Create the hit effect painter.
 
 	CCreatePainterCtx Ctx;
 	Ctx.SetWeaponFireDesc(this);
 	Ctx.SetDamageCtx(DamageCtx);
 
-	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, g_pUniverse->FindDefaultHitEffect(m_Damage.GetDamageType()));
+	IEffectPainter *pPainter = m_pHitEffect.CreatePainter(Ctx, &GetUniverse().GetDefaultHitEffect(m_Damage.GetDamageType()));
 	if (pPainter == NULL)
 		return;
 
 	//	Now create the effect
 
 	if (CEffect::Create(pPainter,
-			pSystem,
+			*pSystem,
 			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
 			DamageCtx.vHitPos,
 			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
@@ -653,7 +657,7 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 //	Finds a property. We return NULL if not found.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
 	CString sValue;
 	SpecialDamageTypes iSpecial;
@@ -866,7 +870,7 @@ void CWeaponFireDesc::FireOnCreateShot (const CDamageSource &Source, CSpaceObjec
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
@@ -895,7 +899,7 @@ bool CWeaponFireDesc::FireOnDamageAbandoned (SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -939,7 +943,7 @@ bool CWeaponFireDesc::FireOnDamageArmor (SDamageCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -983,7 +987,7 @@ bool CWeaponFireDesc::FireOnDamageOverlay (SDamageCtx &Ctx, COverlay *pOverlay)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.pObj);
@@ -1028,7 +1032,7 @@ bool CWeaponFireDesc::FireOnDamageShields (SDamageCtx &Ctx, int iDevice)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CItemListManipulator ItemList(Ctx.pObj->GetItemList());
 		CShip *pShip = Ctx.pObj->AsShip();
@@ -1159,7 +1163,7 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.Attacker.GetObj());
@@ -1193,7 +1197,7 @@ void CWeaponFireDesc::FireOnDestroyShot (CSpaceObject *pShot)
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
@@ -1222,7 +1226,7 @@ bool CWeaponFireDesc::FireOnFragment (const CDamageSource &Source, CSpaceObject 
 		{
 		//	Setup arguments
 
-		CCodeChainCtx CCCtx;
+		CCodeChainCtx CCCtx(GetUniverse());
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(pShot);
@@ -1321,7 +1325,7 @@ CEffectCreator *CWeaponFireDesc::GetFireEffect (void) const
 	//	Otherwise, see if the universe has a default effect for this damage 
 	//	type.
 
-	return g_pUniverse->FindDefaultFireEffect(m_Damage.GetDamageType());
+	return &GetUniverse().GetDefaultFireEffect(m_Damage.GetDamageType());
 	}
 
 Metric CWeaponFireDesc::GetInitialSpeed (void) const
@@ -1462,7 +1466,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 
 	//	Get the type
 
-	CItemType *pItemType = g_pUniverse->FindItemType(dwUNID);
+	CItemType *pItemType = GetUniverse().FindItemType(dwUNID);
 	if (pItemType == NULL)
 		return NULL;
 
@@ -1693,7 +1697,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		m_iFireType = ftMissile;
 	else if (strEquals(sValue, FIRE_TYPE_BEAM))
 		m_iFireType = ftBeam;
-	else if (strEquals(sValue, FIRE_TYPE_AREA))
+	else if (strEquals(sValue, FIRE_TYPE_AREA) || strEquals(sValue, FIRE_TYPE_SHOCKWAVE))
 		m_iFireType = ftArea;
 	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
 		m_iFireType = ftContinuousBeam;

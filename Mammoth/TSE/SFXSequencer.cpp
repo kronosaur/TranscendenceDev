@@ -29,11 +29,14 @@ ALERROR CEffectSequencerCreator::CreateEffect (CSystem *pSystem,
 	{
 	ALERROR error;
 
+	if (pSystem == NULL)
+		return ERR_FAIL;
+
 	//	Create the effect
 
 	CSequencerEffect *pObj;
 
-	if (error = CSequencerEffect::Create(pSystem,
+	if (error = CSequencerEffect::Create(*pSystem,
 			this,
 			pAnchor,
 			vPos,

@@ -138,7 +138,7 @@ void CItemEventDispatcher::FireEventFull (CSpaceObject *pSource, ECodeChainEvent
 	{
 	DEBUG_TRY
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pSource->GetUniverse());
 	bool bSavedVars = false;
 
 	//	Fire event for all items that have it
@@ -281,7 +281,7 @@ void CItemEventDispatcher::FireUpdateEventsFull (CSpaceObject *pSource)
 	{
 	DEBUG_TRY
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(pSource->GetUniverse());
 	bool bSavedVars = false;
 
 	//	Fire event for all items that have it

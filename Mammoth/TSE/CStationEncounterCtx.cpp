@@ -47,14 +47,17 @@ int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CT
 //	negative number. If we cannot reach such a node, we return -100.
 
 	{
-	int iDist = g_pUniverse->GetTopology().GetDistanceToCriteria(pNode, Criteria);
+	if (pNode == NULL)
+		return 100;
+
+	int iDist = pNode->GetTopology().GetDistanceToCriteria(pNode, Criteria);
 	if (iDist == -1)
 		return 100;
 	else if (iDist > 0)
 		return iDist;
 	else
 		{
-		iDist = g_pUniverse->GetTopology().GetDistanceToCriteriaNoMatch(pNode, Criteria);
+		iDist = pNode->GetTopology().GetDistanceToCriteriaNoMatch(pNode, Criteria);
 		if (iDist == -1)
 			return -100;
 		else
@@ -110,6 +113,9 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 //  descriptor and the node.
 
     {
+	if (pNode == NULL)
+		return 0;
+
     //  See if we've got a cached value for this node. (Even if not, we need
     //  the structure so we can cache it.)
 
@@ -128,8 +134,7 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
             {
             //  Compute the criteria for this node and cache it.
 
-            CTopologyNode::SCriteriaCtx Ctx;
-            Ctx.pTopology = &g_pUniverse->GetTopology();
+            CTopologyNode::SCriteriaCtx Ctx(pNode->GetTopology());
             if (!pNode->MatchesCriteria(Ctx, *pSystemCriteria))
                 pStats->iNodeCriteria = 0;
             }

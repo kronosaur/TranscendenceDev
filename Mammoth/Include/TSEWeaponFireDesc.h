@@ -558,6 +558,7 @@ class CWeaponFireDesc
 		Metric CalcSpeed (Metric rPercentOfLight) const;
 		CEffectCreator *GetFireEffect (void) const;
         inline SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         inline SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
 

@@ -40,7 +40,7 @@ ICCItem *CCString::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCString::DestroyItem (CCodeChain *pCC)
+void CCString::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -49,7 +49,7 @@ void CCString::DestroyItem (CCodeChain *pCC)
 	{
 	if (m_pBinding)
 		{
-		m_pBinding->Discard(pCC);
+		m_pBinding->Discard();
 		m_pBinding = NULL;
 		}
 
@@ -58,7 +58,7 @@ void CCString::DestroyItem (CCodeChain *pCC)
 	//	appear to be leaked.
 	m_sValue = CString();
 #endif
-	pCC->DestroyString(this);
+	CCodeChain::DestroyString(this);
 	}
 
 bool CCString::GetBinding (int *retiFrame, int *retiOffset)
@@ -83,7 +83,7 @@ bool CCString::GetBinding (int *retiFrame, int *retiOffset)
 		}
 	}
 
-CString CCString::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCString::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -273,81 +273,8 @@ void CCString::SetFunctionBinding (CCodeChain *pCC, ICCItem *pBinding)
 
 	{
 	if (m_pBinding)
-		m_pBinding->Discard(pCC);
+		m_pBinding->Discard();
 
 	m_pBinding = pBinding->Reference();
 	}
 
-ICCItem *CCString::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-	DWORD dwLength;
-	DWORD dwPaddedLength;
-
-	//	Write out the length of the string
-
-	dwLength = m_sValue.GetLength();
-	if (error = pStream->Write((char *)&dwLength, sizeof(dwLength), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out the string
-
-	if (error = pStream->Write(m_sValue.GetPointer(), dwLength, NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out any padding
-
-	dwPaddedLength = AlignUp(dwLength, sizeof(DWORD));
-	if (dwPaddedLength - dwLength > 0)
-		{
-		if (error = pStream->Write((char *)&dwLength, dwPaddedLength - dwLength, NULL))
-			return pCC->CreateSystemError(error);
-		}
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCString::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-	DWORD dwLength;
-	DWORD dwPaddedLength;
-	char *pPos;
-
-	//	Read the length
-
-	if (error = pStream->Read((char *)&dwLength, sizeof(dwLength), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Grow the string
-
-	pPos = m_sValue.GetWritePointer(dwLength);
-	if (pPos == NULL)
-		return pCC->CreateMemoryError();
-
-	//	Read the string
-
-	if (error = pStream->Read(pPos, dwLength, NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read the padding
-
-	dwPaddedLength = AlignUp(dwLength, sizeof(DWORD));
-	if (dwPaddedLength - dwLength > 0)
-		{
-		if (error = pStream->Read((char *)&dwLength, dwPaddedLength - dwLength, NULL))
-			return pCC->CreateSystemError(error);
-		}
-
-	return pCC->CreateTrue();
-	}

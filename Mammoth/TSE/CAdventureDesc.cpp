@@ -138,7 +138,7 @@ void CAdventureDesc::FireOnGameEnd (const CGameRecord &Game, const SBasicGameSta
 
 	if (FindEventHandler(ON_GAME_END_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Initialize variables
 
@@ -177,7 +177,7 @@ void CAdventureDesc::FireOnGameStart (void)
 
 	if (FindEventHandler(ON_GAME_START_EVENT, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		//	Run code
 
@@ -197,6 +197,19 @@ const CDamageAdjDesc *CAdventureDesc::GetDefaultArmorDamageAdj (int iLevel)
 	{
 	InitDefaultDamageAdj();
 	return &g_ArmorDamageAdj[iLevel - 1];
+	}
+
+const CEconomyType &CAdventureDesc::GetDefaultCurrency (void) const
+
+//	GetDefaultCurrency
+//
+//	Returns the default currency for the adventure.
+
+	{
+	if (m_pDefaultCurrency)
+		return *m_pDefaultCurrency;
+
+	return GetUniverse().GetCreditCurrency();
 	}
 
 const CDamageAdjDesc *CAdventureDesc::GetDefaultShieldDamageAdj (int iLevel)
@@ -251,14 +264,14 @@ ALERROR CAdventureDesc::GetStartingShipClasses (TSortMap<CString, CShipClass *> 
 	{
 	int i;
 
-	bool bShowDebugShips = g_pUniverse->InDebugMode();
+	bool bShowDebugShips = GetUniverse().InDebugMode();
 
 	//	Make a list
 
 	retClasses->DeleteAll();
-	for (i = 0; i < g_pUniverse->GetShipClassCount(); i++)
+	for (i = 0; i < GetUniverse().GetShipClassCount(); i++)
 		{
-		CShipClass *pClass = g_pUniverse->GetShipClass(i);
+		CShipClass *pClass = GetUniverse().GetShipClass(i);
 		if (pClass->IsShownAtNewGame()
 				&& IsValidStartingClass(pClass)
 				&& (!pClass->IsDebugOnly() || bShowDebugShips))
@@ -329,10 +342,10 @@ bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
 		//	Get the station type. If we don't find the station, skip it. We 
 		//	assume that this is an optional type.
 
-		CStationType *pType = g_pUniverse->FindStationType(dwUNID);
+		CStationType *pType = GetUniverse().FindStationType(dwUNID);
 		if (pType == NULL)
 			{
-			if (g_pUniverse->InDebugMode())
+			if (GetUniverse().InDebugMode())
 				::kernelDebugLogPattern("Skipping encounter override %08x because type is not found.", dwUNID);
 			continue;
 			}
@@ -352,7 +365,7 @@ bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
 		//	recreate them at load time (i.e., we run through this code at load
 		//	time again).
 
-		pNewDesc->InitLevelFrequency();
+		pNewDesc->InitLevelFrequency(GetUniverse().GetTopology());
 		}
 
 	//	Done

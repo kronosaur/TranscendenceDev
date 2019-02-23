@@ -610,6 +610,7 @@ class CCommandLineDisplay
 		void Update (void);
 		const CString GetCurrentCmd (void);
 		void AutoCompleteSearch (void);
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 		const CVisualPalette &m_VI;
 		const CG16bitFont *m_pFont = NULL;

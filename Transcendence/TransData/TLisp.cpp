@@ -60,13 +60,13 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	else if (!sCommand.IsBlank() && !strEquals(sCommand, CONSTLIT("True")))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(*g_pUniverse);
 		ICCItemPtr pCode = Ctx.LinkCode(sCommand);
 		ICCItemPtr pResult = Ctx.RunCode(pCode);
 
 		CString sOutput;
 		if (pResult->IsIdentifier())
-			sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+			sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 		else
 			sOutput = CC.Unlink(pResult);
 
@@ -125,13 +125,13 @@ void Run (CUniverse &Universe, CXMLElement *pCmdLine)
 
 			else
 				{
-				CCodeChainCtx Ctx;
+				CCodeChainCtx Ctx(*g_pUniverse);
 				ICCItemPtr pCode = Ctx.LinkCode(sCommand);
 				ICCItemPtr pResult = Ctx.RunCode(pCode);
 
 				CString sOutput;
 				if (pResult->IsIdentifier())
-					sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+					sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				else
 					sOutput = CC.Unlink(pResult);
 
@@ -147,7 +147,7 @@ void RunFile (const CString &sFilespec, bool bNoLogo)
 	{
 	ALERROR error;
 	CCodeChain &CC = g_pUniverse->GetCC();
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(*g_pUniverse);
 
 	//	Verify the file
 
@@ -195,7 +195,7 @@ void RunFile (const CString &sFilespec, bool bNoLogo)
 		//	Compose output
 
 		if (pResult->IsIdentifier())
-			sOutput = pResult->Print(&CC, PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
+			sOutput = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 		else
 			sOutput = CC.Unlink(pResult);
 		}

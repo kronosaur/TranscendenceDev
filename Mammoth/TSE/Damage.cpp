@@ -268,13 +268,11 @@ ICCItem *DamageDesc::FindProperty (const CString &sName) const
 //	Returns the given damage property (or NULL for unknown properties).
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	See if this is one of the special damage properties
 
 	SpecialDamageTypes iSpecial;
 	if ((iSpecial = ConvertPropertyToSpecialDamageTypes(sName)) != specialNone)
-		return CC.CreateInteger(GetSpecialDamage(iSpecial));
+		return CCodeChain::CreateInteger(GetSpecialDamage(iSpecial));
 
 	//	Otherwise, not found
 
@@ -1102,23 +1100,23 @@ static void AddEffectItem (CCodeChain &CC, CCLinkedList *pList, const CString &s
 	CCLinkedList *pNewItem = (CCLinkedList *)CC.CreateLinkedList();
 	if (pNewItem->IsError())
 		{
-		pNewItem->Discard(&CC);
+		pNewItem->Discard();
 		return;
 		}
 
 	ICCItem *pField = CC.CreateString(sEffect);
-	pNewItem->Append(CC, pField);
-	pField->Discard(&CC);
+	pNewItem->Append(pField);
+	pField->Discard();
 
 	if (iTime != -1)
 		{
 		pField = CC.CreateInteger(iTime);
-		pNewItem->Append(CC, pField);
-		pField->Discard(&CC);
+		pNewItem->Append(pField);
+		pField->Discard();
 		}
 
-	pList->Append(CC, pNewItem);
-	pNewItem->Discard(&CC);
+	pList->Append(pNewItem);
+	pNewItem->Discard();
 	}
 
 ICCItem *CreateItemFromDamageEffects (CCodeChain &CC, SDamageCtx &Ctx)

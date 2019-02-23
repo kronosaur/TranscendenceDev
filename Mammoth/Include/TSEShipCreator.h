@@ -78,6 +78,8 @@ struct SShipCreateCtx
 			dwFlags(0)
 		{ }
 
+	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+
 	CSystem *pSystem;							//	System to create ship in
 	CSpaceObject *pGate;						//	Gate where ship will appear (may be NULL)
 	CVector vPos;								//	Position where ship will appear (only if pGate is NULL)

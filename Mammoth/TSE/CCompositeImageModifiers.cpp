@@ -5,9 +5,6 @@
 
 #include "PreComp.h"
 
-static IEffectPainter *g_pMediumDamage = NULL;
-static IEffectPainter *g_pLargeDamage = NULL;
-
 bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) const
 
 //	operator ==
@@ -17,8 +14,8 @@ bool CCompositeImageModifiers::operator== (const CCompositeImageModifiers &Val) 
 			&& m_pFilters == Val.m_pFilters
 			&& m_rgbFadeColor == Val.m_rgbFadeColor
 			&& m_wFadeOpacity == Val.m_wFadeOpacity
-			&& m_fStationDamage == Val.m_fStationDamage
-			&& m_fFullImage == Val.m_fFullImage);
+			&& m_bStationDamage == Val.m_bStationDamage
+			&& m_bFullImage == Val.m_bFullImage);
 	}
 
 void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
@@ -33,10 +30,8 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	//	Station damage
 
-	if (m_fStationDamage)
+	if (m_bStationDamage)
 		{
-		InitDamagePainters();
-
 		//	Create a blank bitmap
 
 		if (pNewDest == NULL)
@@ -51,12 +46,12 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 		//	Add some large damage
 
 		int iCount = (pNewDest->GetWidth() / 32) * (pNewDest->GetHeight() / 32);
-		PaintDamage(*pNewDest, rcNewImage, iCount, g_pLargeDamage);
+		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterLargeStationDamage));
 
 		//	Add some medium damage
 
 		iCount = (pNewDest->GetWidth() / 4) + (pNewDest->GetHeight() / 4);
-		PaintDamage(*pNewDest, rcNewImage, iCount, g_pMediumDamage);
+		PaintDamage(*pNewDest, rcNewImage, iCount, &g_pUniverse->GetNamedPainter(CNamedEffects::painterMediumStationDamage));
 
 		//	Reapply the mask to our image
 
@@ -102,7 +97,7 @@ void CCompositeImageModifiers::Apply (CObjectImageArray *retImage) const
 
 	if (pNewDest)
 		{
-		if (m_fFullImage || retImage->IsAnimated())
+		if (m_bFullImage || retImage->IsAnimated())
 			retImage->SetImage(TSharedPtr<CObjectImage>(new CObjectImage(pNewDest, true)));
 		else
 			retImage->InitFromBitmap(pNewDest, rcNewImage, 0, 0, true);
@@ -116,7 +111,7 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 //	Creates a copy of the given image. Caller is reponsible for freeing.
 
 	{
-	if (m_fFullImage || pImage->IsAnimated())
+	if (m_bFullImage || pImage->IsAnimated())
 		{
 		CG32bitImage *pNewImage = new CG32bitImage(pImage->GetImage(NULL_STR));
 
@@ -151,28 +146,6 @@ CG32bitImage *CCompositeImageModifiers::CreateCopy (CObjectImageArray *pImage, R
 			*retrcNewImage = rcImage;
 
 		return pNewImage;
-		}
-	}
-
-void CCompositeImageModifiers::InitDamagePainters (void)
-
-//	InitDamagePainters
-//
-//	Initializes station damage bitmaps
-
-	{
-	if (g_pMediumDamage == NULL)
-		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(MEDIUM_STATION_DAMAGE_UNID);
-		if (pEffect)
-			g_pMediumDamage = pEffect->CreatePainter(CCreatePainterCtx());
-		}
-
-	if (g_pLargeDamage == NULL)
-		{
-		CEffectCreator *pEffect = g_pUniverse->FindEffectType(LARGE_STATION_DAMAGE_UNID);
-		if (pEffect)
-			g_pLargeDamage = pEffect->CreatePainter(CCreatePainterCtx());
 		}
 	}
 
@@ -221,24 +194,3 @@ void CCompositeImageModifiers::PaintDamage (CG32bitImage &Dest, const RECT &rcDe
 		pPainter->Paint(Dest, x, y, Ctx);
 		}
 	}
-
-void CCompositeImageModifiers::Reinit (void)
-
-//	Reinit
-//
-//	Reinitialize global data
-
-	{
-	if (g_pMediumDamage)
-		{
-		g_pMediumDamage->Delete();
-		g_pMediumDamage = NULL;
-		}
-
-	if (g_pLargeDamage)
-		{
-		g_pLargeDamage->Delete();
-		g_pLargeDamage = NULL;
-		}
-	}
-

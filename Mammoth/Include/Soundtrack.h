@@ -131,10 +131,25 @@ class CSoundtrackManager
 			stateProgramQuit,				//	Program is closing
 			};
 
+		struct SOptions
+			{
+			SOptions (CUniverse &UniverseArg) :
+					Universe(UniverseArg)
+				{ }
+
+			CUniverse &Universe;
+			EGameStates iInitialState = stateNone;
+			int iVolume = 7;
+
+			bool bEnabled = true;			//	Music enabled
+			bool bDebugMode = false;
+			};
+
 		CSoundtrackManager (void);
 		~CSoundtrackManager (void);
 
 		CMusicResource *GetCurrentTrack (int *retiPos = NULL);
+		bool Init (SOptions &Options);
 		void NextTrack (void);
 		void NotifyAddToQueue (CMusicResource *pTrack);
 		void NotifyEndCombat (void);
@@ -148,7 +163,6 @@ class CSoundtrackManager
 		void NotifyUndocked (void);
 		void NotifyUpdatePlayPos (int iPos);
 		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
-		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; m_Mixer.SetDebugMode(bDebugMode); }
 		void SetGameState (EGameStates iNewState);
 		void SetGameState (EGameStates iNewState, CMusicResource *pTrack);
 		void SetMusicEnabled (bool bEnabled = true);
@@ -192,28 +206,30 @@ class CSoundtrackManager
 		void Reinit (void);
 		void RememberTravelTrack (void);
 		void ResetTrackState (void);
+		inline void SetDebugMode (bool bDebugMode = true) { m_bDebugMode = bDebugMode; m_Mixer.SetDebugMode(bDebugMode); }
 		void TransitionTo (CMusicResource *pTrack, int iPos, bool bFadeIn = false);
 		void TransitionToCombat (CMusicResource *pTrack = NULL);
 		void TransitionToTravel (void);
 
-		CMCIMixer m_Mixer;					//	Music mixer
-		bool m_bEnabled;					//	Music is enabled
-		bool m_bDebugMode;					//	Output debug info
-		EGameStates m_iGameState;			//	Current soundtrack state
-		CMusicResource *m_pNowPlaying;		//	What we've scheduled to play
-		CMusicResource *m_pLastTravel;		//	Travel music track interrupted by combat
-		CMusicResource *m_pMissionTrack;	//	Mission track to play
-		TQueue<SQueueEntry> m_Queue;		//	Queued up tracks
+		CUniverse *m_pUniverse = NULL;				//	Universe
+		CMCIMixer m_Mixer;							//	Music mixer
+		bool m_bEnabled = false;					//	Music is enabled
+		bool m_bDebugMode = false;					//	Output debug info
+		EGameStates m_iGameState = stateNone;		//	Current soundtrack state
+		CMusicResource *m_pNowPlaying = NULL;		//	What we've scheduled to play
+		CMusicResource *m_pLastTravel = NULL;		//	Travel music track interrupted by combat
+		CMusicResource *m_pMissionTrack = NULL;		//	Mission track to play
+		TQueue<SQueueEntry> m_Queue;				//	Queued up tracks
 
-		TQueue<DWORD> m_LastPlayed;			//	UNID of tracks played.
-		bool m_bSystemTrackPlayed;			//	systemSoundtrack already played in system.
-		bool m_bStartCombatWhenUndocked;	//	If TRUE, we play combat music when we undock
-		bool m_bMissionTrack;				//	If TRUE, we're playing a mission track
-		DWORD m_dwTransition;				//	Tick on which we started a transition
-		DWORD m_dwStartedCombat;			//	Millisecond on which we started combat
-		DWORD m_dwStartedTravel;			//	Millisecond on which we started travel mode
+		TQueue<DWORD> m_LastPlayed;					//	UNID of tracks played.
+		bool m_bSystemTrackPlayed = false;			//	systemSoundtrack already played in system.
+		bool m_bStartCombatWhenUndocked = false;	//	If TRUE, we play combat music when we undock
+		bool m_bMissionTrack = false;				//	If TRUE, we're playing a mission track
+		DWORD m_dwTransition = 0;					//	Tick on which we started a transition
+		DWORD m_dwStartedCombat = 0;				//	Millisecond on which we started combat
+		DWORD m_dwStartedTravel = 0;				//	Millisecond on which we started travel mode
 
 		mutable STrackCriteria m_NotFoundCache;		//	Remember that we couldn't find this criteria
 
-		CMusicResource *m_pIntroTrack;			//	Track to play for intro.
+		CMusicResource *m_pIntroTrack = NULL;		//	Track to play for intro.
 	};

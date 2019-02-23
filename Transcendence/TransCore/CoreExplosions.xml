@@ -698,7 +698,7 @@
 
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d3; momentum3; WMD1"
 					expansionSpeed=	"25"
@@ -767,7 +767,7 @@
 
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d8; momentum3; WMD2"
 					expansionSpeed=	"25"
@@ -836,7 +836,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d12; momentum3; WMD2"
 					expansionSpeed=	"25"
@@ -861,7 +861,7 @@
 
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 					initialDelay=	"6" 
 
 					damage=			"thermo:1d6; momentum2; WMD1"
@@ -930,7 +930,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d18; momentum3; WMD2"
 					expansionSpeed=	"25"
@@ -955,7 +955,7 @@
 
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 					initialDelay=	"6"
 
 					damage=			"thermo:1d9; momentum2; WMD1"
@@ -1023,7 +1023,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d28; momentum3; WMD2"
 					expansionSpeed=	"25"
@@ -1048,7 +1048,7 @@
 
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 					initialDelay=	"6"
 
 					damage=			"thermo:1d14; momentum2; WMD1"
@@ -1363,7 +1363,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"antimatter:1d8; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1419,7 +1419,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"antimatter:2d23; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1475,7 +1475,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"antimatter:5d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1531,7 +1531,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"antimatter:7d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1587,7 +1587,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"antimatter:11d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1643,7 +1643,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"graviton:1d12; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1699,7 +1699,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"graviton:4d23; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1755,7 +1755,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"graviton:10d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1811,7 +1811,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"graviton:14d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"
@@ -1867,7 +1867,7 @@
 			
 			<Fragment
 					count=			"1"
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"graviton:22d20; momentum:2; WMD:2"
 					expansionSpeed=	"25"

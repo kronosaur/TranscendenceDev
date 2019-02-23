@@ -95,7 +95,7 @@ class CManeuverController
 class CPlayerShipController : public IShipController
 	{
 	public:
-		CPlayerShipController (void);
+		CPlayerShipController (CUniverse &Universe);
 		~CPlayerShipController (void);
 
 		void Cargo (void);
@@ -241,6 +241,7 @@ class CPlayerShipController : public IShipController
 		virtual void OnWreckCreated (CSpaceObject *pWreck) override;
 
 	private:
+
 		void ClearFireAngle (void);
 		CSpaceObject *FindDockTarget (void);
 		bool HasCommsTarget (void);
@@ -256,59 +257,60 @@ class CPlayerShipController : public IShipController
 
 		void UpdateHelp (int iTick);
 
-		CTranscendenceWnd *m_pTrans;
-        CGameSession *m_pSession;               //  Game session
-		CShip *m_pShip;
+		CUniverse &m_Universe;
+		CTranscendenceWnd *m_pTrans = NULL;
+        CGameSession *m_pSession = NULL;            //  Game session
+		CShip *m_pShip = NULL;
 
-		OrderTypes m_iOrder;					//	Last order
-		CSpaceObject *m_pTarget;
-		CSpaceObject *m_pDestination;
-		CSpaceObjectTable m_TargetList;
+		OrderTypes m_iOrder = orderNone;			//	Last order
+		CSpaceObject *m_pTarget = NULL;
+		CSpaceObject *m_pDestination = NULL;
+		TSortMap<CString, CSpaceObject *> m_TargetList;
 
-		CSpaceObject *m_pStation;				//	Station that player is docked with
-		bool m_bSignalDock;						//	Tell the model to switch to dock screen
+		CSpaceObject *m_pStation = NULL;			//	Station that player is docked with
+		bool m_bSignalDock = false;					//	Tell the model to switch to dock screen
 
-		DWORD m_dwWreckObjID;					//	WreckObjID (temp while we resurrect)
+		DWORD m_dwWreckObjID = OBJID_NULL;			//	WreckObjID (temp while we resurrect)
 
-		int m_iLastHelpTick;
-		int m_iLastHelpUseTick;
-		int m_iLastHelpFireMissileTick;
+		int m_iLastHelpTick = 0;
+		int m_iLastHelpUseTick = 0;
+		int m_iLastHelpFireMissileTick = 0;
 
 		CManeuverController m_ManeuverController;
-		EManeuverTypes m_iManeuver;
-		bool m_bThrust;
-		bool m_bActivate;
-		bool m_bStopThrust;
+		EManeuverTypes m_iManeuver = NoRotation;
+		bool m_bThrust = false;
+		bool m_bActivate = false;
+		bool m_bStopThrust = false;
 
-		bool m_bMapHUD;							//	Show HUD on map
-		bool m_bDockPortIndicators;				//	Dock ports light up when near by
+		bool m_bMapHUD = true;						//	Show HUD on map
+		bool m_bDockPortIndicators = true;			//	Dock ports light up when near by
 
-        int m_iMouseAimAngle;                   //  Angle to aim towards
+        int m_iMouseAimAngle = -1;					//  Angle to aim towards
 
-		CCurrencyBlock m_Credits;				//	Money available to player
-		CPlayerGameStats m_Stats;				//	Player stats, including score
-		CUIMessageController m_UIMsgs;			//	Status of various UI messages, such as hints
+		CCurrencyBlock m_Credits;					//	Money available to player
+		CPlayerGameStats m_Stats;					//	Player stats, including score
+		CUIMessageController m_UIMsgs;				//	Status of various UI messages, such as hints
 
-		CString m_sName;						//	Player name
-		GenomeTypes m_iGenome;					//	Player genome
-		DWORD m_dwStartingShipClass;			//	Starting ship class
-		CGenericType *m_pCharacterClass;		//	Character class
+		CString m_sName;							//	Player name
+		GenomeTypes m_iGenome = genomeUnknown;					//	Player genome
+		DWORD m_dwStartingShipClass = 0;			//	Starting ship class
+		CGenericType *m_pCharacterClass = NULL;		//	Character class
 
-		bool m_bUnderAttack;					//	TRUE if we're currently under attack
+		bool m_bUnderAttack = false;				//	TRUE if we're currently under attack
 
-		CSpaceObject *m_pAutoDock;				//	The current station to dock with if we were to 
-												//		press 'D' right now. NULL means no station
-												//		to dock with.
-		int m_iAutoDockPort;					//	The current dock port.
-		CVector m_vAutoDockPort;				//	The current dock port position;
+		CSpaceObject *m_pAutoDock = NULL;			//	The current station to dock with if we were to 
+													//		press 'D' right now. NULL means no station
+													//		to dock with.
+		int m_iAutoDockPort = 0;					//	The current dock port.
+		CVector m_vAutoDockPort;					//	The current dock port position;
 
-		bool m_bShowAutoTarget;					//	If TRUE, we show the autotarget
-		bool m_bTargetOutOfRange;				//	If TRUE, m_pTarget is out of weapon range
-		CSpaceObject *m_pAutoTarget;			//	Saved autotarget.
-		mutable int m_iAutoTargetTick;
+		bool m_bShowAutoTarget = false;				//	If TRUE, we show the autotarget
+		bool m_bTargetOutOfRange = false;			//	If TRUE, m_pTarget is out of weapon range
+		CSpaceObject *m_pAutoTarget = NULL;			//	Saved autotarget.
+		mutable int m_iAutoTargetTick = 0;
 
-		CSpaceObject *m_pAutoDamage;			//	Show damage bar for this object
-		DWORD m_dwAutoDamageExpire;				//	Stop showing on this tick
+		CSpaceObject *m_pAutoDamage = NULL;			//	Show damage bar for this object
+		DWORD m_dwAutoDamageExpire = 0;				//	Stop showing on this tick
 
 	friend CObjectClass<CPlayerShipController>;
 	};

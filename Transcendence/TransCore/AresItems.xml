@@ -492,7 +492,7 @@
 			</Effect>
 
 			<Fragment
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:1d10; WMD3"
 					expansionSpeed=	"35"
@@ -569,7 +569,7 @@
 			</Effect>
 
 			<Fragment
-					type=			"area"
+					type=			"shockwave"
 
 					damage=			"thermo:2d10; WMD7"
 					expansionSpeed=	"25"

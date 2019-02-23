@@ -30,10 +30,10 @@ void CCSymbolTable::AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry)
 
 	//	Discard old entry
 
-	((ICCItem *)pOldEntry)->Discard(pCC);
+	((ICCItem *)pOldEntry)->Discard();
 	}
 
-ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
+void CCSymbolTable::AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd)
 
 //	AddEntry
 //
@@ -48,7 +48,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 
 	ICCItem *pTransformed;
 	if (m_pDefineHook)
-		pTransformed = m_pDefineHook->Transform(*pCC, pEntry);
+		pTransformed = m_pDefineHook->Transform(pEntry);
 	else
 		pTransformed = pEntry->Reference();
 
@@ -60,7 +60,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		CObject *pOldEntry;
 
 		if (m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	If we have a previous entry, decrement its refcount since we're
 		//	throwing it away
@@ -78,12 +78,12 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 		error = m_Symbols.ReplaceEntry(pKey->GetStringValue(), pTransformed, false, &pOldEntry);
 		if (error == ERR_NOTFOUND)
 			{
-			ICCItem *pResult = m_pParent->AddEntry(pCC, pKey, pTransformed);
-			pTransformed->Discard(pCC);
-			return pResult;
+			m_pParent->AddEntry(pKey, pTransformed);
+			pTransformed->Discard();
+			return;
 			}
 		else if (error != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	Get the previous entry
 
@@ -93,11 +93,7 @@ ICCItem *CCSymbolTable::AddEntry (CCodeChain *pCC, ICCItem *pKey, ICCItem *pEntr
 	//	Delete old entry
 
 	if (pPrevEntry)
-		pPrevEntry->Discard(pCC);
-
-	SetModified();
-
-	return pCC->CreateTrue();
+		pPrevEntry->Discard();
 	}
 
 ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
@@ -125,7 +121,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 
 		CObject *pOldEntry;
 		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->Reference(), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -153,7 +149,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
-ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
+ICCItem *CCSymbolTable::CloneContainer (void)
 
 //	CloneContainer
 //
@@ -162,7 +158,7 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 	{
 	int i;
 
-	ICCItem *pNew = pCC->CreateSymbolTable();
+	ICCItem *pNew = CCodeChain::CreateSymbolTable();
 	CCSymbolTable *pNewTable = dynamic_cast<CCSymbolTable *>(pNew);
 	pNewTable->CloneItem(this);
 	ASSERT(pNewTable);
@@ -178,8 +174,8 @@ ICCItem *CCSymbolTable::CloneContainer (CCodeChain *pCC)
 		//	Add to the new table
 
 		CObject *pOldEntry;
-		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(pCC), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneContainer(), true, &pOldEntry) != NOERROR)
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -215,7 +211,7 @@ ICCItem *CCSymbolTable::CloneDeep (CCodeChain *pCC)
 
 		CObject *pOldEntry;
 		if (pNewTable->m_Symbols.ReplaceEntry(sKey, pItem->CloneDeep(pCC), true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 
 		//	We better not have a previous entry (this can only happen if the existing symbol
 		//	table has a duplicate entry).
@@ -262,7 +258,7 @@ void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 #ifdef DEBUG
 		::kernelDebugLogString(m_Symbols.GetKey(i));
 #endif
-		pItem->Discard(pCC);
+		pItem->Discard();
 		m_Symbols.RemoveEntry(i);
 		i--;
 		}
@@ -287,12 +283,10 @@ void CCSymbolTable::DeleteEntry (CCodeChain *pCC, ICCItem *pKey)
 	//	throwing it away
 
 	ICCItem *pPrevEntry = (ICCItem *)pOldEntry;
-	pPrevEntry->Discard(pCC);
-
-	SetModified();
+	pPrevEntry->Discard();
 	}
 
-void CCSymbolTable::DestroyItem (CCodeChain *pCC)
+void CCSymbolTable::DestroyItem (void)
 
 //	DestroyItem
 //
@@ -304,7 +298,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 	//	Release our parent reference
 
 	if (m_pParent)
-		m_pParent->Discard(pCC);
+		m_pParent->Discard();
 
 	//	Release all the entries
 
@@ -313,7 +307,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 		CObject *pValue = m_Symbols.GetValue(i);
 		ICCItem *pItem = (ICCItem *)pValue;
 
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Remove all symbols
@@ -322,7 +316,7 @@ void CCSymbolTable::DestroyItem (CCodeChain *pCC)
 
 	//	Destroy this item
 
-	pCC->DestroySymbolTable(this);
+	CCodeChain::DestroySymbolTable(this);
 	}
 
 int CCSymbolTable::FindOffset (CCodeChain *pCC, ICCItem *pKey)
@@ -419,10 +413,10 @@ ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
 	CCLinkedList *pList = (CCLinkedList *)pCC->CreateLinkedList();
 	
 	ICCItem *pKey = pCC->CreateString(m_Symbols.GetKey(iIndex));
-	pList->Append(*pCC, pKey);
-	pKey->Discard(pCC);
+	pList->Append(pKey);
+	pKey->Discard();
 
-	pList->Append(*pCC, GetElement(iIndex));
+	pList->Append(GetElement(iIndex));
 
 	//	Done
 
@@ -487,8 +481,8 @@ ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
 
 			//	Add the item to the list
 
-			pList->Append(*pCC, pItem);
-			pItem->Discard(pCC);
+			pList->Append(pItem);
+			pItem->Discard();
 			}
 
 		return pList;
@@ -536,7 +530,7 @@ ICCItem *CCSymbolTable::LookupEx (CCodeChain *pCC, ICCItem *pKey, bool *retbFoun
 				}
 			}
 		else
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 		}
 
 	pBinding = dynamic_cast<ICCItem *>(pNew);
@@ -564,7 +558,7 @@ ICCItem *CCSymbolTable::LookupByOffset (CCodeChain *pCC, int iOffset)
 		return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 	}
 
-CString CCSymbolTable::Print (CCodeChain *pCC, DWORD dwFlags)
+CString CCSymbolTable::Print (DWORD dwFlags)
 
 //	Print
 //
@@ -590,7 +584,7 @@ CString CCSymbolTable::Print (CCodeChain *pCC, DWORD dwFlags)
 		Stream.Write(":", 1);
 
 		ICCItem *pValue = dynamic_cast<ICCItem *>(m_Symbols.GetValue(i));
-		CString sValue = pValue->Print(pCC);
+		CString sValue = pValue->Print();
 		Stream.Write(sValue.GetASCIIZPointer(), sValue.GetLength());
 
 		Stream.Write(" ", 1);
@@ -638,7 +632,7 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retb
 			return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 			}
 		else
-			return pCC->CreateMemoryError();
+			throw CException(ERR_MEMORY);
 		}
 
 	pNew = m_Symbols.GetValue(iOffset);
@@ -654,117 +648,3 @@ ICCItem *CCSymbolTable::SimpleLookup (CCodeChain *pCC, ICCItem *pKey, bool *retb
 	return pBinding->Reference();
 	}
 
-ICCItem *CCSymbolTable::StreamItem (CCodeChain *pCC, IWriteStream *pStream)
-
-//	StreamItem
-//
-//	Stream the sub-class specific data
-
-	{
-	ALERROR error;
-	int iCount;
-	int i;
-
-	//	Write out the count
-
-	iCount = m_Symbols.GetCount();
-	if (error = pStream->Write((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Write out each of the items in the list
-
-	for (i = 0; i < iCount; i++)
-		{
-		CString sKey = m_Symbols.GetKey(i);
-		CObject *pValue = m_Symbols.GetValue(i);
-		ICCItem *pItem = (ICCItem *)pValue;
-		ICCItem *pKey;
-		ICCItem *pError;
-
-		//	Write out the key
-
-		pKey = pCC->CreateString(sKey);
-		if (pKey->IsError())
-			return pKey;
-
-		pError = pCC->StreamItem(pKey, pStream);
-		pKey->Discard(pCC);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		//	Write out the value
-
-		pError = pCC->StreamItem(pItem, pStream);
-		if (pError->IsError())
-			return pError;
-
-		pError->Discard(pCC);
-
-		//	Note that there is no need to discard pItem
-		//	since we did not increase its refcount
-		}
-
-	return pCC->CreateTrue();
-	}
-
-ICCItem *CCSymbolTable::UnstreamItem (CCodeChain *pCC, IReadStream *pStream)
-
-//	UnstreamItem
-//
-//	Unstream the sub-class specific data
-
-	{
-	ALERROR error;
-	int i, iCount;
-
-	//	Read the count
-
-	if (error = pStream->Read((char *)&iCount, sizeof(iCount), NULL))
-		return pCC->CreateSystemError(error);
-
-	//	Read all the items
-
-	for (i = 0; i < iCount; i++)
-		{
-		ICCItem *pItem;
-		CString sKey;
-		CObject *pOldEntry;
-
-		//	Load the key
-
-		pItem = pCC->UnstreamItem(pStream);
-		if (pItem->IsError())
-			return pItem;
-
-		sKey = pItem->GetStringValue();
-		pItem->Discard(pCC);
-
-		//	Now load the value
-
-		pItem = pCC->UnstreamItem(pStream);
-
-		//	Note that we don't abort in case of an error
-		//	because the list might contain errors
-
-		//	Append the item to the symbol table
-
-		if (m_Symbols.ReplaceEntry(sKey, pItem, true, &pOldEntry) != NOERROR)
-			return pCC->CreateMemoryError();
-
-		//	No need to discard pItem because we're adding it to the
-		//	symbol table.
-
-		//	If we have a previous entry, decrement its refcount since we're
-		//	throwing it away
-
-		ASSERT(pOldEntry == NULL);
-		}
-
-	//	We are never a local symbol table
-
-	m_bLocalFrame = false;
-
-	return pCC->CreateTrue();
-	}

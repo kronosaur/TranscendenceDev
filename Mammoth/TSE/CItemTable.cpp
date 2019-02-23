@@ -2184,7 +2184,7 @@ CRandomEnhancementGenerator::~CRandomEnhancementGenerator (void)
 
 	{
 	if (m_pCode)
-		m_pCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCode->Discard();
 	}
 
 CRandomEnhancementGenerator &CRandomEnhancementGenerator::operator= (const CRandomEnhancementGenerator &Src)
@@ -2223,18 +2223,16 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 
 	else if (*pPos == '=')
 		{
-		CCodeChain &CC = g_pUniverse->GetCC();
-
 		m_Mods = CItemEnhancement();
 
 		CCodeChain::SLinkOptions Options;
 		Options.iOffset = 1;
 
-		m_pCode = CC.Link(pPos, Options);
+		m_pCode = CCodeChain::Link(pPos, Options);
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();
-			m_pCode->Discard(&CC);
+			m_pCode->Discard();
 			return ERR_FAIL;
 			}
 
@@ -2291,7 +2289,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 	if (m_pCode)
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(Item.GetUniverse());
 
 		//	Save the previous value of gItem
 

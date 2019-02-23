@@ -199,8 +199,6 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 //	Returns a property
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_LIST_SOURCE))
 		{
 		CSpaceObject *pObj = GetSource();
@@ -220,7 +218,7 @@ bool IDockScreenDisplay::EvalBool (const CString &sCode, bool *retbResult, CStri
 //	Evaluates the given string
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
@@ -254,7 +252,7 @@ CSpaceObject *IDockScreenDisplay::EvalListSource (const CString &sString, CStrin
 
 	if (*pPos == '=')
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
@@ -300,7 +298,7 @@ bool IDockScreenDisplay::EvalString (const CString &sString, bool bPlain, ECodeC
 //	Evaluates the given string.
 
 	{
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(&m_DockScreen);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
@@ -350,7 +348,7 @@ ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 //	Default has no properties
 
 	{
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(ICCItem::Nil);
 	}
 
 void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
@@ -462,8 +460,6 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 //	Parses a descriptor. Returns TRUE if successful.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	//	Nil means no default value
 
 	if (pDesc->IsNil())
@@ -480,7 +476,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 		else if (strEquals(sType, TYPE_HERO))
 			{
 			retDesc->iType = backgroundObjHeroImage;
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 			}
@@ -500,7 +496,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 			}
 		else if (strEquals(sType, TYPE_OBJECT))
 			{
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 
@@ -512,7 +508,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 		else if (strEquals(sType, TYPE_SCHEMATIC))
 			{
 			retDesc->iType = backgroundObjSchematicImage;
-			retDesc->pObj = CreateObjFromItem(CC, pDesc->GetElement(FIELD_OBJ));
+			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 			}

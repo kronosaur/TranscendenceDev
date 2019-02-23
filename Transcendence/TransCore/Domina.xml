@@ -677,7 +677,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"darkLightning:6d6"
 				fireRate=			"30"
@@ -710,7 +710,7 @@
 			>
 
 		<Weapon
-				type=				"area"
+				type=				"shockwave"
 
 				damage=				"darkSteel:8d12; shatter5"
 				fireRate=			"30"

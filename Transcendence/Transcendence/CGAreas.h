@@ -122,7 +122,7 @@ class CGCarouselArea : public AGArea
         inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		inline void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
-		void SetList (CCodeChain &CC, ICCItem *pList);
+		void SetList (ICCItem *pList);
 		bool SetStyle (const CString &sStyle);
 		inline void SyncCursor (void) { if (m_pListData) m_pListData->SyncCursor(); Invalidate(); }
 
@@ -189,7 +189,7 @@ class CGDetailsArea : public AGArea
 		inline ICCItem *GetData (void) const { return m_pData; }
         inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		inline void SetData (CCodeChain &CC, ICCItem *pList) { m_pData = pList; }
+		inline void SetData (ICCItem *pList) { m_pData = pList; }
 
 		//	AGArea virtuals
 
@@ -263,7 +263,7 @@ class CGItemListDisplayArea : public AGArea
 	public:
 		CGItemListDisplayArea (void);
 
-		bool InitFromDesc (CCodeChain &CC, ICCItem *pDesc);
+		bool InitFromDesc (ICCItem *pDesc);
         inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetItemList (CSpaceObject *pSource, const CItemList &ItemList);
@@ -284,7 +284,8 @@ class CGItemListDisplayArea : public AGArea
 			bool bGrayed;
 			};
 
-		bool InitFromItemList (CCodeChain &CC, ICCItem *pItemList);
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		bool InitFromItemList (ICCItem *pItemList);
 		void SortItemList (void);
 
 		CSpaceObject *m_pSource;
@@ -339,7 +340,7 @@ class CGItemListArea : public AGArea
 		inline void SetIconHeight (int cyHeight) { m_cyIcon = cyHeight; }
 		inline void SetIconScale (Metric rScale) { m_rIconScale = rScale; }
 		inline void SetIconWidth (int cxWidth) { m_cxIcon = cxWidth; }
-		void SetList (CCodeChain &CC, ICCItem *pList);
+		void SetList (ICCItem *pList);
 		void SetList (CSpaceObject *pSource);
 		void SetList (CItemList &ItemList);
 		inline void SetNoArmorSpeedDisplay (bool bValue = true) { m_bNoArmorSpeedDisplay = bValue; }

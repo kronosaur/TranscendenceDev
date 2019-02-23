@@ -308,6 +308,9 @@
     <ClInclude Include="..\Include\TSESpaceObjectsEnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemPaintImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -518,9 +521,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CSpaceObjectList.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CSpaceObjectTable.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CTileMap.cpp">
@@ -1153,9 +1153,6 @@
     <ClCompile Include="CTradingEconomy.cpp">
       <Filter>Source Files\Trading</Filter>
     </ClCompile>
-    <ClCompile Include="ICCItemPtr.cpp">
-      <Filter>Source Files\TransLISP</Filter>
-    </ClCompile>
     <ClCompile Include="CAbilitySet.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
@@ -1293,6 +1290,15 @@
     </ClCompile>
     <ClCompile Include="CShipStandard.cpp">
       <Filter>Source Files\Ships</Filter>
+    </ClCompile>
+    <ClCompile Include="CNamedEffects.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="SFXGlow.cpp">
+      <Filter>Source Files\SFX</Filter>
+    </ClCompile>
+    <ClCompile Include="IPaintList.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

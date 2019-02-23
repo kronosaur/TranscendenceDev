@@ -7,9 +7,7 @@
 #define ALLOC_GRANULARITY						64
 #define FIXED_POINT								256
 
-static CObjectClass<CFractureEffect>g_Class(OBJID_CFRACTUREEFFECT, NULL);
-
-CFractureEffect::CFractureEffect (void) : CSpaceObject(&g_Class),
+CFractureEffect::CFractureEffect (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_iParticleCount(0),
 		m_pParticles(NULL),
 		m_pAttractor(NULL)
@@ -28,7 +26,7 @@ CFractureEffect::~CFractureEffect (void)
 		delete [] m_pParticles;
 	}
 
-ALERROR CFractureEffect::CreateExplosion (CSystem *pSystem,
+ALERROR CFractureEffect::CreateExplosion (CSystem &System,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &Image,
@@ -46,7 +44,7 @@ ALERROR CFractureEffect::CreateExplosion (CSystem *pSystem,
 	ALERROR error;
 	CFractureEffect *pEffect;
 
-	pEffect = new CFractureEffect;
+	pEffect = new CFractureEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -75,7 +73,7 @@ ALERROR CFractureEffect::CreateExplosion (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;
@@ -91,7 +89,7 @@ ALERROR CFractureEffect::CreateExplosion (CSystem *pSystem,
 	DEBUG_CATCH
 	}
 
-ALERROR CFractureEffect::CreateLinearSweep (CSystem *pSystem,
+ALERROR CFractureEffect::CreateLinearSweep (CSystem &System,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &Image,
@@ -110,7 +108,7 @@ ALERROR CFractureEffect::CreateLinearSweep (CSystem *pSystem,
 	ALERROR error;
 	CFractureEffect *pEffect;
 
-	pEffect = new CFractureEffect;
+	pEffect = new CFractureEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
@@ -139,7 +137,7 @@ ALERROR CFractureEffect::CreateLinearSweep (CSystem *pSystem,
 
 	//	Add to system
 
-	if (error = pEffect->AddToSystem(pSystem))
+	if (error = pEffect->AddToSystem(System))
 		{
 		delete pEffect;
 		return error;

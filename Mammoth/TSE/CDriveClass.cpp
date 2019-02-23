@@ -254,7 +254,7 @@ ICCItem *CDriveClass::FindItemProperty (CItemCtx &Ctx, const CString &sProperty)
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	const SScalableStats *pDesc = GetDesc(Ctx);
     if (pDesc == NULL)
         return CDeviceClass::FindItemProperty(Ctx, sProperty);
@@ -299,19 +299,17 @@ ICCItem *CDriveClass::GetDriveProperty (const CDriveDesc &Desc, const CString &s
 //	Returns property for a built-in drive.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_MAX_SPEED))
-		return CC.CreateInteger(mathRound(100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED));
+		return CCodeChain::CreateInteger(mathRound(100.0 * Desc.GetMaxSpeed() / LIGHT_SPEED));
 
 	else if (strEquals(sProperty, PROPERTY_THRUST))
-		return CC.CreateInteger(Desc.GetThrustProperty());
+		return CCodeChain::CreateInteger(Desc.GetThrustProperty());
 	
 	else if (strEquals(sProperty, PROPERTY_POWER)
 			|| strEquals(sProperty, PROPERTY_DRIVE_POWER))
-		return CC.CreateInteger(Desc.GetPowerUse() * 100);
+		return CCodeChain::CreateInteger(Desc.GetPowerUse() * 100);
 	else
-		return CC.CreateNil();
+		return CCodeChain::CreateNil();
 	}
 
 void CDriveClass::InitDamagedDesc (void) const

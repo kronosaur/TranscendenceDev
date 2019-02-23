@@ -74,7 +74,7 @@ class CAIBehaviorCtx
 		inline bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
 		inline bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
 		inline bool IsAggressor (void) const { return m_AISettings.IsAggressor(); }
-		bool IsBeingAttacked (int iThreshold = 150) const;
+		bool IsBeingAttacked (DWORD dwThreshold = 150) const;
 		inline bool IsDockingRequested (void) const { return m_fDockingRequested; }
 		inline bool IsImmobile (void) const { return m_fImmobile; }
 		inline bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
@@ -393,6 +393,7 @@ class CBaseShipAI : public IShipController
 		inline Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
 		inline Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
+		inline CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		inline bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }

@@ -170,7 +170,6 @@ ALERROR CDisintegrateEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 
 //	CDisintegrateEffectPainter -------------------------------------------------
 
-
 CDisintegrateEffectPainter::CDisintegrateEffectPainter (CCreatePainterCtx &Ctx, CEffectCreator *pCreator)
 
 //	CDisintegrateEffectPainter constructor
@@ -185,13 +184,8 @@ CDisintegrateEffectPainter::CDisintegrateEffectPainter (CCreatePainterCtx &Ctx, 
 	CSpaceObject *pAnchor = Ctx.GetAnchor();
 	if (pAnchor)
 		{
-		m_MaskImage = pAnchor->GetImage();
-		CShip *pShip = pAnchor->AsShip();
-		if (pShip)
-			{
-			m_iMaskTick = 0;
-			m_iMaskRotation = pShip->GetRotationState().GetFrameIndex();
-			}
+		m_MaskImage = pAnchor->GetImage(&m_iMaskRotation);
+		m_iMaskTick = 0;
 		}
 
 	//	Initialize particles

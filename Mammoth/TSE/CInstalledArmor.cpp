@@ -158,7 +158,7 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 	DWORD dwLoad;
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pArmorClass = g_pUniverse->FindArmor(dwLoad);
+	m_pArmorClass = pSource->GetUniverse().FindArmor(dwLoad);
 
 	if (Ctx.dwVersion >= 54)
 		{

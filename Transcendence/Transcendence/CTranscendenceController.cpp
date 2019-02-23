@@ -2087,10 +2087,16 @@ ALERROR CTranscendenceController::OnInit (CString *retsError)
 
 	//	Play Intro Music
 
-	m_Soundtrack.SetMusicEnabled(!GetOptionBoolean(CGameSettings::noMusic));
-	m_Soundtrack.SetVolume(GetOptionInteger(CGameSettings::musicVolume));
-	m_Soundtrack.SetDebugMode(GetOptionBoolean(CGameSettings::debugSoundtrack));
-	m_Soundtrack.SetGameState(CSoundtrackManager::stateProgramLoad);
+	CSoundtrackManager::SOptions Options(m_Model.GetUniverse());
+	Options.bEnabled = !GetOptionBoolean(CGameSettings::noMusic);
+	Options.iInitialState = CSoundtrackManager::stateProgramLoad;
+	Options.iVolume = GetOptionInteger(CGameSettings::musicVolume);
+	Options.bDebugMode = GetOptionBoolean(CGameSettings::debugSoundtrack);
+	if (!m_Soundtrack.Init(Options))
+		{
+		::kernelDebugLogString(CONSTLIT("ERROR: Unable to initialize Sound Manager."));
+		//	Continue without aborting.
+		}
 
 	//	Initialize legacy window
 

@@ -5,11 +5,26 @@
 
 #pragma once
 
-class CAreaDamage : public CSpaceObject
+template <DWORD CLASSID>
+class TSpaceObjectImpl : public CSpaceObject
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CAreaDamage **retpObj);
+		TSpaceObjectImpl (CUniverse &Universe) : CSpaceObject(Universe)
+			{ }
+
+		static constexpr DWORD ClassID (void) { return CLASSID; }
+
+	protected:
+		virtual DWORD GetClassID (void) const override { return CLASSID; }
+	};
+
+class CAreaDamage : public TSpaceObjectImpl<OBJID_CAREADAMAGE>
+	{
+	public:
+		CAreaDamage (CUniverse &Universe);
 		~CAreaDamage (void);
+
+		static ALERROR Create (CSystem &System, SShotCreateCtx &Ctx, CAreaDamage **retpObj);
 
 		//	CSpaceObject virtuals
 
@@ -18,7 +33,7 @@ class CAreaDamage : public CSpaceObject
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetAveExpansionSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CAreaDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -40,7 +55,6 @@ class CAreaDamage : public CSpaceObject
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		CAreaDamage (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
@@ -50,14 +64,12 @@ class CAreaDamage : public CSpaceObject
 		int m_iLifeLeft;						//	Ticks left
 		CDamageSource m_Source;					//	Object that fired the beam
 		CSovereign *m_pSovereign;				//	Sovereign
-
-	friend CObjectClass<CAreaDamage>;
 	};
 
-class CBeam : public CSpaceObject
+class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 	{
 	public:
-		CBeam (void);
+		CBeam (CUniverse &Universe);
 
 		//	CSpaceObject virtuals
 
@@ -69,7 +81,7 @@ class CBeam : public CSpaceObject
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerStations; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerStations; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
@@ -106,14 +118,14 @@ class CBeam : public CSpaceObject
 
 		DWORD m_fReflection:1;					//	TRUE if this is a reflection
 		DWORD m_dwSpareFlags:31;				//	Flags
-
-	friend CObjectClass<CBeam>;
 	};
 
-class CBoundaryMarker : public CSpaceObject
+class CBoundaryMarker : public TSpaceObjectImpl<OBJID_CBOUNDARYMARKER>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
+		CBoundaryMarker (CUniverse &Universe);
+
+		static ALERROR Create (CSystem &System,
 							   const CVector &vStartPos,
 							   CBoundaryMarker **retpMarker);
 
@@ -133,21 +145,20 @@ class CBoundaryMarker : public CSpaceObject
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBoundaryMarker"); }
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
-		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
+		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
 	private:
-		CBoundaryMarker (void);
 
 		TArray<CVector> m_Path;
-
-	friend CObjectClass<CBoundaryMarker>;
 	};
 
-class CContinuousBeam : public CSpaceObject
+class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CContinuousBeam **retpObj);
+		CContinuousBeam (CUniverse &Universe);
 		~CContinuousBeam (void);
+
+		static ALERROR Create (CSystem &System, SShotCreateCtx &Ctx, CContinuousBeam **retpObj);
 
 		//	CSpaceObject virtuals
 
@@ -159,7 +170,7 @@ class CContinuousBeam : public CSpaceObject
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual int GetRotation (void) const override { return m_iLastDirection; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -201,7 +212,6 @@ class CContinuousBeam : public CSpaceObject
 			DWORD dwSpare:29;
 			};
 
-		CContinuousBeam (void);
 		void AddSegment (const CVector &vPos, const CVector &vVel, int iDamage);
 		EDamageResults DoDamage (CSpaceObject *pHit, const CVector &vHitPos, int iHitDir);
 		bool HitTestSegment (SSegment &Segment, CVector *retvHitPos);
@@ -243,26 +253,26 @@ class CContinuousBeam : public CSpaceObject
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
-
-	friend CObjectClass<CContinuousBeam>;
 	};
 
-class CDisintegrationEffect : public CSpaceObject
+class CDisintegrationEffect : public TSpaceObjectImpl<OBJID_CDISINTEGRATIONEFFECT>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
+		CDisintegrationEffect (CUniverse &Universe);
+		virtual ~CDisintegrationEffect (void);
+
+		static ALERROR Create (CSystem &System,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &MaskImage,
 				int iMaskTick,
 				int iMaskRotation,
 				CDisintegrationEffect **retpEffect);
-		virtual ~CDisintegrationEffect (void);
 
 		//	CSpaceObject virtuals
 
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CDisintegrationEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 
 	protected:
 
@@ -288,7 +298,6 @@ class CDisintegrationEffect : public CSpaceObject
 			WORD wSpare;
 			};
 
-		CDisintegrationEffect (void);
 		void InitParticle (SParticle *pParticle);
 
 		int m_iTick;
@@ -299,28 +308,28 @@ class CDisintegrationEffect : public CSpaceObject
 		//	particles
 		int m_iParticleCount;
 		SParticle *m_pParticles;
-
-	friend CObjectClass<CDisintegrationEffect>;
 	};
 
-class CEffect : public CSpaceObject
+class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 	{
 	public:
+		CEffect (CUniverse &Universe);
+		virtual ~CEffect (void);
+
 		static ALERROR Create (IEffectPainter *pPainter,
-				CSystem *pSystem,
+				CSystem &System,
 				CSpaceObject *pAnchor,
 				const CVector &vPos,
 				const CVector &vVel,
 				int iRotation,
 				CEffect **retpEffect = NULL);
-		virtual ~CEffect (void);
 
 		//	CSpaceObject virtuals
 
 		virtual bool CanMove (void) const { return true; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 
 	protected:
 
@@ -335,7 +344,6 @@ class CEffect : public CSpaceObject
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		CEffect (void);
 
 		CEffectCreator *GetEffectCreator (void);
 
@@ -344,11 +352,9 @@ class CEffect : public CSpaceObject
 		int m_iLifetime;
 		int m_iRotation;
 		int m_iTick;
-
-	friend CObjectClass<CEffect>;
 	};
 
-class CFractureEffect : public CSpaceObject
+class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
 	{
 	public:
 		enum Style
@@ -357,14 +363,17 @@ class CFractureEffect : public CSpaceObject
 			styleLinearSweep,
 			};
 
-		static ALERROR CreateExplosion (CSystem *pSystem,
+		CFractureEffect (CUniverse &Universe);
+		virtual ~CFractureEffect (void);
+
+		static ALERROR CreateExplosion (CSystem &System,
 				const CVector &vPos,
 				const CVector &vVel,
 				const CObjectImageArray &Image,
 				int iImageTick,
 				int iImageRotation,
 				CFractureEffect **retpEffect);
-		static ALERROR CreateLinearSweep(CSystem *pSystem,
+		static ALERROR CreateLinearSweep(CSystem &System,
 			const CVector &vPos,
 			const CVector &vVel,
 			const CObjectImageArray &Image,
@@ -372,13 +381,12 @@ class CFractureEffect : public CSpaceObject
 			int iImageRotation,
 			Metric rSweepDirection,
 			CFractureEffect **retpEffect);
-		virtual ~CFractureEffect (void);
 
 		//	CSpaceObject virtuals
 
 		virtual Categories GetCategory (void) const override { return catFractureEffect; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CFractureEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual void MarkImages (void) override { m_Image.MarkImage(); }
 		virtual void SetAttractor (CSpaceObject *pObj) override;
 
@@ -408,7 +416,6 @@ class CFractureEffect : public CSpaceObject
 			int iShape;						//	Index of shape (-1 = destroyed)
 			};
 
-		CFractureEffect (void);
 		void InitParticleArray (void);
 
 		int m_iTick;
@@ -425,16 +432,15 @@ class CFractureEffect : public CSpaceObject
 		CSpaceObject *m_pAttractor;
 
 		double m_rSweepDirection;
-
-	friend CObjectClass<CFractureEffect>;
 	};
 
-class CMarker : public CSpaceObject
+class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 	{
 	public:
+		CMarker (CUniverse &Universe);
         ~CMarker (void);
 
-		static ALERROR Create (CSystem *pSystem,
+		static ALERROR Create (CSystem &System,
 							   CSovereign *pSovereign,
 							   const CVector &vPos,
 							   const CVector &vVel,
@@ -448,7 +454,7 @@ class CMarker : public CSpaceObject
 		virtual Categories GetCategory (void) const override { return catMarker; }
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual bool IsAnchored (void) const override { return true; }
 		virtual bool IsMarker (void) override { return true; }
@@ -473,22 +479,20 @@ class CMarker : public CSpaceObject
             styleSmallCross =               1,  //  Paint small cross
             };
 
-		CMarker (void);
-
 		CString m_sName;						//	Name
 		CSovereign *m_pSovereign;				//	Sovereign
         EStyles m_iStyle;                       //  Paint style
 
 		COrbit *m_pMapOrbit;					//	Orbit to draw on map (may be NULL)
-
-	friend CObjectClass<CMarker>;
 	};
 
-class CMissile : public CSpaceObject
+class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CMissile **retpMissile);
+		CMissile (CUniverse &Universe);
 		~CMissile (void);
+
+		static ALERROR Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpMissile);
 
 		//	CSpaceObject virtuals
 
@@ -506,7 +510,7 @@ class CMissile : public CSpaceObject
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
@@ -545,8 +549,6 @@ class CMissile : public CSpaceObject
 			CVector vVel;				//	Velocity of particle
 			};
 
-		CMissile (void);
-
 		int ComputeVaporTrail (void);
 		void CreateFragments (const CVector &vPos);
 		int GetManeuverRate (void) const;
@@ -581,25 +583,26 @@ class CMissile : public CSpaceObject
 		DWORD m_fFragment:1;					//	TRUE if we're a fragment
 
 		DWORD m_dwSpareFlags:26;				//	Flags
-
-	friend CObjectClass<CMissile>;
 	};
 
-class CParticleDamage : public CSpaceObject
+class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticleDamage **retpObj);
+		CParticleDamage (CUniverse &Universe);
 		~CParticleDamage (void);
+
+		static ALERROR Create (CSystem &System, SShotCreateCtx &Ctx, CParticleDamage **retpObj);
 
 		//	CSpaceObject virtuals
 
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
+		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -622,7 +625,6 @@ class CParticleDamage : public CSpaceObject
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		CParticleDamage (void);
 
 		//	This is the origin of the particle array in object coordinates. We 
 		//	always use a fixed anchor because the motion of the particles 
@@ -666,11 +668,10 @@ class CParticleDamage : public CSpaceObject
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
 
-	friend CObjectClass<CParticleDamage>;
 	friend struct SParticle;
 	};
 
-class CParticleEffect : public CSpaceObject
+class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 	{
 	public:
 		enum ParticlePainting
@@ -734,17 +735,20 @@ class CParticleEffect : public CSpaceObject
 			DWORD m_fFreeDesc:1;		//	TRUE if we own the pDesc structure
 			};
 
-		static ALERROR Create (CSystem *pSystem,
+		CParticleEffect (CUniverse &Universe);
+		~CParticleEffect (void);
+
+		static ALERROR Create (CSystem &System,
 							   CXMLElement *pDesc,
 							   const CVector &vPos,
 							   const CVector &vVel,
 							   CParticleEffect **retpEffect);
-		static ALERROR CreateEmpty (CSystem *pSystem,
+		static ALERROR CreateEmpty (CSystem &System,
 									CSpaceObject *pAnchor,
 									const CVector &vPos,
 									const CVector &vVel,
 									CParticleEffect **retpEffect);
-		static ALERROR CreateExplosion (CSystem *pSystem,
+		static ALERROR CreateExplosion (CSystem &System,
 										CSpaceObject *pAnchor,
 										const CVector &vPos,
 										const CVector &vVel,
@@ -754,7 +758,7 @@ class CParticleEffect : public CSpaceObject
 										int iParticleLifespan,
 										const CObjectImageArray &Image,
 										CParticleEffect **retpEffect);
-		static ALERROR CreateGeyser (CSystem *pSystem,
+		static ALERROR CreateGeyser (CSystem &System,
 									 CSpaceObject *pAnchor,
 									 const CVector &vPos,
 									 const CVector &vVel,
@@ -767,8 +771,6 @@ class CParticleEffect : public CSpaceObject
 									 int iAngleWidth,
 									 CParticleEffect **retpEffect);
 
-		~CParticleEffect (void);
-
 		void AddGroup (SParticleType *pType, int iCount);
 
 		//	CSpaceObject virtuals
@@ -777,7 +779,7 @@ class CParticleEffect : public CSpaceObject
 		virtual bool CanMove (void) const { return true; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerSpace; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerSpace; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
 
@@ -831,7 +833,6 @@ class CParticleEffect : public CSpaceObject
 			SParticleArray *pNext;
 			};
 
-		CParticleEffect (void);
 
 		void CreateGroup (SParticleType *pType, int iCount, SParticleArray **retpGroup);
 		void PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
@@ -841,14 +842,14 @@ class CParticleEffect : public CSpaceObject
 		CString m_sName;
 		SParticleArray *m_pFirstGroup;
 		CSpaceObject *m_pAnchor;
-
-	friend CObjectClass<CParticleEffect>;
 	};
 
-class CPOVMarker : public CSpaceObject
+class CPOVMarker : public TSpaceObjectImpl<OBJID_CPOVMARKER>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
+		CPOVMarker (CUniverse &Universe);
+
+		static ALERROR Create (CSystem &System,
 							   const CVector &vPos,
 							   const CVector &vVel,
 							   CPOVMarker **retpMarker);
@@ -863,16 +864,16 @@ class CPOVMarker : public CSpaceObject
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
 	private:
-		CPOVMarker (void);
 
-	friend CObjectClass<CPOVMarker>;
 	};
 
-class CRadiusDamage : public CSpaceObject
+class CRadiusDamage : public TSpaceObjectImpl<OBJID_CRADIUSDAMAGE>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem, SShotCreateCtx &Ctx, CRadiusDamage **retpObj);
+		CRadiusDamage (CUniverse &Universe);
 		~CRadiusDamage (void);
+
+		static ALERROR Create (CSystem &System, SShotCreateCtx &Ctx, CRadiusDamage **retpObj);
 
 		//	CSpaceObject virtuals
 
@@ -881,7 +882,7 @@ class CRadiusDamage : public CSpaceObject
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CRadiusDamage"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
@@ -902,7 +903,6 @@ class CRadiusDamage : public CSpaceObject
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		CRadiusDamage (void);
 
 		void DamageAll (SUpdateCtx &Ctx);
 
@@ -914,11 +914,9 @@ class CRadiusDamage : public CSpaceObject
 		CDamageSource m_Source;					//	Object that fired the shot
 		CSpaceObject *m_pTarget;				//	Target
 		CSovereign *m_pSovereign;				//	Sovereign
-
-	friend CObjectClass<CRadiusDamage>;
 	};
 
-class CShip : public CSpaceObject
+class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 	{
 	public:
 		enum RemoveDeviceStatus
@@ -938,7 +936,10 @@ class CShip : public CSpaceObject
 			CVector vPos;					//	Origin is center of image, scaled to unit vector
 			};
 
-		static ALERROR CreateFromClass (CSystem *pSystem, 
+		CShip (CUniverse &Universe);
+		virtual ~CShip (void);
+
+		static ALERROR CreateFromClass (CSystem &System, 
 										CShipClass *pClass, 
 										IShipController *pController,
 										CDesignType *pOverride,
@@ -948,8 +949,6 @@ class CShip : public CSpaceObject
 										int iRotation, 
 										SShipGeneratorCtx *pCtx,
 										CShip **retpShip);
-		virtual ~CShip (void);
-
 		//	Orders
 		inline void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
 		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
@@ -1119,7 +1118,7 @@ class CShip : public CSpaceObject
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
         virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pClass->GetHeroImage(); }
-		virtual const CObjectImageArray &GetImage (void) const override;
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override;
 		virtual CString GetInstallationPhrase (const CItem &Item) const override;
 		virtual Metric GetInvMass (void) const override;
 		virtual int GetLastFireTime (void) const override { return m_iLastFireTime; }
@@ -1134,10 +1133,11 @@ class CShip : public CSpaceObject
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CShip"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
+		virtual int GetRotationFrameIndex (void) const override { return m_Rotation.GetFrameIndex(); }
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
@@ -1259,7 +1259,6 @@ class CShip : public CSpaceObject
 		virtual void RevertOrientationChange (void) override;
 
 	private:
-		CShip (void);
 
 		void AccumulateDeviceEnhancementsToArmor (CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void CalcArmorBonus (void);
@@ -1373,23 +1372,22 @@ class CShip : public CSpaceObject
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:8;
-
-	friend CObjectClass<CShip>;
 	};
 
-class CStaticEffect : public CSpaceObject
+class CStaticEffect : public TSpaceObjectImpl<OBJID_CSTATICEFFECT>
 	{
 	public:
-		static ALERROR Create (CEffectCreator *pType,
-							   CSystem *pSystem,
-							   const CVector &vPos,
-							   CStaticEffect **retpEffect);
+		CStaticEffect (CUniverse &Universe);
 		virtual ~CStaticEffect (void);
 
+		static ALERROR Create (CEffectCreator *pType,
+							   CSystem &System,
+							   const CVector &vPos,
+							   CStaticEffect **retpEffect);
 		//	CSpaceObject virtuals
 
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStaticEffect"); }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override { return CSystem::layerEffects; }
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual bool IsAnchored (void) const override { return true; }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
@@ -1403,22 +1401,21 @@ class CStaticEffect : public CSpaceObject
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
-		CStaticEffect (void);
 
 		IEffectPainter *m_pPainter;
-
-	friend CObjectClass<CStaticEffect>;
 	};
 
-class CStation : public CSpaceObject
+class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 	{
 	public:
-		static ALERROR CreateFromType (CSystem *pSystem,
+		CStation (CUniverse &Universe);
+		virtual ~CStation (void);
+
+		static ALERROR CreateFromType (CSystem &System,
 				CStationType *pType,
 				SObjCreateCtx &CreateCtx,
 				CStation **retpStation,
 				CString *retsError = NULL);
-		virtual ~CStation (void);
 
 		void Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL);
 		inline void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
@@ -1478,7 +1475,7 @@ class CStation : public CSpaceObject
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
 		virtual Metric GetGravity (Metric *retrRadius) const override;
 		virtual const CObjectImageArray &GetHeroImage (void) const override { return m_pType->GetHeroImage(CCompositeImageSelector(), CCompositeImageModifiers()); }
-		virtual const CObjectImageArray &GetImage (void) const override { return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
+		virtual const CObjectImageArray &GetImage (int *retiRotationFrameIndex = NULL) const override { if (retiRotationFrameIndex) *retiRotationFrameIndex = 0; return m_pType->GetImage(m_ImageSelector, CCompositeImageModifiers()); }
         virtual const CCompositeImageSelector &GetImageSelector (void) const override { return m_ImageSelector; }
 		virtual Metric GetInvMass (void) const override;
 		virtual int GetLevel (void) const override { return m_pType->GetLevel(); }
@@ -1490,7 +1487,7 @@ class CStation : public CSpaceObject
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CStation"); }
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
-		virtual CSystem::LayerEnum GetPaintLayer (void) override;
+		virtual CSystem::LayerEnum GetPaintLayer (void) const override;
 		virtual Metric GetParallaxDist (void) override { return m_rParallaxDist; }
 		virtual EDamageResults GetPassthroughDefault (void) override { return m_Hull.GetPassthroughDefault(); }
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
@@ -1595,11 +1592,10 @@ class CStation : public CSpaceObject
 			maxDevices				= 8,
 			};
 
-		CStation (void);
-
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
+		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		int CalcNumberOfShips (void);
 		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
@@ -1691,8 +1687,6 @@ class CStation : public CSpaceObject
 		int m_yMapLabel;
 
 		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
-
-	friend CObjectClass<CStation>;
 	};
 
 

@@ -37,35 +37,9 @@ const DWORD DAMAGE_BAR_TIMER =					30 * 5;
 #define SETTING_ENABLED							CONSTLIT("enabled")
 #define SETTING_TRUE							CONSTLIT("true")
 
-CPlayerShipController::CPlayerShipController (void) : 
-		m_pTrans(NULL),
-        m_pSession(NULL),
-		m_iManeuver(NoRotation),
-		m_bThrust(false),
-		m_bActivate(false),
-		m_bStopThrust(false),
-		m_pStation(NULL),
-		m_bSignalDock(false),
-		m_iOrder(orderNone),
-		m_pTarget(NULL),
-		m_pDestination(NULL),
-		m_dwWreckObjID(OBJID_NULL),
-		m_iLastHelpTick(0),
-		m_iLastHelpUseTick(0),
-		m_iLastHelpFireMissileTick(0),
-		m_bMapHUD(true),
-		m_bDockPortIndicators(true),
-        m_iMouseAimAngle(-1),
-		m_pCharacterClass(NULL),
-		m_bUnderAttack(false),
-		m_pAutoDock(NULL),
-		m_iAutoDockPort(0),
-		m_bShowAutoTarget(false),
-		m_bTargetOutOfRange(false),
-		m_pAutoTarget(NULL),
-		m_iAutoTargetTick(0),
-		m_pAutoDamage(NULL),
-		m_dwAutoDamageExpire(0)
+CPlayerShipController::CPlayerShipController (CUniverse &Universe) : 
+		m_Universe(Universe),
+		m_Stats(Universe)
 
 //	CPlayerShipController constructor
 
@@ -309,7 +283,7 @@ CString CPlayerShipController::DebugCrashInfo (void)
 	sResult.Append(strPatternSubst(CONSTLIT("m_pDestination: %s\r\n"), CSpaceObject::DebugDescribe(m_pDestination)));
 
 	for (i = 0; i < m_TargetList.GetCount(); i++)
-		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList.Get(i))));
+		sResult.Append(strPatternSubst(CONSTLIT("m_TargetList[%d]: %s\r\n"), i, CSpaceObject::DebugDescribe(m_TargetList[i])));
 
 	return sResult;
 	}
@@ -477,10 +451,8 @@ ICCItem *CPlayerShipController::FindProperty (const CString &sProperty)
 //  discarding the result if not NULL.
 
     {
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	if (strEquals(sProperty, PROPERTY_CHARACTER_CLASS))
-		return (m_pCharacterClass ? CC.CreateInteger(m_pCharacterClass->GetUNID()) : CC.CreateNil());
+		return (m_pCharacterClass ? CCodeChain::CreateInteger(m_pCharacterClass->GetUNID()) : CCodeChain::CreateNil());
 	else
 		return m_Stats.FindProperty(sProperty);
     }
@@ -785,7 +757,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 	//	Make a list of all targets
 
 	if (!bUpdate)
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 
 	//	Make sure we're valid
 
@@ -793,7 +765,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 	if (m_pShip == NULL
 			|| (pSystem = m_pShip->GetSystem()) == NULL)
 		{
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 		return;
 		}
 
@@ -867,21 +839,21 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			if (bUpdate)
 				{
 				int iIndex;
-				bool bFound = m_TargetList.Find(pObj, &iIndex);
+				bool bFound = m_TargetList.FindPos(CString(szBuffer), &iIndex);
 
 				if (bInList)
 					{
 					if (!bFound)
-						m_TargetList.Add(CString(szBuffer), pObj);
+						m_TargetList.Insert(CString(szBuffer), pObj);
 					}
 				else
 					{
 					if (bFound)
-						m_TargetList.Remove(iIndex);
+						m_TargetList.Delete(iIndex);
 					}
 				}
 			else if (bInList)
-				m_TargetList.Add(CString(szBuffer), pObj);
+				m_TargetList.Insert(CString(szBuffer), pObj);
 			}
 		}
 	}
@@ -897,7 +869,7 @@ void CPlayerShipController::InsuranceClaim (void)
 
 	ASSERT(m_pShip);
 
-	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	CSystem *pSystem = m_Universe.GetCurrentSystem();
 	ASSERT(pSystem);
 	if (pSystem == NULL)
 		return;
@@ -910,7 +882,7 @@ void CPlayerShipController::InsuranceClaim (void)
 
 	//	Place the ship back in the system
 
-	m_pShip->AddToSystem(pSystem);
+	m_pShip->AddToSystem(*pSystem);
 	m_pShip->OnNewSystem(pSystem);
 
 	//	Empty out the wreck
@@ -1030,7 +1002,7 @@ DWORD CPlayerShipController::OnCommunicate (CSpaceObject *pSender, MessageTypes 
 				//	Make sure we have a sovereign
 
 				if (pSovereign == NULL)
-					pSovereign = g_pUniverse->FindSovereign(g_PlayerSovereignUNID);
+					pSovereign = m_Universe.FindSovereign(g_PlayerSovereignUNID);
 
 				//	Get the message based on the sovereign
 
@@ -1091,7 +1063,7 @@ void CPlayerShipController::OnDamaged (const CDamageSource &Cause, CInstalledArm
 	if (pArmor->GetHitPoints() < (iMaxArmorHP / 4) && Damage.CausesSRSFlash())
 		{
 		m_pTrans->DisplayMessage(CONSTLIT("Hull breach imminent!"));
-		g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_HULL_BREACH_ALARM));
+		m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_HULL_BREACH_ALARM));
 		}
 
 	//	Update display
@@ -1115,9 +1087,9 @@ bool CPlayerShipController::OnDestroyCheck (DestructionTypes iCause, const CDama
 
 	//	Loop over powers
 
-	for (i = 0; i < g_pUniverse->GetPowerCount(); i++)
+	for (i = 0; i < m_Universe.GetPowerCount(); i++)
 		{
-		CPower *pPower = g_pUniverse->GetPower(i);
+		CPower *pPower = m_Universe.GetPower(i);
 		if (!pPower->OnDestroyCheck(m_pShip, iCause, Attacker))
 			return false;
 		}
@@ -1250,7 +1222,7 @@ void CPlayerShipController::OnEnemyShipsDetected (void)
 
 	{
 	m_pTrans->DisplayMessage(CONSTLIT("Enemy ships detected"));
-	g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_ENEMY_SHIP_ALARM));
+	m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_ENEMY_SHIP_ALARM));
 	}
 
 void CPlayerShipController::OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
@@ -1338,7 +1310,7 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 
 	//	Paint friendly-fire debugging
 
-	if (g_pUniverse->GetDebugOptions().IsShowLineOfFireEnabled())
+	if (m_Universe.GetDebugOptions().IsShowLineOfFireEnabled())
 		{
 		if (m_pTarget == NULL)
 			PaintDebugLineOfFire(Ctx, Dest);
@@ -1368,7 +1340,7 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 	//	If necessary, show damage bar
 
 	if (m_pAutoDamage
-			&& (DWORD)g_pUniverse->GetTicks() > m_dwAutoDamageExpire)
+			&& (DWORD)m_Universe.GetTicks() > m_dwAutoDamageExpire)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -1445,7 +1417,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 					m_pTrans->DisplayMessage(CONSTLIT("(press [S] to access refueling screen)"));
 				m_pTrans->DisplayMessage(CONSTLIT("Fuel low!"));
 				if ((iSeq % 30) == 0)
-					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_FUEL_LOW_ALARM));
+					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_FUEL_LOW_ALARM));
 				}
 
 			break;
@@ -1486,7 +1458,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 					m_pTrans->DisplayMessage(CONSTLIT("Radiation Warning: Fatal exposure received"));
 
 				if ((iTicksLeft % 150) == 0)
-					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_RADIATION_ALARM));
+					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_RADIATION_ALARM));
 				}
 
 			break;
@@ -1502,7 +1474,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 				{
 				m_pTrans->DisplayMessage(CONSTLIT("Warning: Reactor overload"));
 				if ((iSeq % 24) == 0)
-					g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_REACTOR_OVERLOAD_ALARM));
+					m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_REACTOR_OVERLOAD_ALARM));
 				}
 			break;
 			}
@@ -1603,7 +1575,7 @@ void CPlayerShipController::OnWreckCreated (CSpaceObject *pWreck)
 
 	//	Change our POV to the wreck
 
-	g_pUniverse->SetPOV(pWreck);
+	m_Universe.SetPOV(pWreck);
 
 	//	We remember the wreck, but only by ID because we might not
 	//	get any notifications of its destruction after this
@@ -1619,7 +1591,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 //	Paints line of fire for all ships.
 
 	{
-	CSystem *pSystem = g_pUniverse->GetCurrentSystem();
+	CSystem *pSystem = m_Universe.GetCurrentSystem();
 	if (pSystem == NULL)
 		return;
 
@@ -1732,7 +1704,7 @@ void CPlayerShipController::PaintDockingPortIndicators (SViewportPaintCtx &Ctx, 
 	int iRange = 10;
 	int iMin = 3;
 
-	int iPos = (iRange - 1) - ((g_pUniverse->GetPaintTick() / iSpeed) % iRange);
+	int iPos = (iRange - 1) - ((m_Universe.GetPaintTick() / iSpeed) % iRange);
 	int iSize = iMin + iPos;
 	DWORD dwOpacity = 255 - (iPos * 20);
 
@@ -1877,7 +1849,7 @@ CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags
 		{
 		//	Return the autotarget
 
-		int iTick = g_pUniverse->GetTicks();
+		int iTick = m_Universe.GetTicks();
 		if (iTick == m_iAutoTargetTick)
 			return ((m_pAutoTarget && !m_pAutoTarget->IsDestroyed()) ? m_pAutoTarget : NULL);
 
@@ -1968,7 +1940,7 @@ void CPlayerShipController::OnObjDamaged (const SDamageCtx &Ctx)
 
 		m_pAutoDamage = Ctx.pObj;
 		m_pAutoDamage->SetShowDamageBar();
-		m_dwAutoDamageExpire = g_pUniverse->GetTicks() + DAMAGE_BAR_TIMER;
+		m_dwAutoDamageExpire = m_Universe.GetTicks() + DAMAGE_BAR_TIMER;
 		}
 	}
 
@@ -2043,7 +2015,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Clear out the target list
 
-	m_TargetList.Remove(Ctx.pObj);
+	int iIndex;
+	if (m_TargetList.FindByValue(Ctx.pObj, &iIndex))
+		m_TargetList.Delete(iIndex);
 
 	//	Let the UI deal with destroyed objects
 
@@ -2170,12 +2144,12 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	if (Ctx.bGravityWarning)
 		{
-		int iTicks = g_pUniverse->GetTicks();
+		int iTicks = m_Universe.GetTicks();
 
 		if ((iTicks % 150) == 0)
 			{
 			m_pTrans->DisplayMessage(CONSTLIT("Warning: Deep gravity zone"));
-			g_pUniverse->PlaySound(NULL, g_pUniverse->FindSound(UNID_DEFAULT_GRAVITY_ALARM));
+			m_Universe.PlaySound(NULL, m_Universe.FindSound(UNID_DEFAULT_GRAVITY_ALARM));
 			}
 		}
 
@@ -2234,13 +2208,13 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	if (Ctx.dwVersion >= 141)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_pCharacterClass = g_pUniverse->FindGenericType(dwLoad);
+		m_pCharacterClass = m_Universe.FindGenericType(dwLoad);
 		}
 	else
 		{
 		m_pCharacterClass = pShip->GetClass()->GetCharacterClass();
 		if (m_pCharacterClass == NULL)
-			m_pCharacterClass = g_pUniverse->FindGenericType(UNID_PILGRIM_CHARACTER_CLASS);
+			m_pCharacterClass = m_Universe.FindGenericType(UNID_PILGRIM_CHARACTER_CLASS);
 		}
 
 	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
@@ -2434,7 +2408,7 @@ void CPlayerShipController::Reset (void)
 
 	//	Clear target list
 
-	m_TargetList.RemoveAll();
+	m_TargetList.DeleteAll();
 
 	//	Clear orders
 
@@ -2475,7 +2449,7 @@ void CPlayerShipController::SelectNearestTarget (void)
 
 	InitTargetList(targetEnemies);
 	if (m_TargetList.GetCount() > 0)
-		SetTarget(m_TargetList.Get(0));
+		SetTarget(m_TargetList[0]);
 	else
 		SetTarget(NULL);
 	}
@@ -2548,7 +2522,7 @@ void CPlayerShipController::SetTarget (CSpaceObject *pTarget)
 		}
 	else
 		{
-		m_TargetList.RemoveAll();
+		m_TargetList.DeleteAll();
 		ClearFireAngle();
 		}
 
@@ -2591,20 +2565,20 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 				//	Look for the current target
 
 				int iIndex;
-				if (m_TargetList.Find(m_pTarget, &iIndex))
+				if (m_TargetList.FindByValue(m_pTarget, &iIndex))
 					{
 					iIndex += iDir;
 
 					if (iIndex >= 0 && iIndex < m_TargetList.GetCount())
-						SetTarget(m_TargetList.Get(iIndex));
+						SetTarget(m_TargetList[iIndex]);
 					else
-						SetTarget(m_TargetList.Get(iDefault));
+						SetTarget(m_TargetList[iDefault]);
 					}
 				else
-					SetTarget(m_TargetList.Get(iDefault));
+					SetTarget(m_TargetList[iDefault]);
 				}
 			else
-				SetTarget(m_TargetList.Get(iDefault));
+				SetTarget(m_TargetList[iDefault]);
 			}
 		else
 			SetTarget(NULL);
@@ -2617,7 +2591,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 		InitTargetList(targetFriendlies);
 
 		if (m_TargetList.GetCount() > 0)
-			SetTarget(m_TargetList.Get(iDir == 1 ? 0 : m_TargetList.GetCount() - 1));
+			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
 		else
 			SetTarget(NULL);
 		}
@@ -2659,20 +2633,20 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 				//	Look for the current target
 
 				int iIndex;
-				if (m_TargetList.Find(m_pTarget, &iIndex))
+				if (m_TargetList.FindByValue(m_pTarget, &iIndex))
 					{
 					iIndex += iDir;
 
 					if (iIndex >= 0 && iIndex < m_TargetList.GetCount())
-						SetTarget(m_TargetList.Get(iIndex));
+						SetTarget(m_TargetList[iIndex]);
 					else
-						SetTarget(m_TargetList.Get(iDefault));
+						SetTarget(m_TargetList[iDefault]);
 					}
 				else
-					SetTarget(m_TargetList.Get(iDefault));
+					SetTarget(m_TargetList[iDefault]);
 				}
 			else
-				SetTarget(m_TargetList.Get(iDefault));
+				SetTarget(m_TargetList[iDefault]);
 			}
 		else
 			SetTarget(NULL);
@@ -2685,7 +2659,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 		InitTargetList(targetEnemies);
 
 		if (m_TargetList.GetCount() > 0)
-			SetTarget(m_TargetList.Get(iDir == 1 ? 0 : m_TargetList.GetCount() - 1));
+			SetTarget(m_TargetList[iDir == 1 ? 0 : m_TargetList.GetCount() - 1]);
 		else
 			SetTarget(NULL);
 		}
@@ -2753,13 +2727,33 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//	Set a new controller for the old ship (but do not free
 	//	the previous controller, which is us)
 
-	pOldShip->SetController(g_pUniverse->CreateShipController(NULL_STR), false);
+	pOldShip->SetController(m_Universe.CreateShipController(NULL_STR), false);
 	pOldShip->GetController()->AddOrder(IShipController::orderWait, NULL, IShipController::SData());
 
 	//	Old ship stops tracking fuel (otherwise, it would run out)
 
 	pOldShip->TrackFuel(false);
     pOldShip->TrackMass(false);
+
+	//	Transfer cargo from the old ship to the new one
+
+	if (Options.bTransferCargo)
+		{
+		CItemListManipulator Src(pOldShip->GetItemList());
+		CItemListManipulator Dest(pNewShip->GetItemList());
+
+		Src.ResetCursor();
+		while (Src.MoveCursorForward())
+			{
+			CItem Item = Src.GetItemAtCursor();
+			if (Item.IsInstalled() || Item.IsVirtual())
+				continue;
+
+			Dest.AddItem(Item);
+			Src.DeleteAtCursor(Item.GetCount());
+			Src.MoveCursorBack();
+			}
+		}
 
 	//	Transfer equipment from the old ship to the new one (if necessary).
 	//
@@ -2772,14 +2766,28 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 		pNewShip->GetNativeAbilities().Set(pOldShip->GetNativeAbilities());
 		}
 
+	//	Identify items on the new ship
+
+	if (Options.bIdentifyInstalled)
+		{
+		CItemListManipulator Dest(pNewShip->GetItemList());
+		Dest.ResetCursor();
+		while (Dest.MoveCursorForward())
+			{
+			CItem Item = Dest.GetItemAtCursor();
+			if (Item.IsInstalled())
+				Item.GetType()->SetKnown(true);
+			}
+		}
+
 	//	Now set this controller to drive the new ship. gPlayer and gPlayerShip
 	//	will be set inside of SetPlayerShip.
 
 	pNewShip->SetController(this);
 	m_pShip = pNewShip;
-	g_pUniverse->SetPlayerShip(pNewShip);
-	g_pUniverse->SetPOV(pNewShip);
-	pNewShip->SetSovereign(g_pUniverse->FindSovereign(g_PlayerSovereignUNID));
+	m_Universe.SetPlayerShip(pNewShip);
+	m_Universe.SetPOV(pNewShip);
+	pNewShip->SetSovereign(m_Universe.FindSovereign(g_PlayerSovereignUNID));
 
 	//	Move any data from the old ship to the new ship
 	//	(we leave it on the old ship just in case)

@@ -81,23 +81,14 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	ICCItem *pLocalSymbols = pCC->CreateSymbolTable();
 	if (pLocalSymbols->IsError())
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		g_PM.ClosePage(pPage);
 		return pLocalSymbols;
 		}
 
 	//	Associate the enumaration variable
 
-	ICCItem *pError = pLocalSymbols->AddEntry(pCC, pVar, pCC->CreateNil());
-	if (pError->IsError())
-		{
-		pLocalSymbols->Discard(pCC);
-		pResult->Discard(pCC);
-		g_PM.ClosePage(pPage);
-		return pError;
-		}
-
-	pError->Discard(pCC);
+	pLocalSymbols->AddEntry(pVar, pCC->CreateNil());
 
 	//	Setup the context
 
@@ -120,7 +111,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		ICCItem *pItem = pPage->EnumGetNext(*pCC, EnumCtx);
 		if (pItem->IsError())
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			pResult = pItem;
 			break;
 			}
@@ -134,8 +125,8 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		ICCItem *pMapped = pCC->Eval(pEvalCtx, pBody);
 		if (pMapped->IsError())
 			{
-			pItem->Discard(pCC);
-			pResult->Discard(pCC);
+			pItem->Discard();
+			pResult->Discard();
 			pResult = pMapped;
 			break;
 			}
@@ -144,16 +135,16 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		//	item in the result
 
 		if (!bExcludeNil || !pMapped->IsNil())
-			pList->Append(*pCC, pMapped);
+			pList->Append(pMapped);
 
-		pItem->Discard(pCC);
-		pMapped->Discard(pCC);
+		pItem->Discard();
+		pMapped->Discard();
 		}
 
 	//	Clean up
 
 	pEvalCtx->pLocalSymbols = pOldSymbols;
-	pLocalSymbols->Discard(pCC);
+	pLocalSymbols->Discard();
 	g_PM.ClosePage(pPage);
 
 	//	Done
@@ -162,7 +153,7 @@ ICCItem *fnPageMap (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		return pResult;
 	else
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		return pCC->CreateNil();
 		}
 	}
@@ -217,7 +208,7 @@ ICCItem *fnPageGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		ICCItem *pItem = pPage->EnumGetNext(*pCC, EnumCtx);
 		if (pItem->IsError())
 			{
-			pResult->Discard(pCC);
+			pResult->Discard();
 			pResult = pItem;
 			break;
 			}
@@ -226,13 +217,13 @@ ICCItem *fnPageGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		if (iStart == 0)
 			{
-			pList->Append(*pCC, pItem);
+			pList->Append(pItem);
 			iCount--;
 			}
 		else
 			iStart--;
 
-		pItem->Discard(pCC);
+		pItem->Discard();
 		}
 
 	//	Clean up
@@ -245,7 +236,7 @@ ICCItem *fnPageGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		return pResult;
 	else
 		{
-		pResult->Discard(pCC);
+		pResult->Discard();
 		return pCC->CreateNil();
 		}
 	}

@@ -16,7 +16,7 @@
 		</Relationships>
 		
 		<Language>
-			<Text id="WatchYourTargets">"\"Grrr! Defend the nest!\""</Text>
+			<Text id="WatchYourTargets">Grrr! Defend the nest!</Text>
 			<Text id="NiceShooting">""</Text>
 		</Language>
 	</Sovereign>

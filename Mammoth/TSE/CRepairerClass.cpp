@@ -72,7 +72,7 @@ void CRepairerClass::CalcRegen (CInstalledDevice *pDevice, CShip *pShip, int iSe
 	SEventHandlerDesc Event;
 	if (FindEventHandlerRepairerClass(evtGetArmorRegen, &Event))
 		{
-		CCodeChainCtx Ctx;
+		CCodeChainCtx Ctx(GetUniverse());
 
 		Ctx.DefineContainingType(GetItemType());
 		Ctx.SaveAndDefineSourceVar(pShip);
@@ -248,7 +248,7 @@ int CRepairerClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const
 		SEventHandlerDesc Event;
 		if (FindEventHandlerRepairerClass(evtGetArmorRegen, &Event))
 			{
-			CCodeChainCtx CCCtx;
+			CCodeChainCtx CCCtx(GetUniverse());
 
 			CCCtx.DefineContainingType(GetItemType());
 			CCCtx.SaveAndDefineSourceVar(pShip);

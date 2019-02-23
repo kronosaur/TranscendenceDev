@@ -6,9 +6,9 @@
 
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
 
-static CObjectClass<CParticleDamage>g_Class(OBJID_CPARTICLEDAMAGE, NULL);
+const int MIN_MISSILE_INTERACTION =				10;
 
-CParticleDamage::CParticleDamage (void) : CSpaceObject(&g_Class),
+CParticleDamage::CParticleDamage (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_pEffectPainter(NULL),
 		m_pParticlePainter(NULL)
 
@@ -29,7 +29,7 @@ CParticleDamage::~CParticleDamage (void)
 		m_pParticlePainter->Delete();
 	}
 
-ALERROR CParticleDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticleDamage **retpObj)
+ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticleDamage **retpObj)
 
 //	Create
 //
@@ -52,7 +52,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticl
 
 	//	Create the area
 
-	CParticleDamage *pParticles = new CParticleDamage;
+	CParticleDamage *pParticles = new CParticleDamage(System.GetUniverse());
 	if (pParticles == NULL)
 		return ERR_MEMORY;
 
@@ -165,7 +165,7 @@ ALERROR CParticleDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticl
 
 	//	Add to system
 
-	if (error = pParticles->AddToSystem(pSystem))
+	if (error = pParticles->AddToSystem(System))
 		{
 		delete pParticles;
 		return error;
@@ -177,6 +177,18 @@ ALERROR CParticleDamage::Create (CSystem *pSystem, SShotCreateCtx &Ctx, CParticl
 		*retpObj = pParticles;
 
 	return NOERROR;
+	}
+
+CSpaceObject::Categories CParticleDamage::GetCategory (void) const
+
+//	GetCategory
+//
+//	Returns the category of the object.
+
+	{
+	//	We count as a beam if have low interaction levels
+
+	return ((m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
 CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const

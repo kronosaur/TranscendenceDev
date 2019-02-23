@@ -383,8 +383,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 				
 			"options:\n\n"
 
+			"   'identifyInstalled\n"
 			"   'noOrderTransfer\n"
 			"   'oldShipWaits\n"
+			"   'transferCargo\n"
 			"   'transferEquipment\n"
 				,
 			"ii*",	PPFLAG_SIDEEFFECTS,	},
@@ -675,7 +677,7 @@ ICCItem *fnCanvas (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			int y = pArgs->GetElement(1)->GetIntegerValue();
 			CG32bitImage *pImage;
 			RECT rcImage;
-			GetImageDescFromList(*pCC, pArgs->GetElement(2), &pImage, &rcImage);
+			GetImageDescFromList(pArgs->GetElement(2), &pImage, &rcImage);
 			if (pImage == NULL)
 				return pCC->CreateNil();
 			CG32bitImage *pCanvas = GetCanvasArg(pEvalCtx, pArgs, 3);
@@ -881,6 +883,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pArgs;
 	ICCItem *pResult;
 
@@ -900,7 +903,7 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(LITERAL("Entry pointer expected"), pArgs->GetElement(0));
 		}
 
@@ -914,12 +917,12 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			if (pScreen->IsCurrentItemValid())
 				{
 				Result = pScreen->GetCurrentItem();
-				pResult = CreateListFromItem(*pCC, Result);
+				pResult = CreateListFromItem(Result);
 				}
 			else
 				pResult = pCC->CreateNil();
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 
 		case FN_SCR_REMOVE_ITEM:
@@ -932,19 +935,19 @@ ICCItem *fnScrItem (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				iToDelete = min(iToDelete, Result.GetCount());
 				pScreen->DeleteCurrentItem(iToDelete);
 				Result.SetCount(iToDelete);
-				pResult = CreateListFromItem(*pCC, Result);
+				pResult = CreateListFromItem(Result);
 				}
 			else
 				pResult = pCC->CreateNil();
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_SCR_REFRESH_ITEM:
 			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
-			pArgs->Discard(pCC);
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+			pArgs->Discard();
 			CItemListManipulator *pItemList = &pScreen->GetItemListManipulator();
 			pItemList->Refresh(Item);
 			pResult = pCC->CreateNil();
@@ -1072,13 +1075,13 @@ ICCItem *fnPlyGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CPlayerShipController *pPlayer = GetPlayerArg(pArgs->GetElement(0));
 	if (pPlayer == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
 	//	No longer needed
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -1146,6 +1149,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	ICCItem *pResult;
 
 	//	Convert the first argument into a player controller
@@ -1160,7 +1164,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_PLY_CHANGE_SHIPS:
 			{
-			CSpaceObject *pObj = CreateObjFromItem(*pCC, pArgs->GetElement(1));
+			CSpaceObject *pObj = CreateObjFromItem(pArgs->GetElement(1));
 			if (pObj == NULL || pObj->IsDestroyed())
 				return pCC->CreateError(CONSTLIT("Invalid object"), pArgs->GetElement(1));
 
@@ -1187,7 +1191,9 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				Options.bNoOrderTransfer = pOptions->GetBooleanAt(CONSTLIT("noOrderTransfer"));
 				Options.bOldShipWaits = pOptions->GetBooleanAt(CONSTLIT("oldShipWaits"));
 				Options.bTakeDockingPort = pOptions->GetBooleanAt(CONSTLIT("takeDockingPort"));
+				Options.bTransferCargo = pOptions->GetBooleanAt(CONSTLIT("transferCargo"));
 				Options.bTransferEquipment = pOptions->GetBooleanAt(CONSTLIT("transferEquipment"));
+				Options.bIdentifyInstalled = pOptions->GetBooleanAt(CONSTLIT("identifyInstalled"));
 				}
 
 			//	Change ships
@@ -1241,7 +1247,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_PLY_INC_ITEM_STAT:
 			{
 			CString sStat = pArgs->GetElement(1)->GetStringValue();
-			CItemType *pType = GetItemTypeFromArg(*pCC, pArgs->GetElement(2));
+			CItemType *pType = pCtx->AsItemType(pArgs->GetElement(2));
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), pArgs->GetElement(2));
 
@@ -1274,7 +1280,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	The item that we sold or bought
 
-			CItem Item = CreateItemFromList(*pCC, pArgs->GetElement(iArg));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(iArg));
 			iArg++;
 
 			//	The currency
@@ -1319,7 +1325,7 @@ ICCItem *fnPlySet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_PLY_USE_ITEM:
 			{
-			CItem Item = CreateItemFromList(*pCC, pArgs->GetElement(1));
+			CItem Item = pCtx->AsItem(pArgs->GetElement(1));
 			if (Item.GetType() == NULL)
 				return pCC->CreateError(CONSTLIT("Invalid item"), pArgs->GetElement(1));
 
@@ -1360,7 +1366,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CPlayerShipController *pPlayer = GetPlayerArg(pArgs->GetElement(0));
 	if (pPlayer == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateNil();
 		}
 
@@ -1371,14 +1377,14 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_PLY_COMPOSE_STRING:
 			{
 			pResult = pCC->CreateString(CLanguage::Compose(pArgs->GetElement(1)->GetStringValue(), NULL));
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			break;
 			}
 
 		case FN_PLY_DESTROYED:
 			{
 			CString sText = pArgs->GetElement(1)->GetStringValue();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			CDamageSource Cause(NULL, killedByOther, NULL, sText, 0);
 			pPlayer->GetShip()->Destroy(killedByOther, Cause);
 			pResult = pCC->CreateTrue();
@@ -1406,7 +1412,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			pPlayer->GetTrans()->DisplayMessage(sText);
 
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 			}
@@ -1414,7 +1420,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_PLY_REDIRECT_MESSAGE:
 			{
 			bool bRedirect = !pArgs->GetElement(1)->IsNil();
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pPlayer->GetTrans()->RedirectDisplayMessage(bRedirect);
 			pResult = pCC->CreateTrue();
 			break;
@@ -1487,12 +1493,12 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
             ICCItem *pResult = pCC->CreateSymbolTable();
 
-			pResult->SetIntegerAt(*pCC, CONSTLIT("type"), dwRootUNID);
+			pResult->SetIntegerAt(CONSTLIT("type"), dwRootUNID);
 
 			if (sScreen.IsBlank())
 				{
-                pResult->SetIntegerAt(*pCC, CONSTLIT("screen"), dwRootUNID);
-				pResult->SetIntegerAt(*pCC, CONSTLIT("screenType"), dwRootUNID);
+                pResult->SetIntegerAt(CONSTLIT("screen"), dwRootUNID);
+				pResult->SetIntegerAt(CONSTLIT("screenType"), dwRootUNID);
 				}
 			else
 				{
@@ -1500,19 +1506,19 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				DWORD dwScreen = strToInt(sScreen, 0, &bNotUNID);
 				if (bNotUNID)
 					{
-					pResult->SetStringAt(*pCC, CONSTLIT("screen"), sScreen);
-					pResult->SetStringAt(*pCC, CONSTLIT("screenName"), sScreen);
+					pResult->SetStringAt(CONSTLIT("screen"), sScreen);
+					pResult->SetStringAt(CONSTLIT("screenName"), sScreen);
 					}
 				else
 					{
-					pResult->SetIntegerAt(*pCC, CONSTLIT("screen"), dwScreen);
-					pResult->SetIntegerAt(*pCC, CONSTLIT("screenType"), dwScreen);
+					pResult->SetIntegerAt(CONSTLIT("screen"), dwScreen);
+					pResult->SetIntegerAt(CONSTLIT("screenType"), dwScreen);
 					}
 				}
 
-            pResult->SetStringAt(*pCC, CONSTLIT("pane"), CurFrame.sPane);
+            pResult->SetStringAt(CONSTLIT("pane"), CurFrame.sPane);
             if (CurFrame.pStoredData)
-                pResult->SetAt(*pCC, CONSTLIT("data"), CurFrame.pStoredData);
+                pResult->SetAt(CONSTLIT("data"), CurFrame.pStoredData);
 
             return pResult;
             }
@@ -1590,13 +1596,13 @@ ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(LITERAL("Entry pointer expected"), pArgs->GetElement(0));
 		}
 
 	//	Done with args
 
-	pArgs->Discard(pCC);
+	pArgs->Discard();
 
 	//	Do the appropriate command
 
@@ -1983,7 +1989,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_SHOW_ITEM_SCREEN:
 			{
-			CItem Item(CreateItemFromList(*pCC, pArgs->GetElement(1)));
+			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
 			if (!Item.HasUseItemScreen())
 				return pCC->CreateNil();
 
@@ -2049,7 +2055,7 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
 	if (pScreen == NULL)
 		{
-		pArgs->Discard(pCC);
+		pArgs->Discard();
 		return pCC->CreateError(LITERAL("Entry pointer expected"), pArgs->GetElement(0));
 		}
 
@@ -2069,23 +2075,23 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			if (g_pTrans->GetModel().ShowPane(pArgs->GetElement(1)->GetStringValue()) != NOERROR)
 				{
 				pResult = pCC->CreateError(CONSTLIT("Unable to show pane"), pArgs->GetElement(1));
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 				return pResult;
 				}
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 			}
 
 		case FN_SCR_COUNTER:
 			pScreen->SetCounter(pArgs->GetElement(1)->GetIntegerValue());
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 
 		case FN_SCR_INPUT_TEXT:
 			pScreen->SetTextInput(pArgs->GetElement(1)->GetStringValue());
-			pArgs->Discard(pCC);
+			pArgs->Discard();
 			pResult = pCC->CreateTrue();
 			break;
 
@@ -2095,14 +2101,14 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				{
 				CItemCriteria Filter;
 				Filter.pFilter = pArgs->GetElement(1)->Reference();
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 
 				pScreen->SetListFilter(Filter);
 				}
 			else
 				{
 				CString sFilter = pArgs->GetElement(1)->GetStringValue();
-				pArgs->Discard(pCC);
+				pArgs->Discard();
 
 				CItemCriteria Filter;
 				CItem::ParseCriteria(sFilter, &Filter);

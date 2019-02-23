@@ -161,6 +161,7 @@ class IDockScreenDisplay
 		CSpaceObject *EvalListSource (const CString &sString, CString *retsError);
 		bool EvalString (const CString &sString, bool bPlain, ECodeChainEvents iEvent, CString *retsResult);
 		CDockScreenStack &GetScreenStack (void) const;
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         void SelectArmor (int iSelection);
 
 		CDockScreen &m_DockScreen;
@@ -402,6 +403,7 @@ class CDockScreen : public IScreenController,
 		inline CSpaceObject *GetLocation (void) { return m_pLocation; }
 		CDesignType *GetResolvedRoot (CString *retsResolveScreen = NULL) const;
 		inline AGScreen *GetScreen (void) const { return m_pScreen; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void HandleChar (char chChar);
 		void HandleKeyDown (int iVirtKey);
 		ALERROR InitScreen (HWND hWnd, 
@@ -474,9 +476,8 @@ class CDockScreen : public IScreenController,
 
 			~SDisplayControl (void)
 				{
-				CCodeChain &CC = g_pUniverse->GetCC();
 				if (pCode)
-					pCode->Discard(&CC);
+					pCode->Discard();
 				}
 
 			EControlTypes iType;

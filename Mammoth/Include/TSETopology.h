@@ -8,6 +8,7 @@
 const int INFINITE_NODE_DIST =					1000000;
 const DWORD END_GAME_SYSTEM_UNID =				0x00ffffff;
 
+class CTopology;
 class ITopologyProcessor;
 
 class CTopologyNode
@@ -48,7 +49,11 @@ class CTopologyNode
 
 		struct SCriteriaCtx
 			{
-			CTopology *pTopology = NULL;
+			SCriteriaCtx (CTopology &TopologyArg) :
+					Topology(TopologyArg)
+				{ }
+
+			CTopology &Topology;
 
 			TSortMap<CString, TSortMap<CString, int>> DistanceCache;
 			};
@@ -102,7 +107,7 @@ class CTopologyNode
 				mutable Metric m_rDistance = 0.0;
 			};
 
-		CTopologyNode (const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
+		CTopologyNode (CTopology &Topology, const CString &sID, DWORD SystemUNID, CSystemMap *pMap);
 		~CTopologyNode (void);
 
 		static void CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode);
@@ -136,10 +141,12 @@ class CTopologyNode
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
 		inline CSystem *GetSystem (void) { return m_pSystem; }
 		inline DWORD GetSystemID (void) { return m_dwID; }
-		inline const CString &GetSystemName (void) { return m_sName; }
-		inline DWORD GetSystemTypeUNID (void) { return m_SystemUNID; }
+		inline const CString &GetSystemName (void) const { return m_sName; }
+		inline DWORD GetSystemTypeUNID (void) const { return m_SystemUNID; }
+		inline CTopology &GetTopology (void) const { return m_Topology; }
 		inline CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
 		inline const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
+		CUniverse &GetUniverse (void) const;
 		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		inline ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
@@ -180,7 +187,7 @@ class CTopologyNode
 		static void InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria);
 		static ALERROR ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit);
 		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
-		static ALERROR ParseCriteria (ICCItem *pItem, SCriteria &retCrit, CString *retsError = NULL);
+		static ALERROR ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCriteria &retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParsePointList (const CString &sValue, TArray<SPoint> *retPoints);
 		static ALERROR ParsePosition (const CString &sValue, int *retx, int *rety);
@@ -214,6 +221,7 @@ class CTopologyNode
 			mutable CTopologyNode *pDestNode = NULL;	//	Cached for efficiency (may be NULL)
 			};
 
+		CTopology &m_Topology;					//	Topology that we're a part of
 		CString m_sID;							//	ID of node
 		CString m_sCreatorID;					//	ID of topology desc, if created by a fragment, etc.
 
@@ -430,7 +438,7 @@ class CTopology
 			bool bNoMap;					//	No destination map
 			};
 
-		CTopology (void);
+		CTopology (CUniverse &Universe);
 		~CTopology (void);
 
 		ALERROR AddStargateFromXML (STopologyCreateCtx &Ctx, CXMLElement *pDesc, CTopologyNode *pNode = NULL, bool bRootNode = false);
@@ -454,7 +462,9 @@ class CTopology
 		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
 		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
+		inline CUniverse &GetUniverse (void) const { return m_Universe; }
 		inline DWORD GetVersion (void) const { return m_dwVersion; }
+		bool InDebugMode (void) const;
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		ALERROR RunProcessors (CSystemMap *pMap, const TSortMap<int, TArray<ITopologyProcessor *>> &Processors, CTopologyNodeList &Nodes, CString *retsError);
@@ -479,6 +489,7 @@ class CTopology
 		bool FindTopologyDesc (STopologyCreateCtx &Ctx, const CString &sNodeID, CTopologyDesc **retpNode, NodeTypes *retiNodeType) const;
 		ALERROR GetOrAddTopologyNode (STopologyCreateCtx &Ctx, const CString &sID, CTopologyNode **retpNode);
 
+		CUniverse &m_Universe;
 		CTopologyNodeList m_Topology;
 		TSortMap<CString, int> m_IDToNode;
 		DWORD m_dwVersion = 1;

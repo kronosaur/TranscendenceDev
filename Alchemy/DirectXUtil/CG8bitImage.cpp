@@ -118,74 +118,59 @@ void CG8bitImage::Copy (const CG8bitImage &Src)
 	m_bMarked = Src.m_bMarked;
 	}
 
-bool CG8bitImage::Create (int cxWidth, int cyHeight, BYTE InitialValue)
+void CG8bitImage::Copy (const CG8bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, int xDest, int yDest)
 
-//	Create
+//	Copy
 //
-//	Creates a blank image
+//	Copies from an 8-bit image.
 
 	{
-	CleanUp();
-	if (cxWidth <= 0 || cyHeight <= 0)
-		return false;
-
-	//	Allocate a new buffer
-
-	int iSize = CalcBufferSize(cxWidth, cyHeight);
-	m_pChannel = new BYTE [iSize];
-
-	//	Initialize
-
-	BYTE *pDest = m_pChannel;
-	BYTE *pDestEnd = pDest + iSize;
-
-	while (pDest < pDestEnd)
-		*pDest++ = InitialValue;
-
-	//	Other variables
-
-	m_cxWidth = cxWidth;
-	m_cyHeight = cyHeight;
-	ResetClipRect();
-
-	return true;
-	}
-
-bool CG8bitImage::CreateChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
-
-//	CreateChannel
-//
-//	Creates from a channel
-
-	{
-	CleanUp();
-
-	if (cxSrc == -1)
-		cxSrc = Src.GetWidth();
-
-	if (cySrc == -1)
-		cySrc = Src.GetHeight();
-
 	//	Make sure we're in bounds
 
-	if (!Src.AdjustCoords(NULL, NULL, 0, 0, 
-			&xSrc, &ySrc,
+	if (!AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(), 
+			&xDest, &yDest,
 			&cxSrc, &cySrc))
-		return true;
+		return;
 
-	//	Allocate a new buffer
+	//	Copy data
 
-	int iSize = CalcBufferSize(cxSrc, cySrc);
-	m_pChannel = new BYTE [iSize];
-	m_cxWidth = cxSrc;
-	m_cyHeight = cySrc;
-	ResetClipRect();
+	BYTE *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
+	BYTE *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cySrc);
+	BYTE *pDestRow = GetPixelPos(xDest, yDest);
+
+	while (pSrcRow < pSrcRowEnd)
+		{
+		BYTE *pSrcPos = pSrcRow;
+		BYTE *pSrcPosEnd = pSrcRow + cxSrc;
+		BYTE *pDestPos = pDestRow;
+
+		while (pSrcPos < pSrcPosEnd)
+			*pDestPos++ = *pSrcPos++;
+
+		pSrcRow = Src.NextRow(pSrcRow);
+		pDestRow = NextRow(pDestRow);
+		}
+	}
+
+void CG8bitImage::CopyChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc, int xDest, int yDest)
+
+//	CopyChannel
+//
+//	Copies the given channel in the source to us.
+
+	{
+	//	Make sure we're in bounds
+
+	if (!AdjustCoords(&xSrc, &ySrc, Src.GetWidth(), Src.GetHeight(), 
+			&xDest, &yDest,
+			&cxSrc, &cySrc))
+		return;
 
 	//	Copy data from the channel
 
 	CG32bitPixel *pSrcRow = Src.GetPixelPos(xSrc, ySrc);
 	CG32bitPixel *pSrcRowEnd = Src.GetPixelPos(xSrc, ySrc + cySrc);
-	BYTE *pDestRow = GetPixelPos(0, 0);
+	BYTE *pDestRow = GetPixelPos(xDest, yDest);
 
 	switch (iChannel)
 		{
@@ -269,6 +254,74 @@ bool CG8bitImage::CreateChannel (ChannelTypes iChannel, const CG32bitImage &Src,
 				}
 			break;
 		}
+	}
+
+bool CG8bitImage::Create (int cxWidth, int cyHeight, BYTE InitialValue)
+
+//	Create
+//
+//	Creates a blank image
+
+	{
+	CleanUp();
+	if (cxWidth <= 0 || cyHeight <= 0)
+		return false;
+
+	//	Allocate a new buffer
+
+	int iSize = CalcBufferSize(cxWidth, cyHeight);
+	m_pChannel = new BYTE [iSize];
+
+	//	Initialize
+
+	BYTE *pDest = m_pChannel;
+	BYTE *pDestEnd = pDest + iSize;
+
+	while (pDest < pDestEnd)
+		*pDest++ = InitialValue;
+
+	//	Other variables
+
+	m_cxWidth = cxWidth;
+	m_cyHeight = cyHeight;
+	ResetClipRect();
+
+	return true;
+	}
+
+bool CG8bitImage::CreateChannel (ChannelTypes iChannel, const CG32bitImage &Src, int xSrc, int ySrc, int cxSrc, int cySrc)
+
+//	CreateChannel
+//
+//	Creates from a channel
+
+	{
+	CleanUp();
+
+	if (cxSrc == -1)
+		cxSrc = Src.GetWidth();
+
+	if (cySrc == -1)
+		cySrc = Src.GetHeight();
+
+	//	Make sure we're in bounds
+
+	if (!Src.AdjustCoords(NULL, NULL, 0, 0, 
+			&xSrc, &ySrc,
+			&cxSrc, &cySrc))
+		return true;
+
+	//	Allocate a new buffer
+
+	int iSize = CalcBufferSize(cxSrc, cySrc);
+	m_pChannel = new BYTE [iSize];
+	m_cxWidth = cxSrc;
+	m_cyHeight = cySrc;
+	ResetClipRect();
+
+	//	Copy data from the channel
+
+	CopyChannel(iChannel, Src, xSrc, ySrc, cxSrc, cySrc);
 
 	return true;
 	}

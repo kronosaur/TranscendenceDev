@@ -264,7 +264,6 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
 
 	//	Compose a data block which has the default description.
 
-	CCodeChain &CC = g_pUniverse->GetCC();
 	ICCItemPtr pData = ICCItemPtr(ICCItem::SymbolTable);
 
 	//	Add the default trade description, in case we need it.
@@ -275,7 +274,7 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
 			&& (pTrade = pType->GetTradingDesc())
 			&& pTrade->ComposeDescription(&sTradeDesc))
 		{
-		pData->SetStringAt(CC, CONSTLIT("tradeDesc"), sTradeDesc);
+		pData->SetStringAt(CONSTLIT("tradeDesc"), sTradeDesc);
 		}
 
 	//	Translate
@@ -601,7 +600,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
             CString sNodeID;
             sNodeID.ReadFromStream(Ctx.pStream);
-            CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+            CTopologyNode *pNode = Ctx.GetUniverse().FindTopologyNode(sNodeID);
 			if (pNode == NULL)
 				::kernelDebugLogPattern("Galactic Map: Unable to find nodeID: %s", sNodeID);
 
@@ -622,7 +621,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
 
                 DWORD dwUNID;
                 Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
-                CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
+                CDesignType *pType = Ctx.GetUniverse().FindDesignType(dwUNID);
 				if (pType == NULL)
 					::kernelDebugLogPattern("Galactic Map: Unable to find type: %08x", dwUNID);
 
@@ -752,11 +751,11 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
             CString sNodeID;
 
             sNodeID.ReadFromStream(Ctx.pStream);
-            CTopologyNode *pNode = g_pUniverse->FindTopologyNode(sNodeID);
+            CTopologyNode *pNode = Ctx.GetUniverse().FindTopologyNode(sNodeID);
 
             DWORD dwUNID;
             Ctx.pStream->Read((char *)&dwUNID, sizeof(DWORD));
-            CDesignType *pType = g_pUniverse->FindDesignType(dwUNID);
+            CDesignType *pType = Ctx.GetUniverse().FindDesignType(dwUNID);
 
             int iObjCount;
             Ctx.pStream->Read((char *)&iObjCount, sizeof(DWORD));
@@ -869,7 +868,8 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 //  Refresh from current system, if we're invalid.
 
     {
-    int i;
+	if (pSystem == NULL)
+		return;
 
     CTopologyNode *pNode = pSystem->GetTopology();
     if (pNode == NULL)
@@ -879,7 +879,7 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 
     //  Get the player so we can compute disposition
 
-    CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
+    CSpaceObject *pPlayer = pSystem->GetUniverse().GetPlayerShip();
 
     //  See if we need to accumulate orbit information
 
@@ -887,7 +887,7 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 
     //  Loop over all objects and refresh them
 
-    for (i = 0; i < pSystem->GetObjectCount(); i++)
+    for (int i = 0; i < pSystem->GetObjectCount(); i++)
         {
         CSpaceObject *pObj = pSystem->GetObject(i);
         if (pObj == NULL

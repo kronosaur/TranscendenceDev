@@ -838,7 +838,7 @@
 		</Events>
 		
 		<Language>
-			<Text id="WatchYourTargets">"\"Grrr!\""</Text>
+			<Text id="WatchYourTargets">Grrr!</Text>
 			<Text id="NiceShooting">""</Text>
 		</Language>
 	</Type>

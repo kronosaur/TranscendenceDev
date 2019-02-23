@@ -213,6 +213,7 @@ class CDesignType
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
 		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
@@ -437,7 +438,7 @@ template <class CLASS> class CDesignTypeRef
 			{
 			if (m_dwUNID)
 				{
-				CDesignType *pBaseType = g_pUniverse->FindDesignType(m_dwUNID);
+				CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
 				if (pBaseType == NULL)
 					{
 					Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), m_dwUNID);
@@ -548,7 +549,7 @@ class CEconomyTypeRef
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		inline bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
 		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
-		void Set (DWORD dwUNID);
+		void Set (CUniverse &Universe, DWORD dwUNID);
 		inline void Set (const CEconomyType *pType) { m_pType = pType; }
 
 	private:
@@ -602,6 +603,8 @@ class CShipTableRef : public CDesignTypeRef<CShipTable>
 
 class CSovereignRef : public CDesignTypeRef<CSovereign>
 	{
+	public:
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 	};
 
 class CStationTypeRef : public CDesignTypeRef<CStationType>
@@ -833,7 +836,7 @@ class CExtension
 
 		static ALERROR CreateBaseFile (SDesignLoadCtx &Ctx, EGameTypes iGame, CXMLElement *pDesc, CExternalEntityTable *pEntities, CExtension **retpBase, TArray<CXMLElement *> *retEmbedded);
 		static ALERROR CreateExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, EFolderTypes iFolder, CExternalEntityTable *pEntities, CExtension **retpExtension);
-		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, CExtension **retpExtension, CString *retsError);
+		static ALERROR CreateExtensionStub (const CString &sFilespec, EFolderTypes iFolder, DWORD dwFlags, CExtension **retpExtension, CString *retsError);
 
 		void AccumulateStats (SStats &Stats) const;
 		bool CanExtend (CExtension *pAdventure) const;
@@ -867,6 +870,7 @@ class CExtension
 		inline EExtensionTypes GetType (void) const { return m_iType; }
 		inline CString GetTypeName (void) const { return GetTypeName(GetType()); }
 		inline DWORD GetUNID (void) const { return m_dwUNID; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		inline const CString &GetVersion (void) const { return m_sVersion; }
 		size_t GetXMLMemoryUsage (void) const;
 		inline bool HasIcon (void) const { CG32bitImage *pIcon = GetCoverImage(); return (pIcon && pIcon->GetWidth() > 0 && pIcon->GetHeight() > 0); }
@@ -1051,6 +1055,7 @@ class CExtensionCollection
 		void ClearAllMarks (void);
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);
@@ -1129,6 +1134,7 @@ class CDynamicDesignTable
 struct SDesignLoadCtx
 	{
 	inline DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
+	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 	//	Context
 	CDesignCollection *pDesign = NULL;		//	Design collection
@@ -1229,7 +1235,8 @@ class CDesignCollection
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
 		inline const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
-		inline CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
+		inline const CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
+		inline CDesignType *FindEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
@@ -1277,6 +1284,7 @@ class CDesignCollection
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
+		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
 		bool IsAdventureExtensionBound (DWORD dwUNID);
 		inline bool IsBindComplete (void) const { return !m_bInBindDesign; }
@@ -1287,6 +1295,11 @@ class CDesignCollection
 		void Reinit (void);
 		void SweepImages (void);
 		void WriteDynamicTypes (IWriteStream *pStream);
+
+		//	Dock Screens
+
+		inline CDockScreenType *FindDockScreen (DWORD dwUNID) { return CDockScreenType::AsType(FindEntry(dwUNID)); }
+		CDesignType *ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 	private:
 		void CacheGlobalEvents (CDesignType *pType);

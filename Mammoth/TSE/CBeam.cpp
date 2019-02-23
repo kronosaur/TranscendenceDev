@@ -17,11 +17,9 @@ struct SBeamDrawCtx
 	CG32bitPixel rgbSecondaryColor;
 	};
 
-static CObjectClass<CBeam>g_Class(OBJID_CBEAM, NULL);
-
 void DrawLaserBeam (CG32bitImage &Dest, const SBeamDrawCtx &Ctx);
 
-CBeam::CBeam (void) : CSpaceObject(&g_Class),
+CBeam::CBeam (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 //		m_xPaintFrom(0),
 //		m_yPaintFrom(0),
 		m_pHit(NULL),
@@ -189,7 +187,7 @@ void CBeam::OnReadFromStream (SLoadCtx &Ctx)
 
 	CString sDescUNID;
 	sDescUNID.ReadFromStream(Ctx.pStream);
-	m_pDesc = g_pUniverse->FindWeaponFireDesc(sDescUNID);
+	m_pDesc = Ctx.GetUniverse().FindWeaponFireDesc(sDescUNID);
 
 	Ctx.pStream->Read((char *)&m_iBonus, sizeof(DWORD));
 	if (Ctx.dwVersion >= 18 && Ctx.dwVersion < 137)

@@ -103,7 +103,7 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 
 					//	Tag the object so that no one else goes after it
 
-					ICCItemPtr pTrue(g_pUniverse->GetCC().CreateTrue());
+					ICCItemPtr pTrue(m_pShip->GetUniverse().GetCC().CreateTrue());
 					m_pDest->SetData(SPACE_OBJ_TAGGED_DATA, pTrue);
 					}
 
@@ -132,12 +132,12 @@ void CGaianProcessorAI::Behavior (SUpdateCtx &Ctx)
 				//	Remember when we first started firing at the wreck
 
 				if (m_iStartTime == -1)
-					m_iStartTime = g_pUniverse->GetTicks();
+					m_iStartTime = m_pShip->GetUniverse().GetTicks();
 				
 				//	If we've tried to destroy this wreck for a while and it still
 				//	isn't destroyed, then we give up.
 
-				else if ((g_pUniverse->GetTicks() - m_iStartTime) > MAX_TIME_DESTROYING_WRECK)
+				else if ((m_pShip->GetUniverse().GetTicks() - m_iStartTime) > MAX_TIME_DESTROYING_WRECK)
 					{
 					SetState(stateNone);
 					break;
@@ -348,7 +348,7 @@ void CGaianProcessorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 						if (m_dwAmmo)
 							{
-							CItem MoreAmmo(g_pUniverse->FindItemType(m_dwAmmo), 25);
+							CItem MoreAmmo(m_pShip->GetUniverse().FindItemType(m_dwAmmo), 25);
 							m_pShip->AddItem(MoreAmmo);
 							}
 						}

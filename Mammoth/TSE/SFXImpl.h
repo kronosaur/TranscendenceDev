@@ -351,6 +351,42 @@ class CFlareEffectCreator : public CEffectCreator
 		CG32bitPixel m_rgbSecondaryColor;
 	};
 
+class CGlowEffectCreator : public CEffectCreator
+	{
+	public:
+		CGlowEffectCreator (void) { }
+		CGlowEffectCreator (const CGlowEffectCreator &Src) = delete;
+		CGlowEffectCreator (CGlowEffectCreator &&Src) = delete;
+		~CGlowEffectCreator (void);
+
+		CGlowEffectCreator &operator= (CGlowEffectCreator &&Src) = delete;
+		CGlowEffectCreator &operator= (const CGlowEffectCreator &Src) = delete;
+			
+		virtual CString GetTag (void) override { return GetClassTag(); }
+
+		//	CEffectCreator virtuals
+		virtual int GetLifetime (void) override { return 0; }
+
+		static CString GetClassTag (void) { return CONSTLIT("Glow"); }
+
+	protected:
+		virtual IEffectPainter *OnCreatePainter (CCreatePainterCtx &Ctx) override;
+		virtual ALERROR OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID) override;
+		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
+
+	private:
+		CEffectParamDesc m_Style;			//	style: Effect style
+		CEffectParamDesc m_Radius;			//	radius: Radius of glow (pixels)
+		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
+		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
+		CEffectParamDesc m_BlendMode;		//	blendMode: Blend mode
+
+		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
+		CEffectParamDesc m_Animate;			//	animate: Animation style
+
+		IEffectPainter *m_pSingleton = NULL;
+	};
+
 class CImageEffectCreator : public CEffectCreator,
 		public IEffectPainter
 	{
@@ -1074,10 +1110,12 @@ class CTextEffectCreator : public CEffectCreator
 
 //	Space Object Implementations -----------------------------------------------
 
-class CSequencerEffect : public CSpaceObject
+class CSequencerEffect : public TSpaceObjectImpl<OBJID_CSEQUENCEREFFECT>
 	{
 	public:
-		static ALERROR Create (CSystem *pSystem,
+		CSequencerEffect (CUniverse &Universe);
+
+		static ALERROR Create (CSystem &System,
 							   CEffectSequencerCreator *pType,
 							   CSpaceObject *pAnchor,
 							   const CVector &vPos,
@@ -1096,7 +1134,6 @@ class CSequencerEffect : public CSpaceObject
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override { }
 
 	private:
-		CSequencerEffect (void);
 
 		CEffectSequencerCreator *m_pType;
 		CSpaceObject *m_pAnchor;

@@ -37,7 +37,7 @@ const Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
 #define MAX_IN_FORMATION_DELTA2			(MAX_IN_FORMATION_DELTA * MAX_IN_FORMATION_DELTA)
 
 #ifdef DEBUG_COMBAT
-#define DEBUG_COMBAT_OUTPUT(x)			if (m_pShip->IsSelected()) g_pUniverse->DebugOutput("%d> %s", g_iDebugLine++, x)
+#define DEBUG_COMBAT_OUTPUT(x)			if (m_pShip->IsSelected()) m_pShip->GetUniverse().DebugOutput("%d> %s", g_iDebugLine++, x)
 #else
 #define DEBUG_COMBAT_OUTPUT(x)
 #endif
@@ -68,7 +68,7 @@ CBaseShipAI::~CBaseShipAI (void)
 
 	{
 	if (m_pCommandCode)
-		m_pCommandCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCommandCode->Discard();
 
 	if (m_pOrderModule)
 		delete m_pOrderModule;
@@ -160,7 +160,7 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 
 		if (m_pCommandCode)
 			{
-			CCodeChainCtx Ctx;
+			CCodeChainCtx Ctx(GetUniverse());
 			Ctx.DefineContainingType(m_pShip);
 			Ctx.SaveAndDefineSourceVar(m_pShip);
 
@@ -734,7 +734,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 
 	{
 	if (m_fIsPlayerWingman)
-		return g_pUniverse->GetPlayerShip();
+		return m_pShip->GetUniverse().GetPlayerShip();
 
 	switch (GetCurrentOrder())
 		{
@@ -1042,7 +1042,7 @@ void CBaseShipAI::OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage)
 
 	//	Remember the last time we were attacked (debounce quick hits)
 
-	m_AICtx.SetLastAttack(g_pUniverse->GetTicks());
+	m_AICtx.SetLastAttack(m_pShip->GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}
@@ -1291,7 +1291,7 @@ void CBaseShipAI::OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedSh
 	{
 	//	Get the new player ship
 
-	CSpaceObject *pPlayerShip = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pPlayerShip = m_pShip->GetUniverse().GetPlayerShip();
 	if (pPlayerShip == NULL)
 		{
 		ASSERT(false);
@@ -1548,7 +1548,7 @@ void CBaseShipAI::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 		CString sCode;
 		sCode.ReadFromStream(Ctx.pStream);
 		if (!sCode.IsBlank())
-			m_pCommandCode = g_pUniverse->GetCC().Link(sCode);
+			m_pCommandCode = CCodeChain::Link(sCode);
 		else
 			m_pCommandCode = NULL;
 		}
@@ -1613,7 +1613,7 @@ void CBaseShipAI::ResetBehavior (void)
 	{
 	m_AICtx.Update(m_pShip);
 	m_pShip->ClearAllTriggered();
-	m_Blacklist.Update(g_pUniverse->GetTicks());
+	m_Blacklist.Update(m_pShip->GetUniverse().GetTicks());
 	}
 
 int CBaseShipAI::SetAISettingInteger (const CString &sSetting, int iValue)
@@ -1663,7 +1663,7 @@ void CBaseShipAI::SetCommandCode (ICCItem *pCode)
 	{
 	if (m_pCommandCode)
 		{
-		m_pCommandCode->Discard(&(g_pUniverse->GetCC()));
+		m_pCommandCode->Discard();
 		m_pCommandCode = NULL;
 		}
 
@@ -1868,7 +1868,7 @@ void CBaseShipAI::UseItemsBehavior (void)
 		{
 		//	Look for superconducting coils
 
-		CItemType *pType = g_pUniverse->FindItemType(g_SuperconductingCoilUNID);
+		CItemType *pType = m_pShip->GetUniverse().FindItemType(g_SuperconductingCoilUNID);
 		if (pType)
 			{
 			CItem Coils(pType, 1);
@@ -1940,7 +1940,7 @@ void CBaseShipAI::WriteToStream (IWriteStream *pStream)
 
 	CString sCode;
 	if (m_pCommandCode)
-		sCode = g_pUniverse->GetCC().Unlink(m_pCommandCode);
+		sCode = CCodeChain::Unlink(m_pCommandCode);
 	sCode.WriteToStream(pStream);
 
 	//	Flags

@@ -41,18 +41,7 @@ const int VOLUME_LEVEL[11] =
 const int SEGMENT_BOUNDARY_THRESHOLD =			5000;	//	5 seconds
 
 CSoundtrackManager::CSoundtrackManager (void) :
-		m_bEnabled(false),
-		m_bDebugMode(false),
-		m_iGameState(stateNone),
-		m_pNowPlaying(NULL),
-		m_pLastTravel(NULL),
-		m_pMissionTrack(NULL),
-		m_LastPlayed(10),
-		m_bSystemTrackPlayed(false),
-		m_bStartCombatWhenUndocked(false),
-		m_dwTransition(0),
-		m_dwStartedCombat(0),
-		m_dwStartedTravel(0)
+		m_LastPlayed(10)
 
 //	CSoundtrackManager constructor
 
@@ -79,7 +68,8 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 //	Calculates a game track to play.
 
 	{
-	int i;
+	if (m_pUniverse == NULL)
+		return NULL;
 
 	//	If we've got a mission track, then we play that.
 
@@ -98,9 +88,9 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 	//	Create a probability table of tracks to play.
 
 	TSortMap<int, TProbabilityTable<CMusicResource *>> Table(DescendingSort);
-	for (i = 0; i < g_pUniverse->GetMusicResourceCount(); i++)
+	for (int i = 0; i < m_pUniverse->GetMusicResourceCount(); i++)
 		{
-		CMusicResource *pTrack = g_pUniverse->GetMusicResource(i);
+		CMusicResource *pTrack = m_pUniverse->GetMusicResource(i);
 
 		//	If this is not appropriate music then skip it
 
@@ -232,14 +222,15 @@ CMusicResource *CSoundtrackManager::CalcRandomTrackToPlay (void) const
 //	that we decrease probabilities for tracks we've played recently.
 
 	{
-	int i;
+	if (m_pUniverse == NULL)
+		return NULL;
 
 	//	Create a probability table of tracks to play.
 
 	TProbabilityTable<CMusicResource *> Table;
-	for (i = 0; i < g_pUniverse->GetMusicResourceCount(); i++)
+	for (int i = 0; i < m_pUniverse->GetMusicResourceCount(); i++)
 		{
-		CMusicResource *pTrack = g_pUniverse->GetMusicResource(i);
+		CMusicResource *pTrack = m_pUniverse->GetMusicResource(i);
 
 		//	Skip special tracks
 
@@ -438,6 +429,23 @@ bool CSoundtrackManager::GetQueuedTrack (SQueueEntry *retEntry)
 	return true;
 	}
 
+bool CSoundtrackManager::Init (SOptions &Options)
+
+//	Init
+//
+//	Initialize the soundtrack manager. Must be called before anything else will
+//	work.
+
+	{
+	m_pUniverse = &Options.Universe;
+	SetMusicEnabled(Options.bEnabled);
+	SetVolume(Options.iVolume);
+	SetDebugMode(Options.bDebugMode);
+	SetGameState(Options.iInitialState);
+
+	return true;
+	}
+
 bool CSoundtrackManager::InTransition (void) const
 
 //	InTransition
@@ -475,7 +483,7 @@ void CSoundtrackManager::NextTrack (void)
 //	Play the next track
 
 	{
-	if (InTransition())
+	if (m_pUniverse == NULL || InTransition())
 		return;
 
 	//	Done with mission track
@@ -486,7 +494,7 @@ void CSoundtrackManager::NextTrack (void)
 
 	if (m_bEnabled)
 		{
-		CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState);
+		CMusicResource *pTrack = CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), m_iGameState);
 		if (pTrack == NULL)
 			return;
 
@@ -580,6 +588,9 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 //	transition music).
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	if (m_bDebugMode)
 		::kernelDebugLogPattern("Entered system.");
 
@@ -599,7 +610,7 @@ void CSoundtrackManager::NotifyEnterSystem (CTopologyNode *pNode, bool bFirstTim
 	//	in the old system.
 
 	if (pNode == NULL)
-		pNode = g_pUniverse->GetCurrentTopologyNode();
+		pNode = m_pUniverse->GetCurrentTopologyNode();
 
 	//	Reset some variables.
 
@@ -693,6 +704,9 @@ void CSoundtrackManager::NotifyTrackDone (void)
 //	Done playing a track
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	if (m_bDebugMode)
 		::kernelDebugLogPattern("Track done: %s", (m_pNowPlaying ? m_pNowPlaying->GetFilespec() : CONSTLIT("(none)")));
 
@@ -723,7 +737,7 @@ void CSoundtrackManager::NotifyTrackDone (void)
 		//	Figure out which track to play
 
 		bool bTransition;
-		CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState, &bTransition);
+		CMusicResource *pTrack = CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), m_iGameState, &bTransition);
 
 		//	Play or transition
 
@@ -777,10 +791,13 @@ void CSoundtrackManager::NotifyUndocked (void)
 //	Player has undocked.
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	if (m_bStartCombatWhenUndocked)
 		{
 		m_bStartCombatWhenUndocked = false;
-		Play(CalcGameTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), ATTRIB_COMBAT_SOUNDTRACK));
+		Play(CalcGameTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), ATTRIB_COMBAT_SOUNDTRACK));
 		}
 	}
 
@@ -845,11 +862,12 @@ void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScree
 //	Paint debug information about our state
 
 	{
-	int i;
+	if (m_pUniverse == NULL)
+		return;
 
 	TArray<CString> DebugLines;
 
-	CSpaceObject *pObj = g_pUniverse->GetPlayerShip();
+	CSpaceObject *pObj = m_pUniverse->GetPlayerShip();
 	CShip *pPlayerShip = (pObj ? pObj->AsShip() : NULL);
 	IShipController *pController = (pPlayerShip ? pPlayerShip->GetController() : NULL);
 	
@@ -926,7 +944,7 @@ void CSoundtrackManager::PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScree
 	int y = rcScreen.top + RectHeight(rcScreen) / 2;
 	int x = rcScreen.left + 20;
 
-	for (i = 0; i < DebugLines.GetCount(); i++)
+	for (int i = 0; i < DebugLines.GetCount(); i++)
 		{
 		TextFont.DrawText(Dest, x, y, rgbColor, DebugLines[i]);
 		y += TextFont.GetHeight();
@@ -1008,9 +1026,12 @@ void CSoundtrackManager::SetGameState (EGameStates iNewState)
 //	Sets the current game state and determines which track to play.
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	//	If our state has not changed, then nothing to do
 
-	if (iNewState == m_iGameState)
+	else if (iNewState == m_iGameState)
 		NULL;
 
 	//	If we're quitting, then clean up
@@ -1033,7 +1054,7 @@ void CSoundtrackManager::SetGameState (EGameStates iNewState)
 	//	Otherwise, set the new state
 
 	else
-		SetGameState(iNewState, CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), iNewState));
+		SetGameState(iNewState, CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), iNewState));
 	}
 
 void CSoundtrackManager::SetGameState (EGameStates iNewState, CMusicResource *pTrack)
@@ -1069,7 +1090,7 @@ void CSoundtrackManager::SetMusicEnabled (bool bEnabled)
 //	Enable/disable playing music
 
 	{
-	if (m_bEnabled == bEnabled)
+	if (m_pUniverse == NULL || m_bEnabled == bEnabled)
 		return;
 
 	//	We always boot the mixer, even if we're starting out disabled, because we
@@ -1089,7 +1110,7 @@ void CSoundtrackManager::SetMusicEnabled (bool bEnabled)
 	//	If we're enabling music, play the current track
 
 	if (m_bEnabled)
-		Play(CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), m_iGameState));
+		Play(CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), m_iGameState));
 
 	//	Otherwise, stop playing
 
@@ -1186,6 +1207,9 @@ void CSoundtrackManager::TransitionToCombat (CMusicResource *pTrack)
 //	Transition to a combat track.
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	//	If we're in a travel bed track, remember it so we can go back to it later.
 
 	RememberTravelTrack();
@@ -1193,7 +1217,7 @@ void CSoundtrackManager::TransitionToCombat (CMusicResource *pTrack)
 	//	Pick a combat track
 
 	if (pTrack == NULL)
-		pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
+		pTrack = CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), stateGameCombat);
 	if (pTrack == NULL)
 		return;
 
@@ -1211,9 +1235,12 @@ void CSoundtrackManager::TransitionToTravel (void)
 //	Transition to a travel bed track.
 
 	{
+	if (m_pUniverse == NULL)
+		return;
+
 	//	Pick a travel track
 
-	CMusicResource *pTrack = CalcTrackToPlay(g_pUniverse->GetCurrentTopologyNode(), stateGameTravel);
+	CMusicResource *pTrack = CalcTrackToPlay(m_pUniverse->GetCurrentTopologyNode(), stateGameTravel);
 	if (pTrack == NULL)
 		return;
 

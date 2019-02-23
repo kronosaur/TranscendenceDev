@@ -36,8 +36,10 @@ struct SPlayerChangedShipsCtx
 	{
 	bool bOldShipWaits = false;				//	If TRUE, old ship waits and orders are set appropriately
 	bool bNoOrderTransfer = false;			//	If TRUE, do not change orders to point to new ship
+	bool bTransferCargo = false;			//	If TRUE, move cargo from old ship to new ship
 	bool bTransferEquipment = false;		//	If TRUE, transfer equipment, such as targeting computer
 	bool bTakeDockingPort = false;			//	If TRUE, new ship replaces old ship in docking port
+	bool bIdentifyInstalled = false;		//	If TRUE, identify installed items in the new ship
 	};
 
 //  CAISettings ----------------------------------------------------------------

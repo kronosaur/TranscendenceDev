@@ -9,12 +9,13 @@
 #define RECHARGE_TIME_ATTRIB					CONSTLIT("rechargeTime")
 #define FIRE_RATE_ATTRIB						CONSTLIT("fireRate")
 #define INTERCEPT_RANGE_ATTRIB					CONSTLIT("interceptRange")
+#define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
+#define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define MIN_SOURCE_RANGE_ATTRIB					CONSTLIT("minSourceRange")
+#define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define TARGET_ATTRIB							CONSTLIT("target")
 #define TARGET_CRITERIA_ATTRIB					CONSTLIT("targetCriteria")
 #define WEAPON_ATTRIB							CONSTLIT("weapon")
-#define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
-#define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
-#define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 
 #define MISSILES_TARGET							CONSTLIT("missiles")
 
@@ -24,7 +25,6 @@
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
-
 
 const int DEFAULT_INTERCEPT_RANGE =				10;
 
@@ -88,23 +88,39 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 				{
 				CSpaceObject *pObj = pSystem->GetObject(i);
 
-				if (pObj
-						&& pObj->GetCategory() == CSpaceObject::catMissile
-						&& !pObj->GetDamageSource().IsEqual(pSource)
-						&& !pObj->IsIntangible()
-						&& pSource->IsAngryAt(pObj->GetDamageSource())
-						&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
-							isOmniDirectional))
-					{
-					CVector vRange = pObj->GetPos() - vSourcePos;
-					Metric rDistance2 = vRange.Dot(vRange);
+				//	See if this is a valid target. If not, skip
 
-					if (rDistance2 < rBestDist2)
-						{
-						pBestTarget = pObj;
-						rBestDist2 = rDistance2;
-						}
+				if (pObj == NULL
+						|| pObj->GetCategory() != CSpaceObject::catMissile
+						|| pObj->GetDamageSource().IsEqual(pSource)
+						|| pObj->IsIntangible()
+						|| !pSource->IsAngryAt(pObj->GetDamageSource())
+						|| (!isOmniDirectional
+								&& !AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
+					continue;
+
+				//	Is this closer than our previous best. If not, skip.
+
+				CVector vRange = pObj->GetPos() - vSourcePos;
+				Metric rDistance2 = vRange.Dot(vRange);
+
+				if (rDistance2 >= rBestDist2)
+					continue;
+
+				//	If we have restrictions on the source distance, then check
+				//	here. Skip if we don't match.
+
+				if (m_rMinSourceRange2 > 0.0)
+					{
+					CSpaceObject *pMissileSource = pObj->GetDamageSource().GetObj();
+					if (pMissileSource && pSource->GetDistance2(pMissileSource) < m_rMinSourceRange2)
+						continue;
 					}
+
+				//	If we get this far, then this is the best target so far.
+
+				pBestTarget = pObj;
+				rBestDist2 = rDistance2;
 				}
 
 			return pBestTarget;
@@ -139,8 +155,8 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 						&& !pObj->IsIntangible()
 						&& pObj != pSource
-						&& (AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc) ||
-							isOmniDirectional))
+						&& (isOmniDirectional
+								|| AngleInArc(VectorToPolar((pObj->GetPos() - vSourcePos)), iMinFireArc, iMaxFireArc)))
 					{
 					pBestTarget = pObj;
 					rBestDist2 = rDistance2;
@@ -204,7 +220,7 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 //	understand the property.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
+	CCodeChain &CC = GetUniverse().GetCC();
 	CDeviceClass *pWeapon;
 	CInstalledDevice *pDevice = Ctx.GetDevice();
 
@@ -253,8 +269,8 @@ ICCItem *CAutoDefenseClass::FindItemProperty (CItemCtx &Ctx, const CString &sPro
 
 			CCLinkedList *pList = (CCLinkedList *)pResult;
 
-			pList->AppendInteger(CC, iMinFireArc);
-			pList->AppendInteger(CC, iMaxFireArc);
+			pList->AppendInteger(iMinFireArc);
+			pList->AppendInteger(iMaxFireArc);
 
 			return pResult;
 			}
@@ -602,6 +618,15 @@ ALERROR CAutoDefenseClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDes
 	pDevice->m_rInterceptRange = (Metric)(iInterceptRange * LIGHT_SECOND);
 
 	//	Options
+
+	int iRange = pDesc->GetAttributeIntegerBounded(MIN_SOURCE_RANGE_ATTRIB, 0, -1, 0);
+	if (iRange)
+		{
+		pDevice->m_rMinSourceRange2 = (Metric)(iRange * LIGHT_SECOND);
+		pDevice->m_rMinSourceRange2 *= pDevice->m_rMinSourceRange2;
+		}
+	else
+		pDevice->m_rMinSourceRange2 = 0.0;
 
 	pDevice->m_bCheckLineOfFire = pDesc->GetAttributeBool(CHECK_LINE_OF_FIRE_ATTRIB);
 

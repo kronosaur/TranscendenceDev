@@ -1377,8 +1377,9 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 			int iBestMetric = 0;
 			CItemType *pBestItem = NULL;
 
-			//	Find the highest-level item that matches the given criteria.
-			//	If we find it, then we use it.
+			//	Find the lowest-level item that matches the given criteria.
+			//	If we find it, then we use it. We use the lowest-level item 
+			//	because we want the cheapest price per fuel.
 
 			for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
 				{
@@ -1399,7 +1400,7 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 					Metric rFuelPerItem = Max(1.0, strToDouble(Item.GetType()->GetData(), 0.0, NULL));
 					Metric rItemsToFillShip = rMaxFuel / rFuelPerItem;
 
-					int iMetric = ((rItemsToFillShip >= 10.0) ? 100 : 0) + pType->GetLevel();
+					int iMetric = ((rItemsToFillShip >= 10.0) ? 100 : 0) + (MAX_ITEM_LEVEL - pType->GetLevel());
 					if (pBestItem == NULL || iMetric > iBestMetric)
 						{
 						//	Compute the price, because if we don't sell it, then we
@@ -1809,9 +1810,9 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion >= 62)
 		{
 		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-		m_pCurrency.Set(dwLoad);
+		m_pCurrency.Set(Ctx.GetUniverse(), dwLoad);
 		if (m_pCurrency == NULL)
-			m_pCurrency.Set(DEFAULT_ECONOMY_UNID);
+			m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 	else
 		{
@@ -1821,7 +1822,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 
 		//	Previous versions are always credits
 
-		m_pCurrency.Set(DEFAULT_ECONOMY_UNID);
+		m_pCurrency.Set(Ctx.GetUniverse(), DEFAULT_ECONOMY_UNID);
 		}
 
 	Ctx.pStream->Read((char *)&m_iMaxCurrency, sizeof(DWORD));
@@ -1848,7 +1849,7 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 			Commodity.sID.ReadFromStream(Ctx.pStream);
 
 			Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-			Commodity.pItemType = g_pUniverse->FindItemType(dwLoad);
+			Commodity.pItemType = Ctx.GetUniverse().FindItemType(dwLoad);
 
 			CString sCriteria;
 			sCriteria.ReadFromStream(Ctx.pStream);
@@ -1937,6 +1938,9 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 	{
 	DEBUG_TRY
 
+	if (pObj == NULL)
+		return;
+
 	int i, j;
 	bool bCargoChanged = false;
 
@@ -1964,9 +1968,9 @@ void CTradingDesc::RefreshInventory (CSpaceObject *pObj, int iPercent)
 		//	criteria.
 
 		TArray<CItemType *> ItemTable;
-		for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
+		for (j = 0; j < pObj->GetUniverse().GetItemTypeCount(); j++)
 			{
-			CItemType *pType = g_pUniverse->GetItemType(j);
+			CItemType *pType = pObj->GetUniverse().GetItemType(j);
 			CItem theItem(pType, 1);
 			if (theItem.MatchesCriteria(Service.ItemCriteria))
 				ItemTable.Insert(pType);

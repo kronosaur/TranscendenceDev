@@ -662,13 +662,12 @@ ICCItemPtr CLanguage::GetNounFlags (DWORD dwFlags)
 //	Returns an array of noun flags.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-	ICCItemPtr pResult(CC.CreateLinkedList());
+	ICCItemPtr pResult(ICCItem::List);
 
 	for (int i = 0; i < NOUN_FLAG_TABLE.GetCount(); i++)
 		{
 		if (NOUN_FLAG_TABLE[i].Value & dwFlags)
-			pResult->AppendString(CC, CString(NOUN_FLAG_TABLE.GetKey(i)));
+			pResult->AppendString(CString(NOUN_FLAG_TABLE.GetKey(i)));
 		}
 
 	if (pResult->GetCount() == 0)

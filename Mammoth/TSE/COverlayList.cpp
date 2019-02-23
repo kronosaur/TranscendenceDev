@@ -284,8 +284,6 @@ bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSe
 //	discard retpData.
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
-
 	CDockScreenSys::SSelector BestScreen;
 	BestScreen.iPriority = -1;
 
@@ -434,7 +432,7 @@ ICCItemPtr COverlayList::GetData (DWORD dwID, const CString &sAttrib) const
 		pField = pField->GetNext();
 		}
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(ICCItem::Nil);
 	}
 
 void COverlayList::GetList (TArray<COverlay *> *retList)
@@ -536,7 +534,7 @@ ICCItem *COverlayList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource
 		pField = pField->GetNext();
 		}
 
-	return g_pUniverse->GetCC().CreateNil();
+	return CCodeChain::CreateNil();
 	}
 
 int COverlayList::GetRotation (DWORD dwID)
@@ -616,7 +614,7 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 
     //  If we get this far, then we couldn't find it, so we just return nil
 
-	return ICCItemPtr(g_pUniverse->GetCC().CreateNil());
+	return ICCItemPtr(ICCItem::Nil);
     }
 
 void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
@@ -816,7 +814,6 @@ void COverlayList::ScrapeHarmfulOverlays (CSpaceObject *pSource, int iMaxRemoved
 //	Remove any harmful overlays
 
 	{
-	CCodeChain &CC = g_pUniverse->GetCC();
 	int iRemoved = 0;
 
 	COverlay *pField = m_pFirst;

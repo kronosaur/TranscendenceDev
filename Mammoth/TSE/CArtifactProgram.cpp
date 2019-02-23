@@ -77,7 +77,7 @@ bool CArtifactProgram::Init (EProgramTypes iType, int iLocus, CItemType *pItem, 
 
 	//	Invoke handler and get a descriptor
 
-	CCodeChainCtx Ctx;
+	CCodeChainCtx Ctx(GetUniverse());
 
 	Ctx.SetItemType(pItem);
 	Ctx.SaveAndDefineSourceVar(NULL);
