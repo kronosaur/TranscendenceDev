@@ -1732,6 +1732,9 @@
 							;	don't want to install armor objects.
 
 							(status (objGetItemProperty installerObj thisItem 'installDeviceStatus))
+							(overrideStatus 
+								(or (@ data 'maxTechLevel) (@ data 'techCriteria))
+								)
 							(itemPrice
 								(if (or (@ data 'upgrade) (@ data 'buyAndInstall))
 									(objGetSellPrice installerObj thisItem)
@@ -1759,7 +1762,7 @@
 							(switch
 								; If tech criteria provided then use them for check
 								
-								(or (@ data 'maxTechLevel) (@ data 'techCriteria))
+								overrideStatus
 									(setq stationCannotInstall (or
 										;	If we don't match the tech criteria then we don't have the
 										;	technology to install.
@@ -1861,6 +1864,7 @@
 
 								(and (@ status 'upgradeInstallOnly)
 										(not (@ data 'upgrade))
+										(not overrideStatus)
 										)
 									(setq desc (or
 										(objTranslate installerObj 'rpg.cannotInstallDeviceWithoutUpgrade { item:thisItem targetObj:targetObj })
