@@ -1701,7 +1701,8 @@
 				;	desc:					Description of installation attempt
 
 				(block (totalCost desc descWarning itemToReplace
-
+					(debug Nil)
+					
 					(thisItem (@ data 'item))
 					(targetObj (if (@ data 'targetObj) (@ data 'targetObj) gPlayerShip))
 					(installerObj (if (@ data 'installerObj) (@ data 'installerObj) gSource))
@@ -1753,6 +1754,16 @@
 							installText installTextData
 							militaryCheck
 							)
+							
+							(if debug
+								(block ()
+									(dbgOutput "data = " data)
+									(dbgOutput "installerObj = " (objGetName installerObj))
+									(dbgOutput "status = " status)
+									(dbgOutput "itemPrice = " itemPrice)
+									(dbgOutput "recommendedSlot = " recommendedSlot)
+									)
+								)
 
 							;	Check if the station can install the device
 							
@@ -1797,7 +1808,7 @@
 								;	Otherwise result depends on installDeviceStatus property
 								(setq stationCannotInstall (not (@ status 'canInstall)))
 								)
-
+								
 							;	Compute the cost to install
 
 							(switch
@@ -1815,6 +1826,13 @@
 								(block Nil
 									(setq totalCost 0)
 									(setq stationCannotInstall True)
+									)
+								)
+
+							(if debug
+								(block ()
+									(dbgOutput "stationCannotInstall = " stationCannotInstall)
+									(dbgOutput "totalCost = " totalCost)
 									)
 								)
 
