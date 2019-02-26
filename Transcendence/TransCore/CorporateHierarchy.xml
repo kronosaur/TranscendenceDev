@@ -1666,7 +1666,7 @@
 	EXTRA DATA
 
 	itemsConsumed:		List of item types that we consume
-	itemsConsumedDesc:	Description of the items that we want to buy
+	buyItemsList:		String listing items that we want to buy
 	itemsCreated:		List of item types that we create
 	maxInventory:		Max credits worth of items to stock	
 	
@@ -1745,7 +1745,7 @@
 					<Default>
 						<OnPaneInit>
 							(scrSetDescTranslate gScreen 'descWelcome {
-								consumeDesc: (objGetData gSource "itemsConsumedDesc")
+								buyItemsList: (objTranslate gSource 'buyItemsList)
 								})
 						</OnPaneInit>
 
@@ -1822,7 +1822,7 @@
 
 					(maxInventory (multiply (random 1000 2000) (sysGetLevel)))
 
-					allItems itemsCreated itemsConsumed buyDesc totalItems
+					allItems itemsCreated itemsConsumed totalItems
 					)
 
 					;	Pick the items that we manufacture
@@ -1842,37 +1842,15 @@
 							(objAddSellOrder gSource theType (random '(50 70 80 80 85 85 85 85 90)))
 							)
 						)
-					(objSetData gSource "itemsCreated" itemsCreated)
 						
 					;	Pick the items that we consume
-
-					(setq allItems (shuffle (itmGetTypes (@ facDesc 'consumes))))
-					(setq totalItems (min (random 2 4) (count allItems)))
-					(for i 1 totalItems
-						(block (theType)
-							(setq theType (item allItems (subtract i 1)))
-							(setq itemsConsumed (append itemsConsumed theType))
-							
-							; Set trade line
-							(objAddBuyOrder gSource theType (random '(150 130 120 120 115 115 115 110)))
-							
-							; Compose a line telling the player what we will buy
-							(switch
-								(eq i 1)
-									(setq buyDesc 
-										(typTranslate gType 'descWantToBuy { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
-										)
-
-								(eq i totalItems)
-									(setq buyDesc (cat buyDesc 
-										(typTranslate gType 'descWantToBuyEnd { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
-										))
-
-								(setq buyDesc (cat buyDesc 
-									(typTranslate gType 'descWantToBuyComma { itemName: (itmGetName (itmCreate theType 1) '(plural short)) })
-									))
-								)
-							)
+					
+					(setq itemsConsumed (subset (shuffle (itmGetTypes (@ facDesc 'consumes)))
+											0
+											(random 2 4)
+											))
+					(enum itemsConsumed theType
+						(objAddBuyOrder gSource theType (random '(150 130 120 120 115 115 115 110)))
 						)
 
 					;	Add trade orders for system-wide price impacts
@@ -1882,9 +1860,9 @@
 
 					;	Remember some values
 
-					(objSetData gSource "itemsConsumed" itemsConsumed)
-					(objSetData gSource "itemsConsumedDesc" buyDesc)
-					(objSetData gSource "maxInventory" maxInventory)
+					(objSetData gSource 'itemsCreated itemsCreated)
+					(objSetData gSource 'itemsConsumed itemsConsumed)
+					(objSetData gSource 'maxInventory maxInventory)
 					
 					;	Register a timer so that we can resupply
 
@@ -1924,31 +1902,39 @@
 				You are in the docking level of a corporate manufacturing plant.
 				The station master greets you:
 
-				"Welcome to our manufacturing facilities! %consumeDesc%"
+				"Welcome to our manufacturing facilities! We are looking to buy %buyItemsList%."
 
 			</Text>
-			<Text id="descWantToBuy">
-				"We are looking to buy %itemName%"
-			</Text>
-			<Text id="descWantToBuyComma">
-				", %itemName%"
-			</Text>
-			<Text id="descWantToBuyEnd">
-				" and %itemName%."
+			
+			<Text id="buyItemsList">
+				(or (objGetData gSource 'buyItemsList)
+					(block (itemsConsumed buyItemsList)
+						(setq itemsConsumed (objGetData gSource 'itemsConsumed))
+						
+						;	Fix stations that were created while the OnCreate event was partially broken.
+						
+						(if (not itemsConsumed) (objSetData gSource 'itemsConsumed (setq itemsConsumed
+							(map (itmGetTypes '*) '(excludeNil original) theType (objGetBuyPrice gSource (itmCreate theType 1)))
+							)))
+							
+						(setq buyItemsList (join (map itemsConsumed theType (itmGetName theType '(plural short))) 'oxfordComma))
+						(objSetData gSource 'buyItemsList buyItemsList)
+						buyItemsList
+						)
+					)
 			</Text>
 
             <Text id="core.mapDescCustom">
-                (block (
-                    (itemsConsumed (objGetData gSource 'itemsConsumed))
-                    (itemsCreated (objGetData gSource 'itemsCreated))
-                    )
-                    
-                    (cat
-                        "Buys " (join (map itemsConsumed theType (itmGetName theType 0x82)) 'oxfordComma) " &mdash; "
-                        "Sells " (join (map itemsCreated theType (itmGetName theType 0x82)) 'oxfordComma)
-                        )
-                    )
+                (typTranslate gType 'mapDescCustomText {
+					buyItemsList: (objTranslate gSource 'buyItemsList)
+					sellItemsList: (join (map (objGetData gSource 'itemsCreated) theType (itmGetName theType '(plural short))) 'oxfordComma)
+					})
             </Text>
+			
+			<Text id="mapDescCustomText">
+				Buys %buyItemsList% &mdash;
+				Sells %sellItemsList%
+			</Text>
         </Language>
 	</StationType>
 
