@@ -248,7 +248,7 @@ void CModExchangeSession::CmdRefreshComplete (CListCollectionTask *pTask)
 
 #ifdef STEAM_BUILD
 
-TArray<CUIHelper::SMenuEntry> CModExchangeSession::CreateMenu (CMultiverseCatalogEntry *pEntry)
+TArray<CUIHelper::SMenuEntry> CModExchangeSession::CreateMenu (CMultiverseCatalogEntry *pCatalogEntry)
 	{
 	TArray<CUIHelper::SMenuEntry> Menu;
 

@@ -309,6 +309,7 @@ ALERROR CSteamService::LoadUserCollection (ITaskProcessor *pProcessor, CExtensio
 
 	//	Set the collection
 
+	Extensions.UpdateRegistrationStatus(Collection);
 	Multiverse.SetCollection(Collection);
 	SendServiceStatus(NULL_STR);
 

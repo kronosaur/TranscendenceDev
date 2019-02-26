@@ -2119,6 +2119,7 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 			if (pExtension->IsDisabled())
 				Entry.SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
 			else if (pExtension->IsRegistrationVerified()
+					|| Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteam
                     || Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
 					|| !pExtension->IsRegistered())
 				Entry.SetStatus(CMultiverseCatalogEntry::statusLoaded);
