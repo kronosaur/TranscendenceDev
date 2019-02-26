@@ -134,14 +134,18 @@
 			</OnInProgressUndock>
 
 			<OnCompleted>
-				(switch
-					(= aReason 'success)
-						(block Nil
-							;	Lift the quarantine
-							(sysSetData 'G2 'quarantineLifted True)
-							;	Kate leaves
-							(objSetData aOwnerObj 'stationMaster 'hereticResearcher)
-							)
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(switch
+						(= aReason 'success)
+							(block Nil
+								;	Lift the quarantine
+								(sysSetData 'G2 'quarantineLifted True)
+								;	Kate leaves
+								(objSetData ownerObj 'stationMaster 'hereticResearcher)
+								)
+						)
 					)
 			</OnCompleted>
 		</Events>

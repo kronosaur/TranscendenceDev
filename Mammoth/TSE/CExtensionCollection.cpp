@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    121, 165,  38,  21,  68,  23,  51,  25,  36, 161,
-    151, 136, 117, 119, 100,   4, 152,  84, 247, 200,
+    252, 167, 149, 205,  79, 141,   5, 137, 230, 229,
+    237,   7, 214,  61, 211, 114,   2,  35,  87, 231,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -2123,6 +2123,7 @@ void CExtensionCollection::UpdateCollectionStatus (TArray<CMultiverseCatalogEntr
 			if (pExtension->IsDisabled())
 				Entry.SetStatus(CMultiverseCatalogEntry::statusError, pExtension->GetDisabledReason());
 			else if (pExtension->IsRegistrationVerified()
+					|| Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteam
                     || Entry.GetLicenseType() == CMultiverseCatalogEntry::licenseSteamUGC
 					|| !pExtension->IsRegistered())
 				Entry.SetStatus(CMultiverseCatalogEntry::statusLoaded);
