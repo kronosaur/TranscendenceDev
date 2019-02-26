@@ -1845,10 +1845,8 @@
 						
 					;	Pick the items that we consume
 					
-					(setq itemsConsumed (subset (shuffle (itmGetTypes (@ facDesc 'consumes)))
-											0
-											(random 2 4)
-											))
+					(setq allItems (shuffle (itmGetTypes (@ facDesc 'consumes))))
+					(setq itemsConsumed (subset allItems 0 (random 2 4)))
 					(enum itemsConsumed theType
 						(objAddBuyOrder gSource theType (random '(150 130 120 120 115 115 115 110)))
 						)
@@ -1914,10 +1912,16 @@
 						;	Fix stations that were created while the OnCreate event was partially broken.
 						
 						(if (not itemsConsumed) (objSetData gSource 'itemsConsumed (setq itemsConsumed
-							(map (itmGetTypes '*) '(excludeNil original) theType (objGetBuyPrice gSource (itmCreate theType 1)))
+							(map (itmGetTypes '*) '(excludeNil original) theType
+								(objGetBuyPrice gSource (itmCreate theType 1))
+								)
 							)))
 							
-						(setq buyItemsList (join (map itemsConsumed theType (itmGetName theType '(plural short))) 'oxfordComma))
+						(setq buyItemsList (join (map itemsConsumed theType 
+													(itmGetName theType '(plural short))
+													)
+												'oxfordComma
+												))
 						(objSetData gSource 'buyItemsList buyItemsList)
 						buyItemsList
 						)
@@ -1927,7 +1931,11 @@
             <Text id="core.mapDescCustom">
                 (typTranslate gType 'mapDescCustomText {
 					buyItemsList: (objTranslate gSource 'buyItemsList)
-					sellItemsList: (join (map (objGetData gSource 'itemsCreated) theType (itmGetName theType '(plural short))) 'oxfordComma)
+					sellItemsList: (join (map (objGetData gSource 'itemsCreated) theType
+											(itmGetName theType '(plural short))
+											)
+										'oxfordComma
+										)
 					})
             </Text>
 			
