@@ -1022,8 +1022,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'incCharges charges\n"
 			"   'installed [True|Nil]"
-			"   'level level",
-			"   'shotSeparationScale separation\n"
+			"   'level level"
+			"   'shotSeparationScale separation\n",
 
 			"vs*",	0,	},
 
