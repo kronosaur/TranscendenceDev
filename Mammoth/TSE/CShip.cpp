@@ -4487,6 +4487,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 				return iResult;
 			}
 		}
+	else
+		Ctx.iArmorDamage = Ctx.iDamage;
 
 	//	Tell our attacker that we got hit
 
@@ -4513,7 +4515,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 		{
 		//	Tell the controller that we were damaged
 
-		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorHitDamage);
+		m_pController->OnDamaged(Ctx.Attacker, pArmor, Ctx.Damage, Ctx.iArmorDamage);
 		return damageArmorHit;
 		}
 
