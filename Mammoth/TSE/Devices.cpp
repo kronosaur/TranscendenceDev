@@ -31,6 +31,8 @@
 #define LINKED_FIRE_ALWAYS						CONSTLIT("always")
 #define LINKED_FIRE_ENEMY						CONSTLIT("whenInFireArc")
 #define LINKED_FIRE_TARGET						CONSTLIT("targetInRange")
+#define LINKED_FIRE_SELECTED					CONSTLIT("whenSelected")
+#define LINKED_FIRE_NEVER						CONSTLIT("neverFire")
 
 #define PROPERTY_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged")
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
@@ -121,7 +123,7 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, T
 		//	Linked-fire
 
 		DWORD dwOptions = GetLinkedFireOptions(ItemCtx);
-		if (dwOptions != 0)
+		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
 		}
 
@@ -692,6 +694,12 @@ CString CDeviceClass::GetLinkedFireOptionString (DWORD dwOptions)
 		case lkfEnemyInRange:
 			return LINKED_FIRE_ENEMY;
 
+		case lkfSelected:
+			return LINKED_FIRE_SELECTED;
+
+		case lkfNever:
+			return LINKED_FIRE_NEVER;
+
 		default:
 			ASSERT(false);
 			return NULL_STR;
@@ -812,6 +820,10 @@ ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString
 		dwOptions |= CDeviceClass::lkfTargetInRange;
 	else if (strEquals(sDesc, LINKED_FIRE_ENEMY))
 		dwOptions |= CDeviceClass::lkfEnemyInRange;
+	else if (strEquals(sDesc, LINKED_FIRE_SELECTED))
+		dwOptions |= CDeviceClass::lkfSelected;
+	else if (strEquals(sDesc, LINKED_FIRE_NEVER))
+		dwOptions |= CDeviceClass::lkfNever;
 	else
 		{
 		Ctx.sError = strPatternSubst(CONSTLIT("Invalid linkedFire option: %s"), sDesc);

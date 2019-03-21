@@ -159,6 +159,8 @@ class CDeviceClass
 			lkfAlways =				0x0000001,	//	Linked to fire button
 			lkfTargetInRange =		0x0000002,	//	Fire only if the target is in range
 			lkfEnemyInRange =		0x0000004,	//	Fire only an enemy is in range
+			lkfSelected =			0x0000008,  //  All weapons of this type selectable for linked fire by player
+			lkfNever =				0x0000010,  //  Never fire this weapon
 			};
 
 		enum ECachedHandlers
@@ -675,8 +677,8 @@ class CInstalledDevice
 		DWORD m_fFateDamaged:1;					//	Always damaged when ship destroyed
 		DWORD m_fFateDestroyed:1;				//	Always destroyed when ship destroyed
 		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
+		DWORD m_fLinkedFireSelected : 1;		//	If TRUE, lkfSelected
+		DWORD m_fLinkedFireNever : 1;			//	If TRUE, lkfNever
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 

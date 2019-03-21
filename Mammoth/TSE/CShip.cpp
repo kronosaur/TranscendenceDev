@@ -599,9 +599,10 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	//	For primary weapons, the target is the controller target.
 	//	
 	//	NOTE: Selectable means that the weapon is not a secondary weapon
-	//	and not a linked-fire weapon.
+	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
+	//  linked-fire weapons, which normally count as "selectable", from this definition.
 
-	if (pDevice->IsSelectable(ItemCtx))
+	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetLinkedFireOptions() & CDeviceClass::lkfSelected))
 		{
 		*retpTarget = m_pController->GetTarget(ItemCtx);
 		*retiFireSolution = -1;
@@ -618,10 +619,25 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(ItemCtx);
 
-		//	If our options is "fire always" then our target is always the same
+		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
+
+		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
+		//  but the primary weapon isn't both "fire if selected" AND of the same type, then don't fire.
+
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
+			!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
+			(pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) : false)) &&
+			(dwLinkedFireOptions & CDeviceClass::lkfSelected) &&
+			IsPlayer()
+			))
+		{
+			return false;
+		}
+
+		//	If our options is "fire always" or "fire if selected" then our target is always the same
 		//	as the primary target.
 
-		if (dwLinkedFireOptions & CDeviceClass::lkfAlways)
+		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & CDeviceClass::lkfSelected))
 			{
 			*retpTarget = m_pController->GetTarget(ItemCtx);
 			*retiFireSolution = -1;

@@ -2350,18 +2350,25 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	{
 	CInstalledDevice *pCurWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
 	CInstalledDevice *pNewWeapon = pCurWeapon;
+	bool bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected;
+	bool bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID());
 
 	//	Keep switching until we find a weapon that is not disabled
+	//  If currently selected weapon has LinkedFireSelectable, make sure next
+	//  selected weapon is not (both of the same type AND set as linkedFire="LinkedFireSelected")
+	//  Only then do we check to see if the weapon is enabled.
 
 	do
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
+		bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected;
+		bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID());
 		}
 	while (pNewWeapon 
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
-			&& !pNewWeapon->IsEnabled());
+			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? true : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
 	//	Done
 

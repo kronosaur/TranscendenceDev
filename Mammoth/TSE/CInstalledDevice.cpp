@@ -56,7 +56,9 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fFateDamaged(false),
 		m_fFateDestroyed(false),
 		m_fFateSurvives(false),
-		m_fFateComponetized(false)
+		m_fFateComponetized(false),
+		m_fLinkedFireSelected(false),
+		m_fLinkedFireNever(false)
 	{
 	}
 
@@ -243,6 +245,10 @@ DWORD CInstalledDevice::GetLinkedFireOptions (void) const
 		return CDeviceClass::lkfEnemyInRange;
 	else if (m_fSecondaryWeapon)
 		return CDeviceClass::lkfEnemyInRange;
+	else if (m_fLinkedFireSelected)
+		return CDeviceClass::lkfSelected;
+	else if (m_fLinkedFireNever)
+		return CDeviceClass::lkfNever;
 	else
 		return 0;
 	}
@@ -478,7 +484,8 @@ bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
 
 	{
 	return (!IsSecondaryWeapon()
-			&& GetClass()->GetLinkedFireOptions(Ctx) == 0);
+			&& (GetClass()->GetLinkedFireOptions(Ctx) == 0
+			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelected));
 	}
 
 ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -752,6 +759,8 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	m_fFateDestroyed =		((dwLoad & 0x00040000) ? true : false);
 	m_fFateComponetized =	((dwLoad & 0x00080000) ? true : false);
 	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
+	m_fLinkedFireSelected = ((dwLoad & 0x00200000) ? true : false);
+	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -953,12 +962,18 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 	m_fLinkedFireAlways = false;
 	m_fLinkedFireTarget = false;
 	m_fLinkedFireEnemy = false;
+	m_fLinkedFireSelected = false;
+	m_fLinkedFireNever = false;
 	if (dwOptions & CDeviceClass::lkfAlways)
 		m_fLinkedFireAlways = true;
 	else if (dwOptions & CDeviceClass::lkfTargetInRange)
 		m_fLinkedFireTarget = true;
 	else if (dwOptions & CDeviceClass::lkfEnemyInRange)
 		m_fLinkedFireEnemy = true;
+	else if (dwOptions & CDeviceClass::lkfSelected)
+		m_fLinkedFireSelected = true;
+	else if (dwOptions & CDeviceClass::lkfNever)
+		m_fLinkedFireNever = true;
 	}
 
 bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
@@ -1329,6 +1344,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fFateDestroyed ?		0x00040000 : 0);
 	dwSave |= (m_fFateComponetized ?	0x00080000 : 0);
 	dwSave |= (!m_SlotEnhancements.IsEmpty() ? 0x00100000 : 0);
+	dwSave |= (m_fLinkedFireSelected ?	0x00200000 : 0);
+	dwSave |= (m_fLinkedFireNever ?		0x00400000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
