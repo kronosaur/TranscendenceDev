@@ -255,13 +255,13 @@ int CDeviceSystem::FindNamedIndex (const CItem &Item) const
 	return -1;
 	}
 
-int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir) const
+int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir) const
 
 //	FindNextIndex
 //
 //	Finds the next device of the given category
 
-	{
+{
 	int iStartingSlot;
 
 	//	iStartingSlot is always >= GetCount() so that we can iterate
@@ -273,13 +273,30 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		iStartingSlot = GetCount() + (iStart + iDir);
 
 	//	Loop until we find an appropriate device
+	//  If our current device has "fire if selected", then create an ordering of "fire if selected"
+	//  weapon types, which is based on the order of appearance of the first weapon of each type with "fire if selected".
+	//  Only return a "fire if selected" device if it is the FIRST such weapon of a given type.
+
+	TSortMap<DWORD, int> FireWhenSelectedDeviceTypes;
+	for (int i = 0; i < GetCount(); i++)
+		{
+		if (!m_Devices[i].IsEmpty()
+			&& m_Devices[i].GetCategory() == Category
+			&& m_Devices[i].GetLinkedFireOptions() == CDeviceClass::lkfSelected
+			&& !FireWhenSelectedDeviceTypes.Find(m_Devices[i].GetUNID()))
+			FireWhenSelectedDeviceTypes.Insert(m_Devices[i].GetUNID(), i);
+		}
 
 	for (int i = 0; i < GetCount(); i++)
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
+		int iEarliestLkfSelectedItem = -1;
+		FireWhenSelectedDeviceTypes.Find(m_Devices[iDevice].GetUNID(), &iEarliestLkfSelectedItem);
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice])))
+				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
+				&& (m_Devices[iDevice].GetLinkedFireOptions() == CDeviceClass::lkfSelected ?
+					iDevice == iEarliestLkfSelectedItem : true))
 			return iDevice;
 		}
 
