@@ -2368,7 +2368,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	while (pNewWeapon 
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
-			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? true : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
+			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? pNewWeapon->GetUNID() != pCurWeapon->GetUNID() : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
 	//	Done
 
