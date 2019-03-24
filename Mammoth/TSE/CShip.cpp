@@ -2505,6 +2505,61 @@ AbilityStatus CShip::GetAbility (Abilities iAbility) const
 		}
 	}
 
+int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
+//  GetAmmoForSelectedLinkedFireWeapons
+//
+//  If the given device is a linked-fire weapon of type "whenSelected",
+//  then return the ammo amount to display. Do this by finding all
+//  "whenSelected" weapons of the same type installed on the ship, and adding
+//  their ammo counts (if they use charges) or the number of rounds left in the
+//  cargo hold (if they don't). The latter should be added only once.
+	{
+	if (pDevice->GetLinkedFireOptions() == CDeviceClass::lkfSelected)
+		{
+		int iAmmoCount = 0;
+		TSortMap<CItemType *, bool> AmmoItemTypes;
+		DWORD iGunUNID = pDevice->GetUNID();
+		for (int i = 0; i < m_Devices.GetCount(); i++)
+			{
+			CInstalledDevice currDevice = m_Devices.GetDevice(i);
+			CDeviceClass *pCurrDeviceClass = currDevice.GetClass();
+			if (currDevice.GetCategory() == (itemcatWeapon))
+				{
+				if (iGunUNID == currDevice.GetUNID() && currDevice.GetLinkedFireOptions() == CDeviceClass::lkfSelected)
+					{
+					if (pCurrDeviceClass->IsAmmoWeapon() && !(pCurrDeviceClass->RequiresItems()))
+						//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
+						{
+						int iAmmoLeft = 0;
+						pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft);
+						iAmmoCount += iAmmoLeft;
+						}
+
+					if (pCurrDeviceClass->IsAmmoWeapon() && (pCurrDeviceClass->RequiresItems()))
+						//  If it is an ammo weapon, and also require items, then it is an ammo weapon. Add its ammo to the count ONLY if the ammo type
+						//  hasn't already been added.
+						{
+						bool ammoIsAdded = false;
+						int iAmmoLeft = 0;
+						CItemType *pAmmoType;
+						pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType);
+						AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
+							if (!ammoIsAdded)
+								{
+								AmmoItemTypes.Insert(pAmmoType, true);
+								iAmmoCount += iAmmoLeft;
+								}
+						}
+					}
+				}
+			}
+		//  Return -1 if iAmmoCount is 0. The HUD will then return 0 (since the selected weapon will have 0 ammo if the total ammo is zero).
+		return iAmmoCount == 0 ? -1 : iAmmoCount;
+		}
+	else
+		return -1;
+	}
+
 CSpaceObject *CShip::GetAttachedRoot (void) const
 
 //	GetAttachedRoot
