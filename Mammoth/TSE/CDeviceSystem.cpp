@@ -274,7 +274,7 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 
 	//	Loop until we find an appropriate device
 	//  If our current device has "fire if selected", then create an ordering of "fire if selected"
-	//  weapon types, which is based on the order of appearance of the first weapon of each type with "fire if selected".
+	//  weapon types, which is based on the order of appearance of the first enabled weapon of each type with "fire if selected".
 	//  Only return a "fire if selected" device if it is the FIRST such weapon of a given type.
 
 	TSortMap<DWORD, int> FireWhenSelectedDeviceTypes;
@@ -285,6 +285,7 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 			if (!m_Devices[i].IsEmpty()
 				&& m_Devices[i].GetCategory() == Category
 				&& m_Devices[i].GetLinkedFireOptions() == CDeviceClass::lkfSelected
+				&& m_Devices[i].IsEnabled()
 				&& !FireWhenSelectedDeviceTypes.Find(m_Devices[i].GetUNID()))
 				FireWhenSelectedDeviceTypes.Insert(m_Devices[i].GetUNID(), i);
 			}
