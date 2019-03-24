@@ -255,7 +255,7 @@ int CDeviceSystem::FindNamedIndex (const CItem &Item) const
 	return -1;
 	}
 
-int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir) const
+int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir, bool switchWeapons) const
 
 //	FindNextIndex
 //
@@ -278,13 +278,16 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 	//  Only return a "fire if selected" device if it is the FIRST such weapon of a given type.
 
 	TSortMap<DWORD, int> FireWhenSelectedDeviceTypes;
-	for (int i = 0; i < GetCount(); i++)
+	if (switchWeapons)
 		{
-		if (!m_Devices[i].IsEmpty()
-			&& m_Devices[i].GetCategory() == Category
-			&& m_Devices[i].GetLinkedFireOptions() == CDeviceClass::lkfSelected
-			&& !FireWhenSelectedDeviceTypes.Find(m_Devices[i].GetUNID()))
-			FireWhenSelectedDeviceTypes.Insert(m_Devices[i].GetUNID(), i);
+		for (int i = 0; i < GetCount(); i++)
+			{
+			if (!m_Devices[i].IsEmpty()
+				&& m_Devices[i].GetCategory() == Category
+				&& m_Devices[i].GetLinkedFireOptions() == CDeviceClass::lkfSelected
+				&& !FireWhenSelectedDeviceTypes.Find(m_Devices[i].GetUNID()))
+				FireWhenSelectedDeviceTypes.Insert(m_Devices[i].GetUNID(), i);
+			}
 		}
 
 	for (int i = 0; i < GetCount(); i++)
@@ -295,8 +298,8 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
 				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
-				&& (m_Devices[iDevice].GetLinkedFireOptions() == CDeviceClass::lkfSelected ?
-					iDevice == iEarliestLkfSelectedItem : true))
+				&& (switchWeapons ? (m_Devices[iDevice].GetLinkedFireOptions() == CDeviceClass::lkfSelected ?
+					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
 		}
 
@@ -773,7 +776,7 @@ void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
 //	Select the next weapon.
 
 	{
-	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir);
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir, true);
 	if (iNextWeapon != -1)
 		{
 		m_NamedDevices[devPrimaryWeapon] = iNextWeapon;
