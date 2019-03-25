@@ -9,6 +9,7 @@
 #define ITEM_ATTRIB								CONSTLIT("item")
 
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
@@ -58,7 +59,8 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fFateSurvives(false),
 		m_fFateComponetized(false),
 		m_fLinkedFireSelected(false),
-		m_fLinkedFireNever(false)
+		m_fLinkedFireNever(false),
+		m_fCycleFire(false)
 	{
 	}
 
@@ -761,6 +763,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
 	m_fLinkedFireSelected = ((dwLoad & 0x00200000) ? true : false);
 	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
+	m_fCycleFire =		((dwLoad & 0x00800000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1001,6 +1004,15 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
             return false;
             }
         }
+
+	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
+		{
+		if (pValue == NULL || !pValue->IsNil())
+			SetCycleFireSettings(true);
+		else
+			SetCycleFireSettings(false);
+		}
+
 	else if (strEquals(sName, PROPERTY_EXTERNAL))
 		{
 		bool bSetExternal = (pValue && !pValue->IsNil());
@@ -1346,6 +1358,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (!m_SlotEnhancements.IsEmpty() ? 0x00100000 : 0);
 	dwSave |= (m_fLinkedFireSelected ?	0x00200000 : 0);
 	dwSave |= (m_fLinkedFireNever ?		0x00400000 : 0);
+	dwSave |= (m_fCycleFire ? 			0x00800000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);

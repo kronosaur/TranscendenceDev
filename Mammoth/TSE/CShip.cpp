@@ -6211,15 +6211,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                         if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
                             m_iLastFireTime = GetUniverse().GetTicks();
 
-                        //	Set delay for next activation
-
-                        SetFireDelay(pDevice);
-
 						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
 						//  type, and increment their fire delays.
 						DWORD dwLinkedFireOptions = pDevice->GetLinkedFireOptions();
 
-						if (dwLinkedFireOptions & CDeviceClass::lkfSelected)
+						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
 							{
 							int iFireDelayToIncrement = 0;
 							int iNumberOfGuns = 1;
@@ -6232,22 +6228,31 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 								CDeviceClass *pCurrDeviceClass = currDevice->GetClass();
 								if (currDevice->GetCategory() == (itemcatWeapon))
 									{
-									if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == CDeviceClass::lkfSelected && currDevice != pDevice && currDevice->IsReady() && currDevice->IsEnabled())
+									if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == dwLinkedFireOptions && currDevice->GetCycleFireSettings()
+										&& currDevice != pDevice && currDevice->IsEnabled())
 										{
 										//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
-										WeaponsInFireGroup.Enqueue(currDevice);
 										iNumberOfGuns++;
+										if (currDevice->IsReady())
+											WeaponsInFireGroup.Enqueue(currDevice);
 										}
 									}
 								}
 							iFireDelayToIncrement = (m_pController->GetFireRateAdj() * pDevice->GetActivateDelay(this) / 10);
-							iFireDelayToIncrement = (iFireDelayToIncrement) / iNumberOfGuns;
+							iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
 							while (WeaponsInFireGroup.GetCount() > 0)
 								{
 								SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
 								WeaponsInFireGroup.Dequeue();
 								}
+							//	Set delay for next activation
+
+							SetFireDelay(pDevice, iNumberOfGuns > 1 ? iFireDelayToIncrement * iNumberOfGuns : -1);
 							}
+						else
+							//	Set delay for next activation
+
+							SetFireDelay(pDevice);
 
                         }
                     }

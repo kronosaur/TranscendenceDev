@@ -3086,6 +3086,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			
 		SetCharges(pValue->GetIntegerValue());
 		}
+
 	else if (strEquals(sName, PROPERTY_DAMAGED))
 		SetDamaged((pValue == NULL) || !pValue->IsNil());
 

@@ -475,6 +475,7 @@ class CInstalledDevice
 
 		inline bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
+		inline bool GetCycleFireSettings (void) const { return m_fCycleFire; }
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
 		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
@@ -516,6 +517,7 @@ class CInstalledDevice
 		inline bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		inline bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		inline void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		inline void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
 		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
@@ -679,7 +681,7 @@ class CInstalledDevice
 		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
 		DWORD m_fLinkedFireSelected : 1;		//	If TRUE, lkfSelected
 		DWORD m_fLinkedFireNever : 1;			//	If TRUE, lkfNever
-		DWORD m_fSpare7:1;
+		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare2:8;

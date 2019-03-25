@@ -38,6 +38,7 @@
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
+#define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
@@ -489,6 +490,9 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
         return CC.CreateInteger(iLevel);
         }
+
+	else if (strEquals(sName, PROPERTY_CYCLE_FIRE))
+		return (pDevice ? CC.CreateBool(pDevice->GetCycleFireSettings()) : CC.CreateNil());
 
     else if (strEquals(sName, PROPERTY_DEVICE_SLOTS))
         return CC.CreateInteger(GetSlotsRequired());
