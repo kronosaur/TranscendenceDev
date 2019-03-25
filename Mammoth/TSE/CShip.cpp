@@ -641,6 +641,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 			{
 			*retpTarget = m_pController->GetTarget(ItemCtx);
 			*retiFireSolution = -1;
+
 			return true;
 			}
 
@@ -6213,6 +6214,41 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                         //	Set delay for next activation
 
                         SetFireDelay(pDevice);
+
+						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
+						//  type, and increment their fire delays.
+						DWORD dwLinkedFireOptions = pDevice->GetLinkedFireOptions();
+
+						if (dwLinkedFireOptions & CDeviceClass::lkfSelected)
+							{
+							int iFireDelayToIncrement = 0;
+							int iNumberOfGuns = 1;
+							TQueue<CInstalledDevice *> WeaponsInFireGroup;
+							DWORD iGunUNID = pDevice->GetUNID();
+
+							for (int i = 0; i < m_Devices.GetCount(); i++)
+								{
+								CInstalledDevice *currDevice = GetDevice(i);
+								CDeviceClass *pCurrDeviceClass = currDevice->GetClass();
+								if (currDevice->GetCategory() == (itemcatWeapon))
+									{
+									if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == CDeviceClass::lkfSelected && currDevice != pDevice && currDevice->IsReady() && currDevice->IsEnabled())
+										{
+										//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
+										WeaponsInFireGroup.Enqueue(currDevice);
+										iNumberOfGuns++;
+										}
+									}
+								}
+							iFireDelayToIncrement = (m_pController->GetFireRateAdj() * pDevice->GetActivateDelay(this) / 10);
+							iFireDelayToIncrement = (iFireDelayToIncrement) / iNumberOfGuns;
+							while (WeaponsInFireGroup.GetCount() > 0)
+								{
+								SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
+								WeaponsInFireGroup.Dequeue();
+								}
+							}
+
                         }
                     }
                 }
