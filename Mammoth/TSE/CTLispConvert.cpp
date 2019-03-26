@@ -113,8 +113,16 @@ bool CTLispConvert::AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector 
 			
 			retSelector->sScreen = pItem->GetStringAt(CONSTLIT("screen"));
 			retSelector->iPriority = pItem->GetIntegerAt(CONSTLIT("priority"), 0);
-			retSelector->pData = GetElementAt(pItem, CONSTLIT("data"));
 			retSelector->bOverrideOnly = pItem->GetBooleanAt(CONSTLIT("overrideOnly"));
+
+			//	If we don't have a data element, then we treat the selector item
+			//	as data. This saves us from having an extra data struct.
+
+			ICCItem *pData = pItem->GetElement(CONSTLIT("data"));
+			if (pData == NULL)
+				retSelector->pData = ICCItemPtr(pItem->Reference());
+			else
+				retSelector->pData = ICCItemPtr(pData->Reference());
 			}
 
 		return true;
