@@ -48,9 +48,9 @@
 					type=		"mainDrive"
 					hitPoints=	"30"
 
-					posX=		"-50"
+					posX=		"-54"
 					posY=		"0"
-					sizeX=		"28"
+					sizeX=		"32"
 					sizeY=		"28"
 					/>
 			
@@ -60,8 +60,8 @@
 
 					posX=		"2"
 					posY=		"0"
-					sizeX=		"72"
-					sizeY=		"60"
+					sizeX=		"76"
+					sizeY=		"68"
 					/>
 		</Interior>
 
@@ -70,14 +70,15 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsAntaresIImage;" imageWidth="128" imageHeight="128"/>
+		<Image imageID="&rsAntaresIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&rsAntaresIHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="61"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="61"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="173"	posRadius="61"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-173"	posRadius="61"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="61"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 		
 		<!-- AI and Behavior -->
@@ -171,9 +172,9 @@
 					type=		"mainDrive"
 					hitPoints=	"30"
 
-					posX=		"-50"
+					posX=		"-54"
 					posY=		"0"
-					sizeX=		"28"
+					sizeX=		"32"
 					sizeY=		"28"
 					/>
 			
@@ -183,8 +184,8 @@
 
 					posX=		"2"
 					posY=		"0"
-					sizeX=		"72"
-					sizeY=		"60"
+					sizeX=		"76"
+					sizeY=		"68"
 					/>
 		</Interior>
 
@@ -193,14 +194,15 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsAntaresIIImage;" imageWidth="128" imageHeight="128"/>
+		<Image imageID="&rsAntaresIIHD;" imageWidth="144" imageHeight="144"	rotationCount="120" rotationColumns="12" viewportRatio="0.0175"/>
+		<HeroImage imageID="&rsAntaresIIHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="176"	posRadius="61"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-176"	posRadius="61"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="173"	posRadius="61"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-173"	posRadius="61"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="61"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-176"	posRadius="69"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-173"	posRadius="69"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="69"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 		
 		<!-- AI and Behavior -->
@@ -261,7 +263,7 @@
 
 			attributes=			"commonwealth, freighter, genericClass, makayev"
 
-			size=				"180"
+			size=				"185"
 			mass=				"10000"
 			thrustRatio=		"1"
 			maxSpeed=			"8"
@@ -319,14 +321,15 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsAntaresVImage;" imageWidth="180" imageHeight="180"/>
+		<Image imageID="&rsAntaresVHD;" imageWidth="180" imageHeight="180"	rotationCount="120" rotationColumns="12" viewportRatio="0.02375"/>
+		<HeroImage imageID="&rsAntaresVHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="177"	posRadius="84"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-177"	posRadius="84"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="175"	posRadius="84"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-175"	posRadius="84"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="84"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-177"	posRadius="88"	posZ="-3"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-175"	posRadius="88"	posZ="5"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="88"	posZ="10"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 		
 		<!-- AI and Behavior -->
@@ -691,8 +694,14 @@
 
 <!-- RESOURCES -->
 	
-	<Image UNID="&rsAntaresIImage;"		bitmap="Resources\AntaresI.jpg" bitmask="Resources\AntaresIMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsAntaresIIImage;"	bitmap="Resources\AntaresII.jpg" bitmask="Resources\AntaresIIMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsAntaresVImage;"		bitmap="Resources\AntaresV.jpg" bitmask="Resources\AntaresVMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAntaresIHD;"		bitmap="Resources\AntaresIHD.jpg" bitmask="Resources\AntaresIHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsAntaresIHero;"		bitmap="Resources\AntaresILarge.jpg" bitmask="Resources\AntaresILargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsAntaresIIHD;"		bitmap="Resources\AntaresIIHD.jpg" bitmask="Resources\AntaresIIHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAntaresIIHero;"		bitmap="Resources\AntaresIILarge.jpg" bitmask="Resources\AntaresIILargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsAntaresVHD;"		bitmap="Resources\AntaresVHD.jpg" bitmask="Resources\AntaresVHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsAntaresVHero;"		bitmap="Resources\AntaresVLarge.jpg" bitmask="Resources\AntaresVLargeMask.bmp"  loadOnUse="true"/>
+
 	
 </TranscendenceModule>

@@ -1501,13 +1501,45 @@
 
 	-->
 	
+	<!ENTITY rsPhobosHD					"0x00830001">
 	<!ENTITY rsCorporateCruiserHD		"0x00830002">
+	<!ENTITY rsAntaresIHD				"0x00830003">
+	<!ENTITY rsAntaresIIHD				"0x00830004">
+	<!ENTITY rsAntaresVHD				"0x00830005">
+	<!ENTITY rsEI200HD					"0x00830006">
+	<!ENTITY rsSalvagerNomadHD			"0x00830007">
+	<!ENTITY rsUrakDestroyerHD			"0x00830008">
 	<!ENTITY rsEI7000HD					"0x00830009">
 	<!ENTITY rsMarauderRaidPlatformHD	"0x0083000A">
 	<!ENTITY rsDrakeHD					"0x0083000B">
-	<!ENTITY rsTripoliHD				"0x0083000E">
 	<!ENTITY rsCharonFrigateHD			"0x0083000C">
+	<!ENTITY rsHeliotropeFrigateHD		"0x0083000D">
+	<!ENTITY rsTripoliHD				"0x0083000E">
+	<!ENTITY rsFerianWarriorHD			"0x0083000F">
+	<!ENTITY rsDwargMasterHD			"0x00830010">
+	<!ENTITY rsDwargBehemothHD			"0x00830011">
+	<!ENTITY rsScarabHD					"0x00830012">
+	<!ENTITY rsRanxDreadnoughtHD		"0x00830013">
+	<!ENTITY rsEarthSlaverHD			"0x00830014">
+	<!ENTITY rsSungTransportHD			"0x00830015">
+	<!ENTITY rsT31TransportHD			"0x00830016">
+	<!ENTITY rsT55TransportHD			"0x00830017">
+	<!ENTITY rsDragonSlaverHD			"0x00830018">
+	<!ENTITY rsXenophobeDefenderHD		"0x00830019">
+	<!ENTITY rsXenophobeWorldshipHD		"0x0083001A">
+	<!ENTITY rsXenophobeArkHD			"0x0083001B">
+	<!ENTITY rsHurinHD					"0x0083001C">
 	<!ENTITY rsCSCHD					"0x0083001D">
+	<!ENTITY rsCometfallHD				"0x0083001E">
+	<!ENTITY rsDeimosHD					"0x0083001F">
+	<!ENTITY rsPolarFreighterHD			"0x00830020">
+	<!ENTITY rsAquilaHD					"0x00830021">
+	<!ENTITY rsAurochsHD				"0x00830022">
+	<!ENTITY rsIocrymCommandShipHD		"0x00830023">
+	<!ENTITY rsIocrymSentinelHD			"0x00830024">
+	<!ENTITY rsCorporateExplorerHD		"0x00830025">
+	<!ENTITY rsVentariDestroyerHD		"0x00830026">
+	<!ENTITY rsGaianProcessorHD			"0x00830027">
 
 	<!-- LIBRARIES -->
 	
@@ -1998,6 +2030,10 @@
 	<!ENTITY smCommonwealthSpace		"0x001003A2">
 	<!ENTITY chCommonwealthStationMastersCommon		"0x001003A3">
 	<!ENTITY scEI7000Stock				"0x001003A4">
+
+	<!ENTITY rsAntaresIHero				"0x001003A5">
+	<!ENTITY rsAntaresIIHero			"0x001003A6">
+	<!ENTITY rsAntaresVHero				"0x001003A7">
 
 	<!-- 03B0-03CF SAPIENS -->
 

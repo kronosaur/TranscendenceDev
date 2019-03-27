@@ -4258,4 +4258,8 @@
 	<Image UNID="&rsEI7000Image;"	obsoleteVersion="43"		bitmap="Resources\EI7000.jpg" bitmask="Resources\EI7000Mask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsManufacturingPlant;"	obsoleteVersion="44" bitmap="Resources\ManufacturingPlant.jpg" bitmask="Resources\ManufacturingPlantMask.bmp" loadOnUse="true"/>
 
+	<Image UNID="&rsAntaresIImage;"		obsoleteVersion="45"	bitmap="Resources\AntaresI.jpg" bitmask="Resources\AntaresIMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAntaresIIImage;"	obsoleteVersion="45"	bitmap="Resources\AntaresII.jpg" bitmask="Resources\AntaresIIMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAntaresVImage;"		obsoleteVersion="45"	bitmap="Resources\AntaresV.jpg" bitmask="Resources\AntaresVMask.bmp" loadOnUse="true"/>
+
 </TranscendenceModule>
