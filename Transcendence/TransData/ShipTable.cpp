@@ -132,7 +132,7 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				printf("\t");
 
 			const CString &sField = Cols[j];
-			ICCItem *pResult = pClass->GetProperty(CCCtx, sField);
+			ICCItemPtr pResult = pClass->GetProperty(CCCtx, sField);
 
 			if (strEquals(sField, FIELD_MANEUVER) 
 					|| strEquals(sField, FIELD_THRUST_TO_WEIGHT))
@@ -156,8 +156,6 @@ void GenerateShipTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				printf(sValue.GetASCIIZPointer());
 				}
-
-            pResult->Discard();
 			}
 
 		printf("\n");

@@ -166,7 +166,7 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				//	Get the value
 
 				const CString &sField = Cols[j];
-    			ICCItem *pResult = pType->GetProperty(CCCtx, sField);
+    			ICCItemPtr pResult = pType->GetProperty(CCCtx, sField);
 
 				//	Format and output
 
@@ -188,8 +188,6 @@ void GenerateEncounterTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				    CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
 				    printf(sValue.GetASCIIZPointer());
 				    }
-
-                pResult->Discard();
 				}
 
 			printf("\n");

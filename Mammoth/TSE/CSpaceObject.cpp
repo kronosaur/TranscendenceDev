@@ -4395,7 +4395,7 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateBool(IsUnderAttack());
 
 	else if (pType = GetType())
-		return pType->GetProperty(Ctx, sName);
+		return pType->GetProperty(Ctx, sName)->Reference();
 
 	else
 		return CC.CreateNil();

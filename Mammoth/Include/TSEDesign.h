@@ -290,7 +290,7 @@ class CDesignType
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
-		ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
+		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		int GetPropertyInteger (const CString &sProperty);
 		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);

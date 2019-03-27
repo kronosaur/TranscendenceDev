@@ -1753,7 +1753,7 @@ CString CDesignType::GetNounPhrase (DWORD dwFlags) const
     return CLanguage::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
     }
 
-ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	GetProperty
 //
@@ -1768,17 +1768,17 @@ ICCItem *CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	//	Let our subclass handle this first
 
 	if (pResultPtr = OnGetProperty(Ctx, sProperty))
-		return pResultPtr->Reference();
+		return pResultPtr;
 
 	//	If not, then see if we handle it.
 
 	else if (pResult = FindBaseProperty(Ctx, sProperty))
-		return pResult;
+		return ICCItemPtr(pResult);
 
 	//	Nobody handled it, so just return Nil
 
 	else
-		return CC.CreateNil();
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 int CDesignType::GetPropertyInteger (const CString &sProperty)
@@ -1788,16 +1788,13 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 //	Returns an integer property
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
 	CCodeChainCtx Ctx(GetUniverse());
 
-	ICCItem *pItem = GetProperty(Ctx, sProperty);
-	if (pItem == NULL || pItem->IsNil())
+	ICCItemPtr pItem = GetProperty(Ctx, sProperty);
+	if (!pItem || pItem->IsNil())
 		return 0;
 
-	int iResult = pItem->GetIntegerValue();
-	pItem->Discard();
-	return iResult;
+	return pItem->GetIntegerValue();
 	}
 
 CString CDesignType::GetPropertyString (const CString &sProperty)
@@ -1807,16 +1804,13 @@ CString CDesignType::GetPropertyString (const CString &sProperty)
 //	Returns a string property
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
 	CCodeChainCtx Ctx(GetUniverse());
 
-	ICCItem *pItem = GetProperty(Ctx, sProperty);
-	if (pItem == NULL || pItem->IsNil())
+	ICCItemPtr pItem = GetProperty(Ctx, sProperty);
+	if (!pItem || pItem->IsNil())
 		return NULL_STR;
 
-	CString sResult = pItem->GetStringValue();
-	pItem->Discard();
-	return sResult;
+	return pItem->GetStringValue();
 	}
 
 bool CDesignType::HasAllUNIDs (const TArray<DWORD> &DesiredUNIDs, const TArray<DWORD> &AvailableUNIDs)
@@ -2201,7 +2195,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty()));
+		ICCItemPtr pValue = GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
 	else if (strStartsWith(sAttrib, SPECIAL_SYSTEM_LEVEL))

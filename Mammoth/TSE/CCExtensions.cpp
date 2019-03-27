@@ -4450,7 +4450,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_DESIGN_GET_PROPERTY:
-			return pType->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue());
+			return pType->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_DESIGN_GET_STATIC_DATA:
 			return pType->GetStaticData(pArgs->GetElement(1)->GetStringValue())->Reference();

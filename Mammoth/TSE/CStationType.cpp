@@ -1740,7 +1740,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pSovereign == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		return ICCItemPtr(m_pSovereign->GetProperty(Ctx, PROPERTY_NAME));
+		return m_pSovereign->GetProperty(Ctx, PROPERTY_NAME);
 		}
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{

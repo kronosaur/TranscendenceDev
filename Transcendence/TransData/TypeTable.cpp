@@ -140,9 +140,8 @@ void GenerateTypeTable (CUniverse &Universe, CXMLElement *pCmdLine)
 					}
 				else
 					{
-					ICCItem *pResult = pType->GetProperty(CCCtx, sField);
+					ICCItemPtr pResult = pType->GetProperty(CCCtx, sField);
 					CString sValue = pResult->Print(PRFLAG_NO_QUOTES | PRFLAG_ENCODE_FOR_DISPLAY);
-					pResult->Discard();
 
 					printf(sValue.GetASCIIZPointer());
 					}
