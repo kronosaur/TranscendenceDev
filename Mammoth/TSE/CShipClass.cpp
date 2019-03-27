@@ -206,6 +206,7 @@
 #define PROPERTY_THRUST_TO_WEIGHT				CONSTLIT("thrustToWeight")
 #define PROPERTY_THRUSTER_POWER					CONSTLIT("thrusterPower")
 #define PROPERTY_TREASURE_ITEM_NAMES			CONSTLIT("treasureItemNames")
+#define PROPERTY_VIEWPORT_SIZE					CONSTLIT("viewportSize")
 #define PROPERTY_WEAPON_ITEMS					CONSTLIT("weaponItems")
 #define PROPERTY_WRECK_STRUCTURAL_HP			CONSTLIT("wreckStructuralHP")
 
@@ -3942,6 +3943,9 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		Metric rRatio = 2.0 * (rMass > 0.0 ? m_Perf.GetDriveDesc().GetThrust() / rMass : 0.0);
 		return ICCItemPtr((double)mathRound(rRatio * 10.0) / 10.0);
 		}
+	else if (strEquals(sProperty, PROPERTY_VIEWPORT_SIZE))
+		return ICCItemPtr(GetImageViewportSize());
+
 	else if (strEquals(sProperty, PROPERTY_WEAPON_ITEMS))
 		{
 		//	First make a list of all weapons and organize by type
