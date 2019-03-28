@@ -2524,32 +2524,35 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 			{
 			CInstalledDevice currDevice = m_Devices.GetDevice(i);
 			CDeviceClass *pCurrDeviceClass = currDevice.GetClass();
-			if (currDevice.GetCategory() == (itemcatWeapon))
+			if (!currDevice.IsEmpty())
 				{
-				if (iGunUNID == currDevice.GetUNID() && currDevice.GetLinkedFireOptions() == CDeviceClass::lkfSelected)
+				if (currDevice.GetCategory() == (itemcatWeapon))
 					{
-					if (pCurrDeviceClass->IsAmmoWeapon() && !(pCurrDeviceClass->RequiresItems()))
-						//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
+					if (iGunUNID == currDevice.GetUNID() && currDevice.GetLinkedFireOptions() == CDeviceClass::lkfSelected)
 						{
-						int iAmmoLeft = 0;
-						pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft);
-						iAmmoCount += iAmmoLeft;
-						}
+						if (pCurrDeviceClass->IsAmmoWeapon() && !(pCurrDeviceClass->RequiresItems()))
+							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
+							{
+							int iAmmoLeft = 0;
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft);
+							iAmmoCount += iAmmoLeft;
+							}
 
-					if (pCurrDeviceClass->IsAmmoWeapon() && (pCurrDeviceClass->RequiresItems()))
-						//  If it is an ammo weapon, and also require items, then it is an ammo weapon. Add its ammo to the count ONLY if the ammo type
-						//  hasn't already been added.
-						{
-						bool ammoIsAdded = false;
-						int iAmmoLeft = 0;
-						CItemType *pAmmoType;
-						pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType);
-						AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
+						if (pCurrDeviceClass->IsAmmoWeapon() && (pCurrDeviceClass->RequiresItems()))
+							//  If it is an ammo weapon, and also require items, then it is an ammo weapon. Add its ammo to the count ONLY if the ammo type
+							//  hasn't already been added.
+							{
+							bool ammoIsAdded = false;
+							int iAmmoLeft = 0;
+							CItemType *pAmmoType;
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType);
+							AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
 							if (!ammoIsAdded)
 								{
 								AmmoItemTypes.Insert(pAmmoType, true);
 								iAmmoCount += iAmmoLeft;
 								}
+							}
 						}
 					}
 				}
@@ -6225,16 +6228,18 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 							for (int i = 0; i < m_Devices.GetCount(); i++)
 								{
 								CInstalledDevice *currDevice = GetDevice(i);
-								CDeviceClass *pCurrDeviceClass = currDevice->GetClass();
-								if (currDevice->GetCategory() == (itemcatWeapon))
+								if (!currDevice->IsEmpty())
 									{
-									if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == dwLinkedFireOptions && currDevice->GetCycleFireSettings()
-										&& currDevice != pDevice && currDevice->IsEnabled())
+									if (currDevice->GetCategory() == (itemcatWeapon))
 										{
-										//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
-										iNumberOfGuns++;
-										if (currDevice->IsReady())
-											WeaponsInFireGroup.Enqueue(currDevice);
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == dwLinkedFireOptions && currDevice->GetCycleFireSettings()
+											&& currDevice != pDevice && currDevice->IsEnabled())
+											{
+											//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
+											iNumberOfGuns++;
+											if (currDevice->IsReady())
+												WeaponsInFireGroup.Enqueue(currDevice);
+											}
 										}
 									}
 								}
