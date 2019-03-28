@@ -97,11 +97,13 @@ class CEffectParamDesc
 		CEffectParamDesc (int iValue) : m_iType(typeIntegerConstant), m_dwData(iValue) { }
 		CEffectParamDesc (bool bValue) : m_iType(typeBoolConstant), m_dwData(bValue ? 1 : 0) { }
 		CEffectParamDesc (EDataTypes iType, int iValue);
+		CEffectParamDesc (ICCItem *pValue);
 		~CEffectParamDesc (void);
 
 		CEffectParamDesc &operator= (const CEffectParamDesc &Src)
 			{ CleanUp(); Copy(Src); return *this; }
 
+		ICCItemPtr AsItem (void) const;
 		inline ALERROR Bind (SDesignLoadCtx &Ctx) { if (m_iType == typeImage) return m_pImage->OnDesignLoadComplete(Ctx); return NOERROR; }
 		CGDraw::EBlendModes EvalBlendMode (CGDraw::EBlendModes iDefault = CGDraw::blendNormal) const;
 		bool EvalBool (void) const;
@@ -253,21 +255,21 @@ class IEffectPainter
 		inline void ReadFromStream (SLoadCtx &Ctx) { OnReadFromStream(Ctx); }
 		static CString ReadUNID (SLoadCtx &Ctx);
 		inline void SetNoSound (bool bNoSound = true) { m_bNoSound = bNoSound; }
-		inline void SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+		inline bool SetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 			{
 			//	If we don't have a value, see if there is a default.
 
 			const CEffectParamDesc *pDefaultValue;
 			if (Value.IsNull() && (pDefaultValue = Ctx.GetDefaultParam(sParam)))
-				OnSetParam(Ctx, sParam, *pDefaultValue);
+				return OnSetParam(Ctx, sParam, *pDefaultValue);
 
 			//	Otherwise, just set it (null or not)
 
 			else
-				OnSetParam(Ctx, sParam, Value);
+				return OnSetParam(Ctx, sParam, Value);
 			}
 
-		void SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
+		bool SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue);
 		void SetParamInteger (const CString &sParam, int iValue);
 		inline void SetSingleton (bool bSingleton = true) { m_bSingleton = bSingleton; }
 		static ALERROR ValidateClass (SLoadCtx &Ctx, const CString &sOriginalClass);
@@ -289,7 +291,7 @@ class IEffectPainter
 		virtual CEffectCreator *GetCreator (void) = 0;
 		virtual int GetFadeLifetime (bool bHit) const { return 0; }
 		virtual int GetLifetime (void) { return GetInitialLifetime(); }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) { retValue->InitNull(); }
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const { return false; }
 		virtual bool GetParamList (TArray<CString> *retList) const { return false; }
 		virtual int GetParticleCount (void) { return 1; }
 		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc) { return false; }
@@ -306,7 +308,7 @@ class IEffectPainter
 		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx);
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const { return false; }
 		virtual bool SetParamString (const CString &sParam, const CString &sValue) { return false; }
-		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) { }
+		virtual bool SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) { return false; }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue) { return false; }
 		virtual void SetPos (const CVector &vPos) { }
 		virtual void SetVariants (int iVariants) { }
@@ -314,7 +316,7 @@ class IEffectPainter
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) { }
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) { return false; }
 		virtual void OnWriteToStream (IWriteStream *pStream);
 
 		CUniverse &PainterGetUniverse (void) const { return *g_pUniverse; }

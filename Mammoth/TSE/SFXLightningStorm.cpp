@@ -34,16 +34,16 @@ class CLightningStormEffectPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual void GetRect (RECT *retRect) const;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual int GetLifetime (void) override { return m_iLifetime; }
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EStyles
@@ -271,7 +271,7 @@ void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y
 	m_bInitialized = true;
 	}
 
-void CLightningStormEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CLightningStormEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -294,7 +294,9 @@ void CLightningStormEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger(m_iStyle);
 
 	else
-		retValue->InitNull();
+		return false;
+
+	return true;
 	}
 
 bool CLightningStormEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -472,7 +474,7 @@ bool CLightningStormEffectPainter::PointInImage (int x, int y, int iTick, int iV
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -493,4 +495,9 @@ void CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleObjectArcs);
+
+	else
+		return false;
+
+	return true;
 	}

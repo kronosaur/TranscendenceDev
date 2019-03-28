@@ -24,15 +24,15 @@ class CSingleParticlePainter : public IEffectPainter
 		CSingleParticlePainter (CSingleParticleEffectCreator *pCreator);
 
 		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) { };
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual bool GetParticlePaintDesc (SParticlePaintDesc *retDesc) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { };
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		CSingleParticleEffectCreator *m_pCreator;
@@ -161,7 +161,7 @@ CSingleParticlePainter::CSingleParticlePainter (CSingleParticleEffectCreator *pC
 	{
 	}
 
-void CSingleParticlePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CSingleParticlePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -178,6 +178,10 @@ void CSingleParticlePainter::GetParam (const CString &sParam, CEffectParamDesc *
 		retValue->InitColor(m_rgbSecondaryColor);
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		retValue->InitInteger(m_iStyle);
+	else
+		return false;
+
+	return true;
 	}
 
 bool CSingleParticlePainter::GetParamList (TArray<CString> *retList) const
@@ -230,7 +234,7 @@ void CSingleParticlePainter::OnReadFromStream (SLoadCtx &Ctx)
 		}
 	}
 
-void CSingleParticlePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CSingleParticlePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	OnSetParam
 //
@@ -247,4 +251,8 @@ void CSingleParticlePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &
 		m_rgbSecondaryColor = Value.EvalColor();
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (ParticlePaintStyles)Value.EvalIdentifier(STYLE_TABLE, paintMax, paintPlain);
+	else
+		return false;
+
+	return true;
 	}

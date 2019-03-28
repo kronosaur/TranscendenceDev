@@ -35,7 +35,7 @@ class CEffectGroupPainter : public IEffectPainter
 		virtual void PaintHit (CG32bitImage &Dest, int x, int y, const CVector &vHitPos, SViewportPaintCtx &Ctx) override;
 		virtual void PaintLine (CG32bitImage &Dest, const CVector &vHead, const CVector &vTail, SViewportPaintCtx &Ctx) override;
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
-		virtual void SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) override;
+		virtual bool SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue) override;
 		virtual void SetVariants (int iVariants) override;
 		virtual bool UsesOrigin (void) const override;
 
@@ -410,7 +410,7 @@ bool CEffectGroupPainter::PointInImage (int x, int y, int iTick, int iVariant, i
 	return false;
 	}
 
-void CEffectGroupPainter::SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+bool CEffectGroupPainter::SetParamStruct (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
 
 //	SetParamStruct
 //
@@ -423,12 +423,16 @@ void CEffectGroupPainter::SetParamStruct (CCreatePainterCtx &Ctx, const CString 
 		//	(But only if we don't have any.)
 
 		if (m_Painters.GetCount() != 0)
-			return;
+			return false;
 
 		//	LATER: Create a set of painters from the structures.
 		//	NOTE: We will need to save and load painters by tag (without
 		//	creators).
 		}
+	else
+		return false;
+
+	return true;
 	}
 
 void CEffectGroupPainter::SetVariants (int iVariants)

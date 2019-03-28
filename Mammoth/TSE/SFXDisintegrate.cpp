@@ -19,7 +19,7 @@ class CDisintegrateEffectPainter : public IEffectPainter
 
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetLifetime (void) override;
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
@@ -27,7 +27,7 @@ class CDisintegrateEffectPainter : public IEffectPainter
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		static constexpr int LIFETIME = 180;
@@ -214,13 +214,14 @@ int CDisintegrateEffectPainter::GetLifetime (void)
 	return LIFETIME;
 	}
 
-void CDisintegrateEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CDisintegrateEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
 //	Returns the current param value
 
 	{
+	return false;
 	}
 
 bool CDisintegrateEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -267,13 +268,14 @@ void CDisintegrateEffectPainter::InitParticle (SParticle &Particle) const
 	Particle.bInMask = true;
 	}
 
-void CDisintegrateEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CDisintegrateEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	OnSetParam
 //
 //	Set a parameter
 
 	{
+	return false;
 	}
 
 void CDisintegrateEffectPainter::OnUpdate (SEffectUpdateCtx &Ctx)

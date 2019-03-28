@@ -29,7 +29,7 @@ class CRayEffectPainter : public IEffectPainter
 		//	IEffectPainter virtuals
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetLifetime (void) override { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
@@ -38,7 +38,7 @@ class CRayEffectPainter : public IEffectPainter
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EAnimationTypes
@@ -1254,7 +1254,7 @@ void CRayEffectPainter::CleanUpIntermediates (void)
 	m_Length.DeleteAll();
 	}
 
-void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -1295,7 +1295,9 @@ void CRayEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iXformRotation);
 
 	else
-		retValue->InitNull();
+		return false;
+
+	return true;
 	}
 
 bool CRayEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -1473,7 +1475,7 @@ bool CRayEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -1515,4 +1517,9 @@ void CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 
 	else if (strEquals(sParam, XFORM_ROTATION_ATTRIB))
 		m_iXformRotation = Value.EvalIntegerBounded(-359, 359, 0);
+
+	else
+		return false;
+
+	return true;
 	}

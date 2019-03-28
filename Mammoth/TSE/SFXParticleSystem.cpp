@@ -37,7 +37,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetFadeLifetime (bool bHit) const override { return m_Desc.GetParticleLifetime().GetMaxValue(); }
 		virtual int GetLifetime (void) override;
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
 		virtual int GetParticleCount (void) override { return m_Particles.GetCount(); }
 		virtual void GetRect (RECT *retRect) const override;
@@ -50,7 +50,7 @@ class CParticleSystemEffectPainter : public IEffectPainter
 		virtual bool UsesOrigin (void) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		//	NOTE: These are obsolete. Use the styles in CParticleSystemDesc instead.
@@ -326,7 +326,7 @@ CVector CParticleSystemEffectPainter::CalcInitialVel (CSpaceObject *pObj)
 #endif
 	}
 
-void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -391,7 +391,9 @@ void CParticleSystemEffectPainter::GetParam (const CString &sParam, CEffectParam
 		retValue->InitInteger((int)(m_Desc.GetXformTime() * 100.0));
 
 	else
-		retValue->InitNull();
+		return false;
+
+	return true;
 	}
 
 bool CParticleSystemEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -627,7 +629,7 @@ void CParticleSystemEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 		m_iCurDirection = iTrailDirection;
 	}
 
-void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -717,6 +719,11 @@ void CParticleSystemEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 
 	else if (strEquals(sParam, XFORM_TIME_ATTRIB))
 		m_Desc.SetXformTime(Value.EvalIntegerBounded(0, -1, 100) / 100.0);
+
+	else
+		return false;
+
+	return true;
 	}
 
 bool CParticleSystemEffectPainter::UsesOrigin (void) const

@@ -1048,23 +1048,26 @@ CString IEffectPainter::ReadUNID (SLoadCtx &Ctx)
 	return sUNID;
 	}
 
-void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
+bool IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sParam, ICCItem *pValue)
 
 //	SetParamFromItem
 //
-//	Sets the parameter
+//	Sets the parameter. Returns FALSE if we don't understand the parameter.
 
 	{
 	//	Some parameters are special (and valid for all parameterized
 	//	effects).
 
 	if (strEquals(sParam, FIELD_NO_SOUND))
+		{
 		SetNoSound(!pValue->IsNil());
+		return true;
+		}
 
 	//	We treat structures specially
 
 	else if (pValue->IsSymbolTable())
-		SetParamStruct(Ctx, sParam, pValue);
+		return SetParamStruct(Ctx, sParam, pValue);
 
 	//	Otherwise, tell the painter to set the parameter
 
@@ -1099,7 +1102,7 @@ void IEffectPainter::SetParamFromItem (CCreatePainterCtx &Ctx, const CString &sP
 				Value.InitString(sValue);
 			}
 
-		SetParam(Ctx, sParam, Value);
+		return SetParam(Ctx, sParam, Value);
 		}
 	}
 

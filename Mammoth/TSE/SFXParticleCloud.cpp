@@ -57,7 +57,7 @@ class CParticleCloudPainter : public IEffectPainter
 
 	protected:
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
@@ -705,7 +705,7 @@ void CParticleCloudPainter::SetLifetime (int iLifetime)
 		m_iEmitLifetime = (m_pCreator->GetEmitLifetime() == -1 ? 100 : m_pCreator->GetEmitLifetime()) * iLifetime / 100;
 	}
 
-void CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -714,4 +714,8 @@ void CParticleCloudPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &s
 	{
 	if (strEquals(sParam, LIFETIME_ATTRIB))
 		SetLifetime(Value.EvalInteger());
+	else
+		return false;
+
+	return true;
 	}

@@ -41,24 +41,24 @@ class CParticlePatternEffectPainter : public IEffectPainter
 
 		//	IEffectPainter virtuals
 
-		virtual bool CanPaintComposite (void) { return true; }
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
+		virtual bool CanPaintComposite (void) override { return true; }
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetFadeLifetime (bool bHit) const override { return (bHit ? 0 : FADE_LIFETIME); }
-		virtual int GetLifetime (void) { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual void GetRect (RECT *retRect) const;
+		virtual int GetLifetime (void) override { return m_iLifetime; }
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual void GetRect (RECT *retRect) const override;
 		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
 		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
+		virtual void PaintComposite (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void PaintFade (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override { bool bOldFade = Ctx.bFade; Ctx.bFade = true; Paint(Dest, x, y, Ctx); Ctx.bFade = bOldFade; }
-		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const;
+		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 		static const TArray<CVector> &GetSplinePoints (void) { InitSplinePoints(); return m_Points; }
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EStyles
@@ -395,7 +395,7 @@ bool CParticlePatternEffectPainter::CalcIntermediates (void)
 	return true;
 	}
 
-void CParticlePatternEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CParticlePatternEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -433,7 +433,9 @@ void CParticlePatternEffectPainter::GetParam (const CString &sParam, CEffectPara
 		retValue->InitInteger(m_iWidth);
 
 	else
-		retValue->InitNull();
+		return false;
+
+	return true;
 	}
 
 bool CParticlePatternEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -956,7 +958,7 @@ bool CParticlePatternEffectPainter::PointInImage (int x, int y, int iTick, int i
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void CParticlePatternEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CParticlePatternEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -1000,4 +1002,9 @@ void CParticlePatternEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CS
 
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		m_iWidth = Value.EvalIntegerBounded(1, -1, 8);
+
+	else
+		return false;
+
+	return true;
 	}

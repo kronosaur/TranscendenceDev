@@ -25,12 +25,78 @@ CEffectParamDesc::CEffectParamDesc (EDataTypes iType, int iValue)
 		}
 	}
 
+CEffectParamDesc::CEffectParamDesc (ICCItem *pValue) :
+		m_iType(typeNull)
+
+//	CEffectParamDesc constructor
+
+	{
+	if (pValue->IsNil())
+		InitNull();
+	else if (pValue->IsInteger())
+		InitInteger(pValue->GetIntegerValue());
+	else if (pValue->IsIdentifier())
+		{
+		CString sValue = pValue->GetStringValue();
+		char *pPos = sValue.GetASCIIZPointer();
+
+		DiceRange DiceRangeValue;
+
+		//	If this is a color, parse it
+
+		if (*pPos == '#')
+			InitColor(::LoadRGBColor(sValue));
+
+		//	Otherwise, see if this is a dice range
+
+		else if (DiceRange::LoadIfValid(sValue, &DiceRangeValue))
+			InitDiceRange(DiceRangeValue);
+
+		//	Otherwise, a string
+
+		else
+			InitString(sValue);
+		}
+	}
+
 CEffectParamDesc::~CEffectParamDesc (void)
 
 //	CEffectParamDesc destructor
 
 	{
 	CleanUp();
+	}
+
+ICCItemPtr CEffectParamDesc::AsItem (void) const
+
+//	AsItem
+//
+//	Return as a CC item.
+
+	{
+	switch (m_iType)
+		{
+		case typeColorConstant:
+			return ICCItemPtr(strPatternSubst(CONSTLIT("#%02x%02x%02x"), (m_dwData & 0xff0000) >> 16, (m_dwData & 0x00ff00) >> 8, (m_dwData & 0x0000ff)));
+
+		case typeIntegerConstant:
+			return ICCItemPtr((int)m_dwData);
+
+		case typeIntegerDiceRange:
+			return ICCItemPtr(m_DiceRange.SaveToXML());
+
+		case typeStringConstant:
+			return ICCItemPtr(m_sData);
+
+		case typeBoolConstant:
+			return ICCItemPtr(EvalBool());
+
+		case typeVectorConstant:
+			return ICCItemPtr(::CreateListFromVector(EvalVector()));
+
+		default:
+			return ICCItemPtr(ICCItem::Nil);
+		}
 	}
 
 void CEffectParamDesc::CleanUp (void)

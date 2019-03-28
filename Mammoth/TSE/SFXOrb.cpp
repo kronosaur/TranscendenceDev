@@ -36,7 +36,7 @@ class COrbEffectPainter : public IEffectPainter
 		virtual bool CanPaintComposite (void) override { return true; }
 		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetLifetime (void) override { return m_iLifetime; }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue) override;
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
 		virtual bool GetParamList (TArray<CString> *retList) const override;
 		virtual void GetRect (RECT *retRect) const override;
 		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
@@ -44,7 +44,7 @@ class COrbEffectPainter : public IEffectPainter
 		virtual bool PointInImage (int x, int y, int iTick, int iVariant = 0, int iRotation = 0) const override;
 
 	protected:
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
 		enum EAnimationTypes
@@ -925,7 +925,7 @@ void COrbEffectPainter::CompositeFlares (CG32bitImage &Dest, int xCenter, int yC
 		CompositeFlareRay(Dest, xCenter, yCenter, FlareDesc.iLength, FlareDesc.iWidth, AngleMod(FLARE_ANGLE + (iAngle * i)), m_iIntensity, Ctx);
 	}
 
-void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -966,7 +966,9 @@ void COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iStyle);
 
 	else
-		retValue->InitNull();
+		return false;
+
+	return true;
 	}
 
 bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
@@ -1244,7 +1246,7 @@ bool COrbEffectPainter::PointInImage (int x, int y, int iTick, int iVariant, int
 	return (Absolute(x) <= iSize && Absolute(y) <= iSize);
 	}
 
-void COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	SetParam
 //
@@ -1283,4 +1285,9 @@ void COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	
 	else if (strEquals(sParam, STYLE_ATTRIB))
 		m_iStyle = (EOrbStyles)Value.EvalIdentifier(STYLE_TABLE, styleMax, styleSmooth);
+
+	else
+		return false;
+
+	return true;
 	}

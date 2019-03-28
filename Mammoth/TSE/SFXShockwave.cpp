@@ -40,22 +40,22 @@ class CShockwavePainter : public IEffectPainter
 		CShockwavePainter (CShockwaveEffectCreator *pCreator);
 
 		//	IEffectPainter virtuals
-		virtual CEffectCreator *GetCreator (void) { return m_pCreator; }
+		virtual CEffectCreator *GetCreator (void) override { return m_pCreator; }
 		virtual int GetLifetime (void) override;
-		virtual Metric GetRadius (int iTick) const { return g_KlicksPerPixel * CalcRadius(iTick); }
-		virtual void GetParam (const CString &sParam, CEffectParamDesc *retValue);
-		virtual bool GetParamList (TArray<CString> *retList) const;
-		virtual void GetRect (RECT *retRect) const;
-		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL);
-		virtual void OnUpdate (SEffectUpdateCtx &Ctx);
-		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		virtual Metric GetRadius (int iTick) const override { return g_KlicksPerPixel * CalcRadius(iTick); }
+		virtual bool GetParam (const CString &sParam, CEffectParamDesc *retValue) const override;
+		virtual bool GetParamList (TArray<CString> *retList) const override;
+		virtual void GetRect (RECT *retRect) const override;
+		virtual void OnMove (SEffectMoveCtx &Ctx, bool *retbBoundsChanged = NULL) override;
+		virtual void OnUpdate (SEffectUpdateCtx &Ctx) override;
+		virtual void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 
 		static void Mark (EStyles iStyle) { if (iStyle == styleCloud) GetCloudTexture()->SetMarked();  }
 
 	protected:
-		virtual void OnReadFromStream (SLoadCtx &Ctx);
-		virtual void OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value);
-		virtual void OnWriteToStream (IWriteStream *pStream);
+		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
+		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
+		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
 		bool CalcIntermediates (void);
@@ -516,7 +516,7 @@ int CShockwavePainter::GetLifetime (void)
 		return Max(m_iLifetime, m_iWaveLifetime);
 	}
 
-void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue)
+bool CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retValue) const
 
 //	GetParam
 //
@@ -551,6 +551,10 @@ void CShockwavePainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 		retValue->InitInteger(m_iWaveLifetime);
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		retValue->InitInteger(m_iWidth);
+	else
+		return false;
+
+	return true;
 	}
 
 bool CShockwavePainter::GetParamList (TArray<CString> *retList) const
@@ -647,7 +651,7 @@ void CShockwavePainter::OnReadFromStream (SLoadCtx &Ctx)
 		m_HitTest.ReadFromStream(Ctx);
 	}
 
-void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
+bool CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value)
 
 //	OnSetParam
 //
@@ -685,6 +689,10 @@ void CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 		m_iWaveLifetime = Value.EvalIntegerBounded(0, -1, 0);
 	else if (strEquals(sParam, WIDTH_ATTRIB))
 		m_iWidth = Value.EvalIntegerBounded(0, -1, 1);
+	else
+		return false;
+
+	return true;
 	}
 
 void CShockwavePainter::OnUpdate (SEffectUpdateCtx &Ctx)
