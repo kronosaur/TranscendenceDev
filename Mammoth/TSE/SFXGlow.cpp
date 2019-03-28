@@ -67,6 +67,7 @@ class CGlowEffectPainter : public IEffectPainter
 		
 		bool CalcIntermediates (void) const;
 		const SCacheEntry &GetGlowImage (CSpaceObject &Source) const;
+		void Reset (void) const;
 
 		static DWORDLONG MakeCacheKey (DWORD dwSourceID, int iSourceRotation);
 
@@ -240,6 +241,10 @@ bool CGlowEffectPainter::CalcIntermediates (void) const
 	{
 	if (m_bInitialized)
 		return true;
+
+	//	Reset tables
+
+	Reset();
 
 	//	Calculate the opacity table
 
@@ -541,5 +546,17 @@ bool CGlowEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPar
 	else
 		return false;
 
+	m_bInitialized = false;
 	return true;
+	}
+
+void CGlowEffectPainter::Reset (void) const
+
+//	Reset
+//
+//	Reset the cached intermediates so they can be recomputed.
+
+	{
+	m_OpacityTable.DeleteAll();
+	m_Cache.DeleteAll();
 	}

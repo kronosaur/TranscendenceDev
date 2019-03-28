@@ -530,6 +530,9 @@ ALERROR CEffectGroupCreator::CreateEffect (CSystem *pSystem,
 
 	for (int i = 0; i < m_iCount; i++)
 		{
+		if (IsLooping())
+			m_pCreators[i]->SetLooping();
+
 		if (error = m_pCreators[i]->CreateEffect(pSystem, pAnchor, vPos, vVel, iRotation, iVariant, pData, &pLastEffect))
 			return error;
 		}

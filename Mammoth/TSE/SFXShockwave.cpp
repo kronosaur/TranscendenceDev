@@ -692,6 +692,7 @@ bool CShockwavePainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	else
 		return false;
 
+	m_bInitialized = false;
 	return true;
 	}
 

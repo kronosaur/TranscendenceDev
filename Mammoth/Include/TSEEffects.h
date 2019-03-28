@@ -478,6 +478,7 @@ class CEffectCreator : public CDesignType
 		bool IsLooping (void) const { return m_bLoop; }
 		bool IsValidUNID (void);
 		void PlaySound (CSpaceObject *pSource = NULL);
+		void SetLooping (bool bLoop = true) { m_bLoop = bLoop; }
 
 		//	Virtuals
 

@@ -31,6 +31,8 @@ class COrbEffectPainter : public IEffectPainter
 		COrbEffectPainter (CEffectCreator *pCreator);
 		~COrbEffectPainter (void);
 
+		void CleanUp (void);
+
 		//	IEffectPainter virtuals
 
 		virtual bool CanPaintComposite (void) override { return true; }
@@ -316,7 +318,7 @@ COrbEffectPainter::~COrbEffectPainter (void)
 	{
 	//	Clean up temporaries
 
-	Invalidate();
+	CleanUp();
 	}
 
 void COrbEffectPainter::CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const
@@ -373,10 +375,7 @@ bool COrbEffectPainter::CalcIntermediates (void)
 
 	if (!m_bInitialized)
 		{
-		m_ColorTable.DeleteAll();
-		m_ColorTable2.DeleteAll();
-		m_FlareDesc.DeleteAll();
-		m_TextureFrame.DeleteAll();
+		CleanUp();
 
 		//	Initialized based on animation property
 
@@ -887,6 +886,25 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 		}
 	}
 
+void COrbEffectPainter::CleanUp (void)
+
+//	CleanUp
+//
+//	Clean up all structures
+
+	{
+	if (m_pPainter)
+		{
+		delete m_pPainter;
+		m_pPainter = NULL;
+		}
+
+	m_ColorTable.DeleteAll();
+	m_ColorTable2.DeleteAll();
+	m_FlareDesc.DeleteAll();
+	m_TextureFrame.DeleteAll();
+	}
+
 void COrbEffectPainter::CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx)
 
 //	CompositeFlareRay
@@ -1019,13 +1037,6 @@ void COrbEffectPainter::Invalidate (void)
 //	Free up temporaries
 
 	{
-	if (m_pPainter)
-		{
-		delete m_pPainter;
-		m_pPainter = NULL;
-		}
-
-	m_ColorTable.DeleteAll();
 	m_bInitialized = false;
 	}
 
@@ -1289,5 +1300,6 @@ bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	else
 		return false;
 
+	Invalidate();
 	return true;
 	}

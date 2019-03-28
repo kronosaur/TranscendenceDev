@@ -64,8 +64,8 @@ class CLightningStormEffectPainter : public IEffectPainter
 			};
 
 		void CalcMetrics (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void Invalidate (void);
 		void PaintObjectArcs (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
+		void Reset (void);
 
 		CEffectCreator *m_pCreator;
 
@@ -217,9 +217,6 @@ CLightningStormEffectPainter::~CLightningStormEffectPainter (void)
 //	CLightningStormEffectCreator destructor
 
 	{
-	//	Clean up temporaries
-
-	Invalidate();
 	}
 
 void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -229,7 +226,10 @@ void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y
 //	Calculates metrics required for painting.
 
 	{
-	int i;
+	if (m_bInitialized)
+		return;
+
+	Reset();
 
 	//	Depends on the style
 
@@ -256,10 +256,9 @@ void CLightningStormEffectPainter::CalcMetrics (CG32bitImage &Dest, int x, int y
 			//
 			//	LATER: We should offset based on the center of the effect.
 
-			m_Bolts.DeleteAll();
 			m_Bolts.InsertEmpty(iArcCount);
 
-			for (i = 0; i < m_Bolts.GetCount(); i++)
+			for (int i = 0; i < m_Bolts.GetCount(); i++)
 				m_Bolts[i].vPos = CVector(0.0, 0.0);
 
 			break;
@@ -332,17 +331,6 @@ void CLightningStormEffectPainter::GetRect (RECT *retRect) const
 	retRect->bottom = iSize;
 	}
 
-void CLightningStormEffectPainter::Invalidate (void)
-
-//	Invalidate
-//
-//	Free up temporaries
-
-	{
-	m_bInitialized = false;
-	m_Bolts.DeleteAll();
-	}
-
 void CLightningStormEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 
 //	Paint
@@ -352,8 +340,7 @@ void CLightningStormEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SVie
 	{
 	//	Make sure we're initialized.
 
-	if (!m_bInitialized)
-		CalcMetrics(Dest, x, y, Ctx);
+	CalcMetrics(Dest, x, y, Ctx);
 
 	//	Paint
 
@@ -499,5 +486,16 @@ bool CLightningStormEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CSt
 	else
 		return false;
 
+	m_bInitialized = false;
 	return true;
+	}
+
+void CLightningStormEffectPainter::Reset (void)
+
+//	Reset
+//
+//	Reset cache data so we can calculate metrics.
+
+	{
+	m_Bolts.DeleteAll();
 	}

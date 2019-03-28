@@ -414,7 +414,7 @@ void CRayEffectPainter::CalcIntermediates (int iLength)
 
     if (m_iInitializedLength == iLength)
         return;
-	else if (m_iInitializedLength != -1)
+	else
 		CleanUpIntermediates();
 
     //  Create the renderer. Depending on our animation option, we either create
@@ -1521,5 +1521,6 @@ bool CRayEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	else
 		return false;
 
+	m_iInitializedLength = -1;
 	return true;
 	}

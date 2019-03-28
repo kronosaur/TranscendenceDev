@@ -2690,7 +2690,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"is",	0,	},
 
 		{	"sysCreateEffect",				fnSystemCreateEffect,	0,
-			"(sysCreateEffect effectID anchorObj pos [rotation] [params]) -> True/Nil",
+			"(sysCreateEffect effectID anchorObj pos [rotation] [params]) -> obj or Nil",
 			"vvv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"sysCreateEncounter",			fnSystemCreate,		FN_SYS_CREATE_ENCOUNTER,
@@ -12044,18 +12044,20 @@ ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwD
 	if (pSystem == NULL)
 		return StdErrorNoSystem(*pCC);
 
+	CSpaceObject *pEffect;
 	if (error = pCreator->CreateEffect(pSystem,
 			pAnchor,
 			vPos,
 			NullVector,
 			iRotation,
 			iVariant,
-			pData))
+			pData,
+			&pEffect))
 		return pCC->CreateError(CONSTLIT("Error creating effect"), pCC->CreateInteger(error));
 
 	//	Done
 
-	return pCC->CreateTrue();
+	return CreateObjPointer(*pCC, pEffect);
 	}
 
 ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
