@@ -21,12 +21,11 @@ CEffect::~CEffect (void)
 		m_pPainter->Delete();
 	}
 
-ALERROR CEffect::Create (IEffectPainter *pPainter,
-				CSystem &System,
-				CSpaceObject *pAnchor,
+ALERROR CEffect::Create (CSystem &System,
+				IEffectPainter *pPainter,
 				const CVector &vPos,
 				const CVector &vVel,
-				int iRotation,
+				const SCreateOptions &Options,
 				CEffect **retpEffect)
 
 //	Create
@@ -35,7 +34,6 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	{
 	ALERROR error;
-	CEffect *pEffect;
 
 	//	If no painter, then no effect
 
@@ -44,17 +42,17 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	//	Create the effect object
 
-	pEffect = new CEffect(System.GetUniverse());
+	CEffect *pEffect = new CEffect(System.GetUniverse());
 	if (pEffect == NULL)
 		return ERR_MEMORY;
 
-	pEffect->Place(vPos, (pAnchor == NULL ? vVel : CVector()));
+	pEffect->Place(vPos, (Options.pAnchor == NULL ? vVel : CVector()));
 	pEffect->SetObjectDestructionHook();
 
 	pEffect->m_pPainter = pPainter;
-	pEffect->m_pAnchor = pAnchor;
-	pEffect->m_iLifetime = pPainter->GetLifetime();
-	pEffect->m_iRotation = iRotation;
+	pEffect->m_pAnchor = Options.pAnchor;
+	pEffect->m_iLifetime = (Options.bLoop ? -1 : pPainter->GetLifetime());
+	pEffect->m_iRotation = Options.iRotation;
 	pEffect->m_iTick = 0;
 
 	//	Add to system
@@ -70,11 +68,8 @@ ALERROR CEffect::Create (IEffectPainter *pPainter,
 
 	//	Set bounds
 
-	if (pEffect->m_pPainter)
-		{
-		pEffect->m_pPainter->SetPos(vPos);
-		pEffect->SetBounds(pEffect->m_pPainter);
-		}
+	pEffect->m_pPainter->SetPos(vPos);
+	pEffect->SetBounds(pEffect->m_pPainter);
 
 	//	Play sound
 

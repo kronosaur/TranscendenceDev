@@ -25,6 +25,7 @@
 
 #define INSTANCE_ATTRIB							CONSTLIT("instance")
 #define LENGTH_ATTRIB							CONSTLIT("length")
+#define LOOP_ATTRIB								CONSTLIT("loop")
 #define SOUND_ATTRIB							CONSTLIT("sound")
 #define UNID_ATTRIB								CONSTLIT("UNID")
 
@@ -119,12 +120,16 @@ ALERROR CEffectCreator::CreateEffect (CSystem *pSystem,
 
 	//	Create the effect object
 
-	if (error = CEffect::Create(pPainter,
-			*pSystem,
-			pAnchor,
+	CEffect::SCreateOptions Options;
+	Options.pAnchor = pAnchor;
+	Options.iRotation = iRotation;
+	Options.bLoop = m_bLoop;
+
+	if (error = CEffect::Create(*pSystem,
+			pPainter,
 			vPos,
 			vVel,
-			iRotation,
+			Options,
 			&pEffect))
 		return error;
 
@@ -534,6 +539,10 @@ ALERROR CEffectCreator::InitBasicsFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDe
 
 	if (error = InitInstanceFromXML(Ctx, pDesc))
 		return error;
+
+	//	Options
+
+	m_bLoop = pDesc->GetAttributeBool(LOOP_ATTRIB);
 
 	//	Done
 

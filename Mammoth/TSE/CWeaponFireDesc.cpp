@@ -383,12 +383,15 @@ void CWeaponFireDesc::CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx)
 
 	//	Now create the effect
 
-	if (CEffect::Create(pPainter,
-			*pSystem,
-			((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL),
+	CEffect::SCreateOptions Options;
+	Options.pAnchor = ((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL);
+	Options.iRotation = DamageCtx.iDirection;
+
+	if (CEffect::Create(*pSystem,
+			pPainter,
 			DamageCtx.vHitPos,
 			(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
-			DamageCtx.iDirection) != NOERROR)
+			Options) != NOERROR)
 		{
 		delete pPainter;
 		return;

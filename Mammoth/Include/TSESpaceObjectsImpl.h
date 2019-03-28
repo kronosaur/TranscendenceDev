@@ -313,15 +313,21 @@ class CDisintegrationEffect : public TSpaceObjectImpl<OBJID_CDISINTEGRATIONEFFEC
 class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 	{
 	public:
+		struct SCreateOptions
+			{
+			CSpaceObject *pAnchor = NULL;
+			int iRotation = 0;
+			bool bLoop = false;
+			};
+
 		CEffect (CUniverse &Universe);
 		virtual ~CEffect (void);
 
-		static ALERROR Create (IEffectPainter *pPainter,
-				CSystem &System,
-				CSpaceObject *pAnchor,
+		static ALERROR Create (CSystem &System,
+				IEffectPainter *pPainter,
 				const CVector &vPos,
 				const CVector &vVel,
-				int iRotation,
+				const SCreateOptions &Options = SCreateOptions(),
 				CEffect **retpEffect = NULL);
 
 		int GetLifetime (void) const { return m_iLifetime; }

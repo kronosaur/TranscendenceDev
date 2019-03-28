@@ -463,7 +463,7 @@ class CEffectCreator : public CDesignType
 		static void WritePainterToStream (IWriteStream *pStream, IEffectPainter *pPainter);
 
 		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx);
-		inline bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerEffectType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -472,9 +472,10 @@ class CEffectCreator : public CDesignType
 			return true;
 			}
 
-		inline CWeaponFireDesc *GetDamageDesc (void) { return m_pDamage; }
-		inline EInstanceTypes GetInstance (void) const { return m_iInstance; }
-		inline const CString &GetUNIDString (void) { return m_sUNID; }
+		CWeaponFireDesc *GetDamageDesc (void) { return m_pDamage; }
+		EInstanceTypes GetInstance (void) const { return m_iInstance; }
+		const CString &GetUNIDString (void) { return m_sUNID; }
+		bool IsLooping (void) const { return m_bLoop; }
 		bool IsValidUNID (void);
 		void PlaySound (CSpaceObject *pSource = NULL);
 
@@ -523,9 +524,10 @@ class CEffectCreator : public CDesignType
 
 		CString m_sUNID;
 		CSoundRef m_Sound;
-		EInstanceTypes m_iInstance;
+		EInstanceTypes m_iInstance = instCreator;
+		bool m_bLoop = false;
 
-		CWeaponFireDesc *m_pDamage;
+		CWeaponFireDesc *m_pDamage = NULL;
 
 		//	Events
 		CEventHandler m_Events;				//	Local events
