@@ -168,6 +168,19 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 	return NOERROR;
 	}
 
+void CUniverse::Boot (void)
+
+//	Boot
+//
+//	This must be called once and only once per process. It is needed because 
+//	property tables need to be initialized, but we can't initialize it at 
+//	startup because CString needs to be initialized. It must be called AFTER
+//	kernelInit.
+
+	{
+	CEffect::Boot();
+	}
+
 ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)
 
 //	CreateEmptyStarSystem

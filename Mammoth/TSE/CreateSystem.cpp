@@ -1300,10 +1300,10 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 	if (iCount > 0)
 		{
-		Metric *rDistance = (Metric *)_alloca(iCount * sizeof(Metric));
-		Metric *rAngle = (Metric *)_alloca(iCount * sizeof(Metric));
-		Metric *rEccentricity = (Metric *)_alloca(iCount * sizeof(Metric));
-		Metric *rRotation = (Metric *)_alloca(iCount * sizeof(Metric));
+		Metric *rDistance = (Metric *)_malloca(iCount * sizeof(Metric));
+		Metric *rAngle = (Metric *)_malloca(iCount * sizeof(Metric));
+		Metric *rEccentricity = (Metric *)_malloca(iCount * sizeof(Metric));
+		Metric *rRotation = (Metric *)_malloca(iCount * sizeof(Metric));
 
 		//	Calculate the distance for each object. If the distance is specified
 		//	then use that.

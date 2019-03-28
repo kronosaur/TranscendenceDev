@@ -652,6 +652,10 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	retOptions->m_bDebugVideo = m_Settings.GetBoolean(CGameSettings::debugVideo);
 	retOptions->m_cyMaxScreen = (m_Settings.GetInteger(CGameSettings::maxResolution) <= 0 ? -1 : Max(600, m_Settings.GetInteger(CGameSettings::maxResolution)));
 
+	//	Initialize TSE (we need this to initialize static property tables).
+
+	CUniverse::Boot();
+
 	return NOERROR;
 	}
 

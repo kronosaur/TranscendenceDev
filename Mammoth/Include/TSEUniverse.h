@@ -287,6 +287,7 @@ class CUniverse
 		CUniverse (void);
 		virtual ~CUniverse (void);
 
+		static void Boot (void);
 		ALERROR Init (SInitDesc &Ctx, CString *retsError);
 		ALERROR InitAdventure (IPlayerController *pPlayer, CString *retsError);
 		ALERROR InitGame (DWORD dwStartingMap, CString *retsError);

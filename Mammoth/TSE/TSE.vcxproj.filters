@@ -311,6 +311,9 @@
     <ClInclude Include="SystemPaintImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\TSEPropertyHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1299,6 +1302,9 @@
     </ClCompile>
     <ClCompile Include="IPaintList.cpp">
       <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

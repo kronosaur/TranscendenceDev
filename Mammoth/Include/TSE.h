@@ -155,6 +155,7 @@ extern CUniverse *g_pUniverse;
 #include "TSETypes.h"
 #include "TSEUtil.h"
 #include "TSETransLisp.h"
+#include "TSEPropertyHandler.h"
 #include "TSELanguage.h"
 #include "TSEDesignDefs.h"
 #include "TSEDesign.h"

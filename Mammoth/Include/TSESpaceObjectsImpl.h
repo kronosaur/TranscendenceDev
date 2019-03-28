@@ -324,12 +324,20 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 				int iRotation,
 				CEffect **retpEffect = NULL);
 
+		int GetLifetime (void) const { return m_iLifetime; }
+		void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
+
 		//	CSpaceObject virtuals
 
 		virtual bool CanMove (void) const { return true; }
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
+		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
+		virtual int GetRotation (void) const override { return m_iRotation; }
+		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError) override;
+
+		static void Boot (void);
 
 	protected:
 
@@ -352,6 +360,8 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		int m_iLifetime;
 		int m_iRotation;
 		int m_iTick;
+
+		static TPropertyHandler<CEffect> m_PropertyTable;
 	};
 
 class CFractureEffect : public TSpaceObjectImpl<OBJID_CFRACTUREEFFECT>
