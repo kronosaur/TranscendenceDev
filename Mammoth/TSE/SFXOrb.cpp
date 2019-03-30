@@ -84,10 +84,12 @@ class COrbEffectPainter : public IEffectPainter
 			int iWidth;
 			};
 
+		void CalcAnimationIntermediates (void);
 		void CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const;
 		bool CalcIntermediates (void);
 		void CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
+		void CalcStyleIntermediates (void);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void CompositeFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 		inline bool HasFlares (void) const { return (m_iStyle == styleFlare || m_iStyle == styleDiffraction || m_iStyle == styleFireblast || !m_SpikeCount.IsEmpty()); }
@@ -321,6 +323,242 @@ COrbEffectPainter::~COrbEffectPainter (void)
 	CleanUp();
 	}
 
+void COrbEffectPainter::CalcAnimationIntermediates (void)
+
+//	CalcAnimationIntermediates
+//
+//	Calculate cached intermediates based on animation type.
+//	NOTE: We assume all cached tables have been cleaned up (are empty).
+
+	{
+	switch (m_iAnimation)
+		{
+		//	Expand and fade
+
+		case animateDissipate:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			Metric rDetail = (m_iDetail / 100.0);
+
+			m_iTextureType = CFractalTextureLibrary::typeExplosion;
+			CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
+			CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
+			CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
+			CStepIncrementor ColorFade(CStepIncrementor::styleLinear, 0.0, 1.0, iLifetime);
+
+			m_ColorTable.InsertEmpty(iLifetime);
+			m_FlareDesc.InsertEmpty(iLifetime);
+			m_TextureFrame.InsertEmpty(iLifetime);
+
+			if (UsesColorTable2())
+				m_ColorTable2.InsertEmpty(iLifetime);
+
+			for (int i = 0; i < iLifetime; i++)
+				{
+				int iRadius = Max(2, (int)Radius.GetAt(i));
+				int iIntensity = (int)Intensity.GetAt(i);
+				CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbPrimaryColor, m_rgbSecondaryColor, ColorFade.GetAt(i));
+
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, rgbColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+
+				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+				m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
+
+				if (UsesColorTable2())
+					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+				}
+
+			break;
+			}
+
+		//	Increase radius up to maximum
+
+		case animateExplode:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
+			CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
+			CStepIncrementor Heat(CStepIncrementor::styleSquare, 100.0, 0.0, iLifetime);
+
+			Metric rDetail = (m_iDetail / 100.0);
+
+			m_iTextureType = CFractalTextureLibrary::typeExplosion;
+			CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
+
+			int iEndFade = iLifetime / 3;
+			int iEndFadeStart = iLifetime - iEndFade;
+
+			m_ColorTable.InsertEmpty(iLifetime);
+			m_FlareDesc.InsertEmpty(iLifetime);
+			m_TextureFrame.InsertEmpty(iLifetime);
+
+			if (UsesColorTable2())
+				m_ColorTable2.InsertEmpty(iLifetime);
+
+			for (int i = 0; i < iLifetime; i++)
+				{
+				int iRadius = Max(2, (int)Radius.GetAt(i));
+				int iIntensity = (int)Intensity.GetAt(i);
+				int iHeat = (int)Heat.GetAt(i);
+
+				BYTE byOpacity;
+				if (i > iEndFadeStart)
+					{
+					Metric rFade = (iEndFade - (i - iEndFadeStart)) / (Metric)iEndFade;
+					byOpacity = (BYTE)(255.0 * rFade);
+					}
+				else
+					byOpacity = 255;
+
+				CalcSphericalColorTable(m_iStyle, iRadius, iHeat, m_rgbPrimaryColor, m_rgbSecondaryColor, byOpacity, &m_ColorTable[i]);
+
+				m_FlareDesc[i].iLength = (iIntensity > 60 ? iIntensity * iRadius * FLARE_MULITPLE / 70 : 0);
+				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+				m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
+
+				if (UsesColorTable2())
+					CalcSecondaryColorTable(iRadius, iHeat, byOpacity, &m_ColorTable2[i]);
+				}
+
+			break;
+			}
+
+		//	Standard fade decreases radius and intensity linearly over the
+		//	lifetime of the animation.
+
+		case animateFade:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+			Metric rDetail = (m_iDetail / 100.0);
+
+			CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
+
+			m_ColorTable.InsertEmpty(iLifetime);
+			m_FlareDesc.InsertEmpty(iLifetime);
+
+			if (UsesColorTable2())
+				m_ColorTable2.InsertEmpty(iLifetime);
+
+			//	For cloud and Fireblast we need a repeating animation
+
+			if (UsesTextures())
+				{
+				m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+				int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+				m_TextureFrame.InsertEmpty(iFrames);
+				for (int i = 0; i < iFrames; i++)
+					m_TextureFrame[i] = i;
+				}
+			else
+				m_TextureFrame.InsertEmpty(iLifetime);
+
+			for (int i = 0; i < iLifetime; i++)
+				{
+				Metric rFade = (iLifetime - i) / (Metric)iLifetime;
+				int iRadius = (int)(rFade * m_iRadius);
+				int iIntensity = (int)(rFade * m_iIntensity);
+
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+
+				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+				if (!UsesTextures())
+					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
+
+				if (UsesColorTable2())
+					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+				}
+
+			break;
+			}
+
+		//	Flicker randomly
+
+		case animateFlicker:
+			{
+			int iLifetime = (m_iLifetime < 1 ? 120 : m_iLifetime);
+
+			m_ColorTable.InsertEmpty(iLifetime);
+			m_FlareDesc.InsertEmpty(iLifetime);
+
+			if (UsesColorTable2())
+				m_ColorTable2.InsertEmpty(iLifetime);
+
+			//	For cloud and Fireblast we need a repeating animation
+
+			if (UsesTextures())
+				{
+				m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+				int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+				m_TextureFrame.InsertEmpty(iFrames);
+				for (int i = 0; i < iFrames; i++)
+					m_TextureFrame[i] = i;
+				}
+
+			for (int i = 0; i < iLifetime; i++)
+				{
+				Metric rFlicker = Max(0.5, Min(1.0 + (0.25 * mathRandomGaussian()), 2.0));
+				int iRadius = Max(2, (int)(rFlicker * m_iRadius));
+				int iIntensity = (int)(rFlicker * m_iIntensity);
+
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+
+				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
+				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
+
+				if (UsesColorTable2())
+					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+				}
+
+			break;
+			}
+
+		//	By default the radius does not change.
+
+		default:
+			{
+			m_ColorTable.InsertEmpty(1);
+			m_FlareDesc.InsertEmpty(1);
+
+			CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[0]);
+
+			if (m_iStyle == styleLightning)
+				m_FlareDesc[0].iLength = m_iRadius * LIGHTNING_MULITPLE;
+			else
+				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
+			m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
+
+			//	For cloud and Fireblast we need a repeating animation
+
+			if (UsesTextures())
+				{
+				m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+				int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+				m_TextureFrame.InsertEmpty(iFrames);
+				for (int i = 0; i < iFrames; i++)
+					m_TextureFrame[i] = i;
+				}
+
+			//	For Fireblast, we only need a single color table
+
+			if (UsesColorTable2())
+				{
+				m_ColorTable2.InsertEmpty(1);
+				CalcSecondaryColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
+				}
+
+			break;
+			}
+		}
+	}
+
 void COrbEffectPainter::CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const
 
 //	CalcBlackHoleColorTable
@@ -371,325 +609,12 @@ bool COrbEffectPainter::CalcIntermediates (void)
 //	animation.
 
 	{
-	int i;
-
 	if (!m_bInitialized)
 		{
 		CleanUp();
 
-		//	Initialized based on animation property
-
-		switch (m_iAnimation)
-			{
-			//	Expand and fade
-
-			case animateDissipate:
-				{
-				int iLifetime = Max(1, m_iLifetime);
-				Metric rDetail = (m_iDetail / 100.0);
-
-				m_iTextureType = CFractalTextureLibrary::typeExplosion;
-				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
-				CStepIncrementor ColorFade(CStepIncrementor::styleLinear, 0.0, 1.0, iLifetime);
-
-				m_ColorTable.InsertEmpty(iLifetime);
-				m_FlareDesc.InsertEmpty(iLifetime);
-				m_TextureFrame.InsertEmpty(iLifetime);
-
-				if (UsesColorTable2())
-					m_ColorTable2.InsertEmpty(iLifetime);
-
-				for (i = 0; i < iLifetime; i++)
-					{
-					int iRadius = Max(2, (int)Radius.GetAt(i));
-					int iIntensity = (int)Intensity.GetAt(i);
-					CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbPrimaryColor, m_rgbSecondaryColor, ColorFade.GetAt(i));
-
-					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, rgbColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
-
-					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
-					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
-
-					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
-
-					if (UsesColorTable2())
-						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
-					}
-
-				break;
-				}
-
-			//	Increase radius up to maximum
-
-			case animateExplode:
-				{
-				int iLifetime = Max(1, m_iLifetime);
-				CStepIncrementor Radius(CStepIncrementor::styleSquareRoot, 0.2 * m_iRadius, m_iRadius, iLifetime);
-				CStepIncrementor Intensity(CStepIncrementor::styleLinear, m_iIntensity, 0.0, iLifetime);
-				CStepIncrementor Heat(CStepIncrementor::styleSquare, 100.0, 0.0, iLifetime);
-
-				Metric rDetail = (m_iDetail / 100.0);
-
-				m_iTextureType = CFractalTextureLibrary::typeExplosion;
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
-
-				int iEndFade = iLifetime / 3;
-				int iEndFadeStart = iLifetime - iEndFade;
-
-				m_ColorTable.InsertEmpty(iLifetime);
-				m_FlareDesc.InsertEmpty(iLifetime);
-				m_TextureFrame.InsertEmpty(iLifetime);
-
-				if (UsesColorTable2())
-					m_ColorTable2.InsertEmpty(iLifetime);
-
-				for (i = 0; i < iLifetime; i++)
-					{
-					int iRadius = Max(2, (int)Radius.GetAt(i));
-					int iIntensity = (int)Intensity.GetAt(i);
-					int iHeat = (int)Heat.GetAt(i);
-
-					BYTE byOpacity;
-					if (i > iEndFadeStart)
-						{
-						Metric rFade = (iEndFade - (i - iEndFadeStart)) / (Metric)iEndFade;
-						byOpacity = (BYTE)(255.0 * rFade);
-						}
-					else
-						byOpacity = 255;
-
-					CalcSphericalColorTable(m_iStyle, iRadius, iHeat, m_rgbPrimaryColor, m_rgbSecondaryColor, byOpacity, &m_ColorTable[i]);
-
-					m_FlareDesc[i].iLength = (iIntensity > 60 ? iIntensity * iRadius * FLARE_MULITPLE / 70 : 0);
-					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
-
-					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
-
-					if (UsesColorTable2())
-						CalcSecondaryColorTable(iRadius, iHeat, byOpacity, &m_ColorTable2[i]);
-					}
-
-				break;
-				}
-
-			//	Standard fade decreases radius and intensity linearly over the
-			//	lifetime of the animation.
-
-			case animateFade:
-				{
-				int iLifetime = Max(1, m_iLifetime);
-				Metric rDetail = (m_iDetail / 100.0);
-
-				CStepIncrementor Detail(CStepIncrementor::styleLinear, rDetail, rDetail / 10.0, iLifetime);
-
-				m_ColorTable.InsertEmpty(iLifetime);
-				m_FlareDesc.InsertEmpty(iLifetime);
-
-				if (UsesColorTable2())
-					m_ColorTable2.InsertEmpty(iLifetime);
-
-				//	For cloud and Fireblast we need a repeating animation
-
-				if (UsesTextures())
-					{
-					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
-					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
-
-					m_TextureFrame.InsertEmpty(iFrames);
-					for (i = 0; i < iFrames; i++)
-						m_TextureFrame[i] = i;
-					}
-				else
-					m_TextureFrame.InsertEmpty(iLifetime);
-
-				for (i = 0; i < iLifetime; i++)
-					{
-					Metric rFade = (iLifetime - i) / (Metric)iLifetime;
-					int iRadius = (int)(rFade * m_iRadius);
-					int iIntensity = (int)(rFade * m_iIntensity);
-
-					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
-
-					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
-					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
-
-					if (!UsesTextures())
-						m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
-
-					if (UsesColorTable2())
-						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
-					}
-
-				break;
-				}
-
-			//	Flicker randomly
-
-			case animateFlicker:
-				{
-				int iLifetime = (m_iLifetime < 1 ? 120 : m_iLifetime);
-
-				m_ColorTable.InsertEmpty(iLifetime);
-				m_FlareDesc.InsertEmpty(iLifetime);
-
-				if (UsesColorTable2())
-					m_ColorTable2.InsertEmpty(iLifetime);
-
-				//	For cloud and Fireblast we need a repeating animation
-
-				if (UsesTextures())
-					{
-					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
-					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
-
-					m_TextureFrame.InsertEmpty(iFrames);
-					for (i = 0; i < iFrames; i++)
-						m_TextureFrame[i] = i;
-					}
-
-				for (i = 0; i < iLifetime; i++)
-					{
-					Metric rFlicker = Max(0.5, Min(1.0 + (0.25 * mathRandomGaussian()), 2.0));
-					int iRadius = Max(2, (int)(rFlicker * m_iRadius));
-					int iIntensity = (int)(rFlicker * m_iIntensity);
-
-					CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
-
-					m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
-					m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
-
-					if (UsesColorTable2())
-						CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
-					}
-
-				break;
-				}
-
-			//	By default the radius does not change.
-
-			default:
-				{
-				m_ColorTable.InsertEmpty(1);
-				m_FlareDesc.InsertEmpty(1);
-
-				CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[0]);
-
-				if (m_iStyle == styleLightning)
-					m_FlareDesc[0].iLength = m_iRadius * LIGHTNING_MULITPLE;
-				else
-					m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
-				m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
-
-				//	For cloud and Fireblast we need a repeating animation
-
-				if (UsesTextures())
-					{
-					m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
-					int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
-
-					m_TextureFrame.InsertEmpty(iFrames);
-					for (i = 0; i < iFrames; i++)
-						m_TextureFrame[i] = i;
-					}
-
-				//	For Fireblast, we only need a single color table
-
-				if (UsesColorTable2())
-					{
-					m_ColorTable2.InsertEmpty(1);
-					CalcSecondaryColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
-					}
-
-				break;
-				}
-			}
-
-		//	Initialize the proper painter
-
-		switch (m_iStyle)
-			{
-			case styleCloud:
-			case styleFirecloud:
-			case styleSmoke:
-				{
-				switch (m_iBlendMode)
-					{
-					case CGDraw::blendNormal:
-						m_pPainter = new CCloudCirclePainter<CGBlendBlend>(m_iTextureType);
-						break;
-
-					case CGDraw::blendHardLight:
-						m_pPainter = new CCloudCirclePainter<CGBlendHardLight>(m_iTextureType);
-						break;
-
-					case CGDraw::blendScreen:
-						m_pPainter = new CCloudCirclePainter<CGBlendScreen>(m_iTextureType);
-						break;
-
-					case CGDraw::blendCompositeNormal:
-						m_pPainter = new CCloudCirclePainter<CGBlendComposite>(m_iTextureType);
-						break;
-
-					default:
-						m_pPainter = NULL;
-					}
-				break;
-				}
-
-			case styleDiffraction:
-				{
-				switch (m_iBlendMode)
-					{
-					case CGDraw::blendNormal:
-						m_pPainter = new CDiffractionCirclePainter<CGBlendBlend>();
-						break;
-
-					case CGDraw::blendHardLight:
-						m_pPainter = new CDiffractionCirclePainter<CGBlendHardLight>();
-						break;
-
-					case CGDraw::blendScreen:
-						m_pPainter = new CDiffractionCirclePainter<CGBlendScreen>();
-						break;
-
-					case CGDraw::blendCompositeNormal:
-						m_pPainter = new CDiffractionCirclePainter<CGBlendComposite>();
-						break;
-
-					default:
-						m_pPainter = NULL;
-					}
-				break;
-				}
-
-			case styleFireblast:
-				{
-				switch (m_iBlendMode)
-					{
-					case CGDraw::blendNormal:
-						m_pPainter = new CFireblastCirclePainter<CGBlendBlend>(m_iTextureType, (Metric)m_iDistortion / 100.0);
-						break;
-
-					case CGDraw::blendHardLight:
-						m_pPainter = new CFireblastCirclePainter<CGBlendHardLight>(m_iTextureType, (Metric)m_iDistortion / 100.0);
-						break;
-
-					case CGDraw::blendScreen:
-						m_pPainter = new CFireblastCirclePainter<CGBlendScreen>(m_iTextureType, (Metric)m_iDistortion / 100.0);
-						break;
-
-					case CGDraw::blendCompositeNormal:
-						m_pPainter = new CFireblastCirclePainter<CGBlendComposite>(m_iTextureType, (Metric)m_iDistortion / 100.0);
-						break;
-
-					default:
-						m_pPainter = NULL;
-					}
-				break;
-				}
-			}
+		CalcAnimationIntermediates();
+		CalcStyleIntermediates();
 
 		m_bInitialized = true;
 		}
@@ -886,6 +811,91 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 		}
 	}
 
+void COrbEffectPainter::CalcStyleIntermediates (void)
+
+//	CalcStyleIntermediates
+//
+//	Calculate cached values based on style.
+//	NOTE: We assume m_pPainter is NULL (has been cleaned up).
+
+	{
+	ASSERT(m_pPainter == NULL);
+
+	switch (m_iStyle)
+		{
+		case styleCloud:
+		case styleFirecloud:
+		case styleSmoke:
+			{
+			switch (m_iBlendMode)
+				{
+				case CGDraw::blendNormal:
+					m_pPainter = new CCloudCirclePainter<CGBlendBlend>(m_iTextureType);
+					break;
+
+				case CGDraw::blendHardLight:
+					m_pPainter = new CCloudCirclePainter<CGBlendHardLight>(m_iTextureType);
+					break;
+
+				case CGDraw::blendScreen:
+					m_pPainter = new CCloudCirclePainter<CGBlendScreen>(m_iTextureType);
+					break;
+
+				case CGDraw::blendCompositeNormal:
+					m_pPainter = new CCloudCirclePainter<CGBlendComposite>(m_iTextureType);
+					break;
+				}
+			break;
+			}
+
+		case styleDiffraction:
+			{
+			switch (m_iBlendMode)
+				{
+				case CGDraw::blendNormal:
+					m_pPainter = new CDiffractionCirclePainter<CGBlendBlend>();
+					break;
+
+				case CGDraw::blendHardLight:
+					m_pPainter = new CDiffractionCirclePainter<CGBlendHardLight>();
+					break;
+
+				case CGDraw::blendScreen:
+					m_pPainter = new CDiffractionCirclePainter<CGBlendScreen>();
+					break;
+
+				case CGDraw::blendCompositeNormal:
+					m_pPainter = new CDiffractionCirclePainter<CGBlendComposite>();
+					break;
+				}
+			break;
+			}
+
+		case styleFireblast:
+			{
+			switch (m_iBlendMode)
+				{
+				case CGDraw::blendNormal:
+					m_pPainter = new CFireblastCirclePainter<CGBlendBlend>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+					break;
+
+				case CGDraw::blendHardLight:
+					m_pPainter = new CFireblastCirclePainter<CGBlendHardLight>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+					break;
+
+				case CGDraw::blendScreen:
+					m_pPainter = new CFireblastCirclePainter<CGBlendScreen>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+					break;
+
+				case CGDraw::blendCompositeNormal:
+					m_pPainter = new CFireblastCirclePainter<CGBlendComposite>(m_iTextureType, (Metric)m_iDistortion / 100.0);
+					break;
+				}
+			break;
+			}
+		}
+	}
+
 void COrbEffectPainter::CleanUp (void)
 
 //	CleanUp
@@ -899,6 +909,7 @@ void COrbEffectPainter::CleanUp (void)
 		m_pPainter = NULL;
 		}
 
+	m_iTextureType = CFractalTextureLibrary::typeNone;
 	m_ColorTable.DeleteAll();
 	m_ColorTable2.DeleteAll();
 	m_FlareDesc.DeleteAll();
