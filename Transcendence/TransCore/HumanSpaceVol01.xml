@@ -1506,7 +1506,6 @@
 	<!ENTITY rsAntaresIHD				"0x00830003">
 	<!ENTITY rsAntaresIIHD				"0x00830004">
 	<!ENTITY rsAntaresVHD				"0x00830005">
-	<!ENTITY rsEI200HD					"0x00830006">
 	<!ENTITY rsSalvagerNomadHD			"0x00830007">
 	<!ENTITY rsUrakDestroyerHD			"0x00830008">
 	<!ENTITY rsEI7000HD					"0x00830009">
@@ -1534,7 +1533,6 @@
 	<!ENTITY rsDeimosHD					"0x0083001F">
 	<!ENTITY rsPolarFreighterHD			"0x00830020">
 	<!ENTITY rsAquilaHD					"0x00830021">
-	<!ENTITY rsAurochsHD				"0x00830022">
 	<!ENTITY rsIocrymCommandShipHD		"0x00830023">
 	<!ENTITY rsIocrymSentinelHD			"0x00830024">
 	<!ENTITY rsCorporateExplorerHD		"0x00830025">
