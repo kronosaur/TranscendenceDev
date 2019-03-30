@@ -29,7 +29,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itLightningCannon;" omnidirectional="true"	posAngle="0" posRadius="0" posZ="10"/>
+			<Device deviceID="&itLightningCannon;" omnidirectional="true"	posAngle="0" posRadius="0" posZ="25"/>
 		</Devices>
 
 		<Maneuver
@@ -63,17 +63,18 @@
 					/>
 		</Interior>
 
-		<Image imageID="&rsPolarFreighter;" imageWidth="192" imageHeight="192" />
+		<Image imageID="&rsPolarFreighterHD;" imageWidth="180" imageHeight="180" 	rotationCount="120" rotationColumns="12" viewportRatio="0.023125"/>
+		<HeroImage imageID="&rsPolarFreighterHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="170"	posRadius="82"	posZ="-15"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-170"	posRadius="82"	posZ="-15"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="78"	posZ="-18"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="78"	posZ="-18"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
 			
 			<Effect type="thrustMain"		posAngle="165"	posRadius="86"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="-165"	posRadius="86"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			
-			<Effect type="thrustMain"		posAngle="170"	posRadius="82"	posZ="15"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
-			<Effect type="thrustMain"		posAngle="-170"	posRadius="82"	posZ="15"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
 		</Effects>
 		
 		<AISettings
@@ -483,7 +484,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsCometfall;" imageWidth="130" imageHeight="130"/>
+		<Image imageID="&rsCometfallHD;" imageWidth="130" imageHeight="130"	rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&rsCometfallHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="156"	posRadius="48"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
@@ -553,7 +555,7 @@
 					type=		"mainDrive"
 					hitPoints=	"150"
 
-					posX=		"-9"
+					posX=		"-35"
 					posY=		"0"
 					sizeX=		"48"
 					sizeY=		"46"
@@ -566,7 +568,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsDeimos;" imageWidth="170" imageHeight="170" rotationOffset="-30"/>
+		<Image imageID="&rsDeimosHD;" imageWidth="170" imageHeight="170" rotationOffset="-35"	rotationCount="120" rotationColumns="12" viewportRatio="0.01875"/>
+		<HeroImage imageID="&rsDeimosHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="95"	posRadius="36"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
@@ -611,7 +614,7 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itAresArchcannon;" omnidirectional="true"	posAngle="0" posRadius="0" posZ="10"/>
+			<Device deviceID="&itAresArchcannon;" omnidirectional="true"	posAngle="0" posRadius="0" posZ="25"/>
 			<Device deviceID="&itCydonianShields;"/>
 		</Devices>
 
@@ -646,17 +649,18 @@
 					/>
 		</Interior>
 
-		<Image imageID="&rsPolarFreighter;" imageWidth="192" imageHeight="192" />
+		<Image imageID="&rsPolarFreighterHD;" imageWidth="180" imageHeight="180" 	rotationCount="120" rotationColumns="12" viewportRatio="0.023125"/>
+		<HeroImage imageID="&rsPolarFreighterHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="170"	posRadius="82"	posZ="-15"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
-			<Effect type="thrustMain"		posAngle="-170"	posRadius="82"	posZ="-15"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="78"	posZ="-18"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="78"	posZ="-18"	rotation="180"	effect="&efMainThrusterLarge;"	sendToBack="*"/>
 			
 			<Effect type="thrustMain"		posAngle="165"	posRadius="86"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			<Effect type="thrustMain"		posAngle="-165"	posRadius="86"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 			
-			<Effect type="thrustMain"		posAngle="170"	posRadius="82"	posZ="15"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
-			<Effect type="thrustMain"		posAngle="-170"	posRadius="82"	posZ="15"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="168"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
+			<Effect type="thrustMain"		posAngle="-168"	posRadius="78"	posZ="18"	rotation="180"	effect="&efMainThrusterLarge;"	bringToFront="*"/>
 		</Effects>
 		
 		<AISettings
@@ -731,7 +735,8 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsLargeShips2;" imageX="256" imageY="0" imageWidth="256" imageHeight="256"/>
+		<Image imageID="&rsPhobosHD;" imageWidth="256" imageHeight="256"	rotationCount="120" rotationColumns="12" viewportRatio="0.01875"/>
+		<HeroImage imageID="&rsPhobosHero;" imageWidth="320" imageHeight="320"/>
 		
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="118"	posZ="-30"	rotation="180"	effect="&efMainThrusterLarge;"/>
@@ -753,5 +758,28 @@
 			/>
 
 	</ShipClass>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsAresAdvancedSentry;"		bitmap="Resources\AresAdvancedSentry.jpg" bitmask="Resources\AresAdvancedSentryMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAresAdvancedSentryHero;"	bitmap="Resources\AresAdvancedSentryLarge.jpg" bitmask="Resources\AresAdvancedSentryLargeMask.bmp" loadOnUse="true" />
+
+	<Image UNID="&rsAresDualSentry;"			bitmap="Resources\AresDualSentry.jpg" bitmask="Resources\AresDualSentryMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAresDualSentryHero;"		bitmap="Resources\AresDualSentryLarge.jpg" bitmask="Resources\AresDualSentryLargeMask.bmp" loadOnUse="true" />
+
+	<Image UNID="&rsAresSentry;"				bitmap="Resources\AresSentry.jpg" bitmask="Resources\AresSentryMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAresSentryHero;"			bitmap="Resources\AresSentryLarge.jpg" bitmask="Resources\AresSentryLargeMask.bmp" loadOnUse="true" />
+
+	<Image UNID="&rsCometfallHD;"				bitmap="Resources\CometfallHD.jpg" bitmask="Resources\CometfallHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsCometfallHero;"				bitmap="Resources\CometfallLarge.jpg" bitmask="Resources\CometfallLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsDeimosHD;"					bitmap="Resources\DeimosHD.jpg" bitmask="Resources\DeimosHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsDeimosHero;"				bitmap="Resources\DeimosLarge.jpg" bitmask="Resources\DeimosLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsPhobosHD;"					bitmap="Resources\PhobosHD.jpg" bitmask="Resources\PhobosHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsPhobosHero;"				bitmap="Resources\PhobosLarge.jpg" bitmask="Resources\PhobosLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsPolarFreighterHD;"			bitmap="Resources\PolarFreighterHD.jpg" bitmask="Resources\PolarFreighterHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsPolarFreighterHero;"		bitmap="Resources\PolarFreighterLarge.jpg" bitmask="Resources\PolarFreighterLargeMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

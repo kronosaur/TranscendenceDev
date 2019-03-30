@@ -4261,5 +4261,9 @@
 	<Image UNID="&rsAntaresIImage;"		obsoleteVersion="45"	bitmap="Resources\AntaresI.jpg" bitmask="Resources\AntaresIMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAntaresIIImage;"	obsoleteVersion="45"	bitmap="Resources\AntaresII.jpg" bitmask="Resources\AntaresIIMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAntaresVImage;"		obsoleteVersion="45"	bitmap="Resources\AntaresV.jpg" bitmask="Resources\AntaresVMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAresSentryHD;"		obsoleteVersion="39" bitmap="Resources\AresSentryHD.jpg" bitmask="Resources\AresSentryHDMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsCometfall;"			obsoleteVersion="45"					bitmap="Resources\Cometfall.jpg" bitmask="Resources\CometfallMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsDeimos;"			obsoleteVersion="45"		bitmap="Resources\Deimos.jpg" bitmask="Resources\DeimosMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsPolarFreighter;"	obsoleteVersion="45"		bitmap="Resources\PolarFreighter.jpg" bitmask="Resources\PolarFreighterMask.bmp" loadOnUse="true" />
 
 </TranscendenceModule>

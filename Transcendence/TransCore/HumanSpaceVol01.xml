@@ -1722,6 +1722,10 @@
 	<!ENTITY tbAresFreighterTreasure	"0x001000AF">
 	<!ENTITY smAresSpace				"0x001000B0">
 	<!ENTITY smSpawnCompatibility		"0x001000B1">
+	<!ENTITY rsPhobosHero				"0x001000B2">
+	<!ENTITY rsCometfallHero			"0x001000B3">
+	<!ENTITY rsDeimosHero				"0x001000B4">
+	<!ENTITY rsPolarFreighterHero		"0x001000B5">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	

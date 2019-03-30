@@ -394,22 +394,8 @@
 	
 <!-- RESOURCES -->
 	
-	<Image UNID="&rsAresAdvancedSentry;"		bitmap="Resources\AresAdvancedSentry.jpg" bitmask="Resources\AresAdvancedSentryMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsAresAdvancedSentryHero;"	bitmap="Resources\AresAdvancedSentryLarge.jpg" bitmask="Resources\AresAdvancedSentryLargeMask.bmp" loadOnUse="true" />
-
-	<Image UNID="&rsAresDualSentry;"			bitmap="Resources\AresDualSentry.jpg" bitmask="Resources\AresDualSentryMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsAresDualSentryHero;"		bitmap="Resources\AresDualSentryLarge.jpg" bitmask="Resources\AresDualSentryLargeMask.bmp" loadOnUse="true" />
-
-	<Image UNID="&rsAresSentry;"				bitmap="Resources\AresSentry.jpg" bitmask="Resources\AresSentryMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsAresSentryHero;"			bitmap="Resources\AresSentryLarge.jpg" bitmask="Resources\AresSentryLargeMask.bmp" loadOnUse="true" />
-
 	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsCometfall;"					bitmap="Resources\Cometfall.jpg" bitmask="Resources\CometfallMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsDeimos;"					bitmap="Resources\Deimos.jpg" bitmask="Resources\DeimosMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsPolarFreighter;"			bitmap="Resources\PolarFreighter.jpg" bitmask="Resources\PolarFreighterMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsTundraHD;"					bitmap="Resources\TundraHD.jpg" bitmask="Resources\TundraHDMask.bmp" loadOnUse="true" />
 	
-	<Image UNID="&rsAresSentryHD;" obsoleteVersion="39" bitmap="Resources\AresSentryHD.jpg" bitmask="Resources\AresSentryHDMask.bmp" loadOnUse="true" />
-
 </TranscendenceModule>
