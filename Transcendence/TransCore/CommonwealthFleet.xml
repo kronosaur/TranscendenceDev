@@ -720,7 +720,8 @@ PLAYER DATA
 					/>
 		</Interior>
 
-		<Image imageID="&rsAquila;" imageWidth="210" imageHeight="210"/>
+		<Image imageID="&rsAquilaHD;" imageWidth="210" imageHeight="210" 	rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&rsAquilaHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="168"	posRadius="94"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
@@ -1557,7 +1558,9 @@ PLAYER DATA
 
 <!-- RESOURCES -->
 
-	<Image UNID="&rsAurochs;"				bitmap="Resources\Aurochs.jpg" bitmask="Resources\AurochsMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAquilaHD;"				bitmap="Resources\AquilaHD.jpg" bitmask="Resources\AquilaHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAquilaHero;"			bitmap="Resources\AquilaLarge.jpg" bitmask="Resources\AquilaLargeMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsAurochsHD;"				bitmap="Resources\AurochsHD.jpg"	bitmask="Resources\AurochsHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsAurochsHero;"			bitmap="Resources\AurochsLarge.jpg"	bitmask="Resources\AurochsLargeMask.bmp" 	loadOnUse="true" />
 	
@@ -1566,7 +1569,6 @@ PLAYER DATA
 	<Image UNID="&rsMinotaurM;"				bitmap="Resources\MinotaurM.jpg" bitmask="Resources\MinotaurMMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsMinotaurMHero;"			bitmap="Resources\MinotaurMLarge.jpg" bitmask="Resources\MinotaurMLargeMask.bmp" loadOnUse="true"/>
 
-	<Image UNID="&rsAquila;"				bitmap="Resources\Aquila.jpg" bitmask="Resources\AquilaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsBritannia;"				bitmap="Resources\Britannia.jpg" bitmask="Resources\BritanniaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsBritanniaHD;"			bitmap="Resources\BritanniaHD.jpg" bitmask="Resources\BritanniaHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsCenturionHD;"			bitmap="Resources\CenturionHD.jpg"	bitmask="Resources\CenturionHDMask.bmp" 	loadOnUse="true" />

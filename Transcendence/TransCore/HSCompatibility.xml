@@ -4265,5 +4265,7 @@
 	<Image UNID="&rsCometfall;"			obsoleteVersion="45"					bitmap="Resources\Cometfall.jpg" bitmask="Resources\CometfallMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsDeimos;"			obsoleteVersion="45"		bitmap="Resources\Deimos.jpg" bitmask="Resources\DeimosMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsPolarFreighter;"	obsoleteVersion="45"		bitmap="Resources\PolarFreighter.jpg" bitmask="Resources\PolarFreighterMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAurochs;"			obsoleteVersion="45"	bitmap="Resources\Aurochs.jpg" bitmask="Resources\AurochsMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAquila;"			obsoleteVersion="45"	bitmap="Resources\Aquila.jpg" bitmask="Resources\AquilaMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

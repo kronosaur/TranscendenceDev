@@ -205,7 +205,8 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsAquila;" imageWidth="210" imageHeight="210"/>
+		<Image imageID="&rsAquilaHD;" imageWidth="210" imageHeight="210" 	rotationCount="120" rotationColumns="12" viewportRatio="0.01375"/>
+		<HeroImage imageID="&rsAquilaHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="168"	posRadius="94"	posZ="-20"	rotation="180"	effect="&efMainThrusterLarge;"/>
