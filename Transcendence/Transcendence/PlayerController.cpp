@@ -2374,9 +2374,10 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 
 	if (pNewWeapon)
 		{
-		//	There is a delay in activation
+		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		m_pShip->SetFireDelay(pNewWeapon);
+		if (!(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected))
+			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player
 
