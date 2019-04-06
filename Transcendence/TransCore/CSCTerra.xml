@@ -9,7 +9,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, cscTerra"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip, cscTerra"
 			inherit=			"&scCSCStock;"
 
 			dockScreen=			"Main"

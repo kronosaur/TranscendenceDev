@@ -11,7 +11,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
@@ -47,7 +47,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCSupportStock;"
 
 			dockScreen=			"Main"
@@ -93,7 +93,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
@@ -126,7 +126,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
@@ -160,7 +160,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
@@ -194,7 +194,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCTaskForceStock;"
 
 			dockScreen=			"Main"
@@ -231,7 +231,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCSupportStock;"
 
 			dockScreen=			"Main"
@@ -283,7 +283,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&baCSCBase;"
 			>
 
@@ -399,7 +399,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&scCSCStock;"
 
 			dockScreen=			"Main"
@@ -826,7 +826,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, genericClass, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, genericClass, majorShip"
 			inherit=			"&scCSCStock;"
 
 			dockScreen=			"Main"

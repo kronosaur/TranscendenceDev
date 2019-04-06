@@ -75,7 +75,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, cscAntarctica, majorShip, uncharted, captainHelios"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, commonwealthStarCarrier, cscAntarctica, EI, majorShip, uncharted, captainHelios"
 			inherit=			"&scCSCStock;"
 			character=			"&unidCaptainHelios;"
 

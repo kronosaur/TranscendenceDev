@@ -3431,7 +3431,7 @@
 			class=				"Commonwealth Star Carrier"
 			type=				""
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&baCSCBase;"
 			   
 			size=				"400"
@@ -3921,7 +3921,7 @@
 			type=				""
 			defaultSovereign=	"&svCommonwealthFleet;"
 
-			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, fleetLaw, majorShip, pacificDefense"
+			attributes=			"capitalShip, commonwealth, commonwealthFleet, commonwealthMilitary, EI, fleetLaw, majorShip"
 			inherit=			"&baCSCBase;"
 			   
 			size=				"400"
