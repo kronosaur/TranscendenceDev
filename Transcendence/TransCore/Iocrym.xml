@@ -372,18 +372,43 @@
 			defaultSovereign=	"&svIocrym;"
 
 			attributes=			"capitalShip, genericClass, iocrym, iocrymCommandShip, majorShip"
-			   
+			>
+
+		<!-- Hull -->
+
+		<Hull
 			size=				"350"
 			mass=				"150000"
-			cargoSpace=			"50000"
-			thrustRatio=		"2"
-			maxSpeed=			"6"
+			cargoSpace=			"20000"
+
+			maxReactorPower=	"200000"
+			maxCargoSpace=		"20000"
+			maxDevices=			"10"
 
 			cyberDefenseLevel=	"12"
 			timeStopImmune=		"true"
+			/>
 
+		<Drive
+			maxSpeed=			"6"
+			thrust=				"300000"
+			powerUse=			"20000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"3.0"
+			rotationAccel=		"0.5"
+			/>
+
+		<Interior>
+			<Compartment name="interior"
+					hitPoints=	"800"
+					/>
+		</Interior>
+		
+		<Wreck
 			explosionType=		"&vtPlasmaExplosion3;"
-			>
+			/>
 
 		<!-- Configuration -->
 		
@@ -408,23 +433,10 @@
 			<Device deviceID="&itIocrymCocoon;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"3.0"
-			rotationAccel=		"0.5"
-			/>
-
-		<Interior>
-			<Compartment name="interior"
-					hitPoints=	"800"
-					/>
-		</Interior>
-		
-		<Items>
-		</Items>
-
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsIocrymCommandShip;" imageWidth="300" imageHeight="300" />
+		<Image imageID="&rsIocrymCommandShipHD;" imageWidth="300" imageHeight="300" rotationCount="120" rotationColumns="12" viewportRatio="0.0475" />
+		<HeroImage imageID="&rsIocrymCommandShipHero;" imageWidth="320" imageHeight="320"/>
 		
 		<!-- AI and Behavior -->
 
@@ -487,7 +499,7 @@
 
 	</ShipClass>
 
-	<!-- Iocrym sentinel -->
+	<!-- Level 11: Iocrym sentinel -->
 
 	<ShipClass UNID="&scIocrymSentinel;"
 			manufacturer=		"Iocrym"
@@ -495,16 +507,30 @@
 			type=				"sentinel"
 			defaultSovereign=	"&svIocrym;"
 
+			attributes=			"genericClass,iocrym,iocrymSentinel"
+			>
+
+		<!-- Hull -->
+
+		<Hull
 			size=				"98"
 			mass=				"2500"
 			cargoSpace=			"1000"
-			thrustRatio=		"8"
+			/>
+
+		<Drive
+			thrust=				"20000"
 			maxSpeed=			"12"
+			/>
 
+		<Maneuver
+			maxRotationRate=	"12.0"
+			rotationAccel=		"3.0"
+			/>
+
+		<Wreck
 			explosionType=		"&vtPlasmaExplosion1;"
-
-			attributes=			"genericClass,iocrym,iocrymSentinel"
-			>
+			/>
 
 		<!-- Configuration -->
 		
@@ -518,16 +544,13 @@
 			<Device deviceID="&itIocrymVeil;"/>
 		</Devices>
 
-		<Maneuver
-			maxRotationRate=	"12.0"
-			rotationAccel=		"3.0"
-			/>
+		<!-- Image and Effects -->
 
-		<Image imageID="&rsIocrymSentinel;" imageWidth="128" imageHeight="128" />
+		<Image imageID="&rsIocrymSentinelHD;" imageWidth="128" imageHeight="128" rotationCount="120" rotationColumns="12" viewportRatio="0.01375" />
+		<HeroImage imageID="&rsIocrymSentinelHero;" imageWidth="320" imageHeight="320"/>
 
-		<Items>
-		</Items>
-		
+		<!-- AI and Behavior -->
+
 		<AISettings
 			fireRateAdj=		"15"
 			fireAccuracy=		"90"
@@ -710,8 +733,12 @@
 	
 <!-- RESOURCES -->
 
-	<Image UNID="&rsIocrymSentinel;"	bitmap="Resources\IocrymSentinel.jpg" bitmask="Resources\IocrymSentinelMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsIocrymOutpost;"		bitmap="Resources\IocrymOutpost.jpg" bitmask="Resources\IocrymOutpostMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsIocrymCommandShip;"	bitmap="Resources\IocrymCommandShip.jpg" bitmask="Resources\IocrymCommandShipMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIocrymCommandShipHD;"		bitmap="Resources\IocrymCommandShipHD.jpg"	bitmask="Resources\IocrymCommandShipHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsIocrymCommandShipHero;"	bitmap="Resources\IocrymCommandShipLarge.jpg"	bitmask="Resources\IocrymCommandShipLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsIocrymSentinelHD;"		bitmap="Resources\IocrymSentinelHD.jpg"	bitmask="Resources\IocrymSentinelHDMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsIocrymSentinelHero;"	bitmap="Resources\IocrymSentinelLarge.jpg"	bitmask="Resources\IocrymSentinelLargeMask.bmp" 	loadOnUse="true" />
+
+	<Image UNID="&rsIocrymOutpost;"			bitmap="Resources\IocrymOutpost.jpg" bitmask="Resources\IocrymOutpostMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

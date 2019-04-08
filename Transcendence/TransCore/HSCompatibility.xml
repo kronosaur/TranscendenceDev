@@ -4267,5 +4267,7 @@
 	<Image UNID="&rsPolarFreighter;"	obsoleteVersion="45"		bitmap="Resources\PolarFreighter.jpg" bitmask="Resources\PolarFreighterMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsAurochs;"			obsoleteVersion="45"	bitmap="Resources\Aurochs.jpg" bitmask="Resources\AurochsMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsAquila;"			obsoleteVersion="45"	bitmap="Resources\Aquila.jpg" bitmask="Resources\AquilaMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIocrymSentinel;"	obsoleteVersion="45" bitmap="Resources\IocrymSentinel.jpg" bitmask="Resources\IocrymSentinelMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsIocrymCommandShip;"	obsoleteVersion="45" bitmap="Resources\IocrymCommandShip.jpg" bitmask="Resources\IocrymCommandShipMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

@@ -1876,6 +1876,8 @@
 	
 	<!ENTITY efQuantumsphereHit			"0x001001E0">
 	<!ENTITY efQuantumsphereShot		"0x001001E1">
+	<!ENTITY rsIocrymCommandShipHero	"0x001001E2">
+	<!ENTITY rsIocrymSentinelHero		"0x001001E3">
     
     <!-- 01F0-01FF TINKERS -->
 	
