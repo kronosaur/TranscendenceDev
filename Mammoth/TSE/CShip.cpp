@@ -5883,12 +5883,12 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 			break;
 
 		case CConditionSet::cndDisarmed:
-			if (m_iDisarmedTimer != -1)
+			if (m_iDisarmedTimer == 0)
 				{
 				if (iTimer < 0)
 					m_iDisarmedTimer = -1;
 				else
-					m_iDisarmedTimer = Min(m_iDisarmedTimer + iTimer, MAX_SHORT);
+					m_iDisarmedTimer = Min(iTimer, MAX_SHORT);
 				}
 			break;
 
@@ -5897,12 +5897,12 @@ void CShip::OnSetCondition (CConditionSet::ETypes iCondition, int iTimer)
 			break;
 
 		case CConditionSet::cndParalyzed:
-			if (m_iParalysisTimer != -1)
+			if (m_iParalysisTimer == 0)
 				{
 				if (iTimer < 0)
 					m_iParalysisTimer = -1;
 				else
-					m_iParalysisTimer = Min(m_iParalysisTimer + iTimer, MAX_SHORT);
+					m_iParalysisTimer = Min(iTimer, MAX_SHORT);
 				}
 			break;
 
