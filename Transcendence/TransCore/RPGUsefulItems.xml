@@ -159,7 +159,7 @@
 
 						;	Set the description
 						(scrSetControlValue gScreen 'useItem {
-							title: (itmGetName useItem '(capitalize count))
+							title: (itmGetName useItem '(titleCapitalize countOnly))
 							desc: (itmGetProperty useItem 'description)
 							})
 
@@ -228,7 +228,7 @@
 						(result (scrGetData gScreen 'usageResult))
 						)
 						(scrSetControlValue gScreen 'useItem {
-							title: (itmGetName useItem 'capitalize)
+							title: (itmGetName (itmSetCount useItem 1) '(titleCapitalize countOnly))
 							desc: (itmGetProperty useItem 'description)
 							})
 
@@ -242,8 +242,24 @@
 						(scrSetDesc gScreen (@ result 'desc))
 
 						(if (and (objHasItem theShip useItem 1) (not (@ result 'nextScreen)))
-							(scrShowAction gScreen 'actionDone Nil)
-							(scrShowAction gScreen 'actionContinue Nil)
+
+							;	If we've got another item to use, ask if the player wants
+							;	to use it.
+
+							(block ()
+								(scrShowAction gScreen 'actionDone True)
+								(scrShowAction gScreen 'actionUseAnother True)
+								;(scrSetActionLabel gScreen 'actionUseAnother (scrTranslate gScreen 'actionUseAnother {
+								;	itemName: (itmGetName useItem 0)
+								;	}))
+								)
+
+							;	Done
+
+							(block ()
+								(scrShowAction gScreen 'actionDone True)
+								(scrShowAction gScreen 'actionUseAnother Nil)
+								)
 							)
 						)
 				</OnPaneInit>
@@ -254,9 +270,6 @@
 				</Controls>
 
 				<Actions>
-					<Action id="actionContinue" default="1" cancel="1">
-						(scrShowPane gScreen 'Default)
-					</Action>
 					<Action id="actionDone" default="1" cancel="1">
 						(block (
 							(result (scrGetData gScreen 'usageResult))
@@ -281,12 +294,16 @@
 								)
 							)
 					</Action>
+					<Action id="actionUseAnother">
+						(scrShowPane gScreen 'Default)
+					</Action>
 				</Actions>
 			</ShowResult>
 		</Panes>
 
 		<Language>
 			<Text id="actionUse">[U]se on this Item</Text>
+			<Text id="actionUseAnother">[U]se Another</Text>
 
 			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
 		</Language>
