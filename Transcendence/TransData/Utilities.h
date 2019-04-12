@@ -48,6 +48,7 @@ class COutputChart
 		const CG16bitFont &GetStyleFont (const CString &sStyle);
 		bool Output (void);
 		void SetContentSize (int cxWidth, int cyHeight);
+		void SetMargin (int cxLeft = 0, int cyTop = 0, int cxRight = -1, int cyBottom = -1);
 		void SetOutputFilespec (const CString &sFilespec);
 		void SetStyleFont (const CString &sStyle, const CString &sFontDesc);
 		void SetStyleColor (const CString &sStyle, CG32bitPixel rgbColor);
@@ -63,9 +64,18 @@ class COutputChart
 			CG32bitPixel rgbColor;
 			};
 
+		void Realize (void);
+
 		CG32bitImage m_Image;
 		TSortMap<CString, SStyleDesc> m_Styles;
 		CString m_sFilespec;
+
+		int m_cxContentSize = 0;
+		int m_cyContentSize = 0;
+		int m_cxLeftMargin = 0;
+		int m_cxRightMargin = 0;
+		int m_cyTopMargin = 0;
+		int m_cyBottomMargin = 0;
 	};
 
 class CSimViewer

@@ -258,6 +258,29 @@
 				imageFrameCount="10"/>
 	</Effect>
 
+<!-- DIAGNOSTICS AND DEBUGGING =================================================
+
+-->
+
+	<EffectType unid="&efTestOrbEffect;"
+			loop="true"
+			>
+		<Effect>
+			<Orb	style=			"fireblast"
+					animate=		"explode"
+					intensity=		"100"
+					radius=			"120"
+					lifetime=		"30"
+					distortion=		"60"
+					detail=			"40"
+					
+					blendMode=		"normal"
+					primaryColor=	"#ffd200"
+					secondaryColor=	"#ff2a00"
+					/>
+		</Effect>
+	</EffectType>
+
 <!-- DEFAULT SOUND EFFECTS =====================================================
 
 -->

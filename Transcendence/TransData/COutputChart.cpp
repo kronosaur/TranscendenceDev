@@ -14,11 +14,13 @@ CG32bitImage &COutputChart::GetOutputImage (int *retxOrigin, int *retyOrigin)
 //	Returns the output image and the origin of the content region.
 
 	{
+	Realize();
+
 	if (retxOrigin)
-		*retxOrigin = 0;
+		*retxOrigin = m_cxLeftMargin;
 
 	if (retyOrigin)
-		*retyOrigin = 0;
+		*retyOrigin = m_cyTopMargin;
 
 	return m_Image;
 	}
@@ -87,6 +89,22 @@ bool COutputChart::Output (void)
 	return true;
 	}
 
+void COutputChart::Realize (void)
+
+//	Realize
+//
+//	Create the actual image.
+
+	{
+	if (m_Image.IsEmpty())
+		{
+		int cxTotalSize = m_cxContentSize + (m_cxLeftMargin + m_cxRightMargin);
+		int cyTotalSize = m_cyContentSize + (m_cyTopMargin + m_cyBottomMargin);
+
+		m_Image.Create(cxTotalSize, cyTotalSize);
+		}
+	}
+
 void COutputChart::SetContentSize (int cxWidth, int cyHeight)
 
 //	SetContentSize
@@ -95,7 +113,34 @@ void COutputChart::SetContentSize (int cxWidth, int cyHeight)
 //	is lost.
 
 	{
-	m_Image.Create(cxWidth, cyHeight);
+	m_cxContentSize = cxWidth;
+	m_cyContentSize = cyHeight;
+
+	m_Image.CleanUp();
+	}
+
+void COutputChart::SetMargin (int cxLeft, int cyTop, int cxRight, int cyBottom)
+
+//	SetMargin
+//
+//	Sets the margins; this adds to the size of the image, so we always have
+//	the defined content size available.
+
+	{
+	m_cxLeftMargin = cxLeft;
+	m_cyTopMargin = cyTop;
+
+	if (cxRight < 0)
+		m_cxRightMargin = m_cxLeftMargin;
+	else
+		m_cxRightMargin = cxRight;
+
+	if (cyBottom < 0)
+		m_cyBottomMargin = m_cyTopMargin;
+	else
+		m_cyBottomMargin = cyBottom;
+
+	m_Image.CleanUp();
 	}
 
 void COutputChart::SetOutputFilespec (const CString &sFilespec)

@@ -197,6 +197,10 @@
 	<!ENTITY itSampleItemMisc			"0x000300C0">
 	<!ENTITY itSampleItemArmor			"0x000300C1">
 
+	<!-- 0100-0139 DIAGNOSTICS AND DEBUGGING -->
+
+	<!ENTITY efTestOrbEffect			"0x00030100">
+
 	]>
 	
 <CoreLibrary

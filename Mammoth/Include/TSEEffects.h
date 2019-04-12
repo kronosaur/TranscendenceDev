@@ -98,6 +98,8 @@ class CEffectParamDesc
 		CEffectParamDesc (bool bValue) : m_iType(typeBoolConstant), m_dwData(bValue ? 1 : 0) { }
 		CEffectParamDesc (EDataTypes iType, int iValue);
 		CEffectParamDesc (ICCItem *pValue);
+		explicit CEffectParamDesc (const CString &sValue) { m_sData = sValue; m_iType = typeStringConstant; }
+
 		~CEffectParamDesc (void);
 
 		CEffectParamDesc &operator= (const CEffectParamDesc &Src)

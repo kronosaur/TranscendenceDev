@@ -23,6 +23,7 @@
 #define DEBUG_SWITCH						CONSTLIT("debug")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DIAGNOSTICS_SWITCH					CONSTLIT("diagnostics")
+#define EFFECT_EXPLORER_SWITCH				CONSTLIT("effectExplorer")
 #define EFFECT_IMAGE_SWITCH					CONSTLIT("effectImage")
 #define EFFECT_PERF_SWITCH					CONSTLIT("effectPerf")
 #define ENCOUNTER_COUNT_SWITCH				CONSTLIT("encountercount")
@@ -350,6 +351,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		Run(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(SHIELD_TEST_SWITCH))
 		GenerateShieldStats(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(EFFECT_EXPLORER_SWITCH))
+		GenerateEffectExplorer(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EFFECT_IMAGE_SWITCH))
 		GenerateEffectImage(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(EFFECT_PERF_SWITCH))
@@ -511,6 +514,7 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 			|| pCmdLine->GetAttributeBool(WEAPON_IMAGES_SWITCH) 
 			|| pCmdLine->GetAttributeBool(BATTLE_SIM_SWITCH)
 			|| pCmdLine->GetAttributeBool(ENCOUNTER_SIM_SWITCH)
+			|| pCmdLine->GetAttributeBool(EFFECT_EXPLORER_SWITCH)
 			|| pCmdLine->GetAttributeBool(WORLD_IMAGES_SWITCH))
 		;
 	else
