@@ -61,6 +61,7 @@ const int TEXT_INPUT_PADDING_BOTTOM = 24;
 const int PANE_PADDING_TOP =		24;
 const int PANE_PADDING_EXTRA =		0;
 
+const int MIN_PANE_WIDTH =			408;
 const int STD_PANE_WIDTH =			392;
 const int STD_PANE_PADDING_LEFT =	8;
 const int STD_PANE_PADDING_RIGHT =	8;
@@ -828,12 +829,14 @@ bool CDockPane::InitLayout (const CString &sLayout, const RECT &rcFullRect, CStr
 //	Initializes the layout metrics.
 
 	{
+	int cxStdWidth = Max(MIN_PANE_WIDTH, RectWidth(rcFullRect) / 3) - (STD_PANE_PADDING_LEFT + STD_PANE_PADDING_RIGHT);
+
 	if (sLayout.IsBlank() || strEquals(sLayout, LAYOUT_RIGHT))
 		{
 		m_iLayout = layoutRight;
 
 		m_rcControls.right = rcFullRect.right - STD_PANE_PADDING_RIGHT;
-		m_rcControls.left = m_rcControls.right - STD_PANE_WIDTH;
+		m_rcControls.left = m_rcControls.right - cxStdWidth;
 		m_rcControls.top = rcFullRect.top;
 		m_rcControls.bottom = rcFullRect.bottom;
 
@@ -844,7 +847,7 @@ bool CDockPane::InitLayout (const CString &sLayout, const RECT &rcFullRect, CStr
 		m_iLayout = layoutLeft;
 
 		m_rcControls.left = STD_PANE_PADDING_LEFT;
-		m_rcControls.right = m_rcControls.left + STD_PANE_WIDTH;
+		m_rcControls.right = m_rcControls.left + cxStdWidth;
 		m_rcControls.top = rcFullRect.top;
 		m_rcControls.bottom = rcFullRect.bottom;
 

@@ -11,12 +11,15 @@ const int g_cyBackground =			528;
 
 const int SCREEN_PADDING_LEFT =		8;
 const int SCREEN_PADDING_RIGHT =	8;
+//const int MAX_SCREEN_WIDTH =		1280 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
 const int MAX_SCREEN_WIDTH =		1024 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
+const int MIN_DESC_PANE_WIDTH =		408;
 
 const int DESC_PANE_X =				600;
 const int BACKGROUND_FOCUS_X =		(DESC_PANE_X / 2);
 const int BACKGROUND_FOCUS_Y =		(g_cyBackground / 2);
-const int MAX_BACKGROUND_WIDTH =	1280;
+const int MAX_BACKGROUND_WIDTH =	1500;
+const int MAX_BACKGROUND_HEIGHT =	648;
 const int EXTRA_BACKGROUND_IMAGE =	128;
 
 const int STATUS_BAR_HEIGHT	=		20;
@@ -1305,24 +1308,44 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	else
 		m_pScreen->SetBackgroundColor(GetVisuals().GetWindowBackgroundColor());
 
-	int cxBackground = Min(MAX_BACKGROUND_WIDTH, RectWidth(rcRect));
-	int cyBackground = RectHeight(rcRect);
+	//	Compute RECTs.
+	//
+	//	rRect is the screen-relative area where we will draw the dock screen.
+	//
+	//	m_rcBackground is the full RECT of the background including the title
+	//	bar. This RECT shrinks to fit the background image, and expands up to
+	//	the hard-coded limit.
+	//
+	//	m_rcScreen is RECT limits for the controls.
+
+    CG32bitImage &ScreenImage = GetVisuals().GetBackground().GetImage(CONSTLIT("ShowScreen"));
+	int cxMaxBackground = (ScreenImage.IsEmpty() ? MAX_BACKGROUND_WIDTH : ScreenImage.GetWidth());
+	int cyMaxBackground = (ScreenImage.IsEmpty() ? MAX_BACKGROUND_HEIGHT : ScreenImage.GetHeight() + g_cyTitle);
+
+	int cxBackground = Min(cxMaxBackground, RectWidth(rcRect));
+	int cyBackground = Min(cyMaxBackground, RectHeight(rcRect));
 	m_rcBackground.left = (RectWidth(rcRect) - cxBackground) / 2;
-	m_rcBackground.top = 0;
 	m_rcBackground.right = m_rcBackground.left + cxBackground;
+
+	//	We center the screen on the display area (below the title)
+
+	m_rcBackground.top = ((RectHeight(rcRect) - (cyBackground - g_cyTitle)) / 2) - g_cyTitle;
 	m_rcBackground.bottom = m_rcBackground.top + cyBackground;
 
-	int cxScreen = Min(MAX_SCREEN_WIDTH, RectWidth(rcRect));
-	int cyScreen = RectHeight(rcRect);
+	int cxScreen = Min(MAX_SCREEN_WIDTH, RectWidth(m_rcBackground));
+	int cyScreen = RectHeight(m_rcBackground);
 	m_rcScreen.left = (RectWidth(rcRect) - cxScreen) / 2;
-	m_rcScreen.top = 0;
+	m_rcScreen.top = m_rcBackground.top;
 	m_rcScreen.right = m_rcScreen.left + cxScreen;
 	m_rcScreen.bottom = m_rcScreen.top + cyScreen;
 
-	//	The main display is centered on the screen, but we make sure that we have
-	//	enought room for the title bar (which goes above the display).
+	//	The main display is starts below the title bar
 
-	m_yDisplay = Max(g_cyTitle, (RectHeight(m_rcScreen) - g_cyDockScreen) / 2);
+	m_yDisplay = m_rcScreen.top + g_cyTitle;
+
+	//	Compute the width of the display and the panes
+
+	int cxRightPane = Max(MIN_DESC_PANE_WIDTH, cxScreen / 3);
 
 	//	Prepare a display context
 
@@ -1341,12 +1364,11 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	DisplayCtx.rcScreen = m_rcScreen;
 	DisplayCtx.rcScreen.top = m_yDisplay;
-	DisplayCtx.rcScreen.bottom = DisplayCtx.rcScreen.top + g_cyDockScreen;
 
 	DisplayCtx.rcRect.left = m_rcScreen.left + SCREEN_PADDING_LEFT;
 	DisplayCtx.rcRect.top = m_yDisplay;
-	DisplayCtx.rcRect.right = DisplayCtx.rcRect.left + DESC_PANE_X;
-	DisplayCtx.rcRect.bottom = DisplayCtx.rcRect.top + g_cyDockScreen;
+	DisplayCtx.rcRect.right = DisplayCtx.rcRect.left + RectWidth(m_rcScreen) - (cxRightPane + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT);
+	DisplayCtx.rcRect.bottom = DisplayCtx.rcScreen.bottom;
 
 	//	Get any display options (we need to do this first because it may specify
 	//	a background image.
@@ -1989,7 +2011,7 @@ void CDockScreen::ShowPane (const CString &sName)
 	rcPane.left = m_rcScreen.left;
 	rcPane.right = m_rcScreen.right;
 	rcPane.top = m_yDisplay;
-	rcPane.bottom = rcPane.top + g_cyDockScreen;
+	rcPane.bottom = m_rcScreen.bottom;
 
 	m_CurrentPane.InitPane(this, pNewPane, rcPane);
 

@@ -6,7 +6,7 @@
 #include "Transcendence.h"
 #include "XMLUtil.h"
 
-#define MAIN_SCREEN_WIDTH					1280
+#define MAIN_SCREEN_WIDTH					1500
 #define MAIN_SCREEN_HEIGHT					1280
 
 #define TEXT_CRAWL_X						512
