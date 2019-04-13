@@ -354,6 +354,19 @@ bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
 	return true;
 	}
 
+void CItem::ClearDamaged (void)
+
+//	ClearDamaged
+//
+//	Remove damage
+
+	{
+	m_dwFlags &= ~flagDamaged;
+
+	if (m_pExtra)
+		m_pExtra->m_iDamagedHP = 0;
+	}
+
 CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName)
 
 //	CreateItemByName
@@ -1763,6 +1776,25 @@ bool CItem::HasUseItemScreen (void) const
 	return (m_pItemType->GetUseDesc(&Desc) && !Desc.bUsableInCockpit && Desc.pScreenRoot != NULL);
 	}
 
+bool CItem::IsDamaged (int *retiDamagedHP) const
+
+//	IsDamaged
+//
+//	Returns TRUE if the item is damaged (optionally returns the hit points of 
+//	damage).
+
+	{
+	if (retiDamagedHP)
+		{
+		if (m_pExtra)
+			*retiDamagedHP = m_pExtra->m_iDamagedHP;
+		else
+			*retiDamagedHP = 0;
+		}
+
+	return (m_dwFlags & flagDamaged ? true : false);
+	}
+
 bool CItem::IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2)
 
 //	IsDisruptionEqual
@@ -1809,6 +1841,7 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 	return ((bIgnoreCharges || pExtra->m_dwCharges == 0)
 			&& pExtra->m_dwLevel == 0
 			&& pExtra->m_dwVariantCounter == 0
+			&& pExtra->m_iDamagedHP == 0
 			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
@@ -1836,6 +1869,7 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 		return ((bIgnoreCharges || m_pExtra->m_dwCharges == pSrc->m_dwCharges)
 				&& m_pExtra->m_dwLevel == pSrc->m_dwLevel
 				&& m_pExtra->m_dwVariantCounter == pSrc->m_dwVariantCounter
+				&& m_pExtra->m_iDamagedHP == pSrc->m_iDamagedHP
 				&& (bIgnoreDisrupted || IsDisruptionEqual(GetUniverse().GetTicks(), m_pExtra->m_dwDisruptedTime, pSrc->m_dwDisruptedTime))
 				&& (bIgnoreEnhancements || m_pExtra->m_Mods.IsEqual(pSrc->m_Mods))
 				&& (bIgnoreData || m_pExtra->m_Data.IsEqual(pSrc->m_Data)));
@@ -2825,6 +2859,7 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
 				m_pExtra->m_dwLevel = 0;
 				m_pExtra->m_dwDisruptedTime = 0;
 				m_pExtra->m_Mods = CItemEnhancement(HIWORD(dwLoad));
+				m_pExtra->m_iDamagedHP = 0;
 				}
 			}
 
@@ -2890,6 +2925,11 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
 
 			if (pBuffer->GetCount() >= 9)
 				m_pExtra->m_dwVariantCounter = (DWORD)pBuffer->GetElement(iStart+5)->GetIntegerValue();
+
+			//	Damaged HP
+
+			if (pBuffer->GetCount() >= 10)
+				m_pExtra->m_iDamagedHP = pBuffer->GetElement(iStart+6)->GetIntegerValue();
 			}
 		}
 	}
@@ -2948,11 +2988,14 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			m_pExtra->m_Data.ReadFromStream(Ctx);
 
 			if (Ctx.dwVersion >= 169)
-				{
 				Ctx.pStream->Read(m_pExtra->m_dwVariantCounter);
-				}
 			else
 				m_pExtra->m_dwVariantCounter = 0;
+
+			if (Ctx.dwVersion >= 173)
+				Ctx.pStream->Read(m_pExtra->m_iDamagedHP);
+			else
+				m_pExtra->m_iDamagedHP = 0;
 			}
 		else
 			m_pExtra = NULL;
@@ -2971,6 +3014,7 @@ void CItem::ReadFromStream (SLoadCtx &Ctx)
 			m_pExtra->m_dwLevel = 0;
 			m_pExtra->m_dwDisruptedTime = 0;
 			m_pExtra->m_dwVariantCounter = 0;
+			m_pExtra->m_iDamagedHP = 0;
 			}
 		else
 			m_pExtra = NULL;
@@ -3007,6 +3051,23 @@ void CItem::SetCharges (int iCharges)
 		m_pExtra->m_dwCharges = Min(iCharges, iChargesLimit);
 	else
 		m_pExtra->m_dwCharges = iCharges;
+	}
+
+void CItem::SetDamaged (int iDamagedHP)
+
+//	SetDamaged
+//
+//	Sets damaged hit points.
+
+	{
+	if (iDamagedHP == 0)
+		ClearDamaged();
+	else
+		{
+		SetDamaged();
+		Extra();
+		m_pExtra->m_iDamagedHP = iDamagedHP;
+		}
 	}
 
 void CItem::SetDisrupted (DWORD dwDuration)
@@ -3198,25 +3259,16 @@ ICCItem *CItem::WriteToCCItem (void) const
 //	Converts item to a ICCItem
 
 	{
-	ICCItem *pResult = CCodeChain::CreateLinkedList();
-	if (pResult->IsError())
-		return pResult;
-
-	CCLinkedList *pList = (CCLinkedList *)pResult;
-	ICCItem *pInt;
+	ICCItemPtr pList = ICCItemPtr(ICCItem::List);
 
 	//	Next integer is the item UNID
 
-	pInt = CCodeChain::CreateInteger(GetType()->GetUNID());
-	pList->Append(pInt);
-	pInt->Discard();
+	pList->AppendInteger(GetType()->GetUNID());
 
 	//	Next is the count, flags, and installed
 
 	DWORD *pSource = (DWORD *)this;
-	pInt = CCodeChain::CreateInteger(pSource[1]);
-	pList->Append(pInt);
-	pInt->Discard();
+	pList->AppendInteger(pSource[1]);
 
 	//	Save extra
 
@@ -3224,21 +3276,12 @@ ICCItem *CItem::WriteToCCItem (void) const
 		{
 		//	Save the version (starting in v45)
 
-		pInt = CCodeChain::CreateInteger(CSystem::GetSaveVersion());
-		pList->Append(pInt);
-		pInt->Discard();
+		pList->AppendInteger(CSystem::GetSaveVersion());
 
-		//	Charges
+		//	Charges and level
 
-		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwCharges);
-		pList->Append(pInt);
-		pInt->Discard();
-
-		//	Condition
-
-		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwLevel);
-		pList->Append(pInt);
-		pInt->Discard();
+		pList->AppendInteger(m_pExtra->m_dwCharges);
+		pList->AppendInteger(m_pExtra->m_dwLevel);
 
 		//	Mods
 
@@ -3247,9 +3290,7 @@ ICCItem *CItem::WriteToCCItem (void) const
 		m_pExtra->m_Mods.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(pInt);
-		pInt->Discard();
+		pList->AppendString(CString(Stream.GetPointer(), Stream.GetLength()));
 
 		//	Attribute data block
 
@@ -3257,24 +3298,16 @@ ICCItem *CItem::WriteToCCItem (void) const
 		m_pExtra->m_Data.WriteToStream(&Stream);
 		Stream.Close();
 
-		pInt = CCodeChain::CreateString(CString(Stream.GetPointer(), Stream.GetLength()));
-		pList->Append(pInt);
-		pInt->Discard();
+		pList->AppendString(CString(Stream.GetPointer(), Stream.GetLength()));
 
-		//	Disrupted time
+		//	More
 
-		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwDisruptedTime);
-		pList->Append(pInt);
-		pInt->Discard();
-
-		//  Variant number
-
-		pInt = CCodeChain::CreateInteger(m_pExtra->m_dwVariantCounter);
-		pList->Append(pInt);
-		pInt->Discard();
+		pList->AppendInteger(m_pExtra->m_dwDisruptedTime);
+		pList->AppendInteger(m_pExtra->m_dwVariantCounter);
+		pList->AppendInteger(m_pExtra->m_iDamagedHP);
 		}
 
-	return pResult;
+	return pList->Reference();
 	}
 
 void CItem::WriteToStream (IWriteStream *pStream) const
@@ -3294,6 +3327,7 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 //	CItemEnhancement
 //	CAttributeDataBlock
 //	DWORD		m_dwVariantCounter
+//	DWORD		m_iDamagedHP
 
 	{
 	DWORD dwSave = m_pItemType->GetUNID();
@@ -3322,6 +3356,7 @@ void CItem::WriteToStream (IWriteStream *pStream) const
 		//	More variables
 
 		pStream->Write(m_pExtra->m_dwVariantCounter);
+		pStream->Write(m_pExtra->m_iDamagedHP);
 		}
 	}
 

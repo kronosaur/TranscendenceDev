@@ -317,7 +317,7 @@ class CItem
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
 		CString CalcSortKey (void) const;
 		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
-		inline void ClearDamaged (void) { m_dwFlags &= ~flagDamaged; }
+		void ClearDamaged (void);
 		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
@@ -374,7 +374,7 @@ class CItem
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		bool HasUseItemScreen (void) const;
-		inline bool IsDamaged (void) const { return (m_dwFlags & flagDamaged ? true : false); }
+		bool IsDamaged (int *retiDamagedHP = NULL) const;
 		inline bool IsDisrupted (void) const;
 		inline bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
         inline bool IsEmpty (void) const { return (m_pItemType == NULL); }
@@ -386,8 +386,9 @@ class CItem
 		bool RemoveEnhancement (DWORD dwID);
 		void SetCharges (int iCharges);
 		inline void SetCount (int iCount) { m_dwCount = (DWORD)iCount; }
-		inline void SetDamaged (void) { m_dwFlags |= flagDamaged; }
-		inline void SetDamaged (bool bDamaged) { ClearDamaged(); if (bDamaged) SetDamaged(); }
+		void SetDamaged (void) { m_dwFlags |= flagDamaged; }
+		void SetDamaged (bool bDamaged) { ClearDamaged(); if (bDamaged) SetDamaged(); }
+		void SetDamaged (int iDamagedHP);
 		inline void SetData (const CString &sAttrib, ICCItem *pData) { Extra(); m_pExtra->m_Data.SetData(sAttrib, pData); }
 		void SetDisrupted (DWORD dwDuration);
 		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
@@ -427,6 +428,7 @@ class CItem
 			DWORD m_dwLevel = 0;				//	For scalable items, this stores the level
 			DWORD m_dwDisruptedTime = 0;		//	If >0, the tick on which disruption expires
 			DWORD m_dwVariantCounter = 0;		//	Counter for setting variants
+			int m_iDamagedHP = 0;				//	Hit Points of damage taken (for armor, etc.).
 
 			CItemEnhancement m_Mods;			//	Class-specific modifications (e.g., armor enhancements)
 

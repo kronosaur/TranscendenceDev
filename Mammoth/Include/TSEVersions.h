@@ -628,3 +628,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					172;
 //
 //	172: 1.8 Beta 5
 //		Added m_iShotSeparationScale to CInstalledDevice.
+//
+//	173: 1.9 Alpha 1
+//		Added m_iDamagedHP to CItem::SExtra
