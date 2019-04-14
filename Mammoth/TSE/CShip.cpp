@@ -3710,6 +3710,8 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 //	Installs the item at the cursor as armor.
 
 	{
+	CInstalledArmor *pSect = GetArmorSection(iSect);
+
 	//	Remember the item that we want to install
 
 	CItem NewArmor = ItemList.GetItemAtCursor();
@@ -3735,6 +3737,11 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	if (!ItemList.Refresh(OldArmor))
 		return;
 
+	//	Remember hit points
+
+	int iOldMaxHP;
+	int iOldHP = OldArmor.GetHitPoints(CItemCtx(this, pSect), &iOldMaxHP);
+
 	//	Mark the item as about to be uninstalled
 
 	ItemList.SetInstalledAtCursor(-2);
@@ -3742,14 +3749,12 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	//	How damaged is the current armor?
 
-	bool bDamageOldArmor = IsArmorDamaged(iSect);
 	bool bDestroyOldArmor = !IsArmorRepairable(iSect);
 
 	//	Now install the selected item as new armor
 
 	ItemList.Refresh(NewArmor);
 
-	CInstalledArmor *pSect = GetArmorSection(iSect);
 	pSect->Install(this, ItemList, iSect);
 
 	//	The item is now known and referenced.
@@ -3773,10 +3778,9 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 			{
 			OldArmor.SetInstalled(-1);
 			OldArmor.SetCount(1);
-			if (bDamageOldArmor)
-				OldArmor.SetDamaged();
-			else
-				OldArmor.ClearDamaged();
+
+			int iNewMaxHP = OldArmor.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(OldArmor));
+			OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
 
 			ItemList.AddItem(OldArmor);
 			}
@@ -8185,12 +8189,12 @@ void CShip::UpdateArmorItems (void)
 				&& Item.GetType()->GetCategory() == itemcatArmor)
 			{
 			CInstalledArmor *pSect = GetArmorSection(Item.GetInstalled());
-			bool bDamaged = (pSect->GetHitPoints() < pSect->GetMaxHP(this));
-			if (Item.IsDamaged() != bDamaged)
-				{
-				ItemList.SetDamagedAtCursor(bDamaged);
+			int iHP = pSect->GetHitPoints();
+			int iMaxHP = pSect->GetMaxHP(this);
+			int iDamagedHP = iMaxHP - iHP;
+
+			if (ItemList.SetDamagedAtCursor(iDamagedHP))
 				InvalidateItemListState();
-				}
 			}
 		}
 	}

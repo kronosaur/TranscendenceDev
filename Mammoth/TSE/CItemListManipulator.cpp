@@ -33,7 +33,7 @@ CItemListManipulator::~CItemListManipulator (void)
 	{
 	}
 
-bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageChance)
+bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageChance, int iDamagedHP)
 
 //	AddDamagedComponents
 //
@@ -53,7 +53,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 		if (iDamageChance <= 5 && !Item.IsVirtual())
 			{
 			CItem ItemToDrop(Item);
-			ItemToDrop.ClearDamaged();
+			ItemToDrop.SetDamaged(iDamagedHP);
 			ItemToDrop.SetInstalled(-1);
 
 			AddItem(ItemToDrop);
@@ -86,7 +86,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 		else
 			{
 			CItem ItemToDrop(Item);
-			ItemToDrop.SetDamaged();
+			ItemToDrop.SetDamaged(iDamagedHP);
 			ItemToDrop.SetInstalled(-1);
 
 			AddItem(ItemToDrop);
@@ -671,6 +671,32 @@ void CItemListManipulator::SetDamagedAtCursor (bool bDamaged, int iCount)
 	NewItem.SetDamaged(bDamaged);
 
 	MoveItemTo(NewItem, OldItem);
+	}
+
+bool CItemListManipulator::SetDamagedAtCursor (int iDamagedHP, int iCount)
+
+//	SetDamagedAtCursor
+//
+//	Sets the damage flag. Returns TRUE if the value changed.
+
+	{
+	ASSERT(m_iCursor != -1);
+
+	//	Get the item at the cursor. Abort if there is nothing to do
+
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	if (OldItem.GetDamagedHP(CItemCtx(OldItem)) == iDamagedHP)
+		return false;
+
+	//	Generate a new item
+
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	if (iCount != -1)
+		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
+	NewItem.SetDamaged(iDamagedHP);
+
+	MoveItemTo(NewItem, OldItem);
+	return true;
 	}
 
 void CItemListManipulator::SetDataAtCursor (const CString &sAttrib, ICCItem *pData, int iCount)

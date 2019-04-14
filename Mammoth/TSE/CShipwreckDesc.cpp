@@ -60,13 +60,18 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 				//	Compute the % damage of the armor.
 
 				CInstalledArmor *pArmor = pShip->GetArmorSection(WreckItem.GetInstalled());
-				int iArmorHP = pArmor->GetHitPoints();
-				int iArmorMaxHP = pArmor->GetMaxHP(pShip);
-				int iArmorIntegrity = (iArmorMaxHP > 0 ? 100 * iArmorHP / iArmorMaxHP : 0);
+				int iCurHP = pArmor->GetHitPoints();
+				int iCurMaxHP = pArmor->GetMaxHP(pShip);
+
+				WreckItem.SetInstalled(-1);
+				int iNewMaxHP = WreckItem.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(WreckItem));
+
+				int iArmorIntegrity = (iCurMaxHP > 0 ? 100 * iCurHP / iCurMaxHP : 0);
+				int iDamagedHP = iNewMaxHP - CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
 
 				//	Add this item to the wreck
 
-				Dest.AddDamagedComponents(WreckItem, 100 - iArmorIntegrity);
+				Dest.AddDamagedComponents(WreckItem, 100 - iArmorIntegrity, iDamagedHP);
 				}
 
 			//	Other installed devices have a chance of being

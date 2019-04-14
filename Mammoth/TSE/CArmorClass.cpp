@@ -1304,6 +1304,45 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
+int CArmorClass::CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP)
+
+//	CalcMaxHPChange
+//
+//	Returns the new hit point value if maximum HP has changed.
+
+	{
+	if (iCurMaxHP == iNewMaxHP)
+		return iCurHP;
+
+	//	If new hit points are 0, then we have no choice but to reduce
+	//	current hit points.
+
+	if (iNewMaxHP == 0)
+		return 0;
+
+	//	If old hit points are 0, then we set hit points to the new max.
+
+	else if (iCurMaxHP == 0)
+		return iNewMaxHP;
+
+	//	Otherwise, we try to keep the proportion of damage constant.
+
+	else
+		{
+		//	This should never happen, but if it does, we deal with it.
+
+		if (iCurHP > iCurMaxHP)
+			{
+			iCurMaxHP = iCurHP;
+			ASSERT(false);
+			}
+
+		Metric rDamage = (iCurMaxHP - iCurHP) / (Metric)iCurMaxHP;
+		int iDamage = Min(mathRound(rDamage * iNewMaxHP), iNewMaxHP);
+		return iNewMaxHP - iDamage;
+		}
+	}
+
 Metric CArmorClass::CalcRegen180 (CItemCtx &ItemCtx) const
 
 //	CalcRegen180
@@ -1954,7 +1993,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		if (pArmor)
 			return ICCItemPtr(pArmor->GetHitPoints());
 		else
-			return ICCItemPtr(GetMaxHP(Ctx));
+			return ICCItemPtr(Ctx.GetItem().GetHitPoints(Ctx));
 		}
 
 	else if (strEquals(sName, PROPERTY_HP_BONUS))

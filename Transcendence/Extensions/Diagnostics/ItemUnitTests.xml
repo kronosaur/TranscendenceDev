@@ -127,6 +127,119 @@
 									'powerUse
 									)														result:40	}
 						))
+
+					;	Unit Tests on Armor Damage
+
+					(diagRun (list
+
+						;	Set up
+
+						(lambda ()
+							(block (i)
+								(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+								(if (not gPlayerShip)
+									(error "Unable to create player ship.")
+									)
+								(shpOrder gPlayerShip 'hold)
+
+								;	Install carbide carapace
+
+								(objAddItem gPlayerShip (itmCreate &itCarbideCarapace; 4))
+								(for i 0 3
+									(shpInstallArmor gPlayerShip (itmCreate &itCarbideCarapace; 1) i)
+									)
+								)
+							)
+
+						;	Some tests
+
+						(lambda ()
+							(block (
+								(armorSeg (shpGetArmor gPlayerShip 0))
+								damageDone
+								hpLeft
+								hpAdjusted
+								armorSeg2
+								)
+								;	Make sure the armor gets its completion bonus
+
+								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) 300)
+									(error (cat (itmGetName armorSeg 0) ": Expected 300 HP."))
+									)
+
+								;	Cause damage
+
+								(setq damageDone (shpDamageArmor gPlayerShip armorSeg 'generic 100))
+								(if (!= damageDone 100)
+									(error "Generic damage did not cause 100 hp.")
+									)
+
+								(setq hpLeft (- 300 damageDone))
+								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) hpLeft)
+									(error (cat (itmGetName armorSeg 0) ": Expected " hpLeft " HP."))
+									)
+
+								;	Remove the segment (replace with stock reactive armor)
+
+								(if (not (shpInstallArmor gPlayerShip (itmCreate &itReactiveArmor; 1) 0))
+									(error "Unable to install reactive armor.")
+									)
+
+								;	Find uninstalled carbide carapace
+
+								(setq armorSeg (@ (objGetItems gPlayerShip "aU +unid:&itCarbideCarapace;") 0))
+								(if (not armorSeg)
+									(error "Unable to find uninstalled carbide carapact.")
+									)
+
+								;	Hit points change because once uninstalled we lose the
+								;	completion bonus.
+
+								(setq hpAdjusted 133)
+
+								;	Check hit points.
+
+								(if (!= (itmGetProperty armorSeg 'hp) hpAdjusted)
+									(error (cat "Incorrect HP after uninstall: " (itmGetProperty armorSet 'hp)))
+									)
+
+								;	Remaining installed segments also lose their completion
+								;	bonus.
+
+								(setq armorSeg2 (shpGetArmor gPlayerShip 1))
+								(if (not armorSeg2)
+									(error "Unable to find other armor segment.")
+									)
+
+								(if (!= (objGetItemProperty gPlayerShip armorSeg2 'hp) 200)
+									(error "Carbide carapace did not have 200 hp.")
+									)
+
+								;	Install the damaged segment back.
+
+								(if (not (shpInstallArmor gPlayerShip armorSeg 0))
+									(error "Unable to install carbide carapace.")
+									)
+
+								;	On re-install we only end up with 199 hit points, due to round-off
+								;	error.
+
+								(setq armorSeg (shpGetArmor gPlayerShip 0))
+								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) 199)
+									(error "Re-installed carbide carapace does not have 199 hit points.")
+									)
+								)
+							)
+
+						;	Clean up
+
+						(lambda ()
+							(block ()
+								(objDestroy gPlayerShip)
+								(setq gPlayerShip Nil)
+								)
+							)
+						))
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

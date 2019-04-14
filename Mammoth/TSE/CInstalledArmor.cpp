@@ -118,17 +118,11 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	m_fComplete = false;
 	m_fPrimeSegment = false;
 	m_fConsumePower = false;
-	m_iHitPoints = m_pArmorClass->GetMaxHP(ItemCtx);
-	if (pItem->IsDamaged())
-		m_iHitPoints = m_iHitPoints / 2;
+	m_iHitPoints = pItem->GetHitPoints(ItemCtx);
 
 	//	Mark the item as installed
 
 	ItemList.SetInstalledAtCursor(iSect);
-
-	//	Clear the damage bit, since we restore it properly on uninstall.
-
-	ItemList.SetDamagedAtCursor(false);
 
 	//	After we've installed, set the item pointer
 	//	(we have to wait until after installation so that we
@@ -212,12 +206,11 @@ void CInstalledArmor::SetComplete (CSpaceObject *pSource, bool bComplete)
 	{
 	if (bComplete != m_fComplete)
 		{
+		int iOldMaxHP = GetMaxHP(pSource);
+
 		m_fComplete = bComplete;
 
-		if (m_fComplete)
-			m_iHitPoints += m_pArmorClass->GetCompleteBonus();
-		else
-			m_iHitPoints = Min(m_iHitPoints, GetMaxHP(pSource));
+		m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, GetMaxHP(pSource));
 		}
 	}
 
@@ -243,37 +236,7 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	//	Now compute our new maximum and see if we need to adjust current hit 
 	//	points.
 
-	int iNewMaxHP = GetMaxHP(pSource);
-	if (iOldMaxHP != iNewMaxHP)
-		{
-		//	If new hit points are 0, then we have no choice but to reduce
-		//	current hit points.
-
-		if (iNewMaxHP == 0)
-			m_iHitPoints = 0;
-
-		//	If old hit points are 0, then we set hit points to the new max.
-
-		else if (iOldMaxHP == 0)
-			m_iHitPoints = iNewMaxHP;
-
-		//	Otherwise, we try to keep the proportion of damage constant.
-
-		else
-			{
-			//	This should never happen, but if it does, we deal with it.
-
-			if (m_iHitPoints > iOldMaxHP)
-				{
-				iOldMaxHP = m_iHitPoints;
-				ASSERT(false);
-				}
-
-			Metric rDamage = (iOldMaxHP - m_iHitPoints) / (Metric)iOldMaxHP;
-			int iDamage = Min(mathRound(rDamage * iNewMaxHP), iNewMaxHP);
-			m_iHitPoints = iNewMaxHP - iDamage;
-			}
-		}
+	m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, GetMaxHP(pSource));
 	}
 
 void CInstalledArmor::WriteToStream (IWriteStream *pStream)

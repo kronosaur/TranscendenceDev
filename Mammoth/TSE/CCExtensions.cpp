@@ -1229,7 +1229,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpInstallArmor",				fnShipSet,			FN_SHIP_INSTALL_ARMOR,
-			"(shpInstallArmor ship item armorSegment)",
+			"(shpInstallArmor ship item armorSegment) -> True/Nil",
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
@@ -5200,13 +5200,13 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_DAMAGED:
 			{
-			bool bDamaged;
-			if (pArgs->GetCount() > 1)
-				bDamaged = !pArgs->GetElement(1)->IsNil();
+			if (pArgs->GetCount() < 2)
+				Item.SetDamaged(true);
+			else if (pArgs->GetElement(1)->IsInteger())
+				Item.SetDamaged(pArgs->GetElement(1)->GetIntegerValue());
 			else
-				bDamaged = true;
+				Item.SetDamaged(!pArgs->GetElement(1)->IsNil());
 
-			Item.SetDamaged(bDamaged);
 			return CreateListFromItem(Item);
 			}
 

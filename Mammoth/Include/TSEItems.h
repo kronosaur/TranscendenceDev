@@ -342,12 +342,14 @@ class CItem
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
 		inline const CEconomyType *GetCurrencyType (void) const;
+		int GetDamagedHP (CItemCtx &ItemCtx) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
+		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL) const;
 		inline int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -386,8 +388,7 @@ class CItem
 		bool RemoveEnhancement (DWORD dwID);
 		void SetCharges (int iCharges);
 		inline void SetCount (int iCount) { m_dwCount = (DWORD)iCount; }
-		void SetDamaged (void) { m_dwFlags |= flagDamaged; }
-		void SetDamaged (bool bDamaged) { ClearDamaged(); if (bDamaged) SetDamaged(); }
+		void SetDamaged (bool bDamaged = true) { ClearDamaged(); if (bDamaged) m_dwFlags |= flagDamaged; }
 		void SetDamaged (int iDamagedHP);
 		inline void SetData (const CString &sAttrib, ICCItem *pData) { Extra(); m_pExtra->m_Data.SetData(sAttrib, pData); }
 		void SetDisrupted (DWORD dwDuration);
@@ -492,7 +493,7 @@ class CItemListManipulator
 		CItemListManipulator (CItemList &ItemList);
 		~CItemListManipulator (void);
 
-		bool AddDamagedComponents (const CItem &Item, int iDamageChance);
+		bool AddDamagedComponents (const CItem &Item, int iDamageChance, int iDamagedHP);
 		void AddItem (const CItem &Item);
 		bool AddItems (const CItemList &ItemList, int iChance = 100);
 
@@ -525,6 +526,7 @@ class CItemListManipulator
 		void SetChargesAtCursor (int iCharges, int iCount = 1);
 		void SetCountAtCursor (int iCount);
 		void SetDamagedAtCursor (bool bDamaged, int iCount = 1);
+		bool SetDamagedAtCursor (int iDamagedHP, int iCount = 1);
 		void SetDataAtCursor (const CString &sAttrib, ICCItem *pData, int iCount = 1);
 		void SetDisruptedAtCursor (DWORD dwDuration, int iCount = 1);
 		void SetEnhancedAtCursor (bool bEnhanced);

@@ -26,6 +26,7 @@
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
+#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
 #define PROPERTY_KNOWN							CONSTLIT("known")
@@ -889,6 +890,30 @@ const CItemList &CItem::GetComponents (void) const
 	return m_pItemType->GetComponents();
 	}
 
+int CItem::GetDamagedHP (CItemCtx &ItemCtx) const
+
+//	GetDamagedHP
+//
+//	Returns the number of damaged HPs.
+
+	{
+	if (m_pItemType == NULL)
+		return 0;
+
+	int iDamagedHP;
+	if (!IsDamaged(&iDamagedHP))
+		return 0;
+
+	if (iDamagedHP == 0)
+		{
+		CArmorClass *pArmor = m_pItemType->GetArmorClass();
+		int iMaxHP = pArmor->GetMaxHP(ItemCtx);
+		iDamagedHP = iMaxHP / 2;
+		}
+
+	return iDamagedHP;
+	}
+
 ICCItemPtr CItem::GetDataAsItem (const CString &sAttrib) const
 
 //	GetDataAsItem
@@ -1024,7 +1049,13 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 	//	type is unknown).
 
 	if (IsDamaged())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
+		{
+		CArmorClass *pArmor = m_pItemType->GetArmorClass();
+		if (pArmor)
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("damaged: %d hp"), GetHitPoints(Ctx))));
+		else
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
+		}
 
 	if (IsDisrupted())
 		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("ionized")));
@@ -1122,6 +1153,56 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 		}
 
 	return sResult;
+	}
+
+int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP) const
+
+//	GetHitPoints
+//
+//	Returns the number of hit points left on the item.
+
+	{
+	CArmorClass *pArmor;
+	CDeviceClass *pDevice;
+
+	if (m_pItemType == NULL)
+		{
+		if (retiMaxHP) *retiMaxHP = 0;
+		return 0;
+		}
+
+	else if (pArmor = m_pItemType->GetArmorClass())
+		{
+		CInstalledArmor *pInstalled = Ctx.GetArmor();
+		if (pInstalled)
+			{
+			if (retiMaxHP) *retiMaxHP = pArmor->GetMaxHP(Ctx);
+			return pInstalled->GetHitPoints();
+			}
+		else
+			{
+			int iMaxHP = pArmor->GetMaxHP(Ctx);
+			int iDamagedHP = GetDamagedHP(Ctx);
+
+			if (retiMaxHP) *retiMaxHP = iMaxHP;
+			return Max(0, iMaxHP - iDamagedHP);
+			}
+		}
+
+	else if (pDevice = m_pItemType->GetDeviceClass())
+		{
+		CInstalledDevice *pInstalled = Ctx.GetDevice();
+		if (pInstalled)
+			return pInstalled->GetHitPoints(Ctx, retiMaxHP);
+		else
+			return pDevice->GetHitPoints(Ctx, retiMaxHP);
+		}
+
+	else
+		{
+		if (retiMaxHP) *retiMaxHP = 0;
+		return 0;
+		}
 	}
 
 int CItem::GetLevel (void) const
@@ -3066,7 +3147,7 @@ void CItem::SetDamaged (int iDamagedHP)
 		{
 		SetDamaged();
 		Extra();
-		m_pExtra->m_iDamagedHP = iDamagedHP;
+		m_pExtra->m_iDamagedHP = Max(0, iDamagedHP);
 		}
 	}
 
@@ -3148,7 +3229,14 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		SetCharges(pValue->GetIntegerValue());
 		}
 	else if (strEquals(sName, PROPERTY_DAMAGED))
-		SetDamaged((pValue == NULL) || !pValue->IsNil());
+		{
+		if (pValue == NULL)
+			SetDamaged(true);
+		else if (pValue->IsInteger())
+			SetDamaged(pValue->GetIntegerValue());
+		else
+			SetDamaged(!pValue->IsNil());
+		}
 
 	else if (strEquals(sName, PROPERTY_DISRUPTED))
 		{
