@@ -3593,14 +3593,14 @@ void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
 			int iLeft = pArmor->GetHitPoints();
 			iTotalArmorLeft += iLeft;
 
-			int iDamage = (iMaxHP > 0 ? 100 - (iLeft * 100 / iMaxHP) : 100);
+			int iDamage = 100 - CArmorClass::CalcIntegrity(iLeft, iMaxHP);
 			if (iDamage > iWorstDamage)
 				iWorstDamage = iDamage;
 			}
 
 		//	Compute the percent damage of all armor segments.
 
-		int iArmorDamage = (iTotalMaxArmor > 0 ? 100 - (iTotalArmorLeft * 100 / iTotalMaxArmor) : 100);
+		int iArmorDamage = 100 - CArmorClass::CalcIntegrity(iTotalArmorLeft, iTotalMaxArmor);
 
 		//	Compute the percent damage of all interior segments.
 
@@ -3628,7 +3628,7 @@ void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
 			CInstalledArmor *pArmor = GetArmorSection(i);
 
 			int iMaxHP = pArmor->GetMaxHP(this);
-			int iDamage = (iMaxHP > 0 ? 100 - (pArmor->GetHitPoints() * 100 / iMaxHP) : 100);
+			int iDamage = 100 - CArmorClass::CalcIntegrity(pArmor->GetHitPoints(), iMaxHP);
 			if (iDamage > iMaxPercent)
 				iMaxPercent = iDamage;
 			}

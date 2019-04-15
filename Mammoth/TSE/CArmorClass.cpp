@@ -1305,6 +1305,19 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iDamage / 2;
 	}
 
+int CArmorClass::CalcIntegrity (int iHP, int iMaxHP)
+
+//	CalcIntegrity
+//
+//	Calculates armor integrity.
+
+	{
+	if (iMaxHP == 0 || iMaxHP <= iHP)
+		return 100;
+
+	return ((1000 * iHP / iMaxHP) + 5) / 10;
+	}
+
 int CArmorClass::CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP)
 
 //	CalcMaxHPChange

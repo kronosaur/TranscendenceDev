@@ -52,11 +52,7 @@ int CInstalledArmor::GetHitPointsPercent (CSpaceObject *pSource)
 //	Return the armor integrity (hit points) as a % of maximum hp.
 
 	{
-	int iMaxHP = GetMaxHP(pSource);
-	if (iMaxHP == 0 || iMaxHP <= GetHitPoints())
-		return 100;
-
-	return ((1000 * GetHitPoints() / iMaxHP) + 5) / 10;
+	return CArmorClass::CalcIntegrity(GetHitPoints(), GetMaxHP(pSource));
 	}
 
 int CInstalledArmor::IncCharges (CSpaceObject *pSource, int iChange)

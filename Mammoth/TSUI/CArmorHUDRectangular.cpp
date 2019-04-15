@@ -439,7 +439,7 @@ void CArmorHUDRectangular::PaintShipSections (SHUDPaintCtx &Ctx, CShip *pShip)
 		const SLabelEntry &Label = m_Labels[i];
 		const CShip::SAttachedSectionInfo &Section = Ctx.SectionInfo[i];
 
-		int iIntegrity = 100 * Section.iHP / Section.iMaxHP;
+		int iIntegrity = CArmorClass::CalcIntegrity(Section.iHP, Section.iMaxHP);
 		CString sHP = strPatternSubst("%d%%", iIntegrity);
 
 		CG32bitPixel rgbBack = m_rgbArmorTextBack;

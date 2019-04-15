@@ -136,6 +136,7 @@ class CArmorClass
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 
+		static int CalcIntegrity (int iHP, int iMaxHP);
 		static int CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP);
 		static int GetStdCost (int iLevel);
 		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);

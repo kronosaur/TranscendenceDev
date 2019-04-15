@@ -1051,7 +1051,12 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 		{
 		CArmorClass *pArmor = m_pItemType->GetArmorClass();
 		if (pArmor)
-			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("damaged: %d hp"), GetHitPoints(Ctx))));
+			{
+			int iMaxHP;
+			int iHP = GetHitPoints(Ctx, &iMaxHP);
+			int iArmorIntegrity = CArmorClass::CalcIntegrity(iHP, iMaxHP);
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("integrity: %d%%"), iArmorIntegrity)));
+			}
 		else
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
 		}
@@ -3285,10 +3290,8 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
         //  If this is armor, then we remember the current damaged state and
         //  carry that forward to the new level.
 
-        CInstalledArmor *pArmor;
-        int iArmorIntegrity;
-        if (pArmor = Ctx.GetArmor())
-            iArmorIntegrity = mathPercent(pArmor->GetHitPoints(), Ctx.GetArmorClass()->GetMaxHP(Ctx));
+		int iCurMaxHP;
+		int iCurHP = GetHitPoints(Ctx, &iCurMaxHP);
 
         //  Set the level
 
@@ -3297,8 +3300,14 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
         //  Set armor HP
 
-        if (pArmor)
-            pArmor->SetHitPoints(mathAdjust(Ctx.GetArmorClass()->GetMaxHP(Ctx), iArmorIntegrity));
+		int iNewMaxHP = Ctx.GetArmorClass()->GetMaxHP(Ctx);
+		int iNewHP = CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
+
+		CInstalledArmor *pArmor = Ctx.GetArmor();
+		if (pArmor)
+			pArmor->SetHitPoints(iNewHP);
+		else
+			SetDamaged(iNewMaxHP - iNewHP);
 
         return true;
         }

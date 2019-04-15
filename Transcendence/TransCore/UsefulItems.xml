@@ -790,15 +790,31 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
+		<StaticData>
+			<Data id="CargoCriteria">"aU"</Data>
+		</StaticData>
+
 		<Events>
 			<OnUseOnItem>
-				(block (resultID)
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					resultID
+					)
 
-					(if (shpIsRadioactive gPlayerShip)
-						(block Nil
-							(shpDecontaminate gPlayerShip)
-							(setq resultID 'descResultDecontaminated)
-							)
+					(switch
+						;	If applied on a loose segment, then no effect
+
+						(not (itmGetProperty dstItem 'installed))
+							(setq resultID 'descResultNoEffect)
+
+						;	If ship is radioactive, then we decontaminate
+
+						(shpIsRadioactive gPlayerShip)
+							(block Nil
+								(shpDecontaminate gPlayerShip)
+								(setq resultID 'descResultDecontaminated)
+								)
+
 						(setq resultID 'descResultNotNeeded)
 						)
 
@@ -806,7 +822,9 @@
 					(itmSetKnown gItem)
 					{
 						nextScreen: 'exitScreen
-						desc: (itmTranslate gItem resultID)
+						desc: (itmTranslate gItem resultID {
+							dstItem: (itmGetName dstItem)
+							})
 						}
 					)
 			</OnUseOnItem>
@@ -814,12 +832,22 @@
 
 		<Language>
 			<Text id="descResultDecontaminated">
-				The barrel was filled with a decontamination gel.
-				Your ship has been decontaminated.
+
+				The barrel was filled with a decontamination gel. Your ship has 
+				been decontaminated.
+
 			</Text>
 			<Text id="descResultNotNeeded">
-				The barrel was filled with a decontamination gel.
-				Since your ship is not radioactive, the gel has no effect.
+
+				The barrel was filled with a decontamination gel. Since your 
+				ship is not radioactive, the gel had no effect.
+
+			</Text>
+			<Text id="descResultNoEffect">
+
+				The barrel was filled with a decontamination gel. It had no 
+				effect on the %dstItem% because it is not radioactive.
+
 			</Text>
 		</Language>
 	</ItemType>
@@ -881,28 +909,39 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
+		<StaticData>
+			<Data id="CargoCriteria">"aU"</Data>
+		</StaticData>
+
 		<Events>
 			<OnUseOnItem>
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					)
-					(switch
-						(not (itmMatches dstItem "aI"))
-							Nil
+					(setq dstItem (objSetItemProperty gPlayerShip dstItem 'incHP (- (rollDice 3 6 0))))
 
-						(block Nil
-							(shpDamageArmor gPlayerShip dstItem 2 (rollDice 3 6 0))
+					;	Remove the armor paste from the player's cargo
+					(objRemoveItem gPlayerShip gItem 1)
 
-							;	Remove the armor paste from the player's cargo
-							(objRemoveItem gPlayerShip gItem 1)
+					;	Identify the item
+					(itmSetKnown gItem)
 
-							;	Identify the item
-							(itmSetKnown gItem)
+					;	If the armor was destroyed, then we remove it too.
+
+					(if (and (not (itmGetProperty dstItem 'installed))
+							(= (itmGetProperty dstItem 'hp) 0)
+							)
+						(block ()
+							(objRemoveItem gPlayerShip dstItem)
 
 							{
-								desc: (itmTranslate gItem 'descResult)
+								desc: (itmTranslate gItem 'descResultDestroyed)
 								}
 							)
+
+						{
+							desc: (itmTranslate gItem 'descResult)
+							}
 						)
 					)
 			</OnUseOnItem>
@@ -910,8 +949,16 @@
 
 		<Language>
 			<Text id="descResult">
+
 				Unfortunately, the barrel contained an organic acid that eats
-				through most metals. Your armor has been damaged.
+				through most metals. The armor segment has been damaged.
+
+			</Text>
+			<Text id="descResultDestroyed">
+
+				Unfortunately, the barrel contained an organic acid that eats
+				through most metals. The armor segment has been destroyed.
+
 			</Text>
 		</Language>
 	</ItemType>
@@ -938,6 +985,10 @@
 			>
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<StaticData>
+			<Data id="CargoCriteria">"aU"</Data>
+		</StaticData>
 
 		<Events>
 			<OnUseOnItem>
@@ -976,20 +1027,28 @@
 
 		<Language>
 			<Text id="descResultAlreadyContaminated">
+
 				The barrel contained radioactive waste. Your ship is already
 				radioactive; the waste has no further effect.
+
 			</Text>
 			<Text id="descResultContaminated">
+
 				The barrel contained radioactive waste. Your ship has been
 				contaminated.
+
 			</Text>
 			<Text id="descResultImmune">
+
 				The barrel contained radioactive waste. Fortunately, your armor
 				is immune to radiation. The waste has no effect.
+
 			</Text>
 			<Text id="descResultContaminatedCargo">
-				The barrel contained radioactive waste which just emptied
-				inside your cargo hold. Your ship has been contaminated.
+
+				The barrel contained radioactive waste which just emptied inside
+				your cargo hold. Your ship has been contaminated.
+
 			</Text>
 		</Language>
 	</ItemType>

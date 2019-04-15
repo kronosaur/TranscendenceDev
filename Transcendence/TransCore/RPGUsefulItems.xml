@@ -393,16 +393,6 @@
 									})
 								}
 
-						;	Disallow uninstalled armor as it does not record HP
-						;(not (itmIsInstalled dstItem))
-						;	{
-						;		canUse: Nil
-						;		desc: (itmTranslate gItem 'descUsageInstalledOnly {
-						;			useItem: (itmGetName gItem 'plural)
-						;			dstItem: (itmGetName dstItem 'article)
-						;			})
-						;		}
-
 						;	Item is unidentified (assume it is a barrel for now)
 						(not (itmIsKnown gItem))
 							{
@@ -543,8 +533,16 @@
 										(block (
 											(damageCaused (/ (* repair (random 20 100)) 100))
 											)
-											(objSetItemProperty shipObj dstItem 'incHP (- damageCaused))
-											(setq resultDesc 'descResultDamagedMore)
+											(setq dstItem (objSetItemProperty shipObj dstItem 'incHP (- damageCaused)))
+											(if (and (not (itmGetProperty dstItem 'installed))
+													(= (itmGetProperty dstItem 'hp) 0)
+													)
+												(block ()
+													(objRemoveItem shipObj dstItem)
+													(setq resultDesc 'descResultDestroyed)
+													)
+												(setq resultDesc 'descResultDamagedMore)
+												)
 											)
 
 										;	Sometimes we fail without damaging further
@@ -552,7 +550,7 @@
 										)
 
 								(block ()
-									(setq hpRepaired (min armorHP repair))
+									(setq hpRepaired (min (- maxArmorHP armorHP) repair))
 									(objSetItemProperty shipObj dstItem 'incHP repair)
 									(setq resultDesc 'descResultRepaired)
 										
@@ -612,6 +610,7 @@
 
 			<Text id="descResultCanNotRepair">Unfortunately, you cannot repair %dstItem% with it.</Text>
 			<Text id="descResultDamagedMore">Unfortunately, your attempt to repair the armor has only damaged it further.</Text>
+			<Text id="descResultDestroyed">Unfortunately, your attempt to repair the armor has destroyed it.</Text>
 			<Text id="descResultFailed">Unfortunately, your attempt to repair the armor was unsuccessful and the %useItem% was ruined in the process.</Text>
 			<Text id="descResultItemError">ERROR: &lt;RepairHP&gt; static data not found.</Text>
 			<Text id="descResultNotArmor">That is not an armor segment.</Text>
@@ -641,6 +640,10 @@
     -->
 
 	<Type UNID="&baStdPasteBarrel;">
+		<StaticData>
+			<Data id="CargoCriteria">"aU"</Data>
+		</StaticData>
+
 		<Events>
 			<CanUseOnItem>
 				(block (
@@ -686,9 +689,6 @@
 					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
 
 					(switch
-						(not (itmMatches dstItem "aI"))
-							"only installed armor for now"
-
 						(not enhancementInfo)
 							"ERROR: not implemented yet"
 
