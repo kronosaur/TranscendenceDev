@@ -41,7 +41,6 @@
 #define PROPERTY_EXTERNAL						CONSTLIT("external")
 #define PROPERTY_EXTRA_POWER_USE				CONSTLIT("extraPowerUse")
 #define PROPERTY_FIRE_ARC						CONSTLIT("fireArc")
-#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_LINKED_FIRE_OPTIONS			CONSTLIT("linkedFireOptions")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_POS							CONSTLIT("pos")

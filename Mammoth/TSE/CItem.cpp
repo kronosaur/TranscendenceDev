@@ -26,7 +26,6 @@
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
-#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
 #define PROPERTY_KNOWN							CONSTLIT("known")
@@ -3211,6 +3210,8 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	CInstalledDevice *pDevice;
+	CArmorClass *pArmor;
+	ICCItemPtr pNil(ICCItem::Nil);
 
 	if (IsEmpty())
 		{
@@ -3311,6 +3312,11 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
 		SetVariantNumber(pValue->GetIntegerValue());
 		}
+
+	//	If this is armor, then pass it on.
+
+	else if (pArmor = GetType()->GetArmorClass())
+		return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
 
 	//	If this is an installed device, then pass it on
 

@@ -132,6 +132,7 @@ class CArmorClass
         inline bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
+		bool SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError = NULL);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
 

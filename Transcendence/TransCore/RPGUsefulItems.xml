@@ -19,7 +19,6 @@
 			inherit=			"&dsRPGUseItemBase;"
 			nestedScreen=		"true"
 			>
-
 		<Display type="armorSelector"
 				dataFrom=	"player"
 				list=		"aI"
@@ -72,10 +71,12 @@
 
 	gData uses the following fields:
 
-		useItem:	The item being used. If not specifed we check gItem instead
+		useItem: The item being used. If not specifed we check gItem instead.
 
-		screenSet:	An RPG Screen Set structure (if we've been called from the
-					primary use item screen
+		criteria: If non-Nil, this is the criteria of items to show.
+
+		screenSet: An RPG Screen Set structure (if we've been called from the
+				primary use item screen.
 
 -->
 
@@ -92,21 +93,34 @@
 				(block (
 					(useItem (scrGetData gScreen 'useItem))
 					)
-					(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
-							(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)))
-							))
-					(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
-							(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)))
-							))
-					(scrAddListFilter gScreen 'filterInstallable "Damaged Items" (lambda (theItem)
-							(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)))
-							))
-					(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
-							(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)))
-							))
-					(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
-							(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)))
-							))
+					(switch
+						(@ gData 'criteria)
+							(block (
+								(criteria (@ gData 'criteria))
+								)
+								(scrSetListFilter gScreen (lambda (theItem)
+									(and (itmMatches theItem criteria) (not (itmIsEqual theItem useItem)))
+									))
+								)
+
+						(block()
+							(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
+									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)))
+									))
+							(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
+									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)))
+									))
+							(scrAddListFilter gScreen 'filterInstallable "Damaged Items" (lambda (theItem)
+									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)))
+									))
+							(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
+									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)))
+									))
+							(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
+									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)))
+									))
+							)
+						)
 
 					;	Do not need to reproduce details shown in itemPicker list
 					(scrSetData gScreen 'hideCurrent True)
@@ -127,10 +141,10 @@
 
 	gData uses the following fields:
 
-		useItem:	The item being used. If not specifed we check gItem instead
+		useItem: The item being used. If not specifed we check gItem instead.
 
-		screenSet:	An RPG Screen Set structure (if we've been called from the
-					primary use item screen
+		screenSet: An RPG Screen Set structure (if we've been called from the
+				primary use item screen.
 
 -->
 
@@ -155,6 +169,7 @@
 								itemToUseOn: dstItem
 								shipObj: theShip
 								} ))
+						(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
 						)
 
 						;	Set the description
@@ -183,6 +198,7 @@
 								})
 							)
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
+						(scrShowAction gScreen 'actionUseOnCargo (and cargoCriteria (not (@ gData 'criteria))))
 
 						(rpgInitScreenSet (@ gData 'screenSet))
 						)
@@ -214,6 +230,20 @@
 							;	Store result and display it
 							(scrSetData gScreen 'usageResult result)
 							(scrShowPane gScreen 'ShowResult)
+							)
+					</Action>
+
+					<Action id="actionUseOnCargo">
+						(block (
+							(useItem (scrGetData gScreen 'useItem))
+							(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
+							)
+							(scrExitScreen gScreen)
+
+							(scrShowScreen gScreen &dsRPGUseItemOnCargo; {
+								useItem: useItem
+								criteria: cargoCriteria
+								})
 							)
 					</Action>
 				</Actions>
@@ -303,6 +333,7 @@
 
 		<Language>
 			<Text id="actionUse">[U]se on this Item</Text>
+			<Text id="actionUseOnCargo">Use on [C]argo Item</Text>
 			<Text id="actionUseAnother">[U]se Another</Text>
 
 			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
@@ -326,6 +357,10 @@
     -->
 
 	<Type UNID="&baStdArmorRepair;">
+		<StaticData>
+			<Data id="CargoCriteria">"aU"</Data>
+		</StaticData>
+
 		<Events>
 			<CanRepairItem>True</CanRepairItem>
 
@@ -344,6 +379,8 @@
 					(minArmorLevel (max 1 (- (itmGetLevel gItem) 3)))
 					(maxArmorLevel (+ (itmGetLevel gItem) 4))
 					(armorLevel (itmGetProperty dstItem 'repairLevel))
+					(armorHP (objGetItemProperty shipObj dstItem 'hp))
+					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
 					)
 					(switch
 						;	Armor repair items only work on armor
@@ -357,14 +394,14 @@
 								}
 
 						;	Disallow uninstalled armor as it does not record HP
-						(not (itmIsInstalled dstItem))
-							{
-								canUse: Nil
-								desc: (itmTranslate gItem 'descUsageInstalledOnly {
-									useItem: (itmGetName gItem 'plural)
-									dstItem: (itmGetName dstItem 'article)
-									})
-								}
+						;(not (itmIsInstalled dstItem))
+						;	{
+						;		canUse: Nil
+						;		desc: (itmTranslate gItem 'descUsageInstalledOnly {
+						;			useItem: (itmGetName gItem 'plural)
+						;			dstItem: (itmGetName dstItem 'article)
+						;			})
+						;		}
 
 						;	Item is unidentified (assume it is a barrel for now)
 						(not (itmIsKnown gItem))
@@ -377,7 +414,7 @@
 								}
 
 						;	Armor segment is not damaged
-						(= (objGetArmorDamage shipObj dstItem) 0)
+						(= armorHP maxArmorHP)
 							{
 								canUse: Nil
 								desc: (itmTranslate gItem 'descUsageArmorNotDamaged {
@@ -440,6 +477,9 @@
 					(minArmorLevel (max 1 (- (itmGetLevel gItem) 3)))
 					(maxArmorLevel (+ (itmGetLevel gItem) 4))
 					(armorLevel (itmGetProperty dstItem 'repairLevel))
+					(armorHP (objGetItemProperty shipObj dstItem 'hp))
+					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
+
 					resultDesc hpRepaired
 					)
 
@@ -450,7 +490,7 @@
 						;	NOTE: We need to check some of these conditions again because if this
 						;	was an unknown item, we don't know that it won't work until we try it.
 
-						(= (objGetArmorDamage shipObj dstItem) 0)
+						(= armorHP maxArmorHP)
 							(setq resultDesc 'descResultNotDamaged)
 
 						(not (objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem }))
@@ -500,8 +540,10 @@
 								(leq (random 1 100) failureChance)
 									(if (= (random 1 2) 1)
 										;	Sometimes we fail and damage the armor
-										(block Nil
-											(shpDamageArmor shipObj armorSeg 7 (/ (* repair (random 20 100)) 100))
+										(block (
+											(damageCaused (/ (* repair (random 20 100)) 100))
+											)
+											(objSetItemProperty shipObj dstItem 'incHP (- damageCaused))
 											(setq resultDesc 'descResultDamagedMore)
 											)
 
@@ -510,7 +552,8 @@
 										)
 
 								(block ()
-									(setq hpRepaired (objRepairArmor shipObj dstItem repair))
+									(setq hpRepaired (min armorHP repair))
+									(objSetItemProperty shipObj dstItem 'incHP repair)
 									(setq resultDesc 'descResultRepaired)
 										
 									;	How much of the kit did we use?
@@ -554,7 +597,7 @@
 		</Events>
 
 		<Language>
-			<Text id="descUsageArmorNotDamaged">The ship's %armorNoun% is not damaged.</Text>
+			<Text id="descUsageArmorNotDamaged">The %dstItem% is not damaged.</Text>
 			<Text id="descUsageCanNotRepair">Unfortunately, you cannot repair %dstItem% with %useItem%.</Text>
 			<Text id="descUsageInstalledOnly">%UseItem% can only be used on installed armor segments.</Text>
 			<Text id="descUsageNotArmor">%UseItem% are used for repairing armor and will not function on %dstItem%.</Text>

@@ -228,6 +228,19 @@
 								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) 199)
 									(error "Re-installed carbide carapace does not have 199 hit points.")
 									)
+
+								;	Set properties
+
+								(setq armorSeg (objSetItemProperty gPlayerShip armorSeg 'hp 200))
+								(if (!= (objGetItemProperty gPlayerShip armorSeg 'hp) 200)
+									(error "Set HP property on installed armor failed.")
+									)
+
+								(setq armorSeg2 (@ (objGetItems gPlayerShip "aU +unid:&itReactiveArmor;") 0))
+								(setq armorSeg2 (objSetItemProperty gPlayerShip armorSeg2 'hp 4))
+								(if (!= (objGetItemProperty gPlayerShip armorSeg2 'hp) 4)
+									(error "Set HP property on loose armor failed.")
+									)
 								)
 							)
 

@@ -449,63 +449,6 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		pShip->EnableDevice(ItemList.GetItemAtCursor().GetInstalled(), bEnabled, bSilent);
 		}
 
-	else if (strEquals(sName, PROPERTY_HP))
-		{
-		int iHP = (pValue ? pValue->GetIntegerValue() : 0);
-
-		if (Item.IsInstalled())
-			{
-			if (Item.GetType()->GetArmorClass())
-				{
-				CShip *pShip = AsShip();
-
-				int iArmorSeg = Item.GetInstalled();
-				CInstalledArmor *pSection = pShip->GetArmorSection(iArmorSeg);
-				if (pSection == NULL)
-					{
-					if (retsError) *retsError = CONSTLIT("Unable to find armor segment on ship.");
-					return false;
-					}
-
-				iHP = Min(iHP, pSection->GetMaxHP(this));
-
-				if (iHP < pSection->GetHitPoints())
-					{
-					DamageDesc Damage(damageGeneric, DiceRange(0, 0, pSection->GetHitPoints() - iHP));
-					Damage.SetNoSRSFlash();
-					pShip->DamageArmor(iArmorSeg, Damage);
-					}
-				else if (iHP > pSection->GetHitPoints())
-					pShip->RepairArmor(iArmorSeg, iHP - pSection->GetHitPoints());
-				}
-			else if (Item.GetType()->GetDeviceClass())
-				{
-				//	Set the data
-				//
-				//	LATER: At some point we should move the code above that sets
-				//	armor HP to be handled by SetPropertyAtCursor. At that point,
-				//	we can delete this section and let it go to the default.
-
-				if (!ItemList.SetPropertyAtCursor(this, sName, pValue, iCount, retsError))
-					return false;
-
-				//	Update the object
-
-				ItemEnhancementModified(ItemList);
-				}
-			else
-				{
-				if (retsError) *retsError = CONSTLIT("Unable to set hit points.");
-				return false;
-				}
-			}
-		else
-			{
-			if (retsError) *retsError = CONSTLIT("Unable to set hit points.");
-			return false;
-			}
-		}
-
 	//	Otherwise, just set the property, but pass enough context (this object)
 	//	so that it can find the appropriate device.
 

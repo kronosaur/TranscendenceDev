@@ -72,6 +72,7 @@
 #define PROPERTY_EMP_IMMUNE						CONSTLIT("EMPImmune")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
+#define PROPERTY_INC_HP							CONSTLIT("incHP")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_POWER_OUTPUT					CONSTLIT("powerOutput")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
@@ -2468,6 +2469,88 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	Ctx.pDesign->GetArmorMassDefinitions().OnBindArmor(Ctx, CItem(m_pItemType, 1), &m_sMassClass);
 
 	return NOERROR;
+	}
+
+bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError)
+
+//	SetItemProperty
+//
+//	Sets an armor item property.
+
+	{
+	CSpaceObject *pSource = Ctx.GetSource();
+	CInstalledArmor *pArmor = Ctx.GetArmor();
+
+	if (strEquals(sProperty, PROPERTY_HP))
+		{
+		int iHP = Value.GetIntegerValue();
+
+		if (pSource && pArmor)
+			{
+			CShip *pShip = pSource->AsShip();
+			if (pShip == NULL)
+				{
+				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
+				return false;
+				}
+
+			iHP = Max(0, Min(iHP, pArmor->GetMaxHP(pSource)));
+
+			if (iHP < pArmor->GetHitPoints())
+				{
+				DamageDesc Damage(damageGeneric, DiceRange(0, 0, pArmor->GetHitPoints() - iHP));
+				Damage.SetNoSRSFlash();
+				pShip->DamageArmor(pArmor->GetSect(), Damage);
+				}
+			else if (iHP > pArmor->GetHitPoints())
+				pShip->RepairArmor(pArmor->GetSect(), iHP - pArmor->GetHitPoints());
+			}
+		else
+			{
+			int iMaxHP = GetMaxHP(Ctx);
+			iHP = Max(0, Min(iHP, iMaxHP));
+			
+			Item.SetDamaged(iMaxHP - iHP);
+			}
+		}
+	else if (strEquals(sProperty, PROPERTY_INC_HP))
+		{
+		int iChange = Value.GetIntegerValue();
+
+		if (pSource && pArmor)
+			{
+			CShip *pShip = pSource->AsShip();
+			if (pShip == NULL)
+				{
+				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
+				return false;
+				}
+
+			if (iChange < 0)
+				{
+				DamageDesc Damage(damageGeneric, DiceRange(0, 0, -iChange));
+				Damage.SetNoSRSFlash();
+				pShip->DamageArmor(pArmor->GetSect(), Damage);
+				}
+			else if (iChange > 0)
+				pShip->RepairArmor(pArmor->GetSect(), iChange);
+			}
+		else
+			{
+			int iMaxHP;
+			int iHP = Item.GetHitPoints(Ctx, &iMaxHP);
+			int iNewHP = Max(0, Min(iHP + iChange, iMaxHP));
+			
+			Item.SetDamaged(iMaxHP - iNewHP);
+			}
+		}
+	else
+		{
+		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sProperty);
+		return false;
+		}
+
+	return true;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)
