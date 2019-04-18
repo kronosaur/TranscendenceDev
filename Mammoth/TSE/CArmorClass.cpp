@@ -2116,6 +2116,12 @@ CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
 	{
 	CString sReference;
 
+	//	Power
+
+	int iPower = GetPowerRating(Ctx);
+	if (iPower)
+		AppendReferenceString(&sReference, CLanguage::ComposeNumber(CLanguage::numberPower, iPower * 100.0));
+
 	//	Mass
 
 	int iMassKg = m_pItemType->GetMassKg(Ctx);
