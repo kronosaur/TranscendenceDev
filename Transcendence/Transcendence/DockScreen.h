@@ -513,43 +513,48 @@ class CDockScreen : public IScreenController,
 								SDisplayControl **retpDControl = NULL);
 		void InitDisplayControlRect (CXMLElement *pDesc, const RECT &rcFrame, RECT *retrcRect);
 
-		const SFontTable *m_pFonts;
+		const SFontTable *m_pFonts = NULL;
         CGameSession &m_Session;
-		CPlayerShipController *m_pPlayer;
-		CDesignType *m_pRoot;
+		CPlayerShipController *m_pPlayer = NULL;
+		CDesignType *m_pRoot = NULL;
 		CString m_sScreen;
-		CSpaceObject *m_pLocation;
-		ICCItem *m_pData;
-		CExtension *m_pExtension;
-		CXMLElement *m_pDesc;
-		bool m_bFirstOnInit;
-		bool m_bInOnInit;
+		CSpaceObject *m_pLocation = NULL;
+		ICCItem *m_pData = NULL;
+		CExtension *m_pExtension = NULL;
+		CXMLElement *m_pDesc = NULL;
+		bool m_bFirstOnInit = true;
+		bool m_bInOnInit = false;
 
 		//	Screen and metrics
-		AGScreen *m_pScreen;
-		RECT m_rcBackground;				//	RECT of background area (constrained to ~1280)
-		RECT m_rcScreen;					//	RECT of content area (contrained to ~1024)
+		AGScreen *m_pScreen = NULL;
+		RECT m_rcBackground;					//	RECT of background area (constrained to ~1280)
+		RECT m_rcScreen;						//	RECT of content area (contrained to ~1024)
+		int m_cxImageBackground = 0;			//	Width of image background area
+		int m_cyImageBackground = 0;			//	Height of image background area
+		int m_cxDisplay = 0;
+		int m_xBackgroundFocus = 0;
+		int m_yBackgroundFocus = 0;
 
 		//	Title and header
-		CG32bitImage *m_pBackgroundImage;
-		CGTextArea *m_pCredits;
-		CGTextArea *m_pCargoSpace;
-		bool m_bFreeBackgroundImage;
+		CG32bitImage *m_pBackgroundImage = NULL;
+		CGTextArea *m_pCredits = NULL;
+		CGTextArea *m_pCargoSpace = NULL;
+		bool m_bFreeBackgroundImage = false;
 
 		//	Display controls
 		TArray<SDisplayControl> m_Controls;
-		CXMLElement *m_pDisplayInitialize;
-		bool m_bDisplayAnimate;
+		CXMLElement *m_pDisplayInitialize = NULL;
+		bool m_bDisplayAnimate = false;
 
-		int m_yDisplay;
-		IDockScreenDisplay *m_pDisplay;
+		int m_yDisplay = 0;
+		IDockScreenDisplay *m_pDisplay = NULL;
 
 		//	Panes
-		CXMLElement *m_pPanes;
+		CXMLElement *m_pPanes = NULL;
 		CDockPane m_CurrentPane;
 
 		//	Events
-		ICCItem *m_pOnScreenUpdate;
+		ICCItem *m_pOnScreenUpdate = NULL;
 
 		//	Runtime
 		IDockScreenDisplay::SBackgroundDesc m_DeferredBackground;

@@ -5,19 +5,12 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-const int g_cyDockScreen =			528;
-const int g_cxBackground =			1024;
-const int g_cyBackground =			528;
-
 const int SCREEN_PADDING_LEFT =		8;
 const int SCREEN_PADDING_RIGHT =	8;
 //const int MAX_SCREEN_WIDTH =		1280 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
 const int MAX_SCREEN_WIDTH =		1024 + SCREEN_PADDING_LEFT + SCREEN_PADDING_RIGHT;
 const int MIN_DESC_PANE_WIDTH =		408;
 
-const int DESC_PANE_X =				600;
-const int BACKGROUND_FOCUS_X =		(DESC_PANE_X / 2);
-const int BACKGROUND_FOCUS_Y =		(g_cyBackground / 2);
 const int MAX_BACKGROUND_WIDTH =	1500;
 const int MAX_BACKGROUND_HEIGHT =	648;
 const int EXTRA_BACKGROUND_IMAGE =	128;
@@ -118,27 +111,7 @@ const int ACTION_CUSTOM_PREV_ID =	301;
 #define BAR_COLOR							CG32bitPixel(0, 2, 10)
 
 CDockScreen::CDockScreen (CGameSession &Session) : 
-		m_pFonts(NULL),
-        m_Session(Session),
-		m_pPlayer(NULL),
-		m_pLocation(NULL),
-		m_pData(NULL),
-		m_pDesc(NULL),
-		m_pScreen(NULL),
-		m_bFirstOnInit(true),
-		m_bInOnInit(false),
-
-		m_pBackgroundImage(NULL),
-		m_pCredits(NULL),
-		m_pCargoSpace(NULL),
-		m_bFreeBackgroundImage(false),
-
-		m_pDisplayInitialize(NULL),
-		m_bDisplayAnimate(false),
-		m_pDisplay(NULL),
-
-		m_pPanes(NULL),
-		m_pOnScreenUpdate(NULL)
+        m_Session(Session)
 
 //	CDockScreen constructor
 
@@ -463,8 +436,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 	{
     const CDockScreenVisuals &DockScreenVisuals = GetVisuals();
 
-	int cxBackground = RectWidth(rcRect);
-	int cyBackground = g_cyBackground;
+	int cxBackground = m_cxImageBackground;
+	int cyBackground = m_cyImageBackground;
 
 	//	Load the image
 
@@ -517,8 +490,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 			BltSystemBackground(Desc.pObj->GetSystem(), rcRect);
 			HeroImage.PaintImage(*m_pBackgroundImage,
-					xOffset + BACKGROUND_FOCUS_X,
-					BACKGROUND_FOCUS_Y,
+					xOffset + m_xBackgroundFocus,
+					m_yBackgroundFocus,
 					0,
 					0);
 			}
@@ -552,8 +525,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 			SViewportPaintCtx Ctx;
             Ctx.pCenter = Desc.pObj;
             Ctx.vCenterPos = Desc.pObj->GetPos();
-            Ctx.xCenter = xOffset + BACKGROUND_FOCUS_X;
-            Ctx.yCenter = BACKGROUND_FOCUS_Y;
+            Ctx.xCenter = xOffset + m_xBackgroundFocus;
+            Ctx.yCenter = m_yBackgroundFocus;
 			Ctx.fNoSelection = true;
             Ctx.fNoDockedShips = true;
             Ctx.fShowSatellites = true;
@@ -602,8 +575,8 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 		if (!HeroImage.IsEmpty())
 			{
 			HeroImage.PaintImage(*m_pBackgroundImage,
-					xOffset + BACKGROUND_FOCUS_X,
-					BACKGROUND_FOCUS_Y,
+					xOffset + m_xBackgroundFocus,
+					m_yBackgroundFocus,
 					0,
 					0);
 			}
@@ -1105,9 +1078,9 @@ ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, 
 
 	RECT rcCanvas;
 	rcCanvas.left = rcScreen.left;
-	rcCanvas.top = (RectHeight(rcScreen) - g_cyBackground) / 2;
-	rcCanvas.right = rcCanvas.left + DESC_PANE_X;
-	rcCanvas.bottom = rcCanvas.top + g_cyBackground;
+	rcCanvas.top = (RectHeight(rcScreen) - m_cyImageBackground) / 2;
+	rcCanvas.right = rcCanvas.left + m_cxDisplay;
+	rcCanvas.bottom = rcCanvas.top + m_cyImageBackground;
 
 	//	Create each control
 
@@ -1332,6 +1305,9 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	m_rcBackground.top = ((RectHeight(rcRect) - (cyBackground - g_cyTitle)) / 2) - g_cyTitle;
 	m_rcBackground.bottom = m_rcBackground.top + cyBackground;
 
+	m_cxImageBackground = cxBackground;
+	m_cyImageBackground = cyBackground - g_cyTitle;
+
 	int cxScreen = Min(MAX_SCREEN_WIDTH, RectWidth(m_rcBackground));
 	int cyScreen = RectHeight(m_rcBackground);
 	m_rcScreen.left = (RectWidth(rcRect) - cxScreen) / 2;
@@ -1339,13 +1315,19 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	m_rcScreen.right = m_rcScreen.left + cxScreen;
 	m_rcScreen.bottom = m_rcScreen.top + cyScreen;
 
-	//	The main display is starts below the title bar
-
-	m_yDisplay = m_rcScreen.top + g_cyTitle;
-
 	//	Compute the width of the display and the panes
 
 	int cxRightPane = Max(MIN_DESC_PANE_WIDTH, cxScreen / 3);
+
+	//	The main display is starts below the title bar
+
+	m_yDisplay = m_rcScreen.top + g_cyTitle;
+	m_cxDisplay = cxScreen - cxRightPane;
+
+	//	Compute the center of the display
+
+	m_xBackgroundFocus = (cxScreen - cxRightPane) / 2;
+	m_yBackgroundFocus = m_cyImageBackground / 2;
 
 	//	Prepare a display context
 
