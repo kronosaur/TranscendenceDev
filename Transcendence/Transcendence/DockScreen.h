@@ -120,6 +120,7 @@ class IDockScreenDisplay
 		inline EResults SetListCursor (int iCursor) { return OnSetListCursor(iCursor); }
 		inline EResults SetListFilter (const CItemCriteria &Filter) { return OnSetListFilter(Filter); }
 		inline EResults SetLocation (CSpaceObject *pLocation) { m_pLocation = pLocation; return OnSetLocation(pLocation); }
+		bool SetProperty (const CString &sProperty, ICCItem &Value);
 		inline bool SelectItem (const CItem &Item) { return OnSelectItem(Item); }
 		inline bool SelectNextItem (void) { return OnSelectNextItem(); }
 		inline bool SelectPrevItem (void) { return OnSelectPrevItem(); }
@@ -152,6 +153,7 @@ class IDockScreenDisplay
 		virtual EResults OnSetListCursor (int iCursor) { return resultNone; }
 		virtual EResults OnSetListFilter (const CItemCriteria &Filter) { return resultNone; }
 		virtual EResults OnSetLocation (CSpaceObject *pLocation) { return resultNone; }
+		virtual bool OnSetProperty (const CString &sProperty, ICCItem &Value) { return false; }
 		virtual void OnShowItem (void) { }
 		virtual void OnShowPane (bool bNoListNavigation);
 
@@ -448,6 +450,7 @@ class CDockScreen : public IScreenController,
 		inline bool SetControlValue (const CString &sID, ICCItem *pValue) { return m_CurrentPane.SetControlValue(sID, pValue); }
 		inline void SetCounter (int iCount) { m_CurrentPane.SetCounterValue(iCount); }
 		void SetListCursor (int iCursor);
+		bool SetProperty (const CString &sProperty, ICCItem &Value);
 		inline void SetTextInput (const CString &sText) { m_CurrentPane.SetTextInputValue(sText); }
 		void ShowPane (const CString &sName);
 		bool Translate (const CString &sTextID, ICCItem *pData, ICCItemPtr &pResult);

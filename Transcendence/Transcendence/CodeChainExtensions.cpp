@@ -89,6 +89,7 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_SHOW_ITEM_SCREEN		31
 #define FN_SCR_RETURN_DATA			32
 #define FN_SCR_GET_PROPERTY			33
+#define FN_SCR_SET_PROPERTY			34
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -350,6 +351,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"scrSetListFilter",				fnScrSetOld,		FN_SCR_LIST_FILTER,
 			"(scrSetListFilter screen filter) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"scrSetProperty",					fnScrSet,		FN_SCR_SET_PROPERTY,
+			"(scrSetProperty screen property value) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrSetReturnData",					fnScrSet,		FN_SCR_RETURN_DATA,
 			"(scrSetReturnData screen attrib data) -> True/Nil",
@@ -1983,6 +1988,14 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateError(CONSTLIT("Invalid display ID"), pArgs->GetElement(1));
 
 			//	Done
+
+			return pCC->CreateTrue();
+			}
+
+		case FN_SCR_SET_PROPERTY:
+			{
+			if (!pScreen->SetProperty(pArgs->GetElement(1)->GetStringValue(), *pArgs->GetElement(2)))
+				return pCC->CreateNil();
 
 			return pCC->CreateTrue();
 			}

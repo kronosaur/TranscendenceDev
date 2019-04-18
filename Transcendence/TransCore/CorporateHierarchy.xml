@@ -939,6 +939,7 @@
 							<Action name="Buy Autons" default="1" key="B">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
 									checkMilitaryID: True
+									showActualItem: True
 									})
 							</Action>
 

@@ -948,14 +948,14 @@
 
 	<ItemType UNID="&itDefectiveAuton;"
 			name=				"defective auton"
-			attributes=			"auton, combatAuton, commonwealth, minorItem, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, minorItem, notForSale, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownAuton;"
 			  
-			value=				"200"
+			value=				"2000"
 			mass=				"2000"
 			charges=			"0"
 			massBonusPerCharge=	"1000"

@@ -2001,6 +2001,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"options:\n\n"
 			
+			"   'actual\n"
 			"   'allowFree\n"
 			"   'noInventoryCheck",
 
@@ -5007,31 +5008,51 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_PRICE:
 			{
+			//	Options
+
+			const CEconomyType *pEconTo = NULL;
+			bool bActual = false;
+
+			ICCItem *pOptions = pArgs->GetElement(1);
+			if (pOptions == NULL)
+				;
+			else if (pOptions->IsSymbolTable())
+				{
+				bActual = CTLispConvert::AsOption(pOptions, CONSTLIT("actual"));
+				ICCItem *pItem = pOptions->GetElement(CONSTLIT("currency"));
+				if (pItem)
+					{
+					pEconTo = GetEconomyTypeFromItem(*pCC, pItem);
+					if (pEconTo == NULL)
+						return pCC->CreateError(CONSTLIT("Invalid economy type"), pItem);
+					}
+				}
+			else if (!pOptions->IsNil())
+				{
+				pEconTo = GetEconomyTypeFromItem(*pCC, pOptions);
+				if (pEconTo == NULL)
+					return pCC->CreateError(CONSTLIT("Invalid economy type"), pOptions);
+				}
+
 			//	Avoid recursion
 
 			int iPrice;
 			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
 					&& pCtx->GetItemType() == Item.GetType())
-				iPrice = Item.GetRawPrice();
+				iPrice = Item.GetRawPrice(bActual);
 			else
-				iPrice = Item.GetTradePrice();
+				iPrice = Item.GetTradePrice(NULL, bActual);
 
 			//	Convert currency, if necessary
 
-			if (pArgs->GetCount() < 2 || pArgs->GetElement(1)->IsNil())
-				pResult = pCC->CreateInteger(iPrice);
-			else
+			if (pEconTo)
 				{
 				const CEconomyType *pEconFrom = pType->GetCurrencyType();
-
-				const CEconomyType *pEconTo = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
-				if (pEconTo == NULL)
-					return pCC->CreateError(CONSTLIT("Invalid economy type"), pArgs->GetElement(1));
-
-				//	Exchange
-
-				return pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, iPrice));
+				pResult = pCC->CreateInteger((int)pEconTo->Exchange(pEconFrom, iPrice));
 				}
+			else
+				pResult = pCC->CreateInteger(iPrice);
+
 			break;
 			}
 
@@ -6823,6 +6844,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
                 return pCC->CreateNil();
 
 			ICCItem *pOptions = pArgs->GetElement(2);
+			bool bActual = CTLispConvert::AsOption(pOptions, CONSTLIT("actual"));
 			bool bAllowFree = CTLispConvert::AsOption(pOptions, CONSTLIT("allowFree"));
 			bool bNoInventoryCheck = CTLispConvert::AsOption(pOptions, CONSTLIT("noInventoryCheck"));
 
@@ -6832,12 +6854,18 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if ((pCtx->InEvent(eventGetTradePrice) || pCtx->InEvent(eventGetGlobalPlayerPriceAdj))
 					&& pCtx->GetItemType() == Item.GetType())
-				iValue = Item.GetRawPrice();
+				iValue = Item.GetRawPrice(bActual);
 
 			//	Get the value from the station that is selling
 
 			else
-				iValue = pObj->GetSellPrice(Item, (bNoInventoryCheck ? CTradingDesc::FLAG_NO_INVENTORY_CHECK : 0));
+				{
+				DWORD dwFlags = 0;
+				if (bNoInventoryCheck) dwFlags |= CTradingDesc::FLAG_NO_INVENTORY_CHECK;
+				if (bActual) dwFlags |= CTradingDesc::FLAG_CHARGE_ACTUAL_PRICE;
+
+				iValue = pObj->GetSellPrice(Item, dwFlags);
+				}
 
 			if (bAllowFree && iValue == 0)
 				return pCC->CreateInteger(0);

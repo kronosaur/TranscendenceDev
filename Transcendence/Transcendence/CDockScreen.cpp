@@ -760,6 +760,24 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
+bool CDockScreen::SetProperty (const CString &sProperty, ICCItem &Value)
+
+//	SetProperty
+//
+//	Sets the given screen property.
+
+	{
+	if (strEquals(sProperty, PROPERTY_COUNTER))
+		SetCounter(Value.GetIntegerValue());
+
+	else if (m_pDisplay)
+		return m_pDisplay->SetProperty(sProperty, Value);
+	else
+		return false;
+
+	return true;
+	}
+
 CDesignType *CDockScreen::GetResolvedRoot (CString *retsResolveScreen) const
 
 //	GetResolvedRoot

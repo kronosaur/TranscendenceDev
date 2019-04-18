@@ -98,6 +98,7 @@ class CDockScreenList : public IDockScreenDisplay
 		virtual CItemListManipulator &OnGetItemListManipulator (void) override { return m_pItemListControl->GetItemListManipulator(); }
 		virtual int OnGetListCursor (void) override { return m_pItemListControl->GetCursor(); }
 		virtual IListData *OnGetListData (void) override { return m_pItemListControl->GetList(); }
+		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const override;
 		virtual CSpaceObject *OnGetSource (void) const override { return m_pItemListControl->GetSource(); }
 		virtual EResults OnHandleAction (DWORD dwTag, DWORD dwData) override;
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;
@@ -110,6 +111,7 @@ class CDockScreenList : public IDockScreenDisplay
 		virtual EResults OnSetListCursor (int iCursor) override;
 		virtual EResults OnSetListFilter (const CItemCriteria &Filter) override;
 		virtual EResults OnSetLocation (CSpaceObject *pLocation) override;
+		virtual bool OnSetProperty (const CString &sProperty, ICCItem &Value) override;
 		virtual void OnShowItem (void) override;
 		virtual void OnShowPane (bool bNoListNavigation) override;
 

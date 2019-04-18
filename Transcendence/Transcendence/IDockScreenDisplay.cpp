@@ -213,6 +213,16 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 		return OnGetProperty(sProperty);
 	}
 
+bool IDockScreenDisplay::SetProperty (const CString &sProperty, ICCItem &Value)
+
+//	SetProperty
+//
+//	Sets a property
+
+	{
+	return OnSetProperty(sProperty, Value);
+	}
+
 bool IDockScreenDisplay::EvalBool (const CString &sCode, bool *retbResult, CString *retsError)
 
 //	EvalBool

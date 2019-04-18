@@ -492,7 +492,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 //	Computes the price of the item in the proper currency
 
 	{
-	bool bActual = (Commodity.dwFlags & FLAG_ACTUAL_PRICE ? true : false);
+	bool bActual = ((Commodity.dwFlags & FLAG_ACTUAL_PRICE ? true : false) || ((dwFlags & FLAG_CHARGE_ACTUAL_PRICE) ? true : false));
 	bool bPlayerAdj = !(dwFlags & FLAG_NO_PLAYER_ADJ);
 
 	//	Get the raw price from the item

@@ -324,8 +324,9 @@ class CGItemListArea : public AGArea
 		inline IListData *GetList (void) const { return m_pListData; }
 		bool GetNextTab (DWORD *retdwID) const;
 		bool GetPrevTab (DWORD *retdwID) const;
-		inline CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
-		inline bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
+		CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
+		bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
+		bool IsDisplayAsKnown (void) const { return m_bActualItems; }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void MoveTabToFront (DWORD dwID);
@@ -334,7 +335,7 @@ class CGItemListArea : public AGArea
         inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		inline void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
-		inline void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; }
+		inline void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; Invalidate(); }
 		inline void SetFilter (const CItemCriteria &Filter) { if (m_pListData) m_pListData->SetFilter(Filter); InitRowDesc(); Invalidate(); }
 		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 		inline void SetIconHeight (int cyHeight) { m_cyIcon = cyHeight; }

@@ -9,6 +9,8 @@
 #define FIELD_FILTER_ALL			CONSTLIT("filterAll")
 #define FIELD_FILTER_SELECTED		CONSTLIT("filterSelected")
 
+#define PROPERTY_SHOW_ACTUAL_ITEM	CONSTLIT("showActualItem")
+
 const int PICKER_ROW_HEIGHT	=	96;
 const int PICKER_ROW_COUNT =	4;
 
@@ -125,6 +127,20 @@ ICCItem *CDockScreenList::OnGetCurrentListEntry (void) const
 
 	{
 	return m_pItemListControl->GetEntryAtCursor();
+	}
+
+ICCItemPtr CDockScreenList::OnGetProperty (const CString &sProperty) const
+
+//	OnGetProperty
+//
+//	Returns a property.
+
+	{
+	if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
+		return ICCItemPtr(m_pItemListControl->IsDisplayAsKnown());
+
+	else
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 IDockScreenDisplay::EResults CDockScreenList::OnHandleAction (DWORD dwTag, DWORD dwData)
@@ -532,6 +548,22 @@ IDockScreenDisplay::EResults CDockScreenList::OnSetLocation (CSpaceObject *pLoca
 	{
 	//	LATER: Deal with changing location
 	return resultShowPane;
+	}
+
+bool CDockScreenList::OnSetProperty (const CString &sProperty, ICCItem &Value)
+
+//	OnSetProperty
+//
+//	Sets a property
+
+	{
+	if (strEquals(sProperty, PROPERTY_SHOW_ACTUAL_ITEM))
+		m_pItemListControl->SetDisplayAsKnown(!Value.IsNil());
+
+	else
+		return false;
+
+	return true;
 	}
 
 void CDockScreenList::OnShowItem (void)

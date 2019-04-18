@@ -51,6 +51,7 @@ class CTradingDesc
 			FLAG_NO_INVENTORY_CHECK =	0x00000001,	//	Do not check to see if item exists
 			FLAG_NO_DONATION =			0x00000002,	//	Do not return prices for donations
 			FLAG_NO_PLAYER_ADJ =		0x00000004,	//	Do not compute special player adjs
+			FLAG_CHARGE_ACTUAL_PRICE =	0x00000008,	//	Charge actual price if item unknown
 			};
 
 		enum PriceFlags

@@ -83,6 +83,8 @@
 				
 		showInstallables: If non-nil, then we show weapons, armor, etc. in the
 				screen.
+
+		showActualItem: If non-nil, then show actual item name.
 				
 		sourceObj: If non-nil, get items from this object. NOTE: This is just
 				for the list of items; the <Trade> descriptors (and other stuff
@@ -137,6 +139,10 @@
 					
 						(scrSetListFilter gScreen rpgCalcSellPrice)
 						)
+
+					(if (@ gData 'showActualItem)
+						(scrSetProperty gScreen 'showActualItem True)
+						)
 					)
 			</OnDisplayInit>
 		</Display>
@@ -150,7 +156,10 @@
 						;	Compute the cost of this item.
 						
 						(currencyUsed (objGetDefaultCurrency gSource))
-						(rawCost (objGetSellPrice gSource thisItem))
+						(flags {
+							actual: (@ gData 'showActualItem)
+							})
+						(rawCost (objGetSellPrice gSource thisItem flags))
 						(itemCost (if rawCost rawCost 0))
 						
 						;	Items available
@@ -167,7 +176,10 @@
 							
 						;	Mark up
 						
-						(baseCost (itmGetPrice thisItem currencyUsed))
+						(baseCost (itmGetPrice thisItem {
+							actual: (@ gData 'showActualItem)
+							currency: currencyUsed
+							}))
 						(itemMarkup (if (gr itemCost 0) (- itemCost baseCost) 0))
 						(itemMarkupPercent (if (gr baseCost 0) (int (round (* (/ itemMarkup baseCost) 100)))))
 							
@@ -312,6 +324,10 @@
 								;	Otherwise, complete transaction
 									
 								(block Nil
+									(if (@ gData 'showActualItem)
+										(itmSetKnown thisItem)
+										)
+
 									(rpgBuyItems 1 itemCost)
 									(scrShowPane gScreen "Default")
 									)
@@ -357,6 +373,10 @@
 									(scrShowPane gScreen "InstallItem")
 									
 								(block Nil
+									(if (@ gData 'showActualItem)
+										(itmSetKnown thisItem)
+										)
+
 									(rpgBuyItems countToBuy itemCost)
 									(scrShowPane gScreen "Default")
 									)
@@ -413,6 +433,10 @@
 								
 							(scrSetData gScreen 'itemInstalled itemInstalled)
 								
+							(if (@ gData 'showActualItem)
+								(itmSetKnown itemInstalled)
+								)
+
 							(rpgBuyItems 1 installCost)
 								
 							(shpInstallDevice gPlayerShip itemInstalled)
@@ -423,9 +447,14 @@
 
 					<Action id="actionBuyOnly">
 						(block (
+							(thisItem (scrGetItem gScreen))
 							(itemCost (scrGetData gScreen 'itemCost))
 							)
 							
+							(if (@ gData 'showActualItem)
+								(itmSetKnown thisItem)
+								)
+
 							(rpgBuyItems 1 itemCost)
 							(scrShowPane gScreen "Default")
 							)
