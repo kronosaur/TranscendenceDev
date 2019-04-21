@@ -139,7 +139,12 @@ int CDamageAdjDesc::GetBonusFromAdj (int iDamageAdj, int iDefault)
 
 	{
 	if (iDamageAdj == 0)
-		return -100;
+		{
+		if (iDefault == 0)
+			return 0;
+		else
+			return -100;
+		}
 
 	int iBonus = mathRound(100.0 * (iDefault - iDamageAdj) / iDamageAdj);
 
@@ -241,7 +246,7 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 
 //	GetHPBonusProperty
 //
-//	Returns an array of hp bonuses, one for each damage type
+//	Returns an structure of damage types that have a bonus (or penalty).
 
 	{
 	int i;
@@ -262,7 +267,7 @@ ICCItem *CDamageAdjDesc::GetHPBonusProperty (const CItemEnhancementStack *pEnhan
 		int iBonus = GetBonusFromAdj(iDamageAdj, iDefault);
 		if (iBonus == -100)
 			pResult->SetStringAt(::GetDamageType(iDamageType), CONSTLIT("immune"));
-		else
+		else if (iBonus != 0)
 			pResult->SetIntegerAt(::GetDamageType(iDamageType), iBonus);
 		}
 
