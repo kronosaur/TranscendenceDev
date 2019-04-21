@@ -45,6 +45,7 @@
 #define NUMBER_APPEARING_ATTRIB					CONSTLIT("numberAppearing")
 #define PLURAL_NAME_ATTRIB						CONSTLIT("pluralName")
 #define REVERSE_ARTICLE_ATTRIB					CONSTLIT("reverseArticle")
+#define ROLE_ATTRIB								CONSTLIT("role")
 #define SECOND_PLURAL_ATTRIB					CONSTLIT("secondPlural")
 #define SHOW_CHARGES_IN_USE_MENU				CONSTLIT("showChargesInUseMenu")
 #define SHOW_REFERENCE_ATTRIB					CONSTLIT("showReference")
@@ -116,6 +117,7 @@
 #define PROPERTY_MAX_LEVEL  					CONSTLIT("maxLevel")
 #define PROPERTY_MIN_LEVEL  					CONSTLIT("minLevel")
 #define PROPERTY_MASS_BONUS_PER_CHARGE			CONSTLIT("massBonusPerCharge")
+#define PROPERTY_ROLE							CONSTLIT("role")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
@@ -556,6 +558,9 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
     else if (strEquals(sProperty, PROPERTY_MIN_LEVEL))
         return CC.CreateInteger(GetLevel());
+
+	else if (strEquals(sProperty, PROPERTY_ROLE))
+		return CC.CreateString(m_sRole);
 
 	else if (strEquals(sProperty, PROPERTY_VALUE_BONUS_PER_CHARGE))
 		return CC.CreateInteger(GetValueBonusPerCharge());
@@ -1475,6 +1480,8 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_sSortName = pDesc->GetAttribute(SORT_NAME_ATTRIB);
 	if (m_sSortName.IsBlank())
 		m_sSortName = m_sName;
+	m_sRole = pDesc->GetAttribute(ROLE_ATTRIB);
+
 	m_iMass = pDesc->GetAttributeInteger(CONSTLIT(g_MassAttrib));
 
 	if (error = m_iValue.InitFromXML(Ctx, pDesc->GetAttribute(VALUE_ATTRIB)))

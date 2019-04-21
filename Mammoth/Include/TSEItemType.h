@@ -185,6 +185,7 @@ class CItemType : public CDesignType
 		DWORD m_dwNameFlags;					//	Name flags
 		CString m_sUnknownName;					//	Name of item when unknown (may be NULL)
 		CString m_sSortName;					//	Name to sort by
+		CString m_sRole;						//	Role in design (internal)
 
 		int m_iLevel;							//	Level of item
         int m_iMaxLevel;                        //  Max level, for scalable items
