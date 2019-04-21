@@ -61,6 +61,8 @@
 #define FIELD_REPAIR_COST						CONSTLIT("repairCost")
 #define FIELD_SHIELD_INTERFERENCE				CONSTLIT("shieldInterference")
 
+#define MASS_CLASS_STANDARD_ID					CONSTLIT("medium")
+
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
@@ -122,6 +124,7 @@ const Metric DECAY_BALANCE_ADJ =				-3.0;
 const Metric DIST_BALANCE_ADJ =					2.0;
 const Metric MAX_REGEN_BALANCE_BONUS = 500.0;
 
+const Metric MASS_BALANCE_STD_MASS =			3.5;
 const Metric MASS_BALANCE_K0 =					1.284;
 const Metric MASS_BALANCE_K1 =					-0.47;
 const Metric MASS_BALANCE_K2 =					0.014;
@@ -1056,10 +1059,15 @@ Metric CArmorClass::CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &St
 	if (rMass == 0.0)
 		return 0.0;
 
+	//	Adjust based on the standard armor mass
+
+	Metric rStdMass = GetUniverse().GetDesignCollection().GetArmorMassDefinitions().GetMassClassMass(MASS_CLASS_STANDARD_ID) / 1000.0;
+	Metric rAdj = (rStdMass > 0.0 ? MASS_BALANCE_STD_MASS / rStdMass : 1.0);
+
 	//	Because this is an x^2 curve, we need a limit on mass or else we will start
 	//	to curve up (more mass = bonus, which we don't want).
 
-	rMass = Min(rMass, MASS_BALANCE_LIMIT);
+	rMass = Min(rAdj * rMass, MASS_BALANCE_LIMIT);
 
 	//	This polynomial generates a balance based on mass.
 
