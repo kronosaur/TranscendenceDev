@@ -121,6 +121,11 @@
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
+#define ROLE_CARGO_HOLD							CONSTLIT("cargoHold")
+#define ROLE_DRIVE								CONSTLIT("drive")
+#define ROLE_LAUNCHER							CONSTLIT("launcher")
+#define ROLE_REACTOR							CONSTLIT("reactor")
+
 #define SPECIAL_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged:")
 #define SPECIAL_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted:")
 #define SPECIAL_DAMAGE_TYPE						CONSTLIT("damageType:")
@@ -1720,6 +1725,31 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 		else
 			kernelDebugLogPattern("%s (%x): Unknown sub-element for ItemType: %s", GetNounPhrase(), GetUNID(), pSubDesc->GetTag());
+		}
+
+	//	Initialize role default, if necessary. We only initialize for some 
+	//	specialized device types.
+
+	if (m_pDevice && m_sRole.IsBlank())
+		{
+		switch (m_pDevice->GetCategory())
+			{
+			case itemcatCargoHold:
+				m_sRole = ROLE_CARGO_HOLD;
+				break;
+
+			case itemcatDrive:
+				m_sRole = ROLE_DRIVE;
+				break;
+
+			case itemcatReactor:
+				m_sRole = ROLE_REACTOR;
+				break;
+
+			case itemcatLauncher:
+				m_sRole = ROLE_LAUNCHER;
+				break;
+			}
 		}
 
 	//	Done
