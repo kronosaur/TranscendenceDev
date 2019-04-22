@@ -7,6 +7,7 @@
 
 #define BY_ATTRIBUTE_ATTRIB					CONSTLIT("byAttribute")
 #define BY_COMPONENT_ATTRIB					CONSTLIT("byComponent")
+#define BY_ROLE_ATTRIB						CONSTLIT("byRole")
 #define BY_SHIP_CLASS_ATTRIB				CONSTLIT("byShipClass")
 #define BY_SHIP_CLASS_USAGE_ATTRIB			CONSTLIT("byShipClassUsage")
 #define CRITERIA_ATTRIB						CONSTLIT("criteria")
@@ -87,6 +88,7 @@ int GetItemFreq (CItemType *pType);
 int GetItemType (CItemType *pType);
 void OutputByAttribute (SItemTableCtx &Ctx, const SItemTypeList &ItemList);
 void OutputByComponent (SItemTableCtx &Ctx, const SItemTypeList &ItemList);
+void OutputByRole (SItemTableCtx &Ctx, const SItemTypeList &ItemList);
 void OutputByShipClass (SItemTableCtx &Ctx, const SItemTypeList &ItemList, bool bShowUsage);
 void OutputHeader (SItemTableCtx &Ctx);
 void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList);
@@ -159,6 +161,9 @@ void GenerateItemTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	else if (pCmdLine->GetAttributeBool(BY_COMPONENT_ATTRIB))
 		OutputByComponent(Ctx, ItemList);
 
+	else if (pCmdLine->GetAttributeBool(BY_ROLE_ATTRIB))
+		OutputByRole(Ctx, ItemList);
+
 	else if (pCmdLine->GetAttributeBool(BY_SHIP_CLASS_ATTRIB))
 		OutputByShipClass(Ctx, ItemList, false);
 
@@ -204,6 +209,7 @@ bool CalcColumns (SItemTableCtx &Ctx, CXMLElement *pCmdLine)
 				&& !strEquals(sAttrib, TABLE_ATTRIB)
 				&& !strEquals(sAttrib, FIELD_LEVEL)
 				&& !strEquals(sAttrib, BY_ATTRIBUTE_ATTRIB)
+				&& !strEquals(sAttrib, BY_ROLE_ATTRIB)
 				&& !strEquals(sAttrib, BY_SHIP_CLASS_ATTRIB)
 				&& !strEquals(sAttrib, BY_SHIP_CLASS_USAGE_ATTRIB)
 				&& !strEquals(sAttrib, CONSTLIT("itemtable")))
@@ -379,6 +385,86 @@ void OutputByComponent (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 		OutputHeader(Ctx);
 		OutputTable(Ctx, Entry.ItemTable);
 		printf("\n");
+		}
+	}
+
+void OutputByRole (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
+	{
+	struct SLevelEntry
+		{
+		TSortMap<CString, TArray<CString>> ItemsByRole;
+		};
+
+	//	By role and level
+
+	TSortMap<CString, bool> AllRoles;
+	TSortMap<int, SLevelEntry> Table;
+
+	for (int i = 0; i < ItemList.GetCount(); i++)
+		{
+		CItemType *pType = ItemList[i];
+
+		bool bNew;
+		auto pEntry = Table.SetAt(pType->GetLevel(), &bNew);
+
+		const CString &sRole = pType->GetRole();
+		if (sRole.IsBlank())
+			continue;
+
+		AllRoles.SetAt(sRole, true);
+
+		auto pList = pEntry->ItemsByRole.SetAt(sRole);
+		pList->Insert(pType->GetNounPhrase(nounTitleCapitalize));
+		}
+
+	//	Header
+
+	printf("Level");
+	for (int i = 0; i < AllRoles.GetCount(); i++)
+		{
+		printf("\t%s", (LPSTR)AllRoles.GetKey(i));
+		}
+	printf("\n");
+
+	//	Output
+
+	for (int i = 0; i < Table.GetCount(); i++)
+		{
+		int iIndex = 0;
+
+		printf("%d", Table.GetKey(i));
+
+		while (true)
+			{
+			bool bHasMoreData = false;
+			for (int iRole = 0; iRole < AllRoles.GetCount(); iRole++)
+				{
+				const CString &sRole = AllRoles.GetKey(iRole);
+
+				auto pList = Table[i].ItemsByRole.GetAt(sRole);
+				if (pList == NULL || iIndex >= pList->GetCount())
+					{
+					printf("\t");
+					continue;
+					}
+
+				printf("\t%s", (LPSTR)pList->GetAt(iIndex));
+
+				if (iIndex + 1 < pList->GetCount())
+					bHasMoreData = true;
+				}
+
+			printf("\n");
+
+			if (bHasMoreData)
+				{
+				iIndex++;
+				printf("%d", Table.GetKey(i));
+				continue;
+				}
+			else
+				break;
+			}
 		}
 	}
 

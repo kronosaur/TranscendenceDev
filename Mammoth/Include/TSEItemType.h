@@ -120,6 +120,7 @@ class CItemType : public CDesignType
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
 		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
+		const CString &GetRole (void) const { return m_sRole; }
 		CString GetSortName (void) const;
 		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }

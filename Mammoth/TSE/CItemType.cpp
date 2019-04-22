@@ -560,7 +560,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
         return CC.CreateInteger(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_ROLE))
-		return CC.CreateString(m_sRole);
+		return (!m_sRole.IsBlank() ? CC.CreateString(m_sRole) : CC.CreateNil());
 
 	else if (strEquals(sProperty, PROPERTY_VALUE_BONUS_PER_CHARGE))
 		return CC.CreateInteger(GetValueBonusPerCharge());
