@@ -4038,7 +4038,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		{
 		//	If this was not the player, then set back to the player
 
-		if (Ctx.pObj != g_pUniverse->GetPlayerShip() && g_pUniverse->GetPlayerShip() && !g_pUniverse->GetPlayerShip()->IsDestroyed())
+		CSpaceObject *pPlayer = GetPlayerShip();
+		if (Ctx.pObj != pPlayer && pPlayer && !pPlayer->IsDestroyed())
 			g_pUniverse->SetPOV(g_pUniverse->GetPlayerShip());
 
 		//	Otherwise, set to a marker
