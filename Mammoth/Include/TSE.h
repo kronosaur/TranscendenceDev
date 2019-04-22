@@ -1231,6 +1231,7 @@ class CSpaceObject
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
 
+		bool CanBePOV (void) const { return (m_pSystem && !IsDestroyed()); }
 		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
 		inline void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		const CImageFilterStack *GetSystemFilters (void) const;

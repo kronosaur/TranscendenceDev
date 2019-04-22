@@ -3897,8 +3897,9 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		{
 		//	If this was not the player, then set back to the player
 
-		if (Ctx.pObj != m_Universe.GetPlayerShip() && m_Universe.GetPlayerShip() && !m_Universe.GetPlayerShip()->IsDestroyed())
-			m_Universe.SetPOV(m_Universe.GetPlayerShip());
+		CSpaceObject *pPlayer = GetPlayerShip();
+		if (Ctx.pObj != pPlayer && pPlayer && pPlayer->CanBePOV())
+			m_Universe.SetPOV(pPlayer);
 
 		//	Otherwise, set to a marker
 
