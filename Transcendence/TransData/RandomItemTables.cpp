@@ -113,7 +113,7 @@ void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine)
 	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pType = Universe.GetItemType(i);
-		SortedList.AddEntry(pType->GetSortName(), (CObject *)pType);
+		SortedList.AddEntry(pType->GetSortName(CItemCtx(pType)), (CObject *)pType);
 		}
 
 	//	Create the tables
@@ -205,7 +205,7 @@ void GenerateRandomItemTables (CUniverse &Universe, CXMLElement *pCmdLine)
 						printf("%d\t%s\n", 
 								Table[i].iChance,
 								//Table[i].pType->GetName(&dwFlags, true).GetASCIIZPointer());
-								Table[i].pType->GetSortName().GetASCIIZPointer());
+								Table[i].pType->GetSortName(CItemCtx(Table[i].pType)).GetASCIIZPointer());
 						}
 
 				printf("\n");

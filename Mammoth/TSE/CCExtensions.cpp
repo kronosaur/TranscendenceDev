@@ -47,7 +47,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_DAMAGED				4
 #define FN_ITEM_USE_SCREEN			5
 #define FN_ITEM_FIRE_EVENT			6
-#define FN_ITEM_SET_KNOWN			7
+//	Unused 7
 #define FN_ITEM_KNOWN				8
 #define FN_ITEM_ARMOR_TYPE			9
 #define FN_ITEM_MATCHES				10
@@ -78,6 +78,7 @@ ICCItem *fnFormat (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_PROPERTY			35
 #define FN_ITEM_GET_TYPE_DATA		36
 #define FN_ITEM_IS_EQUAL			37
+#define FN_ITEM_SET_KNOWN			38
 
 ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -88,7 +89,6 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_ITEM_FREQUENCY			3
 
 ICCItem *fnItemTypeGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
-ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_OBJ_GETDATA				1
 #define FN_OBJ_SETDATA				2
@@ -1008,7 +1008,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(itmSetEnhanced item mods) -> item",
 			"vv",	0,	},
 
-		{	"itmSetKnown",					fnItemTypeSet,	FN_ITEM_TYPE_SET_KNOWN,
+		{	"itmSetKnown",					fnItemSet,		FN_ITEM_SET_KNOWN,
 			"(itmSetKnown type|item [True/Nil]) -> True/Nil",
 			"v*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -5077,7 +5077,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			break;
 
 		case FN_ITEM_KNOWN:
-			pResult = pCC->CreateBool(pType->IsKnown());
+			pResult = pCC->CreateBool(Item.IsKnown());
 			break;
 
 		case FN_ITEM_REFERENCE:
@@ -5134,11 +5134,6 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pResult = pCC->CreateNil();
 			break;
 			}
-
-		case FN_ITEM_SET_KNOWN:
-			pType->SetKnown();
-			pResult = pCC->CreateTrue();
-			break;
 
 		case FN_ITEM_SET_REFERENCE:
 			pType->SetShowReference();
@@ -5279,6 +5274,13 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return CreateListFromItem(Item);
 			}
 
+		case FN_ITEM_SET_KNOWN:
+			{
+			bool bSet = (pArgs->GetCount() >= 2 ? !pArgs->GetElement(1)->IsNil() : true);
+			Item.SetKnown(bSet);
+			return pCC->CreateTrue();
+			}
+
 		default:
 			ASSERT(false);
 		}
@@ -5314,53 +5316,6 @@ ICCItem *fnItemTypeGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(pType->GetFrequencyByLevel(pArgs->GetElement(1)->GetIntegerValue()));
 			else
 				return pCC->CreateInteger(pType->GetFrequency());
-
-		default:
-			ASSERT(FALSE);
-			return pCC->CreateNil();
-		}
-	}
-
-ICCItem *fnItemTypeSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
-
-//	fnItemTypeSet
-//
-//	(itmSetKnown item)
-
-	{
-	CCodeChain *pCC = pEvalCtx->pCC;
-	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
-
-	//	Convert the first argument into an armor type
-
-	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
-	if (pType == NULL)
-		return pCC->CreateError(CONSTLIT("Invalid item type"), pArgs->GetElement(0));
-
-	//	Do the appropriate command
-
-	switch (dwData)
-		{
-		case FN_ITEM_TYPE_SET_KNOWN:
-			{
-			bool bSet = (pArgs->GetCount() >= 2 ? !pArgs->GetElement(1)->IsNil() : true);
-
-			if (bSet)
-				pType->SetKnown();
-			else
-				{
-				//	If this type does not have an unknown type, then we cannot clear it
-
-				if (pType->GetUnknownType() == NULL)
-					return pCC->CreateNil();
-
-				//	Otherwise, OK
-
-				pType->ClearKnown();
-				}
-
-			return pCC->CreateTrue();
-			}
 
 		default:
 			ASSERT(FALSE);

@@ -154,12 +154,20 @@ void CItemList::SortItems (void)
 	//	Allocate a new list
 
 	TArray<CItem *> NewList;
-	NewList.InsertEmpty(GetCount());
+	NewList.GrowToFit(GetCount());
 
 	//	Move the items from the old list to the new list in the new order
 
 	for (i = 0; i < GetCount(); i++)
-		NewList[i] = m_List[Sort[i]];
+		{
+		CItem *pSortedItem = m_List[Sort[i]];
+		int iLast = NewList.GetCount() - 1;
+
+		if (iLast >= 0 && NewList[iLast]->IsEqual(*pSortedItem))
+			NewList[iLast]->SetCount(NewList[iLast]->GetCount() + pSortedItem->GetCount());
+		else
+			NewList.Insert(pSortedItem);
+		}
 
 	//	Swap
 

@@ -2776,7 +2776,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 			{
 			CItem Item = Dest.GetItemAtCursor();
 			if (Item.IsInstalled())
-				Item.GetType()->SetKnown(true);
+				Item.SetKnown();
 			}
 		}
 

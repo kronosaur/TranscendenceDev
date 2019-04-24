@@ -72,14 +72,14 @@ class CItemType : public CDesignType
 		CItemType (void);
 		virtual ~CItemType (void);
 
-		inline void AddWeapon (CDeviceClass *pWeapon) { ASSERT(!m_Weapons.Find(pWeapon)); m_Weapons.Insert(pWeapon); }
-		inline bool AreChargesAmmo (void) const { return (m_fAmmoCharges ? true : false); }
-		inline bool AreChargesValued (void) const { return (m_fValueCharges ? true : false); }
-		inline bool CanBeSoldIfUsed (void) const { return (m_fNoSaleIfUsed ? false : true); }
-		inline void ClearKnown (void) { m_fKnown = false; }
-		inline void ClearShowReference (void) { m_fReference = false; }
+		void AddWeapon (CDeviceClass *pWeapon) { ASSERT(!m_Weapons.Find(pWeapon)); m_Weapons.Insert(pWeapon); }
+		bool AreChargesAmmo (void) const { return (m_fAmmoCharges ? true : false); }
+		bool AreChargesValued (void) const { return (m_fValueCharges ? true : false); }
+		bool CanBeSoldIfUsed (void) const { return (m_fNoSaleIfUsed ? false : true); }
+		bool CanBeUnknown (void) const { return (m_UnknownTypes.GetCount() > 0); }
+		void ClearShowReference (void) { m_fReference = false; }
 		void CreateEmptyFlotsam (CSystem &System, const CVector &vPos, const CVector &vVel, CSovereign *pSovereign, CStation **retpFlotsam);
-		inline bool FindEventHandlerItemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerItemType (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -118,11 +118,15 @@ class CItemType : public CDesignType
 		inline int GetMinLevel (void) const { return m_iLevel; }
 		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
 		inline DWORD GetModCode (void) const { return m_dwModCode; }
+		CString GetNamePattern (CItemCtx &Ctx, DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
 		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
+		int GetRandomUnknownTypeIndex (void) const;
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		const CString &GetRole (void) const { return m_sRole; }
-		CString GetSortName (void) const;
-		inline CItemType *GetUnknownType (void) { return m_pUnknownType; }
+		CString GetSortName (CItemCtx &Ctx) const;
+		CItemType *GetUnknownType (CItemCtx &Ctx) const;
+		int GetUnknownTypeCount (void) const { return m_UnknownTypes.GetCount(); }
+		CItemType *GetUnknownTypeIfUnknown (CItemCtx &Ctx, bool bActual = false) const;
 		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
 		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
         inline int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
@@ -131,24 +135,25 @@ class CItemType : public CDesignType
 		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
 		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
 		bool IsAmmunition (void) const;
-		inline bool IsArmor (void) const { return (m_pArmor != NULL); }
-		inline bool IsDevice (void) const { return (m_pDevice != NULL); }
-		inline bool IsKnown (void) const { return (m_fKnown ? true : false); }
+		bool IsArmor (void) const { return (m_pArmor != NULL); }
+		bool IsDevice (void) const { return (m_pDevice != NULL); }
+		bool IsKnown (CItemCtx &Ctx, int *retiUnknownIndex = NULL) const;
 		bool IsFuel (void) const;
 		bool IsMissile (void) const;
-		inline bool IsScalable (void) const { return (m_fScalable ? true : false); }
-		inline bool IsUsable (void) const { return GetUseDesc(NULL); }
-		inline void SetKnown (bool bKnown = true) { m_fKnown = bKnown; }
-		inline void SetShowReference (void) { m_fReference = true; }
-		inline bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
-		inline bool ShowReference (void) const { return (m_fReference ? true : false); }
+		bool IsScalable (void) const { return (m_fScalable ? true : false); }
+		bool IsUsable (void) const { return GetUseDesc(NULL); }
+		void SetAllKnown (bool bKnown = true);
+		void SetKnown (CItemCtx &Ctx, bool bKnown = true);
+		void SetShowReference (void) { m_fReference = true; }
+		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
+		bool ShowReference (void) const { return (m_fReference ? true : false); }
 
 		//	CDesignType overrides
 		static const CItemType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
 		static CItemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
-		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override { return GetNamePattern(CItemCtx(this), dwNounFormFlags, retdwFlags); }
 		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual DesignTypes GetType (void) const override { return designItemType; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
@@ -175,16 +180,26 @@ class CItemType : public CDesignType
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
+		struct SUnknownTypeDesc
+			{
+			CItemTypeRef pUnknownType;			//	An unknown item type
+			CString sUnknownName;				//	Our name when unknown
+			bool bKnown = false;				//	Identified
+			};
+
 		void CreateFlotsamImage (void);
+		CString GenerateRandomName (const CString &sTemplate, const TArray<CString> &RetiredNames = TArray<CString>(), bool *retbTempletized = NULL) const;
 		CStationType *GetFlotsamStationType (void);
 		CString GetUnknownName (int iIndex, DWORD *retdwFlags = NULL);
+		int GetUnknownIndex (CItemCtx &Ctx) const;
 		inline CDesignType *GetUseScreen (CString *retsName) const;
 		void InitRandomNames (void);
 		void InitComponents (void);
+		bool IsUnknownType (DWORD dwUNID, int *retiUnknownIndex = NULL) const;
+		void SetUnknownName (int iIndex, const CString &sName) { m_UnknownTypes[iIndex].sUnknownName = sName; }
 
 		CString m_sName;						//	Full name of item
 		DWORD m_dwNameFlags;					//	Name flags
-		CString m_sUnknownName;					//	Name of item when unknown (may be NULL)
 		CString m_sSortName;					//	Name to sort by
 		CString m_sRole;						//	Role in design (internal)
 
@@ -197,7 +212,7 @@ class CItemType : public CDesignType
 
 		CObjectImageArray m_Image;				//	Image of item
 		CString m_sDescription;					//	Description of item
-		CItemTypeRef m_pUnknownType;			//	Type to show if not known
+		TArray<SUnknownTypeDesc> m_UnknownTypes;//	List of unknown types (if we are unknown)
 		TArray<CString> m_UnknownNames;			//	List of unknown names (if we are the unknown item placeholder)
 		DiceRange m_InitDataValue;				//	Initial data value
 		int m_iMaxCharges;						//	Do not allow charges above this level (-1 = no limit)
@@ -233,15 +248,14 @@ class CItemType : public CDesignType
 		CObjectImageArray m_FlotsamImage;		//	Image used for flotsam
 
 		DWORD m_fRandomDamaged:1;				//	Randomly damaged when found
-		DWORD m_fKnown:1;						//	Is this type known?
 		DWORD m_fReference:1;					//	Does this type show reference info?
 		DWORD m_fDefaultReference:1;			//	TRUE if this shows reference by default
 		DWORD m_fInstanceData:1;				//	TRUE if we need to set instance data at create time
 		DWORD m_fVirtual:1;						//	TRUE if this is a virtual item needed for a weapon that invokes
 		DWORD m_fUseInstalled:1;				//	If TRUE, item can only be used when installed
 		DWORD m_fValueCharges:1;				//	TRUE if value should be adjusted based on charges
-
 		DWORD m_fUseUninstalled:1;				//	If TRUE, item can only be used when uninstalled
+
 		DWORD m_fUseEnabled:1;					//	If TRUE, item can only be used when enabled
 		DWORD m_fScalable:1;                    //  If TRUE, VariantHigh adds to level.
 		DWORD m_fUseCompleteArmor:1;			//	If TRUE, item can be used as a complete armor set
@@ -249,6 +263,7 @@ class CItemType : public CDesignType
 		DWORD m_fAmmoCharges:1;					//	If TRUE, charges are ammo
 		DWORD m_fNoSaleIfUsed:1;				//	If TRUE, cannot be sold once it's been used
 		DWORD m_fShowChargesInUseMenu:1;		//	If TRUE, the use menu shows charges instead of a count.
+		DWORD m_fSpare7:1;
 
 		DWORD m_dwSpare:16;
 

@@ -450,7 +450,10 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 		*retsValue = strFromInt((int)CEconomyType::ExchangeToCredits(GetCurrencyType(), GetValue(CItemCtx(), true)));
 
 	else if (strEquals(sField, FIELD_UNKNOWN_TYPE))
-		*retsValue = (m_pUnknownType ? strPatternSubst(CONSTLIT("0x%x"), m_pUnknownType->GetUNID()) : NULL_STR);
+		{
+		CItemType *pUnknownType = GetUnknownType(CItemCtx(this));
+		*retsValue = (pUnknownType ? strPatternSubst(CONSTLIT("0x%x"), pUnknownType->GetUNID()) : NULL_STR);
+		}
 
 	else if (strEquals(sField, FIELD_USE_KEY))
 		*retsValue = m_sUseKey;
@@ -547,7 +550,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 		return CC.CreateString(GetFrequencyName((FrequencyTypes)GetFrequency()));
 
     else if (strEquals(sProperty, PROPERTY_KNOWN))
-        return CC.CreateBool(IsKnown());
+        return CC.CreateBool(IsKnown(CItemCtx(this)));
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetLevel());
@@ -591,6 +594,53 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 		return NULL;
 	}
 
+CString CItemType::GenerateRandomName (const CString &sTemplate, const TArray<CString> &RetiredNames, bool *retbTempletized) const
+
+//	GenerateRandomName
+//
+//	Generates a random name from a template, making sure that we don't repeat
+//	any of the names in ioRetiredNames.
+
+	{
+	//	See if the template has replaceable parameters.
+
+	char *pPos = sTemplate.GetASCIIZPointer();
+	while (*pPos != '\0' && *pPos != '%')
+		pPos++;
+
+	bool bTempletized = (*pPos == '%');
+	if (retbTempletized)
+		*retbTempletized = bTempletized;
+
+	//	If the template has replaceable parameters, then generate
+	//	a unique name
+
+	if (bTempletized)
+		{
+		int iMaxLoops = 100;
+
+		CString sTry;
+		bool bDuplicate;
+		do
+			{
+			sTry = ::GenerateRandomNameFromTemplate(sTemplate);
+			bDuplicate = false;
+
+			for (int k = 0; k < RetiredNames.GetCount(); k++)
+				if (strEquals(sTry, RetiredNames[k]))
+					{
+					bDuplicate = true;
+					break;
+					}
+			}
+		while (bDuplicate && iMaxLoops-- > 0);
+
+		return sTry;
+		}
+	else
+		return sTemplate;
+	}
+
 CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
 
 //	GetAmmoLauncher
@@ -628,8 +678,13 @@ int CItemType::GetApparentLevel (CItemCtx &Ctx) const
 //	Returns the level that the item appears to be
 
 	{
-	if (!IsKnown())
-		return m_pUnknownType->GetLevel();
+	//	NOTE: We assume that all unknown item types have the same level. If this
+	//	ever changes, we should look at the item in Ctx and use the actual 
+	//	index.
+
+	int iUnknownIndex;
+	if (!IsKnown(Ctx, &iUnknownIndex))
+		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetLevel();
 
 	return GetLevel(Ctx);
 	}
@@ -699,8 +754,9 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
     {
 	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
 
-	if (!IsKnown() && !bActual)
-		return m_pUnknownType->GetCurrencyAndValue(Ctx);
+	int iUnknownIndex;
+	if (!IsKnown(Ctx, &iUnknownIndex) && !bActual)
+		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetCurrencyAndValue(Ctx);
 
 	//	If this is a scalable item, then we need to ask the class
 
@@ -747,8 +803,9 @@ const CString &CItemType::GetDesc (bool bActual) const
 //	Get description for the item
 	
 	{
-	if (!IsKnown() && !bActual)
-		return m_pUnknownType->GetDesc();
+	int iUnknownIndex;
+	if (!bActual && !IsKnown(CItemCtx(this), &iUnknownIndex))
+		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetDesc();
 
 	return m_sDescription; 
 	}
@@ -909,7 +966,7 @@ int CItemType::GetMaxHPBonus (void) const
 		return 150;
 	}
 
-CString CItemType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
+CString CItemType::GetNamePattern (CItemCtx &Ctx, DWORD dwNounFormFlags, DWORD *retdwFlags) const
 
 //	GetNamePattern
 //
@@ -918,23 +975,41 @@ CString CItemType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) con
 	{
 	bool bActualName = (dwNounFormFlags & nounActual) != 0;
 
-	if (!IsKnown() && !bActualName && m_pUnknownType)
+	int iUnknownIndex;
+	if (!IsKnown(Ctx, &iUnknownIndex) && !bActualName)
 		{
-		if (!m_sUnknownName.IsBlank())
+		const SUnknownTypeDesc &Unknown = m_UnknownTypes[iUnknownIndex];
+		if (!Unknown.sUnknownName.IsBlank())
 			{
 			if (retdwFlags)
 				*retdwFlags = 0;
 
-			return m_sUnknownName;
+			return Unknown.sUnknownName;
 			}
 		else
-			return m_pUnknownType->GetNamePattern(dwNounFormFlags, retdwFlags);
+			return Unknown.pUnknownType->GetNamePattern(Ctx, dwNounFormFlags, retdwFlags);
 		}
 
 	if (retdwFlags)
 		*retdwFlags = m_dwNameFlags;
 
 	return m_sName;
+	}
+
+int CItemType::GetRandomUnknownTypeIndex (void) const
+
+//	GetRandomUnknownTypeIndex
+//
+//	Generate a random index for an unknown type (or -1 if this item type is not
+//	unknown).
+
+	{
+	if (m_UnknownTypes.GetCount() == 0)
+		return -1;
+
+	//	LATER: Probability should be based on frequency of unknown items.
+
+	return mathRandom(0, m_UnknownTypes.GetCount() - 1);
 	}
 
 CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags) const
@@ -949,7 +1024,7 @@ CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags
 
 	//	No reference if unknown
 
-	if (!IsKnown() && !(dwFlags & FLAG_ACTUAL_ITEM))
+	if (!IsKnown(Ctx) && !(dwFlags & FLAG_ACTUAL_ITEM))
 		return NULL_STR;
 
 	//	Return armor reference, if this is armor
@@ -973,15 +1048,16 @@ CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags
 		return NULL_STR;
 	}
 
-CString CItemType::GetSortName (void) const
+CString CItemType::GetSortName (CItemCtx &Ctx) const
 
 //	GetSortName
 //
 //	Returns the sort name
 
 	{
-	if (!IsKnown() && !m_sUnknownName.IsBlank())
-		return m_sUnknownName;
+	int iUnknownIndex;
+	if (!IsKnown(Ctx, &iUnknownIndex) && !m_UnknownTypes[iUnknownIndex].sUnknownName.IsBlank())
+		return m_UnknownTypes[iUnknownIndex].sUnknownName;
 	else
 		return m_sSortName;
 	}
@@ -1008,6 +1084,30 @@ CCurrencyAndValue CItemType::GetTradePrice (CSpaceObject *pObj, bool bActual) co
 	return CCurrencyAndValue(Item.GetTradePrice(pObj, bActual), GetCurrencyType());
 	}
 
+int CItemType::GetUnknownIndex (CItemCtx &Ctx) const
+
+//	GetUnknownIndex
+//
+//	Returns the unknown index from an item.
+
+	{
+	//	If not unknown, then we're done.
+
+	int iUnknownCount = m_UnknownTypes.GetCount();
+	if (iUnknownCount == 0)
+		return -1;
+
+	//	Get the item; if we don't have a valid item, then we assume the first 
+	//	unknown item.
+
+	const CItem &Item = Ctx.GetItem();
+	if (Item.GetType() != this)
+		return 0;
+
+	int iIndex = Item.GetUnknownIndex();
+	return Max(0, Min(iIndex, iUnknownCount - 1));
+	}
+
 CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 
 //	GetUnknownName
@@ -1015,10 +1115,48 @@ CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 //	Returns the unknown name of the item
 
 	{
-	if (iIndex != -1 && iIndex < m_UnknownNames.GetCount())
-		return m_UnknownNames[iIndex];
+	if (iIndex >= 0 && iIndex < m_UnknownNames.GetCount())
+		return GenerateRandomName(m_UnknownNames[iIndex]);
 
 	return GetNamePattern(0, retdwFlags);
+	}
+
+CItemType *CItemType::GetUnknownType (CItemCtx &Ctx) const
+
+//	GetUnknownType
+//
+//	Returns the unknown type.
+
+	{
+	int iIndex = GetUnknownIndex(Ctx);
+	if (iIndex < 0)
+		return NULL;
+
+	return m_UnknownTypes[iIndex].pUnknownType;
+	}
+
+CItemType *CItemType::GetUnknownTypeIfUnknown (CItemCtx &Ctx, bool bActual) const
+
+//	GetUnknownTypeIfUnknown
+//
+//	Returns the unknown type.
+
+	{
+	//	NOTE: We add this so that we can do expressions like this:
+	//
+	//	if (CItemType *pUnknownType = GetUnknownTypeIfUnknown(Ctx, bActual))
+	//		...
+
+	if (bActual)
+		return NULL;
+
+	int iIndex = GetUnknownIndex(Ctx);
+	if (iIndex < 0)
+		return NULL;
+	else if (m_UnknownTypes[iIndex].bKnown)
+		return NULL;
+	else
+		return m_UnknownTypes[iIndex].pUnknownType;
 	}
 
 bool CItemType::GetUseDesc (SUseDesc *retDesc) const
@@ -1300,42 +1438,21 @@ void CItemType::InitRandomNames (void)
 	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 		{
 		CItemType *pType = GetUniverse().GetItemType(i);
-		if (pType->m_pUnknownType.GetUNID() == GetUNID())
+		int iUnknownIndex;
+		if (pType->IsUnknownType(GetUNID(), &iUnknownIndex))
 			{
 			CString sTemplate = m_UnknownNames[Randomize[j % iCount]];
 
-			//	See if the template has replaceable parameters.
+			bool bTempletized;
+			CString sName = GenerateRandomName(sTemplate, RetiredNames, &bTempletized);
 
-			char *pPos = sTemplate.GetASCIIZPointer();
-			while (*pPos != '\0' && *pPos != '%')
-				pPos++;
+			pType->SetUnknownName(iUnknownIndex, sName);
 
-			//	If the template has replaceable parameters, then generate
-			//	a unique name
+			//	If the template had randomized parameters, then make sure we 
+			//	don't repeat them.
 
-			if (*pPos == '%')
-				{
-				int iMaxLoops = 100;
-
-				bool bDuplicate;
-				do
-					{
-					pType->m_sUnknownName = ::GenerateRandomNameFromTemplate(sTemplate);
-					bDuplicate = false;
-
-					for (int k = 0; k < RetiredNames.GetCount(); k++)
-						if (strEquals(pType->m_sUnknownName, RetiredNames[k]))
-							{
-							bDuplicate = true;
-							break;
-							}
-					}
-				while (bDuplicate && iMaxLoops-- > 0);
-
-				RetiredNames.Insert(pType->m_sUnknownName);
-				}
-			else
-				pType->m_sUnknownName = sTemplate;
+			if (bTempletized)
+				RetiredNames.Insert(sName);
 
 			j++;
 			}
@@ -1354,6 +1471,23 @@ bool CItemType::IsFuel (void) const
 	return HasLiteralAttribute(STR_FUEL);
 	}
 
+bool CItemType::IsKnown (CItemCtx &Ctx, int *retiUnknownIndex) const
+
+//	IsKnown
+//
+//	Returns TRUE if the item is known.
+
+	{
+	int iIndex = GetUnknownIndex(Ctx);
+	if (iIndex < 0)
+		return true;
+
+	if (retiUnknownIndex)
+		*retiUnknownIndex = iIndex;
+
+	return m_UnknownTypes[iIndex].bKnown;
+	}
+
 bool CItemType::IsMissile (void) const
 
 //	IsMissile
@@ -1365,6 +1499,24 @@ bool CItemType::IsMissile (void) const
 		return true;
 
 	return HasLiteralAttribute(STR_MISSILE);
+	}
+
+bool CItemType::IsUnknownType (DWORD dwUNID, int *retiUnknownIndex) const
+
+//	IsUnknownType
+//
+//	Returns TRUE if this has the given UNID as one of its unknown item types.
+
+	{
+	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+		if (m_UnknownTypes[i].pUnknownType.GetUNID() == dwUNID)
+			{
+			if (retiUnknownIndex)
+				*retiUnknownIndex = i;
+			return true;
+			}
+
+	return false;
 	}
 
 void CItemType::OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const
@@ -1387,7 +1539,10 @@ void CItemType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	{
 	retTypesUsed->SetAt(m_Image.GetBitmapUNID(), true);
-	retTypesUsed->SetAt(m_pUnknownType.GetUNID(), true);
+
+	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+		retTypesUsed->SetAt(m_UnknownTypes[i].pUnknownType.GetUNID(), true);
+
 	retTypesUsed->SetAt(strToInt(m_pUseScreen.GetUNID(), 0), true);
 
 	if (m_pComponents)
@@ -1425,8 +1580,9 @@ ALERROR CItemType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	//	Resolve some pointers
 
-	if (error = m_pUnknownType.Bind(Ctx))
-		return error;
+	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+		if (error = m_UnknownTypes[i].pUnknownType.Bind(Ctx))
+			return error;
 
 	//	Others
 
@@ -1506,10 +1662,25 @@ ALERROR CItemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Get the unknown type info
 
-	if (error = m_pUnknownType.LoadUNID(Ctx, pDesc->GetAttribute(UNKNOWN_TYPE_ATTRIB)))
-		return error;
+	CString sUNID;
+	if (pDesc->FindAttribute(UNKNOWN_TYPE_ATTRIB, &sUNID))
+		{
+		TArray<CString> UNIDs;
+		ParseStringList(sUNID, 0, &UNIDs);
 
-	m_fKnown = (m_pUnknownType.GetUNID() == 0);
+		m_UnknownTypes.GrowToFit(UNIDs.GetCount());
+		for (int i = 0; i < UNIDs.GetCount(); i++)
+			{
+			int iIndex = m_UnknownTypes.GetCount();
+			m_UnknownTypes.InsertEmpty(1);
+
+			if (error = m_UnknownTypes[iIndex].pUnknownType.LoadUNID(Ctx, UNIDs[i]))
+				return error;
+
+			if (m_UnknownTypes[iIndex].pUnknownType.GetUNID() == 0)
+				m_UnknownTypes.Delete(iIndex);
+			}
+		}
 
 	//	Get the reference info
 
@@ -1889,7 +2060,7 @@ bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
 		{
 		CString sType = strSubString(sAttrib, SPECIAL_UNKNOWN_TYPE.GetLength());
 		DWORD dwType = strToInt(sType, 0);
-		return (m_pUnknownType && m_pUnknownType->GetUNID() == dwType);
+		return IsUnknownType(dwType);
 		}
 	else
 		return false;
@@ -1919,31 +2090,83 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 //	Read from stream
 //
 //	DWORD		flags
-//	DWORD		m_sUnknownName
+//
+//	DWORD		Unknown Types count
+//	CString		sUnknownName
+//	DWORD		flags
 
 	{
 	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	
-	m_fKnown =		((dwLoad & 0x00000001) ? true : false);
+	bool bKnown =	(((dwLoad & 0x00000001) && Ctx.dwVersion < 36) ? true : false);
 	m_fReference =	((dwLoad & 0x00000002) ? true : false);
 
-	if (Ctx.dwVersion >= 10)
-		m_sUnknownName.ReadFromStream(Ctx.pStream);
+	if (Ctx.dwVersion >= 36)
+		{
+		int iCount;
+		Ctx.pStream->Read(iCount);
+
+		TSortMap<DWORD, SUnknownTypeDesc> Unknown;
+		Unknown.GrowToFit(iCount);
+
+		for (int i = 0; i < iCount; i++)
+			{
+			DWORD dwUNID;
+			Ctx.pStream->Read(dwUNID);
+
+			SUnknownTypeDesc *pEntry = Unknown.SetAt(dwUNID);
+			pEntry->sUnknownName.ReadFromStream(Ctx.pStream);
+
+			DWORD dwFlags;
+			Ctx.pStream->Read(dwFlags);
+			pEntry->bKnown = ((dwFlags & 0x00000001) ? true : false);
+			}
+
+		for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+			{
+			SUnknownTypeDesc *pSrc = Unknown.GetAt(m_UnknownTypes[i].pUnknownType->GetUNID());
+			if (pSrc == NULL)
+				{
+				//	If a new entry got added in between saves, we mark it to 
+				//	known, so we don't have to generate a name.
+
+				m_UnknownTypes[i].bKnown = true;
+				continue;
+				}
+
+			m_UnknownTypes[i].sUnknownName = pSrc->sUnknownName;
+			m_UnknownTypes[i].bKnown = pSrc->bKnown;
+			}
+		}
 	else
 		{
-		int iUnknownItem;
-		Ctx.pStream->Read((char *)&iUnknownItem, sizeof(DWORD));
+		for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+			m_UnknownTypes[i].bKnown = true;
 
-		if (iUnknownItem != -1 && m_pUnknownType)
-			m_sUnknownName = m_pUnknownType->GetUnknownName(iUnknownItem);
+		if (Ctx.dwVersion >= 10)
+			{
+			CString sUnknownName;
+			sUnknownName.ReadFromStream(Ctx.pStream);
+
+			if (m_UnknownTypes.GetCount() > 0)
+				{
+				m_UnknownTypes[0].sUnknownName = sUnknownName;
+				m_UnknownTypes[0].bKnown = bKnown;
+				}
+			}
+		else
+			{
+			int iUnknownItem;
+			Ctx.pStream->Read(iUnknownItem);
+
+			if (iUnknownItem != -1 && m_UnknownTypes.GetCount() > 0)
+				{
+				m_UnknownTypes[0].sUnknownName = m_UnknownTypes[0].pUnknownType->GetUnknownName(iUnknownItem);
+				m_UnknownTypes[0].bKnown = bKnown;
+				}
+			}
 		}
-
-	//	This can happen if we change the known/unknown status of an
-	//	item type across save games
-
-	if (m_pUnknownType == NULL)
-		m_fKnown = true;
 
 	//	Load components
 
@@ -1963,9 +2186,7 @@ void CItemType::OnReinit (void)
 	{
 	g_pFlotsamStationType = NULL;
 
-	if (GetUnknownType())
-		m_fKnown = false;
-
+	SetAllKnown(false);
 	m_fReference = m_fDefaultReference;
 
 	//	Initialize some random elements
@@ -1981,18 +2202,38 @@ void CItemType::OnWriteToStream (IWriteStream *pStream)
 //	Writes out the variable portions of the item type
 //
 //	DWORD		flags
-//	DWORD		m_sUnknownName
+//
+//	DWORD		Unknown Types count
+//	DWORD		UNID of unknown type
+//	CString		sUnknownName
+//	DWORD		flags
+//
 //	CItemList	m_Components
 
 	{
 	DWORD dwSave;
 
 	dwSave = 0;
-	dwSave |= (m_fKnown ?		0x00000001 : 0);
+	//	0x00000001 UNUSED
 	dwSave |= (m_fReference ?	0x00000002 : 0);
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
-	m_sUnknownName.WriteToStream(pStream);
+	//	Unknown types info
+
+	dwSave = m_UnknownTypes.GetCount();
+	pStream->Write(dwSave);
+	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+		{
+		pStream->Write(m_UnknownTypes[i].pUnknownType->GetUNID());
+
+		m_UnknownTypes[i].sUnknownName.WriteToStream(pStream);
+
+		dwSave = 0;
+		dwSave |= (m_UnknownTypes[i].bKnown ? 0x00000001 : 0);
+		pStream->Write(dwSave);
+		}
+
+	//	Components
 
 	m_Components.WriteToStream(pStream);
 	}
@@ -2063,3 +2304,27 @@ bool CItemType::ParseItemCategory (const CString &sCategory, ItemCategories *ret
 	return true;
 	}
 
+void CItemType::SetAllKnown (bool bKnown)
+
+//	SetAllKnown
+//
+//	Sets known state for all unknown types.
+
+	{
+	for (int i = 0; i < m_UnknownTypes.GetCount(); i++)
+		m_UnknownTypes[i].bKnown = bKnown;
+	}
+
+void CItemType::SetKnown (CItemCtx &Ctx, bool bKnown)
+
+//	SetKnown
+//
+//	Sets whether or not the item is identified.
+
+	{
+	int iIndex = GetUnknownIndex(Ctx);
+	if (iIndex < 0)
+		return;
+
+	m_UnknownTypes[iIndex].bKnown = bKnown;
+	}

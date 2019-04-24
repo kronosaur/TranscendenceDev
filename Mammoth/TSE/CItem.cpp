@@ -93,6 +93,10 @@ CItem::CItem (CItemType *pItemType, int iCount)
 	int iCharges = pItemType->GetCharges();
 	if (iCharges)
 		SetCharges(iCharges);
+
+	int iUnknownIndex = pItemType->GetRandomUnknownTypeIndex();
+	if (iUnknownIndex != -1)
+		SetUnknownIndex(iUnknownIndex);
 	}
 
 CItem::~CItem (void)
@@ -205,6 +209,8 @@ CString CItem::CalcSortKey (void) const
 //	Returns a sort key
 
 	{
+	CItemCtx Ctx(this);
+
 	CItemType *pType = GetType();
 	if (pType == NULL)
 		return NULL_STR;
@@ -284,7 +290,7 @@ CString CItem::CalcSortKey (void) const
 	else
 		sCat.Append(CONSTLIT("1"));
 
-	CString sName = pType->GetSortName();
+	CString sName = pType->GetSortName(Ctx);
 
 	//	For ammo charges, sort used magazines first
 
@@ -933,8 +939,8 @@ CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 //	Gets the item description
 	
 	{
-	if (!m_pItemType->IsKnown() && !bActual)
-		return m_pItemType->GetUnknownType()->GetDesc();
+	if (CItemType *pUnknownType = m_pItemType->GetUnknownTypeIfUnknown(ItemCtx, bActual))
+		return pUnknownType->GetDesc();
 
 	//	If we have code, call it to generate the description
 
@@ -957,9 +963,10 @@ CString CItem::GetDesc (CItemCtx &ItemCtx, bool bActual) const
 		}
 
 	//	Otherwise, get it from the item
+	//	NOTE: Always get the actual description because we checked up above.
 
 	else
-		return m_pItemType->GetDesc(bActual); 
+		return m_pItemType->GetDesc(true); 
 	}
 
 bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData, bool bActual) const
@@ -977,7 +984,7 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 	//	Add additional custom attributes
 
-	if (m_pItemType->IsKnown() || bActual)
+	if (m_pItemType->IsKnown(Ctx) || bActual)
 		{
 		//	Add the level
 
@@ -1295,7 +1302,7 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 
 	else
 		{
-		sName = m_pItemType->GetNamePattern(dwFlags, &dwNounFlags);
+		sName = m_pItemType->GetNamePattern(Ctx, dwFlags, &dwNounFlags);
 
 		//	Modifiers
 
@@ -1577,7 +1584,7 @@ CString CItem::GetReference (CItemCtx &ItemCtx, const CItem &Ammo, DWORD dwFlags
 
 	//	No reference if unknown
 
-	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
+	if (!m_pItemType->IsKnown(ItemCtx) && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
 		return NULL_STR;
 
 	//	If we've got a standard language item, then use that.
@@ -1637,7 +1644,7 @@ bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int 
 
 	//	No reference if unknown
 
-	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
+	if (!m_pItemType->IsKnown(CItemCtx(this)) && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
 		return false;
 
 	//	Return armor reference, if this is armor
@@ -1667,7 +1674,7 @@ bool CItem::GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFl
 
 	//	No reference if unknown
 
-	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
+	if (!m_pItemType->IsKnown(Ctx) && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
 		return false;
 
 	//	Return device reference, if this is a device
@@ -1711,7 +1718,7 @@ bool CItem::GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeed
 
 	//	If this item is unknown, then we don't include reference
 
-	if (!m_pItemType->IsKnown() && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
+	if (!m_pItemType->IsKnown(Ctx) && !(dwFlags & CItemType::FLAG_ACTUAL_ITEM))
 		return false;
 
 	//	If this is armor, ask the armor
@@ -1902,10 +1909,9 @@ bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const
 
 	{
 	const bool bIgnoreInstalled = (dwFlags & FLAG_IGNORE_INSTALLED ? true : false);
-	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
 
 	return (m_pItemType == Item.m_pItemType
-			&& ((bIgnoreEnhancements && (m_dwFlags & ~flagEnhanced) == (Item.m_dwFlags & ~flagEnhanced)) || m_dwFlags == Item.m_dwFlags)
+			&& IsFlagsEqual(Item, dwFlags)
 			&& (bIgnoreInstalled || m_dwInstalled == Item.m_dwInstalled)
 			&& IsExtraEqual(Item.m_pExtra, dwFlags));
 	}
@@ -1976,6 +1982,46 @@ bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 
 	else
 		return false;
+	}
+
+bool CItem::IsFlagsEqual (const CItem &Src, DWORD dwFlags) const
+
+//	IsFlagsEqual
+//
+//	Returns TRUE if the flags setting for the two items are equal.
+
+	{
+	//	Short-circuit the easy case.
+
+	if (Src.m_dwFlags == m_dwFlags)
+		return true;
+
+	//	If enhancements are different, then we're not equal
+
+	const bool bIgnoreEnhancements = (dwFlags & FLAG_IGNORE_ENHANCEMENTS ? true : false);
+	if (!bIgnoreEnhancements 
+			&& (m_dwFlags & flagEnhanced) != (Src.m_dwFlags & flagEnhanced))
+		return false;
+
+	//	Check the damage flag
+
+	if ((m_dwFlags & flagDamaged) != (Src.m_dwFlags & flagDamaged))
+		return false;
+
+	//	If we get this far, the difference must be in the unknown type index.
+	//	In that case, we're equal only if both items are known to the player.
+
+	return (IsKnown() && Src.IsKnown());
+	}
+
+bool CItem::IsKnown (void) const
+
+//	IsKnown
+//
+//	Returns TRUE if the item is known to the player.
+
+	{
+	return (m_pItemType ? m_pItemType->IsKnown(CItemCtx(this)) : true);
 	}
 
 bool CItem::IsUsed (void) const
@@ -3180,6 +3226,19 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		}
 	}
 
+void CItem::SetKnown (bool bKnown)
+
+//	SetKnown
+//
+//	Sets the known state of the item.
+
+	{
+	if (m_pItemType == NULL)
+		return;
+
+	m_pItemType->SetKnown(CItemCtx(this), bKnown);
+	}
+
 bool CItem::SetLevel (int iLevel, CString *retsError)
 
 //  SetLevel
@@ -3282,7 +3341,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
     else if (strEquals(sName, PROPERTY_KNOWN))
 		{
-		m_pItemType->SetKnown(pValue && !pValue->IsNil());
+		m_pItemType->SetKnown(Ctx, pValue && !pValue->IsNil());
 		}
 
     else if (strEquals(sName, PROPERTY_LEVEL))
@@ -3343,6 +3402,18 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	return true;
 	}
 
+void CItem::SetUnknownIndex (int iIndex)
+
+//	SetUnknownIndex
+//
+//	Sets the unknown index.
+
+	{
+	DWORD dwIndex = Min(iIndex, UNKNOWN_INDEX_MAX);
+	m_dwFlags &= ~UNKNOWN_INDEX_MASK;
+	m_dwFlags |= (dwIndex & flagUnknownBit3) | ((dwIndex & ~flagUnknownBit3) << UNKNOWN_INDEX_LOWER_SHIFT);
+	}
+
 void CItem::SetVariantNumber(int iVariantCounter)
 
 //	SetVariantNumber
@@ -3353,7 +3424,6 @@ void CItem::SetVariantNumber(int iVariantCounter)
 	Extra();
 	m_pExtra->m_dwVariantCounter = iVariantCounter;
 	}
-
 
 ICCItem *CItem::WriteToCCItem (void) const
 

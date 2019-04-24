@@ -321,7 +321,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 
 		//	Identify the weapon
 
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 		}
 
 	//	Consume power

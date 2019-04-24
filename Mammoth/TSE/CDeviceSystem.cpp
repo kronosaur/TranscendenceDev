@@ -35,7 +35,7 @@ void CDeviceSystem::AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalle
 				//	If the device affected something, then we now know what it is
 
 				if (pObj->IsPlayer())
-					m_Devices[i].GetClass()->GetItemType()->SetKnown();
+					m_Devices[i].GetItem()->SetKnown();
 				}
 			}
 	}

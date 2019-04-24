@@ -266,8 +266,11 @@ void CCargoSpaceClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSour
 //	Device installed
 
 	{
+	if (pDevice == NULL || pSource == NULL)
+		return;
+
 	//	Identified when installed
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 	}

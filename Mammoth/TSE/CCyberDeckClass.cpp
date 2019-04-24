@@ -82,7 +82,7 @@ bool CCyberDeckClass::Activate (CInstalledDevice *pDevice,
 	//	Identify when program is run
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 
 	return true;
 

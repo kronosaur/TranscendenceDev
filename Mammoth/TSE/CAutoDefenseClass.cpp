@@ -543,7 +543,7 @@ void CAutoDefenseClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource
 	//	Identify
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 
 	DEBUG_CATCH
 	}

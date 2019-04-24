@@ -482,5 +482,5 @@ void CDriveClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, C
 	//	Drives are identified when installed
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 	}

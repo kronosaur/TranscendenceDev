@@ -607,7 +607,7 @@ void MarkItemsKnown (CUniverse &Universe)
 	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pItem = Universe.GetItemType(i);
-		pItem->SetKnown();
+		pItem->SetAllKnown();
 		pItem->SetShowReference();
 		}
 	}

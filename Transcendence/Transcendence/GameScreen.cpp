@@ -1034,7 +1034,7 @@ void CTranscendenceWnd::ShowUsePicker (void)
 
 			//	Add to the list
 
-			bool bHasUseKey = (pType->IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != chUseKey));
+			bool bHasUseKey = (Item.IsKnown() && !sUseKey.IsBlank() && (*sUseKey.GetASCIIZPointer() != chUseKey));
 
 			//	Any items without use keys sort first (so that they are easier
 			//	to access).
@@ -1045,7 +1045,7 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			//
 			//	For items that use charges, we expand if there are multiple
 
-			if (pType->ShowChargesInUseMenu() && pType->IsKnown())
+			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
 				{
 				for (j = 0; j < Item.GetCount(); j++)
 					{
@@ -1077,7 +1077,7 @@ void CTranscendenceWnd::ShowUsePicker (void)
 				continue;
 
 			CString sCount;
-			if (pType->ShowChargesInUseMenu() && pType->IsKnown())
+			if (pType->ShowChargesInUseMenu() && Item.IsKnown())
 				sCount = strFromInt(Item.GetCharges());
 			else if (Item.GetCount() > 1)
 				sCount = strFromInt(Item.GetCount());
@@ -1085,12 +1085,12 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			//	Show the key only if the item is identified
 
 			CString sKey;
-			if (pType->IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != chUseKey))
+			if (Item.IsKnown() && (*UseDesc.sUseKey.GetASCIIZPointer() != chUseKey))
 				sKey = UseDesc.sUseKey;
 
 			//	Name of item
 
-			CString sName = Item.GetNounPhrase(CItemCtx());
+			CString sName = Item.GetNounPhrase(CItemCtx(&Item));
 			if (Item.IsInstalled())
 				sName.Append(STR_INSTALLED);
 			sName = strPatternSubst(CONSTLIT("Use %s"), sName);

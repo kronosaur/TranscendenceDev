@@ -1661,7 +1661,7 @@ void CShieldClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	//	Identified
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 	}
 
 void CShieldClass::OnMarkImages (void)

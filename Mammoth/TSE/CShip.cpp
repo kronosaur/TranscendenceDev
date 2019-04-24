@@ -496,7 +496,7 @@ void CShip::CalcDeviceBonus (void)
 						//	If the device affected something, then we now know what it is
 
 						if (IsPlayer())
-							OtherDev.GetClass()->GetItemType()->SetKnown();
+							OtherDev.GetItem()->SetKnown();
 						}
 					}
 				}
@@ -509,7 +509,7 @@ void CShip::CalcDeviceBonus (void)
 				if (pArmor->AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements))
 					{
 					if (IsPlayer())
-						pArmor->GetClass()->GetItemType()->SetKnown();
+						pArmor->GetItem()->SetKnown();
 					}
 				}
 
@@ -3761,7 +3761,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	if (IsPlayer())
 		{
-		NewArmor.GetType()->SetKnown();
+		NewArmor.SetKnown();
 		NewArmor.GetType()->SetShowReference();
 		}
 

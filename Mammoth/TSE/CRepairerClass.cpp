@@ -432,5 +432,5 @@ void CRepairerClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource
 	//	Identified when installed
 
 	if (pSource->IsPlayer())
-		GetItemType()->SetKnown();
+		pDevice->GetItem()->SetKnown();
 	}

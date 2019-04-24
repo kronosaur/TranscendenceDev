@@ -2720,7 +2720,7 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 	while (ItemList.MoveCursorForward())
 		{
 		CItemType *pType = ItemList.GetItemAtCursor().GetType();
-		pType->SetKnown();
+		ItemList.GetItemPointerAtCursor()->SetKnown();
 		pType->SetShowReference();
 		}
 
@@ -2746,7 +2746,7 @@ ALERROR CTranscendenceModel::StartNewGameBackground (const SNewGameSettings &New
 			CItem Item(pType, 1);
 			ItemList.AddItem(Item);
 
-			pType->SetKnown();
+			pType->SetAllKnown();
 			pType->SetShowReference();
 			}
 		}

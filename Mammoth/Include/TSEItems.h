@@ -370,19 +370,21 @@ class CItem
 		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }
-		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		CUniverse &GetUniverse (void) const;
+		int GetUnknownIndex (void) const { return (int)((m_dwFlags & flagUnknownBit3) | ((m_dwFlags & UNKNOWN_INDEX_LOWER_MASK) >> UNKNOWN_INDEX_LOWER_SHIFT)); }
+		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		bool HasComponents (void) const;
 		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		bool HasUseItemScreen (void) const;
 		bool IsDamaged (int *retiDamagedHP = NULL) const;
-		inline bool IsDisrupted (void) const;
-		inline bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
-        inline bool IsEmpty (void) const { return (m_pItemType == NULL); }
-		inline bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
-		inline bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
-		inline bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
+		bool IsDisrupted (void) const;
+		bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
+        bool IsEmpty (void) const { return (m_pItemType == NULL); }
+		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
+		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
+		bool IsKnown (void) const;
+		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
 		bool IsVirtual (void) const;
 		inline void MarkForDelete (void) { m_dwCount = 0xffff; }
 		bool RemoveEnhancement (DWORD dwID);
@@ -395,8 +397,10 @@ class CItem
 		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
 		inline void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
 		inline void SetInstalled (int iInstalled) { m_dwInstalled = (BYTE)(char)iInstalled; }
+		void SetKnown (bool bKnown = true);
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
+		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
@@ -416,12 +420,20 @@ class CItem
 		enum PFlags
 			{
 			flagDamaged =		0x01,			//	Item is damaged
-
+			flagUnused1 =		0x02,
+			flagUnused2 =		0x04,
+			flagUnknownBit3 =	0x08,
 			flagEnhanced =		0x10,			//	Item is enhanced (Mod 1)
-			flagMod2 =			0x20,			//	Mod 2
-			flagMod3 =			0x40,			//	Mod 3
-			flagMod4 =			0x80,			//	Mod 4
+
+			flagUnknownBit0 =	0x20,
+			flagUnknownBit1 =	0x40,
+			flagUnknownBit2 =	0x80,
 			};
+
+		static constexpr DWORD UNKNOWN_INDEX_LOWER_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2);
+		static constexpr DWORD UNKNOWN_INDEX_LOWER_SHIFT = 5;
+		static constexpr DWORD UNKNOWN_INDEX_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2 | flagUnknownBit3);
+		static constexpr int UNKNOWN_INDEX_MAX = 15;
 
 		struct SExtra
 			{
@@ -441,6 +453,7 @@ class CItem
         int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
 		bool IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const;
+		bool IsFlagsEqual (const CItem &Src, DWORD dwFlags) const;
         void SetScalableLevel (int iValue) { Extra(); m_pExtra->m_dwLevel = iValue; }
 
 		static bool IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2);
@@ -550,7 +563,8 @@ class CItemListManipulator
 class CItemCtx
 	{
 	public:
-        CItemCtx (CItemType *pItemType);
+        CItemCtx (CItemType *pItemType) : m_Item(pItemType, 1), m_pItem(&m_Item) { }
+		CItemCtx (const CItemType *pItemType) : m_Item(const_cast<CItemType *>(pItemType), 1), m_pItem(&m_Item) { }
 		CItemCtx (const CItem &Item) : m_pItem(&Item) { }
 		CItemCtx (const CShipClass *pSource, const CItem &Item) : m_pSourceShipClass(pSource), m_pItem(&Item) { }
 		CItemCtx (const CItem *pItem = NULL, CSpaceObject *pSource = NULL) : m_pItem(pItem), m_pSource(pSource) { }
