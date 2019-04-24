@@ -110,7 +110,7 @@
 					;	Check if we need to create a new attack force
 					(if (not theSentinels)
 						(block (
-							;	Pick a random Iocrym outpost (if none is left, start from commandship)
+							;	Pick a random Iocrym outpost (if none is left, start from command ship)
 							(baseObj (or
 								(random (sysFindObject Nil "TA +iocrymOutpost;"))
 								(sysFindObject Nil "sN +iocrymCommandShip;")

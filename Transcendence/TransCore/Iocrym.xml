@@ -24,7 +24,7 @@
 			unknownType=		"&itUnknownAlienDevice10;"
 			attributes=			"Alien; Iocrym; MajorItem"
 
-			description=		"This alien device is designed to defend the giant commandships of the Iocrym."
+			description=		"This alien device is designed to defend the giant command ships of the Iocrym."
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -293,7 +293,7 @@
 			attributes=			"Alien; Iocrym; Military; MajorItem; NotForSale"
 			unknownType=		"&itUnknownAlienDevice10;"
 
-			description=		"This is a short-range weapon used by Iocrym commandships to defend their perimeter."
+			description=		"This is a short-range weapon used by Iocrym command ships to defend their perimeter."
 			>
 
 		<Image imageID="&rsItems10;" imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
