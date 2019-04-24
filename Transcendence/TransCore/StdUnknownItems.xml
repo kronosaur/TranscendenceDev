@@ -13,7 +13,75 @@
 
 			description=		"These etched holographic chips are impossible to duplicate and often used for currency or identification."
 			>
+	</ItemType>
 
+	<ItemType UNID="&itUnknownROM;"
+			name=				"ROM biosoft(s)"
+			virtual=			"true"
+			level=				"1"
+			value=				"300"
+			attributes=			"unknown"
+
+			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
+			>
+
+		<Names>ROM biosoft(s) labeled "1701"; ROM biosoft(s) labeled "0x0009FFD9";
+			ROM biosoft(s) labeled "Serenity"; ROM biosoft(s) labeled "Storm";
+			ROM biosoft(s) labeled "V y ger"; ROM biosoft(s) labeled "Codeslinger";
+			ROM biosoft(s) labeled "5.0.1"; ROM biosoft(s) labeled "TI901";
+			ROM biosoft(s) labeled "1.4b"; ROM biosoft(s) labeled "3.0";
+			ROM biosoft(s) labeled "X10.3"; ROM biosoft(s) labeled "r2";
+			ROM biosoft(s) labeled "&#xd8;"; ROM biosoft(s) labeled "0xbaadf00d";
+			ROM biosoft(s) labeled "Release 3.2"; ROM biosoft(s) labeled "&#xdf;eta";
+			ROM biosoft(s) labeled "&#xa9;2418 NeuroSoft, rce"; ROM biosoft(s) labeled "&#xa9;2401 Black Sun, rce";
+			ROM biosoft(s) with no label; ROM biosoft(s) labeled "GAAADTAG"
+		</Names>
+	</ItemType>
+
+	<ItemType UNID="&itUnknownROMB;"
+			name=				"ROM biosoft(s)"
+			virtual=			"true"
+			level=				"1"
+			value=				"300"
+			attributes=			"unknown"
+
+			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
+			>
+
+		<Names>ROM biosoft(s) with a green; ROM biosoft(s) with a gold label";
+			ROM biosoft(s) with a blue label; ROM biosoft(s) with a purple label;
+			ROM biosoft(s) with a white label; ROM biosoft(s) with a black label;
+			ROM biosoft(s) with a red label; ROM biosoft(s) with a yellow;
+			ROM biosoft(s) labeled "White Rabbit"; ROM biosoft(s) labeled "Octocat";
+			ROM biosoft(s) labeled "Ivanhoe"; ROM biosoft(s) labeled "Quixote";
+			ROM biosoft(s) labeled "@Void"; ROM biosoft(s) labeled "Merlin 1.7";
+			ROM biosoft(s) labeled "Excalever v0.93"; ROM biosoft(s) labeled "Nostromo";
+			ROM biosoft(s) labeled "Tarlow 3576"; ROM biosoft(s) labeled "Goldilocks";
+			ROM biosoft(s) labeled "Droog 7; ROM biosoft(s) labeled "Safehouse"
+		</Names>
+	</ItemType>
+
+	<ItemType UNID="&itUnknownROMC;"
+			name=				"ROM biosoft(s)"
+			virtual=			"true"
+			level=				"1"
+			value=				"300"
+			attributes=			"unknown"
+
+			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
+			>
+
+		<Names>ROM biosoft(s) labeled "Blue Vishnu"; ROM biosoft(s) labeled "White Shiva";
+			ROM biosoft(s) labeled "Brahma 17"; ROM biosoft(s) labeled "Ganesha 0";
+			ROM biosoft(s) labeled "Kartikeya"; ROM biosoft(s) labeled "Plan Parvati";
+			ROM biosoft(s) labeled "Lakshmi 7"; ROM biosoft(s) labeled "The Saraswati";
+			ROM biosoft(s) labeled "Jade Emperor"; ROM biosoft(s) labeled "Doumu";
+			ROM biosoft(s) labeled "Kunlun"; ROM biosoft(s) labeled "Exalted 1";
+			ROM biosoft(s) labeled "Foo Bar"; ROM biosoft(s) labeled "REAMDE";
+			ROM biosoft(s) labeled "Command.com"; ROM biosoft(s) labeled "MCU Backup";
+			ROM biosoft(s) labeled "Clean wipe"; ROM biosoft(s) labeled "Privilege Escalation";
+			ROM biosoft(s) labeled "Restore"; ROM biosoft(s) labeled "Vectorized Payload"
+		</Names>
 	</ItemType>
 
 <!-- LEVEL 2 -->

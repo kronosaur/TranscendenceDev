@@ -4240,6 +4240,334 @@
 		-->
 	</SystemMap>
 
+	<!-- Use Armor Coating -->
+
+	<DockScreen UNID="&dsUseArmorCoating;"
+			obsolete=			"45"
+			name=				"Ship's Interior"
+			type=				"itemPicker"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"aI"
+			/>
+
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (desc type)
+						(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
+						(setq type (objGetArmorType gPlayerShip gArmorSegment))
+						(if (itmIsKnown gItem)
+							(setq desc (cat "You can use the " (itmGetName gItem 0) " on"))
+							(setq desc (cat "The barrel seems to contain some kind of armor paste. You can use it on"))
+							)
+
+						(scrSetDesc gScreen (cat desc " your ship's " (objGetArmorName gPlayerShip gArmorSegment) " " (armGetName type) "."))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Use on this Armor Segment" key="U" default="1">
+						(block (coatingType)
+							(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
+							(setq coatingType (itmGetTypeData gItem))
+							(switch
+								(eq coatingType 'ablative)
+								(block (desc result)
+									(setq desc "The paste is an ablative coating that resists laser and particle damage.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0a05)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'acid)
+								(block Nil
+									(shpDamageArmor gPlayerShip gArmorSegment 2 (rollDice 3 6 0))
+									(setq gTitle "Unfortunately, the barrel contained an organic acid that eats through most metals. Your armor has been damaged.")
+									)
+
+								(eq coatingType 'carbon-weave)
+								(block (desc result enhancement itemLevel)
+									(setq desc "The coating is composed of nanomachines that strengthen your armor.")
+
+									; Figure out the enhancement based on the level
+									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
+									(setq enhancement Nil)
+									(switch
+										(leq itemLevel 3)
+											(setq enhancement 0x0105)
+
+										(leq itemLevel 5)
+											(setq enhancement 0x0103)
+
+										(leq itemLevel 6)
+											(setq enhancement 0x0101)
+										)
+
+									(if enhancement
+										(block Nil
+											(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) enhancement))
+											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+											)
+										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
+										)
+									)
+
+								(eq coatingType 'carbon-weave2)
+								(block (desc result itemLevel)
+									(setq desc "The coating is composed of nanomachines that strengthen your armor.")
+
+									; Figure out the enhancement based on the level
+									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
+									(switch
+										(leq itemLevel 6)
+											(setq gTitle (cat desc " Unfortunately, your armor is too primitive for the nanomachines."))
+
+										(leq itemLevel 10)
+											(block Nil
+												(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0105))
+												(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+												)
+
+										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
+										)
+									)
+
+								(eq coatingType 'centauriNanos)
+								(block (desc result enhancement itemLevel)
+									(setq desc "The coating is composed of nanomachines that strengthen your armor against laser and impact damage.")
+
+									; Figure out the enhancement based on the level
+									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
+									(setq enhancement Nil)
+									(switch
+										(leq itemLevel 3)
+											(setq enhancement 0x0808)
+
+										(leq itemLevel 5)
+											(setq enhancement 0x0805)
+
+										(leq itemLevel 6)
+											(setq enhancement 0x0803)
+										)
+
+									(if enhancement
+										(block Nil
+											(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) enhancement))
+											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+											)
+										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
+										)
+									)
+
+								(eq coatingType 'decon)
+								(block Nil
+									(setq desc "The barrel was filled with a decontamination gel.")
+
+									(if (shpIsRadioactive gPlayerShip)
+										(block Nil
+											(shpDecontaminate gPlayerShip)
+											(setq desc (cat desc " Your ship has been decontaminated."))
+											)
+										(setq desc (cat desc " Since your ship is not radioactive, the gel has no effect."))
+										)
+
+									(setq gTitle desc)
+									)
+
+								(eq coatingType 'degenerating)
+								(block Nil
+									(setq desc "The paste is a nanomachine matrix that dissolves metals and composites.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x8200)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'EMPimmune)
+								(block (desc result)
+									(setq desc "The barrel contains monopole dust, which protects your armor against EMP effects.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0b20)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'ioneffectimmune)
+								(block (desc result)
+									(setq desc "The barrel contains dyon dust, which immunizes your armor against disabling ion effects.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0c00)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'ionresist)
+								(block (desc result)
+									(setq desc "The paste is a coating that resists ion damage.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0945)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'particleresist)
+								(block (desc result)
+									(setq desc "The paste is a coating that resists particle damage.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0925)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'radiationimmune)
+								(block (desc result)
+									(setq desc "The barrel contains a borocarbide paste that resists radiation.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0b00)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'radioactive)
+								(block Nil
+									(setq desc "The barrel contained radioactive waste.")
+
+									(switch
+										(shpIsRadioactive gPlayerShip)
+											(setq desc (cat desc " Your ship is already radioactive; the waste has no further effect."))
+
+										(shpIsRadiationImmune gPlayerShip (scrGetItem gScreen))
+											(setq desc (cat desc " Fortunately, your armor is immune to radiation. The waste has no effect."))
+
+										(block Nil
+											(shpMakeRadioactive gPlayerShip)
+											(setq desc (cat desc " Your ship has been contaminated."))
+											)
+										)
+
+									(setq gTitle desc)
+									)
+
+								(eq coatingType 'reactive)
+								(block (desc result)
+									(setq desc "The paste is a reactive coating that resists kinetic and chemical explosion damage.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0a15)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'reflective)
+								(block (desc result)
+									(setq desc "The paste is a mirrored coating that reflects laser beams.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x030a)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'regenerating)
+								(block (
+									desc result
+									(itemLevel (itmGetLevel (scrGetItem gScreen)))
+									)
+									(setq desc "The paste is a nanomachine matrix that regenerates the armor segment.")
+									
+									(switch
+										(geq itemLevel 10)
+											(setq gTitle (cat desc " Unfortunately, your armor is too advanced for the nanomachines."))
+											
+										(block Nil
+											(setq result
+												(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0200)
+												)
+
+											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+											)
+										)
+									)
+
+								(eq coatingType 'shieldresist)
+								(block (desc result)
+									(setq desc "The barrel contains meteorsteel dust.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x8c00)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(eq coatingType 'thermoresist)
+								(block (desc result)
+									(setq desc "The paste is a coating that resists thermonuclear damage.")
+
+									(setq result
+										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0955)
+										)
+
+									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
+									)
+
+								(setq gTitle "Unknown barrel type")
+								)
+
+							; Remove the armor paste from the player's list
+							(objRemoveItem gPlayerShip gItem 1)
+
+							; Identify the item
+							(itmSetKnown gItem)
+
+							(scrShowPane gScreen "Done")
+							)
+					</Action>
+
+					<Action name="Cancel" key="C" cancel="1">
+						<Exit/>
+					</Action>
+
+				</Actions>
+
+			</Default>
+
+			<Done 
+					desc="=gTitle"
+					noListNavigation="true"
+					>
+
+				<Actions>
+					<Action name="Done" cancel="1" default="1" key="D">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Done>
+
+		</Panes>
+
+	</DockScreen>
+
 	<!-- Old Image -->
 
 	<Image UNID="&rsEI100Image;"	obsoleteVersion="40" bitmap="Resources\EI100.jpg" 		bitmask="Resources\EI100Mask.bmp" loadOnUse="true"/>

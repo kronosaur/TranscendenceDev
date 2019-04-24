@@ -2234,6 +2234,11 @@
 	<!ENTITY tbCommonwealthFleetItems	"0x0010066C">
 	<!ENTITY rsAquilaHero				"0x0010066D">
 
+	<!-- 06C0-06FF STANDARD ITEMS -->
+
+	<!ENTITY itUnknownROMB				"0x001006C0">
+	<!ENTITY itUnknownROMC				"0x001006C1">
+
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	

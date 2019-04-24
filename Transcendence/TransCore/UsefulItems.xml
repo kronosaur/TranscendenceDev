@@ -1373,7 +1373,7 @@
 			value=				"50"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"This program allows the ship's captain to rest while the ship maintains a steady course."
@@ -1414,7 +1414,7 @@
 
 			value=				"100"
 			mass=				"1"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 
 			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
 			>
@@ -1438,7 +1438,7 @@
 
 			value=				"1000"
 			mass=				"1"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 
 			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
 			>
@@ -1462,7 +1462,7 @@
 
 			value=				"10000"
 			mass=				"1"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 
 			description=		"This ROM stores digital cash and may be redeemed automatically with your ship's computer."
 			>
@@ -1508,7 +1508,7 @@
 			value=				"500"
 			mass=				"1"
 			frequency=			"notrandom"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, neurohackROM, notForSale, questItem"
 
 			description=		"This ROM enables you to connect to AIs and subdue them."
@@ -1536,7 +1536,7 @@
 			value=				"150"
 			mass=				"1"
 			frequency=			"common"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"This ROM enhances a ship's visual display to show the bearing of ships and stations beyond normal visual range."
@@ -1579,7 +1579,7 @@
 			value=				"5"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"This ROM would normally enhance a ship's visual display, but a manufacturing defect makes it worse than useless. Plugging this in to your ship's computer will temporarily damage your display screen."
@@ -1611,7 +1611,7 @@
 			value=				"100"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"consumable, info, systemMap"
 
 			description=		"This program accesses the central cartography libraries to generate a map of the current system."
@@ -1686,7 +1686,7 @@
 			value=				"500"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"consumable, info, military, systemMap"
 
 			description=		"This program accesses military databases to generate a map of enemy stations in the system."
@@ -1733,7 +1733,7 @@
 			value=				"300"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"A targeting program is required to aim guided missiles such as the KM500 Stiletto."
@@ -1768,7 +1768,7 @@
 			value=				"300"
 			mass=				"1"
 			frequency=			"rare"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"A trading computer tracks prices for known stations and suggests the best place to sell commodities."
@@ -1811,32 +1811,6 @@
 		</Invoke>
 	</ItemType>
 
-	<!-- Unknown ROM -->
-
-	<ItemType UNID="&itUnknownROM;"
-			name=				"ROM biosoft(s)"
-			virtual=			"true"
-			level=				"1"
-			value=				"300"
-			attributes=			"unknown"
-
-			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
-			>
-
-		<Names>ROM biosoft(s) labeled "1701"; ROM biosoft(s) labeled "0x0009FFD9";
-			ROM biosoft(s) labeled "Serenity"; ROM biosoft(s) labeled "Storm";
-			ROM biosoft(s) labeled "V y ger"; ROM biosoft(s) labeled "Codeslinger";
-			ROM biosoft(s) labeled "5.0.1"; ROM biosoft(s) labeled "TI901";
-			ROM biosoft(s) labeled "1.4b"; ROM biosoft(s) labeled "3.0";
-			ROM biosoft(s) labeled "X10.3"; ROM biosoft(s) labeled "r2";
-			ROM biosoft(s) labeled "&#xd8;"; ROM biosoft(s) labeled "0xbaadf00d";
-			ROM biosoft(s) labeled "Release 3.2"; ROM biosoft(s) labeled "&#xdf;eta";
-			ROM biosoft(s) labeled "&#xa9;2418 NeuroSoft, rce"; ROM biosoft(s) labeled "&#xa9;2401 Black Sun, rce";
-			ROM biosoft(s) with no label; ROM biosoft(s) labeled "GAAADTAG"
-		</Names>
-
-	</ItemType>
-
 <!-- SHIELD ENHANCEMENTS -->
 
 	<!-- ROM: Enhance shields -->
@@ -1847,7 +1821,7 @@
 			value=				"500"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shieldEnhance"
 
 			description=		"This ROM upgrades a shield generator so that it is more effective at absorbing damage. The ROM works on generators up to technology level VI."
@@ -2247,7 +2221,7 @@
 			value=				"750"
 			mass=				"1"
 			frequency=			"uncommon"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, weaponEnhance"
 
 			description=		"This ROM increases the rate of fire of the ship's primary weapon."
@@ -2268,7 +2242,7 @@
 			value=				"5"
 			mass=				"1"
 			frequency=			"veryrare"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, weaponDamage"
 
 			description=		"Because of a manufacturing defect, this ROM damages the ship's primary weapon when installed."
@@ -2325,7 +2299,7 @@
 			value=				"5000"
 			mass=				"1"
 			frequency=			"veryrare"
-			unknownType=		"&itUnknownROM;"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, notForSale, shieldEnhance"
 
 			description=		"One of Hiro's first creations, this ROM can increase the strength of any shield generator up to tech level 6."
@@ -2569,333 +2543,6 @@
 				</Actions>
 			</Done>
 		</Panes>
-	</DockScreen>
-
-	<!-- Use Armor Coating -->
-
-	<DockScreen UNID="&dsUseArmorCoating;"
-			name=				"Ship's Interior"
-			type=				"itemPicker"
-			>
-
-		<ListOptions
-			dataFrom=	"player"
-			list=		"aI"
-			/>
-
-		<Panes>
-			<Default>
-				<OnPaneInit>
-					(block (desc type)
-						(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
-						(setq type (objGetArmorType gPlayerShip gArmorSegment))
-						(if (itmIsKnown gItem)
-							(setq desc (cat "You can use the " (itmGetName gItem 0) " on"))
-							(setq desc (cat "The barrel seems to contain some kind of armor paste. You can use it on"))
-							)
-
-						(scrSetDesc gScreen (cat desc " your ship's " (objGetArmorName gPlayerShip gArmorSegment) " " (armGetName type) "."))
-						)
-				</OnPaneInit>
-
-				<Actions>
-					<Action name="Use on this Armor Segment" key="U" default="1">
-						(block (coatingType)
-							(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
-							(setq coatingType (itmGetTypeData gItem))
-							(switch
-								(eq coatingType 'ablative)
-								(block (desc result)
-									(setq desc "The paste is an ablative coating that resists laser and particle damage.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0a05)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'acid)
-								(block Nil
-									(shpDamageArmor gPlayerShip gArmorSegment 2 (rollDice 3 6 0))
-									(setq gTitle "Unfortunately, the barrel contained an organic acid that eats through most metals. Your armor has been damaged.")
-									)
-
-								(eq coatingType 'carbon-weave)
-								(block (desc result enhancement itemLevel)
-									(setq desc "The coating is composed of nanomachines that strengthen your armor.")
-
-									; Figure out the enhancement based on the level
-									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
-									(setq enhancement Nil)
-									(switch
-										(leq itemLevel 3)
-											(setq enhancement 0x0105)
-
-										(leq itemLevel 5)
-											(setq enhancement 0x0103)
-
-										(leq itemLevel 6)
-											(setq enhancement 0x0101)
-										)
-
-									(if enhancement
-										(block Nil
-											(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) enhancement))
-											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-											)
-										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
-										)
-									)
-
-								(eq coatingType 'carbon-weave2)
-								(block (desc result itemLevel)
-									(setq desc "The coating is composed of nanomachines that strengthen your armor.")
-
-									; Figure out the enhancement based on the level
-									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
-									(switch
-										(leq itemLevel 6)
-											(setq gTitle (cat desc " Unfortunately, your armor is too primitive for the nanomachines."))
-
-										(leq itemLevel 10)
-											(block Nil
-												(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0105))
-												(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-												)
-
-										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
-										)
-									)
-
-								(eq coatingType 'centauriNanos)
-								(block (desc result enhancement itemLevel)
-									(setq desc "The coating is composed of nanomachines that strengthen your armor against laser and impact damage.")
-
-									; Figure out the enhancement based on the level
-									(setq itemLevel (itmGetLevel (scrGetItem gScreen)))
-									(setq enhancement Nil)
-									(switch
-										(leq itemLevel 3)
-											(setq enhancement 0x0808)
-
-										(leq itemLevel 5)
-											(setq enhancement 0x0805)
-
-										(leq itemLevel 6)
-											(setq enhancement 0x0803)
-										)
-
-									(if enhancement
-										(block Nil
-											(setq result (shpEnhanceItem gPlayerShip (scrGetItem gScreen) enhancement))
-											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-											)
-										(setq gTitle (cat desc " Unfortunately, your armor is too strong for the nanomachines."))
-										)
-									)
-
-								(eq coatingType 'decon)
-								(block Nil
-									(setq desc "The barrel was filled with a decontamination gel.")
-
-									(if (shpIsRadioactive gPlayerShip)
-										(block Nil
-											(shpDecontaminate gPlayerShip)
-											(setq desc (cat desc " Your ship has been decontaminated."))
-											)
-										(setq desc (cat desc " Since your ship is not radioactive, the gel has no effect."))
-										)
-
-									(setq gTitle desc)
-									)
-
-								(eq coatingType 'degenerating)
-								(block Nil
-									(setq desc "The paste is a nanomachine matrix that dissolves metals and composites.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x8200)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'EMPimmune)
-								(block (desc result)
-									(setq desc "The barrel contains monopole dust, which protects your armor against EMP effects.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0b20)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'ioneffectimmune)
-								(block (desc result)
-									(setq desc "The barrel contains dyon dust, which immunizes your armor against disabling ion effects.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0c00)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'ionresist)
-								(block (desc result)
-									(setq desc "The paste is a coating that resists ion damage.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0945)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'particleresist)
-								(block (desc result)
-									(setq desc "The paste is a coating that resists particle damage.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0925)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'radiationimmune)
-								(block (desc result)
-									(setq desc "The barrel contains a borocarbide paste that resists radiation.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0b00)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'radioactive)
-								(block Nil
-									(setq desc "The barrel contained radioactive waste.")
-
-									(switch
-										(shpIsRadioactive gPlayerShip)
-											(setq desc (cat desc " Your ship is already radioactive; the waste has no further effect."))
-
-										(shpIsRadiationImmune gPlayerShip (scrGetItem gScreen))
-											(setq desc (cat desc " Fortunately, your armor is immune to radiation. The waste has no effect."))
-
-										(block Nil
-											(shpMakeRadioactive gPlayerShip)
-											(setq desc (cat desc " Your ship has been contaminated."))
-											)
-										)
-
-									(setq gTitle desc)
-									)
-
-								(eq coatingType 'reactive)
-								(block (desc result)
-									(setq desc "The paste is a reactive coating that resists kinetic and chemical explosion damage.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0a15)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'reflective)
-								(block (desc result)
-									(setq desc "The paste is a mirrored coating that reflects laser beams.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x030a)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'regenerating)
-								(block (
-									desc result
-									(itemLevel (itmGetLevel (scrGetItem gScreen)))
-									)
-									(setq desc "The paste is a nanomachine matrix that regenerates the armor segment.")
-									
-									(switch
-										(geq itemLevel 10)
-											(setq gTitle (cat desc " Unfortunately, your armor is too advanced for the nanomachines."))
-											
-										(block Nil
-											(setq result
-												(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0200)
-												)
-
-											(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-											)
-										)
-									)
-
-								(eq coatingType 'shieldresist)
-								(block (desc result)
-									(setq desc "The barrel contains meteorsteel dust.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x8c00)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(eq coatingType 'thermoresist)
-								(block (desc result)
-									(setq desc "The paste is a coating that resists thermonuclear damage.")
-
-									(setq result
-										(shpEnhanceItem gPlayerShip (scrGetItem gScreen) 0x0955)
-										)
-
-									(setq gTitle (cat desc (intArmorEnhanceStatus result)))
-									)
-
-								(setq gTitle "Unknown barrel type")
-								)
-
-							; Remove the armor paste from the player's list
-							(objRemoveItem gPlayerShip gItem 1)
-
-							; Identify the item
-							(itmSetKnown gItem)
-
-							(scrShowPane gScreen "Done")
-							)
-					</Action>
-
-					<Action name="Cancel" key="C" cancel="1">
-						<Exit/>
-					</Action>
-
-				</Actions>
-
-			</Default>
-
-			<Done 
-					desc="=gTitle"
-					noListNavigation="true"
-					>
-
-				<Actions>
-					<Action name="Done" cancel="1" default="1" key="D">
-						<Exit/>
-					</Action>
-				</Actions>
-			</Done>
-
-		</Panes>
-
 	</DockScreen>
 
 <!-- BASE CLASSES -->
