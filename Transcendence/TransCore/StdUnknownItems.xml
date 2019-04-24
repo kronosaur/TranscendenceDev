@@ -4,6 +4,26 @@
 
 <!-- LEVEL 1 -->
 
+	<ItemType UNID="&itUnknownBarrel;"
+			name=				"barrel(s) with strange markings"
+			virtual=			"true"
+			level=				"1"
+			value=				"150"
+			attributes=			"unknown"
+
+			description=		"These barrels are used to hold everything from chemicals to nanomachines. The markings are completely unfamiliar to you."
+			>
+
+		<Names>barrel(s) marked "H3OCH4"; barrel(s) marked "Nanobatch 3281";
+			barrel(s) marked "01-9098371"; barrel(s) marked "Not for Human Consumption";
+			barrel(s) marked "Keep Seal Clean"; barrel(s) marked "Caution! Volatile Compounds";
+			barrel(s) marked "&#xd0;&#xe6;m&#xf6;"; barrel(s) marked "&#xbf;&#xbf;&#xbf;";
+			barrel(s) marked "&#xd7;&#xd7;&#xd7;"; barrel(s) marked "Do Not Open";
+			barrel(s) marked with strange symbols; barrel(s) marked with a bar code;
+			barrel(s) covered with dents; barrel(s) with no markings
+		</Names>
+	</ItemType>
+
 	<ItemType UNID="&itUnknownID;"
 			name=				"unmarked identification chip"
 			virtual=			"true"
@@ -133,6 +153,27 @@
 
 <!-- LEVEL 5 -->
 
+	<ItemType UNID="&itUnknownBarrel5;"
+			name=				"barrel(s) with strange markings"
+			virtual=			"true"
+			level=				"5"
+			value=				"2000"
+			attributes=			"unknown"
+
+			description=		"These barrels are used to hold everything from chemicals to nanomachines. The markings are completely unfamiliar to you."
+			>
+
+		<Names>barrel(s) marked "C4Si3OH4"; barrel(s) marked "Nanobatch A1876B";
+			barrel(s) marked "27-7862481"; barrel(s) marked "Keep Pressurized";
+			barrel(s) marked "Recycle"; barrel(s) marked "Do Not Discard";
+			barrel(s) marked "Danger! Biohazard!"; barrel(s) marked "Use Only As Directed";
+			barrel(s) marked "Salmonite&#xae;"; barrel(s) marked "Do Not Puncture";
+			barrel(s) marked with Arabic script; barrel(s) marked with microdots;
+			barrel(s) marked with Chinese ideograms; barrel(s) with no markings;
+			barrel(s) marked "Gefahr!"; barrel(s) marked "Peligro!"
+		</Names>
+	</ItemType>
+	
 	<ItemType UNID="&itUnknownMnemonicCube;"
 			name=				"mnemonic cube(s)"
 			virtual=			"true"
