@@ -272,5 +272,5 @@ void CCargoSpaceClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSour
 	//	Identified when installed
 
 	if (pSource->IsPlayer())
-		pDevice->GetItem()->SetKnown();
+		ItemList.GetItemAtCursor().SetKnown();
 	}

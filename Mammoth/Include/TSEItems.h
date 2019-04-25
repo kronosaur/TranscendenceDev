@@ -397,7 +397,7 @@ class CItem
 		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
 		inline void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
 		inline void SetInstalled (int iInstalled) { m_dwInstalled = (BYTE)(char)iInstalled; }
-		void SetKnown (bool bKnown = true);
+		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		void SetUnknownIndex (int iIndex);

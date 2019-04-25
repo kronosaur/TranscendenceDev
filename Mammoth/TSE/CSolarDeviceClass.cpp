@@ -96,5 +96,5 @@ void CSolarDeviceClass::OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSou
 	//	Identified when installed
 
 	if (pSource->IsPlayer())
-		pDevice->GetItem()->SetKnown();
+		ItemList.GetItemAtCursor().SetKnown();
 	}

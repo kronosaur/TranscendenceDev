@@ -3226,7 +3226,7 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		}
 	}
 
-void CItem::SetKnown (bool bKnown)
+void CItem::SetKnown (bool bKnown) const
 
 //	SetKnown
 //
