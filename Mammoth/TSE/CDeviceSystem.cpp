@@ -719,6 +719,24 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 		}
 	}
 
+void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
+
+//	ReadyNextWeapon
+//
+//	Select the next launcher.
+
+{
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
+	if (iNextWeapon != -1)
+	{
+		m_NamedDevices[devMissileWeapon] = iNextWeapon;
+
+		CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
+		CDeviceClass *pClass = pDevice->GetClass();
+		pClass->ValidateSelectedVariant(pObj, pDevice);
+	}
+}
+
 void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
 
 //	ReadyNextMissile
@@ -727,13 +745,17 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
 
 	{
 	int i;
-
+	bool lastSelected;
+	bool firstSelected;
 	CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
 		{
 		pDevice->SelectNextVariant(pObj, iDir);
+		lastSelected = pDevice->IsLastVariantSelected(pObj);
+		firstSelected = pDevice->IsFirstVariantSelected(pObj);
 
 		//	If we have any linked missile launchers, then select them also
+		//  TODO: May need to change for SelectedFire launchers, as well as the fire command for SelectedFire launchers...
 
 		for (i = 0; i < m_Devices.GetCount(); i++)
 			{
@@ -747,6 +769,17 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
 				LinkedDevice.SelectNextVariant(pObj, iDir);
 			}
 		}
+	
+	//  If the last variant is selected, then select the next missile launcher.
+	//  Don't forget to also select the first (or last) missile, too.
+
+	bool selectPrevLauncher = (lastSelected && (iDir == 0));
+	bool selectNextLauncher = (firstSelected && (iDir == 1));
+	if (selectPrevLauncher)
+		ReadyNextLauncher(pObj, 0);
+	else if (selectNextLauncher)
+		ReadyNextLauncher(pObj, 1);
+
 	}
 
 void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)

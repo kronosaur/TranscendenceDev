@@ -111,6 +111,8 @@ class CCyberDeckClass : public CDeviceClass
 											 CItemType **retpType = NULL) override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
+		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) override;
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -685,8 +687,10 @@ class CWeaponClass : public CDeviceClass
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual bool IsAmmoWeapon (void) override;
 		virtual bool IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
+		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsTrackingWeapon (CItemCtx &Ctx) override;
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
+		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) override;
 		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;

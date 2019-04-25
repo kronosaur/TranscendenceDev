@@ -3734,6 +3734,26 @@ bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevic
 	return false;
 	}
 
+bool CWeaponClass::IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice)
+
+//	IsVariantSelected
+//
+//	Returns TRUE if we've selected some variant (i.e., we haven't selected 0xffff)
+
+{
+	return (GetCurrentVariant(pDevice) == -1) || (GetCurrentVariant(pDevice) == 0);
+}
+
+bool CWeaponClass::IsLastVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice)
+
+//	IsVariantSelected
+//
+//	Returns TRUE if we've selected some variant (i.e., we haven't selected 0xffff)
+
+{
+	return (GetCurrentVariant(pDevice) == -1) || (GetCurrentVariant(pDevice) == m_ShotData.GetCount());
+}
+
 bool CWeaponClass::IsSinglePointOrigin (void) const
 
 //	IsSinglePointOrigin
