@@ -376,12 +376,20 @@
 						(ls skillLevel 10)	'descUsageOK3
 											'descUsageOK4
 						))
-					(minArmorLevel (max 1 (- (itmGetLevel gItem) 3)))
-					(maxArmorLevel (+ (itmGetLevel gItem) 4))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itmGetStaticData gItem 'repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
 					(armorLevel (itmGetProperty dstItem 'repairLevel))
 					(armorHP (objGetItemProperty shipObj dstItem 'hp))
 					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
 					)
+					(dbgOutput repairDesc)
 					(switch
 						;	Armor repair items only work on armor
 						(not (itmMatches dstItem "a"))
@@ -426,8 +434,18 @@
 									})
 								}
 
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem (@ repairDesc 'descID) {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
 						;	We cannot repair armor that is too low level
-						(ls armorLevel minArmorLevel)
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
 							{
 								canUse: Nil
 								desc: (itmTranslate gItem 'descArmorTooPrimitive {
@@ -437,7 +455,7 @@
 								}
 
 						;	We cannot repair armor that is too high level
-						(gr armorLevel maxArmorLevel)
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
 							{
 								canUse: Nil
 								desc: (itmTranslate gItem 'descArmorTooAdvanced {
@@ -462,10 +480,16 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(shipObj (@ gData 'shipObj))
-					(repair (eval (itmGetStaticData gItem 'RepairHP)))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itmGetStaticData gItem 'repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
 					(descIntro (itmTranslate gItem 'descResultIntro))
-					(minArmorLevel (max 1 (- (itmGetLevel gItem) 3)))
-					(maxArmorLevel (+ (itmGetLevel gItem) 4))
 					(armorLevel (itmGetProperty dstItem 'repairLevel))
 					(armorHP (objGetItemProperty shipObj dstItem 'hp))
 					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
@@ -486,18 +510,20 @@
 						(not (objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem }))
 							(setq resultDesc 'descResultCannotRepair)
 
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							(setq resultDesc (or (@ repairDesc 'descID) 'descResultCannotRepair))
+
 						;	We cannot repair armor that is too low level
-						(ls armorLevel minArmorLevel)
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
 							(setq resultDesc 'descResultArmorTooPrimitive)
 
 						;	We cannot repair armor that is too high level
-						(gr armorLevel maxArmorLevel)
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
 							(setq resultDesc 'descResultArmorTooAdvanced)
 
-						(not repair)
-							(setq resultDesc 'descResultItemError)
-
 						(block (
+							(repair (@ repairDesc 'repairHP))
 							(armorSeg (itmGetArmorInstalledLocation dstItem))
 							(skillLevel (typGetData &baStdArmorRepair; 'skillLevel))
 

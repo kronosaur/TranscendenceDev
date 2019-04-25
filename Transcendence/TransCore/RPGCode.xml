@@ -1484,6 +1484,29 @@
 					)
 				))
 
+			;	rpgFindInTable
+			;
+			;	Given a table of struct as follows:
+			;
+			;	({ criteria:... }
+			;	 { criteria:... }
+			;	 ...
+			;	 )
+			;
+			;	We return the first entry that matches the given item.
+
+			(setq rpgFindItemInTable (lambda (theItem theTable)
+				(block (result)
+					(enumWhile theTable (not result) theEntry
+						(if (and (@ theEntry 'criteria) (itmMatches theItem (@ theEntry 'criteria)))
+							(setq result theEntry)
+							)
+						)
+
+					result
+					)
+				))
+
 			;	rpgFindWrecksToSalvage
 			;
 			;	Returns a list of wrecks within 100 ls of centerObj that can be 
