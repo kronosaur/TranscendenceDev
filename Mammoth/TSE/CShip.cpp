@@ -620,13 +620,16 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(ItemCtx);
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
+		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
 
 		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
-		//  but the primary weapon isn't both "fire if selected" AND of the same type, then don't fire.
+		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
-			(pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) : false)) &&
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
+			(pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) : false)) && (pWeapon->GetCategory() == itemcatWeapon)) ||
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
+			(pSelectedLauncher != NULL ? (pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) : false)) && (pWeapon->GetCategory() == itemcatLauncher))) &&
 			(dwLinkedFireOptions & CDeviceClass::lkfSelected) &&
 			IsPlayer()
 			))
@@ -6230,7 +6233,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 								CInstalledDevice *currDevice = GetDevice(i);
 								if (!currDevice->IsEmpty())
 									{
-									if (currDevice->GetCategory() == (itemcatWeapon))
+									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
 										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == dwLinkedFireOptions && currDevice->GetCycleFireSettings()
 											&& currDevice != pDevice && currDevice->IsEnabled())
