@@ -87,11 +87,12 @@
 
 		<!-- Image and Effects -->
 		
-		<Image			imageID="&rsStations7;" imageX="0" imageY="640" imageWidth="128" imageHeight="128"/>
+		<Image			imageID="&rsAresOutpost;" imageWidth="160" imageHeight="250"	viewportRatio="0.03"/>
 
 		<DockingPorts
+				portAngle=		"15"
 				portCount=		"8"
-				portRadius=		"80"
+				portRadius=		"95"
 				/>
 
 	</StationType>
@@ -179,12 +180,22 @@
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsStations7;" imageX="0" imageY="0" imageWidth="256" imageHeight="256"/>
+		<Image			imageID="&rsAresCommune;" imageWidth="360" imageHeight="360"	viewportRatio="0.03375"/>
 
-		<DockingPorts
-				portCount=		"8"
-				portRadius=		"80"
-				/>
+		<DockingPorts>
+			<Port posAngle="-75"   posRadius="80"	posZ="0" />
+			<Port posAngle="45"    posRadius="80"	posZ="0" />
+			<Port posAngle="165"   posRadius="80"	posZ="0"	bringToFront="true" />
+
+			<Port posAngle="-45"   posRadius="120"	posZ="-60"	rotation="75"/>
+			<Port posAngle="15"    posRadius="120"	posZ="-60"	rotation="-105"/>
+
+			<Port posAngle="75"    posRadius="120"	posZ="-60"	rotation="-165"/>
+			<Port posAngle="135"   posRadius="120"	posZ="-60"	rotation="15"	bringToFront="true"/>
+
+			<Port posAngle="195"   posRadius="120"	posZ="-60"	rotation="-45"	sendToBack="true"/>
+			<Port posAngle="-105"  posRadius="120"	posZ="-60"	rotation="135"/>
+		</DockingPorts>
 
 	</StationType>
 
@@ -394,6 +405,9 @@
 	
 <!-- RESOURCES -->
 	
+	<Image UNID="&rsAresCommune;"				bitmap="Resources\AresCommune.jpg" bitmask="Resources\AresCommuneMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAresOutpost;"				bitmap="Resources\AresOutpost.jpg" bitmask="Resources\AresOutpostMask.bmp" loadOnUse="true" />
+
 	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsTundraHD;"					bitmap="Resources\TundraHD.jpg" bitmask="Resources\TundraHDMask.bmp" loadOnUse="true" />

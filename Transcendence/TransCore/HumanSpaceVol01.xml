@@ -1726,6 +1726,8 @@
 	<!ENTITY rsCometfallHero			"0x001000B3">
 	<!ENTITY rsDeimosHero				"0x001000B4">
 	<!ENTITY rsPolarFreighterHero		"0x001000B5">
+	<!ENTITY rsAresOutpost				"0x001000B6">
+	<!ENTITY rsAresCommune				"0x001000B7">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	
