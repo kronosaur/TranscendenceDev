@@ -751,6 +751,126 @@
 		</Language>
 	</Type>
 
+	<!-- Device Enhancment Item Base Class
+
+	Items to enhance devices should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnDevice.
+
+	STATIC DATA
+		enhancement - enhancement to apply
+		enhancementTable - table of criteria and enhancements for different device types / levels
+
+    -->
+
+	<Type UNID="&baStdDeviceEnhancement;">
+		<StaticData>
+			<Data id="CargoCriteria">"wU"</Data>
+		</StaticData>
+
+		<Events>
+			<CanUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					)
+					(switch
+						(not (itmMatches dstItem "w"))
+							Nil
+
+						(itmIsKnown gItem)
+							{
+								canUse: True
+								desc: (itmTranslate gItem 'descUsageOK {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+						{
+							canUse: True
+							desc: (itmTranslate gItem 'descUsageUnknown {
+								useItem: (itmGetName gItem)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								})
+							}
+						)
+					)
+			</CanUseOnItem>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					(enhancement (itmGetStaticData gItem 'enhancement))
+					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
+					)
+
+					;	General enhancement has higher priority than table
+					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
+
+					(switch
+						(not enhancementInfo)
+							(block Nil
+								;	No effect, so can't identify item
+								(objRemoveItem gPlayerShip gItem 1)
+								{
+									desc: (itmTranslate gItem 'descNoEffect)
+									}
+								)
+
+						(block (
+							(trData {
+								dstItem: (itmGetName dstItem 'noModifiers)
+								})
+							result
+							)
+							;	Apply enhancement
+							(setq result (shpEnhanceItem gPlayerShip dstItem (@ enhancementInfo 'enhancement)))
+
+							;	Remove the item from the player's cargo
+							(objRemoveItem gPlayerShip gItem 1)
+
+							;	Identify the item
+							(itmSetKnown gItem)
+
+							{
+								desc: (cat
+									(itmTranslate gItem 'descResultIntro)
+									(switch
+										(= result 0) (itmTranslate gItem 'descSuccess trData)
+										(= result 1) (itmTranslate gItem 'descNoEffect trData)
+										(= result 2) (itmTranslate gItem 'descNoFurther trData)
+										(= result 3) (itmTranslate gItem 'descWeakened trData)
+										(= result 4) (itmTranslate gItem 'descRepaired trData)
+										(= result 5) (itmTranslate gItem 'descRemoved trData)
+										(= result 6) (itmTranslate gItem 'descReplaced trData)
+										(= result 7) (itmTranslate gItem 'descFurther trData)
+										)
+									(if (@ enhancementInfo 'descID) " ")
+									(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									)
+								}
+							)
+						)
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descSuccess">Your %dstItem% is more powerful.</Text>
+			<Text id="descNoEffect">The enhancement has no effect.</Text>
+			<Text id="descNoFurther">Your %dstItem% is already enhanced.</Text>
+			<Text id="descWeakened">Your %dstItem% has weakened further.</Text>
+			<Text id="descRepaired">Your %dstItem% has been repaired.</Text>
+			<Text id="descRemoved">Your %dstItem% has lost its enhancement.</Text>
+			<Text id="descReplaced">Your %dstItem% is more powerful (previous enhancement lost).</Text>
+			<Text id="descFurther">Your %dstItem% has been further enhanced.</Text>
+
+			<Text id="descUsageOK">You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsageUnknown">This appears to be some kind of device upgrade. You can use it on %dstItem%.</Text>
+
+			<Text id="descResultTooAdvanced">Unfortunately, your device is too advanced to be upgraded.</Text>
+			<Text id="descResultTooPrimitive">Unfortunately, your device is too primitive for the upgrade.</Text>
+		</Language>
+	</Type>
+
 <!-- CODE -->
 
 	<Globals>

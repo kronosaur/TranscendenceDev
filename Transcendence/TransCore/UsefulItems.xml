@@ -2051,6 +2051,7 @@
 	<!-- Laser Amplifier -->
 
 	<ItemType UNID="&itLaserAmplifier;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"laser amplifier"
 			level=				"1"
 			value=				"250"
@@ -2059,18 +2060,25 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Laser amplifiers are used to repair and upgrade laser weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 0 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Kinetic Upgrade -->
 
 	<ItemType UNID="&itKineticUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"kinetic upgrade"
 			level=				"2"
 			value=				"350"
@@ -2079,18 +2087,25 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Kinetic upgrades increase the damage of a kinetic weapon."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 1 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:kinetic;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Particle Upgrade -->
 
 	<ItemType UNID="&itParticleUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"particle source upgrade"
 			level=				"4"
 			value=				"500"
@@ -2099,18 +2114,25 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the power of particle beams."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 2 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Blast Upgrade -->
 
 	<ItemType UNID="&itBlastUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"hexagene booster"
 			level=				"5"
 			value=				"1000"
@@ -2119,18 +2141,25 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This high-explosive upgrade increases the damage done by blast weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 3 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Ion Upgrade -->
 
 	<ItemType UNID="&itIonUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"ion power capacitor"
 			level=				"7"
 			value=				"2500"
@@ -2139,18 +2168,25 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Ion power capacitors are used to increase the destructive power of ion weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 4 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:ion;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Thermo Upgrade -->
 
 	<ItemType UNID="&itThermoUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"tritium injector"
 			level=				"8"
 			value=				"5000"
@@ -2159,13 +2195,19 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the damage done by thermo weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 5 "is more powerful")
-		</Invoke>
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Weapon Enhancement ROM -->
