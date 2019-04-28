@@ -32,6 +32,7 @@
 #define LINKED_FIRE_ENEMY						CONSTLIT("whenInFireArc")
 #define LINKED_FIRE_TARGET						CONSTLIT("targetInRange")
 #define LINKED_FIRE_SELECTED					CONSTLIT("whenSelected")
+#define LINKED_FIRE_SELECTED_VARIANT			CONSTLIT("whenSelectedSameVariant")
 #define LINKED_FIRE_NEVER						CONSTLIT("neverFire")
 
 #define PROPERTY_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged")
@@ -701,6 +702,9 @@ CString CDeviceClass::GetLinkedFireOptionString (DWORD dwOptions)
 		case lkfSelected:
 			return LINKED_FIRE_SELECTED;
 
+		case lkfSelectedVariant:
+			return LINKED_FIRE_SELECTED_VARIANT;
+
 		case lkfNever:
 			return LINKED_FIRE_NEVER;
 
@@ -826,6 +830,8 @@ ALERROR CDeviceClass::ParseLinkedFireOptions (SDesignLoadCtx &Ctx, const CString
 		dwOptions |= CDeviceClass::lkfEnemyInRange;
 	else if (strEquals(sDesc, LINKED_FIRE_SELECTED))
 		dwOptions |= CDeviceClass::lkfSelected;
+	else if (strEquals(sDesc, LINKED_FIRE_SELECTED_VARIANT))
+		dwOptions |= CDeviceClass::lkfSelectedVariant;
 	else if (strEquals(sDesc, LINKED_FIRE_NEVER))
 		dwOptions |= CDeviceClass::lkfNever;
 	else

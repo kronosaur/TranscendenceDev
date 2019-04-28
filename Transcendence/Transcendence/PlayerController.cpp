@@ -2350,8 +2350,12 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	{
 	CInstalledDevice *pCurWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
 	CInstalledDevice *pNewWeapon = pCurWeapon;
-	bool bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected;
-	bool bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID());
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+
+	DWORD bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected;
+	DWORD bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+		&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+			: true));
 
 	//	Keep switching until we find a weapon that is not disabled
 	//  If currently selected weapon has LinkedFireSelectable, make sure next
@@ -2362,13 +2366,19 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
-		bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected;
-		bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() == CDeviceClass::lkfSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID());
+		bCurWeaponLkfSelected = pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected;
+		bNextWeaponLkfSelected = (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+			&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+				: true));
 		}
+	
 	while (pNewWeapon 
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
-			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? pNewWeapon->GetUNID() != pCurWeapon->GetUNID() : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
+			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? 
+		(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
+			(CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() != CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber() || pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) :
+			pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
 	//	Done
 
@@ -2376,7 +2386,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		if (!(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected))
+		if (!(pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected))
 			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player

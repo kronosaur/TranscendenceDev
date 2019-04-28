@@ -2485,6 +2485,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfEnemyInRange));
 		else if (dwOptions & CDeviceClass::lkfSelected)
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfSelected));
+		else if (dwOptions & CDeviceClass::lkfSelectedVariant)
+			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfSelectedVariant));
 		else if (dwOptions & CDeviceClass::lkfNever)
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfNever));
 		//	Done

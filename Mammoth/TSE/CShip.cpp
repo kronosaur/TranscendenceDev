@@ -601,8 +601,10 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	//	NOTE: Selectable means that the weapon is not a secondary weapon
 	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
 	//  linked-fire weapons, which normally count as "selectable", from this definition.
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetLinkedFireOptions() & CDeviceClass::lkfSelected))
+
+	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetLinkedFireOptions() & dwLinkedFireSelected))
 		{
 		*retpTarget = m_pController->GetTarget(ItemCtx);
 		*retiFireSolution = -1;
@@ -624,13 +626,25 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
 		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
+		//  If a weapon is "fire if selected and same variant", then it only fires if the selected weapon is of the
+		//  same variant and type.
+		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+		int iTest1 = ItemCtx.GetItemVariantNumber();
+		int iTest2 = CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber();
+
+		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions()
+			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
+		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions()
+			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
-			(pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) : false)) && (pWeapon->GetCategory() == itemcatWeapon)) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & CDeviceClass::lkfSelected) : false) &&
-			(pSelectedLauncher != NULL ? (pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) : false)) && (pWeapon->GetCategory() == itemcatLauncher))) &&
-			(dwLinkedFireOptions & CDeviceClass::lkfSelected) &&
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
+				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
+				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
+			(dwLinkedFireOptions & dwLinkedFireSelected) &&
 			IsPlayer()
 			))
 		{
@@ -640,7 +654,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		//	If our options is "fire always" or "fire if selected" then our target is always the same
 		//	as the primary target.
 
-		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & CDeviceClass::lkfSelected))
+		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
 			{
 			*retpTarget = m_pController->GetTarget(ItemCtx);
 			*retiFireSolution = -1;
@@ -2518,7 +2532,8 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 //  their ammo counts (if they use charges) or the number of rounds left in the
 //  cargo hold (if they don't). The latter should be added only once.
 	{
-	if (pDevice->GetLinkedFireOptions() == CDeviceClass::lkfSelected)
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+	if (pDevice->GetLinkedFireOptions() & dwLinkedFireSelected)
 		{
 		int iAmmoCount = 0;
 		TSortMap<CItemType *, bool> AmmoItemTypes;
@@ -2531,7 +2546,9 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 				{
 				if (currDevice.GetCategory() == (itemcatWeapon))
 					{
-					if (iGunUNID == currDevice.GetUNID() && currDevice.GetLinkedFireOptions() == CDeviceClass::lkfSelected)
+					bool bCheckSameVariant = currDevice.GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
+						CItemCtx(this, pDevice).GetItemVariantNumber() == CItemCtx(this, &currDevice).GetItemVariantNumber() : true;
+					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
 						{
 						if (pCurrDeviceClass->IsAmmoWeapon() && !(pCurrDeviceClass->RequiresItems()))
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
@@ -6220,6 +6237,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
 						//  type, and increment their fire delays.
 						DWORD dwLinkedFireOptions = pDevice->GetLinkedFireOptions();
+						DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
 							{
@@ -6235,13 +6253,18 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 									{
 									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() == dwLinkedFireOptions && currDevice->GetCycleFireSettings()
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
 											&& currDevice != pDevice && currDevice->IsEnabled())
 											{
-											//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
-											iNumberOfGuns++;
-											if (currDevice->IsReady())
-												WeaponsInFireGroup.Enqueue(currDevice);
+											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
+											if (currDevice->GetLinkedFireOptions()
+												& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
+												{
+												//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
+												iNumberOfGuns++;
+												if (currDevice->IsReady())
+													WeaponsInFireGroup.Enqueue(currDevice);
+												}
 											}
 										}
 									}

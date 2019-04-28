@@ -60,6 +60,7 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fFateComponetized(false),
 		m_fLinkedFireSelected(false),
 		m_fLinkedFireNever(false),
+		m_fLinkedFireSelectedVariants(false),
 		m_fCycleFire(false)
 	{
 	}
@@ -249,6 +250,8 @@ DWORD CInstalledDevice::GetLinkedFireOptions (void) const
 		return CDeviceClass::lkfEnemyInRange;
 	else if (m_fLinkedFireSelected)
 		return CDeviceClass::lkfSelected;
+	else if (m_fLinkedFireSelectedVariants)
+		return CDeviceClass::lkfSelectedVariant;
 	else if (m_fLinkedFireNever)
 		return CDeviceClass::lkfNever;
 	else
@@ -487,7 +490,8 @@ bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
 	{
 	return (!IsSecondaryWeapon()
 			&& (GetClass()->GetLinkedFireOptions(Ctx) == 0
-			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelected));
+			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelected
+			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelectedVariant));
 	}
 
 ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -763,7 +767,8 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	bool bSlotEnhancements =((dwLoad & 0x00100000) ? true : false);
 	m_fLinkedFireSelected = ((dwLoad & 0x00200000) ? true : false);
 	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
-	m_fCycleFire =		((dwLoad & 0x00800000) ? true : false);
+	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
+	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -966,6 +971,7 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 	m_fLinkedFireTarget = false;
 	m_fLinkedFireEnemy = false;
 	m_fLinkedFireSelected = false;
+	m_fLinkedFireSelectedVariants = false;
 	m_fLinkedFireNever = false;
 	if (dwOptions & CDeviceClass::lkfAlways)
 		m_fLinkedFireAlways = true;
@@ -975,6 +981,8 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 		m_fLinkedFireEnemy = true;
 	else if (dwOptions & CDeviceClass::lkfSelected)
 		m_fLinkedFireSelected = true;
+	else if (dwOptions & CDeviceClass::lkfSelectedVariant)
+		m_fLinkedFireSelectedVariants = true;
 	else if (dwOptions & CDeviceClass::lkfNever)
 		m_fLinkedFireNever = true;
 	}
@@ -1358,7 +1366,8 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (!m_SlotEnhancements.IsEmpty() ? 0x00100000 : 0);
 	dwSave |= (m_fLinkedFireSelected ?	0x00200000 : 0);
 	dwSave |= (m_fLinkedFireNever ?		0x00400000 : 0);
-	dwSave |= (m_fCycleFire ? 			0x00800000 : 0);
+	dwSave |= (m_fLinkedFireSelectedVariants ? 0x00800000 : 0);
+	dwSave |= (m_fCycleFire ?			0x01000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);
