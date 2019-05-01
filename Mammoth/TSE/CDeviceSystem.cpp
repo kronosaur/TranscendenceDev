@@ -255,7 +255,7 @@ int CDeviceSystem::FindNamedIndex (const CItem &Item) const
 	return -1;
 	}
 
-int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir, bool switchWeapons) const
+int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir, bool switchWeapons) const
 
 //	FindNextIndex
 //
