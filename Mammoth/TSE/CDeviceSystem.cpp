@@ -726,7 +726,7 @@ void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
 //	Select the next launcher.
 
 {
-	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir);
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
 	if (iNextWeapon != -1)
 	{
 		m_NamedDevices[devMissileWeapon] = iNextWeapon;
