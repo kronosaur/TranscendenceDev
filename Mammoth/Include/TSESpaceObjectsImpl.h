@@ -1010,8 +1010,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyFirstMissile (void);
 		void ReadyNextMissile (int iDir = 1);
-		void ReadyFirstLauncher(void);
-		void ReadyNextLauncher(int iDir = 1);
 		void RechargeItem (CItemListManipulator &ItemList, int iCharges);
 		int GetMissileCount (void);
 		ALERROR RemoveItemAsDevice (CItemListManipulator &ItemList);

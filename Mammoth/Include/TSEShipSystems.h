@@ -117,7 +117,6 @@ class CDeviceSystem
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
-		void ReadyFirstLauncher (CSpaceObject *pObj);
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);
 		void ReadyNextLauncher (CSpaceObject *pObj, int iDir = 1);

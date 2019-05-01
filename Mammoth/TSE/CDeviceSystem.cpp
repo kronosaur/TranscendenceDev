@@ -721,7 +721,7 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 
 void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
 
-//	ReadyNextWeapon
+//	ReadyNextLauncher
 //
 //	Select the next launcher.
 
