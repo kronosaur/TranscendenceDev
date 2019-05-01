@@ -76,7 +76,7 @@ void CDeviceSystem::AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, in
 		}
 	}
 
-int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
+int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const
 
 //	CalcSlotsInUse
 //
@@ -87,6 +87,7 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 	int iAll = 0;
 	int iWeapons = 0;
 	int iNonWeapons = 0;
+	int iLaunchers = 0;
 
 	//	Count the number of slots being used up currently
 
@@ -98,11 +99,16 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 			int iSlots = Device.GetClass()->GetSlotsRequired();
 			iAll += iSlots;
 
-			if (Device.GetCategory() == itemcatWeapon 
+			if (Device.GetCategory() == itemcatWeapon
 					|| Device.GetCategory() == itemcatLauncher)
 				iWeapons += iSlots;
 			else
 				iNonWeapons += iSlots;
+
+			//  Unlike weapon or nonweapon devices, launchers either take one launcher slot or none at all.
+			//  This is in addition to the weapon/device slots it would take up.
+			if (Device.GetCategory() == itemcatLauncher)
+				iLaunchers += max(iSlots, 1);
 			}
 		}
 
@@ -111,6 +117,9 @@ int CDeviceSystem::CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) con
 
 	if (retiNonWeapon)
 		*retiNonWeapon = iNonWeapons;
+
+	if (retiLauncherSlots)
+		*retiLauncherSlots = iLaunchers;
 
 	return iAll;
 	}

@@ -50,6 +50,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
 #define PROPERTY_AUTO_TARGET					CONSTLIT("autoTarget")
 #define PROPERTY_AVAILABLE_DEVICE_SLOTS			CONSTLIT("availableDeviceSlots")
+#define PROPERTY_AVAILABLE_LAUNCHER_SLOTS		CONSTLIT("availableLauncherSlots")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
 #define PROPERTY_AVAILABLE_WEAPON_SLOTS			CONSTLIT("availableWeaponSlots")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
@@ -569,14 +570,14 @@ void CShip::CalcDeviceBonus (void)
 	DEBUG_CATCH
 	}
 
-int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
+int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const
 
 //	CalcDeviceSlotsInUse
 //
 //	Returns the number of device slots being used
 
 	{
-	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
+	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon, retiLauncherSlots);
 	}
 
 bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
@@ -711,12 +712,14 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 	bool bIsWeapon = (iCategory == itemcatWeapon || iCategory == itemcatLauncher);
 	bool bIsMisc = (iCategory == itemcatMiscDevice);
+	bool bIsLauncher = iCategory == itemcatLauncher;
 
 	//	Count the number of slots being used up currently
 
 	int iWeapons;
+	int iLaunchers;
 	int iNonWeapons;
-	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons);
+	int iAll = CalcDeviceSlotsInUse(&iWeapons, &iNonWeapons, &iLaunchers);
 
 	//	See how many slots we would need to free in order to install this 
 	//	device.
@@ -730,13 +733,19 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			&& (Hull.GetMaxNonWeapons() < Hull.GetMaxDevices())
 				? ((iNonWeapons + iSlotsRequired) - Hull.GetMaxNonWeapons())
 				: 0);
+	int iLauncherSlotsNeeded = (bIsLauncher
+			&& (Hull.GetMaxLaunchers() < Hull.GetMaxDevices())
+				? ((iLaunchers + 1) - Hull.GetMaxLaunchers())
+				: 0);
 
 	//	See if if this is a device with an assigned slot (like a shield generator
 	//	or cargo hold, etc.) and the slot is in use, then we need to replace it.
+	//  If it is a launcher, also check to see if the ship only allows for one launcher.
 
 	int iSingletonSlot;
-	if (IsSingletonDevice(iCategory)
+	if ((IsSingletonDevice(iCategory)
 			&& !IsDeviceSlotAvailable(iCategory, &iSingletonSlot))
+			&& (iCategory == itemcatLauncher ? (Hull.GetMaxLaunchers() == 1) : true))
 		{
 		if (retiSlot)
 			*retiSlot = iSingletonSlot;
@@ -745,9 +754,17 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 		int iSlotsFreed = m_Devices.GetDevice(iSingletonSlot).GetClass()->GetSlotsRequired();
 
+		//  Launcher slots work differently, in that a launcher either takes one launcher slot or zero.
+		//  They still require weapon slots as with any other weapon, which is handled independently.
+
+		int iLauncherSlotsFreed = m_Devices.GetDevice(iSingletonSlot).GetCategory() == itemcatLauncher ? 1 : 0;
+
 		if (iCategory == itemcatLauncher
 				&& (iWeaponSlotsNeeded - iSlotsFreed > 0))
 			return insNoWeaponSlotsLeft;
+		else if (iCategory == itemcatLauncher
+				&& (iLauncherSlotsNeeded - iLauncherSlotsFreed > 0))
+			return insNoLauncherSlotsLeft;
 		else if (iCategory != itemcatLauncher
 				&& (iNonWeaponSlotsNeeded - iSlotsFreed > 0))
 			return insNoNonWeaponSlotsLeft;
@@ -759,7 +776,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		switch (iCategory)
 			{
 			case itemcatLauncher:
-				return insReplaceLauncher;
+				if (Hull.GetMaxLaunchers() == 1)
+					return insReplaceLauncher;
 
 			case itemcatReactor:
 				return insReplaceReactor;
@@ -790,6 +808,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 	if (iAllSlotsNeeded <= 0
 			&& iWeaponSlotsNeeded <= 0
 			&& iNonWeaponSlotsNeeded <= 0
+			&& iLauncherSlotsNeeded <= 0
 			&& iSuggestedSlot == -1)
 		return insOK;
 
@@ -804,14 +823,17 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		if (!pDevice->IsEmpty())
 			{
 			bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
+			bool bThisIsLauncher = (pDevice->GetCategory() == itemcatLauncher);
 			bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
 			int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
 			int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
 			int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+			int iLauncherSlotsFreed = (bThisIsLauncher ? 1 : 0);
 
 			if (iAllSlotsFreed >= iAllSlotsNeeded
 					&& iWeaponSlotsFreed >= iWeaponSlotsNeeded
-					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded)
+					&& iNonWeaponSlotsFreed >= iNonWeaponSlotsNeeded
+					&& iLauncherSlotsFreed >= iLauncherSlotsNeeded)
 				iSlotToReplace = iSuggestedSlot;
 			}
 		}
@@ -832,10 +854,12 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 			if (!pDevice->IsEmpty())
 				{
 				bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
+				bool bThisIsLauncher = (pDevice->GetCategory() == itemcatLauncher);
 				bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
 				int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
 				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
 				int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+				int iLauncherSlotsFreed = (bThisIsLauncher ? 1 : 0);
 
 				int iThisType;
 				if (bThisIsMisc)
@@ -857,7 +881,8 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 				if (iAllSlotsFreed < iAllSlotsNeeded
 						|| iWeaponSlotsFreed < iWeaponSlotsNeeded
-						|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded)
+						|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded
+						|| iLauncherSlotsFreed < iLauncherSlotsNeeded)
 					continue;
 
 				//	See if removing this device is better than removing another one.
@@ -877,12 +902,14 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 	//	If we found it, then OK. Otherwise, we cannot install
 
 	if (iSlotToReplace != -1)
-		{
+	{
 		if (retiSlot)
 			*retiSlot = iSlotToReplace;
 
 		return insReplaceOther;
-		}
+	}
+	else if (iLauncherSlotsNeeded > 0)
+		return insNoLauncherSlotsLeft;
 	else if (iWeaponSlotsNeeded > 0)
 		return insNoWeaponSlotsLeft;
 	else if (iNonWeaponSlotsNeeded > 0)
@@ -3161,6 +3188,13 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		int iAll = CalcDeviceSlotsInUse();
 
 		return CC.CreateInteger(m_pClass->GetHullDesc().GetMaxDevices() - iAll);
+		}
+	else if (strEquals(sName, PROPERTY_AVAILABLE_LAUNCHER_SLOTS))
+		{
+		int iLauncher;
+		int iAll = CalcDeviceSlotsInUse(NULL, NULL, &iLauncher);
+
+		return CC.CreateInteger(Max(0, Min(m_pClass->GetHullDesc().GetMaxLaunchers() - iLauncher, m_pClass->GetHullDesc().GetMaxDevices() - iAll)));
 		}
 	else if (strEquals(sName, PROPERTY_AVAILABLE_NON_WEAPON_SLOTS))
 		{

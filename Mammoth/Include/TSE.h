@@ -685,6 +685,7 @@ class CSpaceObject
 			insNoDeviceSlotsLeft,				//	No device slots left
 			insNoNonWeaponSlotsLeft,			//	No non-weapon slots left
 			insNoWeaponSlotsLeft,				//	No weapon slots left
+			insNoLauncherSlotsLeft,				//	No launcher slots left
 			insNotInstallable,					//	Item cannot be installed
 			insReactorIncompatible,				//	Reactor is too powerful for ship class
 			insReactorOverload,					//	Sum of device power > than reactor output

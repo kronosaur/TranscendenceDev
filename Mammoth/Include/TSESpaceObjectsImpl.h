@@ -995,7 +995,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void SetAsShipSection (CShip *pMain);
 
 		//	Device methods
-		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL) const;
+		int CalcDeviceSlotsInUse (int *retiWeaponSlots = NULL, int *retiNonWeapon = NULL, int *retiLauncherSlots = NULL) const;
 		RemoveDeviceStatus CanRemoveDevice (const CItem &Item, CString *retsResult);
 		void ClearAllTriggered (void);
 		void DamageCargo (SDamageCtx &Ctx);

@@ -92,7 +92,7 @@ class CDeviceSystem
 		void AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
-		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const;
+		int CalcSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon, int *retiLauncherSlots) const;
 		void CleanUp (void);
 		CInstalledDevice *FindDevice (const CItem &Item);
 

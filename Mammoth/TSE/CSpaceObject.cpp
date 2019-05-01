@@ -194,6 +194,7 @@ SInstallItemResultsData INSTALL_ITEM_RESULTS_TABLE[] =
 		{	"noDeviceSlotsLeft",		-1,		2	},
 		{	"noNonWeaponSlotsLeft",		-1,		13	},
 		{	"noWeaponSlotsLeft",		-1,		12	},
+		{	"noLauncherSlotsLeft",		-1,		15	},
 		{	"notInstallable",			-1,		1	},
 		{	"reactorIncompatible",		-1,		11	},
 		{	"reactorOverload",			-1,		-1	},
