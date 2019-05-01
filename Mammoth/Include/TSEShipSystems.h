@@ -102,7 +102,7 @@ class CDeviceSystem
 
 		int FindFreeSlot (void);
 		int FindNamedIndex (const CItem &Item) const;
-		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1) const;
+		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
 		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
 		inline int GetCount (void) const { return m_Devices.GetCount(); }
