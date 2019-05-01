@@ -626,15 +626,13 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		//  If our options is "never fire", or if our options is "fire if selected" and this is the player ship,
 		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
-		//  If a weapon is "fire if selected and same variant", then it only fires if the selected weapon is of the
+		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
 		//  same variant and type.
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
-		int iTest1 = ItemCtx.GetItemVariantNumber();
-		int iTest2 = CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber();
 
-		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions()
+		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
-		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions()
+		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (

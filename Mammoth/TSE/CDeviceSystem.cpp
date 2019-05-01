@@ -284,7 +284,7 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 		for (int i = 0; i < GetCount(); i++)
 			{
 			LONGLONG iTypeAndVariant = (m_Devices[i].GetLinkedFireOptions() &
-				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0);
+				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
 			iTypeAndVariant = m_Devices[i].GetUNID() | (iTypeAndVariant << 32);
 			if (!m_Devices[i].IsEmpty()
 				&& m_Devices[i].GetCategory() == Category
@@ -299,7 +299,7 @@ int CDeviceSystem::FindNextIndex(CSpaceObject *pObj, int iStart, ItemCategories 
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
 		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetLinkedFireOptions() &
-			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0);
+			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
 		iTypeAndVariant = m_Devices[iDevice].GetUNID() | (iTypeAndVariant << 32);
 		int iEarliestLkfSelectedItem = -1;
 		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
