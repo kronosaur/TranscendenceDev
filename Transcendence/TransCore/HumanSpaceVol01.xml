@@ -1728,6 +1728,7 @@
 	<!ENTITY rsPolarFreighterHero		"0x001000B5">
 	<!ENTITY rsAresOutpost				"0x001000B6">
 	<!ENTITY rsAresCommune				"0x001000B7">
+	<!ENTITY rsAresShipyard				"0x001000B8">
 	
 	<!-- 00C0-00CF SALVAGERS -->
 	

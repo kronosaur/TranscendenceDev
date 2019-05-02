@@ -140,13 +140,13 @@
 
 		<Satellites overlapCheck="asteroids">
 			<LevelTable>
-				<Orbitals levelFrequency="----- cccur ----- -----" count="2d4" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- cccur ----- -----" count="3d3" distance="12" angle="equidistant">
 					<Ship class="&scAresSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
-				<Orbitals levelFrequency="----- --rcu r---- -----" count="2d4" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- --rcu r---- -----" count="2d3" distance="12" angle="equidistant">
 					<Ship class="&scAresDualSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
-				<Orbitals levelFrequency="----- ---rc ur--- -----" count="2d4" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- ---rc ur--- -----" count="1d3+1" distance="12" angle="equidistant">
 					<Ship class="&scAresAdvancedSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
 			</LevelTable>
@@ -242,13 +242,13 @@
 
 		<Satellites overlapCheck="asteroids">
 			<LevelTable>
-				<Orbitals levelFrequency="----- cccur ----- -----" count="2d6" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- cccur ----- -----" count="5d3" distance="18" angle="equidistant">
 					<Ship class="&scAresSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
-				<Orbitals levelFrequency="----- -rcur ----- -----" count="2d6" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- -rcur ----- -----" count="4d3" distance="18" angle="equidistant">
 					<Ship class="&scAresDualSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
-				<Orbitals levelFrequency="----- --rcc ur--- -----" count="2d6" distance="12" angle="equidistant">
+				<Orbitals levelFrequency="----- --rcc ur--- -----" count="3d3" distance="18" angle="equidistant">
 					<Ship class="&scAresAdvancedSentry;" count="1" sovereign="&svAres;" orders="sentry"/>
 				</Orbitals>
 			</LevelTable>
@@ -292,12 +292,47 @@
 
 		<!-- Image and Effects -->
 
-		<Image			imageID="&rsStations9;" imageX="0" imageY="256" imageWidth="256" imageHeight="256"/>
+		<Image			imageID="&rsAresShipyard;" imageWidth="640" imageHeight="640"	viewportRatio="0.04375"/>
 
-		<DockingPorts
-				portCount=		"8"
-				portRadius=		"80"
-				/>
+		<DockingPorts>
+
+			<!-- Upper Section -->
+
+			<Port posAngle="105"	posRadius="165"		posZ="80"/>
+			<Port posAngle="82"		posRadius="165"		posZ="80"		rotation="-75"/>
+			<Port posAngle="128"	posRadius="165"		posZ="80"		rotation="-75"/>
+
+			<Port posAngle="63"		posRadius="200"		posZ="50"		rotation="195"/>
+			<Port posAngle="75"		posRadius="260"		posZ="50"		rotation="195"/>
+
+			<Port posAngle="147"	posRadius="200"		posZ="50"		rotation="15"/>
+			<Port posAngle="135"	posRadius="260"		posZ="50"		rotation="15"/>
+
+			<!-- -120 degrees -->
+
+			<Port posAngle="-15"	posRadius="165"		posZ="80"/>
+			<Port posAngle="-38"	posRadius="165"		posZ="80"		rotation="-195"/>
+			<Port posAngle="8"		posRadius="165"		posZ="80"		rotation="-195"		bringToFront="true"/>
+
+			<Port posAngle="-57"	posRadius="200"		posZ="50"		rotation="75"/>
+			<Port posAngle="-45"	posRadius="260"		posZ="50"		rotation="75"/>
+
+			<Port posAngle="27"		posRadius="200"		posZ="50"		rotation="-105"		bringToFront="true"/>
+			<Port posAngle="15"		posRadius="260"		posZ="50"		rotation="-105"		bringToFront="true"/>
+
+			<!-- +120 degrees -->
+
+			<Port posAngle="225"	posRadius="165"		posZ="80"/>
+			<Port posAngle="202"	posRadius="165"		posZ="80"		rotation="45"/>
+			<Port posAngle="248"	posRadius="165"		posZ="80"		rotation="45"/>
+
+			<Port posAngle="183"	posRadius="200"		posZ="50"		rotation="315"		bringToFront="true"/>
+			<Port posAngle="195"	posRadius="260"		posZ="50"		rotation="315"/>
+
+			<Port posAngle="267"	posRadius="200"		posZ="50"		rotation="135"/>
+			<Port posAngle="255"	posRadius="260"		posZ="50"		rotation="135"/>
+
+		</DockingPorts>
 
 	</StationType>
 	
@@ -407,6 +442,7 @@
 	
 	<Image UNID="&rsAresCommune;"				bitmap="Resources\AresCommune.jpg" bitmask="Resources\AresCommuneMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsAresOutpost;"				bitmap="Resources\AresOutpost.jpg" bitmask="Resources\AresOutpostMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsAresShipyard;"				bitmap="Resources\AresShipyard.jpg" bitmask="Resources\AresShipyardMask.bmp" loadOnUse="true" />
 
 	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
