@@ -1671,7 +1671,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         //  If we have both main and trade descriptors, combine them.
 
         if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
-            return strPatternSubst(CONSTLIT("%s � %s"), sMainDesc, sTradeDesc);
+            return strPatternSubst(CONSTLIT("%s — %s"), sMainDesc, sTradeDesc);
 
         //  If all we have is main desc, return that.
 
