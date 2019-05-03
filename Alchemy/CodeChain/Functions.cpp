@@ -2391,15 +2391,9 @@ ICCItem *fnLogical (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 
 		//	Evaluate the item
 
-		if (pArg->IsQuoted())
-			pResult = pArg->Reference();
-		else
-			{
-			pResult = pCC->Eval(pCtx, pArg);
-
-			if (pResult->IsError())
-				return pResult;
-			}
+		pResult = pCC->Eval(pCtx, pArg);
+		if (pResult->IsError())
+			return pResult;
 
 		//	If we are evaluating NOT then reverse the value
 
