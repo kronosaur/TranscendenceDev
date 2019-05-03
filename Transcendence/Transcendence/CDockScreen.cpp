@@ -1096,9 +1096,9 @@ ALERROR CDockScreen::InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, 
 
 	RECT rcCanvas;
 	rcCanvas.left = rcScreen.left;
-	rcCanvas.top = (RectHeight(rcScreen) - m_cyImageBackground) / 2;
+	rcCanvas.top = m_yDisplay;		//	Just under the title bar
 	rcCanvas.right = rcCanvas.left + m_cxDisplay;
-	rcCanvas.bottom = rcCanvas.top + m_cyImageBackground;
+	rcCanvas.bottom = rcScreen.bottom;
 
 	//	Create each control
 
