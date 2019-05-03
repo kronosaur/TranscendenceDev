@@ -319,6 +319,67 @@
 		</Events>
 	</Type>
 
+	<Type unid="&unidCCLogicalOperators;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
+
+					;	and ----------------------------------------------------
+
+					{	test: '(and)										result: true }				;	Same as Scheme
+					{	test: '(and true)									result: true }
+					{	test: '(and 0)										result: 0 }					;	Same as Scheme
+					{	test: '(and 1)										result: 1 }
+					{	test: '(and 0.0)									result: 0.0 }
+					{	test: '(and 1.7)									result: 1.7 }
+					{	test: '(and "")										result: "" }				;	Same as Scheme
+					{	test: '(and "foo")									result: "foo" }
+					{	test: '(and nil)									result: nil }
+					{	test: '(and '())									result: nil }				;	NOTE: Scheme returns '()
+					{	test: '(and '(1))									result: '(1) }
+					{	test: '(and '(1 2 3))								result: '(1 2 3) }
+					{	test: '(and '((+ 1 1) 2 3))							result: '((+ 1 1) 2 3) }
+					{	test: '(and { })									result: nil }
+					{	test: '(and { a:1 b:2 })							result: { a:1 b:2 } }
+					{	test: '(and { a:(+ 1 1) b:2 })						result: { a:2 b:2 } }
+					{	test: '(and '{ a:(+ 1 1) b:2 })						result: '{ a:2 b:2 } }
+
+					{	test: '(and true nil)								result: nil }
+					{	test: '(and true 1)									result: 1 }
+
+					;	or -----------------------------------------------------
+
+					{	test: '(or)											result: nil }				;	Same as Scheme
+					{	test: '(or true)									result: true }
+					{	test: '(or 0)										result: 0 }					;	Same as Scheme
+					{	test: '(or 1)										result: 1 }
+					{	test: '(or 0.0)										result: 0.0 }
+					{	test: '(or 1.7)										result: 1.7 }
+					{	test: '(or "")										result: "" }				;	Same as Scheme
+					{	test: '(or "foo")									result: "foo" }
+					{	test: '(or nil)										result: nil }
+					{	test: '(or '())										result: nil }				;	NOTE: Scheme returns '()
+					{	test: '(or '(1))									result: '(1) }
+					{	test: '(or '(1 2 3))								result: '(1 2 3) }
+					{	test: '(or '((+ 1 1) 2 3))							result: '((+ 1 1) 2 3) }
+					{	test: '(or { })										result: nil }
+					{	test: '(or { a:1 b:2 })								result: { a:1 b:2 } }
+					{	test: '(or { a:(+ 1 1) b:2 })						result: { a:2 b:2 } }
+					{	test: '(or '{ a:(+ 1 1) b:2 })						result: '{ a:2 b:2 } }
+
+					{	test: '(or true nil)								result: true }
+					{	test: '(or nil nil)									result: nil }
+					{	test: '(or nil true)								result: true }
+					{	test: '(or true 1)									result: true }
+					{	test: '(or nil 1)									result: 1 }
+					{	test: '(or 1 nil)									result: 1 }
+
+
+					))
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
 	<Type unid="&unidLanguageTests;">
 		<Events>
 			<OnGlobalStartDiagnostics>

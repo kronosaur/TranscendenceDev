@@ -20,6 +20,7 @@
 	<!ENTITY unidLanguageTests			"0xA0010081">
 	<!ENTITY unidMathTests				"0xA0010082">
 	<!ENTITY unidCCStringTests			"0xA0010083">
+	<!ENTITY unidCCLogicalOperators		"0xA0010084">
 
 	<!-- OTHER -->
 
