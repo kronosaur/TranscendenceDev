@@ -330,6 +330,7 @@
 	<Library unid="&unidCoreTypesLibrary;"/>
 	<Library unid="&unidRPGLibrary;"/>
 	
+	<Module filename="AsteroidFields.xml"/>
 	<Module filename="Environments.xml"/>
 	<Module filename="GalaxyCompatibility.xml"/>
 	<Module filename="GalaxyEffects.xml"/>
