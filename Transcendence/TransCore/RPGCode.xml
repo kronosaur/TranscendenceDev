@@ -2004,6 +2004,13 @@
 											(cat (strCapitalize textYourShip) " does not have an open non-weapon slot for this device.")
 											)
 										))
+										
+								(eq resultCode 'noLauncherSlotsLeft)
+									(setq desc (or
+										(objTranslate installerObj 'rpg.cannotInstallDeviceBecauseLackOfLauncherSlots { item:thisItem targetObj:targetObj slotsRequired:(itmGetProperty thisItem 'deviceSlots) })
+										(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfLauncherSlots { item:thisItem targetObj:targetObj slotsRequired:(itmGetProperty thisItem 'deviceSlots) })
+										(cat (strCapitalize textYourShip) " does not have an open launcher slot for this device.")
+										))
 
 								(eq resultCode 'tooMuchCargo)
 									(setq desc (or
