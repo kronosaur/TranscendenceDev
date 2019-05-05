@@ -770,8 +770,10 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
 			}
 		}
 	
-	//  If the last variant is selected, then select the next missile launcher.
+	//  If the last variant is selected, then select the previous missile launcher.
 	//  Don't forget to also select the first (or last) missile, too.
+	//  Note, we select the next missile launcher if the FIRST variant is selected, because we
+	//  were on the last variant before running this function (which moved us to the first one).
 
 	bool selectPrevLauncher = (lastSelected && (iDir == 0));
 	bool selectNextLauncher = (firstSelected && (iDir == 1));
