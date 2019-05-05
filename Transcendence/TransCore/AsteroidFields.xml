@@ -2,4 +2,709 @@
 
 <TranscendenceModule>
 
+<!-- ASTEROID FIELD MORPHOLOGIES
+
+	These definitions place asteroids and labels in various configurations
+	(morphologies). The actual type of asteroid (or label) created is passed
+	in as a Lookup table parameter.
+
+	The following parameters are generally used:
+
+	_AsteroidSize{X}: This should be an asteroid of size class X.
+
+	_Label: This should be a label definition for the locations inside the 
+			field. Generally, the label should only include attributes related
+			to the type of asteroid field (metallic, rocky, etc.).
+
+-->
+
+	<SystemPartTable unid="&tbAsteroidFieldMorphologies;">
+
+		<!-- ASTEROID SINGLETON -->
+		
+		<AsteroidSingletonMorphology>
+			<Lookup table="BeltAsteroid"/>
+		</AsteroidSingletonMorphology>
+
+		<!-- BASIC ASTEROID BELTS
+		
+			A basic asteroid belt consists of size A, B, C, and D asteroids.
+			
+		-->
+
+		<AsteroidBelt12Morphology>
+			<OrbitalDistribution count="2d4+8" radialWidth="18">
+				<Lookup table="BeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="1"	radialWidth="18">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+					
+			<Marker showOrbit="true"/>
+		</AsteroidBelt12Morphology>
+
+		<AsteroidBelt25Morphology>
+			<OrbitalDistribution count="2d8+16" radialWidth="30">
+				<Lookup table="BeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="2"	radialWidth="30">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+					
+			<Marker showOrbit="true"/>
+		</AsteroidBelt25Morphology>
+
+		<AsteroidBelt50Morphology>
+			<OrbitalDistribution count="2d14+35" radialWidth="42">
+				<Lookup table="BeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="1-3"	radialWidth="42">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+
+			<Marker showOrbit="true"/>
+		</AsteroidBelt50Morphology>
+
+		<AsteroidBelt100Morphology>
+			<OrbitalDistribution count="2d25+75" radialWidth="60">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="3-5"	radialWidth="30">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidBelt100Morphology>
+
+		<AsteroidBelt200Morphology>
+			<OrbitalDistribution count="2d50+150" radialWidth="84">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="4-8"	radialWidth="84">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidBelt200Morphology>
+
+		<AsteroidBelt300Morphology>
+			<OrbitalDistribution count="2d50+250" radialWidth="90">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="4-8"	radialWidth="84">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidBelt300Morphology>
+
+		<AsteroidBelt500Morphology>
+			<OrbitalDistribution count="2d125+375" radialWidth="130">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-10"	radialWidth="130">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidBelt500Morphology>
+
+		<AsteroidBelt1000Morphology>
+			<OrbitalDistribution count="4d125+750" radialWidth="150">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-12"	radialWidth="150">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidBelt1000Morphology>
+
+		<!-- LARGE ASTEROID BELTS
+		
+			These belts contain much larger asteroids. They include asteroids of
+			size A through G.
+			
+		-->
+
+		<LargeAsteroidBelt12Morphology>
+			<OrbitalDistribution count="2d4+8" radialWidth="18">
+				<Lookup table="LargeBeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="1"	radialWidth="18">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+					
+			<Marker showOrbit="true"/>
+		</LargeAsteroidBelt12Morphology>
+
+		<LargeAsteroidBelt25Morphology>
+			<OrbitalDistribution count="2d8+16" radialWidth="30">
+				<Lookup table="LargeBeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="2"	radialWidth="30">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+					
+			<Marker showOrbit="true"/>
+		</LargeAsteroidBelt25Morphology>
+
+		<LargeAsteroidBelt50Morphology>
+			<OrbitalDistribution count="2d14+35" radialWidth="42">
+				<Lookup table="LargeBeltAsteroidAndLabel"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="1-3"	radialWidth="42">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+
+			<Marker showOrbit="true"/>
+		</LargeAsteroidBelt50Morphology>
+
+		<LargeAsteroidBelt100Morphology>
+			<OrbitalDistribution count="2d25+75" radialWidth="60">
+				<Lookup table="LargeBeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="3-5"	radialWidth="30">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</LargeAsteroidBelt100Morphology>
+
+		<LargeAsteroidBelt200Morphology>
+			<OrbitalDistribution count="2d50+150" radialWidth="84">
+				<Lookup table="LargeBeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="4-8"	radialWidth="84">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</LargeAsteroidBelt200Morphology>
+
+		<LargeAsteroidBelt300Morphology>
+			<OrbitalDistribution count="2d50+250" radialWidth="90">
+				<Lookup table="LargeBeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="4-8"	radialWidth="84">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</LargeAsteroidBelt300Morphology>
+
+		<LargeAsteroidBelt500Morphology>
+			<OrbitalDistribution count="2d125+375" radialWidth="130">
+				<Lookup table="LargeBeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-10"	radialWidth="130">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</LargeAsteroidBelt500Morphology>
+
+		<LargeAsteroidBelt1000Morphology>
+			<OrbitalDistribution count="4d125+750" radialWidth="150">
+				<Lookup table="LargeBeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-12"	radialWidth="150">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</LargeAsteroidBelt1000Morphology>
+
+		<!-- ASTEROID ARCS -->
+
+		<AsteroidArc12Morphology>
+			<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="1"	arcLength="250" radialWidth="18">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidArc12Morphology>
+
+		<AsteroidArc25Morphology>
+			<OrbitalDistribution count="2d8+16" arcLength="350" radialWidth="30">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="2"	arcLength="430" radialWidth="30">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidArc25Morphology>
+
+		<AsteroidArc50Morphology>
+			<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="2-4" arcLength="620" radialWidth="42">
+				<LocationAttributes attributes="asteroidBelt, void">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidArc50Morphology>
+
+		<AsteroidArc100Morphology>
+			<OrbitalDistribution count="2d25+75" arcLength="500" radialWidth="60">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="3-5" arcLength="620"	radialWidth="30">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidArc100Morphology>
+
+		<AsteroidArc200Morphology>
+			<OrbitalDistribution count="2d50+150" arcLength="400" radialWidth="84">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="4-8" arcLength="500"	radialWidth="84">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidArc200Morphology>
+
+		<!-- ASTEROID ARC BELTS -->
+
+		<AsteroidArcBeltMediumMorphology>
+			<Group>
+				<Siblings count="3-4" radiusInc="-50--30" angle="equidistant">
+					<Table>
+						<Lookup chance="20"	table="AsteroidArc12Morphology"/>
+						<Lookup chance="60" table="AsteroidArc25Morphology"/>
+						<Lookup chance="20" table="AsteroidArc50Morphology"/>
+					</Table>
+				</Siblings>
+
+				<Siblings count="2-3" radiusInc="-20-30" angle="equidistant">
+					<Group>
+						<Table>
+							<Lookup chance="10" table="AsteroidArc50Morphology"/>
+							<Lookup chance="60" table="AsteroidArc100Morphology"/>
+							<Lookup chance="30" table="AsteroidArc200Morphology"/>
+						</Table>
+						<Siblings chance="50" arcInc="300">
+							<LocationAttributes attributes="asteroids, asteroidBelt">
+								<Lookup table="_Label"/>
+							</LocationAttributes>
+						</Siblings>
+					</Group>
+				</Siblings>
+
+				<Siblings count="4-5" radiusInc="50-80" angle="equidistant">
+					<Table>
+						<Lookup chance="20" table="AsteroidArc25Morphology"/>
+						<Lookup chance="60" table="AsteroidArc50Morphology"/>
+						<Lookup chance="20" table="AsteroidArc100Morphology"/>
+					</Table>
+				</Siblings>
+			</Group>
+		</AsteroidArcBeltMediumMorphology>
+
+		<AsteroidArcBeltLargeMorphology>
+			<Group>
+				<Siblings count="4-6" radiusInc="-70--40" angle="equidistant">
+					<Table>
+						<Lookup chance="20"	table="AsteroidArc12Morphology"/>
+						<Lookup chance="60" table="AsteroidArc25Morphology"/>
+						<Lookup chance="20" table="AsteroidArc50Morphology"/>
+					</Table>
+				</Siblings>
+
+				<Siblings count="3-4" radiusInc="-20-50" angle="equidistant">
+					<Group>
+						<Table>
+							<Lookup chance="10" table="AsteroidArc50Morphology"/>
+							<Lookup chance="60" table="AsteroidArc100Morphology"/>
+							<Lookup chance="30" table="AsteroidArc200Morphology"/>
+						</Table>
+						<Siblings chance="50" arcInc="300">
+							<LocationAttributes attributes="asteroids, asteroidBelt">
+								<Lookup table="_Label"/>
+							</LocationAttributes>
+						</Siblings>
+					</Group>
+				</Siblings>
+
+				<Siblings count="5-7" radiusInc="70-120" angle="equidistant">
+					<Table>
+						<Lookup chance="20" table="AsteroidArc25Morphology"/>
+						<Lookup chance="60" table="AsteroidArc50Morphology"/>
+						<Lookup chance="20" table="AsteroidArc100Morphology"/>
+					</Table>
+				</Siblings>
+			</Group>
+		</AsteroidArcBeltLargeMorphology>
+
+		<!-- ASTEROID TROJANS -->
+
+		<AsteroidTrojans12Morphology>
+			<Siblings count="1" angleInc="60">
+				<Group>
+					<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidTrojans12Morphology>
+
+		<AsteroidTrojans25Morphology>
+			<Siblings count="1" angleInc="60">
+				<Group>
+					<OrbitalDistribution count="2d8+16" arcLength="360" radialWidth="30">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidTrojans25Morphology>
+
+		<AsteroidTrojans50Morphology>
+			<Siblings count="1" angleInc="60">
+				<Group>
+					<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidTrojans50Morphology>
+
+		<AsteroidTrojans100Morphology>
+			<Siblings count="1" angleInc="60">
+				<Group>
+					<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidTrojans100Morphology>
+
+		<AsteroidAntiTrojans12Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Group>
+					<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidAntiTrojans12Morphology>
+
+		<AsteroidAntiTrojans25Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Group>
+					<OrbitalDistribution count="2d8+16" arcLength="360" radialWidth="30">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidAntiTrojans25Morphology>
+
+		<AsteroidAntiTrojans50Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Group>
+					<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidAntiTrojans50Morphology>
+
+		<AsteroidAntiTrojans100Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Group>
+					<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
+						<Lookup table="BeltAsteroid"/>
+					</OrbitalDistribution>
+
+					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
+						<LocationAttributes attributes="asteroids, trojan">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Siblings>
+				</Group>
+			</Siblings>
+		</AsteroidAntiTrojans100Morphology>
+		
+		<!-- COMPONENTS -->
+
+		<BeltAsteroid>
+			<Table>
+				<Lookup chance="80"		table="_AsteroidSizeA"/>
+				<Lookup chance="14"		table="_AsteroidSizeB"/>
+				<Lookup chance="5"		table="_AsteroidSizeC"/>
+				<Lookup chance="1"		table="_AsteroidSizeD"/>
+			</Table>
+		</BeltAsteroid>
+
+		<BeltAsteroidAndLabel>
+			<Table>
+				<Lookup chance="80"		table="_AsteroidSizeA"/>
+				<Lookup chance="14"		table="_AsteroidSizeB"/>
+				<Group  chance="5">
+					<Lookup				table="_AsteroidSizeC"/>
+					
+					<Orbitals distance="2d4+4" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+				<Group  chance="1">
+					<Lookup				table="_AsteroidSizeD"/>
+					
+					<Orbitals distance="2d4+8" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+			</Table>
+		</BeltAsteroidAndLabel>
+
+		<LargeBeltAsteroid>
+			<Table>
+				<Lookup chance="450"	table="_AsteroidSizeA"/>
+				<Lookup chance="251"	table="_AsteroidSizeB"/>
+				<Lookup chance="140"	table="_AsteroidSizeC"/>
+				<Lookup chance="78"		table="_AsteroidSizeD"/>
+				<Lookup chance="44"		table="_AsteroidSizeE"/>
+				<Lookup chance="24"		table="_AsteroidSizeF"/>
+				<Lookup chance="13"		table="_AsteroidSizeG"/>
+			</Table>
+		</LargeBeltAsteroid>
+
+		<LargeBeltAsteroidAndLabel>
+			<Table>
+				<Lookup chance="450"	table="_AsteroidSizeA"/>
+				<Lookup chance="251"	table="_AsteroidSizeB"/>
+				<Lookup chance="140"	table="_AsteroidSizeC"/>
+				<Group  chance="78">
+					<Lookup				table="_AsteroidSizeD"/>
+					
+					<Orbitals chance="50" distance="2d4+4" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+				<Group  chance="44">
+					<Lookup				table="_AsteroidSizeE"/>
+					
+					<Orbitals chance="75" distance="2d4+8" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+				<Group  chance="24">
+					<Lookup				table="_AsteroidSizeF"/>
+					
+					<Orbitals chance="100" distance="2d4+8" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+				<Group  chance="13">
+					<Lookup				table="_AsteroidSizeG"/>
+					
+					<Orbitals chance="100" distance="2d4+8" angle="random">
+						<LocationAttributes attributes="asteroids, asteroidBelt">
+							<Lookup table="_Label"/>
+						</LocationAttributes>
+					</Orbitals>
+				</Group>
+			</Table>
+		</LargeBeltAsteroidAndLabel>
+
+		<!-- Region Morphology
+
+			This definition should be invoked inside a Lookup that defines a
+			Morphology subtable. The Morphology subtable may refer to region.
+
+			REQUIRES
+
+			_Morphology:		Directive that will receive proper variant
+								definitions.
+
+		-->
+		
+		<RegionDefinition>
+			<LocationCriteriaTable>
+				<Variant criteria="*innerSystem"	variant="inner">
+					<Lookup table="_Morphology"/>
+				</Variant>
+				<Variant criteria="*lifeZone"	variant="lifeZone">
+					<Lookup table="_Morphology"/>
+				</Variant>
+				<Variant criteria="*outerSystem"	variant="outer">
+					<Lookup table="_Morphology"/>
+				</Variant>
+			</LocationCriteriaTable>
+		</RegionDefinition>
+		
+	</SystemPartTable>
+
 </TranscendenceModule>

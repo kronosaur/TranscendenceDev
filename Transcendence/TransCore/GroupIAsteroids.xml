@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- GROUP I ASTEROIDS
+
+	A Group I asteroids is an asteroid (or planetoid) of one of the given types:
+
+		ice
+		metallic
+		primordial
+		rocky
+		volcanic
+
+	The definitions below allows you to create asteroid fields with a random
+	selection of asteroid types, based on the territories defined by the star
+	system (e.g., as defined by trnCreateStarAndZones).
+
+	In general we need to create a definition here for every morphology defined
+	in AsteroidFields.xml
+
+-->
+
+	<SystemPartTable unid="&tbGroupIAsteroids;">
+
+		<!-- ASTEROID SINGLETON -->
+		
+		<AsteroidSingleton>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidSingletonMorphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidSingleton>
+
+		<!-- BASIC ASTEROID BELTS -->
+
+		<AsteroidBelt12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt12>
+
+		<AsteroidBelt25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt25>
+
+		<AsteroidBelt50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt50>
+
+		<AsteroidBelt100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt100>
+
+		<AsteroidBelt200>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt200Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt200>
+
+		<AsteroidBelt500>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidBelt500>
+
+		<!-- ASTEROID ARCS -->
+
+		<AsteroidArc12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArc12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArc12>
+
+		<AsteroidArc25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArc25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArc25>
+
+		<AsteroidArc50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArc50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArc50>
+
+		<AsteroidArc100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArc100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArc100>
+
+		<AsteroidArc200>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArc200Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArc200>
+
+		<!-- ASTEROID ARC BELTS -->
+
+		<AsteroidArcBeltMedium>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArcBeltMediumMorphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArcBeltMedium>
+
+		<AsteroidArcBeltLarge>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidArcBeltLargeMorphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidArcBeltLarge>
+
+		<!-- ASTEROID TROJANS -->
+
+		<AsteroidTrojans12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidTrojans12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidTrojans12>
+
+		<AsteroidTrojans25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidTrojans25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidTrojans25>
+
+		<AsteroidTrojans50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidTrojans50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidTrojans50>
+
+		<AsteroidTrojans100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidTrojans100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidTrojans100>
+
+		<AsteroidAntiTrojans12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntiTrojans12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntiTrojans12>
+
+		<AsteroidAntiTrojans25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntiTrojans25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntiTrojans25>
+
+		<AsteroidAntiTrojans50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntiTrojans50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntiTrojans50>
+
+		<AsteroidAntiTrojans100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntiTrojans100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntiTrojans100>
+		
+		<!-- DEFINITIONS -->
+
+		<VariantAsteroid>
+			<Table>
+				<Lookup chance="80"		table="VariantSizeA"/>
+				<Lookup chance="14"		table="VariantSizeB"/>
+				<Lookup chance="5"		table="VariantSizeC"/>
+				<Lookup chance="1"		table="VariantSizeD"/>
+			</Table>
+		</VariantAsteroid>
+		
+		<VariantLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="ice"/>
+				<Label variant="metallic"	attributes="metallic"/>
+				<Label variant="primordial"	attributes="primordial"/>
+				<Label variant="rocky"		attributes="rocky"/>
+				<Label variant="volcanic"	attributes="volcanic"/>
+			</VariantTable>
+		</VariantLabel>
+
+		<VariantSizeA>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeA>
+
+		<VariantSizeB>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeB>
+
+		<VariantSizeC>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeC>
+
+		<VariantSizeD>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeD>
+
+		<VariantSizeE>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeE>
+
+		<VariantSizeF>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeF>
+
+		<VariantSizeG>
+			<VariantTable>
+				<VariantTable variant="inner">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="lifeZone">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+				<VariantTable variant="outer">
+					<RandomStation variant="ice"		stationCriteria="*ice;			*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="metallic"	stationCriteria="*metallic;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="primordial" stationCriteria="*primordial;	*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="rocky"		stationCriteria="*rocky;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+					<RandomStation variant="volcanic"	stationCriteria="*volcanic;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				</VariantTable>
+			</VariantTable>
+		</VariantSizeG>
+
+		<!-- Located Morphology
+
+			This definition should be invoked inside a Lookup that defines a
+			Morphology subtable. The Morphology subtable may refer to region and
+			classification variants.
+
+			REQUIRES
+
+			_Morphology:		Directive that will receive proper variant
+								definitions.
+
+		-->
+
+		<LocationDefinition>
+			<LocationCriteriaTable>
+
+				<!-- MOLTEN ZONE (inner metallic) -->
+
+				<Variant criteria="*moltenZone"	variant="inner">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="40"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="40"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- GREENHOUSE ZONE (inner organic) -->
+
+				<Variant criteria="*greenhouseZone"	variant="inner">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="40" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="30"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- CINDER ZONE (inner rocky) -->
+
+				<Variant criteria="*cinderZone"	variant="inner">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="40"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="40"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- STEAM ZONE (inner water) -->
+
+				<Variant criteria="*steamZone"	variant="inner">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="50"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- METALLIC ZONE (lifeZone metallic) -->
+
+				<Variant criteria="*metallicZone"	variant="lifeZone">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- PRIMORDIAL ZONE (lifeZone organic) -->
+
+				<Variant criteria="*primordialZone"	variant="lifeZone">
+					<Table>
+						<Variant chance="10" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- DESERT ZONE (lifeZone rocky) -->
+
+				<Variant criteria="*desertZone"	variant="lifeZone">
+					<Table>
+						<Variant chance="0" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- BIOSPHERE ZONE (lifeZone water) -->
+
+				<Variant criteria="*biophereZone"	variant="lifeZone">
+					<Table>
+						<Variant chance="15" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="15"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- BARREN ZONE (outer metallic) -->
+
+				<Variant criteria="*barrenZone"		variant="outer">
+					<Table>
+						<Variant chance="20"		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- THOLIN ZONE (outer organic) -->
+
+				<Variant criteria="*tholinZone"		variant="outer">
+					<Table>
+						<Variant chance="10" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="60" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- FROST ZONE (outer rocky) -->
+
+				<Variant criteria="*frostZone"	variant="outer">
+					<Table>
+						<Variant chance="20" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="50"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+
+				<!-- ICE ZONE (outer water) -->
+
+				<Variant criteria="*iceZone"	variant="outer">
+					<Table>
+						<Variant chance="60" 		variant="ice">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10"		variant="metallic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="10" 		variant="primordial">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="20"		variant="rocky">
+							<Lookup table="_Morphology"/>
+						</Variant>
+						<Variant chance="0" 		variant="volcanic">
+							<Lookup table="_Morphology"/>
+						</Variant>
+					</Table>
+				</Variant>
+			</LocationCriteriaTable>
+		</LocationDefinition>
+
+	</SystemPartTable>
+
+</TranscendenceModule>

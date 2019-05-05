@@ -783,6 +783,59 @@
 			</Group>
 		</Vulcanoids>
 		
+		<VariantAsteroidLarge>
+			<Table>
+				<Lookup chance="35"		table="VariantSizeA"/>
+				<Lookup chance="25"		table="VariantSizeB"/>
+				<Lookup chance="15"		table="VariantSizeC"/>
+				<Lookup chance="12"		table="VariantSizeD"/>
+				<Lookup chance="8"		table="VariantSizeE"/>
+				<Lookup chance="4"		table="VariantSizeF"/>
+				<Lookup chance="1"		table="VariantSizeG"/>
+			</Table>
+		</VariantAsteroidLarge>
+
+		<VariantAsteroidAndLabel>
+			<Table>
+				<Lookup chance="80"		table="VariantSizeA"/>
+				<Lookup chance="14"		table="VariantSizeB"/>
+				<Group  chance="5">
+					<Lookup				table="VariantSizeC"/>
+					
+					<Orbitals distance="2d4+4" angle="random">
+						<Lookup table="VariantAsteroidBeltLabel"/>
+					</Orbitals>
+				</Group>
+				<Group  chance="1">
+					<Lookup				table="VariantSizeD"/>
+					
+					<Orbitals distance="2d4+8" angle="random">
+						<Lookup table="VariantAsteroidBeltLabel"/>
+					</Orbitals>
+				</Group>
+			</Table>
+		</VariantAsteroidAndLabel>
+
+		<VariantAsteroidBeltLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="asteroids, asteroidBelt, ice"/>
+				<Label variant="metallic"	attributes="asteroids, asteroidBelt, metallic"/>
+				<Label variant="primordial"	attributes="asteroids, asteroidBelt, primordial"/>
+				<Label variant="rocky"		attributes="asteroids, asteroidBelt, rocky"/>
+				<Label variant="volcanic"	attributes="asteroids, asteroidBelt, volcanic"/>
+			</VariantTable>
+		</VariantAsteroidBeltLabel>
+
+		<VariantAsteroidBeltVoidLabel>
+			<VariantTable>
+				<Label variant="ice"		attributes="asteroidBelt, ice, void"/>
+				<Label variant="metallic"	attributes="asteroidBelt, metallic, void"/>
+				<Label variant="primordial"	attributes="asteroidBelt, primordial, void"/>
+				<Label variant="rocky"		attributes="asteroidBelt, rocky, void"/>
+				<Label variant="volcanic"	attributes="asteroidBelt, void, volcanic"/>
+			</VariantTable>
+		</VariantAsteroidBeltVoidLabel>
+
 	</SystemPartTable>
 
 <!-- ASTEROIDS & PLANETS -->

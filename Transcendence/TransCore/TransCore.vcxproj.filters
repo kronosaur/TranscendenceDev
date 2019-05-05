@@ -810,5 +810,11 @@
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="AsteroidFields.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
+    <Xml Include="GroupIAsteroids.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

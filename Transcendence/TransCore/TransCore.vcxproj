@@ -191,6 +191,7 @@
     <Xml Include="AntarcticaD01.xml" />
     <Xml Include="AresItems.xml" />
     <Xml Include="AresShips.xml" />
+    <Xml Include="AsteroidFields.xml" />
     <Xml Include="Barricades.xml" />
     <Xml Include="BattleArenaChallenger.xml" />
     <Xml Include="BattleArenaFight.xml" />
@@ -537,6 +538,7 @@
     <Xml Include="Gaians.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="GroupIAsteroids.xml" />
     <Xml Include="Heliotropes.xml" />
     <Xml Include="Heretic00.xml" />
     <Xml Include="Heretic01.xml" />

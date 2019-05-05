@@ -222,6 +222,9 @@
 	<!ENTITY tbStars					"0x00020067">
 	<!ENTITY tbAsteroidOre				"0x00020068">
 	<!ENTITY rsMinedOreHero				"0x00020069">
+
+	<!ENTITY tbAsteroidFieldMorphologies	"0x0002006A">
+	<!ENTITY tbGroupIAsteroids			"0x0002006B">
 	
 	<!-- 0070-007F STARS -->
 	
@@ -334,6 +337,7 @@
 	<Module filename="Environments.xml"/>
 	<Module filename="GalaxyCompatibility.xml"/>
 	<Module filename="GalaxyEffects.xml"/>
+	<Module filename="GroupIAsteroids.xml"/>
 	<Module filename="Groups.xml"/>
 	<Module filename="Ice.xml"/>
 	<Module filename="Metallic.xml"/>

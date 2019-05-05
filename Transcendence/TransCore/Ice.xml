@@ -10,80 +10,65 @@
 		
 		<AsteroidIceArc50>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ice">
-						<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidArc50Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
 
-						<OrbitalDistribution count="2-4" arcLength="620" radialWidth="42">
-							<Lookup table="VariantAsteroidBeltVoidLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="IceLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidIceArc50>
 
 		<AsteroidIceArc100>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ice">
-						<OrbitalDistribution count="2d25+75" arcLength="500" radialWidth="60">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidArc100Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
 
-						<OrbitalDistribution count="3-5" arcLength="620"	radialWidth="30">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="IceLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidIceArc100>
 
 		<AsteroidIceArc200>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ice">
-						<OrbitalDistribution count="2d50+150" arcLength="400" radialWidth="84">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidArc200Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
 
-						<OrbitalDistribution count="4-8" arcLength="500"	radialWidth="84">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="IceLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidIceArc200>
 		
 		<AsteroidIceBelt100>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ice">
-						<OrbitalDistribution count="2d25+75" radialWidth="60">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidBelt100Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
 
-						<OrbitalDistribution count="3-5"	radialWidth="30">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="IceLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidIceBelt100>
 		
 		<AsteroidIceBelt500>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ice">
-						<OrbitalDistribution count="2d125+375" radialWidth="130">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="IceSizeA"/>
+					<_AsteroidSizeB		table="IceSizeB"/>
+					<_AsteroidSizeC		table="IceSizeC"/>
+					<_AsteroidSizeD		table="IceSizeD"/>
 
-						<OrbitalDistribution count="6-12"	radialWidth="130">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="IceLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidIceBelt500>
@@ -134,6 +119,67 @@
 			</Orbitals>
 		</IceComet>
 
+		<!-- COMPONENTS -->
+
+		<IceSizeA>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeA>
+
+		<IceSizeB>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeB>
+
+		<IceSizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeC>
+
+		<IceSizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeD>
+
+		<IceSizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeE>
+
+		<IceSizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeF>
+
+		<IceSizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ice;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ice;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ice;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</IceSizeG>
+
+		<IceLabel>
+			<Label attributes="ice"/>
+		</IceLabel>
 	</SystemPartTable>
 
 <!-- ASTEROIDS & PLANETS -->

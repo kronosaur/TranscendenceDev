@@ -10,16 +10,13 @@
 		
 		<AsteroidRockyBelt500>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="rocky">
-						<OrbitalDistribution count="2d125+375" radialWidth="130">
-							<Lookup table="VariantAsteroid"/>
-						</OrbitalDistribution>
+				<_Morphology	table="AsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="RockySizeA"/>
+					<_AsteroidSizeB		table="RockySizeB"/>
+					<_AsteroidSizeC		table="RockySizeC"/>
+					<_AsteroidSizeD		table="RockySizeD"/>
 
-						<OrbitalDistribution count="6-12"	radialWidth="130">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="RockyLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidRockyBelt500>
@@ -55,6 +52,67 @@
 			</Lookup>
 		</RockyPlanetoidPrimary>
 
+		<!-- COMPONENTS -->
+
+		<RockySizeA>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeA>
+
+		<RockySizeB>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeB>
+
+		<RockySizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeC>
+
+		<RockySizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeD>
+
+		<RockySizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeE>
+
+		<RockySizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeF>
+
+		<RockySizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*rocky;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*rocky;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*rocky;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</RockySizeG>
+
+		<RockyLabel>
+			<Label attributes="rocky"/>
+		</RockyLabel>
 	</SystemPartTable>
 
 <!-- ASTEROIDS & PLANETS -->

@@ -10,99 +10,161 @@
 
 		<AsteroidOvoidBelt12>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="2d4+8" radialWidth="18">
-							<Lookup table="VariantAsteroidAndLabel"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt12Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="1"	radialWidth="18">
-							<Lookup table="VariantAsteroidBeltVoidLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt12>
 
 		<AsteroidOvoidBelt25>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="2d8+16" radialWidth="30">
-							<Lookup table="VariantAsteroidAndLabel"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt25Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="2"	radialWidth="30">
-							<Lookup table="VariantAsteroidBeltVoidLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt25>
 
 		<AsteroidOvoidBelt50>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="2d14+35" radialWidth="42">
-							<Lookup table="VariantAsteroidAndLabel"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt50Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="1-3"	radialWidth="42">
-							<Lookup table="VariantAsteroidBeltVoidLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt50>
 		
 		<AsteroidOvoidBelt300>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="2d50+250" radialWidth="90">
-							<Lookup table="VariantAsteroidLarge"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt300Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="4-8"	radialWidth="90">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt300>
 
 		<AsteroidOvoidBelt500>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="2d125+375" radialWidth="130">
-							<Lookup table="VariantAsteroidLarge"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="6-12"	radialWidth="130">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt500>
 	
 		<AsteroidOvoidBelt1000>
 			<Lookup table="RegionDefinition">
-				<_Morphology>
-					<Variant variant="ovoid">
-						<OrbitalDistribution count="4d125+750" radialWidth="150">
-							<Lookup table="VariantAsteroidLarge"/>
-						</OrbitalDistribution>
+				<_Morphology	table="LargeAsteroidBelt1000Morphology">
+					<_AsteroidSizeA		table="OvoidSizeA"/>
+					<_AsteroidSizeB		table="OvoidSizeB"/>
+					<_AsteroidSizeC		table="OvoidSizeC"/>
+					<_AsteroidSizeD		table="OvoidSizeD"/>
+					<_AsteroidSizeE		table="OvoidSizeE"/>
+					<_AsteroidSizeF		table="OvoidSizeF"/>
+					<_AsteroidSizeG		table="OvoidSizeG"/>
 
-						<OrbitalDistribution count="6-12"	radialWidth="150">
-							<Lookup table="VariantAsteroidBeltLabel"/>
-						</OrbitalDistribution>
-					</Variant>
+					<_Label				table="OvoidLabel"/>
 				</_Morphology>
 			</Lookup>
 		</AsteroidOvoidBelt1000>
+
+		<!-- COMPONENTS -->
+
+		<OvoidSizeA>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeA>
+
+		<OvoidSizeB>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeB>
+
+		<OvoidSizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeC>
+
+		<OvoidSizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeD>
+
+		<OvoidSizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeE>
+
+		<OvoidSizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeF>
+
+		<OvoidSizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*ovoid;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*ovoid;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*ovoid;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OvoidSizeG>
+
+		<OvoidLabel>
+			<Label attributes="ovoid"/>
+		</OvoidLabel>
 	</SystemPartTable>
 	
 <!-- ASTEROIDS & PLANETS -->
