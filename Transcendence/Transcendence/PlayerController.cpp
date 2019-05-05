@@ -2332,7 +2332,7 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			int iAmmoLeft;
 			pLauncher->GetSelectedVariantInfo(m_pShip, &sVariant, &iAmmoLeft);
 			if (sVariant.IsBlank())
-				sVariant = pLauncher->GetName();
+				sVariant = strCapitalize(pLauncher->GetName());
 			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), sVariant));
 			}
 

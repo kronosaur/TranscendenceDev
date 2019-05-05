@@ -312,6 +312,7 @@ class CDeviceClass
 		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		virtual bool ShowActivationDelayCounter (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
+		virtual bool UsesLauncherControls (void) { return false; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
 		static bool FindAmmoDataField (CItemType *pItem, const CString &sField, CString *retsValue);

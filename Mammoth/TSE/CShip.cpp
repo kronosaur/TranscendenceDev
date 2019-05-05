@@ -640,13 +640,17 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
+		DWORD testvariable1 = ((pWeapon->GetCategory() == itemcatLauncher) || pWeapon->UsesLauncherControls());
+		bool testvariable2 = (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false);
+		DWORD testvariable3 = (pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & dwLinkedFireSelected) : 0);
+
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
 			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
+				&& ((pWeapon->GetCategory() == itemcatWeapon) && !pWeapon->UsesLauncherControls())) ||
 				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
+				&& ((pWeapon->GetCategory() == itemcatLauncher) || pWeapon->UsesLauncherControls()))) &&
 			(dwLinkedFireOptions & dwLinkedFireSelected) &&
 			IsPlayer()
 			))
