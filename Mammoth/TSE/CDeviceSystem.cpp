@@ -911,7 +911,8 @@ bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemLis
 			break;
 
 		case itemcatLauncher:
-			m_NamedDevices[devMissileWeapon] = -1;
+			if (m_NamedDevices[devMissileWeapon] == iDevSlot)
+				m_NamedDevices[devMissileWeapon] = FindNextIndex(pObj, iDevSlot, itemcatLauncher);
 			break;
 
 		case itemcatShields:
