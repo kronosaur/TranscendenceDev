@@ -29,6 +29,7 @@
 #define ITEMS_TAG						CONSTLIT("Items")
 #define LABEL_TAG						CONSTLIT("Label")
 #define LEVEL_TABLE_TAG					CONSTLIT("LevelTable")
+#define LOCATION_ATTRIBUTES_TAG			CONSTLIT("LocationAttributes")
 #define LOCATION_CRITERIA_TABLE_TAG		CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG						CONSTLIT("Lookup")
 #define MARKER_TAG						CONSTLIT("Marker")
@@ -226,6 +227,7 @@ static char g_ProbabilitiesAttrib[] = "probabilities";
 //	Classes and structures
 
 ALERROR AddAttribute (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
+ALERROR AddLabelAttributes (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 ALERROR AddTerritory (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 bool CheckForOverlap (SSystemCreateCtx *pCtx, const CVector &vPos);
 ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx, 
@@ -320,6 +322,36 @@ ALERROR AddAttribute (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &O
 	if (pObj->FindAttribute(ATTRIBUTES_ATTRIB, &sAttribs))
 		pCtx->pTopologyNode->AddAttributes(sAttribs);
 
+	return NOERROR;
+	}
+
+ALERROR AddLabelAttributes (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc)
+
+//	AddLabelAttributes
+//
+//	Defines attributes that should be inherited by any child label definitions.
+
+	{
+	ALERROR error;
+	CString sNewAttribs = pObj->GetAttribute(ATTRIBUTES_ATTRIB);
+	CString sOldAttribs = pCtx->sLabelAttribs;
+
+	if (!sNewAttribs.IsBlank())
+		pCtx->sLabelAttribs = ::AppendModifiers(sOldAttribs, sNewAttribs);
+
+	//	Create children
+
+	for (int i = 0; i < pObj->GetContentElementCount(); i++)
+		{
+		CXMLElement *pItem = pObj->GetContentElement(i);
+
+		if (error = CreateSystemObject(pCtx, pItem, OrbitDesc))
+			return error;
+		}
+
+	//	Restore and done.
+
+	pCtx->sLabelAttribs = sOldAttribs;
 	return NOERROR;
 	}
 
@@ -978,10 +1010,14 @@ ALERROR CreateLabel (SSystemCreateCtx *pCtx,
 //	Creates a labeled point
 
 	{
-	//	Add the Orbit to the list
+	CString sAttribs = pObj->GetAttribute(ATTRIBUTES_ATTRIB);
+	if (pCtx->sLabelAttribs)
+		sAttribs = ::AppendModifiers(pCtx->sLabelAttribs, sAttribs);
+
+	//	Add the label to the list
 
 	CLocationDef *pLoc;
-	pCtx->System.CreateLocation(NULL_STR, OrbitDesc, pObj->GetAttribute(ATTRIBUTES_ATTRIB), &pLoc);
+	pCtx->System.CreateLocation(NULL_STR, OrbitDesc, sAttribs, &pLoc);
 
 	//	Keep stats
 
@@ -2625,6 +2661,11 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		if (error = CreateLabel(pCtx, pObj, OrbitDesc))
 			return error;
 		}
+	else if (strEquals(sTag, LOCATION_ATTRIBUTES_TAG))
+		{
+		if (error = AddLabelAttributes(pCtx, pObj, OrbitDesc))
+			return error;
+		}
 	else if (strEquals(sTag, ADD_ATTRIBUTE_TAG))
 		{
 		if (error = AddAttribute(pCtx, pObj, OrbitDesc))
@@ -4082,16 +4123,34 @@ ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, co
 	if (pSubTables)
 		pCtx->LocalTables.Insert(pSubTables, 0);
 
-	//	Create all the objects
+	//	Create all the objects. If we specify a sub-table, then we interpret 
+	//	the root as a lookup element (we do this to make the XML syntax more
+	//	efficient).
 
-	for (i = 0; i < pTableDesc->GetContentElementCount(); i++)
+	CString sSubTable = pTableDesc->GetAttribute(TABLE_ATTRIB);
+	if (!sSubTable.IsBlank())
 		{
-		CXMLElement *pResult = pTableDesc->GetContentElement(i);
+		//	If we've got an offset, change the orbit
 
-		//	Recurse
+		COrbit NewOrbit;
+		const COrbit *pOrbitDesc = ComputeOffsetOrbit(pTableDesc, OrbitDesc, &NewOrbit);
 
-		if (error = CreateSystemObject(pCtx, pResult, OrbitDesc))
+		//	Create
+
+		if (error = pCtx->System.CreateLookup(pCtx, sSubTable, *pOrbitDesc, pTableDesc))
 			return error;
+		}
+	else
+		{
+		for (i = 0; i < pTableDesc->GetContentElementCount(); i++)
+			{
+			CXMLElement *pResult = pTableDesc->GetContentElement(i);
+
+			//	Recurse
+
+			if (error = CreateSystemObject(pCtx, pResult, OrbitDesc))
+				return error;
+			}
 		}
 
 	//	Restore

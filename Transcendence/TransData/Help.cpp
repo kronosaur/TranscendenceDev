@@ -452,6 +452,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("  /encounterFreq        Outputs encounter tables.\n");
 		printf("  /encountersim         Simulate an attack on the station.\n");
 		printf("  /encountertable       Encounter table.\n");
+		printf("  /extensiontable       Show all extensions.\n");
 		printf("  /language             Output language tables.\n");
 		if (bDebug)
 			printf("  /lootsim              Simulation of items found in a game.\n");

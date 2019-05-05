@@ -264,6 +264,7 @@ struct SSystemCreateCtx
 
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
 	TSortMap<CString, CString> NameParams;	//	Parameters passed in to CNameDesc
+	CString sLabelAttribs;					//	Inherited label attributes
 
 	//	Options
 
