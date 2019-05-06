@@ -816,5 +816,8 @@
     <Xml Include="GroupIAsteroids.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
+    <Xml Include="OreStone.xml">
+      <Filter>Transcendence Galaxy Library</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

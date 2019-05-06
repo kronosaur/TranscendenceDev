@@ -321,6 +321,20 @@
 	<!ENTITY rsVolcanicPlanetoidSizeE	"0x00020114">
 	<!ENTITY rsVolcanicPlanetoidSizeF	"0x00020115">
 	<!ENTITY rsVolcanicPlanetoidSizeG	"0x00020116">
+
+	<!-- 0120-013F ORE STONE ASTEROIDS -->
+
+	<!ENTITY tbOreStoneTables			"0x00020120">
+	<!ENTITY rsOreStoneAsteroids		"0x00020121">
+	<!ENTITY baOreStoneAsteroid			"0x00020122">
+	<!ENTITY stOreStoneAsteroidSizeA	"0x00020123">
+	<!ENTITY stOreStoneAsteroidSizeB	"0x00020124">
+	<!ENTITY stOreStoneAsteroidSizeC	"0x00020125">
+	<!ENTITY stOreStoneAsteroidSizeD	"0x00020126">
+	<!ENTITY baOreStonePlanetoid		"0x00020127">
+	<!ENTITY stOreStonePlanetoidSizeE	"0x00020128">
+	<!ENTITY stOreStonePlanetoidSizeF	"0x00020129">
+	<!ENTITY stOreStonePlanetoidSizeG	"0x0002012A">
 	]>
 	
 <CoreLibrary
@@ -343,6 +357,7 @@
 	<Module filename="Metallic.xml"/>
 	<Module filename="Mining.xml"/>
 	<Module filename="Ore.xml"/>
+	<Module filename="OreStone.xml"/>
 	<Module filename="Ovoids.xml"/>
 	<Module filename="Neurohack.xml"/>
 	<Module filename="Primordial.xml"/>

@@ -582,6 +582,7 @@
     <Xml Include="KSMissionC02.xml" />
     <Xml Include="Marauders.xml" />
     <Xml Include="Ore.xml" />
+    <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
     <Xml Include="Penitents.xml">
       <SubType>Designer</SubType>

@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- MORPHOLOGY -->
+
+	<SystemPartTable unid="&tbOreStoneTables;">
+
+		<!-- PLANETS AND PLANETOIDS -->
+
+		<OreStonePrimary>
+			<LocationCriteriaTable>
+				<Table criteria="*innerSystem">
+					<Lookup chance="100" table="OreStonePlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*lifeZone">
+					<Lookup chance="100" table="OreStonePlanetoidPrimary"/>
+				</Table>
+				<Table criteria="*outerSystem">
+					<Lookup chance="100" table="OreStonePlanetoidPrimary"/>
+				</Table>
+			</LocationCriteriaTable>
+		</OreStonePrimary>
+
+		<OreStonePlanetoidPrimary>
+			<Lookup table="StandardPlanetoidMorphology">
+				<_PlanetType>
+					<Table>
+						<Station chance="60" type="&stOreStonePlanetoidSizeE;" showOrbit="true"/>
+						<Station chance="30" type="&stOreStonePlanetoidSizeF;" showOrbit="true"/>
+						<Station chance="10" type="&stOreStonePlanetoidSizeG;" showOrbit="true"/>
+					</Table>
+				</_PlanetType>
+				<_PlanetLabel>
+					<Label attributes="oreStone, planet, planetary, planetoid"/>
+				</_PlanetLabel>
+			</Lookup>
+		</OreStonePlanetoidPrimary>
+
+		<!-- ASTEROID FIELDS -->
+
+		<AsteroidOreStoneBelt12>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt12Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt12>
+
+		<AsteroidOreStoneBelt25>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt25Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt25>
+
+		<AsteroidOreStoneBelt50>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt50Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt50>
+		
+		<AsteroidOreStoneBelt300>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt300Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt300>
+
+		<AsteroidOreStoneBelt500>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt500Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt500>
+
+		<AsteroidOreStoneBelt1000>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidBelt1000Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneBelt1000>
+
+		<AsteroidOreStoneTwinBelt1000>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTwinBelt1000Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneTwinBelt1000>
+
+		<AsteroidOreStoneTwinBelt2500>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTwinBelt2500Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneTwinBelt2500>
+
+		<AsteroidOreStoneTwinBelt5000>
+			<Lookup table="RegionDefinition">
+				<_Morphology	table="AsteroidTwinBelt5000Morphology">
+					<_AsteroidSizeA		table="OreStoneSizeA"/>
+					<_AsteroidSizeB		table="OreStoneSizeB"/>
+					<_AsteroidSizeC		table="OreStoneSizeC"/>
+					<_AsteroidSizeD		table="OreStoneSizeD"/>
+
+					<_Label				table="OreStoneLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidOreStoneTwinBelt5000>
+
+		<!-- COMPONENTS -->
+
+		<OreStoneSizeA>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:A;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeA>
+
+		<OreStoneSizeB>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:B;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeB>
+
+		<OreStoneSizeC>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:C;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeC>
+
+		<OreStoneSizeD>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:D;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeD>
+
+		<OreStoneSizeE>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:E;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeE>
+
+		<OreStoneSizeF>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:F;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeF>
+
+		<OreStoneSizeG>
+			<VariantTable>
+				<RandomStation variant="inner"			stationCriteria="*oreStone;		*generic; *inner; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="lifeZone"		stationCriteria="*oreStone;		*generic; *lifeZone; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+				<RandomStation variant="outer"			stationCriteria="*oreStone;		*generic; *outer; *sizeClass:G;" locationAttribs="*" includeAll="true"/>
+			</VariantTable>
+		</OreStoneSizeG>
+
+		<OreStoneLabel>
+			<Label attributes="oreStone"/>
+		</OreStoneLabel>
+	</SystemPartTable>
+
+<!-- ASTEROIDS & PLANETS -->
+
+	<!-- Size A OreStone Asteroid -->
+
+	<StationType UNID="&stOreStoneAsteroidSizeA;"
+		name=				"(oreStone asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
+		inherit=			"&baOreStoneAsteroid;"
+
+		scale=				"world"
+		size=				"3"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="0" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="96" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="0" imageY="224" imageWidth="32" imageHeight="32"/>
+			
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="0" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="32" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="64" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="96" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="128" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="160" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="192" imageWidth="32" imageHeight="32"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="32" imageY="224" imageWidth="32" imageHeight="32"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size B OreStone Asteroid -->
+
+	<StationType UNID="&stOreStoneAsteroidSizeB;"
+		name=				"(oreStone asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
+		inherit=			"&baOreStoneAsteroid;"
+
+		scale=				"world"
+		size=				"55"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+
+		<ImageVariants>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="64" imageY="192" imageWidth="64" imageHeight="64"/>
+			
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="128" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="128" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="128" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="128" imageY="192" imageWidth="64" imageHeight="64"/>
+				
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="192" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="192" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="192" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="192" imageY="192" imageWidth="64" imageHeight="64"/>
+				
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="256" imageY="0" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="256" imageY="64" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="256" imageY="128" imageWidth="64" imageHeight="64"/>
+			<Image			imageID="&rsOreStoneAsteroids;" imageX="256" imageY="192" imageWidth="64" imageHeight="64"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d6" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size C OreStone Asteroid -->
+
+	<StationType UNID="&stOreStoneAsteroidSizeC;"
+		name=				"(oreStone asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
+		inherit=			"&baOreStoneAsteroid;"
+
+		scale=				"world"
+		size=				"128"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"   imageY="432"   imageWidth="88" imageHeight="88"/>
+		
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="88"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="88"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="88"   imageY="432"   imageWidth="88" imageHeight="88"/>
+			
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="176"   imageY="256"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="176"   imageY="344"   imageWidth="88" imageHeight="88"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="176"   imageY="432"   imageWidth="88" imageHeight="88"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d8" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- Size D OreStone Asteroid -->
+
+	<StationType UNID="&stOreStoneAsteroidSizeD;"
+		name=				"(oreStone asteroid)"
+		attributes=			"asteroid, generic, inner, lifeZone, oreStone, outer"
+		inherit=			"&baOreStoneAsteroid;"
+
+		scale=				"world"
+		size=				"480"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="264"  imageY="256"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="372"  imageY="256"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="480"  imageY="256"   imageWidth="108" imageHeight="108"/>
+
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="264"  imageY="364"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="372"  imageY="364"   imageWidth="108" imageHeight="108"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="480"  imageY="364"   imageWidth="108" imageHeight="108"/>
+		</ImageVariants>
+
+		<Items>
+			<Table>
+				<Null chance="90"/>
+				<Lookup chance="10" count="1d10" table="&tbAsteroidOre;"/>
+			</Table>
+		</Items>
+	</StationType>
+
+	<!-- OreStone Planetoid Size E -->
+
+	<StationType UNID="&stOreStonePlanetoidSizeE;"
+		name=				"(oreStone planetoid)"
+		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
+		inherit=			"&baOreStonePlanetoid;"
+
+		scale=				"world"
+		size=				"885"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="320"  imageY="0"	 imageWidth="128" imageHeight="128"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="320"  imageY="128"   imageWidth="128" imageHeight="128"/>
+		
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="448"  imageY="0"	 imageWidth="128" imageHeight="128"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="448"  imageY="128"   imageWidth="128" imageHeight="128"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- OreStone Planetoid Size F -->
+
+	<StationType UNID="&stOreStonePlanetoidSizeF;"
+		name=				"(oreStone planetoid)"
+		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
+		inherit=			"&baOreStonePlanetoid;"
+
+		scale=				"world"
+		size=				"2050"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"	  imageY="520"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="156"  imageY="520"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="312"  imageY="520"   imageWidth="156" imageHeight="156"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="468"  imageY="520"   imageWidth="156" imageHeight="156"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- OreStone Planetoid Size G -->
+
+	<StationType UNID="&stOreStonePlanetoidSizeG;"
+		name=				"(oreStone planetoid)"
+		attributes=			"generic, inner, lifeZone, oreStone, outer, planetoid"
+		inherit=			"&baOreStonePlanetoid;"
+
+		scale=				"world"
+		size=				"3750"
+
+		ejectaType=			"&vtMetallicAsteroidEjecta;"
+		>
+		<Names noArticle="true">Asteroid %1%0%0%0%0%0</Names>
+		
+		<ImageVariants>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"    imageY="676"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="180"  imageY="676"   imageWidth="180" imageHeight="180"/>
+
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="0"    imageY="856"   imageWidth="180" imageHeight="180"/>
+			<Image	imageID="&rsOreStoneAsteroids;" imageX="180"  imageY="856"   imageWidth="180" imageHeight="180"/>
+		</ImageVariants>
+	</StationType>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&baOreStoneAsteroid;">
+		<Events>
+			<OnMining>
+				(intAsteroidOnMining 30)
+			</OnMining>
+		</Events>
+	</Type>
+
+	<Type unid="&baOreStonePlanetoid;">
+	</Type>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsOreStoneAsteroids;"		bitmap="Resources\OreStoneAsteroids.jpg"	bitmask="Resources\OreStoneAsteroidsMask.bmp"		loadOnUse="true"/>
+
+</TranscendenceModule>
