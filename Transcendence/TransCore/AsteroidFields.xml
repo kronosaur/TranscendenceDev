@@ -377,6 +377,56 @@
 			</Group>
 		</AsteroidArcBeltLargeMorphology>
 
+		<!-- ASTEROID TWIN BELT -->
+
+		<AsteroidTwinBelt1000Morphology>
+			<OrbitalDistribution count="4d125+750" radialWidth="150" gapWidth="20">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-12"	radialWidth="50">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+		</AsteroidTwinBelt1000Morphology>
+
+		<AsteroidTwinBelt2500Morphology>
+			<OrbitalDistribution count="4d325+1850" radialWidth="250" gapWidth="20">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-12"	radialWidth="50">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+
+			<Siblings count="3-5" radiusInc="-60-60" angle="equidistant">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</Siblings>
+		</AsteroidTwinBelt2500Morphology>
+
+		<AsteroidTwinBelt5000Morphology>
+			<OrbitalDistribution count="4d475+4050" radialWidth="350" gapWidth="20">
+				<Lookup table="BeltAsteroid"/>
+			</OrbitalDistribution>
+
+			<OrbitalDistribution count="6-12"	radialWidth="50">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</OrbitalDistribution>
+
+			<Siblings count="5-7" radiusInc="-80-80" angle="equidistant">
+				<LocationAttributes attributes="asteroids, asteroidBelt">
+					<Lookup table="_Label"/>
+				</LocationAttributes>
+			</Siblings>
+		</AsteroidTwinBelt5000Morphology>
+
 		<!-- ASTEROID TROJANS -->
 
 		<AsteroidTrojans12Morphology>

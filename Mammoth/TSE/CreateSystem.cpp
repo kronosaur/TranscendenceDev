@@ -81,6 +81,7 @@
 #define ERODE_ATTRIB					CONSTLIT("erode")
 #define EVENT_HANDLER_ATTRIB			CONSTLIT("eventHandler")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
+#define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
 #define INCLUDE_ALL_ATTRIB				CONSTLIT("includeAll")
@@ -934,7 +935,6 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 	int iArcLength = pObj->GetAttributeIntegerBounded(ARC_LENGTH_ATTRIB, 0, -1, 0);
 	int iRadialWidth = pObj->GetAttributeIntegerBounded(RADIAL_WIDTH_ATTRIB, 0, -1, 0);
-	int iRadialEdgeWidth = pObj->GetAttributeIntegerBounded(RADIAL_EDGE_WIDTH_ATTRIB, 0, -1, 0);
 	Metric rScale = GetScale(pObj);
 	Metric rMaxStdDev = 3.0;
 
@@ -943,22 +943,52 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 	if (iArcLength == 0)
 		{
+		int iGapWidth = pObj->GetAttributeIntegerBounded(GAP_WIDTH_ATTRIB, 0, -1, 0);
+
 		Metric rWidth = rScale * iRadialWidth / 2.0;
+		Metric rGapWidth = rScale * iGapWidth / 2.0;
 
-		for (i = 0; i < iCount; i++)
+		if (iGapWidth > 0)
 			{
-			Metric rPos = mathRandomGaussian() / rMaxStdDev;
+			for (i = 0; i < iCount; i++)
+				{
+				Metric rPos = mathRandomGaussian() / rMaxStdDev;
 
-			COrbit SiblingOrbit(OrbitDesc.GetFocus(),
-					OrbitDesc.GetSemiMajorAxis() + (rWidth * rPos),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					COrbit::RandomAngle());
+				Metric rRadius = OrbitDesc.GetSemiMajorAxis();
+				if (rPos >= 0)
+					rRadius = rRadius + rGapWidth + (rWidth * rPos);
+				else
+					rRadius = rRadius - rGapWidth + (rWidth * rPos);
 
-			if (error = CreateSystemObject(pCtx, 
-					pObj->GetContentElement(0), 
-					SiblingOrbit))
-				return error;
+				COrbit SiblingOrbit(OrbitDesc.GetFocus(),
+						rRadius,
+						OrbitDesc.GetEccentricity(),
+						OrbitDesc.GetRotation(),
+						COrbit::RandomAngle());
+
+				if (error = CreateSystemObject(pCtx, 
+						pObj->GetContentElement(0), 
+						SiblingOrbit))
+					return error;
+				}
+			}
+		else
+			{
+			for (i = 0; i < iCount; i++)
+				{
+				Metric rPos = mathRandomGaussian() / rMaxStdDev;
+
+				COrbit SiblingOrbit(OrbitDesc.GetFocus(),
+						OrbitDesc.GetSemiMajorAxis() + (rWidth * rPos),
+						OrbitDesc.GetEccentricity(),
+						OrbitDesc.GetRotation(),
+						COrbit::RandomAngle());
+
+				if (error = CreateSystemObject(pCtx, 
+						pObj->GetContentElement(0), 
+						SiblingOrbit))
+					return error;
+				}
 			}
 		}
 
@@ -966,6 +996,8 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 	else
 		{
+		int iRadialEdgeWidth = pObj->GetAttributeIntegerBounded(RADIAL_EDGE_WIDTH_ATTRIB, 0, -1, 0);
+
 		Metric rArc = rScale * iArcLength / 2.0;
 		Metric rMaxWidth = rScale * iRadialWidth / 2.0;
 		Metric rMinWidth = rScale * iRadialEdgeWidth / 2.0;
