@@ -385,7 +385,7 @@
 			</OrbitalDistribution>
 
 			<OrbitalDistribution count="6-12"	radialWidth="50">
-				<LocationAttributes attributes="asteroids, asteroidBelt">
+				<LocationAttributes attributes="asteroids, asteroidBelt, asteroidFieldGap">
 					<Lookup table="_Label"/>
 				</LocationAttributes>
 			</OrbitalDistribution>
@@ -397,7 +397,7 @@
 			</OrbitalDistribution>
 
 			<OrbitalDistribution count="6-12"	radialWidth="50">
-				<LocationAttributes attributes="asteroids, asteroidBelt">
+				<LocationAttributes attributes="asteroids, asteroidBelt, asteroidFieldGap">
 					<Lookup table="_Label"/>
 				</LocationAttributes>
 			</OrbitalDistribution>
@@ -415,7 +415,7 @@
 			</OrbitalDistribution>
 
 			<OrbitalDistribution count="6-12"	radialWidth="50">
-				<LocationAttributes attributes="asteroids, asteroidBelt">
+				<LocationAttributes attributes="asteroids, asteroidBelt, asteroidFieldGap">
 					<Lookup table="_Label"/>
 				</LocationAttributes>
 			</OrbitalDistribution>
