@@ -4648,7 +4648,7 @@ void CShip::OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotifica
 
 			if (pMainLauncher == pDev 
 					|| (pMainLauncher && pMainLauncher->GetClass() == pDev->GetClass()))
-				ReadyNextMissile();
+				ReadyNextMissile(1, true);
 
 			//	Otherwise, if this is a launcher, we just switch its missiles.
 			//	This handles the case where we have heterogeneous missile launchers.
@@ -7027,14 +7027,14 @@ void CShip::ReadyFirstWeapon (void)
 	m_Devices.ReadyFirstWeapon(this);
 	}
 
-void CShip::ReadyNextMissile (int iDir)
+void CShip::ReadyNextMissile (int iDir, bool bUsedLastAmmo)
 
 //	ReadyNextMissile
 //
 //	Selects the next missile
 
 	{
-	m_Devices.ReadyNextMissile(this, iDir);
+	m_Devices.ReadyNextMissile(this, iDir, bUsedLastAmmo);
 	}
 
 void CShip::ReadyNextWeapon (int iDir)

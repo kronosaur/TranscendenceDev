@@ -120,7 +120,7 @@ class CDeviceSystem
 		void ReadyFirstMissile (CSpaceObject *pObj);
 		void ReadyFirstWeapon (CSpaceObject *pObj);
 		void ReadyNextLauncher (CSpaceObject *pObj, int iDir = 1);
-		void ReadyNextMissile (CSpaceObject *pObj, int iDir = 1);
+		void ReadyNextMissile (CSpaceObject * pObj, int iDir = 1, bool bUsedLastAmmo = false);
 		void ReadyNextWeapon (CSpaceObject *pObj, int iDir = 1);
 		DeviceNames SelectWeapon (CSpaceObject *pObj, int iIndex, int iVariant);
 		void SetCursorAtDevice (CItemListManipulator &ItemList, int iIndex) const;
