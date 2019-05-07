@@ -2544,11 +2544,13 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 				{
 				if (currDevice.GetCategory() == (itemcatWeapon))
 					{
+					CItemCtx ItemCtx(this, pDevice);
 					bool bCheckSameVariant = currDevice.GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
-						CItemCtx(this, pDevice).GetItemVariantNumber() == CItemCtx(this, &currDevice).GetItemVariantNumber() : true;
+						ItemCtx.GetItemVariantNumber() == CItemCtx(this, &currDevice).GetItemVariantNumber() : true;
 					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
 						{
-						if (pCurrDeviceClass->IsAmmoWeapon() && !(pCurrDeviceClass->RequiresItems()))
+						bool bUsesItemsForAmmo = (pCurrDeviceClass->AsWeaponClass()->GetWeaponFireDesc(ItemCtx)->GetAmmoType() != NULL);
+						if (pCurrDeviceClass->IsAmmoWeapon() && !bUsesItemsForAmmo)
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
 							{
 							int iAmmoLeft = 0;
@@ -2556,7 +2558,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 							iAmmoCount += iAmmoLeft;
 							}
 
-						if (pCurrDeviceClass->IsAmmoWeapon() && (pCurrDeviceClass->RequiresItems()))
+						if (pCurrDeviceClass->IsAmmoWeapon() && bUsesItemsForAmmo)
 							//  If it is an ammo weapon, and also require items, then it is an ammo weapon. Add its ammo to the count ONLY if the ammo type
 							//  hasn't already been added.
 							{
