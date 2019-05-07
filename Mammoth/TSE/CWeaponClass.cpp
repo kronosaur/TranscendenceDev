@@ -55,6 +55,7 @@
 
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
 #define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
+#define GET_AMMO_COUNT_TO_DISPLAY_EVENT			CONSTLIT("GetAmmoCountToDisplay")
 
 
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
@@ -218,6 +219,7 @@ static char *CACHED_EVENTS[CWeaponClass::evtCount] =
 	{
 		"OnFireWeapon",
 		"GetAmmoToConsume",
+		"GetAmmoCountToDisplay",
 	};
 
 CFailureDesc CWeaponClass::g_DefaultFailure(CFailureDesc::profileWeaponFailure);
@@ -3158,7 +3160,8 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 										   CInstalledDevice *pDevice,
 										   CString *retsLabel,
 										   int *retiAmmoLeft,
-										   CItemType **retpType)
+										   CItemType **retpType,
+										   bool bUseCustomAmmoCountHandler)
 
 //	GetSelectedVariantInfo
 //
@@ -3257,6 +3260,37 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 		if (retpType)
 			*retpType = GetItemType();
+		}
+
+
+	//  If we are displaying this on the UI, call the item's ammo display event
+	//  if applicable
+	if (retiAmmoLeft && bUseCustomAmmoCountHandler)
+		{
+		SEventHandlerDesc Event;
+		if (retiAmmoLeft && (bUseCustomAmmoCountHandler && (FindEventHandlerWeaponClass(evtGetAmmoCountToDisplay, &Event))))
+			{
+			CCodeChainCtx CCCtx(GetUniverse());
+			int iResult;
+
+			CCCtx.DefineContainingType(GetItemType());
+			CCCtx.SaveAndDefineSourceVar(pSource);
+			CCCtx.SaveAndDefineItemVar(Ctx);
+			CCCtx.DefineItemType(CONSTLIT("aWeaponType"), pShot->GetWeaponType());
+
+			ICCItem *pResult = CCCtx.Run(Event);
+			if (pResult->IsError())
+				pSource->ReportEventError(GET_AMMO_COUNT_TO_DISPLAY_EVENT, pResult);
+
+			if (pResult->IsInteger() && !pResult->IsNil())
+				{
+				iResult = pResult->GetIntegerValue();
+				*retiAmmoLeft = iResult;
+				}
+
+			CCCtx.Discard(pResult);
+			}
+
 		}
 	}
 

@@ -108,7 +108,8 @@ class CCyberDeckClass : public CDeviceClass
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
-											 CItemType **retpType = NULL) override;
+											 CItemType **retpType = NULL,
+											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -569,8 +570,9 @@ class CWeaponClass : public CDeviceClass
 			{
 			evtOnFireWeapon				= 0,
 			evtGetAmmoToConsume			= 1,
+			evtGetAmmoCountToDisplay	= 2,
 
-			evtCount					= 2,
+			evtCount					= 3,
 			};
 
         struct SBalance
@@ -681,7 +683,8 @@ class CWeaponClass : public CDeviceClass
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
-											 CItemType **retpType = NULL) override;
+											 CItemType **retpType = NULL,
+											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
