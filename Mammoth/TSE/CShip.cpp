@@ -645,9 +645,9 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 			(dwLinkedFireOptions & dwLinkedFireSelected) &&
 			IsPlayer()
 			))
-		{
+			{
 			return false;
-		}
+			}
 
 		//	If our options is "fire always" or "fire if selected" then our target is always the same
 		//	as the primary target.

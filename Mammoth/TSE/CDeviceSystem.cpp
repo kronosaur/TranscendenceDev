@@ -261,7 +261,7 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 //
 //	Finds the next device of the given category
 
-{
+	{
 	int iStartingSlot;
 
 	//	iStartingSlot is always >= GetCount() so that we can iterate
