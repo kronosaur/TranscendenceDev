@@ -50,4 +50,33 @@
 
 	</ItemType>
 
+	<ItemType UNID="&itTestWeaponScaled;"
+			name=				"scaled weapon"
+			attributes=			"testItem"
+
+			level=				"3-8"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test weapon: scaled."
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"missile"
+
+				damage=				"kinetic:100"
+				fireRate=			"15"
+				missileSpeed=		"50"
+				lifetime=			"20"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				/>
+	</ItemType>
+
 </TranscendenceModule>

@@ -3349,24 +3349,13 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
         //  If this is armor, then we remember the current damaged state and
         //  carry that forward to the new level.
 
-		int iCurMaxHP;
-		int iCurHP = GetHitPoints(Ctx, &iCurMaxHP);
+		if (pArmor = GetType()->GetArmorClass())
+			return pArmor->SetItemProperty(Ctx, *this, sName, (pValue ? *pValue : *pNil), retsError);
 
-        //  Set the level
+		//	Otherwise, we just set the item level.
 
         if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
             return false;
-
-        //  Set armor HP
-
-		int iNewMaxHP = Ctx.GetArmorClass()->GetMaxHP(Ctx);
-		int iNewHP = CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
-
-		CInstalledArmor *pArmor = Ctx.GetArmor();
-		if (pArmor)
-			pArmor->SetHitPoints(iNewHP);
-		else
-			SetDamaged(iNewMaxHP - iNewHP);
 
         return true;
         }

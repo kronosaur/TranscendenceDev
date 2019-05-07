@@ -75,6 +75,7 @@
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_INC_HP							CONSTLIT("incHP")
+#define PROPERTY_LEVEL							CONSTLIT("level")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_POWER_OUTPUT					CONSTLIT("powerOutput")
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
@@ -2570,6 +2571,32 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			
 			Item.SetDamaged(iMaxHP - iNewHP);
 			}
+		}
+	else if (strEquals(sProperty, PROPERTY_LEVEL))
+		{
+        //  If this is armor, then we remember the current damaged state and
+        //  carry that forward to the new level.
+
+		int iCurMaxHP;
+		int iCurHP = Item.GetHitPoints(Ctx, &iCurMaxHP);
+
+        //  Set the level
+
+        if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
+            return false;
+
+        //  Set armor HP
+
+		int iNewMaxHP = GetMaxHP(Ctx);
+		int iNewHP = CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
+
+		CInstalledArmor *pArmor = Ctx.GetArmor();
+		if (pArmor)
+			pArmor->SetHitPoints(iNewHP);
+		else
+			Item.SetDamaged(iNewMaxHP - iNewHP);
+
+        return true;
 		}
 	else
 		{
