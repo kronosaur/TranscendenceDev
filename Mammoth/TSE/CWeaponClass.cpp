@@ -3742,15 +3742,15 @@ bool CWeaponClass::IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevic
 //  TODO: Make sure that this is the first variant WITH AVAILABLE AMMO that is selected.
 //  We can do this by making sure that the previous variant has an ID greater than the current one.
 
-{
+	{
 	bool bFirstVariantSelected = true;
 	for (int iTry = GetCurrentVariant(pDevice) - 1; iTry >= 0; iTry--)
-	{
+		{
 		//  If any variant with lower ID than our current one is valid, then the first variant is NOT currently selected.
 		bFirstVariantSelected = bFirstVariantSelected && !(VariantIsValid(pSource, pDevice, *m_ShotData[iTry].pDesc));
-	}
+		}
 	return ((GetCurrentVariant(pDevice) == -1) || bFirstVariantSelected);
-}
+	}
 
 bool CWeaponClass::IsLastVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice)
 
@@ -3760,7 +3760,7 @@ bool CWeaponClass::IsLastVariantSelected(CSpaceObject *pSource, CInstalledDevice
 //  TODO: Make sure that this is the last variant WITH AVAILABLE AMMO that is selected.
 //  We can do this by making sure that the next variant has an ID less than the current one.
 
-{
+	{
 	bool bLastVariantSelected = true;
 	for (int iTry = GetCurrentVariant(pDevice) + 1; iTry < m_ShotData.GetCount(); iTry++)
 		{
@@ -3768,7 +3768,7 @@ bool CWeaponClass::IsLastVariantSelected(CSpaceObject *pSource, CInstalledDevice
 		bLastVariantSelected = bLastVariantSelected && !(VariantIsValid(pSource, pDevice, *m_ShotData[iTry].pDesc));
 		}
 	return ((GetCurrentVariant(pDevice) == -1) || bLastVariantSelected);
-}
+	}
 
 bool CWeaponClass::IsSinglePointOrigin (void) const
 

@@ -725,17 +725,17 @@ void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
 //
 //	Select the next launcher.
 
-{
+	{
 	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
 	if (iNextWeapon != -1)
-	{
+		{
 		m_NamedDevices[devMissileWeapon] = iNextWeapon;
 
 		CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 		CDeviceClass *pClass = pDevice->GetClass();
 		pClass->ValidateSelectedVariant(pObj, pDevice);
+		}
 	}
-}
 
 void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLastAmmo)
 
