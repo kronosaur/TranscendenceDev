@@ -777,7 +777,7 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 	if (bUsedLastAmmo ? pDevice->GetValidVariantCount(pObj) == 0 : true)
 		{
 		bool bselectPrevLauncher = (lastSelected && (iDir == 0));
-		bool bselectNextLauncher = (firstSelected && (iDir == 1));
+		bool bselectNextLauncher = ((firstSelected && (iDir == 1)) || (pDevice == NULL));
 		
 		if ((bselectPrevLauncher || bselectNextLauncher) && (pObj->GetCategory() == CSpaceObject::catShip) && (pObj->IsPlayer()))
 			pObj->AsShip()->SetWeaponTriggered(devMissileWeapon, false);
