@@ -51,6 +51,13 @@ bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *
 	if (!CanBeEncountered())
 		return false;
 
+	//	See if we're valid for the current system level.
+
+	CSystem *pSystem = GetUniverse().GetCurrentSystem();
+	int iSystemLevel = (pSystem ? pSystem->GetLevel() : 1);
+	if (iSystemLevel < m_iMinLevel || iSystemLevel > m_iMaxLevel)
+		return false;
+
 	//	If this is part of a mission arc, then see if we can create it.
 
 	TArray<CMission *> MissionArc;
