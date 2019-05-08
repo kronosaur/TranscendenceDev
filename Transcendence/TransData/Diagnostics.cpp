@@ -38,16 +38,25 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 		printf("Created %s\n", (LPSTR)pNode->GetSystemName());
 		}
 
+	//	Start diagnostics are always in SE (if available)
+
+	CSystem *pSE = NULL;
+	if (AllSystems.Find(CONSTLIT("SE"), &pSE))
+		{
+		Universe.SetCurrentSystem(pSE);
+		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics();
+		}
+	else
+		printf("WARNING: Unable to find SE. Cannot run <OnGlobalStartDiagnostics>\n");
+
 	//	Now loop over all systems are invoke OnSystemDiagnostics
 
 	for (i = 0; i < AllSystems.GetCount(); i++)
 		{
+		if (AllSystems[i] == pSE)
+			continue;
+
 		Universe.SetCurrentSystem(AllSystems[i]);
-
-		//	Start diagnostics
-
-		if (i == 0)
-			Universe.GetDesignCollection().FireOnGlobalStartDiagnostics();
 
 		//	System diagnostics
 
