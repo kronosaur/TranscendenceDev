@@ -110,6 +110,8 @@ CUniverse::~CUniverse (void)
 	if (m_pSavedGlobalSymbols)
 		m_pSavedGlobalSymbols->Discard();
 
+	m_AllMissions.DeleteAll();
+
 	//	Destroy all star systems. We do this here because we want to
 	//	guarantee that we destroy all objects before we destruct
 	//	codechain, et al
@@ -120,6 +122,7 @@ CUniverse::~CUniverse (void)
 
 	//	Free up various arrays whose cleanup requires m_CC
 
+	m_NamedEffects.CleanUp();
 	m_Design.CleanUp();
 	m_Extensions.CleanUp();
 	m_Topology.DeleteAll();
