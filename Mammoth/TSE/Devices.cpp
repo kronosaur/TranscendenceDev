@@ -38,6 +38,7 @@
 #define PROPERTY_CAN_BE_DAMAGED					CONSTLIT("canBeDamaged")
 #define PROPERTY_CAN_BE_DISABLED				CONSTLIT("canBeDisabled")
 #define PROPERTY_CAN_BE_DISRUPTED				CONSTLIT("canBeDisrupted")
+#define PROPERTY_CAN_TARGET_MISSILES			CONSTLIT("canTargetMissiles")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_DEVICE_SLOTS					CONSTLIT("deviceSlots")
@@ -479,6 +480,8 @@ ICCItem *CDeviceClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
         return (pDevice ? CC.CreateBool(pDevice->CanBeDisabled(Ctx)) : CC.CreateBool(CanBeDisabled(Ctx)));
 	else if (strEquals(sName, PROPERTY_CAN_BE_DISRUPTED))
 		return (pDevice ? CC.CreateBool(pDevice->CanBeDisrupted()) : CC.CreateBool(CanBeDisrupted()));
+	else if (strEquals(sName, PROPERTY_CAN_TARGET_MISSILES))
+		return (pDevice ? CC.CreateBool(pDevice->CanTargetMissiles()) : CC.CreateNil());
     else if (strEquals(sName, PROPERTY_CAPACITOR))
         {
         CSpaceObject *pSource = Ctx.GetSource();

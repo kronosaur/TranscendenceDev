@@ -748,7 +748,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
 
 //	GetNearestTargets
 //
@@ -771,6 +771,11 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 		DWORD dwFlags = 0;
 		if (m_AICtx.IsAggressor())
 			dwFlags |= FLAG_INCLUDE_NON_AGGRESSORS;
+
+		//  Include missiles if appropriate
+
+		if (bTargetMissiles)
+			dwFlags |= FLAG_INCLUDE_MISSILES;
 
 		//	First build a list of the nearest enemy ships within
 		//	range of the ship.

@@ -74,6 +74,7 @@
 #define SPEED_ATTRIB							CONSTLIT("speed")
 #define STEALTH_ATTRIB							CONSTLIT("stealth")
 #define TARGET_REQUIRED_ATTRIB					CONSTLIT("targetRequired")
+#define TARGETABLE_ATTRIB						CONSTLIT("targetable")
 #define TRAIL_ATTRIB							CONSTLIT("trail")
 #define FIRE_TYPE_ATTRIB						CONSTLIT("type")
 #define VAPOR_TRAIL_ATTRIB						CONSTLIT("vaporTrail")
@@ -1579,6 +1580,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_fNoStationHits = false;
 	m_fNoImmobileHits = false;
 	m_fNoShipHits = false;
+	m_fTargetable = false;
 
 	//	Load missile speed
 
@@ -2229,6 +2231,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		if (error = m_Events.InitFromXML(Ctx, pEventsDesc))
 			return error;
 		}
+
+	//  Targetability
+
+	m_fTargetable = pDesc->GetAttributeBool(TARGETABLE_ATTRIB);
 
 	return NOERROR;
 	}

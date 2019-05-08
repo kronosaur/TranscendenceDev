@@ -8,6 +8,7 @@
 #define DEVICE_ID_ATTRIB						CONSTLIT("deviceID")
 #define ITEM_ATTRIB								CONSTLIT("item")
 
+#define PROPERTY_CAN_TARGET_MISSILES			CONSTLIT("canTargetMissiles")
 #define PROPERTY_CAPACITOR      				CONSTLIT("capacitor")
 #define PROPERTY_CYCLE_FIRE 					CONSTLIT("cycleFire")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
@@ -60,7 +61,8 @@ CInstalledDevice::CInstalledDevice (void) :
 		m_fLinkedFireSelected(false),
 		m_fLinkedFireNever(false),
 		m_fLinkedFireSelectedVariants(false),
-		m_fCycleFire(false)
+		m_fCycleFire(false),
+		m_fCanTargetMissiles(false)
 	{
 	}
 
@@ -771,6 +773,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	m_fLinkedFireNever =	((dwLoad & 0x00400000) ? true : false);
 	m_fLinkedFireSelectedVariants = ((dwLoad & 0x00800000) ? true : false);
 	m_fCycleFire =		((dwLoad & 0x01000000) ? true : false);
+	m_fCanTargetMissiles =	((dwLoad & 0x02000000) ? true : false);
 
 	//	Previous versions did not save this flag
 
@@ -1010,7 +1013,15 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	//	Figure out what to set
 
-    if (strEquals(sName, PROPERTY_CAPACITOR))
+	if (strEquals(sName, PROPERTY_CAN_TARGET_MISSILES))
+		{
+		if (pValue == NULL || !pValue->IsNil())
+			SetCanTargetMissiles(true);
+		else
+			SetCanTargetMissiles(false);
+		}
+
+    else if (strEquals(sName, PROPERTY_CAPACITOR))
         {
         CSpaceObject *pSource = Ctx.GetSource();
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
@@ -1375,6 +1386,7 @@ void CInstalledDevice::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fLinkedFireNever ?		0x00400000 : 0);
 	dwSave |= (m_fLinkedFireSelectedVariants ? 0x00800000 : 0);
 	dwSave |= (m_fCycleFire ?			0x01000000 : 0);
+	dwSave |= (m_fCanTargetMissiles ?	0x02000000 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	CItemEnhancementStack::WriteToStream(m_pEnhancements, pStream);

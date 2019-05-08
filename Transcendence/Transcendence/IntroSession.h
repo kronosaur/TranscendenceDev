@@ -165,7 +165,7 @@ class CIntroShipController : public IShipController
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const override { return m_pDelegate->GetTarget(ItemCtx, dwFlags); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(TargetingCtx, ItemCtx, retpTarget, retiFireSolution); }
+		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles = false) override { m_pDelegate->GetWeaponTarget(TargetingCtx, ItemCtx, retpTarget, retiFireSolution); }
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }

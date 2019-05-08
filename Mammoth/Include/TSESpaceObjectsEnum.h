@@ -223,17 +223,20 @@ class CVisibleEnemyObjSelector
 		inline bool MatchesCategory (CSpaceObject *pObj) const
 			{
 			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation));
+						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
 			}
 
 		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		inline void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
 		CSpaceObject *m_pSource = NULL;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
+		bool m_bIncludeMissiles = false;
 	};
 
 //	CVisibleAggressorObjSelector
@@ -270,11 +273,13 @@ class CVisibleAggressorObjSelector
 		inline bool MatchesCategory (CSpaceObject *pObj) const
 			{
 			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation));
+						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
 			}
 
 		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		inline void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
@@ -282,6 +287,7 @@ class CVisibleAggressorObjSelector
 		CSpaceObject *m_pExcludeObj = NULL;
 		int m_iAggressorThreshold = -1;
 		bool m_bIncludeStations = false;
+		bool m_bIncludeMissiles = false;
 	};
 
 //	CVisibleObjSelector
@@ -314,17 +320,20 @@ class CVisibleObjSelector
 		inline bool MatchesCategory (CSpaceObject *pObj) const
 			{
 			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation));
+						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
 			}
 
 		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		inline void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
 		CSpaceObject *m_pSource = NULL;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
+		bool m_bIncludeMissiles = false;
 	};
 
 class CSpaceObjectEnum

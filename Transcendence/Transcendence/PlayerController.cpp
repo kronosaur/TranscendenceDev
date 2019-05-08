@@ -632,7 +632,7 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
 
 //	GetNearestTargets
 //
@@ -657,12 +657,14 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	Get other targets
 
+		DWORD dwFlags = bTargetMissiles ? (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS | FLAG_INCLUDE_MISSILES)
+			: (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
 		int iMaxTargets = 10;
 		m_pShip->GetNearestVisibleEnemies(iMaxTargets,
 				MAX_AUTO_TARGET_DISTANCE,
 				&TargetingCtx.Targets,
 				pMainTarget,
-				FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
+				dwFlags);
 
 		TargetingCtx.bRecalcTargets = false;
 		}

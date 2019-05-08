@@ -477,6 +477,7 @@ class CInstalledDevice
 		//	properties of the device class
 
 		inline bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
+		inline bool CanTargetMissiles (void) const { return m_fCanTargetMissiles; }
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
 		inline bool GetCycleFireSettings (void) const { return m_fCycleFire; }
 		inline DWORD GetData (void) const { return m_dwData; }
@@ -520,6 +521,7 @@ class CInstalledDevice
 		inline bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		inline bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		inline void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		inline void SetCanTargetMissiles (bool bCanTargetMissiles) { m_fCanTargetMissiles = bCanTargetMissiles; }
 		inline void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
@@ -691,5 +693,7 @@ class CInstalledDevice
 		DWORD m_fLinkedFireSelectedVariants : 1;//  If TRUE, lkfSelectedVariant
 		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
-		DWORD m_dwSpare2:8;
+		DWORD m_fCanTargetMissiles:1;			//	If TRUE, then this weapon can fire at hostile missiles as well as ships
+
+		DWORD m_dwSpare2:7;
 	};
