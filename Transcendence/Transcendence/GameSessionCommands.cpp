@@ -184,6 +184,8 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetThrust(true);
+				pPlayer->SetUIMessageEnabled(uimsgMouseManeuverHint, false);
+				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
 				}
 			break;
 
@@ -193,6 +195,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetManeuver(RotateLeft);
+				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
 				}
 			break;
 
@@ -202,6 +205,7 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				{
 				g_pTrans->Autopilot(false);
 				pPlayer->SetManeuver(RotateRight);
+				pPlayer->SetUIMessageEnabled(uimsgKeyboardManeuverHint, false);
 				}
 			break;
 

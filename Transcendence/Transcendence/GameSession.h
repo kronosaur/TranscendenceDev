@@ -75,8 +75,9 @@ class CGameSession : public IHISession
         CGalacticMapSession::SOptions &GetGalacticMapSettings (void) { return m_GalacticMapSettings; }
 		CGameSettings &GetGameSettings (void) { return m_Settings; }
 		IPlayerController::EUIMode GetUIMode (void) const;
-		inline bool InMenu (void) { return (m_CurrentMenu != menuNone); }
-        inline bool InSystemMap (void) const { return m_bShowingSystemMap; }
+		bool InMenu (void) { return (m_CurrentMenu != menuNone); }
+        bool InSystemMap (void) const { return m_bShowingSystemMap; }
+        bool IsMouseAimEnabled (void) const { return m_bMouseAim; }
 		void PaintInfoText (CG32bitImage &Dest, const CString &sTitle, const TArray<CString> &Body, bool bAboveTargeting = true);
 		void PaintSoundtrackTitles (CG32bitImage &Dest);
 
@@ -84,7 +85,6 @@ class CGameSession : public IHISession
 		void DismissMenu (void);
 		void HideMenu (void);
 		void InitUI (void);
-        inline bool IsMouseAimEnabled (void) const { return m_bMouseAim; }
 		void PaintSRS (CG32bitImage &Screen);
         void SetMouseAimEnabled (bool bEnabled = true);
 		bool ShowMenu (EMenuTypes iMenu);

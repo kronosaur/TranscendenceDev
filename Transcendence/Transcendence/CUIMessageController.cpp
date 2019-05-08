@@ -1,6 +1,7 @@
 //	CUIMessageController.cpp
 //
 //	CUIMessageController class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "Transcendence.h"
@@ -16,20 +17,22 @@ struct SUIMessageData
 
 static SUIMessageData g_MessageData[uimsgCount] =
 	{
-		{	CONSTDEF("allMessages"),		0,	},
-		{	CONSTDEF("allHints"),			0,	},
+		{	CONSTDEF("allMessages"),			0,	},
+		{	CONSTDEF("allHints"),				0,	},
 
-		{	CONSTDEF("commsHint"),			FLAG_IS_HINT,	},
-		{	CONSTDEF("dockHint"),			FLAG_IS_HINT,	},
-		{	CONSTDEF("mapHint"),			FLAG_IS_HINT,	},
-		{	CONSTDEF("autopilotHint"),		FLAG_IS_HINT,	},
-		{	CONSTDEF("gateHint"),			FLAG_IS_HINT,	},
-		{	CONSTDEF("useItemHint"),		FLAG_IS_HINT,	},
-		{	CONSTDEF("refuelHint"),			FLAG_IS_HINT,	},
-		{	CONSTDEF("enableDeviceHint"),	FLAG_IS_HINT,	},
-		{	CONSTDEF("switchMissileHint"),	FLAG_IS_HINT,	},
-		{	CONSTDEF("fireMissileHint"),	FLAG_IS_HINT,	},
-		{	CONSTDEF("galacticMapHint"),	FLAG_IS_HINT,	},
+		{	CONSTDEF("commsHint"),				FLAG_IS_HINT,	},
+		{	CONSTDEF("dockHint"),				FLAG_IS_HINT,	},
+		{	CONSTDEF("mapHint"),				FLAG_IS_HINT,	},
+		{	CONSTDEF("autopilotHint"),			FLAG_IS_HINT,	},
+		{	CONSTDEF("gateHint"),				FLAG_IS_HINT,	},
+		{	CONSTDEF("useItemHint"),			FLAG_IS_HINT,	},
+		{	CONSTDEF("refuelHint"),				FLAG_IS_HINT,	},
+		{	CONSTDEF("enableDeviceHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("switchMissileHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("fireMissileHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("galacticMapHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("mouseManeuverHint"),		FLAG_IS_HINT,	},
+		{	CONSTDEF("keyboardManeuverHint"),	FLAG_IS_HINT,	},
 	};
 
 CUIMessageController::CUIMessageController (void)
@@ -85,7 +88,7 @@ void CUIMessageController::ReadFromStream (SLoadCtx &Ctx)
 	//	Read the number of bytes stored
 
 	DWORD dwLoad;
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 
 	//	Load the array of bytes
 	//	(We assume it is DWORD aligned)
@@ -185,7 +188,7 @@ void CUIMessageController::WriteToStream (IWriteStream *pStream)
 	//	Write the count of messages
 
 	DWORD dwSave = uimsgCount;
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 
 	//	Create an array with a byte for each message state
 	//	(We make sure that it is DWORD aligned)

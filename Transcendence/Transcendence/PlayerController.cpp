@@ -2905,6 +2905,25 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 	bool bEnemiesInRange = m_pShip->IsEnemyInRange(MAX_IN_COMBAT_RANGE, true);
 
+	//	If mouse aim is enabled and player has never thrusted, tell them about
+	//	right-mouse click.
+
+	if (m_UIMsgs.IsEnabled(uimsgMouseManeuverHint)
+			&& m_pSession->IsMouseAimEnabled())
+		{
+		m_pTrans->DisplayMessage(CONSTLIT("(click [Right-Button] to thrust forward)"));
+		m_iLastHelpTick = iTick;
+		return;
+		}
+
+	if (m_UIMsgs.IsEnabled(uimsgKeyboardManeuverHint)
+			&& !m_pSession->IsMouseAimEnabled())
+		{
+		m_pTrans->DisplayMessage(CONSTLIT("(press [Up Arrow] to thrust forward)"));
+		m_iLastHelpTick = iTick;
+		return;
+		}
+
 	//	If we've never docked and we're near a dockable station, then tell
 	//	the player about docking.
 

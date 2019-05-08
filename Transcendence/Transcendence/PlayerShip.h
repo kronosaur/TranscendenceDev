@@ -31,8 +31,10 @@ enum UIMessageTypes
 	uimsgSwitchMissileHint =		10,
 	uimsgFireMissileHint =			11,
 	uimsgGalacticMapHint =			12,
+	uimsgMouseManeuverHint =		13,
+	uimsgKeyboardManeuverHint =		14,
 
-	uimsgCount =					13,
+	uimsgCount =					15,
 	};
 
 class CUIMessageController
