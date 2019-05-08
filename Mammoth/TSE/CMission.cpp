@@ -208,7 +208,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we cannot encounter this mission, then we fail
 
-	if (!pType->CanBeCreated(pOwner, pCreateData))
+	if (!pType->CanBeCreated(Universe.GetMissions(), pOwner, pCreateData))
 		return ERR_NOTFOUND;
 
 	//	Create the new object

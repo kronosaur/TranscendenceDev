@@ -151,6 +151,7 @@ class CMissionList
 
 		~CMissionList (void) { DeleteAll(); }
 
+		bool CanCreateMissionInArc (const CString &sArc, int iSequence) const;
 		void Delete (int iIndex);
 		void Delete (CMission *pMission);
 		void DeleteAll (void);

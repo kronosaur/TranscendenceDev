@@ -8,6 +8,7 @@
 	<!ENTITY unidItemUnitTests			"0xA0010003">
 	<!ENTITY unidRPGUnitTests			"0xA0010004">
 	<!ENTITY unidTopologyTests			"0xA0010005">
+	<!ENTITY unidMissionUnitTests		"0xA0010006">
 
 	<!-- 0040-007F TEST ITEMS -->
 
@@ -22,6 +23,15 @@
 	<!ENTITY unidMathTests				"0xA0010082">
 	<!ENTITY unidCCStringTests			"0xA0010083">
 	<!ENTITY unidCCLogicalOperators		"0xA0010084">
+
+	<!-- 00C0-00FF TEST MISSIONS -->
+
+	<!ENTITY msTestMission01			"0xA00100C0">
+	<!ENTITY msTestMission02			"0xA00100C1">
+	<!ENTITY msTestMission03			"0xA00100C2">
+	<!ENTITY msTestMissionArc01			"0xA00100C3">
+	<!ENTITY msTestMissionArc02			"0xA00100C4">
+	<!ENTITY msTestMissionArc03			"0xA00100C5">
 
 	<!-- OTHER -->
 
@@ -44,8 +54,10 @@
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
+	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
 	<Module filename="TestItems.xml"/>
+	<Module filename="TestMissions.xml"/>
 	<Module filename="TopologyTests.xml"/>
 
 <!-- DIAGNOSTICS -->

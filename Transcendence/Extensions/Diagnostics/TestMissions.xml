@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<MissionType unid="&msTestMission01;"
+			name=						"Test Mission 01"
+			attributes=					"testMission"
+
+			level=						"1"
+			priority=					"10"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+	<MissionType unid="&msTestMission02;"
+			name=						"Test Mission 02"
+			attributes=					"testMission"
+
+			level=						"1-3"
+			priority=					"5"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+	<MissionType unid="&msTestMission03;"
+			name=						"Test Mission 03"
+			attributes=					"testMission"
+
+			level=						"2-4"
+			priority=					"1"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+	<MissionType unid="&msTestMissionArc01;"
+			name=						"Test Mission Arc 01"
+			attributes=					"testMission, testMissionArc"
+
+			level=						"1"
+			maxAppearing=				"1"
+			missionArc=					"testMissionArc:1"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+	<MissionType unid="&msTestMissionArc02;"
+			name=						"Test Mission Arc 02"
+			attributes=					"testMission, testMissionArc"
+
+			level=						"1"
+			maxAppearing=				"1"
+			missionArc=					"testMissionArc:2"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+	<MissionType unid="&msTestMissionArc03;"
+			name=						"Test Mission Arc 03"
+			attributes=					"testMission, testMissionArc"
+
+			level=						"1"
+			maxAppearing=				"1"
+			missionArc=					"testMissionArc:3"
+			>
+
+		<Events>
+
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+			</CanCreate>
+
+			<OnCreate>
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<OnAccepted>
+			</OnAccepted>
+
+			<OnAcceptedUndock>
+			</OnAcceptedUndock>
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+			</OnSetPlayerTarget>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+			</OnReward>
+
+			<!-- MORE -->
+
+			<GetGlobalRumors>
+			</GetGlobalRumors>
+		</Events>
+
+		<Language>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

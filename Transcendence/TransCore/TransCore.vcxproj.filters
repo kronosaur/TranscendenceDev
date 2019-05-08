@@ -819,5 +819,11 @@
     <Xml Include="OreStone.xml">
       <Filter>Transcendence Galaxy Library</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TestMissions.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

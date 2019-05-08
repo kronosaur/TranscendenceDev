@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidMissionUnitTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Find a station to give us a mission
+
+					(setq gSource (sysFindObject gPlayerShip "TFN +populated;"))
+					(if (not gSource)
+						(error "Unable to find mission giver station.")
+						)
+
+					;	Unit Tests for Missions --------------------------------
+
+					(diagEval (list
+
+						;	Criteria selects Test Mission 01 to 03, but Mission 03 is 
+						;	only for level 2 and above; Mission 01 has a higher 
+						;	priority, so it always gets selected.
+
+						{	test:'(msnGetProperty 
+								(rpgMissionGetAssignment {
+									missionCriteria:"n +testMission; -testMissionArc;"
+									})
+								'type
+								)															result:&msTestMission01;	}
+
+						{	test:'(enum (msnFind "*") theMission (msnDestroy theMission))	result:'ignore	}
+
+						;	The only mission that matches this criteria is Mission 03,
+						;	but that mission cannot be created in Eridani (level 1 system)
+						;	so this returns Nil.
+
+						{	test:'(msnGetProperty 
+								(rpgMissionGetAssignment {
+									missionCriteria:"n +testMission; -testMissionArc; L:4-6;"
+									})
+								'type
+								)															result:Nil	}
+
+						{	test:'(enum (msnFind "*") theMission (msnDestroy theMission))	result:'ignore	}
+
+						;	When creating a mission for a mission arc, only the first 
+						;	mission (in sequence) will be available.
+
+						{	test:'(msnGetProperty 
+								(rpgMissionGetAssignment {
+									missionCriteria:"n +testMissionArc;"
+									})
+								'type
+								)															result:&msTestMissionArc01;	}
+						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					(setq gSource Nil)
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

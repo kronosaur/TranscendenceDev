@@ -180,8 +180,10 @@
     <Xml Include="..\Extensions\Diagnostics\DockScreenTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\FunctionTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\ItemUnitTests.xml" />
+    <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
+    <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
     <Xml Include="..\Extensions\Diagnostics\TopologyTests.xml" />
     <Xml Include="Abbasid.xml" />
     <Xml Include="Analyzers.xml" />

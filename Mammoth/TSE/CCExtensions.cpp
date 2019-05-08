@@ -8935,13 +8935,14 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	See if we can create the mission
 
-			return pCC->CreateBool(pType->CanBeCreated(pOwner, pData));
+			return pCC->CreateBool(pType->CanBeCreated(pCtx->GetUniverse().GetMissions(), pOwner, pData));
 			}
 
 		case FN_MISSION_CREATE:
 			{
 			//	Get the list of mission types, categorized by priority
 
+			TSortMap<CString, int> LowestSequence;
 			TSortMap<int, TArray<CMissionType *>> MissionsByPriority(DescendingSort);
 			ICCItem *pList = pArgs->GetElement(0);
 			for (i = 0; i < pList->GetCount(); i++)
@@ -8954,6 +8955,17 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 				TArray<CMissionType *> *pCategory = MissionsByPriority.SetAt(pType->GetPriority());
 				pCategory->Insert(pType);
+
+				//	If this is part of an arc, keep track of the lowest sequence
+				//	number (which should go first).
+
+				if (!pType->GetArc().IsBlank())
+					{
+					bool bNew;
+					int *pLowest = LowestSequence.SetAt(pType->GetArc(), &bNew);
+					if (bNew || pType->GetArcSequence() < *pLowest)
+						*pLowest = pType->GetArcSequence();
+					}
 				}
 
 			//	Now generate a properly ordered list by priority (but randomized within
@@ -8969,7 +8981,19 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				//	Add in order
 
 				for (j = 0; j < MissionsByPriority[i].GetCount(); j++)
-					Missions.Insert(MissionsByPriority[i][j]);
+					{
+					CMissionType *pType = MissionsByPriority[i][j];
+
+					//	Skip missions that are not the lowest sequence.
+
+					if (!pType->GetArc().IsBlank() 
+							&& *LowestSequence.GetAt(pType->GetArc()) != pType->GetArcSequence())
+						continue;
+						
+					//	Add to the list.
+
+					Missions.Insert(pType);
+					}
 				}
 
 			//	Get arguments

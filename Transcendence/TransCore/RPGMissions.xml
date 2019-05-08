@@ -1010,8 +1010,7 @@
 								(gr nextMissionTime (unvGetTick)))
 							Nil
 
-						;	Make a list of available missions. We filter out any missions
-						;	that are outside our system level. If we can't find anything, then we've got nothing.
+						;	Make a list of available missions.
 						(not (setq newMissions (typFind (cat (@ options 'missionCriteria) " -special;"))))
 							Nil
 

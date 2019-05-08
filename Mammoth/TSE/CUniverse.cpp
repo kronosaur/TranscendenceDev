@@ -290,12 +290,11 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 
 	{
 	ALERROR error;
-	int i;
 
 	//	Loop until we create a valid mission (we assume that Types has been 
 	//	shuffled).
 
-	for (i = 0; i < Types.GetCount(); i++)
+	for (int i = 0; i < Types.GetCount(); i++)
 		{
 		//	Create a random mission. If successfull, return.
 

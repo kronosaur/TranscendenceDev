@@ -5,6 +5,8 @@
 
 #pragma once
 
+class CMissionList;
+
 class CMissionType : public CDesignType
 	{
 	public:
@@ -17,25 +19,27 @@ class CMissionType : public CDesignType
 			evtCount					= 1,
 			};
 
-		inline bool CanBeCreated (CSpaceObject *pOwner, ICCItem *pCreateData) const { return (CanBeEncountered() && FireCanCreate(pOwner, pCreateData)); }
-		inline bool CanBeDeclined (void) const { return !m_fNoDecline; }
-		inline bool CanBeDeleted (void) const { return m_fAllowDelete; }
-		inline bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
-		inline bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
-		inline bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
-		inline bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
-		inline bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
-		inline bool FindCachedEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { return m_CachedEvents.FindEventHandler(iEvent, retEvent); }
-		inline bool ForceUndockAfterDebrief (void) const { return m_fForceUndockAfterDebrief; }
-		inline const CString &GetName (void) const { return m_sName; }
-		inline int GetExpireTime (void) const { return m_iExpireTime; }
-		inline int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
-		inline int GetPriority (void) const { return m_iPriority; }
-		inline bool HasDebrief (void) const { return !m_fNoDebrief; }
-		inline void IncAccepted (void) { m_iAccepted++; }
-		inline bool KeepsStats (void) const { return !m_fNoStats; }
-		inline void OnMissionCreated (void) { m_iExisting++; }
-		inline void OnMissionDestroyed (void) { m_iExisting--; }
+		bool CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const;
+		bool CanBeDeclined (void) const { return !m_fNoDecline; }
+		bool CanBeDeleted (void) const { return m_fAllowDelete; }
+		bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
+		bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
+		bool CloseIfOutOfSystem (void) const { return m_fCloseIfOutOfSystem; }
+		bool FailureWhenOwnerDestroyed (void) const { return !m_fNoFailureOnOwnerDestroyed; }
+		bool FailureWhenOutOfSystem (void) const { return (m_iFailIfOutOfSystem != -1); }
+		bool FindCachedEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const { return m_CachedEvents.FindEventHandler(iEvent, retEvent); }
+		bool ForceUndockAfterDebrief (void) const { return m_fForceUndockAfterDebrief; }
+		const CString &GetArc (void) const { return m_sArc; }
+		int GetArcSequence (void) const { return m_iArcSequence; }
+		const CString &GetName (void) const { return m_sName; }
+		int GetExpireTime (void) const { return m_iExpireTime; }
+		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
+		int GetPriority (void) const { return m_iPriority; }
+		bool HasDebrief (void) const { return !m_fNoDebrief; }
+		void IncAccepted (void) { m_iAccepted++; }
+		bool KeepsStats (void) const { return !m_fNoStats; }
+		void OnMissionCreated (void) { m_iExisting++; }
+		void OnMissionDestroyed (void) { m_iExisting--; }
 
 		//	CDesignType overrides
 
@@ -56,10 +60,13 @@ class CMissionType : public CDesignType
 
 	private:
 		bool FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const;
+		static bool ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, CString *retsArc = NULL, int *retiSequence = NULL, CString *retsError = NULL);
 
 		//	Basic properties
 
 		CString m_sName;					//	Internal name
+		CString m_sArc;						//	For related missions
+		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
 		int m_iPriority;					//	Relative priority (default = 1)
 
 		//	Mission creation

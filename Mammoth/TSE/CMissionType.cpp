@@ -12,6 +12,7 @@
 #define FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB		CONSTLIT("forceUndockAfterDebrief")
 #define LEVEL_ATTRIB							CONSTLIT("level")
 #define MAX_APPEARING_ATTRIB					CONSTLIT("maxAppearing")
+#define MISSION_ARC_ATTRIB						CONSTLIT("missionArc")
 #define NAME_ATTRIB								CONSTLIT("name")
 #define NO_DEBRIEF_ATTRIB						CONSTLIT("noDebrief")
 #define NO_DECLINE_ATTRIB						CONSTLIT("noDecline")
@@ -39,6 +40,31 @@ static char *CACHED_EVENTS[CMissionType::evtCount] =
 	{
 	"CanCreate",
 	};
+
+bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const
+
+//	CanBeCreated
+//
+//	Returns TRUE if we can create this mission.
+
+	{
+	if (!CanBeEncountered())
+		return false;
+
+	//	If this is part of a mission arc, then see if we can create it.
+
+	TArray<CMission *> MissionArc;
+	if (!m_sArc.IsBlank() 
+			&& !AllMissions.CanCreateMissionInArc(m_sArc, m_iArcSequence))
+		return false;
+
+	//	Fire <CanCreate>
+
+	if (!FireCanCreate(pOwner, pCreateData))
+		return false;
+
+	return true;
+	}
 
 bool CMissionType::FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const
 
@@ -115,6 +141,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	{
 	ALERROR error;
+	CString sError;
 
 	m_sName = pDesc->GetAttribute(NAME_ATTRIB);
 	m_iPriority = pDesc->GetAttributeIntegerBounded(PRIORITY_ATTRIB, 0, -1, 1);
@@ -131,6 +158,12 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
 
 	CString sAttrib;
+	if (pDesc->FindAttribute(MISSION_ARC_ATTRIB, &sAttrib))
+		{
+		if (!ParseMissionArc(Ctx, sAttrib, &m_sArc, &m_iArcSequence, &sError))
+			return ERR_FAIL;
+		}
+
 	if (pDesc->FindAttribute(MAX_APPEARING_ATTRIB, &sAttrib))
 		{
 		if (error = m_MaxAppearing.LoadFromXML(sAttrib))
@@ -256,4 +289,39 @@ void CMissionType::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_iMaxAppearing);
 	pStream->Write(m_iAccepted);
 	pStream->Write(m_iExisting);
+	}
+
+bool CMissionType::ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, CString *retsArc, int *retiSequence, CString *retsError)
+
+//	ParseMissionArc
+//
+//	Parses an returns a mission arc and sequence.
+
+	{
+	if (sValue.IsBlank())
+		{
+		if (retsArc) *retsArc = NULL_STR;
+		if (retiSequence) *retiSequence = -1;
+		return true;
+		}
+
+	char *pPos = sValue.GetASCIIZPointer();
+	char *pStart = pPos;
+	while (*pPos != ':' && *pPos != '\0')
+		pPos++;
+
+	if (retsArc)
+		*retsArc = CString(pStart, (pPos - pStart));
+
+	if (*pPos == '\0')
+		{
+		if (retiSequence) *retiSequence = -1;
+		return true;
+		}
+
+	pPos++;
+	if (retiSequence)
+		*retiSequence = strParseInt(pPos, -1);
+
+	return true;
 	}

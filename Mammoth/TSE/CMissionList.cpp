@@ -5,6 +5,52 @@
 
 #include "PreComp.h"
 
+bool CMissionList::CanCreateMissionInArc (const CString &sArc, int iSequence) const
+
+//	CreateCreateMissionInArc
+//
+//	Returns TRUE if we can create a mission in the given arc at the given 
+//	sequence.
+
+	{
+	//	If we don't have a sequence number, then we can always create the 
+	//	mission.
+
+	if (iSequence < 0 || sArc.IsBlank())
+		return true;
+
+	//	Check to see if we can create the given mission by looking at the 
+	//	current and closed missions.
+
+	for (int i = 0; i < m_List.GetCount(); i++)
+		{
+		const CMission &Mission = *m_List[i];
+		const CMissionType &MissionType = *CMissionType::AsType(Mission.GetType());
+		if (!strEquals(sArc, MissionType.GetArc()))
+			continue;
+
+		//	If we've got an open or active mission, then we can't create a new
+		//	mission in the same arc.
+
+		if (Mission.IsActive() || Mission.IsOpen())
+			return false;
+
+		//	If we've got a completed mission with a higher sequence number, then
+		//	we cannot create this mission.
+		//
+		//	Even if we've got a mission with the same sequence number, we skip,
+		//	because this is how we handle mutually-exclusive missions in a 
+		//	single arc.
+
+		else if (MissionType.GetArcSequence() >= iSequence)
+			return false;
+		}
+
+	//	If we get this far then we can create a mission.
+
+	return true;
+	}
+
 void CMissionList::Delete (int iIndex)
 
 //	Delete
@@ -102,6 +148,10 @@ void CMissionList::Insert (CMission *pMission)
 //	Insert a new mission
 
 	{
+	ASSERT(pMission);
+	if (pMission == NULL)
+		return;
+
 	m_List.Insert(pMission);
 	}
 
