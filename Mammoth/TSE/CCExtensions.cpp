@@ -1888,6 +1888,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'sovereign\n"
 			"   'suspended\n"
 			"   'stealth\n"
+			"   'type\n"
 			"   'underAttack\n"
 			"\n"
 			"property (ships)\n\n"

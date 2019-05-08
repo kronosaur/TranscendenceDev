@@ -131,6 +131,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_SUSPENDED						CONSTLIT("suspended")
+#define PROPERTY_TYPE							CONSTLIT("type")
 #define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
 
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
@@ -4390,6 +4391,14 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SUSPENDED))
 		return CC.CreateBool(IsSuspended());
+
+	else if (strEquals(sName, PROPERTY_TYPE))
+		{
+		if (CDesignType *pType = GetType())
+			return CC.CreateInteger(pType->GetUNID());
+		else
+			return CC.CreateNil();
+		}
 
 	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
 		return CC.CreateBool(IsUnderAttack());
