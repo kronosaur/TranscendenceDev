@@ -185,7 +185,7 @@
 			name=				"Defend Agricultural Station"
 			attributes=			"commonwealthAgricultural, deliveryMission"
 
-			level=				"1-4"
+			level=				"1-5"
 
 			maxAppearing=		"1"
 			noDebrief=			"true"

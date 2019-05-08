@@ -575,7 +575,7 @@
 			name=				"Rescue Mining Ship"
 			attributes=			"commonwealthMining"
 
-			level=				"1-4"
+			level=				"1-5"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
@@ -883,7 +883,7 @@
 			name=				"Destroy Illegal Miners"
 			attributes=			"commonwealthMining"
 
-			level=				"1-4"
+			level=				"1-5"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"

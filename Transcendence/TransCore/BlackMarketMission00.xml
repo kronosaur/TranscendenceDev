@@ -13,7 +13,7 @@
 			name=				"Black Market Hotel Encounter"
 			attributes=			"corporateHotel"
 
-			level=				"1-4"
+			level=				"1-10"
 				 
 			maxAppearing=		"1"
 			noDebrief=			"true"

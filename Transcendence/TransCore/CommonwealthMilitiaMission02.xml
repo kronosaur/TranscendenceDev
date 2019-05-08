@@ -18,7 +18,7 @@
 			name=			"Destroy Convoy"
 			attributes=		"commonwealthMilitia, rank1"
 
-			level=			"1-7"
+			level=			"3-7"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="1800"

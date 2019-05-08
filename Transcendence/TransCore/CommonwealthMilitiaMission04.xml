@@ -17,7 +17,7 @@
 			name=			"Escort Super Freighter"
 			attributes=		"commonwealthMilitia, rank2"
 
-			level=			"1-7"
+			level=			"4-7"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"

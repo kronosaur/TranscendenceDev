@@ -23,7 +23,7 @@
 			name=						"Destroy Threat to Commonwealth Habitat"
 			attributes=					"commonwealth, commonwealthHabitat"
 
-			level=						"1-4"
+			level=						"1-10"
 			scope=						"system"
 			priority=					"1"
 			maxAppearing=				"-1"

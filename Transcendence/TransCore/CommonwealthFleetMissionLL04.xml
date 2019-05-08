@@ -17,7 +17,7 @@
 
 			expireTime=		"1800"
 			noStats=		"true"
-			level=			"9"
+			level=			"8-10"
 			priority=		"100"
 			>
 
@@ -74,7 +74,7 @@
 			name=			"Lamplighter testing"
 			attributes=		"commonwealthFleet, cscTerra, rank5, rank6, paneInitMission, lamplighter"
 
-			level=			"9"
+			level=			"8-10"
 			maxAppearing=	"1"
 			>
 

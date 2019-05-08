@@ -12,7 +12,7 @@
 			name=				"Meet Stormhound"
 			attributes=			"benedictStoryArc, commonwealthColony"
 
-			level=				"2-3"
+			level=				"1-4"
 			maxAppearing=		"1"
 			priority=			"100"
 

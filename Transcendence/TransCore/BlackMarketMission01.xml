@@ -15,7 +15,7 @@
 			name=				"Black Market Delivery"
 			attributes=			"paneInitMission, blackMarket"
 
-			level=				"1-4"
+			level=				"2-6"
 				 
 			maxAppearing=		"1"
 			noDebrief=			"true"

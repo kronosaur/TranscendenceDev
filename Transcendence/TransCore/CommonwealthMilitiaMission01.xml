@@ -16,7 +16,7 @@
 			name=			"Patrol Orbital Lanes"
 			attributes=		"commonwealthMilitia, rank0"
 
-			level=			"1-7"
+			level=			"2-7"
 
 			expireTime=			"5400"
 			failureAfterOutOfSystem="5400"
