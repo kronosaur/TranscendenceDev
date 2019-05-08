@@ -294,12 +294,23 @@ ALERROR CUniverse::CreateRandomMission (const TArray<CMissionType *> &Types, CSp
 	{
 	ALERROR error;
 
+	int iSystemLevel = (m_pCurrentSystem ? m_pCurrentSystem->GetLevel() : 1);
+
 	//	Loop until we create a valid mission (we assume that Types has been 
 	//	shuffled).
 
 	for (int i = 0; i < Types.GetCount(); i++)
 		{
-		//	Create a random mission. If successfull, return.
+		//	Skip if this mission is not appropriate for this system level. We do
+		//	this here (instead of inside CMissionType::CanBeCreated) becaseu we
+		//	want explicitly created missions to not have a system restriction.
+
+		int iMinLevel, iMaxLevel;
+		Types[i]->GetLevel(&iMinLevel, &iMaxLevel);
+		if (iSystemLevel < iMinLevel || iSystemLevel > iMaxLevel)
+			continue;
+
+		//	Create a random mission. If successful, return.
 
 		if (error = CreateMission(Types[i], pOwner, pCreateData, retpMission, retsError))
 			{

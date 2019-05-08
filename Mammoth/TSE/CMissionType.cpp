@@ -46,16 +46,13 @@ bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *
 //	CanBeCreated
 //
 //	Returns TRUE if we can create this mission.
+//
+//	NOTE: We don't check to see if the mission is appropriate to the system 
+//	level here because we want to allow explicitly created missions. Instead
+//	we check for system level inside CUniverse::CreateRandomMission.
 
 	{
 	if (!CanBeEncountered())
-		return false;
-
-	//	See if we're valid for the current system level.
-
-	CSystem *pSystem = GetUniverse().GetCurrentSystem();
-	int iSystemLevel = (pSystem ? pSystem->GetLevel() : 1);
-	if (iSystemLevel < m_iMinLevel || iSystemLevel > m_iMaxLevel)
 		return false;
 
 	//	If this is part of a mission arc, then see if we can create it.
