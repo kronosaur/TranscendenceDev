@@ -30,6 +30,8 @@ const int MAX_THREAD_COUNT =					16;
 #define SPECIAL_ATTRIB_NEAR_STATIONS	CONSTLIT("nearStations")
 #define SPECIAL_ATTRIB_OUTER_SYSTEM		CONSTLIT("outerSystem")
 
+#define SEPARATION_CRITERIA						CONSTLIT("sTA")
+
 int g_iGateTimer = 0;
 int g_iGateTimerTick = -1;
 int g_cxStarField = -1;
@@ -525,6 +527,85 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 	//	Done
 
 	return iWeight;
+	}
+
+CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase) const
+
+//	CalcRandomEncounterPos
+//
+//	Generates a random position for an encounter attacking the given target.
+//
+//	LATER: Use pEncounterBase to come up with a random position near the line
+//	between the target and the base.
+
+	{
+	static constexpr Metric MIN_SEPARATION =			20.0 * LIGHT_SECOND;
+	static constexpr Metric MIN_PLAYER_SEPARATION =		100.0 * LIGHT_SECOND;
+	static constexpr Metric MIN_PLAYER_SEPARATION2 =	MIN_PLAYER_SEPARATION * MIN_PLAYER_SEPARATION;
+
+	CVector vPos;
+
+	CSpaceObject *pPlayer = GetPlayerShip();
+	Metric rPlayerDist = (pPlayer && pPlayer != &TargetObj ? pPlayer->GetDistance(&TargetObj) : 0.0);
+	Metric rSeparation = Min(0.5 * rDistance, MIN_SEPARATION);
+
+	//	If the target is the player, then we just pick a position in a circle
+	//	around the player. Or, if the player is so far away that there's no 
+	//	chance of spawning near her, then pick a random position.
+
+	if (TargetObj.IsPlayer()
+			|| pPlayer == NULL
+			|| rPlayerDist > rDistance + MIN_PLAYER_SEPARATION
+			|| rPlayerDist < MIN_PLAYER_SEPARATION - rDistance)
+		{
+		int iTries = 100;
+		while (iTries > 0)
+			{
+			vPos = TargetObj.GetPos() + ::PolarToVector(mathRandom(0, 359), rDistance);
+
+			if (FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA))
+					&& --iTries > 0)
+				continue;
+
+			//	Found a good position
+
+			return vPos;
+			}
+
+		//	If not found, then we just return an arbitrary position
+
+		return vPos;
+		}
+
+	//	Otherwise, we pick a location at the given distance from the target, but
+	//	away from the player
+
+	else
+		{
+		int iTries = 100;
+		while (iTries > 0)
+			{
+			vPos = TargetObj.GetPos() + ::PolarToVector(mathRandom(0, 359), rDistance);
+
+			//	If this position is too close to the player, or if it is too 
+			//	close to some other object, then skip.
+
+			if (((pPlayer->GetPos() - vPos).Length2() < MIN_PLAYER_SEPARATION2)
+					|| FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA)))
+				{
+				if (--iTries > 0)
+					continue;
+				}
+
+			//	Found a good position
+
+			return vPos;
+			}
+
+		//	If not found, then we just return an arbitrary position
+
+		return vPos;
+		}
 	}
 
 CG32bitPixel CSystem::CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)

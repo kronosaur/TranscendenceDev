@@ -45,11 +45,11 @@
 
 typedef LONGLONG CurrencyValue;
 
-const int g_DestinyRange = 360;
-const int g_RotationRange = 20;
-const int STD_ROTATION_COUNT = 20;
+static constexpr int g_DestinyRange = 360;
+static constexpr int g_RotationRange = 20;
+static constexpr int STD_ROTATION_COUNT = 20;
 
-const int g_RotationAngle = (360 / g_RotationRange);
+static constexpr int g_RotationAngle = (360 / g_RotationRange);
 
 //	Measurements
 //
@@ -57,159 +57,159 @@ const int g_RotationAngle = (360 / g_RotationRange);
 //	Time: in seconds
 //	Velocity: kilometers/second
 
-const Metric g_Epsilon = 0.0000001;					//	Small value close to 0
-const Metric LIGHT_SPEED = 299792.5;				//	c in Kilometers per second
-const Metric LIGHT_SECOND = LIGHT_SPEED;			//	1 light-second
-const Metric LIGHT_MINUTE = LIGHT_SECOND * 60;		//	1 light-minute
-const Metric MAX_SYSTEM_SPEED = 10.0 * LIGHT_SPEED;	//	By default we clip above this
-const Metric g_AU = 149600000.0;					//	1 AU in Kilometers
+static constexpr Metric g_Epsilon =						0.0000001;			//	Small value close to 0
+static constexpr Metric LIGHT_SPEED =					299792.5;			//	c in Kilometers per second
+static constexpr Metric LIGHT_SECOND =					LIGHT_SPEED;		//	1 light-second
+static constexpr Metric LIGHT_MINUTE =					LIGHT_SECOND * 60;	//	1 light-minute
+static constexpr Metric MAX_SYSTEM_SPEED =				10.0 * LIGHT_SPEED;	//	By default we clip above this
+static constexpr Metric g_AU =							149600000.0;		//	1 AU in Kilometers
 
 //	Scales
 
-const Metric KLICKS_PER_PIXEL =			12500.0;	//	Default kilometers per pixel
-const Metric TIME_SCALE =				60.0;		//	Seconds of game time per second of real time
-const Metric STD_SECONDS_PER_UPDATE =	2.0;		//	Standard adjustment when converting to ticks
-const Metric MAX_SOUND_DISTANCE =		(140.0 * LIGHT_SECOND);	//	Maximum distance at which sound is heard (in light-seconds)
-																//	In practice, this works out to about 100 ls, depending on
-																//	global volume, etc.
+static constexpr Metric KLICKS_PER_PIXEL =				12500.0;			//	Default kilometers per pixel
+static constexpr Metric TIME_SCALE =					60.0;				//	Seconds of game time per second of real time
+static constexpr Metric STD_SECONDS_PER_UPDATE =		2.0;				//	Standard adjustment when converting to ticks
+static constexpr Metric MAX_SOUND_DISTANCE =			(140.0 * LIGHT_SECOND);	//	Maximum distance at which sound is heard (in light-seconds)
+																			//		In practice, this works out to about 100 ls, depending on
+																			//		global volume, etc.
 
-const int g_TicksPerSecond =			30;			//	Frames per second of time
-const Metric g_LRSRange =				(100.0 * LIGHT_SECOND);	//	Range of LRS
-const Metric g_MapKlicksPerPixel =		g_AU / 400.0;//	400 pixels per AU
-const Metric g_InfiniteDistance =		g_AU * g_AU * 1000000.0;	//	A very large number
-const Metric g_InfiniteDistance2 =		g_InfiniteDistance * g_InfiniteDistance;	//	A very large number
-const Metric g_SpaceDragFactor =		0.98;		//	Coefficient of drag in space (1.0 = no drag)
-const Metric g_BounceCoefficient =		0.50;		//	Speed coefficient when bouncing
-const Metric g_MomentumConstant =		25.0;		//	Arbitrary constant for momentum
-const Metric g_MWPerFuelUnit =			15.0;		//	Tenth-MW-ticks produced per fuel unit
-const Metric g_MinSpeed2 =				100.0;		//	If moving less than this speed, force to 0
-const Metric FUEL_UNITS_PER_STD_ROD =	2500.0;		//	Fuel units in a standard fuel rod equivalent
+static constexpr int g_TicksPerSecond =					30;					//	Frames per second of time
+static constexpr Metric g_LRSRange =					(100.0 * LIGHT_SECOND);	//	Range of LRS
+static constexpr Metric g_MapKlicksPerPixel =			g_AU / 400.0;		//	400 pixels per AU
+static constexpr Metric g_InfiniteDistance =			g_AU * g_AU * 1000000.0;	//	A very large number
+static constexpr Metric g_InfiniteDistance2 =			g_InfiniteDistance * g_InfiniteDistance;	//	A very large number
+static constexpr Metric g_SpaceDragFactor =				0.98;				//	Coefficient of drag in space (1.0 = no drag)
+static constexpr Metric g_BounceCoefficient =			0.50;				//	Speed coefficient when bouncing
+static constexpr Metric g_MomentumConstant =			25.0;				//	Arbitrary constant for momentum
+static constexpr Metric g_MWPerFuelUnit =				15.0;				//	Tenth-MW-ticks produced per fuel unit
+static constexpr Metric g_MinSpeed2 =					100.0;				//	If moving less than this speed, force to 0
+static constexpr Metric FUEL_UNITS_PER_STD_ROD =		2500.0;				//	Fuel units in a standard fuel rod equivalent
 
-const DWORD INFINITE_TICK =					0xffffffff;	//	Highest tick
+static constexpr DWORD INFINITE_TICK =					0xffffffff;			//	Highest tick
 
-const int MAX_TECH_LEVEL =				25;
-const int MAX_SYSTEM_LEVEL =			25;
+static constexpr int MAX_TECH_LEVEL =					25;
+static constexpr int MAX_SYSTEM_LEVEL =					25;
 
 //	Event Timers
 
-const int ENVIRONMENT_ON_UPDATE_CYCLE =		15;		//	OnObjUpdate in <SpaceEnvironmentType>
-const int ENVIRONMENT_ON_UPDATE_OFFSET =	3;
+static constexpr int ENVIRONMENT_ON_UPDATE_CYCLE =		15;					//	OnObjUpdate in <SpaceEnvironmentType>
+static constexpr int ENVIRONMENT_ON_UPDATE_OFFSET =		3;
 
-const int ITEM_ON_AI_UPDATE_CYCLE =			30;		//	OnAIUpdate in <ItemType>
-const int ITEM_ON_AI_UPDATE_OFFSET =		0;
+static constexpr int ITEM_ON_AI_UPDATE_CYCLE =			30;					//	OnAIUpdate in <ItemType>
+static constexpr int ITEM_ON_AI_UPDATE_OFFSET =			0;
 
-const int ITEM_ON_UPDATE_CYCLE =			30;		//	OnUpdate in <ItemType>
-const int ITEM_ON_UPDATE_OFFSET =			7;
+static constexpr int ITEM_ON_UPDATE_CYCLE =				30;					//	OnUpdate in <ItemType>
+static constexpr int ITEM_ON_UPDATE_OFFSET =			7;
 
-const int OBJECT_ON_UPDATE_CYCLE =			30;		//	OnUpdate in space objects
-const int OBJECT_ON_UPDATE_OFFSET =			13;
+static constexpr int OBJECT_ON_UPDATE_CYCLE =			30;					//	OnUpdate in space objects
+static constexpr int OBJECT_ON_UPDATE_OFFSET =			13;
 
-const int OVERLAY_ON_UPDATE_CYCLE =			15;		//	OnUpdate in <OverlayType>
-const int OVERLAY_ON_UPDATE_OFFSET =		11;
+static constexpr int OVERLAY_ON_UPDATE_CYCLE =			15;					//	OnUpdate in <OverlayType>
+static constexpr int OVERLAY_ON_UPDATE_OFFSET =			11;
 
-const int GLOBAL_ON_UPDATE_CYCLE =			15;		//	OnGlobalUpdate for all types
+static constexpr int GLOBAL_ON_UPDATE_CYCLE =			15;					//	OnGlobalUpdate for all types
 
-const int ON_SCREEN_UPDATE_CYCLE =			15;		//	OnScreenUpdate for <DockScreen>
+static constexpr int ON_SCREEN_UPDATE_CYCLE =			15;					//	OnScreenUpdate for <DockScreen>
 
 //	Special UNIDs
 //	LATER: UNID should not be hard-coded
 
-const DWORD INVALID_UNID =					0xFFFFFFFF;
+static constexpr DWORD INVALID_UNID =					0xFFFFFFFF;
 
-const DWORD DEFAULT_SYSTEM_TABLE_UNID =		0x0000000B;	//	tbBasicFragments
+static constexpr DWORD DEFAULT_SYSTEM_TABLE_UNID =		0x0000000B;	//	tbBasicFragments
 
-const DWORD UNID_DAMAGED_SITE_SMALL =		0x00000050;	//	ovDamagedSiteSmall
-const DWORD UNID_DAMAGED_SITE_MEDIUM =		0x00000051;	//	ovDamagedSiteMedium
-const DWORD UNID_DAMAGED_SITE_LARGE =		0x00000052;	//	ovDamagedSiteSmall
-const DWORD UNID_DEPREZ_SITE_SMALL =		0x00000053;	//	ovDeprezSiteSmall
-const DWORD UNID_MANEUVERING_THRUSTER =		0x00000090;	//	efManeuveringThrusterDefault
-const DWORD UNID_MAIN_THRUSTER =			0x00000091;	//	efMainThrusterDefault
+static constexpr DWORD UNID_DAMAGED_SITE_SMALL =		0x00000050;	//	ovDamagedSiteSmall
+static constexpr DWORD UNID_DAMAGED_SITE_MEDIUM =		0x00000051;	//	ovDamagedSiteMedium
+static constexpr DWORD UNID_DAMAGED_SITE_LARGE =		0x00000052;	//	ovDamagedSiteSmall
+static constexpr DWORD UNID_DEPREZ_SITE_SMALL =			0x00000053;	//	ovDeprezSiteSmall
+static constexpr DWORD UNID_MANEUVERING_THRUSTER =		0x00000090;	//	efManeuveringThrusterDefault
+static constexpr DWORD UNID_MAIN_THRUSTER =				0x00000091;	//	efMainThrusterDefault
 
-const DWORD UNID_DEFAULT_ENEMY_SHIP_ALARM =	0x000000A0;
-const DWORD UNID_DEFAULT_FUEL_LOW_ALARM =	0x000000A1;
-const DWORD UNID_DEFAULT_RADIATION_ALARM =	0x000000A2;
-const DWORD UNID_DEFAULT_HULL_BREACH_ALARM =	0x000000A3;
-const DWORD UNID_DEFAULT_REACTOR_OVERLOAD_ALARM =	0x000000A4;
-const DWORD UNID_DEFAULT_SHIELDS_DOWN_ALRAM =	0x000000A5;
-const DWORD UNID_DEFAULT_BUTTON_CLICK =		0x000000A6;
-const DWORD UNID_DEFAULT_SELECT =			0x000000A7;
-const DWORD UNID_DEFAULT_GRAVITY_ALARM =	0x000000A8;
+static constexpr DWORD UNID_DEFAULT_ENEMY_SHIP_ALARM =	0x000000A0;
+static constexpr DWORD UNID_DEFAULT_FUEL_LOW_ALARM =	0x000000A1;
+static constexpr DWORD UNID_DEFAULT_RADIATION_ALARM =	0x000000A2;
+static constexpr DWORD UNID_DEFAULT_HULL_BREACH_ALARM =	0x000000A3;
+static constexpr DWORD UNID_DEFAULT_REACTOR_OVERLOAD_ALARM =	0x000000A4;
+static constexpr DWORD UNID_DEFAULT_SHIELDS_DOWN_ALRAM =	0x000000A5;
+static constexpr DWORD UNID_DEFAULT_BUTTON_CLICK =		0x000000A6;
+static constexpr DWORD UNID_DEFAULT_SELECT =			0x000000A7;
+static constexpr DWORD UNID_DEFAULT_GRAVITY_ALARM =		0x000000A8;
 
-const DWORD g_PlayerSovereignUNID =			0x00001001;	//	svPlayer
-const DWORD DEFAULT_ECONOMY_UNID =			0x00001017;	//	ecCreditEconomy
-const DWORD UNID_UNKNOWN_ENEMY =			0x00001018;	//	svUnknownEnemy
-const DWORD UNID_NEUTRAL_SOVEREIGN =		0x00001019;	//	svNeutral
+static constexpr DWORD g_PlayerSovereignUNID =			0x00001001;	//	svPlayer
+static constexpr DWORD DEFAULT_ECONOMY_UNID =			0x00001017;	//	ecCreditEconomy
+static constexpr DWORD UNID_UNKNOWN_ENEMY =				0x00001018;	//	svUnknownEnemy
+static constexpr DWORD UNID_NEUTRAL_SOVEREIGN =			0x00001019;	//	svNeutral
 
-const DWORD g_ShipWreckUNID =				0x00002001;	//	stShipwreck
-const DWORD FLOTSAM_UNID =					0x0000200E;	//	stFlotsam
+static constexpr DWORD g_ShipWreckUNID =				0x00002001;	//	stShipwreck
+static constexpr DWORD FLOTSAM_UNID =					0x0000200E;	//	stFlotsam
 
-const DWORD PLAYER_EI500_FREIGHTER_UNID =	0x00003802;	//	scEI100XPlayer
+static constexpr DWORD PLAYER_EI500_FREIGHTER_UNID =	0x00003802;	//	scEI100XPlayer
 
-const DWORD TRITIUM_PROPULSION_UPGRADE_UNID = 0x0000404B;	//	Tritium propulsion upgrade
-const DWORD CARGO_HOLD_EXPANSION_UNID =		0x00004079;	//	Cargo hold expansion
-const DWORD g_SuperconductingShieldsUNID =	0x0000407D;	//	Superconducting shield generator
-const DWORD g_SuperconductingCoilUNID =		0x0000407E;	//	Superconducting shield generator
-const DWORD NOVA25_REACTOR_UNID =			0x00004107;	//	Nova-25 reactor
+static constexpr DWORD TRITIUM_PROPULSION_UPGRADE_UNID = 0x0000404B;	//	Tritium propulsion upgrade
+static constexpr DWORD CARGO_HOLD_EXPANSION_UNID =		0x00004079;	//	Cargo hold expansion
+static constexpr DWORD g_SuperconductingShieldsUNID =	0x0000407D;	//	Superconducting shield generator
+static constexpr DWORD g_SuperconductingCoilUNID =		0x0000407E;	//	Superconducting shield generator
+static constexpr DWORD NOVA25_REACTOR_UNID =			0x00004107;	//	Nova-25 reactor
 
-const DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
-const DWORD UNID_BLAST_EXPLOSION_1 =		0x0000500B;
-const DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
-const DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
-const DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
-const DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
+static constexpr DWORD UNID_KINETIC_EXPLOSION_1 =		0x00005007;
+static constexpr DWORD UNID_BLAST_EXPLOSION_1 =			0x0000500B;
+static constexpr DWORD UNID_THERMO_EXPLOSION_1 =		0x0000500F;
+static constexpr DWORD UNID_PLASMA_EXPLOSION_1 =		0x00005013;
+static constexpr DWORD UNID_ANTIMATTER_EXPLOSION_1 =	0x00030030;
+static constexpr DWORD UNID_GRAVITON_EXPLOSION_1 =		0x00030034;
 
-const DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
-const DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
-const DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1
-const DWORD g_ShieldEffectUNID =			0x00009004;	//	efShieldHit1
-const DWORD g_StargateInUNID =				0x00009005;	//	efStargateIn
-const DWORD g_StargateOutUNID =				0x00009006;	//	efStargateOut
-const DWORD g_StationDestroyedUNID =		0x00009009;	//	efStationExplosion
-const DWORD LARGE_STATION_DAMAGE_UNID =		0x0000900E;	//	efLargeStationDamage
-const DWORD MEDIUM_STATION_DAMAGE_UNID =	0x0000900F;	//	efMediumStationDamage
+static constexpr DWORD g_ExplosionUNID =				0x00009001;	//	efMediumExplosion1
+static constexpr DWORD g_LargeExplosionUNID =			0x00009002;	//	efLargeExplosion1
+static constexpr DWORD g_HitEffectUNID =				0x00009003;	//	efSmallExplosion1
+static constexpr DWORD g_ShieldEffectUNID =				0x00009004;	//	efShieldHit1
+static constexpr DWORD g_StargateInUNID =				0x00009005;	//	efStargateIn
+static constexpr DWORD g_StargateOutUNID =				0x00009006;	//	efStargateOut
+static constexpr DWORD g_StationDestroyedUNID =			0x00009009;	//	efStationExplosion
+static constexpr DWORD LARGE_STATION_DAMAGE_UNID =		0x0000900E;	//	efLargeStationDamage
+static constexpr DWORD MEDIUM_STATION_DAMAGE_UNID =		0x0000900F;	//	efMediumStationDamage
 
-const DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
+static constexpr DWORD DEFAULT_SHIP_SCREEN_UNID =		0x0000A001;	//	dsShipInterior
 
-const DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
-const DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
-const DWORD g_LRSImageUNID =				0x0000F006;	//	rsZubrinLRS
-const DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
-const DWORD g_SRSSnowImageUNID =			0x0000F008;	//	rsSRSSnow
-const DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
-const DWORD DEFAULT_REACTOR_DISPLAY_IMAGE = 0x0000F00C;	//	rsZubrinReactor
-const DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background
-const DWORD DEFAULT_DOCK_SCREEN_MASK_UNID =	0x0000F014;	//	Default dock screen mask
-const DWORD g_ShipExplosionParticlesUNID =	0x0000F114;	//	rsDebris1
-const DWORD g_ShipExplosionSoundUNID =		0x0000F204;	//	snShipExplosion1
-const DWORD g_StationExplosionSoundUNID =	0x0000F205;	//	snStationExplosion1
+static constexpr DWORD g_DamageImageUNID =				0x0000F001;	//	rsMediumDamage
+static constexpr DWORD SHIP_INTERIOR_IMAGE_UNID =		0x0000F002;	//	rsShipInterior
+static constexpr DWORD g_LRSImageUNID =					0x0000F006;	//	rsZubrinLRS
+static constexpr DWORD UNID_TARGETING_HUD_BACKGROUND =	0x0000F007;	//	rsZubrinTargeting
+static constexpr DWORD g_SRSSnowImageUNID =				0x0000F008;	//	rsSRSSnow
+static constexpr DWORD g_LRSBorderUNID =				0x0000F009;	//	rsZubrinLRSBorder
+static constexpr DWORD DEFAULT_REACTOR_DISPLAY_IMAGE =	0x0000F00C;	//	rsZubrinReactor
+static constexpr DWORD DEFAULT_DOCK_SCREEN_IMAGE_UNID = 0x0000F013;	//	Default dock screen background
+static constexpr DWORD DEFAULT_DOCK_SCREEN_MASK_UNID =	0x0000F014;	//	Default dock screen mask
+static constexpr DWORD g_ShipExplosionParticlesUNID =	0x0000F114;	//	rsDebris1
+static constexpr DWORD g_ShipExplosionSoundUNID =		0x0000F204;	//	snShipExplosion1
+static constexpr DWORD g_StationExplosionSoundUNID =	0x0000F205;	//	snStationExplosion1
 
-const DWORD DEFAULT_DOCK_SERVICES_SCREEN =	0x00010029;
-const DWORD COMPATIBLE_DOCK_SERVICES_SCREEN = 0x0001002A;
-const DWORD COMPATIBLE_SHIP_CONFIG_SCREEN = 0x0000A01B;
+static constexpr DWORD DEFAULT_DOCK_SERVICES_SCREEN =	0x00010029;
+static constexpr DWORD COMPATIBLE_DOCK_SERVICES_SCREEN = 0x0001002A;
+static constexpr DWORD COMPATIBLE_SHIP_CONFIG_SCREEN =	0x0000A01B;
 
-const DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
-const DWORD UNID_DISINTEGRATION_EXPLOSION =	0x00030044;
-const DWORD UNID_TIME_STOP_OVERLAY =		0x00030080;
+static constexpr DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
+static constexpr DWORD UNID_DISINTEGRATION_EXPLOSION =	0x00030044;
+static constexpr DWORD UNID_TIME_STOP_OVERLAY =			0x00030080;
 
 #ifdef DEBUG_HENCHMAN
 const DWORD g_DebugHenchmenShipUNID =		0x00103001;	//	scCenturion
 #endif
 
-const DWORD UNID_RPG_LIBRARY =						0x00010000;
-const DWORD UNID_UNIVERSE_LIBRARY =					0x00020000;
-const DWORD UNID_CORE_TYPES_LIBRARY =				0x00030000;
-const DWORD UNID_HUMAN_SPACE_LIBRARY =				0x00100000;
-const DWORD DEFAULT_ADVENTURE_EXTENSION_UNID =		0x00200000;
-const DWORD UNID_PILGRIM_CHARACTER_CLASS =			0x00201002;
-const DWORD DEFAULT_COMPATIBILITY_LIBRARY_UNID =	0x00700000;
-const DWORD UNID_SOUNDTRACK_EXTENSION =				0x00820000;
-const DWORD UNID_HD_EXTENSION =						0x00830000;
+static constexpr DWORD UNID_RPG_LIBRARY =						0x00010000;
+static constexpr DWORD UNID_UNIVERSE_LIBRARY =					0x00020000;
+static constexpr DWORD UNID_CORE_TYPES_LIBRARY =				0x00030000;
+static constexpr DWORD UNID_HUMAN_SPACE_LIBRARY =				0x00100000;
+static constexpr DWORD DEFAULT_ADVENTURE_EXTENSION_UNID =		0x00200000;
+static constexpr DWORD UNID_PILGRIM_CHARACTER_CLASS =			0x00201002;
+static constexpr DWORD DEFAULT_COMPATIBILITY_LIBRARY_UNID =	0x00700000;
+static constexpr DWORD UNID_SOUNDTRACK_EXTENSION =				0x00820000;
+static constexpr DWORD UNID_HD_EXTENSION =						0x00830000;
 
-const DWORD UNID_DIAGNOSTICS_EXTENSION =			0xA0010000;
+static constexpr DWORD UNID_DIAGNOSTICS_EXTENSION =			0xA0010000;
 
 //	Object IDs
 
-const DWORD OBJID_NULL =					0xFFFFFFFF;
+static constexpr DWORD OBJID_NULL =						0xFFFFFFFF;
 
 //	Global constants
 

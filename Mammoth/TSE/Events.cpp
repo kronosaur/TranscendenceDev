@@ -176,8 +176,6 @@ CVector CTimedEncounterEvent::CalcEncounterPos (CSpaceObject *pTarget, Metric rD
 //	Generates a random position for the encounter.
 
 	{
-	CVector vPos;
-
 	//	Short-circuit
 
 	if (pTarget == NULL)
@@ -187,67 +185,7 @@ CVector CTimedEncounterEvent::CalcEncounterPos (CSpaceObject *pTarget, Metric rD
 	if (pSystem == NULL)
 		return CVector();
 
-	CSpaceObject *pPlayer = pSystem->GetPlayerShip();
-	Metric rPlayerDist = (pPlayer && pPlayer != pTarget ? pPlayer->GetDistance(pTarget) : 0.0);
-	Metric rSeparation = Min(0.5 * m_rDistance, MIN_SEPARATION);
-
-	//	If the target is the player, then we just pick a position in a circle
-	//	around the player. Or, if the player is so far away that there's no 
-	//	chance of spawning near her, then pick a random position.
-
-	if (pTarget->IsPlayer()
-			|| pPlayer == NULL
-			|| rPlayerDist > rDistance + MIN_PLAYER_SEPARATION
-			|| rPlayerDist < MIN_PLAYER_SEPARATION - rDistance)
-		{
-		int iTries = 100;
-		while (iTries > 0)
-			{
-			vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), m_rDistance);
-
-			if (pSystem->FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA))
-					&& --iTries > 0)
-				continue;
-
-			//	Found a good position
-
-			return vPos;
-			}
-
-		//	If not found, then we just return an arbitrary position
-
-		return vPos;
-		}
-
-	//	Otherwise, we pick a location at the given distance from the target, but
-	//	away from the player
-
-	else
-		{
-		int iTries = 100;
-		while (iTries > 0)
-			{
-			vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), m_rDistance);
-
-			//	If this position is too close to the player, or if it is too 
-			//	close to some other object, then skip.
-
-			if (((pPlayer->GetPos() - vPos).Length2() < MIN_PLAYER_SEPARATION2)
-					|| pSystem->FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA)))
-				{
-				if (--iTries > 0)
-					continue;
-				}
-
-			//	Found a good position
-
-			return vPos;
-			}
-
-		//	If not found, then we just return an arbitrary position
-
-		return vPos;
-		}
+	return pSystem->CalcRandomEncounterPos(*pTarget, rDistance);
 	}
 
 CString CTimedEncounterEvent::DebugCrashInfo (void)

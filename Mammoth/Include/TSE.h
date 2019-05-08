@@ -1001,8 +1001,8 @@ class CSpaceObject
 		Metric GetDetectionRange2 (int iPerception) const;
 		int GetDetectionRangeIndex (int iPerception) const;
 		CSovereign::Disposition GetDispositionTowards (CSpaceObject *pObj);
-		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
-		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
+		Metric GetDistance (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
+		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
 		Metric GetHitSize (void) const;

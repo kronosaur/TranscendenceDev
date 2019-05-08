@@ -175,6 +175,39 @@ ICCItemPtr CTLispConvert::CreateCurrencyValue (CurrencyValue Value)
 		return ICCItemPtr((int)Value);
 	}
 
+ICCItemPtr CTLispConvert::CreateObject (const CSpaceObject *pObj)
+
+//	CreateObject
+//
+//	Returns an object pointer.
+
+	{
+	return ICCItemPtr((int)pObj);
+	}
+
+ICCItemPtr CTLispConvert::CreateObjectList (const CSpaceObjectList &List)
+
+//	CreateObjectList
+//
+//	Returns a list of object IDs
+
+	{
+	if (List.GetCount() == 0)
+		return ICCItemPtr(ICCItem::Nil);
+
+	else if (List.GetCount() == 1)
+		return CreateObject(List.GetObj(0));
+	else
+		{
+		ICCItemPtr pResult(ICCItem::List);
+
+		for (int i = 0; i < List.GetCount(); i++)
+			pResult->Append(CreateObject(List.GetObj(i)));
+
+		return pResult;
+		}
+	}
+
 ICCItemPtr CTLispConvert::CreatePowerResultMW (int iPower)
 
 //	CreatePowerResultMW

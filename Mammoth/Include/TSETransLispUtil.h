@@ -25,6 +25,8 @@ class CTLispConvert
 		inline static bool AsOption (ICCItem *pItem, const CString &sOption) { return (pItem && pItem->GetBooleanAt(sOption)); }
 		static bool AsScreenSelector (ICCItem *pItem, CDockScreenSys::SSelector *retSelector = NULL);
 		static ICCItemPtr CreateCurrencyValue (CurrencyValue Value);
+		static ICCItemPtr CreateObject (const CSpaceObject *pObj);
+		static ICCItemPtr CreateObjectList (const CSpaceObjectList &List);
 		static ICCItemPtr CreatePowerResultMW (int iPower);
 		static ICCItemPtr GetElementAt (ICCItem *pItem, const CString &sField);
 	};

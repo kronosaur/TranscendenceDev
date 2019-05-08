@@ -11518,6 +11518,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 
 				pSystem->CreateRandomEncounter(pTable, NULL, pEncounter->GetSovereign(), pTarget);
+				return pCC->CreateTrue();
 				}
 
 			//	If this is a ship table, create an encounter
@@ -11529,14 +11530,14 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				SShipCreateCtx Ctx;
 				Ctx.pSystem = pSystem;
 				Ctx.pTarget = pTarget;
-				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY;
+				Ctx.dwFlags = SShipCreateCtx::ATTACK_NEAREST_ENEMY | SShipCreateCtx::RETURN_RESULT;
 
 				//	Figure out where the encounter will come from
 
 				if (rDist > 0.0)
 					{
 					if (pTarget)
-						Ctx.vPos = pTarget->GetPos() + ::PolarToVector(mathRandom(0, 359), rDist);
+						Ctx.vPos = pSystem->CalcRandomEncounterPos(*pTarget, rDist);
 					Ctx.PosSpread = DiceRange(3, 1, 2);
 					}
 				else if (pGate && pGate->IsActiveStargate())
@@ -11552,9 +11553,12 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				//	Create ships
 
 				pEncounter->CreateShips(Ctx);
-				}
 
-			return pCC->CreateTrue();
+				//	Return the list of ships created
+
+				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
+				return pResult->Reference();
+				}
 			}
 
 		case FN_SYS_CREATE_ENVIRONMENT:
@@ -12131,7 +12135,6 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
-	int i;
 
 	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
 	if (pSystem == NULL)
@@ -12239,23 +12242,8 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 		//	Return at least one of the ships created
 
-		if (CreateCtx.Result.GetCount() == 0)
-			return pCC->CreateNil();
-		else if (CreateCtx.Result.GetCount() == 1)
-			return pCC->CreateInteger((int)CreateCtx.Result.GetObj(0));
-		else
-			{
-			ICCItem *pResult = pCC->CreateLinkedList();
-			if (pResult->IsError())
-				return pResult;
-
-			CCLinkedList *pList = (CCLinkedList *)pResult;
-
-			for (i = 0; i < CreateCtx.Result.GetCount(); i++)
-				pList->AppendInteger((int)CreateCtx.Result.GetObj(i));
-
-			return pResult;
-			}
+		ICCItemPtr pResult = CTLispConvert::CreateObjectList(CreateCtx.Result);
+		return pResult->Reference();
 		}
 
 	//	Otherwise, we create a ship
