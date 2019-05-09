@@ -33,11 +33,12 @@ class CMissionType : public CDesignType
 		int GetArcSequence (void) const { return m_iArcSequence; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
+		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
 		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
 		int GetPriority (void) const { return m_iPriority; }
 		DWORD GetShuffle (void) const { return m_dwShuffle; }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
-		void IncAccepted (void) { m_iAccepted++; }
+		void IncAccepted (void);
 		bool KeepsStats (void) const { return !m_fNoStats; }
 		void OnMissionCreated (void) { m_iExisting++; }
 		void OnMissionDestroyed (void) { m_iExisting--; }
@@ -90,6 +91,7 @@ class CMissionType : public CDesignType
 											//		the number goes up, but if we later destroy the mission
 											//		(perhaps because it expired) then the count drops.
 		int m_iAccepted;					//	Number of times player has accepted this mission type
+		DWORD m_dwLastAcceptedOn = 0;		//	Latest tick when we accepted this mission (0 = never)
 
 		//	Events
 

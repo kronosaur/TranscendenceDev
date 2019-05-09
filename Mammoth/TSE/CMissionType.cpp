@@ -125,6 +125,17 @@ bool CMissionType::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
+void CMissionType::IncAccepted (void)
+
+//	IncAccepted
+//
+//	Mission has been accepted by player.
+
+	{
+	m_iAccepted++;
+	m_dwLastAcceptedOn = GetUniverse().GetTicks();
+	}
+
 ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 //	OnBindDesign
@@ -177,6 +188,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
 	m_iExisting = 0;
+	m_dwLastAcceptedOn = 0;
 
 	//	Level
 
@@ -269,6 +281,9 @@ void CMissionType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 		Ctx.pStream->Read(m_iExisting);
 	else
 		m_iExisting = m_iAccepted;
+
+	if (Ctx.dwVersion >= 37)
+		Ctx.pStream->Read(m_dwLastAcceptedOn);
 	}
 
 void CMissionType::OnReinit (void)
@@ -281,6 +296,7 @@ void CMissionType::OnReinit (void)
 	m_iMaxAppearing = (m_MaxAppearing.IsEmpty() ? -1 : m_MaxAppearing.Roll());
 	m_iAccepted = 0;
 	m_iExisting = 0;
+	m_dwLastAcceptedOn = 0;
 	}
 
 void CMissionType::OnWriteToStream (IWriteStream *pStream)
@@ -293,6 +309,7 @@ void CMissionType::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_iMaxAppearing);
 	pStream->Write(m_iAccepted);
 	pStream->Write(m_iExisting);
+	pStream->Write(m_dwLastAcceptedOn);
 	}
 
 bool CMissionType::ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, CString *retsArc, int *retiSequence, CString *retsError)

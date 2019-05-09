@@ -260,7 +260,15 @@ void CMissionList::Sort (TArray<CMissionType *> &Missions)
 			}
 
 		//	If these are different arcs, or if they are the same arc with the
-		//	same sequence, then we shuffle.
+		//	same sequence, then we prefer missions that have not been accepted
+		//	recently.
+
+		if (pLeft->GetLastAcceptedOn() > pRight->GetLastAcceptedOn())
+			return 1;
+		else if (pLeft->GetLastAcceptedOn() < pRight->GetLastAcceptedOn())
+			return -1;
+
+		//	Lastly, we shuffle.
 
 		if (pLeft->GetShuffle() > pRight->GetShuffle())
 			return 1;

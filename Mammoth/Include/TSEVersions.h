@@ -6,7 +6,7 @@
 #pragma once
 
 constexpr DWORD API_VERSION =							44;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					36;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					37;
 constexpr DWORD SYSTEM_SAVE_VERSION =					173;
 
 //	Uncomment out the following define when building a stable release
@@ -107,6 +107,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					173;
 //
 //	36: 1.9 Alpha 1
 //		Added m_UnknownTypes to CItemType
+//
+//	37: 1.9 Alpha 1
+//		Added m_dwLastAcceptedOn in CMissionType
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
