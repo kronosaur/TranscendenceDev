@@ -927,6 +927,8 @@ class CCodeChain
 
 		bool HasIdentifier (ICCItem *pCode, const CString &sIdentifier);
 
+		static ICCItemPtr SystemSelfTest (void);
+
 	private:
 		static ICCItem *CreateDoubleIfPossible (const CString &sString);
 		static ICCItem *CreateIntegerIfPossible (const CString &sString);

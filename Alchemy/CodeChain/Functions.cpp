@@ -4433,6 +4433,9 @@ ICCItem *fnSysInfo (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData)
 		case FN_SYSINFO_TICKS:
 			return pCC->CreateInteger((int)GetTickCount());
 
+		case FN_SYSINFO_SELF_TEST:
+			return CCodeChain::SystemSelfTest()->Reference();
+
 		default:
 			ASSERT(false);
 			return NULL;

@@ -105,6 +105,7 @@
 #define FN_MATH_EXP						101
 #define FN_MATH_LOG						102
 #define FN_HEX							103
+#define FN_SYSINFO_SELF_TEST			104
 
 ICCItem *fnAppend (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnApply (CEvalContext *pCtx, ICCItem *pArguments, DWORD dwData);

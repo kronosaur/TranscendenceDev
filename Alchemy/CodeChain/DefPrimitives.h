@@ -442,6 +442,7 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 
 		{	"sysGlobals",		fnSysInfo,		FN_SYSINFO_GLOBALS,		"(sysGlobals) -> list of global symbols",		NULL,	0,	},
 		{	"sysPoolUsage",		fnSysInfo,		FN_SYSINFO_POOLUSAGE,	"(sysPoolUsage) -> list of resource usage",		NULL,	0,	},
+		{	"sysSelfTest",		fnSysInfo,		FN_SYSINFO_SELF_TEST,	"(sysSelfTest) -> True/Nil",		NULL,	0,	},
 		{	"sysTicks",			fnSysInfo,		FN_SYSINFO_TICKS,		"(sysTicks) -> int",		NULL,	0,	},
 
 		{	"tan",				fnMathNumerals,	FN_MATH_TAN,

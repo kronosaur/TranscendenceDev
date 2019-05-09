@@ -1187,6 +1187,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='FoundationDebug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="SelfTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\CodeChain.h" />
