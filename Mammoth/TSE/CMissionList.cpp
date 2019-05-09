@@ -242,6 +242,9 @@ void CMissionList::Sort (TArray<CMissionType *> &Missions)
 
 	Missions.Sort([](auto pLeft, auto pRight) {
 
+		constexpr DWORD TIME_BUCKET = 18000;	//	10 minutes real-time
+		constexpr DWORD MAX_TIME_BUCKET = 6;
+
 		//	Priority takes precedence, even for missions in the same arc.
 		
 		if (pLeft->GetPriority() > pRight->GetPriority())
@@ -262,10 +265,17 @@ void CMissionList::Sort (TArray<CMissionType *> &Missions)
 		//	If these are different arcs, or if they are the same arc with the
 		//	same sequence, then we prefer missions that have not been accepted
 		//	recently.
+		//
+		//	We map the last time that we accepted a mission into one of N 
+		//	buckets (each 10 minutes long). Missions accepted in an earlier
+		//	bucket get priority over ones accepted in a later bucket.
 
-		if (pLeft->GetLastAcceptedOn() > pRight->GetLastAcceptedOn())
+		DWORD dwLeftAccepted = Min((pLeft->GetLastAcceptedOn() > 0 ? (pLeft->GetLastAcceptedOn() / TIME_BUCKET) + 1 : 0), MAX_TIME_BUCKET);
+		DWORD dwRightAccepted = Min((pRight->GetLastAcceptedOn() > 0 ? (pRight->GetLastAcceptedOn() / TIME_BUCKET) + 1 : 0), MAX_TIME_BUCKET);
+
+		if (dwLeftAccepted > dwRightAccepted)
 			return 1;
-		else if (pLeft->GetLastAcceptedOn() < pRight->GetLastAcceptedOn())
+		else if (dwLeftAccepted < dwRightAccepted)
 			return -1;
 
 		//	Lastly, we shuffle.
