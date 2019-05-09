@@ -8941,66 +8941,29 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_MISSION_CREATE:
 			{
-			//	Get the list of mission types, categorized by priority
+			//	Get the list of mission types
 
-			TSortMap<CString, int> LowestSequence;
-			TSortMap<int, TArray<CMissionType *>> MissionsByPriority(DescendingSort);
 			ICCItem *pList = pArgs->GetElement(0);
-			for (i = 0; i < pList->GetCount(); i++)
+			TArray<CMissionType *> Missions;
+			Missions.GrowToFit(pList->GetCount());
+
+			for (int i = 0; i < pList->GetCount(); i++)
 				{
 				CMissionType *pType = pCtx->GetUniverse().FindMissionType((DWORD)pList->GetElement(i)->GetIntegerValue());
 				if (pType == NULL)
 					return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown mission type: %x."), pList->GetElement(i)->GetIntegerValue()), pList->GetElement(i));
 
-				//	Get the proper category
-
-				TArray<CMissionType *> *pCategory = MissionsByPriority.SetAt(pType->GetPriority());
-				pCategory->Insert(pType);
-
-				//	If this is part of an arc, keep track of the lowest sequence
-				//	number (which should go first).
-
-				if (!pType->GetArc().IsBlank())
-					{
-					bool bNew;
-					int *pLowest = LowestSequence.SetAt(pType->GetArc(), &bNew);
-					if (bNew || pType->GetArcSequence() < *pLowest)
-						*pLowest = pType->GetArcSequence();
-					}
+				Missions.Insert(pType);
 				}
-
-			//	Now generate a properly ordered list by priority (but randomized within
-			//	each priority).
-
-			TArray<CMissionType *> Missions;
-			for (i = 0; i < MissionsByPriority.GetCount(); i++)
-				{
-				//	Randomize this category
-
-				MissionsByPriority[i].Shuffle();
-
-				//	Add in order
-
-				for (j = 0; j < MissionsByPriority[i].GetCount(); j++)
-					{
-					CMissionType *pType = MissionsByPriority[i][j];
-
-					//	Skip missions that are not the lowest sequence.
-
-					if (!pType->GetArc().IsBlank() 
-							&& *LowestSequence.GetAt(pType->GetArc()) != pType->GetArcSequence())
-						continue;
-						
-					//	Add to the list.
-
-					Missions.Insert(pType);
-					}
-				}
-
+				
 			//	Get arguments
 
 			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
 			ICCItem *pData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+
+			//	Sort the mission list by priority order.
+
+			CMissionList::Sort(Missions);
 
 			//	Create the mission
 

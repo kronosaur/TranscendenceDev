@@ -35,11 +35,13 @@ class CMissionType : public CDesignType
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
 		int GetPriority (void) const { return m_iPriority; }
+		DWORD GetShuffle (void) const { return m_dwShuffle; }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
 		void IncAccepted (void) { m_iAccepted++; }
 		bool KeepsStats (void) const { return !m_fNoStats; }
 		void OnMissionCreated (void) { m_iExisting++; }
 		void OnMissionDestroyed (void) { m_iExisting--; }
+		void SetShuffle (DWORD dwValue = mathRandom()) { m_dwShuffle = dwValue; }
 
 		//	CDesignType overrides
 
@@ -112,5 +114,7 @@ class CMissionType : public CDesignType
 		DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:16;
+
+		DWORD m_dwShuffle = 0;				//	Temp value used to shuffle
 	};
 

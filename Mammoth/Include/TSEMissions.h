@@ -166,6 +166,8 @@ class CMissionList
 		ALERROR ReadFromStream (SLoadCtx &Ctx, CString *retsError);
 		ALERROR WriteToStream (IWriteStream *pStream, CString *retsError);
 
+		static void Sort (TArray<CMissionType *> &Missions);
+
 	private:
 		TArray<CMission *> m_List;
 		bool m_bFree;						//	If TRUE, free missions when removed

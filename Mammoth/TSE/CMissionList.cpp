@@ -225,6 +225,52 @@ ALERROR CMissionList::ReadFromStream (SLoadCtx &Ctx, CString *retsError)
 	return NOERROR;
 	}
 
+void CMissionList::Sort (TArray<CMissionType *> &Missions)
+
+//	Sort
+//
+//	Sort the list of missions by priority order.
+
+	{
+	//	Generate a random number for each mission so that we can do a random
+	//	order.
+
+	for (int i = 0; i < Missions.GetCount(); i++)
+		Missions[i]->SetShuffle();
+
+	//	Sort
+
+	Missions.Sort([](auto pLeft, auto pRight) {
+
+		//	Priority takes precedence, even for missions in the same arc.
+		
+		if (pLeft->GetPriority() > pRight->GetPriority())
+			return -1;
+		else if (pLeft->GetPriority() < pRight->GetPriority())
+			return 1;
+
+		//	If these are the same arc, then we order by sequence.
+
+		if (strEquals(pLeft->GetArc(), pRight->GetArc()))
+			{
+			if (pLeft->GetArcSequence() > pRight->GetArcSequence())
+				return 1;
+			else if (pLeft->GetArcSequence() < pRight->GetArcSequence())
+				return -1;
+			}
+
+		//	If these are different arcs, or if they are the same arc with the
+		//	same sequence, then we shuffle.
+
+		if (pLeft->GetShuffle() > pRight->GetShuffle())
+			return 1;
+		else if (pLeft->GetShuffle() < pRight->GetShuffle())
+			return -1;
+		else
+			return 0;
+		});
+	}
+
 ALERROR CMissionList::WriteToStream (IWriteStream *pStream, CString *retsError)
 
 //	WriteToStream
