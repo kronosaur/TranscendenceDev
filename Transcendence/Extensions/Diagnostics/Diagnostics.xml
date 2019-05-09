@@ -66,6 +66,10 @@
 		<Events>
 			<OnGlobalStartDiagnostics>
 				(block ()
+					(diagRun (list
+						(lambda () (sysSelfTest))
+						))
+
 					(diagTestAutonBay)
 					(diagTestDeviceSlots)
 					)

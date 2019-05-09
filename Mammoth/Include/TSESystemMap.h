@@ -186,7 +186,16 @@ class CSystemMap : public CDesignType
 		bool m_bDebugShowAttributes = false;
 	};
 
-int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2);
+template<>
+inline int Kernel::KeyCompare<CSystemMap::SSortEntry> (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2)
+	{
+	if (Key1.iSort > Key2.iSort)
+		return 1;
+	else if (Key1.iSort < Key2.iSort)
+		return -1;
+	else
+		return 0;
+	}
 
 //	System Tables --------------------------------------------------------------
 

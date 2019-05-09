@@ -747,13 +747,3 @@ void CSystemMap::OnWriteToStream (IWriteStream *pStream)
 
 	pStream->Write(m_dwBackgroundImageOverride);
 	}
-
-int KeyCompare (const CSystemMap::SSortEntry &Key1, const CSystemMap::SSortEntry &Key2)
-	{
-	if (Key1.iSort > Key2.iSort)
-		return 1;
-	else if (Key1.iSort < Key2.iSort)
-		return -1;
-	else
-		return 0;
-	}

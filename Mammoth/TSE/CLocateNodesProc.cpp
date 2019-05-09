@@ -15,7 +15,8 @@ struct SComputedNode
 	Metric rValue;
 	};
 
-int KeyCompare (const SComputedNode &Key1, const SComputedNode &Key2)
+template<>
+int Kernel::KeyCompare<SComputedNode> (const SComputedNode &Key1, const SComputedNode &Key2)
 	{
 	if (Key1.rValue > Key2.rValue)
 		return 1;

@@ -5,7 +5,9 @@
 
 #pragma once
 
+#define _CRT_RAND_S
 #include <cstddef>
+#include <functional>
 
 #ifndef _WINDOWS_
 
@@ -13,7 +15,6 @@
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
 #endif						
 
-#define _CRT_RAND_S
 #define NOMINMAX
 #include <windows.h>
 
@@ -1616,17 +1617,8 @@ inline char uiGetCharFromKeyCode (int iVirtKey) { DWORD dwChar = ::MapVirtualKey
 
 //	Comparison functions
 
-inline int KeyCompare (const CString &sKey1, const CString &sKey2)
-	{
-	return strCompareAbsolute(sKey1, sKey2);
-	}
-
-inline int KeyCompare (const CTimeDate &Key1, const CTimeDate &Key2)
-	{
-	return Key1.Compare(Key2);
-	}
-
-template<class KEY> int KeyCompare (const KEY &Key1, const KEY &Key2) 
+template<class KEY>
+int KeyCompare (const KEY &Key1, const KEY &Key2) 
 	{
 	if (Key1 > Key2)
 		return 1;
@@ -1634,6 +1626,18 @@ template<class KEY> int KeyCompare (const KEY &Key1, const KEY &Key2)
 		return -1;
 	else
 		return 0;
+	}
+
+template<>
+inline int KeyCompare<CString> (const CString &sKey1, const CString &sKey2)
+	{
+	return strCompareAbsolute(sKey1, sKey2);
+	}
+
+template<>
+inline int KeyCompare<CTimeDate> (const CTimeDate &Key1, const CTimeDate &Key2)
+	{
+	return Key1.Compare(Key2);
 	}
 
 //	The following macro "NoEmptyFile()" can be put into a file 

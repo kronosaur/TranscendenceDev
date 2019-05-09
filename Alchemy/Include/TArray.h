@@ -1,9 +1,9 @@
 //	TArray.h
 //
 //	TArray Class
+//	Copyright 2019 by Kronosaur Productions, LLC. All Rights Reserved.
 
-#ifndef INCL_TARRAY
-#define INCL_TARRAY
+#pragma once
 
 enum ESortOptions
 	{
@@ -397,14 +397,21 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 
 		void Sort (Kernel::ESortOptions Order = AscendingSort)
 			{
+			std::function<int(const VALUE &, const VALUE &)> fnCompare = KeyCompare<VALUE>;
+			Sort(fnCompare, Order);
+			}
+
+		void Sort (std::function<int(const VALUE &, const VALUE &)> fnCompare, Kernel::ESortOptions Order = AscendingSort)
+			{
 			if (GetCount() < 2)
 				return;
 
 			TArray<int> Result;
+			Result.GrowToFit(GetCount());
 
 			//	Binary sort the contents into an indexed array
 
-			SortRange(Order, 0, GetCount() - 1, Result);
+			SortRange(fnCompare, Order, 0, GetCount() - 1, Result);
 
 			//	Create a new sorted array
 
@@ -423,13 +430,13 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			}
 
 	private:
-		void SortRange (Kernel::ESortOptions Order, int iLeft, int iRight, TArray<int> &Result)
+		void SortRange (std::function<int(const VALUE &, const VALUE &)> fnCompare, Kernel::ESortOptions Order, int iLeft, int iRight, TArray<int> &Result)
 			{
 			if (iLeft == iRight)
 				Result.Insert(iLeft);
 			else if (iLeft + 1 == iRight)
 				{
-				int iCompare = Order * KeyCompare(GetAt(iLeft), GetAt(iRight));
+				int iCompare = Order * fnCompare(GetAt(iLeft), GetAt(iRight));
 				if (iCompare == 1)
 					{
 					Result.Insert(iLeft);
@@ -448,8 +455,8 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 				TArray<int> Buffer1;
 				TArray<int> Buffer2;
 
-				SortRange(Order, iLeft, iMid, Buffer1);
-				SortRange(Order, iMid+1, iRight, Buffer2);
+				SortRange(fnCompare, Order, iLeft, iMid, Buffer1);
+				SortRange(fnCompare, Order, iMid+1, iRight, Buffer2);
 
 				//	Merge
 
@@ -460,7 +467,7 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 					{
 					if (iPos1 < Buffer1.GetCount() && iPos2 < Buffer2.GetCount())
 						{
-						int iCompare = Order * KeyCompare(GetAt(Buffer1[iPos1]), GetAt(Buffer2[iPos2]));
+						int iCompare = Order * fnCompare(GetAt(Buffer1[iPos1]), GetAt(Buffer2[iPos2]));
 						if (iCompare == 1)
 							Result.Insert(Buffer1[iPos1++]);
 						else if (iCompare == -1)
@@ -595,6 +602,4 @@ template <class VALUE> class TProbabilityTable
 
 #ifdef DEBUG_MEMORY_LEAKS
 #define new DEBUG_NEW
-#endif
-
 #endif
