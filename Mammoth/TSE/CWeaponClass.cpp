@@ -32,6 +32,7 @@
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
 #define MULTI_TARGET_ATTRIB						CONSTLIT("multiTarget")
+#define CAN_FIRE_WHEN_BLIND_ATTRIB				CONSTLIT("canFireWhenBlind")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define POS_ANGLE_ATTRIB						CONSTLIT("posAngle")
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
@@ -95,6 +96,7 @@
 #define PROPERTY_MAX_DAMAGE						CONSTLIT("maxDamage")
 #define PROPERTY_MIN_DAMAGE						CONSTLIT("minDamage")
 #define PROPERTY_MULTI_SHOT						CONSTLIT("multiShot")
+#define PROPERTY_CAN_FIRE_WHEN_BLIND			CONSTLIT("canFireWhenBlind")
 #define PROPERTY_OMNIDIRECTIONAL				CONSTLIT("omnidirectional")
 #define PROPERTY_REPEATING						CONSTLIT("repeating")
 #define PROPERTY_SECONDARY						CONSTLIT("secondary")
@@ -271,9 +273,13 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 
 	bool bSourceDestroyed;
 
+	//  Set the target to NULL if we're blind and we can't fire when blind
+
+	CSpaceObject *pTargetOrNull = ((!m_bCanFireWhenBlind) && pSource->IsBlind()) ? NULL : pTarget;
+
 	//	Fire the weapon
 
-	bool bSuccess = FireWeapon(pDevice, pShot, pSource, pTarget, 0, &bSourceDestroyed, retbConsumedItems);
+	bool bSuccess = FireWeapon(pDevice, pShot, pSource, pTargetOrNull, 0, &bSourceDestroyed, retbConsumedItems);
 
 	//	If firing the weapon destroyed the ship, then we bail out
 
@@ -1425,6 +1431,7 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bContinuousConsumePerShot = pDesc->GetAttributeBool(CONTINUOUS_CONSUME_PERSHOT_ATTRIB);
 	pWeapon->m_iCounterPerShot = pDesc->GetAttributeIntegerBounded(SHIP_COUNTER_PER_SHOT_ATTRIB, 0, -1, 0);
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
+	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
 
 
 	//	Configuration
@@ -1951,7 +1958,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 	//	it is somewhat expensive to get the target from the device so
 	//	we only do it if we really need it.
 
-	if (pTarget == NULL && (IsTracking(ItemCtx, pShot) || m_bBurstTracksTargets))
+	if (pTarget == NULL && (IsTracking(ItemCtx, pShot) || m_bBurstTracksTargets) && !(pSource->IsBlind() && !(m_bCanFireWhenBlind)))
 		pTarget = pDevice->GetTarget(pSource);
 
 	//	Get the fire angle from the device (the AI sets it when it has pre-
@@ -2497,6 +2504,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_MULTI_SHOT))
 		return CC.CreateBool(m_Configuration != ctSingle);
+
+	else if (strEquals(sProperty, PROPERTY_CAN_FIRE_WHEN_BLIND))
+		return CC.CreateBool(m_bCanFireWhenBlind);
 
 	else if (strEquals(sProperty, PROPERTY_OMNIDIRECTIONAL))
 		return CC.CreateBool(GetRotationType(Ctx) == rotOmnidirectional);
@@ -3400,6 +3410,14 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 			pDevice->SetWaiting(false);
 			break;
 		}
+
+	//  If we're blind and this weapon doesn't have the canFireWhenBlind attribute, then
+	//  weapon is not effective.
+
+	if (pSource->IsBlind() && (!m_bCanFireWhenBlind))
+	{
+		return -100;
+	}
 
 	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.

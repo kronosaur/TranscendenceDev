@@ -836,6 +836,7 @@ class CWeaponClass : public CDeviceClass
 		int m_iCounterPerShot;					//	How much to increment the ship's counter by per shot
 		bool m_bOmnidirectional;				//	Omnidirectional
 		bool m_bMIRV;							//	Each shot seeks an independent target
+		bool m_bCanFireWhenBlind;				//	Allow firing this weapon if blinded
 		bool m_bReportAmmo;						//	Report count of ammo shot even if not a launcher
 		int m_iMinFireArc;						//	Min angle of fire arc (degrees)
 		int m_iMaxFireArc;						//	Max angle of fire arc (degrees)
