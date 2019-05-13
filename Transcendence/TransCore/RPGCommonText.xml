@@ -33,10 +33,19 @@
 			
 			<Text id="core.noItemsHereDesc">There are no items here.</Text>
 			<Text id="descNoItemsHere">There are no items here.</Text>
+			<Text id="missionSummary">
+			
+				%Summary%
+				
+				System: %system%\n
+				Payment: %Payment%
+			
+			</Text>
 
 			<!-- Statistics -->
 
 			<Text id="achievementsAndRegrets">achievements &amp; regrets</Text>
+			<Text id="commerce">commerce</Text>
 			<Text id="conducts">conducts</Text>
 			<Text id="criminalRecord">criminal record</Text>
 			<Text id="missionsAndActivities">missions &amp; activities</Text>
@@ -47,6 +56,7 @@
 			<Text id="listAnd">" and "</Text>
 			<Text id="listComma">", "</Text>
 			<Text id="listCommaAnd">", and "</Text>
+			<Text id="none">none</Text>
 			<Text id="the">the</Text>
 			<Text id="we">we</Text>
 			<Text id="you">you</Text>

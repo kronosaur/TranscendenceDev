@@ -14752,7 +14752,7 @@ ICCItem *fnXMLGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			
 		case FN_XML_GET_TEXT:
 			{
-			int iIndex = pArgs->GetElement(1)->GetIntegerValue();
+			int iIndex = (pArgs->GetCount() >= 2 ? pArgs->GetElement(1)->GetIntegerValue() : 0);
 			return pCC->CreateString(pXML->GetContentText(iIndex));
 			}
 
