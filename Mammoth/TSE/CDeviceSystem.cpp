@@ -747,23 +747,44 @@ void CDeviceSystem::ReadyFirstWeapon (CSpaceObject *pObj)
 		}
 	}
 
-void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
+void CDeviceSystem::ReadyNextLauncher(CSpaceObject *pObj, int iDir)
+
+//	ReadyNextLauncher
+//
+//	Select the next launcher.
+
+	{
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devMissileWeapon], itemcatLauncher, iDir, true);
+	if (iNextWeapon != -1)
+		{
+		m_NamedDevices[devMissileWeapon] = iNextWeapon;
+
+		CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
+		CDeviceClass *pClass = pDevice->GetClass();
+		pClass->ValidateSelectedVariant(pObj, pDevice);
+		}
+	}
+
+void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLastAmmo)
 
 //	ReadyNextMissile
 //
 //	Selects the next missile
 
 	{
-	int i;
-
+	bool lastSelected;
+	bool firstSelected;
 	CInstalledDevice *pDevice = GetNamedDevice(devMissileWeapon);
 	if (pDevice)
 		{
 		pDevice->SelectNextVariant(pObj, iDir);
+		lastSelected = pDevice->IsLastVariantSelected(pObj);
+		firstSelected = pDevice->IsFirstVariantSelected(pObj);
 
 		//	If we have any linked missile launchers, then select them also
+		//  TODO: May need to change for SelectedFire launchers, as well as the fire command for SelectedFire launchers...
 
-		for (i = 0; i < m_Devices.GetCount(); i++)
+		for (int i = 0; i < m_Devices.GetCount(); i++)
 			{
 			CInstalledDevice &LinkedDevice = GetDevice(i);
 			CItemCtx Ctx(pObj, &LinkedDevice);
@@ -775,6 +796,27 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir)
 				LinkedDevice.SelectNextVariant(pObj, iDir);
 			}
 		}
+	
+	//  If the last variant is selected, then select the previous missile launcher.
+	//  Don't forget to also select the first (or last) missile, too.
+	//  Note, we select the next missile launcher if the FIRST variant is selected, because we
+	//  were on the last variant before running this function (which moved us to the first one).
+
+	if (bUsedLastAmmo ? pDevice->GetValidVariantCount(pObj) == 0 : true)
+		{
+		bool bselectPrevLauncher = (lastSelected && (iDir == 0));
+		bool bselectNextLauncher = ((firstSelected && (iDir == 1)) || (pDevice == NULL));
+		
+		if ((bselectPrevLauncher || bselectNextLauncher) && (pObj->GetCategory() == CSpaceObject::catShip) && (pObj->IsPlayer()))
+			pObj->AsShip()->SetWeaponTriggered(devMissileWeapon, false);
+
+		if (bselectNextLauncher)
+			ReadyNextLauncher(pObj, 1);
+		else if (bselectPrevLauncher)
+			ReadyNextLauncher(pObj, 0);
+
+		}
+
 	}
 
 void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
@@ -906,7 +948,8 @@ bool CDeviceSystem::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemLis
 			break;
 
 		case itemcatLauncher:
-			m_NamedDevices[devMissileWeapon] = -1;
+			if (m_NamedDevices[devMissileWeapon] == iDevSlot)
+				m_NamedDevices[devMissileWeapon] = FindNextIndex(pObj, iDevSlot, itemcatLauncher);
 			break;
 
 		case itemcatShields:
