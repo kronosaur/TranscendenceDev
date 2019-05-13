@@ -147,6 +147,9 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 		CString sVariant;
 		int iAmmoLeft;
 		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+		int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
+		if (iSelectedFireAmmoLeft >= 0)
+			iAmmoLeft = iSelectedFireAmmoLeft;
 		CString sDevName = pClass->GetName();
 
 		//	Paint the bonus

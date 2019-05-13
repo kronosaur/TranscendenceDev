@@ -159,6 +159,9 @@ class CDeviceClass
 			lkfAlways =				0x0000001,	//	Linked to fire button
 			lkfTargetInRange =		0x0000002,	//	Fire only if the target is in range
 			lkfEnemyInRange =		0x0000004,	//	Fire only an enemy is in range
+			lkfSelected =			0x0000008,  //  All weapons of this type selectable for linked fire by player
+			lkfSelectedVariant =	0x0000010,	//  As above, but applies on combinations of type AND variant, rather than all of a given type regardless of variant
+			lkfNever =				0x0000020,  //  Never fire this weapon
 			};
 
 		enum ECachedHandlers
@@ -473,6 +476,7 @@ class CInstalledDevice
 
 		inline bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
+		inline bool GetCycleFireSettings (void) const { return m_fCycleFire; }
 		inline DWORD GetData (void) const { return m_dwData; }
 		inline int GetDeviceSlot (void) const { return m_iDeviceSlot; }
 		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
@@ -514,6 +518,7 @@ class CInstalledDevice
 		inline bool IsWorking (void) const { return (IsEnabled() && !IsDamaged() && !IsDisrupted()); }
 		inline bool IsWaiting (void) const { return (m_fWaiting ? true : false); }
 		inline void SetActivateDelay (int iDelay) { m_iActivateDelay = iDelay; }
+		inline void SetCycleFireSettings (bool bCycleFire) { m_fCycleFire = bCycleFire; }
 		inline void SetData (DWORD dwData) { m_dwData = dwData; }
 		inline void SetDeviceSlot (int iDev) { m_iDeviceSlot = iDev; }
 		inline void SetDuplicate (bool bDuplicate = true) { m_fDuplicate = bDuplicate; }
@@ -675,10 +680,10 @@ class CInstalledDevice
 		DWORD m_fFateDamaged:1;					//	Always damaged when ship destroyed
 		DWORD m_fFateDestroyed:1;				//	Always destroyed when ship destroyed
 		DWORD m_fFateComponetized:1;			//	Always break into components when ship destroyed
-		DWORD m_fSpare5:1;
-		DWORD m_fSpare6:1;
-		DWORD m_fSpare7:1;
-		DWORD m_fSpare8:1;
+		DWORD m_fLinkedFireSelected : 1;		//	If TRUE, lkfSelected
+		DWORD m_fLinkedFireNever : 1;			//	If TRUE, lkfNever
+		DWORD m_fLinkedFireSelectedVariants : 1;//  If TRUE, lkfSelectedVariant
+		DWORD m_fCycleFire :1;					//	If TRUE, then cycle fire through weapons of same type and linked fire settings
 
 		DWORD m_dwSpare2:8;
 	};

@@ -2350,26 +2350,44 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	{
 	CInstalledDevice *pCurWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
 	CInstalledDevice *pNewWeapon = pCurWeapon;
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+
+	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+		&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+			: true)) : 0x0;
 
 	//	Keep switching until we find a weapon that is not disabled
+	//  If currently selected weapon has LinkedFireSelectable, make sure next
+	//  selected weapon is not (both of the same type AND set as linkedFire="LinkedFireSelected")
+	//  Only then do we check to see if the weapon is enabled.
 
 	do
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
+		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+			&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+				: true)) : 0x0;
 		}
+	
 	while (pNewWeapon 
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
-			&& !pNewWeapon->IsEnabled());
+			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? 
+		(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
+			(CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() != CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber() || pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) :
+			pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
 	//	Done
 
 	if (pNewWeapon)
 		{
-		//	There is a delay in activation
+		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		m_pShip->SetFireDelay(pNewWeapon);
+		if (!(pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected))
+			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player
 

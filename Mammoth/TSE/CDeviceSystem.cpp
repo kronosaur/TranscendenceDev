@@ -255,7 +255,7 @@ int CDeviceSystem::FindNamedIndex (const CItem &Item) const
 	return -1;
 	}
 
-int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir) const
+int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir, bool switchWeapons) const
 
 //	FindNextIndex
 //
@@ -273,13 +273,41 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		iStartingSlot = GetCount() + (iStart + iDir);
 
 	//	Loop until we find an appropriate device
+	//  If our current device has "fire if selected", then create an ordering of "fire if selected"
+	//  weapon types, which is based on the order of appearance of the first enabled weapon of each type with "fire if selected".
+	//  Only return a "fire if selected" device if it is the FIRST such weapon of a given type.
+	//  If selectedFireVariants is true, then only select next item of the same UNID AND variant (as in charges/counter variant).
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+	TSortMap<LONGLONG, int> FireWhenSelectedDeviceTypes;
+	if (switchWeapons)
+		{
+		for (int i = 0; i < GetCount(); i++)
+			{
+			LONGLONG iTypeAndVariant = (m_Devices[i].GetLinkedFireOptions() &
+				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
+			iTypeAndVariant = m_Devices[i].GetUNID() | (iTypeAndVariant << 32);
+			if (!m_Devices[i].IsEmpty()
+				&& m_Devices[i].GetCategory() == Category
+				&& m_Devices[i].GetLinkedFireOptions() & dwLinkedFireSelected
+				&& m_Devices[i].IsEnabled()
+				&& !FireWhenSelectedDeviceTypes.Find(iTypeAndVariant))
+				FireWhenSelectedDeviceTypes.Insert(iTypeAndVariant, i);
+			}
+		}
 
 	for (int i = 0; i < GetCount(); i++)
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
+		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetLinkedFireOptions() &
+			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
+		iTypeAndVariant = m_Devices[iDevice].GetUNID() | (iTypeAndVariant << 32);
+		int iEarliestLkfSelectedItem = -1;
+		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice])))
+				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
+				&& (switchWeapons ? (m_Devices[iDevice].GetLinkedFireOptions() & dwLinkedFireSelected ?
+					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
 		}
 
@@ -756,7 +784,7 @@ void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
 //	Select the next weapon.
 
 	{
-	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir);
+	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir, true);
 	if (iNextWeapon != -1)
 		{
 		m_NamedDevices[devPrimaryWeapon] = iNextWeapon;

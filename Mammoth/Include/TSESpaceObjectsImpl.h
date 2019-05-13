@@ -1000,6 +1000,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void DisableAllDevices (void);
 		void EnableDevice (int iDev, bool bEnable = true, bool bSilent = false);
 		bool FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice);
+		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
 		int GetItemDeviceName (const CItem &Item) const;
 		CItem GetNamedDeviceItem (DeviceNames iDev);

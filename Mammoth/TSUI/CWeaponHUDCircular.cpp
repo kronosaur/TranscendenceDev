@@ -285,6 +285,9 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	CString sVariant;
 	int iAmmoLeft;
 	pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+	int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
+	if (iSelectedFireAmmoLeft >= 0)
+		iAmmoLeft = iSelectedFireAmmoLeft;
 	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier | nounNoModifiers);
 	CString sName = (sVariant.IsBlank() ? sDevName : sVariant);
 
@@ -333,6 +336,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 		}
 
 	//	Paint the ammo count
+	//  TODO: If using LinkedFireSelectable, get the TOTAL ammo count of all weapons.
 
 	if (iAmmoLeft != -1)
 		LargeBoldFont.DrawText(m_Buffer,
