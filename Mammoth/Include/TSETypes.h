@@ -107,7 +107,7 @@ static constexpr int OBJECT_ON_UPDATE_OFFSET =			13;
 static constexpr int OVERLAY_ON_UPDATE_CYCLE =			15;					//	OnUpdate in <OverlayType>
 static constexpr int OVERLAY_ON_UPDATE_OFFSET =			11;
 
-static constexpr int GLOBAL_ON_UPDATE_CYCLE =			15;					//	OnGlobalUpdate for all types
+static constexpr int GLOBAL_ON_UPDATE_CYCLE =			30;					//	OnGlobalUpdate for all types
 
 static constexpr int ON_SCREEN_UPDATE_CYCLE =			15;					//	OnScreenUpdate for <DockScreen>
 
