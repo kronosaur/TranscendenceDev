@@ -13,6 +13,22 @@ CSystemEventList::~CSystemEventList (void)
 	DeleteAll();
 	}
 
+void CSystemEventList::AddEvent (CSystemEvent *pEvent)
+
+	{
+	//	See if we've already got the same event, then we skip.
+
+	if (FindEvent(*pEvent))
+		{
+		delete pEvent;
+		return;
+		}
+
+	//	Insert new event.
+
+	m_List.Insert(pEvent);
+	}
+
 bool CSystemEventList::CancelEvent (CSpaceObject *pObj, bool bInDoEvent)
 
 //	CancelEvent
@@ -120,6 +136,24 @@ void CSystemEventList::DeleteAll (void)
 	m_List.DeleteAll();
 	}
 
+bool CSystemEventList::FindEvent (CSystemEvent &Src, int *retiIndex) const
+
+//	FindEvent
+//
+//	Returns TRUE if the given event already exists.
+
+	{
+	for (int i = 0; i < m_List.GetCount(); i++)
+		if (m_List[i]->IsEqual(Src))
+			{
+			if (retiIndex)
+				*retiIndex = i;
+			return true;
+			}
+
+	return false;
+	}
+
 void CSystemEventList::OnObjDestroyed (CSpaceObject *pObj)
 
 //	OnObjDestroyed
@@ -168,7 +202,7 @@ void CSystemEventList::ReadFromStream (SLoadCtx &Ctx)
 		{
 		CSystemEvent *pEvent;
 		CSystemEvent::CreateFromStream(Ctx, &pEvent);
-		AddEvent(pEvent);
+		m_List.Insert(pEvent);
 		}
 	}
 

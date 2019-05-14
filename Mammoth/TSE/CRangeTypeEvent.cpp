@@ -140,6 +140,18 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 	SetDestroyed();
 	}
 
+bool CRangeTypeEvent::OnIsEqual (CSystemEvent &SrcArg) const
+
+//	OnIsEqual
+//
+//	Returns TRUE if we're equal. Our callers guarantee that Src is of the same
+//	class.
+
+	{
+	CRangeTypeEvent &Src = reinterpret_cast<CRangeTypeEvent &>(SrcArg);
+	return (Src.m_pType == m_pType && strEquals(Src.m_sEvent, m_sEvent));
+	}
+
 bool CRangeTypeEvent::OnObjDestroyed (CSpaceObject *pObj)
 
 //	OnObjDestroyed

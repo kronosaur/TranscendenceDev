@@ -20,6 +20,7 @@ class CRangeTypeEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cRangeTypeEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
@@ -59,6 +60,7 @@ class CTimedEncounterEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedEncounterEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override { return false; }
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
@@ -89,6 +91,7 @@ class CTimedCustomEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedCustomEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
@@ -113,6 +116,7 @@ class CTimedRecurringEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedRecurringEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:
@@ -137,6 +141,7 @@ class CTimedTypeEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedTypeEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:

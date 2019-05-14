@@ -25,10 +25,11 @@ class CSystemEvent
 
 		static void CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent);
 
-		inline DWORD GetTick (void) { return m_dwTick; }
-		inline bool IsDestroyed (void) { return m_bDestroyed; }
-		inline void SetDestroyed (void) { m_bDestroyed = true; }
-		inline void SetTick (DWORD dwTick) { m_dwTick = dwTick; }
+		DWORD GetTick (void) { return m_dwTick; }
+		bool IsDestroyed (void) { return m_bDestroyed; }
+		bool IsEqual (CSystemEvent &Src) const;
+		void SetDestroyed (void) { m_bDestroyed = true; }
+		void SetTick (DWORD dwTick) { m_dwTick = dwTick; }
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 		virtual CString DebugCrashInfo (void) { return NULL_STR; }
@@ -42,6 +43,7 @@ class CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const = 0;
+		virtual bool OnIsEqual (CSystemEvent &Src) const = 0;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) = 0;
 
 	private:
@@ -54,7 +56,7 @@ class CSystemEventList
 	public:
 		~CSystemEventList (void);
 
-		inline void AddEvent (CSystemEvent *pEvent) { m_List.Insert(pEvent); }
+		void AddEvent (CSystemEvent *pEvent);
 		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent);
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent);
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent);
@@ -70,6 +72,8 @@ class CSystemEventList
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 	private:
+		bool FindEvent (CSystemEvent &Src, int *retiIndex = NULL) const;
+
 		TArray<CSystemEvent *> m_List;
 	};
 

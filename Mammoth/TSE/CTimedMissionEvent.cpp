@@ -89,6 +89,18 @@ void CTimedMissionEvent::DoEvent (DWORD dwTick, CSystem &System)
 	DEBUG_CATCH
 	}
 
+bool CTimedMissionEvent::OnIsEqual (CSystemEvent &SrcArg) const
+
+//	OnIsEqual
+//
+//	Returns TRUE if we're equal. Our callers guarantee that Src is of the same
+//	class.
+
+	{
+	CTimedMissionEvent &Src = reinterpret_cast<CTimedMissionEvent &>(SrcArg);
+	return (Src.m_pMission == m_pMission && strEquals(Src.m_sEvent, m_sEvent));
+	}
+
 void CTimedMissionEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream

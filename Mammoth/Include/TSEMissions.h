@@ -190,6 +190,7 @@ class CTimedMissionEvent : public CSystemEvent
 
 	protected:
 		virtual Classes GetClass (void) const override { return cTimedMissionEvent; }
+		virtual bool OnIsEqual (CSystemEvent &Src) const override;
 		virtual void OnWriteToStream (CSystem *pSystem, IWriteStream *pStream) override;
 
 	private:

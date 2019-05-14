@@ -84,6 +84,22 @@ void CSystemEvent::CreateFromStream (SLoadCtx &Ctx, CSystemEvent **retpEvent)
 	*retpEvent = pEvent;
 	}
 
+bool CSystemEvent::IsEqual (CSystemEvent &Src) const
+
+//	IsEqual
+//
+//	Returns TRUE if we're equal
+
+	{
+	if (GetClass() != Src.GetClass())
+		return false;
+
+	if (m_bDestroyed != Src.m_bDestroyed)
+		return false;
+
+	return OnIsEqual(Src);
+	}
+
 void CSystemEvent::WriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	WriteToStream
@@ -353,6 +369,18 @@ void CTimedCustomEvent::DoEvent (DWORD dwTick, CSystem &System)
 	DEBUG_CATCH
 	}
 
+bool CTimedCustomEvent::OnIsEqual (CSystemEvent &SrcArg) const
+
+//	OnIsEqual
+//
+//	Returns TRUE if we're equal. Our callers guarantee that Src is of the same
+//	class.
+
+	{
+	CTimedCustomEvent &Src = reinterpret_cast<CTimedCustomEvent &>(SrcArg);
+	return (Src.m_pObj == m_pObj && strEquals(Src.m_sEvent, m_sEvent));
+	}
+
 bool CTimedCustomEvent::OnObjChangedSystems (CSpaceObject *pObj)
 
 //	OnObjChangedSystems
@@ -440,6 +468,18 @@ void CTimedRecurringEvent::DoEvent (DWORD dwTick, CSystem &System)
 	SetTick(dwTick + m_iInterval);
 
 	DEBUG_CATCH
+	}
+
+bool CTimedRecurringEvent::OnIsEqual (CSystemEvent &SrcArg) const
+
+//	OnIsEqual
+//
+//	Returns TRUE if we're equal. Our callers guarantee that Src is of the same
+//	class.
+
+	{
+	CTimedRecurringEvent &Src = reinterpret_cast<CTimedRecurringEvent &>(SrcArg);
+	return (Src.m_pObj == m_pObj && strEquals(Src.m_sEvent, m_sEvent));
 	}
 
 bool CTimedRecurringEvent::OnObjChangedSystems (CSpaceObject *pObj)
@@ -540,6 +580,18 @@ void CTimedTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 		SetDestroyed();
 
 	DEBUG_CATCH
+	}
+
+bool CTimedTypeEvent::OnIsEqual (CSystemEvent &SrcArg) const
+
+//	OnIsEqual
+//
+//	Returns TRUE if we're equal. Our callers guarantee that Src is of the same
+//	class.
+
+	{
+	CTimedTypeEvent &Src = reinterpret_cast<CTimedTypeEvent &>(SrcArg);
+	return (Src.m_pType == m_pType && strEquals(Src.m_sEvent, m_sEvent));
 	}
 
 void CTimedTypeEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
