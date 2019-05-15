@@ -1152,6 +1152,9 @@ struct SDesignLoadCtx
 	bool bNoResources = false;
     bool bLoopImages = false;				//  If TRUE, image effects loop by default
 
+	//	Bind Temporaries (valid only inside BindDesign)
+	TSortMap<CString, CMissionType *> MissionArcRoots;
+
 	//	Output
 	CString sError;
 	CString sErrorFilespec;					//	File in which error occurred.

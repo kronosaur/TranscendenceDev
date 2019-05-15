@@ -145,6 +145,23 @@ ALERROR CMissionType::OnBindDesign (SDesignLoadCtx &Ctx)
 	{
 	m_CachedEvents.Init(this, CACHED_EVENTS);
 
+	//	For missions that are part of an arc, we track the first mission in the
+	//	arc. We need to do this because both priority and shuffle (order) must
+	//	be the same for all missions in an arc (otherwise sorting does not work
+	//	correctly).
+
+	if (!m_sArc.IsBlank())
+		{
+		if (!Ctx.MissionArcRoots.Find(m_sArc, &m_pArcRoot))
+			{
+			//	Should never happen.
+			ASSERT(false);
+			m_sArc = NULL_STR;
+			m_iArcSequence = -1;
+			m_pArcRoot = NULL;
+			}
+		}
+
 	return NOERROR;
 	}
 
@@ -215,6 +232,29 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_iMinLevel = 1;
 		m_iMaxLevel = MAX_SYSTEM_LEVEL;
 		}
+
+	return NOERROR;
+	}
+
+ALERROR CMissionType::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
+
+//	OnPrepareBindDesign
+//
+//	First pass of BindDesign.
+
+	{
+	//	If we're part of a mission arc, we figure out which is the root mission
+	//	type.
+
+	if (!m_sArc.IsBlank())
+		{
+		bool bNew;
+		CMissionType **ppRoot = Ctx.MissionArcRoots.SetAt(m_sArc, &bNew);
+		if (bNew || m_iArcSequence < (*ppRoot)->m_iArcSequence)
+			*ppRoot = this;
+		}
+
+	//	Done
 
 	return NOERROR;
 	}

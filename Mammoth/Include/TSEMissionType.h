@@ -35,8 +35,8 @@ class CMissionType : public CDesignType
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
 		int GetOutOfSystemTimeOut (void) const { return m_iFailIfOutOfSystem; }
-		int GetPriority (void) const { return m_iPriority; }
-		DWORD GetShuffle (void) const { return m_dwShuffle; }
+		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
+		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
 		void IncAccepted (void);
 		bool KeepsStats (void) const { return !m_fNoStats; }
@@ -57,6 +57,7 @@ class CMissionType : public CDesignType
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
+		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
@@ -68,6 +69,7 @@ class CMissionType : public CDesignType
 		//	Basic properties
 
 		CString m_sName;					//	Internal name
+		CMissionType *m_pArcRoot = NULL;	//	First mission in arc (NULL if not part of mission arc)
 		CString m_sArc;						//	For related missions
 		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
 		int m_iPriority;					//	Relative priority (default = 1)

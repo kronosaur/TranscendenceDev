@@ -245,22 +245,27 @@ void CMissionList::Sort (TArray<CMissionType *> &Missions)
 		constexpr DWORD TIME_BUCKET = 18000;	//	10 minutes real-time
 		constexpr DWORD MAX_TIME_BUCKET = 6;
 
-		//	Priority takes precedence, even for missions in the same arc.
-		
-		if (pLeft->GetPriority() > pRight->GetPriority())
-			return -1;
-		else if (pLeft->GetPriority() < pRight->GetPriority())
-			return 1;
-
 		//	If these are the same arc, then we order by sequence.
+		//	
+		//	NOTE: Callers must guarantee that all missions in the same arc have
+		//	the same priority and the same shuffle value. Otherwise, the sort 
+		//	order will be inconsistent (because ordering will not be 
+		//	transitive).
 
-		if (strEquals(pLeft->GetArc(), pRight->GetArc()))
+		if (!pLeft->GetArc().IsBlank() && strEquals(pLeft->GetArc(), pRight->GetArc()))
 			{
 			if (pLeft->GetArcSequence() > pRight->GetArcSequence())
 				return 1;
 			else if (pLeft->GetArcSequence() < pRight->GetArcSequence())
 				return -1;
 			}
+
+		//	Next, priority takes precedence
+		
+		if (pLeft->GetPriority() > pRight->GetPriority())
+			return -1;
+		else if (pLeft->GetPriority() < pRight->GetPriority())
+			return 1;
 
 		//	If these are different arcs, or if they are the same arc with the
 		//	same sequence, then we prefer missions that have not been accepted
