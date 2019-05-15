@@ -2148,9 +2148,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objRecordBuyItem buyerObj sellerObj item [currency] price) -> True/Nil",
 			"iiv*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"objRegisterForEvents",			fnObjSetOld,		FN_OBJ_REGISTER_EVENTS,
-			"(objRegisterForEvents target obj) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"objRegisterForEvents",			fnObjSet,		FN_OBJ_REGISTER_EVENTS,
+			"(objRegisterForEvents target obj|obj-list) -> True/Nil",
+			"iv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objRegisterForSystemEvents",	fnObjSet,		FN_OBJ_REGISTER_SYSTEM_EVENTS,
 			"(objRegisterForSystemEvents target range) -> True/Nil",
@@ -2555,9 +2555,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(msnRefreshSummary missionObj)",
 			"i",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"msnRegisterForEvents",			fnObjSetOld,		FN_OBJ_REGISTER_EVENTS,
-			"(msnRegisterForEvents missionObj obj)",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"msnRegisterForEvents",			fnObjSet,		FN_OBJ_REGISTER_EVENTS,
+			"(msnRegisterForEvents missionObj obj|obj-list)",
+			"iv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnReward",				fnMissionSet,		FN_MISSION_REWARD,
 			"(msnReward missionObj [data])",
@@ -8181,6 +8181,40 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_REGISTER_EVENTS:
+			{
+			ICCItem *pSource = pArgs->GetElement(1);
+
+			//	If the argument is a list, then we assume a list of objects.
+
+			if (pSource->IsList())
+				{
+				if (pSource->GetCount() == 0)
+					return pCC->CreateNil();
+
+				for (int i = 0; i < pSource->GetCount(); i++)
+					{
+					CSpaceObject *pObj2 = CreateObjFromItem(pSource->GetElement(i));
+					if (pObj2)
+						pObj2->AddEventSubscriber(pObj);
+					}
+
+				return pCC->CreateTrue();
+				}
+
+			//	Otherwise we assume a single object
+
+			else
+				{
+				CSpaceObject *pObj2 = CreateObjFromItem(pSource);
+				if (pObj2 == NULL)
+					return pCC->CreateNil();
+
+				pObj2->AddEventSubscriber(pObj);
+				return pCC->CreateTrue();
+				}
+			}
+
 		case FN_OBJ_REGISTER_SYSTEM_EVENTS:
 			if (pObj->IsDestroyed())
 				return pCC->CreateNil();
@@ -8649,21 +8683,6 @@ ICCItem *fnObjSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 			pObj->Place(vPos);
 			pResult = pCC->CreateTrue();
-			break;
-			}
-
-		case FN_OBJ_REGISTER_EVENTS:
-			{
-			CSpaceObject *pObj2 = CreateObjFromItem(pArgs->GetElement(1));
-			pArgs->Discard();
-
-			if (pObj2)
-				{
-				pObj2->AddEventSubscriber(pObj);
-				pResult = pCC->CreateTrue();
-				}
-			else
-				pResult = pCC->CreateNil();
 			break;
 			}
 
