@@ -220,7 +220,6 @@ void CDockSession::OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignT
 //	Player has invoked ship screen.
 
 	{
-	ASSERT(!InSession());
 	if (InSession())
 		return;
 
