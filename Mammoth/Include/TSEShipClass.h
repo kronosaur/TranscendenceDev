@@ -103,7 +103,8 @@ class CArmorLimits
 			{
 			typeNone,							//	No armor limits (any armor is valid; no speed adj)
 
-			typeAuto,							//	Specify standard and max armor mass and compute speed adj
+			typeAuto,							//	Specify standard and max armor class and compute speed adj
+			typeAutoSpeedAdj,					//	Specify standard and max limits, but calc speed adj
 			typeTable,							//	Use an explicit table to set speed adj
 			typeCompatible,						//	Specify standard, max, and speed bonus/penalties
 			};

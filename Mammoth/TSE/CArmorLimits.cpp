@@ -38,6 +38,7 @@ ALERROR CArmorLimits::Bind (SDesignLoadCtx &Ctx)
 			break;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
 			//	If necessary, look up actual mass values for std and max armor.
@@ -189,6 +190,7 @@ bool CArmorLimits::CalcArmorSpeedBonus (CItemCtx &ArmorItem, int iSegmentCount, 
 			}
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
 			int iArmorMass = CalcArmorMass(ArmorItem);
@@ -251,6 +253,7 @@ bool CArmorLimits::CalcArmorSpeedBonus (const CString &sArmorClassID, int iSegme
 			}
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
 			const CArmorMassDefinitions &Def = g_pUniverse->GetDesignCollection().GetArmorMassDefinitions();
@@ -327,6 +330,7 @@ int CArmorLimits::CalcArmorSpeedBonus (const TArray<CItemCtx> &Armor) const
 			return 0;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
 			//	Add up the armor mass
@@ -386,6 +390,7 @@ int CArmorLimits::CalcArmorSpeedBonus (int iSegmentCount, int iTotalArmorMass) c
 			return 0;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 			{
 			//	In InitFromXML we guarantee that m_iHullMass is greater than 0.
 			//	Otherwise, we would have returned an error at load time.
@@ -485,6 +490,7 @@ ICCItem *CArmorLimits::CalcMaxSpeedByArmorMass (CCodeChainCtx &Ctx, int iStdSpee
 			break;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
 			int iMinSpeed = iStdSpeed + m_iMaxArmorSpeedPenalty;
@@ -586,6 +592,7 @@ void CArmorLimits::CalcSummary (const CArmorMassDefinitions &Defs, SSummary &Sum
 			break;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeTable:
 			{
 			Summary.iMaxArmorMass = GetMaxArmorMass();
@@ -662,9 +669,11 @@ CArmorLimits::EResults CArmorLimits::CanInstallArmor (const CItem &Item) const
 			return resultOK;
 
 		case typeAuto:
+		case typeAutoSpeedAdj:
 		case typeCompatible:
 			{
-			if (Item.GetMassKg() > GetMaxArmorMass())
+			int iArmorMass = CalcArmorMass(Item);
+			if (iArmorMass > GetMaxArmorMass())
 				return resultTooHeavy;
 
 			return resultOK;
@@ -925,7 +934,10 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 				return ERR_FAIL;
 				}
 
-			m_iType = typeAuto;
+			if (!m_sMaxArmorClass.IsBlank())
+				m_iType = typeAuto;
+			else
+				m_iType = typeAutoSpeedAdj;
 			}
 		else
 			m_iType = typeNone;
