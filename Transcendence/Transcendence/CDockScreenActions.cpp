@@ -349,7 +349,7 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 			CString sError;
 			if (g_pTrans->GetModel().ShowScreen(NULL, sScreen, sPane, NULL, &sError) != NOERROR)
 				{
-				pScreen->SetDescription(sError);
+				pScreen->SetDescriptionError(sError);
 				::kernelDebugLogString(sError);
 				return;
 				}
@@ -407,7 +407,7 @@ void CDockScreenActions::ExecuteCode (CDockScreen *pScreen, const CString &sID, 
 		{
 		CString sError = pResult->GetStringValue();
 
-		pScreen->SetDescription(sError);
+		pScreen->SetDescriptionError(sError);
 		::kernelDebugLogString(sError);
 		}
 
