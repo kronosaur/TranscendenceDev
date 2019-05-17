@@ -215,13 +215,13 @@
 								(setq fitCount (objGetFitCount sourceObj thisItem))
 								(setq gMaxCount (min availCount fitCount))
 
-								(setq desc (cat "Unit mass: " (strMassString (itmGetMass thisItem))))
+								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
 								(if (gr gMaxCount 1)
-									(setq desc (cat desc " (" gMaxCount " at " (strMassString (multiply (itmGetMass thisItem) gMaxCount)) ")"))
+									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
 									)
 
 								(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
-									(setq desc (cat desc "\nCapacity: " (strMassString (objGetCargoSpaceLeft sourceObj))))
+									(setq desc (cat desc "\nCapacity: " (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))))
 									)
 
 								(switch
@@ -374,7 +374,7 @@
 									(if (gr maxCount 1)
 										(scrTranslate gScreen 'totalMassString {
 											quantity:maxCount
-											mass:(strMassString (* (itmGetMass thisItem) maxCount))
+											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
 											})
 										""
 										)
@@ -392,7 +392,7 @@
 
 								(itemText
 									(scrTranslate gScreen 'descLootDefault {
-										unitMass:(strMassString (itmGetMass thisItem))
+										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
 										unitPrice:(fmtCurrency itemCurrency itemPrice)
 										totalMassString:totalMassString
 										totalPriceString:totalPriceString

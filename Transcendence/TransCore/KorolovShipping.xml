@@ -631,7 +631,7 @@
 							(switch
 								(= (scrGetData gScreen 'shipType) 'freighter)
 									(cat
-										(fmtNumber (typGetProperty classUNID "cargoSpace")) " tons\n"
+										(fmtNumber 'massTons (typGetProperty classUNID "cargoSpace")) "\n"
 										(fmtNumber 'speed (typGetProperty classUNID "maxSpeed")) "\n"
 										(if armor (strCapitalize armor) "None") "\n"
 										(if shield (strCapitalize shield) "None") "\n"

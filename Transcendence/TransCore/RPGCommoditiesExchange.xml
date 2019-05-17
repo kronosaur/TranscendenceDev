@@ -237,8 +237,8 @@
 									markupPercent: (abs itemMarkupPercent)
 									max: (if (gr maxCount 1) maxCount)
 									maxValue: (fmtCurrency currencyUsed (multiply itemCost maxCount))
-									mass: (strMassString (itmGetMass thisItem))
-									maxMass: (strMassString (multiply (itmGetMass thisItem) maxCount))
+									mass: (fmtNumber 'massKg (itmGetMass thisItem))
+									maxMass: (fmtNumber 'massKg (multiply (itmGetMass thisItem) maxCount))
 									})
 
 								;	If the player has some in their cargo hold, then say so here.
@@ -744,8 +744,8 @@
 										markupPercent: (abs itemMarkupPercent)
 										max: (if (gr offerCount 1) offerCount)
 										maxValue: (fmtCurrency currencyUsed (multiply offerPrice offerCount))
-										mass: (strMassString (itmGetMass thisItem))
-										maxMass: (strMassString (multiply (itmGetMass thisItem) offerCount))
+										mass: (fmtNumber 'massKg (itmGetMass thisItem))
+										maxMass: (fmtNumber 'massKg (multiply (itmGetMass thisItem) offerCount))
 										})
 									)
 

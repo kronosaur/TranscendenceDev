@@ -538,6 +538,9 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 			break;
 			}
 
+		case numberMassTons:
+			return ComposeNumber(numberMass, rNumber * 1000.0);
+
 		//	For power, we assume the value in in KWs.
 
 		case numberPower:

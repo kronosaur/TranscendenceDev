@@ -674,6 +674,8 @@
 
 			(setq strMassString (lambda (mass)
 			
+			; DEPRECATED: Use (fmtNumber 'massKg mass) instead
+			;
 			; Returns a string for the mass with appropriate units. The mass
 			; argument is in kilograms. This function returns strings of the
 			; following forms:

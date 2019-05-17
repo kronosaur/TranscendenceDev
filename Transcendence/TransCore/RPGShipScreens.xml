@@ -102,7 +102,7 @@
 
 						(if thisItem
 							(block (theCategory)
-								(setq desc (cat "Unit mass: " (strMassString (itmGetMass thisItem)) "\n\n"))
+								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem)) "\n\n"))
 
 								; Describe the item installation
 								(setq desc (cat desc (objGetInstalledItemDesc gPlayerShip thisItem) "."))
@@ -182,15 +182,15 @@
 							(itemText (if (= maxCount 1)
 
 								(scrTranslate gScreen 'descCargoItem {
-									unitMass: (strMassString (itmGetMass thisItem))
+									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
 									unitPrice: (fmtCurrency  itemCurrency unitPrice)
 									})
 
 								(scrTranslate gScreen 'descCargoItems {
-									unitMass: (strMassString (itmGetMass thisItem))
+									unitMass: (fmtNumber 'massKg (itmGetMass thisItem))
 									unitPrice: (fmtCurrency itemCurrency unitPrice)
 									count: maxCount
-									totalMass: (strMassString (* (itmGetMass thisItem) maxCount))
+									totalMass: (fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
 									totalPrice: (fmtCurrency itemCurrency (* unitPrice maxCount))
 									})
 								))

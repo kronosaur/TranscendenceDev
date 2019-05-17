@@ -238,21 +238,21 @@
 								(scrSetDescTranslate gScreen 'descStatusUnrecoverable {
 									itemName: (itmGetName sourceItem 'noModifiers)
 									angle: (objGetProperty gSource 'rotation)
-									mass: (strMassString mass)
+									mass: (fmtNumber 'massKg mass)
 									})
 
 							(not fitsInCargo)
 								(scrSetDescTranslate gScreen 'descStatusCannotFit {
 									itemName: (itmGetName sourceItem 'noModifiers)
 									angle: (objGetProperty gSource 'rotation)
-									mass: (strMassString mass)
+									mass: (fmtNumber 'massKg mass)
 									condition: (scrTranslate gScreen (cat "condition." condition))
 									})
 
 							(scrSetDescTranslate gScreen 'descStatus {
 								itemName: (itmGetName sourceItem 'noModifiers)
 								angle: (objGetProperty gSource 'rotation)
-								mass: (strMassString mass)
+								mass: (fmtNumber 'massKg mass)
 								condition: (scrTranslate gScreen (cat "condition." condition))
 								})
 							)

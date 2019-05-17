@@ -1056,6 +1056,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"type:\n\n"
 			
 			"   'integer\n"
+			"   'massKg\n"
+			"   'massTons\n"
 			"   'power\n"
 			"   'real\n"
 			"   'regenRate\n"
