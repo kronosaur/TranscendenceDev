@@ -673,7 +673,7 @@ int CWeaponClass::CalcConfiguration (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, 
 	int i;
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	double rShotSeparationScale = pDevice->GetShotSeparationScale();
+	double rShotSeparationScale = (pDevice ? pDevice->GetShotSeparationScale() : 1.0);
 
 	//	Compute the source position
 
