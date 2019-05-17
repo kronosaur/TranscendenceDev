@@ -40,6 +40,7 @@
 #define PROPERTY_TRADE_ID						CONSTLIT("tradeID")
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_VARIANT						CONSTLIT("variant")
+#define PROPERTY_UNKNOWN_TYPE					CONSTLIT("unknownType")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
@@ -1391,9 +1392,12 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	ICCItem *pResult;
 	int i;
 
+	if (m_pItemType == NULL)
+		return CC.CreateNil();
+
 	//	First we handle all properties that are specific to the item instance.
 
-	if (strEquals(sProperty, PROPERTY_CAN_BE_USED))
+	else if (strEquals(sProperty, PROPERTY_CAN_BE_USED))
 		return CC.CreateBool(CanBeUsed(Ctx));
 
 	else if (strEquals(sProperty, PROPERTY_CHARGES))
@@ -1457,6 +1461,15 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 				return CC.CreateString(Attribs[i].sID);
 
 		return CC.CreateNil();
+		}
+
+	else if (strEquals(sProperty, PROPERTY_UNKNOWN_TYPE))
+		{
+		CItemType *pType = m_pItemType->GetUnknownType(Ctx);
+		if (pType == NULL)
+			return CC.CreateNil();
+		else
+			return CC.CreateInteger(pType->GetUNID());
 		}
 
 	else if (strEquals(sProperty, PROPERTY_USED))
