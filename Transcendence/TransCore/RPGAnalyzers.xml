@@ -130,18 +130,33 @@
 							(result (rpgAnalyzeItem gSource (scrGetItem gScreen)))
 							(modifiedItem (@ result 'modifiedItem))
 							)
-						
 							;	Consume a charge on the analyzer
 							(setq analyzerItem (objSetItemProperty gSource analyzerItem 'incCharges -1))
 							(scrSetData gScreen 'analyzer analyzerItem)
 							
 							;	Save the modified item if it still needs analysis
-							(if (and modifiedItem
-									(or (not (itmIsKnown modifiedItem))
-										(objFireItemEvent gSource modifiedItem 'GetIsAnalysisRequired)
+							(switch
+
+								;	If the Analysis failed somehow and the item still 
+								;	needs analysis, then we remember to set the cursor here
+								;	when we come back.
+
+								(and modifiedItem
+										(or (not (itmIsKnown modifiedItem))
+											(objFireItemEvent gSource modifiedItem 'GetIsAnalysisRequired)
+											)
 										)
-									)
-								(scrSetData gScreen 'modifiedItem modifiedItem)
+									(scrSetData gScreen 'modifiedItem modifiedItem)
+
+								;	If we analyzed one item out of a stack and there are still 
+								;	remaining items in the stack, then we remember them so that
+								;	we position the cursor there.
+
+								(@ result 'remainingItem)
+									(scrSetData gScreen 'modifiedItem (@ result 'remainingItem))
+
+								;	Otherwise, nothing
+									
 								(scrSetData gScreen 'modifiedItem Nil)
 								)
 							
@@ -265,7 +280,7 @@
 				;		desc: The description of the result.
 				;		modifiedItem: The item to show, if any.
 				
-				(block (skillLevel failureChance result desc modifiedItem)
+				(block (skillLevel failureChance result desc modifiedItem remainingItem)
 					
 					;	Compute the chance of failure based on skillLevel
 					
@@ -346,6 +361,7 @@
 							(block Nil
 								(setq desc (@ result 'desc))
 								(setq modifiedItem (@ result 'modifiedItem))
+								(setq remainingItem (@ result 'remainingItem))
 								)
 						
 						;	If this is an unknown item, then we identify it.
@@ -372,6 +388,7 @@
 					{
 						desc: desc
 						modifiedItem: modifiedItem
+						remainingItem: remainingItem
 						}
 					)
 				))

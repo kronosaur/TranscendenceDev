@@ -389,7 +389,7 @@
 					(armorHP (objGetItemProperty shipObj dstItem 'hp))
 					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
 					)
-					(dbgOutput repairDesc)
+					;(dbgOutput repairDesc)
 					(switch
 						;	Armor repair items only work on armor
 						(not (itmMatches dstItem "a"))
