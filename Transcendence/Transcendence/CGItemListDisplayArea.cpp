@@ -135,7 +135,7 @@ int CGItemListDisplayArea::Justify (const RECT &rcRect)
 		for (i = 0; i < m_ItemList.GetCount(); i++)
 			{
 			const CItem &Item = m_ItemList[i].Item;
-			int iLinesNeeded = Medium.BreakText(Item.GetNounPhrase(CItemCtx(), nounShort), m_cxBox);
+			int iLinesNeeded = Medium.BreakText(Item.GetNounPhrase(CItemCtx(Item), nounShort), m_cxBox);
 			if (iLinesNeeded > iMaxLines)
 				iMaxLines = iLinesNeeded;
 			}
@@ -273,7 +273,7 @@ void CGItemListDisplayArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 			rcText.top = yBox + ICON_HEIGHT;
 			rcText.right = rcText.left + m_cxBox;
 			rcText.bottom = rcText.top + Medium.GetHeight() * 2;
-			Medium.DrawText(Dest, rcText, rgbColorTitle, Item.GetNounPhrase(CItemCtx(), dwNounPhraseFlags), 0, CG16bitFont::AlignCenter);
+			Medium.DrawText(Dest, rcText, rgbColorTitle, Item.GetNounPhrase(CItemCtx(Item), dwNounPhraseFlags), 0, CG16bitFont::AlignCenter);
 				
 			//	Next
 

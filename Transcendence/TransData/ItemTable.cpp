@@ -353,7 +353,7 @@ void OutputByComponent (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 		for (j = 0; j < Components.GetCount(); j++)
 			{
 			const CItem &ComponentItem = Components.GetItem(j);
-			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase(CItemCtx()));
+			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase(CItemCtx(ComponentItem)));
 			bool bNew;
 			SAttributeEntry *pEntry = ByComponentTable.SetAt(sUNID, &bNew);
 			if (bNew)

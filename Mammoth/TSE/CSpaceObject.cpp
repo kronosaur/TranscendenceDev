@@ -7577,7 +7577,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsEnabled())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
 				return false;
 				}
 
@@ -7585,7 +7585,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsReady())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
 				return false;
 				}
 
