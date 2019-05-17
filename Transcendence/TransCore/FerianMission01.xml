@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Destroy Threat to Ferians =============================================
+	
+	EXTRA DATA
+	
+		reward:				Reward (in credits) for completing mission
+		targetID:			Id of station to destroy
+
+	======================================================================== -->
+	
+	<MissionType UNID="&msFerian01;"
+			name=						"Ferian 01: Destroy Threat"
+			attributes=					"ferian, ferianColony"
+
+			level=						"4-8"
+			>
+
+		<Events>
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+
+				;	Called from inside msnCreate and msnCanCreate.
+				;	If defined, then return either true or nil to indicate that
+				;	the mission can or cannot be created.
+				;
+				;	gData: Data passed in to msnCreate.
+				;	aOwnerObj: Object that create the mission (or nil)
+
+			</CanCreate>
+
+			<OnCreate>
+
+				;	Called when mission object is created. This adds the mission
+				;	to the list of available missions, but it does not 
+				;	necessarily start or accept the mission.
+				;
+				;	The script may call msnDestroy to abort creation of the 
+				;	mission (but a better mechanism is to implement CanCreate).
+				;
+				;	gSource: Mission object
+				;	gData: Arbitrary data passed in to msnCreate
+				;	aOwnerObj: Object that created the mission (or nil)
+
+				(block (
+
+					;	We target any station that is:
+					;
+					;	1)	Within some distance of us.
+					;	2)	In an asteroid field.
+					;	3)	An enemy of the Ringers (Ferians are neutral, but
+					;		they don't want to make the Ringers mad).
+
+					(enemyStations 
+						(filter	(sysFindObject aOwnerObj "TA N:800; +location:asteroids; +populated; -questTarget; -uncharted;") theObj
+							(= (sovGetDisposition &svRingers; (objGetProperty theObj 'sovereign)) 'enemy)
+							)
+						)
+					)
+					(switch
+
+						;	Get a list of enemy stations in the region. If we cannot find any
+						;	suitable targets then we don't have a mission.
+
+						(not enemyStations)
+							(msnDestroy gSource)
+
+						;	Otherwise we can create a mission
+
+						(block (
+							;	Pick a random enemy station to destroy
+
+							(targetObj (seededRandom (objGetDestiny aOwnerObj) enemyStations))
+							(targetLevel (objGetLevel targetObj))
+							)
+
+							;	Remember target
+
+							(msnSetData gSource 'targetID (objGetID targetObj))
+							(msnRegisterForEvents gSource targetObj)
+
+							;	Compute reward
+
+							(msnSetData gSource 'reward 
+								(switch
+									(ls targetLevel 1)
+										500
+
+									(gr targetLevel 10)
+										250000
+
+									(@ '(0 500 1000 2000 4000 8000 15000 30000 65000 130000 250000) targetLevel)
+									)
+								)
+							)
+						)
+					)
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+				(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+			</OnSetPlayerTarget>
+
+			<OnObjDestroyed>
+				(switch
+					(eq (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
+						(msnSuccess gSource)
+					)
+			</OnObjDestroyed>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(objFireEvent ownerObj 'OnPlayerReward {
+						value: (msnGetData gSource 'reward)
+						})
+					)
+			</OnReward>
+		</Events>
+
+		<Language>
+
+			<!-- Code Points -->
+
+			<Text id="Name">
+				Destroy Threat to Ferian Colony
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'descSummary {
+					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					systemName: (sysGetName)
+					})
+			</Text>
+			<Text id="Intro">
+				(block (
+					(data {
+						targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+						reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+						})
+					)
+					(list
+						{	descID: 'textIntro1				labelID: 'actionIntro1			data: data }
+						)
+					)
+			</Text>
+			<Text id="Briefing">
+				(list
+					{	descID: 'textBriefing1
+						data: {
+							targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+							reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							}
+						}
+					)
+			</Text>
+			<Text id="AcceptReply">
+				(list
+					{	descID: 'textAcceptReply1	 }
+					)
+			</Text>
+			<Text id="DeclineReply">
+				(list
+					{	descID: 'textDeclineReply1	 }
+					)
+			</Text>
+			<Text id="InProgress">
+				(list
+					{	descID: 'textInProgress1	 
+						data: {
+							targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)))
+							}
+						}
+					)
+			</Text>
+			<Text id="SuccessDebrief">
+				(list
+					{	descID: 'textSuccessDebrief1	 
+						data: {
+							reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+							}
+						}
+					)
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="descSummary">
+
+				Your mission is to destroy %targetName% in the %systemName% system.
+
+				System: %systemName%\n
+				Payment: %reward% worth of ore
+
+			</Text>
+			<Text id="textIntro1">
+
+				A tall figure in jeweled armor walks towards you; their face is
+				covered by an opaque helmet inlaid with silver and gold. You 
+				hear their voice through a raspy speaker:
+
+				"Welcome, Earthican. If you seek friendship, we would hire you 
+				to destroy our enemies."
+
+			</Text>
+			<Text id="textBriefing1">
+
+				"%TargetName% encroaches on our territory and steals our 
+				minerals. We task you with destroying them.
+
+				"If you succeed, we will pay you in ore worth %reward%.
+				Do you agree?"
+
+			</Text>
+			<Text id="textAcceptReply1">
+
+				"Good fortune then. Return when you have completed your 
+				mission."
+
+			</Text>
+			<Text id="textDeclineReply1">
+
+				The armored figure turns around and leaves without another word.
+
+			</Text>
+			<Text id="textInProgress1">
+
+				"Earthican! You've returned without accomplishing your mission.
+				We will not pay until our enemy is destroyed."
+
+			</Text>
+			<String id="textSuccessDebrief1">
+
+				"Well done, Earthican. We will pay you in ore."
+
+			</String>
+
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

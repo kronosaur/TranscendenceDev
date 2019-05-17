@@ -85,6 +85,9 @@
     <Filter Include="Extensions\Diagnostics">
       <UniqueIdentifier>{8b9944e2-a1f1-4e36-9d1c-c54d80472cfb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Ferians">
+      <UniqueIdentifier>{51254d89-e854-471c-b6db-6d73848a40c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -446,9 +449,6 @@
     </Xml>
     <Xml Include="EtaCeti.xml">
       <Filter>Human Space Library\Star Systems</Filter>
-    </Xml>
-    <Xml Include="Ferians.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
     </Xml>
     <Xml Include="Fiona.xml">
       <Filter>Human Space Library\Characters</Filter>
@@ -824,6 +824,12 @@
     </Xml>
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
+    <Xml Include="Ferians.xml">
+      <Filter>Human Space Library\Ferians</Filter>
+    </Xml>
+    <Xml Include="FerianMission01.xml">
+      <Filter>Human Space Library\Ferians</Filter>
     </Xml>
   </ItemGroup>
 </Project>

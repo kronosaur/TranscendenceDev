@@ -1,6 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
+
+<!-- Ferian Miners
+
+	DATA
+
+	rank: Player's rank with Ferians. One of:
+
+		Nil: No relationship
+		1: Hireling
+		2: Comrade
+		3: Friend
+		4: Counselor
+		5: Provider
+		6: Grand Provider
+
+	status: This tracks the relationship between the sovereign and the player.
+
+		Nil: Player has never talked with Ferians.
+
+		'known: Player has met Ferians.
+
+	xp: XP earned by player doing missions for Ferians.
+
+-->
 	
 	<Sovereign UNID="&svFerianMiners;"
 			name=":the Ferian swarm"
@@ -62,12 +86,14 @@
 		minersKilled:		Total number of miners killed
 		totalWarriors:		Total number of warrior created
 
+		storageID: ID of object to store reward for player.
+
 	-->
 
 	<StationType UNID="&stFerianColony;"
 			name=				"Ferian colony|Ferian colonies"
 			sovereign=			"&svFerianMiners;"
-			inherit=			"&unidCommonText;"
+			inherit=			"&baFerianStation;"
 				 
 			attributes=			"asteroidBase, enemy, envEarth, envAvoidsAir, ferian, generic, neoHuman, miners, populated, zoanthrope"
 				 
@@ -138,11 +164,56 @@
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
+							<Action id="actionMainHall">
+								(block (storageObj)
+									(switch
+										;	If we've never met the Ferians
+
+										(not (typGetData &svFerianMiners; 'status))
+											(scrShowPane gScreen 'FerianIntro)
+
+										;	If the player left some ore here from a 
+										;	previous mission, then allow them to get
+										;	it.
+
+										(and (setq storageObj (objGetObjByID (objGetData gSource 'storageID)))
+												(objGetItems storageObj "*")
+												)
+											(scrShowScreen gScreen &dsRPGLoot; {
+												sourceObj: storageObj
+												})
+
+										;	Otherwise, see if there are any missions.
+
+										(rpgMissionAssignment {
+											missionCriteria: "n +ferianColony;"
+											noMissionTextID: 'descNoMissions
+											})
+										)
+									)
+							</Action>
+
 							<Action id="actionUndock" default="1" cancel="1">
 								<Exit/>
 							</Action>
 						</Actions>
 					</Default>
+
+					<FerianIntro descID="descFerianIntro">
+						<Actions>
+							<Action id="actionContinue">
+								(block ()
+									(scrShowPane gScreen 'Default)
+									(typSetData &svFerianMiners; 'status 'known)
+
+									(rpgMissionAssignment {
+										missionCriteria: "n +ferianColony;"
+										noMissionTextID: 'descNoMissions
+										})
+									)
+							</Action>
+						</Actions>
+					</FerianIntro>
 				</Panes>
 			</Main>
 		</DockScreens>
@@ -360,17 +431,41 @@
 		</Events>
 
 		<Language>
+			<Text id="actionMainHall">[M]ain Hall</Text>
+
 			<Text id="descWelcome">
 			
-				You enter into a vast chamber, only partially pressurized. Large metal maws 
-				consume a small fortune in rocks and ores delivered by Ferian miners.
+				You enter into a vast chamber, only partially pressurized. Large
+				metal maws consume a small fortune in rocks and ores delivered 
+				by Ferian miners.
 
-				Beneath them you see various vessels shrouded by the cranes and girders of a shipyard.
-				Most of the vessels are new Ferian miners being created out of raw materials. 
+				Beneath them you see various vessels shrouded by the cranes and 
+				girders of a shipyard. Most of the vessels are new Ferian miners
+				being created out of raw materials.
+				
 				A few are much larger and have a more sinister shape.
 
 			</Text>
-		</Language>		
+			<Text id="descFerianIntro">
+
+				You enter a room carved out of rock filled with holodisplays.
+				Monkey-like creatures in dark spacesuits bounce around in the
+				low gravity on various errands.
+
+				Tall figures in jeweled armor stand silently around the 
+				displays.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				A tall figure in jeweled armor walks towards you; their face is
+				covered by an opaque helmet inlaid with silver and gold. You 
+				hear their voice through a raspy speaker:
+
+				"There's nothing here for you, Earthican."
+
+			</Text>
+		</Language>
 	</StationType>
 
 <!-- SHIP CLASSES -->
@@ -593,6 +688,44 @@
 			</ParticleSystem>
 		</Weapon>
 	</ItemType>
+
+<!-- BASE CLASSES -->
+
+	<Type unid="&baFerianStation;"
+			inherit="&unidCommonText;"
+			>
+		<Events>
+			<OnPlayerReward>
+				(block (
+					(storageObj (objGetObjByID (objGetData gSource 'storageID)))
+					(rewardValue (@ gData 'value))
+					)
+					;	Create a storage object, if necessary
+
+					(if (not storageObj)
+						(block ()
+							(setq storageObj (sysCreateMarker "Ferian Storage" (objGetPos gSource) &svFerianMiners;))
+							(objSetData gSource 'storageID (objGetID storageObj))
+							)
+						)
+
+					;	Add ore to storage appropriate to the system
+
+					(objAddItemByValue storageObj (itmCreate (sysGetRandomOreType) 1) rewardValue 'credit)
+
+					;	Return data appropriate for a mission to navigate to the
+					;	loot screen.
+
+					{
+						nextScreen: &dsRPGLoot;
+						nextScreenData: {
+							sourceObj: storageObj
+							}
+						}
+					)
+			</OnPlayerReward>
+		</Events>
+	</Type>
 
 <!-- RESOURCES & EFFECTS -->
 	

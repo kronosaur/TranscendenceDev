@@ -531,6 +531,7 @@
       <SubType>Designer</SubType>
     </Xml>
     <Xml Include="EtaCeti.xml" />
+    <Xml Include="FerianMission01.xml" />
     <Xml Include="Ferians.xml">
       <SubType>Designer</SubType>
     </Xml>
