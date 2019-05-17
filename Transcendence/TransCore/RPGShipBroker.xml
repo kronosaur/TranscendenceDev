@@ -1300,7 +1300,8 @@
 								(cat
 									"{/rtf "
 										"{/f:MediumBold;/c:#79828c; level:} " (itmGetLevel armorItem) "\n"
-										"{/f:MediumBold;/c:#79828c; max. armor:} " (fmtNumber 'massKg (objGetProperty shipObj 'maxArmorMass)) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
 									"}"
 									)
 							}
@@ -1309,7 +1310,8 @@
 							desc:
 								(cat
 									"{/rtf "
-										"{/f:MediumBold;/c:#79828c; max. armor:} " (fmtNumber 'massKg (objGetProperty shipObj 'maxArmorMass)) "\n"
+										"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
+										"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
 									"}"
 									)
 							}
@@ -1483,7 +1485,8 @@
 									(cat "{/f:MediumBold;/c:#79828c; for non-weapons:} " maxNonWeaponSlots " (" availNonWeaponSlots " free)\n") 
 									)
 								"\n"
-								"{/f:MediumBold;/c:#79828c; max. armor:} " (fmtNumber 'massKg (objGetProperty shipObj 'maxArmorMass)) "\n"
+								"{/f:MediumBold;/c:#79828c; std. armor:} " (objGetProperty shipObj 'stdArmorClassName) "\n"
+								"{/f:MediumBold;/c:#79828c; max. armor:} " (objGetProperty shipObj 'maxArmorClassName) "\n"
 								"\n"
 								"{/f:MediumBold;/c:#79828c; manufacturer:} " (objGetProperty shipObj 'manufacturer) "\n"
 								"{/f:MediumBold;/c:#79828c; size:} " (objGetProperty shipObj 'size) " meters\n"

@@ -189,6 +189,7 @@
 #define PROPERTY_HULL_VALUE						CONSTLIT("hullValue")
 #define PROPERTY_LAUNCHER_ITEM					CONSTLIT("launcherItem")
 #define PROPERTY_MAX_ARMOR_CLASS				CONSTLIT("maxArmorClass")
+#define PROPERTY_MAX_ARMOR_CLASS_NAME			CONSTLIT("maxArmorClassName")
 #define PROPERTY_MAX_ARMOR_MASS					CONSTLIT("maxArmorMass")
 #define PROPERTY_MAX_SPEED						CONSTLIT("maxSpeed")
 #define PROPERTY_MAX_SPEED_AT_MAX_ARMOR			CONSTLIT("maxSpeedAtMaxArmor")
@@ -200,6 +201,7 @@
 #define PROPERTY_RATED_POWER					CONSTLIT("ratedPower")
 #define PROPERTY_SHIELD_ITEM					CONSTLIT("shieldItem")
 #define PROPERTY_STD_ARMOR_CLASS				CONSTLIT("stdArmorClass")
+#define PROPERTY_STD_ARMOR_CLASS_NAME			CONSTLIT("stdArmorClassName")
 #define PROPERTY_STD_ARMOR_MASS					CONSTLIT("stdArmorMass")
 #define PROPERTY_THRUST							CONSTLIT("thrust")
 #define PROPERTY_THRUST_RATIO					CONSTLIT("thrustRatio")
@@ -3877,6 +3879,20 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_CLASS))
 		return (!m_Hull.GetArmorLimits().GetMaxArmorClass().IsBlank() ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorClass()) : ICCItemPtr(ICCItem::Nil));
 
+	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_CLASS_NAME))
+		{
+		const CString &sMassClass = m_Hull.GetArmorLimits().GetMaxArmorClass();
+		if (!sMassClass.IsBlank())
+			{
+			const CArmorMassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorMassDefinitions();
+			return ICCItemPtr(MassDef.GetMassClassLabel(sMassClass));
+			}
+		else if (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
+			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetMaxArmorMass()));
+		else
+			return ICCItemPtr();
+		}
+
 	else if (strEquals(sProperty, PROPERTY_MAX_ARMOR_MASS))
 		return (m_Hull.GetArmorLimits().GetMaxArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetMaxArmorMass()) : ICCItemPtr(ICCItem::Nil));
 
@@ -3922,6 +3938,20 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_CLASS))
 		return (!m_Hull.GetArmorLimits().GetStdArmorClass().IsBlank() ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorClass()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_CLASS_NAME))
+		{
+		const CString &sMassClass = m_Hull.GetArmorLimits().GetStdArmorClass();
+		if (!sMassClass.IsBlank())
+			{
+			const CArmorMassDefinitions &MassDef = GetUniverse().GetDesignCollection().GetArmorMassDefinitions();
+			return ICCItemPtr(MassDef.GetMassClassLabel(sMassClass));
+			}
+		else if (m_Hull.GetArmorLimits().GetStdArmorMass() > 0) 
+			return ICCItemPtr(CLanguage::ComposeNumber(CLanguage::numberMass, m_Hull.GetArmorLimits().GetStdArmorMass()));
+		else
+			return ICCItemPtr();
+		}
 
 	else if (strEquals(sProperty, PROPERTY_STD_ARMOR_MASS))
 		return (m_Hull.GetArmorLimits().GetStdArmorMass() > 0 ? ICCItemPtr(m_Hull.GetArmorLimits().GetStdArmorMass()) : ICCItemPtr(ICCItem::Nil));
