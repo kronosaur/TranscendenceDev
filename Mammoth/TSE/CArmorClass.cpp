@@ -366,12 +366,13 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	{
 	int i;
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
     const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 
 	//	If we require a higher level to repair
 
-	if (GetRepairLevel(ItemCtx) != Stats.iLevel)
-		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("repair level %d"), GetRepairLevel(ItemCtx))));
+	if (ArmorItem.GetRepairLevel() != Stats.iLevel)
+		retList->Insert(SDisplayAttribute(attribNeutral, strPatternSubst(CONSTLIT("repair level %d"), ArmorItem.GetRepairLevel())));
 
 	//	Radiation 
 
@@ -1613,6 +1614,9 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 	{
 	int i;
 
+	CItem Item(m_pItemType, 1);
+	CArmorItem ArmorItem = Item.AsArmorItem();
+
 	if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(m_Stats.iHitPoints);
 	else if (strEquals(sField, FIELD_BALANCE))
@@ -1670,7 +1674,7 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_REPAIR_COST))
-		*retsValue = strFromInt(GetRepairCost(CItemCtx()));
+		*retsValue = strFromInt(ArmorItem.GetRepairCost());
 	else if (strEquals(sField, FIELD_REGEN))
 		*retsValue = strFromInt((int)m_Stats.Regen.GetHPPer180());
 	else if (strEquals(sField, FIELD_INSTALL_COST))
@@ -2044,10 +2048,10 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(mathRound(CalcRegen180(Ctx)));
 
 	else if (strEquals(sName, PROPERTY_REPAIR_COST))
-		return ICCItemPtr(GetRepairCost(Ctx));
+		return ICCItemPtr(ArmorItem.GetRepairCost());
 
 	else if (strEquals(sName, PROPERTY_REPAIR_LEVEL))
-		return ICCItemPtr(GetRepairLevel(Ctx));
+		return ICCItemPtr(ArmorItem.GetRepairLevel());
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialShatter));
@@ -2222,18 +2226,29 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 	return true;
 	}
 
-int CArmorClass::GetRepairLevel (CItemCtx &ItemCtx) const
+int CArmorClass::GetRepairCost (const CArmorItem &ArmorItem) const
+
+//	GetRepairCost
+//
+//	Returns the repair cost in default currency.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	return (int)ArmorItem.GetCurrencyType().Exchange(Stats.RepairCost);
+	}
+
+int CArmorClass::GetRepairLevel (const CArmorItem &ArmorItem) const
 
 //	GetRepairLevel
 //
 //	Returns the tech level required to repair this armor segment.
 
 	{
-	if (m_pScalable == NULL || ItemCtx.IsItemNull())
+	if (m_pScalable == NULL)
 		return m_iRepairTech;
 
-	int iActualLevel = ItemCtx.GetItem().GetLevel();
-	int iBaseLevel = m_pItemType->GetLevel();
+	int iActualLevel = ArmorItem.GetLevel();
+	int iBaseLevel = ArmorItem.GetMinLevel();
 	int iScaledRepairLevel = Max(1, Min(m_iRepairTech + (iActualLevel - iBaseLevel), MAX_ITEM_LEVEL));
 
 	return iScaledRepairLevel;

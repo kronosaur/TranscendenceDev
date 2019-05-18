@@ -4071,10 +4071,10 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(ArmorItem.GetMaxHP());
 
 		case FN_ARM_REPAIRCOST:
-			return pCC->CreateInteger(ArmorItem.GetArmorClass().GetRepairCost(CItemCtx(&Item)));
+			return pCC->CreateInteger(ArmorItem.GetRepairCost());
 
 		case FN_ARM_REPAIRTECH:
-			return pCC->CreateInteger(ArmorItem.GetArmorClass().GetRepairLevel(CItemCtx(&Item)));
+			return pCC->CreateInteger(ArmorItem.GetRepairLevel());
 
 		case FN_ARM_IS_RADIATION_IMMUNE:
 			return pCC->CreateBool(ArmorItem.GetArmorClass().IsImmune(CItemCtx(&Item), specialRadiation));

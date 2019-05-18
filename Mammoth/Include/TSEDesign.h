@@ -1374,8 +1374,6 @@ bool SetFrequencyByLevel (CString &sLevelFrequency, int iLevel, int iFreq);
 
 //	Inline implementations
 
-#include "TSEItemInlines.h"
-
 inline bool DamageDesc::IsEnergyDamage (void) const { return ::IsEnergyDamage(m_iType); }
 inline bool DamageDesc::IsMatterDamage (void) const { return ::IsMatterDamage(m_iType); }
 

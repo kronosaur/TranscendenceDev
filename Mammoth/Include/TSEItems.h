@@ -16,6 +16,7 @@ class CDifferentiatedItem
 	{
 	public:
 		inline int GetCharges (void) const;
+		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
@@ -53,6 +54,8 @@ class CArmorItem : public CDifferentiatedItem
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
+		inline int GetRepairCost (void) const;
+		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
 
 	private:

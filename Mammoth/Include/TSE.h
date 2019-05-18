@@ -2055,6 +2055,7 @@ class CListWrapper : public IListData
 #include "TSEUniverse.h"
 
 #include "TSESpaceObjectsEnum.h"
+#include "TSEItemInlines.h"
 
 //	String-Constant Helpers
 

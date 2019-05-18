@@ -554,7 +554,7 @@ void CCodeChainCtx::DefineItem (const CString &sVar, const CItem &Item)
 		m_CC.DefineGlobal(sVar, m_CC.CreateNil());
 	}
 
-void CCodeChainCtx::DefineItemType (const CString &sVar, CItemType *pType)
+void CCodeChainCtx::DefineItemType (const CString &sVar, const CItemType *pType)
 
 //	DefineItemType
 //

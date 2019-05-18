@@ -48,7 +48,7 @@ class CCodeChainCtx
 		void DefineItem (const CItem &Item);
 		void DefineItem (const CString &sVar, const CItem &Item);
 		void DefineItem (const CString &sVar, CItemCtx &ItemCtx);
-		void DefineItemType (const CString &sVar, CItemType *pType);
+		void DefineItemType (const CString &sVar, const CItemType *pType);
 		inline void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
 		void DefineSource (CSpaceObject *pSource);

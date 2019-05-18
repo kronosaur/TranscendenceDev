@@ -36,6 +36,15 @@ inline int CDifferentiatedItem::GetCharges (void) const
 	return m_pCItem->GetCharges();
 	}
 
+inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
+	{
+	const CEconomyType *pCurrency = GetType().GetCurrencyType();
+	if (pCurrency)
+		return *pCurrency;
+	else
+		return GetType().GetUniverse().GetCreditCurrency();
+	}
+
 inline int CDifferentiatedItem::GetLevel (void) const
 	{
 	return m_pCItem->GetLevel();
@@ -73,11 +82,6 @@ inline CString CArmorClass::GetName (void) const
 	return m_pItemType->GetNounPhrase();
 	}
 
-inline int CArmorClass::GetRepairCost (CItemCtx &Ctx) const
-	{
-	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.RepairCost);
-	}
-
 inline DWORD CArmorClass::GetUNID (void)
 	{
 	return m_pItemType->GetUNID();
@@ -112,6 +116,16 @@ inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
 inline int CArmorItem::GetMaxHP (bool bForceComplete) const
 	{
 	return GetArmorClass().GetMaxHP(*this, bForceComplete);
+	}
+
+inline int CArmorItem::GetRepairCost (void) const
+	{
+	return GetArmorClass().GetRepairCost(*this);
+	}
+
+inline int CArmorItem::GetRepairLevel (void) const
+	{
+	return GetArmorClass().GetRepairLevel(*this);
 	}
 
 inline CSpaceObject *CArmorItem::GetSource (void) const

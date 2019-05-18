@@ -120,8 +120,6 @@ class CArmorClass
 		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
-		inline int GetRepairCost (CItemCtx &Ctx) const;
-		int GetRepairLevel (CItemCtx &ItemCtx) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		CString GetShortName (void);
 		inline int GetStealth (void) const { return m_iStealth; }
@@ -175,6 +173,8 @@ class CArmorClass
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
 		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
+		int GetRepairCost (const CArmorItem &ArmorItem) const;
+		int GetRepairLevel (const CArmorItem &ArmorItem) const;
         const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 
 		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;

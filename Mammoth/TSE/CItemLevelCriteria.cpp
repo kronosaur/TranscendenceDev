@@ -65,11 +65,8 @@ bool CItemLevelCriteria::MatchesCriteria (int iLevel, const CItem &Item) const
 			if (!Item.IsArmor())
 				return false;
 
-			CArmorClass *pArmor = Item.GetType()->GetArmorClass();
-			if (pArmor == NULL)
-				return false;
-
-			iItemLevel = pArmor->GetRepairLevel(CItemCtx(Item));
+			const CArmorItem ArmorItem = Item.AsArmorItem();
+			iItemLevel = ArmorItem.GetRepairLevel();
 			break;
 			}
 
