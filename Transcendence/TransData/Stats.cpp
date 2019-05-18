@@ -17,13 +17,13 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pItem = Universe.GetItemType(i);
-		CArmorClass *pArmor = pItem->GetArmorClass();
-		if (pArmor == NULL)
+		CItem Item(pItem, 1);
+		CArmorItem ArmorItem = Item.AsArmorItem();
+		if (!ArmorItem)
 			continue;
 
-		CItem Item(pItem, 1);
 		CString sName = pItem->GetNounPhrase();
-		int iHP = pArmor->GetMaxHP(CItemCtx(&Item));
+		int iHP = ArmorItem.GetMaxHP();
 
 		printf("%d\t%s\t%d\t%d\t%d\t", 
 				pItem->GetLevel(), 
@@ -37,7 +37,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		int iDamage;
 		for (iDamage = damageLaser; iDamage < damageCount; iDamage++)
 			{
-			printf("%d", pArmor->GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage));
+			printf("%d", ArmorItem.GetArmorClass().GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage));
 			if (iDamage != damageCount - 1)
 				printf("\t");
 			}
@@ -51,13 +51,13 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 	for (i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pItem = Universe.GetItemType(i);
-		CArmorClass *pArmor = pItem->GetArmorClass();
-		if (pArmor == NULL)
+		CItem Item(pItem, 1);
+		CArmorItem ArmorItem = Item.AsArmorItem();
+		if (!ArmorItem)
 			continue;
 
 		CString sName = pItem->GetNounPhrase();
-		CItem Item(pItem, 1);
-		int iHP = pArmor->GetMaxHP(CItemCtx(&Item));
+		int iHP = ArmorItem.GetMaxHP();
 
 		printf("%d\t%s\t%d\t", 
 				pItem->GetLevel(), 
@@ -69,7 +69,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		int iDamage;
 		for (iDamage = damageLaser; iDamage < damageCount; iDamage++)
 			{
-			int iAdj = pArmor->GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage);
+			int iAdj = ArmorItem.GetArmorClass().GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage);
 			if (iAdj == 0)
 				printf("----");
 			else

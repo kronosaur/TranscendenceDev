@@ -50,14 +50,15 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
     TArray<CItemType *> &Armors = *m_ArmorTable.SetAt(pWeaponItem->GetLevel());
     for (i = 0; i < Armors.GetCount(); i++)
         {
-        CItem ArmorItem(Armors[i], 1);
-        CItemCtx ArmorCtx(ArmorItem);
-        CArmorClass *pArmorClass = ArmorCtx.GetArmorClass();
-        if (pArmorClass == NULL)
+        CItem Item(Armors[i], 1);
+        CItemCtx ArmorCtx(Item);
+
+		CArmorItem ArmorItem = Item.AsArmorItem();
+        if (!ArmorItem)
             continue;
 
-        Metric rHP = pArmorClass->GetMaxHP(ArmorCtx, true);
-        Metric rDamageAdj = pArmorClass->GetDamageAdj(ArmorCtx, iDamageType);
+        Metric rHP = ArmorItem.GetMaxHP(true);
+        Metric rDamageAdj = ArmorItem.GetArmorClass().GetDamageAdj(ArmorCtx, iDamageType);
 
         //  Compute number of ticks to destroy the armor
 

@@ -113,9 +113,8 @@ class CArmorClass
 		inline int GetInstallCost (CItemCtx &Ctx) const;
 		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
-		int GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete = false) const;
 		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
-		inline CString GetName (void);
+		inline CString GetName (void) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
@@ -175,6 +174,7 @@ class CArmorClass
 
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
+		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
         const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 
 		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
@@ -291,6 +291,8 @@ class CShipArmorDesc
 class CInstalledArmor
 	{
 	public:
+		const CArmorItem AsArmorItem (void) const { return m_pItem->AsArmorItemOrThrow(); }
+		CArmorItem AsArmorItem (void) { return m_pItem->AsArmorItemOrThrow(); }
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;

@@ -15,6 +15,7 @@ class CShipClass;
 class CDifferentiatedItem
 	{
 	public:
+		inline int GetCharges (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
@@ -32,6 +33,10 @@ class CDifferentiatedItem
 
 		const CItem *m_pCItem = NULL;
 		CItem *m_pItem = NULL;
+
+		mutable TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
+
+		static TSharedPtr<CItemEnhancementStack> m_pNullEnhancements;
 	};
 
 class CArmorItem : public CDifferentiatedItem
@@ -43,6 +48,9 @@ class CArmorItem : public CDifferentiatedItem
 		operator CItem & () { return *m_pItem; }
 
 		inline const CArmorClass &GetArmorClass (void) const;
+		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		inline const CInstalledArmor *GetInstalledArmor (void) const;
+		inline int GetMaxHP (bool bForceComplete = false) const;
 		inline CSpaceObject *GetSource (void) const;
 
 	private:
@@ -51,6 +59,8 @@ class CArmorItem : public CDifferentiatedItem
 
 		CArmorItem (const CItem *pItem) : CDifferentiatedItem(pItem)
 			{ }
+
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 
 	friend class CItem;
 	};

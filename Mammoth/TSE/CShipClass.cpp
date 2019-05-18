@@ -711,16 +711,17 @@ Metric CShipClass::CalcDefenseRate (void) const
 	if (pSect)
 		{
         CArmorClass *pArmor = pSect->GetArmorClass();
-        CItem ArmorItem;
-        pSect->CreateArmorItem(&ArmorItem);
-        CItemCtx ItemCtx(ArmorItem);
+        CItem Item;
+        pSect->CreateArmorItem(&Item);
+		CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
-		Ahp = pArmor->GetMaxHP(ItemCtx);
+		Ahp = ArmorItem.GetMaxHP();
 		Aregen = pArmor->GetItemType()->GetDataFieldInteger(FIELD_REGEN);
 
 		//	Adjust for damage type adjustment (for armor that has more resistance
 		//	than standard armor, e.g., meteorsteel).
 
+        CItemCtx ItemCtx(Item);
 		int iDamageAdj = pArmor->CalcAverageRelativeDamageAdj(ItemCtx);
 		Metric rDamageAdj = (iDamageAdj > 0 ? 100.0 / iDamageAdj : 10.0);
 		Ahp *= rDamageAdj;

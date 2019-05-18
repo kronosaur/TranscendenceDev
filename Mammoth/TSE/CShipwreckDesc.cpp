@@ -50,7 +50,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 			//	Make sure that the armor item reflects the current
 			//	state of the ship's armor.
 
-			if (WreckItem.IsArmor())
+			if (auto ArmorItem = WreckItem.AsArmorItem())
 				{
 				//	Most armor is destroyed
 
@@ -64,7 +64,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 				int iCurMaxHP = pArmor->GetMaxHP(pShip);
 
 				WreckItem.ClearInstalled();
-				int iNewMaxHP = WreckItem.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(WreckItem));
+				int iNewMaxHP = ArmorItem.GetMaxHP();
 
 				int iArmorIntegrity = (iCurMaxHP > 0 ? 100 * iCurHP / iCurMaxHP : 0);
 				int iDamagedHP = iNewMaxHP - CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);

@@ -928,9 +928,11 @@ int CItem::GetDamagedHP (CItemCtx &ItemCtx) const
 
 	if (iDamagedHP == 0)
 		{
-		CArmorClass *pArmor = m_pItemType->GetArmorClass();
-		int iMaxHP = pArmor->GetMaxHP(ItemCtx);
-		iDamagedHP = iMaxHP / 2;
+		if (auto ArmorItem = AsArmorItem())
+			{
+			int iMaxHP = ArmorItem.GetMaxHP();
+			iDamagedHP = iMaxHP / 2;
+			}
 		}
 
 	return iDamagedHP;
@@ -1196,17 +1198,17 @@ int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP, bool bUninstalled) const
 		return 0;
 		}
 
-	else if (CArmorClass *pArmor = m_pItemType->GetArmorClass())
+	else if (auto ArmorItem = AsArmorItem())
 		{
 		const CInstalledArmor *pInstalled = GetInstalledArmor();
 		if (!bUninstalled && pInstalled)
 			{
-			if (retiMaxHP) *retiMaxHP = pArmor->GetMaxHP(Ctx);
+			if (retiMaxHP) *retiMaxHP = ArmorItem.GetMaxHP();
 			return pInstalled->GetHitPoints();
 			}
 		else
 			{
-			int iMaxHP = pArmor->GetMaxHP(Ctx);
+			int iMaxHP = ArmorItem.GetMaxHP();
 			int iDamagedHP = GetDamagedHP(Ctx);
 
 			if (retiMaxHP) *retiMaxHP = iMaxHP;

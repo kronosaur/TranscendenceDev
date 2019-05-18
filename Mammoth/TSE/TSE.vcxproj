@@ -326,6 +326,7 @@
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
+    <ClCompile Include="CArmorItem.cpp" />
     <ClCompile Include="CArmorLimits.cpp" />
     <ClCompile Include="CArmorMassDefinitions.cpp" />
     <ClCompile Include="CArmorSystem.cpp" />
@@ -365,6 +366,7 @@
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
+    <ClCompile Include="CDifferentiatedItem.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

@@ -3875,7 +3875,8 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 			OldArmor.ClearInstalled();
 			OldArmor.SetCount(1);
 
-			int iNewMaxHP = OldArmor.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(OldArmor));
+			CArmorItem OldArmorItem = OldArmor.AsArmorItemOrThrow();
+			int iNewMaxHP = OldArmorItem.GetMaxHP();
 			OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
 
 			ItemList.AddItem(OldArmor);

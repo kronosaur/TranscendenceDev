@@ -58,7 +58,7 @@ int CInstalledArmor::GetHitPointsPercent (CSpaceObject *pSource)
 //	Return the armor integrity (hit points) as a % of maximum hp.
 
 	{
-	return CArmorClass::CalcIntegrity(GetHitPoints(), GetMaxHP(pSource));
+	return CArmorClass::CalcIntegrity(GetHitPoints(), AsArmorItem().GetMaxHP());
 	}
 
 int CInstalledArmor::IncCharges (CSpaceObject *pSource, int iChange)
@@ -216,11 +216,12 @@ void CInstalledArmor::SetComplete (CSpaceObject *pSource, bool bComplete)
 	{
 	if (bComplete != m_fComplete)
 		{
-		int iOldMaxHP = GetMaxHP(pSource);
+		CArmorItem ArmorItem = AsArmorItem();
+		int iOldMaxHP = ArmorItem.GetMaxHP();
 
 		m_fComplete = bComplete;
 
-		m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, GetMaxHP(pSource));
+		m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, ArmorItem.GetMaxHP());
 		}
 	}
 
@@ -234,7 +235,8 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	//	Figure out our current max HP, because we might need to change current
 	//	hit points.
 
-	int iOldMaxHP = GetMaxHP(pSource);
+	CArmorItem ArmorItem = AsArmorItem();
+	int iOldMaxHP = ArmorItem.GetMaxHP();
 
 	//	Reset the stack.
 
@@ -246,7 +248,7 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	//	Now compute our new maximum and see if we need to adjust current hit 
 	//	points.
 
-	m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, GetMaxHP(pSource));
+	m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, ArmorItem.GetMaxHP());
 	}
 
 void CInstalledArmor::WriteToStream (IWriteStream *pStream)

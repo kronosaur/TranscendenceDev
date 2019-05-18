@@ -503,8 +503,8 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		{
 		case serviceRepairArmor:
 			{
-			CArmorClass *pArmor = Ctx.pItem->GetType()->GetArmorClass();
-			if (pArmor == NULL)
+			auto ArmorItem = Ctx.pItem->AsArmorItem();
+			if (!ArmorItem)
 				return -1;
 
             //  If we don't have a source, then we only do a basic calculation. 
@@ -512,7 +512,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
             //  guidelines).
 
             if (Ctx.pObj == NULL)
-    			iBasePrice = Ctx.iCount * pArmor->GetRepairCost(CItemCtx(*Ctx.pItem));
+    			iBasePrice = Ctx.iCount * ArmorItem.GetArmorClass().GetRepairCost(CItemCtx(*Ctx.pItem));
 
             //  Otherwise, the price is based on how much damage we've taken
 
@@ -524,19 +524,19 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 
                 CItemCtx ItemCtx(Ctx.pItem, Ctx.pObj, pSeg);
 
-                int iMaxHP = pArmor->GetMaxHP(ItemCtx);
+                int iMaxHP = ArmorItem.GetMaxHP();
                 int iHalf = iMaxHP / 2;
 
                 //  We can repair up to half of maximum damage at normal price
 
                 int iHPToRepair = Ctx.iCount;
                 int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
-                iBasePrice = iHPAtNormalPrice * pArmor->GetRepairCost(ItemCtx);
+                iBasePrice = iHPAtNormalPrice * ArmorItem.GetArmorClass().GetRepairCost(ItemCtx);
 
                 //  If we have more damage than that, we pay double price
 
                 int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
-                iBasePrice += iHPAtExtraPrice * pArmor->GetRepairCost(ItemCtx) * EXTRA_REPAIR_COST_FACTOR;
+                iBasePrice += iHPAtExtraPrice * ArmorItem.GetArmorClass().GetRepairCost(ItemCtx) * EXTRA_REPAIR_COST_FACTOR;
                 }
 
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();

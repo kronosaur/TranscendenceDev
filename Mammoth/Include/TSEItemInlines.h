@@ -31,6 +31,11 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline int CDifferentiatedItem::GetCharges (void) const
+	{
+	return m_pCItem->GetCharges();
+	}
+
 inline int CDifferentiatedItem::GetLevel (void) const
 	{
 	return m_pCItem->GetLevel();
@@ -63,7 +68,7 @@ inline int CArmorClass::GetInstallCost (CItemCtx &Ctx) const
 	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
 	}
 
-inline CString CArmorClass::GetName (void)
+inline CString CArmorClass::GetName (void) const
 	{
 	return m_pItemType->GetNounPhrase();
 	}
@@ -85,9 +90,28 @@ inline const CArmorClass &CArmorItem::GetArmorClass (void) const
 	return *GetType().GetArmorClass();
 	}
 
+inline const CItemEnhancementStack &CArmorItem::GetEnhancements (void) const
+	{
+	const CItemEnhancementStack *pStack = GetEnhancementStack();
+	if (pStack) 
+		return *pStack; 
+	else 
+		return *m_pNullEnhancements;
+	}
+
+inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
+	{
+	return m_pCItem->GetInstalledArmor();
+	}
+
+inline int CArmorItem::GetMaxHP (bool bForceComplete) const
+	{
+	return GetArmorClass().GetMaxHP(*this, bForceComplete);
+	}
+
 inline CSpaceObject *CArmorItem::GetSource (void) const
 	{
-	if (const CInstalledArmor *pInstalled = m_pCItem->GetInstalledArmor())
+	if (const CInstalledArmor *pInstalled = GetInstalledArmor())
 		return pInstalled->GetSource();
 	else
 		return NULL;
@@ -112,7 +136,7 @@ inline int CInstalledArmor::GetLevel (void) const
 
 inline int CInstalledArmor::GetMaxHP (CSpaceObject *pSource) const 
 	{
-	return m_pArmorClass->GetMaxHP(CItemCtx(pSource, this));
+	return m_pItem->AsArmorItemOrThrow().GetMaxHP();
 	}
 
 //	CDeviceClass Inlines -------------------------------------------------------

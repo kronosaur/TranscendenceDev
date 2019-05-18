@@ -4054,33 +4054,30 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Convert the first argument into an armor type
 
 	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
-	if (pType == NULL)
-		return pCC->CreateError(CONSTLIT("Invalid armor type"), pArgs->GetElement(0));
 
-	CArmorClass *pArmor = pType->GetArmorClass();
-	if (pArmor == NULL)
+	CItem Item(pType, 1);
+	CArmorItem ArmorItem = Item.AsArmorItem();
+	if (!ArmorItem)
 		return pCC->CreateError(CONSTLIT("Invalid armor type"), pArgs->GetElement(0));
-
-	CItem ArmorItem(pType, 1);
 
 	//	Do the appropriate command
 
 	switch (dwData)
 		{
 		case FN_ARM_NAME:
-			return pCC->CreateString(pArmor->GetName());
+			return pCC->CreateString(ArmorItem.GetArmorClass().GetName());
 
 		case FN_ARM_HITPOINTS:
-			return pCC->CreateInteger(pArmor->GetMaxHP(CItemCtx(&ArmorItem)));
+			return pCC->CreateInteger(ArmorItem.GetMaxHP());
 
 		case FN_ARM_REPAIRCOST:
-			return pCC->CreateInteger(pArmor->GetRepairCost(CItemCtx(&ArmorItem)));
+			return pCC->CreateInteger(ArmorItem.GetArmorClass().GetRepairCost(CItemCtx(&Item)));
 
 		case FN_ARM_REPAIRTECH:
-			return pCC->CreateInteger(pArmor->GetRepairLevel(CItemCtx(&ArmorItem)));
+			return pCC->CreateInteger(ArmorItem.GetArmorClass().GetRepairLevel(CItemCtx(&Item)));
 
 		case FN_ARM_IS_RADIATION_IMMUNE:
-			return pCC->CreateBool(pArmor->IsImmune(CItemCtx(&ArmorItem), specialRadiation));
+			return pCC->CreateBool(ArmorItem.GetArmorClass().IsImmune(CItemCtx(&Item), specialRadiation));
 
 		default:
 			ASSERT(FALSE);

@@ -838,6 +838,8 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 //	mean the item is underpowered. Positive numbers mean the item is overpowered.
 
 	{
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
+
 	//	Initialize
 
     const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
@@ -850,7 +852,7 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	//  Compute the number of balance points (BP) of the damage. +100 = double
 	//  HP relative to standard. -100 = half HP relative to standard.
 
-	retBalance.rHP = (int)GetMaxHP(ItemCtx, true);
+	retBalance.rHP = ArmorItem.GetMaxHP(true);
 	retBalance.rHPBalance = 100.0 * mathLog2(retBalance.rHP / (Metric)StdStats.iHP);
 	retBalance.rBalance = retBalance.rHPBalance;
 
@@ -1969,7 +1971,8 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-    const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow());
+	const CArmorItem ArmorItem = Ctx.GetItem().AsArmorItemOrThrow();
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	Enhancements
 
@@ -1984,7 +1987,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(IsImmune(Ctx, specialBlinding));
 
 	else if (strEquals(sName, PROPERTY_COMPLETE_HP))
-		return ICCItemPtr(GetMaxHP(Ctx, true));
+		return ICCItemPtr(ArmorItem.GetMaxHP(true));
 
 	else if (strEquals(sName, PROPERTY_COMPLETE_SET))
 		{
@@ -2023,7 +2026,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(pEnhancements));
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
-		return ICCItemPtr(GetMaxHP(Ctx));
+		return ICCItemPtr(ArmorItem.GetMaxHP());
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
 		return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx));
@@ -2072,14 +2075,14 @@ const CString &CArmorClass::GetMassClass (const CItemCtx &ItemCtx) const
 	return m_sMassClass;
 	}
 
-int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
+int CArmorClass::GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete) const
 
 //	GetMaxHP
 //
 //	Returns the max HP for this kind of armor
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	Start with hit points defined by the class, scaled if necessary.
 
@@ -2087,22 +2090,22 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 	//	Fire event to compute HP, if necessary
 
-	iHP = FireGetMaxHP(ItemCtx.GetItem().AsArmorItemOrThrow(), iHP);
+	iHP = FireGetMaxHP(ArmorItem, iHP);
 
 	//	Add mods
 
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 	if (!Enhancements.IsEmpty())
 		iHP = iHP + ((iHP * Enhancements.GetBonus()) / 100);
 
 	//	Add HP from charges
 
 	if (m_iHPBonusPerCharge > 0)
-		iHP += m_iHPBonusPerCharge * ItemCtx.GetItemCharges();
+		iHP += m_iHPBonusPerCharge * ArmorItem.GetCharges();
 
 	//	Add complete bonus
 
-	CInstalledArmor *pSect = ItemCtx.GetArmor();
+	const CInstalledArmor *pSect = ArmorItem.GetInstalledArmor();
 	if (bForceComplete || (pSect && pSect->IsComplete()))
 		iHP += m_iArmorCompleteBonus;
 
@@ -2163,7 +2166,8 @@ bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInst
 	int i;
 
 	CItemCtx ItemCtx(pItem, pInstalled);
-	int iHP = GetMaxHP(ItemCtx);
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
+	int iHP = ArmorItem.GetMaxHP();
 
 	if (retiHP)
 		*retiHP = iHP;
@@ -2423,6 +2427,7 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 //	Returns TRUE if the armor reflects this damage
 
 	{
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	int iReflectChance = 0;
@@ -2444,7 +2449,7 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 		{
 		CInstalledArmor *pSect = ItemCtx.GetArmor();
 
-		int iMaxHP = GetMaxHP(ItemCtx);
+		int iMaxHP = ArmorItem.GetMaxHP();
 		int iHP = (pSect ? pSect->GetHitPoints() : iMaxHP);
 
 		//	Adjust based on how damaged the armor is
@@ -2506,6 +2511,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 //	Sets an armor item property.
 
 	{
+	CArmorItem ArmorItem = Ctx.GetItem().AsArmorItemOrThrow();
 	CSpaceObject *pSource = Ctx.GetSource();
 	CInstalledArmor *pArmor = Ctx.GetArmor();
 
@@ -2522,7 +2528,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 				return false;
 				}
 
-			iHP = Max(0, Min(iHP, pArmor->GetMaxHP(pSource)));
+			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
 
 			if (iHP < pArmor->GetHitPoints())
 				{
@@ -2535,7 +2541,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			}
 		else
 			{
-			int iMaxHP = GetMaxHP(Ctx);
+			int iMaxHP = ArmorItem.GetMaxHP();
 			iHP = Max(0, Min(iHP, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iHP);
@@ -2587,7 +2593,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 
         //  Set armor HP
 
-		int iNewMaxHP = GetMaxHP(Ctx);
+		int iNewMaxHP = ArmorItem.GetMaxHP();
 		int iNewHP = CArmorClass::CalcMaxHPChange(iCurHP, iCurMaxHP, iNewMaxHP);
 
 		CInstalledArmor *pArmor = Ctx.GetArmor();
@@ -2772,6 +2778,7 @@ bool CArmorClass::UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Sta
 
 	{
 	int i;
+	CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
 	CSpaceObject *pObj = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
@@ -2807,7 +2814,7 @@ bool CArmorClass::UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Sta
 
 		CItemCtx ItemCtx(pObj, pDistArmor);
 
-		MaxHP[i] = GetMaxHP(ItemCtx);
+		MaxHP[i] = ArmorItem.GetMaxHP();
 
 		iSegCount++;
 		int iRepairNeeded = MaxHP[i] - pDistArmor->GetHitPoints();
@@ -2903,12 +2910,13 @@ bool CArmorClass::UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const C
 //	Regenerates hit points. We return TRUE if any hit points were regenerated.
 
 	{
+	CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
 	CSpaceObject *pObj = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
 	//	If fully repaired, then nothing to do.
 
-	int iHPNeeded = GetMaxHP(ItemCtx) - pArmor->GetHitPoints();
+	int iHPNeeded = ArmorItem.GetMaxHP() - pArmor->GetHitPoints();
 	if (iHPNeeded <= 0)
 		return false;
 
