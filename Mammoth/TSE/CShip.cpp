@@ -1698,7 +1698,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 				{
 				CInstalledDevice *pDevice = pShip->FindDevice(Item);
 				if (pDevice)
-					pDevice->FinishInstall(pShip);
+					pDevice->FinishInstall();
 				}
 			}
 		}

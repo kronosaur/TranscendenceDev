@@ -1099,7 +1099,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 			//	Install the device
 
-			pStation->m_pDevices[i].Install(pStation, Items, i, true);
+			pStation->m_pDevices[i].Install(*pStation, Items, i, true);
 
 			//	Is this a weapon? If so, set a flag so that we know that
 			//	this station is armed. This is an optimization so that we don't
@@ -1177,7 +1177,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		{
 		for (i = 0; i < maxDevices; i++)
 			if (!pStation->m_pDevices[i].IsEmpty())
-				pStation->m_pDevices[i].FinishInstall(pStation);
+				pStation->m_pDevices[i].FinishInstall();
 		}
 
 	//	Set override, just before creation.
@@ -3595,7 +3595,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		m_pDevices = new CInstalledDevice [dwLoad];
 
 		for (i = 0; i < (int)dwLoad; i++)
-			m_pDevices[i].ReadFromStream(this, Ctx);
+			m_pDevices[i].ReadFromStream(*this, Ctx);
 
 		//	In debug mode, recalc weapon bonus in case anything has changed.
 

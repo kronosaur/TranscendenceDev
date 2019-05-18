@@ -471,7 +471,7 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 		//	Install the device
 
 		m_Devices[i].InitFromDesc(NewDevice);
-		m_Devices[i].Install(pObj, ObjItems, i, true);
+		m_Devices[i].Install(*pObj, ObjItems, i, true);
 
 		//	Assign to named devices
 
@@ -545,7 +545,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 
 	//	Update the structure
 
-	Device.Install(pObj, ItemList, iDeviceSlot);
+	Device.Install(*pObj, ItemList, iDeviceSlot);
 
 	//	If we have a slot positing index, set it now
 
@@ -688,7 +688,7 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 	m_Devices.InsertEmpty(iCount);
 	for (i = 0; i < iCount; i++)
 		{
-		m_Devices[i].ReadFromStream(pObj, Ctx);
+		m_Devices[i].ReadFromStream(*pObj, Ctx);
 
 		Ctx.pStream->Read(dwLoad);
 		if (dwLoad != 0xffffffff)

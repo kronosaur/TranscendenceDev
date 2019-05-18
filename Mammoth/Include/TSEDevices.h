@@ -459,14 +459,14 @@ class CInstalledDevice
 
 		//	Create/Install/uninstall/Save/Load methods
 
-		void FinishInstall (CSpaceObject *pSource);
+		void FinishInstall (void);
 		inline CDeviceClass *GetClass (void) const { return m_pClass; }
 		inline DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
-		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate = false);
+		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate = false);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		void ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx);
+		void ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx);
 		inline void SetClass (CDeviceClass *pClass) { m_pClass.Set(pClass); }
 		void Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList);
 		void Update (CSpaceObject *pSource, CDeviceClass::SDeviceUpdateCtx &Ctx);
@@ -590,6 +590,7 @@ class CInstalledDevice
 											CItemType **retpType = NULL)
 			{ m_pClass->GetSelectedVariantInfo(pSource, this, retsLabel, retiAmmoLeft, retpType); }
 		inline Metric GetShotSpeed (CItemCtx &Ctx) const { return m_pClass->GetShotSpeed(Ctx); }
+		CSpaceObject *GetSource (void) const { return m_pSource; }
 		inline void GetStatus (CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		inline CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		inline int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
@@ -633,9 +634,10 @@ class CInstalledDevice
 		inline const CItemEnhancement &GetMods (void) const { return (m_pItem ? m_pItem->GetMods() : CItem::GetNullMod()); }
 
 		CString m_sID;							//	ID for this slot (may match ID in class slot desc)
-		CItem *m_pItem;							//	Item installed in this slot
+		CSpaceObject *m_pSource = NULL;			//	Installed on this object
+		CItem *m_pItem = NULL;					//	Item installed in this slot
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
-		COverlay *m_pOverlay;					//	Overlay (if associated)
+		COverlay *m_pOverlay = NULL;			//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
 		CEnhancementDesc m_SlotEnhancements;	//	Enhancements confered by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)

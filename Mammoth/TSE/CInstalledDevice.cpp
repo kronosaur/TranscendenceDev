@@ -105,7 +105,7 @@ int CInstalledDevice::CalcPowerUsed (SUpdateCtx &Ctx, CSpaceObject *pSource)
 	return iPower;
 	}
 
-void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
+void CInstalledDevice::FinishInstall (void)
 
 //	FinishInstall
 //
@@ -116,26 +116,28 @@ void CInstalledDevice::FinishInstall (CSpaceObject *pSource)
 	{
 	DEBUG_TRY
 
-	m_pItem->FireOnInstall(pSource);
-	m_pItem->FireOnEnabled(pSource);
+	ASSERT(m_pSource);
 
-	CShip *pShip = pSource->AsShip();
+	m_pItem->FireOnInstall(m_pSource);
+	m_pItem->FireOnEnabled(m_pSource);
+
+	CShip *pShip = m_pSource->AsShip();
 	if (pShip)
 		pShip->GetController()->OnItemInstalled(*m_pItem);
 
 	//	If necessary create an overlay for this device
 
 	COverlayType *pOverlayType;
-	pOverlayType = m_pClass->FireGetOverlayType(CItemCtx(pSource, this));
+	pOverlayType = m_pClass->FireGetOverlayType(CItemCtx(m_pSource, this));
 
 	//	Add it
 
 	if (pOverlayType)
 		{
 		DWORD dwID;
-		pSource->AddOverlay(pOverlayType, GetPosAngle(), GetPosRadius(), 0, 0, -1, &dwID);
+		m_pSource->AddOverlay(pOverlayType, GetPosAngle(), GetPosRadius(), 0, 0, -1, &dwID);
 
-		COverlay *pOverlay = pSource->GetOverlay(dwID);
+		COverlay *pOverlay = m_pSource->GetOverlay(dwID);
 		if (pOverlay)
 			{
 			pOverlay->SetDevice(GetDeviceSlot());
@@ -366,7 +368,7 @@ ALERROR CInstalledDevice::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate)
+void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iDeviceSlot, bool bInCreate)
 
 //	Install
 //
@@ -377,6 +379,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	const CItem &Item = ItemList.GetItemAtCursor();
 
+	m_pSource = &Source;
 	m_pClass.Set(Item.GetType()->GetDeviceClass());
 	m_iDeviceSlot = iDeviceSlot;
 	m_iSlotPosIndex = -1;
@@ -393,7 +396,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	//	Call the class
 
-	m_pClass->OnInstall(this, pObj, ItemList);
+	m_pClass->OnInstall(this, m_pSource, ItemList);
 
 	//	Mark the item as installed
 
@@ -408,12 +411,12 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	//	Select the variant. We need to do this AFTER m_pItem is set because
 	//	we need to check things like charges.
 
-	m_pClass->SelectFirstVariant(pObj, this);
+	m_pClass->SelectFirstVariant(m_pSource, this);
 
 	//	Default to basic fire delay. Callers must set the appropriate delay
 	//	based on enhancements later.
 
-	m_iActivateDelay = m_pClass->GetActivateDelay(CItemCtx(pObj, this));
+	m_iActivateDelay = m_pClass->GetActivateDelay(CItemCtx(m_pSource, this));
 
 	//	If we're installing a device after creation then we
 	//	zero-out the device position, etc. If necessary the
@@ -427,7 +430,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 		//	Desc is initialized to defaults even if FindDeviceSlotDesc fails.
 
 		SDeviceDesc Desc;
-		pObj->FindDeviceSlotDesc(Item, &Desc);
+		m_pSource->FindDeviceSlotDesc(Item, &Desc);
 
 		//	Set the device slot properties
 
@@ -459,7 +462,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 	//	whole ship is created before firing the event)
 
 	if (!bInCreate)
-		FinishInstall(pObj);
+		FinishInstall();
 
 	DEBUG_CATCH
 	}
@@ -592,7 +595,7 @@ void CInstalledDevice::PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &
 		}
 	}
 
-void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
+void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
@@ -721,7 +724,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 	//	In newer versions we store an activation delay instead of an adjustment
 
 	if (Ctx.dwVersion < 93)
-		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(CItemCtx(pSource, this)) / 100;
+		m_iActivateDelay = m_iActivateDelay * m_pClass->GetActivateDelay(CItemCtx(&Source, this)) / 100;
 
 	//	We no longer store mods in the device structure
 
@@ -776,13 +779,15 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 
 	//	Fix up the item pointer (but only if it is installed)
 
+	m_pSource = NULL;
 	m_pItem = NULL;
 	if (m_pClass != NULL && m_iDeviceSlot != -1)
 		{
-		CItemListManipulator ItemList(pSource->GetItemList());
-		pSource->SetCursorAtDevice(ItemList, this);
+		CItemListManipulator ItemList(Source.GetItemList());
+		Source.SetCursorAtDevice(ItemList, this);
 		if (ItemList.IsCursorValid())
 			{
+			m_pSource = &Source;
 			m_pItem = ItemList.GetItemPointerAtCursor();
 			m_pItem->SetInstalled(*this);
 			}

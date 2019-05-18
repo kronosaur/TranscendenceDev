@@ -3058,6 +3058,13 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, I
 						m_pExtra->m_iInstalled = installedArmor;
 						m_pExtra->m_pInstalled = &pArmorSys->GetSegment(GetInstalled());
 						}
+
+					else if (IsDevice()
+							&& GetInstalled() >= 0 && GetInstalled() < pSource->GetDeviceCount())
+						{
+						m_pExtra->m_iInstalled = installedDevice;
+						m_pExtra->m_pInstalled = pSource->GetDevice(GetInstalled());
+						}
 					}
 				}
 
@@ -3544,8 +3551,8 @@ ICCItem *CItem::WriteToCCItem (void) const
 
 		if (const CInstalledArmor *pArmor = GetInstalledArmor())
 			pList->AppendInteger(pArmor->GetSource()->GetID());
-//		else if (const CInstalledDevice *pDevice = GetInstalledDevice())
-//			pList->AppendInteger(pDevice->GetSource()->GetID());
+		else if (const CInstalledDevice *pDevice = GetInstalledDevice())
+			pList->AppendInteger(pDevice->GetSource()->GetID());
 		else
 			pList->AppendInteger(0);
 
