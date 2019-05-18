@@ -4056,7 +4056,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	CItemType *pType = pCtx->AsItemType(pArgs->GetElement(0));
 
 	CItem Item(pType, 1);
-	CArmorItem ArmorItem = Item.AsArmorItem();
+	const CArmorItem ArmorItem = Item.AsArmorItem();
 	if (!ArmorItem)
 		return pCC->CreateError(CONSTLIT("Invalid armor type"), pArgs->GetElement(0));
 

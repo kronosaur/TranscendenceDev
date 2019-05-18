@@ -50,7 +50,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 			//	Make sure that the armor item reflects the current
 			//	state of the ship's armor.
 
-			if (auto ArmorItem = WreckItem.AsArmorItem())
+			if (const CArmorItem ArmorItem = WreckItem.AsArmorItem())
 				{
 				//	Most armor is destroyed
 

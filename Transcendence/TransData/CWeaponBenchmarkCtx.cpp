@@ -53,7 +53,7 @@ bool CWeaponBenchmarkCtx::GetStats (CItemType *pWeaponItem, SStats &retStats)
         CItem Item(Armors[i], 1);
         CItemCtx ArmorCtx(Item);
 
-		CArmorItem ArmorItem = Item.AsArmorItem();
+		const CArmorItem ArmorItem = Item.AsArmorItem();
         if (!ArmorItem)
             continue;
 

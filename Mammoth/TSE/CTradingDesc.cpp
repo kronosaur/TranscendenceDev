@@ -503,7 +503,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		{
 		case serviceRepairArmor:
 			{
-			auto ArmorItem = Ctx.pItem->AsArmorItem();
+			const CArmorItem ArmorItem = Ctx.pItem->AsArmorItem();
 			if (!ArmorItem)
 				return -1;
 

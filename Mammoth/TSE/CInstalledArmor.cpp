@@ -216,7 +216,7 @@ void CInstalledArmor::SetComplete (CSpaceObject *pSource, bool bComplete)
 	{
 	if (bComplete != m_fComplete)
 		{
-		CArmorItem ArmorItem = AsArmorItem();
+		const CArmorItem ArmorItem = AsArmorItem();
 		int iOldMaxHP = ArmorItem.GetMaxHP();
 
 		m_fComplete = bComplete;
@@ -235,7 +235,7 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	//	Figure out our current max HP, because we might need to change current
 	//	hit points.
 
-	CArmorItem ArmorItem = AsArmorItem();
+	const CArmorItem ArmorItem = AsArmorItem();
 	int iOldMaxHP = ArmorItem.GetMaxHP();
 
 	//	Reset the stack.

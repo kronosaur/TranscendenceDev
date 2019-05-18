@@ -18,7 +18,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		{
 		CItemType *pItem = Universe.GetItemType(i);
 		CItem Item(pItem, 1);
-		CArmorItem ArmorItem = Item.AsArmorItem();
+		const CArmorItem ArmorItem = Item.AsArmorItem();
 		if (!ArmorItem)
 			continue;
 
@@ -52,7 +52,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		{
 		CItemType *pItem = Universe.GetItemType(i);
 		CItem Item(pItem, 1);
-		CArmorItem ArmorItem = Item.AsArmorItem();
+		const CArmorItem ArmorItem = Item.AsArmorItem();
 		if (!ArmorItem)
 			continue;
 
