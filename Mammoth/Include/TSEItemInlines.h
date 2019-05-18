@@ -29,16 +29,38 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 	return m_pUseScreen.GetDockScreen((CDesignType *)this, retsName);
 	}
 
+//	CDifferentiatedItem Inlines ------------------------------------------------
+
+inline int CDifferentiatedItem::GetLevel (void) const
+	{
+	return m_pCItem->GetLevel();
+	}
+
+inline int CDifferentiatedItem::GetMinLevel (void) const
+	{
+	return GetType().GetMinLevel();
+	}
+
+inline const CItemType &CDifferentiatedItem::GetType (void) const
+	{
+	return *m_pCItem->GetType();
+	}
+
+inline CItemType &CDifferentiatedItem::GetType (void)
+	{
+	return *m_pItem->GetType();
+	}
+
 //	CArmorClass Inlines --------------------------------------------------------
 
 inline int CArmorClass::GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const
 	{
-	const SScalableStats &Stats = GetScaledStats(Ctx); return Stats.DamageAdj.GetAdj(iDamage);
+	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return Stats.DamageAdj.GetAdj(iDamage);
 	}
 
 inline int CArmorClass::GetInstallCost (CItemCtx &Ctx) const
 	{
-	const SScalableStats &Stats = GetScaledStats(Ctx); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
+	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
 	}
 
 inline CString CArmorClass::GetName (void)
@@ -48,7 +70,7 @@ inline CString CArmorClass::GetName (void)
 
 inline int CArmorClass::GetRepairCost (CItemCtx &Ctx) const
 	{
-	const SScalableStats &Stats = GetScaledStats(Ctx); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.RepairCost);
+	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.RepairCost);
 	}
 
 inline DWORD CArmorClass::GetUNID (void)
@@ -57,6 +79,11 @@ inline DWORD CArmorClass::GetUNID (void)
 	}
 
 //	CArmorItem Inlines ---------------------------------------------------------
+
+inline const CArmorClass &CArmorItem::GetArmorClass (void) const
+	{
+	return *GetType().GetArmorClass();
+	}
 
 //	CInstalledArmor Inlines ----------------------------------------------------
 

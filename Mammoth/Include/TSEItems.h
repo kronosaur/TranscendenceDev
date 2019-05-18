@@ -294,7 +294,29 @@ class CRandomEnhancementGenerator
 
 //	ITEM -----------------------------------------------------------------------
 
-class CArmorItem
+class CDifferentiatedItem
+	{
+	public:
+		inline int GetLevel (void) const;
+		inline int GetMinLevel (void) const;
+		inline const CItemType &GetType (void) const;
+		inline CItemType &GetType (void);
+
+	protected:
+		CDifferentiatedItem (CItem *pItem) :
+				m_pCItem(pItem),
+				m_pItem(pItem)
+			{ }
+
+		CDifferentiatedItem (const CItem *pItem) :
+				m_pCItem(pItem)
+			{ }
+
+		const CItem *m_pCItem = NULL;
+		CItem *m_pItem = NULL;
+	};
+
+class CArmorItem : public CDifferentiatedItem
 	{
 	public:
 		operator bool () const { return (m_pCItem != NULL); }
@@ -302,18 +324,14 @@ class CArmorItem
 		operator const CItem & () const { return *m_pCItem; }
 		operator CItem & () { return *m_pItem; }
 
+		inline const CArmorClass &GetArmorClass (void) const;
+
 	private:
-		CArmorItem (CItem *pItem) :
-				m_pCItem(pItem),
-				m_pItem(pItem)
+		CArmorItem (CItem *pItem) : CDifferentiatedItem(pItem)
 			{ }
 
-		CArmorItem (const CItem *pItem) :
-				m_pCItem(pItem)
+		CArmorItem (const CItem *pItem) : CDifferentiatedItem(pItem)
 			{ }
-
-		const CItem *m_pCItem = NULL;
-		CItem *m_pItem = NULL;
 
 	friend class CItem;
 	};

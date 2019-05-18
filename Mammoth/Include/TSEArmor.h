@@ -118,7 +118,7 @@ class CArmorClass
 		inline CString GetName (void);
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
-		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem());
+		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
 		inline int GetRepairCost (CItemCtx &Ctx) const;
@@ -185,7 +185,7 @@ class CArmorClass
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
 		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
-        const SScalableStats &GetScaledStats (CItemCtx &ItemCtx) const;
+        const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 		CUniverse &GetUniverse (void) const;
 		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);

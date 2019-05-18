@@ -366,7 +366,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	{
 	int i;
-    const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 
 	//	If we require a higher level to repair
 
@@ -840,7 +840,7 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 	{
 	//	Initialize
 
-	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 	retBalance.iLevel = Stats.iLevel;
 
 	//	Figure out how may HPs standard armor at this level should have.
@@ -1240,7 +1240,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 //	Initialize the damage effects based on the damage and on this armor type.
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
@@ -1376,7 +1376,7 @@ Metric CArmorClass::CalcRegen180 (CItemCtx &ItemCtx) const
 //	different algorithm.
 
 	{
-	const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 
 	Metric rRegen = 0.0;
 
@@ -1969,7 +1969,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-    const SScalableStats &Stats = GetScaledStats(Ctx);
+    const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow());
 
 	//	Enhancements
 
@@ -2079,7 +2079,7 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 //	Returns the max HP for this kind of armor
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 
 	//	Start with hit points defined by the class, scaled if necessary.
 
@@ -2111,7 +2111,7 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 	return iHP;
 	}
 
-CString CArmorClass::GetReference (CItemCtx &Ctx, const CItem &Ammo)
+CString CArmorClass::GetReference (CItemCtx &Ctx)
 	
 //	GetReference
 //
@@ -2258,22 +2258,22 @@ Metric CArmorClass::GetScaledCostAdj (CItemCtx &ItemCtx) const
     return (Metric)GetStdStats(iLevel).iCost / (Metric)GetStdStats(m_pItemType->GetLevel()).iCost;
     }
 
-const CArmorClass::SScalableStats &CArmorClass::GetScaledStats (CItemCtx &ItemCtx) const
+const CArmorClass::SScalableStats &CArmorClass::GetScaledStats (const CArmorItem &ArmorItem) const
 
-//  GetScaledStats
+//	GetScaledStats
 //
-//  Returns proper stats
+//	Returns proper stats
 
-    {
-    if (m_pScalable == NULL || ItemCtx.IsItemNull())
+	{
+    if (m_pScalable == NULL)
         return m_Stats;
 
-    int iLevel = Max(0, Min(ItemCtx.GetItem().GetLevel() - ItemCtx.GetItem().GetType()->GetMinLevel(), m_iScaledLevels));
+    int iLevel = Max(0, Min(ArmorItem.GetLevel() - ArmorItem.GetMinLevel(), m_iScaledLevels));
     if (iLevel <= 0)
         return m_Stats;
 
     return m_pScalable[iLevel - 1];
-    }
+	}
 
 CString CArmorClass::GetShortName (void)
 
@@ -2376,7 +2376,7 @@ bool CArmorClass::IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage
 //	Returns TRUE if we are (completely) immune to the given special damage.
 
 	{
-	const SScalableStats &Stats = GetScaledStats(ItemCtx); 
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
 
 	switch (iSpecialDamage)
@@ -2616,7 +2616,7 @@ void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, b
 	{
     DEBUG_TRY
 
-    const SScalableStats &Stats = GetScaledStats(ItemCtx);
+    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
