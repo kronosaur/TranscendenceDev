@@ -129,7 +129,7 @@ class CArmorClass
 		inline DWORD GetUNID (void);
 		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
 		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
-        inline bool IsScalable (void) const { return (m_pScalable != NULL); }
+        bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		bool SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError = NULL);
@@ -174,6 +174,9 @@ class CArmorClass
 		CArmorClass (void);
 
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
+		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
+        const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+
 		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
 		Metric CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
@@ -185,9 +188,7 @@ class CArmorClass
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
 		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
-        const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 		CUniverse &GetUniverse (void) const;
-		int FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const;
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
@@ -229,6 +230,8 @@ class CArmorClass
         SScalableStats *m_pScalable;            //  Params for higher level versions of this armor
 
 		SEventHandlerDesc m_CachedEvents[evtCount];
+
+	friend class CArmorItem;
 	};
 
 //  Ship Armor Segments --------------------------------------------------------
@@ -303,6 +306,7 @@ class CInstalledArmor
         inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource) const;
 		int GetSect (void) const { return m_iSect; }
+		CSpaceObject *GetSource (void) const { return m_pSource; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
 		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);

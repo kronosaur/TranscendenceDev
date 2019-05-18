@@ -1686,7 +1686,7 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
-int CArmorClass::FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const
+int CArmorClass::FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const
 
 //	FireGetMaxHP
 //
@@ -1700,15 +1700,15 @@ int CArmorClass::FireGetMaxHP (CItemCtx &ItemCtx, int iMaxHP) const
 
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(m_pItemType);
-		Ctx.SaveAndDefineSourceVar(ItemCtx.GetSource());
-		Ctx.SaveAndDefineItemVar(ItemCtx);
+		Ctx.SaveAndDefineSourceVar(ArmorItem.GetSource());
+		Ctx.SaveAndDefineItemVar(ArmorItem);
 
 		Ctx.DefineInteger(CONSTLIT("aMaxHP"), iMaxHP);
 
 		ICCItem *pResult = Ctx.Run(Event);
 
 		if (pResult->IsError())
-			ItemCtx.GetSource()->ReportEventError(GET_MAX_HP_EVENT, pResult);
+			ArmorItem.GetSource()->ReportEventError(GET_MAX_HP_EVENT, pResult);
 		else if (!pResult->IsNil())
 			iMaxHP = Max(0, pResult->GetIntegerValue());
 
@@ -2087,7 +2087,7 @@ int CArmorClass::GetMaxHP (CItemCtx &ItemCtx, bool bForceComplete) const
 
 	//	Fire event to compute HP, if necessary
 
-	iHP = FireGetMaxHP(ItemCtx, iHP);
+	iHP = FireGetMaxHP(ItemCtx.GetItem().AsArmorItemOrThrow(), iHP);
 
 	//	Add mods
 

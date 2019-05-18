@@ -626,6 +626,7 @@ class CSystemMapRef : public CDesignTypeRef<CSystemMap>
 //	Items ----------------------------------------------------------------------
 
 #include "TSEWeaponFireDesc.h"
+#include "TSEItemEnhancements.h"
 #include "TSEItems.h"
 
 //	Effect Support Structures --------------------------------------------------

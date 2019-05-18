@@ -85,6 +85,14 @@ inline const CArmorClass &CArmorItem::GetArmorClass (void) const
 	return *GetType().GetArmorClass();
 	}
 
+inline CSpaceObject *CArmorItem::GetSource (void) const
+	{
+	if (const CInstalledArmor *pInstalled = m_pCItem->GetInstalledArmor())
+		return pInstalled->GetSource();
+	else
+		return NULL;
+	}
+
 //	CInstalledArmor Inlines ----------------------------------------------------
 
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)
