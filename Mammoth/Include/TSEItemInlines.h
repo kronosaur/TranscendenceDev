@@ -90,6 +90,11 @@ inline const CArmorClass &CArmorItem::GetArmorClass (void) const
 	return *GetType().GetArmorClass();
 	}
 
+inline CArmorClass &CArmorItem::GetArmorClass (void)
+	{
+	return *GetType().GetArmorClass();
+	}
+
 inline const CItemEnhancementStack &CArmorItem::GetEnhancements (void) const
 	{
 	const CItemEnhancementStack *pStack = GetEnhancementStack();

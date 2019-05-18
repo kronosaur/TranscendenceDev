@@ -239,7 +239,7 @@ CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
 	else if (pItem->IsList())
 		{
 		CItem NewItem;
-		NewItem.ReadFromCCItem(GetUniverse().GetDesignCollection(), pItem);
+		NewItem.ReadFromCCItem(GetUniverse().GetDesignCollection(), GetUniverse().GetCurrentSystem(), pItem);
 		return NewItem;
 		}
 	else if (pItem->IsInteger())

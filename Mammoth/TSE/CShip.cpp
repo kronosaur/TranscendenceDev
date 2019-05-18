@@ -3823,6 +3823,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	//	Fire OnUninstall first
 
 	CItem OldArmor = ItemList.GetItemAtCursor();
+	CArmorItem OldArmorItem = OldArmor.AsArmorItem();
 	OldArmor.FireOnUninstall(this);
 	m_pController->OnItemUninstalled(OldArmor);
 
@@ -3835,7 +3836,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	//	Remember hit points
 
 	int iOldMaxHP;
-	int iOldHP = OldArmor.GetHitPoints(CItemCtx(this, pSect), &iOldMaxHP);
+	int iOldHP = OldArmorItem.GetHP(&iOldMaxHP);
 
 	//	Mark the item as about to be uninstalled. This will clear the installed
 	//	flags but it won't yet stack with other uninstalled items.

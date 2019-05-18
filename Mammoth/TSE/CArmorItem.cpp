@@ -33,3 +33,26 @@ TSharedPtr<CItemEnhancementStack> CArmorItem::GetEnhancementStack (void) const
 	m_pEnhancements->Insert(Mods);
 	return m_pEnhancements;
 	}
+
+int CArmorItem::GetHP (int *retiMaxHP, bool bUninstalled) const
+
+//	GetHP
+//
+//	Returns the current hit points.
+
+	{
+	const CInstalledArmor *pInstalled = GetInstalledArmor();
+	if (!bUninstalled && pInstalled)
+		{
+		if (retiMaxHP) *retiMaxHP = GetMaxHP();
+		return pInstalled->GetHitPoints();
+		}
+	else
+		{
+		int iMaxHP = GetMaxHP();
+		int iDamagedHP = m_pCItem->GetDamagedHP();
+
+		if (retiMaxHP) *retiMaxHP = iMaxHP;
+		return Max(0, iMaxHP - iDamagedHP);
+		}
+	}

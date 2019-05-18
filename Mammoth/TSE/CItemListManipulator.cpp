@@ -701,7 +701,7 @@ bool CItemListManipulator::SetDamagedAtCursor (int iDamagedHP, int iCount)
 	//	Get the item at the cursor. Abort if there is nothing to do
 
 	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
-	if (OldItem.GetDamagedHP(CItemCtx(OldItem)) == iDamagedHP)
+	if (OldItem.GetDamagedHP() == iDamagedHP)
 		return false;
 
 	//	Generate a new item

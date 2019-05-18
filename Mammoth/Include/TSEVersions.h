@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							44;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					37;
-constexpr DWORD SYSTEM_SAVE_VERSION =					173;
+constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 
 //	Uncomment out the following define when building a stable release
 
@@ -638,3 +638,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					173;
 //
 //	173: 1.9 Alpha 1
 //		Added m_iDamagedHP to CItem::SExtra
+//
+//	174: 1.9 Alpha 1
+//		Add source to CItem

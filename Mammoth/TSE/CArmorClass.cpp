@@ -2014,13 +2014,7 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 		return ICCItemPtr(IsImmune(Ctx, specialEMP));
 
 	else if (strEquals(sName, PROPERTY_HP))
-		{
-		CInstalledArmor *pArmor = Ctx.GetArmor();
-		if (pArmor)
-			return ICCItemPtr(pArmor->GetHitPoints());
-		else
-			return ICCItemPtr(Ctx.GetItem().GetHitPoints(Ctx));
-		}
+		return ICCItemPtr(ArmorItem.GetHP());
 
 	else if (strEquals(sName, PROPERTY_HP_BONUS))
 		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(pEnhancements));
@@ -2572,7 +2566,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 		else
 			{
 			int iMaxHP;
-			int iHP = Item.GetHitPoints(Ctx, &iMaxHP);
+			int iHP = ArmorItem.GetHP(&iMaxHP);
 			int iNewHP = Max(0, Min(iHP + iChange, iMaxHP));
 			
 			Item.SetDamaged(iMaxHP - iNewHP);
@@ -2584,7 +2578,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
         //  carry that forward to the new level.
 
 		int iCurMaxHP;
-		int iCurHP = Item.GetHitPoints(Ctx, &iCurMaxHP);
+		int iCurHP = ArmorItem.GetHP(&iCurMaxHP);
 
         //  Set the level
 

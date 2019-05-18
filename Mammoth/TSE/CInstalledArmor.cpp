@@ -90,13 +90,11 @@ void CInstalledArmor::Install (CSpaceObject &Source, CItemListManipulator &ItemL
 	if (pItem == NULL)
 		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item is NULL."));
 
-	CItemType *pType = pItem->GetType();
-	if (pType == NULL)
+	CArmorItem ArmorItem = pItem->AsArmorItem();
+	if (!ArmorItem)
 		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item type is NULL."));
 
-	m_pArmorClass = pType->GetArmorClass();
-	if (m_pArmorClass == NULL)
-		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item is not armor."));
+	m_pArmorClass = &ArmorItem.GetArmorClass();
 
 	//	Set up the enhancements from the armor itself. We will add other 
 	//	enhancements later, in CShip::CalcArmorBonus.
@@ -124,7 +122,7 @@ void CInstalledArmor::Install (CSpaceObject &Source, CItemListManipulator &ItemL
 	m_fComplete = false;
 	m_fPrimeSegment = false;
 	m_fConsumePower = false;
-	m_iHitPoints = pItem->GetHitPoints(ItemCtx);
+	m_iHitPoints = ArmorItem.GetHP(NULL, true);
 
 	//	Mark the item as installed
 

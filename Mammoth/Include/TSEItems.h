@@ -48,7 +48,9 @@ class CArmorItem : public CDifferentiatedItem
 		operator CItem & () { return *m_pItem; }
 
 		inline const CArmorClass &GetArmorClass (void) const;
+		inline CArmorClass &GetArmorClass (void);
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
 		inline CSpaceObject *GetSource (void) const;
@@ -115,14 +117,13 @@ class CItem
 		inline int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
 		inline const CEconomyType *GetCurrencyType (void) const;
-		int GetDamagedHP (CItemCtx &ItemCtx) const;
+		int GetDamagedHP (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
 		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
 		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
-		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
@@ -223,7 +224,7 @@ class CItem
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		void ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer);
+		void ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer);
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
@@ -268,6 +269,8 @@ class CItem
 
 			CAttributeDataBlock m_Data;			//	Opaque data
 			};
+
+		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL, bool bUninstalled = false) const;
 
 		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);

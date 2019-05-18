@@ -1944,7 +1944,7 @@ bool CSystem::DescendObject (DWORD dwObjID, const CVector &vPos, CSpaceObject **
 	return true;
 	}
 
-CSpaceObject *CSystem::FindObject (DWORD dwID)
+CSpaceObject *CSystem::FindObject (DWORD dwID) const
 
 //	FindObject
 //

@@ -912,7 +912,7 @@ const CItemList &CItem::GetComponents (void) const
 	return m_pItemType->GetComponents();
 	}
 
-int CItem::GetDamagedHP (CItemCtx &ItemCtx) const
+int CItem::GetDamagedHP (void) const
 
 //	GetDamagedHP
 //
@@ -1209,7 +1209,7 @@ int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP, bool bUninstalled) const
 		else
 			{
 			int iMaxHP = ArmorItem.GetMaxHP();
-			int iDamagedHP = GetDamagedHP(Ctx);
+			int iDamagedHP = GetDamagedHP();
 
 			if (retiMaxHP) *retiMaxHP = iMaxHP;
 			return Max(0, iMaxHP - iDamagedHP);
@@ -2979,7 +2979,7 @@ DWORD CItem::ParseFlags (ICCItem *pItem)
 	return dwFlags;
 	}
 
-void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
+void CItem::ReadFromCCItem (CDesignCollection &Design, const CSystem *pSystem, ICCItem *pBuffer)
 
 //	ReadFromCCItem
 //
@@ -3038,6 +3038,27 @@ void CItem::ReadFromCCItem (CDesignCollection &Design, ICCItem *pBuffer)
 				{
 				dwVersion = (DWORD)pBuffer->GetElement(iStart)->GetIntegerValue();
 				iStart++;
+				}
+
+			//	Installation
+
+			if (dwVersion >= 174)
+				{
+				DWORD dwObjID = pBuffer->GetElement(iStart)->GetIntegerValue();
+				iStart++;
+
+				CSpaceObject *pSource;
+				if (dwObjID > 0 && pSystem && IsInstalled() && (pSource = pSystem->FindObject(dwObjID)))
+					{
+					CArmorSystem *pArmorSys;
+					if (IsArmor() 
+							&& (pArmorSys = pSource->GetArmorSystem())
+							&& GetInstalled() >= 0 && GetInstalled() < pArmorSys->GetSegmentCount())
+						{
+						m_pExtra->m_iInstalled = installedArmor;
+						m_pExtra->m_pInstalled = &pArmorSys->GetSegment(GetInstalled());
+						}
+					}
 				}
 
 			//	Charges
@@ -3518,6 +3539,15 @@ ICCItem *CItem::WriteToCCItem (void) const
 		//	Save the version (starting in v45)
 
 		pList->AppendInteger(CSystem::GetSaveVersion());
+
+		//	Save any installation info
+
+		if (const CInstalledArmor *pArmor = GetInstalledArmor())
+			pList->AppendInteger(pArmor->GetSource()->GetID());
+//		else if (const CInstalledDevice *pDevice = GetInstalledDevice())
+//			pList->AppendInteger(pDevice->GetSource()->GetID());
+		else
+			pList->AppendInteger(0);
 
 		//	Charges and level
 
