@@ -57,7 +57,7 @@ int CArmorSystem::CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP) con
 	return iTotalHP;
 	}
 
-void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate)
+void CArmorSystem::Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate)
 
 //  Install
 //
@@ -71,7 +71,7 @@ void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool
 
     //  We insert armor segments too
 
-    CItemListManipulator Items(pObj->GetItemList());
+    CItemListManipulator Items(Source.GetItemList());
 
     //  Loop over all sections
 
@@ -91,7 +91,7 @@ void CArmorSystem::Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool
 
 		//	Install
 
-		m_Segments[i].Install(pObj, Items, i, bInCreate);
+		m_Segments[i].Install(Source, Items, i, bInCreate);
 		}
 
     //  Initialize other properties
@@ -120,7 +120,7 @@ bool CArmorSystem::IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDama
 	return (m_Segments.GetCount() > 0);
 	}
 
-void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
+void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject &Source)
 
 //  ReadFromStream
 //
@@ -130,15 +130,15 @@ void CArmorSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
     int i;
 
 	DWORD dwCount;
-	Ctx.pStream->Read((char *)&dwCount, sizeof(DWORD));
+	Ctx.pStream->Read(dwCount);
 	m_Segments.InsertEmpty(dwCount);
 	for (i = 0; i < (int)dwCount; i++)
-		m_Segments[i].ReadFromStream(pObj, i, Ctx);
+		m_Segments[i].ReadFromStream(Source, i, Ctx);
 
     //  Read other properties
 
     if (Ctx.dwVersion >= 128)
-        Ctx.pStream->Read((char *)&m_iHealerLeft, sizeof(DWORD));
+        Ctx.pStream->Read(m_iHealerLeft);
     else
         m_iHealerLeft = 0;
     }
@@ -365,11 +365,11 @@ void CArmorSystem::WriteToStream (IWriteStream *pStream)
     int i;
 
     DWORD dwSave = m_Segments.GetCount();
-	pStream->Write((char *)&dwSave, sizeof(DWORD));
+	pStream->Write(dwSave);
 	for (i = 0; i < m_Segments.GetCount(); i++)
 		m_Segments[i].WriteToStream(pStream);
 
     //  Write other properties
 
-	pStream->Write((char *)&m_iHealerLeft, sizeof(DWORD));
+	pStream->Write(m_iHealerLeft);
     }

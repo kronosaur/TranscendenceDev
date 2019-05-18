@@ -7581,7 +7581,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Do not allow adding installed items
 
-			Item.SetInstalled(-1);
+			Item.ClearInstalled();
 
 			//	Add the item
 

@@ -63,7 +63,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 				int iCurHP = pArmor->GetHitPoints();
 				int iCurMaxHP = pArmor->GetMaxHP(pShip);
 
-				WreckItem.SetInstalled(-1);
+				WreckItem.ClearInstalled();
 				int iNewMaxHP = WreckItem.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(WreckItem));
 
 				int iArmorIntegrity = (iCurMaxHP > 0 ? 100 * iCurHP / iCurMaxHP : 0);
@@ -101,7 +101,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 					case fateDamaged:
 						{
 						CItem ItemToDrop(WreckItem);
-						ItemToDrop.SetInstalled(-1);
+						ItemToDrop.ClearInstalled();
 
 						if (WreckItem.GetMods().IsEnhancement())
 							{
@@ -121,7 +121,7 @@ void CShipwreckDesc::AddItemsToWreck (CShip *pShip, CSpaceObject *pWreck) const
 					case fateSurvives:
 						{
 						CItem ItemToDrop(WreckItem);
-						ItemToDrop.SetInstalled(-1);
+						ItemToDrop.ClearInstalled();
 						Dest.AddItem(ItemToDrop);
 						break;
 						}

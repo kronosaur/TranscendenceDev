@@ -397,7 +397,7 @@ void CInstalledDevice::Install (CSpaceObject *pObj, CItemListManipulator &ItemLi
 
 	//	Mark the item as installed
 
-	ItemList.SetInstalledAtCursor(iDeviceSlot);
+	ItemList.SetInstalledAtCursor(*this);
 
 	//	We remember the item after it is installed;
 	//	otherwise, we get a pointer to the wrong item
@@ -782,7 +782,10 @@ void CInstalledDevice::ReadFromStream (CSpaceObject *pSource, SLoadCtx &Ctx)
 		CItemListManipulator ItemList(pSource->GetItemList());
 		pSource->SetCursorAtDevice(ItemList, this);
 		if (ItemList.IsCursorValid())
+			{
 			m_pItem = ItemList.GetItemPointerAtCursor();
+			m_pItem->SetInstalled(*this);
+			}
 
 		//	In previous versions we automatically offset weapon positions.
 		//	In later versions we explicitly set the position, so we have
@@ -1218,7 +1221,7 @@ void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &Item
 
 	//	Mark the item as uninstalled
 
-	ItemList.SetInstalledAtCursor(-1);
+	ItemList.ClearInstalledAtCursor();
 
 	//	Let the class clean up also
 

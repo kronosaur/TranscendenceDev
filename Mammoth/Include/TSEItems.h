@@ -318,8 +318,9 @@ class CItem
 		CString CalcSortKey (void) const;
 		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
 		void ClearDamaged (void);
-		inline void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
-		inline void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
+		void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
+		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
+		void ClearInstalled (void);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
@@ -396,9 +397,11 @@ class CItem
 		void SetDisrupted (DWORD dwDuration);
 		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
 		inline void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
-		inline void SetInstalled (int iInstalled) { m_dwInstalled = (BYTE)(char)iInstalled; }
+		void SetInstalled (CInstalledArmor &Installed);
+		void SetInstalled (CInstalledDevice &Installed);
 		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
+		void SetPrepareUninstalled (void);
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
@@ -430,6 +433,14 @@ class CItem
 			flagUnknownBit2 =	0x80,
 			};
 
+		enum EInstallTypes
+			{
+			installedNone,
+
+			installedArmor,
+			installedDevice,
+			};
+
 		static constexpr DWORD UNKNOWN_INDEX_LOWER_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2);
 		static constexpr DWORD UNKNOWN_INDEX_LOWER_SHIFT = 5;
 		static constexpr DWORD UNKNOWN_INDEX_MASK = (flagUnknownBit0 | flagUnknownBit1 | flagUnknownBit2 | flagUnknownBit3);
@@ -437,6 +448,9 @@ class CItem
 
 		struct SExtra
 			{
+			EInstallTypes m_iInstalled = installedNone;
+			void *m_pInstalled = NULL;			//	Pointer to either CInstalledArmor or CInstalledDevice
+
 			DWORD m_dwCharges = 0;				//	Charges for items
 			DWORD m_dwLevel = 0;				//	For scalable items, this stores the level
 			DWORD m_dwDisruptedTime = 0;		//	If >0, the tick on which disruption expires
@@ -529,6 +543,7 @@ class CItemListManipulator
 
 		DWORD AddItemEnhancementAtCursor (const CItemEnhancement &Mods, int iCount = 1);
 		void ClearDisruptedAtCursor (int iCount = 1);
+		void ClearInstalledAtCursor (void);
 		void DeleteAtCursor (int iCount);
 		void DeleteMarkedItems (void);
 		const CItem &GetItemAtCursor (void);
@@ -543,7 +558,9 @@ class CItemListManipulator
 		void SetDataAtCursor (const CString &sAttrib, ICCItem *pData, int iCount = 1);
 		void SetDisruptedAtCursor (DWORD dwDuration, int iCount = 1);
 		void SetEnhancedAtCursor (bool bEnhanced);
-		void SetInstalledAtCursor (int iInstalled);
+		void SetInstalledAtCursor (CInstalledArmor &Installed);
+		void SetInstalledAtCursor (CInstalledDevice &Installed);
+		void SetPrepareUninstalledAtCursor (void);
 		bool SetPropertyAtCursor (CSpaceObject *pSource, const CString &sName, ICCItem *pValue, int iCount, CString *retsError);
 		void TransferAtCursor (int iCount, CItemList &DestList);
 

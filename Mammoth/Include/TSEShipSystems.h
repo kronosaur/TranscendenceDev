@@ -67,9 +67,9 @@ class CArmorSystem
 		inline CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
 		inline int GetSegmentCount (void) const { return m_Segments.GetCount(); }
         inline int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
-        void Install (CSpaceObject *pObj, const CShipArmorDesc &Desc, bool bInCreate = false);
+        void Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate = false);
 		bool IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDamage) const;
-        void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);
+        void ReadFromStream (SLoadCtx &Ctx, CSpaceObject &Source);
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
         inline void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }

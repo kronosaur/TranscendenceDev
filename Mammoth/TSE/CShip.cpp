@@ -1635,7 +1635,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 
 	//	Initialize the armor from the class
 
-	pShip->m_Armor.Install(pShip, pClass->GetArmorDesc(), true);
+	pShip->m_Armor.Install(*pShip, pClass->GetArmorDesc(), true);
 
 	//	Devices
 
@@ -1692,7 +1692,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 				{
 				CInstalledArmor *pArmor = pShip->FindArmor(Item);
 				if (pArmor)
-					pArmor->FinishInstall(pShip);
+					pArmor->FinishInstall(*pShip);
 				}
 			else
 				{
@@ -3837,9 +3837,10 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	int iOldMaxHP;
 	int iOldHP = OldArmor.GetHitPoints(CItemCtx(this, pSect), &iOldMaxHP);
 
-	//	Mark the item as about to be uninstalled
+	//	Mark the item as about to be uninstalled. This will clear the installed
+	//	flags but it won't yet stack with other uninstalled items.
 
-	ItemList.SetInstalledAtCursor(-2);
+	ItemList.SetPrepareUninstalledAtCursor();
 	OldArmor = ItemList.GetItemAtCursor();
 
 	//	How damaged is the current armor?
@@ -3850,7 +3851,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 	ItemList.Refresh(NewArmor);
 
-	pSect->Install(this, ItemList, iSect);
+	pSect->Install(*this, ItemList, iSect);
 
 	//	The item is now known and referenced.
 
@@ -3871,7 +3872,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 
 		if (!bDestroyOldArmor)
 			{
-			OldArmor.SetInstalled(-1);
+			OldArmor.ClearInstalled();
 			OldArmor.SetCount(1);
 
 			int iNewMaxHP = OldArmor.GetType()->GetArmorClass()->GetMaxHP(CItemCtx(OldArmor));
@@ -5719,7 +5720,7 @@ void CShip::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Load armor
 
-    m_Armor.ReadFromStream(Ctx, this);
+    m_Armor.ReadFromStream(Ctx, *this);
 
 	//	Abilities
 

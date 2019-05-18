@@ -54,7 +54,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 			{
 			CItem ItemToDrop(Item);
 			ItemToDrop.SetDamaged(iDamagedHP);
-			ItemToDrop.SetInstalled(-1);
+			ItemToDrop.ClearInstalled();
 
 			AddItem(ItemToDrop);
 			return true;
@@ -87,7 +87,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 			{
 			CItem ItemToDrop(Item);
 			ItemToDrop.SetDamaged(iDamagedHP);
-			ItemToDrop.SetInstalled(-1);
+			ItemToDrop.ClearInstalled();
 
 			AddItem(ItemToDrop);
 			return true;
@@ -111,7 +111,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 			if (!Item.IsVirtual() && !Item.IsDamaged() && !bDropDamaged)
 				{
 				CItem ItemToDrop(Item);
-				ItemToDrop.SetInstalled(-1);
+				ItemToDrop.ClearInstalled();
 
 				AddItem(ItemToDrop);
 				return true;
@@ -143,7 +143,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 		else if (!bDropDamaged)
 			{
 			CItem ItemToDrop(Item);
-			ItemToDrop.SetInstalled(-1);
+			ItemToDrop.ClearInstalled();
 
 			AddItem(ItemToDrop);
 			return true;
@@ -159,7 +159,7 @@ bool CItemListManipulator::AddDamagedComponents (const CItem &Item, int iDamageC
 		else
 			{
 			CItem ItemToDrop(Item);
-			ItemToDrop.SetInstalled(-1);
+			ItemToDrop.ClearInstalled();
 
 			if (Item.GetMods().IsEnhancement())
 				{
@@ -290,6 +290,22 @@ void CItemListManipulator::ClearDisruptedAtCursor (int iCount)
 	if (iCount != -1)
 		NewItem.SetCount(Min(iCount, OldItem.GetCount()));
 	NewItem.ClearDisrupted();
+
+	MoveItemTo(NewItem, OldItem);
+	}
+
+void CItemListManipulator::ClearInstalledAtCursor (void)
+
+//	ClearInstalledAtCursor
+//
+//	Uninstalls the selected item
+
+	{
+	ASSERT(m_iCursor != -1);
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	NewItem.SetCount(1);
+	NewItem.ClearInstalled();
 
 	MoveItemTo(NewItem, OldItem);
 	}
@@ -786,7 +802,7 @@ void CItemListManipulator::SetFilter (const CItemCriteria &Filter)
 	GenerateViewMap();
 	}
 
-void CItemListManipulator::SetInstalledAtCursor (int iInstalled)
+void CItemListManipulator::SetInstalledAtCursor (CInstalledArmor &Installed)
 
 //	SetInstalledAtCursor
 //
@@ -797,7 +813,40 @@ void CItemListManipulator::SetInstalledAtCursor (int iInstalled)
 	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
 	NewItem.SetCount(1);
-	NewItem.SetInstalled(iInstalled);
+	NewItem.SetInstalled(Installed);
+
+	MoveItemTo(NewItem, OldItem);
+	}
+
+void CItemListManipulator::SetInstalledAtCursor (CInstalledDevice &Installed)
+
+//	SetInstalledAtCursor
+//
+//	Installs the selected item
+
+	{
+	ASSERT(m_iCursor != -1);
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	NewItem.SetCount(1);
+	NewItem.SetInstalled(Installed);
+
+	MoveItemTo(NewItem, OldItem);
+	}
+
+void CItemListManipulator::SetPrepareUninstalledAtCursor (void)
+
+//	SetPrepareUninstalledAtCursor
+//
+//	Clears the installation flag but does not stack it with other uninstalled
+//	items.
+
+	{
+	ASSERT(m_iCursor != -1);
+	CItem &OldItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	CItem NewItem = m_ItemList.GetItem(m_ViewMap[m_iCursor]);
+	NewItem.SetCount(1);
+	NewItem.SetPrepareUninstalled();
 
 	MoveItemTo(NewItem, OldItem);
 	}

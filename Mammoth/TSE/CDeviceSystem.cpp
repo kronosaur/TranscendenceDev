@@ -690,7 +690,7 @@ void CDeviceSystem::ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj)
 		{
 		m_Devices[i].ReadFromStream(pObj, Ctx);
 
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		if (dwLoad != 0xffffffff)
 			m_NamedDevices[dwLoad] = i;
 

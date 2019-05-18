@@ -12,6 +12,9 @@ bool CInstalledArmor::AccumulateEnhancements (CSpaceObject *pSource, CInstalledD
 //	Accumulate enhancements on devices.
 
 	{
+	if (m_pArmorClass == NULL)
+		return false;
+		
 	return m_pArmorClass->AccumulateEnhancements(CItemCtx(pSource, this), pTarget, EnhancementIDs, pEnhancements);
 	}
 
@@ -22,10 +25,13 @@ bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformance
 //	Accumulate enhancements on devices.
 
 	{
+	if (m_pArmorClass)
+		return false;
+
     return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);
 	}
 
-void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
+void CInstalledArmor::FinishInstall (CSpaceObject &Source)
 
 //	FinishInstall
 //
@@ -36,9 +42,9 @@ void CInstalledArmor::FinishInstall (CSpaceObject *pSource)
 	{
 	DEBUG_TRY
 
-	m_pItem->FireOnInstall(pSource);
+	m_pItem->FireOnInstall(&Source);
 
-	CShip *pShip = pSource->AsShip();
+	CShip *pShip = Source.AsShip();
 	if (pShip)
 		pShip->GetController()->OnItemInstalled(*m_pItem);
 
@@ -73,7 +79,7 @@ int CInstalledArmor::IncCharges (CSpaceObject *pSource, int iChange)
 	return ItemList.GetItemAtCursor().GetCharges();
 	}
 
-void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate)
+void CInstalledArmor::Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate)
 
 //	Install
 //
@@ -81,15 +87,16 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	{
 	CItem *pItem = ItemList.GetItemPointerAtCursor();
-	ASSERT(pItem);
-
-	CItemCtx ItemCtx(pItem, pObj);
+	if (pItem == NULL)
+		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item is NULL."));
 
 	CItemType *pType = pItem->GetType();
-	ASSERT(pType);
+	if (pType == NULL)
+		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item type is NULL."));
 
 	m_pArmorClass = pType->GetArmorClass();
-	ASSERT(m_pArmorClass);
+	if (m_pArmorClass == NULL)
+		throw CException(ERR_FAIL, CONSTLIT("CInstalledArmor::Install: Item is not armor."));
 
 	//	Set up the enhancements from the armor itself. We will add other 
 	//	enhancements later, in CShip::CalcArmorBonus.
@@ -98,7 +105,7 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	//	of hit points below. That way, in CalcArmorBonus we will have the 
 	//	correct value for old hit points when we apply other enhancements.
 
-	const CItemEnhancement &Mods = ItemCtx.GetMods();
+	const CItemEnhancement &Mods = pItem->GetMods();
 	if (!Mods.IsEmpty())
 		{
 		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
@@ -110,6 +117,9 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	//	Set
 
+	CItemCtx ItemCtx(pItem, &Source);
+
+	m_pSource = &Source;
 	m_iSect = iSect;
 	m_fComplete = false;
 	m_fPrimeSegment = false;
@@ -118,7 +128,7 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 
 	//	Mark the item as installed
 
-	ItemList.SetInstalledAtCursor(iSect);
+	ItemList.SetInstalledAtCursor(*this);
 
 	//	After we've installed, set the item pointer
 	//	(we have to wait until after installation so that we
@@ -130,10 +140,10 @@ void CInstalledArmor::Install (CSpaceObject *pObj, CItemListManipulator &ItemLis
 	//	whole ship is created before firing the event)
 
 	if (!bInCreate)
-		FinishInstall(pObj);
+		FinishInstall(Source);
 	}
 
-void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx &Ctx)
+void CInstalledArmor::ReadFromStream (CSpaceObject &Source, int iSect, SLoadCtx &Ctx)
 
 //	ReadFromStream
 //
@@ -146,13 +156,12 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 
 	{
 	DWORD dwLoad;
-
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pArmorClass = pSource->GetUniverse().FindArmor(dwLoad);
+	Ctx.pStream->Read(dwLoad);
+	m_pArmorClass = Source.GetUniverse().FindArmor(dwLoad);
 
 	if (Ctx.dwVersion >= 54)
 		{
-		Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+		Ctx.pStream->Read(dwLoad);
 		m_iSect = dwLoad;
 		}
 	else
@@ -160,7 +169,7 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 
 	//	The caller is responsible for initializing this for earlier versions
 
-	Ctx.pStream->Read((char *)&m_iHitPoints, sizeof(DWORD));
+	Ctx.pStream->Read(m_iHitPoints);
 
 	//	Previous versions saved mods
 
@@ -170,7 +179,7 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 		Dummy.ReadFromStream(Ctx);
 		}
 
-	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
+	Ctx.pStream->Read(dwLoad);
 	m_fComplete =			((dwLoad & 0x00000001) ? true : false);
 	m_fPrimeSegment =		((dwLoad & 0x00000002) ? true : false);
 	m_fConsumePower =		((dwLoad & 0x00000004) ? true : false);
@@ -183,13 +192,18 @@ void CInstalledArmor::ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx
 
 	//	Fix up the item pointer
 
+	m_pSource = NULL;
 	m_pItem = NULL;
 	if (m_pArmorClass != NULL && m_iSect != -1)
 		{
-		CItemListManipulator ItemList(pSource->GetItemList());
-		pSource->SetCursorAtArmor(ItemList, this);
+		CItemListManipulator ItemList(Source.GetItemList());
+		Source.SetCursorAtArmor(ItemList, this);
 		if (ItemList.IsCursorValid())
+			{
+			m_pSource = &Source;
 			m_pItem = ItemList.GetItemPointerAtCursor();
+			m_pItem->SetInstalled(*this);
+			}
 		}
 	}
 

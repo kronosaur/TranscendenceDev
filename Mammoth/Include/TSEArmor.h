@@ -291,36 +291,37 @@ class CInstalledArmor
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		bool AccumulateEnhancements (CSpaceObject *pSource, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
         bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
-		inline bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
-		void FinishInstall (CSpaceObject *pSource);
-		inline int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
-		inline CArmorClass *GetClass (void) const { return m_pArmorClass; }
+		bool ConsumedPower (void) const { return (m_fConsumePower ? true : false); }
+		void FinishInstall (CSpaceObject &Source);
+		int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
+		CArmorClass *GetClass (void) const { return m_pArmorClass; }
 		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
-		inline TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
-		inline int GetHitPoints (void) const { return m_iHitPoints; }
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const { return m_pEnhancements; }
+		int GetHitPoints (void) const { return m_iHitPoints; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
-		inline CItem *GetItem (void) const { return m_pItem; }
+		CItem *GetItem (void) const { return m_pItem; }
         inline int GetLevel (void) const;
 		inline int GetMaxHP (CSpaceObject *pSource) const;
-		inline int GetSect (void) const { return m_iSect; }
+		int GetSect (void) const { return m_iSect; }
 		int IncCharges (CSpaceObject *pSource, int iChange);
-		inline int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
-		void Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
-		inline bool IsComplete (void) const { return (m_fComplete ? true : false); }
-		inline bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
+		int IncHitPoints (int iChange) { m_iHitPoints = Max(0, m_iHitPoints + iChange); return m_iHitPoints; }
+		void Install (CSpaceObject &Source, CItemListManipulator &ItemList, int iSect, bool bInCreate = false);
+		bool IsComplete (void) const { return (m_fComplete ? true : false); }
+		bool IsPrime (void) const { return (m_fPrimeSegment ? true : false); }
 		void SetComplete (CSpaceObject *pSource, bool bComplete = true);
-		inline void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
+		void SetConsumePower (bool bValue = true) { m_fConsumePower = bValue; }
 		void SetEnhancements (CSpaceObject *pSource, const TSharedPtr<CItemEnhancementStack> &pStack);
-		inline void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
-		inline void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
-		inline void SetSect (int iSect) { m_iSect = iSect; }
-		void ReadFromStream (CSpaceObject *pSource, int iSect, SLoadCtx &Ctx);
+		void SetPrime (CSpaceObject *pSource, bool bPrime = true) { m_fPrimeSegment = bPrime; }
+		void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
+		void SetSect (int iSect) { m_iSect = iSect; }
+		void ReadFromStream (CSpaceObject &Source, int iSect, SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
-		CItem *m_pItem;								//	Item
-		CArmorClass *m_pArmorClass;					//	Armor class used
-		int m_iHitPoints;							//	Hit points left
+		CSpaceObject *m_pSource = NULL;				//	Installed on this object
+		CItem *m_pItem = NULL;						//	Item
+		CArmorClass *m_pArmorClass = NULL;			//	Armor class used
+		int m_iHitPoints = 0;						//	Hit points left
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;		//	List of enhancements (may be NULL)
 
 		int m_iSect:16;								//	Armor section

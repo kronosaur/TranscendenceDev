@@ -374,6 +374,22 @@ void CItem::ClearDamaged (void)
 		m_pExtra->m_iDamagedHP = 0;
 	}
 
+void CItem::ClearInstalled (void)
+
+//	ClearInstalled
+//
+//	Clear installed connection.
+
+	{
+	if (m_pExtra)
+		{
+		m_pExtra->m_pInstalled = NULL;
+		m_pExtra->m_iInstalled = installedNone;
+		}
+
+	m_dwInstalled = (BYTE)(char)-1;
+	}
+
 CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName)
 
 //	CreateItemByName
@@ -3239,6 +3255,40 @@ void CItem::SetDisrupted (DWORD dwDuration)
 		}
 	}
 
+void CItem::SetInstalled (CInstalledArmor &Installed)
+
+//	SetInstalled
+//
+//	Binds to an installed armor object.
+
+	{
+	ASSERT(GetCount() == 1);
+	ASSERT(m_pItemType && m_pItemType->GetArmorClass() == Installed.GetClass());
+
+	Extra();
+	m_pExtra->m_pInstalled = &Installed;
+	m_pExtra->m_iInstalled = installedArmor;
+
+	m_dwInstalled = (BYTE)(char)Installed.GetSect();
+	}
+
+void CItem::SetInstalled (CInstalledDevice &Installed)
+
+//	SetInstalled
+//
+//	Binds to an installed device object.
+
+	{
+	ASSERT(GetCount() == 1);
+	ASSERT(m_pItemType && m_pItemType->GetDeviceClass() == Installed.GetClass());
+
+	Extra();
+	m_pExtra->m_pInstalled = &Installed;
+	m_pExtra->m_iInstalled = installedDevice;
+
+	m_dwInstalled = (BYTE)(char)Installed.GetDeviceSlot();
+	}
+
 void CItem::SetKnown (bool bKnown) const
 
 //	SetKnown
@@ -3276,6 +3326,22 @@ bool CItem::SetLevel (int iLevel, CString *retsError)
     SetScalableLevel(iLevel - GetType()->GetMinLevel());
     return true;
     }
+
+void CItem::SetPrepareUninstalled (void)
+
+//	SetPrepareUninstalled
+//
+//	Clear installed connection.
+
+	{
+	if (m_pExtra)
+		{
+		m_pExtra->m_pInstalled = NULL;
+		m_pExtra->m_iInstalled = installedNone;
+		}
+
+	m_dwInstalled = (BYTE)(char)-2;
+	}
 
 bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
 
@@ -3345,7 +3411,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	else if (strEquals(sName, PROPERTY_INSTALLED))
 		{
 		if (pValue && pValue->IsNil())
-			SetInstalled(-1);
+			ClearInstalled();
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
