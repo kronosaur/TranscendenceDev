@@ -1183,26 +1183,23 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 	return sResult;
 	}
 
-int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP) const
+int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP, bool bUninstalled) const
 
 //	GetHitPoints
 //
 //	Returns the number of hit points left on the item.
 
 	{
-	CArmorClass *pArmor;
-	CDeviceClass *pDevice;
-
 	if (m_pItemType == NULL)
 		{
 		if (retiMaxHP) *retiMaxHP = 0;
 		return 0;
 		}
 
-	else if (pArmor = m_pItemType->GetArmorClass())
+	else if (CArmorClass *pArmor = m_pItemType->GetArmorClass())
 		{
-		CInstalledArmor *pInstalled = Ctx.GetArmor();
-		if (pInstalled)
+		const CInstalledArmor *pInstalled = GetInstalledArmor();
+		if (!bUninstalled && pInstalled)
 			{
 			if (retiMaxHP) *retiMaxHP = pArmor->GetMaxHP(Ctx);
 			return pInstalled->GetHitPoints();
@@ -1217,10 +1214,10 @@ int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP) const
 			}
 		}
 
-	else if (pDevice = m_pItemType->GetDeviceClass())
+	else if (CDeviceClass *pDevice = m_pItemType->GetDeviceClass())
 		{
-		CInstalledDevice *pInstalled = Ctx.GetDevice();
-		if (pInstalled)
+		const CInstalledDevice *pInstalled = GetInstalledDevice();
+		if (!bUninstalled && pInstalled)
 			return pInstalled->GetHitPoints(Ctx, retiMaxHP);
 		else
 			return pDevice->GetHitPoints(Ctx, retiMaxHP);

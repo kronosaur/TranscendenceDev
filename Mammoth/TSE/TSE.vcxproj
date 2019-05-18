@@ -258,6 +258,7 @@
     <ClInclude Include="..\Include\TSEGeometry.h" />
     <ClInclude Include="..\Include\TSEImages.h" />
     <ClInclude Include="..\Include\TSEItemDefs.h" />
+    <ClInclude Include="..\Include\TSEItemInlines.h" />
     <ClInclude Include="..\Include\TSEItems.h" />
     <ClInclude Include="..\Include\TSEItemType.h" />
     <ClInclude Include="..\Include\TSELanguage.h" />

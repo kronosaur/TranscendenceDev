@@ -292,6 +292,32 @@ class CRandomEnhancementGenerator
 		ICCItem *m_pCode;
 	};
 
+//	ITEM -----------------------------------------------------------------------
+
+class CArmorItem
+	{
+	public:
+		operator bool () const { return (m_pCItem != NULL); }
+		operator bool () { return (m_pItem != NULL); }
+		operator const CItem & () const { return *m_pCItem; }
+		operator CItem & () { return *m_pItem; }
+
+	private:
+		CArmorItem (CItem *pItem) :
+				m_pCItem(pItem),
+				m_pItem(pItem)
+			{ }
+
+		CArmorItem (const CItem *pItem) :
+				m_pCItem(pItem)
+			{ }
+
+		const CItem *m_pCItem = NULL;
+		CItem *m_pItem = NULL;
+
+	friend class CItem;
+	};
+
 class CItem
 	{
 	public:
@@ -322,7 +348,6 @@ class CItem
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
 		void ClearInstalled (void);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
-		inline bool IsArmor (void) const;
 		inline bool IsDevice (void) const;
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
 		bool IsUsed (void) const;
@@ -350,8 +375,12 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
-		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL) const;
-		inline int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
+		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
+		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
+		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
+		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -405,6 +434,37 @@ class CItem
 		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
+
+		//	Conversion to Item Categories
+		//
+		//	When converting from a CItem to a CArmorItem there are a few common
+		//	patterns:
+		//
+		//	CItem theItem;
+		//
+		//	if (CArmorItem theArmor = theItem.AsArmorItem())
+		//		{
+		//		... do something with theArmor
+		//		}
+		//
+		//	if (theItem.IsArmor())
+		//		{
+		//		some_function(theItem.AsArmorItem());
+		//		}
+		//
+		//	If you're sure that theItem is an armor item, then you can do this:
+		//
+		//	some_function(theItem.AsArmorItemOrThrow());
+		//
+		//	Similar patterns apply for other item categories (devices, etc.).
+
+		inline bool IsArmor (void) const;
+		const CArmorItem AsArmorItem (void) const { return CArmorItem(IsArmor() ? this : NULL); }
+		CArmorItem AsArmorItem (void) { return CArmorItem(IsArmor() ? this : NULL); }
+		const CArmorItem AsArmorItemOrThrow (void) const { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
+		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
+
+		//	Item Criteria
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
 		static void InitCriteriaAll (CItemCriteria *retCriteria);
@@ -484,6 +544,8 @@ class CItem
 		static CItem m_NullItem;
 		static CItemEnhancement m_NullMod;
 	};
+
+//	ITEM LISTS -----------------------------------------------------------------
 
 class CItemList
 	{
