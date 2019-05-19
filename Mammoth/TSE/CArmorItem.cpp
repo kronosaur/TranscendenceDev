@@ -5,6 +5,48 @@
 
 #include "PreComp.h"
 
+#define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
+#define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
+#define PROPERTY_HP								CONSTLIT("hp")
+#define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+#define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
+#define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
+
+ICCItemPtr CArmorItem::FindProperty (const CString &sProperty) const
+
+//	FindProperty
+//
+//	Finds a property.
+
+	{
+	if (strEquals(sProperty, PROPERTY_COMPLETE_HP))
+		return ICCItemPtr(GetMaxHP(true));
+
+	else if (strEquals(sProperty, PROPERTY_COMPLETE_SET))
+		{
+		const CInstalledArmor *pInstalled = GetInstalledArmor();
+		if (pInstalled == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(pInstalled->IsComplete());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_HP))
+		return ICCItemPtr(GetHP());
+
+	else if (strEquals(sProperty, PROPERTY_MAX_HP))
+		return ICCItemPtr(GetMaxHP());
+
+	else if (strEquals(sProperty, PROPERTY_REPAIR_COST))
+		return ICCItemPtr(GetRepairCost());
+
+	else if (strEquals(sProperty, PROPERTY_REPAIR_LEVEL))
+		return ICCItemPtr(GetRepairLevel());
+
+	else
+		return GetArmorClass().FindItemProperty(*this, sProperty);
+	}
+
 TSharedPtr<CItemEnhancementStack> CArmorItem::GetEnhancementStack (void) const
 
 //	GetEnhancementStack

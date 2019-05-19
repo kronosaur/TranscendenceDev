@@ -65,8 +65,6 @@
 
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
-#define PROPERTY_COMPLETE_HP					CONSTLIT("completeHP")
-#define PROPERTY_COMPLETE_SET					CONSTLIT("completeSet")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
 #define PROPERTY_DEVICE_DISRUPT_IMMUNE			CONSTLIT("deviceDisruptImmune")
@@ -82,8 +80,6 @@
 #define PROPERTY_PRIME_SEGMENT					CONSTLIT("primeSegment")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
 #define PROPERTY_REGEN							CONSTLIT("regen")
-#define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
-#define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 
@@ -1967,7 +1963,7 @@ int CArmorClass::GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower) const
 		}
 	}
 
-ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
+ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CString &sName) const
 
 //	FindItemProperty
 //
@@ -1975,12 +1971,12 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	const CArmorItem ArmorItem = Ctx.GetItem().AsArmorItemOrThrow();
     const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	CItemCtx Ctx(&(const CItem &)ArmorItem, ArmorItem.GetSource());
 
 	//	Enhancements
 
-	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 
 	//	Get the property
 
@@ -1990,20 +1986,8 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialBlinding));
 
-	else if (strEquals(sName, PROPERTY_COMPLETE_HP))
-		return ICCItemPtr(ArmorItem.GetMaxHP(true));
-
-	else if (strEquals(sName, PROPERTY_COMPLETE_SET))
-		{
-		CInstalledArmor *pArmor = Ctx.GetArmor();
-		if (pArmor == NULL)
-			return ICCItemPtr(ICCItem::Nil);
-
-		return ICCItemPtr(pArmor->IsComplete());
-		}
-
 	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
-		return ICCItemPtr(Stats.DamageAdj.GetDamageAdjProperty(pEnhancements));
+		return ICCItemPtr(Stats.DamageAdj.GetDamageAdjProperty(&Enhancements));
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialDeviceDamage));
@@ -2017,14 +2001,8 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialEMP));
 
-	else if (strEquals(sName, PROPERTY_HP))
-		return ICCItemPtr(ArmorItem.GetHP());
-
 	else if (strEquals(sName, PROPERTY_HP_BONUS))
-		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(pEnhancements));
-
-	else if (strEquals(sName, PROPERTY_MAX_HP))
-		return ICCItemPtr(ArmorItem.GetMaxHP());
+		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(&Enhancements));
 
 	else if (strEquals(sName, PROPERTY_POWER_OUTPUT))
 		return CTLispConvert::CreatePowerResultMW(GetPowerOutput(Ctx));
@@ -2046,12 +2024,6 @@ ICCItemPtr CArmorClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_REGEN))
 		return ICCItemPtr(mathRound(CalcRegen180(Ctx)));
-
-	else if (strEquals(sName, PROPERTY_REPAIR_COST))
-		return ICCItemPtr(ArmorItem.GetRepairCost());
-
-	else if (strEquals(sName, PROPERTY_REPAIR_LEVEL))
-		return ICCItemPtr(ArmorItem.GetRepairLevel());
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialShatter));

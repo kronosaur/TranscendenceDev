@@ -1493,6 +1493,18 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	else if (strEquals(sProperty, PROPERTY_VARIANT))
 		return CC.CreateInteger(GetVariantNumber());
 
+	//	Handle any armor item properties
+
+	else if (IsArmor())
+		{
+		if (const CArmorItem ArmorItem = AsArmorItem())
+			{
+			ICCItemPtr pResult = ArmorItem.FindProperty(sProperty);
+			if (pResult)
+				return pResult->Reference();
+			}
+		}
+
 	//	Next we handle all properties for devices, armor, etc. Note that this
 	//	includes both installed properties (e.g., armor segment) and static
 	//	properties (e.g., armor HP). But it DOES NOT include item type 
@@ -1501,7 +1513,6 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	else
 		{
 		CDeviceClass *pDevice;
-		CArmorClass *pArmor;
 
 		//	If this is a device, then pass it on
 
@@ -1509,15 +1520,6 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			{
 			if (pResult = pDevice->FindItemProperty(Ctx, sProperty))
 				return pResult;
-			}
-
-		//	If this is armor, then pass it on
-
-		else if (pArmor = GetType()->GetArmorClass())
-			{
-			ICCItemPtr pResult = pArmor->FindItemProperty(Ctx, sProperty);
-			if (pResult)
-				return pResult->Reference();
 			}
 
 		//	If this is a missile, then pass it to the weapon.

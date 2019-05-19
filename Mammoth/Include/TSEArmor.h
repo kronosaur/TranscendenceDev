@@ -104,7 +104,6 @@ class CArmorClass
 			return true;
 			}
 
-		ICCItemPtr FindItemProperty (CItemCtx &Ctx, const CString &sProperty);
         inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		inline int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
         inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
@@ -171,6 +170,7 @@ class CArmorClass
 		CArmorClass (void);
 
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
+		ICCItemPtr FindItemProperty (const CArmorItem &ArmorItem, const CString &sProperty) const;
 		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
 		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
 		int GetRepairCost (const CArmorItem &ArmorItem) const;

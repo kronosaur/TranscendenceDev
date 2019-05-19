@@ -48,6 +48,7 @@ class CArmorItem : public CDifferentiatedItem
 		operator const CItem & () const { return *m_pCItem; }
 		operator CItem & () { return *m_pItem; }
 
+		ICCItemPtr FindProperty (const CString &sProperty) const;
 		inline const CArmorClass &GetArmorClass (void) const;
 		inline CArmorClass &GetArmorClass (void);
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
