@@ -274,8 +274,6 @@ class CItem
 			CAttributeDataBlock m_Data;			//	Opaque data
 			};
 
-		int GetHitPoints (CItemCtx &Ctx, int *retiMaxHP = NULL, bool bUninstalled = false) const;
-
 		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
         int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }

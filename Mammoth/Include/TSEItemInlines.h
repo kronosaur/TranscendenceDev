@@ -9,12 +9,12 @@
 
 inline bool CItem::IsArmor (void) const
 	{
-	return (m_pItemType && m_pItemType->GetArmorClass());
+	return (m_pItemType && m_pItemType->IsArmor());
 	}
 
 inline bool CItem::IsDevice (void) const
 	{
-	return (m_pItemType && m_pItemType->GetDeviceClass());
+	return (m_pItemType && m_pItemType->IsDevice());
 	}
 
 inline const CEconomyType *CItem::GetCurrencyType (void) const

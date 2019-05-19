@@ -273,7 +273,7 @@ CString CItem::CalcSortKey (void) const
 
 	//	Next, sort by install location
 
-	if (IsInstalled() && pType->GetArmorClass())
+	if (IsInstalled() && IsArmor())
 		sCat.Append(strPatternSubst(CONSTLIT("%03d%08x"), GetInstalled(), pType->GetUNID()));
 	else
 		sCat.Append(CONSTLIT("99900000000"));
@@ -1075,11 +1075,11 @@ bool CItem::GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retL
 
 	if (IsDamaged())
 		{
-		CArmorClass *pArmor = m_pItemType->GetArmorClass();
-		if (pArmor)
+		if (IsArmor())
 			{
+			const CArmorItem ArmorItem = AsArmorItem();
 			int iMaxHP;
-			int iHP = GetHitPoints(Ctx, &iMaxHP);
+			int iHP = ArmorItem.GetHP(&iMaxHP);
 			int iArmorIntegrity = CArmorClass::CalcIntegrity(iHP, iMaxHP);
 			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("integrity: %d%%"), iArmorIntegrity)));
 			}
@@ -1183,53 +1183,6 @@ CString CItem::GetEnhancedDesc (CSpaceObject *pInstalled) const
 		}
 
 	return sResult;
-	}
-
-int CItem::GetHitPoints (CItemCtx &Ctx, int *retiMaxHP, bool bUninstalled) const
-
-//	GetHitPoints
-//
-//	Returns the number of hit points left on the item.
-
-	{
-	if (m_pItemType == NULL)
-		{
-		if (retiMaxHP) *retiMaxHP = 0;
-		return 0;
-		}
-
-	else if (const CArmorItem ArmorItem = AsArmorItem())
-		{
-		const CInstalledArmor *pInstalled = GetInstalledArmor();
-		if (!bUninstalled && pInstalled)
-			{
-			if (retiMaxHP) *retiMaxHP = ArmorItem.GetMaxHP();
-			return pInstalled->GetHitPoints();
-			}
-		else
-			{
-			int iMaxHP = ArmorItem.GetMaxHP();
-			int iDamagedHP = GetDamagedHP();
-
-			if (retiMaxHP) *retiMaxHP = iMaxHP;
-			return Max(0, iMaxHP - iDamagedHP);
-			}
-		}
-
-	else if (CDeviceClass *pDevice = m_pItemType->GetDeviceClass())
-		{
-		const CInstalledDevice *pInstalled = GetInstalledDevice();
-		if (!bUninstalled && pInstalled)
-			return pInstalled->GetHitPoints(Ctx, retiMaxHP);
-		else
-			return pDevice->GetHitPoints(Ctx, retiMaxHP);
-		}
-
-	else
-		{
-		if (retiMaxHP) *retiMaxHP = 0;
-		return 0;
-		}
 	}
 
 int CItem::GetLevel (void) const

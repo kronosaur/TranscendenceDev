@@ -83,19 +83,10 @@ class CArmorClass
 
         ~CArmorClass (void);
 
-		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
-		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
-        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
-		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
-		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
-		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
-		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
-		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pType, CArmorClass **retpArmor);
 		bool FindDataField (const CString &sField, CString *retsValue);
-		inline bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandlerArmorClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (m_CachedEvents[iEvent].pCode == NULL)
 				return false;
@@ -104,30 +95,40 @@ class CArmorClass
 			return true;
 			}
 
-        inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
-		inline int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
-        inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
+        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
 		int GetDamageAdjForWeaponLevel (int iLevel);
+		CItemType *GetItemType (void) const { return m_pItemType; }
+		int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
+		inline CString GetName (void) const;
+		CString GetShortName (void);
+		int GetStealth (void) const { return m_iStealth; }
+		DWORD GetUNID (void);
+        bool IsScalable (void) const { return (m_pScalable != NULL); }
+		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
+
+		EDamageResults AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		void AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList);
+		bool AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
+        bool AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const;
+		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
+		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
+		int CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const;
+		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+        inline int GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const;
 		int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon);
 		inline int GetInstallCost (CItemCtx &Ctx) const;
-		inline CItemType *GetItemType (void) const { return m_pItemType; }
 		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
-		inline int GetMaxHPBonus (void) const { return m_iMaxHPBonus; }
-		inline CString GetName (void) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
 		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
-		CString GetShortName (void);
-		inline int GetStealth (void) const { return m_iStealth; }
-		inline DWORD GetUNID (void);
 		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
 		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
-        bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
-		ALERROR OnBindDesign (SDesignLoadCtx &Ctx);
 		bool SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError = NULL);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);
 		bool UpdateRegen (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, const CRegenDesc &Regen, ERegenTypes iRegenType, int iTick);
@@ -171,11 +172,13 @@ class CArmorClass
 
         ALERROR BindScaledParams (SDesignLoadCtx &Ctx);
 		ICCItemPtr FindItemProperty (const CArmorItem &ArmorItem, const CString &sProperty) const;
+		void GenerateScaledStats (void);
 		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
 		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
 		int GetRepairCost (const CArmorItem &ArmorItem) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
         const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
+		CUniverse &GetUniverse (void) const;
 
 		int CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
 		Metric CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
@@ -186,9 +189,7 @@ class CArmorClass
 		Metric CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const;
 		Metric CalcRegen180 (CItemCtx &ItemCtx) const;
-		void GenerateScaledStats (void);
 		int GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const;
-		CUniverse &GetUniverse (void) const;
 		void FireOnArmorDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const;
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
