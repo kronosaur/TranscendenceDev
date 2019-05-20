@@ -596,7 +596,7 @@ void CEffectCreator::InitPainterParameters (CCreatePainterCtx &Ctx, IEffectPaint
 
 		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
-			::kernelDebugLogPattern("EffectType %x GetParameters: %s", GetUNID(), (LPSTR)pResult->GetStringValue());
+			::kernelDebugLogPattern("EffectType %x GetParameters: %s", GetUNID(), pResult->GetStringValue());
 		else if (pResult->IsSymbolTable())
 			{
 			for (i = 0; i < pResult->GetCount(); i++)
