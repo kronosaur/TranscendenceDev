@@ -394,6 +394,7 @@ class CStationType : public CDesignType
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
+		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const override;
 		virtual void OnMarkImages (void) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;

@@ -518,6 +518,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_ADD_RECURRING_TIMER   18
 #define FN_DESIGN_CANCEL_TIMER          19
 #define FN_DESIGN_GET_NAME				20
+#define FN_DESIGN_SET_PROPERTY			21
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3483,6 +3484,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typSetData unid attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"typSetProperty",			fnDesignGet,		FN_DESIGN_SET_PROPERTY,
+			"(typSetProperty unid property data) -> True/Nil",
+			"isv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typTranslate",				fnDesignGet,		FN_DESIGN_TRANSLATE,
 			"(typTranslate unid textID [data] [default]) -> text (or Nil)",
 			"iv*",	0,	},
@@ -4502,6 +4507,15 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			pType->SetGlobalData(sAttrib, pArgs->GetElement(2));
 			return pCC->CreateTrue();
+			}
+
+		case FN_DESIGN_SET_PROPERTY:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			if (sProperty.IsBlank())
+				return pCC->CreateNil();
+
+			return pCC->CreateBool(pType->SetTypeProperty(sProperty, pArgs->GetElement(2)));
 			}
 
 		case FN_DESIGN_TRANSLATE:

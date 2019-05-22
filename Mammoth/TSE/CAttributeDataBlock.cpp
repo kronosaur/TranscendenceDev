@@ -26,6 +26,17 @@ CAttributeDataBlock::CAttributeDataBlock (const CAttributeDataBlock &Src) :
 	Copy(Src);
 	}
 
+CAttributeDataBlock::CAttributeDataBlock (CAttributeDataBlock &&Src) :
+		m_pObjRefData(NULL)
+
+//	CAttributeDataBlock constructor
+
+	{
+	m_Data.TakeHandoff(Src.m_Data);
+	m_pObjRefData = Src.m_pObjRefData;
+	Src.m_pObjRefData = NULL;
+	}
+
 CAttributeDataBlock::~CAttributeDataBlock (void)
 
 //	CAttributeDataBlock destructor
@@ -40,6 +51,18 @@ CAttributeDataBlock &CAttributeDataBlock::operator= (const CAttributeDataBlock &
 
 	{
 	Copy(Src);
+	return *this;
+	}
+
+CAttributeDataBlock &CAttributeDataBlock::operator= (CAttributeDataBlock &&Src)
+
+//	CAttributeDataBlock equals operator
+
+	{
+	m_Data.TakeHandoff(Src.m_Data);
+	m_pObjRefData = Src.m_pObjRefData;
+	Src.m_pObjRefData = NULL;
+
 	return *this;
 	}
 

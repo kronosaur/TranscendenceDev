@@ -689,6 +689,11 @@
 				/>
 		</Items>
 
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Ships and Defenses -->
 
 		<Ships>

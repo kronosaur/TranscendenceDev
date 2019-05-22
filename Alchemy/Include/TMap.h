@@ -563,6 +563,14 @@ template <class KEY, class VALUE> class TSortMap
 			m_Array.SetGranularity(iGranularity);
 			}
 
+		void TakeHandoff (TSortMap<KEY, VALUE> &Src)
+			{
+			m_iOrder = Src.m_iOrder;
+			m_Array.TakeHandoff(Src.m_Array);
+			m_Free.TakeHandoff(Src.m_Free);
+			m_Index.TakeHandoff(Src.m_Index);
+			}
+
 		//	Atom helper functions
 
 		void atom_Delete (DWORD dwAtom)

@@ -33,6 +33,13 @@
 	<!ENTITY msTestMissionArc02			"0xA00100C4">
 	<!ENTITY msTestMissionArc03			"0xA00100C5">
 
+	<!-- 0100-013F TEST DESIGN TYPES -->
+
+	<!ENTITY unidDesignTypeTests		"0xA0010100">
+	<!ENTITY unidTestBaseType			"0xA0010101">
+	<!ENTITY unidTestDescendantType1	"0xA0010102">
+	<!ENTITY unidTestDescendantType2	"0xA0010103">
+
 	<!-- OTHER -->
 
 	<!ENTITY unidStarsOfThePilgrim		"0x00200000">
@@ -51,6 +58,7 @@
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidHumanSpaceLibrary;"/>
 
+	<Module filename="DesignTypeTests.xml"/>
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>

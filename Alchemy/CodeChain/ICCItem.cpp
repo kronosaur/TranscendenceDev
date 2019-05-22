@@ -153,7 +153,7 @@ bool ICCItem::GetBooleanAt (const CString &sKey)
 		}
 	}
 
-ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex)
+ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex) const
 
 //	GetElement
 //

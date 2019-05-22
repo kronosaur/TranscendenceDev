@@ -4404,7 +4404,21 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateBool(IsUnderAttack());
 
 	else if (pType = GetType())
-		return pType->GetProperty(Ctx, sName)->Reference();
+		{
+		EPropertyType iType;
+		ICCItemPtr pResult = pType->GetProperty(Ctx, sName, &iType);
+
+		//	If the property is an object property, then we need to look in 
+		//	object data.
+
+		if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
+			return GetData(sName)->Reference();
+
+		//	Otherwise we have a valid property.
+
+		else
+			return pResult->Reference();
+		}
 
 	else
 		return CC.CreateNil();
@@ -7207,6 +7221,22 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		SetSovereign(pSovereign);
 		return true;
 		}
+
+	//	See if this is a custom property, we set data
+
+	else if (CDesignType *pType = GetType())
+		{
+		ICCItemPtr pDummy;
+		EPropertyType iType;
+		if (pType->FindCustomProperty(sName, pDummy, &iType) && iType == EPropertyType::propData)
+			{
+			SetData(sName, pValue);
+			return true;
+			}
+		else
+			return false;
+		}
+
 	else
 		return false;
 	}

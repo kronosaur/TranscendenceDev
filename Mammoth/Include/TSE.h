@@ -158,6 +158,7 @@ extern CUniverse *g_pUniverse;
 #include "TSEPropertyHandler.h"
 #include "TSELanguage.h"
 #include "TSEDesignDefs.h"
+#include "TSEItemDefs.h"
 #include "TSEDesign.h"
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
@@ -789,6 +790,8 @@ class CSpaceObject
 
 		//	Data
 
+		CAttributeDataBlock &GetData (void) { return m_Data; }
+		const CAttributeDataBlock &GetData (void) const { return m_Data; }
 		ICCItemPtr GetGlobalData (const CString &sAttribute) const;
 		void SetGlobalData (const CString &sAttribute, ICCItem *pData);
 
@@ -1996,7 +1999,7 @@ class CItemListWrapper : public IListData
 
 		virtual void DeleteAtCursor (int iCount) override { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) override { return m_ItemList.FindItem(Item, 0, retiCursor); }
-		virtual int GetCount (void) override { return m_ItemList.GetCount(); }
+		virtual int GetCount (void) const override { return m_ItemList.GetCount(); }
 		virtual int GetCursor (void) override { return m_ItemList.GetCursor(); }
 		virtual const CItem &GetItemAtCursor (void) override { return m_ItemList.GetItemAtCursor(); }
 		virtual CItemListManipulator &GetItemListManipulator (void) override { return m_ItemList; }
@@ -2020,7 +2023,7 @@ class CListWrapper : public IListData
 		CListWrapper (ICCItem *pList);
 		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
-		virtual int GetCount (void) override { return m_pList->GetCount(); }
+		virtual int GetCount (void) const override { return m_pList->GetCount(); }
 		virtual int GetCursor (void) override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) override;
 		virtual ICCItem *GetEntryAtCursor (void) override;

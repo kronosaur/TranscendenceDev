@@ -1318,5 +1318,8 @@
     <ClCompile Include="CArmorItem.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
+    <ClCompile Include="CDesignPropertyDefinitions.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

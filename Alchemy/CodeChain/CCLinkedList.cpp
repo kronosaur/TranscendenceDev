@@ -160,7 +160,7 @@ ICCItem *CCLinkedList::CloneDeep (CCodeChain *pCC)
 	return pClone;
 	}
 
-void CCLinkedList::CreateIndex (void)
+void CCLinkedList::CreateIndex (void) const
 
 //	CreateIndex
 //
@@ -227,7 +227,7 @@ ICCItem *CCLinkedList::Enum (CEvalContext *pCtx, ICCItem *pCode)
 	return pCtx->pCC->CreateNil();
 	}
 
-ICCItem *CCLinkedList::GetElement (int iIndex)
+ICCItem *CCLinkedList::GetElement (int iIndex) const
 
 //	GetElement
 //

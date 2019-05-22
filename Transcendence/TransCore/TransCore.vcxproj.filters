@@ -831,5 +831,8 @@
     <Xml Include="FerianMission01.xml">
       <Filter>Human Space Library\Ferians</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\DesignTypeTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

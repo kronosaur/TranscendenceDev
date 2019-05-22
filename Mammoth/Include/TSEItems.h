@@ -340,8 +340,8 @@ class CItemListManipulator
 
 		inline bool FindItem (const CItem &Item, DWORD dwFlags, int *retiCursor) 
 			{ int iCursor = FindItem(Item, dwFlags); if (iCursor == -1) return false; if (retiCursor) *retiCursor = iCursor; return true; }
-		inline int GetCount (void) { return m_ViewMap.GetCount(); }
-		inline int GetCursor (void) { return m_iCursor; }
+		int GetCount (void) const { return m_ViewMap.GetCount(); }
+		int GetCursor (void) const { return m_iCursor; }
 		inline void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
 		bool SetCursorAtItem (const CItem &Item, DWORD dwFlags = 0);
 		void SetFilter (const CItemCriteria &Filter);

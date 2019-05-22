@@ -29,6 +29,7 @@
 #define MISSION_TYPE_TAG						CONSTLIT("MissionType")
 #define OVERLAY_TYPE_TAG						CONSTLIT("OverlayType")
 #define POWER_TAG								CONSTLIT("Power")
+#define PROPERTIES_TAG							CONSTLIT("Properties")
 #define SHIP_CLASS_TAG							CONSTLIT("ShipClass")
 #define SHIP_CLASS_OVERRIDE_TAG					CONSTLIT("ShipClassOverride")
 #define SHIP_ENERGY_FIELD_TYPE_TAG				CONSTLIT("ShipEnergyFieldType")
@@ -230,6 +231,16 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	int i;
 
 	Ctx.pType = this;
+
+	//	If necessary, evaluate any bind-time design properties
+
+	if (m_pExtra)
+		{
+		if (error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			return error;
+
+		m_pExtra->PropertyDefs.InitTypeData(GetUniverse(), m_pExtra->GlobalData);
+		}
 
 	//	Now that we've connected to our based classes, update the event cache
 	//	with events from our ancestors.
@@ -534,13 +545,64 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	//	Lastly, see if there is static data
 
-	else if (m_pExtra && (m_pExtra->StaticData.FindDataAsItem(sProperty, pValue)))
+	else if (FindStaticData(sProperty, pValue))
 		return pValue->Reference();
 
 	//	Not found
 
 	else
 		return NULL;
+	}
+
+bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType) const
+
+//	FindCustomProperty
+//
+//	Looks for a custom property (in the <Properties> element).
+
+	{
+	//	First look at our level.
+
+	EPropertyType iType;
+	if (m_pExtra && m_pExtra->PropertyDefs.Find(sProperty, pResult, &iType))
+		{
+		switch (iType)
+			{
+			//	If this is a static definition, then we're done.
+
+			case EPropertyType::propDefinition:
+				if (retiType) *retiType = iType;
+				return true;
+
+			//	For type-level data, we need to look in global data (but only at
+			//	our level, because we recurse below).
+
+			case EPropertyType::propConstant:
+			case EPropertyType::propGlobal:
+				if (retiType) *retiType = iType;
+				return m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult);
+
+			//	For anything else, we return true because we found the property,
+			//	but we return a Nil value because we cannot satisfy the request
+			//	(because the data is at the object level). The caller must get
+			//	the value somewhere else based on the returned type.
+
+			default:
+				pResult = ICCItemPtr(ICCItem::Nil);
+				if (retiType) *retiType = iType;
+				return true;
+			}
+		}
+
+	//	Otherwise, check our ancestors
+
+	else if (m_pInheritFrom)
+		return m_pInheritFrom->FindCustomProperty(sProperty, pResult);
+
+	//	Otherwise, not found.
+
+	else
+		return false;
 	}
 
 bool CDesignType::FindDataField (const CString &sField, CString *retsValue) const
@@ -666,8 +728,11 @@ bool CDesignType::FindStaticData (const CString &sAttrib, ICCItemPtr &pData) con
 //	Returns static data
 
 	{
-	if (m_pExtra && m_pExtra->StaticData.FindDataAsItem(sAttrib, pData))
-		return true;
+	if (m_pExtra)
+		{
+		if (m_pExtra->StaticData.FindDataAsItem(sAttrib, pData))
+			return true;
+		}
 
 	if (m_pInheritFrom)
 		return m_pInheritFrom->FindStaticData(sAttrib, pData);
@@ -1753,12 +1818,11 @@ CString CDesignType::GetNounPhrase (DWORD dwFlags) const
     return CLanguage::ComposeNounPhrase(sName, 1, NULL_STR, dwNameFlags, dwFlags);
     }
 
-ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType) const
 
 //	GetProperty
 //
-//	Returns the value of the given property. We return an allocated CC item (which 
-//	must be discarded by the caller).
+//	Returns the value of the given property. We return a CC item.
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
@@ -1768,17 +1832,31 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	//	Let our subclass handle this first
 
 	if (pResultPtr = OnGetProperty(Ctx, sProperty))
+		{
+		if (retiType) *retiType = EPropertyType::propEngine;
 		return pResultPtr;
+		}
 
 	//	If not, then see if we handle it.
 
 	else if (pResult = FindBaseProperty(Ctx, sProperty))
+		{
+		if (retiType) *retiType = EPropertyType::propEngine;
 		return ICCItemPtr(pResult);
+		}
+
+	//	Otherwise, check to see if this is a custom property.
+
+	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
+		return pResultPtr;
 
 	//	Nobody handled it, so just return Nil
 
 	else
+		{
+		if (retiType) *retiType = EPropertyType::propNone;
 		return ICCItemPtr(ICCItem::Nil);
+		}
 	}
 
 int CDesignType::GetPropertyInteger (const CString &sProperty)
@@ -1863,6 +1941,30 @@ bool CDesignType::InheritsFrom (DWORD dwUNID) const
 	return m_pInheritFrom->InheritsFrom(dwUNID);
 	}
 
+void CDesignType::InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const
+
+//	InitObjectData
+//
+//	Initializes the object's data block.
+
+	{
+	//	Let our ancestors initialize.
+
+	if (m_pInheritFrom)
+		m_pInheritFrom->InitObjectData(Obj, Data);
+
+	//	Initialize data.
+
+	if (m_pExtra)
+		{
+		m_pExtra->PropertyDefs.InitObjectData(GetUniverse(), Obj, Data);
+		}
+
+	//	Let subclasses initialize.
+
+	OnInitObjectData(Obj, Data);
+	}
+
 bool CDesignType::IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const
 
 //	IsIncluded
@@ -1917,6 +2019,7 @@ bool CDesignType::IsValidLoadXML (const CString &sTag)
 			|| strEquals(sTag, LANGUAGE_TAG)
 			|| strEquals(sTag, STATIC_DATA_TAG)
 			|| strEquals(sTag, DISPLAY_ATTRIBUTES_TAG)
+			|| strEquals(sTag, PROPERTIES_TAG)
 			|| strEquals(sTag, ATTRIBUTE_DESC_TAG));
 	}
 
@@ -2061,13 +2164,10 @@ ICCItemPtr CDesignType::GetStaticData (const CString &sAttrib) const
 	
 	{
 	ICCItemPtr pResult;
-	if (m_pExtra && m_pExtra->StaticData.FindDataAsItem(sAttrib, pResult))
+	if (FindStaticData(sAttrib, pResult))
 		return pResult;
 
-	if (m_pInheritFrom)
-		return m_pInheritFrom->GetStaticData(sAttrib);
-
-	return ICCItemPtr(GetUniverse().GetCC().CreateNil());
+	return ICCItemPtr(ICCItem::Nil);
 	}
 
 void CDesignType::GetStats (SStats &Stats) const
@@ -2390,6 +2490,11 @@ ALERROR CDesignType::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool 
 
 			InitCachedEvents();
 			}
+		else if (strEquals(pItem->GetTag(), PROPERTIES_TAG))
+			{
+			if (error = SetExtra()->PropertyDefs.InitFromXML(Ctx, *pItem))
+				return ComposeLoadError(Ctx, Ctx.sError);
+			}
 		else if (strEquals(pItem->GetTag(), STATIC_DATA_TAG))
 			SetExtra()->StaticData.SetFromXML(pItem);
 		else if (strEquals(pItem->GetTag(), GLOBAL_DATA_TAG)
@@ -2593,7 +2698,11 @@ void CDesignType::Reinit (void)
 	//	Reinit global data
 
 	if (m_pExtra)
+		{
 		m_pExtra->GlobalData = m_pExtra->InitGlobalData;
+
+		m_pExtra->PropertyDefs.InitTypeData(GetUniverse(), m_pExtra->GlobalData);
+		}
 
 	//	Allow sub-classes to reinit
 
@@ -2615,6 +2724,37 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 		pPlayer->SendMessage(NULL, sError);
 
 	GetUniverse().LogOutput(sError);
+	}
+
+bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
+
+//	SetTypeProperty
+//
+//	Sets a property.
+
+	{
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+
+	//	If this is a custom global property, then set it.
+
+	if (m_pExtra
+			&& m_pExtra->PropertyDefs.Find(sProperty, pDummy, &iType) 
+			&& iType == EPropertyType::propGlobal)
+		{
+		SetGlobalData(sProperty, pValue);
+		return true;
+		}
+
+	//	Otherwise, ask ancestors
+
+	else if (m_pInheritFrom)
+		return m_pInheritFrom->SetTypeProperty(sProperty, pValue);
+
+	//	Otherwise, unknown property.
+
+	else
+		return false;
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const

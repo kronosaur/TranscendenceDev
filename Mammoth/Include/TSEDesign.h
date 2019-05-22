@@ -41,10 +41,6 @@ struct STradeServiceCtx;
 const int MAX_OBJECT_LEVEL =			25;	//	Max level for space objects
 const int MAX_ITEM_LEVEL =				25;	//	Max level for items
 
-//	Item Criteria --------------------------------------------------------------
-
-#include "TSEItemDefs.h"
-
 //	Base Design Type ----------------------------------------------------------
 //
 //	To add a new DesignType:
@@ -228,6 +224,7 @@ class CDesignType
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
 		inline void ClearMark (void) { OnClearMark(); }
+		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		inline CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
 		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
@@ -290,7 +287,7 @@ class CDesignType
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
-		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
+		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
 		int GetPropertyInteger (const CString &sProperty);
 		CString GetPropertyString (const CString &sProperty);
 		CXMLElement *GetScreen (const CString &sUNID);
@@ -310,6 +307,7 @@ class CDesignType
         inline ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
+		void InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const;
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }
 		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
@@ -318,6 +316,7 @@ class CDesignType
 		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		inline void SetModification (bool bValue = true) { m_bIsModification = true; }
+		bool SetTypeProperty (const CString &sProperty, ICCItem *pValue);
 		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		inline void Sweep (void) { OnSweep(); }
@@ -367,6 +366,7 @@ class CDesignType
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }
+		virtual void OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const { }
 		virtual void OnMarkImages (void) { }
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual void OnPrepareReinit (void) { }
@@ -385,6 +385,7 @@ class CDesignType
 			{
 			TArray<DWORD> Extends;						//	Exclude this type from bind unless ALL of these extensions are present
 			TArray<DWORD> Excludes;						//	Exclude this type from bind if ANY of these extensions are present
+			CDesignPropertyDefinitions PropertyDefs;	//	Custom property definitions
 			CAttributeDataBlock StaticData;				//	Static data
 			CAttributeDataBlock GlobalData;				//	Global (variable) data
 			CAttributeDataBlock InitGlobalData;			//	Initial global data

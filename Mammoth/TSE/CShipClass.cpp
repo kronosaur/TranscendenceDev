@@ -4096,6 +4096,16 @@ bool CShipClass::OnHasSpecialAttribute (const CString &sAttrib) const
 		return false;
 	}
 
+void CShipClass::OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const
+
+//	OnInitObjectData
+//
+//	Initialize data for the newly created object.
+
+	{
+	Data.MergeFrom(GetInitialData());
+	}
+
 void CShipClass::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 //	ReadFromStream

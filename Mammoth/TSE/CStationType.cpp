@@ -21,6 +21,7 @@
 #define IMAGE_LOOKUP_TAG						CONSTLIT("ImageLookup")
 #define IMAGE_SHIPWRECK_TAG						CONSTLIT("ImageShipwreck")
 #define IMAGE_VARIANTS_TAG						CONSTLIT("ImageVariants")
+#define INITIAL_DATA_TAG						CONSTLIT("InitialData")
 #define ITEMS_TAG								CONSTLIT("Items")
 #define NAMES_TAG								CONSTLIT("Names")
 #define REINFORCEMENTS_TAG						CONSTLIT("Reinforcements")
@@ -1798,6 +1799,18 @@ bool CStationType::OnHasSpecialAttribute (const CString &sAttrib) const
 		}
 	else
 		return false;
+	}
+
+void CStationType::OnInitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const
+
+//	OnInitObjectData
+//
+//	Initializes the object's data
+
+	{
+	CXMLElement *pInitialData = m_pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
+	if (pInitialData)
+		Obj.SetDataFromXML(pInitialData);
 	}
 
 void CStationType::OnMarkImages (void)

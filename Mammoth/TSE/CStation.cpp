@@ -10,7 +10,6 @@
 #endif
 
 #define ITEM_TAG								CONSTLIT("Item")
-#define INITIAL_DATA_TAG						CONSTLIT("InitialData")
 #define DEVICES_TAG								CONSTLIT("Devices")
 #define ITEMS_TAG								CONSTLIT("Items")
 
@@ -1148,9 +1147,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Initialize any CodeChain data
 
-	CXMLElement *pInitialData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
-	if (pInitialData)
-		pStation->SetDataFromXML(pInitialData);
+	pType->InitObjectData(*pStation, pStation->GetData());
 
 	if (CreateCtx.pExtraData)
 		pStation->SetDataFromXML(CreateCtx.pExtraData);

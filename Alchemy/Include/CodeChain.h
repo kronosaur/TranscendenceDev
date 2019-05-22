@@ -113,7 +113,7 @@ class ICCItem : public CObject
 		virtual ICCItem *CloneContainer (void) = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
-		inline ICCItem *Reference (void) { m_dwRefCount++; return this; }
+		inline ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
 		virtual void Reset (void) = 0;
 		inline void SetNoRefCount (void) { m_bNoRefCount = true; }
 
@@ -124,10 +124,10 @@ class ICCItem : public CObject
 
 		virtual void Append (ICCItem *pValue) { }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) = 0;
-		virtual int GetCount (void) = 0;
-		virtual ICCItem *GetElement (int iIndex) = 0;
-		virtual ICCItem *GetElement (const CString &sKey) { return NULL; }
-		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex);
+		virtual int GetCount (void) const = 0;
+		virtual ICCItem *GetElement (int iIndex) const = 0;
+		virtual ICCItem *GetElement (const CString &sKey) const { return NULL; }
+		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const;
         virtual CString GetKey (int iIndex) { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
@@ -136,7 +136,7 @@ class ICCItem : public CObject
 
 		//	Evaluation
 
-		inline bool IsQuoted (void) { return m_bQuoted; }
+		inline bool IsQuoted (void) const { return m_bQuoted; }
 		inline void SetQuoted (void) { m_bQuoted = true; }
 		inline void ClearQuoted (void) { m_bQuoted = false; }
 
@@ -158,6 +158,7 @@ class ICCItem : public CObject
 		virtual CString GetTypeOf (void);
 		virtual bool IsAtom (void) = 0;
 		virtual bool IsAtomTable (void) { return false; }
+		virtual bool IsConstant (void) const { return false; }
 		virtual bool IsExpression (void) { return false; }
 		virtual bool IsFunction (void) = 0;
 		virtual bool IsIdentifier (void) = 0;
@@ -223,7 +224,7 @@ class ICCItem : public CObject
 
 		ICCItem *NotASymbolTable (void);
 
-		DWORD m_dwRefCount;						//	Number of references to this item
+		mutable DWORD m_dwRefCount;				//	Number of references to this item
 
 		DWORD m_bQuoted:1;						//	TRUE if quoted
 		DWORD m_bError:1;						//	TRUE if it represents a runtime error
@@ -290,8 +291,8 @@ class ICCAtom : public ICCItem
 
 		virtual ICCItem *CloneContainer (void) override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual ICCItem *GetElement (int iIndex) override { return (iIndex == 0 ? Reference() : NULL); }
-		virtual int GetCount (void) override { return 1; }
+		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? Reference() : NULL); }
+		virtual int GetCount (void) const override { return 1; }
 		virtual ICCItem *Head (CCodeChain *pCC) override { return Reference(); }
 		virtual bool IsAtom (void) override { return true; }
 		virtual bool IsInteger (void) override { return false; }
@@ -308,6 +309,7 @@ class CCNumeral : public ICCAtom
 		CCNumeral(void);
 
 		// ICCItem virtuals
+		virtual bool IsConstant (void) const override { return true; }
 		virtual bool IsIdentifier(void) override { return false; }
 		virtual bool IsFunction(void) override { return false; }
 		virtual bool IsInteger(void) override { return false;  }
@@ -379,10 +381,11 @@ class CCNil : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual void Discard (void) override { }
-		virtual int GetCount (void) override { return 0; }
+		virtual int GetCount (void) const override { return 0; }
 		virtual int GetIntegerValue (void) override { return 0; }
 		virtual CString GetStringValue (void) override { return LITERAL("Nil"); }
 		virtual ValueTypes GetValueType (void) override { return Nil; }
+		virtual bool IsConstant (void) const override { return true; }
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsInteger (void) override { return true; }
 		virtual bool IsDouble(void) override { return false; }
@@ -409,6 +412,7 @@ class CCTrue : public ICCAtom
 		virtual int GetIntegerValue (void) override { return 1; }
 		virtual CString GetStringValue (void) override { return LITERAL("True"); }
 		virtual ValueTypes GetValueType (void) override { return True; }
+		virtual bool IsConstant (void) const override { return true; }
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsTrue (void) override { return true; }
@@ -429,6 +433,7 @@ class ICCString : public ICCAtom
 		//	ICCItem virtuals
 
 		virtual ValueTypes GetValueType (void) override { return String; }
+		virtual bool IsConstant (void) const override { return IsQuoted(); }
 		virtual bool IsIdentifier (void) override { return true; }
 		virtual bool IsFunction (void) override { return false; }
 	};
@@ -557,7 +562,7 @@ class CCLinkedList : public ICCList
 		CCLinkedList (void);
 		virtual ~CCLinkedList (void);
 
-		void CreateIndex (void);
+		void CreateIndex (void) const;
 		void RemoveElement (CCodeChain *pCC, int iIndex);
 		void ReplaceElement (CCodeChain *pCC, int iIndex, ICCItem *pNewItem);
 		void Shuffle (CCodeChain *pCC);
@@ -572,10 +577,11 @@ class CCLinkedList : public ICCList
 		virtual ICCItem *CloneContainer (void) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual int GetCount (void) override { return m_iCount; }
-		virtual ICCItem *GetElement (int iIndex) override;
+		virtual int GetCount (void) const override { return m_iCount; }
+		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual bool HasReferenceTo (ICCItem *pSrc) override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
+		virtual bool IsConstant (void) const override { return (IsQuoted() || GetCount() == 0); }
 		virtual bool IsExpression (void) override { return (GetCount() > 0); }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual ICCItem *Tail (CCodeChain *pCC) override;
@@ -594,7 +600,7 @@ class CCLinkedList : public ICCList
 		CCons *m_pLast;							//	Last element in the list
 		int m_iCount;							//	Number of elements
 
-		CCons **m_pIndex;						//	GetElement array
+		mutable CCons **m_pIndex;				//	GetElement array
 	};
 
 //	This is an array of 32-bit integers
@@ -614,8 +620,8 @@ class CCVectorOld : public ICCList
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *CloneContainer (void) override { return Reference(); }	//	LATER
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual int GetCount (void) override { return m_iCount; }
-		virtual ICCItem *GetElement (int iIndex) override;
+		virtual int GetCount (void) const override { return m_iCount; }
+		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual ICCItem *Tail (CCodeChain *pCC) override;
@@ -674,13 +680,13 @@ class CCVector : public ICCVector
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *CloneContainer (void) override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
-		virtual ICCItem *GetElement (int iIndex) override;
+		virtual int GetCount (void) const override { return m_vData.GetCount(); }
+		virtual ICCItem *GetElement (int iIndex) const override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual ICCItem *Tail (CCodeChain *pCC) override;
 		virtual void Reset (void) override;
 
-		virtual int GetCount (void) { return m_vData.GetCount(); }
 		virtual int GetShapeCount (void) { return m_vShape.GetCount(); }
 		virtual int GetDimension (void) { return m_vShape.GetCount(); }
 		virtual ICCItem *SetElement (int iIndex, double dValue);
@@ -737,6 +743,7 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *CloneContainer (void) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ValueTypes GetValueType (void) override { return SymbolTable; }
+		virtual bool IsConstant (void) const override;
 		virtual bool IsIdentifier (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsLocalFrame (void) override { return m_bLocalFrame; }
@@ -747,10 +754,10 @@ class CCSymbolTable : public ICCList
 		//	List interface
 
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override { ASSERT(false); return NULL; }
-		virtual int GetCount (void) override { return m_Symbols.GetCount(); }
-		virtual ICCItem *GetElement (int iIndex) override;
-		virtual ICCItem *GetElement (const CString &sKey) override;
-		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) override;
+		virtual int GetCount (void) const override { return m_Symbols.GetCount(); }
+		virtual ICCItem *GetElement (int iIndex) const override;
+		virtual ICCItem *GetElement (const CString &sKey) const override;
+		virtual ICCItem *GetElement (CCodeChain *pCC, int iIndex) const override;
         virtual CString GetKey (int iIndex) override { return m_Symbols.GetKey(iIndex); }
 		virtual bool HasReferenceTo (ICCItem *pSrc) override;
 		virtual ICCItem *Head (CCodeChain *pCC) override { return GetElement(0); }
@@ -817,7 +824,7 @@ class CConsPool
 		void CleanUp (void);
 		CCons *CreateCons (void);
 		void DestroyCons (CCons *pCons);
-		inline int GetCount (void) const { CSmartLock Lock(m_cs); return m_iCount; }
+		int GetCount (void) const { CSmartLock Lock(m_cs); return m_iCount; }
 
 	private:
 		mutable CCriticalSection m_cs;

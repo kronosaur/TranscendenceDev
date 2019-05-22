@@ -364,6 +364,7 @@
     <ClCompile Include="CCrewPsyche.cpp" />
     <ClCompile Include="CCXMLWrapper.cpp" />
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
+    <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />

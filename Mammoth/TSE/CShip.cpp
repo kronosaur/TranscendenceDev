@@ -1709,7 +1709,7 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 
     //  Initialize the data from the class
 
-    pShip->SetDataFromDataBlock(pClass->GetInitialData());
+	pClass->InitObjectData(*pShip, pShip->GetData());
 
 	//	If we have a generator context, set some more settings
 

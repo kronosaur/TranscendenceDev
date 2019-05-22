@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidDesignTypeTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+						{	test:'(typGetProperty &unidTestBaseType; 'unid)					result:&unidTestBaseType;	}
+
+						{	test:'(typGetProperty &unidTestBaseType; 'diag.def1)			result:17	}
+						{	test:'(typGetProperty &unidTestBaseType; 'diag.def2)			result:'foo	}
+						{	test:'(typGetProperty &unidTestBaseType; 'diag.def3)			result:5	}
+
+						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.def1)		result:17	}
+						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.const1)	result:34	}
+						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.const2)	result:4	}
+
+						{	test:'(typGetProperty &unidTestDescendantType2; 'diag.def1)		result:17	}
+
+						{	test:'(typGetProperty &unidTestBaseType; 'diag.global1)			result:54	}
+						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.global1)	result:54	}
+						{	test:'(typGetProperty &unidTestDescendantType2; 'diag.global1)	result:54	}
+						))
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+<!-- TEST DESIGN TYPES -->
+
+	<Type unid="&unidTestBaseType;">
+		<Properties>
+			<Definition id="diag.def1">17</Definition>
+			<Definition id="diag.def2">"foo"</Definition>
+			<Definition id="diag.def3">(+ 2 3)</Definition>
+			<Definition id="diag.def4">{ a:'foo }</Definition>
+
+			<Constant id="diag.const1">34</Constant>
+			<Constant id="diag.const2">(+ 1 3)</Constant>
+
+			<Global id="diag.global1">54</Global>
+		</Properties>
+	</Type>
+
+	<Type unid="&unidTestDescendantType1;"
+			inherit="&unidTestBaseType;"
+			>
+	</Type>
+
+	<Type unid="&unidTestDescendantType2;"
+			inherit="&unidTestDescendantType1;"
+			>
+	</Type>
+
+</TranscendenceModule>

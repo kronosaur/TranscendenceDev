@@ -390,7 +390,7 @@ int *CCVectorOld::GetArray (void)
 	return m_pData;
 	}
 
-ICCItem *CCVectorOld::GetElement (int iIndex)
+ICCItem *CCVectorOld::GetElement (int iIndex) const
 
 //	GetElement
 //
@@ -405,7 +405,7 @@ ICCItem *CCVectorOld::GetElement (int iIndex)
 	return m_pCC->CreateInteger(m_pData[iIndex]);
 	}
 
-ICCItem *CCVector::GetElement(int iIndex)
+ICCItem *CCVector::GetElement(int iIndex) const
 
 //	GetElement
 //

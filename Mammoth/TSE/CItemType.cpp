@@ -503,6 +503,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 	ICCItem *pResult;
+	ICCItemPtr pResultPtr;
 	int i;
 
 	if (strEquals(sProperty, PROPERTY_CATEGORY))
@@ -589,6 +590,9 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
 	else if (pResult = FindBaseProperty(Ctx, sProperty))
 		return pResult;
+
+	else if (FindCustomProperty(sProperty, pResultPtr))
+		return pResultPtr;
 
 	else
 		return NULL;

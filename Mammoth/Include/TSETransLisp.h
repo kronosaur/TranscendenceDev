@@ -233,7 +233,9 @@ class CAttributeDataBlock
 
 		CAttributeDataBlock (void);
 		CAttributeDataBlock (const CAttributeDataBlock &Src);
+		CAttributeDataBlock (CAttributeDataBlock &&Src);
 		CAttributeDataBlock &operator= (const CAttributeDataBlock &Src);
+		CAttributeDataBlock &operator= (CAttributeDataBlock &&Src);
 		~CAttributeDataBlock (void);
 
 		void Copy (const CAttributeDataBlock &Src, const TSortMap<CString, STransferDesc> &Options);

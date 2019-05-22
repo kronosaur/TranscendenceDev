@@ -354,7 +354,7 @@ int CCSymbolTable::FindValue (ICCItem *pValue)
 	return -1;
 	}
 
-ICCItem *CCSymbolTable::GetElement (int iIndex)
+ICCItem *CCSymbolTable::GetElement (int iIndex) const
 
 //	GetElement
 //
@@ -369,7 +369,7 @@ ICCItem *CCSymbolTable::GetElement (int iIndex)
 	return dynamic_cast<ICCItem *>(m_Symbols.GetValue(iIndex));
 	}
 
-ICCItem *CCSymbolTable::GetElement (const CString &sKey)
+ICCItem *CCSymbolTable::GetElement (const CString &sKey) const
 
 //	GetElement
 //
@@ -400,7 +400,7 @@ ICCItem *CCSymbolTable::GetElement (const CString &sKey)
 	return dynamic_cast<ICCItem *>(pItem);
 	}
 
-ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex)
+ICCItem *CCSymbolTable::GetElement (CCodeChain *pCC, int iIndex) const
 
 //	GetElement
 //
@@ -442,6 +442,22 @@ bool CCSymbolTable::HasReferenceTo (ICCItem *pSrc)
 		}
 
 	return false;
+	}
+
+bool CCSymbolTable::IsConstant (void) const
+
+//	IsConstant
+//
+//	Returns TRUE if the struct is constant (does not have to be evaluated).
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		if (!GetElement(i)->IsConstant())
+			return false;
+		}
+
+	return true;
 	}
 
 ICCItem *CCSymbolTable::ListSymbols (CCodeChain *pCC)
