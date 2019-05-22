@@ -888,11 +888,21 @@ void CDeviceSystem::ReadyNextWeapon (CSpaceObject *pObj, int iDir)
 
 	{
 	int iNextWeapon = FindNextIndex(pObj, m_NamedDevices[devPrimaryWeapon], itemcatWeapon, iDir, true);
+	int iFirstValidWeapon = -1;
 	if (iNextWeapon != -1)
 		{
 		//  Ignore any primary weapon that uses the launcher fire key to shoot
-		while ((iNextWeapon != m_NamedDevices[devPrimaryWeapon]) && (GetDevice(iNextWeapon).GetClass()->UsesLauncherControls()))
+		while ((iNextWeapon != m_NamedDevices[devPrimaryWeapon]) && (GetDevice(iNextWeapon).GetClass()->UsesLauncherControls())
+				&& (iNextWeapon != iFirstValidWeapon))
+			{
+			if (iFirstValidWeapon == -1)
+				iFirstValidWeapon = iNextWeapon;
 			iNextWeapon = FindNextIndex(pObj, iNextWeapon, itemcatWeapon, iDir, true);
+			}
+
+		if ((GetDevice(iNextWeapon).GetClass()->UsesLauncherControls()))
+			return;
+
 
 		m_NamedDevices[devPrimaryWeapon] = iNextWeapon;
 
