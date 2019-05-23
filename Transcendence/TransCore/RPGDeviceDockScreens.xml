@@ -138,12 +138,12 @@
 								(setq desc (@ result 2))
 
 							(and (itmHasAttribute thisItem "Military")
-									(!= (setq militaryCheck (rpgCheckMilitaryID (@ gData 'checkMilitaryID))) True)
+									(!= (setq militaryCheck (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID))) True)
 									)
 								(setq descID 'descNeedMilitaryID)
 
-							(and (@ gData 'checkMilitaryID) 
-									(itmHasAttribute thisItem "Illegal")
+							(and (itmHasAttribute thisItem "Illegal")
+									(!= (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID)) True)
 									)
 								(setq descID 'descArmorIllegal)
 

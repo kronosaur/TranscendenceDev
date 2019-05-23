@@ -189,7 +189,7 @@
 
 						;	Military?
 
-						(militaryCheck (rpgCheckMilitaryID (@ gData 'checkMilitaryID)))
+						(militaryCheck (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID)))
 						(militaryCount 
 							(if (and (itmHasAttribute thisItem 'military)
 									(!= militaryCheck True)

@@ -645,6 +645,11 @@
 				unique=					"inSystem"
 				/>
 
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -689,11 +694,6 @@
 				/>
 		</Items>
 
-		<Properties>
-			<Constant id="rpg.checkMilitaryID">True</Constant>
-			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
-		</Properties>
-
 		<!-- Ships and Defenses -->
 
 		<Ships>
@@ -726,10 +726,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyShip">
-								(scrShowScreen gScreen &dsRPGShipBroker; {
-									createCriteria: "s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGShipBroker;)
 							</Action>
 
 							<Action id="actionCommoditiesExchange">

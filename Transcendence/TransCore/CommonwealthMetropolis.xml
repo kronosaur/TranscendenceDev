@@ -44,6 +44,11 @@
 			Starton %s
 		</Names>
 		
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
@@ -194,6 +199,11 @@
 		<Names noArticle="true">
 			Starton %s
 		</Names>
+
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+		</Properties>
 
 		<!-- Trade and Items -->
 		
@@ -531,10 +541,7 @@
 					</Action>
 
 					<Action id="actionBuyShip">
-						(scrShowScreen gScreen &dsRPGShipBroker; {
-							createCriteria: "s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGShipBroker;)
 					</Action>
 
 					<Action id="actionUndock" cancel="1">

@@ -28,6 +28,11 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s L:7-9; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
@@ -132,10 +137,7 @@
 							</Action>
 
 							<Action id="actionBuyShip">
-								(scrShowScreen gScreen &dsRPGShipBroker; {
-									createCriteria: "s L:7-9; +commonwealth; +military; -notStandard; +shipBroker;"
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGShipBroker;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">

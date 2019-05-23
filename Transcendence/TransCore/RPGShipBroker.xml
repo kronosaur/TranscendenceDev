@@ -5,11 +5,17 @@
 <!-- SHIP BROKER ===============================================================
 
 	This screen allows the player to trade in their ship for a new one.
+
+	We use the following PROPERTIES on gSource:
+
+		'rpg.checkMilitaryID: Policy for checking military ID.
+		'rpg.shipBrokerInventory: Criteria for ships to create as inventory.
 	
 	gData uses the following fields:
 	
 		checkMilitaryID: If True, we don't sell military ships without an ID.
 		createCriteria: Criteria of ship types to create (optional)
+			NOTE: Use rpg.shipBrokerInventory instead.
 		maxCount: Maximum number of ships to create.
 
 -->
@@ -146,7 +152,7 @@
 								;	If a military ID is required, check
 
 								(and (objHasAttribute selObj 'military)
-										(!= (setq militaryCheck (rpgCheckMilitaryID (@ gData 'checkMilitaryID))) True)
+										(!= (setq militaryCheck (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID))) True)
 										)
 									(block ()
 										(scrEnableAction gScreen 'actionBuyShip Nil)
@@ -192,7 +198,7 @@
 								;	If a military ID is required, check
 
 								(and (objHasAttribute selObj 'military)
-										(!= (setq militaryCheck (rpgCheckMilitaryID (@ gData 'checkMilitaryID))) True)
+										(!= (setq militaryCheck (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID))) True)
 										)
 									(block ()
 										(scrEnableAction gScreen 'actionBuyForWingman Nil)
@@ -1076,7 +1082,7 @@
 					)
 				))
 
-			(setq rpgCreateShipsToSell (lambda (sellerObj maxCount createCriteria)
+			(setq rpgCreateShipsToSell (lambda (sellerObj maxCount createCriteriaArg)
 				(block (
 					(shipObj Nil)
 					(shipList Nil)
@@ -1085,7 +1091,13 @@
 
 					;	Make a list of all possible ship classes that we sell.
 
-					(allClasses (typFind (or createCriteria "s +shipBroker;")))
+					(createCriteria (or 
+						(objGetProperty sellerObj 'rpg.shipBrokerInventory)
+						createCriteriaArg
+						"s +shipBroker;"
+						))
+
+					(allClasses (typFind createCriteria))
 
 					;	Filter out any ship classes that we do not sell
 

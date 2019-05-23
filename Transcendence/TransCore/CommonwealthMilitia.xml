@@ -162,6 +162,11 @@
 				unique=					"inSystem"
 				/>
 
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
@@ -284,10 +289,7 @@
 
 							<Action id="actionBuyShip">
 								(if (gr (typGetData &unidCommonwealthMilitia; 'rank) 0)
-									(scrShowScreen gScreen &dsRPGShipBroker; {
-										createCriteria: "s +systemLevel:0-2; +commonwealth; +military; -notStandard; +shipBroker;"
-										checkMilitaryID: True
-										})
+									(scrShowScreen gScreen &dsRPGShipBroker;)
 									(scrShowScreen gScreen &dsRPGMessage; { textID:'descNoShipBrokerAccess })
 									)
 							</Action>

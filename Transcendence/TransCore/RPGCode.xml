@@ -1427,6 +1427,16 @@
 					True
 					)
 				))
+
+			;	rpgCheckMilitaryIDPolicy
+			;
+			;	We expect either sourceObj to have rpg.checkMilitaryID set or
+			;	for policyArg to be the policy. Either way, we accept the same
+			;	values as rpgCheckMilitaryID
+
+			(setq rpgCheckMilitaryIDPolicy (lambda (sourceObj policyArg)
+				(rpgCheckMilitaryID (or (objGetProperty sourceObj 'rpg.checkMilitaryID) policyArg))
+				))
 				
 			;	rpgDestroyItems
 			;
@@ -1916,7 +1926,7 @@
 								;	Check military ID
 
 								(and (itmHasAttribute thisItem "Military")
-										(!= (setq militaryCheck (rpgCheckMilitaryID (@ data 'checkMilitaryID))) True)
+										(!= (setq militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID))) True)
 										)
 									(setq desc (or
 										(objTranslate installerObj 'rpg.cannotInstallDeviceWithoutMilitaryID { item:thisItem targetObj:targetObj militaryID:(@ militaryCheck 'idName) })

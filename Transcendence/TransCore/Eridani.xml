@@ -31,6 +31,11 @@
 			Starton Eridani
 		</Names>
 		
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">

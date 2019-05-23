@@ -189,6 +189,11 @@
 			attributes=			"commonwealthCustoms, dockObj, generic, human, majorStation, stKatsArcology"
 			>
 
+		<Properties>
+			<Constant id="rpg.checkMilitaryID">True</Constant>
+			<Constant id="rpg.shipBrokerInventory">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+		</Properties>
+
 		<Items>
 			<RandomItem count="8d10" 
 					criteria=		"ad~r L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
@@ -1325,10 +1330,7 @@
 					</Action>
 					
 					<Action id="actionBuyShip">
-						(scrShowScreen gScreen &dsRPGShipBroker; {
-							createCriteria: "s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGShipBroker;)
 					</Action>
 
 					<Action id="actionLeave" cancel="1">
