@@ -29,8 +29,10 @@ enum class EPropertyType
 	propDefinition,				//	Type-based, eval at load-time, constant
 	propConstant,				//	Type-based, eval at game-create, constant
 	propGlobal,					//	Type-based, eval at game-create, mutable
+	propDynamicGlobal,			//	Type-based, eval at get-time
 	propVariant,				//	Object-based, eval at object-create, constant
 	propData,					//	Object-based, eval at object-create, mutable
+	propDynamicData,			//	Object-based, eval at get-time
 
 	propEngine,					//	Property handled by the engine
 

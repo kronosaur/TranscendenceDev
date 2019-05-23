@@ -582,6 +582,25 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 				if (retiType) *retiType = iType;
 				return m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult);
 
+			//	For dynamic properties, we evaluate now.
+
+			case EPropertyType::propDynamicGlobal:
+				{
+				if (retiType) *retiType = iType;
+
+				CCodeChainCtx Ctx(GetUniverse());
+				Ctx.SaveAndDefineType(GetUNID());
+				ICCItemPtr pProperty = Ctx.RunCode(pResult);
+				pResult = pProperty;
+				return true;
+				}
+
+			//	For dynamic object properties, we return the code.
+
+			case EPropertyType::propDynamicData:
+				if (retiType) *retiType = iType;
+				return true;
+
 			//	For anything else, we return true because we found the property,
 			//	but we return a Nil value because we cannot satisfy the request
 			//	(because the data is at the object level). The caller must get

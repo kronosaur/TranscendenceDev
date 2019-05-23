@@ -4414,6 +4414,17 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
 			return GetData(sName)->Reference();
 
+		//	If this is a dynamic property, we need to evaluate.
+
+		else if (iType == EPropertyType::propDynamicData)
+			{
+			CCodeChainCtx Ctx(GetUniverse());
+			Ctx.SaveAndDefineSourceVar(this);
+
+			ICCItemPtr pValue = Ctx.RunCode(pResult);
+			return pValue->Reference();
+			}
+
 		//	Otherwise we have a valid property.
 
 		else

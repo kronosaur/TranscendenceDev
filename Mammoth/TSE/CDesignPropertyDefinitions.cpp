@@ -18,6 +18,8 @@
 #define CONSTANT_TAG							CONSTLIT("Constant")
 #define DATA_TAG								CONSTLIT("Data")
 #define DEFINITION_TAG							CONSTLIT("Definition")
+#define DYNAMIC_DATA_TAG						CONSTLIT("DynamicData")
+#define DYNAMIC_GLOBAL_TAG						CONSTLIT("DynamicGlobal")
 #define GLOBAL_TAG								CONSTLIT("Global")
 #define VARIANT_TAG								CONSTLIT("Variant")
 
@@ -85,6 +87,8 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 //	<Global...>: Evaluate at game-create time, store in type, allow changes
 //	<Variant...>: Evaluate at object-create time, store in object
 //	<Data...>: Evaluate at object-create time, store in object, allow changes
+//	<DynamicGlobal...>: Evaluate at get-time on type
+//	<DynamicData...>: Evaluate at get-time on object
 
 	{
 	for (int i = 0; i < Desc.GetContentElementCount(); i++)
@@ -100,6 +104,10 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 			iType = EPropertyType::propData;
 		else if (strEquals(Item.GetTag(), DEFINITION_TAG))
 			iType = EPropertyType::propDefinition;
+		else if (strEquals(Item.GetTag(), DYNAMIC_DATA_TAG))
+			iType = EPropertyType::propDynamicData;
+		else if (strEquals(Item.GetTag(), DYNAMIC_GLOBAL_TAG))
+			iType = EPropertyType::propDynamicGlobal;
 		else if (strEquals(Item.GetTag(), GLOBAL_TAG))
 			iType = EPropertyType::propGlobal;
 		else if (strEquals(Item.GetTag(), VARIANT_TAG))
