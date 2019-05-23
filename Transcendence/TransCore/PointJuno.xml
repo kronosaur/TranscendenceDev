@@ -29,8 +29,9 @@
 			>
 
 		<Properties>
-			<Constant id="rpg.checkMilitaryID">True</Constant>
-			<Constant id="rpg.shipBrokerInventory">"s L:7-9; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+			<Constant		id="rpg.checkMilitaryID">True</Constant>
+			<Constant		id="rpg.shipBrokerCriteria">"s L:7-9; +commonwealth; +military; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
 
 		<!-- Trade and Items -->

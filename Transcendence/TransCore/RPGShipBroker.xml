@@ -9,13 +9,13 @@
 	We use the following PROPERTIES on gSource:
 
 		'rpg.checkMilitaryID: Policy for checking military ID.
-		'rpg.shipBrokerInventory: Criteria for ships to create as inventory.
+		'rpg.shipBrokerCriteria: Criteria for ships to create as inventory.
 	
 	gData uses the following fields:
 	
 		checkMilitaryID: If True, we don't sell military ships without an ID.
 		createCriteria: Criteria of ship types to create (optional)
-			NOTE: Use rpg.shipBrokerInventory instead.
+			NOTE: Use rpg.shipBrokerCriteria instead.
 		maxCount: Maximum number of ships to create.
 
 -->
@@ -26,17 +26,7 @@
 			>
 		
 		<OnScreenInit>
-			(block (
-				(maxCount (if (@ gData 'maxCount) (@ gData 'maxCount) (random 3 5)))
-				(shipIDList (objGetData gSource 'shipBroker.list))
-				)
-				
-				;	If there are no ships in our list, then we need to create some
-				
-				(if (not shipIDList)
-					(setq shipIDList (rpgCreateShipsToSell gSource maxCount (@ gData 'createCriteria)))
-					)
-				)
+			(rpgGetShipInventory gSource (@ gData 'maxCount) (@ gData 'createCriteria))
 		</OnScreenInit>
 		
 		<Display type="carouselSelector"
@@ -1092,7 +1082,7 @@
 					;	Make a list of all possible ship classes that we sell.
 
 					(createCriteria (or 
-						(objGetProperty sellerObj 'rpg.shipBrokerInventory)
+						(objGetProperty sellerObj 'rpg.shipBrokerCriteria)
 						createCriteriaArg
 						"s +shipBroker;"
 						))
@@ -1400,6 +1390,19 @@
 								"}"
 								)
 						})
+					)
+				))
+
+			(setq rpgGetShipInventory (lambda (sourceObj maxCount createCriteria)
+				(block (
+					(shipIDList (objGetData sourceObj 'shipBroker.list))
+					)
+				
+					;	If there are no ships in our list, then we need to create some
+				
+					(or shipIDList
+						(rpgCreateShipsToSell sourceObj (or maxCount (random 3 5)) createCriteria)
+						)
 					)
 				))
 				
