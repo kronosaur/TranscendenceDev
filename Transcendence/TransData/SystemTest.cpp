@@ -10,7 +10,7 @@ const int MAX_LEVEL = 26;
 #define NO_LOGO_SWITCH						CONSTLIT("nologo")
 #define FIELD_NAME							CONSTLIT("shortName")
 
-class SSystemInfo
+class SSystemInfo2
 	{
 	public:
 		CString sName;
@@ -49,7 +49,7 @@ CString GenerateStationKey (CStationType *pType, CSovereign *pPlayer, CString *r
 	return CString(szBuffer);
 	}
 
-void OutputSystemStats (SSystemInfo *pSystemEntry)
+void OutputSystemStats (SSystemInfo2 *pSystemEntry)
 	{
 	int j;
 
@@ -97,7 +97,7 @@ void GenerateSystemTest (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Generate systems for multiple games
 
-	TSortMap<CString, SSystemInfo> AllSystems;
+	TSortMap<CString, SSystemInfo2> AllSystems;
 	for (i = 0; i < iSystemSample; i++)
 		{
 		printf("pass %d...\n", i+1);
@@ -107,6 +107,8 @@ void GenerateSystemTest (CUniverse &Universe, CXMLElement *pCmdLine)
 			CTopologyNode *pNode = Universe.GetTopologyNode(iNode);
 			if (pNode->IsEndGame())
 				continue;
+
+			printf("%s\n", (LPSTR)pNode->GetSystemName());
 
 			//	Create the system
 
@@ -121,7 +123,7 @@ void GenerateSystemTest (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Find this system in the table.
 
 			bool bNew;
-			SSystemInfo *pSystemEntry = AllSystems.SetAt(pNode->GetSystemName(), &bNew);
+			SSystemInfo2 *pSystemEntry = AllSystems.SetAt(pNode->GetSystemName(), &bNew);
 			if (bNew)
 				{
 				pSystemEntry->sName = pNode->GetSystemName();
@@ -210,7 +212,7 @@ void GenerateSystemTest (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	for (i = 0; i < AllSystems.GetCount(); i++)
 		{
-		SSystemInfo *pSystemEntry = &AllSystems[i];
+		SSystemInfo2 *pSystemEntry = &AllSystems[i];
 		OutputSystemStats(pSystemEntry);
 		}
 
@@ -220,7 +222,7 @@ void GenerateSystemTest (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	for (i = 0; i < AllSystems.GetCount(); i++)
 		{
-		SSystemInfo *pSystemEntry = &AllSystems[i];
+		SSystemInfo2 *pSystemEntry = &AllSystems[i];
 
 		if (pSystemEntry->iCount > 0)
 			{
@@ -303,7 +305,7 @@ void GenerateItemFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Generate systems for multiple games
 
-	TSortMap<CString, SSystemInfo> AllSystems;
+	TSortMap<CString, SSystemInfo2> AllSystems;
 	for (i = 0; i < iSystemSample; i++)
 		{
 		if (bLogo)
@@ -325,7 +327,7 @@ void GenerateItemFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 			//	Find this system in the table.
 
 			bool bNew;
-			SSystemInfo *pSystemEntry = AllSystems.SetAt(pNode->GetSystemName(), &bNew);
+			SSystemInfo2 *pSystemEntry = AllSystems.SetAt(pNode->GetSystemName(), &bNew);
 			if (bNew)
 				{
 				pSystemEntry->sName = pNode->GetSystemName();
@@ -394,7 +396,7 @@ void GenerateItemFrequencyTable (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	for (i = 0; i < AllSystems.GetCount(); i++)
 		{
-		SSystemInfo *pSystemEntry = &AllSystems[i];
+		SSystemInfo2 *pSystemEntry = &AllSystems[i];
 
 		for (j = 0; j < pSystemEntry->Items.GetCount(); j++)
 			{

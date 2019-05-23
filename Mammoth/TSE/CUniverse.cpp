@@ -504,6 +504,9 @@ void CUniverse::DestroySystem (CSystem *pSystem)
 	if (m_pPOV && m_pPOV->GetSystem() == pSystem)
 		SetPOV(NULL);
 
+	if (m_pCurrentSystem == pSystem)
+		SetCurrentSystem(NULL);
+
 	//	Remove and destroy the system
 
     m_StarSystems.DeleteAt(pSystem->GetID());
