@@ -56,6 +56,7 @@
 #define DRIVE_POWER_USE_ATTRIB					CONSTLIT("drivePowerUse")
 #define EQUIPMENT_ATTRIB						CONSTLIT("equipment")
 #define EVENT_HANDLER_ATTRIB					CONSTLIT("eventHandler")
+#define FREQUENCY_ATTRIB						CONSTLIT("frequency")
 #define MAX_REACTOR_FUEL_ATTRIB					CONSTLIT("fuelCapacity")
 #define HEIGHT_ATTRIB							CONSTLIT("height")
 #define HP_X_ATTRIB								CONSTLIT("hpX")
@@ -182,6 +183,8 @@
 #define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
 #define PROPERTY_DEFAULT_SOVEREIGN				CONSTLIT("defaultSovereign")
 #define PROPERTY_DRIVE_POWER					CONSTLIT("drivePowerUse")
+#define PROPERTY_FREQUENCY						CONSTLIT("frequency")
+#define PROPERTY_FREQUENCY_RATIO				CONSTLIT("frequencyRatio")
 #define PROPERTY_FUEL_EFFICIENCY				CONSTLIT("fuelEfficiency")
 #define PROPERTY_HAS_TRADE_DESC					CONSTLIT("hasTradeDesc")
 #define PROPERTY_HAS_VARIANTS					CONSTLIT("hasVariants")
@@ -3451,6 +3454,11 @@ ALERROR CShipClass::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fVirtual = pDesc->GetAttributeBool(VIRTUAL_ATTRIB);
 	m_fShipCompartment = pDesc->GetAttributeBool(SHIP_COMPARTMENT_ATTRIB);
 
+	if (pDesc->FindAttribute(FREQUENCY_ATTRIB, &sAttrib))
+		m_Frequency = (FrequencyTypes)::GetFrequency(sAttrib);
+	else
+		m_Frequency = ftCommon;
+
 	if (error = m_pDefaultSovereign.LoadUNID(Ctx, pDesc->GetAttribute(DEFAULT_SOVEREIGN_ATTRIB)))
 		return error;
 
@@ -3849,6 +3857,12 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_SOVEREIGN))
 		return (m_pDefaultSovereign.GetUNID() ? ICCItemPtr(m_pDefaultSovereign.GetUNID()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_FREQUENCY))
+		return ICCItemPtr(GetFrequencyName(GetFrequency()));
+
+	else if (strEquals(sProperty, PROPERTY_FREQUENCY_RATIO))
+		return ICCItemPtr((double)(int)GetFrequency() / (double)ftCommon);
 
 	else if (strEquals(sProperty, PROPERTY_FUEL_EFFICIENCY))
 		return ICCItemPtr(mathRound(CalcFuelEfficiency(m_AverageDevices)));

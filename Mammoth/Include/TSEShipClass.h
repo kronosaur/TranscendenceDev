@@ -398,6 +398,7 @@ class CShipClass : public CDesignType
 		CWeaponFireDesc *GetExplosionType (CShip *pShip) const;
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
+		FrequencyTypes GetFrequency (void) const { return m_Frequency; }
         const CObjectImageArray &GetHeroImage (void);
 		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
 		inline const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
@@ -578,6 +579,7 @@ class CShipClass : public CDesignType
 		int m_iLevel;							//	Ship class level
 		EBalanceTypes m_iLevelType;				//	Type of ships for level
 		Metric m_rCombatStrength;				//	Combat strength
+		FrequencyTypes m_Frequency;				//	Frequency
 
         //  Hull properties
 
