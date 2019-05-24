@@ -515,6 +515,7 @@ class CWeaponFireDesc
         CWeaponFireDesc *GetScaledDesc (int iLevel) const;
         int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
         inline int GetStealth (void) const { return m_iStealth; }
+        inline bool GetTargetable (void) const { return m_fTargetable; }
         inline FireTypes GetType (void) const { return m_iFireType; }
         inline const CString &GetUNID (void) const { return m_sUNID; }
         inline const SVaporTrailDesc &GetVaporTrail (void) const { return GetOldEffects().VaporTrail; }
@@ -654,7 +655,7 @@ class CWeaponFireDesc
 												//		and OnFragment event.
         DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
         DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
-        DWORD m_fSpare7:1;
+        DWORD m_fTargetable:1;					//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
         DWORD m_fSpare8:1;
 
 		DWORD m_dwSpare:16;

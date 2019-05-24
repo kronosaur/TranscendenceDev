@@ -513,7 +513,9 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		//	CSpaceObject virtuals
 
 		virtual CMissile *AsMissile (void) override { return this; }
+		virtual bool CanAttack (void) const override { return m_fTargetable; }
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
+		virtual bool ClassCanAttack (void) override { return m_fTargetable; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
@@ -539,6 +541,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
 		virtual bool IsIntangible (void) const override { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
+		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) override;
@@ -597,8 +600,9 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		DWORD m_fPassthrough:1;					//	TRUE if shot passed through
 		DWORD m_fPainterFade:1;					//	TRUE if we need to paint a fading painter
 		DWORD m_fFragment:1;					//	TRUE if we're a fragment
+		DWORD m_fTargetable:1;					//	TRUE if we can be targetted
 
-		DWORD m_dwSpareFlags:26;				//	Flags
+		DWORD m_dwSpareFlags:25;				//	Flags
 	};
 
 class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>

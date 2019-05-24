@@ -255,6 +255,7 @@ ALERROR CMissile::Create (CSystem &System, SShotCreateCtx &Ctx, CMissile **retpM
 	pMissile->m_fPassthrough = false;
 	pMissile->m_fPainterFade = false;
 	pMissile->m_fFragment = ((Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT) ? true : false);
+	pMissile->m_fTargetable = Ctx.pDesc->GetTargetable();
 	pMissile->m_dwSpareFlags = 0;
 
 	//	If we've got a detonation interval, then set it up
@@ -1063,6 +1064,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		m_fPassthrough =	((dwLoad & 0x00000008) ? true : false);
 		m_fPainterFade =	((dwLoad & 0x00000010) ? true : false);
 		m_fFragment =		((dwLoad & 0x00000020) ? true : false);
+		m_fTargetable =		((dwLoad & 0x00000040) ? true : false);
 
 		Ctx.pStream->Read((char *)&m_iSavedRotationsCount, sizeof(DWORD));
 		if (m_iSavedRotationsCount > 0)
@@ -1423,6 +1425,7 @@ void CMissile::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fPassthrough ? 0x00000008 : 0);
 	dwSave |= (m_fPainterFade ? 0x00000010 : 0);
 	dwSave |= (m_fFragment ?	0x00000020 : 0);
+	dwSave |= (m_fTargetable ?	0x00000040 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Saved rotations
