@@ -28,7 +28,7 @@
 			<EnhancementAbilities>
 				<Enhance type=			"laser"
 						 criteria=		"w~l +damageType:laser;"
-						 enhancement=	"+hpBonus:75;"
+						 enhancement=	"+hpBonus:50;"
 						 />
 			</EnhancementAbilities>
 		</MiscellaneousDevice>
@@ -36,7 +36,7 @@
 		<Language>
 			<Text id="core.reference">
 				
-				+75% damage from laser weapons
+				+50% damage from laser weapons
 
 			</Text>
 		</Language>
