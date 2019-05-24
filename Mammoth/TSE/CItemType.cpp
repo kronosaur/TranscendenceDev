@@ -592,7 +592,7 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 		return pResult;
 
 	else if (FindCustomProperty(sProperty, pResultPtr))
-		return pResultPtr;
+		return pResultPtr->Reference();
 
 	else
 		return NULL;
