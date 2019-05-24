@@ -519,6 +519,7 @@ ICCItem *fnTopologyGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define FN_DESIGN_CANCEL_TIMER          19
 #define FN_DESIGN_GET_NAME				20
 #define FN_DESIGN_SET_PROPERTY			21
+#define FN_DESIGN_INC_PROPERTY			22
 
 ICCItem *fnDesignCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -3472,6 +3473,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(typIncData unid attrib [increment]) -> new value",
 			"is*",	0,	},
 
+		{	"typIncProperty",			fnDesignGet,		FN_DESIGN_INC_PROPERTY,
+			"(typIncProperty unid property [increment]) -> True/Nil",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"typMarkImages",				fnDesignGet,		FN_DESIGN_MARK_IMAGES,
 			"(typMarkImages unid) -> True/Nil",
 			"i",	0,	},
@@ -4482,6 +4487,15 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
             ICCItem *pValue = (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL);
             return pType->IncGlobalData(sAttrib, pValue)->Reference();
+			}
+
+		case FN_DESIGN_INC_PROPERTY:
+			{
+			CString sProperty = pArgs->GetElement(1)->GetStringValue();
+			if (sProperty.IsBlank())
+				return pCC->CreateNil();
+
+			return pType->IncTypeProperty(sProperty, pArgs->GetElement(2))->Reference();
 			}
 
 		case FN_DESIGN_MARK_IMAGES:

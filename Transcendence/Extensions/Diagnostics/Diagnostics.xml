@@ -387,24 +387,26 @@
 		(setq diagEval (lambda (testList)
 			(enum testList theTest
 				(if theTest
-					(block ()
+					(block (
+						(testResult (eval (@ theTest 'test)))
+						)
 						(typIncData &unidDiagnostics; 'totalTests)
 
 						(switch
 							;	If we don't care about the test result, then we just execute
 
 							(= (@ theTest 'result) 'ignore)
-								(eval (@ theTest 'test))
+								testResult
 
 							;	If the test succeeds, then we're good
 
-							(= (eval (@ theTest 'test)) (@ theTest 'result))
+							(= testResult (@ theTest 'result))
 								True
 
 							;	Failed
 
 							(block ()
-								(print "ERROR: " (@ theTest 'test) " - " (eval (@ theTest 'test)) " [expected " (@ theTest 'result) "]")
+								(print "ERROR: " (@ theTest 'test) " - " testResult " [expected " (@ theTest 'result) "]")
 								(typIncData &unidDiagnostics; 'totalFailures)
 								)
 							)

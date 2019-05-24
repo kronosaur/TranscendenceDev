@@ -554,7 +554,7 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		return NULL;
 	}
 
-bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType) const
+bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType, bool bNoInheritance) const
 
 //	FindCustomProperty
 //
@@ -579,8 +579,16 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 
 			case EPropertyType::propConstant:
 			case EPropertyType::propGlobal:
+				{
 				if (retiType) *retiType = iType;
-				return m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult);
+				if (m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult))
+					return true;
+				else
+					{
+					pResult = ICCItemPtr(ICCItem::Nil);
+					return true;
+					}
+				}
 
 			//	For dynamic properties, we evaluate now.
 
@@ -615,7 +623,7 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 
 	//	Otherwise, check our ancestors
 
-	else if (m_pInheritFrom)
+	else if (!bNoInheritance && m_pInheritFrom)
 		return m_pInheritFrom->FindCustomProperty(sProperty, pResult);
 
 	//	Otherwise, not found.
@@ -2743,6 +2751,78 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 		pPlayer->SendMessage(NULL, sError);
 
 	GetUniverse().LogOutput(sError);
+	}
+
+ICCItemPtr CDesignType::IncTypeProperty (const CString &sProperty, ICCItem *pValue)
+
+//	IncTypeProperty
+//
+//	Increment the property, if it is a number.
+
+	{
+	ICCItemPtr pCurValue;
+	EPropertyType iType;
+
+	//	If this is a custom global property, then set it.
+
+	if (FindCustomProperty(sProperty, pCurValue, &iType, true))
+		{
+		//	Must be a global, otherwise we cannot increment.
+
+		if (iType != EPropertyType::propGlobal)
+			return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Cannot increment property %s: Not a type variable"), sProperty)));
+
+		//	If current value is not a number, then we cannot increment.
+
+		else if (!pCurValue->IsNil() && !pCurValue->IsNumber())
+			return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Cannot increment property %s: Not a number"), sProperty)));
+
+		//	Make sure increment value is a number.
+
+		else if (pValue && !pValue->IsNil() && !pValue->IsNumber())
+			return ICCItemPtr(CCodeChain::CreateError(CONSTLIT("Cannot increment property by that value"), pValue));
+
+		//	Otherwise, we're OK.
+
+		else
+			{
+			ICCItemPtr pNewValue;
+			if (pCurValue->IsNil())
+				{
+				if (pValue == NULL || pValue->IsNil())
+					pNewValue = ICCItemPtr(1);
+				else
+					pNewValue = ICCItemPtr(pValue->Reference());
+				}
+			else if (pCurValue->IsInteger())
+				{
+				if (pValue == NULL || pValue->IsNil())
+					pNewValue = ICCItemPtr(pCurValue->GetIntegerValue() + 1);
+				else if (pValue->IsInteger())
+					pNewValue = ICCItemPtr(pCurValue->GetIntegerValue() + pValue->GetIntegerValue());
+				else
+					pNewValue = ICCItemPtr(pCurValue->GetDoubleValue() + pValue->GetDoubleValue());
+				}
+			else
+				{
+				double rInc = (pValue && !pValue->IsNil() ? pValue->GetDoubleValue(): 1.0);
+				pNewValue = ICCItemPtr(pCurValue->GetDoubleValue() + rInc);
+				}
+
+			SetTypeProperty(sProperty, pNewValue);
+			return pNewValue;
+			}
+		}
+
+	//	Otherwise, ask ancestors
+
+	else if (m_pInheritFrom)
+		return m_pInheritFrom->IncTypeProperty(sProperty, pValue);
+
+	//	Otherwise, unknown property.
+
+	else
+		return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Unknown property %s"), sProperty)));
 	}
 
 bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
