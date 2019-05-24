@@ -1096,16 +1096,18 @@
 					;	Now create a list of types to create. Some types are duplicated if
 					;	the class has variants (i.e., different device load-outs).
 
-					(shipsToCreate 
-						(apply append
-							(map classesForSale theClass
-								(if (typGetProperty theClass 'hasVariants)
-									(map (make 'sequence (random 1 3)) i theClass)
-									(list theClass)
-									)
-								)
-							)
-						)
+					;(shipsToCreate 
+					;	(apply append
+					;		(map classesForSale theClass
+					;			(if (typGetProperty theClass 'hasVariants)
+					;				(map (make 'sequence (random 1 3)) i theClass)
+					;				(list theClass)
+					;				)
+					;			)
+					;		)
+					;	)
+
+					(shipsToCreate classesForSale)
 					)
 
 					;	Create a list of ships to sell
