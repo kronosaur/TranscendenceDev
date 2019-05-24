@@ -3436,6 +3436,9 @@ ICCItem *fnRandom (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				return pList->GetElement(mathRandom(0, pList->GetCount()-1))->Reference();
 				}
+			else if (pArgs->GetCount() == 0)
+				return pCC->CreateDouble(mathRandomDouble());
+
 			else
 				return pCC->CreateNil();
 			}

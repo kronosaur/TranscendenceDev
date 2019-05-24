@@ -334,7 +334,9 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"u",	0,	},
 
 		{	"random",			fnRandom,		FN_RANDOM,
-			"(random from to)\n(random list)",
+			"(random from to)\n"
+			"(random list)\n"
+			"(random) -> random number between 0 and 1",
 			"*",	0,	},
 
 		{	"randomGaussian",		fnRandom,		FN_RANDOM_GAUSSIAN,
