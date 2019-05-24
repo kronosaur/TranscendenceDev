@@ -3853,7 +3853,7 @@
 
 		<Language>
 			<Text id="actionBridge">[B]ridge</Text>
-			<Text id="actionInfirmary">[I]nfirmary</Text>
+			<Text id="actionInfirmary">[M]edbay</Text>
 			<Text id="actionTalkMedical">Talk to [M]edical Officer</Text>
 			<Text id="actionDonate">[D]onate Items</Text>
 
