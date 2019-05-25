@@ -16,6 +16,7 @@
 #define PRIMARY_COLOR_ATTRIB			CONSTLIT("primaryColor")
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define SECONDARY_COLOR_ATTRIB			CONSTLIT("secondaryColor")
+#define SECONDARY_OPACITY_ATTRIB		CONSTLIT("secondaryOpacity")
 #define SPIKE_COUNT_ATTRIB				CONSTLIT("spikeCount")
 #define STYLE_ATTRIB					CONSTLIT("style")
 
@@ -114,6 +115,7 @@ class COrbEffectPainter : public IEffectPainter
 		int m_iDetail = 25;
 		int m_iDistortion = 0;
 		BYTE m_byOpacity = 255;
+		BYTE m_bySecondaryOpacity = 255;
 		DiceRange m_SpikeCount = DiceRange(0, 0, 0);
 		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
 		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
@@ -215,6 +217,7 @@ IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
 	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
+	pPainter->SetParam(Ctx, SECONDARY_OPACITY_ATTRIB, m_SecondaryOpacity);
 	pPainter->SetParam(Ctx, SPIKE_COUNT_ATTRIB, m_SpikeCount);
 	pPainter->SetParam(Ctx, STYLE_ATTRIB, m_Style);
 
@@ -271,6 +274,9 @@ ALERROR COrbEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 		return error;
 
 	if (error = m_SecondaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(SECONDARY_COLOR_ATTRIB)))
+		return error;
+
+	if (error = m_SecondaryOpacity.InitIntegerFromXML(Ctx, pDesc->GetAttribute(SECONDARY_OPACITY_ATTRIB)))
 		return error;
 
 	if (error = m_SpikeCount.InitIntegerFromXML(Ctx, pDesc->GetAttribute(SPIKE_COUNT_ATTRIB)))
@@ -367,7 +373,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_bySecondaryOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -471,7 +477,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_bySecondaryOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -513,7 +519,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_bySecondaryOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -551,7 +557,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 			if (UsesColorTable2())
 				{
 				m_ColorTable2.InsertEmpty(1);
-				CalcSecondaryColorTable(m_iRadius, m_iIntensity, m_byOpacity, &m_ColorTable2[0]);
+				CalcSecondaryColorTable(m_iRadius, m_iIntensity, m_bySecondaryOpacity, &m_ColorTable2[0]);
 				}
 
 			break;
@@ -630,6 +636,8 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 
 	{
 	int i;
+	Metric rHighAdj = byOpacity / 255.0;
+	Metric rLowAdj = 1.0 - rHighAdj;
 
 	switch (m_iStyle)
 		{
@@ -641,9 +649,13 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 		case styleSmoke:
 			{
 			CStepIncrementor Color(CStepIncrementor::styleLinear, 0.0, 1.0, 256);
+
 			retColorTable->InsertEmpty(256);
 			for (i = 0; i < 256; i++)
-				(*retColorTable)[i] = CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, Color.GetAt(i));
+				{
+				BYTE byAdjOpacity = (BYTE)(DWORD)mathRound((rHighAdj * 255.0) + (rLowAdj * i));
+				(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(m_rgbSecondaryColor, m_rgbPrimaryColor, Color.GetAt(i)), byAdjOpacity);
+				}
 
 			break;
 			}
@@ -670,7 +682,10 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 			{
 			retColorTable->InsertEmpty(256);
 			for (i = 0; i < 256; i++)
-				(*retColorTable)[i] = m_ExplosionColorizer.GetPixel(i, 256, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor);
+				{
+				BYTE byAdjOpacity = (BYTE)(DWORD)mathRound((rHighAdj * 255.0) + (rLowAdj * i));
+				(*retColorTable)[i] = CG32bitPixel(m_ExplosionColorizer.GetPixel(i, 256, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor), byAdjOpacity);
+				}
 
 			break;
 			}
@@ -1078,6 +1093,9 @@ bool COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		retValue->InitColor(m_rgbSecondaryColor);
 	
+	else if (strEquals(sParam, SECONDARY_OPACITY_ATTRIB))
+		retValue->InitInteger(m_bySecondaryOpacity);
+
 	else if (strEquals(sParam, SPIKE_COUNT_ATTRIB))
 		retValue->InitDiceRange(m_SpikeCount);
 	
@@ -1098,7 +1116,7 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(12);
+	retList->InsertEmpty(13);
 	retList->GetAt(0) = ANIMATE_ATTRIB;
 	retList->GetAt(1) = BLEND_MODE_ATTRIB;
 	retList->GetAt(2) = DETAIL_ATTRIB;
@@ -1109,8 +1127,9 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 	retList->GetAt(7) = PRIMARY_COLOR_ATTRIB;
 	retList->GetAt(8) = RADIUS_ATTRIB;
 	retList->GetAt(9) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(10) = SPIKE_COUNT_ATTRIB;
-	retList->GetAt(11) = STYLE_ATTRIB;
+	retList->GetAt(10) = SECONDARY_OPACITY_ATTRIB;
+	retList->GetAt(11) = SPIKE_COUNT_ATTRIB;
+	retList->GetAt(12) = STYLE_ATTRIB;
 
 	return true;
 	}
@@ -1400,6 +1419,9 @@ bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 	else if (strEquals(sParam, SECONDARY_COLOR_ATTRIB))
 		m_rgbSecondaryColor = Value.EvalColor();
 	
+	else if (strEquals(sParam, SECONDARY_OPACITY_ATTRIB))
+		m_bySecondaryOpacity = Value.EvalOpacity(255);
+
 	else if (strEquals(sParam, SPIKE_COUNT_ATTRIB))
 		m_SpikeCount = Value.EvalDiceRange(0);
 	

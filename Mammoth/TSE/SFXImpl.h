@@ -598,19 +598,20 @@ class COrbEffectCreator : public CEffectCreator
 		virtual ALERROR OnEffectBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
-		CEffectParamDesc m_Radius;			//	radius: Radius of orb (pixels)
-		CEffectParamDesc m_Style;			//	style: Style of ray
-		CEffectParamDesc m_Intensity;		//	intensity: Intensity of orb
-		CEffectParamDesc m_Detail;			//	detail: Level of detail for explosions (0-100)
-		CEffectParamDesc m_Distortion;		//	distortion: Distortion of orb (for explosions)
-		CEffectParamDesc m_PrimaryColor;	//	primaryColor: Primary color
-		CEffectParamDesc m_SecondaryColor;	//	secondaryColor: Secondary color
-		CEffectParamDesc m_Opacity;			//	opacity: 0-255
-		CEffectParamDesc m_BlendMode;		//	blendMode: Blend mode
-		CEffectParamDesc m_SpikeCount;		//	spikeCount: Optional number of spikes (for flares)
+		CEffectParamDesc m_Radius;				//	radius: Radius of orb (pixels)
+		CEffectParamDesc m_Style;				//	style: Style of ray
+		CEffectParamDesc m_Intensity;			//	intensity: Intensity of orb
+		CEffectParamDesc m_Detail;				//	detail: Level of detail for explosions (0-100)
+		CEffectParamDesc m_Distortion;			//	distortion: Distortion of orb (for explosions)
+		CEffectParamDesc m_PrimaryColor;		//	primaryColor: Primary color
+		CEffectParamDesc m_SecondaryColor;		//	secondaryColor: Secondary color
+		CEffectParamDesc m_Opacity;				//	opacity: 0-255
+		CEffectParamDesc m_SecondaryOpacity;	//	secondaryOpacity: 0-255, for textures
+		CEffectParamDesc m_BlendMode;			//	blendMode: Blend mode
+		CEffectParamDesc m_SpikeCount;			//	spikeCount: Optional number of spikes (for flares)
 
-		CEffectParamDesc m_Animate;			//	animate: Animation styles
-		CEffectParamDesc m_Lifetime;		//	lifetime: Lifetime in ticks (optional)
+		CEffectParamDesc m_Animate;				//	animate: Animation styles
+		CEffectParamDesc m_Lifetime;			//	lifetime: Lifetime in ticks (optional)
 
 		IEffectPainter *m_pSingleton;
 	};
