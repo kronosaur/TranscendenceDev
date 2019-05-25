@@ -1125,6 +1125,7 @@
 	<!-- Longzhu Sphere -->
 
 	<ItemType UNID="&itLongzhuSphere;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"longzhu sphere"
 			level=				"6"
 			value=				"500"
@@ -1133,13 +1134,75 @@
 			numberAppearing=	"1"
 			attributes=			"antiMatter, confirmRefuel, consumable, fuel, 100MW, longzhuSphere, notStandardFuel, sungSlavers"
 
-			useScreen=			"&dsUseLongzhuSphere;"
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			data=				"500000"
 
 			description=		"Longzhu spheres are antimatter containment vessels used by the Sung Slavers as power sources."
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Ds L:1-10; -nonEnergyShields;"	repair:True	}
+					{	criteria:"Dw L:1-10; +EnergyWeapon;"		repair:True	}
+					{	criteria:"s L:1-10; -nonEnergyShields;"	enhancement:"+hpBonus:20"	}
+					{	criteria:"w L:1-10; +EnergyWeapon;"		enhancement:"+hpBonus:20"	}
+					{	criteria:"v L:1-10; -Alien;"	enhancement:Nil	}
+					)
+			</Data>
+		</StaticData>
+
+		<Events>
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					)
+					(switch
+						;	Recharge Qianlong Archcannon
+						(= (itmGetType dstItem) &itQianlongArchcannon;)
+							(block (recharged)
+								(setq recharged (objFireItemEvent gPlayerShip gItem 'Recharge 256))
+
+								;	Remove the item from the player's cargo
+								(objRemoveItem gPlayerShip gItem 1)
+
+								(if (= recharged 0)
+									(itmTranslate gItem 'descNoRecharge)
+									(itmTranslate gItem 'descRecharge)
+									)
+								)
+
+						;	Call default handler
+						(typFireEvent &baStdDeviceEnhancement; 'OnUseOnItem gData)
+						)
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descResultIntro">
+
+				The longzhu sphere glows with stored power and the %dstItem%
+				hums with new energy.
+
+			</Text>
+			<Text id="descNoRecharge">
+
+				The longzhu sphere glows with stored power but the Qianlong
+				archcannon is unaffected.
+
+			</Text>
+			<Text id="descRecharge">
+
+				The longzhu sphere glows with stored power and the Qianlong
+				archcannon hums with new energy. Your Qianlong archcannon has
+				been recharged.
+
+			</Text>
+			<Text id="descNoFurther">The enhancement has no effect.</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Particle Bolt Cannon -->

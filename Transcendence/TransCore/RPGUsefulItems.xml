@@ -29,6 +29,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Armor page</Text>
 			<Text id="actionUse">[U]se on this Armor Segment</Text>
 		</Language>
 	</DockScreen>
@@ -61,6 +62,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Device page</Text>
 			<Text id="actionUse">[U]se on this Device</Text>
 		</Language>
 	</DockScreen>
@@ -103,21 +105,23 @@
 									))
 								)
 
-						(block()
+						(block (
+							(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+							)
 							(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
-									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
-									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterInstallable "Damaged Items" (lambda (theItem)
-									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
-									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
-									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							)
 						)
@@ -132,6 +136,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Cargo page</Text>
 		</Language>
 	</DockScreen>
 
@@ -170,6 +175,19 @@
 								shipObj: theShip
 								} ))
 						(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
+
+						;	Initialise the screen set if necessary
+						(screenSet (or
+							(@ gData 'screenSet)
+							(map (itmGetProperty useItem 'rpg.useScreenSet) uScreen
+								{
+									screen: uScreen
+									label: (typTranslate uScreen 'rpg.screenSetLabel)
+									data: { useItem: useItem }
+									mainScreen: (= (@ (scrGetScreen gScreen) 'type) uScreen)
+									}
+								)
+							))
 						)
 
 						;	Set the description
@@ -200,7 +218,7 @@
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
 						(scrShowAction gScreen 'actionUseOnCargo (and cargoCriteria (not (@ gData 'criteria))))
 
-						(rpgInitScreenSet (@ gData 'screenSet))
+						(rpgInitScreenSet screenSet)
 						)
 				</OnPaneInit>
 
@@ -763,17 +781,19 @@
     -->
 
 	<Type UNID="&baStdDeviceEnhancement;">
-		<StaticData>
-			<Data id="CargoCriteria">"wU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useScreenSet">'(&dsRPGUseItemOnDevice; &dsRPGUseItemOnCargo;)</Constant>
+			<Constant id="rpg.useCriteria">"d"</Constant>
+		</Properties>
 
 		<Events>
 			<CanUseOnItem>
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
+					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
 					)
 					(switch
-						(not (itmMatches dstItem "w"))
+						(not (itmMatches dstItem useCriteria))
 							Nil
 
 						(itmIsKnown gItem)
@@ -819,10 +839,20 @@
 							(trData {
 								dstItem: (itmGetName dstItem 'noModifiers)
 								})
+							(descIntro (itmTranslate gItem 'descResultIntro trData))
 							result
 							)
-							;	Apply enhancement
-							(setq result (shpEnhanceItem gPlayerShip dstItem (@ enhancementInfo 'enhancement)))
+							(switch
+								;	Special case for repair as shpEnhanceItem does not return 4 (repair)
+								(@ enhancementInfo 'repair)
+									(block Nil
+										(shpRepairItem gPlayerShip dstItem)
+										(setq result 4)
+										)
+
+								;	Apply enhancement
+								(setq result (shpEnhanceItem gPlayerShip dstItem (@ enhancementInfo 'enhancement)))
+								)
 
 							;	Remove the item from the player's cargo
 							(objRemoveItem gPlayerShip gItem 1)
@@ -832,7 +862,7 @@
 
 							{
 								desc: (cat
-									(itmTranslate gItem 'descResultIntro)
+									descIntro (if descIntro " ")
 									(switch
 										(= result 0) (itmTranslate gItem 'descSuccess trData)
 										(= result 1) (itmTranslate gItem 'descNoEffect trData)

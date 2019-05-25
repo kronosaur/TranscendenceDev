@@ -2066,9 +2066,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:laser;"	repair:True	}
 					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
@@ -2093,9 +2098,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:kinetic;"	repair:True	}
 					{	criteria:"w~l +damageType:kinetic;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
@@ -2120,9 +2130,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:particle;"	repair:True	}
 					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
@@ -2147,9 +2162,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:blast;"	repair:True	}
 					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
@@ -2174,9 +2194,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:ion;"	repair:True	}
 					{	criteria:"w~l +damageType:ion;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
@@ -2201,9 +2226,14 @@
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
 		<StaticData>
 			<Data id="enhancementTable">
 				(
+					{	criteria:"Dw~l +damageType:thermo;"	repair:True	}
 					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
 					)
 			</Data>
