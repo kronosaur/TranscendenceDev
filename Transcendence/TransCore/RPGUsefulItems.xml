@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
-	
+
 <!-- RPG USE ITEM ON ARMOR =====================================================
 
 	This screen allows the player to use an item on an armor segment.
@@ -151,6 +151,13 @@
 		screenSet: An RPG Screen Set structure (if we've been called from the
 				primary use item screen.
 
+	The following item properties will affect behavior
+
+		rpg.useScreenSet may be a list of dsRPGUseItemXYZ screens to initialise
+				a screen set
+
+		rpg.useCriteria will be used by the item base classes and display lists
+				to filter items to show
 -->
 
 	<DockScreen UNID="&dsRPGUseItemBase;"
@@ -721,14 +728,8 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementTable (itmGetStaticData gItem 'enhancementTable))
-					enhancementInfo
+					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
 					)
-					;	Search the enhancementTable for first matching entry
-					(enumWhile enhancementTable (not enhancementInfo) theEntry
-						(if (and (@ theEntry 'criteria) (itmMatches dstItem (@ theEntry 'criteria)))
-							(setq enhancementInfo theEntry)
-							))
 
 					;	General enhancement has higher priority than table
 					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
