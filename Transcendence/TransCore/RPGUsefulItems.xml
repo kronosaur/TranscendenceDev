@@ -318,6 +318,10 @@
 				</Controls>
 
 				<Actions>
+					<Action id="actionUseAnother" default="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+
 					<Action id="actionDone" default="1" cancel="1">
 						(block (
 							(result (scrGetData gScreen 'usageResult))
@@ -341,9 +345,6 @@
 								(scrExitScreen gScreen)
 								)
 							)
-					</Action>
-					<Action id="actionUseAnother">
-						(scrShowPane gScreen 'Default)
 					</Action>
 				</Actions>
 			</ShowResult>
