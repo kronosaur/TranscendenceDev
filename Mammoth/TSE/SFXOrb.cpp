@@ -18,12 +18,13 @@
 #define SPIKE_COUNT_ATTRIB				CONSTLIT("spikeCount")
 #define STYLE_ATTRIB					CONSTLIT("style")
 
-const int DEFAULT_FLARE_COUNT =			5;
-const int FLARE_MULITPLE =				4;
-const int LIGHTNING_MULITPLE =			2;
-const int FLARE_WIDTH_FRACTION =		32;
-const Metric BLOOM_FACTOR =				1.2;
-const int FLARE_ANGLE =					15;
+constexpr int DEFAULT_FLARE_COUNT =			5;
+constexpr int FLARE_MULITPLE =				4;
+constexpr int LIGHTNING_MULITPLE =			2;
+constexpr int FLARE_WIDTH_FRACTION =		32;
+constexpr Metric BLOOM_FACTOR =				1.2;
+constexpr int FLARE_ANGLE =					15;
+constexpr Metric SHELL_EDGE_WIDTH_RATIO =	0.05;
 
 class COrbEffectPainter : public IEffectPainter
 	{
@@ -74,8 +75,10 @@ class COrbEffectPainter : public IEffectPainter
 			styleFirecloud =		7,
 			styleBlackHole =		8,
 			styleLightning =		9,
+			styleShell =			10,
+			styleCloudshell =		11,
 
-			styleMax =				9,
+			styleMax =				11,
 			};
 
 		struct SFlareDesc
@@ -88,6 +91,8 @@ class COrbEffectPainter : public IEffectPainter
 		void CalcBlackHoleColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const;
 		bool CalcIntermediates (void);
 		void CalcSecondaryColorTable (int iRadius, int iIntensity, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
+		void CalcShellColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const;
+		void CalcShellOpacity (int iRadius, int iShellMaxRadius, int iIntensity, BYTE byOpacity, TArray<BYTE> &retOpacity) const;
 		void CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable);
 		void CalcStyleIntermediates (void);
 		void CompositeFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
@@ -97,8 +102,8 @@ class COrbEffectPainter : public IEffectPainter
 		void PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCenter, int iLength, int iWidth, int iAngle, int iIntensity, SViewportPaintCtx &Ctx);
 		void PaintFlares (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
 		void PaintLightning (CG32bitImage &Dest, int xCenter, int yCenter, const SFlareDesc &FlareDesc, SViewportPaintCtx &Ctx);
-		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
-		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke); }
+		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke || m_iStyle == styleCloudshell); }
+		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke || m_iStyle == styleCloudshell); }
 
 		CEffectCreator *m_pCreator;
 
@@ -156,6 +161,8 @@ static LPSTR STYLE_TABLE[] =
 		"firecloud",
 		"blackhole",
 		"lightning",
+		"shell",
+		"cloudshell",
 
 		NULL,
 	};
@@ -637,6 +644,7 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 		//	from primary to secondary colors.
 
 		case styleCloud:
+		case styleCloudshell:
 		case styleSmoke:
 			{
 			CStepIncrementor Color(CStepIncrementor::styleLinear, 0.0, 1.0, 256);
@@ -679,6 +687,73 @@ void COrbEffectPainter::CalcSecondaryColorTable (int iRadius, int iIntensity, BY
 		}
 	}
 
+void COrbEffectPainter::CalcShellColorTable (int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable) const
+
+//	CalcShellColorTable
+//
+//	Calculates a shell.
+
+	{
+	ASSERT(iRadius >= 0);
+
+	if (retColorTable->GetCount() < iRadius)
+		retColorTable->InsertEmpty(iRadius - retColorTable->GetCount());
+
+	int iEdgeWidth = mathRound(iRadius * SHELL_EDGE_WIDTH_RATIO);
+	int iShellMaxRadius = iRadius - iEdgeWidth;
+	int iHoleRadius = iShellMaxRadius * iIntensity / 120;
+
+	TArray<BYTE> OpacityRamp;
+	CalcShellOpacity(iRadius, iShellMaxRadius, iIntensity, byOpacity, OpacityRamp);
+
+	//	Initialize table
+
+	for (int i = 0; i < iRadius; i++)
+		{
+		if (i < iHoleRadius)
+			(*retColorTable)[i] = CG32bitPixel(rgbSecondary, OpacityRamp[i]);
+
+		else if (i < iShellMaxRadius)
+			{
+			int iStep = (i - iHoleRadius);
+			DWORD dwBlend = 255 * iStep / (iShellMaxRadius - iHoleRadius);
+			(*retColorTable)[i] = CG32bitPixel(CG32bitPixel::Blend(rgbSecondary, rgbPrimary, (BYTE)dwBlend), OpacityRamp[i]);
+			}
+		else
+			(*retColorTable)[i] = CG32bitPixel(rgbPrimary, OpacityRamp[i]);
+		}
+	}
+
+void COrbEffectPainter::CalcShellOpacity (int iRadius, int iShellMaxRadius, int iIntensity, BYTE byOpacity, TArray<BYTE> &retOpacity) const
+
+//	CalcShellOpacity
+//
+//	Computes the opacity ramp by radius for a shell-type effect.
+
+	{
+	ASSERT(iRadius >= 0);
+	ASSERT(iShellMaxRadius >= 0);
+
+	iIntensity = Max(0, Min(iIntensity, 100));
+	iShellMaxRadius = Min(iShellMaxRadius, iRadius);
+	int iEdgeWidth = iRadius - iShellMaxRadius;
+
+	if (retOpacity.GetCount() < iRadius)
+		retOpacity.InsertEmpty(iRadius - retOpacity.GetCount());
+
+	CStepIncrementor MaxIntensity(CStepIncrementor::styleOct, 0.0, 1.0, iShellMaxRadius);
+	CStepIncrementor MinIntensity(CStepIncrementor::styleLinear, 0.0, 1.0, iShellMaxRadius);
+	Metric rMaxIntensityK = iIntensity / 100.0;
+	Metric rMinIntensityK = (100 - iIntensity) / 100.0;
+
+	for (int i = 0; i < iShellMaxRadius; i++)
+		retOpacity[i] = (BYTE)(byOpacity * ((MaxIntensity.GetAt(i) * rMaxIntensityK) + (MinIntensity.GetAt(i) * rMinIntensityK)));
+
+	CStepIncrementor Fade(CStepIncrementor::styleSquare, 1.0, 0.0, iEdgeWidth + 1);
+	for (int i = 0; i < iEdgeWidth; i++)
+		retOpacity[iShellMaxRadius + i] = (BYTE)(byOpacity * Fade.GetAt(1 + i));
+	}
+
 void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius, int iIntensity, CG32bitPixel rgbPrimary, CG32bitPixel rgbSecondary, BYTE byOpacity, TArray<CG32bitPixel> *retColorTable)
 
 //	CalcSphericalColorTable
@@ -709,6 +784,10 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			CalcBlackHoleColorTable(iRadius, iIntensity, rgbPrimary, rgbSecondary, byOpacity, retColorTable);
 			break;
 
+		case styleShell:
+			CalcShellColorTable(iRadius, iIntensity, rgbPrimary, rgbSecondary, byOpacity, retColorTable);
+			break;
+
 		//	For cloud we only use this color table for the opacity. The actual
 		//	color information is in the second table (the pixel table).
 
@@ -718,6 +797,20 @@ void COrbEffectPainter::CalcSphericalColorTable (EOrbStyles iStyle, int iRadius,
 			CStepIncrementor Opacity(CStepIncrementor::styleSquare, byOpacity, 0.0, iRadius);
 			for (i = 0; i < iRadius; i++)
 				(*retColorTable)[i] = CG32bitPixel(255, 255, 255, (BYTE)Opacity.GetAt(i));
+
+			break;
+			}
+
+		case styleCloudshell:
+			{
+			int iEdgeWidth = mathRound(iRadius * SHELL_EDGE_WIDTH_RATIO);
+			int iShellMaxRadius = iRadius - iEdgeWidth;
+
+			TArray<BYTE> OpacityRamp;
+			CalcShellOpacity(iRadius, iShellMaxRadius, iIntensity, byOpacity, OpacityRamp);
+
+			for (int i = 0; i < iRadius; i++)
+				(*retColorTable)[i] = CG32bitPixel(255, 255, 255, OpacityRamp[i]);
 
 			break;
 			}
@@ -824,6 +917,7 @@ void COrbEffectPainter::CalcStyleIntermediates (void)
 	switch (m_iStyle)
 		{
 		case styleCloud:
+		case styleCloudshell:
 		case styleFirecloud:
 		case styleSmoke:
 			{
@@ -1088,6 +1182,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 	switch (m_iStyle)
 		{
 		case styleCloud:
+		case styleCloudshell:
 		case styleFirecloud:
 		case styleSmoke:
 			{
@@ -1124,6 +1219,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 
 		case styleBlackHole:
 		case styleFlare:
+		case styleShell:
 		case styleSmooth:
 		case styleLightning:
 			{
@@ -1158,6 +1254,7 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 		{
 		case styleBlackHole:
 		case styleFlare:
+		case styleShell:
 		case styleSmooth:
 		case styleLightning:
 			{
@@ -1167,6 +1264,7 @@ void COrbEffectPainter::PaintComposite (CG32bitImage &Dest, int x, int y, SViewp
 			}
 
 		case styleCloud:
+		case styleCloudshell:
 			break;
 		}
 
