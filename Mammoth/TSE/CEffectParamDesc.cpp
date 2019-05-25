@@ -359,6 +359,26 @@ int CEffectParamDesc::EvalIntegerBounded (int iMin, int iMax, int iDefault) cons
 		return Max(Min(iValue, iMax), iMin);
 	}
 
+BYTE CEffectParamDesc::EvalOpacity (BYTE byDefault) const
+
+//	EvalOpacity
+//
+//	Returns the opacity
+
+	{
+	switch (m_iType)
+		{
+		case typeIntegerConstant:
+			return (BYTE)Min(m_dwData, (DWORD)255);
+
+		case typeIntegerDiceRange:
+			return (BYTE)Max(0, Min(m_DiceRange.Roll(), 255));
+
+		default:
+			return byDefault;
+		}
+	}
+
 CString CEffectParamDesc::EvalString (void) const
 
 //	EvalString

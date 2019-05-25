@@ -12,6 +12,7 @@
 #define DISTORTION_ATTRIB				CONSTLIT("distortion")
 #define INTENSITY_ATTRIB				CONSTLIT("intensity")
 #define LIFETIME_ATTRIB					CONSTLIT("lifetime")
+#define OPACITY_ATTRIB					CONSTLIT("opacity")
 #define PRIMARY_COLOR_ATTRIB			CONSTLIT("primaryColor")
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define SECONDARY_COLOR_ATTRIB			CONSTLIT("secondaryColor")
@@ -105,29 +106,30 @@ class COrbEffectPainter : public IEffectPainter
 		inline bool UsesColorTable2 (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke || m_iStyle == styleCloudshell); }
 		inline bool UsesTextures (void) const { return (m_iStyle == styleCloud || m_iStyle == styleFireblast || m_iStyle == styleFirecloud || m_iStyle == styleSmoke || m_iStyle == styleCloudshell); }
 
-		CEffectCreator *m_pCreator;
+		CEffectCreator *m_pCreator = NULL;
 
-		int m_iRadius;
-		EOrbStyles m_iStyle;
-		int m_iIntensity;
-		int m_iDetail;
-		int m_iDistortion;
-		DiceRange m_SpikeCount;
-		CG32bitPixel m_rgbPrimaryColor;
-		CG32bitPixel m_rgbSecondaryColor;
-		CGDraw::EBlendModes m_iBlendMode;
+		int m_iRadius = (int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL);
+		EOrbStyles m_iStyle = styleSmooth;
+		int m_iIntensity = 50;
+		int m_iDetail = 25;
+		int m_iDistortion = 0;
+		BYTE m_byOpacity = 255;
+		DiceRange m_SpikeCount = DiceRange(0, 0, 0);
+		CG32bitPixel m_rgbPrimaryColor = CG32bitPixel(255, 255, 255);
+		CG32bitPixel m_rgbSecondaryColor = CG32bitPixel(128, 128, 128);
+		CGDraw::EBlendModes m_iBlendMode = CGDraw::blendNormal;
 
-		int m_iLifetime;
-		EAnimationTypes m_iAnimation;
+		int m_iLifetime = 0;
+		EAnimationTypes m_iAnimation = animateNone;
 
 		//	Temporary variables based on shape/style/etc.
 
-		bool m_bInitialized;				//	TRUE if values are valid
-		ICirclePainter *m_pPainter;			//	Circle painter
+		bool m_bInitialized = false;				//	TRUE if values are valid
+		ICirclePainter *m_pPainter = NULL;			//	Circle painter
 		TArray<TArray<CG32bitPixel>> m_ColorTable;	//	Radial color table (per animation frame)
-		TArray<SFlareDesc> m_FlareDesc;		//	Flare spikes (per animation frame)
+		TArray<SFlareDesc> m_FlareDesc;				//	Flare spikes (per animation frame)
 		CFractalTextureLibrary::ETextureTypes m_iTextureType;
-		TArray<int> m_TextureFrame;			//	Texture frame to use
+		TArray<int> m_TextureFrame;					//	Texture frame to use
 
 		TArray<TArray<CG32bitPixel>> m_ColorTable2;	//	Additional color table (used by fireblast)
 
@@ -209,6 +211,7 @@ IEffectPainter *COrbEffectCreator::OnCreatePainter (CCreatePainterCtx &Ctx)
 	pPainter->SetParam(Ctx, DISTORTION_ATTRIB, m_Distortion);
 	pPainter->SetParam(Ctx, INTENSITY_ATTRIB, m_Intensity);
 	pPainter->SetParam(Ctx, LIFETIME_ATTRIB, m_Lifetime);
+	pPainter->SetParam(Ctx, OPACITY_ATTRIB, m_Opacity);
 	pPainter->SetParam(Ctx, PRIMARY_COLOR_ATTRIB, m_PrimaryColor);
 	pPainter->SetParam(Ctx, RADIUS_ATTRIB, m_Radius);
 	pPainter->SetParam(Ctx, SECONDARY_COLOR_ATTRIB, m_SecondaryColor);
@@ -258,6 +261,9 @@ ALERROR COrbEffectCreator::OnEffectCreateFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 	if (error = m_Lifetime.InitIntegerFromXML(Ctx, pDesc->GetAttribute(LIFETIME_ATTRIB)))
 		return error;
 
+	if (error = m_Opacity.InitIntegerFromXML(Ctx, pDesc->GetAttribute(OPACITY_ATTRIB)))
+		return error;
+
 	if (error = m_PrimaryColor.InitColorFromXML(Ctx, pDesc->GetAttribute(PRIMARY_COLOR_ATTRIB)))
 		return error;
 
@@ -299,20 +305,7 @@ ALERROR COrbEffectCreator::OnEffectBindDesign (SDesignLoadCtx &Ctx)
 CExplosionColorizer COrbEffectPainter::m_ExplosionColorizer;
 
 COrbEffectPainter::COrbEffectPainter (CEffectCreator *pCreator) : 
-		m_pCreator(pCreator),
-		m_iRadius((int)(STD_SECONDS_PER_UPDATE * LIGHT_SECOND / KLICKS_PER_PIXEL)),
-		m_iStyle(styleSmooth),
-		m_iIntensity(50),
-		m_iDetail(25),
-		m_iDistortion(0),
-		m_SpikeCount(0, 0, 0),
-		m_rgbPrimaryColor(CG32bitPixel(255, 255, 255)),
-		m_rgbSecondaryColor(CG32bitPixel(128, 128, 128)),
-		m_iBlendMode(CGDraw::blendNormal),
-		m_iLifetime(0),
-		m_iAnimation(animateNone),
-		m_pPainter(NULL),
-		m_bInitialized(false)
+		m_pCreator(pCreator)
 
 //	COrbEffectCreator constructor
 
@@ -366,7 +359,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				int iIntensity = (int)Intensity.GetAt(i);
 				CG32bitPixel rgbColor = CG32bitPixel::Blend(m_rgbPrimaryColor, m_rgbSecondaryColor, ColorFade.GetAt(i));
 
-				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, rgbColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, rgbColor, m_rgbSecondaryColor, m_byOpacity, &m_ColorTable[i]);
 
 				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
@@ -374,7 +367,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -414,10 +407,10 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				if (i > iEndFadeStart)
 					{
 					Metric rFade = (iEndFade - (i - iEndFadeStart)) / (Metric)iEndFade;
-					byOpacity = (BYTE)(255.0 * rFade);
+					byOpacity = (BYTE)(m_byOpacity * rFade);
 					}
 				else
-					byOpacity = 255;
+					byOpacity = m_byOpacity;
 
 				CalcSphericalColorTable(m_iStyle, iRadius, iHeat, m_rgbPrimaryColor, m_rgbSecondaryColor, byOpacity, &m_ColorTable[i]);
 
@@ -469,7 +462,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				int iRadius = (int)(rFade * m_iRadius);
 				int iIntensity = (int)(rFade * m_iIntensity);
 
-				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, m_byOpacity, &m_ColorTable[i]);
 
 				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
@@ -478,7 +471,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 					m_TextureFrame[i] = g_pUniverse->GetFractalTextureLibrary().GetTextureIndex(m_iTextureType, Detail.GetAt(i));
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -514,13 +507,13 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 				int iRadius = Max(2, (int)(rFlicker * m_iRadius));
 				int iIntensity = (int)(rFlicker * m_iIntensity);
 
-				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[i]);
+				CalcSphericalColorTable(m_iStyle, iRadius, iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, m_byOpacity, &m_ColorTable[i]);
 
 				m_FlareDesc[i].iLength = iRadius * FLARE_MULITPLE;
 				m_FlareDesc[i].iWidth = Max(1, m_FlareDesc[i].iLength / FLARE_WIDTH_FRACTION);
 
 				if (UsesColorTable2())
-					CalcSecondaryColorTable(iRadius, iIntensity, 255, &m_ColorTable2[i]);
+					CalcSecondaryColorTable(iRadius, iIntensity, m_byOpacity, &m_ColorTable2[i]);
 				}
 
 			break;
@@ -533,7 +526,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 			m_ColorTable.InsertEmpty(1);
 			m_FlareDesc.InsertEmpty(1);
 
-			CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, 255, &m_ColorTable[0]);
+			CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, m_rgbPrimaryColor, m_rgbSecondaryColor, m_byOpacity, &m_ColorTable[0]);
 
 			if (m_iStyle == styleLightning)
 				m_FlareDesc[0].iLength = m_iRadius * LIGHTNING_MULITPLE;
@@ -558,7 +551,7 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 			if (UsesColorTable2())
 				{
 				m_ColorTable2.InsertEmpty(1);
-				CalcSecondaryColorTable(m_iRadius, m_iIntensity, 255, &m_ColorTable2[0]);
+				CalcSecondaryColorTable(m_iRadius, m_iIntensity, m_byOpacity, &m_ColorTable2[0]);
 				}
 
 			break;
@@ -1073,6 +1066,9 @@ bool COrbEffectPainter::GetParam (const CString &sParam, CEffectParamDesc *retVa
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		retValue->InitInteger(m_iLifetime);
 
+	else if (strEquals(sParam, OPACITY_ATTRIB))
+		retValue->InitInteger(m_byOpacity);
+
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
 		retValue->InitColor(m_rgbPrimaryColor);
 
@@ -1102,18 +1098,19 @@ bool COrbEffectPainter::GetParamList (TArray<CString> *retList) const
 
 	{
 	retList->DeleteAll();
-	retList->InsertEmpty(11);
+	retList->InsertEmpty(12);
 	retList->GetAt(0) = ANIMATE_ATTRIB;
 	retList->GetAt(1) = BLEND_MODE_ATTRIB;
 	retList->GetAt(2) = DETAIL_ATTRIB;
 	retList->GetAt(3) = DISTORTION_ATTRIB;
 	retList->GetAt(4) = INTENSITY_ATTRIB;
 	retList->GetAt(5) = LIFETIME_ATTRIB;
-	retList->GetAt(6) = PRIMARY_COLOR_ATTRIB;
-	retList->GetAt(7) = RADIUS_ATTRIB;
-	retList->GetAt(8) = SECONDARY_COLOR_ATTRIB;
-	retList->GetAt(9) = SPIKE_COUNT_ATTRIB;
-	retList->GetAt(10) = STYLE_ATTRIB;
+	retList->GetAt(6) = OPACITY_ATTRIB;
+	retList->GetAt(7) = PRIMARY_COLOR_ATTRIB;
+	retList->GetAt(8) = RADIUS_ATTRIB;
+	retList->GetAt(9) = SECONDARY_COLOR_ATTRIB;
+	retList->GetAt(10) = SPIKE_COUNT_ATTRIB;
+	retList->GetAt(11) = STYLE_ATTRIB;
 
 	return true;
 	}
@@ -1390,6 +1387,9 @@ bool COrbEffectPainter::OnSetParam (CCreatePainterCtx &Ctx, const CString &sPara
 
 	else if (strEquals(sParam, LIFETIME_ATTRIB))
 		m_iLifetime = Value.EvalIntegerBounded(0, -1, 0);
+
+	else if (strEquals(sParam, OPACITY_ATTRIB))
+		m_byOpacity = Value.EvalOpacity(255);
 
 	else if (strEquals(sParam, PRIMARY_COLOR_ATTRIB))
 		m_rgbPrimaryColor = Value.EvalColor();

@@ -116,6 +116,7 @@ class CEffectParamDesc
 		const CObjectImageArray &EvalImage (void) const;
 		int EvalInteger (void) const;
 		int EvalIntegerBounded (int iMin, int iMax = -1, int iDefault = -1) const;
+		BYTE EvalOpacity (BYTE byDefault = 255) const;
 		CString EvalString (void) const;
 		CVector EvalVector (void) const;
 		inline EDataTypes GetType (void) const { return m_iType; }
