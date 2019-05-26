@@ -52,6 +52,10 @@ class COrbEffectPainter : public IEffectPainter
 		virtual bool OnSetParam (CCreatePainterCtx &Ctx, const CString &sParam, const CEffectParamDesc &Value) override;
 
 	private:
+
+		//	NOTE: These number cannot change because they are stored in save
+		//	files.
+
 		enum EAnimationTypes
 			{
 			animateNone =			0,
@@ -60,8 +64,9 @@ class COrbEffectPainter : public IEffectPainter
 			animateExplode =		2,
 			animateFade =			3,
 			animateFlicker =		4,
+			animateDim =			5,
 
-			animateMax =			4,
+			animateMax =			5,
 			};
 
 		enum EOrbStyles
@@ -147,6 +152,7 @@ static LPSTR ANIMATION_TABLE[] =
 		"explode",
 		"fade",
 		"flicker",
+		"dim",
 
 		NULL
 	};
@@ -520,6 +526,50 @@ void COrbEffectPainter::CalcAnimationIntermediates (void)
 
 				if (UsesColorTable2())
 					CalcSecondaryColorTable(iRadius, iIntensity, m_bySecondaryOpacity, &m_ColorTable2[i]);
+				}
+
+			break;
+			}
+
+		case animateDim:
+			{
+			int iLifetime = Max(1, m_iLifetime);
+
+			m_ColorTable.InsertEmpty(iLifetime);
+			m_FlareDesc.InsertEmpty(iLifetime);
+
+			CStepIncrementor Fade(CStepIncrementor::styleLinear, 0.0, 100.0, iLifetime);
+			CStepIncrementor Opacity(CStepIncrementor::styleLinear, m_byOpacity, m_bySecondaryOpacity, iLifetime);
+			for (int i = 0; i < iLifetime; i++)
+				{
+				CG32bitPixel rgbColor = CG32bitPixel::Fade(m_rgbPrimaryColor, m_rgbSecondaryColor, (int)Fade.GetAt(i));
+				CalcSphericalColorTable(m_iStyle, m_iRadius, m_iIntensity, rgbColor, m_rgbSecondaryColor, (BYTE)(int)Opacity.GetAt(i), &m_ColorTable[i]);
+				}
+
+			if (m_iStyle == styleLightning)
+				m_FlareDesc[0].iLength = m_iRadius * LIGHTNING_MULITPLE;
+			else
+				m_FlareDesc[0].iLength = m_iRadius * FLARE_MULITPLE;
+			m_FlareDesc[0].iWidth = Max(1, m_FlareDesc[0].iLength / FLARE_WIDTH_FRACTION);
+
+			//	For cloud and Fireblast we need a repeating animation
+
+			if (UsesTextures())
+				{
+				m_iTextureType = CFractalTextureLibrary::typeBoilingClouds;
+				int iFrames = g_pUniverse->GetFractalTextureLibrary().GetTextureCount(m_iTextureType);
+
+				m_TextureFrame.InsertEmpty(iFrames);
+				for (int i = 0; i < iFrames; i++)
+					m_TextureFrame[i] = i;
+				}
+
+			//	For Fireblast, we only need a single color table
+
+			if (UsesColorTable2())
+				{
+				m_ColorTable2.InsertEmpty(1);
+				CalcSecondaryColorTable(m_iRadius, m_iIntensity, m_bySecondaryOpacity, &m_ColorTable2[0]);
 				}
 
 			break;

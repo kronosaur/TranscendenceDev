@@ -87,6 +87,11 @@ void GenerateEffectExplorer (CUniverse &Universe, CXMLElement *pCmdLine)
 	else
 		Properties.SetAt(PROPERTY_ANIMATE, CEffectParamDesc(NULL_STR));
 
+	if (pCmdLine->FindAttributeInteger(PROPERTY_INTENSITY, &iValue))
+		Properties.SetAt(PROPERTY_INTENSITY, CEffectParamDesc(iValue));
+	else
+		Properties.SetAt(PROPERTY_INTENSITY, CEffectParamDesc(50));
+
 	if (pCmdLine->FindAttributeInteger(PROPERTY_OPACITY, &iValue))
 		Properties.SetAt(PROPERTY_OPACITY, CEffectParamDesc(iValue));
 	else
