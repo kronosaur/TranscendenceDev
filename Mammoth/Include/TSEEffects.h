@@ -186,33 +186,34 @@ class CCreatePainterCtx
 	{
 	public:
 		void AddDataInteger (const CString &sField, int iValue);
-		inline bool CanCreateSingleton (void) const { return !m_bNoSingleton; }
-		inline bool FindDefaultParam (const CString &sParam, CEffectParamDesc *retValue) const { return (m_pDefaultParams ? m_pDefaultParams->FindParam(sParam, retValue) : false); }
-		inline CSpaceObject *GetAnchor (void) const { return m_pAnchor; }
-		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
-		inline SDamageCtx *GetDamageCtx (void) const { return m_pDamageCtx; }
+		bool CanCreateSingleton (void) const { return !m_bNoSingleton; }
+		bool FindDefaultParam (const CString &sParam, CEffectParamDesc *retValue) const { return (m_pDefaultParams ? m_pDefaultParams->FindParam(sParam, retValue) : false); }
+		CSpaceObject *GetAnchor (void) const { return m_pAnchor; }
+		DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
+		SDamageCtx *GetDamageCtx (void) const { return m_pDamageCtx; }
 		ICCItem *GetData (void);
-		inline const CEffectParamDesc *GetDefaultParam (const CString &sParam) const { return (m_pDefaultParams ? m_pDefaultParams->GetParam(sParam) : NULL); }
-		inline int GetLifetime (void) const { return m_iLifetime; }
-		inline DWORD GetLoadVersion (void) const { return m_dwLoadVersion; }
-		inline ICCItemPtr GetParams (void) const { return m_pParams; }
-		inline const CVector &GetPos (void) const { return m_vPos; }
-		inline bool IsRawPainter (void) const { return m_bRaw; }
-		inline bool IsTracking (void) const { return m_bTracking; }
-		inline void SetAnchor (CSpaceObject *pAnchor) { m_pAnchor = pAnchor; }
-		inline void SetAPIVersion (DWORD dwVersion) { m_dwAPIVersion = dwVersion; }
-		inline void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
+		const CEffectParamDesc *GetDefaultParam (const CString &sParam) const { return (m_pDefaultParams ? m_pDefaultParams->GetParam(sParam) : NULL); }
+		int GetLifetime (void) const { return m_iLifetime; }
+		DWORD GetLoadVersion (void) const { return m_dwLoadVersion; }
+		ICCItemPtr GetParams (void) const { return m_pParams; }
+		const CVector &GetPos (void) const { return m_vPos; }
+		bool IsRawPainter (void) const { return m_bRaw; }
+		bool IsTracking (void) const { return m_bTracking; }
+		void SetAnchor (CSpaceObject *pAnchor) { m_pAnchor = pAnchor; }
+		void SetAPIVersion (DWORD dwVersion) { m_dwAPIVersion = dwVersion; }
+		void SetDamageCtx (SDamageCtx &Ctx) { m_pDamageCtx = &Ctx; }
 		void SetDefaultParam (const CString &sParam, const CEffectParamDesc &Value);
-		inline void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
-		inline void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
-		inline void SetNoSingleton (bool bValue = true) { m_bNoSingleton = bValue; }
-		inline void SetParams (ICCItem *pParams) { m_pParams = pParams; }
-		inline void SetPos (const CVector &vPos) { m_vPos = vPos; }
-		inline void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
-		inline void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
-		inline void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
+		void SetLifetime (int iLifetime) { m_iLifetime = iLifetime; }
+		void SetLoadVersion (DWORD dwVersion) { m_dwLoadVersion = dwVersion; }
+		void SetNoSingleton (bool bValue = true) { m_bNoSingleton = bValue; }
+		void SetOverlay (const COverlay &Overlay) { m_pOverlay = &Overlay; }
+		void SetParams (ICCItem *pParams) { m_pParams = pParams; }
+		void SetPos (const CVector &vPos) { m_vPos = vPos; }
+		void SetRawPainter (bool bValue = true) { m_bRaw = bValue; }
+		void SetTrackingObject (bool bValue = true) { m_bTracking = bValue; }
+		void SetUseObjectCenter (bool bValue = true) { m_bUseObjectCenter = bValue; }
 		void SetWeaponFireDesc (CWeaponFireDesc *pDesc);
-		inline bool UseObjectCenter (void) const { return m_bUseObjectCenter; }
+		bool UseObjectCenter (void) const { return m_bUseObjectCenter; }
 
 	private:
 		struct SDataEntry
@@ -222,11 +223,14 @@ class CCreatePainterCtx
 			};
 
 		void SetDamageCtxData (ICCItem *pTable, SDamageCtx &DamageCtx) const;
+		void SetOverlayData (ICCItem *pTable, const COverlay &Overlay) const;
 		void SetWeaponFireDescData (ICCItem *pTable, CWeaponFireDesc *pDesc) const;
 
 		CSpaceObject *m_pAnchor = NULL;					//	Optional anchor (e.g., for effects that need an object to operate)
 		CVector m_vPos;									//	Optional position of effect
 		int m_iLifetime = 0;							//	Optional lifetime 0 = use creator defaults; -1 = infinite;
+		const CSpaceObject *m_pSource = NULL;			//	Optional object associated with effect
+		const COverlay *m_pOverlay = NULL;				//	Optional overlay that created the effect
 		SDamageCtx *m_pDamageCtx = NULL;				//	Optional damage context
 		CWeaponFireDesc *m_pWeaponFireDesc = NULL;		//	Optional weapon fire desc
 		TArray<SDataEntry> m_Data;						//	Data to add

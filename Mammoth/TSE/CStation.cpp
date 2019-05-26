@@ -265,7 +265,11 @@ void CStation::AddOverlay (COverlayType *pType, int iPosAngle, int iPosRadius, i
 //	Adds an overlay to the ship
 
 	{
-	m_Overlays.AddField(this, pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifeLeft, retdwID);
+	ASSERT(pType);
+	if (pType == NULL)
+		return;
+
+	m_Overlays.AddField(*this, *pType, iPosAngle, iPosRadius, iRotation, iPosZ, iLifeLeft, retdwID);
 
 	//	Recalc bonuses, etc.
 

@@ -96,14 +96,14 @@ void COverlayList::AccumulateBounds (CSpaceObject *pSource, int iScale, int iRot
 		}
 	}
 
-void COverlayList::AddField (CSpaceObject *pSource, 
-								 COverlayType *pType,
-								 int iPosAngle,
-								 int iPosRadius,
-								 int iRotation,
-								 int iPosZ,
-								 int iLifeLeft, 
-								 DWORD *retdwID)
+void COverlayList::AddField (CSpaceObject &Source, 
+							 COverlayType &Type,
+							 int iPosAngle,
+							 int iPosRadius,
+							 int iRotation,
+							 int iPosZ,
+							 int iLifeLeft, 
+							 DWORD *retdwID)
 
 //	AddField
 //
@@ -111,7 +111,8 @@ void COverlayList::AddField (CSpaceObject *pSource,
 
 	{
 	COverlay *pField;
-	COverlay::CreateFromType(pType, 
+	COverlay::CreateFromType(Type, 
+			Source,
 			iPosAngle, 
 			iPosRadius, 
 			iRotation,
@@ -128,7 +129,7 @@ void COverlayList::AddField (CSpaceObject *pSource,
 
 	//	Call OnCreate
 
-	pField->FireOnCreate(pSource);
+	pField->FireOnCreate(&Source);
 
 	//	If we deleted, then we're done
 
@@ -147,7 +148,7 @@ void COverlayList::AddField (CSpaceObject *pSource,
 
 	//	Either way, we need to recalculate impact
 
-	OnConditionsChanged(pSource);
+	OnConditionsChanged(&Source);
 
 	//	Done
 

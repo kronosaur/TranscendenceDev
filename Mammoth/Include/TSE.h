@@ -461,7 +461,8 @@ class COverlay
 
 		COverlay (void);
 		~COverlay (void);
-		static void CreateFromType (COverlayType *pType, 
+		static void CreateFromType (COverlayType &Type, 
+									CSpaceObject &Source,
 									int iPosAngle,
 									int iPosRadius,
 									int iRotation,
@@ -558,8 +559,8 @@ class COverlayList
 		COverlayList (void);
 		~COverlayList (void);
 
-		void AddField (CSpaceObject *pSource, 
-					   COverlayType *pType,
+		void AddField (CSpaceObject &Source, 
+					   COverlayType &Type,
 					   int iPosAngle,
 					   int iPosRadius,
 					   int iRotation,

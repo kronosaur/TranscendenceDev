@@ -228,11 +228,16 @@ void COverlay::CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx)
 
 	if (m_pType->IsHitEffectAlt())
 		{
+		CCreatePainterCtx CreateCtx;
+		CreateCtx.SetAPIVersion(m_pType->GetAPIVersion());
+		CreateCtx.SetAnchor(pSource);
+		CreateCtx.SetOverlay(*this);
+
 		//	Create a painter
 
 		if (m_pHitPainter)
 			m_pHitPainter->Delete();
-		m_pHitPainter = pHitEffect->CreatePainter(CCreatePainterCtx());
+		m_pHitPainter = pHitEffect->CreatePainter(CreateCtx);
 
 		//	Initialize
 
@@ -254,25 +259,24 @@ void COverlay::CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx)
 		}
 	}
 
-void COverlay::CreateFromType (COverlayType *pType, 
-								   int iPosAngle,
-								   int iPosRadius,
-								   int iRotation,
-								   int iPosZ,
-								   int iLifeLeft, 
-								   COverlay **retpField)
+void COverlay::CreateFromType (COverlayType &Type, 
+							   CSpaceObject &Source,
+							   int iPosAngle,
+							   int iPosRadius,
+							   int iRotation,
+							   int iPosZ,
+							   int iLifeLeft, 
+							   COverlay **retpField)
 
 //	CreateFromType
 //
 //	Create field from type
 
 	{
-	ASSERT(pType);
-
 	COverlay *pField = new COverlay;
 
-	pField->m_pType = pType;
-	pField->m_dwID = pType->GetUniverse().CreateGlobalID();
+	pField->m_pType = &Type;
+	pField->m_dwID = Type.GetUniverse().CreateGlobalID();
 	pField->m_iDevice = -1;
 	pField->m_iLifeLeft = iLifeLeft;
 	pField->m_iTick = 0;
@@ -284,11 +288,13 @@ void COverlay::CreateFromType (COverlayType *pType,
 
 	//	Create painters
 
-	CEffectCreator *pCreator = pType->GetEffectCreator();
+	CEffectCreator *pCreator = Type.GetEffectCreator();
 	if (pCreator)
 		{
 		CCreatePainterCtx CreateCtx;
-		CreateCtx.SetAPIVersion(pType->GetAPIVersion());
+		CreateCtx.SetAPIVersion(Type.GetAPIVersion());
+		CreateCtx.SetAnchor(&Source);
+		CreateCtx.SetOverlay(*pField);
 		CreateCtx.SetLifetime(pField->m_iLifeLeft);
 
 		pField->m_pPainter = pCreator->CreatePainter(CreateCtx);

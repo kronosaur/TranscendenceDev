@@ -5,6 +5,7 @@
 
 #include "PreComp.h"
 
+#define FIELD_ANCHOR_OBJ				CONSTLIT("anchorObj")
 #define FIELD_ATTACKER					CONSTLIT("attacker")
 #define FIELD_ARMOR_SEG					CONSTLIT("armorSeg")
 #define FIELD_AVERAGE_DAMAGE_HP			CONSTLIT("averageDamageHP")
@@ -16,6 +17,7 @@
 #define FIELD_HIT_POS					CONSTLIT("hitPos")
 #define FIELD_OBJ_HIT					CONSTLIT("objHit")
 #define FIELD_ORDER_GIVER				CONSTLIT("orderGiver")
+#define FIELD_OVERLAY_TYPE				CONSTLIT("overlayType")
 #define FIELD_PARTICLE_COUNT			CONSTLIT("particleCount")
 #define FIELD_SPEED						CONSTLIT("speed")
 #define FIELD_WEAPON_UNID				CONSTLIT("weaponUNID")
@@ -53,6 +55,9 @@ ICCItem *CCreatePainterCtx::GetData (void)
 	for (i = 0; i < m_Data.GetCount(); i++)
 		m_pData->SetIntegerAt(m_Data[i].sField, m_Data[i].iValue);
 
+	if (m_pAnchor)
+		m_pData->SetIntegerAt(FIELD_ANCHOR_OBJ, (int)m_pAnchor);
+
 	//	Set values depending on what we have in context
 
 	if (m_pDamageCtx)
@@ -63,6 +68,11 @@ ICCItem *CCreatePainterCtx::GetData (void)
 
 	else if (m_pWeaponFireDesc)
 		SetWeaponFireDescData(m_pData, m_pWeaponFireDesc);
+
+	//	Set data for overlays
+
+	else if (m_pOverlay)
+		SetOverlayData(m_pData, *m_pOverlay);
 
 	//	Done
 
@@ -113,6 +123,16 @@ void CCreatePainterCtx::SetDefaultParam (const CString &sParam, const CEffectPar
 		m_pDefaultParams = TUniquePtr<CEffectParamSet>(new CEffectParamSet);
 
 	m_pDefaultParams->AddParam(sParam, Value);
+	}
+
+void CCreatePainterCtx::SetOverlayData (ICCItem *pTable, const COverlay &Overlay) const
+
+//	SetOverlayData
+//
+//	Sets data associated with an overlay.
+
+	{
+	pTable->SetIntegerAt(FIELD_OVERLAY_TYPE, (int)Overlay.GetType()->GetUNID());
 	}
 
 void CCreatePainterCtx::SetWeaponFireDesc (CWeaponFireDesc *pDesc)
