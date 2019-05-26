@@ -1009,7 +1009,8 @@ class CSpaceObject
 		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		inline const CString &GetHighlightText (void) const { return m_sHighlightText; }
 		void GetHitRect (CVector *retvUR, CVector *retvLL) const;
-		Metric GetHitSize (void) const;
+		Metric GetHitSize (void) const { return GetHitSizePixels() * g_KlicksPerPixel; }
+		int GetHitSizePixels (void) const;
 		inline int GetHitSizeHalfAngle (Metric rDist) const { return Max((int)(180.0 * atan(0.5 * GetHitSize() / rDist) / PI), 1); }
 		inline DWORD GetID (void) const { return m_dwID; }
 		inline int GetIndex (void) const { return m_iIndex; }

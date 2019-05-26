@@ -128,6 +128,7 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
 #define PROPERTY_SCALE							CONSTLIT("scale")
 #define PROPERTY_SHOW_AS_DESTINATION			CONSTLIT("showAsDestination")
+#define PROPERTY_SIZE_PIXELS					CONSTLIT("sizePixels")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 #define PROPERTY_SUSPENDED						CONSTLIT("suspended")
@@ -3792,22 +3793,22 @@ void CSpaceObject::GetHitRect (CVector *retvUR, CVector *retvLL) const
 	*retvLL = m_vPos - vDiag;
 	}
 
-Metric CSpaceObject::GetHitSize (void) const
+int CSpaceObject::GetHitSizePixels (void) const
 
-//	GetHitSize
+//	GetHitSizePixels
 //
-//	Returns the size of the object (in kilometers) for purposes of determining
-//	the size that can be hit. This is much larger than the real size of the
-//	object (since object images are greatly magnified) but it is less than the
-//	object bounds, which includes engine effects.
+//	Returns the size of the object (in pixels) for purposes of determining the
+//	size that can be hit. This is much larger than the real size of the	object
+//	(since object images are greatly magnified) but it is less than the	object 
+//	bounds, which includes engine effects.
 
 	{
 	const CObjectImageArray &Image = GetImage();
 	if (Image.IsEmpty())
-		return 32.0 * g_KlicksPerPixel;
+		return 32;
 
 	const RECT &rcRect = Image.GetImageRect();
-	return Max(RectWidth(rcRect), RectHeight(rcRect)) * g_KlicksPerPixel;
+	return Max(RectWidth(rcRect), RectHeight(rcRect));
 	}
 
 Metric CSpaceObject::GetMaxGateDist2 (void) const
@@ -4380,6 +4381,9 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		return pResult->Reference();
 		}
+
+	else if (strEquals(sName, PROPERTY_SIZE_PIXELS))
+		return CC.CreateInteger(GetHitSizePixels());
 
 	else if (strEquals(sName, PROPERTY_SOVEREIGN))
 		{
