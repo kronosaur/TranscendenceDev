@@ -10,6 +10,7 @@
 #define CLEAR_REGISTERED_SWITCH				CONSTLIT("clearRegistered")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DEBUG_SWITCH						CONSTLIT("debug")
+#define EFFECT_EXPLORER_SWITCH				CONSTLIT("effectExplorer")
 #define ENCOUNTER_COUNT_SWITCH				CONSTLIT("encountercount")
 #define ENCOUNTER_FREQ_SWITCH				CONSTLIT("encounterfreq")
 #define ENCOUNTER_SIM_SWITCH				CONSTLIT("encountersim")
@@ -91,6 +92,20 @@ void ShowHelp (CXMLElement *pCmdLine)
 		{
 		printf("  /decompile            Extracts resources from .tdb (overwrites existing).\n");
 		printf("       /dataFile:filename   TDB file to decompile.\n");
+		}
+	else if (pCmdLine->GetAttributeBool(EFFECT_EXPLORER_SWITCH))
+		{
+		printf("  /effectExplorer       Grid of effects.\n");
+		printf("      [/effect:n]           Effect type (e.g. Orb).\n");
+		printf("      [/x:n]                Property to vary along x-axis.\n");
+		printf("      [/y:n]                Property to vary along y-axis.\n");
+		printf("      [/animate:n]          animate property.\n");
+		printf("      [/opacity:n]          opacity property.\n");
+		printf("      [/primaryColor:n]     primaryColor property.\n");
+		printf("      [/radius:n]           radius property.\n");
+		printf("      [/secondaryColor:n]   secondaryColor property.\n");
+		printf("      [/secondaryOpacity:n] secondaryOpacity property.\n");
+		printf("      [/style:n]            style property.\n");
 		}
 	else if (pCmdLine->GetAttributeBool(ENCOUNTER_FREQ_SWITCH))
 		{
@@ -452,6 +467,7 @@ void ShowHelp (CXMLElement *pCmdLine)
 		printf("  /encounterFreq        Outputs encounter tables.\n");
 		printf("  /encountersim         Simulate an attack on the station.\n");
 		printf("  /encountertable       Encounter table.\n");
+		printf("  /effectExplorer       Grid of effects.\n");
 		printf("  /extensiontable       Show all extensions.\n");
 		printf("  /language             Output language tables.\n");
 		if (bDebug)
