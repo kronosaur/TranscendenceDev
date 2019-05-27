@@ -1302,7 +1302,7 @@
 						(if showDevices
 							{
 							icon: (itmGetImageDesc armorItem)
-							title: (itmGetName armorItem '(short actual))
+							title: (cat (itmGetName armorItem '(short actual)) " (&times;" (objGetProperty shipObj 'armorCount) ")")
 							desc:
 								(cat
 									"{/rtf "
