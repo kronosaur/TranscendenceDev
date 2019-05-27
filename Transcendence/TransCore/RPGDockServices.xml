@@ -1753,9 +1753,58 @@
 			<Text id="rpg.cannotInstallArmorBecauseNotCompatible">
 				This armor segment is not compatible with your ship.
 			</Text>
-			<Text id="rpg.cannotInstallDeviceBecauseNotCompatible">
-				This device is not compatible with your ship.
+			<Text id="rpg.cannotInstallBecauseTooMuchCargo">The new cargo hold does not have enough space for your items.</Text>
+
+			<Text id="rpg.cannotInstallDevice">%We% cannot install %itemName% on %yourShip.%</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseAlreadyInstalled">%YourShip% already has %itemName%.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseCannotRemove">
+				(cat
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseCannotRemove.1)
+					" "
+					(if (isInt (@ gData 'removeStatus))
+						(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseCannotRemove.2)
+						(@ gData 'removeStatus)
+						)
+					)
 			</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseCannotRemove.1">%We% can install %itemName%.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseCannotRemove.2">Unfortunately, %your% %replaceItemName% cannot be removed.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseIllegal">%We% do not install illegal items.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfSlots">
+				(if (gr (@ gData 'slotsRequired) 1)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfSlots.single)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfSlots.plural)
+					)
+			</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfSlots.single">%YourShip% does not have an open device slot for this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfSlots.plural">%YourShip% does not have enough open device slots to install this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots">
+				(if (gr (@ gData 'slotsRequired) 1)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots.single)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots.plural)
+					)
+			</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots.single">%YourShip% does not have an open non-weapon slot for this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfNonWeaponSlots.plural">%YourShip% does not have enough open non-weapon slots to install this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfWeaponSlots">
+				(if (gr (@ gData 'slotsRequired) 1)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfWeaponSlots.single)
+					(scrTranslate gScreen 'rpg.cannotInstallDeviceBecauseLackOfWeaponSlots.plural)
+					)
+			</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfWeaponSlots.single">%YourShip% does not have an open weapon slot for this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseLackOfWeaponSlots.plural">%YourShip% does not have enough open weapon slots to install this device.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseNoRoomInCargo">%We% can remove %your% %replaceItemName% and install %itemName%. Unfortunately, there isn't enough room in your cargo hold to do the swap.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseNotCompatible">This device is not compatible with your ship.</Text>
+			<Text id="rpg.cannotInstallDeviceBecauseReactorTooWeak">%YourShip%'s reactor is not powerful enough for this device.</Text>
+
+			<Text id="rpg.cannotInstallDeviceWithoutMilitaryID">You must have %militaryID% to use %itemName%.</Text>
+			<Text id="rpg.cannotInstallDeviceWithoutUpgrade">Sorry, installation services are only available for purchased upgrades.</Text>
+			<Text id="rpg.cannotInstallReactorBecauseTooStrong">The power output of %itemName% is too high for %yourShip%.</Text>
+
+			<Text id="rpg.installDevice">%We% can install %itemName% on %yourShip%</Text>
+			<Text id="rpg.installDeviceAfterRemove">%We% can remove %your% %replaceItemName% and install %itemName%</Text>
+
 			<Text id="rpg.noCompatibleDeviceInCargo">
 				(or
 					(scrTranslate gScreen (cat "rpg.noCompatibleDeviceInCargo:" (@ gData 'category)))
@@ -1770,6 +1819,8 @@
 			<Text id="rpg.noCompatibleDeviceInCargo:shields">You do not have any compatible shield generators in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:weapon">You do not have any compatible weapons in your cargo hold.</Text>
 			<Text id="rpg.noCompatibleDeviceInCargo:device">You do not have any compatible devices in your cargo hold.</Text>
+
+			<Text id="rpg.noTechToInstallDevice">%We% do not have the technology to install %itemName% on %yourShip%</Text>
 
 			<Text id="rpg.warningLevelDowngrade">
 				Note: Your currently installed %itemName% is higher level.
