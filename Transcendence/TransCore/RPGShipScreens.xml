@@ -144,22 +144,13 @@
 		<ListOptions
 			dataFrom=	"player"
 			list=		"*U"
+			initialItem="=(scrSetListCursor gScreen (scrGetData gScreen 'cursor))"
 			/>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
 					(switch
-
-						;	If we want to select a specific item, then do it (this will
-						;	cause a refresh of the pane).
-
-						(scrGetData gScreen 'cursor)
-							(block Nil
-								(scrSetListCursor gScreen (scrGetData gScreen 'cursor))
-								(scrSetData gScreen 'cursor Nil)
-								)
-
 						;	If we have no items, then nothing to do
 
 						(not (scrGetItem gScreen))
