@@ -125,7 +125,7 @@ ICCItem *ICCItem::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pCtx->pCC->CreateNil();
 	}
 
-bool ICCItem::GetBooleanAt (const CString &sKey)
+bool ICCItem::GetBooleanAt (const CString &sKey) const
 
 //	GetBooleanAt
 //
@@ -167,7 +167,7 @@ ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex) const
 	return pItem->Reference();
 	}
 
-double ICCItem::GetDoubleAt (const CString &sKey, double rDefault)
+double ICCItem::GetDoubleAt (const CString &sKey, double rDefault) const
 
 //	GetDoubleAt
 //
@@ -181,7 +181,7 @@ double ICCItem::GetDoubleAt (const CString &sKey, double rDefault)
 	return pItem->GetDoubleValue();
 	}
 
-int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
+int ICCItem::GetIntegerAt (const CString &sKey, int iDefault) const
 
 //	GetIntegerAt
 //
@@ -195,7 +195,7 @@ int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
 	return pItem->GetIntegerValue();
 	}
 
-CString ICCItem::GetStringAt (const CString &sKey, const CString &sDefault)
+CString ICCItem::GetStringAt (const CString &sKey, const CString &sDefault) const
 
 //	GetStringAt
 //

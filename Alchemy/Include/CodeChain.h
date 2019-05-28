@@ -153,19 +153,19 @@ class ICCItem : public CObject
 		virtual CString GetHelp (void) { return NULL_STR; }
 		virtual int GetIntegerValue (void) { return 0; }
 		virtual double GetDoubleValue (void) { return 0.; }
-		virtual CString GetStringValue (void) { return LITERAL(""); }
-		virtual ValueTypes GetValueType (void) = 0;
+		virtual CString GetStringValue (void) const { return LITERAL(""); }
+		virtual ValueTypes GetValueType (void) const = 0;
 		virtual CString GetTypeOf (void);
 		virtual bool IsAtom (void) = 0;
 		virtual bool IsAtomTable (void) { return false; }
 		virtual bool IsConstant (void) const { return false; }
 		virtual bool IsExpression (void) { return false; }
 		virtual bool IsFunction (void) = 0;
-		virtual bool IsIdentifier (void) = 0;
+		virtual bool IsIdentifier (void) const = 0;
 		virtual bool IsInteger (void) = 0;
 		virtual bool IsDouble (void) = 0;
 		virtual bool IsLambdaFunction (void) { return false; }
-		virtual bool IsNil (void) = 0;
+		virtual bool IsNil (void) const = 0;
 		virtual bool IsPrimitive (void) { return false; }
 		virtual bool IsSymbolTable (void) { return false; }
 		virtual bool IsTrue (void) { return false; }
@@ -183,10 +183,10 @@ class ICCItem : public CObject
 		//	Symbol/Atom table functions
 
 		void AppendAt (const CString &sKey, ICCItem *pValue);
-		bool GetBooleanAt (const CString &sKey);
-		double GetDoubleAt (const CString &sKey, double rDefault = 0.0);
-		int GetIntegerAt (const CString &sKey, int iDefault = 0);
-		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR);
+		bool GetBooleanAt (const CString &sKey) const;
+		double GetDoubleAt (const CString &sKey, double rDefault = 0.0) const;
+		int GetIntegerAt (const CString &sKey, int iDefault = 0) const;
+		CString GetStringAt (const CString &sKey, const CString &sDefault = NULL_STR) const;
 		void SetAt (const CString &sKey, ICCItem *pValue);
 		void SetBooleanAt (const CString &sKey, bool bValue);
 		void SetIntegerAt (const CString &sKey, int iValue);
@@ -297,7 +297,7 @@ class ICCAtom : public ICCItem
 		virtual bool IsAtom (void) override { return true; }
 		virtual bool IsInteger (void) override { return false; }
 		virtual bool IsDouble(void) override { return false; }
-		virtual bool IsNil (void) override { return false; }
+		virtual bool IsNil (void) const override { return false; }
 		virtual ICCItem *Tail (CCodeChain *pCC) override;
 	};
 
@@ -310,7 +310,7 @@ class CCNumeral : public ICCAtom
 
 		// ICCItem virtuals
 		virtual bool IsConstant (void) const override { return true; }
-		virtual bool IsIdentifier(void) override { return false; }
+		virtual bool IsIdentifier(void) const override { return false; }
 		virtual bool IsFunction(void) override { return false; }
 		virtual bool IsInteger(void) override { return false;  }
 		virtual bool IsDouble(void) override { return false;  }
@@ -321,7 +321,6 @@ class CCInteger : public CCNumeral
 	public:
 		CCInteger (void);
 
-		inline ValueTypes GetValueType(void) { return Integer;  }
 		inline int GetValue (void) { return m_iValue; }
 		inline void SetValue (int iValue) { m_iValue = iValue; }
 
@@ -331,7 +330,8 @@ class CCInteger : public CCNumeral
 		virtual bool IsDouble(void) override { return false; }
 		virtual int GetIntegerValue (void) override { return m_iValue; }
 		virtual double GetDoubleValue(void) override { return double(m_iValue); }
-		virtual CString GetStringValue (void) override { return strFromInt(m_iValue); }
+		virtual CString GetStringValue (void) const override { return strFromInt(m_iValue); }
+		virtual ValueTypes GetValueType(void) const override { return Integer;  }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual void Reset(void) override;
 
@@ -349,7 +349,6 @@ class CCDouble : public CCNumeral
 	public:
 		CCDouble(void);
 
-		inline ValueTypes GetValueType(void) { return Double;  }
 		inline double GetValue(void) { return m_dValue; }
 		inline void SetValue(double dValue) { m_dValue = dValue; }
 
@@ -359,7 +358,8 @@ class CCDouble : public CCNumeral
 		virtual bool IsDouble(void) override { return true; }
 		virtual int GetIntegerValue(void) override { return int(m_dValue); }
 		virtual double GetDoubleValue(void) override { return m_dValue; }
-		virtual CString GetStringValue(void) override { return strFromDouble(m_dValue); }
+		virtual CString GetStringValue(void) const override { return strFromDouble(m_dValue); }
+		virtual ValueTypes GetValueType(void) const override { return Double;  }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual void Reset (void) override;
 
@@ -383,14 +383,14 @@ class CCNil : public ICCAtom
 		virtual void Discard (void) override { }
 		virtual int GetCount (void) const override { return 0; }
 		virtual int GetIntegerValue (void) override { return 0; }
-		virtual CString GetStringValue (void) override { return LITERAL("Nil"); }
-		virtual ValueTypes GetValueType (void) override { return Nil; }
+		virtual CString GetStringValue (void) const override { return LITERAL("Nil"); }
+		virtual ValueTypes GetValueType (void) const override { return Nil; }
 		virtual bool IsConstant (void) const override { return true; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsInteger (void) override { return true; }
 		virtual bool IsDouble(void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
-		virtual bool IsNil (void) override { return true; }
+		virtual bool IsNil (void) const override { return true; }
 		virtual CString Print (DWORD dwFlags = 0) override { return LITERAL("Nil"); }
 		virtual void Reset (void) override { }
 
@@ -410,10 +410,10 @@ class CCTrue : public ICCAtom
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual void Discard (void) override { }
 		virtual int GetIntegerValue (void) override { return 1; }
-		virtual CString GetStringValue (void) override { return LITERAL("True"); }
-		virtual ValueTypes GetValueType (void) override { return True; }
+		virtual CString GetStringValue (void) const override { return LITERAL("True"); }
+		virtual ValueTypes GetValueType (void) const override { return True; }
 		virtual bool IsConstant (void) const override { return true; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsTrue (void) override { return true; }
 		virtual CString Print (DWORD dwFlags = 0) override { return LITERAL("True"); }
@@ -432,9 +432,9 @@ class ICCString : public ICCAtom
 
 		//	ICCItem virtuals
 
-		virtual ValueTypes GetValueType (void) override { return String; }
+		virtual ValueTypes GetValueType (void) const override { return String; }
 		virtual bool IsConstant (void) const override { return IsQuoted(); }
-		virtual bool IsIdentifier (void) override { return true; }
+		virtual bool IsIdentifier (void) const override { return true; }
 		virtual bool IsFunction (void) override { return false; }
 	};
 
@@ -456,7 +456,7 @@ class CCString : public ICCString
 		virtual double GetDoubleValue (void) override { return strToDouble(m_sValue, 0.0); }
 		virtual int GetIntegerValue (void) override { return strToInt(m_sValue, 0); }
 		virtual ICCItem *GetFunctionBinding (void) override { if (m_pBinding) return m_pBinding->Reference(); else return NULL; }
-		virtual CString GetStringValue (void) override { return m_sValue; }
+		virtual CString GetStringValue (void) const override { return m_sValue; }
 		virtual CString Print (DWORD dwFlags = 0) override;
 		virtual void SetBinding (int iFrame, int iOffset) override;
 		virtual void SetFunctionBinding (CCodeChain *pCC, ICCItem *pBinding) override;
@@ -485,9 +485,9 @@ class CCPrimitive : public ICCAtom
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
 		virtual CString GetHelp (void) override { return m_sDesc; }
-		virtual CString GetStringValue (void) override { return m_sName; }
-		virtual ValueTypes GetValueType (void) override { return Function; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual CString GetStringValue (void) const override { return m_sName; }
+		virtual ValueTypes GetValueType (void) const override { return Function; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsFunction (void) override { return true; }
 		virtual bool IsPrimitive (void) override { return true; }
 		virtual CString Print (DWORD dwFlags = 0) override;
@@ -519,9 +519,9 @@ class CCLambda : public ICCAtom
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
-		virtual CString GetStringValue (void) override { return LITERAL("[lambda expression]"); }
-		virtual ValueTypes GetValueType (void) override { return Function; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual CString GetStringValue (void) const override { return LITERAL("[lambda expression]"); }
+		virtual ValueTypes GetValueType (void) const override { return Function; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsFunction (void) override { return true; }
 		virtual bool IsLambdaFunction (void) override { return true; }
 		virtual CString Print (DWORD dwFlags = 0) override;
@@ -545,13 +545,13 @@ class ICCList : public ICCItem
 
 		//	ICCItem virtuals
 
-		virtual ValueTypes GetValueType (void) override { return List; }
+		virtual ValueTypes GetValueType (void) const override { return List; }
 		virtual bool IsAtom (void) override { return false; }
 		virtual bool IsFunction (void) override { return false; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsInteger (void) override { return false; }
 		virtual bool IsDouble(void) override { return false; }
-		virtual bool IsNil (void) override { return (GetCount() == 0); }
+		virtual bool IsNil (void) const override { return (GetCount() == 0); }
 	};
 
 //	This is a linked-list implementation of a list
@@ -646,13 +646,13 @@ public:
 
 	//	ICCItem virtuals
 
-	virtual ValueTypes GetValueType (void) override { return Vector; }
+	virtual ValueTypes GetValueType (void) const override { return Vector; }
 	virtual bool IsAtom (void) override { return false; }
 	virtual bool IsFunction (void) override { return false; }
-	virtual bool IsIdentifier (void) override { return false; }
+	virtual bool IsIdentifier (void) const override { return false; }
 	virtual bool IsInteger (void) override { return false; }
 	virtual bool IsDouble (void) override { return false; }
-	virtual bool IsNil (void) override { return (GetCount() == 0); }
+	virtual bool IsNil (void) const override { return (GetCount() == 0); }
 };
 
 class CCVector : public ICCVector
@@ -711,8 +711,8 @@ class CCAtomTable : public ICCAtom
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ValueTypes GetValueType (void) override { return Complex; }
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual ValueTypes GetValueType (void) const override { return Complex; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsAtomTable (void) override { return true; }
 		virtual CString Print (DWORD dwFlags = 0) override;
@@ -742,9 +742,9 @@ class CCSymbolTable : public ICCList
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *CloneContainer (void) override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
-		virtual ValueTypes GetValueType (void) override { return SymbolTable; }
+		virtual ValueTypes GetValueType (void) const override { return SymbolTable; }
 		virtual bool IsConstant (void) const override;
-		virtual bool IsIdentifier (void) override { return false; }
+		virtual bool IsIdentifier (void) const override { return false; }
 		virtual bool IsFunction (void) override { return false; }
 		virtual bool IsLocalFrame (void) override { return m_bLocalFrame; }
 		virtual bool IsSymbolTable (void) override { return true; }
