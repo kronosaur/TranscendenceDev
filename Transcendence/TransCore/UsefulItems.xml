@@ -168,14 +168,14 @@
 			(block Nil
 				(switch
 					(shpIsRadioactive gSource)
-						(objSendMessage gSource Nil "The box contained more radioactive waste")
+						(objSendMessage gSource Nil (typTranslate gType 'msgMore))
 
 					(shpIsRadiationImmune gSource)
-						(objSendMessage gSource Nil "The box contained leaky radioactive ordnance; your ship is unaffected")
+						(objSendMessage gSource Nil (typTranslate gType 'msgImmune))
 
 					(block Nil
 						(shpMakeRadioactive gSource)
-						(objSendMessage gSource Nil "The box contained leaky radioactive ordnance")
+						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 						)
 					)
 
@@ -187,6 +187,11 @@
 				)
 		</Invoke>
 
+		<Language>
+			<Text id="msgMore">The box contained more radioactive waste</Text>
+			<Text id="msgImmune">The box contained leaky radioactive ordnance; your ship is unaffected</Text>
+			<Text id="msgResult">The box contained leaky radioactive ordnance</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Ammo Box, Booby-Trapped -->
@@ -208,7 +213,7 @@
 		<Invoke>
 			(block Nil
 				(objMakeParalyzed gSource (random 450 900))
-				(objSendMessage gSource Nil "The box explodes; ship disabled by EMP!")
+				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 
 				; Identify the box
 				(itmSetKnown gItem)
@@ -218,6 +223,9 @@
 				)
 		</Invoke>
 
+		<Language>
+			<Text id="msgResult">The box explodes; ship disabled by EMP!</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Ammo Box, Unknown -->
@@ -1213,7 +1221,7 @@
 			(if (find (sysGetNodes) "Elysium")
 				(block Nil
 					; Gate to Elysium
-					(objSendMessage gSource Nil "\"May you find your path among the stargates...\"")
+					(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 					(objGateTo gSource "Elysium" "Start" &efStargateOut;)
 
 					; Remove the item from the player's list
@@ -1224,9 +1232,14 @@
 					)
 					
 				; Elysium not found
-				(objSendMessage gSource Nil "The gem flickers for a moment but then fades without effect.")
+				(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
 				)
 		</Invoke>
+
+		<Language>
+			<String id="msgResult">"May you find your path among the stargates..."</String>
+			<Text id="msgNoEffect">The gem flickers for a moment but then fades without effect.</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Gem of Contrition -->
@@ -1248,7 +1261,7 @@
 		<Invoke key="C">
 			(block Nil
 				; Stop time
-				(objSendMessage gSource Nil "\"Use this time to right your wrongs...\"")
+				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 				(sysStopTime 500 gSource)
 
 				; Remove the item from the player's list
@@ -1259,6 +1272,9 @@
 				)
 		</Invoke>
 
+		<Language>
+			<String id="msgResult">"Use this time to right your wrongs..."</String>
+		</Language>
 	</ItemType>
 
 	<!-- Gem of Sacrificce -->
@@ -1300,7 +1316,7 @@
 					))
 
 				; All ships in range have their shields lowered
-				(objSendMessage gSource Nil "\"May your sacrifice prove true...\"")
+				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 				(enum (sysFindObject gSource "sN:30;") theObj
 					(sacrificeEffect theObj)
 					)
@@ -1316,6 +1332,9 @@
 				)
 		</Invoke>
 
+		<Language>
+			<String id="msgResult">"May your sacrifice prove true..."</String>
+		</Language>
 	</ItemType>
 
 <!-- Miscellaneous ROMS -->
@@ -1340,10 +1359,10 @@
 			(block Nil
 				; Install
 				(if (not (eq (objGetEquipmentStatus gSource 'Autopilot) 'notInstalled))
-					(objSendMessage gSource Nil "Ship already has an autopilot")
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
 					(block Nil
 						(objChangeEquipmentStatus gSource 'Autopilot 'install)
-						(objSendMessage gSource Nil "Autopilot installed")
+						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 						)
 					)
 
@@ -1355,6 +1374,10 @@
 				)
 		</Invoke>
 
+		<Language>
+			<Text id="msgResult">Autopilot installed</Text>
+			<Text id="msgNoEffect">Ship already has an autopilot</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Cash Card, Blue -->
@@ -1475,11 +1498,12 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 		
 		<Invoke>
-			(objSendMessage gSource Nil "Dock with AI to begin neurohack")
+			(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 		</Invoke>
 
 		<Language>
 			<Text id="core.charges">charge(s)</Text>
+			<Text id="msgResult">Dock with AI to begin neurohack</Text>
 		</Language>
 	</ItemType>
 
@@ -1505,15 +1529,15 @@
 					(eq (objGetEquipmentStatus gSource 'SRS) 'damaged)
 						(block Nil
 							(objChangeEquipmentStatus gSource 'SRS 'repair)
-							(objSendMessage gSource Nil "Visual display repaired")
+							(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
 							)
 
 					(eq (objGetEquipmentStatus gSource 'SRSEnhancer) 'ready)
-						(objSendMessage gSource Nil "Visual display already enhanced")
+						(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
 
 					(block Nil
 						(objChangeEquipmentStatus gSource 'SRSEnhancer 'install)
-						(objSendMessage gSource Nil "Visual display enhanced")
+						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 						)
 					)
 
@@ -1524,6 +1548,12 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgResult">Visual display enhanced</Text>
+			<Text id="msgRepaired">Visual display repaired</Text>
+			<Text id="msgNoEffect">Visual display already enhanced</Text>
+		</Language>
 	</ItemType>
 
 	<!-- ROM: Defective visual display -->
@@ -1547,7 +1577,7 @@
 		<Invoke>
 			(block Nil
 				(objChangeEquipmentStatus gSource 'SRS 'damage 3000)
-				(objSendMessage gSource Nil "ROM failure: Visual display temporarily damaged")
+				(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 
 				; Identify the item
 				(itmSetKnown gItem)
@@ -1556,6 +1586,10 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgResult">ROM failure: Visual display temporarily damaged</Text>
+		</Language>
 	</ItemType>
 
 	<!-- System Map ROM -->
@@ -1699,10 +1733,10 @@
 		<Invoke>
 			(block Nil
 				(if (eq (objGetEquipmentStatus gPlayerShip 'TargetingComputer) 'ready)
-					(objSendMessage gSource Nil "Ship already has a targeting program")
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
 					(block Nil
 						(objChangeEquipmentStatus gPlayerShip 'TargetingComputer 'install)
-						(objSendMessage gSource Nil "Targeting program installed")
+						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 						)
 					)
 
@@ -1713,6 +1747,11 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgResult">Targeting program installed</Text>
+			<Text id="msgNoEffect">Ship already has a targeting program</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Trading Computer ROM -->
@@ -1742,20 +1781,20 @@
 					;	that we already have a trading computer installed on the ship.
 
 					(not (objChangeEquipmentStatus gPlayerShip 'TradingComputer 'install))
-						(objSendMessage gSource Nil "Ship already has a trading computer")
+						(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
 						
 					;	If we didn't have a trading computer before, and installation
 					;	succeeds, then we've succeeded.
 
 					(not hasTradingComputer)
-						(objSendMessage gSource Nil "Trading computer installed")
+						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
 
 					;	If we DID have a trading computer before and installation succeeded
 					;	anyway, then it means we have a trading computer on some device
 					;	(e.g., a cargo hold) and now we have a redundant one installed on
 					;	the ship.
 
-					(objSendMessage gSource Nil "Redundant trading computer installed")
+					(objSendMessage gSource Nil (typTranslate gType 'msgRedundant))
 					)
 
 				;	Identify and remove
@@ -1764,6 +1803,12 @@
 				(objRemoveItem gSource gItem 1)
 				)
 		</Invoke>
+
+		<Language>
+			<Text id="msgResult">Trading computer installed</Text>
+			<Text id="msgNoEffect">Ship already has a trading computer</Text>
+			<Text id="msgRedundant">Redundant trading computer installed</Text>
+		</Language>
 	</ItemType>
 
 <!-- SHIELD ENHANCEMENTS -->
@@ -1796,7 +1841,7 @@
 								(switch
 									; Alien items cannot be enhanced
 									(itmHasAttribute shieldItem "Alien")
-										(objSendMessage gSource Nil "Shield generator is too alien for the ROM to enhance")
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAlien))
 
 									; Novaya repairers cannot be enhanced
 									(itmHasAttribute shieldItem 'nonEnergyShields)
@@ -1804,13 +1849,13 @@
 
 									; If the shield generator is too advanced, then nothing happens
 									(gr (itmGetLevel shieldItem) 6)
-										(objSendMessage gSource Nil "Shield generator is too advanced for the ROM to enhance")
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
 
 									; If the item is damaged, we repair it
 									(itmIsDamaged shieldItem)
 										(block Nil
 											(shpRepairItem gSource theItem)
-											(objSendMessage gSource Nil "Shield generator has been repaired")
+											(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
 											)
 
 									; Enhance the shield generator
@@ -1826,7 +1871,7 @@
 					)
 
 				(if notFound
-					(objSendMessage gSource Nil "Shield generator required")
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
 					)
 
 				; Identify the item
@@ -1839,6 +1884,10 @@
 
 		<Language>
 			<Text id="msgCannotEnhance">The ROM cannot enhance %itemName%</Text>
+			<Text id="msgTooAlien">Shield generator is too alien for the ROM to enhance"</Text>
+			<Text id="msgTooAdvanced">Shield generator is too advanced for the ROM to enhance</Text>
+			<Text id="msgRepaired">Shield generator has been repaired</Text>
+			<Text id="msgNoShields">Shield generator required</Text>
 		</Language>
 	</ItemType>
 
@@ -2051,6 +2100,7 @@
 	<!-- Laser Amplifier -->
 
 	<ItemType UNID="&itLaserAmplifier;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"laser amplifier"
 			level=				"1"
 			value=				"250"
@@ -2059,18 +2109,30 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Laser amplifiers are used to repair and upgrade laser weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 0 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:laser;"	repair:True	}
+					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Kinetic Upgrade -->
 
 	<ItemType UNID="&itKineticUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"kinetic upgrade"
 			level=				"2"
 			value=				"350"
@@ -2079,18 +2141,30 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Kinetic upgrades increase the damage of a kinetic weapon."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 1 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:kinetic;"	repair:True	}
+					{	criteria:"w~l +damageType:kinetic;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Particle Upgrade -->
 
 	<ItemType UNID="&itParticleUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"particle source upgrade"
 			level=				"4"
 			value=				"500"
@@ -2099,18 +2173,30 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the power of particle beams."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 2 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:particle;"	repair:True	}
+					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Blast Upgrade -->
 
 	<ItemType UNID="&itBlastUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"hexagene booster"
 			level=				"5"
 			value=				"1000"
@@ -2119,18 +2205,30 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This high-explosive upgrade increases the damage done by blast weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 3 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:blast;"	repair:True	}
+					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Ion Upgrade -->
 
 	<ItemType UNID="&itIonUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"ion power capacitor"
 			level=				"7"
 			value=				"2500"
@@ -2139,18 +2237,30 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"Ion power capacitors are used to increase the destructive power of ion weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 4 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:ion;"	repair:True	}
+					{	criteria:"w~l +damageType:ion;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Thermo Upgrade -->
 
 	<ItemType UNID="&itThermoUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"tritium injector"
 			level=				"8"
 			value=				"5000"
@@ -2159,13 +2269,24 @@
 			attributes=			"minorItem, weaponEnhance"
 
 			description=		"This weapon upgrade increases the damage done by thermo weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0100 5 "is more powerful")
-		</Invoke>
+		<Properties>
+			<Constant id="rpg.useCriteria">"w"</Constant>
+		</Properties>
+
+		<StaticData>
+			<Data id="enhancementTable">
+				(
+					{	criteria:"Dw~l +damageType:thermo;"	repair:True	}
+					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
+					)
+			</Data>
+		</StaticData>
 	</ItemType>
 
 	<!-- Weapon Enhancement ROM -->
@@ -2278,13 +2399,13 @@
 
 									; If the shield generator is too advanced, then nothing happens
 									(gr (itmGetLevel shieldItem) 6)
-										(objSendMessage gSource Nil "Hiro: Shield tech too high. ROM abort.")
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
 
 									; If the item is damaged, we repair it
 									(itmIsDamaged shieldItem)
 										(block Nil
 											(shpRepairItem gSource theItem)
-											(objSendMessage gSource Nil "Hiro: Shield repair algorithm successful")
+											(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
 											)
 
 									; Enhance the shield generator
@@ -2313,6 +2434,8 @@
 
 		<Language>
 			<Text id="msgCannotEnhance">Hiro: Non-energy shield found. ROM abort.</Text>
+			<Text id="msgTooAdvanced">Hiro: Shield tech too high. ROM abort.</Text>
+			<Text id="msgRepaired">Hiro: Shield repair algorithm successful.</Text>
 		</Language>
 	</ItemType>
 	

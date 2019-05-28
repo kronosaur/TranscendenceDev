@@ -144,22 +144,13 @@
 		<ListOptions
 			dataFrom=	"player"
 			list=		"*U"
+			initialItem="=(scrSetListCursor gScreen (scrGetData gScreen 'cursor))"
 			/>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
 					(switch
-
-						;	If we want to select a specific item, then do it (this will
-						;	cause a refresh of the pane).
-
-						(scrGetData gScreen 'cursor)
-							(block Nil
-								(scrSetListCursor gScreen (scrGetData gScreen 'cursor))
-								(scrSetData gScreen 'cursor Nil)
-								)
-
 						;	If we have no items, then nothing to do
 
 						(not (scrGetItem gScreen))
@@ -213,12 +204,7 @@
 
 							;	Enable/disable actions
 
-							(scrShowAction gScreen 'actionUse 
-								(and
-									(objGetItemProperty gPlayerShip thisItem 'canBeUsed)
-									(objGetItemProperty gPlayerShip thisItem 'hasUseScreen)
-									)
-								)
+							(scrShowAction gScreen 'actionUse (objGetItemProperty gPlayerShip thisItem 'canBeUsed))
 							(scrEnableAction gScreen 'actionJettisonItem (gr maxCount 0))
 							)
 						)
@@ -229,8 +215,23 @@
 						(block (
 							(thisItem (scrGetItem gScreen))
 							)
-							(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
-							(scrShowItemUseScreen gScreen thisItem)
+							(switch
+								(objGetItemProperty gPlayerShip thisItem 'hasUseScreen)
+									(block Nil
+										(scrSetData gScreen 'cursor (scrGetListCursor gScreen))
+										(scrShowItemUseScreen gScreen thisItem)
+										)
+
+								(block Nil
+									(plyRedirectMessage gPlayer True)
+									(plyUseItem gPlayer thisItem)
+									(plyRedirectMessage gPlayer Nil)
+
+									(if (plyGetRedirectMessage gPlayer)
+										(scrShowPane gScreen "UseMessage")
+										)
+									)
+								)
 							)
 					</Action>
 
@@ -309,6 +310,18 @@
 					</Action>
 				</Actions>
 			</JettisonQuantity>
+
+			<UseMessage>
+				<OnPaneInit>
+					(scrSetDesc gScreen (plyGetRedirectMessage gPlayer))
+				</OnPaneInit>
+
+				<Actions>
+					<Action id="actionContinue" default="1" cancel="1">
+						(scrShowPane gScreen "Default")
+					</Action>
+				</Actions>
+			</UseMessage>
 		</Panes>
 
 		<Language>

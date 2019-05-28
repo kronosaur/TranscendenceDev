@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <TranscendenceModule>
-	
+
 <!-- RPG USE ITEM ON ARMOR =====================================================
 
 	This screen allows the player to use an item on an armor segment.
@@ -29,6 +29,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Armor page</Text>
 			<Text id="actionUse">[U]se on this Armor Segment</Text>
 		</Language>
 	</DockScreen>
@@ -61,6 +62,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Device page</Text>
 			<Text id="actionUse">[U]se on this Device</Text>
 		</Language>
 	</DockScreen>
@@ -103,21 +105,23 @@
 									))
 								)
 
-						(block()
+						(block (
+							(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+							)
 							(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
-									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
-									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterInstallable "Damaged Items" (lambda (theItem)
-									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
-									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
-									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)))
+									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
 									))
 							)
 						)
@@ -132,6 +136,7 @@
 		</Panes>
 
 		<Language>
+			<Text id="rpg.screenSetLabel">Cargo page</Text>
 		</Language>
 	</DockScreen>
 
@@ -146,6 +151,13 @@
 		screenSet: An RPG Screen Set structure (if we've been called from the
 				primary use item screen.
 
+	The following item properties will affect behavior
+
+		rpg.useScreenSet may be a list of dsRPGUseItemXYZ screens to initialise
+				a screen set
+
+		rpg.useCriteria will be used by the item base classes and display lists
+				to filter items to show
 -->
 
 	<DockScreen UNID="&dsRPGUseItemBase;"
@@ -170,6 +182,19 @@
 								shipObj: theShip
 								} ))
 						(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
+
+						;	Initialise the screen set if necessary
+						(screenSet (or
+							(@ gData 'screenSet)
+							(map (itmGetProperty useItem 'rpg.useScreenSet) uScreen
+								{
+									screen: uScreen
+									label: (typTranslate uScreen 'rpg.screenSetLabel)
+									data: { useItem: useItem }
+									mainScreen: (= (@ (scrGetScreen gScreen) 'type) uScreen)
+									}
+								)
+							))
 						)
 
 						;	Set the description
@@ -200,7 +225,7 @@
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
 						(scrShowAction gScreen 'actionUseOnCargo (and cargoCriteria (not (@ gData 'criteria))))
 
-						(rpgInitScreenSet (@ gData 'screenSet))
+						(rpgInitScreenSet screenSet)
 						)
 				</OnPaneInit>
 
@@ -300,6 +325,10 @@
 				</Controls>
 
 				<Actions>
+					<Action id="actionUseAnother" default="1">
+						(scrShowPane gScreen 'Default)
+					</Action>
+
 					<Action id="actionDone" default="1" cancel="1">
 						(block (
 							(result (scrGetData gScreen 'usageResult))
@@ -323,9 +352,6 @@
 								(scrExitScreen gScreen)
 								)
 							)
-					</Action>
-					<Action id="actionUseAnother">
-						(scrShowPane gScreen 'Default)
 					</Action>
 				</Actions>
 			</ShowResult>
@@ -702,14 +728,8 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementTable (itmGetStaticData gItem 'enhancementTable))
-					enhancementInfo
+					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
 					)
-					;	Search the enhancementTable for first matching entry
-					(enumWhile enhancementTable (not enhancementInfo) theEntry
-						(if (and (@ theEntry 'criteria) (itmMatches dstItem (@ theEntry 'criteria)))
-							(setq enhancementInfo theEntry)
-							))
 
 					;	General enhancement has higher priority than table
 					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
@@ -748,6 +768,138 @@
 
 			<Text id="descResultTooAdvanced">Unfortunately, your armor is too strong for the nanomachines.</Text>
 			<Text id="descResultTooPrimitive">Unfortunately, your armor is too primitive for the nanomachines.</Text>
+		</Language>
+	</Type>
+
+	<!-- Device Enhancment Item Base Class
+
+	Items to enhance devices should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnDevice.
+
+	STATIC DATA
+		enhancement - enhancement to apply
+		enhancementTable - table of criteria and enhancements for different device types / levels
+
+    -->
+
+	<Type UNID="&baStdDeviceEnhancement;">
+		<Properties>
+			<Constant id="rpg.useScreenSet">'(&dsRPGUseItemOnDevice; &dsRPGUseItemOnCargo;)</Constant>
+			<Constant id="rpg.useCriteria">"d"</Constant>
+		</Properties>
+
+		<Events>
+			<CanUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+					)
+					(switch
+						(not (itmMatches dstItem useCriteria))
+							Nil
+
+						(itmIsKnown gItem)
+							{
+								canUse: True
+								desc: (itmTranslate gItem 'descUsageOK {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+						{
+							canUse: True
+							desc: (itmTranslate gItem 'descUsageUnknown {
+								useItem: (itmGetName gItem)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								})
+							}
+						)
+					)
+			</CanUseOnItem>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					(enhancement (itmGetStaticData gItem 'enhancement))
+					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
+					)
+
+					;	General enhancement has higher priority than table
+					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
+
+					(switch
+						(not enhancementInfo)
+							(block Nil
+								;	No effect, so can't identify item
+								(objRemoveItem gPlayerShip gItem 1)
+								{
+									desc: (itmTranslate gItem 'descNoEffect)
+									}
+								)
+
+						(block (
+							(trData {
+								dstItem: (itmGetName dstItem 'noModifiers)
+								})
+							(descIntro (itmTranslate gItem 'descResultIntro trData))
+							result
+							)
+							(switch
+								;	Special case for repair as shpEnhanceItem does not return 4 (repair)
+								(@ enhancementInfo 'repair)
+									(block Nil
+										(shpRepairItem gPlayerShip dstItem)
+										(setq result 4)
+										)
+
+								;	Apply enhancement
+								(setq result (shpEnhanceItem gPlayerShip dstItem (@ enhancementInfo 'enhancement)))
+								)
+
+							;	Remove the item from the player's cargo
+							(objRemoveItem gPlayerShip gItem 1)
+
+							;	Identify the item
+							(itmSetKnown gItem)
+
+							{
+								desc: (cat
+									descIntro (if descIntro " ")
+									(switch
+										(= result 0) (itmTranslate gItem 'descSuccess trData)
+										(= result 1) (itmTranslate gItem 'descNoEffect trData)
+										(= result 2) (itmTranslate gItem 'descNoFurther trData)
+										(= result 3) (itmTranslate gItem 'descWeakened trData)
+										(= result 4) (itmTranslate gItem 'descRepaired trData)
+										(= result 5) (itmTranslate gItem 'descRemoved trData)
+										(= result 6) (itmTranslate gItem 'descReplaced trData)
+										(= result 7) (itmTranslate gItem 'descFurther trData)
+										)
+									(if (@ enhancementInfo 'descID) " ")
+									(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									)
+								}
+							)
+						)
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descSuccess">Your %dstItem% is more powerful.</Text>
+			<Text id="descNoEffect">The enhancement has no effect.</Text>
+			<Text id="descNoFurther">Your %dstItem% is already enhanced.</Text>
+			<Text id="descWeakened">Your %dstItem% has weakened further.</Text>
+			<Text id="descRepaired">Your %dstItem% has been repaired.</Text>
+			<Text id="descRemoved">Your %dstItem% has lost its enhancement.</Text>
+			<Text id="descReplaced">Your %dstItem% is more powerful (previous enhancement lost).</Text>
+			<Text id="descFurther">Your %dstItem% has been further enhanced.</Text>
+
+			<Text id="descUsageOK">You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsageUnknown">This appears to be some kind of device upgrade. You can use it on %dstItem%.</Text>
+
+			<Text id="descResultTooAdvanced">Unfortunately, your device is too advanced to be upgraded.</Text>
+			<Text id="descResultTooPrimitive">Unfortunately, your device is too primitive for the upgrade.</Text>
 		</Language>
 	</Type>
 
