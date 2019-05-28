@@ -1176,7 +1176,7 @@
 					;	Reactor stats
 					
 					(reactorItem (@ (objGetItems shipObj "rI") 0))
-					(reactorText (if reactorItem (itmGetName reactorItem 0x00) (cat (objGetName shipObj 0x80) " reactor")))
+					(reactorText (if reactorItem (itmGetName reactorItem) (cat (objGetName shipObj '(short generic)) " reactor")))
 					(reactorIcon (if reactorItem (itmGetImageDesc reactorItem) (resCreateImageDesc &rsItems1; 288 288 96 96)))
 					(reactorPowerText (fmtNumber 'power (objGetProperty shipObj 'power)))
 					(reactorEfficiency (objGetProperty shipObj 'fuelEfficiencyBonus))
@@ -1207,7 +1207,7 @@
 					;	Drive Stats
 					
 					(driveItem (@ (objGetItems shipObj "vI") 0))
-					(driveText (if driveItem (itmGetName driveItem 0x00) (cat (objGetName shipObj 0x80) " drive")))
+					(driveText (if driveItem (itmGetName driveItem) (cat (objGetName shipObj '(short generic)) " drive")))
 					(driveIcon (if driveItem (itmGetImageDesc driveItem) (resCreateImageDesc &rsItems1; 96 384 96 96)))
 					
 					;	Cargo Stats
@@ -1289,7 +1289,7 @@
 
 						{
 						icon: cargoIcon
-						title: (if cargoItem (itmGetName cargoItem 0))
+						title: (if cargoItem (itmGetName cargoItem))
 						desc:
 							(cat
 								"{/rtf "
@@ -1302,7 +1302,7 @@
 						(if showDevices
 							{
 							icon: (itmGetImageDesc armorItem)
-							title: (itmGetName armorItem '(short actual))
+							title: (cat (itmGetName armorItem '(short actual)) " (&times;" (objGetProperty shipObj 'armorCount) ")")
 							desc:
 								(cat
 									"{/rtf "
