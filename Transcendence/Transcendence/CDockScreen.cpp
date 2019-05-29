@@ -850,6 +850,7 @@ bool CDockScreen::EvalBool (const CString &sCode)
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(this);
+	Ctx.DefineContainingType(m_pRoot);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -896,6 +897,7 @@ CString CDockScreen::EvalInitialPane (CSpaceObject *pSource, ICCItem *pData)
 
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
+		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -928,6 +930,7 @@ bool CDockScreen::EvalString (const CString &sString, ICCItem *pData, bool bPlai
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(this);
+	Ctx.DefineContainingType(m_pRoot);
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(pData);
 
@@ -979,6 +982,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
+		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(pSource);
 		Ctx.SaveAndDefineDataVar(pData);
 
@@ -1699,6 +1703,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
+					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -1740,6 +1745,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
+					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 					CG32bitImage *pCanvas = &pControl->GetCanvas();
@@ -1782,6 +1788,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
+					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -1825,6 +1832,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 					{
 					CCodeChainCtx Ctx(GetUniverse());
 					Ctx.SetScreen(this);
+					Ctx.DefineContainingType(m_pRoot);
 					Ctx.SaveAndDefineSourceVar(m_pLocation);
 					Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -2184,6 +2192,7 @@ void CDockScreen::Update (int iTick)
 
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.SetScreen(this);
+		Ctx.DefineContainingType(m_pRoot);
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
 

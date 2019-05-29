@@ -414,6 +414,7 @@ class CDockScreen : public IScreenController,
 		inline CExtension *GetExtension (void) const { return m_pExtension; }
 		inline CSpaceObject *GetLocation (void) { return m_pLocation; }
 		CDesignType *GetResolvedRoot (CString *retsResolveScreen = NULL) const;
+		CDesignType *GetRoot (void) const { return m_pRoot; }
 		inline AGScreen *GetScreen (void) const { return m_pScreen; }
 		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void HandleChar (char chChar);
