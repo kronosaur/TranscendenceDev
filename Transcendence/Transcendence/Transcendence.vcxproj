@@ -399,6 +399,7 @@
     <ClCompile Include="CGItemListDisplayArea.cpp" />
     <ClCompile Include="CGSelectorArea.cpp" />
     <ClCompile Include="CGSubjugateArea.cpp" />
+    <ClCompile Include="CGTabArea.cpp" />
     <ClCompile Include="CHeadsUpDisplay.cpp" />
     <ClCompile Include="CHighScoreDisplay.cpp" />
     <ClCompile Include="CIntroSession.cpp" />

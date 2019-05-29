@@ -392,6 +392,16 @@ class CDockScreen : public IScreenController,
 		public IDockScreenUI
 	{
 	public:
+		static constexpr int FIRST_ACTION_ID =		100;
+		static constexpr int LAST_ACTION_ID =		199;
+
+		static constexpr int COUNTER_ID =			200;
+		static constexpr int TEXT_INPUT_ID =		201;
+		static constexpr int IMAGE_AREA_ID =		202;
+		static constexpr int TAB_AREA_ID =			203;
+
+		static constexpr int DISPLAY_ID =			300;
+
 		CDockScreen (CGameSession &Session);
 		virtual ~CDockScreen (void);
 
@@ -444,6 +454,7 @@ class CDockScreen : public IScreenController,
 		inline bool IsCurrentItemValid (void) const { return m_pDisplay->IsCurrentItemValid(); }
 		void SelectNextItem (bool *retbMore = NULL);
 		void SelectPrevItem (bool *retbMore = NULL);
+		bool SelectTab (const CString &sID);
 		void SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc);
 		void SetDescription (const CString &sDesc) { m_CurrentPane.SetDescription(sDesc); }
 		void SetDescriptionError (const CString &sDesc) { m_CurrentPane.SetDescriptionError(sDesc); }
@@ -496,6 +507,7 @@ class CDockScreen : public IScreenController,
 		void BltToBackgroundImage (const RECT &rcRect, CG32bitImage *pImage, int xSrc, int ySrc, int cxSrc, int cySrc);
 		void CleanUpBackgroundImage (void);
 		ALERROR CreateBackgroundImage (const IDockScreenDisplay::SBackgroundDesc &Desc, const RECT &rcRect, int xOffset);
+		void CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, const IDockScreenDisplay::SDisplayOptions &Options, const TArray<SScreenSetTab> &ScreenSet, const CString &sCurTab);
 		ALERROR CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, const RECT &rcRect, const RECT &rcInner);
 		bool EvalBool (const CString &sString);
 		CString EvalInitialPane (void);
@@ -541,9 +553,10 @@ class CDockScreen : public IScreenController,
 
 		//	Title and header
 		CG32bitImage *m_pBackgroundImage = NULL;
+		bool m_bFreeBackgroundImage = false;
 		CGTextArea *m_pCredits = NULL;
 		CGTextArea *m_pCargoSpace = NULL;
-		bool m_bFreeBackgroundImage = false;
+		CGTabArea *m_pTabs = NULL;
 
 		//	Display controls
 		TArray<SDisplayControl> m_Controls;

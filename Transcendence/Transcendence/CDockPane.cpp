@@ -36,8 +36,6 @@
 #define STYLE_WARNING				CONSTLIT("warning")
 
 const int MAX_ACTIONS =				8;
-const int FIRST_ACTION_ID =			100;
-const int LAST_ACTION_ID =			199;
 
 const int CONTROL_BORDER_RADIUS =	4;
 const int CONTROL_INNER_PADDING =	8;
@@ -45,7 +43,6 @@ const int CONTROL_PADDING_BOTTOM =	24;
 const int CONTROL_PADDING_MIN =		4;
 const int ACTION_MARGIN_Y =			46;
 
-const int COUNTER_ID =				204;
 const int COUNTER_WIDTH =			128;
 const int COUNTER_HEIGHT =			40;
 const int COUNTER_PADDING_BOTTOM =	24;
@@ -53,7 +50,6 @@ const int COUNTER_PADDING_BOTTOM =	24;
 const int DESC_PADDING_BOTTOM =		24;
 const int DESC_HEIGHT_GRANULARITY =	48;
 
-const int TEXT_INPUT_ID =			207;
 const int TEXT_INPUT_WIDTH =		380;
 const int TEXT_INPUT_HEIGHT	=		40;
 const int TEXT_INPUT_PADDING_BOTTOM = 24;
@@ -153,7 +149,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 			rcInput.bottom = rcInput.top + COUNTER_HEIGHT;
 
 			pControl->pArea = pTextArea;
-			m_pContainer->AddArea(pControl->pArea, rcInput, COUNTER_ID);
+			m_pContainer->AddArea(pControl->pArea, rcInput, CDockScreen::COUNTER_ID);
 
 			pControl->bReplaceInput = true;
 			break;
@@ -245,7 +241,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 			rcInput.bottom = rcInput.top + TEXT_INPUT_HEIGHT;
 
 			pControl->pArea = pTextArea;
-			m_pContainer->AddArea(pControl->pArea, rcInput, TEXT_INPUT_ID);
+			m_pContainer->AddArea(pControl->pArea, rcInput, CDockScreen::TEXT_INPUT_ID);
 			break;
 			}
 
@@ -624,9 +620,9 @@ bool CDockPane::HandleAction (DWORD dwTag, DWORD dwData)
 //	Handles an action. Returns FALSE if we did not handle it.
 
 	{
-	if (dwTag >= FIRST_ACTION_ID && dwTag <= LAST_ACTION_ID)
+	if (dwTag >= CDockScreen::FIRST_ACTION_ID && dwTag <= CDockScreen::LAST_ACTION_ID)
 		{
-		int iAction = (dwTag - FIRST_ACTION_ID);
+		int iAction = (dwTag - CDockScreen::FIRST_ACTION_ID);
 		ExecuteAction(iAction);
 		return true;
 		}
@@ -1115,7 +1111,7 @@ void CDockPane::RenderControlsBottomBar (void)
 
 	//	Create the action buttons at the bottom
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.
@@ -1176,7 +1172,7 @@ void CDockPane::RenderControlsColumn (void)
 	rcActions.right = m_rcControls.right;
 	rcActions.bottom = m_rcControls.bottom;
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.

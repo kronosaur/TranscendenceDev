@@ -18,6 +18,22 @@ void CDockScreenStack::DeleteAll (void)
 		Pop();
 	}
 
+const SScreenSetTab *CDockScreenStack::FindTab (const CString &sID) const
+
+//	FindTab
+//
+//	Returns the tab by ID.
+
+	{
+	const SDockFrame &Current = GetCurrent();
+
+	for (int i = 0; i < Current.ScreenSet.GetCount(); i++)
+		if (strEquals(sID, Current.ScreenSet[i].sID))
+			return &Current.ScreenSet[i];
+
+	return NULL;
+	}
+
 const SDockFrame &CDockScreenStack::GetCurrent (void) const
 
 //	GetCurrent
@@ -165,6 +181,7 @@ void CDockScreenStack::ResolveCurrent (const SDockFrame &ResolvedFrame)
 
 		m_Stack[iTop].pResolvedRoot = ResolvedFrame.pResolvedRoot;
 		m_Stack[iTop].sResolvedScreen = ResolvedFrame.sResolvedScreen;
+		m_Stack[iTop].sCurrentTab = ResolvedFrame.sCurrentTab;
 		}
 	}
 
@@ -329,4 +346,56 @@ void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
 	//	Add the entry
 
 	Frame.pReturnData->SetAt(sAttrib, pData);
+	}
+
+void CDockScreenStack::SetScreenSet (const ICCItem &ScreenSet)
+
+//	SetScreenSet
+//
+//	Sets the current screen set.
+//
+//	We expect ScreenSet to be an array of structs; each struc has the following
+//	fields:
+//
+//		id: ID of the tab (if Nil, we assign one)
+//		label: User-visible tab name
+//		screen: Screen to navigate to
+//		pane: Pane to navigate to
+//		data: Data
+
+	{
+	if (IsEmpty())
+		return;
+
+	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
+	Frame.ScreenSet.DeleteAll();
+
+	Frame.ScreenSet.GrowToFit(ScreenSet.GetCount());
+	for (int i = 0; i < ScreenSet.GetCount(); i++)
+		{
+		const ICCItem &Entry = *ScreenSet.GetElement(i);
+		if (Entry.IsNil())
+			continue;
+
+		SScreenSetTab &NewTab = *Frame.ScreenSet.Insert();
+		NewTab.sID = Entry.GetStringAt(CONSTLIT("id"), strPatternSubst(CONSTLIT("tab.%d"), i));
+		NewTab.sName = Entry.GetStringAt(CONSTLIT("label"), strPatternSubst(CONSTLIT("Tab %d"), i));
+		NewTab.sScreen = Entry.GetStringAt(CONSTLIT("screen"));
+		NewTab.sPane = Entry.GetStringAt(CONSTLIT("pane"));
+		ICCItem *pData = Entry.GetElement(CONSTLIT("data"));
+		if (pData)
+			NewTab.pData = ICCItemPtr(pData->Reference());
+
+		ICCItem *pEnabled = Entry.GetElement(CONSTLIT("enabled"));
+		if (pEnabled && pEnabled->IsNil() && Frame.ScreenSet.GetCount() > 1)
+			NewTab.bEnabled = false;
+		}
+
+	//	For now we assume that the current screen is the first screen in the 
+	//	screen set.
+
+	if (Frame.ScreenSet.GetCount() > 0)
+		Frame.sCurrentTab = Frame.ScreenSet[0].sID;
+	else
+		Frame.sCurrentTab = NULL_STR;
 	}

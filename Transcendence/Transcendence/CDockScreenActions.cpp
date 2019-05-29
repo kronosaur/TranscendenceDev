@@ -343,11 +343,12 @@ void CDockScreenActions::Execute (int iAction, CDockScreen *pScreen)
 		{
 		if (strEquals(pAction->pCmd->GetTag(), NAVIGATE_TAG))
 			{
-			CString sScreen = pAction->pCmd->GetAttribute(SCREEN_ATTRIB);
-			CString sPane = pAction->pCmd->GetAttribute(PANE_ATTRIB);
-
+			SShowScreenCtx Ctx;
+			Ctx.sScreen = pAction->pCmd->GetAttribute(SCREEN_ATTRIB);
+			Ctx.sPane = pAction->pCmd->GetAttribute(PANE_ATTRIB);
 			CString sError;
-			if (g_pTrans->GetModel().ShowScreen(NULL, sScreen, sPane, NULL, &sError) != NOERROR)
+
+			if (g_pTrans->GetModel().ShowScreen(Ctx, &sError) != NOERROR)
 				{
 				pScreen->SetDescriptionError(sError);
 				::kernelDebugLogString(sError);

@@ -35,6 +35,47 @@
 			inherit=			"&dsRPGDockServicesBase;"
 			nestedScreen=		"true"
 			>
+		<OnScreenInit>
+			(block (
+				(isShipConfig (= gSource gPlayerShip))
+				(armorStatus (rpgCalcDockServiceArmorAction gSource gPlayerShip { }))
+				(weaponsStatus (rpgCalcDockServiceWeaponsAction gSource gPlayerShip { }))
+				(miscDevicesStatus (rpgCalcDockServiceMiscDevicesAction gSource gPlayerShip { }))
+				)
+				(scrSetTabSet gScreen (list 
+					{	id: 'main
+						label: (scrTranslate gScreen (if isShipConfig 'screenSetShipConfig 'screenSetDockServices))
+						screen: &dsRPGDockServices;
+						data: gData
+						}
+
+					(if (@ armorStatus 'enabled)
+						{	id: 'armor
+							label: (scrTranslate gScreen 'screenSetArmorAndShields)
+							screen: &dsRPGManageArmor;
+							data: gData
+							}
+						)
+
+					(if (@ weaponsStatus 'enabled)
+						{	id: 'weapons
+							label: (scrTranslate gScreen 'screenSetWeapons)
+							screen: &dsRPGManageWeapons;
+							data: gData
+							}
+						)
+
+					(if (@ miscDevicesStatus 'enabled)
+						{	id: 'miscDevices
+							label: (scrTranslate gScreen 'screenMiscDevices)
+							screen: &dsRPGManageMiscDevices;
+							data: gData
+							}
+						)
+					))
+				)
+		</OnScreenInit>
+
 		<InitialPane>
 			(block (
 				(removableOverlays Nil)
@@ -109,13 +150,6 @@
 							)
 						
 						(actionStatus Nil)
-						(screenSet (list
-							{
-								screen: &dsRPGDockServices;
-								label: (scrTranslate gScreen (if isShipConfig 'screenSetShipConfig 'screenSetDockServices))
-								mainScreen: True
-								}
-							))
 						)
 
 						;	Dock master
@@ -151,13 +185,6 @@
 						(scrShowAction gScreen 'actionRepairArmor (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionRepairArmor (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionRepairArmor (@ actionStatus 'desc))
-						(if (@ actionStatus 'enabled)
-							(lnkAppend screenSet {
-								screen: &dsRPGManageArmor;
-								label: (scrTranslate gScreen 'screenSetArmorAndShields)
-								data: gData
-								})
-							)
 						
 						;	Weapon services
 						
@@ -165,13 +192,6 @@
 						(scrShowAction gScreen 'actionWeapons (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionWeapons (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionWeapons (@ actionStatus 'desc))
-						(if (@ actionStatus 'enabled)
-							(lnkAppend screenSet {
-								screen: &dsRPGManageWeapons;
-								label: (scrTranslate gScreen 'screenSetWeapons)
-								data: gData
-								})
-							)
 
 						;	Misc devices
 						
@@ -179,13 +199,6 @@
 						(scrShowAction gScreen 'actionMiscDevices (@ actionStatus 'visible))
 						(scrEnableAction gScreen 'actionMiscDevices (@ actionStatus 'enabled))
 						(scrSetActionDesc gScreen 'actionMiscDevices (@ actionStatus 'desc))
-						(if (@ actionStatus 'enabled)
-							(lnkAppend screenSet {
-								screen: &dsRPGManageMiscDevices;
-								label: (scrTranslate gScreen 'screenMiscDevices)
-								data: gData
-								})
-							)
 
 						;	Description
 						
@@ -198,11 +211,6 @@
 										})
 									)
 							)
-
-                        ;   Define the screen set
-
-						(scrSetData gScreen 'screenSet screenSet)
-						(rpgInitScreenSet screenSet)
 						)
 				</OnPaneInit>
 				
@@ -224,21 +232,19 @@
 					</Action>
 
 					<Action id="actionRepairArmor">
-						(scrShowScreen gScreen &dsRPGManageArmor; (struct gData {
-							screenSet: (scrGetData gScreen 'screenSet)
-							}))
+						(scrShowTab gScreen 'armor)
 					</Action>
 					
 					<Action id="actionWeapons">
-						(scrShowScreen gScreen &dsRPGManageWeapons; (struct gData {
-							screenSet: (scrGetData gScreen 'screenSet)
-							}))
+						(scrShowTab gScreen 'weapons)
 					</Action>
 
 					<Action id="actionMiscDevices">
-						(scrShowScreen gScreen &dsRPGManageMiscDevices; (struct gData {
-							screenSet: (scrGetData gScreen 'screenSet)
-							}))
+						(scrShowTab gScreen 'miscDevices)
+					</Action>
+
+					<Action id="actionDone">
+						(scrExitScreen gScreen)
 					</Action>
 				</Actions>
 			</Default>
@@ -320,7 +326,6 @@
 		
 		<Language>
 			<Text id="actionDockMaster">[T]alk with Dockmaster</Text>
-			<Text id="actionDone">[Escape] Done</Text>
 			
 			<Text id="actionMiscDevices">[M]iscellaneous Devices</Text>
 			<Text id="actionMiscDevices:nothing">We don't have miscellaneous devices to install.</Text>

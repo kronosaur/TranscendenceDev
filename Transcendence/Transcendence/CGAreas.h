@@ -186,10 +186,10 @@ class CGDetailsArea : public AGArea
 		CGDetailsArea (const CVisualPalette &VI);
 
 		void CleanUp (void);
-		inline ICCItem *GetData (void) const { return m_pData; }
-        inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		inline void SetData (ICCItem *pList) { m_pData = pList; }
+		ICCItem *GetData (void) const { return m_pData; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetData (ICCItem *pList) { m_pData = pList; }
 
 		//	AGArea virtuals
 
@@ -610,3 +610,53 @@ class CGSelectorArea : public AGArea
 		TArray<SEntry> m_Regions;
 		int m_iCursor = -1;
 	};
+
+class CGTabArea : public AGArea
+	{
+	public:
+		CGTabArea (const CVisualPalette &VI):
+				m_VI(VI)
+			{ }
+
+		void AddTab (const CString &sID, const CString &sLabel);
+		int GetTabCount (void) const { return m_Tabs.GetCount(); }
+		const CString &GetNextTabID (void) const;
+		const CString &GetPrevTabID (void) const;
+		const CString &GetTabID (int iIndex) const { return m_Tabs[iIndex].sID; }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
+		void SetCurTab (const CString &sID);
+
+		//	AGArea virtuals
+		virtual bool LButtonDown (int x, int y) override;
+		virtual void MouseLeave (void) override;
+		virtual void MouseMove (int x, int y) override;
+		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
+
+	private:
+		static constexpr int BORDER_RADIUS = 4;
+		static constexpr int DEFAULT_TAB_HEIGHT = 24;
+		static constexpr int TAB_PADDING_X = 16;
+
+		struct STabDesc
+			{
+			CString sID;
+			CString sLabel;
+			int cxWidth = 0;
+			bool bDisabled = false;
+			};
+
+		bool FindTab (const CString &sID, int *retiIndex = NULL) const;
+		bool HitTest (int x, int y, int *retiTab) const;
+		void PaintTab (CG32bitImage &Dest, const STabDesc &Tab, const RECT &rcRect, bool bSelected, bool bHover) const;
+
+		const CVisualPalette &m_VI;
+		TArray<STabDesc> m_Tabs;
+		int m_iCurTab = -1;
+		int m_iHoverTab = -1;
+
+		int m_cyTabHeight = DEFAULT_TAB_HEIGHT;
+        CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
+        CG32bitPixel m_rgbBackColor = CG32bitPixel(0, 0, 0);
+	};
+

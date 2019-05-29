@@ -85,26 +85,34 @@ ICCItemPtr::~ICCItemPtr (void)
 
 ICCItemPtr &ICCItemPtr::operator= (const ICCItemPtr &Src)
 	{
-	if (m_pPtr)
-		m_pPtr->Discard();
+	ICCItem *pOld = m_pPtr;
 
 	if (Src.m_pPtr)
 		m_pPtr = Src.m_pPtr->Reference();
 	else
 		m_pPtr = NULL;
 
+	//	Discard at the end, in case Src.m_pPtr == m_pPtr.
+
+	if (pOld)
+		pOld->Discard();
+
 	return *this;
 	}
 
 ICCItemPtr &ICCItemPtr::operator= (ICCItem *pSrc)
 	{
-	if (m_pPtr)
-		m_pPtr->Discard();
+	ICCItem *pOld = m_pPtr;
 
 	if (pSrc)
 		m_pPtr = pSrc->Reference();
 	else
 		m_pPtr = NULL;
+
+	//	Discard at the end, in case Src.m_pPtr == m_pPtr.
+
+	if (pOld)
+		pOld->Discard();
 
 	return *this;
 	}

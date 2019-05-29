@@ -29,22 +29,6 @@ const int g_cyStats =				30;
 const int g_cxCargoStats =			200;
 const int g_cxCargoStatsLabel =		100;
 
-const int g_FirstActionID =			100;
-const int g_LastActionID =			199;
-
-const int g_PrevActionID =			200;
-const int g_NextActionID =			201;
-const int g_ItemTitleID =			202;
-const int g_ItemDescID =			203;
-const int g_CounterID =				204;
-const int g_ItemImageID =			205;
-const int TEXT_INPUT_ID =			207;
-const int IMAGE_AREA_ID =			208;
-const int DISPLAY_ID =				209;
-
-const int ACTION_CUSTOM_NEXT_ID =	300;
-const int ACTION_CUSTOM_PREV_ID =	301;
-
 #define CANVAS_TAG					CONSTLIT("Canvas")
 #define DISPLAY_TAG					CONSTLIT("Display")
 #define GROUP_TAG					CONSTLIT("Group")
@@ -133,26 +117,43 @@ void CDockScreen::Action (DWORD dwTag, DWORD dwData)
 //	Button pressed
 
 	{
-	IDockScreenDisplay::EResults iResult = m_pDisplay->HandleAction(dwTag, dwData);
-	
-	switch (iResult)
+	switch (dwTag)
 		{
-		//	If handled, then we're done
+		//	Handle tab control events
 
-		case IDockScreenDisplay::resultHandled:
+		case TAB_AREA_ID:
+			{
+			CString sTabID = m_pTabs->GetTabID(dwData);
+			SelectTab(sTabID);
 			break;
+			}
 
-		//	If we need to reshow the pane, do it.
-
-		case IDockScreenDisplay::resultShowPane:
-			m_CurrentPane.ExecuteShowPane(EvalInitialPane());
-			break;
-
-		//	Otherwise, invoke the button
+		//	Otherwise, let the display handle it.
 
 		default:
-			m_CurrentPane.HandleAction(dwTag, dwData);
-			break;
+			{
+			IDockScreenDisplay::EResults iResult = m_pDisplay->HandleAction(dwTag, dwData);
+	
+			switch (iResult)
+				{
+				//	If handled, then we're done
+
+				case IDockScreenDisplay::resultHandled:
+					break;
+
+				//	If we need to reshow the pane, do it.
+
+				case IDockScreenDisplay::resultShowPane:
+					m_CurrentPane.ExecuteShowPane(EvalInitialPane());
+					break;
+
+				//	Otherwise, invoke the button
+
+				default:
+					m_CurrentPane.HandleAction(dwTag, dwData);
+					break;
+				}
+			}
 		}
 	}
 
@@ -413,6 +414,7 @@ void CDockScreen::CleanUpScreen (void)
 	m_Controls.DeleteAll();
 	m_pDisplayInitialize = NULL;
 	m_pData = NULL;
+	m_pTabs = NULL;
 
 	m_CurrentPane.CleanUp();
 	m_CurrentPane.ClearDescriptionError();
@@ -595,6 +597,40 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 		BltToBackgroundImage(rcRect, pImage, 0, 0, pImage->GetWidth(), pImage->GetHeight());
 
 	return NOERROR;
+	}
+
+void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, const IDockScreenDisplay::SDisplayOptions &Options, const TArray<SScreenSetTab> &ScreenSet, const CString &sCurTab)
+
+//	CreateScreenSetTabs
+//
+//	Creates tabs for the screenset.
+
+	{
+	const CVisualPalette &VI = g_pHI->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = GetVisuals();
+
+	RECT rcRect = Ctx.rcRect;
+	rcRect.left += Options.rcControl.left;
+	rcRect.right = rcRect.left + RectWidth(Options.rcControl);
+	rcRect.top += Options.rcControl.top;
+	rcRect.bottom = rcRect.top + DockScreenVisuals.GetTabHeight();
+
+	m_pTabs = new CGTabArea(VI);
+    m_pTabs->SetColor(DockScreenVisuals.GetTitleTextColor());
+    m_pTabs->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+
+	for (int i = 0; i < ScreenSet.GetCount(); i++)
+		m_pTabs->AddTab(ScreenSet[i].sID, ScreenSet[i].sName);
+
+	//	Select the tab, if necessary.
+
+	if (!sCurTab.IsBlank())
+		m_pTabs->SetCurTab(sCurTab);
+
+	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
+	//	We do not have to free it.
+
+	Ctx.pScreen->AddArea(m_pTabs, rcRect, TAB_AREA_ID);
 	}
 
 ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, const RECT &rcRect, const RECT &rcInner)
@@ -1026,27 +1062,42 @@ void CDockScreen::HandleKeyDown (int iVirtKey)
 //	Handle key down events
 
 	{
-	//	First see if the display will handle it
+	//	If we have a tab control, see if it handles it.
 
-	IDockScreenDisplay::EResults iResult = m_pDisplay->HandleKeyDown(iVirtKey);
-
-	switch (iResult)
+	if (m_pTabs && iVirtKey == VK_TAB)
 		{
-		//	If handled, then we're done
-
-		case IDockScreenDisplay::resultHandled:
-			return;
-
-		//	If we need to reshow the pane, do it.
-
-		case IDockScreenDisplay::resultShowPane:
-			m_CurrentPane.ExecuteShowPane(EvalInitialPane());
-			return;
+		if (uiIsShiftDown())
+			SelectTab(m_pTabs->GetPrevTabID());
+		else
+			SelectTab(m_pTabs->GetNextTabID());
 		}
 
-	//	Otherwise, handle it ourselves
+	//	Otherwise, let the display handle it.
 
-	m_CurrentPane.HandleKeyDown(iVirtKey);
+	else
+		{
+		IDockScreenDisplay::EResults iResult = m_pDisplay->HandleKeyDown(iVirtKey);
+
+		switch (iResult)
+			{
+			//	If handled, then we're done
+
+			case IDockScreenDisplay::resultHandled:
+				break;
+
+			//	If we need to reshow the pane, do it.
+
+			case IDockScreenDisplay::resultShowPane:
+				m_CurrentPane.ExecuteShowPane(EvalInitialPane());
+				break;
+
+			//	Otherwise, the pane handles it.
+
+			default:
+				m_CurrentPane.HandleKeyDown(iVirtKey);
+				break;
+			}
+		}
 	}
 
 ALERROR CDockScreen::InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pStation)
@@ -1392,6 +1443,18 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to create title area.");
 		return error;
+		}
+
+	//	If a screenset is defined, then create the tabs now. Note that we get
+	//	the latest frame because we could have added a screenset in 
+	//	OnScreenInit above.
+
+	if (FrameStack.GetCurrent().ScreenSet.GetCount() > 0)
+		{
+		const SDockFrame &CurFrame = FrameStack.GetCurrent();
+		CreateScreenSetTabs(DisplayCtx, DisplayOptions, CurFrame.ScreenSet, CurFrame.sCurrentTab);
+
+		DisplayOptions.rcControl.top += GetVisuals().GetTabHeight();
 		}
 
 	//	Get the list of panes for this screen
@@ -2051,6 +2114,33 @@ void CDockScreen::SelectPrevItem (bool *retbMore)
 	bool bMore = m_pDisplay->SelectPrevItem();
 	if (retbMore)
 		*retbMore = bMore;
+	}
+
+bool CDockScreen::SelectTab (const CString &sID)
+
+//	SelectTab
+//
+//	Selects the given tab.
+
+	{
+	const SScreenSetTab *pTabInfo = g_pTrans->GetModel().GetScreenStack().FindTab(sID);
+	if (pTabInfo == NULL)
+		return false;
+
+	CString sError;
+	SShowScreenCtx Ctx;
+	Ctx.sScreen = pTabInfo->sScreen;
+	Ctx.sPane = pTabInfo->sPane;
+	Ctx.pData = pTabInfo->pData;
+	Ctx.sTab = sID;
+
+	if (g_pTrans->GetModel().ShowScreen(Ctx, &sError) != NOERROR)
+		{
+		ReportError(sError);
+		return false;
+		}
+
+	return true;
 	}
 
 bool CDockScreen::Translate (const CString &sTextID, ICCItem *pData, ICCItemPtr &pResult)

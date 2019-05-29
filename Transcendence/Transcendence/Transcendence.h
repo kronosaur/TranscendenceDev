@@ -1023,7 +1023,7 @@ class CTranscendenceModel
 		bool ScreenTranslate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
 		inline void SetScreenData (const CString &sAttrib, ICCItem *pData) { GetScreenStack().SetData(sAttrib, pData); }
 		ALERROR ShowPane (const CString &sPane);
-		ALERROR ShowScreen (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData, CString *retsError, bool bReturn = false, bool bFirstFrame = false);
+		ALERROR ShowScreen (SShowScreenCtx &Ctx, CString *retsError = NULL);
 		void ShowShipScreen (void);
 		bool ShowShipScreen (CDesignType *pDefaultScreensRoot, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData, CString *retsError);
 		void UseItem (CItem &Item);

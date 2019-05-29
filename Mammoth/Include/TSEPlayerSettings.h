@@ -30,19 +30,22 @@ class CDockScreenVisuals
     public:
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
         ALERROR Bind (SDesignLoadCtx &Ctx);
-        inline const CObjectImageArray &GetBackground (void) const { return m_Background; }
-        inline const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
-        inline CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
-        inline CG32bitPixel GetTextColor (void) const { return m_rgbText; }
-        inline CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
-        inline CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
-        inline CG32bitPixel GetWindowBackgroundColor (void) const { return CG32bitPixel::Darken(m_rgbTitleBackground, 30);  }
+        const CObjectImageArray &GetBackground (void) const { return m_Background; }
+        const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
+		int GetTabHeight (void) const { return DEFAULT_TAB_HEIGHT; }
+        CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
+        CG32bitPixel GetTextColor (void) const { return m_rgbText; }
+        CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
+        CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
+        CG32bitPixel GetWindowBackgroundColor (void) const { return CG32bitPixel::Darken(m_rgbTitleBackground, 30);  }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void MarkImages (void) const;
 
         static CDockScreenVisuals &GetDefault (void);
 
     private:
+		static constexpr int DEFAULT_TAB_HEIGHT = 24;
+
         CObjectImageArray m_Background;     //  Background image for dock screen.
         CObjectImageArray m_ContentMask;    //  Mask for content
 

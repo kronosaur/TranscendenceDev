@@ -90,6 +90,8 @@ ICCItem *fnPlySetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 #define FN_SCR_RETURN_DATA			32
 #define FN_SCR_GET_PROPERTY			33
 #define FN_SCR_SET_PROPERTY			34
+#define FN_SCR_SCREEN_SET			35
+#define FN_SCR_SHOW_TAB				36
 
 ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnScrGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
@@ -360,9 +362,26 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrSetReturnData screen attrib data) -> True/Nil",
 			"isv",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"scrSetTabSet",					fnScrSet,		FN_SCR_SCREEN_SET,
+			"(scrSetTabSet screen tabSet) -> True/Nil\n\n"
+			
+			"tabSet: List of tabStruct, each with:\n\n"
+			
+			"   'id\n"
+			"   'label\n"
+			"   'screen\n"
+			"   'pane\n"
+			"   'data\n",
+
+			"iv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"scrShowAction",				fnScrSet,			FN_SCR_SHOW_ACTION,
 			"(scrShowAction screen actionID shown) -> True/Nil",
 			"ivv",	PPFLAG_SIDEEFFECTS, },
+
+		{	"scrShowItemUseScreen",				fnScrSet,	FN_SCR_SHOW_ITEM_SCREEN,
+			"(scrShowItemUseScreen screen item) -> True/Nil",
+			"vv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"scrShowPane",					fnScrSetOld,		FN_SCR_SHOW_PANE,
 			"(scrShowPane screen pane) -> True/Nil",
@@ -372,9 +391,9 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(scrShowScreen screen screen [pane] [data]) -> True/Nil",
 			"vv*",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"scrShowItemUseScreen",				fnScrSet,	FN_SCR_SHOW_ITEM_SCREEN,
-			"(scrShowItemUseScreen screen item) -> True/Nil",
-			"vv",	PPFLAG_SIDEEFFECTS,	},
+		{	"scrShowTab",					fnScrSet,			FN_SCR_SHOW_TAB,
+			"(scrShowTab screen tabID) -> True/Nil",
+			"is",	PPFLAG_SIDEEFFECTS, },
 
 		{	"scrTranslate",					fnScrGet,		FN_SCR_TRANSLATE,
 			"(scrTranslate screen textID [data]) -> text or Nil",
@@ -1961,6 +1980,27 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_SCR_SCREEN_SET:
+			{
+			if (!g_pTrans->GetModel().InScreenSession())
+				return pCC->CreateNil();
+
+			ICCItem *pScreenSet = pArgs->GetElement(1);
+			g_pTrans->GetModel().GetScreenStack().SetScreenSet(*pScreenSet);
+			return pCC->CreateTrue();
+			}
+
+		case FN_SCR_SHOW_TAB:
+			{
+			if (!g_pTrans->GetModel().InScreenSession())
+				return pCC->CreateNil();
+
+			if (!pScreen->SelectTab(pArgs->GetElement(1)->GetStringValue()))
+				return pCC->CreateNil();
+
+			return pCC->CreateTrue();
+			}
+
 		case FN_SCR_SET_DISPLAY_TEXT:
 			{
 			CString sID = pArgs->GetElement(1)->GetStringValue();
@@ -2221,7 +2261,13 @@ ICCItem *fnScrShowScreen (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
 
 		CString sError;
-		if (g_pTrans->GetModel().ShowScreen(NULL, sScreen, sPane, pData, &sError) != NOERROR)
+		SShowScreenCtx ShowCtx;
+		ShowCtx.sScreen = sScreen;
+		ShowCtx.sPane = sPane;
+		if (pData)
+			ShowCtx.pData = ICCItemPtr(pData->Reference());
+
+		if (g_pTrans->GetModel().ShowScreen(ShowCtx, &sError) != NOERROR)
 			return pCC->CreateError(sError, pArgs->GetElement(1));
 		}
 

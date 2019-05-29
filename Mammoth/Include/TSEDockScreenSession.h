@@ -29,6 +29,17 @@ class IDockScreenUI
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { }
 	};
 
+struct SScreenSetTab
+	{
+	CString sID;							//	ID (to refer to it)
+	CString sName;							//	User-visible tab name
+	CString sScreen;						//	Screen to navigate to
+	CString sPane;							//	Pane to navigate to
+	ICCItemPtr pData;						//	Data for screen
+
+	bool bEnabled = true;					//	Table is enabled
+	};
+
 struct SDockFrame
 	{
 	CSpaceObject *pLocation = NULL;			//	Current location
@@ -39,16 +50,32 @@ struct SDockFrame
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
 
+	TArray<SScreenSetTab> ScreenSet;		//	Current screen set
+	CString sCurrentTab;					//	Current tab in screen set.
+
 	CDesignType *pResolvedRoot = NULL;
 	CString sResolvedScreen;
 
 	TSortMap<CString, CString> DisplayData;	//	Opaque data used by displays
 	};
 
+struct SShowScreenCtx
+	{
+	CDesignType *pRoot = NULL;
+	CString sScreen;
+	CString sPane;
+	ICCItemPtr pData;
+
+	CString sTab;
+	bool bReturn = false;
+	bool bFirstFrame = false;
+	};
+
 class CDockScreenStack
 	{
 	public:
 		void DeleteAll (void);
+		const SScreenSetTab *FindTab (const CString &sID) const;
 		ICCItem *GetData (const CString &sAttrib);
 		const CString &GetDisplayData (const CString &sID);
 		inline int GetCount (void) const { return m_Stack.GetCount(); }
@@ -65,6 +92,7 @@ class CDockScreenStack
 		void SetDisplayData (const CString &sID, const CString &sData);
 		void SetLocation (CSpaceObject *pLocation);
 		void SetReturnData (const CString &sAttrib, ICCItem *pData);
+		void SetScreenSet (const ICCItem &ScreenSet);
 
 	private:
 		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }

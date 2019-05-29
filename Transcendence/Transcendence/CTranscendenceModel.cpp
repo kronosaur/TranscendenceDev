@@ -857,7 +857,15 @@ ALERROR CTranscendenceModel::EnterScreenSession (CSpaceObject *pLocation, CDesig
 	//
 	//	Initialize the current screen object
 
-	if (error = ShowScreen(pRoot, sScreen, sPane, pData, retsError, false, true))
+	SShowScreenCtx Ctx;
+	Ctx.pRoot = pRoot;
+	Ctx.sScreen = sScreen;
+	Ctx.sPane = sPane;
+	if (pData)
+		Ctx.pData = ICCItemPtr(pData->Reference());
+	Ctx.bFirstFrame = true;
+
+	if (error = ShowScreen(Ctx, retsError))
 		{
 		//	Undo
 
@@ -911,9 +919,16 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 		//	bReturn = true (on ShowScreen) so that we don't restack a
 		//	nested screen that we are returning to.
 
-		CString sError;
 		const SDockFrame &Frame = GetScreenStack().GetCurrent();
-		ShowScreen(Frame.pRoot, Frame.sScreen, Frame.sPane, Frame.pInitialData, &sError, true);
+		SShowScreenCtx Ctx;
+		Ctx.pRoot = Frame.pRoot;
+		Ctx.sScreen = Frame.sScreen;
+		Ctx.sPane = Frame.sPane;
+		Ctx.pData = Frame.pInitialData;
+		Ctx.sTab = Frame.sCurrentTab;
+		Ctx.bReturn = true;
+
+		ShowScreen(Ctx);
 		}
 
 	//	Otherwise, we exit docking
@@ -2020,8 +2035,14 @@ void CTranscendenceModel::RefreshScreenSession (void)
 	//	recalculate it (via InitialPane).
 
 	const SDockFrame &Frame = GetScreenStack().GetCurrent();
-	CString sError;
-	ShowScreen(Frame.pRoot, Frame.sScreen, NULL_STR, Frame.pInitialData, &sError, true);
+	SShowScreenCtx Ctx;
+	Ctx.pRoot = Frame.pRoot;
+	Ctx.sScreen = Frame.sScreen;
+	Ctx.pData = Frame.pInitialData;
+	Ctx.sTab = Frame.sCurrentTab;
+	Ctx.bReturn = true;
+
+	ShowScreen(Ctx);
 	}
 
 ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
@@ -2224,7 +2245,7 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 	return NOERROR;
 	}
 
-ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData, CString *retsError, bool bReturn, bool bFirstFrame)
+ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError)
 
 //	ShowScreen
 //
@@ -2250,18 +2271,18 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 
 	ICCItemPtr pDefaultData;
 	CString sScreenActual;
-	if (pRoot)
-		sScreenActual = sScreen;
+	if (Ctx.pRoot)
+		sScreenActual = Ctx.sScreen;
 	else
 		{
-		if (!FindScreenRoot(sScreen, &pRoot, &sScreenActual, &pDefaultData))
+		if (!FindScreenRoot(Ctx.sScreen, &Ctx.pRoot, &sScreenActual, &pDefaultData))
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find global screen: %s"), sScreen);
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find global screen: %s"), Ctx.sScreen);
 			return ERR_FAIL;
 			}
 
-		if (pDefaultData && pData == NULL)
-			pData = pDefaultData;
+		if (pDefaultData && !Ctx.pData)
+			Ctx.pData = pDefaultData;
 
 		//	NOTE: We have to discard pDefaultData regardless of whether we use 
 		//	it or not.
@@ -2270,27 +2291,27 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 	//	The extension that the screen comes from is determined by where the root
 	//	comes from.
 
-	CExtension *pExtension = pRoot->GetExtension();
+	CExtension *pExtension = Ctx.pRoot->GetExtension();
 
 	//	If the root is a screen then use that
 
 	CXMLElement *pScreen;
 	CXMLElement *pLocalScreens = NULL;
-	if (pRoot->GetType() == designDockScreen)
-		pScreen = CDockScreenType::AsType(pRoot)->GetDesc();
+	if (Ctx.pRoot->GetType() == designDockScreen)
+		pScreen = CDockScreenType::AsType(Ctx.pRoot)->GetDesc();
 	else
 		{
-		pLocalScreens = pRoot->GetLocalScreens();
+		pLocalScreens = Ctx.pRoot->GetLocalScreens();
 		if (pLocalScreens == NULL)
 			{
-			*retsError = strPatternSubst(CONSTLIT("No local screens in type %x."), pRoot->GetUNID());
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("No local screens in type %x."), Ctx.pRoot->GetUNID());
 			return ERR_FAIL;
 			}
 
 		pScreen = pLocalScreens->GetContentElementByTag(sScreenActual);
 		if (pScreen == NULL)
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to find local screen %s in type %x."), sScreenActual, pRoot->GetUNID());
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unable to find local screen %s in type %x."), sScreenActual, Ctx.pRoot->GetUNID());
 			return ERR_FAIL;
 			}
 		}
@@ -2309,8 +2330,8 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 
 	bool bNestedScreen = pScreen->GetAttributeBool(NESTED_SCREEN_ATTRIB);
 	if (bNestedScreen 
-			&& bFirstFrame
-			&& ((CurFrame.sScreen == sScreenActual && CurFrame.sPane == sPane)
+			&& Ctx.bFirstFrame
+			&& ((CurFrame.sScreen == sScreenActual && CurFrame.sPane == Ctx.sPane)
 				|| CurFrame.pLocation == NULL 
 				|| !CurFrame.pLocation->HasDefaultDockScreen()))
 		{
@@ -2321,21 +2342,27 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 
 	SDockFrame NewFrame;
 	NewFrame.pLocation = CurFrame.pLocation;
-	NewFrame.pRoot = pRoot;
+	NewFrame.pRoot = Ctx.pRoot;
 	NewFrame.sScreen = sScreenActual;
-	NewFrame.sPane = sPane;
-	if (pData)
-		NewFrame.pInitialData = ICCItemPtr(pData->Reference());
-	NewFrame.pResolvedRoot = pRoot;
+	NewFrame.sPane = Ctx.sPane;
+	if (Ctx.pData)
+		NewFrame.pInitialData = Ctx.pData;
+	NewFrame.pResolvedRoot = Ctx.pRoot;
 	NewFrame.sResolvedScreen = sScreenActual;
+
+	if (!Ctx.sTab.IsBlank())
+		{
+		NewFrame.ScreenSet = CurFrame.ScreenSet;
+		NewFrame.sCurrentTab = Ctx.sTab;
+		}
 
 	//	Some screens pop us into a new frame
 
 	bool bNewFrame;
 	SDockFrame OldFrame;
-	if (bNewFrame = (!bReturn && bNestedScreen))
+	if (bNewFrame = (!Ctx.bReturn && bNestedScreen && Ctx.sTab.IsBlank()))
 		GetScreenStack().Push(NewFrame);
-	else if (!bReturn)
+	else if (!Ctx.bReturn)
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else
 		GetScreenStack().ResolveCurrent(NewFrame);
@@ -2359,8 +2386,8 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 			GetScreenStack(),
 			pExtension,
 			pScreen,
-			sPane,
-			pData,
+			Ctx.sPane,
+			Ctx.pData,
 			&g_pTrans->m_pCurrentScreen,
 			&sError);
 	m_Universe.SetLogImageLoad(true);
@@ -2373,7 +2400,7 @@ ALERROR CTranscendenceModel::ShowScreen (CDesignType *pRoot, const CString &sScr
 
 		if (bNewFrame)
 			GetScreenStack().Pop();
-		else if (!bReturn)
+		else if (!Ctx.bReturn)
 			GetScreenStack().SetCurrent(OldFrame);
 
 		::kernelDebugLogPattern("InitScreen: %s", sError);
