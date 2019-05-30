@@ -1140,19 +1140,19 @@
 			description=		"Longzhu spheres are antimatter containment vessels used by the Sung Slavers as power sources."
 			>
 
-		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Ds L:1-10; -nonEnergyShields;"	repair:True	}
 					{	criteria:"Dw L:1-10; +EnergyWeapon;"		repair:True	}
 					{	criteria:"s L:1-10; -nonEnergyShields;"	enhancement:"+hpBonus:20"	}
 					{	criteria:"w L:1-10; +EnergyWeapon;"		enhancement:"+hpBonus:20"	}
 					{	criteria:"v L:1-10; -Alien;"	enhancement:Nil	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnUseOnItem>

@@ -810,7 +810,7 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
+					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
 					)
 
 					;	General enhancement has higher priority than table
@@ -902,7 +902,7 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementInfo (rpgFindItemInTable dstItem (itmGetStaticData gItem 'enhancementTable)))
+					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
 					)
 
 					;	General enhancement has higher priority than table

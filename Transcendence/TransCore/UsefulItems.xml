@@ -477,18 +477,18 @@
 			sortName=			"carbon-weaver nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"a &lt;=3"	enhancement:0x0105	}
 					{	criteria:"a &lt;=5"	enhancement:0x0103	}
 					{	criteria:"a &lt;=6"	enhancement:0x0101	}
 					{	criteria:"a &gt;6"	enhancement:Nil	descID:'TooAdvanced	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="descResultIntro">
@@ -758,15 +758,15 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"a &lt;=6"	enhancement:Nil	descID:'TooPrimitive	}
 					{	criteria:"a &lt;=10"	enhancement:0x0105	}
 					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
 
 		<Language>
 			<Text id="descResultIntro">
@@ -1152,14 +1152,14 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"a &lt;=10"	enhancement:0x0200	}
 					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
 
 		<Language>
 			<Text id="descResultIntro">
@@ -2113,20 +2113,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:laser;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:laser;"	repair:True	}
 					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:laser;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Kinetic Upgrade -->
@@ -2145,20 +2143,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:kinetic;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:kinetic;"	repair:True	}
 					{	criteria:"w~l +damageType:kinetic;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:kinetic;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Particle Upgrade -->
@@ -2177,20 +2173,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:particle;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:particle;"	repair:True	}
 					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:particle;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Blast Upgrade -->
@@ -2209,20 +2203,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:blast;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:blast;"	repair:True	}
 					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:blast;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Ion Upgrade -->
@@ -2241,20 +2233,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:ion;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:ion;"	repair:True	}
 					{	criteria:"w~l +damageType:ion;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:ion;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Thermo Upgrade -->
@@ -2273,20 +2263,18 @@
 			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
 
-		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
-
 		<Properties>
-			<Constant id="rpg.useCriteria">"w~l +damageType:thermo;"</Constant>
-		</Properties>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"Dw~l +damageType:thermo;"	repair:True	}
 					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:thermo;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Weapon Enhancement ROM -->

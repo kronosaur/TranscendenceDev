@@ -787,18 +787,18 @@
 			sortName=			"Centauri nanos, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
 					{	criteria:"a &lt;=3"	enhancement:0x0808	}
 					{	criteria:"a &lt;=5"	enhancement:0x0805	}
 					{	criteria:"a &lt;=6"	enhancement:0x0803	}
 					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="descResultIntro">
