@@ -798,9 +798,9 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="CargoCriteria">"aU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
 
 		<Events>
 			<OnUseOnItem>
@@ -917,9 +917,9 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="CargoCriteria">"aU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
 
 		<Events>
 			<OnUseOnItem>
@@ -994,9 +994,9 @@
 
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<StaticData>
-			<Data id="CargoCriteria">"aU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
 
 		<Events>
 			<OnUseOnItem>
@@ -2116,7 +2116,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:laser;"</Constant>
 		</Properties>
 
 		<StaticData>
@@ -2148,7 +2148,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:kinetic;"</Constant>
 		</Properties>
 
 		<StaticData>
@@ -2180,7 +2180,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:particle;"</Constant>
 		</Properties>
 
 		<StaticData>
@@ -2212,7 +2212,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:blast;"</Constant>
 		</Properties>
 
 		<StaticData>
@@ -2244,7 +2244,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:ion;"</Constant>
 		</Properties>
 
 		<StaticData>
@@ -2276,7 +2276,7 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 
 		<Properties>
-			<Constant id="rpg.useCriteria">"w"</Constant>
+			<Constant id="rpg.useCriteria">"w~l +damageType:thermo;"</Constant>
 		</Properties>
 
 		<StaticData>

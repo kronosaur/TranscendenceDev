@@ -10,9 +10,6 @@
 
 		useItem:	The item being used. If not specifed we check gItem instead
 
-		screenSet:	An RPG Screen Set structure (if we've been called from the
-					primary use item screen
-
 -->
 
 	<DockScreen UNID="&dsRPGUseItemOnArmor;"
@@ -29,7 +26,7 @@
 		</Panes>
 
 		<Language>
-			<Text id="rpg.screenSetLabel">Armor page</Text>
+			<Text id="rpg.tabLabel">Installed Armor</Text>
 			<Text id="actionUse">[U]se on this Armor Segment</Text>
 		</Language>
 	</DockScreen>
@@ -41,9 +38,6 @@
 	gData uses the following fields:
 
 		useItem:	The item being used. If not specifed we check gItem instead
-
-		screenSet:	An RPG Screen Set structure (if we've been called from the
-					primary use item screen
 
 -->
 
@@ -62,7 +56,7 @@
 		</Panes>
 
 		<Language>
-			<Text id="rpg.screenSetLabel">Device page</Text>
+			<Text id="rpg.tabLabel">Installed Devices</Text>
 			<Text id="actionUse">[U]se on this Device</Text>
 		</Language>
 	</DockScreen>
@@ -76,9 +70,6 @@
 		useItem: The item being used. If not specifed we check gItem instead.
 
 		criteria: If non-Nil, this is the criteria of items to show.
-
-		screenSet: An RPG Screen Set structure (if we've been called from the
-				primary use item screen.
 
 -->
 
@@ -94,36 +85,16 @@
 			<OnDisplayInit>
 				(block (
 					(useItem (scrGetData gScreen 'useItem))
+					(criteria (@ gData 'criteria))
 					)
 					(switch
-						(@ gData 'criteria)
-							(block (
-								(criteria (@ gData 'criteria))
-								)
-								(scrSetListFilter gScreen (lambda (theItem)
-									(and (itmMatches theItem criteria) (not (itmIsEqual theItem useItem)))
-									))
-								)
+						(isfunction criteria)
+							(scrSetListFilter gScreen criteria)
 
-						(block (
-							(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
-							)
-							(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
-									(and (itmMatches theItem "*U") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
-									))
-							(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
-									(and (itmMatches theItem "adUN") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
-									))
-							(scrAddListFilter gScreen 'filterInstallable "Damaged Items" (lambda (theItem)
-									(and (itmMatches theItem "adUD") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
-									))
-							(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
-									(and (itmMatches theItem "*~admU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
-									))
-							(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
-									(and (itmMatches theItem "mU") (not (itmIsEqual theItem useItem)) (itmMatches theItem useCriteria))
-									))
-							)
+						criteria
+							(scrSetListFilter gScreen (lambda (theItem)
+								(and (itmMatches theItem criteria) (not (itmIsEqual theItem useItem)))
+								))
 						)
 
 					;	Do not need to reproduce details shown in itemPicker list
@@ -136,7 +107,6 @@
 		</Panes>
 
 		<Language>
-			<Text id="rpg.screenSetLabel">Cargo page</Text>
 		</Language>
 	</DockScreen>
 
@@ -148,16 +118,14 @@
 
 		useItem: The item being used. If not specifed we check gItem instead.
 
-		screenSet: An RPG Screen Set structure (if we've been called from the
-				primary use item screen.
-
 	The following item properties will affect behavior
 
-		rpg.useScreenSet may be a list of dsRPGUseItemXYZ screens to initialise
-				a screen set
+		rpg.useCriteria: This will be used by the item base classes and display
+				lists to filter items to show
 
-		rpg.useCriteria will be used by the item base classes and display lists
-				to filter items to show
+		rpg.unknownUseCriteria: This optional criteria will be used instead of
+				rpg.useCriteria if the item being used is unknown to the player.
+
 -->
 
 	<DockScreen UNID="&dsRPGUseItemBase;"
@@ -167,7 +135,136 @@
 			>
 
 		<OnScreenInit>
-			(scrSetData gScreen 'useItem (or (@ gData 'useItem) gItem))
+			(block (
+				(useItemSaved (or (@ gData 'useItem) gItem))
+				(useItem (@ (filter (objGetItems gPlayerShip '*) theItem (itmIsEqual theItem useItemSaved)) 0))
+
+				(cargoCriteria 
+					(switch
+						(itmIsKnown useItem)
+							(itmGetProperty useItem 'rpg.useCriteria)
+
+						(or (itmGetProperty useItem 'rpg.unknownUseCriteria)
+							(itmGetProperty useItem 'rpg.useCriteria)
+							)
+						)
+					)
+
+				(hasGeneralCargo (filter (objGetItems gPlayerShip "*~admU") theItem (itmMatches theItem cargoCriteria)))
+				(hasDevicesCargo (filter (objGetItems gPlayerShip "dU") theItem (itmMatches theItem cargoCriteria)))
+				(hasArmorCargo (filter (objGetItems gPlayerShip "aU") theItem (itmMatches theItem cargoCriteria)))
+				(hasAmmoCargo (filter (objGetItems gPlayerShip "m") theItem (itmMatches theItem cargoCriteria)))
+				)
+				(scrSetData gScreen 'useItem useItemSaved)
+
+				;	If we have a cargo criteria (meaning we can use the item on a 
+				;	cargo item, then we need a tab set.
+
+				(if (and cargoCriteria (not (@ gData 'subTab)))
+					(scrSetTabSet gScreen (list
+						{
+							id: 'configuration
+							label: (typTranslate gType 'rpg.tabLabel)
+							screen: gType
+							data: gData
+							}
+
+						(if hasGeneralCargo
+							{
+								id: 'generalCargo
+								label: (typTranslate gType 'labelGeneralCargo)
+								screen: &dsRPGUseItemOnCargo;
+								data: {
+									useItem: useItem
+									criteria: 
+										(lambda (theItem)
+											(and (itmMatches theItem "*~admU") 
+												(not (itmIsEqual theItem useItem))
+												(itmMatches theItem cargoCriteria)
+												)
+											)
+									subTab: True
+									}
+								}
+							)
+
+						(switch
+							(and hasDevicesCargo hasArmorCargo)
+								{
+									id: 'armorAndDevicesCargo
+									label: (typTranslate gType 'labelArmorAndDevicesCargo)
+									screen: &dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "adU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+
+							(and hasArmorCargo)
+								{
+									id: 'armorCargo
+									label: (typTranslate gType 'labelArmorCargo)
+									screen: &dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "aU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+
+							(and hasDevicesCargo)
+								{
+									id: 'devicesCargo
+									label: (typTranslate gType 'labelDevicesCargo)
+									screen: &dsRPGUseItemOnCargo;
+									data: {
+										useItem: useItem
+										criteria: 
+											(lambda (theItem)
+												(and (itmMatches theItem "dU") 
+													(not (itmIsEqual theItem useItem))
+													(itmMatches theItem cargoCriteria)
+													)
+												)
+										subTab: True
+										}
+									}
+							)
+
+						(if hasAmmoCargo
+							{
+								id: 'devicesCargo
+								label: (typTranslate gType 'labelAmmoCargo)
+								screen: &dsRPGUseItemOnCargo;
+								data: {
+									useItem: useItem
+									criteria: 
+										(lambda (theItem)
+											(and (itmMatches theItem "m") 
+												(not (itmIsEqual theItem useItem))
+												(itmMatches theItem cargoCriteria)
+												)
+											)
+									subTab: True
+									}
+								}
+							)
+						))
+					)
+				)
 		</OnScreenInit>
 
 		<Panes>
@@ -181,20 +278,19 @@
 								itemToUseOn: dstItem
 								shipObj: theShip
 								} ))
-						(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
+
+						(cargoCriteria 
+							(switch
+								(itmIsKnown useItem)
+									(itmGetProperty useItem 'rpg.useCriteria)
+
+								(or (itmGetProperty useItem 'rpg.unknownUseCriteria)
+									(itmGetProperty useItem 'rpg.useCriteria)
+									)
+								)
+							)
 
 						;	Initialise the screen set if necessary
-						(screenSet (or
-							(@ gData 'screenSet)
-							(map (itmGetProperty useItem 'rpg.useScreenSet) uScreen
-								{
-									screen: uScreen
-									label: (typTranslate uScreen 'rpg.screenSetLabel)
-									data: { useItem: useItem }
-									mainScreen: (= (@ (scrGetScreen gScreen) 'type) uScreen)
-									}
-								)
-							))
 						)
 
 						;	Set the description
@@ -223,9 +319,6 @@
 								})
 							)
 						(scrEnableAction gScreen 'actionUse (@ useInfo 'canUse))
-						(scrShowAction gScreen 'actionUseOnCargo (and cargoCriteria (not (@ gData 'criteria))))
-
-						(rpgInitScreenSet screenSet)
 						)
 				</OnPaneInit>
 
@@ -255,20 +348,6 @@
 							;	Store result and display it
 							(scrSetData gScreen 'usageResult result)
 							(scrShowPane gScreen 'ShowResult)
-							)
-					</Action>
-
-					<Action id="actionUseOnCargo">
-						(block (
-							(useItem (scrGetData gScreen 'useItem))
-							(cargoCriteria (itmGetStaticData useItem 'CargoCriteria))
-							)
-							(scrExitScreen gScreen)
-
-							(scrShowScreen gScreen &dsRPGUseItemOnCargo; {
-								useItem: useItem
-								criteria: cargoCriteria
-								})
 							)
 					</Action>
 				</Actions>
@@ -333,9 +412,6 @@
 						(block (
 							(result (scrGetData gScreen 'usageResult))
 							)
-							(if (@ gData 'screenSet)
-								(scrExitScreen gScreen)
-								)
 							(switch
 								(= (@ result 'nextScreen) 'forceUndock)
 									(scrExitScreen gScreen 'forceUndock)
@@ -362,6 +438,12 @@
 			<Text id="actionUseOnCargo">Use on [C]argo Item</Text>
 			<Text id="actionUseAnother">[U]se Another</Text>
 
+			<Text id="labelGeneralCargo">General Cargo</Text>
+			<Text id="labelArmorAndDevicesCargo">Devices &amp; Armor Cargo</Text>
+			<Text id="labelArmorCargo">Armor Cargo</Text>
+			<Text id="labelDevicesCargo">Devices Cargo</Text>
+			<Text id="labelAmmoCargo">Ammo Cargo</Text>
+
 			<Text id="descCanNotUse">You cannot use %useItem% on %dstItem%.</Text>
 		</Language>
 	</DockScreen>
@@ -383,9 +465,9 @@
     -->
 
 	<Type UNID="&baStdArmorRepair;">
-		<StaticData>
-			<Data id="CargoCriteria">"aU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
 
 		<Events>
 			<CanRepairItem>True</CanRepairItem>
@@ -692,9 +774,9 @@
     -->
 
 	<Type UNID="&baStdPasteBarrel;">
-		<StaticData>
-			<Data id="CargoCriteria">"aU"</Data>
-		</StaticData>
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
 
 		<Events>
 			<CanUseOnItem>
@@ -784,7 +866,6 @@
 
 	<Type UNID="&baStdDeviceEnhancement;">
 		<Properties>
-			<Constant id="rpg.useScreenSet">'(&dsRPGUseItemOnDevice; &dsRPGUseItemOnCargo;)</Constant>
 			<Constant id="rpg.useCriteria">"d"</Constant>
 		</Properties>
 
