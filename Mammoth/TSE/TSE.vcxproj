@@ -386,6 +386,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CDockScreenPainter.cpp" />
     <ClCompile Include="CDockScreenStack.cpp" />
     <ClCompile Include="CDockScreenVisuals.cpp" />
     <ClCompile Include="CDockSession.cpp" />

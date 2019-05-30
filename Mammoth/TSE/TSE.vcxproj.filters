@@ -1009,9 +1009,6 @@
     <ClCompile Include="CDriveDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
-    <ClCompile Include="CDockScreenVisuals.cpp">
-      <Filter>Source Files\Ships</Filter>
-    </ClCompile>
     <ClCompile Include="CArmorSystem.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
@@ -1320,6 +1317,12 @@
     </ClCompile>
     <ClCompile Include="CDesignPropertyDefinitions.cpp">
       <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenVisuals.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenPainter.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

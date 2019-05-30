@@ -20,8 +20,9 @@ static TStaticStringTable<TStaticStringEntry<CGCarouselArea::EStyles>, 2> STYLE_
 	"shipList",				CGCarouselArea::styleShipList,
 	};
 
-CGCarouselArea::CGCarouselArea (const CVisualPalette &VI) :
-		m_VI(VI)
+CGCarouselArea::CGCarouselArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
+		m_VI(VI),
+		m_Theme(Theme)
 
 //	CGCarouselArea constructor
 
@@ -285,7 +286,7 @@ void CGCarouselArea::PaintContent (CG32bitImage &Dest, const RECT &rcRect) const
 
 	//	Paint as content
 
-	CDetailArea Painter(*g_pUniverse, m_VI);
+	CDetailArea Painter(*g_pUniverse, m_VI, m_Theme);
 	Painter.SetBackColor(m_rgbBackColor);
 	Painter.SetColor(m_rgbTextColor);
 

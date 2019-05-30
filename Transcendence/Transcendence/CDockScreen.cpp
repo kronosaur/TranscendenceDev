@@ -1458,7 +1458,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 		const SDockFrame &CurFrame = FrameStack.GetCurrent();
 		CreateScreenSetTabs(DisplayCtx, DisplayOptions, CurFrame.ScreenSet, CurFrame.sCurrentTab);
 
-		DisplayOptions.rcControl.top += GetVisuals().GetTabHeight();
+		DisplayOptions.cyTabRegion = GetVisuals().GetTabHeight();
 		}
 
 	//	Get the list of panes for this screen

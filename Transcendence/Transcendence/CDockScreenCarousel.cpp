@@ -142,7 +142,7 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	//	Create the picker control
 
-	m_pControl = new CGCarouselArea(g_pHI->GetVisuals());
+	m_pControl = new CGCarouselArea(g_pHI->GetVisuals(), DockScreenVisuals);
 	if (m_pControl == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");

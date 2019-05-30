@@ -62,6 +62,7 @@ class IDockScreenDisplay
 			SBackgroundDesc BackgroundDesc;		//	Background specified by screen
 
 			RECT rcControl = { 0, 0, 0, 0 };	//	Position of main control
+			int cyTabRegion = 0;				//	Make room for tabs
 
 			CString sType;						//	Display type
 			CXMLElement *pOptions = NULL;		//	Element containing options (<List> or <ListOptions> or <Display>)

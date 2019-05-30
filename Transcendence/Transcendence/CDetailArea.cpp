@@ -39,6 +39,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 
 	{
 	CCodeChain &CC = m_Universe.GetCC();
+	CDockScreenPainter Painter(m_Theme);
 
 	//	Colors and metrics
 
@@ -49,7 +50,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 	if (pData == NULL || pData->IsNil() || !pData->IsSymbolTable())
 		{
 		PaintBackground(Dest, rcRect, rgbFadeBackColor);
-		//PaintBackgroundFrame(Dest, rcRect);
+		Painter.PaintDisplayFrame(Dest, rcRect);
 		return;
 		}
 
@@ -122,7 +123,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 
 	//	Paint a frame on top
 
-	//PaintBackgroundFrame(Dest, rcRect);
+	Painter.PaintDisplayFrame(Dest, rcRect);
 	}
 
 void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor)
@@ -134,28 +135,11 @@ void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32b
 	{
 	CGDraw::RoundedRect(Dest,
 			rcRect.left,
-			rcRect.top,
+			rcRect.top + m_cyTabRegion,
 			RectWidth(rcRect),
-			RectHeight(rcRect),
+			RectHeight(rcRect) - m_cyTabRegion,
 			BORDER_RADIUS + 1,
 			rgbColor);
-	}
-
-void CDetailArea::PaintBackgroundFrame (CG32bitImage &Dest, const RECT &rcRect)
-
-//	PaintBackgroundFrame
-//
-//	Paint the content frame
-
-	{
-	CGDraw::RoundedRectOutline(Dest,
-			rcRect.left,
-			rcRect.top,
-			RectWidth(rcRect),
-			RectHeight(rcRect),
-			BORDER_RADIUS,
-			1,
-			CG32bitPixel(80,80,80));
 	}
 
 void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc)

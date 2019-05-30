@@ -164,9 +164,17 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
     if (Ctx.pRoot && Ctx.pRoot->GetAPIVersion() < 30)
         SelOptions.bAlwaysShowShields = true;
 
+	//	Calculate some basic metrics
+
+	RECT rcControl = Ctx.rcRect;
+	rcControl.left += Options.rcControl.left;
+	rcControl.right = rcControl.left + RectWidth(Options.rcControl);
+	rcControl.top += Options.rcControl.top;
+	rcControl.bottom = rcControl.top + RectHeight(Options.rcControl);
+
 	//	Create the selector control
 
-	m_pControl = new CGSelectorArea(*Ctx.pVI);
+	m_pControl = new CGSelectorArea(*Ctx.pVI, DockScreenVisuals);
 	if (m_pControl == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");
@@ -179,7 +187,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.
 
-	Ctx.pScreen->AddArea(m_pControl, Ctx.rcRect, m_dwID);
+	Ctx.pScreen->AddArea(m_pControl, rcControl, m_dwID);
 
 	//	Initialize the control
 

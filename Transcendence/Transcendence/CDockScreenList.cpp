@@ -352,6 +352,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
     m_pItemListControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 	m_pItemListControl->SetNoArmorSpeedDisplay(Options.bNoArmorSpeedDisplay);
 	m_pItemListControl->SetDisplayAsKnown(Options.bActualItems);
+	m_pItemListControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.

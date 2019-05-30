@@ -16,9 +16,9 @@ const int ITEM_ENTRY_PADDING_TOP =			2;
 const int ITEM_ENTRY_PADDING_LEFT =			4;
 const int ITEM_ENTRY_PADDING_RIGHT =		4;
 
-const int WIDE_COLUMN_SPACING =				200;
+const int WIDE_COLUMN_SPACING =				190;
 const int NARROW_COLUMN_SPACING =			170;
-const int INTER_SPACING_Y =					30;
+const int INTER_SPACING_Y =					24;
 
 const int NARROW_COLUMN_LEFT_X =			-NARROW_COLUMN_SPACING - (ITEM_ENTRY_WIDTH / 2);
 const int NARROW_COLUMN_RIGHT_X =			NARROW_COLUMN_SPACING - (ITEM_ENTRY_WIDTH / 2);
@@ -139,8 +139,9 @@ const int DRIVE_SLOT_INDEX =				1;
 const int CARGO_SLOT_INDEX =				2;
 const int FIRST_UNNAMED_SLOT_INDEX =		3;
 
-CGSelectorArea::CGSelectorArea (const CVisualPalette &VI) :
-		m_VI(VI)
+CGSelectorArea::CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
+		m_VI(VI),
+		m_Theme(Theme)
 
 //	CGSelectorArea constructor
 
@@ -644,6 +645,7 @@ void CGSelectorArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	{
 	DEBUG_TRY
 
+	CDockScreenPainter Painter(m_Theme);
 	int i;
 
 	const int iCornerRadius = 4;
@@ -718,6 +720,8 @@ void CGSelectorArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 					m_VI.GetColor(colorTextFade));
 			}
 		}
+
+	Painter.PaintDisplayFrame(Dest, rcRect);
 
 	DEBUG_CATCH
 	}

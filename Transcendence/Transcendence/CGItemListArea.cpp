@@ -507,9 +507,9 @@ void CGItemListArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
     CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBackColor, 220), 220);
 	CGDraw::RoundedRect(Dest,
 			rcRect.left,
-			rcRect.top,
+			rcRect.top + m_cyTabHeight,
 			RectWidth(rcRect),
-			RectHeight(rcRect),
+			RectHeight(rcRect) - m_cyTabHeight,
 			BORDER_RADIUS + 1,
 			rgbFadeBackColor);
 

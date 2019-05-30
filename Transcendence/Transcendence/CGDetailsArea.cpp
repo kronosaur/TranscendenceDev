@@ -6,8 +6,9 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-CGDetailsArea::CGDetailsArea (const CVisualPalette &VI) : 
-		m_VI(VI)
+CGDetailsArea::CGDetailsArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) : 
+		m_VI(VI),
+		m_Theme(Theme)
 
 //	CGDetailsArea constructor
 
@@ -33,9 +34,10 @@ void CGDetailsArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	{
 	DEBUG_TRY
 
-	CDetailArea Painter(*g_pUniverse, m_VI);
+	CDetailArea Painter(*g_pUniverse, m_VI, m_Theme);
 	Painter.SetBackColor(m_rgbBackColor);
 	Painter.SetColor(m_rgbTextColor);
+	Painter.SetTabRegion(m_cyTabRegions);
 
 	Painter.Paint(Dest, rcRect, m_pData);
 

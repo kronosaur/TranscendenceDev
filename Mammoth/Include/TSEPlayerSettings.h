@@ -58,6 +58,21 @@ class CDockScreenVisuals
         static bool m_bDefaultInitialized;
     };
 
+class CDockScreenPainter
+	{
+	public:
+		CDockScreenPainter (const CDockScreenVisuals &Visuals) :
+				m_Visuals(Visuals)
+			{ }
+
+		void PaintDisplayFrame (CG32bitImage &Dest, const RECT &rcRect) const;
+
+	private:
+		static constexpr int BORDER_RADIUS = 4;
+
+		const CDockScreenVisuals &m_Visuals;
+	};
+
 class CPlayerSettings
 	{
 	public:
