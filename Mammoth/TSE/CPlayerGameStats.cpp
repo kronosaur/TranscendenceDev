@@ -1227,6 +1227,8 @@ void CPlayerGameStats::OnGameEnd (CSpaceObject *pPlayer)
 //	Game over
 
 	{
+	DEBUG_TRY
+
 	//	Mark how long we spent playing the game
 
 	m_GameTime = m_Universe.GetElapsedGameTime();
@@ -1237,6 +1239,8 @@ void CPlayerGameStats::OnGameEnd (CSpaceObject *pPlayer)
 	OnSystemLeft(m_Universe.GetCurrentSystem());
 
 	//	Set the final time for all installed items
+
+	DEBUG_CATCH
 	}
 
 void CPlayerGameStats::OnItemBought (const CItem &Item, CurrencyValue iTotalPrice)

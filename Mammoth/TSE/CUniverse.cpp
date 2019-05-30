@@ -1653,6 +1653,8 @@ bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 //	Asks each design type if they want to resurrect the player
 
 	{
+	DEBUG_TRY
+
 	int i;
 	TArray<int> Types;
 	TArray<int> Chances;
@@ -1691,6 +1693,8 @@ bool CUniverse::IsGlobalResurrectPending (CDesignType **retpType)
 
 	ASSERT(false);
 	return false;
+
+	DEBUG_CATCH;
 	}
 
 bool CUniverse::IsStatsPostingEnabled (void)

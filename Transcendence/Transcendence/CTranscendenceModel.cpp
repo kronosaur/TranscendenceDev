@@ -205,6 +205,8 @@ CString CTranscendenceModel::CalcEpitaph (SDestroyCtx &Ctx)
 //	Generates an epitaph based on destruction cause
 
 	{
+	DEBUG_TRY
+
 	CShip *pShip = m_pPlayer->GetShip();
 	ASSERT(Ctx.pObj == (CSpaceObject *)pShip);
 	ASSERT(pShip->GetSystem());
@@ -329,6 +331,8 @@ CString CTranscendenceModel::CalcEpitaph (SDestroyCtx &Ctx)
 	//	Done
 
 	return sText;
+
+	DEBUG_CATCH
 	}
 
 void CTranscendenceModel::CalcStartingPos (CShipClass *pStartingShip, DWORD *retdwMap, CString *retsNodeID, CString *retsPos)
@@ -1955,6 +1959,8 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 //	Adds the score to the high-score list and fires OnGameEnd for the adventure.
 
 	{
+	DEBUG_TRY
+
 	ASSERT(m_pPlayer);
 	CShip *pPlayerShip = m_pPlayer->GetShip();
 
@@ -2015,6 +2021,8 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 		m_iLastHighScore = AddHighScore(m_GameRecord);
 	else
 		m_iLastHighScore = -1;
+
+	DEBUG_CATCH
 	}
 
 void CTranscendenceModel::RefreshScreenSession (void)
