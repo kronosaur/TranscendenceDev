@@ -77,16 +77,18 @@ class CDetailArea
 		static constexpr int DEFAULT_LARGE_ICON_WIDTH = 320;
 		static constexpr int SPACING_X = 8;
 		static constexpr int SPACING_Y = 8;
+		static constexpr int BACKGROUND_IMAGE_MARGIN_Y = 24;
 
 		enum EStyles
 			{
 			styleDefault,
 			styleStacked,
+			styleFull,
 			};
 
 		EStyles GetStyle (ICCItem *pData);
 		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor);
-		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc);
+		void PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin = 0);
 		void PaintStackedImage (CG32bitImage &Dest, int x, int y, ICCItem *pImageDesc, Metric rScale = 1.0);
 
 		CUniverse &m_Universe;
@@ -548,6 +550,7 @@ class CGSelectorArea : public AGArea
 		void SetCursor (int iIndex) { m_iCursor = iIndex; Invalidate(); }
 		void SetRegions (CSpaceObject *pSource, const SOptions &Options);
         void SetSlotNameAtCursor (const CString &sName);
+		void SetTabRegion (int cyHeight) { m_cyTabRegion = cyHeight; }
 		void SyncCursor (void) { if (m_iCursor != -1 && m_iCursor >= m_Regions.GetCount()) m_iCursor = m_Regions.GetCount() - 1; }
 
 		//	AGArea virtuals
@@ -596,6 +599,7 @@ class CGSelectorArea : public AGArea
 		bool FindLayoutForPos (const CVector &vPos, const TArray<bool> &SlotStatus, int *retiIndex = NULL);
 		bool FindNearestRegion (int xCur, int yCur, EDirections iDir, bool bDiagOnly, int *retiIndex) const;
 		bool FindRegionInDirection (EDirections iDir, int *retiIndex = NULL) const;
+		void PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const;
 		void PaintEmptySlot (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry);
 		void PaintModifier (CG32bitImage &Dest, int x, int y, const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBackColor, int *rety);
@@ -608,6 +612,7 @@ class CGSelectorArea : public AGArea
 		const CDockScreenVisuals &m_Theme;
         CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);
         CG32bitPixel m_rgbBackColor;
+		int m_cyTabRegion = 0;
 
 		CSpaceObject *m_pSource = NULL;
         CItemCriteria m_Criteria;

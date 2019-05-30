@@ -654,6 +654,8 @@ void CGSelectorArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	const int iSelectionWidth = 2;
     CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBackColor, 220), 220);
 
+	PaintBackground(Dest, rcRect);
+
 	//	All coordinates are relative to the center of the area.
 
 	int xCenter = rcRect.left + (RectWidth(rcRect) / 2);
@@ -724,6 +726,23 @@ void CGSelectorArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 	Painter.PaintDisplayFrame(Dest, rcRect);
 
 	DEBUG_CATCH
+	}
+
+void CGSelectorArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect) const
+
+//	PaintBackground
+//
+//	Paints the background.
+
+	{
+    CG32bitPixel rgbFadeBackColor = CG32bitPixel(CG32bitPixel::Darken(m_rgbBackColor, 220), 220);
+	CGDraw::RoundedRect(Dest,
+			rcRect.left,
+			rcRect.top + m_cyTabRegion,
+			RectWidth(rcRect),
+			RectHeight(rcRect) - m_cyTabRegion,
+			m_Theme.GetBorderRadius() + 1,
+			rgbFadeBackColor);
 	}
 
 void CGSelectorArea::PaintEmptySlot (CG32bitImage &Dest, const RECT &rcRect, const SEntry &Entry)

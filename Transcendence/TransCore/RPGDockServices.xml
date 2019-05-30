@@ -113,6 +113,7 @@
 					(shipClass (objGetType shipObj))
 					)
 					{
+					detailsStyle: 'full
 					largeIcon: (shpGetImageDesc shipClass { type:'schematic })
 					details:
 						(or (objFireEvent shipObj 'GetShipDetails { })

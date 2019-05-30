@@ -183,6 +183,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
     m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
     m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.

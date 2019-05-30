@@ -297,8 +297,17 @@ IDockScreenDisplay::EResults CDockScreenList::OnHandleKeyDown (int iVirtKey)
 			if (!m_bNoListNavigation)
 				{
 				DWORD dwNextTab;
-				if (!m_pItemListControl->GetNextTab(&dwNextTab))
-					return resultHandled;
+
+				if (uiIsShiftDown())
+					{
+					if (!m_pItemListControl->GetPrevTab(&dwNextTab))
+						return resultHandled;
+					}
+				else
+					{
+					if (!m_pItemListControl->GetNextTab(&dwNextTab))
+						return resultHandled;
+					}
 
 				if (!SelectTab(dwNextTab))
 					return resultHandled;

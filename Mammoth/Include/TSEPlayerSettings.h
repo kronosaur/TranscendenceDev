@@ -31,6 +31,7 @@ class CDockScreenVisuals
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
         ALERROR Bind (SDesignLoadCtx &Ctx);
         const CObjectImageArray &GetBackground (void) const { return m_Background; }
+		int GetBorderRadius (void) const { return DEFAULT_BORDER_RADIUS; }
         const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
 		int GetTabHeight (void) const { return DEFAULT_TAB_HEIGHT; }
         CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
@@ -44,6 +45,7 @@ class CDockScreenVisuals
         static CDockScreenVisuals &GetDefault (void);
 
     private:
+		static constexpr int DEFAULT_BORDER_RADIUS = 4;
 		static constexpr int DEFAULT_TAB_HEIGHT = 24;
 
         CObjectImageArray m_Background;     //  Background image for dock screen.
