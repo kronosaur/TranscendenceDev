@@ -42,6 +42,11 @@ STEAM RELEASE
 [ ] Click Preview Changes and accept
 [ ] Run Steam client to test.
 
+WINDOWS STORE PACKAGE
+-------------------------------------------------------------------------------
+NOTE: TO get a file to be packaged up in TransPackage, you must mark it as
+content in the properties in this project.
+
 
 NEW APPLICATION (UI)
 -------------------------------------------------------------------------------
