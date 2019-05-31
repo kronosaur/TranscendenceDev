@@ -292,6 +292,7 @@
 
 						;	Initialise the screen set if necessary
 						)
+						;(dbgOutput "useInfo: " useInfo)
 
 						;	Set the description
 						(scrSetControlValue gScreen 'useItem {
@@ -459,8 +460,15 @@
 	EVENTS
 		CanRepairItem - override this event to limit which types of armor can be repaired
 
-	STATIC DATA
-		RepairHP - number of HP repaired in a typical use of this item
+	PROPERTIES
+		rpg.repairTable: Table to determine effect on various items. The table
+			is a list of structs with the following fields:
+
+			criteria: Table entry used for items that match this criteria.
+			repairHP: HP repaired.
+			descID: If repairHP is Nil, then this explains why repair failed.
+			minLevel: Target armor most be at least this level.
+			maxLevel: Target armor must not be higher than this level.
 
     -->
 
@@ -606,6 +614,8 @@
 
 					resultDesc hpRepaired
 					)
+
+					;(dbgOutput repairDesc)
 
 					(switch
 						(not (itmMatches dstItem "a"))

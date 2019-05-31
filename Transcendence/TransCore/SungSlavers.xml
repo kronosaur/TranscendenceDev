@@ -1058,6 +1058,15 @@
 			sortName=			"Sung armor.10"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:125	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1071,10 +1080,6 @@
 				EMPDamageAdj=	"0"
 				radiationImmune="true"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">125</Data>
-		</StaticData>
 	</ItemType>
 
 	<!-- Dragon Shields -->
@@ -1298,6 +1303,15 @@
 			sortName=			"Sung armor.20"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:90		}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1308,10 +1322,6 @@
 				deviceDamageAdj="25"
 				EMPDamageAdj=	"10"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">90</Data>
-		</StaticData>
 	</ItemType>
 
 <!-- LEVEL V ITEMS -->
@@ -1354,6 +1364,15 @@
 			sortName=			"Sung armor.30"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:35	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1366,10 +1385,6 @@
 				deviceDamageAdj="50"
 				EMPDamageAdj=	"25"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">35</Data>
-		</StaticData>
 	</ItemType>
 	
 <!-- LEVEL II ITEMS -->
@@ -1394,6 +1409,15 @@
 			sortName=			"Sung armor.40"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:12	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1405,10 +1429,6 @@
 				blindingDamageAdj="0"
 				EMPDamageAdj=	"25"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">12</Data>
-		</StaticData>
 	</ItemType>
 
 <!-- MISCELLANEOUS -->
@@ -1504,11 +1524,9 @@
 	<Type unid="&baSungArmor;"
 			inherit=			"&baStdArmorRepair;"
 			>
-		<Events>
-			<CanRepairItem>
-				(itmMatches aItemToRepair "a +TiledArmor")
-			</CanRepairItem>
-		</Events>
+		<Language>
+			<Text id="descMustBeTiledArmor">%UseItem% can only repair other tiled armor, such as Sung armor.</Text>
+		</Language>
 	</Type>
 	
 <!-- EFFECTS -->

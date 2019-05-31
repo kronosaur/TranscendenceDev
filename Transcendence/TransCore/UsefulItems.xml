@@ -271,18 +271,20 @@
 			numberAppearing=	"1d4"
 			attributes=			"ArmorRepair; Consumable"
 
-			description=		"This is a small armor plate that can be welded to your ship's armor to repair damage."
+			description=		"This is a small armor plate that can be welded to your ship's armor to repair damage. It works on armor up to level 5."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 
 			sortName=			"armor patch, small"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:5		repairHP:35	}
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
-		
-		<StaticData>
-			<Data id="RepairHP">35</Data>
-		</StaticData>
 	</ItemType>
 
 	<!-- Large Armor Patch -->
@@ -297,18 +299,20 @@
 			numberAppearing=	"1d4"
 			attributes=			"ArmorRepair; Consumable"
 
-			description=		"This is a large armor plate that can be welded to your ship's armor to repair damage."
+			description=		"This is a large armor plate that can be welded to your ship's armor to repair damage. It works on armor up to level 7."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 
 			sortName=			"armor patch, large"
 			>
 
-		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Constant id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:7		repairHP:60	}
+			</Constant>
+		</Properties>
 
-		<StaticData>
-			<Data id="RepairHP">60</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Light Armor Repair Kit -->
@@ -323,18 +327,20 @@
 			numberAppearing=	"1d4"
 			attributes=			"ArmorRepair; Consumable"
 
-			description=		"This kit can be used in the field to repair damaged armor. It will repair up to 100 hp of damage."
+			description=		"This kit can be used in the field to repair damaged armor. It will repair up to 100 hp of damage. It work on armor up to level 9."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 
 			sortName=			"armor repair kit, 50"
 			>
 
-		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Constant id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:9		repairHP:100	}
+			</Constant>
+		</Properties>
 
-		<StaticData>
-			<Data id="RepairHP">100</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Medium Armor Repair Kit -->
@@ -356,11 +362,13 @@
 			sortName=			"armor repair kit, 30"
 			>
 
-		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Constant id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:10		repairHP:175	}
+			</Constant>
+		</Properties>
 
-		<StaticData>
-			<Data id="RepairHP">175</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<!-- Heavy Armor Repair Kit -->
@@ -382,11 +390,13 @@
 			sortName=			"armor repair kit, 10"
 			>
 
-		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Constant id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:10		repairHP:300	}
+			</Constant>
+		</Properties>
 
-		<StaticData>
-			<Data id="RepairHP">300</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="288" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 <!-- BARRELS -->
@@ -438,19 +448,21 @@
 			unknownType=		"&itUnknownBarrel;"
 			attributes=			"ArmorRepair; Consumable"
 
-			description=		"Apply this paste to an armor segment to repair light to moderate damage."
+			description=		"Apply this paste to an armor segment to repair light to moderate damage. It works on armor up to level 5."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 
 			sortName=			"armor repair paste, barrel of"
 			>
 
+		<Properties>
+			<DynamicData id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:5		repairHP:(rollDice 10 6 0)	}
+			</DynamicData>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 		
-		<StaticData>
-			<Data id="RepairHP">(rollDice 10 6 0)</Data>
-		</StaticData>
-
 		<Language>
 			<Text id="descResultIntro">The paste is a silicon-based compound that patches damaged sections of your armor.</Text>
 		</Language>
@@ -1181,19 +1193,21 @@
 			unknownType=		"&itUnknownBarrel;"
 			attributes=			"ArmorRepair; Consumable"
 
-			description=		"Apply this paste to an armor segment to repair moderate to heavy damage."
+			description=		"Apply this paste to an armor segment to repair moderate to heavy damage. It works on armor up to level 7."
 
 			useScreen=			"&dsRPGUseItemOnArmor;"
 
 			sortName=			"repairing nanos, barrel of"
 			>
 
+		<Properties>
+			<DynamicData id="rpg.repairTable">
+				{	criteria:"a"	maxLevel:7		repairHP:(rollDice 9 12 0)	}
+			</DynamicData>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 		
-		<StaticData>
-			<Data id="RepairHP">(rollDice 9 12 0)</Data>
-		</StaticData>
-
 		<Language>
 			<Text id="descResultIntro">The paste contains a colony of nanomachines that can repair your armor.</Text>
 		</Language>
