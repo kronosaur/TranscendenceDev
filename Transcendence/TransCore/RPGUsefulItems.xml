@@ -485,7 +485,7 @@
 											'descUsageOK4
 						))
 					(repairDesc 
-						(or (rpgFindItemInTable dstItem (itmGetStaticData gItem 'repairTable))
+						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
 							{
 								repairHP: (eval (itmGetStaticData gItem 'repairHP))
 								minLevel: (max 1 (- (itmGetLevel gItem) 3))
@@ -589,7 +589,7 @@
 					(dstItem (@ gData 'itemToUseOn))
 					(shipObj (@ gData 'shipObj))
 					(repairDesc 
-						(or (rpgFindItemInTable dstItem (itmGetStaticData gItem 'repairTable))
+						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
 							{
 								repairHP: (eval (itmGetStaticData gItem 'repairHP))
 								minLevel: (max 1 (- (itmGetLevel gItem) 3))
