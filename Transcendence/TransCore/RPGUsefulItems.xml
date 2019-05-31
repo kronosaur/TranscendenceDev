@@ -602,6 +602,8 @@
 					(armorHP (objGetItemProperty shipObj dstItem 'hp))
 					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
 
+					(consumeItem True)
+
 					resultDesc hpRepaired
 					)
 
@@ -611,6 +613,9 @@
 
 						;	NOTE: We need to check some of these conditions again because if this
 						;	was an unknown item, we don't know that it won't work until we try it.
+						;
+						;	Also, if we get this far, then we consume the item, because we didn't
+						;	know what it was so we used up the whole thing.
 
 						(= armorHP maxArmorHP)
 							(setq resultDesc 'descResultNotDamaged)
@@ -703,16 +708,24 @@
 									(geq usedUp 20)
 									(leq (random 1 100) (add usedUp 20))
 									)
-								(objRemoveItem shipObj gItem 1)
+								Nil
 
 								; Item is not used up
-								(setq resultDesc 'descResultReusable)
+								(block ()
+									(setq resultDesc 'descResultReusable)
+									(setq consumeItem Nil)
+									)
 								)
 							)
 						)
 
 					;	Identify the item
 					(itmSetKnown gItem)
+
+					;	Consume
+					(if consumeItem
+						(objRemoveItem shipObj gItem 1)
+						)
 
 					{
 						desc: (cat
@@ -748,7 +761,7 @@
 			<Text id="descResultFailed">Unfortunately, your attempt to repair the armor was unsuccessful and the %useItem% was ruined in the process.</Text>
 			<Text id="descResultItemError">ERROR: &lt;RepairHP&gt; static data not found.</Text>
 			<Text id="descResultNotArmor">That is not an armor segment.</Text>
-			<Text id="descResultNotDamaged">That armor segment is not damaged. There is no need to attempt repairs.</Text>
+			<Text id="descResultNotDamaged">But the armor does not need to be repaired.</Text>
 			<Text id="descResultRepaired">You have successfully repaired %hpRepaired% of damage to your armor.</Text>
 			<Text id="descResultArmorTooPrimitive">Unfortunately, %dstItem% is too primitive to be repaired with it.</Text>
 			<Text id="descResultArmorTooAdvanced">Unfortunately, %dstItem% is too advanced to be repaired with it.</Text>
