@@ -604,6 +604,7 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 				}
 
 			//	For dynamic object properties, we return the code.
+			//	Our caller is responsible for evaluating.
 
 			case EPropertyType::propDynamicData:
 				if (retiType) *retiType = iType;

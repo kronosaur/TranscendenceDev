@@ -88,7 +88,7 @@ class CItemType : public CDesignType
 			return true;
 			}
 
-		ICCItem *FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
+		ICCItemPtr FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
 		int GetApparentLevel (CItemCtx &Ctx) const;
 		CDeviceClass *GetAmmoLauncher (int *retiVariant = NULL) const;
 		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }

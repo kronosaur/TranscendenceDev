@@ -1357,7 +1357,8 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult;
+	ICCItemPtr pResult;
+	EPropertyType iPropType;
 	int i;
 
 	if (m_pItemType == NULL)
@@ -1489,8 +1490,27 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	//	will also get any design type properties and will check the old-style
 	//	data fields.
 
-	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty))
-		return pResult;
+	if (pResult = GetType()->FindItemTypeBaseProperty(CCCtx, sProperty, &iPropType))
+		{
+		switch (iPropType)
+			{
+			case EPropertyType::propDynamicData:
+				{
+				CCodeChainCtx RunCtx(GetUniverse());
+
+				RunCtx.SetItemType(GetType());
+				RunCtx.DefineContainingType(m_pItemType);
+				RunCtx.SaveAndDefineSourceVar(Ctx.GetSource());
+				RunCtx.SaveAndDefineItemVar(*this);
+
+				ICCItemPtr pValue = RunCtx.RunCode(pResult);
+				return pValue->Reference();
+				}
+
+			default:
+				return pResult->Reference();
+			}
+		}
 
 	//	Otherwise, we've got nothing
 

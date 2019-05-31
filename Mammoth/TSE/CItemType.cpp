@@ -489,7 +489,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
-ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
+ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType) const
 
 //	FindItemTypeBaseProperty
 //
@@ -502,12 +502,14 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult;
 	ICCItemPtr pResultPtr;
 	int i;
 
+	if (retiType)
+		*retiType = EPropertyType::propEngine;
+
 	if (strEquals(sProperty, PROPERTY_CATEGORY))
-		return CC.CreateString(GetItemCategoryID(GetCategory()));
+		return ICCItemPtr(GetItemCategoryID(GetCategory()));
 
 	else if (strEquals(sProperty, PROPERTY_COMPONENT_PRICE))
 		{
@@ -518,14 +520,14 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 			iTotalPrice += Component.GetTradePrice(NULL, true) * Component.GetCount();
 			}
 
-		return (iTotalPrice > 0 ? CC.CreateInteger(iTotalPrice) : CC.CreateNil());
+		return (iTotalPrice > 0 ? ICCItemPtr(iTotalPrice) : ICCItemPtr(ICCItem::Nil));
 		}
 
 	else if (strEquals(sProperty, PROPERTY_COMPONENTS))
 		{
 		const CItemList &Components = GetComponents();
 		if (Components.GetCount() == 0)
-			return CC.CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 
 		ICCItem *pList = CC.CreateLinkedList();
 		for (i = 0; i < Components.GetCount(); i++)
@@ -535,64 +537,64 @@ ICCItem *CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString 
 			pEntry->Discard();
 			}
 
-		return pList;
+		return ICCItemPtr(pList);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_CURRENCY))
-		return CC.CreateInteger(GetCurrencyType()->GetUNID());
+		return ICCItemPtr(GetCurrencyType()->GetUNID());
 
 	else if (strEquals(sProperty, PROPERTY_CURRENCY_NAME))
-		return CC.CreateString(GetCurrencyType()->GetSID());
+		return ICCItemPtr(GetCurrencyType()->GetSID());
 
 	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
-		return CC.CreateString(GetDesc());
+		return ICCItemPtr(GetDesc());
 
 	else if (strEquals(sProperty, PROPERTY_FREQUENCY))
-		return CC.CreateString(GetFrequencyName((FrequencyTypes)GetFrequency()));
+		return ICCItemPtr(GetFrequencyName((FrequencyTypes)GetFrequency()));
 
     else if (strEquals(sProperty, PROPERTY_KNOWN))
-        return CC.CreateBool(IsKnown(CItemCtx(this)));
+        return ICCItemPtr(IsKnown(CItemCtx(this)));
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
-        return CC.CreateInteger(GetLevel());
+        return ICCItemPtr(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_MASS_BONUS_PER_CHARGE))
-		return CC.CreateInteger(GetMassBonusPerCharge());
+		return ICCItemPtr(GetMassBonusPerCharge());
 
 	else if (strEquals(sProperty, PROPERTY_MAX_CHARGES))
-		return CC.CreateInteger(GetMaxCharges());
+		return ICCItemPtr(GetMaxCharges());
 
     else if (strEquals(sProperty, PROPERTY_MAX_LEVEL))
-        return CC.CreateInteger(GetMaxLevel());
+        return ICCItemPtr(GetMaxLevel());
 
     else if (strEquals(sProperty, PROPERTY_MIN_LEVEL))
-        return CC.CreateInteger(GetLevel());
+        return ICCItemPtr(GetLevel());
 
 	else if (strEquals(sProperty, PROPERTY_ROLE))
-		return (!m_sRole.IsBlank() ? CC.CreateString(m_sRole) : CC.CreateNil());
+		return (!m_sRole.IsBlank() ? ICCItemPtr(m_sRole) : ICCItemPtr(ICCItem::Nil));
 
 	else if (strEquals(sProperty, PROPERTY_VALUE_BONUS_PER_CHARGE))
-		return CC.CreateInteger(GetValueBonusPerCharge());
+		return ICCItemPtr(GetValueBonusPerCharge());
 
 	else if (strEquals(sProperty, PROPERTY_WEAPON_TYPES))
 		{
 		if (GetLaunchWeapons().GetCount() == 0)
-			return CC.CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 		else
 			{
 			ICCItem *pResult = CC.CreateLinkedList();
 			for (i = 0; i < GetLaunchWeapons().GetCount(); i++)
 				pResult->AppendInteger(GetLaunchWeapons()[i]->GetUNID());
 
-			return pResult;
+			return ICCItemPtr(pResult);
 			}
 		}
 
-	else if (pResult = FindBaseProperty(Ctx, sProperty))
-		return pResult;
+	else if (ICCItem *pResult = FindBaseProperty(Ctx, sProperty))
+		return ICCItemPtr(pResult);
 
-	else if (FindCustomProperty(sProperty, pResultPtr))
-		return pResultPtr->Reference();
+	else if (FindCustomProperty(sProperty, pResultPtr, retiType))
+		return pResultPtr;
 
 	else
 		return NULL;
