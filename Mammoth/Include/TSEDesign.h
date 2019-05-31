@@ -308,6 +308,7 @@ class CDesignType
 		ICCItemPtr IncTypeProperty (const CString &sProperty, ICCItem *pValue);
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
+		void InitItemData (CItem &Item) const;
 		void InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const;
 		inline bool IsMerged (void) const { return m_bIsMerged; }
 		inline bool IsModification (void) const { return m_bIsModification; }

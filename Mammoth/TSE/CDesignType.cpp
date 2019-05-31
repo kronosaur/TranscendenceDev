@@ -1969,6 +1969,24 @@ bool CDesignType::InheritsFrom (DWORD dwUNID) const
 	return m_pInheritFrom->InheritsFrom(dwUNID);
 	}
 
+void CDesignType::InitItemData (CItem &Item) const
+
+//	InitItemData
+//
+//	Initializes the item's data block.
+
+	{
+	//	Let our ancestors initialize.
+
+	if (m_pInheritFrom)
+		m_pInheritFrom->InitItemData(Item);
+
+	//	Initialize data.
+
+	if (m_pExtra)
+		m_pExtra->PropertyDefs.InitItemData(GetUniverse(), Item);
+	}
+
 void CDesignType::InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const
 
 //	InitObjectData

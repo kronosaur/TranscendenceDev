@@ -98,6 +98,8 @@ CItem::CItem (CItemType *pItemType, int iCount)
 	int iUnknownIndex = pItemType->GetRandomUnknownTypeIndex();
 	if (iUnknownIndex != -1)
 		SetUnknownIndex(iUnknownIndex);
+
+	m_pItemType->InitItemData(*this);
 	}
 
 CItem::~CItem (void)
@@ -1494,6 +1496,10 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		{
 		switch (iPropType)
 			{
+			case EPropertyType::propVariant:
+			case EPropertyType::propData:
+				return GetDataAsItem(sProperty)->Reference();
+
 			case EPropertyType::propDynamicData:
 				{
 				CCodeChainCtx RunCtx(GetUniverse());

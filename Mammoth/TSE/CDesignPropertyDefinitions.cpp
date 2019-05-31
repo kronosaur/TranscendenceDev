@@ -186,6 +186,41 @@ ALERROR CDesignPropertyDefinitions::InitFromXML (SDesignLoadCtx &Ctx, const CXML
 	return NOERROR;
 	}
 
+void CDesignPropertyDefinitions::InitItemData (CUniverse &Universe, CItem &Item) const
+
+//	InitItemData
+//
+//	Initializes item-level properties.
+
+	{
+	for (int i = 0; i < m_Defs.GetCount(); i++)
+		{
+		switch (m_Defs[i].iType)
+			{
+			case EPropertyType::propData:
+			case EPropertyType::propVariant:
+				{
+				if (m_Defs[i].pCode)
+					{
+					CCodeChainCtx CCCtx(Universe);
+
+					ICCItemPtr pResult = CCCtx.RunCode(m_Defs[i].pCode);
+					if (pResult->IsError())
+						{
+						::kernelDebugLogPattern("ERROR: Evaluating property %s: %s", m_Defs.GetKey(i), pResult->GetStringValue());
+						continue;
+						}
+
+					if (!pResult->IsNil())
+						Item.SetData(m_Defs.GetKey(i), pResult);
+					}
+
+				break;
+				}
+			}
+		}
+	}
+
 void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObject &Obj, CAttributeDataBlock &Dest) const
 
 //	InitObjectData
@@ -211,7 +246,8 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 						continue;
 						}
 
-					Dest.SetData(m_Defs.GetKey(i), pResult);
+					if (!pResult->IsNil())
+						Dest.SetData(m_Defs.GetKey(i), pResult);
 					}
 
 				break;
@@ -245,7 +281,8 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDa
 						continue;
 						}
 
-					Dest.SetData(m_Defs.GetKey(i), pResult);
+					if (!pResult->IsNil())
+						Dest.SetData(m_Defs.GetKey(i), pResult);
 					}
 
 				break;

@@ -45,6 +45,7 @@ class CDesignPropertyDefinitions
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		bool Find (const CString &sProperty, ICCItemPtr &pData, EPropertyType *retiType = NULL) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
+		void InitItemData (CUniverse &Universe, CItem &Item) const;
 		void InitObjectData (CUniverse &Universe, CSpaceObject &Obj, CAttributeDataBlock &Dest) const;
 		void InitTypeData (CUniverse &Universe, CAttributeDataBlock &Dest) const;
 

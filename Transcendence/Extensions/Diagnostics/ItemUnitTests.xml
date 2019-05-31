@@ -140,6 +140,18 @@
 									(itmSetProperty (itmCreate &itTestWeaponScaled; 1) 'level 5)
 									'level
 									)														result:5	}
+
+						;	Item Custom Properties -----------------------------
+
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant1)		result:'foo	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant2)		result:1	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.constant3)		result:2	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.global1)		result:17	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.global2)		result:4	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.data1)			result:1	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.data2)			result:2	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData1)	result:1	}
+						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData2)	result:4	}
 						))
 
 					;	Unit Tests on Armor Damage
