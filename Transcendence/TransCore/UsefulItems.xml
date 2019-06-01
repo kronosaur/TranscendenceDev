@@ -1838,7 +1838,7 @@
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, shieldEnhance"
 
-			description=		"This ROM upgrades a shield generator so that it is more effective at absorbing damage. The ROM works on generators up to technology level VI."
+			description=		"This ROM upgrades a shield generator so that it is more effective at absorbing damage. The ROM works on generators up to technology level 6."
 			>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>

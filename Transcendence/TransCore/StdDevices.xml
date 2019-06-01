@@ -542,7 +542,7 @@
 			value=				"7000"
 			mass=				"2000"
 			  
-			description=		"This robotic spider crawls along the ship's hull and repairs armor of up to technology level XII. It does not require a device slot."
+			description=		"This robotic spider crawls along the ship's hull and repairs armor of up to technology level 12. It does not require a device slot."
 			>
 
 		<Image imageID="&rsItems1;" imageX="0" imageY="192" imageWidth="96" imageHeight="96"/>
