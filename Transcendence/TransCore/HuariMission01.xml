@@ -126,6 +126,7 @@
 						(msnSetData gSource 'startPos startPos)
 						(msnSetData gSource 'gateID (objGetID endGate))
 						(msnSetData gSource 'slaveCount 17)
+						(msnSetData gSource 'slavesLeft 17)
 						(msnSetData gSource 'slaveCargo (itmSetData (itmCreate &itSlaveCoffin; 1) 'Huari True))
 
 						(msnSetData gSource 'missionXP 75)
@@ -141,7 +142,6 @@
 				(block (
 					(gateObj (objGetObjByID (msnGetData gSource 'gateID)))
 					(convoyDesc (msnGetData gSource 'convoyDesc))
-					(theRoll (random 1 100))
 					targetObj
 					)
 					;	Create the transport
@@ -194,10 +194,9 @@
 							)
 
 					;	Wreck destroyed
-					(and
-						(= (objGetID aObjDestroyed) (msnGetData gSource 'wreckID))
-						(objHasItem aObjDestroyed (msnGetData gSource 'slaveCargo))
-						)
+					(and (= (objGetID aObjDestroyed) (msnGetData gSource 'wreckID))
+							(objHasItem aObjDestroyed (msnGetData gSource 'slaveCargo))
+							)
 						(msnFailure gSource)
 					)
 			</OnObjDestroyed>
@@ -211,30 +210,21 @@
 
 			<OnObjDocked>
 				(switch
-					;	Player docks with wreck
-					(and gPlayerShip (= aObjDocked gPlayerShip)
-						(= (objGetID aDockTarget) (msnGetData gSource 'wreckID))
-						)
-						(block Nil
-							(msnSetData gSource 'status 'returning)
-							(msnSetPlayerTarget gSource)
-							)
-
 					;	Player docks with station
 					(and gPlayerShip (= aObjDocked gPlayerShip)
-						(= (objGetID aDockTarget) (msnGetProperty gSource 'ownerID))
-						(= (msnGetData gSource 'status) 'returning)
-						)
+							(= (objGetID aDockTarget) (msnGetProperty gSource 'ownerID))
+							(= (msnGetData gSource 'status) 'returning)
+							)
 						(block (
-							(slaveCount (msnGetData gSource 'slaveCount))
+							(slavesLeft (msnGetData gSource 'slavesLeft))
 							(slaveCargo (msnGetData gSource 'slaveCargo))
 							(wreckObj (objGetObjByID (msnGetData gSource 'wreckID)))
 							)
 							(switch
 								;	Player returns with all slaves
-								(objHasItem gPlayerShip slaveCargo slaveCount)
+								(objHasItem gPlayerShip slaveCargo slavesLeft)
 									(block Nil
-										(objRemoveItem gPlayerShip slaveCargo slaveCount)
+										(objRemoveItem gPlayerShip slaveCargo slavesLeft)
 										(msnSuccess gSource)
 										)
 
@@ -264,6 +254,39 @@
 					(rpgSetTarget gSource aReason (objGetObjByID (msnGetProperty gSource 'ownerID)) 'dock)
 					)
 			</OnSetPlayerTarget>
+
+			<OnUpdate>
+				(block (
+					(status (msnGetData gSource 'status))
+					)
+					(switch
+						(and (= status 'rescue)
+								(objHasItem gPlayerShip (msnGetData gSource 'slaveCargo))
+								)
+							(block Nil
+								(msnSetData gSource 'status 'returning)
+								(msnSetPlayerTarget gSource)
+								)
+						)
+					)
+			</OnUpdate>
+
+			<OnInProgressUndock>
+				(block (
+					(slaveCargo (msnGetData gSource 'slaveCargo))
+					(slavesOnBoard (objHasItem gPlayerShip slaveCargo))
+					)
+					(if slavesOnBoard
+						(block ()
+							(objRemoveItem gPlayerShip slaveCargo slavesOnBoard)
+							(msnIncData gSource 'slavesLeft (- slavesOnBoard))
+
+							(msnSetData gSource 'status 'rescue)
+							(msnSetPlayerTarget gSource)
+							)
+						)
+					)
+			</OnInProgressUndock>
 
 			<OnReward>
 				(typIncData &svHuariEmpire; 'xp (msnGetData gSource 'missionXP))
@@ -313,42 +336,90 @@
 
 			<Text id="Name">Intercept Sung transport</Text>
 			<Text id="textSummary">
+
 				Intercept a Sung transport and liberate the slaves held onboard.
+
 			</Text>
 			<Text id="Briefing">
+
 				"By the mercy of the Light we've learned the course and schedule of a slave
 				ship carrying our brethren. You can free our citizens by attacking the
-				transport and returning its living cargo to us."
+				transport and returning its living cargo to us.
 
 				"Will you help us, %brother%?"
+
 			</Text>
 			<Text id="AcceptReply">
+
 				"We've programmed the slave ship's coordinates into your ship's computer.
 				Go with the Light!"
+
 			</Text>
 			<Text id="DeclineReply">
+
 				"Let the will of the Light be done, though we cannot understand
 				His methods."
+
 			</Text>
 			<Text id="InProgress">
-				"By all the Light's mercy, what are you doing here?
-				Your task remains uncompleted."
+				(block (
+					(slaveCargo (msnGetData gSource 'slaveCargo))
+					(slavesInCargo (objHasItem gPlayerShip slaveCargo))
+					(slavesLeft (- (msnGetData gSource 'slavesLeft) slavesInCargo))
+					)
+					(switch
+						(and slavesInCargo (= slavesLeft 1))
+							(msnTranslate gSource 'descInProgress.oneSlaveLeft)
+
+						slavesInCargo
+							(msnTranslate gSource 'descInProgress.someSlavesLeft {
+								slavesLeft: slavesLeft
+								})
+
+						(msnTranslate gSource 'descInProgress)
+						)
+					)
 			</Text>
 			<Text id="FailureDebrief">
+
 				"Your failure is also our doom. Maybe we were never meant to bask in the
 				Light's blessings; maybe the darkness of space will consume us after all."
+
 			</Text>
 			<Text id="SuccessDebrief">
+
 				"By the blessed Light, you have succeeded where none dared hope!
 				We are all grateful for rescuing our poor brothers and sisters.
 				The Sung use slaves to develop their technologies. Thousands and
 				thousands of human minds number-crunching inside their steel coffins.
 				You have saved them from a horrific experience."
+
 			</Text>
-			<Text id="textLeftSlaves">
-				"By the enduring Light, where are our brethren? You didn't leave
-				them on that slave ship, did you? There were %slaveCount% coffins
-				on that ship and you need to account for all of them"
+
+			<Text id="descInProgress">
+
+				"By all the Light's mercy, what are you doing here?
+				Your task remains uncompleted."
+
+			</Text>
+			<Text id="descInProgress.oneSlaveLeft">
+
+				"By the enduring Light, you've brought most of our brethren 
+				back!
+				
+				"But there's still one coffin out there and you need to bring 
+				it back!"
+
+			</Text>
+			<Text id="descInProgress.someSlavesLeft">
+
+				"By the enduring Light, you've brought some of our brethren 
+				back!
+				
+				"But where are the others? You didn't leave them on that slave 
+				ship, did you? There are still %slavesLeft% coffins out there
+				and you need to bring them back!"
+
 			</Text>
 		</Language>
 	</MissionType>
