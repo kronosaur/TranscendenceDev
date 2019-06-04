@@ -23,6 +23,15 @@
 			attributes=			"commonwealth, commonwealthCustoms, friendly, human, majorStation, populated, raisuStation"
 			>
 
+		<Properties>
+			<Constant id="rpgCharacter.stationMaster">
+				{
+					id: 'raisuStationMaster
+					gender: 'genderFemale
+					}
+			</Constant>
+		</Properties>
+
 		<ImageVariants>
 			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="0" imageY="0" imageWidth="64" imageHeight="128"/>
 			<Image	imageID="&rsCommonwealthSlumsImage;" imageX="64" imageY="0" imageWidth="64" imageHeight="128"/>
@@ -48,17 +57,7 @@
 									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
 									noMissionTextID: 'descNoMissions
 
-									;	NOTE: We don't really need this because the only way to 
-									;	get rumors is to defeat Arco, and if that happens, the only
-									;	rumor available (with overriding priority) is the one that
-									;	is defined by the Arco mission. Thus there is no chance to
-									;	get any of the regular Commonwealth habitat rumors, which
-									;	require a missionGiver.
-
-									missionGiver: {
-										id: 'raisuStationMaster
-										gender: 'genderFemale
-										}
+									missionGiver: (objGetProperty gSource 'rpgCharacter.stationMaster)
 									})
 							</Action>
 
