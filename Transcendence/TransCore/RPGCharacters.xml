@@ -709,43 +709,15 @@
 				;	Use rpgCharacterTranslate to get text for the character.
 
 				(block (
-					(type (objGetType sourceObj))
 					(characterRole (or role "npc"))
-
-					(characterListVar (cat "rpgCharacterList." characterRole))
-					(characterList (typGetData type characterListVar))
-
-					(nextVar (cat "rpgCharacterNext." characterRole))
-					(next (typGetData type nextVar))
-
 					(characterVar (cat "rpgCharacter." characterRole))
 
-					characterID
+					(characterID (rpgCharacterRandom sourceObj criteria characterRole))
 					)
-
-					;	If we don't yet have a character list, then generate one.
-
-					(if (not characterList)
-						(block ()
-							(setq characterList (rpgCharacterGenerateList criteria))
-							(setq next 0)
-							(typSetData type characterListVar characterList)
-							(typSetData type nextVar 0)
-							)
-						)
-
-					;	Pick a random character (the list has been shuffled, so we 
-					;	just pick the next character on the list).
-
-					(setq characterID (@ characterList (mod next (count characterList))))
 
 					;	Store this character with the object.
 
 					(objSetData sourceObj characterVar characterID)
-
-					;	Next character
-
-					(typIncData type nextVar)
 
 					;	Done
 
@@ -788,36 +760,95 @@
 				(block (
 					(characterRole (or role "npc"))
 					(characterVar (cat "rpgCharacter." characterRole))
-					(characterID (objGetData sourceObj characterVar))
 
-					(theType (@ characterID 0))
-					(theID (@ characterID 1))
+					;	characterID is either a struct, which contains the 
+					;	character info, or it is a list with two elements pointing
+					;	to the character info. If the latter, the first element is
+					;	the type containing the info and the second element is the
+					;	id in the table.
 
-					(characterTable (typGetStaticData theType 'CharacterTable))
+					(characterID (or (objGetProperty sourceObj characterVar) (objGetData sourceObj characterVar)))
 					)
 					(switch
-						(@ characterTable theID)
-							(struct (@ characterTable theID) { sourceType:theType })
+						;	If we have the character info, just return it, adding in a type
+						;	so that we can translate text.
 
-						defaultType
-							(struct (@ (typGetStaticData defaultType 'CharacterTable) 'default) { sourceType:defaultType })
+						(= (typeof characterID) 'struct)
+							(struct characterID { sourceType:(objGetType sourceObj) })
+
+						;	Otherwise, look up from the table
+
+						(block (
+							(theType (@ characterID 0))
+							(theID (@ characterID 1))
+
+							(characterTable (or (typGetProperty theType 'rpg.characterTable) (typGetStaticData theType 'CharacterTable)))
+							)
+							(switch
+								(@ characterTable theID)
+									(struct (@ characterTable theID) { sourceType:theType })
+
+								defaultType
+									(struct (@ (typGetStaticData defaultType 'CharacterTable) 'default) { sourceType:defaultType })
+								)
+							)
 						)
+					)
+				))
+
+			(setq rpgCharacterRandom (lambda (sourceObj criteria role)
+				
+				;	This function assigns a random character to the given source object.
+				;	It should be called once when the object is created.
+				;
+				;	Use rpgCharacterTranslate to get text for the character.
+
+				(block (
+					(type (objGetType sourceObj))
+					(characterRole (or role "npc"))
+
+					(characterListVar (cat "rpgCharacterList." characterRole))
+					(characterList (typGetData type characterListVar))
+
+					(nextVar (cat "rpgCharacterNext." characterRole))
+					(next (typGetData type nextVar))
+
+					(characterVar (cat "rpgCharacter." characterRole))
+
+					characterID
+					)
+
+					;	If we don't yet have a character list, then generate one.
+
+					(if (not characterList)
+						(block ()
+							(setq characterList (rpgCharacterGenerateList criteria))
+							(setq next 0)
+							(typSetData type characterListVar characterList)
+							(typSetData type nextVar 0)
+							)
+						)
+
+					;	Pick a random character (the list has been shuffled, so we 
+					;	just pick the next character on the list).
+
+					(setq characterID (@ characterList (mod next (count characterList))))
+
+					;	Next character
+
+					(typIncData type nextVar)
+
+					;	Done
+
+					characterID
 					)
 				))
 
 			(setq rpgCharacterTranslate (lambda (sourceObj role textID data)
 				(block (
-					(characterRole (or role "npc"))
-					(characterVar (cat "rpgCharacter." characterRole))
-					(characterID (objGetData sourceObj characterVar))
-
-					(type (@ characterID 0))
-					(id (@ characterID 1))
+					(charInfo (rpgCharacterGetInfo sourceObj role))
 					)
-					(if id
-						(typTranslate type (cat id "." textID) data)
-						(typTranslate type textID data)
-						)
+					(typTranslate (@ charInfo 'sourceType) (cat (@ charInfo 'id) "." textID) data)
 					)
 				))
 			)

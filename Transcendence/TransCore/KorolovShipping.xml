@@ -177,8 +177,6 @@
 
 	EXTRA DATA
 
-	assistantDirector:	Last name of the assistant director overseeing this station
-
 	charonStronghold:	Primary Charon base in the system
 
 	-->
@@ -218,6 +216,12 @@
 
 				unique=					"inSystem"
 				/>
+
+		<Properties>
+			<Variant id="rpgCharacter.assistantDirector">
+				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
+			</Variant>
+		</Properties>
 
 		<!-- Trade and Items -->
 
@@ -728,9 +732,6 @@
 		<Events>
 			<OnCreate>
 				(block (charonStronghold)
-					;	Initialize our characters
-					(rpgCharacterAssignRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
-
 					; Register a recurring event
 					(sysAddObjRecurringTimerEvent 240 gSource "OnTrafficControl")
 

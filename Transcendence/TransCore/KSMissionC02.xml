@@ -163,6 +163,12 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<Variant id="rpgCharacter.assistantDirector">
+				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
+			</Variant>
+		</Properties>
+
 		<!-- Trade and Items -->
 		
 		<!-- Ships and Defenses -->
@@ -210,12 +216,6 @@
 		</DockScreens>
 
 		<Events>
-			<OnCreate>
-				(block ()
-					;	Initialize our characters
-					(rpgCharacterAssignRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
-					)
-			</OnCreate>
 		</Events>
 
 		<Language>

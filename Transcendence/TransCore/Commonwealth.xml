@@ -1041,6 +1041,12 @@
 		<Names noArticle="true">Habitat Alpha %1%0; Habitat Beta %1%0; Habitat Gamma %1%0; Habitat Delta %1%0;
 				Habitat Epsilon %1%0; Habitat Zeta %1%0</Names>
 
+		<Properties>
+			<Variant id="rpgCharacter.stationMaster">
+				(rpgCharacterRandom gSource "x +commonwealth; +stationMasterCommon;" 'stationMaster)
+			</Variant>
+		</Properties>
+
 		<Trade>
 			<ConsumeTrade	criteria="{core.fusionFuel}"		impact="1"/>
 			<ConsumeTrade	criteria="{human.basicFood}"	impact="2"/>
@@ -1060,11 +1066,6 @@
 		</Ships>
 
 		<Events>
-			<OnCreate>
-				;	Initialize our characters
-				(rpgCharacterAssignRandom gSource "x +commonwealth; +stationMasterCommon;" 'stationMaster)
-			</OnCreate>
-
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stCommonwealthSlums; "* +commonwealthHabitat;")
 			</GetGlobalAchievements>
