@@ -30,6 +30,7 @@
 					gender: 'genderFemale
 					}
 			</Constant>
+
 		</Properties>
 
 		<ImageVariants>
@@ -49,6 +50,12 @@
 			<Main>
 				<Panes>
 					<Default descID="descNormal">
+						<OnPaneInit>
+							(block ()
+								(scrShowAction gScreen 'actionTakeReward (objGetItems gSource "*U"))
+								)
+						</OnPaneInit>
+
 						<Actions>
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
@@ -59,6 +66,10 @@
 
 									missionGiver: (objGetProperty gSource 'rpgCharacter.stationMaster)
 									})
+							</Action>
+
+							<Action id="actionTakeReward">
+								(scrShowScreen gScreen &dsRPGLoot;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -81,6 +92,8 @@
 		</DockingPorts>
 
 		<Language>
+			<Text id="actionTakeReward">[T]ake Reward</Text>
+
 			<Text id="descNormal">
 
 				The loud voices of a packed multitude bounce off every bulkhead and corridor in the station.
@@ -97,14 +110,18 @@
 
 	EXTRA DATA
 
-	status:		Status of Raisu station
-					Nil						= Controlled by Centauri Warlords
-					'destroyed				= Destroyed
-					'destroyedByPlayer		= Destroyed by player
-					'liberated				= Liberated
+	status:	Status of Raisu station
+		Nil						= Controlled by Centauri Warlords
+		'destroyed				= Destroyed
+		'destroyedByPlayer		= Destroyed by player
+		'liberated				= Liberated
 
-	targetID:				ID of ship to destroy (Arco Vaughn)
-	raidersSummoned:		Number of raiders summoned to station
+	targetID: ID of ship to destroy (Arco Vaughn)
+
+	raidersDestroyedByPlayer: Number of raiders guarding Raisu that have been
+		destroyed by the player.
+
+	raidersSummoned: Number of raiders summoned to station
 
 	======================================================================== -->
 
@@ -137,12 +154,7 @@
 							(objSetEventHandler aOwnerObj &evCentauriOccupation;)
 
 							;	Add Centauri Raiders
-							(for i 1 (random 4 5)
-								(block (theShip)
-									(setq theShip (sysCreateShip &scCentauriRaider; aOwnerObj &svCentauriWarlords;))
-									(shpOrder theShip 'patrol aOwnerObj 10)
-									)
-								)
+							(msnFireEvent gSource 'SummonRaiders)
 
 							;	Warlord base
 							(objAddItem baseObj (itmSetData
@@ -224,23 +236,12 @@
 							Nil
 
 						;	If we've already summoned lots of raiders, then send Arco Vaughn
-						(gr (msnGetData gSource 'raidersSummoned) 20)
+						(gr (msnGetData gSource 'raidersDestroyedByPlayer) 20)
 							(objFireEvent arcoVaughn "OrderKillPlayer")
 
 						;	Otherwise summon some more raiders
 						(leq (random 1 100) 20)
-							(for i 1 (random 3 4)
-								(block (theShip)
-									(setq theShip
-										(sysCreateShip &scCentauriRaider;
-											(sysFindObject stationObj "GN -uncharted;")
-											&svCentauriWarlords;
-											)
-										)
-									(shpOrder theShip 'patrol stationObj 10)
-									(msnIncData gSource 'raidersSummoned)
-									)
-								)
+							(msnFireEvent gSource 'SummonRaiders)
 							)
 						)
 					)
@@ -264,8 +265,36 @@
 							;	Backward compatibility for old Container Habitat rumors
 							(typSetData &scArcoVaughnHeavyRaider; 'status 'destroyed)
 
-							(msnSetUnavailable gSource)
-							(msnSuccess gSource)
+							(switch
+								;	If the player has accepted the mission, then mission 
+								;	accomplished.
+
+								(msnGetProperty gSource 'isActive)
+									(msnSuccess gSource)
+
+								;	Otherwise, if the player killed Arco Vaughn, then we 
+								;	accept the mission so that we can get a proper debrief.
+
+								(and gPlayerShip (= aOrderGiver gPlayerShip))
+									(block ()
+										(msnAccept gSource)
+										(msnSuccess gSource {
+											lateAccept: True
+											})
+										)
+
+								;	Otherwise, we just end the mission
+
+								(block ()
+									(msnSetUnavailable gSource)
+									(msnSuccess gSource)
+									)
+								)
+							)
+
+					(typMatches (objGetType aObjDestroyed) "s +centauriWarlords;")
+						(if (and aDestroy gPlayerShip (= aOrderGiver gPlayerShip))
+							(msnIncData gSource 'raidersDestroyedByPlayer)
 							)
 					)
 			</OnObjDestroyed>
@@ -276,6 +305,16 @@
 						(block (
 							(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
 							)
+							;	If the player didn't get the missiles, then add a
+							;	different reward.
+
+							(if (@ gData 'lateAccept)
+								(block ()
+									(objAddItem stationObj (itmCreate &itCentauriRice; (random 4 8)))
+									(msnSetData gSource 'lateAccept True)
+									)
+								)
+
 							(msnSetData gSource 'status 'liberated)
 							(objSetEventHandler stationObj Nil)
 							)
@@ -394,6 +433,47 @@
 						)
 					)
 			</GetRumors>
+
+			<SummonRaiders>
+				(block (
+					(stationObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+
+					(raidersSummoned (msnGetData gSource 'raidersSummoned))
+					(raidersToCreate
+						(switch
+							(gr raidersSummoned 15)
+								(list &scCentauriHeavyRaider; &scCentauriHeavyRaider; &scCentauriHeavyRaider;)
+
+							(gr raidersSummoned 7)
+								(list &scCentauriHeavyRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;)
+
+							(gr raidersSummoned 0)
+								(if (geq (random 1 100) 50)
+									(list &scCentauriRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;)
+									(list &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;)
+									)
+
+							(if (geq (random 1 100) 50)
+								(list &scCentauriRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;)
+								(list &scCentauriRaider; &scCentauriRaider; &scCentauriRaider; &scCentauriRaider;)
+								)
+							)
+						)
+
+					(sourceObj 
+						(if (gr raidersSummoned 0) (sysFindObject stationObj "GN -uncharted;") stationObj)
+						)
+					)
+					(enum raidersToCreate theClass
+						(block (theShip)
+							(setq theShip (sysCreateShip theClass sourceObj &svCentauriWarlords;))
+							(shpOrder theShip 'patrol stationObj 10)
+							(msnRegisterForEvents gSource theShip)
+							(msnIncData gSource 'raidersSummoned)
+							)
+						)
+					)
+			</SummonRaiders>
 		</Events>
 
 
@@ -427,8 +507,13 @@
 			</Text>
 
 			<Text id="SuccessDebrief">
-				(if (= (plyGetGenome gPlayer) 'humanMale)
-					(msnTranslate gSource 'descMissionSuccessWhisper)
+				(switch
+					(msnGetData gSource 'lateAccept)
+						(msnTranslate gSource 'descMissionSuccessLateAccept)
+
+					(= (plyGetGenome gPlayer) 'humanMale)
+						(msnTranslate gSource 'descMissionSuccessWhisper)
+
 					(msnTranslate gSource 'descMissionSuccessHug)
 					)
 			</Text>
@@ -552,6 +637,18 @@
 				warlords!"
 
 				She beams a smile and hugs you again.
+
+			</Text>
+			<Text id="descMissionSuccessLateAccept">
+
+				The citizens of Raisu station come out of hiding and cheer as 
+				you enter. The station master reaches out to shake your hand:
+
+				"You did it! You killed Arco Vaugh! I never thought I'd live to
+				see it! All those years living in fear. Now we're free!
+
+				"We don't have much to reward you, but the warlords left some
+				barrels of rice here. Take them&mdash;they're yours!"
 
 			</Text>
 
@@ -791,12 +888,14 @@
 			</OrderPatrolBase>
 
 			<OrderKillPlayer>
-				(block Nil
-					(shpCancelOrders gSource)
-					(shpOrder gSource 'attack gPlayerShip)
-					(objSetData gSource "behavior" 'killPlayer)
-					(if (ls (objGetDistance gSource gPlayerShip) 120)
-						(objSendMessageTranslate gPlayerShip gSource 'msgWTF)
+				(if gPlayerShip
+					(block Nil
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'attack gPlayerShip)
+						(objSetData gSource "behavior" 'killPlayer)
+						(if (ls (objGetDistance gSource gPlayerShip) 120)
+							(objSendMessageTranslate gPlayerShip gSource 'msgWTF)
+							)
 						)
 					)
 			</OrderKillPlayer>
