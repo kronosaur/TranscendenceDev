@@ -33,16 +33,16 @@
 				(switch
 					;	If we're not a pilgrim, then nothing to do.
 						
-					(not (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;))
+					(not (= (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;))
 						Nil
 							
 					;	If we're in the starting system, and if we dock with a Sisters
 					;	of Domina station, and if this is the first time we've docked,
 					;	then show the intro screen
 						
-					(and (eq (objGetType gSource) &stSistersOfDomina;)
+					(and (= (objGetType gSource) &stSistersOfDomina;)
 							(not (objGetProperty gSource 'abandoned))
-							(eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+							(= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
 							(not (typGetData &unidBenedictStoryArc; 'firstDockedAtSisters))
 							)
 						{	screen:&dsBenedictIntro;			priority:4	}
@@ -51,9 +51,15 @@
 					;	we started in Eridani, and if we are a pilgrim, then we
 					;	show our home.
 				
-					(and (eq (objGetType gSource) &stBeringStation;)
+					(and (or 
+							(and 
+								(= (objGetType gSource) &stCommonwealthResidentials;)
+								(objGetData gSource 'PilgrimHome)
+								)
+							(= (objGetType gSource) &stBeringStation;)
+							)
 							(not (objGetProperty gSource 'abandoned))
-							(eq (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
+							(= (sysGetNode) (objGetProperty gPlayerShip 'startingSystem))
 							)
 						{	screen:&dsPilgrimBeringStation;		priority:6	}
 							

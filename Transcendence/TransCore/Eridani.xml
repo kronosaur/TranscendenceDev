@@ -272,80 +272,6 @@
 		</Language>
 	</StationType>
 
-	<!-- Bering Station -->
-
-	<StationType UNID="&stBeringStation;"
-			name=				": Commonwealth residentials|Commonwealth residentials"
-			sovereign=			"&svCommonwealth;"
-			inherit=			"&baCommonwealthStation;"
-				 
-			attributes=			"commonwealth, commonwealthCustoms, friendly, human, populated"
-				 
-			dockScreen=			"Main"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			level=				"4"
-			size=				"390"
-			armorID=			"&itPlasteelPlate;"
-			hitPoints=			"320"
-			regen=				"6"
-			multiHull=			"true"
-				 
-			canAttack=			"true"
-			explosionType=		"&vtBlastExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
-			>
-		
-		<!-- Ships and Defenses -->
-
-		<Ships>
-			<Lookup table="&tbCommDefenders;"/>
-			<Lookup count="1d4+1" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<!-- Image and Effects -->
-		
-		<Image imageID="&rsCommonwealthResidentials;" imageWidth="320" imageHeight="290" viewportRatio="0.05"/>
-
-		<DockingPorts
-				portCount=		"10"
-				portRadius=		"175"
-				>
-		</DockingPorts>
-		
-		<!-- Dock Screens -->
-		
-		<DockScreens>
-			<Main>
-				<Panes>
-					<Default descID="descWelcome">
-						<Actions>
-							<Action name="Undock" cancel="1" key="U">
-								<Exit/>
-							</Action>
-						</Actions>
-					</Default>
-				</Panes>
-			</Main>
-		</DockScreens>
-
-		<!-- Events and Data -->
-		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>			
-
-		<Language>
-			<Text id="descWelcome">
-				Welcome to Commonwealth Residentials.
-			</Text>
-		</Language>
-	</StationType>
-
 	<!-- Eridani System -->
 
 	<SystemType UNID="&ssStartonEridani;"
@@ -452,6 +378,16 @@
 					<Null	 chance="10" />
 				</Table>
 			</StJohnTrojanStations>
+
+			<!-- Special Stations -->
+
+			<BeringStation>
+				<Station type="&stCommonwealthResidentials;" noMapLabel="true">
+					<InitialData>
+						<PilgrimHome>True</PilgrimHome>
+					</InitialData>
+				</Station>
+			</BeringStation>
 		</Tables>
 
 		<SystemGroup>
@@ -729,7 +665,7 @@
 									<Table>
 										<Group chance="50">
 											<Siblings arcInc="+39">
-												<Station type="&stBeringStation;" noMapLabel="true"/>
+												<Lookup table="BeringStation"/>
 											</Siblings>
 
 											<!-- Metropolis Station -->
@@ -745,7 +681,7 @@
 
 											<!-- Metropolis Station -->
 											<Siblings arcInc="-39">
-												<Station type="&stBeringStation;" noMapLabel="true"/>
+												<Lookup table="BeringStation"/>
 											</Siblings>
 										</Group>
 									</Table>
