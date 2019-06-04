@@ -8988,52 +8988,84 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_MISSION_CREATE:
 			{
-			//	Get the list of mission types
-
-			ICCItem *pList = pArgs->GetElement(0);
-			TArray<CMissionType *> Missions;
-			Missions.GrowToFit(pList->GetCount());
-
-			for (int i = 0; i < pList->GetCount(); i++)
-				{
-				CMissionType *pType = pCtx->GetUniverse().FindMissionType((DWORD)pList->GetElement(i)->GetIntegerValue());
-				if (pType == NULL)
-					return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown mission type: %x."), pList->GetElement(i)->GetIntegerValue()), pList->GetElement(i));
-
-				Missions.Insert(pType);
-				}
-				
 			//	Get arguments
 
 			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
 			ICCItem *pData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
-			//	Sort the mission list by priority order.
+			//	If we have a list of missions, then we need to choose one 
+			//	randomly.
 
-			CMissionList::Sort(Missions);
-
-			//	Create the mission
-
-			CString sError;
-			CMission *pMission;
-			if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+			if (pArgs->GetElement(0)->IsList())
 				{
-				//	ERR_NOTFOUND means that conditions do not allow for the
-				//	mission to be created. This is not technically an error; it
-				//	just means that the caller must do something else.
+				//	Get the list of mission types
 
-				if (error = ERR_NOTFOUND)
-					return pCC->CreateNil();
+				ICCItem *pList = pArgs->GetElement(0);
+				TArray<CMissionType *> Missions;
+				Missions.GrowToFit(pList->GetCount());
 
-				//	Otherwise, we report an error
+				for (int i = 0; i < pList->GetCount(); i++)
+					{
+					CMissionType *pType = pCtx->GetUniverse().FindMissionType((DWORD)pList->GetElement(i)->GetIntegerValue());
+					if (pType == NULL)
+						return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown mission type: %x."), pList->GetElement(i)->GetIntegerValue()), pList->GetElement(i));
 
-				else
-					return pCC->CreateError(sError);
+					Missions.Insert(pType);
+					}
+				
+				//	Sort the mission list by priority order.
+
+				CMissionList::Sort(Missions);
+
+				//	Create the mission
+
+				CString sError;
+				CMission *pMission;
+				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+					{
+					//	ERR_NOTFOUND means that conditions do not allow for the
+					//	mission to be created. This is not technically an error; it
+					//	just means that the caller must do something else.
+
+					if (error == ERR_NOTFOUND)
+						return pCC->CreateNil();
+
+					//	Otherwise, we report an error
+
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the mission object
+
+				return pCC->CreateInteger((int)pMission);
 				}
 
-			//	Return the mission object
+			//	Otherwise we expect a mission type.
 
-			return pCC->CreateInteger((int)pMission);
+			else
+				{
+				CMissionType *pType = pCtx->GetUniverse().FindMissionType(pArgs->GetElement(0)->GetIntegerValue());
+				if (pType == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown mission type"), pArgs->GetElement(0));
+
+				CString sError;
+				CMission *pMission;
+				if (error = pCtx->GetUniverse().CreateMission(pType, pOwner, pData, &pMission, &sError))
+					{
+					//	ERR_NOTFOUND means the mission refused to be created,
+					//	so we return Nil.
+
+					if (error == ERR_NOTFOUND)
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the mission object
+
+				return pCC->CreateInteger((int)pMission);
+				}
 			}
 
 		case FN_MISSION_FIND:
