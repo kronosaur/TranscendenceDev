@@ -231,6 +231,7 @@
 					(atLastPage (= pageNo (- pageCount 1)))
 
 					(missionObj (@ options 'missionObj))
+					(missionAutoAccept (msnGetProperty missionObj 'autoAccept))
 
 					(nextActionID 0)
 					)
@@ -249,20 +250,38 @@
 					;	Make sure the actions list is properly initialized.
 					
 					(switch
+						;	If we already have a list of actions, then we accept
+						;	those and assume that the caller knows what they are
+						;	doing.
+
+						(= (typeof actions) 'list)
+							Nil
+
 						;	If we're on an Accept/Decline mission page but the 
 						;	mission does not support declining, then we just have
 						;	a single action.
 						
 						(and (@ options 'onAcceptDecline)
 								(or atLastPage (= actions 'acceptDecline))
-								(not (msnGetProperty missionObj 'canBeDeclined))
+								missionAutoAccept
 								)
 							(setq actions (list
 								{
-									label: (or 
-										(scrTranslate theScreen 'actionUndock) 
-										(typTranslate &unidCommonText; 'actionUndock)
-										)
+									label: 
+										(switch
+											(= missionAutoAccept 'acceptAndContinue)
+												(or 
+													(scrTranslate theScreen 'actionContinue) 
+													(typTranslate &unidCommonText; 'actionContinue)
+													)
+
+											(= missionAutoAccept 'acceptAndExit)
+												(or 
+													(scrTranslate theScreen 'actionUndock) 
+													(typTranslate &unidCommonText; 'actionUndock)
+													)
+											)
+
 									code: (@ pageDesc 'acceptCode)
 									nextPage: 'missionAccept
 									}
@@ -321,7 +340,7 @@
 							
 							(actionID (cat "action" nextActionID))
 							(actionDoneID (or (@ options 'actionDoneID) 'actionDone))
-							
+
 							;	Figure out the label, if we don't have one.
 							
 							(actionLabel

@@ -198,6 +198,7 @@
 				<OnPaneInit>
 					(block (
 						(missionObj (scrGetData gScreen 'missionObj))
+						(missionAutoAccept (msnGetProperty missionObj 'autoAccept))
 						)
 						(rpgPagePaneInit gScreen 
 							(msnTranslate (scrGetData gScreen 'missionObj) 'Briefing)
@@ -207,7 +208,7 @@
 									(switch
 										;	If no decline, then we always accept and undock.
 										
-										(not (msnGetProperty (@ options 'missionObj) 'canBeDeclined))
+										(= missionAutoAccept 'acceptAndExit)
 											(block Nil
 												(msnAccept (@ options 'missionObj))
 												(scrSetData gScreen 'curPage Nil)
@@ -225,7 +226,9 @@
 												
 										;	If we accept, then navigate to ReplyAccept
 										
-										(= acceptDecline 'accept)
+										(or	(= missionAutoAccept 'acceptAndContinue)
+												(= acceptDecline 'accept)
+												)
 											(block Nil
 												(msnAccept (@ options 'missionObj))
 												(scrSetData gScreen 'curPage Nil)
