@@ -5,6 +5,7 @@
 #include "PreComp.h"
 
 #define ALLOW_PLAYER_DELETE_ATTRIB				CONSTLIT("allowPlayerDelete")
+#define AUTO_ACCEPT_ATTRIB						CONSTLIT("autoAccept")
 #define DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB		CONSTLIT("debriefAfterOutOfSystem")
 #define DESTROY_ON_DECLINE_ATTRIB				CONSTLIT("destroyOnDecline")
 #define EXPIRE_TIME_ATTRIB						CONSTLIT("expireTime")
@@ -21,11 +22,16 @@
 #define PRIORITY_ATTRIB							CONSTLIT("priority")
 #define RECORD_NON_PLAYER_ATTRIB				CONSTLIT("recordNonPlayer")
 
+#define AUTO_ACCEPT_AND_CONTINUE				CONSTLIT("acceptAndContinue")
+#define AUTO_ACCEPT_AND_EXIT					CONSTLIT("acceptAndExit")
+#define AUTO_ACCEPT_NONE						CONSTLIT("none")
+
 #define FIELD_LEVEL								CONSTLIT("level")
 #define FIELD_MAX_LEVEL							CONSTLIT("maxLevel")
 #define FIELD_MIN_LEVEL							CONSTLIT("minLevel")
 #define FIELD_NAME								CONSTLIT("name")
 
+#define PROPERTY_AUTO_ACCEPT					CONSTLIT("autoAccept")
 #define PROPERTY_CAN_BE_DECLINED				CONSTLIT("canBeDeclined")
 #define PROPERTY_CAN_BE_DELETED					CONSTLIT("canBeDeleted")
 #define PROPERTY_DESTROY_ON_DECLINE				CONSTLIT("destroyOnDecline")
@@ -40,6 +46,26 @@ static char *CACHED_EVENTS[CMissionType::evtCount] =
 	{
 	"CanCreate",
 	};
+
+ICCItemPtr CMissionType::AutoAcceptAsItem (EMissionAutoAccept iAutoAccept)
+
+//	AutoAcceptAsItem
+//
+//	Returns auto accept setting as an item.
+
+	{
+	switch (iAutoAccept)
+		{
+		case EMissionAutoAccept::acceptAndContinue:
+			return ICCItemPtr(AUTO_ACCEPT_AND_CONTINUE);
+
+		case EMissionAutoAccept::acceptAndExit:
+			return ICCItemPtr(AUTO_ACCEPT_AND_EXIT);
+
+		default:
+			return ICCItemPtr(ICCItem::Nil);
+		}
+	}
 
 bool CMissionType::CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const
 
@@ -182,12 +208,13 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fRecordNonPlayer = pDesc->GetAttributeBool(RECORD_NON_PLAYER_ATTRIB);
 	m_fNoFailureOnOwnerDestroyed = pDesc->GetAttributeBool(NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB);
 	m_fNoDebrief = pDesc->GetAttributeBool(NO_DEBRIEF_ATTRIB);
-	m_fNoDecline = pDesc->GetAttributeBool(NO_DECLINE_ATTRIB);
 	m_fNoStats = pDesc->GetAttributeBool(NO_STATS_ATTRIB);
 	m_fCloseIfOutOfSystem = pDesc->GetAttributeBool(DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB);
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
 	m_fAllowDelete = pDesc->GetAttributeBool(ALLOW_PLAYER_DELETE_ATTRIB);
 	m_fDestroyOnDecline = pDesc->GetAttributeBool(DESTROY_ON_DECLINE_ATTRIB);
+
+	//	Mission creation
 
 	CString sAttrib;
 	if (pDesc->FindAttribute(MISSION_ARC_ATTRIB, &sAttrib))
@@ -233,6 +260,17 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_iMaxLevel = MAX_SYSTEM_LEVEL;
 		}
 
+	//	Auto accept
+
+	if (pDesc->FindAttribute(AUTO_ACCEPT_ATTRIB, &sAttrib))
+		{
+		m_iAutoAccept = ParseAutoAccept(Ctx, sAttrib);
+		if (m_iAutoAccept == EMissionAutoAccept::error)
+			return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Invalid autoAccept: %s"), sAttrib));
+		}
+	else if (pDesc->GetAttributeBool(NO_DECLINE_ATTRIB))
+		m_iAutoAccept = EMissionAutoAccept::acceptAndExit;
+
 	return NOERROR;
 	}
 
@@ -268,7 +306,10 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
+	if (strEquals(sProperty, PROPERTY_AUTO_ACCEPT))
+		return AutoAcceptAsItem(m_iAutoAccept);
+
+	else if (strEquals(sProperty, PROPERTY_CAN_BE_DECLINED))
 		return ICCItemPtr(CanBeDeclined());
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_DELETED))
@@ -350,6 +391,25 @@ void CMissionType::OnWriteToStream (IWriteStream *pStream)
 	pStream->Write(m_iAccepted);
 	pStream->Write(m_iExisting);
 	pStream->Write(m_dwLastAcceptedOn);
+	}
+
+EMissionAutoAccept CMissionType::ParseAutoAccept (SDesignLoadCtx &Ctx, const CString &sValue)
+
+//	ParseAutoAccept
+//
+//	Parses an auto accept value. If invalid, we return EMissionAutoAccept::error
+
+	{
+	if (sValue.IsBlank())
+		return EMissionAutoAccept::none;
+	else if (strEquals(sValue, AUTO_ACCEPT_AND_CONTINUE))
+		return EMissionAutoAccept::acceptAndContinue;
+	else if (strEquals(sValue, AUTO_ACCEPT_AND_EXIT))
+		return EMissionAutoAccept::acceptAndExit;
+	else if (strEquals(sValue, AUTO_ACCEPT_NONE))
+		return EMissionAutoAccept::none;
+	else
+		return EMissionAutoAccept::error;
 	}
 
 bool CMissionType::ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, CString *retsArc, int *retiSequence, CString *retsError)

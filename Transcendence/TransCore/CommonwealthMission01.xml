@@ -30,12 +30,12 @@
 			expireTime=					"-1"
 
 			allowPlayerDelete=			"false"
+			autoAccept=					"none"
 			debriefAfterOutOfSystem=	"false"
 			destroyOnDecline=			"false"
 			failureAfterOutOfSystem=	"-1"
 			forceUndockAfterDebrief=	"false"
 			noDebrief=					"false"
-			noDecline=					"false"
 			noFailureOnOwnerDestroyed=	"false"
 			noStats=					"false"
 			recordNonPlayer=			"false"
