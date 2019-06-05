@@ -55,10 +55,12 @@
 			</OnCreate>
 
 			<OnAccepted>
-				(enum (msnGetData gSource 'escorts) theShip
-					(block Nil
-						(shpCancelOrders theShip)
-						(shpOrder theShip 'escort gPlayerShip)
+				(enum (msnGetData gSource 'escorts) theShipID
+					(block (
+						(shipObj (objGetObjByID theShipID))
+						)
+						(shpCancelOrders shipObj)
+						(shpOrder shipObj 'escort gPlayerShip)
 						)
 					)
 			</OnAccepted>
@@ -75,11 +77,13 @@
 			</OnObjDestroyed>
 			
 			<OnCompleted>
-				(enum (msnGetData gSource 'escorts) theShip
-					(block Nil
-						(shpCancelOrders theShip)
-						(shpOrder theShip 'attackNearestEnemy)
-						(shpOrder theShip 'patrol (objGetObjByID (msnGetProperty gSource 'ownerID)))
+				(enum (msnGetData gSource 'escorts) theShipID
+					(block (
+						(shipObj (objGetObjByID theShipID))
+						)
+						(shpCancelOrders shipObj)
+						(shpOrder shipObj 'attackNearestEnemy)
+						(shpOrder shipObj 'patrol (objGetObjByID (msnGetProperty gSource 'ownerID)))
 						)
 					)
 			</OnCompleted>
