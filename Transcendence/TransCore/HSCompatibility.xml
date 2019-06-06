@@ -4833,5 +4833,6 @@
 	<Image UNID="&rsAquila;"			obsoleteVersion="45"	bitmap="Resources\Aquila.jpg" bitmask="Resources\AquilaMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIocrymSentinel;"	obsoleteVersion="45" bitmap="Resources\IocrymSentinel.jpg" bitmask="Resources\IocrymSentinelMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsIocrymCommandShip;"	obsoleteVersion="45" bitmap="Resources\IocrymCommandShip.jpg" bitmask="Resources\IocrymCommandShipMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHurin;"				obsoleteVersion="45"		bitmap="Resources\Hurin.jpg"		bitmask="Resources\HurinMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

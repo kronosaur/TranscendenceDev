@@ -259,13 +259,13 @@
 				enemyExclusionRadius=	"100"
 				/>
 
-		<Image			imageID="&rsStations6;" imageX="0" imageY="448" imageWidth="192" imageHeight="192"/>
+		<Image			imageID="&rsHuariFortress;" imageWidth="380" imageHeight="380"	viewportRatio="0.030625"/>
 
 		<Devices>
-			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="60"  posRadius="85"/>
-			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="155" posRadius="90"/>
-			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="240" posRadius="100"/>
-			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="330" posRadius="110"/>
+			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="30"	posRadius="124"	posZ="104"/>
+			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="120"	posRadius="124"	posZ="104"/>
+			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="-60"	posRadius="124"	posZ="104"/>
+			<Device deviceID="&itMarkIIIHowitzer;"	omnidirectional="true" posAngle="-150"  posRadius="124"	posZ="104"/>
 		</Devices>
 
 		<Items>
@@ -306,15 +306,17 @@
 		</Events>
 
 		<DockingPorts>
-			<Port x="-49"	y="91" />
-			<Port x="85"	y="63" />
-			<Port x="67"	y="-49" />
-			<Port x="43"	y="-72" />
-			<Port x="4"		y="-84" />
+			<Port posAngle="-35"  posRadius="140"  posZ="0"		rotation="120"/>
+			<Port posAngle="-85"  posRadius="140"  posZ="0"		rotation="120"/>
 
-			<Port x="-58"	y="-64" />
-			<Port x="-86"	y="-33" />
-			<Port x="-94"	y="3" />
+			<Port posAngle="55"   posRadius="140"  posZ="0"		rotation="210"/>
+			<Port posAngle="5"	  posRadius="140"  posZ="0"		rotation="210"/>
+
+			<Port posAngle="145"  posRadius="140"  posZ="0"		rotation="300"/>
+			<Port posAngle="85"	  posRadius="140"  posZ="0"		rotation="300"/>
+
+			<Port posAngle="235"  posRadius="140"  posZ="0"		rotation="30"	bringToFront="true"/>
+			<Port posAngle="175"  posRadius="140"  posZ="0"		rotation="30"	bringToFront="true"/>
 		</DockingPorts>
 
 		<DockScreens>
@@ -535,7 +537,7 @@
 
 <!-- SHIP CLASSES -->
 
-	<!-- Hurin Destroyer -->
+	<!-- Level 7: Hurin-class Destroyer -->
 
 	<ShipClass UNID="&scHurinDestroyer;"
 			manufacturer=		"Huari"
@@ -545,7 +547,7 @@
 
 			attributes=			"capitalShip, genericClass, huari"
 
-			size=				"150"
+			size=				"161"
 			mass=				"15000"
 			thrustRatio=		"1.5"
 			maxSpeed=			"8"
@@ -562,13 +564,13 @@
 			/>
 
 		<Devices>
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="0" maxFireArc="200"   posAngle="67"  posRadius="53" posZ="0"/>
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="0" maxFireArc="170"   posAngle="35"  posRadius="71" posZ="0"/>
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="300" maxFireArc="170" posAngle="25"  posRadius="80" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="0" maxFireArc="200"   posAngle="69"  posRadius="55" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="0" maxFireArc="170"   posAngle="36"  posRadius="74" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="300" maxFireArc="170" posAngle="25"  posRadius="89" posZ="0"/>
 
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="160" maxFireArc="0"   posAngle="293" posRadius="53" posZ="0"/>
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="190" maxFireArc="0"   posAngle="325" posRadius="71" posZ="0"/>
-			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="190" maxFireArc="60"  posAngle="335" posRadius="80" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="160" maxFireArc="0"   posAngle="-69" posRadius="55" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="190" maxFireArc="0"   posAngle="-36" posRadius="74" posZ="0"/>
+			<Device deviceID="&itSlamCannon;" secondaryWeapon="true" minFireArc="190" maxFireArc="60"  posAngle="-25" posRadius="89" posZ="0"/>
 
 			<Device deviceID="&itSuperconductingShields;"/>
 			<Device deviceID="&it250MWReactor;"/>
@@ -602,12 +604,13 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsHurin;" imageWidth="164" imageHeight="164"/>
+		<Image imageID="&rsHurinHD;" imageWidth="176" imageHeight="176" rotationCount="120" rotationColumns="12" rotationOffset="5" viewportRatio="0.0225"/>
+		<HeroImage imageID="&rsHurinHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="165"	posRadius="76"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="74"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
-			<Effect type="thrustMain"		posAngle="-165"	posRadius="76"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="164"	posRadius="73"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="71"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
+			<Effect type="thrustMain"		posAngle="-164"	posRadius="73"	posZ="0"	rotation="180"	effect="&efMainThrusterLarge;"/>
 		</Effects>
 
 		<!-- AI and Behavior -->
@@ -720,7 +723,10 @@
 
 <!-- RESOURCES -->
 
+	<Image UNID="&rsHurinHD;"					bitmap="Resources\HurinHD.jpg" bitmask="Resources\HurinHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHurinHero;"					bitmap="Resources\HurinLarge.jpg" bitmask="Resources\HurinLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsHuariFortress;"				bitmap="Resources\HuariFortress.jpg" bitmask="Resources\HuariFortressMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsHuariStationsImage;"		bitmap="Resources\HuariStations.jpg" bitmask="Resources\HuariStationsMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsHurin;"			bitmap="Resources\Hurin.jpg"		bitmask="Resources\HurinMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

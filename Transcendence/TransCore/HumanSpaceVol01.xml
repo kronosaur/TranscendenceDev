@@ -1818,6 +1818,8 @@
 	<!ENTITY msHuariDefendFortress		"0x00100152">
 	<!ENTITY msHuariDestroyStation		"0x00100153">
 	<!ENTITY smHuariSpaceAttribs		"0x00100154">
+	<!ENTITY rsHurinHero				"0x00100155">
+	<!ENTITY rsHuariFortress			"0x00100156">
 
 	<!-- 0160-017F MINING EQUIPMENT -->
 	
