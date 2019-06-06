@@ -84,6 +84,7 @@ class CSpaceObjectCriteria
 		inline bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
 		inline bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
 		inline bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
+		inline bool MatchesTargetableMissilesOnly (void) const { return m_bTargetableMissilesOnly; }
 		inline bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
 		inline void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
 		inline void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
@@ -112,6 +113,7 @@ class CSpaceObjectCriteria
 		bool m_bHomeBaseIsSource = false;			//	Only objects whose home base is the source
 		bool m_bDockedWithSource = false;			//	Only objects currently docked with source
 		bool m_bExcludePlayer = false;				//	Exclude the player
+		bool m_bTargetableMissilesOnly = true;		//	Only include those missiles that have targetable='true'
 		bool m_bTargetIsSource = false;				//	Only objects whose target is the source
 		bool m_bIncludeIntangible = false;			//	Include intangible objects
 
