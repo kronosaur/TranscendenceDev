@@ -57,6 +57,9 @@ bool CObjectTracker::AccumulateEntries (TArray<SObjList *> &Table, const CObject
 			if (Criteria.SelectsKilledOnly() && (!Basics.fInactive || pList->pType->IsVirtual()))
 				continue;
 
+			if (Criteria.SelectsKnownOnly() && !Basics.fKnown)
+				continue;
+
 			//	Otherwise, add
 
             AccumulateEntry(*pList, pList->Objects.GetKey(j), Basics, dwFlags, *retResult);

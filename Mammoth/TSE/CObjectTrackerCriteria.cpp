@@ -36,6 +36,10 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 				m_bKilledOnly = true;
 				break;
 
+			case 'P':
+				m_bKnownOnly = true;
+				break;
+
 			//	We need to skip these values that are handled by CDesignTypeCriteria
 
 			case 'L':

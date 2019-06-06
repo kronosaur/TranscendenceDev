@@ -802,9 +802,6 @@
     <ClCompile Include="CMissionType.cpp">
       <Filter>Source Files\Missions</Filter>
     </ClCompile>
-    <ClCompile Include="CObjectTracker.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="COrderList.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
@@ -1213,9 +1210,6 @@
     <ClCompile Include="CDeviceSystem.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CObjectTrackerCriteria.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="CItemLevelCriteria.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -1323,6 +1317,12 @@
     </ClCompile>
     <ClCompile Include="CDockScreenPainter.cpp">
       <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTrackerCriteria.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTracker.cpp">
+      <Filter>Source Files\Universe</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

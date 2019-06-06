@@ -1781,16 +1781,18 @@ class CGlobalSpaceObject
 class CObjectTrackerCriteria
 	{
 	public:
-		inline const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
-		inline bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly); }
+		const CDesignTypeCriteria &GetTypeCriteria (void) const { return m_TypeCriteria; }
+		bool NeedsRefresh (void) const { return (m_bActiveOnly || m_bKilledOnly); }
 		bool ParseCriteria (const CString &sCriteria);
-		inline bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
-		inline bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
+		bool SelectsActiveOnly (void) const { return m_bActiveOnly; }
+		bool SelectsKilledOnly (void) const { return m_bKilledOnly; }
+		bool SelectsKnownOnly (void) const { return m_bKnownOnly; }
 		
 	private:
 		CDesignTypeCriteria m_TypeCriteria;
 		bool m_bActiveOnly = false;
 		bool m_bKilledOnly = false;
+		bool m_bKnownOnly = false;
 	};
 
 class CObjectTracker
