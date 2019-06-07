@@ -117,7 +117,7 @@
 			level=				"6"
 			>
 
-		<Image			imageID="&rsHuariStationsImage;" imageX="0" imageY="0" imageWidth="292" imageHeight="270" xOffset="8" yOffset="-30"/>
+		<Image			imageID="&rsHuariTemple;" imageWidth="330" imageHeight="330" viewportRatio="0.026875"/>
 
 		<Devices>
 		</Devices>
@@ -208,17 +208,11 @@
 			</Text>
 		</Language>
 
-		<DockingPorts>
-			<Port x="-98"	y="72" />
-			<Port x="-23"	y="107" />
-			<Port x="98"	y="86" />
-			<Port x="149"	y="13" />
-			<Port x="115"	y="-124" />
-
-			<Port x="38"	y="-164" />
-			<Port x="-98"	y="-131" />
-			<Port x="-147"	y="-39" />
-		</DockingPorts>
+		<DockingPorts
+				portAngle=	"-30"
+				portCount=	"8"
+				portRadius=	"175"
+				/>
 	</StationType>
 
 	<!-- Huari Fortress
@@ -727,6 +721,7 @@
 	<Image UNID="&rsHurinHero;"					bitmap="Resources\HurinLarge.jpg" bitmask="Resources\HurinLargeMask.bmp" loadOnUse="true"/>
 
 	<Image UNID="&rsHuariFortress;"				bitmap="Resources\HuariFortress.jpg" bitmask="Resources\HuariFortressMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHuariTemple;"				bitmap="Resources\HuariTemple.jpg" bitmask="Resources\HuariTempleMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsHuariStationsImage;"		bitmap="Resources\HuariStations.jpg" bitmask="Resources\HuariStationsMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

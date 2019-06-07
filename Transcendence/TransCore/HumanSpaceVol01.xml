@@ -1820,6 +1820,7 @@
 	<!ENTITY smHuariSpaceAttribs		"0x00100154">
 	<!ENTITY rsHurinHero				"0x00100155">
 	<!ENTITY rsHuariFortress			"0x00100156">
+	<!ENTITY rsHuariTemple				"0x00100157">
 
 	<!-- 0160-017F MINING EQUIPMENT -->
 	
