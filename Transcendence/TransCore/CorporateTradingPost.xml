@@ -32,6 +32,7 @@
 				systemCriteria=			"+corporateSpace;"
 				systemAffinity=			"*"
 				levelFrequency=			"---rc uur-- ----- ----- -----"
+				maxInSystem=			"1"
 
 				locationCriteria=		"+planetary"
 				enemyExclusionRadius=	"50"
