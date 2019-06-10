@@ -1168,6 +1168,16 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 				pOwner->ClearPlayerDestination();
 			}
 
+		//	Clear player destination when the ship docks.
+		//
+		//	NOTE: This means that autoClearOnDock has different meanings. We
+		//	clear the destination if EITHER the player docks with the object
+		//	or if the object docks with something else. In practice, there 
+		//	shouldn't be confusion or need to separate.
+
+		else if (pShip->IsAutoClearDestinationOnDock())
+			pShip->ClearPlayerDestination();
+
 		//	Dock
 
 		pShip->OnDocked(pOwner);
