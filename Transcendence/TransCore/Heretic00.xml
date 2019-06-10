@@ -319,6 +319,9 @@
 					Nil	;	Blank entry to prevent forced accept/decline options
 					)
 			</Text>
+			<Text id="InProgress">
+				(msnTranslate gSource (msnGetData gSource 'briefingID))
+			</Text>
 
 			<!-- Text -->
 
