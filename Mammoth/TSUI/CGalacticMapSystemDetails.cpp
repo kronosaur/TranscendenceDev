@@ -476,7 +476,7 @@ bool CGalacticMapSystemDetails::GetObjList (CTopologyNode *pNode, TSortMap<CStri
         //  Generate a sort string. We want stations with the same type and name
         //  to be collapsed into a single entry.
 
-        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned);
+        CString sSort = strPatternSubst(CONSTLIT("%d-%02d-%05d-%s-%08x-%s-%s"), iDispSort, iLevelSort, iSizeSort, Objs[i].sName, Objs[i].pType->GetUNID(), sAbandoned, Objs[i].sNotes);
 
         //  Add to our result list
 
