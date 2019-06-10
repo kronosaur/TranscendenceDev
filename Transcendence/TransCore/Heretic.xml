@@ -991,30 +991,32 @@
 			sovereign=			"&svAresHeretic;"
 			inherit=			"&unidCommonText;"
 
+			attributes=			"ares, hereticStation, neoHuman, populated"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
-			dockingPorts=		"8"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
-			multiHull=			"true"
 			armorID=			"&itHeavyTharsisPlate;"
 			hitPoints=			"610"
+			multiHull=			"true"
             regen=              "6"
+
+			canAttack=			"true"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"ares, hereticStation, neoHuman, populated"
 			
 			definiteArticle=	"true"
 			>
 
-		<Image			imageID="&rsStations7;" imageX="0" imageY="640" imageWidth="128" imageHeight="128"/>
+		<!-- Configuration -->
 
 		<Devices>
 			<Device deviceID="&itLightningCannon;" omnidirectional="true"/>
 		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Ship		count="1d6"		class="&scSandstorm;" orders="guard"/>
@@ -1023,6 +1025,8 @@
 		<Reinforcements minShips="5">
 			<Ship		count="1d4"		class="&scSandstorm;" orders="guard"/>
 		</Reinforcements>
+
+		<!-- Treasure -->
 
 		<Items>
 			<Table>
@@ -1033,6 +1037,18 @@
 				<Lookup chance="10" count="1"	table="&trMajorItem7;"/>
 			</Table>
 		</Items>
+
+		<!-- Image and Effects -->
+		
+		<Image			imageID="&rsAresOutpost;" imageWidth="160" imageHeight="250"	viewportRatio="0.03"/>
+
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"8"
+				portRadius=		"95"
+				/>
+
+		<!-- Dock Screens -->
 
 		<DockScreens>
 			<Main>
