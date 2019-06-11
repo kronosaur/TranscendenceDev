@@ -313,6 +313,7 @@
     <ClCompile Include="CCTransDataLibrary.cpp" />
     <ClCompile Include="CHost.cpp" />
     <ClCompile Include="CImageGrid.cpp" />
+    <ClCompile Include="CItemInfoTable.cpp" />
     <ClCompile Include="CItemTypeTable.cpp" />
     <ClCompile Include="Compile.cpp" />
     <ClCompile Include="COutputChart.cpp" />

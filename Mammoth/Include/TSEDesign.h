@@ -288,8 +288,8 @@ class CDesignType
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
-		int GetPropertyInteger (const CString &sProperty);
-		CString GetPropertyString (const CString &sProperty);
+		int GetPropertyInteger (const CString &sProperty) const;
+		CString GetPropertyString (const CString &sProperty) const;
 		CXMLElement *GetScreen (const CString &sUNID);
 		ICCItemPtr GetStaticData (const CString &sAttrib) const;
 		void GetStats (SStats &Stats) const;

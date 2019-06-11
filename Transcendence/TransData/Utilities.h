@@ -21,6 +21,26 @@ class CImageGrid
 		int m_cyCellHeight;
 	};
 
+class CItemInfoTable
+	{
+	public:
+		void AddItem (const CItem &Item);
+		int GetCount (void) const { return m_Table.GetCount(); }
+		int GetInstanceCount (int iIndex) const { return m_Table[iIndex].iInstanceCount; }
+		int GetItemCount (int iIndex) const { return m_Table[iIndex].iTotalCount; }
+		const CItemType &GetItemType (int iIndex) const { return *m_Table[iIndex].pType; }
+
+	private:
+		struct SItemInfo
+			{
+			const CItemType *pType = NULL;
+			int iTotalCount = 0;
+			int iInstanceCount = 0;
+			};
+
+		TSortMap<DWORD, SItemInfo> m_Table;
+	};
+
 class CItemTypeTable
 	{
 	public:

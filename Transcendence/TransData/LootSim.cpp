@@ -28,8 +28,9 @@ struct SSystemInfo
 	int iCount;								//	Number of times this system instance 
 											//	has appeared.
 
-	TSortMap<DWORD, ItemInfo> Items;		//	All items types that have ever appeared in
+	CItemInfoTable Items;					//	All items types that have ever appeared in
 											//	this system instance.
+
 	int iTotalStations = 0;
 	int iTotalLootValue = 0;
 	int iTotalDeviceValue = 0;
@@ -37,7 +38,19 @@ struct SSystemInfo
 	int iTotalOtherValue = 0;
 	};
 
-void AddItems (CSpaceObject *pObj, const CItemCriteria &Criteria, SSystemInfo *pSystemEntry);
+struct SSourceInfo
+	{
+	const CDesignType *pType = NULL;
+	CString sName;
+	int iLevel = 0;
+
+	int iTotalCount = 0;
+	CItemInfoTable Items;
+	};
+
+void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, SSystemInfo *pSystemEntry);
+void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, TSortMap<DWORD, SSourceInfo> &AllSources);
+void OutputItemsBySource (CUniverse &Universe, const TSortMap<DWORD, SSourceInfo> &AllSources, int iSystemSample);
 
 void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 	{
@@ -64,6 +77,9 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 	else
 		CItem::InitCriteriaAll(&ItemCriteria);
 
+	bool bBySource = pCmdLine->GetAttributeBool(CONSTLIT("bySource"));
+	bool bByLevel = !bBySource;
+
 	//	Figure out what we're looting
 
 	DWORD dwLootType = 0;
@@ -86,6 +102,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 	//	Generate systems for multiple games
 
 	TSortMap<CString, SSystemInfo> AllSystems;
+	TSortMap<DWORD, SSourceInfo> AllSources;
 	for (i = 0; i < iSystemSample; i++)
 		{
 		if (bLogo)
@@ -142,7 +159,8 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 						&& pObj->GetItemList().GetCount() != 0)
 					{
 					pSystemEntry->iTotalStations++;
-					AddItems(pObj, ItemCriteria, pSystemEntry);
+					AddItems(*pObj, ItemCriteria, pSystemEntry);
+					AddItems(*pObj, ItemCriteria, AllSources);
 					}
 
 				//	Find any objects that are lootable by the player
@@ -164,7 +182,8 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 					if (pWreck)
 						{
 						pSystemEntry->iTotalStations++;
-						AddItems(pWreck, ItemCriteria, pSystemEntry);
+						AddItems(*pWreck, ItemCriteria, pSystemEntry);
+						AddItems(*pWreck, ItemCriteria, AllSources);
 						}
 					}
 
@@ -176,7 +195,8 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 						&& pObj->HasTradeService(serviceSell))
 					{
 					pSystemEntry->iTotalStations++;
-					AddItems(pObj, ItemCriteria, pSystemEntry);
+					AddItems(*pObj, ItemCriteria, pSystemEntry);
+					AddItems(*pObj, ItemCriteria, AllSources);
 					}
 				}
 
@@ -202,63 +222,72 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Sort by level then system name
 
-	TSortMap<CString, int> Sorted;
-	for (i = 0; i < AllSystems.GetCount(); i++)
+	if (bByLevel)
 		{
-		Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
-		}
-
-	//	Output total value stats
-
-	printf("Level\tSystem\tObjects\tLoot\tDevices\tArmor\tTreasure\n");
-
-	for (i = 0; i < Sorted.GetCount(); i++)
-		{
-		const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
-
-		printf("%d\t%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",
-				SystemEntry.iLevel,
-				SystemEntry.sName.GetASCIIZPointer(),
-				(double)SystemEntry.iTotalStations / (double)iSystemSample,
-				(double)SystemEntry.iTotalLootValue / (double)iSystemSample,
-				(double)SystemEntry.iTotalDeviceValue / (double)iSystemSample,
-				(double)SystemEntry.iTotalArmorValue / (double)iSystemSample,
-				(double)SystemEntry.iTotalOtherValue / (double)iSystemSample
-				);
-		}
-
-	printf("\n");
-
-	//	Output all items
-
-	printf("Level\tSystem\tItem\tCount\tValue\n");
-
-	CItem NULL_ITEM;
-	CItemCtx ItemCtx(NULL_ITEM);
-
-	for (i = 0; i < Sorted.GetCount(); i++)
-		{
-		const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
-
-		for (j = 0; j < SystemEntry.Items.GetCount(); j++)
+		TSortMap<CString, int> Sorted;
+		for (i = 0; i < AllSystems.GetCount(); i++)
 			{
-			const ItemInfo *pEntry = &SystemEntry.Items[j];
+			Sorted.Insert(strPatternSubst(CONSTLIT("%04d-%s"), AllSystems[i].iLevel, AllSystems[i].sName), i);
+			}
 
-			printf("%d\t%s\t%s\t%.2f\t%.2f\n",
+		//	Output total value stats
+
+		printf("Level\tSystem\tObjects\tLoot\tDevices\tArmor\tTreasure\n");
+
+		for (i = 0; i < Sorted.GetCount(); i++)
+			{
+			const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
+
+			printf("%d\t%s\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\n",
 					SystemEntry.iLevel,
 					SystemEntry.sName.GetASCIIZPointer(),
-					pEntry->pType->GetDataField(FIELD_NAME).GetASCIIZPointer(),
-					(double)pEntry->iTotalCount / (double)iSystemSample,
-					(double)pEntry->pType->GetValue(ItemCtx, true) * pEntry->iTotalCount / (double)iSystemSample);
+					(double)SystemEntry.iTotalStations / (double)iSystemSample,
+					(double)SystemEntry.iTotalLootValue / (double)iSystemSample,
+					(double)SystemEntry.iTotalDeviceValue / (double)iSystemSample,
+					(double)SystemEntry.iTotalArmorValue / (double)iSystemSample,
+					(double)SystemEntry.iTotalOtherValue / (double)iSystemSample
+					);
+			}
+
+		printf("\n");
+
+		//	Output all items
+
+		printf("Level\tSystem\tItem\tCount\tValue\n");
+
+		CItem NULL_ITEM;
+		CItemCtx ItemCtx(NULL_ITEM);
+
+		for (i = 0; i < Sorted.GetCount(); i++)
+			{
+			const SSystemInfo &SystemEntry = AllSystems[Sorted[i]];
+
+			for (j = 0; j < SystemEntry.Items.GetCount(); j++)
+				{
+				const CItemType &ItemType = SystemEntry.Items.GetItemType(j);
+				int iItemCount = SystemEntry.Items.GetItemCount(j);
+
+				printf("%d\t%s\t%s\t%.2f\t%.2f\n",
+						SystemEntry.iLevel,
+						SystemEntry.sName.GetASCIIZPointer(),
+						ItemType.GetDataField(FIELD_NAME).GetASCIIZPointer(),
+						(double)iItemCount / (double)iSystemSample,
+						(double)ItemType.GetValue(ItemCtx, true) * iItemCount / (double)iSystemSample);
+				}
 			}
 		}
+
+	//	Output all sources
+
+	if (bBySource)
+		OutputItemsBySource(Universe, AllSources, iSystemSample);
 
 	printf("Average time to create systems: %.2f seconds.\n", (double)dwTotalTime / (1000.0 * iSystemSample));
 	}
 
-void AddItems (CSpaceObject *pObj, const CItemCriteria &Criteria, SSystemInfo *pSystemEntry)
+void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, SSystemInfo *pSystemEntry)
 	{
-	CItemListManipulator ItemList(pObj->GetItemList());
+	CItemListManipulator ItemList(Obj.GetItemList());
 	ItemList.ResetCursor();
 	while (ItemList.MoveCursorForward())
 		{
@@ -271,17 +300,9 @@ void AddItems (CSpaceObject *pObj, const CItemCriteria &Criteria, SSystemInfo *p
 				|| Item.IsDamaged())
 			continue;
 
-		//	Add the item
+		//	Add the item to the system list
 
-		bool bNew;
-		ItemInfo *pEntry = pSystemEntry->Items.SetAt(Item.GetType()->GetUNID(), &bNew);
-		if (bNew)
-			{
-			pEntry->pType = Item.GetType();
-			pEntry->iTotalCount = Item.GetCount();
-			}
-		else
-			pEntry->iTotalCount += Item.GetCount();
+		pSystemEntry->Items.AddItem(Item);
 
 		//	Increment value
 
@@ -294,5 +315,60 @@ void AddItems (CSpaceObject *pObj, const CItemCriteria &Criteria, SSystemInfo *p
 			pSystemEntry->iTotalArmorValue += iValue;
 		else
 			pSystemEntry->iTotalOtherValue += iValue;
+		}
+	}
+
+void AddItems (CSpaceObject &Obj, const CItemCriteria &Criteria, TSortMap<DWORD, SSourceInfo> &AllSources)
+	{
+	bool bNew;
+	SSourceInfo *pTable = AllSources.SetAt(Obj.GetType()->GetUNID(), &bNew);
+	if (bNew)
+		{
+		pTable->pType = Obj.GetType();
+		pTable->sName = pTable->pType->GetPropertyString(CONSTLIT("name"));
+		pTable->iLevel = pTable->pType->GetLevel();
+		}
+
+	pTable->iTotalCount++;
+
+	CItemListManipulator ItemList(Obj.GetItemList());
+	ItemList.ResetCursor();
+	while (ItemList.MoveCursorForward())
+		{
+		const CItem &Item(ItemList.GetItemAtCursor());
+
+		//	Skip items we're not interested in.
+
+		if (!Item.MatchesCriteria(Criteria)
+				|| Item.IsInstalled()
+				|| Item.IsDamaged())
+			continue;
+
+		//	Add the item to the table
+
+		pTable->Items.AddItem(Item);
+		}
+	}
+
+void OutputItemsBySource (CUniverse &Universe, const TSortMap<DWORD, SSourceInfo> &AllSources, int iSystemSample)
+	{
+	printf("Level\tSource\tItem\tTotal Count\tAve. Appearing\n");
+
+	for (int i = 0; i < AllSources.GetCount(); i++)
+		{
+		const SSourceInfo &Source = AllSources[i];
+
+		for (int j = 0; j < Source.Items.GetCount(); j++)
+			{
+			const CItemType &ItemType = Source.Items.GetItemType(j);
+			int iItemCount = Source.Items.GetItemCount(j);
+
+			printf("%d\t%s\t%s\t%.2f\t%.2f\n",
+					Source.iLevel,
+					(LPSTR)Source.sName,
+					(LPSTR)ItemType.GetNounPhrase(),
+					(double)iItemCount / (double)iSystemSample,
+					(double)iItemCount / (double)Source.Items.GetInstanceCount(j));
+			}
 		}
 	}

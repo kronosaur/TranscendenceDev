@@ -299,6 +299,9 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 
 		void InsertEmpty (int iCount = 1, int iIndex = -1)
 			{
+			if (iCount <= 0)
+				return;
+
 			int iOffset;
 			if (iIndex == -1) iIndex = GetCount();
 			iOffset = iIndex * sizeof(VALUE);

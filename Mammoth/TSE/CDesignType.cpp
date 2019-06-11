@@ -1887,7 +1887,7 @@ ICCItemPtr CDesignType::GetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 		}
 	}
 
-int CDesignType::GetPropertyInteger (const CString &sProperty)
+int CDesignType::GetPropertyInteger (const CString &sProperty) const
 
 //	GetPropertyInteger
 //
@@ -1903,7 +1903,7 @@ int CDesignType::GetPropertyInteger (const CString &sProperty)
 	return pItem->GetIntegerValue();
 	}
 
-CString CDesignType::GetPropertyString (const CString &sProperty)
+CString CDesignType::GetPropertyString (const CString &sProperty) const
 
 //	GetPropertyString
 //
