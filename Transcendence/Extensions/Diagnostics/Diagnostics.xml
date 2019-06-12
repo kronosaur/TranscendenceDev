@@ -39,6 +39,7 @@
 	<!ENTITY unidTestBaseType			"0xA0010101">
 	<!ENTITY unidTestDescendantType1	"0xA0010102">
 	<!ENTITY unidTestDescendantType2	"0xA0010103">
+	<!ENTITY unidTestStationType		"0xA0010104">
 
 	<!-- OTHER -->
 
@@ -66,6 +67,7 @@
 	<Module filename="RPGUnitTests.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
+	<Module filename="TestStationTypes.xml"/>
 	<Module filename="TopologyTests.xml"/>
 
 <!-- DIAGNOSTICS -->

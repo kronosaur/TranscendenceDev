@@ -1973,6 +1973,20 @@ ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
+const CEconomyType &CItemType::OnGetDefaultCurrency (void) const
+
+//	OnGetDefaultCurrency
+//
+//	Returns default currency.
+
+	{
+	const CEconomyType *pCurrency = GetCurrencyType();
+	if (pCurrency == NULL)
+		return GetUniverse().GetDefaultCurrency();
+
+	return *pCurrency;
+	}
+
 ICCItemPtr CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty

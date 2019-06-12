@@ -2682,6 +2682,24 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 	return true;
 	}
 
+const CEconomyType &CDesignType::OnGetDefaultCurrency (void) const
+
+//	OnGetDefaultCurrency
+//
+//	Default implementation.
+
+	{
+	const CTradingDesc *pTrade = GetTradingDesc();
+	if (pTrade == NULL)
+		return GetUniverse().GetDefaultCurrency();
+
+	const CEconomyType *pCurrency = pTrade->GetEconomyType();
+	if (pCurrency == NULL)
+		return GetUniverse().GetDefaultCurrency();
+
+	return *pCurrency;
+	}
+
 ALERROR CDesignType::PrepareBindDesign (SDesignLoadCtx &Ctx)
 
 //	PrepareBindDesign

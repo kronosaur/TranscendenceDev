@@ -1864,7 +1864,10 @@ int CArmorClass::GetDamageAdjForWeaponLevel (int iLevel)
 		{
 		if (CWeaponClass::IsStdDamageType((DamageTypes)i, iLevel))
 			{
-			int iDamageAdj = GetDamageAdj(CItemCtx(), (DamageTypes)i);
+			CItem ArmorItem(m_pItemType, 1);
+			CItemCtx ItemCtx(ArmorItem);
+
+			int iDamageAdj = GetDamageAdj(ItemCtx, (DamageTypes)i);
 			if (iDamageAdj > iBestAdj)
 				iBestAdj = iDamageAdj;
 			}

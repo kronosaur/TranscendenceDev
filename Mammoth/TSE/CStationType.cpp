@@ -159,6 +159,7 @@
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
+#define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
 
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_SHIPWRECK							CONSTLIT("shipwreck")
@@ -1753,6 +1754,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(pSystemCriteria->AttribCriteria.AsString());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TREASURE_DESIRED_VALUE))
+		{
+		if (m_pItems == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		CCurrencyAndValue Value = m_pItems->GetDesiredValue(GetLevel());
+		if (Value.IsEmpty())
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr((DWORD)GetDefaultCurrency().Exchange(Value));
 		}
 
 	else

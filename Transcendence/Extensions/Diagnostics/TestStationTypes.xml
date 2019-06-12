@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestStationType;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+						{	test:'(typGetProperty &stDwargColony; 'abandonedDockScreen)		result:&dsRPGAbandonedStation;	}
+						{	test:'(typGetProperty &stDwargColony; 'armorClass)				result:"Dwarg chiton armor"	}
+						{	test:'(typGetProperty &stDwargColony; 'armorLevel)				result:3	}
+						{	test:'(typGetProperty &stDwargColony; 'balance)					result:214	}
+						{	test:'(typGetProperty &stDwargColony; 'canAttack)				result:True	}
+						{	test:'(typGetProperty &stDwargColony; 'category)				result:"02-Enemy"	}
+						{	test:'(typGetProperty &stDwargColony; 'defenderStrength)		result:650	}
+						{	test:'(typGetProperty &stDwargColony; 'dockScreen)				result:Nil	}
+						{	test:'(typGetProperty &stDwargColony; 'explosionType)			result:"blast explosion 2"	}
+						{	test:'(typGetProperty &stDwargColony; 'fireRateAdj)				result:200	}
+						{	test:'(typGetProperty &stDwargColony; 'hitsToDestroy)			result:53	}
+						{	test:'(typGetProperty &stDwargColony; 'installDeviceMaxLevel)	result:Nil	}
+						{	test:'(typGetProperty &stDwargColony; 'hp)						result:160	}
+						{	test:'(typGetProperty &stDwargColony; 'level)					result:4	}
+						{	test:'(typGetProperty &stDwargColony; 'levelFrequency)			result:"---cu v---- ----- ----- -----"	}
+						{	test:'(typGetProperty &stDwargColony; 'locationCriteria)		result:"+planetary"	}
+						{	test:'(typGetProperty &stDwargColony; 'maxLightRadius)			result:500	}
+						{	test:'(typGetProperty &stDwargColony; 'name)					result:"Dwarg colony"	}
+						{	test:'(typGetProperty &stDwargColony; 'regen)					result:2	}
+						{	test:'(typGetProperty &stDwargColony; 'satelliteStrength)		result:0	}
+						{	test:'(typGetProperty &stDwargColony; 'showsUnexploredAnnotation)	result:Nil	}
+						{	test:'(typGetProperty &stDwargColony; 'size)					result:0	}
+						{	test:'(typGetProperty &stDwargColony; 'sovereign)				result:&svDwargRaiders;	}
+						{	test:'(typGetProperty &stDwargColony; 'sovereignName)			result:"Dwarg civilization"	}
+						{	test:'(typGetProperty &stDwargColony; 'systemCriteria)			result:"+dwargSpace; "	}
+						{	test:'(typGetProperty &stDwargColony; 'treasureBalance)			result:93	}
+						{	test:'(typGetProperty &stDwargColony; 'treasureDesiredValue)	result:3200	}
+						{	test:'(typGetProperty &stDwargColony; 'treasureValue)			result:3200	}
+						{	test:'(typGetProperty &stDwargColony; 'unid)					result:&stDwargColony;	}
+						{	test:'(typGetProperty &stDwargColony; 'weaponStrength)			result:80	}
+						))
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

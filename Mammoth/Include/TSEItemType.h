@@ -172,6 +172,7 @@ class CItemType : public CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
         virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual const CEconomyType &OnGetDefaultCurrency (void) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;

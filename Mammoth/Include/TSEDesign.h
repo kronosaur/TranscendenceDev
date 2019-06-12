@@ -275,6 +275,7 @@ class CDesignType
 		inline const CString &GetAttributes (void) const { return m_sAttributes; }
 		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
 		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
+		const CEconomyType &GetDefaultCurrency (void) const { return OnGetDefaultCurrency(); }
 		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return (m_pExtra ? m_pExtra->DisplayAttribs : CDisplayAttributeDefinitions::Null); }
 		CString GetEntityName (void) const;
 		ICCItem *GetEventHandler (const CString &sEvent) const;
@@ -365,6 +366,7 @@ class CDesignType
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
 		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
+		virtual const CEconomyType &OnGetDefaultCurrency (void) const;
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const { return sAttrib.IsBlank(); }

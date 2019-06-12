@@ -834,5 +834,8 @@
     <Xml Include="..\Extensions\Diagnostics\DesignTypeTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TestStationTypes.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>
