@@ -531,7 +531,7 @@ class IItemGenerator
 		virtual void AddItems (SItemAddCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
-		virtual CCurrencyAndValue GetDesiredValue (int iLevel) const { return 0; }
+		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual CItemType *GetItemType (int iIndex) { return NULL; }

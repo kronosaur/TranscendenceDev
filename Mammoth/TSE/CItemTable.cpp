@@ -91,7 +91,7 @@ class CGroupOfGenerators : public IItemGenerator
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
-		virtual CCurrencyAndValue GetDesiredValue (int iLevel) const override;
+		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
 		virtual CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const override;
@@ -488,31 +488,10 @@ void CGroupOfGenerators::AddItems (SItemAddCtx &Ctx)
 
 	if (SetsAverageValue())
 		{
-		//	Figure out how many loops to do. We do as many loops as necessary
-		//	to react the desired value, but we must have at least 1 loop and we
-		//	truncate to a maximum number of loops.
-
-		int iMaxLoopCount = mathRandom(9, 13);
-		Metric rDesiredValue = (Metric)m_DesiredValue[Ctx.iLevel].GetCreditValue();
-		Metric rExpectedValue = Max(1.0, GetExpectedValue(Ctx.iLevel));
-
-		int iLoopCount = Max(1, Min(iMaxLoopCount, mathRound(rDesiredValue / rExpectedValue)));
-
-#ifdef DEBUG_AVERAGE_VALUE
-	bool bDebug = (Ctx.pDest && Ctx.pDest->GetType()->GetUNID() == 0x080200C0);
-	if (bDebug)
-		printf("[%d] Level %d\n", Ctx.pDest->GetID(), Ctx.iLevel);
-#endif
-
-		//	Scale the resulting counts to handle round-off error and to adjust
-		//	for the loop count getting truncated above.
-
-		Metric rScale = (rDesiredValue / (iLoopCount * rExpectedValue));
-
-#ifdef DEBUG_AVERAGE_VALUE
-	if (bDebug)
-		printf("[%d] CountAdj: %.2f\n", Ctx.pDest->GetID(), rCountAdj);
-#endif
+		int iLoopCount;
+		Metric rScale;
+		if (GetDesiredValue(Ctx.iLevel, &iLoopCount, &rScale).IsEmpty())
+			return;
 
 		for (i = 0; i < iLoopCount; i++)
 			AddItemsScaled(Ctx, rScale);
@@ -635,7 +614,7 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 		}
 	}
 
-CCurrencyAndValue CGroupOfGenerators::GetDesiredValue (int iLevel) const
+CCurrencyAndValue CGroupOfGenerators::GetDesiredValue (int iLevel, int *retiLoopCount, Metric *retrScale) const
 
 //	GetDesiredValue
 //
@@ -645,7 +624,38 @@ CCurrencyAndValue CGroupOfGenerators::GetDesiredValue (int iLevel) const
 	if (iLevel < 0 || iLevel >= m_DesiredValue.GetCount())
 		return CCurrencyAndValue();
 
-	return m_DesiredValue[iLevel];
+	//	If all we care about is one value, then just return that.
+
+	else if (retiLoopCount == NULL && retrScale == NULL)
+		return m_DesiredValue[iLevel];
+
+	//	Otherwise, do the full calculations
+
+	else
+		{
+		//	Figure out how many loops to do. We do as many loops as necessary
+		//	to react the desired value, but we must have at least 1 loop and we
+		//	truncate to a maximum number of loops.
+
+		static constexpr int MAX_LOOP_COUNT = 15;
+		Metric rDesiredValue = (Metric)m_DesiredValue[iLevel].GetCreditValue();
+		Metric rExpectedValue = Max(1.0, GetExpectedValue(iLevel));
+
+		int iLoopCount = Max(1, Min(MAX_LOOP_COUNT, mathRound(rDesiredValue / rExpectedValue)));
+		if (retiLoopCount)
+			*retiLoopCount = iLoopCount;
+
+		//	Scale the resulting counts to handle round-off error and to adjust
+		//	for the loop count getting truncated above.
+
+		Metric rScale = (rDesiredValue / (iLoopCount * rExpectedValue));
+		if (retrScale)
+			*retrScale = rScale;
+
+		//	Done
+
+		return m_DesiredValue[iLevel];
+		}
 	}
 
 Metric CGroupOfGenerators::GetExpectedValue (int iLevel) const

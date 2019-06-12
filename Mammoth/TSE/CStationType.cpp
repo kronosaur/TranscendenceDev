@@ -160,6 +160,8 @@
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
 #define PROPERTY_SYSTEM_CRITERIA				CONSTLIT("systemCriteria")
 #define PROPERTY_TREASURE_DESIRED_VALUE			CONSTLIT("treasureDesiredValue")
+#define PROPERTY_TREASURE_DESIRED_VALUE_LOOP_COUNT	CONSTLIT("treasureDesiredValueLoopCount")
+#define PROPERTY_TREASURE_DESIRED_VALUE_SCALE		CONSTLIT("treasureDesiredValueScale")
 
 #define VALUE_FALSE								CONSTLIT("false")
 #define VALUE_SHIPWRECK							CONSTLIT("shipwreck")
@@ -1766,6 +1768,30 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr((DWORD)GetDefaultCurrency().Exchange(Value));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TREASURE_DESIRED_VALUE_LOOP_COUNT))
+		{
+		if (m_pItems == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		int iLoopCount;
+		if (m_pItems->GetDesiredValue(GetLevel(), &iLoopCount).IsEmpty())
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(iLoopCount);
+		}
+
+	else if (strEquals(sProperty, PROPERTY_TREASURE_DESIRED_VALUE_SCALE))
+		{
+		if (m_pItems == NULL)
+			return ICCItemPtr(ICCItem::Nil);
+
+		Metric rScale;
+		if (m_pItems->GetDesiredValue(GetLevel(), NULL, &rScale).IsEmpty())
+			return ICCItemPtr(ICCItem::Nil);
+
+		return ICCItemPtr(rScale);
 		}
 
 	else
