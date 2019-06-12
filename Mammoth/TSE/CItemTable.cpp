@@ -108,13 +108,13 @@ class CGroupOfGenerators : public IItemGenerator
 
 		void AddItemsInt (SItemAddCtx &Ctx) const;
 		void AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const;
-		Metric GetCountAdj (int iLevel);
-		inline bool SetsAverageValue (void) const { return m_AverageValue.GetCount() > 0; }
+		Metric GetExpectedValue (int iLevel) const;
+		bool SetsAverageValue (void) const { return m_DesiredValue.GetCount() > 0; }
 
 		TArray<SEntry> m_Table;
-		TArray<CCurrencyAndValue> m_AverageValue;
-		TArray<Metric> m_CountAdj;
+		TArray<CCurrencyAndValue> m_DesiredValue;
 
+		mutable TArray<Metric> m_ExpectedValue;			//	Expected average value by level
 		mutable bool m_bRecursing;
 	};
 
@@ -487,24 +487,26 @@ void CGroupOfGenerators::AddItems (SItemAddCtx &Ctx)
 
 	if (SetsAverageValue())
 		{
-		//	Figure out how many loops to do. The more loops we do, the more
-		//	different items there will be. We want a small number of loops
-		//	for less valuable treasure hordes.
+		//	Figure out how many loops to do. We do as many loops as necessary
+		//	to react the desired value, but we must have at least 1 loop and we
+		//	truncate to a maximum number of loops.
 
-		Metric rUnitCost = Max(1.0, CWeaponClass::GetStdStats(Ctx.iLevel).rCost * 0.5);
-		int iLoopCount = Max(1, Min(mathRandom(9, 13), mathRound((Metric)m_AverageValue[Ctx.iLevel].GetCreditValue() / rUnitCost)));
+		int iMaxLoopCount = mathRandom(9, 13);
+		Metric rDesiredValue = (Metric)m_DesiredValue[Ctx.iLevel].GetCreditValue();
+		Metric rExpectedValue = Max(1.0, GetExpectedValue(Ctx.iLevel));
 
-		//	CountAdj is the number of times we need to loop through our table
-		//	to get the required item value (on average). We convert this to the
-		//	scaling factor to use for the given number of loops.
+		int iLoopCount = Max(1, Min(iMaxLoopCount, mathRound(rDesiredValue / rExpectedValue)));
 
 #ifdef DEBUG_AVERAGE_VALUE
 	bool bDebug = (Ctx.pDest && Ctx.pDest->GetType()->GetUNID() == 0x080200C0);
 	if (bDebug)
 		printf("[%d] Level %d\n", Ctx.pDest->GetID(), Ctx.iLevel);
 #endif
-		Metric rCountAdj = GetCountAdj(Ctx.iLevel);
-		Metric rScale = rCountAdj / iLoopCount;
+
+		//	Scale the resulting counts to handle round-off error and to adjust
+		//	for the loop count getting truncated above.
+
+		Metric rScale = (rDesiredValue / (iLoopCount * rExpectedValue));
 
 #ifdef DEBUG_AVERAGE_VALUE
 	if (bDebug)
@@ -569,17 +571,7 @@ void CGroupOfGenerators::AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const
 		{
 		const CItem &Item = LocalList.GetItem(i);
 		int iOriginalCount = Item.GetCount();
-
-		//	Adjust the count
-
-		Metric rNewCount = iOriginalCount * rAdj;
-		Metric rNewCountInt = floor(rNewCount);
-		int iNewCount = (int)rNewCountInt;
-
-		Metric rExtra = rNewCount - rNewCountInt;
-		int iExtraChance = (int)(100000.0 * rExtra);
-		if (mathRandom(0, 100000) < iExtraChance)
-			iNewCount++;
+		int iNewCount = mathRoundStochastic(iOriginalCount * rAdj);
 
 #ifdef DEBUG_AVERAGE_VALUE
 		if (bDebug)
@@ -623,12 +615,10 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 //	Returns the average value.
 
 	{
-	int i;
-
 	if (SetsAverageValue())
 		{
-		if (iLevel >= 0 && iLevel < m_AverageValue.GetCount())
-			return m_AverageValue[iLevel].GetCreditValue();
+		if (iLevel >= 0 && iLevel < m_DesiredValue.GetCount())
+			return m_DesiredValue[iLevel].GetCreditValue();
 		else
 			return 0;
 		}
@@ -640,10 +630,24 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 		if (Check.IsRecursing())
 			return 0;
 
-		//	Average value is proportional to chances.
+		return (CurrencyValue)mathRound(GetExpectedValue(iLevel));
+		}
+	}
 
+Metric CGroupOfGenerators::GetExpectedValue (int iLevel) const
+
+//	GetExpectedValue
+//
+//	Returns the expected, average value generated at the given level.
+
+	{
+	if (iLevel < 0 || iLevel >= m_ExpectedValue.GetCount())
+		return 0.0;
+
+	if (m_ExpectedValue[iLevel] < 0.0)
+		{
 		Metric rTotal = 0.0;
-		for (i = 0; i < m_Table.GetCount(); i++)
+		for (int i = 0; i < m_Table.GetCount(); i++)
 			{
 			if (m_Table[i].iChance < 100)
 				rTotal += (m_Table[i].Count.GetAveValueFloat() * (Metric)m_Table[i].pItem->GetAverageValue(iLevel) * (Metric)m_Table[i].iChance / 100.0);
@@ -651,44 +655,10 @@ CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
 				rTotal += m_Table[i].Count.GetAveValueFloat() * m_Table[i].pItem->GetAverageValue(iLevel);
 			}
 
-		return (CurrencyValue)(rTotal + 0.5);
+		m_ExpectedValue[iLevel] = rTotal;
 		}
-	}
 
-Metric CGroupOfGenerators::GetCountAdj (int iLevel)
-
-//	GetCountAdj
-//
-//	Returns the count adjusment for the given level.
-
-	{
-	int i;
-
-	if (iLevel >= 0 && iLevel < m_CountAdj.GetCount())
-		{
-		Metric rCountAdj = m_CountAdj[iLevel];
-		if (rCountAdj < 0.0)
-			{
-			//	Loop over all our children and compute the average value.
-
-			Metric rTotal = 0.0;
-			for (i = 0; i < m_Table.GetCount(); i++)
-				rTotal += (Metric)m_Table[i].pItem->GetAverageValue(iLevel);
-
-			//	Compute the factor that we have to multiply the total to get to
-			//	the desired value.
-
-			rCountAdj = (rTotal > 0.0 ? (Metric)m_AverageValue[iLevel].GetCreditValue() / rTotal : 0.0);
-
-			//	Remember so we don't have to compute it again.
-
-			m_CountAdj[iLevel] = rCountAdj;
-			}
-
-		return rCountAdj;
-		}
-	else
-		return 0.0;
+	return m_ExpectedValue[iLevel];
 	}
 
 CItemTypeProbabilityTable CGroupOfGenerators::GetProbabilityTable (SItemAddCtx &Ctx) const
@@ -770,16 +740,16 @@ ALERROR CGroupOfGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 		TArray<CString> Values;
 		ParseStringList(sAttrib, 0, &Values);
 
-		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
+		m_DesiredValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
 		for (i = 0; i < Values.GetCount(); i++)
-			if (error = m_AverageValue[i + 1].InitFromXML(Ctx, Values[i], i + 1))
+			if (error = m_DesiredValue[i + 1].InitFromXML(Ctx, Values[i], i + 1))
 				return error;
 		}
 	else if (pDesc->FindAttribute(VALUE_ATTRIB, &sAttrib))
 		{
-		m_AverageValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
+		m_DesiredValue.InsertEmpty(MAX_ITEM_LEVEL + 1);
 		for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-			if (error = m_AverageValue[i].InitFromXML(Ctx, sAttrib, i))
+			if (error = m_DesiredValue[i].InitFromXML(Ctx, sAttrib, i))
 				return error;
 		}
 
@@ -804,15 +774,15 @@ ALERROR CGroupOfGenerators::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	//	Bind average values
 
-	for (i = 0; i < m_AverageValue.GetCount(); i++)
-		if (error = m_AverageValue[i].Bind(Ctx))
+	for (i = 0; i < m_DesiredValue.GetCount(); i++)
+		if (error = m_DesiredValue[i].Bind(Ctx))
 			return error;
 
-	//	Initialize count adjustment
+	//	Initialize array to cache expected value.
 
-	m_CountAdj.InsertEmpty(m_AverageValue.GetCount());
-	for (i = 0; i < m_AverageValue.GetCount(); i++)
-		m_CountAdj[i] = -1.0;
+	m_ExpectedValue.InsertEmpty(Max(0, m_DesiredValue.GetCount() - m_ExpectedValue.GetCount()));
+	for (i = 0; i < m_DesiredValue.GetCount(); i++)
+		m_ExpectedValue[i] = -1.0;
 
 	return NOERROR;
 	}
