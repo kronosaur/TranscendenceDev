@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestArmorClass;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for Properties
+
+					(diagEval (list
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'adjustedHP)				result:"250\t140\t88\t35\t88\t53\t70\t70\t70\t70\t56\t56\t35\t35\t23\t23"	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'armorClass)				result:"light"	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'balance)				result:-18	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'blindingImmune)			result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'damageAdj)				result:{ antimatter:100 blast:200 darkAcid:200 darkFire:300 darkLightning:300 darkSteel:200 graviton:125 ion:80 kinetic:50 laser:28 nano:100 particle:80 plasma:100 positron:100 singularity:125 thermo:133	} }
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'deviceDamageImmune)		result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'deviceDisruptImmune)	result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'disintegrationImmune)	result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'effectiveHP)			result:111	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'EMPImmune)				result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'hp)						result:70	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'hpBonus)				result:{ blast:-50 ion:25 kinetic:-20 laser:43 particle:25 thermo:-25 }	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'installCost)			result:160	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'level)					result:4	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'maxHP)					result:70	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'powerOutput)			result:3	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'powerUse)				result:0	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'primeSegment)			result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'radiationImmune)		result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'regen)					result:0	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'repairCost)				result:6	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'shatterImmune)			result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'shieldInterference)		result:Nil	}
+						{	test:'(itmGetProperty (@ data 'armorItem1) 'stdHP)					result:80	}
+						)
+
+						{
+						armorItem1: (itmCreate &itLightSolarArmor; 1)
+						})
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

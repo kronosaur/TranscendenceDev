@@ -1306,6 +1306,29 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 	return CLanguage::ComposeNounPhrase(sName, (int)m_dwCount, sModifier, dwNounFlags, dwFlags);
 	}
 
+int CItem::GetInstallCost (void) const
+
+//	GetInstallCost
+//
+//	Returns the install cost in default currency (or -1 if the item cannot be
+//	installed).
+
+	{
+	if (m_pItemType == NULL)
+		return -1;
+
+	else if (const CArmorItem ArmorItem = AsArmorItem())
+		return ArmorItem.GetInstallCost();
+
+	else if (CDeviceClass *pDevice = m_pItemType->GetDeviceClass())
+		{
+		CItemCtx Ctx(*this);
+		return pDevice->GetInstallCost(Ctx);
+		}
+	else
+		return -1;
+	}
+
 ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
 
 //	GetItemProperty
@@ -1648,7 +1671,6 @@ bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int 
 //	values are filled
 
 	{
-	CArmorClass *pArmor;
 	CDeviceClass *pDevice;
 
 	//	No reference if unknown
@@ -1658,8 +1680,8 @@ bool CItem::GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int 
 
 	//	Return armor reference, if this is armor
 
-	if (pArmor = m_pItemType->GetArmorClass())
-		return pArmor->GetReferenceDamageAdj(this, pInstalled, retiHP, retArray);
+	else if (const CArmorItem ArmorItem = AsArmorItem())
+		return ArmorItem.GetReferenceDamageAdj(retiHP, retArray);
 
 	//	Return device reference, if this is a device
 

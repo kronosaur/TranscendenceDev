@@ -37,7 +37,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		int iDamage;
 		for (iDamage = damageLaser; iDamage < damageCount; iDamage++)
 			{
-			printf("%d", ArmorItem.GetArmorClass().GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage));
+			printf("%d", ArmorItem.GetDamageAdj((DamageTypes)iDamage));
 			if (iDamage != damageCount - 1)
 				printf("\t");
 			}
@@ -69,7 +69,7 @@ void GenerateArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 		int iDamage;
 		for (iDamage = damageLaser; iDamage < damageCount; iDamage++)
 			{
-			int iAdj = ArmorItem.GetArmorClass().GetDamageAdj(CItemCtx(Item), (DamageTypes)iDamage);
+			int iAdj = ArmorItem.GetDamageAdj((DamageTypes)iDamage);
 			if (iAdj == 0)
 				printf("----");
 			else

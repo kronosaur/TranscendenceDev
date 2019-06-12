@@ -18,6 +18,7 @@ class CStationHullDesc
 		inline bool CanBeWrecked (void) const { return (!IsImmutable() && GetMaxHitPoints() > 0); }
 		bool FindDataField (const CString &sField, CString *retsValue) const;
 		inline CArmorClass *GetArmorClass (void) const { return (m_pArmor ? m_pArmor->GetArmorClass() : NULL); }
+		CItem GetArmorItem (void) const;
 		int GetArmorLevel (void) const;
 		inline int GetHitPoints (void) const { return m_iHitPoints; }
 		inline int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }

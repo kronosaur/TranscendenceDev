@@ -4953,7 +4953,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_INSTALL_COST:
 			{
-			int iCost = pType->GetInstallCost(CItemCtx(Item));
+			int iCost = Item.GetInstallCost();
 			if (iCost == -1)
 				return pCC->CreateNil();
 

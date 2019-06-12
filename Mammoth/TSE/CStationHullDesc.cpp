@@ -46,6 +46,12 @@ ALERROR CStationHullDesc::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_pArmor.Bind(Ctx, itemcatArmor))
 		return error;
 
+	if (m_pArmor && !m_pArmor->IsArmor())
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Station armor not an armor item: %s"), m_pArmor->GetNounPhrase());
+		return ERR_FAIL;
+		}
+
 	return NOERROR;
 	}
 
@@ -56,9 +62,11 @@ int CStationHullDesc::CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstall
 //	Returns the effectiveness of the given weapon on this station hull (0-100).
 
 	{
-	CArmorClass *pArmor = GetArmorClass();
-	if (pArmor)
-		return pArmor->GetDamageEffectiveness(pAttacker, pWeapon);
+	if (const CItem Item = GetArmorItem())
+		{
+		const CArmorItem ArmorItem = Item.AsArmorItem();
+		return ArmorItem.GetDamageEffectiveness(pAttacker, pWeapon);
+		}
 	else
 		return 100;
 	}
@@ -150,6 +158,23 @@ bool CStationHullDesc::FindDataField (const CString &sField, CString *retsValue)
 		return false;
 
 	return true;
+	}
+
+CItem CStationHullDesc::GetArmorItem (void) const
+
+//	GetArmorItem
+//
+//	Returns an item representing the armor type. NOTE: May be empty.
+
+	{
+	if (m_pArmor == NULL)
+		return CItem();
+
+	CItem Item(m_pArmor, 1);
+	if (m_pArmor->IsScalable())
+		Item.SetLevel(m_iArmorLevel);
+
+	return Item;
 	}
 
 int CStationHullDesc::GetArmorLevel (void) const

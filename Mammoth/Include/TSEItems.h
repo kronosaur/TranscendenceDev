@@ -16,6 +16,7 @@ class CDifferentiatedItem
 	{
 	public:
 		inline int GetCharges (void) const;
+		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMinLevel (void) const;
@@ -43,18 +44,45 @@ class CDifferentiatedItem
 class CArmorItem : public CDifferentiatedItem
 	{
 	public:
+		struct SBalance
+			{
+			Metric rBalance = 0.0;				//	Total balance (+100 = 100% overpowered)
+			int iLevel = 0;						//	Level for which we balanced
+			Metric rHP = 0.0;					//	Max HP for armor (counting bonuses, etc.).
+
+			Metric rHPBalance = 0.0;			//	Balance contribution from raw HP
+			Metric rDamageAdj = 0.0;			//	Balance contribution from damage adj
+			Metric rDamageEffectAdj = 0.0;		//	Balance contribution from damage effect adj (EMP-resist, etc.).
+			Metric rRegen = 0.0;				//	Balance from regeneration/decay/distribution
+			Metric rRepairAdj = 0.0;			//	Balance from repair level/cost
+			Metric rArmorComplete = 0.0;		//	Balance from armor complete bonus
+			Metric rStealth = 0.0;				//	Balance from stealth bonus
+			Metric rPowerUse = 0.0;				//	Balance from power use
+			Metric rSpeedAdj = 0.0;				//	Balance from speed bonus/penalty
+			Metric rDeviceBonus = 0.0;			//	Balance from device bonus
+
+			Metric rMass = 0.0;					//	Balance from mass
+			Metric rCost = 0.0;					//	Balance from cost
+			};
+
 		operator bool () const { return (m_pCItem != NULL); }
 		operator bool () { return (m_pItem != NULL); }
 		operator const CItem & () const { return *m_pCItem; }
 		operator CItem & () { return *m_pItem; }
 
+		inline int CalcBalance (SBalance &retBalance) const;
 		ICCItemPtr FindProperty (const CString &sProperty) const;
 		inline const CArmorClass &GetArmorClass (void) const;
 		inline CArmorClass &GetArmorClass (void);
+        inline int GetDamageAdj (DamageTypes iDamage) const;
+		inline int GetDamageAdj (const DamageDesc &Damage) const;
+		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		inline int GetInstallCost (void) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
+		inline bool GetReferenceDamageAdj (int *retiHP, int *retArray) const;
 		inline int GetRepairCost (void) const;
 		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
@@ -93,6 +121,8 @@ class CItem
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
+		operator bool () const { return (m_pItemType != NULL); }
+
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
 		CString CalcSortKey (void) const;
 		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
@@ -128,6 +158,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
+		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }

@@ -546,14 +546,14 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		case serviceInstallDevice:
 		case serviceReplaceArmor:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem));
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetInstallCost();
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
 
 		case serviceRemoveDevice:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem)) / 2;
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetInstallCost() / 2;
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}

@@ -713,8 +713,10 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 					CArmorClass *pArmor = pType->GetArmorClass();
 					if (pArmor)
 						{
-						CArmorClass::SBalance Balance;
-						pArmor->CalcBalance(ItemCtx, Balance);
+						CArmorItem ArmorItem = Item.AsArmorItem();
+
+						CArmorItem::SBalance Balance;
+						ArmorItem.CalcBalance(Balance);
 						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f",
 								Balance.rBalance,
 								Balance.rBalance - Balance.rCost,

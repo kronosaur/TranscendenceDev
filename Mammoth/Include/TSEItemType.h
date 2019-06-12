@@ -105,7 +105,6 @@ class CItemType : public CDesignType
 		inline int GetFrequency (void) const { return m_Frequency; }
 		int GetFrequencyByLevel (int iLevel);
 		inline const CObjectImageArray &GetImage (void) { return m_Image; }
-		int GetInstallCost (CItemCtx &Ctx) const;
 		const TArray<CDeviceClass *> &GetLaunchWeapons (void) const { return m_Weapons; }
         int GetLevel (CItemCtx &Ctx) const;
 		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }

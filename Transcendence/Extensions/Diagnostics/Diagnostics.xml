@@ -40,6 +40,7 @@
 	<!ENTITY unidTestDescendantType1	"0xA0010102">
 	<!ENTITY unidTestDescendantType2	"0xA0010103">
 	<!ENTITY unidTestStationType		"0xA0010104">
+	<!ENTITY unidTestArmorClass			"0xA0010105">
 
 	<!-- OTHER -->
 
@@ -65,6 +66,7 @@
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
+	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
 	<Module filename="TestStationTypes.xml"/>
@@ -386,7 +388,7 @@
 				)
 			))
 
-		(setq diagEval (lambda (testList)
+		(setq diagEval (lambda (testList data)
 			(enum testList theTest
 				(if theTest
 					(block (

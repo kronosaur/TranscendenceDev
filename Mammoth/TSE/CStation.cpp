@@ -2354,11 +2354,9 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		{
 		//	Create an item context
 
-		CItem ArmorItem(pArmorClass->GetItemType(), 1);
-		if (ArmorItem.GetType()->IsScalable())
-			ArmorItem.SetLevel(m_Hull.GetArmorLevel());
-
-		CItemCtx ItemCtx(&ArmorItem, this);
+		CItem Item = m_pType->GetHullDesc().GetArmorItem();
+		CArmorItem ArmorItem = Item.AsArmorItem();
+		CItemCtx ItemCtx(&Item, this);
 
 		//	Compute the effects based on damage and our armor
 

@@ -2901,7 +2901,7 @@ CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) c
 
 		//	Need to include install cost
 
-		Value.Add(CCurrencyAndValue(Desc.Item.GetType()->GetInstallCost(CItemCtx(Desc.Item)), Desc.Item.GetCurrencyType()));
+		Value.Add(CCurrencyAndValue(Desc.Item.GetInstallCost(), Desc.Item.GetCurrencyType()));
 		}
 
 	//	Done

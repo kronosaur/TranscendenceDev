@@ -3567,7 +3567,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 
 			//	Need to include install cost
 
-			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(CItemCtx(Item)), Item.GetCurrencyType()));
+			Value.Add(CCurrencyAndValue(Item.GetInstallCost(), Item.GetCurrencyType()));
 			}
 		}
 

@@ -334,6 +334,8 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 //	Returns meta-data
 
 	{
+	CItem Item(const_cast<CItemType *>(this), 1);
+
 	//	Deal with the meta-data that we know about
 
 	if (strEquals(sField, FIELD_LEVEL))
@@ -419,7 +421,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_INSTALL_COST))
 		{
-		int iCost = GetInstallCost(CItemCtx());
+		int iCost = Item.GetInstallCost();
 		if (iCost == -1)
 			*retsValue = NULL_STR;
 		else
@@ -859,21 +861,6 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		}
 	}
 
-int CItemType::GetInstallCost (CItemCtx &Ctx) const
-
-//	GetInstallCost
-//
-//	Returns the cost to install the item (or -1 if the item cannot be installed)
-
-	{
-	if (m_pArmor)
-		return m_pArmor->GetInstallCost(Ctx);
-	else if (m_pDevice)
-		return m_pDevice->GetInstallCost(Ctx);
-	else
-		return -1;
-	}
-
 CString CItemType::GetItemCategory (ItemCategories iCategory)
 
 //	GetItemCategory
@@ -1227,6 +1214,10 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
 //
 //                              this->IsMissile()           this->IsWeapon()
 //  ----------------------------------------------------------------------------
+//	Ctx=null					missile desc, for			weapon desc (use first
+//									first weapon that			variant for 
+//									fires this missile.			launchers).
+//
 //  Ctx=installed weapon        missile desc, if            weapon desc (use variant
 //                                  fired by weapon.            item for missile).
 //

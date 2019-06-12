@@ -36,6 +36,11 @@ inline int CDifferentiatedItem::GetCharges (void) const
 	return m_pCItem->GetCharges();
 	}
 
+inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual) const
+	{
+	return GetType().GetCurrencyAndValue(CItemCtx(*m_pCItem), bActual);
+	}
+
 inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 	{
 	const CEconomyType *pCurrency = GetType().GetCurrencyType();
@@ -67,14 +72,14 @@ inline CItemType &CDifferentiatedItem::GetType (void)
 
 //	CArmorClass Inlines --------------------------------------------------------
 
-inline int CArmorClass::GetDamageAdj (CItemCtx &Ctx, DamageTypes iDamage) const
+inline int CArmorClass::GetDamageAdj (const CArmorItem &ArmorItem, DamageTypes iDamage) const
 	{
-	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return Stats.DamageAdj.GetAdj(iDamage);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem); return Stats.DamageAdj.GetAdj(iDamage);
 	}
 
-inline int CArmorClass::GetInstallCost (CItemCtx &Ctx) const
+inline int CArmorClass::GetInstallCost (const CArmorItem &ArmorItem) const
 	{
-	const SScalableStats &Stats = GetScaledStats(Ctx.GetItem().AsArmorItemOrThrow()); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
+	const SScalableStats &Stats = GetScaledStats(ArmorItem); return (int)m_pItemType->GetCurrencyType()->Exchange(Stats.InstallCost);
 	}
 
 inline CString CArmorClass::GetName (void) const
@@ -89,6 +94,11 @@ inline DWORD CArmorClass::GetUNID (void)
 
 //	CArmorItem Inlines ---------------------------------------------------------
 
+inline int CArmorItem::CalcBalance (SBalance &retBalance) const
+	{
+	return GetArmorClass().CalcBalance(*this, retBalance);
+	}
+
 inline const CArmorClass &CArmorItem::GetArmorClass (void) const
 	{
 	return *GetType().GetArmorClass();
@@ -97,6 +107,21 @@ inline const CArmorClass &CArmorItem::GetArmorClass (void) const
 inline CArmorClass &CArmorItem::GetArmorClass (void)
 	{
 	return *GetType().GetArmorClass();
+	}
+
+inline int CArmorItem::GetDamageAdj (DamageTypes iDamage) const
+	{
+	return GetArmorClass().GetDamageAdj(*this, iDamage);
+	}
+
+inline int CArmorItem::GetDamageAdj (const DamageDesc &Damage) const
+	{
+	return GetArmorClass().GetDamageAdj(*this, Damage);
+	}
+
+inline int CArmorItem::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const
+	{
+	return GetArmorClass().GetDamageEffectiveness(*this, pAttacker, pWeapon);
 	}
 
 inline const CItemEnhancementStack &CArmorItem::GetEnhancements (void) const
@@ -108,6 +133,11 @@ inline const CItemEnhancementStack &CArmorItem::GetEnhancements (void) const
 		return *m_pNullEnhancements;
 	}
 
+inline int CArmorItem::GetInstallCost (void) const
+	{
+	return GetArmorClass().GetInstallCost(*this);
+	}
+
 inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
 	{
 	return m_pCItem->GetInstalledArmor();
@@ -116,6 +146,11 @@ inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
 inline int CArmorItem::GetMaxHP (bool bForceComplete) const
 	{
 	return GetArmorClass().GetMaxHP(*this, bForceComplete);
+	}
+
+inline bool CArmorItem::GetReferenceDamageAdj (int *retiHP, int *retArray) const
+	{
+	return GetArmorClass().GetReferenceDamageAdj(*this, retiHP, retArray);
 	}
 
 inline int CArmorItem::GetRepairCost (void) const
@@ -145,7 +180,7 @@ inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDam
 
 inline int CInstalledArmor::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)
 	{
-	return m_pArmorClass->GetDamageEffectiveness(pAttacker, pWeapon);
+	return m_pItem->AsArmorItemOrThrow().GetDamageEffectiveness(pAttacker, pWeapon);
 	}
 
 inline int CInstalledArmor::GetLevel (void) const 
