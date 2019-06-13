@@ -68,6 +68,8 @@ const int g_cxCargoStatsLabel =		100;
 #define VCENTER_ATTRIB				CONSTLIT("vcenter")
 #define WIDTH_ATTRIB				CONSTLIT("width")
 
+#define EVENT_ON_OBJ_DESTROYED		CONSTLIT("OnObjDestroyed")
+
 #define PROPERTY_COUNTER			CONSTLIT("counter")
 #define PROPERTY_DESCRIPTION		CONSTLIT("description")
 #define PROPERTY_IN_FIRST_ON_INIT	CONSTLIT("inFirstOnInit")
@@ -1648,6 +1650,60 @@ void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSour
 	{
 	if (m_pDisplay
 			&& m_pDisplay->OnModifyItemComplete(Ctx, pSource, Result) == IDockScreenDisplay::resultShowPane)
+		{
+		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
+
+		//	NOTE: We defer the actual recalc of the pane until after any action
+		//	is done. We need to do this because we don't want to execute
+		//	<OnPaneInit> in the middle of processing an action (since that might
+		//	change state which the action is relying on.
+
+		if (CurFrame.sPane.IsBlank())
+			m_CurrentPane.ExecuteShowPane(EvalInitialPane(), true);
+		else
+			m_CurrentPane.ExecuteShowPane(CurFrame.sPane, true);
+		}
+	}
+
+void CDockScreen::OnObjDestroyed (const SDestroyCtx &Ctx)
+
+//	OnObjDestroyed
+//
+//	An object was destroyed.
+
+	{
+	//	If we have an event to handle this, invoke it now.
+
+	if (CDockScreenType *pRootDockScreen = CDockScreenType::AsType(m_pRoot))
+		{
+		SEventHandlerDesc Event;
+		if (pRootDockScreen->FindEventHandler(EVENT_ON_OBJ_DESTROYED, &Event))
+			{
+			CCodeChainCtx CCCtx(GetUniverse());
+			CCCtx.SetExtension(Event.pExtension);
+			CCCtx.SetScreen(this);
+			CCCtx.DefineContainingType(m_pRoot);
+			CCCtx.SaveAndDefineSourceVar(m_pLocation);
+			CCCtx.SaveAndDefineDataVar(m_pData);
+
+			CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+			CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
+			CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
+			CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
+			CCCtx.DefineBool(CONSTLIT("aDestroy"), Ctx.WasDestroyed());
+			CCCtx.DefineString(CONSTLIT("aDestroyReason"), GetDestructionName(Ctx.iCause));
+
+			ICCItemPtr pResult = CCCtx.RunCode(Event.pCode);
+
+			if (pResult->IsError())
+				ReportError(pResult->GetStringValue());
+			}
+		}
+
+	//	See if the display handles this.
+
+	if (m_pDisplay
+			&& m_pDisplay->OnObjDestroyed(Ctx) == IDockScreenDisplay::resultShowPane)
 		{
 		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
 

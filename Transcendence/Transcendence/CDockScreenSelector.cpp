@@ -253,6 +253,28 @@ bool CDockScreenSelector::OnIsCurrentItemValid (void) const
 	return m_pControl->IsCursorValid();
 	}
 
+IDockScreenDisplay::EResults CDockScreenSelector::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
+
+//	OnObjDestroyedNotify
+//
+//	An object was destroyed.
+
+	{
+	if (Ctx.pObj == m_pLocation)
+		{
+		//	No need to do anything because we will undock in this case.
+
+		return resultNone;
+		}
+	else if (m_pControl->GetSource() == Ctx.pObj)
+		{
+		m_pControl->SetRegions(NULL, CGSelectorArea::SOptions());
+		return resultShowPane;
+		}
+	else
+		return resultNone;
+	}
+
 IDockScreenDisplay::EResults CDockScreenSelector::OnResetList (CSpaceObject *pLocation)
 
 //	OnResetList

@@ -27,6 +27,7 @@ class IDockScreenUI
 
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { }
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { }
+		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 	};
 
 struct SScreenSetTab

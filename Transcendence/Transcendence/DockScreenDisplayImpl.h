@@ -217,6 +217,7 @@ class CDockScreenSelector : public IDockScreenDisplay
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual bool OnIsCurrentItemValid (void) const override;
+		virtual EResults OnObjDestroyedNotify (const SDestroyCtx &Ctx) override;
 		virtual EResults OnResetList (CSpaceObject *pLocation) override;
 		virtual bool OnSelectNextItem (void) override;
 		virtual bool OnSelectPrevItem (void) override;

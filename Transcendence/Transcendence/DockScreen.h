@@ -111,12 +111,13 @@ class IDockScreenDisplay
 		static constexpr DWORD FLAG_UI_ITEM_SELECTOR =		0x00000002;	//	Shows an item selector
 		DWORD GetUIFlags (void) const { return OnGetUIFlags(); }
 
-		inline EResults HandleAction (DWORD dwTag, DWORD dwData) { return OnHandleAction(dwTag, dwData); }
-		inline EResults HandleKeyDown (int iVirtKey) { return OnHandleKeyDown(iVirtKey); }
+		EResults HandleAction (DWORD dwTag, DWORD dwData) { return OnHandleAction(dwTag, dwData); }
+		EResults HandleKeyDown (int iVirtKey) { return OnHandleKeyDown(iVirtKey); }
 		ALERROR Init (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError);
 		inline bool IsCurrentItemValid (void) const { return OnIsCurrentItemValid(); }
 		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item);
 		EResults OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result);
+		EResults OnObjDestroyed (const SDestroyCtx &Ctx) { return OnObjDestroyedNotify(Ctx); }
 		inline EResults ResetList (CSpaceObject *pLocation) { return OnResetList(pLocation); }
 		inline EResults SetListCursor (int iCursor) { return OnSetListCursor(iCursor); }
 		inline EResults SetListFilter (const CItemCriteria &Filter) { return OnSetListFilter(Filter); }
@@ -147,6 +148,7 @@ class IDockScreenDisplay
 		virtual EResults OnHandleKeyDown (int iVirtKey) { return resultNone; }
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) { return NOERROR; }
 		virtual bool OnIsCurrentItemValid (void) const { return false; }
+		virtual EResults OnObjDestroyedNotify (const SDestroyCtx &Ctx) { return resultNone; }
 		virtual EResults OnResetList (CSpaceObject *pLocation) { return resultNone; }
 		virtual bool OnSelectItem (const CItem &Item) { return false; }
 		virtual bool OnSelectNextItem (void) { return false; }
@@ -475,6 +477,7 @@ class CDockScreen : public IScreenController,
 		//	IDockScreenUI
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) override;
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) override;
+		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 
 	private:
 		enum EControlTypes
