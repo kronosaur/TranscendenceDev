@@ -131,6 +131,9 @@ const Metric MASS_BALANCE_LIMIT =				16.0;	//	Above this mass (in tons) we don't
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
 const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
 
+constexpr int EXTRA_REPAIR_COST_FACTOR =		3;  //  Damage over 50% cost 3 times more to repair
+
+
 static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
 		//						Repair	Install
@@ -1671,7 +1674,7 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_REPAIR_COST))
-		*retsValue = strFromInt(ArmorItem.GetRepairCost());
+		*retsValue = strFromInt((int)ArmorItem.GetRepairCost());
 	else if (strEquals(sField, FIELD_REGEN))
 		*retsValue = strFromInt((int)m_Stats.Regen.GetHPPer180());
 	else if (strEquals(sField, FIELD_INSTALL_COST))
@@ -2200,7 +2203,7 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 	return true;
 	}
 
-int CArmorClass::GetRepairCost (const CArmorItem &ArmorItem) const
+CurrencyValue CArmorClass::GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair) const
 
 //	GetRepairCost
 //
@@ -2208,7 +2211,29 @@ int CArmorClass::GetRepairCost (const CArmorItem &ArmorItem) const
 
 	{
 	const SScalableStats &Stats = GetScaledStats(ArmorItem);
-	return (int)ArmorItem.GetCurrencyType().Exchange(Stats.RepairCost);
+
+	if (iHPToRepair == 1)
+		return ArmorItem.GetCurrencyType().Exchange(Stats.RepairCost);
+
+	else
+		{
+		int iMaxHP = ArmorItem.GetMaxHP();
+		int iHalf = iMaxHP / 2;
+
+		//  We can repair up to half of maximum damage at normal price
+
+		int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
+		CurrencyValue iBasePrice = iHPAtNormalPrice * Stats.RepairCost.GetCreditValue();
+
+		//  If we have more damage than that, we pay double price
+
+		int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
+		iBasePrice += iHPAtExtraPrice * Stats.RepairCost.GetCreditValue() * EXTRA_REPAIR_COST_FACTOR;
+
+		//	Convert the total to the armor item's currency
+
+		return ArmorItem.GetCurrencyType().Exchange(iBasePrice);
+		}
 	}
 
 int CArmorClass::GetRepairLevel (const CArmorItem &ArmorItem) const

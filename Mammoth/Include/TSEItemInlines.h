@@ -153,9 +153,9 @@ inline bool CArmorItem::GetReferenceDamageAdj (int *retiHP, int *retArray) const
 	return GetArmorClass().GetReferenceDamageAdj(*this, retiHP, retArray);
 	}
 
-inline int CArmorItem::GetRepairCost (void) const
+inline CurrencyValue CArmorItem::GetRepairCost (int iHPToRepair) const
 	{
-	return GetArmorClass().GetRepairCost(*this);
+	return GetArmorClass().GetRepairCost(*this, iHPToRepair);
 	}
 
 inline int CArmorItem::GetRepairLevel (void) const

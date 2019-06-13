@@ -38,7 +38,7 @@ ICCItemPtr CArmorItem::FindProperty (const CString &sProperty) const
 		return ICCItemPtr(GetMaxHP());
 
 	else if (strEquals(sProperty, PROPERTY_REPAIR_COST))
-		return ICCItemPtr(GetRepairCost());
+		return ICCItemPtr((int)GetRepairCost());
 
 	else if (strEquals(sProperty, PROPERTY_REPAIR_LEVEL))
 		return ICCItemPtr(GetRepairLevel());

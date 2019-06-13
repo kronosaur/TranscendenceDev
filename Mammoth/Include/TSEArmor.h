@@ -146,7 +146,7 @@ class CArmorClass
 		bool GetReferenceDamageAdj (const CArmorItem &ArmorItem, int *retiHP, int *retArray) const;
 		int FireGetMaxHP (const CArmorItem &ArmorItem, int iMaxHP) const;
 		int GetMaxHP (const CArmorItem &ArmorItem, bool bForceComplete = false) const;
-		int GetRepairCost (const CArmorItem &ArmorItem) const;
+		CurrencyValue GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair = 1) const;
 		int GetRepairLevel (const CArmorItem &ArmorItem) const;
         const SScalableStats &GetScaledStats (const CArmorItem &ArmorItem) const;
 		CUniverse &GetUniverse (void) const;

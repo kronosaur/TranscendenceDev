@@ -464,5 +464,34 @@
 		</Events>
 	</Type>
 
-</TranscendenceModule>
+	<Type unid="&unidMathTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
 
+					;	ecoExchange --------------------------------------------
+
+					{	test: '(ecoExchange 0 'credit 'rin)					result: 0	}
+					{	test: '(ecoExchange 1 'credit 'rin)					result: 1	}
+					{	test: '(ecoExchange -1 'credit 'rin)				result: -1	}
+					{	test: '(ecoExchange 4 'credit 'rin)					result: 1	}
+					{	test: '(ecoExchange 5 'credit 'rin)					result: 1	}
+					{	test: '(ecoExchange 6 'credit 'rin)					result: 2	}
+					{	test: '(ecoExchange 10 'credit 'rin)				result: 2	}
+					{	test: '(ecoExchange 25 'credit 'rin)				result: 5	}
+					{	test: '(ecoExchange 27 'credit 'rin)				result: 6	}
+					{	test: '(ecoExchange -27 'credit 'rin)				result: -6	}
+
+					{	test: '(ecoExchange 0 'rin 'credit)					result: 0	}
+					{	test: '(ecoExchange 1 'rin 'credit)					result: 5	}
+					{	test: '(ecoExchange 5 'rin 'credit)					result: 25	}
+					{	test: '(ecoExchange 25 'rin 'credit)				result: 125	}
+					{	test: '(ecoExchange Nil 'rin 'credit)				result: Nil	}
+					{	test: '(ecoExchange -5 'rin 'credit)				result: -25	}
+
+					))
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

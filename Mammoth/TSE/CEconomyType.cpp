@@ -26,32 +26,49 @@ CurrencyValue CEconomyType::Exchange (const CEconomyType *pFrom, CurrencyValue i
 
 	CurrencyValue iFromConversion = (pFrom ? pFrom->m_iCreditConversion : 100);
 
-	//	If we're the same rate, then done
+	//	Short-circuit
 
-	if (iFromConversion == m_iCreditConversion)
+	if (iAmount == 0)
 		return iAmount;
 
-	//	If converting from credits, then it is simpler
+	//	If we're the same rate, then done
 
-	else if (iFromConversion == 100)
-		return 100 * iAmount / m_iCreditConversion;
+	else if (iFromConversion == m_iCreditConversion)
+		return iAmount;
 
-	//	If converting to credits, then it is simpler
-
-	else if (m_iCreditConversion == 100)
-		return iFromConversion * iAmount / 100;
-
-	//	Otherwise we need to do both conversion
+	//	Else we need to convert
 
 	else
 		{
-		//	First convert to Commonwealth credits
+		Metric rResult;
 
-		CurrencyValue iCredits = iFromConversion * iAmount / 100;
+		if (iFromConversion == 100)
+			rResult = 100.0 * iAmount / m_iCreditConversion;
 
-		//	Now convert back to this currency
+		//	If converting to credits, then it is simpler
 
-		return 100 * iCredits / m_iCreditConversion;
+		else if (m_iCreditConversion == 100)
+			rResult = (double)iFromConversion * iAmount / 100.0;
+
+		//	Otherwise we need to do both conversion
+
+		else
+			{
+			//	First convert to Commonwealth credits
+
+			double rCredits = (double)iFromConversion * iAmount / 100.0;
+
+			//	Now convert back to this currency
+
+			rResult = 100.0 * rCredits / (double)m_iCreditConversion;
+			}
+
+		//	Convert to integer
+
+		if (rResult < 0.0)
+			return (CurrencyValue)floor(rResult);
+		else
+			return (CurrencyValue)ceil(rResult);
 		}
 	}
 
@@ -62,18 +79,12 @@ CurrencyValue CEconomyType::ExchangeToCredits (const CEconomyType *pFrom, Curren
 //	Converts the given amount to credits.
 
 	{
-	return pFrom->m_iCreditConversion * iAmount / 100;
+	if (iAmount == 0 || pFrom == NULL)
+		return iAmount;
+
+	double rResult = (double)pFrom->m_iCreditConversion * iAmount / 100.0;
+	return (CurrencyValue)(rResult < 0.0 ? floor(rResult) : ceil(rResult));
 	}
-
-CurrencyValue CEconomyType::ExchangeToCredits (const CCurrencyAndValue &Value)
-
-//  ExchangeToCredits
-//
-//  Converts the given value to credits
-
-    {
-    return Value.GetCurrencyType()->m_iCreditConversion * Value.GetValue() / 100;
-    }
 
 bool CEconomyType::FindDataField (const CString &sField, CString *retsValue) const
 

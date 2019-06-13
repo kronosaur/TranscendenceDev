@@ -21,7 +21,7 @@ class CEconomyType : public CDesignType
 		inline bool IsCreditEquivalent (void) const { return (m_iCreditConversion == 100); }
 
 		static CurrencyValue ExchangeToCredits (const CEconomyType *pFrom, CurrencyValue iAmount);
-		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value);
+		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value) { return ExchangeToCredits(Value.GetCurrencyType(), Value.GetValue()); }
 		static CString RinHackGet (CSpaceObject *pObj);
 		static CurrencyValue RinHackInc (CSpaceObject *pObj, CurrencyValue iInc);
 		static void RinHackSet (CSpaceObject *pObj, const CString &sData);

@@ -4082,7 +4082,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(ArmorItem.GetMaxHP());
 
 		case FN_ARM_REPAIRCOST:
-			return pCC->CreateInteger(ArmorItem.GetRepairCost());
+			return pCC->CreateInteger((int)ArmorItem.GetRepairCost());
 
 		case FN_ARM_REPAIRTECH:
 			return pCC->CreateInteger(ArmorItem.GetRepairLevel());
@@ -4111,6 +4111,9 @@ ICCItem *fnCurrency (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_CURRENCY_EXCHANGE:
 			{
+			if (pArgs->GetElement(0)->IsNil())
+				return pCC->CreateNil();
+
 			int iValue = pArgs->GetElement(0)->GetIntegerValue();
 
 			const CEconomyType *pEconFrom = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));

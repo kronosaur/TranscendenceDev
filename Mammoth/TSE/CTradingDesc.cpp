@@ -33,8 +33,6 @@
 #define UNAVAILABLE_PREFIX						CONSTLIT("unavailable")
 #define VARIABLE_PREFIX							CONSTLIT("variable")
 
-const int EXTRA_REPAIR_COST_FACTOR =            3;  //  Damage over 50% cost 3 times more to repair
-
 struct SServiceData
 	{
 	char *pszName;
@@ -221,6 +219,9 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 //	Returns a price adjusted by the system trading table.
 
 	{
+	if (iPrice <= 0)
+		return iPrice;
+
 	const CTopologyNode *pNode = Ctx.pNode;
 	if (pNode == NULL)
 		{
@@ -240,7 +241,7 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 	if (!pNode->GetTradingEconomy().FindPriceAdj(Ctx.pItem->GetType(), &iAdj))
 		return iPrice;
 
-	return iPrice * iAdj / 100;
+	return Max(1, iPrice * iAdj / 100);
 	}
 
 CurrencyValue CTradingDesc::CalcMaxBalance (int iLevel, const CEconomyType *pCurrency)
@@ -507,38 +508,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			if (!ArmorItem)
 				return -1;
 
-            //  If we don't have a source, then we only do a basic calculation. 
-            //  This should not happen (as long as the TLisp code follows 
-            //  guidelines).
-
-            if (Ctx.pObj == NULL)
-    			iBasePrice = Ctx.iCount * ArmorItem.GetRepairCost();
-
-            //  Otherwise, the price is based on how much damage we've taken
-
-            else
-                {
-                CInstalledArmor *pSeg = Ctx.pObj->FindArmor(*Ctx.pItem);
-                if (pSeg == NULL)
-                    return -1;
-
-                CItemCtx ItemCtx(Ctx.pItem, Ctx.pObj, pSeg);
-
-                int iMaxHP = ArmorItem.GetMaxHP();
-                int iHalf = iMaxHP / 2;
-
-                //  We can repair up to half of maximum damage at normal price
-
-                int iHPToRepair = Ctx.iCount;
-                int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
-                iBasePrice = iHPAtNormalPrice * ArmorItem.GetRepairCost();
-
-                //  If we have more damage than that, we pay double price
-
-                int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
-                iBasePrice += iHPAtExtraPrice * ArmorItem.GetRepairCost() * EXTRA_REPAIR_COST_FACTOR;
-                }
-
+   			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}

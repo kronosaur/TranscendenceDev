@@ -83,7 +83,7 @@ class CArmorItem : public CDifferentiatedItem
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
 		inline bool GetReferenceDamageAdj (int *retiHP, int *retArray) const;
-		inline int GetRepairCost (void) const;
+		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
 
