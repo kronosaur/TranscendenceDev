@@ -478,25 +478,25 @@
 			<Buy	criteria="mwU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="mwU -Illegal; -ID;"				priceAdj="10"/>
 			
-			<InstallDevice	criteria="w L:1-5;" priceAdj="100"	upgradeInstallOnly="true"/>
-			<RemoveDevice	criteria="w L:1-5;" priceAdj="100"	upgradeInstallOnly="true"/>
+			<InstallDevice	criteria="w L:1-6;" priceAdj="100"	upgradeInstallOnly="true"/>
+			<RemoveDevice	criteria="w L:1-6;" priceAdj="100"	upgradeInstallOnly="true"/>
 		</Trade>
 
 		<Items>
 			<RandomItem count="10" 
-					criteria=		"w L:1-5; -Illegal; -Military; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:c|-|-"
+					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement2)"
 					/>
 			<RandomItem count="15" 
-					criteria=		"w L:1-5; -Illegal; -Military; -NotStandard; -NotForSale;"
-					levelFrequency=	"systemLevel:u|c|u"
+					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
+					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
 					enhancement=	"=(intHPEnhancement1)"
 					/>
 			<RandomItem count="8" 
-					criteria=		"w L:1-5; -Illegal; -Military; -NotStandard; -NotForSale;"
+					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
 					enhancement=	"=(intHPEnhancement1)"

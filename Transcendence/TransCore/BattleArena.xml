@@ -107,11 +107,15 @@
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
 
-			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
+			<ConsumeTrade	criteria="{human.armor}"		impact="25"/>
+			<ConsumeTrade	criteria="{human.shields}"		impact="25"/>
+			<ConsumeTrade	criteria="{human.weapons}"		impact="25"/>
+
+			<BalanceTrade	criteria="{core.fusionFuel}"	impact="20"/>
 			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
-			<BalanceTrade	criteria="{human.lux}"		impact="20"/>
-			<BalanceTrade	criteria="{human.meds}"		impact="20"/>
-			<BalanceTrade	criteria="{human.res}"		impact="20"/>
+			<BalanceTrade	criteria="{human.lux}"			impact="20"/>
+			<BalanceTrade	criteria="{human.meds}"			impact="20"/>
+			<BalanceTrade	criteria="{human.res}"			impact="20"/>
 		</Trade>
 		
 		<!-- Satellites -->
@@ -977,21 +981,10 @@
 		<Tables>
 			<ArmsQuarterStation>
 				<Table>
-					<Station chance="15" type="&stArmorDealer;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-
-					<Station chance="40" type="&stArmsDealer;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-
-					<Station chance="25" type="&stArmsDealerMakayev;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
-					
-					<Station chance="20" type="&stArmsDealerRasiermesser;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
+					<Station chance="15" type="&stArmorDealer;" noMapLabel="true"/>
+					<Station chance="40" type="&stArmsDealer;" noMapLabel="true"/>
+					<Station chance="25" type="&stArmsDealerMakayev;" noMapLabel="true"/>
+					<Station chance="20" type="&stArmsDealerRasiermesser;" noMapLabel="true"/>
 				</Table>
 			</ArmsQuarterStation>
 
@@ -1028,15 +1021,9 @@
 				<Table>
 					<Station chance="20" type="&stCorporateEnclave;"/>
 					<Station chance="20" type="&stMiningColony;"/>
-					<Station chance="15" type="&stArmorDealer;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-					<Station chance="15" type="&stArmsDealer;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-					<Station chance="10" type="&stArmsDealerMakayev;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
+					<Station chance="15" type="&stArmorDealer;"/>
+					<Station chance="15" type="&stArmsDealer;"/>
+					<Station chance="10" type="&stArmsDealerMakayev;"/>
 					<Station chance="10" type="&stCommonwealthSlums;"/>
 					<Station chance="10" type="&stFuelDepot;"/>
 				</Table>
@@ -1212,9 +1199,7 @@
 							<!-- Arms Quarter -->
 						
 							<Offset scale="pixel"				xOffset="719"	 yOffset="-1709">
-								<Station type="&stArmorDealer;" noMapLabel="true">
-									<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-								</Station>
+								<Station type="&stArmorDealer;" noMapLabel="true"/>
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="1118"	 yOffset="-1556">
@@ -1226,9 +1211,7 @@
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="839"	 yOffset="-2075">
-								<Station type="&stArmsDealer;" noMapLabel="true">
-									<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-								</Station>
+								<Station type="&stArmsDealer;" noMapLabel="true"/>
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="1295"	 yOffset="-1934">

@@ -33,6 +33,10 @@
 			<ItemAttribute id="human.lux"		label="luxury good"			criteriaLabel="luxury goods"			criteria="* +lux; -illegal;"/>
 			<ItemAttribute id="human.meds"		label="medical supplies"	criteriaLabel="medical supplies"		criteria="* +meds;"/>
 			<ItemAttribute id="human.res"		label="industrial resource"	criteriaLabel="industrial resources"	criteria="*~f +res; -ore; -illegal;"/>
+
+			<ItemAttribute id="human.armor"									criteriaLabel="armors"					criteria="a -illegal;"/>
+			<ItemAttribute id="human.shields"								criteriaLabel="shields"					criteria="s -illegal;"/>
+			<ItemAttribute id="human.weapons"								criteriaLabel="weapons &amp; ammo"		criteria="wm -illegal;"/>
 		</AttributeDesc>
 
 		<Events>
