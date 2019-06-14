@@ -300,7 +300,7 @@
 
 			attributes=			"anarchists, genericClass"
 			   
-			size=				"21"
+			size=				"27"
 			mass=				"50"
 			thrustRatio=		"4"
 			maxSpeed=			"20"
@@ -358,6 +358,7 @@
 			type=				"battlepod"
 			defaultSovereign=	"&svAnarchists;"
 
+			size=				"10"
 			mass=				"5"
 			cargoSpace=			"0"
 			thrustRatio=		"16"

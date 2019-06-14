@@ -462,7 +462,8 @@
 			class=				""
 			type=				"heavy raider"
 
-			mass=				"100"
+			size=				"23"
+			mass=				"60"
 			cargoSpace=			"10"
 			thrustRatio=		"1.8"
 			maxSpeed=			"13"
@@ -559,6 +560,7 @@
 			type=				"heavy raider"
 			defaultSovereign=	"&svCentauriWarlords;"
 
+			size=				"23"
 			mass=				"60"
 			cargoSpace=			"10"
 			thrustRatio=		"1.8"
@@ -607,6 +609,7 @@
 			type=				"raider"
 			defaultSovereign=	"&svCentauriWarlords;"
 
+			size=				"17"
 			mass=				"25"
 			cargoSpace=			"5"
 			thrustRatio=		"4.0"

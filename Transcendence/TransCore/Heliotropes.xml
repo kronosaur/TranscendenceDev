@@ -261,6 +261,7 @@
 			type=				"gunship"
 			defaultSovereign=	"&svHeliotropes;"
 
+			size=				"20"
 			mass=				"25"
 			cargoSpace=			"5"
 			thrustRatio=		"14"
