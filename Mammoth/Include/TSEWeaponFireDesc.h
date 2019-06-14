@@ -466,81 +466,81 @@ class CWeaponFireDesc
 		bool FireOnFragment (const CDamageSource &Source, CSpaceObject *pShot, const CVector &vHitPos, CSpaceObject *pNearestObj, CSpaceObject *pTarget);
 		void FireOnDestroyObj (const SDestroyCtx &Ctx);
 		void FireOnDestroyShot (CSpaceObject *pShot);
-		inline CItemType *GetAmmoType (void) const { return m_pAmmoType; }
-        inline DWORD GetAmmoTypeUNID (void) const { return m_pAmmoType.GetUNID(); }
-		inline int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
-		inline Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
-		inline Metric GetAveDamage (void) const { return m_Damage.GetDamageValue(); }
-		inline Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
+		CItemType *GetAmmoType (void) const { return m_pAmmoType; }
+        DWORD GetAmmoTypeUNID (void) const { return m_pAmmoType.GetUNID(); }
+		int GetAreaDamageDensity (void) const { return m_AreaDamageDensity.Roll(); }
+		Metric GetAreaDamageDensityAverage (void) const { return m_AreaDamageDensity.GetAveValueFloat(); }
+		Metric GetAveDamage (void) const { return m_Damage.GetDamageValue(); }
+		Metric GetAveExpansionSpeed (void) const { return (m_ExpansionSpeed.GetAveValue() * LIGHT_SPEED / 100.0); }
 		Metric GetAveInitialSpeed (void) const;
-		inline int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
+		int GetAveLifetime (void) const { return m_Lifetime.GetAveValue(); }
 		Metric GetAveParticleCount (void) const;
         Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
-        inline int GetContinuous (void) const { return m_iContinuous; }
-		inline int GetContinuousFireDelay (void) const { return m_iContinuousFireDelay; }
+        int GetContinuous (void) const { return m_iContinuous; }
+		int GetContinuousFireDelay (void) const { return m_iContinuousFireDelay; }
 		const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
-		inline CEffectCreator *GetEffect (void) const { return m_pEffect; }
-        inline Metric GetEffectiveRange (void) const { return m_rMaxEffectiveRange; }
-		inline ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
-        inline const SExhaustDesc &GetExhaust (void) const { return GetOldEffects().Exhaust; }
-		inline Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
-		inline CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
-		inline CExtension *GetExtension (void) const { return m_pExtension; }
-		inline int GetFireDelay (void) const { return m_iFireRate; }
-		inline FireTypes GetFireType (void) const { return m_iFireType; }
-		inline SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
-		inline Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
-		inline Metric GetFragmentationMinThreshold (void) const { return m_rMinFragThreshold; }
-		inline int GetHitPoints (void) const { return m_iHitPoints; }
-		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
-        inline const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
-		inline int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
+		CEffectCreator *GetEffect (void) const { return m_pEffect; }
+        Metric GetEffectiveRange (void) const { return m_rMaxEffectiveRange; }
+		ICCItem *GetEventHandler (const CString &sEvent) const { SEventHandlerDesc Event; if (!FindEventHandler(sEvent, &Event)) return NULL; return Event.pCode; }
+        const SExhaustDesc &GetExhaust (void) const { return GetOldEffects().Exhaust; }
+		Metric GetExpansionSpeed (void) const { return (m_ExpansionSpeed.Roll() * LIGHT_SPEED / 100.0); }
+		CWeaponFireDesc *GetExplosionType (void) const { return m_pExplosionType; }
+		CExtension *GetExtension (void) const { return m_pExtension; }
+		int GetFireDelay (void) const { return m_iFireRate; }
+		FireTypes GetFireType (void) const { return m_iFireType; }
+		SFragmentDesc *GetFirstFragment (void) const { return m_pFirstFragment; }
+		Metric GetFragmentationMaxThreshold (void) const { return m_rMaxFragThreshold; }
+		Metric GetFragmentationMinThreshold (void) const { return m_rMinFragThreshold; }
+		int GetHitPoints (void) const { return m_iHitPoints; }
+		int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
+        const CObjectImageArray &GetImage (void) const { return GetOldEffects().Image; }
+		int GetInitialDelay (void) const { return m_InitialDelay.Roll(); }
 		Metric GetInitialSpeed (void) const;
-		inline int GetInteraction (void) const { return m_iInteraction; }
+		int GetInteraction (void) const { return m_iInteraction; }
         int GetLevel (void) const;
-		inline int GetLifetime (void) const { return m_Lifetime.Roll(); }
-		inline int GetManeuverRate (void) const { return m_iManeuverRate; }
-		inline int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
-		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
-		inline int GetMinDamage (void) const { return m_MinDamage.Roll(); }
-		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
+		int GetLifetime (void) const { return m_Lifetime.Roll(); }
+		int GetManeuverRate (void) const { return m_iManeuverRate; }
+		int GetMaxLifetime (void) const { return m_Lifetime.GetMaxValue(); }
+		Metric GetMaxRadius (void) const { return m_rMaxRadius; }
+		int GetMinDamage (void) const { return m_MinDamage.Roll(); }
+		Metric GetMinRadius (void) const { return m_rMinRadius; }
         Metric GetMaxRange (void) const;
 		CEffectCreator *GetParticleEffect (void) const;
-		inline const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
-		inline int GetPassthrough (void) const { return m_iPassthrough; }
-		inline int GetPowerUse (void) const { return m_iPowerUse; }
-		inline int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
-		inline Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
+		const CParticleSystemDesc *GetParticleSystemDesc (void) const { return m_pParticleDesc; }
+		int GetPassthrough (void) const { return m_iPassthrough; }
+		int GetPowerUse (void) const { return m_iPowerUse; }
+		int GetProximityFailsafe (void) const { return m_iProximityFailsafe; }
+		Metric GetRatedSpeed (void) const { return m_rMissileSpeed; }
         CWeaponFireDesc *GetScaledDesc (int iLevel) const;
         int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
-        inline int GetStealth (void) const { return m_iStealth; }
-        inline bool GetTargetable (void) const { return m_fTargetable; }
-        inline FireTypes GetType (void) const { return m_iFireType; }
-        inline const CString &GetUNID (void) const { return m_sUNID; }
-        inline const SVaporTrailDesc &GetVaporTrail (void) const { return GetOldEffects().VaporTrail; }
+        int GetStealth (void) const { return m_iStealth; }
+        bool GetTargetable (void) const { return m_fTargetable; }
+        FireTypes GetType (void) const { return m_iFireType; }
+        const CString &GetUNID (void) const { return m_sUNID; }
+        const SVaporTrailDesc &GetVaporTrail (void) const { return GetOldEffects().VaporTrail; }
 		CItemType *GetWeaponType (CItemType **retpLauncher = NULL) const;
-		inline bool HasEvents (void) const { return !m_Events.IsEmpty(); }
-		inline bool HasFragments (void) const { return m_pFirstFragment != NULL; }
+		bool HasEvents (void) const { return !m_Events.IsEmpty(); }
+		bool HasFragments (void) const { return m_pFirstFragment != NULL; }
 		bool HasFragmentInterval (int *retiInterval = NULL) const;
-		inline bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
+		bool HasOnFragmentEvent (void) const { return m_CachedEvents[evtOnFragment].pCode != NULL; }
 		void InitFromDamage (const DamageDesc &Damage);
 		ALERROR InitFromMissileXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pMissile, const SInitOptions &Options);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const SInitOptions &Options);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon);
-		inline bool IsCurvedBeam (void) const { return false; }
-        inline bool IsDirectionalImage (void) const { return m_fDirectional; }
-        inline bool IsFragment (void) const { return m_fFragment; }
-		inline bool IsMIRV (void) const { return (m_pFirstFragment ? m_pFirstFragment->bMIRV : false); }
-        inline bool IsScalable (void) const { return (m_pScalable != NULL); }
-		inline bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
-		inline bool IsTracking (void) const { return m_iManeuverability != 0; }
+		bool IsCurvedBeam (void) const { return false; }
+        bool IsDirectionalImage (void) const { return m_fDirectional; }
+        bool IsFragment (void) const { return m_fFragment; }
+		bool IsMIRV (void) const { return (m_pFirstFragment ? m_pFirstFragment->bMIRV : false); }
+        bool IsScalable (void) const { return (m_pScalable != NULL); }
+		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
+		bool IsTracking (void) const { return m_iManeuverability != 0; }
 		bool IsTrackingOrHasTrackingFragments (void) const;
-		inline bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
+		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
-		inline void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
-		inline bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
+		void PlayFireSound (CSpaceObject *pSource) { m_FireSound.PlaySound(pSource); }
+		bool ProximityBlast (void) const { return (m_fProximityBlast ? true : false); }
 
 	private:
         struct SOldEffects
@@ -558,9 +558,9 @@ class CWeaponFireDesc
         Metric CalcMaxEffectiveRange (void) const;
 		Metric CalcSpeed (Metric rPercentOfLight) const;
 		CEffectCreator *GetFireEffect (void) const;
-        inline SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
-        inline SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
+        SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+        SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
 
 		CExtension *m_pExtension = NULL;		//	Extension that defines the weaponfiredesc

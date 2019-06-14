@@ -805,6 +805,8 @@ class CWeaponClass : public CDeviceClass
 							 CSpaceObject *pTarget,
 							 int iRepeatingCount,
 							 int iShotNumber);
+		int GetContinuous (const CWeaponFireDesc &Shot) const;
+		int GetContinuousFireDelay (const CWeaponFireDesc &Shot) const;
 		int GetFireDelay (CWeaponFireDesc *pShot) const;
 		CWeaponFireDesc *GetReferenceShotData (CWeaponFireDesc *pShot, int *retiFragments = NULL) const;
 		int GetSelectVariantCount (void) const;
@@ -854,6 +856,9 @@ class CWeaponClass : public CDeviceClass
 		SConfigDesc *m_pConfig;					//	Custom configuration (may be NULL)
 		int m_iConfigAimTolerance;				//	Aim tolerance
 		bool m_bConfigAlternating;				//	Fire each shot in turn
+
+		int m_iContinuous = 0;					//	Repeat fire
+		int m_iContinuousFireDelay = 0;			//	Delay between shots
 
 		bool m_bCharges;						//	TRUE if weapon has charges instead of ammo
 

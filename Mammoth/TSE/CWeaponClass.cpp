@@ -38,6 +38,8 @@
 #define POS_RADIUS_ATTRIB						CONSTLIT("posRadius")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
 #define RECOIL_ATTRIB							CONSTLIT("recoil")
+#define REPEATING_ATTRIB						CONSTLIT("repeating")
+#define REPEATING_DELAY_ATTRIB					CONSTLIT("repeatingDelay")
 #define REPORT_AMMO_ATTRIB						CONSTLIT("reportAmmo")
 #define SHIP_COUNTER_PER_SHOT_ATTRIB			CONSTLIT("shipCounterPerShot")
 #define TARGET_STATIONS_ONLY_ATTRIB				CONSTLIT("targetStationsOnly")
@@ -303,7 +305,7 @@ bool CWeaponClass::Activate (CInstalledDevice *pDevice,
 	//	We set to -1 because we skip the first Update after the call
 	//	to Activate (since it happens on the same tick)
 
-	if (pShot->GetContinuous() > 0)
+	if (GetContinuous(*pShot) > 0)
 		SetContinuousFire(pDevice, CONTINUOUS_START);
 
 	//	Player-specific code
@@ -891,8 +893,8 @@ Metric CWeaponClass::CalcConfigurationMultiplier (CWeaponFireDesc *pShot, bool b
 			break;
 		}
 
-	if (pShot->GetContinuous() > 0)
-		rMult *= (pShot->GetContinuous() + 1);
+	if (int iRepeating = GetContinuous(*pShot))
+		rMult *= (iRepeating + 1);
 
 	//	Include passthrough.
     //
@@ -1433,7 +1435,6 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 	pWeapon->m_bBurstTracksTargets = pDesc->GetAttributeBool(BURST_TRACKS_TARGETS_ATTRIB);
 	pWeapon->m_bCanFireWhenBlind = pDesc->GetAttributeBool(CAN_FIRE_WHEN_BLIND_ATTRIB);
 
-
 	//	Configuration
 
 	CString sConfig = pDesc->GetAttribute(CONFIGURATION_ATTRIB);
@@ -1476,6 +1477,11 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 		else
 			pWeapon->m_Configuration = ctSingle;
 		}
+
+	//	Repeat fire
+
+	pWeapon->m_iContinuous = pDesc->GetAttributeInteger(REPEATING_ATTRIB);
+	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(REPEATING_DELAY_ATTRIB, 1, -1, 0);
 
 	//	Counter
 
@@ -1663,7 +1669,7 @@ bool CWeaponClass::FindAmmoDataField (const CItem &Ammo, const CString &sField, 
 	else if (strEquals(sField, FIELD_VARIANT_COUNT))
 		*retsValue = strFromInt(GetSelectVariantCount());
 	else if (strEquals(sField, FIELD_REPEAT_COUNT))
-		*retsValue = strFromInt(pShot->GetContinuous() + 1);
+		*retsValue = strFromInt(GetContinuous(*pShot) + 1);
 	else if (strEquals(sField, FIELD_CONFIGURATION))
 		{
 		CCodeChain &CC = GetUniverse().GetCC();
@@ -1985,7 +1991,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
 	CVector ShotPos[MAX_SHOT_COUNT];
 	int ShotDir[MAX_SHOT_COUNT];
-	int iShotCount = CalcConfiguration(ItemCtx, pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == pShot->GetContinuous()));
+	int iShotCount = CalcConfiguration(ItemCtx, pShot, iFireAngle, ShotPos, ShotDir, (iRepeatingCount == GetContinuous(*pShot)));
     if (iShotCount <= 0)
         return false;
 
@@ -2240,6 +2246,42 @@ int CWeaponClass::GetAmmoItemCount (void) const
     else
         return 1;
     }
+
+int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
+
+//	GetContinous
+//
+//	If this is a repeating fire weapon, we return the number of additional 
+//	shots. 0 means no repeat fire.
+
+	{
+	//	Check the shot first
+
+	if (int iRepeating = Shot.GetContinuous())
+		return iRepeating;
+
+	//	Check the weapon
+
+	return m_iContinuous;
+	}
+
+int CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
+
+//	GetContinuousFireDelay
+//
+//	Returns the number of ticks between repeating shots. 0 means that shots come
+//	each tick with no delay in between.
+
+	{
+	//	Check the shot first
+
+	if (int iDelay = Shot.GetContinuousFireDelay())
+		return iDelay;
+
+	//	Check the weapon
+
+	return m_iContinuousFireDelay;
+	}
 
 int CWeaponClass::GetFireDelay (CWeaponFireDesc *pShot) const
 
@@ -2517,10 +2559,8 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 		return CC.CreateBool(GetRotationType(Ctx) == rotOmnidirectional);
 
 	else if (strEquals(sProperty, PROPERTY_REPEATING))
-		{ 
-		CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
-		return CC.CreateInteger(pShot->GetContinuous());
-		}
+		return CC.CreateInteger(GetContinuous(*pShot));
+
 	else if (strEquals(sProperty, PROPERTY_SHIP_COUNTER_PER_SHOT))
 		{
 		return CC.CreateInteger(m_iCounterPerShot);
@@ -4601,18 +4641,19 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot)
 			{
-			int iContinuousDelay = Max(1, pShot->GetContinuousFireDelay() + 1);
+			int iContinuous = GetContinuous(*pShot);
+			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
 			//	-1 is used to skip the first update cycle
 			//	(which happens on the same tick as Activate)
 
 			if (iContinuousDelay > 1)
 				{
-				SetContinuousFire(pDevice, ((pShot->GetContinuous() + 1) * iContinuousDelay) - 1);
+				SetContinuousFire(pDevice, ((iContinuous + 1) * iContinuousDelay) - 1);
 				}
 			else
 				{
-				SetContinuousFire(pDevice, pShot->GetContinuous());
+				SetContinuousFire(pDevice, iContinuous);
 				}
 			}
 		else
@@ -4623,7 +4664,8 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 		CWeaponFireDesc *pShot = GetWeaponFireDesc(ItemCtx);
 		if (pShot)
 			{
-			int iContinuousDelay = Max(1, pShot->GetContinuousFireDelay() + 1);
+			int iContinuous = GetContinuous(*pShot);
+			int iContinuousDelay = Max(1, GetContinuousFireDelay(*pShot) + 1);
 
 			if ((dwContinuous % iContinuousDelay) == 0)
 				{
@@ -4631,7 +4673,7 @@ void CWeaponClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDe
 					pShot,
 					pSource,
 					NULL,
-					1 + pShot->GetContinuous() - (dwContinuous / iContinuousDelay),
+					1 + iContinuous - (dwContinuous / iContinuousDelay),
 					&Ctx.bSourceDestroyed,
 					&Ctx.bConsumedItems);
 
