@@ -709,6 +709,9 @@ class CWeaponClass : public CDeviceClass
 		virtual void OnMarkImages (void) override;
 
 	private:
+		static constexpr int CONTINUOUS_START = 0xff;
+		static constexpr int CONTINUOUS_DATA_LIMIT = 0xfe;
+
 		enum ConfigurationTypes
 			{
 			ctSingle,				//	single shot
@@ -751,11 +754,6 @@ class CWeaponClass : public CDeviceClass
 			resDefault,
 			resNoShot,
 			resShotFired,
-			};
-
-		enum Constants
-			{
-			CONTINUOUS_START = 0xff,
 			};
 
 		struct SShotFireResult

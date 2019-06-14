@@ -58,7 +58,6 @@
 #define ON_FIRE_WEAPON_EVENT					CONSTLIT("OnFireWeapon")
 #define GET_AMMO_TO_CONSUME_EVENT				CONSTLIT("GetAmmoToConsume")
 
-
 #define FIELD_AMMO_TYPE							CONSTLIT("ammoType")
 #define FIELD_AVERAGE_DAMAGE					CONSTLIT("averageDamage")	//	Average damage (1000x hp)
 #define FIELD_BALANCE							CONSTLIT("balance")
@@ -1480,8 +1479,18 @@ ALERROR CWeaponClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CI
 
 	//	Repeat fire
 
-	pWeapon->m_iContinuous = pDesc->GetAttributeInteger(REPEATING_ATTRIB);
-	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(REPEATING_DELAY_ATTRIB, 1, -1, 0);
+	pWeapon->m_iContinuous = pDesc->GetAttributeIntegerBounded(REPEATING_ATTRIB, 0, -1, 0);
+	pWeapon->m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(REPEATING_DELAY_ATTRIB, 0, -1, 0);
+
+	//	NOTE: For now we don't support a combination of repeating fire and 
+	//	repeating delay that exceeds 254.
+
+	if (pWeapon->m_iContinuous > CONTINUOUS_DATA_LIMIT
+			|| pWeapon->m_iContinuous * pWeapon->m_iContinuousFireDelay > CONTINUOUS_DATA_LIMIT)
+		{
+		Ctx.sError = CONSTLIT("Unfortunately, that combination of repeating= and repeatingDelay= is too high for the engine.");
+		return ERR_FAIL;
+		}
 
 	//	Counter
 
@@ -4594,6 +4603,13 @@ void CWeaponClass::SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) c
 //	Sets the current variant for the device
 
 	{
+	//	NOTE: We also clear the repeating counter; if we switch missiles, we
+	//	want to stop firing the previous missile.
+
+	SetContinuousFire(pDevice, 0);
+
+	//	Set the new variant
+
 	pDevice->SetData((((DWORD)(WORD)(short)iVariant) << 16) | LOWORD(pDevice->GetData()));
 	}
 
