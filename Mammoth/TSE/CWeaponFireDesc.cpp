@@ -1617,8 +1617,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_pAmmoType = NULL;
 
-	m_iContinuous = 0;
-	m_iContinuousFireDelay = 0;
+	m_iContinuous = -1;
+	m_iContinuousFireDelay = -1;
 	m_iPassthrough = 0;
 	m_iFireRate = -1;
 
@@ -2049,8 +2049,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load continuous and passthrough
 
-	m_iContinuous = pDesc->GetAttributeInteger(BEAM_CONTINUOUS_ATTRIB);
-	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 1, -1, 0);
+	m_iContinuous = pDesc->GetAttributeIntegerBounded(BEAM_CONTINUOUS_ATTRIB, 0, -1, -1);
+	m_iContinuousFireDelay = pDesc->GetAttributeIntegerBounded(CONTINUOUS_FIRE_DELAY_ATTRIB, 0, -1, -1);
 
 	if (pDesc->FindAttributeInteger(PASSTHROUGH_ATTRIB, &m_iPassthrough))
 		{

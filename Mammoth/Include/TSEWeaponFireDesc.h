@@ -477,7 +477,7 @@ class CWeaponFireDesc
 		Metric GetAveParticleCount (void) const;
         Metric GetAveSpeed (void) const { return 0.5 * (GetRatedSpeed() + m_rMaxMissileSpeed); }
         int GetContinuous (void) const { return m_iContinuous; }
-		int GetContinuousFireDelay (void) const { return m_iContinuousFireDelay; }
+		int GetContinuousFireDelay (void) const { return (m_iContinuous != -1 ? m_iContinuousFireDelay : -1); }
 		const DamageDesc &GetDamage (void) const { return m_Damage; }
 		DamageTypes GetDamageType (void) const;
 		CEffectCreator *GetEffect (void) const { return m_pEffect; }
@@ -577,8 +577,8 @@ class CWeaponFireDesc
 		CItemTypeRef m_pAmmoType;				//	item type for this ammo
 		FireTypes m_iFireType = ftMissile;		//	beam or missile
 		DamageDesc m_Damage;					//	Damage per shot
-		int m_iContinuous = 0;					//	repeat for this number of frames
-		int m_iContinuousFireDelay = 0;			//	Ticks between continuous fire shots
+		int m_iContinuous = -1;					//	repeat for this number of frames (-1 = default)
+		int m_iContinuousFireDelay = -1;		//	Ticks between continuous fire shots (-1 = default)
 		int m_iFireRate = -1;					//	Ticks between shots (-1 = default to weapon class)
 		int m_iPowerUse = -1;					//	Power use in 1/10th MWs (-1 = default to weapon class)
 		int m_iIdlePowerUse = -1;				//	Power use while idle (-1 = default to weapon class)

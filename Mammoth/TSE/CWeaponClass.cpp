@@ -2255,9 +2255,10 @@ int CWeaponClass::GetContinuous (const CWeaponFireDesc &Shot) const
 //	shots. 0 means no repeat fire.
 
 	{
-	//	Check the shot first
+	//	Check the shot first, which can override the weapon.
 
-	if (int iRepeating = Shot.GetContinuous())
+	int iRepeating = Shot.GetContinuous();
+	if (iRepeating != -1)
 		return iRepeating;
 
 	//	Check the weapon
@@ -2273,9 +2274,10 @@ int CWeaponClass::GetContinuousFireDelay (const CWeaponFireDesc &Shot) const
 //	each tick with no delay in between.
 
 	{
-	//	Check the shot first
+	//	Check the shot first, which can override the weapon
 
-	if (int iDelay = Shot.GetContinuousFireDelay())
+	int iDelay = Shot.GetContinuousFireDelay();
+	if (iDelay != -1)
 		return iDelay;
 
 	//	Check the weapon
