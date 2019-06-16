@@ -11,6 +11,32 @@ class CItemList;
 class CShipClass;
 
 //	ITEM -----------------------------------------------------------------------
+//
+//	HACK: The pattern below does not deal with const properly. When we migrate
+//	to C++17 we should use the following pattern:
+//
+//	#include <type_traits>
+//	
+//	class Foo;
+//	
+//	template<bool IsConst>
+//	class FooWrapper {
+//	    using reference_type = std::conditional_t<IsConst, const Foo&, Foo&>;
+//	
+//	    public:
+//	    FooWrapper(reference_type foo) : foo(foo) {}
+//	
+//	    private:
+//	    reference_type foo;
+//	};
+//	
+//	template<typename T> FooWrapper(T& t) -> FooWrapper<std::is_const_v<T>>;
+//	
+//	void bar(const Foo& foo1, Foo& foo2)
+//	{
+//	    FooWrapper wrapper1(foo1); // FooWrapper<false>
+//	    FooWrapper wrapper2(foo2); // FooWrapper<true>
+//	}
 
 class CDifferentiatedItem
 	{
