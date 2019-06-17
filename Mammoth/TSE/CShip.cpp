@@ -4403,7 +4403,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	//	Short-circuit
 
-	if (Ctx.iDamage == 0)
+	if (Ctx.iDamage == 0 || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
