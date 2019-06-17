@@ -350,7 +350,7 @@
 
 	</ShipClass>
 
-	<!-- Hornet Battlepod -->
+	<!-- Level 1: Hornet Battlepod -->
 
 	<ShipClass UNID="&scHornet;"
 			manufacturer=		"Earth Industries"
@@ -380,7 +380,8 @@
 			rotationAccel=		"6.0"
 			/>
 
-		<Image imageID="&rsHornetHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsHornetHD;" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" viewportRatio="0.0029375"/>
+		<HeroImage imageID="&rsHornetHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
 			<Effect type="thrustMain"		posAngle="180"	posRadius="8"	posZ="0"	rotation="180"/>
@@ -438,5 +439,6 @@
 	<Image UNID="&rsAnarchistStations;"				bitmap="Resources\AnarchistStations.jpg"		bitmask="Resources\AnarchistStationsMask.bmp"	loadOnUse="true"/>
 	<Image UNID="&rsEarthzoneHD;"					bitmap="Resources\EarthzoneHD.jpg"				bitmask="Resources\EarthzoneHDMask.bmp"  		loadOnUse="true"/>
 	<Image UNID="&rsHornetHD;"						bitmap="Resources\HornetHD.jpg"					bitmask="Resources\HornetHDMask.bmp"  			loadOnUse="true"/>
+	<Image UNID="&rsHornetHero;"					bitmap="Resources\HornetLarge.jpg"				bitmask="Resources\HornetLargeMask.bmp"  			loadOnUse="true"/>
 	
 </TranscendenceModule>
