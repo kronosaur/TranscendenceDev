@@ -413,11 +413,27 @@
 		<Language>
 			<String id="DeployAck">"330M Mule online [v2.2a]"</String>
 			<Text id="actionUndock">[U]ndock</Text>
-			<Text id="actionJettison">[J]ettison</Text>
-			<Text id="actionLoot">[L]oot</Text>
+			<Text id="actionJettison">[S]tore Items</Text>
+			<Text id="actionLoot">[R]etrieve Items</Text>
 			<Text id="actionNameAuton">[N]ame Auton</Text>
-			<Text id="descDefault">You are docked with a 330M mule auton.</Text>
+			<Text id="actionRetrieveThisItem">[R]etrieve this Item</Text>
+			<Text id="actionRetrieve">[R]etrieve</Text>
+			<Text id="actionStoreThisItem">[S]tore this Item</Text>
+			<Text id="actionStore">[S]tore</Text>
 			<Text id="core.noItemsHereDesc">There are no items here.</Text>
+
+			<Text id="descDefault">
+				
+				Capacity Left: %capacity%
+
+				You are docked with a 330M mule auton.
+
+			</Text>
+
+			<Text id="rpg.jettisonQuantity">How many items do you wish to store?</Text>
+			<Text id="rpg.lootQuantity">How many items do you wish to retrieve?</Text>
+			<Text id="rpg.noSpaceToJettison">There is not enough space here to store %itemName%.</Text>
+			<Text id="rpg.onlySomeSpaceToJettison">There is only enough space here to store %itemName%.</Text>
 		</Language>
 		
 		<!-- Docking -->
@@ -428,16 +444,29 @@
 				<Panes>
 					<Default descID="descDefault">
 						<OnPaneInit>
-							(rpgSetLootAction gSource)
+							(block ()
+								(scrSetDescTranslate gScreen 'descDefault {
+									name: (objGetName gSource 0)
+									capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft gSource))
+									})
+
+								(rpgSetLootAction gSource)
+								)
 						</OnPaneInit>
 
 						<Actions>
 							<Action id="actionLoot" default="1">
-								(scrShowScreen gScreen &dsRPGLoot;)
+								(scrShowScreen gScreen &dsRPGLoot; {
+									lootLabel: (objTranslate gSource 'actionRetrieveThisItem)
+									lootConfirmLabel: (objTranslate gSource 'actionRetrieve)
+									})
 							</Action>
 
 							<Action id="actionJettison">
-								(scrShowScreen gScreen &dsRPGJettison;)
+								(scrShowScreen gScreen &dsRPGJettison; {
+									jettisonLabel: (objTranslate gSource 'actionStoreThisItem)
+									jettisonConfirmLabel: (objTranslate gSource 'actionStore)
+									})
 							</Action>
 
 							<Action id="actionNameAuton">
