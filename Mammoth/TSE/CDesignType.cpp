@@ -625,7 +625,7 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 	//	Otherwise, check our ancestors
 
 	else if (!bNoInheritance && m_pInheritFrom)
-		return m_pInheritFrom->FindCustomProperty(sProperty, pResult);
+		return m_pInheritFrom->FindCustomProperty(sProperty, pResult, retiType);
 
 	//	Otherwise, not found.
 
