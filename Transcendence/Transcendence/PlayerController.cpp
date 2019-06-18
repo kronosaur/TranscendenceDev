@@ -2704,9 +2704,9 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//	If the new ship is docked with a station then make sure that it
 	//	is not a subordinate of the station.
 
-	CSpaceObject *pStation = pNewShip->GetDockedObj();
-	if (pStation)
-		pStation->RemoveSubordinate(pNewShip);
+	CSpaceObject *pNewShipDockedAt = pNewShip->GetDockedObj();
+	if (pNewShipDockedAt)
+		pNewShipDockedAt->RemoveSubordinate(pNewShip);
 
 	//	If we want to take over the docking port, then do it now.
 
@@ -2740,14 +2740,16 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 		}
 
-	//	If we're docked and the new ship is also docked with the same
-	//	object, then we stay docked; otherwise, we undock
+	//	If new and old ships don't have the same docking state, then we need to
+	//	undock both.
 
-	else if (m_pStation 
-			&& m_pStation != pNewShip->GetDockedObj())
+	else if (m_pStation != pNewShipDockedAt)
 		{
-		g_pTrans->GetModel().ExitScreenSession(true);
-		pNewShip->Undock();
+		if (m_pStation)
+			g_pTrans->GetModel().ExitScreenSession(true);
+
+		if (pNewShipDockedAt)
+			pNewShip->Undock();
 		}
 
 	//	Set a new controller for the old ship (but do not free
