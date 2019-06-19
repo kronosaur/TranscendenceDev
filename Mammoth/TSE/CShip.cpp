@@ -1485,7 +1485,8 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		rcRect.top = 0;
 		rcRect.right = 4;
 		rcRect.bottom = 4;
-		Image.Init(g_ShipExplosionParticlesUNID,
+		Image.Init(GetUniverse(),
+				g_ShipExplosionParticlesUNID,
 				rcRect,
 				8,
 				3);

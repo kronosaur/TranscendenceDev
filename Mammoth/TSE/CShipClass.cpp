@@ -2741,7 +2741,7 @@ const CPlayerSettings *CShipClass::GetPlayerSettings (void) const
 
     if (m_fOwnPlayerSettings)
         {
-        m_pPlayerSettings->Resolve(pBaseSettings);
+        m_pPlayerSettings->Resolve(GetUniverse(), pBaseSettings);
         return m_pPlayerSettings;
         }
 
@@ -3124,7 +3124,7 @@ void CShipClass::MarkImages (bool bMarkDevices)
 
     const CPlayerSettings *pPlayerSettings = GetPlayerSettings();
     if (pPlayerSettings)
-        pPlayerSettings->MarkImages();
+        pPlayerSettings->MarkImages(GetUniverse());
 
 	DEBUG_CATCH
 	}

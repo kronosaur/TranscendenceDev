@@ -49,7 +49,7 @@ ALERROR CDockScreenVisuals::Bind (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
-CDockScreenVisuals &CDockScreenVisuals::GetDefault (void)
+CDockScreenVisuals &CDockScreenVisuals::GetDefault (CUniverse &Universe)
 
 //  GetDefault
 //
@@ -63,8 +63,8 @@ CDockScreenVisuals &CDockScreenVisuals::GetDefault (void)
         //  NOTE: We need to resolve the default image now because we don't get
         //  called at bind (because we're a default image).
 
-        m_Default.m_Background.Init(DEFAULT_DOCK_SCREEN_IMAGE_UNID, 1, 1, true);
-        m_Default.m_ContentMask.Init(DEFAULT_DOCK_SCREEN_MASK_UNID, 1, 1, true);
+        m_Default.m_Background.Init(Universe, DEFAULT_DOCK_SCREEN_IMAGE_UNID, 1, 1, true);
+        m_Default.m_ContentMask.Init(Universe, DEFAULT_DOCK_SCREEN_MASK_UNID, 1, 1, true);
 
         //  Default colors
 
@@ -91,7 +91,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
     DWORD dwImageUNID;
 	if ((::LoadUNID(Ctx, pDesc->GetAttribute(BACKGROUND_IMAGE_ATTRIB), &dwImageUNID) != NOERROR)
             || (dwImageUNID != 0 
-                && (m_Background.Init(dwImageUNID, 1, 1) != NOERROR)))
+                && (m_Background.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
         Ctx.sError = strPatternSubst("Unable to initialize image: %08x", dwImageUNID);
         return ERR_FAIL;
@@ -99,7 +99,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	if ((::LoadUNID(Ctx, pDesc->GetAttribute(CONTENT_MASK_ATTRIB), &dwImageUNID) != NOERROR)
             || (dwImageUNID != 0 
-                && (m_ContentMask.Init(dwImageUNID, 1, 1) != NOERROR)))
+                && (m_ContentMask.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
         Ctx.sError = strPatternSubst("Unable to initialize image: %08x", dwImageUNID);
         return ERR_FAIL;

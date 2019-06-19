@@ -840,7 +840,7 @@ const CDockScreenVisuals &CDockScreen::GetVisuals (void) const
     
     {
     ASSERT(m_pPlayer);
-    return m_pPlayer->GetShip()->GetClass()->GetPlayerSettings()->GetDockScreenVisuals();
+    return m_pPlayer->GetShip()->GetClass()->GetPlayerSettings()->GetDockScreenVisuals(GetUniverse());
     }
 
 bool CDockScreen::EvalBool (const CString &sCode)

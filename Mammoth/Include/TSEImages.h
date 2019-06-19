@@ -206,8 +206,8 @@ class CObjectImageArray
 		~CObjectImageArray (void);
 		CObjectImageArray &operator= (const CObjectImageArray &Source);
 
-		ALERROR Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);
-		ALERROR Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
+		ALERROR Init (CUniverse &Universe, DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow = false);
+		ALERROR Init (CUniverse &Universe, DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
 		ALERROR Init (CObjectImage *pImage, const RECT &rcImage, int iFrameCount, int iTicksPerFrame);
 		ALERROR InitFromBitmap (CG32bitImage *pBitmap, const RECT &rcImage, int iFrameCount, int iTicksPerFrame, bool bFreeBitmap, int xOffset = 0, int yOffset = 0);
 		ALERROR InitFromFrame (const CObjectImageArray &Source, int iTick, int iRotationIndex);

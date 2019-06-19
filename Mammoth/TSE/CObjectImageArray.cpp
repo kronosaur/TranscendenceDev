@@ -922,7 +922,7 @@ bool CObjectImageArray::ImagesIntersect (int iTick, int iRotation, int x, int y,
 	return false;
 	}
 
-ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow)
+ALERROR CObjectImageArray::Init (CUniverse &Universe, DWORD dwBitmapUNID, int iFrameCount, int iTicksPerFrame, bool bResolveNow)
 
 //  Init
 //
@@ -939,7 +939,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, int iFrameCount, int iTicks
 
     if (bResolveNow)
         {
-        m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+        m_pImage = Universe.FindLibraryImage(m_dwBitmapUNID);
 
         //  We assume the RECT is the entire bitmap
 
@@ -1014,7 +1014,7 @@ ALERROR CObjectImageArray::Init (CObjectImage *pImage, const RECT &rcImage, int 
 	return NOERROR;
 	}
 
-ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame)
+ALERROR CObjectImageArray::Init (CUniverse &Universe, DWORD dwBitmapUNID, const RECT &rcImage, int iFrameCount, int iTicksPerFrame)
 
 //	Init
 //
@@ -1026,7 +1026,7 @@ ALERROR CObjectImageArray::Init (DWORD dwBitmapUNID, const RECT &rcImage, int iF
 	//	Initialize basic info
 
 	m_dwBitmapUNID = dwBitmapUNID;
-	m_pImage = g_pUniverse->FindLibraryImage(m_dwBitmapUNID);
+	m_pImage = Universe.FindLibraryImage(m_dwBitmapUNID);
 	m_rcImage = rcImage;
 	m_iFrameCount = iFrameCount;
 	m_iRotationCount = 1;
@@ -1294,7 +1294,7 @@ void CObjectImageArray::MarkImage (void) const
     //  If we're in debug mode, we take this opportunity to validate the image
     //  rect against the actual image.
 
-    if (g_pUniverse->InDebugMode())
+    if (m_pImage->GetUniverse().InDebugMode())
 		ValidateImageSize(m_pImage->GetWidth(), m_pImage->GetHeight());
 	}
 

@@ -1392,7 +1392,8 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 		rcRect.top = 0;
 		rcRect.right = 4;
 		rcRect.bottom = 4;
-		PartImage.Init(g_ShipExplosionParticlesUNID,
+		PartImage.Init(GetUniverse(),
+				g_ShipExplosionParticlesUNID,
 				rcRect,
 				8,
 				3);
