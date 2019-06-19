@@ -129,7 +129,7 @@ BEGIN
             VALUE "LegalTrademarks", "Transcendence is a registered trademark of Kronosaur Productions, LLC."
             VALUE "OriginalFilename", "Transcendence.exe"
             VALUE "ProductName", "Transcendence"
-            VALUE "ProductVersion", "1.8.1 Steam"
+            VALUE "ProductVersion", "1.9 Alpha 1 Steam"
         END
     END
     BLOCK "VarFileInfo"
