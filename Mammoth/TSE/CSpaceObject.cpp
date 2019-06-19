@@ -3976,7 +3976,7 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 
 	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
 		{
-		CVisibleObjSelector Selector(this);
+		CVisibleObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
 		if (dwFlags & FLAG_INCLUDE_MISSILES)
 			Selector.SetIncludeMissiles();
@@ -3985,7 +3985,7 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 		}
 	else
 		{
-		CVisibleAggressorObjSelector Selector(this);
+		CVisibleAggressorObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
 		if (dwFlags & FLAG_INCLUDE_MISSILES)
 			Selector.SetIncludeMissiles();
@@ -4005,7 +4005,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleObjSelector Selector(this);
+	CVisibleObjSelector Selector(*this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 
@@ -4026,7 +4026,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleObjSelector Selector(this);
+	CVisibleObjSelector Selector(*this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 

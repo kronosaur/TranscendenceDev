@@ -20,12 +20,12 @@ class CNearestInRadiusRange
 			SetRadius(rRadius);
 			}
 
-		inline const CVector &GetLL (void) const { return m_vLL; }
-		inline const CVector &GetUR (void) const { return m_vUR; }
+		const CVector &GetLL (void) const { return m_vLL; }
+		const CVector &GetUR (void) const { return m_vUR; }
 
-		inline bool Matches (CSpaceObject *pObj, Metric *retrDist2 = NULL) const
+		bool Matches (CSpaceObject &Obj, Metric *retrDist2 = NULL) const
 			{
-			CVector vDist = pObj->GetPos() - m_vCenter;
+			CVector vDist = Obj.GetPos() - m_vCenter;
 			Metric rDist2 = vDist.Length2();
 
 			if (rDist2 >= m_rBestDist2)
@@ -37,13 +37,13 @@ class CNearestInRadiusRange
 			return true;
 			}
 
-		inline void ReduceRadius (Metric rRadius)
+		void ReduceRadius (Metric rRadius)
 			{
 			if (rRadius < m_rRadius)
 				SetRadius(rRadius);
 			}
 
-		inline void SetBestDist2 (Metric rDist2) { m_rBestDist2 = rDist2; }
+		void SetBestDist2 (Metric rDist2) { m_rBestDist2 = rDist2; }
 
 	private:
 		inline void SetRadius (Metric rRadius)
@@ -80,12 +80,12 @@ class CNearestInArcAndRadiusRange
 			SetRadius(rRadius);
 			}
 
-		inline const CVector &GetLL (void) const { return m_vLL; }
-		inline const CVector &GetUR (void) const { return m_vUR; }
+		const CVector &GetLL (void) const { return m_vLL; }
+		const CVector &GetUR (void) const { return m_vUR; }
 
-		inline bool Matches (CSpaceObject *pObj, Metric *retrDist2 = NULL) const
+		bool Matches (CSpaceObject &Obj, Metric *retrDist2 = NULL) const
 			{
-			CVector vDist = pObj->GetPos() - m_vCenter;
+			CVector vDist = Obj.GetPos() - m_vCenter;
 			Metric rDist2 = vDist.Length2();
 
 			if (rDist2 >= m_rBestDist2)
@@ -101,16 +101,16 @@ class CNearestInArcAndRadiusRange
 			return true;
 			}
 
-		inline void ReduceRadius (Metric rRadius)
+		void ReduceRadius (Metric rRadius)
 			{
 			if (rRadius < m_rRadius)
 				SetRadius(rRadius);
 			}
 
-		inline void SetBestDist2 (Metric rDist2) { m_rBestDist2 = rDist2; }
+		void SetBestDist2 (Metric rDist2) { m_rBestDist2 = rDist2; }
 
 	private:
-		inline void SetRadius (Metric rRadius)
+		void SetRadius (Metric rRadius)
 			{
 			m_rRadius = rRadius;
 			m_rBestDist2 = rRadius * rRadius;
@@ -146,12 +146,12 @@ class CAnyObjSelector
 			return g_InfiniteDistance;
 			}
 
-		inline bool Matches (CSpaceObject *pObj, Metric rDist2) const
+		inline bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return !pObj->IsUnreal();
+			return !Obj.IsUnreal();
 			}
 
-		inline bool MatchesCategory (CSpaceObject *pObj) const
+		inline bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return true;
 			}
@@ -175,13 +175,13 @@ class CCriteriaObjSelector
 			return g_InfiniteDistance;
 			}
 
-		inline bool Matches (CSpaceObject *pObj, Metric rDist2)
+		inline bool Matches (CSpaceObject &Obj, Metric rDist2)
 			{
-			return (!pObj->IsUnreal())
-				&& pObj->MatchesCriteria(m_Ctx, m_Criteria);
+			return (!Obj.IsUnreal())
+				&& Obj.MatchesCriteria(m_Ctx, m_Criteria);
 			}
 
-		inline bool MatchesCategory (CSpaceObject *pObj) const
+		inline bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return true;
 			}
@@ -199,41 +199,41 @@ class CCriteriaObjSelector
 class CVisibleEnemyObjSelector
 	{
 	public:
-		CVisibleEnemyObjSelector (CSpaceObject *pSource) :
-				m_pSource(pSource),
-				m_Perception(pSource->GetPerception())
+		CVisibleEnemyObjSelector (CSpaceObject &Source) :
+				m_Source(Source),
+				m_Perception(Source.GetPerception())
 			{ }
 
-		inline Metric GetMaxRange (void) const
+		Metric GetMaxRange (void) const
 			{
 			return m_Perception.GetRange(0);
 			}
 
-		inline bool Matches (CSpaceObject *pObj, Metric rDist2) const
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (pObj->CanAttack()
-				&& m_pSource->IsAngryAt(pObj)
-				&& m_Perception.CanBeTargeted(pObj, rDist2)
-				&& !pObj->IsDestroyed()
-				&& pObj != m_pSource
-				&& pObj != m_pExcludeObj
-				&& !pObj->IsEscortingFriendOf(m_pSource));
+			return (Obj.CanAttack()
+				&& m_Source.IsAngryAt(&Obj)
+				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsDestroyed()
+				&& &Obj != &m_Source
+				&& &Obj != m_pExcludeObj
+				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
 
-		inline bool MatchesCategory (CSpaceObject *pObj) const
+		bool MatchesCategory (CSpaceObject &Obj) const
 			{
-			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
+			return (Obj.GetCategory() == CSpaceObject::catShip
+						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
-		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
-		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		inline void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
-		CSpaceObject *m_pSource = NULL;
+		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
 		bool m_bIncludeMissiles = false;
@@ -247,43 +247,43 @@ class CVisibleEnemyObjSelector
 class CVisibleAggressorObjSelector
 	{
 	public:
-		CVisibleAggressorObjSelector (CSpaceObject *pSource) :
-				m_pSource(pSource),
-				m_Perception(pSource->GetPerception()),
-				m_iAggressorThreshold(g_pUniverse->GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD)
+		CVisibleAggressorObjSelector (CSpaceObject &Source) :
+				m_Source(Source),
+				m_Perception(Source.GetPerception()),
+				m_iAggressorThreshold(Source.GetUniverse().GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD)
 			{ }
 
-		inline Metric GetMaxRange (void) const
+		Metric GetMaxRange (void) const
 			{
 			return m_Perception.GetRange(0);
 			}
 
-		inline bool Matches (CSpaceObject *pObj, Metric rDist2) const
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (pObj->CanAttack()
-				&& m_pSource->IsAngryAt(pObj)
-				&& m_Perception.CanBeTargeted(pObj, rDist2)
-				&& !pObj->IsDestroyed()
-				&& pObj != m_pSource
-				&& pObj != m_pExcludeObj
-				&& pObj->GetLastFireTime() > m_iAggressorThreshold
-				&& !pObj->IsEscortingFriendOf(m_pSource));
+			return (Obj.CanAttack()
+				&& m_Source.IsAngryAt(&Obj)
+				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsDestroyed()
+				&& &Obj != &m_Source
+				&& &Obj != m_pExcludeObj
+				&& Obj.GetLastFireTime() > m_iAggressorThreshold
+				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
 
-		inline bool MatchesCategory (CSpaceObject *pObj) const
+		bool MatchesCategory (CSpaceObject &Obj) const
 			{
-			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
+			return (Obj.GetCategory() == CSpaceObject::catShip
+						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
-		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
-		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		inline void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
-		CSpaceObject *m_pSource = NULL;
+		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		int m_iAggressorThreshold = -1;
 		bool m_bIncludeStations = false;
@@ -297,40 +297,40 @@ class CVisibleAggressorObjSelector
 class CVisibleObjSelector
 	{
 	public:
-		CVisibleObjSelector (CSpaceObject *pSource) :
-				m_pSource(pSource),
-				m_Perception(pSource->GetPerception())
+		CVisibleObjSelector (CSpaceObject &Source) :
+				m_Source(Source),
+				m_Perception(Source.GetPerception())
 			{ }
 
-		inline Metric GetMaxRange (void) const
+		Metric GetMaxRange (void) const
 			{
 			return m_Perception.GetRange(0);
 			}
 
-		inline bool Matches (CSpaceObject *pObj, Metric rDist2) const
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (pObj->CanAttack()
-				&& m_Perception.CanBeTargeted(pObj, rDist2)
-				&& !pObj->IsDestroyed()
-				&& pObj != m_pSource
-				&& pObj != m_pExcludeObj
-				&& !pObj->IsEscortingFriendOf(m_pSource));
+			return (Obj.CanAttack()
+				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsDestroyed()
+				&& &Obj != &m_Source
+				&& &Obj != m_pExcludeObj
+				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
 
-		inline bool MatchesCategory (CSpaceObject *pObj) const
+		bool MatchesCategory (CSpaceObject &Obj) const
 			{
-			return (pObj->GetCategory() == CSpaceObject::catShip
-						|| (m_bIncludeStations && pObj->GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (pObj->GetCategory() == CSpaceObject::catMissile && pObj->IsTargetableProjectile())));
+			return (Obj.GetCategory() == CSpaceObject::catShip
+						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
-		inline void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
-		inline void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		inline void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
+		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
-		CSpaceObject *m_pSource = NULL;
+		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
 		bool m_bIncludeMissiles = false;
@@ -369,10 +369,10 @@ class CSpaceObjectEnum
 					CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 					Metric rDist2;
-					if (Selector.MatchesCategory(pObj)
-							&& Range.Matches(pObj, &rDist2)
+					if (Selector.MatchesCategory(*pObj)
+							&& Range.Matches(*pObj, &rDist2)
 							&& SourceObj.IsAngryAt(pObj)
-							&& Selector.Matches(pObj, rDist2))
+							&& Selector.Matches(*pObj, rDist2))
 						{
 						Range.SetBestDist2(rDist2);
 						pBestObj = pObj;
@@ -393,11 +393,11 @@ class CSpaceObjectEnum
 
 				CSpaceObject *pPlayer = System.GetPlayerShip();
 				if (pPlayer 
-						&& Selector.MatchesCategory(pPlayer)
+						&& Selector.MatchesCategory(*pPlayer)
 						&& !SourceObj.IsEnemy(pPlayer) 
 						&& SourceObj.IsAngryAt(pPlayer)
-						&& Range.Matches(pPlayer, &rDist2)
-						&& Selector.Matches(pPlayer, rDist2))
+						&& Range.Matches(*pPlayer, &rDist2)
+						&& Selector.Matches(*pPlayer, rDist2))
 					{
 					Range.SetBestDist2(rDist2);
 					pBestObj = pPlayer;
@@ -411,9 +411,9 @@ class CSpaceObjectEnum
 					{
 					CSpaceObject *pObj = ObjList.GetObj(i);
 
-					if (Selector.MatchesCategory(pObj)
-							&& Range.Matches(pObj, &rDist2)
-							&& Selector.Matches(pObj, rDist2))
+					if (Selector.MatchesCategory(*pObj)
+							&& Range.Matches(*pObj, &rDist2)
+							&& Selector.Matches(*pObj, rDist2))
 						{
 						Range.SetBestDist2(rDist2);
 						pBestObj = pObj;
@@ -461,10 +461,10 @@ class CSpaceObjectEnum
 					CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 					Metric rDist2;
-					if (Selector.MatchesCategory(pObj)
-							&& Range.Matches(pObj, &rDist2)
+					if (Selector.MatchesCategory(*pObj)
+							&& Range.Matches(*pObj, &rDist2)
 							&& SourceObj.IsAngryAt(pObj)
-							&& Selector.Matches(pObj, rDist2))
+							&& Selector.Matches(*pObj, rDist2))
 						{
 						Sorted.Insert(rDist2, pObj);
 
@@ -488,11 +488,11 @@ class CSpaceObjectEnum
 
 				CSpaceObject *pPlayer = System.GetPlayerShip();
 				if (pPlayer 
-						&& Selector.MatchesCategory(pPlayer)
+						&& Selector.MatchesCategory(*pPlayer)
 						&& !SourceObj.IsEnemy(pPlayer) 
 						&& SourceObj.IsAngryAt(pPlayer)
-						&& Range.Matches(pPlayer, &rDist2)
-						&& Selector.Matches(pPlayer, rDist2))
+						&& Range.Matches(*pPlayer, &rDist2)
+						&& Selector.Matches(*pPlayer, rDist2))
 					{
 					Sorted.Insert(rDist2, pPlayer);
 
@@ -508,9 +508,9 @@ class CSpaceObjectEnum
 					{
 					CSpaceObject *pObj = ObjList.GetObj(i);
 
-					if (Selector.MatchesCategory(pObj)
-							&& Range.Matches(pObj, &rDist2)
-							&& Selector.Matches(pObj, rDist2))
+					if (Selector.MatchesCategory(*pObj)
+							&& Range.Matches(*pObj, &rDist2)
+							&& Selector.Matches(*pObj, rDist2))
 						{
 						Sorted.Insert(rDist2, pObj);
 
@@ -579,9 +579,9 @@ class CSpaceObjectEnum
 				CSpaceObject *pObj = Grid.EnumGetNextFast(i);
 
 				Metric rDist2;
-				if (Selector.MatchesCategory(pObj)
-						&& Range.Matches(pObj, &rDist2)
-						&& Selector.Matches(pObj, rDist2))
+				if (Selector.MatchesCategory(*pObj)
+						&& Range.Matches(*pObj, &rDist2)
+						&& Selector.Matches(*pObj, rDist2))
 					{
 					return pObj;
 					}
