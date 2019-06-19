@@ -2944,9 +2944,52 @@
 	<Type unid="&baCommonwealthStation;"
 			inherit=			"&unidCommonText;"
 			>
+		<Properties>
+			<Data		id="rpg.triageMissionCriteria">(cat "n +commonwealth; +triage; =" (sysGetLevel) ";")</Data>
+		</Properties>
+
 		<Events>
 			<OnDestroy>
-				(intCommonwealthOnDestroy)
+				(block ()
+
+					;	Destroy items on the station because we don't want too 
+					;	much loot
+
+					(rpgDestroyItems gSource)
+
+					;	Figure out if we need to retaliate
+
+					(switch
+						;	If the player killed us, then this is a Commonwealth
+						;	crime.
+
+						(and gPlayerShip (= aOrderGiver gPlayerShip))
+							(block ()
+								(intCommonwealthCrime 3 
+									(objTranslate gSource 'strDestroyedStationCrime {
+										objName: (objGetName gSource 'article)
+										})
+									)
+
+								(objSetProperty gSource 'rpg.triageMissionCriteria 
+									(cat "n +commonwealth; +triage; +destroyedByPlayer; =" (sysGetLevel) ";")
+									)
+								)
+
+						;	If the destroyer is a capital ship of some sort
+						;	(e.g., a Xenophobe worldship) then we remember that
+						;	and possibly spawn a revenge mission.
+
+						(and aOrderGiver
+								(objMatches aOrderGiver gSource "sAE +capitalShip;")
+								)
+							(block (missionObj)
+								(setq missionObj (msnCreate &msCommonwealthRevenge01; gSource {
+									targetID: (objGetID aOrderGiver)
+									}))
+								)
+						)
+					)
 			</OnDestroy>
 		</Events>
 
@@ -2970,6 +3013,10 @@
 			</Text>
 			<Text id="descHallCommemoration">
 				The hall is empty, but in the corner you can see %text%.
+			</Text>
+
+			<Text id="strDestroyedStationCrime">
+				the destruction of %objName%
 			</Text>
 		</Language>
 	</Type>

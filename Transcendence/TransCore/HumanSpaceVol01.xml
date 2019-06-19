@@ -2044,6 +2044,7 @@
 	<!ENTITY rsAntaresIIHero			"0x001003A6">
 	<!ENTITY rsAntaresVHero				"0x001003A7">
 	<!ENTITY rsScarabHero				"0x001003A8">
+	<!ENTITY msCommonwealthRevenge01	"0x001003A9">
 
 	<!-- 03B0-03CF SAPIENS -->
 
@@ -2342,6 +2343,7 @@
 	<Module filename="CommonwealthMilitiaMissionSK01.xml"/>
 	<Module filename="CommonwealthMining.xml"/>
 	<Module filename="CommonwealthMission01.xml"/>
+	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="CommonwealthStarCarrier.xml"/>

@@ -22,7 +22,10 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (desc)
+					(block (
+						(hasTriage (objGetProperty gSource 'rpg.triageMissionCriteria))
+						desc
+						)
 						(switch
 							;	If we have a description in the object, then use that.
 							;	NOTE: We also check AbandonedScreenDesc because that ID
@@ -33,6 +36,11 @@
 									(objTranslate gSource 'descAbandonedStation) 
 									(objTranslate gSource 'AbandonedScreenDesc)))
 								(scrSetDesc gScreen desc)
+
+							;	If we have triage
+
+							hasTriage
+								(scrSetDescTranslate gScreen 'descAbandonedStationTriage)
 								
 							;	If populated, then use a default.
 							
@@ -48,13 +56,27 @@
 							
 							(scrSetDescTranslate gScreen 'descAbandonedStationDefault)
 							)
+
+						;	Triage zone is enabled if this is a friendly, 
+						;	populated station.
+
+						(scrShowAction gScreen 'actionTriage hasTriage)
+
+						;	Enable loot action if we have loot
 							
 						(rpgSetLootAction gSource)
 						)
 				</OnPaneInit>
 				
 				<Actions>
-					<Action id="actionLoot" default="1" >
+					<Action id="actionTriage" default="1">
+						(rpgMissionAssignment {
+							missionCriteria: (objGetProperty gSource 'rpg.triageMissionCriteria)
+							noMissionTextID: 'descTriageEmpty
+							})
+					</Action>
+
+					<Action id="actionLoot" default="1">
 						(scrShowScreen gScreen &dsRPGLoot;)
 					</Action>
 
@@ -70,10 +92,30 @@
 		</Panes>
 		
 		<Language>
+			<Text id="actionTriage">[T]riage Center</Text>
+
 			<Text id="descAbandonedStationDefault">
 
 				You are docked at a destroyed structure.
 				Leaking fluids and venting gases obscure the ruined machinery inside.
+
+			</Text>
+			<Text id="descAbandonedStationTriage">
+
+				You are docked at the ruins of a station. Spacesuited crews roam
+				the cavernous bay and vacuum alarms sound in the distance.
+
+				An inflatable chamber in the middle serves as a triage and 
+				command	center.
+
+			</Text>
+			<Text id="descTriageEmpty">
+
+				Rows of medbeds fill the makeshift triage center. Human medics 
+				and autodocs roam the aisles seemingly without purpose or 
+				urgency.
+
+				All you hear are coughs and muffled cries.
 
 			</Text>
 			<Text id="descAbandonedStationPopulated">
