@@ -12792,7 +12792,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the property
 
-			return pNode->GetProperty(sProperty);
+			return pNode->GetProperty(sProperty)->Reference();
 			}
 
 		case FN_SYS_GET_POV:

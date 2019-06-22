@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<!-- Avenge Destroyed Station ==============================================
+	
+	EXTRA DATA
+	
+		reward:				Reward (in credits) for completing mission
+		targetID:			Id of station to destroy
+
+	======================================================================== -->
+	
+	<MissionType UNID="&msCommonwealthRevenge01;"
+			name=						"Avenge Destroyed Station"
+			attributes=					"commonwealth, triage"
+
+			level=						"1-10"
+
+			destroyOnDecline=			"true"
+			noFailureOnOwnerDestroyed=	"true"
+			>
+
+		<Events>
+			<!-- CREATE MISSION -->
+
+			<CanCreate>
+				(switch
+					(not (@ gData 'targetID))
+						Nil
+
+					;	If the target is still alive, then we can create the mission
+
+					(objGetObjByID (@ gData 'targetID))
+					)
+			</CanCreate>
+
+			<OnCreate>
+				(block (
+					(targetObj (objGetObjByID (@ gData 'targetID)))
+					(targetLevel (objGetProperty targetObj 'level))
+					)
+					(msnSetData gSource 'targetID (@ gData 'targetID))
+					(msnRegisterForEvents gSource targetObj)
+
+					;	Compute reward
+
+					(msnSetData gSource 'reward
+						(switch
+							(leq targetLevel 10)
+								(@ '(0 500 1000 2000 4000 8000 15000 30000 65000 130000 250000) targetLevel)
+
+							500000
+							)
+						)
+					)
+			</OnCreate>
+
+			<!-- BRIEFING, ACCEPTING, DECLINING -->
+
+			<!-- RUNNING THE MISSION -->
+
+			<OnSetPlayerTarget>
+				(switch
+					(= (sysGetNode) (msnGetProperty gSource 'nodeID))
+						(rpgSetTarget gSource aReason (objGetObjByID (msnGetData gSource 'targetID)))
+					)
+			</OnSetPlayerTarget>
+
+			<OnObjDestroyed>
+				(switch
+					(!= (objGetID aObjDestroyed) (msnGetData gSource 'targetID))
+						Nil
+
+					(not aDestroy)
+						(msnFailure gSource { status:'targetLeft })
+
+					(and aOrderGiver (= aOrderGiver gPlayerShip))
+						(msnSuccess gSource { status:'killedByPlayer })
+
+					(msnSuccess gSource { status:'killedByOther })
+					)
+			</OnObjDestroyed>
+
+			<!-- MISSION COMPLETE -->
+
+			<OnReward>
+
+				;	Called when the mission was successful, just before showing
+				;	the debriefing screen.
+				;
+				;	gSource: Mission object.
+				;	gData: Arbitrary data passed to msnReward
+				;
+				;	This event can return an optional structure to control 
+				;	debriefing. The struct has the following fields:
+				;
+				;	nextScreen: The screen to show after debrief, OR
+				;		'forceUndock
+				;	nextScreenData: Data to pass to scrShowScreen.
+
+				(rpgMissionRewardPayment (msnGetData gSource 'reward))
+
+			</OnReward>
+		</Events>
+
+		<Language>
+
+			<!-- Code Points -->
+
+			<Text id="Summary">
+				(msnTranslate gSource 'descSummary {
+					stationName: (objGetName (objGetObjByID (msnGetProperty gSource 'ownerID)) 'article)
+					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
+					systemName: (sysGetName)
+					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					})
+			</Text>
+
+			<Text id="Intro">
+				(list
+					{	descID:'textIntro1		labelID:'actionIntro1	}
+					{	descID:'textIntro2		labelID:'actionIntro2	
+						data: {
+							targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) '(article short))
+							}
+						}
+					)
+			</Text>
+
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing {
+					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) '(article short))
+					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					})
+			</Text>
+
+			<Text id="SuccessDebrief">
+				(msnTranslate gSource 'textSuccessDebrief {
+					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
+					})
+			</Text>
+
+			<Text id="FailureDebrief">
+				(msnTranslate gSource 'textFailureDebrief {	})
+			</Text>
+
+			<!-- Text -->
+
+			<Text id="Name">
+				Avenge Destroyed Station
+			</Text>
+			<Text id="descSummary">
+
+				Your mission is to destroy %targetName% to avenge the destruction
+				of %stationName%.
+
+				System: %systemName%\n
+				Payment: %reward%
+
+			</Text>
+			<Text id="textIntro1">
+
+				Rows of medbeds fill the makeshift triage center. An old woman
+				holding a sofa pillow sits on a gurney nearby. Her eyes are red
+				and puffy, but her jaw is clenched in anger.
+
+			</Text>
+			<String id="actionIntro1">"[W]hat happened here?"</String>
+			<Text id="textIntro2">
+
+				She stares at you for a second and then blinks.
+
+				"%TargetName% hit us. It came right out of the black with no
+				warning. All I remember is the pounding of the bulkheads and the
+				screams."
+
+			</Text>
+			<String id="actionIntro2">"[H]ow can I help?"</String>
+
+			<Text id="textBriefing">
+
+				The old woman stares, almost as if she recognizes you.
+
+				"You can kill the bastards for me. I'll give you %reward% if you
+				hunt down and destroy the ship that did this to us. They can rot
+				in the black forever and maybe then I'll feel better."
+
+			</Text>
+
+			<Text id="AcceptReply">
+
+				The old woman nods.
+
+				"Yeah, maybe I'll feel better."
+
+			</Text>
+			<String id="DeclineReply">
+
+				The old woman slumps forward with a sigh.
+
+				"I don't know what I'm saying. I'm glad Aaron can't see me like
+				this."
+
+				She starts to sob quietly, and you decide to leave.
+
+			</String>
+			<Text id="InProgress">
+
+				As you enter, the old woman grabs your shoulder:
+
+				"You promised me! Get out there and make things right!"
+
+			</Text>
+			<Text id="textSuccessDebrief">
+
+				The old woman is there waiting for you, but she doesn't look 
+				any happier than before.
+
+				"You did what you said, and maybe now I can rest. I've deposited
+				%reward% as promised."
+
+			</Text>
+			<Text id="textFailureDebrief">
+
+				You find the old woman lying on a medbed. She gives you a look
+				of disappointment and then turns away without a word.
+
+			</Text>
+			<Text id="SuccessMsg">
+				Mission complete!
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

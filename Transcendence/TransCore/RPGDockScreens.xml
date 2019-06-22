@@ -22,7 +22,10 @@
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (desc)
+					(block (
+						(hasTriage (objGetProperty gSource 'rpg.triageMissionCriteria))
+						desc
+						)
 						(switch
 							;	If we have a description in the object, then use that.
 							;	NOTE: We also check AbandonedScreenDesc because that ID
@@ -33,6 +36,11 @@
 									(objTranslate gSource 'descAbandonedStation) 
 									(objTranslate gSource 'AbandonedScreenDesc)))
 								(scrSetDesc gScreen desc)
+
+							;	If we have triage
+
+							hasTriage
+								(scrSetDescTranslate gScreen 'descAbandonedStationTriage)
 								
 							;	If populated, then use a default.
 							
@@ -48,13 +56,27 @@
 							
 							(scrSetDescTranslate gScreen 'descAbandonedStationDefault)
 							)
+
+						;	Triage zone is enabled if this is a friendly, 
+						;	populated station.
+
+						(scrShowAction gScreen 'actionTriage hasTriage)
+
+						;	Enable loot action if we have loot
 							
 						(rpgSetLootAction gSource)
 						)
 				</OnPaneInit>
 				
 				<Actions>
-					<Action id="actionLoot" default="1" >
+					<Action id="actionTriage" default="1">
+						(rpgMissionAssignment {
+							missionCriteria: (objGetProperty gSource 'rpg.triageMissionCriteria)
+							noMissionTextID: 'descTriageEmpty
+							})
+					</Action>
+
+					<Action id="actionLoot" default="1">
 						(scrShowScreen gScreen &dsRPGLoot;)
 					</Action>
 
@@ -70,10 +92,30 @@
 		</Panes>
 		
 		<Language>
+			<Text id="actionTriage">[T]riage Center</Text>
+
 			<Text id="descAbandonedStationDefault">
 
 				You are docked at a destroyed structure.
 				Leaking fluids and venting gases obscure the ruined machinery inside.
+
+			</Text>
+			<Text id="descAbandonedStationTriage">
+
+				You are docked at the ruins of a station. Spacesuited crews roam
+				the cavernous bay and vacuum alarms sound in the distance.
+
+				An inflatable chamber in the middle serves as a triage and 
+				command	center.
+
+			</Text>
+			<Text id="descTriageEmpty">
+
+				Rows of medbeds fill the makeshift triage center. Human medics 
+				and autodocs roam the aisles seemingly without purpose or 
+				urgency.
+
+				All you hear are coughs and muffled cries.
 
 			</Text>
 			<Text id="descAbandonedStationPopulated">
@@ -186,14 +228,19 @@
 	or to a crate in space.
 
 	gData uses the following fields:
-	
+
+	jettisonLabel: "Jettison this Item"
+
+	jettisonConfirmLabel: "Jettison"
+
 	sourceObj: Object to jettison to.
+
 -->
 
 	<DockScreen UNID="&dsRPGJettison;"
-			name=				"Ship's Cargo Hold"
 			type=				"itemPicker"
 			nestedScreen=		"true"
+			inherit=			"&dsDockScreenBase;"
 			>
 
 		<ListOptions
@@ -202,50 +249,88 @@
 			/>
 
 		<Panes>
-			<Default descID="descNoItems">
+			<Default>
 				<OnPaneInit>
 					(block (
 						(thisItem (scrGetItem gScreen))
-						(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+						(sourceObj (or (@ gData 'sourceObj) gSource))
 						)
 
-						(if thisItem
-							(block (availCount fitCount)
-								(setq availCount (itmGetCount thisItem))
-								(setq fitCount (objGetFitCount sourceObj thisItem))
-								(setq gMaxCount (min availCount fitCount))
+						;	Initialize action label, if necessary
 
-								(setq desc (cat "Unit mass: " (fmtNumber 'massKg (itmGetMass thisItem))))
-								(if (gr gMaxCount 1)
-									(setq desc (cat desc " (" gMaxCount " at " (fmtNumber 'massKg (multiply (itmGetMass thisItem) gMaxCount)) ")"))
+						(if (@ gData 'jettisonLabel)
+							(scrSetActionLabel gScreen 'actionJettisonThis (@ gData 'jettisonLabel))
+							)
+
+						(switch
+							(not thisItem)
+								(block ()
+									(setq gMaxCount 0)
+									(scrSetDescTranslate gScreen 'descNoItemsHere)
+									)
+								
+							(block (
+								(availCount (itmGetCount thisItem))
+								(fitCount (objGetFitCount sourceObj thisItem))
+								(maxCount (min availCount fitCount))
+
+								(capacityLeft
+									(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
+										(scrTranslate gScreen 'capacityLeftString {
+											capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))
+											})
+										)
 									)
 
-								(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
-									(setq desc (cat desc "\nCapacity: " (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))))
+								(totalMassString 
+									(if (gr maxCount 1)
+										(scrTranslate gScreen 'totalMassString {
+											quantity:maxCount
+											mass:(fmtNumber 'massKg (* (itmGetMass thisItem) maxCount))
+											})
+										""
+										)
 									)
 
-								(switch
-									(eq gMaxCount 0)
-										(setq desc (cat desc "\n\nThere is not enough space here to jettison " (itmGetName thisItem 4) "."))
-									(eq gMaxCount 1)
-										(setq desc (cat desc "\n\nThere is enough space to jettison one " (itmGetName thisItem 0) "."))
-									(gr availCount fitCount)
-										(setq desc (cat desc "\n\nThere is enough space to jettison only " fitCount " " (itmGetName thisItem 2) "."))
-									(setq desc (cat desc "\n\nThere is enough space to jettison all " (itmGetName thisItem 8) "."))
+								(itemText
+									(scrTranslate gScreen 'descJettisonDefault {
+										unitMass:(fmtNumber 'massKg (itmGetMass thisItem))
+										totalMassString:totalMassString
+										})
 									)
 
-								(scrSetDesc gScreen desc)
+								(spaceString
+									(switch
+										(eq maxCount 0)
+											(scrTranslate gScreen 'rpg.noSpaceToJettison { itemName:(itmGetName thisItem 'article) })
+
+										(gr availCount fitCount)
+											(scrTranslate gScreen 'rpg.onlySomeSpaceToJettison {
+												itemName:(itmGetName (itmSetCount thisItem fitCount) 'countAlways)
+												})
+
+										;(scrTranslate gScreen 'spaceStringAll { itemName:(itmGetName thisItem 'count) })
+										)
+									)
 								)
-							(setq gMaxCount 0)
+
+								(scrSetDesc gScreen
+									(if capacityLeft (cat capacityLeft "\n"))
+									itemText
+									(if spaceString (cat "\n\n" spaceString))
+									)
+
+								(setq gMaxCount maxCount)
+								)
 							)
 
 						; Enable/disable actions
-						(scrEnableAction gScreen 0 (gr gMaxCount 0))
+						(scrEnableAction gScreen 'actionJettisonThis (gr gMaxCount 0))
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Jettison this Item" default="1" key="J" >
+					<Action id="actionJettisonThis" default="1">
 						(block (
 							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
 							)
@@ -264,7 +349,7 @@
 							)
 					</Action>
 
-					<Action name="Done" cancel="1" key="D">
+					<Action id="actionDone" cancel="1">
                         (scrExitScreen gScreen)
 					</Action>
 				</Actions>
@@ -275,13 +360,23 @@
 
 				<OnPaneInit>
 					(block Nil
-						(scrSetDesc gScreen (cat "How many items do you wish to jettison?"))
+						;	Initialize action label, if necessary
+
+						(switch
+							(@ gData 'jettisonConfirmLabel)
+								(scrSetActionLabel gScreen 'actionJettison (@ gData 'jettisonConfirmLabel))
+
+							(@ gData 'jettisonLabel)
+								(scrSetActionLabel gScreen 'actionJettison (@ gData 'jettisonLabel))
+							)
+
+						(scrSetDescTranslate gScreen 'rpg.jettisonQuantity)
 						(scrSetCounter gScreen gMaxCount)
 						)
 				</OnPaneInit>
 
 				<Actions>
-					<Action name="Jettison" default="1" key="J">
+					<Action id="actionJettison" default="1">
 						(block (
 							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
 							(count (scrGetCounter gScreen))
@@ -298,7 +393,7 @@
 							)
 					</Action>
 
-					<Action name="Cancel" cancel="1" key="C">
+					<Action id="actionCancel" cancel="1">
 						<ShowPane pane="Default"/>
 					</Action>
 				</Actions>
@@ -306,9 +401,18 @@
 		</Panes>
 
 		<Language>
-			<Text id="descNoItems">
-				There are no items in your cargo hold that can be jettisoned.
+			<Text id="actionJettisonThis">[J]ettison this Item</Text>
+			<Text id="actionJettison">[J]ettison</Text>
+
+			<Text id="descJettisonDefault">
+				Unit mass: %unitMass% %totalMassString%
 			</Text>
+			<String id="totalMassString">(%quantity% at %mass%)</String>
+			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>
+
+			<Text id="rpg.jettisonQuantity">How many items do you wish to jettison?</Text>
+			<Text id="rpg.noSpaceToJettison">There is not enough space here to jettison %itemName%.</Text>
+			<Text id="rpg.onlySomeSpaceToJettison">There is only enough space here to jettison %itemName%.</Text>
 		</Language>
 	</DockScreen>
 
@@ -319,7 +423,9 @@
 
 	gData uses the following fields:
 
-	lootLabel: Action label to use.
+	lootLabel: "Loot this Item"
+
+	lootConfirmLabel: "Loot"
 
 	nextScreen:	If specified, we navigate to the given screen when we're done.
 		This may also be a list consisting of a screen and a pane.
@@ -344,6 +450,7 @@
 				<OnPaneInit>
 					(block (
 						(thisItem (scrGetItem gScreen))
+						(sourceObj (or (@ gData 'sourceObj) gSource))
 						)
 						;	Initialize action label, if necessary
 
@@ -369,6 +476,14 @@
 
 								(itemCurrency (itmGetProperty thisItem 'currency))
 								(itemPrice (itmGetPrice thisItem))
+
+								(capacityLeft
+									(if (ls (objGetCargoSpaceLeft sourceObj) 200000)
+										(scrTranslate gScreen 'capacityLeftString {
+											capacity: (fmtNumber 'massKg (objGetCargoSpaceLeft sourceObj))
+											})
+										)
+									)
 
 								(totalMassString 
 									(if (gr maxCount 1)
@@ -416,6 +531,7 @@
 								(tradeData (rpgItemTradeComputer thisItem))
 								)
 								(scrSetDesc gScreen
+									(if capacityLeft (cat capacityLeft "\n"))
 									itemText
 									(if spaceString (cat "\n\n" spaceString))
 									(if tradeData (cat "\n\n" (@ tradeData 'sellRecommendation)))
@@ -465,10 +581,15 @@
 
 				<OnPaneInit>
 					(block Nil
-						(if (@ gData 'lootLabel)
-							(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootLabel))
+						(switch
+							(@ gData 'lootConfirmLabel)
+								(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootConfirmLabel))
+
+							(@ gData 'lootLabel)
+								(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootLabel))
 							)
-						(scrSetDescTranslate gScreen 'descLootQuantity)
+
+						(scrSetDescTranslate gScreen 'rpg.lootQuantity)
 						(scrSetCounter gScreen (scrGetData gScreen 'maxCount))
 						)
 				</OnPaneInit>
@@ -504,11 +625,13 @@
 			</Text>
 			<String id="totalMassString">(%quantity% at %mass%)</String>
 			<String id="totalPriceString">(%count% for %price%)</String>
+			<Text id="capacityLeftString">Capacity Left: %capacity%</Text>
 			<Text id="spaceStringNone">You do not have enough space to carry %itemName%.</Text>
 			<Text id="spaceStringSome">You only have enough room to carry %itemName%.</Text>
 			<Text id="spaceStringAll">You have enough room to carry all %itemName%.</Text>
 			<Text id="actionLootThis">[L]oot this Item</Text>
-			<Text id="descLootQuantity">How many items do you wish to loot?</Text>
+
+			<Text id="rpg.lootQuantity">How many items do you wish to loot?</Text>
 		</Language>
 
 	</DockScreen>

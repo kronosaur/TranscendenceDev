@@ -39,6 +39,15 @@
 						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4 7.3)		result:7.5	}
 
 						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2a )		result:2	}
+
+						{	test:'(setq gTestStation1 (sysCreateStation &stTestStation1; Nil))		result:'ignore	}
+						{	test:'(objGetProperty gTestStation1 'diag.data1)				result:7	}
+						{	test:'(objSetProperty gTestStation1 'diag.data1 17)				result:True	}
+						{	test:'(objGetProperty gTestStation1 'diag.data1)				result:17	}
+
+						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:11	}
+						{	test:'(objSetProperty gTestStation1 'diag.data2 -5)				result:True	}
+						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:-5	}
 						))
 					)
 			</OnGlobalStartDiagnostics>
@@ -64,6 +73,7 @@
 			<Global id="diag.global3">8</Global>
 			<Global id="diag.global4">1.2</Global>
 
+			<Data id="diag.data1">7</Data>
 		</Properties>
 	</Type>
 
@@ -76,5 +86,22 @@
 			inherit="&unidTestDescendantType1;"
 			>
 	</Type>
+
+	<StationType UNID="&stTestStation1;"
+			name=				"(flotsam)"
+			sovereign=			"&svNeutral;"
+			inherit=			"&unidTestBaseType;"
+
+			scale=				"ship"
+			mobile=				"true"
+			mass=				"1"
+			immutable=			"true"
+			destroyWhenEmpty=	"true"
+			noMapIcon=			"true"
+			>
+		<Properties>
+			<Data id="diag.data2">11</Data>
+		</Properties>
+	</StationType>
 
 </TranscendenceModule>

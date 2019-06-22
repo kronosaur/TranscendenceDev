@@ -1467,6 +1467,12 @@
 										(setq damagedItemCount (add damagedItemCount tenth (if (leq (random 1 10) tenthMod) 1 0) tenth (if (leq (random 1 10) tenthMod) 1 0)))
 										)
 
+								; 90% chance of ammo being destroyed
+								(itmMatches theItem "m")
+									(if (gr (random 1 100) 90)
+										(setq undamagedItemCount (divide (multiply 50 (itmGetCount theItem)) 100))
+										)
+
 								; 70% of other items are destroyed
 								(block Nil
 									(setq undamagedItemCount (divide (multiply 30 (itmGetCount theItem)) 100))

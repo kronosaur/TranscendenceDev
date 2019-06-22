@@ -133,7 +133,7 @@ class CTopologyNode
 		inline int GetLevel (void) const { return m_iLevel; }
 		Metric GetLinearDistanceTo (const CTopologyNode *pNode) const;
 		Metric GetLinearDistanceTo2 (const CTopologyNode *pNode) const;
-		ICCItem *GetProperty (const CString &sName);
+		ICCItemPtr GetProperty (const CString &sName) const;
 		inline int GetStargateCount (void) const { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;

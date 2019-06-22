@@ -2044,6 +2044,7 @@
 	<!ENTITY rsAntaresIIHero			"0x001003A6">
 	<!ENTITY rsAntaresVHero				"0x001003A7">
 	<!ENTITY rsScarabHero				"0x001003A8">
+	<!ENTITY msCommonwealthRevenge01	"0x001003A9">
 
 	<!-- 03B0-03CF SAPIENS -->
 
@@ -2075,6 +2076,7 @@
 	<!ENTITY rsEarthzoneHD				"0x00100430">
 	<!ENTITY rsHornetHD					"0x00100431">
 	<!ENTITY smAnarchistSpace			"0x00100432">
+	<!ENTITY rsHornetHero				"0x00100433">
 
 	<!-- 0450-046F RANX EMPIRE -->
 
@@ -2341,6 +2343,7 @@
 	<Module filename="CommonwealthMilitiaMissionSK01.xml"/>
 	<Module filename="CommonwealthMining.xml"/>
 	<Module filename="CommonwealthMission01.xml"/>
+	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>
 	<Module filename="CommonwealthShips.xml"/>
 	<Module filename="CommonwealthStarCarrier.xml"/>

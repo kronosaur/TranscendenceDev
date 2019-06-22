@@ -41,6 +41,7 @@
 	<!ENTITY unidTestDescendantType2	"0xA0010103">
 	<!ENTITY unidTestStationType		"0xA0010104">
 	<!ENTITY unidTestArmorClass			"0xA0010105">
+	<!ENTITY stTestStation1				"0xA0010106">
 
 	<!-- OTHER -->
 
@@ -50,8 +51,8 @@
 <TranscendenceExtension UNID="&unidExtension;" 
 		name=			"Diagnostics"
 		release=		"1"
-		version=		"1.0.0"
-		apiVersion=		"43"
+		version=		"1.0.1"
+		apiVersion=		"45"
 		extends=		"&unidStarsOfThePilgrim;"
 		debugOnly=		"true"
 		coverImageID=	"&unidCoverImage;"
