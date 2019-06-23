@@ -80,13 +80,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 		sCriteria = CONSTLIT("*");
 
 	CSpaceObjectCriteria Criteria(sCriteria);
-
-	CItemCriteria ItemCriteria;
-	CString sItemCriteria = pCmdLine->GetAttribute(CONSTLIT("itemCriteria"));
-	if (!sItemCriteria.IsBlank())
-		CItem::ParseCriteria(sItemCriteria, &ItemCriteria);
-	else
-		CItem::InitCriteriaAll(&ItemCriteria);
+	CItemCriteria ItemCriteria(pCmdLine->GetAttribute(CONSTLIT("itemCriteria")), CItemCriteria::ALL);
 
 	//	Output type
 

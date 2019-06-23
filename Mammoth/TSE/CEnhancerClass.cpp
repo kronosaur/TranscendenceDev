@@ -159,7 +159,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	RootStats.sCriteria = pDesc->GetAttribute(CRITERIA_ATTRIB);
 	if (!RootStats.sCriteria.IsBlank())
-		CItem::ParseCriteria(RootStats.sCriteria, &RootStats.Criteria);
+		RootStats.Criteria.Init(RootStats.sCriteria);
 
 	RootStats.iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
 	if (error = RootStats.LevelCheck.InitFromXML(Ctx, pDesc->GetAttribute(LEVEL_CHECK_ATTRIB)))
@@ -212,7 +212,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		if (!pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 			sCriteria = CONSTLIT("w");
 
-		CItem::ParseCriteria(sCriteria, &pDevice->m_Criteria);
+		pDevice->m_Criteria.Init(sCriteria);
 		}
 
 	//	Done

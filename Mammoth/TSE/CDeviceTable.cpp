@@ -1374,7 +1374,7 @@ ALERROR CGroupOfDeviceGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 			{
 			SSlotDesc *pSlotDesc = m_SlotDesc.Insert();
 
-			CItem::ParseCriteria(pEntry->GetAttribute(CRITERIA_ATTRIB), &pSlotDesc->Criteria);
+			pSlotDesc->Criteria.Init(pEntry->GetAttribute(CRITERIA_ATTRIB));
 
 			if (error = IDeviceGenerator::InitDeviceDescFromXML(Ctx, pEntry, &pSlotDesc->DefaultDesc))
 				return error;

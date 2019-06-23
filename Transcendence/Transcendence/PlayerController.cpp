@@ -2967,8 +2967,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 	if (m_UIMsgs.IsEnabled(uimsgUseItemHint) && !bEnemiesInRange)
 		{
 		CItemListManipulator ItemList(m_pShip->GetItemList());
-		CItemCriteria UsableItems;
-		CItem::ParseCriteria(CONSTLIT("u"), &UsableItems);
+		CItemCriteria UsableItems(CONSTLIT("u"));
 		ItemList.SetFilter(UsableItems);
 		bool bHasUsableItems = ItemList.MoveCursorForward();
 

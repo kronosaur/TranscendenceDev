@@ -4780,8 +4780,7 @@ ICCItem *fnItemCreateByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	//	Parse criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(sCriteria, &Criteria);
+	CItemCriteria Criteria(sCriteria);
 
 	//	Create the item
 
@@ -4812,8 +4811,7 @@ ICCItem *fnItemCreateRandom (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	//	Parse criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(sCriteria, &Criteria);
+	CItemCriteria Criteria(sCriteria);
 
 	//	Create the item
 
@@ -4836,8 +4834,7 @@ ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Get the criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(0)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(0)->GetStringValue());
 
 	//	Create a linked list for the result
 
@@ -5176,8 +5173,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_MATCHES:
 			{
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();
-			CItemCriteria Criteria;
-			CItem::ParseCriteria(sCriteria, &Criteria);
+			CItemCriteria Criteria(sCriteria);
 			pResult = pCC->CreateBool(Item.MatchesCriteria(Criteria));
 			break;
 			}
@@ -5676,8 +5672,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 		return pCC->CreateNil();
 		}
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(1)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(1)->GetStringValue());
 
 	pVar = pArgs->GetElement(2);
 	pBody = pArgs->GetElement(3);
@@ -5845,8 +5840,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	if (pArgs->IsError())
 		return pArgs;
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(0)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(0)->GetStringValue());
 
 	pVar = pArgs->GetElement(1);
 	pBody = pArgs->GetElement(2);
@@ -8882,8 +8876,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();
 			pArgs->Discard();
 
-			CItemCriteria Criteria;
-			CItem::ParseCriteria(sCriteria, &Criteria);
+			CItemCriteria Criteria(sCriteria);
 
 			pResult = pCC->CreateLinkedList();
 			if (pResult->IsError())
@@ -14549,8 +14542,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (!bFound)
 				{
-				CItemCriteria Crit;
-				CItem::InitCriteriaAll(&Crit);
+				CItemCriteria Crit(CItemCriteria::ALL);
 				CItem Item = CItem::CreateItemByName(pCtx->GetUniverse(), sName, Crit, true);
 				if (Item.GetType())
 					{

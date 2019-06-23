@@ -73,11 +73,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 
 	//	Device criteria
 
-	CString sCriteria;
-	if (pHull->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
-		CItem::ParseCriteria(sCriteria, &m_DeviceCriteria);
-	else
-		CItem::InitCriteriaAll(&m_DeviceCriteria);
+	m_DeviceCriteria.Init(pHull->GetAttribute(DEVICE_CRITERIA_ATTRIB), CItemCriteria::ALL);
 
 	//	Always allow virtual items, because we often use them and we don't want
 	//	to force the modder to always include them in the criteria.

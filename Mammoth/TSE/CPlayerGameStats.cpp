@@ -690,8 +690,7 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 
 	else
 		{
-		CItemCriteria Crit;
-		CItem::ParseCriteria(pItemCriteria->GetStringValue(), &Crit);
+		CItemCriteria Crit(pItemCriteria->GetStringValue());
 
 		CMapIterator i;
 		m_ItemStats.Reset(i);

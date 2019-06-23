@@ -855,11 +855,7 @@ void SelectByCriteria (SItemTableCtx &Ctx, const CString &sCriteria, TArray<CIte
 
 	//	Compute the criteria
 
-	CItemCriteria Crit;
-	if (!sCriteria.IsBlank())
-		CItem::ParseCriteria(sCriteria, &Crit);
-	else
-		CItem::InitCriteriaAll(&Crit);
+	CItemCriteria Crit(sCriteria, CItemCriteria::ALL);
 
 	//	Loop over all items that match and add them to
 	//	a sorted table.

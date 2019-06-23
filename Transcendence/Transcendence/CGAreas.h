@@ -519,18 +519,10 @@ class CGSelectorArea : public AGArea
 
         struct SOptions
             {
-            SOptions (void) :
-                    iConfig(configDevices),
-                    bNoEmptySlots(false),
-                    bAlwaysShowShields(false)
-                {
-                CItem::InitCriteriaAll(&ItemCriteria);
-                }
-
-            EConfigurations iConfig;
-            CItemCriteria ItemCriteria;
-            bool bNoEmptySlots;
-            bool bAlwaysShowShields;
+            EConfigurations iConfig = configDevices;
+            CItemCriteria ItemCriteria = CItemCriteria(CItemCriteria::ALL);
+            bool bNoEmptySlots = false;
+            bool bAlwaysShowShields = false;
             };
 
 		CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);

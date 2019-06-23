@@ -2137,7 +2137,7 @@ ALERROR CRandomItems::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		sCriteria = strPatternSubst(CONSTLIT("%s %s"), pDesc->GetAttribute(CATEGORIES_ATTRIB), sAttributes);
 		}
 
-	CItem::ParseCriteria(sCriteria, &m_Criteria);
+	m_Criteria.Init(sCriteria);
 	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
 	m_bDynamicLevelFrequency = (strFind(m_sLevelFrequency, CONSTLIT(":")) != -1);
 	m_iDynamicLevel = 0;

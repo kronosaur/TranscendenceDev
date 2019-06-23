@@ -5,98 +5,401 @@
 
 #include "PreComp.h"
 
-CItemCriteria::CItemCriteria (const CItemCriteria &Copy)
+CItemCriteria::CItemCriteria (DWORD dwSpecial)
 
-//	Criteria copy constructor
+//	CItemCriteria constructor
 
 	{
-	dwItemCategories = Copy.dwItemCategories;
-	dwExcludeCategories = Copy.dwExcludeCategories;
-	dwMustHaveCategories = Copy.dwMustHaveCategories;
-	wFlagsMustBeSet = Copy.wFlagsMustBeSet;
-	wFlagsMustBeCleared = Copy.wFlagsMustBeCleared;
+	switch (dwSpecial)
+		{
+		case NONE:
+			break;
 
-	bUsableItemsOnly = Copy.bUsableItemsOnly;
-	bExcludeVirtual = Copy.bExcludeVirtual;
-	bInstalledOnly = Copy.bInstalledOnly;
-	bNotInstalledOnly = Copy.bNotInstalledOnly;
-	bLauncherMissileOnly = Copy.bLauncherMissileOnly;
+		case ALL:
+			dwItemCategories = 0xFFFFFFFF;
+			break;
 
-	ModifiersRequired = Copy.ModifiersRequired;
-	ModifiersNotAllowed = Copy.ModifiersNotAllowed;
-	SpecialAttribRequired = Copy.SpecialAttribRequired;
-	SpecialAttribNotAllowed = Copy.SpecialAttribNotAllowed;
-	Frequency = Copy.Frequency;
-
-	iEqualToLevel = Copy.iEqualToLevel;
-	iGreaterThanLevel = Copy.iGreaterThanLevel;
-	iLessThanLevel = Copy.iLessThanLevel;
-
-	iEqualToPrice = Copy.iEqualToPrice;
-	iGreaterThanPrice = Copy.iGreaterThanPrice;
-	iLessThanPrice = Copy.iLessThanPrice;
-
-	iEqualToMass = Copy.iEqualToMass;
-	iGreaterThanMass = Copy.iGreaterThanMass;
-	iLessThanMass = Copy.iLessThanMass;
-
-	sLookup = Copy.sLookup;
-	pFilter = Copy.pFilter;
-	if (pFilter)
-		pFilter->Reference();
+		default:
+			throw CException(ERR_FAIL);
+		}
 	}
 
-CItemCriteria &CItemCriteria::operator= (const CItemCriteria &Copy)
+CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
-//	Criteria equals operator
-
-	{
-	if (pFilter)
-		pFilter->Discard();
-
-	dwItemCategories = Copy.dwItemCategories;
-	dwExcludeCategories = Copy.dwExcludeCategories;
-	dwMustHaveCategories = Copy.dwMustHaveCategories;
-	wFlagsMustBeSet = Copy.wFlagsMustBeSet;
-	wFlagsMustBeCleared = Copy.wFlagsMustBeCleared;
-
-	bUsableItemsOnly = Copy.bUsableItemsOnly;
-	bExcludeVirtual = Copy.bExcludeVirtual;
-	bInstalledOnly = Copy.bInstalledOnly;
-	bNotInstalledOnly = Copy.bNotInstalledOnly;
-	bLauncherMissileOnly = Copy.bLauncherMissileOnly;
-
-	ModifiersRequired = Copy.ModifiersRequired;
-	ModifiersNotAllowed = Copy.ModifiersNotAllowed;
-	SpecialAttribRequired = Copy.SpecialAttribRequired;
-	SpecialAttribNotAllowed = Copy.SpecialAttribNotAllowed;
-	Frequency = Copy.Frequency;
-
-	iEqualToLevel = Copy.iEqualToLevel;
-	iGreaterThanLevel = Copy.iGreaterThanLevel;
-	iLessThanLevel = Copy.iLessThanLevel;
-
-	iEqualToPrice = Copy.iEqualToPrice;
-	iGreaterThanPrice = Copy.iGreaterThanPrice;
-	iLessThanPrice = Copy.iLessThanPrice;
-
-	iEqualToMass = Copy.iEqualToMass;
-	iGreaterThanMass = Copy.iGreaterThanMass;
-	iLessThanMass = Copy.iLessThanMass;
-
-	sLookup = Copy.sLookup;
-	pFilter = Copy.pFilter;
-	if (pFilter)
-		pFilter->Reference();
-
-	return *this;
-	}
-
-CItemCriteria::~CItemCriteria (void)
+//	CItemCriteria constructor
 
 	{
-	if (pFilter)
-		pFilter->Discard();
+	bool bExclude = false;
+	bool bMustHave = false;
+
+	//	Parse string
+
+	char *pPos = sCriteria.GetASCIIZPointer();
+
+	//	If null, use default
+
+	if (*pPos == '\0')
+		{
+		*this = CItemCriteria(dwDefault);
+		return;
+		}
+
+	//	If we start with a brace, then this is a lookup.
+
+	else if (*pPos == '{')
+		{
+		pPos++;
+
+		char *pStart = pPos;
+		while (*pPos != '\0' && *pPos != '}' )
+			pPos++;
+
+		sLookup = CString(pStart, (int)(pPos - pStart));
+
+		//	No other directives are allowed
+
+		return;
+		}
+
+	//	Otherwise, parse a criteria.
+
+	while (*pPos != '\0')
+		{
+		switch (*pPos)
+			{
+			case '*':
+				dwItemCategories = 0xFFFFFFFF;
+				break;
+
+			case 'a':
+				if (bExclude)
+					dwExcludeCategories |= itemcatArmor;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatArmor;
+				else
+					dwItemCategories |= itemcatArmor;
+				break;
+
+			case 'b':
+				if (bExclude)
+					dwExcludeCategories |= itemcatMiscDevice;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatMiscDevice;
+				else
+					dwItemCategories |= itemcatMiscDevice;
+				break;
+
+			case 'c':
+				if (bExclude)
+					dwExcludeCategories |= itemcatCargoHold;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatCargoHold;
+				else
+					dwItemCategories |= itemcatCargoHold;
+				break;
+
+			case 'd':
+				if (bExclude)
+					dwExcludeCategories |= itemcatMiscDevice
+					| itemcatWeapon
+					| itemcatLauncher
+					| itemcatReactor
+					| itemcatShields
+					| itemcatCargoHold
+					| itemcatDrive;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatMiscDevice
+					| itemcatWeapon
+					| itemcatLauncher
+					| itemcatReactor
+					| itemcatShields
+					| itemcatCargoHold
+					| itemcatDrive;
+				else
+					dwItemCategories |= itemcatMiscDevice
+					| itemcatWeapon
+					| itemcatLauncher
+					| itemcatReactor
+					| itemcatShields
+					| itemcatCargoHold
+					| itemcatDrive;
+				break;
+
+			case 'f':
+				if (bExclude)
+					dwExcludeCategories |= itemcatFuel;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatFuel;
+				else
+					dwItemCategories |= itemcatFuel;
+				break;
+
+			case 'l':
+				if (bExclude)
+					dwExcludeCategories |= itemcatLauncher;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatLauncher;
+				else
+					dwItemCategories |= itemcatLauncher;
+				break;
+
+			case 'm':
+				if (bExclude)
+					dwExcludeCategories |= itemcatMissile;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatMissile;
+				else
+					dwItemCategories |= itemcatMissile;
+				break;
+
+			case 'p':
+				if (bExclude)
+					dwExcludeCategories |= itemcatWeapon;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatWeapon;
+				else
+					dwItemCategories |= itemcatWeapon;
+				break;
+
+			case 'r':
+				if (bExclude)
+					dwExcludeCategories |= itemcatReactor;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatReactor;
+				else
+					dwItemCategories |= itemcatReactor;
+				break;
+
+			case 's':
+				if (bExclude)
+					dwExcludeCategories |= itemcatShields;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatShields;
+				else
+					dwItemCategories |= itemcatShields;
+				break;
+
+			case 't':
+				if (bExclude)
+					dwExcludeCategories |= itemcatMisc;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatMisc;
+				else
+					dwItemCategories |= itemcatMisc;
+				break;
+
+			case 'u':
+				if (bExclude)
+					dwExcludeCategories |= itemcatUseful;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatUseful;
+				else
+					dwItemCategories |= itemcatUseful;
+				break;
+
+			case 'v':
+				if (bExclude)
+					dwExcludeCategories |= itemcatDrive;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatDrive;
+				else
+					dwItemCategories |= itemcatDrive;
+				break;
+
+			case 'w':
+				if (bExclude)
+					dwExcludeCategories |= itemcatWeapon | itemcatLauncher;
+				else if (bMustHave)
+					dwMustHaveCategories |= itemcatWeapon | itemcatLauncher;
+				else
+					dwItemCategories |= itemcatWeapon | itemcatLauncher;
+				break;
+
+			case 'I':
+				bInstalledOnly = true;
+				break;
+
+			case 'D':
+				wFlagsMustBeSet |= CItem::flagDamaged;
+				break;
+
+			case 'F':
+				Frequency = ParseCriteriaParam(&pPos);
+				break;
+
+			case 'L':
+			{
+			int iHigh;
+			int iLow;
+
+			if (ParseCriteriaParamLevelRange(&pPos, &iLow, &iHigh))
+				{
+				if (iHigh == -1)
+					iEqualToLevel = iLow;
+				else
+					{
+					iGreaterThanLevel = iLow - 1;
+					iLessThanLevel = iHigh + 1;
+					}
+				}
+
+			break;
+			}
+
+			case 'M':
+				bLauncherMissileOnly = true;
+				dwItemCategories |= itemcatMissile;
+				break;
+
+			case 'N':
+				wFlagsMustBeCleared |= CItem::flagDamaged;
+				break;
+
+			case 'S':
+				bUsableItemsOnly = true;
+				break;
+
+			case 'U':
+				bNotInstalledOnly = true;
+				break;
+
+			case 'V':
+				bExcludeVirtual = false;
+				break;
+
+			case '+':
+			case '-':
+			{
+			bool bSpecialAttrib = false;
+			char chChar = *pPos;
+			pPos++;
+
+			//	Deal with category exclusion
+
+			//	Get the modifier
+
+			char *pStart = pPos;
+			while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t')
+				{
+				if (*pPos == ':')
+					bSpecialAttrib = true;
+				pPos++;
+				}
+
+			CString sModifier = CString(pStart, pPos - pStart);
+
+			//	Required or Not Allowed
+
+			if (chChar == '+')
+				{
+				if (bSpecialAttrib)
+					SpecialAttribRequired.Insert(sModifier);
+				else
+					ModifiersRequired.Insert(sModifier);
+				}
+			else
+				{
+				if (bSpecialAttrib)
+					SpecialAttribNotAllowed.Insert(sModifier);
+				else
+					ModifiersNotAllowed.Insert(sModifier);
+				}
+
+			//	No trailing semi
+
+			if (*pPos == '\0')
+				pPos--;
+
+			break;
+			}
+
+			case '~':
+				bExclude = true;
+				break;
+
+			case '^':
+				bMustHave = true;
+				break;
+
+			case '=':
+			case '>':
+			case '<':
+			{
+			char chChar = *pPos;
+			pPos++;
+
+			//	<= or >=
+
+			int iEqualAdj;
+			if (*pPos == '=')
+				{
+				pPos++;
+				iEqualAdj = 1;
+				}
+			else
+				iEqualAdj = 0;
+
+			//	Is this price?
+
+			char comparison;
+			if (*pPos == '$' || *pPos == '#')
+				comparison = *pPos++;
+			else
+				comparison = '\0';
+
+			//	Get the number
+
+			char *pNewPos;
+			int iValue = strParseInt(pPos, 0, &pNewPos);
+
+			//	Back up one because we will increment at the bottom
+			//	of the loop.
+
+			if (pPos != pNewPos)
+				pPos = pNewPos - 1;
+
+			//	Price limits
+
+			if (comparison == '$')
+				{
+				if (chChar == '=')
+					iEqualToPrice = iValue;
+				else if (chChar == '>')
+					iGreaterThanPrice = iValue - iEqualAdj;
+				else if (chChar == '<')
+					iLessThanPrice = iValue + iEqualAdj;
+				}
+
+			//	Mass limits
+
+			else if (comparison == '#')
+				{
+				if (chChar == '=')
+					iEqualToMass = iValue;
+				else if (chChar == '>')
+					iGreaterThanMass = iValue - iEqualAdj;
+				else if (chChar == '<')
+					iLessThanMass = iValue + iEqualAdj;
+				}
+
+			//	Level limits
+
+			else
+				{
+				if (chChar == '=')
+					iEqualToLevel = iValue;
+				else if (chChar == '>')
+					iGreaterThanLevel = iValue - iEqualAdj;
+				else if (chChar == '<')
+					iLessThanLevel = iValue + iEqualAdj;
+				}
+
+			break;
+			}
+			}
+
+		pPos++;
+		}
 	}
 
 bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const

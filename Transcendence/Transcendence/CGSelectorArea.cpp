@@ -141,12 +141,12 @@ const int FIRST_UNNAMED_SLOT_INDEX =		3;
 
 CGSelectorArea::CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 		m_VI(VI),
-		m_Theme(Theme)
+		m_Theme(Theme),
+		m_Criteria(CItemCriteria::ALL)
 
 //	CGSelectorArea constructor
 
 	{
-    CItem::InitCriteriaAll(&m_Criteria);
 	}
 
 CGSelectorArea::~CGSelectorArea (void)

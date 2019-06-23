@@ -35,7 +35,7 @@ ALERROR CDockScreenItemList::OnInitList (SInitCtx &Ctx, const SDisplayOptions &O
 		return ERR_FAIL;
 		}
 
-	CItem::ParseCriteria(sCriteria, &m_ItemCriteria);
+	m_ItemCriteria.Init(sCriteria);
 	m_pItemListControl->SetFilter(m_ItemCriteria);
 
 	//	If we have content, then eval the function (note that this might

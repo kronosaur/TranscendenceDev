@@ -41,18 +41,23 @@ enum ItemFates
 
 struct CItemCriteria
 	{
-	CItemCriteria (void) { }
-	CItemCriteria (const CItemCriteria &Copy);
-	~CItemCriteria (void);
+	static constexpr DWORD NONE = 0x00000000;
+	static constexpr DWORD ALL = 0x00000001;
 
-	CItemCriteria &operator= (const CItemCriteria &Copy);
+	CItemCriteria (void) { }
+	explicit CItemCriteria (DWORD dwSpecial);
+	explicit CItemCriteria (const CString &sCriteria, DWORD dwDefault = NONE);
 
 	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 	int GetMaxLevelMatched (void) const;
 	CString GetName (void) const;
+	ICCItem *GetFilter (void) const { return m_pFilter; }
+	void Init (DWORD dwSpecial = NONE) { *this = CItemCriteria(dwSpecial); }
+	void Init (const CString &sCriteria, DWORD dwSpecial = NONE) { *this = CItemCriteria(sCriteria, dwSpecial); }
 	bool Intersects (const CItemCriteria &Src) const;
-	inline bool IsEmpty (void) const { return (dwItemCategories == 0 && sLookup.IsBlank() && pFilter == NULL); }
-    inline bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
+	bool IsEmpty (void) const { return (dwItemCategories == 0 && sLookup.IsBlank() && !m_pFilter); }
+    bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
+	void SetFilter (ICCItemPtr pFilter) { m_pFilter = pFilter; }
 
 	DWORD dwItemCategories = 0;				//	Set of ItemCategories to match on
 	DWORD dwExcludeCategories = 0;			//	Categories to exclude
@@ -62,7 +67,7 @@ struct CItemCriteria
 	WORD wFlagsMustBeCleared = 0;			//	These flags must be cleared
 
 	bool bUsableItemsOnly = false;			//	Item must be usable
-	bool bExcludeVirtual = false;			//	Exclude virtual items
+	bool bExcludeVirtual = true;			//	Exclude virtual items
 	bool bInstalledOnly = false;			//	Item must be installed
 	bool bNotInstalledOnly = false;			//	Item must not be installed
 	bool bLauncherMissileOnly = false;		//	Item must be a missile for a launcher
@@ -84,7 +89,9 @@ struct CItemCriteria
 	int iLessThanMass = -1;					//	If not -1, only items less than this mass (in kg)
 
 	CString sLookup;						//	Look up a shared criteria
-	ICCItem *pFilter = NULL;				//	Filter returns Nil for excluded items
+
+	private:
+		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items
 	};
 
 enum EDisplayAttributeTypes

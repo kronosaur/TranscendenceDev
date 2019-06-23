@@ -17,13 +17,13 @@
 
 CItemListManipulator::CItemListManipulator (CItemList &ItemList) : m_ItemList(ItemList),
 		m_iCursor(-1),
-		m_bUseFilter(false)
+		m_bUseFilter(false),
+		m_Filter(CItemCriteria::ALL)
 
 //	CItemListManipulator constructor
 
 	{
 	GenerateViewMap();
-	CItem::InitCriteriaAll(&m_Filter);
 	}
 
 CItemListManipulator::~CItemListManipulator (void)

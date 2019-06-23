@@ -115,9 +115,9 @@ void GenerateImageChart (CUniverse &Universe, CXMLElement *pCmdLine)
 	CString sCriteria;
 	CItemCriteria ItemCriteria;
 	if (bHasItemCriteria = pCmdLine->FindAttribute(CONSTLIT("itemCriteria"), &sCriteria))
-		CItem::ParseCriteria(sCriteria, &ItemCriteria);
+		ItemCriteria.Init(sCriteria);
 	else
-		CItem::InitCriteriaAll(&ItemCriteria);
+		ItemCriteria.Init(CItemCriteria::ALL);
 
 	//	Get the criteria from the command line.
 

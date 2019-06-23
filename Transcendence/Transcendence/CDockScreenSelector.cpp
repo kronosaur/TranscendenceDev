@@ -154,7 +154,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
     CGSelectorArea::SOptions SelOptions;
     SelOptions.iConfig = m_iConfig;
-    CItem::ParseCriteria(Options.sItemCriteria, &SelOptions.ItemCriteria);
+	SelOptions.ItemCriteria.Init(Options.sItemCriteria);
     SelOptions.bNoEmptySlots = Options.bNoEmptySlots;
 
     //  If we're on API < 30, then we always show shields on armor selectors

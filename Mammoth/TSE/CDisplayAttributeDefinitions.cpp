@@ -239,11 +239,7 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 
 			//	Criteria
 
-			CString sCriteria;
-			if (pDef->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
-				CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
-			else
-				CItem::InitCriteriaAll(&pEntry->Criteria);
+			pEntry->Criteria.Init(pDef->GetAttribute(CRITERIA_ATTRIB), CItemCriteria::ALL);
 
 			//	Type
 

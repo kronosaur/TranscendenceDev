@@ -141,6 +141,19 @@ class CItem
 			FLAG_FIND_MIN_CHARGES =			0x00010000,	//	Item with least number of charges
 			};
 
+		enum PFlags
+			{
+			flagDamaged =		0x01,			//	Item is damaged
+			flagUnused1 =		0x02,
+			flagUnused2 =		0x04,
+			flagUnknownBit3 =	0x08,
+			flagEnhanced =		0x10,			//	Item is enhanced (Mod 1)
+
+			flagUnknownBit0 =	0x20,
+			flagUnknownBit1 =	0x40,
+			flagUnknownBit2 =	0x80,
+			};
+
 		CItem (void);
 		CItem (const CItem &Copy);
 		CItem (CItemType *pItemType, int iCount);
@@ -276,9 +289,7 @@ class CItem
 		//	Item Criteria
 
 		static CString GenerateCriteria (const CItemCriteria &Criteria);
-		static void InitCriteriaAll (CItemCriteria *retCriteria);
 		static const CItem &NullItem (void) { return CItem::m_NullItem; }
-		static void ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria);
 		static DWORD ParseFlags (ICCItem *pItem);
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 
@@ -289,19 +300,6 @@ class CItem
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
-		enum PFlags
-			{
-			flagDamaged =		0x01,			//	Item is damaged
-			flagUnused1 =		0x02,
-			flagUnused2 =		0x04,
-			flagUnknownBit3 =	0x08,
-			flagEnhanced =		0x10,			//	Item is enhanced (Mod 1)
-
-			flagUnknownBit0 =	0x20,
-			flagUnknownBit1 =	0x40,
-			flagUnknownBit2 =	0x80,
-			};
-
 		enum EInstallTypes
 			{
 			installedNone,

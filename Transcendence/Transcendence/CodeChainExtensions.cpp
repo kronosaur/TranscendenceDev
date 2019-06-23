@@ -1791,12 +1791,9 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CItemCriteria Filter;
 			if (pArgs->GetElement(3)->IsFunction())
-				Filter.pFilter = pArgs->GetElement(3)->Reference();
+				Filter.SetFilter(ICCItemPtr(pArgs->GetElement(3)->Reference()));
 			else
-				{
-				CString sFilter = pArgs->GetElement(3)->GetStringValue();
-				CItem::ParseCriteria(sFilter, &Filter);
-				}
+				Filter.Init(pArgs->GetElement(3)->GetStringValue());
 
 			pScreen->AddListFilter(sID, sLabel, Filter);
 
@@ -2153,7 +2150,7 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 			if (pArgs->GetElement(1)->IsFunction())
 				{
 				CItemCriteria Filter;
-				Filter.pFilter = pArgs->GetElement(1)->Reference();
+				Filter.SetFilter(ICCItemPtr(pArgs->GetElement(1)->Reference()));
 				pArgs->Discard();
 
 				pScreen->SetListFilter(Filter);
@@ -2163,9 +2160,7 @@ ICCItem *fnScrSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 				CString sFilter = pArgs->GetElement(1)->GetStringValue();
 				pArgs->Discard();
 
-				CItemCriteria Filter;
-				CItem::ParseCriteria(sFilter, &Filter);
-
+				CItemCriteria Filter(sFilter);
 				pScreen->SetListFilter(Filter);
 				}
 

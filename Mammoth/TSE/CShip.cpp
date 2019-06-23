@@ -5024,8 +5024,7 @@ void CShip::OnHitByDeviceDamage (void)
 	{
 	//	We pick a random installed device
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(CONSTLIT("dI +canBeDamaged:true;"), &Criteria);
+	CItemCriteria Criteria(CONSTLIT("dI +canBeDamaged:true;"));
 
 	CItemListManipulator ItemList(GetItemList());
 	SetCursorAtRandomItem(ItemList, Criteria);
@@ -5048,8 +5047,7 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 	{
 	//	We pick a random installed device
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(CONSTLIT("dI +canBeDisrupted:true;"), &Criteria);
+	CItemCriteria Criteria(CONSTLIT("dI +canBeDisrupted:true;"));
 
 	CItemListManipulator ItemList(GetItemList());
 	SetCursorAtRandomItem(ItemList, Criteria);

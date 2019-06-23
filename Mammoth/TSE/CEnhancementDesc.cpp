@@ -110,11 +110,7 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	//	Load the item criteria
 
-	CString sCriteria;
-	if (!pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
-		sCriteria = CONSTLIT("*");
-
-	CItem::ParseCriteria(sCriteria, &Enhance.Criteria);
+	Enhance.Criteria.Init(pDesc->GetAttribute(CRITERIA_ATTRIB), CItemCriteria::ALL);
 
 	//	Level check criteria
 
@@ -137,7 +133,7 @@ void CEnhancementDesc::InsertHPBonus (int iBonus)
 
 	{
 	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
-	CItem::InitCriteriaAll(&pEnhance->Criteria);
+	pEnhance->Criteria.Init(CItemCriteria::ALL);
 	pEnhance->Enhancement.SetModBonus(iBonus);
 	}
 
@@ -225,7 +221,7 @@ void CEnhancementDesc::ReadFromStream (SLoadCtx &Ctx)
 
 		CString sCriteria;
 		sCriteria.ReadFromStream(Ctx.pStream);
-		CItem::ParseCriteria(sCriteria, &Enhancer.Criteria);
+		Enhancer.Criteria.Init(sCriteria);
 
 		Enhancer.LevelCheck.ReadFromStream(Ctx);
 		Enhancer.Enhancement.ReadFromStream(Ctx);

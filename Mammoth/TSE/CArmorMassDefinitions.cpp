@@ -221,7 +221,7 @@ ALERROR CArmorMassDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	Parse the criteria
 
-	CItem::ParseCriteria(sCriteria, &pDef->Criteria);
+	pDef->Criteria.Init(sCriteria);
 
 	//	Now read all the mass definitions
 

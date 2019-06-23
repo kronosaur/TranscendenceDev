@@ -131,7 +131,7 @@ void CTradingDesc::AddOrder (ETradeServiceTypes iService, const CString &sCriter
 	Commodity.iService = iService;
 	Commodity.pItemType = pItemType;
 	if (pItemType == NULL)
-		CItem::ParseCriteria(sCriteria, &Commodity.ItemCriteria);
+		Commodity.ItemCriteria.Init(sCriteria);
 	Commodity.PriceAdj.SetInteger(iPriceAdj);
 	Commodity.dwFlags = 0;
 	Commodity.sID = ComputeID(iService, Commodity.pItemType.GetUNID(), sCriteria, Commodity.dwFlags);
@@ -197,7 +197,7 @@ void CTradingDesc::AddOrder (CItemType *pItemType, const CString &sCriteria, int
 	pCommodity->iService = iService;
 	pCommodity->pItemType = pItemType;
 	if (pItemType == NULL)
-		CItem::ParseCriteria(sCriteria, &pCommodity->ItemCriteria);
+		pCommodity->ItemCriteria.Init(sCriteria);
 	pCommodity->PriceAdj.SetInteger(iPriceAdj);
 	pCommodity->dwFlags = dwNewFlags;
 	pCommodity->sID = ComputeID(iService, pCommodity->pItemType.GetUNID(), sCriteria, dwNewFlags);
@@ -708,10 +708,7 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 
 			else
 				{
-				if (!sCriteria.IsBlank())
-					CItem::ParseCriteria(sCriteria, &pCommodity->ItemCriteria);
-				else
-					CItem::InitCriteriaAll(&pCommodity->ItemCriteria);
+				pCommodity->ItemCriteria.Init(sCriteria, CItemCriteria::ALL);
 
 				//	Item
 
@@ -1729,9 +1726,7 @@ bool CTradingDesc::ParseHasServiceOptions (ICCItem *pOptions, SHasServiceOptions
 
 	//	Item criteria
 
-	CString sCriteria = pOptions->GetStringAt(CONSTLIT("itemCriteria"));
-	if (!sCriteria.IsBlank())
-		CItem::ParseCriteria(sCriteria, &retOptions.ItemCriteria);
+	retOptions.ItemCriteria.Init(pOptions->GetStringAt(CONSTLIT("itemCriteria")), CItemCriteria::NONE);
 
 	return true;
 	}
@@ -1830,13 +1825,13 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 					|| Commodity.iService == serviceSellShip)
 				{
 				CDesignTypeCriteria::ParseCriteria(sCriteria, &Commodity.TypeCriteria);
-				CItem::InitCriteriaAll(&Commodity.ItemCriteria);
+				Commodity.ItemCriteria.Init(CItemCriteria::ALL);
 				}
 
 			//	Otherwise, this is an item criteria
 
 			else
-				CItem::ParseCriteria(sCriteria, &Commodity.ItemCriteria);
+				Commodity.ItemCriteria.Init(sCriteria);
 
 			//	Prices
 

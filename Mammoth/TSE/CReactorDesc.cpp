@@ -297,7 +297,7 @@ ALERROR CReactorDesc::InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 		m_pFuelCriteria = new CItemCriteria;
 		m_fFreeFuelCriteria = true;
 
-		CItem::ParseCriteria(sCriteria, m_pFuelCriteria);
+		m_pFuelCriteria->Init(sCriteria);
 
 		m_iMinFuelLevel = -1;
 		m_iMaxFuelLevel = -1;
@@ -359,7 +359,7 @@ ALERROR CReactorDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWOR
 		m_pFuelCriteria = new CItemCriteria;
 		m_fFreeFuelCriteria = true;
 
-		CItem::ParseCriteria(sCriteria, m_pFuelCriteria);
+		m_pFuelCriteria->Init(sCriteria);
 
 		m_iMinFuelLevel = -1;
 		m_iMaxFuelLevel = -1;

@@ -196,7 +196,7 @@ const CDamageAdjDesc *CAdventureDesc::GetDefaultArmorDamageAdj (int iLevel)
 
 	{
 	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
-		throw (ERR_FAIL);
+		throw CException(ERR_FAIL);
 
 	InitDefaultDamageAdj();
 	return &g_ArmorDamageAdj[iLevel - 1];

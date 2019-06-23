@@ -242,7 +242,7 @@ void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 		sCriteria.ReadFromStream(Ctx.pStream);
 
 		SCriteriaEntry *pEntry = m_CriteriaImpact.SetAt(sCriteria);
-		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
+		pEntry->Criteria.Init(sCriteria);
 
 		Ctx.pStream->Read(pEntry->iImpact);
 		}
@@ -270,7 +270,7 @@ void CTradingEconomy::ReadFromStream (SUniverseLoadCtx &Ctx)
 		sCriteria.ReadFromStream(Ctx.pStream);
 
 		SCriteriaEntry *pEntry = m_TradeImpact.SetAt(sCriteria);
-		CItem::ParseCriteria(sCriteria, &pEntry->Criteria);
+		pEntry->Criteria.Init(sCriteria);
 
 		Ctx.pStream->Read(pEntry->iImpact);
 		}
@@ -425,7 +425,7 @@ void CTradingEconomy::RefreshFromTradeDesc (CSystem *pSystem, CTradingDesc *pTra
 			bool bNew;
 			SCriteriaEntry *pEntry = pDestTable->SetAt(Service.sItemCriteria, &bNew);
 			if (bNew)
-				CItem::ParseCriteria(Service.sItemCriteria, &pEntry->Criteria);
+				pEntry->Criteria.Init(Service.sItemCriteria);
 
 			pEntry->iImpact += iImpact;
 			}

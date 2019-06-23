@@ -838,8 +838,7 @@ ALERROR CArmorLimits::InitArmorLimitsFromXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	if (!sCriteria.IsBlank())
 		{
-		NewLimits.pCriteria.Set(new CItemCriteria);
-		CItem::ParseCriteria(sCriteria, NewLimits.pCriteria);
+		NewLimits.pCriteria.Set(new CItemCriteria(sCriteria));
 		}
 
 	NewLimits.iSpeedAdj = iSpeedAdj;
@@ -861,11 +860,7 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 
 	//	Armor criteria is valid for all types
 
-	CString sCriteria;
-	if (pDesc->FindAttribute(ARMOR_CRITERIA_ATTRIB, &sCriteria))
-		CItem::ParseCriteria(sCriteria, &m_ArmorCriteria);
-	else
-		CItem::InitCriteriaAll(&m_ArmorCriteria);
+	m_ArmorCriteria.Init(pDesc->GetAttribute(ARMOR_CRITERIA_ATTRIB), CItemCriteria::ALL);
 
 	//	We never exclude virtual items because it is common for (e.g., biotech)
 	//	classes to have virtual armor.

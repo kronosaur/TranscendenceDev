@@ -1586,7 +1586,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (!pDesc->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
 		sCriteria = CONSTLIT("s");
 
-	CItem::ParseCriteria(sCriteria, &pArmor->m_DeviceCriteria);
+	pArmor->m_DeviceCriteria.Init(sCriteria);
 
 	//	Ship speed bonus
 
@@ -2318,7 +2318,7 @@ int CArmorClass::GetStdDamageAdj (CUniverse &Universe, int iLevel, DamageTypes i
 
 	{
 	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
-		throw (ERR_FAIL);
+		throw CException(ERR_FAIL);
 
 	return Universe.GetArmorDamageAdj(iLevel)->GetAdj(iDamage);
 	}

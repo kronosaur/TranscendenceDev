@@ -17,8 +17,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 	CItemType *pItem = Universe.FindItemType(dwUNID);
 	if (pItem == NULL)
 		{
-		CItemCriteria Crit;
-		CItem::InitCriteriaAll(&Crit);
+		CItemCriteria Crit(CItemCriteria::ALL);
 		CItem Item = CItem::CreateItemByName(Universe, sUNID, Crit);
 		pItem = Item.GetType();
 
