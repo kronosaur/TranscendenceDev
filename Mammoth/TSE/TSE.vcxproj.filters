@@ -1324,5 +1324,8 @@
     <ClCompile Include="CObjectTracker.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="CItemCriteria.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

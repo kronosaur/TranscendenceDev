@@ -405,6 +405,7 @@
     <ClCompile Include="CImageFilterDesc.cpp" />
     <ClCompile Include="CImageFilterStack.cpp" />
     <ClCompile Include="CIntegralRotationDesc.cpp" />
+    <ClCompile Include="CItemCriteria.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
     <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
