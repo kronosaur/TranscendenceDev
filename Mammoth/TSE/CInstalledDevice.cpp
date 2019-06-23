@@ -637,7 +637,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (dwLoad == 0xffffffff)
 		return;
 
-	m_pClass.Set(g_pUniverse->FindDeviceClass(dwLoad));
+	m_pClass.Set(Ctx.GetUniverse().FindDeviceClass(dwLoad));
 
 	//	Other data
 

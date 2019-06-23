@@ -121,14 +121,14 @@ ALERROR CMusicResource::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 		if (Ctx.pExtension
 				&& Ctx.pExtension->GetFolderType() == CExtension::folderCollection)
-			m_sFilespec = g_pUniverse->GetExtensionCollection().GetExternalResourceFilespec(Ctx.pExtension, m_sFilename);
+			m_sFilespec = Ctx.GetUniverse().GetExtensionCollection().GetExternalResourceFilespec(Ctx.pExtension, m_sFilename);
 
 		//	Otherwise, it is part of the resource db
 
 		else
 			m_sFilespec = Ctx.pResDb->ResolveFilespec(Ctx.sFolder, m_sFilename);
 
-		if (g_pUniverse->InDebugMode())
+		if (Ctx.GetUniverse().InDebugMode())
 			{
 			if (!pathExists(m_sFilespec))
 				::kernelDebugLogPattern("Cannot find soundtrack file: %s.", m_sFilename);

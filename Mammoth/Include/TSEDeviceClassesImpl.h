@@ -469,7 +469,7 @@ class CShieldClass : public CDeviceClass
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 		static Metric GetStdCost (int iLevel);
-		static int GetStdEffectiveHP (int iLevel);
+		static int GetStdEffectiveHP (CUniverse &Universe, int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdPower (int iLevel);
 		static int GetStdRegen (int iLevel);

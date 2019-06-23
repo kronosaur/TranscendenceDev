@@ -518,6 +518,8 @@ struct SItemAddCtx
 			ItemList(theItemList)
 		{ }
 
+	CUniverse &GetUniverse (void) { return *g_pUniverse; }
+
 	CItemListManipulator &ItemList;				//	Item list to add items to
 
 	CSystem *pSystem = NULL;					//	System where we're creating items

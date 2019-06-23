@@ -85,7 +85,7 @@ ALERROR CRandomTopologyCreator::AddRandomRegion (STopologyCreateCtx &Ctx,
 	//	If we're debugging, then add the valid area as a highlight (so we can see it
 	//	on the map)
 
-	if (g_pUniverse->InDebugMode()
+	if (Ctx.GetUniverse().InDebugMode()
 			&& pAreaDef->GetAttributeBool(DEBUG_ATTRIB))
 		{
 		Ctx.pMap->AddAreaHighlight(ValidArea);

@@ -383,51 +383,6 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 
 	else
 		return NULL;
-
-#if 0
-	DWORD dwWeaponUNID;
-	DWORD dwVariantUNID;
-
-	//	If the argument is a list, then we get the weapon UNID and the variant
-	//	from the list.
-
-	if (pArg->IsList() && pArg->GetCount() >= 2)
-		{
-		dwWeaponUNID = (DWORD)pArg->GetElement(0)->GetIntegerValue();
-		dwVariantUNID = (DWORD)pArg->GetElement(1)->GetIntegerValue();
-		}
-
-	//	Otherwise, get the first variant of the weapon
-
-	else
-		{
-		dwWeaponUNID = (DWORD)pArg->GetIntegerValue();
-		dwVariantUNID = 0;
-		}
-
-	//	Get the item associated with the UNID
-
-	CItemType *pType = g_pUniverse->FindItemType(dwWeaponUNID);
-	if (pType == NULL)
-		return NULL;
-
-	//	If variant UNID is 0, then pType is either a weapon or a missile and 
-    //  this will return its descriptor.
-
-    if (dwVariantUNID == 0)
-        return pType->GetWeaponFireDesc(CItemCtx());
-
-    //  Otherwise, get the missile type
-
-    else
-        {
-	    CItemType *pMissileType = g_pUniverse->FindItemType(dwVariantUNID);
-	    if (pMissileType == NULL)
-		    return NULL;
-
-        return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
-        }
-#endif
 	}
 
 ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)

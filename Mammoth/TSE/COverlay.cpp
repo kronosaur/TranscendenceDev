@@ -956,7 +956,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read((char *)&dwLoad, sizeof(DWORD));
-	m_pType = g_pUniverse->FindShipEnergyFieldType(dwLoad);
+	m_pType = Ctx.GetUniverse().FindShipEnergyFieldType(dwLoad);
 	if (m_pType == NULL)
 		throw CException(ERR_FAIL, strPatternSubst(CONSTLIT("Undefined overlay type: %08x"), dwLoad));
 
@@ -969,7 +969,7 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 		}
 	else
 		{
-		m_dwID = g_pUniverse->CreateGlobalID();
+		m_dwID = Ctx.GetUniverse().CreateGlobalID();
 		m_iPosAngle = 0;
 		m_iPosRadius = 0;
 		m_iRotation = 0;

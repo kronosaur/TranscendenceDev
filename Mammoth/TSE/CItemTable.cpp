@@ -822,7 +822,7 @@ void CSingleItem::AddItems (SItemAddCtx &Ctx)
 	{
 	//	Ignore if not debugging
 
-	if (m_bDebugOnly && !g_pUniverse->InDebugMode())
+	if (m_bDebugOnly && !Ctx.GetUniverse().InDebugMode())
 		return;
 
 	//	Create item
@@ -942,7 +942,7 @@ ALERROR CSingleItem::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	Ignore if not debugging. We don't bind because sometimes we have a
 	//	reference to an item type that only exists in debug mode.
 
-	if (m_bDebugOnly && !g_pUniverse->InDebugMode())
+	if (m_bDebugOnly && !Ctx.GetUniverse().InDebugMode())
 		return NOERROR;
 
 	//	Bind

@@ -18,7 +18,7 @@ void GenerateStdArmorTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				CArmorClass::GetStdHP(i),
 				CArmorClass::GetStdCost(i),
 				CArmorClass::GetStdMass(i),
-				CArmorClass::GetStdEffectiveHP(i));
+				CArmorClass::GetStdEffectiveHP(Universe, i));
 		}
 	}
 
@@ -43,6 +43,6 @@ void GenerateStdShieldTable (CUniverse &Universe, CXMLElement *pCmdLine)
 				CShieldClass::GetStdRegen(i),
 				szBuffer,
 				CShieldClass::GetStdPower(i),
-				CShieldClass::GetStdEffectiveHP(i));
+				CShieldClass::GetStdEffectiveHP(Universe, i));
 		}
 	}

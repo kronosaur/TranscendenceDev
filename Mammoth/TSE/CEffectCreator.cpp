@@ -437,7 +437,7 @@ IEffectPainter *CEffectCreator::CreatePainterFromStream (SLoadCtx &Ctx, bool bNu
 		if (dwUNID == 0)
 			return NULL;
 
-		pCreator = g_pUniverse->FindEffectType(dwUNID);
+		pCreator = Ctx.GetUniverse().FindEffectType(dwUNID);
 
 		//	Error
 

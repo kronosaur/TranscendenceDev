@@ -1403,25 +1403,21 @@ Metric CShieldClass::GetStdCost (int iLevel)
 		return 0.0;
 	}
 
-int CShieldClass::GetStdEffectiveHP (int iLevel)
+int CShieldClass::GetStdEffectiveHP (CUniverse &Universe, int iLevel)
 
 //	GetStdEffectiveHP
 //
 //	Returns the effective HP of a shield at this level
 
 	{
-	int i;
-
-	if (iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL)
-		{
-		int iHPbyDamageType[damageCount];
-		for (i = 0; i < damageCount; i++)
-			iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, g_pUniverse->GetShieldDamageAdj(iLevel)->GetAdj((DamageTypes)i));
-
-		return ::CalcEffectiveHP(iLevel, STD_STATS[iLevel - 1].iHP, iHPbyDamageType);
-		}
-	else
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
 		return -1;
+
+	int iHPbyDamageType[damageCount];
+	for (int i = 0; i < damageCount; i++)
+		iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, Universe.GetShieldDamageAdj(iLevel)->GetAdj((DamageTypes)i));
+
+	return ::CalcEffectiveHP(iLevel, STD_STATS[iLevel - 1].iHP, iHPbyDamageType);
 	}
 
 int CShieldClass::GetStdHP (int iLevel)

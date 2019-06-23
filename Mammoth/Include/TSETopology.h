@@ -386,6 +386,7 @@ struct STopologyCreateCtx
 	void GetAbsoluteDisplayPos (int x, int y, int *retx, int *rety, int *retiRotation) const;
 	void GetFragmentDisplayPos (CTopologyNode *pNode, int *retx, int *rety) const;
 	void GetFragmentEntranceDisplayPos (int *retx, int *rety) const;
+	CUniverse &GetUniverse (void) { return *g_pUniverse; }
 
 	CSystemMap *pMap = NULL;						//	Map that we're currently processing
 	TArray<CTopologyDescTable *> Tables;			//	List of tables to look up

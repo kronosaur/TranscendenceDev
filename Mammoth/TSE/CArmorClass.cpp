@@ -820,7 +820,7 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 		if (iArmorLevel < iDamageLevel + 5
 				&& iArmorLevel > iDamageLevel - 3)
 			{
-			int iStdAdj = GetStdDamageAdj(iArmorLevel, (DamageTypes)i);
+			int iStdAdj = GetStdDamageAdj(GetUniverse(), iArmorLevel, (DamageTypes)i);
 			int iDamageAdj = GetDamageAdj(ArmorItem, (DamageTypes)i);
 
 			rTotalAdj += (iStdAdj > 0.0 ? (Metric)iDamageAdj * 100.0 / iStdAdj : 1000.0);
@@ -2309,7 +2309,7 @@ int CArmorClass::GetStdCost (int iLevel)
 	return STD_STATS[iLevel - 1].iCost;
 	}
 
-int CArmorClass::GetStdDamageAdj (int iLevel, DamageTypes iDamage)
+int CArmorClass::GetStdDamageAdj (CUniverse &Universe, int iLevel, DamageTypes iDamage)
 
 //	GetStdDamageAdj
 //
@@ -2317,23 +2317,25 @@ int CArmorClass::GetStdDamageAdj (int iLevel, DamageTypes iDamage)
 //	the given level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
-	return g_pUniverse->GetArmorDamageAdj(iLevel)->GetAdj(iDamage);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw (ERR_FAIL);
+
+	return Universe.GetArmorDamageAdj(iLevel)->GetAdj(iDamage);
 	}
 
-int CArmorClass::GetStdEffectiveHP (int iLevel)
+int CArmorClass::GetStdEffectiveHP (CUniverse &Universe, int iLevel)
 
 //	GetStdEffectiveHP
 //
 //	Returns effective HP by level
 
 	{
-	int i;
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		return -1;
 
 	int iHPbyDamageType[damageCount];
-	for (i = 0; i < damageCount; i++)
-		iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, g_pUniverse->GetArmorDamageAdj(iLevel)->GetAdj((DamageTypes)i));
+	for (int i = 0; i < damageCount; i++)
+		iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, Universe.GetArmorDamageAdj(iLevel)->GetAdj((DamageTypes)i));
 
 	return ::CalcEffectiveHP(iLevel, STD_STATS[iLevel - 1].iHP, iHPbyDamageType);
 	}

@@ -93,8 +93,8 @@ class CArmorClass
 		static int CalcIntegrity (int iHP, int iMaxHP);
 		static int CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP);
 		static int GetStdCost (int iLevel);
-		static int GetStdDamageAdj (int iLevel, DamageTypes iDamage);
-		static int GetStdEffectiveHP (int iLevel);
+		static int GetStdDamageAdj (CUniverse &Universe, int iLevel, DamageTypes iDamage);
+		static int GetStdEffectiveHP (CUniverse &Universe, int iLevel);
 		static int GetStdHP (int iLevel);
 		static int GetStdMass (int iLevel);
         static const SStdStats &GetStdStats (int iLevel);

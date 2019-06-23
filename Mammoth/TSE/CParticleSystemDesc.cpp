@@ -159,7 +159,7 @@ ALERROR CParticleSystemDesc::InitFromWeaponDescXML (SDesignLoadCtx &Ctx, CXMLEle
 
 	if (m_iStyle == styleJet)
 		{
-		if (g_pUniverse->InDebugMode())
+		if (Ctx.GetUniverse().InDebugMode())
 			::kernelDebugLogPattern("%s: style='jet' is not valid for weapons; using style='spray' instead.", sUNID);
 
 		m_iStyle = styleSpray;
