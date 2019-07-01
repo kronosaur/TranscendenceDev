@@ -278,7 +278,8 @@
 			rotationAccel=		"6.0"
 			/>
 
-		<Image imageID="&rsUrakSentinelHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsUrakSentinelHD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsUrakSentinelHero;" imageWidth="320" imageHeight="320"/>
 
 		<AISettings
 			fireRateAdj=		"20"
@@ -570,6 +571,8 @@
 <!-- RESOURCES -->
 
 	<Image UNID="&rsUrakDestroyer;"		bitmap="Resources\UrakDestroyer.jpg" 	bitmask="Resources\UrakDestroyerMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsUrakSentinelHD;"	bitmap="Resources\UrakSentinelHD.jpg" 	bitmask="Resources\UrakSentinelHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsUrakSentinelHero;"	bitmap="Resources\UrakSentinelLarge.jpg" 	bitmask="Resources\UrakSentinelLargeMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

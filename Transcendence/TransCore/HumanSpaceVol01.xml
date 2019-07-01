@@ -1741,6 +1741,7 @@
 	<!ENTITY rsUrakDestroyer			"0x001000D0">
 	<!ENTITY rsUrakSentinelHD			"0x001000D1">
 	<!ENTITY smUrakSpace				"0x001000D2">
+	<!ENTITY rsUrakSentinelHero			"0x001000D3">
 	
 	<!-- 00E0-00EF BATTLE ARENA MAXIMUS -->
 	
