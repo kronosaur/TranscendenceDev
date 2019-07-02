@@ -113,6 +113,23 @@ bool CMultiverseModel::FindEntry (DWORD dwUNID, CMultiverseCatalogEntry *retEntr
 	return false;
 	}
 
+CMultiverseCatalogEntry *CMultiverseModel::FindEntryActual (DWORD dwUNID) const
+
+//	FindEntryActual
+//
+//	Returns a pointer to the given catalog entry (or NULL). This must be called
+//	from inside a lock.
+
+	{
+	for (int i = 0; i < m_Collection.GetCount(); i++)
+		{
+		if (m_Collection.GetEntry(i)->GetUNID() == dwUNID)
+			return m_Collection.GetEntry(i);
+		}
+
+	return NULL;
+	}
+
 TArray<CMultiverseCatalogEntry> CMultiverseModel::GetCollection (void) const
 
 //	GetCollection
@@ -522,6 +539,22 @@ void CMultiverseModel::SetDisabled (void)
 	m_sUsername = NULL_STR;
 	m_fUserSignedIn = false;
 	DeleteCollection();
+	}
+
+void CMultiverseModel::SetEntryDownloadRequested (DWORD dwUNID, bool bValue)
+
+//	SetEntryDownloadRequested
+//
+//	Sets the download requested flag.
+
+	{
+	CSmartLock Lock(m_cs);
+
+	CMultiverseCatalogEntry *pEntry = FindEntryActual(dwUNID);
+	if (pEntry == NULL)
+		return;
+
+	pEntry->SetDownloadRequested(bValue);
 	}
 
 ALERROR CMultiverseModel::SetNews (const CJSONValue &Data, const CString &sCacheFilespec, TSortMap<CString, CString> *retDownloads, CString *retsResult)

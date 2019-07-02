@@ -66,7 +66,7 @@ class ICIService
 		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR RegisterUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, const CString &sEmail, bool bAutoSignIn, CString *retsResult = NULL) { return NOERROR; }
-		virtual ALERROR RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest) { return NOERROR; }
+		virtual ALERROR RequestExtensionDownload (DWORD dwUNID, const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest) { return NOERROR; }
 		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL) { return NOERROR; }
 		virtual ALERROR SignOutUser (ITaskProcessor *pProcessor, CString *retsError = NULL) { return NOERROR; }
 		virtual ALERROR WriteAsXML (IWriteStream *pOutput) { return NOERROR; }
@@ -123,7 +123,7 @@ class CCloudService
 		ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL);
 		ALERROR ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult = NULL);
 		ALERROR RegisterUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, const CString &sEmail, bool bAutoSignIn, CString *retsResult = NULL);
-		ALERROR RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest);
+		ALERROR RequestExtensionDownload (DWORD dwUNID, const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest);
 		ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL);
 		ALERROR SignOutUser (ITaskProcessor *pProcessor, CString *retsError = NULL);
 

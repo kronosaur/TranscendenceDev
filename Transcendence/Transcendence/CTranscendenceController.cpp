@@ -124,6 +124,7 @@
 #define CMD_UI_BACK_TO_INTRO					CONSTLIT("uiBackToIntro")
 #define CMD_UI_CHANGE_PASSWORD					CONSTLIT("uiChangePassword")
 #define CMD_UI_EXIT								CONSTLIT("uiExit")
+#define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
 #define CMD_UI_MUSIC_VOLUME_DOWN				CONSTLIT("uiMusicVolumeDown")
 #define CMD_UI_MUSIC_VOLUME_UP					CONSTLIT("uiMusicVolumeUp")
 #define CMD_UI_RESET_PASSWORD					CONSTLIT("uiResetPassword")
@@ -1560,6 +1561,11 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		else
 			m_HI.HISessionCommand(CMD_SERVICE_EXTENSION_LOADED);
 		}
+	else if (strEquals(sCmd, CMD_UI_GET_COLLECTION))
+		{
+		TArray<CMultiverseCatalogEntry> *pCollection = static_cast<TArray<CMultiverseCatalogEntry> *>(pData);
+		*pCollection = m_Multiverse.GetCollection();
+		}
 
 	//	Service housekeeping
 
@@ -2256,6 +2262,7 @@ bool CTranscendenceController::RequestCatalogDownload (const TArray<CMultiverseC
 		{
 		//	Get the name of the filePath of the file to download
 
+		DWORD dwUNID = Downloads[i].GetUNID();
 		const CString &sFilePath = Downloads[i].GetTDBFileRef().GetFilePath();
 		const CIntegerIP &FileDigest = Downloads[i].GetTDBFileRef().GetDigest();
 
@@ -2266,7 +2273,12 @@ bool CTranscendenceController::RequestCatalogDownload (const TArray<CMultiverseC
 		//	Request a download. (We can do this synchronously because it
 		//	doesn't take long and the call is thread-safe).
 
-		m_Service.RequestExtensionDownload(sFilePath, sFilespec, FileDigest);
+		m_Service.RequestExtensionDownload(dwUNID, sFilePath, sFilespec, FileDigest);
+
+		//	Remember that we requested a download for this entry so that we
+		//	don't try to download it again.
+
+		m_Multiverse.SetEntryDownloadRequested(dwUNID);
 		}
 
 	//	Done
@@ -2315,7 +2327,7 @@ bool CTranscendenceController::RequestResourceDownload (const TArray<CMultiverse
 		//	Request a download. (We can do this synchronously because it
 		//	doesn't take long and the call is thread-safe).
 
-		m_Service.RequestExtensionDownload(Downloads[i].GetFilePath(), pathAddComponent(sDestFolder, sDestFilename), CIntegerIP());
+		m_Service.RequestExtensionDownload(0, Downloads[i].GetFilePath(), pathAddComponent(sDestFolder, sDestFilename), CIntegerIP());
 		}
 
 	//	Done

@@ -40,6 +40,7 @@ CHexarcDownloader::~CHexarcDownloader (void)
 	}
 
 void CHexarcDownloader::AddRequest (const CString &sAPI,
+									DWORD dwUNID,
 									const CString &sFilePath,
 									const CJSONValue &AuthToken,
 									const CString &sFilespec,
@@ -67,6 +68,7 @@ void CHexarcDownloader::AddRequest (const CString &sAPI,
 	else if (FindRequest(sFilePath, &pNewRequest))
 		{
 		pNewRequest->sAPI = sAPI;
+		pNewRequest->dwUNID = dwUNID;
 		pNewRequest->sFilePath = sFilePath;
 		pNewRequest->AuthToken = AuthToken;
 		pNewRequest->sFilespec = sFilespec;
@@ -79,6 +81,7 @@ void CHexarcDownloader::AddRequest (const CString &sAPI,
 		{
 		SRequest *pNewRequest = new SRequest;
 		pNewRequest->sAPI = sAPI;
+		pNewRequest->dwUNID = dwUNID;
 		pNewRequest->sFilePath = sFilePath;
 		pNewRequest->AuthToken = AuthToken;
 		pNewRequest->sFilespec = sFilespec;
@@ -131,6 +134,7 @@ void CHexarcDownloader::GetStatus (SStatus *retStatus)
 		return;
 		}
 
+	retStatus->dwUNID = m_pCurrent->dwUNID;
 	retStatus->sFilespec = m_pCurrent->sFilespec;
 	if (m_pCurrent->dwTotalLen == 0)
 		retStatus->iProgress = 0;
@@ -290,6 +294,7 @@ bool CHexarcDownloader::UpdateCurrentStatus (const CJSONValue &Result, const CSt
 	//	Update the current status
 
 	m_pCurrent->dwDownload += sData.GetLength();
+	retStatus->dwUNID = m_pCurrent->dwUNID;
 	retStatus->sFilespec = m_pCurrent->sFilespec;
 	retStatus->iProgress = (int)(100 * (DWORDLONG)m_pCurrent->dwDownload / (DWORDLONG)m_pCurrent->dwTotalLen);
 	retStatus->FileDigest = m_pCurrent->FileDigest;

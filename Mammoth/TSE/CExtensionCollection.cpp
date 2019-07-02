@@ -917,6 +917,13 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 				&& !LibrariesUsed.Find(Entry.GetUNID()))
 			continue;
 
+		//	If we already requested a download for this entry, then don't bother
+		//	again. This can happen if the UNID in the TDB doesn't match the UNID
+		//	in the catalog entry.
+
+		if (Entry.IsDownloadRequested())
+			continue;
+
 		//	Look for this extension in our list. If we found it then compare
 		//	the signature to make sure that we have the right version.
 

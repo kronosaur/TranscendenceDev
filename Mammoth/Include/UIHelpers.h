@@ -53,8 +53,8 @@ class CListCollectionTask : public IHITask
 							 const SOptions &Options = SOptions());
 		~CListCollectionTask (void);
 
-		inline const TArray<CMultiverseCatalogEntry> &GetCollection (void) const { return m_Collection; }
-		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
+		const TArray<CMultiverseCatalogEntry> &GetCollection (void) const { return m_Collection; }
+		IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
 
 		//	IHITask virtuals
 		virtual ALERROR OnExecute (ITaskProcessor *pProcessor, CString *retsResult);
@@ -88,7 +88,7 @@ class CListSaveFilesTask : public IHITask
 		CListSaveFilesTask (CHumanInterface &HI, const TArray<CString> &Folders, const SOptions &Options = SOptions());
 		~CListSaveFilesTask (void);
 
-		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
+		IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
 
 		//	IHITask virtuals
 		virtual ALERROR OnExecute (ITaskProcessor *pProcessor, CString *retsResult);
@@ -108,7 +108,7 @@ class CReadProfileTask : public IHITask
 		CReadProfileTask (CHumanInterface &HI, CCloudService &Service, int cxWidth);
 		~CReadProfileTask (void);
 
-		inline IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
+		IAnimatron *GetListHandoff (void) { IAnimatron *pResult = m_pList; m_pList = NULL; return pResult; }
 
 		//	IHITask virtuals
 		virtual ALERROR OnExecute (ITaskProcessor *pProcessor, CString *retsResult);

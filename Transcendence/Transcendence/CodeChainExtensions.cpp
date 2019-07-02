@@ -104,6 +104,7 @@ ICCItem *fnPlyComposeString (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 #define FN_UI_SET_SOUNDTRACK_MODE	1
 #define FN_UI_QUEUE_SOUNDTRACK		2
 #define FN_UI_KEY_LABEL				3
+#define FN_UI_GET_COLLECTION		4
 
 ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -120,6 +121,7 @@ ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 #define CMD_SOUNDTRACK_QUEUE_ADD			CONSTLIT("cmdSoundtrackQueueAdd")
 #define CMD_SOUNDTRACK_STOP_MISSION_TRACK	CONSTLIT("cmdSoundtrackStopMissionTrack")
 #define CMD_SOUNDTRACK_STOP_MISSION_TRACK_TRAVEL	CONSTLIT("cmdSoundtrackStopMissionTrackTravel")
+#define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
 
 #define MODE_MISSION_END					CONSTLIT("missionEnd")
 #define MODE_MISSION_END_TRAVEL				CONSTLIT("missionEndTravel")
@@ -574,6 +576,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	UI functions
 		//	------------
+
+		{	"uiGetCollection",						fnUISet,		FN_UI_GET_COLLECTION,
+			"(uiGetCollection) -> collection",
+			NULL,	0,	},
 
 		{	"uiKeyLabel",							fnUISet,		FN_UI_KEY_LABEL,
 			"(uiKeyLabel command) -> text",
@@ -2284,6 +2290,29 @@ ICCItem *fnUISet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_UI_GET_COLLECTION:
+			{
+			TArray<CMultiverseCatalogEntry> Collection;
+			g_pHI->HICommand(CMD_UI_GET_COLLECTION, &Collection);
+			if (Collection.GetCount() == 0)
+				return CCodeChain::CreateNil();
+
+			ICCItemPtr pResult(ICCItem::List);
+			for (int i = 0; i < Collection.GetCount(); i++)
+				{
+				const CMultiverseCatalogEntry &Src = Collection[i];
+				ICCItemPtr pDest(ICCItem::SymbolTable);
+
+				pDest->SetIntegerAt(CONSTLIT("unid"), Src.GetUNID());
+				pDest->SetStringAt(CONSTLIT("name"), Src.GetName());
+				pDest->SetStringAt(CONSTLIT("status"), Src.StatusAsString(Src.GetStatus()));
+
+				pResult->Append(pDest);
+				}
+
+			return pResult->Reference();
+			}
+
 		case FN_UI_KEY_LABEL:
 			{
 			CString sCommand = pArgs->GetElement(0)->GetStringValue();

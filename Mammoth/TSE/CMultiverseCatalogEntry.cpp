@@ -231,3 +231,32 @@ void CMultiverseCatalogEntry::SetIcon (CG32bitImage *&pImage)
 	m_pIcon.TakeHandoff(pImage);
 	pImage = NULL;
 	}
+
+CString CMultiverseCatalogEntry::StatusAsString (ELocalStatus iStatus)
+
+//	StatusAsString
+//
+//	Returns status as a string.
+
+	{
+	switch (iStatus)
+		{
+		case statusNotAvailable:
+			return CONSTLIT("notAvailable");
+
+		case statusDownloadInProgress:
+			return CONSTLIT("downloading");
+			
+		case statusLoaded:
+			return CONSTLIT("loaded");
+			
+		case statusCorrupt:
+			return CONSTLIT("corrupt");
+
+		case statusPlayerDisabled:
+			return CONSTLIT("disabled");
+
+		default:
+			return CONSTLIT("Unknown");
+		}
+	}

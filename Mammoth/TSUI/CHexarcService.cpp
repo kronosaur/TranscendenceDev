@@ -159,7 +159,7 @@ class CHexarcService : public ICIService
 		virtual ALERROR ReadHighScoreList (ITaskProcessor *pProcessor, DWORD dwAdventure, CAdventureHighScoreList *retHighScores, CString *retsResult = NULL) override;
 		virtual ALERROR ReadProfile (ITaskProcessor *pProcessor, CUserProfile *retProfile, CString *retsResult = NULL) override;
 		virtual ALERROR RegisterUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, const CString &sEmail, bool bAutoSignIn, CString *retsResult = NULL) override;
-		virtual ALERROR RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest) override;
+		virtual ALERROR RequestExtensionDownload (DWORD dwUNID, const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest) override;
 		virtual ALERROR SignInUser (ITaskProcessor *pProcessor, const CString &sUsername, const CString &sPassword, bool bAutoSignIn, CString *retsResult = NULL) override;
 		virtual ALERROR SignOutUser (ITaskProcessor *pProcessor, CString *retsError = NULL) override;
 		virtual ALERROR WriteAsXML (IWriteStream *pOutput) override;
@@ -970,14 +970,14 @@ ALERROR CHexarcService::RegisterUser (ITaskProcessor *pProcessor, const CString 
 	return NOERROR;
 	}
 
-ALERROR CHexarcService::RequestExtensionDownload (const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest)
+ALERROR CHexarcService::RequestExtensionDownload (DWORD dwUNID, const CString &sFilePath, const CString &sFilespec, const CIntegerIP &FileDigest)
 
 //	RequestExtensionDownload
 //
 //	Requests a download of the given extension file.
 
 	{
-	m_Downloader.AddRequest(FUNC_DOWNLOAD_CATALOG_ENTRY_FILE, sFilePath, m_UserToken, sFilespec, FileDigest);
+	m_Downloader.AddRequest(FUNC_DOWNLOAD_CATALOG_ENTRY_FILE, dwUNID, sFilePath, m_UserToken, sFilespec, FileDigest);
 	return NOERROR;
 	}
 

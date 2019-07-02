@@ -69,27 +69,30 @@ class CMultiverseCatalogEntry
 		static ALERROR CreateBasicEntry (const SEntryCreate &Create, CMultiverseCatalogEntry **retpEntry);
 		static ALERROR CreateFromJSON (const CJSONValue &Entry, CMultiverseCatalogEntry **retpEntry, CString *retsResult);
 
-		inline const CString &GetDesc (void) const { return m_sDesc; }
-		inline CG32bitImage *GetIcon (void) const { return m_pIcon; }
-		inline CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : NULL); }
+		const CString &GetDesc (void) const { return m_sDesc; }
+		CG32bitImage *GetIcon (void) const { return m_pIcon; }
+		CG32bitImage *GetIconHandoff (void) { return (m_pIcon ? new CG32bitImage(*m_pIcon) : NULL); }
 		bool GetLibrariesUsed (TSortMap<DWORD, bool> &retLibrariesUsed) const;
-		inline ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
-		inline const CString &GetName (void) const { return m_sName; }
-		inline DWORD GetRelease (void) const { return m_dwRelease; }
-		inline int GetResourceCount (void) const { return m_Resources.GetCount(); }
-		inline const CMultiverseFileRef &GetResourceRef (int iIndex) const { return m_Resources[iIndex]; }
-		inline ELocalStatus GetStatus (void) const { return m_iStatus; }
-		inline const CString &GetStatusText (void) const { return m_sStatus; }
-		inline const CMultiverseFileRef &GetTDBFileRef (void) const { return m_TDBFile; }
-		inline EExtensionTypes GetType (void) const { return m_iType; }
-		inline DWORD GetUNID (void) const { return m_dwUNID; }
-		inline const CString &GetVersion (void) const { return m_sVersion; }
+		ELicenseTypes GetLicenseType (void) const { return m_iLicenseType; }
+		const CString &GetName (void) const { return m_sName; }
+		DWORD GetRelease (void) const { return m_dwRelease; }
+		int GetResourceCount (void) const { return m_Resources.GetCount(); }
+		const CMultiverseFileRef &GetResourceRef (int iIndex) const { return m_Resources[iIndex]; }
+		ELocalStatus GetStatus (void) const { return m_iStatus; }
+		const CString &GetStatusText (void) const { return m_sStatus; }
+		const CMultiverseFileRef &GetTDBFileRef (void) const { return m_TDBFile; }
+		EExtensionTypes GetType (void) const { return m_iType; }
+		DWORD GetUNID (void) const { return m_dwUNID; }
+		const CString &GetVersion (void) const { return m_sVersion; }
+		bool IsDownloadRequested (void) const { return m_bDownloadRequested; }
 		bool IsValid (void);
+		void SetDownloadRequested (bool bValue = true) { m_bDownloadRequested = bValue; }
 		void SetIcon (CG32bitImage *&pImage);
-		inline void SetStatus (ELocalStatus iStatus, const CString &sStatus = NULL_STR) { m_iStatus = iStatus; m_sStatus = sStatus; }
-		inline void SetVersion (const CString &sVersion) { m_sVersion = sVersion; }
+		void SetStatus (ELocalStatus iStatus, const CString &sStatus = NULL_STR) { m_iStatus = iStatus; m_sStatus = sStatus; }
+		void SetVersion (const CString &sVersion) { m_sVersion = sVersion; }
 
 		static DWORD ParseFullUNID (const CJSONValue &Value);
+		static CString StatusAsString (ELocalStatus iStatus);
 
 	private:
 
@@ -107,6 +110,7 @@ class CMultiverseCatalogEntry
 
 		TArray<DWORD> m_Dependencies;					//	Libraries that we need
 		TArray<CMultiverseFileRef> m_Resources;
+		bool m_bDownloadRequested = false;				//	TRUE if we asked to download this
 
 		//	These members are not valid until a call to CExtensionCollection::UpdateCollectionStatus
 
@@ -121,12 +125,12 @@ class CMultiverseCollection
 		~CMultiverseCollection (void) { DeleteAll(); }
 
 		void DeleteAll (void);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CMultiverseCatalogEntry *GetEntry (int iIndex) const { return m_List[iIndex]; }
+		int GetCount (void) const { return m_List.GetCount(); }
+		CMultiverseCatalogEntry *GetEntry (int iIndex) const { return m_List[iIndex]; }
 		bool HasAllUNIDs (const TArray<DWORD> &UNIDList) const;
 		bool HasAnyUNID (const TArray<DWORD> &UNIDList) const;
 		bool HasUNID (DWORD dwUNID) const;
-		inline void Insert (CMultiverseCatalogEntry *pEntry) { m_List.Insert(pEntry); }
+		void Insert (CMultiverseCatalogEntry *pEntry) { m_List.Insert(pEntry); }
 
 	private:
 		TArray<CMultiverseCatalogEntry *> m_List;
@@ -239,7 +243,7 @@ class CMultiverseModel
 		CMultiverseNewsEntry *GetNextNewsEntry (void);
 		EOnlineStates GetOnlineState (CString *retsUsername = NULL, CString *retsDesc = NULL) const;
 		bool GetResourceFileRefs (const TArray<CString> &Filespecs, TArray<CMultiverseFileRef> *retFileRefs) const;
-		inline const CString &GetServiceStatus (void) { return m_sLastStatus; }
+		const CString &GetServiceStatus (void) { return m_sLastStatus; }
 		const CString &GetUpgradeURL (void) const { return m_sUpgradeURL; }
 		inline ULONG64 GetUpgradeVersion (void) const { return m_UpgradeVersion.dwProductVersion; }
 		bool IsLoadCollectionNeeded (void) const;
@@ -252,6 +256,7 @@ class CMultiverseModel
 		ALERROR SetCollection (const CJSONValue &Data, CExtensionCollection &Extensions, CString *retsResult);
 		ALERROR SetCollection (const TArray<CMultiverseCatalogEntry *> &NewCollection);
 		void SetDisabled (void);
+		void SetEntryDownloadRequested (DWORD dwUNID, bool bValue = true);
 		ALERROR SetNews (const CJSONValue &Data, const CString &sCacheFilespec, TSortMap<CString, CString> *retDownloads, CString *retsResult);
 		void SetServiceStatus (const CString &sStatus) { m_sLastStatus = sStatus; }
 		void SetUsername (const CString &sUsername);
@@ -268,6 +273,7 @@ class CMultiverseModel
 
 		void AddResources (const CMultiverseCatalogEntry &Entry);
 		void DeleteCollection (void);
+		CMultiverseCatalogEntry *FindEntryActual (DWORD dwUNID) const;
 		bool LockCollection (void) const;
 		void SetUpgradeVersion (const CJSONValue &Entry);
 
@@ -344,19 +350,9 @@ class CHexarcDownloader
 	public:
 		struct SStatus
 			{
-			SStatus (void) :
-					iProgress(0)
-				{ }
-
-			SStatus (const SStatus &Src)
-				{
-				sFilespec = Src.sFilespec;
-				iProgress = Src.iProgress;
-				FileDigest = Src.FileDigest;
-				}
-
+			DWORD dwUNID = 0;
 			CString sFilespec;				//	Filespec to which we're downloading
-			int iProgress;					//	0-100. If 100, then file is ready.
+			int iProgress = 0;				//	0-100. If 100, then file is ready.
 			CIntegerIP FileDigest;			//	Desired digest
 			};
 
@@ -364,6 +360,7 @@ class CHexarcDownloader
 		~CHexarcDownloader (void);
 
 		void AddRequest (const CString &sAPI,
+						 DWORD dwUNID,
 						 const CString &sFilePath,
 						 const CJSONValue &AuthToken,
 						 const CString &sFilespec,
@@ -375,6 +372,7 @@ class CHexarcDownloader
 		struct SRequest
 			{
 			CString sAPI;					//	API URL for download
+			DWORD dwUNID = 0;				//	UNID of entry (may be 0)
 			CString sFilePath;				//	FilePath of the file to download
 			CJSONValue AuthToken;			//	AuthToken to use
 			CString sFilespec;				//	Destination filespec
