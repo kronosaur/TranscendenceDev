@@ -858,7 +858,9 @@
 									(itmTranslate gItem 'descResultIntro)
 									(intArmorEnhanceStatus result)
 									(if (@ enhancementInfo 'descID) " ")
-									(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									(or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
 									)
 								}
 							)
@@ -897,23 +899,34 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
+					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
 					)
 					(switch
 						(not (itmMatches dstItem useCriteria))
 							Nil
 
-						(itmIsKnown gItem)
+						(not (itmIsKnown gItem))
 							{
 								canUse: True
-								desc: (itmTranslate gItem 'descUsageOK {
-									useItem: (itmGetName gItem 'article)
+								desc: (itmTranslate gItem 'descUsageUnknown {
+									useItem: (itmGetName gItem)
 									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
 									})
 								}
+
+						(not (@ enhancementInfo 'enhancement))
+							{
+								canUse: Nil
+								desc: 
+									(or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
+								}
+
 						{
 							canUse: True
-							desc: (itmTranslate gItem 'descUsageUnknown {
-								useItem: (itmGetName gItem)
+							desc: (itmTranslate gItem 'descUsageOK {
+								useItem: (itmGetName gItem 'article)
 								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
 								})
 							}
@@ -956,6 +969,9 @@
 										(setq result 4)
 										)
 
+								(not (@ enhancementInfo 'enhancement))
+									(setq result 1)
+
 								;	Apply enhancement
 								(setq result (shpEnhanceItem gPlayerShip dstItem (@ enhancementInfo 'enhancement)))
 								)
@@ -980,7 +996,9 @@
 										(= result 7) (itmTranslate gItem 'descFurther trData)
 										)
 									(if (@ enhancementInfo 'descID) " ")
-									(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									(or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
 									)
 								}
 							)
