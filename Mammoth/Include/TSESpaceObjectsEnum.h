@@ -214,6 +214,7 @@ class CVisibleEnemyObjSelector
 			return (Obj.CanAttack()
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsUnreal()
 				&& !Obj.IsDestroyed()
 				&& &Obj != &m_Source
 				&& &Obj != m_pExcludeObj
@@ -263,6 +264,7 @@ class CVisibleAggressorObjSelector
 			return (Obj.CanAttack()
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsUnreal()
 				&& !Obj.IsDestroyed()
 				&& &Obj != &m_Source
 				&& &Obj != m_pExcludeObj
@@ -312,6 +314,7 @@ class CVisibleObjSelector
 			return (Obj.CanAttack()
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsDestroyed()
+				&& !Obj.IsUnreal()
 				&& &Obj != &m_Source
 				&& &Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));

@@ -524,6 +524,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
+		virtual int GetLastFireTime (void) const override;
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
 		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
