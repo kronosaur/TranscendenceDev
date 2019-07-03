@@ -404,7 +404,7 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
     bool bAmmo = ItemCtx.GetItem().GetType()->IsMissile();
     bool bUsesAmmo;
-    if (pShot->GetAmmoType())
+    if (CItemType *pAmmoType = pShot->GetAmmoType())
         {
         bUsesAmmo = true;
 
@@ -421,16 +421,20 @@ int CWeaponClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
         //  percent cost difference. +1 = ammo is 1% more expensive than 
         //  standard. -1 = ammo is 1% cheaper than standard.
 
-        Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pShot->GetAmmoType()->GetCurrencyAndValue(ItemCtx, true));
-		if (pShot->GetAmmoType()->AreChargesAmmo() && pShot->GetAmmoType()->GetMaxCharges() > 0)
-			rAmmoCost /= (Metric)pShot->GetAmmoType()->GetMaxCharges();
+        Metric rAmmoCost = (Metric)CEconomyType::ExchangeToCredits(pAmmoType->GetCurrencyAndValue(ItemCtx, true));
+		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
+			rAmmoCost /= (Metric)pAmmoType->GetMaxCharges();
 
         Metric rAmmoCostDelta = 100.0 * (rAmmoCost - retBalance.rStdAmmoCost) / retBalance.rStdAmmoCost;
         retBalance.rAmmo += rAmmoCostDelta * BALANCE_AMMO_COST_RATIO;
 
         //  Compute the ammo mass bonus
 
-        Metric rAmmoMassDelta = 100.0 * (pShot->GetAmmoType()->GetMassKg(ItemCtx) - retBalance.rStdAmmoMass) / retBalance.rStdAmmoMass;
+		Metric rAmmoMass = pAmmoType->GetMassKg(ItemCtx);
+		if (pAmmoType->AreChargesAmmo() && pAmmoType->GetMaxCharges() > 0)
+			rAmmoMass /= (Metric)pAmmoType->GetMaxCharges();
+
+        Metric rAmmoMassDelta = 100.0 * (rAmmoMass - retBalance.rStdAmmoMass) / retBalance.rStdAmmoMass;
         retBalance.rAmmo += rAmmoMassDelta * BALANCE_AMMO_MASS_RATIO;
 
         //  Add up to total balance
