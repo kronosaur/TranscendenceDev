@@ -320,6 +320,9 @@
     <ClInclude Include="..\Include\TSEItemEnhancements.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameFileCompatibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">

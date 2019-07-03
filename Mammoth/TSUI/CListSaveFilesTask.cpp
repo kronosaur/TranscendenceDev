@@ -122,6 +122,12 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	CShipClass *pClass = g_pUniverse->FindShipClass(GameFile.GetPlayerShip());
 	if (pClass)
 		Info.Insert(pClass->GetNounPhrase(nounGeneric));
+	else
+		{
+		CString sName = GameFile.GetPlayerShipClassName();
+		if (!sName.IsBlank())
+			Info.Insert(sName);
+		}
 
 	//	Gender
 
@@ -200,6 +206,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	//	Create an image of the ship class
 
+	CG32bitImage ShipImage;
 	if (pClass && pClass->GetImage().IsLoaded())
 		{
 		//	Figure out the size of the image. We use the original size or 96 
@@ -209,19 +216,32 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 		//	Create the image, scaled to the right size
 
-		CG32bitImage *pNewImage = new CG32bitImage;
-		pClass->CreateScaledImage(*pNewImage, 0, 90, cxIcon, cxIcon);
+		pClass->CreateScaledImage(ShipImage, 0, 90, cxIcon, cxIcon);
+		}
+	else
+		{
+		GameFile.GetPlayerShipImage(ShipImage);
+		}
 
+	//	Add the image
+
+	if (!ShipImage.IsEmpty())
+		{
 		//	Position
 
-		int xImage = x + m_Options.cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - cxIcon) / 2;
-		int yImage = (SHIP_IMAGE_HEIGHT - cxIcon) / 2;
+		int xImage = x + m_Options.cxWidth - SHIP_IMAGE_WIDTH + (SHIP_IMAGE_WIDTH - ShipImage.GetWidth()) / 2;
+		int yImage = (SHIP_IMAGE_HEIGHT - ShipImage.GetHeight()) / 2;
 
 		//	New image frame
 
 		IAnimatron *pImageFrame = new CAniRect;
 		pImageFrame->SetPropertyVector(PROP_POSITION, CVector(xImage, yImage));
-		pImageFrame->SetPropertyVector(PROP_SCALE, CVector(cxIcon, cxIcon));
+		pImageFrame->SetPropertyVector(PROP_SCALE, CVector(ShipImage.GetWidth(), ShipImage.GetHeight()));
+
+		//	Take ownership of this image
+
+		CG32bitImage *pNewImage = new CG32bitImage;
+		pNewImage->TakeHandoff(ShipImage);
 		pImageFrame->SetFillMethod(new CAniImageFill(pNewImage, true));
 
 		pRoot->AddTrack(pImageFrame, 0);

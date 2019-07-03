@@ -16,6 +16,16 @@ class CGameFile
 			FLAG_ACCEPT_MISSION =					0x00000008,
 			};
 
+		static constexpr int EPITAPH_MAX =					256;
+		static constexpr int GAME_HEADER_MAX_SYSTEM_NAME =	128;
+		static constexpr int GAME_ID_MAX =					128;
+		static constexpr int PLAYER_NAME_MAX =				128;
+		static constexpr int SHIP_IMAGE_SIZE =				96;
+		static constexpr int SHIP_NAME_MAX =				128;
+		static constexpr int USERNAME_MAX =					256;
+		static constexpr int VERSION_MAX =					32;
+		static constexpr int INVALID_ENTRY =				0xffffffff;
+
 		CGameFile (void);
 		~CGameFile (void);
 
@@ -24,28 +34,30 @@ class CGameFile
 		void Close (void);
 		ALERROR Create (const CString &sFilename, const CString &sUsername);
 		static CString GenerateFilename (const CString &sName);
-		inline DWORD GetAdventure (void) const { return m_Header.dwAdventure; }
+		DWORD GetAdventure (void) const { return m_Header.dwAdventure; }
 
 		static constexpr DWORD FLAG_VERSION_NUMBERS =	0x00000001;
 		static constexpr DWORD FLAG_VERSION_STRING =	0x00000002;
 		CString GetCreateVersion (DWORD dwFlags = FLAG_VERSION_STRING) const;
 
-		inline CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
-		inline CString GetFilespec (void) const { return m_pFile->GetFilename(); }
-		inline CString GetGameID (void) { return CString(m_Header.szGameID); }
-		inline GenomeTypes GetPlayerGenome (void) const { return (GenomeTypes)m_Header.dwGenome; }
+		CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
+		CString GetFilespec (void) const { return m_pFile->GetFilename(); }
+		CString GetGameID (void) { return CString(m_Header.szGameID); }
+		GenomeTypes GetPlayerGenome (void) const { return (GenomeTypes)m_Header.dwGenome; }
 		CString GetPlayerName (void) const;
-		inline DWORD GetPlayerShip (void) const { return m_Header.dwPlayerShip; }
-		inline int GetResurrectCount (void) { return m_Header.dwResurrectCount; }
-		inline int GetScore (void) const { return (int)m_Header.dwScore; }
+		DWORD GetPlayerShip (void) const { return m_Header.dwPlayerShip; }
+		CString GetPlayerShipClassName (void) const;
+		bool GetPlayerShipImage (CG32bitImage &Image) const;
+		int GetResurrectCount (void) { return m_Header.dwResurrectCount; }
+		int GetScore (void) const { return (int)m_Header.dwScore; }
 		CString GetSystemName (void) const;
-		inline CString GetUsername (void) { return CString(m_Header.szUsername); }
-		inline bool IsDebug (void) const { return ((m_Header.dwFlags & GAME_FLAG_DEBUG) ? true : false); }
-		inline bool IsEndGame (void) const { return ((m_Header.dwFlags & GAME_FLAG_END_GAME) ? true : false); }
-		inline bool IsGameResurrect (void) { return ((m_Header.dwFlags & GAME_FLAG_RESURRECT) ? true : false); }
-		inline bool IsOpen (void) const { return (m_pFile != NULL); }
-		inline bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
-		inline bool IsUniverseValid (void) { return (m_Header.dwUniverse != INVALID_ENTRY); }
+		CString GetUsername (void) { return CString(m_Header.szUsername); }
+		bool IsDebug (void) const { return ((m_Header.dwFlags & GAME_FLAG_DEBUG) ? true : false); }
+		bool IsEndGame (void) const { return ((m_Header.dwFlags & GAME_FLAG_END_GAME) ? true : false); }
+		bool IsGameResurrect (void) { return ((m_Header.dwFlags & GAME_FLAG_RESURRECT) ? true : false); }
+		bool IsOpen (void) const { return (m_pFile != NULL); }
+		bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
+		bool IsUniverseValid (void) { return (m_Header.dwUniverse != INVALID_ENTRY); }
 
 		static constexpr DWORD FLAG_NO_UPGRADE =	0x00000001;
 		ALERROR Open (const CString &sFilename, DWORD dwFlags);
@@ -69,96 +81,43 @@ class CGameFile
 			GAME_FLAG_END_GAME =					0x00000010,	//	This game is done and cannot be continued
 			};
 
-		enum Consts
-			{
-			GAME_HEADER_MAX_SYSTEM_NAME =			128,
-			GAME_ID_MAX =							128,
-			PLAYER_NAME_MAX =						128,
-			USERNAME_MAX =							256,
-			EPITAPH_MAX =							256,
-			VERSION_MAX =							32,
-			INVALID_ENTRY =							0xffffffff,
-			};
-
-		struct SGameHeader8
-			{
-			DWORD dwVersion;				//	Game file format version
-
-			DWORD dwUniverse;				//	Location of universe data
-			DWORD dwSystemMap;				//	Location of system directory. The system
-											//		directory is an array of file IDs
-											//		indexed by system UNID and prefixed
-											//		by a count.
-			char szSystemName[GAME_HEADER_MAX_SYSTEM_NAME];
-			DWORD dwFlags;					//	Flags for game
-			DWORD dwResurrectCount;			//	Number of times we're been resurrected
-			DWORD dwGameStats;				//	Location of game stats
-			DWORD dwCreateVersion;			//	Product version that created this save file
-			DWORD dwPartialSave;			//	System entry that was partially saved (while entering a gate)
-
-			DWORD dwSpare[4];
-			};
-
-		struct SGameHeader9
-			{
-			DWORD dwVersion;				//	Game file format version
-
-			DWORD dwUniverse;				//	Location of universe data
-			DWORD dwSystemMap;				//	Location of system directory. The system
-											//		directory is an array of file IDs
-											//		indexed by system UNID and prefixed
-											//		by a count.
-			char szSystemName[GAME_HEADER_MAX_SYSTEM_NAME];
-			DWORD dwFlags;					//	Flags for game
-			DWORD dwResurrectCount;			//	Number of times we're been resurrected
-			DWORD dwGameStats;				//	Location of game stats
-			DWORD dwCreateVersion;			//	Product version that created this save file
-			DWORD dwPartialSave;			//	System entry that was partially saved (while entering a gate)
-
-			//	New in SGameHeader 9
-			char szUsername[USERNAME_MAX];	//	Username (may be NULL if not a regulation game)
-			char szGameID[GAME_ID_MAX];		//	GameID (may be NULL if not a regulation game)
-			DWORD dwAdventure;				//	UNID of adventure (extension)
-			char szPlayerName[PLAYER_NAME_MAX];
-			DWORD dwGenome;					//	Player genome
-			DWORD dwPlayerShip;				//	UNID of player ship
-			DWORD dwScore;					//	Current score
-			char szEpitaph[EPITAPH_MAX];	//	Epitaph (if dead)
-			};
-
 		struct SGameHeader
 			{
-			DWORD dwVersion;				//	Game file format version
+			DWORD dwVersion = 0;				//	Game file format version
 
-			DWORD dwUniverse;				//	Location of universe data
-			DWORD dwSystemMap;				//	Location of system directory. The system
-											//		directory is an array of file IDs
-											//		indexed by system UNID and prefixed
-											//		by a count.
-			char szSystemName[GAME_HEADER_MAX_SYSTEM_NAME];
-			DWORD dwFlags;					//	Flags for game
-			DWORD dwResurrectCount;			//	Number of times we're been resurrected
-			DWORD dwGameStats;				//	Location of game stats
-			DWORD dwCreateVersion;			//	Product version that created this save file
-			DWORD dwPartialSave;			//	System entry that was partially saved (while entering a gate)
+			DWORD dwUniverse = INVALID_ENTRY;	//	Location of universe data
+			DWORD dwSystemMap = INVALID_ENTRY;	//	Location of system directory. The system
+												//		directory is an array of file IDs
+												//		indexed by system UNID and prefixed
+												//		by a count.
+			char szSystemName[GAME_HEADER_MAX_SYSTEM_NAME] = "";
+			DWORD dwFlags = 0;					//	Flags for game
+			DWORD dwResurrectCount = 0;			//	Number of times we're been resurrected
+			DWORD dwGameStats = 0;				//	Location of game stats
+			DWORD dwCreateVersion = 0;			//	Product version that created this save file
+			DWORD dwPartialSave = 0;			//	System entry that was partially saved (while entering a gate)
 
 			//	New in SGameHeader 9
-			char szUsername[USERNAME_MAX];	//	Username (may be NULL if not a regulation game)
-			char szGameID[GAME_ID_MAX];		//	GameID (may be NULL if not a regulation game)
-			DWORD dwAdventure;				//	UNID of adventure (extension)
-			char szPlayerName[PLAYER_NAME_MAX];
-			DWORD dwGenome;					//	Player genome
-			DWORD dwPlayerShip;				//	UNID of player ship
-			DWORD dwScore;					//	Current score
-			char szEpitaph[EPITAPH_MAX];	//	Epitaph (if dead)
+			char szUsername[USERNAME_MAX] = "";	//	Username (may be NULL if not a regulation game)
+			char szGameID[GAME_ID_MAX] = "";	//	GameID (may be NULL if not a regulation game)
+			DWORD dwAdventure = 0;				//	UNID of adventure (extension)
+			char szPlayerName[PLAYER_NAME_MAX] = "";
+			DWORD dwGenome = 0;					//	Player genome
+			DWORD dwPlayerShip = 0;				//	UNID of player ship
+			DWORD dwScore = 0;					//	Current score
+			char szEpitaph[EPITAPH_MAX] = "";	//	Epitaph (if dead)
 
 			//	New in SGameHeader 10
-			DWORD dwCreateAPI;				//	Created on this API version
-			DWORD dwCreateVersionMajor;
-			DWORD dwCreateVersionMinor;
-			DWORD dwCreateVersionPoint;
-			DWORD dwCreateVersionBuild;
-			char szCreateVersion[VERSION_MAX];
+			DWORD dwCreateAPI = 0;				//	Created on this API version
+			DWORD dwCreateVersionMajor = 0;
+			DWORD dwCreateVersionMinor = 0;
+			DWORD dwCreateVersionPoint = 0;
+			DWORD dwCreateVersionBuild = 0;
+			char szCreateVersion[VERSION_MAX] = "";
+
+			//	New in SGameHeader 11
+			DWORD dwShipImage = INVALID_ENTRY;	//	Location of ship image
+			char szShipClassName[SHIP_NAME_MAX] = "";
 			};
 
 		struct SSystemData
@@ -170,6 +129,7 @@ class CGameFile
 		ALERROR ComposeLoadError (const CString &sError, CString *retsError);
 		ALERROR LoadGameHeader (SGameHeader *retHeader);
 		void LoadSystemMapFromStream (DWORD dwVersion, const CString &sStream);
+		ALERROR SaveShipImage (CUniverse &Universe, CSpaceObject &ShipObj);
 		ALERROR SaveGameHeader (SGameHeader &Header);
 		void SaveSystemMapToStream (CString *retsStream);
 

@@ -829,6 +829,37 @@ bool CG32bitImage::CreateFromImageTransformed (const CG32bitImage &Source, int x
 	return true;
 	}
 
+bool CG32bitImage::CreateFromWindowsBMP (IReadStream &Stream)
+
+//	CreateFromWindowsBMP
+//
+//	Reads from a Windows BMP file format.
+
+	{
+	BITMAPFILEHEADER header;
+	Stream.Read((char *)&header, sizeof(header));
+	if (header.bfType != 'MB')
+		return false;
+
+	BITMAPINFOHEADER bmi;
+	Stream.Read((char *)&bmi, sizeof(bmi));
+	if (bmi.biWidth < 0 || bmi.biHeight < 0)
+		return false;
+
+	if (!Create(bmi.biWidth, bmi.biHeight, alpha8))
+		return false;
+
+	//	Read the bits bottom-up
+
+	for (int y = m_cyHeight - 1; y >= 0; y--)
+		{
+		DWORD *pDestRow = (DWORD *)GetPixelPos(0, y);
+		Stream.Read((char *)pDestRow, m_cxWidth * sizeof(DWORD));
+		}
+
+	return true;
+	}
+
 void CG32bitImage::DrawDot (int x, int y, CG32bitPixel rgbColor, MarkerTypes iMarker)
 
 //	DrawDot
@@ -1130,6 +1161,32 @@ void CG32bitImage::SwapBuffers (CG32bitImage &Other)
 	
 	{
 	Swap(m_pRGBA, Other.m_pRGBA);
+	}
+
+void CG32bitImage::TakeHandoff (CG32bitImage &Src)
+
+//	TakeHandoff
+//
+//	Moves the buffer from Src to us.
+
+	{
+	CleanUp();
+
+	m_pRGBA = Src.m_pRGBA;
+	Src.m_pRGBA = NULL;
+
+	m_bFreeRGBA = Src.m_bFreeRGBA;
+	Src.m_bFreeRGBA = false;
+
+	m_bMarked = Src.m_bMarked;
+	m_pBMI = Src.m_pBMI;
+	Src.m_pBMI = NULL;
+
+	m_cxWidth = Src.m_cxWidth;
+	m_cyHeight = Src.m_cyHeight;
+	m_iPitch = Src.m_iPitch;
+	m_AlphaType = Src.m_AlphaType;
+	m_rcClip = Src.m_rcClip;
 	}
 
 bool CG32bitImage::WriteToWindowsBMP (IWriteStream *pStream)

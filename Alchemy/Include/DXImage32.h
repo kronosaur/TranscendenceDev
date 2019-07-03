@@ -147,6 +147,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool CreateFromExternalBuffer (void *pBuffer, int cxWidth, int cyHeight, int iPitch, EAlphaTypes AlphaType = alphaNone);
 		bool CreateFromFile (const CString &sImageFilespec, const CString &sMaskFilespec = NULL_STR, DWORD dwFlags = 0);
 		bool CreateFromImageTransformed (const CG32bitImage &Source, int xSrc, int ySrc, int cxSrc, int cySrc, Metric rScaleX, Metric rScaleY, Metric rRotation = 0.0);
+		bool CreateFromWindowsBMP (IReadStream &Stream);
 		inline EAlphaTypes GetAlphaType (void) const { return m_AlphaType; }
 		inline CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		inline CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
@@ -202,6 +203,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		size_t GetMemoryUsage (void) const;
 		bool SaveAsWindowsBMP (const CString &sFilespec);
 		void SwapBuffers (CG32bitImage &Other);
+		void TakeHandoff (CG32bitImage &Src);
 		bool WriteToWindowsBMP (IWriteStream *pStream);
 
 	private:

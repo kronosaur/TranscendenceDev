@@ -5,9 +5,10 @@
 
 #include "PreComp.h"
 #include "Zip.h"
+#include "GameFileCompatibility.h"
 
 #define MIN_GAME_FILE_VERSION					5
-#define GAME_FILE_VERSION						10
+#define GAME_FILE_VERSION						11
 
 CGameFile::CGameFile (void) : 
 		m_pFile(NULL),
@@ -138,7 +139,7 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 
 	//	Universe not yet saved
 
-	::ZeroMemory(&m_Header, sizeof(m_Header));
+	m_Header = SGameHeader();
 
 	m_Header.dwVersion = GAME_FILE_VERSION;
 	m_Header.dwCreateVersion = fileGetProductVersion();
@@ -151,11 +152,6 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	m_Header.dwCreateVersionPoint = HIWORD((DWORD)VerInfo.dwProductVersion);
 	m_Header.dwCreateVersionBuild = LOWORD((DWORD)VerInfo.dwProductVersion);
 	lstrcpyn(m_Header.szCreateVersion, VerInfo.sProductVersion.GetASCIIZPointer(), sizeof(m_Header.szCreateVersion));
-
-	m_Header.dwUniverse = INVALID_ENTRY;
-	m_Header.dwGameStats = INVALID_ENTRY;
-	m_Header.dwResurrectCount = 0;
-	m_Header.dwFlags = 0;
 
 	//	If we have a username then we treat this as a regulation game.
 
@@ -262,6 +258,51 @@ CString CGameFile::GetPlayerName (void) const
 	return sName;
 	}
 
+CString CGameFile::GetPlayerShipClassName (void) const
+
+//	GetPlayerShipClassName
+//
+//	Returns the ship class (or NULL_STR if none stored).
+
+	{
+	return CString((char *)m_Header.szShipClassName);
+	}
+
+bool CGameFile::GetPlayerShipImage (CG32bitImage &Image) const
+
+//	GetPlayerShipImage
+//
+//	Returns the player ship image (or FALSE if we don't have one stored).
+
+	{
+	if (m_pFile == NULL || m_Header.dwShipImage == INVALID_ENTRY)
+		return false;
+
+	CString sEntry;
+	if (m_pFile->ReadEntry(m_Header.dwShipImage, &sEntry) != NOERROR)
+		return false;
+
+	CBufferReadBlock Buffer(sEntry);
+	if (Buffer.Open() != NOERROR)
+		return false;
+
+	CMemoryWriteStream Bitmap;
+	if (Bitmap.Create() != NOERROR)
+		return false;
+
+	if (!zipDecompress(Buffer, compressionZlib, Bitmap))
+		return false;
+
+	CMemoryReadStream BitmapReader(Bitmap.GetPointer(), Bitmap.GetLength());
+	if (BitmapReader.Open() != NOERROR)
+		return false;
+
+	if (!Image.CreateFromWindowsBMP(BitmapReader))
+		return false;
+
+	return true;
+	}
+
 CString CGameFile::GetSystemName (void) const
 
 //	GetSystemName
@@ -288,6 +329,8 @@ ALERROR CGameFile::LoadGameHeader (SGameHeader *retHeader)
 	{
 	ALERROR error;
 
+	*retHeader = SGameHeader();
+
 	CString sHeader;
 	if (error = m_pFile->ReadEntry(m_iHeaderID, &sHeader))
 		return error;
@@ -297,31 +340,16 @@ ALERROR CGameFile::LoadGameHeader (SGameHeader *retHeader)
 	if (sHeader.GetLength() == sizeof(SGameHeader8))
 		{
 		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader8));
-
-		//	Initialize additional data
-
-		retHeader->szUsername[0] = '\0';
-		retHeader->szGameID[0] = '\0';
-		retHeader->dwAdventure = 0;
-		retHeader->szPlayerName[0] = '\0';
-		retHeader->dwGenome = 0;
-		retHeader->dwPlayerShip = 0;
-		retHeader->dwScore = 0;
-		retHeader->szEpitaph[0] = '\0';
 		}
 
 	else if (sHeader.GetLength() == sizeof(SGameHeader9))
 		{
 		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader9));
+		}
 
-		//	Initialize additional data
-
-		retHeader->dwCreateAPI = 0;
-		retHeader->dwCreateVersionMajor = 0;
-		retHeader->dwCreateVersionMinor = 0;
-		retHeader->dwCreateVersionPoint = 0;
-		retHeader->dwCreateVersionBuild = 0;
-		retHeader->szCreateVersion[0] = '\0';
+	else if (sHeader.GetLength() == sizeof(SGameHeader10))
+		{
+		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader10));
 		}
 
 	//	Read current version
@@ -759,6 +787,65 @@ ALERROR CGameFile::SaveGameStats (const CGameStats &Stats)
 	return NOERROR;
 	}
 
+ALERROR CGameFile::SaveShipImage (CUniverse &Universe, CSpaceObject &ShipObj)
+
+//	SaveShipImage
+//
+//	Saves the ship image.
+
+	{
+	CShipClass *pClass = CShipClass::AsType(ShipObj.GetType());
+	if (pClass == NULL || !pClass->GetImage().IsLoaded())
+		return ERR_FAIL;
+
+	//	Figure out the size of the image. We use the original size or 96 
+	//	pixels, whichever is smaller.
+
+	int cxIcon = Min(SHIP_IMAGE_SIZE, pClass->CalcImageSize());
+
+	//	Create the image, scaled to the right size
+
+	CG32bitImage NewImage;
+	pClass->CreateScaledImage(NewImage, 0, 90, cxIcon, cxIcon);
+
+	//	Save to bitmap
+
+	CMemoryWriteStream Bitmap;
+	if (Bitmap.Create() != NOERROR)
+		return ERR_FAIL;
+
+	if (!NewImage.WriteToWindowsBMP(&Bitmap))
+		return ERR_FAIL;
+
+	//	Compress
+
+	CMemoryReadBlockWrapper BitmapSrc(Bitmap);
+	if (BitmapSrc.Open() != NOERROR)
+		return ERR_FAIL;
+
+	CMemoryWriteStream BitmapCompressed;
+	if (BitmapCompressed.Create() != NOERROR)
+		return ERR_FAIL;
+
+	if (!zipCompress(BitmapSrc, compressionZlib, BitmapCompressed))
+		return ERR_FAIL;
+
+	//	Write to the database
+
+	if (m_Header.dwShipImage != INVALID_ENTRY)
+		{
+		if (m_pFile->WriteEntry(m_Header.dwShipImage, CString(BitmapCompressed.GetPointer(), BitmapCompressed.GetLength(), true)) != NOERROR)
+			return ERR_FAIL;
+		}
+	else
+		{
+		if (m_pFile->AddEntry(CString(BitmapCompressed.GetPointer(), BitmapCompressed.GetLength(), true), (int *)&m_Header.dwShipImage) != NOERROR)
+			return ERR_FAIL;
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CGameFile::SaveSystem (DWORD dwUNID, CSystem *pSystem, DWORD dwFlags)
 
 //	SaveSystem
@@ -1029,9 +1116,17 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	//	Save the genome and player ship in the header
 
-	if (pPlayerObj && pPlayerObj->GetType()->GetUNID() != m_Header.dwPlayerShip)
+	if (pPlayerObj 
+			&& (pPlayerObj->GetType()->GetUNID() != m_Header.dwPlayerShip
+				|| m_Header.dwShipImage == INVALID_ENTRY))
 		{
 		m_Header.dwPlayerShip = pPlayerObj->GetType()->GetUNID();
+
+		CString sShipClass = pPlayerObj->GetNounPhrase(nounGeneric);
+		lstrcpyn(m_Header.szShipClassName, sShipClass.GetASCIIZPointer(), sizeof(m_Header.szShipClassName));
+
+		SaveShipImage(Univ, *pPlayerObj);
+
 		bUpdateHeader = true;
 		}
 
