@@ -313,8 +313,8 @@ class CVisibleObjSelector
 			{
 			return (Obj.CanAttack()
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
-				&& !Obj.IsDestroyed()
 				&& !Obj.IsUnreal()
+				&& !Obj.IsDestroyed()
 				&& &Obj != &m_Source
 				&& &Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));
