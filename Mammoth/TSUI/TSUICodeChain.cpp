@@ -42,8 +42,19 @@ static PRIMITIVEPROCDEF g_Primitives[] =
 			"   'left\n"
 			"   'right\n"
 			"   'ctrl\n"
+			"   'alt\n"
 			"   'space\n"
 			"   'shift\n"
+			"   'backspace\n"
+			"   'pgup\n"
+			"   'pgdown\n"
+			"   'ins\n"
+			"   'del\n"
+			"   'pause\n"
+			"   'tab\n"
+			"   'enter\n"
+			"   'home\n"
+			"   'end\n"
 			"   'esc\n"
 			"   'lmb\n"
 			"   'rmb\n",
@@ -203,6 +214,50 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				else if (strEquals(sKey, "ctrl"))
 				{
 					iKey = VK_CONTROL;
+				}
+				else if (strEquals(sKey, "alt"))
+				{
+					iKey = VK_MENU;
+				}
+				else if (strEquals(sKey, "pgup"))
+				{
+					iKey = VK_PRIOR;
+				}
+				else if (strEquals(sKey, "pgdown"))
+				{
+					iKey = VK_NEXT;
+				}
+				else if (strEquals(sKey, "enter"))
+				{
+					iKey = VK_RETURN;
+				}
+				else if (strEquals(sKey, "ins"))
+				{
+					iKey = VK_INSERT;
+				}
+				else if (strEquals(sKey, "del"))
+				{
+					iKey = VK_DELETE;
+				}
+				else if (strEquals(sKey, "pause"))
+				{
+					iKey = VK_PAUSE;
+				}
+				else if (strEquals(sKey, "tab"))
+				{
+					iKey = VK_TAB;
+				}
+				else if (strEquals(sKey, "backspace"))
+				{
+					iKey = VK_BACK;
+				}
+				else if (strEquals(sKey, "home"))
+				{
+					iKey = VK_HOME;
+				}
+				else if (strEquals(sKey, "end"))
+				{
+					iKey = VK_END;
 				}
 				else if (strEquals(sKey, "lmb"))
 				{
