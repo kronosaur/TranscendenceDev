@@ -238,9 +238,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		{
 		if (error = m_pExtra->PropertyDefs.BindDesign(Ctx))
 			return error;
-
-		m_pExtra->PropertyDefs.InitTypeData(GetUniverse(), m_pExtra->GlobalData);
 		}
+
+	//	Initialize data
+
+	InitTypeData(*this);
 
 	//	Now that we've connected to our based classes, update the event cache
 	//	with events from our ancestors.
@@ -554,7 +556,81 @@ ICCItem *CDesignType::FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProp
 		return NULL;
 	}
 
-bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType, bool bNoInheritance) const
+bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType) const
+
+//	FindCustomProperty
+//
+//	Looks for a custom property (in the <Properties> element).
+
+	{
+	//	Get the property info. If not found, then we're done
+
+	EPropertyType iType;
+	if (!FindCustomPropertyRaw(sProperty, pResult, &iType))
+		return false;
+
+	if (retiType)
+		*retiType = iType;
+
+	//	See if we can get the data.
+
+	switch (iType)
+		{
+		//	Not found
+
+		case EPropertyType::propNone:
+			return false;
+
+		//	If this is a static definition, then we're done because the data
+		//	came back from FindCustomPropertyRaw.
+
+		case EPropertyType::propDefinition:
+			return true;
+
+		//	For type-level data, we need to look in global data (but only at
+		//	our level).
+
+		case EPropertyType::propConstant:
+		case EPropertyType::propGlobal:
+			{
+			if (m_pExtra && m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult))
+				return true;
+			else
+				{
+				pResult = ICCItemPtr(ICCItem::Nil);
+				return true;
+				}
+			}
+
+		//	For dynamic properties, we evaluate now.
+
+		case EPropertyType::propDynamicGlobal:
+			{
+			CCodeChainCtx Ctx(GetUniverse());
+			Ctx.SaveAndDefineType(GetUNID());
+			ICCItemPtr pProperty = Ctx.RunCode(pResult);
+			pResult = pProperty;
+			return true;
+			}
+
+		//	For dynamic object properties, we return the code.
+		//	Our caller is responsible for evaluating.
+
+		case EPropertyType::propDynamicData:
+			return true;
+
+		//	For anything else, we return true because we found the property,
+		//	but we return a Nil value because we cannot satisfy the request
+		//	(because the data is at the object level). The caller must get
+		//	the value somewhere else based on the returned type.
+
+		default:
+			pResult = ICCItemPtr(ICCItem::Nil);
+			return true;
+		}
+	}
+
+bool CDesignType::FindCustomPropertyRaw (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType) const
 
 //	FindCustomProperty
 //
@@ -574,38 +650,10 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 				if (retiType) *retiType = iType;
 				return true;
 
-			//	For type-level data, we need to look in global data (but only at
-			//	our level, because we recurse below).
-
-			case EPropertyType::propConstant:
-			case EPropertyType::propGlobal:
-				{
-				if (retiType) *retiType = iType;
-				if (m_pExtra->GlobalData.FindDataAsItem(sProperty, pResult))
-					return true;
-				else
-					{
-					pResult = ICCItemPtr(ICCItem::Nil);
-					return true;
-					}
-				}
-
-			//	For dynamic properties, we evaluate now.
-
-			case EPropertyType::propDynamicGlobal:
-				{
-				if (retiType) *retiType = iType;
-
-				CCodeChainCtx Ctx(GetUniverse());
-				Ctx.SaveAndDefineType(GetUNID());
-				ICCItemPtr pProperty = Ctx.RunCode(pResult);
-				pResult = pProperty;
-				return true;
-				}
-
 			//	For dynamic object properties, we return the code.
 			//	Our caller is responsible for evaluating.
 
+			case EPropertyType::propDynamicGlobal:
 			case EPropertyType::propDynamicData:
 				if (retiType) *retiType = iType;
 				return true;
@@ -624,8 +672,8 @@ bool CDesignType::FindCustomProperty (const CString &sProperty, ICCItemPtr &pRes
 
 	//	Otherwise, check our ancestors
 
-	else if (!bNoInheritance && m_pInheritFrom)
-		return m_pInheritFrom->FindCustomProperty(sProperty, pResult, retiType);
+	else if (m_pInheritFrom)
+		return m_pInheritFrom->FindCustomPropertyRaw(sProperty, pResult, retiType);
 
 	//	Otherwise, not found.
 
@@ -2002,13 +2050,29 @@ void CDesignType::InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) 
 	//	Initialize data.
 
 	if (m_pExtra)
-		{
 		m_pExtra->PropertyDefs.InitObjectData(GetUniverse(), Obj, Data);
-		}
 
 	//	Let subclasses initialize.
 
 	OnInitObjectData(Obj, Data);
+	}
+
+void CDesignType::InitTypeData (CDesignType &Type) const
+
+//	InitTypeData
+//
+//	Initializes the type's global data.
+
+	{
+	//	Let our ancestors initialize.
+
+	if (m_pInheritFrom)
+		m_pInheritFrom->InitTypeData(Type);
+
+	//	Initialize data.
+
+	if (m_pExtra)
+		m_pExtra->PropertyDefs.InitTypeData(GetUniverse(), Type);
 	}
 
 bool CDesignType::IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const
@@ -2402,6 +2466,37 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		return OnHasSpecialAttribute(sAttrib);
 	}
 
+ICCItemPtr CDesignType::IncTypeProperty (const CString &sProperty, ICCItem *pValue)
+
+//	IncTypeProperty
+//
+//	Increment the property, if it is a number.
+
+	{
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+
+	if (!FindCustomPropertyRaw(sProperty, pDummy, &iType))
+		return ICCItemPtr(ICCItem::Nil);
+
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			{
+			ICCItemPtr pCurValue = GetGlobalData(sProperty);
+			ICCItemPtr pNewValue = CCodeChain::IncValue(pCurValue, pValue);
+			if (pNewValue->IsError())
+				return ICCItemPtr(ICCItem::Nil);
+
+			SetGlobalData(sProperty, pNewValue);
+			return pNewValue;
+			}
+
+		default:
+			return ICCItemPtr(ICCItem::Nil);
+		}
+	}
+
 void CDesignType::InitCachedEvents (void)
 
 //	InitCachedEvents
@@ -2764,9 +2859,11 @@ void CDesignType::Reinit (void)
 	if (m_pExtra)
 		{
 		m_pExtra->GlobalData = m_pExtra->InitGlobalData;
-
-		m_pExtra->PropertyDefs.InitTypeData(GetUniverse(), m_pExtra->GlobalData);
 		}
+
+	//	Reinit properties
+
+	InitTypeData(*this);
 
 	//	Allow sub-classes to reinit
 
@@ -2790,78 +2887,6 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 	GetUniverse().LogOutput(sError);
 	}
 
-ICCItemPtr CDesignType::IncTypeProperty (const CString &sProperty, ICCItem *pValue)
-
-//	IncTypeProperty
-//
-//	Increment the property, if it is a number.
-
-	{
-	ICCItemPtr pCurValue;
-	EPropertyType iType;
-
-	//	If this is a custom global property, then set it.
-
-	if (FindCustomProperty(sProperty, pCurValue, &iType, true))
-		{
-		//	Must be a global, otherwise we cannot increment.
-
-		if (iType != EPropertyType::propGlobal)
-			return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Cannot increment property %s: Not a type variable"), sProperty)));
-
-		//	If current value is not a number, then we cannot increment.
-
-		else if (!pCurValue->IsNil() && !pCurValue->IsNumber())
-			return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Cannot increment property %s: Not a number"), sProperty)));
-
-		//	Make sure increment value is a number.
-
-		else if (pValue && !pValue->IsNil() && !pValue->IsNumber())
-			return ICCItemPtr(CCodeChain::CreateError(CONSTLIT("Cannot increment property by that value"), pValue));
-
-		//	Otherwise, we're OK.
-
-		else
-			{
-			ICCItemPtr pNewValue;
-			if (pCurValue->IsNil())
-				{
-				if (pValue == NULL || pValue->IsNil())
-					pNewValue = ICCItemPtr(1);
-				else
-					pNewValue = ICCItemPtr(pValue->Reference());
-				}
-			else if (pCurValue->IsInteger())
-				{
-				if (pValue == NULL || pValue->IsNil())
-					pNewValue = ICCItemPtr(pCurValue->GetIntegerValue() + 1);
-				else if (pValue->IsInteger())
-					pNewValue = ICCItemPtr(pCurValue->GetIntegerValue() + pValue->GetIntegerValue());
-				else
-					pNewValue = ICCItemPtr(pCurValue->GetDoubleValue() + pValue->GetDoubleValue());
-				}
-			else
-				{
-				double rInc = (pValue && !pValue->IsNil() ? pValue->GetDoubleValue(): 1.0);
-				pNewValue = ICCItemPtr(pCurValue->GetDoubleValue() + rInc);
-				}
-
-			SetTypeProperty(sProperty, pNewValue);
-			return pNewValue;
-			}
-		}
-
-	//	Otherwise, ask ancestors
-
-	else if (m_pInheritFrom)
-		return m_pInheritFrom->IncTypeProperty(sProperty, pValue);
-
-	//	Otherwise, unknown property.
-
-	else
-		return ICCItemPtr(CCodeChain::CreateError(strPatternSubst(CONSTLIT("Unknown property %s"), sProperty)));
-	}
-
 bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
 
 //	SetTypeProperty
@@ -2872,25 +2897,18 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	//	If this is a custom global property, then set it.
-
-	if (m_pExtra
-			&& m_pExtra->PropertyDefs.Find(sProperty, pDummy, &iType) 
-			&& iType == EPropertyType::propGlobal)
-		{
-		SetGlobalData(sProperty, pValue);
-		return true;
-		}
-
-	//	Otherwise, ask ancestors
-
-	else if (m_pInheritFrom)
-		return m_pInheritFrom->SetTypeProperty(sProperty, pValue);
-
-	//	Otherwise, unknown property.
-
-	else
+	if (!FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		return false;
+
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			SetGlobalData(sProperty, pValue);
+			return true;
+
+		default:
+			return false;
+		}
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const

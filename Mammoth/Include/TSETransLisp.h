@@ -36,6 +36,8 @@ class CCodeChainCtx
 		~CCodeChainCtx (void);
 
 		ICCItemPtr Create (ICCItem::ValueTypes iType);
+		ICCItemPtr CreateDebugError (const CString &sError, ICCItem *pValue = NULL) const;
+		ICCItemPtr DebugError (ICCItem *pResult) const;
 		void DefineContainingType (const CDesignType *pType);
 		void DefineContainingType (const CItem &Item);
 		void DefineContainingType (const COverlay *pOverlay);

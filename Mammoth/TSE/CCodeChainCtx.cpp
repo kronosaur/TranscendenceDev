@@ -399,6 +399,32 @@ ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
 	return pValue;
 	}
 
+ICCItemPtr CCodeChainCtx::CreateDebugError (const CString &sError, ICCItem *pValue) const
+
+//	CreateDebugError
+//
+//	Creates an error in debug mode or Nil otherwise.
+
+	{
+	if (m_Universe.InDebugMode())
+		return ICCItemPtr(CCodeChain::CreateError(sError, pValue));
+	else
+		return ICCItemPtr(ICCItem::Nil);
+	}
+
+ICCItemPtr CCodeChainCtx::DebugError (ICCItem *pResult) const
+
+//	DebugError
+//
+//	Swallows errors unless in debug mode.
+
+	{
+	if (pResult->IsError() && !m_Universe.InDebugMode())
+		return ICCItemPtr(ICCItem::Nil);
+	else
+		return ICCItemPtr(pResult->Reference());
+	}
+
 void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
 
 //	DefineDamageCtx

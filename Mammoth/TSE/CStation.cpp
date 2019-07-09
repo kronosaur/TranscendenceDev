@@ -33,7 +33,6 @@
 #define PROPERTY_DEST_STARGATE_ID				CONSTLIT("destStargateID")
 #define PROPERTY_DOCKING_PORT_COUNT				CONSTLIT("dockingPortCount")
 #define PROPERTY_EXPLORED						CONSTLIT("explored")
-#define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")

@@ -256,7 +256,7 @@ void CDesignPropertyDefinitions::InitObjectData (CUniverse &Universe, CSpaceObje
 		}
 	}
 
-void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDataBlock &Dest) const
+void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CDesignType &Type) const
 
 //	InitTypeData
 //
@@ -264,6 +264,7 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDa
 
 	{
 	CCodeChainCtx CCCtx(Universe);
+	CCCtx.DefineContainingType(&Type);
 
 	for (int i = 0; i < m_Defs.GetCount(); i++)
 		{
@@ -282,7 +283,7 @@ void CDesignPropertyDefinitions::InitTypeData (CUniverse &Universe, CAttributeDa
 						}
 
 					if (!pResult->IsNil())
-						Dest.SetData(m_Defs.GetKey(i), pResult);
+						Type.SetGlobalData(m_Defs.GetKey(i), pResult);
 					}
 
 				break;

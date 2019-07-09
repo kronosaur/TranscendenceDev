@@ -47,7 +47,7 @@ class CDesignPropertyDefinitions
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 		void InitItemData (CUniverse &Universe, CItem &Item) const;
 		void InitObjectData (CUniverse &Universe, CSpaceObject &Obj, CAttributeDataBlock &Dest) const;
-		void InitTypeData (CUniverse &Universe, CAttributeDataBlock &Dest) const;
+		void InitTypeData (CUniverse &Universe, CDesignType &Type) const;
 
 	private:
 		struct SDef

@@ -5264,6 +5264,48 @@ bool CSpaceObject::InBarrier (const CVector &vPos)
 	return false;
 	}
 
+bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncProperty
+//
+//	Increment the given property.
+
+	{
+	//	First see if our sub-classes handle this property
+
+	if (OnIncProperty(sProperty, pInc, pResult))
+		return true;
+
+	//	See if this is a custom property, we set data
+
+	else if (CDesignType *pType = GetType())
+		{
+		ICCItemPtr pDummy;
+		EPropertyType iType;
+		if (!pType->FindCustomProperty(sProperty, pDummy, &iType))
+			return false;
+
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				pResult = pType->IncGlobalData(sProperty, pInc);
+				return true;
+
+			case EPropertyType::propData:
+				pResult = IncData(sProperty, pInc);
+				return true;
+
+			default:
+				return false;
+			}
+		}
+
+	//	Not handled
+
+	else
+		return false;
+	}
+
 bool CSpaceObject::InteractsWith (int iInteraction) const
 
 //	InteractsWith
@@ -7247,13 +7289,22 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		{
 		ICCItemPtr pDummy;
 		EPropertyType iType;
-		if (pType->FindCustomProperty(sName, pDummy, &iType) && iType == EPropertyType::propData)
-			{
-			SetData(sName, pValue);
-			return true;
-			}
-		else
+		if (!pType->FindCustomProperty(sName, pDummy, &iType))
 			return false;
+
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				pType->SetGlobalData(sName, pValue);
+				return true;
+
+			case EPropertyType::propData:
+				SetData(sName, pValue);
+				return true;
+
+			default:
+				return false;
+			}
 		}
 
 	else

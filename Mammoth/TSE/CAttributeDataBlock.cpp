@@ -298,7 +298,7 @@ ICCItemPtr CAttributeDataBlock::IncData (const CString &sAttrib, ICCItem *pValue
     //  If pValue is NULL, we default to 1. We add ref no matter what so that
     //  we can discard unconditionally.
 
-    if (pValue == NULL)
+    if (pValue == NULL || pValue->IsNil())
         pValue = CCodeChain::CreateInteger(1);
     else
         pValue->Reference();

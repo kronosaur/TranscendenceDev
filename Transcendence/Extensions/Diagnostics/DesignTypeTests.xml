@@ -38,7 +38,16 @@
 						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4 -2)		result:(+ 2.2 -2)	}
 						{	test:'(typIncProperty &unidTestBaseType; 'diag.global4 7.3)		result:7.5	}
 
-						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2a )		result:2	}
+						;	NOTE: a global property is unique for each type. That is, even though unidTestBaseType
+						;	'diag.global2a has been set to 1, it does not affect its descendant type 
+						;	(whose value is still Nil). Thus when we increment below we're still at 1.
+
+						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2a)		result:1	}
+
+						{	test:'(typSetProperty &unidTestBaseType; 'diag.global2c 17)		result:True	}
+						{	test:'(typSetProperty &unidTestDescendantType1; 'diag.global2c 1)		result:True	}
+						{	test:'(typGetProperty &unidTestDescendantType1; 'diag.global2c)		result:1	}
+						{	test:'(typIncProperty &unidTestDescendantType1; 'diag.global2c)		result:2	}
 
 						{	test:'(setq gTestStation1 (sysCreateStation &stTestStation1; Nil))		result:'ignore	}
 						{	test:'(objGetProperty gTestStation1 'diag.data1)				result:7	}
@@ -48,6 +57,13 @@
 						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:11	}
 						{	test:'(objSetProperty gTestStation1 'diag.data2 -5)				result:True	}
 						{	test:'(objGetProperty gTestStation1 'diag.data2)				result:-5	}
+
+						{	test:'(objSetProperty gTestStation1 'diag.global2a 'foo7)		result:True	}
+						{	test:'(objGetProperty gTestStation1 'diag.global2a)				result:'foo7	}
+
+						{	test:'(objSetProperty gTestStation1 'diag.global2a 15)			result:True	}
+						{	test:'(objIncProperty gTestStation1 'diag.global2a 7)			result:22	}
+						{	test:'(objGetProperty gTestStation1 'diag.global2a)				result:22	}
 						))
 					)
 			</OnGlobalStartDiagnostics>

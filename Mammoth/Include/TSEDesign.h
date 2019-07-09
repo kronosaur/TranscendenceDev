@@ -123,24 +123,24 @@ class CDesignTypeCriteria
 		CDesignTypeCriteria (void);
 
 		CString AsString (void) const;
-		inline bool ChecksLevel (void) const { return (m_iGreaterThanLevel != INVALID_COMPARE || m_iLessThanLevel != INVALID_COMPARE); }
-		inline const CString &GetExcludedAttrib (int iIndex) const { return m_sExclude[iIndex]; }
-		inline int GetExcludedAttribCount (void) const { return m_sExclude.GetCount(); }
-		inline const CString &GetExcludedSpecialAttrib (int iIndex) const { return m_sExcludeSpecial[iIndex]; }
-		inline int GetExcludedSpecialAttribCount (void) const { return m_sExcludeSpecial.GetCount(); }
-		inline const CString &GetRequiredAttrib (int iIndex) const { return m_sRequire[iIndex]; }
-		inline int GetRequiredAttribCount (void) const { return m_sRequire.GetCount(); }
-		inline const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
-		inline int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
-        inline void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
-		inline bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
-        inline bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
-		inline bool IsEqual (const CDesignTypeCriteria &Src) const { return strEquals(Src.AsString(), AsString()); }
-		inline bool MatchesDesignType (DesignTypes iType) const
+		bool ChecksLevel (void) const { return (m_iGreaterThanLevel != INVALID_COMPARE || m_iLessThanLevel != INVALID_COMPARE); }
+		const CString &GetExcludedAttrib (int iIndex) const { return m_sExclude[iIndex]; }
+		int GetExcludedAttribCount (void) const { return m_sExclude.GetCount(); }
+		const CString &GetExcludedSpecialAttrib (int iIndex) const { return m_sExcludeSpecial[iIndex]; }
+		int GetExcludedSpecialAttribCount (void) const { return m_sExcludeSpecial.GetCount(); }
+		const CString &GetRequiredAttrib (int iIndex) const { return m_sRequire[iIndex]; }
+		int GetRequiredAttribCount (void) const { return m_sRequire.GetCount(); }
+		const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
+		int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
+        void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
+		bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
+        bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
+		bool IsEqual (const CDesignTypeCriteria &Src) const { return strEquals(Src.AsString(), AsString()); }
+		bool MatchesDesignType (DesignTypes iType) const
 			{ return ((m_dwTypeSet & (1 << iType)) ? true : false); }
 		bool MatchesLevel (int iMinLevel, int iMaxLevel) const;
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline bool StructuresOnly (void) const { return m_bStructuresOnly; }
+		bool StructuresOnly (void) const { return m_bStructuresOnly; }
 		void WriteToStream (IWriteStream *pStream);
 
 		static ALERROR ParseCriteria (const CString &sCriteria, CDesignTypeCriteria *retCriteria);
@@ -208,26 +208,26 @@ class CDesignType
 
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
-		inline ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
-		inline void PrepareReinit (void) { OnPrepareReinit(); }
+		void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
-		inline void UnbindDesign (void) { m_pInheritFrom = NULL; OnUnbindDesign(); }
+		void UnbindDesign (void) { m_pInheritFrom = NULL; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
-		inline void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
+		void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
-		inline void ClearMark (void) { OnClearMark(); }
-		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL, bool bNoInheritance = false) const;
-		inline CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
+		void ClearMark (void) { OnClearMark(); }
+		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
+		CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
-		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_pExtra || !m_pExtra->EventsCache[iEvent].pCode) 
 				return false;
@@ -270,20 +270,20 @@ class CDesignType
 		void FireOnGlobalUpdate (const SEventHandlerDesc &Event);
 		void FireOnRandomEncounter (CSpaceObject *pObj = NULL);
 		size_t GetAllocMemoryUsage (void) const;
-		inline DWORD GetAPIVersion (void) const { return m_dwVersion; }
-		inline const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
-		inline const CString &GetAttributes (void) const { return m_sAttributes; }
-		inline CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
-		inline int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
+		DWORD GetAPIVersion (void) const { return m_dwVersion; }
+		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return (m_pExtra ? m_pExtra->ArmorDefinitions : CArmorMassDefinitions::Null); }
+		const CString &GetAttributes (void) const { return m_sAttributes; }
+		CString GetDataField (const CString &sField) const { CString sValue; FindDataField(sField, &sValue); return sValue; }
+		int GetDataFieldInteger (const CString &sField) { CString sValue; if (FindDataField(sField, &sValue)) return strToInt(sValue, 0, NULL); else return 0; }
 		const CEconomyType &GetDefaultCurrency (void) const { return OnGetDefaultCurrency(); }
-		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return (m_pExtra ? m_pExtra->DisplayAttribs : CDisplayAttributeDefinitions::Null); }
+		const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return (m_pExtra ? m_pExtra->DisplayAttribs : CDisplayAttributeDefinitions::Null); }
 		CString GetEntityName (void) const;
 		ICCItem *GetEventHandler (const CString &sEvent) const;
 		void GetEventHandlers (const CEventHandler **retHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers);
 		CExtension *GetExtension (void) const { return m_pExtension; }
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
-		inline CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
-		inline DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
+		CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
+		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
 		CXMLElement *GetLocalScreens (void) const;
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
@@ -295,35 +295,36 @@ class CDesignType
 		ICCItemPtr GetStaticData (const CString &sAttrib) const;
 		void GetStats (SStats &Stats) const;
 		CString GetTypeClassName (void) const;
-		inline DWORD GetUNID (void) const { return m_dwUNID; }
-		inline CXMLElement *GetXMLElement (void) const { return m_pXML; }
+		DWORD GetUNID (void) const { return m_dwUNID; }
+		CXMLElement *GetXMLElement (void) const { return m_pXML; }
 		TSortMap<DWORD, DWORD> GetXMLMergeFlags (void) const;
 		bool HasAttribute (const CString &sAttrib) const;
-		inline bool HasCustomMapDescLanguage (void) const { return (m_fHasCustomMapDescLang ? true : false); }
-		inline bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
+		bool HasCustomMapDescLanguage (void) const { return (m_fHasCustomMapDescLang ? true : false); }
+		bool HasEvents (void) const { return !m_Events.IsEmpty() || (m_pInheritFrom && m_pInheritFrom->HasEvents()); }
 		bool HasLanguageBlock (void) const;
 		bool HasLanguageEntry (const CString &sID) const;
-		inline bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasLiteralAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-        inline ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
+        ICCItemPtr IncGlobalData (const CString &sAttrib, ICCItem *pValue = NULL) { return SetExtra()->GlobalData.IncData(sAttrib, pValue); }
 		ICCItemPtr IncTypeProperty (const CString &sProperty, ICCItem *pValue);
 		bool InheritsFrom (DWORD dwUNID) const;
 		void InitCachedEvents (int iCount, char **pszEvents, SEventHandlerDesc *retEvents);
 		void InitItemData (CItem &Item) const;
 		void InitObjectData (CSpaceObject &Obj, CAttributeDataBlock &Data) const;
-		inline bool IsMerged (void) const { return m_bIsMerged; }
-		inline bool IsModification (void) const { return m_bIsModification; }
-		inline bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
-		inline void MarkImages (void) { OnMarkImages(); }
-		inline void SetGlobalData (const CString &sAttrib, ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
-		inline void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
-		inline void SetMerged (bool bValue = true) { m_bIsMerged = true; }
-		inline void SetModification (bool bValue = true) { m_bIsModification = true; }
+		void InitTypeData (CDesignType &Type) const;
+		bool IsMerged (void) const { return m_bIsMerged; }
+		bool IsModification (void) const { return m_bIsModification; }
+		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
+		void MarkImages (void) { OnMarkImages(); }
+		void SetGlobalData (const CString &sAttrib, ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
+		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
+		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
+		void SetModification (bool bValue = true) { m_bIsModification = true; }
 		bool SetTypeProperty (const CString &sProperty, ICCItem *pValue);
-		inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
-		inline void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
-		inline void Sweep (void) { OnSweep(); }
-		inline void TopologyInitialized (void) { OnTopologyInitialized(); }
+		void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
+		void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
+		void Sweep (void) { OnSweep(); }
+		void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
@@ -402,8 +403,9 @@ class CDesignType
 			};
 
 		void AddUniqueHandlers (TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers);
+		bool FindCustomPropertyRaw (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		SEventHandlerDesc *GetInheritedCachedEvent (ECachedHandlers iEvent) const;
-		inline bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
+		bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
 		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const;
@@ -436,8 +438,8 @@ template <class CLASS> class CDesignTypeRef
 	public:
 		CDesignTypeRef (void) : m_pType(NULL), m_dwUNID(0) { }
 
-		inline operator CLASS *() const { return m_pType; }
-		inline CLASS * operator->() const { return m_pType; }
+		operator CLASS *() const { return m_pType; }
+		CLASS * operator->() const { return m_pType; }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx)
 			{
@@ -461,7 +463,7 @@ template <class CLASS> class CDesignTypeRef
 			return NOERROR;
 			}
 
-		inline DWORD GetUNID (void) const { return m_dwUNID; }
+		DWORD GetUNID (void) const { return m_dwUNID; }
 		ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID, DWORD dwDefault = 0) { if (!sUNID.IsBlank()) return ::LoadUNID(Ctx, sUNID, &m_dwUNID); else { m_dwUNID = dwDefault; return NOERROR; } }
 
 		void Set (CLASS *pType)
@@ -494,7 +496,7 @@ class CItemTypeRef : public CDesignTypeRef<CItemType>
 	public:
 		CItemTypeRef (void) { }
 		CItemTypeRef (CItemType *pType) { Set(pType); }
-		inline ALERROR Bind (SDesignLoadCtx &Ctx) { return CDesignTypeRef<CItemType>::Bind(Ctx); }
+		ALERROR Bind (SDesignLoadCtx &Ctx) { return CDesignTypeRef<CItemType>::Bind(Ctx); }
 		ALERROR Bind (SDesignLoadCtx &Ctx, ItemCategories iCategory);
 	};
 
@@ -523,19 +525,19 @@ class CDockScreenTypeRef
 		CDockScreenTypeRef (void) : m_pType(NULL), m_pLocal(NULL) { }
 		CDockScreenTypeRef (const CString &sUNID) : m_sUNID(sUNID), m_pType(NULL), m_pLocal(NULL) { }
 
-		inline operator CDockScreenType *() const { return m_pType; }
-		inline CDockScreenType * operator->() const { return m_pType; }
+		operator CDockScreenType *() const { return m_pType; }
+		CDockScreenType * operator->() const { return m_pType; }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, CXMLElement *pLocalScreens = NULL);
 		CXMLElement *GetDesc (void) const;
 		CDesignType *GetDockScreen (CDesignType *pRoot, CString *retsName) const;
 		CString GetStringUNID (CDesignType *pRoot) const;
-		inline const CString &GetUNID (void) const { return m_sUNID; }
-		inline bool IsEmpty (void) const { return m_sUNID.IsBlank(); }
+		const CString &GetUNID (void) const { return m_sUNID; }
+		bool IsEmpty (void) const { return m_sUNID.IsBlank(); }
 		void LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID);
 
 		ALERROR Bind (CXMLElement *pLocalScreens = NULL);
-		inline void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
+		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
 
 	private:
 		CString m_sUNID;
@@ -548,14 +550,14 @@ class CEconomyTypeRef
 	public:
 		CEconomyTypeRef (void) : m_pType(NULL) { }
 
-		inline operator const CEconomyType *() const { return m_pType; }
-		inline const CEconomyType * operator->() const { return m_pType; }
+		operator const CEconomyType *() const { return m_pType; }
+		const CEconomyType * operator->() const { return m_pType; }
 
 		ALERROR Bind (SDesignLoadCtx &Ctx);
-		inline bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
+		bool IsEmpty (void) const { return (m_sUNID.IsBlank() && m_pType == NULL); }
 		void LoadUNID (const CString &sUNID) { m_sUNID = sUNID; }
 		void Set (CUniverse &Universe, DWORD dwUNID);
-		inline void Set (const CEconomyType *pType) { m_pType = pType; }
+		void Set (const CEconomyType *pType) { m_pType = pType; }
 
 	private:
 		CString m_sUNID;
@@ -575,7 +577,7 @@ class CEffectCreatorRef : public CDesignTypeRef<CEffectCreator>
 		ALERROR CreateBeamEffect (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
 		IEffectPainter *CreatePainter (CCreatePainterCtx &Ctx, CEffectCreator *pDefaultCreator = NULL) const;
-		inline bool IsEmpty (void) const { return (m_dwUNID == 0 && m_pType == NULL); }
+		bool IsEmpty (void) const { return (m_dwUNID == 0 && m_pType == NULL); }
 		ALERROR LoadEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc, const CString &sAttrib);
 		ALERROR LoadSimpleEffect (SDesignLoadCtx &Ctx, const CString &sUNID, CXMLElement *pDesc);
 		void Set (CEffectCreator *pEffect);
@@ -740,11 +742,11 @@ class CDesignList
 		CDesignList (void) : m_List(128) { }
 		~CDesignList (void) { }
 
-		inline void AddEntry (CDesignType *pType) { m_List.Insert(pType); }
+		void AddEntry (CDesignType *pType) { m_List.Insert(pType); }
 		void Delete (DWORD dwUNID);
 		void DeleteAll (bool bFree = false);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CDesignType *GetEntry (int iIndex) const { return m_List[iIndex]; }
+		int GetCount (void) const { return m_List.GetCount(); }
+		CDesignType *GetEntry (int iIndex) const { return m_List[iIndex]; }
 
 	private:
 		TArray<CDesignType *> m_List;
@@ -761,8 +763,8 @@ class CDesignTable
 		void Delete (DWORD dwUNID);
 		void DeleteAll (void);
 		CDesignType *FindByUNID (DWORD dwUNID) const;
-		inline int GetCount (void) const { return m_Table.GetCount(); }
-		inline CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
+		int GetCount (void) const { return m_Table.GetCount(); }
+		CDesignType *GetEntry (int iIndex) const { return m_Table.GetValue(iIndex); }
 		ALERROR Merge (const CDesignTable &Source, CDesignList &Override, const TArray<DWORD> &ExtensionsIncluded, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion);
 		ALERROR Merge (const CDynamicDesignTable &Source, CDesignList *ioOverride = NULL);
 
@@ -851,55 +853,55 @@ class CExtension
 		void CreateIcon (int cxWidth, int cyHeight, CG32bitImage **retpIcon) const;
 		ALERROR ExecuteGlobals (SDesignLoadCtx &Ctx);
 		bool IsLibraryInUse (DWORD dwUNID) const;
-		inline CAdventureDesc *GetAdventureDesc (void) const { return m_pAdventureDesc; }
-		inline DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
-		inline DWORD GetAutoIncludeAPIVersion (void) const { return m_dwAutoIncludeAPIVersion; }
+		CAdventureDesc *GetAdventureDesc (void) const { return m_pAdventureDesc; }
+		DWORD GetAPIVersion (void) const { return m_dwAPIVersion; }
+		DWORD GetAutoIncludeAPIVersion (void) const { return m_dwAutoIncludeAPIVersion; }
 		CG32bitImage *GetCoverImage (void) const;
-		inline const TArray<CString> &GetCredits (void) const { return m_Credits; }
-		inline const CString &GetDisabledReason (void) const { return m_sDisabledReason; }
-		inline CString GetDesc (void) { return (m_pAdventureDesc ? m_pAdventureDesc->GetDesc() : NULL_STR); }
-		inline const CDesignTable &GetDesignTypes (void) { return m_DesignTypes; }
-		inline const CIntegerIP &GetDigest (void) const { return m_Digest; }
-		inline CExternalEntityTable *GetEntities (void) { return m_pEntities; }
+		const TArray<CString> &GetCredits (void) const { return m_Credits; }
+		const CString &GetDisabledReason (void) const { return m_sDisabledReason; }
+		CString GetDesc (void) { return (m_pAdventureDesc ? m_pAdventureDesc->GetDesc() : NULL_STR); }
+		const CDesignTable &GetDesignTypes (void) { return m_DesignTypes; }
+		const CIntegerIP &GetDigest (void) const { return m_Digest; }
+		CExternalEntityTable *GetEntities (void) { return m_pEntities; }
 		CString GetEntityName (DWORD dwUNID) const;
-		inline const TArray<CString> &GetExternalResources (void) const { return m_Externals; }
-		inline const CString &GetFilespec (void) const { return m_sFilespec; }
-		inline EFolderTypes GetFolderType (void) const { return m_iFolderType; }
-		inline const SLibraryDesc &GetLibrary (int iIndex) const { return m_Libraries[iIndex]; }
-		inline int GetLibraryCount (void) const { return m_Libraries.GetCount(); }
-		inline ELoadStates GetLoadState (void) const { return m_iLoadState; }
-		inline DWORD GetMinExtensionAPIVersion (void) const { return m_dwMinExtensionAPIVersion; }
-		inline const CTimeDate &GetModifiedTime (void) const { return m_ModifiedTime; }
-		inline const CString &GetName (void) const { return m_sName; }
-		inline CTopologyDescTable &GetTopology (void) { return m_Topology; }
-		inline DWORD GetRelease (void) const { return m_dwRelease; }
-		inline EExtensionTypes GetType (void) const { return m_iType; }
-		inline CString GetTypeName (void) const { return GetTypeName(GetType()); }
-		inline DWORD GetUNID (void) const { return m_dwUNID; }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
-		inline const CString &GetVersion (void) const { return m_sVersion; }
+		const TArray<CString> &GetExternalResources (void) const { return m_Externals; }
+		const CString &GetFilespec (void) const { return m_sFilespec; }
+		EFolderTypes GetFolderType (void) const { return m_iFolderType; }
+		const SLibraryDesc &GetLibrary (int iIndex) const { return m_Libraries[iIndex]; }
+		int GetLibraryCount (void) const { return m_Libraries.GetCount(); }
+		ELoadStates GetLoadState (void) const { return m_iLoadState; }
+		DWORD GetMinExtensionAPIVersion (void) const { return m_dwMinExtensionAPIVersion; }
+		const CTimeDate &GetModifiedTime (void) const { return m_ModifiedTime; }
+		const CString &GetName (void) const { return m_sName; }
+		CTopologyDescTable &GetTopology (void) { return m_Topology; }
+		DWORD GetRelease (void) const { return m_dwRelease; }
+		EExtensionTypes GetType (void) const { return m_iType; }
+		CString GetTypeName (void) const { return GetTypeName(GetType()); }
+		DWORD GetUNID (void) const { return m_dwUNID; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		const CString &GetVersion (void) const { return m_sVersion; }
 		size_t GetXMLMemoryUsage (void) const;
-		inline bool HasIcon (void) const { CG32bitImage *pIcon = GetCoverImage(); return (pIcon && pIcon->GetWidth() > 0 && pIcon->GetHeight() > 0); }
-		inline bool IsAutoInclude (void) const { return m_bAutoInclude; }
-		inline bool IsDebugOnly (void) const { return m_bDebugOnly; }
-		inline bool IsDisabled (void) const { return m_bDisabled; }
-		inline bool IsHidden (void) const { return m_bHidden; }
-		inline bool IsMarked (void) const { return m_bMarked; }
-		inline bool IsOfficial (void) const { return ((m_dwUNID & 0xFF000000) < 0xA0000000); }
-		inline bool IsPrivate (void) const { return m_bPrivate; }
-		inline bool IsRegistered (void) const { return m_bRegistered; }
-		inline bool IsRegistrationVerified (void) { return (m_bRegistered && m_bVerified); }
+		bool HasIcon (void) const { CG32bitImage *pIcon = GetCoverImage(); return (pIcon && pIcon->GetWidth() > 0 && pIcon->GetHeight() > 0); }
+		bool IsAutoInclude (void) const { return m_bAutoInclude; }
+		bool IsDebugOnly (void) const { return m_bDebugOnly; }
+		bool IsDisabled (void) const { return m_bDisabled; }
+		bool IsHidden (void) const { return m_bHidden; }
+		bool IsMarked (void) const { return m_bMarked; }
+		bool IsOfficial (void) const { return ((m_dwUNID & 0xFF000000) < 0xA0000000); }
+		bool IsPrivate (void) const { return m_bPrivate; }
+		bool IsRegistered (void) const { return m_bRegistered; }
+		bool IsRegistrationVerified (void) { return (m_bRegistered && m_bVerified); }
 		ALERROR Load (ELoadStates iDesiredState, IXMLParserController *pResolver, const SLoadOptions &Options, CString *retsError);
-		inline void SetDeleted (void) { m_bDeleted = true; }
-		inline void SetDisabled (const CString &sReason) { if (!m_bDisabled) { m_sDisabledReason = sReason; m_bDisabled = true; } }
-		inline void SetDigest (const CIntegerIP &Digest) { m_Digest = Digest; }
-		inline void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
-		inline void SetModifiedTime (const CTimeDate &Time) { m_ModifiedTime = Time; }
-		inline void SetName (const CString &sName) { m_sName = sName; }
-		inline void SetVerified (bool bVerified = true) { m_bVerified = bVerified; }
+		void SetDeleted (void) { m_bDeleted = true; }
+		void SetDisabled (const CString &sReason) { if (!m_bDisabled) { m_sDisabledReason = sReason; m_bDisabled = true; } }
+		void SetDigest (const CIntegerIP &Digest) { m_Digest = Digest; }
+		void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
+		void SetModifiedTime (const CTimeDate &Time) { m_ModifiedTime = Time; }
+		void SetName (const CString &sName) { m_sName = sName; }
+		void SetVerified (bool bVerified = true) { m_bVerified = bVerified; }
 		void SweepImages (void);
-		inline bool UsesCompatibilityLibrary (void) const { return m_bUsesCompatibilityLibrary; }
-		inline bool UsesXML (void) const { return m_bUsesXML; }
+		bool UsesCompatibilityLibrary (void) const { return m_bUsesCompatibilityLibrary; }
+		bool UsesXML (void) const { return m_bUsesXML; }
 
 		static ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, CString *retsError);
 		static void DebugDump (CExtension *pExtension, bool bFull = false);
@@ -1022,7 +1024,7 @@ class CExtensionCollection
 		CExtensionCollection (void);
 		~CExtensionCollection (void);
 
-		inline void AddExtensionFolder (const CString &sFilespec) { m_ExtensionFolders.Insert(sFilespec); }
+		void AddExtensionFolder (const CString &sFilespec) { m_ExtensionFolders.Insert(sFilespec); }
 		void CleanUp (void);
 		ALERROR ComputeAvailableAdventures (DWORD dwFlags, TArray<CExtension *> *retList, CString *retsError);
 		ALERROR ComputeAvailableExtensions (CExtension *pAdventure, DWORD dwFlags, const TArray<DWORD> &Extensions, TArray<CExtension *> *retList, CString *retsError);
@@ -1044,9 +1046,9 @@ class CExtensionCollection
 		bool IsExtensionDisabledManually (DWORD dwUNID) const { return m_DisabledExtensions.Find(dwUNID); }
 		bool IsRegisteredGame (CExtension *pAdventure, const TArray<CExtension *> &DesiredExtensions, DWORD dwFlags);
 		ALERROR Load (const CString &sFilespec, const TSortMap<DWORD, bool> &DisabledExtensions, DWORD dwFlags, CString *retsError);
-		inline bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
+		bool LoadedInDebugMode (void) { return m_bLoadedInDebugMode; }
 		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError);
-		inline void SetCollectionFolder (const CString &sFilespec) { m_sCollectionFolder = sFilespec; }
+		void SetCollectionFolder (const CString &sFilespec) { m_sCollectionFolder = sFilespec; }
 		void SetExtensionEnabled (DWORD dwUNID, bool bEnabled);
 		void SweepImages (void);
 		void UpdateCollectionStatus (TArray<CMultiverseCatalogEntry> &Collection, const SCollectionStatusOptions &Options);
@@ -1061,7 +1063,7 @@ class CExtensionCollection
 		void ClearAllMarks (void);
 		void ComputeCompatibilityLibraries (CExtension *pAdventure, DWORD dwFlags, TArray<CExtension *> *retList);
 		ALERROR ComputeFilesToLoad (const CString &sFilespec, CExtension::EFolderTypes iFolder, TSortMap<CString, int> &List, CString *retsError);
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR LoadBaseFile (const CString &sFilespec, DWORD dwFlags, CString *retsError);
 		ALERROR LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CExtension **retpExtension);
 		ALERROR LoadFile (const CString &sFilespec, CExtension::EFolderTypes iFolder, DWORD dwFlags, const CIntegerIP &CheckDigest, bool *retbReload, CString *retsError);
@@ -1096,10 +1098,10 @@ class CDynamicDesignTable
 		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
 		ALERROR DefineType (CExtension *pExtension, DWORD dwUNID, CXMLElement *pSource, CDesignType **retpType = NULL, CString *retsError = NULL);
 		void Delete (DWORD dwUNID);
-		inline void DeleteAll (void) { CleanUp(); }
+		void DeleteAll (void) { CleanUp(); }
 		CDesignType *FindType (DWORD dwUNID);
-		inline int GetCount (void) const { return m_Table.GetCount(); }
-		inline CDesignType *GetType (int iIndex) const { return m_Table[iIndex].pType; }
+		int GetCount (void) const { return m_Table.GetCount(); }
+		CDesignType *GetType (int iIndex) const { return m_Table[iIndex].pType; }
 		int GetXMLMemoryUsage (void) const;
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
@@ -1132,15 +1134,15 @@ class CDynamicDesignTable
 		void CleanUp (void);
 		ALERROR Compile (SEntry *pEntry, CString *retsError = NULL);
 		ALERROR CreateType (SEntry *pEntry, CXMLElement *pDesc, CDesignType **retpType, CString *retsError = NULL);
-		inline const SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
+		const SEntry *GetEntry (int iIndex) const { return &m_Table[iIndex]; }
 
 		TSortMap<DWORD, SEntry> m_Table;
 	};
 
 struct SDesignLoadCtx
 	{
-	inline DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
-	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+	DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
+	CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 	//	Context
 	CDesignCollection *pDesign = NULL;		//	Design collection
@@ -1243,9 +1245,9 @@ class CDesignCollection
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
-		inline const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
-		inline const CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
-		inline CDesignType *FindEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
+		const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
+		const CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
+		CDesignType *FindEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);
@@ -1276,27 +1278,27 @@ class CDesignCollection
 		void FireOnGlobalUniverseLoad (void);
 		void FireOnGlobalUniverseSave (void);
 		void FireOnGlobalUpdate (int iTick);
-		inline DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
-		inline DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
-		inline CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
-		inline const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
-		inline int GetCount (void) const { return m_AllTypes.GetCount(); }
-		inline int GetCount (DesignTypes iType) const { return m_ByType[iType].GetCount(); }
-		inline const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
+		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
+		DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
+		CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
+		const CArmorMassDefinitions &GetArmorMassDefinitions (void) const { return m_ArmorDefinitions; }
+		int GetCount (void) const { return m_AllTypes.GetCount(); }
+		int GetCount (DesignTypes iType) const { return m_ByType[iType].GetCount(); }
+		const CDisplayAttributeDefinitions &GetDisplayAttributes (void) const { return m_DisplayAttribs; }
 		DWORD GetDynamicUNID (const CString &sName);
 		void GetEnabledExtensions (TArray<CExtension *> *retExtensionList);
-		inline CDesignType *GetEntry (int iIndex) const { return m_AllTypes.GetEntry(iIndex); }
-		inline CDesignType *GetEntry (DesignTypes iType, int iIndex) const { return m_ByType[iType].GetEntry(iIndex); }
-		inline CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
-		inline int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
+		CDesignType *GetEntry (int iIndex) const { return m_AllTypes.GetEntry(iIndex); }
+		CDesignType *GetEntry (DesignTypes iType, int iIndex) const { return m_ByType[iType].GetEntry(iIndex); }
+		CExtension *GetExtension (int iIndex) const { return m_BoundExtensions[iIndex]; }
+		int GetExtensionCount (void) const { return m_BoundExtensions.GetCount(); }
 		CG32bitImage *GetImage (DWORD dwUNID, DWORD dwFlags = 0);
 		CString GetStartingNodeID (void);
 		void GetStats (SStats &Result) const;
 		CTopologyDescTable *GetTopologyDesc (void) const { return m_pTopology; }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
-		inline bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		bool HasDynamicTypes (void) { return (m_DynamicTypes.GetCount() > 0); }
 		bool IsAdventureExtensionBound (DWORD dwUNID);
-		inline bool IsBindComplete (void) const { return !m_bInBindDesign; }
+		bool IsBindComplete (void) const { return !m_bInBindDesign; }
 		bool IsRegisteredGame (void);
 		void MarkGlobalImages (void);
 		void NotifyTopologyInit (void);
@@ -1307,7 +1309,7 @@ class CDesignCollection
 
 		//	Dock Screens
 
-		inline CDockScreenType *FindDockScreen (DWORD dwUNID) { return CDockScreenType::AsType(FindEntry(dwUNID)); }
+		CDockScreenType *FindDockScreen (DWORD dwUNID) { return CDockScreenType::AsType(FindEntry(dwUNID)); }
 		CDesignType *ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 	private:

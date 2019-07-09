@@ -302,6 +302,12 @@ void COverlay::CreateFromType (COverlayType &Type,
 
 	pField->m_pHitPainter = NULL;
 
+	//	Initialize data
+
+	Type.InitObjectData(Source, pField->m_Data);
+
+	//	Done
+
 	*retpField = pField;
 	}
 
@@ -340,6 +346,52 @@ void COverlay::Destroy (CSpaceObject *pSource)
 				m_pHitPainter = NULL;
 				}
 			}
+		}
+	}
+
+bool COverlay::FindCustomProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty, ICCItemPtr &pValue) const
+
+//	FindCustomProperty
+//
+//	Returns a custom property. Returns FALSE if given property is not defined.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	EPropertyType iType;
+	ICCItemPtr pResult = m_pType->GetProperty(CCCtx, sProperty, &iType);
+
+	if (iType == EPropertyType::propNone)
+		return false;
+
+	//	If the property is an object property, then we need to look in 
+	//	object data.
+
+	else if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
+		{
+		pValue = GetData(sProperty);
+		return true;
+		}
+
+	//	If this is a dynamic property, we need to evaluate.
+
+	else if (iType == EPropertyType::propDynamicData)
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+		Ctx.SaveAndDefineSourceVar(&SourceObj);
+		Ctx.SaveAndDefineOverlayID(m_dwID);
+
+		pValue = Ctx.RunCode(pResult);
+		return true;
+		}
+
+	//	Otherwise we have a valid property.
+
+	else
+		{
+		pValue = pResult;
+		return true;
 		}
 	}
 
@@ -676,7 +728,7 @@ bool COverlay::GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const
 	return bHasImpact;
 	}
 
-CVector COverlay::GetPos (CSpaceObject *pSource)
+CVector COverlay::GetPos (CSpaceObject *pSource) const
 
 //	GetPos
 //
@@ -692,32 +744,112 @@ CVector COverlay::GetPos (CSpaceObject *pSource)
 		return pSource->GetPos();
 	}
 
-ICCItem *COverlay::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, const CString &sName)
+ICCItemPtr COverlay::GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty) const
 
 //	GetProperty
 //
 //	Returns a property
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
+	ICCItemPtr pValue;
 
-	if (strEquals(sName, PROPERTY_COUNTER))
-		return CC.CreateInteger(m_iCounter);
+	if (strEquals(sProperty, PROPERTY_COUNTER))
+		return ICCItemPtr(m_iCounter);
 
-	else if (strEquals(sName, PROPERTY_COUNTER_LABEL))
-		return CC.CreateString(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel());
+	else if (strEquals(sProperty, PROPERTY_COUNTER_LABEL))
+		return ICCItemPtr(!m_sMessage.IsBlank() ? m_sMessage : m_pType->GetCounterLabel());
 
-	else if (strEquals(sName, PROPERTY_POS))
-		return CreateListFromVector(GetPos(pSource));
+	else if (strEquals(sProperty, PROPERTY_POS))
+		return ICCItemPtr(CreateListFromVector(GetPos(&SourceObj)));
 
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		return CC.CreateInteger(GetRotation());
+	else if (strEquals(sProperty, PROPERTY_ROTATION))
+		return ICCItemPtr(GetRotation());
 
-	else if (strEquals(sName, PROPERTY_TYPE))
-		return CC.CreateInteger(GetType()->GetUNID());
+	else if (strEquals(sProperty, PROPERTY_TYPE))
+		return ICCItemPtr(GetType()->GetUNID());
+
+	else if (FindCustomProperty(CCCtx, SourceObj, sProperty, pValue))
+		return pValue;
 
 	else
-		return CC.CreateNil();
+		return ICCItemPtr(ICCItem::Nil);
+	}
+
+bool COverlay::IncCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncCustomProperty
+//
+//	Increment a custom property.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+		
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			pResult = m_pType->IncGlobalData(sProperty, pInc);
+			return true;
+
+		case EPropertyType::propData:
+			pResult = IncData(sProperty, pInc);
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
+bool COverlay::IncProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncProperty
+//
+//	Increments a property. Returns FALSE if we could not increment.
+
+	{
+	CCodeChain &CC = GetUniverse().GetCC();
+
+	if (strEquals(sProperty, PROPERTY_COUNTER))
+		{
+		//	If we're a radius counter, then do unit conversion.
+
+		if (m_pType->GetCounterStyle() == COverlayType::counterRadius)
+			{
+			Metric rOldRadius = m_iCounter * g_KlicksPerPixel;
+			Metric rRadiusInc;
+			if (pInc && !pInc->IsNil())
+				rRadiusInc = ParseDistance(pInc->GetStringValue(), LIGHT_SECOND);
+			else
+				rRadiusInc = LIGHT_SECOND;
+
+			m_iCounter = mathRound((rOldRadius + rRadiusInc) / g_KlicksPerPixel);
+			SourceObj.RefreshBounds();
+			}
+
+		//	Otherwise, take the integer value
+
+		else if (pInc && !pInc->IsNil())
+			m_iCounter += pInc->GetIntegerValue();
+
+		else
+			m_iCounter += 1;
+
+		pResult = ICCItemPtr(m_iCounter);
+		return true;
+		}
+
+	//	See if this is a custom property
+
+	else if (IncCustomProperty(SourceObj, sProperty, pInc, pResult))
+		return true;
+
+	else
+		return false;
 	}
 
 void COverlay::Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx)
@@ -1027,6 +1159,36 @@ void COverlay::ReadFromStream (SLoadCtx &Ctx)
 	m_fFading =		((dwFlags & 0x00000002) ? true : false);
 	}
 
+bool COverlay::SetCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pValue)
+
+//	SetCustomProperty
+//
+//	Sets a property. Returns TRUE if this was a valid property.
+
+	{
+	if (m_pType == NULL)
+		return false;
+
+	ICCItemPtr pDummy;
+	EPropertyType iType;
+	if (!m_pType->FindCustomProperty(sProperty, pDummy, &iType))
+		return false;
+		
+	switch (iType)
+		{
+		case EPropertyType::propGlobal:
+			m_pType->SetGlobalData(sProperty, pValue);
+			return true;
+
+		case EPropertyType::propData:
+			SetData(sProperty, pValue);
+			return true;
+
+		default:
+			return false;
+		}
+	}
+
 bool COverlay::SetEffectProperty (const CString &sProperty, ICCItem *pValue)
 
 //	SetEffectProperty
@@ -1091,6 +1253,11 @@ bool COverlay::SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem
 
 	else if (strEquals(sName, PROPERTY_ROTATION))
 		SetRotation(pValue->GetIntegerValue());
+
+	//	See if this is a custom property
+
+	else if (SetCustomProperty(*pSource, sName, pValue))
+		return true;
 
 	//	If nothing else, ask the painter
 

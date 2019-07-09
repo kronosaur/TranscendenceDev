@@ -277,6 +277,30 @@ bool COverlayList::DestroyDeleted (void)
 	return bModified;
 	}
 
+COverlay *COverlayList::FindField (DWORD dwID)
+
+//	FindField
+//
+//	Returns a field with the given ID (or NULL).
+
+	{
+	COverlay *pField = m_pFirst;
+	while (pField)
+		{
+		if (pField->GetID() == dwID)
+			{
+			if (pField->IsDestroyed())
+				return NULL;
+			else
+				return pField;
+			}
+
+		pField = pField->GetNext();
+		}
+
+	return NULL;
+	}
+
 bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
 
 //	FireGetDockScreen
@@ -518,7 +542,7 @@ CVector COverlayList::GetPos (CSpaceObject *pSource, DWORD dwID)
 	return CVector();
 	}
 
-ICCItem *COverlayList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName)
+ICCItem *COverlayList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName) const
 
 //	GetProperty
 //
@@ -528,9 +552,11 @@ ICCItem *COverlayList::GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource
 	COverlay *pField = m_pFirst;
 	while (pField)
 		{
-
 		if (pField->GetID() == dwID && !pField->IsDestroyed())
-			return pField->GetProperty(pCCCtx, pSource, sName);
+			{
+			ICCItemPtr pResult = pField->GetProperty(*pCCCtx, *pSource, sName);
+			return pResult->Reference();
+			}
 
 		pField = pField->GetNext();
 		}
@@ -617,6 +643,20 @@ ICCItemPtr COverlayList::IncData (DWORD dwID, const CString &sAttrib, ICCItem *p
 
 	return ICCItemPtr(ICCItem::Nil);
     }
+
+bool COverlayList::IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncProperty
+//
+//	Increments a property.
+
+	{
+	COverlay *pField = FindField(dwID);
+	if (pField == NULL)
+		return false;
+
+	return pField->IncProperty(SourceObj, sProperty, pInc, pResult);
+	}
 
 void COverlayList::OnConditionsChanged (CSpaceObject *pSource)
 

@@ -843,5 +843,8 @@
     <Xml Include="CommonwealthMissionRevenge01.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

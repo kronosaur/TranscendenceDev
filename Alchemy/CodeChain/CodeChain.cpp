@@ -1296,6 +1296,49 @@ bool CCodeChain::HasIdentifier (ICCItem *pCode, const CString &sIdentifier)
 		}
 	}
 
+ICCItemPtr CCodeChain::IncValue (ICCItem *pValue, ICCItem *pInc)
+
+//	IncValue
+//
+//	Increments pValue by pInc and returns the result (or an error, if the 
+//	there is an error).
+
+	{
+	//	If current value is not a number, then we cannot increment.
+
+	if (pValue && !pValue->IsNil() && !pValue->IsNumber())
+		return ICCItemPtr(CreateError(CONSTLIT("Cannot increment: Not a number"), pValue));
+
+	//	Make sure increment value is a number.
+
+	else if (pInc && !pInc->IsNil() && !pInc->IsNumber())
+		return ICCItemPtr(CreateError(CONSTLIT("Cannot increment by that value"), pInc));
+
+	//	Otherwise, we're OK.
+
+	else if (pValue == NULL || pValue->IsNil())
+		{
+		if (pInc == NULL || pInc->IsNil())
+			return ICCItemPtr(1);
+		else
+			return ICCItemPtr(pInc->Reference());
+		}
+	else if (pValue->IsInteger())
+		{
+		if (pInc == NULL || pInc->IsNil())
+			return ICCItemPtr(pValue->GetIntegerValue() + 1);
+		else if (pInc->IsInteger())
+			return ICCItemPtr(pValue->GetIntegerValue() + pInc->GetIntegerValue());
+		else
+			return ICCItemPtr(pValue->GetDoubleValue() + pInc->GetDoubleValue());
+		}
+	else
+		{
+		double rInc = (pInc && !pInc->IsNil() ? pInc->GetDoubleValue(): 1.0);
+		return ICCItemPtr(pValue->GetDoubleValue() + rInc);
+		}
+	}
+
 ICCItem *CCodeChain::ListGlobals (void)
 
 //	ListGlobals

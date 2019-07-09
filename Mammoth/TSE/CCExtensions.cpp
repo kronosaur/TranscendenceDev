@@ -240,6 +240,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_HAS_SERVICE			133
 #define FN_OBJ_CONDITION			134
 #define FN_OBJ_ABANDON				135
+#define FN_OBJ_INC_PROPERTY			136
+#define FN_OBJ_INC_OVERLAY_PROPERTY	137
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -2087,6 +2089,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIncOverlayData obj overlayID attrib [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"(objIncOverlayProperty obj overlayID property [increment]) -> new value",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(objIncProperty obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
 			"(objIncVel obj velVector) -> velVector\n\n"
 
@@ -2554,6 +2564,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"msnIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"msnIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(msnIncProperty obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
 			"(msnRefreshSummary missionObj)",
@@ -4497,9 +4511,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sProperty = pArgs->GetElement(1)->GetStringValue();
 			if (sProperty.IsBlank())
-				return pCC->CreateNil();
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
 
-			return pType->IncTypeProperty(sProperty, pArgs->GetElement(2))->Reference();
+			return pCtx->DebugError(pType->IncTypeProperty(sProperty, pArgs->GetElement(2)))->Reference();
 			}
 
 		case FN_DESIGN_MARK_IMAGES:
@@ -6993,6 +7007,22 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
             return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
 			}
 
+		case FN_OBJ_INC_OVERLAY_PROPERTY:
+			{
+			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
+			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
+
+            COverlayList *pOverlays = pObj->GetOverlays();
+            if (pOverlays == NULL)
+                return pCC->CreateNil();
+
+			ICCItemPtr pResult;
+			if (!pOverlays->IncProperty(*pObj, dwID, sAttrib, pArgs->GetElement(3), pResult))
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(2))->Reference();
+
+			return pResult->Reference();
+			}
+
 		case FN_OBJ_IS_ANGRY_AT:
 			{
 			CSpaceObject *pTargetObj = CreateObjFromItem(pArgs->GetElement(1));
@@ -8140,6 +8170,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the newly changed item
 
 			return CreateListFromItem(Item);
+			}
+
+		case FN_OBJ_INC_PROPERTY:
+			{
+			ICCItemPtr pResult;
+			if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_INCREMENT_VELOCITY:

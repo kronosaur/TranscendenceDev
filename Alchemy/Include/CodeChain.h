@@ -113,9 +113,9 @@ class ICCItem : public CObject
 		virtual ICCItem *CloneContainer (void) = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
-		inline ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
+		ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
 		virtual void Reset (void) = 0;
-		inline void SetNoRefCount (void) { m_bNoRefCount = true; }
+		void SetNoRefCount (void) { m_bNoRefCount = true; }
 
 		//	List interface
 
@@ -131,19 +131,19 @@ class ICCItem : public CObject
         virtual CString GetKey (int iIndex) { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
-		inline bool IsList (void) { return IsNil() || !IsAtom(); }
+		bool IsList (void) { return IsNil() || !IsAtom(); }
 		virtual ICCItem *Tail (CCodeChain *pCC) = 0;
 
 		//	Evaluation
 
-		inline bool IsQuoted (void) const { return m_bQuoted; }
-		inline void SetQuoted (void) { m_bQuoted = true; }
-		inline void ClearQuoted (void) { m_bQuoted = false; }
+		bool IsQuoted (void) const { return m_bQuoted; }
+		void SetQuoted (void) { m_bQuoted = true; }
+		void ClearQuoted (void) { m_bQuoted = false; }
 
 		//	Errors
 
-		inline bool IsError (void) { return m_bError; }
-		inline void SetError (void) { m_bError = true; }
+		bool IsError (void) { return m_bError; }
+		void SetError (void) { m_bError = true; }
 
 		//	Virtuals that must be overridden
 
@@ -177,7 +177,7 @@ class ICCItem : public CObject
 
 		bool IsLambdaExpression (void);
 		bool IsLambdaSymbol (void);
-		inline bool IsNumber (void) { return (IsInteger() || IsDouble()); }
+		bool IsNumber (void) { return (IsInteger() || IsDouble()); }
 		void ResetItem (void);
 
 		//	Symbol/Atom table functions
@@ -321,8 +321,8 @@ class CCInteger : public CCNumeral
 	public:
 		CCInteger (void);
 
-		inline int GetValue (void) { return m_iValue; }
-		inline void SetValue (int iValue) { m_iValue = iValue; }
+		int GetValue (void) { return m_iValue; }
+		void SetValue (int iValue) { m_iValue = iValue; }
 
 		//	ICCItem virtuals
 		virtual ICCItem *Clone(CCodeChain *pCC) override;
@@ -349,8 +349,8 @@ class CCDouble : public CCNumeral
 	public:
 		CCDouble(void);
 
-		inline double GetValue(void) { return m_dValue; }
-		inline void SetValue(double dValue) { m_dValue = dValue; }
+		double GetValue(void) { return m_dValue; }
+		void SetValue(double dValue) { m_dValue = dValue; }
 
 		//	ICCItem virtuals
 		virtual ICCItem *Clone(CCodeChain *pCC) override;
@@ -445,9 +445,9 @@ class CCString : public ICCString
 	public:
 		CCString (void);
 
-		inline CString GetValue (void) { return m_sValue; }
+		CString GetValue (void) { return m_sValue; }
 		static CString Print (const CString &sString, DWORD dwFlags = 0);
-		inline void SetValue (CString sValue) { m_sValue = sValue; }
+		void SetValue (CString sValue) { m_sValue = sValue; }
 
 		//	ICCItem virtuals
 
@@ -805,7 +805,7 @@ class CCItemPool
 		void CleanUp (void);
 		ICCItem *CreateItem (void);
 		void DestroyItem (ICCItem *pItem);
-		inline int GetCount (void) const { CSmartLock Lock(m_cs); return m_iCount; }
+		int GetCount (void) const { CSmartLock Lock(m_cs); return m_iCount; }
 
 	private:
 		mutable CCriticalSection m_cs;
@@ -870,7 +870,7 @@ class CCodeChain
 
 		static ICCItem *CreateAtomTable (void);
 		static ICCItem *CreateBool (bool bValue);
-		inline static CCons *CreateCons (void) { return m_ConsPool.CreateCons(); }
+		static CCons *CreateCons (void) { return m_ConsPool.CreateCons(); }
 		static ICCItem *CreateError (const CString &sError, ICCItem *pData = NULL);
 		static ICCItem *CreateErrorCode (int iErrorCode);
 		static ICCItem *CreateInteger (int iValue);
@@ -878,35 +878,36 @@ class CCodeChain
 		static ICCItem *CreateLambda (ICCItem *pList, bool bArgsOnly);
 		static ICCItem *CreateLinkedList (void);
 		static ICCItem *CreateLiteral (const CString &sString);
-		inline static ICCItem *CreateNil (void) { return &m_Nil; }
+		static ICCItem *CreateNil (void) { return &m_Nil; }
 		static ICCItem *CreateNumber (double dValue);
 		static ICCItem *CreatePrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl);
 		static ICCItem *CreateString (const CString &sString);
 		static ICCItem *CreateSymbolTable (void);
 		static ICCItem *CreateSystemError (ALERROR error);
-		inline static ICCItem *CreateTrue (void) { return &m_True; }
+		static ICCItem *CreateTrue (void) { return &m_True; }
 		static ICCItem *CreateVariant (const CString &sValue);
 		ICCItem *CreateVectorOld (int iSize);
 		ICCItem *CreateFilledVector (double dScalar, TArray<int> vShape);
 		ICCItem *CreateVectorGivenContent (TArray<int> vShape, CCLinkedList *pContentList);
 		ICCItem *CreateVectorGivenContent (TArray<int> vShape, TArray<double> vContentList);
-		inline static void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(pItem); }
-		inline static void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
-		inline static void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(pItem); }
-		inline static void DestroyDouble (ICCItem *pItem) { m_DoublePool.DestroyItem(pItem); }
-		inline static void DestroyLambda (ICCItem *pItem) { m_LambdaPool.DestroyItem(pItem); }
-		inline static void DestroyLinkedList (ICCItem *pItem) { m_ListPool.DestroyItem(pItem); }
-		inline static void DestroyPrimitive (ICCItem *pItem) { m_PrimitivePool.DestroyItem(pItem); }
-		inline static void DestroyString (ICCItem *pItem) { m_StringPool.DestroyItem(pItem); }
-		inline static void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(pItem); }
-		inline static void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
-		inline static void DestroyVector(ICCItem *pItem) { m_VectorPool.DestroyItem(pItem); }
+		static void DestroyAtomTable (ICCItem *pItem) { m_AtomTablePool.DestroyItem(pItem); }
+		static void DestroyCons (CCons *pCons) { m_ConsPool.DestroyCons(pCons); }
+		static void DestroyInteger (ICCItem *pItem) { m_IntegerPool.DestroyItem(pItem); }
+		static void DestroyDouble (ICCItem *pItem) { m_DoublePool.DestroyItem(pItem); }
+		static void DestroyLambda (ICCItem *pItem) { m_LambdaPool.DestroyItem(pItem); }
+		static void DestroyLinkedList (ICCItem *pItem) { m_ListPool.DestroyItem(pItem); }
+		static void DestroyPrimitive (ICCItem *pItem) { m_PrimitivePool.DestroyItem(pItem); }
+		static void DestroyString (ICCItem *pItem) { m_StringPool.DestroyItem(pItem); }
+		static void DestroySymbolTable (ICCItem *pItem) { m_SymbolTablePool.DestroyItem(pItem); }
+		static void DestroyVectorOld (ICCItem *pItem) { delete pItem; }
+		static void DestroyVector(ICCItem *pItem) { m_VectorPool.DestroyItem(pItem); }
+		static ICCItemPtr IncValue (ICCItem *pValue, ICCItem *pInc = NULL);
 
 		//	Evaluation and parsing routines
 
 		ICCItem *Apply (ICCItem *pFunc, ICCItem *pArgs, LPVOID pExternalCtx);
-		inline ICCItem *GetNil (void) { return &m_Nil; }
-		inline ICCItem *GetTrue (void) { return &m_True; }
+		ICCItem *GetNil (void) { return &m_Nil; }
+		ICCItem *GetTrue (void) { return &m_True; }
 		ICCItem *Eval (CEvalContext *pEvalCtx, ICCItem *pItem);
 		static ICCItem *Link (const CString &sString, SLinkOptions &Options = SLinkOptions());
 		ICCItem *LookupGlobal (const CString &sGlobal, LPVOID pExternalCtx);
@@ -921,14 +922,14 @@ class CCodeChain
 		void DiscardAllGlobals (void);
 		ICCItem *EvaluateArgs (CEvalContext *pCtx, ICCItem *pArgs, const CString &sArgValidation);
 		IItemTransform *GetGlobalDefineHook (void) const { return m_pGlobalSymbols->GetDefineHook(); }
-		inline ICCItem *GetGlobals (void) { return m_pGlobalSymbols; }
+		ICCItem *GetGlobals (void) { return m_pGlobalSymbols; }
 		ICCItem *ListGlobals (void);
 		ICCItem *LookupFunction (CEvalContext *pCtx, ICCItem *pName);
 		ICCItem *PoolUsage (void);
 		ALERROR RegisterPrimitive (PRIMITIVEPROCDEF *pDef, IPrimitiveImpl *pImpl = NULL);
 		ALERROR RegisterPrimitives (const SPrimitiveDefTable &Table);
-		inline void SetGlobalDefineHook (IItemTransform *pHook) { m_pGlobalSymbols->SetDefineHook(pHook); }
-		inline void SetGlobals (ICCItem *pGlobals) { m_pGlobalSymbols->Discard(); m_pGlobalSymbols = pGlobals->Reference(); }
+		void SetGlobalDefineHook (IItemTransform *pHook) { m_pGlobalSymbols->SetDefineHook(pHook); }
+		void SetGlobals (ICCItem *pGlobals) { m_pGlobalSymbols->Discard(); m_pGlobalSymbols = pGlobals->Reference(); }
 
 		//	Miscellaneous
 
