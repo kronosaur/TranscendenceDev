@@ -253,13 +253,13 @@ struct SSystemCreateCtx
 
 	SSystemCreateCtx (CSystem &SystemArg);
 
-	inline CSystem &GetSystem (void) { return System; }
+	CSystem &GetSystem (void) { return System; }
 	inline CUniverse &GetUniverse (void);
 
 	//	Context
 
-	CExtension *pExtension;					//	Extension from which the current desc came
-	CTopologyNode *pTopologyNode;			//	Topology node
+	CExtension *pExtension = NULL;			//	Extension from which the current desc came
+	CTopologyNode *pTopologyNode = NULL;	//	Topology node
 	CSystem &System;						//	System that we're creating
 
 	TArray<CXMLElement *> LocalTables;		//	Stack of local tables
@@ -268,11 +268,11 @@ struct SSystemCreateCtx
 
 	//	Options
 
-	EOverlapCheck iOverlapCheck;			//	If TRUE, we adjust locations to avoid overlapping an existing object
+	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object
 
 	//	Stats
 
-	CSystemCreateStats *pStats;				//	System creation stats (may be NULL)
+	CSystemCreateStats *pStats = NULL;		//	System creation stats (may be NULL)
 	CSystemCreateEvents Events;				//	System deferred events
 	TArray<CString> DebugStack;				//	Stack of directives
 
@@ -281,8 +281,8 @@ struct SSystemCreateCtx
 	CString sError;							//	Creation error
 	CString sLocationAttribs;				//	Current location attribs
 	TArray<CString> Variants;				//	List of variants set with <Variant> directive
-	CSpaceObject *pStation;					//	Root station when creating satellites
-	DWORD dwLastObjID;						//	Object created in last call
+	CSpaceObject *pStation = NULL;			//	Root station when creating satellites
+	DWORD dwLastObjID = 0;					//	Object created in last call
 											//	NOTE: This is an ID in case the object gets deleted.
 
 	CStationTableCache StationTables;		//	Cached station tables

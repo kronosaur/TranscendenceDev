@@ -3879,12 +3879,6 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	SSystemCreateCtx Ctx(*pSystem);
 	Ctx.pStats = pStats;
 
-	//	Add local tables, if they exist
-
-	CXMLElement *pTables = pType->GetLocalSystemTables();
-	if (pTables)
-		Ctx.LocalTables.Insert(pTables);
-
 	//	Start the debug stack
 
 	PushDebugStack(&Ctx, strPatternSubst(CONSTLIT("SystemType nodeID=%s unid=%x"), pTopology->GetID(), pType->GetUNID()));
@@ -4689,16 +4683,22 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 //	SSystemCreateCtx -----------------------------------------------------------
 
 SSystemCreateCtx::SSystemCreateCtx (CSystem &SystemArg) : 
-			pExtension(SystemArg.GetType() ? SystemArg.GetType()->GetExtension() : NULL),
 			pTopologyNode(SystemArg.GetTopology()),
-			System(SystemArg),
-			iOverlapCheck(checkOverlapNone),
-			pStats(NULL),
-			pStation(NULL), 
-			dwLastObjID(0)
+			System(SystemArg)
 
 //	SSystemCreateCtx constructor
 
 	{
 	NameParams.SetAt(CONSTLIT("systemName"), System.GetName());
+
+	//	Initialize members based on the system type.
+
+	if (CSystemType *pSystemType = SystemArg.GetType())
+		{
+		pExtension = pSystemType->GetExtension();
+
+		CXMLElement *pTables = pSystemType->GetLocalSystemTables();
+		if (pTables)
+			LocalTables.Insert(pTables);
+		}
 	}
