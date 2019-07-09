@@ -113,7 +113,7 @@ class CSpaceObjectCriteria
 		bool m_bHomeBaseIsSource = false;			//	Only objects whose home base is the source
 		bool m_bDockedWithSource = false;			//	Only objects currently docked with source
 		bool m_bExcludePlayer = false;				//	Exclude the player
-		bool m_bTargetableMissilesOnly = true;		//	Only include those missiles that have targetable='true'
+		bool m_bTargetableMissilesOnly = false;		//	Only include those missiles that have targetable='true'
 		bool m_bTargetIsSource = false;				//	Only objects whose target is the source
 		bool m_bIncludeIntangible = false;			//	Include intangible objects
 
