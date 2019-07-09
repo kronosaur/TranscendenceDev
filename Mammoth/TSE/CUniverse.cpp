@@ -17,6 +17,7 @@
 #define CONTROLLER_ZOANTHROPE				CONSTLIT("zoanthrope")
 
 #define PROPERTY_API_VERSION				CONSTLIT("apiVersion")
+#define PROPERTY_DEFAULT_CURRENCY			CONSTLIT("defaultCurrency")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
 struct SExtensionSaveDesc
@@ -1013,6 +1014,9 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 	if (strEquals(sProperty, PROPERTY_API_VERSION))
 		return ICCItemPtr(API_VERSION);
+
+	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
+		return ICCItemPtr(GetDefaultCurrency().GetUNID());
 
 	else if (strEquals(sProperty, PROPERTY_MIN_API_VERSION))
 		return ICCItemPtr(m_Design.GetAPIVersion());

@@ -1115,16 +1115,10 @@
 				))
 
 			(setq rpgMissionRewardPayment (lambda (theReward currency)
-				(if currency
-					(block Nil
-						(plyCredit gPlayer currency theReward)
-						(typIncGlobalData &svPlayer; "missionRewards" 
-							(ecoExchange theReward 'credit currency)
-							)
-						)
-					(block Nil
-						(plyCredit gPlayer theReward)
-						(typIncGlobalData &svPlayer; "missionRewards" theReward)
+				(block Nil
+					(plyCredit gPlayer (or currency 'credit) theReward)
+					(typIncGlobalData &svPlayer; "missionRewards" 
+						(ecoExchange theReward (or currency 'credit) (unvGetProperty 'defaultCurrency))
 						)
 					)
 				))

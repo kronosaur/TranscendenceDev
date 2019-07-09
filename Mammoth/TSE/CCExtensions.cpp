@@ -3629,6 +3629,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(unvGetProperty property)\n\n"
 				
 			"   'apiVersion        Engine API version\n"
+			"   'defaultCurrency   Default currency\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
 			"s",	0,	},

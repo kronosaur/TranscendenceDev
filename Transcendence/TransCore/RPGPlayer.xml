@@ -6,7 +6,7 @@
 
 	GLOBAL DATA
 	
-	missionRewards:		Total amount of credits earned in missions
+	missionRewards:		Total amount earned in missions (in default currency)
 	
 	tutorialBought:		True if the player has bought something.
 	tutorialInstalled:	True if the player has installed a device.
@@ -43,7 +43,7 @@
 						(if missionRewards
 							(list (list
 								(typTranslate &svPlayer; 'achievement.missionMoney)
-								missionRewards
+								(fmtCurrency (unvGetProperty 'defaultCurrency) missionRewards)
 								(typTranslate &unidCommonText; 'missionsAndActivities)
 								))
 							)
