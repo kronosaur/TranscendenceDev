@@ -68,10 +68,10 @@
 			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
 			>
 
-		<Names>ROM biosoft(s) with a green; ROM biosoft(s) with a gold label";
+		<Names>ROM biosoft(s) with a green label; ROM biosoft(s) with a gold label";
 			ROM biosoft(s) with a blue label; ROM biosoft(s) with a purple label;
 			ROM biosoft(s) with a white label; ROM biosoft(s) with a black label;
-			ROM biosoft(s) with a red label; ROM biosoft(s) with a yellow;
+			ROM biosoft(s) with a red label; ROM biosoft(s) with a yellow label;
 			ROM biosoft(s) labeled "White Rabbit"; ROM biosoft(s) labeled "Octocat";
 			ROM biosoft(s) labeled "Ivanhoe"; ROM biosoft(s) labeled "Quixote";
 			ROM biosoft(s) labeled "@Void"; ROM biosoft(s) labeled "Merlin 1.7";
