@@ -18,13 +18,13 @@ class CAIShipControls
 
 		CAIShipControls (void);
 
-		inline EManeuverTypes GetManeuver (void) const { return m_iManeuver; }
+		EManeuverTypes GetManeuver (void) const { return m_iManeuver; }
 		inline bool GetThrust (CShip *pShip) const;
-		inline int GetThrustDir (void) const { return m_iThrustDir; }
+		int GetThrustDir (void) const { return m_iThrustDir; }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetManeuver (EManeuverTypes iManeuver) { m_iManeuver = iManeuver; }
-		inline void SetThrust (bool bThrust) { m_iThrustDir = (bThrust ? constAlwaysThrust : constNeverThrust); }
-		inline void SetThrustDir (int iDir) { m_iThrustDir = iDir; }
+		void SetManeuver (EManeuverTypes iManeuver) { m_iManeuver = iManeuver; }
+		void SetThrust (bool bThrust) { m_iThrustDir = (bThrust ? constAlwaysThrust : constNeverThrust); }
+		void SetThrustDir (int iDir) { m_iThrustDir = iDir; }
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
 	private:
@@ -38,74 +38,74 @@ class CAIBehaviorCtx
 		CAIBehaviorCtx (void);
 		~CAIBehaviorCtx (void);
 
-		inline bool AscendOnGate (void) const { return m_AISettings.AscendOnGate(); }
-		inline bool AvoidsExplodingStations (void) const { return m_fAvoidExplodingStations; }
-		inline void ClearBestWeapon (void) { m_fRecalcBestWeapon = true; }
+		bool AscendOnGate (void) const { return m_AISettings.AscendOnGate(); }
+		bool AvoidsExplodingStations (void) const { return m_fAvoidExplodingStations; }
+		void ClearBestWeapon (void) { m_fRecalcBestWeapon = true; }
 		void ClearNavPath (void);
 		void DebugPaintInfo (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		inline CString GetAISetting (const CString &sSetting) { return m_AISettings.GetValue(sSetting); }
-		inline const CAISettings &GetAISettings (void) const { return m_AISettings; }
-		inline CInstalledDevice *GetBestWeapon (void) const { return (m_iBestWeapon != devNone ? m_pBestWeapon : NULL); }
-		inline DeviceNames GetBestWeaponIndex (void) const { return m_iBestWeapon; }
-		inline Metric GetBestWeaponRange (void) const { return m_rBestWeaponRange; }
-		inline Metric GetBestWeaponRange2 (void) const { return m_rBestWeaponRange * m_rBestWeaponRange; }
-		inline AICombatStyles GetCombatStyle (void) const { return m_AISettings.GetCombatStyle(); }
-		inline int GetFireAccuracy (void) const { return m_AISettings.GetFireAccuracy(); }
-		inline int GetFireRangeAdj (void) const { return m_AISettings.GetFireRangeAdj(); }
-		inline int GetFireRateAdj (void) const { return m_AISettings.GetFireRateAdj(); }
-		inline Metric GetFlankDist (void) const { return m_rFlankDist; }
-		inline Metric GetFlankRange2 (void) const { return 1.5 * m_rFlankDist * m_rFlankDist; }
-		inline int GetLastAttack (void) const { return m_iLastAttack; }
-		inline EManeuverTypes GetLastTurn (void) const { return m_iLastTurn; }
-		inline int GetLastTurnCount (void) const { return m_iLastTurnCount; }
-		inline EManeuverTypes GetManeuver (void) const { return m_ShipControls.GetManeuver(); }
-		inline int GetMaxTurnCount (void) const { return m_iMaxTurnCount; }
-		inline Metric GetMaxWeaponRange (void) const { return m_rMaxWeaponRange; }
-		inline Metric GetMinCombatSeparation (void) const { return m_AISettings.GetMinCombatSeparation(); }
-		inline CNavigationPath *GetNavPath (void) const { return m_pNavPath; }
-		inline int GetPerception (void) const { return m_AISettings.GetPerception(); }
-		inline const CVector &GetPotential (void) const { return m_vPotential; }
-		inline Metric GetPrimaryAimRange2 (void) const { return m_rPrimaryAimRange2; }
-		inline SUpdateCtx *GetSystemUpdateCtx (void) const { return m_pUpdateCtx;  }
-		inline bool GetThrust (CShip *pShip) const { return m_ShipControls.GetThrust(pShip); }
-		inline int GetThrustDir (void) const { return m_ShipControls.GetThrustDir(); }
-		inline bool HasEscorts (void) const { return m_fHasEscorts; }
-		inline bool HasMultipleWeapons (void) const { return m_fHasMultipleWeapons; }
-		inline bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
-		inline bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
-		inline bool IsAggressor (void) const { return m_AISettings.IsAggressor(); }
+		CString GetAISetting (const CString &sSetting) { return m_AISettings.GetValue(sSetting); }
+		const CAISettings &GetAISettings (void) const { return m_AISettings; }
+		CInstalledDevice *GetBestWeapon (void) const { return (m_iBestWeapon != devNone ? m_pBestWeapon : NULL); }
+		DeviceNames GetBestWeaponIndex (void) const { return m_iBestWeapon; }
+		Metric GetBestWeaponRange (void) const { return m_rBestWeaponRange; }
+		Metric GetBestWeaponRange2 (void) const { return m_rBestWeaponRange * m_rBestWeaponRange; }
+		AICombatStyles GetCombatStyle (void) const { return m_AISettings.GetCombatStyle(); }
+		int GetFireAccuracy (void) const { return m_AISettings.GetFireAccuracy(); }
+		int GetFireRangeAdj (void) const { return m_AISettings.GetFireRangeAdj(); }
+		int GetFireRateAdj (void) const { return m_AISettings.GetFireRateAdj(); }
+		Metric GetFlankDist (void) const { return m_rFlankDist; }
+		Metric GetFlankRange2 (void) const { return 1.5 * m_rFlankDist * m_rFlankDist; }
+		int GetLastAttack (void) const { return m_iLastAttack; }
+		EManeuverTypes GetLastTurn (void) const { return m_iLastTurn; }
+		int GetLastTurnCount (void) const { return m_iLastTurnCount; }
+		EManeuverTypes GetManeuver (void) const { return m_ShipControls.GetManeuver(); }
+		int GetMaxTurnCount (void) const { return m_iMaxTurnCount; }
+		Metric GetMaxWeaponRange (void) const { return m_rMaxWeaponRange; }
+		Metric GetMinCombatSeparation (void) const { return m_AISettings.GetMinCombatSeparation(); }
+		CNavigationPath *GetNavPath (void) const { return m_pNavPath; }
+		int GetPerception (void) const { return m_AISettings.GetPerception(); }
+		const CVector &GetPotential (void) const { return m_vPotential; }
+		Metric GetPrimaryAimRange2 (void) const { return m_rPrimaryAimRange2; }
+		SUpdateCtx *GetSystemUpdateCtx (void) const { return m_pUpdateCtx;  }
+		bool GetThrust (CShip *pShip) const { return m_ShipControls.GetThrust(pShip); }
+		int GetThrustDir (void) const { return m_ShipControls.GetThrustDir(); }
+		bool HasEscorts (void) const { return m_fHasEscorts; }
+		bool HasMultipleWeapons (void) const { return m_fHasMultipleWeapons; }
+		bool HasSecondaryWeapons (void) const { return m_fHasSecondaryWeapons; }
+		bool HasSuperconductingShields (void) const { return m_fSuperconductingShields; }
+		bool IsAggressor (void) const { return m_AISettings.IsAggressor(); }
 		bool IsBeingAttacked (DWORD dwThreshold = 150) const;
-		inline bool IsDockingRequested (void) const { return m_fDockingRequested; }
-		inline bool IsImmobile (void) const { return m_fImmobile; }
-		inline bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
+		bool IsDockingRequested (void) const { return m_fDockingRequested; }
+		bool IsImmobile (void) const { return m_fImmobile; }
+		bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
 		bool IsSecondAttack (void) const;
-		inline bool IsWaitingForShieldsToRegen (void) const { return m_fWaitForShieldsToRegen; }
-		inline bool NoAttackOnThreat (void) const { return m_AISettings.NoAttackOnThreat(); }
-		inline bool NoDogfights (void) const { return m_AISettings.NoDogfights(); }
-		inline bool NoFriendlyFire (void) const { return m_AISettings.NoFriendlyFire(); }
-		inline bool NoFriendlyFireCheck (void) const { return m_AISettings.NoFriendlyFireCheck(); }
-		inline bool NoNavPaths (void) const { return m_AISettings.NoNavPaths(); }
-		inline bool NoOrderGiver (void) const { return m_AISettings.NoOrderGiver(); }
-		inline bool NoShieldRetreat (void) const { return m_AISettings.NoShieldRetreat(); }
+		bool IsWaitingForShieldsToRegen (void) const { return m_fWaitForShieldsToRegen; }
+		bool NoAttackOnThreat (void) const { return m_AISettings.NoAttackOnThreat(); }
+		bool NoDogfights (void) const { return m_AISettings.NoDogfights(); }
+		bool NoFriendlyFire (void) const { return m_AISettings.NoFriendlyFire(); }
+		bool NoFriendlyFireCheck (void) const { return m_AISettings.NoFriendlyFireCheck(); }
+		bool NoNavPaths (void) const { return m_AISettings.NoNavPaths(); }
+		bool NoOrderGiver (void) const { return m_AISettings.NoOrderGiver(); }
+		bool NoShieldRetreat (void) const { return m_AISettings.NoShieldRetreat(); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void ReadFromStreamAISettings (SLoadCtx &Ctx) { m_AISettings.ReadFromStream(Ctx); }
-		inline CString SetAISetting (const CString &sSetting, const CString &sValue) { return m_AISettings.SetValue(sSetting, sValue); }
-		inline void SetAISettings (const CAISettings &Source) { m_AISettings = Source; }
+		void ReadFromStreamAISettings (SLoadCtx &Ctx) { m_AISettings.ReadFromStream(Ctx); }
+		CString SetAISetting (const CString &sSetting, const CString &sValue) { return m_AISettings.SetValue(sSetting, sValue); }
+		void SetAISettings (const CAISettings &Source) { m_AISettings = Source; }
 		void SetBarrierClock (CShip *pShip);
-		inline void SetDockingRequested (bool bValue = true) { m_fDockingRequested = bValue; }
-		inline void SetHasEscorts (bool bValue = true) { m_fHasEscorts = bValue; }
+		void SetDockingRequested (bool bValue = true) { m_fDockingRequested = bValue; }
+		void SetHasEscorts (bool bValue = true) { m_fHasEscorts = bValue; }
 		void SetLastAttack (int iTick);
-		inline void SetLastTurn (EManeuverTypes iTurn) { m_iLastTurn = iTurn; }
-		inline void SetLastTurnCount (int iCount) { m_iLastTurnCount = iCount; }
-		inline void SetManeuver (EManeuverTypes iManeuver) { m_ShipControls.SetManeuver(iManeuver); }
-		inline void SetManeuverCounter (int iCount) { m_iManeuverCounter = iCount; }
-		inline void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos, bool bOwned = false) { ClearNavPath(); m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; m_fFreeNavPath = bOwned; }
-		inline void SetPotential (const CVector &vVec) { m_vPotential = vVec; }
-		inline void SetSystemUpdateCtx (SUpdateCtx *pCtx) { m_pUpdateCtx = pCtx;  }
-		inline void SetThrust (bool bThrust) { m_ShipControls.SetThrust(bThrust); }
-		inline void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
-		inline void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
-		inline bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
+		void SetLastTurn (EManeuverTypes iTurn) { m_iLastTurn = iTurn; }
+		void SetLastTurnCount (int iCount) { m_iLastTurnCount = iCount; }
+		void SetManeuver (EManeuverTypes iManeuver) { m_ShipControls.SetManeuver(iManeuver); }
+		void SetManeuverCounter (int iCount) { m_iManeuverCounter = iCount; }
+		void SetNavPath (CNavigationPath *pNavPath, int iNavPathPos, bool bOwned = false) { ClearNavPath(); m_pNavPath = pNavPath; m_iNavPathPos = iNavPathPos; m_fFreeNavPath = bOwned; }
+		void SetPotential (const CVector &vVec) { m_vPotential = vVec; }
+		void SetSystemUpdateCtx (SUpdateCtx *pCtx) { m_pUpdateCtx = pCtx;  }
+		void SetThrust (bool bThrust) { m_ShipControls.SetThrust(bThrust); }
+		void SetThrustDir (int iDir) { m_ShipControls.SetThrustDir(iDir); }
+		void SetWaitingForShieldsToRegen (bool bValue = true) { m_fWaitForShieldsToRegen = bValue; }
+		bool ThrustsThroughTurn (void) const { return m_fThrustThroughTurn; }
 		void Update (CShip *pShip);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
@@ -152,9 +152,9 @@ class CAIBehaviorCtx
 		void CalcShieldState (CShip *pShip);
 		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
 		void CancelDocking (CShip *pShip, CSpaceObject *pBase);
-		inline bool CheckForFriendsInLineOfFire (CShip *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
+		bool CheckForFriendsInLineOfFire (CShip *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
 			{ return (NoFriendlyFireCheck() || pShip->IsLineOfFireClear(pDevice, pTarget, iFireAngle, rMaxRange)); }
-		inline CVector CombinePotential (const CVector &vDir)
+		CVector CombinePotential (const CVector &vDir)
 			{ return GetPotential() + (vDir.Normal() * 100.0 * g_KlicksPerPixel);	}
 		void CommunicateWithEscorts (CShip *pShip, MessageTypes iMessage, CSpaceObject *pParam1 = NULL, DWORD dwParam2 = 0);
 		void Undock (CShip *pShip);
@@ -228,15 +228,15 @@ class IOrderModule
 		virtual ~IOrderModule (void);
 
 		void Attacked (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pAttacker, const SDamageCtx &Damage, bool bFriendlyFire);
-		inline void Behavior (CShip *pShip, CAIBehaviorCtx &Ctx) { OnBehavior(pShip, Ctx); }
-		inline void BehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { OnBehaviorStart(pShip, Ctx, pOrderTarget, Data); }
+		void Behavior (CShip *pShip, CAIBehaviorCtx &Ctx) { OnBehavior(pShip, Ctx); }
+		void BehaviorStart (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pOrderTarget, const IShipController::SData &Data) { OnBehaviorStart(pShip, Ctx, pOrderTarget, Data); }
 		DWORD Communicate (CShip *pShip, CAIBehaviorCtx &Ctx, CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2);
 		static IOrderModule *Create (IShipController::OrderTypes iOrder);
 		CString DebugCrashInfo (CShip *pShip);
 		void Destroyed (CShip *pShip, SDestroyCtx &Ctx);
-		inline CSpaceObject *GetBase (void) { return OnGetBase(); }
-		inline IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
-		inline CSpaceObject *GetTarget (void) { return OnGetTarget(); }
+		CSpaceObject *GetBase (void) { return OnGetBase(); }
+		IShipController::OrderTypes GetOrder (void) { return OnGetOrder(); }
+		CSpaceObject *GetTarget (void) { return OnGetTarget(); }
 		void ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
@@ -269,11 +269,11 @@ class COrderList
 		void Delete (int iIndex);
 		void DeleteAll (void);
 		void DeleteCurrent (void);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline IShipController::OrderTypes GetCurrentOrder (void) const { return (IShipController::OrderTypes)(GetCurrentEntry().dwOrderType); }
+		int GetCount (void) const { return m_List.GetCount(); }
+		IShipController::OrderTypes GetCurrentOrder (void) const { return (IShipController::OrderTypes)(GetCurrentEntry().dwOrderType); }
 		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget, IShipController::SData *retData = NULL) const { return GetOrder(0, retpTarget, retData); }
-		inline DWORD GetCurrentOrderData (void) const { return GetCurrentEntry().dwData; }
-		inline CSpaceObject *GetCurrentOrderTarget (void) const { return GetCurrentEntry().pTarget; }
+		DWORD GetCurrentOrderData (void) const { return GetCurrentEntry().dwData; }
+		CSpaceObject *GetCurrentOrderTarget (void) const { return GetCurrentEntry().pTarget; }
 		IShipController::OrderTypes GetOrder (int iIndex, CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const;
 		void Insert (IShipController::OrderTypes iOrder, CSpaceObject *pTarget, const IShipController::SData &Data, bool bAddBefore = false);
 		void OnNewSystem (CSystem *pNewSystem, bool *retbCurrentChanged);
@@ -389,17 +389,17 @@ class CBaseShipAI : public IShipController
 		void FireOnOrderChanged (void);
 		void FireOnOrdersCompleted (void);
 		IShipController::OrderTypes GetCurrentOrder (void) const { return m_Orders.GetCurrentOrder(); }
-		inline CSpaceObject *GetCurrentOrderTarget (void) const { return m_Orders.GetCurrentOrderTarget(); }
-		inline Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
-		inline Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
+		CSpaceObject *GetCurrentOrderTarget (void) const { return m_Orders.GetCurrentOrderTarget(); }
+		Metric GetDistance (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length(); }
+		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
-		inline CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
-		inline bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
+		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
+		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
 		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
-		inline bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
+		bool IsDockingRequested (void) { return m_AICtx.IsDockingRequested(); }
 		void ResetBehavior (void);
 		void SetCurrentOrderData (const SData &Data);
 		void UpgradeShieldBehavior (void);

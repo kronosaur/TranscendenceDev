@@ -1557,10 +1557,6 @@ ALERROR CSystem::CreateStation (CStationType *pType,
 
 	SSystemCreateCtx Ctx(*this);
 
-	CXMLElement *pLocalTable = (m_pType ? m_pType->GetLocalSystemTables() : NULL);
-	if (pLocalTable)
-		Ctx.LocalTables.Insert(pLocalTable);
-
 	//	Generate an orbit. First we look for the nearest object with
 	//	an orbit.
 
