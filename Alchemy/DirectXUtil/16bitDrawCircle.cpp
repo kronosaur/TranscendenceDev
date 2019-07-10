@@ -85,7 +85,7 @@ class CCompositeFilledCircleFromTable
 		~CCompositeFilledCircleFromTable (void);
 
 		void DrawLine (int x, int y);
-		inline int GetRadius (void) const { return m_iRadius; }
+		int GetRadius (void) const { return m_iRadius; }
 
 	private:
 		CG16bitImage *m_pDest;
@@ -107,7 +107,7 @@ class CCompositeFilledCircleFromTableStochastic
 		~CCompositeFilledCircleFromTableStochastic (void);
 
 		void DrawLine (int x, int y);
-		inline int GetRadius (void) const { return m_iRadius; }
+		int GetRadius (void) const { return m_iRadius; }
 
 	private:
 		CG16bitImage *m_pDest;
@@ -582,7 +582,7 @@ class CFilledCircleFromTable
 		~CFilledCircleFromTable (void);
 
 		void DrawLine (int x, int y);
-		inline int GetRadius (void) const { return m_iRadius; }
+		int GetRadius (void) const { return m_iRadius; }
 
 	private:
 		CG16bitImage *m_pDest;

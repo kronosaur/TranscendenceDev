@@ -489,19 +489,19 @@ template <class PAINTER, class BLENDER> class TImagePainter : public IImagePaint
 			}
 
 	private:
-		inline bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
-		inline void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
-		inline CG32bitPixel FILTER (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->Filter(rgbSrc, pDest); }
-		inline CG32bitPixel GET_PIXEL (int x, int y) { return ((PAINTER *)this)->GetPixelAt(x, y); }
-		inline void START_ROW (CG32bitPixel *pSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->StartRow(pSrc, pDest); }
+		bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
+		void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
+		CG32bitPixel FILTER (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->Filter(rgbSrc, pDest); }
+		CG32bitPixel GET_PIXEL (int x, int y) { return ((PAINTER *)this)->GetPixelAt(x, y); }
+		void START_ROW (CG32bitPixel *pSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->StartRow(pSrc, pDest); }
 
 		//	Default implementation (for optional methods)
 
-		inline bool BeginDraw (void) { return true; }
-		inline void EndDraw (void) { }
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return CG32bitPixel::Null();  }
-		inline CG32bitPixel GetPixelAt (int x, int y) { return CG32bitPixel::Null(); }
-		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
+		bool BeginDraw (void) { return true; }
+		void EndDraw (void) { }
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return CG32bitPixel::Null();  }
+		CG32bitPixel GetPixelAt (int x, int y) { return CG32bitPixel::Null(); }
+		void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
 	};
 
 template <class PAINTER> class TBlt
@@ -817,8 +817,8 @@ template <class PAINTER> class TBlt
 			}
 
 	private:
-		inline CG32bitPixel FILTER (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->Filter(rgbSrc, pDest); }
-		inline void START_ROW (CG32bitPixel *pSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->StartRow(pSrc, pDest); }
+		CG32bitPixel FILTER (CG32bitPixel rgbSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->Filter(rgbSrc, pDest); }
+		void START_ROW (CG32bitPixel *pSrc, CG32bitPixel *pDest) { return ((PAINTER *)this)->StartRow(pSrc, pDest); }
 
-		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
+		void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest) { }
 	};

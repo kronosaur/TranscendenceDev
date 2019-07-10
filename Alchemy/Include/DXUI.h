@@ -31,21 +31,21 @@ class AGArea
 
 		void AddEffect (const SEffectDesc &Effect);
 		void AddShadowEffect (void);
-		inline RECT GetPaintRect (void) const { return m_pParent->GetPaintRect(GetRect()); }
-		inline IAreaContainer *GetParent (void) const { return m_pParent; }
-		inline RECT &GetRect (void) { return m_rcRect; }
-		inline const RECT &GetRect (void) const { return m_rcRect; }
-		inline AGScreen *GetScreen (void) { return m_pScreen; }
-		inline DWORD GetTag (void) { return m_dwTag; }
-		inline void Hide (void) { ShowHide(false); }
+		RECT GetPaintRect (void) const { return m_pParent->GetPaintRect(GetRect()); }
+		IAreaContainer *GetParent (void) const { return m_pParent; }
+		RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) const { return m_rcRect; }
+		AGScreen *GetScreen (void) { return m_pScreen; }
+		DWORD GetTag (void) { return m_dwTag; }
+		void Hide (void) { ShowHide(false); }
 		ALERROR Init (AGScreen *pScreen, IAreaContainer *pParent, const RECT &rcRect, DWORD dwTag);
-		inline void Invalidate (void) { Invalidate(m_rcRect); }
-		inline void Invalidate (const RECT &rcInvalid);
-		inline bool IsVisible (void) { return m_bVisible; }
-		inline void SetController (IScreenController *pController) { m_pController = pController; }
+		void Invalidate (void) { Invalidate(m_rcRect); }
+		void Invalidate (const RECT &rcInvalid);
+		bool IsVisible (void) { return m_bVisible; }
+		void SetController (IScreenController *pController) { m_pController = pController; }
 		void SetRect (const RECT &rcRect);
 		void SignalAction (DWORD dwData = 0);
-		inline void Show (void) { ShowHide(true); }
+		void Show (void) { ShowHide(true); }
 		void ShowHide (bool bShow);
 
 		//	AGArea virtuals
@@ -62,10 +62,10 @@ class AGArea
 		virtual bool WantsMouseOver (void) { return true; }
 
 	protected:
-		inline const SEffectDesc &GetEffect (int iIndex) { return m_pEffects[iIndex]; }
-		inline int GetEffectCount (void) { return m_iEffectCount; }
-		inline const SEffectDesc *GetEffects (void) { return m_pEffects; }
-		inline bool HasEffects (void) { return (m_pEffects != NULL); }
+		const SEffectDesc &GetEffect (int iIndex) { return m_pEffects[iIndex]; }
+		int GetEffectCount (void) { return m_iEffectCount; }
+		const SEffectDesc *GetEffects (void) { return m_pEffects; }
+		bool HasEffects (void) { return (m_pEffects != NULL); }
 		virtual void OnSetRect (void) { }
 		virtual void OnShowHide (bool bShow) { }
 
@@ -94,17 +94,17 @@ class AGScreen : public IAreaContainer
 		void DestroyArea (AGArea *pArea);
 		void DestroyArea (DWORD dwTag);
 		AGArea *FindArea (DWORD dwTag);
-		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
-		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
-		inline const RECT &GetRect (void) { return m_rcRect; }
-		inline DWORD GetTimeSinceMouseMove (void) const { return (::GetTickCount() - m_dwLastMouseTime); }
+		AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
+		int GetAreaCount (void) { return m_Areas.GetCount(); }
+		const RECT &GetRect (void) { return m_rcRect; }
+		DWORD GetTimeSinceMouseMove (void) const { return (::GetTickCount() - m_dwLastMouseTime); }
 		const CG16bitFont &GetWingdingsFont (void) const;
-		inline IScreenController *GetController (void) { return m_pController; }
-		inline void Invalidate (void) { m_rcInvalid.left = 0; m_rcInvalid.top = 0; m_rcInvalid.right = RectWidth(m_rcRect); m_rcInvalid.bottom = RectHeight(m_rcRect); }
-		inline void Invalidate (const RECT &rcInvalid) { UnionRect(&m_rcInvalid, &rcInvalid, &m_rcInvalid); }
+		IScreenController *GetController (void) { return m_pController; }
+		void Invalidate (void) { m_rcInvalid.left = 0; m_rcInvalid.top = 0; m_rcInvalid.right = RectWidth(m_rcRect); m_rcInvalid.bottom = RectHeight(m_rcRect); }
+		void Invalidate (const RECT &rcInvalid) { UnionRect(&m_rcInvalid, &rcInvalid, &m_rcInvalid); }
 		void OnAreaAdded (AGArea *pArea);
-		inline void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackgroundColor = rgbColor; }
-		inline void SetController (IScreenController *pController) { m_pController = pController; }
+		void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackgroundColor = rgbColor; }
+		void SetController (IScreenController *pController) { m_pController = pController; }
 
 		//	IAreaContainer virtuals
 		virtual void ConvertToPaintCoords (int &x, int &y) const override { x += m_rcRect.left; y += m_rcRect.top; }
@@ -123,7 +123,7 @@ class AGScreen : public IAreaContainer
 
 	private:
 		void FireMouseMove (const POINT &pt);
-		inline int GetAreaIndex (AGArea *pArea) { int iIndex; if (m_Areas.Find(pArea, &iIndex)) return iIndex; else return -1; }
+		int GetAreaIndex (AGArea *pArea) { int iIndex; if (m_Areas.Find(pArea, &iIndex)) return iIndex; else return -1; }
 		AGArea *HitTest (const POINT &pt);
 		void RefreshMouseOver (void);
 		void SetMouseOver (AGArea *pArea);
@@ -157,8 +157,8 @@ class CGFrameArea : public AGArea, public IAreaContainer
 
 		ALERROR AddArea (AGArea *pArea, const RECT &rcRect, DWORD dwTag);
 		AGArea *FindArea (DWORD dwTag);
-		inline AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
-		inline int GetAreaCount (void) { return m_Areas.GetCount(); }
+		AGArea *GetArea (int iIndex) { return m_Areas[iIndex]; }
+		int GetAreaCount (void) { return m_Areas.GetCount(); }
 
 		//	AGArea virtuals
 		virtual bool LButtonDoubleClick (int x, int y) override;
@@ -190,22 +190,22 @@ class CGButtonArea : public AGArea
 	public:
 		CGButtonArea (void);
 
-		inline CString GetLabelAccelerator (void) { return (m_iAccelerator != -1 ? CString(m_sLabel.GetASCIIZPointer() + m_iAccelerator, 1) : NULL_STR); }
-		inline bool IsDisabled (void) { return m_bDisabled; }
-		inline void SetAcceleratorColor (CG32bitPixel rgbColor) { m_rgbAccelColor = rgbColor; }
-		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-		inline void SetBackColorHover (CG32bitPixel rgbColor) { m_rgbBackColorHover = rgbColor; }
-		inline void SetBorderColor (CG32bitPixel rgbColor) { m_rgbBorderColor = rgbColor; }
-		inline void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
-		inline void SetDesc (const CString &sDesc) { m_sDesc = sDesc; }
-		inline void SetDescColor (CG32bitPixel rgbColor) { m_rgbDescColor = rgbColor; }
-		inline void SetDescFont (const CG16bitFont *pFont) { m_pDescFont = pFont; }
-		inline void SetDisabled (bool bDisabled = true) { m_bDisabled = bDisabled; }
-		inline void SetLabel (const CString &sText) { m_sLabel = sText; m_iAccelerator = -1; }
+		CString GetLabelAccelerator (void) { return (m_iAccelerator != -1 ? CString(m_sLabel.GetASCIIZPointer() + m_iAccelerator, 1) : NULL_STR); }
+		bool IsDisabled (void) { return m_bDisabled; }
+		void SetAcceleratorColor (CG32bitPixel rgbColor) { m_rgbAccelColor = rgbColor; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetBackColorHover (CG32bitPixel rgbColor) { m_rgbBackColorHover = rgbColor; }
+		void SetBorderColor (CG32bitPixel rgbColor) { m_rgbBorderColor = rgbColor; }
+		void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
+		void SetDesc (const CString &sDesc) { m_sDesc = sDesc; }
+		void SetDescColor (CG32bitPixel rgbColor) { m_rgbDescColor = rgbColor; }
+		void SetDescFont (const CG16bitFont *pFont) { m_pDescFont = pFont; }
+		void SetDisabled (bool bDisabled = true) { m_bDisabled = bDisabled; }
+		void SetLabel (const CString &sText) { m_sLabel = sText; m_iAccelerator = -1; }
 		void SetLabelAccelerator (const CString &sKey, int iKeyOffset = -1);
-		inline void SetLabelColor (CG32bitPixel rgbColor) { m_rgbLabelColor = rgbColor; }
-		inline void SetLabelFont (const CG16bitFont *pFont) { m_pLabelFont = pFont; }
-		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
+		void SetLabelColor (CG32bitPixel rgbColor) { m_rgbLabelColor = rgbColor; }
+		void SetLabelFont (const CG16bitFont *pFont) { m_pLabelFont = pFont; }
+		void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
 
 		//	AGArea virtuals
 		virtual int Justify (const RECT &rcRect) override;
@@ -253,10 +253,10 @@ class CGImageArea : public AGArea
 	public:
 		CGImageArea (void);
 
-		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-		inline void SetImage (CG32bitImage *pImage, const RECT &rcImage) { m_pImage = pImage; m_rcImage = rcImage; Invalidate(); }
-		inline void SetStyles (DWORD dwStyles) { m_dwStyles = dwStyles; Invalidate(); }
-		inline void SetTransBackground (bool bTrans = true) { m_bTransBackground = bTrans; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetImage (CG32bitImage *pImage, const RECT &rcImage) { m_pImage = pImage; m_rcImage = rcImage; Invalidate(); }
+		void SetStyles (DWORD dwStyles) { m_dwStyles = dwStyles; Invalidate(); }
+		void SetTransBackground (bool bTrans = true) { m_bTransBackground = bTrans; }
 
 		//	AGArea virtuals
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
@@ -276,19 +276,19 @@ class CGTextArea : public AGArea
 	public:
 		CGTextArea (void);
 
-		inline const CString &GetText (void) const { return m_sText; }
-		inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-		inline void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
-		inline void SetColor (CG32bitPixel rgbColor) { m_rgbColor = rgbColor; }
-		inline void SetCursor (int iLine, int iCol = 0) { m_iCursorLine = iLine; m_iCursorPos = iCol; }
-		inline void SetEditable (bool bEditable = true) { m_bEditable = bEditable; }
-		inline void SetFont (const CG16bitFont *pFont) { m_pFont = pFont; m_cxJustifyWidth = 0; }
-		inline void SetFontTable (const IFontTable *pFontTable) { m_pFontTable = pFontTable; }
-		inline void SetLineSpacing (int cySpacing) { m_cyLineSpacing = cySpacing; m_cxJustifyWidth = 0; }
-		inline void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
-		inline void SetRichText (const CString &sRTF) { m_sRTF = sRTF; m_sText = NULL_STR; m_bRTFInvalid = true; Invalidate(); }
-		inline void SetStyles (DWORD dwStyles) { m_dwStyles = dwStyles; m_cxJustifyWidth = 0; }
-		inline void SetText (const CString &sText) { m_sText = sText; m_sRTF = NULL_STR; m_cxJustifyWidth = 0; Invalidate(); }
+		const CString &GetText (void) const { return m_sText; }
+		void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+		void SetBorderRadius (int iRadius) { m_iBorderRadius = iRadius; }
+		void SetColor (CG32bitPixel rgbColor) { m_rgbColor = rgbColor; }
+		void SetCursor (int iLine, int iCol = 0) { m_iCursorLine = iLine; m_iCursorPos = iCol; }
+		void SetEditable (bool bEditable = true) { m_bEditable = bEditable; }
+		void SetFont (const CG16bitFont *pFont) { m_pFont = pFont; m_cxJustifyWidth = 0; }
+		void SetFontTable (const IFontTable *pFontTable) { m_pFontTable = pFontTable; }
+		void SetLineSpacing (int cySpacing) { m_cyLineSpacing = cySpacing; m_cxJustifyWidth = 0; }
+		void SetPadding (int iPadding) { m_rcPadding.left = iPadding; m_rcPadding.top = iPadding; m_rcPadding.right = iPadding; m_rcPadding.bottom = iPadding; }
+		void SetRichText (const CString &sRTF) { m_sRTF = sRTF; m_sText = NULL_STR; m_bRTFInvalid = true; Invalidate(); }
+		void SetStyles (DWORD dwStyles) { m_dwStyles = dwStyles; m_cxJustifyWidth = 0; }
+		void SetText (const CString &sText) { m_sText = sText; m_sRTF = NULL_STR; m_cxJustifyWidth = 0; Invalidate(); }
 
 		//	AGArea virtuals
 		virtual int Justify (const RECT &rcRect) override;

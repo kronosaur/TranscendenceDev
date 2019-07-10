@@ -171,7 +171,7 @@ template <class TYPE> class TListNode
 			return iCount;
 			}
 
-		inline TYPE *GetNext (void) { return (TYPE *)m_pNext; }
+		TYPE *GetNext (void) { return (TYPE *)m_pNext; }
 
 		void Insert (TListNode<TYPE> *pNewNode)
 			{

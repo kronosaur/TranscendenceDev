@@ -20,7 +20,7 @@ static constexpr int DEFAULT_ARRAY_GRANULARITY = 10;
 class CArrayBase
 	{
 	public:
-		inline void SetGranularity (int iGranularity) { if (m_pBlock == NULL) AllocBlock(::GetProcessHeap(), iGranularity); else m_pBlock->m_iGranularity = iGranularity; }
+		void SetGranularity (int iGranularity) { if (m_pBlock == NULL) AllocBlock(::GetProcessHeap(), iGranularity); else m_pBlock->m_iGranularity = iGranularity; }
 
 		static CString DebugGetStats (void);
 
@@ -43,10 +43,10 @@ class CArrayBase
 		void CleanUpBlock (void);
 		void CopyOptions (const CArrayBase &Src);
 		void DeleteBytes (int iOffset, int iLength);
-		inline char *GetBytes (void) const { return (m_pBlock ? (char *)(&m_pBlock[1]) : NULL); }
-		inline int GetGranularity (void) const { return (m_pBlock ? m_pBlock->m_iGranularity : Kernel::DEFAULT_ARRAY_GRANULARITY); }
-		inline HANDLE GetHeap (void) const { return (m_pBlock ? m_pBlock->m_hHeap : ::GetProcessHeap()); }
-		inline int GetSize (void) const { return (m_pBlock ? m_pBlock->m_iSize : 0); }
+		char *GetBytes (void) const { return (m_pBlock ? (char *)(&m_pBlock[1]) : NULL); }
+		int GetGranularity (void) const { return (m_pBlock ? m_pBlock->m_iGranularity : Kernel::DEFAULT_ARRAY_GRANULARITY); }
+		HANDLE GetHeap (void) const { return (m_pBlock ? m_pBlock->m_hHeap : ::GetProcessHeap()); }
+		int GetSize (void) const { return (m_pBlock ? m_pBlock->m_iSize : 0); }
 		void InsertBytes (int iOffset, void *pData, int iLength, int iAllocQuantum);
 		ALERROR Resize (int iNewSize, bool bPreserve, int iAllocQuantum);
 		void TakeHandoffBase (CArrayBase &Src);
@@ -61,8 +61,8 @@ template <class VALUE> class TRawArray : public CArrayBase
 		TRawArray (void) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY), m_iExtraBytes(0) { }
 		TRawArray (int iExtraBytes) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY), m_iExtraBytes(iExtraBytes) { }
 
-		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
-		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
+		const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -81,23 +81,23 @@ template <class VALUE> class TRawArray : public CArrayBase
 			CleanUpBlock();
 			}
 
-		inline const VALUE &GetAt (int iIndex) const
+		const VALUE &GetAt (int iIndex) const
 			{
 			const VALUE *pElement = (VALUE *)(GetBytes() + iIndex * GetElementSize());
 			return *pElement;
 			}
 
-		inline VALUE &GetAt (int iIndex)
+		VALUE &GetAt (int iIndex)
 			{
 			VALUE *pElement = (VALUE *)(GetBytes() + iIndex * GetElementSize());
 			return *pElement;
 			}
 
-		inline int GetCount (void) const { return (GetSize() / GetElementSize()); }
+		int GetCount (void) const { return (GetSize() / GetElementSize()); }
 
-		inline int GetElementSize (void) const { return sizeof(VALUE) + m_iExtraBytes; }
+		int GetElementSize (void) const { return sizeof(VALUE) + m_iExtraBytes; }
 
-		inline int GetExtraBytes (void) const { return m_iExtraBytes; }
+		int GetExtraBytes (void) const { return m_iExtraBytes; }
 
 		void Insert (const VALUE &Value, int iIndex = -1)
 			{
@@ -171,8 +171,8 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return *this;
 			}
 
-		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
-		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
+		const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -229,21 +229,21 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			return false;
 			}
 
-		inline const VALUE &GetAt (int iIndex) const
+		const VALUE &GetAt (int iIndex) const
 			{
 			ASSERT(iIndex >= 0 && iIndex < GetCount());
 			const VALUE *pElement = (VALUE *)(GetBytes() + iIndex * sizeof(VALUE));
 			return *pElement;
 			}
 
-		inline VALUE &GetAt (int iIndex)
+		VALUE &GetAt (int iIndex)
 			{
 			ASSERT(iIndex >= 0 && iIndex < GetCount());
 			VALUE *pElement = (VALUE *)(GetBytes() + iIndex * sizeof(VALUE));
 			return *pElement;
 			}
 
-		inline int GetCount (void) const
+		int GetCount (void) const
 			{
 			return GetSize() / sizeof(VALUE);
 			}
@@ -502,8 +502,8 @@ template <class VALUE> class TProbabilityTable
 				m_iTotalChance(0)
 			{ }
 
-		inline const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
-		inline VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
+		const VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -517,10 +517,10 @@ template <class VALUE> class TProbabilityTable
 			m_iTotalChance = 0;
 			}
 
-		inline const VALUE &GetAt (int iIndex) const { return m_Table[iIndex].Value; }
-		inline VALUE &GetAt (int iIndex) { return m_Table[iIndex].Value; }
+		const VALUE &GetAt (int iIndex) const { return m_Table[iIndex].Value; }
+		VALUE &GetAt (int iIndex) { return m_Table[iIndex].Value; }
 
-		inline int GetChance (int iIndex) const { return m_Table[iIndex].iChance; }
+		int GetChance (int iIndex) const { return m_Table[iIndex].iChance; }
 
 		int GetChanceByValue (const VALUE &ToFind) const
 			{
@@ -531,7 +531,7 @@ template <class VALUE> class TProbabilityTable
 			return 0;
 			}
 
-		inline int GetCount (void) const { return m_Table.GetCount(); }
+		int GetCount (void) const { return m_Table.GetCount(); }
 
 		double GetScaledChance (int iIndex, int iScale = 100) const
 			{
@@ -549,7 +549,7 @@ template <class VALUE> class TProbabilityTable
 			return (double)iScale * (double)GetChanceByValue(ToFind) / (double)m_iTotalChance;
 			}
 
-		inline int GetTotalChance (void) const { return m_iTotalChance; }
+		int GetTotalChance (void) const { return m_iTotalChance; }
 
 		void Insert (const VALUE &NewValue, int iChance)
 			{
@@ -561,7 +561,7 @@ template <class VALUE> class TProbabilityTable
 			m_iTotalChance += iChance;
 			}
 
-		inline bool IsEmpty (void) const { return (m_iTotalChance == 0); }
+		bool IsEmpty (void) const { return (m_iTotalChance == 0); }
 
 		int RollPos (void) const
 			{

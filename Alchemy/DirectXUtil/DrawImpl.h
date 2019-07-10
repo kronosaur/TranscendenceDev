@@ -36,7 +36,7 @@ class CGlowingRingPainter
 class CFilterNormal : public TBlt<CFilterNormal>
 	{
 	public:
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
 	};
 
 class CFilterBackColor : public TBlt<CFilterBackColor>
@@ -45,7 +45,7 @@ class CFilterBackColor : public TBlt<CFilterBackColor>
 		CFilterBackColor (CG32bitPixel rgbBackColor) : m_rgbBackColor(rgbBackColor)
 			{ }
 
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			if (rgbSrc.GetRed() <= 0x01 && rgbSrc.GetGreen() <= 0x01 && rgbSrc.GetBlue() <= 0x01)
 				return CG32bitPixel::Null();
@@ -63,7 +63,7 @@ class CFilterTrans : public TBlt<CFilterTrans>
 		CFilterTrans (BYTE byOpacity) : m_byOpacity(byOpacity)
 			{ }
 
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			BYTE byAlpha = rgbSrc.GetAlpha();
 
@@ -84,7 +84,7 @@ class CFilterTrans : public TBlt<CFilterTrans>
 class CFilterDesaturate : public TBlt<CFilterDesaturate>
 	{
 	public:
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			if (rgbSrc.GetAlpha() == 0x00)
 				return rgbSrc;
@@ -99,7 +99,7 @@ class CFilterDesaturateTrans : public TBlt<CFilterDesaturateTrans>
 		CFilterDesaturateTrans (BYTE byOpacity) : m_byOpacity(byOpacity)
 			{ }
 
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			BYTE byAlpha = rgbSrc.GetAlpha();
 
@@ -133,7 +133,7 @@ class CFilterColorize : public TBlt<CFilterColorize>
 			{
 			}
 
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			//	See: Computer Graphics, Foley & van Dam, p.593.
 
@@ -156,7 +156,7 @@ class CFilterColorize : public TBlt<CFilterColorize>
 class CFilterLighten : public TBlt<CFilterLighten>
 	{
 	public:
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			BYTE bySrcAlpha = rgbSrc.GetAlpha();
 
@@ -190,7 +190,7 @@ class CFilterLighten : public TBlt<CFilterLighten>
 class CFilterMask0 : public TBlt<CFilterMask0>
 	{
 	public:
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			if (Max(Max(rgbSrc.GetRed(), rgbSrc.GetGreen()), rgbSrc.GetBlue()) <= 7)
 				return CG32bitPixel::Null();
@@ -209,7 +209,7 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 			NoiseInit();
 			}
 
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const
 			{
 			if (PERM(((DWORD)pDest >> 2) * LARGE_PRIME2 + m_dwRnd) < m_byOpacity)
 				return rgbSrc;
@@ -217,7 +217,7 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 				return CG32bitPixel::Null();
 			}
 
-		inline void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest)
+		void StartRow (CG32bitPixel *pSrc, CG32bitPixel *pDest)
 			{
 			m_dwRnd *= LARGE_PRIME1;
 			}
@@ -236,7 +236,7 @@ class CFilterShimmer : public TBlt<CFilterShimmer>
 template <class BLENDER> class TBltImageNormal : public TImagePainter<TBltImageNormal<BLENDER>, BLENDER>
 	{
 	private:
-		inline CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
+		CG32bitPixel Filter (CG32bitPixel rgbSrc, CG32bitPixel *pDest) const { return rgbSrc; }
 
 	friend TImagePainter;
 	};
@@ -292,7 +292,7 @@ class CSolidFill
 				m_rgbColor(rgbColor)
 			{ }
 
-		inline CG32bitPixel GetColor (void) const { return m_rgbColor; }
+		CG32bitPixel GetColor (void) const { return m_rgbColor; }
 
 	private:
 		CG32bitPixel m_rgbColor;
@@ -313,7 +313,7 @@ template <class BLENDER> class CImageCirclePainter : public TCirclePainter32<CIm
 			{ }
 
 
-		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
+		CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 			{
 			ASSERT(iAngle >= 0 && iAngle < m_iAngleRange);
 			ASSERT(iRadius >= 0 && iRadius <= m_iRadius);
@@ -354,7 +354,7 @@ class CRadialCirclePainter8 : public TRadialPainter8<CRadialCirclePainter8>
 	public:
 		CRadialCirclePainter8 (int iRadius, BYTE CenterValue, BYTE EdgeValue);
 
-		inline BYTE GetColorAt (int iRadius) const { return m_Ramp[iRadius]; }
+		BYTE GetColorAt (int iRadius) const { return m_Ramp[iRadius]; }
 
 	private:
 		TArray<BYTE> m_Ramp;
@@ -402,7 +402,7 @@ template <class BLENDER> class CRadialCirclePainter : public TRadialPainter32<CR
 			}
 
 	private:
-		inline CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
+		CG32bitPixel GetColorAt (int iRadius) const { return m_pColorRamp->GetAt(iRadius); }
 
 		const TArray<CG32bitPixel> *m_pColorRamp;
 		TArray<CG32bitPixel> m_ColorRamp;

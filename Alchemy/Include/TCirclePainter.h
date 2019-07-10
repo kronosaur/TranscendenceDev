@@ -50,8 +50,8 @@ template <class PAINTER, class BLENDER> class TCirclePainter32 : public ICircleP
 
 		//	Default implementation
 
-		inline bool BeginDraw (void) { return true; }
-		inline void EndDraw (void) { }
+		bool BeginDraw (void) { return true; }
+		void EndDraw (void) { }
 
 	protected:
 
@@ -297,7 +297,7 @@ template <class PAINTER, class BLENDER> class TCirclePainter32 : public ICircleP
 				}
 			}
 
-		inline void DRAW_PIXEL (CG32bitPixel *pPos, CG32bitPixel rgbColor)
+		void DRAW_PIXEL (CG32bitPixel *pPos, CG32bitPixel rgbColor)
 			{
 			BYTE byOpacity = rgbColor.GetAlpha();
 			BYTE *pAlphaInv = CG32bitPixel::AlphaTable(byOpacity ^ 0xff);
@@ -313,10 +313,10 @@ template <class PAINTER, class BLENDER> class TCirclePainter32 : public ICircleP
 			*pPos = CG32bitPixel(byRedResult, byGreenResult, byBlueResult);
 			}
 
-		inline CG32bitPixel GET_COLOR (int iAngle, int iRadius) { return ((PAINTER *)this)->GetColorAt(iAngle, iRadius); }
+		CG32bitPixel GET_COLOR (int iAngle, int iRadius) { return ((PAINTER *)this)->GetColorAt(iAngle, iRadius); }
 
-		inline bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
-		inline void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
+		bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
+		void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
 
 		CG32bitImage *m_pDest;
 		const RECT *m_rcClip;
@@ -513,7 +513,7 @@ template <class PAINTER> class TRadialPainter8
 				}
 			}
 
-		inline BYTE GET_COLOR (int iRadius) { return ((PAINTER *)this)->GetColorAt(iRadius); }
+		BYTE GET_COLOR (int iRadius) { return ((PAINTER *)this)->GetColorAt(iRadius); }
 
 		CG8bitImage *m_pDest;
 		const RECT *m_rcClip;
@@ -966,7 +966,7 @@ template <class PAINTER, class BLENDER> class TRadialPainter32
 				}
 			}
 
-		inline CG32bitPixel GET_COLOR (int iRadius) { return ((PAINTER *)this)->GetColorAt(iRadius); }
+		CG32bitPixel GET_COLOR (int iRadius) { return ((PAINTER *)this)->GetColorAt(iRadius); }
 
 		CG32bitImage *m_pDest;
 		const RECT *m_rcClip;

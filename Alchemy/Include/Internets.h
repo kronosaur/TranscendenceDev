@@ -46,15 +46,15 @@ class CHTTPMessage
 
 		void AddHeader (const CString &sField, const CString &sValue);
 		bool FindHeader (const CString &sField, CString *retsValue = NULL) const;
-		inline const CString &GetBodyBuffer (void) const { if (m_pBody) return m_pBody->GetMediaBuffer(); else return NULL_STR; }
-		inline IMediaType *GetBodyHandoff (void) { IMediaType *pBody = m_pBody; m_pBody = NULL; return pBody; }
-		inline DWORD GetStatusCode (void) const { return m_dwStatusCode; }
-		inline const CString &GetStatusMsg (void) const { return m_sStatusMsg; }
-		inline const CString &GetURL (void) const { return m_sURL; }
+		const CString &GetBodyBuffer (void) const { if (m_pBody) return m_pBody->GetMediaBuffer(); else return NULL_STR; }
+		IMediaType *GetBodyHandoff (void) { IMediaType *pBody = m_pBody; m_pBody = NULL; return pBody; }
+		DWORD GetStatusCode (void) const { return m_dwStatusCode; }
+		const CString &GetStatusMsg (void) const { return m_sStatusMsg; }
+		const CString &GetURL (void) const { return m_sURL; }
 		ALERROR InitFromStream (IReadStream &Stream, CString *retsError, bool bNoBody = false);
 		ALERROR InitRequest (const CString &sMethod, const CString &sURL);
 		ALERROR InitResponse (DWORD dwStatusCode, const CString &sStatusMsg);
-		inline void SetBody (IMediaType *pBody) { if (m_pBody) delete m_pBody; m_pBody = pBody; }
+		void SetBody (IMediaType *pBody) { if (m_pBody) delete m_pBody; m_pBody = pBody; }
 		ALERROR WriteToBuffer (IWriteStream *pOutput) const;
 
 	private:
@@ -123,12 +123,12 @@ class CHTTPClientSession : public IReadStream
 
 		EInetsErrors Connect (const CString &sHost, const CString &sPort = NULL_STR);
 		EInetsErrors Disconnect (void);
-		inline const CString &GetHost (void) { return m_sHost; }
-		inline DWORD GetTicksSinceLastActivity (void) { return (m_dwLastActivity == 0 ? 0xffffffff : (::GetTickCount() - m_dwLastActivity)); }
+		const CString &GetHost (void) { return m_sHost; }
+		DWORD GetTicksSinceLastActivity (void) { return (m_dwLastActivity == 0 ? 0xffffffff : (::GetTickCount() - m_dwLastActivity)); }
 		bool IsConnected (void);
 		bool IsInternetAvailable (void);
 		EInetsErrors Send (const CHTTPMessage &Request, CHTTPMessage *retResponse, IHTTPClientSessionEvents *pEvents = NULL);
-		inline void SetStopEvent (HANDLE hEvent) { m_hStop = hEvent; }
+		void SetStopEvent (HANDLE hEvent) { m_hStop = hEvent; }
 
 		//	IReadStream interface
 

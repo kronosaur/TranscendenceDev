@@ -13,26 +13,26 @@ class CVector3D
 		CVector3D (void) : x(0.0), y(0.0), z(0.0) { }
 		CVector3D (Metric ix, Metric iy, Metric iz) : x(ix), y(iy), z(iz) { }
 
-		inline bool operator == (const CVector3D &vA) const { return (x == vA.x && y == vA.y && z == vA.z); }
+		bool operator == (const CVector3D &vA) const { return (x == vA.x && y == vA.y && z == vA.z); }
 
-		inline const Metric &GetX (void) const { return x; }
-		inline const Metric &GetY (void) const { return y; }
-		inline const Metric &GetZ (void) const { return z; }
-		inline bool IsNull (void) const { return (x == 0.0 && y == 0.0 && z == 0.0); }
-		inline Metric Length (void) const { return sqrt(x * x + y * y + z * z); }
-		inline Metric Length2 (void) const { return (x * x + y * y + z * z); }
-		inline Metric Longest (void) const
+		const Metric &GetX (void) const { return x; }
+		const Metric &GetY (void) const { return y; }
+		const Metric &GetZ (void) const { return z; }
+		bool IsNull (void) const { return (x == 0.0 && y == 0.0 && z == 0.0); }
+		Metric Length (void) const { return sqrt(x * x + y * y + z * z); }
+		Metric Length2 (void) const { return (x * x + y * y + z * z); }
+		Metric Longest (void) const
 			{
 			Metric ax = (x < 0.0 ? -x : x);
 			Metric ay = (y < 0.0 ? -y : y);
 			Metric az = (z < 0.0 ? -z : z);
 			return (ax > ay ? (ax > az ? ax : az) : (ay > az ? ay : az));
 			}
-		inline CVector Perpendicular (void) const { return CVector(-y, x); }
-		inline void SetX (Metric NewX) { x = NewX; }
-		inline void SetY (Metric NewY) { y = NewY; }
-		inline void SetZ (Metric NewZ) { z = NewZ; }
-		inline CVector3D Unit (void) const 
+		CVector Perpendicular (void) const { return CVector(-y, x); }
+		void SetX (Metric NewX) { x = NewX; }
+		void SetY (Metric NewY) { y = NewY; }
+		void SetZ (Metric NewZ) { z = NewZ; }
+		CVector3D Unit (void) const 
 			{
 			Metric rLength = Length();
 			if (rLength == 0.0)
@@ -40,7 +40,7 @@ class CVector3D
 			else
 				return CVector3D(x / rLength, y / rLength, z / rLength);
 			}
-		inline CVector3D Unit (Metric *retrLength) const
+		CVector3D Unit (Metric *retrLength) const
 			{
 			*retrLength = Length();
 			if (*retrLength == 0.0)
@@ -76,7 +76,7 @@ class CXForm3D
 		CXForm3D (XFormType type, const CVector3D &vVector);
 		CXForm3D (XFormType type, Metric rRadians);
 
-		inline void SetAt (int iRow, int iCol, Metric rValue) { m_Xform[iRow][iCol] = rValue; }
+		void SetAt (int iRow, int iCol, Metric rValue) { m_Xform[iRow][iCol] = rValue; }
 		CVector3D Transform (const CVector3D &vVector) const;
 		CVector3D Transform (const CVector3D &vVector, Metric *retrW) const;
 
@@ -93,7 +93,7 @@ const CXForm3D operator* (const CXForm3D &op1, const CXForm3D &op2);
 class CProjection3D
 	{
 	public:
-		inline CProjection3D (Metric rFoV, Metric rAspectRatio = 1.0, Metric rNearPlane = 1.0, Metric rFarPlane = 10.0) :
+		CProjection3D (Metric rFoV, Metric rAspectRatio = 1.0, Metric rNearPlane = 1.0, Metric rFarPlane = 10.0) :
 				m_rFoV(rFoV),
 				m_rAspectRatio(rAspectRatio),
 				m_rNearPlane(rNearPlane),
@@ -107,15 +107,15 @@ class CProjection3D
 			m_Xform.SetAt(3, 3, 0.0);
 			}
 
-		inline operator const CXForm3D & () const { return m_Xform; }
+		operator const CXForm3D & () const { return m_Xform; }
 
-		inline const CXForm3D &GetXform (void) const { return m_Xform; }
-		inline CVector Transform (const CXForm3D &Xform, const CVector3D &vPos) const { Metric rW; CVector3D vA = Xform.Transform(vPos, &rW); return CVector(vA.GetX() / rW, vA.GetY() / rW); }
-		inline CVector Transform (const CVector3D &vPos) const { return Transform(m_Xform, vPos); }
+		const CXForm3D &GetXform (void) const { return m_Xform; }
+		CVector Transform (const CXForm3D &Xform, const CVector3D &vPos) const { Metric rW; CVector3D vA = Xform.Transform(vPos, &rW); return CVector(vA.GetX() / rW, vA.GetY() / rW); }
+		CVector Transform (const CVector3D &vPos) const { return Transform(m_Xform, vPos); }
 		TArray<CVector> Transform (const CXForm3D &Xform, const TArray<CVector3D> &Points) const;
 
 	private:
-		inline static Metric cotan (Metric rValue) { return cos(rValue) / sin(rValue); }
+		static Metric cotan (Metric rValue) { return cos(rValue) / sin(rValue); }
 
 		Metric m_rFoV;
 		Metric m_rAspectRatio;
@@ -136,8 +136,8 @@ class CLine3D
 				m_vEnd(vEnd)
 			{ }
 
-		inline const CVector3D &GetStart (void) const { return m_vStart; }
-		inline const CVector3D &GetEnd (void) const { return m_vEnd; }
+		const CVector3D &GetStart (void) const { return m_vStart; }
+		const CVector3D &GetEnd (void) const { return m_vEnd; }
 
 	private:
 		CVector3D m_vStart;

@@ -30,10 +30,10 @@ class CGCloudGenerator3D
 		CGCloudGenerator3D (int iScale, int iFrames = 256, int iMaxLevels = -1);
 
 		Metric GetAtPeriodic (int x, int y, int z) const;
-		inline int GetFrames (void) const { return m_iFrames; }
-		inline int GetMaxLevels (void) const { return m_iMaxLevels; }
-		inline Metric GetMaxValue (void) const { return m_rMaxValue; }
-		inline int GetScale (void) const { return m_iScale; }
+		int GetFrames (void) const { return m_iFrames; }
+		int GetMaxLevels (void) const { return m_iMaxLevels; }
+		Metric GetMaxValue (void) const { return m_rMaxValue; }
+		int GetScale (void) const { return m_iScale; }
 
 	private:
 		struct SFreq

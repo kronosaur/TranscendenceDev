@@ -27,12 +27,12 @@ class CSortedEdgeList
 			{ }
 
 		void Advance (void);
-		inline SEdgeState *GetFirst (void) const { return m_pFirst; }
-		inline CSortedEdgeList *GetNext (void) const { return m_pNext; }
+		SEdgeState *GetFirst (void) const { return m_pFirst; }
+		CSortedEdgeList *GetNext (void) const { return m_pNext; }
 		void Insert (SEdgeState *pEdge);
 		void Insert (CSortedEdgeList &EdgeList);
-		inline bool IsEmpty (void) const { return (m_pFirst == NULL); }
-		inline void SetNext (CSortedEdgeList *pNext) { m_pNext = pNext; }
+		bool IsEmpty (void) const { return (m_pFirst == NULL); }
+		void SetNext (CSortedEdgeList *pNext) { m_pNext = pNext; }
 		void Sort (void);
 
 	private:
@@ -50,8 +50,8 @@ class CGlobalEdgeTable
 
 		~CGlobalEdgeTable (void);
 
-		inline CSortedEdgeList *GetFirst (void) const { return m_pFirst;  }
-		inline CSortedEdgeList *GetLast (void) const { return m_pLast; }
+		CSortedEdgeList *GetFirst (void) const { return m_pFirst;  }
+		CSortedEdgeList *GetLast (void) const { return m_pLast; }
 		void Insert (SEdgeState *pEdge);
 
 	private:

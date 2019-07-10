@@ -175,14 +175,14 @@ template <class PAINTER, class BLENDER> class TRegionPainter32 : public IRegionP
 
 		//	Default implementation
 
-		inline bool BeginDraw (void) { return true; }
-		inline void EndDraw (void) { }
+		bool BeginDraw (void) { return true; }
+		void EndDraw (void) { }
 
 	protected:
 
-		inline bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
-		inline void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
-		inline CG32bitPixel GET_PIXEL (int x, int y) { return ((PAINTER *)this)->GetPixelAt(x, y); }
+		bool BEGIN_DRAW (void) { return ((PAINTER *)this)->BeginDraw(); }
+		void END_DRAW (void) { ((PAINTER *)this)->EndDraw(); }
+		CG32bitPixel GET_PIXEL (int x, int y) { return ((PAINTER *)this)->GetPixelAt(x, y); }
 
 		CG32bitImage *m_pDest;
 		const RECT *m_rcClip;

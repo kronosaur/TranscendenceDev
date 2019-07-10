@@ -238,15 +238,15 @@ class CTimeDate
 		CTimeDate (const SYSTEMTIME &Time);
 		CTimeDate (int iDaysSince1AD, int iMillisecondsSinceMidnight);
 
-		inline operator SYSTEMTIME () const { return m_Time; }
+		operator SYSTEMTIME () const { return m_Time; }
 
-		inline int Year (void) const { return m_Time.wYear; }
-		inline int Month (void) const { return m_Time.wMonth; }
-		inline int Day (void) const { return m_Time.wDay; }
-		inline int Hour (void) const { return m_Time.wHour; }
-		inline int Minute (void) const { return m_Time.wMinute; }
-		inline int Second (void) const { return m_Time.wSecond; }
-		inline int Millisecond (void) const { return m_Time.wMilliseconds; }
+		int Year (void) const { return m_Time.wYear; }
+		int Month (void) const { return m_Time.wMonth; }
+		int Day (void) const { return m_Time.wDay; }
+		int Hour (void) const { return m_Time.wHour; }
+		int Minute (void) const { return m_Time.wMinute; }
+		int Second (void) const { return m_Time.wSecond; }
+		int Millisecond (void) const { return m_Time.wMilliseconds; }
 
 		int Compare (const CTimeDate &Src) const;
 		int DayOfWeek (void) const;
@@ -269,14 +269,14 @@ class CTimeSpan
 
 		static bool Parse (const CString &sValue, CTimeSpan *retValue);
 
-		inline int Days (void) const { return (int)m_Days; }
-		inline int Seconds (void) const { return (SECONDS_PER_DAY * m_Days) + (m_Milliseconds / 1000); }
-		inline int Milliseconds (void) const { return (SECONDS_PER_DAY * 1000 * m_Days) + m_Milliseconds; }
-		inline int MillisecondsSinceMidnight (void) const { return (int)m_Milliseconds; }
+		int Days (void) const { return (int)m_Days; }
+		int Seconds (void) const { return (SECONDS_PER_DAY * m_Days) + (m_Milliseconds / 1000); }
+		int Milliseconds (void) const { return (SECONDS_PER_DAY * 1000 * m_Days) + m_Milliseconds; }
+		int MillisecondsSinceMidnight (void) const { return (int)m_Milliseconds; }
 
 		CString Encode (void) const;
 		CString Format (const CString &sFormat) const;
-		inline bool IsBlank (void) const { return (m_Days == 0 && m_Milliseconds == 0); }
+		bool IsBlank (void) const { return (m_Days == 0 && m_Milliseconds == 0); }
 		void ReadFromStream (IReadStream *pStream);
 		void WriteToStream (IWriteStream *pStream) const;
 
@@ -358,8 +358,8 @@ class IObjectClass
 	public:
 		IObjectClass (OBJCLASSID ObjID, PDATADESCSTRUCT pDataDesc) : m_ObjID(ObjID), m_pDataDesc(pDataDesc) { }
 
-		inline PDATADESCSTRUCT GetDataDesc (void) { return m_pDataDesc; }
-		inline OBJCLASSID GetObjID (void) { return m_ObjID; }
+		PDATADESCSTRUCT GetDataDesc (void) { return m_pDataDesc; }
+		OBJCLASSID GetObjID (void) { return m_ObjID; }
 		virtual CObject *Instantiate (void) = 0;
 		virtual int GetObjSize (void) = 0;
 
@@ -377,7 +377,7 @@ class CObject
 		virtual ~CObject (void);
 
 		CObject *Copy (void);
-		inline IObjectClass *GetClass (void) { return m_pClass; }
+		IObjectClass *GetClass (void) { return m_pClass; }
 		static bool IsValidPointer (CObject *pObj);
 		ALERROR Load (CUnarchiver *pUnarchiver);
 		ALERROR LoadDone (void);
@@ -439,8 +439,8 @@ class CCriticalSection
 		CCriticalSection (void) { ::InitializeCriticalSection(&m_cs); }
 		~CCriticalSection (void) { ::DeleteCriticalSection(&m_cs); }
 
-		inline void Lock (void) { ::EnterCriticalSection(&m_cs); }
-		inline void Unlock (void) { ::LeaveCriticalSection(&m_cs); }
+		void Lock (void) { ::EnterCriticalSection(&m_cs); }
+		void Unlock (void) { ::LeaveCriticalSection(&m_cs); }
 
 	private:
 		CRITICAL_SECTION m_cs;
@@ -462,10 +462,10 @@ class COSObject
 		COSObject (void) : m_hHandle(INVALID_HANDLE_VALUE) { }
 		~COSObject (void) { if (m_hHandle != INVALID_HANDLE_VALUE) ::CloseHandle(m_hHandle); }
 
-		inline void Close (void) { if (m_hHandle != INVALID_HANDLE_VALUE) { ::CloseHandle(m_hHandle); m_hHandle = INVALID_HANDLE_VALUE; } }
-		inline HANDLE GetWaitObject (void) const { return m_hHandle; }
-		inline void TakeHandoff (COSObject &Obj) { Close(); m_hHandle = Obj.m_hHandle; Obj.m_hHandle = INVALID_HANDLE_VALUE; }
-		inline bool Wait (DWORD dwTimeout = INFINITE) const { return (::WaitForSingleObject(m_hHandle, dwTimeout) != WAIT_TIMEOUT); }
+		void Close (void) { if (m_hHandle != INVALID_HANDLE_VALUE) { ::CloseHandle(m_hHandle); m_hHandle = INVALID_HANDLE_VALUE; } }
+		HANDLE GetWaitObject (void) const { return m_hHandle; }
+		void TakeHandoff (COSObject &Obj) { Close(); m_hHandle = Obj.m_hHandle; Obj.m_hHandle = INVALID_HANDLE_VALUE; }
+		bool Wait (DWORD dwTimeout = INFINITE) const { return (::WaitForSingleObject(m_hHandle, dwTimeout) != WAIT_TIMEOUT); }
 
 	protected:
 		HANDLE m_hHandle;
@@ -476,9 +476,9 @@ class CManualEvent : public COSObject
 	public:
 		void Create (void);
 		void Create (const CString &sName, bool *retbExists = NULL);
-		inline bool IsSet (void) { return (::WaitForSingleObject(m_hHandle, 0) == WAIT_OBJECT_0); }
-		inline void Reset (void) { ::ResetEvent(m_hHandle); }
-		inline void Set (void) { ::SetEvent(m_hHandle); }
+		bool IsSet (void) { return (::WaitForSingleObject(m_hHandle, 0) == WAIT_OBJECT_0); }
+		void Reset (void) { ::ResetEvent(m_hHandle); }
+		void Set (void) { ::SetEvent(m_hHandle); }
 	};
 
 //	CINTDynamicArray. Implementation of a dynamic array.
@@ -492,13 +492,13 @@ class CINTDynamicArray
 		CINTDynamicArray (HANDLE hHeap);
 		~CINTDynamicArray (void);
 
-		inline ALERROR Append (BYTE *pData, int iLength, int iAllocQuantum)
+		ALERROR Append (BYTE *pData, int iLength, int iAllocQuantum)
 			{ return Insert(-1, pData, iLength, iAllocQuantum); }
 		ALERROR Delete (int iOffset, int iLength);
-		inline ALERROR DeleteAll (void) { return Delete(0, m_iLength); }
-		inline int GetLength (void) const { return m_iLength; }
-		inline void SetLength (int iLength) { m_iLength = iLength; }
-		inline BYTE *GetPointer (int iOffset) const { return (m_pArray ? m_pArray + iOffset : NULL); }
+		ALERROR DeleteAll (void) { return Delete(0, m_iLength); }
+		int GetLength (void) const { return m_iLength; }
+		void SetLength (int iLength) { m_iLength = iLength; }
+		BYTE *GetPointer (int iOffset) const { return (m_pArray ? m_pArray + iOffset : NULL); }
 		ALERROR Insert (int iOffset, BYTE *pData, int iLength, int iAllocQuantum);
 		ALERROR Resize (int iNewSize, BOOL bPreserve, int iAllocQuantum);
 
@@ -520,7 +520,7 @@ class CIntArray : public CObject
 		CIntArray &operator= (const CIntArray &Obj);
 
 		ALERROR AppendElement (int iElement, int *retiIndex = NULL);
-		inline ALERROR CollapseArray (int iPos, int iCount) { return RemoveRange(iPos, iPos + iCount - 1); }
+		ALERROR CollapseArray (int iPos, int iCount) { return RemoveRange(iPos, iPos + iCount - 1); }
 		ALERROR ExpandArray (int iPos, int iCount);
 		int FindElement (int iElement) const;
 		int GetCount (void) const;
@@ -582,13 +582,13 @@ class CString : public CObject
 
 		CString (const CString &pString);
 		CString &operator= (const CString &pString);
-		inline operator LPSTR () const { return GetASCIIZPointer(); }
+		operator LPSTR () const { return GetASCIIZPointer(); }
 		bool operator== (const CString &sValue) const;
 		bool operator!= (const CString &sValue) const;
 
 		static constexpr DWORD FLAG_ALLOC_EXTRA = 0x00000001;
 		void Append (LPCSTR pString, int iLength = -1, DWORD dwFlags = 0);
-		inline void Append (const CString &sString, DWORD dwFlags = 0) { Append(sString.GetPointer(), sString.GetLength(), dwFlags); }
+		void Append (const CString &sString, DWORD dwFlags = 0) { Append(sString.GetPointer(), sString.GetLength(), dwFlags); }
 
 		void Capitalize (CapitalizeOptions iOption);
 		char *GetASCIIZPointer (void) const;
@@ -597,7 +597,7 @@ class CString : public CObject
 		char *GetPointer (void) const;
 		char *GetWritePointer (int iLength);
 		void GrowToFit (int iLength);
-		inline bool IsBlank (void) const { return (GetLength() == 0); }
+		bool IsBlank (void) const { return (GetLength() == 0); }
 		void ReadFromStream (IReadStream *pStream);
 		void Transcribe (const char *pString, int iLen);
 		void Truncate (int iLength);
@@ -648,7 +648,7 @@ class CString : public CObject
 		static void AddToFreeList (PSTORESTRUCT pStore, int iSize);
 		PSTORESTRUCT AllocStore (int iSize, BOOL bAllocString);
 #ifdef INLINE_DECREF
-		inline void DecRefCount (void)
+		void DecRefCount (void)
 			{
 			if (m_pStore && (--m_pStore->iRefCount) == 0)
 				FreeStore(m_pStore);
@@ -658,8 +658,8 @@ class CString : public CObject
 #endif
 
 		static void FreeStore (PSTORESTRUCT pStore);
-		inline void IncRefCount (void) { if (m_pStore) m_pStore->iRefCount++; }
-		inline BOOL IsExternalStorage (void) { return (m_pStore->iAllocSize < 0 ? TRUE : FALSE); }
+		void IncRefCount (void) { if (m_pStore) m_pStore->iRefCount++; }
+		BOOL IsExternalStorage (void) { return (m_pStore->iAllocSize < 0 ? TRUE : FALSE); }
 
 		static constexpr DWORD FLAG_PRESERVE_CONTENTS =		0x00000001;
 		static constexpr DWORD FLAG_GEOMETRIC_GROWTH =		0x00000002;
@@ -684,7 +684,7 @@ class CException
 				m_sMsg(sMsg)
 			{ }
 
-		inline ALERROR GetErrorCode (void) const { return m_error; }
+		ALERROR GetErrorCode (void) const { return m_error; }
 		CString GetErrorMessage (void) const;
 
 	private:
@@ -705,7 +705,7 @@ class CDictionary : public CObject
 		ALERROR Find (int iKey, int *retiValue) const;
 		ALERROR FindEx (int iKey, int *retiEntry) const;
 		ALERROR FindOrAdd (int iKey, int iValue, bool *retbFound, int *retiValue);
-		inline int GetCount (void) const { return m_Array.GetCount() / 2; }
+		int GetCount (void) const { return m_Array.GetCount() / 2; }
 		void GetEntry (int iEntry, int *retiKey, int *retiValue) const;
 		ALERROR ReplaceEntry (int iKey, int iValue, bool bAdd, bool *retbAdded, int *retiOldValue);
 		ALERROR RemoveAll (void) { return m_Array.RemoveAll(); }
@@ -714,7 +714,7 @@ class CDictionary : public CObject
 
 	protected:
 		virtual int Compare (int iKey1, int iKey2) const;
-		inline ALERROR ExpandArray (int iPos, int iCount) { return m_Array.ExpandArray(2 * iPos, 2 * iCount); }
+		ALERROR ExpandArray (int iPos, int iCount) { return m_Array.ExpandArray(2 * iPos, 2 * iCount); }
 		void SetEntry (int iEntry, int iKey, int iValue);
 
 		bool FindSlot (int iKey, int *retiPos) const;
@@ -731,7 +731,7 @@ class CIDTable : public CDictionary
 		CIDTable (BOOL bOwned, BOOL bNoReference);
 		virtual ~CIDTable (void);
 
-		inline ALERROR AddEntry (int iKey, CObject *pValue) { return CDictionary::AddEntry(iKey, (int)pValue); }
+		ALERROR AddEntry (int iKey, CObject *pValue) { return CDictionary::AddEntry(iKey, (int)pValue); }
 		int GetKey (int iEntry) const;
 		CObject *GetValue (int iEntry) const;
 		ALERROR Lookup (int iKey, CObject **retpValue) const;
@@ -838,7 +838,7 @@ class CAtomizer
 		CAtomizer (void);
 
 		DWORD Atomize (const CString &sIdentifier);
-		inline int GetCount (void) const { return m_StringToAtom.GetCount(); }
+		int GetCount (void) const { return m_StringToAtom.GetCount(); }
 		const CString &GetIdentifier (DWORD dwAtom) const;
 		int GetMemoryUsage (void) const;
 
@@ -868,7 +868,7 @@ class CFileReadBlock : public CObject, public IReadBlock
 		CFileReadBlock (const CString &sFilename);
 		virtual ~CFileReadBlock (void);
 
-		inline const CString &GetFilename (void) const { return m_sFilename; }
+		const CString &GetFilename (void) const { return m_sFilename; }
 
 		//	IReadBlock virtuals
 
@@ -934,11 +934,11 @@ class IWriteStream
 		virtual ALERROR Create (void) = 0;
 		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
 
-		inline ALERROR Write (char chChar, int iLength = 1) { return WriteChar(chChar, iLength); }
-		inline ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
-		inline ALERROR Write (DWORD dwValue) { return Write((char *)&dwValue, sizeof(DWORD)); }
-		inline ALERROR Write (double rValue) { return Write((char *)&rValue, sizeof(double)); }
-		inline ALERROR Write (const CString &sString) { return Write(sString.GetPointer(), sString.GetLength()); }
+		ALERROR Write (char chChar, int iLength = 1) { return WriteChar(chChar, iLength); }
+		ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
+		ALERROR Write (DWORD dwValue) { return Write((char *)&dwValue, sizeof(DWORD)); }
+		ALERROR Write (double rValue) { return Write((char *)&rValue, sizeof(double)); }
+		ALERROR Write (const CString &sString) { return Write(sString.GetPointer(), sString.GetLength()); }
 
 		ALERROR WriteChar (char chChar, int iLength = 1);
 		ALERROR WriteChars (const CString &sString, int *retiBytesWritten = NULL) { return Write(sString.GetASCIIZPointer(), sString.GetLength(), retiBytesWritten); }
@@ -951,9 +951,9 @@ class IReadStream
 		virtual ALERROR Open (void) = 0;
 		virtual ALERROR Read (char *pData, int iLength, int *retiBytesRead = NULL) = 0;
 
-		inline ALERROR Read (int &iValue) { return Read((char *)&iValue, sizeof(DWORD)); }
-		inline ALERROR Read (DWORD &dwValue) { return Read((char *)&dwValue, sizeof(DWORD)); }
-		inline ALERROR Read (double &rValue) { return Read((char *)&rValue, sizeof(double)); }
+		ALERROR Read (int &iValue) { return Read((char *)&iValue, sizeof(DWORD)); }
+		ALERROR Read (DWORD &dwValue) { return Read((char *)&dwValue, sizeof(DWORD)); }
+		ALERROR Read (double &rValue) { return Read((char *)&rValue, sizeof(double)); }
 	};
 
 //	CMemoryWriteStream. This object is used to write variable length
@@ -965,8 +965,8 @@ class CMemoryWriteStream : public CObject, public IWriteStream
 		CMemoryWriteStream (int iMaxSize = DEFAULT_MAX_SIZE);
 		virtual ~CMemoryWriteStream (void);
 
-		inline char *GetPointer (void) { return m_pBlock; }
-		inline int GetLength (void) { return m_iCurrentSize; }
+		char *GetPointer (void) { return m_pBlock; }
+		int GetLength (void) { return m_iCurrentSize; }
 
 		//	IWriteStream virtuals
 
@@ -1069,7 +1069,7 @@ class CFileReadStream : public CObject, public IReadStream
 		CFileReadStream (const CString &sFilename);
 		virtual ~CFileReadStream (void);
 
-		inline DWORD GetFileSize (void) { return m_dwFileSize; }
+		DWORD GetFileSize (void) { return m_dwFileSize; }
 
 		//	IReadStream virtuals
 
@@ -1104,7 +1104,7 @@ class CArchiver : public CObject
 		ALERROR AddObject (CObject *pObject);
 		ALERROR BeginArchive (void);
 		ALERROR EndArchive (void);
-		inline void SetVersion (DWORD dwVersion) { m_dwVersion = dwVersion; }
+		void SetVersion (DWORD dwVersion) { m_dwVersion = dwVersion; }
 
 		//	These methods should only be called by objects
 		//	that are being saved
@@ -1134,7 +1134,7 @@ class CUnarchiver : public CObject
 
 		ALERROR BeginUnarchive (void);
 		ALERROR EndUnarchive (void);
-		inline TArray<CObject *> &GetList (void) { return m_List; }
+		TArray<CObject *> &GetList (void) { return m_List; }
 		CObject *GetObject (int iIndex);
 		DWORD GetVersion (void) { return m_dwVersion; }
 		ALERROR ResolveExternalReference (CString sTag, void *pReference);
@@ -1177,11 +1177,11 @@ class CDataFile : public CObject
 		ALERROR Close (void);
 		ALERROR DeleteEntry (int iEntry);
 		ALERROR Flush (void);
-		inline CString GetFilename (void) const { return m_sFilename; }
+		CString GetFilename (void) const { return m_sFilename; }
 		int GetDefaultEntry (void);
 		int GetEntryLength (int iEntry);
-		inline BOOL IsOpen (void) { return (m_hFile != INVALID_HANDLE_VALUE || m_pFile); }
-		inline ALERROR Open (DWORD dwFlags = 0) { return Open(NULL_STR, dwFlags); }
+		BOOL IsOpen (void) { return (m_hFile != INVALID_HANDLE_VALUE || m_pFile); }
+		ALERROR Open (DWORD dwFlags = 0) { return Open(NULL_STR, dwFlags); }
 		ALERROR Open (const CString &sFilename, DWORD dwFlags = 0);
 		ALERROR OpenFromResource (HMODULE hInst, char *pszRes, DWORD dwFlags = 0);
 		ALERROR ReadEntry (int iEntry, CString *retsData);
@@ -1321,7 +1321,7 @@ class CRegKey
 									   const CString &sAppName,
 									   CRegKey *retKey);
 
-		inline operator HKEY() const { return m_hKey; }
+		operator HKEY() const { return m_hKey; }
 
 		bool FindStringValue (const CString &sValue, CString *retsData);
 		void SetStringValue (const CString &sValue, const CString &sData);
@@ -1344,12 +1344,12 @@ class IThreadPoolTask
 class CThreadPool
 	{
 	public:
-		inline ~CThreadPool (void) { CleanUp(); }
+		~CThreadPool (void) { CleanUp(); }
 
 		void AddTask (IThreadPoolTask *pTask);
 		bool Boot (int iThreadCount);
 		void CleanUp (void);
-		inline int GetThreadCount (void) const { return m_Threads.GetCount() + 1; }
+		int GetThreadCount (void) const { return m_Threads.GetCount() + 1; }
 		void Run (void);
 
 	private:
@@ -1362,7 +1362,7 @@ class CThreadPool
 		void RunTask (IThreadPoolTask *pTask);
 		void WorkerThread (void);
 
-		inline static DWORD WINAPI WorkerThreadStub (LPVOID pData) { ((CThreadPool *)pData)->WorkerThread(); return 0; }
+		static DWORD WINAPI WorkerThreadStub (LPVOID pData) { ((CThreadPool *)pData)->WorkerThread(); return 0; }
 
 		CCriticalSection m_cs;
 		TArray<SThreadDesc> m_Threads;

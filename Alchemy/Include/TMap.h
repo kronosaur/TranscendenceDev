@@ -118,7 +118,7 @@ template <class KEY, class VALUE> class TMap : public CMapBase
 				return NULL;
 			}
 
-		inline int GetCount (void) { return m_iCount; }
+		int GetCount (void) { return m_iCount; }
 
 		const KEY &GetKey (VALUE *pValue) const
 			{
@@ -246,8 +246,8 @@ template <class KEY, class VALUE> class TSortMap
 	public:
 		TSortMap (ESortOptions iOrder = AscendingSort) : m_iOrder(iOrder) { }
 
-		inline const VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
-		inline VALUE &operator [] (int iIndex) { return GetValue(iIndex); }
+		const VALUE &operator [] (int iIndex) const { return GetValue(iIndex); }
+		VALUE &operator [] (int iIndex) { return GetValue(iIndex); }
 
 		TSortMap<KEY, VALUE> &operator= (const TSortMap<KEY, VALUE> &Obj)
 			{
@@ -871,7 +871,7 @@ struct SSimpleStringEntry
 template <class VALUE> class TProbabilityMap
 	{
 	public:
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 
 		void Delete (int iIndex)
 			{
@@ -885,7 +885,7 @@ template <class VALUE> class TProbabilityMap
 			m_iTotalChance = 0;
 			}
 
-		inline int GetChance (int iIndex) const { return m_Table[iIndex]; }
+		int GetChance (int iIndex) const { return m_Table[iIndex]; }
 
 		int GetChanceByValue (const VALUE &ToFind) const
 			{
@@ -896,7 +896,7 @@ template <class VALUE> class TProbabilityMap
 			return *pChance;
 			}
 
-		inline int GetCount (void) const { return m_Table.GetCount(); }
+		int GetCount (void) const { return m_Table.GetCount(); }
 
 		const VALUE &GetKey (int iIndex) const { return m_Table.GetKey(iIndex); }
 
@@ -916,7 +916,7 @@ template <class VALUE> class TProbabilityMap
 			return (double)iScale * (double)GetChanceByValue(ToFind) / (double)m_iTotalChance;
 			}
 
-		inline int GetTotalChance (void) const { return m_iTotalChance; }
+		int GetTotalChance (void) const { return m_iTotalChance; }
 
 		void Insert (const VALUE &NewValue, int iChance)
 			{
@@ -932,7 +932,7 @@ template <class VALUE> class TProbabilityMap
 			m_iTotalChance += iChance;
 			}
 
-		inline bool IsEmpty (void) const { return (m_iTotalChance == 0); }
+		bool IsEmpty (void) const { return (m_iTotalChance == 0); }
 
 		int RollPos (void) const
 			{

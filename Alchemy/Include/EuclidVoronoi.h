@@ -8,16 +8,16 @@
 class CVoronoiTessellation
 	{
 	public:
-		inline int GetNeighbor (int iSiteIndex, int iIndex) const { return m_Sites[iSiteIndex].Neighbors[iIndex]; }
-		inline int GetNeighborCount (int iSiteIndex) const { return m_Sites[iSiteIndex].Neighbors.GetCount(); }
-		inline const CLine &GetNeighborEdge (int iSiteIndex, int iIndex) const { return m_Edges[m_Sites[iSiteIndex].Edges[iIndex]].Edge; }
-		inline int GetSiteCount (void) const { return m_Sites.GetCount(); }
-		inline DWORD GetSiteData (int iIndex) const { return m_Sites[iIndex].dwData; }
-		inline void GetSiteNeighbors (int iIndex, TArray<int> *retNeighbors) const { *retNeighbors = m_Sites[iIndex].Neighbors; }
-		inline const CVector &GetSiteOrigin (int iIndex) const { return m_Sites[iIndex].Origin; }
-		inline void GetSitePolygon (int iIndex, TArray<CVector> *retPoints) const { *retPoints = m_Sites[iIndex].Polygon; }
+		int GetNeighbor (int iSiteIndex, int iIndex) const { return m_Sites[iSiteIndex].Neighbors[iIndex]; }
+		int GetNeighborCount (int iSiteIndex) const { return m_Sites[iSiteIndex].Neighbors.GetCount(); }
+		const CLine &GetNeighborEdge (int iSiteIndex, int iIndex) const { return m_Edges[m_Sites[iSiteIndex].Edges[iIndex]].Edge; }
+		int GetSiteCount (void) const { return m_Sites.GetCount(); }
+		DWORD GetSiteData (int iIndex) const { return m_Sites[iIndex].dwData; }
+		void GetSiteNeighbors (int iIndex, TArray<int> *retNeighbors) const { *retNeighbors = m_Sites[iIndex].Neighbors; }
+		const CVector &GetSiteOrigin (int iIndex) const { return m_Sites[iIndex].Origin; }
+		void GetSitePolygon (int iIndex, TArray<CVector> *retPoints) const { *retPoints = m_Sites[iIndex].Polygon; }
 		void Init (const TArray<CVector> &Points, Metric rWidth = 0.0, Metric rHeight = 0.0);
-		inline void SetSiteData (int iIndex, DWORD dwData) { m_Sites[iIndex].dwData = dwData; }
+		void SetSiteData (int iIndex, DWORD dwData) { m_Sites[iIndex].dwData = dwData; }
 
 	private:
 		struct SEdge

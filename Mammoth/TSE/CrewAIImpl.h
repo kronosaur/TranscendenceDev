@@ -22,15 +22,15 @@ class CCrewPsyche
 	public:
 		CCrewPsyche (void);
 
-		inline ECrewArchetypes GetArchetype (void) const { return (ECrewArchetypes)m_dwArchetype; }
-		inline DWORD GetBelief (void) const { return m_dwBelief; }
-		inline DWORD GetCohesion (void) const { return m_dwCohesion; }
-		inline DWORD GetLoyalty (void) const { return m_dwLoyalty; }
+		ECrewArchetypes GetArchetype (void) const { return (ECrewArchetypes)m_dwArchetype; }
+		DWORD GetBelief (void) const { return m_dwBelief; }
+		DWORD GetCohesion (void) const { return m_dwCohesion; }
+		DWORD GetLoyalty (void) const { return m_dwLoyalty; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetArchetype (ECrewArchetypes iArchetype);
-		inline void SetBelief (DWORD dwBelief) { m_dwBelief = dwBelief; }
-		inline void SetCohesion (DWORD dwCohesion) { m_dwCohesion = dwCohesion; }
-		inline void SetLoyalty (DWORD dwLoyalty) { m_dwLoyalty = dwLoyalty; }
+		void SetBelief (DWORD dwBelief) { m_dwBelief = dwBelief; }
+		void SetCohesion (DWORD dwCohesion) { m_dwCohesion = dwCohesion; }
+		void SetLoyalty (DWORD dwLoyalty) { m_dwLoyalty = dwLoyalty; }
 		void WriteToStream (IWriteStream *pStream);
 
 	private:

@@ -54,17 +54,17 @@ class CScreenMgr
 		bool CheckIsReady (void);
 		void CleanUp (void);
 		void ClientToLocal (int x, int y, int *retx, int *rety);
-		inline void Flip (void) { if (m_bExclusiveMode && m_pDD) FlipInt(); }
-		inline int GetHeight (void) const { return m_cyScreen; }
-		inline bool GetInvalidRect (RECT *retrcRect) { *retrcRect = m_rcInvalid; return (::IsRectEmpty(&m_rcInvalid) != TRUE); }
-		inline CG32bitImage &GetScreen (void) { return m_Screen; }
-		inline int GetWidth (void) const { return m_cxScreen; }
+		void Flip (void) { if (m_bExclusiveMode && m_pDD) FlipInt(); }
+		int GetHeight (void) const { return m_cyScreen; }
+		bool GetInvalidRect (RECT *retrcRect) { *retrcRect = m_rcInvalid; return (::IsRectEmpty(&m_rcInvalid) != TRUE); }
+		CG32bitImage &GetScreen (void) { return m_Screen; }
+		int GetWidth (void) const { return m_cxScreen; }
 		void GlobalToLocal (int x, int y, int *retx, int *rety);
 		ALERROR Init (SScreenMgrOptions &Options, CString *retsError);
 		void Invalidate (void) { SetInvalidAll(&m_rcInvalid); SetInvalidAll(&m_rcInvalidSecondary); }
 		void Invalidate (const RECT &rcRect) { ::UnionRect(&m_rcInvalid, &m_rcInvalid, &rcRect); ::UnionRect(&m_rcInvalidSecondary, &m_rcInvalidSecondary, &rcRect); }
-		inline bool IsMinimized (void) const { return m_bMinimized; }
-		inline bool IsScreenPersistent (void) { return !m_bBackgroundBlt; }
+		bool IsMinimized (void) const { return m_bMinimized; }
+		bool IsScreenPersistent (void) { return !m_bBackgroundBlt; }
 		void LocalToGlobal (int x, int y, int *retx, int *rety);
 		void OnWMActivateApp (bool bActivate);
 		void OnWMDisplayChange (int iBitDepth, int cxWidth, int cyHeight);

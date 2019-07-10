@@ -88,9 +88,9 @@ struct ParserCtx
 
 		void DefineEntity (const CString &sName, const CString &sValue);
 		CString LookupEntity (const CString &sName, bool *retbFound = NULL);
-		inline bool OptionNoTagCharCheck (void) const { return m_bNoTagCharCheck; }
-		inline void SetOptionNoTagCharCheck (bool bValue = true) { m_bNoTagCharCheck = bValue; }
-		inline void SetOptionRootElementOnly (bool bValue = true) { m_bParseRootElement = bValue; }
+		bool OptionNoTagCharCheck (void) const { return m_bNoTagCharCheck; }
+		void SetOptionNoTagCharCheck (bool bValue = true) { m_bNoTagCharCheck = bValue; }
+		void SetOptionRootElementOnly (bool bValue = true) { m_bParseRootElement = bValue; }
 
 	public:
 		IXMLParserController *m_pController;

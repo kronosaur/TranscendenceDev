@@ -42,7 +42,7 @@ class CMarkovWordGenerator
 		SFragHead *AppendChainChar (SFragHead *pFrag, char chChar, DWORD dwFlags);
 		bool Find (char *pFrag, int *retiPos);
 		bool FindChainChar (SFragHead *pFrag, char chChar, SChainChar **retpChain);
-		inline SChainChar *GetChain (SFragHead *pFrag) { return (SChainChar *)(&pFrag[1]); }
+		SChainChar *GetChain (SFragHead *pFrag) { return (SChainChar *)(&pFrag[1]); }
 		bool InitStart (void);
 
 		TArray<SFragHead *> m_Table;
