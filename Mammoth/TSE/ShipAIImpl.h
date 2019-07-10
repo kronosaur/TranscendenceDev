@@ -395,6 +395,7 @@ class CBaseShipAI : public IShipController
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		inline CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		inline bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
+		bool InitOrderModule (void);
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
 		void HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
