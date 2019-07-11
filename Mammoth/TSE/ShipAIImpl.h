@@ -394,7 +394,6 @@ class CBaseShipAI : public IShipController
 		Metric GetDistance2 (CSpaceObject *pObj) const { return (pObj->GetPos() - m_pShip->GetPos()).Length2(); }
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
-		bool InitOrderModule (void);
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }

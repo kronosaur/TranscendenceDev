@@ -190,76 +190,17 @@ void CBaseShipAI::Behavior (SUpdateCtx &Ctx)
 	//	handle it.
 
 	if (m_fOldStyleBehaviors)
+		{
 		OnBehavior(Ctx);
 
-	//	Otherwise, if we have an order module, then let it handle behavior
+		//	This method is incompatible with order modules so we just return here.
 
-	else if (m_pOrderModule)
-		m_pOrderModule->Behavior(m_pShip, m_AICtx);
-
-	//	Otherwise, we need to initialize the order module.
-	//	NOTE: This should never happen because we initialize the order module
-	//	when we add or delete orders.
-
-	else
-		{
-		if (InitOrderModule())
-			m_pOrderModule->Behavior(m_pShip, m_AICtx);
-
-		else if (m_fOldStyleBehaviors)
-			OnBehavior(Ctx);
+		return;
 		}
 
-	//	Done
+	//	If we don't have an order module, see if we can create one from the order
 
-	m_AICtx.SetSystemUpdateCtx(NULL);
-
-	DEBUG_CATCH
-	}
-
-bool CBaseShipAI::InitOrderModule (void)
-
-//	InitOrderModule
-//
-//	Initializes the order module based on the order. We return TRUE if we are
-//	using an order module; FALSE otherwise.
-
-	{
-	IShipController::OrderTypes iOrder = GetCurrentOrder();
-
-	//	Reset the old style flag because we don't know if the next order
-	//	will have an order module or not.
-
-	m_fOldStyleBehaviors = false;
-
-	//	If we've got an existing order module, then we need to either delete it
-	//	or re-initialize it.
-
-	if (m_pOrderModule)
-		{
-		//	If the current order module handles the current order, then we don't have
-		//	to reallocate everything; we just need to restart it.
-
-		if (m_pOrderModule->GetOrder() == iOrder)
-			{
-			CSpaceObject *pTarget;
-			SData Data;
-			GetCurrentOrderEx(&pTarget, &Data);
-			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
-			}
-
-		//	Otherwise, we delete the order module and allow it to be recreated.
-
-		else
-			{
-			delete m_pOrderModule;
-			m_pOrderModule = NULL;
-			}
-		}
-
-	//	See if we need to create an order module
-
-	if (m_pOrderModule == NULL && iOrder != IShipController::orderNone)
+	if (m_pOrderModule == NULL)
 		{
 		m_pOrderModule = IOrderModule::Create(iOrder);
 		
@@ -267,30 +208,42 @@ bool CBaseShipAI::InitOrderModule (void)
 		//	style behavior.
 
 		if (m_pOrderModule == NULL)
-			m_fOldStyleBehaviors = true;
-
-		else
 			{
-			//	Tell our descendants to clean up. We need to do this because we don't
-			//	want our descendants to hold on to object pointers (since the order
-			//	module will handle everything, including getting destroyed object
-			//	notifications).
-
-			OnCleanUp();
-
-			//	Initialize order module
-
-			CSpaceObject *pTarget;
-			SData Data;
-			GetCurrentOrderEx(&pTarget, &Data);
-			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
+			m_fOldStyleBehaviors = true;
+			OnBehavior(Ctx);
+			return;
 			}
+
+		//	Tell our descendants to clean up. We need to do this because we don't
+		//	want our descendants to hold on to object pointers (since the order
+		//	module will handle everything, including getting destroyed object
+		//	notifications).
+
+		OnCleanUp();
+
+		//	Initialize order module
+
+		CSpaceObject *pTarget;
+		SData Data;
+		GetCurrentOrderEx(&pTarget, &Data);
+		m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
+
+		//	NOTE: We might have cancelled the order inside BehaviorStart, so we
+		//	return in that case.
+
+		if (m_pOrderModule == NULL)
+			return;
 		}
 
-	//	NOTE: We might have cancelled the order inside BehaviorStart, so we
-	//	return FALSE in that case.
+	//	Implement orders
 
-	return (m_pOrderModule != NULL);
+	m_pOrderModule->Behavior(m_pShip, m_AICtx);
+
+	//	Done
+
+	m_AICtx.SetSystemUpdateCtx(NULL);
+
+	DEBUG_CATCH
 	}
 
 CSpaceObject *CBaseShipAI::CalcEnemyShipInRange (CSpaceObject *pCenter, Metric rRange, CSpaceObject *pExcludeObj)
@@ -629,9 +582,34 @@ void CBaseShipAI::FireOnOrderChanged (void)
 
 	m_AICtx.SetManeuverCounter(0);
 
-	//	Initialize the order module
+	//	Reset the old style flag because we don't know if the next order
+	//	will have an order module or not.
 
-	InitOrderModule();
+	m_fOldStyleBehaviors = false;
+
+	//	Reset the order module
+
+	if (m_pOrderModule)
+		{
+		//	If the current order module handles the current order, then we don't have
+		//	to reallocate everything; we just need to restart it.
+
+		if (m_pOrderModule->GetOrder() == GetCurrentOrder())
+			{
+			CSpaceObject *pTarget;
+			SData Data;
+			GetCurrentOrderEx(&pTarget, &Data);
+			m_pOrderModule->BehaviorStart(m_pShip, m_AICtx, pTarget, Data);
+			}
+
+		//	Otherwise, we delete the order module and allow it to be recreated.
+
+		else
+			{
+			delete m_pOrderModule;
+			m_pOrderModule = NULL;
+			}
+		}
 
 	//	Give descendents a chance
 
