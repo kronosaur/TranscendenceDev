@@ -1805,6 +1805,8 @@
 	<!ENTITY rsSteelSlaverHD			"0x00100125">
 	<!ENTITY baSungArmor				"0x00100126">
 	<!ENTITY smSungSpace				"0x00100127">
+	<!ENTITY rsSteelSlaverHero			"0x00100128">
+	<!ENTITY rsSteelSlaver				"0x00100129">
 	
 	<!-- 0140-014F XENOPHOBES -->
 	
