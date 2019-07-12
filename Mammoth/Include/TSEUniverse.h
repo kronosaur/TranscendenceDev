@@ -33,7 +33,7 @@ class CFractalTextureLibrary
 
 		const CG8bitImage &GetTexture (ETextureTypes iType, int iFrame) const;
 		int GetTextureCount (ETextureTypes iType) const;
-		inline int GetTextureIndex (ETextureTypes iType, Metric rFraction) const
+		int GetTextureIndex (ETextureTypes iType, Metric rFraction) const
 			{
 			int iMaxFrames = GetTextureCount(iType);
 			return Max(0, Min((int)(rFraction * iMaxFrames), iMaxFrames - 1));
@@ -88,12 +88,12 @@ class CDebugOptions
 	{
 	public:
 		ICCItemPtr GetProperty (const CString &sProperty) const;
-		inline bool IsShowAIDebugEnbled (void) const { return m_bShowAIDebug; }
-		inline bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
-		inline bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
-		inline bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
-		inline bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
-		inline bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
+		bool IsShowAIDebugEnbled (void) const { return m_bShowAIDebug; }
+		bool IsShowBoundsEnabled (void) const { return m_bShowBounds; }
+		bool IsShowFacingsAngleEnabled (void) const { return m_bShowFacingsAngle; }
+		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
+		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
+		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
 		
 	private:
@@ -122,16 +122,16 @@ class CSFXOptions
 
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
-		inline BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
-		inline bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
-		inline bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
-		inline bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
-		inline bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
-		inline bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
-		inline bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
-		inline bool IsStarshineEnabled (void) const { return m_bStarshine; }
-		inline void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
-		inline void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
+		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
+		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
+		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
+		bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
+		bool IsSpaceBackgroundEnabled (void) const { return m_bSpaceBackground; }
+		bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
+		bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
+		bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
+		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
 		void SetSFXQualityAuto (void);
 
@@ -294,16 +294,16 @@ class CUniverse
 		ALERROR LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, DWORD *retdwPlayerID, CString *retsError);
 		void StartGame (bool bNewGame);
 
-		inline void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
-		inline ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
+		void AddAscendedObj (CSpaceObject *pObj) { m_AscendedObjects.Insert(pObj); }
+		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError) { return m_Design.AddDynamicType(pExtension, dwUNID, pSource, bNewGame, retsError); }
 		void AddEvent (CSystemEvent *pEvent);
-		inline void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
+		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
-		inline bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
-		inline bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, sEvent, bInDoEvent); }
-		inline bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
+		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
+		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, sEvent, bInDoEvent); }
+		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
 		ALERROR CreateEmptyStarSystem (CSystem **retpSystem);
-		inline DWORD CreateGlobalID (void) { return m_dwNextID++; }
+		DWORD CreateGlobalID (void) { return m_dwNextID++; }
 		ALERROR CreateMission (CMissionType *pType, CSpaceObject *pOwner, ICCItem *pCreateData, CMission **retpMission, CString *retsError);
 		ALERROR CreateRandomItem (const CItemCriteria &Crit, 
 								  const CString &sLevelFrequency,
@@ -313,181 +313,181 @@ class CUniverse
 		ALERROR CreateStarSystem (const CString &sNodeID, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		ALERROR CreateStarSystem (CTopologyNode *pTopology, CSystem **retpSystem, CString *retsError = NULL, CSystemCreateStats *pStats = NULL);
 		void DestroySystem (CSystem *pSystem);
-		inline bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
-		inline CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
+		bool FindFont (const CString &sFont, const CG16bitFont **retpFont = NULL) const { return m_pHost->FindFont(sFont, retpFont); }
+		CMission *FindMission (DWORD dwID) const { return m_AllMissions.GetMissionByID(dwID); }
 		CSpaceObject *FindObject (DWORD dwID);
-		inline void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
-		inline void FireOnGlobalIntroStarted (void) { m_Design.FireOnGlobalIntroStarted(); }
-		inline void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane, pData); }
-		inline void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price); }
-		inline void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
-		inline void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
-		inline void FireOnGlobalPlayerLeftSystem (void) { m_Design.FireOnGlobalPlayerLeftSystem(); }
-		inline void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerSoldItem(pBuyerObj, Item, Price); }
-		inline void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx) { m_Design.FireOnGlobalSystemCreated(SysCreateCtx); }
-		inline void FireOnGlobalUniverseCreated (void) { m_Design.FireOnGlobalUniverseCreated(); }
-		inline void FireOnGlobalUniverseLoad (void) { m_Design.FireOnGlobalUniverseLoad(); }
-		inline void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
+		void FireOnGlobalIntroCommand (const CString &sCommand) { m_Design.FireOnGlobalIntroCommand(sCommand); }
+		void FireOnGlobalIntroStarted (void) { m_Design.FireOnGlobalIntroStarted(); }
+		void FireOnGlobalPaneInit (void *pScreen, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData) { m_Design.FireOnGlobalPaneInit(pScreen, pRoot, sScreen, sPane, pData); }
+		void FireOnGlobalPlayerBoughtItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerBoughtItem(pSellerObj, Item, Price); }
+		void FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip) { m_Design.FireOnGlobalPlayerChangedShips(pOldShip); }
+		void FireOnGlobalPlayerEnteredSystem (void) { m_Design.FireOnGlobalPlayerEnteredSystem(); }
+		void FireOnGlobalPlayerLeftSystem (void) { m_Design.FireOnGlobalPlayerLeftSystem(); }
+		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price) { m_Design.FireOnGlobalPlayerSoldItem(pBuyerObj, Item, Price); }
+		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx) { m_Design.FireOnGlobalSystemCreated(SysCreateCtx); }
+		void FireOnGlobalUniverseCreated (void) { m_Design.FireOnGlobalUniverseCreated(); }
+		void FireOnGlobalUniverseLoad (void) { m_Design.FireOnGlobalUniverseLoad(); }
+		void FireOnGlobalUniverseSave (void) { m_Design.FireOnGlobalUniverseSave(); }
 		void FlushStarSystem (CTopologyNode *pTopology);
 		void GenerateGameStats (CGameStats &Stats);
-		inline void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
+		void GetAllAdventures (TArray<CExtension *> *retList) { CString sError; m_Extensions.ComputeAvailableAdventures((m_bDebugMode ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retList, &sError); }
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
-		inline CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
-		inline CG32bitPixel GetColor (const CString &sColor) const { return m_pHost->GetColor(sColor); }
-		inline CAdventureDesc *GetCurrentAdventureDesc (void) { return m_pAdventure; }
+		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
+		CG32bitPixel GetColor (const CString &sColor) const { return m_pHost->GetColor(sColor); }
+		CAdventureDesc *GetCurrentAdventureDesc (void) { return m_pAdventure; }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
-		inline const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
+		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
-		inline const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
-		inline ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
-		inline const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
+		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
+		ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
+		const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
 		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
-		inline CDockSession &GetDockSession (void) { return m_DockSession; }
-		inline const CDockSession &GetDockSession (void) const { return m_DockSession; }
-		inline CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
-		inline CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
-		inline CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
-		inline CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
+		CDockSession &GetDockSession (void) { return m_DockSession; }
+		const CDockSession &GetDockSession (void) const { return m_DockSession; }
+		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
+		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
+		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
-		inline const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
-		inline CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
-        inline CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
-        inline const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
-		inline IHost *GetHost (void) const { return m_pHost; }
-		inline CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
-		inline int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
-		inline CMissionList &GetMissions (void) { return m_AllMissions; }
+		const CG16bitFont &GetFont (const CString &sFont) const { return m_pHost->GetFont(sFont); }
+		CFractalTextureLibrary &GetFractalTextureLibrary (void) { return m_FractalTextureLibrary; }
+        CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
+        const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
+		IHost *GetHost (void) const { return m_pHost; }
+		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
+		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
+		CMissionList &GetMissions (void) { return m_AllMissions; }
 		void GetMissions (CSpaceObject *pSource, const CMission::SCriteria &Criteria, TArray<CMission *> *retList);
-		inline const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
-		inline IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
-		inline const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
-		inline CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
+		const CG16bitFont &GetNamedFont (ENamedFonts iFont) { return *m_FontTable[iFont]; }
+		IEffectPainter &GetNamedPainter (CNamedEffects::ETypes iPainter) { return m_NamedEffects.GetPainter(m_Design, iPainter); }
+		const CObjectStats::SEntry &GetObjStats (DWORD dwObjID) const { return m_ObjStats.GetEntry(dwObjID); }
+		CObjectStats::SEntry &GetObjStatsActual (DWORD dwObjID) { return m_ObjStats.GetEntryActual(dwObjID); }
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty);
 		void GetRandomLevelEncounter (int iLevel, CDesignType **retpType, IShipGenerator **retpTable, CSovereign **retpBaseSovereign);
-		inline CString GetResourceDb (void) { return m_sResourceDb; }
-		inline CCriticalSection &GetSem (void) { return m_cs; }
-		inline CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
+		CString GetResourceDb (void) { return m_sResourceDb; }
+		CCriticalSection &GetSem (void) { return m_cs; }
+		CSFXOptions &GetSFXOptions (void) { return m_SFXOptions; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const;
-		inline bool GetSound (void) { return !m_bNoSound; }
-		inline CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
-		inline bool InDebugMode (void) { return m_bDebugMode; }
-		inline void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
-		inline bool InResurrectMode (void) { return m_bResurrectMode; }
+		bool GetSound (void) { return !m_bNoSound; }
+		CSoundMgr *GetSoundMgr (void) { return m_pSoundMgr; }
+		bool InDebugMode (void) { return m_bDebugMode; }
+		void InitEntityResolver (CExtension *pExtension, CEntityResolverList *retResolver) { m_Extensions.InitEntityResolver(pExtension, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retResolver); }
+		bool InResurrectMode (void) { return m_bResurrectMode; }
 		bool IsGlobalResurrectPending (CDesignType **retpType);
-		inline bool IsRegistered (void) { return m_bRegistered; }
+		bool IsRegistered (void) { return m_bRegistered; }
 		bool IsStatsPostingEnabled (void);
-		inline void NotifyOnObjDeselected (CSpaceObject *pObj) { pObj->FireOnDeselected(); }
+		void NotifyOnObjDeselected (CSpaceObject *pObj) { pObj->FireOnDeselected(); }
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
-		inline void NotifyOnObjSelected (CSpaceObject *pObj) { pObj->FireOnSelected(); }
+		void NotifyOnObjSelected (CSpaceObject *pObj) { pObj->FireOnSelected(); }
 		void NotifyOnPlayerEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
-		inline ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
-		inline bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
-		inline void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }
+		ALERROR LoadNewExtension (const CString &sFilespec, const CIntegerIP &FileDigest, CString *retsError) { return m_Extensions.LoadNewExtension(sFilespec, FileDigest, retsError); }
+		bool LogImageLoad (void) const { return (m_iLogImageLoad == 0); }
+		void LogOutput (const CString &sLine) const { m_pHost->LogOutput(sLine); }
 		void PlaySound (CSpaceObject *pSource, int iChannel);
 		void PutPlayerInSystem (CShip *pPlayerShip, const CVector &vPos, CSystemEventList &SavedEvents);
 		void RefreshCurrentMission (void);
-		inline void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
+		void RegisterForNotifications (INotifications *pSubscriber) { m_Subscribers.Insert(pSubscriber); }
 		ALERROR Reinit (void);
-		inline CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
+		CSpaceObject *RemoveAscendedObj (DWORD dwObjID) { return m_AscendedObjects.RemoveByID(dwObjID); }
 		ALERROR SaveDeviceStorage (void);
 		ALERROR SaveToStream (IWriteStream *pStream);
 		void SetCurrentSystem (CSystem *pSystem);
-		inline void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
-		inline bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
+		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
 		bool SetPOV (CSpaceObject *pPOV);
 		void SetPlayerShip (CSpaceObject *pPlayer);
-		inline void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
-		inline void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
-		inline void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
-		inline void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
+		void SetRegistered (bool bRegistered = true) { m_bRegistered = bRegistered; }
+		void SetResurrectMode (bool bResurrect = true) { m_bResurrectMode = bResurrect; }
+		void SetSound (bool bSound = true) { m_bNoSound = !bSound; }
+		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
-		inline void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
+		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
 		CArmorClass *FindArmor (DWORD dwUNID);
-		inline CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
-		inline CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
+		CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
+		const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
+		CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
-		inline const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
-		inline CEffectCreator *FindEffectType (DWORD dwUNID) { return CEffectCreator::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CShipTable *FindEncounterTable (DWORD dwUNID) { return CShipTable::AsType(m_Design.FindEntry(dwUNID)); }
+		const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
+		CEffectCreator *FindEffectType (DWORD dwUNID) { return CEffectCreator::AsType(m_Design.FindEntry(dwUNID)); }
+		CShipTable *FindEncounterTable (DWORD dwUNID) { return CShipTable::AsType(m_Design.FindEntry(dwUNID)); }
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension **retpExtension = NULL) { return m_Extensions.FindBestExtension(dwUNID, dwRelease, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retpExtension); }
-		inline CGenericType *FindGenericType (DWORD dwUNID) { return CGenericType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CItemTable *FindItemTable (DWORD dwUNID) { return CItemTable::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CItemType *FindItemType (DWORD dwUNID) { return CItemType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CMissionType *FindMissionType (DWORD dwUNID) { return CMissionType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline COverlayType *FindOverlayType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CPower *FindPower (DWORD dwUNID) { return CPower::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CShipClass *FindShipClass (DWORD dwUNID) { return CShipClass::AsType(m_Design.FindEntry(dwUNID)); }
+		CGenericType *FindGenericType (DWORD dwUNID) { return CGenericType::AsType(m_Design.FindEntry(dwUNID)); }
+		CItemTable *FindItemTable (DWORD dwUNID) { return CItemTable::AsType(m_Design.FindEntry(dwUNID)); }
+		CItemType *FindItemType (DWORD dwUNID) { return CItemType::AsType(m_Design.FindEntry(dwUNID)); }
+		CMissionType *FindMissionType (DWORD dwUNID) { return CMissionType::AsType(m_Design.FindEntry(dwUNID)); }
+		COverlayType *FindOverlayType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
+		CPower *FindPower (DWORD dwUNID) { return CPower::AsType(m_Design.FindEntry(dwUNID)); }
+		CShipClass *FindShipClass (DWORD dwUNID) { return CShipClass::AsType(m_Design.FindEntry(dwUNID)); }
 		CShipClass *FindShipClassByName (const CString &sName);
-		inline COverlayType *FindShipEnergyFieldType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
-		inline CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
-		inline const CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CSovereign *FindSovereign (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) { return m_Design.FindSystemFragment(sName, retpTable); }
-		inline CSystemType *FindSystemType (DWORD dwUNID) { return CSystemType::AsType(m_Design.FindEntry(dwUNID)); }
-		inline CTopologyNode *FindTopologyNode (const CString &sName) { return m_Topology.FindTopologyNode(sName); }
+		COverlayType *FindShipEnergyFieldType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
+		int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
+		CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
+		CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
+		const CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		CSovereign *FindSovereign (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
+		CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
+		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) { return m_Design.FindSystemFragment(sName, retpTable); }
+		CSystemType *FindSystemType (DWORD dwUNID) { return CSystemType::AsType(m_Design.FindEntry(dwUNID)); }
+		CTopologyNode *FindTopologyNode (const CString &sName) { return m_Topology.FindTopologyNode(sName); }
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sName);
-		inline CCodeChain &GetCC (void) { return m_CC; }
-		inline CTopologyNode *GetCurrentTopologyNode (void) { return (m_pCurrentSystem ? m_pCurrentSystem->GetTopology() : NULL); }
-		inline CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
-		inline IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
-		inline int GetPaintTick (void) { return m_iPaintTick; }
-		inline CSpaceObject *GetPOV (void) const { return m_pPOV; }
-		inline IPlayerController *GetPlayer (void) const { return m_pPlayer; }
+		CCodeChain &GetCC (void) { return m_CC; }
+		CTopologyNode *GetCurrentTopologyNode (void) { return (m_pCurrentSystem ? m_pCurrentSystem->GetTopology() : NULL); }
+		CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
+		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
+		int GetPaintTick (void) { return m_iPaintTick; }
+		CSpaceObject *GetPOV (void) const { return m_pPOV; }
+		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
 		GenomeTypes GetPlayerGenome (void) const;
 		CString GetPlayerName (void) const;
-		inline CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
+		CSpaceObject *GetPlayerShip (void) const { return m_pPlayerShip; }
 		CSovereign *GetPlayerSovereign (void) const;
-		inline DWORD GetTicks (void) { return (DWORD)m_iTick; }
+		DWORD GetTicks (void) { return (DWORD)m_iTick; }
 
-		inline void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
+		void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);
-		inline TSharedPtr<CObjectImage> FindLibraryImage (DWORD dwUNID) { CObjectImage *pImage = CObjectImage::AsType(m_Design.FindEntry(dwUNID)); return TSharedPtr<CObjectImage>(pImage ? pImage->AddRef() : NULL); }
-		inline CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
-		inline CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
-		inline void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }
-		inline void SweepLibraryBitmaps (void) { m_Extensions.SweepImages(); m_Design.SweepImages(); m_DynamicImageLibrary.Sweep();  }
+		TSharedPtr<CObjectImage> FindLibraryImage (DWORD dwUNID) { CObjectImage *pImage = CObjectImage::AsType(m_Design.FindEntry(dwUNID)); return TSharedPtr<CObjectImage>(pImage ? pImage->AddRef() : NULL); }
+		CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
+		CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
+		void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }
+		void SweepLibraryBitmaps (void) { m_Extensions.SweepImages(); m_Design.SweepImages(); m_DynamicImageLibrary.Sweep();  }
 
-		inline CDesignCollection &GetDesignCollection (void) { return m_Design; }
-		inline CDesignType *GetDesignType (int iIndex) { return m_Design.GetEntry(iIndex); }
-		inline int GetDesignTypeCount (void) { return m_Design.GetCount(); }
-		inline const CExtension *GetExtensionDesc (int iIndex) { return m_Design.GetExtension(iIndex); }
-		inline int GetExtensionDescCount (void) { return m_Design.GetExtensionCount(); }
-		inline CItemType *GetItemType (int iIndex) { return (CItemType *)m_Design.GetEntry(designItemType, iIndex); }
-		inline int GetItemTypeCount (void) { return m_Design.GetCount(designItemType); }
-		inline CPower *GetPower (int iIndex) { return (CPower *)m_Design.GetEntry(designPower, iIndex); }
-		inline int GetPowerCount (void) { return m_Design.GetCount(designPower); }
-		inline CShipClass *GetShipClass (int iIndex) { return (CShipClass *)m_Design.GetEntry(designShipClass, iIndex); }
-		inline int GetShipClassCount (void) { return m_Design.GetCount(designShipClass); }
-		inline CMusicResource *GetMusicResource (int iIndex) const { return (CMusicResource *)m_Design.GetEntry(designMusic, iIndex); }
-		inline int GetMusicResourceCount (void) const { return m_Design.GetCount(designMusic); }
-		inline CSovereign *GetSovereign (int iIndex) const { return (CSovereign *)m_Design.GetEntry(designSovereign, iIndex); }
-		inline int GetSovereignCount (void) { return m_Design.GetCount(designSovereign); }
-		inline CStationType *GetStationType (int iIndex) { return (CStationType *)m_Design.GetEntry(designStationType, iIndex); }
-		inline int GetStationTypeCount (void) { return m_Design.GetCount(designStationType); }
-		inline CTopology &GetTopology (void) { return m_Topology; }
-		inline const CTopology &GetTopology (void) const { return m_Topology; }
-		inline CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetTopologyNode(iIndex); }
-		inline int GetTopologyNodeCount (void) const { return m_Topology.GetTopologyNodeCount(); }
+		CDesignCollection &GetDesignCollection (void) { return m_Design; }
+		CDesignType *GetDesignType (int iIndex) { return m_Design.GetEntry(iIndex); }
+		int GetDesignTypeCount (void) { return m_Design.GetCount(); }
+		const CExtension *GetExtensionDesc (int iIndex) { return m_Design.GetExtension(iIndex); }
+		int GetExtensionDescCount (void) { return m_Design.GetExtensionCount(); }
+		CItemType *GetItemType (int iIndex) { return (CItemType *)m_Design.GetEntry(designItemType, iIndex); }
+		int GetItemTypeCount (void) { return m_Design.GetCount(designItemType); }
+		CPower *GetPower (int iIndex) { return (CPower *)m_Design.GetEntry(designPower, iIndex); }
+		int GetPowerCount (void) { return m_Design.GetCount(designPower); }
+		CShipClass *GetShipClass (int iIndex) { return (CShipClass *)m_Design.GetEntry(designShipClass, iIndex); }
+		int GetShipClassCount (void) { return m_Design.GetCount(designShipClass); }
+		CMusicResource *GetMusicResource (int iIndex) const { return (CMusicResource *)m_Design.GetEntry(designMusic, iIndex); }
+		int GetMusicResourceCount (void) const { return m_Design.GetCount(designMusic); }
+		CSovereign *GetSovereign (int iIndex) const { return (CSovereign *)m_Design.GetEntry(designSovereign, iIndex); }
+		int GetSovereignCount (void) { return m_Design.GetCount(designSovereign); }
+		CStationType *GetStationType (int iIndex) { return (CStationType *)m_Design.GetEntry(designStationType, iIndex); }
+		int GetStationTypeCount (void) { return m_Design.GetCount(designStationType); }
+		CTopology &GetTopology (void) { return m_Topology; }
+		const CTopology &GetTopology (void) const { return m_Topology; }
+		CTopologyNode *GetTopologyNode (int iIndex) { return m_Topology.GetTopologyNode(iIndex); }
+		int GetTopologyNodeCount (void) const { return m_Topology.GetTopologyNodeCount(); }
 
 		void PaintObject (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintObjectMap (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pObj);
 		void PaintPOV (CG32bitImage &Dest, const RECT &rcView, DWORD dwFlags);
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
-		inline void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
+		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
 		void Update (SSystemUpdateCtx &Ctx);
 		void UpdateExtended (void);
 
@@ -520,7 +520,7 @@ class CUniverse
 		ALERROR InitLevelEncounterTables (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
-		inline void SetCurrentAdventureDesc (CAdventureDesc *pAdventure) { m_pAdventure = pAdventure; }
+		void SetCurrentAdventureDesc (CAdventureDesc *pAdventure) { m_pAdventure = pAdventure; }
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateMissions (int iTick, CSystem *pSystem);
