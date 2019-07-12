@@ -14,8 +14,6 @@ static DWORD g_dwTotalTime = 0;
 #define MAX_DELTA_VEL							(g_KlicksPerPixel / 2.0)
 #define MAX_DELTA_VEL2							(MAX_DELTA_VEL * MAX_DELTA_VEL)
 
-#define MAX_DISTANCE							(700.0 * g_KlicksPerPixel)
-
 const int ITEM_UPDATE_CYCLE =					30;
 const int HIGHLIGHT_TIMER =						200;
 const int HIGHLIGHT_BLINK =						110;
@@ -5802,39 +5800,62 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 			//	Skip if we're too far
 
-			CVector vDist = pObj->GetPos() - vSource;
-			if (vDist.Length2() > rMaxDist2)
+			CVector vCurObjPos = pObj->GetPos();
+			CVector vCurDist = vCurObjPos - vSource;
+			Metric rCurDist2 = vCurDist.Length2();
+			if (rCurDist2 > rMaxDist2)
 				continue;
 
-			//	Figure out the object's bearing relative to us
+			//	Get the current distance. Because this is all a heuristic, we
+			//	assume that this is not too different from the object distance
+			//	when the shot gets there.
 
-			Metric rDist;
-			int iObjAngle = VectorToPolar(vDist, &rDist);
+			Metric rCurDist = sqrt(rCurDist2);
 
 			//	If we're inside the object radius, then we would hit it no matter what
 			//	the angle.
 
 			Metric rHalfSize = 0.5 * pObj->GetHitSize();
-			if (rDist < rHalfSize)
+			if (rCurDist < rHalfSize)
 				{
 				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
 				break;
 				}
 
-			//	Figure out how big the object is from that distance
+			//	Figure out where the object will be by the time the shot gets
+			//	to it.
+
+			CVector vFutureDist;
+			if (rShotSpeed > 0.0 && pObj->CanThrust())
+				{
+				Metric rTimeToReachObj = rCurDist / rShotSpeed;
+				CVector vFutureObjPos = vCurObjPos + (rTimeToReachObj * pObj->GetVel());
+				vFutureDist = vFutureObjPos - vSource;
+				}
+			else
+				vFutureDist = vCurDist;
+
+			//	Figure out the object's bearing relative to us
+
+			int iFutureAngle = VectorToPolar(vFutureDist);
+
+			//	Figure out how big the object is from that distance.
+			//
+			//	NOTE: For now we use the current (not future) distance because
+			//	we assume it is close enough (as opposed to the angle).
 
 			int iHalfAngularSize;
-			if (rDist < rHalfSize + TOO_CLOSE)
+			if (rCurDist < rHalfSize + TOO_CLOSE)
 				iHalfAngularSize = 90;
 			else if (bAreaWeapon)
 				iHalfAngularSize = 45;
 			else
-				iHalfAngularSize = pObj->GetHitSizeHalfAngle(rDist);
+				iHalfAngularSize = pObj->GetHitSizeHalfAngle(rCurDist);
 
 			//	See if it is in our line of fire
 
-			if (AreAnglesAligned(iAngle, iObjAngle, iHalfAngularSize))
+			if (AreAnglesAligned(iAngle, iFutureAngle, iHalfAngularSize))
 				{
 				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
