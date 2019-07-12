@@ -1317,7 +1317,7 @@ void CPlayerShipController::OnPaintSRSEnhancements (CG32bitImage &Dest, SViewpor
 		if (m_pTarget == NULL)
 			PaintDebugLineOfFire(Ctx, Dest);
 		else if (m_pTarget->GetCategory() == CSpaceObject::catShip)
-			PaintDebugLineOfFire(Ctx, Dest, m_pTarget);
+			PaintDebugLineOfFire(Ctx, Dest, *m_pTarget);
 		}
 
 	//	Paint the docking target, if necessary
@@ -1614,39 +1614,71 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 
 			if (rDist2 < DIST2)
 				{
-				PaintDebugLineOfFire(Ctx, Dest, pObj);
+				PaintDebugLineOfFire(Ctx, Dest, *pObj);
 				}
 			}
 		}
 	}
 
-void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject *pTarget) const
+void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj) const
 
 //	PaintDebugLineOfFire
 //
-//	Paints debug info for pTarget's line of fire.
+//	Paints the line for fire for all weapons on the ship.
 
 	{
-	int i;
-
-	static const Metric DEFAULT_DIST_CHECK = 700.0 * g_KlicksPerPixel;
-	static const CG32bitPixel RGB_BLOCKED(255, 0, 0);
-	static const CG32bitPixel RGB_CLEAR(0, 255, 255);
-
-	CShip *pShip = pTarget->AsShip();
+	CShip *pShip = TargetObj.AsShip();
 	if (pShip == NULL)
 		return;
 
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(devPrimaryWeapon);
-	if (pDevice == NULL)
+	if (pDevice && !pDevice->IsSecondaryWeapon())
+		PaintDebugLineOfFire(Ctx, Dest, TargetObj, *pDevice);
+
+	for (int i = 0; i < pShip->GetDeviceCount(); i++)
+		{
+		CInstalledDevice *pDevice = pShip->GetDevice(i);
+		if (!pDevice->IsEmpty() && pDevice->IsSecondaryWeapon())
+			PaintDebugLineOfFire(Ctx, Dest, TargetObj, *pDevice);
+		}
+	}
+
+void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bitImage &Dest, CSpaceObject &TargetObj, CInstalledDevice &Weapon) const
+
+//	PaintDebugLineOfFire
+//
+//	Paints debug info the the given object and weapon.
+
+	{
+	static const Metric DEFAULT_DIST_CHECK = 700.0 * g_KlicksPerPixel;
+	static const CG32bitPixel RGB_BLOCKED(255, 0, 0);
+	static const CG32bitPixel RGB_CLEAR(0, 255, 255);
+
+	CShip *pShip = TargetObj.AsShip();
+	if (pShip == NULL)
 		return;
+
+	//	Compute the fire direction of the weapon.
+
+	int iDir = Weapon.GetFireAngle();
+	CWeaponClass *pWeapon = Weapon.GetClass()->AsWeaponClass();
+	if (pWeapon)
+		{
+		int iWeaponMinFireArc, iWeaponMaxFireArc;
+		switch (pWeapon->GetRotationType(CItemCtx(&TargetObj, &Weapon), &iWeaponMinFireArc, &iWeaponMaxFireArc))
+			{
+			case CDeviceClass::rotSwivel:
+				iDir = AngleMiddle(iWeaponMinFireArc, iWeaponMaxFireArc);
+				break;
+			}
+		}
 
 	//	First, we compute the line of fire algorithm and highlight the first 
 	//	object that blocks us.
 
-	int iDir = pShip->GetRotation();
+	iDir = AngleMod(pShip->GetRotation() + iDir);
 	CSpaceObject *pBlock = NULL;
-	if (!pShip->IsLineOfFireClear(pDevice, NULL, iDir, Max(pDevice->GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK), &pBlock))
+	if (!pShip->IsLineOfFireClear(&Weapon, NULL, iDir, Max(Weapon.GetMaxEffectiveRange(pShip), DEFAULT_DIST_CHECK), &pBlock))
 		{
 		int x, y;
 		Ctx.XForm.Transform(pBlock->GetPos(), &x, &y);
@@ -1656,7 +1688,7 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 
 	//	Paint the line of fire that we're testing.
 
-	CVector vStart = pDevice->GetPos(pShip);
+	CVector vStart = Weapon.GetPos(pShip);
 	int xStart, yStart;
 	Ctx.XForm.Transform(vStart, &xStart, &yStart);
 
@@ -1667,16 +1699,21 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	CGDraw::LineDotted(Dest, xStart, yStart, xEnd, yEnd, CG32bitPixel(255, 255, 0, 128));
 
 	//	Paint the path that a shot would take if fired right now.
+	//
+	//	We show this relative to the player, which makes it a little easier to
+	//	visualize. But in the actual algorithm (inside IsLineOfFireClear) we 
+	//	compute the path in absolute terms and adjust the position of objects
+	//	(including the player) based on their velocities.
 
-	Metric rSpeed = pDevice->GetShotSpeed(CItemCtx(pShip, pDevice));
-	CVector vVel = pShip->GetVel() + PolarToVector(iDir, rSpeed);
+	Metric rSpeed = Weapon.GetShotSpeed(CItemCtx(pShip, &Weapon));
+	CVector vVel = pShip->GetVel() + PolarToVector(iDir, rSpeed) - m_pShip->GetVel();
 	CVector vPos = vStart;
 
 	CG32bitPixel rgbPath = (pBlock ? RGB_BLOCKED : RGB_CLEAR);
 
 	int xPrev, yPrev;
 	Ctx.XForm.Transform(vStart, &xPrev, &yPrev);
-	for (i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 		{
 		vPos = vPos + (g_SecondsPerUpdate * vVel);
 
