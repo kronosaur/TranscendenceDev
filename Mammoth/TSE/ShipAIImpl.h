@@ -407,6 +407,7 @@ class CBaseShipAI : public IShipController
 		void UseItemsBehavior (void);
 
 		//	CBaseShipAI virtuals
+
 		virtual void OnAttackedNotify (CSpaceObject *pAttacker, const SDamageCtx &Damage) { }
 		virtual void OnBehavior (SUpdateCtx &Ctx) { }
 		virtual void OnCleanUp (void) { }
@@ -448,7 +449,9 @@ class CBaseShipAI : public IShipController
 		DWORD m_fOldStyleBehaviors:1;			//	TRUE if we're not using m_pOrderModule
 		DWORD m_fPlayerBlacklisted:1;			//	TRUE if we've blacklisted the player (for attacking us)
 
-		DWORD m_fSpare:24;
+		DWORD m_fUseOrderModules:1;				//	TRUE if descendant allows order modules
+
+		DWORD m_fSpare:23;
 	};
 
 //	Inlines --------------------------------------------------------------------

@@ -127,6 +127,7 @@ CStandardShipAI::CStandardShipAI (void) :
 //	CStandardShipAI constructor
 
 	{
+	m_fUseOrderModules = true;
 	}
 
 CStandardShipAI::~CStandardShipAI (void)

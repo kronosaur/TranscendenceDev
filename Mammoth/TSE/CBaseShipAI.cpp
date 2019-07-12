@@ -55,7 +55,8 @@ CBaseShipAI::CBaseShipAI (void) :
 		m_fAvoidWalls(false),
 		m_fIsPlayerWingman(false),
 		m_fOldStyleBehaviors(false),
-		m_fPlayerBlacklisted(false)
+		m_fPlayerBlacklisted(false),
+		m_fUseOrderModules(false)
 
 //	CBaseShipAI constructor
 
@@ -629,9 +630,11 @@ void CBaseShipAI::FireOnOrderChanged (void)
 
 	m_AICtx.SetManeuverCounter(0);
 
-	//	Initialize the order module
+	//	Initialize the order module. We can't call this for descendants (such as
+	//	CZoanthropeAI that do not use order modules).
 
-	InitOrderModule();
+	if (m_fUseOrderModules)
+		InitOrderModule();
 
 	//	Give descendents a chance
 
