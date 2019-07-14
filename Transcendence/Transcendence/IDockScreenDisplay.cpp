@@ -38,6 +38,18 @@
 
 #define PROPERTY_LIST_SOURCE		CONSTLIT("listSource")
 
+#define SCREEN_TYPE_ARMOR_SELECTOR		CONSTLIT("armorSelector")
+#define SCREEN_TYPE_CANVAS				CONSTLIT("canvas")
+#define SCREEN_TYPE_CAROUSEL_SELECTOR	CONSTLIT("carouselSelector")
+#define SCREEN_TYPE_CUSTOM_PICKER		CONSTLIT("customPicker")
+#define SCREEN_TYPE_CUSTOM_ITEM_PICKER	CONSTLIT("customItemPicker")
+#define SCREEN_TYPE_DETAILS_PANE		CONSTLIT("detailsPane")
+#define SCREEN_TYPE_DEVICE_SELECTOR		CONSTLIT("deviceSelector")
+#define SCREEN_TYPE_ITEM_PICKER			CONSTLIT("itemPicker")
+#define SCREEN_TYPE_MISC_SELECTOR		CONSTLIT("miscSelector")
+#define SCREEN_TYPE_SUBJUGATE_MINIGAME	CONSTLIT("subjugateMinigame")
+#define SCREEN_TYPE_WEAPONS_SELECTOR	CONSTLIT("weaponsSelector")
+
 #define TYPE_HERO					CONSTLIT("hero")
 #define TYPE_IMAGE					CONSTLIT("image")
 #define TYPE_NONE					CONSTLIT("none")
@@ -46,6 +58,54 @@
 
 const int ICON_WIDTH =				96;
 const int ICON_HEIGHT =				96;
+
+IDockScreenDisplay *IDockScreenDisplay::Create (CDockScreen &DockScreen, const CString &sType, CString *retsError)
+
+//	Create
+//
+//	Creates a display of the given type (or return NULL if there was an error).
+//	NOTE: Callers must still call Init on the display after this.
+
+	{
+	if (sType.IsBlank() || strEquals(sType, SCREEN_TYPE_CANVAS))
+		return new CDockScreenNullDisplay(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_ITEM_PICKER))
+		return new CDockScreenItemList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CAROUSEL_SELECTOR))
+		return new CDockScreenCarousel(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CUSTOM_PICKER))
+		return new CDockScreenCustomList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CUSTOM_ITEM_PICKER))
+		return new CDockScreenCustomItemList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_DETAILS_PANE))
+		return new CDockScreenDetailsPane(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_ARMOR_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configArmor);
+
+	else if (strEquals(sType, SCREEN_TYPE_DEVICE_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configDevices);
+
+	else if (strEquals(sType, SCREEN_TYPE_MISC_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configMiscDevices);
+
+	else if (strEquals(sType, SCREEN_TYPE_SUBJUGATE_MINIGAME))
+		return new CDockScreenSubjugate(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_WEAPONS_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configWeapons);
+	
+	else
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("ERROR: Invalid display type: %s."), sType);
+		return NULL;
+		}
+	}
 
 bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retOptions, CString *retsError)
 

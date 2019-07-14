@@ -75,17 +75,7 @@ const int g_cxCargoStatsLabel =		100;
 #define PROPERTY_IN_FIRST_ON_INIT	CONSTLIT("inFirstOnInit")
 #define PROPERTY_INPUT				CONSTLIT("input")
 
-#define SCREEN_TYPE_ARMOR_SELECTOR		CONSTLIT("armorSelector")
 #define SCREEN_TYPE_CANVAS				CONSTLIT("canvas")
-#define SCREEN_TYPE_CAROUSEL_SELECTOR	CONSTLIT("carouselSelector")
-#define SCREEN_TYPE_CUSTOM_PICKER		CONSTLIT("customPicker")
-#define SCREEN_TYPE_CUSTOM_ITEM_PICKER	CONSTLIT("customItemPicker")
-#define SCREEN_TYPE_DETAILS_PANE		CONSTLIT("detailsPane")
-#define SCREEN_TYPE_DEVICE_SELECTOR		CONSTLIT("deviceSelector")
-#define SCREEN_TYPE_ITEM_PICKER			CONSTLIT("itemPicker")
-#define SCREEN_TYPE_MISC_SELECTOR		CONSTLIT("miscSelector")
-#define SCREEN_TYPE_SUBJUGATE_MINIGAME	CONSTLIT("subjugateMinigame")
-#define SCREEN_TYPE_WEAPONS_SELECTOR	CONSTLIT("weaponsSelector")
 
 #define ALIGN_CENTER				CONSTLIT("center")
 #define ALIGN_RIGHT					CONSTLIT("right")
@@ -421,11 +411,7 @@ void CDockScreen::CleanUpScreen (void)
 	m_CurrentPane.CleanUp();
 	m_CurrentPane.ClearDescriptionError();
 
-	if (m_pOnScreenUpdate)
-		{
-		m_pOnScreenUpdate->Discard();
-		m_pOnScreenUpdate = NULL;
-		}
+	m_pOnScreenUpdate = NULL;
 
 	DEBUG_CATCH
 	}
@@ -1286,12 +1272,38 @@ void CDockScreen::InitDisplayControlRect (CXMLElement *pDesc, const RECT &rcFram
 	*retrcRect = rcRect;
 	}
 
+void CDockScreen::InitOnUpdate (CXMLElement *pDesc)
+
+//	InitOnUpdate
+//
+//	Initializes m_pOnScreenUpdate.
+
+	{
+	if (pDesc == NULL)
+		m_pOnScreenUpdate = NULL;
+
+	else
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+		ICCItemPtr pCode = Ctx.LinkCode(pDesc->GetContentText(0));
+		if (pCode->IsError())
+			{
+			kernelDebugLogPattern("Unable to parse OnScreenUpdate: %s.", pCode->GetStringValue());
+			m_pOnScreenUpdate = NULL;
+			}
+		else
+			{
+			m_pOnScreenUpdate = pCode;
+			}
+		}
+	}
+
 ALERROR CDockScreen::InitScreen (HWND hWnd, 
 								 RECT &rcRect, 
 								 CDockScreenStack &FrameStack,
 								 CExtension *pExtension,
 								 CXMLElement *pDesc, 
-								 const CString &sPane,
+								 const CString &sInitialPane,
 								 ICCItem *pData,
 								 AGScreen **retpScreen,
 								 CString *retsError)
@@ -1474,44 +1486,9 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Create the main display object based on the type parameter.
 
-	if (DisplayOptions.sType.IsBlank() || strEquals(DisplayOptions.sType, SCREEN_TYPE_CANVAS))
-		m_pDisplay = new CDockScreenNullDisplay(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_ITEM_PICKER))
-		m_pDisplay = new CDockScreenItemList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CAROUSEL_SELECTOR))
-		m_pDisplay = new CDockScreenCarousel(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CUSTOM_PICKER))
-		m_pDisplay = new CDockScreenCustomList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_CUSTOM_ITEM_PICKER))
-		m_pDisplay = new CDockScreenCustomItemList(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_DETAILS_PANE))
-		m_pDisplay = new CDockScreenDetailsPane(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_ARMOR_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configArmor);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_DEVICE_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configDevices);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_MISC_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configMiscDevices);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_SUBJUGATE_MINIGAME))
-		m_pDisplay = new CDockScreenSubjugate(*this);
-
-	else if (strEquals(DisplayOptions.sType, SCREEN_TYPE_WEAPONS_SELECTOR))
-		m_pDisplay = new CDockScreenSelector(*this, CGSelectorArea::configWeapons);
-	
-	else
-		{
-		if (retsError) *retsError = strPatternSubst(CONSTLIT("ERROR: Invalid display type: %s."), DisplayOptions.sType);
+	m_pDisplay = IDockScreenDisplay::Create(*this, DisplayOptions.sType, retsError);
+	if (m_pDisplay == NULL)
 		return ERR_FAIL;
-		}
 
 	//	Initialize
 
@@ -1561,31 +1538,14 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Cache the screen's OnUpdate
 
-	CXMLElement *pOnUpdate = m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG);
-	if (pOnUpdate)
-		{
-		CCodeChainCtx Ctx(GetUniverse());
-		ICCItemPtr pCode = Ctx.LinkCode(pOnUpdate->GetContentText(0));
-		if (pCode->IsError())
-			{
-			kernelDebugLogPattern("Unable to parse OnScreenUpdate: %s.", pCode->GetStringValue());
-			m_pOnScreenUpdate = NULL;
-			}
-		else
-			{
-			m_pOnScreenUpdate = pCode->Reference();
-			}
-		}
+	InitOnUpdate(m_pDesc->GetContentElementByTag(ON_SCREEN_UPDATE_TAG));
 
-	//	Show the pane
+	//	Figure out what pane to show
 
-	if (!sPane.IsBlank())
+	CString sPane;
+	if (sInitialPane.IsBlank())
 		{
-		ShowPane(sPane);
-		}
-	else
-		{
-		CString sPane = EvalInitialPane(m_pLocation, pData);
+		sPane = EvalInitialPane(m_pLocation, pData);
 
 		//	If evaluation fails due to an error, then show default
 
@@ -1595,11 +1555,13 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 		//	Set the pane for the current frame stack, now that we've figured it out.
 
 		FrameStack.SetCurrentPane(sPane);
-
-		//	Show it
-
-		ShowPane(sPane);
 		}
+	else
+		sPane = sInitialPane;
+
+	//	Show the pane
+
+	ShowPane(sPane);
 
 	//	Done
 
@@ -2242,7 +2204,7 @@ void CDockScreen::Update (int iTick)
 		//	Add a reference to m_pOnScreenUpdate because we might
 		//	reinitialize the screen inside the call.
 
-		ICCItem *pCode = m_pOnScreenUpdate->Reference();
+		ICCItemPtr pCode = m_pOnScreenUpdate;
 
 		//	Execute
 
@@ -2252,13 +2214,10 @@ void CDockScreen::Update (int iTick)
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
 
-		ICCItem *pResult = Ctx.Run(pCode);
+		ICCItemPtr pResult = Ctx.RunCode(pCode);
 
 		if (pResult->IsError())
 			kernelDebugLogPattern("<OnScreenUpdate>: %s", pResult->GetStringValue());
-
-		Ctx.Discard(pResult);
-		Ctx.Discard(pCode);
 		}
 
 	DEBUG_CATCH
