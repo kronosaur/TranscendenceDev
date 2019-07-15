@@ -142,6 +142,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 	CInstalledDevice *pDevice = pShip->GetNamedDevice(iDev);
 	if (pDevice)
 		{
+		CItemCtx ItemCtx(pShip, pDevice);
 		CDeviceClass *pClass = pDevice->GetClass();
 
 		CString sVariant;
@@ -150,7 +151,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 		int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 		if (iSelectedFireAmmoLeft >= 0)
 			iAmmoLeft = iSelectedFireAmmoLeft;
-		CString sDevName = pClass->GetName();
+		CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier | nounNoModifiers, true);
 
 		//	Paint the bonus
 

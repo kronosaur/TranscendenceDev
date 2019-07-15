@@ -218,7 +218,7 @@ class CItem
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeedBonus) const;
-		CString GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags = 0) const;
+		CString GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags = 0, bool isCalledFromHUD = false) const;
 		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
 		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
 		inline CItemType *GetType (void) const { return m_pItemType; }

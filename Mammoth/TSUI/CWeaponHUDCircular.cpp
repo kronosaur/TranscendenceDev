@@ -288,7 +288,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 	if (iSelectedFireAmmoLeft >= 0)
 		iAmmoLeft = iSelectedFireAmmoLeft;
-	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier | nounNoModifiers);
+	CString sDevName = pDevice->GetItem()->GetNounPhrase(ItemCtx, nounDuplicateModifier | nounNoModifiers, true);
 	CString sName = (sVariant.IsBlank() ? sDevName : sVariant);
 
 	//	Figure out metrics for the background

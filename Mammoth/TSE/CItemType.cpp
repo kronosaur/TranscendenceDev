@@ -190,6 +190,7 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"OnEnable",
 		"OnInstall",
 		"OnRefuel",
+		"GetHUDName",
 	};
 
 static TStaticStringTable<TStaticStringEntry<ItemFates>, 5> FATE_TABLE = {

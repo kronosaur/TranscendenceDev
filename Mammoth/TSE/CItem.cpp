@@ -1224,7 +1224,7 @@ int CItem::GetMaxCharges (void) const
 	return (m_pItemType ? m_pItemType->GetMaxCharges() : 0);
 	}
 
-CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
+CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags, bool isCalledFromHUD) const
 
 //	GetNounPhrase
 //
@@ -1238,8 +1238,38 @@ CString CItem::GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags) const
 	//	If we have code, call it to generate the name
 
 	SEventHandlerDesc Event;
-	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
-			&& !(dwFlags & nounNoEvent))
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetHUDName, &Event)
+		&& !(dwFlags & nounNoEvent) && isCalledFromHUD)
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+
+		Ctx.SetEvent(eventGetName);
+		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
+		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		else if (pResult->IsList() && pResult->GetCount() >= 2)
+			{
+			sName = pResult->GetElement(0)->GetStringValue();
+			dwNounFlags = pResult->GetElement(1)->GetIntegerValue();
+			}
+		else
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		Ctx.Discard(pResult);
+		}
+	else if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
+			 && !(dwFlags & nounNoEvent))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 

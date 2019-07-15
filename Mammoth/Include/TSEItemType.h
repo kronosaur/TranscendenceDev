@@ -30,8 +30,9 @@ class CItemType : public CDesignType
 			evtOnEnabled				= 7,
 			evtOnInstall				= 8,
 			evtOnRefuel					= 9,
+			evtGetHUDName				= 10,
 
-			evtCount					= 10,
+			evtCount					= 11,
 			};
 
 		struct SUseDesc
