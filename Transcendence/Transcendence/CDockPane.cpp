@@ -120,7 +120,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
 
 	switch (iType)
 		{
@@ -561,7 +561,7 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
 
 	if (strEquals(sStyle, STYLE_WARNING))
 		{
@@ -1111,7 +1111,7 @@ void CDockPane::RenderControlsBottomBar (void)
 
 	//	Create the action buttons at the bottom
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.
@@ -1172,7 +1172,7 @@ void CDockPane::RenderControlsColumn (void)
 	rcActions.right = m_rcControls.right;
 	rcActions.bottom = m_rcControls.bottom;
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.

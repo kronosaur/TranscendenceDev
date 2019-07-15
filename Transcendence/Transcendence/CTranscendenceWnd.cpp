@@ -22,8 +22,7 @@ int g_cyScreen = 0;
 #define CONTROLLER_PLAYER					CONSTLIT("player")
 
 #define STR_SMALL_TYPEFACE					CONSTLIT("Tahoma")
-#define STR_MEDIUM_TYPEFACE					CONSTLIT("Tahoma")
-#define STR_LARGE_TYPEFACE					CONSTLIT("Trebuchet MS")
+#define STR_MEDIUM_TYPEFACE					CONSTLIT("Lucida Sans")
 #define STR_FIXED_TYPEFACE					CONSTLIT("Lucida Console")
 
 #define BAR_COLOR							CG32bitPixel(0, 2, 10)

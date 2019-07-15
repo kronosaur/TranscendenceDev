@@ -393,6 +393,53 @@ class CDockPane
 		CString m_sDeferredShowPane;
 	};
 
+class CDockScreenLayout
+	{
+	public:
+		static constexpr int CARGO_STATUS_LABEL_WIDTH =	100;
+		static constexpr int CARGO_STATUS_WIDTH =		200;
+		static constexpr int MIN_DESC_PANE_WIDTH =		408;
+		static constexpr int MAX_FRAME_IMAGE_WIDTH =	1500;
+		static constexpr int MAX_FRAME_IMAGE_HEIGHT =	648;
+		static constexpr int CONTENT_PADDING_LEFT =		8;
+		static constexpr int CONTENT_PADDING_RIGHT =	8;
+		static constexpr int MAX_CONTENT_WIDTH =		1024 + CONTENT_PADDING_LEFT + CONTENT_PADDING_RIGHT;
+		static constexpr int STATUS_AREA_WIDTH =		400;
+		static constexpr int STATUS_BAR_HEIGHT =		20;
+		static constexpr int TITLE_HEIGHT =				72;
+		static constexpr int TITLE_PADDING_LEFT =		8;
+
+		RECT GetCanvasRect (void) const;
+		RECT GetCargoStatusLabelRect (void) const;
+		RECT GetCargoStatusRect (void) const;
+		const RECT &GetContentRect (void) const { return m_rcContent; }
+		RECT GetDisplayRect (void) const;
+		int GetFrameImageFocusX (void) const { return m_xBackgroundFocus; }
+		int GetFrameImageFocusY (void) const { return m_yBackgroundFocus; }
+		int GetFrameImageHeight (void) const { return RectHeight(m_rcFrameImage); }
+		int GetFrameImageWidth (void) const { return RectWidth(m_rcFrameImage); }
+		const RECT &GetFrameRect (void) const { return m_rcFrame; }
+		RECT GetMoneyStatusRect (void) const;
+		RECT GetStatusBarRect (void) const;
+		RECT GetTitleBarRect (void) const;
+		RECT GetTitleRect (void) const;
+		bool Init (const RECT &rcScreen, const CDockScreenVisuals &Visuals);
+
+	private:
+		int GetDisplayWidth (void) const { return m_cxDisplay; }
+		int GetPaneWidth (void) const { return m_cxPane; }
+
+		RECT m_rcScreen;						//	RECT of dock screen AGScreen
+		RECT m_rcFrame;							//	RECT of background area (constrained to ~1280)
+		RECT m_rcFrameImage;					//	RECT of where we paint the frame image
+		RECT m_rcContent;						//	RECT of content area (contrained to ~1024)
+		int m_xBackgroundFocus = 0;
+		int m_yBackgroundFocus = 0;
+		int m_cxDisplay = 0;
+		int m_cxPane = 0;
+		int m_cyStatusFont = 0;
+	};
+
 class CDockScreen : public IScreenController,
 		public IDockScreenUI
 	{
@@ -456,7 +503,8 @@ class CDockScreen : public IScreenController,
         CGameSession &GetGameSession (void) { return m_Session; }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		CString GetTextInput (void) const { return m_CurrentPane.GetTextInputValue(); }
-        const CDockScreenVisuals &GetVisuals (void) const;
+        const CDockScreenVisuals &GetDockScreenVisuals (void) const;
+		const CVisualPalette &GetVisuals (void) const { return g_pHI->GetVisuals(); }
 		bool IsCurrentItemValid (void) const { return m_pDisplay->IsCurrentItemValid(); }
 		void SelectNextItem (bool *retbMore = NULL);
 		void SelectPrevItem (bool *retbMore = NULL);
@@ -515,7 +563,7 @@ class CDockScreen : public IScreenController,
 		void CleanUpBackgroundImage (void);
 		ALERROR CreateBackgroundImage (const IDockScreenDisplay::SBackgroundDesc &Desc, const RECT &rcRect, int xOffset);
 		void CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, const IDockScreenDisplay::SDisplayOptions &Options, const TArray<SScreenSetTab> &ScreenSet, const CString &sCurTab);
-		ALERROR CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen, const RECT &rcRect, const RECT &rcInner);
+		ALERROR CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen);
 		bool EvalBool (const CString &sString);
 		CString EvalInitialPane (void);
 		CString EvalInitialPane (CSpaceObject *pSource, ICCItem *pData);
@@ -523,7 +571,7 @@ class CDockScreen : public IScreenController,
 		ALERROR FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CString *retsError);
 		CString GetScreenName (CXMLElement *pDesc);
 		ALERROR InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pStation);
-		ALERROR InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen, const RECT &rcScreen);
+		ALERROR InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen);
 		void InitOnUpdate (CXMLElement *pDesc);
 		void ShowDisplay (bool bAnimateOnly = false);
 		void ShowItem (void) { m_pDisplay->ShowItem(); }
@@ -550,13 +598,7 @@ class CDockScreen : public IScreenController,
 
 		//	Screen and metrics
 		AGScreen *m_pScreen = NULL;
-		RECT m_rcBackground;					//	RECT of background area (constrained to ~1280)
-		RECT m_rcScreen;						//	RECT of content area (contrained to ~1024)
-		int m_cxImageBackground = 0;			//	Width of image background area
-		int m_cyImageBackground = 0;			//	Height of image background area
-		int m_cxDisplay = 0;
-		int m_xBackgroundFocus = 0;
-		int m_yBackgroundFocus = 0;
+		CDockScreenLayout m_Layout;
 
 		//	Title and header
 		CG32bitImage *m_pBackgroundImage = NULL;
@@ -570,7 +612,6 @@ class CDockScreen : public IScreenController,
 		CXMLElement *m_pDisplayInitialize = NULL;
 		bool m_bDisplayAnimate = false;
 
-		int m_yDisplay = 0;
 		IDockScreenDisplay *m_pDisplay = NULL;
 
 		//	Panes
