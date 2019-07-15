@@ -402,8 +402,9 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 	{
     const CDockScreenVisuals &DockScreenVisuals = GetDockScreenVisuals();
 
-	int cxBackground = m_Layout.GetFrameImageWidth();
-	int cyBackground = m_Layout.GetFrameImageHeight();
+	RECT rcFrameImage = m_Layout.GetFrameImageRect();
+	int cxBackground = RectWidth(rcFrameImage);
+	int cyBackground = RectHeight(rcFrameImage);
 
 	//	Load the image
 
@@ -411,22 +412,13 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 	if (Desc.iType == IDockScreenDisplay::backgroundImage && Desc.dwImageID)
 		pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
 
-	//	Sometimes (like in the case of item lists) the image is larger than normal
-
-	int cyExtra = 0;
-	if (pImage)
-		cyExtra = Max(pImage->GetHeight() - cyBackground, 0);
-
 	//	Create a new image for the background
 
 	CleanUpBackgroundImage();
 
 	m_pBackgroundImage = new CG32bitImage;
 	m_bFreeBackgroundImage = true;
-	m_pBackgroundImage->Create(cxBackground, cyBackground + cyExtra, CG32bitImage::alpha8);
-
-	if (cyExtra)
-		m_pBackgroundImage->Fill(0, cyBackground, cxBackground, cyExtra, 0);
+	m_pBackgroundImage->Create(cxBackground, cyBackground, CG32bitImage::alpha8);
 
 	//	Load and blt the dock screen background based on the player ship class
 
@@ -470,7 +462,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
             //  less than the entire background).
 
             int cxObjImage = (RectWidth(rcRect) / 2) + EXTRA_BACKGROUND_IMAGE;
-            int cyObjImage = cyBackground + cyExtra;
+            int cyObjImage = cyBackground;
 
             //  Create a temporary image
 
@@ -1814,13 +1806,13 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 			    DefaultDesc.iType = IDockScreenDisplay::backgroundObjHeroImage;
 			}
 
-		CreateBackgroundImage(DefaultDesc, m_Layout.GetFrameRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameRect().left);
+		CreateBackgroundImage(DefaultDesc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);
 		}
 
 	//	Otherwise, create the image with the given descriptor
 
 	else
-		CreateBackgroundImage(Desc, m_Layout.GetFrameRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameRect().left);
+		CreateBackgroundImage(Desc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);
 
 	//	Create the area
 
@@ -1832,7 +1824,6 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 
 		//	Add the background
 
-		RECT rcBackArea;
 		CGImageArea *pImage = new CGImageArea;
 
 		RECT rcImage;
@@ -1843,15 +1834,10 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 		pImage->SetImage(m_pBackgroundImage, rcImage);
         pImage->SetTransBackground(true);
 
-		rcBackArea.left = m_Layout.GetFrameRect().left;
-		rcBackArea.top = m_Layout.GetContentRect().top;
-		rcBackArea.right = rcBackArea.left + RectWidth(m_Layout.GetFrameRect());
-		rcBackArea.bottom = rcBackArea.top + m_pBackgroundImage->GetHeight();
-
 		//	bSendToBack = true because we may have created other areas before 
 		//	this and we need the background to be in back.
 
-		m_pScreen->AddArea(pImage, rcBackArea, IMAGE_AREA_ID, true);
+		m_pScreen->AddArea(pImage, m_Layout.GetFrameImageRect(), IMAGE_AREA_ID, true);
 		}
 
 	DEBUG_CATCH

@@ -416,8 +416,7 @@ class CDockScreenLayout
 		RECT GetDisplayRect (void) const;
 		int GetFrameImageFocusX (void) const { return m_xBackgroundFocus; }
 		int GetFrameImageFocusY (void) const { return m_yBackgroundFocus; }
-		int GetFrameImageHeight (void) const { return RectHeight(m_rcFrameImage); }
-		int GetFrameImageWidth (void) const { return RectWidth(m_rcFrameImage); }
+		const RECT &GetFrameImageRect (void) const { return m_rcFrameImage; }
 		const RECT &GetFrameRect (void) const { return m_rcFrame; }
 		RECT GetMoneyStatusRect (void) const;
 		RECT GetStatusBarRect (void) const;

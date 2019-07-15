@@ -64,10 +64,10 @@ bool CDockScreenLayout::Init (const RECT &rcScreen, const CDockScreenVisuals &Vi
 
 	m_cxDisplay = cxContent - m_cxPane;
 
-	//	Compute the center of the display
+	//	Compute the center of the display (relative to the frame image RECT).
 
 	m_xBackgroundFocus = (cxContent - m_cxPane) / 2;
-	m_yBackgroundFocus = GetFrameImageHeight() / 2;
+	m_yBackgroundFocus = RectHeight(m_rcFrameImage) / 2;
 
 	//	Other metrics
 
