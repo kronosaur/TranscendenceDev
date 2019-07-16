@@ -1401,7 +1401,7 @@ class CSpaceObject
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) { }
 
 		virtual bool IsHidden (void) const { return false; }
-		virtual bool IsInactive (void) const { return IsSuspended(); }
+		virtual bool IsInactive (void) const { return (IsSuspended() || IsDestroyed()); }
 		virtual bool IsIntangible (void) const { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsSuspended (void) const { return false; }
 		virtual bool IsUnreal (void) const { return (IsSuspended() || IsDestroyed()); }

@@ -7060,6 +7060,18 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
 			CSpaceObjectCriteria Criteria(pSource, sFilter);
 
+			//	We force including intangibles. We need to do this because this
+			//	is often called inside of <OnObjDestroyed>, and since the object
+			//	has been destroyed, it will fail the match unless we include
+			//	intangibles.
+			//
+			//	To exclude destroyed objects, callers should ask for active
+			//	objects.
+
+			Criteria.SetIncludeIntangible(true);
+
+			//	Match
+
 			CSpaceObjectCriteria::SCtx Ctx(Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}

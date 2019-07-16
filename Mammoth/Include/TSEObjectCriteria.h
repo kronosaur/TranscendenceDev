@@ -85,6 +85,7 @@ class CSpaceObjectCriteria
 		inline bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
 		inline bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
 		inline bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
+		void SetIncludeIntangible (bool bValue = true) { m_bIncludeIntangible = bValue; }
 		inline void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
 		inline void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
 		void SetSource (CSpaceObject *pSource);
