@@ -1183,7 +1183,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || IsInGate()); }
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
-		virtual bool IsInactive (void) const override { return (m_fManualSuspended || IsInGate()); }
+		virtual bool IsInactive (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed()); }
 		virtual bool IsIntangible (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
