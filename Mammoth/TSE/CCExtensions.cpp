@@ -7016,6 +7016,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
 			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			Criteria.SetIncludeIntangible(true);
 
 			CSpaceObjectCriteria::SCtx Ctx(Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
