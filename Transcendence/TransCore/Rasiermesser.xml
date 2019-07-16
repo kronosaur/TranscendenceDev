@@ -411,7 +411,7 @@
 								(switch
 									(ls xp 50)
 										(setq desc (cat "The lab is filled with racks of equipment; researchers are testing various new weapons here.\n\n"
-											"Sitting by the corner, a small stocky man mumbles to himself as he pours through dozens of screen of information. "
+											"Sitting by the corner, a small stocky man mumbles to himself as he pours through dozens of screens of information. "
 											"His name is Dvalin, the chief scientist for the Rasiermesser Corporation."
 											))
 
