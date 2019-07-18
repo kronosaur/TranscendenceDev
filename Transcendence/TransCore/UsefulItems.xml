@@ -1898,7 +1898,7 @@
 
 		<Language>
 			<Text id="msgCannotEnhance">The ROM cannot enhance %itemName%</Text>
-			<Text id="msgTooAlien">Shield generator is too alien for the ROM to enhance"</Text>
+			<Text id="msgTooAlien">Shield generator is too alien for the ROM to enhance</Text>
 			<Text id="msgTooAdvanced">Shield generator is too advanced for the ROM to enhance</Text>
 			<Text id="msgRepaired">Shield generator has been repaired</Text>
 			<Text id="msgNoShields">Shield generator required</Text>
