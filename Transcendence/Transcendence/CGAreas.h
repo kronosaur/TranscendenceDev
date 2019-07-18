@@ -632,6 +632,7 @@ class CGTabArea : public AGArea
         void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
         void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetCurTab (const CString &sID);
+		void SetNoNavigation (bool bValue = true) { m_bNoNavigation = bValue; }
 
 		//	AGArea virtuals
 		virtual bool LButtonDown (int x, int y) override;
@@ -660,6 +661,7 @@ class CGTabArea : public AGArea
 		TArray<STabDesc> m_Tabs;
 		int m_iCurTab = -1;
 		int m_iHoverTab = -1;
+		bool m_bNoNavigation = false;
 
 		int m_cyTabHeight = DEFAULT_TAB_HEIGHT;
         CG32bitPixel m_rgbTextColor = CG32bitPixel(255, 255, 255);

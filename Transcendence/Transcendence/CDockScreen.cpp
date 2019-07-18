@@ -994,10 +994,13 @@ void CDockScreen::HandleKeyDown (int iVirtKey)
 
 	if (m_pTabs && iVirtKey == VK_TAB)
 		{
-		if (uiIsShiftDown())
-			SelectTab(m_pTabs->GetPrevTabID());
-		else
-			SelectTab(m_pTabs->GetNextTabID());
+		if (!m_bNoListNavigation)
+			{
+			if (uiIsShiftDown())
+				SelectTab(m_pTabs->GetPrevTabID());
+			else
+				SelectTab(m_pTabs->GetNextTabID());
+			}
 		}
 
 	//	Otherwise, let the display handle it.
@@ -1982,7 +1985,10 @@ void CDockScreen::ShowPane (const CString &sName)
 	//	Update screen
 	//	Show the currently selected item
 
-	m_pDisplay->ShowPane(pNewPane->GetAttributeBool(NO_LIST_NAVIGATION_ATTRIB));
+	m_bNoListNavigation = pNewPane->GetAttributeBool(NO_LIST_NAVIGATION_ATTRIB);
+	m_pDisplay->ShowPane(m_bNoListNavigation);
+	if (m_pTabs)
+		m_pTabs->SetNoNavigation(m_bNoListNavigation);
 
 	UpdateCredits();
 

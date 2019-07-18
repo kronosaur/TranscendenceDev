@@ -610,6 +610,7 @@ class CDockScreen : public IScreenController,
 		TArray<SDisplayControl> m_Controls;
 		CXMLElement *m_pDisplayInitialize = NULL;
 		bool m_bDisplayAnimate = false;
+		bool m_bNoListNavigation = false;
 
 		IDockScreenDisplay *m_pDisplay = NULL;
 
