@@ -1693,7 +1693,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_pExtension = Ctx.pExtension;
     m_iLevel = Options.iLevel;
 	m_fVariableInitialSpeed = false;
-	m_fFragment = false;
+	m_fFragment = Options.bIsFragment;
 
 	//	Fire type
 
@@ -2111,12 +2111,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		SInitOptions FragOptions;
 		FragOptions.sUNID = strPatternSubst("%s/f%d", m_sUNID, iFragCount++);
 		FragOptions.iLevel = m_iLevel;
+		FragOptions.bIsFragment = true;
 
 		pNewDesc->pDesc = new CWeaponFireDesc;
 		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, FragOptions))
 			return error;
-
-		pNewDesc->pDesc->m_fFragment = true;
 
 		//	Set the fragment count
 

@@ -95,6 +95,7 @@ class DamageDesc
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
+		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
 		bool IsEnergyDamage (void) const;
 		bool IsMatterDamage (void) const;
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
@@ -399,17 +400,13 @@ class CWeaponFireDesc
 
 		struct SInitOptions
 			{
-			SInitOptions (void) :
-					iLevel(1),
-					bDamageOnly(false)
-				{ }
-
 			CString sUNID;					//	UNID of weapon fire desc
-			int iLevel;						//	Level (for scalable weapons)
+			int iLevel = 1;					//	Level (for scalable weapons)
 
 			//	Options
 
-			bool bDamageOnly;				//	Defines damage (not entire projectile desc)
+			bool bDamageOnly = false;		//	Defines damage (not entire projectile desc)
+			bool bIsFragment = false;		//	We're initializing a fragment
 			};
 
         struct SVaporTrailDesc
