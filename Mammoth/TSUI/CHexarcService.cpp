@@ -121,6 +121,8 @@
 #define TYPE_TRANSCENDENCE_LIBRARY				CONSTLIT("transcendenceLibrary")
 #define TYPE_TRANSCENDENCE_NEWS					CONSTLIT("transcendenceNews")
 
+//	NOTE: We keep the actual private key in HexarcKeys.h.
+
 #ifdef HEXARC_SANDBOX
 
 const int KEY_SIZE = 64;
@@ -987,8 +989,6 @@ bool CHexarcService::Sign (const CJSONValue &Value, CIntegerIP *retSignature)
 //
 //	Signs the given JSON value using the Transcendence client secret key and the
 //	algorithm (MAC) used by Hexarc.
-//
-//	NOTE: We keep this here to obfuscate it (CHexarcService is not open-source)
 
 	{
 	//	Get the secret key
