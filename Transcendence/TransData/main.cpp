@@ -40,6 +40,7 @@
 #define ITEM_TABLE_SWITCH					CONSTLIT("itemtable")
 #define LANGUAGE_SWITCH						CONSTLIT("language")
 #define LOOT_SIM_SWITCH						CONSTLIT("lootsim")
+#define MORE_EXTENSIONS_ATTRIB				CONSTLIT("moreExtensions")
 #define PERF_TEST_SWITCH					CONSTLIT("perftest")
 #define RANDOM_ITEMS_SWITCH					CONSTLIT("randomitems")
 #define RANDOM_NUMBER_TEST					CONSTLIT("randomnumbertest")
@@ -549,13 +550,36 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 		else if (strEquals(sExtensionList, CONSTLIT("all")))
 			Ctx.bDefaultExtensions = true;
 		else
-			{
-			TArray<DWORD> Extensions;
 			ParseUNIDList(sExtensionList, PUL_FLAG_HEX, &Ctx.ExtensionUNIDs);
-			}
 		}
 	else
 		Ctx.bDefaultExtensions = true;
+
+	//	If we have additional extensions, add them now.
+
+	if (!Ctx.bDefaultExtensions
+			&& pCmdLine->FindAttribute(MORE_EXTENSIONS_ATTRIB, &sExtensionList))
+		{
+		if (strEquals(sExtensionList, CONSTLIT("all")))
+			{
+			Ctx.bDefaultExtensions = true;
+			Ctx.ExtensionUNIDs.DeleteAll();
+			}
+		else
+			{
+			TArray<DWORD> Extensions;
+			ParseUNIDList(sExtensionList, PUL_FLAG_HEX, &Extensions);
+
+			for (int i = 0; i < Extensions.GetCount(); i++)
+				if (Ctx.ExtensionUNIDs.Find(Extensions[i]))
+					{
+					Extensions.Delete(i);
+					i--;
+					}
+
+			Ctx.ExtensionUNIDs.Insert(Extensions);
+			}
+		}
 
 	//	Open the universe
 
