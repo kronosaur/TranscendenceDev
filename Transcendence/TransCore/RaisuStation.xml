@@ -184,7 +184,7 @@
 							(setq theItem (itmCreate &itDM1500MissileRack; 1))
 
 						;	Find all compatible missiles for this launcher
-						(not (setq missileTypes (itmGetTypes (cat "M +launchedBy:" (itmGetType launcherItem) ";"))))
+						(not (setq missileTypes (itmGetTypes (cat "M +launchedBy:" (itmGetType launcherItem) "; -illegal; -military;"))))
 							(setq theItem (itmCreate &itDM1500MissileRack; 1))
 
 						;	Find a tracking missile of level 3 or less.
