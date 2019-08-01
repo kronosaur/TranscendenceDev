@@ -109,7 +109,7 @@ CString CGameRecord::GetDescription (DWORD dwParts) const
 
 		if (dwParts & descCharacter)
 			{
-			CString sLine = strPatternSubst(CONSTLIT("%s — %s"), m_sName, GetGenomeName(m_iGenome));
+			CString sLine = strPatternSubst(CONSTLIT("%s %&mdash; %s"), m_sName, GetGenomeName(m_iGenome));
 			Output.Write(sLine.GetASCIIZPointer(), sLine.GetLength());
 
 			bDashNeeded = true;
@@ -118,7 +118,7 @@ CString CGameRecord::GetDescription (DWORD dwParts) const
 		if (dwParts & descShip)
 			{
 			if (bDashNeeded)
-				Output.Write(" — ", 3);
+				Output.Write(strPatternSubst(CONSTLIT(" %&mdash; ")));
 
 			Output.Write(m_sShipClass.GetASCIIZPointer(), m_sShipClass.GetLength());
 			}

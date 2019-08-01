@@ -505,10 +505,7 @@ void AppendReferenceString (CString *iosReference, const CString &sString)
 	else if (iosReference->IsBlank())
 		*iosReference = sString;
 	else
-		{
-		iosReference->Append(CONSTLIT(" — "));
-		iosReference->Append(sString);
-		}
+		iosReference->Append(strPatternSubst(CONSTLIT(" %&mdash; %s"), sString));
 	}
 
 int CalcEffectiveHP (int iLevel, int iHP, int *iHPbyDamageType)

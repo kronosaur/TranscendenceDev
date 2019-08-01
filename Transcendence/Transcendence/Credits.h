@@ -2,29 +2,45 @@
 //
 //	Included by IntroScreen.cpp
 
-static char *ADDITIONAL_PROGRAMMING[] =
+static constexpr char *ADDITIONAL_PROGRAMMING[] =
 	{
-	"Owen Embury (giantcabbage) • Nathaniel Stalberg (NMS) • Bryon Leung (Heliogenesis)",
-	"Alex Chen (Archcannon) • Brian Merchant • Benn Bollay"
+	"Owen Embury (giantcabbage)",
+	"Nathaniel Stalberg (NMS)",
+	"Bryon Leung (Heliogenesis)",
+	"Alex Chen (Archcannon)",
+	"Brian Merchant",
+	"Benn Bollay"
 	};
 
-const int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMING) / sizeof(ADDITIONAL_PROGRAMMING[0]));
+static constexpr int ADDITIONAL_PROGRAMMING_COUNT = (sizeof(ADDITIONAL_PROGRAMMING) / sizeof(ADDITIONAL_PROGRAMMING[0]));
 
-static char *SPECIAL_THANKS[] =
+static constexpr char *SPECIAL_THANKS[] =
 	{
-	"Alexander Huitric (Wolfy) • Patrick Martin (Megas) • Joe Needleman (Ttech)",
-	"Jeremy Skaggs (AssumedPseudonym) • Ember Song (Shrike)",
+	"Alexander Huitric (Wolfy)",
+	"Patrick Martin (Megas)",
+	"Joe Needleman (Ttech)",
+	"Jeremy Skaggs (AssumedPseudonym)",
+	"Ember Song (Shrike)",
 
-	"Betelgeuse • Nathan Brown (Atarlost) • Michael Curran (Burzmali)",
-	"Ruggero Dondi (Digdug) • Johan Friis (Alterecco) • David Lenker (dvlenk6)",
-	"Hendrik Liersch (Bimbel) • Jess Merkley (Fossaman) • Jason Miao",
-	"Kieran Mitchell (Yugi) • Mike Mosher (Prophet) • Bryan Murray (Periculi)",
-	"Dan Newman (SparcMan) • Robert Patrick (RPC)",
+	"Betelgeuse",
+	"Nathan Brown (Atarlost)",
+	"Michael Curran (Burzmali)",
+	"Ruggero Dondi (Digdug)",
+	"Johan Friis (Alterecco)",
+	"David Lenker (dvlenk6)",
+	"Hendrik Liersch (Bimbel)",
+	"Jess Merkley (Fossaman)",
+	"Jason Miao",
+	"Kieran Mitchell (Yugi)",
+	"Mike Mosher (Prophet)",
+	"Bryan Murray (Periculi)",
+	"Dan Newman (SparcMan)",
+	"Robert Patrick (RPC)",
 	};
 
-const int SPECIAL_THANKS_COUNT = (sizeof(SPECIAL_THANKS) / sizeof(SPECIAL_THANKS[0]));
+static constexpr int SPECIAL_THANKS_COUNT = (sizeof(SPECIAL_THANKS) / sizeof(SPECIAL_THANKS[0]));
 
-static char *FEEDBACK[] =
+static constexpr char *FEEDBACK[] =
 	{
 	"Aeon Blaze",
 	"Aeonic",
@@ -240,9 +256,9 @@ static char *FEEDBACK[] =
 	"Zerat00l",
 	};
 
-const int FEEDBACK_COUNT = (sizeof(FEEDBACK) / sizeof(FEEDBACK[0]));
+static constexpr int FEEDBACK_COUNT = (sizeof(FEEDBACK) / sizeof(FEEDBACK[0]));
 
-static char *INSPIRATION[] =
+static constexpr char *INSPIRATION[] =
 	{
 	"Across Realtime",
 	"The Art of Game Design",
@@ -275,9 +291,9 @@ static char *INSPIRATION[] =
 	"Nethack & Star Control II",
 	};
 
-const int INSPIRATION_COUNT = (sizeof(INSPIRATION) / sizeof(INSPIRATION[0]));
+static constexpr int INSPIRATION_COUNT = (sizeof(INSPIRATION) / sizeof(INSPIRATION[0]));
 
-static char *SOFTWARE[] =
+static constexpr char *SOFTWARE[] =
 	{
 	"Adobe® Photoshop®",
 	"Caligari trueSpace®",
@@ -289,4 +305,4 @@ static char *SOFTWARE[] =
 	"zlib"
 	};
 
-const int SOFTWARE_COUNT = (sizeof(SOFTWARE) / sizeof(SOFTWARE[0]));
+static constexpr int SOFTWARE_COUNT = (sizeof(SOFTWARE) / sizeof(SOFTWARE[0]));

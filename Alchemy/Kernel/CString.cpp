@@ -214,6 +214,28 @@ CString::CString (const char *pString, int iLength, BOOL bExternal) :
 		}
 	}
 
+CString::CString (const SConstString &String) :
+		CObject(&g_Class),
+		m_pStore(NULL)
+
+//	CString constructor
+
+	{
+	if (String.pszString && String.iLen > 0)
+		{
+		m_pStore = AllocStore(0, FALSE);
+		if (m_pStore)
+			{
+			//	A negative value means that this is an external
+			//	read-only storage
+
+			m_pStore->iAllocSize = -String.iLen;
+			m_pStore->iLength = String.iLen;
+			m_pStore->pString = const_cast<char *>(String.pszString);
+			}
+		}
+	}
+
 CString::~CString (void)
 
 //	CString destructor

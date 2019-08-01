@@ -846,5 +846,8 @@
     <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\TestTSE.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

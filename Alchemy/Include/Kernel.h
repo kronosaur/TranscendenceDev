@@ -557,6 +557,38 @@ struct SConstString
 #define CONSTUSE(constEntry)	CString((constEntry).pszString, (constEntry).iLen, true)
 extern const CString NULL_STR;
 
+static constexpr char CHAR_LEFT_DOUBLE_QUOTE =		'\x93';
+static constexpr char CHAR_RIGHT_DOUBLE_QUOTE =		'\x94';
+
+static constexpr SConstString CSTR_LEFT_DOUBLE_QUOTE =	CONSTDEFS("\x93");
+static constexpr SConstString CSTR_RIGHT_DOUBLE_QUOTE =	CONSTDEFS("\x94");
+static constexpr SConstString CSTR_BULLET =				CONSTDEFS("\x95");
+static constexpr SConstString CSTR_MDASH =				CONSTDEFS("\x97");
+static constexpr SConstString CSTR_TRADEMARK =			CONSTDEFS("\x99");
+static constexpr SConstString CSTR_COPYRIGHT =			CONSTDEFS("\xA9");
+static constexpr SConstString CSTR_REGISTERED =			CONSTDEFS("\xAE");
+static constexpr SConstString CSTR_DEGREE =				CONSTDEFS("\xB0");
+static constexpr SConstString CSTR_PLUS_MINUS =			CONSTDEFS("\xB1");
+
+static constexpr SConstString CSTR_CAP_AACUTE =			CONSTDEFS("\xC1");
+static constexpr SConstString CSTR_CAP_EACUTE =			CONSTDEFS("\xC9");
+static constexpr SConstString CSTR_CAP_IACUTE =			CONSTDEFS("\xCD");
+static constexpr SConstString CSTR_CAP_NTILDE =			CONSTDEFS("\xD1");
+static constexpr SConstString CSTR_CAP_OACUTE =			CONSTDEFS("\xD3");
+static constexpr SConstString CSTR_TIMES =				CONSTDEFS("\xD7");
+static constexpr SConstString CSTR_CAP_UACUTE =			CONSTDEFS("\xDA");
+static constexpr SConstString CSTR_CAP_UUML =			CONSTDEFS("\xDC");
+static constexpr SConstString CSTR_AACUTE =				CONSTDEFS("\xE1");
+static constexpr SConstString CSTR_EACUTE =				CONSTDEFS("\xE9");
+static constexpr SConstString CSTR_IACUTE =				CONSTDEFS("\xED");
+static constexpr SConstString CSTR_NTILDE =				CONSTDEFS("\xF1");
+static constexpr SConstString CSTR_OACUTE =				CONSTDEFS("\xF3");
+static constexpr SConstString CSTR_UACUTE =				CONSTDEFS("\xFA");
+static constexpr SConstString CSTR_UUML =				CONSTDEFS("\xFC");
+
+static constexpr SConstString CSTR_WINGDING_LEFT_ARROW =	CONSTDEFS("\xE7");
+static constexpr SConstString CSTR_WINGDING_RIGHT_ARROW =	CONSTDEFS("\xE8");
+
 class CString : public CObject
 	{
 	public:
@@ -578,6 +610,7 @@ class CString : public CObject
 		CString (CharacterSets iCharSet, const char *pString);
 		CString (char *pString, int iLength);
 		CString (const char *pString, int iLength, BOOL bExternal);
+		CString (const SConstString &String);
 		virtual ~CString (void);
 
 		CString (const CString &pString);

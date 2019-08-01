@@ -1151,12 +1151,12 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 			if (rgbBonus != rgbColorRef)
 				{
-				sReference = strPatternSubst(CONSTLIT("{/rtf %s — {/c:%d; %s}}"), CTextBlock::Escape(sReference), (COLORREF)rgbBonus, CTextBlock::Escape(sBonus));
+				sReference = strPatternSubst(CONSTLIT("{/rtf %s %&mdash; {/c:%d; %s}}"), CTextBlock::Escape(sReference), (COLORREF)rgbBonus, CTextBlock::Escape(sBonus));
 				PaintRTFText(Dest, rcDrawRect, sReference, Medium, rgbColorRef, &cyHeight);
 				}
 			else
 				{
-				sReference = strPatternSubst(CONSTLIT("%s — %s"), sReference, sBonus);
+				sReference = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sReference, sBonus);
 				Medium.DrawText(Dest, rcDrawRect, rgbColorRef, sReference, 0, 0, &cyHeight);
 				}
 

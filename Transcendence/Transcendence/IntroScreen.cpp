@@ -141,7 +141,8 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 //	Creates full end credits
 
 	{
-	int i;
+	static constexpr int CREDIT_DURATION = 150;
+
 	CAniSequencer *pSeq = new CAniSequencer;
 	int iTime = 0;
 
@@ -160,10 +161,10 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += 150;
+	iTime += pAnimation->GetDuration();
 
 	Names.DeleteAll();
 	Names.Insert(CONSTLIT("Michael Tangent"));
@@ -171,40 +172,40 @@ void CTranscendenceWnd::CreateCreditsAnimation (IAnimatron **retpAnimatron)
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += 150;
+	iTime += pAnimation->GetDuration();
 
 	//	More programming
 
 	Names.DeleteAll();
-	for (i = 0; i < ADDITIONAL_PROGRAMMING_COUNT; i++)
+	for (int i = 0; i < ADDITIONAL_PROGRAMMING_COUNT; i++)
 		Names.Insert(CString(ADDITIONAL_PROGRAMMING[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("additional programming by"),
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += ADDITIONAL_PROGRAMMING_COUNT * 150;
+	iTime += pAnimation->GetDuration();
 
 	//	Special thanks
 
 	Names.DeleteAll();
-	for (i = 0; i < SPECIAL_THANKS_COUNT; i++)
+	for (int i = 0; i < SPECIAL_THANKS_COUNT; i++)
 		Names.Insert(CString(SPECIAL_THANKS[i]));
 
 	m_UIRes.CreateMediumCredit(CONSTLIT("special thanks to"),
 			Names,
 			xMidCenter,
 			yMidCenter,
-			150,
+			CREDIT_DURATION,
 			&pAnimation);
 	pSeq->AddTrack(pAnimation, iTime);
-	iTime += SPECIAL_THANKS_COUNT * 150;
+	iTime += pAnimation->GetDuration();
 
 	//	Thanks to
 

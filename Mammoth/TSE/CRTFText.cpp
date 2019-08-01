@@ -66,7 +66,7 @@ CString CRTFText::GenerateRTFText (const CString &sText, const SAutoRTFOptions &
 		return sText;
 
 	CG32bitPixel rgbColor = Options.rgbQuoteText;
-	CString sCloseQuote = CONSTLIT("”}");
+	CString sCloseQuote = strPatternSubst(CONSTLIT("%&rdquo;}"));
 
 	//	Start with the RTF open
 
@@ -89,7 +89,7 @@ CString CRTFText::GenerateRTFText (const CString &sText, const SAutoRTFOptions &
 				}
 			else
 				{
-				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; “"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
+				CString sQuoteStart = strPatternSubst(CONSTLIT("{/c:#%02x%02x%02x; %&ldquo;"), rgbColor.GetRed(), rgbColor.GetGreen(), rgbColor.GetBlue());
 				Output.Write(sQuoteStart.GetASCIIZPointer(), sQuoteStart.GetLength());
 				bInQuotes = true;
 				}

@@ -96,7 +96,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	bool bPermadeath = m_Options.bFilterPermadeath || GameFile.GetResurrectCount() == 0;		//	We still show the Permadeath label if we don't force it
 	CString sHeading;
 	
-	sHeading = strPatternSubst(CONSTLIT("%s — %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
+	sHeading = strPatternSubst(CONSTLIT("%s %&mdash; %s"), GameFile.GetPlayerName(), GameFile.GetSystemName());
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, y));
@@ -147,7 +147,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 	else
 		Info.Insert(strPatternSubst(CONSTLIT("Continue in the %s System"), GameFile.GetSystemName()));
 
-	CString sDesc = strJoin(Info, CONSTLIT(" — "));
+	CString sDesc = strJoin(Info, strPatternSubst(CONSTLIT(" %&mdash; ")));
 
 	IAnimatron *pDesc = new CAniText;
 	pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, y));
@@ -265,11 +265,11 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	CString sExtra;
 	if (!sEpitaph.IsBlank())
-		sExtra = strPatternSubst(CONSTLIT("Score %d — %s\n%s — %s — %s"), iScore, sEpitaph, sGameType, sModifiedTime, sFilename);
+		sExtra = strPatternSubst(CONSTLIT("Score %d %&mdash; %s\n%s %&mdash; %s %&mdash; %s"), iScore, sEpitaph, sGameType, sModifiedTime, sFilename);
 	else if (iScore > 0)
-		sExtra = strPatternSubst(CONSTLIT("Score %d\n%s — %s — %s"), iScore, sGameType, sModifiedTime, sFilename);
+		sExtra = strPatternSubst(CONSTLIT("Score %d\n%s %&mdash; %s %&mdash; %s"), iScore, sGameType, sModifiedTime, sFilename);
 	else
-		sExtra = strPatternSubst(CONSTLIT("%s — %s — %s"), sGameType, sModifiedTime, sFilename);
+		sExtra = strPatternSubst(CONSTLIT("%s %&mdash; %s %&mdash; %s"), sGameType, sModifiedTime, sFilename);
 
 	pDesc = new CAniText;
 	pDesc->SetPropertyVector(PROP_POSITION, CVector(xText, y));

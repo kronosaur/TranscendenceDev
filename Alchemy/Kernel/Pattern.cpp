@@ -19,8 +19,11 @@
 //	s	Argument is a CString. The string is substituted
 //
 //	x	Argument is an unsigned 32-bit integer. The hex value is substituted
+//
+//	&	Followed by an XML entity and semicolon
 
 #include "PreComp.h"
+#include "Internets.h"
 
 void WritePadding (CString &sOutput, char chChar, int iLen);
 
@@ -198,6 +201,30 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 					pPos++;
 					iLength--;
+					}
+				else if (*pPos == '&')
+					{
+					//	Get the entity name
+
+					pPos++;
+					iLength--;
+					char *pStart = pPos;
+					while (iLength > 0 && *pPos != ';')
+						{
+						pPos++;
+						iLength--;
+						}
+
+					CString sEntity(pStart, (int)(pPos - pStart));
+					CString sResult = CHTML::TranslateStdEntity(sEntity);
+
+					sOutput.Append(sResult);
+
+					if (iLength > 0 && *pPos == ';')
+						{
+						pPos++;
+						iLength--;
+						}
 					}
 				else if (*pPos == '%')
 					{

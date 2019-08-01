@@ -639,20 +639,20 @@ class CCommandLineDisplay
 class CUIResources
 	{
 	public:
-		CUIResources (void) : 
-				m_pFonts(NULL),
-				m_bOptionShowDamageAdjAsHP(false) { }
-
 		ALERROR Init (SFontTable *pFonts);
 
-		void CreateTitleAnimation (int x, int y, int iDuration, IAnimatron **retpAni);
-		void CreateLargeCredit (const CString &sCredit, const CString &sName, int x, int y, int iDuration, IAnimatron **retpAni);
-		void CreateMediumCredit (const CString &sCredit, TArray<CString> &Names, int x, int y, int iDuration, IAnimatron **retpAni);
+		void CreateTitleAnimation (int x, int y, int iDuration, IAnimatron **retpAni) const;
+		void CreateLargeCredit (const CString &sCredit, const CString &sName, int x, int y, int iDuration, IAnimatron **retpAni) const;
+		void CreateMediumCredit (const CString &sCredit, const TArray<CString> &Names, int x, int y, int iDuration, IAnimatron **retpAni) const;
 
 	private:
-		SFontTable *m_pFonts;						//	Font table
+		static constexpr int CREDIT_LINE_MAX_WIDTH = 1000;
 
-		bool m_bOptionShowDamageAdjAsHP;			//	If TRUE, show damage adj as HP instead of %
+		static void CombineNames (const TArray<CString> &Names, const CString &sSeparator, int cxMaxWidth, const CG16bitFont &Font, TArray<CString> &retLines);
+
+		SFontTable *m_pFonts = NULL;				//	Font table
+
+		bool m_bOptionShowDamageAdjAsHP = false;	//	If TRUE, show damage adj as HP instead of %
 	};
 
 #define DEBUG_LINES_COUNT					51

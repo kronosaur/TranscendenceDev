@@ -414,7 +414,7 @@ void CAniTextInput::Paint (SAniPaintCtx &Ctx)
 
 	CString sText;
 	if (m_bPassword)
-		sText = strRepeat(CONSTLIT("•"), m_Properties[INDEX_TEXT].GetString().GetLength());
+		sText = strRepeat(CSTR_BULLET, m_Properties[INDEX_TEXT].GetString().GetLength());
 	else
 		sText = m_Properties[INDEX_TEXT].GetString();
 

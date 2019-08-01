@@ -390,7 +390,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	if (sRef.IsBlank())
 		sRef = strPatternSubst(CONSTLIT("Level %s%s"), strLevel(Item.GetLevel()), sExtraDesc);
 	else
-		sRef = strPatternSubst(CONSTLIT("Level %s — %s%s"), strLevel(Item.GetLevel()), sRef, sExtraDesc);
+		sRef = strPatternSubst(CONSTLIT("Level %s %&mdash; %s%s"), strLevel(Item.GetLevel()), sRef, sExtraDesc);
 
 	IAnimatron *pRef = new CAniText;
 	pRef->SetPropertyVector(PROP_POSITION, CVector(xText, yText + cyText));

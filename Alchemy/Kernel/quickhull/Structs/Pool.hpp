@@ -3,7 +3,7 @@
 //  QuickHull
 //
 //  Created by Antti Kuukka on 1/28/16.
-//  Copyright © 2016 Antti Kuukka. All rights reserved.
+//  Copyright (c) 2016 Antti Kuukka. All rights reserved.
 //
 
 #ifndef Pool_h

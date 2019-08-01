@@ -48,38 +48,6 @@ enum StateTypes
 
 #define STR_DOCTYPE								CONSTLIT("DOCTYPE")
 
-static TStaticStringTable<TStaticStringEntry<SConstString>, 27> STD_ENTITY_TABLE = {
-	"Aacute",		CONSTDEFS("Á"),
-	"Eacute",		CONSTDEFS("É"),
-	"Iacute",		CONSTDEFS("Í"),
-	"Ntilde",		CONSTDEFS("Ñ"),
-	"Oacute",		CONSTDEFS("Ó"),
-	"Uacute",		CONSTDEFS("Ú"),
-	"Uuml",			CONSTDEFS("Ü"),
-	"aacute",		CONSTDEFS("á"),
-	"amp",			CONSTDEFS("&"),
-	"apos",			CONSTDEFS("\'"),
-
-	"bull",			CONSTDEFS("•"),
-	"copy",			CONSTDEFS("©"),
-	"deg",			CONSTDEFS("°"),
-	"eacute",		CONSTDEFS("é"),
-	"gt",			CONSTDEFS(">"),
-	"iacute",		CONSTDEFS("í"),
-	"lt",			CONSTDEFS("<"),
-	"mdash",		CONSTDEFS("—"),
-	"ntilde",		CONSTDEFS("ñ"),
-	"oacute",		CONSTDEFS("ó"),
-
-	"plusmn",		CONSTDEFS("±"),
-	"quot",			CONSTDEFS("\""),
-	"reg",			CONSTDEFS("®"),
-	"times",		CONSTDEFS("×"),
-	"trade",		CONSTDEFS("™"),
-	"uacute",		CONSTDEFS("ú"),
-	"uuml",			CONSTDEFS("ü"),
-	};
-
 struct ParserCtx
 	{
 	public:
@@ -1360,7 +1328,6 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 	{
 	*retbFound = true;
 	CString sResult;
-	const TStaticStringEntry<SConstString> *pEntry;
 
 	//	If the entity is a hex number, then this is a character
 
@@ -1383,8 +1350,8 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 
 	//	Else, see if it is a standard entity
 
-	else if (pEntry = STD_ENTITY_TABLE.GetAtCase(sName))
-		return CONSTUSE(pEntry->Value);
+	else if (CHTML::FindStdEntity(sName, &sResult))
+		return sResult;
 
 	//	Otherwise, it is a general attribute
 

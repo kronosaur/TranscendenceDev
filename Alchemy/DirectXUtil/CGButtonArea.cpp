@@ -201,12 +201,12 @@ void CGButtonArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 			if (strEquals(m_sAccelerator, SPECIAL_ACCEL_LEFT_ARROW))
 				{
-				sLabel = CString("ç", 1);
+				sLabel = CSTR_WINGDING_LEFT_ARROW;
 				pLabelFont = &GetScreen()->GetWingdingsFont();
 				}
 			else if (strEquals(m_sAccelerator, SPECIAL_ACCEL_RIGHT_ARROW))
 				{
-				sLabel = CString("è", 1);
+				sLabel = CSTR_WINGDING_RIGHT_ARROW;
 				pLabelFont = &GetScreen()->GetWingdingsFont();
 				}
 			else

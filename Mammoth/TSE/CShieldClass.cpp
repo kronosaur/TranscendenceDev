@@ -1620,9 +1620,9 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 			{
 			int iMultiple10 = mathRound(10.0 * (iPercent + 100.0) / 100.0);
 			if ((iMultiple10 % 10) == 0)
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d× longer recovery"), iMultiple10 / 10));
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%&times; longer recovery"), iMultiple10 / 10));
 			else
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d× longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d%&times; longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
 			}
 		else if (iPercent > 0)
 			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% longer recovery"), iPercent));

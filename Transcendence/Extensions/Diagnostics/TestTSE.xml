@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidTestTSE;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(block (
+					)
+					;	Unit Tests for strPatternSubst
+
+					(diagEval (list
+						{	test:'(tsePattern "Percent %%." 17)					result:"Percent %."	}
+						{	test:'(tsePattern "Int %d." 17)						result:"Int 17."	}
+						{	test:'(tsePattern "Hex %x." 0xf00d)					result:"Hex f00d."	}
+
+						{	test:'(tsePattern "Entity: %&amp;amp;.")			result:"Entity: &amp;."	}
+						)
+
+						{
+						})
+					)
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

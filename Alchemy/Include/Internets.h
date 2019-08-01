@@ -271,6 +271,13 @@ class CBase64Encoder : public IWriteStream
 
 //	Utilities ------------------------------------------------------------------
 
+class CHTML
+	{
+	public:
+		static bool FindStdEntity (const CString &sEntity, CString *retsValue);
+		static CString TranslateStdEntity (const CString &sEntity);
+	};
+
 CString urlCompose (const CString &sProtocol, const CString &sHost, const CString &sPath);
 CString urlDecode (const CString &sURL, DWORD dwFlags = 0);
 CString urlEncode (const CString &sText, DWORD dwFlags = 0);

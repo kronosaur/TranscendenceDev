@@ -5,13 +5,44 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
-const int DAMAGE_TYPE_ICON_WIDTH =			16;
-const int DAMAGE_TYPE_ICON_HEIGHT =			16;
+void CUIResources::CombineNames (const TArray<CString> &Names, const CString &sSeparator, int cxMaxWidth, const CG16bitFont &Font, TArray<CString> &retLines)
 
-const int DAMAGE_ADJ_ICON_SPACING_X =		2;
-const int DAMAGE_ADJ_SPACING_X =			6;
+//	CombineNames
+//
+//	Formats names into an array of lines that fit in max width.
 
-void CUIResources::CreateTitleAnimation (int x, int y, int iDuration, IAnimatron **retpAni)
+	{
+	retLines.DeleteAll();
+	if (Names.GetCount() == 0)
+		return;
+
+	const int cxSeparator = Font.MeasureText(sSeparator);
+	CString sLine;
+
+	sLine = Names[0];
+	int cxLine = Font.MeasureText(sLine);
+
+	for (int i = 1; i < Names.GetCount(); i++)
+		{
+		const int cxName = Font.MeasureText(Names[i]);
+		if (cxLine + cxSeparator + cxName <= cxMaxWidth)
+			{
+			sLine = strPatternSubst(CONSTLIT("%s%s%s"), sLine, sSeparator, Names[i]);
+			cxLine += cxSeparator + cxName;
+			}
+		else
+			{
+			retLines.Insert(sLine);
+			sLine = Names[i];
+			cxLine = cxName;
+			}
+		}
+
+	if (!sLine.IsBlank())
+		retLines.Insert(sLine);
+	}
+
+void CUIResources::CreateTitleAnimation (int x, int y, int iDuration, IAnimatron **retpAni) const
 
 //	CreateTitleAnimation
 //
@@ -33,7 +64,7 @@ void CUIResources::CreateTitleAnimation (int x, int y, int iDuration, IAnimatron
 	*retpAni = pText;
 	}
 
-void CUIResources::CreateLargeCredit (const CString &sCredit, const CString &sName, int x, int y, int iDuration, IAnimatron **retpAni)
+void CUIResources::CreateLargeCredit (const CString &sCredit, const CString &sName, int x, int y, int iDuration, IAnimatron **retpAni) const
 
 //	CreateLargeCredit
 //
@@ -71,14 +102,19 @@ void CUIResources::CreateLargeCredit (const CString &sCredit, const CString &sNa
 	*retpAni = pSeq;
 	}
 
-void CUIResources::CreateMediumCredit (const CString &sCredit, TArray<CString> &Names, int x, int y, int iDuration, IAnimatron **retpAni)
+void CUIResources::CreateMediumCredit (const CString &sCredit, const TArray<CString> &Names, int x, int y, int iDuration, IAnimatron **retpAni) const
 
 //	CreateMediumCredit
 //
 //	Creates a credit animation
 
 	{
-	int i;
+	//	Combine names into lines
+
+	TArray<CString> Lines;
+	CombineNames(Names, strPatternSubst(CONSTLIT(" %&bull; ")), CREDIT_LINE_MAX_WIDTH, m_pFonts->SubTitle, Lines);
+
+	//	Create sequencer
 
 	CAniSequencer *pSeq = new CAniSequencer;
 
@@ -92,26 +128,26 @@ void CUIResources::CreateMediumCredit (const CString &sCredit, TArray<CString> &
 	pCredit->SetPropertyFont(CONSTLIT("font"), &m_pFonts->Header);
 	pCredit->SetFontFlags(CG16bitFont::AlignCenter);
 
-	pCredit->AnimateLinearFade(iDuration * Names.GetCount(), 20, 20);
+	pCredit->AnimateLinearFade(iDuration * Lines.GetCount(), 20, 20);
 
 	pSeq->AddTrack(pCredit, 0);
 
 	//	Each line of names comes and goes
 
 	int iTime = 0;
-	for (i = 0; i < Names.GetCount(); i++)
+	for (int i = 0; i < Lines.GetCount(); i++)
 		{
-		CAniText *pName = new CAniText;
-		pName->SetPropertyVector(CONSTLIT("position"), CVector((Metric)x, (Metric)(y + m_pFonts->SubTitle.GetHeight())));
-		pName->SetPropertyColor(CONSTLIT("color"), m_pFonts->rgbTitleColor);
-		pName->SetPropertyString(CONSTLIT("text"), Names[i]);
+		CAniText *pLine = new CAniText;
+		pLine->SetPropertyVector(CONSTLIT("position"), CVector((Metric)x, (Metric)(y + m_pFonts->SubTitle.GetHeight())));
+		pLine->SetPropertyColor(CONSTLIT("color"), m_pFonts->rgbTitleColor);
+		pLine->SetPropertyString(CONSTLIT("text"), Lines[i]);
 
-		pName->SetPropertyFont(CONSTLIT("font"), &m_pFonts->SubTitle);
-		pName->SetFontFlags(CG16bitFont::AlignCenter);
+		pLine->SetPropertyFont(CONSTLIT("font"), &m_pFonts->SubTitle);
+		pLine->SetFontFlags(CG16bitFont::AlignCenter);
 
-		pName->AnimateLinearFade(iDuration, 20, 20);
+		pLine->AnimateLinearFade(iDuration, 20, 20);
 
-		pSeq->AddTrack(pName, iTime);
+		pSeq->AddTrack(pLine, iTime);
 		iTime += iDuration;
 		}
 

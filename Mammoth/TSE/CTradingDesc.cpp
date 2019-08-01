@@ -342,7 +342,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -363,14 +363,14 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
             sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
         else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d — Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
+            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
         else if (RepairArmor.iMaxLevel != -1)
             sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
         else
             sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -386,7 +386,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -408,7 +408,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
             sText = CONSTLIT("Sells commodities");
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }

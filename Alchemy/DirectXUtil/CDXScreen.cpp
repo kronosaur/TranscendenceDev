@@ -775,7 +775,7 @@ void CDXScreen::SwapBuffers (void)
 		            return;
 		            }
 
-	            //	Create all layer resources`
+	            //	Create all layer resources
 
                 if (!InitLayerResources())
                     {
