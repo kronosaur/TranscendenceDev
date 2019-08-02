@@ -256,7 +256,8 @@
 
 			attributes=			"ares,genericClass"
 			   
-			mass=				"80"
+			size=				"24"
+			mass=				"160"
 			thrustRatio=		"6"
 			maxSpeed=			"20"
 			cargoSpace=			"50"
@@ -270,8 +271,8 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itLightningCannon;"/>
-			<Device deviceID="&itMicronukeCannon;">
+			<Device deviceID="&itLightningCannon;"  posAngle="42" posRadius="28" posZ="0"/>
+			<Device deviceID="&itMicronukeCannon;"	posAngle="-42" posRadius="28" posZ="0">
 				<Items>
 					<Item count="3d20" item="&itMicronuke;"/>
 				</Items>
@@ -290,12 +291,13 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsTundraHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsTundraHD;" imageWidth="76" imageHeight="76" rotationCount="120" rotationColumns="12" viewportRatio="0.005"/>
+		<HeroImage imageID="&rsTundraHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="40"	posRadius="8"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="0"	posRadius="6"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-40"	posRadius="8"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="40"	posRadius="11"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="0"	posRadius="8"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-40"	posRadius="11"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<!-- AI and Behavior -->
@@ -782,4 +784,10 @@
 	<Image UNID="&rsPolarFreighterHD;"			bitmap="Resources\PolarFreighterHD.jpg" bitmask="Resources\PolarFreighterHDMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsPolarFreighterHero;"		bitmap="Resources\PolarFreighterLarge.jpg" bitmask="Resources\PolarFreighterLargeMask.bmp" loadOnUse="true"/>
 
+	<Image UNID="&rsTundraHD;"					bitmap="Resources\TundraHD.jpg" bitmask="Resources\TundraHDMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsTundraHero;"				bitmap="Resources\TundraLarge.jpg" bitmask="Resources\TundraLargeMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
+	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
+	
 </TranscendenceModule>
