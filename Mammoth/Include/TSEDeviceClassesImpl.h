@@ -535,7 +535,8 @@ class CShieldClass : public CDeviceClass
 
 		SEventHandlerDesc m_CachedEvents[evtCount];		//	Cached events
 
-		CEffectCreatorRef m_pHitEffect;			//	Effect when shield is hit
+		CEffectCreatorRef m_pHitEffect;				//	Effect when shield is hit, appearing at hit location
+		CEffectCreatorRef m_pFlashEffect;			//	Effect when shield is hit, appearing on ship
 	};
 
 class CSolarDeviceClass : public CDeviceClass

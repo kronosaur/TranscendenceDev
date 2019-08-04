@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define FLASH_EFFECT_TAG						CONSTLIT("FlashEffect")
 #define HIT_EFFECT_TAG							CONSTLIT("HitEffect")
 
 #define ABSORB_ADJ_ATTRIB						CONSTLIT("absorbAdj")
@@ -12,6 +13,7 @@
 #define DAMAGE_ADJ_ATTRIB						CONSTLIT("damageAdj")
 #define DAMAGE_ADJ_LEVEL_ATTRIB					CONSTLIT("damageAdjLevel")
 #define DEPLETION_DELAY_ATTRIB					CONSTLIT("depletionDelay")
+#define FLASH_EFFECT_ATTRIB						CONSTLIT("flashEffect")
 #define HAS_NON_REGEN_HP_ATTRIB					CONSTLIT("hasNonRegenHP")
 #define HIT_EFFECT_ATTRIB						CONSTLIT("hitEffect")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
@@ -360,6 +362,17 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 				Ctx.iDirection);
 		}
 
+	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
+		&& m_pFlashEffect
+		&& !Ctx.bNoHitEffect)
+	{
+		m_pFlashEffect->CreateEffect(pShip->GetSystem(),
+			NULL,
+			pShip->GetPos(),
+			pShip->GetVel(),
+			Ctx.iDirection);
+	}
+
 	//	Shield takes damage
 
 	if (Ctx.iShieldDamage > 0)
@@ -402,6 +415,13 @@ bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *p
 					pWeapon->GetPos(pSource),
 					pSource->GetVel(),
 					0);
+
+		if (m_pFlashEffect)
+			m_pFlashEffect->CreateEffect(pSource->GetSystem(),
+				pSource,
+				pSource->GetPos(),
+				pSource->GetVel(),
+				0);
 
 		return true;
 		}
@@ -827,6 +847,11 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 			strPatternSubst(CONSTLIT("%d:h"), InitCtx.pType->GetUNID()),
 			pDesc->GetContentElementByTag(HIT_EFFECT_TAG),
 			pDesc->GetAttribute(HIT_EFFECT_ATTRIB)))
+		return error;
+	if (error = pShield->m_pFlashEffect.LoadEffect(Ctx,
+		strPatternSubst(CONSTLIT("%d:h"), InitCtx.pType->GetUNID()),
+		pDesc->GetContentElementByTag(FLASH_EFFECT_TAG),
+		pDesc->GetAttribute(FLASH_EFFECT_ATTRIB)))
 		return error;
 
 	//	Done
@@ -1503,6 +1528,8 @@ void CShieldClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	{
 	retTypesUsed->SetAt(m_pHitEffect.GetUNID(), true);
+	retTypesUsed->SetAt(m_pFlashEffect.GetUNID(), true);
+
 	}
 
 ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -1524,9 +1551,11 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	CItemType *pType = GetItemType();
 	pType->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
-	//	Hit effect
+	//	Hit effects
 
 	if (error = m_pHitEffect.Bind(Ctx))
+		return error;
+	if (error = m_pFlashEffect.Bind(Ctx))
 		return error;
 
 	//	If the hit effect is NULL, then use default
@@ -1544,6 +1573,7 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 //	Find the effect. We start after the shield class UNID.
 //
 //	{unid}:h		Hit effect
+//	{unid}:f		Flash effect
 
 	{
 	//	We start after the shield class UNID
@@ -1558,6 +1588,12 @@ CEffectCreator *CShieldClass::OnFindEffectCreator (const CString &sUNID)
 		{
 		case 'h':
 			return m_pHitEffect;
+
+		case 'f':
+			if (m_pFlashEffect)
+				return m_pFlashEffect;
+			else
+				return NULL;
 
 		default:
 			return NULL;
@@ -1669,6 +1705,8 @@ void CShieldClass::OnMarkImages (void)
 	{
 	if (m_pHitEffect)
 		m_pHitEffect->MarkImages();
+	if (m_pFlashEffect)
+		m_pFlashEffect->MarkImages();
 	}
 
 void CShieldClass::Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus)
