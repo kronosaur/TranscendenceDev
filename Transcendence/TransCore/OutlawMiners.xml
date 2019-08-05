@@ -839,36 +839,58 @@
 			type=				"gunship"
 			defaultSovereign=	"&svOutlawMiners;"
 
-			size=				"21"
-			mass=				"30"
-			cargoSpace=			"10"
-			thrustRatio=		"7"
-			maxSpeed=			"17"
-
 			attributes=			"EI, genericClass, outlawMiners"
+			inherit=			"&baHumanTechShip;"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itUltraLightTitaniumArmor;" areaSet="0,2,3,7" />
-			<ArmorSection start="90"  span="180" armorID="&itUltraLightTitaniumArmor;" areaSet="1,4" />
-		</Armor>
+		<!-- Hull -->
 
-		<Devices>
-			<Device deviceID="&itRecoillessCannon;"/>
-			<Device deviceID="&itAClassDefenseScreen;"/>
-		</Devices>
+		<Hull
+			size=				"20"
+			mass=				"30"
+			cargoSpace=			"10"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"17"
+			thrust=				"250"
+			/>
 
 		<Maneuver
 			maxRotationRate=	"18.0"
 			rotationAccel=		"2.0"
 			/>
 
-		<Image imageID="&rsHammerheadHD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itUltraLightTitaniumArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itRecoillessCannon;"		posAngle="0" posRadius="16" posZ="0"/>
+			<Device deviceID="&itAClassDefenseScreen;"/>
+		</Devices>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsHammerheadHD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.003125"/>
+		<HeroImage imageID="&rsHammerheadHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="180"	posRadius="10"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="180"	posRadius="23"	posZ="0"	rotation="180"/>
 		</Effects>
 		
+		<!-- AI and Behavior -->
+
 		<AISettings
 			fireRateAdj=		"50"
 			fireRangeAdj=		"50"
@@ -888,41 +910,71 @@
 			type=				"gunship"
 			defaultSovereign=	"&svOutlawMiners;"
 
-			size=				"21"
-			mass=				"30"
+			size=				"20"
+			mass=				"45"
 			cargoSpace=			"10"
 			thrustRatio=		"10"
 			maxSpeed=			"16"
 
 			attributes=			"EI, genericClass, outlawMiners"
+			inherit=			"&baHumanTechShip;"
 			>
 
-		<Armor>
-			<ArmorSection start="270" span="180" armorID="&itLightTitaniumArmor;" areaSet="0,2,3,7" />
-			<ArmorSection start="90"  span="180" armorID="&itLightTitaniumArmor;" areaSet="1,4" />
-		</Armor>
+		<!-- Hull -->
 
-		<Devices>
-			<Device deviceID="&itDualRecoillessCannon;"/>
-			<Device deviceID="&itClass1Deflector;"/>
-		</Devices>
+		<Hull
+			size=				"20"
+			mass=				"45"
+			cargoSpace=			"10"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"50"
+			maxDevices=			"6"
+
+			maxArmor=			"heavy"
+			stdArmor=			"light"
+			/>
+
+		<Drive
+			maxSpeed=			"18"
+			thrust=				"500"
+			/>
 
 		<Maneuver
 			maxRotationRate=	"18.0"
 			rotationAccel=		"2.0"
 			/>
 
+		<!-- Configuration -->
+
+		<Armor
+			armorID=			"&itLightTitaniumArmor;"
+			count=				"2"
+			/>
+		
+		<Devices>
+			<Device deviceID="&itDualRecoillessCannon;"		posAngle="0" posRadius="16" posZ="0"/>
+			<Device deviceID="&itClass1Deflector;"/>
+		</Devices>
+
+		<!-- Treasure -->
+
 		<Items>
 			<Item count="4d6" item="&itHelium3FuelRod;"/>
 		</Items>
 
-		<Image imageID="&rsHammerhead2HD;" imageX="0" imageY="0" imageWidth="32" imageHeight="32" rotationCount="120" rotationColumns="12" />
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsHammerhead2HD;" imageWidth="50" imageHeight="50" rotationCount="120" rotationColumns="12" viewportRatio="0.003125"/>
+		<HeroImage imageID="&rsHammerhead2Hero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="167"	posRadius="15"	posZ="3"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-167"	posRadius="15"	posZ="3"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="167"	posRadius="24"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-167"	posRadius="24"	posZ="0"	rotation="180"/>
 		</Effects>
 		
+		<!-- AI and Behavior -->
+
 		<AISettings
 			fireRateAdj=		"30"
 			fireRangeAdj=		"50"
@@ -1238,14 +1290,18 @@
 	
 <!-- RESOURCES -->
 
-	<Image UNID="&rsBorer;"					bitmap="Resources\Borer.jpg" bitmask="Resources\BorerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsOutlawMineIce;"			bitmap="Resources\OutlawMineIce.jpg" bitmask="Resources\OutlawMineIceMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsOutlawMineMetallic;"	bitmap="Resources\OutlawMineMetallic.jpg" bitmask="Resources\OutlawMineMetallicMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsOutlawMinePrimordial;"	bitmap="Resources\OutlawMinePrimordial.jpg" bitmask="Resources\OutlawMinePrimordialMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsOutlawMineRocky;"		bitmap="Resources\OutlawMineRocky.jpg" bitmask="Resources\OutlawMineRockyMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsOutlawMineVolcanic;"	bitmap="Resources\OutlawMineVolcanic.jpg" bitmask="Resources\OutlawMineVolcanicMask.bmp" loadOnUse="true"/>
-	<Image UNID="&rsBorerHD;"				bitmap="Resources\BorerHD.jpg" bitmask="Resources\BorerHDMask.bmp" loadOnUse="true"/>
+
 	<Image UNID="&rsHammerheadHD;"			bitmap="Resources\HammerheadHD.jpg" bitmask="Resources\HammerheadHDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHammerheadHero;"		bitmap="Resources\HammerheadLarge.jpg"			bitmask="Resources\HammerheadLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsHammerhead2HD;"			bitmap="Resources\Hammerhead2HD.jpg" bitmask="Resources\Hammerhead2HDMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsHammerhead2Hero;"		bitmap="Resources\Hammerhead2Large.jpg"			bitmask="Resources\Hammerhead2LargeMask.bmp"  loadOnUse="true"/>
+
+	<Image UNID="&rsBorerHD;"				bitmap="Resources\BorerHD.jpg" bitmask="Resources\BorerHDMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

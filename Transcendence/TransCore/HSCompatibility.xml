@@ -4835,5 +4835,7 @@
 	<Image UNID="&rsIocrymCommandShip;"	obsoleteVersion="45" bitmap="Resources\IocrymCommandShip.jpg" bitmask="Resources\IocrymCommandShipMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsHurin;"				obsoleteVersion="45"		bitmap="Resources\Hurin.jpg"		bitmask="Resources\HurinMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSteelSlaverHD;"		obsoleteVersion="46" bitmap="Resources\SteelSlaverHD.jpg"	bitmask="Resources\SteelSlaverHDMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsZulu;"				obsoleteVersion="46"				bitmap="Resources\Zulu.jpg"				bitmask="Resources\ZuluMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsBorer;"				obsoleteVersion="46"			bitmap="Resources\Borer.jpg" bitmask="Resources\BorerMask.bmp" loadOnUse="true"/>
 
 </TranscendenceModule>

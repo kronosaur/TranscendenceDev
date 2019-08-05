@@ -2011,6 +2011,10 @@
 	<!ENTITY rsOutlawCamp				"0x00100335">
 	<!ENTITY rsOutlawBase				"0x00100336">
 	<!ENTITY rsOutlawHaven				"0x00100337">
+	<!ENTITY rsZuluHero					"0x00100338">
+	<!ENTITY rsZulu2Hero				"0x00100339">
+	<!ENTITY rsHammerheadHero			"0x0010033A">
+	<!ENTITY rsHammerhead2Hero			"0x0010033B">
 
 	<!-- 0370-038F AUTONS -->
 
