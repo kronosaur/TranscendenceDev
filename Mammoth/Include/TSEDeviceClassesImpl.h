@@ -461,6 +461,7 @@ class CShieldClass : public CDeviceClass
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
+		virtual void PaintHitEffect(CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &DamageCtx, bool FlashEffect = false);
 		virtual void Recharge (CInstalledDevice *pDevice, CShip *pShip, int iStatus) override;
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;

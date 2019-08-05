@@ -355,22 +355,14 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 			&& m_pHitEffect
 			&& !Ctx.bNoHitEffect)
 		{
-		m_pHitEffect->CreateEffect(pShip->GetSystem(),
-				NULL,
-				Ctx.vHitPos,
-				pShip->GetVel(),
-				Ctx.iDirection);
+		PaintHitEffect(pDevice, pShip, Ctx);
 		}
 
 	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
 		&& m_pFlashEffect
 		&& !Ctx.bNoHitEffect)
 	{
-		m_pFlashEffect->CreateEffect(pShip->GetSystem(),
-			NULL,
-			pShip->GetPos(),
-			pShip->GetVel(),
-			Ctx.iDirection);
+		PaintHitEffect(pDevice, pShip, Ctx, true);
 	}
 
 	//	Shield takes damage
@@ -391,6 +383,35 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	return (Ctx.iDamage == 0);
 
 	DEBUG_CATCH
+	}
+
+void CShieldClass::PaintHitEffect(CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &DamageCtx, bool FlashEffect)
+	{
+	//	Create the hit effect painter.
+	CSystem *pSystem = (pShip->GetSystem());
+
+	CCreatePainterCtx Ctx;
+	Ctx.SetDamageCtx(DamageCtx);
+
+	IEffectPainter *pPainter = FlashEffect ? m_pFlashEffect.CreatePainter(Ctx) : m_pHitEffect.CreatePainter(Ctx);
+	if (pPainter == NULL)
+	return;
+
+	//	Now create the effect
+
+	CEffect::SCreateOptions Options;
+	Options.pAnchor = ((DamageCtx.pObj && !DamageCtx.pObj->IsDestroyed()) ? DamageCtx.pObj : NULL);
+	Options.iRotation = DamageCtx.iDirection;
+
+	if (CEffect::Create(*pSystem,
+		pPainter,
+		FlashEffect ? DamageCtx.pObj->GetPos() : DamageCtx.vHitPos,
+		(DamageCtx.pObj ? DamageCtx.pObj->GetVel() : CVector()),
+		Options) != NOERROR)
+		{
+		delete pPainter;
+		return;
+		}
 	}
 
 bool CShieldClass::AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon)
