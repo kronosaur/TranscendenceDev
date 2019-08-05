@@ -28,6 +28,7 @@
 #define REGEN_ADJ_PER_CHARGE_ATTRIB				CONSTLIT("regenHPBonusPerCharge")
 #define REGEN_TIME_ATTRIB						CONSTLIT("regenTime")
 #define REGEN_TYPE_ATTRIB						CONSTLIT("regenType")
+#define TIME_BETWEEN_FLASH_EFFECTS_ATTRIB		CONSTLIT("timeBetweenFlashEffects")
 #define WEAPON_SUPPRESS_ATTRIB					CONSTLIT("weaponSuppress")
 
 #define GET_MAX_HP_EVENT						CONSTLIT("GetMaxHP")
@@ -360,9 +361,11 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	if ((Ctx.iAbsorb || Ctx.IsShotReflected())
 		&& m_pFlashEffect
-		&& !Ctx.bNoHitEffect)
+		&& !Ctx.bNoHitEffect
+		&& pDevice->IsReady())
 	{
 		PaintHitEffect(pDevice, pShip, Ctx, true);
+		pDevice->SetTimeUntilReady(m_iTimeBetweenFlashEffects);
 	}
 
 	//	Shield takes damage
@@ -874,6 +877,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 		pDesc->GetContentElementByTag(FLASH_EFFECT_TAG),
 		pDesc->GetAttribute(FLASH_EFFECT_ATTRIB)))
 		return error;
+	pShield->m_iTimeBetweenFlashEffects = pDesc->GetAttributeInteger(TIME_BETWEEN_FLASH_EFFECTS_ATTRIB);
 
 	//	Done
 
