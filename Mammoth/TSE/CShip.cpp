@@ -3858,6 +3858,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	ItemList.Refresh(NewArmor);
 
 	pSect->Install(*this, ItemList, iSect);
+	NewArmor = ItemList.GetItemAtCursor();
 
 	//	The item is now known and referenced.
 

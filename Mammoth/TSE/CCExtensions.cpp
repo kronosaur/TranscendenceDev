@@ -1236,11 +1236,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpInstallArmor",				fnShipSet,			FN_SHIP_INSTALL_ARMOR,
-			"(shpInstallArmor ship item armorSegment) -> True/Nil",
+			"(shpInstallArmor ship item armorSegment) -> itemStruct (or Nil)",
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot])",
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
@@ -10108,7 +10108,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Install
 
 			pShip->InstallItemAsArmor(ItemList, iSegment);
-			return pCC->CreateTrue();
+			return CreateListFromItem(ItemList.GetItemAtCursor());
 			}
 
 		case FN_SHIP_INSTALL_DEVICE:
