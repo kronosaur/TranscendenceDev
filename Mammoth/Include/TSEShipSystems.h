@@ -63,16 +63,16 @@ class CArmorSystem
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
 		int CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP = NULL) const;
-        inline int GetHealerLeft (void) const { return m_iHealerLeft; }
-		inline CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
-		inline int GetSegmentCount (void) const { return m_Segments.GetCount(); }
-        inline int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
+        int GetHealerLeft (void) const { return m_iHealerLeft; }
+		CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
+		int GetSegmentCount (void) const { return m_Segments.GetCount(); }
+        int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
         void Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate = false);
 		bool IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDamage) const;
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject &Source);
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
-        inline void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
+        void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
 		void SetTotalHitPoints (CSpaceObject *pSource, int iNewHP);
 		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
         void WriteToStream (IWriteStream *pStream);
@@ -105,12 +105,12 @@ class CDeviceSystem
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
 		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
-		inline int GetCount (void) const { return m_Devices.GetCount(); }
+		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
-		inline CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
-		inline const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
-		inline CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
-		inline int GetNamedIndex (DeviceNames iDev) const { return m_NamedDevices[iDev]; }
+		CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
+		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		int GetNamedIndex (DeviceNames iDev) const { return m_NamedDevices[iDev]; }
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
@@ -183,14 +183,14 @@ class CShipInteriorDesc
 		void CalcCompartmentPositions (int iScale, TArray<CVector> &Result) const;
 		int CalcImageSize (CShipClass *pClass, CVector *retvOrigin = NULL) const;
 		void DebugPaint (CG32bitImage &Dest, int x, int y, int iRotation, int iScale) const;
-		inline int GetCount (void) const { return m_Compartments.GetCount(); }
-		inline const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
+		int GetCount (void) const { return m_Compartments.GetCount(); }
+		const SCompartmentDesc &GetCompartment (int iIndex) const { return m_Compartments[iIndex]; }
 		int GetHitPoints (void) const;
 		const TArray<int> &GetPaintOrder (void) const { return m_PaintOrder; }
-		inline bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
+		bool HasAttached (void) const { return (m_fHasAttached ? true : false); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
-		inline bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
+		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		bool IsMultiHull (void) const { return (m_fIsMultiHull ? true : false); }
 
 		static ECompartmentTypes ParseCompartmentType (const CString &sValue);
 
@@ -210,17 +210,17 @@ class CShipInterior
 		void CreateAttached (CShip *pShip, const CShipInteriorDesc &Desc);
 		EDamageResults Damage (CShip *pShip, const CShipInteriorDesc &Desc, SDamageCtx &Ctx);
 		bool FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const;
-		inline CSpaceObject *GetAttached (int iIndex) const { return m_Compartments[iIndex].pAttached; }
-		inline int GetCount (void) const { return m_Compartments.GetCount(); }
+		CSpaceObject *GetAttached (int iIndex) const { return m_Compartments[iIndex].pAttached; }
+		int GetCount (void) const { return m_Compartments.GetCount(); }
 		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
-		inline bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
+		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
 		void OnDestroyed (CShip *pShip, const SDestroyCtx &Ctx);
 		void OnNewSystem (CSystem *pSystem, CShip *pShip, const CShipInteriorDesc &Desc);
 		void OnPlace (CShip *pShip, const CVector &vOldPos);
 		void ReadFromStream (CShip *pShip, const CShipInteriorDesc &Desc, SLoadCtx &Ctx);
 		bool RepairHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iRepairHP);
-		inline void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
+		void SetAttached (int iIndex, CSpaceObject *pAttached) { m_Compartments[iIndex].pAttached = pAttached; }
 		void SetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int iHP);
 		void WriteToStream (CShip *pShip, IWriteStream *pStream);
 
@@ -317,10 +317,10 @@ class CRotationDesc
         void Add (const CRotationDesc &Src);
         bool AdjForShipMass (Metric rHullMass, Metric rItemMass);
 		ALERROR Bind (SDesignLoadCtx &Ctx, CObjectImageArray &Image);
-		inline int GetFrameCount (void) const { return m_iCount; }
-        inline Metric GetMaxRotationPerTick (void) const { return m_rDegreesPerTick; }
-        inline Metric GetRotationAccelPerTick (void) const { return m_rAccelPerTick; }
-        inline Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
+		int GetFrameCount (void) const { return m_iCount; }
+        Metric GetMaxRotationPerTick (void) const { return m_rDegreesPerTick; }
+        Metric GetRotationAccelPerTick (void) const { return m_rAccelPerTick; }
+        Metric GetRotationAccelStopPerTick (void) const { return m_rAccelPerTickStop; }
 		ALERROR InitFromManeuverXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, Metric rDefaultDegreesPerTick = 0.01);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void Interpolate (const CRotationDesc &From, const CRotationDesc &To, Metric rInterpolate = 0.5);
@@ -349,21 +349,21 @@ class CIntegralRotationDesc
 			};
 
         CIntegralRotationDesc (void);
-        inline explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }
+        explicit CIntegralRotationDesc (const CRotationDesc &Desc) { InitFromDesc(Desc); }
 
-        inline int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
+        int AlignToRotationAngle (int iAngle) const { return GetRotationAngle(GetFrameIndex(iAngle)); }
 		int CalcFinalRotationFrame (int iRotationFrame, int iRotationSpeed) const;
-		inline int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
-		inline int GetFrameCount (void) const { return m_iCount; }
-		inline int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
+		int GetFrameAngle (void) const { return (m_iCount > 0 ? mathRound(360.0 / m_iCount) : 0); }
+		int GetFrameCount (void) const { return m_iCount; }
+		int GetFrameIndex (int iAngle) const { return (m_iCount > 0 ? (m_FacingsData[m_iCount].AngleToFrameIndex[AngleMod(iAngle)]) : 0); }
 		int GetManeuverDelay (void) const;
-		inline Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
-		inline int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
+		Metric GetManeuverRatio (void) const { return (Metric)m_iMaxRotationRate / ROTATION_FRACTION; }
+		int GetMaxRotationSpeed (void) const { return m_iMaxRotationRate; }
 		Metric GetMaxRotationSpeedDegrees (void) const;
-		inline int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
-		inline int GetRotationAccel (void) const { return m_iRotationAccel; }
-		inline int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
-		inline int GetRotationAngle (int iIndex) const { return (m_iCount > 0 ? m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount] : 0); }
+		int GetMaxRotationTimeTicks (void) const { Metric rSpeed = GetMaxRotationSpeedDegrees(); return (rSpeed > 0.0 ? (int)(360.0 / rSpeed) : 0); }
+		int GetRotationAccel (void) const { return m_iRotationAccel; }
+		int GetRotationAccelStop (void) const { return m_iRotationAccelStop; }
+		int GetRotationAngle (int iIndex) const { return (m_iCount > 0 ? m_FacingsData[m_iCount].FrameIndexToAngle[iIndex % m_iCount] : 0); }
         void InitFromDesc (const CRotationDesc &Desc);
 		void Init (int iFrameCount, Metric rMaxRotation = 360.0, Metric rAccel = 1.0, Metric rAccelStop = 1.0);
 
@@ -402,14 +402,14 @@ class CIntegralRotation
 
 		~CIntegralRotation (void);
 
-		inline int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
-		inline int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
-		inline EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
+		int CalcFinalRotationFrame (const CIntegralRotationDesc &Desc) const { return Desc.CalcFinalRotationFrame(m_iRotationFrame, m_iRotationSpeed); }
+		int GetFrameIndex (void) const { return GetFrameIndex(m_iRotationFrame); }
+		EManeuverTypes GetLastManeuver (void) const { return m_iLastManeuver; }
 		EManeuverTypes GetManeuverToFace (const CIntegralRotationDesc &Desc, int iAngle) const;
 		int GetRotationAngle (const CIntegralRotationDesc &Desc) const;
 		Metric GetRotationSpeedDegrees (const CIntegralRotationDesc &Desc) const;
 		void Init (const CIntegralRotationDesc &Desc, int iRotationAngle = -1);
-		inline bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
+		bool IsPointingTo (const CIntegralRotationDesc &Desc, int iAngle) const { return (GetManeuverToFace(Desc, iAngle) == NoRotation); }
 		void ReadFromStream (SLoadCtx &Ctx, const CIntegralRotationDesc &Desc);
 		void SetRotationAngle (const CIntegralRotationDesc &Desc, int iAngle);
 		void SetRotationSpeedDegrees (const CIntegralRotationDesc &Desc, Metric rDegreesPerTick);
@@ -417,7 +417,7 @@ class CIntegralRotation
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		inline int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
+		int GetFrameIndex (int iFrame) const { return (iFrame / CIntegralRotationDesc::ROTATION_FRACTION); }
 
 		int m_iRotationFrame;				//	Current rotation (in 1/1000ths of a rotation)
 		int m_iRotationSpeed;				//	Current rotation speed (+ clockwise; - counterclockwise; in 1/1000ths)
@@ -434,11 +434,11 @@ class CCargoDesc
                 m_iCargoSpace(iCargoSpace)
             { }
 
-        inline int GetCargoSpace (void) const { return m_iCargoSpace; }
+        int GetCargoSpace (void) const { return m_iCargoSpace; }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void Interpolate (const CCargoDesc &From, const CCargoDesc &To, Metric rInterpolate = 0.5);
-        inline bool IsEmpty (void) const { return m_bUninitialized; }
-        inline void SetCargoSpace (int iCargoSpace) { m_iCargoSpace = iCargoSpace; m_bUninitialized = false; }
+        bool IsEmpty (void) const { return m_bUninitialized; }
+        void SetCargoSpace (int iCargoSpace) { m_iCargoSpace = iCargoSpace; m_bUninitialized = false; }
 		void ValidateCargoSpace (int iMaxCargoSpace);
 
     private:
@@ -459,24 +459,24 @@ class CDriveDesc
 		Metric AdjMaxSpeed (Metric rAdj);
         int AdjPowerUse (Metric rAdj);
         int AdjThrust (Metric rAdj);
-		inline Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
-		inline int GetMaxSpeedFrac (void) const { return (m_iMaxSpeedLimit != -1 ? m_iMaxSpeedLimit : mathRound(100.0 * m_rMaxSpeed / LIGHT_SPEED)); }
-		inline int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
-		inline int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
-        inline int GetPowerUse (void) const { return m_iPowerUse; }
-        inline int GetThrust (void) const { return m_iThrust; }
-        inline int GetThrustProperty (void) const { return 2 * m_iThrust; }
-        inline DWORD GetUNID (void) const { return m_dwUNID; }
+		Metric GetMaxSpeed (void) const { return m_rMaxSpeed; }
+		int GetMaxSpeedFrac (void) const { return (m_iMaxSpeedLimit != -1 ? m_iMaxSpeedLimit : mathRound(100.0 * m_rMaxSpeed / LIGHT_SPEED)); }
+		int GetMaxSpeedInc (void) const { return m_iMaxSpeedInc; }
+		int GetMaxSpeedLimit (void) const { return m_iMaxSpeedLimit; }
+        int GetPowerUse (void) const { return m_iPowerUse; }
+        int GetThrust (void) const { return m_iThrust; }
+        int GetThrustProperty (void) const { return 2 * m_iThrust; }
+        DWORD GetUNID (void) const { return m_dwUNID; }
         ALERROR InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, Metric *retrThrustRatio, int *retiMaxSpeed);
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID);
 		void InitThrustFromXML (SDesignLoadCtx &Ctx, const CString &sValue);
         void Interpolate (const CDriveDesc &From, const CDriveDesc &To, Metric rInterpolate = 0.5);
-        inline bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
-        inline void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }
-        inline void SetMaxSpeed (Metric rSpeed) { m_rMaxSpeed = rSpeed; }
-        inline void SetPowerUse (int iPowerUse) { m_iPowerUse = iPowerUse; }
-        inline void SetThrust (int iThrust) { m_iThrust = iThrust; }
-        inline void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
+        bool IsInertialess (void) const { return (m_fInertialess ? true : false); }
+        void SetInertialess (bool bValue = true) { m_fInertialess = bValue; }
+        void SetMaxSpeed (Metric rSpeed) { m_rMaxSpeed = rSpeed; }
+        void SetPowerUse (int iPowerUse) { m_iPowerUse = iPowerUse; }
+        void SetThrust (int iThrust) { m_iThrust = iThrust; }
+        void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 
 		static int CalcThrust (Metric rThrustRatio, Metric rMassInTons);
 		static Metric CalcThrustRatio (int iThrust, Metric rMassInTons);
@@ -536,25 +536,25 @@ class CReactorDesc
 	    CReactorDesc (void);
         CReactorDesc (const CReactorDesc &Src) { Copy(Src); }
 
-	    inline ~CReactorDesc (void) { CleanUp(); }
-        inline CReactorDesc &operator= (const CReactorDesc &Src) { CleanUp(); Copy(Src); return *this; }
+	    ~CReactorDesc (void) { CleanUp(); }
+        CReactorDesc &operator= (const CReactorDesc &Src) { CleanUp(); Copy(Src); return *this; }
 
         int AdjMaxPower (Metric rAdj);
         Metric AdjEfficiency (Metric rAdj);
         bool FindDataField (const CString &sField, CString *retsValue) const;
         ICCItem *FindProperty (const CString &sProperty) const;
-        inline Metric GetEfficiency (void) const { return m_rPowerPerFuelUnit; }
+        Metric GetEfficiency (void) const { return m_rPowerPerFuelUnit; }
         int GetEfficiencyBonus (void) const;
-        inline Metric GetFuelCapacity (void) const { return m_rMaxFuel; }
+        Metric GetFuelCapacity (void) const { return m_rMaxFuel; }
         CString GetFuelCriteriaString (void) const;
         void GetFuelLevel (int *retiMin, int *retiMax) const;
-        inline int GetMaxPower (void) const { return m_iMaxPower; }
+        int GetMaxPower (void) const { return m_iMaxPower; }
         ALERROR InitFromShipClassXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID);
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, DWORD dwUNID, bool bShipClass = false);
         ALERROR InitScaled (SDesignLoadCtx &Ctx, const CReactorDesc &Src, int iBaseLevel, int iScaledLevel);
         bool IsFuelCompatible (const CItem &FuelItem) const;
-		inline void SetMaxPower (int iPower) { m_iMaxPower = iPower; }
-		inline bool UsesFuel (void) const { return (m_fNoFuel ? false : true); }
+		void SetMaxPower (int iPower) { m_iMaxPower = iPower; }
+		bool UsesFuel (void) const { return (m_fNoFuel ? false : true); }
 
         static const SStdStats &GetStdStats (int iLevel);
 		static bool IsExportedProperty (const CString &sProperty);
@@ -601,20 +601,20 @@ class CPowerConsumption
 			{ }
 
 		Metric ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse);
-		inline Metric GetFuelLeft (void) const { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
-		inline int GetGraceTimer (void) const { return m_iReactorGraceTimer; }
-		inline int GetPowerConsumed (void) const { return m_iPowerDrain; }
-		inline int GetPowerGenerated (void) const { return m_iPowerGenerated; }
-		inline int GetPowerNeeded (void) { return Max(0, (m_iPowerDrain - m_iPowerGenerated)); }
-		inline bool IsOutOfFuel (void) const { return m_fOutOfFuel; }
-		inline bool IsOutOfPower (void) const { return m_fOutOfPower; }
+		Metric GetFuelLeft (void) const { return (m_fOutOfFuel ? 0.0 : m_rFuelLeft); }
+		int GetGraceTimer (void) const { return m_iReactorGraceTimer; }
+		int GetPowerConsumed (void) const { return m_iPowerDrain; }
+		int GetPowerGenerated (void) const { return m_iPowerGenerated; }
+		int GetPowerNeeded (void) { return Max(0, (m_iPowerDrain - m_iPowerGenerated)); }
+		bool IsOutOfFuel (void) const { return m_fOutOfFuel; }
+		bool IsOutOfPower (void) const { return m_fOutOfPower; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void Refuel (Metric rFuel, Metric rMaxFuel);
 		void SetFuelLeft (Metric rFuel);
-		inline void SetGraceTimer (int iTime) { m_iReactorGraceTimer = iTime; }
+		void SetGraceTimer (int iTime) { m_iReactorGraceTimer = iTime; }
 		void SetMaxFuel (Metric rMaxFuel);
-		inline void SetOutOfFuel (bool bValue = true) { m_fOutOfFuel = bValue; }
-		inline void SetOutOfPower (bool bValue = true) { m_fOutOfPower = bValue; }
+		void SetOutOfFuel (bool bValue = true) { m_fOutOfFuel = bValue; }
+		void SetOutOfPower (bool bValue = true) { m_fOutOfPower = bValue; }
 		bool UpdateGraceTimer (void);
 		void UpdatePowerUse (int iPowerDrained, int iPowerGenerated, Metric rEfficiency, Metric *retrFuelConsumed = NULL);
 		void WriteToStream (CSpaceObject *pObj, IWriteStream &Stream) const;
@@ -670,25 +670,25 @@ class CShipPerformanceDesc
 				m_fShieldInterference(false)
 			{ }
 
-		inline const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
-        inline const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
-        inline const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
-        inline const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_IntegralRotationDesc; }
-        inline const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
-        inline const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
-		inline bool HasShieldInterference (void) const { return (m_fShieldInterference ? true : false); }
+		const CAbilitySet &GetAbilities (void) const { return m_Abilities; }
+        const CCargoDesc &GetCargoDesc (void) const { return m_CargoDesc; }
+        const CDriveDesc &GetDriveDesc (void) const { return m_DriveDesc; }
+        const CIntegralRotationDesc &GetIntegralRotationDesc (void) const { return m_IntegralRotationDesc; }
+        const CReactorDesc &GetReactorDesc (void) const { return m_ReactorDesc; }
+        const CRotationDesc &GetRotationDesc (void) const { return m_RotationDesc; }
+		bool HasShieldInterference (void) const { return (m_fShieldInterference ? true : false); }
         void Init (SShipPerformanceCtx &Ctx);
-		inline bool IsEmpty (void) const { return (m_fInitialized ? false : true); }
+		bool IsEmpty (void) const { return (m_fInitialized ? false : true); }
 
         //  Read-Write versions of accessors
 
-		inline CAbilitySet &GetAbilities (void) { return m_Abilities; }
-        inline CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
-        inline CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
-        inline CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
-        inline CIntegralRotationDesc &GetIntegralRotationDesc (void) { return m_IntegralRotationDesc; }
+		CAbilitySet &GetAbilities (void) { return m_Abilities; }
+        CCargoDesc &GetCargoDesc (void) { return m_CargoDesc; }
+        CDriveDesc &GetDriveDesc (void) { return m_DriveDesc; }
+        CReactorDesc &GetReactorDesc (void) { return m_ReactorDesc; }
+        CIntegralRotationDesc &GetIntegralRotationDesc (void) { return m_IntegralRotationDesc; }
 
-		inline static const CShipPerformanceDesc &Null (void) { return m_Null; }
+		static const CShipPerformanceDesc &Null (void) { return m_Null; }
 
     private:
 		CRotationDesc m_RotationDesc;
