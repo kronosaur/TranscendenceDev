@@ -12,6 +12,7 @@ static TStaticStringTable<TStaticStringEntry<CConditionSet::ETypes>, CConditionS
 	"lrsBlind",				CConditionSet::cndLRSBlind,
 	"paralyzed",			CConditionSet::cndParalyzed,
 	"radioactive",			CConditionSet::cndRadioactive,
+	"shieldBlocked",		CConditionSet::cndShieldBlocked,
 	"shipScreenDisabled",	CConditionSet::cndShipScreenDisabled,
 	"spinning",				CConditionSet::cndSpinning,
 	"timeStopped",			CConditionSet::cndTimeStopped,

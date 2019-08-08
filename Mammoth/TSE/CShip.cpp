@@ -4999,6 +4999,9 @@ bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
 		case CConditionSet::cndRadioactive:
 			return (m_fRadioactive ? true : false);
 
+		case CConditionSet::cndShieldBlocked:
+			return m_Perf.HasShieldInterference();
+
 		default:
 			return false;
 		}

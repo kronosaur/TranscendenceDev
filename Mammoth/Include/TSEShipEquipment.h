@@ -23,8 +23,9 @@ class CConditionSet
 			cndTimeStopped =		0x00000040,		//	Time-stopped
 			cndShipScreenDisabled =	0x00000080,		//	Source cannot bring up ship screen
 			cndLRSBlind =			0x00000100,		//	LRS-blind
+			cndShieldBlocked =		0x00000200,		//	Shields disabled
 
-			cndCount =				9,
+			cndCount =				10,
 			};
 
 		enum EModifications

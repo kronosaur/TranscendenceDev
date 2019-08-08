@@ -631,6 +631,13 @@ class CPowerConsumption
 	};
 
 //  CShipPerformanceDesc ------------------------------------------------------
+//
+//	NOTE: The CShipPerformanceDesc class is meant as a cache of current ship
+//	performance/capabilities based on other ship state (such as devices, 
+//	enhancements, overlays, etc.).
+//
+//	It is NOT meant to keep persistent state such as radiation, EMP, etc.
+//	Although we might eventually want to cache that info here.
 
 struct SShipPerformanceCtx
     {

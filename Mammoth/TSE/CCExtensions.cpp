@@ -1648,6 +1648,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"
+			"   'shieldBlocked\n"
 			"   'spinning\n"
 			"   'timeStopped",
 
