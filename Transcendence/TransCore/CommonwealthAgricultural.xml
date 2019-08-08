@@ -293,7 +293,7 @@
 							(msnSetData gSource 'nextWave 0)
 
 							; Register for events
-							(msnRegisterForEvents aOwnerObj)
+							(msnRegisterForEvents gSource aOwnerObj)
 
 							; Set the reward
 							(msnSetData gSource 'reward (@ attackDesc 'reward))

@@ -139,6 +139,7 @@
 				(msnTranslate gSource 'descSummary {
 					targetName: (objGetName (objGetObjByID (msnGetData gSource 'targetID)) 'article)
 					systemName: (sysGetName)
+					reward: (fmtCurrency 'credit (msnGetData gSource 'reward))
 					})
 			</Text>
 			<Text id="Intro">
