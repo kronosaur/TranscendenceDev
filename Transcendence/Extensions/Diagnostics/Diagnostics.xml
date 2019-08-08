@@ -96,6 +96,7 @@
 
 					(diagTestAutonBay)
 					(diagTestDeviceSlots)
+					(diagTestMeteorsteel)
 					)
 			</OnGlobalStartDiagnostics>
 
@@ -217,6 +218,44 @@
 
 					(lambda () 
 						(diagInstallItem gPlayerShip (itmCreate &itTestDriveDualSlot; 1))
+						)
+
+					;	Done with the player ship
+
+					(lambda () 
+						(block ()
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+							)
+						)
+					))
+				)
+			))
+
+		(setq diagTestMeteorsteel (lambda ()
+			(block ()
+				(diagRun (list
+
+					;	Create ship
+
+					(lambda () (diagCreatePlayerShip))
+
+					;	Install meteorsteel armor
+
+					(lambda () 
+						(diagInstallItem gPlayerShip (itmCreate &itLightMeteorsteel; 1))
+						)
+
+					;	See if shields are disabled
+
+					(lambda ()
+						(block (
+							(shieldItem (@ (objGetItems gPlayerShip "sI") 0))
+							)
+							(if (not (objGetCondition gPlayerShip 'shieldBlocked))
+								(error "Shield not disabled by meteorsteel")
+								)
+							)
 						)
 
 					;	Done with the player ship
@@ -371,11 +410,21 @@
 						(error (cat "Cannot install: " (@ result 1)))
 
 					(@ result 0)
-						(block (installedItem)
+						(block (
+							(itemCat (itmGetProperty theItem 'category))
+							installedItem
+							)
 							(objAddItem theShip theItem)
-							(setq installedItem (shpInstallDevice theShip theItem))
+
+							(switch
+								(= itemCat 'armor)
+									(setq installedItem (shpInstallArmor theShip theItem (or (@ options 'armorSeg) 0)))
+
+								(setq installedItem (shpInstallDevice theShip theItem))
+								)
+
 							(if (not (itmGetProperty installedItem 'installed))
-								(error "Installation failed.")
+								(error (cat "Installation failed: " (itmGetName installedItem 0) "."))
 								)
 							)
 					)
