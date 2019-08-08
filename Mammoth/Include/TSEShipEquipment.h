@@ -35,16 +35,16 @@ class CConditionSet
 			cndRemoved =				1,
 			};
 
-		inline void Clear (ETypes iCondition) { m_dwSet &= ~iCondition; }
-		inline void ClearAll (void) { m_dwSet = 0; }
+		void Clear (ETypes iCondition) { m_dwSet &= ~iCondition; }
+		void ClearAll (void) { m_dwSet = 0; }
 		bool Diff (const CConditionSet &OldSet, TArray<ETypes> &Added, TArray<ETypes> &Removed) const;
-		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
-		inline bool IsSet (ETypes iCondition) const { return ((m_dwSet & iCondition) ? true : false); }
-		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
-		inline void Set (ETypes iCondition) { m_dwSet |= iCondition; }
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsSet (ETypes iCondition) const { return ((m_dwSet & iCondition) ? true : false); }
+		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		void Set (ETypes iCondition) { m_dwSet |= iCondition; }
 		void Set (const CConditionSet &Conditions);
 		ICCItemPtr WriteAsCCItem (void) const;
-		inline void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
 
 		static ETypes ParseCondition (const CString &sCondition);
 
@@ -104,18 +104,18 @@ enum AbilityStatus
 class CAbilitySet
 	{
 	public:
-		inline void Clear (Abilities iAbility) { m_dwSet &= ~GetFlag(iAbility); }
-		inline void ClearAll (void) { m_dwSet = 0; }
+		void Clear (Abilities iAbility) { m_dwSet &= ~GetFlag(iAbility); }
+		void ClearAll (void) { m_dwSet = 0; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
-		inline bool IsSet (Abilities iAbility) const { return ((m_dwSet & GetFlag(iAbility)) ? true : false); }
-		inline void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
-		inline void Set (Abilities iAbility) { m_dwSet |= GetFlag(iAbility); }
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsSet (Abilities iAbility) const { return ((m_dwSet & GetFlag(iAbility)) ? true : false); }
+		void ReadFromStream (SLoadCtx &Ctx) { Ctx.pStream->Read(m_dwSet); }
+		void Set (Abilities iAbility) { m_dwSet |= GetFlag(iAbility); }
 		void Set (const CAbilitySet &Abilities);
-		inline void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
+		void WriteToStream (IWriteStream *pStream) const { pStream->Write(m_dwSet); }
 
 	private:
-		inline DWORD GetFlag (Abilities iAbility) const { return (1 << iAbility); }
+		DWORD GetFlag (Abilities iAbility) const { return (1 << iAbility); }
 
 		DWORD m_dwSet = 0;
 	};
