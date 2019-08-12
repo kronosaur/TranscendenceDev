@@ -131,7 +131,7 @@
 
 			<OnGlobalSystemStarted>
 				(enum (msnFind "a +unid:&msHuntForAntarctica;;") theMission
-					(if (not (msnGetData gSource 'targetID))
+					(if (not (msnGetData theMission 'targetID))
 						(block (
 							(targetObj (sysFindObject Nil "sN +cscAntarctica;"))
 							)
