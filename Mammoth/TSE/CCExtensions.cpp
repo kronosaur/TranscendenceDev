@@ -11652,6 +11652,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
 				return pResult->Reference();
 				}
+
+			else
+				return pCC->CreateNil();
 			}
 
 		case FN_SYS_CREATE_ENVIRONMENT:
