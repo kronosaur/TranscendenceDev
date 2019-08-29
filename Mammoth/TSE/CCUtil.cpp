@@ -643,7 +643,7 @@ const CEconomyType *GetEconomyTypeFromString (const CString &sCurrency)
 const CEconomyType *GetEconomyTypeFromItem (CCodeChain &CC, ICCItem *pItem)
 	{
 	if (pItem == NULL || pItem->IsNil())
-		return CEconomyType::AsType(g_pUniverse->FindDesignType(DEFAULT_ECONOMY_UNID));
+		return &g_pUniverse->GetDefaultCurrency();
 
 	if (pItem->IsInteger())
 		return CEconomyType::AsType(g_pUniverse->FindDesignType(pItem->GetIntegerValue()));

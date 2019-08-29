@@ -2174,7 +2174,7 @@ const CEconomyType *CDesignType::GetEconomyType (void) const
 	if (pTrade)
 		return pTrade->GetEconomyType();
 
-	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
+	return &GetUniverse().GetDefaultCurrency();
 	}
 
 void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers)

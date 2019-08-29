@@ -2338,9 +2338,9 @@ const CEconomyType *CShipClass::GetEconomyType (void) const
 	if (pCurrency)
 		return pCurrency;
 
-	//	Otherwise, default to credits
+	//	Otherwise, default currency
 
-	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
+	return &GetUniverse().GetDefaultCurrency();
 	}
 
 CWeaponFireDesc *CShipClass::GetExplosionType (CShip *pShip) const

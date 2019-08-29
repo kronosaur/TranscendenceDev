@@ -250,7 +250,7 @@ const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 	if (pType)
 		return pType->GetEconomyType();
 
-	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
+	return &GetUniverse().GetDefaultCurrency();
 	}
 
 DWORD CSpaceObject::GetDefaultEconomyUNID (void)
