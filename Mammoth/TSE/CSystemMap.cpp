@@ -165,7 +165,7 @@ ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 	//	Add background annotations
 
 	if (!m_pBackgroundEffect.IsEmpty())
-		AddAnnotation(m_pBackgroundEffect, 0, 0, 0);
+		GetDisplayMap()->AddAnnotation(m_pBackgroundEffect, 0, 0, 0);
 
 	//	Iterate over all creators and execute them
 
