@@ -38,6 +38,8 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 		printf("Created %s\n", (LPSTR)pNode->GetSystemName());
 		}
 
+	Universe.StartGame(true);
+
 	//	Start diagnostics are always in the starting system (if available)
 
 	CSystem *pSE = NULL;

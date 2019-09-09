@@ -26,20 +26,18 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 
 		"OnGlobalIntroCommand",
 		"OnGlobalIntroStarted",
-
 		"OnGlobalMarkImages",
-		
 		"OnGlobalObjDestroyed",
 		"OnGlobalObjGateCheck",
 
 		"OnGlobalPlayerBoughtItem",
 		"OnGlobalPlayerSoldItem",
+		"OnGlobalRunDiagnostics",
 		"OnGlobalStartDiagnostics",
-
 		"OnGlobalSystemDiagnostics",
+
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
-
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
 		"OnGlobalUniverseSave",
@@ -1042,6 +1040,26 @@ void CDesignCollection::FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, con
 		CDesignType *pType = m_EventsCache[evtOnGlobalPlayerSoldItem]->GetEntry(i, &Event);
 
 		pType->FireOnGlobalPlayerSoldItem(Event, pBuyerObj, Item, Price);
+		}
+	}
+
+void CDesignCollection::FireOnGlobalRunDiagnostics (void)
+
+//	FireOnGlobalRunDiagnostics
+//
+//	Called after StartDiagnostics
+
+	{
+	int i;
+
+	//	Fire all events
+
+	for (i = 0; i < m_EventsCache[evtOnGlobalRunDiagnostics]->GetCount(); i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalRunDiagnostics]->GetEntry(i, &Event);
+
+		pType->FireOnGlobalRunDiagnostics(Event);
 		}
 	}
 

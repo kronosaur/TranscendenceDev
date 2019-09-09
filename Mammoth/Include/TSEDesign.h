@@ -258,6 +258,7 @@ class CDesignType
 		ALERROR FireOnGlobalPlayerLeftSystem (CString *retsError = NULL);
 		void FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		ALERROR FireOnGlobalResurrect (CString *retsError = NULL);
+		void FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event);
 		void FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event);
 		ALERROR FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError = NULL);
@@ -1182,27 +1183,25 @@ class CDesignCollection
 
 			evtOnGlobalIntroCommand			= 5,
 			evtOnGlobalIntroStarted			= 6,
-
 			evtOnGlobalMarkImages			= 7,
-			
 			evtOnGlobalObjDestroyed			= 8,
 			evtOnGlobalObjGateCheck			= 9,
 
 			evtOnGlobalPlayerBoughtItem		= 10,
 			evtOnGlobalPlayerSoldItem		= 11,
-			evtOnGlobalStartDiagnostics		= 12,
+			evtOnGlobalRunDiagnostics		= 12,
+			evtOnGlobalStartDiagnostics		= 13,
+			evtOnGlobalSystemDiagnostics	= 14,
 
-			evtOnGlobalSystemDiagnostics	= 13,
-			evtOnGlobalSystemStarted		= 14,
-			evtOnGlobalSystemStopped		= 15,
+			evtOnGlobalSystemStarted		= 15,
+			evtOnGlobalSystemStopped		= 16,
+			evtOnGlobalUniverseCreated		= 17,
+			evtOnGlobalUniverseLoad			= 18,
+			evtOnGlobalUniverseSave			= 19,
 
-			evtOnGlobalUniverseCreated		= 16,
-			evtOnGlobalUniverseLoad			= 17,
-			evtOnGlobalUniverseSave			= 18,
-			
-			evtOnGlobalUpdate				= 19,
+			evtOnGlobalUpdate				= 20,
 
-			evtCount						= 20
+			evtCount						= 21
 			};
 
 		enum EFlags
@@ -1269,6 +1268,7 @@ class CDesignCollection
 		void FireOnGlobalPlayerEnteredSystem (void);
 		void FireOnGlobalPlayerLeftSystem (void);
 		void FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price);
+		void FireOnGlobalRunDiagnostics (void);
 		void FireOnGlobalStartDiagnostics (void);
 		void FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx);
 		void FireOnGlobalSystemDiagnostics (void);
