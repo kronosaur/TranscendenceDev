@@ -91,12 +91,12 @@ void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine)
 		//	Start diagnostics are always in SE (if available)
 
 		CSystem *pSE = NULL;
-		if (AllSystems.Find(CONSTLIT("SE"), &pSE))
+		if (AllSystems.Find(Universe.GetCurrentAdventureDesc().GetStartingNodeID(), &pSE))
 			{
 			RunSystem(Universe, *pSE, Ctx);
 			}
 		else
-			printf("WARNING: Unable to find SE. Cannot run <OnGlobalStartDiagnostics>\n");
+			printf("WARNING: Unable to find starting system. Cannot run <OnGlobalStartDiagnostics>\n");
 
 		//	Now update all system
 

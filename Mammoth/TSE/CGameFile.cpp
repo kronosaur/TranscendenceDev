@@ -1106,7 +1106,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	if (m_Header.dwAdventure == 0)
 		{
-		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc()->GetExtensionUNID();
+		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc().GetExtensionUNID();
 
 		CString sPlayerName = Univ.GetPlayerName();
 		lstrcpyn(m_Header.szPlayerName, sPlayerName.GetASCIIZPointer(), sizeof(m_Header.szPlayerName));

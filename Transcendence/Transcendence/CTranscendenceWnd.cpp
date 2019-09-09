@@ -659,7 +659,7 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	//	Welcome
 
 	m_MessageDisplay.ClearAll();
-	const CString &sWelcome = g_pUniverse->GetCurrentAdventureDesc()->GetWelcomeMessage();
+	const CString &sWelcome = g_pUniverse->GetCurrentAdventureDesc().GetWelcomeMessage();
 	if (!sWelcome.IsBlank())
 		m_MessageDisplay.DisplayMessage(sWelcome, m_Fonts.rgbTitleColor);
 

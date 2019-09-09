@@ -13,23 +13,23 @@ class CAdventureDesc : public CDesignType
 		void FireOnGameEnd (const CGameRecord &Game, const SBasicGameStats &BasicStats);
 		void FireOnGameStart (void);
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
-		DWORD GetBackgroundUNID (void) { return m_dwBackgroundUNID; }
+		DWORD GetBackgroundUNID (void) const { return m_dwBackgroundUNID; }
 		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
 		const CStationEncounterDesc *GetEncounterDesc (DWORD dwUNID) const;
-		inline DWORD GetExtensionUNID (void) { return m_dwExtensionUNID; }
-		inline const CString &GetName (void) { return m_sName; }
-		inline const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { return &m_ShieldDamageAdj[iLevel - 1]; }
-		inline DWORD GetStartingMapUNID (void) { return m_dwStartingMap; }
-		inline const CString &GetStartingNodeID (void) { return m_sStartingNodeID; }
-		inline const CString &GetStartingPos (void) { return m_sStartingPos; }
+		DWORD GetExtensionUNID (void) const { return m_dwExtensionUNID; }
+		const CString &GetName (void) const { return m_sName; }
+		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { return &m_ShieldDamageAdj[iLevel - 1]; }
+		DWORD GetStartingMapUNID (void) const { return m_dwStartingMap; }
+		const CString &GetStartingNodeID (void) const { return m_sStartingNodeID; }
+		const CString &GetStartingPos (void) const { return m_sStartingPos; }
 		ALERROR GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError);
-		inline const CString &GetWelcomeMessage (void) { return m_sWelcomeMessage; }
+		const CString &GetWelcomeMessage (void) const { return m_sWelcomeMessage; }
 		bool InitEncounterOverrides (CString *retsError = NULL);
-		inline bool IsCurrentAdventure (void) { return (m_fIsCurrentAdventure ? true : false); }
-		inline bool IsInDefaultResource (void) { return (m_fInDefaultResource ? true : false); }
+		bool IsCurrentAdventure (void) const { return (m_fIsCurrentAdventure ? true : false); }
+		bool IsInDefaultResource (void) const { return (m_fInDefaultResource ? true : false); }
 		bool IsValidStartingClass (CShipClass *pClass);
-		inline void SetCurrentAdventure (bool bCurrent = true) { m_fIsCurrentAdventure = bCurrent; }
+		void SetCurrentAdventure (bool bCurrent = true) { m_fIsCurrentAdventure = bCurrent; }
 
 		//	CDesignType overrides
 
@@ -51,14 +51,14 @@ class CAdventureDesc : public CDesignType
 	private:
 		static void InitDefaultDamageAdj (void);
 
-		DWORD m_dwExtensionUNID;
+		DWORD m_dwExtensionUNID = 0;
 
 		CString m_sName;						//	Name of adventure
-		DWORD m_dwBackgroundUNID;				//	Background image to use for choice screen
+		DWORD m_dwBackgroundUNID = 0;				//	Background image to use for choice screen
 		CString m_sWelcomeMessage;				//	Equivalent of "Welcome to Transcendence!"
 
 		CDesignTypeCriteria m_StartingShips;	//	Starting ship criteria
-		DWORD m_dwStartingMap;					//	Default system map to load
+		DWORD m_dwStartingMap = 0;				//	Default system map to load
 		CString m_sStartingNodeID;				//	NodeID where we start
 		CString m_sStartingPos;					//	Named object at which we start
 

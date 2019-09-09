@@ -529,14 +529,14 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Generate a list of ship classes
 
-	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
-	if (pAdventure == NULL)
+	CAdventureDesc &Adventure = g_pUniverse->GetCurrentAdventureDesc();
+	if (Adventure.IsNull())
 		{
 		*retsError = ERR_NO_ADVENTURE;
 		return ERR_FAIL;
 		}
 
-	if (error = pAdventure->GetStartingShipClasses(&m_ShipClasses, retsError))
+	if (error = Adventure.GetStartingShipClasses(&m_ShipClasses, retsError))
 		return error;
 
 	if (m_ShipClasses.GetCount() == 0)
@@ -559,7 +559,7 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	CUIHelper Helper(m_HI);
 	IAnimatron *pTitle;
-	Helper.CreateSessionTitle(this, m_Service, pAdventure->GetName(), NULL, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, Adventure.GetName(), NULL, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	//	Create a scroller to hold all the settings

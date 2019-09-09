@@ -22,8 +22,8 @@
 
 struct SExtensionSaveDesc
 	{
-	DWORD dwUNID;
-	DWORD dwRelease;
+	DWORD dwUNID = 0;
+	DWORD dwRelease = 0;
 	};
 
 #define STR_G_PLAYER						CONSTLIT("gPlayer")
@@ -929,8 +929,7 @@ CTopologyNode *CUniverse::GetFirstTopologyNode (void)
 
 	//	Get the default map
 
-	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
-	DWORD dwStartingMap = (pAdventure ? pAdventure->GetStartingMapUNID() : 0);
+	DWORD dwStartingMap = GetCurrentAdventureDesc().GetStartingMapUNID();
 
 	//	Initialize the topology
 
@@ -939,14 +938,12 @@ CTopologyNode *CUniverse::GetFirstTopologyNode (void)
 
 	//	Figure out the starting node
 
-	CString sNodeID;
-	if (pAdventure)
-		sNodeID = pAdventure->GetStartingNodeID();
+	CString sNodeID = GetCurrentAdventureDesc().GetStartingNodeID();
 
 	if (sNodeID.IsBlank())
 		{
 		TSortMap<CString, CShipClass *> StartingShips;
-		if (pAdventure->GetStartingShipClasses(&StartingShips, &sError) != NOERROR)
+		if (GetCurrentAdventureDesc().GetStartingShipClasses(&StartingShips, &sError) != NOERROR)
 			return NULL;
 
 		if (StartingShips.GetCount() > 0)
@@ -1351,7 +1348,12 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		//	tables.
 
 		if (Ctx.pAdventure)
-			SetCurrentAdventureDesc(Ctx.pAdventure->GetAdventureDesc());
+			m_pAdventure = Ctx.pAdventure->GetAdventureDesc();
+		else
+			{
+			m_EmptyAdventure = CAdventureDesc();
+			m_pAdventure = &m_EmptyAdventure;
+			}
 
 		//	Figure out the minimum API version for all extensions being used.
 
@@ -1408,24 +1410,9 @@ ALERROR CUniverse::InitAdventure (IPlayerController *pPlayer, CString *retsError
 	SetPlayer(pPlayer);
 
 	//	Invoke Adventure OnGameStart
-	//	NOTE: The proper adventure is set by a call to InitAdventure,
-	//	when the adventure is chosen.
-
-	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
-	if (pAdventure == NULL)
-		{
-		//	We don't want to free pPlayer, so we need to clear it out before we
-		//	reset.
-
-		m_pPlayer = NULL;
-		SetPlayer(NULL);
-
-		*retsError = CONSTLIT("Must have an adventure.");
-		return ERR_FAIL;
-		}
 
 	SetLogImageLoad(false);
-	pAdventure->FireOnGameStart();
+	GetCurrentAdventureDesc().FireOnGameStart();
 	SetLogImageLoad(true);
 
 	//	Done
@@ -1486,12 +1473,11 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 
 	{
 	ALERROR error;
-	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
 
 	//	If starting map is 0, see if we can get it from the adventure
 
-	if (dwStartingMap == 0 && pAdventure)
-		dwStartingMap = pAdventure->GetStartingMapUNID();
+	if (dwStartingMap == 0)
+		dwStartingMap = GetCurrentAdventureDesc().GetStartingMapUNID();
 
 	//	Initialize the topology. This is the point at which the topology is created
 
@@ -1506,11 +1492,8 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 	//	Tell the adventure to initialize its encounter tables, which might
 	//	override the encounter desc of specific station types.
 
-	if (pAdventure)
-		{
-		if (!pAdventure->InitEncounterOverrides(retsError))
-			return ERR_FAIL;
-		}
+	if (!GetCurrentAdventureDesc().InitEncounterOverrides(retsError))
+		return ERR_FAIL;
 
 	//	Init encounter tables (this must be done AFTER InitTopoloy because it
 	//	some station encounters specify a topology node).
@@ -2185,9 +2168,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	//	Make sure we initialize adventure encounter overrides
 
-	CAdventureDesc *pAdventure = GetCurrentAdventureDesc();
-	if (pAdventure)
-		pAdventure->InitEncounterOverrides();
+	GetCurrentAdventureDesc().InitEncounterOverrides();
 
 	return NOERROR;
 	}
@@ -2518,8 +2499,11 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	Adventure UNID
 
 	SExtensionSaveDesc Desc;
-	Desc.dwUNID = m_pAdventure->GetExtension()->GetUNID();
-	Desc.dwRelease = m_pAdventure->GetExtension()->GetRelease();
+	if (m_pAdventure->GetExtension())
+		{
+		Desc.dwUNID = m_pAdventure->GetExtension()->GetUNID();
+		Desc.dwRelease = m_pAdventure->GetExtension()->GetRelease();
+		}
 	pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
 
 	//	CDynamicDesignTable
@@ -2616,7 +2600,7 @@ void CUniverse::SetCurrentSystem (CSystem *pSystem)
 
 	{
 	if (m_pCurrentSystem)
-		m_pCurrentSystem->FlushEnemyObjectCache();
+		m_pCurrentSystem->FlushAllCaches();
 
 	CSystem *pOldSystem = m_pCurrentSystem;
 	m_pCurrentSystem = pSystem;

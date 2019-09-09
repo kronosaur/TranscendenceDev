@@ -2177,6 +2177,17 @@ void CSystem::FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDes
 		}
 	}
 
+void CSystem::FlushAllCaches (void)
+
+//	FlushAllCaches
+//
+//	Flushes all caches to save memory.
+
+	{
+	FlushEnemyObjectCache();
+	FlushDeletedObjects();
+	}
+
 void CSystem::FlushDeletedObjects (void)
 
 //	FlushDeletedObjects

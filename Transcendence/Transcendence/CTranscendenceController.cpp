@@ -929,7 +929,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		m_Settings.SetString(CGameSettings::playerGenome, GetGenomeID(pNewGame->iPlayerGenome));
 		m_Settings.SetInteger(CGameSettings::playerShipClass, (int)pNewGame->dwPlayerShip);
-		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc()->GetExtensionUNID());
+		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc().GetExtensionUNID());
 
 		//	Report creation
 
@@ -1087,7 +1087,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Remember the last adventure so that we load this in the intro next time.
 
-		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc()->GetExtensionUNID());
+		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc().GetExtensionUNID());
 
 		//	Start game (this does some stuff and then calls cmdGameStart)
 

@@ -1876,7 +1876,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 			{
 			*retsValue = pPlayer->GetStartingNode();
 			if (retsValue->IsBlank())
-				*retsValue = GetUniverse().GetCurrentAdventureDesc()->GetStartingNodeID();
+				*retsValue = GetUniverse().GetCurrentAdventureDesc().GetStartingNodeID();
 			}
 		else
 			*retsValue = NULL_STR;

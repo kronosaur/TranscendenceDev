@@ -334,7 +334,7 @@ class CUniverse
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
 		CG32bitPixel GetColor (const CString &sColor) const { return m_pHost->GetColor(sColor); }
-		CAdventureDesc *GetCurrentAdventureDesc (void) { return m_pAdventure; }
+		CAdventureDesc &GetCurrentAdventureDesc (void) { return *m_pAdventure; }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
@@ -520,7 +520,6 @@ class CUniverse
 		ALERROR InitLevelEncounterTables (void);
 		ALERROR InitRequiredEncounters (CString *retsError);
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
-		void SetCurrentAdventureDesc (CAdventureDesc *pAdventure) { m_pAdventure = pAdventure; }
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
 		void UpdateMissions (int iTick, CSystem *pSystem);
@@ -576,6 +575,7 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		CAdventureDesc m_EmptyAdventure;
 
 		//	Cached singletons
 

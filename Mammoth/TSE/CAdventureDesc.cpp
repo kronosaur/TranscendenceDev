@@ -105,11 +105,24 @@ static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
 static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
 CAdventureDesc::CAdventureDesc (void) :
+		m_fIsCurrentAdventure(false),
+		m_fInDefaultResource(false),
+		m_fIncludeOldShipClasses(false),
 		m_fInInitEncounterOverrides(false)
 
 //	CAdventureDesc constructor
 
 	{
+	m_sWelcomeMessage = CONSTLIT("Welcome to Transcendence!");
+
+	//	Initialize armor and shield damage adjustment tables
+
+	InitDefaultDamageAdj();
+	for (int i = 1; i <= MAX_ITEM_LEVEL; i++)
+		{
+		m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
+		m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
+		}
 	}
 
 bool CAdventureDesc::FindDataField (const CString &sField, CString *retsValue) const
@@ -486,15 +499,6 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	else if (Ctx.pExtension && strFind(Ctx.pExtension->GetName(), CONSTLIT("Extension")) == 0)
 		Ctx.pExtension->SetName(m_sName);
-
-	//	Initialize armor and shield damage adjustment tables
-
-	InitDefaultDamageAdj();
-	for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-		{
-		m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
-		m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
-		}
 
 	//	Load constants
 

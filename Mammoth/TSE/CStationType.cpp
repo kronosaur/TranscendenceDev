@@ -846,8 +846,7 @@ const CStationEncounterDesc &CStationType::GetEncounterDesc (void) const
 	{
 	//	See if the adventure overrides our encounter descriptor
 
-	CAdventureDesc *pAdventure = GetUniverse().GetCurrentAdventureDesc();
-	const CStationEncounterDesc *pDesc = (pAdventure ? pAdventure->GetEncounterDesc(GetUNID()) : NULL);
+	const CStationEncounterDesc *pDesc = GetUniverse().GetCurrentAdventureDesc().GetEncounterDesc(GetUNID());
 	if (pDesc)
 		return *pDesc;
 

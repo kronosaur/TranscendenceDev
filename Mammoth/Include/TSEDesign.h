@@ -212,6 +212,7 @@ class CDesignType
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
+		bool IsNull (void) const { return (m_dwUNID == 0); }
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
 		ALERROR PrepareBindDesign (SDesignLoadCtx &Ctx);
 		void PrepareReinit (void) { OnPrepareReinit(); }

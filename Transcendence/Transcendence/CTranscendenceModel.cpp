@@ -353,15 +353,15 @@ void CTranscendenceModel::CalcStartingPos (CShipClass *pStartingShip, DWORD *ret
 
 	if (dwMap == 0 || sNodeID.IsBlank() || sPos.IsBlank())
 		{
-		CAdventureDesc *pAdventure = m_Universe.GetCurrentAdventureDesc();
+		const CAdventureDesc &Adventure = m_Universe.GetCurrentAdventureDesc();
 		if (dwMap == 0)
-			dwMap = pAdventure->GetStartingMapUNID();
+			dwMap = Adventure.GetStartingMapUNID();
 
 		if (sNodeID.IsBlank())
-			sNodeID = pAdventure->GetStartingNodeID();
+			sNodeID = Adventure.GetStartingNodeID();
 
 		if (sPos.IsBlank())
-			sPos = pAdventure->GetStartingPos();
+			sPos = Adventure.GetStartingPos();
 		}
 
 	//	If not, come up with a reasonable default
@@ -1964,14 +1964,14 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 	ASSERT(m_pPlayer);
 	CShip *pPlayerShip = m_pPlayer->GetShip();
 
-	CAdventureDesc *pAdventure = m_Universe.GetCurrentAdventureDesc();
-	ASSERT(pAdventure);
+	CAdventureDesc &Adventure = m_Universe.GetCurrentAdventureDesc();
+	ASSERT(!Adventure.IsNull());
 
 	//	Add to high score list
 
 	m_GameRecord.SetUsername(m_GameFile.GetUsername());
 	m_GameRecord.SetGameID(m_GameFile.GetGameID());
-	m_GameRecord.SetAdventureUNID(pAdventure->GetExtensionUNID());
+	m_GameRecord.SetAdventureUNID(Adventure.GetExtensionUNID());
 
 	TArray<DWORD> Extensions;
 	m_Universe.GetCurrentAdventureExtensions(&Extensions);
@@ -2008,7 +2008,7 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 	SetCrawlText(NULL_STR);
 
 	m_Universe.SetLogImageLoad(false);
-	pAdventure->FireOnGameEnd(m_GameRecord, BasicStats);
+	Adventure.FireOnGameEnd(m_GameRecord, BasicStats);
 	m_Universe.SetLogImageLoad(true);
 
 	//	Update the score in case it was changed inside OnGameEnd
@@ -2017,7 +2017,7 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 
 	//	Add to high score if this is the default adventure
 
-	if (pAdventure->GetExtensionUNID() == DEFAULT_ADVENTURE_EXTENSION_UNID)
+	if (Adventure.GetExtensionUNID() == DEFAULT_ADVENTURE_EXTENSION_UNID)
 		m_iLastHighScore = AddHighScore(m_GameRecord);
 	else
 		m_iLastHighScore = -1;

@@ -770,6 +770,7 @@ class CSystem
 		void FireOnSystemObjDestroyed (SDestroyCtx &Ctx);
 		void FireOnSystemWeaponFire (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount);
 		void FireSystemWeaponEvents (CSpaceObject *pShot, CWeaponFireDesc *pDesc, const CDamageSource &Source, int iRepeatingCount, DWORD dwFlags);
+		void FlushAllCaches (void);
 		void FlushEnemyObjectCache (void);
 		CString GetAttribsAtPos (const CVector &vPos);
 		void GetDebugInfo (SDebugInfo &Info) const;
