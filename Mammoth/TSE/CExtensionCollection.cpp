@@ -1516,6 +1516,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		CExtension::SLoadOptions LoadOptions;
 		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+		LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 		//	If this extension has been manually disabled, then don't bother with
 		//	the digest because it is expensive. We'll compute it later.

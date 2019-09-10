@@ -1192,7 +1192,7 @@ void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CS
 		ReportEventError(ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT, pResult);
 	}
 
-void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalEndDiagnostics
 //
@@ -1205,7 +1205,14 @@ void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
 
 	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_END_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
+
+	//	Success!
+
+	return true;
 	}
 
 void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)
@@ -1375,7 +1382,7 @@ ALERROR CDesignType::FireOnGlobalResurrect (CString *retsError)
 	return NOERROR;
 	}
 
-void CDesignType::FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalRunDiagnostics
 //
@@ -1388,10 +1395,17 @@ void CDesignType::FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event)
 
 	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_RUN_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
+
+	//	Success
+
+	return true;
 	}
 
-void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalStartDiagnostics
 //
@@ -1404,10 +1418,17 @@ void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
 
 	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_START_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
+
+	//	Success
+
+	return true;
 	}
 
-void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalSystemDiagnostics
 //
@@ -1420,7 +1441,14 @@ void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
 
 	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_SYSTEM_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
+
+	//	Success
+
+	return true;
 	}
 
 ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError)

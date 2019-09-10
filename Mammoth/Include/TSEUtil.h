@@ -496,6 +496,8 @@ class CEventHandler
 		inline bool IsEmpty (void) const { return m_Handlers.GetCount() == 0; }
 		void MergeFrom (const CEventHandler &Src);
 
+		static bool IsDiagnosticsEvent (const CString &sEvent);
+
 	private:
 		TSortMap<CString, ICCItem *> m_Handlers;
 	};

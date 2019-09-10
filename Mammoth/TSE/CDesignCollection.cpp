@@ -797,23 +797,25 @@ bool CDesignCollection::FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCt
 	return (iPriceAdj != 100);
 	}
 
-void CDesignCollection::FireOnGlobalEndDiagnostics (void)
+void CDesignCollection::FireOnGlobalEndDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalEndDiagnostics
 //
 //	Done running diagnostics. Output results.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalEndDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalEndDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalEndDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalEndDiagnostics(Event);
+		if (!pType->FireOnGlobalEndDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
@@ -1043,63 +1045,69 @@ void CDesignCollection::FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, con
 		}
 	}
 
-void CDesignCollection::FireOnGlobalRunDiagnostics (void)
+void CDesignCollection::FireOnGlobalRunDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalRunDiagnostics
 //
 //	Called after StartDiagnostics
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalRunDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalRunDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalRunDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalRunDiagnostics(Event);
+		if (!pType->FireOnGlobalRunDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
-void CDesignCollection::FireOnGlobalStartDiagnostics (void)
+void CDesignCollection::FireOnGlobalStartDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalStartDiagnostics
 //
 //	Called after all systems created.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalStartDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalStartDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalStartDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalStartDiagnostics(Event);
+		if (!pType->FireOnGlobalStartDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
-void CDesignCollection::FireOnGlobalSystemDiagnostics (void)
+void CDesignCollection::FireOnGlobalSystemDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalSystemDiagnostics
 //
 //	Called for each system.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalSystemDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalSystemDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalSystemDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalSystemDiagnostics(Event);
+		if (!pType->FireOnGlobalSystemDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 

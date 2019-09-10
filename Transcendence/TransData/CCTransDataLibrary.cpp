@@ -6,6 +6,8 @@
 #include "PreComp.h"
 
 static constexpr DWORD FN_TSE_PATTERN =					1;
+static constexpr DWORD FN_TSE_SET_SYSTEM =				2;
+static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			3;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -20,6 +22,14 @@ static PRIMITIVEPROCDEF g_Library[] =
 			"iv*",	0,	},
 
 		//	These are engine diagnostic functions
+
+		{	"diagSetSystem",				fnTransEngine,		FN_TSE_SET_SYSTEM,
+			"(diagSetSystem nodeID) -> True/error",
+			"s",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"diagUpdateSystem",				fnTransEngine,		FN_TSE_UPDATE_SYSTEM,
+			"(diagUpdateSystem [updates]) -> True/error",
+			"*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"tsePattern",					fnTransEngine,		FN_TSE_PATTERN,
 			"(tsePattern pattern ...) -> string",
@@ -56,6 +66,8 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	CUniverse &Universe = pCtx->GetUniverse();
 
 	switch (dwData)
 		{
@@ -121,6 +133,48 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				}
 
 			return pCC->CreateString(sResult);
+			}
+
+		case FN_TSE_SET_SYSTEM:
+			{
+			CString sNodeID = pArgs->GetElement(0)->GetStringValue();
+			CTopologyNode *pNode = Universe.FindTopologyNode(sNodeID);
+			if (pNode == NULL)
+				return pCC->CreateError("Unknown nodeID", pArgs->GetElement(0));
+
+			//	If system is not loaded, then we fail.
+
+			CSystem *pSystem = pNode->GetSystem();
+			if (pSystem == NULL)
+				return pCC->CreateError("System not loaded", pArgs->GetElement(0));
+
+			//	Set as current system.
+
+			Universe.SetCurrentSystem(pSystem);
+			return pCC->CreateTrue();
+			}
+
+		case FN_TSE_UPDATE_SYSTEM:
+			{
+			int iUpdates;
+			if (pArgs->GetCount() > 0)
+				iUpdates = pArgs->GetElement(0)->GetIntegerValue();
+			else
+				iUpdates = 1;
+
+			if (iUpdates <= 0)
+				return pCC->CreateNil();
+
+			SSystemUpdateCtx UpdateCtx;
+			UpdateCtx.bForceEventFiring = true;
+			UpdateCtx.bForcePainted = true;
+
+			for (int i = 0; i < iUpdates; i++)
+				{
+				Universe.Update(UpdateCtx);
+				}
+
+			return pCC->CreateTrue();
 			}
 
 		default:
