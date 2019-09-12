@@ -255,6 +255,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	CExtension::SLoadOptions LoadOptions;
 	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 	//	Make sure the extension is loaded completely.
 
@@ -1612,6 +1613,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	Ctx.sResDb = sFilespec;
 	Ctx.pResDb = &Resources;
 	Ctx.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) ? true : false);
+	Ctx.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) ? true : false);
 	Ctx.sErrorFilespec = sFilespec;
 
 	//	Load it.
@@ -1737,6 +1739,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	ExtCtx.sResDb = Ctx.sResDb;
 	ExtCtx.pResDb = Ctx.pResDb;
 	ExtCtx.bNoResources = Ctx.bNoResources;
+	ExtCtx.bLoadDiagnostics = Ctx.bLoadDiagnostics;
 	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
 	//	No need to set bBindAsNewGame because it is only useful during Bind.
 	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;
