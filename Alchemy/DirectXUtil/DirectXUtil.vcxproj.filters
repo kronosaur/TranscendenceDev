@@ -43,6 +43,9 @@
     <Filter Include="Source Files\PNG">
       <UniqueIdentifier>{ae2f7503-cf8c-48ea-bab7-c0f97397a6ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\OpenGL">
+      <UniqueIdentifier>{b5bdf2c4-b7c7-485d-9dd2-cefafb5e7929}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NoiseImpl.h">
@@ -130,6 +133,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\TImagePlane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGLIncludes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\OpenGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\OpenGLShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -421,6 +436,18 @@
     </ClCompile>
     <ClCompile Include="FilterMinMax.cpp">
       <Filter>Source Files\32bit</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLContext.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLShader.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLVAO.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLTexture.cpp">
+      <Filter>Source Files\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -11,7 +11,10 @@ CDXScreen::CDXScreen (void) :
 		m_hWnd(NULL),
 		m_pD3D(NULL),
 		m_pD3DDevice(NULL),
-		m_bDeviceLost(false)
+		m_pOGLContext(NULL),
+		m_bDeviceLost(false),
+		m_bOpenGLAttached(false),
+	    m_pOpenGLTexture(NULL)
 
 //	CDXScreen constructor
 
@@ -148,6 +151,11 @@ void CDXScreen::CleanUp (void)
         m_pD3D->Release();
 		m_pD3D = NULL;
 		}
+	if (m_pOGLContext != NULL)
+		{
+		delete(m_pOGLContext);
+		m_pOGLContext = NULL;
+		}
 	}
 
 bool CDXScreen::CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CString *retsError)
@@ -177,9 +185,17 @@ bool CDXScreen::CreateLayer (const SDXLayerCreate &Create, int *retiLayerID, CSt
 	pLayer->yPos = Create.yPos;
 	pLayer->zPos = Create.zPos;
 
+	//	If we're using OpenGL, then create our texture resources.
+
+	if (m_bUseOpenGL)
+		{
+		pLayer->FrontBuffer.Create(Create.cxWidth, Create.cyHeight);
+		pLayer->BackBuffer.Create(Create.cxWidth, Create.cyHeight);
+		}
+
 	//	If we're using textures, we need a vertex buffer and three textures.
 
-	if (m_bUseTextures)
+	else if (m_bUseTextures)
 		{
 		if (!CreateLayerResources(*pLayer, retsError))
 			{
@@ -385,58 +401,70 @@ bool CDXScreen::Init (HWND hWnd, int cxWidth, int cyHeight, DWORD dwFlags, CStri
 	m_cyTarget = RectHeight(rcClient);
 
 	//	Options
+	//  We should use OpenGL if we're neither using DirectX nor GDI
 
 	m_bUseGDI = ((dwFlags & FLAG_FORCE_GDI) ? true : false);
 	m_bNoGPUAcceleration = m_bUseGDI || ((dwFlags & FLAG_NO_TEXTURES) ? true : false);
+	m_bUseOpenGL = ((dwFlags & FLAG_FORCE_OPENGL) ? true : false);
 	m_bEndSceneNeeded = false;
 	m_bErrorReported = false;
 
-    //	Create the D3D object, which is needed to create the D3DDevice.
-
-    if ((m_pD3D = ::Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
+    //	If using OpenGL, create the OpenGL object.
+	if (m_bUseOpenGL)
 		{
-		if (retsError) *retsError = CONSTLIT("Unable to create D3D object.");
-        return false;
+		HDC hDC = ::GetDC(m_hWnd);
+		m_pOGLContext = new OpenGLContext(hWnd);
+		::ReleaseDC(m_hWnd, hDC);
 		}
 
-    //	Set up the structure used to create the D3DDevice. Most parameters are
-    //	zeroed out. We set Windowed to TRUE, since we want to do D3D in a
-    //	window, and then set the SwapEffect to "discard", which is the most
-    //	efficient method of presenting the back buffer to the display.  And 
-    //	we request a back buffer format that matches the current desktop display 
-    //	format.
 
-    ZeroMemory( &m_Present, sizeof( m_Present ) );
-    m_Present.Windowed = TRUE;
-    m_Present.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    m_Present.BackBufferFormat = D3DFMT_UNKNOWN;
-	m_Present.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+    //	Create the D3D object, which is needed to create the D3DDevice.
+	if (!m_bUseGDI && !m_bUseOpenGL)
+		{
+		if ((m_pD3D = ::Direct3DCreate9(D3D_SDK_VERSION)) == NULL)
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to create D3D object.");
+			return false;
+			}
 
-    //	Create the Direct3D device. Here we are using the default adapter (most
-    //	systems only have one, unless they have multiple graphics hardware cards
-    //	installed) and requesting the HAL (which is saying we want the hardware
-    //	device rather than a software one). Software vertex processing is 
-    //	specified since we know it will work on all cards. On cards that support 
-    //	hardware vertex processing, though, we would see a big performance gain 
-    //	by specifying hardware vertex processing.
+		//	Set up the structure used to create the D3DDevice. Most parameters are
+		//	zeroed out. We set Windowed to TRUE, since we want to do D3D in a
+		//	window, and then set the SwapEffect to "discard", which is the most
+		//	efficient method of presenting the back buffer to the display.  And 
+		//	we request a back buffer format that matches the current desktop display 
+		//	format.
 
-    if (FAILED(m_pD3D->CreateDevice(D3DADAPTER_DEFAULT,
+		ZeroMemory(&m_Present, sizeof(m_Present));
+		m_Present.Windowed = TRUE;
+		m_Present.SwapEffect = D3DSWAPEFFECT_DISCARD;
+		m_Present.BackBufferFormat = D3DFMT_UNKNOWN;
+		m_Present.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+
+		//	Create the Direct3D device. Here we are using the default adapter (most
+		//	systems only have one, unless they have multiple graphics hardware cards
+		//	installed) and requesting the HAL (which is saying we want the hardware
+		//	device rather than a software one). Software vertex processing is 
+		//	specified since we know it will work on all cards. On cards that support 
+		//	hardware vertex processing, though, we would see a big performance gain 
+		//	by specifying hardware vertex processing.
+
+		if (FAILED(m_pD3D->CreateDevice(D3DADAPTER_DEFAULT,
 			D3DDEVTYPE_HAL,
 			hWnd,
-            D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-            &m_Present,
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+			&m_Present,
 			&m_pD3DDevice)))
-	    {
-		if (retsError) *retsError = CONSTLIT("Unable to create D3D device.");
-        return false;
+			{
+			if (retsError) *retsError = CONSTLIT("Unable to create D3D device.");
+			return false;
+			}
+
+		//	Initialize
+
+		if (!InitDevice(retsError))
+			return false;
 		}
-
-	//	Initialize
-
-	if (!InitDevice(retsError))
-		return false;
-
-	//	Done
+		//	Done
 
 	return true;
 	}
@@ -571,6 +599,39 @@ void CDXScreen::Render (void)
 			::ReleaseDC(m_hWnd, hDC);
 			}
 		}
+
+	//	If we're using OpenGL, then do some stuff...
+	else if (m_bUseOpenGL)
+		{
+		HDC hDC = ::GetDC(m_hWnd);
+		SLayer &Layer = m_Layers[m_PaintOrder[0]];
+		CG32bitPixel *pPixelArray = Layer.BackBuffer.GetPixelArray();
+		while(!m_bOpenGLAttached)
+			{
+			// Use a while loop and sleep in order to avoid a weird race condition where OpenGL initializes before
+			// something important is done, which causes SetPixelFormat to fail
+			// Seems like SetPixelFormat (or rather the ChoosePixelFormat function) must be executed after something
+			// happens with the device context that hDC is attached to...
+			Sleep(1);
+			bool iInitOpenGLSuccess = m_pOGLContext->initOpenGL(m_hWnd, hDC);
+			if (iInitOpenGLSuccess)
+				m_bOpenGLAttached = true;
+				m_pOGLContext->resize(m_cxTarget, m_cyTarget);
+			}
+		::ReleaseDC(m_hWnd, hDC);
+		if (pPixelArray)
+		{
+			if (!m_pOpenGLTexture)
+				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight);
+			else
+				m_pOpenGLTexture->updateTexture2D(pPixelArray, Layer.cxWidth, Layer.cyHeight);
+		}
+		if (m_pOpenGLTexture)
+			m_pOGLContext->testTextures(m_pOpenGLTexture);
+		else
+			m_pOGLContext->testShaders();
+		}
+
 
 	//	The remaining methods all use DX, so if we've lost the device, we can't
 	//	do anything.
@@ -745,6 +806,12 @@ bool CDXScreen::ResetDevice (void)
 	return true;
 	}
 
+void CDXScreen::ResizeOpenGL (int width, int height)
+	{
+	if (m_bOpenGLAttached)
+		m_pOGLContext->resize(width, height);
+	}
+
 void CDXScreen::SwapBuffers (void)
 
 //	SwapBuffers
@@ -758,7 +825,14 @@ void CDXScreen::SwapBuffers (void)
 	//	the buffers (since we're swapping), so this is a safe place to reset the
 	//	device if necessary.
 
-	if (m_bDeviceLost)
+	if (m_bUseOpenGL)
+		{
+			//::kernelDebugLogPattern("[OGL] Outer HWND: %x", m_hWnd);
+			m_pOGLContext->swapBuffers(m_hWnd); // Swap buffers
+			//int doNothing = 1;
+		}
+
+	else if (m_bDeviceLost)
 		{
 		//	See if we need to reset
 

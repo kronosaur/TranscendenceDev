@@ -1244,7 +1244,7 @@ void COrbEffectPainter::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintC
 		}
 
 	//	Paint
-
+	// TODO: Implement in shader form!!
 	switch (m_iStyle)
 		{
 		case styleCloud:
@@ -1354,6 +1354,12 @@ void COrbEffectPainter::PaintFlareRay (CG32bitImage &Dest, int xCenter, int yCen
 	{
 	if (iLength <= 0 || iWidth <= 0)
 		return;
+
+	if (iLength >= 9000 || iWidth >= 9000)
+		{
+		int error = 2;
+		return;
+		}
 
 	//	Compute the line
 

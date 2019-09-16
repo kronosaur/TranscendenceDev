@@ -258,6 +258,8 @@
     <ClInclude Include="..\Include\DXScreenMgr3D.h" />
     <ClInclude Include="..\Include\DXSparseMask.h" />
     <ClInclude Include="..\Include\DXUI.h" />
+    <ClInclude Include="..\Include\OpenGL.h" />
+    <ClInclude Include="..\Include\OpenGLShader.h" />
     <ClInclude Include="..\Include\Reanimator.h" />
     <ClInclude Include="..\Include\TBlt.h" />
     <ClInclude Include="..\Include\TCirclePainter.h" />
@@ -272,6 +274,8 @@
     <ClInclude Include="DX3DImpl.h" />
     <ClInclude Include="lodepng\lodepng.h" />
     <ClInclude Include="NoiseImpl.h" />
+    <ClInclude Include="OpenGL.h" />
+    <ClInclude Include="OpenGLIncludes.h" />
     <ClInclude Include="PixelMacros.h" />
     <ClInclude Include="PreComp.h" />
     <ClInclude Include="RasterizerImpl.h" />
@@ -514,6 +518,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug in Program Files|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Noise.cpp" />
+    <ClCompile Include="OpenGLContext.cpp" />
+    <ClCompile Include="OpenGLShader.cpp" />
+    <ClCompile Include="OpenGLTexture.cpp" />
+    <ClCompile Include="OpenGLVAO.cpp" />
     <ClCompile Include="Polygon.cpp" />
     <ClCompile Include="PolygonSimple.cpp" />
     <ClCompile Include="Sound.cpp">

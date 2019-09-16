@@ -150,6 +150,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool CreateFromWindowsBMP (IReadStream &Stream);
 		EAlphaTypes GetAlphaType (void) const { return m_AlphaType; }
 		CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
+		CG32bitPixel *GetPixelArray(void) const { return m_pRGBA; }
 		CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }

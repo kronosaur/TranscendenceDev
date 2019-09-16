@@ -72,6 +72,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		//	Video options
 		{	"forceDirectX",				optionBoolean,	"false",	0	},
 		{	"forceNonDirectX",			optionBoolean,	"false",	0	},
+		{	"forceOpenGL",			        optionBoolean,	"false",	0	},
 		{	"forceExclusive",			optionBoolean,	"false",	0	},
 		{	"forceNonExclusive",		optionBoolean,	"false",	0	},
 		{	"windowedMode",				optionBoolean,	"false",	0	},

@@ -644,6 +644,7 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	retOptions->m_iColorDepthDesired = 16;
 	retOptions->m_bForceDX = (m_Settings.GetBoolean(CGameSettings::forceDirectX) || m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
 	retOptions->m_bForceNonDX = (m_Settings.GetBoolean(CGameSettings::forceNonDirectX) && !retOptions->m_bForceDX);
+	retOptions->m_bForceOpenGL = (m_Settings.GetBoolean(CGameSettings::forceOpenGL) && !retOptions->m_bForceOpenGL);
 	retOptions->m_bForceExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
 	retOptions->m_bForceNonExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceNonExclusive) && !retOptions->m_bForceExclusiveMode);
 	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res);

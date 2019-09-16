@@ -110,7 +110,7 @@ bool CDXBackgroundBlt::Init (int cxWidth, int cyHeight, CString *retsError)
 	//	background.
 
 #ifndef DEBUG_NO_DX_BLT_THREAD
-	if (::sysGetProcessorCount() > 1)
+	if (::sysGetProcessorCount() > 1 && !(m_DX.IsUsingOpenGL()))
 		{
 		ASSERT(!IsEnabled());
 
@@ -121,4 +121,14 @@ bool CDXBackgroundBlt::Init (int cxWidth, int cyHeight, CString *retsError)
 #endif
 
 	return true;
+	}
+
+void CDXBackgroundBlt::Resize(int width, int height)
+
+//	Resize
+//
+//	Resize the OpenGL context (if one is in use)
+
+	{
+	m_DX.ResizeOpenGL(width, height);
 	}
