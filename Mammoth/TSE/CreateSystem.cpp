@@ -3676,6 +3676,10 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 	{
 	ALERROR error;
 
+	ASSERT(pStation);
+	if (pStation == NULL)
+		return ERR_FAIL;
+
 	//	Set the name of the station, if specified by the system
 
 	CNameDesc Name;
@@ -3713,7 +3717,7 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	CString sEntryPoint = pDesc->GetAttribute(OBJ_NAME_ATTRIB);
 	if (!sEntryPoint.IsBlank())
-		pCtx->System.NameObject(sEntryPoint, pStation);
+		pCtx->System.NameObject(sEntryPoint, *pStation);
 
 	//	If we don't want to show a map label
 
@@ -4215,7 +4219,7 @@ ALERROR CSystem::CreateMarker (CXMLElement *pDesc, const COrbit &oOrbit, CMarker
 
 	CString sEntryPoint = pDesc->GetAttribute(OBJ_NAME_ATTRIB);
 	if (!sEntryPoint.IsBlank())
-		NameObject(sEntryPoint, pMarker);
+		NameObject(sEntryPoint, *pMarker);
 
     //  Show the orbit, if necessary
 	//	(But not if we duplicate an existing orbit. This is what allows us to show

@@ -12522,7 +12522,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Add a named object
 
-	pSystem->NameObject(sStargateName, pStargate);
+	pSystem->NameObject(sStargateName, *pStargate);
 
 	//	Set stargate properties (note: CreateStation also looks at objName and adds the name
 	//	to the named-objects system table.)

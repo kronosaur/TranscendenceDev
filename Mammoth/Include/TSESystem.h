@@ -815,7 +815,7 @@ class CSystem
 		bool IsStationInSystem (CStationType *pType);
 		inline bool IsTimeStopped (void) { return (m_iTimeStopped != 0); }
 		void MarkImages (void);
-		void NameObject (const CString &sName, CSpaceObject *pObj);
+		void NameObject (const CString &sName, CSpaceObject &Obj);
 		CVector OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos);
 		void OnStationDestroyed (SDestroyCtx &Ctx);
 		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, SViewportAnnotations *pAnnotations = NULL);
@@ -844,7 +844,7 @@ class CSystem
 		CVector TileToVector (int x, int y) const;
 		void TransferObjEventsIn (CSpaceObject *pObj, CSystemEventList &ObjEvents);
 		void TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEvents);
-		void UnnameObject (CSpaceObject *pObj);
+		void UnnameObject (CSpaceObject &Obj);
 		void UnregisterEventHandler (CSpaceObject *pObj);
 		void Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnotations = NULL);
 		void UpdateExtended (const CTimeSpan &ExtraTime);

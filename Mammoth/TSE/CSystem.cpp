@@ -1112,7 +1112,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 			return ERR_FAIL;
 			}
 
-		Ctx.pSystem->NameObject(sName, pObj);
+		Ctx.pSystem->NameObject(sName, *pObj);
 		}
 
 	//	Load all timed events
@@ -3007,15 +3007,15 @@ void CSystem::MarkImages (void)
 	DEBUG_CATCH
 	}
 
-void CSystem::NameObject (const CString &sName, CSpaceObject *pObj)
+void CSystem::NameObject (const CString &sName, CSpaceObject &Obj)
 
 //	NameObject
 //
 //	Name an object
 
 	{
-	m_NamedObjects.Insert(sName, pObj);
-	pObj->SetNamed();
+	m_NamedObjects.SetAt(sName, &Obj);
+	Obj.SetNamed();
 	}
 
 CVector CSystem::OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos)
@@ -4005,6 +4005,11 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	FlushEnemyObjectCache();
 
+	//	Remove from named object list
+
+	if (Ctx.pObj->IsNamed())
+		UnnameObject(*Ctx.pObj);
+
 	//	Invalidate encounter table cache
 
 	if (Ctx.pObj->HasRandomEncounters())
@@ -4394,6 +4399,10 @@ ALERROR CSystem::StargateCreated (CSpaceObject *pGate, const CString &sStargateI
 //	fix up the topology nodes as appropriate.
 
 	{
+	ASSERT(pGate);
+	if (pGate == NULL)
+		return ERR_FAIL;
+
 	//	Get the ID of the stargate
 
 	CString sGateID;
@@ -4417,7 +4426,7 @@ ALERROR CSystem::StargateCreated (CSpaceObject *pGate, const CString &sStargateI
 	//	Add this as a named object (so we can come back here)
 
 	if (GetNamedObject(sGateID) == NULL)
-		NameObject(sGateID, pGate);
+		NameObject(sGateID, *pGate);
 
 	return NOERROR;
 	}
@@ -4526,18 +4535,18 @@ void CSystem::TransferObjEventsOut (CSpaceObject *pObj, CSystemEventList &ObjEve
 		}
 	}
 
-void CSystem::UnnameObject (CSpaceObject *pObj)
+void CSystem::UnnameObject (CSpaceObject &Obj)
 
 //	UnnameObject
 //
 //	Remove the name for the object
 
 	{
-	int i;
-
-	for (i = 0; i < m_NamedObjects.GetCount(); i++)
-		if (m_NamedObjects[i] == pObj)
+	for (int i = 0; i < m_NamedObjects.GetCount(); i++)
+		if (m_NamedObjects[i] == &Obj)
 			m_NamedObjects.Delete(i);
+
+	Obj.SetNamed(false);
 	}
 
 void CSystem::UnregisterEventHandler (CSpaceObject *pObj)
