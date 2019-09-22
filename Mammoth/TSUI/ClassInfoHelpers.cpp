@@ -37,6 +37,9 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 //	Creates info about the ship class' armor
 
 	{
+	CUniverse &Universe = pClass->GetUniverse();
+	auto &Hull = pClass->GetHullDesc();
+
 	//	Edge condition
 
 	if (pClass->GetHullSectionCount() == 0)
@@ -52,16 +55,40 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 
     CItem ArmorItem;
     pClass->GetHullSection(0).CreateArmorItem(&ArmorItem);
+	ArmorItem.SetCount(pClass->GetHullSectionCount());
 
-	//	Compute the max armor limit
+	//	Compute the armor limits
 
-	int iMaxArmorMass = pClass->GetHullDesc().GetArmorLimits().GetMaxArmorMass();
 	CString sMaxArmor;
-	if ((iMaxArmorMass % 1000) == 0)
-		sMaxArmor = strPatternSubst(CONSTLIT("%d"), iMaxArmorMass / 1000);
-	else
-		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), iMaxArmorMass / 1000, ((iMaxArmorMass % 1000) + 50) / 100);
 
+	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorMass());
+	const CString &sMaxMassClass = Hull.GetArmorLimits().GetMaxArmorClass();
+	if (!sMaxMassClass.IsBlank())
+		{
+		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sMaxMassClass), sMaxArmorLimit);
+		}
+	else if (Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
+		sMaxArmor = sMaxArmorLimit;
+	else
+		sMaxArmor = "unlimited";
+
+	CString sStdArmor;
+
+	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorMass());
+	const CString &sStdMassClass = Hull.GetArmorLimits().GetStdArmorClass();
+	if (!sStdMassClass.IsBlank())
+		{
+		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sStdMassClass), sStdArmorLimit);
+		}
+	else if (Hull.GetArmorLimits().GetStdArmorMass() > 0) 
+		sStdArmor = sStdArmorLimit;
+	else
+		sStdArmor = "unlimited";
+
+	CString sExtraDesc = strPatternSubst(CONSTLIT("\nstd. armor: %s\nmax. armor: %s"), sStdArmor, sMaxArmor);
+	
 	//	Info
 
 	CreateClassInfoItem(ArmorItem, 
@@ -69,7 +96,7 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 			y, 
 			cxWidth, 
 			dwOptions, 
-			strPatternSubst(CONSTLIT("\noptional upgrade up to %s ton segments"), sMaxArmor),
+			sExtraDesc,
 			retcyHeight, 
 			retpInfo);
 	}
@@ -351,13 +378,16 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	//	Create text
 
 	int cyText = 0;
+	CString sItemName = Item.GetNounPhrase(CItemCtx(Item), nounActual | nounShort);
+	if (Item.GetCount() > 1)
+		sItemName = strPatternSubst(CONSTLIT("%s (%&times;%d)"), sItemName, Item.GetCount());
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, yText + cyText));
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
 	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pName->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pName->SetPropertyString(PROP_TEXT, Item.GetNounPhrase(CItemCtx(Item), nounActual));
+	pName->SetPropertyString(PROP_TEXT, sItemName);
 	if (bRightAlign)
 		pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
 
