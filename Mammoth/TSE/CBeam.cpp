@@ -114,9 +114,9 @@ void CBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pHit)
+	if (Ctx.Obj == m_pHit)
 		m_pHit = NULL;
 	}
 

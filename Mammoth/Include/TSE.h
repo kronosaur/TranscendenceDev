@@ -1759,6 +1759,14 @@ class CSpaceObject
 		static COverlayList m_NullOverlays;
 	};
 
+inline bool operator== (const CSpaceObject &Obj1, const CSpaceObject &Obj2) { return &Obj1 == &Obj2; }
+inline bool operator== (const CSpaceObject &Obj1, const CSpaceObject *pObj2) { return &Obj1 == pObj2; }
+inline bool operator== (const CSpaceObject *pObj1, const CSpaceObject &Obj2) { return pObj1 == &Obj2; }
+
+inline bool operator!= (const CSpaceObject &Obj1, const CSpaceObject &Obj2) { return !(Obj1 == Obj2); }
+inline bool operator!= (const CSpaceObject &Obj1, const CSpaceObject *pObj2) { return !(Obj1 == pObj2); }
+inline bool operator!= (const CSpaceObject *pObj1, const CSpaceObject &Obj2) { return !(pObj1 == Obj2); }
+
 class CGlobalSpaceObject
 	{
 	public:

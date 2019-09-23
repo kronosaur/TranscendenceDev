@@ -140,7 +140,7 @@ void CEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	if (Ctx.pObj == m_pAnchor)
+	if (Ctx.Obj == m_pAnchor)
 		m_pAnchor = NULL;
 	}
 

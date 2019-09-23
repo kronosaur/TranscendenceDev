@@ -467,13 +467,13 @@ void CContinuousBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	int i;
 
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 
 	for (i = 0; i < m_Hits.GetCount(); i++)
-		if (Ctx.pObj == m_Hits[i].GetHitObj())
+		if (Ctx.Obj == m_Hits[i].GetHitObj())
 			{
 			m_Hits.Delete(i);
 			i--;

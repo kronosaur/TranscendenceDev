@@ -2110,7 +2110,7 @@ void CSystem::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 	CSystemEventHandler *pHandler = m_EventHandlers.GetNext();
 	while (pHandler)
 		{
-		if (pHandler->InRange(Ctx.pObj->GetPos()))
+		if (pHandler->InRange(Ctx.Obj.GetPos()))
 			pHandler->GetObj()->FireOnSystemObjDestroyed(Ctx);
 
 		pHandler = pHandler->GetNext();
@@ -3045,7 +3045,7 @@ void CSystem::OnStationDestroyed (SDestroyCtx &Ctx)
 //	A station has been abandoned.
 
 	{
-	m_TimedEvents.OnStationDestroyed(Ctx.pObj);
+	m_TimedEvents.OnStationDestroyed(&Ctx.Obj);
 	}
 
 void CSystem::PaintDestinationMarker (SViewportPaintCtx &Ctx, CG32bitImage &Dest, int x, int y, CSpaceObject *pObj)
@@ -3924,14 +3924,14 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	//	Tell all other objects that the given object was destroyed
 	//	NOTE: The destroyed flag is already set on the object
 
-	ASSERT(Ctx.pObj->IsDestroyed());
-	if (Ctx.pObj->NotifyOthersWhenDestroyed())
+	ASSERT(Ctx.Obj.IsDestroyed());
+	if (Ctx.Obj.NotifyOthersWhenDestroyed())
 		{
 		DEBUG_SAVE_PROGRAMSTATE;
 
 		//	Notify subscribers
 
-		Ctx.pObj->NotifyOnObjDestroyed(Ctx);
+		Ctx.Obj.NotifyOnObjDestroyed(Ctx);
 
 		//	Notify other objects in the system
 
@@ -3939,7 +3939,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 			{
 			CSpaceObject *pObj = GetObject(i);
 
-			if (pObj && pObj != Ctx.pObj)
+			if (pObj && pObj != Ctx.Obj)
 				{
 				SetProgramState(psOnObjDestroyed, pObj);
 
@@ -3949,7 +3949,7 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 		//	System-level notifications
 
-		CSpaceObject::Categories iObjCat = Ctx.pObj->GetCategory();
+		CSpaceObject::Categories iObjCat = Ctx.Obj.GetCategory();
 		if (iObjCat == CSpaceObject::catShip || iObjCat == CSpaceObject::catStation)
 			{
 			FireOnSystemObjDestroyed(Ctx);
@@ -3961,8 +3961,8 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	//	Deal with event handlers
 
-	m_TimedEvents.OnObjDestroyed(Ctx.pObj);
-	if (m_EventHandlers.ObjDestroyed(Ctx.pObj))
+	m_TimedEvents.OnObjDestroyed(&Ctx.Obj);
+	if (m_EventHandlers.ObjDestroyed(&Ctx.Obj))
 		m_fFlushEventHandlers = true;
 
 	//	If this is the player and we're resurrecting, then remove the player from
@@ -3970,23 +3970,23 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 	//	the destroyed flag set, but we don't want them to show up in future 
 	//	searches.
 
-	if (Ctx.pObj->IsPlayer() && Ctx.bResurrectPending)
+	if (Ctx.Obj.IsPlayer() && Ctx.bResurrectPending)
 		{
-		m_ObjGrid.Delete(Ctx.pObj);
+		m_ObjGrid.Delete(&Ctx.Obj);
 		}
 
 	//	Deal with joints
 
-	m_Joints.ObjDestroyed(Ctx.pObj);
+	m_Joints.ObjDestroyed(&Ctx.Obj);
 
 	//	Check to see if this was the POV
 
-	if (Ctx.pObj == m_Universe.GetPOV())
+	if (Ctx.Obj == m_Universe.GetPOV())
 		{
 		//	If this was not the player, then set back to the player
 
 		CSpaceObject *pPlayer = GetPlayerShip();
-		if (Ctx.pObj != pPlayer && pPlayer && pPlayer->CanBePOV())
+		if (Ctx.Obj != pPlayer && pPlayer && pPlayer->CanBePOV())
 			m_Universe.SetPOV(pPlayer);
 
 		//	Otherwise, set to a marker
@@ -3994,12 +3994,12 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 		else
 			{
 			CPOVMarker *pMarker;
-			CPOVMarker::Create(*this, Ctx.pObj->GetPos(), NullVector, &pMarker);
+			CPOVMarker::Create(*this, Ctx.Obj.GetPos(), NullVector, &pMarker);
 			m_Universe.SetPOV(pMarker);
 			}
 		}
 
-	m_AllObjects[Ctx.pObj->GetIndex()] = NULL;
+	m_AllObjects[Ctx.Obj.GetIndex()] = NULL;
 
 	//	Invalidate cache of enemy objects
 
@@ -4007,17 +4007,17 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	//	Remove from named object list
 
-	if (Ctx.pObj->IsNamed())
-		UnnameObject(*Ctx.pObj);
+	if (Ctx.Obj.IsNamed())
+		UnnameObject(Ctx.Obj);
 
 	//	Invalidate encounter table cache
 
-	if (Ctx.pObj->HasRandomEncounters())
+	if (Ctx.Obj.HasRandomEncounters())
 		m_fEncounterTableValid = false;
 
 	//	If this was a star then recalc the list of stars
 
-	if (Ctx.pObj->GetScale() == scaleStar)
+	if (Ctx.Obj.GetScale() == scaleStar)
 		{
 		ComputeStars();
 		if (m_Universe.GetSFXOptions().IsStarshineEnabled())
@@ -4026,20 +4026,20 @@ void CSystem::RemoveObject (SDestroyCtx &Ctx)
 
 	//	If this object has a volumetric shadow, then we need to remove it.
 
-	if (Ctx.pObj->HasVolumetricShadow()
+	if (Ctx.Obj.HasVolumetricShadow()
 			&& m_Universe.GetSFXOptions().IsStarshineEnabled())
-		RemoveVolumetricShadow(Ctx.pObj);
+		RemoveVolumetricShadow(&Ctx.Obj);
 
 	//	Debug code to see if we ever delete a barrier in the middle of move
 
 #ifdef DEBUG_PROGRAMSTATE
 	if (g_iProgramState == psUpdatingMove)
 		{
-		if (Ctx.pObj->IsBarrier())
+		if (Ctx.Obj.IsBarrier())
 			{
 			CString sObj = CONSTLIT("ERROR: Destroying barrier during move.\r\n");
 
-			ReportCrashObj(&sObj, Ctx.pObj);
+			ReportCrashObj(&sObj, &Ctx.Obj);
 			kernelDebugLogString(sObj);
 
 #ifdef DEBUG

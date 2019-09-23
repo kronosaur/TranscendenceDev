@@ -247,7 +247,7 @@ void CGameSession::OnObjDestroyed (const SDestroyCtx &Ctx)
 		HideMenu();
 		ShowMenu(menuCommsTarget);
 		}
-	else if (m_CurrentMenu == menuComms && m_pCurrentComms == Ctx.pObj)
+	else if (m_CurrentMenu == menuComms && m_pCurrentComms == Ctx.Obj)
 		{
 		HideMenu();
 		m_pCurrentComms = NULL;

@@ -1525,7 +1525,7 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	A station has been destroyed
 
 	{
-	bool bIsMajorStation = Ctx.pObj->HasAttribute(CONSTLIT("majorStation"));
+	bool bIsMajorStation = Ctx.Obj.HasAttribute(CONSTLIT("majorStation"));
 
 	//	If we are the cause of the destruction and then record stat
 
@@ -1537,26 +1537,26 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 		//	NOTE: Here we care about enemy instead of angry.
 
 		if (bIsMajorStation)
-			m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-					Ctx.pObj,
+			m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+					&Ctx.Obj,
 					Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	Otherwise, record the event if this is a major station
 
 	else if (bIsMajorStation)
-		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 
 	//	If the station was targeted, then clear the target
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		SetTarget(NULL);
         if (m_pSession)
             m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -1996,9 +1996,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	NOTE: We don't care about stations here because those will be
 	//	handled in OnStationDestroyed
 
-	if (Ctx.pObj->GetCategory() == CSpaceObject::catShip)
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catShip)
 		{
-		bool bIsMajorShip = Ctx.pObj->HasAttribute(CONSTLIT("majorShip"));
+		bool bIsMajorShip = Ctx.Obj.HasAttribute(CONSTLIT("majorShip"));
 
 		if (Ctx.Attacker.IsCausedByPlayer())
 			{
@@ -2008,20 +2008,20 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 				{
 			//	NOTE: Here we care about enemy instead of angry.
 
-				m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-						Ctx.pObj,
+				m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+						&Ctx.Obj,
 						Ctx.Attacker.GetSovereignUNID());
 				}
 			}
 		else if (bIsMajorShip)
-			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	If the object we're docked with got destroyed, then undock
 
-	if (m_pStation == Ctx.pObj || Ctx.pObj->IsPlayerDocked())
+	if (m_pStation == Ctx.Obj || Ctx.Obj.IsPlayerDocked())
 		{
-		if (Ctx.pObj->IsPlayerDocked())
+		if (Ctx.Obj.IsPlayerDocked())
 			g_pTrans->GetModel().ExitScreenSession(true);
 
 		m_pStation = NULL;
@@ -2029,7 +2029,7 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Clear out some variables
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		m_pTarget = NULL;
 		ClearFireAngle();
@@ -2037,16 +2037,16 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
             m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pDestination == Ctx.pObj)
+	if (m_pDestination == Ctx.Obj)
 		m_pDestination = NULL;
 
-	if (m_pAutoDock == Ctx.pObj)
+	if (m_pAutoDock == Ctx.Obj)
 		m_pAutoDock = NULL;
 
-	if (m_pAutoTarget == Ctx.pObj)
+	if (m_pAutoTarget == Ctx.Obj)
 		m_pAutoTarget = NULL;
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -2055,7 +2055,7 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	Clear out the target list
 
 	int iIndex;
-	if (m_TargetList.FindByValue(Ctx.pObj, &iIndex))
+	if (m_TargetList.FindByValue(&Ctx.Obj, &iIndex))
 		m_TargetList.Delete(iIndex);
 
 	//	Let the UI deal with destroyed objects

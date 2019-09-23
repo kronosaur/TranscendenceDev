@@ -629,7 +629,7 @@ class CDamageSource
 		bool IsFriend (CSovereign *pSovereign) const;
 		inline bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);
-		void OnObjDestroyed (CSpaceObject *pObjDestroyed);
+		void OnObjDestroyed (CSpaceObject &ObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
 		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }

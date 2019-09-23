@@ -54,7 +54,8 @@ class CCodeChainCtx
 		inline void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
 		void DefineSource (CSpaceObject *pSource);
-		void DefineSpaceObject (const CString &sVar, CSpaceObject *pObj);
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
 		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);

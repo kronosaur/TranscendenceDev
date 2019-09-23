@@ -157,8 +157,7 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 
 	m_Hull.SetHitPoints(0);
 
-	SDestroyCtx DestroyCtx;
-	DestroyCtx.pObj = this;
+	SDestroyCtx DestroyCtx(*this);
 	DestroyCtx.pDesc = pWeaponDesc;
 	DestroyCtx.Attacker = Attacker;
 	DestroyCtx.pWreck = this;
@@ -2630,25 +2629,25 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	If this object is docked with us, remove it from the
 	//	docking table.
 
-	m_DockingPorts.OnObjDestroyed(this, Ctx.pObj);
+	m_DockingPorts.OnObjDestroyed(this, &Ctx.Obj);
 
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Delete(Ctx.pObj);
+	m_Targets.Delete(&Ctx.Obj);
 
 	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.pObj)
+		if (m_WeaponTargets[i] == Ctx.Obj)
 			m_WeaponTargets[i] = NULL;
 
 	//	If this was our base, remove it.
 
-	if (Ctx.pObj == m_pBase)
+	if (Ctx.Obj == m_pBase)
 		m_pBase = NULL;
 
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 
-	m_Subordinates.Delete(Ctx.pObj);
+	m_Subordinates.Delete(&Ctx.Obj);
 	}
 
 bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -3847,10 +3846,10 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Delete(Ctx.pObj);
+	m_Targets.Delete(&Ctx.Obj);
 
 	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.pObj)
+		if (m_WeaponTargets[i] == Ctx.Obj)
 			m_WeaponTargets[i] = NULL;
 	}
 
@@ -3864,7 +3863,6 @@ void CStation::OnSubordinateDestroyed (SDestroyCtx &Ctx)
 //	(that can happen in occupation situations).
 
 	{
-	CSpaceObject *pSubordinate = Ctx.pObj;
 	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	CSpaceObject *pTarget;
@@ -3923,7 +3921,6 @@ void CStation::OnSubordinateHit (SDamageCtx &Ctx)
 //	One of our subordinates was hit.
 
 	{
-	CSpaceObject *pSubordinate = Ctx.pObj;
 	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	CSpaceObject *pTarget;

@@ -313,9 +313,9 @@ void CParticleDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 	}
 

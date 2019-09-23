@@ -208,7 +208,7 @@ CString CTranscendenceModel::CalcEpitaph (SDestroyCtx &Ctx)
 	DEBUG_TRY
 
 	CShip *pShip = m_pPlayer->GetShip();
-	ASSERT(Ctx.pObj == (CSpaceObject *)pShip);
+	ASSERT(Ctx.Obj == (CSpaceObject *)pShip);
 	ASSERT(pShip->GetSystem());
 	CString sSystemName = pShip->GetSystem()->GetName();
 

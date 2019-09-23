@@ -505,7 +505,7 @@ void CShipInterior::OnDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 	for (i = 0; i < m_Compartments.GetCount(); i++)
 		{
 		CSpaceObject *pAttached = GetAttached(i);
-		if (pAttached == Ctx.pObj)
+		if (pAttached == Ctx.Obj)
 			{
 			//	Remove this object from the list.
 

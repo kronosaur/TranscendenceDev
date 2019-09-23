@@ -832,12 +832,12 @@ void CMissile::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pHit)
+	if (Ctx.Obj == m_pHit)
 		m_pHit = NULL;
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 	}
 

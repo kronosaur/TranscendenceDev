@@ -2243,7 +2243,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	{
 	//	Alter our goals
 
-	if (Ctx.pObj == m_pDest)
+	if (Ctx.Obj == m_pDest)
 		{
 		switch (m_State)
 			{
@@ -2280,7 +2280,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Alter our goals
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		{
 		switch (m_State)
 			{
@@ -2320,7 +2320,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	//	that appropriately.
 
 	if (GetOrderCount() > 0
-			&& Ctx.pObj == GetCurrentOrderTarget())
+			&& Ctx.Obj == GetCurrentOrderTarget())
 		{
 		//	Deal with the consequences
 
@@ -2375,7 +2375,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Otherwise, if we're docked with the object that got destroyed then react
 
-	else if (Ctx.pObj == m_pShip->GetDockedObj())
+	else if (Ctx.Obj == m_pShip->GetDockedObj())
 		{
 		switch (GetCurrentOrder())
 			{
@@ -2402,7 +2402,7 @@ void CStandardShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Clean up debug ship
 
-	if (Ctx.pObj == g_pDebugShip)
+	if (Ctx.Obj == g_pDebugShip)
 		g_pDebugShip = NULL;
 	}
 

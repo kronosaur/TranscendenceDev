@@ -260,13 +260,13 @@ IDockScreenDisplay::EResults CDockScreenSelector::OnObjDestroyedNotify (const SD
 //	An object was destroyed.
 
 	{
-	if (Ctx.pObj == m_pLocation)
+	if (Ctx.Obj == m_pLocation)
 		{
 		//	No need to do anything because we will undock in this case.
 
 		return resultNone;
 		}
-	else if (m_pControl->GetSource() == Ctx.pObj)
+	else if (m_pControl->GetSource() == Ctx.Obj)
 		{
 		m_pControl->SetRegions(NULL, CGSelectorArea::SOptions());
 		return resultShowPane;

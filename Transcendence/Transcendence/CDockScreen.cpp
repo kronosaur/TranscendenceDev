@@ -1538,7 +1538,7 @@ void CDockScreen::OnObjDestroyed (const SDestroyCtx &Ctx)
 			CCCtx.SaveAndDefineSourceVar(m_pLocation);
 			CCCtx.SaveAndDefineDataVar(m_pData);
 
-			CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+			CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 			CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 			CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 			CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);

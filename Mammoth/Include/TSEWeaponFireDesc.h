@@ -286,10 +286,14 @@ struct SDamageCtx
 
 struct SDestroyCtx
 	{
-	CSpaceObject *GetOrderGiver (void) const;
-	inline bool WasDestroyed (void) const { return (iCause != enteredStargate && iCause != ascended); }
+	SDestroyCtx (CSpaceObject &ObjArg) :
+			Obj(ObjArg)
+		{ }
 
-	CSpaceObject *pObj = NULL;						//	Object destroyed
+	CSpaceObject *GetOrderGiver (void) const;
+	bool WasDestroyed (void) const { return (iCause != enteredStargate && iCause != ascended); }
+
+	CSpaceObject &Obj;								//	Object destroyed
 	CWeaponFireDesc *pDesc = NULL;					//	WeaponFireDesc
 	CDamageSource Attacker;							//	Ultimate attacker
 	CSpaceObject *pWreck = NULL;					//	Wreck left behind

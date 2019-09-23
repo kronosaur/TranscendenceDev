@@ -542,7 +542,7 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		{
 		case orderMine:
 			{
-			if (Ctx.pObj == GetCurrentOrderTarget())
+			if (Ctx.Obj == GetCurrentOrderTarget())
 				{
 				//	Stop mining
 
@@ -564,13 +564,13 @@ void CFerianShipAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Reset
 
-	if (m_pBase == Ctx.pObj)
+	if (m_pBase == Ctx.Obj)
 		{
 		SetState(stateNone);
 		m_pBase = NULL;
 		}
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		SetState(stateNone);
 		m_pTarget = NULL;

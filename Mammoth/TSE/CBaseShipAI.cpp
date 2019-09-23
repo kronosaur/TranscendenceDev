@@ -1259,7 +1259,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	(we will be updated when we enter the new system).
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
-			&& Ctx.pObj == GetCurrentOrderTarget())
+			&& Ctx.Obj == GetCurrentOrderTarget())
 		return;
 
 	//	If we're following the player through a gate and the object
@@ -1268,14 +1268,14 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
 			&& Ctx.iCause == enteredStargate
-			&& Ctx.pObj->FollowsObjThroughGate(NULL))
+			&& Ctx.Obj.FollowsObjThroughGate(NULL))
 		return;
 
 	//	If we are following an object and it is about to be resurrected,
 	//	then don't cancel the escort order
 
 	if (GetCurrentOrder() == IShipController::orderEscort
-			&& Ctx.pObj == GetCurrentOrderTarget()
+			&& Ctx.Obj == GetCurrentOrderTarget()
 			&& Ctx.bResurrectPending)
 		return;
 
@@ -1293,7 +1293,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	delete any that refer to this object.
 
 	bool bChanged;
-	m_Orders.OnObjDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}
@@ -1403,7 +1403,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	Station has been destroyed
 
 	{
-	ASSERT(!Ctx.pObj->IsDestroyed());
+	ASSERT(!Ctx.Obj.IsDestroyed());
 
 	//	In some cases we ignore the notification because the station still
 	//	exists
@@ -1420,7 +1420,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 	//	Remove orders as appropriate
 
 	bool bChanged;
-	m_Orders.OnStationDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnStationDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}

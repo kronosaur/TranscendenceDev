@@ -284,7 +284,7 @@ void CFractureEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Handle it when another object is destroyed
 
 	{
-	if (m_pAttractor == Ctx.pObj)
+	if (m_pAttractor == Ctx.Obj)
 		m_pAttractor = NULL;
 	}
 

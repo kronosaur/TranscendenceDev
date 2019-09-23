@@ -1408,12 +1408,12 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 //	Object destroyed by player
 
 	{
-	bool bIsEnemy = Ctx.pObj->IsEnemy(pPlayer);
+	bool bIsEnemy = Ctx.Obj.IsEnemy(pPlayer);
 
 	//	Is this a ship?
 
 	CShip *pShip;
-	if (Ctx.pObj->GetCategory() == CSpaceObject::catShip && (pShip = Ctx.pObj->AsShip()))
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catShip && (pShip = Ctx.Obj.AsShip()))
 		{
 		CShipClass *pClass = pShip->GetClass();
 		SShipClassStats *pStats = GetShipStats(pClass->GetUNID());
@@ -1429,27 +1429,27 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 		//	Tell the sovereign that the player destroyed one of their ships.
 
-		CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+		CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 		if (pSovereign)
-			pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
+			pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
 		}
 
 	//	Is this a station?
 
-	else if (Ctx.pObj->GetCategory() == CSpaceObject::catStation)
+	else if (Ctx.Obj.GetCategory() == CSpaceObject::catStation)
 		{
-		if (Ctx.pObj->HasAttribute(CONSTLIT("populated"))
-				|| Ctx.pObj->HasAttribute(CONSTLIT("score")))
+		if (Ctx.Obj.HasAttribute(CONSTLIT("populated"))
+				|| Ctx.Obj.HasAttribute(CONSTLIT("score")))
 			{
-			SStationTypeStats *pStats = GetStationStats(Ctx.pObj->GetType()->GetUNID());
+			SStationTypeStats *pStats = GetStationStats(Ctx.Obj.GetType()->GetUNID());
 
 			pStats->iDestroyed++;
 
 			//	Tell the sovereign that the player destroyed one of their stations.
 
-			CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+			CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 			if (pSovereign)
-				pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
+				pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
 			}
 		}
 	}

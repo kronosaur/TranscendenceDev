@@ -291,14 +291,14 @@ void CAutonAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	//	If our target gets destroyed...
 
 	if (m_State == stateAttackingTarget)
-		if (Ctx.pObj == m_pTarget)
+		if (Ctx.Obj == m_pTarget)
 			SetState(stateNone);
 
 	//	Reset
 
-	if (m_pDest == Ctx.pObj)
+	if (m_pDest == Ctx.Obj)
 		m_pDest = NULL;
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		m_pTarget = NULL;
 	}
 
