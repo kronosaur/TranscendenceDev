@@ -46,7 +46,7 @@ class CNearestInRadiusRange
 		void SetBestDist2 (Metric rDist2) { m_rBestDist2 = rDist2; }
 
 	private:
-		inline void SetRadius (Metric rRadius)
+		void SetRadius (Metric rRadius)
 			{
 			m_rRadius = rRadius;
 			m_rBestDist2 = rRadius * rRadius;
@@ -141,17 +141,17 @@ class CNearestInArcAndRadiusRange
 class CAnyObjSelector
 	{
 	public:
-		inline Metric GetMaxRange (void) const
+		Metric GetMaxRange (void) const
 			{
 			return g_InfiniteDistance;
 			}
 
-		inline bool Matches (CSpaceObject &Obj, Metric rDist2) const
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
 			return !Obj.IsUnreal();
 			}
 
-		inline bool MatchesCategory (CSpaceObject &Obj) const
+		bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return true;
 			}
@@ -170,18 +170,18 @@ class CCriteriaObjSelector
 				m_Ctx(m_Criteria)
 			{ }
 
-		inline Metric GetMaxRange (void) const
+		Metric GetMaxRange (void) const
 			{
 			return g_InfiniteDistance;
 			}
 
-		inline bool Matches (CSpaceObject &Obj, Metric rDist2)
+		bool Matches (CSpaceObject &Obj, Metric rDist2)
 			{
 			return (!Obj.IsUnreal())
 				&& Obj.MatchesCriteria(m_Ctx, m_Criteria);
 			}
 
-		inline bool MatchesCategory (CSpaceObject &Obj) const
+		bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return true;
 			}
@@ -215,8 +215,8 @@ class CVisibleEnemyObjSelector
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsDestroyed()
-				&& &Obj != &m_Source
-				&& &Obj != m_pExcludeObj
+				&& Obj != m_Source
+				&& Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
 
@@ -264,8 +264,8 @@ class CVisibleAggressorObjSelector
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsDestroyed()
-				&& &Obj != &m_Source
-				&& &Obj != m_pExcludeObj
+				&& Obj != m_Source
+				&& Obj != m_pExcludeObj
 				&& Obj.GetLastFireTime() > m_iAggressorThreshold
 				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
@@ -312,8 +312,8 @@ class CVisibleObjSelector
 			return (Obj.CanAttack()
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsDestroyed()
-				&& &Obj != &m_Source
-				&& &Obj != m_pExcludeObj
+				&& Obj != m_Source
+				&& Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));
 			}
 

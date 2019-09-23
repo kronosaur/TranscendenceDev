@@ -4543,7 +4543,7 @@ void CSystem::UnnameObject (CSpaceObject &Obj)
 
 	{
 	for (int i = 0; i < m_NamedObjects.GetCount(); i++)
-		if (m_NamedObjects[i] == &Obj)
+		if (m_NamedObjects[i] == Obj)
 			m_NamedObjects.Delete(i);
 
 	Obj.SetNamed(false);
