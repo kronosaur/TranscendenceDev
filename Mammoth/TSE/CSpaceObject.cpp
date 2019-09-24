@@ -7519,6 +7519,25 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	ClearInUpdateCode();
 	}
 
+void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
+
+//	UpdateDrag
+//
+//	Slow down the update based on drag factor.
+
+	{
+	if (GetVel().IsNull())
+		;
+
+	//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
+	//	and not have to compute wreck movement down to infinitesimal distances.
+
+	else if (GetVel().Length2() < g_MinSpeed2)
+		SetVel(NullVector);
+	else
+		SetVel(CVector(GetVel().GetX() * rDragFactor, GetVel().GetY() * rDragFactor));
+	}
+
 void CSpaceObject::UpdateEffects (void)
 
 //	UpdateEffects

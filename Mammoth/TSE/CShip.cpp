@@ -6360,7 +6360,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         //	Slow down
 
-        SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+		UpdateDrag(Ctx, g_SpaceDragFactor);
 
         if (m_iParalysisTimer > 0)
             m_iParalysisTimer--;
