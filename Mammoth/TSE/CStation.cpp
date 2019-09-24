@@ -47,6 +47,7 @@
 #define PROPERTY_ROTATION_SPEED					CONSTLIT("rotationSpeed")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
+#define PROPERTY_SHIP_REINFORCEMENT_REQUESTED	CONSTLIT("shipReinforcementRequested")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
@@ -1783,6 +1784,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_ENABLED))
 		return CC.CreateBool(!m_fNoReinforcements);
+
+	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_REQUESTED))
+		return (m_iReinforceRequestCount ? CC.CreateInteger(m_iReinforceRequestCount) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(ShowMapLabel());
@@ -3985,7 +3989,6 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	DEBUG_TRY
 
-	int i;
     bool bCalcBounds = false;
 	bool bCalcDeviceBonus = false;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
@@ -4000,100 +4003,62 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		return;
 		}
 
-	//	Basic update
+	//	Active station attack, etc.
 
-	UpdateAttacking(Ctx, iTick);
+	if (!IsAbandoned())
+		{
+		//	Update blacklist counter
+		//	NOTE: Once the player is blacklisted by this station, there is
+		//	no way to get off the blacklist. (At least no automatic way).
+
+		m_Blacklist.Update(iTick);
+
+		//	Update attacks
+
+		if (m_fArmed && !m_pType->IsVirtual())
+			{
+			if (!UpdateAttacking(Ctx, iTick))
+				return;
+			}
+
+		//	Update reinforcements
+
+		UpdateReinforcements(iTick);
+
+		//	Update trade
+
+		if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
+			UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+		}
+
+	//	Update docking ports
+
 	m_DockingPorts.UpdateAll(Ctx, this);
-	UpdateReinforcements(iTick);
 
-	//	Trade
-
-	if ((iTick % TRADE_UPDATE_FREQUENCY) == 0
-			 && !IsAbandoned())
-		UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
-
-	//	Update each device
+	//	Update each device. If updating destroys the station, then we're done.
 
 	if (m_pDevices)
 		{
-		CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
-		for (i = 0; i < maxDevices; i++)
-			{
-			DeviceCtx.ResetOutputs();
-
-			m_pDevices[i].Update(this, DeviceCtx);
-			if (DeviceCtx.bSourceDestroyed)
-				return;
-
-			//	If the device was repaired or disabled, we need to update
-
-			if (DeviceCtx.bRepaired)
-				{
-				bCalcDeviceBonus = true;
-				}
-
-			if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
-				{
-				bCalcDeviceBonus = true;
-				}
-			}
+		if (!UpdateDevices(Ctx, iTick, bCalcDeviceBonus))
+			return;
 		}
 
 	//	Update destroy animation
 
 	if (m_iDestroyedAnimation)
-		{
-		const CObjectImageArray &Image = GetImage(false);
-		int cxWidth = RectWidth(Image.GetImageRect());
-
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
-		if (pEffect)
-			{
-			for (int i = 0; i < mathRandom(1, 3); i++)
-				{
-				CVector vPos = GetPos() 
-						+ PolarToVector(mathRandom(0, 359), g_KlicksPerPixel * mathRandom(1, cxWidth / 3));
-
-				pEffect->CreateEffect(GetSystem(),
-						this,
-						vPos,
-						GetVel(),
-						0);
-				}
-			}
-
-		m_iDestroyedAnimation--;
-		}
+		UpdateDestroyedAnimation();
 
 	//	If we're moving, slow down
 
-	if (!IsAnchored() && !GetVel().IsNull())
-		{
-		//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
-		//	and not have to compute wreck movement down to infinitesimal distances.
-
-		if (GetVel().Length2() < g_MinSpeed2)
-			SetVel(NullVector);
-		else
-			SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
-		}
+	if (!IsAnchored())
+		UpdateDrag(Ctx, g_SpaceDragFactor);
 
 	//	Overlays
 
 	if (!m_Overlays.IsEmpty())
 		{
-		bool bModified;
-
-		const CObjectImageArray &Image = GetImage(true);
-
-		m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
-		if (CSpaceObject::IsDestroyedInUpdate())
+		if (!UpdateOverlays(Ctx, bCalcBounds, bCalcDeviceBonus))
 			return;
-		else if (bModified)
-			{
-			bCalcBounds = true;
-			bCalcDeviceBonus = true;
-			}
 		}
 
 	//	Update as necessary
@@ -4994,29 +4959,18 @@ void CStation::Undock (CSpaceObject *pObj)
 		m_fDestroyIfEmpty = true;
 	}
 
-void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
+bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 //	UpdateAttacking
 //
-//	Station attacks any enemies in range
+//	Station attacks any enemies in range. Returns FALSE if the station was
+//	destroyed.
 
 	{
 	DEBUG_TRY
 
 	int i, j;
 	
-	//	Update blacklist counter
-	//	NOTE: Once the player is blacklisted by this station, there is
-	//	no way to get off the blacklist. (At least no automatic way).
-
-	m_Blacklist.Update(iTick);
-
-	//	If we're abandoned or if we have no weapons then
-	//	there's nothing we can do
-
-	if (IsAbandoned() || !m_fArmed || m_pType->IsVirtual())
-		return;
-
 	//	Compute the range at which we attack enemies
 
 	Metric rAttackRange;
@@ -5085,7 +5039,7 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					pWeapon->SetTarget(pTarget);
 					pWeapon->Activate(this, pTarget, &bSourceDestroyed);
 					if (bSourceDestroyed)
-						return;
+						return false;
 
 					pWeapon->SetTimeUntilReady(m_pType->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
 
@@ -5097,7 +5051,98 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 			}
 		}
 
+	return true;
+
 	DEBUG_CATCH
+	}
+
+void CStation::UpdateDestroyedAnimation (void)
+
+//	UpdateDestroyedAnimation
+//
+//	Updates animation when station is destroyed.
+
+	{
+	ASSERT(m_iDestroyedAnimation > 0);
+
+	const CObjectImageArray &Image = GetImage(false);
+	int cxWidth = RectWidth(Image.GetImageRect());
+
+	CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
+	if (pEffect)
+		{
+		for (int i = 0; i < mathRandom(1, 3); i++)
+			{
+			CVector vPos = GetPos() 
+					+ PolarToVector(mathRandom(0, 359), g_KlicksPerPixel * mathRandom(1, cxWidth / 3));
+
+			pEffect->CreateEffect(GetSystem(),
+					this,
+					vPos,
+					GetVel(),
+					0);
+			}
+		}
+
+	m_iDestroyedAnimation--;
+	}
+
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
+
+//	UpdateDevices
+//
+//	Updates all devices. We set iobModified to TRUE if a device was modified,
+//	requiring a device recalc.
+//
+//	We return TRUE if successful. FALSE if the station was destroyed inside the
+//	update.
+
+	{
+	ASSERT(m_pDevices);
+
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
+	for (int i = 0; i < maxDevices; i++)
+		{
+		DeviceCtx.ResetOutputs();
+
+		m_pDevices[i].Update(this, DeviceCtx);
+		if (DeviceCtx.bSourceDestroyed)
+			return false;
+
+		//	If the device was repaired or disabled, we need to update
+
+		if (DeviceCtx.bRepaired)
+			iobModified = true;
+
+		else if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
+			iobModified = true;
+		}
+
+	return true;
+	}
+
+bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices)
+
+//	UpdateOverlays
+//
+//	Update overlays. Returns TRUE if we succeed or FALSE if the update destroyed
+//	the station.
+
+	{
+	bool bModified;
+	const CObjectImageArray &Image = GetImage(true);
+
+	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
+	if (CSpaceObject::IsDestroyedInUpdate())
+		return false;
+
+	else if (bModified)
+		{
+		iobCalcBounds = true;
+		iobCalcDevices = true;
+		}
+
+	return true;
 	}
 
 void CStation::UpdateReinforcements (int iTick)
@@ -5108,11 +5153,6 @@ void CStation::UpdateReinforcements (int iTick)
 
 	{
 	DEBUG_TRY
-
-	//	Nothing to do if we're abandoned
-
-	if (IsAbandoned())
-		return;
 
 	//	Repair damage
 
@@ -5159,44 +5199,46 @@ void CStation::UpdateReinforcements (int iTick)
 
 	//	Get reinforcements
 
-	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0
-			&& !m_fNoReinforcements
-			&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
+	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0)
 		{
-		//	If we've requested several rounds of reinforcements but have
-		//	never received any, then it's likely that they are being
-		//	destroyed at the gate, so we stop requesting so many
-
-		if (m_iReinforceRequestCount > 0)
+		if (!m_fNoReinforcements
+				&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
 			{
-			int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
-			int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
-			if ((iLongTick % iCycle) != 0)
-				return;
+			//	If we've requested several rounds of reinforcements but have
+			//	never received any, then it's likely that they are being
+			//	destroyed at the gate, so we stop requesting so many
+
+			if (m_iReinforceRequestCount > 0)
+				{
+				int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
+				int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
+				if ((iLongTick % iCycle) != 0)
+					return;
+				}
+
+			//	We either bring in ships from the nearest gate or we build
+			//	them ourselves.
+
+			CSpaceObject *pGate;
+			if (m_pType->BuildsReinforcements()
+					|| (pGate = GetNearestStargate(true)) == NULL)
+				pGate = this;
+
+			//	Generate reinforcements
+
+			SShipCreateCtx Ctx;
+			Ctx.pSystem = GetSystem();
+			Ctx.pBase = this;
+			Ctx.pGate = pGate;
+			m_pType->GetReinforcementsTable()->CreateShips(Ctx);
+
+			//	Increment counter
+
+			m_iReinforceRequestCount++;
 			}
-
-		//	We either bring in ships from the nearest gate or we build
-		//	them ourselves.
-
-		CSpaceObject *pGate;
-		if (m_pType->BuildsReinforcements()
-				|| (pGate = GetNearestStargate(true)) == NULL)
-			pGate = this;
-
-		//	Generate reinforcements
-
-		SShipCreateCtx Ctx;
-		Ctx.pSystem = GetSystem();
-		Ctx.pBase = this;
-		Ctx.pGate = pGate;
-		m_pType->GetReinforcementsTable()->CreateShips(Ctx);
-
-		//	Increment counter
-
-		m_iReinforceRequestCount++;
+		else
+			m_iReinforceRequestCount = 0;
 		}
-	else
-		m_iReinforceRequestCount = 0;
 
 	//	Attack targets on the target list
 

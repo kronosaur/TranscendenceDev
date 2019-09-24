@@ -1641,7 +1641,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
-		void UpdateAttacking (SUpdateCtx &Ctx, int iTick);
+		bool UpdateAttacking (SUpdateCtx &Ctx, int iTick);
+		void UpdateDestroyedAnimation (void);
+		bool UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified);
+		bool UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices);
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
 
