@@ -196,7 +196,7 @@ class CSpaceObjectAddressResolver
 	public:
 		bool HasUnresolved (void);
 		void InsertRef (DWORD dwObjID, void *pCtx, PRESOLVEOBJIDPROC pfnResolveProc);
-		void InsertRef (DWORD dwObjID, CSpaceObject **ppAddr);
+		void InsertRef (DWORD dwObjID, CSpaceObject **ppAddr, bool bOptional = false);
 		void ResolveRefs (DWORD dwObjID, CSpaceObject *pObj);
 
 	private:
@@ -204,9 +204,18 @@ class CSpaceObjectAddressResolver
 			{
 			PRESOLVEOBJIDPROC pfnResolveProc;	//	If NULL, then pCtx is an address to fix up.
 			void *pCtx;
+			bool bOptional = false;
+
+#ifdef DEBUG
+			DWORD dwID = 0;
+#endif
 			};
 
 		TSortMap<DWORD, TArray<SEntry>> m_List;
+
+#ifdef DEBUG
+		DWORD m_dwNextID = 1;
+#endif
 	};
 
 struct SLoadCtx

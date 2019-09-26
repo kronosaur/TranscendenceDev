@@ -3793,7 +3793,7 @@ void CSystem::GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj
 	Ctx.ForwardReferences.InsertRef(dwID, retpObj);
 	}
 
-void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
+void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj, bool bOptional)
 
 //	ReadObjRefFromStream
 //
@@ -3818,7 +3818,7 @@ void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 
 	//	If we could not find it, add the return pointer as a reference
 
-	Ctx.ForwardReferences.InsertRef(dwID, retpObj);
+	Ctx.ForwardReferences.InsertRef(dwID, retpObj, bOptional);
 	}
 
 void CSystem::ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC pfnResolveProc)

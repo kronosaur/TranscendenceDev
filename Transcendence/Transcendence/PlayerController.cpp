@@ -2259,7 +2259,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pStation);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
-	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination);
+	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination, true);
 
 	if (Ctx.dwVersion >= 100)
 		{

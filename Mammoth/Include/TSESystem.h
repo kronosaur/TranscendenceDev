@@ -871,7 +871,7 @@ class CSystem
 
 		static Metric CalcApparentSpeedAdj (Metric rSpeed);
 		static void GetObjRefFromID (SLoadCtx &Ctx, DWORD dwID, CSpaceObject **retpObj);
-		static void ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj);
+		static void ReadObjRefFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj, bool bOptional = false);
 		static void ReadObjRefFromStream (SLoadCtx &Ctx, void *pCtx, PRESOLVEOBJIDPROC pfnResolveProc);
 		static void ReadSovereignRefFromStream (SLoadCtx &Ctx, CSovereign **retpSovereign);
 
