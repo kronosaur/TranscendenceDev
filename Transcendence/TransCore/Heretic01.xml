@@ -200,7 +200,7 @@
 					;	If mission is already active then we need to restore previous orders
 					(rpgIsMissionActive &msHereticSvalbard;)
 						(block (kateMorgentalObj)
-							(setq kateMorgentalObj (rpgCharacterCreateShip &unidKateMorgental;))
+							(setq kateMorgentalObj (rpgCharacterCreateShip &unidKateMorgental; &scSvalbardExplorer;))
 							(enum (typGetData &unidKateMorgental; 'lastOrders) order
 								(block (cmd)
 									(setq cmd (append kateMorgentalObj (@ order 'desc)))
