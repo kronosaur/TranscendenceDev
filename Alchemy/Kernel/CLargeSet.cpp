@@ -112,8 +112,8 @@ bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString
 
 	//	Parse
 	
-	char *pPos = sValue.GetASCIIZPointer();
-	char *pPosEnd = pPos + sValue.GetLength();
+	const char *pPos = sValue.GetASCIIZPointer();
+	const char *pPosEnd = pPos + sValue.GetLength();
 	while (pPos < pPosEnd)
 		{
 		//	Ignore whitespace
@@ -134,7 +134,7 @@ bool CLargeSet::InitFromString (const CString &sValue, DWORD dwMaxValue, CString
 
 		else if (*pPos >= '0' && *pPos <= '9')
 			{
-			char *pEnd;
+			const char *pEnd;
 			bool bFailed;
 			DWORD dwStartValue = (DWORD)strParseInt(pPos, 0, &pEnd, &bFailed);
 			if (bFailed)

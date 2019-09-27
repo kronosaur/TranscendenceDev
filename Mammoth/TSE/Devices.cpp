@@ -857,8 +857,8 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 	{
 	//	Look for a :nn suffix specifying a variant
 
-	char *pStart = sName.GetASCIIZPointer();
-	char *pPos = pStart;
+	const char *pStart = sName.GetASCIIZPointer();
+	const char *pPos = pStart;
 	while (*pPos != '\0')
 		{
 		if (*pPos == ':')

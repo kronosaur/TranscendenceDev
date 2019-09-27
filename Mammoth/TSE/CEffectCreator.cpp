@@ -669,7 +669,7 @@ CEffectCreator *CEffectCreator::FindEffectCreator (const CString &sUNID)
 
 	//	First we parse the UNID
 
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 	DWORD dwUNID = strParseInt(pPos, 0, &pPos);
 
 	//	Look for the design type
@@ -797,7 +797,7 @@ CEffectCreator *CEffectCreator::OnFindEffectCreator (const CString &sUNID)
 //	Finds the effect creator by UNID
 
 	{
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we're done, then we mean ourselves
 

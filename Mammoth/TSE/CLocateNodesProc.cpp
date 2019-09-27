@@ -67,7 +67,7 @@ CEffectCreator *CLocateNodesProc::OnFindEffectCreator (const CString &sUNID)
 //		           ^
 
 	{
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we've got a slash, then recurse down
 
@@ -285,7 +285,7 @@ ALERROR CLocateNodesProc::ParseRange (SDesignLoadCtx &Ctx, const CString &sRange
 		}
 	else
 		{
-		char *pPos = sRange.GetASCIIZPointer();
+		const char *pPos = sRange.GetASCIIZPointer();
 		while (*pPos == ' ')
 			pPos++;
 

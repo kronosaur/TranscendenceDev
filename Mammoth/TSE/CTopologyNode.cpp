@@ -950,7 +950,7 @@ ALERROR CTopologyNode::ParseAttributeCriteria (const CString &sCriteria, SAttrib
 	{
 	*retCrit = SAttributeCriteria();
 
-	char *pPos = sCriteria.GetASCIIZPointer();
+	const char *pPos = sCriteria.GetASCIIZPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -1175,7 +1175,7 @@ ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *re
 
 	//	Keep parsing until we hit the end
 
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 	bool bInvalid = false;
 
 	while (!bInvalid)
@@ -1239,7 +1239,7 @@ ALERROR CTopologyNode::ParsePosition (const CString &sValue, int *retx, int *ret
 
 	//	Parse
 
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 
 	bool bInvalid;
 	*retx = ::strParseInt(pPos, 0, &pPos, &bInvalid);

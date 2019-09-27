@@ -74,7 +74,7 @@ CString::CString (const char *pString) :
 		Transcribe(pString, -1);
 	}
 
-CString::CString (char *pString, int iLength) :
+CString::CString (const char *pString, int iLength) :
 		CObject(&g_Class),
 		m_pStore(NULL)
 
@@ -2017,7 +2017,7 @@ CString Kernel::strFormatMilliseconds (DWORD dwMilliseconds)
 		return strPatternSubst("%d ms", dwMilliseconds);
 	}
 
-int Kernel::strGetHexDigit (char *pPos)
+int Kernel::strGetHexDigit (const char *pPos)
 
 //	strGetHexDigit
 //
@@ -2044,7 +2044,7 @@ char Kernel::strGetHexDigit (int iDigit)
 		return '0';
 	}
 
-bool Kernel::strIsASCIISymbol (char *pPos)
+bool Kernel::strIsASCIISymbol (const char *pPos)
 
 //	strIsASCIISymbol
 //
@@ -2099,8 +2099,8 @@ bool Kernel::strIsInt (const CString &sValue, DWORD dwFlags, int *retiValue)
 //	Returns true if this is an integer value.
 
 	{
-	char *pPos = sValue.GetASCIIZPointer();
-	char *pPosEnd;
+	const char *pPos = sValue.GetASCIIZPointer();
+	const char *pPosEnd;
 	bool bError;
 	int iValue = strParseInt(pPos, 0, dwFlags, &pPosEnd, &bError);
 	if (retiValue)
@@ -2244,14 +2244,14 @@ CString Kernel::strLoadFromRes (HINSTANCE hInst, int iResID)
 	return sString;
 	}
 
-double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue)
+double Kernel::strParseDouble (const char *pStart, double rNullResult, const char **retpEnd, bool *retbNullValue)
 
 //  strParseDouble
 //
 //  Parses a double precision value.
 
     {
-    char *pPos = pStart;
+    const char *pPos = pStart;
 
     //  Skip any leading whitespace
 
@@ -2261,7 +2261,7 @@ double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd,
     //  We copy what we've got to a buffer, because we're going to use atof.
 
     static const int MAX_SIZE = 64;
-    char *pSrc = pPos;
+    const char *pSrc = pPos;
     char szBuffer[MAX_SIZE];
     char *pDest = szBuffer;
     char *pDestEnd = szBuffer + MAX_SIZE;
@@ -2277,11 +2277,11 @@ double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd,
 	else if (*pSrc == '+')
 		*pDest++ = *pSrc++;
 
-	char *pInt = pSrc;
+	const char *pInt = pSrc;
 	while (*pSrc >= '0' && *pSrc <= '9' && pDest < pDestEnd)
 		*pDest++ = *pSrc++;
 
-	char *pIntEnd = pSrc;
+	const char *pIntEnd = pSrc;
 	if (pInt == pIntEnd)
 		{
         if (retbNullValue) *retbNullValue = true;
@@ -2290,8 +2290,8 @@ double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd,
 
 	//	Do we have a fractional part?
 
-	char *pFrac = NULL;
-	char *pFracEnd = pIntEnd;
+	const char *pFrac = NULL;
+	const char *pFracEnd = pIntEnd;
 	if (*pSrc == '.' && pDest < pDestEnd)
 		{
 		*pDest++ = *pSrc++;
@@ -2310,8 +2310,8 @@ double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd,
 
 	//	Do we have an exponential part?
 
-	char *pExp = NULL;
-	char *pExpEnd = pFracEnd;
+	const char *pExp = NULL;
+	const char *pExpEnd = pFracEnd;
 	int iExpSign = 1;
 	if ((*pSrc == 'e' || *pSrc == 'E') && pDest < pDestEnd)
 		{
@@ -2363,7 +2363,7 @@ double Kernel::strParseDouble (char *pStart, double rNullResult, char **retpEnd,
     return atof(szBuffer);
     }
 
-int Kernel::strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd, bool *retbNullValue)
+int Kernel::strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd, bool *retbNullValue)
 
 //	strParseInt
 //
@@ -2373,7 +2373,7 @@ int Kernel::strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **re
 //	retbNullValue: Returns TRUE if there are no valid numbers.
 
 	{
-	char *pPos;
+	const char *pPos;
 	BOOL bNegative;
 	BOOL bFoundNumber;
 	BOOL bHex;
@@ -2497,14 +2497,14 @@ int Kernel::strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **re
 	return iInt;
 	}
 
-int Kernel::strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd, bool *retbNullValue)
+int Kernel::strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd, bool *retbNullValue)
 
 //	strParseIntOfBase
 //
 //	Parses an integer of the given base
 
 	{
-	char *pPos;
+	const char *pPos;
 	BOOL bNegative;
 	BOOL bFoundNumber;
 	int iInt;
@@ -2610,7 +2610,7 @@ int Kernel::strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **
 	return iInt;
 	}
 
-void Kernel::strParseWhitespace (char *pPos, char **retpPos)
+void Kernel::strParseWhitespace (const char *pPos, const char **retpPos)
 
 //	strParseWhitespace
 //
@@ -3113,9 +3113,9 @@ CString Kernel::strTrimWhitespace (const CString &sString, bool bLeading, bool b
 //	Removes leading and trailing whitespace
 
 	{
-	char *pPos = sString.GetASCIIZPointer();
-	char *pStart;
-	char *pEnd;
+	const char *pPos = sString.GetASCIIZPointer();
+	const char *pStart;
+	const char *pEnd;
 
 	if (bLeading)
 		strParseWhitespace(pPos, &pStart);

@@ -12,7 +12,7 @@ COLORREF strToCOLORREF(const CString &sColor)
 //	Converts a string of the 24-bit hex-representation "rrggbb" into an RGB COLORREF
 
 	{
-	char *pPos = sColor.GetASCIIZPointer();
+	const char *pPos = sColor.GetASCIIZPointer();
 
 	//	Skip '#', if there
 

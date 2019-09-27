@@ -582,7 +582,7 @@ CEffectCreator *CWeaponFireDesc::FindEffectCreator (const CString &sUNID)
 //	Finds effect creator from a partial UNID
 
 	{
-	char *pPos;
+	const char *pPos;
 
 	//	Get the appropriate weapon fire desc and the parse position
 
@@ -695,14 +695,14 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 		return NULL;
 	}
 
-CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, char **retpPos)
+CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, const char **retpPos)
 
 //	FindWeaponFireDesc
 //
 //	Finds the weapon fire desc from a partial UNID
 
 	{
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we're done, then we want this descriptor
 
@@ -764,7 +764,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 //	Finds the descriptor by name
 
 	{
-	char *pPos = sUNID.GetPointer();
+	const char *pPos = sUNID.GetPointer();
 
 	//	Get the UNID of the type
 
@@ -1462,7 +1462,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 //	we return the weapon item UNID
 
 	{
-	char *pPos = m_sUNID.GetPointer();
+	const char *pPos = m_sUNID.GetPointer();
 
 	//	Get the weapon UNID and the ordinal
 

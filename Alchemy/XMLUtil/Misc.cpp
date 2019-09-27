@@ -278,7 +278,7 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<int> *pList)
 //	Parses a string into an integer list
 
 	{
-	char *pPos = sValue.GetPointer();
+	const char *pPos = sValue.GetPointer();
 
 	while (*pPos != '\0')
 		{
@@ -314,7 +314,7 @@ ALERROR ParseAttributeIntegerList (const CString &sValue, TArray<DWORD> *pList)
 //	Parses a string into an integer list
 
 	{
-	char *pPos = sValue.GetPointer();
+	const char *pPos = sValue.GetPointer();
 
 	while (*pPos != '\0')
 		{

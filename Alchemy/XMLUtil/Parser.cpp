@@ -1331,7 +1331,7 @@ CString ResolveEntity (ParserCtx *pCtx, const CString &sName, bool *retbFound)
 
 	//	If the entity is a hex number, then this is a character
 
-	char *pPos = sName.GetASCIIZPointer();
+	const char *pPos = sName.GetASCIIZPointer();
 	if (*pPos == '#')
 		{
 		pPos++;

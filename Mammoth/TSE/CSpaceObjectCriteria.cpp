@@ -247,7 +247,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 
 	//	Parse
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -320,7 +320,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 			case 'L':
 				{
 				CString sParam = ParseCriteriaParam(&pPos);
-				char *pParamPos = sParam.GetASCIIZPointer();
+				const char *pParamPos = sParam.GetASCIIZPointer();
 
 				//	Parse the first number
 
@@ -518,7 +518,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 
 				//	Get the number
 
-				char *pNewPos;
+				const char *pNewPos;
 				int iValue = strParseInt(pPos, 0, &pNewPos);
 
 				//	Back up one because we will increment at the bottom

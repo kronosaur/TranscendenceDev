@@ -36,9 +36,9 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 	{
 	CString sOutput;
 	sOutput.GrowToFit(4000);
-	char *pPos = sPattern.GetPointer();
+	const char *pPos = sPattern.GetPointer();
 	int iLength = sPattern.GetLength();
-	char *pRunStart;
+	const char *pRunStart;
 	int iRunLength;
 	int iLastInteger = 1;
 
@@ -99,7 +99,7 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 				if (*pPos >= '0' && *pPos <= '9')
 					{
-					char *pNewPos;
+					const char *pNewPos;
 					bPadWithZeros = (*pPos == '0');
 					iMinFieldWidth = strParseInt(pPos, 0, &pNewPos);
 
@@ -208,7 +208,7 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 					pPos++;
 					iLength--;
-					char *pStart = pPos;
+					const char *pStart = pPos;
 					while (iLength > 0 && *pPos != ';')
 						{
 						pPos++;

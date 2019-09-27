@@ -213,7 +213,7 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 	//	Parse
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -401,7 +401,7 @@ ALERROR CDesignTypeCriteria::ParseCriteria (const CString &sCriteria, CDesignTyp
 
 				//	Get the number
 
-				char *pNewPos;
+				const char *pNewPos;
 				int iValue = strParseInt(pPos, 0, &pNewPos);
 
 				//	Back up one because we will increment at the bottom

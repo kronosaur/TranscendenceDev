@@ -520,8 +520,8 @@ ICCItem *CCodeChain::CreateVariant (const CString &sValue)
 //	Parses sValue and returns either an integer, double, or string.
 
 	{
-	char *pPos = sValue.GetASCIIZPointer();
-	char *pPosEnd = pPos + sValue.GetLength();
+	const char *pPos = sValue.GetASCIIZPointer();
+	const char *pPosEnd = pPos + sValue.GetLength();
 
 	//	Skip any leading whitespace
 
@@ -535,7 +535,7 @@ ICCItem *CCodeChain::CreateVariant (const CString &sValue)
 		//	See if this is an integer
 
 		bool bFailed;
-		char *pNumberEnd;
+		const char *pNumberEnd;
 		int iValue = strParseInt(pPos, 0, &pNumberEnd, &bFailed);
 		if (!bFailed && pNumberEnd == pPosEnd)
 			return CreateInteger(iValue);

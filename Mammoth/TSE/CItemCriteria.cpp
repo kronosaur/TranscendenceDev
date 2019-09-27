@@ -34,7 +34,7 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
 	//	Parse string
 
-	char *pPos = sCriteria.GetASCIIZPointer();
+	const char *pPos = sCriteria.GetASCIIZPointer();
 
 	//	If null, use default
 
@@ -50,7 +50,7 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 		{
 		pPos++;
 
-		char *pStart = pPos;
+		const char *pStart = pPos;
 		while (*pPos != '\0' && *pPos != '}' )
 			pPos++;
 
@@ -228,23 +228,23 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 				break;
 
 			case 'L':
-			{
-			int iHigh;
-			int iLow;
-
-			if (ParseCriteriaParamLevelRange(&pPos, &iLow, &iHigh))
 				{
-				if (iHigh == -1)
-					iEqualToLevel = iLow;
-				else
-					{
-					iGreaterThanLevel = iLow - 1;
-					iLessThanLevel = iHigh + 1;
-					}
-				}
+				int iHigh;
+				int iLow;
 
-			break;
-			}
+				if (ParseCriteriaParamLevelRange(&pPos, &iLow, &iHigh))
+					{
+					if (iHigh == -1)
+						iEqualToLevel = iLow;
+					else
+						{
+						iGreaterThanLevel = iLow - 1;
+						iLessThanLevel = iHigh + 1;
+						}
+					}
+
+				break;
+				}
 
 			case 'M':
 				bLauncherMissileOnly = true;
@@ -269,49 +269,49 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
 			case '+':
 			case '-':
-			{
-			bool bSpecialAttrib = false;
-			char chChar = *pPos;
-			pPos++;
-
-			//	Deal with category exclusion
-
-			//	Get the modifier
-
-			char *pStart = pPos;
-			while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t')
 				{
-				if (*pPos == ':')
-					bSpecialAttrib = true;
+				bool bSpecialAttrib = false;
+				char chChar = *pPos;
 				pPos++;
-				}
 
-			CString sModifier = CString(pStart, pPos - pStart);
+				//	Deal with category exclusion
 
-			//	Required or Not Allowed
+				//	Get the modifier
 
-			if (chChar == '+')
-				{
-				if (bSpecialAttrib)
-					SpecialAttribRequired.Insert(sModifier);
+				const char *pStart = pPos;
+				while (*pPos != '\0' && *pPos != ';' && *pPos != ' ' && *pPos != '\t')
+					{
+					if (*pPos == ':')
+						bSpecialAttrib = true;
+					pPos++;
+					}
+
+				CString sModifier = CString(pStart, pPos - pStart);
+
+				//	Required or Not Allowed
+
+				if (chChar == '+')
+					{
+					if (bSpecialAttrib)
+						SpecialAttribRequired.Insert(sModifier);
+					else
+						ModifiersRequired.Insert(sModifier);
+					}
 				else
-					ModifiersRequired.Insert(sModifier);
+					{
+					if (bSpecialAttrib)
+						SpecialAttribNotAllowed.Insert(sModifier);
+					else
+						ModifiersNotAllowed.Insert(sModifier);
+					}
+
+				//	No trailing semi
+
+				if (*pPos == '\0')
+					pPos--;
+
+				break;
 				}
-			else
-				{
-				if (bSpecialAttrib)
-					SpecialAttribNotAllowed.Insert(sModifier);
-				else
-					ModifiersNotAllowed.Insert(sModifier);
-				}
-
-			//	No trailing semi
-
-			if (*pPos == '\0')
-				pPos--;
-
-			break;
-			}
 
 			case '~':
 				bExclude = true;
@@ -324,78 +324,78 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 			case '=':
 			case '>':
 			case '<':
-			{
-			char chChar = *pPos;
-			pPos++;
-
-			//	<= or >=
-
-			int iEqualAdj;
-			if (*pPos == '=')
 				{
+				char chChar = *pPos;
 				pPos++;
-				iEqualAdj = 1;
+
+				//	<= or >=
+
+				int iEqualAdj;
+				if (*pPos == '=')
+					{
+					pPos++;
+					iEqualAdj = 1;
+					}
+				else
+					iEqualAdj = 0;
+
+				//	Is this price?
+
+				char comparison;
+				if (*pPos == '$' || *pPos == '#')
+					comparison = *pPos++;
+				else
+					comparison = '\0';
+
+				//	Get the number
+
+				const char *pNewPos;
+				int iValue = strParseInt(pPos, 0, &pNewPos);
+
+				//	Back up one because we will increment at the bottom
+				//	of the loop.
+
+				if (pPos != pNewPos)
+					pPos = pNewPos - 1;
+
+				//	Price limits
+
+				if (comparison == '$')
+					{
+					if (chChar == '=')
+						iEqualToPrice = iValue;
+					else if (chChar == '>')
+						iGreaterThanPrice = iValue - iEqualAdj;
+					else if (chChar == '<')
+						iLessThanPrice = iValue + iEqualAdj;
+					}
+
+				//	Mass limits
+
+				else if (comparison == '#')
+					{
+					if (chChar == '=')
+						iEqualToMass = iValue;
+					else if (chChar == '>')
+						iGreaterThanMass = iValue - iEqualAdj;
+					else if (chChar == '<')
+						iLessThanMass = iValue + iEqualAdj;
+					}
+
+				//	Level limits
+
+				else
+					{
+					if (chChar == '=')
+						iEqualToLevel = iValue;
+					else if (chChar == '>')
+						iGreaterThanLevel = iValue - iEqualAdj;
+					else if (chChar == '<')
+						iLessThanLevel = iValue + iEqualAdj;
+					}
+
+				break;
 				}
-			else
-				iEqualAdj = 0;
-
-			//	Is this price?
-
-			char comparison;
-			if (*pPos == '$' || *pPos == '#')
-				comparison = *pPos++;
-			else
-				comparison = '\0';
-
-			//	Get the number
-
-			char *pNewPos;
-			int iValue = strParseInt(pPos, 0, &pNewPos);
-
-			//	Back up one because we will increment at the bottom
-			//	of the loop.
-
-			if (pPos != pNewPos)
-				pPos = pNewPos - 1;
-
-			//	Price limits
-
-			if (comparison == '$')
-				{
-				if (chChar == '=')
-					iEqualToPrice = iValue;
-				else if (chChar == '>')
-					iGreaterThanPrice = iValue - iEqualAdj;
-				else if (chChar == '<')
-					iLessThanPrice = iValue + iEqualAdj;
-				}
-
-			//	Mass limits
-
-			else if (comparison == '#')
-				{
-				if (chChar == '=')
-					iEqualToMass = iValue;
-				else if (chChar == '>')
-					iGreaterThanMass = iValue - iEqualAdj;
-				else if (chChar == '<')
-					iLessThanMass = iValue + iEqualAdj;
-				}
-
-			//	Level limits
-
-			else
-				{
-				if (chChar == '=')
-					iEqualToLevel = iValue;
-				else if (chChar == '>')
-					iGreaterThanLevel = iValue - iEqualAdj;
-				else if (chChar == '<')
-					iLessThanLevel = iValue + iEqualAdj;
-				}
-
-			break;
-			}
 			}
 
 		pPos++;

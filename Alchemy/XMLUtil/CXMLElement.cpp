@@ -446,7 +446,7 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
 
     //  Parse the first number
 
-    char *pPos = sValue.GetASCIIZPointer();
+    const char *pPos = sValue.GetASCIIZPointer();
     bool bNullValue;
 	int iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
     if (bNullValue)

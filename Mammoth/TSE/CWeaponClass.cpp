@@ -1738,7 +1738,7 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 
 	//	Look for a :nn suffix specifying a variant
 
-	char *pPos = sField.GetASCIIZPointer();
+	const char *pPos = sField.GetASCIIZPointer();
 	while (*pPos != '\0')
 		{
 		if (*pPos == ':')
@@ -4423,7 +4423,7 @@ CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 	{
 	//	We start after the weapon class UNID
 
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 	if (*pPos != '/')
 		return NULL;
 

@@ -180,7 +180,7 @@ ALERROR DiceRange::LoadFromXML (const CString &sAttrib, int iDefault, CString *r
 
 	{
 	bool bNullValue;
-	char *pPos = sAttrib.GetASCIIZPointer();
+	const char *pPos = sAttrib.GetASCIIZPointer();
 
 	//	If empty, then default to 0
 
@@ -258,7 +258,7 @@ ALERROR DiceRange::LoadFromXML (const CString &sAttrib, int iDefault, CString *r
 		while (::strIsWhitespace(pPos))
 			pPos++;
 
-		char *pStart = pPos;
+		const char *pStart = pPos;
 
 		//	Skip whitespace at the end
 
@@ -281,7 +281,7 @@ bool DiceRange::LoadIfValid (const CString &sAttrib, DiceRange *retValue)
 
 	{
 	bool bNullValue;
-	char *pPos = sAttrib.GetASCIIZPointer();
+	const char *pPos = sAttrib.GetASCIIZPointer();
 
 	//	If empty, then not valid
 
@@ -1724,7 +1724,7 @@ CG32bitPixel LoadRGBColor (const CString &sString, CG32bitPixel rgbDefault)
 //	Returns a 16-bit color from an RGB triplet
 
 	{
-	char *pPos = sString.GetASCIIZPointer();
+	const char *pPos = sString.GetASCIIZPointer();
 
 	//	Null
 
@@ -1759,7 +1759,7 @@ ALERROR LoadUNID (SDesignLoadCtx &Ctx, const CString &sString, DWORD *retdwUNID)
 //	Loads the given UNID
 
 	{
-	char *pPos = sString.GetASCIIZPointer();
+	const char *pPos = sString.GetASCIIZPointer();
 
 	//	A blank string just means NULL.
 
@@ -1942,7 +1942,7 @@ void NLSplit (const CString &sPhrase, TArray<CString> *retArray)
 		}
 	}
 
-CString ParseCriteriaParam (char **ioPos, bool bExpectColon, bool *retbBinaryParam)
+CString ParseCriteriaParam (const char **ioPos, bool bExpectColon, bool *retbBinaryParam)
 
 //	ParseCriteriaParam
 //
@@ -1962,7 +1962,7 @@ CString ParseCriteriaParam (char **ioPos, bool bExpectColon, bool *retbBinaryPar
 //	If the param has an embedded colon, we return retbBinaryParam set to TRUE.
 
 	{
-	char *pPos = *ioPos;
+	const char *pPos = *ioPos;
 
 	//	Skip criteria character
 
@@ -1997,7 +1997,7 @@ CString ParseCriteriaParam (char **ioPos, bool bExpectColon, bool *retbBinaryPar
 
 	bool bBinaryParam = false;
 	bool bAllowSpaces = false;
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != ';' && (bAllowSpaces || *pPos != ' ') && *pPos != '\t' && *pPos != '\0')
 		{
 		if (*pPos == ':')
@@ -2021,7 +2021,7 @@ CString ParseCriteriaParam (char **ioPos, bool bExpectColon, bool *retbBinaryPar
 	return CString(pStart, pPos - pStart);
 	}
 
-bool ParseCriteriaParamLevelRange (char **ioPos, int *retiLow, int *retiHigh)
+bool ParseCriteriaParamLevelRange (const char **ioPos, int *retiLow, int *retiHigh)
 
 //	ParseCriteriaParamLevelRange
 //
@@ -2029,7 +2029,7 @@ bool ParseCriteriaParamLevelRange (char **ioPos, int *retiLow, int *retiHigh)
 
 	{
 	CString sParam = ParseCriteriaParam(ioPos);
-	char *pParamPos = sParam.GetASCIIZPointer();
+	const char *pParamPos = sParam.GetASCIIZPointer();
 
 	//	Parse the first number
 
@@ -2137,7 +2137,7 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale)
 	{
 	//	First parse the number
 
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 	int iValue = strParseInt(pPos, 0, &pPos);
 	if (iValue <= 0)
 		return 0.0;
@@ -2150,7 +2150,7 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale)
 	if (*pPos == '\0')
 		return iValue * rDefaultScale;
 
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != '\0' && !strIsWhitespace(pPos))
 		pPos++;
 

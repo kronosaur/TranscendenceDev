@@ -411,8 +411,8 @@ bool CTimeDate::Parse (const CString &sFormat, const CString &sValue, CString *r
 
 	if (strEquals(sFormat, FORMAT_INTERNET))
 		{
-		char *pPos = sValue.GetASCIIZPointer();
-		char *pPosEnd = pPos + sValue.GetLength();
+		const char *pPos = sValue.GetASCIIZPointer();
+		const char *pPosEnd = pPos + sValue.GetLength();
 
 		//	Skip leading whitespace
 
@@ -726,7 +726,7 @@ bool CTimeSpan::Parse (const CString &sValue, CTimeSpan *retValue)
 //		(where ddd = days; mmm = milliseconds)
 
 	{
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 
 	//	If the first character is a 'D' then we assume an encoded TimeSpan
 
@@ -801,7 +801,7 @@ bool CTimeSpan::Parse (const CString &sValue, CTimeSpan *retValue)
 		}
 	}
 
-bool CTimeSpan::ParsePartial (char *pPos, DWORD *retdwDays, DWORD *retdwMilliseconds, char **retpPos)
+bool CTimeSpan::ParsePartial (const char *pPos, DWORD *retdwDays, DWORD *retdwMilliseconds, const char **retpPos)
 
 //	ParsePartial
 //
@@ -849,7 +849,7 @@ bool CTimeSpan::ParsePartial (char *pPos, DWORD *retdwDays, DWORD *retdwMillisec
 
 	//	Get the time unit
 
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != ' ' && *pPos != '\0')
 		pPos++;
 

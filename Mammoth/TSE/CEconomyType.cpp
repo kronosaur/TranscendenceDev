@@ -491,7 +491,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 
 		//	Parse various modifiers
 
-		char *pPos = sValue.GetASCIIZPointer();
+		const char *pPos = sValue.GetASCIIZPointer();
 		while (*pPos != '\0')
 			{
 			//	Skip whitespace
@@ -501,7 +501,7 @@ ALERROR CCurrencyValueDesc::Parse (SDesignLoadCtx &Ctx, const CString &sDesc, co
 
 			//	Modifier
 
-			char *pStart = pPos;
+			const char *pStart = pPos;
 			while (*pPos != '=' && *pPos != '\0')
 				pPos++;
 

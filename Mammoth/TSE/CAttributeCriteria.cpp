@@ -8,8 +8,8 @@
 #define MATCH_ALL						CONSTLIT("*")
 #define MATCH_DEFAULT					CONSTLIT("*~")
 
-inline bool IsWeightChar (char *pPos) { return (*pPos == '+' || *pPos == '-' || *pPos == '*' || *pPos == '!'); }
-inline bool IsDelimiterChar (char *pPos, bool bIsSpecialAttrib = false) { return (*pPos == '\0' || *pPos == ',' || *pPos == ';' || (!bIsSpecialAttrib && strIsWhitespace(pPos))); }
+inline bool IsWeightChar (const char *pPos) { return (*pPos == '+' || *pPos == '-' || *pPos == '*' || *pPos == '!'); }
+inline bool IsDelimiterChar (const char *pPos, bool bIsSpecialAttrib = false) { return (*pPos == '\0' || *pPos == ',' || *pPos == ';' || (!bIsSpecialAttrib && strIsWhitespace(pPos))); }
 
 int CAttributeCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight) const
 
@@ -436,7 +436,7 @@ ALERROR CAttributeCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStr
 
 	//	Parse
 
-	char *pPos = sCriteria.GetASCIIZPointer();
+	const char *pPos = sCriteria.GetASCIIZPointer();
 	while (*pPos != '\0')
 		{
 		if (IsWeightChar(pPos))
@@ -483,8 +483,8 @@ ALERROR CAttributeCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStr
 			//	Get the attribute until the delimeter
 
 			bool bIsSpecialAttrib = false;
-			char *pStart = pPos;
-			char *pCustomWeight = NULL;
+			const char *pStart = pPos;
+			const char *pCustomWeight = NULL;
 			while (!IsDelimiterChar(pPos, bIsSpecialAttrib))
 				{
 				if (*pPos == ':')

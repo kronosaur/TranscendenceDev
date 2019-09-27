@@ -7,8 +7,8 @@
 
 #define FILE_ATTRIB							CONSTLIT("file")
 
-bool NextEntity (char **ioPos, char *pEnd, CString *retsName, DWORD *retdwValue);
-bool NextEntityReference (char **ioPos, char *pEnd, CString *retsEntity);
+bool NextEntity (const char **ioPos, const char *pEnd, CString *retsName, DWORD *retdwValue);
+bool NextEntityReference (const char **ioPos, const char *pEnd, CString *retsEntity);
 
 void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 	{
@@ -33,8 +33,8 @@ void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 		return;
 		}
 
-	char *pPos = DataFile.GetPointer(0, -1);
-	char *pEnd = pPos + DataFile.GetLength();
+	const char *pPos = DataFile.GetPointer(0, -1);
+	const char *pEnd = pPos + DataFile.GetLength();
 
 	//	Look for "<!ENTITY"
 
@@ -102,9 +102,9 @@ void GenerateEntitiesTable (const CString &sDataFile, CXMLElement *pCmdLine)
 		}
 	}
 
-bool NextEntity (char **ioPos, char *pEnd, CString *retsName, DWORD *retdwValue)
+bool NextEntity (const char **ioPos, const char *pEnd, CString *retsName, DWORD *retdwValue)
 	{
-	char *pPos = *ioPos;
+	const char *pPos = *ioPos;
 
 	while (true)
 		{
@@ -146,7 +146,7 @@ bool NextEntity (char **ioPos, char *pEnd, CString *retsName, DWORD *retdwValue)
 
 		//	Skip to whitespace
 
-		char *pStart = pPos;
+		const char *pStart = pPos;
 		while (pPos < pEnd && *pPos != ' ' && *pPos != '\t')
 			pPos++;
 
@@ -173,9 +173,9 @@ bool NextEntity (char **ioPos, char *pEnd, CString *retsName, DWORD *retdwValue)
 		}
 	}
 
-bool NextEntityReference (char **ioPos, char *pEnd, CString *retsEntity)
+bool NextEntityReference (const char **ioPos, const char *pEnd, CString *retsEntity)
 	{
-	char *pPos = *ioPos;
+	const char *pPos = *ioPos;
 
 	while (true)
 		{
@@ -188,7 +188,7 @@ bool NextEntityReference (char **ioPos, char *pEnd, CString *retsEntity)
 			return false;
 
 		pPos++;
-		char *pStart = pPos;
+		const char *pStart = pPos;
 
 		while (pPos < pEnd && *pPos != ';')
 			pPos++;

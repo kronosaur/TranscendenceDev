@@ -427,8 +427,8 @@ ICCItem *CreateResultFromDataField (CCodeChain &CC, const CString &sValue)
 
 	else
 		{
-		char *pPos = sValue.GetASCIIZPointer();
-		char *pEnd;
+		const char *pPos = sValue.GetASCIIZPointer();
+		const char *pEnd;
 		bool bNull;
 		int iResult = strParseInt(pPos, 0, &pEnd, &bNull);
 		if (!bNull && *pEnd == '\0')

@@ -44,7 +44,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	int iDamageAdj[damageCount];
 	CString sDamageAdj = pItem->GetDataField(CONSTLIT("damageAdj"));
-	char *pPos = sDamageAdj.GetASCIIZPointer();
+	const char *pPos = sDamageAdj.GetASCIIZPointer();
 	int iCount = 0;
 	while (iCount < damageCount)
 		{

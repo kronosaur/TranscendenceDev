@@ -1500,7 +1500,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (pValue->IsIdentifier())
 				{
 				CString sValue = pValue->GetStringValue();
-				char *pEnd;
+				const char *pEnd;
 				bool bFailed;
 				int iValue = strParseIntOfBase(sValue.GetASCIIZPointer(), 16, 0, &pEnd, &bFailed);
 				if (bFailed || *pEnd != '\0')
@@ -4167,7 +4167,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
 
 	CString sPattern = pArgs->GetElement(0)->GetStringValue();
-	char *pPos = sPattern.GetASCIIZPointer();
+	const char *pPos = sPattern.GetASCIIZPointer();
 
 	ICCItem *pStruct = ((pArgs->GetCount() > 1) ? pArgs->GetElement(1) : NULL);
 
@@ -4211,7 +4211,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			else
 				{
-				char *pStart = pPos;
+				const char *pStart = pPos;
 				while (*pPos != '%' && *pPos != '\0')
 					pPos++;
 
@@ -5214,7 +5214,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					char *pEnd;
+					const char *pEnd;
 					CString sSecond = pSecond->GetStringValue();
 					double rSecondValue = strParseDouble(sSecond.GetASCIIZPointer(), 0.0, &pEnd, &bFailed);
 					if (bFailed || *pEnd != '\0')
@@ -5248,7 +5248,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					char *pEnd;
+					const char *pEnd;
 					CString sSecond = pSecond->GetStringValue();
 					int iSecondValue = strParseInt(sSecond.GetASCIIZPointer(), 0, &pEnd, &bFailed);
 

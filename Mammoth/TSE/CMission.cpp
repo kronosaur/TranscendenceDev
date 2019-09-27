@@ -1039,7 +1039,7 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 	//	Parse
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)

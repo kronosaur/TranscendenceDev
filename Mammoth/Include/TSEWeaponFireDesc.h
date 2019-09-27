@@ -456,7 +456,7 @@ class CWeaponFireDesc
 			}
 
 		ICCItem *FindProperty (const CString &sProperty) const;
-		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
+		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, const char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
         ALERROR FinishBindDesign (SDesignLoadCtx &Ctx);
 		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);

@@ -254,7 +254,7 @@ class CBase64Encoder : public IWriteStream
 
 		virtual ALERROR Close (void) override;
 		virtual ALERROR Create (void) override { return NOERROR; }
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+		virtual ALERROR Write (const char *pData, int iLength, int *retiBytesWritten = NULL) override;
 
 		//	We want to inherit all the overloaded versions of Write.
 

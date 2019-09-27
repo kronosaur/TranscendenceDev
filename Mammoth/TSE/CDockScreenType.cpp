@@ -202,7 +202,7 @@ void CDockScreenTypeRef::LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID)
 	{
 	if (Ctx.pExtension)
 		{
-		char *pPos = sUNID.GetASCIIZPointer();
+		const char *pPos = sUNID.GetASCIIZPointer();
 		if (*pPos == '@')
 			{
 			WORD wLow = LOWORD(Ctx.pExtension->GetUNID()) + (WORD)strParseIntOfBase(pPos+1, 16, 0);

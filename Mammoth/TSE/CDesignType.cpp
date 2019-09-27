@@ -2403,7 +2403,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		//	Parse from and to
 
 		CString sParam = strSubString(sAttrib, SPECIAL_SYSTEM_LEVEL.GetLength());
-		char *pPos = sParam.GetASCIIZPointer();
+		const char *pPos = sParam.GetASCIIZPointer();
 		bool bFailed;
 		int iFrom = strParseInt(pPos, 0, &pPos, &bFailed);
 		if (bFailed)

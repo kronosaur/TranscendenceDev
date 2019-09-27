@@ -1401,7 +1401,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 	//	Parse the string
 
-	char *pPos = sDesc.GetASCIIZPointer();
+	const char *pPos = sDesc.GetASCIIZPointer();
 
 	//	Expect either "+" or "-" (for disadvantage)
 
@@ -1421,7 +1421,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 	//	Parse the enhancement name
 
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != ':' && *pPos != '\0')
 		pPos++;
 
@@ -1439,7 +1439,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			iValue = strParseInt(pPos, 0, &pPos);
 		else
 			{
-			char *pStart = pPos;
+			const char *pStart = pPos;
 			while (*pPos != '\0' && *pPos != ':')
 				pPos++;
 

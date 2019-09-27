@@ -240,7 +240,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		{
 		//	Parse this value
 
-		char *pPos = sAttrib.GetASCIIZPointer();
+		const char *pPos = sAttrib.GetASCIIZPointer();
 		m_iMinLevel = Max(1, Min(strParseInt(pPos, 1, &pPos), MAX_SYSTEM_LEVEL));
 
 		while (*pPos == ' ')
@@ -426,8 +426,8 @@ bool CMissionType::ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, 
 		return true;
 		}
 
-	char *pPos = sValue.GetASCIIZPointer();
-	char *pStart = pPos;
+	const char *pPos = sValue.GetASCIIZPointer();
+	const char *pStart = pPos;
 	while (*pPos != ':' && *pPos != '\0')
 		pPos++;
 

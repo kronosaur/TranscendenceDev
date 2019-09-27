@@ -109,7 +109,7 @@ CEffectCreator *CRandomPointsProc::OnFindEffectCreator (const CString &sUNID)
 //		           ^
 
 	{
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we've got a slash, then recurse down
 

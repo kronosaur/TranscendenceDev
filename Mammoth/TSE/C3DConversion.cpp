@@ -438,7 +438,7 @@ ALERROR C3DConversion::OverridePaintFirst (int iDirectionCount, const CString &s
 			//	Expect a range
 
 			int iFrom, iTo;
-			char *pPos = sAngles.GetASCIIZPointer();
+			const char *pPos = sAngles.GetASCIIZPointer();
 			bool bFail;
 			iFrom = AngleMod(strParseInt(pPos, 0, &pPos, &bFail));
 			if (bFail)

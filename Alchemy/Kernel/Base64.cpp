@@ -146,7 +146,7 @@ ALERROR CBase64Encoder::Close (void)
 	return NOERROR;
 	}
 
-ALERROR CBase64Encoder::Write (char *pData, int iLength, int *retiBytesWritten)
+ALERROR CBase64Encoder::Write (const char *pData, int iLength, int *retiBytesWritten)
 
 //	Write
 //
