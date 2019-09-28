@@ -168,7 +168,7 @@ inline void DebugStopTimer (char *szTiming) { }
 
 struct SUniverseLoadCtx
 	{
-	inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+	CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 	DWORD dwVersion;					//	See CUniverse.cpp for version history
 	DWORD dwSystemVersion;				//	System version when universe was saved
@@ -238,7 +238,7 @@ struct SLoadCtx
 			dwObjClassID(0)
 		{ }
 
-	inline CUniverse &GetUniverse (void) { return m_Universe; }
+	CUniverse &GetUniverse (void) { return m_Universe; }
 
 	DWORD dwVersion;					//	See CSystem.cpp for version history
 
@@ -293,8 +293,8 @@ struct SUpdateCtx
 	{
 	public:
 		int GetLightIntensity (CSpaceObject *pObj) const;
-		inline bool IsTimeStopped (void) const { return m_bTimeStopped; }
-		inline void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
+		bool IsTimeStopped (void) const { return m_bTimeStopped; }
+		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
 
 		CSystem *pSystem = NULL;					//	Current system
 		CSpaceObject *pPlayer = NULL;				//	The player
@@ -372,11 +372,11 @@ class CAttributeCriteria
 		int AdjStationWeight (CStationType *pType, int iOriginalWeight = 1000) const;
 		int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const;
 		int CalcNodeWeight (CTopologyNode *pNode) const;
-		inline int GetCount (void) const { return m_Attribs.GetCount(); }
+		int GetCount (void) const { return m_Attribs.GetCount(); }
 		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired) const;
 		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
-		inline bool MatchesAll (void) const { return (GetCount() == 0); }
-		inline bool MatchesDefault (void) const { return (m_dwFlags & flagDefault); }
+		bool MatchesAll (void) const { return (GetCount() == 0); }
+		bool MatchesDefault (void) const { return (m_dwFlags & flagDefault); }
 		ALERROR Parse (const CString &sCriteria, DWORD dwFlags = 0, CString *retsError = NULL);
 
 		static int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength);
@@ -445,19 +445,19 @@ class DiceRange
 		DiceRange (void) : m_iFaces(0), m_iCount(0), m_iBonus(0) { }
 		DiceRange (int iFaces, int iCount, int iBonus);
 
-		inline int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
-		inline Metric GetAveValueFloat (void) const { return (m_iFaces > 0 ? ((m_iCount * (m_iFaces + 1.0) / 2.0) + m_iBonus) : m_iBonus); }
-		inline int GetBonus (void) const { return m_iBonus; }
-		inline int GetCount (void) const { return m_iCount; }
-		inline int GetFaces (void) const { return m_iFaces; }
-		inline int GetMaxValue (void) const { return m_iFaces * m_iCount + m_iBonus; }
-		inline int GetMinValue (void) const { return m_iCount + m_iBonus; }
-		inline bool IsConstant (void) const { return (m_iFaces * m_iCount) == 0; }
-		inline bool IsEmpty (void) const { return (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0); }
+		int GetAveValue (void) const { return (m_iCount * (m_iFaces + 1) / 2) + m_iBonus; }
+		Metric GetAveValueFloat (void) const { return (m_iFaces > 0 ? ((m_iCount * (m_iFaces + 1.0) / 2.0) + m_iBonus) : m_iBonus); }
+		int GetBonus (void) const { return m_iBonus; }
+		int GetCount (void) const { return m_iCount; }
+		int GetFaces (void) const { return m_iFaces; }
+		int GetMaxValue (void) const { return m_iFaces * m_iCount + m_iBonus; }
+		int GetMinValue (void) const { return m_iCount + m_iBonus; }
+		bool IsConstant (void) const { return (m_iFaces * m_iCount) == 0; }
+		bool IsEmpty (void) const { return (m_iFaces == 0 && m_iCount == 0 && m_iBonus == 0); }
 		int Roll (void) const;
 		int RollSeeded (int iSeed) const;
 		ALERROR LoadFromXML (const CString &sAttrib, int iDefault, CString *retsSuffix = NULL);
-		inline ALERROR LoadFromXML (const CString &sAttrib, CString *retsSuffix = NULL) { return LoadFromXML(sAttrib, 0, retsSuffix); }
+		ALERROR LoadFromXML (const CString &sAttrib, CString *retsSuffix = NULL) { return LoadFromXML(sAttrib, 0, retsSuffix); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		CString SaveToXML (void) const;
 		void Scale (Metric rScale);
@@ -517,10 +517,10 @@ class CEventHandler
 		ALERROR AddEvent (CXMLElement *pEventXML, CString *retsError = NULL);
 		void DeleteAll (void);
 		bool FindEvent (const CString &sEvent, ICCItem **retpCode) const;
-		inline int GetCount (void) const { return m_Handlers.GetCount(); }
+		int GetCount (void) const { return m_Handlers.GetCount(); }
 		const CString &GetEvent (int iIndex, ICCItem **retpCode = NULL) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return m_Handlers.GetCount() == 0; }
+		bool IsEmpty (void) const { return m_Handlers.GetCount() == 0; }
 		void MergeFrom (const CEventHandler &Src);
 
 		static bool IsDiagnosticsEvent (const CString &sEvent);
@@ -534,9 +534,9 @@ class CGlobalEventCache
 	public:
 		CGlobalEventCache (const CString &sEvent) : m_sEvent(sEvent) { }
 
-		inline void DeleteAll (void) { m_Cache.DeleteAll(); }
-		inline int GetCount (void) const { return m_Cache.GetCount(); }
-		inline CDesignType *GetEntry (int iIndex, SEventHandlerDesc *retEvent = NULL) const
+		void DeleteAll (void) { m_Cache.DeleteAll(); }
+		int GetCount (void) const { return m_Cache.GetCount(); }
+		CDesignType *GetEntry (int iIndex, SEventHandlerDesc *retEvent = NULL) const
 			{
 			if (retEvent)
 				*retEvent = m_Cache[iIndex].Event;
@@ -633,33 +633,33 @@ class CDamageSource
 
 		bool CanHit (CSpaceObject *pTarget) const;
 		bool CanHitFriends (void) const;
-		inline DestructionTypes GetCause (void) const { return m_iCause; }
+		DestructionTypes GetCause (void) const { return m_iCause; }
 		CString GetDamageCauseNounPhrase (DWORD dwFlags);
 		CSpaceObject *GetObj (void) const;
 		DWORD GetObjID (void) const;
 		CSpaceObject *GetOrderGiver (void) const;
-		inline CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
-		inline const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
+		CSpaceObject *GetSecondaryObj (void) const { return m_pSecondarySource; }
+		const CString &GetSourceName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwSourceNameFlags; return m_sSourceName; }
 		CSovereign *GetSovereign (void) const;
 		DWORD GetSovereignUNID (void) const;
-		inline bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
+		bool HasDamageCause (void) const { return ((m_pSource && !IsObjID()) || !m_sSourceName.IsBlank()); }
 		bool HasSource (void) const;
-		inline bool IsAutomatedWeapon (void) const { return ((m_dwFlags & FLAG_IS_AUTOMATED_WEAPON) ? true : false); }
+		bool IsAutomatedWeapon (void) const { return ((m_dwFlags & FLAG_IS_AUTOMATED_WEAPON) ? true : false); }
 		bool IsCausedByEnemyOf (CSpaceObject *pObj) const;
 		bool IsCausedByFriendOf (CSpaceObject *pObj) const;
 		bool IsCausedByNonFriendOf (CSpaceObject *pObj) const;
-		inline bool IsCausedByPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER_CAUSED) ? true : false); }
-		inline bool IsEmpty (void) const { return (GetObj() == NULL); }
+		bool IsCausedByPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER_CAUSED) ? true : false); }
+		bool IsEmpty (void) const { return (GetObj() == NULL); }
 		bool IsEnemy (CDamageSource &Src) const;
 		bool IsEqual (const CDamageSource &Src) const;
 		bool IsEqual (CSpaceObject *pSrc) const;
 		bool IsFriend (CSovereign *pSovereign) const;
-		inline bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
+		bool IsPlayer (void) const { return ((m_dwFlags & FLAG_IS_PLAYER) ? true : false); }
 		void OnLeaveSystem (void);
 		void OnObjDestroyed (CSpaceObject &ObjDestroyed);
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
-		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
+		void SetAutomatedWeapon (bool bValue = true) { if (bValue) m_dwFlags |= FLAG_IS_AUTOMATED_WEAPON; else m_dwFlags &= FLAG_IS_AUTOMATED_WEAPON; }
+		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetObj (CSpaceObject *pSource);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
@@ -676,9 +676,9 @@ class CDamageSource
 			FLAG_IS_AUTOMATED_WEAPON		= 0x00000010,	//	Source is a missile-defense system.
 			};
 
-		inline DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
-		inline bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
-		inline bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
+		DWORD GetRawObjID (void) const { return (DWORD)m_pSource; }
+		bool IsObjPointer (void) const { return (m_pSource && !IsObjID()); }
+		bool IsObjID (void) const { return ((m_dwFlags & FLAG_OBJ_ID) == FLAG_OBJ_ID); }
 
 		CSpaceObject *m_pSource;
 		DestructionTypes m_iCause;
@@ -705,7 +705,7 @@ class CDamageAdjDesc
 
 		ALERROR Bind (SDesignLoadCtx &Ctx, const CDamageAdjDesc *pDefault);
 		int GetAbsorbAdj (DamageTypes iDamageType) const;
-		inline int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
+		int GetAdj (DamageTypes iDamageType) const { return (iDamageType == damageGeneric ? 100 : m_iDamageAdj[iDamageType]); }
 		void GetAdjAndDefault (DamageTypes iDamageType, int *retiAdj, int *retiDefault) const;
 		int GetHPBonus (DamageTypes iDamageType) const;
 		ICCItem *GetDamageAdjProperty (const CItemEnhancementStack *pEnhancements = NULL) const;
@@ -769,13 +769,13 @@ class CPerceptionCalc
 		bool CanBeTargetedAtDist (CSpaceObject *pTarget, Metric rTargetDist) const;
 		Metric GetMaxDist (CSpaceObject *pTarget) const;
 		Metric GetMaxDist2 (CSpaceObject *pTarget) const;
-		inline int GetPerception (void) const { return m_iPerception; }
-		inline int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
+		int GetPerception (void) const { return m_iPerception; }
+		int GetRangeIndex (int iStealth) const { return GetRangeIndex(iStealth, m_iPerception); }
 		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
-		inline void SetPerception (int iPerception) { m_iPerception = iPerception; }
+		void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
-		inline static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
-		inline static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
+		static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
+		static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
 		static int GetRangeIndex (int iStealth, int iPerception);
 
 	private:
@@ -798,7 +798,7 @@ class CRandomEntryResults
 		~CRandomEntryResults (void);
 
 		void AddResult (CXMLElement *pElement, int iCount);
-		inline int GetCount (void) { return m_Results.GetCount(); }
+		int GetCount (void) { return m_Results.GetCount(); }
 		CXMLElement *GetResult (int iIndex);
 		int GetResultCount (int iIndex);
 
@@ -851,7 +851,7 @@ class IElementGenerator
 		static bool GenerateAsGroup (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
 		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<SResult> &retResult, CString *retsError = NULL);
 		static bool GenerateAsTable (SCtx &Ctx, CXMLElement *pDesc, TArray<CXMLElement *> &retResult, CString *retsError = NULL);
-		inline static bool IsGeneratorTag (const CString &sTag) { return (GetGeneratorType(sTag) != typeElement); }
+		static bool IsGeneratorTag (const CString &sTag) { return (GetGeneratorType(sTag) != typeElement); }
 
 	protected:
 		static EGeneratorTypes GetGeneratorType (const CString &sTag);
@@ -870,19 +870,19 @@ class CSpaceObjectList
 
 		void Add (CSpaceObject *pObj, int *retiIndex = NULL);
 		void Add (const CSpaceObjectList &List);
-		inline void CleanUp (void) { m_List.DeleteAll(); }
-		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
+		void CleanUp (void) { m_List.DeleteAll(); }
+		void Delete (int iIndex) { m_List.Delete(iIndex); }
 		bool Delete (CSpaceObject *pObj);
 		void DeleteSystemObjs (void);
-		inline void DeleteAll (void) { m_List.DeleteAll(); }
-		inline void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
+		void DeleteAll (void) { m_List.DeleteAll(); }
+		void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
 		void FastAdd (const CSpaceObjectList &List);
-		inline bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
-		inline CSpaceObject *GetRandomObj (void) const { return (m_List.GetCount() == 0 ? NULL : m_List[mathRandom(0, m_List.GetCount() - 1)]); }
-		inline TArray<CSpaceObject *> &GetRawList (void) { return m_List; }
-		inline bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
+		bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
+		int GetCount (void) const { return m_List.GetCount(); }
+		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
+		CSpaceObject *GetRandomObj (void) const { return (m_List.GetCount() == 0 ? NULL : m_List[mathRandom(0, m_List.GetCount() - 1)]); }
+		TArray<CSpaceObject *> &GetRawList (void) { return m_List; }
+		bool IsEmpty (void) const { return (m_List.GetCount() == 0); }
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
 		void NotifyOnObjDocked (CSpaceObject *pDockingObj, CSpaceObject *pDockTarget);
 		void NotifyOnObjEnteredGate (CSpaceObject *pGatingObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
@@ -893,7 +893,7 @@ class CSpaceObjectList
 		void ReadFromStream (SLoadCtx &Ctx, bool bIgnoreMissing = false);
 		void ReadFromStreamSingle (SLoadCtx &Ctx);
 		void SetAllocSize (int iNewCount);
-		inline void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
+		void SetObj (int iIndex, CSpaceObject *pObj) { m_List[iIndex] = pObj; }
 		void Subtract (const CSpaceObjectList &List);
 		void WriteToStream (CSystem *pSystem, IWriteStream *pStream);
 
@@ -929,11 +929,11 @@ class CTile
 	public:
 		CTile (void) : m_dwData(0) { }
 
-		inline DWORD GetTile (void) { return m_dwData; }
-		inline DWORD *GetTilePointer (void) { return &m_dwData; }
-		inline CTileMapSection *GetTileMapSection (void) { return (CTileMapSection *)m_dwData; }
-		inline void SetTile (DWORD dwTile) { m_dwData = dwTile; }
-		inline void SetTileMapSection (CTileMapSection *pMap) { m_dwData = (DWORD)pMap; }
+		DWORD GetTile (void) { return m_dwData; }
+		DWORD *GetTilePointer (void) { return &m_dwData; }
+		CTileMapSection *GetTileMapSection (void) { return (CTileMapSection *)m_dwData; }
+		void SetTile (DWORD dwTile) { m_dwData = dwTile; }
+		void SetTileMapSection (CTileMapSection *pMap) { m_dwData = (DWORD)pMap; }
 
 	private:
 		DWORD m_dwData;
@@ -945,13 +945,13 @@ class CTileMapSection
 		CTileMapSection (int iCount) { m_pMap = new CTile [iCount]; }
 		~CTileMapSection (void) { delete [] m_pMap; }
 
-		inline DWORD GetTile (int iIndex) { return m_pMap[iIndex].GetTile(); }
-		inline DWORD *GetTilePointer (int iIndex) { return m_pMap[iIndex].GetTilePointer(); }
-		inline CTileMapSection *GetTileMapSection (int iIndex) { return m_pMap[iIndex].GetTileMapSection(); }
-		inline ALERROR ReadFromStream (int iCount, IReadStream *pStream) { return pStream->Read((char *)m_pMap, iCount * sizeof(CTile)); }
-		inline void SetTile (int iIndex, DWORD dwTile) { m_pMap[iIndex].SetTile(dwTile); }
-		inline void SetTileMapSection (int iIndex, CTileMapSection *pMap) { m_pMap[iIndex].SetTileMapSection(pMap); }
-		inline void WriteToStream (int iCount, IWriteStream *pStream) const { pStream->Write((char *)m_pMap, iCount * sizeof(CTile)); }
+		DWORD GetTile (int iIndex) { return m_pMap[iIndex].GetTile(); }
+		DWORD *GetTilePointer (int iIndex) { return m_pMap[iIndex].GetTilePointer(); }
+		CTileMapSection *GetTileMapSection (int iIndex) { return m_pMap[iIndex].GetTileMapSection(); }
+		ALERROR ReadFromStream (int iCount, IReadStream *pStream) { return pStream->Read((char *)m_pMap, iCount * sizeof(CTile)); }
+		void SetTile (int iIndex, DWORD dwTile) { m_pMap[iIndex].SetTile(dwTile); }
+		void SetTileMapSection (int iIndex, CTileMapSection *pMap) { m_pMap[iIndex].SetTileMapSection(pMap); }
+		void WriteToStream (int iCount, IWriteStream *pStream) const { pStream->Write((char *)m_pMap, iCount * sizeof(CTile)); }
 
 	private:
 		CTile *m_pMap;
@@ -983,9 +983,9 @@ class CTileMap
 		void GetNext (STileMapEnumerator &i, int *retx, int *rety, DWORD *retdwTile) const;
 		DWORD GetTile (int x, int y) const;
 		DWORD *GetTilePointer (int x, int y);
-		inline int GetScale (void) const { return m_iScale; }
+		int GetScale (void) const { return m_iScale; }
 		int GetTotalSize (void) const;
-		inline int GetSize (void) const { return m_iSize; }
+		int GetSize (void) const { return m_iSize; }
 		bool HasMore (STileMapEnumerator &i) const;
 		void Init (int iSize, int iScale);
 		ALERROR ReadFromStream (IReadStream *pStream);
@@ -1049,7 +1049,7 @@ class CSpaceObjectGrid
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		void EnumStart (SSpaceObjectGridEnumerator &i, const CVector &vUR, const CVector &vLL, DWORD dwFlags) const;
-		inline bool EnumHasMore (SSpaceObjectGridEnumerator &i) const;
+		bool EnumHasMore (SSpaceObjectGridEnumerator &i) const;
 		CSpaceObject *EnumGetNext (SSpaceObjectGridEnumerator &i) const;
 		CSpaceObject *EnumGetNextFast (SSpaceObjectGridEnumerator &i) const;
 		CSpaceObject *EnumGetNextInBoxPoint (SSpaceObjectGridEnumerator &i) const;
@@ -1067,8 +1067,8 @@ class CSpaceObjectGrid
 		bool GetGridCoord (const CVector &vPos, int *retx, int *rety) const;
 		const SList &GetList (const CVector &vPos) const;
 		SList &GetList (const CVector &vPos);
-		inline const SList &GetList (int x, int y) const { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
-		inline SList &GetList (int x, int y) { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
+		const SList &GetList (int x, int y) const { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
+		SList &GetList (int x, int y) { ASSERT(y * m_iGridSize + x < m_iGridSize * m_iGridSize); return m_pGrid[y * m_iGridSize + x]; }
 
 		CSpaceObjectPool m_Pool;
 		SList *m_pGrid;
@@ -1107,7 +1107,7 @@ class CGameTimeKeeper
 	{
 	public:
 		void AddDiscontinuity (int iTick, const CTimeSpan &Duration);
-		inline void DeleteAll (void) { m_Discontinuities.DeleteAll(); }
+		void DeleteAll (void) { m_Discontinuities.DeleteAll(); }
 		CTimeSpan GetElapsedTimeAt (int iTick);
 		void ReadFromStream (IReadStream *pStream);
 		void WriteToStream (IWriteStream *pStream);
@@ -1176,7 +1176,7 @@ template <class TYPE> class TSEListNode
 			return iCount;
 			}
 
-		inline TYPE *GetNext (void) { return (TYPE *)m_pNext; }
+		TYPE *GetNext (void) { return (TYPE *)m_pNext; }
 
 		void Insert (TSEListNode<TYPE> *pNewNode)
 			{
@@ -1260,7 +1260,7 @@ class CRegenDesc
 							 const CString &sRegenRate,
 							 const CString &sRegenHP,
 							 int iTicksPerCycle = 1);
-		inline bool IsEmpty (void) const { return m_bEmpty; }
+		bool IsEmpty (void) const { return m_bEmpty; }
 
 	private:
 		int m_iHPPerCycle;					//	HP gained per cycle
@@ -1281,7 +1281,7 @@ class CZoneGrid
 		ALERROR CreateFromXML (CXMLElement *pDesc, int cxWidth, int cyHeight, int iCellSize);
 		bool ChooseRandomPoint (int *retx, int *rety) const;
 		ALERROR CreateZone (int cxSize = -1, int cySize = -1, int iCellSize = 1);
-		inline const CString &GetName (void) const { return m_sName; }
+		const CString &GetName (void) const { return m_sName; }
 		int GetValue (int x, int y) const;
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 
@@ -1290,7 +1290,7 @@ class CZoneGrid
 		ALERROR CreateZoneMap (CG8bitImage &ZoneMap);
 		int GetValueRaw (int x, int y) const;
 		void MapCoord (int x, int y, int *retx, int *rety) const;
-		inline int MapDim (int x) const { return x / m_iCellSize; }
+		int MapDim (int x) const { return x / m_iCellSize; }
 		ALERROR ZoneOpCircle (CXMLElement *pOp, CG8bitImage &DestMap);
 		ALERROR ZoneOpCircleGradient (CXMLElement *pOp, CG8bitImage &DestMap);
 		ALERROR ZoneOpMultiply (CXMLElement *pOp, CG8bitImage &DestMap);
@@ -1315,18 +1315,18 @@ class CBitGrid
 		CBitGrid (int cxWidth, int cyHeight) : m_cxWidth(cxWidth), m_cyHeight(cyHeight), m_Grid(cxWidth * cyHeight)
 			{ }
 
-		inline void Clear (int x, int y) { if (InBounds(x, y)) m_Grid.Clear(Coord(x, y)); }
-		inline bool InBounds (int x, int y)
+		void Clear (int x, int y) { if (InBounds(x, y)) m_Grid.Clear(Coord(x, y)); }
+		bool InBounds (int x, int y)
 			{
 			int xGrid = (x + m_cxWidth / 2);
 			int yGrid = (m_cyHeight / 2 - y);
 			return (xGrid >= 0 && xGrid < m_cxWidth && yGrid >= 0 && yGrid < m_cyHeight);
 			}
-		inline bool IsSet (int x, int y) { return m_Grid.IsSet(Coord(x, y)); }
-		inline void Set (int x, int y) { if (InBounds(x, y)) m_Grid.Set(Coord(x, y)); }
+		bool IsSet (int x, int y) { return m_Grid.IsSet(Coord(x, y)); }
+		void Set (int x, int y) { if (InBounds(x, y)) m_Grid.Set(Coord(x, y)); }
 
 	private:
-		inline DWORD Coord (int x, int y) { return ((m_cyHeight / 2 - y) * m_cxWidth) + (x + m_cxWidth / 2); }
+		DWORD Coord (int x, int y) { return ((m_cyHeight / 2 - y) * m_cxWidth) + (x + m_cxWidth / 2); }
 
 		int m_cxWidth;
 		int m_cyHeight;
@@ -1342,8 +1342,8 @@ class I2DFunction
 
 		virtual ~I2DFunction (void) { }
 
-		inline Metric Eval (Metric x, Metric y) { return OnEval(x, y); }
-		inline ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return OnInitFromXML(Ctx, pDesc); }
+		Metric Eval (Metric x, Metric y) { return OnEval(x, y); }
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return OnInitFromXML(Ctx, pDesc); }
 
 	protected:
 		virtual Metric OnEval (Metric x, Metric y) { return 0.0f; }
@@ -1367,13 +1367,13 @@ class CComplexArea
 	public:
 		CComplexArea (void);
 
-		inline void ExcludeCircle (int x, int y, int iRadius) { AddCircle(m_ExcludedCircles, x, y, iRadius); }
-		inline void ExcludeRect (int x, int y, int cxWidth, int cyHeight, int iRotation = 0) { AddRect(m_ExcludedRects, x, y, cxWidth, cyHeight, iRotation); }
+		void ExcludeCircle (int x, int y, int iRadius) { AddCircle(m_ExcludedCircles, x, y, iRadius); }
+		void ExcludeRect (int x, int y, int cxWidth, int cyHeight, int iRotation = 0) { AddRect(m_ExcludedRects, x, y, cxWidth, cyHeight, iRotation); }
 		bool GeneratePointsInArea (int iCount, int iMinSeparation, TArray<int> *retX, TArray<int> *retY);
 		bool GeneratePointsInArea (int iCount, int iMinSeparation, CIntGraph *retGraph);
 		bool InArea (int x, int y);
-		inline void IncludeCircle (int x, int y, int iRadius) { AddCircle(m_IncludedCircles, x, y, iRadius); }
-		inline void IncludeRect (int x, int y, int cxWidth, int cyHeight, int iRotation = 0) { AddRect(m_IncludedRects, x, y, cxWidth, cyHeight, iRotation); }
+		void IncludeCircle (int x, int y, int iRadius) { AddCircle(m_IncludedCircles, x, y, iRadius); }
+		void IncludeRect (int x, int y, int cxWidth, int cyHeight, int iRotation = 0) { AddRect(m_IncludedRects, x, y, cxWidth, cyHeight, iRotation); }
 		void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale = 1.0) const;
 		bool RandomPointInArea (int *retx, int *rety);
 		void ReadFromStream (IReadStream &Stream);
@@ -1408,8 +1408,8 @@ class CComplexArea
 		void WriteCircleArray (IWriteStream &Stream, const TArray<SCircle> &Array) const;
 		void WriteRectArray (IWriteStream &Stream, const TArray<SRect> &Array) const;
 
-		inline static int XToImageCoords (int xCenter, int x, Metric rScale) { return xCenter + (int)(x * rScale); }
-		inline static int YToImageCoords (int yCenter, int y, Metric rScale) { return yCenter - (int)(y * rScale); }
+		static int XToImageCoords (int xCenter, int x, Metric rScale) { return xCenter + (int)(x * rScale); }
+		static int YToImageCoords (int yCenter, int y, Metric rScale) { return yCenter - (int)(y * rScale); }
 
 		TArray<SCircle> m_ExcludedCircles;
 		TArray<SRect> m_ExcludedRects;
@@ -1437,14 +1437,14 @@ class C3DObjectPos
 
 		void CalcCoord (int iScale, CVector *retvPos) const;
 		void CalcCoord (int iScale, int iRotation, CVector *retvPos) const;
-		inline int GetAngle (void) const { return m_iPosAngle; }
-		inline int GetRadius (void) const { return m_iPosRadius; }
-		inline int GetZ (void) const { return m_iPosZ; }
+		int GetAngle (void) const { return m_iPosAngle; }
+		int GetRadius (void) const { return m_iPosRadius; }
+		int GetZ (void) const { return m_iPosZ; }
 		bool InitFromXY (int iScale, const CVector &vPos, int iZ = 0);
 		bool InitFromXML (CXMLElement *pDesc, DWORD dwFlags = 0, bool *retb3DPos = NULL);
-		inline bool IsEmpty (void) const { return m_iPosRadius == 0; }
+		bool IsEmpty (void) const { return m_iPosRadius == 0; }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetAngle (int iAngle) { m_iPosAngle = AngleMod(iAngle); }
+		void SetAngle (int iAngle) { m_iPosAngle = AngleMod(iAngle); }
 		void WriteToStream (IWriteStream &Stream) const;
 
 	private:
@@ -1466,7 +1466,7 @@ class C3DConversion
 		static void CalcCoordCompatible (int iAngle, int iRadius, int *retx, int *rety);
 		static void CalcPolar (int iScale, const CVector &vPos, int iZ, Metric *retrAngle, Metric *retrRadius);
 
-		inline void CleanUp (void) { m_Cache.DeleteAll(); }
+		void CleanUp (void) { m_Cache.DeleteAll(); }
 		ALERROR Init (CXMLElement *pDesc);
 		ALERROR Init (CXMLElement *pDesc, int iDirectionCount, int iScale, int iFacing);
 		void Init (int iDirectionCount, int iScale, int iAngle, int iRadius, int iZ, int iFacing);
@@ -1474,10 +1474,10 @@ class C3DConversion
 		void InitCompatibleXY (int iDirectionCount, int iX, int iY, int iFacing);
 		void InitComplete (int iDirectionCount, int iScale, int iFacing);
 		void InitXY (int iDirectionCount, int iScale, int iX, int iY, int iZ, int iFacing);
-		inline bool IsEmpty (void) const { return (m_Cache.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Cache.GetCount() == 0); }
 		void GetCoord (int iRotation, int *retx, int *rety) const;
 		void GetCoordFromDir (int iDirection, int *retx, int *rety) const;
-		inline bool PaintFirst (int iDirection) const { return m_Cache[iDirection].bPaintFirst; }
+		bool PaintFirst (int iDirection) const { return m_Cache[iDirection].bPaintFirst; }
 
 	private:
 		struct SEntry
@@ -1574,11 +1574,11 @@ class CFormulaText
 	{
 	public:
 		int EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix = NULL, CString *retsSuffix = NULL, CString *retsError = NULL) const;
-		inline void InitFromInteger (int iValue) { m_sText = strFromInt(iValue); }
+		void InitFromInteger (int iValue) { m_sText = strFromInt(iValue); }
 		ALERROR InitFromString (SDesignLoadCtx &Ctx, const CString &sText);
-		inline bool IsEmpty (void) const { return m_sText.IsBlank(); }
+		bool IsEmpty (void) const { return m_sText.IsBlank(); }
 		void ReadFromStream (SLoadCtx &Ctx);
-		inline void SetInteger (int iValue) { m_sText = strFromInt(iValue); }
+		void SetInteger (int iValue) { m_sText = strFromInt(iValue); }
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:

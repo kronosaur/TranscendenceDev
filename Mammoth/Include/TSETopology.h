@@ -16,7 +16,7 @@ class CTopologyNode
 	public:
 		struct SAttributeCriteria
 			{
-			inline CString AsString (void) const
+			CString AsString (void) const
 				{
 				CMemoryWriteStream Stream;
 				if (Stream.Create() != NOERROR)
@@ -31,7 +31,7 @@ class CTopologyNode
 				return CString(Stream.GetPointer(), Stream.GetLength());
 				}
 
-			inline bool IsEmpty (void) const { return (AttribsRequired.GetCount() == 0 && AttribsNotAllowed.GetCount() == 0 && SpecialRequired.GetCount() == 0 && SpecialNotAllowed.GetCount() == 0); }
+			bool IsEmpty (void) const { return (AttribsRequired.GetCount() == 0 && AttribsNotAllowed.GetCount() == 0 && SpecialRequired.GetCount() == 0 && SpecialNotAllowed.GetCount() == 0); }
 
 			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing
 			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
@@ -123,68 +123,68 @@ class CTopologyNode
 		bool FindStargateTo (const CString &sDestNode, CString *retsName = NULL, CString *retsDestGateID = NULL);
 		CString FindStargateName (const CString &sDestNode, const CString &sEntryPoint);
 		CString GenerateStargateName (void) const;
-		inline const CString &GetAttributes (void) const { return m_sAttributes; }
-		inline int GetCalcDistance (void) const { return m_iCalcDistance; }
-		inline const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
-		inline ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
+		const CString &GetAttributes (void) const { return m_sAttributes; }
+		int GetCalcDistance (void) const { return m_iCalcDistance; }
+		const CString &GetCreatorID (void) const { return (m_sCreatorID.IsBlank() ? m_sID : m_sCreatorID); }
+		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
 		inline CSystemMap *GetDisplayPos (int *retxPos = NULL, int *retyPos = NULL) const;
-		inline const CString &GetEndGameReason (void) { return m_sEndGameReason; }
-		inline const CString &GetEpitaph (void) { return m_sEpitaph; }
-		inline const CString &GetID (void) const { return m_sID; }
+		const CString &GetEndGameReason (void) { return m_sEndGameReason; }
+		const CString &GetEpitaph (void) { return m_sEpitaph; }
+		const CString &GetID (void) const { return m_sID; }
 		CTopologyNode *GetGateDest (const CString &sName, CString *retsEntryPoint = NULL);
         DWORD GetLastVisitedTime (void) const;
-		inline int GetLevel (void) const { return m_iLevel; }
+		int GetLevel (void) const { return m_iLevel; }
 		Metric GetLinearDistanceTo (const CTopologyNode *pNode) const;
 		Metric GetLinearDistanceTo2 (const CTopologyNode *pNode) const;
 		ICCItemPtr GetProperty (const CString &sName) const;
-		inline int GetStargateCount (void) const { return m_NamedGates.GetCount(); }
+		int GetStargateCount (void) const { return m_NamedGates.GetCount(); }
 		CString GetStargate (int iIndex);
 		CTopologyNode *GetStargateDest (int iIndex, CString *retsEntryPoint = NULL) const;
 		ICCItemPtr GetStargateProperty (const CString &sName, const CString &sProperty) const;
 		void GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc);
-		inline CSystem *GetSystem (void) { return m_pSystem; }
-		inline DWORD GetSystemID (void) { return m_dwID; }
-		inline const CString &GetSystemName (void) const { return m_sName; }
-		inline DWORD GetSystemTypeUNID (void) const { return m_SystemUNID; }
-		inline CTopology &GetTopology (void) const { return m_Topology; }
-		inline CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
-		inline const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
+		CSystem *GetSystem (void) { return m_pSystem; }
+		DWORD GetSystemID (void) { return m_dwID; }
+		const CString &GetSystemName (void) const { return m_sName; }
+		DWORD GetSystemTypeUNID (void) const { return m_SystemUNID; }
+		CTopology &GetTopology (void) const { return m_Topology; }
+		CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
+		const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		CUniverse &GetUniverse (void) const;
-		inline bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
-		inline ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
+		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
 		ALERROR InitFromAttributesXML (CXMLElement *pAttributes, CString *retsError);
 		ALERROR InitFromSystemXML (CTopology &Topology, CXMLElement *pSystem, CString *retsError);
-		inline bool IsCreationDeferred (void) const { return m_bDeferCreate; }
+		bool IsCreationDeferred (void) const { return m_bDeferCreate; }
 		static bool IsCriteriaAll (const SCriteria &Crit);
-		inline bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
-		inline bool IsKnown (void) const { return m_bKnown; }
-		inline bool IsMarked (void) const { return m_bMarked; }
-		inline bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
+		bool IsEndGame (void) const { return (m_SystemUNID == END_GAME_SYSTEM_UNID); }
+		bool IsKnown (void) const { return m_bKnown; }
+		bool IsMarked (void) const { return m_bMarked; }
+		bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
 		bool MatchesAttributeCriteria (const SAttributeCriteria &Crit) const;
 		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
-		inline void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
-		inline void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
-		inline void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
-		inline void SetDeferCreate (bool bValue = true) { m_bDeferCreate = bValue; }
-		inline void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
-		inline void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
-		inline void SetKnown (bool bKnown = true) { m_bKnown = bKnown; }
-		inline void SetLevel (int iLevel) { m_iLevel = iLevel; }
-		inline void SetMarked (bool bValue = true) const { m_bMarked = bValue; }
-		inline void SetName (const CString &sName) { m_sName = sName; }
-		inline void SetPos (int xPos, int yPos) { m_xPos = xPos; m_yPos = yPos; }
-		inline void SetPositionKnown (bool bKnown = true) { m_bPosKnown = bKnown; }
+		void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
+		void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
+		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
+		void SetDeferCreate (bool bValue = true) { m_bDeferCreate = bValue; }
+		void SetEndGameReason (const CString &sReason) { m_sEndGameReason = sReason; }
+		void SetEpitaph (const CString &sEpitaph) { m_sEpitaph = sEpitaph; }
+		void SetKnown (bool bKnown = true) { m_bKnown = bKnown; }
+		void SetLevel (int iLevel) { m_iLevel = iLevel; }
+		void SetMarked (bool bValue = true) const { m_bMarked = bValue; }
+		void SetName (const CString &sName) { m_sName = sName; }
+		void SetPos (int xPos, int yPos) { m_xPos = xPos; m_yPos = yPos; }
+		void SetPositionKnown (bool bKnown = true) { m_bPosKnown = bKnown; }
 		bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 		void SetStargateCharted (const CString &sName, bool bCharted = true);
 		void SetStargateDest (const CString &sName, const CString &sDestNode, const CString &sEntryPoint);
-		inline void SetSystem (CSystem *pSystem) { m_pSystem = pSystem; }
-		inline void SetSystemID (DWORD dwID) { m_dwID = dwID; }
-		inline void SetSystemUNID (DWORD dwUNID) { m_SystemUNID = dwUNID; }
+		void SetSystem (CSystem *pSystem) { m_pSystem = pSystem; }
+		void SetSystemID (DWORD dwID) { m_dwID = dwID; }
+		void SetSystemUNID (DWORD dwUNID) { m_SystemUNID = dwUNID; }
 		void WriteToStream (IWriteStream *pStream);
 
-		inline void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
+		void AddVariantLabel (const CString &sVariant) { m_VariantLabels.Insert(sVariant); }
 		bool HasVariantLabel (const CString &sVariant);
 
 		static void InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria);
@@ -260,22 +260,22 @@ class CTopologyNode
 class CTopologyNodeList
 	{
 	public:
-		inline CTopologyNode *operator [] (int iIndex) const { return m_List.GetAt(iIndex); }
+		CTopologyNode *operator [] (int iIndex) const { return m_List.GetAt(iIndex); }
 
 		void Delete (CTopologyNode *pNode);
-		inline void Delete (int iIndex) { m_List.Delete(iIndex); }
-		inline void DeleteAll (void) { m_List.DeleteAll(); }
+		void Delete (int iIndex) { m_List.Delete(iIndex); }
+		void DeleteAll (void) { m_List.DeleteAll(); }
 		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CXMLElement *pCriteria, CTopologyNodeList *retList, CString *retsError);
 		ALERROR Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNode::SCriteria &Crit, CTopologyNodeList *ioList);
 		bool FindNode (CTopologyNode *pNode, int *retiIndex = NULL) const;
 		bool FindNode (const CString &sID, int *retiIndex = NULL) const;
-		inline CTopologyNode *GetAt (int iIndex) const { return m_List.GetAt(iIndex); }
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline void Insert (CTopologyNode *pNode) { m_List.Insert(pNode); }
+		CTopologyNode *GetAt (int iIndex) const { return m_List.GetAt(iIndex); }
+		int GetCount (void) const { return m_List.GetCount(); }
+		void Insert (CTopologyNode *pNode) { m_List.Insert(pNode); }
 		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
 		void RestoreMarks (TArray<bool> &Saved);
 		void SaveAndSetMarks (bool bMark, TArray<bool> *retSaved);
-		inline void Shuffle (void) { m_List.Shuffle(); }
+		void Shuffle (void) { m_List.Shuffle(); }
 
 	private:
 		TArray<CTopologyNode *> m_List;
@@ -307,24 +307,24 @@ class CTopologyDesc
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
 		CString GetAttributes (void);
-		inline CXMLElement *GetDesc (void) const { return m_pDesc; }
-		inline const CString &GetID (void) const { return m_sID; }
-		inline EInitialStates GetInitialState (void) const { return m_iInitialState; }
-		inline CEffectCreator *GetLabelEffect (void) const { return m_pLabelEffect; }
-		inline CSystemMap *GetMap (void) const { return m_pMap; }
-		inline CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
+		CXMLElement *GetDesc (void) const { return m_pDesc; }
+		const CString &GetID (void) const { return m_sID; }
+		EInitialStates GetInitialState (void) const { return m_iInitialState; }
+		CEffectCreator *GetLabelEffect (void) const { return m_pLabelEffect; }
+		CSystemMap *GetMap (void) const { return m_pMap; }
+		CEffectCreator *GetMapEffect (void) const { return m_pMapEffect; }
 		CXMLElement *GetNameDesc (void) const;
 		bool GetPos (int *retx, int *rety);
 		CXMLElement *GetSystemDesc (void) const;
 		inline CTopologyDesc *GetTopologyDesc (int iIndex) const;
 		inline int GetTopologyDescCount (void) const;
-		inline CTopologyDescTable *GetTopologyDescTable (void) { return m_pDescList; }
-		inline ENodeDescTypes GetType (void) const { return m_iType; }
-		inline bool IsAbsoluteNode (void) const { return (*m_sID.GetASCIIZPointer() != '+'); }
+		CTopologyDescTable *GetTopologyDescTable (void) { return m_pDescList; }
+		ENodeDescTypes GetType (void) const { return m_iType; }
+		bool IsAbsoluteNode (void) const { return (*m_sID.GetASCIIZPointer() != '+'); }
 		bool IsEndGameNode (CString *retsEpitaph = NULL, CString *retsReason = NULL) const;
-		inline bool IsRootNode (void) const { return ((m_dwFlags & FLAG_IS_ROOT_NODE) ? true : false); }
+		bool IsRootNode (void) const { return ((m_dwFlags & FLAG_IS_ROOT_NODE) ? true : false); }
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pXMLDesc, CSystemMap *pMap, const CString &sParentUNID);
-		inline void SetRootNode (void) { m_dwFlags |= FLAG_IS_ROOT_NODE; }
+		void SetRootNode (void) { m_dwFlags |= FLAG_IS_ROOT_NODE; }
 
 	private:
 		enum Flags
@@ -355,18 +355,18 @@ class CTopologyDescTable
 		ALERROR AddRootNode (SDesignLoadCtx &Ctx, const CString &sNodeID);
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		void CleanUp (void);
-		inline void DeleteIDMap (void) { delete m_pIDToDesc; m_pIDToDesc = NULL; }
+		void DeleteIDMap (void) { delete m_pIDToDesc; m_pIDToDesc = NULL; }
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
 		CTopologyDesc *FindTopologyDesc (const CString &sID);
 		CXMLElement *FindTopologyDescXML (const CString &sNodeID);
 		CTopologyDesc *FindRootNodeDesc (const CString &sID);
 		CXMLElement *FindRootNodeDescXML (const CString &sNodeID);
-		inline const CString &GetFirstNodeID (void) { return m_sFirstNode; }
-		inline int GetRootNodeCount (void) { return m_RootNodes.GetCount(); }
-		inline CTopologyDesc *GetRootNodeDesc (int iIndex) { return m_RootNodes[iIndex]; }
-		inline CXMLElement *GetRootNodeDescXML (int iIndex) { return m_RootNodes[iIndex]->GetDesc(); }
-		inline CTopologyDesc *GetTopologyDesc (int iIndex) { return m_Table[iIndex]; }
-		inline int GetTopologyDescCount (void) { return m_Table.GetCount(); }
+		const CString &GetFirstNodeID (void) { return m_sFirstNode; }
+		int GetRootNodeCount (void) { return m_RootNodes.GetCount(); }
+		CTopologyDesc *GetRootNodeDesc (int iIndex) { return m_RootNodes[iIndex]; }
+		CXMLElement *GetRootNodeDescXML (int iIndex) { return m_RootNodes[iIndex]->GetDesc(); }
+		CTopologyDesc *GetTopologyDesc (int iIndex) { return m_Table[iIndex]; }
+		int GetTopologyDescCount (void) { return m_Table.GetCount(); }
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CSystemMap *pMap, const CString &sParentUNID, bool bAddFirstAsRoot = false);
 		ALERROR LoadNodeFromXML (SDesignLoadCtx &Ctx, CXMLElement *pNode, CSystemMap *pMap, const CString &sParentUNID, CTopologyDesc **retpNode = NULL);
 
@@ -463,11 +463,11 @@ class CTopology
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
 		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
 		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
-		inline CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
-		inline CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
-		inline int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
-		inline CUniverse &GetUniverse (void) const { return m_Universe; }
-		inline DWORD GetVersion (void) const { return m_dwVersion; }
+		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
+		CTopologyNode *GetTopologyNode (int iIndex) const { return m_Topology.GetAt(iIndex); }
+		int GetTopologyNodeCount (void) const { return m_Topology.GetCount(); }
+		CUniverse &GetUniverse (void) const { return m_Universe; }
+		DWORD GetVersion (void) const { return m_dwVersion; }
 		bool InDebugMode (void) const;
 		ALERROR InitComplexArea (CXMLElement *pAreaDef, int iMinRadius, CComplexArea *retArea, STopologyCreateCtx *pCtx = NULL, CTopologyNode **iopExit = NULL); 
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
