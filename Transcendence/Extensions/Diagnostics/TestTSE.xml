@@ -5,21 +5,33 @@
 	<Type unid="&unidTestTSE;">
 		<Events>
 			<OnGlobalStartDiagnostics>
-				(block (
+				(diagEval (list
+
+					;	CIntegerRangeCriteria
+
+					{	test:'(tseParseIntegerRange "=1;")					result:{ equalTo:1 }	}
+					{	test:'(tseParseIntegerRange "=15;")					result:{ equalTo:15 }	}
+					{	test:'(tseParseIntegerRange "&gt;15;")				result:{ greaterThan:15 }	}
+					{	test:'(tseParseIntegerRange "&gt;=15;")				result:{ greaterThan:14 }	}
+					{	test:'(tseParseIntegerRange "&lt;5;")				result:{ lessThan:5 }	}
+					{	test:'(tseParseIntegerRange "&lt;=5;")				result:{ lessThan:6 }	}
+					{	test:'(tseParseIntegerRange "L:8")					result:{ equalTo:8 modifier:"L" }	}
+					{	test:'(tseParseIntegerRange "L:1-9")				result:{ greaterThan:0 lessThan:10 modifier:"L" }	}
+					{	test:'(tseParseIntegerRange "L:18-")				result:{ greaterThan:17 modifier:"L" }	}
+					{	test:'(tseParseIntegerRange "&gt;#100")				result:{ greaterThan:100 modifier:"#" }	}
+					{	test:'(tseParseIntegerRange "&gt;=#100")			result:{ greaterThan:99 modifier:"#" }	}
+
+					;	strPatternSubst
+
+					{	test:'(tsePattern "Percent %%." 17)					result:"Percent %."	}
+					{	test:'(tsePattern "Int %d." 17)						result:"Int 17."	}
+					{	test:'(tsePattern "Hex %x." 0xf00d)					result:"Hex f00d."	}
+
+					{	test:'(tsePattern "Entity: %&amp;amp;.")			result:"Entity: &amp;."	}
 					)
-					;	Unit Tests for strPatternSubst
 
-					(diagEval (list
-						{	test:'(tsePattern "Percent %%." 17)					result:"Percent %."	}
-						{	test:'(tsePattern "Int %d." 17)						result:"Int 17."	}
-						{	test:'(tsePattern "Hex %x." 0xf00d)					result:"Hex f00d."	}
-
-						{	test:'(tsePattern "Entity: %&amp;amp;.")			result:"Entity: &amp;."	}
-						)
-
-						{
-						})
-					)
+					{
+					})
 			</OnGlobalStartDiagnostics>
 		</Events>
 	</Type>

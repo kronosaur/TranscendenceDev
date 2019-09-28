@@ -421,6 +421,24 @@ class CAttributeCriteria
 		DWORD m_dwFlags;
 	};
 
+class CIntegerRangeCriteria
+	{
+	public:
+		CString AsString (char chModifier = '\0') const;
+		int GetEqualToValue (void) const { return m_iEqualToValue; }
+		int GetGreaterThanValue (void) const { return m_iGreaterThanValue; }
+		int GetLessThanValue (void) const { return m_iLessThanValue; }
+		bool IsEmpty (void) const { return (m_iEqualToValue == -1 && m_iGreaterThanValue == -1 && m_iLessThanValue == -1); }
+		bool Matches (int iValue) const;
+		bool Parse (const char *pPos, const char **retpPos = NULL, char *retchModifier = NULL);
+
+	private:
+		int m_iEqualToValue = -1;				//	If not -1, match only this value
+		int m_iGreaterThanValue = -1;			//	If not -1, match only greater than this value
+		int m_iLessThanValue = -1;				//	If not -1, match only less than this value
+		
+	};
+
 class DiceRange
 	{
 	public:

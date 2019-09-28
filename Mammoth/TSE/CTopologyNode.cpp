@@ -33,6 +33,7 @@
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
+#define FIELD_CRITERIA							CONSTLIT("criteria")
 #define FIELD_KNOWN_ONLY						CONSTLIT("knownOnly")
 #define FIELD_MAX_DIST							CONSTLIT("maxDist")
 #define FIELD_MIN_DIST							CONSTLIT("minDist")
@@ -860,6 +861,11 @@ bool CTopologyNode::MatchesAttributeCriteria (const SAttributeCriteria &Crit) co
 		if (HasSpecialAttribute(Crit.SpecialNotAllowed[i]))
 			return false;
 
+	//	Check level
+
+	if (!Crit.Level.Matches(GetLevel()))
+		return false;
+
 	return true;
 	}
 
@@ -978,6 +984,17 @@ ALERROR CTopologyNode::ParseAttributeCriteria (const CString &sCriteria, SAttrib
 					}
 				break;
 				}
+
+			case '=':
+			case '>':
+			case '<':
+			case 'L':
+				{
+				if (!retCrit->Level.Parse(pPos, &pPos))
+					return ERR_FAIL;
+
+				break;
+				}
 			}
 
 		pPos++;
@@ -1089,13 +1106,13 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 	if (!pItem || pItem->IsNil())
 		return NOERROR;
 
-	else if (!pItem->IsSymbolTable())
+	else if (pItem->IsIdentifier())
 		{
-		if (retsError) *retsError = CONSTLIT("Criteria must be a structure.");
-		return ERR_FAIL;
+		if (ALERROR error = ParseAttributeCriteria(pItem->GetStringValue(), &retCrit.AttribCriteria))
+			return error;
 		}
 
-	else
+	else if (pItem->IsSymbolTable())
 		{
 		int iMaxDist = -1;
 		int iMinDist = 0;
@@ -1103,7 +1120,13 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 		for (i = 0; i < pItem->GetCount(); i++)
 			{
 			CString sKey = pItem->GetKey(i);
-			if (strEquals(sKey, FIELD_MAX_DIST))
+
+			if (strEquals(sKey, FIELD_CRITERIA))
+				{
+				if (ALERROR error = ParseAttributeCriteria(pItem->GetElement(i)->GetStringValue(), &retCrit.AttribCriteria))
+					return error;
+				}
+			else if (strEquals(sKey, FIELD_MAX_DIST))
 				{
 				iMaxDist = pItem->GetElement(i)->GetIntegerValue();
 				}
@@ -1157,9 +1180,14 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 			pDistCriteria->iMaxDist = iMaxDist;
 			pDistCriteria->iMinDist = iMinDist;
 			}
-
-		return NOERROR;
 		}
+	else
+		{
+		if (retsError) *retsError = CONSTLIT("Invalid criteria.");
+		return ERR_FAIL;
+		}
+
+	return NOERROR;
 	}
 
 ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *retPoints)

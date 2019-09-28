@@ -5,9 +5,10 @@
 
 #include "PreComp.h"
 
-static constexpr DWORD FN_TSE_PATTERN =					1;
-static constexpr DWORD FN_TSE_SET_SYSTEM =				2;
-static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			3;
+static constexpr DWORD FN_TSE_PARSE_INTEGER_RANGE =		1;
+static constexpr DWORD FN_TSE_PATTERN =					2;
+static constexpr DWORD FN_TSE_SET_SYSTEM =				3;
+static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -30,6 +31,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"diagUpdateSystem",				fnTransEngine,		FN_TSE_UPDATE_SYSTEM,
 			"(diagUpdateSystem [updates]) -> True/error",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"tseParseIntegerRange",			fnTransEngine,		FN_TSE_PARSE_INTEGER_RANGE,
+			"(tseParseIntegerRange criteria) -> result",
+			"s",	0,	},
 
 		{	"tsePattern",					fnTransEngine,		FN_TSE_PATTERN,
 			"(tsePattern pattern ...) -> string",
@@ -71,6 +76,35 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_TSE_PARSE_INTEGER_RANGE:
+			{
+			CIntegerRangeCriteria Criteria;
+			CString sCriteria = pArgs->GetElement(0)->GetStringValue();
+
+			const char *pPos = sCriteria.GetASCIIZPointer();
+			char chModifier;
+			if (!Criteria.Parse(pPos, &pPos, &chModifier))
+				return pCC->CreateError(CONSTLIT("Invalid criteria"), pArgs->GetElement(0));
+
+			if (Criteria.IsEmpty())
+				return pCC->CreateNil();
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			if (Criteria.GetEqualToValue() != -1)
+				pResult->SetIntegerAt(CONSTLIT("equalTo"), Criteria.GetEqualToValue());
+
+			if (Criteria.GetGreaterThanValue() != -1)
+				pResult->SetIntegerAt(CONSTLIT("greaterThan"), Criteria.GetGreaterThanValue());
+
+			if (Criteria.GetLessThanValue() != -1)
+				pResult->SetIntegerAt(CONSTLIT("lessThan"), Criteria.GetLessThanValue());
+
+			if (chModifier != '\0')
+				pResult->SetStringAt(CONSTLIT("modifier"), CString(&chModifier, 1));
+
+			return pResult->Reference();
+			}
+
 		case FN_TSE_PATTERN:
 			{
 			static constexpr int MAX_ARG_BLOCK_SIZE = 4000;

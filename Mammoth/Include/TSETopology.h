@@ -26,6 +26,7 @@ class CTopologyNode
 				CAttributeCriteria::WriteAsString(Stream, SpecialRequired, CONSTLIT("+"));
 				CAttributeCriteria::WriteAsString(Stream, AttribsNotAllowed, CONSTLIT("-"));
 				CAttributeCriteria::WriteAsString(Stream, SpecialNotAllowed, CONSTLIT("-"));
+				Stream.Write(Level.AsString());
 
 				return CString(Stream.GetPointer(), Stream.GetLength());
 				}
@@ -36,6 +37,8 @@ class CTopologyNode
 			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
 			TArray<CString> SpecialRequired;			//	Special attributes
 			TArray<CString> SpecialNotAllowed;			//	Special attributes
+
+			CIntegerRangeCriteria Level;				//	Required level
 			};
 
 		struct SDistanceTo

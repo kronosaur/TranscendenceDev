@@ -2911,10 +2911,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"sysGetNodes",					fnSystemGet,	FN_SYS_ALL_NODES,
-			"(sysGetNodes [criteria]) -> list of nodeIDs\n\n"
+			"(sysGetNodes [criteria|options]) -> list of nodeIDs\n\n"
 			
-			"criteria:\n\n"
+			"options:\n\n"
 			
+			"   criteria:       Only nodes that match attributes\n"
 			"   knownOnly:True  Only nodes known to player\n"
 			"   maxDist:n       Only nodes n or fewer gates away.\n"
 			"   minDist:n       Only nodes n or more gates away.\n",
