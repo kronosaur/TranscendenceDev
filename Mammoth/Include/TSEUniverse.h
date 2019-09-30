@@ -94,7 +94,9 @@ class CDebugOptions
 		bool IsShowLineOfFireEnabled (void) const { return m_bShowLineOfFire; }
 		bool IsShowNavPathsEnabled (void) const { return m_bShowNavPaths; }
 		bool IsShowNodeAttributesEnabled (void) const { return m_bShowNodeAttributes; }
+		bool IsVerboseCreate (void) const { return m_bVerboseCreate; }
 		bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL);
+		void SetVerboseCreate (bool bValue = true) { m_bVerboseCreate = bValue; }
 		
 	private:
 		ICCItemPtr GetMemoryUse (void) const;
@@ -105,6 +107,7 @@ class CDebugOptions
 		bool m_bShowNavPaths = false;
 		bool m_bShowFacingsAngle = false;
 		bool m_bShowNodeAttributes = false;
+		bool m_bVerboseCreate = false;
 	};
 
 //	SFX Options ----------------------------------------------------------------
@@ -260,6 +263,7 @@ class CUniverse
 			bool bNoCollectionCheck = false;			//  If TRUE, don't check collection digests
 			bool bForceCompatibilityLibrary = false;	//	If TRUE, force include of Compatibility Library
 			bool bRecoverAdventureError = false;		//	If TRUE, we try to recover if given adventure not found
+			bool bVerboseCreate = false;				//	If TRUE, log debug info on universe creation
 
 			//	Adventure to bind to (choose one, in order)
 

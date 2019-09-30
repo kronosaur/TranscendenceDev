@@ -1153,9 +1153,16 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		if (!Ctx.bNoResources)
 			m_FractalTextureLibrary.Init();
 
-		//	Initialize some stuff
+		//	Initialize some debug options
 
 		m_bDebugMode = Ctx.bDebugMode;
+
+		//	LATER: We should probably persist debug options at some point. In 
+		//	thase case all debug options should be initialized from the init
+		//	context.
+
+		if (Ctx.bVerboseCreate)
+			m_DebugOptions.SetVerboseCreate(true);
 
 		//	If necessary, figure out where the main files are
 
@@ -1512,6 +1519,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 
 	{
 	int i, j;
+	bool bVerbose = GetDebugOptions().IsVerboseCreate();
 
 	//	Loop over all station types and see if we need to distribute them.
 
@@ -1521,6 +1529,11 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		int iCount = pType->GetNumberAppearing();
 		if (iCount <= 0)
 			continue;
+
+		//	Debug
+
+		if (bVerbose)
+			LogOutput(strPatternSubst("[%08x] %s: Minimum count: %d", pType->GetUNID(), pType->GetNounPhrase(), iCount));
 
 		//	Make a list of all the nodes in which this station can appear
 
@@ -1538,11 +1551,20 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 				Table.Insert(pNode, iFreq);
 			}
 
+		if (bVerbose)
+			{
+			TArray<CString> Nodes;
+			for (int i = 0; i < Table.GetCount(); i++)
+				Nodes.Insert(Table[i]->GetID());
+
+			LogOutput(strPatternSubst("[%08x] %s: Nodes: %s", pType->GetUNID(), pType->GetNounPhrase(), strJoin(Nodes, CONSTLIT("oxfordComma"))));
+			}
+
 		//	If no nodes, then report a warning
 
 		if (Table.GetCount() == 0)
 			{
-			kernelDebugLogPattern("Warning: Not enough appropriate systems to create %d %s [%08x].", iCount, pType->GetNounPhrase(iCount > 1 ? nounPlural : 0), pType->GetUNID());
+			LogOutput(strPatternSubst("WARNING: Not enough appropriate systems to create %d %s [%08x].", iCount, pType->GetNounPhrase(iCount > 1 ? nounPlural : 0), pType->GetUNID()));
 			continue;
 			}
 
@@ -1552,7 +1574,7 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 		if (pType->IsUniqueInSystem() && iCount > Table.GetCount())
 			{
 			iCount = Table.GetCount();
-			kernelDebugLogPattern("Warning: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount);
+			LogOutput(strPatternSubst("WARNING: Decreasing number appearing of %s [%08x] to %d due to lack of appropriate systems.", pType->GetNounPhrase(nounPlural), pType->GetUNID(), iCount));
 			}
 
 		//	Loop over the required number and place them in appropriate nodes.

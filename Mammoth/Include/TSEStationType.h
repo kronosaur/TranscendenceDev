@@ -196,18 +196,11 @@ class CStationEncounterCtx
 	private:
 		struct SEncounterStats
 			{
-			SEncounterStats (void) :
-					iCount(0),
-					iLimit(-1),
-					iMinimum(0),
-                    iNodeCriteria(-1)
-				{ }
+			int iCount = 0;						//	Number of times encountered
+			int iLimit = -1;					//	Encounter limit (-1 = no limit)
+			int iMinimum = 0;					//	Minimum encounters (-1 = no limit)
 
-			int iCount;						//	Number of times encountered
-			int iLimit;						//	Encounter limit (-1 = no limit)
-			int iMinimum;					//	Minimum encounters (-1 = no limit)
-
-            mutable int iNodeCriteria;      //  Cached frequency for node (-1 = unknown)
+            mutable int iNodeCriteria = -1;		//  Cached frequency for node (-1 = unknown)
 			};
 
 		int GetBaseFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);

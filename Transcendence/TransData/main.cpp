@@ -21,6 +21,7 @@
 #define ARMOR_TABLE_SWITCH					CONSTLIT("armortable")
 #define ATTRIBUTE_LIST_SWITCH				CONSTLIT("attributelist")
 #define DEBUG_SWITCH						CONSTLIT("debug")
+#define DEBUG_CREATE_SWITCH					CONSTLIT("debugCreate")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DIAGNOSTICS_SWITCH					CONSTLIT("diagnostics")
 #define EFFECT_EXPLORER_SWITCH				CONSTLIT("effectExplorer")
@@ -497,6 +498,7 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 	Ctx.sFilespec = sFilespec;
 	Ctx.pHost = &Host;
 	Ctx.bDebugMode = pCmdLine->GetAttributeBool(DEBUG_SWITCH);
+	Ctx.bVerboseCreate = pCmdLine->GetAttributeBool(DEBUG_CREATE_SWITCH);
 
 	//	Figure out what adventure we need
 
@@ -619,6 +621,7 @@ bool IsMainCommandParam (const CString &sAttrib)
 			|| strEquals(sAttrib, CONSTLIT("apiVersion"))
 			|| strEquals(sAttrib, CONSTLIT("criteria"))
 			|| strEquals(sAttrib, CONSTLIT("debug"))
+			|| strEquals(sAttrib, CONSTLIT("debugCreate"))
 			|| strEquals(sAttrib, CONSTLIT("extensionFolder"))
 			|| strEquals(sAttrib, CONSTLIT("extensions"))
 			|| strEquals(sAttrib, CONSTLIT("noLogo")));

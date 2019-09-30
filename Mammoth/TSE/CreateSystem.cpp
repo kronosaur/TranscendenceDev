@@ -3839,6 +3839,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 	{
 	ALERROR error;
 	int i, j;
+	bool bVerbose = Universe.GetDebugOptions().IsVerboseCreate();
 
 #ifdef DEBUG_STATION_PLACEMENT
 	{
@@ -3931,58 +3932,69 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 		for (i = 0; i < Universe.GetStationTypeCount(); i++)
 			{
 			CStationType *pType = Universe.GetStationType(i);
-			int iToCreate;
-			if (iToCreate = pType->GetEncounterRequired(pTopology))
+
+			//	Figure out how many objects we still need to create. If none,
+			//	then we continue.
+
+			int iToCreate = pType->GetEncounterRequired(pTopology);
+			if (iToCreate == 0)
+				continue;
+
+			//	Debug
+
+			if (bVerbose)
+				Universe.LogOutput(strPatternSubst(CONSTLIT("[%08x] %s: Creating %d required objects."), pType->GetUNID(), pType->GetNounPhrase(), iToCreate));
+
+			//	Create each of the required objects.
+
+			for (j = 0; j < iToCreate; j++)
 				{
-				for (j = 0; j < iToCreate; j++)
+				//	Look for an appropriate location to create the station at.
+
+				COrbit OrbitDesc;
+				CString sLocationAttribs;
+				int iLocation;
+				if (error = ChooseRandomLocation(&Ctx, 
+						pType->GetLocationCriteria(), 
+						pType,
+						&OrbitDesc, 
+						&sLocationAttribs,
+						&iLocation))
 					{
-					//	Look for an appropriate location to create the station at.
+					//	If we couldn't find an appropriate location then we try 
+					//	picking a random location in the system that is away from
+					//	other stations.
 
-					COrbit OrbitDesc;
-					CString sLocationAttribs;
-					int iLocation;
-					if (error = ChooseRandomLocation(&Ctx, 
-							pType->GetLocationCriteria(), 
-							pType,
-							&OrbitDesc, 
-							&sLocationAttribs,
-							&iLocation))
+					if (error == ERR_NOTFOUND)
 						{
-						//	If we couldn't find an appropriate location then we try 
-						//	picking a random location in the system that is away from
-						//	other stations.
-
-						if (error == ERR_NOTFOUND)
-							{
-							GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
-							iLocation = -1;
-							}
-						else
-							return error;
+						GenerateRandomPosition(&Ctx, pType, &OrbitDesc);
+						iLocation = -1;
 						}
-
-					//	Remember saved last obj
-
-					DWORD dwSavedLastObjID = Ctx.dwLastObjID;
-					Ctx.dwLastObjID = 0;
-
-					//	Create the station at the location
-
-					SObjCreateCtx CreateCtx(Ctx);
-					CreateCtx.vPos = OrbitDesc.GetObjectPos();
-					CreateCtx.pLoc = (iLocation != -1 ? &Ctx.System.GetLocation(iLocation) : NULL);
-					CreateCtx.pOrbit = &OrbitDesc;
-					CreateCtx.bCreateSatellites = true;
-
-					if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+					else
 						return error;
-
-					//	Remember that we filled this location
-
-					if (iLocation != -1)
-						pSystem->SetLocationObjID(iLocation, Ctx.dwLastObjID);
-					Ctx.dwLastObjID = dwSavedLastObjID;
 					}
+
+				//	Remember saved last obj
+
+				DWORD dwSavedLastObjID = Ctx.dwLastObjID;
+				Ctx.dwLastObjID = 0;
+
+				//	Create the station at the location
+
+				SObjCreateCtx CreateCtx(Ctx);
+				CreateCtx.vPos = OrbitDesc.GetObjectPos();
+				CreateCtx.pLoc = (iLocation != -1 ? &Ctx.System.GetLocation(iLocation) : NULL);
+				CreateCtx.pOrbit = &OrbitDesc;
+				CreateCtx.bCreateSatellites = true;
+
+				if (error = pSystem->CreateStation(&Ctx, pType, CreateCtx))
+					return error;
+
+				//	Remember that we filled this location
+
+				if (iLocation != -1)
+					pSystem->SetLocationObjID(iLocation, Ctx.dwLastObjID);
+				Ctx.dwLastObjID = dwSavedLastObjID;
 				}
 			}
 		}
