@@ -16,7 +16,7 @@ class CAdventureDesc : public CDesignType
 		DWORD GetBackgroundUNID (void) const { return m_dwBackgroundUNID; }
 		const CEconomyType &GetDefaultCurrency (void) const;
 		CString GetDesc (void);
-		const CStationEncounterDesc *GetEncounterDesc (DWORD dwUNID) const;
+		const CXMLElement &GetEncounterOverrideXML (void) const { return m_EncounterOverridesXML; }
 		DWORD GetExtensionUNID (void) const { return m_dwExtensionUNID; }
 		const CString &GetName (void) const { return m_sName; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { return &m_ShieldDamageAdj[iLevel - 1]; }
@@ -25,7 +25,6 @@ class CAdventureDesc : public CDesignType
 		const CString &GetStartingPos (void) const { return m_sStartingPos; }
 		ALERROR GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError);
 		const CString &GetWelcomeMessage (void) const { return m_sWelcomeMessage; }
-		bool InitEncounterOverrides (CString *retsError = NULL);
 		bool IsCurrentAdventure (void) const { return (m_fIsCurrentAdventure ? true : false); }
 		bool IsInDefaultResource (void) const { return (m_fInDefaultResource ? true : false); }
 		bool IsValidStartingClass (CShipClass *pClass);
@@ -66,7 +65,6 @@ class CAdventureDesc : public CDesignType
 		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
 
 		CXMLElement m_EncounterOverridesXML;
-		TSortMap<DWORD, CStationEncounterDesc> m_Encounters;
 
 		CEconomyTypeRef m_pDefaultCurrency;		//	Default currency (mostly used for UI)
 
@@ -74,6 +72,5 @@ class CAdventureDesc : public CDesignType
 		DWORD m_fInDefaultResource:1;			//	TRUE if adventure is a module in the default resource
 		DWORD m_fIncludeOldShipClasses:1;		//	TRUE if we should include older extensions (even if 
 												//		they don't match starting ship criteria).
-		DWORD m_fInInitEncounterOverrides:1;	//	TRUE if we're initializing this.
 	};
 

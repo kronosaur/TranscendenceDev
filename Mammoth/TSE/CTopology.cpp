@@ -1824,12 +1824,6 @@ ALERROR CUniverse::InitTopology (DWORD dwStartingMap, CString *retsError)
 		if (error = m_Design.GetEntry(i)->FireOnGlobalTopologyCreated(retsError))
 			return error;
 
-	//	For all encounters that are required (i.e., specify an exact number to 
-	//	be encountered) we distribute them randomly across all topology nodes.
-
-	if (error = InitRequiredEncounters(retsError))
-		return error;
-
 	return NOERROR;
 	}
 

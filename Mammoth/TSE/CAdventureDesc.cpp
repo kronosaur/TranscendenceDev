@@ -107,8 +107,7 @@ static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
 CAdventureDesc::CAdventureDesc (void) :
 		m_fIsCurrentAdventure(false),
 		m_fInDefaultResource(false),
-		m_fIncludeOldShipClasses(false),
-		m_fInInitEncounterOverrides(false)
+		m_fIncludeOldShipClasses(false)
 
 //	CAdventureDesc constructor
 
@@ -253,24 +252,6 @@ CString CAdventureDesc::GetDesc (void)
 		return CONSTLIT("{/rtf }");
 	}
 
-const CStationEncounterDesc *CAdventureDesc::GetEncounterDesc (DWORD dwUNID) const
-
-//	GetEncounterDesc
-//
-//	See if we override the given encounter descriptor.
-
-	{
-	//	If we're initializing the encounter overrides, then we always return
-	//	NULL, otherwise we would be returning uninitialized data.
-
-	if (m_fInInitEncounterOverrides)
-		return NULL;
-
-	//	Look for an override. We return NULL if not found.
-
-	return m_Encounters.GetAt(dwUNID);
-	}
-
 ALERROR CAdventureDesc::GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError)
 
 //	GetStartingShipClasses
@@ -318,76 +299,6 @@ void CAdventureDesc::InitDefaultDamageAdj (void)
 
 		g_bDamageAdjInit = true;
 		}
-	}
-
-bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
-
-//	InitEncounterOverrides
-//
-//	Apply our overrides to the station type encounters.
-
-	{
-	int i;
-	SDesignLoadCtx LoadCtx;
-
-	//	Remember that we're overriding so that we don't re-enter
-
-	m_fInInitEncounterOverrides = true;
-
-	//	Loop over all overrides
-
-	for (i = 0; i < m_EncounterOverridesXML.GetContentElementCount(); i++)
-		{
-		CXMLElement *pOverride = m_EncounterOverridesXML.GetContentElement(i);
-
-		//	Get the UNID that we're overriding
-
-		DWORD dwUNID;
-		if (::LoadUNID(LoadCtx, pOverride->GetAttribute(FIELD_UNID), &dwUNID) != NOERROR)
-			{
-			if (retsError) *retsError = LoadCtx.sError;
-			return false;
-			}
-
-		if (dwUNID == 0)
-			{
-			if (retsError) *retsError = CONSTLIT("Encounter override must specify UNID to override.");
-			return false;
-			}
-
-		//	Get the station type. If we don't find the station, skip it. We 
-		//	assume that this is an optional type.
-
-		CStationType *pType = GetUniverse().FindStationType(dwUNID);
-		if (pType == NULL)
-			{
-			if (GetUniverse().InDebugMode())
-				::kernelDebugLogPattern("Skipping encounter override %08x because type is not found.", dwUNID);
-			continue;
-			}
-
-		//	Add an entry to our table
-
-		CStationEncounterDesc *pNewDesc = m_Encounters.SetAt(dwUNID);
-
-		//	Override it.
-
-		if (!pNewDesc->InitAsOverride(pType->GetEncounterDesc(), *pOverride, retsError))
-			return false;
-
-		//	Reinitialize the level frequency, if necessary.
-		//
-		//	NOTE: There is no need to save these level tables since we will 
-		//	recreate them at load time (i.e., we run through this code at load
-		//	time again).
-
-		pNewDesc->InitLevelFrequency(GetUniverse().GetTopology());
-		}
-
-	//	Done
-
-	m_fInInitEncounterOverrides = false;
-	return true;
 	}
 
 bool CAdventureDesc::IsValidStartingClass (CShipClass *pClass)

@@ -926,22 +926,17 @@ CTopologyNode *CUniverse::GetFirstTopologyNode (void)
 
 	{
 	ASSERT(m_StarSystems.GetCount() == 0);
+	ASSERT(m_Topology.GetTopologyNodeCount() > 0);
 
-	//	Get the default map
+	//	Get the default map and starting node
 
 	DWORD dwStartingMap = GetCurrentAdventureDesc().GetStartingMapUNID();
-
-	//	Initialize the topology
-
-	CString sError;
-	InitTopology(dwStartingMap, &sError);
-
-	//	Figure out the starting node
-
 	CString sNodeID = GetCurrentAdventureDesc().GetStartingNodeID();
 
 	if (sNodeID.IsBlank())
 		{
+		CString sError;
+
 		TSortMap<CString, CShipClass *> StartingShips;
 		if (GetCurrentAdventureDesc().GetStartingShipClasses(&StartingShips, &sError) != NOERROR)
 			return NULL;
@@ -1496,16 +1491,17 @@ ALERROR CUniverse::InitGame (DWORD dwStartingMap, CString *retsError)
 
 	m_Design.NotifyTopologyInit();
 
-	//	Tell the adventure to initialize its encounter tables, which might
-	//	override the encounter desc of specific station types.
+	//	For all encounters that are required (i.e., specify an exact number to 
+	//	be encountered) we distribute them randomly across all topology nodes.
 
-	if (!GetCurrentAdventureDesc().InitEncounterOverrides(retsError))
-		return ERR_FAIL;
+	if (error = InitRequiredEncounters(retsError))
+		return error;
 
 	//	Init encounter tables (this must be done AFTER InitTopoloy because it
 	//	some station encounters specify a topology node).
 
-	InitLevelEncounterTables();
+	if (error = InitLevelEncounterTables())
+		return error;
 
 	return NOERROR;
 	}
@@ -1515,7 +1511,8 @@ ALERROR CUniverse::InitRequiredEncounters (CString *retsError)
 //	InitRequiredEncounters
 //
 //	Called from inside InitTopology. If there are any encounter types that need
-//	to be created then we distribute them across the topology here.
+//	to be created then we distribute them across the topology here. This will
+//	update minimum counts stored inside the station type's encounter record.
 
 	{
 	int i, j;
@@ -2187,10 +2184,6 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 				}
 			}
 		}
-
-	//	Make sure we initialize adventure encounter overrides
-
-	GetCurrentAdventureDesc().InitEncounterOverrides();
 
 	return NOERROR;
 	}

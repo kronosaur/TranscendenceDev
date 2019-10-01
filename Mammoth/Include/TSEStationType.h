@@ -133,6 +133,7 @@ class CStationEncounterDesc
 		const CString &GetLocationCriteria (void) const { return m_sLocationCriteria; }
 		int GetMaxAppearing (void) const { return (m_bMaxCountLimit ? m_MaxAppearing.Roll() : -1); }
 		int GetNumberAppearing (void) const { return (m_bNumberAppearing ? m_NumberAppearing.Roll() : -1); }
+		bool HasAutoLevelFrequency (void) const { return m_bAutoLevelFrequency; }
         bool HasSystemCriteria (const CTopologyNode::SCriteria **retpCriteria = NULL) const 
             {
             if (m_bSystemCriteria) 
@@ -347,6 +348,7 @@ class CStationType : public CDesignType
 		bool IsWall (void) { return (m_fWall ? true : false); }
 		void MarkImages (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers);
 		void OnShipEncounterCreated (SSystemCreateCtx &CreateCtx, CSpaceObject *pObj, const COrbit &Orbit);
+		bool OverrideEncounterDesc (const CXMLElement &Override, CString *retsError = NULL);
 		void PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick);
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y);
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y);
@@ -411,6 +413,7 @@ class CStationType : public CDesignType
 		Metric CalcMaxAttackDistance (void);
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
+		CStationEncounterDesc &GetEncounterDesc (void);
 		void InitStationDamage (void);
 
 		CXMLElement *m_pDesc;
@@ -500,7 +503,8 @@ class CStationType : public CDesignType
 		CCommunicationsHandler m_CommsHandler;			//	Communications handler
 
 		//	Random occurrence
-		CStationEncounterDesc m_RandomPlacement;		//	Random encounter information
+		CStationEncounterDesc m_EncounterDesc;			//	Random encounter information
+		TUniquePtr<CStationEncounterDesc> m_pEncounterDescOverride;		//	Random encounter information
 		CStationEncounterCtx m_EncounterRecord;			//	Record of encounters so far
 
 		//	Ships

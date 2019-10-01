@@ -375,7 +375,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//	NOTE: m_pAdventureDesc can be NULL (e.g., in the intro screen).
 
 	if (m_pAdventureDesc)
+		{
 		m_pAdventureDesc->SetCurrentAdventure();
+
+		//	Let the adventure override encounter desc
+
+		if (!OverrideEncounterDesc(Ctx, m_pAdventureDesc->GetEncounterOverrideXML()))
+			{
+			m_bInBindDesign = false;
+			*retsError = Ctx.sError;
+			return ERR_FAIL;
+			}
+		}
 
 	//	Cache a map between currency name and economy type
 	//	We need to do this before Bind because some types will lookup
@@ -1474,6 +1485,51 @@ void CDesignCollection::NotifyTopologyInit (void)
 		CDesignType *pType = m_AllTypes.GetEntry(i);
 		pType->TopologyInitialized();
 		}
+	}
+
+bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML)
+
+//	OverrideEncounterDesc
+//
+//	Overrides encounter descriptors.
+
+	{
+	//	Loop over all overrides
+
+	for (int i = 0; i < OverridesXML.GetContentElementCount(); i++)
+		{
+		const CXMLElement *pOverride = OverridesXML.GetContentElement(i);
+
+		//	Get the UNID that we're overriding
+
+		DWORD dwUNID;
+		if (::LoadUNID(Ctx, pOverride->GetAttribute(UNID_ATTRIB), &dwUNID) != NOERROR)
+			return false;
+
+		if (dwUNID == 0)
+			{
+			Ctx.sError = CONSTLIT("Encounter override must specify UNID to override.");
+			return false;
+			}
+
+		//	Get the station type. If we don't find the station, skip it. We 
+		//	assume that this is an optional type.
+
+		CStationType *pType = CStationType::AsType(FindEntry(dwUNID));
+		if (pType == NULL)
+			{
+			if (GetUniverse().InDebugMode())
+				GetUniverse().LogOutput(strPatternSubst("Skipping encounter override %08x because type is not found.", dwUNID));
+			continue;
+			}
+
+		//	Override
+
+		if (!pType->OverrideEncounterDesc(*pOverride, &Ctx.sError))
+			return false;
+		}
+
+	return true;
 	}
 
 void CDesignCollection::ReadDynamicTypes (SUniverseLoadCtx &Ctx)

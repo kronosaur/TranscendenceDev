@@ -153,6 +153,7 @@
 #define FIELD_TREASURE_VALUE					CONSTLIT("treasureValue")
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
+#define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
@@ -844,15 +845,17 @@ const CStationEncounterDesc &CStationType::GetEncounterDesc (void) const
 //	Get the encounter descriptor for this station.
 
 	{
-	//	See if the adventure overrides our encounter descriptor
+	return (m_pEncounterDescOverride ? *m_pEncounterDescOverride : m_EncounterDesc);
+	}
 
-	const CStationEncounterDesc *pDesc = GetUniverse().GetCurrentAdventureDesc().GetEncounterDesc(GetUNID());
-	if (pDesc)
-		return *pDesc;
+CStationEncounterDesc &CStationType::GetEncounterDesc (void)
 
-	//	Otherwise, we return our own.
+//	GetEncounterDesc
+//
+//	Get the encounter descriptor for this station.
 
-	return m_RandomPlacement;
+	{
+	return (m_pEncounterDescOverride ? *m_pEncounterDescOverride : m_EncounterDesc);
 	}
 
 int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
@@ -1379,10 +1382,8 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 	//	Placement
 
-	if (error = m_RandomPlacement.InitFromStationTypeXML(Ctx, pDesc))
+	if (error = m_EncounterDesc.InitFromStationTypeXML(Ctx, pDesc))
 		return error;
-
-	m_EncounterRecord.Reinit(m_RandomPlacement);
 
 	//	Background objects
 
@@ -1729,8 +1730,11 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
 
-	if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
-		return ICCItemPtr(m_RandomPlacement.GetLevelFrequency());
+	if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
+		return (GetEncounterDesc().HasAutoLevelFrequency() ? ICCItemPtr(GetEncounterDesc().GetLevelFrequency()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
+		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(ShowsUnexploredAnnotation());
@@ -1748,7 +1752,7 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	else if (strEquals(sProperty, PROPERTY_SYSTEM_CRITERIA))
 		{
         const CTopologyNode::SCriteria *pSystemCriteria;
-        if (!m_RandomPlacement.HasSystemCriteria(&pSystemCriteria))
+        if (!GetEncounterDesc().HasSystemCriteria(&pSystemCriteria))
 			return ICCItemPtr(ICCItem::Nil);
 
 		if (pSystemCriteria->AttribCriteria.IsEmpty())
@@ -1889,7 +1893,7 @@ void CStationType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 	//	Load encounter record
 
 	if (Ctx.dwVersion >= 25)
-		m_RandomPlacement.ReadFromStream(Ctx);
+		GetEncounterDesc().ReadFromStream(Ctx);
 
 	if (Ctx.dwVersion >= 19)
 		m_EncounterRecord.ReadFromStream(Ctx);
@@ -1930,7 +1934,7 @@ void CStationType::OnReinit (void)
 	//	Reinitialize
 
 	m_Name.Reinit();
-	m_EncounterRecord.Reinit(m_RandomPlacement);
+	m_EncounterRecord.Reinit(GetEncounterDesc());
 	m_Image.Reinit();
 	m_HeroImage.Reinit();
 	}
@@ -1974,7 +1978,8 @@ void CStationType::OnTopologyInitialized (void)
 	//	We take this opportunity to resolve the level of certain encounters
 	//	(now that we know the topology).
 
-	m_RandomPlacement.InitLevelFrequency(GetUniverse().GetTopology());
+	GetEncounterDesc().InitLevelFrequency(GetUniverse().GetTopology());
+	m_EncounterRecord.Reinit(GetEncounterDesc());
 	}
 
 void CStationType::OnUnbindDesign (void)
@@ -1989,6 +1994,10 @@ void CStationType::OnUnbindDesign (void)
 
 	m_fCommsHandlerInit = false;
 	m_CommsHandler.DeleteAll();
+
+	//	Reset encounter overrides
+
+	m_pEncounterDescOverride.Set(NULL);
 	}
 
 void CStationType::OnWriteToStream (IWriteStream *pStream)
@@ -2005,8 +2014,25 @@ void CStationType::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
-	m_RandomPlacement.WriteToStream(pStream);
+	GetEncounterDesc().WriteToStream(pStream);
 	m_EncounterRecord.WriteToStream(pStream);
+	}
+
+bool CStationType::OverrideEncounterDesc (const CXMLElement &Override, CString *retsError)
+
+//	OverrideEncounterDesc
+//
+//	Overrides the current encounter descriptor with the given XML element. This
+//	must be done during Bind because we do not persist the override.
+
+	{
+	if (!m_pEncounterDescOverride)
+		m_pEncounterDescOverride.Set(new CStationEncounterDesc(m_EncounterDesc));
+
+	if (!m_pEncounterDescOverride->InitAsOverride(*m_pEncounterDescOverride, Override, retsError))
+		return false;
+
+	return true;
 	}
 
 void CStationType::PaintAnimations (CG32bitImage &Dest, int x, int y, int iTick)

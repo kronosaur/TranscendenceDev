@@ -196,6 +196,9 @@
 
 		<Events>
 			<OnGlobalTopologyCreated>
+				;	LATER: The creation of the Huaramarca should be done in the
+				;	map, using a TopologyCreator.
+
 				(block (gateway)
 
 					; Pick a random system in Huari space to have a gateway to Huaramarca
