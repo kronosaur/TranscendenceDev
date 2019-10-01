@@ -91,19 +91,11 @@ class CGalacticMapSession : public IHISession
 	public:
         struct SOptions
             {
-            SOptions (void) :
-                    xCenter(0),
-                    yCenter(0),
-                    iScale(0),
-                    pSelected(NULL),
-                    pCurNode(NULL)
-                { }
-
-            int xCenter;
-            int yCenter;
-            int iScale;                     //  0 = use defaults for everything
-            CTopologyNode *pSelected;
-            CTopologyNode *pCurNode;        //  Node at the time we saved options
+            int xCenter = 0;
+            int yCenter = 0;
+            int iScale = 0;							//  0 = use defaults for everything
+            const CTopologyNode *pSelected = NULL;
+            const CTopologyNode *pCurNode = NULL;	//  Node at the time we saved options
             };
 
         CGalacticMapSession (STranscendenceSessionCtx &CreateCtx, CSystemMapThumbnails &SystemMapThumbnails, SOptions &SavedState);
@@ -124,7 +116,7 @@ class CGalacticMapSession : public IHISession
 
 	private:
         void SaveState (void);
-        void Select (CTopologyNode *pNode, bool bNoSound = false);
+        void Select (const CTopologyNode *pNode, bool bNoSound = false);
         void SetTargetScale (void);
 
         CGameSettings &m_Settings;

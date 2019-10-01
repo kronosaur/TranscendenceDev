@@ -81,16 +81,11 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	We better have enough nodes
 
-	if (pNodeList->GetCount() < iDistCount)
+	if (NewNodeList.GetCount() < iDistCount)
 		{
 		*retsError = CONSTLIT("<DistributeNodes>: Not enough available nodes.");
 		return ERR_FAIL;
@@ -101,16 +96,16 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 
 	if (m_Criteria.iMinInterNodeDist == 0 && m_Criteria.iMaxInterNodeDist == -1)
 		{
-		pNodeList->Shuffle();
+		NewNodeList.Shuffle();
 
 		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(i)->InitFromAdditionalXML(Ctx.Topology, m_Systems[i % iSystemCount].pDesc, retsError))
+			if (error = NewNodeList[i].InitFromAdditionalXML(Ctx.Topology, m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers
 
-			NodesToDelete.Insert(pNodeList->GetAt(i));
+			NodesToDelete.Insert(&NewNodeList[i]);
 			}
 		}
 
@@ -118,9 +113,9 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 
 	else
 		{
-		pNodeList->Shuffle();
+		NewNodeList.Shuffle();
 
-		int iNodeCount = pNodeList->GetCount();
+		int iNodeCount = NewNodeList.GetCount();
 
 		int iOffset = 0;
 		TArray<int> Chosen;
@@ -144,7 +139,7 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 			for (i = 0; i < iDistCount - 1; i++)
 				for (j = i + 1; j < iDistCount; j++)
 					{
-					int iDist = Ctx.Topology.GetDistance(pNodeList->GetAt(Chosen[i])->GetID(), pNodeList->GetAt(Chosen[j])->GetID());
+					int iDist = Ctx.Topology.GetDistance(NewNodeList[Chosen[i]].GetID(), NewNodeList[Chosen[j]].GetID());
 					if (iDist > iMax)
 						iMax = iDist;
 					if (iDist < iMin)
@@ -177,7 +172,7 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 			iOffset += 1;
 			if (iOffset >= iNodeCount)
 				{
-				pNodeList->Shuffle();
+				NewNodeList.Shuffle();
 				iOffset = 0;
 				}
 			}
@@ -186,12 +181,12 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 
 		for (i = 0; i < iDistCount; i++)
 			{
-			if (error = pNodeList->GetAt(Best[i])->InitFromSystemXML(Ctx.Topology, m_Systems[i % iSystemCount].pDesc, retsError))
+			if (error = NewNodeList[Best[i]].InitFromSystemXML(Ctx.Topology, m_Systems[i % iSystemCount].pDesc, retsError))
 				return error;
 
 			//	Remove this node from NodeList so that it is not re-used by our callers
 
-			NodesToDelete.Insert(pNodeList->GetAt(Best[i]));
+			NodesToDelete.Insert(&NewNodeList[Best[i]]);
 			}
 		}
 
@@ -200,7 +195,7 @@ ALERROR CDistributeNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &No
 	if (Ctx.bReduceNodeList)
 		{
 		for (i = 0; i < NodesToDelete.GetCount(); i++)
-			NodeList.Delete(NodesToDelete[i]);
+			NodeList.Delete(&NodesToDelete[i]);
 		}
 
 	return NOERROR;

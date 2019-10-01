@@ -86,16 +86,16 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 
 	for (i = 0; i < NodeList.GetCount(); i++)
 		{
-		CTopologyNode *pNode = NodeList[i];
+		CTopologyNode &Node = NodeList[i];
 
 		//	Make sure we match criteria
 
-		if (!pNode->MatchesCriteria(MatchCtx, m_Criteria))
+		if (!Node.MatchesCriteria(MatchCtx, m_Criteria))
 			{
 			//	Add to remaining (unprocessed list).
 
 			if (Ctx.bReduceNodeList)
-				Remaining.Insert(pNode);
+				Remaining.Insert(&Node);
 
 			continue;
 			}
@@ -103,10 +103,10 @@ ALERROR CApplySystemProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 		//	Apply
 
 		if (!m_sAttributes.IsBlank())
-			pNode->AddAttributes(m_sAttributes);
+			Node.AddAttributes(m_sAttributes);
 
 		if (!m_SystemDesc.IsEmpty())
-			m_SystemDesc.Apply(Ctx.Topology, pNode);
+			m_SystemDesc.Apply(Ctx.Topology, &Node);
 		}
 
 	//	Modify original list to have only remaining (unprocessed) nodes.

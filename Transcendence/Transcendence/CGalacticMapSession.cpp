@@ -323,7 +323,7 @@ void CGalacticMapSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		}
 	}
 
-void CGalacticMapSession::Select (CTopologyNode *pNode, bool bNoSound)
+void CGalacticMapSession::Select (const CTopologyNode *pNode, bool bNoSound)
 
 //  Select
 //
@@ -358,7 +358,7 @@ void CGalacticMapSession::Select (CTopologyNode *pNode, bool bNoSound)
         CGalacticMapSystemDetails Details(m_HI.GetVisuals(), GetReanimator(), rcPane);
 
         IAnimatron *pAni;
-        Details.CreateDetailsPane(pNode, &pAni);
+        Details.CreateDetailsPane(*pNode, &pAni);
 
     	StartPerformance(pAni, ID_DETAILS, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
         }

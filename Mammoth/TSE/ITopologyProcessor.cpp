@@ -90,7 +90,7 @@ ALERROR ITopologyProcessor::CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLEleme
 	return (*retpProc)->InitFromXML(Ctx, pDesc, sUNID);
 	}
 
-CTopologyNodeList *ITopologyProcessor::FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered)
+CTopologyNodeList &ITopologyProcessor::FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered)
 
 //	FilterNodes
 //
@@ -107,12 +107,13 @@ CTopologyNodeList *ITopologyProcessor::FilterNodes (CTopology &Topology, CTopolo
 		//	Filter
 
 		if (Unfiltered.Filter(Ctx, Criteria, &Filtered) != NOERROR)
-			return NULL;
+			//	Should never happen.
+			throw CException(ERR_FAIL);
 
 		pNodeList = &Filtered;
 		}
 
-	return pNodeList;
+	return *pNodeList;
 	}
 
 ALERROR ITopologyProcessor::InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
@@ -217,10 +218,8 @@ void ITopologyProcessor::SaveAndMarkNodes (CTopology &Topology, CTopologyNodeLis
 //	and clears the mark on all others.
 
 	{
-	int i;
-
 	Topology.GetTopologyNodeList().SaveAndSetMarks(false, retSaved);
 
-	for (i = 0; i < NodeList.GetCount(); i++)
-		NodeList[i]->SetMarked(true);
+	for (int i = 0; i < NodeList.GetCount(); i++)
+		NodeList[i].SetMarked(true);
 	}

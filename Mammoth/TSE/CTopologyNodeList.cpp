@@ -49,11 +49,9 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNo
 //	Filters the list based on the criteria and returns a new list
 
 	{
-	int i;
-
 	//	Loop over all nodes and generate a filtered list
 
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		{
 		if (m_List[i]->MatchesCriteria(Ctx, Crit))
 			ioList->Insert(m_List[i]);

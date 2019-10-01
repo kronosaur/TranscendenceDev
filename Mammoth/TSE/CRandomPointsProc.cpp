@@ -322,18 +322,13 @@ ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	We mark nodes that are available for being placed
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, NewNodeList, &SavedMarks);
 
 	//	Loop over each point
 
@@ -371,13 +366,13 @@ ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 			//	requirements.
 
 			CTopologyNodeList NodesNearPoint;
-			for (j = 0; j < pNodeList->GetCount(); j++)
+			for (j = 0; j < NewNodeList.GetCount(); j++)
 				{
-				CTopologyNode *pNode = pNodeList->GetAt(j);
-				if (pNode->IsMarked())
+				CTopologyNode &Node = NewNodeList[j];
+				if (Node.IsMarked())
 					{
 					int xNode, yNode;
-					pNode->GetDisplayPos(&xNode, &yNode);
+					Node.GetDisplayPos(&xNode, &yNode);
 
 					//	Compute distance to point pos
 
@@ -391,11 +386,11 @@ ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 						{
 						//	Add to list
 
-						NodesNearPoint.Insert(pNode);
+						NodesNearPoint.Insert(&Node);
 
 						//	Unmark so it won't be found again
 
-						pNode->SetMarked(false);
+						Node.SetMarked(false);
 						}
 					}
 				}
@@ -413,25 +408,25 @@ ALERROR CRandomPointsProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 
 	if (Ctx.bReduceNodeList)
 		{
-		if (pNodeList == &NodeList)
+		if (&NewNodeList == &NodeList)
 			{
-			for (i = 0; i < pNodeList->GetCount(); i++)
+			for (i = 0; i < NewNodeList.GetCount(); i++)
 				{
-				CTopologyNode *pNode = pNodeList->GetAt(i);
-				if (!pNode->IsMarked())
+				CTopologyNode &Node = NewNodeList[i];
+				if (!Node.IsMarked())
 					{
-					pNodeList->Delete(i);
+					NewNodeList.Delete(i);
 					i--;
 					}
 				}
 			}
 		else
 			{
-			for (i = 0; i < pNodeList->GetCount(); i++)
+			for (i = 0; i < NewNodeList.GetCount(); i++)
 				{
-				CTopologyNode *pNode = pNodeList->GetAt(i);
-				if (!pNode->IsMarked())
-					NodeList.Delete(pNode);
+				CTopologyNode &Node = NewNodeList[i];
+				if (!Node.IsMarked())
+					NodeList.Delete(&Node);
 				}
 			}
 		}

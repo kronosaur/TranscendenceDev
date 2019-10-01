@@ -130,12 +130,7 @@ ALERROR CGroupTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Node
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList *pNodeList = &FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	If we're reducing the node list, then make a copy of the node list.
 

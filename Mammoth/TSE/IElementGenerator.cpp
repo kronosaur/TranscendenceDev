@@ -48,7 +48,7 @@ class CElementNodeDistanceTable : public IElementGenerator
 		TArray<SEntry> m_Table;
 		TUniquePtr<IElementGenerator> m_DefaultItem;
 
-		mutable TArray<CTopologyNode *> m_OriginList;
+		mutable TArray<const CTopologyNode *> m_OriginList;
 		mutable const CTopology *m_pTopology = NULL;
 		mutable DWORD m_dwTopologyVersion = 0;
 	};
@@ -556,7 +556,7 @@ void CElementNodeDistanceTable::InitOriginList (SCtx &Ctx) const
 	m_OriginList.DeleteAll();
 	for (i = 0; i < Ctx.pTopology->GetTopologyNodeCount(); i++)
 		{
-		CTopologyNode *pNode = Ctx.pTopology->GetTopologyNode(i);
+		const CTopologyNode *pNode = Ctx.pTopology->GetTopologyNode(i);
 		if (pNode->IsEndGame())
 			continue;
 

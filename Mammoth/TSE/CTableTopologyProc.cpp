@@ -136,12 +136,7 @@ ALERROR CTableTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Node
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	Pick a random value
 
@@ -154,7 +149,7 @@ ALERROR CTableTopologyProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Node
 		{
 		if (iRoll <= m_Procs[i].iChance)
 			{
-			if (error = m_Procs[i].pProc->Process(Ctx, *pNodeList, retsError))
+			if (error = m_Procs[i].pProc->Process(Ctx, NewNodeList, retsError))
 				return error;
 
 			break;

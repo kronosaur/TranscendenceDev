@@ -36,14 +36,12 @@ void CConquerNodesProc::CalcAdjacentNodes (CTopologyNodeList &NodeList, CTopolog
 //	Returns a list of all marked nodes that are adjacent to the given list
 
 	{
-	int i, j;
-
-	for (i = 0; i < NodeList.GetCount(); i++)
+	for (int i = 0; i < NodeList.GetCount(); i++)
 		{
-		for (j = 0; j < NodeList[i]->GetStargateCount(); j++)
+		for (int j = 0; j < NodeList[i].GetStargateCount(); j++)
 			{
-			CTopologyNode *pDest = NodeList[i]->GetStargateDest(j);
-			if (pDest != NodeList[i] && pDest->IsMarked())
+			CTopologyNode *pDest = NodeList[i].GetStargateDest(j);
+			if (pDest != &NodeList[i] && pDest->IsMarked())
 				{
 				if (!retOutput->FindNode(pDest))
 					retOutput->Insert(pDest);
@@ -90,8 +88,6 @@ CTopologyNode *CConquerNodesProc::ChooseRandomNode (CTopologyNodeList &NodeList,
 //	Chooses a random node from the list, using Weights as a descriminator
 
 	{
-	int i;
-
 	//	Generate a weight for each node
 
 	TArray<int> Chance;
@@ -100,10 +96,10 @@ CTopologyNode *CConquerNodesProc::ChooseRandomNode (CTopologyNodeList &NodeList,
 	Success.InsertEmpty(NodeList.GetCount());
 
 	int iTotalChance = 0;
-	for (i = 0; i < NodeList.GetCount(); i++)
-		if (NodeList[i]->IsMarked())
+	for (int i = 0; i < NodeList.GetCount(); i++)
+		if (NodeList[i].IsMarked())
 			{
-			Chance[i] = CalcNodeWeight(NodeList[i], Weights, &Success[i]);
+			Chance[i] = CalcNodeWeight(&NodeList[i], Weights, &Success[i]);
 			iTotalChance += Chance[i];
 			}
 		else
@@ -117,12 +113,12 @@ CTopologyNode *CConquerNodesProc::ChooseRandomNode (CTopologyNodeList &NodeList,
 	//	Pick a random node
 
 	int iRoll = mathRandom(1, iTotalChance);
-	for (i = 0; i < Chance.GetCount(); i++)
+	for (int i = 0; i < Chance.GetCount(); i++)
 		{
 		if (iRoll <= Chance[i])
 			{
 			if (mathRandom(1, 100) <= Success[i])
-				return NodeList[i];
+				return &NodeList[i];
 			else
 				return NULL;
 			}
@@ -319,18 +315,13 @@ ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	We mark nodes that are available for us
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, NewNodeList, &SavedMarks);
 
 	//	Initialize some conqueror temporaries
 
@@ -348,7 +339,7 @@ ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 
 	int iMaxRounds = 10000;
 	int iRounds = 0;
-	int iNodesLeft = pNodeList->GetCount();
+	int iNodesLeft = NewNodeList.GetCount();
 	while (iNodesLeft > 0 && iRounds < iMaxRounds)
 		{
 		//	See if any conqueror adds a new seed
@@ -363,7 +354,7 @@ ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 				{
 				//	Pick a random available node
 
-				CTopologyNode *pNewNode = ChooseRandomNode(*pNodeList, GetSeedWeightTable(pConqueror));
+				CTopologyNode *pNewNode = ChooseRandomNode(NewNodeList, GetSeedWeightTable(pConqueror));
 				if (pNewNode == NULL)
 					continue;
 
@@ -430,12 +421,12 @@ ALERROR CConquerNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeL
 
 	if (Ctx.bReduceNodeList)
 		{
-		if (pNodeList == &NodeList && iNodesLeft == 0)
+		if (&NewNodeList == &NodeList && iNodesLeft == 0)
 			NodeList.DeleteAll();
 		else
 			{
-			for (i = 0; i < pNodeList->GetCount(); i++)
-				NodeList.Delete(pNodeList->GetAt(i));
+			for (i = 0; i < NewNodeList.GetCount(); i++)
+				NodeList.Delete(&NewNodeList[i]);
 			}
 		}
 

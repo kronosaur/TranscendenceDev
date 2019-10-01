@@ -131,20 +131,15 @@ ALERROR CFillNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	Loop over all nodes and place the systems in random order
 
-	pNodeList->Shuffle();
-	for (i = 0; i < pNodeList->GetCount(); i++)
+	NewNodeList.Shuffle();
+	for (i = 0; i < NewNodeList.GetCount(); i++)
 		{
 		CTopologyNodeList SingleNode;
-		SingleNode.Insert(pNodeList->GetAt(i));
+		SingleNode.Insert(&NewNodeList[i]);
 
 		if (error = m_Procs[i % iProcCount]->Process(Ctx, SingleNode, retsError))
 			return error;
@@ -154,12 +149,12 @@ ALERROR CFillNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList
 
 	if (Ctx.bReduceNodeList)
 		{
-		if (pNodeList == &NodeList)
+		if (&NewNodeList == &NodeList)
 			NodeList.DeleteAll();
 		else
 			{
-			for (i = 0; i < pNodeList->GetCount(); i++)
-				NodeList.Delete(pNodeList->GetAt(i));
+			for (i = 0; i < NewNodeList.GetCount(); i++)
+				NodeList.Delete(&NewNodeList[i]);
 			}
 		}
 

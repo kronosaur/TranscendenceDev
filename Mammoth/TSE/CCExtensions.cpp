@@ -13723,7 +13723,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 					
 				TSortMap<CString, int> Distances;
-				pCtx->GetUniverse().GetTopology().CalcDistances(pNode, Distances);
+				pCtx->GetUniverse().GetTopology().CalcDistances(*pNode, Distances);
 
 				ICCItemPtr pResult(ICCItem::SymbolTable);
 				for (int i = 0; i < Distances.GetCount(); i++)

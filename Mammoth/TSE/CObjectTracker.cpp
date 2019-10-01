@@ -285,7 +285,7 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
     return pObj->TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
 	}
 
-void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const
+void CObjectTracker::GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const
 
 //  GetGalacticMapObjects
 //
@@ -301,7 +301,7 @@ void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<S
 
 	//	Look in the index of nodes
 
-	const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	const SNodeData *pNodeData = m_ByNode.GetAt(Node.GetID());
     if (pNodeData == NULL)
         return;
 

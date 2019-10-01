@@ -17,7 +17,7 @@ class CGalacticMapPainter
 	public:
         struct SSelectResult
             {
-            CTopologyNode *pNode;
+            const CTopologyNode *pNode;
             };
 
 		CGalacticMapPainter (const CUniverse &Universe, CSystemMap *pMap, CSystemMapThumbnails &SystemMapThumbnails);
@@ -25,29 +25,29 @@ class CGalacticMapPainter
 
 		void AdjustCenter (int xCenter, int yCenter, int iScale, int *retxCenter, int *retyCenter) const;
         void GalacticToView (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
-		inline int GetHeight (void) const { return m_cyMap; }
-        inline void GetPos (int *retx, int *rety) const { *retx = m_xCenter; *rety = m_yCenter; }
-        inline int GetScale (void) const { return m_iScale; }
-        inline CTopologyNode *GetSelection (void) const { return m_pSelected; }
-        inline const RECT &GetViewport (void) const { return m_rcView; }
-		inline int GetWidth (void) const { return m_cxMap; }
+		int GetHeight (void) const { return m_cyMap; }
+        void GetPos (int *retx, int *rety) const { *retx = m_xCenter; *rety = m_yCenter; }
+        int GetScale (void) const { return m_iScale; }
+        const CTopologyNode *GetSelection (void) const { return m_pSelected; }
+        const RECT &GetViewport (void) const { return m_rcView; }
+		int GetWidth (void) const { return m_cxMap; }
         bool HitTest (int x, int y, SSelectResult &Result) const;
 		void Paint (CG32bitImage &Dest) const;
-        inline void SetPos (int x, int y) { m_xCenter = x; m_yCenter = y; }
-        inline void SetScale (int iScale) { m_iScale = iScale; }
-        inline void SetSelection (CTopologyNode *pNode) { m_pSelected = pNode; }
-        inline void SetViewport (const RECT &rcRect) { m_rcView = rcRect; RectCenter(m_rcView, &m_xViewCenter, &m_yViewCenter); }
+        void SetPos (int x, int y) { m_xCenter = x; m_yCenter = y; }
+        void SetScale (int iScale) { m_iScale = iScale; }
+        void SetSelection (const CTopologyNode *pNode) { m_pSelected = pNode; }
+        void SetViewport (const RECT &rcRect) { m_rcView = rcRect; RectCenter(m_rcView, &m_xViewCenter, &m_yViewCenter); }
         void ViewToGalactic (int x, int y, int xCenter, int yCenter, int iScale, int *retx, int *rety) const;
 
 	private:
 		void DrawNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
-		void DrawNodeConnections (CG32bitImage &Dest, CTopologyNode *pNode, int x, int y) const;
+		void DrawNodeConnections (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y) const;
         void DrawSelection (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbColor) const;
 		void DrawUnknownNode (CG32bitImage &Dest, const CTopologyNode *pNode, int x, int y, Metric rScale, CG32bitPixel rgbColor) const;
-		inline int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
-		inline int GetImageGalacticWidth (void) const { return (m_pImage ? (int)(m_pImage->GetWidth() / m_rImageScale) : 0); }
+		int GetImageGalacticHeight (void) const { return (m_pImage ? (int)(m_pImage->GetHeight() / m_rImageScale) : 0); }
+		int GetImageGalacticWidth (void) const { return (m_pImage ? (int)(m_pImage->GetWidth() / m_rImageScale) : 0); }
 		void Init (void);
-		inline SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
+		SPoint Xform (const SPoint &pt) const { return SPoint(m_xViewCenter + m_iScale * (pt.x - m_xCenter) / 100, m_yViewCenter + m_iScale * (m_yCenter - pt.y) / 100); }
 
 		const CUniverse &m_Universe;
 		const CG16bitFont &m_MediumFont;
@@ -64,7 +64,7 @@ class CGalacticMapPainter
 
 		//	Painting options
 
-        CTopologyNode *m_pSelected;			//  Selected node (may be NULL)
+        const CTopologyNode *m_pSelected;			//  Selected node (may be NULL)
         mutable int m_iSelectAngle;         //  Animate selection
 
 		int m_iScale;                       //  Scale to paint at 100 = normal; 200 = 2x size

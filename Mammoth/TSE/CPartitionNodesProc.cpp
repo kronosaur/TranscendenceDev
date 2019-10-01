@@ -206,12 +206,7 @@ ALERROR CPartitionNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Nod
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	Figure out the order in which we assign partitions
 
@@ -239,22 +234,22 @@ ALERROR CPartitionNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Nod
 	//	(So we first save the marks)
 
 	TArray<bool> SavedMarks;
-	SaveAndMarkNodes(Ctx.Topology, *pNodeList, &SavedMarks);
+	SaveAndMarkNodes(Ctx.Topology, NewNodeList, &SavedMarks);
 
 	//	Loop until we have placed all nodes in a partition
 
 	int iLoopsWithoutProgress = 0;
 	int iPartition = 0;
-	int iNodesLeft = pNodeList->GetCount();
+	int iNodesLeft = NewNodeList.GetCount();
 	while (iNodesLeft > 0)
 		{
 		//	Find the node with the fewest available stargates
 
 		CTopologyNode *pStartNode = NULL;
 		int iMinGates = -1;
-		for (i = 0; i < pNodeList->GetCount(); i++)
+		for (i = 0; i < NewNodeList.GetCount(); i++)
 			{
-			CTopologyNode *pNode = pNodeList->GetAt(i);
+			CTopologyNode *pNode = &NewNodeList[i];
 			if (pNode->IsMarked())
 				{
 				int iGateCount = 0;
@@ -282,7 +277,7 @@ ALERROR CPartitionNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Nod
 
 		int iNodeCount = m_Partitions[iPartition].NodeCount.Roll();
 		if (m_Partitions[iPartition].bNodeCountPercent)
-			iNodeCount = pNodeList->GetCount() * iNodeCount / 100;
+			iNodeCount = NewNodeList.GetCount() * iNodeCount / 100;
 
 		//	Generate a list of contiguous nodes for the partition
 		//	This also unmarks any nodes chosen.
@@ -337,12 +332,12 @@ ALERROR CPartitionNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &Nod
 
 	if (Ctx.bReduceNodeList)
 		{
-		if (pNodeList == &NodeList && iNodesLeft == 0)
+		if (&NewNodeList == &NodeList && iNodesLeft == 0)
 			NodeList.DeleteAll();
 		else
 			{
-			for (i = 0; i < pNodeList->GetCount(); i++)
-				NodeList.Delete(pNodeList->GetAt(i));
+			for (i = 0; i < NewNodeList.GetCount(); i++)
+				NodeList.Delete(&NewNodeList[i]);
 			}
 		}
 

@@ -168,27 +168,22 @@ ALERROR CLocateNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 	//	If we have a criteria, the filter the nodes
 
 	CTopologyNodeList FilteredNodeList;
-	CTopologyNodeList *pNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
-	if (pNodeList == NULL)
-		{
-		*retsError = CONSTLIT("Error filtering nodes");
-		return ERR_FAIL;
-		}
+	CTopologyNodeList &NewNodeList = FilterNodes(Ctx.Topology, m_Criteria, NodeList, FilteredNodeList);
 
 	//	If no nodes, then we're done
 
-	if (pNodeList->GetCount() == 0)
+	if (NewNodeList.GetCount() == 0)
 		return NOERROR;
 
 	//	Compute a value for all nodes
 
 	TArray<SComputedNode> Results;
-	Results.InsertEmpty(pNodeList->GetCount());
+	Results.InsertEmpty(NewNodeList.GetCount());
 	if (m_pMapFunction)
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
+		for (i = 0; i < NewNodeList.GetCount(); i++)
 			{
-			Results[i].pNode = pNodeList->GetAt(i);
+			Results[i].pNode = &NewNodeList[i];
 
 			int x, y;
 			Results[i].pNode->GetDisplayPos(&x, &y);
@@ -202,9 +197,9 @@ ALERROR CLocateNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 		}
 	else
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
+		for (i = 0; i < NewNodeList.GetCount(); i++)
 			{
-			Results[i].pNode = pNodeList->GetAt(i);
+			Results[i].pNode = &NewNodeList[i];
 			Results[i].rValue = 1.0f;
 			}
 		}
@@ -214,11 +209,11 @@ ALERROR CLocateNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 	//	location.
 
 	TArray<bool> SavedMarks;
-	SavedMarks.InsertEmpty(pNodeList->GetCount());
-	for (i = 0; i < pNodeList->GetCount(); i++)
+	SavedMarks.InsertEmpty(NewNodeList.GetCount());
+	for (i = 0; i < NewNodeList.GetCount(); i++)
 		{
-		SavedMarks[i] = pNodeList->GetAt(i)->IsMarked();
-		pNodeList->GetAt(i)->SetMarked(true);
+		SavedMarks[i] = NewNodeList[i].IsMarked();
+		NewNodeList[i].SetMarked(true);
 		}
 
 	//	Loop over all locations
@@ -253,15 +248,15 @@ ALERROR CLocateNodesProc::OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeLi
 
 	if (Ctx.bReduceNodeList)
 		{
-		for (i = 0; i < pNodeList->GetCount(); i++)
-			if (!pNodeList->GetAt(i)->IsMarked())
-				NodeList.Delete(pNodeList->GetAt(i));
+		for (i = 0; i < NewNodeList.GetCount(); i++)
+			if (!NewNodeList[i].IsMarked())
+				NodeList.Delete(&NewNodeList[i]);
 		}
 
 	//	Done
 
-	for (i = 0; i < pNodeList->GetCount(); i++)
-		pNodeList->GetAt(i)->SetMarked(SavedMarks[i]);
+	for (i = 0; i < NewNodeList.GetCount(); i++)
+		NewNodeList[i].SetMarked(SavedMarks[i]);
 
 	return NOERROR;
 	}

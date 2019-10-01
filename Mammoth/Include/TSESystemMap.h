@@ -42,12 +42,12 @@ class ITopologyProcessor
 		static ALERROR CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID, ITopologyProcessor **retpProc);
 
 		virtual ~ITopologyProcessor (void) { }
-		inline ALERROR BindDesign (SDesignLoadCtx &Ctx) { return OnBindDesign(Ctx); }
-		inline CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
-		inline EPhase GetPhase (void) const { return m_iPhase; }
+		ALERROR BindDesign (SDesignLoadCtx &Ctx) { return OnBindDesign(Ctx); }
+		CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
+		EPhase GetPhase (void) const { return m_iPhase; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, const CString &sUNID);
-		inline void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { OnPaint(Dest, xCenter, yCenter, rScale); }
-		inline ALERROR Process (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(Ctx, NodeList, retsError); }
+		void Paint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { OnPaint(Dest, xCenter, yCenter, rScale); }
+		ALERROR Process (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return OnProcess(Ctx, NodeList, retsError); }
 
 		static EPhase ParsePhase (const CString &sValue);
 
@@ -58,7 +58,7 @@ class ITopologyProcessor
 		virtual void OnPaint (CG32bitImage &Dest, int xCenter, int yCenter, Metric rScale) const { }
 		virtual ALERROR OnProcess (SProcessCtx &Ctx, CTopologyNodeList &NodeList, CString *retsError) { return NOERROR; }
 
-		CTopologyNodeList *FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
+		CTopologyNodeList &FilterNodes (CTopology &Topology, CTopologyNode::SCriteria &Criteria, CTopologyNodeList &Unfiltered, CTopologyNodeList &Filtered);
 		ALERROR InitBaseItemXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void RestoreMarks (CTopology &Topology, TArray<bool> &Saved);
 		void SaveAndMarkNodes (CTopology &Topology, CTopologyNodeList &NodeList, TArray<bool> *retSaved);
@@ -87,21 +87,21 @@ class CSystemMap : public CDesignType
 		void AccumulateTopologyProcessors (TSortMap<int, TArray<ITopologyProcessor *>> &Result) const;
 		bool AddAnnotation (CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL) { return AddAnnotation(NULL_STR, pEffect, x, y, iRotation, retdwID); }
 		bool AddAnnotation (const CString &sNodeID, CEffectCreator *pEffect, int x, int y, int iRotation, DWORD *retdwID = NULL);
-		inline bool AddAreaHighlight (const CComplexArea &Area) { m_AreaHighlights.Insert(Area); return true; }
+		bool AddAreaHighlight (const CComplexArea &Area) { m_AreaHighlights.Insert(Area); return true; }
 		ALERROR GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopologyNodeList> &NodesAdded, CString *retsError);
 		bool DebugShowAttributes (void) const;
 		bool DebugShowIntermediatePoints (void) const;
 		CG32bitImage *CreateBackgroundImage (Metric *retrImageScale);
 		void GetBackgroundImageSize (int *retcx, int *retcy);
-		inline CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
-        inline Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
-		inline const CString &GetName (void) const { return m_sName; }
-		inline void GetScale (int *retiInitial, int *retiMin = NULL, int *retiMax = NULL) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
-        inline CG32bitPixel GetStargateLineColor (void) const { return m_rgbStargateLines; }
-		inline const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
-		inline bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }
-		inline bool IsStartingMap (void) const { return m_bStartingMap; }
-		inline void SetBackgroundImageUNID (DWORD dwUNID) { m_dwBackgroundImageOverride = dwUNID; }
+		CSystemMap *GetDisplayMap (void) { return (m_pPrimaryMap != NULL ? m_pPrimaryMap : this); }
+        Metric GetLightYearsPerPixel (void) const { return m_rLightYearsPerPixel; }
+		const CString &GetName (void) const { return m_sName; }
+		void GetScale (int *retiInitial, int *retiMin = NULL, int *retiMax = NULL) { if (retiInitial) *retiInitial = m_iInitialScale; if (retiMin) *retiMin = m_iMinScale; if (retiMax) *retiMax = m_iMaxScale; }
+        CG32bitPixel GetStargateLineColor (void) const { return m_rgbStargateLines; }
+		const CString &GetStartingNodeID (void) { return m_FixedTopology.GetFirstNodeID(); }
+		bool IsPrimaryMap (void) const { return (m_pPrimaryMap == NULL); }
+		bool IsStartingMap (void) const { return m_bStartingMap; }
+		void SetBackgroundImageUNID (DWORD dwUNID) { m_dwBackgroundImageOverride = dwUNID; }
 
 		//	CDesignType overrides
 		static CSystemMap *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designSystemMap) ? (CSystemMap *)pType : NULL); }

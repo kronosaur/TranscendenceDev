@@ -1857,7 +1857,7 @@ class CObjectTracker
 		void Delete (CSpaceObject *pObj);
 		void DeleteAll (void);
 		bool Find (const CString &sNodeID, const CObjectTrackerCriteria &Criteria, TArray<SObjEntry> *retResult);
-        void GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const;
+        void GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const;
         void GetSystemBackgroundObjects (const CTopologyNode *pNode, TSortMap<Metric, SBackgroundObjEntry> &Results) const;
         void GetSystemStarObjects (const CTopologyNode *pNode, TArray<SBackgroundObjEntry> &Results) const;
         const TArray<COrbit> &GetSystemOrbits (const CTopologyNode *pNode) const;

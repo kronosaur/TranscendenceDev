@@ -645,7 +645,7 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
-void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc)
+void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
 
 //	GetStargateRouteDesc
 //
@@ -745,7 +745,7 @@ void CTopologyNode::InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteri
 			bool bNew;
 			TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.SetAt(pSource->GetID(), &bNew);
 			if (bNew)
-				Ctx.Topology.CalcDistances(pSource, *pDistMap);
+				Ctx.Topology.CalcDistances(*pSource, *pDistMap);
 			}
 		}
 	}
