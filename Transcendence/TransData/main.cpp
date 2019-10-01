@@ -304,21 +304,12 @@ void AlchemyMain (CXMLElement *pCmdLine)
 	CUniverse Universe;
 	CString sError;
 
-	if (bLogo)
-		printf("Loading...");
-
 	if (error = InitUniverse(Universe, Host, (bDefaultDataFile ? NULL_STR : sDataFile), pCmdLine, &sError))
 		{
-		if (bLogo)
-			printf("\n");
-
 		printf("%s\n", sError.GetASCIIZPointer());
 		::kernelSetDebugLog(NULL);
 		return;
 		}
-
-	if (bLogo)
-		printf("done.\n");
 
 	//	Figure out what to do
 
@@ -493,6 +484,10 @@ ALERROR CreateXMLElementFromDataFile (const CString &sFilespec, CXMLElement **re
 ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec, CXMLElement *pCmdLine, CString *retsError)
 	{
 	ALERROR error;
+	bool bLogo = !pCmdLine->GetAttributeBool(NO_LOGO_SWITCH);
+
+	if (bLogo)
+		printf("Loading...");
 
 	CUniverse::SInitDesc Ctx;
 	Ctx.sFilespec = sFilespec;
@@ -597,7 +592,13 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 #endif
 
 	if (error = Universe.Init(Ctx, retsError))
+		{
+		printf("\n");
 		return error;
+		}
+
+	if (bLogo)
+		printf("done.\n");
 
 	if (error = Universe.InitGame(0, retsError))
 		return error;
