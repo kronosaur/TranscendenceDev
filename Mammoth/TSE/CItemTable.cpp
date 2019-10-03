@@ -556,7 +556,7 @@ void CGroupOfGenerators::AddItemsScaled (SItemAddCtx &Ctx, Metric rAdj) const
 #ifdef DEBUG_AVERAGE_VALUE
 		if (bDebug)
 			{
-			printf("%s: %d -> %.2f = %d\n", (LPSTR)Item.GetNounPhrase(CItemCtx()), iOriginalCount, rNewCount, iNewCount);
+			printf("%s: %d -> %.2f = %d\n", (LPSTR)Item.GetNounPhrase(), iOriginalCount, rNewCount, iNewCount);
 			}
 #endif
 
@@ -2307,7 +2307,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 		else
 			{
 			CString sError;
-			if (Mods.InitFromDesc(pResult, &sError) != NOERROR)
+			if (Mods.InitFromDesc(Item.GetUniverse(), *pResult, &sError) != NOERROR)
 				{
 				::kernelDebugLogPattern("Generate Enhancement: %s", sError);
 				Mods = CItemEnhancement();

@@ -1264,9 +1264,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIsShip obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpEnhanceItem",				fnShipSetOld,		FN_SHIP_ENHANCE_ITEM,
-			"(shpEnhanceItem ship item [mods]) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpEnhanceItem",				fnShipSet,			FN_SHIP_ENHANCE_ITEM,
+			"(shpEnhanceItem ship item [mods|options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   enhancement: enhancement code/desc (required)\n"
+
+			"   lifetime: (in ticks)\n"
+			"   itemType: item causing enhancement\n",
+
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
 			"(shpMakeRadioactive ship) -> True/Nil",
@@ -5166,7 +5174,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pCtx->InEvent(eventGetName) && pCtx->GetItemType() == Item.GetType())
 				dwFlags |= nounNoEvent;
 
-			pResult = pCC->CreateString(Item.GetNounPhrase(CItemCtx(Item), dwFlags));
+			pResult = pCC->CreateString(Item.GetNounPhrase(dwFlags));
 			break;
 			}
 
@@ -5296,7 +5304,7 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CItemEnhancement Mods;
 			CString sError;
-			if (Mods.InitFromDesc(pArgs->GetElement(1), &sError) != NOERROR)
+			if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(1), &sError) != NOERROR)
 				return pCC->CreateError(sError, pArgs->GetElement(1));
 
 			Item.AddEnhancement(Mods);
@@ -7680,11 +7688,28 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), NULL);
 
-			//	Get optional lifetime
+			//	Get options
 
 			int iLifetime = -1;
+			CItemEnhancement Mods;
 			if (pArgs->GetCount() > 3 && !pArgs->GetElement(3)->IsNil())
-				iLifetime = pArgs->GetElement(3)->GetIntegerValue();
+				{
+				ICCItem *pOptions = pArgs->GetElement(3);
+				if (pOptions->IsSymbolTable())
+					{
+					ICCItem *pMods = pOptions->GetElement(CONSTLIT("enhancement"));
+					if (pMods)
+						{
+						CString sError;
+						if (Mods.InitFromDesc(pCtx->GetUniverse(), *pMods, &sError) != NOERROR)
+							return pCC->CreateError(sError, pMods);
+						}
+
+					iLifetime = pOptions->GetIntegerAt(CONSTLIT("lifetime"), -1);
+					}
+				else
+					iLifetime = pOptions->GetIntegerValue();
+				}
 
 			//	Add
 
@@ -7693,10 +7718,18 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Done
 
-			if (dwID != OBJID_NULL)
-				return pCC->CreateInteger(dwID);
-			else
-				return pCC->CreateNil();
+			switch (iResult)
+				{
+				case eisNoEffect:
+				case eisAlreadyEnhanced:
+					return pCC->CreateNil();
+
+				default:
+					if (dwID != OBJID_NULL)
+						return pCC->CreateInteger(dwID);
+					else
+						return pCC->CreateNil();
+				}
 			}
 
 		case FN_OBJ_ADD_OVERLAY:
@@ -10072,6 +10105,65 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iResult);
 			}
 
+		case FN_SHIP_ENHANCE_ITEM:
+			{
+			CItemListManipulator *pItemList = NULL;
+			CItemListManipulator ItemList(pShip->GetItemList());
+
+			//	If the argument is a list then it is an item (which means we have to find
+			//	the item in the manipulator). If the argument is an integer then we expect
+			//	an item list manipulator pointer.
+
+			if (pArgs->GetElement(1)->IsInteger())
+				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
+			else
+				{
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (!ItemList.SetCursorAtItem(Item))
+					{
+					if (pCtx->GetAPIVersion() >= 18)
+						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+					else
+						return pCC->CreateNil();
+					}
+
+				pItemList = &ItemList;
+				}
+
+			//	Get the enhancement
+
+			CItemEnhancement Mods;
+			if (pArgs->GetCount() > 2)
+				{
+				CString sError;
+				if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(2), &sError) != NOERROR)
+					return pCC->CreateError(sError);
+				}
+
+			if (pItemList == NULL)
+				return pCC->CreateNil();
+
+			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
+				{
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
+				{
+				if (Mods.IsEmpty())
+					Mods = CItemEnhancement(etBinaryEnhancement);
+
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else
+				{
+				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
+				return pCC->CreateTrue();
+				}
+			break;
+			}
+
 		case FN_SHIP_FIX_BLINDNESS:
 			{
 			bool bNoMessage = (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil());
@@ -10404,8 +10496,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			|| dwData == FN_SHIP_ORDER_HOLD
 			|| dwData == FN_SHIP_CONTROLLER)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("i*"));
-	else if (dwData == FN_SHIP_ENHANCE_ITEM)
-		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv*"));
 	else
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv"));
 	if (pArgs->IsError())
@@ -10746,75 +10836,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				}
 			else
 				pResult = pCC->CreateNil();
-			break;
-			}
-
-		case FN_SHIP_ENHANCE_ITEM:
-			{
-			CItemListManipulator *pItemList = NULL;
-			CItemListManipulator ItemList(pShip->GetItemList());
-
-			//	If the argument is a list then it is an item (which means we have to find
-			//	the item in the manipulator). If the argument is an integer then we expect
-			//	an item list manipulator pointer.
-
-			if (pArgs->GetElement(1)->IsInteger())
-				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
-			else
-				{
-				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-				if (!ItemList.SetCursorAtItem(Item))
-					{
-					pArgs->Discard();
-					if (pCtx->GetAPIVersion() >= 18)
-						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
-					else
-						return pCC->CreateNil();
-					}
-
-				pItemList = &ItemList;
-				}
-
-			//	Get the enhancement
-
-			CItemEnhancement Mods;
-			CString sError;
-			if (pArgs->GetCount() > 2)
-				{
-				if (Mods.InitFromDesc(pArgs->GetElement(2), &sError) != NOERROR)
-					{
-					pArgs->Discard();
-					pResult = pCC->CreateError(sError);
-					break;
-					}
-				}
-
-			if (pItemList == NULL)
-				{
-				pArgs->Discard();
-				pResult = pCC->CreateNil();
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
-				{
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
-				{
-				if (Mods.IsEmpty())
-					Mods = CItemEnhancement(etBinaryEnhancement);
-
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else
-				{
-				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
-				pArgs->Discard();
-				pResult = pCC->CreateTrue();
-				}
 			break;
 			}
 
@@ -12039,7 +12060,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (iBonus != 0)
 				{
 				pEnhancements.TakeHandoff(new CItemEnhancementStack);
-				pEnhancements->InsertHPBonus(iBonus);
+				pEnhancements->InsertHPBonus(NULL, iBonus);
 				}
 
 			//	Create the weapon shot

@@ -5,17 +5,13 @@
 
 #include "PreComp.h"
 
-void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
+void CItemEnhancementStack::AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes
 //
 //	Add enhancement attributes as appropriate.
 
 	{
-	int i;
-
-	CDeviceClass *pClass = Ctx.GetDeviceClass();
-
 	//	Add all damage resistance enhancements
 
 	bool bNoDamageAdj = false;
@@ -36,7 +32,7 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 
 	if (!bNoDamageAdj)
 		{
-		for (i = 0; i < damageCount; i++)
+		for (int i = 0; i < damageCount; i++)
 			{
 			if ((iAdj = GetResistDamageAdj((DamageTypes)i)) != 100)
 				retList->Insert(SDisplayAttribute((iAdj < 100 ? attribPositive : attribNegative), GetDamageShortName((DamageTypes)i), true));
@@ -45,7 +41,7 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 
 	//	Add some binary enhancements
 
-	for (i = 0; i < m_Stack.GetCount(); i++)
+	for (int i = 0; i < m_Stack.GetCount(); i++)
 		{
 		bool bDisadvantage = m_Stack[i].IsDisadvantage();
 		EDisplayAttributeTypes iDisplayType = (bDisadvantage ? attribNegative : attribPositive);
@@ -61,7 +57,7 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 			case etImmunityIonEffects:
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
-				m_Stack[i].AccumulateAttributes(Ctx, retList);
+				m_Stack[i].AccumulateAttributes(Item, retList);
 				break;
 			}
 		}
@@ -92,8 +88,15 @@ void CItemEnhancementStack::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplay
 
 	//	Add tracking
 
-	if (IsTracking() && pClass && !pClass->IsTrackingWeapon(CItemCtx()))
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+tracking"), true));
+	if (IsTracking())
+		{
+		//	Only add this as an enhancement if the raw (unenhanced device) 
+		//	doesn't already have it.
+
+		CDeviceClass *pClass = Item.GetDeviceClass();
+		if (pClass && !pClass->IsTrackingWeapon(CItemCtx()))
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+tracking"), true));
+		}
 	}
 
 int CItemEnhancementStack::ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const
@@ -484,7 +487,7 @@ void CItemEnhancementStack::Insert (const CItemEnhancement &Mods)
 		m_Stack.Insert(Mods);
 	}
 
-void CItemEnhancementStack::InsertActivateAdj (int iAdj, int iMin, int iMax)
+void CItemEnhancementStack::InsertActivateAdj (CItemType *pEnhancerType, int iAdj, int iMin, int iMax)
 
 //	InsertActivateAdj
 //
@@ -493,9 +496,12 @@ void CItemEnhancementStack::InsertActivateAdj (int iAdj, int iMin, int iMax)
 	{
 	m_Stack.InsertEmpty();
 	m_Stack[m_Stack.GetCount() - 1].SetModSpeed(iAdj, iMin, iMax);
+
+	if (pEnhancerType)
+		m_Stack[m_Stack.GetCount() - 1].SetEnhancementType(pEnhancerType);
 	}
 
-void CItemEnhancementStack::InsertHPBonus (int iBonus)
+void CItemEnhancementStack::InsertHPBonus (CItemType *pEnhancerType, int iBonus)
 
 //	InsertHPBonus
 //
@@ -504,6 +510,9 @@ void CItemEnhancementStack::InsertHPBonus (int iBonus)
 	{
 	m_Stack.InsertEmpty();
 	m_Stack[m_Stack.GetCount() - 1].SetModBonus(iBonus);
+
+	if (pEnhancerType)
+		m_Stack[m_Stack.GetCount() - 1].SetEnhancementType(pEnhancerType);
 	}
 
 bool CItemEnhancementStack::IsBlindingImmune (void) const

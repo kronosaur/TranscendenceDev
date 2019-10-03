@@ -91,7 +91,11 @@
 
 					(leq (random 1 100) 10)
 						(block (result)
-							(setq result (shpEnhanceItem gSource shieldItem 0x0102))
+							(setq result (shpEnhanceItem gSource shieldItem {
+								enhancement: "+hpBonus:20"
+								itemType: gType
+								}))
+
 							(objSendMessage gSource Nil 
 								(intItemEnhanceStatus result
 									(typTranslate gType 'msgSuccess)
@@ -103,7 +107,11 @@
 					;	Otherwise, a bug
 
 					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem 0x8102))
+						(setq result (shpEnhanceItem gSource shieldItem {
+							enhancement: "-hpBonus:20"
+							itemType: gType
+							}))
+
 						(objSendMessage gSource Nil 
 							(intItemEnhanceStatus result
 								(typTranslate gType 'msgShieldError)
@@ -198,7 +206,11 @@
 					;	Shields enhanced
 
 					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem 0x0102))
+						(setq result (shpEnhanceItem gSource shieldItem {
+							enhancement: "+hpBonus:20"
+							itemType: gType
+							}))
+
 						(objSendMessage gSource Nil 
 							(intItemEnhanceStatus result 
 								(typTranslate gType 'msgSuccess)
@@ -335,7 +347,11 @@
 					;	Shields enhanced
 
 					(block (result)
-						(setq result (shpEnhanceItem gSource shieldItem 0x0f02))
+						(setq result (shpEnhanceItem gSource shieldItem {
+							enhancement: "+efficient:20"
+							itemType: gType
+							}))
+						
 						(objSendMessage gSource Nil 
 							(intItemEnhanceStatus result 
 								(typTranslate gType 'msgSuccess)

@@ -268,6 +268,25 @@
 				/>
 	</ItemType>
 
+	<!-- Unknown ROM -->
+
+	<ItemType UNID="&itUnknownROM;"
+			name=				"ROM biosoft(s)"
+			virtual=			"true"
+			level=				"1"
+			value=				"300"
+			attributes=			"unknown"
+
+			description=		"These ROM biochips are generally used to upgrade a computer's neural network. Unfortunately, you have no knowledge of the software's specific nature or purpose."
+			>
+
+		<Names>
+			ROM biosoft(s) labeled "Unknown"
+		</Names>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
 <!-- MISCELLANEOUS =============================================================
 
 -->

@@ -353,7 +353,7 @@ void OutputByComponent (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 		for (j = 0; j < Components.GetCount(); j++)
 			{
 			const CItem &ComponentItem = Components.GetItem(j);
-			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase(CItemCtx(ComponentItem)));
+			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase());
 			bool bNew;
 			SAttributeEntry *pEntry = ByComponentTable.SetAt(sUNID, &bNew);
 			if (bNew)
@@ -687,14 +687,14 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
                     if (Stats.pBestArmor)
                         {
                         CItem BestArmor(Stats.pBestArmor, 1);
-                        sBestArmor = BestArmor.GetNounPhrase(ItemCtx, nounShort);
+                        sBestArmor = BestArmor.GetNounPhrase(nounShort);
                         }
 
                     CString sWorstArmor;
                     if (Stats.pWorstArmor)
                         {
                         CItem WorstArmor(Stats.pWorstArmor, 1);
-                        sWorstArmor = WorstArmor.GetNounPhrase(ItemCtx, nounShort);
+                        sWorstArmor = WorstArmor.GetNounPhrase(nounShort);
                         }
 
                     printf("%d\t%s\t%d\t%s\t%d",

@@ -1469,7 +1469,7 @@ bool CShieldClass::IsDepleted (CInstalledDevice *pDevice)
 	return ((int)pDevice->GetData() < 0); 
 	}
 
-void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CShieldClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	OnAccumulateAttributes
 //

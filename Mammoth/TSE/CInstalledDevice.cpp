@@ -160,27 +160,17 @@ int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 	return m_iActivateDelay;
 	}
 
-CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *pItem)
+CString CInstalledDevice::GetEnhancedDesc (void)
 
 //	GetEnhancedDesc
 //
 //	Returns description of the enhancement
 
 	{
-	CItemCtx ItemCtx(pSource, this);
-
-	TArray<SDisplayAttribute> Attribs;
-	if (!ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
+	if (m_pItem == NULL)
 		return NULL_STR;
 
-	CString sResult = Attribs[0].sText;
-	for (int i = 1; i < Attribs.GetCount(); i++)
-		{
-		sResult.Append(CONSTLIT(" "));
-		sResult.Append(Attribs[i].sText);
-		}
-
-	return sResult;
+	return m_pItem->GetEnhancedDesc();
 	}
 
 ItemFates CInstalledDevice::GetFate (void) const
@@ -476,7 +466,7 @@ bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) 
 //	Returns TRUE if we're linked to weapon trigger
 
 	{
-	DWORD dwOptions = GetClass()->GetLinkedFireOptions(Ctx);
+	DWORD dwOptions = GetClass()->GetLinkedFireOptions(m_pItem->AsDeviceItemOrThrow());
 	if (dwOptions == 0)
 		return false;
 	else if (iTriggerCat == itemcatNone)
@@ -492,10 +482,12 @@ bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
 //	Returns TRUE if device can be selected as a primary weapon or launcher.
 
 	{
+	const CDeviceItem DeviceItem = m_pItem->AsDeviceItemOrThrow();
+
 	return (!IsSecondaryWeapon()
-			&& (GetClass()->GetLinkedFireOptions(Ctx) == 0
-			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelected
-			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelectedVariant));
+			&& (GetClass()->GetLinkedFireOptions(DeviceItem) == 0
+			|| GetClass()->GetLinkedFireOptions(DeviceItem) == CDeviceClass::lkfSelected
+			|| GetClass()->GetLinkedFireOptions(DeviceItem) == CDeviceClass::lkfSelectedVariant));
 	}
 
 ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -684,7 +676,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		m_iSlotPosIndex = -1;
 		}

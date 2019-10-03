@@ -56,6 +56,8 @@
 			ROM biosoft(s) labeled "&#xa9;2418 NeuroSoft, rce"; ROM biosoft(s) labeled "&#xa9;2401 Black Sun, rce";
 			ROM biosoft(s) with no label; ROM biosoft(s) labeled "GAAADTAG"
 		</Names>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
 	<ItemType UNID="&itUnknownROMB;"

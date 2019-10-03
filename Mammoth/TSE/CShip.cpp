@@ -533,7 +533,7 @@ void CShip::CalcDeviceBonus (void)
 
 					int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
 					if (iBonus != 0)
-						pEnhancements->InsertHPBonus(iBonus);
+						pEnhancements->InsertHPBonus(NULL, iBonus);
 					break;
 					}
 				}
@@ -623,7 +623,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		//	Get the actual options.
 
-		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(ItemCtx);
+		const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(DeviceItem);
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
@@ -1444,7 +1445,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		if (Explosion.iBonus != 0)
 			{
 			ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			ShotCtx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
@@ -3423,8 +3424,7 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 		Stats.pReactorImage = &pReactor->GetItem()->GetType()->GetImage();
 		Stats.bReactorDamaged = pReactor->IsDamaged();
 
-		CItemCtx ItemCtx(this, pReactor);
-		ItemCtx.GetEnhancementDisplayAttributes(&Stats.Enhancements);
+		pReactor->GetItem()->AccumulateEnhancementDisplayAttributes(Stats.Enhancements);
 		}
 	else
 		{

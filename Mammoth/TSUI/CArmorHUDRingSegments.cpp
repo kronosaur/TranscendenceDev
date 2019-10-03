@@ -60,7 +60,7 @@ void CArmorHUDRingSegments::DrawArmorName (CG32bitImage &Dest, int iAngle, int i
 	pShip->SetCursorAtArmor(ItemList, pArmor->GetSect());
 
 	TArray<SDisplayAttribute> Attribs;
-	ItemCtx.GetEnhancementDisplayAttributes(&Attribs);
+	pArmor->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs);
 
 	//	Draw it
 
@@ -239,7 +239,7 @@ void CArmorHUDRingSegments::DrawShieldsName (CG32bitImage &Dest, int iAngle, int
 	CString sName = pShields->GetClass()->GetName();
 
 	TArray<SDisplayAttribute> Attribs;
-	ItemCtx.GetEnhancementDisplayAttributes(&Attribs);
+	pShields->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs);
 
 	DrawItemBox(Dest, iAngle, iRadius, sName, Attribs, rgbBack, rgbColor);
 	}

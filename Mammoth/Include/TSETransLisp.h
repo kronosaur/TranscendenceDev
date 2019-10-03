@@ -160,9 +160,9 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual CString GetStringValue (void) const override { return m_pFunction->GetStringValue(); }
 		virtual ValueTypes GetValueType (void) const override { return Function; }
 		virtual bool IsIdentifier (void) const override { return false; }
-		virtual bool IsFunction (void) override { return true; }
-		virtual bool IsLambdaFunction (void) override { return true; }
-		virtual bool IsPrimitive (void) override { return false; }
+		virtual bool IsFunction (void) const override { return true; }
+		virtual bool IsLambdaFunction (void) const override { return true; }
+		virtual bool IsPrimitive (void) const override { return false; }
 		virtual CString Print (DWORD dwFlags = 0) override { return m_pFunction->Print(dwFlags); }
 		virtual void Reset (void) override { }
 
@@ -203,8 +203,8 @@ class CCXMLWrapper : public ICCAtom
 		virtual CString GetTypeOf (void) override { return CONSTLIT("xmlElement"); }
 		virtual ValueTypes GetValueType (void) const override { return Complex; }
 		virtual bool IsIdentifier (void) const override { return false; }
-		virtual bool IsFunction (void) override { return false; }
-		virtual bool IsPrimitive (void) override { return false; }
+		virtual bool IsFunction (void) const override { return false; }
+		virtual bool IsPrimitive (void) const override { return false; }
 		virtual CString Print (DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
 		virtual void Reset (void) override { }
 

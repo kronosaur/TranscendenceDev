@@ -356,7 +356,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList)
+void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes
 //
@@ -365,8 +365,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	{
 	int i;
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	If we require a higher level to repair
 
@@ -549,7 +548,7 @@ bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *p
 
 		//	Add HP bonus enhancements
 
-		pEnhancements->InsertHPBonus(m_iDeviceBonus);
+		pEnhancements->InsertHPBonus(ItemCtx.GetItem().GetType(), m_iDeviceBonus);
 		if (!m_sEnhancementType.IsBlank())
 			EnhancementIDs.Insert(m_sEnhancementType);
 

@@ -107,7 +107,7 @@ inline const SStdDeviceStats *GetStdDeviceStats (int iLevel)
 		return NULL;
 	}
 
-void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes
 //
@@ -120,18 +120,18 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, T
 
 	if (Ammo.IsEmpty())
 		{
-		CInstalledDevice *pDevice = ItemCtx.GetDevice();
+		const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
 
 		//	Linked-fire
 
-		DWORD dwOptions = GetLinkedFireOptions(ItemCtx);
+		DWORD dwOptions = GetLinkedFireOptions(DeviceItem);
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
 		}
 
 	//	Let our subclasses add their own attributes
 
-	OnAccumulateAttributes(ItemCtx, Ammo, retList);
+	OnAccumulateAttributes(DeviceItem, Ammo, retList);
 	}
 
 bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -318,7 +318,7 @@ int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 	if (m_pItemType == NULL)
 		return -1;
 
-	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel(ItemCtx));
+	const SStdDeviceStats *pStats = GetStdDeviceStats(ItemCtx.GetItem().GetApparentLevel());
 	if (pStats == NULL)
 		return -1;
 
@@ -421,7 +421,7 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, pType))
 			return error;
 		}
 

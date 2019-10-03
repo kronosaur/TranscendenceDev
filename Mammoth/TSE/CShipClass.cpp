@@ -4050,7 +4050,7 @@ ICCItemPtr CShipClass::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProper
 		Items.InsertEmpty(SampleItems.GetCount());
 		for (int i = 0; i < SampleItems.GetCount(); i++)
 			{
-			Items[i] = SampleItems.GetItem(i).GetNounPhrase(CItemCtx());
+			Items[i] = SampleItems.GetItem(i).GetNounPhrase();
 			}
 
 		return ICCItemPtr(strJoin(Items, CONSTLIT("oxfordComma")));

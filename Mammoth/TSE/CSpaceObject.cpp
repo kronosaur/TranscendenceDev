@@ -467,54 +467,20 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 	if (retdwID)
 		*retdwID = OBJID_NULL;
 
-	//	Determine the mod code of the new enhancement
-
-	DWORD dwNewModCode = pEnhancement->GetModCode();
-
-	//	For now we always replace any existing enhancements
-	//	But we compute whether we repair or replace any existing enhancements
-
-	EnhanceItemStatus iResult;
-	const CItemEnhancement &OldEnhancement = ItemList.GetItemAtCursor().GetMods();
-	if (OldEnhancement.IsEmpty())
-		iResult = eisOK;
-	else if (OldEnhancement.IsDisadvantage())
-		iResult = eisRepaired;
-	else if (OldEnhancement.GetModCode() == dwNewModCode)
-		iResult = eisOK;
-	else
-		iResult = eisEnhancementReplaced;
-
 	//	Compute expire time
 
 	int iExpireTime = (iLifetime != -1 ? GetUniverse().GetTicks() + iLifetime : -1);
 
-	//	Add the item enhancement
+	//	Create a new enhancement
 
 	CItemEnhancement NewEnhancement;
 	NewEnhancement.SetEnhancementType(pEnhancement);
-	NewEnhancement.SetModCode(dwNewModCode);
+	NewEnhancement.SetModCode(pEnhancement->GetModCode());
 	NewEnhancement.SetExpireTime(iExpireTime);
-	DWORD dwID = ItemList.AddItemEnhancementAtCursor(NewEnhancement);
 
-	//	Give the object a chance to respond to the enhancement
+	//	Enhance
 
-	ItemEnhancementModified(ItemList);
-
-	//	Fire On event to the enhancement
-
-	if (ItemList.IsCursorValid())
-		{
-		CItem theEnhancement(pEnhancement, 1);
-		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
-		}
-
-	//	Done
-
-	if (retdwID)
-		*retdwID = dwID;
-
-	return iResult;
+	return EnhanceItem(ItemList, NewEnhancement, retdwID);
 	}
 
 void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID)
@@ -1648,7 +1614,16 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	//	Figure out the effect of the enhancement on the item
 
 	CItemEnhancement Enhancement = Item.GetMods();
-	EnhanceItemStatus iResult = Enhancement.Combine(Item, Mods.GetModCode());
+	EnhanceItemStatus iResult = Enhancement.Combine(Item, Mods);
+
+	//	If no enhancement, then we exit
+
+	switch (iResult)
+		{
+		case eisNoEffect:
+		case eisAlreadyEnhanced:
+			return iResult;
+		}
 
 	//	Handle some special cases
 
@@ -7715,7 +7690,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsEnabled())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(nounCapitalize));
 				return false;
 				}
 
@@ -7723,7 +7698,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsReady())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(nounCapitalize));
 				return false;
 				}
 

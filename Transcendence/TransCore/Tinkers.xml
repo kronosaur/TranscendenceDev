@@ -262,7 +262,11 @@
 									;	Make immune
 									(objEnumItems gPlayerShip "aI" theItem
 										(block (result)
-											(setq result (shpEnhanceItem gPlayerShip theItem 0x0b00))
+											(setq result (shpEnhanceItem gPlayerShip theItem {
+												enhancement: "+immunity:radiation"
+												itemType: &itRadiationImmuneCoating;
+												}))
+
 											(switch
 												(or (eq result 0) (eq result 2) (eq result 6) (eq result 7))
 													(setq armorEnhanced (add armorEnhanced 1))

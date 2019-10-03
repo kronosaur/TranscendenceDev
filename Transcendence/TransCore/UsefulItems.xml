@@ -567,7 +567,7 @@
 		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<StaticData>
-			<Data id="enhancement">0x0b00</Data>
+			<Data id="enhancement">"+immunity:radiation"</Data>
 		</StaticData>
 
 		<Language>
@@ -1874,7 +1874,11 @@
 
 									; Enhance the shield generator
 									(block (result)
-										(setq result (shpEnhanceItem gSource theItem 0x0102))
+										(setq result (shpEnhanceItem gSource theItem {
+											enhancement: "+hpBonus:20"
+											itemType: gType
+											}))
+
 										(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more powerful" "shield generator"))
 										)
 									)
@@ -2412,7 +2416,11 @@
 
 									; Enhance the shield generator
 									(block (result)
-										(setq result (shpEnhanceItem gSource theItem 0x0105))
+										(setq result (shpEnhanceItem gSource theItem {
+											enhancement: "+hpBonus:50"
+											itemType: gType
+											}))
+										
 										(objSendMessage gSource Nil (intItemEnhanceStatus result "Hiro: Shield optimization complete" "shield generator"))
 										)
 									)
@@ -2746,7 +2754,11 @@
 
 										; Enhance the shield generator
 										(block (result)
-											(setq result (shpEnhanceItem gSource theItem newMods))
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												itemType: gType
+												}))
+
 											(objSendMessage gSource Nil (intItemEnhanceStatus result successText "shield generator"))
 											
 											; Identify the item
@@ -2796,7 +2808,11 @@
 
 										; Enhance the weapon
 										(block (result)
-											(setq result (shpEnhanceItem gSource theItem newMods))
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												itemType: gType
+												}))
+
 											(objSendMessage gSource Nil (intItemEnhanceStatus result (cat "Your " (itmGetName weaponItem 32) " " successText) (cat "your " (itmGetName weaponItem 32))))
 											)
 										)

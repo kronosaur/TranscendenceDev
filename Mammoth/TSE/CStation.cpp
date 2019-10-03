@@ -478,7 +478,7 @@ void CStation::CalcDeviceBonus (void)
 
 				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
 				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(iBonus);
+					pEnhancements->InsertHPBonus(NULL, iBonus);
 				break;
 				}
 			}
@@ -746,7 +746,7 @@ void CStation::CreateDestructionEffect (void)
 		if (Explosion.iBonus != 0)
 			{
 			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
@@ -1371,7 +1371,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 		if (Explosion.iBonus != 0)
 			{
 			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);

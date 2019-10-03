@@ -65,7 +65,7 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 	return Accumulate(Ctx.GetItem().GetLevel(), Target, EnhancementIDs, pEnhancements);
 	}
 
-ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType)
 
 //	InitFromXML
 //
@@ -81,7 +81,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	if (strEquals(pDesc->GetTag(), ENHANCE_TAG))
 		{
 		m_Enhancements.InsertEmpty(1);
-		if (error = InitFromEnhanceXML(Ctx, pDesc, m_Enhancements[0]))
+		if (error = InitFromEnhanceXML(Ctx, pDesc, pEnhancerType, m_Enhancements[0]))
 			return error;
 		}
 	else
@@ -89,7 +89,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_Enhancements.InsertEmpty(pDesc->GetContentElementCount());
 		for (i = 0; i < pDesc->GetContentElementCount(); i++)
 			{
-			if (error = InitFromEnhanceXML(Ctx, pDesc->GetContentElement(i), m_Enhancements[i]))
+			if (error = InitFromEnhanceXML(Ctx, pDesc->GetContentElement(i), pEnhancerType, m_Enhancements[i]))
 				return error;
 			}
 		}
@@ -97,7 +97,7 @@ ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, SEnhancerDesc &Enhance)
+ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType, SEnhancerDesc &Enhance)
 
 //	InitFromEnhanceXML
 //
@@ -121,6 +121,9 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	if (error = Enhance.Enhancement.InitFromDesc(Ctx, pDesc->GetAttribute(ENHANCEMENT_ATTRIB)))
 		return error;
+
+	if (pEnhancerType)
+		Enhance.Enhancement.SetEnhancementType(pEnhancerType);
 
 	return NOERROR;
 	}

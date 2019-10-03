@@ -243,7 +243,7 @@ void CShieldHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx 
 		//	Paint the modifiers
 
 		TArray<SDisplayAttribute> Attribs;
-		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
+		if (pShield->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
 

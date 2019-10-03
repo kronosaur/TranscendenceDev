@@ -146,6 +146,30 @@ struct SDisplayAttribute
 			}
 		}
 
+	static SDisplayAttribute FromHPBonus (int iHPBonus)
+		{
+		if (iHPBonus < 0)
+			return SDisplayAttribute(attribNegative, strPatternSubst("-%d%%", -iHPBonus));
+		else
+			return SDisplayAttribute(attribPositive, strPatternSubst("+%d%%", iHPBonus));
+		}
+
+	static SDisplayAttribute FromResistHPBonus (int iHPBonus, const CString &sLabel)
+		{
+		if (iHPBonus < 0)
+			return SDisplayAttribute(attribNegative, strPatternSubst("-%d%% %s", -iHPBonus, sLabel));
+		else
+			return SDisplayAttribute(attribPositive, strPatternSubst("+%d%% %s", iHPBonus, sLabel));
+		}
+
+	static SDisplayAttribute FromResistHPBonus (DamageTypes iDamageType, int iHPBonus)
+		{
+		if (iHPBonus < 0)
+			return SDisplayAttribute(attribNegative, strPatternSubst("-%d%% vs %s", -iHPBonus, GetDamageShortName(iDamageType)));
+		else
+			return SDisplayAttribute(attribPositive, strPatternSubst("+%d%% vs %s", iHPBonus, GetDamageShortName(iDamageType)));
+		}
+
 	static bool HasEnhancement (const TArray<SDisplayAttribute> &List)
 		{
 		int i;

@@ -54,12 +54,13 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 21> NOUN_FLAG_TABLE = {
 	"tokenize",				nounTokenize,
 	};
 
-static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 7> NUMBER_FORMAT_TABLE = {
+static TStaticStringTable<TStaticStringEntry<CLanguage::ENumberFormatTypes>, 8> NUMBER_FORMAT_TABLE = {
 	"integer",				CLanguage::numberInteger,
 	"massKg",				CLanguage::numberMass,
 	"massTons",				CLanguage::numberMassTons,
 	"power",				CLanguage::numberPower,
 	"real",					CLanguage::numberReal,
+	"realTimeTicks",		CLanguage::numberRealTimeTicks,
 	"regenRate",			CLanguage::numberRegenRate,
 	"speed",				CLanguage::numberSpeed,
 	};

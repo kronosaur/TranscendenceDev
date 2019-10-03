@@ -127,7 +127,7 @@ void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos)
 		ComputeLightningPoints(iCount - iMiddle, pPoints + iMiddle, rChaos);
 	}
 
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, CItemType *pType, int cxSize, int cySize, bool bGray)
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize, int cySize, bool bGray)
 
 //	DrawItemTypeIcon
 //

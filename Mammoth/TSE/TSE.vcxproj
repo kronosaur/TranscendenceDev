@@ -367,6 +367,7 @@
     <ClCompile Include="CDelaunayStargateGenerator.cpp" />
     <ClCompile Include="CDesignPropertyDefinitions.cpp" />
     <ClCompile Include="CDesignTypeCriteria.cpp" />
+    <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />

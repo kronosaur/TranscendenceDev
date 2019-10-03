@@ -146,6 +146,7 @@ static constexpr DWORD FLOTSAM_UNID =					0x0000200E;	//	stFlotsam
 static constexpr DWORD PLAYER_EI500_FREIGHTER_UNID =	0x00003802;	//	scEI100XPlayer
 
 static constexpr DWORD TRITIUM_PROPULSION_UPGRADE_UNID = 0x0000404B;	//	Tritium propulsion upgrade
+static constexpr DWORD UNKNOWN_ROM_UNID =				0x00004061;
 static constexpr DWORD CARGO_HOLD_EXPANSION_UNID =		0x00004079;	//	Cargo hold expansion
 static constexpr DWORD g_SuperconductingShieldsUNID =	0x0000407D;	//	Superconducting shield generator
 static constexpr DWORD g_SuperconductingCoilUNID =		0x0000407E;	//	Superconducting shield generator
@@ -266,3 +267,9 @@ enum GenomeTypes
 
 	genomeCount			= 4,
 	};
+
+CString GetDamageName (DamageTypes iType);
+CString GetDamageShortName (DamageTypes iType);
+CString GetDamageType (DamageTypes iType);
+bool IsEnergyDamage (DamageTypes iType);
+bool IsMatterDamage (DamageTypes iType);

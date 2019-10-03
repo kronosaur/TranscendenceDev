@@ -7,6 +7,16 @@
 
 //	CItem Inlines --------------------------------------------------------------
 
+inline const CEconomyType *CItem::GetCurrencyType (void) const
+	{
+	return m_pItemType->GetCurrencyType();
+	}
+
+inline CDeviceClass *CItem::GetDeviceClass (void) const
+	{
+	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
+	}
+
 inline bool CItem::IsArmor (void) const
 	{
 	return (m_pItemType && m_pItemType->IsArmor());
@@ -15,11 +25,6 @@ inline bool CItem::IsArmor (void) const
 inline bool CItem::IsDevice (void) const
 	{
 	return (m_pItemType && m_pItemType->IsDevice());
-	}
-
-inline const CEconomyType *CItem::GetCurrencyType (void) const
-	{
-	return m_pItemType->GetCurrencyType();
 	}
 
 //	CItemType Inlines ----------------------------------------------------------
@@ -212,13 +217,37 @@ inline DWORD CDeviceClass::GetUNID (void)
 
 //	CDeviceItem Inlines --------------------------------------------------------
 
+inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
+	{
+	return *GetType().GetDeviceClass();
+	}
+
+inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
+	{
+	return *GetType().GetDeviceClass();
+	}
+
+inline const CInstalledDevice *CDeviceItem::GetInstalledDevice (void) const
+	{
+	return m_pCItem->GetInstalledDevice();
+	}
+
+inline CSpaceObject *CDeviceItem::GetSource (void) const
+	{
+	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
+		return pInstalled->GetSource();
+	else
+		return NULL;
+	}
+
 //	CInstalledDevice Inlines ---------------------------------------------------
 
 inline bool CInstalledDevice::IsSecondaryWeapon (void) const 
 	{
 	DWORD dwLinkedFire;
+	const CDeviceItem DeviceItem = m_pItem->AsDeviceItemOrThrow();
 	return (m_fSecondaryWeapon 
-			|| (dwLinkedFire = m_pClass->GetLinkedFireOptions(CItemCtx(NULL, (CInstalledDevice *)this))) == CDeviceClass::lkfEnemyInRange
+			|| (dwLinkedFire = m_pClass->GetLinkedFireOptions(DeviceItem)) == CDeviceClass::lkfEnemyInRange
 			|| dwLinkedFire == CDeviceClass::lkfTargetInRange);
 	}
 

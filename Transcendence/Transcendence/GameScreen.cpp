@@ -921,9 +921,9 @@ void CTranscendenceWnd::ShowEnableDisablePicker (void)
 
 				CString sName;
 				if (pDevice->IsEnabled())
-					sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase(ItemCtx));
+					sName = strPatternSubst(CONSTLIT("Disable %s"), Item.GetNounPhrase());
 				else
-					sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase(ItemCtx));
+					sName = strPatternSubst(CONSTLIT("Enable %s"), Item.GetNounPhrase());
 
 				//	Extra
 
@@ -1090,7 +1090,7 @@ void CTranscendenceWnd::ShowUsePicker (void)
 
 			//	Name of item
 
-			CString sName = Item.GetNounPhrase(CItemCtx(&Item));
+			CString sName = Item.GetNounPhrase();
 			if (Item.IsInstalled())
 				sName.Append(STR_INSTALLED);
 			sName = strPatternSubst(CONSTLIT("Use %s"), sName);

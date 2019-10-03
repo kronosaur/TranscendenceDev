@@ -2525,9 +2525,11 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_LINKED_FIRE_OPTIONS))
 		{
+		const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem();
+
 		//	Get the options from the device
 
-		DWORD dwOptions = GetLinkedFireOptions(Ctx);
+		DWORD dwOptions = GetLinkedFireOptions(DeviceItem);
 		if (dwOptions == 0)
 			return CC.CreateNil();
 
@@ -2814,7 +2816,7 @@ Metric CWeaponClass::GetMaxRange (CItemCtx &ItemCtx)
 	return pShot->GetMaxRange();
 	}
 
-DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
+DWORD CWeaponClass::GetLinkedFireOptions (const CDeviceItem &DeviceItem) const
 
 //	GetLinkedFireOptions
 //
@@ -2824,7 +2826,7 @@ DWORD CWeaponClass::GetLinkedFireOptions (CItemCtx &Ctx)
 	//	If the device has linked fire, then honor that.
 
 	DWORD dwOptions;
-	if (Ctx.GetDevice() && (dwOptions = Ctx.GetDevice()->GetLinkedFireOptions()))
+	if (DeviceItem.GetInstalledDevice() && (dwOptions = DeviceItem.GetInstalledDevice()->GetLinkedFireOptions()))
 		return dwOptions;
 
 	//	Otherwise, take native linked fire setting from weapon.
@@ -3277,7 +3279,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 		if (retsLabel)
 			{
 			if (GetCategory() == itemcatLauncher)
-				*retsLabel = Item.GetNounPhrase(Ctx, nounCapitalize);
+				*retsLabel = Item.GetNounPhrase(nounCapitalize);
 			else
 				*retsLabel = CString();
 			}
@@ -4173,13 +4175,15 @@ bool CWeaponClass::NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc, int *ret
 		}
 	}
 
-void CWeaponClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	OnAccumulateAttributes
 //
 //	Adds attributes of the weapon type
 
 	{
+	CItemCtx ItemCtx(&(const CItem &)DeviceItem, DeviceItem.GetSource());
+
 	//	Add omnidirectional and arc attributes
 
 	int iMinArc, iMaxArc;

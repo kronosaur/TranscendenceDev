@@ -585,6 +585,26 @@ CString CLanguage::ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber)
 			break;
 			}
 
+		case numberRealTimeTicks:
+			{
+			int iSeconds = mathRound(rNumber / g_TicksPerSecond);
+			if (iSeconds == 0)
+				return CONSTLIT("0 seconds");
+			else if (iSeconds == 1)
+				return CONSTLIT("1 second");
+			else if (iSeconds <= 90)
+				return strPatternSubst(CONSTLIT("%,d seconds"), iSeconds);
+			else
+				{
+				int iMinutes = mathRound(iSeconds / 60.0);
+				if (iMinutes == 1)
+					return CONSTLIT("1 minute");
+				else
+					return strPatternSubst(CONSTLIT("%,d minutes"), iMinutes);
+				}
+			break;
+			}
+
 		case numberRegenRate:
 			{
 			if (rNumber <= 0.0)

@@ -59,6 +59,7 @@ class CLanguage
 			numberMassTons,					//	500 kg or 1.5 tons (input in tons)
 			numberPower,					//	1.1 MW
 			numberReal,						//	100 or 10.0 or 1.0 or 0.00
+			numberRealTimeTicks,			//	59 seconds (input in ticks)
 			numberRegenRate,				//	1.0 hp/sec
 			numberSpeed,					//	.05c
 			};

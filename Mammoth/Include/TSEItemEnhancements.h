@@ -94,12 +94,15 @@ enum ERegenTypes
 class CItemEnhancement
 	{
 	public:
-		CItemEnhancement (void) : m_dwID(OBJID_NULL), m_dwMods(0), m_pEnhancer(NULL), m_iExpireTime(-1) { }
-		CItemEnhancement (DWORD dwMods) : m_dwID(OBJID_NULL), m_dwMods(dwMods), m_pEnhancer(NULL), m_iExpireTime(-1) { }
+		CItemEnhancement (void) { }
+		CItemEnhancement (DWORD dwMods) : m_dwMods(dwMods) { }
 
-		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
+		static constexpr DWORD FLAG_INCLUDE_HP_BONUS = 0x00000001;
+		static constexpr DWORD FLAG_INCLUDE_EXPIRATION = 0x00000002;
+		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList, DWORD dwFlags = 0) const;
+
 		DWORD AsDWORD (void) const { return m_dwMods; }
-		EnhanceItemStatus Combine (const CItem &Item, CItemEnhancement Enhancement);
+		EnhanceItemStatus Combine (const CItem &Item, const CItemEnhancement &Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;
 		int GetActivateRateAdj (int *retiMinDelay = NULL, int *retiMaxDelay = NULL) const;
 		int GetDamageAdj (void) const;
@@ -130,7 +133,7 @@ class CItemEnhancement
 		ItemEnhancementTypes GetType (void) const { return (ItemEnhancementTypes)(m_dwMods & etTypeMask); }
 		int GetValueAdj (const CItem &Item) const;
 		bool HasCustomDamageAdj (void) const;
-		ALERROR InitFromDesc (ICCItem *pItem, CString *retsError);
+		ALERROR InitFromDesc (CUniverse &Universe, const ICCItem &Item, CString *retsError);
 		ALERROR InitFromDesc (const CString &sDesc, CString *retsError);
 		ALERROR InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc);
 		bool IsBlindingImmune (void) const { return IsIonEffectImmune() || ((GetType() == etSpecialDamage) && GetLevel2() == specialBlinding && !IsDisadvantage()); }
@@ -181,10 +184,11 @@ class CItemEnhancement
 		bool CalcRegen (CItemCtx &ItemCtx, int iTicksPerUpdate, CRegenDesc &retRegen, ERegenTypes *retiType = NULL) const;
 		bool CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const;
 		bool CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const;
-		EnhanceItemStatus CombineAdvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
-		EnhanceItemStatus CombineAdvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
-		EnhanceItemStatus CombineDisadvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement);
-		EnhanceItemStatus CombineDisadvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement);
+		EnhanceItemStatus CombineAdvantageWithAdvantage (const CItem &Item, const CItemEnhancement &Enhancement);
+		EnhanceItemStatus CombineAdvantageWithDisadvantage (const CItem &Item, const CItemEnhancement &Enhancement);
+		EnhanceItemStatus CombineDisadvantageWithDisadvantage (const CItem &Item, const CItemEnhancement &Enhancement);
+		EnhanceItemStatus CombineDisadvantageWithAdvantage (const CItem &Item, const CItemEnhancement &Enhancement);
+		bool CombineExpireTime (const CItemEnhancement &Enhancement);
 		DamageTypes GetDamageTypeField (void) const { return (DamageTypes)(DWORD)((m_dwMods & etData2Mask) >> 4); }
 		bool IsIonEffectImmune (void) const { return ((GetType() == etImmunityIonEffects) && !IsDisadvantage()); }
 
@@ -196,10 +200,10 @@ class CItemEnhancement
 		static int Level2Bonus (int iLevel, bool bDisadvantage = false);
 		static int Level2DamageAdj (int iLevel, bool bDisadvantage = false);
 
-		DWORD m_dwID;							//	Global ID
-		DWORD m_dwMods;							//	Mod code
-		CItemType *m_pEnhancer;					//	Item that added this mod (may be NULL)
-		int m_iExpireTime;						//	Universe tick when mod expires (-1 == no expiration)
+		DWORD m_dwID = OBJID_NULL;				//	Global ID
+		DWORD m_dwMods = 0;						//	Mod code
+		CItemType *m_pEnhancer = NULL;			//	Item that added this mod (may be NULL)
+		int m_iExpireTime = -1;					//	Universe tick when mod expires (-1 == no expiration)
 
 		static CItemEnhancement m_Null;
 	};
@@ -212,7 +216,7 @@ class CItemEnhancementStack
 				m_dwRefCount(1)
 			{ }
 
-		void AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const;
+		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList) const;
 		CItemEnhancementStack *AddRef (void) { m_dwRefCount++; return this; }
 		int ApplyDamageAdj (const DamageDesc &Damage, int iDamageAdj) const;
 		void ApplySpecialDamage (DamageDesc *pDamage) const;
@@ -225,6 +229,7 @@ class CItemEnhancementStack
 		int GetCount (void) const { return m_Stack.GetCount(); }
 		const DamageDesc &GetDamage (void) const;
 		int GetDamageAdj (const DamageDesc &Damage) const;
+		const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Stack[iIndex]; }
 		int GetFireArc (void) const;
 		int GetManeuverRate (void) const;
 		int GetPowerAdj (void) const;
@@ -232,8 +237,8 @@ class CItemEnhancementStack
 		int GetResistEnergyAdj (void) const;
 		int GetResistMatterAdj (void) const;
 		void Insert (const CItemEnhancement &Mods);
-		void InsertActivateAdj (int iAdj, int iMin, int iMax);
-		void InsertHPBonus (int iBonus);
+		void InsertActivateAdj (CItemType *pEnhancerType, int iAdj, int iMin, int iMax);
+		void InsertHPBonus (CItemType *pEnhancerType, int iBonus);
 		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		bool IsBlindingImmune (void) const;
 		bool IsDecaying (void) const;

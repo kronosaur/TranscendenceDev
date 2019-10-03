@@ -225,7 +225,7 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Old-style bonus
 
 		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
-		pEnhancements->InsertHPBonus(m_iBonus);
+		pEnhancements->InsertHPBonus(NULL, m_iBonus);
 
 		//	Tell the object hit that it has been damaged
 

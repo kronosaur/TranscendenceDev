@@ -6,7 +6,7 @@
 
 CItemEnhancement CItemEnhancement::m_Null;
 
-void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList) const
+void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList, DWORD dwFlags) const
 
 //	AccumulateAttributes
 //
@@ -17,18 +17,50 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 
 	switch (GetType())
 		{
-		//	This is handled elsewhere because we need to aggregate.
-
 		case etNone:
+			break;
+
 		case etHPBonus:
 		case etStrengthen:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				retList->Insert(SDisplayAttribute::FromHPBonus(GetHPBonus()));
+			break;
+
 		case etResist:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetResistHPBonus(), CONSTLIT("vs all attacks")));
+			break;
+
 		case etResistEnergy:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetResistHPBonus(), CONSTLIT("vs energy attacks")));
+			break;
+
 		case etResistMatter:
-		case etResistByLevel:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetResistHPBonus(), CONSTLIT("vs matter attacks")));
+			break;
+
 		case etResistByDamage:
-		case etResistByDamage2:
 		case etResistHPBonus:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetDamageTypeField(), GetResistHPBonus()));
+			break;
+
+		case etResistByLevel:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				{
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetDamageTypeField(), GetResistHPBonus()));
+				retList->Insert(SDisplayAttribute::FromResistHPBonus((DamageTypes)(GetDamageTypeField() + 1), GetResistHPBonus()));
+				}
+			break;
+
+		case etResistByDamage2:
+			if (dwFlags & FLAG_INCLUDE_HP_BONUS)
+				{
+				retList->Insert(SDisplayAttribute::FromResistHPBonus(GetDamageTypeField(), GetResistHPBonus()));
+				retList->Insert(SDisplayAttribute::FromResistHPBonus((DamageTypes)(GetDamageTypeField() + 2), GetResistHPBonus()));
+				}
 			break;
 
 		case etRegenerate:
@@ -183,6 +215,18 @@ void CItemEnhancement::AccumulateAttributes (CItemCtx &Ctx, TArray<SDisplayAttri
 		default:
 			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+unknown"), true));
 			break;
+		}
+
+	//	Expiration
+
+	if ((dwFlags & FLAG_INCLUDE_EXPIRATION)
+			&& m_iExpireTime != -1)
+		{
+		int iLifetime = m_iExpireTime - (int)Item.GetUniverse().GetTicks();
+		if (iLifetime > 0)
+			retList->Insert(SDisplayAttribute(attribNeutral, 
+						CLanguage::ComposeNumber(CLanguage::numberRealTimeTicks, iLifetime)
+						));
 		}
 	}
 
@@ -369,7 +413,7 @@ bool CItemEnhancement::CanBeCombinedWith (const CItemEnhancement &NewEnhancement
 		}
 	}
 
-EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement Enhancement)
+EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhancement &Enhancement)
 
 //	Combine
 //
@@ -406,6 +450,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement
 			int iNewBonus;
 			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
+				*this = Enhancement;	//	Take expireTime, etc.
 				SetModBonus(iNewBonus);
 				return eisOK;
 				}
@@ -458,10 +503,15 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement
 				return CombineAdvantageWithDisadvantage(Item, Enhancement);
 			else
 				{
-				//	A disadvantage removes an advantage
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+				else
+					{
+					//	A disadvantage removes an advantage
 
-				*this = CItemEnhancement();
-				return eisEnhancementRemoved;
+					*this = CItemEnhancement();
+					return eisEnhancementRemoved;
+					}
 				}
 			}
 		else
@@ -474,7 +524,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, CItemEnhancement
 		}
 	}
 
-EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement)
+EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &Item, const CItemEnhancement &Enhancement)
 
 //	CombineAdvantageWithAdvantage
 //
@@ -490,6 +540,9 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			int iNewBonus;
 			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
 				SetModBonus(iNewBonus);
 				return eisBetter;
 				}
@@ -509,7 +562,10 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetLevel() > GetLevel())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -520,7 +576,10 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetDataX() > GetDataX())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -532,7 +591,10 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetActivateRateAdj() < GetActivateRateAdj())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -545,12 +607,18 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetDamageTypeField() != GetDamageTypeField())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisEnhancementReplaced;
 				}
 			else if (Enhancement.GetLevel() > GetLevel())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -561,7 +629,10 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetDataX() > GetDataX())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -572,7 +643,10 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 			{
 			if (Enhancement.GetDataX() > GetDataX())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisBetter;
 				}
 			else
@@ -584,7 +658,7 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithAdvantage (const CItem &
 		}
 	}
 
-EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement)
+EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CItem &Item, const CItemEnhancement &Enhancement)
 
 //	CombineAdvantageWithDisadvantage
 //
@@ -599,6 +673,9 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CIte
 			int iNewBonus;
 			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
 				SetModBonus(iNewBonus);
 				return eisWorse;
 				}
@@ -611,7 +688,7 @@ EnhanceItemStatus CItemEnhancement::CombineAdvantageWithDisadvantage (const CIte
 		}
 	}
 
-EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CItem &Item, CItemEnhancement Enhancement)
+EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CItem &Item, const CItemEnhancement &Enhancement)
 
 //	CombineDisadvantageWithAdvantage
 //
@@ -625,7 +702,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		case etRegenerate:
 		case etHealerRegenerate:
 			{
-			*this = CItemEnhancement();
+			if (!CombineExpireTime(Enhancement))
+				return eisNoEffect;
+
+			m_dwMods = Enhancement.m_dwMods;
 			return eisRepaired;
 			}
 
@@ -644,7 +724,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		case etSpeed:
 		case etSpeedOld:
 			{
-			*this = CItemEnhancement();
+			if (!CombineExpireTime(Enhancement))
+				return eisNoEffect;
+
+			m_dwMods = Enhancement.m_dwMods;
 			return eisRepaired;
 			}
 
@@ -654,6 +737,9 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 			int iNewBonus;
 			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
 				SetModBonus(iNewBonus);
 				return (GetHPBonus() >= 0 ? eisRepaired : eisBetter);
 				}
@@ -668,7 +754,7 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithAdvantage (const CIte
 		}
 	}
 
-EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const CItem &Item, CItemEnhancement Enhancement)
+EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const CItem &Item, const CItemEnhancement &Enhancement)
 
 //	CombineDisadvantageWithDisadvantage
 //
@@ -689,7 +775,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 			{
 			if (Enhancement.GetLevel() > GetLevel())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisWorse;
 				}
 			else
@@ -700,7 +789,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 			{
 			if (Enhancement.GetDataX() > GetDataX())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisWorse;
 				}
 			else
@@ -713,6 +805,9 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 			int iNewBonus;
 			if (CalcNewHPBonus(Item, Enhancement, &iNewBonus))
 				{
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
 				SetModBonus(iNewBonus);
 				return eisWorse;
 				}
@@ -725,7 +820,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 			{
 			if (Enhancement.GetActivateRateAdj() > GetActivateRateAdj())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisWorse;
 				}
 			else
@@ -739,7 +837,10 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 			if (Enhancement.GetDamageTypeField() == GetDamageTypeField()
 					&& Enhancement.GetLevel() > GetLevel())
 				{
-				*this = Enhancement;
+				if (!CombineExpireTime(Enhancement))
+					return eisNoEffect;
+
+				m_dwMods = Enhancement.m_dwMods;
 				return eisWorse;
 				}
 			else
@@ -751,6 +852,43 @@ EnhanceItemStatus CItemEnhancement::CombineDisadvantageWithDisadvantage (const C
 		default:
 			return eisNoEffect;
 		}
+	}
+
+bool CItemEnhancement::CombineExpireTime (const CItemEnhancement &Enhancement)
+
+//	CombineExpireTime
+//
+//	Combines expiration time. Returns FALSE if we cannot combine the given 
+//	enhancement.
+
+	{
+	//	If neither old or new has an expiration time, then we're fine.
+
+	if (m_iExpireTime == -1 && Enhancement.m_iExpireTime == -1)
+		;
+
+	//	If new has an expiration time, then we cannot combine with a permanent
+	//	enhancement.
+
+	else if (m_iExpireTime == -1)
+		return false;
+
+	//	If old has an expiration time, then we become permanent.
+
+	else if (Enhancement.m_iExpireTime == -1)
+		m_iExpireTime = -1;
+
+	//	If both have an expiration time, then we take the longest time.
+
+	else
+		m_iExpireTime = Max(m_iExpireTime, Enhancement.m_iExpireTime);
+
+	//	Always take the enhancer from the new one, if we have one.
+
+	if (Enhancement.m_pEnhancer)
+		m_pEnhancer = Enhancement.m_pEnhancer;
+
+	return true;
 	}
 
 DWORD CItemEnhancement::EncodeABC (DWORD dwTypeCode, int A, int B, int C)
@@ -1389,6 +1527,10 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+tracking:{n}				n is maneuver rate
 
 	{
+	//	Initialize
+
+	*this = CItemEnhancement();
+
 	//	If the string is a number then we interpret it as a mod code.
 
 	bool bFailed;
@@ -1755,20 +1897,54 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 	return NOERROR;
 	}
 
-ALERROR CItemEnhancement::InitFromDesc (ICCItem *pItem, CString *retsError)
+ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item, CString *retsError)
 
 //	InitFromDesc
 //
 //	Initializes from a CodeChain item
 
 	{
-	if (pItem->IsInteger())
+	if (Item.IsSymbolTable())
 		{
-		m_dwMods = (DWORD)pItem->GetIntegerValue();
+		//	Enhancement
+
+		CString sMods = Item.GetStringAt(CONSTLIT("enhancement"));
+		if (sMods.IsBlank())
+			{
+			if (retsError) *retsError = CONSTLIT("Must have enhancement field.");
+			return ERR_FAIL;
+			}
+
+		if (ALERROR error = InitFromDesc(sMods, retsError))
+			return error;
+
+		//	Lifetime
+
+		int iLifetime = Item.GetIntegerAt(CONSTLIT("lifetime"), -1);
+		m_iExpireTime = (iLifetime != -1 ? Universe.GetTicks() + iLifetime : -1);
+
+		//	Enhancement type
+
+		DWORD dwEnhancementUNID = (DWORD)Item.GetIntegerAt(CONSTLIT("itemType"));
+		if (dwEnhancementUNID)
+			{
+			m_pEnhancer = Universe.FindItemType(dwEnhancementUNID);
+			if (m_pEnhancer == NULL)
+				{
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown enhancementType: %08x"), dwEnhancementUNID);
+				return ERR_FAIL;
+				}
+			}
+
+		return NOERROR;
+		}
+	else if (Item.IsInteger())
+		{
+		*this = CItemEnhancement((DWORD)Item.GetIntegerValue());
 		return NOERROR;
 		}
 	else
-		return InitFromDesc(pItem->GetStringValue(), retsError);
+		return InitFromDesc(Item.GetStringValue(), retsError);
 	}
 
 ALERROR CItemEnhancement::InitFromDesc (SDesignLoadCtx &Ctx, const CString &sDesc)

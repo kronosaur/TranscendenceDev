@@ -545,7 +545,10 @@
 				(block Nil
 					; Vaughn's armor is resistant to laser and kinetic (only 20% damage gets through)
 					(objEnumItems gSource "aI" theItem
-						(shpEnhanceItem gSource theItem 0x0808)
+						(shpEnhanceItem gSource theItem {
+							enhancement: "+resistDamageTier:laser:20;"
+							itemType: &itCentauriNanos;
+							})
 						)
 					)
 			</OnCreate>
@@ -793,9 +796,9 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"a &lt;=3"	enhancement:0x0808	}
-					{	criteria:"a &lt;=5"	enhancement:0x0805	}
-					{	criteria:"a &lt;=6"	enhancement:0x0803	}
+					{	criteria:"a &lt;=3"	enhancement:"+resistDamageTier:laser:20;"	}
+					{	criteria:"a &lt;=5"	enhancement:"+resistDamageTier:laser:50;"	}
+					{	criteria:"a &lt;=6"	enhancement:"+resistDamageTier:laser:70;"	}
 					{	criteria:"a &gt;10"	enhancement:Nil	descID:'TooAdvanced	}
 					)
 			</Constant>

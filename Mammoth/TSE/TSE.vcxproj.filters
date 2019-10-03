@@ -1333,5 +1333,8 @@
     <ClCompile Include="CIntegerRangeCriteria.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="CDeviceItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

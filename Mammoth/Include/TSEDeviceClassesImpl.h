@@ -154,7 +154,7 @@ class CDriveClass : public CDeviceClass
 
 		//	CDeviceClass virtuals
 
-		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) override;
+		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
         virtual bool OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerformanceCtx &Ctx) const override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 
@@ -175,6 +175,7 @@ class CDriveClass : public CDeviceClass
         CDriveClass &operator= (const CDriveClass &Desc) = delete;
 
         const SScalableStats *GetDesc (CItemCtx &Ctx) const;
+        const SScalableStats *GetDesc (const CDeviceItem &DeviceItem) const;
         void InitDamagedDesc (void) const;
         void InitEnhancedDesc (void) const;
         static ALERROR InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dwUNID, CXMLElement *pDesc, SScalableStats &retStats);
@@ -476,7 +477,7 @@ class CShieldClass : public CDeviceClass
 
 
 	protected:
-		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) override;
+		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 		virtual void OnMarkImages (void) override;
@@ -671,7 +672,7 @@ class CWeaponClass : public CDeviceClass
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) override;
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
-		virtual DWORD GetLinkedFireOptions (CItemCtx &Ctx) override;
+		virtual DWORD GetLinkedFireOptions (const CDeviceItem &DeviceItem) const override;
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
@@ -702,7 +703,7 @@ class CWeaponClass : public CDeviceClass
 
 	protected:
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
-		virtual void OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList) override;
+		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
         virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
