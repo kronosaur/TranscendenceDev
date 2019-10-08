@@ -93,7 +93,7 @@
 						(block (result)
 							(setq result (shpEnhanceItem gSource shieldItem {
 								enhancement: "+hpBonus:20"
-								itemType: gType
+								type: gType
 								}))
 
 							(objSendMessage gSource Nil 
@@ -109,7 +109,7 @@
 					(block (result)
 						(setq result (shpEnhanceItem gSource shieldItem {
 							enhancement: "-hpBonus:20"
-							itemType: gType
+							type: gType
 							}))
 
 						(objSendMessage gSource Nil 
@@ -208,7 +208,7 @@
 					(block (result)
 						(setq result (shpEnhanceItem gSource shieldItem {
 							enhancement: "+hpBonus:20"
-							itemType: gType
+							type: gType
 							}))
 
 						(objSendMessage gSource Nil 
@@ -349,7 +349,7 @@
 					(block (result)
 						(setq result (shpEnhanceItem gSource shieldItem {
 							enhancement: "+efficient:20"
-							itemType: gType
+							type: gType
 							}))
 						
 						(objSendMessage gSource Nil 

@@ -547,7 +547,7 @@
 					(objEnumItems gSource "aI" theItem
 						(shpEnhanceItem gSource theItem {
 							enhancement: "+resistDamageTier:laser:20;"
-							itemType: &itCentauriNanos;
+							type: &itCentauriNanos;
 							})
 						)
 					)

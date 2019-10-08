@@ -95,6 +95,7 @@ class CEnhancementDesc
 	public:
 		bool Accumulate (int iLevel, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
 		bool Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements) const;
+		ALERROR Bind (SDesignLoadCtx &Ctx);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType);
 		void InsertHPBonus (int iBonus);
 		bool IsEmpty (void) const { return (m_Enhancements.GetCount() == 0); }

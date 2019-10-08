@@ -1925,13 +1925,13 @@ ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item
 
 		//	Enhancement type
 
-		DWORD dwEnhancementUNID = (DWORD)Item.GetIntegerAt(CONSTLIT("itemType"));
+		DWORD dwEnhancementUNID = (DWORD)Item.GetIntegerAt(CONSTLIT("type"));
 		if (dwEnhancementUNID)
 			{
 			m_pEnhancer = Universe.FindItemType(dwEnhancementUNID);
 			if (m_pEnhancer == NULL)
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown enhancementType: %08x"), dwEnhancementUNID);
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown enhancement type: %08x"), dwEnhancementUNID);
 				return ERR_FAIL;
 				}
 			}

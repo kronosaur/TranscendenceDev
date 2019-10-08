@@ -458,8 +458,6 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 //	AddItemEnhancement
 //
 //	Adds an enhancement to the given item
-//
-//	LATER: This should be replaced with EnhanceItem(), which is a superset.
 
 	{
 	//	Pre-init in case we exit early

@@ -749,6 +749,9 @@ ALERROR CSingleDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 		if (error = m_pExtraItems->OnDesignLoadComplete(Ctx))
 			return error;
 
+	if (m_Enhancements.Bind(Ctx))
+		return error;
+
 	//	Error checking
 
 	if (m_pItemType)
@@ -1409,11 +1412,14 @@ ALERROR CGroupOfDeviceGenerators::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 //	Resolve references
 
 	{
-	int i;
 	ALERROR error;
 
-	for (i = 0; i < m_Table.GetCount(); i++)
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		if (error = m_Table[i].pDevice->OnDesignLoadComplete(Ctx))
+			return error;
+
+	for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+		if (error = m_SlotDesc[i].DefaultDesc.Enhancements.Bind(Ctx))
 			return error;
 
 	return NOERROR;

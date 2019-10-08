@@ -65,6 +65,35 @@ bool CEnhancementDesc::Accumulate (CItemCtx &Ctx, const CItem &Target, TArray<CS
 	return Accumulate(Ctx.GetItem().GetLevel(), Target, EnhancementIDs, pEnhancements);
 	}
 
+ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)
+
+//	Bind
+//
+//	Bind design.
+
+	{
+	for (int i = 0; i < m_Enhancements.GetCount(); i++)
+		{
+		SEnhancerDesc &Enhance = m_Enhancements[i];
+
+		//	Bind the type in case it is an item type.
+
+		if (DWORD dwEnhancementType = strToInt(Enhance.sType, 0))
+			{
+			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemType(dwEnhancementType);
+			if (pEnhancementType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unknown enhancement type: %08x"), dwEnhancementType);
+				return ERR_FAIL;
+				}
+
+			Enhance.Enhancement.SetEnhancementType(pEnhancementType);
+			}
+		}
+
+	return NOERROR;
+	}
+
 ALERROR CEnhancementDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType)
 
 //	InitFromXML
@@ -106,7 +135,14 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 	{
 	ALERROR error;
 
+	//	The type is either a string or the UNID of an item type. If the latter,
+	//	we use it as the enhancement type. We canonicalize the UNID here, and we
+	//	look up the UNID in Bind.
+
 	Enhance.sType = pDesc->GetAttribute(TYPE_ATTRIB);
+	DWORD dwEnhancementType = strToInt(Enhance.sType, 0);
+	if (dwEnhancementType)
+		Enhance.sType = strPatternSubst(CONSTLIT("0x%08x"), dwEnhancementType);
 
 	//	Load the item criteria
 
@@ -121,6 +157,9 @@ ALERROR CEnhancementDesc::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	if (error = Enhance.Enhancement.InitFromDesc(Ctx, pDesc->GetAttribute(ENHANCEMENT_ATTRIB)))
 		return error;
+
+	//	If the enhancement type comes from the caller, then use it as a default,
+	//	but this can be overridden via the type= attribute.
 
 	if (pEnhancerType)
 		Enhance.Enhancement.SetEnhancementType(pEnhancerType);

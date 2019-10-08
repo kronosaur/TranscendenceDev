@@ -847,7 +847,7 @@
 							;	Apply enhancement
 							(setq result (shpEnhanceItem gPlayerShip dstItem {
 								enhancement: (@ enhancementInfo 'enhancement)
-								itemType: (itmGetType gItem)
+								type: (itmGetType gItem)
 								}))
 
 							;	Remove the armor paste from the player's cargo
@@ -978,7 +978,7 @@
 								;	Apply enhancement
 								(setq result (shpEnhanceItem gPlayerShip dstItem {
 									enhancement: (@ enhancementInfo 'enhancement)
-									itemType: (itmGetType gItem)
+									type: (itmGetType gItem)
 									}))
 								)
 

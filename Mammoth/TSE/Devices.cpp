@@ -234,6 +234,9 @@ ALERROR CDeviceClass::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_pOverlayType.Bind(Ctx))
 		return error;
 
+	if (error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	m_pItemType->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return OnDesignLoadComplete(Ctx);

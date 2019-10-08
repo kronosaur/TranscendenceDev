@@ -502,6 +502,9 @@ ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (error = m_pClass.Bind(Ctx))
 		return error;
 
+	if (error = m_SlotEnhancements.Bind(Ctx))
+		return error;
+
 	return NOERROR;
 	}
 

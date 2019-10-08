@@ -151,6 +151,9 @@ ALERROR CSystemType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	if (ALERROR error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return NOERROR;

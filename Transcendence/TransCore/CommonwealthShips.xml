@@ -1312,7 +1312,7 @@
 			<DeviceSlot criteria="w" posAngle="0" posRadius="20" posZ="0"/>
 			<DeviceSlot criteria="s">
 				<EnhancementAbilities>
-					<Enhance type=			"manticoreShieldPenalty"
+					<Enhance type=			"&vtManticoreShieldPenalty;"
 							 criteria=		"s -nonEnergyShields;"
 							 enhancement=	"-hpBonus:-20"
 							 />
@@ -1446,6 +1446,14 @@
 			combatStyle=		"advanced"
 			/>
 	</ShipClass>
+
+	<ItemType UNID="&vtManticoreShieldPenalty;"
+			name=				"Manticore shield penalty"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsManticore120;" imageX="0" imageY="0" imageWidth="80" imageHeight="80"/>
+	</ItemType>
 
 <!-- TABLES -->
 

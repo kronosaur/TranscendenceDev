@@ -1876,7 +1876,7 @@
 									(block (result)
 										(setq result (shpEnhanceItem gSource theItem {
 											enhancement: "+hpBonus:20"
-											itemType: gType
+											type: gType
 											}))
 
 										(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more powerful" "shield generator"))
@@ -2418,7 +2418,7 @@
 									(block (result)
 										(setq result (shpEnhanceItem gSource theItem {
 											enhancement: "+hpBonus:50"
-											itemType: gType
+											type: gType
 											}))
 										
 										(objSendMessage gSource Nil (intItemEnhanceStatus result "Hiro: Shield optimization complete" "shield generator"))
@@ -2756,7 +2756,7 @@
 										(block (result)
 											(setq result (shpEnhanceItem gSource theItem {
 												enhancement: newMods
-												itemType: gType
+												type: gType
 												}))
 
 											(objSendMessage gSource Nil (intItemEnhanceStatus result successText "shield generator"))
@@ -2810,7 +2810,7 @@
 										(block (result)
 											(setq result (shpEnhanceItem gSource theItem {
 												enhancement: newMods
-												itemType: gType
+												type: gType
 												}))
 
 											(objSendMessage gSource Nil (intItemEnhanceStatus result (cat "Your " (itmGetName weaponItem 32) " " successText) (cat "your " (itmGetName weaponItem 32))))

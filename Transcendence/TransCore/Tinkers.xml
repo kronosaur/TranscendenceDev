@@ -264,7 +264,7 @@
 										(block (result)
 											(setq result (shpEnhanceItem gPlayerShip theItem {
 												enhancement: "+immunity:radiation"
-												itemType: &itRadiationImmuneCoating;
+												type: &itRadiationImmuneCoating;
 												}))
 
 											(switch

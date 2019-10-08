@@ -1272,7 +1272,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   enhancement: enhancement code/desc (required)\n"
 
 			"   lifetime: (in ticks)\n"
-			"   itemType: item causing enhancement\n",
+			"   type: item causing enhancement\n",
 
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
