@@ -608,7 +608,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 
-	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
+	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
 		*retpTarget = m_pController->GetTarget(ItemCtx);
 		*retiFireSolution = -1;
@@ -8237,7 +8237,7 @@ void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
 
 		if (!pDevice->IsEmpty()
 				&& (pDevice == pPrimaryDevice
-					|| (pDevice->IsLinkedFire(Ctx, iCat))))
+					|| (pDevice->IsLinkedFire(iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
 	}
@@ -8266,7 +8266,7 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 
 		if (!pDevice->IsEmpty()
 				&& (pDevice == pWeapon 
-					|| (pDevice->IsLinkedFire(Ctx, iCat))))
+					|| (pDevice->IsLinkedFire(iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
 	}

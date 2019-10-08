@@ -244,7 +244,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 			//	Skip linked-fire weapons
 
-			else if (pWeapon->IsLinkedFire(ItemCtx))
+			else if (pWeapon->IsLinkedFire())
 				continue;
 
 			//	Otherwise, this is a primary weapon or launcher

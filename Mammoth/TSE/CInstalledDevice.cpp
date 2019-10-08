@@ -459,7 +459,7 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	DEBUG_CATCH
 	}
 
-bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) const
+bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 
 //	IsLinkedFire
 //
@@ -475,7 +475,7 @@ bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) 
 		return (GetClass()->GetCategory() == iTriggerCat);
 	}
 
-bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
+bool CInstalledDevice::IsSelectable (void) const
 
 //	IsSelectable
 //

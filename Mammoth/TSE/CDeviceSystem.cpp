@@ -305,7 +305,7 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
+				&& m_Devices[iDevice].IsSelectable()
 				&& (switchWeapons ? (m_Devices[iDevice].GetSlotLinkedFireOptions() & dwLinkedFireSelected ?
 					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
@@ -479,13 +479,13 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 			{
 			case itemcatWeapon:
 				if (m_NamedDevices[devPrimaryWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
+						&& m_Devices[i].IsSelectable())
 					m_NamedDevices[devPrimaryWeapon] = i;
 				break;
 
 			case itemcatLauncher:
 				if (m_NamedDevices[devMissileWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
+						&& m_Devices[i].IsSelectable())
 					m_NamedDevices[devMissileWeapon] = i;
 				break;
 
@@ -557,12 +557,12 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	switch (Device.GetCategory())
 		{
 		case itemcatWeapon:
-			if (Device.IsSelectable(ItemCtx))
+			if (Device.IsSelectable())
 				m_NamedDevices[devPrimaryWeapon] = iDeviceSlot;
 			break;
 
 		case itemcatLauncher:
-			if (Device.IsSelectable(ItemCtx))
+			if (Device.IsSelectable())
 				m_NamedDevices[devMissileWeapon] = iDeviceSlot;
 			break;
 
@@ -723,7 +723,7 @@ void CDeviceSystem::ReadyFirstMissile (CSpaceObject *pObj)
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectFirstVariant(pObj);
 			}
 		}
@@ -792,7 +792,7 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectNextVariant(pObj, iDir);
 			}
 		}
