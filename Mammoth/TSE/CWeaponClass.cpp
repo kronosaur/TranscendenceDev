@@ -2529,7 +2529,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 		//	Get the options from the device
 
-		DWORD dwOptions = GetLinkedFireOptions(DeviceItem);
+		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if (dwOptions == 0)
 			return CC.CreateNil();
 
@@ -2814,24 +2814,6 @@ Metric CWeaponClass::GetMaxRange (CItemCtx &ItemCtx)
 		return 0.0;
 
 	return pShot->GetMaxRange();
-	}
-
-DWORD CWeaponClass::GetLinkedFireOptions (const CDeviceItem &DeviceItem) const
-
-//	GetLinkedFireOptions
-//
-//	Returns linked fire options for the weapon
-	
-	{
-	//	If the device has linked fire, then honor that.
-
-	DWORD dwOptions;
-	if (DeviceItem.GetInstalledDevice() && (dwOptions = DeviceItem.GetInstalledDevice()->GetLinkedFireOptions()))
-		return dwOptions;
-
-	//	Otherwise, take native linked fire setting from weapon.
-
-	return m_dwLinkedFireOptions; 
 	}
 
 int CWeaponClass::GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse) const

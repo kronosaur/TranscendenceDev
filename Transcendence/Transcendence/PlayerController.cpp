@@ -2391,9 +2391,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	CInstalledDevice *pNewWeapon = pCurWeapon;
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-		&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+		&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 			: true)) : 0x0;
 
 	//	Keep switching until we find a weapon that is not disabled
@@ -2405,9 +2405,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
-		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-			&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+			&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 				: true)) : 0x0;
 		}
 	
@@ -2415,7 +2415,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
 			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? 
-		(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
+		(pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
 			(CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() != CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber() || pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) :
 			pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
@@ -2425,7 +2425,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		if (!(pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected))
+		if (!(pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player

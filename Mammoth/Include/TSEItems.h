@@ -138,7 +138,9 @@ class CDeviceItem : public CDifferentiatedItem
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
+		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
+		DWORD GetLinkedFireOptions (void) const;
 		inline CSpaceObject *GetSource (void) const;
 
 	private:
@@ -147,6 +149,8 @@ class CDeviceItem : public CDifferentiatedItem
 
 		CDeviceItem (const CItem *pItem): CDifferentiatedItem(pItem)
 			{ }
+
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 
 	friend class CItem;
 	};

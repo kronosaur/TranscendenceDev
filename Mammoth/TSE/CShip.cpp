@@ -608,7 +608,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 
-	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetLinkedFireOptions() & dwLinkedFireSelected))
+	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
 		*retpTarget = m_pController->GetTarget(ItemCtx);
 		*retiFireSolution = -1;
@@ -624,7 +624,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		//	Get the actual options.
 
 		const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
-		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(DeviceItem);
+		DWORD dwLinkedFireOptions = DeviceItem.GetLinkedFireOptions();
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
@@ -641,10 +641,10 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
 				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
 				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
 			(dwLinkedFireOptions & dwLinkedFireSelected) &&
@@ -2539,23 +2539,23 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 
 	{
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
-	if (pDevice->GetLinkedFireOptions() & dwLinkedFireSelected)
+	if (pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected)
 		{
 		int iAmmoCount = 0;
 		TSortMap<CItemType *, bool> AmmoItemTypes;
 		DWORD iGunUNID = pDevice->GetUNID();
 		for (int i = 0; i < m_Devices.GetCount(); i++)
 			{
-			CInstalledDevice currDevice = m_Devices.GetDevice(i);
+			CInstalledDevice &currDevice = m_Devices.GetDevice(i);
 			CDeviceClass *pCurrDeviceClass = currDevice.GetClass();
 			if (!currDevice.IsEmpty())
 				{
 				if (currDevice.GetCategory() == (itemcatWeapon))
 					{
 					CItemCtx ItemCtx(this, pDevice);
-					bool bCheckSameVariant = currDevice.GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
+					bool bCheckSameVariant = currDevice.GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
 						ItemCtx.GetItemVariantNumber() == CItemCtx(this, &currDevice).GetItemVariantNumber() : true;
-					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
+					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetSlotLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
 						{
 						bool bUsesItemsForAmmo = (pCurrDeviceClass->AsWeaponClass()->GetWeaponFireDesc(ItemCtx)->GetAmmoType() != NULL);
 						if (pCurrDeviceClass->IsAmmoWeapon() && !bUsesItemsForAmmo)
@@ -6252,7 +6252,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
 						//  type, and increment their fire delays.
-						DWORD dwLinkedFireOptions = pDevice->GetLinkedFireOptions();
+						DWORD dwLinkedFireOptions = pDevice->GetSlotLinkedFireOptions();
 						DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
@@ -6269,11 +6269,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 									{
 									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
 											&& currDevice != pDevice && currDevice->IsEnabled())
 											{
 											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
-											if (currDevice->GetLinkedFireOptions()
+											if (currDevice->GetSlotLinkedFireOptions()
 												& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
 												{
 												//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.

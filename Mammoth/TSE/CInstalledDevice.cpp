@@ -226,9 +226,9 @@ CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) 
 		return NULL;
 	}
 
-DWORD CInstalledDevice::GetLinkedFireOptions (void) const
+DWORD CInstalledDevice::GetSlotLinkedFireOptions (void) const
 
-//	GetLinkedFireOptions
+//	GetSlotLinkedFireOptions
 //
 //	Returns linked-fire options for the device slot.
 
@@ -466,7 +466,7 @@ bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) 
 //	Returns TRUE if we're linked to weapon trigger
 
 	{
-	DWORD dwOptions = GetClass()->GetLinkedFireOptions(m_pItem->AsDeviceItemOrThrow());
+	DWORD dwOptions = m_pItem->AsDeviceItemOrThrow().GetLinkedFireOptions();
 	if (dwOptions == 0)
 		return false;
 	else if (iTriggerCat == itemcatNone)
@@ -482,12 +482,12 @@ bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
 //	Returns TRUE if device can be selected as a primary weapon or launcher.
 
 	{
-	const CDeviceItem DeviceItem = m_pItem->AsDeviceItemOrThrow();
+	DWORD dwOptions = m_pItem->AsDeviceItemOrThrow().GetLinkedFireOptions();
 
 	return (!IsSecondaryWeapon()
-			&& (GetClass()->GetLinkedFireOptions(DeviceItem) == 0
-			|| GetClass()->GetLinkedFireOptions(DeviceItem) == CDeviceClass::lkfSelected
-			|| GetClass()->GetLinkedFireOptions(DeviceItem) == CDeviceClass::lkfSelectedVariant));
+			&& (dwOptions == 0
+			|| dwOptions == CDeviceClass::lkfSelected
+			|| dwOptions == CDeviceClass::lkfSelectedVariant));
 	}
 
 ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)

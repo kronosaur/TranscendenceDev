@@ -227,6 +227,15 @@ inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	return *GetType().GetDeviceClass();
 	}
 
+inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
+	{
+	const CItemEnhancementStack *pStack = GetEnhancementStack();
+	if (pStack) 
+		return *pStack; 
+	else 
+		return *m_pNullEnhancements;
+	}
+
 inline const CInstalledDevice *CDeviceItem::GetInstalledDevice (void) const
 	{
 	return m_pCItem->GetInstalledDevice();
@@ -247,7 +256,7 @@ inline bool CInstalledDevice::IsSecondaryWeapon (void) const
 	DWORD dwLinkedFire;
 	const CDeviceItem DeviceItem = m_pItem->AsDeviceItemOrThrow();
 	return (m_fSecondaryWeapon 
-			|| (dwLinkedFire = m_pClass->GetLinkedFireOptions(DeviceItem)) == CDeviceClass::lkfEnemyInRange
+			|| (dwLinkedFire = DeviceItem.GetLinkedFireOptions()) == CDeviceClass::lkfEnemyInRange
 			|| dwLinkedFire == CDeviceClass::lkfTargetInRange);
 	}
 

@@ -120,11 +120,9 @@ void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CI
 
 	if (Ammo.IsEmpty())
 		{
-		const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
-
 		//	Linked-fire
 
-		DWORD dwOptions = GetLinkedFireOptions(DeviceItem);
+		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
 		}
@@ -242,6 +240,33 @@ ALERROR CDeviceClass::Bind (SDesignLoadCtx &Ctx)
 	return OnDesignLoadComplete(Ctx);
 
 	DEBUG_CATCH
+	}
+
+DWORD CDeviceClass::CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2)
+
+//	CombineLinkedFireOptions
+//
+//	Combines linked fire options.
+
+	{
+	if (dwSrc1 == 0)
+		return dwSrc2;
+	else if (dwSrc2 == 0)
+		return dwSrc1;
+	else if (dwSrc1 == lkfNever || dwSrc2 == lkfNever)
+		return lkfNever;
+	else if (dwSrc1 == lkfAlways || dwSrc2 == lkfAlways)
+		return lkfAlways;
+	else if (dwSrc1 == lkfEnemyInRange || dwSrc2 == lkfEnemyInRange)
+		return lkfEnemyInRange;
+	else if (dwSrc1 == lkfTargetInRange || dwSrc2 == lkfTargetInRange)
+		return lkfTargetInRange;
+	else if (dwSrc1 == lkfSelected || dwSrc2 == lkfSelected)
+		return lkfSelected;
+	else if (dwSrc1 == lkfSelectedVariant || dwSrc2 == lkfSelectedVariant)
+		return lkfSelectedVariant;
+	else
+		return dwSrc1;
 	}
 
 COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const

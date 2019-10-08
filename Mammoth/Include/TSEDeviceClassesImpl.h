@@ -672,7 +672,7 @@ class CWeaponClass : public CDeviceClass
 		virtual ICCItem *FindItemProperty (CItemCtx &Ctx, const CString &sName) override;
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) override;
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
-		virtual DWORD GetLinkedFireOptions (const CDeviceItem &DeviceItem) const override;
+		virtual DWORD GetLinkedFireOptions (void) const override { return m_dwLinkedFireOptions; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;

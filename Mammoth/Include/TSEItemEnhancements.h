@@ -50,8 +50,10 @@ enum ItemEnhancementTypes
 												//		X = %bonus (if disadvantage, this is decrease)
 	etTracking =						0x1800,	//	weapon gains tracking
 												//		X = maneuver rate
-	etOmnidirectional =					0x1900,	//	weapon gain omnidirectional
+	etOmnidirectional =					0x1900,	//	weapon gains omnidirectional
 												//		X = 0: omni; >0 <360 : swivel
+	etLinkedFire =						0x1a00,	//	weapon gains linked fire
+												//		X = linked fire options
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -121,6 +123,7 @@ class CItemEnhancement
 		DWORD GetID (void) const { return m_dwID; }
 		int GetLevel (void) const { return (int)(DWORD)(m_dwMods & etData1Mask); }
 		int GetLevel2 (void) const { return (int)(DWORD)((m_dwMods & etData2Mask) >> 4); }
+		DWORD GetLinkedFireOptions (void) const;
 		int GetManeuverRate (void) const;
 		DWORD GetModCode (void) const { return m_dwMods; }
 		int GetPowerAdj (void) const;
@@ -164,6 +167,7 @@ class CItemEnhancement
 		void SetModCode (DWORD dwMods) { m_dwMods = dwMods; }
 		void SetModImmunity (SpecialDamageTypes iSpecial) { m_dwMods = Encode12(etSpecialDamage, 0, (int)iSpecial); }
 		void SetModEfficiency (int iAdj) { m_dwMods = (iAdj > 0 ? EncodeABC(etPowerEfficiency, iAdj) : EncodeABC(etPowerEfficiency | etDisadvantage, -iAdj)); }
+		void SetModLinkedFire (DWORD dwOptions) { m_dwMods = EncodeAX(etLinkedFire, 0, dwOptions); }
 		void SetModOmnidirectional (int iFireArc) { m_dwMods = EncodeAX(etOmnidirectional, 0, Max(0, iFireArc)); }
 		void SetModReflect (DamageTypes iDamageType) { m_dwMods = Encode12(etReflect, 0, (int)iDamageType); }
 		void SetModResistDamage (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByDamage | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
@@ -231,6 +235,7 @@ class CItemEnhancementStack
 		int GetDamageAdj (const DamageDesc &Damage) const;
 		const CItemEnhancement &GetEnhancement (int iIndex) const { return m_Stack[iIndex]; }
 		int GetFireArc (void) const;
+		DWORD GetLinkedFireOptions (void) const;
 		int GetManeuverRate (void) const;
 		int GetPowerAdj (void) const;
 		int GetResistDamageAdj (DamageTypes iDamage) const;

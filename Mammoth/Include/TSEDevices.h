@@ -270,7 +270,7 @@ class CDeviceClass
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const { return damageGeneric; }
 		virtual int GetDefaultFireAngle (CInstalledDevice *pDevice, CSpaceObject *pSource) const { return 0; }
 		virtual int GetHitPoints (CItemCtx &ItemCtx, int *retiMaxHP = NULL) const { return 0; }
-		virtual DWORD GetLinkedFireOptions (const CDeviceItem &DeviceItem) const { return 0; }
+		virtual DWORD GetLinkedFireOptions (void) const { return 0; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) { return 0.0; }
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) { return 0.0; }
 
@@ -315,6 +315,7 @@ class CDeviceClass
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) { }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) { return false; }
 
+		static DWORD CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2);
 		static bool FindAmmoDataField (CItemType *pItem, const CString &sField, CString *retsValue);
 		static bool FindWeaponFor (CItemType *pItem, CDeviceClass **retpWeapon = NULL, int *retiVariant = NULL, CWeaponFireDesc **retpDesc = NULL);
 		static ItemCategories GetItemCategory (DeviceNames iDev);
@@ -491,7 +492,7 @@ class CInstalledDevice
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		const CString &GetID (void) const { return m_sID; }
 		CItem *GetItem (void) const { return m_pItem; }
-		DWORD GetLinkedFireOptions (void) const;
+		DWORD GetSlotLinkedFireOptions (void) const;
         int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }
 		int GetMaxFireArc (void) const { return m_iMaxFireArc; }

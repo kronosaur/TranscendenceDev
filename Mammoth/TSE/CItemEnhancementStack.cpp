@@ -369,6 +369,21 @@ int CItemEnhancementStack::GetFireArc (void) const
 	return iBestFireArc;
 	}
 
+DWORD CItemEnhancementStack::GetLinkedFireOptions (void) const
+
+//	GetLinkedFireOptions
+//
+//	Return linked fire options.
+
+	{
+	DWORD dwOptions = 0;
+
+	for (int i = 0; i < m_Stack.GetCount(); i++)
+		dwOptions = CDeviceClass::CombineLinkedFireOptions(dwOptions, m_Stack[i].GetLinkedFireOptions());
+
+	return dwOptions;
+	}
+
 int CItemEnhancementStack::GetManeuverRate (void) const
 
 //	GetManeuverRate

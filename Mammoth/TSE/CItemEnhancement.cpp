@@ -212,6 +212,14 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+swivel %d"), GetDataX()), true));
 			break;
 
+		case etLinkedFire:
+			{
+			DWORD dwOptions = (DWORD)GetDataX();
+			if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
+				retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+linked-fire")));
+			break;
+			}
+
 		default:
 			retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+unknown"), true));
 			break;
@@ -1240,6 +1248,23 @@ int CItemEnhancement::GetHPAdj (void) const
 		}
 	}
 
+DWORD CItemEnhancement::GetLinkedFireOptions (void) const
+
+//	GetLinkedFireOptions
+//
+//	Returns linked fire options.
+
+	{
+	switch (GetType())
+		{
+		case etLinkedFire:
+			return (DWORD)GetDataX();
+
+		default:
+			return 0;
+		}
+	}
+
 int CItemEnhancement::GetManeuverRate (void) const
 
 //	GetManeuverRate
@@ -1472,6 +1497,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etImmunityIonEffects:
 			case etTracking:
 			case etOmnidirectional:
+			case etLinkedFire:
 				return 100;
 
 			default:
@@ -1584,7 +1610,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 		else
 			{
 			const char *pStart = pPos;
-			while (*pPos != '\0' && *pPos != ':')
+			while (*pPos != '\0' && *pPos != ':' && *pPos != ';')
 				pPos++;
 
 			sValue = CString(pStart, (int)(pPos - pStart));
@@ -1852,6 +1878,21 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			}
 		else
 			SetModTracking(Min(iValue, 180));
+		}
+
+	//	Linked-fire
+
+	else if (strEquals(sID, CONSTLIT("linkedFire")))
+		{
+		DWORD dwOptions;
+		SDesignLoadCtx Ctx;
+		if (CDeviceClass::ParseLinkedFireOptions(Ctx, sValue, &dwOptions) != NOERROR)
+			{
+			if (retsError) *retsError = Ctx.sError;
+			return ERR_FAIL;
+			}
+
+		SetModLinkedFire(dwOptions);
 		}
 
 	//	Otherwise, see if this is a special damage 
