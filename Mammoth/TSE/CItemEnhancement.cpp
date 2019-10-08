@@ -209,7 +209,7 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 			else if (GetDataX() == 0)
 				retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+omnidirectional"), true));
 			else
-				retList->Insert(SDisplayAttribute(iDisplayType, CONSTLIT("+swivel"), true));
+				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+swivel %d"), GetDataX()), true));
 			break;
 
 		default:
@@ -1514,6 +1514,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+hpBonus:{n}				Add hp bonus.
 //	+hpBonus:{s}:{n}			DamageAdj for type s set to hpBonus n
 //	+immunity:{s}				Immunity to special damage s.
+//	+omnidirectional			Omnidirectional.
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
 //	+regen:{n}					Regenerate
@@ -1524,6 +1525,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+resistMatter:{n}			DamageAdj for matter damage set to n
 //	+shield:{n}					Add shield disrupt special damage, where n is an item level
 //	+speed:{n}					Faster. n is new delay value as a percent of normal
+//	+swivel:{n}					Swivel n degrees
 //	+tracking:{n}				n is maneuver rate
 
 	{
@@ -1798,7 +1800,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 		if (iValue <= 0)
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Invalid speed value: %s."), iValue);
+				*retsError = strPatternSubst(CONSTLIT("Invalid speed value: %s."), sValue);
 			return ERR_FAIL;
 			}
 		else
@@ -1825,6 +1827,15 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			m_dwMods = EncodeAX(etOmnidirectional | etDisadvantage);
 		else if (iValue == 0 || iValue >= 360)
 			m_dwMods = EncodeAX(etOmnidirectional, 0, 0);
+		else
+			m_dwMods = EncodeAX(etOmnidirectional, 0, iValue);
+		}
+	else if (strEquals(sID, CONSTLIT("swivel")))
+		{
+		if (bDisadvantage || iValue < 0)
+			m_dwMods = EncodeAX(etOmnidirectional | etDisadvantage);
+		else if (iValue == 0 || iValue >= 360)
+			m_dwMods = EncodeAX(etOmnidirectional, 0, 30);
 		else
 			m_dwMods = EncodeAX(etOmnidirectional, 0, iValue);
 		}
