@@ -113,12 +113,12 @@ class CEnhancementDesc
 			CString sType;						//	Type of enhancement
 			CItemCriteria Criteria;				//	Items that we enhance
 			CItemLevelCriteria LevelCheck;		//	Criteria for item level
-			CItemEnhancement Enhancement;		//	Enhancement confered
+			CItemEnhancement Enhancement;		//	Enhancement conferred
 			};
 
 		ALERROR InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pEnhancerType, SEnhancerDesc &Enhance);
 
-		TArray<SEnhancerDesc> m_Enhancements;	//	Enhancements confered on other items
+		TArray<SEnhancerDesc> m_Enhancements;	//	Enhancements conferred on other items
 	};
 
 class CDeviceClass
@@ -351,7 +351,7 @@ class CDeviceClass
 		COverlayTypeRef m_pOverlayType;			//	Associated overlay (may be NULL)
 
 		int m_iMaxHPBonus;						//	Max HP bonus for this device
-		CEnhancementDesc m_Enhancements;		//	Enhancements confered on other items
+		CEnhancementDesc m_Enhancements;		//	Enhancements conferred on other items
 		CAbilitySet m_Equipment;				//	Equipment installed by this device
 
 		SEventHandlerDesc m_CachedEvents[evtCount];	//	Cached events
@@ -643,7 +643,7 @@ class CInstalledDevice
 		CDeviceClassRef m_pClass;				//	The device class that is installed here
 		COverlay *m_pOverlay = NULL;			//	Overlay (if associated)
 		DWORD m_dwTargetID;						//	ObjID of target (for tracking secondary weapons)
-		CEnhancementDesc m_SlotEnhancements;	//	Enhancements confered by the slot
+		CEnhancementDesc m_SlotEnhancements;	//	Enhancements conferred by the slot
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	List of enhancements (may be NULL)
 		TArray<DWORD> m_LastShotIDs;			//	ObjID of last shots (only for continuous beams)
 

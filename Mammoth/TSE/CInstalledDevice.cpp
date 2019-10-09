@@ -70,7 +70,7 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 
 //	AccumulateSlotEnhancements
 //
-//	Accumulates enhancements confered by the slot itself.
+//	Accumulates enhancements conferred by the slot itself.
 
 	{
 	bool bEnhanced = false;

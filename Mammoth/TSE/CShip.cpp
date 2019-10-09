@@ -539,7 +539,7 @@ void CShip::CalcDeviceBonus (void)
 				}
 
 			//	Set the bonuses
-			//	Note that these include any bonuses confered by item enhancements
+			//	Note that these include any bonuses conferred by item enhancements
 
 			Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
 

@@ -606,7 +606,7 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 
 //	GetWeaponBonus
 //
-//	Returns the weapon bonus confered by the fields
+//	Returns the weapon bonus conferred by the fields
 
 	{
 	int iBonus = 0;

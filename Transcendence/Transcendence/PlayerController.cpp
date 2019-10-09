@@ -2818,7 +2818,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//
 	//	NOTE: This transfers equipment such as targeting computers that are 
 	//	installed on the ship. It does not include (not should it include) 
-	//	abilities/equipment confered by devices or enhancements.
+	//	abilities/equipment conferred by devices or enhancements.
 
 	if (Options.bTransferEquipment)
 		{
