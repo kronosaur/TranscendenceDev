@@ -227,6 +227,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (void) const;
+		bool GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
@@ -269,6 +270,7 @@ class CItem
 		bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
         bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
+		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
 		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
 		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }

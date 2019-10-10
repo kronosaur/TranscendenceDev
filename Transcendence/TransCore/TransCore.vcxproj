@@ -184,6 +184,7 @@
     <Xml Include="..\Extensions\Diagnostics\MissionUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\RPGUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestArmorClasses.xml" />
+    <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestItems.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestMissions.xml" />
     <Xml Include="..\Extensions\Diagnostics\TestOverlays.xml" />

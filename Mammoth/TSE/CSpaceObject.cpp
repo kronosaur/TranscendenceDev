@@ -866,6 +866,52 @@ bool CSpaceObject::CanDetect (int iPerception, CSpaceObject *pObj)
 	return (vDist.Length2() < pObj->GetDetectionRange2(iPerception));
 	}
 
+CSpaceObject::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem) const
+
+//	CanEnhanceItem
+//
+//	Returns an SEnhanceItemResult structure. If the result is eisUnknown, then 
+//	we got an error trying to enhance.
+
+	{
+	ASSERT(ItemList.IsCursorValid());
+	ASSERT(!EnhancementItem.IsEmpty());
+
+	DEBUG_TRY
+
+	SEnhanceItemResult Result;
+
+	//	Get the item to enhance
+
+	const CItem &TargetItem = ItemList.GetItemAtCursor();
+	CItemType *pType = TargetItem.GetType();
+
+	//	Get the enhancement to confer
+
+	CItemEnhancement NewEnhancement;
+	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), NewEnhancement))
+		return Result;
+
+	//	If no mod, nothing to do.
+
+	if (NewEnhancement.IsEmpty())
+		{
+		Result.iResult = eisNoEffect;
+		return Result;
+		}
+
+	//	Figure out the effect of the enhancement on the item
+
+	Result.Enhancement = TargetItem.GetMods();
+	Result.iResult = Result.Enhancement.Combine(TargetItem, NewEnhancement);
+
+	//	Done
+
+	return Result;
+
+	DEBUG_CATCH
+	}
+
 bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj)
 
 //	CanFireOnObjHelper
@@ -1580,39 +1626,13 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 
 	//	Get the item to enhance
 
-	const CItem &Item = ItemList.GetItemAtCursor();
-	CItemType *pType = Item.GetType();
-
-	//	If this is an old-style enhancement, then handle it the old way
-
-	if (Mods.GetModCode() == etBinaryEnhancement)
-		{
-		//	If the item is damaged, then enhancing it repairs it
-
-		if (Item.IsDamaged())
-			ItemList.SetDamagedAtCursor(false);
-
-		//	Otherwise, enhance it if it is not already enhanced
-
-		else if (!Item.IsEnhanced())
-			ItemList.SetEnhancedAtCursor(true);
-
-		//	Otherwise, we are already enhanced
-
-		else
-			return eisAlreadyEnhanced;
-
-		//	Raise event
-
-		ItemEnhancementModified(ItemList);
-
-		return eisOK;
-		}
+	const CItem &TargetItem = ItemList.GetItemAtCursor();
+	CItemType *pType = TargetItem.GetType();
 
 	//	Figure out the effect of the enhancement on the item
 
-	CItemEnhancement Enhancement = Item.GetMods();
-	EnhanceItemStatus iResult = Enhancement.Combine(Item, Mods);
+	CItemEnhancement Enhancement = TargetItem.GetMods();
+	EnhanceItemStatus iResult = Enhancement.Combine(TargetItem, Mods);
 
 	//	If no enhancement, then we exit
 
@@ -1621,27 +1641,29 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		case eisNoEffect:
 		case eisAlreadyEnhanced:
 			return iResult;
-		}
 
-	//	Handle some special cases
-
-	if (pType->IsArmor())
-		{
-		CInstalledArmor *pArmor = FindArmor(ItemList.GetItemAtCursor());
-		CArmorClass *pArmorClass = pType->GetArmorClass();
-
-		//	If we're trying to make armor immune to radiation and it is already immune
-		//	then we return already enhanced
-
-		if (iResult == eisOK 
-				&& Enhancement.IsRadiationImmune()
-				&& pArmorClass->IsImmune(CItemCtx(this, pArmor), specialRadiation))
-			return eisAlreadyEnhanced;
+		case eisItemRepaired:
+			ItemList.SetDamagedAtCursor(false);
+			return iResult;
 		}
 
 	//	Enhance
 
-	DWORD dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+	DWORD dwID;
+	switch (Enhancement.GetModCode())
+		{
+		case etBinaryEnhancement:
+			dwID = OBJID_NULL;
+			ItemList.SetEnhancedAtCursor(true);
+			break;
+
+		default:
+			//	NOTE: This call handles etNone properly by removing the 
+			//	enhancement and returning a null ID.
+
+			dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+			break;
+		}
 
 	//	Deal with installed items
 
@@ -1665,6 +1687,44 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	return iResult;
 
 	DEBUG_CATCH
+	}
+
+bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, SEnhanceItemResult &retResult, CString *retsError)
+
+//	EnhanceItem
+//
+//	Enhances the currently selected item with the given enhancement.
+
+	{
+	ASSERT(ItemList.IsCursorValid());
+	ASSERT(!EnhancementItem.IsEmpty());
+
+	//	Get the enhancement to confer
+
+	CItemEnhancement Enhancement;
+	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), Enhancement, retsError))
+		return false;
+
+	//	If no mod, nothing to do.
+
+	retResult = SEnhanceItemResult();
+	if (Enhancement.IsEmpty())
+		{
+		retResult.iResult = eisNoEffect;
+		return true;
+		}
+
+	retResult.Enhancement = Enhancement;
+
+	//	Enhance
+
+	DWORD dwID;
+	retResult.iResult = EnhanceItem(ItemList, Enhancement, &dwID);
+	retResult.Enhancement.SetID(dwID);
+
+	//	Done
+
+	return true;
 	}
 
 void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)

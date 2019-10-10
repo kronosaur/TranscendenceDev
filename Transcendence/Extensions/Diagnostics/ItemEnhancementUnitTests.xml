@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidItemEnhancementUnitTests;">
+		<Events>
+			<OnGlobalRunDiagnostics>
+				(block (
+					)
+					;	Set up a player ship
+
+					(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+					(if (not gPlayerShip)
+						(error "Unable to create player ship.")
+						)
+					(shpOrder gPlayerShip 'hold)
+
+					;	Unit Tests for Item Enhancements
+
+					(diagEval (list
+
+						;	Enhance reactive armor with ablative
+
+						{	test:'(@ (itmGetProperty 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'damageAdj
+										)
+									'particle
+									)														result:100	}
+
+						{	test:'(objCanEnhanceItem 
+									gPlayerShip 
+									(@ (objGetItems gPlayerShip "aI") 0)
+									&itAblativeArmorCoating;
+									)														result:'ok	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itAblativeArmorCoating;
+										)
+									'resultCode
+									)														result:'ok	}
+
+						{	test:'(@ (itmGetProperty 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										'damageAdj
+										)
+									'particle
+									)														result:75	}
+						))
+
+					;	Done
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
+					)
+			</OnGlobalRunDiagnostics>
+		</Events>
+	</Type>
+
+
+</TranscendenceModule>

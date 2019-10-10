@@ -72,6 +72,8 @@ enum ItemEnhancementTypes
 
 enum EnhanceItemStatus
 	{
+	eisUnknown,
+
 	eisOK,										//	Enhancement OK
 	eisNoEffect,								//	Nothing happens
 	eisAlreadyEnhanced,							//	Already has this exact enhancement
@@ -80,6 +82,7 @@ enum EnhanceItemStatus
 	eisEnhancementRemoved,						//	Enhancement removed
 	eisEnhancementReplaced,						//	Enhancement replaced by another enhancement
 	eisBetter,									//	Enhancement made better
+	eisItemRepaired,							//	Item was repaired
 	};
 
 enum ERegenTypes
@@ -182,6 +185,7 @@ class CItemEnhancement
 		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static CString EnhanceItemStatusToString (EnhanceItemStatus iStatus);
 		static const CItemEnhancement &Null (void) { return m_Null; }
 
 	private:

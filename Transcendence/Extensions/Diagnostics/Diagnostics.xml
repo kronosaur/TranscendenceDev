@@ -9,6 +9,7 @@
 	<!ENTITY unidRPGUnitTests			"0xA0010004">
 	<!ENTITY unidTopologyTests			"0xA0010005">
 	<!ENTITY unidMissionUnitTests		"0xA0010006">
+	<!ENTITY unidItemEnhancementUnitTests	"0xA0010007">
 
 	<!-- 0040-007F TEST ITEMS -->
 
@@ -73,6 +74,7 @@
 	<Module filename="DesignTypeTests.xml"/>
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
+	<Module filename="ItemEnhancementUnitTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>

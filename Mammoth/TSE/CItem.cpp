@@ -10,6 +10,7 @@
 
 #define CAN_BE_INSTALLED_EVENT					CONSTLIT("CanBeInstalled")
 #define CAN_BE_UNINSTALLED_EVENT				CONSTLIT("CanBeUninstalled")
+#define GET_ENHANCEMENT_EVENT					CONSTLIT("GetEnhancement")
 #define ON_ADDED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnAddedAsEnhancement")
 #define ON_DISABLED_EVENT						CONSTLIT("OnDisable")
 #define ON_ENABLED_EVENT						CONSTLIT("OnEnable")
@@ -22,6 +23,7 @@
 #define PROPERTY_CAN_BE_USED					CONSTLIT("canBeUsed")
 #define PROPERTY_CHARGES						CONSTLIT("charges")
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
+#define PROPERTY_CORE_ENHANCEMENT				CONSTLIT("core.enhancement")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
@@ -1207,6 +1209,93 @@ CString CItem::GetEnhancedDesc (void) const
 	return sResult;
 	}
 
+bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString *retsError) const
+
+//	GetEnhancementConferred
+//
+//	Returns the enhancement conferred by this item on the TargetItem (if used).
+
+	{
+	//	Pre-init and check for null
+
+	retEnhancement = CItemEnhancement();
+	if (TargetItem.IsEmpty())
+		return true;
+
+	//	If we have a mod code, then use that.
+
+	if (DWORD dwModCode = TargetItem.GetType()->GetModCode())
+		{
+		retEnhancement = CItemEnhancement(dwModCode);
+		retEnhancement.SetEnhancementType(GetType());
+		return true;
+		}
+
+	//	Otherwise, see if we have properties.
+
+	CCodeChainCtx Ctx(GetUniverse());
+	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT));
+	if (pEnhancementDesc && !pEnhancementDesc->IsNil())
+		{
+		CString sError;
+		if (retEnhancement.InitFromDesc(GetUniverse(), *pEnhancementDesc, &sError) != NOERROR)
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("[%08x %s] core.enhancement is invalid: %s"), GetType()->GetUNID(), GetNounPhrase(), sError);
+
+			return false;
+			}
+
+		retEnhancement.SetEnhancementType(GetType());
+		return true;
+		}
+
+	//	If we still have nothing, call GetEnhancement event.
+
+	SEventHandlerDesc Event;
+	if (m_pItemType->FindEventHandler(GET_ENHANCEMENT_EVENT, &Event))
+		{
+		Ctx.DefineContainingType(m_pItemType);
+		Ctx.SaveAndDefineSourceVar(GetSource());
+		Ctx.SaveAndDefineItemVar(*this);
+
+		ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
+		ICCItemPtr pData(ICCItem::SymbolTable);
+		pData->SetAt(CONSTLIT("targetItem"), pTargetItem);
+
+		Ctx.SaveAndDefineDataVar(pData);
+
+		ICCItemPtr pResult = Ctx.RunCode(Event);
+		if (pResult->IsError())
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("[%08x %s] <GetEnhancement> error: %s"), GetType()->GetUNID(), GetNounPhrase(), pResult->GetStringValue());
+
+			return false;
+			}
+
+		CString sError;
+		if (retEnhancement.InitFromDesc(GetUniverse(), *pResult, &sError) != NOERROR)
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("[%08x %s] <GetEnhancement> returned invalid enhancement: %s"), GetType()->GetUNID(), GetNounPhrase(), sError);
+
+			return false;
+			}
+
+		if (retEnhancement.GetEnhancementType() == NULL)
+			retEnhancement.SetEnhancementType(GetType());
+
+		//	Done
+
+		return true;
+		}
+
+	//	No enhancement (but no error either).
+
+	return true;
+	}
+
 TSharedPtr<CItemEnhancementStack> CItem::GetEnhancementStack (void) const
 
 //	GetEnhancementStack
@@ -2109,6 +2198,58 @@ bool CItem::IsDisruptionEqual (DWORD dwNow, DWORD dwD1, DWORD dwD2)
 		return true;
 
 	return (dwD1 < dwNow && dwD2 < dwNow);
+	}
+
+bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
+
+//	IsEnhancementEffective
+//
+//	Returns TRUE if the given enhancement would actually affect the item. For
+//	example, radiation immunity does not work on armor that is already radiation
+//	immune.
+//
+//	NOTE: We only consider the intrinsic properties of this item, not any 
+//	enhancements conferred by the ship or other items.
+
+	{
+	if (IsArmor())
+		{
+		const CArmorClass *pArmor = GetType()->GetArmorClass();
+		CItem BasicItem(GetType(), 1);
+		CItemCtx ItemCtx(BasicItem);
+
+		switch (Enhancement.GetType())
+			{
+			case etSpecialDamage:
+				if (Enhancement.IsDisadvantage())
+					return pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+				else
+					return !pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+
+			default:
+				return true;
+			}
+		}
+	else if (IsDevice())
+		{
+		const CDeviceClass *pDevice = GetType()->GetDeviceClass();
+		CItem BasicItem(GetType(), 1);
+		CItemCtx ItemCtx(BasicItem);
+
+		switch (Enhancement.GetType())
+			{
+			case etOmnidirectional:
+				if (Enhancement.IsDisadvantage())
+					return (pDevice->GetFireArc(ItemCtx) > 0);
+				else
+					return (pDevice->GetFireArc(ItemCtx) < Enhancement.GetFireArc());
+
+			default:
+				return true;
+			}
+		}
+	else
+		return false;
 	}
 
 bool CItem::IsEqual (const CItem &Item, DWORD dwFlags) const

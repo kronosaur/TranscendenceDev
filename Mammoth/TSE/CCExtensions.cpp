@@ -242,6 +242,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ABANDON				135
 #define FN_OBJ_INC_PROPERTY			136
 #define FN_OBJ_INC_OVERLAY_PROPERTY	137
+#define FN_OBJ_CAN_ENHANCE_ITEM		138
+#define FN_OBJ_ENHANCE_ITEM			139
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -1461,6 +1463,25 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objCanDetectTarget obj target) -> True/Nil",
 			"ii",	0,	},
 
+		{	"objCanEnhanceItem",		fnObjGet,		FN_OBJ_CAN_ENHANCE_ITEM,
+			"(objCanEnhanceItem obj item enhancementType|item) -> resultCode\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens.\n"
+			"   'repaired: Device was repaired.\n",
+
+			"ivv",	0,	},
+
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
 			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
 			
@@ -1574,6 +1595,32 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objDestroy",					fnObjSet,		FN_OBJ_DESTROY,
 			"(objDestroy obj [objSource]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
+			"(objEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+			
+			"   resultCode: Result of enhancement\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   id: Enhancement ID (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens\n"
+			"   'repaired: Device was repaired\n",
+
+			"ivv",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"objEnumItems",					fnObjEnumItems,	0,
 			"(objEnumItems obj criteria itemVar exp) -> value\n\n"
@@ -6262,6 +6309,30 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(Perception.CanBeTargeted(pTarget, pObj->GetDistance2(pTarget)));
 			}
 
+		case FN_OBJ_CAN_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CSpaceObject::SEnhanceItemResult Result = pObj->CanEnhanceItem(ItemList, EnhancementItem);
+			if (Result.iResult == eisUnknown)
+				return pCC->CreateError("Invalid enhancement.");
+
+			//	Encode result
+
+			return pCC->CreateString(CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
+			}
+
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
@@ -8036,6 +8107,44 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CSpaceObject::SEnhanceItemResult Result;
+			CString sError;
+			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
+				return pCC->CreateError(sError);
+
+			//	Encode result
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
+
+			if (!Result.Enhancement.IsEmpty())
+				pResult->SetIntegerAt(CONSTLIT("enhancement"), Result.Enhancement.GetModCode());
+
+			if (Result.Enhancement.GetID() != OBJID_NULL)
+				pResult->SetIntegerAt(CONSTLIT("id"), Result.Enhancement.GetID());
+
+			if (Result.Enhancement.GetExpireTime() != 0xffffffff
+					&& Result.Enhancement.GetExpireTime() > pCtx->GetUniverse().GetTicks())
+				pResult->SetIntegerAt(CONSTLIT("lifetime"), Result.Enhancement.GetExpireTime() - pCtx->GetUniverse().GetTicks());
+
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_FIRE_EVENT:

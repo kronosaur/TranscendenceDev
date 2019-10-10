@@ -6,6 +6,20 @@
 
 CItemEnhancement CItemEnhancement::m_Null;
 
+static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 11> ENHANCE_ITEM_STATUS_TABLE = {
+	"alreadyEnhanced",		eisAlreadyEnhanced,
+	"damaged",				eisUnknown,
+	"defectRemoved",		eisRepaired,
+	"defectReplaced",		eisUnknown,
+	"degraded",				eisWorse,
+	"enhancementRemoved",	eisEnhancementRemoved,
+	"enhancementReplaced",	eisEnhancementReplaced,
+	"improved",				eisBetter,
+	"noEffect",				eisNoEffect,
+	"ok",					eisOK,
+	"repaired",				eisItemRepaired,
+	};
+
 void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList, DWORD dwFlags) const
 
 //	AccumulateAttributes
@@ -430,9 +444,38 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 	{
 	DWORD dwNewMods = Enhancement.m_dwMods;
 
+	//	For binary enhancements we check the status of the item.
+
+	if (dwNewMods == etBinaryEnhancement)
+		{
+		//	If the item is damaged, then enhancing it repairs it
+
+		if (Item.IsDamaged())
+			{
+			*this = CItemEnhancement();
+			return eisItemRepaired;
+			}
+
+		//	Otherwise, enhance it if it is not already enhanced
+
+		else if (!Item.IsEnhanced())
+			{
+			*this = Enhancement;
+			return eisOK;
+			}
+
+		//	Otherwise, we are already enhanced
+
+		else
+			{
+			*this = CItemEnhancement();
+			return eisAlreadyEnhanced;
+			}
+		}
+
 	//	If we're losing the enhancement, then clear it
 
-	if (dwNewMods == etLoseEnhancement)
+	else if (dwNewMods == etLoseEnhancement)
 		{
 		if (IsEnhancement())
 			{
@@ -464,6 +507,14 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 				}
 			else
 				return eisNoEffect;
+			}
+
+		//	Make sure this enhancement works on the item.
+
+		else if (!Item.IsEnhancementEffective(Enhancement))
+			{
+			*this = CItemEnhancement();
+			return eisAlreadyEnhanced;
 			}
 
 		//	For all others, take the enhancement
@@ -959,6 +1010,23 @@ DWORD CItemEnhancement::Encode12 (DWORD dwTypeCode, int Data1, int Data2)
 			| (dwData2 << 4);
 	}
 
+CString CItemEnhancement::EnhanceItemStatusToString (EnhanceItemStatus iStatus)
+
+//	EnhanceItemStatusToString
+//
+//	Convert to string.
+
+	{
+	for (int i = 0; i < ENHANCE_ITEM_STATUS_TABLE.GetCount(); i++)
+		{
+		auto &Entry = ENHANCE_ITEM_STATUS_TABLE[i];
+		if (Entry.Value == iStatus)
+			return CString(Entry.pszKey);
+		}
+
+	return NULL_STR;
+	}
+
 int CItemEnhancement::GetAbsorbAdj (const DamageDesc &Damage) const
 
 //	GetAbsorbAdj
@@ -985,7 +1053,7 @@ int CItemEnhancement::GetDamageAdj (void) const
 
 //	GetDamageAdj
 //
-//	Returns the damage adjustment confered by this mod
+//	Returns the damage adjustment conferred by this mod
 
 	{
 	switch (GetType())
@@ -1013,7 +1081,7 @@ int CItemEnhancement::GetDamageAdj (const DamageDesc &Damage) const
 
 //	GetDamageAdj
 //
-//	Returns the damage adjustment confered by this mod
+//	Returns the damage adjustment conferred by this mod
 
 	{
 	switch (GetType())
@@ -1352,7 +1420,7 @@ int CItemEnhancement::GetResistHPBonus (void) const
 
 //	GetResistHPBonus
 //
-//	Returns the damage adjustment confered by this mod
+//	Returns the damage adjustment conferred by this mod
 
 	{
 	switch (GetType())
