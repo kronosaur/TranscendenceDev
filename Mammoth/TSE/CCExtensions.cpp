@@ -1425,10 +1425,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objAddItem obj item|type [count]) -> item",
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
-		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
-			"(objAddItemEnhancement obj item enhancementType [lifetime]) -> enhancementID",
-			"ivi*",	PPFLAG_SIDEEFFECTS,	},
-
 		{	"objAddOverlay",				fnObjSet,		FN_OBJ_ADD_OVERLAY,
 			"(objAddOverlay obj overlayType [lifetime]) -> overlayID\n"
 			"(objAddOverlay obj overlayType pos rotation [lifetime]) -> overlayID\n"
@@ -1464,7 +1460,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"ii",	0,	},
 
 		{	"objCanEnhanceItem",		fnObjGet,		FN_OBJ_CAN_ENHANCE_ITEM,
-			"(objCanEnhanceItem obj item enhancementType|item) -> resultCode\n\n"
+			"(objCanEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+
+			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
 			
 			"resultCode:\n\n"
 			
@@ -1602,6 +1605,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"result:\n\n"
 			
 			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
 			"   enhancement: Enhancement applied (optional)\n"
 			"   id: Enhancement ID (optional)\n"
 			"   lifetime: Lifetime in ticks (optional)\n\n"
@@ -4093,6 +4097,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"envHasAttribute",				fnEnvironmentGet,		FN_ENV_HAS_ATTRIBUTE,
 			"DEPRECATED: Use typHasAttribute instead",
 			"is",	0,	},
+
+		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
+			"DEPRECATED: Use objEnhanceItem instead",
+			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 	};
 
 #define EXTENSIONS_COUNT		(sizeof(g_Extensions) / sizeof(g_Extensions[0]))
@@ -6330,7 +6338,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Encode result
 
-			return pCC->CreateString(CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
 			}
 
 		case FN_OBJ_CAN_INSTALL_ITEM:
@@ -8131,20 +8139,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Encode result
 
-			ICCItemPtr pResult(ICCItem::SymbolTable);
-			pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
-
-			if (!Result.Enhancement.IsEmpty())
-				pResult->SetIntegerAt(CONSTLIT("enhancement"), Result.Enhancement.GetModCode());
-
-			if (Result.Enhancement.GetID() != OBJID_NULL)
-				pResult->SetIntegerAt(CONSTLIT("id"), Result.Enhancement.GetID());
-
-			if (Result.Enhancement.GetExpireTime() != 0xffffffff
-					&& Result.Enhancement.GetExpireTime() > pCtx->GetUniverse().GetTicks())
-				pResult->SetIntegerAt(CONSTLIT("lifetime"), Result.Enhancement.GetExpireTime() - pCtx->GetUniverse().GetTicks());
-
-			return pResult->Reference();
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
 			}
 
 		case FN_OBJ_FIRE_EVENT:

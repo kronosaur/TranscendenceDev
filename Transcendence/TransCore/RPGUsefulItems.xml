@@ -849,6 +849,7 @@
 				;				means permanent.
 				;			type: Item type of enhancement (only if different
 				;				from gItem).
+				;			desc: Explanation for result
 
 				(block (
 					(dstItem (@ gData 'targetItem))
@@ -870,16 +871,20 @@
 								}
 
 						;	Table look up
+						;	NOTE: It is OK if we find a table entry with no enhancement.
+						;	That just means that we cannot enhance the target (usually
+						;	due to level) and the desc field explains why.
 
-						(and (setq enhancementInfo (rpgFindItemInTable dstItem 
-									(or (itmGetProperty gItem 'rpg.enhancementTable) 
-										(itmGetStaticData gItem 'enhancementTable)
-										)
-									))
-								(@ enhancementInfo 'enhancement)
-								)
+						(setq enhancementInfo (rpgFindItemInTable dstItem 
+								(or (itmGetProperty gItem 'rpg.enhancementTable) 
+									(itmGetStaticData gItem 'enhancementTable)
+									)
+								))
 							{
 								enhancement: (@ enhancementInfo 'enhancement)
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
 								}
 
 						;	Invalid
@@ -892,42 +897,30 @@
 			<OnUseOnItem>
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
-					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
+					result
 					)
+					;	Apply the enhancement
 
-					;	General enhancement has higher priority than table
-					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
+					(setq result (objEnhanceItem gPlayerShip dstItem gItem))
 
-					(switch
-						(not enhancementInfo)
-							"ERROR: not implemented yet"
+					;	Remove and identify the item
 
-						(block (result)
-							;	Apply enhancement
-							(setq result (shpEnhanceItem gPlayerShip dstItem {
-								enhancement: (@ enhancementInfo 'enhancement)
-								type: (itmGetType gItem)
-								}))
+					(objRemoveItem gPlayerShip gItem 1)
+					(itmSetKnown gItem)
 
-							;	Remove the armor paste from the player's cargo
-							(objRemoveItem gPlayerShip gItem 1)
+					;	Describe what happened
 
-							;	Identify the item
-							(itmSetKnown gItem)
-
-							{
-								desc: (cat
+					{
+						desc: (join 
+								(list
 									(itmTranslate gItem 'descResultIntro)
-									(intArmorEnhanceStatus result)
-									(if (@ enhancementInfo 'descID) " ")
-									(or (itmTranslate gItem (@ enhancementInfo 'descID))
-										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									(or (@ result 'desc)
+										(itmTranslate gItem (cat "descResult." (@ result 'resultCode)))
 										)
 									)
-								}
-							)
-						)
+								" "
+								)
+						}
 					)
 			</OnUseOnItem>
 		</Events>
@@ -938,6 +931,15 @@
 
 			<Text id="descResultTooAdvanced">Unfortunately, your armor is too strong for the nanomachines.</Text>
 			<Text id="descResultTooPrimitive">Unfortunately, your armor is too primitive for the nanomachines.</Text>
+
+			<Text id="descResult.alreadyEnhanced">But your armor does not need the enhancement.</Text>
+			<Text id="descResult.defectRemoved">It seems to have restored your armor.</Text>
+			<Text id="descResult.defectReplaced"></Text>
+			<Text id="descResult.degraded">Your armor has weakened further.</Text>
+			<Text id="descResult.enhancementRemoved">Your armor has lost its enhancement.</Text>
+			<Text id="descResult.enhancementReplaced">Unfortunately, your armor has lost its previous enhancement.</Text>
+			<Text id="descResult.improved">Your armor has been further enhanced.</Text>
+			<Text id="descResult.noEffect">But it has no effect on your armor.</Text>
 		</Language>
 	</Type>
 
@@ -1006,91 +1008,116 @@
 					)
 			</CanUseOnItem>
 
+			<GetEnhancement>
+
+				;	This event is called by objCanEnhanceItem and objEnhanceItem
+				;	to figure out what enhancement will be applied.
+				;
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;		'repair: Target item should be repaired
+				;
+				;		enhancement description:
+				;			enhancement: Enhancement code/desc (required)
+				;			lifetime: Duration of enhancement (ticks). Nil or -1
+				;				means permanent.
+				;			type: Item type of enhancement (only if different
+				;				from gItem).
+				;			desc: Explanation for result
+
+				(block (
+					(dstItem (@ gData 'targetItem))
+					enhancement
+					enhancementInfo
+					)
+					(switch
+
+						;	Only works on devices
+
+						(not (itmMatches dstItem "d"))
+							Nil
+
+						;	Backwards compatibility
+
+						(setq enhancement (itmGetStaticData gItem 'enhancement))
+							{	
+								enhancement: enhancement
+								}
+
+						;	Table look up
+						;	NOTE: It is OK if we find a table entry with no enhancement.
+						;	That just means that we cannot enhance the target (usually
+						;	due to level) and the desc field explains why.
+
+						(setq enhancementInfo (rpgFindItemInTable dstItem 
+								(or (itmGetProperty gItem 'rpg.enhancementTable)
+									(itmGetStaticData gItem 'enhancementTable)
+									)
+								))
+							{
+								enhancement: (@ enhancementInfo 'enhancement)
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
+								}
+
+						;	Invalid
+
+						Nil
+						)
+					)
+			</GetEnhancement>
+
 			<OnUseOnItem>
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
-					(enhancement (itmGetStaticData gItem 'enhancement))
-					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
+					(trData {
+						dstItem: (itmGetName dstItem 'noModifiers)
+						})
+
+					result
 					)
+					;	Apply the enhancement
 
-					;	General enhancement has higher priority than table
-					(if enhancement (set@ enhancementInfo 'enhancement enhancement))
+					(setq result (objEnhanceItem gPlayerShip dstItem gItem))
 
-					(switch
-						(not enhancementInfo)
-							(block Nil
-								;	No effect, so can't identify item
-								(objRemoveItem gPlayerShip gItem 1)
-								{
-									desc: (itmTranslate gItem 'descNoEffect)
-									}
-								)
+					;	Remove and identify the item
 
-						(block (
-							(trData {
-								dstItem: (itmGetName dstItem 'noModifiers)
-								})
-							(descIntro (itmTranslate gItem 'descResultIntro trData))
-							result
-							)
-							(switch
-								;	Special case for repair as shpEnhanceItem does not return 4 (repair)
-								(@ enhancementInfo 'repair)
-									(block Nil
-										(shpRepairItem gPlayerShip dstItem)
-										(setq result 4)
-										)
+					(objRemoveItem gPlayerShip gItem 1)
+					(itmSetKnown gItem)
 
-								(not (@ enhancementInfo 'enhancement))
-									(setq result 1)
+					;	Describe what happened
 
-								;	Apply enhancement
-								(setq result (shpEnhanceItem gPlayerShip dstItem {
-									enhancement: (@ enhancementInfo 'enhancement)
-									type: (itmGetType gItem)
-									}))
-								)
-
-							;	Remove the item from the player's cargo
-							(objRemoveItem gPlayerShip gItem 1)
-
-							;	Identify the item
-							(itmSetKnown gItem)
-
-							{
-								desc: (cat
-									descIntro (if descIntro " ")
-									(switch
-										(= result 0) (itmTranslate gItem 'descSuccess trData)
-										(= result 1) (itmTranslate gItem 'descNoEffect trData)
-										(= result 2) (itmTranslate gItem 'descNoFurther trData)
-										(= result 3) (itmTranslate gItem 'descWeakened trData)
-										(= result 4) (itmTranslate gItem 'descRepaired trData)
-										(= result 5) (itmTranslate gItem 'descRemoved trData)
-										(= result 6) (itmTranslate gItem 'descReplaced trData)
-										(= result 7) (itmTranslate gItem 'descFurther trData)
-										)
-									(if (@ enhancementInfo 'descID) " ")
-									(or (itmTranslate gItem (@ enhancementInfo 'descID))
-										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+					{
+						desc: (join 
+								(list
+									(itmTranslate gItem 'descResultIntro trData)
+									(or (@ result 'desc)
+										(itmTranslate gItem (cat "descResult." (@ result 'resultCode)) trData)
 										)
 									)
-								}
-							)
-						)
+								" "
+								)
+						}
 					)
 			</OnUseOnItem>
 		</Events>
 
 		<Language>
-			<Text id="descSuccess">Your %dstItem% is more powerful.</Text>
-			<Text id="descNoEffect">The enhancement has no effect.</Text>
-			<Text id="descNoFurther">Your %dstItem% is already enhanced.</Text>
-			<Text id="descWeakened">Your %dstItem% has weakened further.</Text>
-			<Text id="descRepaired">Your %dstItem% has been repaired.</Text>
-			<Text id="descRemoved">Your %dstItem% has lost its enhancement.</Text>
-			<Text id="descReplaced">Your %dstItem% is more powerful (previous enhancement lost).</Text>
-			<Text id="descFurther">Your %dstItem% has been further enhanced.</Text>
+			<Text id="descResult.ok">Your %dstItem% is more powerful.</Text>
+			<Text id="descResult.alreadyEnhanced">Your %dstItem% does not need the enhancement.</Text>
+			<Text id="descResult.defectRemoved">The enhancement has repaired a defect on your %dstItem%.</Text>
+			<Text id="descResult.degraded">Your %dstItem% has weakened further.</Text>
+			<Text id="descResult.enhancementRemoved">Your %dstItem% has lost its enhancement.</Text>
+			<Text id="descResult.enhancementReplaced">Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
+			<Text id="descResult.improved">Your %dstItem% has been further enhanced.</Text>
+			<Text id="descResult.noEffect">The enhancement has no effect.</Text>
+			<Text id="descResult.repaired">Your %dstItem% has been repaired.</Text>
 
 			<Text id="descUsageOK">You can use %useItem% on %dstItem%.</Text>
 			<Text id="descUsageRepair">You can use %useItem% to repair %dstItem%.</Text>

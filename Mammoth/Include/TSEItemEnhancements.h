@@ -54,6 +54,8 @@ enum ItemEnhancementTypes
 												//		X = 0: omni; >0 <360 : swivel
 	etLinkedFire =						0x1a00,	//	weapon gains linked fire
 												//		X = linked fire options
+	etRepairDevice =					0x1b00,	//	Repair the device, if damaged
+												//		B = max level (0 = all levels)
 
 	etData1Mask =						0x000f,	//	4-bits of data (generally for damage adj)
 	etData2Mask =						0x00f0,	//	4-bits of data (generally for damage type)
@@ -72,17 +74,20 @@ enum ItemEnhancementTypes
 
 enum EnhanceItemStatus
 	{
-	eisUnknown,
+	//	NOTE: These number are (sadly) exposed to TLisp (via shpEnhanceItem).
+	//	Do not change them.
 
-	eisOK,										//	Enhancement OK
-	eisNoEffect,								//	Nothing happens
-	eisAlreadyEnhanced,							//	Already has this exact enhancement
-	eisWorse,									//	A disadvantage was made worse
-	eisRepaired,								//	Disadvantage was repaired
-	eisEnhancementRemoved,						//	Enhancement removed
-	eisEnhancementReplaced,						//	Enhancement replaced by another enhancement
-	eisBetter,									//	Enhancement made better
-	eisItemRepaired,							//	Item was repaired
+	eisUnknown =						-1,
+
+	eisOK =								0,		//	Enhancement OK
+	eisNoEffect =						1,		//	Nothing happens
+	eisAlreadyEnhanced =				2,		//	Already has this exact enhancement
+	eisWorse =							3,		//	A disadvantage was made worse
+	eisRepaired =						4,		//	Disadvantage was repaired
+	eisEnhancementRemoved =				5,		//	Enhancement removed
+	eisEnhancementReplaced =			6,		//	Enhancement replaced by another enhancement
+	eisBetter =							7,		//	Enhancement made better
+	eisItemRepaired =					8,		//	Item was repaired
 	};
 
 enum ERegenTypes

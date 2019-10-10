@@ -750,6 +750,7 @@ class CSpaceObject
 			{
 			EnhanceItemStatus iResult = eisUnknown;
 			CItemEnhancement Enhancement;
+			CString sDesc;
 			};
 
 		//	Creation and Lifetime
@@ -871,6 +872,7 @@ class CSpaceObject
 		bool AddItem (const CItem &Item, CItem *retResult = NULL, CString *retsError = NULL);
 		EnhanceItemStatus AddItemEnhancement (const CItem &itemToEnhance, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
 		EnhanceItemStatus AddItemEnhancement (CItemListManipulator &ItemList, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
+		static ICCItemPtr AsCCItem (CCodeChainCtx &Ctx, const SEnhanceItemResult &Result);
 		SEnhanceItemResult CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem) const;
 		void DamageItem (CInstalledDevice *pDevice);
 		void DamageItem (CItemListManipulator &ItemList);

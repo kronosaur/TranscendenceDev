@@ -34,28 +34,28 @@
 
 			(setq intArmorEnhanceStatus (lambda (result)
 				(switch
-					(eq result 0)
+					(eq result 0)	;	ok
 						""
 
-					(eq result 1)
+					(eq result 1)	;	noEffect
 						" But it has no effect on your armor."
 
-					(eq result 2)
+					(eq result 2)	;	alreadyEnhanced
 						" But your armor is already enhanced."
 
-					(eq result 3)
+					(eq result 3)	;	degraded
 						" Your armor has weakened further."
 
-					(eq result 4)
+					(eq result 4)	;	defectRemoved
 						" It seems to have restored your armor."
 
-					(eq result 5)
+					(eq result 5)	;	enhancementRemoved
 						" Your armor has lost its enhancement."
 
-					(eq result 6)
+					(eq result 6)	;	enhancementReplaced
 						" Unfortunately, your armor has lost its previous enhancement."
 
-					(eq result 7)
+					(eq result 7)	;	improved
 						" Your armor has been further enhanced."
 
 					""

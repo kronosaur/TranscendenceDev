@@ -548,6 +548,32 @@ ALERROR CSpaceObject::AddToSystem (CSystem &System, bool bNoGlobalInsert)
 	return NOERROR;
 	}
 
+ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const SEnhanceItemResult &Result)
+
+//	AsCCItem
+//
+//	Encode as a structure.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
+
+	if (!Result.Enhancement.IsEmpty())
+		pResult->SetStringAt(CONSTLIT("enhancement"), strPatternSubst(CONSTLIT("0x%08x"), Result.Enhancement.GetModCode()));
+
+	if (Result.Enhancement.GetID() != OBJID_NULL)
+		pResult->SetIntegerAt(CONSTLIT("id"), Result.Enhancement.GetID());
+
+	if (Result.Enhancement.GetExpireTime() != 0xffffffff
+			&& Result.Enhancement.GetExpireTime() > Ctx.GetUniverse().GetTicks())
+		pResult->SetIntegerAt(CONSTLIT("lifetime"), Result.Enhancement.GetExpireTime() - Ctx.GetUniverse().GetTicks());
+
+	if (!Result.sDesc.IsBlank())
+		pResult->SetStringAt(CONSTLIT("desc"), Result.sDesc);
+
+	return pResult;
+	}
+
 void CSpaceObject::Ascend (void)
 
 //	Ascend
@@ -888,13 +914,12 @@ CSpaceObject::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipula
 
 	//	Get the enhancement to confer
 
-	CItemEnhancement NewEnhancement;
-	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), NewEnhancement))
+	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), Result.Enhancement, Result.sDesc))
 		return Result;
 
-	//	If no mod, nothing to do.
+	//	If no mod, nothing to do (but Result.sDesc might explain what happened).
 
-	if (NewEnhancement.IsEmpty())
+	if (Result.Enhancement.IsEmpty())
 		{
 		Result.iResult = eisNoEffect;
 		return Result;
@@ -902,12 +927,15 @@ CSpaceObject::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipula
 
 	//	Figure out the effect of the enhancement on the item
 
-	Result.Enhancement = TargetItem.GetMods();
-	Result.iResult = Result.Enhancement.Combine(TargetItem, NewEnhancement);
+	else
+		{
+		CItemEnhancement OldEnhancement = TargetItem.GetMods();
+		Result.iResult = OldEnhancement.Combine(TargetItem, Result.Enhancement);
 
-	//	Done
+		//	Done
 
-	return Result;
+		return Result;
+		}
 
 	DEBUG_CATCH
 	}
@@ -1701,26 +1729,26 @@ bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &Enh
 
 	//	Get the enhancement to confer
 
-	CItemEnhancement Enhancement;
-	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), Enhancement, retsError))
+	retResult = SEnhanceItemResult();
+	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), retResult.Enhancement, retResult.sDesc, retsError))
 		return false;
 
 	//	If no mod, nothing to do.
 
-	retResult = SEnhanceItemResult();
-	if (Enhancement.IsEmpty())
+	if (retResult.Enhancement.IsEmpty())
 		{
 		retResult.iResult = eisNoEffect;
 		return true;
 		}
 
-	retResult.Enhancement = Enhancement;
+	//	Otherwise, enhance
 
-	//	Enhance
-
-	DWORD dwID;
-	retResult.iResult = EnhanceItem(ItemList, Enhancement, &dwID);
-	retResult.Enhancement.SetID(dwID);
+	else
+		{
+		DWORD dwID;
+		retResult.iResult = EnhanceItem(ItemList, retResult.Enhancement, &dwID);
+		retResult.Enhancement.SetID(dwID);
+		}
 
 	//	Done
 

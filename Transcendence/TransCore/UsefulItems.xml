@@ -2134,7 +2134,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:laser;"	repair:True	}
+					{	criteria:"Dw~l +damageType:laser;"	enhancement:"+repair:10"	}
 					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
 					)
 			</Constant>
@@ -2164,8 +2164,8 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:kinetic;"	repair:True	}
-					{	criteria:"w~l +damageType:kinetic;"	enhancement:"+hpBonus"	}
+					{	criteria:"Dw~l +damageType:kinetic;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:kinetic;"		enhancement:"+hpBonus"	}
 					)
 			</Constant>
 
@@ -2194,7 +2194,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:particle;"	repair:True	}
+					{	criteria:"Dw~l +damageType:particle;"	enhancement:"+repair:10"	}
 					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
 					)
 			</Constant>
@@ -2224,7 +2224,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:blast;"	repair:True	}
+					{	criteria:"Dw~l +damageType:blast;"	enhancement:"+repair:10"	}
 					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
 					)
 			</Constant>
@@ -2254,8 +2254,8 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:ion;"	repair:True	}
-					{	criteria:"w~l +damageType:ion;"	enhancement:"+hpBonus"	}
+					{	criteria:"Dw~l +damageType:ion;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:ion;"		enhancement:"+hpBonus"	}
 					)
 			</Constant>
 
@@ -2284,7 +2284,7 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Dw~l +damageType:thermo;"	repair:True	}
+					{	criteria:"Dw~l +damageType:thermo;"	enhancement:"+repair:10"	}
 					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
 					)
 			</Constant>

@@ -442,19 +442,19 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 //	Combine the current enhancement with the given one
 
 	{
-	DWORD dwNewMods = Enhancement.m_dwMods;
+	//	Ignore null enhancements
+
+	if (Enhancement.m_dwMods == etNone)
+		return eisNoEffect;
 
 	//	For binary enhancements we check the status of the item.
 
-	if (dwNewMods == etBinaryEnhancement)
+	else if (Enhancement.m_dwMods == etBinaryEnhancement)
 		{
 		//	If the item is damaged, then enhancing it repairs it
 
 		if (Item.IsDamaged())
-			{
-			*this = CItemEnhancement();
 			return eisItemRepaired;
-			}
 
 		//	Otherwise, enhance it if it is not already enhanced
 
@@ -467,21 +467,32 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 		//	Otherwise, we are already enhanced
 
 		else
-			{
-			*this = CItemEnhancement();
 			return eisAlreadyEnhanced;
-			}
 		}
 
 	//	If we're losing the enhancement, then clear it
 
-	else if (dwNewMods == etLoseEnhancement)
+	else if (Enhancement.m_dwMods == etLoseEnhancement)
 		{
 		if (IsEnhancement())
 			{
 			*this = CItemEnhancement();
 			return eisEnhancementRemoved;
 			}
+		else
+			return eisNoEffect;
+		}
+
+	//	Handle repair enhancements
+
+	else if (Enhancement.GetType() == etRepairDevice)
+		{
+		if (!Item.IsDamaged())
+			return eisNoEffect;
+
+		else if (Enhancement.GetDataB() == 0 || Enhancement.GetDataB() >= Item.GetLevel())
+			return eisItemRepaired;
+
 		else
 			return eisNoEffect;
 		}
@@ -512,10 +523,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 		//	Make sure this enhancement works on the item.
 
 		else if (!Item.IsEnhancementEffective(Enhancement))
-			{
-			*this = CItemEnhancement();
 			return eisAlreadyEnhanced;
-			}
 
 		//	For all others, take the enhancement
 
@@ -527,7 +535,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 
 	//	If already enhanced
 
-	else if (m_dwMods == dwNewMods)
+	else if (m_dwMods == Enhancement.m_dwMods)
 		{
 		if (IsDisadvantage())
 			return eisNoEffect;
@@ -1612,6 +1620,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
 //	+regen:{n}					Regenerate
+//	+repair:{n}					Repair device up to level n.
 //	+resist:{s}:{n}				DamageAdj for type s set to n
 //	+resistDamageClass:{s}:{n}	DamageAdj for type s (and its next-tier mate) set to n
 //	+resistDamageTier:{s}:{n}	DamageAdj for type s (and its tier mate) set to n
@@ -1941,7 +1950,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 		if (iValue < 0)
 			{
 			if (retsError)
-				*retsError = strPatternSubst(CONSTLIT("Invalid maneuver rate: %s."), iValue);
+				*retsError = strPatternSubst(CONSTLIT("Invalid maneuver rate: %s."), sValue);
 			return ERR_FAIL;
 			}
 		else
@@ -1962,6 +1971,25 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 		SetModLinkedFire(dwOptions);
 		}
+
+	//	Repair device
+
+	else if (strEquals(sID, CONSTLIT("repair")))
+		{
+		if (iValue < 0 || iValue > MAX_ITEM_LEVEL)
+			{
+			if (retsError)
+				*retsError = strPatternSubst(CONSTLIT("Invalid item level: %s."), sValue);
+			return ERR_FAIL;
+			}
+
+		m_dwMods = EncodeABC(etRepairDevice, 0, iValue);
+		}
+
+	//	Binary enhancement
+
+	else if (strEquals(sID, CONSTLIT("enhance")))
+		m_dwMods = etBinaryEnhancement;
 
 	//	Otherwise, see if this is a special damage 
 
@@ -2024,15 +2052,23 @@ ALERROR CItemEnhancement::InitFromDesc (CUniverse &Universe, const ICCItem &Item
 //	Initializes from a CodeChain item
 
 	{
-	if (Item.IsSymbolTable())
+	if (Item.IsNil())
+		{
+		*this = CItemEnhancement();
+		return NOERROR;
+		}
+	else if (Item.IsSymbolTable())
 		{
 		//	Enhancement
 
 		CString sMods = Item.GetStringAt(CONSTLIT("enhancement"));
 		if (sMods.IsBlank())
 			{
-			if (retsError) *retsError = CONSTLIT("Must have enhancement field.");
-			return ERR_FAIL;
+			//	Sometimes the struct has no enhancement but a desc field that
+			//	explains why we could not enhance.
+
+			*this = CItemEnhancement();
+			return NOERROR;
 			}
 
 		if (ALERROR error = InitFromDesc(sMods, retsError))

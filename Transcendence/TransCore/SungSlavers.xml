@@ -1170,11 +1170,11 @@
 		<Properties>
 			<Constant id="rpg.enhancementTable">
 				'(
-					{	criteria:"Ds L:1-10; -nonEnergyShields;"	repair:True	}
-					{	criteria:"Dw L:1-10; +EnergyWeapon;"		repair:True	}
-					{	criteria:"s L:1-10; -nonEnergyShields;"	enhancement:"+hpBonus:20"	}
-					{	criteria:"w L:1-10; +EnergyWeapon;"		enhancement:"+hpBonus:20"	}
-					{	criteria:"v L:1-10; -Alien;"	enhancement:Nil	}
+					{	criteria:"Ds L:1-10; -nonEnergyShields;"	enhancement:"+repair:10"	}
+					{	criteria:"Dw L:1-10; +EnergyWeapon;"		enhancement:"+repair:10"	}
+					{	criteria:"s L:1-10; -nonEnergyShields;"		enhancement:"+hpBonus:20"	}
+					{	criteria:"w L:1-10; +EnergyWeapon;"			enhancement:"+hpBonus:20"	}
+					{	criteria:"v L:1-10; -Alien;"				enhancement:"+enhance"	}
 					)
 			</Constant>
 		</Properties>

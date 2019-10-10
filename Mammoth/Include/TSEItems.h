@@ -227,7 +227,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (void) const;
-		bool GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString *retsError = NULL) const;
+		bool GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString &retsDesc, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }

@@ -6,6 +6,30 @@
 		<Events>
 			<OnGlobalRunDiagnostics>
 				(block (
+					(runAllIterations Nil)
+
+					(armorEnhancements
+						'(&itAblativeArmorCoating; &itCarbonWeaverNanos; &itParticleResistCoating;
+							&itRadiationImmuneCoating; &itEMPImmuneCoating; &itIonResistCoating;
+							&itShieldInterfereCoating; &itIonEffectImmuneCoating; &itThermoResistCoating;
+							&itCarbonWeaver2Coating; &itDegeneratingNanos;
+							&itReactiveArmorCoating; &itReflectiveArmorCoating; &itRegeneratingNanos;
+							)
+						)
+
+					(armorSegments
+						'(&itLightCeramicPlate; &itLightReactiveArmor; &itUltraLightTitaniumCasing; &itUltraLightTitaniumArmor; &itLightTitaniumArmor;
+							&itCeramicPlate; &itReactiveArmor; &itTitaniumArmor; &itLightXMHArmor;
+							&itHeavyCeramicPlate; &itPhotorepairArmor; &itLightPlasteelPlate; &itPolymeshArmor; &itHardenedReactiveArmor; &itHeavyReactiveArmor;
+							&itPlasteelPlate; &itPolyceramicPlate; &itAdvancedReactiveArmor; &itLightSolarArmor; &itLightTevlarArmor; &itV10PoweredArmor;
+							&itLightBlastPlate; &itCeralloyArmor; &itHardenedPlasteelPlate; &itHeavyPlasteelPlate; &itMediumSolarArmor;
+							&itBlastPlate; &itHeavyCeralloyArmor; &itDuralloyArmor; &itLightOmskArmor; &itAdvancedPlasteelPlate; &itHeavySolarArmor; &itStealthPlate;
+							&itHeavyBlastPlate; &itSuperHeavyBlastPlate; &itAdvancedCeralloyArmor; &itLightGusokuArmor; &itP120HexphaseArmor; &itLightOrthoSteel;
+							&itCarbideCarapace; &itMediumOmskArmor; &itP210HexphaseArmor; &itLightIthaliumArmor; &itMediumIthaliumArmor; &itMassiveIthaliumArmor; &itOrthoSteel; &itQuadroCarbideArmor; &itMassiveQuadroCarbideArmor; &itTransuranicPlate; &itV300PoweredArmor;
+							&itHexaCarbideArmor; &itMassiveHexaCarbideArmor; &itMassiveOmskArmor; &itP1000HexphaseArmor; &itAdvancedIthaliumArmor; &itHeavyOrthoSteel;
+							&itDiamondLatticeArmor; &itExperimentalIthaliumArmor; &itOctoCarbideArmor; &itMassiveOctoCarbideArmor;
+							)
+						)
 					)
 					;	Set up a player ship
 
@@ -19,20 +43,22 @@
 
 					(diagEval (list
 
-						;	Enhance reactive armor with ablative
+						;	Enhance reactive armor with ablative -----------------------------------
 
 						{	test:'(@ (itmGetProperty 
 										(@ (objGetItems gPlayerShip "aI") 0)
 										'damageAdj
 										)
 									'particle
-									)														result:100	}
+									)												result:100	}
 
-						{	test:'(objCanEnhanceItem 
-									gPlayerShip 
-									(@ (objGetItems gPlayerShip "aI") 0)
-									&itAblativeArmorCoating;
-									)														result:'ok	}
+						{	test:'(@ (objCanEnhanceItem 
+										gPlayerShip 
+										(@ (objGetItems gPlayerShip "aI") 0)
+										&itAblativeArmorCoating;
+										)
+									'resultCode
+									)												result:'ok	}
 
 						{	test:'(@ (objEnhanceItem 
 										gPlayerShip
@@ -40,15 +66,143 @@
 										&itAblativeArmorCoating;
 										)
 									'resultCode
-									)														result:'ok	}
+									)												result:'ok	}
 
 						{	test:'(@ (itmGetProperty 
 										(@ (objGetItems gPlayerShip "aI") 0)
 										'damageAdj
 										)
 									'particle
-									)														result:75	}
+									)												result:75	}
+
+						;	Enhance harderned reactive armor with anti-radiation -------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itHardenedReactiveArmor; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmCreate &itHardenedReactiveArmor; 1)
+										&itRadiationImmuneCoating;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(enum (objGetItems gPlayerShip "aU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Longzhu sphere: repair shields -----------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmSetProperty
+										(itmCreate &itClass1Deflector; 1)
+										'damaged True
+										)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmSetProperty
+											(itmCreate &itClass1Deflector; 1)
+											'damaged True
+											)
+										&itLongzhuSphere;
+										)
+									'resultCode
+									)												result:'repaired	}
+
+						{	test:'(objGetItems gPlayerShip "dDU")					result:Nil	}
+
+						{	test:'(enum (objGetItems gPlayerShip "dU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Longzhu sphere: repair weapon -----------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmSetProperty
+										(itmCreate &itLaserCannon; 1)
+										'damaged True
+										)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmSetProperty
+											(itmCreate &itLaserCannon; 1)
+											'damaged True
+											)
+										&itLongzhuSphere;
+										)
+									'resultCode
+									)												result:'repaired	}
+
+						{	test:'(objGetItems gPlayerShip "dDU")					result:Nil	}
+
+						{	test:'(enum (objGetItems gPlayerShip "dU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Longzhu sphere: repair drive -------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmSetProperty
+										(itmCreate &itTritiumPropulsionUpgrade; 1)
+										'damaged True
+										)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmSetProperty
+											(itmCreate &itTritiumPropulsionUpgrade; 1)
+											'damaged True
+											)
+										&itLongzhuSphere;
+										)
+									'resultCode
+									)												result:'repaired	}
+
+						{	test:'(objGetItems gPlayerShip "dDU")					result:Nil	}
+
+						{	test:'(enum (objGetItems gPlayerShip "dU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
 						))
+
+					;	Armor paste iterations
+
+					(if runAllIterations
+						(enum armorEnhancements theEnhancement
+							(block (
+								(enhancementItem (itmCreate theEnhancement 1))
+								)
+								(enum armorSegments theArmor
+									(block (
+										(armorItem (itmCreate theArmor 1))
+										result
+										)
+										(objAddItem gPlayerShip armorItem)
+										(setq result (objEnhanceItem gPlayerShip armorItem enhancementItem))
+					
+										(print (itmGetName enhancementItem 'short) " + " (itmGetName armorItem 'short) ": "
+											(join 
+												(list
+													(itmTranslate theEnhancement 'descResultIntro)
+													(or (@ result 'desc)
+														(itmTranslate theEnhancement (cat "descResult." (@ result 'resultCode)))
+														)
+													)
+												" "
+												)
+											)
+										)
+									)
+								)
+							)
+						)
 
 					;	Done
 

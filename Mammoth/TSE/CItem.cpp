@@ -1209,7 +1209,7 @@ CString CItem::GetEnhancedDesc (void) const
 	return sResult;
 	}
 
-bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString *retsError) const
+bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString &retsDesc, CString *retsError) const
 
 //	GetEnhancementConferred
 //
@@ -1219,6 +1219,7 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 	//	Pre-init and check for null
 
 	retEnhancement = CItemEnhancement();
+	retsDesc = NULL_STR;
 	if (TargetItem.IsEmpty())
 		return true;
 
@@ -1285,6 +1286,8 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 
 		if (retEnhancement.GetEnhancementType() == NULL)
 			retEnhancement.SetEnhancementType(GetType());
+
+		retsDesc = pResult->GetStringAt(CONSTLIT("desc"));
 
 		//	Done
 

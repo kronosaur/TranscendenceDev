@@ -1608,9 +1608,20 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             {
             ICCItem *pList = pArgs->GetElement(0);
 
+			//	Exclude nil elements
+
+			TArray<CString> List;
+			for (int i = 0; i < pList->GetCount(); i++)
+				{
+				if (pList->GetElement(i)->IsNil())
+					continue;
+
+				List.Insert(pList->GetElement(i)->GetStringValue());
+				}
+
             //  Short-circuit.
 
-            if (pList->GetCount() == 0)
+            if (List.GetCount() == 0)
                 return pCC->CreateNil();
 
             //  Prepare output buffer
@@ -1621,28 +1632,28 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
             //  We always start with the first element
 
-            Stream.WriteChars(pList->GetElement(0)->GetStringValue());
+            Stream.WriteChars(List[0]);
 
             //  If no separator, then we just concatenate all entries
 
             CString sSeparator = (pArgs->GetCount() >= 2 ? pArgs->GetElement(1)->GetStringValue() : NULL_STR);
             if (sSeparator.IsBlank())
                 {
-                for (i = 1; i < pList->GetCount(); i++)
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                for (i = 1; i < List.GetCount(); i++)
+                    Stream.WriteChars(List[i]);
                 }
 
             //  If oxford comma, concatenate
 
             else if (strEquals(sSeparator, CONSTLIT("oxfordComma")))
                 {
-                for (i = 1; i < pList->GetCount(); i++)
+                for (i = 1; i < List.GetCount(); i++)
                     {
                     //  Either comma or comma-and
 
-                    if (i == pList->GetCount() - 1)
+                    if (i == List.GetCount() - 1)
                         {
-                        if (pList->GetCount() == 2)
+                        if (List.GetCount() == 2)
                             Stream.WriteChars(CONSTLIT(" and "));
                         else
                             Stream.WriteChars(CONSTLIT(", and "));
@@ -1652,7 +1663,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
                     //  Write entry
 
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(List[i]);
                     }
                 }
 
@@ -1660,7 +1671,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
             else
                 {
-                for (i = 1; i < pList->GetCount(); i++)
+                for (i = 1; i < List.GetCount(); i++)
                     {
                     //  Write separator
 
@@ -1668,7 +1679,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
                     //  Write entry
 
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(List[i]);
                     }
                 }
 
