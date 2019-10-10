@@ -234,8 +234,8 @@ class CUIHelper
 		static int ScrollAnimationDecay (int iOffset);
 
 	private:
-		static constexpr int ENHANCEMENT_ICON_HEIGHT = 48;
-		static constexpr int ENHANCEMENT_ICON_WIDTH = 48;
+		static constexpr int ENHANCEMENT_ICON_HEIGHT = 40;
+		static constexpr int ENHANCEMENT_ICON_WIDTH = 40;
 
 		void CreateClassInfoSpecialItem (CItemType *pItemIcon, const CString &sText, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISession *pSession, const TArray<SMenuEntry> *pMenu, DWORD dwOptions) const;

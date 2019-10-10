@@ -586,7 +586,7 @@
 			value=				"1300"
 			mass=				"3000"
 			  
-			description=		"Rasiermesser brought the SmartCannon to market despite opposition from law enforcement. The weapon requires SmartCannon rounds."
+			description=		"Rasiermesser brought the SmartCannon to market despite opposition from law enforcement."
 			>
 
 		<Image imageID="&rsItemsRasiermesser1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -1092,7 +1092,7 @@
 			value=				"10000"
 			mass=				"3000"
 			  
-			description=		"The Akan 30 is a powerful cannon designed by the Rasiermesser Corporation. This weapon requires Akan 30 cannon shells."
+			description=		"The Akan 30 is a powerful cannon designed by the Rasiermesser Corporation."
 			>
 
 		<Image imageID="&rsItemsRasiermesser3;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -1498,7 +1498,7 @@
 			value=				"25000"
 			mass=				"5000"
 			  
-			description=		"This weapons places an Akan 30 cannon on a computer-controlled, omnidirectional turret. This weapon requires Akan 30 cannon shells."
+			description=		"This weapons places an Akan 30 cannon on a computer-controlled, omnidirectional turret."
 			>
 
 		<Image imageID="&rsItemsRasiermesser3;" imageX="192" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -1539,7 +1539,7 @@
 			value=				"22000"
 			mass=				"1200"
 			  
-			description=		"This cheap cartridge missile launcher fires three tracking micro-missiles. The weapon requires Dragonfly missile cartridges."
+			description=		"This cheap cartridge missile launcher fires three tracking micro-missiles."
 			>
 
 		<Image imageID="&rsItemsEI2;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
@@ -2051,7 +2051,7 @@
 			value=				"32000"
 			mass=				"5000"
 			  
-			description=		"Produced in great numbers in the Syrtis War, the cannon is now common throughout the Outer Realm. The cannon requires thermo cannon shells."
+			description=		"Produced in great numbers in the Syrtis War, the cannon is now common throughout the Outer Realm."
 			>
 
 		<Image imageID="&rsItemsBushido2;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -2266,7 +2266,7 @@
 			value=				"165000"
 			mass=				"6000"
 			  
-			description=		"This is a modified thermo cannon mounted on an automated turret. It requires thermo cannon shells."
+			description=		"This is a modified thermo cannon mounted on an automated turret."
 			>
 
 		<Image imageID="&rsItemsBushido2;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -2309,7 +2309,7 @@
 			value=				"120000"
 			mass=				"2000"
 			  
-			description=		"Taikon's TM7 cannon launches warheads that split into three independent missiles. The cannon requires TM7 warheads."
+			description=		"Taikon's TM7 cannon launches warheads that split into three independent missiles."
 			>
 
 		<Image imageID="&rsItemsTaikon1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>

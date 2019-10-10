@@ -214,7 +214,7 @@
 				(block (
 					(transData {
 						item: theItem
-						itemName: (itmGetName theItem 'article)
+						itemName: (itmGetName theItem '(article noModifiers))
 						})
 					)
 					(switch
