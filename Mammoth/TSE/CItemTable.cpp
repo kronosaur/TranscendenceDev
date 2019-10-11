@@ -2172,27 +2172,6 @@ ALERROR CRandomItems::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-CRandomEnhancementGenerator::~CRandomEnhancementGenerator (void)
-
-//	CRandomEnhancementGenerator destructor
-
-	{
-	if (m_pCode)
-		m_pCode->Discard();
-	}
-
-CRandomEnhancementGenerator &CRandomEnhancementGenerator::operator= (const CRandomEnhancementGenerator &Src)
-
-//	CRandomEnhancementGenerator operator =
-
-	{
-	m_iChance = Src.m_iChance;
-	m_Mods = Src.m_Mods;
-	m_pCode = (Src.m_pCode ? Src.m_pCode->Reference() : NULL);
-
-	return *this;
-	}
-
 ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -2222,11 +2201,10 @@ ALERROR CRandomEnhancementGenerator::InitFromXML (SDesignLoadCtx &Ctx, CXMLEleme
 		CCodeChain::SLinkOptions Options;
 		Options.iOffset = 1;
 
-		m_pCode = CCodeChain::Link(pPos, Options);
+		m_pCode = ICCItemPtr(CCodeChain::Link(pPos, Options));
 		if (m_pCode->IsError())
 			{
 			Ctx.sError = m_pCode->GetStringValue();
-			m_pCode->Discard();
 			return ERR_FAIL;
 			}
 
@@ -2291,7 +2269,7 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 
 		//	Execute the code
 
-		ICCItem *pResult = Ctx.Run(m_pCode);	//	LATER:Event
+		ICCItemPtr pResult = Ctx.RunCode(m_pCode);	//	LATER:Event
 
 		//	If we have an error, report it
 
@@ -2313,10 +2291,6 @@ void CRandomEnhancementGenerator::EnhanceItem (CItem &Item) const
 				Mods = CItemEnhancement();
 				}
 			}
-
-		//	Done with code
-
-		Ctx.Discard(pResult);
 
 		//	Enhance the item
 

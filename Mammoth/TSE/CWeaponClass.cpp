@@ -87,6 +87,7 @@
 #define PROPERTY_BALANCE_EXCLUDE_COST			CONSTLIT("balanceExcludeCost")
 #define PROPERTY_DAMAGE_180						CONSTLIT("damage")			//	HP damage per 180 ticks
 #define PROPERTY_DAMAGE_PER_PROJECTILE			CONSTLIT("damagePerProjectile")
+#define PROPERTY_DAMAGE_TYPE_ID					CONSTLIT("damageTypeID")
 #define PROPERTY_DAMAGE_WMD_180					CONSTLIT("damageWMD180")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_EFFECTIVE_RANGE				CONSTLIT("effectiveRange")
@@ -2466,6 +2467,9 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_PER_PROJECTILE))
 		return CC.CreateDouble(CalcDamage(pShot, pEnhancements));
+
+	else if (strEquals(sProperty, PROPERTY_DAMAGE_TYPE_ID))
+		return CC.CreateString(::GetDamageType(pShot->GetDamageType()));
 
 	else if (strEquals(sProperty, PROPERTY_DAMAGE_WMD_180))
 		{

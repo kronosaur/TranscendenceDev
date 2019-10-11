@@ -288,19 +288,14 @@ class CItemEnhancementStack
 class CRandomEnhancementGenerator
 	{
 	public:
-		CRandomEnhancementGenerator (void) : m_iChance(0), m_pCode(NULL) { }
-		~CRandomEnhancementGenerator (void);
-
-		CRandomEnhancementGenerator &operator= (const CRandomEnhancementGenerator &Src);
-
 		void EnhanceItem (CItem &Item) const;
 		int GetChance (void) const { return m_iChance; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		bool IsVariant (void) const;
 
 	private:
-		int m_iChance;
+		int m_iChance = 0;
 		CItemEnhancement m_Mods;
-		ICCItem *m_pCode;
+		ICCItemPtr m_pCode;
 	};
 

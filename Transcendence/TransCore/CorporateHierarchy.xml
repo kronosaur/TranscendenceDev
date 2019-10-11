@@ -155,13 +155,13 @@
 					criteria=		"a L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
 					criteria=		"w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
 					criteria=		"d~w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
@@ -317,13 +317,13 @@
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8-12" 
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|u|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="6-10" 
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
@@ -493,13 +493,13 @@
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8" 
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 
 			<RandomItem count="25-35" 
@@ -2785,8 +2785,28 @@
 					)
 				))
 
-			(setq intHPEnhancement1 (lambda Nil
-				(random (list 0x0101 0x0101 0x0102 0x0102 0x0103))
+			(setq intHPEnhancement1 (lambda (theItem)
+				(block (
+					(theCategory (itmGetProperty theItem 'category))
+					(theMod (random (list 
+						"+hpBonus:10"
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						)))
+					)
+					(switch
+						(= theCategory 'armor)
+							{	enhancement:theMod		type:&itPlasteelNanos;	}
+
+						(= theCategory 'shields)
+							{	enhancement:theMod		type:&itEnhanceShieldsROM;	}
+
+						(= theCategory 'weapon)
+							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
+						)
+					)
 				))
 
 			(setq intHPEnhancement2 (lambda Nil
@@ -2803,6 +2823,21 @@
 
 			(setq intMakayevWeaponEnhancement (lambda Nil
 				(random (list 0x0102 0x0103 0x0103 0x0104 0x0104 0x0105))
+				))
+
+			(setq intGetEnhancementByDamageType (lambda (theItem)
+				(block (
+					(damageType (itmGetProperty theItem 'damageTypeID))
+					)
+					(switch
+						(= damageType 'laser)		&itLaserAmplifier;
+						(= damageType 'kinetic)		&itKineticUpgrade;
+						(= damageType 'particle)	&itParticleUpgrade;
+						(= damageType 'bast)		&itBlastUpgrade;
+						(= damageType 'ion)			&itIonUpgrade;
+						(= damageType 'thermo)		&itThermoUpgrade;
+						)
+					)
 				))
 			)
 	</Globals>

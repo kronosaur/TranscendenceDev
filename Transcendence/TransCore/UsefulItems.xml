@@ -543,6 +543,37 @@
 		</Language>
 	</ItemType>
 
+	<!-- Plasteel Nanos -->
+
+	<ItemType UNID="&itPlasteelNanos;"
+			inherit=			"&baStdPasteBarrel;"
+			name=				"[barrel(s) of ]plasteel nanos"
+			level=				"3"
+			value=				"200"
+			mass=				"1000"
+			frequency=			"uncommon"
+			numberAppearing=	"1d4"
+			unknownType=		"&itUnknownBarrel;"
+			attributes=			"ArmorEnhance; MinorItem"
+
+			description=		"The nanomachines in this paste create a hard plasteel shell on top of armor segments."
+
+			useScreen=			"&dsRPGUseItemOnArmor;"
+			>
+
+		<Properties>
+			<Constant id="core.enhancement">"+hpBonus"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				The coating is composed of plasteel nanomachines that strengthen your armor.
+			</Text>
+		</Language>
+	</ItemType>
+
 	<!-- Radiation Immunity Coating -->
 
 	<ItemType UNID="&itRadiationImmuneCoating;"
