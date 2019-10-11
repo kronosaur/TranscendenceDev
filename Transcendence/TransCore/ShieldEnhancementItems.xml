@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- LEVEL 2 -->
+
+	<!-- Level 2: Shield Enhancement ROM -->
+
+	<ItemType UNID="&itEnhanceShieldsROM;"
+			name=				"shield enhancement ROM"
+			level=				"2"
+			value=				"500"
+			mass=				"1"
+			frequency=			"uncommon"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"info, minorItem, shieldEnhance"
+
+			description=		"This ROM upgrades a shield generator so that it is more effective at absorbing damage. The ROM works on generators up to technology level 6."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(block (notFound)
+				; Install
+				(setq notFound True)
+				(objEnumItems gSource "sI" theItem
+					(block (shieldItem)
+						(setq shieldItem theItem)
+						(if notFound
+							(block Nil
+								(switch
+									; Alien items cannot be enhanced
+									(itmHasAttribute shieldItem "Alien")
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAlien))
+
+									; Novaya repairers cannot be enhanced
+									(itmHasAttribute shieldItem 'nonEnergyShields)
+										(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+									; If the shield generator is too advanced, then nothing happens
+									(gr (itmGetLevel shieldItem) 6)
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+
+									; If the item is damaged, we repair it
+									(itmIsDamaged shieldItem)
+										(block Nil
+											(shpRepairItem gSource theItem)
+											(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
+											)
+
+									; Enhance the shield generator
+									(block (result)
+										(setq result (shpEnhanceItem gSource theItem {
+											enhancement: "+hpBonus:20"
+											type: gType
+											}))
+
+										(objSendMessage gSource Nil (intItemEnhanceStatus result "Your shields are more powerful" "shield generator"))
+										)
+									)
+								(setq notFound Nil)
+								)
+							)
+						)
+					)
+
+				(if notFound
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoShields))
+					)
+
+				; Identify the item
+				(itmSetKnown gItem)
+
+				; Remove ROM
+				(objRemoveItem gSource gItem 1)
+				)
+		</Invoke>
+
+		<Language>
+			<Text id="msgCannotEnhance">The ROM cannot enhance %itemName%</Text>
+			<Text id="msgTooAlien">Shield generator is too alien for the ROM to enhance</Text>
+			<Text id="msgTooAdvanced">Shield generator is too advanced for the ROM to enhance</Text>
+			<Text id="msgRepaired">Shield generator has been repaired</Text>
+			<Text id="msgNoShields">Shield generator required</Text>
+		</Language>
+	</ItemType>
+
+<!-- LEVEL 4 -->
+
+	<!-- Level 4: Hiro's Shield Optimizer -->
+
+	<ItemType UNID="&itHiroShieldOptimizer;"
+			name=				"Hiro's shield optimizer"
+			level=				"4"
+			value=				"5000"
+			mass=				"1"
+			frequency=			"veryrare"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"info, minorItem, notForSale, shieldEnhance"
+
+			description=		"One of Hiro's first creations, this ROM can increase the strength of any shield generator up to tech level 6."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(block (notFound)
+				; Install
+				(setq notFound True)
+				(objEnumItems gSource "sI" theItem
+					(block (shieldItem)
+						(setq shieldItem theItem)
+						(if notFound
+							(block Nil
+								(switch
+									; Novaya repairers cannot be enhanced
+									(itmHasAttribute shieldItem 'nonEnergyShields)
+										(objSendMessage gSource Nil (typTranslate gType 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+									; If the shield generator is too advanced, then nothing happens
+									(gr (itmGetLevel shieldItem) 6)
+										(objSendMessage gSource Nil (typTranslate gType 'msgTooAdvanced))
+
+									; If the item is damaged, we repair it
+									(itmIsDamaged shieldItem)
+										(block Nil
+											(shpRepairItem gSource theItem)
+											(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
+											)
+
+									; Enhance the shield generator
+									(block (result)
+										(setq result (shpEnhanceItem gSource theItem {
+											enhancement: "+hpBonus:50"
+											type: gType
+											}))
+										
+										(objSendMessage gSource Nil (intItemEnhanceStatus result "Hiro: Shield optimization complete" "shield generator"))
+										)
+									)
+								(setq notFound Nil)
+								)
+							)
+						)
+					)
+
+				(if notFound
+					(objSendMessage gSource Nil "Hiro: No shield found. ROM abort.")
+					)
+
+				; Identify the item
+				(itmSetKnown gItem)
+
+				; Remove ROM
+				(objRemoveItem gSource gItem 1)
+				)
+		</Invoke>
+
+		<Language>
+			<Text id="msgCannotEnhance">Hiro: Non-energy shield found. ROM abort.</Text>
+			<Text id="msgTooAdvanced">Hiro: Shield tech too high. ROM abort.</Text>
+			<Text id="msgRepaired">Hiro: Shield repair algorithm successful.</Text>
+		</Language>
+	</ItemType>
+	
+<!-- LEVEL 6 -->
+
+	<!-- Level 6: Green Etherium field crystal -->
+
+	<ItemType UNID="&itGreenEtheriumCrystal;"
+			name=				"green etherium field crystal"
+			level=				"6"
+			value=				"10000"
+			mass=				"10"
+			frequency=			"common"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Green etherium is used to create energy fields that reflect particle beam energy. Unfortunately, it has a limited duration."
+
+			enhancement=		"0x0329"
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalInstall &itGreenEtheriumCrystal; (random 30000 40000))
+		</Invoke>
+		
+		<Events>
+			<OnAddedAsEnhancement>
+				(objSendMessage gSource Nil (cat
+					"Your shields now reflect particle damage"
+					(if (eq aResult 6) " (previous enhancement lost)" "")
+					))
+			</OnAddedAsEnhancement>
+			
+			<OnRemovedAsEnhancement>
+				(objSendMessage gSource Nil "Green etherium crystal has burned out")
+			</OnRemovedAsEnhancement>
+		</Events>
+
+		<Language>
+			<Text id="msgCannotEnhance">Field crystal not compatibile with %itemName%</Text>
+		</Language>
+	</ItemType>
+
+<!-- LEVEL 7 -->
+
+	<!-- Level 7: Decayed Etherium field crystal -->
+
+	<ItemType UNID="&itDecayedEtheriumCrystal;"
+			name=				"decayed etherium field crystal"
+			level=				"7"
+			value=				"10"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, minorItem, shieldEnhance"
+
+			description=		"In pristine state, this field crystal is used to reflect ion energy. But this decayed crystal would do more harm than good."
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalUse 0x834A "Your shields fade")
+		</Invoke>
+	</ItemType>
+
+	<!-- Level 7: Molbidium field crystal -->
+
+	<ItemType UNID="&itMolbidiumCrystal;"
+			name=				"molbidium field crystal"
+			level=				"7"
+			value=				"25000"
+			mass=				"10"
+			frequency=			"common"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Molbidium crystals are often used to increase the power density of shield generators."
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalUse 0x0103 "Your shields are more powerful")
+		</Invoke>
+	</ItemType>
+
+<!-- LEVEL 8 -->
+
+	<!-- Level 8: Blue Etherium field crystal -->
+
+	<ItemType UNID="&itBlueEtheriumCrystal;"
+			name=				"blue etherium field crystal"
+			level=				"8"
+			value=				"60000"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Blue etherium is used to create energy fields that reflect ion energy. Unfortunately, it has a limited duration."
+			
+			enhancement=		"0x0349"
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalInstall &itBlueEtheriumCrystal; (random 30000 40000))
+		</Invoke>
+		
+		<Events>
+			<OnAddedAsEnhancement>
+				(objSendMessage gSource Nil (cat
+					"Your shields now reflect ion damage"
+					(if (eq aResult 6) " (previous enhancement lost)" "")
+					))
+			</OnAddedAsEnhancement>
+			
+			<OnRemovedAsEnhancement>
+				(objSendMessage gSource Nil "Blue etherium crystal has burned out")
+			</OnRemovedAsEnhancement>
+		</Events>
+	</ItemType>
+
+	<!-- Level 8: Diamond field crystal -->
+
+	<ItemType UNID="&itDiamondCrystal;"
+			name=				"diamond field crystal"
+			level=				"8"
+			value=				"40000"
+			mass=				"10"
+			frequency=			"rare"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Diamond field crystals increase the power of tech VII-XII shield generators. Unlike other field crystals, a generator can use multiple diamond field crystals."
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalUse 0x0100 "Your shields are more powerful")
+		</Invoke>
+	</ItemType>
+
+<!-- LEVEL 11 -->
+
+	<!-- Level 11: Yellow Etherium field crystal -->
+
+	<ItemType UNID="&itYellowEtheriumCrystal;"
+			name=				"yellow etherium field crystal"
+			level=				"11"
+			value=				"300000"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Yellow etherium is used to create energy fields that reflect positron energy. Unfortunately, it has a limited duration."
+
+			enhancement=		"0x0369"
+			>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intFieldCrystalInstall &itYellowEtheriumCrystal; (random 30000 40000))
+		</Invoke>
+		
+		<Events>
+			<OnAddedAsEnhancement>
+				(objSendMessage gSource Nil (cat
+					"Your shields now reflect positron damage"
+					(if (eq aResult 6) " (previous enhancement lost)" "")
+					))
+			</OnAddedAsEnhancement>
+			
+			<OnRemovedAsEnhancement>
+				(objSendMessage gSource Nil "Yellow etherium crystal has burned out")
+			</OnRemovedAsEnhancement>
+		</Events>
+	</ItemType>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq intFieldCrystalInstall (lambda (enhancementType theLifetime)
+				(block (theShields)
+					(switch
+						; Must have a shield generator
+						(not (setq theShields (item (objGetItems gSource "sI") 0)))
+							(objSendMessage gSource Nil "Shield generator required")
+
+						; Novaya repairers cannot be enhanced
+						(itmHasAttribute theShields 'nonEnergyShields)
+							(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName theShields '(article short)) }))
+
+						; If the shield generator is not advanced enough, then nothing happens
+						(ls (itmGetLevel theShields) 7)
+							(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
+							
+						; If the shield generator is too advanced, then nothing happens
+						(gr (itmGetLevel theShields) 12)
+							(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
+
+						; Damage items cannot be enhanced
+						(itmIsDamaged theShields)
+							(objSendMessage gSource Nil "This crystal cannot enhance a damaged shield generator")
+							
+						; Enhance!
+						(block Nil
+							; Add enhancement
+							(if (not (objAddItemEnhancement gSource theShields enhancementType theLifetime))
+								(objSendMessage gSource Nil "The crystal has no effect")
+								)
+
+							; Identify the item
+							(itmSetKnown gItem)
+
+							; Remove ROM
+							(objRemoveItem gSource gItem 1)
+							)
+						)
+					)
+				))
+
+			(setq intFieldCrystalUse (lambda (newMods successText)
+				(block (notFound)
+					; Install
+					(setq notFound True)
+					(objEnumItems gSource "sI" theItem
+						(block (shieldItem)
+							(setq shieldItem theItem)
+							(if notFound
+								(block Nil
+									(switch
+										; Novaya repairers cannot be enhanced
+										(itmHasAttribute shieldItem 'nonEnergyShields)
+											(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+										; If the shield generator is not advanced enough, then nothing happens
+										(ls (itmGetLevel shieldItem) 7)
+											(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
+
+										; If the shield generator is too advanced, then nothing happens
+										(gr (itmGetLevel shieldItem) 12)
+											(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
+
+										; If the item is damaged, we repair it
+										(and (itmIsDamaged shieldItem) (ls newMods 0x8000))
+											(block Nil
+												(shpRepairItem gSource theItem)
+												(objSendMessage gSource Nil "Shield generator has been repaired")
+												
+												; Remove ROM
+												(objRemoveItem gSource gItem 1)
+												)
+
+										; Enhance the shield generator
+										(block (result)
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												type: gType
+												}))
+
+											(objSendMessage gSource Nil (intItemEnhanceStatus result successText "shield generator"))
+											
+											; Identify the item
+											(itmSetKnown gItem)
+
+											; Remove ROM
+											(objRemoveItem gSource gItem 1)
+											)
+										)
+									(setq notFound Nil)
+									)
+								)
+							)
+						)
+
+					(if notFound
+						(objSendMessage gSource Nil "Shield generator required")
+						)
+					)
+				))
+			)
+	</Globals>
+
+<!-- UNKNOWN TYPES -->
+
+	<!-- Field Crystal, Unknown -->
+
+	<ItemType UNID="&vtUnknownFieldCrystal;"
+			name=				"energy field crystal(s)"
+			virtual=			"true"
+			level=				"7"
+			value=				"1000"
+			attributes=			"unknown"
+
+			description=		"These rare crystals are used to modulate energy fields, such as those created by shield generators. Unfortunately, you cannot decode the crystal's markings."
+			>
+
+		<Names>field crystal(s) marked "AK3GH1"; field crystal(s) marked "B8K1GA";
+			field crystal(s) marked "C0M9JH"; field crystal(s) marked "D930JA";
+			field crystal(s) marked "E2E8MO"; field crystal(s) marked "F3K9BA";
+			field crystal(s) marked "G1 rating"; field crystal(s) marked "H-field compatible";
+			field crystal(s) marked "I3MO7A"; field crystal(s) marked "J3 rating";
+			field crystal(s) marked "K-field neutral"; field crystal(s) marked "L1Z3GA";
+			field crystal(s) marked "M7 inducer"; field crystal(s) marked "N4M1ZA";
+			field crystal(s) marked "O3-field compatible"; field crystal(s) marked "P93MA8";
+			field crystal(s) marked "Q inducer"; field crystal(s) marked "R-field compatible";
+			field crystal(s) marked "S-field neutral"; field crystal(s) marked "T1 inducer";
+			field crystal(s) marked "UV8 antagonist"; field crystal(s) marked "V3TA2B";
+			field crystal(s) marked "W3 range"; field crystal(s) marked "X4";
+			field crystal(s) marked "Z-field neutral"
+		</Names>
+	</ItemType>
+
+</TranscendenceModule>

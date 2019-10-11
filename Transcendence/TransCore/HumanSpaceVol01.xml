@@ -2415,10 +2415,13 @@
 		part. -->
 
 	<Module filename="Analyzers.xml"/>
+	<Module filename="ArmorEnhancementItems.xml"/>
+	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
 	<Module filename="MiscItems.xml"/>
 	<Module filename="MRAD.xml"/>
 	<Module filename="QuantumCPU.xml"/>
+	<Module filename="ShieldEnhancementItems.xml"/>
 	<Module filename="StdArmor.xml"/>
 	<Module filename="StdAutons.xml"/>
 	<Module filename="StdDevices.xml"/>
@@ -2432,6 +2435,7 @@
 	<Module filename="StdUnknownItems.xml"/>
 	<Module filename="StdWeapons.xml"/>
 	<Module filename="UsefulItems.xml"/>
+	<Module filename="WeaponEnhancementItems.xml"/>
 		
 	<!-- These modules have a combination of types. Some should be in the
 		adventure; others should be core types. -->

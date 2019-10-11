@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+<!-- LEVEL 1 -->
+
+	<!-- Level 1: Laser Amplifier -->
+
+	<ItemType UNID="&itLaserAmplifier;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"laser amplifier"
+			level=				"1"
+			value=				"150"
+			mass=				"25"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"Laser amplifiers are used to repair and upgrade laser weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:laser;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:laser;"	enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:laser;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- LEVEL 2 -->
+
+	<!-- Level 2: Kinetic Upgrade -->
+
+	<ItemType UNID="&itKineticUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"kinetic upgrade"
+			level=				"2"
+			value=				"200"
+			mass=				"50"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"Kinetic upgrades increase the damage of a kinetic weapon."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:kinetic;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:kinetic;"		enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:kinetic;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- LEVEL 3 -->
+
+	<!-- Level 3: Defective Weapon Enhancement ROM -->
+
+	<ItemType UNID="&itDamageWeaponROM;"
+			name=				"defective weapon enhancement ROM"
+			level=				"3"
+			value=				"5"
+			mass=				"1"
+			frequency=			"veryrare"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"info, minorItem, weaponDamage"
+
+			description=		"Because of a manufacturing defect, this ROM damages the ship's primary weapon when installed."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(block (
+				(theWeapon (objGetProperty gSource 'selectedWeapon))
+				(data { weapon:(itmGetName theWeapon 'noModifiers) } )
+				)
+				(if theWeapon
+					(block Nil
+						(switch
+							(itmGetProperty theWeapon 'damaged)
+								(objSendMessage gSource Nil (typTranslate gType 'msgAlreadyDamaged data))
+								
+							(itmIsEnhanced theWeapon)
+								(objSendMessage gSource Nil (typTranslate gType 'msgEnhancementLost data))
+							
+							(objSendMessage gSource Nil (typTranslate gType 'msgWeaponDamaged data))
+							)
+							
+						(shpDamageItem gSource theWeapon)
+						
+						; Identify the item
+						(itmSetKnown gItem)
+
+						; Remove ROM
+						(objRemoveItem gSource gItem 1)
+						)
+					
+					(objSendMessage gSource Nil (typTranslate gType 'msgNoPrimary))
+					)
+				)
+		</Invoke>
+		
+		<Language>
+			<Text id="msgAlreadyDamaged">The defective ROM had no effect on your damaged %weapon%</Text>
+			<Text id="msgEnhancementLost">Your %weapon% lost its enhancement due to a defective ROM</Text>
+			<Text id="msgWeaponDamaged">Your %weapon% was damaged by a defective ROM</Text>
+			<Text id="msgNoPrimary">Primary weapon required</Text>
+		</Language>
+	</ItemType>
+
+	<!-- Level 3: Weapon Optimizer ROM -->
+
+	<ItemType UNID="&itWeaponSpeedROM;"
+			name=				"weapon optimizer ROM"
+			level=				"3"
+			value=				"750"
+			mass=				"1"
+			frequency=			"uncommon"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"info, minorItem, weaponEnhance"
+
+			description=		"This ROM increases the rate of fire of the ship's primary weapon."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intEnhanceWeaponUse 0x1002 Nil "has an improved fire rate" 6)
+		</Invoke>
+	</ItemType>
+
+<!-- LEVEL 4 -->
+
+	<!-- Level 4: Particle Source Upgrade -->
+
+	<ItemType UNID="&itParticleUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"particle source upgrade"
+			level=				"4"
+			value=				"1100"
+			mass=				"25"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"This weapon upgrade increases the power of particle beams."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:particle;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:particle;"	enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:particle;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- LEVEL 5 -->
+
+	<!-- Level 5: Hexagene Booster -->
+
+	<ItemType UNID="&itBlastUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"hexagene booster"
+			level=				"5"
+			value=				"1400"
+			mass=				"75"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"This high-explosive upgrade increases the damage done by blast weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:blast;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:blast;"	enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:blast;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- LEVEL 7 -->
+
+	<!-- Level 7: Ion Power Capacitor -->
+
+	<ItemType UNID="&itIonUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"ion power capacitor"
+			level=				"7"
+			value=				"10500"
+			mass=				"50"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"Ion power capacitors are used to increase the destructive power of ion weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:ion;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:ion;"		enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:ion;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- LEVEL 8 -->
+
+	<!-- Level 8: Tritium Injector -->
+
+	<ItemType UNID="&itThermoUpgrade;"
+			inherit=			"&baStdDeviceEnhancement;"
+			name=				"tritium injector"
+			level=				"8"
+			value=				"13000"
+			mass=				"150"
+			frequency=			"uncommon"
+			attributes=			"minorItem, weaponEnhance"
+
+			description=		"This weapon upgrade increases the damage done by thermo weapons."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l +damageType:thermo;"	enhancement:"+repair:10"	}
+					{	criteria:"w~l +damageType:thermo;"	enhancement:"+hpBonus"	}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l +damageType:thermo;"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
+<!-- GLOBALS -->
+
+	<Globals>
+		(block Nil
+			(setq intEnhanceWeaponUse (lambda (newMods damageType successText maxLevel)
+				(block (notFound)
+					(if (not maxLevel) (setq maxLevel 10))
+					; Install
+					(setq notFound True)
+					(objEnumItems gSource "w~lI" theItem
+						(block (weaponItem)
+							(setq weaponItem theItem)
+							(if (and 
+									notFound 
+									(or (not damageType) (eq (itmGetDamageType weaponItem) damageType))
+									(eq (shpGetItemDeviceName gSource weaponItem) 0)
+									)
+								(block Nil
+									(switch
+										; If the weapon is too advanced, it doesn't work
+										(gr (itmGetLevel weaponItem) maxLevel)
+											(objSendMessage gSource Nil (cat "Your " (itmGetName weaponItem 32) " is too advanced to be optimized"))
+												
+										; If the item is damaged, we repair it
+										(and (itmIsDamaged weaponItem) (ls newMods 0x8000))
+											(block Nil
+												(shpRepairItem gSource theItem)
+												(objSendMessage gSource Nil (cat (itmGetName weaponItem 33) " has been repaired"))
+												)
+
+										; Enhance the weapon
+										(block (result)
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												type: gType
+												}))
+
+											(objSendMessage gSource Nil (intItemEnhanceStatus result (cat "Your " (itmGetName weaponItem 32) " " successText) (cat "your " (itmGetName weaponItem 32))))
+											)
+										)
+									(setq notFound Nil)
+									)
+								)
+							)
+						)
+
+					; Item is identified
+
+					(itmSetKnown gItem)
+
+					; If we did not find a weapon to enhance, then no effect. Otherwise
+					; we consume the item
+
+					(if notFound
+						(objSendMessage gSource Nil "The enhancement has no effect")
+						(objRemoveItem gSource gItem 1)
+						)
+					)
+				))
+			)
+	</Globals>
+
+</TranscendenceModule>

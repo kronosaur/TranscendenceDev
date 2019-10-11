@@ -852,5 +852,17 @@
     <Xml Include="..\Extensions\Diagnostics\ItemEnhancementUnitTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="ArmorEnhancementItems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="ArmorRepairItems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="WeaponEnhancementItems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
+    <Xml Include="ShieldEnhancementItems.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

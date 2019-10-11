@@ -3420,6 +3420,109 @@
 					(scrShowScreen gScreen "&dsExchangeBuy;")
 					)
 				))
+
+			(setq useRepairArmor (lambda (theItem theSegment)
+				(block (needsRepair resultText)
+					(setq needsRepair (gr (objGetArmorDamage gPlayerShip theSegment) 0))
+					
+					(if needsRepair
+						(block (repair failureChance skillLevel usedUp)
+							(setq skillLevel (typGetGlobalData &dsUseArmorPatch; "skillLevel"))
+							(setq repair (eval (itmGetStaticData theItem "RepairHP")))
+							
+							; If the repairing item is damaged armor, then we don't repair as much
+							(if (itmMatches theItem "aD")
+								(setq repair (divide repair 2))
+								)
+
+							; As skill level increased, the player's failure chance
+							; decreases. Also the amount of hp repaired increased.
+							(switch
+								(ls skillLevel 2)
+									(block Nil
+										(setq failureChance 20)
+										(setq repair (divide (multiply repair 80) 100))
+										)
+
+								(ls skillLevel 5)
+									(setq failureChance 10)
+
+								(ls skillLevel 10)
+									(block Nil
+										(setq failureChance 5)
+										(setq repair (divide (multiply repair 110) 100))
+										)
+
+								(block Nil
+									(setq failureChance 0)
+									(setq repair 
+										(divide (multiply repair (min (add 70 (multiply skillLevel 5)) 200)) 100)
+										)
+									)
+								)
+								
+							; Do the repairs
+							(setq usedUp 100)
+							(switch
+								(not repair)
+									(setq resultText "ERROR: &lt;RepairHP&gt; static data not found.")
+
+								(leq (random 1 100) failureChance)
+									(if (eq (random 1 2) 1)
+										; Sometimes we fail and damage the armor
+										(block Nil
+											(shpDamageArmor gPlayerShip theSegment 7 (divide (multiply repair (random 20 100)) 100))
+											(setq resultText "Unfortunately, your attempt to repair the armor has only damaged it further.")
+											)
+											
+										; Sometimes we fail without damaging further
+										(block Nil
+											(setq resultText (cat 
+												"Unfortunately, your attempt to repair the armor was unsuccessful "
+												"and the " (itmGetName theItem 0) " was ruined in the process."
+												))
+											)
+										)
+
+								(block (hpRepaired)
+									(setq hpRepaired (objRepairArmor gPlayerShip theSegment repair))
+									(setq resultText (cat 
+										"You have successfully repaired " hpRepaired
+										(if (eq hpRepaired 1) " hit point " " hit points ")
+										"of damage to your armor."
+										))
+										
+									; How much of the kit did we use?
+									(if (gr repair 0)
+										(setq usedUp (divide (multiply 100 hpRepaired) repair))
+										)
+										
+									; Skill level increases
+									(typIncGlobalData &dsUseArmorPatch; "skillLevel" 1)
+									)
+								)
+								
+							; Use up the item
+							(if (or (ls skillLevel 10)
+									(geq usedUp 20)
+									(leq (random 1 100) (add usedUp 20))
+									)
+								(objRemoveItem gPlayerShip theItem 1)
+								
+								; Item is not used up
+								(setq resultText (cat resultText 
+									"\n\nThere is still enough of the " (itmGetName theItem 0)
+									" left to repair other segments."
+									))
+								)
+							)
+
+						(setq resultText "That armor segment is not damaged. There is no need to attempt repairs.")
+						)
+
+					resultText
+					)
+				))
 			)
 	</Globals>
 
@@ -4803,6 +4906,188 @@
 			</Text>
 		</Language>
 	</StationType>
+
+	<!-- Use Armor Patch
+	
+	GLOBAL DATA
+	
+	skillLevel:			Total number of successful uses
+	
+	-->
+
+	<DockScreen UNID="&dsUseArmorPatch;"
+			name=				"Ship's Interior"
+			type=				"itemPicker"
+			>
+
+		<ListOptions
+			dataFrom=	"player"
+			list=		"aI"
+			/>
+			
+		<InitialPane>
+			(switch
+				(not (itmIsKnown gItem))
+					"UnknownBarrel"
+					
+				"Default"
+				)
+		</InitialPane>
+			
+		<Panes>
+			<Default>
+				<OnPaneInit>
+					(block (type damage desc skillLevel)
+						; Init skill level
+						(setq skillLevel (typGetGlobalData &dsUseArmorPatch; "skillLevel"))
+						(if (not skillLevel)
+							(block Nil
+								(typSetGlobalData &dsUseArmorPatch; "skillLevel" 0)
+								(setq skillLevel 0)
+								)
+							)
+							
+						; Intro, if necessary
+						
+						(setq desc (objFireItemEvent gSource gItem "GetRepairItemIntro"))
+						(if (not desc)
+							(setq desc "")
+							)
+							
+						; Figure out which segment we're repairing and describe its condition
+						
+						(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
+						(setq type (objGetArmorType gPlayerShip gArmorSegment))
+						(setq damage (objGetArmorDamage gPlayerShip gArmorSegment))
+						(setq desc (cat desc "The ship's " (objGetArmorName gPlayerShip gArmorSegment) " " (armGetName type)))
+						(setq gCanRepair True)
+						(switch
+							(eq damage 0)
+								(block Nil
+									(setq desc (cat desc " is not damaged."))
+									(setq gCanRepair Nil)
+									)
+
+							(eq damage 1)
+								(setq desc (cat desc " has sustained 1 point of damage."))
+
+							(setq desc (cat desc " has sustained " damage " points of damage."))
+							)
+							
+						; See if we can repair it with the given item
+						
+						(if gCanRepair
+							(block Nil
+								(setq aItemToRepair (scrGetItem gScreen))
+								(if (not (objFireItemEvent gSource gItem "CanRepairItem"))
+									(block Nil
+										(setq desc (cat desc
+											"\n\nUnfortunately, it cannot be repaired with the " (itmGetName gItem 0) "."
+											))
+										(setq gCanRepair Nil)
+										)
+									)
+								)
+							)
+						
+						; Skill level
+						(switch
+							(not gCanRepair)
+								Nil
+								
+							(ls skillLevel 2)
+								(setq desc (cat desc
+									"\n\nYou do not have much experience repairing your own armor."
+									))
+									
+							(ls skillLevel 5)
+								(setq desc (cat desc
+									"\n\nYou have some experience repairing your own armor."
+									))
+									
+							(ls skillLevel 10)
+								(setq desc (cat desc
+									"\n\nYou are proficient at repairing your own armor."
+									))
+									
+							(setq desc (cat desc
+								"\n\nYou are an expert at repairing your own armor."
+								))
+							)
+
+						(scrSetDesc gScreen desc)
+
+						; Disable actions if we cannot repair
+						(scrEnableAction gScreen 0 gCanRepair)
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Repair this Armor Segment" key="R" default="1">
+						(block Nil
+							(setq gTitle (useRepairArmor gItem gArmorSegment))
+							(scrShowPane gScreen "Done")
+							)
+					</Action>
+
+					<Action name="Cancel" cancel="1" key="C">
+						<Exit/>
+					</Action>
+					
+				</Actions>
+			</Default>
+			
+			<UnknownBarrel>
+				<OnPaneInit>
+					(block (desc type)
+						(setq gArmorSegment (itmGetArmorInstalledLocation (scrGetItem gScreen)))
+						(setq type (objGetArmorType gPlayerShip gArmorSegment))
+						(if (itmIsKnown gItem)
+							(setq desc (cat "You can use the " (itmGetName gItem 0) " on"))
+							(setq desc (cat "The barrel seems to contain some kind of armor paste. You can use it on"))
+							)
+
+						(scrSetDesc gScreen (cat desc " your ship's " (objGetArmorName gPlayerShip gArmorSegment) " " (armGetName type) "."))
+						)
+				</OnPaneInit>
+
+				<Actions>
+					<Action name="Use on this Armor Segment" key="U" default="1">
+						(block Nil
+							; Identify the item [we do this first because we want to refer
+							; to the barrel by its real name]
+							(itmSetKnown gItem)
+
+							; Repair
+							(setq gTitle (useRepairArmor gItem gArmorSegment))
+							(setq gTitle (cat
+								(itmGetStaticData gItem "BarrelDesc") "\n\n"
+								gTitle
+								))
+								
+							(scrShowPane gScreen "Done")
+							)
+					</Action>
+
+					<Action name="Cancel" key="C" cancel="1">
+						<Exit/>
+					</Action>
+				</Actions>
+			</UnknownBarrel>
+
+			<Done 
+					desc="=gTitle"
+					noListNavigation="true"
+					>
+
+				<Actions>
+					<Action name="Done" cancel="1" default="1" key="D">
+						<Exit/>
+					</Action>
+				</Actions>
+			</Done>
+		</Panes>
+	</DockScreen>
 
 	<!-- Old Image -->
 

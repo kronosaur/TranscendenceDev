@@ -199,6 +199,8 @@
     <Xml Include="AntarcticaD01.xml" />
     <Xml Include="AresItems.xml" />
     <Xml Include="AresShips.xml" />
+    <Xml Include="ArmorEnhancementItems.xml" />
+    <Xml Include="ArmorRepairItems.xml" />
     <Xml Include="AsteroidFields.xml" />
     <Xml Include="Barricades.xml" />
     <Xml Include="BattleArenaChallenger.xml" />
@@ -621,6 +623,7 @@
     <Xml Include="Salvagers.xml" />
     <Xml Include="Sanctuary.xml" />
     <Xml Include="Sapiens.xml" />
+    <Xml Include="ShieldEnhancementItems.xml" />
     <Xml Include="StdMiningEquipment.xml">
       <SubType>Designer</SubType>
     </Xml>
@@ -633,6 +636,7 @@
     <Xml Include="Volkov.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="WeaponEnhancementItems.xml" />
     <Xml Include="Xenophobes.xml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
