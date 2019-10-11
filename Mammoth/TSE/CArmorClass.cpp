@@ -79,6 +79,7 @@
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_PRIME_SEGMENT					CONSTLIT("primeSegment")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
+#define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
@@ -1235,20 +1236,21 @@ Metric CArmorClass::CalcBalanceSpecial (const CArmorItem &ArmorItem, const SScal
 	return rTotalBalance;
 	}
 
-void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
+void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 //	CalcDamageEffects
 //
 //	Initialize the damage effects based on the damage and on this armor type.
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
 	//	Reflect
 
-	Ctx.SetShotReflected(IsReflective(ItemCtx, Ctx.Damage) && Ctx.iDamage > 0);
+	Ctx.SetShotReflected(IsReflective(ArmorItem, Ctx.Damage) && Ctx.iDamage > 0);
 
 	//	Disintegration
 
@@ -2028,6 +2030,26 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialRadiation));
 
+	else if (strEquals(sName, PROPERTY_REFLECT))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+
+		for (int iDamage = 0; iDamage < damageCount; iDamage++)
+			{
+			DamageDesc Damage((DamageTypes)iDamage, DiceRange(1, 1, 0));
+			int iChance;
+			IsReflective(ArmorItem, Damage, &iChance);
+
+			if (iChance > 0)
+				pResult->SetIntegerAt(::GetDamageType((DamageTypes)iDamage), iChance);
+			}
+
+		if (pResult->GetCount() == 0)
+			return ICCItemPtr(ICCItem::Nil);
+		else
+			return pResult;
+		}
+
 	else if (strEquals(sName, PROPERTY_REGEN))
 		return ICCItemPtr(mathRound(CalcRegen180(Ctx)));
 
@@ -2429,15 +2451,14 @@ bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
 	return (m_fShieldInterference || Enhancements.IsShieldInterfering());
 	}
 
-bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
+bool CArmorClass::IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance) const
 
 //	IsReflective
 //
 //	Returns TRUE if the armor reflects this damage
 
 	{
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 
 	int iReflectChance = 0;
 
@@ -2454,21 +2475,27 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 
 	//	Done
 
-	if (iReflectChance)
+	if (iReflectChance > 0)
 		{
-		CInstalledArmor *pSect = ItemCtx.GetArmor();
-
-		int iMaxHP = ArmorItem.GetMaxHP();
-		int iHP = (pSect ? pSect->GetHitPoints() : iMaxHP);
+		int iMaxHP;
+		int iHP = ArmorItem.GetHP(&iMaxHP);
 
 		//	Adjust based on how damaged the armor is
 
 		iReflectChance = (iMaxHP > 0 ? iHP * iReflectChance / iMaxHP : iReflectChance);
 
+		if (retiChance)
+			*retiChance = iReflectChance;
+
 		return (mathRandom(1, 100) <= iReflectChance);
 		}
 	else
+		{
+		if (retiChance)
+			*retiChance = 0;
+
 		return false;
+		}
 	}
 
 ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)

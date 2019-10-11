@@ -509,6 +509,37 @@
 		</Language>
 	</ItemType>
 
+	<!-- Particle Reflect Coating -->
+
+	<ItemType UNID="&itParticleReflectCoating;"
+			inherit=			"&baStdPasteBarrel;"
+			name=				"[barrel(s) of ]particle-reflect coating"
+			level=				"5"
+			value=				"400"
+			mass=				"1000"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			unknownType=		"&itUnknownBarrel;"
+
+			description=		"This coating reflects particle beams."
+
+			useScreen=			"&dsRPGUseItemOnArmor;"
+			>
+
+		<Properties>
+			<Constant id="core.enhancement">"+reflect:particle"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				The paste is a coating that reflects particle beams.
+			</Text>
+		</Language>
+	</ItemType>
+
 	<!-- Particle Resistance Coating -->
 
 	<ItemType UNID="&itParticleResistCoating;"
@@ -1159,11 +1190,11 @@
 			sortName=			"reflective armor coating, barrel of"
 			>
 
-		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+		<Properties>
+			<Constant id="core.enhancement">"+reflect:laser"</Constant>
+		</Properties>
 
-		<StaticData>
-			<Data id="enhancement">0x030a</Data>
-		</StaticData>
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
 
 		<Language>
 			<Text id="descResultIntro">

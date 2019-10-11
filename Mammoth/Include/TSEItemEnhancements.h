@@ -177,7 +177,7 @@ class CItemEnhancement
 		void SetModEfficiency (int iAdj) { m_dwMods = (iAdj > 0 ? EncodeABC(etPowerEfficiency, iAdj) : EncodeABC(etPowerEfficiency | etDisadvantage, -iAdj)); }
 		void SetModLinkedFire (DWORD dwOptions) { m_dwMods = EncodeAX(etLinkedFire, 0, dwOptions); }
 		void SetModOmnidirectional (int iFireArc) { m_dwMods = EncodeAX(etOmnidirectional, 0, Max(0, iFireArc)); }
-		void SetModReflect (DamageTypes iDamageType) { m_dwMods = Encode12(etReflect, 0, (int)iDamageType); }
+		void SetModReflect (DamageTypes iDamageType) { m_dwMods = Encode12(etReflect, DEFAULT_REFLECT_LEVEL, (int)iDamageType); }
 		void SetModResistDamage (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByDamage | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
 		void SetModResistDamageClass (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByDamage2 | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
 		void SetModResistDamageTier (DamageTypes iDamageType, int iAdj) { m_dwMods = Encode12(etResistByLevel | (iAdj > 100 ? etDisadvantage : 0), DamageAdj2Level(iAdj), (int)iDamageType); }
@@ -194,6 +194,8 @@ class CItemEnhancement
 		static const CItemEnhancement &Null (void) { return m_Null; }
 
 	private:
+		static constexpr int DEFAULT_REFLECT_LEVEL =	9;
+
 		bool CalcRegen (CItemCtx &ItemCtx, int iTicksPerUpdate, CRegenDesc &retRegen, ERegenTypes *retiType = NULL) const;
 		bool CalcNewHPBonus (const CItem &Item, const CItemEnhancement &NewEnhancement, int *retiNewBonus) const;
 		bool CanBeCombinedWith (const CItemEnhancement &NewEnhancement) const;

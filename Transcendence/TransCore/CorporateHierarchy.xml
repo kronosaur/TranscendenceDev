@@ -487,7 +487,7 @@
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement2)"
+					enhancement=	"=(intHPEnhancement2 gItem)"
 					/>
 			<RandomItem count="15" 
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
@@ -652,7 +652,7 @@
 					criteria=		"w L:1-7; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem chance="65" count="1d4" 
@@ -1521,7 +1521,7 @@
 					criteria=		"w L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|crv"
 					enhanced=		"20"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
@@ -1535,7 +1535,7 @@
 					criteria=		"w L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
@@ -2681,7 +2681,15 @@
 	<Globals>
 		(block Nil
 			(setq intBushidoArmorEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0309 0x0329))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+					{	enhancement:"+reflect:laser"		type:&itReflectiveArmorCoating;	}
+					{	enhancement:"+reflect:particle"		type:&itParticleReflectCoating; }
+					))
 				))
 
 			(setq intBushidoShieldEnhancement (lambda Nil
@@ -2786,43 +2794,67 @@
 				))
 
 			(setq intHPEnhancement1 (lambda (theItem)
-				(block (
-					(theCategory (itmGetProperty theItem 'category))
-					(theMod (random (list 
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
 						"+hpBonus:10"
 						"+hpBonus:10"
 						"+hpBonus:20"
 						"+hpBonus:20"
 						"+hpBonus:30"
-						)))
-					)
-					(switch
-						(= theCategory 'armor)
-							{	enhancement:theMod		type:&itPlasteelNanos;	}
-
-						(= theCategory 'shields)
-							{	enhancement:theMod		type:&itEnhanceShieldsROM;	}
-
-						(= theCategory 'weapon)
-							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
-						)
+						))
 					)
 				))
 
-			(setq intHPEnhancement2 (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0103 0x0104))
+			(setq intHPEnhancement2 (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						))
+					)
 				))
 
-			(setq intHPEnhancement3 (lambda Nil
-				(random (list 0x0102 0x0103 0x0103 0x0104 0x0104 0x0105))
+			(setq intHPEnhancement3 (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						"+hpBonus:40"
+						"+hpBonus:50"
+						))
+					)
 				))
 
 			(setq intMakayevArmorEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0103 0x0104 0x0b00 0x0c00))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+					{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
+					{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+					))
 				))
 
-			(setq intMakayevWeaponEnhancement (lambda Nil
-				(random (list 0x0102 0x0103 0x0103 0x0104 0x0104 0x0105))
+			(setq intMakayevWeaponEnhancement (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						"+hpBonus:40"
+						"+hpBonus:50"
+						))
+					)
 				))
 
 			(setq intGetEnhancementByDamageType (lambda (theItem)
@@ -2836,6 +2868,27 @@
 						(= damageType 'bast)		&itBlastUpgrade;
 						(= damageType 'ion)			&itIonUpgrade;
 						(= damageType 'thermo)		&itThermoUpgrade;
+						)
+					)
+				))
+
+			(setq intCreateHPBonusEnhancement (lambda (theItem theMod)
+				(block (
+					(theCategory (itmGetProperty theItem 'category))
+					)
+					(switch
+						(= theCategory 'armor)
+							{	enhancement:theMod		type:&itPlasteelNanos;	}
+
+						(= theCategory 'shields)
+							{	enhancement:theMod		type:&itEnhanceShieldsROM;	}
+
+						(= theCategory 'weapon)
+							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
+
+						;	Failsafe, in case we pass a Nil item or something.
+
+						{	enhancement:theMod	}
 						)
 					)
 				))

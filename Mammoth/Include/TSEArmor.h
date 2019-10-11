@@ -76,7 +76,7 @@ class CArmorClass
 		void AccumulatePowerUsed (CItemCtx &ItemCtx, SUpdateCtx &Ctx, int &iPowerUsed, int &iPowerGenerated) const;
 		void CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		int CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx);
-		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx);
+		void CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const;
 		const CString &GetMassClass (const CItemCtx &ItemCtx) const;
 		int GetPowerOutput (CItemCtx &ItemCtx) const;
 		int GetPowerRating (CItemCtx &ItemCtx, int *retiIdlePower = NULL) const;
@@ -84,7 +84,7 @@ class CArmorClass
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
 		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
-		bool IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage);
+		bool IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance = NULL) const;
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		bool SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError = NULL);
 		void Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified);

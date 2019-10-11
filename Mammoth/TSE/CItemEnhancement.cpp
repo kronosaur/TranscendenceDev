@@ -1823,6 +1823,8 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			return ERR_FAIL;
 			}
 
+		//	Sets reflect to 95%. For now we don't allow variations.
+
 		SetModReflect(iDamageType);
 		}
 
