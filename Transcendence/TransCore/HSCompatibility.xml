@@ -3523,6 +3523,106 @@
 					resultText
 					)
 				))
+
+			(setq intFieldCrystalInstall (lambda (enhancementType theLifetime)
+				(block (theShields)
+					(switch
+						; Must have a shield generator
+						(not (setq theShields (item (objGetItems gSource "sI") 0)))
+							(objSendMessage gSource Nil "Shield generator required")
+
+						; Novaya repairers cannot be enhanced
+						(itmHasAttribute theShields 'nonEnergyShields)
+							(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName theShields '(article short)) }))
+
+						; If the shield generator is not advanced enough, then nothing happens
+						(ls (itmGetLevel theShields) 7)
+							(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
+							
+						; If the shield generator is too advanced, then nothing happens
+						(gr (itmGetLevel theShields) 12)
+							(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
+
+						; Damage items cannot be enhanced
+						(itmIsDamaged theShields)
+							(objSendMessage gSource Nil "This crystal cannot enhance a damaged shield generator")
+							
+						; Enhance!
+						(block Nil
+							; Add enhancement
+							(if (not (objAddItemEnhancement gSource theShields enhancementType theLifetime))
+								(objSendMessage gSource Nil "The crystal has no effect")
+								)
+
+							; Identify the item
+							(itmSetKnown gItem)
+
+							; Remove ROM
+							(objRemoveItem gSource gItem 1)
+							)
+						)
+					)
+				))
+
+			(setq intFieldCrystalUse (lambda (newMods successText)
+				(block (notFound)
+					; Install
+					(setq notFound True)
+					(objEnumItems gSource "sI" theItem
+						(block (shieldItem)
+							(setq shieldItem theItem)
+							(if notFound
+								(block Nil
+									(switch
+										; Novaya repairers cannot be enhanced
+										(itmHasAttribute shieldItem 'nonEnergyShields)
+											(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
+
+										; If the shield generator is not advanced enough, then nothing happens
+										(ls (itmGetLevel shieldItem) 7)
+											(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
+
+										; If the shield generator is too advanced, then nothing happens
+										(gr (itmGetLevel shieldItem) 12)
+											(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
+
+										; If the item is damaged, we repair it
+										(and (itmIsDamaged shieldItem) (ls newMods 0x8000))
+											(block Nil
+												(shpRepairItem gSource theItem)
+												(objSendMessage gSource Nil "Shield generator has been repaired")
+												
+												; Remove ROM
+												(objRemoveItem gSource gItem 1)
+												)
+
+										; Enhance the shield generator
+										(block (result)
+											(setq result (shpEnhanceItem gSource theItem {
+												enhancement: newMods
+												type: gType
+												}))
+
+											(objSendMessage gSource Nil (intItemEnhanceStatus result successText "shield generator"))
+											
+											; Identify the item
+											(itmSetKnown gItem)
+
+											; Remove ROM
+											(objRemoveItem gSource gItem 1)
+											)
+										)
+									(setq notFound Nil)
+									)
+								)
+							)
+						)
+
+					(if notFound
+						(objSendMessage gSource Nil "Shield generator required")
+						)
+					)
+				))
 			)
 	</Globals>
 

@@ -139,8 +139,10 @@ class CDeviceItem : public CDifferentiatedItem
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		DWORD GetLinkedFireOptions (void) const;
+		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
 
 	private:

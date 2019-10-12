@@ -2055,7 +2055,6 @@
 	<!ENTITY msCommonwealthRevenge01	"0x001003A9">
 	<!ENTITY vtManticoreShieldPenalty	"0x001003AA">
 	<!ENTITY itPlasteelNanos			"0x001003AB">
-	<!ENTITY itParticleReflectCoating	"0x001003AC">
 
 	<!-- 03B0-03CF SAPIENS -->
 
@@ -2225,6 +2224,7 @@
 	<!ENTITY rsCargoContainer			"0x001005E1">
 	<!ENTITY baCashCard					"0x001005E2">
 	<!ENTITY baAnalyzer					"0x001005E3">
+	<!ENTITY baFieldCrystal				"0x001005E4">
 
 	<!-- 0600-061F ABBASID -->
 
@@ -2260,6 +2260,12 @@
 
 	<!ENTITY itUnknownROMB				"0x001006C0">
 	<!ENTITY itUnknownROMC				"0x001006C1">
+	<!ENTITY itParticleReflectCoating	"0x001006C2">
+	<!ENTITY vtUnknownCommonFieldCrystal	"0x001006C3">
+	<!ENTITY itSilicarbCrystal			"0x001006C4">
+	<!ENTITY itRubidiumCrystal			"0x001006C5">
+	<!ENTITY itSuperlatticeCrystal		"0x001006C6">
+	<!ENTITY itTrillumCrystal			"0x001006C7">
 
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

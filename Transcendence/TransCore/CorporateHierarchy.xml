@@ -2693,7 +2693,16 @@
 				))
 
 			(setq intBushidoShieldEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0104 0x0824 0x0842 0xf03))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:20"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:20"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:30"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:40"			type:&itDiamondCrystal;	}
+					{	enhancement:"+resistDamageTier:particle:60"		type:&itRubidiumCrystal;	}
+					{	enhancement:"+resistDamageTier:ion:60"		type:&itSuperlatticeCrystal; }
+					{	enhancement:"+efficient:20"			type:&itShieldPowerSaver;	}
+					))
 				))
 
 			(setq intBushidoWeaponEnhancement (lambda Nil
@@ -2727,23 +2736,13 @@
 				))
 
 			(setq intCorporateGenerateEnhancement (lambda (theItem)
-				(block (theCategory)
-					(setq theCategory (itmGetCategory theItem))
-					(switch
-						; Armor enhancements
-						(eq theCategory 0x0002)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						; Shield enhancements
-						(eq theCategory 0x0080)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						; Weapon enhancements
-						(eq theCategory 0x0004)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						0x0000
-						)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						))
 					)
 				))
 
@@ -2881,7 +2880,12 @@
 							{	enhancement:theMod		type:&itPlasteelNanos;	}
 
 						(= theCategory 'shields)
-							{	enhancement:theMod		type:&itEnhanceShieldsROM;	}
+							(switch
+								(leq (itmGetLevel theItem) 5)
+									{	enhancement:theMod		type:&itSilicarbCrystal;	}
+
+								{	enhancement:theMod		type:&itDiamondCrystal;	}
+								)
 
 						(= theCategory 'weapon)
 							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }

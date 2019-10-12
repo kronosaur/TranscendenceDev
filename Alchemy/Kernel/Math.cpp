@@ -33,6 +33,21 @@ int Kernel::mathAdjust (int iValue, int iPercent)
 		}
 	}
 
+int Kernel::mathAdjustRound (int iValue, int iPercent)
+
+//	mathAdjustRound
+//
+//	Alters iValue such that:
+//
+//	result = (iValue * iPercent) / 100, rounded
+
+	{
+	if (iPercent == 100)
+		return iValue;
+	else
+		return mathRound((iValue * iPercent) / 100.0);
+	}
+
 DWORD Kernel::mathGetSeed (void)
 
 //	mathGetSeed

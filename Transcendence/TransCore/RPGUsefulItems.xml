@@ -61,6 +61,36 @@
 		</Language>
 	</DockScreen>
 
+<!-- RPG USE ITEM ON SHIELDS ===================================================
+
+	This screen allows the player to use an item on an installed device.
+
+	gData uses the following fields:
+
+		useItem:	The item being used. If not specifed we check gItem instead
+
+-->
+
+	<DockScreen UNID="&dsRPGUseItemOnShields;"
+			inherit=			"&dsRPGUseItemBase;"
+			nestedScreen=		"true"
+			>
+
+		<Display type="deviceSelector"
+				dataFrom=	"player"
+				list=		"sI"
+				noEmptySlots="true"
+				/>
+
+		<Panes>
+		</Panes>
+
+		<Language>
+			<Text id="rpg.tabLabel">Shields</Text>
+			<Text id="actionUse">[U]se on this Shield</Text>
+		</Language>
+	</DockScreen>
+
 <!-- RPG USE ITEM ON CARGO =====================================================
 
 	This screen allows the player to use an item on an item in the cargo bay.
@@ -474,6 +504,10 @@
 					(dstItem (@ gData 'itemToUseOn))
 					(useCriteria (itmGetProperty gItem 'rpg.useCriteria))
 					(enhancementInfo (rpgFindItemInTable dstItem (or (itmGetProperty gItem 'rpg.enhancementTable) (itmGetStaticData gItem 'enhancementTable))))
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+						})
 					)
 					(switch
 						(not (itmMatches dstItem useCriteria))
@@ -491,27 +525,21 @@
 						(@ enhancementInfo 'repair)
 							{
 								canUse: True
-								desc: (itmTranslate gItem 'descUsageRepair {
-									useItem: (itmGetName gItem 'article)
-									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
-									})
+								desc: (itmTranslate gItem 'descUsageRepair trData)
 								}
 
 						(not (@ enhancementInfo 'enhancement))
 							{
 								canUse: Nil
 								desc: 
-									(or (itmTranslate gItem (@ enhancementInfo 'descID))
-										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+									(or (itmTranslate gItem (@ enhancementInfo 'descID) trData)
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)) trData)
 										)
 								}
 
 						{
 							canUse: True
-							desc: (itmTranslate gItem 'descUsageOK {
-								useItem: (itmGetName gItem 'article)
-								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
-								})
+							desc: (itmTranslate gItem 'descUsageOK trData)
 							}
 						)
 					)
@@ -543,6 +571,10 @@
 					(dstItem (@ gData 'targetItem))
 					enhancement
 					enhancementInfo
+					(trData {
+						useItem: (itmGetName gItem 'article)
+						dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+						})
 					)
 					(switch
 
@@ -570,8 +602,8 @@
 								))
 							{
 								enhancement: (@ enhancementInfo 'enhancement)
-								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID))
-										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID) trData)
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)) trData)
 										)
 								}
 

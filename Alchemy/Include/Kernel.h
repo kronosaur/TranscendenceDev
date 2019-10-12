@@ -1590,6 +1590,7 @@ bool strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMa
 //	Math functions (Math.cpp)
 
 int mathAdjust (int iValue, int iPercent);
+int mathAdjustRound (int iValue, int iPercent);
 DWORD mathGetSeed (void);
 DWORD mathMakeSeed (DWORD dwValue);
 int mathNearestPowerOf2 (int x);

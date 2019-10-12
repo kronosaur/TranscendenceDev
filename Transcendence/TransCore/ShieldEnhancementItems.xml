@@ -2,6 +2,44 @@
 
 <TranscendenceModule>
 
+<!-- LEVEL 1 -->
+
+	<!-- Level 1: Silicarb field crystal -->
+
+	<ItemType UNID="&itSilicarbCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"silicarb field crystal"
+			level=				"1"
+			value=				"250"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownCommonFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Silicon-carbide crystals increase the energy density of shield generators. This crystal is compatible with generators up to tech level 5."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Ds L:1-5;"				enhancement:"+repair:5"	}
+					{	criteria:"s L:1-5;"					enhancement:"+hpBonus"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				The energy field crystal is made of silicon-carbide, which boosts shield strength.
+			</Text>
+		</Language>
+	</ItemType>
+
 <!-- LEVEL 2 -->
 
 	<!-- Level 2: Shield Enhancement ROM -->
@@ -163,46 +201,158 @@
 			<Text id="msgRepaired">Hiro: Shield repair algorithm successful.</Text>
 		</Language>
 	</ItemType>
-	
-<!-- LEVEL 6 -->
 
-	<!-- Level 6: Green Etherium field crystal -->
+	<!-- Level 4: Rubidium Field Crystal -->
 
-	<ItemType UNID="&itGreenEtheriumCrystal;"
-			name=				"green etherium field crystal"
-			level=				"6"
-			value=				"10000"
+	<ItemType UNID="&itRubidiumCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"rubidium field crystal"
+			level=				"4"
+			value=				"1000"
 			mass=				"10"
-			frequency=			"common"
-			unknownType=		"&vtUnknownFieldCrystal;"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownCommonFieldCrystal;"
 			attributes=			"fieldCrystal, majorItem, shieldEnhance"
 
-			description=		"Green etherium is used to create energy fields that reflect particle beam energy. Unfortunately, it has a limited duration."
+			description=		"Rubidium crystals create energy fields that resist particle and blast damage. This crystal is compatible with generators of tech levels 1-7."
 
-			enhancement=		"0x0329"
+			useScreen=			"&dsRPGUseItemOnShields;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-7;"					enhancement:"+resistDamageTier:particle:60"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intFieldCrystalInstall &itGreenEtheriumCrystal; (random 30000 40000))
-		</Invoke>
-		
+		<Language>
+			<Text id="descResultIntro">
+				The energy field crystal is made of silicon-carbide, which boosts shield strength.
+			</Text>
+		</Language>
+	</ItemType>
+
+<!-- LEVEL 5 -->
+
+	<!-- Level 5: Green Etherium field crystal -->
+
+	<ItemType UNID="&itGreenEtheriumCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"green etherium field crystal"
+			level=				"5"
+			value=				"2100"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownCommonFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Green etherium is used to create energy fields that reflect particle beam energy. Unfortunately, it has a limited duration. This crystal works on tech levels 2-8."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1;"					descID:'TooPrimitive	}
+					{	criteria:"s L:2-8;"					enhancement:"+reflect:particle"		lifetime:(random 30000 40000)	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
 		<Events>
-			<OnAddedAsEnhancement>
-				(objSendMessage gSource Nil (cat
-					"Your shields now reflect particle damage"
-					(if (eq aResult 6) " (previous enhancement lost)" "")
-					))
-			</OnAddedAsEnhancement>
-			
 			<OnRemovedAsEnhancement>
 				(objSendMessage gSource Nil "Green etherium crystal has burned out")
 			</OnRemovedAsEnhancement>
 		</Events>
 
 		<Language>
-			<Text id="msgCannotEnhance">Field crystal not compatibile with %itemName%</Text>
+			<Text id="descResultIntro">
+				The crystal is made of green etherium, which reflects particle beam energy.
+			</Text>
+		</Language>
+	</ItemType>
+
+<!-- LEVEL 6 -->
+
+	<!-- Level 6: Diamond field crystal -->
+
+	<ItemType UNID="&itDiamondCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"diamond field crystal"
+			level=				"6"
+			value=				"6000"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Diamond field crystals increase the power of shield generators. Unlike other field crystals, a generator can use multiple diamond field crystals. These crystals are compatible with shields of tech level 3-9."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-2;"					descID:'TooPrimitive	}
+					{	criteria:"Ds L:3-9;"				enhancement:"+repair:9"	}
+					{	criteria:"s L:3-9;"					enhancement:"+hpBonus"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				This is a diamond superconductor, which increases the strength of shield generators.
+			</Text>
+		</Language>
+	</ItemType>
+
+	<!-- Level 6: Trillum field crystal -->
+
+	<ItemType UNID="&itTrillumCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"trillum field crystal"
+			level=				"6"
+			value=				"6000"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"Crystalline trillum increases the power efficiency of high-energy shields. These crystals are compatible with tech levels 3-9."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-2;"					descID:'TooPrimitive	}
+					{	criteria:"s L:3-9;"					enhancement:"+efficient:70"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				This is a trillum energy field crystal, which increases the energy efficiency of shield generators.
+			</Text>
 		</Language>
 	</ItemType>
 
@@ -211,6 +361,7 @@
 	<!-- Level 7: Decayed Etherium field crystal -->
 
 	<ItemType UNID="&itDecayedEtheriumCrystal;"
+			inherit=			"&baFieldCrystal;"
 			name=				"decayed etherium field crystal"
 			level=				"7"
 			value=				"10"
@@ -220,34 +371,100 @@
 			attributes=			"fieldCrystal, minorItem, shieldEnhance"
 
 			description=		"In pristine state, this field crystal is used to reflect ion energy. But this decayed crystal would do more harm than good."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-3;"					descID:'TooPrimitive	}
+					{	criteria:"s L:4-10;"				enhancement:"-reflect:ion"	}
+					{	criteria:"s L:11-25;"				descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intFieldCrystalUse 0x834A "Your shields fade")
-		</Invoke>
+		<Language>
+			<Text id="descResultIntro">
+				The crystal is decayed etherium.
+			</Text>
+		</Language>
 	</ItemType>
 
 	<!-- Level 7: Molbidium field crystal -->
 
 	<ItemType UNID="&itMolbidiumCrystal;"
+			inherit=			"&baFieldCrystal;"
 			name=				"molbidium field crystal"
 			level=				"7"
-			value=				"25000"
+			value=				"12000"
 			mass=				"10"
 			frequency=			"common"
 			unknownType=		"&vtUnknownFieldCrystal;"
 			attributes=			"fieldCrystal, majorItem, shieldEnhance"
 
-			description=		"Molbidium crystals are often used to increase the power density of shield generators."
+			description=		"Molbidium crystals are often used to increase the power density of shield generators. They are compatible with shields of tech levels 4-10."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-3;"					descID:'TooPrimitive	}
+					{	criteria:"Ds L:4-10;"				enhancement:"+repair:10"	}
+					{	criteria:"s L:4-10;"				enhancement:"+hpBonus:30"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intFieldCrystalUse 0x0103 "Your shields are more powerful")
-		</Invoke>
+		<Language>
+			<Text id="descResultIntro">
+				The crystal is made of molbidium, which increases shield strength.
+			</Text>
+		</Language>
+	</ItemType>
+
+	<!-- Level 7: Superlattice Field Crystal -->
+
+	<ItemType UNID="&itSuperlatticeCrystal;"
+			inherit=			"&baFieldCrystal;"
+			name=				"superlattice field crystal"
+			level=				"7"
+			value=				"10000"
+			mass=				"10"
+			frequency=			"uncommon"
+			unknownType=		"&vtUnknownFieldCrystal;"
+			attributes=			"fieldCrystal, majorItem, shieldEnhance"
+
+			description=		"This crystalline superlattice absorbs high-energy particles and thus resist ion and thermonuclear damage. This crystal is compatible with shield generators of tech levels 4-10."
+
+			useScreen=			"&dsRPGUseItemOnShields;"
+			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-3;"					descID:'TooPrimitive	}
+					{	criteria:"s L:4-10;"				enhancement:"+resistDamageTier:ion:60"	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				The energy field crystal is made of a metamaterial superlattice, which absorbs ion and thermonuclear damage.
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- LEVEL 8 -->
@@ -255,213 +472,129 @@
 	<!-- Level 8: Blue Etherium field crystal -->
 
 	<ItemType UNID="&itBlueEtheriumCrystal;"
+			inherit=			"&baFieldCrystal;"
 			name=				"blue etherium field crystal"
 			level=				"8"
-			value=				"60000"
+			value=				"18000"
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
 			attributes=			"fieldCrystal, majorItem, shieldEnhance"
 
-			description=		"Blue etherium is used to create energy fields that reflect ion energy. Unfortunately, it has a limited duration."
+			description=		"Blue etherium is used to create energy fields that reflect ion energy. Unfortunately, it has a limited duration. These crystals work on shields of tech level 5-11."
 			
-			enhancement=		"0x0349"
+			useScreen=			"&dsRPGUseItemOnShields;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-4;"					descID:'TooPrimitive	}
+					{	criteria:"s L:5-11;"				enhancement:"+reflect:ion"		lifetime:(random 30000 40000)	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intFieldCrystalInstall &itBlueEtheriumCrystal; (random 30000 40000))
-		</Invoke>
-		
 		<Events>
-			<OnAddedAsEnhancement>
-				(objSendMessage gSource Nil (cat
-					"Your shields now reflect ion damage"
-					(if (eq aResult 6) " (previous enhancement lost)" "")
-					))
-			</OnAddedAsEnhancement>
-			
 			<OnRemovedAsEnhancement>
 				(objSendMessage gSource Nil "Blue etherium crystal has burned out")
 			</OnRemovedAsEnhancement>
 		</Events>
+
+		<Language>
+			<Text id="descResultIntro">
+				The crystal is made of blue etherium, which reflects ion energy.
+			</Text>
+		</Language>
 	</ItemType>
 
-	<!-- Level 8: Diamond field crystal -->
+<!-- LEVEL 10 -->
 
-	<ItemType UNID="&itDiamondCrystal;"
-			name=				"diamond field crystal"
-			level=				"8"
-			value=				"40000"
-			mass=				"10"
-			frequency=			"rare"
-			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"fieldCrystal, majorItem, shieldEnhance"
-
-			description=		"Diamond field crystals increase the power of tech VII-XII shield generators. Unlike other field crystals, a generator can use multiple diamond field crystals."
-			>
-
-		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
-
-		<Invoke>
-			(intFieldCrystalUse 0x0100 "Your shields are more powerful")
-		</Invoke>
-	</ItemType>
-
-<!-- LEVEL 11 -->
-
-	<!-- Level 11: Yellow Etherium field crystal -->
+	<!-- Level 10: Yellow Etherium field crystal -->
 
 	<ItemType UNID="&itYellowEtheriumCrystal;"
+			inherit=			"&baFieldCrystal;"
 			name=				"yellow etherium field crystal"
-			level=				"11"
-			value=				"300000"
+			level=				"10"
+			value=				"80000"
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
 			attributes=			"fieldCrystal, majorItem, shieldEnhance"
 
-			description=		"Yellow etherium is used to create energy fields that reflect positron energy. Unfortunately, it has a limited duration."
+			description=		"Yellow etherium is used to create energy fields that reflect positron energy. Unfortunately, it has a limited duration. This crystal works on tech levels 7-13."
 
-			enhancement=		"0x0369"
+			useScreen=			"&dsRPGUseItemOnShields;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"s L:1-6;"					descID:'TooPrimitive	}
+					{	criteria:"s L:7-13;"				enhancement:"+reflect:positron"		lifetime:(random 30000 40000)	}
+					{	criteria:"s"						descID:'TooAdvanced	}
+					)
+			</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="288" imageY="384" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intFieldCrystalInstall &itYellowEtheriumCrystal; (random 30000 40000))
-		</Invoke>
-		
 		<Events>
-			<OnAddedAsEnhancement>
-				(objSendMessage gSource Nil (cat
-					"Your shields now reflect positron damage"
-					(if (eq aResult 6) " (previous enhancement lost)" "")
-					))
-			</OnAddedAsEnhancement>
-			
 			<OnRemovedAsEnhancement>
 				(objSendMessage gSource Nil "Yellow etherium crystal has burned out")
 			</OnRemovedAsEnhancement>
 		</Events>
+
+		<Language>
+			<Text id="descResultIntro">
+				The crystal is made of yellow etherium, which reflects positron energy.
+			</Text>
+		</Language>
 	</ItemType>
 
 <!-- GLOBALS -->
 
 	<Globals>
 		(block Nil
-			(setq intFieldCrystalInstall (lambda (enhancementType theLifetime)
-				(block (theShields)
-					(switch
-						; Must have a shield generator
-						(not (setq theShields (item (objGetItems gSource "sI") 0)))
-							(objSendMessage gSource Nil "Shield generator required")
-
-						; Novaya repairers cannot be enhanced
-						(itmHasAttribute theShields 'nonEnergyShields)
-							(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName theShields '(article short)) }))
-
-						; If the shield generator is not advanced enough, then nothing happens
-						(ls (itmGetLevel theShields) 7)
-							(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
-							
-						; If the shield generator is too advanced, then nothing happens
-						(gr (itmGetLevel theShields) 12)
-							(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
-
-						; Damage items cannot be enhanced
-						(itmIsDamaged theShields)
-							(objSendMessage gSource Nil "This crystal cannot enhance a damaged shield generator")
-							
-						; Enhance!
-						(block Nil
-							; Add enhancement
-							(if (not (objAddItemEnhancement gSource theShields enhancementType theLifetime))
-								(objSendMessage gSource Nil "The crystal has no effect")
-								)
-
-							; Identify the item
-							(itmSetKnown gItem)
-
-							; Remove ROM
-							(objRemoveItem gSource gItem 1)
-							)
-						)
-					)
-				))
-
-			(setq intFieldCrystalUse (lambda (newMods successText)
-				(block (notFound)
-					; Install
-					(setq notFound True)
-					(objEnumItems gSource "sI" theItem
-						(block (shieldItem)
-							(setq shieldItem theItem)
-							(if notFound
-								(block Nil
-									(switch
-										; Novaya repairers cannot be enhanced
-										(itmHasAttribute shieldItem 'nonEnergyShields)
-											(objSendMessage gSource Nil (typTranslate &itGreenEtheriumCrystal; 'msgCannotEnhance { itemName:(itmGetName shieldItem '(article short)) }))
-
-										; If the shield generator is not advanced enough, then nothing happens
-										(ls (itmGetLevel shieldItem) 7)
-											(objSendMessage gSource Nil "Shield generator is too primitive for the field crystal")
-
-										; If the shield generator is too advanced, then nothing happens
-										(gr (itmGetLevel shieldItem) 12)
-											(objSendMessage gSource Nil "Shield generator is too advanced for the field crystal")
-
-										; If the item is damaged, we repair it
-										(and (itmIsDamaged shieldItem) (ls newMods 0x8000))
-											(block Nil
-												(shpRepairItem gSource theItem)
-												(objSendMessage gSource Nil "Shield generator has been repaired")
-												
-												; Remove ROM
-												(objRemoveItem gSource gItem 1)
-												)
-
-										; Enhance the shield generator
-										(block (result)
-											(setq result (shpEnhanceItem gSource theItem {
-												enhancement: newMods
-												type: gType
-												}))
-
-											(objSendMessage gSource Nil (intItemEnhanceStatus result successText "shield generator"))
-											
-											; Identify the item
-											(itmSetKnown gItem)
-
-											; Remove ROM
-											(objRemoveItem gSource gItem 1)
-											)
-										)
-									(setq notFound Nil)
-									)
-								)
-							)
-						)
-
-					(if notFound
-						(objSendMessage gSource Nil "Shield generator required")
-						)
-					)
-				))
 			)
 	</Globals>
 
 <!-- UNKNOWN TYPES -->
 
-	<!-- Field Crystal, Unknown -->
+	<ItemType UNID="&vtUnknownCommonFieldCrystal;"
+			name=				"energy field crystal(s)"
+			virtual=			"true"
+			level=				"3"
+			value=				"600"
+			attributes=			"unknown"
+
+			description=		"These rare crystals are used to modulate energy fields, such as those created by shield generators. Unfortunately, you cannot decode the crystal's markings."
+			>
+
+		<Names>field crystal(s) marked "Type I"; field crystal(s) marked "Type II";
+			field crystal(s) marked "Type III"; field crystal(s) marked "Type IV";
+			field crystal(s) marked "Argon-%1%0%0"; field crystal(s) marked "Beryllium-%1%0%0";
+			field crystal(s) marked "Cerium-%1%0%0"; field crystal(s) marked "Cobalt-%1%0%0";
+			field crystal(s) marked "Erbium-%1%0%0"; field crystal(s) marked "Francium-%1%0%0";
+			field crystal(s) marked "Gallium-%1%0%0"; field crystal(s) marked "Holmium-%1%0%0";
+			field crystal(s) marked "Iridium-%1%0%0"; field crystal(s) marked "Krypton-%1%0%0";
+			field crystal(s) marked "Lawrencium-%1%0%0"; field crystal(s) marked "Meitnerium-%1%0%0";
+			field crystal(s) marked "Medelevium-%1%0%0"; field crystal(s) marked "Neptunium-%1%0%0";
+			field crystal(s) marked "Niobium-%1%0%0"; field crystal(s) marked "Osmium-%1%0%0";
+			field crystal(s) marked "Polonium-%1%0%0"; field crystal(s) marked "Rhenium-%1%0%0";
+			field crystal(s) marked "Selenium-%1%0%0"; field crystal(s) marked "Tellurium-%1%0%0";
+			field crystal(s) marked "Xenon-%1%0%0"
+		</Names>
+	</ItemType>
 
 	<ItemType UNID="&vtUnknownFieldCrystal;"
 			name=				"energy field crystal(s)"
 			virtual=			"true"
 			level=				"7"
-			value=				"1000"
+			value=				"13000"
 			attributes=			"unknown"
 
 			description=		"These rare crystals are used to modulate energy fields, such as those created by shield generators. Unfortunately, you cannot decode the crystal's markings."
@@ -482,5 +615,34 @@
 			field crystal(s) marked "Z-field neutral"
 		</Names>
 	</ItemType>
+
+<!-- BASE CLASSES -->
+
+	<Type UNID="&baFieldCrystal;"
+			inherit="&baStdDeviceEnhancement;"
+			>
+		<Properties>
+			<Constant id="rpg.useCriteria">"s"</Constant>
+		</Properties>
+
+		<Language>
+			<Text id="descResult.ok">The %dstItem% is more powerful.</Text>
+			<Text id="descResult.alreadyEnhanced">The %dstItem% does not benefit from the crystal.</Text>
+			<Text id="descResult.defectRemoved">The crystal has repaired a defect on the %dstItem%.</Text>
+			<Text id="descResult.degraded">The %dstItem% has weakened further.</Text>
+			<Text id="descResult.enhancementRemoved">The %dstItem% has lost its previous enhancement.</Text>
+			<Text id="descResult.enhancementReplaced">The %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
+			<Text id="descResult.improved">The %dstItem% has been further enhanced.</Text>
+			<Text id="descResult.noEffect">The crystal has no effect.</Text>
+			<Text id="descResult.repaired">The %dstItem% has been repaired.</Text>
+
+			<Text id="descUsageOK">You can install %useItem% on %dstItem%.</Text>
+			<Text id="descUsageRepair">You can use %useItem% to repair %dstItem%.</Text>
+			<Text id="descUsageUnknown">The crystal can modulate energy fields. You can install it on %dstItem%.</Text>
+
+			<Text id="descResultTooAdvanced">Unfortunately, %dstItem% is too advanced to be upgraded.</Text>
+			<Text id="descResultTooPrimitive">Unfortunately, %dstItem% is too primitive for the upgrade.</Text>
+		</Language>
+	</Type>
 
 </TranscendenceModule>

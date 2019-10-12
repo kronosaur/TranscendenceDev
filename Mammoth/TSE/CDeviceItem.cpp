@@ -44,6 +44,26 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 	return m_pEnhancements;
 	}
 
+int CDeviceItem::GetHP (int *retiMaxHP, bool bUninstalled) const
+
+//	GetHP
+//
+//	Returns current hit point level.
+
+	{
+	const CInstalledDevice *pInstalled = GetInstalledDevice();
+	if (!bUninstalled && pInstalled)
+		{
+		CItemCtx ItemCtx(GetSource(), pInstalled);
+		return GetDeviceClass().GetHitPoints(ItemCtx, retiMaxHP);
+		}
+	else
+		{
+		CItemCtx ItemCtx(*this);
+		return GetDeviceClass().GetHitPoints(ItemCtx, retiMaxHP);
+		}
+	}
+
 DWORD CDeviceItem::GetLinkedFireOptions (void) const
 
 //	GetLinkedFireOptions
@@ -67,4 +87,28 @@ DWORD CDeviceItem::GetLinkedFireOptions (void) const
 	//	Done
 
 	return dwOptions;
+	}
+
+int CDeviceItem::GetMaxHP (void) const
+
+//	GetMaxHP
+//
+//	Return max hit points.
+
+	{
+	int iMaxHP;
+
+	const CInstalledDevice *pInstalled = GetInstalledDevice();
+	if (pInstalled)
+		{
+		CItemCtx ItemCtx(GetSource(), pInstalled);
+		GetDeviceClass().GetHitPoints(ItemCtx, &iMaxHP);
+		}
+	else
+		{
+		CItemCtx ItemCtx(*this);
+		GetDeviceClass().GetHitPoints(ItemCtx, &iMaxHP);
+		}
+
+	return iMaxHP;
 	}

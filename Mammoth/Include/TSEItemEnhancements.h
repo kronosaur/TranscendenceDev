@@ -171,6 +171,7 @@ class CItemEnhancement
 		void SetEnhancementType (CItemType *pType) { m_pEnhancer = pType; }
 		void SetExpireTime (int iTime) { m_iExpireTime = iTime; }
 		void SetID (DWORD dwID) { m_dwID = dwID; }
+		void SetModAbsorbAdj (DamageTypes iDamageType) { m_dwMods = Encode12(etDisadvantage | etReflect, DEFAULT_ABSORB_ADJ, (int)iDamageType); }
 		void SetModBonus (int iBonus);
 		void SetModCode (DWORD dwMods) { m_dwMods = dwMods; }
 		void SetModImmunity (SpecialDamageTypes iSpecial) { m_dwMods = Encode12(etSpecialDamage, 0, (int)iSpecial); }
@@ -194,6 +195,7 @@ class CItemEnhancement
 		static const CItemEnhancement &Null (void) { return m_Null; }
 
 	private:
+		static constexpr int DEFAULT_ABSORB_ADJ =		10;
 		static constexpr int DEFAULT_REFLECT_LEVEL =	9;
 
 		bool CalcRegen (CItemCtx &ItemCtx, int iTicksPerUpdate, CRegenDesc &retRegen, ERegenTypes *retiType = NULL) const;

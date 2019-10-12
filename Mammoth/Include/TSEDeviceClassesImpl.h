@@ -458,6 +458,7 @@ class CShieldClass : public CDeviceClass
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatShields; }
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const override;
+		virtual int GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const override;
 		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
@@ -497,10 +498,12 @@ class CShieldClass : public CDeviceClass
 		int FireGetMaxHP (CInstalledDevice *pDevice, CSpaceObject *pSource, int iMaxHP) const;
 		void FireOnShieldDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx);
 		void FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pSource);
+		int GetAbsorbAdj (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage) const;
 		int GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const;
 		int GetHPLeft (CItemCtx &Ctx) const;
 		int GetMaxHP (CItemCtx &Ctx) const;
 		int GetReferenceDepletionDelay (void) const;
+		int GetReflectChance (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage, int iHP, int iMaxHP) const;
 		bool UpdateDepleted (CInstalledDevice *pDevice);
 		void SetDepleted (CInstalledDevice *pDevice, CSpaceObject *pSource);
 		void SetHPLeft (CInstalledDevice *pDevice, CSpaceObject *pSource, int iHP, bool bConsumeCharges = false);

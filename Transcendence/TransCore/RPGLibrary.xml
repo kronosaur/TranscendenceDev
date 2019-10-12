@@ -133,6 +133,7 @@
 	<!-- 0120-013F MISC DOCK SCREENS -->
 
 	<!ENTITY dsRPGShipClassViewer		"0x00010120">
+	<!ENTITY dsRPGUseItemOnShields		"0x00010121">
 	]>
 	
 <CoreLibrary

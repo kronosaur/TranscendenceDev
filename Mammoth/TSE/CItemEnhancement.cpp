@@ -1825,7 +1825,10 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 
 		//	Sets reflect to 95%. For now we don't allow variations.
 
-		SetModReflect(iDamageType);
+		if (bDisadvantage)
+			SetModAbsorbAdj(iDamageType);
+		else
+			SetModReflect(iDamageType);
 		}
 
 	//	Regen

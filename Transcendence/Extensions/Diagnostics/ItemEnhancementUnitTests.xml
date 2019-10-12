@@ -93,6 +93,322 @@
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}
 
+						;	Silicarb Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itSilicarbCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'110	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itSilicarbCrystal;
+										)
+									'resultCode
+									)												result:'improved	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'120	}
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itMammoth25Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmCreate &itMammoth25Deflector; 1)
+										&itSilicarbCrystal;
+										)
+									'resultCode
+									)												result:'noEffect	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Rubidium Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itClass1Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itRubidiumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(@ (objGetItemProperty
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'damageAdj
+										)
+									'particle
+									)												result:60	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Green Etherium Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itClass3Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itGreenEtheriumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'reflect
+									)												result:{ particle:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Diamond Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itDiamondCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'110	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itDiamondCrystal;
+										)
+									'resultCode
+									)												result:'improved	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'120	}
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itMammoth25Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmCreate &itMammoth25Deflector; 1)
+										&itDiamondCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Trillum Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itClass3Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itTrillumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'powerUse
+									)												result:{ ion:10 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Decayed Etherium Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itClass3Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itDecayedEtheriumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'absorbAdj
+									)												result:{ ion:10 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Molbidium Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itNephrenP25; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itMolbidiumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'130	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itMolbidiumCrystal;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(itmGetProperty 
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'hp
+										)											result:'130	}
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itMammoth25Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(itmCreate &itMammoth25Deflector; 1)
+										&itMolbidiumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Superlattice Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itClass3Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itSuperlatticeCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(@ (objGetItemProperty
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										'damageAdj
+										)
+									'ion
+									)												result:60	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Blue Etherium Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itMammoth100Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itBlueEtheriumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'reflect
+									)												result:{ ion:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Yellow Etherium Field Crystal -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itMammoth100Deflector; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "sU") 0)
+										&itYellowEtheriumCrystal;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "sU") 0)
+									'reflect
+									)												result:{ positron:95 }	}
+
+						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
 						;	Longzhu sphere: repair shields -----------------------------------------
 
 						{	test:'(objAddItem gPlayerShip 
