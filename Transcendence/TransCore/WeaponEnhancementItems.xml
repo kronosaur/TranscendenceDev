@@ -176,6 +176,27 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="576" imageWidth="96" imageHeight="96"/>
 	</ItemType>
 
+	<!-- Level 4: Weapon Efficiency ROM -->
+
+	<ItemType UNID="&itWeaponEfficiencyROM;"
+			name=				"weapon efficiency ROM"
+			level=				"4"
+			value=				"1000"
+			mass=				"1"
+			frequency=			"uncommon"
+			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
+			attributes=			"info, minorItem, weaponEnhance"
+
+			description=		"This ROM reduces the power consumption of the ship's primary weapon."
+			>
+
+		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Invoke>
+			(intEnhanceWeaponUse 0x0f02 Nil "has more efficient power consumption" 6)
+		</Invoke>
+	</ItemType>
+
 <!-- LEVEL 5 -->
 
 	<!-- Level 5: Hexagene Booster -->

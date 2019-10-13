@@ -139,7 +139,7 @@
 					criteria=		"w L:1-7; +Rasiermesser; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intRasiermesserWeaponEnhancement)"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d12" 
@@ -277,7 +277,7 @@
 					criteria=		"w L:1-10; +Rasiermesser; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"20"
-					enhancement=	"=(intRasiermesserWeaponEnhancement)"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12"
@@ -291,7 +291,7 @@
 					criteria=		"w L:1-10; +Rasiermesser; -NotForSale;"
 					levelFrequency=	"systemLevel:v|u|cur"
 					enhanced=		"10"
-					enhancement=	"=(intRasiermesserWeaponEnhancement)"
+					enhancement=	"=(intRasiermesserWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12"
@@ -732,11 +732,31 @@
 	<Globals>
 		(block Nil
 			(setq intRasiermesserArmorEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0905 0x0915 0x0925 0x0935))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:0x0a05					type:&itAblativeArmorCoating;	}
+					{	enhancement:0x0a15					type:&itReactiveArmorCoating;	}
+					{	enhancement:0x0a25					type:&itParticleResistCoating;	}
+					;	LATER: Add blast resistance coating
+					{	enhancement:0x0200					type:&itRegeneratingNanos;	}
+					))
 				))
 
-			(setq intRasiermesserWeaponEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0102 0x0103 0x0103 0x0104 0x0f02 0x1002))
+			(setq intRasiermesserWeaponEnhancement (lambda (theItem)
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:30"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:30"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:40"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+efficient:20"			type:&itWeaponEfficiencyROM;	}
+					{	enhancement:"+speed:80"				type:&itWeaponSpeedROM;	}
+					))
 				))
 			)
 	</Globals>
