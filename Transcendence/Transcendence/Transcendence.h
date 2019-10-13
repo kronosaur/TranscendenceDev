@@ -127,11 +127,11 @@ class CMessageDisplay
 		void Paint (CG32bitImage &Dest);
 		void Update (void);
 
-		inline void SetBlinkTime (int iTime) { m_iBlinkTime = iTime; }
-		inline void SetFadeTime (int iTime) { m_iFadeTime = iTime; }
-		inline void SetFont (CG16bitFont *pFont) { m_pFont = pFont; }
-		inline void SetRect (RECT &rcRect) { m_rcRect = rcRect; }
-		inline void SetSteadyTime (int iTime) { m_iSteadyTime = iTime; }
+		void SetBlinkTime (int iTime) { m_iBlinkTime = iTime; }
+		void SetFadeTime (int iTime) { m_iFadeTime = iTime; }
+		void SetFont (CG16bitFont *pFont) { m_pFont = pFont; }
+		void SetRect (RECT &rcRect) { m_rcRect = rcRect; }
+		void SetSteadyTime (int iTime) { m_iSteadyTime = iTime; }
 
 	private:
 		enum Constants
@@ -157,8 +157,8 @@ class CMessageDisplay
 			CG32bitPixel rgbColor;					//	Color to paint
 			};
 
-		inline int Next (int iPos) { return ((iPos + 1) % MESSAGE_QUEUE_SIZE); }
-		inline int Prev (int iPos) { return ((iPos + MESSAGE_QUEUE_SIZE - 1) % MESSAGE_QUEUE_SIZE); }
+		int Next (int iPos) { return ((iPos + 1) % MESSAGE_QUEUE_SIZE); }
+		int Prev (int iPos) { return ((iPos + MESSAGE_QUEUE_SIZE - 1) % MESSAGE_QUEUE_SIZE); }
 
 		RECT m_rcRect;
 
@@ -186,8 +186,8 @@ class CHighScoreList
 
 		int AddEntry (const CGameRecord &NewEntry);
 
-		inline int GetCount (void) const { return m_iCount; }
-		inline const CGameRecord &GetEntry (int iIndex) const { return m_List[iIndex]; }
+		int GetCount (void) const { return m_iCount; }
+		const CGameRecord &GetEntry (int iIndex) const { return m_List[iIndex]; }
 
 	private:
 		bool m_bModified;
@@ -202,10 +202,10 @@ class CTextCrawlDisplay
 		~CTextCrawlDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (const RECT &rcRect, const CString &sText);
 		void Paint (CG32bitImage &Dest);
-		inline void SetFont (const CG16bitFont *pFont) { m_pFont = pFont; }
+		void SetFont (const CG16bitFont *pFont) { m_pFont = pFont; }
 		void Update (void);
 
 	private:
@@ -229,7 +229,7 @@ class CMenuData
 
 		CMenuData (void);
 
-		inline void AddMenuItem (const CString &sKey,
+		void AddMenuItem (const CString &sKey,
 						  const CString &sLabel,
 						  DWORD dwFlags,
 						  DWORD dwData,
@@ -241,20 +241,20 @@ class CMenuData
 						  DWORD dwFlags,
 						  DWORD dwData,
 						  DWORD dwData2 = 0);
-		inline void SetTitle (const CString &sTitle) { m_sTitle = sTitle; }
+		void SetTitle (const CString &sTitle) { m_sTitle = sTitle; }
 
 		int FindItemByKey (const CString &sKey);
 		bool FindItemData (const CString &sKey, DWORD *retdwData = NULL, DWORD *retdwData2 = NULL);
-		inline int GetCount (void) const { return m_iCount; }
-		inline DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
-		inline DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
-		inline const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
-		inline const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
-		inline DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
-		inline const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
-		inline const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
-		inline const CString &GetTitle (void) { return m_sTitle; }
-		inline void RemoveAll (void) { m_iCount = 0; }
+		int GetCount (void) const { return m_iCount; }
+		DWORD GetItemData (int iIndex) const { return m_List[iIndex].dwData; }
+		DWORD GetItemData2 (int iIndex) const { return m_List[iIndex].dwData2; }
+		const CObjectImageArray *GetItemImage (int iIndex) const { return m_List[iIndex].pImage; }
+		const CString &GetItemExtra (int iIndex) const { return m_List[iIndex].sExtra; }
+		DWORD GetItemFlags (int iIndex) const { return m_List[iIndex].dwFlags; }
+		const CString &GetItemKey (int iIndex) const { return m_List[iIndex].sKey; }
+		const CString &GetItemLabel (int iIndex) const { return m_List[iIndex].sLabel; }
+		const CString &GetTitle (void) { return m_sTitle; }
+		void RemoveAll (void) { m_iCount = 0; }
 
 	private:
 		struct Entry
@@ -281,11 +281,11 @@ class CMenuDisplay
 		~CMenuDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (CMenuData *pMenu, const RECT &rcRect);
-		inline void Invalidate (void) { m_bInvalid = true; }
+		void Invalidate (void) { m_bInvalid = true; }
 		void Paint (CG32bitImage &Dest);
-		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
+		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 
 		static CString GetHotKeyFromOrdinal (int *ioOrdinal, const TSortMap<CString, bool> &Exclude);
 
@@ -308,19 +308,19 @@ class CPickerDisplay
 		~CPickerDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		int GetSelection (void);
 		ALERROR Init (CMenuData *pMenu, const RECT &rcRect);
-		inline void Invalidate (void) { m_bInvalid = true; }
+		void Invalidate (void) { m_bInvalid = true; }
 		bool LButtonDown (int x, int y);
 		bool MouseMove (int x, int y);
 		bool MouseWheel (int iDelta, int x, int y);
 		void Paint (CG32bitImage &Dest);
-		inline void ResetSelection (void) { m_iSelection = 0; m_iHover = -1; m_iFirstInView = 0; m_cxSmoothScroll = 0; m_bInvalid = true; }
+		void ResetSelection (void) { m_iSelection = 0; m_iHover = -1; m_iFirstInView = 0; m_cxSmoothScroll = 0; m_bInvalid = true; }
 		void SelectNext (void);
 		void SelectPrev (void);
-		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
-		inline void SetHelpText (const CString &sText) { m_sHelpText = sText; }
+		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
+		void SetHelpText (const CString &sText) { m_sHelpText = sText; }
 
 	private:
 		int HitTest (int x, int y) const;
@@ -374,25 +374,25 @@ class CButtonBarData
 						StyleTypes iStyle = styleLarge);
 		void CleanUp (void);
 		int FindButton (const CString &sKey);
-		inline AlignmentTypes GetAlignment (int iIndex) { return m_Buttons[iIndex].iAlign; }
-		inline const RECT &GetButtonRect (int iIndex) { return m_Buttons[iIndex].rcRect; }
-		inline DWORD GetCmdID (int iIndex) { return m_Buttons[iIndex].dwCmdID; }
-		inline int GetCount (void) { return m_iCount; }
-		inline const CString &GetDescription (int iIndex) { return m_Buttons[iIndex].sDescription; }
-		inline const CG32bitImage &GetImage (void) { return m_Images; }
+		AlignmentTypes GetAlignment (int iIndex) { return m_Buttons[iIndex].iAlign; }
+		const RECT &GetButtonRect (int iIndex) { return m_Buttons[iIndex].rcRect; }
+		DWORD GetCmdID (int iIndex) { return m_Buttons[iIndex].dwCmdID; }
+		int GetCount (void) { return m_iCount; }
+		const CString &GetDescription (int iIndex) { return m_Buttons[iIndex].sDescription; }
+		const CG32bitImage &GetImage (void) { return m_Images; }
 		void GetImageSize (int iIndex, RECT *retrcRect);
-		inline int GetImageIndex (int iIndex) { return m_Buttons[iIndex].iImageIndex; }
-		inline const CString &GetKey (int iIndex) { return m_Buttons[iIndex].sKey; }
-		inline const CString &GetLabel (int iIndex) { return m_Buttons[iIndex].sLabel; }
-		inline StyleTypes GetStyle (int iIndex) { return m_Buttons[iIndex].iStyle; }
-		inline bool GetVisible (int iIndex) { return ((m_Buttons[iIndex].dwFlags & FLAG_VISIBLE) ? true : false); }
+		int GetImageIndex (int iIndex) { return m_Buttons[iIndex].iImageIndex; }
+		const CString &GetKey (int iIndex) { return m_Buttons[iIndex].sKey; }
+		const CString &GetLabel (int iIndex) { return m_Buttons[iIndex].sLabel; }
+		StyleTypes GetStyle (int iIndex) { return m_Buttons[iIndex].iStyle; }
+		bool GetVisible (int iIndex) { return ((m_Buttons[iIndex].dwFlags & FLAG_VISIBLE) ? true : false); }
 		int HitTest (int x, int y);
 		ALERROR Init (void);
 
-		inline void SetButtonRect (int iIndex, const RECT &rcRect) { m_Buttons[iIndex].rcRect = rcRect; }
-		inline void SetDescription (int iIndex, const CString &sDescription) { m_Buttons[iIndex].sDescription = sDescription; }
-		inline void SetLabel (int iIndex, const CString &sLabel) { m_Buttons[iIndex].sLabel = sLabel; }
-		inline void SetVisible (int iIndex, bool bVisible) { if (bVisible) m_Buttons[iIndex].dwFlags |= FLAG_VISIBLE; else m_Buttons[iIndex].dwFlags &= ~FLAG_VISIBLE; }
+		void SetButtonRect (int iIndex, const RECT &rcRect) { m_Buttons[iIndex].rcRect = rcRect; }
+		void SetDescription (int iIndex, const CString &sDescription) { m_Buttons[iIndex].sDescription = sDescription; }
+		void SetLabel (int iIndex, const CString &sLabel) { m_Buttons[iIndex].sLabel = sLabel; }
+		void SetVisible (int iIndex, bool bVisible) { if (bVisible) m_Buttons[iIndex].dwFlags |= FLAG_VISIBLE; else m_Buttons[iIndex].dwFlags &= ~FLAG_VISIBLE; }
 
 	private:
 		enum Flags
@@ -426,19 +426,19 @@ class CButtonBarDisplay
 		~CButtonBarDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (CTranscendenceWnd *pTrans, 
 					  CButtonBarData *pData, 
 					  const RECT &rcRect);
-		inline void Invalidate (void) { }
+		void Invalidate (void) { }
 		bool OnChar (char chChar);
 		bool OnKeyDown (int iVirtKey);
 		bool OnLButtonDoubleClick (int x, int y);
 		bool OnLButtonDown (int x, int y);
 		void OnMouseMove (int x, int y);
 		void Paint (CG32bitImage &Dest);
-		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
-        inline void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
+		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
+        void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
 		void Update (void);
 
 	private:
@@ -464,11 +464,11 @@ class CDeviceCounterDisplay
 		~CDeviceCounterDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (CPlayerShipController *pPlayer, const RECT &rcRect);
-		inline void Invalidate (void) { m_bInvalid = true; }
+		void Invalidate (void) { m_bInvalid = true; }
 		void Paint (CG32bitImage &Dest);
-		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
+		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 		void Update (void);
 
 	private:
@@ -491,9 +491,9 @@ class CPlayerDisplay
 		~CPlayerDisplay (void);
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (CTranscendenceWnd *pTrans, CCloudService *pService, const RECT &rcRect, bool bShowDebugOption);
-		inline void Invalidate (void) { m_bInvalid = true; }
+		void Invalidate (void) { m_bInvalid = true; }
 		bool OnChar (char chChar);
 		bool OnLButtonDoubleClick (int x, int y);
 		bool OnLButtonDown (int x, int y);
@@ -545,12 +545,12 @@ class CLRSDisplay
 			{ }
 
 		void CleanUp (void);
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (CPlayerShipController *pPlayer, const RECT &rcRect);
 		void Paint (CG32bitImage &Dest);
-		inline void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackground = rgbColor; }
-		inline void SetBackgroundImage (const CG32bitImage *pImage) { m_pBackground = pImage; }
-		inline void SetSnowImage (const CG32bitImage *pSnow) { m_pSnow = pSnow; }
+		void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackground = rgbColor; }
+		void SetBackgroundImage (const CG32bitImage *pImage) { m_pBackground = pImage; }
+		void SetSnowImage (const CG32bitImage *pSnow) { m_pSnow = pSnow; }
 		void Update (void);
 
 	private:
@@ -575,11 +575,11 @@ class CCommandLineDisplay
 		~CCommandLineDisplay (void);
 
 		void CleanUp (void);
-		inline void ClearInput (void) { m_sInput = NULL_STR; m_iCursorPos = 0; m_bInvalid = true; }
-		inline void ClearHint (void) { m_sHint = NULL_STR; m_iScrollPos = 0; m_bInvalid = true; }
-		inline const CString &GetInput (void) { return m_sInput; }
-		inline int GetOutputLineCount (void) { return GetOutputCount(); }
-		inline const RECT &GetRect (void) { return m_rcRect; }
+		void ClearInput (void) { m_sInput = NULL_STR; m_iCursorPos = 0; m_bInvalid = true; }
+		void ClearHint (void) { m_sHint = NULL_STR; m_iScrollPos = 0; m_bInvalid = true; }
+		const CString &GetInput (void) { return m_sInput; }
+		int GetOutputLineCount (void) { return GetOutputCount(); }
+		const RECT &GetRect (void) { return m_rcRect; }
 		ALERROR Init (const RECT &rcRect);
 		void Input (const CString &sInput);
 		void InputBackspace (void);
@@ -587,12 +587,12 @@ class CCommandLineDisplay
 		void InputEnter (void);
 		void InputHistoryUp(void);
 		void InputHistoryDown(void);
-		inline bool IsEnabled (void) const { return m_bEnabled; }
+		bool IsEnabled (void) const { return m_bEnabled; }
 		bool OnChar (char chChar, DWORD dwKeyData);
 		void OnKeyDown (int iVirtKey, DWORD dwKeyState);
 		void Output (const CString &sOutput, CG32bitPixel rgbColor = CG32bitPixel::Null());
 		void Paint (CG32bitImage &Dest);
-		inline void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
+		void SetEnabled (bool bEnabled = true) { m_bEnabled = bEnabled; }
 
 	private:
 		enum Constants
@@ -610,7 +610,7 @@ class CCommandLineDisplay
 		void Update (void);
 		const CString GetCurrentCmd (void);
 		void AutoCompleteSearch (void);
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 		const CVisualPalette &m_VI;
 		const CG16bitFont *m_pFont = NULL;
@@ -675,24 +675,24 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 
 		void Autopilot (bool bTurnOn);
 		void CleanUpPlayerShip (void);
-		void ClearMessage (void);
+		inline void ClearMessage (void);
 		void DebugConsoleOutput (const CString &sOutput);
 		void DisplayMessage (CString sMessage);
 		void DoCommand (DWORD dwCmd);
-		inline const CString &GetCrashInfo (void) { return m_sCrashInfo; }
+		const CString &GetCrashInfo (void) { return m_sCrashInfo; }
 		inline bool GetDebugGame (void);
-		inline const SFontTable &GetFonts (void) { return m_Fonts; }
+		const SFontTable &GetFonts (void) { return m_Fonts; }
 		inline CHighScoreList *GetHighScoreListOld (void);
 		inline CTranscendenceModel &GetModel (void);
 		void GetMousePos (POINT *retpt);
 		inline CPlayerShipController *GetPlayer (void);
-		inline CReanimator &GetReanimator (void) { return m_Reanimator; }
-		inline const CString &GetRedirectMessage (void) { return m_sRedirectMessage; }
+		CReanimator &GetReanimator (void) { return m_Reanimator; }
+		const CString &GetRedirectMessage (void) { return m_sRedirectMessage; }
 		inline CGameSettings &GetSettings (void);
-		inline const CUIResources &GetUIRes (void) { return m_UIRes; }
-		inline bool InAutopilot (void) { return m_bAutopilot; }
-		inline bool InDockState (void) { return m_State == gsDocked; }
-		inline bool InGameState (void) { return m_State == gsInGame; }
+		const CUIResources &GetUIRes (void) { return m_UIRes; }
+		bool InAutopilot (void) { return m_bAutopilot; }
+		bool InDockState (void) { return m_State == gsDocked; }
+		bool InGameState (void) { return m_State == gsInGame; }
 		ALERROR InitDisplays (void);
 		void OnStargateSystemReady (void);
 		void PlayerEndGame (void);
@@ -700,7 +700,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 							    CTopologyNode *pDestNode,
 							    const CString &sDestEntryPoint);
 		void RedirectDisplayMessage (bool bRedirect = true);
-		inline void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
+		void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
 
 		//	CUniverse::IHost
 		virtual void ConsoleOutput (const CString &sLine) override;
@@ -817,8 +817,8 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void ShowGameMenu (void);
 		void ShowUsePicker (void);
 
-		inline void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
-		inline bool IsGameCreated (void) { return m_bGameCreated; }
+		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
+		bool IsGameCreated (void) { return m_bGameCreated; }
 
 		inline CGameFile &GetGameFile (void);
 
@@ -960,7 +960,7 @@ class CTranscendencePlayer : public IPlayerController
 	public:
 		CTranscendencePlayer (void);
 
-		inline void SetPlayer (CPlayerShipController *pPlayer) { m_pPlayer = pPlayer; }
+		void SetPlayer (CPlayerShipController *pPlayer) { m_pPlayer = pPlayer; }
 
 		//	IPlayerController interface
 
@@ -995,11 +995,11 @@ class CTranscendenceModel
 		void OnPlayerEnteredGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate);
 		void OnPlayerExitedGate (void);
 		void OnPlayerTraveledThroughGate (void);
-		inline CDockSession &GetDockSession (void) { return m_Universe.GetDockSession(); }
-		inline const CDockSession &GetDockSession (void) const { return m_Universe.GetDockSession(); }
-		inline ICCItem *GetScreenData (const CString &sAttrib) { return GetScreenStack().GetData(sAttrib); }
-        inline CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
-        inline const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
+		CDockSession &GetDockSession (void) { return m_Universe.GetDockSession(); }
+		const CDockSession &GetDockSession (void) const { return m_Universe.GetDockSession(); }
+		ICCItem *GetScreenData (const CString &sAttrib) { return GetScreenStack().GetData(sAttrib); }
+        CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
+        const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
 		ALERROR EndGame (void);
 		ALERROR EndGame (const CString &sReason, const CString &sEpitaph, int iScoreChange = 0);
 		ALERROR EndGameClose (CString *retsError = NULL);
@@ -1011,17 +1011,17 @@ class CTranscendenceModel
 		ALERROR EnterScreenSession (CSpaceObject *pLocation, CDesignType *pRoot, const CString &sScreen, const CString &sPane, ICCItem *pData, CString *retsError = NULL);
 		void ExitScreenSession (bool bForceUndock = false);
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen = NULL, ICCItemPtr *retpData = NULL);
-		inline int GetLastHighScore (void) { return m_iLastHighScore; }
+		int GetLastHighScore (void) { return m_iLastHighScore; }
 		const SFileVersionInfo &GetProgramVersion (void) const { return m_Version; }
 		void GetScreenSession (SDockFrame *retFrame);
-        inline CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
-		inline void IncScreenData (const CString &sAttrib, ICCItem *pData, ICCItem **retpResult = NULL) { GetScreenStack().IncData(sAttrib, pData, retpResult); }
-		inline bool InScreenSession (void) const { return GetDockSession().InSession(); }
+        CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
+		void IncScreenData (const CString &sAttrib, ICCItem *pData, ICCItem **retpResult = NULL) { GetScreenStack().IncData(sAttrib, pData, retpResult); }
+		bool InScreenSession (void) const { return GetDockSession().InSession(); }
 		bool IsGalacticMapAvailable (CString *retsError = NULL);
 		void RecordFinalScore (const CString &sEpitaph, const CString &sEndGameReason, bool bEscaped);
 		void RefreshScreenSession (void);
 		bool ScreenTranslate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
-		inline void SetScreenData (const CString &sAttrib, ICCItem *pData) { GetScreenStack().SetData(sAttrib, pData); }
+		void SetScreenData (const CString &sAttrib, ICCItem *pData) { GetScreenStack().SetData(sAttrib, pData); }
 		ALERROR ShowPane (const CString &sPane);
 		ALERROR ShowScreen (SShowScreenCtx &Ctx, CString *retsError = NULL);
 		void ShowShipScreen (void);
@@ -1031,27 +1031,27 @@ class CTranscendenceModel
 		void AddSaveFileFolder (const CString &sFilespec);
 		int AddHighScore (const CGameRecord &Score);
 		void CleanUp (void);
-		inline const CString &GetCopyright (void) { return m_Version.sCopyright; }
-		inline CG32bitImage *GetCrawlImage (void) const { return m_pCrawlImage; }
-		inline CMusicResource *GetCrawlSoundtrack (void) const { return m_pCrawlSoundtrack; }
-		inline const CString &GetCrawlText (void) const { return m_sCrawlText; }
-		inline bool GetDebugMode (void) const { return m_bDebugMode; }
-		inline CGameFile &GetGameFile (void) { return m_GameFile; }
-		inline const CGameRecord &GetGameRecord (void) { return m_GameRecord; }
-		inline CHighScoreList &GetHighScoreListOld (void) { return m_HighScoreList; }
-		inline CPlayerShipController *GetPlayer (void) { return m_pPlayer; }
-		inline const CString &GetProductName (void) { return m_Version.sProductName; }
-		inline const TArray<CString> &GetSaveFileFolders (void) const { return m_SaveFileFolders; }
-		inline CSFXOptions &GetSFXOptions (void) { return m_Universe.GetSFXOptions(); }
-		inline CUniverse &GetUniverse (void) { return m_Universe; }
-		inline const CString &GetVersion (void) { return m_Version.sProductVersion; }
+		const CString &GetCopyright (void) { return m_Version.sCopyright; }
+		CG32bitImage *GetCrawlImage (void) const { return m_pCrawlImage; }
+		CMusicResource *GetCrawlSoundtrack (void) const { return m_pCrawlSoundtrack; }
+		const CString &GetCrawlText (void) const { return m_sCrawlText; }
+		bool GetDebugMode (void) const { return m_bDebugMode; }
+		CGameFile &GetGameFile (void) { return m_GameFile; }
+		const CGameRecord &GetGameRecord (void) { return m_GameRecord; }
+		CHighScoreList &GetHighScoreListOld (void) { return m_HighScoreList; }
+		CPlayerShipController *GetPlayer (void) { return m_pPlayer; }
+		const CString &GetProductName (void) { return m_Version.sProductName; }
+		const TArray<CString> &GetSaveFileFolders (void) const { return m_SaveFileFolders; }
+		CSFXOptions &GetSFXOptions (void) { return m_Universe.GetSFXOptions(); }
+		CUniverse &GetUniverse (void) { return m_Universe; }
+		const CString &GetVersion (void) { return m_Version.sProductVersion; }
 		ALERROR Init (const CGameSettings &Settings);
 		ALERROR InitBackground (const CGameSettings &Settings, const CString &sCollectionFolder, const TArray<CString> &ExtensionFolders, CString *retsError = NULL);
 		ALERROR LoadGame (const CString &sSignedInUsername, const CString &sFilespec, CString *retsError);
-		inline void ResetPlayer (void) { m_pPlayer = NULL; }
-		inline void SetCrawlImage (DWORD dwImage) { m_pCrawlImage = g_pUniverse->GetLibraryBitmap(dwImage); }
-		inline void SetCrawlSoundtrack (DWORD dwTrack) { m_pCrawlSoundtrack = g_pUniverse->FindMusicResource(dwTrack); }
-		inline void SetCrawlText (const CString &sText) { m_sCrawlText = sText; }
+		void ResetPlayer (void) { m_pPlayer = NULL; }
+		void SetCrawlImage (DWORD dwImage) { m_pCrawlImage = g_pUniverse->GetLibraryBitmap(dwImage); }
+		void SetCrawlSoundtrack (DWORD dwTrack) { m_pCrawlSoundtrack = g_pUniverse->FindMusicResource(dwTrack); }
+		void SetCrawlText (const CString &sText) { m_sCrawlText = sText; }
 		void SetDebugMode (bool bDebugMode = true);
 		ALERROR SaveHighScoreList (CString *retsError = NULL);
 		ALERROR SaveGame (DWORD dwFlags, CString *retsError = NULL);
@@ -1077,7 +1077,7 @@ class CTranscendenceModel
 		void CalcStartingPos (CShipClass *pStartingShip, DWORD *retdwMap, CString *retsNodeID, CString *retsPos);
 		ALERROR CreateAllSystems (const CString &sStartNode, CSystem **retpStartingSystem, CString *retsError);
 		void GenerateGameStats (CGameStats *retStats, bool bGameOver = false);
-		inline CString GetSaveFilePath (void) const { return (m_SaveFileFolders.GetCount() == 0 ? NULL_STR : m_SaveFileFolders[0]); }
+		CString GetSaveFilePath (void) const { return (m_SaveFileFolders.GetCount() == 0 ? NULL_STR : m_SaveFileFolders[0]); }
 		ALERROR LoadGameStats (const CString &sFilespec, CGameStats *retStats);
 		ALERROR LoadHighScoreList (CString *retsError = NULL);
 		ALERROR LoadUniverse (const CString &sCollectionFolder, const TArray<CString> &ExtensionFolders, DWORD dwAdventure, const TArray<DWORD> &Extensions, const TSortMap<DWORD, bool> &DisabledExtensions, CString *retsError = NULL);
@@ -1146,16 +1146,16 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 			m_SessionCtx.pSoundtrack = &m_Soundtrack;
 			}
 
-		inline CCommandLineDisplay &GetDebugConsole (void) { return m_DebugConsole; }
-        inline CGameSession *GetGameSession (void) { return m_pGameSession; }
-		inline const CGameKeys &GetKeyMap (void) const { return m_Settings.GetKeyMap(); }
-		inline CTranscendenceModel &GetModel (void) { return m_Model; }
-		inline CMultiverseModel &GetMultiverse (void) { return m_Multiverse; }
-		inline bool GetOptionBoolean (int iOption) { return m_Settings.GetBoolean(iOption); }
-		inline int GetOptionInteger (int iOption) { return m_Settings.GetInteger(iOption); }
-		inline CCloudService &GetService (void) { return m_Service; }
-		inline CGameSettings &GetSettings (void) { return m_Settings; }
-		inline CSoundtrackManager &GetSoundtrack (void) { return m_Soundtrack; }
+		CCommandLineDisplay &GetDebugConsole (void) { return m_DebugConsole; }
+        CGameSession *GetGameSession (void) { return m_pGameSession; }
+		const CGameKeys &GetKeyMap (void) const { return m_Settings.GetKeyMap(); }
+		CTranscendenceModel &GetModel (void) { return m_Model; }
+		CMultiverseModel &GetMultiverse (void) { return m_Multiverse; }
+		bool GetOptionBoolean (int iOption) { return m_Settings.GetBoolean(iOption); }
+		int GetOptionInteger (int iOption) { return m_Settings.GetInteger(iOption); }
+		CCloudService &GetService (void) { return m_Service; }
+		CGameSettings &GetSettings (void) { return m_Settings; }
+		CSoundtrackManager &GetSoundtrack (void) { return m_Soundtrack; }
 		void PaintDebugInfo (CG32bitImage &Dest, const RECT &rcScreen);
 		void SetOptionBoolean (int iOption, bool bValue);
 		void SetOptionInteger (int iOption, int iValue);
