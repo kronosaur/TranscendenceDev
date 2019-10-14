@@ -2940,6 +2940,11 @@
 			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
 
 			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</Constant>
+
+			<!--
 			A destroyed station may give out the following missions. Unless the
 			station was destroyed by the player, in which case, this criteria
 			will change.

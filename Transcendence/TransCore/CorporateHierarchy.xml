@@ -2955,6 +2955,11 @@
 			By default we accept any military ID (even ones from APD or ED).
 			-->
 			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+
+			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</COnstant>
 		</Properties>
 
 		<Events>

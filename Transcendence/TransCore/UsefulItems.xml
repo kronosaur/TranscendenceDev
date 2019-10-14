@@ -157,7 +157,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, cannotOrder"
+			attributes=			"ammoBox, consumable, cannotOrder, defective, notForSale"
 
 			description=		"This ammunition box contains leaky radioactive ordnance."
 			>
@@ -203,7 +203,7 @@
 			mass=				"2500"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownAmmoBox;"
-			attributes=			"ammoBox, consumable, cannotOrder"
+			attributes=			"ammoBox, consumable, cannotOrder, defective, notForSale"
 
 			description=		"This ammunition box has been rigged to disable the ship when it is opened."
 			>
@@ -623,7 +623,7 @@
 			mass=				"1"
 			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, shipEquipment"
+			attributes=			"defective, info, minorItem, shipEquipment, notForSale"
 
 			description=		"This ROM would normally enhance a ship's visual display, but a manufacturing defect makes it worse than useless. Plugging this in to your ship's computer will temporarily damage your display screen."
 

@@ -589,6 +589,11 @@
 			By default Ringers do not bother checking for military ID.
 			-->
 			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+
+			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</Constant>
 		</Properties>
 
 		<Language>
