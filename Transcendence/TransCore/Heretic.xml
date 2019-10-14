@@ -405,9 +405,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -673,9 +671,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -690,9 +686,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>

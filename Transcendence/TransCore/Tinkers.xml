@@ -80,6 +80,13 @@
 			ejectaType=			"&vtWreckEjecta;"
 			>
 
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -184,14 +191,11 @@
 
 						<Actions>
 							<Action id="actionBuyScrap" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellScrap">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionCustomWork">

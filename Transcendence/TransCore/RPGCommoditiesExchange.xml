@@ -6,15 +6,39 @@
 
 	This screen allows the player to buy and sell items according to the 
 	<Trade> settings.
-	
-	gData uses the following fields:
-	
-		checkMilitaryID: If True, we check military ID before installing an 
-				item.
-				
-		showInstallables: If True, we always show all devices, etc.
-		
-		sourceObj: If not Nil, use this as the object for inventory purposes.
+
+	PROPERTIES
+
+		rpg.checkMilitaryID: Specifies whether or not we require the player to 
+			have a military ID before selling them military items (items with
+			the military attribute).
+
+			If True, then we look for an ID with the military attribute. If a
+			string, then we assume it is an item criteria for the required
+			military ID (for example, Eurasian Diarchy uses this to require a
+			special letter or marque).
+
+			If not specified, we inherit the property from the object (or we use
+			(@ gData 'checkMilitaryID) for backwards compatibility).
+
+		rpg.showActualItem: If True, we show actual item names even if they are
+			unknown to the player. If the player purchases one of these unknown
+			items, they become known to them.
+
+			If Nil, then the player does not know what they are buying.
+
+			If not specified, we inherit the property from the object.
+
+		rpg.sourceObj: If not Nil, use this as the object for inventory 
+			purposes. That is, the list of items to buy comes from this object.
+
+			NOTE: <Trade> descriptors still come from gSource.
+
+	LANGUAGE
+
+		core.commoditiesExchangeDesc: If the source object has this text ID, 
+			then we use it as the screen description. Otherwise we use a 
+			default.
 	
 -->
 	
@@ -22,6 +46,12 @@
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Properties>
+			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
+		</Properties>
+
 		<Panes>
 			<Default>
 				<OnPaneInit>
@@ -34,15 +64,14 @@
 				<Actions>
 					<Action id="actionBuyItems" default="1">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							checkMilitaryID: (@ gData 'checkMilitaryID)
-							showInstallables: (@ gData 'showInstallables)
-							sourceObj: (@ gData 'sourceObj)
+							rpg.checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)
+							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
 					</Action>
 
 					<Action id="actionSellItems">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-							sourceObj: (@ gData 'sourceObj)
+							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
 					</Action>
 
@@ -69,27 +98,24 @@
 
 	This screen allows the player to buy items from a station. We use the 
 	<Trade> directives on the station to determine inventory and price.
-	
+
+	PROPERTIES
+
+		rpg.checkMilitaryID: See dsRPGCommoditiesExchange.
+
+		rpg.criteria: If non-nil, we restrict sales to items matching this 
+			criteria. [For backwards compatibility, this defaults to 
+			(@ gData 'criteria).]
+
+		rpg.showActualItem: See dsRPGCommoditiesExchange.
+
+		rpg.sourceObj: See dsRPGCommoditiesExchange.
+
 	gData uses the following fields:
 	
-		checkMilitaryID: If True, we check military ID before installing an 
-				item.
-				
-		criteria: If non-nil, we restrict sales to items matching this 
-				criteria.
-
 		listFilter: If non-nil, this is a function to use as a filter of items
 				for the player to buy.
 				
-		showInstallables: If non-nil, then we show weapons, armor, etc. in the
-				screen.
-
-		showActualItem: If non-nil, then show actual item name.
-				
-		sourceObj: If non-nil, get items from this object. NOTE: This is just
-				for the list of items; the <Trade> descriptors (and other stuff
-				still come from gSource).
-		
 -->
 	
 	<DockScreen unid="&dsRPGCommoditiesExchangeBuy;"
@@ -97,14 +123,21 @@
 			nestedScreen=		"true"
 			>
 		
+		<Properties>
+			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
+			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
+			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
+		</Properties>
+
 		<Display type="itemPicker"
-				dataFrom=	"=(or (@ gData 'sourceObj) 'station)"
+				dataFrom=	"=(or (scrGetProperty gScreen 'rpg.sourceObj) 'station)"
 				list=		"*"
 				>
 			<OnDisplayInit>
 				(block (
-					(itemCriteria (@ gData 'criteria))
-					(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+					(itemCriteria (scrGetProperty gScreen 'rpg.criteria))
+					(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
 					)
 				
 					(switch
@@ -140,9 +173,9 @@
 						(scrSetListFilter gScreen rpgCalcSellPrice)
 						)
 
-					(if (@ gData 'showActualItem)
-						(scrSetProperty gScreen 'showActualItem True)
-						)
+					;	We set the underlying engine property based on inputs.
+
+					(scrSetProperty gScreen 'showActualItem (scrGetProperty gScreen 'rpg.showActualItem))
 					)
 			</OnDisplayInit>
 		</Display>
@@ -157,7 +190,7 @@
 						
 						(currencyUsed (objGetDefaultCurrency gSource))
 						(flags {
-							actual: (@ gData 'showActualItem)
+							actual: (scrGetProperty gScreen 'rpg.showActualItem)
 							})
 						(rawCost (objGetSellPrice gSource thisItem flags))
 						(itemCost (if rawCost rawCost 0))
@@ -177,7 +210,7 @@
 						;	Mark up
 						
 						(baseCost (itmGetPrice thisItem {
-							actual: (@ gData 'showActualItem)
+							actual: (scrGetProperty gScreen 'rpg.showActualItem)
 							currency: currencyUsed
 							}))
 						(itemMarkup (if (gr itemCost 0) (- itemCost baseCost) 0))
@@ -189,7 +222,7 @@
 
 						;	Military?
 
-						(militaryCheck (rpgCheckMilitaryIDPolicy gSource (@ gData 'checkMilitaryID)))
+						(militaryCheck (rpgCheckMilitaryID (scrGetProperty gScreen 'rpg.checkMilitaryID)))
 						(militaryCount 
 							(if (and (itmHasAttribute thisItem 'military)
 									(!= militaryCheck True)
@@ -213,7 +246,7 @@
 							item: thisItem
 
 							buyAndInstall: True
-							checkMilitaryID: (@ gData 'checkMilitaryID)
+							checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)
 							checkTotalPower: True
 							currencyUsed: currencyUsed
 							installerObj: gSource
@@ -324,7 +357,7 @@
 								;	Otherwise, complete transaction
 									
 								(block Nil
-									(if (@ gData 'showActualItem)
+									(if (scrGetProperty gScreen 'rpg.showActualItem)
 										(itmSetKnown thisItem)
 										)
 
@@ -373,7 +406,7 @@
 									(scrShowPane gScreen "InstallItem")
 									
 								(block Nil
-									(if (@ gData 'showActualItem)
+									(if (scrGetProperty gScreen 'rpg.showActualItem)
 										(itmSetKnown thisItem)
 										)
 
@@ -433,7 +466,7 @@
 								
 							(scrSetData gScreen 'itemInstalled itemInstalled)
 								
-							(if (@ gData 'showActualItem)
+							(if (scrGetProperty gScreen 'rpg.showActualItem)
 								(itmSetKnown itemInstalled)
 								)
 
@@ -451,7 +484,7 @@
 							(itemCost (scrGetData gScreen 'itemCost))
 							)
 							
-							(if (@ gData 'showActualItem)
+							(if (scrGetProperty gScreen 'rpg.showActualItem)
 								(itmSetKnown thisItem)
 								)
 
@@ -572,7 +605,11 @@
 
 	This screen allows the player to sell items to a station. We use the 
 	<Trade> directives on the station to determine inventory and price.
-	
+
+	PROPERTIES
+
+		rpg.sourceObj: See dsRPGCommoditiesExchange.
+
 	gData uses the following fields:
 	
 		criteria: If non-nil, we restrict sales to items matching this 
@@ -587,10 +624,6 @@
 		priceCalc: If non-nil, then use this function to compute the price to
 				pay. Otherwise, we use the normal Trade descriptors
 				
-		sourceObj: If non-nil, get items from this object. NOTE: This is just
-				for the list of items; the <Trade> descriptors (and other stuff
-				still come from gSource).
-				
 		title: Title for screen (or Nil for station name)
 -->
 	
@@ -600,13 +633,16 @@
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Properties>
+			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
+		</Properties>
 
 		<ListOptions
 				dataFrom=	"player"
 				list=		"*"
 				>
 			(block (
-				(itemCriteria (@ gData 'criteria))
+				(itemCriteria (scrGetProperty gScreen 'rpg.criteria))
 				)
 				
 				(switch
@@ -794,7 +830,7 @@
 							(thisItem (scrGetItem gScreen))
 							(maxCount (scrGetData gScreen 'maxCount))
 							(itemCost (scrGetData gScreen 'itemCost))
-							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
 							)
 							
 							(switch
@@ -841,7 +877,7 @@
 							(countToSell (scrGetCounter gScreen))
 							(maxCount (scrGetData gScreen 'maxCount))
 							(itemCost (scrGetData gScreen 'itemCost))
-							(sourceObj (if (@ gData 'sourceObj) (@ gData 'sourceObj) gSource))
+							(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
 							)
 							
 							(switch

@@ -175,9 +175,7 @@
 
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -514,9 +512,7 @@
 
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -633,9 +629,7 @@
 						<Actions>
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -972,6 +966,13 @@
 	<Type UNID="&baTeratonNestBase;"
 			inherit=			"&unidCommonText;"
 			>
+		<Properties>
+			<!--
+			By default Teratons do not bother checking for military ID.
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+		</Properties>
+
 		<Language>
 			<Text id="actionCommoditiesExchange">[T]rading Chamber</Text>
 

@@ -1957,9 +1957,7 @@
 							</Action>
 
 							<Action name="Commodities Exchange" key="C">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action name="Dock Services" key="D">
@@ -3071,14 +3069,11 @@
 							</Action>
 
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionDockServices">

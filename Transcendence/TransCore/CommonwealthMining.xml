@@ -309,9 +309,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">

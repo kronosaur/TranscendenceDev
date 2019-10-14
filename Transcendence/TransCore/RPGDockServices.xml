@@ -1303,9 +1303,9 @@
 				<Actions>
 					<Action id="actionBuyAmmo">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							checkMilitaryID: (@ gData 'checkMilitaryID)
-							criteria: (cat "m +launchedBy:" (itmGetType (scrGetItem gScreen)) ";")
-							sourceObj: (@ gData 'sourceObj)
+							rpg.checkMilitaryID: (@ gData 'checkMilitaryID)
+							rpg.criteria: (cat "m +launchedBy:" (itmGetType (scrGetItem gScreen)) ";")
+							rpg.sourceObj: (@ gData 'sourceObj)
 							})
 					</Action>
 					

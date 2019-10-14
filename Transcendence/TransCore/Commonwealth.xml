@@ -289,9 +289,7 @@
 							</Action>
 					
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -553,9 +551,7 @@
 							</Action>
 					
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -650,7 +646,6 @@
 				/>
 
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -735,9 +730,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices" default="1">
@@ -895,9 +888,7 @@
 
 						<Actions>
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1607,9 +1598,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -2945,7 +2934,17 @@
 			inherit=			"&unidCommonText;"
 			>
 		<Properties>
-			<Data		id="rpg.triageMissionCriteria">(cat "n +commonwealth; +triage; =" (sysGetLevel) ";")</Data>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+
+			<!--
+			A destroyed station may give out the following missions. Unless the
+			station was destroyed by the player, in which case, this criteria
+			will change.
+			-->
+			<Data		id="rpg.triageMissionCriteria">(cat "n +commonwealth; +triage; -destroyedByPlayer; =" (sysGetLevel) ";")</Data>
 		</Properties>
 
 		<Events>

@@ -221,9 +221,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -384,9 +382,7 @@
 							</Action>
 							
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -552,9 +548,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -937,15 +931,11 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action name="Buy Autons" default="1" key="B">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									showActualItem: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action name="Sell Autons" key="S">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action name="Repair Active Autons" key="R">
@@ -1224,8 +1214,7 @@
 					<Default descID="descCorporateLevel">
 						<Actions>
 							<Action id="actionSellItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionLeave" cancel="1">
@@ -1426,9 +1415,7 @@
 							</Action>
 
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1597,9 +1584,7 @@
 							</Action>
 
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionRepairItems">
@@ -1751,14 +1736,11 @@
 
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 							
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 							
 							<Action id="actionUndock" cancel="1">
@@ -2063,8 +2045,7 @@
 
 						<Actions>
 							<Action id="actionSellItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionLeave" cancel="1">
@@ -2218,14 +2199,11 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -2384,9 +2362,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionDockServices" default="1">
@@ -2518,9 +2494,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -2927,9 +2901,7 @@
 					</Action>
 
 					<Action id="actionBuyItems">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 					</Action>
 
 					<Action id="actionUndock" cancel="1">
@@ -2978,6 +2950,13 @@
 	<Type unid="&baCorporateStation;"
 		inherit=			"&dsDockScreenBase;"
 		>
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+		</Properties>
+
 		<Events>
 			<OnDestroy>
 				(intCorporateOnDestroy)

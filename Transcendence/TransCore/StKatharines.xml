@@ -1321,9 +1321,7 @@
 			<Default descID="descCommerceQuarter">
 				<Actions>
 					<Action id="actionCommoditiesExchange" default="1">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 					</Action>
 					
 					<Action id="actionIncandescentExports">
@@ -1344,8 +1342,7 @@
 				<Actions>
 					<Action name="Buy Items" default="1" key="B">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							criteria: "* +food; +specialty;"
-							checkMilitaryID: True
+							rpg.criteria: "* +food; +specialty;"
 							})
 					</Action>
 

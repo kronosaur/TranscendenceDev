@@ -202,9 +202,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -219,9 +217,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>
@@ -373,9 +369,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -401,9 +395,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>
@@ -591,6 +583,14 @@
 	<Type unid="&baRingersStation;"
 			inherit=			"&unidCommonText;"
 			>
+
+		<Properties>
+			<!--
+			By default Ringers do not bother checking for military ID.
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+		</Properties>
+
 		<Language>
 			<Text id="actionCommoditiesExchange">[E]xchange</Text>
 

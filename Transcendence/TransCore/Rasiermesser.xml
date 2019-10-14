@@ -369,9 +369,7 @@
 							</Action>
 
 							<Action name="Buy Items" key="B">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action name="Repair Items" key="R">

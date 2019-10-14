@@ -143,14 +143,11 @@ PLAYER DATA
 							</Action>
 
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -619,14 +616,11 @@ PLAYER DATA
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -744,9 +738,7 @@ PLAYER DATA
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: Nil
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1443,6 +1435,13 @@ PLAYER DATA
 	<Type unid="&baBlackMarketStation;"
 			inherit="&unidCommonText;"
 			>
+		<Properties>
+			<!--
+			By default we do not check military IDs
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</COnstant>
+		</Properties>
+
 		<Events>
 			<OnCreate>
 				(if (objGetStaticData gSource 'blackMarket.deployBountyHunters)
