@@ -140,7 +140,7 @@ ICCItemPtr CDockScreenList::OnGetProperty (const CString &sProperty) const
 		return ICCItemPtr(m_pItemListControl->IsDisplayAsKnown());
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
 IDockScreenDisplay::EResults CDockScreenList::OnHandleAction (DWORD dwTag, DWORD dwData)
@@ -560,7 +560,7 @@ IDockScreenDisplay::EResults CDockScreenList::OnSetLocation (CSpaceObject *pLoca
 	return resultShowPane;
 	}
 
-bool CDockScreenList::OnSetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreenList::OnSetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	OnSetProperty
 //

@@ -182,7 +182,6 @@ void CUniverse::Boot (void)
 //	kernelInit.
 
 	{
-	CEffect::Boot();
 	}
 
 ALERROR CUniverse::CreateEmptyStarSystem (CSystem **retpSystem)

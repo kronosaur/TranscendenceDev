@@ -1084,7 +1084,7 @@ int Kernel::strCompareAbsolute (const CString &sString1, const CString &sString2
 		return 0;
 	}
 
-int Kernel::strCompareAbsolute (const char *pS1, const char *pS2)
+int Kernel::strCompareAbsolute (LPCSTR pS1, LPCSTR pS2)
 	{
 	while (*pS1 != '\0' && *pS2 != '\0')
 		{

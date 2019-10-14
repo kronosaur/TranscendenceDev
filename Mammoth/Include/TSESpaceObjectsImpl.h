@@ -343,8 +343,6 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError) override;
 
-		static void Boot (void);
-
 	protected:
 
 		//	CSpaceObject virtuals

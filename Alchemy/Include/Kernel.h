@@ -1429,7 +1429,7 @@ bool kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout = INFINITE);
 CString strCat (const CString &sString1, const CString &sString2);
 int strCompare (const CString &sString1, const CString &sString2);
 int strCompareAbsolute (const CString &sString1, const CString &sString2);
-int strCompareAbsolute (const char *pS1, const char *pS2);
+int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2);
 CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline CString strANSIToUTF8 (const CString &sText) { return strConvert(sText, CP_ACP, CP_UTF8); }
 inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, CP_UTF8, CP_ACP); }
@@ -1660,6 +1660,12 @@ int KeyCompare (const KEY &Key1, const KEY &Key2)
 		return -1;
 	else
 		return 0;
+	}
+
+template<>
+inline int KeyCompare<LPCSTR> (const LPCSTR &Key1, const LPCSTR &Key2)
+	{
+	return strCompareAbsolute(Key1, Key2);
 	}
 
 template<>

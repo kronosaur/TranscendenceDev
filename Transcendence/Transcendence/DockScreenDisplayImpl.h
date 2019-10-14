@@ -111,7 +111,7 @@ class CDockScreenList : public IDockScreenDisplay
 		virtual EResults OnSetListCursor (int iCursor) override;
 		virtual EResults OnSetListFilter (const CItemCriteria &Filter) override;
 		virtual EResults OnSetLocation (CSpaceObject *pLocation) override;
-		virtual bool OnSetProperty (const CString &sProperty, ICCItem &Value) override;
+		virtual bool OnSetProperty (const CString &sProperty, const ICCItem &Value) override;
 		virtual void OnShowItem (void) override;
 		virtual void OnShowPane (bool bNoListNavigation) override;
 

@@ -124,7 +124,7 @@ class IDockScreenDisplay
 		EResults SetListCursor (int iCursor) { return OnSetListCursor(iCursor); }
 		EResults SetListFilter (const CItemCriteria &Filter) { return OnSetListFilter(Filter); }
 		EResults SetLocation (CSpaceObject *pLocation) { m_pLocation = pLocation; return OnSetLocation(pLocation); }
-		bool SetProperty (const CString &sProperty, ICCItem &Value);
+		bool SetProperty (const CString &sProperty, const ICCItem &Value);
 		bool SelectItem (const CItem &Item) { return OnSelectItem(Item); }
 		bool SelectNextItem (void) { return OnSelectNextItem(); }
 		bool SelectPrevItem (void) { return OnSelectPrevItem(); }
@@ -158,7 +158,7 @@ class IDockScreenDisplay
 		virtual EResults OnSetListCursor (int iCursor) { return resultNone; }
 		virtual EResults OnSetListFilter (const CItemCriteria &Filter) { return resultNone; }
 		virtual EResults OnSetLocation (CSpaceObject *pLocation) { return resultNone; }
-		virtual bool OnSetProperty (const CString &sProperty, ICCItem &Value) { return false; }
+		virtual bool OnSetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
 		virtual void OnShowItem (void) { }
 		virtual void OnShowPane (bool bNoListNavigation);
 
@@ -304,7 +304,7 @@ class CDockPane
 		bool HandleAction (DWORD dwTag, DWORD dwData);
 		bool HandleChar (char chChar);
 		bool HandleKeyDown (int iVirtKey);
-		ALERROR InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect);
+		ALERROR InitPane (CDockSession &DockSession, CDockScreen &DockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect);
 		bool SetControlValue (const CString &sID, ICCItem *pValue);
 		void SetCounterValue (int iValue);
 		void SetDescription (const CString &sDesc);
@@ -470,9 +470,9 @@ class CDockScreen : public IScreenController,
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void HandleChar (char chChar);
 		void HandleKeyDown (int iVirtKey);
-		ALERROR InitScreen (HWND hWnd, 
+		ALERROR InitScreen (CDockSession &DockSession,
+							HWND hWnd, 
 							RECT &rcRect, 
-							CDockScreenStack &FrameStack,
 							CExtension *pExtension,
 							CXMLElement *pDesc, 
 							const CString &sInitialPane,
@@ -496,11 +496,11 @@ class CDockScreen : public IScreenController,
 		ICCItem *GetCurrentListEntry (void);
 		const CString &GetDescription (void) const { return m_CurrentPane.GetDescriptionString(); }
 		CG32bitImage *GetDisplayCanvas (const CString &sID);
+		CDockSession *GetDockSession (void) const { return m_pDockSession; }
 		CItemListManipulator &GetItemListManipulator (void) { return m_pDisplay->GetItemListManipulator(); }
 		int GetListCursor (void) const { return m_pDisplay->GetListCursor(); }
 		IListData *GetListData (void) const { return m_pDisplay->GetListData(); }
         CGameSession &GetGameSession (void) { return m_Session; }
-		ICCItemPtr GetProperty (const CString &sProperty) const;
 		CString GetTextInput (void) const { return m_CurrentPane.GetTextInputValue(); }
         const CDockScreenVisuals &GetDockScreenVisuals (void) const;
 		const CVisualPalette &GetVisuals (void) const { return g_pHI->GetVisuals(); }
@@ -515,18 +515,19 @@ class CDockScreen : public IScreenController,
 		bool SetControlValue (const CString &sID, ICCItem *pValue) { return m_CurrentPane.SetControlValue(sID, pValue); }
 		void SetCounter (int iCount) { m_CurrentPane.SetCounterValue(iCount); }
 		void SetListCursor (int iCursor);
-		bool SetProperty (const CString &sProperty, ICCItem &Value);
 		void SetTextInput (const CString &sText) { m_CurrentPane.SetTextInputValue(sText); }
-		void ShowPane (const CString &sName);
-		bool Translate (const CString &sTextID, ICCItem *pData, ICCItemPtr &pResult);
+		void ShowPane (CDockSession &DockSession, const CString &sName);
 
 		//	IScreenController virtuals
 		virtual void Action (DWORD dwTag, DWORD dwData = 0) override;
 
 		//	IDockScreenUI
+		virtual ICCItemPtr GetProperty (const CString &sProperty) const override;
 		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) override;
 		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
+		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) override;
+
 
 	private:
 		enum EControlTypes
@@ -562,13 +563,13 @@ class CDockScreen : public IScreenController,
 		void CleanUpBackgroundImage (void);
 		ALERROR CreateBackgroundImage (const IDockScreenDisplay::SBackgroundDesc &Desc, const RECT &rcRect, int xOffset);
 		void CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, const IDockScreenDisplay::SDisplayOptions &Options, const TArray<SScreenSetTab> &ScreenSet, const CString &sCurTab);
-		ALERROR CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen);
+		ALERROR CreateTitleArea (CDockSession &DockSession, CXMLElement *pDesc, AGScreen *pScreen);
 		bool EvalBool (const CString &sString);
 		CString EvalInitialPane (void);
 		CString EvalInitialPane (CSpaceObject *pSource, ICCItem *pData);
 		SDisplayControl *FindDisplayControl (const CString &sID);
 		ALERROR FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CString *retsError);
-		CString GetScreenName (CXMLElement *pDesc);
+		CString GetScreenName (CDockSession &DockSession, CXMLElement *pDesc);
 		ALERROR InitCodeChain (CTranscendenceWnd *pTrans, CSpaceObject *pStation);
 		ALERROR InitDisplay (CXMLElement *pDisplayDesc, AGScreen *pScreen);
 		void InitOnUpdate (CXMLElement *pDesc);
@@ -585,6 +586,7 @@ class CDockScreen : public IScreenController,
 
 		const SFontTable *m_pFonts = NULL;
         CGameSession &m_Session;
+		CDockSession *m_pDockSession = NULL;			//	Guaranteed to be valid after InitScreen is called.
 		CPlayerShipController *m_pPlayer = NULL;
 		CDesignType *m_pRoot = NULL;
 		CString m_sScreen;

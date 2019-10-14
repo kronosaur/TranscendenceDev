@@ -14,10 +14,10 @@ class TPropertyHandler
 	public:
 		struct SPropertyDef
 			{
-			LPSTR pProperty;
-			LPSTR pShortDesc;
+			LPCSTR pProperty;
+			LPCSTR pShortDesc;
 			std::function<ICCItemPtr(const OBJ &, const CString &)> fnGet;
-			std::function<bool(OBJ &, const CString &, ICCItem *, CString *)> fnSet;
+			std::function<bool(OBJ &, const CString &, const ICCItem &, CString *)> fnSet;
 			};
 
 		TPropertyHandler (void)
@@ -27,7 +27,7 @@ class TPropertyHandler
 		template <int N> TPropertyHandler (const std::array<SPropertyDef, N> &Table)
 			{
 			for (int i = 0; i < N; i++)
-				m_Table.SetAt(CString(Table[i].pProperty), Table[i]);
+				m_Table.SetAt(Table[i].pProperty, Table[i]);
 			}
 
 		bool FindProperty (const OBJ &Obj, const CString &sProperty, ICCItemPtr &retpValue) const
@@ -64,7 +64,7 @@ class TPropertyHandler
 
 			try
 				{
-				return m_Table[iIndex].fnGet(Obj, CString(m_Table[iIndex].sProperty));
+				return m_Table[iIndex].fnGet(Obj, CString(m_Table[iIndex].pProperty));
 				}
 			catch (...)
 				{
@@ -74,27 +74,27 @@ class TPropertyHandler
 
 		int GetPropertyCount (void) const { return m_Table.GetCount(); }
 
-		const CString &GetPropertyName (int iIndex) const
+		CString GetPropertyName (int iIndex) const
 			{
 			if (iIndex < 0 || iIndex >= m_Table.GetCount())
 				return NULL_STR;
 
-			return m_Table.GetKey(iIndex);
+			return CString(m_Table.GetKey(iIndex));
 			}
 
-		bool SetProperty (OBJ &Obj, const CString &sProperty, ICCItem *pValue, CString *retsError = NULL)
+		bool SetProperty (OBJ &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError = NULL)
 			{
 			const SPropertyDef *pEntry = m_Table.GetAt(sProperty);
 			if (pEntry == NULL || pEntry->fnSet == NULL)
 				{
 				if (retsError)
-					*retsError = strPatternSubst("Invalid property: %s", sProperty);
+					*retsError = NULL_STR;
 				return false;
 				}
 
 			try
 				{
-				return pEntry->fnSet(Obj, sProperty, pValue, retsError);
+				return pEntry->fnSet(Obj, sProperty, Value, retsError);
 				}
 			catch (...)
 				{
@@ -105,5 +105,5 @@ class TPropertyHandler
 			}
 
 	private:
-		TSortMap<CString, SPropertyDef> m_Table;
+		TSortMap<LPCSTR, SPropertyDef> m_Table;
 	};

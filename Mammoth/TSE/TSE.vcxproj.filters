@@ -1336,5 +1336,8 @@
     <ClCompile Include="CDeviceItem.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
+    <ClCompile Include="DockSessionProperties.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

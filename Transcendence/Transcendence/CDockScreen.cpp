@@ -388,6 +388,8 @@ void CDockScreen::CleanUpScreen (void)
 	m_CurrentPane.ClearDescriptionError();
 
 	m_pOnScreenUpdate = NULL;
+	m_pLocation = NULL;
+	m_pDockSession = NULL;
 
 	DEBUG_CATCH
 	}
@@ -589,7 +591,7 @@ void CDockScreen::CreateScreenSetTabs (const IDockScreenDisplay::SInitCtx &Ctx, 
 	Ctx.pScreen->AddArea(m_pTabs, rcRect, TAB_AREA_ID);
 	}
 
-ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen)
+ALERROR CDockScreen::CreateTitleArea (CDockSession &DockSession, CXMLElement *pDesc, AGScreen *pScreen)
 
 //	CreateTitleArea
 //
@@ -613,7 +615,7 @@ ALERROR CDockScreen::CreateTitleArea (CXMLElement *pDesc, AGScreen *pScreen)
 
 	//	Get the name of this location
 
-	CString sName = GetScreenName(pDesc);
+	CString sName = GetScreenName(DockSession, pDesc);
 
 	//	Add the name as a title to the screen
 
@@ -692,7 +694,7 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 
 //	GetProperty
 //
-//	Returns the given screen property.
+//	Returns the given screen property, or NULL if not found.
 
 	{
 	//	See if this is a generic property.
@@ -717,10 +719,10 @@ ICCItemPtr CDockScreen::GetProperty (const CString &sProperty) const
 	//	Otherwise, Nil
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
-bool CDockScreen::SetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreen::SetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetProperty
 //
@@ -931,7 +933,7 @@ ALERROR CDockScreen::FireOnScreenInit (CSpaceObject *pSource, ICCItem *pData, CS
 	DEBUG_CATCH
 	}
 
-CString CDockScreen::GetScreenName (CXMLElement *pDesc)
+CString CDockScreen::GetScreenName (CDockSession &DockSession, CXMLElement *pDesc)
 
 //	GetScreenName
 //
@@ -944,14 +946,14 @@ CString CDockScreen::GetScreenName (CXMLElement *pDesc)
 
 	//	If we have a "core.name" language element, then use that.
 
-	if (Translate(CONSTLIT("core.name"), m_pData, pTitle))
+	if (DockSession.Translate(CONSTLIT("core.name"), m_pData, pTitle))
 		return pTitle->GetStringValue();
 
 	//	If we have nameID= then use that as a translation ID.
 
 	else if (pDesc->FindAttribute(NAME_ID_ATTRIB, &sValue))
 		{
-		if (!Translate(sValue, m_pData, pTitle))
+		if (!DockSession.Translate(sValue, m_pData, pTitle))
 			return strPatternSubst(CONSTLIT("Unknown language ID: %s"), sValue);
 
 		return pTitle->GetStringValue();
@@ -1233,9 +1235,9 @@ void CDockScreen::InitOnUpdate (CXMLElement *pDesc)
 		}
 	}
 
-ALERROR CDockScreen::InitScreen (HWND hWnd, 
+ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
+								 HWND hWnd, 
 								 RECT &rcRect, 
-								 CDockScreenStack &FrameStack,
 								 CExtension *pExtension,
 								 CXMLElement *pDesc, 
 								 const CString &sInitialPane,
@@ -1247,6 +1249,12 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 //
 //	Initializes the docking screen. Returns an AGScreen object
 //	that has been initialized appropriately.
+//
+//	LATER: We need to separate the computation of state information (e.g.,
+//	executing events, computing panes, etc.) from the initialization of the
+//	screen itself. Eventually, all the state computation should happen inside
+//	CDockSession and this method should just ask CDockSession for the current
+//	state.
 
 	{
 	DEBUG_TRY
@@ -1261,7 +1269,8 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Init some variables
 
-	SDockFrame Frame = FrameStack.GetCurrent();
+	m_pDockSession = &DockSession;
+	const SDockFrame &Frame = DockSession.GetCurrentFrame();
 	m_pLocation = Frame.pLocation;
 	m_pRoot = Frame.pRoot;
 	m_sScreen = Frame.sScreen;
@@ -1347,7 +1356,7 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 
 	//	Creates the title area
 
-	if (error = CreateTitleArea(m_pDesc, m_pScreen))
+	if (error = CreateTitleArea(DockSession, m_pDesc, m_pScreen))
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to create title area.");
 		return error;
@@ -1357,9 +1366,9 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 	//	the latest frame because we could have added a screenset in 
 	//	OnScreenInit above.
 
-	if (FrameStack.GetCurrent().ScreenSet.GetCount() > 0)
+	if (DockSession.GetCurrentFrame().ScreenSet.GetCount() > 0)
 		{
-		const SDockFrame &CurFrame = FrameStack.GetCurrent();
+		const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
 		CreateScreenSetTabs(DisplayCtx, DisplayOptions, CurFrame.ScreenSet, CurFrame.sCurrentTab);
 
 		DisplayOptions.cyTabRegion = GetDockScreenVisuals().GetTabHeight();
@@ -1443,15 +1452,17 @@ ALERROR CDockScreen::InitScreen (HWND hWnd,
 			sPane = CONSTLIT("Default");
 
 		//	Set the pane for the current frame stack, now that we've figured it out.
+		//	LATER: The method for computing the current pane should be moved to
+		//	the dock session object.
 
-		FrameStack.SetCurrentPane(sPane);
+		DockSession.SetCurrentPane(sPane);
 		}
 	else
 		sPane = sInitialPane;
 
 	//	Show the pane
 
-	ShowPane(sPane);
+	ShowPane(DockSession, sPane);
 
 	//	Done
 
@@ -1922,7 +1933,7 @@ void CDockScreen::SetLocation (CSpaceObject *pLocation)
 		}
 	}
 
-void CDockScreen::ShowPane (const CString &sName)
+void CDockScreen::ShowPane (CDockSession &DockSession, const CString &sName)
 
 //	ShowPane
 //
@@ -1980,7 +1991,7 @@ void CDockScreen::ShowPane (const CString &sName)
 
 	//	Initialize the pane based on the pane descriptor
 
-	m_CurrentPane.InitPane(this, pNewPane, m_Layout.GetContentRect());
+	m_CurrentPane.InitPane(DockSession, *this, pNewPane, m_Layout.GetContentRect());
 
 	//	Update screen
 	//	Show the currently selected item
@@ -2030,7 +2041,11 @@ bool CDockScreen::SelectTab (const CString &sID)
 //	Selects the given tab.
 
 	{
-	const SScreenSetTab *pTabInfo = g_pTrans->GetModel().GetScreenStack().FindTab(sID);
+	ASSERT(m_pDockSession);
+	if (m_pDockSession == NULL)
+		return false;
+
+	const SScreenSetTab *pTabInfo = m_pDockSession->FindTab(sID);
 	if (pTabInfo == NULL)
 		return false;
 
@@ -2048,16 +2063,6 @@ bool CDockScreen::SelectTab (const CString &sID)
 		}
 
 	return true;
-	}
-
-bool CDockScreen::Translate (const CString &sTextID, ICCItem *pData, ICCItemPtr &pResult)
-
-//	Translate
-//
-//	Translate text
-
-	{
-	return g_pTrans->GetModel().ScreenTranslate(sTextID, pData, pResult);
 	}
 
 void CDockScreen::Update (int iTick)

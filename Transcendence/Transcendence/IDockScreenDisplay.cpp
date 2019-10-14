@@ -273,7 +273,7 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 		return OnGetProperty(sProperty);
 	}
 
-bool IDockScreenDisplay::SetProperty (const CString &sProperty, ICCItem &Value)
+bool IDockScreenDisplay::SetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetProperty
 //
@@ -423,7 +423,7 @@ ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 //	Default has no properties
 
 	{
-	return ICCItemPtr(ICCItem::Nil);
+	return NULL;
 	}
 
 void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)

@@ -2148,39 +2148,6 @@ ALERROR CTranscendenceModel::SaveHighScoreList (CString *retsError)
 	return NOERROR;
 	}
 
-bool CTranscendenceModel::ScreenTranslate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError) const
-
-//	ScreenTranslate
-//
-//	Translates a text ID. We return Nil if we could not find the text ID.
-
-	{
-	//	If not in a screen session, then nothing
-
-	if (!InScreenSession())
-		{
-		if (retsError) *retsError = CONSTLIT("Not in a dock screen.");
-		return false;
-		}
-
-	const SDockFrame &Frame = GetScreenStack().GetCurrent();
-
-	//	First ask the current docking location to translate
-
-	if (Frame.pLocation && Frame.pLocation->Translate(sID, pData, pResult))
-		return true;
-
-	//	Otherwise, let the screen translate
-
-	if (Frame.pResolvedRoot && Frame.pResolvedRoot->Translate(Frame.pLocation, sID, pData, pResult))
-		return true;
-
-	//	Otherwise, we have no translation
-
-	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown Language ID: %s"), sID);
-	return false;
-	}
-
 void CTranscendenceModel::SetDebugMode (bool bDebugMode)
 
 //	SetDebugMode
@@ -2235,6 +2202,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 
 	{
 	ASSERT(!GetScreenStack().IsEmpty());
+	if (!InScreenSession())
+		return NOERROR;
 
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
@@ -2246,7 +2215,7 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 
 	//	Show it
 
-	pSession->GetDockScreen().ShowPane(sPane);
+	pSession->GetDockScreen().ShowPane(GetDockSession(), sPane);
 
 	//	Done
 
@@ -2389,9 +2358,9 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
-	error = pSession->GetDockScreen().InitScreen(m_HI.GetHWND(),
+	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
-			GetScreenStack(),
 			pExtension,
 			pScreen,
 			Ctx.sPane,

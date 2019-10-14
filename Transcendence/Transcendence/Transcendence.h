@@ -997,7 +997,6 @@ class CTranscendenceModel
 		void OnPlayerTraveledThroughGate (void);
 		CDockSession &GetDockSession (void) { return m_Universe.GetDockSession(); }
 		const CDockSession &GetDockSession (void) const { return m_Universe.GetDockSession(); }
-		ICCItem *GetScreenData (const CString &sAttrib) { return GetScreenStack().GetData(sAttrib); }
         CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
         const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
 		ALERROR EndGame (void);
@@ -1015,13 +1014,10 @@ class CTranscendenceModel
 		const SFileVersionInfo &GetProgramVersion (void) const { return m_Version; }
 		void GetScreenSession (SDockFrame *retFrame);
         CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
-		void IncScreenData (const CString &sAttrib, ICCItem *pData, ICCItem **retpResult = NULL) { GetScreenStack().IncData(sAttrib, pData, retpResult); }
 		bool InScreenSession (void) const { return GetDockSession().InSession(); }
 		bool IsGalacticMapAvailable (CString *retsError = NULL);
 		void RecordFinalScore (const CString &sEpitaph, const CString &sEndGameReason, bool bEscaped);
 		void RefreshScreenSession (void);
-		bool ScreenTranslate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
-		void SetScreenData (const CString &sAttrib, ICCItem *pData) { GetScreenStack().SetData(sAttrib, pData); }
 		ALERROR ShowPane (const CString &sPane);
 		ALERROR ShowScreen (SShowScreenCtx &Ctx, CString *retsError = NULL);
 		void ShowShipScreen (void);

@@ -876,7 +876,7 @@ bool CDockPane::InitLayout (const CString &sLayout, const RECT &rcFullRect, CStr
 	return true;
 	}
 
-ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect)
+ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect)
 
 //	InitPane
 //
@@ -887,10 +887,10 @@ ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, c
 
 	//	Initialize
 
-	AGScreen *pScreen = pDockScreen->GetScreen();
+	AGScreen *pScreen = DockScreen.GetScreen();
 	CleanUp(pScreen);
 
-	m_pDockScreen = pDockScreen;
+	m_pDockScreen = &DockScreen;
 	m_pPaneDesc = pPaneDesc;
 	ICCItem *pData = m_pDockScreen->GetData();
 
@@ -954,7 +954,7 @@ ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, c
 	else if (m_pPaneDesc->FindAttribute(DESC_ID_ATTRIB, &sValue))
 		{
 		ICCItemPtr pResult;
-		if (!m_pDockScreen->Translate(sValue, pData, pResult))
+		if (!DockSession.Translate(sValue, pData, pResult))
 			ReportError(strPatternSubst(CONSTLIT("Unknown language ID: %s"), sValue));
 		else
 			SetDescription(pResult->GetStringValue());
