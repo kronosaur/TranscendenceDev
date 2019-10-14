@@ -412,9 +412,6 @@
     <ClCompile Include="SFXImageFracture.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
-    <ClCompile Include="SFXLightningShockwave.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="SFXMoltenBolt.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
@@ -1148,9 +1145,6 @@
       <Filter>Source Files\Stations</Filter>
     </ClCompile>
     <ClCompile Include="CEnhancementDesc.cpp">
-      <Filter>Source Files\Items</Filter>
-    </ClCompile>
-    <ClCompile Include="CItemPriceTracker.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
     <ClCompile Include="CTradingDesc.cpp">

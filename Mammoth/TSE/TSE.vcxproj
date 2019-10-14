@@ -410,7 +410,6 @@
     <ClCompile Include="CIntegralRotationDesc.cpp" />
     <ClCompile Include="CItemCriteria.cpp" />
     <ClCompile Include="CItemLevelCriteria.cpp" />
-    <ClCompile Include="CItemPriceTracker.cpp" />
     <ClCompile Include="CItemTypeProbabilityTable.cpp" />
     <ClCompile Include="CLanguage.cpp" />
     <ClCompile Include="CLightningBundlePainter.cpp" />
@@ -725,7 +724,6 @@
     <ClCompile Include="SFXImage.cpp" />
     <ClCompile Include="SFXImageAndTail.cpp" />
     <ClCompile Include="SFXImageFracture.cpp" />
-    <ClCompile Include="SFXLightningShockwave.cpp" />
     <ClCompile Include="SFXMoltenBolt.cpp" />
     <ClCompile Include="SFXParticleCloud.cpp" />
     <ClCompile Include="SFXParticlePattern.cpp" />

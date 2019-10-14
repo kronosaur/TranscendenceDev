@@ -49,39 +49,6 @@ class CFractalTextureLibrary
 		TArray<CG8bitImage> m_ExplosionTextures;
 	};
 
-#ifdef LATER_PRICE_TRACKER
-
-//	Item Price Tracker ---------------------------------------------------------
-
-class CItemPriceTracker
-	{
-	public:
-		bool FindBestPlaceToBuy (const CItem &Item, CString *retsNodeID, DWORD *retdwObjID, int *retiPrice) const;
-		bool FindBestPlaceToSell (const CItem &Item, CString *retsNodeID, DWORD *retdwObjID, int *retiPrice) const;
-		void ReadFromStream (SUniverseLoadCtx &Ctx);
-		void UpdatePrices (CSystem *pSystem);
-		void WriteToStream (IWriteStream *pStream);
-
-	private:
-		struct SPriceVector
-			{
-			TSortMap<int, TArray<DWORD>> BuyPrices;			//	List of ObjIDs that will buy at this price (ascending sort)
-			TSortMap<int, TArray<DWORD>> BuyDamagedPrices;	//	List of ObjIDs that will buy damaged item at this price (ascending sort)
-			TSortMap<int, TArray<DWORD>> SellPrices;		//	List of ObjIDs that will sell at this price (ascending sort)
-			};
-
-		struct SSystemEntry
-			{
-			TSortMap<DWORD, SPriceVector> Items;
-			};
-
-		void UpdatePrices (SSystemEntry &Entry, CSystem *pSystem, CSpaceObject *pObj);
-
-		TSortMap<CString, SSystemEntry> m_Systems;
-	};
-
-#endif
-
 //	Debug Options --------------------------------------------------------------
 
 class CDebugOptions
