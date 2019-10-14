@@ -357,7 +357,7 @@ void CDockSession::OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignT
 		}
 	}
 
-bool CDockSession::SetData (const CString &sAttrib, ICCItem *pData)
+bool CDockSession::SetData (const CString &sAttrib, const ICCItem *pData)
 
 //	SetData
 //
@@ -367,15 +367,35 @@ bool CDockSession::SetData (const CString &sAttrib, ICCItem *pData)
 	if (!InSession())
 		return false;
 
-	//	If necessary, create the stored data block
+	//	If nil, then we delete the entry
 
-	SDockFrame &Frame = m_DockFrames.GetCurrent();
-	if (!Frame.pStoredData)
-		Frame.pStoredData = ICCItemPtr(ICCItem::SymbolTable);
+	if (pData == NULL || pData->IsNil())
+		{
+		SDockFrame &Frame = m_DockFrames.GetCurrent();
+		if (Frame.pStoredData)
+			Frame.pStoredData->DeleteAt(sAttrib);
+		}
 
-	//	Add the entry
+	//	Otherwise, add entry
 
-	Frame.pStoredData->SetAt(sAttrib, pData);
+	else
+		{
+		//	If necessary, create the stored data block
+
+		SDockFrame &Frame = m_DockFrames.GetCurrent();
+		if (!Frame.pStoredData)
+			Frame.pStoredData = ICCItemPtr(ICCItem::SymbolTable);
+
+		//	Clone, because we don't want to inherit any future changes to this
+		//	item.
+
+		ICCItemPtr pClone(pData->CloneContainer());
+
+		//	Add the entry
+
+		Frame.pStoredData->SetAt(sAttrib, pClone);
+		}
+
 	return true;
 	}
 

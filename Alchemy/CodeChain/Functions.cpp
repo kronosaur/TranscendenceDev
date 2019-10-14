@@ -1823,7 +1823,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (pValue->IsNil())
 					{
-					pTarget->DeleteEntry(pCC, pKey);
+					pTarget->DeleteEntry(pKey);
 					}
 
 				//	Otherwise, add it

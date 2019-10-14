@@ -261,7 +261,7 @@ class CAttributeDataBlock
 		void OnSystemChanged (CSystem *pSystem);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStream (IReadStream *pStream);
-		void SetData (const CString &sAttrib, ICCItem *pItem);
+		void SetData (const CString &sAttrib, const ICCItem *pItem);
 		void SetFromXML (CXMLElement *pData);
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);

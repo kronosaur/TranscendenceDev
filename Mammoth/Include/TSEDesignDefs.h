@@ -44,6 +44,10 @@ class CDesignPropertyDefinitions
 	public:
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		bool Find (const CString &sProperty, ICCItemPtr &pData, EPropertyType *retiType = NULL) const;
+		ICCItemPtr GetCode (int iIndex) const { return m_Defs[iIndex].pCode; }
+		int GetCount (void) const { return m_Defs.GetCount(); }
+		const CString &GetName (int iIndex) const { return m_Defs.GetKey(iIndex); }
+		EPropertyType GetType (int iIndex) const { return m_Defs[iIndex].iType; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &Desc);
 		void InitItemData (CUniverse &Universe, CItem &Item) const;
 		void InitObjectData (CUniverse &Universe, CSpaceObject &Obj, CAttributeDataBlock &Dest) const;

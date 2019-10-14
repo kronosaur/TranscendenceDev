@@ -149,7 +149,7 @@ ICCItem *CCSymbolTable::Clone (CCodeChain *pCC)
 	return pNewTable;
 	}
 
-ICCItem *CCSymbolTable::CloneContainer (void)
+ICCItem *CCSymbolTable::CloneContainer (void) const
 
 //	CloneContainer
 //
@@ -264,7 +264,7 @@ void CCSymbolTable::DeleteAll (CCodeChain *pCC, bool bLambdaOnly)
 		}
 	}
 
-void CCSymbolTable::DeleteEntry (CCodeChain *pCC, ICCItem *pKey)
+void CCSymbolTable::DeleteEntry (ICCItem *pKey)
 
 //	DeleteEntry
 //

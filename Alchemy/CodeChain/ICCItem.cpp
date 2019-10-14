@@ -68,7 +68,7 @@ void ICCItem::AppendString (const CString &sValue)
 	pItem->Discard();
 	}
 
-void ICCItem::CloneItem (ICCItem *pItem)
+void ICCItem::CloneItem (const ICCItem *pItem)
 
 //	CloneItem
 //
@@ -279,6 +279,17 @@ void ICCItem::ResetItem (void)
 	m_bQuoted = false;
 	m_bError = false;
 	m_bNoRefCount = false;
+	}
+
+void ICCItem::DeleteAt (const CString &sKey)
+
+//	DeleteAt
+//
+//	Deletes a key-value pair.
+
+	{
+	ICCItemPtr pKey(sKey);
+	DeleteEntry(pKey);
 	}
 
 void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)

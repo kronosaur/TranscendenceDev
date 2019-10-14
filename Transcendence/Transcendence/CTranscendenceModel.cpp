@@ -2322,8 +2322,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	NewFrame.pRoot = Ctx.pRoot;
 	NewFrame.sScreen = sScreenActual;
 	NewFrame.sPane = Ctx.sPane;
-	if (Ctx.pData)
-		NewFrame.pInitialData = Ctx.pData;
+	NewFrame.pInitialData = Ctx.pData;
 	NewFrame.pResolvedRoot = Ctx.pRoot;
 	NewFrame.sResolvedScreen = sScreenActual;
 
@@ -2343,6 +2342,10 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 		GetScreenStack().SetCurrent(NewFrame, &OldFrame);
 	else
 		GetScreenStack().ResolveCurrent(NewFrame);
+
+	//	Initialize custom screen properties
+
+	m_Universe.GetDockSession().InitCustomProperties();
 
 	//	Show the screen
 	//

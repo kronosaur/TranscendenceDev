@@ -110,7 +110,7 @@ class ICCItem : public CObject
 		//	Increment and decrement ref counts
 
 		virtual ICCItem *Clone (CCodeChain *pCC) = 0;
-		virtual ICCItem *CloneContainer (void) = 0;
+		virtual ICCItem *CloneContainer (void) const = 0;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) { return Clone(pCC); }
 		virtual void Discard (void);
 		ICCItem *Reference (void) const { m_dwRefCount++; return const_cast<ICCItem *>(this); }
@@ -183,6 +183,7 @@ class ICCItem : public CObject
 		//	Symbol/Atom table functions
 
 		void AppendAt (const CString &sKey, ICCItem *pValue);
+		void DeleteAt (const CString &sKey);
 		bool GetBooleanAt (const CString &sKey) const;
 		double GetDoubleAt (const CString &sKey, double rDefault = 0.0) const;
 		int GetIntegerAt (const CString &sKey, int iDefault = 0) const;
@@ -195,7 +196,7 @@ class ICCItem : public CObject
 		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) { }
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) { ASSERT(false); }
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) { }
-		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) { }
+		virtual void DeleteEntry (ICCItem *pKey) { }
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) { return -1; }
 		virtual int FindValue (ICCItem *pValue) { return -1; }
 		virtual IItemTransform *GetDefineHook (void) { return NULL; }
@@ -218,7 +219,7 @@ class ICCItem : public CObject
 		static int Compare (ICCItem *pFirst, ICCItem *pSecond);
 
 	protected:
-		void CloneItem (ICCItem *pItem);
+		void CloneItem (const ICCItem *pItem);
 
 		virtual void DestroyItem (void) { }
 
@@ -289,7 +290,7 @@ class ICCAtom : public ICCItem
 
 		//	ICCItem virtuals
 
-		virtual ICCItem *CloneContainer (void) override { return Reference(); }
+		virtual ICCItem *CloneContainer (void) const override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual ICCItem *GetElement (int iIndex) const override { return (iIndex == 0 ? Reference() : NULL); }
 		virtual int GetCount (void) const override { return 1; }
@@ -574,7 +575,7 @@ class CCLinkedList : public ICCList
 
 		virtual void Append (ICCItem *pValue) override;
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (void) override;
+		virtual ICCItem *CloneContainer (void) const override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual int GetCount (void) const override { return m_iCount; }
@@ -618,7 +619,7 @@ class CCVectorOld : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (void) override { return Reference(); }	//	LATER
+		virtual ICCItem *CloneContainer (void) const override { return Reference(); }	//	LATER
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual int GetCount (void) const override { return m_iCount; }
 		virtual ICCItem *GetElement (int iIndex) const override;
@@ -678,7 +679,7 @@ class CCVector : public ICCVector
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (void) override { return Reference(); }
+		virtual ICCItem *CloneContainer (void) const override { return Reference(); }
 		virtual ICCItem *Enum (CEvalContext *pCtx, ICCItem *pCode) override;
 		virtual int GetCount (void) const override { return m_vData.GetCount(); }
 		virtual ICCItem *GetElement (int iIndex) const override;
@@ -740,7 +741,7 @@ class CCSymbolTable : public ICCList
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual ICCItem *CloneContainer (void) override;
+		virtual ICCItem *CloneContainer (void) const override;
 		virtual ICCItem *CloneDeep (CCodeChain *pCC) override;
 		virtual ValueTypes GetValueType (void) const override { return SymbolTable; }
 		virtual bool IsConstant (void) const override;
@@ -768,7 +769,7 @@ class CCSymbolTable : public ICCList
 		virtual void AddByOffset (CCodeChain *pCC, int iOffset, ICCItem *pEntry) override;
 		virtual void AddEntry (ICCItem *pKey, ICCItem *pEntry, bool bForceLocalAdd = false) override;
 		virtual void DeleteAll (CCodeChain *pCC, bool bLambdaOnly) override;
-		virtual void DeleteEntry (CCodeChain *pCC, ICCItem *pKey) override;
+		virtual void DeleteEntry (ICCItem *pKey) override;
 		virtual int FindOffset (CCodeChain *pCC, ICCItem *pKey) override;
 		virtual int FindValue (ICCItem *pValue) override;
 		virtual IItemTransform *GetDefineHook (void) override { return m_pDefineHook; }

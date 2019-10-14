@@ -124,19 +124,21 @@ class CDockSession
 		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
+		void InitCustomProperties (void);
 		bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
 		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemBegin(Ctx, pSource, Item); }
 		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemComplete(Ctx, pSource, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
-		bool SetData (const CString &sAttrib, ICCItem *pValue);
+		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
 		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
 		bool SetScreenSet (const ICCItem &ScreenSet);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
 
 	private:
+		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
 		bool ModifyItemNotificationNeeded (CSpaceObject *pSource) const;
 
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI

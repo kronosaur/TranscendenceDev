@@ -291,6 +291,7 @@ class CDesignType
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		ICCItemPtr GetProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
+		const CDesignPropertyDefinitions *GetPropertyDefs (void) const { return (m_pExtra ? &m_pExtra->PropertyDefs : NULL); }
 		int GetPropertyInteger (const CString &sProperty) const;
 		CString GetPropertyString (const CString &sProperty) const;
 		CXMLElement *GetScreen (const CString &sUNID);
@@ -318,7 +319,7 @@ class CDesignType
 		bool IsModification (void) const { return m_bIsModification; }
 		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		void MarkImages (void) { OnMarkImages(); }
-		void SetGlobalData (const CString &sAttrib, ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
+		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		void SetModification (bool bValue = true) { m_bIsModification = true; }

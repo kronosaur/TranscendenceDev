@@ -644,7 +644,7 @@ void CAttributeDataBlock::ReadFromStream (IReadStream *pStream)
 		}
 	}
 
-void CAttributeDataBlock::SetData (const CString &sAttrib, ICCItem *pItem)
+void CAttributeDataBlock::SetData (const CString &sAttrib, const ICCItem *pItem)
 
 //	SetData
 //
