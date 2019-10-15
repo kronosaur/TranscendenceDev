@@ -313,8 +313,8 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -619,8 +619,8 @@
 		</Items>
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +ringerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
 			<Buy	criteria="*NU +res; &gt;=4;"		priceAdj="90"/>
 			<ConsumeTrade	criteria="{human.res}"		impact="2"/>

@@ -37,7 +37,7 @@
 			mass=				"50"
 			frequency=			"rare"
 			unknownType=		"&itUnknownMnemonicCube;"
-			attributes=			"defective, info, minorItem, notForSale, quantumProgram, shieldDamage"
+			attributes=			"defective, info, minorItem, quantumProgram, shieldDamage"
 
 			description=		"The first version of the ShieldPower algorithm is promising but contains significant bugs."
 			>

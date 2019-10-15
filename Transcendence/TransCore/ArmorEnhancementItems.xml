@@ -425,7 +425,7 @@
 			unknownType=		"&itUnknownBarrel;"
 			frequency=			"uncommon"
 			numberAppearing=	"1d4"
-			attributes=			"armorDamage, consumable, defective, notForSale"
+			attributes=			"armorDamage, consumable, defective"
 
 			description=		"These nanomachines are used to recycle old ships and armors into their basic components. Use with caution: Do not allow contact with a ship's armor or hull."
 

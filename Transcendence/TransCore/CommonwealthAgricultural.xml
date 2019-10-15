@@ -54,7 +54,7 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="*NU +food; -illegal; -lux; -notForSale;"		priceAdj="100"/>
+			<Sell	criteria="*NU +food; -defective; -illegal; -lux; -notForSale;"		priceAdj="100"/>
 
 			<Buy	criteria="*NU +lux; -Illegal; -notForSale; &lt;=$250;"	priceAdj="100"/>
 			<Buy	criteria="*NU" item="&itHydrocarbons;"		priceAdj="100"/>

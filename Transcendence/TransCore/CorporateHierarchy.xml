@@ -187,8 +187,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="ufNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="amdufNU -Illegal; -ID;"				priceAdj="10"/>
@@ -300,7 +300,7 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="asU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="asU -Illegal; -ID;"				priceAdj="10"/>
 			
@@ -469,8 +469,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="mwU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="mwU -Illegal; -ID;"				priceAdj="10"/>
 			
@@ -668,8 +668,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +makayev; -defective; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a +makayev; L:1-7;" priceAdj="100"/>
@@ -805,8 +805,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +bushido; -illegal; -notForSale;" priceAdj="100" inventoryAdj="300" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +bushido; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="300" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a +bushido; L:1-10;" priceAdj="100"/>
@@ -913,7 +913,7 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
 		</Trade>
 
@@ -1339,8 +1339,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="fNU +basicFuel; L:1-4; -illegal; -ID; -notForSale;"	priceAdj="90"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="fNU +basicFuel; L:1-4; -defective; -illegal; -ID; -notForSale;"	priceAdj="90"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="90"/>
 			<Refuel			criteria="f +BasicFuel; L:5-10;" priceAdj="100"/>
@@ -1539,8 +1539,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU +makayev; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +makayev; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU +makayev; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
@@ -2131,7 +2131,7 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU +Lux; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +Lux; -defective; -NotForSale;"	priceAdj="100"/>
 
 			<Buy	criteria="*NU +Food; -Lux; -Illegal; &lt;=$100; -NotForSale;"	priceAdj="105"/>
 			<Buy	criteria="*NU" item="&itHydrocarbons;"		priceAdj="105"/>
@@ -2277,10 +2277,10 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +Taikon;"				priceAdj="100"/>
-			<Sell	criteria="*NU +RingerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU +Alien;"				priceAdj="120"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +Taikon; -defective;"				priceAdj="100"/>
+			<Sell	criteria="*NU +RingerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU +Alien; -defective;"				priceAdj="120"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 
 			<Refuel			criteria="f +unid:&itPteracniumFuelRod;;" priceAdj="100"/>
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
@@ -2461,7 +2461,7 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="uNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="amduNU -Illegal; -ID;"				priceAdj="10"/>

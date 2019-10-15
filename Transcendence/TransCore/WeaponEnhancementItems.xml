@@ -77,7 +77,7 @@
 			mass=				"1"
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"defective, info, minorItem, notForSale, weaponDamage"
+			attributes=			"defective, info, minorItem, weaponDamage"
 
 			description=		"Because of a manufacturing defect, this ROM damages the ship's primary weapon when installed."
 			>

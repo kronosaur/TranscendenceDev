@@ -977,7 +977,7 @@
 
 	<ItemType UNID="&itDefectiveAuton;"
 			name=				"defective auton"
-			attributes=			"auton, combatAuton, commonwealth, defective, minorItem, notForSale, omniDefense"
+			attributes=			"auton, combatAuton, commonwealth, defective, minorItem, omniDefense"
 			inherit=			"&baAutonItemBase;"
 			  
 			level=				"4"

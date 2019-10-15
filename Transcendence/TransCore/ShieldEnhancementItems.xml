@@ -368,7 +368,7 @@
 			mass=				"10"
 			frequency=			"uncommon"
 			unknownType=		"&vtUnknownFieldCrystal;"
-			attributes=			"defective, fieldCrystal, minorItem, notForSale, shieldDamage"
+			attributes=			"defective, fieldCrystal, minorItem, shieldDamage"
 
 			description=		"In pristine state, this field crystal is used to reflect ion energy. But this decayed crystal would do more harm than good."
 
