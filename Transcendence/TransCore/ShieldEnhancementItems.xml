@@ -260,7 +260,7 @@
 			<Constant id="rpg.enhancementTable">
 				'(
 					{	criteria:"s L:1;"					descID:'TooPrimitive	}
-					{	criteria:"s L:2-8;"					enhancement:"+reflect:particle"		lifetime:(random 30000 40000)	}
+					{	criteria:"s L:2-8;"					enhancement:"+reflect:particle"		lifetime:36000	}
 					{	criteria:"s"						descID:'TooAdvanced	}
 					)
 			</Constant>
@@ -490,7 +490,7 @@
 			<Constant id="rpg.enhancementTable">
 				'(
 					{	criteria:"s L:1-4;"					descID:'TooPrimitive	}
-					{	criteria:"s L:5-11;"				enhancement:"+reflect:ion"		lifetime:(random 30000 40000)	}
+					{	criteria:"s L:5-11;"				enhancement:"+reflect:ion"		lifetime:36000	}
 					{	criteria:"s"						descID:'TooAdvanced	}
 					)
 			</Constant>
@@ -534,7 +534,7 @@
 			<Constant id="rpg.enhancementTable">
 				'(
 					{	criteria:"s L:1-6;"					descID:'TooPrimitive	}
-					{	criteria:"s L:7-13;"				enhancement:"+reflect:positron"		lifetime:(random 30000 40000)	}
+					{	criteria:"s L:7-13;"				enhancement:"+reflect:positron"		lifetime:36000	}
 					{	criteria:"s"						descID:'TooAdvanced	}
 					)
 			</Constant>

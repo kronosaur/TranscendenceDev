@@ -602,6 +602,7 @@
 								))
 							{
 								enhancement: (@ enhancementInfo 'enhancement)
+								lifetime: (@ enhancementInfo 'lifetime)
 								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID) trData)
 										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)) trData)
 										)
