@@ -1110,8 +1110,8 @@
 							)
 						)
 					)
-					(dbgOutput (objGetName sellerObj) " Full: " (map classesForSale theClass (typGetProperty theClass 'name)))
-					(dbgOutput (objGetName sellerObj) " Filtered: " (map shipsToCreate theClass (typGetProperty theClass 'name)))
+					;(dbgOutput (objGetName sellerObj) " Full: " (map classesForSale theClass (typGetProperty theClass 'name)))
+					;(dbgOutput (objGetName sellerObj) " Filtered: " (map shipsToCreate theClass (typGetProperty theClass 'name)))
 
 					;	Create a list of ships to sell
 					

@@ -841,6 +841,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'level\n"
 			"   'reference\n"
 			"   'rootName\n"
+			"   'unknownType\n"
+			"   'unknownTypeIndex\n"
 			"   'used\n"
 			"\n"
 			"property (device)\n\n"
@@ -2286,6 +2288,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 
 			"   'charges charges\n"
+			"   'cycleFire [True|Nil]"
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
@@ -2295,7 +2298,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions list-of-options\n"
 			"   'pos (angle radius [z])\n"
 			"   'secondary [True|Nil]"
-			"   'cycleFire [True|Nil]",
+			"   'unknownTypeIndex [integer|Nil]",
 
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 

@@ -43,6 +43,7 @@
 #define PROPERTY_VALUE_BONUS_PER_CHARGE			CONSTLIT("valueBonusPerCharge")
 #define PROPERTY_VARIANT						CONSTLIT("variant")
 #define PROPERTY_UNKNOWN_TYPE					CONSTLIT("unknownType")
+#define PROPERTY_UNKNOWN_TYPE_INDEX				CONSTLIT("unknownTypeIndex")
 #define PROPERTY_USED							CONSTLIT("used")
 #define PROPERTY_WEAPON_TYPES					CONSTLIT("weaponTypes")
 
@@ -1649,6 +1650,15 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 			return CC.CreateNil();
 		else
 			return CC.CreateInteger(pType->GetUNID());
+		}
+
+	else if (strEquals(sProperty, PROPERTY_UNKNOWN_TYPE_INDEX))
+		{
+		int iUnknownIndex = GetUnknownIndex();
+		if (iUnknownIndex < 0)
+			return CC.CreateNil();
+		else
+			return CC.CreateInteger(iUnknownIndex);
 		}
 
 	else if (strEquals(sProperty, PROPERTY_USED))
@@ -3355,6 +3365,23 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 
         return true;
         }
+	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
+		{
+		int iUnknownTypeCount = m_pItemType->GetUnknownTypeCount();
+		if (iUnknownTypeCount == 0)
+			;
+
+		else if (pValue == NULL || pValue->IsNil())
+			SetUnknownIndex(m_pItemType->GetRandomUnknownTypeIndex());
+
+		else
+			{
+			int iIndex = Max(0, Min(pValue->GetIntegerValue(), iUnknownTypeCount - 1));
+			SetUnknownIndex(iIndex);
+			}
+
+		return true;
+		}
 	else if (strEquals(sName, PROPERTY_VARIANT))
 		{
 		if (pValue == NULL || pValue->IsNil())

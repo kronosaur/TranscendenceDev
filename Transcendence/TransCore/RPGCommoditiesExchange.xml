@@ -130,6 +130,21 @@
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
+		<OnScreenInit>
+			;	If we're showing actual items, reset the unknown type index 
+			;	so that unknown items collapse into the same type.
+
+			(if (scrGetProperty gScreen 'rpg.showActualItem)
+				(block (
+					(sourceObj (or (scrGetProperty gScreen 'rpg.sourceObj) gSource))
+					)
+					(enum (objGetItems sourceObj "*U +property:unknownType") theItem
+						(objSetItemProperty sourceObj theItem 'unknownTypeIndex 0 (itmGetCount theItem))
+						)
+					)
+				)
+		</OnScreenInit>
+
 		<Display type="itemPicker"
 				dataFrom=	"=(or (scrGetProperty gScreen 'rpg.sourceObj) 'station)"
 				list=		"*"
