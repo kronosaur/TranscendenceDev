@@ -223,7 +223,7 @@
 							(gr (objGetDistance aObjDestroyed gPlayerShip) 300)
 								(block Nil
 									(msnIncData gSource 'missionXP -50)
-									(msnSetData gSource (divide (msnGetData gSource 'reward) 2))
+									(msnSetData gSource 'reward (divide (msnGetData gSource 'reward) 2))
 									(msnSetData gSource 'noHelp True)
 									(msnSuccess gSource)
 									)
