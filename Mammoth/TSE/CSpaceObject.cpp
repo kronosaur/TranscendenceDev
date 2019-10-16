@@ -548,7 +548,7 @@ ALERROR CSpaceObject::AddToSystem (CSystem &System, bool bNoGlobalInsert)
 	return NOERROR;
 	}
 
-ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const SEnhanceItemResult &Result)
+ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItemResult &Result)
 
 //	AsCCItem
 //
@@ -892,7 +892,7 @@ bool CSpaceObject::CanDetect (int iPerception, CSpaceObject *pObj)
 	return (vDist.Length2() < pObj->GetDetectionRange2(iPerception));
 	}
 
-CSpaceObject::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem) const
+CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CString *retsError) const
 
 //	CanEnhanceItem
 //
@@ -905,17 +905,29 @@ CSpaceObject::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipula
 
 	DEBUG_TRY
 
-	SEnhanceItemResult Result;
-
-	//	Get the item to enhance
-
 	const CItem &TargetItem = ItemList.GetItemAtCursor();
-	CItemType *pType = TargetItem.GetType();
+
+	//	See if we have an explicit event
+
+	CItem::SEnhanceItemResult Result;
+	if (!EnhancementItem.FireCanEnhanceItem(*this, TargetItem, Result, retsError))
+		{
+		Result.iResult = eisUnknown;
+		return Result;
+		}
+
+	//	If <CanEnhanceItem> worked, then we're done.
+
+	if (Result.iResult != eisUnknown)
+		return Result;
 
 	//	Get the enhancement to confer
 
-	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), Result.Enhancement, Result.sDesc))
+	if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
+		{
+		Result.iResult = eisUnknown;
 		return Result;
+		}
 
 	//	If no mod, nothing to do (but Result.sDesc might explain what happened).
 
@@ -1655,7 +1667,6 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	//	Get the item to enhance
 
 	const CItem &TargetItem = ItemList.GetItemAtCursor();
-	CItemType *pType = TargetItem.GetType();
 
 	//	Figure out the effect of the enhancement on the item
 
@@ -1717,7 +1728,7 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	DEBUG_CATCH
 	}
 
-bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, SEnhanceItemResult &retResult, CString *retsError)
+bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CItem::SEnhanceItemResult &retResult, CString *retsError)
 
 //	EnhanceItem
 //
@@ -1727,10 +1738,18 @@ bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &Enh
 	ASSERT(ItemList.IsCursorValid());
 	ASSERT(!EnhancementItem.IsEmpty());
 
+	//	See if we have an <OnEnhanceItem> event.
+
+	retResult = CItem::SEnhanceItemResult();
+	if (!EnhancementItem.FireOnEnhanceItem(*this, ItemList.GetItemAtCursor(), retResult, retsError))
+		return false;
+
+	if (retResult.iResult != eisUnknown)
+		return true;
+
 	//	Get the enhancement to confer
 
-	retResult = SEnhanceItemResult();
-	if (!EnhancementItem.GetEnhancementConferred(ItemList.GetItemAtCursor(), retResult.Enhancement, retResult.sDesc, retsError))
+	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), retResult, retsError))
 		return false;
 
 	//	If no mod, nothing to do.

@@ -10,10 +10,12 @@
 
 #define CAN_BE_INSTALLED_EVENT					CONSTLIT("CanBeInstalled")
 #define CAN_BE_UNINSTALLED_EVENT				CONSTLIT("CanBeUninstalled")
+#define CAN_ENHANCE_ITEM_EVENT					CONSTLIT("CanEnhanceItem")
 #define GET_ENHANCEMENT_EVENT					CONSTLIT("GetEnhancement")
 #define ON_ADDED_AS_ENHANCEMENT_EVENT			CONSTLIT("OnAddedAsEnhancement")
 #define ON_DISABLED_EVENT						CONSTLIT("OnDisable")
 #define ON_ENABLED_EVENT						CONSTLIT("OnEnable")
+#define ON_ENHANCE_ITEM_EVENT					CONSTLIT("OnEnhanceItem")
 #define ON_INSTALL_EVENT						CONSTLIT("OnInstall")
 #define ON_OBJ_DESTROYED_EVENT					CONSTLIT("OnObjDestroyed")
 #define ON_REACTOR_OVERLOAD_EVENT				CONSTLIT("OnReactorOverload")
@@ -25,6 +27,7 @@
 #define PROPERTY_COMPONENTS						CONSTLIT("components")
 #define PROPERTY_CORE_ENHANCEMENT				CONSTLIT("core.enhancement")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
+#define PROPERTY_DEFECTIVE_ENHANCEMENT			CONSTLIT("defectiveEnhancement")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
 #define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
@@ -621,6 +624,62 @@ bool CItem::FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) con
 		return true;
 	}
 
+bool CItem::FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError) const
+
+//	FireCanEnhanceItem
+//
+//	Fires <CanEnhanceItem> event. If we do not handle this event, we return TRUE
+//	and retResult.iResult is eisUnknown.
+//
+//	If we get an error, we return FALSE.
+
+	{
+	retResult = SEnhanceItemResult();
+
+	SEventHandlerDesc Event;
+	if (!m_pItemType->FindEventHandler(CAN_ENHANCE_ITEM_EVENT, &Event))
+		{
+		retResult.iResult = eisUnknown;
+		return true;
+		}
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(m_pItemType);
+	Ctx.SaveAndDefineSourceVar(&TargetObj);
+	Ctx.SaveAndDefineItemVar(*this);
+
+	ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	pData->SetAt(CONSTLIT("targetItem"), pTargetItem);
+
+	Ctx.SaveAndDefineDataVar(pData);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("[%08x %s] <CanEnhanceItem> error: %s"), GetType()->GetUNID(), GetNounPhrase(), pResult->GetStringValue());
+
+		return false;
+		}
+
+	CString sResultCode = pResult->GetStringAt(CONSTLIT("resultCode"));
+	retResult.iResult = CItemEnhancement::AsEnhanceItemStatus(sResultCode);
+	if (retResult.iResult == eisUnknown)
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("[%08x %s] <CanEnhanceItem> Unknown resultCode: %s"), GetType()->GetUNID(), GetNounPhrase(), sResultCode);
+
+		return false;
+		}
+
+	retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+
+	//	Done
+
+	return true;
+	}
+
 void CItem::FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const
 
 //	FireCustomEvent
@@ -796,6 +855,62 @@ void CItem::FireOnEnabled (CSpaceObject *pSource) const
 			pSource->ReportEventError(strPatternSubst(CONSTLIT("Item %x OnEnable"), m_pItemType->GetUNID()), pResult);
 		Ctx.Discard(pResult);
 		}
+	}
+
+bool CItem::FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError) const
+
+//	FireOnEnhanceItem
+//
+//	Fires <OnEnhanceItem> event. If we do not handle this event, we return TRUE
+//	and retResult.iResult is eisUnknown.
+//
+//	If we get an error, we return FALSE.
+
+	{
+	retResult = SEnhanceItemResult();
+
+	SEventHandlerDesc Event;
+	if (!m_pItemType->FindEventHandler(ON_ENHANCE_ITEM_EVENT, &Event))
+		{
+		retResult.iResult = eisUnknown;
+		return true;
+		}
+
+	CCodeChainCtx Ctx(GetUniverse());
+	Ctx.DefineContainingType(m_pItemType);
+	Ctx.SaveAndDefineSourceVar(&TargetObj);
+	Ctx.SaveAndDefineItemVar(*this);
+
+	ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
+	ICCItemPtr pData(ICCItem::SymbolTable);
+	pData->SetAt(CONSTLIT("targetItem"), pTargetItem);
+
+	Ctx.SaveAndDefineDataVar(pData);
+
+	ICCItemPtr pResult = Ctx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("[%08x %s] <OnEnhanceItem> error: %s"), GetType()->GetUNID(), GetNounPhrase(), pResult->GetStringValue());
+
+		return false;
+		}
+
+	CString sResultCode = pResult->GetStringAt(CONSTLIT("resultCode"));
+	retResult.iResult = CItemEnhancement::AsEnhanceItemStatus(sResultCode);
+	if (retResult.iResult == eisUnknown)
+		{
+		if (retsError)
+			*retsError = strPatternSubst(CONSTLIT("[%08x %s] <OnEnhanceItem> Unknown resultCode: %s"), GetType()->GetUNID(), GetNounPhrase(), sResultCode);
+
+		return false;
+		}
+
+	retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
+
+	//	Done
+
+	return true;
 	}
 
 void CItem::FireOnInstall (CSpaceObject *pSource) const
@@ -1114,8 +1229,15 @@ bool CItem::GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *p
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("damaged")));
 		}
 
-	if (IsDisrupted())
-		retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("ionized")));
+	if (DWORD dwDisrupted = GetDisruptedDuration())
+		{
+		if (dwDisrupted == INFINITE_TICK)
+			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("ionized")));
+		else
+			retList->Insert(SDisplayAttribute(attribNegative, 
+					strPatternSubst(CONSTLIT("ionized: %s"), CLanguage::ComposeNumber(CLanguage::numberRealTimeTicks, dwDisrupted))
+					));
+		}
 
 	//	Done
 
@@ -1210,7 +1332,7 @@ CString CItem::GetEnhancedDesc (void) const
 	return sResult;
 	}
 
-bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString &retsDesc, CString *retsError) const
+bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError) const
 
 //	GetEnhancementConferred
 //
@@ -1219,8 +1341,8 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 	{
 	//	Pre-init and check for null
 
-	retEnhancement = CItemEnhancement();
-	retsDesc = NULL_STR;
+	retResult = SEnhanceItemResult();
+	retResult.iResult = eisNoEffect;
 	if (TargetItem.IsEmpty())
 		return true;
 
@@ -1228,8 +1350,8 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 
 	if (DWORD dwModCode = TargetItem.GetType()->GetModCode())
 		{
-		retEnhancement = CItemEnhancement(dwModCode);
-		retEnhancement.SetEnhancementType(GetType());
+		retResult.Enhancement = CItemEnhancement(dwModCode);
+		retResult.Enhancement.SetEnhancementType(GetType());
 		return true;
 		}
 
@@ -1240,7 +1362,7 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 	if (pEnhancementDesc && !pEnhancementDesc->IsNil())
 		{
 		CString sError;
-		if (retEnhancement.InitFromDesc(GetUniverse(), *pEnhancementDesc, &sError) != NOERROR)
+		if (retResult.Enhancement.InitFromDesc(GetUniverse(), *pEnhancementDesc, &sError) != NOERROR)
 			{
 			if (retsError)
 				*retsError = strPatternSubst(CONSTLIT("[%08x %s] core.enhancement is invalid: %s"), GetType()->GetUNID(), GetNounPhrase(), sError);
@@ -1248,7 +1370,7 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 			return false;
 			}
 
-		retEnhancement.SetEnhancementType(GetType());
+		retResult.Enhancement.SetEnhancementType(GetType());
 		return true;
 		}
 
@@ -1258,7 +1380,7 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 	if (m_pItemType->FindEventHandler(GET_ENHANCEMENT_EVENT, &Event))
 		{
 		Ctx.DefineContainingType(m_pItemType);
-		Ctx.SaveAndDefineSourceVar(GetSource());
+		Ctx.SaveAndDefineSourceVar(&TargetObj);
 		Ctx.SaveAndDefineItemVar(*this);
 
 		ICCItemPtr pTargetItem(::CreateListFromItem(TargetItem));
@@ -1277,7 +1399,7 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 			}
 
 		CString sError;
-		if (retEnhancement.InitFromDesc(GetUniverse(), *pResult, &sError) != NOERROR)
+		if (retResult.Enhancement.InitFromDesc(GetUniverse(), *pResult, &sError) != NOERROR)
 			{
 			if (retsError)
 				*retsError = strPatternSubst(CONSTLIT("[%08x %s] <GetEnhancement> returned invalid enhancement: %s"), GetType()->GetUNID(), GetNounPhrase(), sError);
@@ -1285,10 +1407,10 @@ bool CItem::GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &
 			return false;
 			}
 
-		if (retEnhancement.GetEnhancementType() == NULL)
-			retEnhancement.SetEnhancementType(GetType());
+		if (retResult.Enhancement.GetEnhancementType() == NULL)
+			retResult.Enhancement.SetEnhancementType(GetType());
 
-		retsDesc = pResult->GetStringAt(CONSTLIT("desc"));
+		retResult.sDesc = pResult->GetStringAt(CONSTLIT("desc"));
 
 		//	Done
 
@@ -1586,6 +1708,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	else if (strEquals(sProperty, PROPERTY_DAMAGED))
 		return CC.CreateBool(IsDamaged());
 
+	else if (strEquals(sProperty, PROPERTY_DEFECTIVE_ENHANCEMENT))
+		return CC.CreateBool(GetMods().IsDisadvantage());
+
 	else if (strEquals(sProperty, PROPERTY_DESCRIPTION))
 		{
 		if (CCCtx.InEvent(eventGetDescription))
@@ -1595,7 +1720,15 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		}
 
 	else if (strEquals(sProperty, PROPERTY_DISRUPTED))
-		return CC.CreateBool(IsDisrupted());
+		{
+		DWORD dwTime = GetDisruptedDuration();
+		if (dwTime == 0)
+			return CC.CreateNil();
+		else if (dwTime == INFINITE_TICK)
+			return CC.CreateTrue();
+		else
+			return CC.CreateInteger(dwTime);
+		}
 
 	else if (strEquals(sProperty, PROPERTY_HAS_USE_SCREEN))
 		return CC.CreateBool(HasUseItemScreen());

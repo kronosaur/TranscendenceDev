@@ -6335,7 +6335,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Do it
 
-			CSpaceObject::SEnhanceItemResult Result = pObj->CanEnhanceItem(ItemList, EnhancementItem);
+			CItem::SEnhanceItemResult Result = pObj->CanEnhanceItem(ItemList, EnhancementItem);
 			if (Result.iResult == eisUnknown)
 				return pCC->CreateError("Invalid enhancement.");
 
@@ -8135,7 +8135,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Do it
 
-			CSpaceObject::SEnhanceItemResult Result;
+			CItem::SEnhanceItemResult Result;
 			CString sError;
 			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
 				return pCC->CreateError(sError);

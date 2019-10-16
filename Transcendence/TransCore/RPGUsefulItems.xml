@@ -654,6 +654,8 @@
 			<Text id="descResult.ok">Your %dstItem% is more powerful.</Text>
 			<Text id="descResult.alreadyEnhanced">Your %dstItem% does not need the enhancement.</Text>
 			<Text id="descResult.defectRemoved">The enhancement has repaired a defect on your %dstItem%.</Text>
+			<Text id="descResult.damaged">Your %dstItem% was damaged.</Text>
+			<Text id="descResult.defectReplaced">Your %dstItem% has weakened further.</Text>
 			<Text id="descResult.degraded">Your %dstItem% has weakened further.</Text>
 			<Text id="descResult.enhancementRemoved">Your %dstItem% has lost its enhancement.</Text>
 			<Text id="descResult.enhancementReplaced">Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>

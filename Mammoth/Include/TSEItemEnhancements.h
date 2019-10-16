@@ -88,6 +88,8 @@ enum EnhanceItemStatus
 	eisEnhancementReplaced =			6,		//	Enhancement replaced by another enhancement
 	eisBetter =							7,		//	Enhancement made better
 	eisItemRepaired =					8,		//	Item was repaired
+	eisItemDamaged =					9,		//	Item was damaged
+	eisDefectReplaced =					10,		//	Defect was replaced by another defect
 	};
 
 enum ERegenTypes
@@ -191,6 +193,7 @@ class CItemEnhancement
 		bool UpdateArmorRegen (CItemCtx &ArmorCtx, SUpdateCtx &UpdateCtx, int iTick) const;
 		void WriteToStream (IWriteStream *pStream) const;
 
+		static EnhanceItemStatus AsEnhanceItemStatus (const CString &sValue);
 		static CString EnhanceItemStatusToString (EnhanceItemStatus iStatus);
 		static const CItemEnhancement &Null (void) { return m_Null; }
 

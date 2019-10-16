@@ -97,6 +97,7 @@ class CLanguage
 		static CString ComposeGenderedWord (const CString &sWord, GenomeTypes iGender);
 		static CString ComposeNounPhrase (const CString &sNoun, int iCount, const CString &sModifier, DWORD dwNounFlags, DWORD dwComposeFlags);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, int iNumber);
+		static CString ComposeNumber (ENumberFormatTypes iFormat, DWORD dwNumber) { return ComposeNumber(iFormat, (int)dwNumber); }
 		static CString ComposeNumber (ENumberFormatTypes iFormat, Metric rNumber);
 		static CString ComposeNumber (ENumberFormatTypes iFormat, ICCItem *pNumber);
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);

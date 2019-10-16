@@ -8,9 +8,9 @@ CItemEnhancement CItemEnhancement::m_Null;
 
 static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 11> ENHANCE_ITEM_STATUS_TABLE = {
 	"alreadyEnhanced",		eisAlreadyEnhanced,
-	"damaged",				eisUnknown,
+	"damaged",				eisItemDamaged,
 	"defectRemoved",		eisRepaired,
-	"defectReplaced",		eisUnknown,
+	"defectReplaced",		eisDefectReplaced,
 	"degraded",				eisWorse,
 	"enhancementRemoved",	eisEnhancementRemoved,
 	"enhancementReplaced",	eisEnhancementReplaced,
@@ -250,6 +250,20 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 						CLanguage::ComposeNumber(CLanguage::numberRealTimeTicks, iLifetime)
 						));
 		}
+	}
+
+EnhanceItemStatus CItemEnhancement::AsEnhanceItemStatus (const CString &sValue)
+
+//	AsEnhanceItemStatus
+//
+//	Returns an enhance item status (or eisUnknown if error).
+
+	{
+	auto pResult = ENHANCE_ITEM_STATUS_TABLE.GetAt(sValue);
+	if (pResult == NULL)
+		return eisUnknown;
+
+	return pResult->Value;
 	}
 
 int CItemEnhancement::DamageAdj2Level (int iDamageAdj)

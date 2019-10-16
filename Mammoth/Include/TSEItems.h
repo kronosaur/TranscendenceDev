@@ -184,6 +184,13 @@ class CItem
 			flagUnknownBit2 =	0x80,
 			};
 
+		struct SEnhanceItemResult
+			{
+			EnhanceItemStatus iResult = eisUnknown;
+			CItemEnhancement Enhancement;
+			CString sDesc;
+			};
+
 		CItem (void);
 		CItem (const CItem &Copy);
 		CItem (CItemType *pItemType, int iCount);
@@ -205,12 +212,14 @@ class CItem
 		bool IsUsed (void) const;
 		bool FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const;
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
+		bool FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		bool FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;
 		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
 		void FireOnEnabled (CSpaceObject *pSource) const;
+		bool FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireOnInstall (CSpaceObject *pSource) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		bool FireOnReactorOverload (CSpaceObject *pSource) const;
@@ -229,7 +238,7 @@ class CItem
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
 		CString GetEnhancedDesc (void) const;
-		bool GetEnhancementConferred (const CItem &TargetItem, CItemEnhancement &retEnhancement, CString &retsDesc, CString *retsError = NULL) const;
+		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }

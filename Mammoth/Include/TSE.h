@@ -746,13 +746,6 @@ class CSpaceObject
 			bool bShowHighlight = false;
 			};
 
-		struct SEnhanceItemResult
-			{
-			EnhanceItemStatus iResult = eisUnknown;
-			CItemEnhancement Enhancement;
-			CString sDesc;
-			};
-
 		//	Creation and Lifetime
 
 		CSpaceObject (CUniverse &Universe);
@@ -872,13 +865,13 @@ class CSpaceObject
 		bool AddItem (const CItem &Item, CItem *retResult = NULL, CString *retsError = NULL);
 		EnhanceItemStatus AddItemEnhancement (const CItem &itemToEnhance, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
 		EnhanceItemStatus AddItemEnhancement (CItemListManipulator &ItemList, CItemType *pEnhancement, int iLifetime, DWORD *retdwID);
-		static ICCItemPtr AsCCItem (CCodeChainCtx &Ctx, const SEnhanceItemResult &Result);
-		SEnhanceItemResult CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem) const;
+		static ICCItemPtr AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItemResult &Result);
+		CItem::SEnhanceItemResult CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CString *retsError = NULL) const;
 		void DamageItem (CInstalledDevice *pDevice);
 		void DamageItem (CItemListManipulator &ItemList);
 		void DisruptItem (CItemListManipulator &ItemList, DWORD dwDuration);
 		EnhanceItemStatus EnhanceItem (CItemListManipulator &ItemList, const CItemEnhancement &Mods, DWORD *retdwID = NULL);
-		bool EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, SEnhanceItemResult &retResult, CString *retsError = NULL);
+		bool EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CItem::SEnhanceItemResult &retResult, CString *retsError = NULL);
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
 		CItemList &GetItemList (void) { return m_ItemList; }
 		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName);
