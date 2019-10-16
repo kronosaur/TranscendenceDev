@@ -1679,6 +1679,8 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		{
 		case eisNoEffect:
 		case eisAlreadyEnhanced:
+		case eisCantReplaceDefect:
+		case eisCantReplaceEnhancement:
 			return iResult;
 
 		case eisItemRepaired:

@@ -6,18 +6,20 @@
 
 CItemEnhancement CItemEnhancement::m_Null;
 
-static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 11> ENHANCE_ITEM_STATUS_TABLE = {
-	"alreadyEnhanced",		eisAlreadyEnhanced,
-	"damaged",				eisItemDamaged,
-	"defectRemoved",		eisRepaired,
-	"defectReplaced",		eisDefectReplaced,
-	"degraded",				eisWorse,
-	"enhancementRemoved",	eisEnhancementRemoved,
-	"enhancementReplaced",	eisEnhancementReplaced,
-	"improved",				eisBetter,
-	"noEffect",				eisNoEffect,
-	"ok",					eisOK,
-	"repaired",				eisItemRepaired,
+static TStaticStringTable<TStaticStringEntry<EnhanceItemStatus>, 13> ENHANCE_ITEM_STATUS_TABLE = {
+	"alreadyEnhanced",			eisAlreadyEnhanced,
+	"cantReplaceDefect",		eisCantReplaceDefect,
+	"cantReplaceEnhancement",	eisCantReplaceEnhancement,
+	"damaged",					eisItemDamaged,
+	"defectRemoved",			eisRepaired,
+	"defectReplaced",			eisDefectReplaced,
+	"degraded",					eisWorse,
+	"enhancementRemoved",		eisEnhancementRemoved,
+	"enhancementReplaced",		eisEnhancementReplaced,
+	"improved",					eisBetter,
+	"noEffect",					eisNoEffect,
+	"ok",						eisOK,
+	"repaired",					eisItemRepaired,
 	};
 
 void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList, DWORD dwFlags) const
@@ -566,14 +568,14 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 			if (CanBeCombinedWith(Enhancement))
 				return CombineDisadvantageWithDisadvantage(Item, Enhancement);
 			else
-				return eisNoEffect;
+				return eisCantReplaceDefect;
 			}
 		else
 			{
 			if (CanBeCombinedWith(Enhancement))
 				return CombineDisadvantageWithAdvantage(Item, Enhancement);
 			else
-				return eisNoEffect;
+				return eisCantReplaceDefect;
 			}
 		}
 	else
@@ -600,7 +602,7 @@ EnhanceItemStatus CItemEnhancement::Combine (const CItem &Item, const CItemEnhan
 			if (CanBeCombinedWith(Enhancement))
 				return CombineAdvantageWithAdvantage(Item, Enhancement);
 			else
-				return eisNoEffect;
+				return eisCantReplaceEnhancement;
 			}
 		}
 	}

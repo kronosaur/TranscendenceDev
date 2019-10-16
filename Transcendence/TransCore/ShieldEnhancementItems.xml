@@ -341,7 +341,7 @@
 			<Constant id="rpg.enhancementTable">
 				'(
 					{	criteria:"s L:1-2;"					descID:'TooPrimitive	}
-					{	criteria:"s L:3-9;"					enhancement:"+efficient:70"	}
+					{	criteria:"s L:3-9;"					enhancement:"+efficient:20"	}
 					{	criteria:"s"						descID:'TooAdvanced	}
 					)
 			</Constant>

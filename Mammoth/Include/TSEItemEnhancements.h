@@ -90,6 +90,8 @@ enum EnhanceItemStatus
 	eisItemRepaired =					8,		//	Item was repaired
 	eisItemDamaged =					9,		//	Item was damaged
 	eisDefectReplaced =					10,		//	Defect was replaced by another defect
+	eisCantReplaceDefect =				11,		//	Existing defect cannot be replaced
+	eisCantReplaceEnhancement =			12,		//	Existing enhancement cannot be replaced
 	};
 
 enum ERegenTypes

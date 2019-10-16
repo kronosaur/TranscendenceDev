@@ -7804,6 +7804,8 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				{
 				case eisNoEffect:
 				case eisAlreadyEnhanced:
+				case eisCantReplaceDefect:
+				case eisCantReplaceEnhancement:
 					return pCC->CreateNil();
 
 				default:

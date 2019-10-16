@@ -572,6 +572,9 @@
 					enhancement
 					enhancementInfo
 					(trData {
+						itemName: (itmGetName gItem 'article)
+						targetItemName: (itmGetName dstItem 'noModifiers)
+
 						useItem: (itmGetName gItem 'article)
 						dstItem: (itmGetName dstItem '(demonstrative noModifiers))
 						})
@@ -619,9 +622,13 @@
 				(block (
 					(dstItem (@ gData 'itemToUseOn))
 					(trData {
+						itemName: (itmGetName gItem 'article)
+						targetItemName: (itmGetName dstItem 'noModifiers)
+
 						dstItem: (itmGetName dstItem 'noModifiers)
 						})
 
+					(wasUnknown (not (itmIsKnown gItem)))
 					result
 					)
 					;	Apply the enhancement
@@ -651,13 +658,15 @@
 		</Events>
 
 		<Language>
-			<Text id="descResult.ok">Your %dstItem% is more powerful.</Text>
+			<Text id="descResult.ok">Your %dstItem% has been enhanced.</Text>
 			<Text id="descResult.alreadyEnhanced">Your %dstItem% does not need the enhancement.</Text>
+			<Text id="descResult.cantReplaceDefect">But it has no effect on your %targetItemName% because it is defective.</Text>
+			<Text id="descResult.cantReplaceEnhancement">But it has no effect on your %targetItemName% because it is enhanced.</Text>
 			<Text id="descResult.defectRemoved">The enhancement has repaired a defect on your %dstItem%.</Text>
 			<Text id="descResult.damaged">Your %dstItem% was damaged.</Text>
 			<Text id="descResult.defectReplaced">Your %dstItem% has weakened further.</Text>
 			<Text id="descResult.degraded">Your %dstItem% has weakened further.</Text>
-			<Text id="descResult.enhancementRemoved">Your %dstItem% has lost its enhancement.</Text>
+			<Text id="descResult.enhancementRemoved">Your %dstItem% has lost its previous enhancement.</Text>
 			<Text id="descResult.enhancementReplaced">Your %dstItem% has been enhanced, but has lost its previous enhancement.</Text>
 			<Text id="descResult.improved">Your %dstItem% has been further enhanced.</Text>
 			<Text id="descResult.noEffect">The enhancement has no effect.</Text>

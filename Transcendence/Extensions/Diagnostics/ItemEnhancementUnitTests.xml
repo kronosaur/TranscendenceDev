@@ -257,7 +257,7 @@
 									gPlayerShip
 									(@ (objGetItems gPlayerShip "sU") 0)
 									'powerUse
-									)												result:{ ion:10 }	}
+									)												result:8000	}
 
 						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
 									(objRemoveItem gPlayerShip theItem)
@@ -406,6 +406,106 @@
 									)												result:{ positron:95 }	}
 
 						{	test:'(enum (objGetItems gPlayerShip "sU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Defective Weapon -------------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itLaserCannon; 1)
+									)												result:'ignore	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "wU") 0)
+										&itDamageWeaponROM;
+										)
+									'resultCode
+									)												result:'damaged	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "wU") 0)
+									'disrupted
+									)												result:9000	}
+
+						{	test:'(enum (objGetItems gPlayerShip "wU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Weapon Optimizer ROM ---------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itLaserCannon; 1)
+									)												result:'ignore	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "wU") 0)
+									'fireDelay
+									)												result:5	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "wU") 0)
+										&itWeaponSpeedROM;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "wU") 0)
+									'fireDelay
+									)												result:4	}
+
+						{	test:'(enum (objGetItems gPlayerShip "wU") theItem 
+									(objRemoveItem gPlayerShip theItem)
+									)												result:'ignore	}
+
+						;	Weapon Efficiency ROM --------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itLaserCannon; 1)
+									)												result:'ignore	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "wU") 0)
+									'powerUse
+									)												result:1000	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "wU") 0)
+										&itWeaponEfficiencyROM;
+										)
+									'resultCode
+									)												result:'ok	}
+
+						{	test:'(objGetItemProperty
+									gPlayerShip
+									(@ (objGetItems gPlayerShip "wU") 0)
+									'powerUse
+									)												result:800	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "wU") 0)
+										&itWeaponEfficiencyROM;
+										)
+									'resultCode
+									)												result:'alreadyEnhanced	}
+
+						{	test:'(@ (objEnhanceItem 
+										gPlayerShip
+										(@ (objGetItems gPlayerShip "wU") 0)
+										&itWeaponSpeedROM;
+										)
+									'resultCode
+									)												result:'cantReplaceEnhancement	}
+
+						{	test:'(enum (objGetItems gPlayerShip "wU") theItem 
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}
 

@@ -71,6 +71,7 @@
 	<!-- Level 3: Defective Weapon Enhancement ROM -->
 
 	<ItemType UNID="&itDamageWeaponROM;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"defective weapon enhancement ROM"
 			level=				"3"
 			value=				"5"
@@ -79,53 +80,131 @@
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"defective, info, minorItem, weaponDamage"
 
-			description=		"Because of a manufacturing defect, this ROM damages the ship's primary weapon when installed."
+			description=		"Because of a manufacturing defect, this ROM ionizes any weapon it is intalled on."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
+
+		<Properties>
+			<Constant id="rpg.useCriteria">"w~l"</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block (
-				(theWeapon (objGetProperty gSource 'selectedWeapon))
-				(data { weapon:(itmGetName theWeapon 'noModifiers) } )
-				)
-				(if theWeapon
-					(block Nil
-						(switch
-							(itmGetProperty theWeapon 'damaged)
-								(objSendMessage gSource Nil (typTranslate gType 'msgAlreadyDamaged data))
-								
-							(itmIsEnhanced theWeapon)
-								(objSendMessage gSource Nil (typTranslate gType 'msgEnhancementLost data))
-							
-							(objSendMessage gSource Nil (typTranslate gType 'msgWeaponDamaged data))
-							)
-							
-						(shpDamageItem gSource theWeapon)
-						
-						; Identify the item
-						(itmSetKnown gItem)
+		<Events>
+			<CanEnhanceItem>
 
-						; Remove ROM
-						(objRemoveItem gSource gItem 1)
-						)
-					
-					(objSendMessage gSource Nil (typTranslate gType 'msgNoPrimary))
+				;	This event is called by objCanEnhanceItem.
+				;
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;
+				;		enhancement description:
+				;			resultCode: Result of enhancement
+				;			desc: Explanation for result
+
+				(block (
+					(targetItem (@ gData 'targetItem))
+					(trdata { weapon:(itmGetName targetItem 'noModifiers) } )
 					)
-				)
-		</Invoke>
+					(switch
+						(gr (itmGetProperty targetItem 'level) 6)
+							{
+								resultCode: 'noEffect
+								effect: 'tooAdvanced
+								}
+
+						(or (itmGetProperty targetItem 'damaged)
+								(itmGetProperty targetItem 'disrupted)
+								)
+							{
+								resultCode: 'noEffect
+								effect: 'alreadyDamaged
+								}
+
+						(itmIsEnhanced targetItem)
+							{
+								resultCode: 'enhancementRemoved
+								effect:
+									(if (itmGetProperty targetItem 'defectiveEnhancement)
+										'defectLost
+										'enhancementLost
+										)
+								}
+
+						{
+							resultCode: 'damaged
+							effect: 'weaponIonized
+							}
+						)
+					)
+
+			</CanEnhanceItem>
+
+			<OnEnhanceItem>
+
+				;	This event is called by objEnhanceItem.
+				;
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: No effect
+				;
+				;		enhancement description:
+				;			resultCode: Result of enhancement
+				;			desc: Explanation for result
+
+				(block (
+					(targetItem (@ gData 'targetItem))
+
+					;	Call CanEnhanceItem to figure out what should happen
+					(result (objFireItemEvent gSource gItem 'CanEnhanceItem gData))
+					(effect (@ result 'effect))
+					)
+					(switch
+						(= effect 'weaponIonized)
+							(objSetItemProperty gSource targetItem 'disrupted 9000)
+
+						(or (= effect 'defectLost) (= effect 'enhancementLost))
+							(shpDamageItem gSource targetItem)
+						)
+
+					{
+						resultCode: (@ result 'resultCode)
+						desc: (typTranslate gType (cat "result." effect) {
+							weapon: (itmGetName targetItem 'noModifiers)
+							})
+						}
+					)
+
+			</OnEnhanceItem>
+		</Events>
 		
 		<Language>
-			<Text id="msgAlreadyDamaged">The defective ROM had no effect on your damaged %weapon%</Text>
-			<Text id="msgEnhancementLost">Your %weapon% lost its enhancement due to a defective ROM</Text>
-			<Text id="msgWeaponDamaged">Your %weapon% was damaged by a defective ROM</Text>
-			<Text id="msgNoPrimary">Primary weapon required</Text>
+			<Text id="descResultIntro">
+				This is a defective weapon enhancement ROM.
+			</Text>
+
+			<Text id="result.alreadyDamaged">The ROM has no effect on your damaged %weapon%.</Text>
+			<Text id="result.defectLost">The defective ROM reset your %weapon%, restoring it to normal.</Text>
+			<Text id="result.enhancementLost">The %weapon% has lost its previous enhancement.</Text>
+			<Text id="result.tooAdvanced">Fortunately, the %weapon% is too advanced to be affected.</Text>
+			<Text id="result.weaponIonized">Your %weapon% has been ionized.</Text>
 		</Language>
 	</ItemType>
 
 	<!-- Level 3: Weapon Optimizer ROM -->
 
 	<ItemType UNID="&itWeaponSpeedROM;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"weapon optimizer ROM"
 			level=				"3"
 			value=				"750"
@@ -134,14 +213,28 @@
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, weaponEnhance"
 
-			description=		"This ROM increases the rate of fire of the ship's primary weapon."
+			description=		"This upgrade ROM increases a weapon's rate of fire. It is compatible with weapons up to level 6."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l L:1-6;"					enhancement:"+repair:10"	}
+					{	criteria:"w~l L:1-6;"					enhancement:"+speed:80"		}
+					{	criteria:"w~l"							descID:'tooAdvanced		}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l"</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x1002 Nil "has an improved fire rate" 6)
-		</Invoke>
+		<Language>
+			<Text id="descResultIntro">This upgrade ROM increases a weapon's rate of fire.</Text>
+		</Language>
 	</ItemType>
 
 <!-- LEVEL 4 -->
@@ -179,6 +272,7 @@
 	<!-- Level 4: Weapon Efficiency ROM -->
 
 	<ItemType UNID="&itWeaponEfficiencyROM;"
+			inherit=			"&baStdDeviceEnhancement;"
 			name=				"weapon efficiency ROM"
 			level=				"4"
 			value=				"1000"
@@ -187,14 +281,28 @@
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
 			attributes=			"info, minorItem, weaponEnhance"
 
-			description=		"This ROM reduces the power consumption of the ship's primary weapon."
+			description=		"This upgrade ROM reduces a weapon's power consumption. It is compatible with weapons up to tech level 10."
+
+			useScreen=			"&dsRPGUseItemOnDevice;"
 			>
+
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Dw~l L:1-10;"					enhancement:"+repair:10"	}
+					{	criteria:"w~l L:1-10;"					enhancement:"+efficient:20"	}
+					{	criteria:"w~l"							descID:'tooAdvanced		}
+					)
+			</Constant>
+
+			<Constant id="rpg.useCriteria">"w~l"</Constant>
+		</Properties>
 
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(intEnhanceWeaponUse 0x0f02 Nil "has more efficient power consumption" 6)
-		</Invoke>
+		<Language>
+			<Text id="descResultIntro">This upgrade ROM decreases a weapon's power consumption.</Text>
+		</Language>
 	</ItemType>
 
 <!-- LEVEL 5 -->
