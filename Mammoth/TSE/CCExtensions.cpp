@@ -29,6 +29,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_IS_ACTIVE			6
 #define FN_DEBUG_GET				7
 #define FN_DEBUG_SET				8
+#define FN_DEBUG_BREAK				9
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -646,6 +647,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Debug functions
 		//	---------------
+
+		{	"dbgBreak",						fnDebug,		FN_DEBUG_BREAK,
+			"(dbgBreak)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
@@ -4241,6 +4247,17 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_API_VERSION:
 			return pCC->CreateInteger(pCtx->GetAPIVersion());
+
+		case FN_DEBUG_BREAK:
+			{
+			CString sText = (pArgs->GetCount() > 0 ? pArgs->GetElement(0)->GetStringValue() : NULL_STR);
+#ifdef DEBUG
+			DebugBreak();
+			return pCC->CreateTrue();
+#else
+			return pCC->CreateNil();
+#endif
+			}
 
 		case FN_DEBUG_GET:
 			{

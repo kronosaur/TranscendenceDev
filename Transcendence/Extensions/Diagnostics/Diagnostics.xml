@@ -387,6 +387,7 @@
 				(objAddItem gPlayerShip (itmCreate &it1GWReactor; 1))
 				(shpInstallDevice gPlayerShip (itmCreate &it1GWReactor; 1))
 				(shpRefuelFromItem gPlayerShip (itmCreate &itHadronVacuumFuelCell; 100))
+				(objAddItem gPlayerShip (itmCreate &itMilitaryID; 1))
 
 				;	Add money
 
