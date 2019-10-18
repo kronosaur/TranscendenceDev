@@ -1179,12 +1179,12 @@
 
 	<ShipClass UNID="&scWolfenG4;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			level=				"4"
 			attributes=			"battleArena, gladiator"
-			inherit=			"&scWolfen;"
+			inherit=			"&scWolfenC;"
 			>
 
 		<Names noArticle="true" personalName="true">
@@ -1419,12 +1419,12 @@
 
 	<ShipClass UNID="&scWolfenG5;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			level=				"5"
 			attributes=			"battleArena, gladiator"
-			inherit=			"&scWolfen;"
+			inherit=			"&scWolfenC;"
 			>
 
 		<Names noArticle="true" personalName="true">
@@ -1616,12 +1616,12 @@
 
 	<ShipClass UNID="&scWolfenG6;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 
 			level=				"6"
 			attributes=			"battleArena, gladiator"
-			inherit=			"&scWolfen;"
+			inherit=			"&scWolfenC2;"
 			>
 
 		<Names noArticle="true" personalName="true">

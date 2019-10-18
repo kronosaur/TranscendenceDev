@@ -577,9 +577,9 @@
 	
 	<!-- Level 5: Wolfen-class Gunship -->
 
-	<ShipClass UNID="&scWolfen;"
+	<ShipClass UNID="&scWolfenC;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
@@ -621,7 +621,7 @@
 
 		<DeviceSlots>
 			<DeviceSlot criteria="w +property:omnidirectional;" posAngle="180" posRadius="4"/>
-			<DeviceSlot criteria="w" posAngle="0" posRadius="20"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="18"/>
 		</DeviceSlots>
 
 		<!-- Configuration -->
@@ -649,13 +649,13 @@
 
 		<!-- Image and Effects -->
 
-		<Image imageID="&rsWolfenGunshipHD;" imageX="0" imageY="0" imageWidth="48" imageHeight="48" rotationCount="120"/>
+		<Image imageID="&rsWolfenC;" imageWidth="56" imageHeight="56" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
 		<HeroImage imageID="&rsWolfenLarge;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="158"	posRadius="20"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-180"	posRadius="18"	posZ="-5"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-158"	posRadius="20"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="156"	posRadius="26"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-180"	posRadius="23"	posZ="-3"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-156"	posRadius="26"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<!-- Player Settings -->
@@ -703,6 +703,46 @@
 			
 			combatStyle=		"advanced"
 			/>
+
+	</ShipClass>
+	
+	<!-- Wolfen/C Variant 2: This is just a re-skinned Wolfen/C -->
+
+	<ShipClass UNID="&scWolfenC2;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+			defaultSovereign=	"&svCommonwealth;"
+
+			level=				"5"
+			attributes=			"commonwealth, genericClass, pacificDefense"
+			inherit=			"&scWolfenC;"
+			>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsWolfenC2;" imageWidth="56" imageHeight="56" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&rsWolfenC2Hero;" imageWidth="320" imageHeight="320"/>
+
+	</ShipClass>
+	
+	<!-- Wolfen/C Variant 3: This is just a re-skinned Wolfen/C -->
+
+	<ShipClass UNID="&scWolfenC3;"
+			manufacturer=		"Pacific Defense"
+			class=				"Wolfen/C"
+			type=				"gunship"
+			defaultSovereign=	"&svCommonwealth;"
+
+			level=				"5"
+			attributes=			"commonwealth, genericClass, pacificDefense"
+			inherit=			"&scWolfenC;"
+			>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsWolfenC3;" imageWidth="56" imageHeight="56" rotationCount="120" rotationColumns="12" viewportRatio="0.00375"/>
+		<HeroImage imageID="&rsWolfenC3Hero;" imageWidth="320" imageHeight="320"/>
 
 	</ShipClass>
 	
@@ -1569,10 +1609,17 @@
 
 	<Image UNID="&rsSapphire;"					bitmap="Resources\Sapphire.jpg"	bitmask="Resources\SapphireMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsSapphireLarge;"				bitmap="Resources\ZubrinLarge.jpg"	bitmask="Resources\ZubrinLargeMask.bmp" 	loadOnUse="true" />
-	<Image UNID="&rsWolfenLarge;"				bitmap="Resources\WolfenLarge.jpg"	bitmask="Resources\WolfenLargeMask.bmp" 	loadOnUse="true" />
 
 	<Image UNID="&rsScarabHD;"					bitmap="Resources\ScarabHD.jpg"	bitmask="Resources\ScarabHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsScarabHero;"				bitmap="Resources\ScarabLarge.jpg"	bitmask="Resources\ScarabLargeMask.bmp" 	loadOnUse="true" />
 
+	<Image UNID="&rsWolfenC;		"			bitmap="Resources\WolfenC.jpg" bitmask="Resources\WolfenCMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenLarge;"				bitmap="Resources\WolfenCLarge.jpg"	bitmask="Resources\WolfenCLargeMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsWolfenArmor;"				bitmap="Resources\ArmorHUD_Wolfen.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsArmorHUDShip_Wolfen;"		bitmap="Resources\ArmorHUDShip_Wolfen.jpg" bitmask="Resources\ArmorHUDShip_WolfenMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenC2;		"			bitmap="Resources\WolfenC2.jpg" bitmask="Resources\WolfenC2Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenC2Hero;"				bitmap="Resources\WolfenC2Large.jpg"	bitmask="Resources\WolfenC2LargeMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsWolfenC3;		"			bitmap="Resources\WolfenC3.jpg" bitmask="Resources\WolfenC3Mask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenC3Hero;"				bitmap="Resources\WolfenC3Large.jpg"	bitmask="Resources\WolfenC3LargeMask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>

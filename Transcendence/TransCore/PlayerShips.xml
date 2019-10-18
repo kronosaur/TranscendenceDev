@@ -104,7 +104,7 @@
 			type=				"gunship"
 
 			attributes=			"commonwealth, pacificDefense, playerClass, startingClass, 00200000_PlayerShip"
-			inherit=			"&scWolfen;"
+			inherit=			"&scWolfenC;"
 			characterClass=		"&unidPilgrimClass;"
 			>
 

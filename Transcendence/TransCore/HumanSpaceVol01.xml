@@ -94,6 +94,7 @@
 	<!ENTITY sc310AAegisAuton			"0x0000300F">
 	<!ENTITY scEI500					"0x00003010">
 	<!ENTITY scWolfen					"0x00003011">
+	<!ENTITY scWolfenC					"0x00003011">	<!-- Same as scWolfen -->
 	<!ENTITY sc200ADefenderAuton		"0x00003017">
 	<!ENTITY scExplorerAuton			"0x00003018">
 	
@@ -2055,6 +2056,10 @@
 	<!ENTITY msCommonwealthRevenge01	"0x001003A9">
 	<!ENTITY vtManticoreShieldPenalty	"0x001003AA">
 	<!ENTITY itPlasteelNanos			"0x001003AB">
+	<!ENTITY rsWolfenC2					"0x001003AC">
+	<!ENTITY rsWolfenC2Hero				"0x001003AD">
+	<!ENTITY rsWolfenC3					"0x001003AE">
+	<!ENTITY rsWolfenC3Hero				"0x001003AF">
 
 	<!-- 03B0-03CF SAPIENS -->
 
@@ -2267,6 +2272,12 @@
 	<!ENTITY itSuperlatticeCrystal		"0x001006C6">
 	<!ENTITY itTrillumCrystal			"0x001006C7">
 	<!ENTITY itWeaponEfficiencyROM		"0x001006C8">
+
+	<!-- 0700-073F COMMONWEALTH III -->
+
+	<!ENTITY rsWolfenC					"0x00100700">
+	<!ENTITY scWolfenC2					"0x00100701">
+	<!ENTITY scWolfenC3					"0x00100702">
 
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>

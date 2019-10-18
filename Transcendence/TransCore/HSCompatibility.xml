@@ -5217,5 +5217,8 @@
 	<Image UNID="&rsSteelSlaverHD;"		obsoleteVersion="46" bitmap="Resources\SteelSlaverHD.jpg"	bitmask="Resources\SteelSlaverHDMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsZulu;"				obsoleteVersion="46"				bitmap="Resources\Zulu.jpg"				bitmask="Resources\ZuluMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsBorer;"				obsoleteVersion="46"			bitmap="Resources\Borer.jpg" bitmask="Resources\BorerMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenGunship;"		obsolete="46" bitmap="Resources\ShipsWolfenGunship.jpg" bitmask="Resources\ShipsWolfenGunshipMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenGunshipHD;"	obsolete="46" bitmap="Resources\WolfenGunshipHD.jpg" bitmask="Resources\WolfenGunshipHDMask.bmp" loadOnUse="true"/>
+
 
 </TranscendenceModule>

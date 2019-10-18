@@ -8,12 +8,12 @@
 
 	<ShipClass UNID="&scWolfenVolkov;"
 			manufacturer=		"Pacific Defense"
-			class=				"Wolfen"
+			class=				"Wolfen/C"
 			type=				"gunship"
 			defaultSovereign=	"&svCommonwealth;"
 
 			attributes=			"commonwealth, pacificDefense"
-			inherit=			"&scWolfen;"
+			inherit=			"&scWolfenC3;"
 			character=			"&chVolkov;"
 			eventHandler=		"&chVolkov;"
 
