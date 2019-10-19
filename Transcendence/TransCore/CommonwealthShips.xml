@@ -575,7 +575,7 @@
 
 	</ShipClass>
 	
-	<!-- Level 5: Wolfen-class Gunship -->
+	<!-- Level 5: Wolfen/C-class Gunship -->
 
 	<ShipClass UNID="&scWolfenC;"
 			manufacturer=		"Pacific Defense"
@@ -1613,7 +1613,7 @@
 	<Image UNID="&rsScarabHD;"					bitmap="Resources\ScarabHD.jpg"	bitmask="Resources\ScarabHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsScarabHero;"				bitmap="Resources\ScarabLarge.jpg"	bitmask="Resources\ScarabLargeMask.bmp" 	loadOnUse="true" />
 
-	<Image UNID="&rsWolfenC;		"			bitmap="Resources\WolfenC.jpg" bitmask="Resources\WolfenCMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsWolfenC;"					bitmap="Resources\WolfenC.jpg" bitmask="Resources\WolfenCMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsWolfenLarge;"				bitmap="Resources\WolfenCLarge.jpg"	bitmask="Resources\WolfenCLargeMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsWolfenArmor;"				bitmap="Resources\ArmorHUD_Wolfen.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsArmorHUDShip_Wolfen;"		bitmap="Resources\ArmorHUDShip_Wolfen.jpg" bitmask="Resources\ArmorHUDShip_WolfenMask.bmp" loadOnUse="true"/>
