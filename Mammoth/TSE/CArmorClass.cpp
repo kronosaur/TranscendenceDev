@@ -83,6 +83,7 @@
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
+#define PROPERTY_STEALTH						CONSTLIT("stealth")
 
 constexpr int MAX_REFLECTION_CHANCE =			95;
 constexpr int ARMOR_HP_PER_SHIELD_HP =			4;
@@ -2058,6 +2059,15 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	else if (strEquals(sName, PROPERTY_STD_HP))
 		return ICCItemPtr(GetStdHP(Stats.iLevel));
+
+	else if (strEquals(sName, PROPERTY_STEALTH))
+		{
+		int iStealth = GetStealth();
+		if (iStealth <= CSpaceObject::stealthNormal)
+			return ICCItemPtr(ICCItem::Nil);
+		else
+			return ICCItemPtr(iStealth);
+		}
 
 	else
 		return NULL;

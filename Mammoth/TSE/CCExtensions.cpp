@@ -898,6 +898,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repairLevel\n"
 			"   'shatterImmune\n"
 			"   'stdHP\n"
+			"   'stealth\n"
 			"\n"
 			"property (all)\n\n"
 			"   'category\n"
