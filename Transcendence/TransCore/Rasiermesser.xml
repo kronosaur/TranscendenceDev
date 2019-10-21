@@ -6,11 +6,11 @@
 
 	<ItemType UNID="&itDvalinArmor;"
 			name=				"[segment(s) of ]Dvalin armor"
-			level=				"7"
-			value=				"6000"
+			level=				"9"
+			value=				"15000"
 			frequency=			"notrandom"
 			mass=				"3500"
-			attributes=			"military, minorItem, rasiermesser, notForSale"
+			attributes=			"military, minorItem, rasiermesser, notStandard"
 
 			description=		"Dvalin's nano-sintering process can create armor that is stronger than hexphase."
 
@@ -20,8 +20,8 @@
 		<Image imageID="&rsItems7;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"200"
-				hpBonus=	"  +0,  +0,+100, +0, +50,  +0"
+				hitPoints=	"320"
+				hpBonus=	"  +0,  +0,+100, +0, +100,  +0"
 
 				repairCostAdj=	"150"
 				/>
@@ -36,7 +36,7 @@
 			value=				"200000"
 			mass=				"4000"
 			frequency=			"notrandom"
-			attributes=			"energyWeapon, majorItem, military, rasiermesser, notForSale"
+			attributes=			"energyWeapon, majorItem, military, rasiermesser, notStandard"
 
 			description=		"This is an experimental ion cannon created by Rasiermesser's chief scientist."
 			>
@@ -204,7 +204,6 @@
 	EXTRA DATA
 
 	Dvalin:			True if Dvalin is at this station.
-	offered:		True if player offered an item this session
 	giftXP:			XP at last gift (from Dvalin)
 	XP:				Experience points (increases as the player donates)
 
@@ -236,12 +235,21 @@
 			attributes=			"corporate, corporateCustoms, envAir, envEarth, envFire, envWater, friendly, generic, human, independent, majorStation, populated, rasiermesser"
 			>
 
+		<Properties>
+			<Global id="DvalinSystem">Nil</Global>
+			<Global id="showDvalinAttribute">Nil</Global>
+
+			<Data id="Dvalin">Nil</Data>
+			<Data id="xp">0</Data>
+			<Data id="giftXP">0</Data>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
 				systemCriteria=			"+corporateSpace;"
 				systemAffinity=			"+corporateCore;"
-				levelFrequency=			"----- rur-- ----- ----- -----"
+				levelFrequency=			"----- uur-- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
 				enemyExclusionRadius=	"75"
@@ -322,6 +330,14 @@
 			<ConsumeTrade	criteria="{core.ore}"			impact="4"/>
 		</Trade>
 
+		<AttributeDesc>
+			<!-- Define attribute for items that Dvalin is interested in. -->
+		
+			<ItemAttribute label="Dvalin valuable"		criteria="asw +notForSale; F:rv-;">
+				<OnShow>(typGetProperty gType 'showDvalinAttribute)</OnShow>
+			</ItemAttribute>
+		</AttributeDesc>
+
 		<StaticData>
 			<NPCService>
 				(	;	service					level	margin
@@ -338,10 +354,10 @@
 			<OnContractQuery>True</OnContractQuery>
 
 			<OnCreate>
-				(if (not (objGetGlobalData gSource "DvalinSystem"))
+				(if (not (objGetProperty gSource 'DvalinSystem))
 					(block Nil
-						(objSetGlobalData gSource "DvalinSystem" (sysGetNode))
-						(objSetData gSource "Dvalin" True)
+						(objSetProperty gSource 'DvalinSystem (sysGetNode))
+						(objSetProperty gSource 'Dvalin True)
 						)
 					)
 			</OnCreate>
@@ -349,47 +365,37 @@
 
 		<DockScreens>
 			<Main>
-
-				<OnScreenInit>
-					(block Nil
-						(if (scrIsFirstOnInit gScreen)
-							(objSetData gSource "offered" Nil)
-							)
-						)
-				</OnScreenInit>
-
 				<Panes>
 					<Default descID="descWelcome">
 						<Actions>
-							<Action name="Research Lab" default="1" key="L">
-								(if (objGetData gSource "Dvalin" )
-									(scrShowScreen gScreen "ResearchLab")
-									(scrShowScreen gScreen "SecondaryLab")
+							<Action id="actionResearchLab" default="1">
+								(if (objGetProperty gSource 'Dvalin )
+									(scrShowScreen gScreen 'ResearchLab)
+									(scrShowScreen gScreen 'SecondaryLab)
 									)
 							</Action>
 
-							<Action name="Buy Items" key="B">
+							<Action id="actionBuyItems">
 								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
-							<Action name="Repair Items" key="R">
+							<Action id="actionRepairItems">
 								(scrShowScreen gScreen "&dsRPGRepairItem;" {
 									criteria: "*~aD +Rasiermesser;"
 									priceAdj: 65
 									})
 							</Action>
 
-							<Action name="Dock Services" key="D">
+							<Action id="actionDockServices">
 								(rpgDockServices gPlayerShip {
 									checkMilitaryID: True
 									})
 							</Action>
 
-							<Action name="Undock" cancel="1" key="U">
+							<Action id="actionUndock" cancel="1">
 								<Exit/>
 							</Action>
 						</Actions>
-
 					</Default>
 				</Panes>
 			</Main>
@@ -398,47 +404,38 @@
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(block (xp desc)
-								; Initialize
-								(if (not (objGetData gSource "XP"))
-									(objSetData gSource "XP" 0)
-									)
-								(setq xp (objGetData gSource "XP"))
-
-								; Description
+							(block (
+								(xp (or (objGetProperty gSource 'xp) 0))
+								)
 								(switch
 									(ls xp 50)
-										(setq desc (cat "The lab is filled with racks of equipment; researchers are testing various new weapons here.\n\n"
-											"Sitting by the corner, a small stocky man mumbles to himself as he pours through dozens of screens of information. "
-											"His name is Dvalin, the chief scientist for the Rasiermesser Corporation."
-											))
+										(scrSetDescTranslate gScreen 'DvalinIntro.01)
 
 									(ls xp 150)
-										(setq desc (cat "The center of the lab has a massive testing area; a segment of armor on a static frame is being subjected to intense energies.\n\n"
-											"Dvalin walks over to you and points to the test: \"Dat is my new nano-sintered armor. It will be twice as strong as hexphase, ya? It will be done soon!\""
-											))
+										(scrSetDescTranslate gScreen 'DvalinIntro.02)
 
 									(ls xp 500)
-										(setq desc (cat "One side of the lab has a static frame holding a complex weapon; scientists and engineers work on it under Dvalin's direction.\n\n"
-											"Dvalin walks over to you: \"It is my new project, ya? An ion weapon as powerful as a howitzer!\""
-											))
+										(scrSetDescTranslate gScreen 'DvalinIntro.03)
 
-									(setq desc (cat "The center of the lab has a massive testing area; a dangerous-looking weapon attached to a static frame burns a hole in a sample of blast plate.\n\n"
-										"Dvalin walks over to you and points at the test: \"Vat do you think? Impressive, ya? Much better than Akan!"
-										))
+									(scrSetDescTranslate gScreen 'DvalinIntro.04)
 									)
-
-								(scrSetDesc gScreen desc)
 								)
 						</OnPaneInit>
 
 						<Actions>
-							<Action name="Offer Item" default="1" key="O">
-								(scrShowScreen gScreen "OfferItem")
+							<Action id="actionOfferItem" default="1">
+								(block ()
+									(scrShowScreen gScreen "OfferItem")
+
+									;	After offering, we know what kinds of items
+									;	Dvalin is looking for
+
+									(typSetProperty &stRasiermesserFactory; 'showDvalinAttribute True)
+									)
 							</Action>
 
-							<Action name="Leave" cancel="1" key="L">
-								(scrShowScreen gScreen "Main")
+							<Action id="actionLeave" cancel="1">
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</Default>
@@ -457,29 +454,38 @@
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(block Nil
-								(setq gItem (scrGetItem gScreen))
-								(if gItem
-									(scrSetDesc gScreen (cat "Offer " (itmGetName gItem 0x0004) "."))
-									(block Nil
-										(scrSetDesc gScreen "Dvalin is not interested in any of the items in your cargo hold.")
-										(scrEnableAction gScreen 0 Nil)
+							(block (
+								(theItem (scrGetItem gScreen))
+								)
+								(scrSetDesc gScreen (cat
+									(scrTranslate gScreen 'DvalinOfferIntro)
+									"\n\n"
+									(if theItem
+										(scrTranslate gScreen 'DvalinOfferItem { itemName:(itmGetName theItem 0) })
+										(scrTranslate gScreen 'DvalinNothingToOffer)
 										)
-									)
+									))
+
+								(scrEnableAction gScreen 'actionOfferItem theItem)
 								)
 						</OnPaneInit>
 
 						<Actions>
-							<Action name="Offer Item" default="1" key="O">
-								(block (haveDamaged haveUndamaged gain haveCount)
+							<Action id="actionOfferItem" default="1">
+								(block (
+									(theItem (scrGetItem gScreen))
+									(haveCount 0)
+
+									haveDamaged haveUndamaged gain result
+									)
 
 									; See if we've already got the item that the player donated
-									(setq haveCount 0)
-									(enum (objGetItems gSource "aswU +NotForSale; F:rv-;") theItem
-										(if (eq (itmGetType theItem) (itmGetType gItem))
+
+									(enum (objGetItems gSource "aswU +NotForSale; F:rv-;") itemAtLab
+										(if (eq (itmGetType itemAtLab) (itmGetType theItem))
 											(block Nil
-												(setq haveCount (add haveCount (itmGetCount gItem)))
-												(if (itmIsDamaged theItem)
+												(setq haveCount (add haveCount (itmGetCount theItem)))
+												(if (itmIsDamaged itemAtLab)
 													(setq haveDamaged True)
 													(setq haveUndamaged True)
 													)
@@ -488,60 +494,73 @@
 										)
 
 									; Figure out how valuable this item is to Dvalin
-									(setq gResult True)
+
 									(switch
 										(and (not haveDamaged) (not haveUndamaged))
-											(if (itmIsDamaged gItem)
+											(if (itmIsDamaged theItem)
 												(block Nil
-													(setq gain (multiply 5 (itmGetLevel gItem)))
-													(setq gTitle (cat "Dvalin is impressed: \"Gods! " (itmGetName gItem 0x0005) "! A pity it is not intact, ya?\""))
+													(setq gain (multiply 5 (itmGetLevel theItem)))
+													(setq result (scrTranslate gScreen 'DvalinImpressed {
+														itemName: (itmGetName theItem 'article)
+														}))
 													)
 												(block Nil
-													(setq gain (multiply 10 (itmGetLevel gItem)))
-													(setq gTitle (cat "Dvalin is ecstatic: \"Gods! I have not seen " (itmGetName gItem 0x0004) " before! It is in excellent condition, ya?\""))
+													(setq gain (multiply 10 (itmGetLevel theItem)))
+													(setq result (scrTranslate gScreen 'DvalinEcstatic {
+														itemName: (itmGetName theItem 'article)
+														}))
 													)
 												)
 
-										(and (not haveUndamaged) (not (itmIsDamaged gItem)))
+										(and (not haveUndamaged) (not (itmIsDamaged theItem)))
 											(block Nil
-												(setq gain (multiply 7 (itmGetLevel gItem)))
-												(setq gTitle (cat "Dvalin is very pleased: \"At last! An undamaged " (itmGetName gItem 0x0000) "! It is in excellent condition, ya?\""))
+												(setq gain (multiply 7 (itmGetLevel theItem)))
+												(setq result (scrTranslate gScreen 'DvalinVeryPleased {
+													itemName: (itmGetName theItem 0)
+													}))
 												)
 
 										(gr haveCount 5)
 											(block Nil
 												(setq gain 0)
-												(setq gTitle (cat "Dvalin is uninterested: \"Another one, ya? We will use it for ballast, perhaps.\""))
-												(setq gResult Nil)
+												(setq result (scrTranslate gScreen 'DvalinUninterested {
+													itemName: (itmGetName theItem 0)
+													}))
 												)
 
-										(or (not haveDamaged) (not (itmIsDamaged gItem)))
+										(or (not haveDamaged) (not (itmIsDamaged theItem)))
 											(block Nil
-												(setq gain (multiply 2 (itmGetLevel gItem)))
-												(setq gTitle (cat "Dvalin is pleased: \"Good work! This " (itmGetName gItem 0x0000) " will be analyzed with the others.\""))
+												(setq gain (multiply 2 (itmGetLevel theItem)))
+												(setq result (scrTranslate gScreen 'DvalinPleased {
+													itemName: (itmGetName theItem 0)
+													}))
 												)
 
 										(block Nil
-											(setq gain (multiply 1 (itmGetLevel gItem)))
-											(setq gTitle (cat "Dvalin is not very interested: \"Another one, ya? Put it over there; we will analyze it.\""))
+											(setq gain (multiply 1 (itmGetLevel theItem)))
+											(setq result (scrTranslate gScreen 'DvalinNotVeryInterested {
+												itemName: (itmGetName theItem 0)
+												}))
 											)
 										)
 
 									; Increase XP
-									(objIncData gSource "XP" gain)
+									(objIncProperty gSource 'xp gain)
 
 									; Transfer the item
-									(objRemoveItem gPlayerShip gItem 1)
-									(objAddItem gSource gItem 1)
-									(objSetData gSource "offered" True)
+									(objRemoveItem gPlayerShip theItem 1)
+									(objAddItem gSource theItem 1)
 
 									; Done
-									(scrShowScreen gScreen "Reward")
+									(scrShowScreen gScreen 'Reward {
+										result: result
+										noGift: (= gain 0)
+										})
 									)
 							</Action>
 
-							<Action name="Cancel" cancel="1" key="C">
-								(scrShowScreen gScreen "ResearchLab")
+							<Action id="actionCancel" cancel="1">
+								(scrShowScreen gScreen 'ResearchLab)
 							</Action>
 						</Actions>
 					</Default>
@@ -552,76 +571,105 @@
 				<Panes>
 					<Default>
 						<OnPaneInit>
-							(scrSetDesc gScreen gTitle)
+							(scrSetDesc gScreen (@ gData 'result))
 						</OnPaneInit>
 
 						<Actions>
-							<Action name="Continue" default="1" cancel="1" key="C">
-								(block (minXP xp roll)
-									; We double to xp required after each gift
-									(setq xp (objGetData gSource "XP"))
-									(setq minXP (multiply (objGetData gSource "giftXP") 2))
-									(if (ls minXP 100)
-										(setq minXP 100)
-										)
+							<Action id="actionContinue" default="1" cancel="1">
+								(block (
+									(xp (or (objGetProperty gSource 'xp) 0))
+									(noGift (@ gData 'noGift))
 
+									;	We double xp required after each gift
+									(minXP (max (multiply (objGetProperty gSource 'giftXP) 2) 100))
+
+									(roll (random 1 100))
+
+									giftItem
+									)
 									; Figure out what kind of gift to give
-									(setq roll (random 1 100))
+
 									(switch
-										(or (not gResult) (ls xp minXP))
-											(setq gItem Nil)
+										(or noGift (ls xp minXP))
+											(setq giftItem Nil)
 
 										(geq xp 2400)
-											(setq gItem Nil)
+											(setq giftItem Nil)
 
 										(geq xp 800)
 											(block Nil
-												(setq gItem 
-													(itmSetEnhanced 
-														(itmCreate &itDvalinIon9Cannon; 1)
-														(random (list 0x0105 0x0106 0x0107))
-														)
+												(setq giftItem 
+													(itmSetEnhanced (itmCreate &itDvalinIon9Cannon; 1) {
+														enhancement: (random (list 
+															"+hpBonus:50" "+hpBonus:60" "+hpBonus:70"
+															))
+														type: &itIonUpgrade;
+														})
 													)
+
+												;	Once the Ion9 has been given, we no longer care 
+												;	about Dvalin items.
+
+												(typSetProperty &stRasiermesserFactory; 'showDvalinAttribute Nil)
 												)
 
 										(geq xp 400)
 											(block Nil
-												(setq gItem (itmCreate &itDvalinArmor; 4))
+												(setq giftItem (itmCreate &itDvalinArmor; 4))
 												)
 
 										(geq xp 200)
 											(switch
 												(leq roll 60)
-													(setq gItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) 0x0105))
+													(setq giftItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) {
+														enhancement: "+hpBonus:50"
+														type: &itBlastUpgrade;
+														}))
 
 												(leq roll 90)
-													(setq gItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) 0x0107))
+													(setq giftItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) {
+														enhancement: "+hpBonus:70"
+														type: &itBlastUpgrade;
+														}))
 
-												(setq gItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) 0x1003))
+												(setq giftItem (itmSetEnhanced (itmCreate &itAkan600Turret; 1) {
+													enhancement: "+speed:80"
+													type: &itWeaponSpeedROM;
+													}))
 												)
 
 										(geq xp 100)
 											(switch
 												(leq roll 60)
-													(setq gItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) 0x010a))
+													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+														enhancement: "+hpBonus:100"
+														type: &itPlasteelNanos;
+														}))
 
 												(leq roll 90)
-													(setq gItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) 0x0349))
+													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+														enhancement: "+reflect:ion"
+														type: &itIonReflectCoating;
+														}))
 
-												(setq gItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) 0x0200))
+												(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+													enhancement: "+regen"
+													type: &itRegeneratingNanos;
+													}))
 												)
 
-										(setq gItem Nil)
+										(setq giftItem Nil)
 										)
 
 									; Give the gift
-									(if gItem
+									(if giftItem
 										(block Nil
-											(objAddItem gPlayerShip gItem)
-											(objSetData gSource "giftXP" minXP)
-											(scrShowPane gScreen "Gift")
+											(objAddItem gPlayerShip giftItem)
+											(objSetProperty gSource "giftXP" minXP)
+											(scrSetData gScreen 'giftItem giftItem)
+											(scrShowPane gScreen 'Gift)
 											)
-										(scrShowScreen gScreen "ResearchLab")
+										(scrShowScreen gScreen 'ResearchLab)
 										)
 									)
 							</Action>
@@ -630,21 +678,24 @@
 
 					<Gift>
 						<OnPaneInit>
-							(block Nil
-								(scrSetDesc gScreen (cat "Dvalin thanks you for helping his research:\n\n"
-									"\"Danke for your aid! Our research advances because of you. Please, accept "
-									(itmGetName gItem 0x040) ". "
-									(if (gr (itmGetCount gItem) 1)
-										"I made them specially for you!\""
-										"It has special enhancements, ya?\""
+							(block (
+								(giftItem (scrGetData gScreen 'giftItem))
+								)
+								(scrSetDescTranslate gScreen 
+									(if (gr (itmGetCount giftItem) 1)
+										'DvalinGiftMultiple
+										'DvalinGiftSingle
 										)
-									))
+									{
+										itemName: (itmGetName giftItem '(demonstrative noModifiers))
+										}
+									)
 								)
 						</OnPaneInit>
 
 						<Actions>
-							<Action name="Continue" default="1" cancel="1" key="C">
-								(scrShowScreen gScreen "Main")
+							<Action id="actionContinue" default="1" cancel="1">
+								(scrShowScreen gScreen 'Main)
 							</Action>
 						</Actions>
 					</Gift>
@@ -677,6 +728,10 @@
 		</DockingPorts>
 
 		<Language>
+			<Text id="actionOfferItem">[O]ffer Item</Text>
+			<Text id="actionRepairItems">[R]epair Items</Text>
+			<Text id="actionResearchLab">Research [L]ab</Text>
+
 			<Text id="descWelcome">
 
 				Welcome to Rasiermesser! We are the leading manufacturer of 
@@ -700,9 +755,117 @@
 				We install Rasiermesser items up to tech level %maxLevel%.
 
 			</Text>
+			<Text id="DvalinIntro.01">
+
+				The lab is filled with racks of equipment; researchers are 
+				testing various new weapons here.
+
+				Sitting by the corner, a small stocky man mumbles to himself as 
+				he pours through dozens of screens of information. His name is 
+				Dvalin, the chief scientist for the Rasiermesser Corporation.
+
+			</Text>
+			<Text id="DvalinIntro.02">
+
+				The center of the lab has a massive testing area; a segment of 
+				armor on a static frame is being subjected to intense energies.
+
+				Dvalin walks over to you and points to the test: "Dat is my new
+				nano-sintered armor. It will be twice as strong as hexphase, ya?
+				It will be done soon!"
+
+			</Text>
+			<Text id="DvalinIntro.03">
+
+				One side of the lab has a static frame holding a complex weapon;
+				scientists and engineers work on it under Dvalin's direction.
+
+				Dvalin walks over to you: "It is my new project, ya? An ion 
+				weapon as powerful as a howitzer!"
+
+			</Text>
+			<Text id="DvalinIntro.04">
+
+				The center of the lab has a massive testing area; a 
+				dangerous-looking weapon attached to a static frame burns a hole
+				in a sample of blast plate.
+
+				Dvalin walks over to you and points at the test: "Vat do you 
+				think? Impressive, ya? Much better than Akan!"
+
+			</Text>
+			<Text id="DvalinOfferIntro">
+
+				Dvalin is looking for rare and powerful items to reverse-engineer
+				and learn from.
+			
+			</Text>
+			<Text id="DvalinOfferItem">
+
+				The %itemName% could be useful in his research.
+			
+			</Text>
+			<Text id="DvalinNothingToOffer">
+
+				Unfortunately, Dvalin is not interested in any of the item in 
+				your cargo hold.
+			
+			</Text>
+			<Text id="DvalinEcstatic">
+
+				Dvalin is ecstatic: "Gods! I have not seen %itemName% before! It
+				is in excellent condition, ya?"
+			
+			</Text>
+			<Text id="DvalinImpressed">
+
+				Dvalin is impressed: "Gods! %ItemName%! A pity it is not intact,
+				ya?"
+				
+			</Text>
+			<Text id="DvalinVeryPleased">
+
+				Dvalin is very pleased: "At last! An undamaged %itemName%! It is
+				in excellent condition, ya?"
+			
+			</Text>
+			<Text id="DvalinPleased">
+
+				Dvalin is pleased: "Good work! This %itemName% will be analyzed 
+				with the others."
+			
+			</Text>
+			<Text id="DvalinNotVeryInterested">
+
+				Dvalin is not very interested: "Another one, ya? Put it over 
+				there; we will analyze it."
+
+			</Text>
+			<Text id="DvalinUninterested">
+
+				Dvalin is uninterested: "Another one, ya? We will use it for 
+				ballast, perhaps."
+			
+			</Text>
+			<Text id="DvalinGiftSingle">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Our research advances because of you. 
+				Please, accept %itemName%. It has special enhancements, ya?"
+
+			</Text>
+			<Text id="DvalinGiftMultiple">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Our research advances because of you. 
+				Please, accept %itemName%. I made them specially for you!"
+
+			</Text>
             
             <Text id="core.mapDescCustom">
-				(if (objGetData gSource 'Dvalin)
+				(if (objGetProperty gSource 'Dvalin)
 					(cat (typTranslate gType 'mapDescDvalin) " "
 						(typTranslate gType 'core.mapDesc)
 						)
