@@ -198,7 +198,7 @@ class CDisplayAttributeDefinitions
 		bool FindCriteriaNameByID (const CString &sID, CString *retsName = NULL) const;
 		int GetLocationAttribFrequency (const CString &sAttrib) const;
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		inline bool IsEmpty (void) const { return ((m_Attribs.GetCount() == 0) && (m_ItemAttribs.GetCount() == 0)); }
+		bool IsEmpty (void) const { return ((m_Attribs.GetCount() == 0) && (m_ItemAttribs.GetCount() == 0)); }
 
 		static bool InitFromCCItem (ICCItem *pEntry, SDisplayAttribute &Result);
 
@@ -207,11 +207,15 @@ class CDisplayAttributeDefinitions
 	private:
 		struct SItemEntry
 			{
+			const CDesignType *pSourceType = NULL;	//	Type that defined the display attributes
+
 			CString sID;					//	Optional ID
 			CItemCriteria Criteria;
 			EDisplayAttributeTypes iType;
 			CString sText;					//	Text to display on item
 			CString sCriteriaName;			//	Name for the criteria
+
+			ICCItemPtr pOnShow;				//	<OnShow> event
 			};
 
 		struct SAttribDesc

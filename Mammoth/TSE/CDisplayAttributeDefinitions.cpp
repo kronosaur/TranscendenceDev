@@ -7,6 +7,7 @@
 
 #define ITEM_ATTRIBUTE_TAG						CONSTLIT("ItemAttribute")
 #define LOCATION_ATTRIBUTE_TAG					CONSTLIT("LocationAttribute")
+#define ON_SHOW_TAG								CONSTLIT("OnShow")
 
 #define ATTRIBUTE_ATTRIB						CONSTLIT("attribute")
 #define CRITERIA_ATTRIB							CONSTLIT("criteria")
@@ -30,17 +31,55 @@ void CDisplayAttributeDefinitions::AccumulateAttributes (const CItem &Item, TArr
 //	Adds display attributes possessed by Item to retList.
 
 	{
-	int i;
-
-	for (i = 0; i < m_ItemAttribs.GetCount(); i++)
+	for (int i = 0; i < m_ItemAttribs.GetCount(); i++)
 		{
 		//	Some display attributes are blank because we use them only for 
 		//	balance of trade computations.
 
-		if (m_ItemAttribs[i].sText.IsBlank())
-			continue;
+		if (m_ItemAttribs[i].sText.IsBlank() && !m_ItemAttribs[i].pOnShow)
+			{ }
 
-		if (Item.MatchesCriteria(m_ItemAttribs[i].Criteria))
+		//	Skip if we don't match the item criteria
+
+		else if (!Item.MatchesCriteria(m_ItemAttribs[i].Criteria))
+			{ }
+
+		//	If we have an OnShow event, call it now
+
+		else if (m_ItemAttribs[i].pOnShow)
+			{
+			CCodeChainCtx CCX(Item.GetUniverse());
+
+			if (m_ItemAttribs[i].pSourceType)
+				CCX.SaveAndDefineType(m_ItemAttribs[i].pSourceType->GetUNID());
+			CCX.SaveAndDefineItemVar(Item);
+
+			ICCItemPtr pResult = CCX.RunCode(m_ItemAttribs[i].pOnShow);
+
+			//	If error, display the error as an attribe.
+
+			if (pResult->IsError())
+				retList->Insert(SDisplayAttribute(attribNeutral, pResult->GetStringValue(), m_ItemAttribs[i].sID));
+
+			//	Nil means don't show the attribute.
+
+			else if (pResult->IsNil())
+				{ }
+
+			//	True means show the attribute label defined in XML
+
+			else if (pResult->IsTrue())
+				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID));
+
+			//	Otherwise, we expect the result to be the attribute label.
+
+			else
+				retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, pResult->GetStringValue(), m_ItemAttribs[i].sID));
+			}
+
+		//	Otherwise, we just add it
+
+		else
 			retList->Insert(SDisplayAttribute(m_ItemAttribs[i].iType, m_ItemAttribs[i].sText, m_ItemAttribs[i].sID));
 		}
 	}
@@ -225,14 +264,15 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 //	Initialize
 
 	{
-	int i;
+	CCodeChainCtx CCX(Ctx.GetUniverse());
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pDef = pDesc->GetContentElement(i);
 		if (strEquals(pDef->GetTag(), ITEM_ATTRIBUTE_TAG))
 			{
 			SItemEntry *pEntry = m_ItemAttribs.Insert();
+			pEntry->pSourceType = Ctx.pType;
 			pEntry->sID = pDef->GetAttribute(ID_ATTRIB);
 			pEntry->sText = pDef->GetAttribute(LABEL_ATTRIB);
 			pEntry->sCriteriaName = pDef->GetAttribute(CRITERIA_LABEL_ATTRIB);
@@ -260,6 +300,20 @@ ALERROR CDisplayAttributeDefinitions::InitFromXML (SDesignLoadCtx &Ctx, CXMLElem
 				}
 			else
 				pEntry->iType = attribNeutral;
+
+			//	OnShow
+
+			if (CXMLElement *pOnShow = pDef->GetContentElementByTag(ON_SHOW_TAG))
+				{
+				ICCItemPtr pCode = CCX.LinkCode(pOnShow->GetContentText(0));
+				if (pCode->IsError())
+					{
+					Ctx.sError = strPatternSubst(CONSTLIT("OnShow: %s"), pCode->GetStringValue());
+					return ERR_FAIL;
+					}
+
+				pEntry->pOnShow = pCode;
+				}
 			}
 		else if (strEquals(pDef->GetTag(), LOCATION_ATTRIBUTE_TAG))
 			{
