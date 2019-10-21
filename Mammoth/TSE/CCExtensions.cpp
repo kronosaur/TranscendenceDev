@@ -1971,6 +1971,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (ships)\n\n"
 			
 			"   'alwaysLeaveWreck\n"
+			"   'armorCount\n"
 			"   'autoTarget\n"
 			"   'availableDeviceSlots\n"
 			"   'availableNonWeaponSlots\n"

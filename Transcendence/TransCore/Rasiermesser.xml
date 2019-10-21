@@ -615,7 +615,7 @@
 
 										(geq xp 400)
 											(block Nil
-												(setq giftItem (itmCreate &itDvalinArmor; 4))
+												(setq giftItem (itmCreate &itDvalinArmor; (objGetProperty gPlayerShip 'armorCount)))
 												)
 
 										(geq xp 200)
@@ -641,18 +641,18 @@
 										(geq xp 100)
 											(switch
 												(leq roll 60)
-													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
 														enhancement: "+hpBonus:100"
 														type: &itPlasteelNanos;
 														}))
 
 												(leq roll 90)
-													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+													(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
 														enhancement: "+reflect:ion"
 														type: &itIonReflectCoating;
 														}))
 
-												(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; 4) {
+												(setq giftItem (itmSetEnhanced (itmCreate &itAdvancedCeralloyArmor; (objGetProperty gPlayerShip 'armorCount)) {
 													enhancement: "+regen"
 													type: &itRegeneratingNanos;
 													}))
