@@ -752,6 +752,37 @@
 
 <!-- LEVEL 8 -->
 
+	<!-- Level 8: Ion Reflect Coating -->
+
+	<ItemType UNID="&itIonReflectCoating;"
+			inherit=			"&baStdPasteBarrel;"
+			name=				"[barrel(s) of ]ion-reflect coating"
+			level=				"8"
+			value=				"5250"
+			mass=				"1000"
+			frequency=			"rare"
+			numberAppearing=	"1d4"
+			attributes=			"ArmorEnhance; MinorItem; Specialty"
+			unknownType=		"&itUnknownBarrel5;"
+
+			description=		"This coating reflects ion damage."
+
+			useScreen=			"&dsRPGUseItemOnArmor;"
+			>
+
+		<Properties>
+			<Constant id="core.enhancement">"+reflect:ion"</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
+
+		<Language>
+			<Text id="descResultIntro">
+				The paste is a coating that reflects ion damage.
+			</Text>
+		</Language>
+	</ItemType>
+
 	<!-- Level 8: Ithalium Paste -->
 
 	<ItemType UNID="&itThermoResistCoating;"

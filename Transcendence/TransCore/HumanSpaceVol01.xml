@@ -2272,6 +2272,7 @@
 	<!ENTITY itSuperlatticeCrystal		"0x001006C6">
 	<!ENTITY itTrillumCrystal			"0x001006C7">
 	<!ENTITY itWeaponEfficiencyROM		"0x001006C8">
+	<!ENTITY itIonReflectCoating		"0x001006C9">
 
 	<!-- 0700-073F COMMONWEALTH III -->
 
