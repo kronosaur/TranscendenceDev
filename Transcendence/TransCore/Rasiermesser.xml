@@ -46,7 +46,7 @@
 		<Weapon
 				type=				"particles"
 
-				damage=				"ion:60; shield:9;"
+				damage=				"ion:90; shield:9;"
 				fireRate=			"22"
 				missileSpeed=		"100"
 				lifetime=			"30"
@@ -645,14 +645,7 @@
 
 										(geq xp 800)
 											(block Nil
-												(setq giftItem 
-													(itmSetEnhanced (itmCreate &itDvalinIon9Cannon; 1) {
-														enhancement: (random (list 
-															"+hpBonus:50" "+hpBonus:60" "+hpBonus:70"
-															))
-														type: &itIonUpgrade;
-														})
-													)
+												(setq giftItem (itmCreate &itDvalinIon9Cannon; 1))
 
 												;	Once the Ion9 has been given, we no longer care 
 												;	about Dvalin items.
