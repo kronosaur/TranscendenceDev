@@ -78,7 +78,7 @@
 			sovereign=			"&svCorporate;"
 			inherit=			"&baCorporateStation;"
 
-			dockScreen=			"&dsArmsDealerSpecial;"
+			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			canAttack=			"true"
 
@@ -105,34 +105,7 @@
 				enemyExclusionRadius=	"50"
 				/>
 
-		<Image			imageID="&rsCorporateArmsDealer;" imageWidth="148" imageHeight="226" viewportRatio="0.03125"/>
-
-		<DockingPorts
-				portCount=		"8"
-				portAngle=		"-15"
-				portRadius=		"100"
-				>
-		</DockingPorts>
-		
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itAkan30Cannon;"	omnidirectional="true">
-				<Items>
-					<Item count="900" item="&itAkan30CannonShell;"/>
-				</Items>
-			</Device>
-		</Devices>
+		<!-- Trade and Items -->
 
 		<Items>
 			<RandomItem count="1d12" 
@@ -163,19 +136,93 @@
 			<InstallDevice	criteria="d L:1-7;" priceAdj="unavailable"	messageID="descNoInstall"/>
 		</Trade>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
+		<!-- Configuration -->
 
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
+		<Devices>
+			<Device deviceID="&itAkan30Cannon;"	omnidirectional="true">
+				<Items>
+					<Item count="900" item="&itAkan30CannonShell;"/>
+				</Items>
+			</Device>
+		</Devices>
 
-		<StaticData>
-			<LongName>"a Rasiermesser arms dealer"</LongName>
-		</StaticData>
+		<!-- Ships and Defenses -->
+
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
+
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image			imageID="&rsCorporateArmsDealer;" imageWidth="148" imageHeight="226" viewportRatio="0.03125"/>
+
+		<DockingPorts
+				portCount=		"8"
+				portAngle=		"-15"
+				portRadius=		"100"
+				/>
+		
+		<!-- Dock Screen -->
+
+		<DockScreens>
+			<Main>
+				<Panes>
+					<Default descID="descWelcome">
+						<Actions>
+							<Action id="actionOperations">
+								(rpgMissionAssignment {
+									missionCriteria: (cat "n +rasiermesserArmsDealer; =" (sysGetLevel) ";")
+									noMissionTextID: 'descNoMissions
+									maxPerStation: 1
+									})
+							</Action>
+
+							<Action id="actionDockServices" default="1">
+								(rpgDockServices gPlayerShip {
+									checkMilitaryID: True
+									})
+							</Action>
+
+							<Action id="actionBuyItems">
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
+							</Action>
+
+							<Action id="actionUndock" cancel="1">
+								<Exit/>
+							</Action>
+						</Actions>
+
+					</Default>
+				</Panes>
+			</Main>
+		</DockScreens>
+
+		<!-- Events and Data -->
 
 		<Language>
+			<Text id="descWelcome">
+
+				You are docked at a Rasiermesser arms dealer.
+
+			</Text>
+			<Text id="descNoMissions">
+
+				The operations level is filled with screens. A couple of 
+				controllers sit in front of them looking bored. One of them 
+				turns to you:
+
+				"Nothing going on today, fortunately!"
+
+			</Text>
+
 			<Text id="descNoInstall">
 
 				We only install Rasiermesser items. We cannot install %itemName%

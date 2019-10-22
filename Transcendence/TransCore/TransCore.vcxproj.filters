@@ -864,5 +864,8 @@
     <Xml Include="ShieldEnhancementItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </Xml>
+    <Xml Include="RasiermesserMission01.xml">
+      <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

@@ -604,6 +604,7 @@
     <Xml Include="RaisuStation.xml" />
     <Xml Include="Rama.xml" />
     <Xml Include="RanxEmpire.xml" />
+    <Xml Include="RasiermesserMission01.xml" />
     <Xml Include="RPGCommoditiesExchange.xml" />
     <Xml Include="RPGCommonText.xml" />
     <Xml Include="RPGComponents.xml">

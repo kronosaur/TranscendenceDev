@@ -2280,6 +2280,10 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 
+	<!-- 0740-075F RASIERMESSER -->
+
+	<!ENTITY msRasiermesserFindDvalin	"0x00100740">
+
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
@@ -2416,6 +2420,7 @@
 	<Module filename="RaisuStation.xml"/>
 	<Module filename="RanxEmpire.xml"/>
 	<Module filename="Rasiermesser.xml"/>
+	<Module filename="RasiermesserMission01.xml"/>
 	<Module filename="Ringers.xml"/>
 	<Module filename="RogueFleet.xml"/>
 	<Module filename="Salvagers.xml"/>

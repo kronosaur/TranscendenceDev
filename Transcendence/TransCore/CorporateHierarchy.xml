@@ -2948,7 +2948,7 @@
 	-->
 	
 	<Type unid="&baCorporateStation;"
-		inherit=			"&dsDockScreenBase;"
+		inherit=			"&unidCommonText;"
 		>
 		<Properties>
 			<!--
@@ -2969,13 +2969,19 @@
 		</Events>
 		
 		<Language>
+			<Text id="actionOperations">[O]perations Level</Text>
+
 			<Text id="customs.chargedForDecon">
+
 				Corporate security stops your ship for decontamination.
 				You are automatically charged %cost% for decontaminating your ship.
+
 			</Text>
 			<Text id="customs.cantAffordDecon">
+
 				Corporate security stops your ship for decontamination.
 				Unfortunately, you do not have %cost% to pay for decontamination.
+
 			</Text>
 		</Language>
 	</Type>
