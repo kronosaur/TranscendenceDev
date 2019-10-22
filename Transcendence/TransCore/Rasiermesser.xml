@@ -298,7 +298,7 @@
 		<Encounter
 				systemCriteria=			"+corporateSpace;"
 				systemAffinity=			"+corporateCore;"
-				levelFrequency=			"----- uur-- ----- ----- -----"
+				levelFrequency=			"----r uur-- ----- ----- -----"
 
 				locationCriteria=		"+planetary"
 				enemyExclusionRadius=	"75"
@@ -512,7 +512,7 @@
 
 				<ListOptions
 					dataFrom=	"player"
-					list=		"aswU +NotForSale; -Rasiermesser; F:rv-;"
+					list=		"aswU +notForSale; -illegal; -rasiermesser; F:rv-;"
 					/>
 
 				<Panes>
@@ -538,6 +538,14 @@
 							<Action id="actionOfferItem" default="1">
 								(block (
 									(theItem (scrGetItem gScreen))
+									(itemLevel (itmGetLevel theItem))
+
+									;	Armor is worth half as much
+									(itemScoreAdj (if (= (itmGetProperty theItem 'category) 'armor) 0.5 1.0))
+
+									;	Higher level items are exponentially more valuable
+									(itemScore (round (* itemScoreAdj (pow 1.5 itemLevel))))
+
 									(haveCount 0)
 
 									haveDamaged haveUndamaged gain result
@@ -563,13 +571,13 @@
 										(and (not haveDamaged) (not haveUndamaged))
 											(if (itmIsDamaged theItem)
 												(block Nil
-													(setq gain (multiply 5 (itmGetLevel theItem)))
+													(setq gain (multiply 5 itemScore))
 													(setq result (scrTranslate gScreen 'DvalinImpressed {
 														itemName: (itmGetName theItem 'article)
 														}))
 													)
 												(block Nil
-													(setq gain (multiply 10 (itmGetLevel theItem)))
+													(setq gain (multiply 10 itemScore))
 													(setq result (scrTranslate gScreen 'DvalinEcstatic {
 														itemName: (itmGetName theItem 'article)
 														}))
@@ -578,7 +586,7 @@
 
 										(and (not haveUndamaged) (not (itmIsDamaged theItem)))
 											(block Nil
-												(setq gain (multiply 7 (itmGetLevel theItem)))
+												(setq gain (multiply 7 itemScore))
 												(setq result (scrTranslate gScreen 'DvalinVeryPleased {
 													itemName: (itmGetName theItem 0)
 													}))
@@ -594,14 +602,14 @@
 
 										(or (not haveDamaged) (not (itmIsDamaged theItem)))
 											(block Nil
-												(setq gain (multiply 2 (itmGetLevel theItem)))
+												(setq gain (multiply 3 itemScore))
 												(setq result (scrTranslate gScreen 'DvalinPleased {
 													itemName: (itmGetName theItem 0)
 													}))
 												)
 
 										(block Nil
-											(setq gain (multiply 1 (itmGetLevel theItem)))
+											(setq gain (multiply 2 itemScore))
 											(setq result (scrTranslate gScreen 'DvalinNotVeryInterested {
 												itemName: (itmGetName theItem 0)
 												}))
@@ -900,7 +908,7 @@
 			</Text>
 			<Text id="DvalinNotVeryInterested">
 
-				Dvalin is not very interested: "Another one, ya? Put it over 
+				Dvalin is somewhat interested: "Another one, ya? Put it over 
 				there; we will analyze it."
 
 			</Text>

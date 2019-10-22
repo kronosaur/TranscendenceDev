@@ -1742,40 +1742,6 @@
 		</Weapon>
 	</ItemType>
 
-	<!-- Ion Disruptor -->
-
-	<ItemType UNID="&itIonDisruptor;"
-			name=				"ion disruptor"
-			attributes=			"commonwealth, EI, energyWeapon, military, majorItem, specialty"
-			  
-			level=				"7"
-			frequency=			"rare"
-
-			value=				"35000"
-			mass=				"3000"
-			  
-			description=		"The ion disruptor's beam can penetrate a ship's hull and ionize the delicate mechanisms of weapons and other devices."
-			>
-
-		<Image imageID="&rsItemsEI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
-
-		<Weapon
-				type=				"beam"
-
-				damage=				"ion:5d6; deviceDisrupt:2"
-				fireRate=			"20"
-				lifetime=			"30"
-				powerUse=			"500"
-
-				effect=				"&efEIDisruptorBeam;"
-				fireEffect=			"&efEIDisruptorFire;"
-				hitEffect=			"&efEIDisruptorHit;"
-				sound=				"&snLaserCannon;"
-				>
-		</Weapon>
-
-	</ItemType>
-
 	<!-- Light Ion Blaster -->
 
 	<ItemType UNID="&itLightIonBlaster;"

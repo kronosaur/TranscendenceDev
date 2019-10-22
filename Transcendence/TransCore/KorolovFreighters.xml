@@ -673,7 +673,7 @@
 			value=				"14000"
 			mass=				"2500"
 			frequency=			"notrandom"
-			attributes=			"EI; MajorItem; NotForSale"
+			attributes=			"EI, majorItem, notStandard"
 
 			description=		"High manufacturing costs and poor sales doomed it in the market, but many prefer this vintage deflector over modern imitators."
 

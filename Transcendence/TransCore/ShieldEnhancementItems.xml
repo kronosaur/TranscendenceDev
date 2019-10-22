@@ -135,7 +135,7 @@
 			mass=				"1"
 			frequency=			"veryrare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, notForSale, shieldEnhance"
+			attributes=			"info, minorItem, notStandard, shieldEnhance"
 
 			description=		"One of Hiro's first creations, this ROM can increase the strength of any shield generator up to tech level 6."
 			>
