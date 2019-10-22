@@ -2425,6 +2425,43 @@
 						)
 					)
 				))
+
+			;	STORAGE FUNCTIONS ------------------------------------------------------------------
+
+			(setq rpgGetStorage (lambda (sourceObj)
+				(block (
+					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageObj (objGetObjByID storageID))
+					)
+					(switch
+						(not storageObj)
+							Nil
+
+						(not (objGetItems storageObj "*"))
+							Nil
+
+						storageObj
+						)
+					)
+				))
+
+			(setq rpgStoreItem (lambda (sourceObj theItem)
+				(block (
+					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageObj (objGetObjByID storageID))
+					)
+					;	Create storage if necessary
+
+					(if (not storageObj)
+						(block ()
+							(setq storageObj (sysCreateMarker "RPG Storage" (objGetPos sourceObj) (objGetProperty sourceObj 'sovereign)))
+							(objSetProperty sourceObj 'rpg.storageID (objGetID storageObj))
+							)
+						)
+
+					(objAddItem storageObj theItem)
+					)
+				))
 			)
 	</Globals>
 

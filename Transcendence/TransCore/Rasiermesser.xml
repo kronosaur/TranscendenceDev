@@ -287,8 +287,10 @@
 			<Global id="showDvalinAttribute">Nil</Global>
 
 			<Data id="Dvalin">Nil</Data>
-			<Data id="xp">0</Data>
 			<Data id="giftXP">0</Data>
+			<Data id="xp">0</Data>
+
+			<Data id="rpg.storageID"></Data>
 		</Properties>
 
 		<!-- Encounter Info -->
@@ -416,9 +418,24 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionResearchLab" default="1">
-								(if (objGetProperty gSource 'Dvalin )
-									(scrShowScreen gScreen 'ResearchLab)
-									(scrShowScreen gScreen 'SecondaryLab)
+								(block (storageObj)
+									(switch
+										;	If we've previously left some rewards here, get them.
+
+										(setq storageObj (rpgGetStorage gSource))
+											(scrShowScreen gScreen &dsRPGLoot; {
+												sourceObj: storageObj
+												})
+
+										;	If this is Dvalin's lab, then go there
+
+										(objGetProperty gSource 'Dvalin )
+											(scrShowScreen gScreen 'ResearchLab)
+
+										;	Otherwise, nothing exciting.
+
+										(scrShowScreen gScreen 'SecondaryLab)
+										)
 									)
 							</Action>
 
@@ -427,7 +444,7 @@
 							</Action>
 
 							<Action id="actionRepairItems">
-								(scrShowScreen gScreen "&dsRPGRepairItem;" {
+								(scrShowScreen gScreen &dsRPGRepairItem; {
 									criteria: "*~aD +Rasiermesser;"
 									priceAdj: 65
 									})
@@ -704,7 +721,7 @@
 									; Give the gift
 									(if giftItem
 										(block Nil
-											(objAddItem gPlayerShip giftItem)
+											(rpgStoreItem gSource giftItem)
 											(objSetProperty gSource "giftXP" minXP)
 											(scrSetData gScreen 'giftItem giftItem)
 											(scrShowPane gScreen 'Gift)
@@ -735,7 +752,13 @@
 
 						<Actions>
 							<Action id="actionContinue" default="1" cancel="1">
-								(scrShowScreen gScreen 'Main)
+								(block ()
+									(scrShowScreen gScreen 'Main)
+
+									(scrShowScreen gScreen &dsRPGLoot; {
+										sourceObj: (rpgGetStorage gSource)
+										})
+									)
 							</Action>
 						</Actions>
 					</Gift>
