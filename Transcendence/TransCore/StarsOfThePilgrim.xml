@@ -98,7 +98,8 @@
 			>
 		
 		<EncounterOverrides>
-			<Encounter unid="&stTinkerGathering;"	minAppearing="1"/>
+			<Encounter unid="&stRasiermesserFactory;"	minAppearing="1"/>
+			<Encounter unid="&stTinkerGathering;"		minAppearing="1"/>
 		</EncounterOverrides>
 
 		<Language>
