@@ -18,6 +18,7 @@
 #define NO_DEBRIEF_ATTRIB						CONSTLIT("noDebrief")
 #define NO_DECLINE_ATTRIB						CONSTLIT("noDecline")
 #define NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB	CONSTLIT("noFailureOnOwnerDestroyed")
+#define NO_IN_PROGRESS_ATTRIB					CONSTLIT("noInProgress")
 #define NO_STATS_ATTRIB							CONSTLIT("noStats")
 #define PRIORITY_ATTRIB							CONSTLIT("priority")
 #define RECORD_NON_PLAYER_ATTRIB				CONSTLIT("recordNonPlayer")
@@ -37,6 +38,7 @@
 #define PROPERTY_DESTROY_ON_DECLINE				CONSTLIT("destroyOnDecline")
 #define PROPERTY_FORCE_UNDOCK_AFTER_DEBRIEF		CONSTLIT("forceUndockAfterDebrief")
 #define PROPERTY_HAS_DEBRIEF					CONSTLIT("hasDebrief")
+#define PROPERTY_HAS_IN_PROGRESS				CONSTLIT("hasInProgress")
 #define PROPERTY_MAX_APPEARING					CONSTLIT("maxAppearing")
 #define PROPERTY_PRIORITY						CONSTLIT("priority")
 #define PROPERTY_TOTAL_ACCEPTED					CONSTLIT("totalAccepted")
@@ -208,6 +210,7 @@ ALERROR CMissionType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fRecordNonPlayer = pDesc->GetAttributeBool(RECORD_NON_PLAYER_ATTRIB);
 	m_fNoFailureOnOwnerDestroyed = pDesc->GetAttributeBool(NO_FAILURE_ON_OWNER_DESTROYED_ATTRIB);
 	m_fNoDebrief = pDesc->GetAttributeBool(NO_DEBRIEF_ATTRIB);
+	m_fNoInProgress = pDesc->GetAttributeBool(NO_IN_PROGRESS_ATTRIB);
 	m_fNoStats = pDesc->GetAttributeBool(NO_STATS_ATTRIB);
 	m_fCloseIfOutOfSystem = pDesc->GetAttributeBool(DEBRIEF_AFTER_OUT_OF_SYSTEM_ATTRIB);
 	m_fForceUndockAfterDebrief = pDesc->GetAttributeBool(FORCE_UNDOCK_AFTER_DEBRIEF_ATTRIB);
@@ -323,6 +326,9 @@ ICCItemPtr CMissionType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_HAS_DEBRIEF))
 		return ICCItemPtr(HasDebrief());
+
+	else if (strEquals(sProperty, PROPERTY_HAS_IN_PROGRESS))
+		return ICCItemPtr(HasInProgress());
 
 	else if (strEquals(sProperty, PROPERTY_PRIORITY))
 		return ICCItemPtr(GetPriority());
