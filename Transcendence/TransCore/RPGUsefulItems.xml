@@ -482,6 +482,340 @@
 
 <!-- BASE CLASSES -->
 
+	<!-- Armor Repair Item Base Class
+
+	Armor repair items should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnArmor.
+
+	EVENTS
+		CanRepairItem - override this event to limit which types of armor can be repaired
+
+	PROPERTIES
+
+		rpg.repairTable: Table to determine effect on various items. The table
+			is a list of structs with the following fields:
+
+			criteria: Table entry used for items that match this criteria.
+			repairHP: HP repaired.
+			descID: If repairHP is Nil, then this explains why repair failed.
+			minLevel: Target armor most be at least this level.
+			maxLevel: Target armor must not be higher than this level.
+
+    -->
+
+	<Type UNID="&baStdArmorRepair;">
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
+
+		<Events>
+			<CanRepairItem>True</CanRepairItem>
+
+			<CanUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					(shipObj (@ gData 'shipObj))
+					(armorNoun (cat (objGetArmorName shipObj dstItem) " " (itmGetName dstItem 'noModifiers)))
+					(skillLevel (typGetData &baStdArmorRepair; 'skillLevel))
+					(useDesc (switch
+						(ls skillLevel 2)	'descUsageOK1
+						(ls skillLevel 5)	'descUsageOK2
+						(ls skillLevel 10)	'descUsageOK3
+											'descUsageOK4
+						))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
+					(armorLevel (itmGetProperty dstItem 'repairLevel))
+					(armorHP (objGetItemProperty shipObj dstItem 'hp))
+					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
+					)
+					;(dbgOutput repairDesc)
+					(switch
+						;	Armor repair items only work on armor
+						(not (itmMatches dstItem "a"))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageNotArmor {
+									useItem: (itmGetName gItem 'plural)
+									dstItem: (itmGetName dstItem 'article)
+									})
+								}
+
+						;	Item is unidentified (assume it is a barrel for now)
+						(not (itmIsKnown gItem))
+							{
+								canUse: True
+								desc: (itmTranslate gItem 'descUsageUnknown {
+									useItem: (itmGetName gItem)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	Armor segment is not damaged
+						(= armorHP maxArmorHP)
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageArmorNotDamaged {
+									useItem: (itmGetName gItem)
+									dstItem: (itmGetName dstItem)
+									armorNoun: armorNoun
+									})
+								}
+
+						;	Check if we can repair armor with the given item
+						(not (and (setq aItemToRepair dstItem)
+								(objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem })
+								))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descUsageCanNotRepair {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem (@ repairDesc 'descID) {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	We cannot repair armor that is too low level
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descArmorTooPrimitive {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	We cannot repair armor that is too high level
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
+							{
+								canUse: Nil
+								desc: (itmTranslate gItem 'descArmorTooAdvanced {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+
+						;	Otherwise OK
+						{
+							canUse: True
+							desc: (itmTranslate gItem useDesc {
+								useItem: (itmGetName gItem 'article)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								})
+							}
+						)
+					)
+			</CanUseOnItem>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					(shipObj (@ gData 'shipObj))
+					(repairDesc 
+						(or (rpgFindItemInTable dstItem (itmGetProperty gItem 'rpg.repairTable))
+							{
+								repairHP: (eval (itmGetStaticData gItem 'repairHP))
+								minLevel: (max 1 (- (itmGetLevel gItem) 3))
+								maxLevel: (+ (itmGetLevel gItem) 4)
+								}
+							)
+						)
+					(descIntro (itmTranslate gItem 'descResultIntro))
+					(armorLevel (itmGetProperty dstItem 'repairLevel))
+					(armorHP (objGetItemProperty shipObj dstItem 'hp))
+					(maxArmorHP (objGetItemProperty shipObj dstItem 'maxHP))
+
+					(consumeItem True)
+
+					resultDesc hpRepaired
+					)
+
+					;(dbgOutput repairDesc)
+
+					(switch
+						(not (itmMatches dstItem "a"))
+							(setq resultDesc 'descResultNotArmor)
+
+						;	NOTE: We need to check some of these conditions again because if this
+						;	was an unknown item, we don't know that it won't work until we try it.
+						;
+						;	Also, if we get this far, then we consume the item, because we didn't
+						;	know what it was so we used up the whole thing.
+
+						(= armorHP maxArmorHP)
+							(setq resultDesc 'descResultNotDamaged)
+
+						(not (objFireItemEvent shipObj gItem 'CanRepairItem { itemToRepair:dstItem }))
+							(setq resultDesc 'descResultCannotRepair)
+
+						;	If we can't repair this item
+						(not (@ repairDesc 'repairHP))
+							(setq resultDesc (or (@ repairDesc 'descID) 'descResultCannotRepair))
+
+						;	We cannot repair armor that is too low level
+						(and (@ repairDesc 'minLevel) (ls armorLevel (@ repairDesc 'minLevel)))
+							(setq resultDesc 'descResultArmorTooPrimitive)
+
+						;	We cannot repair armor that is too high level
+						(and (@ repairDesc 'maxLevel) (gr armorLevel (@ repairDesc 'maxLevel)))
+							(setq resultDesc 'descResultArmorTooAdvanced)
+
+						(block (
+							(repair (@ repairDesc 'repairHP))
+							(armorSeg (itmGetArmorInstalledLocation dstItem))
+							(skillLevel (typGetData &baStdArmorRepair; 'skillLevel))
+
+							;	As skill level increased, the player's failure chance
+							;	decreases. Also the amount of hp repaired increased.
+							(failureChance (switch
+								(ls skillLevel 2)	20
+								(ls skillLevel 5)	10
+								(ls skillLevel 10)	5
+													0
+								))
+							(repairScale (switch
+								(ls skillLevel 2)	80
+								(ls skillLevel 5)	100
+								(ls skillLevel 10)	110
+									(min (+ 70 (* skillLevel 5)) 200)
+								))
+							(usedUp 100)
+							)
+							;	If the repairing item is damaged armor, then we don't repair as much
+							(if (itmMatches theItem "aD")
+								(setq repair (/ repair 2))
+								)
+
+							;	Scale repair HP with skill level
+							(setq repair (/ (* repair repairScale) 100))
+
+							;	Do the repairs
+							(switch
+								(leq (random 1 100) failureChance)
+									(if (= (random 1 2) 1)
+										;	Sometimes we fail and damage the armor
+										(block (
+											(damageCaused (/ (* repair (random 20 100)) 100))
+											)
+											(setq dstItem (objSetItemProperty shipObj dstItem 'incHP (- damageCaused)))
+											(if (and (not (itmGetProperty dstItem 'installed))
+													(= (itmGetProperty dstItem 'hp) 0)
+													)
+												(block ()
+													(objRemoveItem shipObj dstItem)
+													(setq resultDesc 'descResultDestroyed)
+													)
+												(setq resultDesc 'descResultDamagedMore)
+												)
+											)
+
+										;	Sometimes we fail without damaging further
+										(setq resultDesc 'descResultFailed)
+										)
+
+								(block ()
+									(setq hpRepaired (min (- maxArmorHP armorHP) repair))
+									(objSetItemProperty shipObj dstItem 'incHP repair)
+									(setq resultDesc 'descResultRepaired)
+										
+									;	How much of the kit did we use?
+									(if (gr repair 0)
+										(setq usedUp (/ (* 100 hpRepaired) repair))
+										)
+
+									;	Skill level increases
+									(typIncData &baStdArmorRepair; 'skillLevel)
+									)
+								)
+
+							;	Use up the item
+							(if (or (ls skillLevel 10)
+									(geq usedUp 20)
+									(leq (random 1 100) (add usedUp 20))
+									)
+								Nil
+
+								; Item is not used up
+								(block ()
+									(setq resultDesc 'descResultReusable)
+									(setq consumeItem Nil)
+									)
+								)
+							)
+						)
+
+					;	Identify the item
+					(itmSetKnown gItem)
+
+					;	Consume
+					(if consumeItem
+						(objRemoveItem shipObj gItem 1)
+						)
+
+					{
+						desc: (cat
+							descIntro (if descIntro " ")
+							(itmTranslate gItem resultDesc {
+								useItem: (itmGetName gItem)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								hpRepaired: (fmtNoun (typTranslate &baStdArmorRepair; 'nounHitPoints) hpRepaired 'countAlways)
+								})
+							)
+						}
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descUsageArmorNotDamaged">The %dstItem% is not damaged.</Text>
+			<Text id="descUsageCanNotRepair">Unfortunately, you cannot repair %dstItem% with %useItem%.</Text>
+			<Text id="descUsageInstalledOnly">%UseItem% can only be used on installed armor segments.</Text>
+			<Text id="descUsageNotArmor">%UseItem% are used for repairing armor and will not function on %dstItem%.</Text>
+			<Text id="descUsageUnknown">The barrel seems to contain some kind of armor paste. You can use it on %dstItem%.</Text>
+			<Text id="descArmorTooPrimitive">Unfortunately, %dstItem% is too primitive to be repaired with %useItem%.</Text>
+			<Text id="descArmorTooAdvanced">Unfortunately, %dstItem% is too advanced to be repaired with %useItem%.</Text>
+
+			<Text id="descUsageOK1">You can attempt to repair %dstItem% with %useItem%, though you do not have much experience repairing armor.</Text>
+			<Text id="descUsageOK2">You can attempt to repair %dstItem% with %useItem%; you have some experience repairing armor.</Text>
+			<Text id="descUsageOK3">You can attempt to repair %dstItem% with %useItem%; you are proficient at repairing armor.</Text>
+			<Text id="descUsageOK4">You can attempt to repair %dstItem% with %useItem%; you are an expert at repairing armor.</Text>
+
+			<Text id="descResultCanNotRepair">Unfortunately, you cannot repair %dstItem% with it.</Text>
+			<Text id="descResultDamagedMore">Unfortunately, your attempt to repair the armor has only damaged it further.</Text>
+			<Text id="descResultDestroyed">Unfortunately, your attempt to repair the armor has destroyed it.</Text>
+			<Text id="descResultFailed">Unfortunately, your attempt to repair the armor was unsuccessful and the %useItem% was ruined in the process.</Text>
+			<Text id="descResultItemError">ERROR: &lt;RepairHP&gt; static data not found.</Text>
+			<Text id="descResultNotArmor">That is not an armor segment.</Text>
+			<Text id="descResultNotDamaged">But the armor does not need to be repaired.</Text>
+			<Text id="descResultRepaired">You have successfully repaired %hpRepaired% of damage to your armor.</Text>
+			<Text id="descResultArmorTooPrimitive">Unfortunately, %dstItem% is too primitive to be repaired with it.</Text>
+			<Text id="descResultArmorTooAdvanced">Unfortunately, %dstItem% is too advanced to be repaired with it.</Text>
+			<Text id="descResultReusable">
+				You have successfully repaired %hpRepaired% of damage to your armor.
+
+				There is still enough of the %useItem% left to repair other segments.
+			</Text>
+			
+			<Text id="nounHitPoints">hit point(s)</Text>
+		</Language>
+	</Type>
+
 	<!-- Device Enhancment Item Base Class
 
 	Items to enhance devices should inherit from this class. Typically they should
@@ -678,6 +1012,169 @@
 
 			<Text id="descResultTooAdvanced">Unfortunately, your device is too advanced to be upgraded.</Text>
 			<Text id="descResultTooPrimitive">Unfortunately, your device is too primitive for the upgrade.</Text>
+		</Language>
+	</Type>
+
+	<!-- Paste Barrel Item Base Class
+
+	Armor coating barrels should inherit from this class. Typically they should
+	set useScreen to dsRPGUseItemOnArmor.
+
+	PROPERTIES
+
+		core.enhancement: Enhancement to apply to armor. Use for constant
+			enhancements (i.e., enhancements that apply to all armor).
+
+		rpg.enhancementTable: Table of criteria and enhancements for different 
+			armor types / levels. Use this to apply different enhancements to
+			different types of armor.
+
+    -->
+
+	<Type UNID="&baStdPasteBarrel;">
+		<Properties>
+			<Constant id="rpg.useCriteria">"a"</Constant>
+		</Properties>
+
+		<Events>
+			<CanUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					)
+					(switch
+						(not (itmMatches dstItem "a"))
+							Nil
+
+						(itmIsKnown gItem)
+							{
+								canUse: True
+								desc: (itmTranslate gItem 'descUsageOK {
+									useItem: (itmGetName gItem 'article)
+									dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+									})
+								}
+						{
+							canUse: True
+							desc: (itmTranslate gItem 'descUsageUnknown {
+								useItem: (itmGetName gItem)
+								dstItem: (itmGetName dstItem '(demonstrative noModifiers))
+								})
+							}
+						)
+					)
+			</CanUseOnItem>
+
+			<GetEnhancement>
+
+				;	This event is called by objCanEnhanceItem and objEnhanceItem
+				;	to figure out what enhancement will be applied.
+				;
+				;	gItem: The item doing the enhancing
+				;
+				;	gData
+				;		targetItem: The item being enhanced.
+				;
+				;	RETURN
+				;		Nil: Cannot enhance target (no effect)
+				;		'repair: Target item should be repaired
+				;
+				;		enhancement description:
+				;			enhancement: Enhancement code/desc (required)
+				;			lifetime: Duration of enhancement (ticks). Nil or -1
+				;				means permanent.
+				;			type: Item type of enhancement (only if different
+				;				from gItem).
+				;			desc: Explanation for result
+
+				(block (
+					(dstItem (@ gData 'targetItem))
+					enhancement
+					enhancementInfo
+					)
+					(switch
+
+						;	Only works on armor
+
+						(not (itmMatches dstItem "a"))
+							Nil
+
+						;	Backwards compatibility
+
+						(setq enhancement (itmGetStaticData gItem 'enhancement))
+							{	
+								enhancement: enhancement
+								}
+
+						;	Table look up
+						;	NOTE: It is OK if we find a table entry with no enhancement.
+						;	That just means that we cannot enhance the target (usually
+						;	due to level) and the desc field explains why.
+
+						(setq enhancementInfo (rpgFindItemInTable dstItem 
+								(or (itmGetProperty gItem 'rpg.enhancementTable) 
+									(itmGetStaticData gItem 'enhancementTable)
+									)
+								))
+							{
+								enhancement: (@ enhancementInfo 'enhancement)
+								desc: (or (itmTranslate gItem (@ enhancementInfo 'descID))
+										(itmTranslate gItem (cat "descResult" (@ enhancementInfo 'descID)))
+										)
+								}
+
+						;	Invalid
+
+						Nil
+						)
+					)
+			</GetEnhancement>
+
+			<OnUseOnItem>
+				(block (
+					(dstItem (@ gData 'itemToUseOn))
+					result
+					)
+					;	Apply the enhancement
+
+					(setq result (objEnhanceItem gPlayerShip dstItem gItem))
+
+					;	Remove and identify the item
+
+					(objRemoveItem gPlayerShip gItem 1)
+					(itmSetKnown gItem)
+
+					;	Describe what happened
+
+					{
+						desc: (join 
+								(list
+									(itmTranslate gItem 'descResultIntro)
+									(or (@ result 'desc)
+										(itmTranslate gItem (cat "descResult." (@ result 'resultCode)))
+										)
+									)
+								" "
+								)
+						}
+					)
+			</OnUseOnItem>
+		</Events>
+
+		<Language>
+			<Text id="descUsageOK">You can use %useItem% on %dstItem%.</Text>
+			<Text id="descUsageUnknown">The barrel seems to contain some kind of armor paste. You can use it on %dstItem%.</Text>
+
+			<Text id="descResultTooAdvanced">Unfortunately, your armor is too strong for the nanomachines.</Text>
+			<Text id="descResultTooPrimitive">Unfortunately, your armor is too primitive for the nanomachines.</Text>
+
+			<Text id="descResult.alreadyEnhanced">But your armor does not need the enhancement.</Text>
+			<Text id="descResult.defectRemoved">It seems to have restored your armor.</Text>
+			<Text id="descResult.defectReplaced"></Text>
+			<Text id="descResult.degraded">Your armor has weakened further.</Text>
+			<Text id="descResult.enhancementRemoved">Your armor has lost its enhancement.</Text>
+			<Text id="descResult.enhancementReplaced">Unfortunately, your armor has lost its previous enhancement.</Text>
+			<Text id="descResult.improved">Your armor has been further enhanced.</Text>
+			<Text id="descResult.noEffect">But it has no effect on your armor.</Text>
 		</Language>
 	</Type>
 
