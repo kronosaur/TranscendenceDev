@@ -306,28 +306,7 @@
 				unique=					"inSystem"
 				/>
 
-		<Image imageID="&rsRasiermesserFactory;" imageX="0" imageY="0" imageWidth="192" imageHeight="256"/>
-		<HeroImage imageID="&rsRasiermesserFactoryHero;" imageWidth="600" imageHeight="528"/>
-
-		<Ships>
-			<Lookup count="2" table="&tbCorpDefenders;"/>
-			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
-		</Ships>
-
-		<Reinforcements minShips="4">
-			<Table>
-				<Lookup chance="75" table="&tbCorpDefenders;"/>
-				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
-			</Table>
-		</Reinforcements>
-
-		<Devices>
-			<Device deviceID="&itAkan30Cannon;"	omnidirectional="true">
-				<Items>
-					<Item count="900" item="&itAkan30CannonShell;"/>
-				</Items>
-			</Device>
-		</Devices>
+		<!-- Trade and Items -->
 
 		<Items>
 			<RandomItem count="1d12"
@@ -379,38 +358,43 @@
 			<ConsumeTrade	criteria="{core.ore}"			impact="4"/>
 		</Trade>
 
-		<AttributeDesc>
-			<!-- Define attribute for items that Dvalin is interested in. -->
-		
-			<ItemAttribute label="Dvalin valuable"		criteria="asw +notForSale; F:rv-;">
-				<OnShow>(typGetProperty gType 'showDvalinAttribute)</OnShow>
-			</ItemAttribute>
-		</AttributeDesc>
+		<!-- Configuration -->
 
-		<StaticData>
-			<NPCService>
-				(	;	service					level	margin
-					(	'repairArmor			9		100		)
-					)
-			</NPCService>
-		</StaticData>
+		<Devices>
+			<Device deviceID="&itAkan30Cannon;"	omnidirectional="true">
+				<Items>
+					<Item count="900" item="&itAkan30CannonShell;"/>
+				</Items>
+			</Device>
+		</Devices>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
+		<!-- Ships and Defenses -->
 
-			<OnContractQuery>True</OnContractQuery>
+		<Ships>
+			<Lookup count="2" table="&tbCorpDefenders;"/>
+			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
+		</Ships>
 
-			<OnCreate>
-				(if (not (objGetProperty gSource 'DvalinSystem))
-					(block Nil
-						(objSetProperty gSource 'DvalinSystem (sysGetNode))
-						(objSetProperty gSource 'Dvalin True)
-						)
-					)
-			</OnCreate>
-		</Events>
+		<Reinforcements minShips="4">
+			<Table>
+				<Lookup chance="75" table="&tbCorpDefenders;"/>
+				<Lookup chance="25" table="&tbCommPrivateCrafts;"/>
+			</Table>
+		</Reinforcements>
+
+		<!-- Image and Effects -->
+
+		<Image imageID="&rsRasiermesserFactory;" imageWidth="320" imageHeight="580" viewportRatio="0.0225"/>
+		<HeroImage imageID="&rsRasiermesserFactoryHero;" imageWidth="850" imageHeight="648"/>
+
+		<DockingPorts
+				portAngle=		"8"
+				portCount=		"8"
+				portRadius=		"150"
+				>
+		</DockingPorts>
+
+		<!-- Dock Screen -->
 
 		<DockScreens>
 			<Main>
@@ -784,19 +768,36 @@
 					</Default>
 				</Panes>
 			</SecondaryLab>
-
 		</DockScreens>
 
-		<DockingPorts>
-			<Port x="107"	y="49" />
-			<Port x="112"	y="-1" />
-			<Port x="91"	y="-50" />
-			<Port x="42"	y="-85" />
-			<Port x="-25"	y="-90" />
-			<Port x="-76"	y="-65" />
-			<Port x="-105"	y="-21" />
-			<Port x="-111"	y="21" />
-		</DockingPorts>
+		<!-- Events and Data -->
+
+		<AttributeDesc>
+			<!-- Define attribute for items that Dvalin is interested in. -->
+		
+			<ItemAttribute label="Dvalin valuable"		criteria="asw +notForSale; F:rv-;">
+				<OnShow>(typGetProperty gType 'showDvalinAttribute)</OnShow>
+			</ItemAttribute>
+		</AttributeDesc>
+
+		<StaticData>
+			<NPCService>
+				(	;	service					level	margin
+					(	'repairArmor			9		100		)
+					)
+			</NPCService>
+		</StaticData>
+
+		<Events>
+			<OnCreate>
+				(if (not (objGetProperty gSource 'DvalinSystem))
+					(block Nil
+						(objSetProperty gSource 'DvalinSystem (sysGetNode))
+						(objSetProperty gSource 'Dvalin True)
+						)
+					)
+			</OnCreate>
+		</Events>
 
 		<Language>
 			<Text id="actionOfferItem">[O]ffer Item</Text>
