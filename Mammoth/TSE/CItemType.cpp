@@ -1009,7 +1009,7 @@ const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
     return m_Stats[iLevel - 1];
     }
 
-CCurrencyAndValue CItemType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CItemType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //

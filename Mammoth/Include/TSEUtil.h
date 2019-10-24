@@ -475,8 +475,8 @@ class DiceRange
 class CCurrencyBlock
 	{
 	public:
-		CurrencyValue GetCredits (DWORD dwEconomyUNID);
-		CurrencyValue GetCredits (const CString &sCurrency);
+		CurrencyValue GetCredits (DWORD dwEconomyUNID) const;
+		CurrencyValue GetCredits (const CString &sCurrency) const;
 		CurrencyValue IncCredits (DWORD dwEconomyUNID, CurrencyValue iInc);
 		CurrencyValue IncCredits (const CString &sCurrency, CurrencyValue iInc);
 		void ReadFromStream (SLoadCtx &Ctx);
@@ -1551,7 +1551,7 @@ class IListData
 		virtual void DeleteAtCursor (int iCount) { }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) { return false; }
 		virtual int GetCount (void) const { return 0; }
-		virtual int GetCursor (void) { return -1; }
+		virtual int GetCursor (void) const { return -1; }
 		virtual CString GetDescAtCursor (void) { return NULL_STR; }
 		virtual ICCItem *GetEntryAtCursor (void) { return CCodeChain::CreateNil(); }
 		virtual const CItem &GetItemAtCursor (void) { return g_DummyItem; }
@@ -1573,7 +1573,7 @@ class IListData
 class CFormulaText
 	{
 	public:
-		int EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix = NULL, CString *retsSuffix = NULL, CString *retsError = NULL) const;
+		int EvalAsInteger (const CSpaceObject *pSource, CString *retsPrefix = NULL, CString *retsSuffix = NULL, CString *retsError = NULL) const;
 		void InitFromInteger (int iValue) { m_sText = strFromInt(iValue); }
 		ALERROR InitFromString (SDesignLoadCtx &Ctx, const CString &sText);
 		bool IsEmpty (void) const { return m_sText.IsBlank(); }

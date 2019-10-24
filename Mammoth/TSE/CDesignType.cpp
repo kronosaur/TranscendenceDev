@@ -1819,7 +1819,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
-CCurrencyAndValue CDesignType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CDesignType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //

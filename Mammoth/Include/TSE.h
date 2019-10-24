@@ -475,7 +475,7 @@ class COverlay
 		void Destroy (CSpaceObject *pSource);
 		bool Disarms (CSpaceObject *pSource) const { return m_pType->Disarms(); }
 		void FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult);
-		bool FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const;
+		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const;
 		void FireOnCreate (CSpaceObject *pSource);
 		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		void FireOnDestroy (CSpaceObject *pSource);
@@ -576,7 +576,7 @@ class COverlayList
 		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
 		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
 		CString DebugCrashInfo (void) const;
-		bool FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL) const;
+		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
 		const CConditionSet &GetConditions (void) const { return m_Conditions; }
@@ -819,6 +819,7 @@ class CSpaceObject
 
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const { return dockingNotSupported; }
 		virtual void CreateRandomDockedShips (IShipGenerator *pGenerator, const CShipChallengeDesc &ShipsNeeded = CShipChallengeDesc()) { }
+		virtual const CDockingPorts *GetDockingPorts (void) const { return NULL; }
 		virtual CDockingPorts *GetDockingPorts (void) { return NULL; }
 		virtual void Undock (CSpaceObject *pObj) { }
 
@@ -826,8 +827,8 @@ class CSpaceObject
 		int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
 		int GetOpenDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? (pPorts->GetPortCount(this) - pPorts->GetPortsInUseCount(this)) : 0); }
 		CSpaceObject *GetShipAtDockingPort (int iPort) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortObj(this, iPort) : NULL); }
-		bool IsObjDocked (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
-		bool IsObjDockedOrDocking (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
+		bool IsObjDocked (const CSpaceObject *pObj) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
+		bool IsObjDockedOrDocking (CSpaceObject *pObj) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
 		void PlaceAtRandomDockPort (CSpaceObject *pObj) { CDockingPorts *pPorts = GetDockingPorts(); if (pPorts) pPorts->DockAtRandomPort(this, pObj); }
 		bool ObjRequestDock (CSpaceObject *pObj, int iPort = -1);
 		bool SupportsDockingFast (void) const { return (m_fHasDockScreenMaybe ? true : false); }
@@ -873,8 +874,9 @@ class CSpaceObject
 		EnhanceItemStatus EnhanceItem (CItemListManipulator &ItemList, const CItemEnhancement &Mods, DWORD *retdwID = NULL);
 		bool EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CItem::SEnhanceItemResult &retResult, CString *retsError = NULL);
 		CItem GetItemForDevice (CInstalledDevice *pDevice);
+		const CItemList &GetItemList (void) const { return m_ItemList; }
 		CItemList &GetItemList (void) { return m_ItemList; }
-		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName);
+		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName) const;
 		bool RemoveItem (const CItem &Item, DWORD dwItemMatchFlags, int iCount = -1, int *retiCountRemoved = NULL, CString *retsError = NULL);
 		void RemoveItemEnhancement (const CItem &itemToEnhance, DWORD dwID, bool bExpiredOnly = false);
 		void RepairItem (CItemListManipulator &ItemList);
@@ -891,7 +893,7 @@ class CSpaceObject
 		void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
 		void InvalidateItemListState (void) { m_fItemEventsValid = false; }
 		bool IsItemEventListValid (void) const { return (m_fItemEventsValid ? true : false); }
-		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item);
+		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item) const;
 		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result);
 
 		//	Joints
@@ -950,7 +952,7 @@ class CSpaceObject
 		void FireCustomShipOrderEvent (const CString &sEvent, CSpaceObject *pShip, ICCItem **retpResult = NULL);
 		bool FireGetDockScreen (CDockScreenSys::SSelector *retSelector = NULL) const;
 		bool FireGetExplosionType (SExplosionType *retExplosion) const;
-		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj);
+		bool FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj) const;
 		void FireItemOnAIUpdate (void);
 		void FireItemOnDocked (CSpaceObject *pDockedAt);
 		void FireItemOnObjDestroyed (const SDestroyCtx &Ctx);
@@ -1282,9 +1284,10 @@ class CSpaceObject
 		//	Trade
 
 		virtual CTradingDesc *AllocTradeDescOverride (void) { return NULL; }
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const { return NULL; }
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) { return NULL; }
-		virtual CTradingDesc *GetTradeDescOverride (void) { return NULL; }
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) { return CCurrencyAndValue(0, GetDefaultEconomy()); }
+		virtual CTradingDesc *GetTradeDescOverride (void) const { return NULL; }
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const { return CCurrencyAndValue(0, GetDefaultEconomy()); }
 
 		void AddBuyOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
 		void AddSellOrder (CItemType *pType, const CString &sCriteria, int iPriceAdj);
@@ -1292,14 +1295,14 @@ class CSpaceObject
 		void AddTradeOrder (ETradeServiceTypes iService, const CString &sCriteria, CItemType *pItemType, int iPriceAdj);
 		CurrencyValue ChargeMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
 		CurrencyValue CreditMoney (DWORD dwEconomyUNID, CurrencyValue iValue);
-		bool GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL);
+		bool GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
 		bool GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice);
-		CurrencyValue GetBalance (DWORD dwEconomyUNID);
+		CurrencyValue GetBalance (DWORD dwEconomyUNID) const;
 		int GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCount = NULL);
-		const CEconomyType *GetDefaultEconomy (void);
-		DWORD GetDefaultEconomyUNID (void);
-		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL);
-		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL);
+		const CEconomyType *GetDefaultEconomy (void) const;
+		DWORD GetDefaultEconomyUNID (void) const;
+		bool GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		bool GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType **retpItemType, int *retiPrice);
 		int GetSellPrice (const CItem &Item, DWORD dwFlags);
 		bool GetShipBuyPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
@@ -1387,7 +1390,7 @@ class CSpaceObject
 		virtual bool IsImmutable (void) const { return false; }
 		virtual bool IsKnown (void) { return true; }
 		virtual bool IsMarker (void) { return false; }
-		virtual bool IsMission (void) { return false; }
+		virtual bool IsMission (void) const { return false; }
 		virtual bool IsNonSystemObj (void) { return false; }
 		virtual bool IsShownInGalacticMap (void) const { return false; }
 		virtual bool IsVirtual (void) const { return false; }
@@ -1474,7 +1477,7 @@ class CSpaceObject
 		virtual void OnSubordinateDestroyed (SDestroyCtx &Ctx) { }
 		virtual void OnSubordinateHit (SDamageCtx &Ctx) { }
 		virtual void ProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program) { }
-		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg) { }
+		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) { }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) { return 0; }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCounterValue(int iCounterValue) { }
@@ -2029,7 +2032,7 @@ class CItemListWrapper : public IListData
 		virtual void DeleteAtCursor (int iCount) override { m_ItemList.DeleteAtCursor(iCount); if (m_pSource) m_pSource->InvalidateItemListAddRemove(); }
 		virtual bool FindItem (const CItem &Item, int *retiCursor = NULL) override { return m_ItemList.FindItem(Item, 0, retiCursor); }
 		virtual int GetCount (void) const override { return m_ItemList.GetCount(); }
-		virtual int GetCursor (void) override { return m_ItemList.GetCursor(); }
+		virtual int GetCursor (void) const override { return m_ItemList.GetCursor(); }
 		virtual const CItem &GetItemAtCursor (void) override { return m_ItemList.GetItemAtCursor(); }
 		virtual CItemListManipulator &GetItemListManipulator (void) override { return m_ItemList; }
 		virtual CSpaceObject *GetSource (void) override { return m_pSource; }
@@ -2053,7 +2056,7 @@ class CListWrapper : public IListData
 		virtual ~CListWrapper (void) { m_pList->Discard(); }
 
 		virtual int GetCount (void) const override { return m_pList->GetCount(); }
-		virtual int GetCursor (void) override { return m_iCursor; }
+		virtual int GetCursor (void) const override { return m_iCursor; }
 		virtual CString GetDescAtCursor (void) override;
 		virtual ICCItem *GetEntryAtCursor (void) override;
 		virtual CString GetTitleAtCursor (void) override;

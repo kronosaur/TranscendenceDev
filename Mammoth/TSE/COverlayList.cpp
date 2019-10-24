@@ -301,7 +301,7 @@ COverlay *COverlayList::FindField (DWORD dwID)
 	return NULL;
 	}
 
-bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
+bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
 
 //	FireGetDockScreen
 //

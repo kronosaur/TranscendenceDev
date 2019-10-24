@@ -32,8 +32,8 @@ class IDockScreenUI
 			};
 
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const { return NULL; }
-		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { }
-		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { }
+		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { }
+		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
 	};
@@ -126,8 +126,8 @@ class CDockSession
 		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
 		void InitCustomProperties (void);
 		bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
-		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemBegin(Ctx, pSource, Item); }
-		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemComplete(Ctx, pSource, Result); }
+		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemBegin(Ctx, Source, Item); }
+		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemComplete(Ctx, Source, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
@@ -139,7 +139,7 @@ class CDockSession
 
 	private:
 		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
-		bool ModifyItemNotificationNeeded (CSpaceObject *pSource) const;
+		bool ModifyItemNotificationNeeded (const CSpaceObject &Source) const;
 
 		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
 		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens

@@ -116,7 +116,7 @@ class CGCarouselArea : public AGArea
 		CGCarouselArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 
 		void CleanUp (void);
-		inline int GetCursor (void) { return (m_pListData ? m_pListData->GetCursor() : -1); }
+		inline int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
 		ICCItem *GetEntryAtCursor (void);
 		inline IListData *GetList (void) const { return m_pListData; }
 		inline CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
@@ -326,7 +326,7 @@ class CGItemListArea : public AGArea
 		void CleanUp (void);
 		void EnableTab (DWORD dwID, bool bEnabled = true);
 		void DeleteAtCursor (int iCount) { if (m_pListData) m_pListData->DeleteAtCursor(iCount); InitRowDesc(); Invalidate(); }
-		int GetCursor (void) { return (m_pListData ? m_pListData->GetCursor() : -1); }
+		int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
 		ICCItem *GetEntryAtCursor (void);
 		const CItem &GetItemAtCursor (void) { return (m_pListData ? m_pListData->GetItemAtCursor() : g_DummyItem); }
 		CItemListManipulator &GetItemListManipulator (void) { return (m_pListData ? m_pListData->GetItemListManipulator() : g_DummyItemListManipulator); }
@@ -528,7 +528,7 @@ class CGSelectorArea : public AGArea
 		CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 		~CGSelectorArea (void);
 
-		int GetCursor (void) { return m_iCursor; }
+		int GetCursor (void) const { return m_iCursor; }
 		ICCItem *GetEntryAtCursor (void);
 		const CItem &GetItemAtCursor (void);
 		IListData *GetList (void) const { return NULL; }

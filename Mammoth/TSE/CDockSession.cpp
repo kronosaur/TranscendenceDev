@@ -268,7 +268,7 @@ void CDockSession::IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCIt
         *retpResult = pResult;
 	}
 
-bool CDockSession::ModifyItemNotificationNeeded (CSpaceObject *pSource) const
+bool CDockSession::ModifyItemNotificationNeeded (const CSpaceObject &Source) const
 
 //	ModifyItemNotificationNeeded
 //
@@ -278,14 +278,14 @@ bool CDockSession::ModifyItemNotificationNeeded (CSpaceObject *pSource) const
 	{
 	//	If not in a dock screen session, then we never need a notification.
 
-	if (!InSession() || pSource == NULL)
+	if (!InSession())
 		return false;
 
 	//	If we've modified either the player ship or an object that we're docked
 	//	with, then we need a notification.
 
-	if (pSource == m_DockFrames.GetCurrent().pLocation
-			|| pSource == GetUniverse().GetPlayerShip())
+	if (Source == m_DockFrames.GetCurrent().pLocation
+			|| Source == GetUniverse().GetPlayerShip())
 		return true;
 
 	//	Otherwise, no notification.

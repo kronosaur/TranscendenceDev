@@ -699,7 +699,7 @@ DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
 		return 0;
 
 	Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
-	Metric rDist = Ctx.pCenter->GetDistance(const_cast<CSpaceObject *>(this));
+	Metric rDist = Ctx.pCenter->GetDistance(this);
 	if (rDist <= rRange)
 		return 0;
 
@@ -2192,7 +2192,7 @@ bool CSpaceObject::FireGetDockScreen (CDockScreenSys::SSelector *retSelector) co
 
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
-	Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
+	Ctx.SaveAndDefineSourceVar(this);
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
@@ -2217,7 +2217,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
-		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
+		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -2285,7 +2285,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 		}
 	}
 
-bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
+bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj) const
 
 //	FireGetPlayerPriceAdj
 //
@@ -4812,7 +4812,7 @@ bool CSpaceObject::HasDockScreen (void) const
 
 	const COverlayList *pOverlays;
 	if ((pOverlays = GetOverlays()) 
-			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
+			&& pOverlays->FireGetDockScreen(this))
 		return true;
 
 	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
@@ -6036,7 +6036,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		return false;
 
 	if (Crit.MatchesDockedWithSource())
-		if (pSource == NULL || !pSource->IsObjDocked(const_cast<CSpaceObject *>(this)))
+		if (pSource == NULL || !pSource->IsObjDocked(this))
 			return false;
 
 	if (Crit.MatchesFriendlyOnly() 
@@ -6420,14 +6420,14 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 		}
 	}
 
-void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item)
+void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item) const
 
 //	OnModifyItemBegin
 //
 //	The given Item (which must be part of the object) is about to be modified.
 
 	{
-	GetUniverse().GetDockSession().OnModifyItemBegin(ModifyCtx, this, Item);
+	GetUniverse().GetDockSession().OnModifyItemBegin(ModifyCtx, *this, Item);
 	}
 
 void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result)
@@ -6438,7 +6438,7 @@ void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCt
 
 	{
 	InvalidateItemListState();
-	GetUniverse().GetDockSession().OnModifyItemComplete(ModifyCtx, this, Result);
+	GetUniverse().GetDockSession().OnModifyItemComplete(ModifyCtx, *this, Result);
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -7085,7 +7085,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) con
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetNounPhrase(), pError->GetStringValue());
 	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer)
-		pPlayer->SendMessage(const_cast<CSpaceObject *>(this), sError);
+		pPlayer->SendMessage(this, sError);
 
 	kernelDebugLogString(sError);
 	}

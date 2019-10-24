@@ -281,7 +281,7 @@ CurrencyValue CTradingDesc::CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *r
 	return iMaxBalance * (90 + ((pObj->GetDestiny() + 9) / 18)) / 100;
 	}
 
-int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
+int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, const CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
 
 //	CalcPriceForService
 //
@@ -1092,7 +1092,7 @@ bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &
 		}
 	}
 
-bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetArmorInstallPrice
 //
@@ -1103,7 +1103,7 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceReplaceArmor;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1138,7 +1138,7 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 	return false;
 	}
 
-bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
 
 //	GetArmorRepairPrice
 //
@@ -1149,7 +1149,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSourc
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRepairArmor;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
     Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
@@ -1178,7 +1178,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSourc
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -1189,7 +1189,7 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceInstallDevice;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1231,7 +1231,7 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
 
 //	GetDeviceRemovePrice
 //
@@ -1242,7 +1242,7 @@ bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, 
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRemoveDevice;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1317,7 +1317,7 @@ int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescrip
 	return iMaxLevel;
 	}
 
-bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
+bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
 
 //	GetRefuelItemAndPrice
 //
@@ -1331,7 +1331,7 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRefuel;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.iCount = 1;
 

@@ -426,17 +426,22 @@ ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 	return NULL;
 	}
 
-void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
+void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const
 
 //	OnModifyItemBeing
 //
-//	An item on pSource is about to be modified.
+//	An item on Source is about to be modified. This is used to set state in Ctx
+//	so that we know how to update the UI after the modification happens.
+//
+//	NOTE: We do not guarantee that OnModifyItemComplete will ever be called 
+//	(we could fail due to error), so we should not alter any state (which is
+//	why this method is const).
 
 	{
 	//	If we're not displaying items from this source, then we don't need to
 	//	do anything.
 
-	if (GetSource() != pSource)
+	if (GetSource() != Source)
 		{ }
 
 	//	If this is a selector area, then just reset the list
@@ -458,7 +463,7 @@ void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, 
 		}
 
 	//	If the item that we're going to modify is the currently selected item, 
-	//	then we select the modified out.
+	//	then we select the modified one.
 
 	else if (GetCurrentItem().IsEqual(Item))
 		{
@@ -475,7 +480,7 @@ void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, 
 		}
 	}
 
-IDockScreenDisplay::EResults IDockScreenDisplay::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result)
+IDockScreenDisplay::EResults IDockScreenDisplay::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result)
 
 //	OnModifyItemComplete
 //

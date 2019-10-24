@@ -15,7 +15,7 @@ ALERROR CFormulaText::InitFromString (SDesignLoadCtx &Ctx, const CString &sText)
 	return NOERROR;
 	}
 
-int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CString *retsSuffix, CString *retsError) const
+int CFormulaText::EvalAsInteger (const CSpaceObject *pSource, CString *retsPrefix, CString *retsSuffix, CString *retsError) const
 
 //	EvalAsInteger
 //

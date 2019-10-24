@@ -675,7 +675,7 @@ void CDockingPorts::InitXYPortPos (int iRotation, int iScale) const
 	m_iLastRotation = iRotation;
 	}
 
-bool CDockingPorts::IsDocked (CSpaceObject *pObj, int *retiPort) const
+bool CDockingPorts::IsDocked (const CSpaceObject *pObj, int *retiPort) const
 
 //	IsDocked
 //
@@ -694,7 +694,7 @@ bool CDockingPorts::IsDocked (CSpaceObject *pObj, int *retiPort) const
 	return false;
 	}
 
-bool CDockingPorts::IsDockedOrDocking (CSpaceObject *pObj)
+bool CDockingPorts::IsDockedOrDocking (const CSpaceObject *pObj) const
 
 //	IsDockedOrDocking
 //

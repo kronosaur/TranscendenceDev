@@ -429,7 +429,7 @@ void COverlay::FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, IC
 		*retpResult = GetUniverse().GetCC().CreateNil();
 	}
 
-bool COverlay::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
+bool COverlay::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const
 
 //	FireGetDockScreen
 //

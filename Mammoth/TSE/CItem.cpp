@@ -2124,7 +2124,7 @@ CSpaceObject *CItem::GetSource (void) const
 		}
 	}
 
-int CItem::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+int CItem::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //

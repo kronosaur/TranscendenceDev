@@ -152,6 +152,7 @@ class CIntroShipController : public IShipController
 		virtual CSpaceObject *GetBase (void) const override { return m_pDelegate->GetBase(); }
 		virtual CString GetClass (void) override { return m_pDelegate->GetClass(); }
 		virtual int GetCombatPower (void) override { return m_pDelegate->GetCombatPower(); }
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override { return m_pDelegate->GetCurrencyBlock(); }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return m_pDelegate->GetCurrencyBlock(); }
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDelegate->GetDestination(); }
 		virtual bool GetDeviceActivate (void) override { return m_pDelegate->GetDeviceActivate(); }

@@ -33,7 +33,7 @@ enum ETradeServiceTypes
 struct STradeServiceCtx
 	{
 	ETradeServiceTypes iService = serviceNone;		//	Service
-	CSpaceObject *pProvider = NULL;					//	Object providing the service
+	const CSpaceObject *pProvider = NULL;			//	Object providing the service
 	const CEconomyType *pCurrency = NULL;			//	Currency to use
 	const CTopologyNode *pNode = NULL;				//	Optional node (in case we have no provider)
 
@@ -97,15 +97,15 @@ class CTradingDesc
 		bool BuysShip (CSpaceObject *pObj, CSpaceObject *pShip, DWORD dwFlags, int *retiPrice = NULL);
 		int Charge (CSpaceObject *pObj, int iCharge);
         bool ComposeDescription (CString *retsDesc) const;
-		bool GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
-		bool GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
-		bool GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
-		bool GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
+		bool GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL) const;
+		bool GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const;
+		bool GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason = NULL, DWORD *retdwPriceFlags = NULL) const;
+		bool GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags = NULL) const;
 		inline const CEconomyType *GetEconomyType (void) const { return m_pCurrency; }
 		inline CurrencyValue GetMaxBalance (CSpaceObject *pObj) const { return CalcMaxBalance(pObj); }
 		inline CurrencyValue GetMaxBalance (int iLevel) const { return CalcMaxBalance(iLevel, m_pCurrency); }
 		int GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly = false) const;
-		bool GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
+		bool GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const;
 		inline int GetReplenishCurrency (void) { return m_iReplenishCurrency; }
 		inline int GetServiceCount (void) const { return m_List.GetCount(); }
 		void GetServiceInfo (int iIndex, SServiceInfo &Result) const;
@@ -129,7 +129,7 @@ class CTradingDesc
 		void RefreshInventory (CSpaceObject *pObj, int iPercent = 100);
 		void WriteToStream (IWriteStream *pStream);
 
-		static int CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags);
+		static int CalcPriceForService (ETradeServiceTypes iService, const CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags);
 		static CurrencyValue CalcMaxBalance (int iLevel, const CEconomyType *pCurrency = NULL);
 		static CString ServiceToString (ETradeServiceTypes iService);
 		static bool ParseHasServiceOptions (ICCItem *pOptions, SHasServiceOptions &retOptions);

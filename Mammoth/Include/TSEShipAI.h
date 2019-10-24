@@ -292,6 +292,7 @@ class IShipController
 		virtual CSpaceObject *GetBase (void) const { return NULL; }
 		virtual CString GetClass (void) { return NULL_STR; }
 		virtual int GetCombatPower (void) = 0;
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const { return NULL; }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) { return NULL; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
 		virtual bool GetDeviceActivate (void) = 0;

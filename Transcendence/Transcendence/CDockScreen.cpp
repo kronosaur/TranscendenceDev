@@ -1493,7 +1493,7 @@ ALERROR CDockScreen::ReportError (const CString &sError)
 	return ERR_FAIL;
 	}
 
-void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
+void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const
 
 //	OnModifyItemBegin
 //
@@ -1501,10 +1501,10 @@ void CDockScreen::OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource,
 
 	{
 	if (m_pDisplay)
-		m_pDisplay->OnModifyItemBegin(Ctx, pSource, Item);
+		m_pDisplay->OnModifyItemBegin(Ctx, Source, Item);
 	}
 
-void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result)
+void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result)
 
 //	OnModifyItemComplete
 //
@@ -1512,7 +1512,7 @@ void CDockScreen::OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSour
 
 	{
 	if (m_pDisplay
-			&& m_pDisplay->OnModifyItemComplete(Ctx, pSource, Result) == IDockScreenDisplay::resultShowPane)
+			&& m_pDisplay->OnModifyItemComplete(Ctx, Source, Result) == IDockScreenDisplay::resultShowPane)
 		{
 		const SDockFrame &CurFrame = g_pUniverse->GetDockSession().GetCurrentFrame();
 

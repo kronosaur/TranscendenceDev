@@ -95,7 +95,7 @@ CurrencyValue CSpaceObject::CreditMoney (DWORD dwEconomyUNID, CurrencyValue iVal
 		return pMoney->GetCredits(dwEconomyUNID);
 	}
 
-bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason)
+bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetArmorInstallPrice
 //
@@ -108,7 +108,7 @@ bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetArmorInstallPrice(this, Item, dwFlags, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetArmorInstallPrice(*this, Item, dwFlags, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -118,7 +118,7 @@ bool CSpaceObject::GetArmorInstallPrice (const CItem &Item, DWORD dwFlags, int *
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorInstallPrice(this, Item, dwFlags, retiPrice, retsReason))
+	if (pTrade && pTrade->GetArmorInstallPrice(*this, Item, dwFlags, retiPrice, retsReason))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.
@@ -151,7 +151,7 @@ bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetArmorRepairPrice(this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetArmorRepairPrice(*this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -161,7 +161,7 @@ bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetArmorRepairPrice(this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
+	if (pTrade && pTrade->GetArmorRepairPrice(*this, pSource, Item, iHPToRepair, dwFlags, retiPrice))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.
@@ -181,14 +181,14 @@ bool CSpaceObject::GetArmorRepairPrice (CSpaceObject *pSource, const CItem &Item
 	return false;
 	}
 
-CurrencyValue CSpaceObject::GetBalance (DWORD dwEconomyUNID)
+CurrencyValue CSpaceObject::GetBalance (DWORD dwEconomyUNID) const
 
 //	GetBalance
 //
 //	Returns the current balance.
 
 	{
-	CCurrencyBlock *pMoney = GetCurrencyBlock();
+	const CCurrencyBlock *pMoney = GetCurrencyBlock();
 	if (pMoney == NULL)
 		return 0;
 
@@ -235,7 +235,7 @@ int CSpaceObject::GetBuyPrice (const CItem &Item, DWORD dwFlags, int *retiMaxCou
 	return -1;
 	}
 
-const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
+const CEconomyType *CSpaceObject::GetDefaultEconomy (void) const
 
 //	GetDefaultEconomy
 //
@@ -253,7 +253,7 @@ const CEconomyType *CSpaceObject::GetDefaultEconomy (void)
 	return &GetUniverse().GetDefaultCurrency();
 	}
 
-DWORD CSpaceObject::GetDefaultEconomyUNID (void)
+DWORD CSpaceObject::GetDefaultEconomyUNID (void) const
 
 //	GetDefaultEconomyUNID
 //
@@ -267,7 +267,7 @@ DWORD CSpaceObject::GetDefaultEconomyUNID (void)
 	return DEFAULT_ECONOMY_UNID;
 	}
 
-bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags)
+bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -285,7 +285,7 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
+	if (pTradeOverride && pTradeOverride->GetDeviceInstallPrice(*this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -299,7 +299,7 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 		}
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceInstallPrice(this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
+	if (pTrade && pTrade->GetDeviceInstallPrice(*this, Item, dwFlags, retiPrice, retsReason, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, we do not install
@@ -307,7 +307,7 @@ bool CSpaceObject::GetDeviceInstallPrice (const CItem &Item, DWORD dwFlags, int 
 	return false;
 	}
 
-bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags)
+bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
 
 //	GetDeviceRemovePrice
 //
@@ -320,7 +320,7 @@ bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice, retdwPriceFlags))
+	if (pTradeOverride && pTradeOverride->GetDeviceRemovePrice(*this, Item, dwFlags, retiPrice, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -330,7 +330,7 @@ bool CSpaceObject::GetDeviceRemovePrice (const CItem &Item, DWORD dwFlags, int *
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetDeviceRemovePrice(this, Item, dwFlags, retiPrice, retdwPriceFlags))
+	if (pTrade && pTrade->GetDeviceRemovePrice(*this, Item, dwFlags, retiPrice, retdwPriceFlags))
 		return true;
 
 	//	Otherwise, we do not remove
@@ -354,7 +354,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTradeOverride && pTradeOverride->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	Otherwise, ask our design type
@@ -364,7 +364,7 @@ bool CSpaceObject::GetRefuelItemAndPrice (CSpaceObject *pObjToRefuel, CItemType 
 		return false;
 
 	CTradingDesc *pTrade = pType->GetTradingDesc();
-	if (pTrade && pTrade->GetRefuelItemAndPrice(this, pObjToRefuel, 0, retpItemType, retiPrice))
+	if (pTrade && pTrade->GetRefuelItemAndPrice(*this, pObjToRefuel, 0, retpItemType, retiPrice))
 		return true;
 
 	//	For compatibility, any ship prior to version 23 has a default.

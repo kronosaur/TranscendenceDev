@@ -2730,6 +2730,25 @@ int CShip::GetCombatPower (void)
 	return m_pController->GetCombatPower();
 	}
 
+const CCurrencyBlock *CShip::GetCurrencyBlock (void) const
+
+//	GetCurrencyBlock
+//
+//	Returns the currency store object.
+
+	{
+	//	If our controller has a block, then use that (this is how the player
+	//	stores money).
+
+	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
+	if (pMoney)
+		return pMoney;
+
+	//	Done
+
+	return m_pMoney;
+	}
+
 CCurrencyBlock *CShip::GetCurrencyBlock (bool bCreate)
 
 //	GetCurrencyBlock
@@ -3543,7 +3562,7 @@ int CShip::GetTotalArmorHP (int *retiMaxHP) const
 	return iHP;
 	}
 
-CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
+CCurrencyAndValue CShip::GetTradePrice (const CSpaceObject *pProvider) const
 
 //	GetTradePrice
 //
@@ -3557,7 +3576,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 
 	//	Add up the value of all installed items
 
-	CItemListManipulator AllItems(GetItemList());
+	CItemListManipulator AllItems(const_cast<CItemList &>(GetItemList()));
 	while (AllItems.MoveCursorForward())
 		{
 		const CItem &Item = AllItems.GetItemAtCursor();
@@ -7461,7 +7480,7 @@ DeviceNames CShip::SelectWeapon (const CItem &Item)
 	return SelectWeapon(iDev, iVariant);
 	}
 
-void CShip::SendMessage (CSpaceObject *pSender, const CString &sMsg)
+void CShip::SendMessage (const CSpaceObject *pSender, const CString &sMsg)
 
 //	SendMessage
 //

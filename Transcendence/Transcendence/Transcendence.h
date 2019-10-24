@@ -969,7 +969,7 @@ class CTranscendencePlayer : public IPlayerController
 		virtual GenomeTypes GetGenome (void) const override;
 		virtual CString GetName (void) const override;
 		virtual EUIMode GetUIMode (void) const override;
-		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) override;
+		virtual void OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage) override;
 
 	private:
 		CPlayerShipController *m_pPlayer;

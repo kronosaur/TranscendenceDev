@@ -2876,7 +2876,7 @@ const CShipStandard &CShipClass::GetStandard (void) const
 		return CShipStandard::GetDefaults();
 	}
 
-CCurrencyAndValue CShipClass::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CShipClass::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //

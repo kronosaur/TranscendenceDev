@@ -342,7 +342,7 @@ class CDesignType
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const;
 		virtual CCommunicationsHandler *GetCommsHandler (void) { return NULL; }
 		virtual const CEconomyType *GetEconomyType (void) const;
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		virtual CTradingDesc *GetTradingDesc (void) const { return NULL; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return GetDataField(CONSTLIT("name")); }

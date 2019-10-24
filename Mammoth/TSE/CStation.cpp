@@ -1526,6 +1526,16 @@ Metric CStation::GetAttackDistance (void) const
 		return MAX_ATTACK_DISTANCE;
 	}
 
+const CCurrencyBlock *CStation::GetCurrencyBlock (void) const
+
+//	GetCurrencyBlock
+//
+//	Returns our currency store, creating one if required.
+
+	{
+	return m_pMoney;
+	}
+
 CCurrencyBlock *CStation::GetCurrencyBlock (bool bCreate)
 
 //	GetCurrencyBlock

@@ -141,7 +141,7 @@ CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
 	return ItemList.GetItemAtCursor();
 	}
 
-ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName)
+ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName) const
 
 //	GetItemProperty
 //
@@ -266,12 +266,16 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 	else
 		{
 		//	Select the item (to make sure that it is part of the object)
+		//
+		//	LATER: We need a const-version of CItemListManupulator
 
-		CItemListManipulator ItemList(GetItemList());
+		CItemListManipulator ItemList(const_cast<CItemList &>(GetItemList()));
 		if (!ItemList.SetCursorAtItem(Item))
 			return CC.CreateError(CONSTLIT("Item not found on object."));
 
-		CItemCtx Ctx(&Item, this);
+		//	LATER: Eventually we will get rid of CItemCtx.
+
+		CItemCtx Ctx(&Item, const_cast<CSpaceObject *>(this));
 		return Item.GetItemProperty(CCCtx, Ctx, sName);
 		}
 	}

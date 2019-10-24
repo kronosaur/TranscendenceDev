@@ -189,6 +189,7 @@ class CPlayerShipController : public IShipController
 		virtual CString GetAISettingString (const CString &sSetting) override;
 		virtual CString GetClass (void) override { return CONSTLIT("player"); }
 		virtual int GetCombatPower (void) override;
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override { return &m_Credits; }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return &m_Credits; }
 		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }

@@ -47,7 +47,7 @@ IPlayerController::EUIMode CTranscendencePlayer::GetUIMode (void) const
 	return pSession->GetUIMode();
 	}
 
-void CTranscendencePlayer::OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage)
+void CTranscendencePlayer::OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage)
 
 //	OnMessageFromObj
 //
@@ -58,7 +58,7 @@ void CTranscendencePlayer::OnMessageFromObj (CSpaceObject *pSender, const CStrin
 			&& !pSender->IsVirtual() 
 			&& !pSender->IsMission()
 			&& !pSender->IsDestroyed())
-		pSender->Highlight(sMessage);
+		const_cast<CSpaceObject *>(pSender)->Highlight(sMessage);
 	else
 		g_pTrans->DisplayMessage(sMessage);
 	}

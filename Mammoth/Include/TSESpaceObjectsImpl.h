@@ -1122,6 +1122,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetCombatPower (void) override;
 		virtual int GetCounterValue (void) override { return m_iCounterValue; }
 		virtual int GetCounterIncrementRate(void) override { return m_pClass->GetHullDesc().GetCounterIncrementRate(); }
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetCyberDefenseLevel (void) override { return m_pClass->GetCyberDefenseLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
@@ -1129,6 +1130,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pClass->GetDefaultBkgnd(); }
 		virtual CSpaceObject *GetDestination (void) const override { return m_pController->GetDestination(); }
 		virtual CSpaceObject *GetDockedObj (void) const override { return (m_fShipCompartment ? NULL : m_pDocked); }
+		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
 		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
@@ -1167,8 +1169,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual Metric GetMaxSpeed (void) override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
-		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pProvider) override;
+		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
 		virtual int GetVisibleDamage (void) override;
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
@@ -1228,7 +1230,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void RemoveOverlay (DWORD dwID) override;
 		virtual void RepairDamage (int iHitPoints) override;
 		virtual void Resume (void) override { m_fManualSuspended = false; if (!IsInGate()) ClearCannotBeHit(); m_pController->OnStatsChanged(); }
-		virtual void SendMessage (CSpaceObject *pSender, const CString &sMsg) override;
+		virtual void SendMessage (const CSpaceObject *pSender, const CString &sMsg) override;
 		virtual bool SetAbility (Abilities iAbility, AbilityModifications iModification, int iDuration, DWORD dwOptions) override;
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pController->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pController->SetAISettingString(sSetting, sValue); }
@@ -1485,11 +1487,13 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
         virtual CSpaceObject *GetBase (void) const override { return m_pBase; }
 		virtual Categories GetCategory (void) const override { return catStation; }
 		virtual DWORD GetClassUNID (void) override { return m_pType->GetUNID(); }
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
 		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_pDevices[iDev]; }
 		virtual int GetDeviceCount (void) const override { return (m_pDevices ? maxDevices : 0); }
+		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
 		virtual Metric GetGravity (Metric *retrRadius) const override;
@@ -1521,7 +1525,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual int GetStealth (void) const override;
 		virtual Metric GetStellarMass (void) const override { return (GetScale() == scaleStar ? m_rMass : 0.0); }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
-		virtual CTradingDesc *GetTradeDescOverride (void) override { return m_pTrade; }
+		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override { return m_Hull.GetVisibleDamageDesc(Damage); }

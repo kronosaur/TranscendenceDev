@@ -104,7 +104,7 @@ class IDockScreenDisplay
 		ICCItem *GetCurrentListEntry (void) const { return OnGetCurrentListEntry(); }
 		bool GetDefaultBackground (SBackgroundDesc *retDesc);
 		CItemListManipulator &GetItemListManipulator (void) { return OnGetItemListManipulator(); }
-		int GetListCursor (void) { return OnGetListCursor(); }
+		int GetListCursor (void) const { return OnGetListCursor(); }
 		IListData *GetListData (void) { return OnGetListData(); }
 		ICCItemPtr GetProperty (const CString &sProperty) const;
 		CSpaceObject *GetSource (void) const { return OnGetSource(); }
@@ -117,8 +117,8 @@ class IDockScreenDisplay
 		EResults HandleKeyDown (int iVirtKey) { return OnHandleKeyDown(iVirtKey); }
 		ALERROR Init (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError);
 		bool IsCurrentItemValid (void) const { return OnIsCurrentItemValid(); }
-		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item);
-		EResults OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result);
+		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const;
+		EResults OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result);
 		EResults OnObjDestroyed (const SDestroyCtx &Ctx) { return OnObjDestroyedNotify(Ctx); }
 		EResults ResetList (CSpaceObject *pLocation) { return OnResetList(pLocation); }
 		EResults SetListCursor (int iCursor) { return OnSetListCursor(iCursor); }
@@ -141,7 +141,7 @@ class IDockScreenDisplay
 		virtual ICCItem *OnGetCurrentListEntry (void) const { return NULL; }
 		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) { return false; }
 		virtual CItemListManipulator &OnGetItemListManipulator (void) { return g_DummyItemListManipulator; }
-		virtual int OnGetListCursor (void) { return -1; }
+		virtual int OnGetListCursor (void) const { return -1; }
 		virtual IListData *OnGetListData (void) { return NULL; }
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const;
 		virtual CSpaceObject *OnGetSource (void) const { return NULL; }
@@ -523,8 +523,8 @@ class CDockScreen : public IScreenController,
 
 		//	IDockScreenUI
 		virtual ICCItemPtr GetProperty (const CString &sProperty) const override;
-		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) override;
-		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) override;
+		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const override;
+		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) override;
 
