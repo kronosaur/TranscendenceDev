@@ -842,6 +842,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged\n"
 			"   'description\n"
 			"   'disrupted\n"
+			"   'enhancement\n"
 			"   'hasUseScreen\n"
 			"   'installed\n"
 			"   'level\n"

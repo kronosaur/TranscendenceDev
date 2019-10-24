@@ -254,6 +254,34 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 		}
 	}
 
+ICCItemPtr CItemEnhancement::AsDesc (CUniverse &Universe) const
+
+//	AsDesc
+//
+//	Return a struct describing the enhancement. See also InitFromDesc.
+
+	{
+	if (IsEmpty())
+		return ICCItemPtr(ICCItem::Nil);
+
+	else if (m_iExpireTime == -1 && m_pEnhancer == NULL)
+		return ICCItemPtr(m_dwMods);
+
+	else
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+		pResult->SetIntegerAt(CONSTLIT("enhancement"), (int)m_dwMods);
+
+		if (m_iExpireTime != -1)
+			pResult->SetIntegerAt(CONSTLIT("lifetime"), Max(0, (m_iExpireTime - (int)Universe.GetTicks())));
+
+		if (m_pEnhancer)
+			pResult->SetIntegerAt(CONSTLIT("type"), (int)m_pEnhancer->GetUNID());
+
+		return pResult;
+		}
+	}
+
 EnhanceItemStatus CItemEnhancement::AsEnhanceItemStatus (const CString &sValue)
 
 //	AsEnhanceItemStatus

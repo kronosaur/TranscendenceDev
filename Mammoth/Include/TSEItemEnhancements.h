@@ -115,6 +115,7 @@ class CItemEnhancement
 		static constexpr DWORD FLAG_INCLUDE_EXPIRATION = 0x00000002;
 		void AccumulateAttributes (const CItem &Item, TArray<SDisplayAttribute> *retList, DWORD dwFlags = 0) const;
 
+		ICCItemPtr AsDesc (CUniverse &Universe) const;
 		DWORD AsDWORD (void) const { return m_dwMods; }
 		EnhanceItemStatus Combine (const CItem &Item, const CItemEnhancement &Enhancement);
 		int GetAbsorbAdj (const DamageDesc &Damage) const;

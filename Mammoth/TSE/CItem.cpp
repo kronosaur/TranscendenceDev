@@ -30,6 +30,7 @@
 #define PROPERTY_DEFECTIVE_ENHANCEMENT			CONSTLIT("defectiveEnhancement")
 #define PROPERTY_DESCRIPTION					CONSTLIT("description")
 #define PROPERTY_DISRUPTED						CONSTLIT("disrupted")
+#define PROPERTY_ENHANCEMENT					CONSTLIT("enhancement")
 #define PROPERTY_HAS_USE_SCREEN					CONSTLIT("hasUseScreen")
 #define PROPERTY_INC_CHARGES					CONSTLIT("incCharges")
 #define PROPERTY_INSTALLED						CONSTLIT("installed")
@@ -1729,6 +1730,9 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 		else
 			return CC.CreateInteger(dwTime);
 		}
+
+	else if (strEquals(sProperty, PROPERTY_ENHANCEMENT))
+		return GetMods().AsDesc(GetUniverse())->Reference();
 
 	else if (strEquals(sProperty, PROPERTY_HAS_USE_SCREEN))
 		return CC.CreateBool(HasUseItemScreen());
@@ -3465,6 +3469,20 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			}
 		else
 			SetCharges(Max(0, GetCharges() + pValue->GetIntegerValue()));
+		}
+
+	else if (strEquals(sName, PROPERTY_ENHANCEMENT))
+		{
+		if (pValue == NULL || pValue->IsNil())
+			AddEnhancement(CItemEnhancement());
+		else
+			{
+			CItemEnhancement NewEnhancement;
+			if (NewEnhancement.InitFromDesc(GetUniverse(), *pValue, retsError) != NOERROR)
+				return false;
+
+			AddEnhancement(NewEnhancement);
+			}
 		}
 
 	else if (strEquals(sName, PROPERTY_INSTALLED))
