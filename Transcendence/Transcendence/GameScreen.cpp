@@ -1029,7 +1029,7 @@ void CTranscendenceWnd::ShowUsePicker (void)
 			//	See if we can use this item, and get the use key
 
 			CString sUseKey;
-			if (!Item.CanBeUsed(ItemCtx, &sUseKey))
+			if (!Item.CanBeUsed(&sUseKey))
 				continue;
 
 			//	Add to the list

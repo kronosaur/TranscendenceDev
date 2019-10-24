@@ -382,6 +382,11 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		return false;
 		}
 
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, Item);
+
 	//	We handle damage differently because we may need to remove enhancements,
 	//	etc.
 
@@ -468,10 +473,16 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		ItemEnhancementModified(ItemList);
 		}
 
-	//	Done
+	//	Return the newly changed item. We do this before the notification 
+	//	because the notification might change the underlying item list (because
+	//	it sorts).
 
 	if (retItem)
 		*retItem = ItemList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
 
 	return true;
 	}

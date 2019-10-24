@@ -331,7 +331,7 @@ CString CItem::CalcSortKey (void) const
 	return strPatternSubst(CONSTLIT("%s%s%s%s%d"), sInstalled, sCat, sName, sCharges, ((DWORD)(int)this) % 0x10000);
 	}
 
-bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
+bool CItem::CanBeUsed (CString *retsUseKey) const
 
 //	CanBeUsed
 //
@@ -356,7 +356,7 @@ bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
 
 	if (UseDesc.bOnlyIfEnabled)
 		{
-		CInstalledDevice *pDevice = ItemCtx.GetDevice();
+		const CInstalledDevice *pDevice = GetInstalledDevice();
 		if (pDevice == NULL || !pDevice->IsEnabled())
 			return false;
 		}
@@ -370,13 +370,13 @@ bool CItem::CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey) const
 		{
 		if (UseDesc.bOnlyIfCompleteArmor)
 			{
-			CInstalledArmor *pArmor = ItemCtx.GetArmor();
+			const CInstalledArmor *pArmor = GetInstalledArmor();
 			if (pArmor == NULL || !pArmor->IsComplete() || !pArmor->IsPrime())
 				return false;
 			}
 		else if (UseDesc.bAsArmorSet)
 			{
-			CInstalledArmor *pArmor = ItemCtx.GetArmor();
+			const CInstalledArmor *pArmor = GetInstalledArmor();
 			if (pArmor == NULL || !pArmor->IsPrime())
 				return false;
 			}
@@ -1701,7 +1701,7 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 	//	First we handle all properties that are specific to the item instance.
 
 	else if (strEquals(sProperty, PROPERTY_CAN_BE_USED))
-		return CC.CreateBool(CanBeUsed(Ctx));
+		return CC.CreateBool(CanBeUsed());
 
 	else if (strEquals(sProperty, PROPERTY_CHARGES))
 		return CC.CreateInteger(GetCharges());

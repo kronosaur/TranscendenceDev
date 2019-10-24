@@ -202,7 +202,7 @@ class CItem
 		bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
 		CString CalcSortKey (void) const;
-		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
+		bool CanBeUsed (CString *retsUseKey = NULL) const;
 		void ClearDamaged (void);
 		void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
