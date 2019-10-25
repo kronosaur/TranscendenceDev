@@ -417,7 +417,11 @@
 								; If found, improve it
 								(if itemToImprove
 									(block Nil
-										(shpEnhanceItem gSource itemToImprove (if (leq roll 35) 0x0102 0x0105))
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: (if (leq roll 35) 0x0102 0x0105)
+											type: &vtIngenuityEnhancement;
+											})
+											
 										(setq desc (typTranslate gType 'msgArmorImproved {
 											segment: (objGetArmorName gSource itemToImprove)
 											itemName: (itmGetName itemToImprove 0xa0)
@@ -457,18 +461,27 @@
 
 									(leq roll 65)
 										(block ()
-											(shpEnhanceItem gSource itemToImprove 0x0102)
+											(shpEnhanceItem gSource itemToImprove {
+												enhancement: 0x0102
+												type: &vtIngenuityEnhancement;
+												})
 											(setq desc (typTranslate gType 'msgShieldStrength data))
 											)
 
 									(leq roll 70)
 										(block ()
-											(shpEnhanceItem gSource itemToImprove 0x0104)
+											(shpEnhanceItem gSource itemToImprove {
+												enhancement: 0x0104
+												type: &vtIngenuityEnhancement;
+												})
 											(setq desc (typTranslate gType 'msgShieldStrength data))
 											)
 
 									(block ()
-										(shpEnhanceItem gSource itemToImprove 0x0f01)
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: 0x0f01
+											type: &vtIngenuityEnhancement;
+											})
 										(setq desc (typTranslate gType 'msgShieldEfficiency data))
 										)
 									)
@@ -490,7 +503,11 @@
 								; If found, improve it
 								(if itemToImprove
 									(block Nil
-										(shpEnhanceItem gSource itemToImprove (if (leq roll 85) 0x0102 0x0104))
+										(shpEnhanceItem gSource itemToImprove {
+											enhancement: (if (leq roll 85) 0x0102 0x0104)
+											type: &vtIngenuityEnhancement;
+											})
+											
 										(setq desc (typTranslate gType 'msgWeaponImproved {
 											itemName: (itmGetName itemToImprove 0xa0)
 											}))
@@ -810,6 +827,14 @@
 					imageTicksPerFrame="3"/>
 		</HitEffect>
 	</OverlayType>
+
+	<ItemType UNID="&vtIngenuityEnhancement;"
+			name=				"Domina Ingenuity enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 
 <!-- BASE CLASSES -->
 

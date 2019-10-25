@@ -1512,14 +1512,21 @@
 										(setq gResult (cat "Your " (itmGetName gItem 0x81) " has been repaired."))
 										)
 										
-								(block (result theEnhancement)
+								(block (result theEnhancement theType)
 									(switch
 										(itmMatches gItem "s")
-											(setq theEnhancement (random '(0x0101 0x0102 0x0102 0x0103 0x0104 0x0905 0x0915 0x0925 0x0935 0x0F02 0x0F02)))
+											(block ()
+												(setq theEnhancement (random '(0x0101 0x0102 0x0102 0x0103 0x0104 0x0905 0x0915 0x0925 0x0935 0x0F02 0x0F02)))
+												(setq theType &vtUniversityEnhancement;)
+												)
+
 										(setq theEnhancement 0x0001)
 										)
 									
-									(setq result (shpEnhanceItem gPlayerShip gItem theEnhancement))
+									(setq result (shpEnhanceItem gPlayerShip gItem {
+										enhancement: theEnhancement
+										type: theType
+										}))
 									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " is more powerful") (itmGetName gItem 0x80)))
 									)
 								)
@@ -1626,6 +1633,14 @@
 			</Text>
 		</Language>
 	</DockScreen>
+
+	<ItemType UNID="&vtUniversityEnhancement;"
+			name=				"St. Katharine University enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 
 <!-- St Katharine's Star System -->
 

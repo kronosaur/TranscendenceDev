@@ -1196,10 +1196,6 @@ bool CItem::GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *p
 		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
-		//	Add any enhancements
-
-		AccumulateEnhancementDisplayAttributes(*retList);
-
 		//	Charges
 
 		CString sNoun;

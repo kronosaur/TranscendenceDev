@@ -4202,9 +4202,14 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 		CWeaponFireDesc *pShot = GetReferenceShotData(pRootShot, &iFragments);
 		DamageDesc Damage = pShot->GetDamage();
 
+		//	Apply enhancements
+
+		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+		Enhancements.ApplySpecialDamage(&Damage);
+
 		//	Compute special abilities.
 
-		if (pRootShot->IsTracking() || pShot->IsTracking())
+		if (pRootShot->IsTracking() || pShot->IsTracking() || Enhancements.IsTracking())
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("tracking")));
 
 		//	Special damage delivery
@@ -4285,6 +4290,17 @@ void CWeaponClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 
 		if (Damage.GetMassDestructionLevel() > 0)
 			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("WMD %d"), Damage.GetMassDestructionLevel())));
+		}
+
+	//	A launcher with no ammo selected.
+
+	else
+		{
+		const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
+
+		if (Enhancements.IsTracking())
+			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("tracking")));
+
 		}
 	}
 

@@ -1558,22 +1558,26 @@ void CShieldClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 //	Returns display attributes
 
 	{
-	int i;
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 
 	//	Reflection
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_Reflective.InSet(iDamage) || Enhancements.ReflectsDamage(iDamage))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName(iDamage))));
 		}
 
 	//	Weapon suppress
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_WeaponSuppress.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_WeaponSuppress.InSet(iDamage))
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName(iDamage))));
 		}
 	}
 

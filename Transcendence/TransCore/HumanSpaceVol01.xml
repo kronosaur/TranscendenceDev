@@ -2242,6 +2242,7 @@
 	<!-- 0640-065F DOMINA -->
 
 	<!ENTITY baDominaPower				"0x00100640">
+	<!ENTITY vtIngenuityEnhancement		"0x00100641">
 
 	<!-- 0660-06BF COMMONWEALTH FLEET III -->
 
@@ -2279,6 +2280,7 @@
 	<!ENTITY rsWolfenC					"0x00100700">
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
+	<!ENTITY vtUniversityEnhancement	"0x00100703">
 
 	<!-- 0740-075F RASIERMESSER -->
 

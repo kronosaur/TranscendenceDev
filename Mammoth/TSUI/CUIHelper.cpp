@@ -207,11 +207,6 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 		{
 		for (int i = 0; i < pEnhancements->GetCount(); i++)
 			{
-			//	Skip if we don't have an enhancer type
-
-			if (pEnhancements->GetEnhancement(i).GetEnhancementType() == NULL)
-				continue;
-
 			cyHeight += Max(ENHANCEMENT_ICON_HEIGHT, 2 * Medium.GetHeight());
 			}
 		}
@@ -996,7 +991,7 @@ void CUIHelper::PaintItemEnhancement (CG32bitImage &Dest, CSpaceObject *pSource,
 	const CItemType *pEnhancer = Enhancement.GetEnhancementType();
 	if (pEnhancer == NULL)
 		{
-		pEnhancer = Item.GetUniverse().FindItemType(UNKNOWN_ROM_UNID);
+		pEnhancer = Item.GetUniverse().FindItemType(UNID_GENERIC_ENHANCEMENT);
 		if (pEnhancer == NULL)
 			return;
 		}
@@ -1287,9 +1282,6 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 		{
 		for (int i = 0; i < pEnhancements->GetCount(); i++)
 			{
-			if (pEnhancements->GetEnhancement(i).GetEnhancementType() == NULL)
-				continue;
-
 			int cyHeight;
 			PaintItemEnhancement(Dest, pSource, Item, pEnhancements->GetEnhancement(i), rcDrawRect, (bSelected ? rgbColorDescSel : rgbColorDesc), &cyHeight);
 
