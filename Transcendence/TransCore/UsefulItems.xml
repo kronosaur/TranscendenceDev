@@ -586,7 +586,7 @@
 				(switch
 					(eq (objGetEquipmentStatus gSource 'SRS) 'damaged)
 						(block Nil
-							(objChangeEquipmentStatus gSource 'SRS 'repair)
+							(objChangeEquipmentStatus gSource 'SRS 'repair 'noMessage)
 							(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
 							)
 

@@ -419,7 +419,8 @@ static PRIMITIVEPROCDEF g_DefPrimitives[] =
 			"*",	0,	},
 
 		{	"subset",			fnSubset,		0,
-			"(subset list pos [count]) -> list",
+			"(subset list pos [count]) -> list\n"
+			"(subset string pos [count]) -> string",
 			"vv*",	0,	},
 
 		{	"subst",			fnSubst,		0,
