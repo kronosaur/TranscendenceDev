@@ -2377,6 +2377,8 @@
 	<Module filename="CommonwealthMilitiaMission04.xml"/>
 	<Module filename="CommonwealthMilitiaMissionSK01.xml"/>
 	<Module filename="CommonwealthMining.xml"/>
+	<Module filename="CommonwealthMiningMission01.xml"/>
+	<Module filename="CommonwealthMiningMission02.xml"/>
 	<Module filename="CommonwealthMission01.xml"/>
 	<Module filename="CommonwealthMissionRevenge01.xml"/>
 	<Module filename="CommonwealthRonins.xml"/>

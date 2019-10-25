@@ -510,6 +510,8 @@
     <Xml Include="CommonwealthMilitiaMission03.xml" />
     <Xml Include="CommonwealthMilitiaMission04.xml" />
     <Xml Include="CommonwealthMilitiaMissionSK01.xml" />
+    <Xml Include="CommonwealthMiningMission01.xml" />
+    <Xml Include="CommonwealthMiningMission02.xml" />
     <Xml Include="CommonwealthMission01.xml" />
     <Xml Include="CommonwealthMissionRevenge01.xml" />
     <Xml Include="CommonwealthRonins.xml" />

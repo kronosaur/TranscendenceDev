@@ -88,6 +88,9 @@
     <Filter Include="Human Space Library\Ferians">
       <UniqueIdentifier>{51254d89-e854-471c-b6db-6d73848a40c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Human Space Library\Commonwealth Mining">
+      <UniqueIdentifier>{b7ab7526-b5af-4e40-a600-c7792dbd8d66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Transcendence.xml" />
@@ -346,9 +349,6 @@
     <None Include="CommonwealthMetropolis.xml">
       <Filter>Human Space Library\Commonwealth</Filter>
     </None>
-    <None Include="CommonwealthMining.xml">
-      <Filter>Human Space Library\Commonwealth</Filter>
-    </None>
     <None Include="PointJuno.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
     </None>
@@ -390,6 +390,9 @@
     </None>
     <None Include="AresOrthodoxy.xml">
       <Filter>Human Space Library\Ares Orthodoxy</Filter>
+    </None>
+    <None Include="CommonwealthMining.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -866,6 +869,12 @@
     </Xml>
     <Xml Include="RasiermesserMission01.xml">
       <Filter>Human Space Library\Corporate Hierarchy</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission01.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="CommonwealthMiningMission02.xml">
+      <Filter>Human Space Library\Commonwealth Mining</Filter>
     </Xml>
   </ItemGroup>
 </Project>
