@@ -381,6 +381,10 @@
 							(scrShowPane gScreen 'ShowResult)
 							)
 					</Action>
+
+					<Action id="actionCancel" cancel="1">
+						(scrExitScreen gScreen)
+					</Action>
 				</Actions>
 			</Default>
 
