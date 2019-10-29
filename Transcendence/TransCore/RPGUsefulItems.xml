@@ -1015,6 +1015,87 @@
 		</Language>
 	</Type>
 
+	<!-- Equipment Item Base Class
+
+	This represents a ROM or other item that installs equipment, such as a
+	targeting computer.
+
+	PROPERTIES
+
+	rpg.equipment: ID of equipment installed by this item.
+
+	rpg.alternateEquipment: Additional ID of equipment repaired by this item.
+		If specified, we repair this equipment if damaged.
+
+	LANGUAGE
+
+	rpg.equipmentInstalled: The equipment was installed successfully.
+
+	rpg.equipmentNoEffect: Installation had no effect because the equipment was
+		already installed.
+
+	rpg.equipmentRedundant: The equipment was installed, but is currently not
+		needed because the ship has the capability from another source.
+
+	rpg.equipmentRepaired: The equipment was repaired.
+	
+	-->
+
+	<ItemType unid="&baStdEquipmentItem;">
+		<Invoke>
+			(block (
+				(theEquipment (itmGetProperty gItem 'rpg.equipment))
+				(repairEquipment (itmGetProperty gItem 'rpg.alternateEquipment))
+
+				(equipmentStatus (objGetEquipmentStatus gSource theEquipment))
+				)
+				;	Handle each of the cases
+
+				(switch
+					;	If we need to repair the equipment, do it.
+
+					(= equipmentStatus 'damaged)
+						(block ()
+							(objChangeEquipmentStatus gSource theEquipment 'repair 'noMessage)
+							(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRepaired))
+							)
+
+					(and repairEquipment
+							(= (objGetEquipmentStatus gSource repairEquipment) 'damaged)
+							)
+						(block ()
+							(objChangeEquipmentStatus gSource repairEquipment 'repair 'noMessage)
+							(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRepaired))
+							)
+
+					;	Try to install the equipment. If it fails, then it means 
+					;	that we already have the equipment installed on the ship.
+
+					(not (objChangeEquipmentStatus gSource theEquipment 'install))
+						(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentNoEffect))
+						
+					;	If we didn't have equipment before, and installation 
+					;	succeeds, then we've succeeded.
+
+					(!= equipmentStatus 'ready)
+						(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentInstalled))
+
+					;	If we DID have a trading computer before and installation succeeded
+					;	anyway, then it means we have a trading computer on some device
+					;	(e.g., a cargo hold) and now we have a redundant one installed on
+					;	the ship.
+
+					(objSendMessage gSource Nil (typTranslate gType 'rpg.equipmentRedundant))
+					)
+
+				;	Identify and remove
+
+				(itmSetKnown gItem)
+				(objRemoveItem gSource gItem 1)
+				)
+		</Invoke>
+	</ItemType>
+
 	<!-- Paste Barrel Item Base Class
 
 	Armor coating barrels should inherit from this class. Typically they should
