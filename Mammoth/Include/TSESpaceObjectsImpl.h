@@ -512,6 +512,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 
 		virtual CMissile *AsMissile (void) override { return this; }
 		virtual bool CanAttack (void) const override { return m_fTargetable; }
+		virtual bool CanBeAttacked (void) const override { return m_fTargetable; }
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
 		virtual bool ClassCanAttack (void) override { return m_fTargetable; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
@@ -1093,6 +1094,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CShip *AsShip (void) override { return this; }
 		virtual void Behavior (SUpdateCtx &Ctx) override;
 		virtual bool CanAttack (void) const override;
+		virtual bool CanBeAttacked (void) const override { return CanAttack(); }
 		virtual bool CanInstallItem (const CItem &Item, int iSlot = -1, InstallItemResults *retiResult = NULL, CString *retsResult = NULL, CItem *retItemToReplace = NULL) override;
 		virtual bool CanMove (void) const override { return true; }
 		virtual RequestDockResults CanObjRequestDock (CSpaceObject *pObj = NULL) const override;
@@ -1475,6 +1477,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
 		virtual bool CanAttack (void) const override;
+		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack()); }
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
@@ -1542,7 +1545,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
-		virtual bool IsInactive (void) const override { return !CanAttack(); }
+		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
 		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
 		virtual bool IsKnown (void) override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }

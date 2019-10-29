@@ -99,6 +99,8 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define ORDER_DOCKED							CONSTLIT("docked")
 
 #define PROPERTY_ASCENDED						CONSTLIT("ascended")
+#define PROPERTY_CAN_ATTACK						CONSTLIT("canAttack")
+#define PROPERTY_CAN_BE_ATTACKED				CONSTLIT("canBeAttacked")
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
@@ -4215,6 +4217,12 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	if (strEquals(sName, PROPERTY_ASCENDED))
 		return CC.CreateBool(IsAscended());
 
+	else if (strEquals(sName, PROPERTY_CAN_ATTACK))
+		return CC.CreateBool(CanAttack());
+
+	else if (strEquals(sName, PROPERTY_CAN_BE_ATTACKED))
+		return CC.CreateBool(CanBeAttacked());
+
 	else if (strEquals(sName, PROPERTY_CATEGORY))
 		{
 		switch (GetCategory())
@@ -5169,7 +5177,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
 					|| pObj->GetScale() == scaleStructure)
 				&& IsAngryAt(pObj)
-				&& pObj->CanAttack();
+				&& pObj->CanBeAttacked();
 
 		//	Compute the size of the object, if we're doing proximity computations
 
@@ -5825,7 +5833,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 		CSpaceObject *pObj = pSystem->EnumObjectsInBoxGetNextFast(i);
 
 		if (!pObj->IsDestroyed()
-				&& pObj->CanAttack()
+				&& pObj->CanBeAttacked()
 				//	Only check for ships, structures
 				&& (pObj->GetScale() == scaleStructure 
 					|| pObj->GetScale() == scaleShip)
@@ -6029,7 +6037,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 			&& (GetScale() == scaleWorld || GetScale() == scaleStar))
 		return false;
 
-	if (Crit.MatchesKilledOnly() && (CanAttack() || IsVirtual()))
+	if (Crit.MatchesKilledOnly() && (CanBeAttacked() || IsVirtual()))
 		return false;
 
 	if (!Crit.MatchesSovereign(GetSovereign()))

@@ -795,7 +795,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanAttack()))
+			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
 				{
 				if (iTargetType == targetEnemies)
 					{
@@ -804,7 +804,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 					}
 				else
 					{
-					if (pObj->CanAttack() || pObj->SupportsDockingFast())
+					if (pObj->CanBeAttacked() || pObj->SupportsDockingFast())
 						{
 						if (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							iMainKey = 0;
@@ -2604,7 +2604,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 	//	If a friendly is already selected, then cycle
 	//	to the next friendly.
 
-	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack()))
+	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked()))
 		{
 		InitTargetList(targetFriendlies, true);
 
@@ -2672,7 +2672,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 	//	If an enemy target is already selected, then cycle
 	//	to the next enemy.
 
-	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack())
+	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked())
 		{
 		InitTargetList(targetEnemies, true);
 

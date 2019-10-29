@@ -635,6 +635,20 @@ class COverlayList
 //		possible target. Missiles/beams cannot attack. Wrecks and abandoned
 //		stations cannot attack.
 //
+//	CanBeAttacked: If TRUE, this object has hit points and can be attacked. This
+//		is usually the same as CanAttack, but there are some objects (e.g.,
+//		Arco Vaughn's habitat) that can be destroyed but cannot attack. We need
+//		the distinction because we always auto-target CanAttack over 
+//		CanBeAttacked.
+//
+//		NOTE: This is mostly about targeting, not about being hit. Lots of 
+//		objects can be hit but do not need to be targets (e.g., asteroids).
+//		In general, every object that CanAttack should be CanBeAttacked (but the
+//		reverse need not be true).
+//
+//	CanBeDestroyed: If TRUE, the object can be destroyed (not just abandoned).
+//		E.g., a shipwreck can be destroyed, but an abandoned station cannot be.
+//
 //	Hidden: Hidden objects are never shown in the system. For example, suspended
 //		objects are hidden. Anything that paints, e.g., fading missiles, is not
 //		hidden.
@@ -1362,6 +1376,7 @@ class CSpaceObject
 		virtual CStation *AsStation (void) { return NULL; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) { return false; }
 		virtual bool CanAttack (void) const { return false; }
+		virtual bool CanBeAttacked (void) const { return false; }
 		virtual bool CanBeDestroyed (void) { return true; }
 		virtual bool CanBeHitBy (const DamageDesc &Damage) { return true; }
 		virtual bool CanHit (CSpaceObject *pObj) { return true; }
