@@ -68,6 +68,7 @@ class CAutoTargetCalc
 	{
 	public:
 		static constexpr Metric MAX_DISTANCE =			30.0 * LIGHT_SECOND;
+		static constexpr Metric MAX_DISTANCE2 =			(MAX_DISTANCE * MAX_DISTANCE);
 
 		const CSpaceObject *GetAutoTarget (void) const;
 		void Init (const CSpaceObject &PlayerObj);
@@ -76,6 +77,8 @@ class CAutoTargetCalc
 		void Update (const CSpaceObject &PlayerObj, const CSpaceObject &Obj);
 
 	private:
+		void SetTargetIfBetter (const CSpaceObject &Obj, Metric rObjDist2);
+
 		bool m_bNeedsAutoTarget = false;				//	TRUE if player's weapon needs an autotarget
 		bool m_bPlayerTargetOutOfRange = false;			//	TRUE if player's current target is unreachable
 		int m_iPlayerPerception = 0;					//	Player's perception
@@ -83,6 +86,7 @@ class CAutoTargetCalc
 		const CSpaceObject *m_pPlayerTarget = NULL;		//	Current player target (may be NULL)
 		const CSpaceObject *m_pTargetObj = NULL;		//	If non-null, nearest possible target for player
 		Metric m_rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
+		bool m_bTargetCanAttack = false;				//	TRUE if current target can attack
 		int m_iMinFireArc = 0;							//	Fire arc of primary weapon
 		int m_iMaxFireArc = 0;
 	};

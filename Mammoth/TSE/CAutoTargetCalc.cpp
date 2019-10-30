@@ -62,7 +62,7 @@ void CAutoTargetCalc::Init (const CSpaceObject &PlayerObj)
 	//	Set up perception and max target dist
 
 	m_iPlayerPerception = PlayerObj.GetPerception();
-	m_rTargetDist2 = MAX_DISTANCE * MAX_DISTANCE;
+	m_rTargetDist2 = MAX_DISTANCE2;
 	}
 
 void CAutoTargetCalc::Update (const CSpaceObject &PlayerObj, const CSpaceObject &Obj)
@@ -105,20 +105,13 @@ void CAutoTargetCalc::Update (const CSpaceObject &PlayerObj, const CSpaceObject 
 		//	Otherwise, if this object is angry at the player, then it is a
 		//	valid auto-target
 
-		else if (bIsAngryAtPlayer && Obj.CanAttack())
-			{
-			Metric rDist2 = rDist * rDist;
-			if (rDist2 < m_rTargetDist2)
-				{
-				m_pTargetObj = &Obj;
-				m_rTargetDist2 = rDist2;
-				}
-			}
+		else if (bIsAngryAtPlayer && Obj.CanBeAttacked())
+			SetTargetIfBetter(Obj, rDist * rDist);
 		}
 
-	//	If the object cannot attack, then it is never an auto-target.
+	//	If the object cannot be attacked, then it is never an auto-target.
 
-	else if (!Obj.CanAttack())
+	else if (!Obj.CanBeAttacked())
 		{ }
 
 	//	If this object is not angry at us, then it can never be an auto-
@@ -134,15 +127,10 @@ void CAutoTargetCalc::Update (const CSpaceObject &PlayerObj, const CSpaceObject 
 		{
 		Metric rDist;
 		int iAngle = VectorToPolar(vDist, &rDist);
-		Metric rDist2 = rDist * rDist;
 
-		if (rDist2 < m_rTargetDist2
-				&& AngleInArc(iAngle, m_iMinFireArc, m_iMaxFireArc)
+		if (AngleInArc(iAngle, m_iMinFireArc, m_iMaxFireArc)
 				&& rDist <= Obj.GetDetectionRange(m_iPlayerPerception))
-			{
-			m_pTargetObj = &Obj;
-			m_rTargetDist2 = rDist2;
-			}
+			SetTargetIfBetter(Obj, rDist * rDist);
 		}
 
 	//	Otherwise, just find the nearest target
@@ -150,11 +138,66 @@ void CAutoTargetCalc::Update (const CSpaceObject &PlayerObj, const CSpaceObject 
 	else
 		{
 		Metric rDist2 = vDist.Length2();
-		if (rDist2 < m_rTargetDist2
-				&& rDist2 <= Obj.GetDetectionRange2(m_iPlayerPerception))
+
+		if (rDist2 <= Obj.GetDetectionRange2(m_iPlayerPerception))
+			SetTargetIfBetter(Obj, rDist2);
+		}
+	}
+
+void CAutoTargetCalc::SetTargetIfBetter (const CSpaceObject &Obj, Metric rObjDist2)
+
+//	SetTarget
+//
+//	If the given object is better than the currently selected target, then we
+//	set the given object as the selected target.
+
+	{
+	//	If we don't have a current target, then we always take the given object
+	//	as long as it is in range.
+
+	if (m_pTargetObj == NULL)
+		{
+		if (rObjDist2 < MAX_DISTANCE2)
 			{
 			m_pTargetObj = &Obj;
-			m_rTargetDist2 = rDist2;
+			m_rTargetDist2 = rObjDist2;
+			m_bTargetCanAttack = Obj.CanAttack();
+			}
+		}
+
+	//	Otherwise, we need to see if the given object is better than the 
+	//	currently selected one.
+
+	else
+		{
+		bool bCanAttack = Obj.CanAttack();
+
+		//	If the currently selected target can attack and the given object
+		//	cannot, then we always skip.
+
+		if (m_bTargetCanAttack && !bCanAttack)
+			{ }
+
+		//	Conversely, if the selected target CANNOT attack and the given 
+		//	object can, we take the given object even if it is further away.
+
+		else if (!m_bTargetCanAttack 
+				&& bCanAttack
+				&& rObjDist2 < MAX_DISTANCE2)
+			{
+			m_pTargetObj = &Obj;
+			m_rTargetDist2 = rObjDist2;
+			m_bTargetCanAttack = true;
+			}
+
+		//	Otherwise, if both have the same CanAttack value, then we compare
+		//	based on distance.
+
+		else if (rObjDist2 < m_rTargetDist2)
+			{
+			m_pTargetObj = &Obj;
+			m_rTargetDist2 = rObjDist2;
+			m_bTargetCanAttack = bCanAttack;
 			}
 		}
 	}
