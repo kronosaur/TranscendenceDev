@@ -37,7 +37,7 @@ void Shader::init(const char *vsFile, const char *fsFile) {
 	const char* fsText = fsString.c_str();
 
 	if (vsText == NULL || fsText == NULL) {
-		cerr << "Either vertex shader or fragment shader file not found." << endl;
+		::kernelDebugLogPattern("Either vertex shader or fragment shader file not found.");
 		return;
 	}
 
@@ -50,14 +50,14 @@ void Shader::init(const char *vsFile, const char *fsFile) {
 	if (!success)
 	{
 		glGetShaderInfoLog(shader_vp, 512, NULL, err_log);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << err_log << std::endl;
+		::kernelDebugLogPattern("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s", err_log);
 	};
 	glCompileShader(shader_fp);
 	glGetShaderiv(shader_fp, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
 		glGetShaderInfoLog(shader_fp, 512, NULL, err_log);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << err_log << std::endl;
+		::kernelDebugLogPattern("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s", err_log);
 	};
 
 	shader_id = glCreateProgram();

@@ -6,10 +6,10 @@ in vec2 TexCoord;
 
 uniform sampler2D ourTexture;
 
-float roundme(float input)
+float roundme(float input_float)
 {
     float roundLevels = 10.0f;
-    return float(round(input * roundLevels)) / roundLevels;
+    return float(round(input_float * roundLevels)) / roundLevels;
 }
 
 void main()
