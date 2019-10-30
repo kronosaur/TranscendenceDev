@@ -20,6 +20,7 @@ struct SDamageCtx;
 struct SDestroyCtx;
 struct SSystemCreateCtx;
 struct SSpaceObjectGridEnumerator;
+struct SUpdateCtx;
 
 //	Utility inlines
 
@@ -287,55 +288,6 @@ struct SViewportAnnotations
 	CVector vFormationPos;
 	CVector vFormationCurPos;
 #endif
-	};
-
-struct SUpdateCtx
-	{
-	public:
-		int GetLightIntensity (CSpaceObject *pObj) const;
-		bool IsTimeStopped (void) const { return m_bTimeStopped; }
-		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
-
-		CSystem *pSystem = NULL;					//	Current system
-		CSpaceObject *pPlayer = NULL;				//	The player
-		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
-		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
-
-		//	Used to compute nearest docking port to player
-
-		CSpaceObject *pDockingObj = NULL;			//	If non-null, nearest object to dock with
-		int iDockingPort = -1;						//	Nearest docking port
-		CVector vDockingPort;						//	Position of docking port (absolute)
-		Metric rDockingPortDist2 = 0.0;				//	Distance from player to docking port
-
-		//	Used to compute player's auto target
-
-		bool bNeedsAutoTarget = false;				//	TRUE if player's weapon needs an autotarget
-		bool bPlayerTargetOutOfRange = false;		//	TRUE if player's current target is unreachable
-		int iPlayerPerception = 0;					//	Player's perception
-
-		CSpaceObject *pPlayerTarget = NULL;			//	Current player target (may be NULL)
-		CSpaceObject *pTargetObj = NULL;			//	If non-null, nearest possible target for player
-		Metric rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
-		int iMinFireArc = 0;						//	Fire arc of primary weapon
-		int iMaxFireArc = 0;
-
-		//	Misc flags
-
-		bool bGravityWarning = false;				//	Player in a dangerous gravity field
-		bool bHasShipBarriers = false;				//	TRUE if the system has ship barriers (e.g., Arena)
-		bool bHasGravity = false;					//	TRUE if the system has gravity
-
-	private:
-
-		//	About the object being updated
-
-		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
-
-		//	Cached computed values
-
-		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
-		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
 	};
 
 //	Utility classes

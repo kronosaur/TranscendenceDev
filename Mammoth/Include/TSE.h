@@ -159,172 +159,13 @@ extern CUniverse *g_pUniverse;
 #include "TSELanguage.h"
 #include "TSEDesignDefs.h"
 #include "TSEItemDefs.h"
+#include "TSEResourceDb.h"
 #include "TSEDesign.h"
 #include "TSEStorage.h"
 #include "TSEMultiverse.h"
 #include "TSEPaintUtil.h"
 #include "TSESystem.h"
 #include "TSEDockScreenSession.h"
-
-//	CResourceDb
-
-class CResourceDb
-	{
-	public:
-		CResourceDb (const CString &sDefFilespec, bool bExtension = false);
-		~CResourceDb (void);
-
-		void ComputeFileDigest (CIntegerIP *retDigest);
-		IXMLParserController *GetEntities (void) const { return m_pEntities; }
-		IXMLParserController *GetEntitiesHandoff (bool *retbFree) { IXMLParserController *pEntities = m_pEntities; *retbFree = m_bFreeEntities; m_pEntities = NULL; m_bFreeEntities = false; return pEntities; }
-		const CString &GetFilespec (void) const { return m_sFilespec; }
-		CString GetRootTag (void);
-		bool ImageExists (const CString &sFolder, const CString &sFilename);
-		bool IsTDB (void) const { return (m_pDb != NULL); }
-		bool IsUsingExternalGameFile (void) const { return !m_bGameFileInDb; }
-		bool IsUsingExternalResources (void) const { return !m_bResourcesInDb; }
-		ALERROR LoadEmbeddedGameFile (const CString &sFilename, CXMLElement **retpData, IXMLParserController *pResolver, CExternalEntityTable *ioEntityTable, CString *retsError);
-		ALERROR LoadEntities (CString *retsError, CExternalEntityTable **retEntities = NULL);
-		ALERROR LoadGameFile (CXMLElement **retpData, IXMLParserController *pEntities, CString *retsError, CExternalEntityTable *ioEntityTable = NULL);
-		ALERROR LoadGameFileStub (CXMLElement **retpData, CExternalEntityTable *ioEntityTable, CString *retsError);
-		ALERROR LoadImage (const CString &sFolder, const CString &sFilename, HBITMAP *rethImage, EBitmapTypes *retiImageType = NULL);
-		ALERROR LoadImageFile (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult = false, CString *retsError = NULL);
-		ALERROR LoadMaskFile (const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, CString *retsError = NULL);
-		ALERROR LoadModule (const CString &sFolder, const CString &sFilename, CXMLElement **retpData, CString *retsError);
-		ALERROR LoadModuleEntities (const CString &sFolder, const CString &sFilename, CExternalEntityTable **retpEntities, CString *retsError);
-		ALERROR LoadSound (CSoundMgr &SoundMgr, const CString &sFolder, const CString &sFilename, int *retiChannel);
-		ALERROR Open (DWORD dwFlags, CString *retsError);
-		CString ResolveFilespec (const CString &sFolder, const CString &sFilename) const;
-		void SetDebugMode (bool bValue) { m_bDebugMode = bValue; }
-		void SetEntities (IXMLParserController *pEntities, bool bFree = false);
-
-		CString GetResourceFilespec (int iIndex);
-		int GetResourceCount (void);
-		int GetVersion (void) { return m_iVersion; }
-		ALERROR ExtractMain (CString *retsData);
-		ALERROR ExtractResource (const CString sFilespec, CString *retsData);
-
-	private:
-		enum EFlags
-			{
-			//	SResourceEntry flags
-			FLAG_COMPRESS_ZLIB =		0x00000001,
-			};
-
-		struct SResourceEntry
-			{
-			CString sFilename;
-			int iEntryID;
-			DWORD dwFlags;
-			};
-
-		ALERROR OpenDb (void);
-		ALERROR LoadImageFileAndMask (const CString &sImageFilename, const CString &sMaskFilename, TUniquePtr<CG32bitImage> &pImage, bool bPreMult = false, CString *retsError = NULL);
-		ALERROR LoadPNGFile (const CString &sImageFilename, TUniquePtr<CG32bitImage> &pImage, CString *retsError = NULL);
-		ALERROR ReadEntry (const CString &sFilespec, CString *retsData);
-
-		int m_iVersion;
-		bool m_bGameFileInDb;
-		bool m_bResourcesInDb;
-		bool m_bDebugMode;
-
-		//	If we're just using the file system
-		CString m_sFilespec;
-		CString m_sRoot;
-		CString m_sGameFile;
-
-		//	If we're using a TDB
-		CDataFile *m_pDb;
-		TSortMap<CString, SResourceEntry> m_ResourceMap;
-		int m_iGameFile;
-
-		IXMLParserController *m_pEntities;			//	Entities to use in parsing
-		bool m_bFreeEntities;						//	If TRUE, we own m_pEntities;
-	};
-
-class CAStarPathFinder
-	{
-	public:
-		CAStarPathFinder (void);
-		~CAStarPathFinder (void);
-
-		void AddObstacle (const CVector &vUR, const CVector &vLL);
-		int FindPath (const CVector &vStart, const CVector &vEnd, CVector **retPathList, bool bTryReverse = true);
-
-	private:
-		struct SObstacle
-			{
-			CVector vUR;
-			CVector vLL;
-			};
-
-		struct SNode
-			{
-			int x;
-			int y;
-
-			CVector vPos;
-			int iCostFromStart;
-			int iHeuristic;
-			int iTotalCost;
-
-			SNode *pParent;
-			SNode *pPrev;
-			SNode *pNext;
-			};
-
-		typedef SNode *SNodeRoot;
-
-		void AddToClosedList (SNode *pNew);
-		void AddToOpenList (SNode *pNew);
-		int CalcHeuristic (const CVector &vPos, const CVector &vDest);
-		void CollapsePath (TArray<SNode *> &Path, int iStart, int iEnd);
-		void CreateInOpenList (const CVector &vEnd, SNode *pCurrent, int xDir, int yDir);
-		bool IsInClosedList (int x, int y);
-		bool IsPathClear (const CVector &vStart, const CVector &vEnd);
-		bool IsPointClear (const CVector &vPos);
-		bool LineIntersectsRect (const CVector &vStart, const CVector &vEnd, const CVector &vUR, const CVector &vLL);
-		int OptimizePath (const CVector &vEnd, SNode *pFinal, CVector **retPathList);
-		void Reset (void);
-
-		void AddToList (SNodeRoot &pRoot, SNode *pNew, SNode *pAddAfter = NULL);
-		void DeleteFromList (SNodeRoot &pRoot, SNode *pDelete);
-		void DeleteList (SNodeRoot &pRoot);
-
-		TArray<SObstacle> m_Obstacles;
-		SNodeRoot m_pOpenList;
-		SNodeRoot m_pClosedList;
-		CTileMap *m_pClosedMap;
-
-#ifdef DEBUG_ASTAR_PERF
-		int m_iCallsToIsPathClear;
-		int m_iClosedListCount;
-		int m_iOpenListCount;
-#endif
-	};
-
-//	Paint Utilities
-
-void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos);
-void CreateBlasterShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
-void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
-void DrawLightning (CG32bitImage &Dest,
-					int xFrom, int yFrom,
-					int xTo, int yTo,
-					CG32bitPixel rgbColor,
-					int iPoints,
-					Metric rChaos);
-void DrawLightning (CG32bitImage &Dest,
-					int xFrom, int yFrom,
-					int xTo, int yTo,
-					CG32bitPixel rgbFrom,
-					CG32bitPixel rgbTo,
-					Metric rChaos);
-void DrawParticle (CG32bitImage &Dest,
-				   int x, int y,
-				   CG32bitPixel rgbColor,
-				   int iSize,
-				   DWORD byOpacity);
 
 //	Helper functions
 
@@ -334,7 +175,6 @@ int NLCompare (TArray<CString> &Input, TArray<CString> &Pattern);
 void NLSplit (const CString &sPhrase, TArray<CString> *retArray);
 
 void ReportCrashObj (CString *retsMessage, CSpaceObject *pCrashObj = NULL);
-
 
 //	Miscellaneous Structures & Classes
 
@@ -404,227 +244,59 @@ class CAttackDetector
 		int m_iLastHit;
 	};
 
-//	Item Event Handler
+//	CSpaceObject Definitions ---------------------------------------------------
 
-enum EItemEventDispatchTypes
-	{
-	dispatchFireEvent,
-	dispatchCheckEnhancementLifetime,
-	};
+#include "TSESpaceObjectUtil.h"
+#include "TSEOverlays.h"
 
-class CItemEventDispatcher
+struct SUpdateCtx
 	{
 	public:
-		CItemEventDispatcher (void);
-		~CItemEventDispatcher (void);
+		int GetLightIntensity (CSpaceObject *pObj) const;
+		bool IsTimeStopped (void) const { return m_bTimeStopped; }
+		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
 
-		void FireEvent (CSpaceObject *pSource, ECodeChainEvents iEvent)	{ if (m_pFirstEntry) FireEventFull(pSource, iEvent); }
-		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
-		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
-		void FireUpdateEvents (CSpaceObject *pSource) { if (m_pFirstEntry) FireUpdateEventsFull(pSource); }
-		void Init (CSpaceObject *pSource);
+		CSystem *pSystem = NULL;					//	Current system
+		CSpaceObject *pPlayer = NULL;				//	The player
+		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
+		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
 
-	private:
-		struct SEntry
-			{
-			EItemEventDispatchTypes iType;				//	Type of entry
-			CItem *pItem;								//	Pointer to item
+		//	Used to compute nearest docking port to player
 
-			ECodeChainEvents iEvent;					//	Event (if dispatchFireEvent)
-			SEventHandlerDesc Event;					//	Code (if dispatchFireEvent)
+		CSpaceObject *pDockingObj = NULL;			//	If non-null, nearest object to dock with
+		int iDockingPort = -1;						//	Nearest docking port
+		CVector vDockingPort;						//	Position of docking port (absolute)
+		Metric rDockingPortDist2 = 0.0;				//	Distance from player to docking port
 
-			DWORD dwEnhancementID;						//	ID of enhancement (if relevant)
+		//	Used to compute player's auto target
 
-			SEntry *pNext;
-			};
+		bool bNeedsAutoTarget = false;				//	TRUE if player's weapon needs an autotarget
+		bool bPlayerTargetOutOfRange = false;		//	TRUE if player's current target is unreachable
+		int iPlayerPerception = 0;					//	Player's perception
 
-		void AddEntry (const CString &sEvent, EItemEventDispatchTypes iType, const SEventHandlerDesc &Event, CItem *pItem, DWORD dwEnhancementID);
-		SEntry *AddEntry (void);
-		void FireEventFull (CSpaceObject *pSource, ECodeChainEvents iEvent);
-		void FireUpdateEventsFull (CSpaceObject *pSource);
-		void Refresh (CSpaceObject *pSource, SEntry *pFirst);
-		void RemoveAll (void);
+		CSpaceObject *pPlayerTarget = NULL;			//	Current player target (may be NULL)
+		CSpaceObject *pTargetObj = NULL;			//	If non-null, nearest possible target for player
+		Metric rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
+		int iMinFireArc = 0;						//	Fire arc of primary weapon
+		int iMaxFireArc = 0;
 
-		SEntry *m_pFirstEntry;
-	};
+		//	Misc flags
 
-//	Ship classes and types
-
-class COverlay
-	{
-	public:
-		struct SImpactDesc
-			{
-			CConditionSet Conditions;			//	Set of conditions imparted
-			Metric rDrag = 1.0;					//	Drag coefficient (1.0 = no drag)
-			};
-
-		COverlay (void);
-		~COverlay (void);
-		static void CreateFromType (COverlayType &Type, 
-									CSpaceObject &Source,
-									int iPosAngle,
-									int iPosRadius,
-									int iRotation,
-									int iPosZ,
-									int iLifeLeft, 
-									COverlay **retpField);
-
-		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
-		void Destroy (CSpaceObject *pSource);
-		bool Disarms (CSpaceObject *pSource) const { return m_pType->Disarms(); }
-		void FireCustomEvent (CSpaceObject *pSource, const CString &sEvent, ICCItem *pData, ICCItem **retpResult);
-		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector &Selector) const;
-		void FireOnCreate (CSpaceObject *pSource);
-		bool FireOnDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		void FireOnDestroy (CSpaceObject *pSource);
-		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
-		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
-		CConditionSet GetConditions (CSpaceObject *pSource) const;
-		int GetCounter (void) const { return m_iCounter; }
-		ICCItemPtr GetData (const CString &sAttrib) const { return m_Data.GetDataAsItem(sAttrib); }
-		int GetDevice (void) const { return m_iDevice; }
-		Metric GetDrag (CSpaceObject *pSource) const { return m_pType->GetDrag(); }
-		DWORD GetID (void) const { return m_dwID; }
-		bool GetImpact (CSpaceObject *pSource, SImpactDesc &Impact) const;
-		const CString &GetMessage (void) const { return m_sMessage; }
-		COverlay *GetNext (void) const { return m_pNext; }
-		CVector GetPos (CSpaceObject *pSource) const;
-		ICCItemPtr GetProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty) const;
-		int GetRotation (void) const { return m_iRotation; }
-		COverlayType *GetType(void) const { return m_pType; }
-        ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
-		bool IncProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
-		bool IsDestroyed (void) const { return (m_fDestroyed ? true : false); }
-		bool IsFading (void) const { return (m_fFading ? true : false); }
-		bool IsShieldOverlay (void) const { return m_pType->IsShieldOverlay(); }
-		bool IsShipScreenDisabled (void) const { return m_pType->IsShipScreenDisabled(); }
-		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y);
-		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
-		bool Paralyzes (CSpaceObject *pSource) const { return m_pType->Paralyzes(); }
-		void ReadFromStream (SLoadCtx &Ctx);
-		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
-		void SetDevice (int iDev) { m_iDevice = iDev; }
-		bool SetEffectProperty (const CString &sProperty, ICCItem *pValue);
-		void SetNext (COverlay *pNext) { m_pNext = pNext; }
-		void SetPos (CSpaceObject *pSource, const CVector &vPos);
-		bool SetProperty (CSpaceObject *pSource, const CString &sName, ICCItem *pValue);
-		void SetRotation (int iRotation) { m_iRotation = iRotation; }
-		bool Spins (CSpaceObject *pSource) const { return m_pType->Spins(); }
-		bool StopsTime (const CSpaceObject *pSource) const { return m_pType->StopsTime(); }
-		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
-		void WriteToStream (IWriteStream *pStream);
-
-		static void PaintCounterFlag (CG32bitImage &Dest, int x, int y, const CString &sCounter, const CString &sLabel, CG32bitPixel rgbColor, SViewportPaintCtx &Ctx);
+		bool bGravityWarning = false;				//	Player in a dangerous gravity field
+		bool bHasShipBarriers = false;				//	TRUE if the system has ship barriers (e.g., Arena)
+		bool bHasGravity = false;					//	TRUE if the system has gravity
 
 	private:
-		void CalcOffset (int iScale, int iRotation, int *retxOffset, int *retyOffset, int *retiRotationOrigin = NULL) const;
-		void FireOnUpdate (CSpaceObject *pSource);
-		void CreateHitEffect (CSpaceObject *pSource, SDamageCtx &Ctx);
-		bool FindCustomProperty (CCodeChainCtx &CCCtx, CSpaceObject &SourceObj, const CString &sProperty, ICCItemPtr &pValue) const;
-		CUniverse &GetUniverse (void) const { return (m_pType ? m_pType->GetUniverse() : *g_pUniverse); }
-		bool IncCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
-		bool SetCustomProperty (CSpaceObject &SourceObj, const CString &sProperty, ICCItem *pValue);
 
-		COverlayType *m_pType;					//	Type of field
-		DWORD m_dwID;							//	Universal ID
-		int m_iTick;							//	Overlay tick
-		int m_iLifeLeft;						//	Ticks left of energy field life (-1 = permanent)
-		int m_iDevice;							//	Index of device that we're associated with (-1 if not a device)
+		//	About the object being updated
 
-		int m_iPosAngle;						//	Position relative to source (degrees)
-		int m_iPosRadius;						//	Position relative to source (pixels)
-		int m_iRotation;						//	Overlay orientation (degrees)
-		int m_iPosZ;							//  Overlay height (pixels)
+		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
 
-		CAttributeDataBlock m_Data;				//	data
-		int m_iCounter;							//	Arbitrary counter
-		CString m_sMessage;						//	Message text
+		//	Cached computed values
 
-		IEffectPainter *m_pPainter;				//	Painter
-
-		int m_iPaintHit;						//	If >0 then we paint a hit
-		int m_iPaintHitTick;					//	Tick for hit painter
-		IEffectPainter *m_pHitPainter;			//	Hit painter
-
-		DWORD m_fDestroyed:1;					//	TRUE if field should be destroyed
-		DWORD m_fFading:1;						//	TRUE if we're destroyed, but fading the effect
-
-		COverlay *m_pNext;					//	Next energy field associated with this object
+		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
+		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
 	};
-
-class COverlayList
-	{
-	public:
-		COverlayList (void);
-		~COverlayList (void);
-
-		void AddField (CSpaceObject &Source, 
-					   COverlayType &Type,
-					   int iPosAngle,
-					   int iPosRadius,
-					   int iRotation,
-					   int iPosZ,
-					   int iLifeLeft, 
-					   DWORD *retdwID = NULL);
-		bool AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		bool AbsorbsWeaponFire (CInstalledDevice *pDevice);
-		void AccumulateBounds (CSpaceObject *pSource, int iScale, int iRotation, RECT *ioBounds);
-		bool Damage (CSpaceObject *pSource, SDamageCtx &Ctx);
-		CString DebugCrashInfo (void) const;
-		bool FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector = NULL) const;
-		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
-		void FireOnObjDocked (CSpaceObject *pSource, CSpaceObject *pShip) const;
-		const CConditionSet &GetConditions (void) const { return m_Conditions; }
-		int GetCountOfType (COverlayType *pType);
-		ICCItemPtr GetData (DWORD dwID, const CString &sAttrib) const;
-		bool GetImpact (CSpaceObject *pSource, COverlay::SImpactDesc &Impact) const;
-		void GetList (TArray<COverlay *> *retList);
-		void GetListOfCommandPaneCounters (TArray<COverlay *> *retList);
-		COverlay *GetOverlay (DWORD dwID) const;
-		CVector GetPos (CSpaceObject *pSource, DWORD dwID);
-		ICCItem *GetProperty (CCodeChainCtx *pCCCtx, CSpaceObject *pSource, DWORD dwID, const CString &sName) const;
-		int GetRotation (DWORD dwID);
-		COverlayType *GetType(DWORD dwID);
-		int GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSource);
-        ICCItemPtr IncData (DWORD dwID, const CString &sAttrib, ICCItem *pValue = NULL);
-		bool IncProperty (CSpaceObject &SourceObj, DWORD dwID, const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
-		bool IsEmpty (void) { return (m_pFirst == NULL); }
-		void OnNewSystem (CSpaceObject *pSource, CSystem *pSystem) { m_Conditions = CalcConditions(pSource); }
-		void Paint (CG32bitImage &Dest, int iScale, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintBackground (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
-		void PaintLRSAnnotations (const ViewportTransform &Trans, CG32bitImage &Dest, int x, int y);
-		void PaintMapAnnotations (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
-		void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pSource);
-		void RemoveField (CSpaceObject *pSource, DWORD dwID);
-		void ScrapeHarmfulOverlays (CSpaceObject *pSource, int iMaxRemoved = 1);
-		void SetData (DWORD dwID, const CString &sAttrib, ICCItem *pData);
-		bool SetEffectProperty (DWORD dwID, const CString &sProperty, ICCItem *pValue);
-		void SetPos (CSpaceObject *pSource, DWORD dwID, const CVector &vPos);
-		bool SetProperty (CSpaceObject *pSource, DWORD dwID, const CString &sName, ICCItem *pValue);
-		void SetRotation (DWORD dwID, int iRotation);
-		void Update (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
-		void UpdateTimeStopped (CSpaceObject *pSource, int iScale, int iRotation, bool *retbModified = NULL);
-		void WriteToStream (IWriteStream *pStream);
-
-	private:
-		CConditionSet CalcConditions (CSpaceObject *pSource) const;
-		bool DestroyDeleted (void);
-		COverlay *FindField (DWORD dwID);
-		void OnConditionsChanged (CSpaceObject *pSource);
-
-		COverlay *m_pFirst;
-		CConditionSet m_Conditions;			//	Imparted conditions (cached from actual overlays)
-	};
-
-//	Space Objects
-
-#define MAX_COMMS_CAPS					25
 
 //	CSpaceObject ---------------------------------------------------------------
 //

@@ -1,6 +1,7 @@
 //	CNavigationPath.cpp
 //
 //	CNavigationPath class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 

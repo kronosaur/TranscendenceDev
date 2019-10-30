@@ -190,3 +190,26 @@ class CMapLabelArranger
 		static void SetLabelLeft (SLabelEntry &Entry, int cyChar);
 		static void SetLabelRight (SLabelEntry &Entry, int cyChar);
 	};
+
+//	Paint Utilities
+
+void ComputeLightningPoints (int iCount, CVector *pPoints, Metric rChaos);
+void CreateBlasterShape (int iAngle, int iLength, int iWidth, SPoint *Poly);
+void DrawItemTypeIcon (CG32bitImage &Dest, int x, int y, const CItemType *pType, int cxSize = 0, int cySize = 0, bool bGray = false);
+void DrawLightning (CG32bitImage &Dest,
+					int xFrom, int yFrom,
+					int xTo, int yTo,
+					CG32bitPixel rgbColor,
+					int iPoints,
+					Metric rChaos);
+void DrawLightning (CG32bitImage &Dest,
+					int xFrom, int yFrom,
+					int xTo, int yTo,
+					CG32bitPixel rgbFrom,
+					CG32bitPixel rgbTo,
+					Metric rChaos);
+void DrawParticle (CG32bitImage &Dest,
+				   int x, int y,
+				   CG32bitPixel rgbColor,
+				   int iSize,
+				   DWORD byOpacity);

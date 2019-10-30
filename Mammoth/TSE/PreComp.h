@@ -17,6 +17,10 @@
 #include "CrewAIImpl.h"
 #include "LegacyAIImpl.h"
 
+//	Systems
+
+#include "SystemImpl.h"
+
 //	Topology
 
 #include "TopologyDescImpl.h"
