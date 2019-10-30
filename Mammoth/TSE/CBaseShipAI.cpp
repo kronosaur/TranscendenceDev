@@ -933,7 +933,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
 	}
 
-bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
+bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //

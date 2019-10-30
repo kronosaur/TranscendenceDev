@@ -902,7 +902,7 @@ void CPlayerShipController::InsuranceClaim (void)
 	DEBUG_CATCH
 	}
 
-bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
+bool CPlayerShipController::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -2086,25 +2086,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Remember the AutoTarget. NOTE: We need to check again to see if the
-	//	target is destroyed because it could have gotten destroyed after it
-	//	was picked.
+	//	Remember the AutoTarget.
 
-	if (Ctx.pTargetObj && !Ctx.pTargetObj->IsDestroyed())
-		{
-		m_pAutoTarget = Ctx.pTargetObj;
-		if (Ctx.bNeedsAutoTarget)
-			m_bShowAutoTarget = true;
-		else
-			m_bShowAutoTarget = false;
-		}
-	else
-		{
-		m_pAutoTarget = NULL;
-		m_bShowAutoTarget = false;
-		}
-
-	m_bTargetOutOfRange = Ctx.bPlayerTargetOutOfRange;
+	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
+	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
+	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
 
 	//	Compute the AutoDock target.
 	//
@@ -2133,17 +2119,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Otherwise, if we are close to a port then we use that.
 
-	else if (Ctx.pDockingObj && !Ctx.pDockingObj->IsDestroyed())
+	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.AutoDock.GetDockObj()))
 		{
-		m_pAutoDock = Ctx.pDockingObj;
-		m_iAutoDockPort = Ctx.iDockingPort;
-		m_vAutoDockPort = Ctx.vDockingPort;
+		m_iAutoDockPort = Ctx.AutoDock.GetDockingPortIndex();
+		m_vAutoDockPort = Ctx.AutoDock.GetDockingPortPos();
 		}
-
-	//	Otherwise, nothing to dock with
-
-	else
-		m_pAutoDock = NULL;
 
 	//	Notify the game controller when we transition in/out of combat.
 	//

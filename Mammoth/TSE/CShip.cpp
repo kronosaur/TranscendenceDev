@@ -3132,7 +3132,7 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		}
 	}
 
-int CShip::GetPerception (void)
+int CShip::GetPerception (void) const
 
 //	GetPerception
 //
@@ -4010,7 +4010,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	InvalidateItemListState();
 	}
 
-bool CShip::IsAngryAt (CSpaceObject *pObj) const
+bool CShip::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //

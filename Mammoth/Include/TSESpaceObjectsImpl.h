@@ -537,7 +537,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
 		virtual bool IsIntangible (void) const override { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
 		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
@@ -1157,7 +1157,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual COverlayList *GetOverlays (void) override { return &m_Overlays; }
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
-		virtual int GetPerception (void) override;
+		virtual int GetPerception (void) const override;
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
 		virtual int GetRotationFrameIndex (void) const override { return m_Rotation.GetFrameIndex(); }
@@ -1180,7 +1180,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual void IncCounterValue(int iCounterValue) override { m_iCounterValue += iCounterValue; }
 		virtual bool IsAnchored (void) const override { return (GetDockedObj() != NULL) || IsManuallyAnchored(); }
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
 		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || IsInGate()); }
@@ -1541,7 +1541,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsActiveStargate (void) const override { return !m_sStargateDestNode.IsBlank() && m_fActive; }
 		virtual bool IsAnchored (void) const override { return (!m_pType->IsMobile() || IsManuallyAnchored()); }
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
 		virtual bool IsExplored (void) override { return m_fExplored; }
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
@@ -1635,7 +1635,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
 		void InitMapLabel (void);
-		bool IsBlacklisted (CSpaceObject *pObj = NULL) const;
+		bool IsBlacklisted (const CSpaceObject *pObj = NULL) const;
 		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
 		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);
 		EDamageResults OnDamageNormal (SDamageCtx &Ctx);

@@ -1073,27 +1073,10 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 		//	Otherwise, if the port is open, see if this is the nearest port to
 		//	the current player position.
 
-		else if (m_pPort[i].iStatus == psEmpty)
+		else if (pPlayer && m_pPort[i].iStatus == psEmpty)
 			{
-			if (pPlayer)
-				{
-				//	Compute the distance from the player to the port
-
-				CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
-				Metric rDist2 = (vPortPos - pPlayer->GetPos()).Length2();
-
-				//	If this is a better port, then replace the existing 
-				//	solution.
-
-				if (rDist2 <= rMaxDist2
-						&& (Ctx.pDockingObj == NULL || rDist2 < Ctx.rDockingPortDist2))
-					{
-					Ctx.pDockingObj = pOwner;
-					Ctx.iDockingPort = i;
-					Ctx.rDockingPortDist2 = rDist2;
-					Ctx.vDockingPort = vPortPos;
-					}
-				}
+			CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
+			Ctx.AutoDock.Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
 			}
 		}
 

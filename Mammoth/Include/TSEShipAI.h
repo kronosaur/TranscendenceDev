@@ -311,7 +311,7 @@ class IShipController
 
 		virtual bool GetThrust (void) = 0;
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles = false) { }
-		virtual bool IsAngryAt (CSpaceObject *pObj) const { return false; }
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsPlayerBlacklisted (void) const { return false; }
 		virtual bool IsPlayerWingman (void) const { return false; }

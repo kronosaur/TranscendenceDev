@@ -261,25 +261,9 @@ struct SUpdateCtx
 		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
 		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
 
-		//	Used to compute nearest docking port to player
-
-		CSpaceObject *pDockingObj = NULL;			//	If non-null, nearest object to dock with
-		int iDockingPort = -1;						//	Nearest docking port
-		CVector vDockingPort;						//	Position of docking port (absolute)
-		Metric rDockingPortDist2 = 0.0;				//	Distance from player to docking port
-
-		//	Used to compute player's auto target
-
-		bool bNeedsAutoTarget = false;				//	TRUE if player's weapon needs an autotarget
-		bool bPlayerTargetOutOfRange = false;		//	TRUE if player's current target is unreachable
-		int iPlayerPerception = 0;					//	Player's perception
-
-		CSpaceObject *pPlayerTarget = NULL;			//	Current player target (may be NULL)
-		CSpaceObject *pTargetObj = NULL;			//	If non-null, nearest possible target for player
-		Metric rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
-		int iMinFireArc = 0;						//	Fire arc of primary weapon
-		int iMaxFireArc = 0;
-
+		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
+		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
+		
 		//	Misc flags
 
 		bool bGravityWarning = false;				//	Player in a dangerous gravity field
@@ -698,7 +682,7 @@ class CSpaceObject
 		int GetDataInteger (const CString &sAttrib) const;
 		CString GetDesiredCommsKey (void) const;
 		int GetDestiny (void) const { return m_iDestiny; }
-		Metric GetDetectionRange (int iPerception) { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
+		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
 		int GetDetectionRangeIndex (int iPerception) const;
 		CSovereign::Disposition GetDispositionTowards (CSpaceObject *pObj);
@@ -1134,7 +1118,7 @@ class CSpaceObject
 		virtual Metric GetMaxWeaponRange (void) const { return 0.0; }
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
-		virtual int GetPerception (void) { return perceptNormal; }
+		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) { return -1; }
@@ -1145,7 +1129,7 @@ class CSpaceObject
 		virtual bool HasMapLabel (void) { return false; }
 		virtual void IncCounterValue(int iCounterValue) { }
 		virtual bool IsAngry (void) { return false; }
-		virtual bool IsAngryAt (CSpaceObject *pObj) const { return IsEnemy(pObj); }
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return IsEnemy(pObj); }
 		virtual bool IsIdentified (void) { return true; }
 		virtual bool IsMultiHull (void) { return false; }
 		virtual bool IsPlayer (void) const { return false; }
@@ -1345,7 +1329,6 @@ class CSpaceObject
 
 		void InitItemEvents (void) { m_ItemEvents.Init(this); m_fItemEventsValid = true; }
 		void UpdateEffects (void);
-		void UpdatePlayerTarget (SUpdateCtx &Ctx);
 
 		static CSpaceObject *CreateFromClassID (CUniverse &Universe, DWORD dwClass);
 

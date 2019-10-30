@@ -204,7 +204,7 @@ class CPlayerShipController : public IShipController
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles = false) override;
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_iManeuver = iManeuver; }

@@ -1,6 +1,7 @@
 //	CSpaceObject.cpp
 //
 //	CSpaceObject class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -7589,7 +7590,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
-		UpdatePlayerTarget(Ctx);
+		Ctx.AutoTarget.Update(*Ctx.pPlayer, *this);
 		}
 
 	//	See if we have a dock screen. We only check every 20 ticks or so, so this
@@ -7687,99 +7688,6 @@ void CSpaceObject::UpdateExtended (const CTimeSpan &ExtraTime)
 	//	Let subclasses update
 
 	OnUpdateExtended(ExtraTime);
-	}
-
-void CSpaceObject::UpdatePlayerTarget (SUpdateCtx &Ctx)
-
-//	UpdatePlayerTarget
-//
-//	Called during update to see if this could be the player's best target.
-
-	{
-	bool bIsAngryAtPlayer = IsAngryAt(Ctx.pPlayer);
-	CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
-
-	//	If this is the player's current target, then see if we can actually
-	//	hit it with any of our weapons.
-
-	if (Ctx.pPlayerTarget == this)
-		{
-		Metric rDist;
-		int iAngle = VectorToPolar(vDist, &rDist);
-
-		//	If we're out of range of both the primary and the launcher, then 
-		//	we remember that fact.
-
-		if (rDist > Ctx.pPlayer->GetMaxWeaponRange())
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	If we have a fire arc and we're outside the arc, then we're not in
-		//	range either.
-
-		else if (Ctx.iMinFireArc != Ctx.iMaxFireArc
-				&& !AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc))
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	If we're outside detection range, then we can't keep the target
-
-		else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	Otherwise, if this object is angry at the player, then it is a
-		//	valid auto-target
-
-		else if (bIsAngryAtPlayer && CanAttack())
-			{
-			Metric rDist2 = rDist * rDist;
-			if (rDist2 < Ctx.rTargetDist2)
-				{
-				Ctx.pTargetObj = this;
-				Ctx.rTargetDist2 = rDist2;
-				}
-			}
-		}
-
-	//	If the object cannot attack, then it is never an auto-target.
-
-	else if (!CanAttack())
-		{ }
-
-	//	If this object is not angry at us, then it can never be an auto-
-	//	target.
-
-	else if (!bIsAngryAtPlayer)
-		{ }
-
-	//	If the player's weapons has an arc of fire, then limit ourselves to
-	//	targets in the arc.
-
-	else if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
-		{
-		Metric rDist;
-		int iAngle = VectorToPolar(vDist, &rDist);
-		Metric rDist2 = rDist * rDist;
-
-		if (rDist2 < Ctx.rTargetDist2
-				&& AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc)
-				&& rDist <= GetDetectionRange(Ctx.iPlayerPerception))
-			{
-			Ctx.pTargetObj = this;
-			Ctx.rTargetDist2 = rDist2;
-			}
-		}
-
-	//	Otherwise, just find the nearest target
-
-	else
-		{
-		Metric rDist2 = vDist.Length2();
-		if (rDist2 < Ctx.rTargetDist2
-				&& rDist2 <= GetDetectionRange2(Ctx.iPlayerPerception))
-			{
-			Ctx.pTargetObj = this;
-			Ctx.rTargetDist2 = rDist2;
-			}
-		}
 	}
 
 bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)

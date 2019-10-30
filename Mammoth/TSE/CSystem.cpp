@@ -11,7 +11,6 @@
 
 #define LEVEL_ENCOUNTER_CHANCE			10
 
-const Metric MAX_AUTO_TARGET_DISTANCE =			30.0 * LIGHT_SECOND;
 const Metric MAX_ENCOUNTER_DIST	=				30.0 * LIGHT_MINUTE;
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
 
@@ -346,55 +345,6 @@ Metric CSystem::CalcApparentSpeedAdj (Metric rSpeed)
 
 	Metric rAdj = (1.0 / ((1.0 / rSpeedFrac) - 1.0)) + 1.0;
 	return Min(MAX_ADJ, rAdj);
-	}
-
-void CSystem::CalcAutoTarget (SUpdateCtx &Ctx)
-
-//	CalcAutoTarget
-//
-//	Initializes various fields in the context to figure out what the player's
-//	auto-target is.
-
-	{
-	if (Ctx.pPlayer == NULL)
-		return;
-
-	Ctx.pPlayerTarget = Ctx.pPlayer->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
-
-	//	Check to see if the primary weapon requires autotargetting
-
-	CInstalledDevice *pWeapon = Ctx.pPlayer->GetNamedDevice(devPrimaryWeapon);
-	if (pWeapon && pWeapon->IsEnabled())
-		{
-		CItemCtx ItemCtx(Ctx.pPlayer, pWeapon);
-		Ctx.bNeedsAutoTarget = pWeapon->GetClass()->NeedsAutoTarget(ItemCtx, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
-		}
-
-	//	If the primary does not need it, check the missile launcher
-
-	CInstalledDevice *pLauncher;
-	if ((pLauncher = Ctx.pPlayer->GetNamedDevice(devMissileWeapon))
-		&& pLauncher->IsEnabled())
-		{
-		CItemCtx ItemCtx(Ctx.pPlayer, pLauncher);
-		int iLauncherMinFireArc, iLauncherMaxFireArc;
-		if (pLauncher->GetClass()->NeedsAutoTarget(ItemCtx, &iLauncherMinFireArc, &iLauncherMaxFireArc))
-			{
-			if (Ctx.bNeedsAutoTarget)
-				CGeometry::CombineArcs(Ctx.iMinFireArc, Ctx.iMaxFireArc, iLauncherMinFireArc, iLauncherMaxFireArc, &Ctx.iMinFireArc, &Ctx.iMaxFireArc);
-			else
-				{
-				Ctx.bNeedsAutoTarget = true;
-				Ctx.iMinFireArc = iLauncherMinFireArc;
-				Ctx.iMaxFireArc = iLauncherMaxFireArc;
-				}
-			}
-		}
-
-	//	Set up perception and max target dist
-
-	Ctx.iPlayerPerception = Ctx.pPlayer->GetPerception();
-	Ctx.rTargetDist2 = MAX_AUTO_TARGET_DISTANCE * MAX_AUTO_TARGET_DISTANCE;
 	}
 
 int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar, const CG8bitSparseImage **retpVolumetricMask)
@@ -4604,7 +4554,8 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 	//	Initialize the player weapon context so that we can select the auto-
 	//	target.
 
-	CalcAutoTarget(Ctx);
+	if (Ctx.pPlayer)
+		Ctx.AutoTarget.Init(*Ctx.pPlayer);
 
 	//	Add all objects to the grid so that we can do faster
 	//	hit tests

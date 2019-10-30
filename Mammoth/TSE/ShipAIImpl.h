@@ -340,7 +340,7 @@ class CBaseShipAI : public IShipController
 		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles = false) override;
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
 		virtual void OnAttacked (CSpaceObject *pAttacker, const SDamageCtx &Damage) override;

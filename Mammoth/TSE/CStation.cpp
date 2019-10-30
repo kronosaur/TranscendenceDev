@@ -2000,7 +2000,7 @@ void CStation::InitMapLabel (void)
 		}
 	}
 
-bool CStation::IsBlacklisted (CSpaceObject *pObj) const
+bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
 
 //	IsBlacklisted
 //

@@ -1345,5 +1345,11 @@
     <ClCompile Include="DockSessionProperties.cpp">
       <Filter>Source Files\Dock Screens</Filter>
     </ClCompile>
+    <ClCompile Include="CAutoTargetCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoDockCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

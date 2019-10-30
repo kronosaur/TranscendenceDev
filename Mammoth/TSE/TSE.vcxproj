@@ -340,6 +340,8 @@
     <ClCompile Include="CAscendedObjectList.cpp" />
     <ClCompile Include="CAttackOrder.cpp" />
     <ClCompile Include="CAttackStationOrder.cpp" />
+    <ClCompile Include="CAutoDockCalc.cpp" />
+    <ClCompile Include="CAutoTargetCalc.cpp" />
     <ClCompile Include="CCargoDesc.cpp" />
     <ClCompile Include="CCircleRadiusDisruptor.cpp" />
     <ClCompile Include="CCommunicationsHandler.cpp">
