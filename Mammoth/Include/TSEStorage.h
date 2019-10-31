@@ -41,7 +41,7 @@ class CGameFile
 		CString GetCreateVersion (DWORD dwFlags = FLAG_VERSION_STRING) const;
 
 		CString GetEpitaph (void) const { return CString((char *)m_Header.szEpitaph); }
-		CString GetFilespec (void) const { return m_pFile->GetFilename(); }
+		CString GetFilespec (void) const { return (IsOpen() ? m_pFile->GetFilename() : NULL_STR); }
 		CString GetGameID (void) { return CString(m_Header.szGameID); }
 		GenomeTypes GetPlayerGenome (void) const { return (GenomeTypes)m_Header.dwGenome; }
 		CString GetPlayerName (void) const;
