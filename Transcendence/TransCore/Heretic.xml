@@ -462,7 +462,7 @@
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
 				 
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 			definiteArticle=	"true"
 			>
 
@@ -567,7 +567,7 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itDiamondLatticeArmor;"
@@ -731,7 +731,7 @@
 			inherit=			"&unidCommonText;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightIthaliumArmor;"
@@ -866,7 +866,7 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			multiHull=			"true"
 			armorID=			"&itQuadroCarbideArmor;"
@@ -984,7 +984,7 @@
 
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockScreen=			"Main"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			armorID=			"&itHeavyTharsisPlate;"
 			hitPoints=			"610"

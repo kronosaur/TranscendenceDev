@@ -22,7 +22,7 @@
 			regen=              "20"
 			shipRegen=			"20"
 
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

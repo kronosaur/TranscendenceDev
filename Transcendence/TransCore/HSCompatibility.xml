@@ -1384,7 +1384,7 @@
 			dockScreen=			"Dispatch"
 			abandonedScreen=	"Destroyed"
 			dockingPorts=		"10"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
             level=              "4"
 			multiHull=			"true"

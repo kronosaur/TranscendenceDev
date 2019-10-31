@@ -21,7 +21,6 @@
 			regen=				"2"
 			multiHull=			"Nil"
 				 
-			noBlacklist=		"true"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -300,7 +299,12 @@
 			</OnCreate>
 
 			<OnAcceptedUndock>
-				(msnAddTimerEvent gSource (random 120 270) 'OnNextWave)
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(msnAddTimerEvent gSource (random 120 270) 'OnNextWave)
+					(objSetProperty ownerObj 'ignoreFriendlyFire True)
+					)
 			</OnAcceptedUndock>
 
 			<OnSetPlayerTarget>
@@ -412,6 +416,14 @@
 							)
 					)
 			</OnObjDestroyed>
+
+			<OnCompleted>
+				(block (
+					(ownerObj (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
+					(objSetProperty ownerObj 'ignoreFriendlyFire Nil)
+					)
+			</OnCompleted>
 
 			<OnReward>
 				(block (

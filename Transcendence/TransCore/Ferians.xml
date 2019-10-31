@@ -105,9 +105,9 @@
             regen=              "10"
 			multiHull=			"true"
 				 
+			ignoreFriendlyFire=	"true"
 			explosionType=		"&vtThermoExplosion1;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
-			noBlacklist=		"true"
 			>
 
 		<!-- Encounter Info -->

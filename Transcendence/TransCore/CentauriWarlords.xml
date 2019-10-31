@@ -33,7 +33,7 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
-			noBlacklist=		"true"
+			ignoreFriendlyFire=	"true"
 
 			level=				"4"
 			multiHull=			"true"
