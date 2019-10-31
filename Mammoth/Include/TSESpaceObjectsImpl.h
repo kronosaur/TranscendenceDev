@@ -228,7 +228,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 		//	at least 1,000 light-minutes. [But if we ever need to scale beyond 
 		//	that, then we should set the origin to the original shot position.]
 
-		inline const CVector &GetOrigin (void) const { return NullVector; }
+		const CVector &GetOrigin (void) const { return NullVector; }
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
 		TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Stack of enhancements
@@ -655,7 +655,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		//	at least 1,000 light-minutes. [But if we ever need to scale beyond 
 		//	that, then we should set the origin to the original shot position.]
 
-		inline const CVector &GetOrigin (void) const { return NullVector; }
+		const CVector &GetOrigin (void) const { return NullVector; }
 		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor
@@ -825,7 +825,7 @@ class CParticleEffect : public TSpaceObjectImpl<OBJID_CPARTICLEEFFECT>
 
 		struct SParticle
 			{
-			inline bool IsValid (void) { return iLifeLeft != -1; }
+			bool IsValid (void) { return iLifeLeft != -1; }
 
 			int iDestiny;
 			int iLifeLeft;
@@ -969,13 +969,13 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 										SShipGeneratorCtx *pCtx,
 										CShip **retpShip);
 		//	Orders
-		inline void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
-		inline IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
-		inline DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
+		void CancelCurrentOrder (void) { m_pController->CancelCurrentOrder(); }
+		IShipController::OrderTypes GetCurrentOrder (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) const { return m_pController->GetCurrentOrderEx(retpTarget, retData); }
+		DWORD GetCurrentOrderData (void) { return m_pController->GetCurrentOrderData(); }
 
 		//	Armor methods
-		inline CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
-		inline int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
+		CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
+		int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
@@ -988,9 +988,9 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsMultiHull (void) override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
-		inline bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
-		inline bool IsShipSection (void) const { return m_fShipCompartment; }
-		inline bool RepairInterior (int iRepairHP) { return m_Interior.RepairHitPoints(this, m_pClass->GetInteriorDesc(), iRepairHP); }
+		bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
+		bool IsShipSection (void) const { return m_fShipCompartment; }
+		bool RepairInterior (int iRepairHP) { return m_Interior.RepairHitPoints(this, m_pClass->GetInteriorDesc(), iRepairHP); }
 		void SetAsShipSection (CShip *pMain);
 
 		//	Device methods
@@ -1030,59 +1030,59 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		//	Settings
 		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
-		inline bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
+		bool HasAutopilot (void) { return (GetAbility(ablAutopilot) == ablInstalled); }
 
-		inline bool HasManualLeaveWreck (void) const { return (m_fAlwaysLeaveWreck ? true : false); }
+		bool HasManualLeaveWreck (void) const { return (m_fAlwaysLeaveWreck ? true : false); }
 
-		inline bool IsInGate (void) const { return m_iExitGateTimer > 0; }
+		bool IsInGate (void) const { return m_iExitGateTimer > 0; }
 		void SetInGate (CSpaceObject *pGate, int iTickCount);
 
-		inline bool CanTargetFriendlies (void) const { return (GetAbility(ablFriendlyFireLock) != ablInstalled); }
-		inline bool HasTargetingComputer (void) const { return (GetAbility(ablTargetingSystem) == ablInstalled); }
+		bool CanTargetFriendlies (void) const { return (GetAbility(ablFriendlyFireLock) != ablInstalled); }
+		bool HasTargetingComputer (void) const { return (GetAbility(ablTargetingSystem) == ablInstalled); }
 
-		inline void ClearSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablRemove, -1, 0); }
-		inline bool IsSRSEnhanced (void) { return (GetAbility(ablExtendedScanner) == ablInstalled); }
-		inline void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
+		void ClearSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablRemove, -1, 0); }
+		bool IsSRSEnhanced (void) { return (GetAbility(ablExtendedScanner) == ablInstalled); }
+		void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
 
 		//	Reactor methods
-		inline Metric GetFuelLeft (void) { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
+		Metric GetFuelLeft (void) { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
 		Metric GetMaxFuel (void) const;
-		inline const CReactorDesc &GetReactorDesc (void) const { return m_Perf.GetReactorDesc(); }
+		const CReactorDesc &GetReactorDesc (void) const { return m_Perf.GetReactorDesc(); }
 		void GetReactorStats (SReactorStats &Stats) const;
 		void TrackFuel (bool bTrack = true);
-		inline void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
+		void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
 		int GetPowerConsumption (void);
 		bool IsFuelCompatible (const CItem &Item);
 
 		//	Drive methods
-		inline int Angle2Direction (int iAngle) const { return m_pClass->Angle2Direction(iAngle); }
-		inline int AlignToRotationAngle (int iAngle) const { return m_pClass->AlignToRotationAngle(iAngle); }
-		inline int GetRotationAngle (void) { return m_pClass->GetRotationAngle(); }
-        inline const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
-		inline int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
-		inline const CIntegralRotation &GetRotationState (void) const { return m_Rotation; }
-		inline EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetIntegralRotationDesc(), iAngle); }
-		inline Metric GetThrust (void) const { return m_Perf.GetDriveDesc().GetThrust(); }
-		inline Metric GetThrustProperty (void) const { return m_Perf.GetDriveDesc().GetThrustProperty(); }
+		int Angle2Direction (int iAngle) const { return m_pClass->Angle2Direction(iAngle); }
+		int AlignToRotationAngle (int iAngle) const { return m_pClass->AlignToRotationAngle(iAngle); }
+		int GetRotationAngle (void) { return m_pClass->GetRotationAngle(); }
+        const CIntegralRotationDesc &GetRotationDesc (void) const { return m_Perf.GetIntegralRotationDesc(); }
+		int GetRotationRange (void) { return m_pClass->GetRotationRange(); }
+		const CIntegralRotation &GetRotationState (void) const { return m_Rotation; }
+		EManeuverTypes GetManeuverToFace (int iAngle) const { return m_Rotation.GetManeuverToFace(m_Perf.GetIntegralRotationDesc(), iAngle); }
+		Metric GetThrust (void) const { return m_Perf.GetDriveDesc().GetThrust(); }
+		Metric GetThrustProperty (void) const { return m_Perf.GetDriveDesc().GetThrustProperty(); }
 		Metric GetMaxAcceleration (void);
-		inline bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
-		inline bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
-		inline bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetIntegralRotationDesc(), iAngle); }
-		inline void SetMaxSpeedEmergency (void) { m_fHalfSpeed = false; m_fEmergencySpeed = true; m_fQuarterSpeed = false; CalcPerformance(); }
-        inline void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
-        inline void SetMaxSpeedQuarter (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = true; CalcPerformance(); }
-        inline void ResetMaxSpeed (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
+		bool IsInertialess (void) { return m_Perf.GetDriveDesc().IsInertialess(); }
+		bool IsMainDriveDamaged (void) const { return m_iDriveDamagedTimer != 0; }
+		bool IsPointingTo (int iAngle) { return m_Rotation.IsPointingTo(m_Perf.GetIntegralRotationDesc(), iAngle); }
+		void SetMaxSpeedEmergency (void) { m_fHalfSpeed = false; m_fEmergencySpeed = true; m_fQuarterSpeed = false; CalcPerformance(); }
+        void SetMaxSpeedHalf (void) { m_fHalfSpeed = true; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
+        void SetMaxSpeedQuarter (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = true; CalcPerformance(); }
+        void ResetMaxSpeed (void) { m_fHalfSpeed = false; m_fEmergencySpeed = false; m_fQuarterSpeed = false; CalcPerformance(); }
 
 		//	Miscellaneous
-		inline IShipController *GetController (void) { return m_pController; }
-		inline CShipClass *GetClass (void) { return m_pClass; }
+		IShipController *GetController (void) { return m_pController; }
+		CShipClass *GetClass (void) { return m_pClass; }
 		void SetController (IShipController *pController, bool bFreeOldController = true);
-		inline void SetControllerEnabled (bool bEnabled = true) { m_fControllerDisabled = !bEnabled; }
+		void SetControllerEnabled (bool bEnabled = true) { m_fControllerDisabled = !bEnabled; }
 		void SetCommandCode (ICCItem *pCode);
-		inline void SetDestroyInGate (void) { m_fDestroyInGate = true; }
-		inline void SetEncounterInfo (CStationType *pEncounterInfo) { m_pEncounterInfo = pEncounterInfo; }
-		inline void SetPlayerWingman (bool bIsWingman) const { m_pController->SetPlayerWingman(bIsWingman); }
-		inline void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_Perf.GetIntegralRotationDesc(), iAngle); }
+		void SetDestroyInGate (void) { m_fDestroyInGate = true; }
+		void SetEncounterInfo (CStationType *pEncounterInfo) { m_pEncounterInfo = pEncounterInfo; }
+		void SetPlayerWingman (bool bIsWingman) const { m_pController->SetPlayerWingman(bIsWingman); }
+		void SetRotation (int iAngle) { m_Rotation.SetRotationAngle(m_Perf.GetIntegralRotationDesc(), iAngle); }
 		void Undock (void);
 
 		//	CSpaceObject virtuals
@@ -1311,7 +1311,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
         ALERROR ReportCreateError (const CString &sError) const;
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		void SetTotalArmorHP (int iNewHP);
-		inline bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
+		bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
 		void UpdateDestroyInGate (void);
 		bool UpdateFuel (SUpdateCtx &Ctx, int iTick);
 		void UpdateInactive (void);
@@ -1441,32 +1441,32 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 				CString *retsError = NULL);
 
 		void Abandon (DestructionTypes iCause, const CDamageSource &Attacker, CWeaponFireDesc *pWeaponDesc = NULL);
-		inline void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
-		inline void ClearReconned (void) { m_fReconned = false; }
-		inline const CStationHull &GetHull (void) const { return m_Hull; }
+		void ClearFireReconEvent (void) { m_fFireReconEvent = false; }
+		void ClearReconned (void) { m_fReconned = false; }
+		const CStationHull &GetHull (void) const { return m_Hull; }
 		int GetImageVariant (void);
-		inline int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
-		inline int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
-		inline CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
+		int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
+		int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
+		CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
 		bool IsNameSet (void) const;
-		inline bool IsReconned (void) { return (m_fReconned ? true : false); }
-		inline void SetActive (void) { m_fActive = true; }
-		inline void SetBase (CSpaceObject *pBase) { m_pBase = pBase; }
-		inline void SetFireReconEvent (void) { m_fFireReconEvent = true; }
+		bool IsReconned (void) { return (m_fReconned ? true : false); }
+		void SetActive (void) { m_fActive = true; }
+		void SetBase (CSpaceObject *pBase) { m_pBase = pBase; }
+		void SetFireReconEvent (void) { m_fFireReconEvent = true; }
 		void SetFlotsamImage (CItemType *pItemType);
 		void SetImageVariant (int iVariant);
-		inline void SetInactive (void) { m_fActive = false; }
+		void SetInactive (void) { m_fActive = false; }
 		void SetMapOrbit (const COrbit &oOrbit);
-		inline void SetMass (Metric rMass) { m_rMass = rMass; }
-		inline void SetNoConstruction (void) { m_fNoConstruction = true; }
-		inline void SetNoMapLabel (void) { m_fNoMapLabel = true; }
-		inline void SetNoReinforcements (void) { m_fNoReinforcements = true; }
-		inline void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
-		inline void SetReconned (void) { m_fReconned = true; }
-		inline void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
-		inline void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
+		void SetMass (Metric rMass) { m_rMass = rMass; }
+		void SetNoConstruction (void) { m_fNoConstruction = true; }
+		void SetNoMapLabel (void) { m_fNoMapLabel = true; }
+		void SetNoReinforcements (void) { m_fNoReinforcements = true; }
+		void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
+		void SetReconned (void) { m_fReconned = true; }
+		void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
+		void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
-		inline void SetStructuralHitPoints (int iHP) { m_Hull.SetStructuralHP(iHP); }
+		void SetStructuralHitPoints (int iHP) { m_Hull.SetStructuralHP(iHP); }
 
 		//	CSpaceObject virtuals
 
@@ -1624,7 +1624,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		int CalcNumberOfShips (void);
-		inline bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
+		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
