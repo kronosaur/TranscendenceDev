@@ -329,9 +329,9 @@ class CDesignType
 		void Sweep (void) { OnSweep(); }
 		void TopologyInitialized (void) { OnTopologyInitialized(); }
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 		static CString GetTypeChar (DesignTypes iType);
@@ -411,7 +411,7 @@ class CDesignType
 		bool HasCachedEvent (ECachedHandlers iEvent) const { return (m_pExtra && m_pExtra->EventsCache[iEvent].pCode != NULL); }
 		void InitCachedEvents (void);
 		bool InSelfReference (CDesignType *pType);
-		bool TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const;
+		bool TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const;
 		SExtra *SetExtra (void) { if (!m_pExtra) m_pExtra.Set(new SExtra); return m_pExtra; }
 
 		DWORD m_dwUNID = 0;

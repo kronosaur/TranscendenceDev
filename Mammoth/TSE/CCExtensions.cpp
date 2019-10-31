@@ -6685,7 +6685,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 
-			return CreateDisposition(*pCC, pObj->GetDispositionTowards(pTarget));
+			return CreateDisposition(*pCC, pObj->GetDispositionTowards(*pTarget));
 			}
 
 		case FN_OBJ_GET_EVENT_HANDLER:

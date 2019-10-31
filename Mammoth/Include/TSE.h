@@ -557,7 +557,7 @@ class CSpaceObject
 		bool SetItemData (const CItem &Item, const CString &sField, ICCItem *pValue, int iCount, CItem *retItem = NULL, CString *retsError = NULL);
 		bool SetItemProperty (const CItem &Item, const CString &sName, ICCItem *pValue, int iCount, CItem *retItem, CString *retsError);
 		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult);
-		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText);
+		bool TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool UseItem (const CItem &Item, CString *retsError = NULL);
 
 		void InvalidateItemListAddRemove (void) { m_fItemEventsValid = false; }
@@ -685,7 +685,7 @@ class CSpaceObject
 		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
 		int GetDetectionRangeIndex (int iPerception) const;
-		CSovereign::Disposition GetDispositionTowards (CSpaceObject *pObj);
+		CSovereign::Disposition GetDispositionTowards (const CSpaceObject &Obj) const;
 		Metric GetDistance (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }
 		const CString &GetHighlightText (void) const { return m_sHighlightText; }
@@ -1060,8 +1060,8 @@ class CSpaceObject
 		virtual bool HasVolumetricShadow (void) const { return false; }
 		virtual bool IsExplored (void) { return true; }
 		virtual bool IsImmutable (void) const { return false; }
-		virtual bool IsKnown (void) { return true; }
-		virtual bool IsMarker (void) { return false; }
+		virtual bool IsKnown (void) const { return true; }
+		virtual bool IsMarker (void) const { return false; }
 		virtual bool IsMission (void) const { return false; }
 		virtual bool IsNonSystemObj (void) { return false; }
 		virtual bool IsShownInGalacticMap (void) const { return false; }
@@ -1634,10 +1634,10 @@ class CObjectTracker
         void AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, const SObjBasics &ObjData, DWORD dwFlags, TArray<SObjEntry> &Results) const;
         bool Find (CTopologyNode *pNode, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
         bool Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics **retpObjData = NULL) const;
-		bool GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjData, CString *retsDesc) const;
+		bool GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &ObjData, CString *retsDesc) const;
 		SObjList *GetList (CSpaceObject *pObj) const;
 		SObjList *GetList (CTopologyNode *pNode, CDesignType *pType) const;
-        void Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer);
+        void Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, const CSpaceObject *pPlayer);
 		void ReplayCommand (const SDelayedCommand &Cmd, CSystem *pSystem);
 		void SetKnown (TArray<SObjList *> &Table, const CDesignTypeCriteria &Criteria, bool bKnown);
 		SObjList *SetList (CSpaceObject *pObj);

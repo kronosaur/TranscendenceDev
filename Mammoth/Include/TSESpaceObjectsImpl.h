@@ -471,7 +471,7 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
 		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual bool IsAnchored (void) const override { return true; }
-		virtual bool IsMarker (void) override { return true; }
+		virtual bool IsMarker (void) const override { return true; }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
         virtual bool ShowMapOrbit (void) const override { return (m_pMapOrbit != NULL); }
@@ -1188,7 +1188,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsIdentified (void) override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed()); }
 		virtual bool IsIntangible (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed() || IsVirtual()); }
-		virtual bool IsKnown (void) override { return m_fKnown; }
+		virtual bool IsKnown (void) const override { return m_fKnown; }
 		virtual bool IsOutOfPower (void) override { return (m_pPowerUse && (m_pPowerUse->IsOutOfPower() || m_pPowerUse->IsOutOfFuel())); }
 		virtual bool IsPlayer (void) const override;
 		virtual bool IsPlayerWingman (void) const override { return m_pController->IsPlayerWingman(); }
@@ -1548,7 +1548,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
 		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
-		virtual bool IsKnown (void) override { return m_fKnown; }
+		virtual bool IsKnown (void) const override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
         virtual bool IsShownInGalacticMap (void) const override;

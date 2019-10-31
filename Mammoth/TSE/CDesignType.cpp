@@ -2911,7 +2911,7 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return false;
 	}
 
-bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2954,7 +2954,7 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 	return false;
 	}
 	
-bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3002,7 +3002,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 	return false;
 	}
 
-bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
+bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
 
 //	TranslateVersion2
 //

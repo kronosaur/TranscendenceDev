@@ -149,9 +149,9 @@ class CLanguageDataBlock
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
 		bool Translate (const CDesignType &Type, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 	private:
@@ -180,7 +180,7 @@ class CLanguageDataBlock
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
 		ETranslateResult TranslateFull (const CDesignType &Type, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		ETranslateResult TranslateFull (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
+		ETranslateResult TranslateFull (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		ETranslateResult TranslateFull (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		const SEntry *TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 

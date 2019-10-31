@@ -254,14 +254,14 @@ bool CObjectTracker::Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics 
     return true;
     }
 
-bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjData, CString *retsDesc) const
+bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &ObjData, CString *retsDesc) const
 
 //	GetCustomDesc
 //
 //	Returns a custom description for object services.
 
 	{
-	CDesignType *pType = pObj->GetType();
+	CDesignType *pType = Obj.GetType();
 	if (pType == NULL || !pType->HasCustomMapDescLanguage())
 		return false;
 
@@ -282,7 +282,7 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
 
 	//	Translate
 
-    return pObj->TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
+    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
 	}
 
 void CObjectTracker::GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const
@@ -541,7 +541,7 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
     //  Insert and update
 
 	SObjBasics *pEntry = pList->Objects.Insert(pObj->GetID());
-    Refresh(pObj, pEntry, pPlayer);
+    Refresh(*pObj, *pEntry, pPlayer);
 	}
 
 void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
@@ -929,42 +929,42 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 
         //  Refresh
 
-        Refresh(pObj, pObjData, pPlayer);
+        Refresh(*pObj, *pObjData, pPlayer);
         }
     }
 
-void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer)
+void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, const CSpaceObject *pPlayer)
 
 //  Refresh
 //
 //  Refresh the object data from the actual object.
 
     {
-	CDesignType *pType = pObj->GetType();
+	CDesignType *pType = Obj.GetType();
 	if (pType == NULL)
 		return;
 
     //  Update flags
 
-    pObjData->vPos = pObj->GetPos();
-    pObjData->fKnown = pObj->IsKnown();
-    pObjData->fShowDestroyed = pObj->ShowStationDamage();
-    pObjData->fShowInMap = pObj->IsShownInGalacticMap();
-	pObjData->fInactive = pObj->IsInactive();
+    ObjData.vPos = Obj.GetPos();
+    ObjData.fKnown = Obj.IsKnown();
+    ObjData.fShowDestroyed = Obj.ShowStationDamage();
+    ObjData.fShowInMap = Obj.IsShownInGalacticMap();
+	ObjData.fInactive = Obj.IsInactive();
 
     //  Track our disposition relative to the player
 
     if (pPlayer)
         {
-        CSovereign::Disposition iDisp = pObj->GetDispositionTowards(pPlayer);
-        pObjData->fFriendly = (iDisp == CSovereign::dispFriend);
-        pObjData->fEnemy = (iDisp == CSovereign::dispEnemy);
+        CSovereign::Disposition iDisp = Obj.GetDispositionTowards(*pPlayer);
+        ObjData.fFriendly = (iDisp == CSovereign::dispFriend);
+        ObjData.fEnemy = (iDisp == CSovereign::dispEnemy);
         }
 
     //  See if we have a custom services description
 
     CString sCustomNotes;
-    bool bHasCustomNotes = GetCustomDesc(pObj, *pObjData, &sCustomNotes);
+    bool bHasCustomNotes = GetCustomDesc(Obj, ObjData, &sCustomNotes);
 
 	//	If the name of this object does not match the type, then we store it.
 	//
@@ -973,19 +973,19 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
 
 	DWORD dwNameFlags;
 	DWORD dwDummyFlags;
-	CString sName = pObj->GetNamePattern(0, &dwNameFlags);
+	CString sName = Obj.GetNamePattern(0, &dwNameFlags);
 	if (!pType->GetTypeImage().IsConstant()
             || bHasCustomNotes
             || !strEquals(sName, pType->GetNamePattern(0, &dwDummyFlags)))
 		{
-        SObjExtra &Extra = pObjData->SetExtra();
+        SObjExtra &Extra = ObjData.SetExtra();
 		Extra.sName = sName;
 		Extra.dwNameFlags = dwNameFlags;
-        Extra.ImageSel = pObj->GetImageSelector();
+        Extra.ImageSel = Obj.GetImageSelector();
         Extra.sNotes = sCustomNotes;
 		}
     else
-        pObjData->DeleteExtra();
+        ObjData.DeleteExtra();
     }
 
 void CObjectTracker::ReplayCommands (CSystem *pSystem)

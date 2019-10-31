@@ -3783,16 +3783,16 @@ int CSpaceObject::GetDetectionRangeIndex (int iPerception) const
 	return CPerceptionCalc::GetRangeIndex(GetStealth(), iPerception);
 	}
 
-CSovereign::Disposition CSpaceObject::GetDispositionTowards (CSpaceObject *pObj)
+CSovereign::Disposition CSpaceObject::GetDispositionTowards (const CSpaceObject &Obj) const
 
 //	GetDispositionTowards
 //
 //	Returns the disposition of this objects towards the given object
 
 	{
-	CSovereign *pOurSovereign = GetSovereign();
+	const CSovereign *pOurSovereign = GetSovereign();
 	if (pOurSovereign)
-		return pOurSovereign->GetDispositionTowards(pObj->GetSovereign());
+		return pOurSovereign->GetDispositionTowards(Obj.GetSovereign());
 	else
 		return CSovereign::dispFriend;
 	}
@@ -7502,7 +7502,7 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &re
 	return false;
 	}
 
-bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *retsText)
+bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
