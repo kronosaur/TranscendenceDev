@@ -3500,12 +3500,7 @@ int CShip::GetShieldLevel (void)
 	if (pShields == NULL)
 		return -1;
 
-	int iHP, iMaxHP;
-	pShields->GetStatus(this, &iHP, &iMaxHP);
-	if (iMaxHP == 0)
-		return -1;
-
-	return iHP * 100 / iMaxHP;
+	return pShields->GetHitPointsPercent(this);
 	}
 
 int CShip::GetStealth (void) const

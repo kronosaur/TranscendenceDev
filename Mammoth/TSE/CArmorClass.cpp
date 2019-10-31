@@ -1328,8 +1328,17 @@ int CArmorClass::CalcIntegrity (int iHP, int iMaxHP)
 	{
 	if (iMaxHP == 0 || iMaxHP <= iHP)
 		return 100;
+	else if (iHP == 0)
+		return 0;
+	else
+		{
+		int iPercent = ((1000 * iHP / iMaxHP) + 5) / 10;
 
-	return ((1000 * iHP / iMaxHP) + 5) / 10;
+		//	Always show 1% instead of 0% if HP > 0.
+		//	Always show 99% instead of 100% if HP < MaxHP.
+
+		return Max(1, Min(iPercent, 99));
+		}
 	}
 
 int CArmorClass::CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP)
