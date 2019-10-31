@@ -90,6 +90,7 @@ class CGroupOfGenerators : public IItemGenerator
 		virtual ~CGroupOfGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
 		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
@@ -128,6 +129,7 @@ class CLevelTableOfItemGenerators : public IItemGenerator
 		virtual ~CLevelTableOfItemGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
@@ -162,6 +164,7 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		virtual ~CLocationCriteriaTableOfItemGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pEntry; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
@@ -195,6 +198,7 @@ class CLookup : public IItemGenerator
 
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override { return m_pTable->GetAverageValue(iLevel); }
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_pTable->GetGenerator(); }
 		virtual int GetGeneratorCount (void) override { return ((m_pTable && m_pTable->GetGenerator()) ? 1 : 0); }
@@ -222,6 +226,7 @@ class CRandomItems : public IItemGenerator
 		virtual ~CRandomItems (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
 		virtual CItemType *GetItemType (int iIndex) override { return m_Table[iIndex].pType; }
 		virtual int GetItemTypeCount (void) override { return m_iCount; }
@@ -283,6 +288,7 @@ class CTableOfGenerators : public IItemGenerator
 		virtual ~CTableOfGenerators (void) override;
 		virtual void AddItems (SItemAddCtx &Ctx) override;
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CurrencyValue GetAverageValue (int iLevel) override;
 		virtual IItemGenerator *GetGenerator (int iIndex) override { return m_Table[iIndex].pItem; }
 		virtual int GetGeneratorCount (void) override { return m_Table.GetCount(); }
@@ -461,6 +467,27 @@ ALERROR CItemTable::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
+ALERROR CItemTable::OnFinishBindDesign (SDesignLoadCtx &Ctx)
+
+//	OnFinishBindDesign
+//
+//	Finish bind.
+
+	{
+	ALERROR error;
+
+	if (m_pGenerator)
+		{
+		if (error = m_pGenerator->FinishBind(Ctx))
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("ItemTable (%x): %s"), GetUNID(), Ctx.sError);
+			return error;
+			}
+		}
+
+	return NOERROR;
+	}
+
 //	CGroupOfGenerators --------------------------------------------------------
 
 CGroupOfGenerators::~CGroupOfGenerators (void)
@@ -586,6 +613,24 @@ void CGroupOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
+	}
+
+ALERROR CGroupOfGenerators::FinishBind(SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Resolve references
+
+	{
+	ALERROR error;
+
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (error = m_Table[i].pItem->FinishBind(Ctx))
+			return error;
+		}
+
+	return NOERROR;
 	}
 
 CurrencyValue CGroupOfGenerators::GetAverageValue (int iLevel)
@@ -1027,6 +1072,24 @@ void CLevelTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
+ALERROR CLevelTableOfItemGenerators::FinishBind (SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Bind design
+
+	{
+	ALERROR error;
+
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (error = m_Table[i].pEntry->FinishBind(Ctx))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
 CurrencyValue CLevelTableOfItemGenerators::GetAverageValue (int iLevel)
 
 //	GetAverageValue
@@ -1258,6 +1321,24 @@ void CLocationCriteriaTableOfItemGenerators::AddTypesUsed (TSortMap<DWORD, bool>
 		m_Table[i].pEntry->AddTypesUsed(retTypesUsed);
 	}
 
+ALERROR CLocationCriteriaTableOfItemGenerators::FinishBind (SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Bind design
+
+	{
+	ALERROR error;
+
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (error = m_Table[i].pEntry->FinishBind(Ctx))
+			return error;
+		}
+
+	return NOERROR;
+	}
+
 CurrencyValue CLocationCriteriaTableOfItemGenerators::GetAverageValue (int iLevel)
 
 //	GetAverageValue
@@ -1446,6 +1527,16 @@ ALERROR CLookup::Create (DWORD dwUNID, IItemGenerator **retpGenerator, CString *
 	return NOERROR;
 	}
 
+ALERROR CLookup::FinishBind (SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Resolve references
+
+	{
+	return NOERROR;
+	}
+
 CItemTypeProbabilityTable CLookup::GetProbabilityTable (SItemAddCtx &Ctx) const
 
 //	GetProbabilityTable
@@ -1555,6 +1646,24 @@ void CTableOfGenerators::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	for (i = 0; i < m_Table.GetCount(); i++)
 		m_Table[i].pItem->AddTypesUsed(retTypesUsed);
+	}
+
+ALERROR CTableOfGenerators::FinishBind (SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Resolve references
+
+	{
+	ALERROR error;
+
+	for (int i = 0; i < m_Table.GetCount(); i++)
+		{
+		if (error = m_Table[i].pItem->FinishBind(Ctx))
+			return error;
+		}
+
+	return NOERROR;
 	}
 
 CurrencyValue CTableOfGenerators::GetAverageValue (int iLevel)
@@ -1846,6 +1955,23 @@ struct ItemEntryStruct
 	int iChance;
 	int iRemainder;
 	};
+
+ALERROR CRandomItems::FinishBind (SDesignLoadCtx &Ctx)
+
+//	FinishBind
+//
+//	Resolve references
+
+	{
+	if (!m_bDynamicLevelFrequency)
+		InitTable(m_sLevelFrequency);
+
+	//	Reset
+
+	m_iDynamicLevel = 0;
+
+	return NOERROR;
+	}
 
 CurrencyValue CRandomItems::GetAverageValue (int iLevel)
 
@@ -2162,13 +2288,6 @@ ALERROR CRandomItems::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 //	Resolve references
 
 	{
-	if (!m_bDynamicLevelFrequency)
-		InitTable(m_sLevelFrequency);
-
-	//	Reset
-
-	m_iDynamicLevel = 0;
-
 	return NOERROR;
 	}
 

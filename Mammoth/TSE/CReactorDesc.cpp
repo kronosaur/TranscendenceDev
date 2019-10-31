@@ -185,7 +185,7 @@ ICCItem *CReactorDesc::FindProperty (const CString &sProperty) const
 	else if (strEquals(sProperty, PROPERTY_FUEL_CRITERIA))
 		{
 		if (m_pFuelCriteria)
-			return CCodeChain::CreateString(CItem::GenerateCriteria(*m_pFuelCriteria));
+			return CCodeChain::CreateString(m_pFuelCriteria->AsString());
 		else
 			return CCodeChain::CreateString(strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel));
 		}
@@ -233,7 +233,7 @@ CString CReactorDesc::GetFuelCriteriaString (void) const
 
     {
 	if (m_pFuelCriteria)
-		return CItem::GenerateCriteria(*m_pFuelCriteria);
+		return m_pFuelCriteria->AsString();
 	else
 		return strPatternSubst(CONSTLIT("f L:%d-%d;"), m_iMinFuelLevel, m_iMaxFuelLevel);
     }

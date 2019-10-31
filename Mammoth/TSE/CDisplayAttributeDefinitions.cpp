@@ -121,7 +121,7 @@ const CDisplayAttributeDefinitions::SItemEntry *CDisplayAttributeDefinitions::Fi
 
 	for (i = 0; i < m_ItemAttribs.GetCount(); i++)
 		{
-		if (strEquals(sCriteria, CItem::GenerateCriteria(m_ItemAttribs[i].Criteria)))
+		if (strEquals(sCriteria, m_ItemAttribs[i].Criteria.AsString()))
 			return &m_ItemAttribs[i];
 		}
 

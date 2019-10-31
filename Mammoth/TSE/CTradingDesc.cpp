@@ -1087,7 +1087,7 @@ bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &
 			if (S1.pItemType)
 				return (S1.pItemType == S2.pItemType);
 			else
-				return strEquals(CItem::GenerateCriteria(S1.ItemCriteria), CItem::GenerateCriteria(S2.ItemCriteria));
+				return (S1.ItemCriteria == S2.ItemCriteria);
 			}
 		}
 	}
@@ -1419,7 +1419,7 @@ void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 
 	Result.iService = Service.iService;
 	Result.pItemType = Service.pItemType;
-	Result.sItemCriteria = CItem::GenerateCriteria(Service.ItemCriteria);
+	Result.sItemCriteria = Service.ItemCriteria.AsString();
 	Result.sTypeCriteria = Service.TypeCriteria.AsString();
 	Result.iPriceAdj = Service.PriceAdj.EvalAsInteger(NULL);
 
@@ -2182,7 +2182,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 				|| Commodity.iService == serviceSellShip)
 			sCriteria = Commodity.TypeCriteria.AsString();
 		else
-			sCriteria = CItem::GenerateCriteria(Commodity.ItemCriteria);
+			sCriteria = Commodity.ItemCriteria.AsString();
 
 		sCriteria.WriteToStream(pStream);
 

@@ -17,6 +17,11 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
+inline bool CItem::HasAttribute (const CString &sAttrib) const
+	{
+	return (m_pItemType ? m_pItemType->HasLiteralAttribute(sAttrib): false);
+	}
+
 inline bool CItem::IsArmor (void) const
 	{
 	return (m_pItemType && m_pItemType->IsArmor());

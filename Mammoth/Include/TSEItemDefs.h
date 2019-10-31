@@ -39,58 +39,80 @@ enum ItemFates
 	fateComponetized,					//	Item is always reduced to components
 	};
 
-struct CItemCriteria
+class CItemCriteria
 	{
-	static constexpr DWORD NONE = 0x00000000;
-	static constexpr DWORD ALL = 0x00000001;
+	public:
+		static constexpr DWORD NONE = 0x00000000;
+		static constexpr DWORD ALL = 0x00000001;
 
-	CItemCriteria (void) { }
-	explicit CItemCriteria (DWORD dwSpecial);
-	explicit CItemCriteria (const CString &sCriteria, DWORD dwDefault = NONE);
+		CItemCriteria (void) { }
+		explicit CItemCriteria (DWORD dwSpecial);
+		explicit CItemCriteria (const CString &sCriteria, DWORD dwDefault = NONE);
 
-	bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
-	int GetMaxLevelMatched (void) const;
-	CString GetName (void) const;
-	ICCItem *GetFilter (void) const { return m_pFilter; }
-	void Init (DWORD dwSpecial = NONE) { *this = CItemCriteria(dwSpecial); }
-	void Init (const CString &sCriteria, DWORD dwSpecial = NONE) { *this = CItemCriteria(sCriteria, dwSpecial); }
-	bool Intersects (const CItemCriteria &Src) const;
-	bool IsEmpty (void) const { return (dwItemCategories == 0 && sLookup.IsBlank() && !m_pFilter); }
-    bool MatchesItemCategory (ItemCategories iCategory) { return ((dwItemCategories & iCategory) && !(dwExcludeCategories & iCategory)); }
-	void SetFilter (ICCItemPtr pFilter) { m_pFilter = pFilter; }
+		bool operator== (const CItemCriteria &Src) const;
+		bool operator!= (const CItemCriteria &Src) const { return !(*this == Src); }
 
-	DWORD dwItemCategories = 0;				//	Set of ItemCategories to match on
-	DWORD dwExcludeCategories = 0;			//	Categories to exclude
-	DWORD dwMustHaveCategories = 0;			//	ANDed categories
-
-	WORD wFlagsMustBeSet = 0;				//	These flags must be set
-	WORD wFlagsMustBeCleared = 0;			//	These flags must be cleared
-
-	bool bUsableItemsOnly = false;			//	Item must be usable
-	bool bExcludeVirtual = true;			//	Exclude virtual items
-	bool bInstalledOnly = false;			//	Item must be installed
-	bool bNotInstalledOnly = false;			//	Item must not be installed
-	bool bLauncherMissileOnly = false;		//	Item must be a missile for a launcher
-
-	TArray<CString> ModifiersRequired;		//	Required modifiers
-	TArray<CString> ModifiersNotAllowed;	//	Exclude these modifiers
-	TArray<CString> SpecialAttribRequired;	//	Special required attributes
-	TArray<CString> SpecialAttribNotAllowed;//	Exclude these special attributes
-	CString Frequency;						//	If not blank, only items with these frequencies
-
-	int iEqualToLevel = -1;					//	If not -1, only items of this level
-	int iGreaterThanLevel = -1;				//	If not -1, only items greater than this level
-	int iLessThanLevel = -1;				//	If not -1, only items less than this level
-	int iEqualToPrice = -1;					//	If not -1, only items at this price
-	int iGreaterThanPrice = -1;				//	If not -1, only items greater than this price
-	int iLessThanPrice = -1;				//	If not -1, only items less than this price
-	int iEqualToMass = -1;					//	If not -1, only items of this mass (in kg)
-	int iGreaterThanMass = -1;				//	If not -1, only items greater than this mass (in kg)
-	int iLessThanMass = -1;					//	If not -1, only items less than this mass (in kg)
-
-	CString sLookup;						//	Look up a shared criteria
+		CString AsString (void) const;
+		bool ExcludesVirtual (void) const { return m_bExcludeVirtual; }
+		bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
+		const CString &GetLookup (void) const { return m_sLookup; }
+		int GetMaxLevelMatched (void) const;
+		CString GetName (void) const;
+		ICCItem *GetFilter (void) const { return m_pFilter; }
+		void Init (DWORD dwSpecial = NONE) { *this = CItemCriteria(dwSpecial); }
+		void Init (const CString &sCriteria, DWORD dwSpecial = NONE) { *this = CItemCriteria(sCriteria, dwSpecial); }
+		bool Intersects (const CItemCriteria &Src) const;
+		bool IsEmpty (void) const { return (m_dwItemCategories == 0 && m_sLookup.IsBlank() && !m_pFilter); }
+		bool MatchesAttributes (const CItem &Item) const;
+		bool MatchesFlags (DWORD dwFlags) const;
+		bool MatchesFrequency (FrequencyTypes iFreq) const;
+		bool MatchesInstalledOnly (void) const { return m_bInstalledOnly; }
+		bool MatchesItemCategory (ItemCategories iCategory) const { return ((m_dwItemCategories & iCategory) && !(m_dwExcludeCategories & iCategory)); }
+		bool MatchesItemCategory (const CItemType &ItemType) const;
+		bool MatchesLauncherMissilesOnly (void) const { return m_bLauncherMissileOnly; }
+		bool MatchesLevel (int iLevel) const;
+		bool MatchesMass (int iMassKg) const;
+		bool MatchesNotInstalledOnly (void) const { return m_bNotInstalledOnly; }
+		bool MatchesPrice (CurrencyValue iValue) const;
+		bool MatchesUsableOnly (void) const { return m_bUsableItemsOnly; }
+		void SetExcludeVirtual (bool bExclude = true) { m_bExcludeVirtual = bExclude; }
+		void SetFilter (ICCItemPtr pFilter) { m_pFilter = pFilter; }
 
 	private:
+		void ParseSubExpression (const char *pPos, const char **retpPos = NULL);
+		void WriteSubExpression (CMemoryWriteStream &Output) const;
+		static void WriteCategoryFlags (CMemoryWriteStream &Output, DWORD dwCategories);
+
+		DWORD m_dwItemCategories = 0;				//	Set of ItemCategories to match on
+		DWORD m_dwExcludeCategories = 0;			//	Categories to exclude
+		DWORD m_dwMustHaveCategories = 0;			//	ANDed categories
+
+		WORD m_wFlagsMustBeSet = 0;					//	These flags must be set
+		WORD m_wFlagsMustBeCleared = 0;				//	These flags must be cleared
+
+		bool m_bUsableItemsOnly = false;			//	Item must be usable
+		bool m_bExcludeVirtual = true;				//	Exclude virtual items
+		bool m_bInstalledOnly = false;				//	Item must be installed
+		bool m_bNotInstalledOnly = false;			//	Item must not be installed
+		bool m_bLauncherMissileOnly = false;		//	Item must be a missile for a launcher
+
+		TArray<CString> m_ModifiersRequired;		//	Required modifiers
+		TArray<CString> m_ModifiersNotAllowed;		//	Exclude these modifiers
+		TArray<CString> m_SpecialAttribRequired;	//	Special required attributes
+		TArray<CString> m_SpecialAttribNotAllowed;	//	Exclude these special attributes
+		CString m_Frequency;						//	If not blank, only items with these frequencies
+
+		int m_iEqualToLevel = -1;					//	If not -1, only items of this level
+		int m_iGreaterThanLevel = -1;				//	If not -1, only items greater than this level
+		int m_iLessThanLevel = -1;					//	If not -1, only items less than this level
+		int m_iEqualToPrice = -1;					//	If not -1, only items at this price
+		int m_iGreaterThanPrice = -1;				//	If not -1, only items greater than this price
+		int m_iLessThanPrice = -1;					//	If not -1, only items less than this price
+		int m_iEqualToMass = -1;					//	If not -1, only items of this mass (in kg)
+		int m_iGreaterThanMass = -1;				//	If not -1, only items greater than this mass (in kg)
+		int m_iLessThanMass = -1;					//	If not -1, only items less than this mass (in kg)
+
+		CString m_sLookup;							//	Look up a shared criteria
 		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items
 	};
 

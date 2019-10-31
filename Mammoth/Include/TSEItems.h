@@ -272,6 +272,7 @@ class CItem
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
 		int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
@@ -342,7 +343,6 @@ class CItem
 
 		//	Item Criteria
 
-		static CString GenerateCriteria (const CItemCriteria &Criteria);
 		static const CItem &NullItem (void) { return CItem::m_NullItem; }
 		static DWORD ParseFlags (ICCItem *pItem);
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
@@ -609,6 +609,7 @@ class IItemGenerator
 		virtual ~IItemGenerator (void) { }
 		virtual void AddItems (SItemAddCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
+		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
 		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }

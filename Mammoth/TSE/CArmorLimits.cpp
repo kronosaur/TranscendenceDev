@@ -865,7 +865,7 @@ ALERROR CArmorLimits::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int 
 	//	We never exclude virtual items because it is common for (e.g., biotech)
 	//	classes to have virtual armor.
 
-	m_ArmorCriteria.bExcludeVirtual = false;
+	m_ArmorCriteria.SetExcludeVirtual(false);
 
 	//	If we've already got a table of armor limits then we're using that method.
 

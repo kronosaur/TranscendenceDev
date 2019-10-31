@@ -292,6 +292,7 @@ class CItemTable : public CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
 		IItemGenerator *m_pGenerator;

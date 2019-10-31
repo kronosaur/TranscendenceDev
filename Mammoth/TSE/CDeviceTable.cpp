@@ -1149,10 +1149,9 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	TSortMap<int, int> BestEntry;
 	for (i = 0; i < m_SlotDesc.GetCount(); i++)
 		{
-		if ((m_SlotDesc[i].Criteria.dwItemCategories & Category)
-				&& !(m_SlotDesc[i].Criteria.dwExcludeCategories & Category))
+		if (m_SlotDesc[i].Criteria.MatchesItemCategory(Category))
 			{
-			BestEntry.Insert(CItem::GenerateCriteria(m_SlotDesc[i].Criteria).GetLength(), i);
+			BestEntry.Insert(m_SlotDesc[i].Criteria.AsString().GetLength(), i);
 			}
 		}
 

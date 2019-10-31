@@ -292,7 +292,7 @@ void CEnhancementDesc::WriteToStream (IWriteStream &Stream) const
 		const SEnhancerDesc &Enhancer = m_Enhancements[i];
 
 		Enhancer.sType.WriteToStream(&Stream);
-		CItem::GenerateCriteria(Enhancer.Criteria).WriteToStream(&Stream);
+		Enhancer.Criteria.AsString().WriteToStream(&Stream);
 		Enhancer.LevelCheck.WriteToStream(Stream);
 		Enhancer.Enhancement.WriteToStream(&Stream);
 		}

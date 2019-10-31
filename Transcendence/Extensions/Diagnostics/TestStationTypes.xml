@@ -14,7 +14,7 @@
 						{	test:'(typGetProperty &stDwargColony; 'armorClass)				result:"Dwarg chiton armor"	}
 						{	test:'(typGetProperty &stDwargColony; 'armorLevel)				result:3	}
 						{	test:'(typGetProperty &stDwargColony; 'balance)					result:214	}
-						{	test:'(typGetProperty &stDwargColony; 'canAttack)				result:True	}
+						{	test:'(typGetProperty &stDwargColony; 'canAttack)				result:Nil	}
 						{	test:'(typGetProperty &stDwargColony; 'category)				result:"02-Enemy"	}
 						{	test:'(typGetProperty &stDwargColony; 'defenderStrength)		result:650	}
 						{	test:'(typGetProperty &stDwargColony; 'dockScreen)				result:Nil	}

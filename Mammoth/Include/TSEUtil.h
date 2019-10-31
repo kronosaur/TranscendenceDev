@@ -7,6 +7,7 @@
 
 class CDesignType;
 class CEconomyType;
+class CItemCriteria;
 class CItemCtx;
 class CItemEnhancementStack;
 class CExtension;
@@ -14,7 +15,6 @@ class CLocationDef;
 class COrbit;
 class CTopology;
 class CTopologyNode;
-struct CItemCriteria;
 struct SDesignLoadCtx;
 struct SDamageCtx;
 struct SDestroyCtx;
