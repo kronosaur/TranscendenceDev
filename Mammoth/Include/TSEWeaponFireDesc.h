@@ -536,6 +536,7 @@ class CWeaponFireDesc
         bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
+		bool IsTracking (const SShotCreateCtx &Ctx) const;
 		bool IsTrackingOrHasTrackingFragments (void) const;
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);

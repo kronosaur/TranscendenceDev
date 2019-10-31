@@ -350,7 +350,8 @@ class CParticleArray
 		void EmitRadiate (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitRadiateArc (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
 		void EmitSpray (const CParticleSystemDesc &Desc, int iCount, const CVector &vSource, const CVector &vSourceVel, int iDirection, int iTick);
-
+		int GetManeuverRate (SEffectUpdateCtx &Ctx) const;
+		bool IsTrackingTime (SEffectUpdateCtx &Ctx) const;
 		void PaintFireAndSmoke (CG32bitImage &Dest, 
 								int xPos, 
 								int yPos, 

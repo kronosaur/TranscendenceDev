@@ -1691,6 +1691,11 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 			return iResult;
 		}
 
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, TargetItem);
+
 	//	Enhance
 
 	DWORD dwID;
@@ -1720,6 +1725,11 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		CItem theEnhancement(Mods.GetEnhancementType(), 1);
 		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
 		}
+
+	//	Update the object
+
+	if (ItemList.IsCursorValid())
+		OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
 
 	//	Done
 

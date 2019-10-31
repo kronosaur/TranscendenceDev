@@ -656,6 +656,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		//	that, then we should set the origin to the original shot position.]
 
 		const CVector &GetOrigin (void) const { return NullVector; }
+		bool IsTracking (void) const;
 		bool SetMissileFade (void);
 
 		CWeaponFireDesc *m_pDesc;				//	Weapon descriptor

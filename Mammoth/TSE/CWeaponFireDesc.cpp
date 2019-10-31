@@ -304,7 +304,7 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 	{
 	CCreatePainterCtx PainterCtx;
 	PainterCtx.SetWeaponFireDesc(this);
-	PainterCtx.SetTrackingObject(CreateCtx.pTarget && IsTracking());
+	PainterCtx.SetTrackingObject(IsTracking(CreateCtx));
 	PainterCtx.SetUseObjectCenter(true);
 
 	//	If this is an explosion, then we pass the source as an anchor.
@@ -2414,6 +2414,18 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
 
     return NOERROR;
     }
+
+bool CWeaponFireDesc::IsTracking (const SShotCreateCtx &Ctx) const
+
+//	IsTracking
+//
+//	Returns TRUE if the shot we're creating tracks.
+
+	{
+	return Ctx.pTarget
+			&& (IsTracking()
+				|| (Ctx.pEnhancements && Ctx.pEnhancements->IsTracking()));
+	}
 
 bool CWeaponFireDesc::IsTrackingOrHasTrackingFragments (void) const
 

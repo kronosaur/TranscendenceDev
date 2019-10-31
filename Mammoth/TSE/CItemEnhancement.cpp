@@ -2002,6 +2002,8 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 				*retsError = strPatternSubst(CONSTLIT("Invalid maneuver rate: %s."), sValue);
 			return ERR_FAIL;
 			}
+		else if (iValue == 0)
+			SetModTracking(9);
 		else
 			SetModTracking(Min(iValue, 180));
 		}
