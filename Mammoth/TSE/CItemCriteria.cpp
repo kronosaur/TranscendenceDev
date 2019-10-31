@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+const CItemCriteria CItemCriteria::m_Null;
+
 CItemCriteria::CItemCriteria (DWORD dwSpecial)
 
 //	CItemCriteria constructor
@@ -42,7 +44,17 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
 	else
 		{
-		ParseSubExpression(pPos);
+		ParseSubExpression(pPos, &pPos);
+
+		//	Parse OR expression
+
+		if (*pPos == '|')
+			{
+			pPos++;
+
+			m_pOr.Set(new CItemCriteria);
+			m_pOr->ParseSubExpression(pPos);
+			}
 		}
 	}
 
@@ -509,7 +521,15 @@ void CItemCriteria::ParseSubExpression (const char *pPos, const char **retpPos)
 		//	No other directives are allowed
 
 		if (*pPos == '}')
+			{
 			pPos++;
+
+			//	Skip any trailing whitespace in case we have an OR operator 
+			//	after this.
+
+			while (*pPos != '\0' && strIsWhitespace(pPos))
+				pPos++;
+			}
 
 		if (retpPos)
 			*retpPos = pPos;
@@ -522,7 +542,7 @@ void CItemCriteria::ParseSubExpression (const char *pPos, const char **retpPos)
 		bool bExclude = false;
 		bool bMustHave = false;
 
-		while (*pPos != '\0')
+		while (*pPos != '\0' && *pPos != '|')
 			{
 			switch (*pPos)
 				{
@@ -902,7 +922,6 @@ void CItemCriteria::WriteSubExpression (CMemoryWriteStream &Output) const
 //	Writes the sub-expression.
 
 	{
-
 	if (!m_sLookup.IsBlank())
 		Output.Write(strPatternSubst(CONSTLIT("{%s}"), m_sLookup));
 
@@ -1021,5 +1040,13 @@ void CItemCriteria::WriteSubExpression (CMemoryWriteStream &Output) const
 
 		if (!sTerm.IsBlank())
 			Output.Write(sTerm.GetPointer(), sTerm.GetLength());
+		}
+
+	//	Recurse into OR expression, if necessary
+
+	if (m_pOr)
+		{
+		Output.Write(CONSTLIT("|"));
+		m_pOr->WriteSubExpression(Output);
 		}
 	}

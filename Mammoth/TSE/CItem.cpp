@@ -2563,8 +2563,6 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 //	Return TRUE if this item matches the given criteria
 
 	{
-    CItemCtx ItemCtx(*this);
-
 	if (m_pItemType == NULL)
 		return false;
 
@@ -2590,6 +2588,11 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 
 		return bMatches;
 		}
+
+	//	If we've got an OR expression and it matches, then we're done.
+
+	else if (Criteria.HasORExpression() && MatchesCriteria(Criteria.GetORExpression()))
+		return true;
 
 	//	If we've got a lookup, then recurse
 

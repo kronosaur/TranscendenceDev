@@ -55,10 +55,12 @@ class CItemCriteria
 		CString AsString (void) const;
 		bool ExcludesVirtual (void) const { return m_bExcludeVirtual; }
 		bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
+		ICCItem *GetFilter (void) const { return m_pFilter; }
 		const CString &GetLookup (void) const { return m_sLookup; }
 		int GetMaxLevelMatched (void) const;
 		CString GetName (void) const;
-		ICCItem *GetFilter (void) const { return m_pFilter; }
+		const CItemCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
+		bool HasORExpression (void) const { return m_pOr != NULL; }
 		void Init (DWORD dwSpecial = NONE) { *this = CItemCriteria(dwSpecial); }
 		void Init (const CString &sCriteria, DWORD dwSpecial = NONE) { *this = CItemCriteria(sCriteria, dwSpecial); }
 		bool Intersects (const CItemCriteria &Src) const;
@@ -114,6 +116,10 @@ class CItemCriteria
 
 		CString m_sLookup;							//	Look up a shared criteria
 		ICCItemPtr m_pFilter;						//	Filter returns Nil for excluded items
+
+		TUniquePtr<CItemCriteria> m_pOr;			//	OR sub-expression
+
+		static const CItemCriteria m_Null;
 	};
 
 enum EDisplayAttributeTypes
