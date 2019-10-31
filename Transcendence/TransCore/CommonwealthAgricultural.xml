@@ -21,7 +21,6 @@
 			regen=				"2"
 			multiHull=			"Nil"
 				 
-			canAttack=			"true"
 			noBlacklist=		"true"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"

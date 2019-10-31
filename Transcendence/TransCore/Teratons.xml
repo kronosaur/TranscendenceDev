@@ -28,7 +28,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -443,7 +442,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -558,7 +556,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -678,7 +675,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			mass=				"5000"
@@ -771,7 +767,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			mass=				"5000"

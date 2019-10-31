@@ -55,7 +55,6 @@
 			sovereign=			"&svSung;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
@@ -129,7 +128,6 @@
 			sovereign=			"&svSung;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
@@ -228,7 +226,6 @@
 			noMapLabel=			"true"
 			fireRateAdj=		"40"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"2500"
 			armorID=			"&itPlasteelPlate;"
@@ -259,7 +256,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -285,7 +281,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -311,7 +306,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -337,7 +331,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"

@@ -31,7 +31,6 @@
 			sovereign=			"&svKobolWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedCeralloyArmor;"

@@ -22,7 +22,6 @@
 			regen=              "20"
 			shipRegen=			"20"
 
-			canAttack=			"true"
 			noBlacklist=		"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"

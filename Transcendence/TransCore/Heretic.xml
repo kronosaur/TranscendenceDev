@@ -304,7 +304,6 @@
 			regen=              "15"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -459,7 +458,6 @@
             regen=              "4"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -569,7 +567,6 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
 			multiHull=			"true"
@@ -734,7 +731,6 @@
 			inherit=			"&unidCommonText;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
 			multiHull=			"true"
@@ -870,7 +866,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
 			multiHull=			"true"
@@ -996,7 +991,6 @@
 			multiHull=			"true"
             regen=              "6"
 
-			canAttack=			"true"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"

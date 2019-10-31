@@ -17,7 +17,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedReactiveArmor;"

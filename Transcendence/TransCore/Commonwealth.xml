@@ -178,7 +178,6 @@
 			regen=              "6"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -355,7 +354,6 @@
 			dockScreen=			"Main"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"2000"
 			armorID=			"&itP120HexphaseArmor;"
@@ -424,7 +422,6 @@
 			regen=              "10"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -627,7 +624,6 @@
 			regen=              "8"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -792,7 +788,6 @@
 			regen=              "4"
 			shipRegen=			"1"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -940,7 +935,6 @@
 			multiHull=			"true"
 			regen=              "6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1021,7 +1015,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"3"
 			multiHull=			"true"
@@ -1244,7 +1237,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -1477,7 +1469,6 @@
 			regen=              "20"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"

@@ -60,7 +60,6 @@
 			sovereign=			"&svSistersOfDomina;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itPlasteelPlate;"

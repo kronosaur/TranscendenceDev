@@ -448,7 +448,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -482,7 +481,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -516,7 +514,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -550,7 +547,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -584,7 +580,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -618,7 +613,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -652,7 +646,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -686,7 +679,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -720,7 +712,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -754,7 +745,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -788,7 +778,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -822,7 +811,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -869,7 +857,6 @@
             regen=              "2"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-			canAttack=			"true"
 
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, monument, populated"
 			>

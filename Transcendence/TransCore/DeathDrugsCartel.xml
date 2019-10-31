@@ -21,7 +21,6 @@
 			sovereign=			"&svDeathDrugsCartel;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"160"

@@ -208,7 +208,6 @@
 			sovereign=			"&svRogueFleet;"
 			abandonedScreen=	"Main"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itP120HexphaseArmor;"

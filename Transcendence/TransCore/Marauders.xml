@@ -34,7 +34,6 @@
 
 			fireRateAdj=		"30"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -114,7 +113,6 @@
 
 			fireRateAdj=		"20"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -215,7 +213,6 @@
 
 			fireRateAdj=		"20"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

@@ -21,7 +21,6 @@
 			name=				"pteravore lair"
 			sovereign=			"&svPteravores;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"

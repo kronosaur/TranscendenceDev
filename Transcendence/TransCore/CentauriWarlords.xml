@@ -33,7 +33,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			allowEnemyDocking=	"true"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
 			level=				"4"
@@ -262,7 +261,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itLightPlasteelPlate;"
 			hitPoints=			"50"
@@ -318,7 +316,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itPlasteelPlate;"
 			hitPoints=			"90"
@@ -374,7 +371,6 @@
 			sovereign=			"&svCentauriWarlords;"
 			
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noFriendlyTarget=	"true"
 
 			level=				"2"

@@ -42,7 +42,6 @@
 
 			fireRateAdj=		"30"
 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>

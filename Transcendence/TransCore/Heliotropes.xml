@@ -40,7 +40,6 @@
 			multiHull=			"true"
             regen=              "8"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -115,7 +114,6 @@
 			hitPoints=			"120"
             regen=              "1"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"40"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"

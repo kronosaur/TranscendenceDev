@@ -1384,7 +1384,6 @@
 			dockScreen=			"Dispatch"
 			abandonedScreen=	"Destroyed"
 			dockingPorts=		"10"
-			canAttack=			"true"
 			noBlacklist=		"true"
 
             level=              "4"
@@ -1856,7 +1855,6 @@
 			regen=			    "15"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"80"
@@ -2971,7 +2969,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itBlastPlate;"
@@ -4947,7 +4944,6 @@
 			regen=				"6"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

@@ -79,7 +79,6 @@
 			regen=              "15"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -263,7 +262,6 @@
 			regen=              "25"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

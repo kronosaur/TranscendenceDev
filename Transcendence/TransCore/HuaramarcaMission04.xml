@@ -195,7 +195,6 @@
 			sovereign=			"&svSung;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"

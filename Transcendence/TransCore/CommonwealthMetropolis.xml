@@ -22,7 +22,6 @@
 			regen=				"8"
 			shipRegen=			"4"
 			
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -178,7 +177,6 @@
 			regen=				"15"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

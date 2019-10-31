@@ -75,7 +75,6 @@
 			multiHull=			"true"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

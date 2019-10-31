@@ -569,7 +569,6 @@
 			name=				"Iocrym outpost"
 			sovereign=			"&svIocrym;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIocrymPlate;"
