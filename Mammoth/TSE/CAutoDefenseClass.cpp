@@ -150,7 +150,7 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 				CSpaceObject *pObj = pSystem->GetObject(i);
 				Metric rDistance2;
 				if (pObj
-						&& (m_TargetCriteria.MatchesCategory(pObj->GetCategory()))
+						&& pObj->MatchesCriteriaCategory(Ctx, m_TargetCriteria)
 						&& ((rDistance2 = (pObj->GetPos() - vSourcePos).Length2()) < rBestDist2)
 						&& pObj->MatchesCriteria(Ctx, m_TargetCriteria)
 						&& !pObj->IsIntangible()

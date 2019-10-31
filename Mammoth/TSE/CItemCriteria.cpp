@@ -44,17 +44,7 @@ CItemCriteria::CItemCriteria (const CString &sCriteria, DWORD dwDefault)
 
 	else
 		{
-		ParseSubExpression(pPos, &pPos);
-
-		//	Parse OR expression
-
-		if (*pPos == '|')
-			{
-			pPos++;
-
-			m_pOr.Set(new CItemCriteria);
-			m_pOr->ParseSubExpression(pPos);
-			}
+		ParseSubExpression(pPos);
 		}
 	}
 
@@ -491,7 +481,7 @@ bool CItemCriteria::MatchesPrice (CurrencyValue iValue) const
 	return true;
 	}
 
-void CItemCriteria::ParseSubExpression (const char *pPos, const char **retpPos)
+void CItemCriteria::ParseSubExpression (const char *pPos)
 
 //	ParseSubExpression
 //
@@ -530,9 +520,6 @@ void CItemCriteria::ParseSubExpression (const char *pPos, const char **retpPos)
 			while (*pPos != '\0' && strIsWhitespace(pPos))
 				pPos++;
 			}
-
-		if (retpPos)
-			*retpPos = pPos;
 		}
 
 	//	Otherwise, parse a criteria.
@@ -879,11 +866,16 @@ void CItemCriteria::ParseSubExpression (const char *pPos, const char **retpPos)
 
 			pPos++;
 			}
+		}
 
-		//	Done
+	//	Parse OR expression
 
-		if (retpPos)
-			*retpPos = pPos;
+	if (*pPos == '|')
+		{
+		pPos++;
+
+		m_pOr.Set(new CItemCriteria);
+		m_pOr->ParseSubExpression(pPos);
 		}
 	}
 

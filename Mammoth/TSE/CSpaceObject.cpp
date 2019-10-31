@@ -6024,6 +6024,13 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 	if (pSource == this)
 		return false;
 
+	//	If we have an OR expression and that matches, then we're done.
+
+	if (Crit.HasORExpression() && MatchesCriteria(Ctx, Crit.GetORExpression()))
+		return true;
+
+	//	Match player
+
 	if (!(Crit.MatchesCategory(GetCategory()))
 			&& (!Crit.MatchesPlayer() || !IsPlayer()))
 		return false;
@@ -6202,6 +6209,23 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		Ctx.DistSort.Insert(rObjDist2, const_cast<CSpaceObject *>(this));
 
 	return true;
+	}
+
+bool CSpaceObject::MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const
+
+//	MatchesCriteriaCategory
+//
+//	Returns TRUE if this object matches just the category portion of the 
+//	criteria. We expose this for optimizations.
+
+	{
+	if (Crit.MatchesCategory(GetCategory()))
+		return true;
+
+	if (Crit.HasORExpression())
+		return MatchesCriteriaCategory(Ctx, Crit.GetORExpression());
+
+	return false;
 	}
 
 bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc)

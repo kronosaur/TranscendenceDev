@@ -50,9 +50,11 @@ class CSpaceObjectCriteria
 		bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
 		bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
 		bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }
+		const CSpaceObjectCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
 		CriteriaSortTypes GetSort (void) const { return m_iSort; }
 		ESortOptions GetSortOrder (void) const { return m_iSortOrder; }
 		CSpaceObject *GetSource (void) const { return m_pSource; }
+		bool HasORExpression (void) const { return (m_pOr ? true : false); }
 		void Init (const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(NULL, sCriteria); }
 		void Init (CSpaceObject *pSource, const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(pSource, sCriteria); }
 		bool IsEmpty (void) const { return (m_dwCategories == 0); }
@@ -92,6 +94,7 @@ class CSpaceObjectCriteria
 
 	private:
 		void Parse (CSpaceObject *pSource, const CString &sCriteria);
+		void ParseSubExpression (const char *pPos);
 
 		CSpaceObject *m_pSource = NULL;				//	Source
 
@@ -144,5 +147,9 @@ class CSpaceObjectCriteria
 
 		CriteriaSortTypes m_iSort = sortNone;
 		ESortOptions m_iSortOrder = AscendingSort;
+
+		TUniquePtr<CSpaceObjectCriteria> m_pOr;		//	OR sub-expression.
+
+		static const CSpaceObjectCriteria m_Null;
 	};
 

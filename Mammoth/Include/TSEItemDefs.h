@@ -81,7 +81,7 @@ class CItemCriteria
 		void SetFilter (ICCItemPtr pFilter) { m_pFilter = pFilter; }
 
 	private:
-		void ParseSubExpression (const char *pPos, const char **retpPos = NULL);
+		void ParseSubExpression (const char *pPos);
 		void WriteSubExpression (CMemoryWriteStream &Output) const;
 		static void WriteCategoryFlags (CMemoryWriteStream &Output, DWORD dwCategories);
 

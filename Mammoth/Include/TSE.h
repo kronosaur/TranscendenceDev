@@ -852,6 +852,7 @@ class CSpaceObject
 
 		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { return MatchesCriteria(CSpaceObjectCriteria::SCtx(Crit), Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
+		bool MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 
 		//	Motion
 		//

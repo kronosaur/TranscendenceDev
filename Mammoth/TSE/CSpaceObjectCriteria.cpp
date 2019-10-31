@@ -7,6 +7,8 @@
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
+const CSpaceObjectCriteria CSpaceObjectCriteria::m_Null;
+
 CSpaceObjectCriteria::CSpaceObjectCriteria (const CString &sCriteria)
 
 //	CSpaceObjectCriteria constructor
@@ -239,8 +241,6 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		=n			Level comparisons
 
 	{
-	CString sParam;
-
 	//	Initialize
 
 	m_pSource = pSource;
@@ -248,7 +248,20 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 	//	Parse
 
 	const char *pPos = sCriteria.GetPointer();
-	while (*pPos != '\0')
+	ParseSubExpression(pPos);
+	}
+
+void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
+
+//	ParseSubExpression
+//
+//	Parses a sub-expression and returns the first character after the sub-
+//	expression.
+
+	{
+	CString sParam;
+
+	while (*pPos != '\0' && *pPos != '|')
 		{
 		switch (*pPos)
 			{
@@ -305,7 +318,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 				else
 					{
 					m_bSourceSovereignOnly = true;
-					m_dwSovereignUNID = (pSource && pSource->GetSovereign() ? pSource->GetSovereign()->GetUNID() : 0);
+					m_dwSovereignUNID = (m_pSource && m_pSource->GetSovereign() ? m_pSource->GetSovereign()->GetUNID() : 0);
 					}
 				break;
 
@@ -389,7 +402,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 
 			case 'P':
 				m_bPerceivableOnly = true;
-				m_iPerception = (pSource ? pSource->GetPerception() : 0);
+				m_iPerception = (m_pSource ? m_pSource->GetPerception() : 0);
 				break;
 
 			case 'R':
@@ -541,6 +554,16 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 			}
 
 		pPos++;
+		}
+
+	//	If we have a sub-expression, recurse
+
+	if (*pPos == '|')
+		{
+		pPos++;
+
+		m_pOr.Set(new CSpaceObjectCriteria);
+		m_pOr->ParseSubExpression(pPos);
 		}
 	}
 
