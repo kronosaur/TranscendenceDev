@@ -47,47 +47,47 @@ class CSpaceObjectCriteria
 		CSpaceObjectCriteria (const CString &sCriteria);
 		CSpaceObjectCriteria (CSpaceObject *pSourceArg, const CString &sCriteria);
 
-		inline bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
-		inline bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
-		inline bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }
-		inline CriteriaSortTypes GetSort (void) const { return m_iSort; }
-		inline ESortOptions GetSortOrder (void) const { return m_iSortOrder; }
-		inline CSpaceObject *GetSource (void) const { return m_pSource; }
-		inline void Init (const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(NULL, sCriteria); }
-		inline void Init (CSpaceObject *pSource, const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(pSource, sCriteria); }
-		inline bool IsEmpty (void) const { return (m_dwCategories == 0); }
-		inline bool MatchesActiveOnly (void) const { return m_bActiveObjectsOnly; }
-		inline bool MatchesAngryOnly (void) const { return m_bAngryObjectsOnly; }
+		bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
+		bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
+		bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }
+		CriteriaSortTypes GetSort (void) const { return m_iSort; }
+		ESortOptions GetSortOrder (void) const { return m_iSortOrder; }
+		CSpaceObject *GetSource (void) const { return m_pSource; }
+		void Init (const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(NULL, sCriteria); }
+		void Init (CSpaceObject *pSource, const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(pSource, sCriteria); }
+		bool IsEmpty (void) const { return (m_dwCategories == 0); }
+		bool MatchesActiveOnly (void) const { return m_bActiveObjectsOnly; }
+		bool MatchesAngryOnly (void) const { return m_bAngryObjectsOnly; }
 		bool MatchesAttributes (const CSpaceObject &Obj) const;
-		inline bool MatchesCategory (DWORD dwCat) const { return (m_dwCategories & dwCat) != 0; }
-		inline const CString &MatchesData (void) const { return m_sData; }
-		inline bool MatchesDockedWithSource (void) const { return m_bDockedWithSource; }
-		inline bool MatchesEnemyOnly (void) const { return m_bEnemyObjectsOnly; }
-		inline bool MatchesFartherThan (void) const { return m_bFartherThan; }
-		inline bool MatchesFarthestOnly (void) const { return m_bFarthestOnly; }
-		inline bool MatchesFriendlyOnly (void) const { return m_bFriendlyObjectsOnly; }
-		inline bool MatchesHomeBaseIsSource (void) const { return m_bHomeBaseIsSource; }
-		inline int MatchesIntersectAngle (void) const { return m_iIntersectAngle; }
-		inline bool MatchesKilledOnly (void) const { return m_bKilledObjectsOnly; }
+		bool MatchesCategory (DWORD dwCat) const { return (m_dwCategories & dwCat) != 0; }
+		const CString &MatchesData (void) const { return m_sData; }
+		bool MatchesDockedWithSource (void) const { return m_bDockedWithSource; }
+		bool MatchesEnemyOnly (void) const { return m_bEnemyObjectsOnly; }
+		bool MatchesFartherThan (void) const { return m_bFartherThan; }
+		bool MatchesFarthestOnly (void) const { return m_bFarthestOnly; }
+		bool MatchesFriendlyOnly (void) const { return m_bFriendlyObjectsOnly; }
+		bool MatchesHomeBaseIsSource (void) const { return m_bHomeBaseIsSource; }
+		int MatchesIntersectAngle (void) const { return m_iIntersectAngle; }
+		bool MatchesKilledOnly (void) const { return m_bKilledObjectsOnly; }
 		bool MatchesLevel (int iLevel) const;
-		inline bool MatchesManufacturedOnly (void) const { return m_bManufacturedObjectsOnly; }
-		inline Metric MatchesMaxRadius (void) const { return m_rMaxRadius; }
-		inline Metric MatchesMinRadius (void) const { return m_rMinRadius; }
-		inline bool MatchesNearerThan (void) const { return m_bNearerThan; }
-		inline bool MatchesNearestOnly (void) const { return m_bNearestOnly; }
+		bool MatchesManufacturedOnly (void) const { return m_bManufacturedObjectsOnly; }
+		Metric MatchesMaxRadius (void) const { return m_rMaxRadius; }
+		Metric MatchesMinRadius (void) const { return m_rMinRadius; }
+		bool MatchesNearerThan (void) const { return m_bNearerThan; }
+		bool MatchesNearestOnly (void) const { return m_bNearestOnly; }
 		bool MatchesOrder (const CSpaceObject *pSource, const CSpaceObject &Obj) const;
-		inline bool MatchesPerceivableOnly (void) const { return m_bPerceivableOnly; }
-		inline int MatchesPerception (void) const { return m_iPerception; }
-		inline bool MatchesPlayer (void) const { return m_bSelectPlayer; }
+		bool MatchesPerceivableOnly (void) const { return m_bPerceivableOnly; }
+		int MatchesPerception (void) const { return m_iPerception; }
+		bool MatchesPlayer (void) const { return m_bSelectPlayer; }
 		bool MatchesPosition (const CSpaceObject &Obj) const;
 		bool MatchesSovereign (CSovereign *pSovereign) const;
-		inline bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
-		inline bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
-		inline bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
-		inline bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
+		bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
+		bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
+		bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
+		bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
 		void SetIncludeIntangible (bool bValue = true) { m_bIncludeIntangible = bValue; }
-		inline void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
-		inline void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
+		void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
+		void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
 		void SetSource (CSpaceObject *pSource);
 
 	private:
