@@ -519,6 +519,7 @@
     <ClCompile Include="CSystemEventList.cpp" />
     <ClCompile Include="CTimedMissionEvent.cpp" />
     <ClCompile Include="CTLispConvert.cpp" />
+    <ClCompile Include="CTopologyAttributeCriteria.cpp" />
     <ClCompile Include="CTopologyCreateCtx.cpp" />
     <ClCompile Include="CTopologySystemDesc.cpp" />
     <ClCompile Include="CTradingComputer.cpp" />

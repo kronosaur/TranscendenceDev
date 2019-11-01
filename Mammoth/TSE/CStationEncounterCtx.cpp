@@ -34,7 +34,7 @@ void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
 		}
 	}
 
-int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria)
+int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria)
 
 //	CalcDistanceToCriteria
 //

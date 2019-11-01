@@ -44,7 +44,7 @@ class CSpaceObjectCriteria
 			};
 
 		CSpaceObjectCriteria (void) { }
-		CSpaceObjectCriteria (const CString &sCriteria);
+		explicit CSpaceObjectCriteria (const CString &sCriteria);
 		CSpaceObjectCriteria (CSpaceObject *pSourceArg, const CString &sCriteria);
 
 		bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }

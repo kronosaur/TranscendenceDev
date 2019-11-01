@@ -123,7 +123,7 @@ class CStationEncounterDesc
 		void InitLevelFrequency (CTopology &Topology);
 		bool CanBeRandomlyEncountered (void) const { return (!m_sLevelFrequency.IsBlank() || m_bNumberAppearing); }
 		int GetCountOfRandomEncounterLevels (void) const;
-		const CTopologyNode::SAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }
+		const CTopologyAttributeCriteria &GetDistanceCriteria (void) const { return m_DistanceCriteria; }
 		void GetExclusionDesc (SExclusionDesc &Exclusion) const;
 		Metric GetExclusionRadius (void) const { return m_rExclusionRadius; }
 		Metric GetEnemyExclusionRadius (void) const { return m_rEnemyExclusionRadius; }
@@ -154,7 +154,7 @@ class CStationEncounterDesc
 		bool m_bSystemCriteria = false;				//	If TRUE we have system criteria
 		CTopologyNode::SCriteria m_SystemCriteria;	//	System criteria
 
-		CTopologyNode::SAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
+		CTopologyAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria
 		CString m_sLevelFrequency;					//	String array of frequency distribution by level
 		CAttributeCriteria m_SystemAffinity;		//	Adjust frequency based on number of matches
@@ -192,7 +192,7 @@ class CStationEncounterCtx
 		void Reinit (const CStationEncounterDesc &Desc);
 		void WriteToStream (IWriteStream *pStream);
 
-		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria);
+		static int CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria);
 
 	private:
 		struct SEncounterStats

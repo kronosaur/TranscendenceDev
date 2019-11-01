@@ -11,39 +11,34 @@ const DWORD END_GAME_SYSTEM_UNID =				0x00ffffff;
 class CTopology;
 class ITopologyProcessor;
 
+class CTopologyAttributeCriteria
+	{
+	public:
+		CTopologyAttributeCriteria (void) { }
+		explicit CTopologyAttributeCriteria (const CString &sCriteria) { Parse(sCriteria); }
+
+		CString AsString (void) const;
+		ALERROR Init (const CString &sCriteria) { *this = CTopologyAttributeCriteria(); return Parse(sCriteria); }
+		bool IsEmpty (void) const;
+		bool Matches (const CTopologyNode &Node) const;
+
+	private:
+		ALERROR Parse (const CString &sCriteria);
+
+		TArray<CString> m_AttribsRequired;			//	Does not match if any of these attribs are missing
+		TArray<CString> m_AttribsNotAllowed;		//	Does not match if any of these attribs are present
+		TArray<CString> m_SpecialRequired;			//	Special attributes
+		TArray<CString> m_SpecialNotAllowed;		//	Special attributes
+
+		CIntegerRangeCriteria m_Level;				//	Required level
+	};
+
 class CTopologyNode
 	{
 	public:
-		struct SAttributeCriteria
-			{
-			CString AsString (void) const
-				{
-				CMemoryWriteStream Stream;
-				if (Stream.Create() != NOERROR)
-					return NULL_STR;
-
-				CAttributeCriteria::WriteAsString(Stream, AttribsRequired, CONSTLIT("+"));
-				CAttributeCriteria::WriteAsString(Stream, SpecialRequired, CONSTLIT("+"));
-				CAttributeCriteria::WriteAsString(Stream, AttribsNotAllowed, CONSTLIT("-"));
-				CAttributeCriteria::WriteAsString(Stream, SpecialNotAllowed, CONSTLIT("-"));
-				Stream.Write(Level.AsString());
-
-				return CString(Stream.GetPointer(), Stream.GetLength());
-				}
-
-			bool IsEmpty (void) const { return (AttribsRequired.GetCount() == 0 && AttribsNotAllowed.GetCount() == 0 && SpecialRequired.GetCount() == 0 && SpecialNotAllowed.GetCount() == 0); }
-
-			TArray<CString> AttribsRequired;			//	Does not match if any of these attribs are missing
-			TArray<CString> AttribsNotAllowed;			//	Does not match if any of these attribs are present
-			TArray<CString> SpecialRequired;			//	Special attributes
-			TArray<CString> SpecialNotAllowed;			//	Special attributes
-
-			CIntegerRangeCriteria Level;				//	Required level
-			};
-
 		struct SDistanceTo
 			{
-			SAttributeCriteria AttribCriteria;
+			CTopologyAttributeCriteria AttribCriteria;
 			CString sNodeID;
 
 			int iMinDist = 0;
@@ -68,7 +63,7 @@ class CTopologyNode
 			int iMaxStargates = -1;					//	Match if <= this many stargates
 			int iMinInterNodeDist = 0;				//	Used by <DistributeNodes> (maybe move there)
 			int iMaxInterNodeDist = -1;
-			SAttributeCriteria AttribCriteria;
+			CTopologyAttributeCriteria AttribCriteria;
 			TArray<SDistanceTo> DistanceTo;			//	Matches if node is within the proper distance of another node or nodes
 
 			bool bKnownOnly = false;				//	Only nodes that are known to the player
@@ -150,7 +145,7 @@ class CTopologyNode
 		CTradingEconomy &GetTradingEconomy (void) { return m_Trading; }
 		const CTradingEconomy &GetTradingEconomy (void) const { return m_Trading; }
 		CUniverse &GetUniverse (void) const;
-		bool HasAttribute (const CString &sAttrib) { return ::HasModifier(m_sAttributes, sAttrib); }
+		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		ICCItemPtr IncData (const CString &sAttrib, ICCItem *pValue = NULL) { return m_Data.IncData(sAttrib, pValue); }
 		ALERROR InitFromAdditionalXML (CTopology &Topology, CXMLElement *pDesc, CString *retsError);
@@ -162,8 +157,7 @@ class CTopologyNode
 		bool IsKnown (void) const { return m_bKnown; }
 		bool IsMarked (void) const { return m_bMarked; }
 		bool IsPositionKnown (void) const { return (m_bKnown || m_bPosKnown); }
-		bool MatchesAttributeCriteria (const SAttributeCriteria &Crit) const;
-		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit);
+		bool MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit) const;
 		void SetCalcDistance (int iDist) const { m_iCalcDistance = iDist; }
 		void SetCreatorID (const CString &sID) { m_sCreatorID = sID; }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
@@ -188,7 +182,6 @@ class CTopologyNode
 		bool HasVariantLabel (const CString &sVariant);
 
 		static void InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteria);
-		static ALERROR ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit);
 		static ALERROR ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCriteria &retCrit, CString *retsError = NULL);
 		static ALERROR ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError = NULL);
@@ -272,7 +265,7 @@ class CTopologyNodeList
 		bool FindNode (const CString &sID, int *retiIndex = NULL) const;
 		int GetCount (void) const { return m_List.GetCount(); }
 		void Insert (CTopologyNode *pNode) { if (pNode) m_List.Insert(pNode); }
-		bool IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
+		bool IsNodeInRangeOf (const CTopologyNode *pNode, int iMin, int iMax, const CTopologyAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const;
 		void RestoreMarks (TArray<bool> &Saved);
 		void SaveAndSetMarks (bool bMark, TArray<bool> *retSaved);
 		void Shuffle (void) { m_List.Shuffle(); }
@@ -462,8 +455,8 @@ class CTopology
 		CString GenerateUniquePrefix (const CString &sPrefix, const CString &sTestNodeID);
 		int GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTarget) const;
 		int GetDistance (const CString &sSourceID, const CString &sDestID) const;
-		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
-		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const;
+		int GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
+		int GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const;
 		CTopologyNodeList &GetTopologyNodeList (void) { return m_Topology; }
 		CTopologyNode *GetTopologyNode (int iIndex) { return &m_Topology[iIndex]; }
 		const CTopologyNode *GetTopologyNode (int iIndex) const { return &m_Topology[iIndex]; }

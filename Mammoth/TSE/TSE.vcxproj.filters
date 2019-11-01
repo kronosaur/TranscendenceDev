@@ -1351,5 +1351,8 @@
     <ClCompile Include="CAutoDockCalc.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
+    <ClCompile Include="CTopologyAttributeCriteria.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

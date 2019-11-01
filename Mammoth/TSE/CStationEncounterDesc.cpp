@@ -264,7 +264,7 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 
 	if (Override.FindAttribute(DISTANCE_CRITERIA_ATTRIB, &sAttrib))
 		{
-		if (CTopologyNode::ParseAttributeCriteria(sAttrib, &m_DistanceCriteria) != NOERROR)
+		if (m_DistanceCriteria.Init(sAttrib) != NOERROR)
 			return false;
 		}
 
@@ -410,7 +410,7 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	Level frequency and criteria
 
-	if (error = CTopologyNode::ParseAttributeCriteria(pDesc->GetAttribute(DISTANCE_CRITERIA_ATTRIB), &m_DistanceCriteria))
+	if (error = m_DistanceCriteria.Init(pDesc->GetAttribute(DISTANCE_CRITERIA_ATTRIB)))
 		return error;
 
 	m_sDistanceFrequency = pDesc->GetAttribute(DISTANCE_FREQUENCY_ATTRIB);
