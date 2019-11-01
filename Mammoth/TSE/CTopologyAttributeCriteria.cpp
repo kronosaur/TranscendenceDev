@@ -16,11 +16,7 @@ CString CTopologyAttributeCriteria::AsString (void) const
 	if (Stream.Create() != NOERROR)
 		return NULL_STR;
 
-	CAttributeCriteria::WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"));
-	CAttributeCriteria::WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"));
-	CAttributeCriteria::WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"));
-	CAttributeCriteria::WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"));
-	Stream.Write(m_Level.AsString());
+	WriteSubExpression(Stream);
 
 	return CString(Stream.GetPointer(), Stream.GetLength());
 	}
@@ -35,7 +31,9 @@ bool CTopologyAttributeCriteria::IsEmpty (void) const
 	return (m_AttribsRequired.GetCount() == 0 
 			&& m_AttribsNotAllowed.GetCount() == 0 
 			&& m_SpecialRequired.GetCount() == 0 
-			&& m_SpecialNotAllowed.GetCount() == 0);
+			&& m_SpecialNotAllowed.GetCount() == 0
+			&& m_Level.IsEmpty()
+			&& !m_pOr);
 	}
 
 bool CTopologyAttributeCriteria::Matches (const CTopologyNode &Node) const
@@ -45,6 +43,11 @@ bool CTopologyAttributeCriteria::Matches (const CTopologyNode &Node) const
 //	Returns TRUE if the given node matches the criteria
 
 	{
+	//	Check the sub-expression first. If it matches then we're done.
+
+	if (m_pOr && m_pOr->Matches(Node))
+		return true;
+
 	//	Check required attributes
 
 	for (int i = 0; i < m_AttribsRequired.GetCount(); i++)
@@ -85,7 +88,17 @@ ALERROR CTopologyAttributeCriteria::Parse (const CString &sCriteria)
 
 	{
 	const char *pPos = sCriteria.GetASCIIZPointer();
-	while (*pPos != '\0')
+	return ParseSubExpression(pPos);
+	}
+
+ALERROR CTopologyAttributeCriteria::ParseSubExpression (const char *pPos)
+
+//	ParseSubExpression
+//
+//	Parses a string criteria
+
+	{
+	while (*pPos != '\0' && *pPos != '|')
 		{
 		switch (*pPos)
 			{
@@ -128,6 +141,37 @@ ALERROR CTopologyAttributeCriteria::Parse (const CString &sCriteria)
 		pPos++;
 		}
 
+	//	Recurse if we have an OR expression.
+
+	if (*pPos == '|')
+		{
+		pPos++;
+		m_pOr.Set(new CTopologyAttributeCriteria);
+		return m_pOr->ParseSubExpression(pPos);
+		}
+
 	return NOERROR;
 	}
 
+void CTopologyAttributeCriteria::WriteSubExpression (CMemoryWriteStream &Stream) const
+
+//	WriteSubExpression
+//
+//	Writes sub-expression to stream.
+
+	{
+	CAttributeCriteria::WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"));
+	CAttributeCriteria::WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"));
+	CAttributeCriteria::WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"));
+	CAttributeCriteria::WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"));
+
+	Stream.Write(m_Level.AsString());
+
+	//	If we have an OR expression, recurse.
+
+	if (m_pOr)
+		{
+		Stream.Write(CONSTLIT(" | "));
+		m_pOr->WriteSubExpression(Stream);
+		}
+	}

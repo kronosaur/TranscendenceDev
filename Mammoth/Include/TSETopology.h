@@ -24,6 +24,8 @@ class CTopologyAttributeCriteria
 
 	private:
 		ALERROR Parse (const CString &sCriteria);
+		ALERROR ParseSubExpression (const char *pPos);
+		void WriteSubExpression (CMemoryWriteStream &Stream) const;
 
 		TArray<CString> m_AttribsRequired;			//	Does not match if any of these attribs are missing
 		TArray<CString> m_AttribsNotAllowed;		//	Does not match if any of these attribs are present
@@ -31,6 +33,8 @@ class CTopologyAttributeCriteria
 		TArray<CString> m_SpecialNotAllowed;		//	Special attributes
 
 		CIntegerRangeCriteria m_Level;				//	Required level
+
+		TUniquePtr<CTopologyAttributeCriteria> m_pOr;
 	};
 
 class CTopologyNode

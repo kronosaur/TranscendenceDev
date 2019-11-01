@@ -1038,7 +1038,7 @@ void CItemCriteria::WriteSubExpression (CMemoryWriteStream &Output) const
 
 	if (m_pOr)
 		{
-		Output.Write(CONSTLIT("|"));
+		Output.Write(CONSTLIT(" | "));
 		m_pOr->WriteSubExpression(Output);
 		}
 	}
