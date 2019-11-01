@@ -9,6 +9,7 @@ static constexpr DWORD FN_TSE_PARSE_INTEGER_RANGE =		1;
 static constexpr DWORD FN_TSE_PATTERN =					2;
 static constexpr DWORD FN_TSE_SET_SYSTEM =				3;
 static constexpr DWORD FN_TSE_UPDATE_SYSTEM =			4;
+static constexpr DWORD FN_TSE_AFFINITY_CRITERIA =		5;
 
 ICCItem *fnNil (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -31,6 +32,10 @@ static PRIMITIVEPROCDEF g_Library[] =
 		{	"diagUpdateSystem",				fnTransEngine,		FN_TSE_UPDATE_SYSTEM,
 			"(diagUpdateSystem [updates]) -> True/error",
 			"*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"tseAffinityCriteria",			fnTransEngine,		FN_TSE_AFFINITY_CRITERIA,
+			"(tseAffinityCriteria criteria attribs [freq]) -> result",
+			"ss*",	0,	},
 
 		{	"tseParseIntegerRange",			fnTransEngine,		FN_TSE_PARSE_INTEGER_RANGE,
 			"(tseParseIntegerRange criteria) -> result",
@@ -76,6 +81,33 @@ ICCItem *fnTransEngine (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	switch (dwData)
 		{
+		case FN_TSE_AFFINITY_CRITERIA:
+			{
+			CString sError;
+			CAffinityCriteria Criteria;
+			if (Criteria.Parse(pArgs->GetElement(0)->GetStringValue(), &sError) != NOERROR)
+				return pCC->CreateError(sError, pArgs->GetElement(0));
+
+			CString sAttribList = pArgs->GetElement(1)->GetStringValue();
+			int iFreq = (pArgs->GetCount() > 2 ? pArgs->GetElement(2)->GetIntegerValue() : -1);
+
+			std::function<bool(const CString &)> fnHasAttrib = [sAttribList](const CString &sAttrib) { return ::HasModifier(sAttribList, sAttrib); };
+			std::function<int(const CString &)> fnGetFreq = NULL;
+			if (iFreq != -1)
+				fnGetFreq = [iFreq](const CString &sAttrib) { return iFreq; };
+
+			ICCItemPtr pResult(ICCItem::SymbolTable);
+			pResult->SetStringAt(CONSTLIT("criteria"), Criteria.AsString());
+
+			bool bMatch = Criteria.Matches(fnHasAttrib);
+			pResult->SetBooleanAt(CONSTLIT("match"), bMatch);
+
+			int iWeight = Criteria.CalcWeight(fnHasAttrib, NULL, fnGetFreq);
+			pResult->SetIntegerAt(CONSTLIT("weight"), iWeight);
+
+			return pResult->Reference();
+			}
+
 		case FN_TSE_PARSE_INTEGER_RANGE:
 			{
 			CIntegerRangeCriteria Criteria;

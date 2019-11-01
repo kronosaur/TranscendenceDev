@@ -422,14 +422,6 @@ int CSystem::CalcLocationAffinity (const CAffinityCriteria &Criteria, const CStr
 //	CalcLocationAffinity
 //
 //	Computes the affinity of the position with the given location attributes.
-//
-//	EXAMPLES:
-//
-//	Criteria = "*"			LocationAttribs = "{anything}"		Result = 1000
-//	Criteria = "+asteroids"	LocationAttribs = "asteroids"		Result = 2000
-//	Criteria = "+asteroids"	LocationAttribs = "foo"				Result = 1000
-//	Criteria = "-asteroids"	LocationAttribs = "asteroids"		Result = 500
-//	Criteria = "-asteroids"	LocationAttribs = "foo"				Result = 1000
 
 	{
 	return Criteria.CalcWeight(

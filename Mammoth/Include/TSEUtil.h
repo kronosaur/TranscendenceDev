@@ -355,6 +355,8 @@ class CAffinityCriteria
 		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired, bool *retbIsSpecial = NULL) const;
 		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
 		int GetCount (void) const { return m_Attribs.GetCount(); }
+		static bool IsCustomAttribOperator (const char *pPos);
+		ALERROR ParseSubExpression (const char *pPos, CString *retsError = NULL);
 		void WriteSubExpression (CMemoryWriteStream &Stream) const;
 
 		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength);
@@ -363,6 +365,8 @@ class CAffinityCriteria
 
 		TArray<SEntry> m_Attribs;
 		DWORD m_dwFlags = 0;
+
+		TUniquePtr<CAffinityCriteria> m_pOr;
 	};
 
 class CIntegerRangeCriteria

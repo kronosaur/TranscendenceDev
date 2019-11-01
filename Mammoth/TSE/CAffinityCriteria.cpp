@@ -37,31 +37,46 @@ int CAffinityCriteria::CalcWeight (std::function<bool(const CString &)> fnHasAtt
 //	attribute exists or not.
 
 	{
+	int iWeight;
+
 	//	Special values
 
 	if (MatchesDefault())
-		return 0;
+		iWeight = 0;
+
 	else if (MatchesAll())
-		return 1000;
+		iWeight = 1000;
 
-	//	Compute
-
-	int iWeight = 1000;
-	for (int i = 0; i < GetCount(); i++)
+	else
 		{
-		DWORD dwMatchStrength;
-		bool bIsSpecial;
-		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
+		iWeight = 1000;
 
-		bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
+		//	Compute
 
-		int iAdj;
-		if (fnGetFreq)
-			iAdj = CalcWeightAdjWithAttribFreq(bHasAttrib, dwMatchStrength, fnGetFreq(sAttrib));
-		else
-			iAdj = CalcWeightAdj(bHasAttrib, dwMatchStrength);
+		for (int i = 0; i < GetCount(); i++)
+			{
+			DWORD dwMatchStrength;
+			bool bIsSpecial;
+			const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
 
-		iWeight = iWeight * iAdj / 1000;
+			bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
+
+			int iAdj;
+			if (fnGetFreq)
+				iAdj = CalcWeightAdjWithAttribFreq(bHasAttrib, dwMatchStrength, fnGetFreq(sAttrib));
+			else
+				iAdj = CalcWeightAdj(bHasAttrib, dwMatchStrength);
+
+			iWeight = iWeight * iAdj / 1000;
+			}
+		}
+
+	//	Recurse, if necessary
+
+	if (m_pOr)
+		{
+		int iOtherWeight = m_pOr->CalcWeight(fnHasAttrib, fnHasSpecialAttrib, fnGetFreq);
+		iWeight = Max(iWeight, iOtherWeight);
 		}
 
 	return iWeight;
@@ -205,7 +220,7 @@ int CAffinityCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMat
 			//	objects, so that we keep our overall frequency relatively constant.
 
 			if (bHasAttrib)
-				return 100000 / iAttribFreq;
+				return mathRound(100000.0 / iAttribFreq);
 
 			//	If this location DOES NOT have the attribute, then we have 0 chance of
 			//	appearing here.
@@ -227,7 +242,7 @@ int CAffinityCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMat
 			//	of the attribute. 
 
 			else
-				return 100000 / (100 - iAttribFreq);
+				return mathRound(100000.0 / (100 - iAttribFreq));
 			}
 
 		//	Compute based on match strength
@@ -274,9 +289,9 @@ int CAffinityCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMat
 			//	Compute our probability based on whether we have the attribute our not
 
 			if (bHasAttrib)
-				return (int)(1000.0 * rF / iAttribFreq);
+				return mathRound(1000.0 * rF / iAttribFreq);
 			else
-				return (int)(1000.0 * (100.0 - rF) / (100 - iAttribFreq));
+				return mathRound(1000.0 * (100.0 - rF) / (100 - iAttribFreq));
 			}
 		}
 	}
@@ -299,9 +314,11 @@ const CString &CAffinityCriteria::GetAttribAndRequired (int iIndex, bool *retbRe
 			case CODE_INCREASE_IF:
 			case CODE_DECREASE_UNLESS:
 				*retbRequired = true;
+				break;
 
 			default:
 				*retbRequired = false;
+				break;
 			}
 		}
 
@@ -329,6 +346,78 @@ const CString &CAffinityCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatch
 	return Entry.sAttrib;
 	}
 
+bool CAffinityCriteria::IsCustomAttribOperator (const char *pPos)
+
+//	IsCustomAttribOperator
+//
+//	Returns TRUE if the character is the = operator (or the | operator, for
+//	backwards compatibility.
+
+	{
+	if (*pPos == '=')
+		return true;
+	else if (*pPos == '|')
+		{
+		//	Skip ahead to make sure this is not an OR operator.
+
+		if (pPos[1] == '\0')
+			return false;
+
+		if (pPos[1] != '+' && pPos[1] != '-')
+			return false;
+
+		if (pPos[2] < '0' || pPos[2] > '9')
+			return false;
+
+		return true;
+		}
+	else
+		return false;
+	}
+
+bool CAffinityCriteria::Matches (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib) const
+
+//	Matches
+//
+//	Returns TRUE if this criteria matches the given position in the given 
+//	system.
+
+	{
+	bool bMatches;
+
+	if (MatchesDefault())
+		bMatches = false;
+
+	else if (MatchesAll())
+		bMatches = true;
+
+	else
+		{
+		bMatches = true;
+
+		for (int i = 0; i < GetCount(); i++)
+			{
+			bool bRequired;
+			bool bIsSpecial;
+			const CString &sAttrib = GetAttribAndRequired(i, &bRequired, &bIsSpecial);
+
+			bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
+			if (bHasAttrib != bRequired)
+				{
+				bMatches = false;
+				break;
+				}
+			}
+		}
+
+	//	Recurse, if necessary
+
+	if (!bMatches && m_pOr)
+		bMatches = m_pOr->Matches(fnHasAttrib, fnHasSpecialAttrib);
+
+	return bMatches;
+	}
+
 ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 
 //	Parse
@@ -342,17 +431,33 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 	//	If we match all, then we have no individual criteria
 
 	if (strEquals(sCriteria, MATCH_ALL))
-		return NOERROR;
+		{
+		}
 	else if (strEquals(sCriteria, MATCH_DEFAULT))
 		{
 		m_dwFlags |= flagDefault;
-		return NOERROR;
+		}
+	else
+		{
+		const char *pPos = sCriteria.GetASCIIZPointer();
+		if (ParseSubExpression(sCriteria) != NOERROR)
+			{
+			if (retsError) *retsError = strPatternSubst(CONSTLIT("Invalid criteria: %s"), sCriteria);
+			return ERR_FAIL;
+			}
 		}
 
-	//	Parse
+	return NOERROR;
+	}
 
-	const char *pPos = sCriteria.GetASCIIZPointer();
-	while (*pPos != '\0')
+ALERROR CAffinityCriteria::ParseSubExpression (const char *pPos, CString *retsError)
+
+//	ParseSubExpression
+//
+//	Parses the criteria
+
+	{
+	while (*pPos != '\0' && *pPos != '|')
 		{
 		if (IsWeightChar(pPos))
 			{
@@ -388,12 +493,7 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 			//	Whitespace or empty attributes are invalid here.
 
 			if (IsDelimiterChar(pPos))
-				{
-				if (retsError)
-					*retsError = strPatternSubst(CONSTLIT("Invalid criteria: \"%s\""), sCriteria);
-
 				return ERR_FAIL;
-				}
 
 			//	Get the attribute until the delimeter
 
@@ -404,8 +504,10 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 				{
 				if (*pPos == ':')
 					bIsSpecialAttrib = true;
-				else if (*pPos == '|' || *pPos == '=')
+				else if (IsCustomAttribOperator(pPos))
 					pCustomWeight = pPos;
+				else if (*pPos == '|')
+					break;
 
 				pPos++;
 				}
@@ -480,6 +582,7 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 
 					default:
 						pEntry->dwMatchStrength = 0;
+						break;
 					}
 				}
 			}
@@ -487,38 +590,16 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 			pPos++;
 		}
 
-	return NOERROR;
-	}
+	//	Recurse, if necessary
 
-bool CAffinityCriteria::Matches (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib) const
-
-//	Matches
-//
-//	Returns TRUE if this criteria matches the given position in the given 
-//	system.
-
-	{
-	//	Special values
-
-	if (MatchesDefault())
-		return false;
-	else if (MatchesAll())
-		return true;
-
-	for (int i = 0; i < GetCount(); i++)
+	if (*pPos == '|')
 		{
-		bool bRequired;
-		bool bIsSpecial;
-		const CString &sAttrib = GetAttribAndRequired(i, &bRequired, &bIsSpecial);
-
-		bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
-		if (bHasAttrib != bRequired)
-			return false;
+		pPos++;
+		m_pOr.Set(new CAffinityCriteria);
+		return m_pOr->ParseSubExpression(pPos, retsError);
 		}
 
-	//	We match
-
-	return true;
+	return NOERROR;
 	}
 
 void CAffinityCriteria::WriteSubExpression (CMemoryWriteStream &Stream) const
@@ -604,8 +685,17 @@ void CAffinityCriteria::WriteSubExpression (CMemoryWriteStream &Stream) const
 							Stream.Write(strPatternSubst(CONSTLIT("-%s=-%d;"), Entry.sAttrib, dwValue));
 							break;
 						}
+					break;
 					}
 				}
 			}
+		}
+
+	//	Recurse, if necessary
+
+	if (m_pOr)
+		{
+		Stream.Write(CONSTLIT(" | "));
+		m_pOr->WriteSubExpression(Stream);
 		}
 	}
