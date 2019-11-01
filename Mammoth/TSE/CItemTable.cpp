@@ -313,6 +313,19 @@ class CTableOfGenerators : public IItemGenerator
 
 //	IItemGenerator -------------------------------------------------------------
 
+int IItemGenerator::CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCriteria &Criteria)
+
+//	CalcLocationAffinity
+//
+//	Computes the location affinity.
+
+	{
+	if (Ctx.pSystem)
+		return Ctx.pSystem->CalcLocationAffinity(Criteria, NULL_STR, Ctx.vPos);
+	else
+		return Criteria.CalcWeight([](const CString &sAttrib) { return false; });
+	}
+
 ALERROR IItemGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator)
 
 //	CreateFromXML
@@ -1278,7 +1291,7 @@ void CLocationCriteriaTableOfItemGenerators::AddItems (SItemAddCtx &Ctx)
 		m_iTotalChance = 0;
 		for (i = 0; i < m_Table.GetCount(); i++)
 			{
-			m_Table[i].iChance = m_Table[i].Criteria.CalcLocationWeight(Ctx.pSystem, NULL_STR, Ctx.vPos);
+			m_Table[i].iChance = CalcLocationAffinity(Ctx, m_Table[i].Criteria);
 			m_iTotalChance += m_Table[i].iChance;
 			}
 
@@ -1393,7 +1406,7 @@ CItemTypeProbabilityTable CLocationCriteriaTableOfItemGenerators::GetProbability
 		m_iTotalChance = 0;
 		for (i = 0; i < m_Table.GetCount(); i++)
 			{
-			m_Table[i].iChance = m_Table[i].Criteria.CalcLocationWeight(Ctx.pSystem, NULL_STR, Ctx.vPos);
+			m_Table[i].iChance = CalcLocationAffinity(Ctx, m_Table[i].Criteria);
 			m_iTotalChance += m_Table[i].iChance;
 			}
 

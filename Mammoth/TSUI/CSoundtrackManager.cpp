@@ -107,7 +107,7 @@ CMusicResource *CSoundtrackManager::CalcGameTrackToPlay (CTopologyNode *pNode, c
 		//	Calculate the chance for this track based on location
 		//	criteria.
 
-		int iChance = (pNode ? pNode->CalcMatchStrength(pTrack->GetLocationCriteria()) : 1000);
+		int iChance = (pNode ? pNode->CalcAffinity(pTrack->GetLocationCriteria()) : 1000);
 		if (iChance == 0)
 			continue;
 

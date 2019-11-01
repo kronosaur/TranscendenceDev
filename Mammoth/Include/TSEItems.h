@@ -620,4 +620,7 @@ class IItemGenerator
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
+
+	protected:
+		static int CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCriteria &Criteria);
 	};

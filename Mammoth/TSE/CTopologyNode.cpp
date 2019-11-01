@@ -182,29 +182,17 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 	return NOERROR;
 	}
 
-int CTopologyNode::CalcMatchStrength (const CAffinityCriteria &Criteria)
+int CTopologyNode::CalcAffinity (const CAffinityCriteria &Criteria) const
 
-//	CalcMatchStrength
+//	CalcAffinity
 //
-//	Calculates the match strength of topology node and the criteria.
+//	Computes the affinity value of this node given the criteria.
 
 	{
-	int i;
-
-	int iStrength = 1000;
-	for (i = 0; i < Criteria.GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		bool bIsSpecial;
-		const CString &sAttrib = Criteria.GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
-
-		bool bHasAttrib = (bIsSpecial ? HasSpecialAttribute(sAttrib) : HasAttribute(sAttrib));
-		int iAdj = CAffinityCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength);
-
-		iStrength = iStrength * iAdj / 1000;
-		}
-
-	return iStrength;
+	return Criteria.CalcWeight(
+		[this](const CString &sAttrib) { return HasAttribute(sAttrib); },
+		[this](const CString &sAttrib) { return HasSpecialAttribute(sAttrib); }
+		);
 	}
 
 void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode)

@@ -417,14 +417,11 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 	DEBUG_CATCH
 	}
 
-int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAffinityCriteria &Criteria)
+int CSystem::CalcLocationAffinity (const CAffinityCriteria &Criteria, const CString &sLocationAttribs, const CVector &vPos) const
 
-//	CalcLocationWeight
+//	CalcLocationAffinity
 //
-//	Calculates the weight of the given location relative to the given
-//	criteria.
-//
-//	See: CAffinityCriteria::CalcWeightAdj
+//	Computes the affinity of the position with the given location attributes.
 //
 //	EXAMPLES:
 //
@@ -435,48 +432,11 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAffinityCriteria &Cr
 //	Criteria = "-asteroids"	LocationAttribs = "foo"				Result = 1000
 
 	{
-	int i;
-	int iWeight = 1000;
-
-	//	Handle edge cases
-
-	if (Criteria.MatchesAll())
-		return iWeight;
-
-	//	Adjust weight based on criteria
-
-	const CString &sAttributes = pLoc->GetAttributes();
-	CVector vPos = pLoc->GetOrbit().GetObjectPos();
-
-	for (i = 0; i < Criteria.GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		const CString &sAttrib = Criteria.GetAttribAndWeight(i, &dwMatchStrength);
-
-		//	Do we have the attribute? Check the location and any attributes
-		//	inherited from territories and the system.
-
-		bool bHasAttrib = (::HasModifier(sAttributes, sAttrib)
-				|| HasAttribute(vPos, sAttrib));
-
-		//	Compute the frequency of the given attribute
-
-		int iAttribFreq = m_Universe.GetAttributeDesc().GetLocationAttribFrequency(sAttrib);
-
-		//	Adjust probability based on the match strength
-
-		int iAdj = CAffinityCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
-		iWeight = iWeight * iAdj / 1000;
-
-		//	If weight is 0, then no need to continue
-
-		if (iWeight == 0)
-			return 0;
-		}
-
-	//	Done
-
-	return iWeight;
+	return Criteria.CalcWeight(
+		[this, sLocationAttribs, vPos](const CString &sAttrib) { return ::HasModifier(sLocationAttribs, sAttrib) || HasAttribute(vPos, sAttrib); },
+		NULL,
+		[this](const CString &sAttrib) { return m_Universe.GetAttributeDesc().GetLocationAttribFrequency(sAttrib); }
+		);
 	}
 
 CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase) const
@@ -2326,7 +2286,7 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 		//	Compute the probability based on attributes
 
-		int iChance = CalcLocationWeight(&Loc, Criteria.AttribCriteria);
+		int iChance = CalcLocationAffinity(Loc, Criteria.AttribCriteria);
 		if (iChance == 0)
 			continue;
 
@@ -2526,7 +2486,7 @@ int CSystem::GetTileSize (void) const
 	return m_pEnvironment->GetTileSize();
 	}
 
-bool CSystem::HasAttribute (const CVector &vPos, const CString &sAttrib)
+bool CSystem::HasAttribute (const CVector &vPos, const CString &sAttrib) const
 
 //	HasAttribute
 //
@@ -2955,6 +2915,19 @@ void CSystem::MarkImages (void)
 	m_Universe.SetLogImageLoad(true);
 
 	DEBUG_CATCH
+	}
+
+bool CSystem::MatchesLocationAffinity (const CAffinityCriteria &Criteria, const CString &sLocationAttribs, const CVector &vPos) const
+
+//	MatchesLocationAffinity
+//
+//	Returns TRUE if we match the given position with the given location 
+//	attributes.
+
+	{
+	return Criteria.Matches(
+		[this, sLocationAttribs, vPos](const CString &sAttrib) { return ::HasModifier(sLocationAttribs, sAttrib) || HasAttribute(vPos, sAttrib); }
+		);
 	}
 
 void CSystem::NameObject (const CString &sName, CSpaceObject &Obj)

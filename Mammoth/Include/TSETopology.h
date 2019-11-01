@@ -118,7 +118,7 @@ class CTopologyNode
 		void AddAttributes (const CString &sAttribs);
 		ALERROR AddStargate (const SStargateDesc &GateDesc);
 		ALERROR AddStargateAndReturn (const SStargateDesc &GateDesc);
-		int CalcMatchStrength (const CAffinityCriteria &Criteria);
+		int CalcAffinity (const CAffinityCriteria &Criteria) const;
 		bool FindStargate (const CString &sName, CString *retsDestNode = NULL, CString *retsEntryPoint = NULL);
 		bool FindStargateTo (const CString &sDestNode, CString *retsName = NULL, CString *retsDestGateID = NULL);
 		CString FindStargateName (const CString &sDestNode, const CString &sEntryPoint);

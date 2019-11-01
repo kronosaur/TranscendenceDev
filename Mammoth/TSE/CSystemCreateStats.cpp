@@ -141,7 +141,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 
 		pEntry->SystemProb.Insert(pType, iSystemChance);
 
-		int iBaseChance = StationCriteria.AdjStationWeight(pType, iSystemChance);
+		int iBaseChance = iSystemChance * pType->CalcAffinity(StationCriteria) / 1000;
 		if (iBaseChance == 0)
 			continue;
 
@@ -157,7 +157,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 			int iLocID = LocationTable[j];
 			CLocationDef &Loc = pSystem->GetLocation(iLocID);
 
-			iTotal += LocationCriteria.AdjLocationWeight(pSystem, &Loc);
+			iTotal += pSystem->CalcLocationAffinity(Loc, LocationCriteria);
 			}
 
 		int iAverageChance = iTotal / LocationTable.GetCount();

@@ -13,6 +13,7 @@ class CDesignCollection;
 class CDockScreen;
 class CDockingPorts;
 class CDynamicDesignTable;
+class CEconomyType;
 class CEffect;
 class CGameStats;
 class CGenericType;
@@ -224,6 +225,7 @@ class CDesignType
 		void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
 		static CDesignType *AsType (CDesignType *pType) { return pType; }
+		int CalcAffinity (const CAffinityCriteria &Criteria) const;
 		void ClearMark (void) { OnClearMark(); }
 		bool FindCustomProperty (const CString &sProperty, ICCItemPtr &pResult, EPropertyType *retiType = NULL) const;
 		CEffectCreator *FindEffectCreatorInType (const CString &sUNID) { return OnFindEffectCreator(sUNID); }

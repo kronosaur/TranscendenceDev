@@ -7,6 +7,10 @@
 
 class CInstalledArmor;
 class CInstalledDevice;
+class CItemCtx;
+class COrbit;
+struct SDamageCtx;
+struct SSystemCreateCtx;
 
 //	CodeChain context
 

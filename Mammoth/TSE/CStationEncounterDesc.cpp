@@ -31,7 +31,7 @@
 
 const Metric DEFAULT_ENEMY_EXCLUSION =			50.0 * LIGHT_SECOND;
 
-int CStationEncounterDesc::CalcAffinity (CTopologyNode *pNode) const
+int CStationEncounterDesc::CalcAffinity (const CTopologyNode &Node) const
 
 //	CalcAffinity
 //
@@ -42,7 +42,7 @@ int CStationEncounterDesc::CalcAffinity (CTopologyNode *pNode) const
 	if (m_SystemAffinity.MatchesAll())
 		return ftCommon;
 
-	int iWeight = m_SystemAffinity.CalcNodeWeight(pNode);
+	int iWeight = Node.CalcAffinity(m_SystemAffinity);
 	return (ftCommon * iWeight / 1000);
 	}
 

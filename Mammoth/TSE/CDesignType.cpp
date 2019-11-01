@@ -283,6 +283,19 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	return error;
 	}
 
+int CDesignType::CalcAffinity (const CAffinityCriteria &Criteria) const
+
+//	CalcAffinity
+//
+//	Computes the affinity value of this type given the criteria.
+
+	{
+	return Criteria.CalcWeight(
+		[this](const CString &sAttrib) { return HasAttribute(sAttrib); },
+		[this](const CString &sAttrib) { return HasSpecialAttribute(sAttrib); }
+		);
+	}
+
 ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const
 
 //	ComposeLoadError

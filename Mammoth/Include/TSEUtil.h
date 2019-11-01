@@ -5,20 +5,16 @@
 
 #pragma once
 
+#include <functional>
+
 class CDesignType;
-class CEconomyType;
 class CItemCriteria;
-class CItemCtx;
 class CItemEnhancementStack;
 class CExtension;
-class CLocationDef;
-class COrbit;
 class CTopology;
 class CTopologyNode;
 struct SDesignLoadCtx;
-struct SDamageCtx;
 struct SDestroyCtx;
-struct SSystemCreateCtx;
 struct SSpaceObjectGridEnumerator;
 struct SUpdateCtx;
 
@@ -305,37 +301,27 @@ class CIDCounter
 class CAffinityCriteria
 	{
 	public:
+		CAffinityCriteria (void) { }
+
+		CString AsString (void) const;
+		int CalcWeight (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib = NULL, std::function<int(const CString &)> fnGetFreq = NULL) const;
+		bool Matches (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib = NULL) const;
+		bool MatchesAll (void) const { return (GetCount() == 0); }
+		bool MatchesDefault (void) const { return ((m_dwFlags & flagDefault) ? true : false); }
+		ALERROR Parse (const CString &sCriteria, CString *retsError = NULL);
+
+	private:
+		enum EFlags
+			{
+			flagDefault =					0x00000001,
+			};
+
 		enum EMatchStrength
 			{
 			matchRequired =					0x00010000,
 			matchExcluded =					0x00020000,
 			};
 
-		enum EFlags
-			{
-			flagDefault =					0x00000001,
-			};
-
-		CAffinityCriteria (void) :
-				m_dwFlags(0)
-			{ }
-
-		CString AsString (void) const;
-		int AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight = 1000) const;
-		int AdjStationWeight (CStationType *pType, int iOriginalWeight = 1000) const;
-		int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const;
-		int CalcNodeWeight (CTopologyNode *pNode) const;
-		int GetCount (void) const { return m_Attribs.GetCount(); }
-		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired) const;
-		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
-		bool MatchesAll (void) const { return (GetCount() == 0); }
-		bool MatchesDefault (void) const { return ((m_dwFlags & flagDefault) ? true : false); }
-		ALERROR Parse (const CString &sCriteria, CString *retsError = NULL);
-
-		static int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength);
-		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq = -1);
-
-	private:
 		enum MatchStrengthEncoding
 			{
 			CODE_MASK =						0xFFFF0000,
@@ -362,16 +348,21 @@ class CAffinityCriteria
 		struct SEntry
 			{
 			CString sAttrib;
-			DWORD dwMatchStrength;
-			bool bIsSpecial;
+			DWORD dwMatchStrength = 0;
+			bool bIsSpecial = false;
 			};
 
+		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired, bool *retbIsSpecial = NULL) const;
+		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
+		int GetCount (void) const { return m_Attribs.GetCount(); }
 		void WriteSubExpression (CMemoryWriteStream &Stream) const;
+
+		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq);
 
 		TArray<SEntry> m_Attribs;
-		DWORD m_dwFlags;
+		DWORD m_dwFlags = 0;
 	};
 
 class CIntegerRangeCriteria
@@ -389,7 +380,6 @@ class CIntegerRangeCriteria
 		int m_iEqualToValue = -1;				//	If not -1, match only this value
 		int m_iGreaterThanValue = -1;			//	If not -1, match only greater than this value
 		int m_iLessThanValue = -1;				//	If not -1, match only less than this value
-		
 	};
 
 class DiceRange

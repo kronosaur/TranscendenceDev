@@ -150,7 +150,7 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 		//	Adjust based on affinity
 
 		int iAffinity;
-		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(pNode)) < ftCommon)
+		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(*pNode)) < ftCommon)
 			{
 			pStats->iNodeCriteria = pStats->iNodeCriteria * iAffinity / ftCommon;
 			}
@@ -232,7 +232,7 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, CStationType 
 
 	int iLimit;
 	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStation) >= iLimit)
-		return false;
+		return 0;
 
 	//	Check for a level limit
 
@@ -275,7 +275,7 @@ int CStationEncounterCtx::GetRequiredForNode (CTopologyNode *pNode, const CStati
 
 	int iLimit;
 	if (Desc.HasSystemLimit(&iLimit) && pStats->iCount >= iLimit)
-		return false;
+		return 0;
 
 	//	Check node minimums
 

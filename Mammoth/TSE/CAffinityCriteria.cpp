@@ -27,65 +27,16 @@ CString CAffinityCriteria::AsString (void) const
 	return CString(Stream.GetPointer(), Stream.GetLength());
 	}
 
-int CAffinityCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight) const
+int CAffinityCriteria::CalcWeight (std::function<bool(const CString &)> fnHasAttrib, 
+								   std::function<bool(const CString &)> fnHasSpecialAttrib, 
+								   std::function<int(const CString &)> fnGetFreq) const
 
-//	AdjLocationWeight
+//	CalcWeight
 //
-//	Returns the adjusted weight for the given location.
+//	Computes the weight using the given functions to determine whether the 
+//	attribute exists or not.
 
 	{
-	int i;
-	int iResult = iOriginalWeight;
-
-	for (i = 0; i < GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
-
-		int iAdj = CalcLocationWeight(pSystem, pLoc->GetAttributes(), pLoc->GetOrbit().GetObjectPos(), sAttrib, dwMatchStrength);
-		if (iAdj == 0)
-			return 0;
-
-		iResult = iResult * iAdj / 1000;
-		}
-
-	return iResult;
-	}
-
-int CAffinityCriteria::AdjStationWeight (CStationType *pType, int iOriginalWeight) const
-
-//	AdjStationWeight
-//
-//	Returns the adjusted weight for the station given this set of criteria.
-
-	{
-	int i;
-	int iResult = iOriginalWeight;
-
-	for (i = 0; i < GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
-
-		int iAdj = CalcWeightAdj(pType->HasAttribute(sAttrib), dwMatchStrength);
-		if (iAdj == 0)
-			return 0;
-
-		iResult = iResult * iAdj / 1000;
-		}
-
-	return iResult;
-	}
-
-int CAffinityCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const
-
-//	CalcLocationWeight
-//
-//	Computes the location weight 1000 = full.
-
-	{
-	int i;
-
 	//	Special values
 
 	if (MatchesDefault())
@@ -95,80 +46,28 @@ int CAffinityCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLoc
 
 	//	Compute
 
-	int iChance = 1000;
-	for (i = 0; i < GetCount(); i++)
+	int iWeight = 1000;
+	for (int i = 0; i < GetCount(); i++)
 		{
 		DWORD dwMatchStrength;
-		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
+		bool bIsSpecial;
+		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
 
-		int iAdj = CAffinityCriteria::CalcLocationWeight(pSystem, 
-				sLocationAttribs,
-				vPos,
-				sAttrib,
-				dwMatchStrength);
+		bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
 
-		iChance = (iChance * iAdj) / 1000;
+		int iAdj;
+		if (fnGetFreq)
+			iAdj = CalcWeightAdjWithAttribFreq(bHasAttrib, dwMatchStrength, fnGetFreq(sAttrib));
+		else
+			iAdj = CalcWeightAdj(bHasAttrib, dwMatchStrength);
+
+		iWeight = iWeight * iAdj / 1000;
 		}
 
-	return iChance;
+	return iWeight;
 	}
 
-int CAffinityCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength)
-
-//	CalcLocationWeight
-//
-//	Computes the location weight
-
-	{
-	//	Check to see if either the label
-	//	or the node/system has the attribute.
-
-	bool bHasAttrib = (::HasModifier(sLocationAttribs, sAttrib)
-			|| (pSystem && pSystem->HasAttribute(vPos, sAttrib)));
-
-	//	Compute the frequency of the given attribute
-
-	int iAttribFreq = g_pUniverse->GetAttributeDesc().GetLocationAttribFrequency(sAttrib);
-
-	//	Adjust probability based on the match strength
-
-	return CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
-	}
-
-int CAffinityCriteria::CalcNodeWeight (CTopologyNode *pNode) const
-
-//	CalcNodeWeight
-//
-//	Computes the weight of the node.
-
-	{
-	int i;
-
-	//	Special values
-
-	if (MatchesDefault())
-		return 0;
-	else if (MatchesAll())
-		return 1000;
-
-	//	Compute
-
-	int iChance = 1000;
-	for (i = 0; i < GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
-
-		bool bMatches = (pNode->HasSpecialAttribute(sAttrib) || pNode->HasAttribute(sAttrib));
-		int iAdj = CalcWeightAdj(bMatches, dwMatchStrength);
-
-		iChance = (iChance * iAdj) / 1000;
-		}
-
-	return iChance;
-	}
-
-int CAffinityCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
+int CAffinityCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength)
 
 //	CalcWeightAdj
 //
@@ -186,11 +85,6 @@ int CAffinityCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, in
 //	NOTE: The above numbers assume iAttribFreq is 20.
 
 	{
-	//	Adjust for attribute frequency
-
-	if (iAttribFreq != -1)
-		return CalcWeightAdjWithAttribFreq(bHasAttrib, dwMatchStrength, iAttribFreq);
-
 	//	Default
 
 	switch (dwMatchStrength)
@@ -387,16 +281,18 @@ int CAffinityCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMat
 		}
 	}
 
-const CString &CAffinityCriteria::GetAttribAndRequired (int iIndex, bool *retbRequired) const
+const CString &CAffinityCriteria::GetAttribAndRequired (int iIndex, bool *retbRequired, bool *retbIsSpecial) const
 
 //	GetAttribAndRequired
 //
 //	Returns the attrib and whether or not it is required
 
 	{
+	const SEntry &Entry = m_Attribs[iIndex];
+
 	if (retbRequired)
 		{
-		switch (m_Attribs[iIndex].dwMatchStrength & CODE_MASK)
+		switch (Entry.dwMatchStrength & CODE_MASK)
 			{
 			case CODE_REQUIRED:
 			case CODE_SEEK:
@@ -409,7 +305,10 @@ const CString &CAffinityCriteria::GetAttribAndRequired (int iIndex, bool *retbRe
 			}
 		}
 
-	return m_Attribs[iIndex].sAttrib;
+	if (retbIsSpecial)
+		*retbIsSpecial = Entry.bIsSpecial;
+
+	return Entry.sAttrib;
 	}
 
 const CString &CAffinityCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatchStrength, bool *retbIsSpecial) const
@@ -589,6 +488,37 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 		}
 
 	return NOERROR;
+	}
+
+bool CAffinityCriteria::Matches (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib) const
+
+//	Matches
+//
+//	Returns TRUE if this criteria matches the given position in the given 
+//	system.
+
+	{
+	//	Special values
+
+	if (MatchesDefault())
+		return false;
+	else if (MatchesAll())
+		return true;
+
+	for (int i = 0; i < GetCount(); i++)
+		{
+		bool bRequired;
+		bool bIsSpecial;
+		const CString &sAttrib = GetAttribAndRequired(i, &bRequired, &bIsSpecial);
+
+		bool bHasAttrib = (bIsSpecial && fnHasSpecialAttrib ? fnHasSpecialAttrib(sAttrib) : fnHasAttrib(sAttrib));
+		if (bHasAttrib != bRequired)
+			return false;
+		}
+
+	//	We match
+
+	return true;
 	}
 
 void CAffinityCriteria::WriteSubExpression (CMemoryWriteStream &Stream) const

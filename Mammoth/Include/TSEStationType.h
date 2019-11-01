@@ -115,7 +115,7 @@ class CStationEncounterDesc
 			Metric rEnemyExclusionRadius2;
 			};
 
-		int CalcAffinity (CTopologyNode *pNode) const;
+		int CalcAffinity (const CTopologyNode &Node) const;
 		int CalcLevelFromFrequency (void) const;
 		bool InitAsOverride (const CStationEncounterDesc &Original, const CXMLElement &Override, CString *retsError);
 		ALERROR InitFromStationTypeXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);

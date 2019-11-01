@@ -72,8 +72,6 @@ bool CTerritoryList::MatchesCriteria (CTerritoryDef *pTerritory, const CVector &
 //	See if the territory's criteria matches.
 
 	{
-	int j;
-
 	const CString &sCriteria = pTerritory->GetCriteria();
 	if (sCriteria.IsBlank())
 		return true;
@@ -89,26 +87,11 @@ bool CTerritoryList::MatchesCriteria (CTerritoryDef *pTerritory, const CVector &
 	if (Criteria.Parse(sCriteria, &sError) != NOERROR)
 		kernelDebugLogPattern("Error parsing territory: %s", sError);
 
-	//	Loop over all elements of the criteria
+	//	See if we match
 
-	bool bMatches = true;
-	for (j = 0; j < Criteria.GetCount(); j++)
-		{
-		bool bRequired;
-		const CString &sAttrib = Criteria.GetAttribAndRequired(j, &bRequired);
-
-		//	Recusively see if we have the attribute
-
-		bool bFound = HasAttribute(vPos, sAttrib);
-
-		//	If we don't match, then we're done
-
-		if (bFound != bRequired)
-			{
-			bMatches = false;
-			break;
-			}
-		}
+	bool bMatches = Criteria.Matches(
+		[this, vPos](const CString &sAttrib) { return HasAttribute(vPos, sAttrib); }
+		);
 
 	//	Restore
 

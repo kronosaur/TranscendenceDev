@@ -201,6 +201,8 @@ class CLocationCriteriaTableEntry : public IImageEntry
 			CAffinityCriteria Criteria;
 			};
 
+		static int CalcLocationAffinity (SSelectorInitCtx &InitCtx, const CAffinityCriteria &Criteria);
+
 		TArray<SEntry> m_Table;
 		int m_iDefault;
 	};
@@ -1604,6 +1606,19 @@ void CLocationCriteriaTableEntry::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 		m_Table[i].pImage->AddTypesUsed(retTypesUsed);
 	}
 
+int CLocationCriteriaTableEntry::CalcLocationAffinity (SSelectorInitCtx &InitCtx, const CAffinityCriteria &Criteria)
+
+//	CalcLocationAffinity
+//
+//	Computes the location affinity.
+
+	{
+	if (InitCtx.pSystem)
+		return InitCtx.pSystem->CalcLocationAffinity(Criteria, InitCtx.sLocAttribs, InitCtx.vObjPos);
+	else
+		return Criteria.CalcWeight([InitCtx](const CString &sAttrib) { return ::HasModifier(InitCtx.sLocAttribs, sAttrib); });
+	}
+
 IImageEntry *CLocationCriteriaTableEntry::Clone (void)
 
 //  Clone
@@ -1758,7 +1773,7 @@ void CLocationCriteriaTableEntry::InitSelector (SSelectorInitCtx &InitCtx, CComp
 		//	Compute the probability of this entry at the
 		//	given location.
 
-		int iChance = m_Table[i].Criteria.CalcLocationWeight(InitCtx.pSystem, InitCtx.sLocAttribs, InitCtx.vObjPos);
+		int iChance = CalcLocationAffinity(InitCtx, m_Table[i].Criteria);
 		if (iChance > 0)
 			ProbTable.Insert(i, iChance);
 		}
