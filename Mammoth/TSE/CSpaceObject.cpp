@@ -3797,6 +3797,20 @@ CSovereign::Disposition CSpaceObject::GetDispositionTowards (const CSpaceObject 
 		return CSovereign::dispFriend;
 	}
 
+CSovereign::Disposition CSpaceObject::GetDispositionTowards (const CSovereign &Sovereign) const
+
+//	GetDispositionTowards
+//
+//	Returns the disposition of this objects towards the given object
+
+	{
+	const CSovereign *pOurSovereign = GetSovereign();
+	if (pOurSovereign)
+		return pOurSovereign->GetDispositionTowards(&Sovereign);
+	else
+		return CSovereign::dispFriend;
+	}
+
 CDesignType *CSpaceObject::GetFirstDockScreen (CString *retsScreen, ICCItemPtr *retpData)
 
 //	GetFirstDockScreen

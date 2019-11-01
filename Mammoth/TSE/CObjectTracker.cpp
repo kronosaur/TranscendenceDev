@@ -960,6 +960,12 @@ void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, cons
         ObjData.fFriendly = (iDisp == CSovereign::dispFriend);
         ObjData.fEnemy = (iDisp == CSovereign::dispEnemy);
         }
+	else if (const CSovereign *pSovereign = Obj.GetUniverse().FindSovereign(g_PlayerSovereignUNID))
+		{
+        CSovereign::Disposition iDisp = Obj.GetDispositionTowards(*pSovereign);
+        ObjData.fFriendly = (iDisp == CSovereign::dispFriend);
+        ObjData.fEnemy = (iDisp == CSovereign::dispEnemy);
+		}
 
     //  See if we have a custom services description
 

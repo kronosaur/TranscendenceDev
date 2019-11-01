@@ -685,6 +685,7 @@ class CSpaceObject
 		Metric GetDetectionRange (int iPerception) const { return CPerceptionCalc::GetRange(GetDetectionRangeIndex(iPerception)); }
 		Metric GetDetectionRange2 (int iPerception) const;
 		int GetDetectionRangeIndex (int iPerception) const;
+		CSovereign::Disposition GetDispositionTowards (const CSovereign &Sovereign) const;
 		CSovereign::Disposition GetDispositionTowards (const CSpaceObject &Obj) const;
 		Metric GetDistance (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length(); }
 		Metric GetDistance2 (const CSpaceObject *pObj) const { return (pObj->GetPos() - GetPos()).Length2(); }

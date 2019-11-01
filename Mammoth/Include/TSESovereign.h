@@ -73,7 +73,7 @@ class CSovereign : public CDesignType
 		void DeleteRelationships (void);
 		inline void FlushEnemyObjectCache (void) { m_EnemyObjects.DeleteAll(); m_pEnemyObjectsSystem = NULL; }
 		IPlayerController *GetController (void);
-		Disposition GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent = true) const;
+		Disposition GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent = true) const;
 		inline const CSpaceObjectList &GetEnemyObjectList (const CSystem *pSystem) { InitEnemyObjectList(pSystem); return m_EnemyObjects; }
 		EThreatLevels GetPlayerThreatLevel (void) const;
 		bool GetPropertyInteger (const CString &sProperty, int *retiValue);
@@ -128,8 +128,8 @@ class CSovereign : public CDesignType
 			};
 
 		bool CalcSelfRel (void);
-		const SRelationship *FindRelationship (CSovereign *pSovereign, bool bCheckParent = false) const;
-		SRelationship *FindRelationship (CSovereign *pSovereign, bool bCheckParent = false);
+		const SRelationship *FindRelationship (const CSovereign *pSovereign, bool bCheckParent = false) const;
+		SRelationship *FindRelationship (const CSovereign *pSovereign, bool bCheckParent = false);
 		inline Alignments GetAlignment (void) const { return m_iAlignment; }
 		void InitEnemyObjectList (const CSystem *pSystem) const;
 		void InitRelationships (void);

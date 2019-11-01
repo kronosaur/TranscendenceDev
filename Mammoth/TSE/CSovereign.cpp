@@ -277,7 +277,7 @@ bool CSovereign::FindDataField (const CString &sField, CString *retsValue) const
 	return true;
 	}
 
-const CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent) const
+const CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSovereign, bool bCheckParent) const
 
 //	FindRelationship
 //
@@ -288,7 +288,7 @@ const CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSove
 	return const_cast<CSovereign *>(this)->FindRelationship(pSovereign, bCheckParent);
 	}
 
-CSovereign::SRelationship *CSovereign::FindRelationship (CSovereign *pSovereign, bool bCheckParent)
+CSovereign::SRelationship *CSovereign::FindRelationship (const CSovereign *pSovereign, bool bCheckParent)
 
 //	FindRelationship
 //
@@ -327,7 +327,7 @@ IPlayerController *CSovereign::GetController (void)
 		return NULL;
 	}
 
-CSovereign::Disposition CSovereign::GetDispositionTowards (CSovereign *pSovereign, bool bCheckParent) const
+CSovereign::Disposition CSovereign::GetDispositionTowards (const CSovereign *pSovereign, bool bCheckParent) const
 
 //	GetDispositionTowards
 //
