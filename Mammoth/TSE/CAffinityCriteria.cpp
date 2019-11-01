@@ -11,6 +11,22 @@
 inline bool IsWeightChar (const char *pPos) { return (*pPos == '+' || *pPos == '-' || *pPos == '*' || *pPos == '!'); }
 inline bool IsDelimiterChar (const char *pPos, bool bIsSpecialAttrib = false) { return (*pPos == '\0' || *pPos == ',' || *pPos == ';' || (!bIsSpecialAttrib && strIsWhitespace(pPos))); }
 
+CString CAffinityCriteria::AsString (void) const
+
+//	AsString
+//
+//	Represent as a string.
+
+	{
+	CMemoryWriteStream Stream(64 * 1024);
+	if (Stream.Create() != NOERROR)
+		return NULL_STR;
+
+	WriteSubExpression(Stream);
+
+	return CString(Stream.GetPointer(), Stream.GetLength());
+	}
+
 int CAffinityCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight) const
 
 //	AdjLocationWeight
@@ -414,7 +430,7 @@ const CString &CAffinityCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatch
 	return Entry.sAttrib;
 	}
 
-ALERROR CAffinityCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CString *retsError)
+ALERROR CAffinityCriteria::Parse (const CString &sCriteria, CString *retsError)
 
 //	Parse
 //
@@ -422,7 +438,7 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStri
 
 	{
 	m_Attribs.DeleteAll();
-	m_dwFlags = dwFlags;
+	m_dwFlags = 0;
 
 	//	If we match all, then we have no individual criteria
 
@@ -489,7 +505,7 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStri
 				{
 				if (*pPos == ':')
 					bIsSpecialAttrib = true;
-				else if (*pPos == '|')
+				else if (*pPos == '|' || *pPos == '=')
 					pCustomWeight = pPos;
 
 				pPos++;
@@ -575,17 +591,91 @@ ALERROR CAffinityCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStri
 	return NOERROR;
 	}
 
-void CAffinityCriteria::WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix)
+void CAffinityCriteria::WriteSubExpression (CMemoryWriteStream &Stream) const
 
-//	WriteAsString
+//	WriteSubExpression
 //
-//	Write as a string.
+//	Writes out to a string.
 
 	{
-	for (int i = 0; i < Attribs.GetCount(); i++)
+	//	If no attributes then we have special syntax
+
+	if (m_Attribs.GetCount() == 0)
 		{
-		Stream.WriteChars(sPrefix);
-		Stream.WriteChars(Attribs[i]);
-		Stream.WriteChars(CONSTLIT("; "));
+		if (MatchesDefault())
+			Stream.Write(MATCH_DEFAULT);
+		else
+			Stream.Write(MATCH_ALL);
+		}
+
+	else
+		{
+		for (int i = 0; i < m_Attribs.GetCount(); i++)
+			{
+			const SEntry &Entry = m_Attribs[i];
+
+			if (i != 0)
+				Stream.WriteChar(' ');
+
+			switch (Entry.dwMatchStrength)
+				{
+				case matchRequired:
+					Stream.Write(strPatternSubst(CONSTLIT("*%s;"), Entry.sAttrib));
+					break;
+
+				case matchSeek1:
+					Stream.Write(strPatternSubst(CONSTLIT("+%s;"), Entry.sAttrib));
+					break;
+
+				case matchSeek2:
+					Stream.Write(strPatternSubst(CONSTLIT("++%s;"), Entry.sAttrib));
+					break;
+
+				case matchSeek3:
+					Stream.Write(strPatternSubst(CONSTLIT("+++%s;"), Entry.sAttrib));
+					break;
+
+				case matchAvoid1:
+					Stream.Write(strPatternSubst(CONSTLIT("-%s;"), Entry.sAttrib));
+					break;
+
+				case matchAvoid2:
+					Stream.Write(strPatternSubst(CONSTLIT("--%s;"), Entry.sAttrib));
+					break;
+
+				case matchAvoid3:
+					Stream.Write(strPatternSubst(CONSTLIT("---%s;"), Entry.sAttrib));
+					break;
+
+				case matchExcluded:
+					Stream.Write(strPatternSubst(CONSTLIT("!%s;"), Entry.sAttrib));
+					break;
+
+				default:
+					{
+					DWORD dwCode = (Entry.dwMatchStrength & CODE_MASK);
+					DWORD dwValue = (Entry.dwMatchStrength & VALUE_MASK);
+
+					switch (dwCode)
+						{
+						case CODE_INCREASE_IF:
+							Stream.Write(strPatternSubst(CONSTLIT("+%s=+%d;"), Entry.sAttrib, dwValue));
+							break;
+
+						case CODE_DECREASE_IF:
+							Stream.Write(strPatternSubst(CONSTLIT("+%s=-%d;"), Entry.sAttrib, dwValue));
+							break;
+
+						case CODE_INCREASE_UNLESS:
+							Stream.Write(strPatternSubst(CONSTLIT("-%s=+%d;"), Entry.sAttrib, dwValue));
+							break;
+
+						case CODE_DECREASE_UNLESS:
+							Stream.Write(strPatternSubst(CONSTLIT("-%s=-%d;"), Entry.sAttrib, dwValue));
+							break;
+						}
+					}
+				}
+			}
 		}
 	}

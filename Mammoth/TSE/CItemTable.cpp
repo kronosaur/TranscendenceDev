@@ -1451,7 +1451,7 @@ ALERROR CLocationCriteriaTableOfItemGenerators::LoadFromXML (SDesignLoadCtx &Ctx
 		SEntry *pNewEntry = m_Table.Insert();
 
 		CString sCriteria = pEntry->GetAttribute(CRITERIA_ATTRIB);
-		if (error = pNewEntry->Criteria.Parse(sCriteria, 0, &Ctx.sError))
+		if (error = pNewEntry->Criteria.Parse(sCriteria, &Ctx.sError))
 			return error;
 
 		pNewEntry->Count.LoadFromXML(pEntry->GetAttribute(COUNT_ATTRIB));

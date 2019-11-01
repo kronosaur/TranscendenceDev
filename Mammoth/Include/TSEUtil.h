@@ -320,6 +320,7 @@ class CAffinityCriteria
 				m_dwFlags(0)
 			{ }
 
+		CString AsString (void) const;
 		int AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight = 1000) const;
 		int AdjStationWeight (CStationType *pType, int iOriginalWeight = 1000) const;
 		int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const;
@@ -328,12 +329,11 @@ class CAffinityCriteria
 		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired) const;
 		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
 		bool MatchesAll (void) const { return (GetCount() == 0); }
-		bool MatchesDefault (void) const { return (m_dwFlags & flagDefault); }
-		ALERROR Parse (const CString &sCriteria, DWORD dwFlags = 0, CString *retsError = NULL);
+		bool MatchesDefault (void) const { return ((m_dwFlags & flagDefault) ? true : false); }
+		ALERROR Parse (const CString &sCriteria, CString *retsError = NULL);
 
 		static int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq = -1);
-		static void WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix);
 
 	private:
 		enum MatchStrengthEncoding
@@ -366,6 +366,7 @@ class CAffinityCriteria
 			bool bIsSpecial;
 			};
 
+		void WriteSubExpression (CMemoryWriteStream &Stream) const;
 		static int CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq);
 

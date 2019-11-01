@@ -275,11 +275,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 		m_sLevelFrequency = sAttrib;
 
 	if (Override.FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
-		m_sLocationCriteria = sAttrib;
+		{
+		if (m_LocationCriteria.Parse(sAttrib, retsError))
+			return false;
+		}
 
 	if (Override.FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
 		{
-		if (m_SystemAffinity.Parse(sAttrib, 0, retsError) != NOERROR)
+		if (m_SystemAffinity.Parse(sAttrib, retsError) != NOERROR)
 			return false;
 		}
 
@@ -415,11 +418,16 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	m_sDistanceFrequency = pDesc->GetAttribute(DISTANCE_FREQUENCY_ATTRIB);
 	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
-	m_sLocationCriteria = pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+
+	if (pDesc->FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
+		{
+		if (error = m_LocationCriteria.Parse(sAttrib, &Ctx.sError))
+			return error;
+		}
 
 	if (pDesc->FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
 		{
-		if (error = m_SystemAffinity.Parse(sAttrib, 0, &Ctx.sError))
+		if (error = m_SystemAffinity.Parse(sAttrib, &Ctx.sError))
 			return error;
 		}
 

@@ -19,13 +19,13 @@ CString CIntegerRangeCriteria::AsString (char chModifier) const
 	if (IsEmpty())
 		return NULL_STR;
 	else if (m_iEqualToValue != -1)
-		return strPatternSubst(CONSTLIT("=%s%d; "), sModifier, m_iEqualToValue);
+		return strPatternSubst(CONSTLIT("=%s%d;"), sModifier, m_iEqualToValue);
 	else if (m_iLessThanValue == -1)
-		return strPatternSubst(CONSTLIT(">%s%d; "), sModifier, m_iGreaterThanValue);
+		return strPatternSubst(CONSTLIT(">%s%d;"), sModifier, m_iGreaterThanValue);
 	else if (m_iGreaterThanValue == -1)
-		return strPatternSubst(CONSTLIT("<%s%d; "), sModifier, m_iLessThanValue);
+		return strPatternSubst(CONSTLIT("<%s%d;"), sModifier, m_iLessThanValue);
 	else
-		return strPatternSubst(CONSTLIT(">%s%d; <%s%d; "), sModifier, m_iGreaterThanValue, m_iLessThanValue);
+		return strPatternSubst(CONSTLIT(">%s%d; <%s%d;"), sModifier, m_iGreaterThanValue, m_iLessThanValue);
 	}
 
 bool CIntegerRangeCriteria::Matches (int iValue) const

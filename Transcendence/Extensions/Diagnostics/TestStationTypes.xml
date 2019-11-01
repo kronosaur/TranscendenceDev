@@ -25,7 +25,7 @@
 						{	test:'(typGetProperty &stDwargColony; 'hp)						result:160	}
 						{	test:'(typGetProperty &stDwargColony; 'level)					result:4	}
 						{	test:'(typGetProperty &stDwargColony; 'levelFrequency)			result:"---cu v---- ----- ----- -----"	}
-						{	test:'(typGetProperty &stDwargColony; 'locationCriteria)		result:"+planetary"	}
+						{	test:'(typGetProperty &stDwargColony; 'locationCriteria)		result:"+planetary;"	}
 						{	test:'(typGetProperty &stDwargColony; 'maxLightRadius)			result:500	}
 						{	test:'(typGetProperty &stDwargColony; 'name)					result:"Dwarg colony"	}
 						{	test:'(typGetProperty &stDwargColony; 'regen)					result:2	}
@@ -34,7 +34,7 @@
 						{	test:'(typGetProperty &stDwargColony; 'size)					result:0	}
 						{	test:'(typGetProperty &stDwargColony; 'sovereign)				result:&svDwargRaiders;	}
 						{	test:'(typGetProperty &stDwargColony; 'sovereignName)			result:"Dwarg civilization"	}
-						{	test:'(typGetProperty &stDwargColony; 'systemCriteria)			result:"+dwargSpace; "	}
+						{	test:'(typGetProperty &stDwargColony; 'systemCriteria)			result:"+dwargSpace;"	}
 						{	test:'(typGetProperty &stDwargColony; 'treasureBalance)			result:93	}
 						{	test:'(typGetProperty &stDwargColony; 'treasureDesiredValue)	result:3200	}
 						{	test:'(typGetProperty &stDwargColony; 'treasureValue)			result:3200	}

@@ -26,6 +26,7 @@ class CTopologyAttributeCriteria
 		ALERROR Parse (const CString &sCriteria);
 		ALERROR ParseSubExpression (const char *pPos);
 		void WriteSubExpression (CMemoryWriteStream &Stream) const;
+		static void WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix, bool &iobSpaceNeeded);
 
 		TArray<CString> m_AttribsRequired;			//	Does not match if any of these attribs are missing
 		TArray<CString> m_AttribsNotAllowed;		//	Does not match if any of these attribs are present

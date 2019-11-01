@@ -461,7 +461,7 @@ ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx,
 	//	Parse the criteria
 
 	SLocationCriteria Criteria;
-	if (error = Criteria.AttribCriteria.Parse(sCriteria, 0, &pCtx->sError))
+	if (error = Criteria.AttribCriteria.Parse(sCriteria, &pCtx->sError))
 		return error;
 
 	//	Choose a random location
@@ -1139,7 +1139,7 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 			if (!strEquals(sCriteria, MATCH_ALL))
 				{
 				CAffinityCriteria Criteria;
-				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
+				if (error = Criteria.Parse(sCriteria, &pCtx->sError))
 					return error;
 
 				for (j = 0; j < Criteria.GetCount(); j++)
@@ -1907,7 +1907,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		CString sLocationAttribs;
 		int iLocation;
 		if (error = ChooseRandomLocation(pCtx, 
-				pType->GetLocationCriteria(), 
+				SLocationCriteria(pType->GetLocationCriteria()), 
+				COrbit(),
 				(bSeparateEnemies ? pType : NULL),
 				&OrbitDesc, 
 				&sLocationAttribs,
@@ -2978,7 +2979,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 			if (!strEquals(sCriteria, MATCH_ALL))
 				{
 				CAffinityCriteria Criteria;
-				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
+				if (error = Criteria.Parse(sCriteria, &pCtx->sError))
 					return error;
 
 				bool bMatched = true;
@@ -3425,7 +3426,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 		//	Parse station criteria if we've got it.
 
 		CAffinityCriteria StationCriteria;
-		if (error = StationCriteria.Parse(sCriteria, 0, &pCtx->sError))
+		if (error = StationCriteria.Parse(sCriteria, &pCtx->sError))
 			return error;
 
 		for (i = 0; i < iCount; i++)
@@ -3462,19 +3463,13 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
 			if (pType->GetTempChance())
 				{
-				if (!strEquals(pType->GetLocationCriteria(), MATCH_ALL))
+				const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
+				if (!LocationCriteria.MatchesAll())
 					{
-					CAffinityCriteria Criteria;
-					if (error = Criteria.Parse(pType->GetLocationCriteria(), 0, &pCtx->sError))
-						{
-						pCtx->sError = strPatternSubst(CONSTLIT("StationType %x: Invalid locationCriteria"), pType->GetUNID());
-						return error;
-						}
-
-					for (j = 0; j < Criteria.GetCount(); j++)
+					for (j = 0; j < LocationCriteria.GetCount(); j++)
 						{
 						DWORD dwMatchStrength;
-						const CString &sAttrib = Criteria.GetAttribAndWeight(j, &dwMatchStrength);
+						const CString &sAttrib = LocationCriteria.GetAttribAndWeight(j, &dwMatchStrength);
 
 						int iAdj = ComputeLocationWeight(pCtx,
 								sLocationAttribs,
@@ -3559,7 +3554,7 @@ ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocati
 	{
 	ALERROR error;
 
-	if (error = retCriteria->AttribCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), 0, &pCtx->sError))
+	if (error = retCriteria->AttribCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), &pCtx->sError))
 		return error;
 
 	Metric rScale = GetScale(pDesc);
@@ -3955,7 +3950,8 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 				CString sLocationAttribs;
 				int iLocation;
 				if (error = ChooseRandomLocation(&Ctx, 
-						pType->GetLocationCriteria(), 
+						SLocationCriteria(pType->GetLocationCriteria()), 
+						COrbit(),
 						pType,
 						&OrbitDesc, 
 						&sLocationAttribs,

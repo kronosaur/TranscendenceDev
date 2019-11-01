@@ -232,14 +232,14 @@ class CSystemCreateEvents
 
 struct SLocationCriteria
 	{
-	SLocationCriteria (void) :
-			rMinDist(0.0),
-			rMaxDist(0.0)
+	SLocationCriteria (void) { }
+	explicit SLocationCriteria (const CAffinityCriteria &Criteria) :
+			AttribCriteria(Criteria)
 		{ }
 
 	CAffinityCriteria AttribCriteria;		//	Attribute criteria
-	Metric rMinDist;						//	Minimum distance from source
-	Metric rMaxDist;						//	Maximum distance from source
+	Metric rMinDist = 0.0;					//	Minimum distance from source
+	Metric rMaxDist = 0.0;					//	Maximum distance from source
 	};
 
 struct SSystemCreateCtx

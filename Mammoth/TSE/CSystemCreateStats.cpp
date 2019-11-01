@@ -147,8 +147,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 
 		pEntry->FillProb.Insert(pType, iBaseChance);
 
-		CAffinityCriteria LocationCriteria;
-		LocationCriteria.Parse(pType->GetLocationCriteria(), 0);
+		const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
 
 		//	Average out our chance of ending up at one of the given locations.
 

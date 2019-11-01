@@ -736,7 +736,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
     else if (strEquals(sField, FIELD_LEVEL))
         *retsValue = strFromInt(GetLevel());
     else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-        *retsValue = GetLocationCriteria();
+        *retsValue = GetLocationCriteria().AsString();
     else if (strEquals(sField, FIELD_NAME))
         *retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))

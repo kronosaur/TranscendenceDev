@@ -12,7 +12,7 @@ CString CTopologyAttributeCriteria::AsString (void) const
 //	Represent as a string.
 
 	{
-	CMemoryWriteStream Stream;
+	CMemoryWriteStream Stream(64 * 1024);
 	if (Stream.Create() != NOERROR)
 		return NULL_STR;
 
@@ -160,12 +160,21 @@ void CTopologyAttributeCriteria::WriteSubExpression (CMemoryWriteStream &Stream)
 //	Writes sub-expression to stream.
 
 	{
-	CAffinityCriteria::WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"));
-	CAffinityCriteria::WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"));
-	CAffinityCriteria::WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"));
-	CAffinityCriteria::WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"));
+	bool bSpaceNeeded = false;
 
-	Stream.Write(m_Level.AsString());
+	WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"), bSpaceNeeded);
+	WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"), bSpaceNeeded);
+	WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"), bSpaceNeeded);
+	WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"), bSpaceNeeded);
+
+	if (!m_Level.IsEmpty())
+		{
+		if (bSpaceNeeded)
+			Stream.WriteChar(' ');
+
+		Stream.Write(m_Level.AsString());
+		bSpaceNeeded = true;
+		}
 
 	//	If we have an OR expression, recurse.
 
@@ -175,3 +184,24 @@ void CTopologyAttributeCriteria::WriteSubExpression (CMemoryWriteStream &Stream)
 		m_pOr->WriteSubExpression(Stream);
 		}
 	}
+
+void CTopologyAttributeCriteria::WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix, bool &iobSpaceNeeded)
+
+//	WriteAsString
+//
+//	Write as a string.
+
+	{
+	for (int i = 0; i < Attribs.GetCount(); i++)
+		{
+		if (iobSpaceNeeded)
+			Stream.WriteChar(' ');
+
+		Stream.WriteChars(sPrefix);
+		Stream.WriteChars(Attribs[i]);
+		Stream.WriteChar(';');
+
+		iobSpaceNeeded = true;
+		}
+	}
+

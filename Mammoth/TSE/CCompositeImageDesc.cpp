@@ -1723,7 +1723,7 @@ ALERROR CLocationCriteriaTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounte
 		//	Load the criteria
 
 		CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
-		if (error = m_Table[i].Criteria.Parse(sCriteria, 0, &Ctx.sError))
+		if (error = m_Table[i].Criteria.Parse(sCriteria, &Ctx.sError))
 			return error;
 
 		if (m_iDefault == -1 && m_Table[i].Criteria.MatchesDefault())
