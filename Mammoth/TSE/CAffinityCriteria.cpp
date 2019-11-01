@@ -1,7 +1,7 @@
-//	CAttributeCriteria.cpp
+//	CAffinityCriteria.cpp
 //
 //	CAttributeCrtieria class
-//	Copryight (c) 2011 by George Moromisato. All Rights Reserved.
+//	Copryight (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -11,7 +11,7 @@
 inline bool IsWeightChar (const char *pPos) { return (*pPos == '+' || *pPos == '-' || *pPos == '*' || *pPos == '!'); }
 inline bool IsDelimiterChar (const char *pPos, bool bIsSpecialAttrib = false) { return (*pPos == '\0' || *pPos == ',' || *pPos == ';' || (!bIsSpecialAttrib && strIsWhitespace(pPos))); }
 
-int CAttributeCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight) const
+int CAffinityCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight) const
 
 //	AdjLocationWeight
 //
@@ -36,7 +36,7 @@ int CAttributeCriteria::AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc,
 	return iResult;
 	}
 
-int CAttributeCriteria::AdjStationWeight (CStationType *pType, int iOriginalWeight) const
+int CAffinityCriteria::AdjStationWeight (CStationType *pType, int iOriginalWeight) const
 
 //	AdjStationWeight
 //
@@ -61,7 +61,7 @@ int CAttributeCriteria::AdjStationWeight (CStationType *pType, int iOriginalWeig
 	return iResult;
 	}
 
-int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const
+int CAffinityCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const
 
 //	CalcLocationWeight
 //
@@ -85,7 +85,7 @@ int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLo
 		DWORD dwMatchStrength;
 		const CString &sAttrib = GetAttribAndWeight(i, &dwMatchStrength);
 
-		int iAdj = CAttributeCriteria::CalcLocationWeight(pSystem, 
+		int iAdj = CAffinityCriteria::CalcLocationWeight(pSystem, 
 				sLocationAttribs,
 				vPos,
 				sAttrib,
@@ -97,7 +97,7 @@ int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLo
 	return iChance;
 	}
 
-int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength)
+int CAffinityCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength)
 
 //	CalcLocationWeight
 //
@@ -119,7 +119,7 @@ int CAttributeCriteria::CalcLocationWeight (CSystem *pSystem, const CString &sLo
 	return CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
 	}
 
-int CAttributeCriteria::CalcNodeWeight (CTopologyNode *pNode) const
+int CAffinityCriteria::CalcNodeWeight (CTopologyNode *pNode) const
 
 //	CalcNodeWeight
 //
@@ -152,7 +152,7 @@ int CAttributeCriteria::CalcNodeWeight (CTopologyNode *pNode) const
 	return iChance;
 	}
 
-int CAttributeCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
+int CAffinityCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
 
 //	CalcWeightAdj
 //
@@ -208,7 +208,7 @@ int CAttributeCriteria::CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, i
 		}
 	}
 
-int CAttributeCriteria::CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStrength)
+int CAffinityCriteria::CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStrength)
 
 //	CalcWeightAdjCustom
 //
@@ -249,7 +249,7 @@ int CAttributeCriteria::CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStren
 		}
 	}
 
-int CAttributeCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
+int CAffinityCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq)
 
 //	CalcWeightAdjWithAttribFreq
 //
@@ -371,7 +371,7 @@ int CAttributeCriteria::CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMa
 		}
 	}
 
-const CString &CAttributeCriteria::GetAttribAndRequired (int iIndex, bool *retbRequired) const
+const CString &CAffinityCriteria::GetAttribAndRequired (int iIndex, bool *retbRequired) const
 
 //	GetAttribAndRequired
 //
@@ -396,7 +396,7 @@ const CString &CAttributeCriteria::GetAttribAndRequired (int iIndex, bool *retbR
 	return m_Attribs[iIndex].sAttrib;
 	}
 
-const CString &CAttributeCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatchStrength, bool *retbIsSpecial) const
+const CString &CAffinityCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatchStrength, bool *retbIsSpecial) const
 
 //	GetAttribAndWeight
 //
@@ -414,7 +414,7 @@ const CString &CAttributeCriteria::GetAttribAndWeight (int iIndex, DWORD *dwMatc
 	return Entry.sAttrib;
 	}
 
-ALERROR CAttributeCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CString *retsError)
+ALERROR CAffinityCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CString *retsError)
 
 //	Parse
 //
@@ -575,7 +575,7 @@ ALERROR CAttributeCriteria::Parse (const CString &sCriteria, DWORD dwFlags, CStr
 	return NOERROR;
 	}
 
-void CAttributeCriteria::WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix)
+void CAffinityCriteria::WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix)
 
 //	WriteAsString
 //

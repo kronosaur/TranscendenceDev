@@ -182,7 +182,7 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 	return NOERROR;
 	}
 
-int CTopologyNode::CalcMatchStrength (const CAttributeCriteria &Criteria)
+int CTopologyNode::CalcMatchStrength (const CAffinityCriteria &Criteria)
 
 //	CalcMatchStrength
 //
@@ -199,7 +199,7 @@ int CTopologyNode::CalcMatchStrength (const CAttributeCriteria &Criteria)
 		const CString &sAttrib = Criteria.GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
 
 		bool bHasAttrib = (bIsSpecial ? HasSpecialAttribute(sAttrib) : HasAttribute(sAttrib));
-		int iAdj = CAttributeCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength);
+		int iAdj = CAffinityCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength);
 
 		iStrength = iStrength * iAdj / 1000;
 		}

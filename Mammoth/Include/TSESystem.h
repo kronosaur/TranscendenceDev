@@ -237,7 +237,7 @@ struct SLocationCriteria
 			rMaxDist(0.0)
 		{ }
 
-	CAttributeCriteria AttribCriteria;		//	Attribute criteria
+	CAffinityCriteria AttribCriteria;		//	Attribute criteria
 	Metric rMinDist;						//	Minimum distance from source
 	Metric rMaxDist;						//	Maximum distance from source
 	};
@@ -741,7 +741,7 @@ class CSystem
 		ALERROR AddToSystem (CSpaceObject *pObj, int *retiIndex);
 		bool AscendObject (CSpaceObject *pObj, CString *retsError = NULL);
 		int CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
-		int CalcMatchStrength (const CAttributeCriteria &Criteria) { return (m_pTopology ? m_pTopology->CalcMatchStrength(Criteria) : (Criteria.MatchesAll() ? 1000 : 0)); }
+		int CalcMatchStrength (const CAffinityCriteria &Criteria) { return (m_pTopology ? m_pTopology->CalcMatchStrength(Criteria) : (Criteria.MatchesAll() ? 1000 : 0)); }
 		CVector CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric rDistance, const CSpaceObject *pEncounterBase = NULL) const;
 		CG32bitPixel CalculateSpaceColor (CSpaceObject *pPOV, CSpaceObject **retpStar = NULL, const CG8bitSparseImage **retpVolumetricMask = NULL);
 		void CancelTimedEvent (CSpaceObject *pSource, bool bInDoEvent = false);
@@ -857,7 +857,7 @@ class CSystem
 		//	Locations & Territories
 		ALERROR AddTerritory (CTerritoryDef *pTerritory);
 		void BlockOverlappingLocations (void);
-		int CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &Criteria);
+		int CalcLocationWeight (CLocationDef *pLoc, const CAffinityCriteria &Criteria);
 		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation = NULL);
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);

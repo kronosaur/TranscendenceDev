@@ -602,7 +602,7 @@ int ComputeLocationWeight (SSystemCreateCtx *pCtx,
 //	locations with the given criteria.
 
 	{
-	return CAttributeCriteria::CalcLocationWeight(&pCtx->System, sLocationAttribs, vPos, sAttrib, dwMatchStrength);
+	return CAffinityCriteria::CalcLocationWeight(&pCtx->System, sLocationAttribs, vPos, sAttrib, dwMatchStrength);
 	}
 
 int ComputeStationWeight (SSystemCreateCtx *pCtx, CStationType *pType, const CString &sAttrib, DWORD dwMatchStrength)
@@ -612,7 +612,7 @@ int ComputeStationWeight (SSystemCreateCtx *pCtx, CStationType *pType, const CSt
 //	Returns the weight of this station type given the attribute and match weight
 
 	{
-	return CAttributeCriteria::CalcWeightAdj(pType->HasAttribute(sAttrib), dwMatchStrength);
+	return CAffinityCriteria::CalcWeightAdj(pType->HasAttribute(sAttrib), dwMatchStrength);
 	}
 
 ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc)
@@ -1138,7 +1138,7 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 			{
 			if (!strEquals(sCriteria, MATCH_ALL))
 				{
-				CAttributeCriteria Criteria;
+				CAffinityCriteria Criteria;
 				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
 					return error;
 
@@ -2977,7 +2977,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 			{
 			if (!strEquals(sCriteria, MATCH_ALL))
 				{
-				CAttributeCriteria Criteria;
+				CAffinityCriteria Criteria;
 				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
 					return error;
 
@@ -2991,7 +2991,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 							pCtx->sLocationAttribs,
 							OrbitDesc.GetObjectPos(),
 							sAttrib,
-							(bRequired ? CAttributeCriteria::matchRequired : CAttributeCriteria::matchExcluded));
+							(bRequired ? CAffinityCriteria::matchRequired : CAffinityCriteria::matchExcluded));
 
 					if (iAdj == 0)
 						{
@@ -3424,7 +3424,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 		{
 		//	Parse station criteria if we've got it.
 
-		CAttributeCriteria StationCriteria;
+		CAffinityCriteria StationCriteria;
 		if (error = StationCriteria.Parse(sCriteria, 0, &pCtx->sError))
 			return error;
 
@@ -3464,7 +3464,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 				{
 				if (!strEquals(pType->GetLocationCriteria(), MATCH_ALL))
 					{
-					CAttributeCriteria Criteria;
+					CAffinityCriteria Criteria;
 					if (error = Criteria.Parse(pType->GetLocationCriteria(), 0, &pCtx->sError))
 						{
 						pCtx->sError = strPatternSubst(CONSTLIT("StationType %x: Invalid locationCriteria"), pType->GetUNID());

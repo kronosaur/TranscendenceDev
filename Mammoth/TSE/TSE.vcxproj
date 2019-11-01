@@ -892,7 +892,7 @@
     <ClCompile Include="C3DConversion.cpp" />
     <ClCompile Include="CAStarPathFinder.cpp" />
     <ClCompile Include="CAttackDetector.cpp" />
-    <ClCompile Include="CAttributeCriteria.cpp" />
+    <ClCompile Include="CAffinityCriteria.cpp" />
     <ClCompile Include="CAttributeDataBlock.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>

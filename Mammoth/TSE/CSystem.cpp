@@ -417,14 +417,14 @@ int CSystem::CalculateLightIntensity (const CVector &vPos, CSpaceObject **retpSt
 	DEBUG_CATCH
 	}
 
-int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &Criteria)
+int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAffinityCriteria &Criteria)
 
 //	CalcLocationWeight
 //
 //	Calculates the weight of the given location relative to the given
 //	criteria.
 //
-//	See: CAttributeCriteria::CalcWeightAdj
+//	See: CAffinityCriteria::CalcWeightAdj
 //
 //	EXAMPLES:
 //
@@ -465,7 +465,7 @@ int CSystem::CalcLocationWeight (CLocationDef *pLoc, const CAttributeCriteria &C
 
 		//	Adjust probability based on the match strength
 
-		int iAdj = CAttributeCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
+		int iAdj = CAffinityCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength, iAttribFreq);
 		iWeight = iWeight * iAdj / 1000;
 
 		//	If weight is 0, then no need to continue

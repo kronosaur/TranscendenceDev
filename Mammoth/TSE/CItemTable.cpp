@@ -177,7 +177,7 @@ class CLocationCriteriaTableOfItemGenerators : public IItemGenerator
 		struct SEntry
 			{
 			IItemGenerator *pEntry;
-			CAttributeCriteria Criteria;
+			CAffinityCriteria Criteria;
 			DiceRange Count;
 
 			mutable int iChance;

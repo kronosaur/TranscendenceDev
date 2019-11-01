@@ -85,7 +85,7 @@ bool CTerritoryList::MatchesCriteria (CTerritoryDef *pTerritory, const CVector &
 	//	Parse the criteria
 
 	CString sError;
-	CAttributeCriteria Criteria;
+	CAffinityCriteria Criteria;
 	if (Criteria.Parse(sCriteria, 0, &sError) != NOERROR)
 		kernelDebugLogPattern("Error parsing territory: %s", sError);
 

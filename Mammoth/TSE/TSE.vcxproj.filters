@@ -502,9 +502,6 @@
     <ClCompile Include="CAttackDetector.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="CAttributeCriteria.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CAttributeDataBlock.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -1353,6 +1350,9 @@
     </ClCompile>
     <ClCompile Include="CTopologyAttributeCriteria.cpp">
       <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CAffinityCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

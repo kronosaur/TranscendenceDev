@@ -157,7 +157,7 @@ class CStationEncounterDesc
 		CTopologyAttributeCriteria m_DistanceCriteria;	//	Criteria for nodes for distance calc
 		CString m_sDistanceFrequency;				//	Frequency distribution by distance from criteria
 		CString m_sLevelFrequency;					//	String array of frequency distribution by level
-		CAttributeCriteria m_SystemAffinity;		//	Adjust frequency based on number of matches
+		CAffinityCriteria m_SystemAffinity;			//	Adjust frequency based on number of matches
 
 		CString m_sLocationCriteria;				//	Criteria for location
 		Metric m_rExclusionRadius = 0.0;			//	No stations of any kind within this radius

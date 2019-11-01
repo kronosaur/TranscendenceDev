@@ -120,7 +120,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 	//	NOTE: For now we only do enemies.
 
 	CString sEnemyStationCriteria = strPatternSubst(CONSTLIT("%s,%s"), sStationCriteria, CONSTLIT("*enemy"));
-	CAttributeCriteria StationCriteria;
+	CAffinityCriteria StationCriteria;
 #ifdef DEBUG
 	//	LATER: We should always add everything and filter in TransData
 	StationCriteria.Parse(sStationCriteria, 0);
@@ -147,7 +147,7 @@ void CSystemCreateStats::AddFillLocationsTable (CSystem *pSystem, const TProbabi
 
 		pEntry->FillProb.Insert(pType, iBaseChance);
 
-		CAttributeCriteria LocationCriteria;
+		CAffinityCriteria LocationCriteria;
 		LocationCriteria.Parse(pType->GetLocationCriteria(), 0);
 
 		//	Average out our chance of ending up at one of the given locations.

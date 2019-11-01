@@ -302,7 +302,7 @@ class CIDCounter
 		DWORD m_dwNextID;
 	};
 
-class CAttributeCriteria
+class CAffinityCriteria
 	{
 	public:
 		enum EMatchStrength
@@ -316,7 +316,7 @@ class CAttributeCriteria
 			flagDefault =					0x00000001,
 			};
 
-		CAttributeCriteria (void) :
+		CAffinityCriteria (void) :
 				m_dwFlags(0)
 			{ }
 

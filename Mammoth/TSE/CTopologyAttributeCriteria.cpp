@@ -160,10 +160,10 @@ void CTopologyAttributeCriteria::WriteSubExpression (CMemoryWriteStream &Stream)
 //	Writes sub-expression to stream.
 
 	{
-	CAttributeCriteria::WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"));
-	CAttributeCriteria::WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"));
-	CAttributeCriteria::WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"));
-	CAttributeCriteria::WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"));
+	CAffinityCriteria::WriteAsString(Stream, m_AttribsRequired, CONSTLIT("+"));
+	CAffinityCriteria::WriteAsString(Stream, m_SpecialRequired, CONSTLIT("+"));
+	CAffinityCriteria::WriteAsString(Stream, m_AttribsNotAllowed, CONSTLIT("-"));
+	CAffinityCriteria::WriteAsString(Stream, m_SpecialNotAllowed, CONSTLIT("-"));
 
 	Stream.Write(m_Level.AsString());
 

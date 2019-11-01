@@ -198,7 +198,7 @@ class CLocationCriteriaTableEntry : public IImageEntry
 		struct SEntry
 			{
 			IImageEntry *pImage;
-			CAttributeCriteria Criteria;
+			CAffinityCriteria Criteria;
 			};
 
 		TArray<SEntry> m_Table;
