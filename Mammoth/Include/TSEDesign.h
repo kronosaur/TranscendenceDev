@@ -121,7 +121,7 @@ enum DesignTypes
 class CDesignTypeCriteria
 	{
 	public:
-		CDesignTypeCriteria (void);
+		CDesignTypeCriteria (void) { }
 
 		CString AsString (void) const;
 		bool ChecksLevel (void) const { return (m_iGreaterThanLevel != INVALID_COMPARE || m_iLessThanLevel != INVALID_COMPARE); }
@@ -129,10 +129,12 @@ class CDesignTypeCriteria
 		int GetExcludedAttribCount (void) const { return m_sExclude.GetCount(); }
 		const CString &GetExcludedSpecialAttrib (int iIndex) const { return m_sExcludeSpecial[iIndex]; }
 		int GetExcludedSpecialAttribCount (void) const { return m_sExcludeSpecial.GetCount(); }
+		const CDesignTypeCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
 		const CString &GetRequiredAttrib (int iIndex) const { return m_sRequire[iIndex]; }
 		int GetRequiredAttribCount (void) const { return m_sRequire.GetCount(); }
 		const CString &GetRequiredSpecialAttrib (int iIndex) const { return m_sRequireSpecial[iIndex]; }
 		int GetRequiredSpecialAttribCount (void) const { return m_sRequireSpecial.GetCount(); }
+		bool HasORExpression (void) const { return (m_pOr ? true : false); }
         void IncludeType (DesignTypes iType) { m_dwTypeSet |= (1 << iType); }
 		bool IncludesVirtual (void) const { return m_bIncludeVirtual; }
         bool IsEmpty (void) const { return (m_dwTypeSet == 0); }
@@ -152,17 +154,24 @@ class CDesignTypeCriteria
 			INVALID_COMPARE = -1000,
 			};
 
-		DWORD m_dwTypeSet;
+		ALERROR ParseSubExpression (const char *pPos);
+		void WriteSubExpression (CMemoryWriteStream &Stream) const;
+
+		DWORD m_dwTypeSet = 0;
 		TArray<CString> m_sRequire;
 		TArray<CString> m_sExclude;
 		TArray<CString> m_sRequireSpecial;
 		TArray<CString> m_sExcludeSpecial;
 
-		int m_iGreaterThanLevel;
-		int m_iLessThanLevel;
+		int m_iGreaterThanLevel = INVALID_COMPARE;
+		int m_iLessThanLevel = INVALID_COMPARE;
 
-		bool m_bIncludeVirtual;
-        bool m_bStructuresOnly;
+		bool m_bIncludeVirtual = false;
+        bool m_bStructuresOnly = false;
+
+		TUniquePtr<CDesignTypeCriteria> m_pOr;
+
+		static const CDesignTypeCriteria m_Null;
 	};
 
 //	CDesignType
