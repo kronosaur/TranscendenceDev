@@ -65,6 +65,11 @@ inline int CDifferentiatedItem::GetLevel (void) const
 	return m_pCItem->GetLevel();
 	}
 
+inline int CDifferentiatedItem::GetMassKg (void) const
+	{
+	return m_pCItem->GetMassKg();
+	}
+
 inline int CDifferentiatedItem::GetMinLevel (void) const
 	{
 	return GetType().GetMinLevel();

@@ -129,6 +129,8 @@ const Metric MASS_BALANCE_K1 =					-0.47;
 const Metric MASS_BALANCE_K2 =					0.014;
 const Metric MASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
 const Metric MASS_BALANCE_LIMIT =				16.0;	//	Above this mass (in tons) we don't get any additional bonus
+const Metric MASS_STD_MASS =					(-MASS_BALANCE_K1 - sqrt(MASS_BALANCE_K1 * MASS_BALANCE_K1 - 4.0 * MASS_BALANCE_K2 * MASS_BALANCE_K0)) / (2.0 * MASS_BALANCE_K2);
+const Metric MASS_COST_POWER =					0.5;
 
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
 const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
@@ -918,13 +920,17 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 	
 	//	Mass
 
-	retBalance.rMass = CalcBalanceMass(ArmorItem, Stats);
+	retBalance.rMass = CalcBalanceMass(ArmorItem, Stats, &retBalance.rStdMass);
 	retBalance.rBalance += retBalance.rMass;
+
+	//	Standard cost depends on mass
+
+	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetMassKg() / (1000.0 * retBalance.rStdMass), MASS_COST_POWER)) / 10.0);
 
 	//	Cost
 
 	Metric rCost = (Metric)CEconomyType::ExchangeToCredits(ArmorItem.GetCurrencyAndValue(true));
-	Metric rCostDelta = 100.0 * (rCost - StdStats.iCost) / (Metric)StdStats.iCost;
+	Metric rCostDelta = 100.0 * (rCost - retBalance.rStdCost) / retBalance.rStdCost;
 	retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
 	retBalance.rBalance += retBalance.rCost;
 
@@ -1051,7 +1057,7 @@ Metric CArmorClass::CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, con
 	return rBalance;
 	}
 
-Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const
 
 //	CalcBalanceMass
 //
@@ -1073,6 +1079,11 @@ Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalabl
 	//	to curve up (more mass = bonus, which we don't want).
 
 	rMass = Min(rAdj * rMass, MASS_BALANCE_LIMIT);
+
+	//	Compute the standard mass that results in 0 balance.
+
+	if (retrStdMass)
+		*retrStdMass = MASS_STD_MASS / (rAdj > 0.0 ? rAdj : 1.0);
 
 	//	This polynomial generates a balance based on mass.
 

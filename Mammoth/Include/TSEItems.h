@@ -45,6 +45,7 @@ class CDifferentiatedItem
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
+		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
@@ -89,6 +90,9 @@ class CArmorItem : public CDifferentiatedItem
 
 			Metric rMass = 0.0;					//	Balance from mass
 			Metric rCost = 0.0;					//	Balance from cost
+
+			Metric rStdMass = 0.0;				//	Standard mass (balance = 0.0)
+			Metric rStdCost = 0.0;				//	Standard cost for mass.
 			};
 
 		operator bool () const { return (m_pCItem != NULL); }
