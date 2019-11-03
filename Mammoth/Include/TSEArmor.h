@@ -175,6 +175,7 @@ class CArmorClass
 		int m_iDamageAdjLevel;					//	Level to use for intrinsic damage adj
 		DamageTypeSet m_Reflective;				//	Types of damage reflected
 		CString m_sMassClass;					//	Computed mass class (computed in Bind)
+		int m_iBalanceAdj;						//	Manual adjustment to balance calculation
 
 		DWORD m_fPhotoRecharge:1;				//	TRUE if refuels when near a star
 		DWORD m_fShieldInterference:1;			//	TRUE if armor interferes with shields

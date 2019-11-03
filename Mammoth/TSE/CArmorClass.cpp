@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define BALANCE_ADJ_ATTRIB						CONSTLIT("balanceAdj")
 #define BLINDING_DAMAGE_ADJ_ATTRIB				CONSTLIT("blindingDamageAdj")
 #define BLINDING_IMMUNE_ATTRIB					CONSTLIT("blindingImmune")
 #define CHARGE_DECAY_ATTRIB						CONSTLIT("chargeDecay")
@@ -64,6 +65,7 @@
 #define MASS_CLASS_STANDARD_ID					CONSTLIT("medium")
 
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
+#define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -939,6 +941,10 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 	retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
 	retBalance.rBalance += retBalance.rCost;
 
+	//	Manual adjustment
+
+	retBalance.rBalance += m_iBalanceAdj;
+
 	return (int)retBalance.rBalance;
 	}
 
@@ -1443,6 +1449,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
+	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
 
 	//	Regen
 
@@ -2016,6 +2023,14 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 
 	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
 		return ICCItemPtr(m_sMassClass);
+
+	else if (strEquals(sName, PROPERTY_BALANCE_ADJ))
+		{
+		if (m_iBalanceAdj)
+			return ICCItemPtr(m_iBalanceAdj);
+		else
+			return ICCItemPtr(ICCItem::Nil);
+		}
 
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialBlinding));
