@@ -788,18 +788,46 @@
 
 	</ItemType>
 
-	<!-- Segment of Light Omsk Armor -->
+	<!-- Light Mark I Omsk Armor -->
 
-	<ItemType UNID="&itLightOmskArmor;"
-			name=				"[segment(s) of ]light Omsk armor"
+	<ItemType UNID="&itLightMarkIOmskArmor;"
+			name=				"[segment(s) of ]light mark I Omsk armor"
 			attributes=			"commonwealth, makayev, minorItem, omskArmor, omskDS, specialty"
 			  
 			level=				"6"
 			frequency=			"common"
 			numberAppearing=	"1d6"
 
-			value=				"2000"
-			mass=				"2500"
+			value=				"1500"
+			mass=				"2000"
+			  
+			description=		"When installed on a ship with an Omsk deflector, this segment adds 20 hp strength to the shields."
+			>
+
+		<Image imageID="&rsItems6;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"110"
+				balanceAdj=	"20"
+				/>
+				
+		<StaticData>
+			<bonusHP>20</bonusHP>
+		</StaticData>
+	</ItemType>
+
+	<!-- Medium Mark I Omsk Armor -->
+
+	<ItemType UNID="&itMediumMarkIOmskArmor;"
+			name=				"[segment(s) of ]medium mark I Omsk armor"
+			attributes=			"commonwealth, makayev, minorItem, omskArmor, omskDS, specialty"
+			  
+			level=				"6"
+			frequency=			"common"
+			numberAppearing=	"1d6"
+
+			value=				"2100"
+			mass=				"3000"
 			  
 			description=		"When installed on a ship with an Omsk deflector, this segment adds 25 hp strength to the shields."
 			>
@@ -808,10 +836,39 @@
 
 		<Armor
 				hitPoints=	"135"
+				balanceAdj=	"20"
 				/>
 				
 		<StaticData>
 			<bonusHP>25</bonusHP>
+		</StaticData>
+	</ItemType>
+
+	<!-- Heavy Mark I Omsk Armor -->
+
+	<ItemType UNID="&itHeavyMarkIOmskArmor;"
+			name=				"[segment(s) of ]heavy mark I Omsk armor"
+			attributes=			"commonwealth, makayev, minorItem, omskArmor, omskDS, specialty"
+			  
+			level=				"6"
+			frequency=			"common"
+			numberAppearing=	"1d6"
+
+			value=				"2700"
+			mass=				"5000"
+			  
+			description=		"When installed on a ship with an Omsk deflector, this segment adds 40 hp strength to the shields."
+			>
+
+		<Image imageID="&rsItems6;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"180"
+				balanceAdj=	"20"
+				/>
+				
+		<StaticData>
+			<bonusHP>40</bonusHP>
 		</StaticData>
 	</ItemType>
 
@@ -1081,10 +1138,38 @@
 
 	</ItemType>
 
-	<!-- Segment of Medium Omsk Armor -->
+	<!-- Light Mark II Omsk Armor -->
 
-	<ItemType UNID="&itMediumOmskArmor;"
-			name=				"[segment(s) of ]medium Omsk armor"
+	<ItemType UNID="&itLightMarkIIOmskArmor;"
+			name=				"[segment(s) of ]light mark II Omsk armor"
+			attributes=			"commonwealth, makayev, military, minorItem, omskArmor, omskDS, specialty"
+			  
+			level=				"8"
+			frequency=			"rare"
+			numberAppearing=	"1d6"
+
+			value=				"6500"
+			mass=				"2000"
+			  
+			description=		"The embedded field projectors in this armor enhance the power of Omsk deflectors by 40 hp."
+			>
+
+		<Image imageID="&rsItems8;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"190"
+				balanceAdj=	"20"
+				/>
+				
+		<StaticData>
+			<bonusHP>40</bonusHP>
+		</StaticData>
+	</ItemType>
+
+	<!-- Medium Mark II Omsk Armor -->
+
+	<ItemType UNID="&itMediumMarkIIOmskArmor;"
+			name=				"[segment(s) of ]medium mark II Omsk armor"
 			attributes=			"commonwealth, makayev, military, minorItem, omskArmor, omskDS, specialty"
 			  
 			level=				"8"
@@ -1092,7 +1177,7 @@
 			numberAppearing=	"1d6"
 
 			value=				"8000"
-			mass=				"3500"
+			mass=				"3000"
 			  
 			description=		"The embedded field projectors in this armor enhance the power of Omsk deflectors by 50 hp."
 			>
@@ -1101,10 +1186,39 @@
 
 		<Armor
 				hitPoints=	"225"
+				balanceAdj=	"20"
 				/>
 				
 		<StaticData>
 			<bonusHP>50</bonusHP>
+		</StaticData>
+	</ItemType>
+
+	<!-- Heavy Mark II Omsk Armor -->
+
+	<ItemType UNID="&itHeavyMarkIIOmskArmor;"
+			name=				"[segment(s) of ]heavy mark II Omsk armor"
+			attributes=			"commonwealth, makayev, military, minorItem, omskArmor, omskDS, specialty"
+			  
+			level=				"8"
+			frequency=			"rare"
+			numberAppearing=	"1d6"
+
+			value=				"11000"
+			mass=				"5000"
+			  
+			description=		"The embedded field projectors in this armor enhance the power of Omsk deflectors by 80 hp."
+			>
+
+		<Image imageID="&rsItems8;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Armor
+				hitPoints=	"300"
+				balanceAdj=	"20"
+				/>
+				
+		<StaticData>
+			<bonusHP>80</bonusHP>
 		</StaticData>
 	</ItemType>
 
@@ -1409,17 +1523,17 @@
 
 	</ItemType>
 
-	<!-- Segment of Massive Omsk Armor -->
+	<!-- Massive Mark II Omsk Armor -->
 
-	<ItemType UNID="&itMassiveOmskArmor;"
-			name=				"[segment(s) of ]massive Omsk armor"
+	<ItemType UNID="&itMassiveMarkIIOmskArmor;"
+			name=				"[segment(s) of ]massive mark II Omsk armor"
 			attributes=			"commonwealth, makayev, military, minorItem, omskArmor, omskDS, specialty"
 			  
 			level=				"9"
 			frequency=			"rare"
 			numberAppearing=	"1d6"
 
-			value=				"22000"
+			value=				"35000"
 			mass=				"12000"
 			  
 			description=		"The heaviest armor in the Omsk series, originally designed for Makayev's canceled cruiser project, adds 100 hp to Omsk shields."
@@ -1428,7 +1542,8 @@
 		<Image imageID="&rsItems9;" imageX="0" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
-				hitPoints=	"400"
+				hitPoints=	"800"
+				balanceAdj=	"20"
 				/>
 				
 		<StaticData>
