@@ -82,6 +82,7 @@
 #define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_STEALTH						CONSTLIT("stealth")
 
@@ -922,6 +923,10 @@ int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance 
 
 	retBalance.rMass = CalcBalanceMass(ArmorItem, Stats, &retBalance.rStdMass);
 	retBalance.rBalance += retBalance.rMass;
+
+	//	Compute standard hit point for the given mass
+
+	retBalance.rStdHP = StdStats.iHP * pow(2.0, Max(-2.0, Min(2.0, -retBalance.rMass / 100.0)));
 
 	//	Standard cost depends on mass
 
@@ -2077,8 +2082,19 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialShatter));
 
+	else if (strEquals(sName, PROPERTY_STD_COST))
+		{
+		CArmorItem::SBalance Balance;
+		CalcBalance(ArmorItem, Balance);
+		return ICCItemPtr(mathRound(Balance.rStdCost));
+		}
+
 	else if (strEquals(sName, PROPERTY_STD_HP))
-		return ICCItemPtr(GetStdHP(Stats.iLevel));
+		{
+		CArmorItem::SBalance Balance;
+		CalcBalance(ArmorItem, Balance);
+		return ICCItemPtr(mathRound(Balance.rStdHP));
+		}
 
 	else if (strEquals(sName, PROPERTY_STEALTH))
 		{

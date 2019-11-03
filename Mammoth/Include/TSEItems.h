@@ -76,6 +76,9 @@ class CArmorItem : public CDifferentiatedItem
 			Metric rBalance = 0.0;				//	Total balance (+100 = 100% overpowered)
 			int iLevel = 0;						//	Level for which we balanced
 			Metric rHP = 0.0;					//	Max HP for armor (counting bonuses, etc.).
+			Metric rStdMass = 0.0;				//	Standard mass (balance = 0.0)
+			Metric rStdCost = 0.0;				//	Standard cost for mass.
+			Metric rStdHP = 0.0;				//	Standard HP for mass.
 
 			Metric rHPBalance = 0.0;			//	Balance contribution from raw HP
 			Metric rDamageAdj = 0.0;			//	Balance contribution from damage adj
@@ -90,9 +93,6 @@ class CArmorItem : public CDifferentiatedItem
 
 			Metric rMass = 0.0;					//	Balance from mass
 			Metric rCost = 0.0;					//	Balance from cost
-
-			Metric rStdMass = 0.0;				//	Standard mass (balance = 0.0)
-			Metric rStdCost = 0.0;				//	Standard cost for mass.
 			};
 
 		operator bool () const { return (m_pCItem != NULL); }
