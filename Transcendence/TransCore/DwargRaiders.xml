@@ -347,6 +347,8 @@
 			maxSpeed=			"19"
 
 			attributes=			"dwarg, genericClass, zoanthrope"
+
+			explosionType=		"&vtKineticExplosion2;"
 			>
 
 		<Armor>
