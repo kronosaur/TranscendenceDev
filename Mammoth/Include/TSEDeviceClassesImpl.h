@@ -826,9 +826,9 @@ class CWeaponClass : public CDeviceClass
 		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
 
-		int GetAlternatingPos (CInstalledDevice *pDevice) const;
-		DWORD GetContinuousFire (CInstalledDevice *pDevice) const;
-		int GetCurrentVariant (CInstalledDevice *pDevice) const;
+		int GetAlternatingPos (const CInstalledDevice *pDevice) const;
+		DWORD GetContinuousFire (const CInstalledDevice *pDevice) const;
+		int GetCurrentVariant (const CInstalledDevice *pDevice) const;
 		void SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const;
 		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const;
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;

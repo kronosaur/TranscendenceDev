@@ -482,6 +482,7 @@ class CInstalledDevice
 		bool CanBeEmpty (void) const { return !m_fCannotBeEmpty; }
 		bool CanTargetMissiles (void) const { return m_fCanTargetMissiles; }
 		int GetCharges (CSpaceObject *pSource) { return (m_pItem ? m_pItem->GetCharges() : 0); }
+		DWORD GetContinuousFire (void) const { return (int)(DWORD)LOBYTE(LOWORD(m_dwData)); }
 		bool GetCycleFireSettings (void) const { return m_fCycleFire; }
 		DWORD GetData (void) const { return m_dwData; }
 		int GetDeviceSlot (void) const { return m_iDeviceSlot; }

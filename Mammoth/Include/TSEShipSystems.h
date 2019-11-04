@@ -109,11 +109,13 @@ class CDeviceSystem
 		int GetCountByID (const CString &sID) const;
 		CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
 		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
 		int GetNamedIndex (DeviceNames iDev) const { return m_NamedDevices[iDev]; }
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
+		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;
 		void MarkImages (void);
 		bool OnDestroyCheck (CSpaceObject *pObj, DestructionTypes iCause, const CDamageSource &Attacker);
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject *pObj);

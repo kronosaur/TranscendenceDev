@@ -2702,17 +2702,17 @@ int CWeaponClass::GetCounter (CInstalledDevice *pDevice, CSpaceObject *pSource, 
 	return pDevice->GetTemperature();
 	}
 
-int CWeaponClass::GetAlternatingPos (CInstalledDevice *pDevice) const
+int CWeaponClass::GetAlternatingPos (const CInstalledDevice *pDevice) const
 	{
 	return (int)(DWORD)HIBYTE(LOWORD(pDevice->GetData()));
 	}
 
-DWORD CWeaponClass::GetContinuousFire (CInstalledDevice *pDevice) const
+DWORD CWeaponClass::GetContinuousFire (const CInstalledDevice *pDevice) const
 	{
-	return (int)(DWORD)LOBYTE(LOWORD(pDevice->GetData()));
+	return pDevice->GetContinuousFire();
 	}
 
-int CWeaponClass::GetCurrentVariant (CInstalledDevice *pDevice) const
+int CWeaponClass::GetCurrentVariant (const CInstalledDevice *pDevice) const
 	{
 	return (int)(short)HIWORD(pDevice->GetData()); 
 	}

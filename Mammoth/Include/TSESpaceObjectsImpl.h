@@ -1028,6 +1028,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		bool GetWeaponIsReady (DeviceNames iDev);
         Metric GetWeaponRange (DeviceNames iDev);
 		bool IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL, int *retiFacingAngle = NULL);
+		bool IsWeaponRepeating (DeviceNames iDev = devNone) const { return m_Devices.IsWeaponRepeating(); }
 
 		//	Settings
 		CAbilitySet &GetNativeAbilities (void) { return m_Abilities; }
