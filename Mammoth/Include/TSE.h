@@ -1504,7 +1504,8 @@ class CObjectTracker
                     fShowInMap(false),
                     fFriendly(false),
                     fEnemy(false),
-					fInactive(false)
+					fInactive(false),
+					fPlayerBlacklisted(false)
                 { }
 
 			CTopologyNode *pNode = NULL;
@@ -1521,6 +1522,7 @@ class CObjectTracker
             DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
             DWORD fEnemy:1;
 			DWORD fInactive:1;				//	pObj->IsInactive()
+            DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
 			};
 
         struct SBackgroundObjEntry
@@ -1585,7 +1587,8 @@ class CObjectTracker
                     fShowInMap(false),
                     fFriendly(false),
                     fEnemy(false),
-					fInactive(false)
+					fInactive(false),
+					fPlayerBlacklisted(false)
                 { }
 
             void DeleteExtra (void)
@@ -1609,7 +1612,7 @@ class CObjectTracker
             DWORD fFriendly:1;              //  If neither friend or enemy, then neutral
             DWORD fEnemy:1;
             DWORD fInactive:1;				//	TRUE if pObj->IsInactive()
-            DWORD fSpare7:1;
+            DWORD fPlayerBlacklisted:1;		//	TRUE if player is blacklisted
             DWORD fSpare8:1;
 
             DWORD dwSpare:24;

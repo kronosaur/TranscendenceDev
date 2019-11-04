@@ -88,6 +88,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     pEntry->fFriendly = ObjData.fFriendly;
     pEntry->fEnemy = ObjData.fEnemy;
 	pEntry->fInactive = ObjData.fInactive;
+	pEntry->fPlayerBlacklisted = ObjData.fPlayerBlacklisted;
 
 	if (ObjData.pExtra)
 		{
@@ -659,6 +660,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                         pObjData->fFriendly =		((dwLoad & 0x00000010) ? true : false);
                         pObjData->fEnemy =			((dwLoad & 0x00000020) ? true : false);
                         pObjData->fInactive =		((dwLoad & 0x00000040) ? true : false);
+                        pObjData->fPlayerBlacklisted = ((dwLoad & 0x00000080) ? true : false);
 
                         //  Extra, if we've got it
 
@@ -951,6 +953,7 @@ void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, cons
     ObjData.fShowDestroyed = Obj.ShowStationDamage();
     ObjData.fShowInMap = Obj.IsShownInGalacticMap();
 	ObjData.fInactive = Obj.IsInactive();
+	ObjData.fPlayerBlacklisted = (pPlayer && !Obj.IsEnemy(pPlayer) && Obj.IsAngryAt(pPlayer));
 
     //  Track our disposition relative to the player
 
@@ -1284,13 +1287,14 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 //  Flags
 
                 dwSave = 0;
-                dwSave |= (ObjData.pExtra           ? 0x00000001 : 0);
-                dwSave |= (ObjData.fKnown           ? 0x00000002 : 0);
-                dwSave |= (ObjData.fShowDestroyed   ? 0x00000004 : 0);
-                dwSave |= (ObjData.fShowInMap       ? 0x00000008 : 0);
-                dwSave |= (ObjData.fFriendly        ? 0x00000010 : 0);
-                dwSave |= (ObjData.fEnemy           ? 0x00000020 : 0);
-                dwSave |= (ObjData.fInactive        ? 0x00000040 : 0);
+                dwSave |= (ObjData.pExtra				? 0x00000001 : 0);
+                dwSave |= (ObjData.fKnown				? 0x00000002 : 0);
+                dwSave |= (ObjData.fShowDestroyed		? 0x00000004 : 0);
+                dwSave |= (ObjData.fShowInMap			? 0x00000008 : 0);
+                dwSave |= (ObjData.fFriendly			? 0x00000010 : 0);
+                dwSave |= (ObjData.fEnemy				? 0x00000020 : 0);
+                dwSave |= (ObjData.fInactive			? 0x00000040 : 0);
+                dwSave |= (ObjData.fPlayerBlacklisted	? 0x00000080 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that

@@ -394,6 +394,17 @@ void CGalacticMapSystemDetails::GetObjAttribs (const CObjectTracker::SObjEntry &
 //	Returns attributes for the object.
 
 	{
+	//	Blacklisted
+
+	if (Obj.fPlayerBlacklisted)
+		{
+		CCartoucheBlock::SCartoucheDesc *pEntry = retAttribs.Insert();
+		pEntry->sText = CONSTLIT("blacklisted");
+
+		pEntry->rgbBack = m_VI.GetColor(colorAreaDisadvantage);
+		pEntry->rgbColor = m_VI.GetColor(colorTextDisadvantage);
+		}
+
 	//	Add currency
 
 	CTradingDesc *pTrade = Obj.pType->GetTradingDesc();
