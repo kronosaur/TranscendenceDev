@@ -3005,6 +3005,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes        Attributes of the system\n"
 			"   'known             Known to player\n"
 			"   'lastVisitOn       Tick on which player last visited\n"
 			"   'lastVisitSeconds  Game seconds since player last visited\n"
