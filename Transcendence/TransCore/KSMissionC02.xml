@@ -106,14 +106,21 @@
 				Payment: %payment%
 			</Text>
 			<Text id="SuccessDebrief">
-				(list
-					{
-						descID: 'textSuccessDebrief1
-						}
-					{
-						descID: 'textSuccessDebrief2
-						data: { reward: (itmGetName (msnGetData gSource 'rewardItem) '(count actual)) }
-						}
+				(block (
+					(rewardItem (msnGetData gSource 'rewardItem))
+					)
+					(list
+						{
+							descID: 'textSuccessDebrief1
+							}
+						{
+							descID: (if (gr (itmGetMass rewardItem) 10)
+								'textSuccessDebrief2Heavy
+								'textSuccessDebrief2
+								)
+							data: { reward: (itmGetName rewardItem '(count actual)) }
+							}
+						)
 					)
 			</Text>
 			<Text id="textSuccessDebrief1">
@@ -131,6 +138,14 @@
 				something that might help in your travels."
 
 				He hands you %reward%.
+
+			</Text>
+			<Text id="textSuccessDebrief2Heavy">
+
+				"We don't have much in the way of rewards here. But I've got
+				something that might help in your travels.
+
+				"Please accept %reward%."
 
 			</Text>
 
