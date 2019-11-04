@@ -2709,29 +2709,26 @@ bool CSpaceObject::FireOnDockObjAdj (CSpaceObject **retpObj)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		if (pResult->IsError())
 			{
 			ReportEventError(ON_DOCK_OBJ_ADJ_EVENT, pResult);
-			Ctx.Discard(pResult);
 			return false;
 			}
-		else if (pResult->IsNil())
-			{
-			Ctx.Discard(pResult);
-			return false;
-			}
-		else
+		else if (pResult->IsInteger())
 			{
 			CSpaceObject *pNewObj = Ctx.AsSpaceObject(pResult);
-			Ctx.Discard(pResult);
 
 			if (pNewObj == NULL || pNewObj == this)
 				return false;
 
 			*retpObj = pNewObj;
 			return true;
+			}
+		else
+			{
+			return false;
 			}
 		}
 

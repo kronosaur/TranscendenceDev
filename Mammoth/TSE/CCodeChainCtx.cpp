@@ -318,6 +318,8 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	try
 		{
 		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
+		if (pObj && ((DWORD)pObj->GetCategory() & ~CSpaceObject::catMask))
+			pObj = NULL;
 		}
 	catch (...)
 		{

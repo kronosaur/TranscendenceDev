@@ -330,6 +330,8 @@ class CSpaceObject
 			catMarker =			0x00000020,
 			catMission =		0x00000040,
 			catOther =			0x80000000,
+
+			catMask =			0x8000007F,
 			};
 
 		enum StealthAndPerceptionLevels
