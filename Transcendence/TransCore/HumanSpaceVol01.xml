@@ -2307,32 +2307,30 @@
 	<Library unid="&unidCoreTypesLibrary;"/>
 	<Library unid="&unidRPGLibrary;"/>
 	<Library unid="&unidGalaxyLibrary;"/>
+
+	<!-- Ares Orthodoxy -->
 	
-	<Module filename="Domina.xml"/>
-	<Module filename="HSCompatibility.xml"/>
-	<Module filename="HumanSpaceMap.xml"/>
-		
-	<!-- These modules implement specific system. We need to make these more
-		generic and move the adventure-specific behavior to Part I -->
-		
+	<Module filename="AresItems.xml"/>
+	<Module filename="AresOrthodoxy.xml"/>
+	<Module filename="AresShips.xml"/>
+
+	<!-- Battle Arena Maximus -->
+
 	<Module filename="BattleArena.xml"/>
 	<Module filename="BattleArenaChallenger.xml"/>
 	<Module filename="BattleArenaFight.xml"/>
 	<Module filename="BattleArenaGladiators.xml"/>
-	<Module filename="BattleArenaMelee.xml"/>
 	<Module filename="BattleArenaKidnapped.xml"/>
-	<Module filename="CharonFortress.xml"/>
-	<Module filename="Dantalion.xml"/>
-	<Module filename="Eridani.xml"/>
-	<Module filename="EtaCeti.xml"/>
-	<Module filename="Heretic.xml"/>
-	<Module filename="PointJuno.xml"/>
-	<Module filename="Sanctuary.xml"/>
-	<Module filename="StKatharines.xml"/>
-	
+	<Module filename="BattleArenaMelee.xml"/>
+
+	<!-- Black Market -->
+
+	<Module filename="BlackMarket.xml"/>
+	<Module filename="BlackMarketMission00.xml"/>
+	<Module filename="BlackMarketMission01.xml"/>
+
 	<!-- Characters -->
 		
-	<Module filename="Antarctica.xml"/>
 	<Module filename="Benedict.xml"/>
 	<Module filename="Fiona.xml"/>
 	<Module filename="HugoSandoval.xml"/>
@@ -2341,27 +2339,31 @@
 	<Module filename="Rama.xml"/>
 	<Module filename="Stormhound.xml"/>
 	<Module filename="Volkov.xml"/>
+
+	<!-- Charon Pirates -->
 	
-	<!-- These modules implement encounters. They should be clean, for the
-		most part. -->
-		
-	<Module filename="Abbasid.xml"/>
-	<Module filename="Anarchists.xml"/>
-	<Module filename="Antarctica01.xml"/>
-	<Module filename="Antarctica02.xml"/>
-	<Module filename="AntarcticaD01.xml"/>
-	<Module filename="AresItems.xml"/>
-	<Module filename="AresOrthodoxy.xml"/>
-	<Module filename="AresShips.xml"/>
-	<Module filename="BlackMarket.xml"/>
-	<Module filename="BlackMarketMission00.xml"/>
-	<Module filename="BlackMarketMission01.xml"/>
-	<Module filename="CentauriWarlords.xml"/>
+	<Module filename="CharonFortress.xml"/>
 	<Module filename="CharonPirates.xml"/>
+	<Module filename="Kronosaurus.xml"/>
+
+	<!-- Commonwealth -->
+		
 	<Module filename="Commonwealth.xml"/>
 	<Module filename="CommonwealthAgricultural.xml"/>
 	<Module filename="CommonwealthCenturions.xml"/>
 	<Module filename="CommonwealthCharacters.xml"/>
+	<Module filename="CommonwealthMetropolis.xml"/>
+	<Module filename="CommonwealthMission01.xml"/>
+	<Module filename="CommonwealthMissionRevenge01.xml"/>
+	<Module filename="CommonwealthRonins.xml"/>
+	<Module filename="CommonwealthShips.xml"/>
+
+	<!-- Commonwealth Fleet -->
+
+	<Module filename="Antarctica.xml"/>
+	<Module filename="Antarctica01.xml"/>
+	<Module filename="Antarctica02.xml"/>
+	<Module filename="AntarcticaD01.xml"/>
 	<Module filename="CommonwealthFleet.xml"/>
 	<Module filename="CommonwealthFleetMission01.xml"/>
 	<Module filename="CommonwealthFleetMission02.xml"/>
@@ -2379,83 +2381,93 @@
 	<Module filename="CommonwealthFleetMissionLL03.xml"/>
 	<Module filename="CommonwealthFleetMissionLL04.xml"/>
 	<Module filename="CommonwealthFleetMissionPJ01.xml"/>
-	<Module filename="CommonwealthMetropolis.xml"/>
+	<Module filename="CommonwealthStarCarrier.xml"/>
+	<Module filename="CSCTerra.xml"/>
+	<Module filename="Dantalion.xml"/>
+	<Module filename="PointJuno.xml"/>
+
+	<!-- Commonwealth Militia -->
+
 	<Module filename="CommonwealthMilitia.xml"/>
 	<Module filename="CommonwealthMilitiaMission01.xml"/>
 	<Module filename="CommonwealthMilitiaMission02.xml"/>
 	<Module filename="CommonwealthMilitiaMission03.xml"/>
 	<Module filename="CommonwealthMilitiaMission04.xml"/>
 	<Module filename="CommonwealthMilitiaMissionSK01.xml"/>
+
+	<!-- Commonwealth Mining -->
+
 	<Module filename="CommonwealthMining.xml"/>
 	<Module filename="CommonwealthMiningMission01.xml"/>
 	<Module filename="CommonwealthMiningMission02.xml"/>
-	<Module filename="CommonwealthMission01.xml"/>
-	<Module filename="CommonwealthMissionRevenge01.xml"/>
-	<Module filename="CommonwealthRonins.xml"/>
-	<Module filename="CommonwealthShips.xml"/>
-	<Module filename="CommonwealthStarCarrier.xml"/>
+
+	<!-- Corporate Hierarchy -->
+
 	<Module filename="CorporateHierarchy.xml"/>
 	<Module filename="CorporateInsurance.xml"/>
 	<Module filename="CorporateTradingPost.xml"/>
-	<Module filename="CSCTerra.xml"/>
-	<Module filename="Dall01.xml"/>
+	<Module filename="Rasiermesser.xml"/>
+	<Module filename="RasiermesserMission01.xml"/>
+
+	<!-- Encounters -->
+
+	<Module filename="Abbasid.xml"/>
+	<Module filename="Anarchists.xml"/>
+	<Module filename="CentauriWarlords.xml"/>
 	<Module filename="DeathDrugsCartel.xml"/>
 	<Module filename="Debris.xml"/>
 	<Module filename="DwargRaiders.xml"/>
-	<Module filename="FerianMission01.xml"/>
-	<Module filename="Ferians.xml"/>
 	<Module filename="Gaians.xml"/>
 	<Module filename="Heliotropes.xml"/>
 	<Module filename="Himal.xml"/>
-	<Module filename="Huari.xml"/>
-	<Module filename="HuariMission01.xml"/>
-	<Module filename="HuariMission02.xml"/>
-	<Module filename="HuariMission03.xml"/>
-	<Module filename="HumanTech.xml"/>
 	<Module filename="Iocrym.xml"/>
 	<Module filename="KobolWarlords.xml"/>
-	<Module filename="KorolovFreighters.xml"/>
-	<Module filename="KorolovShipping.xml"/>
-	<Module filename="Kronosaurus.xml"/>
-	<Module filename="KronosaurusMission01.xml"/>
-	<Module filename="KSMission01.xml"/>
-	<Module filename="KSMission02.xml"/>
-	<Module filename="KSMission03.xml"/>
-	<Module filename="KSMissionC01.xml"/>
-	<Module filename="KSMissionC02.xml"/>
 	<Module filename="Luminous.xml"/>
 	<Module filename="Marauders.xml"/>
 	<Module filename="OutlawMiners.xml"/>
 	<Module filename="Outlaws.xml"/>
 	<Module filename="Penitents.xml"/>
 	<Module filename="Pteravores.xml"/>
-	<Module filename="RaisuStation.xml"/>
 	<Module filename="RanxEmpire.xml"/>
-	<Module filename="Rasiermesser.xml"/>
-	<Module filename="RasiermesserMission01.xml"/>
 	<Module filename="Ringers.xml"/>
 	<Module filename="RogueFleet.xml"/>
 	<Module filename="Salvagers.xml"/>
 	<Module filename="Sapiens.xml"/>
-	<Module filename="SistersOfDomina.xml"/>
-	<Module filename="SungSlaveCamp.xml"/>
-	<Module filename="SungSlavers.xml"/>
-	<Module filename="TeratonResearch.xml"/>
-	<Module filename="Teratons.xml"/>
 	<Module filename="Tinkers.xml"/>
 	<Module filename="UrakWarlords.xml"/>
 	<Module filename="Ventari.xml"/>
 	<Module filename="Xenophobes.xml"/>
-		
-	<!-- These modules implement items. They should be clean, for the most
-		part. -->
+
+	<!-- Eridani -->
+
+	<Module filename="Eridani.xml"/>
+	<Module filename="EridaniStations.xml"/>
+	<Module filename="RaisuStation.xml"/>
+
+	<!-- Ferians -->
+
+	<Module filename="Ferians.xml"/>
+	<Module filename="FerianMission01.xml"/>
+
+	<!-- Heretic -->
+
+	<Module filename="Heretic.xml"/>
+	<Module filename="MRAD.xml"/>
+
+	<!-- Huari -->
+
+	<Module filename="Huari.xml"/>
+	<Module filename="HuariMission01.xml"/>
+	<Module filename="HuariMission02.xml"/>
+	<Module filename="HuariMission03.xml"/>
+
+	<!-- Items -->
 
 	<Module filename="Analyzers.xml"/>
 	<Module filename="ArmorEnhancementItems.xml"/>
 	<Module filename="ArmorRepairItems.xml"/>
 	<Module filename="Barricades.xml"/>
 	<Module filename="MiscItems.xml"/>
-	<Module filename="MRAD.xml"/>
 	<Module filename="QuantumCPU.xml"/>
 	<Module filename="ShieldEnhancementItems.xml"/>
 	<Module filename="StdArmor.xml"/>
@@ -2464,20 +2476,58 @@
 	<Module filename="StdEffects.xml"/>
 	<Module filename="StdFuel.xml"/>
 	<Module filename="StdMiningEquipment.xml"/>
-	<Module filename="StdPlayerShips.xml"/>
 	<Module filename="StdShields.xml"/>
-	<Module filename="StdSovereigns.xml"/>
-	<Module filename="StdSystems.xml"/>
 	<Module filename="StdUnknownItems.xml"/>
 	<Module filename="StdWeapons.xml"/>
 	<Module filename="UsefulItems.xml"/>
 	<Module filename="WeaponEnhancementItems.xml"/>
-		
-	<!-- These modules have a combination of types. Some should be in the
-		adventure; others should be core types. -->
-		
+
+	<!-- Korolov Shipping -->
+
+	<Module filename="KorolovFreighters.xml"/>
+	<Module filename="KorolovShipping.xml"/>
+	<Module filename="KronosaurusMission01.xml"/>
+	<Module filename="KSMission01.xml"/>
+	<Module filename="KSMission02.xml"/>
+	<Module filename="KSMission03.xml"/>
+	<Module filename="KSMissionC01.xml"/>
+	<Module filename="KSMissionC02.xml"/>
+
+	<!-- Misc -->
+
 	<Module filename="Code.xml"/>
+	<Module filename="Domina.xml"/>
+	<Module filename="HSCompatibility.xml"/>
+	<Module filename="HumanTech.xml"/>
 	<Module filename="StdDockScreens.xml"/>
+	<Module filename="StdPlayerShips.xml"/>
+	<Module filename="StdSovereigns.xml"/>
 	<Module filename="StdTypes.xml"/>
 
+	<!-- Sisters of Domina -->
+
+	<Module filename="Sanctuary.xml"/>
+	<Module filename="SistersOfDomina.xml"/>
+
+	<!-- St. Katharine's Star -->
+
+	<Module filename="Dall01.xml"/>
+	<Module filename="StKatharines.xml"/>
+
+	<!-- Star Systems -->
+		
+	<Module filename="EtaCeti.xml"/>
+	<Module filename="HumanSpaceMap.xml"/>
+	<Module filename="StdSystems.xml"/>
+
+	<!-- Sung Slavers -->
+	
+	<Module filename="SungSlaveCamp.xml"/>
+	<Module filename="SungSlavers.xml"/>
+
+	<!-- Teratons -->
+
+	<Module filename="TeratonResearch.xml"/>
+	<Module filename="Teratons.xml"/>
+		
 </CoreLibrary>

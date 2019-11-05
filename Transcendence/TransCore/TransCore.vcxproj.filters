@@ -70,9 +70,6 @@
     <Filter Include="Human Space Library\Teratons">
       <UniqueIdentifier>{95e56c36-5b2d-4c56-95f4-a524716c4ce5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Human Space Library\Misc Encounters">
-      <UniqueIdentifier>{b33ac3ac-3346-4d8b-b1b3-ef7b253a1f89}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Human Space Library\Sung Slavers">
       <UniqueIdentifier>{fb38e338-1ce7-4323-8cae-1c58f0d6e634}</UniqueIdentifier>
     </Filter>
@@ -90,6 +87,12 @@
     </Filter>
     <Filter Include="Human Space Library\Commonwealth Mining">
       <UniqueIdentifier>{b7ab7526-b5af-4e40-a600-c7792dbd8d66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Human Space Library\Heretic">
+      <UniqueIdentifier>{64de1583-14c5-4dd9-b26d-abe0621575f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Human Space Library\Encounters">
+      <UniqueIdentifier>{b33ac3ac-3346-4d8b-b1b3-ef7b253a1f89}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -236,7 +239,7 @@
       <Filter>RPG Library</Filter>
     </None>
     <None Include="CentauriWarlords.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="Code.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
@@ -245,10 +248,7 @@
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
     <None Include="DwargRaiders.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
-    </None>
-    <None Include="Heretic.xml">
-      <Filter>Human Space Library\Star Systems</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="HSCompatibility.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
@@ -257,25 +257,25 @@
       <Filter>Human Space Library\Star Systems</Filter>
     </None>
     <None Include="Iocrym.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="KateMorgental.xml">
       <Filter>Human Space Library\Characters</Filter>
     </None>
     <None Include="Luminous.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="MiscItems.xml">
       <Filter>Human Space Library\Items</Filter>
     </None>
     <None Include="OutlawMiners.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="Ringers.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="RogueFleet.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="StdArmor.xml">
       <Filter>Human Space Library\Items</Filter>
@@ -298,9 +298,6 @@
     <None Include="StdDockScreens.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
-    <None Include="StdEffects.xml">
-      <Filter>Human Space Library\Miscellaneous</Filter>
-    </None>
     <None Include="StdPlayerShips.xml">
       <Filter>Human Space Library\Miscellaneous</Filter>
     </None>
@@ -317,10 +314,10 @@
       <Filter>Human Space Library\Items</Filter>
     </None>
     <None Include="Tinkers.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="UrakWarlords.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </None>
     <None Include="UsefulItems.xml">
       <Filter>Human Space Library\Items</Filter>
@@ -394,6 +391,12 @@
     <None Include="CommonwealthMining.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
     </None>
+    <None Include="Heretic.xml">
+      <Filter>Human Space Library\Heretic</Filter>
+    </None>
+    <None Include="StdEffects.xml">
+      <Filter>Human Space Library\Items</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="CorePlaceholders.xml">
@@ -460,7 +463,7 @@
       <Filter>Human Space Library\Characters</Filter>
     </Xml>
     <Xml Include="Penitents.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="StdMiningEquipment.xml">
       <Filter>Human Space Library\Items</Filter>
@@ -637,52 +640,52 @@
       <Filter>RPG Library</Filter>
     </Xml>
     <Xml Include="Abbasid.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Xenophobes.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="DeathDrugsCartel.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Anarchists.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Gaians.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Heliotropes.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Himal.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="KobolWarlords.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Marauders.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Outlaws.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Pteravores.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="RanxEmpire.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Salvagers.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Sapiens.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Debris.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="Ventari.xml">
-      <Filter>Human Space Library\Misc Encounters</Filter>
+      <Filter>Human Space Library\Encounters</Filter>
     </Xml>
     <Xml Include="CommonwealthFleetMissionLL03.xml">
       <Filter>Human Space Library\Commonwealth Fleet</Filter>
@@ -875,6 +878,12 @@
     </Xml>
     <Xml Include="CommonwealthMiningMission02.xml">
       <Filter>Human Space Library\Commonwealth Mining</Filter>
+    </Xml>
+    <Xml Include="EridaniStations.xml">
+      <Filter>Human Space Library\Eridani</Filter>
+    </Xml>
+    <Xml Include="MRAD.xml">
+      <Filter>Human Space Library\Heretic</Filter>
     </Xml>
   </ItemGroup>
 </Project>

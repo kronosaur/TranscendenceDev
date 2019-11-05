@@ -541,6 +541,7 @@
     <Xml Include="Debris.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="EridaniStations.xml" />
     <Xml Include="EtaCeti.xml" />
     <Xml Include="FerianMission01.xml" />
     <Xml Include="Ferians.xml">
@@ -595,6 +596,7 @@
     <Xml Include="KSMissionC01.xml" />
     <Xml Include="KSMissionC02.xml" />
     <Xml Include="Marauders.xml" />
+    <Xml Include="MRAD.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />

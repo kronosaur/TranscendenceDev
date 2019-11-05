@@ -328,11 +328,13 @@
 		
 		<Language>
 			<Text id="descWelcome">
+
 				You are in the docking bay of a Commonwealth colony. Except for a few shuttles,
 				the docking bay of this station is deserted. A loose hose spills dirty
 				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
 				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
 				and exhaust.
+
 			</Text>
 		</Language>
 	</StationType>

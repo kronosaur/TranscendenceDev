@@ -3615,6 +3615,13 @@
 						)
 					)
 				))
+
+			; Aliases for backwards compatibility ------------------------------
+			
+			(setq comShowBuyScreen scrShowBuyScreen)
+			(setq comShowSellScreen scrShowSellScreen)
+			(setq intMassString strMassString)
+			(setq intTranslate objTranslate)
 			)
 	</Globals>
 
