@@ -910,14 +910,6 @@
 			<RemoveDevice	criteria="d L:1-11;" priceAdj="100"/>
 		</Trade>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<DockScreens>
 			<Main>
 				<Panes>

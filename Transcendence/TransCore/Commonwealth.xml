@@ -321,12 +321,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 			
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -582,12 +576,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -754,14 +742,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
 		</Language>
@@ -897,14 +877,6 @@
 		
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="descWelcome">
 				You are in the docking bay of %objName%. Medical professionals
@@ -984,14 +956,6 @@
 
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">
 				Welcome to Commonwealth Residentials.
@@ -1057,12 +1021,6 @@
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stCommonwealthSlums; "* +commonwealthHabitat;")
 			</GetGlobalAchievements>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<GetGlobalRumors>
 				(append
@@ -1295,12 +1253,6 @@
 		</StaticData>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnObjDestroyed>
 				(if (eq aObjDestroyed (objGetObjRefData gSource "target"))
 					(block Nil
@@ -1616,14 +1568,6 @@
 					)
 			</NPCService>
 		</StaticData>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<Language>
 			<Text id="descWelcome">

@@ -228,12 +228,6 @@
 					)
 			</GetGlobalRumors>
 
-			<OnContractGenerate>
-				(intGenerateMiningRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnOreDepositFound>
 				(switch
 					;	If there are no outlaw miners in the system, we send out

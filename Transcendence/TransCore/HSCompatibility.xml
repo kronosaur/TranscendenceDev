@@ -4983,14 +4983,6 @@
 
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>			
-
 		<Language>
 			<Text id="descWelcome">
 				Welcome to Commonwealth Residentials.
