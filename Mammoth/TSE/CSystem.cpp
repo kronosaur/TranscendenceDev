@@ -3653,6 +3653,10 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 			}
 		}
 
+	//	Paint all labels.
+
+	Ctx.GetLabelPainter().Paint(Dest);
+
 	//	Paint NavPaths
 
 	if (m_Universe.GetDebugOptions().IsShowNavPathsEnabled())

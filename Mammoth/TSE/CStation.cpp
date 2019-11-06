@@ -2000,6 +2000,48 @@ void CStation::InitMapLabel (void)
 		}
 	}
 
+bool CStation::InitWorldMapLabel (void)
+
+//	InitWorldMapLabel
+//
+//	Initializes a label for a planet. Returns TRUE if we have a valid map label.
+
+	{
+	//	If we have have a valid label, we're done
+
+	if (!m_sMapLabel.IsBlank() && m_pMapFont)
+		return true;
+
+	//	Otherwise, figure out a map label
+
+	else
+		{
+		m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
+		int iPlanetarySize = GetPlanetarySize();
+
+		//	We don't show world labels if this is an internal name, or if the
+		//	object is too small.
+
+		if (m_sMapLabel.IsBlank() 
+				|| *m_sMapLabel.GetASCIIZPointer() == '('
+				|| iPlanetarySize < MIN_NAMED_WORLD_SIZE)
+			{
+			m_fNoMapLabel = true;
+			return false;
+			}
+		else
+			{
+			if (iPlanetarySize < LARGE_WORLD_SIZE)
+				m_pMapFont = &GetUniverse().GetNamedFont(CUniverse::fontPlanetoidMapLabel);
+			else
+				m_pMapFont = &GetUniverse().GetNamedFont(CUniverse::fontWorldMapLabel);
+			m_xMapLabel = -m_pMapFont->MeasureText(m_sMapLabel) / 2;
+			m_yMapLabel = m_MapImage.GetHeight() / 2;
+			return true;
+			}
+		}
+	}
+
 bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
 
 //	IsBlacklisted
@@ -3252,6 +3294,18 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 				y - (m_MapImage.GetHeight() / 2));
 
 		m_Overlays.PaintMapAnnotations(Ctx, Dest, x, y);
+
+		//	Paint name
+
+		if (!m_fNoMapLabel
+				&& InitWorldMapLabel())
+			{
+			Ctx.GetLabelPainter().AddLabel(m_sMapLabel,
+					*m_pMapFont,
+					CG32bitPixel(255, 255, 255, 0x80),
+					x + m_xMapLabel,
+					y + m_yMapLabel);
+			}
 		}
 	else if (m_Scale == scaleStar)
 		{

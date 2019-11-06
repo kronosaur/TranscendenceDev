@@ -5,10 +5,29 @@
 
 #pragma once
 
+class CLabelPainter
+	{
+	public:
+		void AddLabel (const CString &sText, const CG16bitFont &Font, CG32bitPixel rgbColor, int x, int y);
+		void Paint (CG32bitImage &Dest) const;
+
+	private:
+		struct SLabelDesc
+			{
+			CString sText;
+			const CG16bitFont *pFont = NULL;
+			CG32bitPixel rgbColor;
+			int x = 0;
+			int y = 0;
+			};
+
+		TArray<SLabelDesc> m_Labels;
+	};
+
 struct SViewportPaintCtx
 	{
 	public:
-		inline void Save (void)
+		void Save (void)
 			{
 			SVariants *pFrame = m_SaveStack.Insert();
 
@@ -21,7 +40,7 @@ struct SViewportPaintCtx
 			pFrame->iVariant = iVariant;
 			}
 
-		inline void Restore (void)
+		void Restore (void)
 			{
 			int iLastIndex = m_SaveStack.GetCount() - 1;
 			if (iLastIndex >= 0)
@@ -141,18 +160,19 @@ class CMapViewportCtx
 		CMapViewportCtx (void) { }
 		CMapViewportCtx (CSpaceObject *pCenter, const RECT &rcView, Metric rMapScale);
 
-		inline CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
-		inline const CVector &GetCenterPos (void) const { return m_vCenter; }
-		inline int GetCenterX (void) const { return m_xCenter; }
-		inline int GetCenterY (void) const { return m_yCenter; }
-		inline const RECT &GetViewportRect (void) const { return m_rcView; }
-		inline ViewportTransform &GetXform (void) { return m_Trans; }
+		CSpaceObject *GetCenterObj (void) const { return m_pCenter; }
+		const CVector &GetCenterPos (void) const { return m_vCenter; }
+		int GetCenterX (void) const { return m_xCenter; }
+		int GetCenterY (void) const { return m_yCenter; }
+		CLabelPainter &GetLabelPainter (void) { return m_Labels; }
+		const RECT &GetViewportRect (void) const { return m_rcView; }
+		ViewportTransform &GetXform (void) { return m_Trans; }
 		bool IsInViewport (CSpaceObject *pObj) const;
-		inline bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
-		inline bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
-		inline void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
-		inline void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
-		inline void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
+		bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
+		bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
+		void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
+		void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
+		void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
@@ -167,6 +187,8 @@ class CMapViewportCtx
 		int m_yCenter = 0;					//		(in viewport coordinate)
 
 		ViewportTransform m_Trans;			//	Transform
+
+		CLabelPainter m_Labels;		//	List of labels to paint
 
 		bool m_b3DMap = true;				//	Use standard 3D projection
 		bool m_bNoSpaceBackground = false;	//	Do not paint a space background

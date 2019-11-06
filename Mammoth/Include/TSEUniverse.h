@@ -251,8 +251,10 @@ class CUniverse
 			fontSRSObjName =			2,	//	Font for name of objects in SRS
 			fontSRSMessage =			3,	//	Font for comms messages from objects in SRS
 			fontSRSObjCounter =			4,	//	Font for counter labels
+			fontPlanetoidMapLabel =		5,
+			fontWorldMapLabel =			6,
 
-			fontCount =					5,
+			fontCount =					75,
 			};
 
 		CUniverse (void);

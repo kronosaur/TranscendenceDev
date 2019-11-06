@@ -1354,5 +1354,8 @@
     <ClCompile Include="CAffinityCriteria.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="CLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -1620,6 +1620,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 			maxDevices				= 8,
 			};
 
+		static constexpr int MIN_NAMED_WORLD_SIZE = 1000;
+		static constexpr int LARGE_WORLD_SIZE = 5000;
+
 		void AvengeAttack (CSpaceObject *pAttacker);
 		bool Blacklist (CSpaceObject *pObj);
 		void CalcBounds (void);
@@ -1637,6 +1640,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
 		void InitMapLabel (void);
+		bool InitWorldMapLabel (void);
 		bool IsBlacklisted (const CSpaceObject *pObj = NULL) const;
 		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
 		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);
@@ -1713,6 +1717,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
 
 		CG32bitImage m_MapImage;				//	Image for the map (if star or world)
+		const CG16bitFont *m_pMapFont = NULL;	//	Font for map label (initialized by InitWorldMapLabel)
 		CString m_sMapLabel;					//	Label for map
 		int m_xMapLabel;						//	Name label in map view (cached)
 		int m_yMapLabel;

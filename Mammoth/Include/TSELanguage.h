@@ -196,9 +196,10 @@ class CNameDesc
 		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 //		CString GenerateName (CSystem *pSystem, DWORD *retdwNameFlags) const;
 		CString GenerateName (TSortMap<CString, CString> *pParams = NULL, DWORD *retdwNameFlags = NULL) const;
-		inline const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }
-		inline bool IsConstant (void) const { return (m_Names.GetCount() == 0); }
-		inline bool IsEmpty (void) const { return m_sConstantName.IsBlank(); }
+		const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }
+		bool IsConstant (void) const { return (m_Names.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_sConstantName.IsBlank() && m_Names.GetCount() == 0); }
+		bool IsHidden (void) const { return IsEmpty() || *m_sConstantName.GetASCIIZPointer() == '('; }
 		void Reinit (void);
 
 	private:

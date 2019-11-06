@@ -56,6 +56,8 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	"SmallBold",			//	SRS object name: Tahoma 11 bold
 	"Header",				//	SRS object message
 	"Small",				//	SRS object counter: 10 pixels
+	"MediumBold",			//	Planetoid map label
+	"HeaderBold",			//	World map label
 	};
 
 CUniverse::CUniverse (void) : 
