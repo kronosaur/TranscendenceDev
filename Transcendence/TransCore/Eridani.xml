@@ -7,63 +7,267 @@
 	<SystemType UNID="&ssStartonEridani;"
 				attributes=		"envWater"
 				>
-		<Tables>
-			<!-- Planets and Asteroids -->
+		<SystemGroup>
 
-			<SmallInnerAsteroid>
-				<Table>
-					<Station chance="80" type="&stMetallicAsteroidSizeA;"/>
-					<Station chance="20" type="&stRockyAsteroidSizeA;"/>
-				</Table>
-			</SmallInnerAsteroid>
+			<!-- Epsilon Eridani -->
 
-			<MediumInnerAsteroid>
-				<Table>
-					<Station chance="80" type="&stMetallicAsteroidSizeB;"/>
-					<Station chance="20" type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</MediumInnerAsteroid>
+			<Station type="&stStarClassK0;" name="Epsilon Eridani"/>
 
-			<StJohnAsteroid>
-				<Table>
-					<Station chance="35" type="&stRockyOuterAsteroidSizeA;"/>
-					<Station chance="20" type="&stMetallicAsteroidSizeA;"/>
-					<Station chance="35" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="4"  type="&stRockyOuterAsteroidSizeB;"/>
-					<Station chance="2"  type="&stMetallicAsteroidSizeB;"/>
-					<Station chance="4"  type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</StJohnAsteroid>
+			<AddAttribute attributes="KTypeSystem"/>
+			<AddTerritory minRadius="0"		maxRadius="350"		attributes="innerSystem, rockyComp, cinderZone"/>
+			<AddTerritory minRadius="350"	maxRadius="590"		attributes="lifeZone, rockyComp, desertZone"/>
+			<AddTerritory minRadius="590"	maxRadius="0"		attributes="outerSystem, rockyComp, frostZone"/>
 
-			<StJohnTrojans>
-				<Group>
-					<Siblings count="2d20" arcInc="2d205-206" radiusInc="-4-4">
-						<Lookup table="StJohnAsteroid"/>
+			<Orbitals angle="incrementing:30-330">
+
+				<!-- Dante II
+					The inner world is a barren, rocky world -->
+
+				<Group distance="80">
+					<Station type="&stRockyPlanetoidSizeF;" 
+							objName="OldStart"
+							name="Dante II" 
+							showOrbit="true"
+							/>
+
+					<Orbitals distance="24" angle="random">
+						<Group>
+							<Lookup table="StargateOutbound"/>
+
+							<Orbitals distance="18" angle="0">
+								<Station type="&stCommonwealthNavSign;">
+									<InitialData>
+										<Data id="languageTable">&ssStartonEridani;</Data>
+										<Data id="signID">navSign.outbound.sign</Data>
+										<Data id="infoID">navSign.outbound.info</Data>
+									</InitialData>
+								</Station>
+							</Orbitals>
+						</Group>
+					</Orbitals>
+
+					<!-- Trojans of Dante II are metal-rich asteroids -->
+
+					<LocationAttributes attributes="danteTrojans">
+						<Lookup table="AsteroidCompactTrojans50"/>
+						<Lookup table="AsteroidCompactAntiTrojans50"/>
+					</LocationAttributes>
+				</Group>
+
+				<!-- Hagaron
+					Another inner world -->
+
+				<Group distance="160">
+					<Station type="&stDesertTerrestrialSizeH;" name="Hageron" showOrbit="true"/>
+
+					<Orbitals distance="1d8+8" angle="random">
+						<Location attributes="hagaronOrbit"/>
+					</Orbitals>
+				</Group>
+
+				<!-- Raphael -->
+
+				<Group distance="270">
+					<Station type="&stRockyPlanetoidSizeG;" name="Raphael" showOrbit="true"/>
+
+					<Orbitals distance="1d8+8" angle="random">
+						<Location attributes="raphaelOrbit"/>
+					</Orbitals>
+
+					<!-- Trojans -->
+
+					<LocationAttributes attributes="raphaelTrojans">
+						<Lookup chance="90" table="AsteroidTrojans25"/>
+						<Lookup chance="90" table="AsteroidAntiTrojans25"/>
+					</LocationAttributes>
+				</Group>
+
+				<!-- St. John's World
+					The worlds around this gas giant form the core of the
+					Starton community. -->
+
+				<Group distance="520">
+
+					<!-- St. John's World -->
+
+					<Station type="&stHydrogenGasGiantSizeM;" 
+							name="St. John's World" 
+							showOrbit="true"
+							/>
+
+					<!-- Moons of St. John's WOrld -->
+
+					<Orbitals angle="incrementing:45-315">
+
+						<!-- Morgana -->
+
+						<Group distance="22">
+							<Station type="&stPrimordialPlanetoidSizeF;" name="Morgana"/>
+						</Group>
+
+						<!-- Mordred -->
+
+						<Group distance="45">
+							<Station type="&stRockyPlanetoidSizeG;" name="Mordred"/>
+						</Group>
+
+						<!-- Uther
+							The main Commonwealth station is here. -->
+
+						<Group distance="80">
+
+							<!-- The planet Uther -->
+
+							<Station type="&stIcePlanetoidSizeG;" name="Uther"/>
+
+							<!-- The main stations are all in a group -->
+
+							<Siblings angleInc="180">
+								<Location attributes="startonMetropolis"/>
+							</Siblings>
+
+							<!-- The Sisters of Domina is opposite -->
+
+							<Siblings radiusInc="12">
+								<Location attributes="sistersOfDomina"/>
+							</Siblings>
+						</Group>
+
+						<!-- Lancelot -->
+
+						<Group distance="140">
+							<Station type="&stMetallicPlanetoidSizeF;" name="Lancelot"/>
+
+							<Orbitals distance="6" angle="random">
+								<Location attributes="lancelotOrbit"/>
+							</Orbitals>
+						</Group>
+
+					</Orbitals>
+
+					<!-- Trojans -->
+
+					<LocationAttributes attributes="stJohnTrojans">
+						<Lookup table="AsteroidTrojans50"/>
+						<Lookup table="AsteroidAntiTrojans50"/>
+
+						<!-- Add a guaranteed location, just in case -->
+
+						<Siblings count="1" angleInc="60">
+							<Location/>
+						</Siblings>
+					</LocationAttributes>
+
+					<!-- Antipode -->
+
+					<LocationAttributes attributes="stJohnAntipode">
+						<Lookup table="AsteroidAntipode100"/>
+					</LocationAttributes>
+				</Group>
+
+				<!-- Voerms -->
+
+				<Group distance="900">
+					<Station type="&stMethaneGasGiantSizeK;" name="Voerms" showOrbit="true"/>
+
+					<Lookup table="AsteroidRing25"/>
+
+					<!-- Voerms is in a sparse asteroid belt -->
+
+					<Lookup table="AsteroidBelt100"/>
+
+					<!-- Arco Vaugh's base is somewhere around here -->
+
+					<Siblings count="1" angleInc="20-340" radiusInc="-20-180">
+						<Location attributes="arcoVaughnBase"/>
 					</Siblings>
 
-					<Siblings count="2d20" arcInc="2d159-160" radiusInc="-6-6">
-						<Lookup table="StJohnAsteroid"/>
-					</Siblings>
+					<!-- There are a few other Centauri bases here -->
 
-					<Siblings count="2d16" arcInc="2d109-110" radiusInc="-8-8">
-						<Lookup table="StJohnAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d49-50" radiusInc="-12-12">
-						<Lookup table="StJohnAsteroid"/>
+					<Siblings count="6" angleInc="40-320" radiusInc="-90-90">
+						<Location attributes="centauriBase"/>
 					</Siblings>
 				</Group>
-			</StJohnTrojans>
 
-			<OuterAsteroid>
+			</Orbitals>
+
+			<!-- Create more stargates in case an extension added more links -->
+
+			<Lookup table="HumanSpaceStargates"/>
+			
+			<!-- Create ore deposits -->
+			
+			<Code>
+				(trnCreateOreDeposits (random 0 2))
+			</Code>
+
+			<!-- Populate Dante II Trojans -->
+
+			<RandomLocation count="2" locationCriteria="*danteTrojans" exclusionRadius="50" noWarnings="true">
+				<Lookup table="DanteStations"/>
+			</RandomLocation>
+
+			<!-- Populate Hagaron -->
+
+			<RandomLocation locationCriteria="*hagaronOrbit">
 				<Table>
-					<Station chance="70" type="&stRockyOuterAsteroidSizeA;"/>
-					<Station chance="20" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="8"  type="&stRockyOuterAsteroidSizeB;"/>
-					<Station chance="2"  type="&stRockyAsteroidSizeB;"/>
+					<Lookup			chance="80" table="Stations1" />
+					<RandomStation  chance="20" stationCriteria="*enemy;"/>
 				</Table>
-			</OuterAsteroid>
+			</RandomLocation>
 
+			<!-- Populate Raphael -->
+
+			<RandomLocation locationCriteria="*raphaelOrbit">
+				<Table>
+					<Lookup			chance="80" table="Stations1" />
+					<RandomStation  chance="20" stationCriteria="*enemy;"/>
+				</Table>
+			</RandomLocation>
+
+			<RandomLocation count="2" locationCriteria="*raphaelTrojans" exclusionRadius="50" noWarnings="true">
+				<Lookup chance="75" table="Stations1"/>
+			</RandomLocation>
+
+			<!-- Populate St. John's World -->
+
+			<RandomLocation locationCriteria="*startonMetropolis">
+				<Lookup table="StartonMetropolis"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*sistersOfDomina">
+				<Group>
+					<Station type="&stSistersOfDomina;"/>
+
+					<Siblings radiusInc="8">
+						<Marker objName="Start"/>
+					</Siblings>
+				</Group>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*lancelotOrbit" exclusionRadius="0">
+				<Station type="&stCentauriCamp;"/>
+			</RandomLocation>
+
+			<RandomLocation locationCriteria="*stJohnTrojans" exclusionRadius="50">
+				<Station type="&stRaisuStation;"/>
+				<Lookup table="StJohnTrojanStations"/>
+			</RandomLocation>
+
+			<!-- Populate Voerms -->
+
+			<RandomLocation locationCriteria="*arcoVaughnBase" exclusionRadius="0">
+				<Station type="&stArcoVaughnHabitat;"/>
+			</RandomLocation>
+
+			<RandomLocation count="2-3" locationCriteria="*centauriBase" exclusionRadius="50">
+				<Station type="&stCentauriCamp;"/>
+			</RandomLocation>
+		</SystemGroup>
+
+		<!-- Lookup Tables -->
+
+		<Tables>
 			<!-- Random Stations -->
 
 			<Stations1>
@@ -79,11 +283,10 @@
 			<DanteStations>
 				<Table>
 					<Station chance="45"	type="&stMiningColony;"/>
-					<Station chance="25"	type="&stCentauriCamp;"/>
-					<Station chance="10"	type="&stCharonPirateOutpost;"/>
+					<Station chance="30"	type="&stCentauriCamp;"/>
+					<Station chance="15"	type="&stCharonPirateOutpost;"/>
 					<Station chance="5"		type="&stCommonwealthSlums;"/>
 					<Station chance="5"		type="&stFuelDepot;"/>
-					<Null	 chance="10" />
 				</Table>
 			</DanteStations>
 
@@ -109,6 +312,136 @@
 				</Table>
 			</StJohnTrojanStations>
 
+			<!-- Metropolis -->
+
+			<StartonMetropolis>
+				<Group>
+
+					<!-- Commonwealth Station -->
+
+					<Station type="&stStartonEridani;"/>
+
+					<!-- Industrial Center -->
+
+					<Siblings arcInc="+22">
+						<Station type="&stCorporateEnclave;" name=": Greenwich Industries" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Dry Dock -->
+
+					<Siblings arcInc="-22">
+						<Station type="&stCommonwealthDryDock;" name=": Starton Dry Dock" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Metropolis Station -->
+
+					<Siblings radiusInc="+22">
+						<Lookup table="MetropolisStation"/>
+					</Siblings>
+
+					<!-- Metropolis Station -->
+
+					<Siblings radiusInc="-22">
+						<Lookup table="MetropolisStation"/>
+					</Siblings>
+
+					<!-- Central Nav beacons -->
+
+					<Siblings arcInc="+12" radiusInc="+12">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings arcInc="-12" radiusInc="-12">
+						<Station type="&stNavBeacon;" imageVariant="1"/>
+					</Siblings>
+
+					<!-- Metropolis Stations -->
+
+					<Table>
+						<Group chance="50">
+							<Siblings arcInc="+39">
+								<Lookup table="BeringStation"/>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings arcInc="-39">
+								<Lookup table="MetropolisStation"/>
+							</Siblings>
+						</Group>
+
+						<Group chance="50">
+							<Siblings arcInc="+39">
+								<Lookup table="MetropolisStation"/>
+							</Siblings>
+
+							<!-- Metropolis Station -->
+							<Siblings arcInc="-39">
+								<Lookup table="BeringStation"/>
+							</Siblings>
+						</Group>
+					</Table>
+
+					<!-- Slums -->
+
+					<Siblings arcInc="+55">
+						<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings arcInc="-55">
+						<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Peripheral nav beacons -->
+
+					<Siblings arcInc="+68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<Siblings arcInc="-68">
+						<Station type="&stNavBeacon;" imageVariant="0"/>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings arcInc="+82">
+						<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Slums -->
+
+					<Siblings arcInc="-82">
+						<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings arcInc="110-121">
+						<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings arcInc="-110--121">
+						<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="-11--14" arcInc="11-14">
+						<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
+					</Siblings>
+
+					<!-- Container Habitat -->
+
+					<Siblings radiusInc="11-14" arcInc="-11--14">
+						<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
+					</Siblings>
+
+				</Group>
+			</StartonMetropolis>
+
 			<!-- Special Stations -->
 
 			<BeringStation>
@@ -120,499 +453,7 @@
 			</BeringStation>
 		</Tables>
 
-		<SystemGroup>
-
-			<!-- Epsilon Eridani -->
-
-			<Station type="&stStarClassK0;" name="Epsilon Eridani"/>
-
-			<AddAttribute attributes="KTypeSystem"/>
-			<AddTerritory minRadius="0"		maxRadius="350"		attributes="innerSystem, rockyComp, cinderZone"/>
-			<AddTerritory minRadius="350"	maxRadius="590"		attributes="lifeZone, rockyComp, desertZone"/>
-			<AddTerritory minRadius="590"	maxRadius="0"		attributes="outerSystem, rockyComp, frostZone"/>
-
-			<Orbitals angle="incrementing:30-330">
-
-				<!-- Dante II
-					The inner world is a barren, rocky world -->
-
-				<Group distance="80">
-					<Primary>
-						<Station type="&stRockyPlanetoidSizeF;" 
-								objName="OldStart"
-								name="Dante II" 
-								showOrbit="true"
-								/>
-					</Primary>
-
-					<Orbitals distance="24" angle="random">
-						<Group>
-							<Lookup table="StargateOutbound"/>
-
-							<Orbitals distance="18" angle="0">
-								<Station type="&stCommonwealthNavSign;">
-									<InitialData>
-										<Data id="languageTable">&ssStartonEridani;</Data>
-										<Data id="signID">navSign.outbound.sign</Data>
-										<Data id="infoID">navSign.outbound.info</Data>
-									</InitialData>
-								</Station>
-							</Orbitals>
-						</Group>
-					</Orbitals>
-
-					<!-- Trojans of Dante II are metal-rich asteroids -->
-
-					<Trojan>
-						<Group>
-							<Siblings count="1d20" arcInc="2d105-106" radiusInc="-4-4">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d20" arcInc="2d79-80" radiusInc="-6-6">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d16" arcInc="2d55-56" radiusInc="-8-8">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d12" arcInc="2d25-26" radiusInc="-12-12">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d5-1" arcInc="2d15-16" radiusInc="-16-16">
-								<Lookup table="MediumInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1" arcInc="2d15-16" radiusInc="-20-20">
-								<Lookup table="DanteStations"/>
-							</Siblings>
-							
-							<Siblings count="1" arcInc="2d15-16" radiusInc="-20-20">
-								<Lookup table="LocationDefinition">
-									<_Morphology>
-										<Lookup table="VariantAsteroidTrojanLabel"/>
-									</_Morphology>
-								</Lookup>
-							</Siblings>
-						</Group>
-					</Trojan>
-
-					<AntiTrojan>
-						<Group>
-							<Siblings count="1d20" arcInc="2d105-106" radiusInc="-4-4">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d20" arcInc="2d79-80" radiusInc="-6-6">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d16" arcInc="2d55-56" radiusInc="-8-8">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d12" arcInc="2d25-26" radiusInc="-12-12">
-								<Lookup table="SmallInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1d5-1" arcInc="2d15-16" radiusInc="-16-16">
-								<Lookup table="MediumInnerAsteroid"/>
-							</Siblings>
-
-							<Siblings count="1" arcInc="2d15-16" radiusInc="-20-20">
-								<Lookup table="DanteStations"/>
-							</Siblings>
-							
-							<Siblings count="1" arcInc="2d15-16" radiusInc="-20-20">
-								<Lookup table="LocationDefinition">
-									<_Morphology>
-										<Lookup table="VariantAsteroidTrojanLabel"/>
-									</_Morphology>
-								</Lookup>
-							</Siblings>
-						</Group>
-					</AntiTrojan>
-
-				</Group>
-
-				<!-- Hagaron
-					Another inner world -->
-
-				<Group distance="160">
-					<Primary>
-						<Station type="&stDesertTerrestrialSizeH;" name="Hageron" showOrbit="true"/>
-					</Primary>
-
-					<Orbitals distance="1d8+8" angle="random">
-						<Lookup table="Stations1" probability="80"/>
-					</Orbitals>
-
-				</Group>
-
-				<!-- Raphael -->
-
-				<Group distance="270">
-					<Primary>
-						<Station type="&stRockyPlanetoidSizeG;" name="Raphael" showOrbit="true"/>
-					</Primary>
-
-					<Orbitals distance="1d8+8" angle="random">
-						<Lookup table="Stations1" probability="80"/>
-					</Orbitals>
-
-					<!-- Trojans -->
-
-					<Trojan>
-						<Group probability="50">
-							<Orbitals count="3d4+4" distance="2d8+8" angle="random">
-								<Lookup table="AsteroidSingleton"/>
-							</Orbitals>
-
-							<Orbitals distance="1d8+6" angle="random">
-								<Lookup table="Stations1" probability="75"/>
-							</Orbitals>
-
-							<Orbitals distance="1d6" angle="random">
-								<Lookup table="LocationDefinition">
-									<_Morphology>
-										<Lookup table="VariantAsteroidTrojanLabel"/>
-									</_Morphology>
-								</Lookup>
-							</Orbitals>
-						</Group>
-					</Trojan>
-
-					<AntiTrojan>
-						<Group probability="50">
-							<Orbitals count="3d4+4" distance="2d8+8" angle="random">
-								<Lookup table="AsteroidSingleton"/>
-							</Orbitals>
-
-							<Orbitals distance="1d8+6" angle="random">
-								<Lookup table="Stations1" probability="75"/>
-							</Orbitals>
-
-							<Orbitals distance="1d6" angle="random">
-								<Lookup table="LocationDefinition">
-									<_Morphology>
-										<Lookup table="VariantAsteroidTrojanLabel"/>
-									</_Morphology>
-								</Lookup>
-							</Orbitals>
-						</Group>
-					</AntiTrojan>
-
-				</Group>
-
-				<!-- St. John's World
-					The worlds around this gas giant form the core of the
-					Starton community. -->
-
-				<Group distance="520">
-
-					<!-- St. John's World -->
-
-					<Primary>
-						<Station type="&stHydrogenGasGiantSizeM;" 
-								name="St. John's World" 
-								showOrbit="true"
-								/>
-					</Primary>
-
-					<!-- Moons of St. John's WOrld -->
-
-					<Orbitals angle="incrementing:45-315">
-
-						<!-- Morgana -->
-
-						<Group distance="22">
-							<Primary>
-								<Station type="&stPrimordialPlanetoidSizeF;" name="Morgana"/>
-							</Primary>
-						</Group>
-
-						<!-- Mordred -->
-
-						<Group distance="45">
-							<Primary>
-								<Station type="&stRockyPlanetoidSizeG;" name="Mordred"/>
-							</Primary>
-						</Group>
-
-						<!-- Uther
-							The main Commonwealth station is here. -->
-
-						<Group distance="80">
-
-							<!-- The planet Uther -->
-
-							<Primary>
-								<Station type="&stIcePlanetoidSizeG;" name="Uther"/>
-							</Primary>
-
-							<!-- The main stations are all in a group -->
-
-							<Siblings angleInc="180">
-								<Group>
-
-									<!-- Commonwealth Station -->
-									<Primary>
-										<Station type="&stStartonEridani;"/>
-									</Primary>
-
-									<!-- Industrial Center -->
-									<Siblings arcInc="+22">
-										<Station type="&stCorporateEnclave;" name=": Greenwich Industries" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Dry Dock -->
-									<Siblings arcInc="-22">
-										<Station type="&stCommonwealthDryDock;" name=": Starton Dry Dock" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Metropolis Station -->
-									<Siblings radiusInc="+22">
-										<Lookup table="MetropolisStation"/>
-									</Siblings>
-
-									<!-- Metropolis Station -->
-									<Siblings radiusInc="-22">
-										<Lookup table="MetropolisStation"/>
-									</Siblings>
-
-									<!-- Central Nav beacons -->
-									<Siblings arcInc="+12" radiusInc="+12">
-										<Station type="&stNavBeacon;" imageVariant="0"/>
-									</Siblings>
-
-									<Siblings arcInc="-12" radiusInc="-12">
-										<Station type="&stNavBeacon;" imageVariant="1"/>
-									</Siblings>
-
-									<!-- Metropolis Stations -->
-									<Table>
-										<Group chance="50">
-											<Siblings arcInc="+39">
-												<Lookup table="BeringStation"/>
-											</Siblings>
-
-											<!-- Metropolis Station -->
-											<Siblings arcInc="-39">
-												<Lookup table="MetropolisStation"/>
-											</Siblings>
-										</Group>
-
-										<Group chance="50">
-											<Siblings arcInc="+39">
-												<Lookup table="MetropolisStation"/>
-											</Siblings>
-
-											<!-- Metropolis Station -->
-											<Siblings arcInc="-39">
-												<Lookup table="BeringStation"/>
-											</Siblings>
-										</Group>
-									</Table>
-
-									<!-- Slums -->
-									<Siblings arcInc="+55">
-										<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Slums -->
-									<Siblings arcInc="-55">
-										<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Peripheral nav beacons -->
-									<Siblings arcInc="+68">
-										<Station type="&stNavBeacon;" imageVariant="0"/>
-									</Siblings>
-
-									<Siblings arcInc="-68">
-										<Station type="&stNavBeacon;" imageVariant="0"/>
-									</Siblings>
-
-									<!-- Slums -->
-									<Siblings arcInc="+82">
-										<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Slums -->
-									<Siblings arcInc="-82">
-										<Station type="&stCommonwealthSlums;" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Container Habitat -->
-									<Siblings arcInc="110-121">
-										<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Container Habitat -->
-									<Siblings arcInc="-110--121">
-										<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Container Habitat -->
-									<Siblings radiusInc="-11--14" arcInc="11-14">
-										<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
-									</Siblings>
-
-									<!-- Container Habitat -->
-									<Siblings radiusInc="11-14" arcInc="-11--14">
-										<Station type="&stContainerHabitat;" name=": Starton Residentials|Starton Residentials" noMapLabel="true"/>
-									</Siblings>
-
-								</Group>
-							</Siblings>
-
-							<!-- The Sisters of Domina is opposite -->
-
-							<Siblings radiusInc="12">
-								<Group>
-									<Station type="&stSistersOfDomina;"/>
-
-									<Siblings radiusInc="8">
-										<Marker objName="Start"/>
-									</Siblings>
-								</Group>
-							</Siblings>
-
-						</Group>
-
-						<!-- Lancelot -->
-
-						<Group distance="140">
-							<Primary>
-								<Station type="&stMetallicPlanetoidSizeF;" name="Lancelot"/>
-							</Primary>
-
-							<Orbitals distance="6" angle="random">
-								<Station type="&stCentauriCamp;"/>
-							</Orbitals>
-						</Group>
-
-					</Orbitals>
-
-					<!-- Trojans -->
-
-					<Table>
-						<Group chance="50">
-							<Trojan>
-								<Lookup table="StJohnTrojans"/>
-
-								<Orbitals distance="1d8+6" angle="random">
-									<Station type="&stRaisuStation;" />
-								</Orbitals>
-								
-								<Orbitals distance="1d6" angle="random">
-									<Lookup table="LocationDefinition">
-										<_Morphology>
-											<Lookup table="VariantAsteroidTrojanLabel"/>
-										</_Morphology>
-									</Lookup>
-								</Orbitals>
-							</Trojan>
-
-							<AntiTrojan>
-								<Lookup table="StJohnTrojans"/>
-
-								<Orbitals distance="1d8+6" angle="random">
-									<Lookup table="StJohnTrojanStations"/>
-								</Orbitals>
-								
-								<Orbitals distance="1d6" angle="random">
-									<Lookup table="LocationDefinition">
-										<_Morphology>
-											<Lookup table="VariantAsteroidTrojanLabel"/>
-										</_Morphology>
-									</Lookup>
-								</Orbitals>
-							</AntiTrojan>
-						</Group>
-
-						<Group chance="50">
-							<Trojan>
-								<Lookup table="StJohnTrojans"/>
-
-								<Orbitals distance="1d8+6" angle="random">
-									<Lookup table="StJohnTrojanStations"/>
-								</Orbitals>
-								
-								<Orbitals distance="1d6" angle="random">
-									<Lookup table="LocationDefinition">
-										<_Morphology>
-											<Lookup table="VariantAsteroidTrojanLabel"/>
-										</_Morphology>
-									</Lookup>
-								</Orbitals>
-							</Trojan>
-
-							<AntiTrojan>
-								<Lookup table="StJohnTrojans"/>
-
-								<Orbitals distance="1d8+6" angle="random">
-									<Station type="&stRaisuStation;" />
-								</Orbitals>
-								
-								<Orbitals distance="1d6" angle="random">
-									<Lookup table="LocationDefinition">
-										<_Morphology>
-											<Lookup table="VariantAsteroidTrojanLabel"/>
-										</_Morphology>
-									</Lookup>
-								</Orbitals>
-							</AntiTrojan>
-						</Group>
-					</Table>
-
-				</Group>
-
-				<!-- Voerms -->
-
-				<Group distance="900">
-					<Primary>
-						<Station type="&stMethaneGasGiantSizeK;" name="Voerms" showOrbit="true"/>
-					</Primary>
-
-					<Orbitals count="6d6" distance="2d4+15" angle="random">
-						<Lookup table="OuterAsteroid"/>
-					</Orbitals>
-					
-					<!-- Voerms is in a sparse asteroid belt -->
-
-					<Siblings count="80-120" distribution="4d40-80">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
-
-					<!-- Arco Vaugh's base is somewhere around here -->
-
-					<Siblings count="1" angleInc="20-340" radiusInc="-20-180">
-						<Station type="&stArcoVaughnHabitat;"/>
-					</Siblings>
-
-					<!-- There are a few other Centauri bases here -->
-
-					<Siblings count="2-3" angleInc="40-320" radiusInc="-90-90">
-						<Station type="&stCentauriCamp;"/>
-					</Siblings>
-				</Group>
-
-			</Orbitals>
-
-			<!-- Create more stargates in case an extension added more links -->
-
-			<Lookup table="HumanSpaceStargates"/>
-			
-			<!-- Create ore deposits -->
-			
-			<Code>
-				(trnCreateOreDeposits (random 0 2))
-			</Code>
-
-		</SystemGroup>
+		<!-- Events and Data -->
 
 		<Events>
 			<OnCreate>
