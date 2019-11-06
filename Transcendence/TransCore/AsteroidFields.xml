@@ -377,6 +377,22 @@
 			</Group>
 		</AsteroidArcBeltLargeMorphology>
 
+		<!-- ASTEROID RINGS -->
+
+		<AsteroidRing25Morphology>
+			<Orbitals distance="2d4+16">
+				<OrbitalDistribution count="2d4+8" radialWidth="4">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution count="1"	radialWidth="6">
+					<LocationAttributes attributes="asteroids, asteroidRing">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+			</Orbitals>
+		</AsteroidRing25Morphology>
+		
 		<!-- ASTEROID TWIN BELT -->
 
 		<AsteroidTwinBelt1000Morphology>
@@ -429,214 +445,276 @@
 
 		<!-- ASTEROID TROJANS -->
 
+		<!-- Trojan Groups -->
+
+		<AsteroidTrojanGroup12>
+			<Group>
+				<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="30" count="1-2"	arcLength="200" radialWidth="18">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="50" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidTrojanGroup12>
+
+		<AsteroidTrojanGroup25>
+			<Group>
+				<OrbitalDistribution count="2d8+16" arcLength="360" radialWidth="30">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="60" count="1-2"	arcLength="360" radialWidth="30">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="70" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidTrojanGroup25>
+
+		<AsteroidTrojanGroup50>
+			<Group>
+				<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="90" count="1-2"	arcLength="500" radialWidth="42">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="90" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidTrojanGroup50>
+
+		<AsteroidTrojanGroup100>
+			<Group>
+				<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="100" count="1-3"	arcLength="720" radialWidth="60">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="100" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidTrojanGroup100>
+
+		<!-- Compact Trojan Groups -->
+
+		<AsteroidCompactTrojanGroup12>
+			<Group>
+				<OrbitalDistribution count="2d4+8" arcLength="100" radialWidth="18">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="30" count="1-2"	arcLength="100" radialWidth="18">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="50" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidCompactTrojanGroup12>
+
+		<AsteroidCompactTrojanGroup25>
+			<Group>
+				<OrbitalDistribution count="2d8+16" arcLength="180" radialWidth="30">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="60" count="1-2"	arcLength="180" radialWidth="30">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="70" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidCompactTrojanGroup25>
+
+		<AsteroidCompactTrojanGroup50>
+			<Group>
+				<OrbitalDistribution count="2d14+35" arcLength="250" radialWidth="42">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="90" count="1-2"	arcLength="250" radialWidth="42">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="90" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidCompactTrojanGroup50>
+
+		<AsteroidCompactTrojanGroup100>
+			<Group>
+				<OrbitalDistribution count="2d25+75" arcLength="360" radialWidth="60">
+					<Lookup table="BeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution chance="100" count="1-3"	arcLength="360" radialWidth="60">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+				<Siblings chance="100" count="1"	arcInc="-10-10" radiusInc="-10-10">
+					<LocationAttributes attributes="asteroids, trojan">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</Siblings>
+			</Group>
+		</AsteroidCompactTrojanGroup100>
+
+		<!-- Trojan Morphologies -->
+
 		<AsteroidTrojans12Morphology>
 			<Siblings count="1" angleInc="60">
-				<Group>
-					<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup12"/>
 			</Siblings>
 		</AsteroidTrojans12Morphology>
 
 		<AsteroidTrojans25Morphology>
 			<Siblings count="1" angleInc="60">
-				<Group>
-					<OrbitalDistribution count="2d8+16" arcLength="360" radialWidth="30">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup25"/>
 			</Siblings>
 		</AsteroidTrojans25Morphology>
 
 		<AsteroidTrojans50Morphology>
 			<Siblings count="1" angleInc="60">
-				<Group>
-					<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup50"/>
 			</Siblings>
 		</AsteroidTrojans50Morphology>
 
 		<AsteroidTrojans100Morphology>
 			<Siblings count="1" angleInc="60">
-				<Group>
-					<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup100"/>
 			</Siblings>
 		</AsteroidTrojans100Morphology>
 
 		<AsteroidAntiTrojans12Morphology>
 			<Siblings count="1" angleInc="-60">
-				<Group>
-					<OrbitalDistribution count="2d4+8" arcLength="200" radialWidth="18">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="200" radialWidth="18">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup12"/>
 			</Siblings>
 		</AsteroidAntiTrojans12Morphology>
 
 		<AsteroidAntiTrojans25Morphology>
 			<Siblings count="1" angleInc="-60">
-				<Group>
-					<OrbitalDistribution count="2d8+16" arcLength="360" radialWidth="30">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="360" radialWidth="30">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup25"/>
 			</Siblings>
 		</AsteroidAntiTrojans25Morphology>
 
 		<AsteroidAntiTrojans50Morphology>
 			<Siblings count="1" angleInc="-60">
-				<Group>
-					<OrbitalDistribution count="2d14+35" arcLength="500" radialWidth="42">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="500" radialWidth="42">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup50"/>
 			</Siblings>
 		</AsteroidAntiTrojans50Morphology>
 
 		<AsteroidAntiTrojans100Morphology>
 			<Siblings count="1" angleInc="-60">
-				<Group>
-					<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
-						<Lookup table="BeltAsteroid"/>
-					</OrbitalDistribution>
-
-					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcLength="720" radialWidth="60">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-					<Siblings chance="35" count="1"	arcInc="-10-10" radiusInc="-10-10">
-						<LocationAttributes attributes="asteroids, trojan">
-							<Lookup table="_Label"/>
-						</LocationAttributes>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidTrojanGroup100"/>
 			</Siblings>
 		</AsteroidAntiTrojans100Morphology>
 		
+		<!-- Compact Trojan Morphologies -->
+
+		<AsteroidCompactTrojans12Morphology>
+			<Siblings count="1" angleInc="60">
+				<Lookup table="AsteroidCompactTrojanGroup12"/>
+			</Siblings>
+		</AsteroidCompactTrojans12Morphology>
+
+		<AsteroidCompactTrojans25Morphology>
+			<Siblings count="1" angleInc="60">
+				<Lookup table="AsteroidCompactTrojanGroup25"/>
+			</Siblings>
+		</AsteroidCompactTrojans25Morphology>
+
+		<AsteroidCompactTrojans50Morphology>
+			<Siblings count="1" angleInc="60">
+				<Lookup table="AsteroidCompactTrojanGroup50"/>
+			</Siblings>
+		</AsteroidCompactTrojans50Morphology>
+
+		<AsteroidCompactTrojans100Morphology>
+			<Siblings count="1" angleInc="60">
+				<Lookup table="AsteroidCompactTrojanGroup100"/>
+			</Siblings>
+		</AsteroidCompactTrojans100Morphology>
+
+		<AsteroidCompactAntiTrojans12Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Lookup table="AsteroidCompactTrojanGroup12"/>
+			</Siblings>
+		</AsteroidCompactAntiTrojans12Morphology>
+
+		<AsteroidCompactAntiTrojans25Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Lookup table="AsteroidCompactTrojanGroup25"/>
+			</Siblings>
+		</AsteroidCompactAntiTrojans25Morphology>
+
+		<AsteroidCompactAntiTrojans50Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Lookup table="AsteroidCompactTrojanGroup50"/>
+			</Siblings>
+		</AsteroidCompactAntiTrojans50Morphology>
+
+		<AsteroidCompactAntiTrojans100Morphology>
+			<Siblings count="1" angleInc="-60">
+				<Lookup table="AsteroidCompactTrojanGroup100"/>
+			</Siblings>
+		</AsteroidCompactAntiTrojans100Morphology>
+
+		<!-- Antipode Morphologies -->
+
+		<AsteroidAntipode50Morphology>
+			<Siblings count="1" angleInc="180">
+				<Lookup table="AsteroidCompactTrojanGroup50"/>
+			</Siblings>
+		</AsteroidAntipode50Morphology>
+
+		<AsteroidAntipode100Morphology>
+			<Siblings count="1" angleInc="180">
+				<Lookup table="AsteroidCompactTrojanGroup100"/>
+			</Siblings>
+		</AsteroidAntipode100Morphology>
+
 		<!-- COMPONENTS -->
 
 		<BeltAsteroid>

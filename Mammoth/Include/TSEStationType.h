@@ -272,7 +272,7 @@ class CStationType : public CDesignType
 		CurrencyValue GetBalancedTreasure (void) const;
 		CEffectCreator *GetBarrierEffect (void) { return m_pBarrierEffect; }
 		IShipGenerator *GetConstructionTable (void) { return m_pConstruction; }
-		CSovereign *GetControllingSovereign (void);
+		CSovereign *GetControllingSovereign (void) const;
 		DWORD GetDefaultBkgnd (void) { return m_dwDefaultBkgnd; }
 		const CShipChallengeDesc &GetDefenderCount (void) const { return m_DefenderCount; }
 		CXMLElement *GetDesc (void) { return m_pDesc; }

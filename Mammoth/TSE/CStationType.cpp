@@ -826,7 +826,7 @@ CCommunicationsHandler *CStationType::GetCommsHandler (void)
 		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
 	}
 
-CSovereign *CStationType::GetControllingSovereign (void)
+CSovereign *CStationType::GetControllingSovereign (void) const
 
 //	GetControllingSovereign
 //

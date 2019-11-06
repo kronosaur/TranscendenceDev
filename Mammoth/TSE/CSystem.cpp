@@ -1946,7 +1946,7 @@ bool CSystem::FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFla
 	//	Generate a table of LocationIDs that match the given criteria.
 
 	TProbabilityTable<int> Table;
-	if (!GetEmptyLocations(Criteria, CenterOrbitDesc, pStationToPlace, &Table))
+	if (!GetEmptyLocations(Criteria, CenterOrbitDesc, pStationToPlace, 0.0, &Table))
 		return false;
 
 	//	Done
@@ -2231,7 +2231,7 @@ int CSystem::GetEmptyLocationCount (void)
 	return EmptyLocations.GetCount();
 	}
 
-bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, TProbabilityTable<int> *retTable)
+bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable)
 
 //	GetEmptyLocations
 //
@@ -2299,7 +2299,12 @@ bool CSystem::GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit
 
 		if (pStationToPlace)
 			{
-			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), pStationToPlace))
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), *pStationToPlace))
+				continue;
+			}
+		else if (rMinExclusion > 0.0)
+			{
+			if (!IsExclusionZoneClear(Loc.GetOrbit().GetObjectPos(), rMinExclusion))
 				continue;
 			}
 
@@ -2703,7 +2708,7 @@ void CSystem::InitVolumetricMask (void)
 		}
 	}
 
-bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
+bool CSystem::IsExclusionZoneClear (const CVector &vPos, const CStationType &Type) const
 
 //	IsExclusionZoneClear
 //
@@ -2716,9 +2721,9 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 
 	//	Compute some stuff about the type
 
-	CSovereign *pSourceSovereign = pType->GetControllingSovereign();
+	CSovereign *pSourceSovereign = Type.GetControllingSovereign();
 	CStationEncounterDesc::SExclusionDesc SourceExclusion;
-	pType->GetExclusionDesc(SourceExclusion);
+	Type.GetExclusionDesc(SourceExclusion);
 
 	//	Check against all objects in the system
 
@@ -2783,6 +2788,71 @@ bool CSystem::IsExclusionZoneClear (const CVector &vPos, CStationType *pType)
 
 			if (rDist2 < Exclusion.rAllExclusionRadius2)
 				return false;
+			}
+		}
+
+	//	If we get this far, then zone is clear
+
+	return true;
+	}
+
+bool CSystem::IsExclusionZoneClear (const CVector &vPos, Metric rMinExclusion) const
+
+//	IsExclusionZoneClear
+//
+//	Returns TRUE if the region around vPos is clear enough to place the given 
+//	station type. We consider exclusion zones as defined in the station's
+//	encounter descriptor.
+
+	{
+	if (rMinExclusion <= 0.0)
+		return true;
+
+	Metric rMinExclusion2 = rMinExclusion * rMinExclusion;
+
+	//	Check against all objects in the system
+
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		Metric rExclusion2;
+
+		//	Skip any objects that cannot attack
+
+		if (pObj == NULL)
+			continue;
+
+		if (pObj->GetScale() != scaleStructure 
+				&& (pObj->GetScale() != scaleShip || pObj->GetEncounterInfo() == NULL))
+			continue;
+
+		//	Get the exclusion zone for this object (because it may exclude more
+		//	than we do). But it is OK if it doesn't have one.
+
+		rExclusion2 = rMinExclusion2;
+		CStationType *pObjType = pObj->GetEncounterInfo();
+		if (pObjType)
+			{
+			CStationEncounterDesc::SExclusionDesc Exclusion;
+			pObjType->GetExclusionDesc(Exclusion);
+
+			if (Exclusion.bHasAllExclusion)
+				rExclusion2 = Max(rExclusion2, Exclusion.rAllExclusionRadius2);
+
+			if (Exclusion.bHasEnemyExclusion)
+				rExclusion2 = Max(rExclusion2, Exclusion.rEnemyExclusionRadius2);
+			}
+
+		//	Check radius
+
+		Metric rDist2 = (vPos - pObj->GetPos()).Length2();
+		if (rDist2 < rExclusion2)
+			{
+#ifdef DEBUG_EXCLUSION_RADIUS
+			if (m_Universe.InDebugMode())
+				m_Universe.LogOutput(strPatternSubst(CONSTLIT("%s: %s too close to %s"), GetName(), pType->GetNounPhrase(), pObj->GetNounPhrase()));
+#endif
+			return false;
 			}
 		}
 

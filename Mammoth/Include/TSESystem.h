@@ -861,12 +861,13 @@ class CSystem
 		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation = NULL);
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);
-		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, TProbabilityTable<int> *retTable);
+		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable);
 		inline bool GetEmptyLocations (TArray<int> *retList) { return m_Locations.GetEmptyLocations(retList); }
 		inline const CLocationDef &GetLocation (int iLocID) const { return m_Locations.GetLocation(iLocID); }
 		inline CLocationDef &GetLocation (int iLocID) { return m_Locations.GetLocation(iLocID); }
 		inline int GetLocationCount (void) { return m_Locations.GetCount(); }
-		bool IsExclusionZoneClear (const CVector &vPos, CStationType *pType = NULL);
+		bool IsExclusionZoneClear (const CVector &vPos, const CStationType &Type) const;
+		bool IsExclusionZoneClear (const CVector &vPos, Metric rMinExclusion) const;
 		bool MatchesLocationAffinity (const CAffinityCriteria &Criteria, const CString &sLocationAttribs, const CVector &vPos) const;
 		void SetLocationObjID (int iLocID, DWORD dwObjID) { m_Locations.SetObjID(iLocID, dwObjID); }
 

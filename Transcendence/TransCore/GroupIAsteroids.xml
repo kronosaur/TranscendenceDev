@@ -211,6 +211,21 @@
 			</Lookup>
 		</AsteroidArcBeltLarge>
 
+		<!-- ASTEROID RINGS -->
+
+		<AsteroidRing25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidRing25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidRing25>
+
 		<!-- ASTEROID TROJANS -->
 
 		<AsteroidTrojans12>
@@ -316,6 +331,138 @@
 				</_Morphology>
 			</Lookup>
 		</AsteroidAntiTrojans100>
+		
+		<AsteroidAntipode50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntipode50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntipode50>
+
+		<AsteroidAntipode100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidAntipode100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidAntipode100>
+
+		<!-- ASTEROID COMPACT TROJANS -->
+
+		<AsteroidCompactTrojans12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactTrojans12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactTrojans12>
+
+		<AsteroidCompactTrojans25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactTrojans25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactTrojans25>
+
+		<AsteroidCompactTrojans50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactTrojans50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactTrojans50>
+
+		<AsteroidCompactTrojans100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactTrojans100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactTrojans100>
+
+		<AsteroidCompactAntiTrojans12>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactAntiTrojans12Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactAntiTrojans12>
+
+		<AsteroidCompactAntiTrojans25>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactAntiTrojans25Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactAntiTrojans25>
+
+		<AsteroidCompactAntiTrojans50>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactAntiTrojans50Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactAntiTrojans50>
+
+		<AsteroidCompactAntiTrojans100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidCompactAntiTrojans100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidCompactAntiTrojans100>
 		
 		<!-- DEFINITIONS -->
 

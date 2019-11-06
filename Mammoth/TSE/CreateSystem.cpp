@@ -29,6 +29,7 @@
 #define ITEMS_TAG						CONSTLIT("Items")
 #define LABEL_TAG						CONSTLIT("Label")
 #define LEVEL_TABLE_TAG					CONSTLIT("LevelTable")
+#define LOCATION_TAG					CONSTLIT("Location")
 #define LOCATION_ATTRIBUTES_TAG			CONSTLIT("LocationAttributes")
 #define LOCATION_CRITERIA_TABLE_TAG		CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG						CONSTLIT("Lookup")
@@ -104,6 +105,7 @@
 #define NO_RANDOM_ENCOUNTERS_ATTRIB		CONSTLIT("noRandomEncounters")
 #define NO_REINFORCEMENTS_ATTRIB		CONSTLIT("noReinforcements")
 #define NO_SATELLITES_ATTRIB			CONSTLIT("noSatellites")
+#define NO_WARNINGS_ATTRIB				CONSTLIT("noWarnings")
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
@@ -527,7 +529,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		//	If we want to separate enemies, then see if there are any
 		//	enemies of this station type at this location.
 
-		if (bSeparateEnemies && !pCtx->System.IsExclusionZoneClear(vPos, Entry.pType))
+		if (bSeparateEnemies && !pCtx->System.IsExclusionZoneClear(vPos, *Entry.pType))
 			continue;
 
 		//	Add it
@@ -605,7 +607,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	//	Create a list of appropriate locations
 
 	TProbabilityTable<int> LocationTable;
-	if (!pCtx->System.GetEmptyLocations(LocationCriteria, OrbitDesc, NULL, &LocationTable))
+	if (!pCtx->System.GetEmptyLocations(LocationCriteria, OrbitDesc, NULL, 0.0, &LocationTable))
 		{
 		if (pCtx->GetUniverse().InDebugMode())
 			{
@@ -1162,13 +1164,23 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	if (error = GetLocationCriteria(pCtx, pDesc, &Criteria))
 		return error;
 
+	//	Minimum exclusion
+
+	Metric rScale = GetScale(pDesc);
+	Metric rExclusionRadius = rScale * pDesc->GetAttributeDoubleBounded(EXCLUSION_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
 	//	If we're placing a single station, then get its type so that we can 
 	//	use it when picking a location. In particular, this allows us to honor 
 	//	the station exclusion radius.
+	//
+	//	NOTE: If the caller specifies an exclusion radius, we take it, even if
+	//	it is 0.0
 
 	CStationType *pStationToPlace = NULL;
 	CXMLElement *pChild = pDesc->GetContentElement(0);
-	if (iChildCount == 1 && strEquals(pChild->GetTag(), STATION_TAG))
+	if (iChildCount == 1 
+			&& strEquals(pChild->GetTag(), STATION_TAG)
+			&& rExclusionRadius < 0.0)
 		{
 		pStationToPlace = pCtx->GetUniverse().FindStationType((DWORD)pChild->GetAttributeInteger(TYPE_ATTRIB));
 		}
@@ -1176,9 +1188,10 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	//	Generate a list of all locations that match the given criteria.
 
 	TProbabilityTable<int> Table;
-	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, &Table))
+	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius, &Table))
 		{
-		if (pCtx->GetUniverse().InDebugMode())
+		if (pCtx->GetUniverse().InDebugMode()
+				&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 			{
 			pCtx->GetUniverse().LogOutput(CONSTLIT("Warning: No locations found for RandomLocation"));
 			DumpDebugStack(pCtx);
@@ -1212,7 +1225,8 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 		if (Table.IsEmpty())
 			{
-			if (pCtx->GetUniverse().InDebugMode())
+			if (pCtx->GetUniverse().InDebugMode()
+					&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 				{
 				pCtx->GetUniverse().LogOutput(CONSTLIT("Warning: Ran out of locations in RandomLocation directive"));
 				DumpDebugStack(pCtx);
@@ -2466,6 +2480,11 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 	STATION_PLACEMENT_OUTPUT(strPatternSubst(CONSTLIT("<%s>\n"), sTag).GetASCIIZPointer());
 
+#ifdef DEBUG
+	if (pObj->GetAttributeBool(CONSTLIT("debugBreak")))
+		DebugBreak();
+#endif
+
 	//	Nothing to do if this is a debug-only object and we are not in
 	//	debug mode.
 
@@ -2644,7 +2663,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		PopDebugStack(pCtx);
 		}
-	else if (strEquals(sTag, LABEL_TAG))
+	else if (strEquals(sTag, LABEL_TAG) || strEquals(sTag, LOCATION_TAG))
 		{
 		if (error = CreateLabel(pCtx, pObj, OrbitDesc))
 			return error;
