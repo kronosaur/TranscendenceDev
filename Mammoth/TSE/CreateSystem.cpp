@@ -125,6 +125,7 @@
 #define SEGMENT_ATTRIB			        CONSTLIT("segment")
 #define SEPARATE_ENEMIES_ATTRIB			CONSTLIT("separateEnemies")
 #define SHAPE_ATTRIB					CONSTLIT("shape")
+#define SHOW_MAP_LABEL_ATTRIB			CONSTLIT("showMapLabel")
 #define SHOW_ORBIT_ATTRIB				CONSTLIT("showOrbit")
 #define SOVEREIGN_ATTRIB				CONSTLIT("sovereign")
 #define SPACE_SCALE_ATTRIB				CONSTLIT("spaceScale")
@@ -3644,8 +3645,14 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	//	If we don't want to show a map label
 
-	if (pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB))
-		pStation->SetNoMapLabel();
+	bool bValue;
+	if (pDesc->FindAttributeBool(SHOW_MAP_LABEL_ATTRIB, &bValue))
+		{
+		pStation->SetForceMapLabel(bValue);
+		pStation->SetSuppressMapLabel(!bValue);
+		}
+	else if (pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB))
+		pStation->SetSuppressMapLabel();
 
 	//	No reinforcements
 

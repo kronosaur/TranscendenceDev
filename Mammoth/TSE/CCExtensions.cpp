@@ -11385,7 +11385,8 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		case FN_STATION_SHOW_MAP_LABEL:
-			pStation->SetShowMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetForceMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetSuppressMapLabel(pArgs->GetElement(1)->IsNil());
 			return pCC->CreateTrue();
 
 		default:

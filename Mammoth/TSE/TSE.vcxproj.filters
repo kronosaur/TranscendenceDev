@@ -1258,9 +1258,6 @@
     <ClCompile Include="CConditionSet.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CMapLabelArranger.cpp">
-      <Filter>Source Files\StarSystem</Filter>
-    </ClCompile>
     <ClCompile Include="CSpaceObjectPool.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -1355,6 +1352,12 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelArranger.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelPainter.cpp">
       <Filter>Source Files\Painting</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1130,7 +1130,6 @@ class CSpaceObject
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetVisibleDamage (void) { return 0; }
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) { Damage = SVisibleDamage(); }
-		virtual bool HasMapLabel (void) { return false; }
 		virtual void IncCounterValue(int iCounterValue) { }
 		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return IsEnemy(pObj); }
@@ -1157,7 +1156,7 @@ class CSpaceObject
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) { return NULL_STR; }
 		virtual void SetCounterValue(int iCounterValue) { }
 		virtual void SetIdentified (bool bIdentified = true) { }
-		virtual void SetMapLabelPos (CMapLabelArranger::EPositions iPos) { }
+		virtual void SetMapLabelPos (CMapLabelPainter::EPositions iPos) { }
 		virtual void UpdateArmorItems (void) { }
 
 		//	...for objects that can bounce
@@ -1204,7 +1203,7 @@ class CSpaceObject
 		virtual bool IsAbandoned (void) const { return false; }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
-        virtual bool ShowMapLabel (void) const { return false; }
+		virtual bool ShowMapLabel (void) const { return false; }
         virtual bool ShowMapOrbit (void) const { return false; }
         virtual bool ShowStationDamage (void) const { return false; }
 

@@ -94,6 +94,7 @@
 #define SHIP_REGEN_ATTRIB						CONSTLIT("shipRegen")
 #define SHIP_REPAIR_RATE_ATTRIB					CONSTLIT("shipRepairRate")
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
+#define SHOW_MAP_LABEL_ATTRIB					CONSTLIT("showMapLabel")
 #define SIGN_ATTRIB								CONSTLIT("sign")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
@@ -1300,7 +1301,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
-    m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
     m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
@@ -1312,6 +1312,35 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fCalcMaxAttackDist = false;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
+	//	Suppress or force map label
+	//
+	//	If showMapLabel="true", we force showing the label, even if we normally
+	//	would not. Conversely, if ="false", we always suppress showing the 
+	//	label. If not specified, we let the station do the default behavior.
+
+	bool bValue;
+	if (pDesc->FindAttributeBool(SHOW_MAP_LABEL_ATTRIB, &bValue))
+		{
+		m_fForceMapLabel = bValue;
+		m_fSuppressMapLabel = !bValue;
+		}
+
+	//	Handle this for backwards compatibility.
+
+	else if (pDesc->FindAttributeBool(NO_MAP_LABEL_ATTRIB, &bValue))
+		{
+		m_fSuppressMapLabel = bValue;
+		m_fForceMapLabel = false;
+		}
+
+	//	Else, let the station do default behavior.
+
+	else
+		{
+		m_fForceMapLabel = false;
+		m_fSuppressMapLabel = false;
+		}
+		
 	CString sLayer;
 	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sLayer)
 			&& strEquals(sLayer, CONSTLIT("overhang")))

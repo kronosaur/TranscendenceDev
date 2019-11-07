@@ -1456,17 +1456,17 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetBase (CSpaceObject *pBase) { m_pBase = pBase; }
 		void SetFireReconEvent (void) { m_fFireReconEvent = true; }
 		void SetFlotsamImage (CItemType *pItemType);
+		void SetForceMapLabel (bool bValue = true) { m_fForceMapLabel = bValue; }
 		void SetImageVariant (int iVariant);
 		void SetInactive (void) { m_fActive = false; }
 		void SetMapOrbit (const COrbit &oOrbit);
 		void SetMass (Metric rMass) { m_rMass = rMass; }
 		void SetNoConstruction (void) { m_fNoConstruction = true; }
-		void SetNoMapLabel (void) { m_fNoMapLabel = true; }
 		void SetNoReinforcements (void) { m_fNoReinforcements = true; }
 		void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
 		void SetReconned (void) { m_fReconned = true; }
 		void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
-		void SetShowMapLabel (bool bShow = true) { m_fNoMapLabel = !bShow; }
+		void SetSuppressMapLabel (bool bValue = true) { m_fSuppressMapLabel = bValue; }
 		void SetStargate (const CString &sDestNode, const CString &sDestEntryPoint);
 		void SetStructuralHitPoints (int iHP) { m_Hull.SetStructuralHP(iHP); }
 
@@ -1536,7 +1536,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
-		virtual bool HasMapLabel (void) override;
 		virtual bool HasVolumetricShadow (void) const override { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAbandoned (void) const override { return m_Hull.IsAbandoned(); }
@@ -1579,10 +1578,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void SetExplored (bool bExplored = true) override { m_fExplored = bExplored; }
 		virtual void SetIdentified (bool bIdentified = true) override { m_fKnown = bIdentified; }
 		virtual void SetKnown (bool bKnown = true) override;
-		virtual void SetMapLabelPos (CMapLabelArranger::EPositions iPos) override { m_iMapLabelPos = iPos; m_sMapLabel = NULL_STR; }
+		virtual void SetMapLabelPos (CMapLabelPainter::EPositions iPos) override { m_MapLabel.CleanUp(); m_MapLabel.SetPos(iPos); }
 		virtual void SetName (const CString &sName, DWORD dwFlags = 0) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;
-        virtual bool ShowMapLabel (void) const { return (m_Scale != scaleStar && m_Scale != scaleWorld && m_pType->ShowsMapIcon() && !m_fNoMapLabel); }
+		virtual bool ShowMapLabel (void) const override;
         virtual bool ShowMapOrbit (void) const override { return (m_fShowMapOrbit ? true : false); }
         virtual bool ShowStationDamage (void) const override { return m_Hull.IsWrecked(); }
 		virtual bool SupportsGating (void) override { return IsActiveStargate(); }
@@ -1634,13 +1633,11 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CreateDestructionEffect (void);
 		void CreateEjectaFromDamage (int iDamage, const CVector &vHitPos, int iDirection, const DamageDesc &Damage);
 		void CreateStructuralDestructionEffect (SDestroyCtx &Ctx);
-		ALERROR CreateMapImage (void);
+		ALERROR CreateMapImage (void) const;
 		void DeterAttack (CSpaceObject *pTarget);
 		void FinishCreation (SSystemCreateCtx *pSysCreateCtx = NULL);
 		Metric GetAttackDistance (void) const;
 		const CObjectImageArray &GetImage (bool bFade, int *retiTick = NULL, int *retiVariant = NULL) const;
-		void InitMapLabel (void);
-		bool InitWorldMapLabel (void);
 		bool IsBlacklisted (const CSpaceObject *pObj = NULL) const;
 		EDamageResults OnDamageAbandoned (SDamageCtx &Ctx);
 		EDamageResults OnDamageImmutable (SDamageCtx &Ctx);
@@ -1670,7 +1667,6 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CCompositeImageSelector m_ImageSelector;//	Image variant to display
 		int m_iDestroyedAnimation;				//	Frames left of destroyed animation
 		COrbit *m_pMapOrbit;					//	Orbit to draw on map
-		CMapLabelArranger::EPositions m_iMapLabelPos;	//	Position of label in map/LRS view
 		Metric m_rParallaxDist;					//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 
 		CString m_sStargateDestNode;			//	Destination node
@@ -1695,7 +1691,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 
 		DWORD m_fArmed:1;						//	TRUE if station has weapons
 		DWORD m_fKnown:1;						//	TRUE if known to the player
-		DWORD m_fNoMapLabel:1;					//	Do not show map label
+		DWORD m_fSuppressMapLabel:1;			//	Do not show map label
 		DWORD m_fActive:1;						//	TRUE if stargate is active
 		DWORD m_fNoReinforcements:1;			//	Do not send reinforcements
 		DWORD m_fRadioactive:1;					//	TRUE if radioactive
@@ -1711,16 +1707,15 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
 
-		DWORD m_dwSpare:16;
+		DWORD m_fForceMapLabel:1;				//	Force showing map label
+		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
+		DWORD m_dwSpare:14;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)
 
-		CG32bitImage m_MapImage;				//	Image for the map (if star or world)
-		const CG16bitFont *m_pMapFont = NULL;	//	Font for map label (initialized by InitWorldMapLabel)
-		CString m_sMapLabel;					//	Label for map
-		int m_xMapLabel;						//	Name label in map view (cached)
-		int m_yMapLabel;
+		mutable CG32bitImage m_MapImage;		//	Image for the map (if star or world)
+		mutable CMapLabelPainter m_MapLabel;	//	Cached info about map label
 
 		CObjectImageArray m_StarlightImage;		//	Image rotated for proper lighting.
 	};

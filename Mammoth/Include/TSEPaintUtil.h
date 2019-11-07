@@ -155,7 +155,7 @@ class CVolumetricShadowPainter
 		CVector m_vLR;						//	Lower-right of shadow box (mask coords)
 	};
 
-class CMapLabelArranger
+class CMapLabelPainter
 	{
 	public:
 		enum EPositions
@@ -167,10 +167,36 @@ class CMapLabelArranger
 			posBottom				= 3,	//	Centered below the object
 			};
 
+		void CleanUp (void) { m_sLabel = NULL_STR; m_pFont = NULL; }
+		const CString &GetLabel (void) const { return m_sLabel; }
+		const CG16bitFont &GetFont (void) const { return *m_pFont; }
+		EPositions GetPos (void) const { return m_iPos; }
+		int GetPosX (void) const { return m_xLabel; }
+		int GetPosY (void) const { return m_yLabel; }
+		bool IsEmpty (void) const { return m_sLabel.IsBlank(); }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void SetLabel (const CString &sLabel, const CG16bitFont &Font) { m_sLabel = sLabel; m_pFont = &Font; }
+		void SetPos (EPositions iPos) { m_iPos = iPos; }
+		void SetPos (int x, int y) { m_xLabel = x; m_yLabel = y; }
+		void WriteToStream (IWriteStream &Stream) const;
+
+	private:
+		static EPositions LoadPosition (DWORD dwLoad) { return (EPositions)dwLoad; }
+		static DWORD SavePosition (EPositions iPos) { return (DWORD)iPos; }
+
+		CString m_sLabel;					//	Label for map
+
+		EPositions m_iPos = posNone;		//	Position
+		const CG16bitFont *m_pFont = NULL;	//	Font for map label 
+		int m_xLabel = 0;					//	Name label in map view
+		int m_yLabel = 0;
+	};
+
+class CMapLabelArranger
+	{
+	public:
 		static void Arrange (CSystem *pSystem);
-		static void CalcLabelPos (const CString &sLabel, EPositions iPos, int &xMapLabel, int &yMapLabel);
-		static inline EPositions LoadPosition (DWORD dwLoad) { return (EPositions)dwLoad; }
-		static inline DWORD SavePosition (EPositions iPos) { return (DWORD)iPos; }
+		static void CalcLabelPos (const CString &sLabel, CMapLabelPainter::EPositions iPos, int &xMapLabel, int &yMapLabel);
 
 	private:
 		struct SLabelEntry
@@ -181,8 +207,8 @@ class CMapLabelArranger
 			int cxLabel = 0;
 
 			RECT rcLabel = { 0, 0, 0, 0 };
-			EPositions iPosition = posNone;
-			EPositions iNewPosition  = posNone;
+			CMapLabelPainter::EPositions iPosition = CMapLabelPainter::posNone;
+			CMapLabelPainter::EPositions iNewPosition  = CMapLabelPainter::posNone;
 			};
 
 		static bool CalcOverlap (SLabelEntry *pEntries, int iCount);

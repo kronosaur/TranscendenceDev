@@ -46,7 +46,7 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
 
-		if (pObj && pObj->HasMapLabel())
+		if (pObj && pObj->ShowMapLabel())
 			{
 			Labels[iLabelCount].pObj = pObj;
 			Trans.Transform(pObj->GetPos(), &Labels[iLabelCount].x, &Labels[iLabelCount].y);
@@ -74,19 +74,19 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 				{
 				switch (Labels[i].iNewPosition)
 					{
-					case posRight:
+					case CMapLabelPainter::posRight:
 						{
 						SetLabelRight(Labels[i], cyChar);
 						break;
 						}
 
-					case posLeft:
+					case CMapLabelPainter::posLeft:
 						{
 						SetLabelLeft(Labels[i], cyChar);
 						break;
 						}
 
-					case posBottom:
+					case CMapLabelPainter::posBottom:
 						{
 						SetLabelBelow(Labels[i], cyChar);
 						break;
@@ -105,7 +105,7 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 		Labels[i].pObj->SetMapLabelPos(Labels[i].iPosition);
 	}
 
-void CMapLabelArranger::CalcLabelPos (const CString &sLabel, EPositions iPos, int &xMapLabel, int &yMapLabel)
+void CMapLabelArranger::CalcLabelPos (const CString &sLabel, CMapLabelPainter::EPositions iPos, int &xMapLabel, int &yMapLabel)
 
 //	CalcLabelPos
 //
@@ -117,7 +117,7 @@ void CMapLabelArranger::CalcLabelPos (const CString &sLabel, EPositions iPos, in
 
 	switch (iPos)
 		{
-		case posLeft:
+		case CMapLabelPainter::posLeft:
 			{
 			int cxLabel = Font.MeasureText(sLabel);
 			xMapLabel = -(LABEL_SPACING_X + cxLabel);
@@ -125,7 +125,7 @@ void CMapLabelArranger::CalcLabelPos (const CString &sLabel, EPositions iPos, in
 			break;
 			}
 
-		case posBottom:
+		case CMapLabelPainter::posBottom:
 			{
 			int cxLabel = Font.MeasureText(sLabel);
 			xMapLabel = -(cxLabel / 2);
@@ -149,7 +149,7 @@ bool CMapLabelArranger::CalcOverlap (SLabelEntry *pEntries, int iCount)
 
 	for (i = 0; i < iCount; i++)
 		{
-		pEntries[i].iNewPosition = posNone;
+		pEntries[i].iNewPosition = CMapLabelPainter::posNone;
 
 		for (j = 0; j < iCount; j++)
 			if (i != j)
@@ -161,17 +161,17 @@ bool CMapLabelArranger::CalcOverlap (SLabelEntry *pEntries, int iCount)
 
 					switch (pEntries[i].iPosition)
 						{
-						case posRight:
+						case CMapLabelPainter::posRight:
 							{
 							if (xDelta > 0)
-								pEntries[i].iNewPosition = posLeft;
+								pEntries[i].iNewPosition = CMapLabelPainter::posLeft;
 							break;
 							}
 
-						case posLeft:
+						case CMapLabelPainter::posLeft:
 							{
 							if (xDelta < 0)
-								pEntries[i].iNewPosition = posBottom;
+								pEntries[i].iNewPosition = CMapLabelPainter::posBottom;
 							break;
 							}
 						}
@@ -192,7 +192,7 @@ void CMapLabelArranger::SetLabelBelow (SLabelEntry &Entry, int cyChar)
 	Entry.rcLabel.left = Entry.x - (Entry.cxLabel / 2);
 	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
 
-	Entry.iPosition = posBottom;
+	Entry.iPosition = CMapLabelPainter::posBottom;
 	}
 
 void CMapLabelArranger::SetLabelLeft (SLabelEntry &Entry, int cyChar)
@@ -202,7 +202,7 @@ void CMapLabelArranger::SetLabelLeft (SLabelEntry &Entry, int cyChar)
 	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
 	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
 
-	Entry.iPosition = posLeft;
+	Entry.iPosition = CMapLabelPainter::posLeft;
 	}
 
 void CMapLabelArranger::SetLabelRight (SLabelEntry &Entry, int cyChar)
@@ -212,5 +212,5 @@ void CMapLabelArranger::SetLabelRight (SLabelEntry &Entry, int cyChar)
 	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
 	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
 
-	Entry.iPosition = posRight;
+	Entry.iPosition = CMapLabelPainter::posRight;
 	}

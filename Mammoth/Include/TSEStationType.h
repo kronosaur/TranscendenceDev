@@ -267,6 +267,7 @@ class CStationType : public CDesignType
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
+		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
 		CurrencyValue GetBalancedTreasure (void) const;
@@ -357,8 +358,8 @@ class CStationType : public CDesignType
 		void SetTempChance (int iChance) { m_iChance = iChance; }
 		bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
-		bool ShowsMapLabel (void) { return (m_fNoMapLabel ? false : true); }
 		bool ShowsUnexploredAnnotation (void) const { return (m_fShowsUnexploredAnnotation ? true : false); }
+		bool SuppressMapLabel (void) const { return false; }
 		bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
@@ -470,7 +471,7 @@ class CStationType : public CDesignType
 		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
-		DWORD m_fNoMapLabel:1;							//	If TRUE, do not show a label on system map
+		DWORD m_fSuppressMapLabel:1;					//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
 
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
@@ -478,7 +479,7 @@ class CStationType : public CDesignType
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fCalcMaxAttackDist:1;					//	If TRUE, we need to compute m_rMaxAttackDistance
-		DWORD m_fSpare6:1;
+		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
