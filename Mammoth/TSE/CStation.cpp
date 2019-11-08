@@ -4647,6 +4647,7 @@ void CStation::SetName (const CString &sName, DWORD dwFlags)
 	//	Clear cache so we recompute label metrics
 
 	m_MapLabel.CleanUp();
+	m_fMapLabelInitialized = false;
 	}
 
 void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryPoint)

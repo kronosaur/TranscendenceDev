@@ -359,7 +359,7 @@ class CStationType : public CDesignType
 		bool ShowsMapDetails (void) { return (m_fNoMapDetails ? false : true); }
 		bool ShowsMapIcon (void) { return (m_fNoMapIcon ? false : true); }
 		bool ShowsUnexploredAnnotation (void) const { return (m_fShowsUnexploredAnnotation ? true : false); }
-		bool SuppressMapLabel (void) const { return false; }
+		bool SuppressMapLabel (void) const { return m_fSuppressMapLabel; }
 		bool UsesReverseArticle (void) { return (m_fReverseArticle ? true : false); }
 
 		//	CDesignType overrides
