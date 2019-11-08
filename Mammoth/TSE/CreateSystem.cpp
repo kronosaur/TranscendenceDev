@@ -3942,7 +3942,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Arrange all map labels so that they don't overlap
 
-	CMapLabelArranger::Arrange(pSystem);
+	CMapLabelArranger::Arrange(*pSystem);
 	pSystem->ComputeStars();
 
 	//	Call each object and tell it that the system has been

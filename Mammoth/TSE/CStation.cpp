@@ -4912,12 +4912,16 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		return CSpaceObject::SetProperty(sName, pValue, retsError);
 	}
 
-bool CStation::ShowMapLabel (void) const
+bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
 
 //	ShowMapLabel
 //
 //	Returns TRUE if the object has a map label. This will also make sure that
 //	m_MapLabel is initialized and valid.
+//
+//	If we have a map label, and if we support re-positioning labels to avoid
+//	overlap, then we optionally return the width and height of the label in 
+//	pixels.
 
 	{
 	//	If we're not initialized, then we need to figure out the deal with our
@@ -4985,9 +4989,7 @@ bool CStation::ShowMapLabel (void) const
 				else
 					{
 					m_MapLabel.SetLabel(GetNounPhrase(nounTitleCapitalize), GetUniverse().GetNamedFont(CUniverse::fontMapLabel));
-					int xLabel, yLabel;
-					CMapLabelArranger::CalcLabelPos(m_MapLabel.GetLabel(), m_MapLabel.GetPos(), xLabel, yLabel);
-					m_MapLabel.SetPos(xLabel, yLabel);
+					m_MapLabel.RealizePos();
 					}
 				}
 			}
@@ -4999,7 +5001,23 @@ bool CStation::ShowMapLabel (void) const
 
 	//	Once initialized, we store the map label (if any) in m_MapLabel.
 
-	return !m_MapLabel.IsEmpty();
+	if (m_MapLabel.IsEmpty())
+		return false;
+	else if (retcxLabel == NULL && retcyLabel == NULL)
+		return true;
+	else if (m_Scale == scaleWorld)
+		{
+		//	World labels are never repositioned
+
+		if (retcxLabel) *retcxLabel = 0;
+		if (retcyLabel) *retcyLabel = 0;
+		return true;
+		}
+	else
+		{
+		m_MapLabel.MeasureLabel(retcxLabel, retcyLabel);
+		return true;
+		}
 	}
 
 void CStation::Undock (CSpaceObject *pObj)

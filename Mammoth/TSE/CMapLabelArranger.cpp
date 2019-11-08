@@ -11,26 +11,17 @@ static constexpr int LABEL_OVERLAP_Y =								1;
 
 static constexpr Metric MAP_VERTICAL_ADJUST =						1.4;
 
-void CMapLabelArranger::Arrange (CSystem *pSystem)
+void CMapLabelArranger::Arrange (CSystem &System)
 
 //	Arrange
 //
 //	Arranges labels for objects in the system.
 
 	{
-	if (pSystem == NULL)
-		return;
-
 	int i;
 	const int MAX_LABELS = 100;
 	int iLabelCount = 0;
 	SLabelEntry Labels[MAX_LABELS];
-	const CG16bitFont &MapLabelFont = pSystem->GetUniverse().GetNamedFont(CUniverse::fontMapLabel);
-
-	//	Compute some font metrics
-
-	int cxChar = MapLabelFont.GetAverageWidth();
-	int cyChar = MapLabelFont.GetHeight();
 
 	//	Compute a transform for map coordinate
 
@@ -42,17 +33,24 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 
 	//	Loop over all objects and see if they have a map label
 
-	for (i = 0; i < pSystem->GetObjectCount() && iLabelCount < MAX_LABELS; i++)
+	for (i = 0; i < System.GetObjectCount() && iLabelCount < MAX_LABELS; i++)
 		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
+		CSpaceObject *pObj = System.GetObject(i);
 
-		if (pObj && pObj->ShowMapLabel())
+		int cxLabel, cyLabel;
+		if (pObj 
+				&& pObj->ShowMapLabel(&cxLabel, &cyLabel)
+				&& cxLabel > 0)
 			{
 			Labels[iLabelCount].pObj = pObj;
 			Trans.Transform(pObj->GetPos(), &Labels[iLabelCount].x, &Labels[iLabelCount].y);
-			Labels[iLabelCount].cxLabel = MapLabelFont.MeasureText(pObj->GetNounPhrase(nounTitleCapitalize));
+			Labels[iLabelCount].cxLabel = cxLabel;
+			Labels[iLabelCount].cyLabel = cyLabel;
 
-			SetLabelLeft(Labels[iLabelCount], cyChar);
+			if (pObj->GetPos().GetX() > 0.0)
+				SetLabelPos(Labels[iLabelCount], CMapLabelPainter::posRight);
+			else
+				SetLabelPos(Labels[iLabelCount], CMapLabelPainter::posLeft);
 
 			iLabelCount++;
 			}
@@ -72,26 +70,8 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 
 			for (i = 0; i < iLabelCount; i++)
 				{
-				switch (Labels[i].iNewPosition)
-					{
-					case CMapLabelPainter::posRight:
-						{
-						SetLabelRight(Labels[i], cyChar);
-						break;
-						}
-
-					case CMapLabelPainter::posLeft:
-						{
-						SetLabelLeft(Labels[i], cyChar);
-						break;
-						}
-
-					case CMapLabelPainter::posBottom:
-						{
-						SetLabelBelow(Labels[i], cyChar);
-						break;
-						}
-					}
+				if (Labels[i].iNewPosition != CMapLabelPainter::posNone)
+					SetLabelPos(Labels[i], Labels[i].iNewPosition);
 				}
 
 			iIteration++;
@@ -105,43 +85,6 @@ void CMapLabelArranger::Arrange (CSystem *pSystem)
 		Labels[i].pObj->SetMapLabelPos(Labels[i].iPosition);
 	}
 
-void CMapLabelArranger::CalcLabelPos (const CString &sLabel, CMapLabelPainter::EPositions iPos, int &xMapLabel, int &yMapLabel)
-
-//	CalcLabelPos
-//
-//	Calculate the position of the label relative to the object center.
-
-	{
-	const CG16bitFont &Font = g_pUniverse->GetNamedFont(CUniverse::fontMapLabel);
-	int cyLabel = Font.GetHeight();
-
-	switch (iPos)
-		{
-		case CMapLabelPainter::posLeft:
-			{
-			int cxLabel = Font.MeasureText(sLabel);
-			xMapLabel = -(LABEL_SPACING_X + cxLabel);
-			yMapLabel = -(cyLabel / 2);
-			break;
-			}
-
-		case CMapLabelPainter::posBottom:
-			{
-			int cxLabel = Font.MeasureText(sLabel);
-			xMapLabel = -(cxLabel / 2);
-			yMapLabel = LABEL_SPACING_Y;
-			break;
-			}
-
-		//	Defaults to posRight
-
-		default:
-			xMapLabel = LABEL_SPACING_X;
-			yMapLabel = -(cyLabel / 2);
-			break;
-		}
-	}
-
 bool CMapLabelArranger::CalcOverlap (SLabelEntry *pEntries, int iCount)
 	{
 	bool bOverlap = false;
@@ -149,68 +92,74 @@ bool CMapLabelArranger::CalcOverlap (SLabelEntry *pEntries, int iCount)
 
 	for (i = 0; i < iCount; i++)
 		{
-		pEntries[i].iNewPosition = CMapLabelPainter::posNone;
-
-		for (j = 0; j < iCount; j++)
-			if (i != j)
+		for (j = i + 1; j < iCount; j++)
+			{
+			if (RectsIntersect(pEntries[i].rcLabel, pEntries[j].rcLabel))
 				{
-				if (RectsIntersect(pEntries[i].rcLabel, pEntries[j].rcLabel))
+				int xDelta = pEntries[j].x - pEntries[i].x;
+				int yDelta = pEntries[j].y - pEntries[i].y;
+
+				switch (pEntries[i].iPosition)
 					{
-					int xDelta = pEntries[j].x - pEntries[i].x;
-					int yDelta = pEntries[j].y - pEntries[i].y;
-
-					switch (pEntries[i].iPosition)
+					case CMapLabelPainter::posRight:
 						{
-						case CMapLabelPainter::posRight:
+						if (xDelta > 0)
 							{
-							if (xDelta > 0)
+							if (pEntries[i].iNewPosition == CMapLabelPainter::posNone)
+								{
 								pEntries[i].iNewPosition = CMapLabelPainter::posLeft;
-							break;
+								bOverlap = true;
+								}
 							}
-
-						case CMapLabelPainter::posLeft:
+						else
 							{
-							if (xDelta < 0)
-								pEntries[i].iNewPosition = CMapLabelPainter::posBottom;
-							break;
+							if (pEntries[j].iNewPosition == CMapLabelPainter::posNone)
+								{
+								pEntries[j].iNewPosition = CMapLabelPainter::posLeft;
+								bOverlap = true;
+								}
 							}
+						break;
 						}
 
-					bOverlap = true;
-					break;
+					case CMapLabelPainter::posLeft:
+						{
+						if (xDelta < 0)
+							{
+							if (pEntries[i].iNewPosition == CMapLabelPainter::posNone)
+								{
+								pEntries[i].iNewPosition = CMapLabelPainter::posRight;
+								bOverlap = true;
+								}
+							}
+						else
+							{
+							if (pEntries[j].iNewPosition == CMapLabelPainter::posNone)
+								{
+								pEntries[j].iNewPosition = CMapLabelPainter::posRight;
+								bOverlap = true;
+								}
+							}
+						break;
+						}
 					}
+
+				break;
 				}
+			}
 		}
 
 	return bOverlap;
 	}
 
-void CMapLabelArranger::SetLabelBelow (SLabelEntry &Entry, int cyChar)
+void CMapLabelArranger::SetLabelPos (SLabelEntry &Entry, CMapLabelPainter::EPositions iPos)
 	{
-	Entry.rcLabel.top = Entry.y + LABEL_SPACING_Y + LABEL_OVERLAP_Y;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
-	Entry.rcLabel.left = Entry.x - (Entry.cxLabel / 2);
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
+	CMapLabelPainter::CalcLabelRect(Entry.x, Entry.y, Entry.cxLabel, Entry.cyLabel, iPos, Entry.rcLabel);
 
-	Entry.iPosition = CMapLabelPainter::posBottom;
-	}
+	//	Shrink the RECT a bit because we tolerate a little bit of overlap.
 
-void CMapLabelArranger::SetLabelLeft (SLabelEntry &Entry, int cyChar)
-	{
-	Entry.rcLabel.left = Entry.x - (LABEL_SPACING_X + Entry.cxLabel);
-	Entry.rcLabel.top = Entry.y - (cyChar / 2) + LABEL_OVERLAP_Y;
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
+	Entry.rcLabel.top += LABEL_OVERLAP_Y;
+	Entry.rcLabel.bottom -= LABEL_OVERLAP_Y;
 
-	Entry.iPosition = CMapLabelPainter::posLeft;
-	}
-
-void CMapLabelArranger::SetLabelRight (SLabelEntry &Entry, int cyChar)
-	{
-	Entry.rcLabel.left = Entry.x + LABEL_SPACING_X;
-	Entry.rcLabel.top = Entry.y - (cyChar / 2) + LABEL_OVERLAP_Y;
-	Entry.rcLabel.right = Entry.rcLabel.left + Entry.cxLabel;
-	Entry.rcLabel.bottom = Entry.rcLabel.top + cyChar - (2 * LABEL_OVERLAP_Y);
-
-	Entry.iPosition = CMapLabelPainter::posRight;
+	Entry.iPosition = iPos;
 	}

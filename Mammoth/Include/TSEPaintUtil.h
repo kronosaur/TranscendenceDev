@@ -174,13 +174,23 @@ class CMapLabelPainter
 		int GetPosX (void) const { return m_xLabel; }
 		int GetPosY (void) const { return m_yLabel; }
 		bool IsEmpty (void) const { return m_sLabel.IsBlank(); }
+		void MeasureLabel (int *retcxLabel = NULL, int *retcyLabel = NULL) const;
 		void ReadFromStream (SLoadCtx &Ctx);
+		void RealizePos (void);
 		void SetLabel (const CString &sLabel, const CG16bitFont &Font) { m_sLabel = sLabel; m_pFont = &Font; }
 		void SetPos (EPositions iPos) { m_iPos = iPos; }
 		void SetPos (int x, int y) { m_xLabel = x; m_yLabel = y; }
 		void WriteToStream (IWriteStream &Stream) const;
 
+		static void CalcLabelRect (int x, int y, int cxLabel, int cyLabel, EPositions iPos, RECT &retrcRect);
+
 	private:
+		static constexpr int LABEL_SPACING_X =	8;
+		static constexpr int LABEL_SPACING_Y =	4;
+		static constexpr int LABEL_OVERLAP_Y =	1;
+
+		static void CalcLabelPos (int cxLabel, int cyLabel, EPositions iPos, int &xMapLabel, int &yMapLabel);
+		static void CalcLabelPos (const CString &sLabel, const CG16bitFont &Font, EPositions iPos, int &xMapLabel, int &yMapLabel);
 		static EPositions LoadPosition (DWORD dwLoad) { return (EPositions)dwLoad; }
 		static DWORD SavePosition (EPositions iPos) { return (DWORD)iPos; }
 
@@ -195,8 +205,7 @@ class CMapLabelPainter
 class CMapLabelArranger
 	{
 	public:
-		static void Arrange (CSystem *pSystem);
-		static void CalcLabelPos (const CString &sLabel, CMapLabelPainter::EPositions iPos, int &xMapLabel, int &yMapLabel);
+		static void Arrange (CSystem &System);
 
 	private:
 		struct SLabelEntry
@@ -205,6 +214,7 @@ class CMapLabelArranger
 			int x = 0;
 			int y = 0;
 			int cxLabel = 0;
+			int cyLabel = 0;
 
 			RECT rcLabel = { 0, 0, 0, 0 };
 			CMapLabelPainter::EPositions iPosition = CMapLabelPainter::posNone;
@@ -212,9 +222,7 @@ class CMapLabelArranger
 			};
 
 		static bool CalcOverlap (SLabelEntry *pEntries, int iCount);
-		static void SetLabelBelow (SLabelEntry &Entry, int cyChar);
-		static void SetLabelLeft (SLabelEntry &Entry, int cyChar);
-		static void SetLabelRight (SLabelEntry &Entry, int cyChar);
+		static void SetLabelPos (SLabelEntry &Entry, CMapLabelPainter::EPositions iPos);
 	};
 
 //	Paint Utilities
