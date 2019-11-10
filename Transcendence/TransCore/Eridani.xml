@@ -90,8 +90,7 @@
 
 					<!-- St. John's World -->
 
-					<Station type="&stHydrogenGasGiantSizeM;" 
-							name="St. John's World" 
+					<Station type="&stHydrogenGasGiantStJohns;" 
 							showOrbit="true"
 							/>
 
@@ -187,6 +186,13 @@
 					<Siblings count="6" angleInc="40-320" radiusInc="-90-90">
 						<Location attributes="centauriBase"/>
 					</Siblings>
+				</Group>
+
+				<!-- Eldir -->
+
+				<Group distance="1100">
+					<Station type="&stAsteroidEldir;" showOrbit="true"/>
+
 				</Group>
 
 			</Orbitals>
@@ -504,5 +510,42 @@
 			</Text>
 		</Language>
 	</SystemType>
+
+<!-- WORLDS -->
+
+	<!-- Eldir -->
+	
+	<StationType UNID="&stAsteroidEldir;"
+		name=				"Eldir"
+		scale=				"world"
+		size=				"2"
+		sovereign=			"&svIndependent;"
+
+		attributes=			"asteroid, generic, ice"
+		showMapLabel=		"true"
+		>
+		<ImageVariants>
+			<Image			imageID="&rsEridaniWorlds;" imageX="0" imageY="0" imageWidth="220" imageHeight="220"/>
+		</ImageVariants>
+	</StationType>
+
+	<!-- St. Johns -->
+
+	<StationType UNID="&stHydrogenGasGiantStJohns;"
+		name=				"St. Johns Worlds"
+		scale=				"world"
+		size=				"146500"
+
+		attributes=			"gasGiant, generic"
+		>
+		<ImageVariants>
+			<Image	imageID="&rsHydrogenGasGiantStJohns;" imageX="0"   imageY="0"   imageWidth="450" imageHeight="450"/>
+		</ImageVariants>
+	</StationType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsEridaniWorlds;"		bitmap="Resources\EridaniWorlds.jpg"	bitmask="Resources\EridaniWorldsMask.bmp" 	loadOnUse="true" />
+	<Image UNID="&rsHydrogenGasGiantStJohns;"		bitmap="Resources\HydrogenGasGiantStJohns.jpg"	bitmask="Resources\HydrogenGasGiant01Mask.bmp" 	loadOnUse="true" />
 
 </TranscendenceModule>

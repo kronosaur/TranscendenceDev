@@ -2294,6 +2294,13 @@
 	<!ENTITY msRasiermesserFindDvalin	"0x00100740">
 	<!ENTITY itV70PoweredArmor			"0x00100741">
 
+	<!-- 0760-077F ERIDANI -->
+
+	<!ENTITY rsEridaniWorlds			"0x00100760">
+	<!ENTITY stAsteroidEldir			"0x00100761">
+	<!ENTITY stHydrogenGasGiantStJohns	"0x00100762">
+	<!ENTITY rsHydrogenGasGiantStJohns	"0x00100763">
+
     <!-- 1000-FFFF RESERVED: DO NOT USE -->
 	]>
 	
