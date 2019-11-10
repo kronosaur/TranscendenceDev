@@ -34,8 +34,9 @@ class CTDBCompiler
 
 		void AddEntityTable (CExternalEntityTable *pTable);
 		void AddResource (const CString &sName, int iEntryID, bool bCompress);
-		inline CExternalEntityTable *GetCoreEntities (void) const { return m_pCoreEntities; }
-		inline const CString &GetRootPath (void) const { return m_sRootPath; }
+		bool FindResource (const CString &sName) const { return (m_ResourceMap.GetAt(sName) != NULL); }
+		CExternalEntityTable *GetCoreEntities (void) const { return m_pCoreEntities; }
+		const CString &GetRootPath (void) const { return m_sRootPath; }
 		bool Init (const CString &sInputFilespec, const CString &sOutputFilespec, const TArray<CString> &EntityFilespecs, CXMLElement *pCmdLine, CString *retsError);
 		void PopEntityTable (CExternalEntityTable *pOldTable);
 		CExternalEntityTable *PushEntityTable (CExternalEntityTable *pNewTable);
