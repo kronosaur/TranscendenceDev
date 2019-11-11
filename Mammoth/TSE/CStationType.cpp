@@ -1748,6 +1748,26 @@ ALERROR CStationType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 //	Do stuff after all types bound
 
 	{
+	if (m_pItems)
+		if (ALERROR error = m_pItems->FinishBind(Ctx))
+			return error;
+
+	if (m_pInitialShips)
+		if (ALERROR error = m_pInitialShips->FinishBind(Ctx))
+			return error;
+
+	if (m_pReinforcements)
+		if (ALERROR error = m_pReinforcements->FinishBind(Ctx))
+			return error;
+
+	if (m_pConstruction)
+		if (ALERROR error = m_pConstruction->FinishBind(Ctx))
+			return error;
+
+	if (m_pEncounters)
+		if (ALERROR error = m_pEncounters->FinishBind(Ctx))
+			return error;
+
 	return NOERROR;
 	}
 

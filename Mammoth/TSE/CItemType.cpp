@@ -1456,12 +1456,8 @@ ALERROR CItemType::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Call contained objects
 
 	if (m_pComponents)
-		{
 		if (error = m_pComponents->OnDesignLoadComplete(Ctx))
 			return error;
-
-		InitComponents();
-		}
 
 	if (m_pDevice)
 		if (error = m_pDevice->Bind(Ctx))
@@ -1812,6 +1808,14 @@ ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 
     {
     ALERROR error;
+
+	if (m_pComponents)
+		{
+		if (error = m_pComponents->FinishBind(Ctx))
+			return error;
+
+		InitComponents();
+		}
 
     if (m_pDevice)
         if (error = m_pDevice->FinishBind(Ctx))

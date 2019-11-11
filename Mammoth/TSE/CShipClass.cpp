@@ -3386,6 +3386,18 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 //	All types bound.
 
 	{
+	if (m_pItems)
+		if (ALERROR error = m_pItems->FinishBind(Ctx))
+			return error;
+
+	if (m_pDeviceSlots)
+		if (ALERROR error = m_pDeviceSlots->FinishBind(Ctx))
+			return error;
+
+	if (m_pDevices)
+		if (ALERROR error = m_pDevices->FinishBind(Ctx))
+			return error;
+
 	//	Compute score and level
 
 	if (!m_fScoreOverride)

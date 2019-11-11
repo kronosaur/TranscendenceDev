@@ -123,6 +123,15 @@ ALERROR CSpaceObject::CreateRandomItems (CXMLElement *pItems, CSystem *pSystem)
 		return error;
 		}
 
+	if (error = pGenerator->FinishBind(Ctx))
+		{
+		CString sError = strPatternSubst(CONSTLIT("ERROR: Unable to create random items: %s\r\n"), Ctx.sError);
+		ReportCrashObj(&sError, this);
+		kernelDebugLogString(sError);
+		ASSERT(false);
+		return error;
+		}
+
 	//	Add the items
 
 	CreateRandomItems(pGenerator, pSystem);
