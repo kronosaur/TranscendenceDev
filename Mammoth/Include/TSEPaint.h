@@ -101,6 +101,7 @@ struct SViewportPaintCtx
 		bool bShowUnexploredAnnotation = false;
 		bool bShowBounds = false;
 		bool bShowFacingsAngle = false;
+		bool bNo3DExtras = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.
@@ -170,9 +171,11 @@ class CMapViewportCtx
 		bool IsInViewport (CSpaceObject *pObj) const;
 		bool IsPaintStationImagesEnabled (void) const { return m_bPaintStationImages; }
 		bool IsSpaceBackgroundEnabled (void) const { return !m_bNoSpaceBackground; }
+		void Set3DExtrasEnabled (bool bEnabled = true) { m_bShow3DExtras = bEnabled; }
 		void Set3DMapEnabled (bool bEnabled = true) { m_b3DMap = bEnabled; }
 		void SetPaintStationImagesEnabled (bool bEnabled = true) { m_bPaintStationImages = bEnabled; }
 		void SetSpaceBackgroundEnabled (bool bEnabled = true) { m_bNoSpaceBackground = !bEnabled; }
+		bool Show3DExtras (void) const { return m_bShow3DExtras; }
 		void Transform (const CVector &vPos, int *retx, int *rety) const;
 
 	private:
@@ -193,5 +196,6 @@ class CMapViewportCtx
 		bool m_b3DMap = true;				//	Use standard 3D projection
 		bool m_bNoSpaceBackground = false;	//	Do not paint a space background
 		bool m_bPaintStationImages = false;	//	Paint station images
+		bool m_bShow3DExtras = true;		//	Show 3D extras
 	};
 

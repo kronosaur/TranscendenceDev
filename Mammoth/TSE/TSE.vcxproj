@@ -298,6 +298,7 @@
     <ClInclude Include="..\Include\TSEUtil.h" />
     <ClInclude Include="..\Include\TSEVersions.h" />
     <ClInclude Include="..\Include\TSEWeaponFireDesc.h" />
+    <ClInclude Include="SystemCreateImpl.h" />
     <ClInclude Include="CrewAIImpl.h" />
     <ClInclude Include="GameFileCompatibility.h" />
     <ClInclude Include="LanguageDefs.h" />
@@ -330,6 +331,7 @@
     <ClCompile Include="CAdventureHighScoreList.cpp" />
     <ClCompile Include="CAdventureRecord.cpp" />
     <ClCompile Include="CAISettings.cpp" />
+    <ClCompile Include="CAngleGenerator.cpp" />
     <ClCompile Include="CApproachOrder.cpp" />
     <ClCompile Include="CArmorItem.cpp" />
     <ClCompile Include="CArmorLimits.cpp" />
@@ -428,6 +430,7 @@
     <ClCompile Include="CObjectJoint.cpp" />
     <ClCompile Include="CObjectJointList.cpp" />
     <ClCompile Include="CObjectTrackerCriteria.cpp" />
+    <ClCompile Include="COrbitFocusGenerator.cpp" />
     <ClCompile Include="COverlay.cpp" />
     <ClCompile Include="COverlayList.cpp" />
     <ClCompile Include="CEscortOrder.cpp" />
@@ -504,6 +507,7 @@
     <ClCompile Include="CMusicResource.cpp" />
     <ClCompile Include="CSimpleOrder.cpp" />
     <ClCompile Include="CSimplePathStargateGenerator.cpp" />
+    <ClCompile Include="CSmartSystemCreateOptions.cpp" />
     <ClCompile Include="CSoundResource.cpp" />
     <ClCompile Include="CSpaceObjectAddressResolver.cpp" />
     <ClCompile Include="CSpaceObjectCriteria.cpp" />

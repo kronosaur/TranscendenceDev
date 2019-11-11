@@ -224,6 +224,7 @@ class CGameSettings
 			force1024Res,					//	Force 1024x768 resolution
 			force600Res,					//	Force 1024x600 resolution
 			graphicsQuality,				//	SFX vs performance
+			no3DExtras,						//	Do not create out of plane objects
 			no3DSystemMap,					//	3D system map projection
 			maxResolution,					//	Maximum vertical resolution
 			noGPUAcceleration,				//	Do not use GPU textures for blts
@@ -248,7 +249,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 42,
+			OPTIONS_COUNT = 43,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }

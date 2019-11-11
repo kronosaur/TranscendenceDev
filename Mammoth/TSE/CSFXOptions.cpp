@@ -23,6 +23,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 	switch (iQuality)
 		{
 		case sfxMaximum:
+			m_b3DExtras = true;
 			m_bDockScreenTransparent = true;
 			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
@@ -32,6 +33,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxStandard:
+			m_b3DExtras = true;
 			m_bDockScreenTransparent = true;
 			m_bHUDTransparent = true;
 			m_bSpaceBackground = true;
@@ -41,6 +43,7 @@ void CSFXOptions::SetSFXQuality (ESFXQuality iQuality)
 			break;
 
 		case sfxMinimum:
+			m_b3DExtras = false;
 			m_bDockScreenTransparent = false;
 			m_bHUDTransparent = false;
 			m_bSpaceBackground = false;

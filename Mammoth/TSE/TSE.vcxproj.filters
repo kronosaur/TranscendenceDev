@@ -335,6 +335,9 @@
     <ClInclude Include="..\Include\TSEOverlays.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SystemCreateImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -1359,6 +1362,15 @@
     </ClCompile>
     <ClCompile Include="CMapLabelPainter.cpp">
       <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CAngleGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="COrbitFocusGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSmartSystemCreateOptions.cpp">
+      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

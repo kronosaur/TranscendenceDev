@@ -63,7 +63,11 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 	{
 	DEBUG_TRY
 
-	if (pItems)
+	//	Out of plane objects don't get inventory; this handles the case of out
+	//	of plane asteroids getting ore.
+
+	if (pItems 
+			&& !IsOutOfPlaneObj())
 		{
 		//	Notify any dock screens that we might modify an item
 		//	Null item means preserve current selection.

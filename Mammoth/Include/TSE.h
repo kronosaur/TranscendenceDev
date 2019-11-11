@@ -436,6 +436,7 @@ class CSpaceObject
 		bool IsAscended (void) const { return m_fAscended; }
 		void Remove (DestructionTypes iCause, const CDamageSource &Attacker, bool bRemovedByOwner = false);
 		void SetAscended (bool bAscended = true) { m_fAscended = bAscended; }
+		void SetIndex (int iIndex) { m_iIndex = iIndex; }
 
 		//	Abilities
 
@@ -831,7 +832,6 @@ class CSpaceObject
 		void SetMarked (bool bMarked = true) { m_fMarked = bMarked; }
 		void SetNamed (bool bNamed = true) { m_fHasName = bNamed; }
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj) { m_Data.SetObjRefData(sAttrib, pObj); }
-		void SetOutOfPlaneObj (bool bValue = true) { m_fOutOfPlaneObj = bValue; }
 		void SetOverride (CDesignType *pOverride);
 
 		void SetPlayerDocked (void) { m_fPlayerDocked = true; }
@@ -926,12 +926,15 @@ class CSpaceObject
 		DWORD CalcSRSVisibility (SViewportPaintCtx &Ctx) const;
 		void ClearPaintNeeded (void) { m_fPaintNeeded = false; }
 		const CImageFilterStack *GetSystemFilters (void) const;
+		bool Is3DExtra (void) const { return (m_f3DExtra ? true : false); }
 		bool IsOutOfPlaneObj (void) const { return m_fOutOfPlaneObj; }
 		bool IsPaintNeeded (void) { return m_fPaintNeeded; }
 		void Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx);
 		void PaintHighlightText (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx, AlignmentStyles iAlign, CG32bitPixel rgbColor, int *retcyHeight = NULL);
 		void PaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int y);
 		void PaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) { OnPaintSRSEnhancements(Dest, Ctx); }
+		void Set3DExtra (bool bValue = true) { m_f3DExtra = bValue; }
+		void SetOutOfPlaneObj (bool bValue = true) { m_fOutOfPlaneObj = bValue; }
 		void SetPainted (void) { m_fPainted = true; }
 		void SetPaintNeeded (void) { m_fPaintNeeded = true; }
 		bool WasPainted (void) const { return m_fPainted; }
@@ -1060,6 +1063,7 @@ class CSpaceObject
 		virtual CDesignType *GetWreckType (void) const { return NULL; }
 		virtual bool HasAttribute (const CString &sAttribute) const { return sAttribute.IsBlank(); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const;
+		virtual bool HasStarlightImage (void) const { return false; }
 		virtual bool HasVolumetricShadow (void) const { return false; }
 		virtual bool IsExplored (void) { return true; }
 		virtual bool IsImmutable (void) const { return false; }
@@ -1412,7 +1416,7 @@ class CSpaceObject
 		DWORD m_fCollisionTestNeeded:1;			//	TRUE if object needs to check collisions with barriers
 		DWORD m_fHasDockScreenMaybe:1;			//	TRUE if object has a dock screen for player (may be stale)
 		DWORD m_fAutoClearDestinationOnGate:1;	//	TRUE if we should clear the destination when player gates
-		DWORD m_fSpare6:1;
+		DWORD m_f3DExtra:1;						//	TRUE if object is an optional 3D extra
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
@@ -1819,10 +1823,12 @@ Metric ParseDistance (const CString &sValue, Metric rDefaultScale);
 #define CCUTIL_FLAG_CHECK_DESTROYED				0x00000001
 
 Metric CalcRandomMetric (CCodeChain &CC, ICCItem *pItem);
+bool CreateBinaryFromList (const CString &sClass, const ICCItem &List, void *pvDest);
 ICCItem *CreateDamageSource (CCodeChain &CC, const CDamageSource &Source);
 CString CreateDataFieldFromItemList (const TArray<CItem> &List);
 CString CreateDataFromItem (ICCItem *pItem);
 ICCItem *CreateDisposition (CCodeChain &CC, CSovereign::Disposition iDisp);
+ICCItem *CreateListFromBinary (const CString &sClass, void const *pvSource, int iLengthBytes);
 ICCItem *CreateListFromImage (CCodeChain &CC, const CObjectImageArray &Image, int iRotation = 0);
 ICCItem *CreateListFromItem (const CItem &Item);
 ICCItem *CreateListFromOrbit (CCodeChain &CC, const COrbit &OrbitDesc);

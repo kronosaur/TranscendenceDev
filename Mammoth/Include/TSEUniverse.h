@@ -93,6 +93,7 @@ class CSFXOptions
 		CSFXOptions (void) { SetSFXQuality(sfxMaximum); }
 
 		BYTE GetHUDOpacity (void) const { return (m_bHUDTransparent ? 200 : 255); }
+		bool Is3DExtrasEnabled (void) const { return m_b3DExtras; }
 		bool Is3DSystemMapEnabled (void) const { return m_b3DSystemMap; }
 		bool IsDockScreenTransparent (void) const { return m_bDockScreenTransparent; }
 		bool IsManeuveringEffectEnabled (void) const { return m_bManeuveringEffect; }
@@ -100,6 +101,7 @@ class CSFXOptions
 		bool IsStargateTravelEffectEnabled (void) const { return m_bStargateTravelEffect; }
 		bool IsStarGlowEnabled (void) const { return m_bStarGlow; }
 		bool IsStarshineEnabled (void) const { return m_bStarshine; }
+		void Set3DExtrasEnabled (bool bEnabled = true) { m_b3DExtras = bEnabled; }
 		void Set3DSystemMapEnabled (bool bEnabled = true) { m_b3DSystemMap = bEnabled; }
 		void SetManeuveringEffectEnabled (bool bEnabled = true) { m_bManeuveringEffect = bEnabled; }
 		void SetSFXQuality (ESFXQuality iQuality);
@@ -109,6 +111,7 @@ class CSFXOptions
 		ESFXQuality m_iQuality;
 
 		bool m_b3DSystemMap;				//	3D effect on system map
+		bool m_b3DExtras;					//	Show extra 3D objects, like parallax asteroids
 		bool m_bHUDTransparent;				//	HUD has transparency effect
 		bool m_bManeuveringEffect;			//	Show maneuvering thruster effects
 		bool m_bSpaceBackground;			//	Show system image background

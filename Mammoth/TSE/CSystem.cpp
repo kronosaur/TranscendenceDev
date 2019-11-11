@@ -575,6 +575,7 @@ void CSystem::CalcViewportCtx (SViewportPaintCtx &Ctx, const RECT &rcView, CSpac
 	Ctx.fShowManeuverEffects = m_Universe.GetSFXOptions().IsManeuveringEffectEnabled();
 	Ctx.fNoStarshine = !m_Universe.GetSFXOptions().IsStarshineEnabled();
 	Ctx.fNoSpaceBackground = !m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled();
+	Ctx.bNo3DExtras = !m_Universe.GetSFXOptions().Is3DExtrasEnabled();
 
 	//	Debug options
 
@@ -628,26 +629,33 @@ void CSystem::CalcVolumetricMask (CSpaceObject *pStar, CG8bitSparseImage &Volume
 		{
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj == NULL
-				|| pObj->IsDestroyed()
-				|| !pObj->HasVolumetricShadow())
-			continue;
+				|| pObj->IsDestroyed())
+			{ }
 
-		//	Compute the angle of the object with respect to the star
-		//	And skip any objects that are outside the star's light radius.
+		//	See if we need to do any starlight processing
 
-		Metric rStarDist;
-		int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
-		if (rStarDist > rMaxDist)
-			continue;
+		else if (pObj->HasStarlightImage())
+			{
+			//	Compute the angle of the object with respect to the star
+			//	And skip any objects that are outside the star's light radius.
 
-		//	Generate an image lit from the proper angle
+			Metric rStarDist;
+			int iStarAngle = ::VectorToPolar(pObj->GetPos() - pStar->GetPos(), &rStarDist);
+			if (rStarDist > rMaxDist)
+				continue;
 
-		pObj->CreateStarlightImage(iStarAngle, rStarDist);
+			//	Generate an image lit from the proper angle
 
-		//	Add the shadow
+			pObj->CreateStarlightImage(iStarAngle, rStarDist);
 
-		CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
-		Painter.PaintShadow();
+			//	Add the shadow, if necessary
+
+			if (pObj->HasVolumetricShadow())
+				{
+				CVolumetricShadowPainter Painter(pStar, xStar, yStar, iStarAngle, rStarDist, pObj, VolumetricMask);
+				Painter.PaintShadow();
+				}
+			}
 		}
 	}
 
@@ -3144,7 +3152,8 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 		CSpaceObject *pObj = GetObject(i);
 		if (pObj 
 				&& !pObj->IsVirtual() 
-				&& pObj != pPlayerCenter)
+				&& pObj != pPlayerCenter
+				&& (!Ctx.bNo3DExtras || !pObj->Is3DExtra()))
 			{
 			Metric rParallaxDist;
 
@@ -3389,6 +3398,10 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	int i;
 	Metric rKlicksPerPixel = rScale;
 
+	//	Options
+
+	bool bShow3DExtras = m_Universe.GetSFXOptions().Is3DExtrasEnabled();
+
 	//	Figure out the boundary of the viewport in system coordinates. We generate
 	//	a viewport for each detection range 1-5.
 
@@ -3473,6 +3486,7 @@ void CSystem::PaintViewportLRS (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		int iRange;
 		if (!pObj->IsHidden()
 				&& !pObj->IsVirtual()
+				&& (bShow3DExtras || !pObj->Is3DExtra())
 				&& pObj->InBox(vLargeUR, vLargeLL))
 			{
 			if ((pObj->GetScale() == scaleStar 
@@ -3554,6 +3568,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 	//	Initialize context
 
 	CMapViewportCtx Ctx(pCenter, rcView, rMapScale);
+	Ctx.Set3DExtrasEnabled(m_Universe.GetSFXOptions().Is3DExtrasEnabled());
 	Ctx.Set3DMapEnabled(m_Universe.GetSFXOptions().Is3DSystemMapEnabled());
 	Ctx.SetSpaceBackgroundEnabled(m_Universe.GetSFXOptions().IsSpaceBackgroundEnabled());
 
@@ -3614,6 +3629,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 
 		if (pObj 
 				&& (pObj->GetScale() == scaleStar || pObj->GetScale() == scaleWorld || pObj->GetCategory() == CSpaceObject::catMarker)
+				&& (Ctx.Show3DExtras() || !pObj->Is3DExtra())
 				&& (pObj->GetMapOrbit() || Ctx.IsInViewport(pObj)))
 			{
 			//	Figure out the position of the object in pixels
@@ -3638,6 +3654,7 @@ void CSystem::PaintViewportMap (CG32bitImage &Dest, const RECT &rcView, CSpaceOb
 		if (pObj 
 				&& (pObj->GetScale() == scaleStructure
 					|| pObj->GetScale() == scaleShip)
+				&& (Ctx.Show3DExtras() || !pObj->Is3DExtra())
 				&& Ctx.IsInViewport(pObj))
 			{
 			//	Figure out the position of the object in pixels
@@ -4378,6 +4395,34 @@ void CSystem::SetSpaceEnvironment (int xTile, int yTile, CSpaceEnvironmentType *
 	{
 	InitSpaceEnvironment();
 	m_pEnvironment->SetTileType(xTile, yTile, pEnvironment);
+	}
+
+void CSystem::SortByPaintOrder (void)
+
+//	SortByPaintOrder
+//
+//	Sorts all objects by parallax, so that we can paint in the proper order.
+//	This is an optimization that assumes that parallax objects don't get created
+//	dynamically (after the system is created). If that assumption is wrong, then
+//	we need to re-sort after a parallax object is created.
+
+	{
+	TSortMap<Metric, CSpaceObject *> Sorted(DescendingSort);
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj)
+			Sorted.Insert(pObj->GetParallaxDist(), pObj);
+		}
+
+	m_AllObjects.DeleteAll();
+	m_AllObjects.GrowToFit(Sorted.GetCount());
+	for (int i = 0; i < Sorted.GetCount(); i++)
+		{
+		CSpaceObject *pObj = Sorted[i];
+		pObj->SetIndex(i);
+		m_AllObjects.Insert(pObj);
+		}
 	}
 
 ALERROR CSystem::StargateCreated (CSpaceObject *pGate, const CString &sStargateID, const CString &sDestNodeID, const CString &sDestEntryPoint)

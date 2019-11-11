@@ -169,7 +169,9 @@
 				<Group distance="900">
 					<Station type="&stMethaneGasGiantSizeK;" name="Voerms" showOrbit="true"/>
 
-					<Lookup table="AsteroidRing25"/>
+					<ZAdjust inclination="90" rotation="alignedRandom" excludeLocations="true">
+						<Lookup table="AsteroidRing100"/>
+					</ZAdjust>
 
 					<!-- Voerms is in a sparse asteroid belt -->
 

@@ -1135,6 +1135,9 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (Settings.GetBoolean(CGameSettings::no3DSystemMap))
 		m_Universe.GetSFXOptions().Set3DSystemMapEnabled(false);
 
+	if (Settings.GetBoolean(CGameSettings::no3DExtras))
+		m_Universe.GetSFXOptions().Set3DExtrasEnabled(false);
+
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;

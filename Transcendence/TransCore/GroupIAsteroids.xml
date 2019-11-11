@@ -226,6 +226,19 @@
 			</Lookup>
 		</AsteroidRing25>
 
+		<AsteroidRing100>
+			<Lookup table="LocationDefinition">
+				<_Morphology	table="AsteroidRing100Morphology">
+					<_AsteroidSizeA		table="VariantSizeA"/>
+					<_AsteroidSizeB		table="VariantSizeB"/>
+					<_AsteroidSizeC		table="VariantSizeC"/>
+					<_AsteroidSizeD		table="VariantSizeD"/>
+
+					<_Label				table="VariantLabel"/>
+				</_Morphology>
+			</Lookup>
+		</AsteroidRing100>
+
 		<!-- ASTEROID TROJANS -->
 
 		<AsteroidTrojans12>

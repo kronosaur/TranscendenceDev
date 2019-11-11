@@ -131,7 +131,7 @@ class ICCItem : public CObject
         virtual CString GetKey (int iIndex) { return NULL_STR; }
 		virtual bool HasReferenceTo (ICCItem *pSrc) { return (pSrc == this); }
 		virtual ICCItem *Head (CCodeChain *pCC) = 0;
-		bool IsList (void) { return IsNil() || !IsAtom(); }
+		bool IsList (void) const { return IsNil() || !IsAtom(); }
 		virtual ICCItem *Tail (CCodeChain *pCC) = 0;
 
 		//	Evaluation

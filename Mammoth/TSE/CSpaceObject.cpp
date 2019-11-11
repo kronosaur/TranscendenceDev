@@ -278,7 +278,8 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 		m_fManualAnchor(false),
 		m_fCollisionTestNeeded(false),
 		m_fHasDockScreenMaybe(false),
-		m_fAutoClearDestinationOnGate(false)
+		m_fAutoClearDestinationOnGate(false),
+		m_f3DExtra(false)
 
 //	CSpaceObject constructor
 
@@ -1330,6 +1331,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
+	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
 
 	//	No need to save the following
 
@@ -7917,6 +7919,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
+	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

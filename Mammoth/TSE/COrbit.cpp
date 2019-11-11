@@ -5,30 +5,11 @@
 #include "PreComp.h"
 #include "math.h"
 
-COrbit::COrbit (void) : m_rEccentricity(0.0),
-		m_rSemiMajorAxis(0.0),
-		m_rRotation(0.0),
-		m_rPos(0.0)
-	{
-	}
+#define CLASS_CORBIT					CONSTLIT("COrbit")
 
-COrbit::COrbit (const CVector &vCenter, Metric rRadius, Metric rPos) : m_vFocus(vCenter),
+COrbit::COrbit (const CVector &vCenter, Metric rRadius, Metric rPos) : 
+		m_vFocus(CVector3D(vCenter.GetX(), vCenter.GetY(), 0.0)),
 		m_rSemiMajorAxis(rRadius),
-		m_rEccentricity(0.0),
-		m_rRotation(0.0),
-		m_rPos(rPos)
-	{
-	}
-
-COrbit::COrbit (const CVector &vCenter, 
-					   Metric rSemiMajorAxis,
-					   Metric rEccentricity,
-					   Metric rRotation,
-					   Metric rPos) :
-		m_vFocus(vCenter),
-		m_rSemiMajorAxis(rSemiMajorAxis),
-		m_rEccentricity(rEccentricity),
-		m_rRotation(rRotation),
 		m_rPos(rPos)
 	{
 	}
@@ -42,8 +23,66 @@ bool COrbit::operator== (const COrbit &Src) const
 			&& m_rSemiMajorAxis == Src.m_rSemiMajorAxis
 			&& m_rEccentricity == Src.m_rEccentricity
 			&& m_rRotation == Src.m_rRotation
+			&& m_rInclination == Src.m_rInclination
 			&& m_rPos == Src.m_rPos);
     }
+
+ICCItemPtr COrbit::AsItem (void) const
+
+//	AsItem
+//
+//	Serializes the orbit to an item.
+
+	{
+	SSerialized Serialized;
+	Serialized.vFocus = CVector(m_vFocus.GetX(), m_vFocus.GetY());
+	Serialized.rFocusZ = m_vFocus.GetZ();
+	Serialized.rEccentricity = m_rEccentricity;
+	Serialized.rSemiMajorAxis = m_rSemiMajorAxis;
+	Serialized.rRotation = m_rRotation;
+	Serialized.rInclination = m_rInclination;
+	Serialized.rPos = m_rPos;
+
+	return ICCItemPtr(CreateListFromBinary(CLASS_CORBIT, &Serialized, sizeof(Serialized)));
+	}
+
+bool COrbit::FromItem (const ICCItem &Item, COrbit &retOrbit)
+
+//	FromItem
+//
+//	Deserializes from an item.
+
+	{
+	retOrbit = COrbit();
+
+	//	Nil means default orbit
+
+	if (Item.IsNil())
+		return true;
+
+	//	Must be a list
+
+	else if (!Item.IsList())
+		return false;
+
+	//	Load binary from list and check the class
+
+	else
+		{
+		SSerialized Serialized;
+		if (!CreateBinaryFromList(CLASS_CORBIT, Item, &Serialized))
+			return false;
+
+		retOrbit.SetFocus(CVector3D(Serialized.vFocus.GetX(), Serialized.vFocus.GetY(), Serialized.rFocusZ));
+		retOrbit.SetEccentricity(Serialized.rEccentricity);
+		retOrbit.SetSemiMajorAxis(Serialized.rSemiMajorAxis);
+		retOrbit.SetRotation(Serialized.rRotation);
+		retOrbit.SetInclination(Serialized.rInclination);
+		retOrbit.m_rPos = Serialized.rPos;
+
+		return true;
+		}
+	}
 
 CG32bitPixel COrbit::GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) const
 
@@ -64,12 +103,50 @@ CG32bitPixel COrbit::GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) 
 #endif
     }
 
-CVector COrbit::GetPoint (Metric rAngle) const
+CVector3D COrbit::GetObjectPos3D (void) const
+
+//	GetObjectPos3D
+//
+//	Returns a 3D position
+
+	{
+	Metric rPosZ;
+	CVector vPos = GetPoint(m_rPos, &rPosZ);
+	return CVector3D(vPos.GetX(), vPos.GetY(), rPosZ);
+	}
+
+CVector COrbit::GetPoint (Metric rAngle, Metric *retrZ) const
 	{
 	Metric rRadius = m_rSemiMajorAxis * (1.0 - (m_rEccentricity * m_rEccentricity)) 
 			/ (1.0 - m_rEccentricity * cos(rAngle));
 
-	return m_vFocus + CVector(cos(rAngle + m_rRotation) * rRadius, sin(rAngle + m_rRotation) * rRadius);
+	if (m_rInclination == 0.0)
+		{
+		if (retrZ) *retrZ = m_vFocus.GetZ();
+		return CVector(m_vFocus.GetX(), m_vFocus.GetY()) + CVector(cos(rAngle + m_rRotation) * rRadius, sin(rAngle + m_rRotation) * rRadius);
+		}
+	else
+		{
+		//	For orbits with inclinations, we first compute the point on the 
+		//	orbit in the orbital plane.
+
+		CVector vPointOnPlane = CVector(cos(rAngle) * rRadius, sin(rAngle) * rRadius);
+
+		//	Next we tilt the orbit and end up with X, Y, Z coordinates.
+
+		CVector vResult(vPointOnPlane.GetX() * cos(m_rInclination), vPointOnPlane.GetY());
+		if (retrZ) *retrZ = m_vFocus.GetZ() + (vPointOnPlane.GetX() * sin(m_rInclination));
+
+		//	Then we rotate the point around the Z axis in case the orbit has a
+		//	rotation.
+
+		if (m_rRotation)
+			vResult = vResult.Rotate(m_rRotation);
+
+		//	And finally we can offset from the focus
+
+		return CVector(m_vFocus.GetX(), m_vFocus.GetY()) + vResult;
+		}
 	}
 
 CVector COrbit::GetPointAndRadius (Metric rAngle, Metric *retrRadius) const
@@ -77,12 +154,12 @@ CVector COrbit::GetPointAndRadius (Metric rAngle, Metric *retrRadius) const
 	*retrRadius = m_rSemiMajorAxis * (1.0 - (m_rEccentricity * m_rEccentricity)) 
 			/ (1.0 - m_rEccentricity * cos(rAngle));
 
-	return m_vFocus + CVector(cos(rAngle + m_rRotation) * (*retrRadius), sin(rAngle + m_rRotation) * (*retrRadius));
+	return CVector(m_vFocus.GetX(), m_vFocus.GetY()) + CVector(cos(rAngle + m_rRotation) * (*retrRadius), sin(rAngle + m_rRotation) * (*retrRadius));
 	}
 
 CVector COrbit::GetPointCircular (Metric rAngle) const
 	{
-	return m_vFocus + CVector(cos(rAngle) * m_rSemiMajorAxis, sin(rAngle) * m_rSemiMajorAxis);
+	return CVector(m_vFocus.GetX(), m_vFocus.GetY()) + CVector(cos(rAngle) * m_rSemiMajorAxis, sin(rAngle) * m_rSemiMajorAxis);
 	}
 
 void COrbit::Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor)
@@ -261,4 +338,17 @@ void COrbit::PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgb
 			yPrev = y;
 			}
 		}
+	}
+
+Metric COrbit::ZToParallax (Metric rZ)
+
+//	ZToParallax
+//
+//	Convert from Cartessian z position to a parallax.
+
+	{
+	if (rZ == 0.0)
+		return 1.0;
+	else
+		return Max(0.01, 1.0 + (rZ / CAMERA_DIST));
 	}

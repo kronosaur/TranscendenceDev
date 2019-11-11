@@ -13607,16 +13607,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ORBIT_CREATE:
 			{
+			COrbit Orbit;
+
 			CVector vCenter;
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			Metric rRadius = Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND);
-			Metric rAngle = mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue());
-			Metric rEccentricity = Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99));
-			Metric rRotation = (pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetFocus(vCenter);
+			Orbit.SetSemiMajorAxis(Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND));
+			Orbit.SetObjectAngle(mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue()));
+			Orbit.SetEccentricity(Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99)));
+			Orbit.SetRotation(pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetInclination(pArgs->GetCount() >= 6 ? mathDegreesToRadians(pArgs->GetElement(5)->GetDoubleValue()) : 0.0);
 
-			COrbit Orbit(vCenter, rRadius, rEccentricity, rRotation, rAngle);
 			return CreateListFromOrbit(*pCC, Orbit);
 			}
 
@@ -14231,15 +14234,13 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Adjust the orbit
 
-			COrbit NewOrbitDesc(OrbitDesc.GetFocus(),
-					Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleOffset);
-
+			COrbit NewOrbit = OrbitDesc;
+			NewOrbit.SetSemiMajorAxis(Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset));
+			NewOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
+			
 			//	Done
 
-			return CreateListFromVector(NewOrbitDesc.GetObjectPos());
+			return CreateListFromVector(NewOrbit.GetObjectPos());
 			}
 
 		default:

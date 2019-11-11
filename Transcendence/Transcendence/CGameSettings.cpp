@@ -79,6 +79,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"force1024",				optionBoolean,	"false",	0	},
 		{	"force600",					optionBoolean,	"false",	0	},
 		{	"graphicsQuality",			optionString,	"auto",		0	},
+		{	"no3DExtras",				optionBoolean,	"false",	0	},
 		{	"no3DSystemMap",			optionBoolean,	"false",	0	},
 		{	"maxResolution",			optionInteger,	"1200",		0	},
 		{	"noGPUAcceleration",		optionBoolean,	"false",	0	},

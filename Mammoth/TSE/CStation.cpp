@@ -927,6 +927,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 	pStation->m_fDestroyIfEmpty = false;
     pStation->m_fIsSegment = CreateCtx.bIsSegment;
+	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
 
 	//	Set up rotation, if necessary
 
@@ -3143,6 +3144,7 @@ void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPa
 	//	asteroids we've scanned or not.
 
 	if (!m_fExplored 
+			&& !IsOutOfPlaneObj()
 			&& m_pType->ShowsUnexploredAnnotation()
 			&& Ctx.bShowUnexploredAnnotation)
 		{

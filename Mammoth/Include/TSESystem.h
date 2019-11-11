@@ -85,17 +85,20 @@ typedef TSEListNode<CSystemEventHandler> CSystemEventHandlerNode;
 class COrbit
 	{
 	public:
-		COrbit (void);
+		COrbit (void) { }
 		COrbit (const CVector &vCenter, Metric rRadius, Metric rPos = 0.0);
-		COrbit (const CVector &vCenter, Metric rSemiMajorAxis, Metric rEccentricity, Metric rRotation, Metric rPos = 0.0);
 
 		bool operator== (const COrbit &Src) const;
 
+		ICCItemPtr AsItem (void) const;
 		const Metric &GetEccentricity (void) const { return m_rEccentricity; }
-		const CVector &GetFocus (void) const { return m_vFocus; }
+		const CVector3D &GetFocus3D (void) const { return m_vFocus; }
+		const CVector &GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
+		const Metric &GetInclination (void) const { return m_rInclination; }
 		const Metric &GetObjectAngle (void) const { return m_rPos; }
-		CVector GetObjectPos (void) const { return GetPoint(m_rPos); }
-		CVector GetPoint (Metric rAngle) const;
+		CVector GetObjectPos (Metric *retrZ = NULL) const { return GetPoint(m_rPos, retrZ); }
+		CVector3D GetObjectPos3D (void) const;
+		CVector GetPoint (Metric rAngle, Metric *retrZ = NULL) const;
 		CVector GetPointAndRadius (Metric rAngle, Metric *retrRadius) const;
 		CVector GetPointCircular (Metric rAngle) const;
 		const Metric &GetRotation (void) const { return m_rRotation; }
@@ -103,18 +106,41 @@ class COrbit
 		bool IsNull (void) const { return (m_rSemiMajorAxis == 0.0); }
 		void Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor);
         void PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor, CGDraw::EBlendModes iMode = CGDraw::blendNormal) const;
+		void SetEccentricity (Metric rValue) { m_rEccentricity = rValue; }
+		void SetFocus (const CVector &vCenter) { m_vFocus = CVector3D(vCenter.GetX(), vCenter.GetY(), 0.0); }
+		void SetFocus (const CVector3D &vCenter) { m_vFocus = vCenter; }
+		void SetInclination (Metric rValue) { m_rInclination = rValue; }
+		void SetObjectAngle (Metric rValue) { m_rPos = rValue; }
+		void SetRotation (Metric rValue) { m_rRotation = rValue; }
+		void SetSemiMajorAxis (Metric rValue) { m_rSemiMajorAxis = rValue; }
 
+		static bool FromItem (const ICCItem &Item, COrbit &retOrbit);
 		static Metric RandomAngle (void) { return mathDegreesToRadians(mathRandom(0,3599) / 10.0); }
+		static Metric ZToParallax (Metric rZ);
 
 	private:
+		static constexpr Metric CAMERA_DIST = LIGHT_SECOND * 60.0;
+
+		struct SSerialized
+			{
+			CVector vFocus;
+			Metric rEccentricity = 0.0;
+			Metric rSemiMajorAxis = 0.0;
+			Metric rRotation = 0.0;
+			Metric rPos = 0.0;
+			Metric rInclination = 0.0;
+			Metric rFocusZ = 0.0;
+			};
+
         CG32bitPixel GetColorAtRadiusHD (CG32bitPixel rgbColor, Metric rRadius) const;
 
-		CVector m_vFocus;				//	Focus of orbit
-		Metric m_rEccentricity;			//	Ellipse eccentricity
-		Metric m_rSemiMajorAxis;		//	Semi-major axis
-		Metric m_rRotation;				//	Angle of rotation (radians)
+		CVector3D m_vFocus;				//	Focus of orbit
+		Metric m_rEccentricity = 0.0;	//	Ellipse eccentricity
+		Metric m_rSemiMajorAxis = 0.0;	//	Semi-major axis
+		Metric m_rRotation = 0.0;		//	Angle of rotation (radians)
+		Metric m_rInclination = 0.0;	//	Angle of inclination (radians)
 
-		Metric m_rPos;					//	Obj position in orbit (radians)
+		Metric m_rPos = 0.0;			//	Obj position in orbit (radians)
 	};
 
 class CStationTableCache
@@ -242,6 +268,16 @@ struct SLocationCriteria
 	Metric rMaxDist = 0.0;					//	Maximum distance from source
 	};
 
+struct SZAdjust
+	{
+	CString sInclination;					//	Override inclination attrib
+	CString sRotation;						//	Override rotation attrib
+	DiceRange ZOffset;						//	Override Z position (in scale units)
+	Metric rScale = LIGHT_SECOND;			//	Scale units
+
+	bool bIgnoreLocations = false;			//	Do not adjust locations
+	};
+
 struct SSystemCreateCtx
 	{
 	enum EOverlapCheck 
@@ -268,7 +304,9 @@ struct SSystemCreateCtx
 
 	//	Options
 
+	SZAdjust ZAdjust;						//	Adjust Z
 	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object
+	bool bIs3DExtra = false;				//	Objects are optional 3D extras
 
 	//	Stats
 
@@ -634,6 +672,7 @@ struct SObjCreateCtx
 	bool bCreateSatellites = false;			//	If TRUE, create satellites
     bool bIsSegment = false;				//  If TRUE, we're a satellite segment
 	bool bIgnoreLimits = false;				//	If TRUE, create even if we exceed limits
+	bool bIs3DExtra = false;				//	If TRUE, this is an optional effect
 	};
 
 class CSystem
@@ -921,6 +960,7 @@ class CSystem
 		void PaintViewportAnnotations (CG32bitImage &Dest, SViewportAnnotations &Annotations, SViewportPaintCtx &Ctx);
 		void RemoveVolumetricShadow (CSpaceObject *pObj);
 		void SetPainted (void);
+		void SortByPaintOrder (void);
 		void UpdateCollisionTesting (SUpdateCtx &Ctx);
 		void UpdateGravity (SUpdateCtx &Ctx, CSpaceObject *pGravityObj);
 		void UpdateRandomEncounters (void);

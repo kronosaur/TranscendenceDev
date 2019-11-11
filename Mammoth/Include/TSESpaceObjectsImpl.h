@@ -1536,6 +1536,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
+		virtual bool HasStarlightImage (void) const override { return (GetScale() == scaleWorld); }
 		virtual bool HasVolumetricShadow (void) const override { return (GetScale() == scaleWorld && !IsOutOfPlaneObj()); }
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual bool IsAbandoned (void) const override { return m_Hull.IsAbandoned(); }
@@ -1547,7 +1548,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsIdentified (void) override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
-		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed()); }
+		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed() || IsOutOfPlaneObj()); }
 		virtual bool IsKnown (void) const override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
