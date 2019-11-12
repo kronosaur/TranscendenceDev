@@ -2601,7 +2601,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError)
+ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
 
 //	SetItemProperty
 //
@@ -2622,7 +2622,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return false;
+				return resultPropertyError;
 				}
 
 			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
@@ -2654,7 +2654,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return false;
+				return resultPropertyError;
 				}
 
 			if (iChange < 0)
@@ -2686,7 +2686,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
         //  Set the level
 
         if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
-            return false;
+			return resultPropertyError;
 
         //  Set armor HP
 
@@ -2698,16 +2698,14 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			pArmor->SetHitPoints(iNewHP);
 		else
 			Item.SetDamaged(iNewMaxHP - iNewHP);
-
-        return true;
 		}
 	else
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sProperty);
-		return false;
+		return resultPropertyNotFound;
 		}
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

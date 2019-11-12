@@ -8,6 +8,13 @@
 #include <array>
 #include <functional>
 
+enum ESetPropertyResults
+	{
+	resultPropertySet,
+	resultPropertyNotFound,
+	resultPropertyError,
+	};
+
 template <class OBJ>
 class TPropertyHandler
 	{

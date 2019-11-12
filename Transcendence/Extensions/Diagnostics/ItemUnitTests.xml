@@ -152,6 +152,48 @@
 						{	test:'(itmGetProperty &itTestArmorScaled; 'test.data2)			result:2	}
 						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData1)	result:1	}
 						{	test:'(itmGetProperty &itTestArmorScaled; 'test.dynamicData2)	result:4	}
+
+						;	Item Properties ------------------------------------
+
+						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+									'known)													result:Nil	}
+						{	test:'(itmSetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+									'known True)											result:'ignore	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 0)
+									'known)													result:True	}
+						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+									'known)													result:Nil	}
+						{	test:'(itmSetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+									'known True)											result:'ignore	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+									'known)													result:True	}
+						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(typSetProperty &itWeaponSpeedROM; 'known True)			result:True	}
+						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:True	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
+									'known)													result:True	}
+						{	test:'(itmSetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 2)
+									'known Nil)												result:'ignore	}
+						{	test:'(itmGetProperty &itWeaponSpeedROM; 'known)				result:Nil	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+									'known)													result:True	}
+						{	test:'(itmSetProperty &itWeaponSpeedROM; 'known Nil)			result:'ignore	}
+						{	test:'(itmGetProperty 
+									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
+									'known)													result:Nil	}
 						))
 
 					;	Unit Tests on Armor Damage

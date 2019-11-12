@@ -4646,7 +4646,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (sProperty.IsBlank())
 				return pCC->CreateNil();
 
-			return pCC->CreateBool(pType->SetTypeProperty(sProperty, pArgs->GetElement(2)));
+			return pCC->CreateBool(pType->SetTypeProperty(sProperty, *pArgs->GetElement(2)));
 			}
 
 		case FN_DESIGN_TRANSLATE:
@@ -4999,7 +4999,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5200,7 +5201,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
+			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5331,7 +5332,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5405,12 +5407,19 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			if (!Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), &sError))
+			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+
+			switch (iResult)
 				{
-				if (sError.IsBlank())
-					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+				case resultPropertyError:
+				case resultPropertyNotFound:
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+
+				default:
+					break;
 				}
 
 			return CreateListFromItem(Item);

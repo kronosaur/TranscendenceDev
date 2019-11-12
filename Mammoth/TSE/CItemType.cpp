@@ -1856,7 +1856,21 @@ ICCItemPtr CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	CItem Item(const_cast<CItemType *>(this), 1);
 	CItemCtx ItemCtx(Item);
 
-	return ICCItemPtr(Item.GetItemProperty(Ctx, ItemCtx, sProperty));
+	return ICCItemPtr(Item.GetItemProperty(Ctx, ItemCtx, sProperty, true));
+	}
+
+bool CItemType::OnSetTypeProperty (const CString &sProperty, const ICCItem &Value)
+
+//	OnSetTypeProperty
+//
+//	Sets a property.
+
+	{
+	CItem Item(this, 1);
+	CItemCtx ItemCtx(Item);
+
+	ESetPropertyResults iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
+	return (iResult == resultPropertySet);
 	}
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const

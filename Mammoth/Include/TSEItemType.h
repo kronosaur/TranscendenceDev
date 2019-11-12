@@ -174,6 +174,7 @@ class CItemType : public CDesignType
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
+		virtual bool OnSetTypeProperty (const CString &sProperty, const ICCItem &Value) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:

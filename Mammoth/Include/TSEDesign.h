@@ -334,7 +334,7 @@ class CDesignType
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
 		void SetModification (bool bValue = true) { m_bIsModification = true; }
-		bool SetTypeProperty (const CString &sProperty, ICCItem *pValue);
+		bool SetTypeProperty (const CString &sProperty, const ICCItem &Value);
 		void SetUNID (DWORD dwUNID) { m_dwUNID = dwUNID; }
 		void SetXMLElement (CXMLElement *pDesc) { m_pXML = pDesc; }
 		void Sweep (void) { OnSweep(); }
@@ -391,6 +391,7 @@ class CDesignType
 		virtual void OnPrepareReinit (void) { }
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) { }
 		virtual void OnReinit (void) { }
+		virtual bool OnSetTypeProperty (const CString &sProperty, const ICCItem &Value) { return false; }
 		virtual void OnSweep (void) { }
 		virtual void OnTopologyInitialized (void) { }
 		virtual void OnUnbindDesign (void) { }

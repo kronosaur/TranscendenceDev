@@ -717,7 +717,7 @@ ICCItem *GetImageDescProperty (CCodeChain &CC, ICCItem *pImageDesc, const CStrin
 		return CC.CreateNil();
 	}
 
-bool GetLinkedFireOptions (ICCItem *pArg, DWORD *retdwOptions, CString *retsError)
+bool GetLinkedFireOptions (const ICCItem *pArg, DWORD *retdwOptions, CString *retsError)
 
 //	GetLinkedFireOptions
 //

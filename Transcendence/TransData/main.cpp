@@ -609,7 +609,8 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 
 	//	Mark everything as known
 
-	MarkItemsKnown(Universe);
+	if (!Ctx.bDiagnostics)
+		MarkItemsKnown(Universe);
 
 	return NOERROR;
 	}

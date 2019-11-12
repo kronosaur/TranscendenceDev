@@ -1853,7 +1853,7 @@ void CShieldClass::SetHitPoints (CItemCtx &ItemCtx, int iHP)
 	SetHPLeft(pDevice, pSource, Min(GetMaxHP(ItemCtx), iHP), true);
 	}
 
-bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -1871,7 +1871,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			|| !Ctx.GetItem().IsInstalled())
 		{
 		*retsError = CONSTLIT("Item is not an installed device on object.");
-		return false;
+		return resultPropertyError;
 		}
 
 	//	Handle it.
@@ -1902,7 +1902,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	//	Success
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)

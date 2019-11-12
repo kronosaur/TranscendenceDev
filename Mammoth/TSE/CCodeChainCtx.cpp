@@ -226,13 +226,16 @@ CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem 
 	return pDevice;
 	}
 
-CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+CItem CCodeChainCtx::AsItem (ICCItem *pItem, bool *retbItemType) const
 
 //	AsItem
 //
 //	Get an item
 
 	{
+	if (retbItemType)
+		*retbItemType = false;
+
 	if (pItem == NULL || pItem->IsNil())
 		return CItem();
 
@@ -247,6 +250,9 @@ CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
 		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
 		if (pType == NULL)
 			return CItem();
+
+		if (retbItemType)
+			*retbItemType = true;
 
 		return CItem(pType, 1);
 		}

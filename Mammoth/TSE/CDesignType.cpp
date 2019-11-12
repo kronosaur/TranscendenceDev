@@ -2885,7 +2885,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 	GetUniverse().LogOutput(sError);
 	}
 
-bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
+bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetTypeProperty
 //
@@ -2895,18 +2895,23 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	if (!FindCustomPropertyRaw(sProperty, pDummy, &iType))
-		return false;
+	if (OnSetTypeProperty(sProperty, Value))
+		return true;
 
-	switch (iType)
+	else if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		{
-		case EPropertyType::propGlobal:
-			SetGlobalData(sProperty, pValue);
-			return true;
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				SetGlobalData(sProperty, &Value);
+				return true;
 
-		default:
-			return false;
+			default:
+				return false;
+			}
 		}
+	else
+		return false;
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const

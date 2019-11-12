@@ -1355,7 +1355,7 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 	//	Otherwise, see if we have properties.
 
 	CCodeChainCtx Ctx(GetUniverse());
-	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT));
+	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT, false));
 	if (pEnhancementDesc && !pEnhancementDesc->IsNil())
 		{
 		CString sError;
@@ -1634,7 +1634,7 @@ int CItem::GetInstallCost (void) const
 		return -1;
 	}
 
-ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
+ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
 
 //	GetItemProperty
 //
@@ -1735,6 +1735,23 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	else if (strEquals(sProperty, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
+
+	else if (strEquals(sProperty, PROPERTY_KNOWN))
+		{
+		if (bOnType)
+			{
+			//	If asking about the type, we return True if all unknown types 
+			//	are known.
+
+			for (int i = 0; i < m_pItemType->GetUnknownTypeCount(); i++)
+				if (!m_pItemType->IsKnown(i))
+					return CC.CreateNil();
+
+			return CC.CreateTrue();
+			}
+		else
+			return CC.CreateBool(IsKnown());
+		}
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetLevel());
@@ -1883,7 +1900,7 @@ Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const 
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0.0;
 
@@ -1900,7 +1917,7 @@ int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CS
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0;
 
@@ -1917,7 +1934,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0;
 
@@ -2293,7 +2310,7 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty()));
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty(), false));
 		return Compare.Eval(pValue);
 		}
 	else
@@ -3083,7 +3100,7 @@ void CItem::SetPrepareUninstalled (void)
 	m_dwInstalled = (BYTE)(char)-2;
 	}
 
-bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
 
 //	SetProperty
 //
@@ -3099,7 +3116,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
-		return false;
+		return resultPropertyError;
 		}
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
@@ -3107,7 +3124,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 			
 		SetCharges(pValue->GetIntegerValue());
@@ -3142,7 +3159,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		else if (pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 		else
 			SetCharges(Max(0, GetCharges() + pValue->GetIntegerValue()));
@@ -3156,7 +3173,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			{
 			CItemEnhancement NewEnhancement;
 			if (NewEnhancement.InitFromDesc(GetUniverse(), *pValue, retsError) != NOERROR)
-				return false;
+				return resultPropertyError;
 
 			AddEnhancement(NewEnhancement);
 			}
@@ -3169,13 +3186,16 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
-			return false;
+			return resultPropertyError;
 			}
 		}
 
     else if (strEquals(sName, PROPERTY_KNOWN))
 		{
-		SetKnown(pValue && !pValue->IsNil());
+		if (bOnType)
+			m_pItemType->SetAllKnown(!pValue->IsNil());
+		else
+			SetKnown(pValue && !pValue->IsNil());
 		}
 
     else if (strEquals(sName, PROPERTY_LEVEL))
@@ -3189,9 +3209,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		//	Otherwise, we just set the item level.
 
         if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
-            return false;
-
-        return true;
+			return resultPropertyError;
         }
 	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
 		{
@@ -3207,15 +3225,13 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			int iIndex = Max(0, Min(pValue->GetIntegerValue(), iUnknownTypeCount - 1));
 			SetUnknownIndex(iIndex);
 			}
-
-		return true;
 		}
 	else if (strEquals(sName, PROPERTY_VARIANT))
 		{
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 
 		SetVariantNumber(pValue->GetIntegerValue());
@@ -3236,10 +3252,10 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	else
 		{
 		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-		return false;
+		return resultPropertyNotFound;
 		}
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CItem::SetUnknownIndex (int iIndex)

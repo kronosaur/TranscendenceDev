@@ -865,7 +865,7 @@ bool CItemListManipulator::SetPropertyAtCursor (CSpaceObject *pSource, const CSt
 		NewItem.SetCount(Max(0, Min(iCount, OldItem.GetCount())));
 
 	CItemCtx ItemCtx(&NewItem, pSource);
-	if (!NewItem.SetProperty(ItemCtx, sName, pValue, retsError))
+	if (NewItem.SetProperty(ItemCtx, sName, pValue, false, retsError) != resultPropertySet)
 		return false;
 
 	MoveItemTo(NewItem, OldItem);

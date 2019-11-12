@@ -289,7 +289,7 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		//	LATER: Eventually we will get rid of CItemCtx.
 
 		CItemCtx Ctx(&Item, const_cast<CSpaceObject *>(this));
-		return Item.GetItemProperty(CCCtx, Ctx, sName);
+		return Item.GetItemProperty(CCCtx, Ctx, sName, false);
 		}
 	}
 
