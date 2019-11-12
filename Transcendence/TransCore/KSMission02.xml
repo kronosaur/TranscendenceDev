@@ -4,7 +4,7 @@
 
 	<!-- Mission: New Freighter ================================================
 
-	Escort a new freigher from a stargate back to Korolov. This mission is used when the Korolov
+	Escort a new freighter from a stargate back to Korolov. This mission is used when the Korolov
 	station does not have any freighters suitable for the player to escort, or only has one or two
 	freighters left.
 
@@ -351,13 +351,13 @@
 
 			<Text id="Briefing">
 				(msnTranslate gSource 'textBriefing {
-					shipClass: (typGetDataField (msnGetData gSource 'escortType) 'name)
+					shipClass: (typGetName (msnGetData gSource 'escortType) '(article generic))
 					gateName: (objGetName (objGetObjByID (msnGetData gSource 'gateID)) 'article)
 					payment: (fmtCurrency 'credit (msnGetData gSource 'reward))
 					})
 			</Text>
 			<Text id="textBriefing">
-				A %shipClass% will be entering the system at %gateName%.
+				%ShipClass% will be entering the system at %gateName%.
 				We will pay %payment% if you escort her safely back to our location.
 
 				Do you wish to accept this assignment?
