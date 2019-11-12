@@ -24,7 +24,7 @@ class CDetailList
 		void Format (const RECT &rcRect, DWORD dwFlags = 0, int *retcyHeight = NULL);
 		void Load (ICCItem *pDetails);
 		void Paint (CG32bitImage &Dest) const;
-        inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		
 	private:
 		struct SDetailEntry
@@ -116,20 +116,20 @@ class CGCarouselArea : public AGArea
 		CGCarouselArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme);
 
 		void CleanUp (void);
-		inline int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
+		int GetCursor (void) const { return (m_pListData ? m_pListData->GetCursor() : -1); }
 		ICCItem *GetEntryAtCursor (void);
-		inline IListData *GetList (void) const { return m_pListData; }
-		inline CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
-		inline bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
+		IListData *GetList (void) const { return m_pListData; }
+		CSpaceObject *GetSource (void) { return (m_pListData ? m_pListData->GetSource() : NULL); }
+		bool IsCursorValid (void) const { return (m_pListData ? m_pListData->IsCursorValid() : false); }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
-		inline void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); Invalidate(); }
-        inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		inline void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
+		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); Invalidate(); }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
 		void SetList (ICCItem *pList);
 		bool SetStyle (const CString &sStyle);
-		inline void SyncCursor (void) { if (m_pListData) m_pListData->SyncCursor(); Invalidate(); }
+		void SyncCursor (void) { if (m_pListData) m_pListData->SyncCursor(); Invalidate(); }
 
 		//	AGArea virtuals
 
@@ -228,7 +228,7 @@ class CGDrawArea : public AGArea
 	public:
 		CGDrawArea (void);
 
-		inline CG32bitImage &GetCanvas (void) { CreateImage(); return m_Image; }
+		CG32bitImage &GetCanvas (void) { CreateImage(); return m_Image; }
 
 		//	AGArea virtuals
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
@@ -247,10 +247,10 @@ class CGItemDisplayArea : public AGArea
 	public:
 		CGItemDisplayArea (void);
 
-        inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
-		inline void SetItem (CSpaceObject *pSource, const CItem &Item) { m_pSource = pSource; m_Item = Item; Invalidate(); }
-		inline void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; Invalidate(); }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetItem (CSpaceObject *pSource, const CItem &Item) { m_pSource = pSource; m_Item = Item; Invalidate(); }
+		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; Invalidate(); }
 
 		//	AGArea virtuals
 		virtual int Justify (const RECT &rcRect) override;
@@ -273,10 +273,10 @@ class CGItemListDisplayArea : public AGArea
 		CGItemListDisplayArea (void);
 
 		bool InitFromDesc (ICCItem *pDesc);
-        inline void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        inline void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetItemList (CSpaceObject *pSource, const CItemList &ItemList);
-		inline void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; m_ItemList.DeleteAll(); Invalidate(); }
+		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; m_ItemList.DeleteAll(); Invalidate(); }
 
 		//	AGArea virtuals
 		virtual int Justify (const RECT &rcRect) override;
@@ -293,7 +293,7 @@ class CGItemListDisplayArea : public AGArea
 			bool bGrayed;
 			};
 
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		bool InitFromItemList (ICCItem *pItemList);
 		void SortItemList (void);
 
@@ -443,7 +443,7 @@ class CGNeurohackArea : public AGArea
 
 		void CleanUp (void);
 		void SetData (int iWillpower, int iDamage);
-		inline void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
+		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 
 		//	AGArea virtuals
 		virtual void Paint (CG32bitImage &Dest, const RECT &rcRect) override;
