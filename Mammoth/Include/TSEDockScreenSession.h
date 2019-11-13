@@ -86,6 +86,7 @@ class CDockScreenStack
 		void DeleteAll (void);
 		const CString &GetDisplayData (const CString &sID);
 		int GetCount (void) const { return m_Stack.GetCount(); }
+		SDockFrame &GetCallingFrame (void) { return (m_Stack.GetCount() < 2 ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 2]); }
 		SDockFrame &GetCurrent (void) { ASSERT(!IsEmpty()); return (IsEmpty() ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 1]); }
 		const SDockFrame &GetCurrent (void) const;
 		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }

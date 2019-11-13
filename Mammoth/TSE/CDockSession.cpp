@@ -406,12 +406,12 @@ bool CDockSession::SetReturnData (const CString &sAttrib, ICCItem *pData)
 //	Sets data associated with previous frame.
 
 	{
-	if (!InSession())
+	if (m_DockFrames.GetCount() < 2)
 		return false;
 
 	//	If necessary, create the stored data block
 
-	SDockFrame &Frame = m_DockFrames.GetCurrent();
+	SDockFrame &Frame = m_DockFrames.GetCallingFrame();
 	if (!Frame.pReturnData)
 		Frame.pReturnData = ICCItemPtr(ICCItem::SymbolTable);
 
