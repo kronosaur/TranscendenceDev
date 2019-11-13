@@ -190,7 +190,7 @@ void CMarker::OnReadFromStream (SLoadCtx &Ctx)
     if (bHasMapOrbit)
         {
         m_pMapOrbit = new COrbit;
-        Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->ReadFromStream(Ctx);
         }
     else
         m_pMapOrbit = NULL;
@@ -223,7 +223,7 @@ void CMarker::OnWriteToStream (IWriteStream *pStream)
     //  Write map orbit, if we have one
 
     if (m_pMapOrbit)
-        pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
+        m_pMapOrbit->WriteToStream(*pStream);
 	}
 
 void CMarker::SetOrbit (const COrbit &Orbit)

@@ -704,13 +704,13 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                 //  Read orbits
 
                 for (i = 0; i < iOrbitCount; i++)
-                    Ctx.pStream->Read((char *)&pNodeData->Orbits[i], sizeof(COrbit));
+					pNodeData->Orbits[i].ReadFromStream(SystemCtx);
                 }
             else
                 {
                 COrbit Dummy;
                 for (i = 0; i < iOrbitCount; i++)
-                    Ctx.pStream->Read((char *)&Dummy, sizeof(COrbit));
+					Dummy.ReadFromStream(SystemCtx);
                 }
 
 			//	Read the command list
@@ -1318,10 +1318,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
         //  Write each of the orbits
 
         for (i = 0; i < m_ByNode[iNode].Orbits.GetCount(); i++)
-            {
-            const COrbit &Orbit = m_ByNode[iNode].Orbits[i];
-	        pStream->Write((char *)&Orbit, sizeof(COrbit));
-            }
+			m_ByNode[iNode].Orbits[i].WriteToStream(*pStream);
 
 		//	Write any delayed commands
 

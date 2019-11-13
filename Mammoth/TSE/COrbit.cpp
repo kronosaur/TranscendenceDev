@@ -340,6 +340,54 @@ void COrbit::PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgb
 		}
 	}
 
+void COrbit::ReadFromStream (SLoadCtx &Ctx)
+
+//	ReadFromStream
+//
+//	Read from stream.
+
+	{
+	//	In previous versions we used a 2D vector
+
+	if (Ctx.dwVersion >= 175)
+		m_vFocus.ReadFromStream(*Ctx.pStream);
+	else
+		{
+		CVector vFocus;
+		vFocus.ReadFromStream(*Ctx.pStream);
+		m_vFocus = CVector3D(vFocus.GetX(), vFocus.GetY(), 0.0);
+		}
+
+	//	Read other values
+
+	Ctx.pStream->Read(m_rEccentricity);
+	Ctx.pStream->Read(m_rSemiMajorAxis);
+	Ctx.pStream->Read(m_rRotation);
+	Ctx.pStream->Read(m_rPos);
+
+	//	Added in 175
+
+	if (Ctx.dwVersion >= 175)
+		Ctx.pStream->Read(m_rInclination);
+	else
+		m_rInclination = 0.0;
+	}
+
+void COrbit::WriteToStream (IWriteStream &Stream) const
+
+//	WriteToStream
+//
+//	Write to stream.
+
+	{
+	m_vFocus.WriteToStream(Stream);
+	Stream.Write(m_rEccentricity);
+	Stream.Write(m_rSemiMajorAxis);
+	Stream.Write(m_rRotation);
+	Stream.Write(m_rPos);
+	Stream.Write(m_rInclination);
+	}
+
 Metric COrbit::ZToParallax (Metric rZ)
 
 //	ZToParallax

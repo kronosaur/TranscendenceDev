@@ -29,9 +29,11 @@ class CVector3D
 			return (ax > ay ? (ax > az ? ax : az) : (ay > az ? ay : az));
 			}
 		CVector Perpendicular (void) const { return CVector(-y, x); }
+		void ReadFromStream (IReadStream &Stream) { Stream.Read((char *)this, sizeof(CVector3D)); }
 		void SetX (Metric NewX) { x = NewX; }
 		void SetY (Metric NewY) { y = NewY; }
 		void SetZ (Metric NewZ) { z = NewZ; }
+		void WriteToStream (IWriteStream &Stream) const { Stream.Write((char *)this, sizeof(CVector3D)); }
 		CVector3D Unit (void) const 
 			{
 			Metric rLength = Length();

@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							46;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					37;
-constexpr DWORD SYSTEM_SAVE_VERSION =					174;
+constexpr DWORD SYSTEM_SAVE_VERSION =					175;
 
 //	Uncomment out the following define when building a stable release
 
@@ -641,3 +641,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //
 //	174: 1.9 Alpha 1
 //		Add source to CItem
+//
+//	175: 1.9 Alpha 3
+//		Changes to COrbit

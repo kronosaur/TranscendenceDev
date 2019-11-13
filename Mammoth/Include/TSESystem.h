@@ -106,6 +106,7 @@ class COrbit
 		bool IsNull (void) const { return (m_rSemiMajorAxis == 0.0); }
 		void Paint (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor);
         void PaintHD (CMapViewportCtx &Ctx, CG32bitImage &Dest, CG32bitPixel rgbColor, CGDraw::EBlendModes iMode = CGDraw::blendNormal) const;
+		void ReadFromStream (SLoadCtx &Ctx);
 		void SetEccentricity (Metric rValue) { m_rEccentricity = rValue; }
 		void SetFocus (const CVector &vCenter) { m_vFocus = CVector3D(vCenter.GetX(), vCenter.GetY(), 0.0); }
 		void SetFocus (const CVector3D &vCenter) { m_vFocus = vCenter; }
@@ -113,6 +114,7 @@ class COrbit
 		void SetObjectAngle (Metric rValue) { m_rPos = rValue; }
 		void SetRotation (Metric rValue) { m_rRotation = rValue; }
 		void SetSemiMajorAxis (Metric rValue) { m_rSemiMajorAxis = rValue; }
+		void WriteToStream (IWriteStream &Stream) const;
 
 		static bool FromItem (const ICCItem &Item, COrbit &retOrbit);
 		static Metric RandomAngle (void) { return mathDegreesToRadians(mathRandom(0,3599) / 10.0); }

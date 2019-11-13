@@ -3475,8 +3475,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (dwLoad != 0xffffffff)
 		{
 		m_pMapOrbit = new COrbit;
-		//	LATER: COrbit should load itself
-		Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->ReadFromStream(Ctx);
 		}
 
 	//	Map label
@@ -4141,8 +4140,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 		{
 		dwSave = 1;
 		pStream->Write(dwSave);
-		//	LATER: COrbit should have a save method
-		pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->WriteToStream(*pStream);
 		}
 	else
 		{
