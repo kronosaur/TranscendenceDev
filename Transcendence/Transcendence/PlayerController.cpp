@@ -299,8 +299,7 @@ void CPlayerShipController::Dock (void)
 
 	if (m_pStation)
 		{
-		m_pStation->Undock(m_pShip);
-		m_pStation = NULL;
+		Undock();
 		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
 		return;
 		}
@@ -745,6 +744,13 @@ void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
 
 	m_bDockPortIndicators = (strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_ENABLED)
 			|| strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_TRUE));
+
+	//	If we saved while docked, we undock ourselves. This can happen if we 
+	//	call (gamSave) from inside a dock screen. But since we don't save our
+	//	dock state, we need to undock when we come back.
+
+	if (m_pStation)
+		Undock();
 	}
 
 void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdate)
