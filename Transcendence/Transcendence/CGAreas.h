@@ -344,7 +344,7 @@ class CGItemListArea : public AGArea
         void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
-		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; Invalidate(); }
+		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; InitRowDesc(); Invalidate(); }
 		void SetFilter (const CItemCriteria &Filter) { if (m_pListData) m_pListData->SetFilter(Filter); InitRowDesc(); Invalidate(); }
 		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
 		void SetIconHeight (int cyHeight) { m_cyIcon = cyHeight; }

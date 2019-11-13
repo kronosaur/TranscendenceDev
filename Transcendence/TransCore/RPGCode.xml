@@ -1732,6 +1732,7 @@
 				;	maxTechLevel:			The maximum tech level we will install (unless we match techCriteriaOverride)
 				;	noCargoCheck:			If True, then we don't check to see if the old device fits in cargo
 				;	replaceItem:			If not Nil, we try to replace this device.
+				;	showActualItem:			Show true item, even if unknown to player.
 				;	targetObj:				Object on which to install (if Nil, we assume player ship)
 				;	techCriteria:			If not Nil, the item must match this criteria
 				;	techCriteriaOverride:	If not Nil, and item matches this criteria, install even if above maxTechLevel
@@ -1751,7 +1752,11 @@
 					(targetObj (if (@ data 'targetObj) (@ data 'targetObj) gPlayerShip))
 					(installerObj (if (@ data 'installerObj) (@ data 'installerObj) gSource))
 					(currencyUsed (if (@ data 'currencyUsed) (@ data 'currencyUsed) (objGetDefaultCurrency installerObj)))
-					(itemName (itmGetName thisItem 0x04))
+					(itemName 
+						(itmGetName thisItem 
+							(list 'article (if (@ data 'showActualItem) 'actual))
+							)
+						)
 					(canInstall Nil)
 
 					;	If the target object is not the player's ship, then we need to modify
@@ -1782,7 +1787,9 @@
 								)
 							(itemPrice
 								(if (or (@ data 'upgrade) (@ data 'buyAndInstall))
-									(objGetSellPrice installerObj thisItem)
+									(objGetSellPrice installerObj thisItem {
+										actual: (@ data 'showActualItem)
+										})
 									0
 									)
 								)
@@ -1895,7 +1902,7 @@
 
 								stationCannotInstall
 									(if (@ status 'descID)
-										(setq desc (objTranslate installerObj (@ status 'descID) { item:thisItem itemName:(itmGetName thisItem 'article) targetObj:targetObj }))
+										(setq desc (objTranslate installerObj (@ status 'descID) { item:thisItem itemName:itemName targetObj:targetObj }))
 										(setq desc (or
 											(objTranslate installerObj 'rpg.noTechToInstallDevice { item:thisItem targetObj:targetObj })
 											(scrTranslate gScreen 'rpg.noTechToInstallDevice { item:thisItem targetObj:targetObj })
@@ -1943,7 +1950,7 @@
 										(objTranslate installerObj 'rpg.cannotInstallDeviceWithoutMilitaryID { item:thisItem targetObj:targetObj militaryID:(@ militaryCheck 'idName) })
 										(scrTranslate gScreen 'rpg.cannotInstallDeviceWithoutMilitaryID { item:thisItem targetObj:targetObj militaryID:(@ militaryCheck 'idName) })
 										(typTranslate &unidCommonText; 'rpg.mustHaveAMilitaryIDToUseItem {
-											itemName: (itmGetName thisItem 'article)
+											itemName: itemName
 											militaryID: (@ militaryCheck 'idName) 
 											})
 										))
