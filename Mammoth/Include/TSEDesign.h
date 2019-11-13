@@ -1333,7 +1333,7 @@ class CDesignCollection
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
 		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML);
-		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType);
+		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType = NULL);
 		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
 		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
 

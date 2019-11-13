@@ -1609,7 +1609,7 @@ void CDesignCollection::Reinit (void)
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType)
+ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType)
 
 //	ResolveInheritingType
 //
@@ -1653,7 +1653,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	if (pAncestor->GetInheritFromUNID() && pAncestor->GetInheritFrom() == NULL)
 		{
-		if (error = ResolveInheritingType(Ctx, pAncestor))
+		if (error = ResolveInheritingType(Ctx, pAncestor, &pAncestor))
 			return error;
 		}
 
@@ -1663,6 +1663,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	if (pAncestor->GetType() == designGenericType)
 		{
 		pType->SetInheritFrom(pAncestor);
+		if (retpNewType) *retpNewType = pType;
 		return NOERROR;
 		}
 
@@ -1685,6 +1686,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 		{
 		delete pNewXML;
 		pType->SetInheritFrom(pAncestor);
+		if (retpNewType) *retpNewType = pType;
 		return NOERROR;
 		}
 
@@ -1701,6 +1703,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	pNewType->SetMerged();
 	pNewType->SetInheritFrom(pAncestor);
+	if (retpNewType) *retpNewType = pNewType;
 
 	//	The original type will get replaced, but we need to reset the inherit
 	//	pointer. [Since it will be removed from m_AllTypes, it will never get
