@@ -30,39 +30,6 @@
 			backgroundID=		"&rsRedGiantSpace;"
 			>
 
-		<Tables>
-			<OuterAsteroid>
-				<Table>
-					<Station chance="85" type="&stRockyOuterAsteroidSizeA;"/>
-					<Station chance="10" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="4" type="&stRockyOuterAsteroidSizeB;"/>
-					<Station chance="1" type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</OuterAsteroid>
-
-			<OuterAsteroidField>
-				<Group>
-					<Station type="&stRockyOuterAsteroidSizeD;" showOrbit="true"/>
-
-					<Siblings count="2d20" arcInc="2d411-412" radiusInc="-8-8">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d20" arcInc="2d319-320" radiusInc="-12-12">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d16" arcInc="2d219-220" radiusInc="-16-16">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d99-100" radiusInc="-24-24">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
-				</Group>
-			</OuterAsteroidField>
-		</Tables>
-
 		<SystemGroup>
 
 			<!-- Star -->
@@ -127,9 +94,7 @@
 
 					<!-- Asteroids -->
 
-					<Siblings count="300" distribution="4d40-82">
-						<Lookup table="OuterAsteroid"/>
-					</Siblings>
+					<Lookup table="AsteroidBelt200"/>
 				</Group>
 
 				<!-- Mama Cocha -->
@@ -178,10 +143,9 @@
 						</Stargate>
 					</Orbitals>
 
-					<Orbitals count="6d60" distance="2d12+20" angle="random">
-						<Lookup table="OuterAsteroid"/>
-					</Orbitals>
-
+					<ZAdjust inclination="30-60" rotation="alignedRandom" excludeLocations="true">
+						<Lookup table="AsteroidRing200"/>
+					</ZAdjust>
 				</Group>
 
 			</Orbitals>
@@ -189,7 +153,7 @@
 			<!-- Comets -->
 
 			<Orbitals count="3-6" scale="light-minute" distance="1d8+20" angle="random" eccentricity="1d20" rotation="random">
-				<Lookup table="OuterAsteroidField"/>
+				<Lookup table="AsteroidArc50"/>
 			</Orbitals>
 
 		</SystemGroup>

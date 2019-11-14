@@ -1835,60 +1835,6 @@
 			noRandomEncounters=	"true"
 			noExtraEncounters=	"true"
 			>
-
-		<Tables>
-			<!-- Planets and Asteroids -->
-
-			<InnerArcMedium>
-				<Group>
-					<Siblings count="2d20" arcInc="2d205-206" radiusInc="-4-4">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d20" arcInc="2d159-160" radiusInc="-6-6">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d16" arcInc="2d109-110" radiusInc="-8-8">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d49-50" radiusInc="-12-12">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-				</Group>
-			</InnerArcMedium>
-
-			<InnerArcSmall>
-				<Group>
-					<Siblings count="2d12" arcInc="2d105-106" radiusInc="-3-3">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d12" arcInc="2d79-80" radiusInc="-4-4">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d10" arcInc="2d54-55" radiusInc="-6-6">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-
-					<Siblings count="2d8" arcInc="2d24-25" radiusInc="-9-9">
-						<Lookup table="InnerAsteroid"/>
-					</Siblings>
-				</Group>
-			</InnerArcSmall>
-
-			<InnerAsteroid>
-				<Table>
-					<Station chance="45" type="&stMetallicAsteroidSizeA;"/>
-					<Station chance="45" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="5" type="&stMetallicAsteroidSizeB;"/>
-					<Station chance="5" type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</InnerAsteroid>
-		</Tables>
-
 		<SystemGroup>
 
 			<!-- Star -->
@@ -1921,8 +1867,8 @@
 					<Siblings count="6d4+1" angle="equidistant" radiusInc="-120-120">
 						<Group>
 							<Table>
-								<Lookup chance="75" table="InnerArcSmall"/>
-								<Lookup chance="25" table="InnerArcMedium"/>
+								<Lookup chance="75" table="AsteroidArc25"/>
+								<Lookup chance="25" table="AsteroidArc50"/>
 							</Table>
 
 							<Siblings arcInc="-60-60" radiusInc="8-16">
@@ -1955,6 +1901,7 @@
 			<Orbitals distance="8" scale="light-minute" angle="random">
 				<Group>
 					<Station type="&stRockyPlanetoidSizeE;"
+							name="Heretic II"
 							showOrbit="true"
 							/>
 

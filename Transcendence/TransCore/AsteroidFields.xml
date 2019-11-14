@@ -464,7 +464,7 @@
 		<!-- ASTEROID RINGS -->
 
 		<AsteroidRing25Morphology>
-			<Orbitals distance="2d4+16">
+			<Orbitals distance="2d4+12">
 				<OrbitalDistribution count="2d4+20" radialWidth="4">
 					<Lookup table="SmallBeltAsteroid"/>
 				</OrbitalDistribution>
@@ -490,6 +490,20 @@
 				</OrbitalDistribution>
 			</Orbitals>
 		</AsteroidRing100Morphology>
+		
+		<AsteroidRing200Morphology>
+			<Orbitals distance="2d6+20">
+				<OrbitalDistribution count="4d12+174" radialWidth="6">
+					<Lookup table="SmallBeltAsteroid"/>
+				</OrbitalDistribution>
+
+				<OrbitalDistribution count="1"	radialWidth="8">
+					<LocationAttributes attributes="asteroids, asteroidRing">
+						<Lookup table="_Label"/>
+					</LocationAttributes>
+				</OrbitalDistribution>
+			</Orbitals>
+		</AsteroidRing200Morphology>
 		
 		<!-- ASTEROID TWIN BELT -->
 

@@ -519,14 +519,11 @@
 						<Station type="&stHydrogenGasGiantSizeM;" name="Zheling Iv" showOrbit="true"/>
 					</Primary>
 
-					<Orbitals count="4d12" distance="2d6+4" eccentricity="20-40" angle="random">
-						<Table>
-							<Station chance="75" type="&stRockyOuterAsteroidSizeA;" />
-							<Station chance="25" type="&stRockyOuterAsteroidSizeB;" />
-						</Table>
-					</Orbitals>
+					<ZAdjust inclination="random" rotation="alignedRandom" excludeLocations="true">
+						<Lookup table="AsteroidRing25"/>
+					</ZAdjust>
 
-					<Orbitals distance="16-24" angle="random">
+					<Orbitals distance="24" angle="random">
 						<Station type="&stAresCommune;"/>
 					</Orbitals>
 
@@ -536,30 +533,12 @@
 						<Station type="&stCSCEuropaWreck;"/>
 					</Siblings>
 
-					<Trojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyOuterAsteroidSizeA;" />
-							</Orbitals>
+					<Lookup table="AsteroidTrojans50"/>
 
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyOuterAsteroidSizeB;" />
-							</Orbitals>
-						</Group>
-					</Trojan>
+					<Lookup table="AsteroidAntiTrojans50"/>
 
 					<AntiTrojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyOuterAsteroidSizeA;" />
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyOuterAsteroidSizeB;" />
-							</Orbitals>
-
-							<Marker objName="stagingBeta"/>
-						</Group>
+						<Marker objName="stagingBeta"/>
 					</AntiTrojan>
 
 					<!-- Nebula at the fourth planetary orbit -->

@@ -1842,42 +1842,25 @@
 
 					<!-- Trojans -->
 
+					<Lookup table="AsteroidCompactTrojans50"/>
+
 					<Trojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Table>
-								<Label  chance="20" attributes="asteroids"/>
-								<Lookup chance="50" table="FriendlyOuterStations" />
-								<Lookup chance="30" table="EnemyStations"/>
-							</Table>
-						</Group>
+						<Table>
+							<Label  chance="20" attributes="asteroids"/>
+							<Lookup chance="50" table="FriendlyOuterStations" />
+							<Lookup chance="30" table="EnemyStations"/>
+						</Table>
 					</Trojan>
 
+					<Lookup table="AsteroidCompactAntiTrojans50"/>
+
 					<AntiTrojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Table>
-								<Label  chance="20" attributes="asteroids"/>
-								<Lookup chance="50" table="FriendlyOuterStations" />
-								<Lookup chance="30" table="EnemyStations"/>
-							</Table>
-						</Group>
+						<Table>
+							<Label  chance="20" attributes="asteroids"/>
+							<Lookup chance="50" table="FriendlyOuterStations" />
+							<Lookup chance="30" table="EnemyStations"/>
+						</Table>
 					</AntiTrojan>
-
 				</Group>
 			</Orbitals>
 
@@ -1920,15 +1903,7 @@
 			<!-- Icy Ring -->
 
 			<Orbitals distance="780" angle="random">
-				<Group>
-					<Siblings count="500" distribution="4d60-122">
-						<Station type="&stIceAsteroidSizeA;"/>
-					</Siblings>
-
-					<Siblings count="50" distribution="4d20-42">
-						<Station type="&stIceAsteroidSizeB;"/>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidIceBelt500"/>
 			</Orbitals>
 			
 			<Orbitals count="2d4+4" distance="740-820" angle="minSeparation:10">
