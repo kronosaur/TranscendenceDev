@@ -885,5 +885,8 @@
     <Xml Include="MRAD.xml">
       <Filter>Human Space Library\Heretic</Filter>
     </Xml>
+    <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml">
+      <Filter>Extensions\Diagnostics</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

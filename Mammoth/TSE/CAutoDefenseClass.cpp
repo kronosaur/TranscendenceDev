@@ -130,10 +130,6 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 		case trgCriteria:
 			{
-			//	First we set the source
-
-			m_TargetCriteria.SetSource(pSource);
-
 			//	Compute the range
 
 			Metric rBestDist2;
@@ -144,7 +140,7 @@ CSpaceObject *CAutoDefenseClass::FindTarget (CInstalledDevice *pDevice, CSpaceOb
 
 			//	Now look for the nearest object
 
-			CSpaceObjectCriteria::SCtx Ctx(m_TargetCriteria);
+			CSpaceObjectCriteria::SCtx Ctx(pSource, m_TargetCriteria);
 			for (int i = 0; i < pSystem->GetObjectCount(); i++)
 				{
 				CSpaceObject *pObj = pSystem->GetObject(i);

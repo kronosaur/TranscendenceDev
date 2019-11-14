@@ -7188,7 +7188,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pSource = CreateObjFromItem(pArgs->GetElement(1));
 
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	We force including intangibles. We need to do this because this
 			//	is often called inside of <OnObjDestroyed>, and since the object
@@ -7202,7 +7202,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Match
 
-			CSpaceObjectCriteria::SCtx Ctx(Criteria);
+			CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}
 
@@ -12836,7 +12836,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Second argument is the filter
 
 	CString sFilter = pArgs->GetElement(1)->GetStringValue();
-	CSpaceObjectCriteria Criteria(pSource, sFilter);
+	CSpaceObjectCriteria Criteria(sFilter);
 
 	//	If we're checking for position, we need to do some extra work
 
@@ -12874,9 +12874,11 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Prepare result list (if necessary)
 	
+	CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
+
 	ICCItem *pResult;
 	CCLinkedList *pList;
-	if (!Criteria.MatchesNearestOnly() && !Criteria.MatchesFarthestOnly())
+	if (!Ctx.bNearestOnly && !Ctx.bFarthestOnly)
 		{
 		pResult = pCC->CreateLinkedList();
 		if (pResult->IsError())
@@ -12894,11 +12896,10 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	NOTE: We have this convoluted code path because we want to optimize
 	//	adding items to our list [not sure if it's worth it, though].
 
-	bool bGenerateOurOwnList = (pList && (Criteria.GetSort() == CSpaceObjectCriteria::sortNone));
+	bool bGenerateOurOwnList = (pList && (Ctx.iSort == CSpaceObjectCriteria::sortNone));
 
 	//	Do the search
 
-	CSpaceObjectCriteria::SCtx Ctx(Criteria);
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
@@ -12916,7 +12917,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If we only want the nearest/farthest object, then find it now
 
-	if (Criteria.MatchesNearestOnly() || Criteria.MatchesFarthestOnly())
+	if (Ctx.bNearestOnly || Ctx.bFarthestOnly)
 		{
 		//	Return the object
 
@@ -14389,7 +14390,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetCount() > 3)
 				sFilter = pArgs->GetElement(3)->GetStringValue();
 
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	Keep trying random positions until we find something that works
 			//	(or until we run out of tries)
@@ -14422,7 +14423,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				//	See if any object is within the separation range. If there 
 				//	is, then we continue.
 
-				if (pSystem->FindObjectInRange(vTry, rSeparation, Criteria)
+				if (pSystem->FindObjectInRange(pSource, vTry, rSeparation, Criteria)
 						&& --iTries > 0)
 					continue;
 

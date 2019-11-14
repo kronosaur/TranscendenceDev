@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type unid="&unidSystemFunctionTests;">
+		<Events>
+			<OnGlobalStartDiagnostics>
+				(diagEval (list
+
+					;	sysFindObject --------------------------------------------------------------
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stSistersOfDomina;) }
+
+					{	test: '(objGetType 
+									(sysFindObject (@ data 'source)
+										"TN +sistersOfDomina")
+									)												result: &stSistersOfDomina; }
+
+					{	test: '(objGetType 
+									(sysFindObject (@ data 'source)
+										"GN")
+									)												result: &stStargate; }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; | G")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stSistersOfDomina; &stStargate;) }
+
+					{	test: '(objGetType 
+									(sysFindObject (@ data 'source)
+										"TN +sistersOfDomina | G")
+									)												result: &stStargate; }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T S:d +sistersOfDomina; | G")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stStargate; &stSistersOfDomina;) }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T S:D +sistersOfDomina; | G")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stSistersOfDomina; &stStargate;) }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; | G S:d")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stStargate; &stSistersOfDomina;) }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; | G S:D")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stSistersOfDomina; &stStargate;) }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; N:100 | G R:1000")
+									theObj
+									(objGetType theObj)
+									)												result: Nil }
+
+					{	test: '(map 
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; R:300 | G N:200")
+									theObj
+									(objGetType theObj)
+									)												result: (list &stSistersOfDomina; &stStargate;) }
+
+					{	test: '(objGetType
+									(sysFindObject (@ data 'source)
+										"T +sistersOfDomina; | G N")
+									)												result: &stStargate; }
+					)
+
+					{
+					source: (@ (sysFindObject nil "t +star;") 0)
+					})
+			</OnGlobalStartDiagnostics>
+		</Events>
+	</Type>
+
+</TranscendenceModule>

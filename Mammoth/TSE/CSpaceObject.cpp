@@ -6051,7 +6051,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 //	Returns TRUE if this object matches the criteria
 
 	{
-	CSpaceObject *pSource = Crit.GetSource();
+	CSpaceObject *pSource = Ctx.pSource;
 	if (pSource == this)
 		return false;
 
@@ -6090,6 +6090,11 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		return false;
 
 	if (!Crit.MatchesSovereign(GetSovereign()))
+		return false;
+
+	if (Crit.MatchesSourceSovereign() 
+			&& pSource 
+			&& GetSovereignUNID() != pSource->GetSovereignUNID())
 		return false;
 
 	if (Crit.MatchesDockedWithSource())
@@ -6157,9 +6162,9 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If necessary, compute the distance and angle from the source to the obj.
 
-	int iObjAngle;
-	Metric rObjDist;
-	Metric rObjDist2;
+	int iObjAngle = -1;
+	Metric rObjDist = -1.0;
+	Metric rObjDist2 = -1.0;
 	if (Ctx.bCalcPolar)
 		{
 		CVector vCenter = (pSource ? pSource->GetPos() : CVector());
@@ -6178,17 +6183,25 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		rObjDist2 = vDist.Length2();
 		}
 
+	ASSERT(!Crit.MatchesNearerThan() || rObjDist2 >= 0.0);
+	ASSERT(!Crit.MatchesFartherThan() || rObjDist2 >= 0.0);
+	ASSERT(!Crit.MatchesPerceivableOnly() || rObjDist2 >= 0.0);
+	ASSERT(Crit.MatchesIntersectAngle() == -1 || (rObjDist >= 0.0 && iObjAngle >= 0));
+	ASSERT(!Ctx.bNearestOnly || rObjDist2 >= 0.0);
+	ASSERT(!Ctx.bFarthestOnly || rObjDist2 >= 0.0);
+	ASSERT(Ctx.iSort == CSpaceObjectCriteria::sortNone || rObjDist2 >= 0.0);
+
 	//	Ranges
 
-	if (Crit.MatchesNearerThan() && rObjDist2 > Ctx.rMaxRadius2)
+	if (Crit.MatchesNearerThan() && rObjDist2 > Crit.MatchesMaxRadius2())
 		return false;
 
-	if (Crit.MatchesFartherThan() && rObjDist2 < Ctx.rMinRadius2)
+	if (Crit.MatchesFartherThan() && rObjDist2 < Crit.MatchesMinRadius2())
 		return false;
 
 	//	Visible only
 
-	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Crit.MatchesPerception()))
+	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Ctx.iSourcePerception))
 		return false;
 
 	//	Angle
@@ -6215,7 +6228,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If we're looking for the nearest or farthest, do that computation now
 
-	if (Crit.MatchesNearestOnly())
+	if (Ctx.bNearestOnly)
 		{
 		if (rObjDist2 < Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
@@ -6224,7 +6237,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 			Ctx.rBestDist2 = rObjDist2;
 			}
 		}
-	else if (Crit.MatchesFarthestOnly())
+	else if (Ctx.bFarthestOnly)
 		{
 		if (rObjDist2 > Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
@@ -6236,7 +6249,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If we're sorting by distance, then add the object to the list
 
-	if (Crit.GetSort() == CSpaceObjectCriteria::sortByDistance)
+	if (Ctx.iSort == CSpaceObjectCriteria::sortByDistance)
 		Ctx.DistSort.Insert(rObjDist2, const_cast<CSpaceObject *>(this));
 
 	return true;

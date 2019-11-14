@@ -24,6 +24,7 @@
 	<!ENTITY unidMathTests				"0xA0010082">
 	<!ENTITY unidCCStringTests			"0xA0010083">
 	<!ENTITY unidCCLogicalOperators		"0xA0010084">
+	<!ENTITY unidSystemFunctionTests	"0xA0010085">
 
 	<!-- 00C0-00FF TEST MISSIONS -->
 
@@ -78,6 +79,7 @@
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
+	<Module filename="SystemFunctionTests.xml"/>
 	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
@@ -117,6 +119,10 @@
 					)
 					(print "Total Tests: " (fmtNumber totalTests))
 					(print "Failed Tests: " (fmtNumber totalFailures) "\n")
+
+					(if (gr totalFailures 0)
+						(error "One or more tests failed.")
+						)
 					)
 			</OnGlobalEndDiagnostics>
 		</Events>

@@ -730,6 +730,7 @@ class CSpaceObject
 		CSpaceObject *GetPlayerShip (void) const { return (m_pSystem ? m_pSystem->GetPlayerShip() : NULL); }
 		const CVector &GetPos (void) const { return m_vPos; }
 		CSovereign *GetSovereignToDefend (void) const;
+		DWORD GetSovereignUNID (void) const { CSovereign *pSovereign = GetSovereign(); return (pSovereign ? pSovereign->GetUNID() : 0); }
 		ICCItemPtr GetStaticData (const CString &sAttrib);
 		CG32bitPixel GetSymbolColor (void);
 		void GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *retList, CSpaceObject *pExcludeObj = NULL);
@@ -858,7 +859,7 @@ class CSpaceObject
 		void WriteToStream (IWriteStream *pStream);
 		void WriteObjRefToStream (CSpaceObject *pObj, IWriteStream *pStream) { GetSystem()->WriteObjRefToStream(pObj, pStream, this); }
 
-		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { return MatchesCriteria(CSpaceObjectCriteria::SCtx(Crit), Crit); }
+		bool MatchesCriteria (const CSpaceObjectCriteria &Crit) const { return MatchesCriteria(CSpaceObjectCriteria::SCtx(NULL, Crit), Crit); }
 		bool MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 		bool MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const;
 

@@ -165,9 +165,9 @@ class CAnyObjSelector
 class CCriteriaObjSelector
 	{
 	public:
-		CCriteriaObjSelector (const CSpaceObjectCriteria &Criteria) :
+		CCriteriaObjSelector (CSpaceObject *pSource, const CSpaceObjectCriteria &Criteria) :
 				m_Criteria(Criteria),
-				m_Ctx(m_Criteria)
+				m_Ctx(pSource, m_Criteria)
 			{ }
 
 		Metric GetMaxRange (void) const

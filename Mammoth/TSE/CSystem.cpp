@@ -465,7 +465,7 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 			{
 			vPos = TargetObj.GetPos() + ::PolarToVector(mathRandom(0, 359), rDistance);
 
-			if (FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA))
+			if (FindObjectInRange(NULL, vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA))
 					&& --iTries > 0)
 				continue;
 
@@ -493,7 +493,7 @@ CVector CSystem::CalcRandomEncounterPos (const CSpaceObject &TargetObj, Metric r
 			//	close to some other object, then skip.
 
 			if (((pPlayer->GetPos() - vPos).Length2() < MIN_PLAYER_SEPARATION2)
-					|| FindObjectInRange(vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA)))
+					|| FindObjectInRange(NULL, vPos, rSeparation, CSpaceObjectCriteria(SEPARATION_CRITERIA)))
 				{
 				if (--iTries > 0)
 					continue;
@@ -1869,7 +1869,7 @@ CSpaceObject *CSystem::FindObject (DWORD dwID) const
 	return NULL;
 	}
 
-CSpaceObject *CSystem::FindObjectInRange (const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
+CSpaceObject *CSystem::FindObjectInRange (CSpaceObject *pSource, const CVector &vCenter, Metric rRange, const CSpaceObjectCriteria &Criteria) const
 
 //	FindObjectInRange
 //
@@ -1882,7 +1882,7 @@ CSpaceObject *CSystem::FindObjectInRange (const CVector &vCenter, Metric rRange,
 
 	if (!Criteria.IsEmpty())
 		{
-		CCriteriaObjSelector Selector(Criteria);
+		CCriteriaObjSelector Selector(pSource, Criteria);
 		CNearestInRadiusRange Range(vCenter, rRange);
 
 		return CSpaceObjectEnum::FindObjInRange(*this, Range, Selector);

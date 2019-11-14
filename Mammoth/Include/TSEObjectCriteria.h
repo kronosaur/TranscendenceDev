@@ -25,17 +25,23 @@ class CSpaceObjectCriteria
 
 		struct SCtx
 			{
-			SCtx (const CSpaceObjectCriteria &Crit);
+			SCtx (CSpaceObject *pSourceArg, const CSpaceObjectCriteria &Crit);
 
-			//	Computed from criteria
-			Metric rMinRadius2;
-			Metric rMaxRadius2;
+			CSpaceObject *pSource;
+
+			//	Computed from source
+			DWORD dwSourceSovereignUNID;
+			int iSourcePerception;
 
 			//	Nearest/farthest object
+			bool bNearestOnly;
+			bool bFarthestOnly;
+
 			CSpaceObject *pBestObj;
 			Metric rBestDist2;
 
 			//	Sorted results
+			CriteriaSortTypes iSort;
 			TSortMap<Metric, CSpaceObject *> DistSort;
 
 			//	Temporaries
@@ -45,15 +51,13 @@ class CSpaceObjectCriteria
 
 		CSpaceObjectCriteria (void) { }
 		explicit CSpaceObjectCriteria (const CString &sCriteria);
-		CSpaceObjectCriteria (CSpaceObject *pSourceArg, const CString &sCriteria);
 
 		bool ExcludesIntangible (void) const { return !m_bIncludeIntangible; }
 		bool ExcludesPlayer (void) const { return m_bExcludePlayer; }
 		bool ExcludesVirtual (void) const { return !m_bIncludeVirtual; }
 		const CSpaceObjectCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
-		CriteriaSortTypes GetSort (void) const { return m_iSort; }
-		ESortOptions GetSortOrder (void) const { return m_iSortOrder; }
-		CSpaceObject *GetSource (void) const { return m_pSource; }
+		CriteriaSortTypes GetSort (void) const;
+		ESortOptions GetSortOrder (void) const;
 		bool HasORExpression (void) const { return (m_pOr ? true : false); }
 		void Init (const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(NULL, sCriteria); }
 		void Init (CSpaceObject *pSource, const CString &sCriteria) { *this = CSpaceObjectCriteria(); Parse(pSource, sCriteria); }
@@ -66,7 +70,7 @@ class CSpaceObjectCriteria
 		bool MatchesDockedWithSource (void) const { return m_bDockedWithSource; }
 		bool MatchesEnemyOnly (void) const { return m_bEnemyObjectsOnly; }
 		bool MatchesFartherThan (void) const { return m_bFartherThan; }
-		bool MatchesFarthestOnly (void) const { return m_bFarthestOnly; }
+		bool MatchesFarthestOnly (void) const { return (m_bFarthestOnly || (m_pOr && m_pOr->MatchesFarthestOnly())); }
 		bool MatchesFriendlyOnly (void) const { return m_bFriendlyObjectsOnly; }
 		bool MatchesHomeBaseIsSource (void) const { return m_bHomeBaseIsSource; }
 		int MatchesIntersectAngle (void) const { return m_iIntersectAngle; }
@@ -74,29 +78,32 @@ class CSpaceObjectCriteria
 		bool MatchesLevel (int iLevel) const;
 		bool MatchesManufacturedOnly (void) const { return m_bManufacturedObjectsOnly; }
 		Metric MatchesMaxRadius (void) const { return m_rMaxRadius; }
+		Metric MatchesMaxRadius2 (void) const { return m_rMaxRadius2; }
 		Metric MatchesMinRadius (void) const { return m_rMinRadius; }
+		Metric MatchesMinRadius2 (void) const { return m_rMinRadius2; }
 		bool MatchesNearerThan (void) const { return m_bNearerThan; }
-		bool MatchesNearestOnly (void) const { return m_bNearestOnly; }
+		bool MatchesNearestOnly (void) const { return (m_bNearestOnly || (m_pOr && m_pOr->MatchesNearestOnly())); }
 		bool MatchesOrder (const CSpaceObject *pSource, const CSpaceObject &Obj) const;
 		bool MatchesPerceivableOnly (void) const { return m_bPerceivableOnly; }
-		int MatchesPerception (void) const { return m_iPerception; }
 		bool MatchesPlayer (void) const { return m_bSelectPlayer; }
 		bool MatchesPosition (const CSpaceObject &Obj) const;
 		bool MatchesSovereign (CSovereign *pSovereign) const;
+		bool MatchesSourceSovereign (void) const { return m_bSourceSovereignOnly; }
 		bool MatchesStargate (const CString &sID) const { return (m_sStargateID.IsBlank() || strEquals(m_sStargateID, sID)); }
 		bool MatchesStargatesOnly (void) const { return m_bStargatesOnly; }
 		bool MatchesStructureScaleOnly (void) const { return m_bStructureScaleOnly; }
 		bool MatchesTargetIsSource (void) const { return m_bTargetIsSource; }
+		bool NeedsDistCalc (void) const { return (MatchesNearerThan() || MatchesFartherThan() || MatchesPerceivableOnly() || m_iSort == sortByDistance || (m_pOr && m_pOr->NeedsDistCalc()));  }
+		bool NeedsPolarCalc (void) const { return (MatchesIntersectAngle() != -1 || (m_pOr && m_pOr->NeedsPolarCalc())); }
+		bool NeedsSourcePerception (void) const { return (m_bPerceivableOnly || (m_pOr && m_pOr->NeedsSourcePerception())); }
+		bool NeedsSourceSovereign (void) const { return (m_bSourceSovereignOnly || (m_pOr && m_pOr->NeedsSourceSovereign())); }
 		void SetIncludeIntangible (bool bValue = true) { m_bIncludeIntangible = bValue; }
 		void SetLineIntersect (const CVector &vPos1, const CVector &vPos2) { m_iPosCheck = checkLineIntersect; m_vPos1 = vPos1; m_vPos2 = vPos2; }
 		void SetPosIntersect (const CVector &vPos) { m_iPosCheck = checkPosIntersect; m_vPos1 = vPos; }
-		void SetSource (CSpaceObject *pSource);
 
 	private:
 		void Parse (CSpaceObject *pSource, const CString &sCriteria);
 		void ParseSubExpression (const char *pPos);
-
-		CSpaceObject *m_pSource = NULL;				//	Source
 
 		DWORD m_dwCategories = 0;					//	Only these object categories
 		bool m_bSelectPlayer = false;				//	Select the player
@@ -120,7 +127,6 @@ class CSpaceObjectCriteria
 		bool m_bIncludeIntangible = false;			//	Include intangible objects
 
 		bool m_bPerceivableOnly = false;			//	Only objects that can be perceived by the source
-		int m_iPerception = 0;						//	Cached perception of pSource
 
 		bool m_bSourceSovereignOnly = false;		//	Only objects the same sovereign as source
 		DWORD m_dwSovereignUNID = 0;				//	Only objects with this sovereign UNID
@@ -128,7 +134,9 @@ class CSpaceObjectCriteria
 		CString m_sData;							//	Only objects with non-Nil data
 		CString m_sStargateID;						//	Only objects with this stargate ID (if non blank)
 		Metric m_rMinRadius = 0.0;					//	Only objects at or beyond the given radius
+		Metric m_rMinRadius2 = 0.0;
 		Metric m_rMaxRadius = g_InfiniteDistance;	//	Only objects within the given radius
+		Metric m_rMaxRadius2 = g_InfiniteDistance2;
 		int m_iIntersectAngle = -1;					//	Only objects that intersect line from source
 		IShipController::OrderTypes m_iOrder = IShipController::orderNone;	//	Only objects with this order
 
@@ -147,6 +155,7 @@ class CSpaceObjectCriteria
 
 		CriteriaSortTypes m_iSort = sortNone;
 		ESortOptions m_iSortOrder = AscendingSort;
+
 
 		TUniquePtr<CSpaceObjectCriteria> m_pOr;		//	OR sub-expression.
 
