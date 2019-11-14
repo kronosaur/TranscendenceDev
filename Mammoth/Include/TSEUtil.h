@@ -824,7 +824,7 @@ class CSpaceObjectList
 		void DeleteAll (void) { m_List.DeleteAll(); }
 		void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
 		void FastAdd (const CSpaceObjectList &List);
-		bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
+		bool FindObj (const CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(const_cast<CSpaceObject *>(pObj), retiIndex); }
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		CSpaceObject *GetRandomObj (void) const { return (m_List.GetCount() == 0 ? NULL : m_List[mathRandom(0, m_List.GetCount() - 1)]); }

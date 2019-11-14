@@ -428,6 +428,24 @@ void CSpaceObject::AddEventSubscriber (CSpaceObject *pObj)
 		m_SubscribedObjs.Add(pObj); 
 	}
 
+void CSpaceObject::AddEventSubscribers (const CSpaceObjectList &Objs)
+
+//	AddEventSubscribers
+//
+//	Adds the given set of objects as subscribers to our events. We check for
+//	duplicates before adding.
+
+	{
+	for (int i = 0; i < Objs.GetCount(); i++)
+		{
+		CSpaceObject *pObj = Objs.GetObj(i);
+		if (!pObj->IsDestroyed() 
+				&& pObj->NotifyOthersWhenDestroyed()
+				&& !FindEventSubscriber(*pObj))
+			m_SubscribedObjs.Add(pObj);
+		}
+	}
+
 EnhanceItemStatus CSpaceObject::AddItemEnhancement (const CItem &itemToEnhance, 
 													CItemType *pEnhancement, 
 													int iLifetime, 

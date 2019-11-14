@@ -857,6 +857,7 @@ class CSystem
 		void MarkImages (void);
 		void NameObject (const CString &sName, CSpaceObject &Obj);
 		CVector OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos);
+		void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options);
 		void OnStationDestroyed (SDestroyCtx &Ctx);
 		void PaintViewport (CG32bitImage &Dest, const RECT &rcView, CSpaceObject *pCenter, DWORD dwFlags, SViewportAnnotations *pAnnotations = NULL);
 		void PaintViewportGrid (CMapViewportCtx &Ctx, CG32bitImage &Dest, Metric rGridSize);

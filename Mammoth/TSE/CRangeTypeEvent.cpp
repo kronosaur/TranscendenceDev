@@ -171,6 +171,17 @@ bool CRangeTypeEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return false;
 	}
 
+void CRangeTypeEvent::OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options)
+
+//	OnPlayerChangedShips
+//
+//	Switch any references to the player ship.
+
+	{
+	if (m_pCenter == OldShip)
+		m_pCenter = &NewShip;
+	}
+
 void CRangeTypeEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)
 
 //	OnWriteToStream

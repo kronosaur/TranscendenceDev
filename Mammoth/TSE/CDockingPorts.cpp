@@ -1128,7 +1128,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 				&& pOwner->HasOnObjDockedEvent() 
 				&& pOwner != pShip
 				&& !pOwner->IsDestroyed()
-				&& pShip->IsSubscribedToEvents(pOwner))
+				&& pShip->FindEventSubscriber(*pOwner))
 			pOwner->FireOnObjDocked(pShip, pOwner);
 
 		//	Notify any overlays on the station that a ship docked.

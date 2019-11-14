@@ -3031,6 +3031,26 @@ CVector CSystem::OnJumpPosAdj (CSpaceObject *pObj, const CVector &vPos)
 	return vPos;
 	}
 
+void CSystem::OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options)
+
+//	OnPlayerChangedShips
+//
+//	Handle player changing ships.
+
+	{
+	for (int i = 0; i < GetObjectCount(); i++)
+		{
+		CSpaceObject *pObj = GetObject(i);
+		if (pObj 
+				&& !pObj->IsDestroyed()
+				&& pObj != OldShip
+				&& pObj != NewShip)
+			pObj->OnPlayerChangedShips(&OldShip, Options);
+		}
+
+	m_TimedEvents.OnPlayerChangedShips(OldShip, NewShip, Options);
+	}
+
 void CSystem::OnStationDestroyed (SDestroyCtx &Ctx)
 
 //	OnStationDestroyed

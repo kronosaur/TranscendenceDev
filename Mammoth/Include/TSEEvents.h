@@ -39,6 +39,7 @@ class CSystemEvent
 		virtual CDesignType *GetEventHandlerType (void) { return NULL; }
 		virtual bool OnObjChangedSystems (CSpaceObject *pObj) { return false; }
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) { return false; }
+		virtual void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options) { }
 		virtual bool OnStationDestroyed (CSpaceObject *pObj) { return false; }
 
 	protected:
@@ -65,6 +66,7 @@ class CSystemEventList
 		inline CSystemEvent *GetEvent (int iIndex) const { return m_List[iIndex]; }
 		inline void MoveEvent (int iIndex, CSystemEventList &Dest) { Dest.AddEvent(m_List[iIndex]); m_List.Delete(iIndex); }
 		void OnObjDestroyed (CSpaceObject *pObj);
+		void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options);
 		void OnStationDestroyed (CSpaceObject *pObj);
 		void ReadFromStream (SLoadCtx &Ctx);
 		inline void RemoveEvent (int iIndex) { delete m_List[iIndex]; m_List.Delete(iIndex); }

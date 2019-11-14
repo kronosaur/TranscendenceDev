@@ -515,6 +515,20 @@ class CSpaceObject
 		bool HasDefaultDockScreen (void) const { return (GetDefaultDockScreen() != NULL); }
 		bool HasDockScreen (void) const;
 
+		//	Events
+
+		void AddEventSubscriber (CSpaceObject *pObj);
+		void AddEventSubscribers (const CSpaceObjectList &Objs);
+		bool FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent = NULL) const;
+		bool FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const;
+		bool FindEventSubscriber (const CSpaceObject &Obj) const { return m_SubscribedObjs.FindObj(&Obj); }
+		const CSpaceObjectList &GetEventSubscribers (void) const { return m_SubscribedObjs; }
+		void RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> *retRemoved = NULL);
+		void RemoveAllEventSubscribers (void) { m_SubscribedObjs.DeleteAll(); }
+		void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Delete(pObj); }
+		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
+		void SetEventFlags (void);
+
 		//	Fuel
 
 		virtual void ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse = CReactorDesc::fuelConsume) { }
@@ -584,7 +598,6 @@ class CSpaceObject
 		//	Miscellaneous
 
 		void AddEffect (IEffectPainter *pPainter, const CVector &vPos, int iTick = 0, int iRotation = 0);
-		void AddEventSubscriber (CSpaceObject *pObj);
 		bool Blocks (CSpaceObject *pObj) { return (m_fIsBarrier && CanBlock(pObj)); }
 		bool BlocksShips (void) { return (m_fIsBarrier && CanBlockShips()); }
 		int CalcFireSolution (CSpaceObject *pTarget, Metric rMissileSpeed) const;
@@ -613,9 +626,6 @@ class CSpaceObject
 		int FindCommsMessage (const CString &sID);
 		int FindCommsMessageByName (const CString &sName);
 		bool FindDevice (const CItem &Item, CInstalledDevice **retpDevice, CString *retsError);
-		bool FindEventHandler (const CString &sEntryPoint, SEventHandlerDesc *retEvent = NULL) const;
-		bool FindEventHandler (CDesignType::ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const;
-		bool FindEventSubscriber (CSpaceObject *pObj) { return m_SubscribedObjs.FindObj(pObj); }
 		bool FireCanDockAsPlayer (CSpaceObject *pDockTarget, CString *retsError);
 		bool FireCanInstallItem (const CItem &Item, int iSlot, CString *retsResult);
 		bool FireCanRemoveItem (const CItem &Item, int iSlot, CString *retsResult);
@@ -787,7 +797,6 @@ class CSpaceObject
 		bool IsSelected (void) const { return m_fSelected; }
 		bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
 		bool IsStargateInRange (Metric rMaxRange);
-		bool IsSubscribedToEvents (CSpaceObject *pObj) const { return m_SubscribedObjs.FindObj(pObj); }
 		bool IsUnderAttack (void);
 		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
@@ -808,9 +817,6 @@ class CSpaceObject
 					&& (vLL.GetX() < m_vPos.GetX())
 					&& (vLL.GetY() < m_vPos.GetY()); }
 		void Reconned (void);
-		void RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> *retRemoved = NULL);
-		void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Delete(pObj); }
-		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 		void RestartTime (void) { m_fTimeStop = false; }
 		void SetCollisionTestNeeded (bool bNeeded = true) { m_fCollisionTestNeeded = bNeeded; }
 		void SetData (const CString &sAttrib, ICCItem *pData) { m_Data.SetData(sAttrib, pData); }
@@ -818,7 +824,6 @@ class CSpaceObject
 		void SetDataFromXML (CXMLElement *pData) { m_Data.SetFromXML(pData); }
 		void SetDataInteger (const CString &sAttrib, int iValue);
 		void SetDestructionNotify (bool bNotify = true) { m_fNoObjectDestructionNotify = !bNotify; }
-		void SetEventFlags (void);
 		void SetHasGetDockScreenEvent (bool bHasEvent) { m_fHasGetDockScreenEvent = bHasEvent; }
 		void SetHasOnAttackedEvent (bool bHasEvent) { m_fHasOnAttackedEvent = bHasEvent; }
 		void SetHasOnAttackedByPlayerEvent (bool bHasEvent) { m_fHasOnAttackedByPlayerEvent = bHasEvent; }

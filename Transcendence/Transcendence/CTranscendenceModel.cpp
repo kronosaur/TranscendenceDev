@@ -1542,8 +1542,6 @@ void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceOb
 //	Handle the player changing ships.
 
 	{
-	int i;
-
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return;
@@ -1569,18 +1567,8 @@ void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceOb
 
 	CSystem *pSystem = m_Universe.GetCurrentSystem();
 	ASSERT(pSystem);
-	if (pSystem == NULL)
-		return;
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-		if (pObj 
-				&& !pObj->IsDestroyed()
-				&& pObj != pOldShip
-				&& pObj != pNewShip)
-			pObj->OnPlayerChangedShips(pOldShip, Options);
-		}
+	if (pSystem)
+		pSystem->OnPlayerChangedShips(*pOldShip, *pNewShip, Options);
 	}
 
 void CTranscendenceModel::OnPlayerDestroyed (SDestroyCtx &Ctx, CString *retsEpitaph)

@@ -2844,6 +2844,11 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	pNewShip->TrackFuel();
 	pNewShip->TrackMass();
 
+	//	Transfer event registrations
+
+	pNewShip->AddEventSubscribers(pOldShip->GetEventSubscribers());
+	pOldShip->RemoveAllEventSubscribers();
+
 	//	Reset all other settings
 
 	SetTarget(NULL);
