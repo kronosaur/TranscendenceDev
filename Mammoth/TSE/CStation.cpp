@@ -2044,7 +2044,7 @@ bool CStation::IsShownInGalacticMap (void) const
 	//	overrides, because sometimes the object just hides the map label to keep
 	//	the map clean (not because it is not an interesting station).
 
-    if (!m_pType->ShowsMapIcon() || !m_pType->SuppressMapLabel())
+    if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
         return false;
 
     //  Skip stargates, which we don't need to show in the details pane

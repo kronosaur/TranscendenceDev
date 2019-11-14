@@ -83,14 +83,15 @@
 	<StationType UNID="&stBattleArena;"
 			name=				"Battle Arena Maximus"
 			sovereign=			"&svCorporate;"
-			level=				"2"
-				 
-			attributes=			"battleArena, battleArenaMaximus, battleArenaSegment, corporate, corporateCustoms, corporateDecon, friendly, generic, human, majorStation, populated"
-				 
-			dockScreen=			"Main"
 			inherit=			"&unidCommonText;"
+
+			attributes=			"battleArena, battleArenaMaximus, battleArenaSegment, corporate, corporateCustoms, corporateDecon, friendly, generic, human, majorStation, populated"
+
+			dockScreen=			"Main"
 			defaultBackgroundID="&rsBattleArenaBkgnd;"
 				 
+			level=				"5"
+			size=				"5000"
 			barrier=			"true"
 			barrierEffect=		"&efBattleArenaWallHit;"
 			canAttack=			"true"

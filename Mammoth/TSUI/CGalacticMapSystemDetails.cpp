@@ -470,9 +470,9 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
 		else
 			iDispSort = 3;
 
-        //  Higher level stations go first
+        //  Higher level stations go first (but only for enemy stations)
 
-        int iLevelSort = (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel());
+        int iLevelSort = (iDispSort == 1 ? 0 : (MAX_ITEM_LEVEL + 1 - Objs[i].pType->GetLevel()));
 
 		//	Size is next
 
