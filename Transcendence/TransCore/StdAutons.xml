@@ -748,14 +748,7 @@
 					(block (
 						;	Look for the nearest unknown object
 						
-						(targetObj (@
-							(filter (sysFindObject gSource "Ts -uncharted; S:d;") theObj
-								(and (not (objIsKnown theObj))
-										(objGetProperty theObj 'hasDockingPorts)
-										(or (objGetProperty theObj 'canBeAttacked) (objMatches theObj gSource "G"))
-										)
-								)
-							0))
+						(targetObj (ObjFireEvent gSource 'GetExploreTarget))
 						)
 						
 						(switch
@@ -781,6 +774,10 @@
 		</Communications>
 
 		<Events>
+			<GetExploreTarget>
+				(sysFindObject gSource "NsT +property:showMapLabel; -property:known; -uncharted;")
+			</GetExploreTarget>
+			
 			<OnOrdersCompleted>
 				(block (behavior theTarget)
 					(setq behavior (objGetData gSource 'behavior))
@@ -794,14 +791,7 @@
 								
 								;	Look for the nearest unknown object
 						
-								(targetObj (@
-									(filter (sysFindObject gSource "Ts -uncharted; S:d;") theObj
-										(and (not (objIsKnown theObj))
-												(objGetProperty theObj 'hasDockingPorts)
-												(or (objCanAttack theObj) (objMatches theObj gSource "G"))
-												)
-										)
-									0))
+								(targetObj (ObjFireEvent gSource 'GetExploreTarget))
 								)
 								
 								;	Explore object
