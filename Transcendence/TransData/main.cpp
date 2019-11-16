@@ -45,6 +45,7 @@
 #define PERF_TEST_SWITCH					CONSTLIT("perftest")
 #define RANDOM_ITEMS_SWITCH					CONSTLIT("randomitems")
 #define RANDOM_NUMBER_TEST					CONSTLIT("randomnumbertest")
+#define REFERENCE_SWITCH					CONSTLIT("reference")
 #define RUN_SWITCH							CONSTLIT("run")
 #define RUN_FILE_SWITCH						CONSTLIT("runFile")
 #define SHIELD_TEST_SWITCH					CONSTLIT("shieldtest")
@@ -408,6 +409,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateWeaponEffectChart(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(WORLD_IMAGES_SWITCH))
 		GenerateWorldImageChart(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(REFERENCE_SWITCH))
+		GenerateReference(Universe, pCmdLine);
 	else
 		GenerateStats(Universe, pCmdLine);
 

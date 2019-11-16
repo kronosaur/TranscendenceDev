@@ -366,7 +366,7 @@
 						}))
 					(if (gr (count text) 46)
 						(setq text (cat (subset text 0 45)
-										(typTranslate &unidCommonText; 'elipsis)
+										(typTranslate &unidCommonText; 'ellipsis)
 							))
 						)
 					text
