@@ -74,7 +74,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"10"
 
 				effect=				"&efLaserBeamDefault;"

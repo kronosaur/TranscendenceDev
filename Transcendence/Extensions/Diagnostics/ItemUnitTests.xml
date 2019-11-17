@@ -194,6 +194,28 @@
 						{	test:'(itmGetProperty 
 									(itmSetProperty (itmCreate &itWeaponSpeedROM; 1) 'unknownTypeIndex 1)
 									'known)													result:Nil	}
+
+						;	Weapon Speed, Range, and Lifetime
+
+						{	test:'(itmGetProperty &itLaserCannon; 'lifetime)				result:30	}
+						{	test:'(itmGetProperty &itLaserCannon; 'speed)					result:100	}
+						{	test:'(itmGetProperty &itLaserCannon; 'range)					result:60	}
+
+						{	test:'(itmGetProperty &itRecoillessCannon; 'lifetime)			result:60	}
+						{	test:'(itmGetProperty &itRecoillessCannon; 'speed)				result:40	}
+						{	test:'(itmGetProperty &itRecoillessCannon; 'range)				result:48	}
+
+						{	test:'(itmGetProperty &itOracusHarassPower; 'lifetime)			result:40	}
+						{	test:'(itmGetProperty &itOracusHarassPower; 'speed)				result:0	}
+						{	test:'(itmGetProperty &itOracusHarassPower; 'range)				result:12	}
+
+						{	test:'(itmGetProperty &itMorningStarCannon; 'lifetime)			result:60	}
+						{	test:'(itmGetProperty &itMorningStarCannon; 'speed)				result:40	}
+						{	test:'(itmGetProperty &itMorningStarCannon; 'range)				result:48	}
+
+						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'lifetime)		result:3	}
+						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'speed)		result:1000	}
+						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'range)		result:60	}
 						))
 
 					;	Unit Tests on Armor Damage

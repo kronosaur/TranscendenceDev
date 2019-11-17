@@ -64,6 +64,7 @@ inline int AngleBearing (int iDir, int iTarget)
 	else
 		return iBearing;
 	}
+inline int Seconds2Ticks (Metric rSeconds) { return mathRound(rSeconds / g_SecondsPerUpdate); }
 inline Metric Ticks2Seconds (int iTicks) { return (Metric)iTicks * g_SecondsPerUpdate; }
 
 //	Debugging Support

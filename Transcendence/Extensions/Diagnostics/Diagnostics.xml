@@ -16,6 +16,7 @@
 	<!ENTITY itTestDriveDualSlot		"0xA0010040">
 	<!ENTITY itTestArmorScaled			"0xA0010041">
 	<!ENTITY itTestWeaponScaled			"0xA0010042">
+	<!ENTITY itTestWeaponRelativistic	"0xA0010043">
 
 	<!-- 0080-00BF TEST FUNCTIONS -->
 

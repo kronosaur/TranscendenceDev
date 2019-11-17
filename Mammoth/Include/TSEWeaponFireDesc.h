@@ -558,12 +558,16 @@ class CWeaponFireDesc
         CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
         Metric CalcMaxEffectiveRange (void) const;
-		Metric CalcSpeed (Metric rPercentOfLight) const;
+		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
         SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
+		bool InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+		bool InitMissileSpeed (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
+
+		static bool LoadFireType (const CString &sValue, FireTypes *retiFireType = NULL);
 
 		CExtension *m_pExtension = NULL;		//	Extension that defines the weaponfiredesc
 		CString m_sUNID;						//	Identification. The format is
