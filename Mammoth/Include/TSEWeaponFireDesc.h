@@ -557,12 +557,15 @@ class CWeaponFireDesc
 		CWeaponFireDesc (const CWeaponFireDesc &Desc) = delete;
         CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
+		int CalcDefaultHitPoints (void) const;
+		int CalcDefaultInteraction (void) const;
         Metric CalcMaxEffectiveRange (void) const;
 		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
         SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
+		bool InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
 		bool InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
 		bool InitMissileSpeed (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
@@ -662,9 +665,18 @@ class CWeaponFireDesc
         DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
         DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
         DWORD m_fTargetable:1;					//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
-        DWORD m_fSpare8:1;
+        DWORD m_fDefaultInteraction:1;			//	If TRUE, compute default interaction at bind-time.
 
-		DWORD m_dwSpare:16;
+		DWORD m_fDefaultHitPoints:1;			//	If TRUE, computer hit points at bind-time.
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
         static SOldEffects m_NullOldEffects;
 	};

@@ -104,12 +104,16 @@
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
+#define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
+#define PROPERTY_STD_HP							CONSTLIT("stdHP")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
 
-const Metric DEFAULT_FRAG_THRESHOLD =			4.0;	//	4 light-seconds (~95 pixels)
+static constexpr Metric DEFAULT_FRAG_THRESHOLD =		4.0;	//	4 light-seconds (~95 pixels)
+static constexpr Metric HP_ARMOR_RATIO =				0.1;	//	Ammo HP per standard armor HP of same level
+static constexpr Metric STD_AMMO_MASS =					10.0;	//	Standard ammo mass (in kg)
 
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
@@ -197,6 +201,47 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 			pMissile->SetVel(pMissile->GetVel() * (Metric)(m_iAccelerationFactor / 100.0));
 		}
     }
+
+int CWeaponFireDesc::CalcDefaultHitPoints (void) const
+
+//	CalcDefaultHitPoints
+//
+//	Computes default hit points.
+
+	{
+	//	Ammo items get hit points proportional to level and mass.
+
+	if (m_pAmmoType)
+		{
+		CItem AmmoItem(m_pAmmoType, 1);
+		Metric rStdHP = HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
+		Metric rMassAdj = AmmoItem.GetMassKg() / STD_AMMO_MASS;
+
+		return mathRound(rMassAdj * rStdHP);
+		}
+
+	//	Otherwise, no hit points.
+
+	else
+		return 0;
+	}
+
+int CWeaponFireDesc::CalcDefaultInteraction (void) const
+
+//	CalcDefaultInteraction
+//
+//	Computes the default interaction.
+
+	{
+	if (m_iFireType == ftBeam)
+		return 0;
+	else if (m_iFireType == ftMissile)
+		{
+		return 100;
+		}
+	else
+		return 0;
+	}
 
 Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 
@@ -669,8 +714,14 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	//	We handle some properties
 
-	if (strEquals(sProperty, PROPERTY_LIFETIME))
+	if (strEquals(sProperty, PROPERTY_INTERACTION))
+		return CC.CreateInteger(GetInteraction());
+
+	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
+
+	else if (strEquals(sProperty, PROPERTY_STD_HP))
+		return CC.CreateInteger(CalcDefaultHitPoints());
 
 	else if (strEquals(sProperty, PROPERTY_TRACKING))
 		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
@@ -1612,6 +1663,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_iHitPoints = 0;
 	m_iInteraction = 0;
+	m_fDefaultHitPoints = false;
+	m_fDefaultInteraction = false;
 
 	//	We initialize this with the UNID, and later resolve the reference
 	//	during OnDesignLoadComplete
@@ -1762,10 +1815,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
-	//	Initialize some variables not used by all types
+	//	Initialize interaction and hit points
 
-	m_iHitPoints = 0;
-    m_iInteraction = 100;
+	if (!InitHitPoints(Ctx, *pDesc))
+		return ERR_FAIL;
 
 	//	Load specific properties
 
@@ -1793,15 +1846,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			m_fDirectional = pDesc->GetAttributeBool(DIRECTIONAL_ATTRIB);
 			if (m_fDirectional && m_pEffect)
 				m_pEffect->SetVariants(g_RotationRange);
-
-			//	Hit points and interaction
-
-			m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
-			CString sInteraction;
-			if (pDesc->FindAttribute(INTERACTION_ATTRIB, &sInteraction))
-				m_iInteraction = strToInt(sInteraction, 100);
-			else
-				m_iInteraction = (m_iFireType == ftBeam ? 0 : 100);
 
 			//	Load exhaust data
 
@@ -2146,6 +2190,42 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	return NOERROR;
 	}
 
+bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
+
+//	InitHitPoints
+//
+//	Initializes:
+//
+//	m_iInteraction
+//	m_iHitPoints
+//	m_fDefaultInteraction
+//	m_fDefaultHitPoints
+
+	{
+	//	Beams and missiles get non-zero interaction and hit points.
+
+	if (m_iFireType == ftBeam || m_iFireType == ftMissile)
+		{
+		m_iHitPoints = XMLDesc.GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, -1);
+		m_fDefaultHitPoints = (m_iHitPoints == -1);
+
+		m_iInteraction = XMLDesc.GetAttributeIntegerBounded(INTERACTION_ATTRIB, 0, 100, -1);
+		m_fDefaultInteraction = (m_iInteraction == -1);
+		}
+
+	//	Otherwise, none
+
+	else
+		{
+		m_iHitPoints = 0;
+		m_iInteraction = 100;
+		m_fDefaultHitPoints = false;
+		m_fDefaultInteraction = false;
+		}
+
+	return true;
+	}
+
 bool CWeaponFireDesc::InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
 
 //	InitLifetime
@@ -2383,6 +2463,9 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_fFragment = Src.m_fFragment;
     m_fProximityBlast = Src.m_fProximityBlast;
 	m_FragInterval = Src.m_FragInterval;
+	m_fTargetable = Src.m_fTargetable;
+	m_fDefaultInteraction = Src.m_fDefaultInteraction;
+	m_fDefaultHitPoints = Src.m_fDefaultHitPoints;
 
     m_pEffect = Src.m_pEffect;
     m_pHitEffect = Src.m_pHitEffect;
@@ -2570,6 +2653,12 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	if (error = m_pExplosionType.Bind(Ctx))
 		return error;
+
+	if (m_fDefaultHitPoints)
+		m_iHitPoints = CalcDefaultHitPoints();
+
+	if (m_fDefaultInteraction)
+		m_iInteraction = CalcDefaultInteraction();
 
 	//	Fragment
 
