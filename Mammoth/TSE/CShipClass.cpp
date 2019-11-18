@@ -1784,7 +1784,7 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(serviceInstallDevice) : -1);
+		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(GetUniverse(), serviceInstallDevice) : -1);
 		*retsValue = (iMaxLevel != -1 ? strFromInt(iMaxLevel) : NULL_STR);
 		}
 	else if (strEquals(sField, FIELD_MANUFACTURER))
@@ -1953,7 +1953,10 @@ bool CShipClass::FindDataField (const CString &sField, CString *retsValue) const
 		*retsValue = strFromInt(10 * iRatio);
 		}
 	else if (strEquals(sField, FIELD_TREASURE_VALUE))
-		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(GetLevel())) : 0);
+		{
+		SItemAddCtx AddItemCtx(GetUniverse());
+		*retsValue = strFromInt(m_pItems ? (int)(m_pItems->GetAverageValue(AddItemCtx, GetLevel())) : 0);
+		}
 
 	else if (strEquals(sField, FIELD_WRECK_CHANCE))
 		*retsValue = strFromInt(m_WreckDesc.GetWreckChance());
@@ -3224,26 +3227,26 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Bind sovereign
 
 	if (error = m_pDefaultSovereign.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Image
 
 	if (error = m_Image.OnDesignLoadComplete(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     if (error = m_HeroImage.OnDesignLoadComplete(Ctx))
-        goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Now that we have the image we can bind the rotation desc, because it needs
 	//	the rotation count, etc.
 
 	if (error = m_RotationDesc.Bind(Ctx, m_Image.GetSimpleImage()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Thruster effects
 
 	if (error = m_Effects.Bind(Ctx, m_Image.GetSimpleImage()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Drive images
 
@@ -3254,7 +3257,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 		m_ExhaustImage.SetRotationCount(iRotationCount);
 		if (error = m_ExhaustImage.OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 		for (i = 0; i < m_Exhaust.GetCount(); i++)
 			m_Exhaust[i].PosCalc.InitComplete(iRotationCount, iScale, 180);
@@ -3263,31 +3266,31 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Hull
 
 	if (error = m_Hull.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     if (error = m_Armor.Bind(Ctx))
-        goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_WreckDesc.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	More
 
 	if (error = m_EventHandler.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_Character.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_CharacterClass.Bind(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (error = m_pDefaultScreen.Bind(Ctx, GetLocalScreens()))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pTrade)
 		if (error = m_pTrade->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	If we own the player settings, then bind them. Otherwise, we clear the
     //  pointer so that we can resolve at run-time.
@@ -3298,7 +3301,7 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
     if (m_fOwnPlayerSettings)
         {
 		if (error = m_pPlayerSettings->Bind(Ctx, this))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
         }
     else
         m_pPlayerSettings = NULL;
@@ -3317,21 +3320,21 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	if (m_pItems)
 		if (error = m_pItems->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pDeviceSlots)
 		if (error = m_pDeviceSlots->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	if (m_pDevices)
 		if (error = m_pDevices->OnDesignLoadComplete(Ctx))
-			goto Fail;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Escorts
 
 	if (m_pEscorts)
 		if (error = m_pEscorts->OnDesignLoadComplete(Ctx))
-			return error;
+			return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Generate an average set of devices.
 	//
@@ -3366,37 +3369,11 @@ ALERROR CShipClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Bind structures
 
 	if (error = m_Interior.BindDesign(Ctx))
-		goto Fail;
+		return ComposeLoadError(Ctx, Ctx.sError);
 
     //  Compute performance based on average devices
 
     CalcPerformance();
-
-	return NOERROR;
-
-Fail:
-
-	return ComposeLoadError(Ctx, Ctx.sError);
-	}
-
-ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
-
-//	OnFinishBindDesign
-//
-//	All types bound.
-
-	{
-	if (m_pItems)
-		if (ALERROR error = m_pItems->FinishBind(Ctx))
-			return error;
-
-	if (m_pDeviceSlots)
-		if (ALERROR error = m_pDeviceSlots->FinishBind(Ctx))
-			return error;
-
-	if (m_pDevices)
-		if (ALERROR error = m_pDevices->FinishBind(Ctx))
-			return error;
 
 	//	Compute score and level
 
@@ -3440,8 +3417,6 @@ ALERROR CShipClass::OnFinishBindDesign (SDesignLoadCtx &Ctx)
 			&& m_Hull.HasArmorLimits()
 			&& m_Hull.GetArmorLimits().CanInstallArmor(CItem(m_Armor.GetSegment(0).GetArmorClass()->GetItemType(), 1)) != CArmorLimits::resultOK)
 		::kernelDebugLogPattern("WARNING: %s armor not compatible with ship class %s (%08x)", m_Armor.GetSegment(0).GetArmorClass()->GetName(), GetNounPhrase(), GetUNID());
-
-	//	Done
 
 	return NOERROR;
 	}

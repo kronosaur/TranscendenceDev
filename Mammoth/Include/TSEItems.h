@@ -569,18 +569,36 @@ class CItemCtx
 
 struct SItemAddCtx
 	{
-	SItemAddCtx (CItemListManipulator &theItemList) : 
-			ItemList(theItemList)
+	SItemAddCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg),
+			m_Internal(CItemList::Null()),
+			ItemList(m_Internal)
 		{ }
 
-	CUniverse &GetUniverse (void) { return *g_pUniverse; }
+	SItemAddCtx (CUniverse &UniverseArg, CItemListManipulator &ItemListArg) :
+			Universe(UniverseArg),
+			ItemList(ItemListArg),
+			m_Internal(CItemList::Null())
+		{ }
 
+	SItemAddCtx (CItemListManipulator &theItemList) : 
+			Universe(*g_pUniverse),
+			ItemList(theItemList),
+			m_Internal(CItemList::Null())
+		{ }
+
+	CUniverse &GetUniverse (void) { return Universe; }
+
+	CUniverse &Universe;
 	CItemListManipulator &ItemList;				//	Item list to add items to
 
 	CSystem *pSystem = NULL;					//	System where we're creating items
 	CSpaceObject *pDest = NULL;					//	Object to add to (may be NULL)
 	CVector vPos;								//	Position to use (for LocationCriteriaTable)
 	int iLevel = 1;								//	Level to use for item create (for LevelTable)
+
+	private:
+		CItemListManipulator m_Internal;
 	};
 
 class CItemTypeProbabilityTable
@@ -606,16 +624,16 @@ class IItemGenerator
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
 		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
-		static ALERROR CreateRandomItemTable (const CItemCriteria &Crit, 
+		static ALERROR CreateRandomItemTable (CUniverse &Universe,
+											  const CItemCriteria &Crit, 
 											  const CString &sLevelFrequency,
 											  IItemGenerator **retpGenerator);
 
 		virtual ~IItemGenerator (void) { }
 		virtual void AddItems (SItemAddCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
-		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
-		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) { return 0; }
+		virtual CCurrencyAndValue GetDesiredValue (SItemAddCtx &Ctx, int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual CItemType *GetItemType (int iIndex) { return NULL; }

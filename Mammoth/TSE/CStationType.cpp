@@ -659,7 +659,10 @@ Metric CStationType::CalcTreasureValue (int iLevel) const
 	Metric rTotal = 0.0;
 
 	if (m_pItems)
-		rTotal += m_pItems->GetAverageValue(iLevel);
+		{
+		SItemAddCtx AddItemCtx(GetUniverse());
+		rTotal += m_pItems->GetAverageValue(AddItemCtx, iLevel);
+		}
 
 	if (m_pSatellitesDesc)
 		rTotal += CalcSatelliteTreasureValue(m_pSatellitesDesc, iLevel);
@@ -746,7 +749,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		*retsValue = strFromInt(CalcHitsToDestroy(GetLevel()));
 	else if (strEquals(sField, FIELD_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(serviceInstallDevice) : -1);
+		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(GetUniverse(), serviceInstallDevice) : -1);
 		*retsValue = (iMaxLevel != -1 ? strFromInt(iMaxLevel) : NULL_STR);
 		}
 
@@ -1741,36 +1744,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ALERROR CStationType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
-
-//	OnFinishBindDesign
-//
-//	Do stuff after all types bound
-
-	{
-	if (m_pItems)
-		if (ALERROR error = m_pItems->FinishBind(Ctx))
-			return error;
-
-	if (m_pInitialShips)
-		if (ALERROR error = m_pInitialShips->FinishBind(Ctx))
-			return error;
-
-	if (m_pReinforcements)
-		if (ALERROR error = m_pReinforcements->FinishBind(Ctx))
-			return error;
-
-	if (m_pConstruction)
-		if (ALERROR error = m_pConstruction->FinishBind(Ctx))
-			return error;
-
-	if (m_pEncounters)
-		if (ALERROR error = m_pEncounters->FinishBind(Ctx))
-			return error;
-
-	return NOERROR;
-	}
-
 ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
@@ -1816,7 +1789,8 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		CCurrencyAndValue Value = m_pItems->GetDesiredValue(GetLevel());
+		SItemAddCtx AddItemCtx(GetUniverse());
+		CCurrencyAndValue Value = m_pItems->GetDesiredValue(AddItemCtx, GetLevel());
 		if (Value.IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
@@ -1828,8 +1802,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
+		SItemAddCtx AddItemCtx(GetUniverse());
 		int iLoopCount;
-		if (m_pItems->GetDesiredValue(GetLevel(), &iLoopCount).IsEmpty())
+		if (m_pItems->GetDesiredValue(AddItemCtx, GetLevel(), &iLoopCount).IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(iLoopCount);
@@ -1840,8 +1815,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
+		SItemAddCtx AddItemCtx(GetUniverse());
 		Metric rScale;
-		if (m_pItems->GetDesiredValue(GetLevel(), NULL, &rScale).IsEmpty())
+		if (m_pItems->GetDesiredValue(AddItemCtx, GetLevel(), NULL, &rScale).IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(rScale);

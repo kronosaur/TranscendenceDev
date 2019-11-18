@@ -644,7 +644,7 @@ int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
 	if (pTradeOverride)
 		{
-		int iLevel = pTradeOverride->GetMaxLevelMatched(iService);
+		int iLevel = pTradeOverride->GetMaxLevelMatched(GetUniverse(), iService);
 		if (iLevel > iMaxLevel)
 			iMaxLevel = iLevel;
 		}
@@ -655,7 +655,7 @@ int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
 	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
 	if (pTrade)
 		{
-		int iLevel = pTrade->GetMaxLevelMatched(iService);
+		int iLevel = pTrade->GetMaxLevelMatched(GetUniverse(), iService);
 		if (iLevel > iMaxLevel)
 			iMaxLevel = iLevel;
 		}
@@ -673,14 +673,14 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingD
 	//	See if we have an override
 
 	CTradingDesc *pTradeOverride = GetTradeDescOverride();
-	if (pTradeOverride && pTradeOverride->HasService(iService, Options))
+	if (pTradeOverride && pTradeOverride->HasService(GetUniverse(), iService, Options))
 		return true;
 
 	//	Ask base type
 
 	CDesignType *pType = GetType();
 	CTradingDesc *pTrade = (pType ? pType->GetTradingDesc() : NULL);
-	if (pTrade && pTrade->HasService(iService, Options))
+	if (pTrade && pTrade->HasService(GetUniverse(), iService, Options))
 		return true;
 
 	//	No service

@@ -212,7 +212,6 @@ class CDeviceClass
 		bool CanBeDamaged (void) const { return (!m_fDeviceDamageImmune && (m_fCanBeDamagedOverride || OnCanBeDamaged())); }
 		bool CanBeDisabled (CItemCtx &Ctx) const { return m_fCanBeDisabledOverride || OnCanBeDisabled(Ctx); }
 		bool CanBeDisrupted (void) const { return (!m_fDeviceDisruptImmune && (m_fCanBeDisruptedOverride || OnCanBeDisrupted())); }
-        ALERROR FinishBind (SDesignLoadCtx &Ctx) { return OnFinishBind(Ctx); }
 		CEffectCreator *FindEffectCreator (const CString &sUNID) { return OnFindEffectCreator(sUNID); }
 		bool FindEventHandlerDeviceClass (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{ 
@@ -243,6 +242,7 @@ class CDeviceClass
 		inline DWORD GetUNID (void);
 		void MarkImages (void) { DEBUG_TRY OnMarkImages(); DEBUG_CATCH }
 		bool OnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker);
+		ALERROR PrepareBind (SDesignLoadCtx &Ctx) { return OnPrepareBind(Ctx); }
 
 		virtual bool AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip, SDamageCtx &Ctx) { Ctx.iAbsorb = 0; return false; }
 		virtual bool AbsorbsWeaponFire (CInstalledDevice *pDevice, CSpaceObject *pSource, CInstalledDevice *pWeapon) { return false; }
@@ -340,9 +340,9 @@ class CDeviceClass
 		virtual bool OnCanBeDisrupted(void) const { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
-		virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
         virtual Metric OnGetScaledCostAdj (CItemCtx &Ctx) const;
 		virtual void OnMarkImages (void) { }
+		virtual ALERROR OnPrepareBind (SDesignLoadCtx &Ctx) { return NOERROR; }
 
 	private:
 		CItemType *m_pItemType;					//	Item for device
@@ -440,7 +440,6 @@ class IDeviceGenerator
 		virtual void AddDevices (SDeviceGenerateCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual Metric CalcHullPoints (void) const { return 0.0; }
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual IDeviceGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }

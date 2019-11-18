@@ -218,9 +218,9 @@ class CDesignType
 
 		ALERROR BindDesign (SDesignLoadCtx &Ctx);
 		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const;
-		ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return OnFinishBindDesign(Ctx); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsOverride = false);
+		bool IsBound (void) const { return m_bBindCalled; }
 		bool IsIncluded (DWORD dwAPIVersion, const TArray<DWORD> &ExtensionsIncluded) const;
 		bool IsNull (void) const { return (m_dwUNID == 0); }
 		bool MatchesCriteria (const CDesignTypeCriteria &Criteria);
@@ -228,7 +228,7 @@ class CDesignType
 		void PrepareReinit (void) { OnPrepareReinit(); }
 		void ReadFromStream (SUniverseLoadCtx &Ctx);
 		void Reinit (void);
-		void UnbindDesign (void) { m_pInheritFrom = NULL; OnUnbindDesign(); }
+		void UnbindDesign (void) { m_pInheritFrom = NULL; m_bBindCalled = false; OnUnbindDesign(); }
 		void WriteToStream (IWriteStream *pStream);
 
 		void AddExternals (TArray<CString> *retExternals) { OnAddExternals(retExternals); }
@@ -380,7 +380,6 @@ class CDesignType
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) { return NULL; }
 		virtual bool OnFindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const { return false; }
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual const CEconomyType &OnGetDefaultCurrency (void) const;
 		virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const { return NULL_STR; }
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const { return NULL; }
@@ -442,6 +441,7 @@ class CDesignType
 		TUniquePtr<SExtra> m_pExtra;					//	Extra type stuff (not all types need this, so we only
 														//		allocate when necessary).
 
+		bool m_bBindCalled = false;						//	TRUE if we've bound this type
 		bool m_bIsModification = false;					//	TRUE if this modifies the type it overrides
 		bool m_bIsMerged = false;						//	TRUE if we created this type by merging (inheritance)
 
@@ -460,19 +460,8 @@ template <class CLASS> class CDesignTypeRef
 			{
 			if (m_dwUNID)
 				{
-				CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-				if (pBaseType == NULL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), m_dwUNID);
-					return ERR_FAIL;
-					}
-
-				m_pType = CLASS::AsType(pBaseType);
-				if (m_pType == NULL)
-					{
-					Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %x"), m_dwUNID);
-					return ERR_FAIL;
-					}
+				if (ALERROR error = BindType(Ctx, m_dwUNID, m_pType))
+					return error;
 				}
 
 			return NOERROR;
@@ -497,6 +486,33 @@ template <class CLASS> class CDesignTypeRef
 				m_dwUNID = dwUNID;
 				m_pType = NULL;
 				}
+			}
+
+		static ALERROR BindType (SDesignLoadCtx &Ctx, DWORD dwUNID, CLASS *&pType)
+			{
+			CDesignType *pBaseType = Ctx.GetUniverse().FindDesignTypeUnbound(dwUNID);
+			if (pBaseType)
+				{
+				if (!pBaseType->IsBound())
+					{
+					if (ALERROR error = pBaseType->BindDesign(Ctx))
+						return error;
+					}
+				}
+			else
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unknown design type: %x"), dwUNID);
+				return ERR_FAIL;
+				}
+
+			pType = CLASS::AsType(pBaseType);
+			if (pType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Specified type is invalid: %x"), dwUNID);
+				return ERR_FAIL;
+				}
+
+			return NOERROR;
 			}
 
 	protected:
@@ -1152,10 +1168,15 @@ class CDynamicDesignTable
 
 struct SDesignLoadCtx
 	{
+	SDesignLoadCtx (CUniverse &UniverseArg = *g_pUniverse) :
+			Universe(UniverseArg)
+		{ }
+
 	DWORD GetAPIVersion (void) const { return (pExtension ? pExtension->GetAPIVersion() : API_VERSION); }
-	CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+	CUniverse &GetUniverse (void) const { return Universe; }
 
 	//	Context
+	CUniverse &Universe;
 	CDesignCollection *pDesign = NULL;		//	Design collection
 	CString sResDb;							//	ResourceDb filespec
 	CResourceDb *pResDb = NULL;				//	Open ResourceDb object
@@ -1171,9 +1192,11 @@ struct SDesignLoadCtx
 	bool bBindAsNewGame = false;			//	If TRUE, then we are binding a new game
 	bool bNoResources = false;
     bool bLoopImages = false;				//  If TRUE, image effects loop by default
+	bool bTraceBind = false;				//	If TRUE, output bind trace
 
 	//	Bind Temporaries (valid only inside BindDesign)
 	TSortMap<CString, CMissionType *> MissionArcRoots;
+	int iBindNesting = 0;
 
 	//	Output
 	CString sError;
@@ -1253,17 +1276,30 @@ class CDesignCollection
 			size_t dwGraphicsMemory = 0;		//	Total memory used by graphics
 			};
 
+		struct SBindOptions
+			{
+			DWORD dwAPIVersion = 0;
+			bool bNewGame = false;
+			bool bNoResources = false;
+			bool bTraceBind = false;
+			};
+
 		CDesignCollection (void);
 		~CDesignCollection (void);
 
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError);
-		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError);
+		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
 		const CEconomyType *FindEconomyType (const CString &sID) { const CEconomyType **ppType = m_EconomyIndex.GetAt(sID); return (ppType ? *ppType : NULL); }
-		const CDesignType *FindEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
-		CDesignType *FindEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
+		const CDesignType *FindEntry (DWORD dwUNID) const;
+		CDesignType *FindEntry (DWORD dwUNID);
+		CDesignType *FindEntryBound (SDesignLoadCtx &Ctx, DWORD dwUNID);
+
+		const CDesignType *FindUnboundEntry (DWORD dwUNID) const { return m_AllTypes.FindByUNID(dwUNID); }
+		CDesignType *FindUnboundEntry (DWORD dwUNID) { return m_AllTypes.FindByUNID(dwUNID); }
+
 		CExtension *FindExtension (DWORD dwUNID) const;
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) const;
 		void FireGetGlobalAchievements (CGameStats &Stats);

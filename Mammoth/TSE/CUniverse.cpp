@@ -259,7 +259,7 @@ ALERROR CUniverse::CreateRandomItem (const CItemCriteria &Crit,
 	//	Create the generator
 
 	IItemGenerator *pTable;
-	if (error = IItemGenerator::CreateRandomItemTable(Crit, sLevelFrequency, &pTable))
+	if (error = IItemGenerator::CreateRandomItemTable(*this, Crit, sLevelFrequency, &pTable))
 		return error;
 
 	//	Pick an item
@@ -1371,8 +1371,17 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 		//
 		//	We don't need to log image load
 
+		CDesignCollection::SBindOptions BindOptions;
+		BindOptions.dwAPIVersion = dwAPIVersion;
+		BindOptions.bNewGame = !Ctx.bInLoadGame;
+		BindOptions.bNoResources = Ctx.bNoResources;
+
+#ifdef DEBUG_BIND
+		BindOptions.bTraceBind = Ctx.bDiagnostics;
+#endif
+
 		SetLogImageLoad(false);
-		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, dwAPIVersion, !Ctx.bInLoadGame, Ctx.bNoResources, retsError);
+		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, BindOptions, retsError);
 		SetLogImageLoad(true);
 
 		if (error)

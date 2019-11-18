@@ -545,63 +545,6 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 	return true;
 	}
 
-ALERROR CWeaponFireDesc::FinishBindDesign (SDesignLoadCtx &Ctx)
-
-//  FinishBindDesign
-//
-//  Last pass
-
-    {
-    ALERROR error;
-    int i;
-
-#ifdef DEBUG_BIND
-    CItemType *pDevice;
-	CItemType *pAmmo = GetWeaponType(&pDevice);
-    if (pAmmo)
-        ::kernelDebugLogPattern("Bind design for: %s [%s]\n", pAmmo->GetNounPhrase(), GetUNID());
-#endif
-
-	//	Load some events for efficiency
-
-	for (i = 0; i < evtCount; i++)
-		{
-		if (!FindEventHandler(CString(CACHED_EVENTS[i], -1, true), &m_CachedEvents[i]))
-			{
-			m_CachedEvents[i].pExtension = NULL;
-			m_CachedEvents[i].pCode = NULL;
-			}
-		}
-
-	//	If we have an OnFragment event, then we enable proximity blast
-	//	(But only if we don't have periodic fragmentation.)
-
-	if (HasOnFragmentEvent() && m_FragInterval.IsEmpty())
-		m_fProximityBlast = true;
-
-	//	Fragment
-
-	SFragmentDesc *pNext = m_pFirstFragment;
-	while (pNext)
-		{
-		if (error = pNext->pDesc->FinishBindDesign(Ctx))
-			return error;
-
-		pNext = pNext->pNext;
-		}
-
-    //  Scaled levels
-
-    if (m_pScalable)
-        {
-        for (i = 0; i < m_iScaledLevels; i++)
-            if (error = m_pScalable[i].FinishBindDesign(Ctx))
-                return error;
-        }
-
-    return NOERROR;
-    }
-
 Metric CWeaponFireDesc::GetAveParticleCount (void) const
 
 //	GetAveParticleCount
@@ -2679,6 +2622,23 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
             if (error = m_pScalable[i].OnDesignLoadComplete(Ctx))
                 return error;
         }
+
+	//	Load some events for efficiency
+
+	for (i = 0; i < evtCount; i++)
+		{
+		if (!FindEventHandler(CString(CACHED_EVENTS[i], -1, true), &m_CachedEvents[i]))
+			{
+			m_CachedEvents[i].pExtension = NULL;
+			m_CachedEvents[i].pCode = NULL;
+			}
+		}
+
+	//	If we have an OnFragment event, then we enable proximity blast
+	//	(But only if we don't have periodic fragmentation.)
+
+	if (HasOnFragmentEvent() && m_FragInterval.IsEmpty())
+		m_fProximityBlast = true;
 
 	return NOERROR;
 

@@ -122,7 +122,7 @@ bool CItemCriteria::GetExplicitLevelMatched (int *retiMin, int *retiMax) const
 		}
 	}
 
-int CItemCriteria::GetMaxLevelMatched (void) const
+int CItemCriteria::GetMaxLevelMatched (CUniverse &Universe) const
 
 //	GetMaxLevelMatches
 //
@@ -131,15 +131,19 @@ int CItemCriteria::GetMaxLevelMatched (void) const
 //	item type that matches and return the max level.
 
 	{
-	int i;
+	if (!Universe.GetDesignCollection().IsBindComplete())
+		{
+		ASSERT(false);
+		return -1;
+		}
 
 	if (!m_sLookup.IsBlank())
 		{
-		const CItemCriteria *pCriteria = g_pUniverse->GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(m_sLookup);
+		const CItemCriteria *pCriteria = Universe.GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(m_sLookup);
 		if (pCriteria == NULL)
 			return -1;
 
-		return pCriteria->GetMaxLevelMatched();
+		return pCriteria->GetMaxLevelMatched(Universe);
 		}
 
 	if (m_iEqualToLevel != -1)
@@ -151,9 +155,9 @@ int CItemCriteria::GetMaxLevelMatched (void) const
 	//	Look at every single item that might match
 
 	int iMaxLevel = -1;
-	for (i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	for (int i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
 
 		if (Item.MatchesCriteria(*this))
@@ -194,16 +198,22 @@ CString CItemCriteria::GetName (void) const
 		}
 	}
 
-bool CItemCriteria::Intersects (const CItemCriteria &Src) const
+bool CItemCriteria::Intersects (CUniverse &Universe, const CItemCriteria &Src) const
 
 //	Intersects
 //
 //	Returns TRUE if the two criterias match at least one item in common.
 
 	{
-	for (int i = 0; i < g_pUniverse->GetItemTypeCount(); i++)
+	if (!Universe.GetDesignCollection().IsBindComplete())
 		{
-		CItemType *pType = g_pUniverse->GetItemType(i);
+		ASSERT(false);
+		return false;
+		}
+
+	for (int i = 0; i < Universe.GetItemTypeCount(); i++)
+		{
+		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
 
 		if (Item.MatchesCriteria(*this) && Item.MatchesCriteria(Src))

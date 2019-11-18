@@ -176,24 +176,12 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 		//	Cache some global events
 
 		CacheGlobalEvents(pType);
-
-		//	Done binding
-
-		if (error = pType->FinishBindDesign(Ctx))
-			{
-			m_AllTypes.Delete(dwUNID);
-			m_ByType[pType->GetType()].Delete(dwUNID);
-			m_DynamicTypes.Delete(dwUNID);
-			if (retsError)
-				*retsError = Ctx.sError;
-			return error;
-			}
 		}
 
 	return NOERROR;
 	}
 
-ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError)
+ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError)
 
 //	BindDesign
 //
@@ -243,17 +231,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//	If we're loading an old game, and if we don't have the TypesUsed array, then it
 	//	means we need to load all obsolete types. In that case we use API = 0.
 
-	if (!bNewGame && TypesUsed.GetCount() == 0)
+	if (!Options.bNewGame && TypesUsed.GetCount() == 0)
 		m_dwMinAPIVersion = 0;
 	else
-		m_dwMinAPIVersion = dwAPIVersion;
+		m_dwMinAPIVersion = Options.dwAPIVersion;
 
 	//	Create a design load context
 
 	SDesignLoadCtx Ctx;
 	Ctx.pDesign = this;
-	Ctx.bBindAsNewGame = bNewGame;
-	Ctx.bNoResources = bNoResources;
+	Ctx.bBindAsNewGame = Options.bNewGame;
+	Ctx.bNoResources = Options.bNoResources;
+	Ctx.bTraceBind = Options.bTraceBind;
 
 	//	Loop over the bind list in order and add appropriate types to m_AllTypes
 	//	(The order guarantees that the proper types override)
@@ -312,7 +301,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	//	If this is a new game, then create all the Template types
 
-	if (bNewGame)
+	if (Options.bNewGame)
 		{
 		m_DynamicUNIDs.DeleteAll();
 		m_DynamicTypes.DeleteAll();
@@ -412,8 +401,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		}
 
 	//	Prepare to bind. This is used by design elements that need two passes
-	//	to bind. We also use it to set up the inheritence hierarchy, which means
-	//	that we rely on the map from UNID to valid design type (m_AllTypes)
+	//	to bind.
 
 	m_ArmorDefinitions.DeleteAll();
 	m_DisplayAttribs.DeleteAll();
@@ -445,7 +433,9 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	m_ArmorDefinitions.OnInitDone();
 
-	//	Now call Bind on all active design entries
+	//	Now call Bind on all active design entries. We may proceed recursively.
+	//	That is, when binding a type, that type might depend on other types, and
+	//	we recursively bind those types.
 
 	for (i = 0; i < evtCount; i++)
 		m_EventsCache[i]->DeleteAll();
@@ -453,31 +443,23 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	for (i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
-		if (error = pEntry->BindDesign(Ctx))
+
+		//	Bind if necessary.
+
+		if (!pEntry->IsBound())
 			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
+			if (error = pEntry->BindDesign(Ctx))
+				{
+				m_bInBindDesign = false;
+				*retsError = Ctx.sError;
+				return error;
+				}
 			}
 
 		//	Cache some global events. We keep track of the global events for
 		//	all types so that we can access them faster.
 
 		CacheGlobalEvents(pEntry);
-		}
-
-	//	Finish binding. This pass is used by design elements
-	//	that need to do stuff after all designs are bound.
-
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
-		{
-		CDesignType *pEntry = m_AllTypes.GetEntry(i);
-		if (error = pEntry->FinishBindDesign(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
 		}
 
 	//	Remember what we bound
@@ -646,6 +628,72 @@ void CDesignCollection::DebugOutputExtensions (void) const
 		}
 
 	::kernelDebugLogPattern("Using API version: %d", m_dwMinAPIVersion);
+	}
+
+const CDesignType *CDesignCollection::FindEntry (DWORD dwUNID) const
+
+//	FindEntry
+//
+//	Finds an entry and returns it (or NULL).
+
+	{
+	const CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+#ifdef DEBUG
+	if (!pType->IsBound())
+		{
+		DebugBreak();
+		}
+#endif
+
+	return pType;
+	}
+
+CDesignType *CDesignCollection::FindEntry (DWORD dwUNID)
+
+//	FindEntry
+//
+//	Finds an entry and returns it (or NULL).
+
+	{
+	CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+#ifdef DEBUG
+	if (!pType->IsBound())
+		{
+		DebugBreak();
+		}
+#endif
+
+	return pType;
+	}
+
+CDesignType *CDesignCollection::FindEntryBound (SDesignLoadCtx &Ctx, DWORD dwUNID)
+
+//	FindEntryBound
+//
+//	Returns the entry, making sure to call Bind if necessary. This is designed
+//	to be called from inside a different type's OnBind.
+
+	{
+	CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+	if (!pType->IsBound())
+		{
+		if (pType->BindDesign(Ctx) != NOERROR)
+			{
+			Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind: %s"), Ctx.sError));
+			return NULL;
+			}
+		}
+
+	return pType;
 	}
 
 CExtension *CDesignCollection::FindExtension (DWORD dwUNID) const
@@ -1515,7 +1563,7 @@ bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLEl
 		//	Get the station type. If we don't find the station, skip it. We 
 		//	assume that this is an optional type.
 
-		CStationType *pType = CStationType::AsType(FindEntry(dwUNID));
+		CStationType *pType = CStationType::AsType(FindUnboundEntry(dwUNID));
 		if (pType == NULL)
 			{
 			if (GetUniverse().InDebugMode())

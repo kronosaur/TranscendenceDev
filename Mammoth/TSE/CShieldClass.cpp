@@ -1618,7 +1618,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If the hit effect is NULL, then use default
 
 	if (m_pHitEffect == NULL)
-		m_pHitEffect.Set(GetUniverse().FindEffectType(g_ShieldEffectUNID));
+		m_pHitEffect.Set(GetUniverse().FindEffectTypeBound(Ctx, g_ShieldEffectUNID));
 
 	return NOERROR;
 	}

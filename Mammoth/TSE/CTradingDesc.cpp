@@ -303,7 +303,7 @@ int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, const CSpace
 	return ComputePrice(Ctx, Default, dwFlags);
 	}
 
-bool CTradingDesc::ComposeDescription (CString *retsDesc) const
+bool CTradingDesc::ComposeDescription (CUniverse &Universe, CString *retsDesc) const
 
 //  ComposeDescription
 //
@@ -321,10 +321,10 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Buying and selling ships
 
     SServiceTypeInfo BuyShips;
-    GetServiceTypeInfo(serviceBuyShip, BuyShips);
+    GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
 
     SServiceTypeInfo SellShips;
-    GetServiceTypeInfo(serviceSellShip, SellShips);
+    GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
 
     CString sBuySellShips;
     if (BuyShips.bAvailable && SellShips.bAvailable)
@@ -337,7 +337,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Refuels
 
     SServiceTypeInfo Refuel;
-    if (GetServiceTypeInfo(serviceRefuel, Refuel))
+    if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
         {
         CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
@@ -350,10 +350,10 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Repair armor
 
     SServiceTypeInfo RepairArmor;
-    GetServiceTypeInfo(serviceRepairArmor, RepairArmor);
+    GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
 
     SServiceTypeInfo InstallArmor;
-    GetServiceTypeInfo(serviceReplaceArmor, InstallArmor);
+    GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
 
     if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
         {
@@ -378,7 +378,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Install devices
 
     SServiceTypeInfo InstallDevice;
-    GetServiceTypeInfo(serviceInstallDevice, InstallDevice);
+    GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
 
     if (InstallDevice.iMaxLevel != -1)
         {
@@ -392,10 +392,10 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         }
 
     SServiceTypeInfo Buys;
-    GetServiceTypeInfo(serviceBuy, Buys);
+    GetServiceTypeInfo(Universe, serviceBuy, Buys);
 
     SServiceTypeInfo Sells;
-    GetServiceTypeInfo(serviceSell, Sells);
+    GetServiceTypeInfo(Universe, serviceSell, Sells);
 
     if (Buys.bAvailable || Sells.bAvailable)
         {
@@ -1277,7 +1277,7 @@ bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &I
 	return false;
 	}
 
-int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly) const
+int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iService, bool bDescriptionOnly) const
 
 //	GetMaxLevelMatched
 //
@@ -1308,7 +1308,7 @@ int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescrip
 			if (m_List[i].pItemType)
 				iLevel = m_List[i].pItemType->GetLevel();
 			else
-				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched();
+				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched(Universe);
 
 			if (iLevel > iMaxLevel)
 				iMaxLevel = iLevel;
@@ -1324,6 +1324,8 @@ bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject 
 //	Returns the appropriate fuel and price to refuel the given object.
 
 	{
+	CUniverse &Universe = Obj.GetUniverse();
+
 	int i, j;
 	CShip *pShipToRefuel = pObjToRefuel->AsShip();
 	if (pShipToRefuel == NULL)
@@ -1348,9 +1350,9 @@ bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject 
 			//	If we find it, then we use it. We use the lowest-level item 
 			//	because we want the cheapest price per fuel.
 
-			for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
+			for (j = 0; j < Universe.GetItemTypeCount(); j++)
 				{
-				CItemType *pType = g_pUniverse->GetItemType(j);
+				CItemType *pType = Universe.GetItemType(j);
 				CItem Item(pType, 1);
 
 				if (Item.MatchesCriteria(m_List[i].ItemCriteria)
@@ -1427,7 +1429,7 @@ void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 	Result.bUpgradeInstallOnly = ((Service.dwFlags & FLAG_UPGRADE_INSTALL_ONLY) ? true : false);
 	}
 
-bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const
+bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const
 
 //  GetServiceTypeInfo
 //
@@ -1472,7 +1474,7 @@ bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceType
 			if (m_List[i].pItemType)
 				iLevel = m_List[i].pItemType->GetLevel();
 			else
-				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched();
+				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched(Universe);
 
 			if (iLevel > Info.iMaxLevel)
 				Info.iMaxLevel = iLevel;
@@ -1481,7 +1483,7 @@ bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceType
 	return Info.bAvailable;
     }
 
-bool CTradingDesc::HasService (ETradeServiceTypes iService, const SHasServiceOptions &Options) const
+bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options) const
 
 //	HasService
 //
@@ -1502,7 +1504,7 @@ bool CTradingDesc::HasService (ETradeServiceTypes iService, const SHasServiceOpt
 
 			//	Make sure we match the options
 
-			if (!MatchesHasServiceOptions(Options, m_List[i]))
+			if (!MatchesHasServiceOptions(Universe, Options, m_List[i]))
 				continue;
 
 			//	Found it!
@@ -1609,7 +1611,7 @@ bool CTradingDesc::Matches (CDesignType *pType, const SServiceDesc &Commodity) c
 	return pType->MatchesCriteria(Commodity.TypeCriteria);
 	}
 
-bool CTradingDesc::MatchesHasServiceOptions (const SHasServiceOptions &Options, const SServiceDesc &Service) const
+bool CTradingDesc::MatchesHasServiceOptions (CUniverse &Universe, const SHasServiceOptions &Options, const SServiceDesc &Service) const
 
 //	MatchesHasServiceOptions
 //
@@ -1643,7 +1645,7 @@ bool CTradingDesc::MatchesHasServiceOptions (const SHasServiceOptions &Options, 
 				{
 				if (Service.pItemType && !CItem(Service.pItemType, 1).MatchesCriteria(Options.ItemCriteria))
 					return false;
-				else if (!Service.ItemCriteria.Intersects(Options.ItemCriteria))
+				else if (!Service.ItemCriteria.Intersects(Universe, Options.ItemCriteria))
 					return false;
 				}
 			break;

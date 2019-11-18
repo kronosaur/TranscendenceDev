@@ -427,7 +427,11 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 //	name. If there is ambiguity, a random item is chosen.
 
 	{
-	int i;
+	if (!Universe.GetDesignCollection().IsBindComplete())
+		{
+		ASSERT(false);
+		return CItem();
+		}
 
 	TArray<CItemType *> List;
 
@@ -445,7 +449,7 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 
 	int iBestMatch = -1000;
 	int iBestNonCriteriaMatch = -1000;
-	for (i = 0; i < Universe.GetItemTypeCount(); i++)
+	for (int i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);

@@ -228,17 +228,42 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 	
 	{
-	ALERROR error;
-	int i;
+	//	Short-circuit, if already bound
+
+	if (m_bBindCalled)
+		return NOERROR;
+
+	if (Ctx.bTraceBind)
+		{
+		CString sName = GetEntityName();
+		if (sName.IsBlank())
+			sName = GetNounPhrase();
+		if (sName.IsBlank())
+			{
+			if (m_dwUNID)
+				sName = strPatternSubst(CONSTLIT("UNID %08x"), m_dwUNID);
+			else
+				sName = CONSTLIT("Unknown");
+			}
+
+		Ctx.iBindNesting++;
+		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind %02d> %s"), Ctx.iBindNesting, sName));
+		}
+
+	//	Bind. Set the flag so that we do not recurse.
 
 	Ctx.pType = this;
+	m_bBindCalled = true;
 
 	//	If necessary, evaluate any bind-time design properties
 
 	if (m_pExtra)
 		{
-		if (error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
 			return error;
+			}
 		}
 
 	//	Initialize data
@@ -251,7 +276,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (m_pInheritFrom)
 		{
 		ASSERT(IsModification() || m_pInheritFrom->GetUNID() != GetUNID());
-		for (i = 0; i < evtCount; i++)
+		for (int i = 0; i < evtCount; i++)
 			{
 			if (!HasCachedEvent((ECachedHandlers)i))
 				{
@@ -270,7 +295,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	try
 		{
-		error = OnBindDesign(Ctx);
+		if (ALERROR error = OnBindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
+			return error;
+			}
 		}
 	catch (...)
 		{
@@ -279,8 +308,13 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		throw;
 		}
 
+	//	Done
+
+	if (Ctx.bTraceBind)
+		Ctx.iBindNesting--;
+
 	Ctx.pType = NULL;
-	return error;
+	return NOERROR;
 	}
 
 int CDesignType::CalcAffinity (const CAffinityCriteria &Criteria) const
@@ -1802,7 +1836,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         CString sTradeDesc;
         CTradingDesc *pTrade = GetTradingDesc();
         if (pTrade)
-            pTrade->ComposeDescription(&sTradeDesc);
+            pTrade->ComposeDescription(GetUniverse(), &sTradeDesc);
 
         //  If we have both main and trade descriptors, combine them.
 
@@ -3101,19 +3135,9 @@ ALERROR CArmorClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown armor design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Armor item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetArmorClass();
 		if (m_pType == NULL)
@@ -3132,19 +3156,9 @@ ALERROR CDeviceClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown device design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Device item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetDeviceClass();
 		if (m_pType == NULL)
@@ -3177,12 +3191,9 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-        CItemType *pItemType = Ctx.GetUniverse().FindItemType(m_dwUNID);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %08x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
         m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
         if (m_pType == NULL)

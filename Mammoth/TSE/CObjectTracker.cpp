@@ -276,7 +276,7 @@ bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &O
     CString sTradeDesc;
 	if (!ObjData.fShowDestroyed
 			&& (pTrade = pType->GetTradingDesc())
-			&& pTrade->ComposeDescription(&sTradeDesc))
+			&& pTrade->ComposeDescription(Obj.GetUniverse(), &sTradeDesc))
 		{
 		pData->SetStringAt(CONSTLIT("tradeDesc"), sTradeDesc);
 		}

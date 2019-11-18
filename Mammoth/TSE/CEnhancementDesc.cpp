@@ -80,7 +80,7 @@ ALERROR CEnhancementDesc::Bind (SDesignLoadCtx &Ctx)
 
 		if (DWORD dwEnhancementType = strToInt(Enhance.sType, 0))
 			{
-			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemType(dwEnhancementType);
+			CItemType *pEnhancementType = Ctx.GetUniverse().FindItemTypeBound(Ctx, dwEnhancementType);
 			if (pEnhancementType == NULL)
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Unknown enhancement type: %08x"), dwEnhancementType);

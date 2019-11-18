@@ -57,13 +57,13 @@ class CItemCriteria
 		bool GetExplicitLevelMatched (int *retiMin, int *retiMax) const;
 		ICCItem *GetFilter (void) const { return m_pFilter; }
 		const CString &GetLookup (void) const { return m_sLookup; }
-		int GetMaxLevelMatched (void) const;
+		int GetMaxLevelMatched (CUniverse &Universe) const;
 		CString GetName (void) const;
 		const CItemCriteria &GetORExpression (void) const { return (m_pOr ? *m_pOr : m_Null); }
 		bool HasORExpression (void) const { return m_pOr != NULL; }
 		void Init (DWORD dwSpecial = NONE) { *this = CItemCriteria(dwSpecial); }
 		void Init (const CString &sCriteria, DWORD dwSpecial = NONE) { *this = CItemCriteria(sCriteria, dwSpecial); }
-		bool Intersects (const CItemCriteria &Src) const;
+		bool Intersects (CUniverse &Universe, const CItemCriteria &Src) const;
 		bool IsEmpty (void) const { return (m_dwItemCategories == 0 && m_sLookup.IsBlank() && !m_pFilter); }
 		bool MatchesAttributes (const CItem &Item) const;
 		bool MatchesFlags (DWORD dwFlags) const;

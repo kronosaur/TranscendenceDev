@@ -57,7 +57,6 @@ class CArmorClass
 			return true;
 			}
 
-        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx) { return NOERROR; }
 		int GetCompleteBonus (void) { return m_iArmorCompleteBonus; }
 		int GetDamageAdjForWeaponLevel (int iLevel);
 		CItemType *GetItemType (void) const { return m_pItemType; }

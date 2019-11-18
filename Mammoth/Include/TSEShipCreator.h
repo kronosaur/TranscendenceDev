@@ -112,7 +112,6 @@ class IShipGenerator
 		virtual ~IShipGenerator (void) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
 		virtual void CreateShips (SShipCreateCtx &Ctx) { }
-		virtual ALERROR FinishBind (SDesignLoadCtx &Ctx) { return NOERROR; }
 		virtual Metric GetAverageLevelStrength (int iLevel) { return 0.0; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
@@ -164,7 +163,6 @@ class CShipTable : public CDesignType
 		//	CDesignType overrides
 		virtual void OnAccumulateXMLMergeFlags (TSortMap<DWORD, DWORD> &MergeFlags) const override;
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override { if (m_pGenerator) m_pGenerator->AddTypesUsed(retTypesUsed); }
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 

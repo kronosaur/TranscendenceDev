@@ -167,7 +167,6 @@ class CItemType : public CDesignType
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual const CEconomyType &OnGetDefaultCurrency (void) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
@@ -175,6 +174,7 @@ class CItemType : public CDesignType
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
 		virtual bool OnSetTypeProperty (const CString &sProperty, const ICCItem &Value) override;
+		virtual void OnUnbindDesign (void) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
@@ -278,7 +278,7 @@ class CItemTable : public CDesignType
 		virtual ~CItemTable (void);
 
 		void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
-		CurrencyValue GetAverageValue (int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(iLevel) : 0); }
+		CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(Ctx, iLevel) : 0); }
 		IItemGenerator *GetGenerator (void) { return m_pGenerator; }
 		CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return m_pGenerator->GetProbabilityTable(Ctx); }
 		bool HasItemAttribute (const CString &sAttrib) const { return (m_pGenerator ? m_pGenerator->HasItemAttribute(sAttrib) : false); }
@@ -293,7 +293,6 @@ class CItemTable : public CDesignType
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
 
 	private:
 		IItemGenerator *m_pGenerator;

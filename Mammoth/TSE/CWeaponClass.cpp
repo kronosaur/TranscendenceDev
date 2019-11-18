@@ -4350,75 +4350,17 @@ ALERROR CWeaponClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 		    if (error = m_ShotData[i].pAmmoType.Bind(Ctx))
 			    return error;
-
-			//	Must be valid
-
-			if (m_ShotData[i].pAmmoType == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Unable to find ItemType for ammoID: %x"), m_ShotData[i].pAmmoType.GetUNID());
-				return ERR_FAIL;
-				}
-
-			//	Get the descriptor
-
-			m_ShotData[i].pDesc = m_ShotData[i].pAmmoType->GetMissileDesc();
-			if (m_ShotData[i].pDesc == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("ItemType must have <Missile> definition: %x"), m_ShotData[i].pAmmoType.GetUNID());
-				return ERR_FAIL;
-				}
 			}
 		}
-
-	return NOERROR;
-
-	DEBUG_CATCH
-	}
-
-ALERROR CWeaponClass::OnFinishBind (SDesignLoadCtx &Ctx)
-
-//  OnFinishBind
-//
-//  Finish binding
-
-    {
-	int i;
-	ALERROR error;
 
 	//	Events
 
 	GetItemType()->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
-	//	Shots
-
-	TSortMap<CItemType *, bool> UniqueAmmo;
-	for (i = 0; i < m_ShotData.GetCount(); i++)
-		{
-		//	If we own this definition, then we need to bind it.
-
-		if (m_ShotData[i].bOwned)
-			{
-			if (error = m_ShotData[i].pDesc->FinishBindDesign(Ctx))
-				return error;
-			}
-
-		//	Make a list of all unique ammo items
-
-		if (m_ShotData[i].pDesc->GetAmmoType())
-			UniqueAmmo.SetAt(m_ShotData[i].pDesc->GetAmmoType(), true);
-		}
-
-	//	For each ammo item that we fire, give it a pointer to us so that it can
-	//	refer back.
-
-	for (i = 0; i < UniqueAmmo.GetCount(); i++)
-		{
-		CItemType *pAmmoType = UniqueAmmo.GetKey(i);
-		pAmmoType->AddWeapon(this);
-		}
-
 	return NOERROR;
-    }
+
+	DEBUG_CATCH
+	}
 
 CEffectCreator *CWeaponClass::OnFindEffectCreator (const CString &sUNID)
 
@@ -4489,6 +4431,66 @@ void CWeaponClass::OnMarkImages (void)
 
 	for (i = 0; i < m_ShotData.GetCount(); i++)
 		m_ShotData[i].pDesc->MarkImages();
+	}
+
+ALERROR CWeaponClass::OnPrepareBind (SDesignLoadCtx &Ctx)
+
+//	OnPrepareBind
+//
+//	Get ready for bind.
+
+	{
+	DEBUG_TRY
+
+	//	We need to connect the pointers to the missile items BEFORE we bind 
+	//	because sometimes we don't know whether we'll bind weapon or missile
+
+	TSortMap<CItemType *, bool> UniqueAmmo;
+	for (int i = 0; i < m_ShotData.GetCount(); i++)
+		{
+		//	We only care about references to missiles that own their own
+		//	descriptor.
+
+		if (!m_ShotData[i].bOwned)
+			{
+			//	Resolve the item pointer, but don't bind yet.
+
+			DWORD dwAmmoUNID = m_ShotData[i].pAmmoType.GetUNID();
+			CItemType *pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
+			if (pAmmoType == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("Unable to find ItemType for ammoID: %x"), dwAmmoUNID);
+				return ERR_FAIL;
+				}
+
+			//	Initialize the descriptor
+
+			m_ShotData[i].pDesc = pAmmoType->GetMissileDesc();
+			if (m_ShotData[i].pDesc == NULL)
+				{
+				Ctx.sError = strPatternSubst(CONSTLIT("ItemType must have <Missile> definition: %x"), dwAmmoUNID);
+				return ERR_FAIL;
+				}
+			}
+
+		//	While we're looping, make a list of all unique ammo items.
+
+		if (m_ShotData[i].pDesc->GetAmmoType())
+			UniqueAmmo.SetAt(m_ShotData[i].pDesc->GetAmmoType(), true);
+		}
+
+	//	For each ammo item that we fire, give it a pointer to us so that it can
+	//	refer back.
+
+	for (int i = 0; i < UniqueAmmo.GetCount(); i++)
+		{
+		CItemType *pAmmoType = UniqueAmmo.GetKey(i);
+		pAmmoType->AddWeapon(this);
+		}
+
+	return NOERROR;
+
+	DEBUG_CATCH
 	}
 
 bool CWeaponClass::RequiresItems (void) const

@@ -708,9 +708,9 @@ class CWeaponClass : public CDeviceClass
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 		virtual void OnMarkImages (void) override;
+		virtual ALERROR OnPrepareBind (SDesignLoadCtx &Ctx) override;
 
 	private:
 		static constexpr int CONTINUOUS_START = 0xff;

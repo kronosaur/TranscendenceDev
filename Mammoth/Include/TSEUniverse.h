@@ -388,16 +388,21 @@ class CUniverse
 
 		CArmorClass *FindArmor (DWORD dwUNID);
 		CCompositeImageType *FindCompositeImageType (DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntry(dwUNID)); }
+		CCompositeImageType *FindCompositeImageTypeBound (SDesignLoadCtx &Ctx, DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntryBound(Ctx, dwUNID)); }
 		const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
 		CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
+		CDesignType *FindDesignTypeUnbound (DWORD dwUNID) { return m_Design.FindUnboundEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
 		const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
 		CEffectCreator *FindEffectType (DWORD dwUNID) { return CEffectCreator::AsType(m_Design.FindEntry(dwUNID)); }
+		CEffectCreator *FindEffectTypeBound (SDesignLoadCtx &Ctx, DWORD dwUNID) { return CEffectCreator::AsType(m_Design.FindEntryBound(Ctx, dwUNID)); }
 		CShipTable *FindEncounterTable (DWORD dwUNID) { return CShipTable::AsType(m_Design.FindEntry(dwUNID)); }
 		bool FindExtension (DWORD dwUNID, DWORD dwRelease, CExtension **retpExtension = NULL) { return m_Extensions.FindBestExtension(dwUNID, dwRelease, (InDebugMode() ? CExtensionCollection::FLAG_DEBUG_MODE : 0), retpExtension); }
 		CGenericType *FindGenericType (DWORD dwUNID) { return CGenericType::AsType(m_Design.FindEntry(dwUNID)); }
 		CItemTable *FindItemTable (DWORD dwUNID) { return CItemTable::AsType(m_Design.FindEntry(dwUNID)); }
 		CItemType *FindItemType (DWORD dwUNID) { return CItemType::AsType(m_Design.FindEntry(dwUNID)); }
+		CItemType *FindItemTypeBound (SDesignLoadCtx &Ctx, DWORD dwUNID) { return CItemType::AsType(m_Design.FindEntryBound(Ctx, dwUNID)); }
+		CItemType *FindItemTypeUnbound (DWORD dwUNID) { return CItemType::AsType(m_Design.FindUnboundEntry(dwUNID)); }
 		CMissionType *FindMissionType (DWORD dwUNID) { return CMissionType::AsType(m_Design.FindEntry(dwUNID)); }
 		COverlayType *FindOverlayType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
 		CPower *FindPower (DWORD dwUNID) { return CPower::AsType(m_Design.FindEntry(dwUNID)); }
@@ -406,9 +411,10 @@ class CUniverse
 		COverlayType *FindShipEnergyFieldType(DWORD dwUNID) { return COverlayType::AsType(m_Design.FindEntry(dwUNID)); }
 		int FindSound (DWORD dwUNID) { CSoundResource *pSound = FindSoundResource(dwUNID); return (pSound ? pSound->GetSound() : -1); }
 		CMusicResource *FindMusicResource (DWORD dwUNID) { return CMusicResource::AsType(m_Design.FindEntry(dwUNID)); }
-		CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindEntry(dwUNID)); }
+		CSoundResource *FindSoundResource (DWORD dwUNID) { return CSoundResource::AsType(m_Design.FindUnboundEntry(dwUNID)); }
 		const CSovereign *FindSovereign (DWORD dwUNID) const { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
 		CSovereign *FindSovereign (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindEntry(dwUNID)); }
+		CSovereign *FindSovereignUnbound (DWORD dwUNID) { return CSovereign::AsType(m_Design.FindUnboundEntry(dwUNID)); }
 		CSpaceEnvironmentType *FindSpaceEnvironment (DWORD dwUNID) { return CSpaceEnvironmentType::AsType(m_Design.FindEntry(dwUNID)); }
 		CStationType *FindStationType (DWORD dwUNID) { return CStationType::AsType(m_Design.FindEntry(dwUNID)); }
 		CXMLElement *FindSystemFragment (const CString &sName, CSystemTable **retpTable = NULL) { return m_Design.FindSystemFragment(sName, retpTable); }
@@ -431,6 +437,7 @@ class CUniverse
 		void ClearLibraryBitmapMarks (void) { m_Design.ClearImageMarks(); m_DynamicImageLibrary.ClearMarks();  }
 		void GarbageCollectLibraryBitmaps (void);
 		TSharedPtr<CObjectImage> FindLibraryImage (DWORD dwUNID) { CObjectImage *pImage = CObjectImage::AsType(m_Design.FindEntry(dwUNID)); return TSharedPtr<CObjectImage>(pImage ? pImage->AddRef() : NULL); }
+		TSharedPtr<CObjectImage> FindLibraryImageUnbound (DWORD dwUNID) { CObjectImage *pImage = CObjectImage::AsType(m_Design.FindUnboundEntry(dwUNID)); return TSharedPtr<CObjectImage>(pImage ? pImage->AddRef() : NULL); }
 		CG32bitImage *GetLibraryBitmap (DWORD dwUNID, DWORD dwFlags = 0) { return m_Design.GetImage(dwUNID, dwFlags); }
 		CG32bitImage *GetLibraryBitmapCopy (DWORD dwUNID) { return m_Design.GetImage(dwUNID, CDesignCollection::FLAG_IMAGE_COPY); }
 		void MarkLibraryBitmaps (void) { m_Design.MarkGlobalImages(); if (m_pCurrentSystem) m_pCurrentSystem->MarkImages(); }
