@@ -22,7 +22,7 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	pfd.cColorBits = 32;
 	pfd.cDepthBits = 32;
 	pfd.iLayerType = PFD_MAIN_PLANE;
-	::kernelDebugLogPattern("[OpenGL] INITOPENGL called.");
+	::kernelDebugLogPattern("[OpenGL] Initializing...");
 
 	int iPixelFormat = ChoosePixelFormat(m_deviceContext, &pfd);
 	if (iPixelFormat == 0)
@@ -80,7 +80,14 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	glGetIntegerv(GL_MAJOR_VERSION, &glVersion[0]);
 	glGetIntegerv(GL_MINOR_VERSION, &glVersion[1]);
 
-	::kernelDebugLogPattern("OpenGL successfully initialized, version: %d.%d", glVersion[0], glVersion[1]);
+	::kernelDebugLogPattern("[OpenGL] OpenGL successfully initialized, version: %d.%d", glVersion[0], glVersion[1]);
+	int iMaxTexturesPerShader, iMaxTextureSize, iMaxTextures;
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &iMaxTexturesPerShader);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &iMaxTextureSize);
+	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &iMaxTextures);
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	::kernelDebugLogPattern("[OpenGL] Using graphics device: %s", CString((LPCSTR)renderer));
+	::kernelDebugLogPattern("[OpenGL] Maximum %d textures at resolution %dx%d, max %d per shader", iMaxTextures, iMaxTextureSize, iMaxTextureSize, iMaxTexturesPerShader);
 	prepSquareCanvas();
 	return true;
 	}

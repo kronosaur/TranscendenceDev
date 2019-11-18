@@ -32,7 +32,6 @@ void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	::kernelDebugLogPattern("[OpenGL] Texture resolution: %d x %d", width, height);
 	}
 
 void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
