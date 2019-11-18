@@ -262,57 +262,40 @@
 	<!-- Mined Ore Dock Screen -->
 
 	<DockScreen UNID="&dsMinedOre;"
+		inherit="&dsDockScreenBase;"
 			>
 		
 		<OnScreenInit>
 			(switch
-				;	If we have a miner's cargo hold, and there is ore here,
-				;	go straight to looting screen.
+				;	If there is ore here, and we have a miner's cargo hold
+				;	(or have already destroyed most of the ore), go straight to looting screen.
 				
-				(and (objGetItems gPlayerShip "*I +MinersHold;")
-						(objGetItems gSource "*")
+				(and (objGetItems gSource "*")
+					(or (objGetItems gPlayerShip "*I +MinersHold;")
+						(objGetData gSource 'oreDestroyed)
 						)
+					)
 					(scrShowScreen gScreen &dsRPGLoot; {
 						forceUndock: 'forceUndock
+						lootLabel: (scrTranslate gScreen 'actionBringAboard)
+						descLootQuantity: (scrTranslate gScreen 'descLootQuantity)
 						})
 				)
 		</OnScreenInit>
 
 		<InitialPane>
 			(switch
-				(not (objGetItems gPlayerShip "*I +MinersHold;"))
-					"NoMinersHold"
-					
 				(not (objGetItems gSource "*"))
 					"Empty"
 					
-				"Default"
+				"NoMinersHold"
 				)
 		</InitialPane>
 
 		<Panes>
-			<Default descID="descMinedOreDefault">
-				<Actions>
-					<Action name="Bring Aboard" key="B" default="1" >
-						(block Nil
-							(if (objGetItems gPlayerShip "*I +MinersHold;")
-								(scrShowScreen gScreen &dsRPGLoot; {
-									forceUndock: 'forceUndock
-									})
-								(scrShowPane gScreen "NoMinersHold")
-								)
-							)
-					</Action>
-
-					<Action name="Leave" cancel="1" key="L">
-						<Exit/>
-					</Action>
-				</Actions>
-			</Default>
-
 			<NoMinersHold descID="descNoMinersHold">
 				<Actions>
-					<Action name="Continue" key="C" default="1">
+					<Action id="actionContinue" default="1">
 						(block (oreToRemove)
 							; Remove 75% of the ore
 							(setq oreToRemove Nil)
@@ -328,15 +311,20 @@
 							(enum oreToRemove theItem
 								(objRemoveItem gSource theItem)
 								)
-
+							
+							; Remember that we've destroyed ore.
+							(objSetData gSource 'oreDestroyed True)
+							
 							; Loot
 							(scrShowScreen gScreen &dsRPGLoot; {
 								forceUndock: 'forceUndock
+								lootLabel: (scrTranslate gScreen 'actionBringAboard)
+								descLootQuantity: (scrTranslate gScreen 'descLootQuantity)
 								})
 							)
 					</Action>
 
-					<Action name="Leave" key="L" cancel="1">
+					<Action id="actionLeave" cancel="1">
 						<Exit/>
 					</Action>
 				</Actions>
@@ -344,7 +332,7 @@
 
 			<Empty descID="descEmpty">
 				<Actions>
-					<Action name="Leave" default="1" cancel="1" key="L">
+					<Action id="actionLeave" default="1" cancel="1">
 						<Exit/>
 					</Action>
 				</Actions>
@@ -352,9 +340,7 @@
 		</Panes>
 
 		<Language>
-			<Text id="descMinedOreDefault">
-				You are floating next to boulders of mined ore.
-			</Text>
+			<Text id="actionBringAboard">[B]ring Aboard</Text>
 			<Text id="descEmpty">
 				You are floating next to boulders of mined ore.
 			</Text>
@@ -367,6 +353,7 @@
 				Continue anyway?
 
 			</Text>
+			<Text id="descLootQuantity">How many items do you wish to bring aboard?</Text>
 		</Language>
 	</DockScreen>
 	
@@ -394,7 +381,9 @@
 						(objRemoveOverlay gSource aOverlayID)
 						(block Nil
 							(objSetOverlayProperty gSource aOverlayID 'counter tons)
-							(objSetOverlayProperty gSource aOverlayID 'counterLabel (typTranslate &ovMiningOreCount; 'msgTonsOfOre { count:tons }))
+							(objSetOverlayProperty gSource aOverlayID 'counterLabel
+								(fmtNoun (typTranslate gType 'msgTonsOfOre) tons 'noDeterminer)
+								)
 							)
 						)
 					)
@@ -405,10 +394,7 @@
 			<Text id="msgNoOreFound">No ore found</Text>
 			<Text id="msgScanning">Scanning...</Text>
 			<Text id="msgTonsOfOre">
-				(if (= (@ gData 'count) 1)
-					"ton of ore"
-					"tons of ore"
-					)
+				ton(s) of ore
 			</Text>
 		</Language>
 	</OverlayType>
