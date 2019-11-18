@@ -621,6 +621,11 @@ void CDXScreen::Render (void)
 		::ReleaseDC(m_hWnd, hDC);
 		if (pPixelArray)
 		{
+			if (m_pOGLContext->pollResize())
+				{
+				delete m_pOpenGLTexture;
+				m_pOGLContext->ackResize();
+				}
 			if (!m_pOpenGLTexture)
 				m_pOpenGLTexture = new OpenGLTexture(pPixelArray, Layer.cxWidth, Layer.cyHeight);
 			else

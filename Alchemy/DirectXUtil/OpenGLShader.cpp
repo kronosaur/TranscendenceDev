@@ -8,22 +8,22 @@
 
 using namespace std;
 
-string textFileRead(const char *fileName) {
+string textFileRead (const char *fileName) {
 	ifstream in(fileName);
 	string contents((istreambuf_iterator<char>(in)),
 		istreambuf_iterator<char>());
 	return contents;
 }
 
-Shader::Shader() {
+Shader::Shader () {
 
 }
 
-Shader::Shader(const char *vsFile, const char *fsFile) {
+Shader::Shader (const char *vsFile, const char *fsFile) {
 	init(vsFile, fsFile);
 }
 
-void Shader::init(const char *vsFile, const char *fsFile) {
+void Shader::init (const char *vsFile, const char *fsFile) {
 	char err_log[512];
 	shader_vp = glCreateShader(GL_VERTEX_SHADER);
 	shader_fp = glCreateShader(GL_FRAGMENT_SHADER);
@@ -68,7 +68,7 @@ void Shader::init(const char *vsFile, const char *fsFile) {
 	glLinkProgram(shader_id);
 }
 
-Shader::~Shader() {
+Shader::~Shader () {
 	glDetachShader(shader_id, shader_fp);
 	glDetachShader(shader_id, shader_vp);
 
@@ -77,15 +77,15 @@ Shader::~Shader() {
 	glDeleteProgram(shader_id);
 }
 
-unsigned int Shader::id() {
+unsigned int Shader::id () {
 	return shader_id;
 }
 
-void Shader::bind() {
+void Shader::bind () {
 	glUseProgram(shader_id);
 }
 
-void Shader::unbind() {
+void Shader::unbind () {
 	glUseProgram(0);
 }
 

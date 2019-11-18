@@ -10,16 +10,16 @@
 
 class Shader {
 public:
-	Shader();
-	Shader(const char *vsFile, const char *fsFile);
-	~Shader();
+	Shader ();
+	Shader (const char *vsFile, const char *fsFile);
+	~Shader ();
 
-	void init(const char *vsFile, const char *fsFile);
+	void init (const char *vsFile, const char *fsFile);
 
-	void bind();
-	void unbind();
+	void bind ();
+	void unbind ();
 
-	unsigned int id();
+	unsigned int id ();
 
 private:
 	unsigned int shader_id;

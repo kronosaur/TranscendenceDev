@@ -1,12 +1,12 @@
 #include "OpenGL.h"
 #include "PreComp.h"
 
-OpenGLTexture::OpenGLTexture(void* texture, int width, int height)
+OpenGLTexture::OpenGLTexture (void* texture, int width, int height)
 	{
 	initTexture2D(texture, width, height);
 	}
 
-void OpenGLTexture::initTexture2D(GLvoid* texture, int width, int height)
+void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 	{
 
 	int iNumOfChannels = 4;
@@ -35,7 +35,7 @@ void OpenGLTexture::initTexture2D(GLvoid* texture, int width, int height)
 	::kernelDebugLogPattern("[OpenGL] Texture resolution: %d x %d", width, height);
 	}
 
-void OpenGLTexture::updateTexture2D(GLvoid* texture, int width, int height)
+void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
 	{
 	int iNumOfChannels = 4;
 	static int iPBOInd = 0;
@@ -65,7 +65,7 @@ void OpenGLTexture::updateTexture2D(GLvoid* texture, int width, int height)
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, texture);
 	}
 
-OpenGLTexture::~OpenGLTexture()
+OpenGLTexture::~OpenGLTexture ()
 	{
 	glDeleteTextures(1, &m_pTextureID[0]);
 	glDeleteBuffers(2, &pboID[0]);

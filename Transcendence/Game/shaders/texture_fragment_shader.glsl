@@ -8,7 +8,7 @@ uniform sampler2D ourTexture;
 
 float roundme(float input_float)
 {
-    float roundLevels = 10.0f;
+    float roundLevels = 5.0f;
     return float(round(input_float * roundLevels)) / roundLevels;
 }
 

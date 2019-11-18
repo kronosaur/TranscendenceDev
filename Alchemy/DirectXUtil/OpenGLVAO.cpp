@@ -1,20 +1,20 @@
 #include "OpenGL.h"
 #include "PreComp.h"
 
-OpenGLVAO::OpenGLVAO(std::vector<std::vector<float>> vbos,
+OpenGLVAO::OpenGLVAO (std::vector<std::vector<float>> vbos,
 	std::vector<std::vector<unsigned int>> ebos) 
 	{
 	initVAO(vbos, ebos);
 	}
 
-OpenGLVAO::OpenGLVAO(std::vector<std::vector<float>> vbos,
+OpenGLVAO::OpenGLVAO (std::vector<std::vector<float>> vbos,
 	std::vector<std::vector<unsigned int>> ebos,
 	std::vector<std::vector<float>> texcoords)
 {
 	initVAO(vbos, ebos, texcoords);
 }
 
-void OpenGLVAO::initVAO(std::vector<std::vector<float>> vbos,
+void OpenGLVAO::initVAO (std::vector<std::vector<float>> vbos,
 	std::vector<std::vector<unsigned int>> ebos,
 	std::vector<std::vector<float>> texcoords)
 {
@@ -62,7 +62,7 @@ void OpenGLVAO::initVAO(std::vector<std::vector<float>> vbos,
 
 }
 
-void OpenGLVAO::initVAO(std::vector<std::vector<float>> vbos,
+void OpenGLVAO::initVAO (std::vector<std::vector<float>> vbos,
 	std::vector<std::vector<unsigned int>> ebos)
 	{
 	m_iNumArrays = vbos.size();
@@ -94,7 +94,7 @@ void OpenGLVAO::initVAO(std::vector<std::vector<float>> vbos,
 
 	}
 
-OpenGLVAO::~OpenGLVAO() 
+OpenGLVAO::~OpenGLVAO ()
 	{
 	glDeleteVertexArrays(1, &vaoID[0]);
 	glDeleteBuffers(m_iNumArrays, &vboID[0]);

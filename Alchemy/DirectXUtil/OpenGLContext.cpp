@@ -3,13 +3,14 @@
 #define OPENGL_COLOR_BITS 32;
 #define OPENGL_DEPTH_BITS 32;
 
-OpenGLContext::OpenGLContext(HWND hwnd) :
+OpenGLContext::OpenGLContext (HWND hwnd) :
 	m_iWindowWidth(0),
-	m_iWindowHeight(0)
+	m_iWindowHeight(0),
+	m_bResized(false)
 {
 }
 
-bool OpenGLContext::initOpenGL(HWND hwnd, HDC hdc)
+bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 {
 	this->m_windowID = hwnd;
 	m_deviceContext = hdc;
@@ -45,8 +46,8 @@ bool OpenGLContext::initOpenGL(HWND hwnd, HDC hdc)
 		}
 
 	int attributes[] = {
-		WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-		WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+		WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+		WGL_CONTEXT_MINOR_VERSION_ARB, 2,
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
 		0
@@ -84,7 +85,7 @@ bool OpenGLContext::initOpenGL(HWND hwnd, HDC hdc)
 	return true;
 	}
 
-void OpenGLContext::prepSquareCanvas()
+void OpenGLContext::prepSquareCanvas ()
 {
 	//
 	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
@@ -128,7 +129,7 @@ void OpenGLContext::prepSquareCanvas()
 
 	}
 
-void OpenGLContext::prepTestScene()
+void OpenGLContext::prepTestScene ()
 	{
 	m_pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 	// Create our square
@@ -185,14 +186,14 @@ void OpenGLContext::prepTestScene()
 	delete[] colors;
 	}
 
-void OpenGLContext::resize(int w, int h)
+void OpenGLContext::resize (int w, int h)
 	{
 	m_iWindowWidth = w;
 	m_iWindowHeight = h;
 	::kernelDebugLogPattern("Resolution change: %d, %d", m_iWindowWidth, m_iWindowHeight);
 	}
 
-void OpenGLContext::testRender()
+void OpenGLContext::testRender ()
 	{
 	static float red = 0.0f;
 	static float blue = 0.0f;
@@ -205,7 +206,7 @@ void OpenGLContext::testRender()
 	green = fmod((green + 0.1f), 1.0f);
 	}
 
-void OpenGLContext::testShaders()
+void OpenGLContext::testShaders ()
 	{
 
 	// Create our new shader
@@ -254,7 +255,7 @@ void OpenGLContext::testShaders()
 //	glReadPixels(1, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 	}
 
-void OpenGLContext::testTextures(OpenGLTexture* texture)
+void OpenGLContext::testTextures (OpenGLTexture* texture)
 {
 
 	// Create our new shader
@@ -306,14 +307,14 @@ void OpenGLContext::testTextures(OpenGLTexture* texture)
 					   //	glReadPixels(1, 1, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 }
 
-void OpenGLContext::swapBuffers(HWND hwnd)
+void OpenGLContext::swapBuffers (HWND hwnd)
 	{
 	HDC hDC = ::GetDC(hwnd);
 	SwapBuffers(hDC);
 	::ReleaseDC(hwnd, hDC);
 	}
 
-void OpenGLContext::getWGLError()
+void OpenGLContext::getWGLError ()
 	{
 	LPCSTR lpMsgBuf;
 	DWORD dw = GetLastError();
@@ -332,7 +333,7 @@ void OpenGLContext::getWGLError()
 	::kernelDebugLogPattern("[OpenGL] Error code %d: %s", dw, CString(lpMsgBuf));
 	}
 
-void OpenGLContext::getWGLSwapError()
+void OpenGLContext::getWGLSwapError ()
 	{
 	LPCSTR lpMsgBuf;
 	DWORD dw = GetLastError();

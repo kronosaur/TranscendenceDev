@@ -58,14 +58,14 @@ private:
 */
 class OpenGLTexture {
 public:
-	OpenGLTexture(void) { }
-	OpenGLTexture(void* texture, int width, int height);
-	~OpenGLTexture(void);
-	void initTexture2D(void* texture, int width, int height);
-	void bindTexture2D(GLenum glTexture) { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
-	void unbindTexture2D(void) { glBindTexture(GL_TEXTURE_2D, 0); }
-	void updateTexture2D(void* texture, int width, int height);
-	unsigned int* getTexture(void) { return m_pTextureID; }
+	OpenGLTexture (void) { }
+	OpenGLTexture (void* texture, int width, int height);
+	~OpenGLTexture (void);
+	void initTexture2D (void* texture, int width, int height);
+	void bindTexture2D (GLenum glTexture) { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
+	void unbindTexture2D (void) { glBindTexture(GL_TEXTURE_2D, 0); }
+	void updateTexture2D (void* texture, int width, int height);
+	unsigned int* getTexture (void) { return m_pTextureID; }
 
 private:
 	unsigned int m_pTextureID[1];
@@ -74,23 +74,23 @@ private:
 
 class OpenGLVAO {
 public:
-	OpenGLVAO(void) { };
-	OpenGLVAO(std::vector<std::vector<float>> vbos,
+	OpenGLVAO (void) { };
+	OpenGLVAO (std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos);
-	OpenGLVAO(std::vector<std::vector<float>> vbos,
+	OpenGLVAO (std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos,
 		std::vector<std::vector<float>> texcoords);
-	~OpenGLVAO(void);
-	void initVAO(std::vector<std::vector<float>> vbos,
+	~OpenGLVAO (void);
+	void initVAO (std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos);
-	void initVAO(std::vector<std::vector<float>> vbos,
+	void initVAO (std::vector<std::vector<float>> vbos,
 		std::vector<std::vector<unsigned int>> ebos,
 		std::vector<std::vector<float>> texcoords);
-	void setShader(Shader* shader) { m_pShader = shader; }
-	void addTexture2D(void* texture);
-	void removeTexture();
-	Shader* getShader(void) { return m_pShader; }
-	unsigned int* getVAO(void) { return vaoID; }
+	void setShader (Shader* shader) { m_pShader = shader; }
+	void addTexture2D (void* texture);
+	void removeTexture ();
+	Shader* getShader (void) { return m_pShader; }
+	unsigned int* getVAO (void) { return vaoID; }
 
 private:
 	Shader *m_pShader;
@@ -103,26 +103,29 @@ private:
 
 class OpenGLContext {
 public:
-	OpenGLContext(void) { };
-	OpenGLContext(HWND hwnd);
-	~OpenGLContext(void) { };
-	bool initOpenGL(HWND hwnd, HDC hdc);
-	void setupQuads(void);
-	void resize(int w, int h);
-	void renderScene(void);
-	void testRender();
-	void testShaders();
-	void testTextures(OpenGLTexture *texture);
-	void prepSquareCanvas();
-	void prepTextureCanvas();
-	void prepTestScene();
-	void swapBuffers(HWND hwnd);
-	void getWGLError();
-	void getWGLSwapError();
+	OpenGLContext (void) { };
+	OpenGLContext (HWND hwnd);
+	~OpenGLContext (void) { };
+	bool initOpenGL (HWND hwnd, HDC hdc);
+	void setupQuads (void);
+	void resize (int w, int h);
+	void ackResize () { m_bResized = false; };
+	bool pollResize () { return m_bResized; };
+	void renderScene (void);
+	void testRender ();
+	void testShaders ();
+	void testTextures (OpenGLTexture *texture);
+	void prepSquareCanvas ();
+	void prepTextureCanvas ();
+	void prepTestScene ();
+	void swapBuffers (HWND hwnd);
+	void getWGLError ();
+	void getWGLSwapError ();
 
 private:
 	int m_iWindowWidth;
 	int m_iWindowHeight;
+	bool m_bResized;
 
 	Shader *m_pTestShader;
 
