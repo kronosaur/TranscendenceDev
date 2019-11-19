@@ -735,7 +735,7 @@ const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const
 //	Returns the armor damage adj table
 
 	{
-	return GetCurrentAdventureDesc().GetEngineOptions().GetArmorDamageAdj(iLevel);
+	return GetEngineOptions().GetArmorDamageAdj(iLevel);
 	}
 
 const CEconomyType &CUniverse::GetCreditCurrency (void) const
@@ -835,7 +835,7 @@ const CDamageAdjDesc *CUniverse::GetShieldDamageAdj (int iLevel) const
 //	Returns the shield damage table
 
 	{
-	return GetCurrentAdventureDesc().GetEngineOptions().GetShieldDamageAdj(iLevel);
+	return GetEngineOptions().GetShieldDamageAdj(iLevel);
 	}
 
 void CUniverse::GetCurrentAdventureExtensions (TArray<DWORD> *retList)
@@ -1343,7 +1343,7 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 #endif
 
 		SetLogImageLoad(false);
-		error = m_Design.BindDesign(BindOrder, Ctx.TypesUsed, BindOptions, retsError);
+		error = m_Design.BindDesign(*this, BindOrder, Ctx.TypesUsed, BindOptions, retsError);
 		SetLogImageLoad(true);
 
 		if (error)

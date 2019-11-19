@@ -199,10 +199,11 @@ ALERROR CAdventureDesc::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 
 	{
-	ALERROR error;
-
-	if (error = m_pDefaultCurrency.Bind(Ctx))
+	if (ALERROR error = m_pDefaultCurrency.Bind(Ctx))
 		return error;
+
+	if (!m_EngineOptions.InitFromProperties(Ctx, *this))
+		return ERR_FAIL;
 
 	return NOERROR;
 	}

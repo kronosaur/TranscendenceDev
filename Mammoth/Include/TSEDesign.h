@@ -1288,7 +1288,7 @@ class CDesignCollection
 		~CDesignCollection (void);
 
 		ALERROR AddDynamicType (CExtension *pExtension, DWORD dwUNID, ICCItem *pSource, bool bNewGame, CString *retsError);
-		ALERROR BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError);
+		ALERROR BindDesign (CUniverse &Universe, const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError);
 		void CleanUp (void);
 		void ClearImageMarks (void);
 		void DebugOutputExtensions (void) const;
@@ -1368,12 +1368,16 @@ class CDesignCollection
 		CDesignType *ResolveDockScreen (CDesignType *pLocalScreen, const CString &sScreen, CString *retsScreenActual = NULL, bool *retbIsLocal = NULL);
 
 	private:
+		ALERROR BindDesignError (SDesignLoadCtx &Ctx, CString *retsError = NULL);
 		void CacheGlobalEvents (CDesignType *pType);
 		ALERROR CreateTemplateTypes (SDesignLoadCtx &Ctx);
+		bool InitAdventure (SDesignLoadCtx &Ctx);
+		bool InitEconomyTypes (SDesignLoadCtx &Ctx);
 		bool OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML);
 		ALERROR ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType = NULL);
 		ALERROR ResolveOverrides (SDesignLoadCtx &Ctx, const TSortMap<DWORD, bool> &TypesUsed);
 		ALERROR ResolveTypeHierarchy (SDesignLoadCtx &Ctx);
+		void Unbind (void);
 
 		//	Loaded types. These are initialized at load-time and never change.
 

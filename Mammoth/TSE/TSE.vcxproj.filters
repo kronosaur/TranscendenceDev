@@ -1373,7 +1373,7 @@
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
     <ClCompile Include="CEngineOptions.cpp">
-      <Filter>Source Files\DesignTypes</Filter>
+      <Filter>Source Files\Universe</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

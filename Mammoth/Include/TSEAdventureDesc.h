@@ -14,9 +14,10 @@ class CEngineOptions
 		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
 		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
 		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
-		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
+		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
 		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
-		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		void Merge (const CEngineOptions &Src);
 
 	private:
 		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
@@ -27,6 +28,9 @@ class CEngineOptions
 		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
 		int m_iDefaultInteraction = -1;
 		int m_iDefaultShotHP = -1;
+
+		bool m_bCustomArmorDamageAdj = false;
+		bool m_bCustomShieldDamageAdj = false;
 	};
 
 class CAdventureDesc : public CDesignType
@@ -48,7 +52,6 @@ class CAdventureDesc : public CDesignType
 		const CString &GetStartingPos (void) const { return m_sStartingPos; }
 		ALERROR GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError);
 		const CString &GetWelcomeMessage (void) const { return m_sWelcomeMessage; }
-		bool InitEngineOptions (SDesignLoadCtx &Ctx) { return m_EngineOptions.InitFromProperties(Ctx, *this); }
 		bool IsCurrentAdventure (void) const { return (m_fIsCurrentAdventure ? true : false); }
 		bool IsInDefaultResource (void) const { return (m_fInDefaultResource ? true : false); }
 		bool IsValidStartingClass (CShipClass *pClass);
@@ -89,4 +92,3 @@ class CAdventureDesc : public CDesignType
 		DWORD m_fIncludeOldShipClasses:1;		//	TRUE if we should include older extensions (even if 
 												//		they don't match starting ship criteria).
 	};
-

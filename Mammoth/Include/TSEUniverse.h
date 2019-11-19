@@ -326,7 +326,7 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
-		const CEngineOptions &GetEngineOptions (void) const { return GetCurrentAdventureDesc().GetEngineOptions(); }
+		const CEngineOptions &GetEngineOptions (void) const { return m_EngineOptions; }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
@@ -375,6 +375,7 @@ class CUniverse
 		void SetCurrentSystem (CSystem *pSystem);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
 		bool SetPOV (CSpaceObject *pPOV);
@@ -393,6 +394,7 @@ class CUniverse
 		CCompositeImageType *FindCompositeImageTypeBound (SDesignLoadCtx &Ctx, DWORD dwUNID) { return CCompositeImageType::AsType(m_Design.FindEntryBound(Ctx, dwUNID)); }
 		const CDesignType *FindDesignType (DWORD dwUNID) const { return m_Design.FindEntry(dwUNID); }
 		CDesignType *FindDesignType (DWORD dwUNID) { return m_Design.FindEntry(dwUNID); }
+		const CDesignType *FindDesignTypeUnbound (DWORD dwUNID) const { return m_Design.FindUnboundEntry(dwUNID); }
 		CDesignType *FindDesignTypeUnbound (DWORD dwUNID) { return m_Design.FindUnboundEntry(dwUNID); }
 		CDeviceClass *FindDeviceClass (DWORD dwUNID);
 		const CEconomyType *FindEconomyType (const CString &sName) { return m_Design.FindEconomyType(sName); }
@@ -554,6 +556,7 @@ class CUniverse
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
+		CEngineOptions m_EngineOptions;
 		CSFXOptions m_SFXOptions;
 		CDebugOptions m_DebugOptions;
 		CFractalTextureLibrary m_FractalTextureLibrary;

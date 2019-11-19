@@ -158,3 +158,29 @@ bool CEngineOptions::InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType 
 
 	return true;
 	}
+
+void CEngineOptions::Merge (const CEngineOptions &Src)
+
+//	Merge
+//
+//	Merges with source.
+
+	{
+	if (Src.m_bCustomArmorDamageAdj)
+		{
+		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
+			m_ArmorDamageAdj[i] = Src.m_ArmorDamageAdj[i];
+		}
+
+	if (Src.m_bCustomShieldDamageAdj)
+		{
+		for (int i = 0; i < MAX_ITEM_LEVEL; i++)
+			m_ShieldDamageAdj[i] = Src.m_ShieldDamageAdj[i];
+		}
+
+	if (Src.m_iDefaultInteraction != -1)
+		m_iDefaultInteraction = Src.m_iDefaultInteraction;
+
+	if (Src.m_iDefaultShotHP != -1)
+		m_iDefaultShotHP = Src.m_iDefaultShotHP;
+	}
