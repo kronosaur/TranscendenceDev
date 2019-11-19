@@ -58,6 +58,7 @@ class IHICommand
 		IHICommand (CHumanInterface &HI) : m_HI(HI) { }
 		virtual ~IHICommand (void) { }
 
+		CHumanInterface &GetHI (void) const { return m_HI; }
 		inline void HICleanUp (void) { OnCleanUp(); }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return OnCommand(sCmd, pData); }
 		inline CString HIGetPropertyString (const CString &sProperty) { return OnGetPropertyString(sProperty); }

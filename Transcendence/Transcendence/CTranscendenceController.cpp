@@ -585,9 +585,14 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	retOptions->m_bWindowedMode = m_Settings.GetBoolean(CGameSettings::windowedMode);
 	if (retOptions->m_bWindowedMode)
 		{
-		//	If we're forcing 1024, then we know the size
+		//	If we're forcing a resolution, then we know the size
 
-		if (m_Settings.GetBoolean(CGameSettings::force1024Res))
+		if (m_Settings.GetBoolean(CGameSettings::force1280Res))
+			{
+			retOptions->m_cxScreenDesired = 1280;
+			retOptions->m_cyScreenDesired = 768;
+			}
+		else if (m_Settings.GetBoolean(CGameSettings::force1024Res))
 			{
 			retOptions->m_cxScreenDesired = 1024;
 			retOptions->m_cyScreenDesired = 768;
@@ -642,11 +647,11 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	//	Now set other options for HI
 
 	retOptions->m_iColorDepthDesired = 16;
-	retOptions->m_bForceDX = (m_Settings.GetBoolean(CGameSettings::forceDirectX) || m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
+	retOptions->m_bForceDX = (m_Settings.GetBoolean(CGameSettings::forceDirectX) || m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res) || m_Settings.GetBoolean(CGameSettings::force1280Res));
 	retOptions->m_bForceNonDX = (m_Settings.GetBoolean(CGameSettings::forceNonDirectX) && !retOptions->m_bForceDX);
 	retOptions->m_bForceExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
 	retOptions->m_bForceNonExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceNonExclusive) && !retOptions->m_bForceExclusiveMode);
-	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res);
+	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res) || m_Settings.GetBoolean(CGameSettings::force1280Res);
 	retOptions->m_bNoGPUAcceleration = m_Settings.GetBoolean(CGameSettings::noGPUAcceleration);
 	retOptions->m_iSoundVolume = m_Settings.GetInteger(CGameSettings::soundVolume);
 	retOptions->m_sMusicFolder = m_Settings.GetString(CGameSettings::musicPath);

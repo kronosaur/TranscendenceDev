@@ -53,6 +53,7 @@
 #define STYLE_IMAGE								CONSTLIT("image")
 
 #define STR_GENOME								CONSTLIT("gender")
+#define STR_NAME								CONSTLIT("name")
 
 const int ICON_HEIGHT =							48;
 const int ICON_WIDTH =							48;
@@ -80,7 +81,10 @@ const int SPECIAL_DEVICE_SLOTS =				104;
 
 CNewGameSession::CNewGameSession (CHumanInterface &HI, CCloudService &Service, const SNewGameSettings &Defaults) : IHISession(HI),
 		m_Service(Service),
-		m_Settings(Defaults)
+		m_Settings(Defaults),
+		m_PlayerGenome(*this),
+		m_PlayerName(*this),
+		m_Difficulty(*this)
 
 //	CNewGameSession constructor
 
@@ -155,7 +159,7 @@ void CNewGameSession::CmdChangeGenome (void)
 	else
 		m_Settings.iPlayerGenome = genomeHumanMale;
 
-	SetPlayerGenome(m_Settings.iPlayerGenome, m_xPlayerGenome, m_yPlayerGenome, m_cxPlayerGenome);
+	SetPlayerGenome(m_Settings.iPlayerGenome);
 	}
 
 void CNewGameSession::CmdEditName (void)
@@ -167,47 +171,22 @@ void CNewGameSession::CmdEditName (void)
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
-	if (m_bEditingName)
+	if (m_PlayerName.IsEditing())
 		{
-		IAnimatron *pEdit;
-		if (m_pRoot->FindElement(ID_PLAYER_NAME_FIELD, &pEdit))
-			{
-			m_Settings.sPlayerName = CUniverse::ValidatePlayerName(pEdit->GetPropertyString(PROP_TEXT));
-			m_Settings.bDefaultPlayerName = false;
+		CString sValue;
+		m_PlayerName.StopEdit(&sValue);
 
-			DeleteElement(ID_PLAYER_NAME_FIELD);
-			}
+		m_Settings.sPlayerName = CUniverse::ValidatePlayerName(sValue);
+		m_Settings.bDefaultPlayerName = false;
 
-		SetPlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-		m_bEditingName = false;
+		SetPlayerName(m_Settings.sPlayerName);
 		}
 
 	//	If we're not editing, then start editing
 
 	else
 		{
-		DeleteElement(ID_PLAYER_NAME);
-
-		//	Create edit control
-
-		IAnimatron *pEdit;
-		VI.CreateEditControl(NULL,
-				ID_PLAYER_NAME_FIELD,
-				m_xPlayerName + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ,
-				m_yPlayerName,
-				NAME_FIELD_WIDTH,
-				0,
-				NULL_STR,
-				&pEdit,
-				NULL);
-
-		pEdit->SetPropertyString(PROP_TEXT, m_Settings.sPlayerName);
-
-		m_pRoot->AddLine(pEdit);
-
-		SetInputFocus(ID_PLAYER_NAME_FIELD);
-
-		m_bEditingName = true;
+		m_PlayerName.StartEdit(NAME_FIELD_WIDTH, m_Settings.sPlayerName);
 		}
 	}
 
@@ -218,11 +197,10 @@ void CNewGameSession::CmdEditNameCancel (void)
 //	Cancel editing name
 
 	{
-	if (m_bEditingName)
+	if (m_PlayerName.IsEditing())
 		{
-		DeleteElement(ID_PLAYER_NAME_FIELD);
-		SetPlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-		m_bEditingName = false;
+		m_PlayerName.StopEdit();
+		SetPlayerName(m_Settings.sPlayerName);
 		}
 	}
 
@@ -305,92 +283,6 @@ void CNewGameSession::CmdPrevShipClass (void)
 		if (pNext)
 			pNext->SetPropertyBool(PROP_ENABLED, true);
 		}
-	}
-
-void CNewGameSession::CreatePlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth)
-
-//	CreatePlayerGenome
-//
-//	Creates the player genome UI section
-
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x, y));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, STR_GENOME);
-	pLabel->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
-
-	m_pRoot->AddLine(pLabel);
-
-	//	Create a button
-
-	IAnimatron *pButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_CHANGE_GENOME, 
-			x + cxWidth - SMALL_BUTTON_WIDTH, 
-			y,
-			&VI.GetImage(imageSmallHumanMale),
-			0,
-			&pButton);
-
-	pButton->SetID(CMD_CHANGE_GENOME);
-
-	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, CMD_CHANGE_GENOME);
-	m_pRoot->AddLine(pButton);
-
-	//	Player genome
-
-	SetPlayerGenome(iGenome, x, y, cxWidth);
-	}
-
-void CNewGameSession::CreatePlayerName (const CString &sName, int x, int y, int cxWidth)
-
-//	CreatePlayerName
-//
-//	Creates the player name UI section
-
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ, y));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, CONSTLIT("name"));
-
-	m_pRoot->AddLine(pLabel);
-
-	//	Create a button
-
-	IAnimatron *pButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_EDIT_NAME, 
-			x, 
-			y,
-			&VI.GetImage(imageSmallEditIcon),
-			0,
-			&pButton);
-
-	pButton->SetID(CMD_EDIT_NAME);
-
-	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, CMD_EDIT_NAME);
-	m_pRoot->AddLine(pButton);
-
-	//	Player name
-
-	SetPlayerName(sName, x, y, cxWidth);
 	}
 
 void CNewGameSession::CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth)
@@ -517,12 +409,6 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 	//	Compute the location of various elements (relative to the upper-left of
 	//	the root vscroller).
 
-	m_xPlayerName = m_xLeftCol;
-	m_yPlayerName = MAJOR_PADDING_TOP;
-	m_cxPlayerName = m_cxLeftCol;
-	m_xPlayerGenome = m_xRightCol;
-	m_yPlayerGenome = MAJOR_PADDING_TOP;
-	m_cxPlayerGenome = m_cxRightCol;
 	m_xShipClass = m_xLeftCol;
 	m_yShipClass = MAJOR_PADDING_TOP;
 	m_cxShipClass = RectWidth(rcCenter);
@@ -572,12 +458,25 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Create the player name
 
-	CreatePlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-	m_bEditingName = false;
+	m_PlayerName.Create(*m_pRoot,
+			CMD_EDIT_NAME,
+			STR_NAME,
+			m_xLeftCol,
+			MAJOR_PADDING_TOP,
+			m_cxLeftCol,
+			alignLeft);
+	SetPlayerName(m_Settings.sPlayerName);
 
 	//	Create the player genome
 
-	CreatePlayerGenome(m_Settings.iPlayerGenome, m_xPlayerGenome, m_yPlayerGenome, m_cxPlayerGenome);
+	m_PlayerGenome.Create(*m_pRoot, 
+			CMD_CHANGE_GENOME, 
+			STR_GENOME, 
+			m_xRightCol, 
+			MAJOR_PADDING_TOP, 
+			m_cxRightCol, 
+			alignRight);
+	SetPlayerGenome(m_Settings.iPlayerGenome);
 
 	//	Create the ship class
 
@@ -602,14 +501,14 @@ void CNewGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 	switch (iVirtKey)
 		{
 		case VK_RETURN:
-			if (m_bEditingName)
+			if (m_PlayerName.IsEditing())
 				CmdEditName();
 			else
 				CmdOK();
 			break;
 
 		case VK_ESCAPE:
-			if (m_bEditingName)
+			if (m_PlayerName.IsEditing())
 				CmdEditNameCancel();
 			else
 				CmdCancel();
@@ -680,7 +579,7 @@ void CNewGameSession::OnUpdate (bool bTopMost)
 	{
 	}
 
-void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth)
+void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome)
 
 //	SetPlayerGenome
 //
@@ -688,69 +587,23 @@ void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cx
 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
 
-	//	Delete the previous one
+	if (iGenome == genomeHumanMale)
+		m_PlayerGenome.SetImage(VI.GetImage(imageSmallHumanMale));
+	else
+		m_PlayerGenome.SetImage(VI.GetImage(imageSmallHumanFemale));
 
-	DeleteElement(ID_PLAYER_GENOME);
-
-	//	Player genome
-
-	IAnimatron *pGenome = new CAniText;
-	pGenome->SetID(ID_PLAYER_GENOME);
-	pGenome->SetPropertyVector(PROP_POSITION, CVector(x, y + MediumBoldFont.GetHeight()));
-	pGenome->SetPropertyVector(PROP_SCALE, CVector(cxWidth - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ, 100.0));
-	pGenome->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
-	pGenome->SetPropertyFont(PROP_FONT, &SubTitleFont);
-	pGenome->SetPropertyString(PROP_TEXT, strTitleCapitalize(GetGenomeName(iGenome)));
-	pGenome->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
-
-	m_pRoot->AddLine(pGenome);
-
-	//	Change the button image
-
-	IAnimatron *pButton;
-	if (m_pRoot->FindElement(CMD_CHANGE_GENOME, &pButton))
-		{
-		const CG32bitImage *pImage;
-
-		if (iGenome == genomeHumanMale)
-			pImage = &VI.GetImage(imageSmallHumanMale);
-		else
-			pImage = &VI.GetImage(imageSmallHumanFemale);
-
-		IAnimatron *pStyle = pButton->GetStyle(STYLE_IMAGE);
-		pStyle->SetFillMethod(new CAniImageFill(pImage, false));
-		}
+	m_PlayerGenome.SetText(strTitleCapitalize(GetGenomeName(iGenome)));
 	}
 
-void CNewGameSession::SetPlayerName (const CString &sName, int x, int y, int cxWidth)
+void CNewGameSession::SetPlayerName (const CString &sName)
 
 //	SetPlayerName
 //
 //	Sets the current player name
 
 	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
-
-	//	Delete the previous one
-
-	DeleteElement(ID_PLAYER_NAME);
-
-	//	Player name
-
-	IAnimatron *pName = new CAniText;
-	pName->SetID(ID_PLAYER_NAME);
-	pName->SetPropertyVector(PROP_POSITION, CVector(x + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ, y + MediumBoldFont.GetHeight()));
-	pName->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
-	pName->SetPropertyFont(PROP_FONT, &SubTitleFont);
-	pName->SetPropertyString(PROP_TEXT, sName);
-
-	m_pRoot->AddLine(pName);
+	m_PlayerName.SetText(sName);
 	}
 
 void CNewGameSession::SetShipClass (CShipClass *pClass, int x, int y, int cxWidth)

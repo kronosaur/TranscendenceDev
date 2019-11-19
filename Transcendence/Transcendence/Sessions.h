@@ -485,11 +485,9 @@ class CNewGameSession : public IHISession
 		void CmdNextShipClass (void);
 		void CmdOK (void);
 		void CmdPrevShipClass (void);
-		void CreatePlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth);
-		void CreatePlayerName (const CString &sName, int x, int y, int cxWidth);
 		void CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth);
-		void SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth);
-		void SetPlayerName (const CString &sName, int x, int y, int cxWidth);
+		void SetPlayerGenome (GenomeTypes iGenome);
+		void SetPlayerName (const CString &sName);
 		void SetShipClass (CShipClass *pClass, int x, int y, int cxWidth);
 		void SetShipClassDesc (const CString &sDesc, int x, int y, int cxWidth);
 		void SetShipClassImage (CShipClass *pClass, int x, int y, int cxWidth);
@@ -499,27 +497,24 @@ class CNewGameSession : public IHISession
 		SNewGameSettings m_Settings;
 
 		TSortMap<CString, CShipClass *> m_ShipClasses;
-		int m_iCurShipClass;
-		bool m_bEditingName;
+		int m_iCurShipClass = 0;
 
-		CAniVScroller *m_pRoot;
+		CAniVScroller *m_pRoot = NULL;
 
-		int m_xLeftCol;
-		int m_cxLeftCol;
-		int m_xCenterCol;
-		int m_cxCenterCol;
-		int m_xRightCol;
-		int m_cxRightCol;
+		int m_xLeftCol = 0;
+		int m_cxLeftCol = 0;
+		int m_xCenterCol = 0;
+		int m_cxCenterCol = 0;
+		int m_xRightCol = 0;
+		int m_cxRightCol = 0;
 
-		int m_xPlayerName;
-		int m_yPlayerName;
-		int m_cxPlayerName;
-		int m_xPlayerGenome;
-		int m_yPlayerGenome;
-		int m_cxPlayerGenome;
-		int m_xShipClass;
-		int m_yShipClass;
-		int m_cxShipClass;
+		CSmallOptionButtonAnimator m_PlayerName;
+		CSmallOptionButtonAnimator m_PlayerGenome;
+		CSmallOptionButtonAnimator m_Difficulty;
+
+		int m_xShipClass = 0;
+		int m_yShipClass = 0;
+		int m_cxShipClass = 0;
 	};
 
 class CProfileSession : public IHISession
