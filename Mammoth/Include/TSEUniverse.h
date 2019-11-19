@@ -310,14 +310,15 @@ class CUniverse
 		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const;
 		CAscendedObjectList &GetAscendedObjects (void) { return m_AscendedObjects; }
 		CG32bitPixel GetColor (const CString &sColor) const { return m_pHost->GetColor(sColor); }
-		CAdventureDesc &GetCurrentAdventureDesc (void) { return *m_pAdventure; }
+		const CAdventureDesc &GetCurrentAdventureDesc (void) const { return m_Design.GetAdventureDesc(); }
+		CAdventureDesc &GetCurrentAdventureDesc (void) { return m_Design.GetAdventureDesc(); }
 		void GetCurrentAdventureExtensions (TArray<DWORD> *retList);
 		CMission *GetCurrentMission (void);
 		const CDisplayAttributeDefinitions &GetAttributeDesc (void) const { return m_Design.GetDisplayAttributes(); }
 		const CEconomyType &GetCreditCurrency (void) const;
 		const CDebugOptions &GetDebugOptions (void) const { return m_DebugOptions; }
 		ICCItemPtr GetDebugProperty (const CString &sProperty) const { return m_DebugOptions.GetProperty(sProperty); }
-		const CEconomyType &GetDefaultCurrency (void) const { return (m_pAdventure ? m_pAdventure->GetDefaultCurrency() : GetCreditCurrency()); }
+		const CEconomyType &GetDefaultCurrency (void) const { return GetCurrentAdventureDesc().GetDefaultCurrency(); }
 		CEffectCreator &GetDefaultFireEffect (DamageTypes iDamage);
 		CEffectCreator &GetDefaultHitEffect (DamageTypes iDamage);
 		CDockSession &GetDockSession (void) { return m_DockSession; }
@@ -325,6 +326,7 @@ class CUniverse
 		CGImageCache &GetDynamicImageLibrary (void) { return m_DynamicImageLibrary; }
 		CTimeSpan GetElapsedGameTime (void) { return m_Time.GetElapsedTimeAt(m_iTick); }
 		CTimeSpan GetElapsedGameTimeAt (int iTick) { return m_Time.GetElapsedTimeAt(iTick); }
+		const CEngineOptions &GetEngineOptions (void) const { return GetCurrentAdventureDesc().GetEngineOptions(); }
 		CExtensionCollection &GetExtensionCollection (void) { return m_Extensions; }
 		CString GetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib);
 		CTopologyNode *GetFirstTopologyNode (void);
@@ -517,23 +519,22 @@ class CUniverse
 		CString m_sResourceDb;					//	Resource database
 
 		TArray<TArray<SLevelEncounter>> m_LevelEncounterTables;	//	Array of SLevelEncounter arrays
-		bool m_bBasicInit;						//	TRUE if we've initialized CodeChain, etc.
+		bool m_bBasicInit = false;				//	TRUE if we've initialized CodeChain, etc.
 
 		//	Game instance data
 
-		bool m_bRegistered;						//	If TRUE, this is a registered game
-		bool m_bResurrectMode;					//	If TRUE, this session is a game resurrect
-		int m_iTick;							//	Ticks since beginning of time
-		int m_iPaintTick;						//	Advances only when we paint a frame
+		bool m_bRegistered = false;				//	If TRUE, this is a registered game
+		bool m_bResurrectMode = false;			//	If TRUE, this session is a game resurrect
+		int m_iTick = 1;						//	Ticks since beginning of time
+		int m_iPaintTick = 1;					//	Advances only when we paint a frame
 		CGameTimeKeeper m_Time;					//	Game time tracker
-		CAdventureDesc *m_pAdventure;			//	Current adventure
-		CSpaceObject *m_pPOV;					//	Point of view
-		IPlayerController *m_pPlayer;			//	Player controller
-		CSpaceObject *m_pPlayerShip;			//	Player ship
-		CSystem *m_pCurrentSystem;				//	Current star system (used by code)
+		CSpaceObject *m_pPOV = NULL;			//	Point of view
+		IPlayerController *m_pPlayer = NULL;	//	Player controller
+		CSpaceObject *m_pPlayerShip = NULL;		//	Player ship
+		CSystem *m_pCurrentSystem = NULL;		//	Current star system (used by code)
 		TSortMap<DWORD, CSystem *> m_StarSystems;	//	Array of CSystem (indexed by ID)
 		CTimeDate m_StartTime;					//	Time when we started the game
-		DWORD m_dwNextID;						//	Next universal ID
+		DWORD m_dwNextID = 1;					//	Next universal ID
 		CTopology m_Topology;					//	Array of CTopologyNode
 		CAscendedObjectList m_AscendedObjects;	//	Ascended objects (objects not in any system)
 		CMissionList m_AllMissions;				//	List of all missions
@@ -546,10 +547,10 @@ class CUniverse
 		//	Support structures
 
 		CCriticalSection m_cs;
-		IHost *m_pHost;
+		IHost *m_pHost = NULL;
 		CCodeChain m_CC;
-		ICCItem *m_pSavedGlobalSymbols;
-		CSoundMgr *m_pSoundMgr;
+		ICCItem *m_pSavedGlobalSymbols = NULL;
+		CSoundMgr *m_pSoundMgr = NULL;
 		const CG16bitFont *m_FontTable[fontCount];
 		CG16bitFont m_DefaultFonts[fontCount];
 		TArray<INotifications *> m_Subscribers;
@@ -558,7 +559,6 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
-		CAdventureDesc m_EmptyAdventure;
 
 		//	Cached singletons
 
@@ -567,8 +567,8 @@ class CUniverse
 
 		//	Debugging structures
 
-		bool m_bDebugMode;
-		bool m_bNoSound;
-		int m_iLogImageLoad;					//	If >0 we disable image load logging
+		bool m_bDebugMode = false;
+		bool m_bNoSound = false;
+		int m_iLogImageLoad = 0;				//	If >0 we disable image load logging
 	};
 

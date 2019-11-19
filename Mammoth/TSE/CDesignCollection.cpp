@@ -46,9 +46,7 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	};
 
 CDesignCollection::CDesignCollection (void) :
-		m_Base(true),	//	m_Base owns its types and will free them at the end
-		m_pAdventureDesc(NULL),
-		m_bInBindDesign(false)
+		m_Base(true)	//	m_Base owns its types and will free them at the end
 
 //	CDesignCollection construtor
 
@@ -225,6 +223,8 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	m_pTopology = NULL;
 	m_pAdventureExtension = NULL;
+	m_pAdventureDesc = NULL;
+	m_EmptyAdventure = CAdventureDesc();
 
 	//	Minimum API version
 	//
@@ -281,7 +281,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		if (pExtension->GetType() == extAdventure)
 			{
 			m_pAdventureExtension = pExtension;
-			m_pAdventureDesc = pExtension->GetAdventureDesc();
+//			m_pAdventureDesc = pExtension->GetAdventureDesc();
 			}
 
 		//	If this is an adventure or the base extension then take the 
@@ -363,8 +363,9 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//
 	//	NOTE: m_pAdventureDesc can be NULL (e.g., in the intro screen).
 
-	if (m_pAdventureDesc)
+	if (m_ByType[designAdventureDesc].GetCount() > 0)
 		{
+		m_pAdventureDesc = CAdventureDesc::AsType(m_ByType[designAdventureDesc].GetEntry(0));
 		m_pAdventureDesc->SetCurrentAdventure();
 
 		//	Let the adventure override encounter desc
@@ -375,7 +376,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 			*retsError = Ctx.sError;
 			return ERR_FAIL;
 			}
+
+		//	Let the adventure descriptor initialize constants
+
+		if (!m_pAdventureDesc->InitEngineOptions(Ctx))
+			{
+			m_bInBindDesign = false;
+			*retsError = Ctx.sError;
+			return ERR_FAIL;
+			}
 		}
+	else
+		m_pAdventureDesc = NULL;
 
 	//	Cache a map between currency name and economy type
 	//	We need to do this before Bind because some types will lookup

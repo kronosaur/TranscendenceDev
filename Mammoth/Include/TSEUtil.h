@@ -661,7 +661,7 @@ class CDamageAdjDesc
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
 		bool IsEmpty (void) const;
 
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);

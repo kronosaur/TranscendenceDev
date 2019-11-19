@@ -209,9 +209,14 @@ int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 //	Computes default hit points.
 
 	{
+	int iDefault;
+
+	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultShotHP()) != -1)
+		return iDefault;
+
 	//	Ammo items get hit points proportional to level and mass.
 
-	if (m_pAmmoType)
+	else if (m_pAmmoType)
 		{
 		CItem AmmoItem(m_pAmmoType, 1);
 		Metric rStdHP = HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
@@ -233,12 +238,17 @@ int CWeaponFireDesc::CalcDefaultInteraction (void) const
 //	Computes the default interaction.
 
 	{
-	if (m_iFireType == ftBeam)
+	int iDefault;
+
+	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultInteraction()) != -1)
+		return iDefault;
+
+	else if (m_iFireType == ftBeam)
 		return 0;
+
 	else if (m_iFireType == ftMissile)
-		{
 		return 100;
-		}
+
 	else
 		return 0;
 	}

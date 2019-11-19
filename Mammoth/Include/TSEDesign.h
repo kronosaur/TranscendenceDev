@@ -1331,6 +1331,8 @@ class CDesignCollection
 		void FireOnGlobalUniverseLoad (void);
 		void FireOnGlobalUniverseSave (void);
 		void FireOnGlobalUpdate (int iTick);
+		const CAdventureDesc &GetAdventureDesc (void) const { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
+		CAdventureDesc &GetAdventureDesc (void) { return (m_pAdventureDesc ? *m_pAdventureDesc : m_EmptyAdventure); }
 		DWORD GetAdventureUNID (void) const { return (m_pAdventureExtension ? m_pAdventureExtension->GetUNID() : 0); }
 		DWORD GetAPIVersion (void) const { return m_dwMinAPIVersion; }
 		CArmorMassDefinitions &GetArmorMassDefinitions (void) { return m_ArmorDefinitions; }
@@ -1381,18 +1383,19 @@ class CDesignCollection
 
 		//	Cached data initialized at bind-time
 
-		DWORD m_dwMinAPIVersion;
+		DWORD m_dwMinAPIVersion = 0;
 		TArray<CExtension *> m_BoundExtensions;
 		CDesignTable m_AllTypes;
 		CDesignList m_ByType[designCount];
 		CDesignList m_OverrideTypes;
 		CTopologyDescTable *m_pTopology;
-		CExtension *m_pAdventureExtension;
-		CAdventureDesc *m_pAdventureDesc;
+		CExtension *m_pAdventureExtension = NULL;
+		CAdventureDesc *m_pAdventureDesc = NULL;
 		TSortMap<CString, const CEconomyType *> m_EconomyIndex;
 		CArmorMassDefinitions m_ArmorDefinitions;
 		CDisplayAttributeDefinitions m_DisplayAttribs;
 		CGlobalEventCache *m_EventsCache[evtCount];
+		CAdventureDesc m_EmptyAdventure;
 
 		//	Dynamic design types
 
@@ -1403,7 +1406,7 @@ class CDesignCollection
 
 		//	State
 
-		bool m_bInBindDesign;
+		bool m_bInBindDesign = false;
 	};
 
 //	Utility functions

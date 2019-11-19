@@ -61,29 +61,9 @@ static char *FONT_TABLE[CUniverse::fontCount] =
 	};
 
 CUniverse::CUniverse (void) : 
-		m_bBasicInit(false),
-
-		m_bRegistered(false),
-		m_bResurrectMode(false),
-		m_iTick(1),
-		m_iPaintTick(1),
-		m_pAdventure(NULL),
-		m_pPOV(NULL),
-		m_pPlayer(NULL),
-		m_pPlayerShip(NULL),
-		m_pCurrentSystem(NULL),
-		m_dwNextID(1),
 		m_Topology(*this),
 		m_AllMissions(true),
-
-		m_pSoundMgr(NULL),
-
-		m_pHost(&g_DefaultHost),
-		m_pSavedGlobalSymbols(NULL),
-
-		m_bDebugMode(false),
-		m_bNoSound(false),
-		m_iLogImageLoad(0)
+		m_pHost(&g_DefaultHost)
 
 //	CUniverse constructor
 
@@ -755,10 +735,7 @@ const CDamageAdjDesc *CUniverse::GetArmorDamageAdj (int iLevel) const
 //	Returns the armor damage adj table
 
 	{
-	if (m_pAdventure)
-		return m_pAdventure->GetArmorDamageAdj(iLevel);
-	else
-		return CAdventureDesc::GetDefaultArmorDamageAdj(iLevel);
+	return GetCurrentAdventureDesc().GetEngineOptions().GetArmorDamageAdj(iLevel);
 	}
 
 const CEconomyType &CUniverse::GetCreditCurrency (void) const
@@ -858,10 +835,7 @@ const CDamageAdjDesc *CUniverse::GetShieldDamageAdj (int iLevel) const
 //	Returns the shield damage table
 
 	{
-	if (m_pAdventure)
-		return m_pAdventure->GetShieldDamageAdj(iLevel);
-	else
-		return CAdventureDesc::GetDefaultShieldDamageAdj(iLevel);
+	return GetCurrentAdventureDesc().GetEngineOptions().GetShieldDamageAdj(iLevel);
 	}
 
 void CUniverse::GetCurrentAdventureExtensions (TArray<DWORD> *retList)
@@ -1344,18 +1318,6 @@ ALERROR CUniverse::Init (SInitDesc &Ctx, CString *retsError)
 				*retsError = CONSTLIT("Unable to reinit.");
 				return error;
 				}
-			}
-
-		//	Set the current adventure (we need to do this before BindDesign, since
-		//	we need the current adventure to get the shield and armor damage adj
-		//	tables.
-
-		if (Ctx.pAdventure)
-			m_pAdventure = Ctx.pAdventure->GetAdventureDesc();
-		else
-			{
-			m_EmptyAdventure = CAdventureDesc();
-			m_pAdventure = &m_EmptyAdventure;
 			}
 
 		//	Figure out the minimum API version for all extensions being used.
@@ -2524,10 +2486,10 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 	//	Adventure UNID
 
 	SExtensionSaveDesc Desc;
-	if (m_pAdventure->GetExtension())
+	if (const CExtension *pExtension = GetCurrentAdventureDesc().GetExtension())
 		{
-		Desc.dwUNID = m_pAdventure->GetExtension()->GetUNID();
-		Desc.dwRelease = m_pAdventure->GetExtension()->GetRelease();
+		Desc.dwUNID = pExtension->GetUNID();
+		Desc.dwRelease = pExtension->GetRelease();
 		}
 	pStream->Write((char *)&Desc, sizeof(SExtensionSaveDesc));
 

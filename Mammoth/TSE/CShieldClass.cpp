@@ -729,7 +729,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	Load damage adjustment
 
 	pShield->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, InitCtx.pType->GetLevel());
-	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Load absorb adjustment; if attribute not found, assume 100% for everything

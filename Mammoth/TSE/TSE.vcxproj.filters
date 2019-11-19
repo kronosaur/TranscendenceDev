@@ -1372,5 +1372,8 @@
     <ClCompile Include="CSmartSystemCreateOptions.cpp">
       <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
+    <ClCompile Include="CEngineOptions.cpp">
+      <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

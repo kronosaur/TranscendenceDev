@@ -1517,7 +1517,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	//	Load the new damage adjustment structure
 
 	pArmor->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, iLevel);
-	if (error = pArmor->m_Stats.DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pArmor->m_Stats.DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Blind-immune
