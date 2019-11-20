@@ -275,6 +275,7 @@ class CUniverse
 		void AddEvent (CSystemEvent *pEvent);
 		void AddTimeDiscontinuity (const CTimeSpan &Duration) { m_Time.AddDiscontinuity(m_iTick++, Duration); }
 		ALERROR AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem);
+		void AdjustDamage (SDamageCtx &Ctx) const;
 		bool CancelEvent (CSpaceObject *pObj, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, bInDoEvent); }
 		bool CancelEvent (CSpaceObject *pObj, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pObj, sEvent, bInDoEvent); }
 		bool CancelEvent (CDesignType *pType, const CString &sEvent, bool bInDoEvent = false) { return m_Events.CancelEvent(pType, sEvent, bInDoEvent); }
@@ -375,6 +376,7 @@ class CUniverse
 		void SetCurrentSystem (CSystem *pSystem);
 		void SetDebugMode (bool bDebug = true) { m_bDebugMode = bDebug; }
 		bool SetDebugProperty (const CString &sProperty, ICCItem *pValue, CString *retsError = NULL) { return m_DebugOptions.SetProperty(sProperty, pValue, retsError); }
+		void SetDifficultyLevel (CDifficultyOptions::ELevels iLevel) { m_Difficulty.SetLevel(iLevel); }
 		void SetEngineOptions (const CEngineOptions &Options) { m_EngineOptions.Merge(Options); }
 		bool SetExtensionData (EStorageScopes iScope, DWORD dwExtension, const CString &sAttrib, const CString &sData);
 		void SetNewSystem (CSystem *pSystem, CSpaceObject *pPOV);
@@ -429,6 +431,8 @@ class CUniverse
 		CTopologyNode *GetCurrentTopologyNode (void) { return (m_pCurrentSystem ? m_pCurrentSystem->GetTopology() : NULL); }
 		CSystem *GetCurrentSystem (void) { return m_pCurrentSystem; }
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
+		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
+		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
@@ -529,6 +533,7 @@ class CUniverse
 		bool m_bResurrectMode = false;			//	If TRUE, this session is a game resurrect
 		int m_iTick = 1;						//	Ticks since beginning of time
 		int m_iPaintTick = 1;					//	Advances only when we paint a frame
+		CDifficultyOptions m_Difficulty;		//	Difficulty level
 		CGameTimeKeeper m_Time;					//	Game time tracker
 		CSpaceObject *m_pPOV = NULL;			//	Point of view
 		IPlayerController *m_pPlayer = NULL;	//	Player controller

@@ -18,6 +18,7 @@
 
 #define PROPERTY_API_VERSION				CONSTLIT("apiVersion")
 #define PROPERTY_DEFAULT_CURRENCY			CONSTLIT("defaultCurrency")
+#define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
 struct SExtensionSaveDesc
@@ -152,6 +153,37 @@ ALERROR CUniverse::AddStarSystem (CTopologyNode *pTopology, CSystem *pSystem)
 		}
 
 	return NOERROR;
+	}
+
+void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
+
+//	AdjustDamage
+//
+//	Adjust damage to implement difficulty levels.
+
+	{
+	const CSpaceObject *pOrderGiver;
+
+	//	If the player got hit, then adjust
+
+	Metric rAdjust;
+	if (Ctx.pObj->IsPlayer())
+		rAdjust = m_Difficulty.GetPlayerDamageAdj();
+
+	//	Otherwise, if the attacker is the player, then adjust
+
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer())
+		rAdjust = m_Difficulty.GetEnemyDamageAdj();
+
+	//	Otherwise, no adjustment.
+
+	else
+		return;
+
+	//	Adjust damage
+
+	if (rAdjust != 1.0)
+		Ctx.iDamage = mathRoundStochastic(Ctx.iDamage * rAdjust);
 	}
 
 void CUniverse::Boot (void)
@@ -725,6 +757,10 @@ void CUniverse::GenerateGameStats (CGameStats &Stats)
 	else
 		Stats.Insert(CONSTLIT("Game"), CONSTLIT("Unregistered"));
 
+	//	Difficulty
+
+	Stats.Insert(CONSTLIT("Difficulty"), CDifficultyOptions::GetLabel(GetDifficultyLevel()));
+
 	DEBUG_CATCH
 	}
 
@@ -984,6 +1020,9 @@ ICCItemPtr CUniverse::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
 	else if (strEquals(sProperty, PROPERTY_DEFAULT_CURRENCY))
 		return ICCItemPtr(GetDefaultCurrency().GetUNID());
+
+	else if (strEquals(sProperty, PROPERTY_DIFFICULTY))
+		return ICCItemPtr(CDifficultyOptions::GetID(GetDifficultyLevel()));
 
 	else if (strEquals(sProperty, PROPERTY_MIN_API_VERSION))
 		return ICCItemPtr(m_Design.GetAPIVersion());
@@ -1701,6 +1740,7 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 //	DWORD		m_dwNextID
 //
 //	CGameTimeKeeper
+//	CDifficulty
 //
 //	DWORD		No of enabled extensions
 //	SExtensionSaveDesc for each
@@ -1802,6 +1842,13 @@ ALERROR CUniverse::LoadFromStream (IReadStream *pStream, DWORD *retdwSystemID, D
 
 	if (Ctx.dwVersion >= 7)
 		m_Time.ReadFromStream(pStream);
+
+	//	m_Difficulty
+
+	if (Ctx.dwVersion >= 38)
+		m_Difficulty.ReadFromStream(*pStream);
+	else
+		m_Difficulty.SetLevel(CDifficultyOptions::lvlChallenge);
 
 	//	Prepare a universe initialization context
 	//	NOTE: Caller has set debug mode based on game file header flag.
@@ -2354,6 +2401,7 @@ ALERROR CUniverse::Reinit (void)
 	m_StarSystems.DeleteAll();
 	m_dwNextID = 1;
 	m_Objects.DeleteAll();
+	m_Difficulty = CDifficultyOptions();
 
 	//	NOTE: We don't reinitialize m_bDebugMode or m_bRegistered because those
 	//	are set before Reinit (and thus we would overwrite them).
@@ -2407,6 +2455,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 //	DWORD		flags
 //	DWORD		m_dwNextID
 //	CGameTimeKeeper m_Time
+//	CDifficultyOptions m_Difficulty
 //
 //	DWORD		No of enabled extensions
 //	SExtensionSaveDesc for each
@@ -2462,6 +2511,7 @@ ALERROR CUniverse::SaveToStream (IWriteStream *pStream)
 
 	pStream->Write(m_dwNextID);
 	m_Time.WriteToStream(pStream);
+	m_Difficulty.WriteToStream(*pStream);
 
 	//	Extensions
 	//

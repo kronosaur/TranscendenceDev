@@ -859,6 +859,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		SNewGameSettings Defaults;
 		Defaults.sPlayerName = m_Settings.GetString(CGameSettings::playerName);
 		Defaults.iPlayerGenome = ParseGenomeID(m_Settings.GetString(CGameSettings::playerGenome));
+		Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 		Defaults.dwPlayerShip = (DWORD)m_Settings.GetInteger(CGameSettings::playerShipClass);
 
 		//	If the player name is NULL then we come up with a better idea
@@ -881,6 +882,11 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		if (Defaults.iPlayerGenome == genomeUnknown)
 			Defaults.iPlayerGenome = (mathRandom(1, 2) == 1 ? genomeHumanFemale : genomeHumanMale);
+
+		//	Validate difficulty
+
+		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
+			Defaults.iDifficulty = CDifficultyOptions::lvlNormal;
 
 		//	New game screen
 
@@ -935,6 +941,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		m_Settings.SetString(CGameSettings::playerGenome, GetGenomeID(pNewGame->iPlayerGenome));
 		m_Settings.SetInteger(CGameSettings::playerShipClass, (int)pNewGame->dwPlayerShip);
 		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc().GetExtensionUNID());
+		m_Settings.SetString(CGameSettings::lastDifficulty, CDifficultyOptions::GetID(pNewGame->iDifficulty));
 
 		//	Report creation
 

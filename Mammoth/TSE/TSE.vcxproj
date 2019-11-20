@@ -378,6 +378,7 @@
     <ClCompile Include="CDeviceItem.cpp" />
     <ClCompile Include="CDeviceSystem.cpp" />
     <ClCompile Include="CDifferentiatedItem.cpp" />
+    <ClCompile Include="CDifficultyOptions.cpp" />
     <ClCompile Include="CDisplayAttributeDefinitions.cpp" />
     <ClCompile Include="CDockingPorts.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

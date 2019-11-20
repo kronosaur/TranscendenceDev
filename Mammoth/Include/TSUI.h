@@ -469,8 +469,12 @@ enum EImageLibrary
 	imagePlayIcon =					25,
 	imageDebugIcon =				26,
 	imageSettingsIcon =				27,
+	imageDifficultyStory =			28,
+	imageDifficultyNormal =			29,
+	imageDifficultyChallenge =		30,
+	imageDifficultyPermadeath =		31,
 
-	imageCount =					28,
+	imageCount =					32,
 	};
 
 class CVisualPalette : public IFontTable

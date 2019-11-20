@@ -4423,6 +4423,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	int i;
 
+	GetUniverse().AdjustDamage(Ctx);
+
 	//	Short-circuit
 
 	if (Ctx.iDamage == 0 || GetSystem() == NULL)

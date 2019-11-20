@@ -10,9 +10,7 @@
 #define MIN_GAME_FILE_VERSION					5
 #define GAME_FILE_VERSION						11
 
-CGameFile::CGameFile (void) : 
-		m_pFile(NULL),
-		m_iRefCount(0)
+CGameFile::CGameFile (void)
 
 //	CGameFile constructor
 
@@ -200,6 +198,34 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	return NOERROR;
 	}
 
+DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
+
+//	EncodeDifficulty
+//
+//	Encodes into flags.
+
+	{
+	switch (iLevel)
+		{
+		//	Challenge level is the default
+
+		case CDifficultyOptions::lvlChallenge:
+			return 0;
+
+		case CDifficultyOptions::lvlNormal:
+			return (1 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlStory:
+			return (2 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlPermadeath:
+			return (3 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		default:
+			return 0;
+		}
+	}
+
 CString CGameFile::GenerateFilename (const CString &sName)
 
 //	GenerateFilename
@@ -239,6 +265,34 @@ CString CGameFile::GetCreateVersion (DWORD dwFlags) const
 
 	else
 		return CString(m_Header.szCreateVersion);
+	}
+
+CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
+
+//	GetDifficulty
+//
+//	Decodes the difficulty from flags.
+
+	{
+	DWORD dwFlags = (m_Header.dwFlags & GAME_FLAG_DIFFICULTY_MASK) >> GAME_FLAG_DIFFICULTY_SHIFT;
+
+	switch (dwFlags)
+		{
+		case 0:
+			return CDifficultyOptions::lvlChallenge;
+
+		case 1:
+			return CDifficultyOptions::lvlNormal;
+
+		case 2:
+			return CDifficultyOptions::lvlStory;
+
+		case 3:
+			return CDifficultyOptions::lvlPermadeath;
+
+		default:
+			return CDifficultyOptions::lvlChallenge;
+		}
 	}
 
 CString CGameFile::GetPlayerName (void) const
@@ -1191,6 +1245,11 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 			}
 		}
 
+	//	Set difficulty
+
+	dwNewFlags &= ~GAME_FLAG_DIFFICULTY_MASK;
+	dwNewFlags |= EncodeDifficulty(Univ.GetDifficultyLevel());
+
 	//	If flags have changed, save the header
 
 	if (dwNewFlags != m_Header.dwFlags)
@@ -1231,6 +1290,10 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 	//	Done
 
 	m_pFile->Flush();
+
+	//	Remember when we saved, in case we try to save again this tick.
+
+	m_dwLastSavedOn = Univ.GetTicks();
 
 	return NOERROR;
 	}

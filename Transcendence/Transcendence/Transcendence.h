@@ -96,19 +96,13 @@ struct SFontTable
 
 struct SNewGameSettings
 	{
-	SNewGameSettings (void) :
-			iPlayerGenome(genomeUnknown),
-			dwPlayerShip(0),
-			bFullCreate(false),
-			bDefaultPlayerName(false)
-		{ }
-
 	CString sPlayerName;						//	Character name
-	GenomeTypes iPlayerGenome;					//	Genome
-	DWORD dwPlayerShip;							//	Starting ship class
+	GenomeTypes iPlayerGenome = genomeUnknown;	//	Genome
+	CDifficultyOptions::ELevels iDifficulty = CDifficultyOptions::lvlUnknown;
+	DWORD dwPlayerShip = 0;						//	Starting ship class
 
-	bool bFullCreate;							//	If TRUE, create all systems
-	bool bDefaultPlayerName;					//	If TRUE, this is a default player name
+	bool bFullCreate = false;					//	If TRUE, create all systems
+	bool bDefaultPlayerName = false;			//	If TRUE, this is a default player name
 	};
 
 struct SAdventureSettings

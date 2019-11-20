@@ -111,6 +111,11 @@ static constexpr int GLOBAL_ON_UPDATE_CYCLE =			30;					//	OnGlobalUpdate for al
 
 static constexpr int ON_SCREEN_UPDATE_CYCLE =			15;					//	OnScreenUpdate for <DockScreen>
 
+//	Constants & Enums
+
+static constexpr int MAX_OBJECT_LEVEL =					25;	//	Max level for space objects
+static constexpr int MAX_ITEM_LEVEL =					25;	//	Max level for items
+
 //	Special UNIDs
 //	LATER: UNID should not be hard-coded
 

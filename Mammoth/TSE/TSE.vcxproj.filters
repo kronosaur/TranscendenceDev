@@ -1375,5 +1375,8 @@
     <ClCompile Include="CEngineOptions.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="CDifficultyOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

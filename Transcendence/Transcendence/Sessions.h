@@ -479,6 +479,7 @@ class CNewGameSession : public IHISession
 	private:
 		void AddClassInfo (CShipClass *pClass, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni);
 		void CmdCancel (void);
+		void CmdChangeDifficulty (void);
 		void CmdChangeGenome (void);
 		void CmdEditName (void);
 		void CmdEditNameCancel (void);
@@ -486,6 +487,7 @@ class CNewGameSession : public IHISession
 		void CmdOK (void);
 		void CmdPrevShipClass (void);
 		void CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth);
+		void SetDifficulty (CDifficultyOptions::ELevels iLevel);
 		void SetPlayerGenome (GenomeTypes iGenome);
 		void SetPlayerName (const CString &sName);
 		void SetShipClass (CShipClass *pClass, int x, int y, int cxWidth);

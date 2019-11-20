@@ -199,6 +199,7 @@ class CGameSettings
 			playerGenome,					//	Default player genome ("humanMale" or "humanFemale")
 			playerShipClass,				//	Default player ship class
 			lastAdventure,					//	Last adventure created
+			lastDifficulty,					//	Last difficulty level played
 
 			dockPortIndicator,				//	Options for dock port indicator
 			allowInvokeLetterHotKeys,		//	Allow invoke entries to have letter hot keys
@@ -250,7 +251,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 44,
+			OPTIONS_COUNT = 45,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }

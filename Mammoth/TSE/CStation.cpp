@@ -2083,6 +2083,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 
 	int i;
 
+	GetUniverse().AdjustDamage(Ctx);
+
 	//	Stations don't have armor segments
 
 	Ctx.iSectHit = -1;

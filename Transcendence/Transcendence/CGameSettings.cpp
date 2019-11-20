@@ -53,6 +53,7 @@ SOptionDefaults g_OptionData[CGameSettings::OPTIONS_COUNT] =
 		{	"playerGenome",				optionString,	"",			0	},
 		{	"playerShipClass",			optionInteger,	"0",		OPTION_FLAG_HEX	},
 		{	"lastAdventure",			optionInteger,	"0",		OPTION_FLAG_HEX	},
+		{	"lastDifficulty",			optionString,	"normal",	0	},
 
 		{	"dockPortIndicator",		optionString,	"enabled",	0	},
 		{	"invokeLetterHotKeys",		optionBoolean,	"false",	0	},

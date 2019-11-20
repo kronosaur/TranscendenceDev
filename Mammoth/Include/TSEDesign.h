@@ -37,11 +37,6 @@ struct SDestroyCtx;
 struct SSystemCreateCtx;
 struct STradeServiceCtx;
 
-//	Constants & Enums
-
-const int MAX_OBJECT_LEVEL =			25;	//	Max level for space objects
-const int MAX_ITEM_LEVEL =				25;	//	Max level for items
-
 //	Base Design Type ----------------------------------------------------------
 //
 //	To add a new DesignType:

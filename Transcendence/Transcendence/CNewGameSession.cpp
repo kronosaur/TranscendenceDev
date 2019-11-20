@@ -9,6 +9,7 @@
 #define ALIGN_CENTER							CONSTLIT("center")
 #define ALIGN_RIGHT								CONSTLIT("right")
 
+#define CMD_CHANGE_DIFFICULTY					CONSTLIT("cmdChangeDifficulty")
 #define CMD_CHANGE_GENOME						CONSTLIT("cmdChangeGenome")
 #define CMD_CLOSE_SESSION						CONSTLIT("cmdCloseSession")
 #define CMD_EDIT_NAME							CONSTLIT("cmdEditName")
@@ -52,6 +53,7 @@
 
 #define STYLE_IMAGE								CONSTLIT("image")
 
+#define STR_DIFFICULTY							CONSTLIT("difficulty")
 #define STR_GENOME								CONSTLIT("gender")
 #define STR_NAME								CONSTLIT("name")
 
@@ -145,6 +147,17 @@ void CNewGameSession::CmdCancel (void)
 	//	New game
 
 	HI.HICommand(CMD_BACK_TO_INTRO);
+	}
+
+void CNewGameSession::CmdChangeDifficulty (void)
+
+//	CmdChangeDifficulty
+//
+//	Change the difficulty
+
+	{
+	m_Settings.iDifficulty = CDifficultyOptions::NextLevel(m_Settings.iDifficulty);
+	SetDifficulty(m_Settings.iDifficulty);
 	}
 
 void CNewGameSession::CmdChangeGenome (void)
@@ -246,6 +259,7 @@ void CNewGameSession::CmdOK (void)
 	NewGame.iPlayerGenome = m_Settings.iPlayerGenome;
 	NewGame.dwPlayerShip = m_ShipClasses[m_iCurShipClass]->GetUNID();
 	NewGame.bDefaultPlayerName = m_Settings.bDefaultPlayerName;
+	NewGame.iDifficulty = m_Settings.iDifficulty;
 
 	//	Remember some variables because after we close the session this object
 	//	will be gone.
@@ -372,6 +386,8 @@ ALERROR CNewGameSession::OnCommand (const CString &sCmd, void *pData)
 		CmdNextShipClass();
 	else if (strEquals(sCmd, CMD_PREV_SHIP_CLASS))
 		CmdPrevShipClass();
+	else if (strEquals(sCmd, CMD_CHANGE_DIFFICULTY))
+		CmdChangeDifficulty();
 	else if (strEquals(sCmd, CMD_CHANGE_GENOME))
 		CmdChangeGenome();
 	else if (strEquals(sCmd, CMD_EDIT_NAME))
@@ -467,13 +483,24 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 			alignLeft);
 	SetPlayerName(m_Settings.sPlayerName);
 
+	//	Create the difficulty option
+
+	m_Difficulty.Create(*m_pRoot, 
+			CMD_CHANGE_DIFFICULTY, 
+			STR_DIFFICULTY, 
+			m_xRightCol, 
+			MAJOR_PADDING_TOP, 
+			m_cxRightCol, 
+			alignRight);
+	SetDifficulty(m_Settings.iDifficulty);
+
 	//	Create the player genome
 
 	m_PlayerGenome.Create(*m_pRoot, 
 			CMD_CHANGE_GENOME, 
 			STR_GENOME, 
 			m_xRightCol, 
-			MAJOR_PADDING_TOP, 
+			MAJOR_PADDING_TOP + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT, 
 			m_cxRightCol, 
 			alignRight);
 	SetPlayerGenome(m_Settings.iPlayerGenome);
@@ -577,6 +604,37 @@ void CNewGameSession::OnUpdate (bool bTopMost)
 //	Update
 
 	{
+	}
+
+void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevels iLevel)
+
+//	SetDifficulty
+//
+//	Sets the difficulty control.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	m_Difficulty.SetText(CDifficultyOptions::GetLabel(iLevel));
+
+	switch (iLevel)
+		{
+		case CDifficultyOptions::lvlStory:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyStory));
+			break;
+
+		case CDifficultyOptions::lvlNormal:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyNormal));
+			break;
+
+		case CDifficultyOptions::lvlPermadeath:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyPermadeath));
+			break;
+
+		default:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyChallenge));
+			break;
+		}
 	}
 
 void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome)
