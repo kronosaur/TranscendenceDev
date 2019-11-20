@@ -216,6 +216,9 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 	CG32bitPixel rgbLineColor = GetColor(colorLineFrame);
 	int cyCenter = RectHeight(rcCenter);
 
+	if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
+		rgbCenter = GetColor(colorAreaDialog);
+
 	if (!Background.IsEmpty())
 		{
 		//	Compute the RECT of the background image
@@ -250,11 +253,7 @@ void CVisualPalette::DrawSessionBackground (CG32bitImage &Screen, const CG32bitI
 		{
 		Screen.Fill(rcFull.left, 0, RectWidth(rcFull), rcFull.top, rgbBackgroundColor);
 		Screen.Fill(rcFull.left, rcFull.bottom, RectWidth(rcFull), cyScreen - rcFull.bottom, rgbBackgroundColor);
-
-		if (dwFlags & OPTION_SESSION_DLG_BACKGROUND)
-			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), GetColor(colorAreaDialog));
-		else
-			Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), rgbCenter);
+		Screen.Fill(rcFull.left, rcFull.top, RectWidth(rcFull), RectHeight(rcFull), rgbCenter);
 		}
 
 	//	Paint the frame

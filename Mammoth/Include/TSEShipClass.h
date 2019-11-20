@@ -374,7 +374,7 @@ class CShipClass : public CDesignType
 		bool FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const;
 
 		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
-		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0);
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
@@ -399,7 +399,7 @@ class CShipClass : public CDesignType
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		FrequencyTypes GetFrequency (void) const { return m_Frequency; }
-        const CObjectImageArray &GetHeroImage (void);
+        const CObjectImageArray &GetHeroImage (void) const;
 		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
 		inline const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
 		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
@@ -453,7 +453,7 @@ class CShipClass : public CDesignType
 					int iTick, 
 					bool bThrusting = false,
 					bool bRadioactive = false,
-					DWORD byInvisible = 0);
+					DWORD byInvisible = 0) const;
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const;
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
@@ -478,7 +478,7 @@ class CShipClass : public CDesignType
 						const ViewportTransform &Trans, 
 						int iDirection, 
 						int iTick,
-						bool bInFrontOnly);
+						bool bInFrontOnly) const;
 		inline bool ShowsMapLabel (void) const { return HasDockingPorts(); }
 
 		//	CDesignType overrides
@@ -633,7 +633,7 @@ class CShipClass : public CDesignType
 		//	Image
 
 		CCompositeImageDesc m_Image;			//	Image of ship
-        CObjectImageArray m_HeroImage;          //  Large image
+        mutable CObjectImageArray m_HeroImage;	//  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Exhaust

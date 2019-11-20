@@ -393,6 +393,44 @@ void CUIHelper::CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISe
 
 	}
 
+CG32bitImage CUIHelper::CreateGlowBackground (void) const
+
+//	CreateGlowBackground
+//
+//	Creates a standard background.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	RECT rcRect;
+	VI.GetWidescreenRect(NULL, &rcRect);
+
+	CG32bitPixel rgbBack = VI.GetColor(colorAreaDialog);
+	CG32bitPixel rgbCenter = CG32bitPixel::Blend(rgbBack, CG32bitPixel(255, 255, 255), 0.1);
+
+	return CreateGlowBackground(RectWidth(rcRect), RectHeight(rcRect), rgbCenter, rgbBack);
+	}
+
+CG32bitImage CUIHelper::CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const
+
+//	CreateGlowBackground
+//
+//	Creates a background image with a circular gradient.
+
+	{
+	CG32bitImage Image;
+	if (!Image.Create(cxWidth, cyHeight, CG32bitImage::alphaNone, rgbEdge))
+		throw CException(ERR_MEMORY);
+
+	int xCenter = cxWidth / 2;
+	int yCenter = cyHeight / 2;
+	int iRadius = cxWidth / 2;
+
+	CGDraw::CircleGradient(Image, xCenter, yCenter, iRadius, rgbCenter);
+
+	return Image;
+	}
+
 void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg) const
 
 //	CreateInputErrorMessage

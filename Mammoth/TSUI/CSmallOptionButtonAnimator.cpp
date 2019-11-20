@@ -58,7 +58,7 @@ void CSmallOptionButtonAnimator::Create (CAniVScroller &Root, const CString &sID
 		pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
 		}
 
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
+	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
 	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
 	pLabel->SetPropertyString(PROP_TEXT, sLabel);
 
@@ -140,7 +140,7 @@ void CSmallOptionButtonAnimator::SetText (const CString &sText)
 		pText->SetPropertyVector(PROP_SCALE, CVector(m_cxWidth, 100.0));
 		}
 
-	pText->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
+	pText->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pText->SetPropertyFont(PROP_FONT, &SubTitleFont);
 	pText->SetPropertyString(PROP_TEXT, sText);
 

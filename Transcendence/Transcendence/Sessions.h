@@ -477,7 +477,7 @@ class CNewGameSession : public IHISession
 		virtual void OnUpdate (bool bTopMost) override;
 
 	private:
-		void AddClassInfo (CShipClass *pClass, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni);
+		void AddClassInfo (const CShipClass &Class, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni);
 		void CmdCancel (void);
 		void CmdChangeDifficulty (void);
 		void CmdChangeGenome (void);
@@ -486,29 +486,26 @@ class CNewGameSession : public IHISession
 		void CmdNextShipClass (void);
 		void CmdOK (void);
 		void CmdPrevShipClass (void);
-		void CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth);
+		void CreateShipClass (const CShipClass &Class, int x, int y, int cxWidth);
+		void CreateShipClassButton (const CString &sID, int x, int y, const CG32bitImage &Image, bool bEnabled);
+		void CreateShipClassLabel (int x, int y, int cxWidth);
 		void SetDifficulty (CDifficultyOptions::ELevels iLevel);
 		void SetPlayerGenome (GenomeTypes iGenome);
 		void SetPlayerName (const CString &sName);
-		void SetShipClass (CShipClass *pClass, int x, int y, int cxWidth);
+		void SetShipClass (const CShipClass &Class, int x, int y, int cxWidth);
 		void SetShipClassDesc (const CString &sDesc, int x, int y, int cxWidth);
-		void SetShipClassImage (CShipClass *pClass, int x, int y, int cxWidth);
+		void SetShipClassDetails (const CShipClass &Class, int x, int y, int cxWidth);
+		void SetShipClassImage (const CShipClass &Class, int x, int y, int cxWidth);
 		void SetShipClassName (const CString &sName, int x, int y, int cxWidth);
 
 		CCloudService &m_Service;
 		SNewGameSettings m_Settings;
+		CG32bitImage m_Background;
 
 		TSortMap<CString, CShipClass *> m_ShipClasses;
 		int m_iCurShipClass = 0;
 
 		CAniVScroller *m_pRoot = NULL;
-
-		int m_xLeftCol = 0;
-		int m_cxLeftCol = 0;
-		int m_xCenterCol = 0;
-		int m_cxCenterCol = 0;
-		int m_xRightCol = 0;
-		int m_cxRightCol = 0;
 
 		CSmallOptionButtonAnimator m_PlayerName;
 		CSmallOptionButtonAnimator m_PlayerGenome;

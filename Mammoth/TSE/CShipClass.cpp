@@ -2136,7 +2136,7 @@ bool CShipClass::FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDes
 	return false;
 	}
 
-void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags)
+void CShipClass::GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags) const
 
 //	GenerateDevices
 //
@@ -2511,7 +2511,7 @@ CString CShipClass::GetGenericName (DWORD *retdwFlags) const
 		}
 	}
 
-const CObjectImageArray &CShipClass::GetHeroImage (void)
+const CObjectImageArray &CShipClass::GetHeroImage (void) const
 
 //  GetHeroImage
 //
@@ -4248,7 +4248,7 @@ void CShipClass::Paint (CG32bitImage &Dest,
 						int iTick,
 						bool bThrusting,
 						bool bRadioactive,
-						DWORD byInvisible)
+						DWORD byInvisible) const
 
 //	Paint
 //
@@ -4390,7 +4390,7 @@ void CShipClass::PaintThrust (CG32bitImage &Dest,
 							  const ViewportTransform &Trans, 
 							  int iDirection, 
 							  int iTick,
-							  bool bInFrontOnly)
+							  bool bInFrontOnly) const
 
 //	PaintThrust
 //

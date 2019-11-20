@@ -886,7 +886,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		//	Validate difficulty
 
 		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
-			Defaults.iDifficulty = CDifficultyOptions::lvlNormal;
+			Defaults.iDifficulty = CDifficultyOptions::lvlStory;
 
 		//	New game screen
 
