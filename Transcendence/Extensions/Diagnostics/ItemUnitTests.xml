@@ -226,6 +226,18 @@
 						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'lifetime)		result:3	}
 						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'range)		result:60	}
 						{	test:'(itmGetProperty &itTestWeaponRelativistic; 'speed)		result:1000	}
+
+						{	test:'(itmGetProperty &itSmartCannon; 'hp)						result:6	}
+						{	test:'(itmGetProperty &itSmartCannon; 'interaction)				result:50	}
+						{	test:'(itmGetProperty &itSmartCannon; 'lifetime)				result:60	}
+						{	test:'(itmGetProperty &itSmartCannon; 'range)					result:60	}
+						{	test:'(itmGetProperty &itSmartCannon; 'speed)					result:50	}
+
+						{	test:'(itmGetProperty &itSmartCannonShell; 'hp)					result:6	}
+						{	test:'(itmGetProperty &itSmartCannonShell; 'interaction)		result:50	}
+						{	test:'(itmGetProperty &itSmartCannonShell; 'lifetime)			result:60	}
+						{	test:'(itmGetProperty &itSmartCannonShell; 'range)				result:60	}
+						{	test:'(itmGetProperty &itSmartCannonShell; 'speed)				result:50	}
 						))
 
 					;	Unit Tests on Armor Damage

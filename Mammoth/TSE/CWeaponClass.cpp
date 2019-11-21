@@ -4448,15 +4448,26 @@ ALERROR CWeaponClass::OnPrepareBind (SDesignLoadCtx &Ctx)
 	TSortMap<CItemType *, bool> UniqueAmmo;
 	for (int i = 0; i < m_ShotData.GetCount(); i++)
 		{
-		//	We only care about references to missiles that own their own
-		//	descriptor.
+		CItemType *pAmmoType = NULL;
 
-		if (!m_ShotData[i].bOwned)
+		//	Resolve in case we have ammo
+
+		if (m_ShotData[i].bOwned)
+			{
+			DWORD dwAmmoUNID = m_ShotData[i].pDesc->GetAmmoTypeUNID();
+			if (dwAmmoUNID)
+				pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
+			}
+
+		//	If we have a reference to a missile we need to connect its weapon
+		//	fire descriptor. We need to do this before Bind.
+
+		else
 			{
 			//	Resolve the item pointer, but don't bind yet.
 
 			DWORD dwAmmoUNID = m_ShotData[i].pAmmoType.GetUNID();
-			CItemType *pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
+			pAmmoType = Ctx.GetUniverse().FindItemTypeUnbound(dwAmmoUNID);
 			if (pAmmoType == NULL)
 				{
 				Ctx.sError = strPatternSubst(CONSTLIT("Unable to find ItemType for ammoID: %x"), dwAmmoUNID);
@@ -4475,8 +4486,8 @@ ALERROR CWeaponClass::OnPrepareBind (SDesignLoadCtx &Ctx)
 
 		//	While we're looping, make a list of all unique ammo items.
 
-		if (m_ShotData[i].pDesc->GetAmmoType())
-			UniqueAmmo.SetAt(m_ShotData[i].pDesc->GetAmmoType(), true);
+		if (pAmmoType)
+			UniqueAmmo.SetAt(pAmmoType, true);
 		}
 
 	//	For each ammo item that we fire, give it a pointer to us so that it can
