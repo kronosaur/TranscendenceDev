@@ -433,6 +433,7 @@ class CWeaponFireDesc
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
         void ApplyAcceleration (CSpaceObject *pMissile) const;
+		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
         bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (CSpaceObject *pObj) const;

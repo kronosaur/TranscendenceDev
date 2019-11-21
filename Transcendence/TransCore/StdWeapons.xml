@@ -31,7 +31,7 @@
 
 				damage=				"blast:4d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"10"
+				hitPoints=			"7"
 				lifetime=			"90"
 				powerUse=			"1"
 				charges=			"true"
@@ -106,7 +106,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"10"
 				
@@ -139,7 +138,6 @@
 				damage=				"kinetic:1d3+1; momentum1"
 				fireRate=			"10"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"40"
 				powerUse=			"11"
 
@@ -210,7 +208,7 @@
 
 				damage=				"blast:5d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"10"
+				hitPoints=			"12"
 				lifetime=			"120"
 				powerUse=			"2"
 				charges=			"true"
@@ -318,7 +316,6 @@
 				damage=				"kinetic:2d6-1; momentum:1; WMD:4"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"80"
 				powerUse=			"22"
 
@@ -352,7 +349,6 @@
 				damage=				"kinetic:1d3+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"30"
 				lifetime=			"40"
 				powerUse=			"20"
 
@@ -394,7 +390,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"24"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"60"
 				powerUse=			"70"
 
@@ -464,7 +459,6 @@
 				damage=				"blast:1d6+1; momentum:1; WMD:3"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"24"
 				powerUse=			"50"
 
@@ -564,7 +558,6 @@
 				damage=				"kinetic:2d8+2; momentum:1; WMD:4"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"60"
 
@@ -680,7 +673,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"30"
 
@@ -746,7 +738,6 @@
 				damage=				"kinetic:14d8; momentum:5; WMD:5"
 				fireRate=			"46"
 				missileSpeed=		"45"
-				interaction=		"90"
 				hitPoints=			"5"
 				lifetime=			"67"
 				powerUse=			"160"
@@ -781,7 +772,6 @@
 				fireRate=			"15"
 				missileSpeed=		"90"
 				lifetime=			"50"
-				interaction=		"20"
 				powerUse=			"130"
 
 				effect=				"&efKineticBoltDefault;"
@@ -930,7 +920,6 @@
 				damage=				"blast:1d6+1; momentum1; WMD3"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"40"
 				powerUse=			"100"
 
@@ -970,7 +959,6 @@
 				damage=				"kinetic:2d8+2; momentum:1; WMD:4"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"100"
 
@@ -1144,7 +1132,6 @@
 				fireRate=			"16"
 				missileSpeed=		"90"
 				lifetime=			"50"
-				interaction=		"20"
 				powerUse=			"300"
 
 				effect=				"&efKineticBoltDefault;"
@@ -1405,7 +1392,6 @@
 				damage=				"blast:1d6+1; momentum1; WMD3"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"40"
 				powerUse=			"250"
 

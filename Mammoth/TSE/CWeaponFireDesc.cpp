@@ -107,13 +107,10 @@
 #define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
+#define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
-
-static constexpr Metric DEFAULT_FRAG_THRESHOLD =		4.0;	//	4 light-seconds (~95 pixels)
-static constexpr Metric HP_ARMOR_RATIO =				0.1;	//	Ammo HP per standard armor HP of same level
-static constexpr Metric STD_AMMO_MASS =					10.0;	//	Standard ammo mass (in kg)
 
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
@@ -202,6 +199,77 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 		}
     }
 
+Metric CWeaponFireDesc::CalcDamage (DWORD dwDamageFlags) const
+
+//	CalcDamage
+//
+//	Computes the total average damage for this shot.
+
+	{
+	//	If we have fragments we need to recurse
+
+	if (HasFragments())
+		{
+		Metric rTotal = 0.0;
+
+		SFragmentDesc *pFragment = GetFirstFragment();
+		while (pFragment)
+			{
+			//	By default, 1/8 of fragments hit, unless the fragments are radius type
+
+			Metric rHitFraction;
+			switch (pFragment->pDesc->GetType())
+				{
+				case ftArea:
+				case ftRadius:
+					rHitFraction = 1.0;
+					break;
+
+				default:
+                    if (pFragment->pDesc->IsTracking())
+                        rHitFraction = CWeaponClass::EXPECTED_TRACKING_FRAGMENT_HITS;
+                    else
+                        rHitFraction = CWeaponClass::EXPECTED_FRAGMENT_HITS;
+                    break;
+				}
+
+            //  Adjust for passthrough
+
+            if (pFragment->pDesc->GetPassthrough() > 0)
+                {
+                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
+                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), CWeaponClass::MAX_EXPECTED_PASSTHROUGH);
+                }
+
+			//	Add up values
+
+			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * pFragment->pDesc->CalcDamage(dwDamageFlags);
+
+			pFragment = pFragment->pNext;
+			}
+
+		return rTotal;
+		}
+	else
+		{
+		//	Average damage depends on type
+
+		switch (GetType())
+			{
+			case ftArea:
+				//	Assume 1/8th damage points hit on average
+				return CWeaponClass::EXPECTED_SHOCKWAVE_HITS * GetAreaDamageDensityAverage() * GetDamage().GetDamageValue(dwDamageFlags);
+
+			case ftRadius:
+				//	Assume average target is far enough away to take half damage
+				return CWeaponClass::EXPECTED_RADIUS_DAMAGE * GetDamage().GetDamageValue(dwDamageFlags);
+
+			default:
+				return GetDamage().GetDamageValue(dwDamageFlags);
+			}
+		}
+	}
+
 int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 
 //	CalcDefaultHitPoints
@@ -214,18 +282,39 @@ int CWeaponFireDesc::CalcDefaultHitPoints (void) const
 	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultShotHP()) != -1)
 		return iDefault;
 
+	//	Beams never interact
+
+	else if (m_iFireType == ftBeam)
+		return 0;
+
 	//	Ammo items get hit points proportional to level and mass.
 
 	else if (m_pAmmoType)
 		{
 		CItem AmmoItem(m_pAmmoType, 1);
-		Metric rStdHP = HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
-		Metric rMassAdj = AmmoItem.GetMassKg() / STD_AMMO_MASS;
+		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
+		Metric rMassAdj = AmmoItem.GetMassKg() / CWeaponClass::STD_AMMO_MASS;
 
 		return mathRound(rMassAdj * rStdHP);
 		}
 
-	//	Otherwise, no hit points.
+	//	Otherwise, compute based on damage ratio.
+
+	else if (m_iFireType == ftMissile)
+		{
+		//	Compute the damage of this shot as a ratio of the standard
+		//	damage for the level. 
+
+		Metric rStdDamage = CWeaponClass::GetStdDamage(GetLevel());
+		Metric rShotDamage = CalcDamage();
+		Metric rRatio = rShotDamage / rStdDamage;
+
+		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(GetLevel());
+
+		return mathRound(CWeaponClass::DEFAULT_HP_DAMAGE_RATIO * rRatio * rStdHP);
+		}
+
+	//	No hit points
 
 	else
 		return 0;
@@ -246,8 +335,31 @@ int CWeaponFireDesc::CalcDefaultInteraction (void) const
 	else if (m_iFireType == ftBeam)
 		return 0;
 
-	else if (m_iFireType == ftMissile)
+	else if (m_pAmmoType)
 		return 100;
+
+	else if (m_iFireType == ftMissile)
+		{
+		//	Compute the damage of this shot as a ratio of the standard
+		//	damage for the level. 
+
+		Metric rStdDamage = CWeaponClass::GetStdDamage(GetLevel());
+		Metric rShotDamage = CalcDamage();
+		Metric rRatio = rShotDamage / rStdDamage;
+
+		//	Shots above 0.5c (like Flenser) have a maximum interaction, which
+		//	linearly decreases from 100 at 0.5c to 0 at 1c.
+
+		Metric rMaxInteraction = Max(Min(1.0, 2.0 * (1.0 - (GetRatedSpeed() / LIGHT_SPEED))), 0.0);
+
+		//	Convert to interaction
+
+		Metric rInteraction = Min(rMaxInteraction,
+				pow(rRatio, CWeaponClass::DEFAULT_INTERACTION_EXP)
+					- pow(CWeaponClass::DEFAULT_INTERACTION_MIN_RATIO, CWeaponClass::DEFAULT_INTERACTION_EXP));
+
+		return mathRound(100.0 * Max(0.0, Min(rInteraction, 1.0)));
+		}
 
 	else
 		return 0;
@@ -675,6 +787,9 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	else if (strEquals(sProperty, PROPERTY_STD_HP))
 		return CC.CreateInteger(CalcDefaultHitPoints());
+
+	else if (strEquals(sProperty, PROPERTY_STD_INTERACTION))
+		return CC.CreateInteger(CalcDefaultInteraction());
 
 	else if (strEquals(sProperty, PROPERTY_TRACKING))
 		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
@@ -1638,7 +1753,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pFirstFragment = NULL;
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
-	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
 	m_rMinFragThreshold = 0.0;
 	m_FragInterval.SetConstant(0);
 
@@ -1698,7 +1813,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
-    m_iLevel = Options.iLevel;
+    m_iLevel = Max(1, Options.iLevel);
 	m_fFragment = Options.bIsFragment;
 
 	//	Fire type
@@ -2041,8 +2156,8 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
-	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
-	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
+	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
 
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).

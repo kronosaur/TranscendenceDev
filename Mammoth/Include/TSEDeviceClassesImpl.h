@@ -569,6 +569,30 @@ class CSolarDeviceClass : public CDeviceClass
 class CWeaponClass : public CDeviceClass
 	{
 	public:
+		//	Ammo constants
+
+		static constexpr Metric HP_ARMOR_RATIO = 0.1;						//	Ammo HP per standard armor HP of same level
+		static constexpr Metric STD_AMMO_MASS =	10.0;						//	Standard ammo mass (in kg)
+		static constexpr Metric DEFAULT_HP_DAMAGE_RATIO = 0.5;				//	Used to compute default HP.
+																			//		See: CWeaponFireDesc::CalcDefaultHitPoints
+
+		//	Balance computation
+
+		static constexpr Metric EXPECTED_FRAGMENT_HITS = 0.2;				//  Fraction of fragments that hit (for balance purposes)
+		static constexpr Metric EXPECTED_RADIUS_DAMAGE = 0.8;				//  Fraction of radius damage (for balance purposes)
+		static constexpr Metric EXPECTED_SHOCKWAVE_HITS = 0.2;				//  Fraction of shockwave that hits (for balance purposes)
+		static constexpr Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.9;		//  Fraction of tracking fragments that hit (for balance purposes)
+		static constexpr Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
+
+		//	Fragmentation
+
+		static constexpr Metric DEFAULT_FRAG_THRESHOLD = 4.0;				//	4 light-seconds (~95 pixels)
+
+		//	Interaction
+
+		static constexpr Metric DEFAULT_INTERACTION_MIN_RATIO = 0.5;		//	Ratio at which default interaction is 0.
+		static constexpr Metric DEFAULT_INTERACTION_EXP = 0.7;				//	Exponent for computing default interaction
+																			//		See: CWeaponFireDesc::CalcDefaultInteraction
 		enum ECachedHandlers
 			{
 			evtOnFireWeapon				= 0,

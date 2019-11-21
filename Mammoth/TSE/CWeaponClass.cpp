@@ -114,12 +114,6 @@
 
 const int MAX_SHOT_COUNT =				100;
 
-const Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
-const Metric EXPECTED_FRAGMENT_HITS =   0.2;                //  Fraction of fragments that hit (for balance purposes)
-const Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.9;			//  Fraction of tracking fragments that hit (for balance purposes)
-const Metric EXPECTED_SHOCKWAVE_HITS =  0.2;                //  Fraction of shockwave that hits (for balance purposes)
-const Metric EXPECTED_RADIUS_DAMAGE =   0.8;                //  Fraction of radius damage (for balance purposes)
-
 const Metric g_DualShotSeparation =		12;					//	Radius of dual shot (pixels)
 const int TEMP_DECREASE =				-1;					//	Decrease in temp per cooling rate
 const int MAX_TEMP =					120;				//	Max temperature
@@ -947,124 +941,61 @@ Metric CWeaponClass::CalcDamage (CWeaponFireDesc *pShot, const CItemEnhancementS
 //	Computes damage for the given weapon fire desc.
 
 	{
-	//	If we have fragments we need to recurse
+	//	Compute the damage for the shot.
 
-	if (pShot->HasFragments())
+	Metric rDamage = pShot->CalcDamage(dwDamageFlags);
+
+	//	If we have a capacitor, adjust damage
+
+	switch (m_Counter)
 		{
-		Metric rTotal = 0.0;
-
-		CWeaponFireDesc::SFragmentDesc *pFragment = pShot->GetFirstFragment();
-		while (pFragment)
+		case cntCapacitor:
 			{
-			//	By default, 1/8 of fragments hit, unless the fragments are radius type
+			//	Compute the number of ticks until we discharge the capacitor
 
-			Metric rHitFraction;
-			switch (pFragment->pDesc->GetType())
-				{
-				case CWeaponFireDesc::ftArea:
-				case CWeaponFireDesc::ftRadius:
-					rHitFraction = 1.0;
-					break;
+			Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * GetFireDelay(pShot);
 
-				default:
-                    if (pFragment->pDesc->IsTracking())
-                        rHitFraction = EXPECTED_TRACKING_FRAGMENT_HITS;
-                    else
-                        rHitFraction = EXPECTED_FRAGMENT_HITS;
-                    break;
-				}
+			//	Compute the number of ticks to recharge
 
-            //  Adjust for passthrough
+			Metric rRechargeTime = (MAX_COUNTER / (Metric)m_iCounterUpdate) * m_iCounterUpdateRate;
 
-            if (pFragment->pDesc->GetPassthrough() > 0)
-                {
-                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
-                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), MAX_EXPECTED_PASSTHROUGH);
-                }
+			//	Adjust damage by the fraction of time that we spend firing.
+            //  Remember that we're recharging even while firing, so we 
+            //  only care about the ratio.
 
-			//	Add up values
+            if (rRechargeTime > rFireTime)
+				rDamage *= rFireTime / rRechargeTime;
 
-			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * CalcDamage(pFragment->pDesc, pEnhancements, dwDamageFlags);
-
-			pFragment = pFragment->pNext;
+			break;
 			}
 
-		return rTotal;
+        case cntTemperature:
+            {
+            //  Compute the number of ticks until we reach max temp
+
+            Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * GetFireDelay(pShot);
+
+            //  Compute the number of ticks to cool down
+
+            Metric rCoolDownTime = (MAX_COUNTER / (Metric)-m_iCounterUpdate) * m_iCounterUpdateRate;
+
+            //  Adjust damage by the fraction of time that we spend firing.
+
+            if (rCoolDownTime > rFireTime)
+                rDamage *= rFireTime / rCoolDownTime;
+
+            break;
+            }
 		}
-	else
-		{
-		Metric rDamage;
 
-		//	Average damage depends on type
+	//	Adjust for enhancements
 
-		switch (pShot->GetType())
-			{
-			case CWeaponFireDesc::ftArea:
-				//	Assume 1/8th damage points hit on average
-				rDamage = EXPECTED_SHOCKWAVE_HITS * pShot->GetAreaDamageDensityAverage() * pShot->GetDamage().GetDamageValue(dwDamageFlags);
-				break;
+	if (pEnhancements)
+		rDamage += (rDamage * pEnhancements->GetBonus() / 100.0);
 
-			case CWeaponFireDesc::ftRadius:
-				//	Assume average target is far enough away to take half damage
-				rDamage = EXPECTED_RADIUS_DAMAGE * pShot->GetDamage().GetDamageValue(dwDamageFlags);
-				break;
+	//	Done
 
-			default:
-				rDamage = pShot->GetDamage().GetDamageValue(dwDamageFlags);
-			}
-
-		//	If we have a capacitor, adjust damage
-
-		switch (m_Counter)
-			{
-			case cntCapacitor:
-				{
-				//	Compute the number of ticks until we discharge the capacitor
-
-				Metric rFireTime = (MAX_COUNTER / (Metric)-m_iCounterActivate) * GetFireDelay(pShot);
-
-				//	Compute the number of ticks to recharge
-
-				Metric rRechargeTime = (MAX_COUNTER / (Metric)m_iCounterUpdate) * m_iCounterUpdateRate;
-
-				//	Adjust damage by the fraction of time that we spend firing.
-                //  Remember that we're recharging even while firing, so we 
-                //  only care about the ratio.
-
-                if (rRechargeTime > rFireTime)
-					rDamage *= rFireTime / rRechargeTime;
-
-				break;
-				}
-
-            case cntTemperature:
-                {
-                //  Compute the number of ticks until we reach max temp
-
-                Metric rFireTime = (MAX_COUNTER / (Metric)m_iCounterActivate) * GetFireDelay(pShot);
-
-                //  Compute the number of ticks to cool down
-
-                Metric rCoolDownTime = (MAX_COUNTER / (Metric)-m_iCounterUpdate) * m_iCounterUpdateRate;
-
-                //  Adjust damage by the fraction of time that we spend firing.
-
-                if (rCoolDownTime > rFireTime)
-                    rDamage *= rFireTime / rCoolDownTime;
-
-                break;
-                }
-			}
-
-		//	Adjust for enhancements
-
-		if (pEnhancements)
-			rDamage += (rDamage * pEnhancements->GetBonus() / 100.0);
-
-		//	Done
-
-		return rDamage;
-		}
+	return rDamage;
 	}
 
 Metric CWeaponClass::CalcDamagePerShot (CWeaponFireDesc *pShot, const CItemEnhancementStack *pEnhancements, DWORD dwDamageFlags) const
