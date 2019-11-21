@@ -328,10 +328,6 @@ void CNewGameSession::CreateShipClass (const CShipClass &Class, int x, int y, in
 			VI.GetImage(imageSmallRightIcon),
 			m_iCurShipClass + 1 < m_ShipClasses.GetCount());
 
-	//	Label
-
-//	CreateShipClassLabel(x, y + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT, cxWidth);
-
 	//	Ship class
 
 	SetShipClass(Class, x, y, cxWidth);
@@ -357,22 +353,6 @@ void CNewGameSession::CreateShipClassButton (const CString &sID, int x, int y, c
 
 	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, sID);
 	m_pRoot->AddLine(pButton);
-	}
-
-void CNewGameSession::CreateShipClassLabel (int x, int y, int cxWidth)
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x, y));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, CONSTLIT("ship class"));
-	pLabel->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
-
-	m_pRoot->AddLine(pLabel);
 	}
 
 void CNewGameSession::OnCleanUp (void)
@@ -562,10 +542,6 @@ void CNewGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 		case VK_RIGHT:
 			CmdNextShipClass();
 			break;
-
-		default:
-//			HandlePageScrollKeyDown(ID_SETTINGS, iVirtKey, dwKeyData);
-			break;
 		}
 	}
 
@@ -585,7 +561,6 @@ void CNewGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 //	Handle mouse wheel
 
 	{
-//	HandlePageScrollMouseWheel(ID_SETTINGS, iDelta);
 	}
 
 void CNewGameSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
@@ -970,7 +945,6 @@ void CNewGameSession::SetShipClassName (const CString &sName, int x, int y, int 
 	pName->SetPropertyVector(PROP_POSITION, CVector(x, y));
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
 	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	//pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
 	pName->SetPropertyFont(PROP_FONT, &SubTitleFont);
 	pName->SetPropertyString(PROP_TEXT, sName);
 	pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
