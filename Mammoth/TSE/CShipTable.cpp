@@ -43,7 +43,7 @@ class CLevelTableOfShipGenerators : public IShipGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) override;
 		virtual Metric GetAverageLevelStrength (int iLevel) override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
 
@@ -72,7 +72,7 @@ class CLookupShipTable : public IShipGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) override;
 		virtual Metric GetAverageLevelStrength (int iLevel) override { return m_Count.GetAveValueFloat() * m_pTable->GetAverageLevelStrength(iLevel); }
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 
 	private:
@@ -92,7 +92,7 @@ class CSingleShip : public IShipGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) override;
 		virtual Metric GetAverageLevelStrength (int iLevel) override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
 
@@ -132,7 +132,7 @@ class CTableOfShipGenerators : public IShipGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) override;
 		virtual Metric GetAverageLevelStrength (int iLevel) override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
 
@@ -161,7 +161,7 @@ class CGroupOfShipGenerators : public IShipGenerator
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void CreateShips (SShipCreateCtx &Ctx) override;
 		virtual Metric GetAverageLevelStrength (int iLevel) override;
-		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
+		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR ValidateForRandomEncounter (void) override;
 
@@ -220,7 +220,7 @@ ALERROR IShipGenerator::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 	return NOERROR;
 	}
 
-ALERROR IShipGenerator::CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IShipGenerator **retpGenerator)
+ALERROR IShipGenerator::CreateFromXMLAsGroup (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, IShipGenerator **retpGenerator)
 
 //	CreateFromXMLAsGroup
 //
@@ -426,7 +426,7 @@ Metric CLevelTableOfShipGenerators::GetAverageLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-ALERROR CLevelTableOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLevelTableOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -531,7 +531,7 @@ void CLookupShipTable::CreateShips (SShipCreateCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CLookupShipTable::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -916,7 +916,7 @@ Metric CSingleShip::GetAverageLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CSingleShip::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1199,7 +1199,7 @@ Metric CTableOfShipGenerators::GetAverageLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-ALERROR CTableOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CTableOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //
@@ -1355,7 +1355,7 @@ Metric CGroupOfShipGenerators::GetAverageLevelStrength (int iLevel)
 	return rTotal;
 	}
 
-ALERROR CGroupOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CGroupOfShipGenerators::LoadFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	LoadFromXML
 //

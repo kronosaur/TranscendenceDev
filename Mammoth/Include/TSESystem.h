@@ -244,7 +244,7 @@ class CSystemCreateStats
 class CSystemCreateEvents
 	{
 	public:
-		void AddDeferredEvent (CSpaceObject *pObj, CExtension *pExtension, CXMLElement *pEventCode);
+		void AddDeferredEvent (CSpaceObject *pObj, CExtension *pExtension, const CXMLElement *pEventCode);
 		ALERROR FireDeferredEvent (const CString &sEvent, CString *retsError);
 
 	private:
@@ -252,7 +252,7 @@ class CSystemCreateEvents
 			{
 			CSpaceObject *pObj;
 			CExtension *pExtension;
-			CXMLElement *pEventCode;
+			const CXMLElement *pEventCode;
 			};
 
 		TArray<SEventDesc> m_Events;
@@ -305,6 +305,9 @@ struct SSystemCreateCtx
 	CString sLabelAttribs;					//	Inherited label attributes
 
 	//	Options
+
+	bool bHasStationCreate = false;			//	TRUE if we've defined some create options
+	CStationCreateOptions StationCreate;	//	Options for creating a station
 
 	SZAdjust ZAdjust;						//	Adjust Z
 	EOverlapCheck iOverlapCheck = checkOverlapNone;	//	If TRUE, we adjust locations to avoid overlapping an existing object

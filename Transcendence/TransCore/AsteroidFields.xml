@@ -913,9 +913,9 @@
 				<Lookup chance="251"	table="_AsteroidSizeB"/>
 				<Lookup chance="140"	table="_AsteroidSizeC"/>
 				<Lookup chance="78"		table="_AsteroidSizeD"/>
-				<Lookup chance="44"		table="_AsteroidSizeE"/>
-				<Lookup chance="24"		table="_AsteroidSizeF"/>
-				<Lookup chance="13"		table="_AsteroidSizeG"/>
+				<Lookup chance="44"		table="_AsteroidSizeE"	noMapLabel="true"/>
+				<Lookup chance="24"		table="_AsteroidSizeF"	noMapLabel="true"/>
+				<Lookup chance="13"		table="_AsteroidSizeG"	noMapLabel="true"/>
 			</Table>
 		</LargeBeltAsteroid>
 
@@ -934,7 +934,7 @@
 					</Orbitals>
 				</Group>
 				<Group  chance="44">
-					<Lookup				table="_AsteroidSizeE"/>
+					<Lookup				table="_AsteroidSizeE"	noMapLabel="true"/>
 					
 					<Orbitals chance="75" distance="2d4+8" angle="random">
 						<LocationAttributes attributes="asteroids, asteroidBelt">
@@ -943,7 +943,7 @@
 					</Orbitals>
 				</Group>
 				<Group  chance="24">
-					<Lookup				table="_AsteroidSizeF"/>
+					<Lookup				table="_AsteroidSizeF"	noMapLabel="true"/>
 					
 					<Orbitals chance="100" distance="2d4+8" angle="random">
 						<LocationAttributes attributes="asteroids, asteroidBelt">
@@ -952,7 +952,7 @@
 					</Orbitals>
 				</Group>
 				<Group  chance="13">
-					<Lookup				table="_AsteroidSizeG"/>
+					<Lookup				table="_AsteroidSizeG"	noMapLabel="true"/>
 					
 					<Orbitals chance="100" distance="2d4+8" angle="random">
 						<LocationAttributes attributes="asteroids, asteroidBelt">

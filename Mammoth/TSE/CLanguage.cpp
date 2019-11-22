@@ -699,7 +699,7 @@ ICCItemPtr CLanguage::GetNounFlags (DWORD dwFlags)
 	return pResult;
 	}
 
-DWORD CLanguage::LoadNameFlags (CXMLElement *pDesc)
+DWORD CLanguage::LoadNameFlags (const CXMLElement *pDesc)
 
 //	LoadNameFlags
 //

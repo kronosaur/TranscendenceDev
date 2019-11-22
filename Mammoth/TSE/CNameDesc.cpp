@@ -48,7 +48,7 @@ ALERROR CNameDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ALERROR CNameDesc::InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
+ALERROR CNameDesc::InitFromXMLRoot (SDesignLoadCtx &Ctx, const CXMLElement *pDesc)
 
 //	InitFromXMLRoot
 //

@@ -121,7 +121,7 @@ class CTradingDesc
 		inline void SetDefaultMaxBalance (int iMaxCurrency) { m_iMaxCurrency = iMaxCurrency; }
 		inline void SetDefaultReplenish (int iReplenishCurrency) { m_iReplenishCurrency = iReplenishCurrency; }
 
-		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CTradingDesc **retpTrade);
+		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, CTradingDesc **retpTrade);
 		void OnCreate (CSpaceObject *pObj);
 		ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx);
 		void OnUpdate (CSpaceObject *pObj);

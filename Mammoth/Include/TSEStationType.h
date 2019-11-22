@@ -231,6 +231,48 @@ class CStationEncounterCtx
 		TSortMap<CString, SEncounterStats> m_ByNode;	//	Encounters by topology node
 	};
 
+class CStationCreateOptions
+	{
+	public:
+		bool ForceMapLabel (void) const { return m_bForceMapLabel; }
+		bool ForceMapOrbit (void) const { return m_bForceMapOrbit; }
+		bool ForcePaintOverhang (void) const { return strEquals(m_sPaintLayer, CONSTLIT("overhang")); }
+		int GetImageVariant (void) const { return m_iImageVariant; }
+		const CNameDesc &GetNameDesc (void) const { return m_Name; }
+		const CString &GetObjName (void) const { return m_sObjName; }
+		const CXMLElement *GetOnCreateXML (void) const { return m_pOnCreate; }
+		const CXMLElement *GetSatellitesXML (void) const { return m_pSatellites; }
+		const CXMLElement *GetShipsXML (void) const { return m_pShips; }
+		const CXMLElement *GetTradeXML (void) const { return m_pTrade; }
+		ALERROR InitFromXML (SSystemCreateCtx &Ctx, const CXMLElement &XMLDesc);
+		void Merge (const CStationCreateOptions &Src);
+		bool MergeFromSimpleXML (const CXMLElement &XMLDesc, CStationCreateOptions *retOld);
+		bool SuppressConstruction (void) const { return m_bSuppressConstruction; }
+		bool SuppressMapLabel (void) const { return m_bSuppressMapLabel; }
+		bool SuppressReinforcements (void) const { return m_bSuppressReinforcements; }
+		
+	private:
+		void CopyOnWrite (bool &bCopied, CStationCreateOptions *retCopy);
+
+		CNameDesc m_Name;
+		int m_iImageVariant = -1;
+		CString m_sPaintLayer;
+		CString m_sObjName;
+
+		const CXMLElement *m_pOnCreate = NULL;
+
+		const CXMLElement *m_pSatellites = NULL;
+		const CXMLElement *m_pShips = NULL;
+		const CXMLElement *m_pTrade = NULL;
+
+		bool m_bForceMapLabel = false;
+		bool m_bForceMapOrbit = false;
+		bool m_bSuppressConstruction = false;
+		bool m_bSuppressMapLabel = false;
+		bool m_bSuppressMapOrbit = false;
+		bool m_bSuppressReinforcements = false;
+	};
+
 //	CStationType --------------------------------------------------------------
 
 const int STATION_REPAIR_FREQUENCY =	30;

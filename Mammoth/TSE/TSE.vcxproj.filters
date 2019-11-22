@@ -1378,5 +1378,8 @@
     <ClCompile Include="CDifficultyOptions.cpp">
       <Filter>Source Files\Universe</Filter>
     </ClCompile>
+    <ClCompile Include="CStationCreateOptions.cpp">
+      <Filter>Source Files\Stations</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
