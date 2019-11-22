@@ -158,6 +158,8 @@
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
+#define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
+#define PROPERTY_PRIMARY_WEAPON_LEVEL			CONSTLIT("primaryWeaponLevel")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
@@ -936,6 +938,33 @@ CString CStationType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) 
 
 	{
 	return m_Name.GetConstantName(retdwFlags);
+	}
+
+CItem CStationType::GetPrimaryWeapon (void) const
+
+//	GetPrimaryWeapon
+//
+//	Returns the highest-level weapon on the station.
+
+	{
+	const CDeviceClass *pBestDevice = NULL;
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		auto &Device = GetDevice(i);
+		const CDeviceClass *pDevice = Device.GetClass();
+		if (pDevice->GetCategory() == itemcatWeapon
+				|| pDevice->GetCategory() == itemcatLauncher)
+			{
+			if (pBestDevice == NULL
+					|| pDevice->GetLevel() > pBestDevice->GetLevel())
+				pBestDevice = pDevice;
+			}
+		}
+
+	if (pBestDevice)
+		return CItem(pBestDevice->GetItemType(), 1);
+	else
+		return CItem();
 	}
 
 IShipGenerator *CStationType::GetReinforcementsTable (void)
@@ -1758,6 +1787,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
+
+	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON))
+		{
+		CItem PrimaryWeapon = GetPrimaryWeapon();
+		return (PrimaryWeapon.IsEmpty() ? ICCItemPtr(ICCItem::Nil) : ICCItemPtr(PrimaryWeapon.GetNounPhrase()));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON_LEVEL))
+		{
+		CItem PrimaryWeapon = GetPrimaryWeapon();
+		return (PrimaryWeapon.IsEmpty() ? ICCItemPtr(ICCItem::Nil) : ICCItemPtr(PrimaryWeapon.GetLevel()));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(ShowsUnexploredAnnotation());

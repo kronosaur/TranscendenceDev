@@ -279,6 +279,8 @@ class CStationType : public CDesignType
 		CXMLElement *GetDesc (void) { return m_pDesc; }
 		CString GetDestNodeID (void) { return m_sStargateDestNode; }
 		CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
+		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
+		int GetDeviceCount (void) const { return m_iDevicesCount; }
 		int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		const CStationEncounterDesc &GetEncounterDesc (void) const;
@@ -314,6 +316,7 @@ class CStationType : public CDesignType
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
 		Metric GetParallaxDist (void) const { return m_rParallaxDist; }
+		CItem GetPrimaryWeapon (void) const;
 		IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
 		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);

@@ -8,6 +8,7 @@
 
 	<ItemType UNID="&vtWreckEjecta;"
 			name=				"wreck ejecta"
+			attributes=			"ejecta"
 			virtual=			"true"
 			>
 

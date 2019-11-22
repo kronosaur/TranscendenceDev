@@ -2316,7 +2316,7 @@ bool CWeaponFireDesc::InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLD
 		if (m_rMaxMissileSpeed > 0.0)
 			{
 			Metric rLifetimeSeconds = rRange / m_rMaxMissileSpeed;
-			m_Lifetime.SetConstant(Seconds2Ticks(rLifetimeSeconds));
+			m_Lifetime.SetConstant(Max(1, Seconds2Ticks(rLifetimeSeconds)));
 			}
 		else
 			m_Lifetime.SetConstant(0);
