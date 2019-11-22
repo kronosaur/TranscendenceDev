@@ -36,7 +36,6 @@
 #define ALERT_WHEN_ATTACKED_ATTRIB				CONSTLIT("alertWhenAttacked")
 #define ALERT_WHEN_DESTROYED_ATTRIB				CONSTLIT("alertWhenDestroyed")
 #define ALLOW_ENEMY_DOCKING_ATTRIB				CONSTLIT("allowEnemyDocking")
-#define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")

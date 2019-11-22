@@ -203,8 +203,8 @@
 						{	test:'(itmGetProperty &itLaserCannon; 'range)					result:60	}
 						{	test:'(itmGetProperty &itLaserCannon; 'speed)					result:100	}
 
-						{	test:'(itmGetProperty &itRecoillessCannon; 'hp)					result:0	}
-						{	test:'(itmGetProperty &itRecoillessCannon; 'interaction)		result:80	}
+						{	test:'(itmGetProperty &itRecoillessCannon; 'hp)					result:2	}
+						{	test:'(itmGetProperty &itRecoillessCannon; 'interaction)		result:47	}
 						{	test:'(itmGetProperty &itRecoillessCannon; 'lifetime)			result:60	}
 						{	test:'(itmGetProperty &itRecoillessCannon; 'range)				result:48	}
 						{	test:'(itmGetProperty &itRecoillessCannon; 'speed)				result:40	}
