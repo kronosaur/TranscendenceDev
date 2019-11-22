@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							46;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					175;
+constexpr DWORD SYSTEM_SAVE_VERSION =					176;
 
 //	Uncomment out the following define when building a stable release
 
@@ -647,3 +647,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					175;
 //
 //	175: 1.9 Alpha 3
 //		Changes to COrbit
+//
+//	176: 1.9 Alpha 3
+//		m_iType in CStationHull

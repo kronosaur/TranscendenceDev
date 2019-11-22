@@ -346,6 +346,16 @@ int DamageDesc::GetMassDestructionAdj (void) const
     return WMD_DATA[m_MassDestructionAdj].iAdj;
     }
     
+int DamageDesc::GetMassDestructionAdjFromValue (int iValue) 
+    
+//  GetMassDestructionAdjFromValue
+//
+//  Returns the damage adj of WMD.
+
+    {
+    return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iAdj;
+    }
+
 int DamageDesc::GetMassDestructionLevel (void) const
 
 //  GetMassDestructionLevel
@@ -365,6 +375,16 @@ int DamageDesc::GetMassDestructionLevelFromValue (int iValue)
     {
     return WMD_DATA[Max(0, Min(iValue, MAX_INTENSITY))].iLevel;
     }
+
+int DamageDesc::GetMiningWMDAdj (void)
+
+//	GetMiningWMDAdj
+//
+//	Returns the adjustment to damage if we treat mining as WMD.
+
+	{
+    return WMD_DATA[m_MiningAdj].iAdj;
+	}
 
 int DamageDesc::GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags) const
 

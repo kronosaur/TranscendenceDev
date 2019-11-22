@@ -1550,7 +1550,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
 		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed() || IsOutOfPlaneObj()); }
 		virtual bool IsKnown (void) const override { return m_fKnown; }
-		virtual bool IsMultiHull (void) override { return m_Hull.IsMultiHull(); }
+		virtual bool IsMultiHull (void) override { return (m_Hull.GetHullType() != CStationHullDesc::hullSingle); }
         virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
         virtual bool IsShownInGalacticMap (void) const override;
 		virtual bool IsStargate (void) const override { return !m_sStargateDestNode.IsBlank(); }

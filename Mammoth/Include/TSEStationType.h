@@ -10,6 +10,16 @@
 class CStationHullDesc
 	{
 	public:
+		enum EHullTypes
+			{
+			hullUnknown				= -1,
+
+			hullSingle				= 0,	//	Single hull, normal damage
+			hullAsteroid			= 1,	//	Must have either WMD or mining to damage
+			hullMultiple			= 2,	//	Must have WMD to damage
+			hullUnderground			= 3,	//	Must have mining to damage
+			};
+
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
 		ALERROR Bind (SDesignLoadCtx &Ctx);
 		int CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
@@ -21,6 +31,7 @@ class CStationHullDesc
 		CItem GetArmorItem (void) const;
 		int GetArmorLevel (void) const;
 		int GetHitPoints (void) const { return m_iHitPoints; }
+		EHullTypes GetHullType (void) const { return m_iType; }
 		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
 		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
 		const CRegenDesc &GetRegenDesc (void) const { return m_Regen; }
@@ -28,22 +39,24 @@ class CStationHullDesc
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault = true);
 		ALERROR InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		bool IsImmutable (void) const { return m_bImmutable; }
-		bool IsMultiHull (void) const { return m_bMultiHull; }
 		void SetImmutable (bool bValue = true) { m_bImmutable = bValue; }
+
+		static CString GetID (EHullTypes iType);
+		static EHullTypes ParseHullType (const CString &sValue);
 		
 	private:
+		EHullTypes m_iType;					//	Type of hull
 		CItemTypeRef m_pArmor;				//	Armor class
-		int m_iArmorLevel;					//	Armor level (for scalable items)
-		int m_iHitPoints;					//	Hit points at creation time
-		int m_iMaxHitPoints;				//	Max hit points
+		int m_iArmorLevel = 0;				//	Armor level (for scalable items)
+		int m_iHitPoints = 0;				//	Hit points at creation time
+		int m_iMaxHitPoints = 0;			//	Max hit points
 		CRegenDesc m_Regen;					//	Repair rate
 
-		int m_iStructuralHP;				//	Initial structural hit points
-		int m_iMaxStructuralHP;				//	Max structural hp (0 = station is permanent)
+		int m_iStructuralHP = 0;			//	Initial structural hit points
+		int m_iMaxStructuralHP = 0;			//	Max structural hp (0 = station is permanent)
 		
-		bool m_bMultiHull;					//	Must have WMD to damage
-		bool m_bImmutable;					//	Cannot be damaged
-		bool m_bCannotBeHit;				//	Transparent to projectiles
+		bool m_bImmutable = false;			//	Cannot be damaged
+		bool m_bCannotBeHit = false;		//	Transparent to projectiles
 	};
 
 class CStationHull
@@ -51,11 +64,13 @@ class CStationHull
 	public:
 		CStationHull (void);
 
+		int CalcAdjustedDamage (SDamageCtx &Ctx) const;
 		bool CanBeDestroyed (void) const { return (m_iStructuralHP > 0); }
 		bool CanBeHit (void) const { return !m_fCannotBeHit; }
 		ICCItem *FindProperty (const CString &sProperty) const;
 		int GetArmorLevel (void) const { return m_iArmorLevel; }
 		int GetHitPoints (void) const { return m_iHitPoints; }
+		CStationHullDesc::EHullTypes GetHullType (void) const { return m_iType; }
 		int GetMaxHitPoints (void) const { return m_iMaxHitPoints; }
 		int GetMaxStructuralHP (void) const { return m_iMaxStructuralHP; }
 		EDamageResults GetPassthroughDefault (void) const;
@@ -67,7 +82,6 @@ class CStationHull
 		void Init (const CStationHullDesc &Desc);
 		bool IsAbandoned (void) const { return (m_iHitPoints == 0 && !m_fImmutable); }
 		bool IsImmutable (void) const { return (m_fImmutable ? true : false); }
-		bool IsMultiHull (void) const { return (m_fMultiHull ? true : false); }
 		bool IsWrecked (void) const { return (IsAbandoned() && m_iMaxHitPoints > 0); }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SetArmorLevel (int iValue) { m_iArmorLevel = iValue; }
@@ -75,7 +89,7 @@ class CStationHull
 		void SetImmutable (bool bValue = true) { m_fImmutable = bValue; }
 		void SetMaxHitPoints (int iValue) { m_iMaxHitPoints = Max(0, iValue); }
 		void SetMaxStructuralHP (int iValue) { m_iMaxStructuralHP = Max(0, iValue); }
-		void SetMultiHull (bool bValue = true) { m_fMultiHull = bValue; }
+		void SetHullType (CStationHullDesc::EHullTypes iType) { m_iType = iType; }
 		bool SetPropertyIfFound (const CString &sProperty, ICCItem *pValue, CString *retsError);
 		void SetStructuralHP (int iValue) { m_iStructuralHP = Max(0, iValue); }
 		void UpdateExtended (const CStationHullDesc &Desc, const CTimeSpan &ExtraTime);
@@ -83,15 +97,20 @@ class CStationHull
 		void WriteToStream (IWriteStream &Stream, CStation *pStation);
 
 	private:
-		int m_iArmorLevel;					//	Armor level (for scalable items)
-		int m_iHitPoints;					//	Total hit points (0 = station abandoned)
-		int m_iMaxHitPoints;				//	Max hit points (0 = station cannot be abandoned)
-		int m_iStructuralHP;				//	Structural hp (0 = station cannot be destroyed)
-		int m_iMaxStructuralHP;				//	Max structural hp
+		static constexpr DWORD HULL_TYPES_MASK =	0x000000f0;
+		static constexpr DWORD HULL_TYPES_SHIFT =	4;
+
+		CStationHullDesc::EHullTypes m_iType = CStationHullDesc::hullUnknown;
+
+		int m_iArmorLevel = 0;				//	Armor level (for scalable items)
+		int m_iHitPoints = 0;				//	Total hit points (0 = station abandoned)
+		int m_iMaxHitPoints = 0;			//	Max hit points (0 = station cannot be abandoned)
+		int m_iStructuralHP = 0;			//	Structural hp (0 = station cannot be destroyed)
+		int m_iMaxStructuralHP = 0;			//	Max structural hp
 		
-		DWORD m_fMultiHull:1;				//	Must have WMD to damage
 		DWORD m_fImmutable:1;				//	Cannot be damaged
 		DWORD m_fCannotBeHit:1;				//	Cannot be hit
+		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;
 		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;

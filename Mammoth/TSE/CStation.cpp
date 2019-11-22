@@ -2216,15 +2216,10 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	if (Ctx.Damage.GetMiningAdj())
 		FireOnMining(Ctx);
 
-	//	Once the station is abandoned, only WMD damage can destroy it.
-    //  NOTE: We check level (which is 0 for no WMD) rather than 
-    //  MassDestructionAdj, because we always have a little WMD. But for 
-    //  this case, we want "real" WMD.
+	//	Adjust the damage based on WMD requirements. Most hull types require
+	//	WMD damage to be hurt.
 
-    if (Ctx.Damage.GetMassDestructionLevel() > 0)
-        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
-	else
-		Ctx.iDamage = 0;
+	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -2378,11 +2373,10 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iArmorDamage;
 		}
 
-	//	If we're a multi-hull object then we adjust for mass destruction
-	//	effects (non-mass destruction weapons don't hurt us very much)
+	//	Adjust the damage based on WMD requirements. Most hull types require
+	//	WMD damage to be hurt.
 
-    if (Ctx.iDamage > 0 && m_Hull.IsMultiHull())
-        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -3779,7 +3773,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 151)
 		{
 		m_Hull.SetImmutable(bImmutable);
-		m_Hull.SetMultiHull(m_pType->GetHullDesc().IsMultiHull());
+		m_Hull.SetHullType(m_pType->GetHullDesc().GetHullType());
 		}
 
 	//	Rotation

@@ -117,8 +117,11 @@ class DamageDesc
 		int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
 		int GetEMPDamage (void) const { return (int)m_EMPDamage; }
         int GetMassDestructionAdj (void) const;
+		int GetMassDestructionDamage (void) const { return m_MassDestructionAdj; }
         int GetMassDestructionLevel (void) const;
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
+		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningWMDAdj (void);
 		int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
@@ -132,6 +135,7 @@ class DamageDesc
         static int GetDamageLevel (DamageTypes iType);
         static int GetDamageTier (DamageTypes iType);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
+        static int GetMassDestructionAdjFromValue (int iValue);
         static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
