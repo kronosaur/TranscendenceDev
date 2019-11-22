@@ -2765,9 +2765,8 @@
 						(= theCategory 'weapon)
 							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
 
-						;	Failsafe, in case we pass a Nil item or something.
-
-						{	enhancement:theMod	}
+						;	No enhancement. Note that sometimes this gets called
+						;	on a non-enhanceable item (e.g., ammo).
 						)
 					)
 				))
