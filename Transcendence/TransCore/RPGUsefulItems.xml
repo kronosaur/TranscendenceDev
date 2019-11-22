@@ -998,8 +998,8 @@
 		<Language>
 			<Text id="descResult.ok">Your %dstItem% has been enhanced.</Text>
 			<Text id="descResult.alreadyEnhanced">Your %dstItem% does not need the enhancement.</Text>
-			<Text id="descResult.cantReplaceDefect">But it has no effect on your %targetItemName% because it is defective.</Text>
-			<Text id="descResult.cantReplaceEnhancement">But it has no effect on your %targetItemName% because it is enhanced.</Text>
+			<Text id="descResult.cantReplaceDefect">But it has no effect on your %targetItemName% because it is already defective.</Text>
+			<Text id="descResult.cantReplaceEnhancement">But it has no effect on your %targetItemName% because it is already enhanced.</Text>
 			<Text id="descResult.defectRemoved">The enhancement has repaired a defect on your %dstItem%.</Text>
 			<Text id="descResult.damaged">Your %dstItem% was damaged.</Text>
 			<Text id="descResult.defectReplaced">Your %dstItem% has weakened further.</Text>
@@ -1222,6 +1222,7 @@
 					;	Apply the enhancement
 
 					(setq result (objEnhanceItem gPlayerShip dstItem gItem))
+					(dbgOutput result)
 
 					;	Remove and identify the item
 
@@ -1253,6 +1254,8 @@
 			<Text id="descResultTooPrimitive">Unfortunately, your armor is too primitive for the nanomachines.</Text>
 
 			<Text id="descResult.alreadyEnhanced">But your armor does not need the enhancement.</Text>
+			<Text id="descResult.cantReplaceDefect">But it has no effect on your armor because it is already defective.</Text>
+			<Text id="descResult.cantReplaceEnhancement">But it has no effect on your armor because it is already enhanced.</Text>
 			<Text id="descResult.defectRemoved">It seems to have restored your armor.</Text>
 			<Text id="descResult.defectReplaced"></Text>
 			<Text id="descResult.degraded">Your armor has weakened further.</Text>
