@@ -1115,7 +1115,7 @@ ALERROR CSystem::CreateFromStream (CUniverse &Universe,
 	return NOERROR;
 	}
 
-ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation)
+ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, DWORD dwFlags, CLocationDef **retpLocation)
 
 //	CreateLocation
 //
@@ -1125,6 +1125,9 @@ ALERROR CSystem::CreateLocation (const CString &sID, const COrbit &Orbit, const 
 	CLocationDef *pLocation = m_Locations.Insert(sID);
 	pLocation->SetOrbit(Orbit);
 	pLocation->SetAttributes(sAttributes);
+	if (dwFlags & FLAG_REQUIRED_LOCATION)
+		pLocation->SetRequired();
+
 	if (retpLocation)
 		*retpLocation = pLocation;
 

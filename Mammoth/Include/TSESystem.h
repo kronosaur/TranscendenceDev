@@ -383,19 +383,22 @@ class CMoveCtx
 class CLocationDef
 	{
 	public:
-		CLocationDef (void);
+		CLocationDef (void) { }
 
+		bool CanBeBlocked (void) const;
 		const CString &GetAttributes (void) const { return m_sAttributes; }
 		DWORD GetObjID (void) const { return m_dwObjID; }
 		const COrbit &GetOrbit (void) const { return m_OrbitDesc; }
 		bool HasAttribute (const CString &sAttrib) const { return ::HasModifier(m_sAttributes, sAttrib); }
 		bool IsBlocked (void) const { return m_bBlocked; }
 		bool IsEmpty (void) const { return (m_dwObjID == 0 && !m_bBlocked); }
+		bool IsRequired (void) const { return m_bRequired; }
 		void SetAttributes (const CString &sAttribs) { m_sAttributes = sAttribs; }
 		void SetBlocked (bool bBlocked = true) { m_bBlocked = bBlocked; }
 		void SetID (const CString &sID) { m_sID = sID; }
 		void SetObjID (DWORD dwObjID) { m_dwObjID = dwObjID; }
 		void SetOrbit (const COrbit &Orbit) { m_OrbitDesc = Orbit; }
+		void SetRequired (bool bValue = true) { m_bRequired = bValue; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void WriteToStream (IWriteStream *pStream);
 
@@ -404,9 +407,10 @@ class CLocationDef
 		COrbit m_OrbitDesc;
 		CString m_sAttributes;
 
-		DWORD m_dwObjID;					//	Object created at this location (or 0)
+		DWORD m_dwObjID = 0;				//	Object created at this location (or 0)
 
-		bool m_bBlocked;					//	If TRUE, this location is too close to another
+		bool m_bRequired = false;			//	If TRUE, location cannot be blocked
+		bool m_bBlocked = false;			//	If TRUE, this location is too close to another
 	};
 
 class CLocationList
@@ -426,6 +430,9 @@ class CLocationList
 		void WriteToStream (IWriteStream *pStream);
 
 	private:
+		static constexpr Metric OVERLAP_DIST = 25.0 * LIGHT_SECOND;
+		static constexpr Metric OVERLAP_DIST2 = OVERLAP_DIST * OVERLAP_DIST;
+
 		void InvalidateObjIndex (void) { m_ObjIndex.DeleteAll(); }
 
 		TArray<CLocationDef> m_List;
@@ -903,7 +910,10 @@ class CSystem
 		void BlockOverlappingLocations (void);
 		int CalcLocationAffinity (const CAffinityCriteria &Criteria, const CString &sLocationAttribs, const CVector &vPos) const;
 		int CalcLocationAffinity (const CLocationDef &Loc, const CAffinityCriteria &Criteria) const { return CalcLocationAffinity(Criteria, Loc.GetAttributes(), Loc.GetOrbit().GetObjectPos()); }
-		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, CLocationDef **retpLocation = NULL);
+
+		static constexpr DWORD FLAG_REQUIRED_LOCATION = 0x00000001;
+		ALERROR CreateLocation (const CString &sID, const COrbit &Orbit, const CString &sAttributes, DWORD dwFlags = 0, CLocationDef **retpLocation = NULL);
+
 		bool FindRandomLocation (const SLocationCriteria &Criteria, DWORD dwFlags, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, int *retiLocID);
 		int GetEmptyLocationCount (void);
 		bool GetEmptyLocations (const SLocationCriteria &Criteria, const COrbit &CenterOrbitDesc, CStationType *pStationToPlace, Metric rMinExclusion, TProbabilityTable<int> *retTable);

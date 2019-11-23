@@ -125,6 +125,7 @@
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define RADIUS_DEC_ATTRIB				CONSTLIT("radiusDec")
 #define RADIUS_INC_ATTRIB				CONSTLIT("radiusInc")
+#define REQUIRED_ATTRIB					CONSTLIT("required")
 #define ROTATION_ATTRIB					CONSTLIT("rotation")
 #define SEGMENT_ATTRIB			        CONSTLIT("segment")
 #define SEPARATE_ENEMIES_ATTRIB			CONSTLIT("separateEnemies")
@@ -633,7 +634,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = iPercent * iLocationCount / 100;
+		iCount = mathAdjust(iLocationCount, iPercent);
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -1077,10 +1078,16 @@ ALERROR CreateLabel (SSystemCreateCtx *pCtx,
 		LocationOrbit.SetInclination(0.0);
 		}
 
+	//	Options
+
+	DWORD dwLocationFlags = 0;
+	if (pObj->GetAttributeBool(REQUIRED_ATTRIB))
+		dwLocationFlags |= CSystem::FLAG_REQUIRED_LOCATION;
+
 	//	Add the label to the list
 
 	CLocationDef *pLoc;
-	pCtx->System.CreateLocation(NULL_STR, LocationOrbit, sAttribs, &pLoc);
+	pCtx->System.CreateLocation(NULL_STR, LocationOrbit, sAttribs, dwLocationFlags, &pLoc);
 
 	//	Keep stats
 
@@ -1266,7 +1273,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = Max(0, iPercent * Table.GetCount() / 100);
+		iCount = mathAdjust(Table.GetCount(), Min(Max(0, iPercent), 100));
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
