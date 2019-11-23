@@ -1222,7 +1222,6 @@
 					;	Apply the enhancement
 
 					(setq result (objEnhanceItem gPlayerShip dstItem gItem))
-					(dbgOutput result)
 
 					;	Remove and identify the item
 

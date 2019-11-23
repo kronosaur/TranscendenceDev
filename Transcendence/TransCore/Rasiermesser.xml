@@ -285,6 +285,8 @@
 			<Global id="showDvalinAttribute">Nil</Global>
 
 			<Data id="Dvalin">Nil</Data>
+			<Data id="DvalinArmorGiven">Nil</Data>
+			<Data id="DvalinWeaponGiven">Nil</Data>
 			<Data id="giftXP">0</Data>
 			<Data id="xp">0</Data>
 
@@ -463,7 +465,13 @@
 									(ls xp 500)
 										(scrSetDescTranslate gScreen 'DvalinIntro.03)
 
-									(scrSetDescTranslate gScreen 'DvalinIntro.04)
+									(not (objGetProperty gSource 'DvalinWeaponGiven))
+										(scrSetDescTranslate gScreen 'DvalinIntro.04)
+
+									(block ()
+										(scrSetDescTranslate gScreen 'DvalinIntro.05)
+										(scrEnableAction gScreen 'actionOfferItem Nil)
+										)
 									)
 								)
 						</OnPaneInit>
@@ -639,30 +647,36 @@
 
 									(roll (random 1 100))
 
-									giftItem
+									(giftItem Nil)
 									)
 									; Figure out what kind of gift to give
 
 									(switch
 										(or noGift (ls xp minXP))
-											(setq giftItem Nil)
+											Nil
 
 										(geq xp 2400)
-											(setq giftItem Nil)
+											Nil
 
 										(geq xp 800)
-											(block Nil
-												(setq giftItem (itmCreate &itDvalinIon9Cannon; 1))
+											(if (not (objGetProperty gSource 'DvalinWeaponGiven))
+												(block Nil
+													(setq giftItem (itmCreate &itDvalinIon9Cannon; 1))
+													(objSetProperty gSource 'DvalinWeaponGiven True)
 
-												;	Once the Ion9 has been given, we no longer care 
-												;	about Dvalin items.
+													;	Once the Ion9 has been given, we no longer care 
+													;	about Dvalin items.
 
-												(typSetProperty &stRasiermesserFactory; 'showDvalinAttribute Nil)
+													(typSetProperty &stRasiermesserFactory; 'showDvalinAttribute Nil)
+													)
 												)
 
 										(geq xp 400)
-											(block Nil
-												(setq giftItem (itmCreate &itDvalinArmor; (objGetProperty gPlayerShip 'armorCount)))
+											(if (not (objGetProperty gSource 'DvalinArmorGiven))
+												(block Nil
+													(setq giftItem (itmCreate &itDvalinArmor; (objGetProperty gPlayerShip 'armorCount)))
+													(objSetProperty gSource 'DvalinArmorGiven True)
+													)
 												)
 
 										(geq xp 200)
@@ -704,8 +718,6 @@
 													type: &itRegeneratingNanos;
 													}))
 												)
-
-										(setq giftItem Nil)
 										)
 
 									; Give the gift
@@ -729,8 +741,13 @@
 								(giftItem (scrGetData gScreen 'giftItem))
 								)
 								(scrSetDescTranslate gScreen 
-									(if (gr (itmGetCount giftItem) 1)
-										'DvalinGiftMultiple
+									(switch
+										(gr (itmGetCount giftItem) 1)
+											'DvalinGiftMultiple
+
+										(= (itmGetType giftItem) &itDvalinIon9Cannon;)
+											'DvalinGiftIon9
+
 										'DvalinGiftSingle
 										)
 									{
@@ -759,7 +776,7 @@
 				<Panes>
 					<Default descID="descSecondaryLab">
 						<Actions>
-							<Action name="Leave" default="1" cancel="1" key="L">
+							<Action id="actionLeave" default="1" cancel="1">
 								(scrShowScreen gScreen "Main")
 							</Action>
 						</Actions>
@@ -864,6 +881,15 @@
 				think? Impressive, ya? Much better than Akan!"
 
 			</Text>
+			<Text id="DvalinIntro.05">
+
+				The center of the lab has a massive testing area; an Ion9 cannon
+				is attached to a static frame.
+
+				Dvalin walks over to you: "How do you like you Ion9? Impressive,
+				ya? We're trying to adapt it for mass production."
+			
+			</Text>
 			<Text id="DvalinOfferIntro">
 
 				Dvalin is looking for rare and powerful items to reverse-engineer
@@ -877,7 +903,7 @@
 			</Text>
 			<Text id="DvalinNothingToOffer">
 
-				Unfortunately, Dvalin is not interested in any of the item in 
+				Unfortunately, Dvalin is not interested in any of the items in 
 				your cargo hold.
 			
 			</Text>
@@ -923,6 +949,16 @@
 
 				"Danke for your aid! Our research advances because of you. 
 				Please, accept %itemName%. It has special enhancements, ya?"
+
+			</Text>
+			<Text id="DvalinGiftIon9">
+
+				Dvalin thanks you for helping his research:
+
+				"Danke for your aid! Because of your help I have created 
+				the Ion9 cannon.
+				
+				"Take it on your journey. It is my greatest accomplishment."
 
 			</Text>
 			<Text id="DvalinGiftMultiple">
