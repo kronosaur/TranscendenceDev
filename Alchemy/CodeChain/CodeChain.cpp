@@ -919,7 +919,9 @@ ICCItem *CCodeChain::EvalLiteralStruct (CEvalContext *pCtx, ICCItem *pItem)
 		ICCItem *pNewKey = CreateString(sKey);
 		ICCItem *pNewValue = (pValue ? Eval(pCtx, pValue) : CreateNil());
 
-		pNewTable->AddEntry(pNewKey, pNewValue);
+		if (!pNewValue->IsNil())
+			pNewTable->AddEntry(pNewKey, pNewValue);
+
 		pNewKey->Discard();
 		pNewValue->Discard();
 		}

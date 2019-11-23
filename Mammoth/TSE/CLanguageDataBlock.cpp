@@ -49,7 +49,8 @@ ICCItemPtr CLanguageDataBlock::ComposeCCItem (ICCItem *pValue, ICCItem *pData) c
 			{
 			ICCItemPtr pElement = ComposeCCItem(pValue->GetElement(i), pData);
 			ICCItemPtr pKey = ICCItemPtr(pValue->GetKey(i));
-			pResult->AddEntry(pKey, pElement);
+			if (!pElement->IsNil())
+				pResult->AddEntry(pKey, pElement);
 			}
 
 		return pResult;
