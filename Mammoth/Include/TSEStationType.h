@@ -198,6 +198,7 @@ class CStationEncounterCtx
 		void AddEncounter (CSystem *pSystem);
 		bool CanBeEncountered (const CStationEncounterDesc &Desc);
 		bool CanBeEncounteredInSystem (CSystem *pSystem, CStationType *pStationType, const CStationEncounterDesc &Desc);
+		TSortMap<CString, int> GetEncounterCountByNode (void) const;
 		int GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc);
 		int GetFrequencyForNode (CTopologyNode *pNode, CStationType *pStation, const CStationEncounterDesc &Desc);
 		int GetFrequencyForSystem (CSystem *pSystem, CStationType *pStation, const CStationEncounterDesc &Desc);

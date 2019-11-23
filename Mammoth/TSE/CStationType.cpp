@@ -155,6 +155,8 @@
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
+#define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
+#define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
 #define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
@@ -1783,6 +1785,18 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 
 	if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
 		return (GetEncounterDesc().HasAutoLevelFrequency() ? ICCItemPtr(GetEncounterDesc().GetLevelFrequency()) : ICCItemPtr(ICCItem::Nil));
+
+	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+		TSortMap<CString, int> ByNode = m_EncounterRecord.GetEncounterCountByNode();
+		for (int i = 0; i < ByNode.GetCount(); i++)
+			pResult->SetIntegerAt(ByNode.GetKey(i), ByNode[i]);
+
+		return pResult;
+		}
+	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_TOTAL))
+		return ICCItemPtr(m_EncounterRecord.GetTotalCount());
 
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
