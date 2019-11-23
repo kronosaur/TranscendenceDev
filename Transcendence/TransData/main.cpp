@@ -276,14 +276,46 @@ void AlchemyMain (CXMLElement *pCmdLine)
 			return;
 			}
 
-		if (error = Game.ClearRegistered())
+		printf("Save file: %s.\n", (char *)sSaveFile);
+
+		if (Game.IsRegistered())
 			{
-			printf("ERROR: Unable to clear registered bit.\n");
-			::kernelSetDebugLog(NULL);
-			return;
+			if (error = Game.ClearRegistered())
+				{
+				printf("ERROR: Unable to clear registered bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Cleared registered bit.\n");
+			}
+		else
+			printf("Unregistered game.\n");
+
+		if (Game.IsEndGame())
+			{
+			if (error = Game.ClearEndGame())
+				{
+				printf("ERROR: Unable to clear endgame bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Cleared endgame bit.\n");
 			}
 
-		printf("Cleared registered bit on %s.\n", (char *)sSaveFile);
+		if (!Game.IsDebug())
+			{
+			if (error = Game.SetDebugMode())
+				{
+				printf("ERROR: Unable to set debug bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Set debug mode.\n");
+			}
+
 		::kernelSetDebugLog(NULL);
 		return;
 		}

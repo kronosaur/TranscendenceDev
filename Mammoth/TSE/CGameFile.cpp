@@ -29,6 +29,21 @@ CGameFile::~CGameFile (void)
 		}
 	}
 
+ALERROR CGameFile::ClearEndGame (void)
+
+//	ClearEndGame
+//
+//	Clears the end game bit.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	m_Header.dwFlags &= ~GAME_FLAG_END_GAME;
+	return SaveGameHeader(m_Header);
+	}
+
 ALERROR CGameFile::ClearRegistered (void)
 
 //	ClearRegistered
@@ -678,6 +693,15 @@ ALERROR CGameFile::LoadUniverse (CUniverse &Univ, DWORD *retdwSystemID, DWORD *r
 		return error;
 		}
 
+	//	If the game file thinks we're in debug mode, then set debug mode, 
+	//	because sometimes we clear the debug mode bit and want to propagate it.
+
+	if (IsDebug())
+		Univ.SetDebugMode();
+
+	if (!IsRegistered())
+		Univ.SetRegistered(false);
+
 	//	Done
 
 	Stream.Close();
@@ -1296,6 +1320,28 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 	m_dwLastSavedOn = Univ.GetTicks();
 
 	return NOERROR;
+	}
+
+ALERROR CGameFile::SetDebugMode (bool bValue)
+
+//	SetDebugMode
+//
+//	Sets or clears debug mode.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	if (IsDebug() == bValue)
+		return NOERROR;
+
+	if (bValue)
+		m_Header.dwFlags |= GAME_FLAG_DEBUG;
+	else
+		m_Header.dwFlags &= ~GAME_FLAG_DEBUG;
+
+	return SaveGameHeader(m_Header);
 	}
 
 ALERROR CGameFile::SetGameResurrect (void)

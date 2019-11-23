@@ -29,6 +29,7 @@ class CGameFile
 		CGameFile (void);
 		~CGameFile (void);
 
+		ALERROR ClearEndGame (void);
 		ALERROR ClearRegistered (void);
 		ALERROR ClearGameResurrect(void);
 		void Close (void);
@@ -60,6 +61,7 @@ class CGameFile
 		bool IsOpen (void) const { return (m_pFile != NULL); }
 		bool IsRegistered (void) const { return ((m_Header.dwFlags & GAME_FLAG_REGISTERED) ? true : false); }
 		bool IsUniverseValid (void) { return (m_Header.dwUniverse != INVALID_ENTRY); }
+		ALERROR SetDebugMode (bool bValue = true);
 
 		static constexpr DWORD FLAG_NO_UPGRADE =	0x00000001;
 		ALERROR Open (const CString &sFilename, DWORD dwFlags);

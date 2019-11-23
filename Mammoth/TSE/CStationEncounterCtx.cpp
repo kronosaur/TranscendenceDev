@@ -179,6 +179,22 @@ int CStationEncounterCtx::GetCountInSystem (CSystem *pSystem, CStationType *pSta
 	return pCount->iCount;
 	}
 
+TSortMap<CString, int> CStationEncounterCtx::GetEncounterCountByNode (void) const
+
+//	GetEncounterCountByNode
+//
+//	Returns the count of stations encountered for each node ID.
+
+	{
+	TSortMap<CString, int> Result;
+	Result.GrowToFit(m_ByNode.GetCount());
+
+	for (int i = 0; i < m_ByNode.GetCount(); i++)
+		Result.SetAt(m_ByNode.GetKey(i), m_ByNode[i].iCount);
+
+	return Result;
+	}
+
 int CStationEncounterCtx::GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc)
 
 //	GetFrequencyByLevel
