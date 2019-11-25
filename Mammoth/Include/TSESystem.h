@@ -93,7 +93,7 @@ class COrbit
 		ICCItemPtr AsItem (void) const;
 		const Metric &GetEccentricity (void) const { return m_rEccentricity; }
 		const CVector3D &GetFocus3D (void) const { return m_vFocus; }
-		const CVector &GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
+		CVector GetFocus (void) const { return CVector(m_vFocus.GetX(), m_vFocus.GetY()); }
 		const Metric &GetInclination (void) const { return m_rInclination; }
 		const Metric &GetObjectAngle (void) const { return m_rPos; }
 		CVector GetObjectPos (Metric *retrZ = NULL) const { return GetPoint(m_rPos, retrZ); }
