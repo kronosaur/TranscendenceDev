@@ -505,12 +505,11 @@ int CMissile::GetLastFireTime (void) const
 
 //	GetLastFireTime
 //
-//	Returns 'last fire time', which is 0 if missile is not targetable, or current time if it is.
+//	For purposes of aggression, we always treat missiles are recently 
+//	aggressive (we need this so that these missiles are targeted).
 
 	{
-	if (IsTargetableProjectile())
-		return GetUniverse().GetTicks();
-	return 0;
+	return GetUniverse().GetTicks();
 	}
 
 int CMissile::GetManeuverRate (void) const

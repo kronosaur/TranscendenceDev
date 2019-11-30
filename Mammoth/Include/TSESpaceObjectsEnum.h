@@ -215,7 +215,6 @@ class CVisibleEnemyObjSelector
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsUnreal()
-				&& !Obj.IsDestroyed()
 				&& Obj != m_Source
 				&& Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));
@@ -265,7 +264,6 @@ class CVisibleAggressorObjSelector
 				&& m_Source.IsAngryAt(&Obj)
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsUnreal()
-				&& !Obj.IsDestroyed()
 				&& Obj != m_Source
 				&& Obj != m_pExcludeObj
 				&& Obj.GetLastFireTime() > m_iAggressorThreshold
@@ -314,7 +312,6 @@ class CVisibleObjSelector
 			return (Obj.CanAttack()
 				&& m_Perception.CanBeTargeted(&Obj, rDist2)
 				&& !Obj.IsUnreal()
-				&& !Obj.IsDestroyed()
 				&& Obj != m_Source
 				&& Obj != m_pExcludeObj
 				&& !Obj.IsEscortingFriendOf(&m_Source));
