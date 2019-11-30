@@ -2000,7 +2000,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 				    MAX_TARGET_RANGE, 
 				    &TargetList, 
 				    pTarget, 
-				    FLAG_INCLUDE_NON_AGGRESSORS);
+				    CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS);
 
             int iNextTarget = 0;
             for (i = 1; i < iShotCount; i++)

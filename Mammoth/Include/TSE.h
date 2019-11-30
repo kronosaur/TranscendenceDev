@@ -712,9 +712,9 @@ class CSpaceObject
 		CSpaceObject *GetNearestEnemyStation (Metric rMaxRange = g_InfiniteDistance);
 		CSpaceObject *GetNearestStargate (bool bExcludeUncharted = false);
 
-#define FLAG_INCLUDE_NON_AGGRESSORS		0x00000001
-#define FLAG_INCLUDE_STATIONS			0x00000002
-#define FLAG_INCLUDE_MISSILES			0x00000004
+		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =		0x00000001;
+		static constexpr DWORD FLAG_INCLUDE_STATIONS =				0x00000002;
+		static constexpr DWORD FLAG_INCLUDE_TARGETABLE_MISSILES =	0x00000004;
 		int GetNearestVisibleEnemies (int iMaxEnemies, 
 									  Metric rMaxDist, 
 									  TArray<CSpaceObject *> *pretList, 

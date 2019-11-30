@@ -671,7 +671,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution, pDevice->CanTargetMissiles());
+			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 

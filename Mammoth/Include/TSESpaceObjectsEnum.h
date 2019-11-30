@@ -229,7 +229,7 @@ class CVisibleEnemyObjSelector
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
@@ -274,12 +274,12 @@ class CVisibleAggressorObjSelector
 			{
 			return (Obj.GetCategory() == CSpaceObject::catShip
 						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
+						|| (m_bIncludeTargetableMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
@@ -287,7 +287,7 @@ class CVisibleAggressorObjSelector
 		CSpaceObject *m_pExcludeObj = NULL;
 		int m_iAggressorThreshold = -1;
 		bool m_bIncludeStations = false;
-		bool m_bIncludeMissiles = false;
+		bool m_bIncludeTargetableMissiles = false;
 	};
 
 //	CVisibleObjSelector
@@ -321,19 +321,19 @@ class CVisibleObjSelector
 			{
 			return (Obj.GetCategory() == CSpaceObject::catShip
 						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
+						|| (m_bIncludeTargetableMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
-		bool m_bIncludeMissiles = false;
+		bool m_bIncludeTargetableMissiles = false;
 	};
 
 class CSpaceObjectEnum

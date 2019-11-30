@@ -1683,7 +1683,7 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 							MAX_MIRV_TARGET_RANGE, 
 							&TargetList, 
 							NULL, 
-							FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
+							CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS);
 
 					Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 

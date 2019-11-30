@@ -4101,8 +4101,8 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 		{
 		CVisibleObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
+		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
 		}
@@ -4110,8 +4110,8 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 		{
 		CVisibleAggressorObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
+		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
 		}
