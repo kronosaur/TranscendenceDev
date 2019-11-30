@@ -49,11 +49,9 @@ ALERROR CTopologyNodeList::Filter (CTopologyNode::SCriteriaCtx &Ctx, CTopologyNo
 //	Filters the list based on the criteria and returns a new list
 
 	{
-	int i;
-
 	//	Loop over all nodes and generate a filtered list
 
-	for (i = 0; i < m_List.GetCount(); i++)
+	for (int i = 0; i < m_List.GetCount(); i++)
 		{
 		if (m_List[i]->MatchesCriteria(Ctx, Crit))
 			ioList->Insert(m_List[i]);
@@ -102,7 +100,7 @@ bool CTopologyNodeList::FindNode (const CString &sID, int *retiIndex) const
 	return false;
 	}
 
-bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMax, const CTopologyNode::SAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const
+bool CTopologyNodeList::IsNodeInRangeOf (const CTopologyNode *pNode, int iMin, int iMax, const CTopologyAttributeCriteria &AttribCriteria, CTopologyNodeList &Checked) const
 
 //	IsNodeInRangeOf
 //
@@ -114,7 +112,7 @@ bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMa
 
 	//	Add ourselves to the Checked list
 
-	Checked.Insert(pNode);
+	Checked.Insert(const_cast<CTopologyNode *>(pNode));
 
 	//	If iMin is 0, then check the current node
 
@@ -123,7 +121,7 @@ bool CTopologyNodeList::IsNodeInRangeOf (CTopologyNode *pNode, int iMin, int iMa
 		//	If we match the criteria, then we're OK (since we've satified the distance 
 		//	criteria).
 
-		if (pNode->MatchesAttributeCriteria(AttribCriteria))
+		if (AttribCriteria.Matches(*pNode))
 			return true;
 		}
 

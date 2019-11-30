@@ -134,11 +134,11 @@ void AdvanceAET (void)
 			}
 		else 
 			{
-			//	Advance the edge’s X coordinate by minimum move
+			//	Advance the edge's X coordinate by minimum move
 
 			CurrentEdge->x += CurrentEdge->xWholePixelMove;
 
-			//	Determine whether it’s time for X to advance one extra
+			//	Determine whether it's time for X to advance one extra
 			
 			if ((CurrentEdge->iErrorTerm +=
 				CurrentEdge->iErrorTermAdjUp) > 0)
@@ -205,11 +205,11 @@ void BuildGlobalEdgeTable (int iVertexCount, SPoint *pVertexList, SPolyEdgeState
 			Swap(StartY, EndY);
 			}
 
-		//	Skip if this can’t ever be an active edge (has 0 height)
+		//	Skip if this can't ever be an active edge (has 0 height)
 
 		if ((DeltaY = EndY - StartY) != 0)
 			{
-			//	Allocate space for this edge’s info, and fill in the structure
+			//	Allocate space for this edge's info, and fill in the structure
 
 			NewEdgePtr = NextFreeEdgeStruc++;
 			NewEdgePtr->xDirection =   //	direction in which X moves
@@ -272,7 +272,7 @@ void MoveXSortedToAET (int YToMove)
 	int CurrentX;
 
 	//	The GET is Y sorted. Any edges that start at the desired Y
-	//	coordinate will be first in the GET, so we’ll move edges from
+	//	coordinate will be first in the GET, so we'll move edges from
 	//	the GET to AET until the first edge left in the GET is no longer
 	//	at the desired Y coordinate. Also, the GET is X sorted within
 	//	each Y coordinate, so each successive edge we add to the AET is

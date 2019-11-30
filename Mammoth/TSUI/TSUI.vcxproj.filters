@@ -159,6 +159,9 @@
     <ClCompile Include="CArmorHUDShaped.cpp">
       <Filter>Source Files\HUD</Filter>
     </ClCompile>
+    <ClCompile Include="CSmallOptionButtonAnimator.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

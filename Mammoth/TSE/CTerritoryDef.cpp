@@ -150,7 +150,7 @@ void CTerritoryDef::ReadFromStream (SLoadCtx &Ctx)
 	for (i = 0; i < (int)dwLoad; i++)
 		{
 		SRegion *pRegion = &m_Regions[i];
-		Ctx.pStream->Read((char *)&pRegion->OrbitDesc, sizeof(COrbit));
+		pRegion->OrbitDesc.ReadFromStream(Ctx);
 		Ctx.pStream->Read((char *)&pRegion->rMaxRadius, sizeof(Metric));
 		Ctx.pStream->Read((char *)&pRegion->rMinRadius, sizeof(Metric));
 
@@ -188,7 +188,7 @@ void CTerritoryDef::WriteToStream (IWriteStream *pStream)
 	for (i = 0; i < m_Regions.GetCount(); i++)
 		{
 		SRegion *pRegion = &m_Regions[i];
-		pStream->Write((char *)&pRegion->OrbitDesc, sizeof(COrbit));
+		pRegion->OrbitDesc.WriteToStream(*pStream);
 		pStream->Write((char *)&pRegion->rMaxRadius, sizeof(Metric));
 		pStream->Write((char *)&pRegion->rMinRadius, sizeof(Metric));
 		}

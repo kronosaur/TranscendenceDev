@@ -816,26 +816,26 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	//	object was a target, this also clears the pTarget variable
 	//	(which makes the ship eligible for re-targeting).
 
-	if (RemoveAssetObj(Ctx.pObj))
+	if (RemoveAssetObj(&Ctx.Obj))
 		{
 		//	If one of our assets was destroyed, check to see if it was
 		//	destroyed by a target.
 
 		if (Ctx.Attacker.GetObj() 
 				&& (pTarget = FindTarget(Ctx.Attacker.GetObj())) != NULL)
-			pTarget->iKilled += Ctx.pObj->GetCombatPower();
+			pTarget->iKilled += Ctx.Obj.GetCombatPower();
 
 		//	If our asset was attacking a target, remove it from the assignedTo
 		//	field. (Obviously this could be a different enemy than the one
 		//	that killed the asset).
 
-		if ((pTarget = FindTarget(Ctx.pObj->GetTarget(CItemCtx()))) != NULL)
-			pTarget->iAssignedTo -= Ctx.pObj->GetCombatPower();
+		if ((pTarget = FindTarget(Ctx.Obj.GetTarget(CItemCtx()))) != NULL)
+			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
 		}
 
 	//	Otherwise, check to see if a target was destroyed
 
-	else if ((pTarget = FindTarget(Ctx.pObj, &iIndex)) != NULL)
+	else if ((pTarget = FindTarget(&Ctx.Obj, &iIndex)) != NULL)
 		RemoveTarget(iIndex);
 
 	//	Act based on state
@@ -848,7 +848,7 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		case stateAttackFromRallyPoint:
 		case stateWaitingForThreat:
 			{
-			if (m_pObjective == Ctx.pObj)
+			if (m_pObjective == Ctx.Obj)
 				CancelCurrentOrder();
 			break;
 			}
@@ -856,9 +856,9 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	Generic reset
 
-	if (m_pObjective == Ctx.pObj)
+	if (m_pObjective == Ctx.Obj)
 		m_pObjective = NULL;
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		m_pTarget = NULL;
 	}
 

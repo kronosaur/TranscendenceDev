@@ -5,21 +5,13 @@
 
 #include "PreComp.h"
 
-TPropertyHandler<CEffect> CEffect::m_PropertyTable;
-
-void CEffect::Boot (void)
-
-//	Boot
-//
-//	Initialize the property table.
-
-	{
-	m_PropertyTable = std::array<TPropertyHandler<CEffect>::SPropertyDef, 1> {
+TPropertyHandler<CEffect> CEffect::m_PropertyTable = std::array<TPropertyHandler<CEffect>::SPropertyDef, 1> {
+		{
 		"lifetime",		"ticks",
 		[](const CEffect &Obj, const CString &sProperty) { return ICCItemPtr(Obj.GetLifetime()); },
-		[](CEffect &Obj, const CString &sProperty, ICCItem *pValue, CString *retsError) { Obj.SetLifetime(pValue->GetIntegerValue()); return true; }
-		};
-	}
+		[](CEffect &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { Obj.SetLifetime(Value.GetIntegerValue()); return true; }
+		}
+	};
 
 ICCItem *CEffect::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 
@@ -62,7 +54,7 @@ bool CEffect::SetProperty (const CString &sProperty, ICCItem *pValue, CString *r
 
 	//	Try CEffect object properties
 
-	if (m_PropertyTable.SetProperty(*this, sProperty, pValue, retsError))
+	if (m_PropertyTable.SetProperty(*this, sProperty, *pValue, retsError))
 		return true;
 
 	//	Next try painter parameters

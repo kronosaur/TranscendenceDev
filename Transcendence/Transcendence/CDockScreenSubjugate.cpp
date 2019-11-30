@@ -121,7 +121,7 @@ ICCItemPtr CDockScreenSubjugate::OnGetProperty (const CString &sProperty) const
 			}
 		}
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
 IDockScreenDisplay::EResults CDockScreenSubjugate::OnHandleKeyDown (int iVirtKey)

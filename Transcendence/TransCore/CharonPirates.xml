@@ -21,7 +21,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itUltraLightTitaniumArmor;"
 			hitPoints=			"70"
@@ -84,7 +83,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itReactiveArmor;"
 			hitPoints=			"90"
@@ -161,7 +159,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itReactiveArmor;"
 			hitPoints=			"50"
@@ -232,7 +229,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itHeavyReactiveArmor;"
@@ -359,7 +355,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itReactiveArmor;"
@@ -435,7 +430,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itHeavyReactiveArmor;"
@@ -528,7 +522,6 @@
 			sovereign=			"&svPirates;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itHeavyReactiveArmor;"

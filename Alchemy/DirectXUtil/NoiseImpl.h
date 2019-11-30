@@ -52,7 +52,7 @@ class CCloudGenerator
 	public:
 		CCloudGenerator (int iScale);
 
-		inline Metric GetMaxValue (void) const { return m_rMaxValue; }
+		Metric GetMaxValue (void) const { return m_rMaxValue; }
 		Metric GetNext (void);
 		void NextY (void);
 		void ResetX (int x);

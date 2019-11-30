@@ -46,8 +46,8 @@ template <class COMPUTATION> class TMathReduce
 			}
 
 	private:
-		inline int COMPUTE (int iX, int iY) const { return ((COMPUTATION *)this)->Compute(iX, iY); }
-		inline double COMPUTE (double rX, double rY) const { return ((COMPUTATION *)this)->Compute(rX, rY); }
+		int COMPUTE (int iX, int iY) const { return ((COMPUTATION *)this)->Compute(iX, iY); }
+		double COMPUTE (double rX, double rY) const { return ((COMPUTATION *)this)->Compute(rX, rY); }
 	};
 
 class CAddition : public TMathReduce<CAddition>

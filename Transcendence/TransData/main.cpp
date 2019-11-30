@@ -21,6 +21,7 @@
 #define ARMOR_TABLE_SWITCH					CONSTLIT("armortable")
 #define ATTRIBUTE_LIST_SWITCH				CONSTLIT("attributelist")
 #define DEBUG_SWITCH						CONSTLIT("debug")
+#define DEBUG_CREATE_SWITCH					CONSTLIT("debugCreate")
 #define DECOMPILE_SWITCH					CONSTLIT("decompile")
 #define DIAGNOSTICS_SWITCH					CONSTLIT("diagnostics")
 #define EFFECT_EXPLORER_SWITCH				CONSTLIT("effectExplorer")
@@ -40,9 +41,11 @@
 #define ITEM_TABLE_SWITCH					CONSTLIT("itemtable")
 #define LANGUAGE_SWITCH						CONSTLIT("language")
 #define LOOT_SIM_SWITCH						CONSTLIT("lootsim")
+#define MORE_EXTENSIONS_ATTRIB				CONSTLIT("moreExtensions")
 #define PERF_TEST_SWITCH					CONSTLIT("perftest")
 #define RANDOM_ITEMS_SWITCH					CONSTLIT("randomitems")
 #define RANDOM_NUMBER_TEST					CONSTLIT("randomnumbertest")
+#define REFERENCE_SWITCH					CONSTLIT("reference")
 #define RUN_SWITCH							CONSTLIT("run")
 #define RUN_FILE_SWITCH						CONSTLIT("runFile")
 #define SHIELD_TEST_SWITCH					CONSTLIT("shieldtest")
@@ -273,14 +276,46 @@ void AlchemyMain (CXMLElement *pCmdLine)
 			return;
 			}
 
-		if (error = Game.ClearRegistered())
+		printf("Save file: %s.\n", (char *)sSaveFile);
+
+		if (Game.IsRegistered())
 			{
-			printf("ERROR: Unable to clear registered bit.\n");
-			::kernelSetDebugLog(NULL);
-			return;
+			if (error = Game.ClearRegistered())
+				{
+				printf("ERROR: Unable to clear registered bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Cleared registered bit.\n");
+			}
+		else
+			printf("Unregistered game.\n");
+
+		if (Game.IsEndGame())
+			{
+			if (error = Game.ClearEndGame())
+				{
+				printf("ERROR: Unable to clear endgame bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Cleared endgame bit.\n");
 			}
 
-		printf("Cleared registered bit on %s.\n", (char *)sSaveFile);
+		if (!Game.IsDebug())
+			{
+			if (error = Game.SetDebugMode())
+				{
+				printf("ERROR: Unable to set debug bit.\n");
+				::kernelSetDebugLog(NULL);
+				return;
+				}
+
+			printf("Set debug mode.\n");
+			}
+
 		::kernelSetDebugLog(NULL);
 		return;
 		}
@@ -302,21 +337,12 @@ void AlchemyMain (CXMLElement *pCmdLine)
 	CUniverse Universe;
 	CString sError;
 
-	if (bLogo)
-		printf("Loading...");
-
 	if (error = InitUniverse(Universe, Host, (bDefaultDataFile ? NULL_STR : sDataFile), pCmdLine, &sError))
 		{
-		if (bLogo)
-			printf("\n");
-
 		printf("%s\n", sError.GetASCIIZPointer());
 		::kernelSetDebugLog(NULL);
 		return;
 		}
-
-	if (bLogo)
-		printf("done.\n");
 
 	//	Figure out what to do
 
@@ -415,6 +441,8 @@ void AlchemyMain (CXMLElement *pCmdLine)
 		GenerateWeaponEffectChart(Universe, pCmdLine);
 	else if (pCmdLine->GetAttributeBool(WORLD_IMAGES_SWITCH))
 		GenerateWorldImageChart(Universe, pCmdLine);
+	else if (pCmdLine->GetAttributeBool(REFERENCE_SWITCH))
+		GenerateReference(Universe, pCmdLine);
 	else
 		GenerateStats(Universe, pCmdLine);
 
@@ -491,11 +519,16 @@ ALERROR CreateXMLElementFromDataFile (const CString &sFilespec, CXMLElement **re
 ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec, CXMLElement *pCmdLine, CString *retsError)
 	{
 	ALERROR error;
+	bool bLogo = !pCmdLine->GetAttributeBool(NO_LOGO_SWITCH);
+
+	if (bLogo)
+		printf("Loading...");
 
 	CUniverse::SInitDesc Ctx;
 	Ctx.sFilespec = sFilespec;
 	Ctx.pHost = &Host;
 	Ctx.bDebugMode = pCmdLine->GetAttributeBool(DEBUG_SWITCH);
+	Ctx.bVerboseCreate = pCmdLine->GetAttributeBool(DEBUG_CREATE_SWITCH);
 
 	//	Figure out what adventure we need
 
@@ -549,13 +582,36 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 		else if (strEquals(sExtensionList, CONSTLIT("all")))
 			Ctx.bDefaultExtensions = true;
 		else
-			{
-			TArray<DWORD> Extensions;
 			ParseUNIDList(sExtensionList, PUL_FLAG_HEX, &Ctx.ExtensionUNIDs);
-			}
 		}
 	else
 		Ctx.bDefaultExtensions = true;
+
+	//	If we have additional extensions, add them now.
+
+	if (!Ctx.bDefaultExtensions
+			&& pCmdLine->FindAttribute(MORE_EXTENSIONS_ATTRIB, &sExtensionList))
+		{
+		if (strEquals(sExtensionList, CONSTLIT("all")))
+			{
+			Ctx.bDefaultExtensions = true;
+			Ctx.ExtensionUNIDs.DeleteAll();
+			}
+		else
+			{
+			TArray<DWORD> Extensions;
+			ParseUNIDList(sExtensionList, PUL_FLAG_HEX, &Extensions);
+
+			for (int i = 0; i < Extensions.GetCount(); i++)
+				if (Ctx.ExtensionUNIDs.Find(Extensions[i]))
+					{
+					Extensions.Delete(i);
+					i--;
+					}
+
+			Ctx.ExtensionUNIDs.Insert(Extensions);
+			}
+		}
 
 	//	Open the universe
 
@@ -571,7 +627,13 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 #endif
 
 	if (error = Universe.Init(Ctx, retsError))
+		{
+		printf("\n");
 		return error;
+		}
+
+	if (bLogo)
+		printf("done.\n");
 
 	if (error = Universe.InitGame(0, retsError))
 		return error;
@@ -582,7 +644,8 @@ ALERROR InitUniverse (CUniverse &Universe, CHost &Host, const CString &sFilespec
 
 	//	Mark everything as known
 
-	MarkItemsKnown(Universe);
+	if (!Ctx.bDiagnostics)
+		MarkItemsKnown(Universe);
 
 	return NOERROR;
 	}
@@ -595,6 +658,7 @@ bool IsMainCommandParam (const CString &sAttrib)
 			|| strEquals(sAttrib, CONSTLIT("apiVersion"))
 			|| strEquals(sAttrib, CONSTLIT("criteria"))
 			|| strEquals(sAttrib, CONSTLIT("debug"))
+			|| strEquals(sAttrib, CONSTLIT("debugCreate"))
 			|| strEquals(sAttrib, CONSTLIT("extensionFolder"))
 			|| strEquals(sAttrib, CONSTLIT("extensions"))
 			|| strEquals(sAttrib, CONSTLIT("noLogo")));

@@ -63,11 +63,11 @@ class CGFont
 
 		HFONT GetFont (void);
 
-		inline void SetBold (BOOL bBold) { FlushFont(); m_fBold = (DWORD)bBold; }
-		inline void SetHeightInPixels (int iHeight) { FlushFont(); m_iHeight = iHeight; }
+		void SetBold (BOOL bBold) { FlushFont(); m_fBold = (DWORD)bBold; }
+		void SetHeightInPixels (int iHeight) { FlushFont(); m_iHeight = iHeight; }
 		void SetHeightInPoints (int iTenthPoints);
-		inline void SetItalic (BOOL bItalic) { FlushFont(); m_fItalic = (DWORD)bItalic; }
-		inline void SetTypeface (CString sTypeface) { FlushFont(); m_sTypeface = sTypeface; }
+		void SetItalic (BOOL bItalic) { FlushFont(); m_fItalic = (DWORD)bItalic; }
+		void SetTypeface (CString sTypeface) { FlushFont(); m_sTypeface = sTypeface; }
 
 	private:
 		void FlushFont (void);

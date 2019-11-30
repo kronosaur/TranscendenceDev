@@ -376,7 +376,7 @@ class CShipClass : public CDesignType
 		bool FindDeviceSlotDesc (CShip *pShip, const CItem &Item, SDeviceDesc *retDesc) const;
 
 		static const DWORD GDFLAG_NO_DEVICE_SLOT_SEARCH = 0x00000001;
-		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0);
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices, DWORD dwFlags = 0) const;
 
 		CString GenerateShipName (DWORD *retdwFlags) const;
 		inline const CAISettings &GetAISettings (void) { return m_AISettings; }
@@ -401,7 +401,7 @@ class CShipClass : public CDesignType
 		inline CXMLElement *GetFirstDockScreen (void) { return m_pDefaultScreen.GetDesc(); }
 		inline CDesignType *GetFirstDockScreen (CString *retsName) { return m_pDefaultScreen.GetDockScreen(this, retsName); }
 		FrequencyTypes GetFrequency (void) const { return m_Frequency; }
-        const CObjectImageArray &GetHeroImage (void);
+        const CObjectImageArray &GetHeroImage (void) const;
 		inline const CHullDesc &GetHullDesc (void) const { return m_Hull; }
 		inline const CDriveDesc &GetHullDriveDesc (void) const { return m_DriveDesc; }
 		inline const CReactorDesc *GetHullReactorDesc (void) { return &m_ReactorDesc; }
@@ -455,7 +455,7 @@ class CShipClass : public CDesignType
 					int iTick, 
 					bool bThrusting = false,
 					bool bRadioactive = false,
-					DWORD byInvisible = 0);
+					DWORD byInvisible = 0) const;
 		void PaintDevicePositions (CG32bitImage &Dest, int x, int y, const CDeviceDescList &Devices, int iShipRotation) const;
 		void PaintDockPortPositions (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
 		void PaintInteriorCompartments (CG32bitImage &Dest, int x, int y, int iShipRotation) const;
@@ -480,7 +480,7 @@ class CShipClass : public CDesignType
 						const ViewportTransform &Trans, 
 						int iDirection, 
 						int iTick,
-						bool bInFrontOnly);
+						bool bInFrontOnly) const;
 		inline bool ShowsMapLabel (void) const { return HasDockingPorts(); }
 
 		//	CDesignType overrides
@@ -491,7 +491,7 @@ class CShipClass : public CDesignType
 		virtual const CEconomyType *GetEconomyType (void) const;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iLevel; return m_iLevel; }
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override;
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const override;
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual CTradingDesc *GetTradingDesc (void) const override { return m_pTrade; }
 		virtual DesignTypes GetType (void) const override { return designShipClass; }
         virtual const CCompositeImageDesc &GetTypeImage (void) const override { return m_Image; }
@@ -510,7 +510,6 @@ class CShipClass : public CDesignType
 		virtual void OnClearMark (void) override { m_WreckDesc.ClearMarks(); }
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-		virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
         virtual CString OnGetMapDescriptionMain (SMapDescriptionCtx &Ctx) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
@@ -636,7 +635,7 @@ class CShipClass : public CDesignType
 		//	Image
 
 		CCompositeImageDesc m_Image;			//	Image of ship
-        CObjectImageArray m_HeroImage;          //  Large image
+        mutable CObjectImageArray m_HeroImage;	//  Large image
 		CObjectEffectDesc m_Effects;			//	Effects for ship
 
 		//	Exhaust

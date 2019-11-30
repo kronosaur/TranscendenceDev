@@ -71,7 +71,7 @@ void CSequencerEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Handle it when another object is destroyed
 
 	{
-	if (m_pAnchor == Ctx.pObj)
+	if (m_pAnchor == Ctx.Obj)
 		m_pAnchor = NULL;
 	}
 

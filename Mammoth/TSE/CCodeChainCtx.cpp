@@ -226,13 +226,16 @@ CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem 
 	return pDevice;
 	}
 
-CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+CItem CCodeChainCtx::AsItem (ICCItem *pItem, bool *retbItemType) const
 
 //	AsItem
 //
 //	Get an item
 
 	{
+	if (retbItemType)
+		*retbItemType = false;
+
 	if (pItem == NULL || pItem->IsNil())
 		return CItem();
 
@@ -247,6 +250,9 @@ CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
 		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
 		if (pType == NULL)
 			return CItem();
+
+		if (retbItemType)
+			*retbItemType = true;
 
 		return CItem(pType, 1);
 		}
@@ -318,6 +324,8 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	try
 		{
 		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
+		if (pObj && ((DWORD)pObj->GetCategory() & ~CSpaceObject::catMask))
+			pObj = NULL;
 		}
 	catch (...)
 		{
@@ -383,51 +391,6 @@ CWeaponFireDesc *CCodeChainCtx::AsWeaponFireDesc (ICCItem *pItem) const
 
 	else
 		return NULL;
-
-#if 0
-	DWORD dwWeaponUNID;
-	DWORD dwVariantUNID;
-
-	//	If the argument is a list, then we get the weapon UNID and the variant
-	//	from the list.
-
-	if (pArg->IsList() && pArg->GetCount() >= 2)
-		{
-		dwWeaponUNID = (DWORD)pArg->GetElement(0)->GetIntegerValue();
-		dwVariantUNID = (DWORD)pArg->GetElement(1)->GetIntegerValue();
-		}
-
-	//	Otherwise, get the first variant of the weapon
-
-	else
-		{
-		dwWeaponUNID = (DWORD)pArg->GetIntegerValue();
-		dwVariantUNID = 0;
-		}
-
-	//	Get the item associated with the UNID
-
-	CItemType *pType = g_pUniverse->FindItemType(dwWeaponUNID);
-	if (pType == NULL)
-		return NULL;
-
-	//	If variant UNID is 0, then pType is either a weapon or a missile and 
-    //  this will return its descriptor.
-
-    if (dwVariantUNID == 0)
-        return pType->GetWeaponFireDesc(CItemCtx());
-
-    //  Otherwise, get the missile type
-
-    else
-        {
-	    CItemType *pMissileType = g_pUniverse->FindItemType(dwVariantUNID);
-	    if (pMissileType == NULL)
-		    return NULL;
-
-        return pType->GetWeaponFireDesc(CItemCtx(CItem(pMissileType, 1)));
-        }
-#endif
 	}
 
 ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
@@ -442,6 +405,32 @@ ICCItemPtr CCodeChainCtx::Create (ICCItem::ValueTypes iType)
 		throw CException(ERR_MEMORY);
 
 	return pValue;
+	}
+
+ICCItemPtr CCodeChainCtx::CreateDebugError (const CString &sError, ICCItem *pValue) const
+
+//	CreateDebugError
+//
+//	Creates an error in debug mode or Nil otherwise.
+
+	{
+	if (m_Universe.InDebugMode())
+		return ICCItemPtr(CCodeChain::CreateError(sError, pValue));
+	else
+		return ICCItemPtr(ICCItem::Nil);
+	}
+
+ICCItemPtr CCodeChainCtx::DebugError (ICCItem *pResult) const
+
+//	DebugError
+//
+//	Swallows errors unless in debug mode.
+
+	{
+	if (pResult->IsError() && !m_Universe.InDebugMode())
+		return ICCItemPtr(ICCItem::Nil);
+	else
+		return ICCItemPtr(pResult->Reference());
 	}
 
 void CCodeChainCtx::DefineDamageCtx (const SDamageCtx &Ctx, int iDamage)
@@ -589,7 +578,7 @@ void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
 	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
 	}
 
-void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
+void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
 //
@@ -597,7 +586,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
 
 	{
 	if (pObj)
-		m_CC.DefineGlobalInteger(sVar, (int)pObj);
+		DefineSpaceObject(sVar, *pObj);
 	else
 		{
 		ICCItem *pValue = m_CC.CreateNil();

@@ -33,7 +33,7 @@ template <class VALUE> class TQueue
 				delete [] m_pArray;
 			}
 
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 
 		void DeleteAll (void)
 			{
@@ -107,7 +107,7 @@ template <class VALUE> class TQueue
 			return false;
 			}
 
-		inline VALUE &GetAt (int iIndex) const
+		VALUE &GetAt (int iIndex) const
 			{
 			ASSERT(iIndex < GetCount());
 			return m_pArray[(m_iHead + iIndex) % m_iSize];
@@ -126,7 +126,7 @@ template <class VALUE> class TQueue
 				return (m_iTail + m_iSize - m_iHead);
 			}
 
-		inline VALUE &Head (void) const
+		VALUE &Head (void) const
 			{
 			ASSERT(m_iHead != m_iTail);
 			return m_pArray[m_iHead];
@@ -152,17 +152,17 @@ template <class VALUE> class TQueue
 			m_iTail = 0;
 			}
 
-		inline bool IsEmpty (void) const
+		bool IsEmpty (void) const
 			{
 			return (m_iHead == m_iTail);
 			}
 
-		inline bool IsFull (void) const
+		bool IsFull (void) const
 			{
 			return (((m_iTail + 1) % m_iSize) == m_iHead);
 			}
 
-		inline VALUE &Tail (void) const
+		VALUE &Tail (void) const
 			{
 			ASSERT(m_iHead != m_iTail);
 			return m_pArray[(m_iTail + m_iSize - 1) % m_iSize];
@@ -204,7 +204,7 @@ template <class VALUE> class TQueue
 			delete [] m_pArray;
 			}
 
-		inline VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
+		VALUE &operator [] (int iIndex) const { return GetAt(iIndex); }
 
 		void Dequeue (void)
 			{
@@ -214,20 +214,20 @@ template <class VALUE> class TQueue
 				m_iHead = (m_iHead + 1) % m_iSize;
 			}
 
-		inline VALUE &GetAt (int iIndex) const
+		VALUE &GetAt (int iIndex) const
 			{
 			ASSERT(iIndex >= 0 && iIndex < GetCount());
 			return m_pArray[(m_iHead + iIndex) % m_iSize];
 			}
 
-		inline int GetCount (void) const
+		int GetCount (void) const
 			{
 			return (m_iTail + m_iSize - m_iHead) % m_iSize;
 			}
 
-		inline int GetMaxCount (void) const { return m_iSize - 1; }
+		int GetMaxCount (void) const { return m_iSize - 1; }
 
-		inline VALUE &Head (void) const
+		VALUE &Head (void) const
 			{
 			ASSERT(GetCount() > 0);
 			return m_pArray[m_iHead];
@@ -248,7 +248,7 @@ template <class VALUE> class TQueue
 			return GetCount()-1;
 			}
 
-		inline VALUE &Tail (void) const
+		VALUE &Tail (void) const
 			{
 			ASSERT(GetCount() > 0);
 			return m_pArray[(m_iTail + m_iSize - 1) % m_iSize];

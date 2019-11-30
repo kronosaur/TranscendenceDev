@@ -26,20 +26,18 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 
 		"OnGlobalIntroCommand",
 		"OnGlobalIntroStarted",
-
 		"OnGlobalMarkImages",
-		
 		"OnGlobalObjDestroyed",
 		"OnGlobalObjGateCheck",
 
 		"OnGlobalPlayerBoughtItem",
 		"OnGlobalPlayerSoldItem",
+		"OnGlobalRunDiagnostics",
 		"OnGlobalStartDiagnostics",
-
 		"OnGlobalSystemDiagnostics",
+
 		"OnGlobalSystemStarted",
 		"OnGlobalSystemStopped",
-
 		"OnGlobalUniverseCreated",
 		"OnGlobalUniverseLoad",
 		"OnGlobalUniverseSave",
@@ -48,9 +46,7 @@ static char *CACHED_EVENTS[CDesignCollection::evtCount] =
 	};
 
 CDesignCollection::CDesignCollection (void) :
-		m_Base(true),	//	m_Base owns its types and will free them at the end
-		m_pAdventureDesc(NULL),
-		m_bInBindDesign(false)
+		m_Base(true)	//	m_Base owns its types and will free them at the end
 
 //	CDesignCollection construtor
 
@@ -178,24 +174,12 @@ ALERROR CDesignCollection::AddDynamicType (CExtension *pExtension, DWORD dwUNID,
 		//	Cache some global events
 
 		CacheGlobalEvents(pType);
-
-		//	Done binding
-
-		if (error = pType->FinishBindDesign(Ctx))
-			{
-			m_AllTypes.Delete(dwUNID);
-			m_ByType[pType->GetType()].Delete(dwUNID);
-			m_DynamicTypes.Delete(dwUNID);
-			if (retsError)
-				*retsError = Ctx.sError;
-			return error;
-			}
 		}
 
 	return NOERROR;
 	}
 
-ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, DWORD dwAPIVersion, bool bNewGame, bool bNoResources, CString *retsError)
+ALERROR CDesignCollection::BindDesign (CUniverse &Universe, const TArray<CExtension *> &BindOrder, const TSortMap<DWORD, bool> &TypesUsed, const SBindOptions &Options, CString *retsError)
 
 //	BindDesign
 //
@@ -206,61 +190,44 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	DEBUG_TRY
 
 	ALERROR error;
-	int i;
 
 	//	Remember that we're in bind design
 
 	m_bInBindDesign = true;
 
+	//	Reset everything
+
+	Unbind();
+
 	//	Generate a table of extension UNIDs that we're including
 
 	TArray<DWORD> ExtensionsIncluded;
 	ExtensionsIncluded.InsertEmpty(BindOrder.GetCount());
-	for (i = 0; i < BindOrder.GetCount(); i++)
+	for (int i = 0; i < BindOrder.GetCount(); i++)
 		ExtensionsIncluded[i] = BindOrder[i]->GetUNID();
-
-	//	Unbind everything
-
-	CShipClass::UnbindGlobal();
-
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
-		m_AllTypes.GetEntry(i)->UnbindDesign();
-	m_AllTypes.DeleteAll();
-
-	//	Reset the bind tables
-
-	for (i = 0; i < designCount; i++)
-		m_ByType[i].DeleteAll();
-
-	m_CreatedTypes.DeleteAll();
-	m_OverrideTypes.DeleteAll();
-
-	//	Reset
-
-	m_pTopology = NULL;
-	m_pAdventureExtension = NULL;
 
 	//	Minimum API version
 	//
 	//	If we're loading an old game, and if we don't have the TypesUsed array, then it
 	//	means we need to load all obsolete types. In that case we use API = 0.
 
-	if (!bNewGame && TypesUsed.GetCount() == 0)
+	if (!Options.bNewGame && TypesUsed.GetCount() == 0)
 		m_dwMinAPIVersion = 0;
 	else
-		m_dwMinAPIVersion = dwAPIVersion;
+		m_dwMinAPIVersion = Options.dwAPIVersion;
 
 	//	Create a design load context
 
 	SDesignLoadCtx Ctx;
 	Ctx.pDesign = this;
-	Ctx.bBindAsNewGame = bNewGame;
-	Ctx.bNoResources = bNoResources;
+	Ctx.bBindAsNewGame = Options.bNewGame;
+	Ctx.bNoResources = Options.bNoResources;
+	Ctx.bTraceBind = Options.bTraceBind;
 
 	//	Loop over the bind list in order and add appropriate types to m_AllTypes
 	//	(The order guarantees that the proper types override)
 
-	for (i = 0; i < BindOrder.GetCount(); i++)
+	for (int i = 0; i < BindOrder.GetCount(); i++)
 		{
 		CExtension *pExtension = BindOrder[i];
 
@@ -279,11 +246,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		//	Run globals for the extension
 
 		if (error = pExtension->ExecuteGlobals(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
+			return BindDesignError(Ctx, retsError);
 
 		//	Add the types
 
@@ -292,10 +255,7 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 		//	If this is the adventure, then remember it
 
 		if (pExtension->GetType() == extAdventure)
-			{
 			m_pAdventureExtension = pExtension;
-			m_pAdventureDesc = pExtension->GetAdventureDesc();
-			}
 
 		//	If this is an adventure or the base extension then take the 
 		//	topology.
@@ -314,24 +274,16 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	//	If this is a new game, then create all the Template types
 
-	if (bNewGame)
+	if (Options.bNewGame)
 		{
 		m_DynamicUNIDs.DeleteAll();
 		m_DynamicTypes.DeleteAll();
 
 		if (error = FireOnGlobalTypesInit(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
+			return BindDesignError(Ctx, retsError);
 
 		if (error = CreateTemplateTypes(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
+			return BindDesignError(Ctx, retsError);
 		}
 
 	//	Add all the dynamic types. These came either from the saved game file or
@@ -342,82 +294,31 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	//	Resolve inheritance and overrides types.
 
 	if (error = ResolveTypeHierarchy(Ctx))
-		{
-		m_bInBindDesign = false;
-		*retsError = Ctx.sError;
-		return error;
-		}
+		return BindDesignError(Ctx, retsError);
 
 	m_AllTypes.Merge(m_HierarchyTypes, &m_OverrideTypes);
 
 	//	Now resolve all overrides and inheritance
 
 	if (error = ResolveOverrides(Ctx, TypesUsed))
-		{
-		m_bInBindDesign = false;
-		*retsError = Ctx.sError;
-		return error;
-		}
+		return BindDesignError(Ctx, retsError);
 
 	//	Initialize the byType lists
 
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
+	for (int i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		m_ByType[pEntry->GetType()].AddEntry(pEntry);
 		}
 
-	//	Set our adventure desc as current; since adventure descs are always 
-	//	loaded this is the only thing that we can use to tell if we should
-	//	call global events.
-	//
-	//	This must happen after Unbind (because that clears it) and before
-	//	PrepareBindDesign.
-	//
-	//	NOTE: m_pAdventureDesc can be NULL (e.g., in the intro screen).
-
-	if (m_pAdventureDesc)
-		m_pAdventureDesc->SetCurrentAdventure();
-
-	//	Cache a map between currency name and economy type
-	//	We need to do this before Bind because some types will lookup
-	//	a currency name during Bind.
-
-	m_EconomyIndex.DeleteAll();
-	for (i = 0; i < GetCount(designEconomyType); i++)
-		{
-		const CEconomyType *pEcon = CEconomyType::AsType(GetEntry(designEconomyType, i));
-		const CString &sName = pEcon->GetSID();
-
-		bool bUnique;
-		const CEconomyType **ppDest = m_EconomyIndex.SetAt(sName, &bUnique);
-		if (!bUnique)
-			{
-			pEcon->ComposeLoadError(Ctx, CONSTLIT("Currency ID must be unique"));
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return ERR_FAIL;
-			}
-
-		*ppDest = pEcon;
-		}
-
 	//	Prepare to bind. This is used by design elements that need two passes
-	//	to bind. We also use it to set up the inheritence hierarchy, which means
-	//	that we rely on the map from UNID to valid design type (m_AllTypes)
+	//	to bind.
 
-	m_ArmorDefinitions.DeleteAll();
-	m_DisplayAttribs.DeleteAll();
-
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
+	for (int i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
 		if (error = pEntry->PrepareBindDesign(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
+			return BindDesignError(Ctx, retsError);
 
 		//	We take this opportunity to build a list of display attributes
 		//	defined by each type.
@@ -436,39 +337,40 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 
 	m_ArmorDefinitions.OnInitDone();
 
-	//	Now call Bind on all active design entries
+	//	Cache a map between currency name and economy type
+	//	We need to do this before Bind because some types will lookup
+	//	a currency name during Bind.
 
-	for (i = 0; i < evtCount; i++)
-		m_EventsCache[i]->DeleteAll();
+	if (!InitEconomyTypes(Ctx))
+		return BindDesignError(Ctx, retsError);
 
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
+	//	Initialize the adventure descriptor. This will also initialize various
+	//	engine options. We do this after PrepareBind because we will bind the
+	//	adventure here.
+
+	if (!InitAdventure(Ctx))
+		return BindDesignError(Ctx, retsError);
+
+	//	Now call Bind on all active design entries. We may proceed recursively.
+	//	That is, when binding a type, that type might depend on other types, and
+	//	we recursively bind those types.
+
+	for (int i = 0; i < m_AllTypes.GetCount(); i++)
 		{
 		CDesignType *pEntry = m_AllTypes.GetEntry(i);
-		if (error = pEntry->BindDesign(Ctx))
+
+		//	Bind if necessary.
+
+		if (!pEntry->IsBound())
 			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
+			if (error = pEntry->BindDesign(Ctx))
+				return BindDesignError(Ctx, retsError);
 			}
 
 		//	Cache some global events. We keep track of the global events for
 		//	all types so that we can access them faster.
 
 		CacheGlobalEvents(pEntry);
-		}
-
-	//	Finish binding. This pass is used by design elements
-	//	that need to do stuff after all designs are bound.
-
-	for (i = 0; i < m_AllTypes.GetCount(); i++)
-		{
-		CDesignType *pEntry = m_AllTypes.GetEntry(i);
-		if (error = pEntry->FinishBindDesign(Ctx))
-			{
-			m_bInBindDesign = false;
-			*retsError = Ctx.sError;
-			return error;
-			}
 		}
 
 	//	Remember what we bound
@@ -479,6 +381,18 @@ ALERROR CDesignCollection::BindDesign (const TArray<CExtension *> &BindOrder, co
 	return NOERROR;
 
 	DEBUG_CATCH
+	}
+
+ALERROR CDesignCollection::BindDesignError (SDesignLoadCtx &Ctx, CString *retsError)
+
+//	BindDesignError
+//
+//	Helper to return an error from inside of BindDesign.
+
+	{
+	m_bInBindDesign = false;
+	if (retsError) *retsError = Ctx.sError;
+	return ERR_FAIL;
 	}
 
 void CDesignCollection::CacheGlobalEvents (CDesignType *pType)
@@ -637,6 +551,72 @@ void CDesignCollection::DebugOutputExtensions (void) const
 		}
 
 	::kernelDebugLogPattern("Using API version: %d", m_dwMinAPIVersion);
+	}
+
+const CDesignType *CDesignCollection::FindEntry (DWORD dwUNID) const
+
+//	FindEntry
+//
+//	Finds an entry and returns it (or NULL).
+
+	{
+	const CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+#ifdef DEBUG
+	if (!pType->IsBound())
+		{
+		DebugBreak();
+		}
+#endif
+
+	return pType;
+	}
+
+CDesignType *CDesignCollection::FindEntry (DWORD dwUNID)
+
+//	FindEntry
+//
+//	Finds an entry and returns it (or NULL).
+
+	{
+	CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+#ifdef DEBUG
+	if (!pType->IsBound())
+		{
+		DebugBreak();
+		}
+#endif
+
+	return pType;
+	}
+
+CDesignType *CDesignCollection::FindEntryBound (SDesignLoadCtx &Ctx, DWORD dwUNID)
+
+//	FindEntryBound
+//
+//	Returns the entry, making sure to call Bind if necessary. This is designed
+//	to be called from inside a different type's OnBind.
+
+	{
+	CDesignType *pType = m_AllTypes.FindByUNID(dwUNID);
+	if (pType == NULL)
+		return NULL;
+
+	if (!pType->IsBound())
+		{
+		if (pType->BindDesign(Ctx) != NOERROR)
+			{
+			Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind: %s"), Ctx.sError));
+			return NULL;
+			}
+		}
+
+	return pType;
 	}
 
 CExtension *CDesignCollection::FindExtension (DWORD dwUNID) const
@@ -799,23 +779,25 @@ bool CDesignCollection::FireGetGlobalPlayerPriceAdj (STradeServiceCtx &ServiceCt
 	return (iPriceAdj != 100);
 	}
 
-void CDesignCollection::FireOnGlobalEndDiagnostics (void)
+void CDesignCollection::FireOnGlobalEndDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalEndDiagnostics
 //
 //	Done running diagnostics. Output results.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalEndDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalEndDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalEndDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalEndDiagnostics(Event);
+		if (!pType->FireOnGlobalEndDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
@@ -1045,43 +1027,69 @@ void CDesignCollection::FireOnGlobalPlayerSoldItem (CSpaceObject *pBuyerObj, con
 		}
 	}
 
-void CDesignCollection::FireOnGlobalStartDiagnostics (void)
+void CDesignCollection::FireOnGlobalRunDiagnostics (SDiagnosticsCtx &Ctx)
+
+//	FireOnGlobalRunDiagnostics
+//
+//	Called after StartDiagnostics
+
+	{
+	int iCount = m_EventsCache[evtOnGlobalRunDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
+
+	//	Fire all events
+
+	for (int i = 0; i < iCount; i++)
+		{
+		SEventHandlerDesc Event;
+		CDesignType *pType = m_EventsCache[evtOnGlobalRunDiagnostics]->GetEntry(i, &Event);
+
+		if (!pType->FireOnGlobalRunDiagnostics(Event))
+			Ctx.iTotalErrors++;
+		}
+	}
+
+void CDesignCollection::FireOnGlobalStartDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalStartDiagnostics
 //
 //	Called after all systems created.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalStartDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalStartDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalStartDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalStartDiagnostics(Event);
+		if (!pType->FireOnGlobalStartDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
-void CDesignCollection::FireOnGlobalSystemDiagnostics (void)
+void CDesignCollection::FireOnGlobalSystemDiagnostics (SDiagnosticsCtx &Ctx)
 
 //	FireOnGlobalSystemDiagnostics
 //
 //	Called for each system.
 
 	{
-	int i;
+	int iCount = m_EventsCache[evtOnGlobalSystemDiagnostics]->GetCount();
+	Ctx.iTotalTests += iCount;
 
 	//	Fire all events
 
-	for (i = 0; i < m_EventsCache[evtOnGlobalSystemDiagnostics]->GetCount(); i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		SEventHandlerDesc Event;
 		CDesignType *pType = m_EventsCache[evtOnGlobalSystemDiagnostics]->GetEntry(i, &Event);
 
-		pType->FireOnGlobalSystemDiagnostics(Event);
+		if (!pType->FireOnGlobalSystemDiagnostics(Event))
+			Ctx.iTotalErrors++;
 		}
 	}
 
@@ -1395,6 +1403,83 @@ void CDesignCollection::GetStats (SStats &Result) const
 	Result.dwTotalXMLMemory += m_HierarchyTypes.GetXMLMemoryUsage();
 	}
 
+bool CDesignCollection::InitAdventure (SDesignLoadCtx &Ctx)
+
+//	InitAdventure
+//
+//	Initializes the adventure descriptor from inside of BindDesign.
+
+	{
+	//	Set our adventure desc as current; since adventure descs are always 
+	//	loaded this is the only thing that we can use to tell if we should
+	//	call global events.
+	//
+	//	This must happen after Unbind (because that clears it) and after
+	//	PrepareBindDesign.
+	//
+	//	NOTE: m_pAdventureDesc can be NULL (e.g., in the intro screen).
+
+	if (m_ByType[designAdventureDesc].GetCount() > 0)
+		{
+		m_pAdventureDesc = CAdventureDesc::AsType(m_ByType[designAdventureDesc].GetEntry(0));
+		m_pAdventureDesc->SetCurrentAdventure();
+
+		//	Bind the adventure
+
+		if (m_pAdventureDesc->BindDesign(Ctx) != NOERROR)
+			return false;
+
+		//	Let the adventure override encounter desc
+
+		if (!OverrideEncounterDesc(Ctx, m_pAdventureDesc->GetEncounterOverrideXML()))
+			return false;
+
+		//	Let the universe initialize engine options based on the adventure
+		//	description. We need to do this before we start calling Bind because
+		//	specific types might need it.
+
+		Ctx.GetUniverse().SetEngineOptions(m_pAdventureDesc->GetEngineOptions());
+		}
+
+	//	Done
+
+	return true;
+	}
+
+bool CDesignCollection::InitEconomyTypes (SDesignLoadCtx &Ctx)
+
+//	InitEconomyTypes
+//
+//	Cache a map between currency name and economy type
+//	We need to do this before Bind because some types will lookup
+//	a currency name during Bind.
+
+	{
+	for (int i = 0; i < GetCount(designEconomyType); i++)
+		{
+		CEconomyType *pEcon = CEconomyType::AsType(GetEntry(designEconomyType, i));
+		if (!pEcon->IsBound())
+			{
+			if (ALERROR error = pEcon->BindDesign(Ctx))
+				return false;
+			}
+
+		const CString &sName = pEcon->GetSID();
+
+		bool bUnique;
+		const CEconomyType **ppDest = m_EconomyIndex.SetAt(sName, &bUnique);
+		if (!bUnique)
+			{
+			pEcon->ComposeLoadError(Ctx, CONSTLIT("Currency ID must be unique"));
+			return false;
+			}
+
+		*ppDest = pEcon;
+		}
+
+	return true;
+	}
+
 bool CDesignCollection::IsAdventureExtensionBound (DWORD dwUNID)
 
 //	IsAdventureExtensionBound
@@ -1448,6 +1533,51 @@ void CDesignCollection::NotifyTopologyInit (void)
 		CDesignType *pType = m_AllTypes.GetEntry(i);
 		pType->TopologyInitialized();
 		}
+	}
+
+bool CDesignCollection::OverrideEncounterDesc (SDesignLoadCtx &Ctx, const CXMLElement &OverridesXML)
+
+//	OverrideEncounterDesc
+//
+//	Overrides encounter descriptors.
+
+	{
+	//	Loop over all overrides
+
+	for (int i = 0; i < OverridesXML.GetContentElementCount(); i++)
+		{
+		const CXMLElement *pOverride = OverridesXML.GetContentElement(i);
+
+		//	Get the UNID that we're overriding
+
+		DWORD dwUNID;
+		if (::LoadUNID(Ctx, pOverride->GetAttribute(UNID_ATTRIB), &dwUNID) != NOERROR)
+			return false;
+
+		if (dwUNID == 0)
+			{
+			Ctx.sError = CONSTLIT("Encounter override must specify UNID to override.");
+			return false;
+			}
+
+		//	Get the station type. If we don't find the station, skip it. We 
+		//	assume that this is an optional type.
+
+		CStationType *pType = CStationType::AsType(FindUnboundEntry(dwUNID));
+		if (pType == NULL)
+			{
+			if (GetUniverse().InDebugMode())
+				GetUniverse().LogOutput(strPatternSubst("Skipping encounter override %08x because type is not found.", dwUNID));
+			continue;
+			}
+
+		//	Override
+
+		if (!pType->OverrideEncounterDesc(*pOverride, &Ctx.sError))
+			return false;
+		}
+
+	return true;
 	}
 
 void CDesignCollection::ReadDynamicTypes (SUniverseLoadCtx &Ctx)
@@ -1527,7 +1657,7 @@ void CDesignCollection::Reinit (void)
 	DEBUG_CATCH
 	}
 
-ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType)
+ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignType *pType, CDesignType **retpNewType)
 
 //	ResolveInheritingType
 //
@@ -1571,7 +1701,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	if (pAncestor->GetInheritFromUNID() && pAncestor->GetInheritFrom() == NULL)
 		{
-		if (error = ResolveInheritingType(Ctx, pAncestor))
+		if (error = ResolveInheritingType(Ctx, pAncestor, &pAncestor))
 			return error;
 		}
 
@@ -1581,6 +1711,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 	if (pAncestor->GetType() == designGenericType)
 		{
 		pType->SetInheritFrom(pAncestor);
+		if (retpNewType) *retpNewType = pType;
 		return NOERROR;
 		}
 
@@ -1603,6 +1734,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 		{
 		delete pNewXML;
 		pType->SetInheritFrom(pAncestor);
+		if (retpNewType) *retpNewType = pType;
 		return NOERROR;
 		}
 
@@ -1619,6 +1751,7 @@ ALERROR CDesignCollection::ResolveInheritingType (SDesignLoadCtx &Ctx, CDesignTy
 
 	pNewType->SetMerged();
 	pNewType->SetInheritFrom(pAncestor);
+	if (retpNewType) *retpNewType = pNewType;
 
 	//	The original type will get replaced, but we need to reset the inherit
 	//	pointer. [Since it will be removed from m_AllTypes, it will never get
@@ -1803,6 +1936,43 @@ void CDesignCollection::SweepImages (void)
 		GetEntry(i)->Sweep();
 
 	DEBUG_CATCH
+	}
+
+void CDesignCollection::Unbind (void)
+
+//	Unbind
+//
+//	Reset everything.
+
+	{
+	//	Unbind everything
+
+	CShipClass::UnbindGlobal();
+
+	for (int i = 0; i < m_AllTypes.GetCount(); i++)
+		m_AllTypes.GetEntry(i)->UnbindDesign();
+	m_AllTypes.DeleteAll();
+
+	//	Reset the bind tables
+
+	for (int i = 0; i < designCount; i++)
+		m_ByType[i].DeleteAll();
+
+	m_CreatedTypes.DeleteAll();
+	m_OverrideTypes.DeleteAll();
+	m_ArmorDefinitions.DeleteAll();
+	m_DisplayAttribs.DeleteAll();
+	m_EconomyIndex.DeleteAll();
+
+	//	Reset
+
+	for (int i = 0; i < evtCount; i++)
+		m_EventsCache[i]->DeleteAll();
+
+	m_pTopology = NULL;
+	m_pAdventureExtension = NULL;
+	m_pAdventureDesc = NULL;
+	m_EmptyAdventure = CAdventureDesc();
 	}
 
 void CDesignCollection::WriteDynamicTypes (IWriteStream *pStream)

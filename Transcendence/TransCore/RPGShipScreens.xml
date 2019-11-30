@@ -314,7 +314,20 @@
 
 			<UseMessage>
 				<OnPaneInit>
-					(scrSetDesc gScreen (plyGetRedirectMessage gPlayer))
+					(block (
+						(theMessage (plyGetRedirectMessage gPlayer))
+						(lastChar (subset theMessage (- (count theMessage) 1)))
+						)
+						(if (or (= lastChar ".")
+								(= lastChar "!")
+								(= lastChar "?")
+								(= lastChar "\"")
+								(= lastChar "'")
+								)
+							(scrSetDesc gScreen theMessage)
+							(scrSetDesc gScreen (cat theMessage "."))
+							)
+						)
 				</OnPaneInit>
 
 				<Actions>

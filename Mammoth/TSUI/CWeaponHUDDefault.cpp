@@ -146,7 +146,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 
 		CString sVariant;
 		int iAmmoLeft;
-		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+		pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft, NULL, true);
 		int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 		if (iSelectedFireAmmoLeft >= 0)
 			iAmmoLeft = iSelectedFireAmmoLeft;
@@ -156,7 +156,7 @@ void CWeaponHUDDefault::PaintDeviceStatus (CShip *pShip, DeviceNames iDev, int x
 
 		int cxBonus = 0;
 
-		CString sBonus = pDevice->GetEnhancedDesc(pShip);
+		CString sBonus = pDevice->GetEnhancedDesc();
 		if (!sBonus.IsBlank())
 			{
 			int cyHeight;

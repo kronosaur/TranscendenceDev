@@ -99,8 +99,8 @@ void TransCompiler (CXMLElement *pCmdLine)
 //		/>
 
 	{
-	printf("TransCompiler v2.2\n");
-	printf("Copyright (c) 2003-2015 by Kronosaur Productions, LLC. All Rights Reserved.\n\n");
+	printf("TransCompiler v2.3\n");
+	printf("Copyright (c) 2003-2019 by Kronosaur Productions, LLC. All Rights Reserved.\n\n");
 
 	if (pCmdLine->GetAttributeBool(NOARGS) || pCmdLine->GetAttributeBool(SWITCH_HELP))
 		{
@@ -567,6 +567,14 @@ ALERROR WriteResource (CTDBCompiler &Ctx, const CString &sFilename, const CStrin
 	{
 	ALERROR error;
 	CString sFilespec = pathAddComponent(sFolder, sFilename);
+
+	//	See if we already have this resource
+
+	if (Ctx.FindResource(sFilespec))
+		{
+		printf("   %s (duplicate)\n", sFilespec.GetASCIIZPointer());
+		return NOERROR;
+		}
 
 	CFileReadBlock theFile(pathAddComponent(Ctx.GetRootPath(), sFilespec));
 	if (error = theFile.Open())

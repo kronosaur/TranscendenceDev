@@ -68,7 +68,7 @@ void ICCItem::AppendString (const CString &sValue)
 	pItem->Discard();
 	}
 
-void ICCItem::CloneItem (ICCItem *pItem)
+void ICCItem::CloneItem (const ICCItem *pItem)
 
 //	CloneItem
 //
@@ -281,6 +281,17 @@ void ICCItem::ResetItem (void)
 	m_bNoRefCount = false;
 	}
 
+void ICCItem::DeleteAt (const CString &sKey)
+
+//	DeleteAt
+//
+//	Deletes a key-value pair.
+
+	{
+	ICCItemPtr pKey(sKey);
+	DeleteEntry(pKey);
+	}
+
 void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 //	SetAt
@@ -289,7 +300,12 @@ void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 	{
 	ICCItem *pKey = CCodeChain::CreateString(sKey);
-	AddEntry(pKey, pValue);
+
+	if (pValue->IsNil())
+		DeleteEntry(pKey);
+	else
+		AddEntry(pKey, pValue);
+
 	pKey->Discard();
 	}
 
@@ -300,10 +316,8 @@ void ICCItem::SetBooleanAt (const CString &sKey, bool bValue)
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CCodeChain::CreateString(sKey);
 	ICCItem *pValue = (bValue ? CCodeChain::CreateTrue() : CCodeChain::CreateNil());
-	AddEntry(pKey, pValue);
-	pKey->Discard();
+	SetAt(sKey, pValue);
 	pValue->Discard();
 	}
 

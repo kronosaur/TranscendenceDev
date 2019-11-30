@@ -295,12 +295,12 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 		{
 		for (int i = 0; i < GetCount(); i++)
 			{
-			LONGLONG iTypeAndVariant = (m_Devices[i].GetLinkedFireOptions() &
+			LONGLONG iTypeAndVariant = (m_Devices[i].GetSlotLinkedFireOptions() &
 				CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[i]).GetItemVariantNumber() : 0xffffffff);
 			iTypeAndVariant = m_Devices[i].GetUNID() | (iTypeAndVariant << 32);
 			if (!m_Devices[i].IsEmpty()
 				&& m_Devices[i].GetCategory() == Category
-				&& m_Devices[i].GetLinkedFireOptions() & dwLinkedFireSelected
+				&& m_Devices[i].GetSlotLinkedFireOptions() & dwLinkedFireSelected
 				&& m_Devices[i].IsEnabled()
 				&& !FireWhenSelectedDeviceTypes.Find(iTypeAndVariant))
 				FireWhenSelectedDeviceTypes.Insert(iTypeAndVariant, i);
@@ -310,15 +310,15 @@ int CDeviceSystem::FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories
 	for (int i = 0; i < GetCount(); i++)
 		{
 		int iDevice = ((iDir * i) + iStartingSlot) % GetCount();
-		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetLinkedFireOptions() &
+		LONGLONG iTypeAndVariant = (m_Devices[iDevice].GetSlotLinkedFireOptions() &
 			CDeviceClass::lkfSelectedVariant ? CItemCtx(pObj, &m_Devices[iDevice]).GetItemVariantNumber() : 0xffffffff);
 		iTypeAndVariant = m_Devices[iDevice].GetUNID() | (iTypeAndVariant << 32);
 		int iEarliestLkfSelectedItem = -1;
 		FireWhenSelectedDeviceTypes.Find(iTypeAndVariant, &iEarliestLkfSelectedItem);
 		if (!m_Devices[iDevice].IsEmpty() 
 				&& m_Devices[iDevice].GetCategory() == Category
-				&& m_Devices[iDevice].IsSelectable(CItemCtx(pObj, &m_Devices[iDevice]))
-				&& (switchWeapons ? (m_Devices[iDevice].GetLinkedFireOptions() & dwLinkedFireSelected ?
+				&& m_Devices[iDevice].IsSelectable()
+				&& (switchWeapons ? (m_Devices[iDevice].GetSlotLinkedFireOptions() & dwLinkedFireSelected ?
 					iDevice == iEarliestLkfSelectedItem : true) : true))
 			return iDevice;
 		}
@@ -491,13 +491,13 @@ bool CDeviceSystem::Init (CSpaceObject *pObj, const CDeviceDescList &Devices, in
 			{
 			case itemcatWeapon:
 				if (m_NamedDevices[devPrimaryWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
+						&& m_Devices[i].IsSelectable())
 					m_NamedDevices[devPrimaryWeapon] = i;
 				break;
 
 			case itemcatLauncher:
 				if (m_NamedDevices[devMissileWeapon] == -1
-						&& m_Devices[i].IsSelectable(CItemCtx(pObj, &m_Devices[i])))
+						&& m_Devices[i].IsSelectable())
 					m_NamedDevices[devMissileWeapon] = i;
 				break;
 
@@ -569,7 +569,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 	switch (Device.GetCategory())
 		{
 		case itemcatWeapon:
-			if (Device.IsSelectable(ItemCtx))
+			if (Device.IsSelectable())
 				{
 				if (Device.GetClass()->UsesLauncherControls())
 					m_NamedDevices[devMissileWeapon] = iDeviceSlot;
@@ -579,7 +579,7 @@ bool CDeviceSystem::Install (CSpaceObject *pObj, CItemListManipulator &ItemList,
 			break;
 
 		case itemcatLauncher:
-			if (Device.IsSelectable(ItemCtx))
+			if (Device.IsSelectable())
 				m_NamedDevices[devMissileWeapon] = iDeviceSlot;
 			break;
 
@@ -647,6 +647,33 @@ bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) con
 			ASSERT(retiSlot == NULL);
 			return true;
 		}
+	}
+
+bool CDeviceSystem::IsWeaponRepeating (DeviceNames iDev) const
+
+//	IsWeaponRepeating
+//
+//	Returns TRUE if the given weapon is repeating. If iDev == devNone, then we
+//	return TRUE if any weapon is currently repeating.
+
+	{
+	if (iDev == devNone)
+		{
+		for (int i = 0; i < m_Devices.GetCount(); i++)
+			if (!m_Devices[i].IsEmpty() 
+					&& (m_Devices[i].GetCategory() == itemcatWeapon || m_Devices[i].GetCategory() == itemcatLauncher))
+				{
+				if (m_Devices[i].GetContinuousFire() != 0)
+					return true;
+				}
+
+		return false;
+		}
+	else if (const CInstalledDevice *pDevice = GetNamedDevice(iDev))
+		return (pDevice->GetContinuousFire() != 0);
+
+	else
+		return false;
 	}
 
 void CDeviceSystem::MarkImages (void)
@@ -740,7 +767,7 @@ void CDeviceSystem::ReadyFirstMissile (CSpaceObject *pObj)
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectFirstVariant(pObj);
 			}
 		}
@@ -853,7 +880,7 @@ void CDeviceSystem::ReadyNextMissile (CSpaceObject *pObj, int iDir, bool bUsedLa
 			if (!LinkedDevice.IsEmpty()
 					&& &LinkedDevice != pDevice
 					&& LinkedDevice.GetClass() == pDevice->GetClass()
-					&& LinkedDevice.IsLinkedFire(Ctx, itemcatLauncher))
+					&& LinkedDevice.IsLinkedFire(itemcatLauncher))
 				LinkedDevice.SelectNextVariant(pObj, iDir);
 			}
 		}

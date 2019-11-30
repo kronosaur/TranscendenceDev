@@ -11,14 +11,14 @@ class CGPath
 		void AddPolygonHandoff (TArray<CVector> &Points);
 		void Close (void);
 		void CreateSubPathStrokePath (int iSubPath, Metric rLineWidth, CGPath *retPath);
-		inline void DeleteAll (void) { m_SubPaths.DeleteAll(); }
-		inline int GetSubPathCount (void) const { return m_SubPaths.GetCount(); }
+		void DeleteAll (void) { m_SubPaths.DeleteAll(); }
+		int GetSubPathCount (void) const { return m_SubPaths.GetCount(); }
 		int GetSubPathPolygonPoints (int iSubPath, TArray<CVector> *retPoints) const;
 		int GetVertexCount (void) const;
 		void Init (void);
 		void Init (const TArray<CVector> &Points, bool bLeaveOpen = false);
 		void InitTakeHandoff (TArray<CVector> &Points);
-		inline bool IsEmpty (void) const { return (m_SubPaths.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_SubPaths.GetCount() == 0); }
 		void LineTo (const CVector &Pos);
 		void MoveTo (const CVector &Pos);
 		void Rasterize (CGRegion *retRegion, int iAntiAlias = 4);
@@ -66,7 +66,7 @@ class CGShape
 
 		//	Helpers for regions
 
-		inline static bool Arc (const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CGRegion *retRegion, Metric rSpacing = 0, DWORD dwFlags = 0)
+		static bool Arc (const CVector &vCenter, Metric rRadius, Metric rStartAngle, Metric rEndAngle, Metric rArcWidth, CGRegion *retRegion, Metric rSpacing = 0, DWORD dwFlags = 0)
 			{
 			CGPath Path; 
 			if (!Arc(vCenter, rRadius, rStartAngle, rEndAngle, rArcWidth, &Path, rSpacing, dwFlags))
@@ -76,7 +76,7 @@ class CGShape
 			return true;
 			}
 
-		inline static bool ArcSegment (const CVector &vCenter, Metric rRadius, Metric rAngle, Metric rWidth, CGRegion *retRegion)
+		static bool ArcSegment (const CVector &vCenter, Metric rRadius, Metric rAngle, Metric rWidth, CGRegion *retRegion)
 			{
 			CGPath Path;
 			if (!ArcSegment(vCenter, rRadius, rAngle, rWidth, &Path))
@@ -86,7 +86,7 @@ class CGShape
 			return true;
 			}
 
-		inline static bool ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CGRegion *retRegion)
+		static bool ArcQuadrilateral (const CVector &vCenter, const CVector &vInnerPos, const CVector &vOuterPos, Metric rWidth, CGRegion *retRegion)
 			{
 			CGPath Path;
 			if (!ArcQuadrilateral(vCenter, vInnerPos, vOuterPos, rWidth, &Path))

@@ -208,7 +208,7 @@ CString CTranscendenceModel::CalcEpitaph (SDestroyCtx &Ctx)
 	DEBUG_TRY
 
 	CShip *pShip = m_pPlayer->GetShip();
-	ASSERT(Ctx.pObj == (CSpaceObject *)pShip);
+	ASSERT(Ctx.Obj == (CSpaceObject *)pShip);
 	ASSERT(pShip->GetSystem());
 	CString sSystemName = pShip->GetSystem()->GetName();
 
@@ -353,15 +353,15 @@ void CTranscendenceModel::CalcStartingPos (CShipClass *pStartingShip, DWORD *ret
 
 	if (dwMap == 0 || sNodeID.IsBlank() || sPos.IsBlank())
 		{
-		CAdventureDesc *pAdventure = m_Universe.GetCurrentAdventureDesc();
+		const CAdventureDesc &Adventure = m_Universe.GetCurrentAdventureDesc();
 		if (dwMap == 0)
-			dwMap = pAdventure->GetStartingMapUNID();
+			dwMap = Adventure.GetStartingMapUNID();
 
 		if (sNodeID.IsBlank())
-			sNodeID = pAdventure->GetStartingNodeID();
+			sNodeID = Adventure.GetStartingNodeID();
 
 		if (sPos.IsBlank())
-			sPos = pAdventure->GetStartingPos();
+			sPos = Adventure.GetStartingPos();
 		}
 
 	//	If not, come up with a reasonable default
@@ -913,6 +913,8 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return;
+
+	CSpaceObject *pLocation = (GetScreenStack().IsEmpty() ? NULL : GetScreenStack().GetCurrent().pLocation);
 			
 	//	Exit the current screen. If we've got a screen underneath, then we need
 	//	to show it.
@@ -953,6 +955,11 @@ void CTranscendenceModel::ExitScreenSession (bool bForceUndock)
 
 		pSession->OnShowDockScreen(false);
 		pSession->GetDockScreen().CleanUpScreen();
+
+		//	If necessary, checkpoint the game.
+
+		if (pLocation && !pLocation->IsPlayer() && m_Universe.GetDifficulty().SaveOnUndock())
+			SaveGame(CGameFile::FLAG_CHECKPOINT);
 		}
 
 	DEBUG_CATCH
@@ -1135,6 +1142,9 @@ ALERROR CTranscendenceModel::InitBackground (const CGameSettings &Settings, cons
 	if (Settings.GetBoolean(CGameSettings::no3DSystemMap))
 		m_Universe.GetSFXOptions().Set3DSystemMapEnabled(false);
 
+	if (Settings.GetBoolean(CGameSettings::no3DExtras))
+		m_Universe.GetSFXOptions().Set3DExtrasEnabled(false);
+
 	DWORD dwAdventure = Settings.GetInteger(CGameSettings::lastAdventure);
 	if (dwAdventure == 0)
 		dwAdventure = DEFAULT_ADVENTURE_EXTENSION_UNID;
@@ -1276,7 +1286,9 @@ ALERROR CTranscendenceModel::LoadGame (const CString &sSignedInUsername, const C
 
 		//	If this game is in end game state OR if we are forcing permadeath and this game is over then we just load the stats.
 
-		if (m_GameFile.IsEndGame() || (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
+		if (m_GameFile.IsEndGame() 
+				|| (m_GameFile.GetDifficulty() == CDifficultyOptions::lvlPermadeath && m_GameFile.IsGameResurrect())
+				|| (m_bForcePermadeath && m_GameFile.IsGameResurrect() && m_GameFile.GetResurrectCount() == 0))
 			{
 			error = m_GameFile.LoadGameStats(&m_GameStats);
 			m_GameFile.Close();
@@ -1539,8 +1551,6 @@ void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceOb
 //	Handle the player changing ships.
 
 	{
-	int i;
-
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
 		return;
@@ -1566,18 +1576,8 @@ void CTranscendenceModel::OnPlayerChangedShips (CSpaceObject *pOldShip, CSpaceOb
 
 	CSystem *pSystem = m_Universe.GetCurrentSystem();
 	ASSERT(pSystem);
-	if (pSystem == NULL)
-		return;
-
-	for (i = 0; i < pSystem->GetObjectCount(); i++)
-		{
-		CSpaceObject *pObj = pSystem->GetObject(i);
-		if (pObj 
-				&& !pObj->IsDestroyed()
-				&& pObj != pOldShip
-				&& pObj != pNewShip)
-			pObj->OnPlayerChangedShips(pOldShip, Options);
-		}
+	if (pSystem)
+		pSystem->OnPlayerChangedShips(*pOldShip, *pNewShip, Options);
 	}
 
 void CTranscendenceModel::OnPlayerDestroyed (SDestroyCtx &Ctx, CString *retsEpitaph)
@@ -1964,14 +1964,14 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 	ASSERT(m_pPlayer);
 	CShip *pPlayerShip = m_pPlayer->GetShip();
 
-	CAdventureDesc *pAdventure = m_Universe.GetCurrentAdventureDesc();
-	ASSERT(pAdventure);
+	CAdventureDesc &Adventure = m_Universe.GetCurrentAdventureDesc();
+	ASSERT(!Adventure.IsNull());
 
 	//	Add to high score list
 
 	m_GameRecord.SetUsername(m_GameFile.GetUsername());
 	m_GameRecord.SetGameID(m_GameFile.GetGameID());
-	m_GameRecord.SetAdventureUNID(pAdventure->GetExtensionUNID());
+	m_GameRecord.SetAdventureUNID(Adventure.GetExtensionUNID());
 
 	TArray<DWORD> Extensions;
 	m_Universe.GetCurrentAdventureExtensions(&Extensions);
@@ -2008,7 +2008,7 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 	SetCrawlText(NULL_STR);
 
 	m_Universe.SetLogImageLoad(false);
-	pAdventure->FireOnGameEnd(m_GameRecord, BasicStats);
+	Adventure.FireOnGameEnd(m_GameRecord, BasicStats);
 	m_Universe.SetLogImageLoad(true);
 
 	//	Update the score in case it was changed inside OnGameEnd
@@ -2017,7 +2017,7 @@ void CTranscendenceModel::RecordFinalScore (const CString &sEpitaph, const CStri
 
 	//	Add to high score if this is the default adventure
 
-	if (pAdventure->GetExtensionUNID() == DEFAULT_ADVENTURE_EXTENSION_UNID)
+	if (Adventure.GetExtensionUNID() == DEFAULT_ADVENTURE_EXTENSION_UNID)
 		m_iLastHighScore = AddHighScore(m_GameRecord);
 	else
 		m_iLastHighScore = -1;
@@ -2062,11 +2062,18 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 	{
 	ALERROR error;
 
+	//	Skip if we already saved the game this tick.
+
+	if (m_GameFile.GetLastSavedOn() == m_Universe.GetTicks())
+		return NOERROR;
+
 	//	We never save on mission check point in debug mode. [Otherwise it's hard
 	//	to debug a mission.]
 
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
-			&& m_Universe.InDebugMode())
+			&& (m_Universe.InDebugMode()
+				|| m_bNoMissionCheckpoint
+				|| m_Universe.GetDifficultyLevel() == CDifficultyOptions::lvlPermadeath))
 		return NOERROR;
 
 	//	If this is a mission check point and we've already quit the game, then
@@ -2074,13 +2081,6 @@ ALERROR CTranscendenceModel::SaveGame (DWORD dwFlags, CString *retsError)
 
 	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
 			&& m_iState == statePlayerInEndGame)
-		return NOERROR;
-
-	//	If we're saving a mission, check the option and exit if we're not 
-	//	supposed to save on mission accept.
-
-	if ((dwFlags & CGameFile::FLAG_ACCEPT_MISSION) 
-			&& m_bNoMissionCheckpoint)
 		return NOERROR;
 
 	//	Fire and event to give global types a chance to save any volatiles
@@ -2148,39 +2148,6 @@ ALERROR CTranscendenceModel::SaveHighScoreList (CString *retsError)
 	return NOERROR;
 	}
 
-bool CTranscendenceModel::ScreenTranslate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError) const
-
-//	ScreenTranslate
-//
-//	Translates a text ID. We return Nil if we could not find the text ID.
-
-	{
-	//	If not in a screen session, then nothing
-
-	if (!InScreenSession())
-		{
-		if (retsError) *retsError = CONSTLIT("Not in a dock screen.");
-		return false;
-		}
-
-	const SDockFrame &Frame = GetScreenStack().GetCurrent();
-
-	//	First ask the current docking location to translate
-
-	if (Frame.pLocation && Frame.pLocation->Translate(sID, pData, pResult))
-		return true;
-
-	//	Otherwise, let the screen translate
-
-	if (Frame.pResolvedRoot && Frame.pResolvedRoot->Translate(Frame.pLocation, sID, pData, pResult))
-		return true;
-
-	//	Otherwise, we have no translation
-
-	if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown Language ID: %s"), sID);
-	return false;
-	}
-
 void CTranscendenceModel::SetDebugMode (bool bDebugMode)
 
 //	SetDebugMode
@@ -2235,6 +2202,8 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 
 	{
 	ASSERT(!GetScreenStack().IsEmpty());
+	if (!InScreenSession())
+		return NOERROR;
 
 	CGameSession *pSession = GetPlayer()->GetGameSession();
 	if (pSession == NULL)
@@ -2246,7 +2215,7 @@ ALERROR CTranscendenceModel::ShowPane (const CString &sPane)
 
 	//	Show it
 
-	pSession->GetDockScreen().ShowPane(sPane);
+	pSession->GetDockScreen().ShowPane(GetDockSession(), sPane);
 
 	//	Done
 
@@ -2353,8 +2322,7 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	NewFrame.pRoot = Ctx.pRoot;
 	NewFrame.sScreen = sScreenActual;
 	NewFrame.sPane = Ctx.sPane;
-	if (Ctx.pData)
-		NewFrame.pInitialData = Ctx.pData;
+	NewFrame.pInitialData = Ctx.pData;
 	NewFrame.pResolvedRoot = Ctx.pRoot;
 	NewFrame.sResolvedScreen = sScreenActual;
 
@@ -2375,6 +2343,10 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 	else
 		GetScreenStack().ResolveCurrent(NewFrame);
 
+	//	Initialize custom screen properties
+
+	m_Universe.GetDockSession().InitCustomProperties();
+
 	//	Show the screen
 	//
 	//	NOTE: This call can recurse (because we can call ShowScreen
@@ -2389,9 +2361,9 @@ ALERROR CTranscendenceModel::ShowScreen (SShowScreenCtx &Ctx, CString *retsError
 
 	m_Universe.SetLogImageLoad(false);
 	CString sError;
-	error = pSession->GetDockScreen().InitScreen(m_HI.GetHWND(),
+	error = pSession->GetDockScreen().InitScreen(m_Universe.GetDockSession(),
+			m_HI.GetHWND(),
 			g_pTrans->m_rcMainScreen,
-			GetScreenStack(),
 			pExtension,
 			pScreen,
 			Ctx.sPane,
@@ -2578,6 +2550,10 @@ ALERROR CTranscendenceModel::StartNewGame (const CString &sUsername, const SNewG
 
 	if (!sUsername.IsBlank() && !m_Universe.InDebugMode() && m_Universe.GetDesignCollection().IsRegisteredGame())
 		m_Universe.SetRegistered(true);
+
+	//	Set difficulty
+
+	m_Universe.SetDifficultyLevel(NewGame.iDifficulty);
 
 	//	Create a controller for the player's ship (this is owned
 	//	by the ship once we pass it to CreateShip)

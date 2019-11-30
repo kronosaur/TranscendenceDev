@@ -350,7 +350,7 @@ void CWaitOrder::OnObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx, int iObj,
 	//	destroyed, then we leave.
 
 	if (m_fWaitForThreat
-			&& pShip->GetDockedObj() == Ctx.pObj)
+			&& pShip->GetDockedObj() == Ctx.Obj)
 		*retbCancelOrder = true;
 	}
 

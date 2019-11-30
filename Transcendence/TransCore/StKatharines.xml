@@ -190,7 +190,8 @@
 			>
 
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
+			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.showActualItem">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -214,8 +215,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="400" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -defective; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="400" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -447,7 +448,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -481,7 +481,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -515,7 +514,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -549,7 +547,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -583,7 +580,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -617,7 +613,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -651,7 +646,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -685,7 +679,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -719,7 +712,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -753,7 +745,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -787,7 +778,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -821,7 +811,6 @@
 			sovereign=			"&svCommonwealth;"
 			dockScreen=			"&dsStKatsArcology;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -868,7 +857,6 @@
             regen=              "2"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-			canAttack=			"true"
 
 			attributes=			"commonwealth, commonwealthCustoms, friendly, generic, human, majorStation, monument, populated"
 			>
@@ -1321,9 +1309,7 @@
 			<Default descID="descCommerceQuarter">
 				<Actions>
 					<Action id="actionCommoditiesExchange" default="1">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 					</Action>
 					
 					<Action id="actionIncandescentExports">
@@ -1344,8 +1330,7 @@
 				<Actions>
 					<Action name="Buy Items" default="1" key="B">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							criteria: "* +food; +specialty;"
-							checkMilitaryID: True
+							rpg.criteria: "* +food; +specialty;"
 							})
 					</Action>
 
@@ -1514,14 +1499,21 @@
 										(setq gResult (cat "Your " (itmGetName gItem 0x81) " has been repaired."))
 										)
 										
-								(block (result theEnhancement)
+								(block (result theEnhancement theType)
 									(switch
 										(itmMatches gItem "s")
-											(setq theEnhancement (random '(0x0101 0x0102 0x0102 0x0103 0x0104 0x0905 0x0915 0x0925 0x0935 0x0F02 0x0F02)))
+											(block ()
+												(setq theEnhancement (random '(0x0101 0x0102 0x0102 0x0103 0x0104 0x0905 0x0915 0x0925 0x0935 0x0F02 0x0F02)))
+												(setq theType &vtUniversityEnhancement;)
+												)
+
 										(setq theEnhancement 0x0001)
 										)
 									
-									(setq result (shpEnhanceItem gPlayerShip gItem theEnhancement))
+									(setq result (shpEnhanceItem gPlayerShip gItem {
+										enhancement: theEnhancement
+										type: theType
+										}))
 									(setq gResult (intItemEnhanceStatus result (cat "Your " (itmGetName gItem 0x80) " is more powerful") (itmGetName gItem 0x80)))
 									)
 								)
@@ -1628,6 +1620,14 @@
 			</Text>
 		</Language>
 	</DockScreen>
+
+	<ItemType UNID="&vtUniversityEnhancement;"
+			name=				"St. Katharine University enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+	</ItemType>
 
 <!-- St Katharine's Star System -->
 
@@ -1842,42 +1842,25 @@
 
 					<!-- Trojans -->
 
+					<Lookup table="AsteroidCompactTrojans50"/>
+
 					<Trojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Table>
-								<Label  chance="20" attributes="asteroids"/>
-								<Lookup chance="50" table="FriendlyOuterStations" />
-								<Lookup chance="30" table="EnemyStations"/>
-							</Table>
-						</Group>
+						<Table>
+							<Label  chance="20" attributes="asteroids"/>
+							<Lookup chance="50" table="FriendlyOuterStations" />
+							<Lookup chance="30" table="EnemyStations"/>
+						</Table>
 					</Trojan>
 
+					<Lookup table="AsteroidCompactAntiTrojans50"/>
+
 					<AntiTrojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Table>
-								<Label  chance="20" attributes="asteroids"/>
-								<Lookup chance="50" table="FriendlyOuterStations" />
-								<Lookup chance="30" table="EnemyStations"/>
-							</Table>
-						</Group>
+						<Table>
+							<Label  chance="20" attributes="asteroids"/>
+							<Lookup chance="50" table="FriendlyOuterStations" />
+							<Lookup chance="30" table="EnemyStations"/>
+						</Table>
 					</AntiTrojan>
-
 				</Group>
 			</Orbitals>
 
@@ -1920,15 +1903,7 @@
 			<!-- Icy Ring -->
 
 			<Orbitals distance="780" angle="random">
-				<Group>
-					<Siblings count="500" distribution="4d60-122">
-						<Station type="&stIceAsteroidSizeA;"/>
-					</Siblings>
-
-					<Siblings count="50" distribution="4d20-42">
-						<Station type="&stIceAsteroidSizeB;"/>
-					</Siblings>
-				</Group>
+				<Lookup table="AsteroidIceBelt500"/>
 			</Orbitals>
 			
 			<Orbitals count="2d4+4" distance="740-820" angle="minSeparation:10">

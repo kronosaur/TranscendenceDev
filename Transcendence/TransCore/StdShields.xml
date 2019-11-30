@@ -537,7 +537,7 @@
 			frequency=			"rare"
 			attributes=			"commonwealth, majorItem, specialty, makayev, omskDeflector, omskDS"
 
-			description=		"When used in concert with Omsk armor segments, this deflector increases in strength up to 200 hit points."
+			description=		"When used in concert with Omsk armor segments, this deflector strengthens to a maximum of 200 hit points."
 
 			sortName=			"Omsk deflector.30"
 			>
@@ -779,7 +779,7 @@
 			frequency=			"rare"
 			attributes=			"commonwealth, majorItem, makayev, military, omskDeflector, omskDS, specialty"
 
-			description=		"When used in concert with Omsk armor segments, this deflector increases in strength up to 400 hit points."
+			description=		"When used in concert with Omsk armor segments, this deflector strengthens to a maximum of 400 hit points."
 
 			sortName=			"Omsk deflector.20"
 			>

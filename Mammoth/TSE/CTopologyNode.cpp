@@ -33,12 +33,14 @@
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
+#define FIELD_CRITERIA							CONSTLIT("criteria")
 #define FIELD_KNOWN_ONLY						CONSTLIT("knownOnly")
 #define FIELD_MAX_DIST							CONSTLIT("maxDist")
 #define FIELD_MIN_DIST							CONSTLIT("minDist")
 
 #define PREV_DEST								CONSTLIT("[Prev]")
 
+#define PROPERTY_ATTRIBUTES						CONSTLIT("attributes")
 #define PROPERTY_DEST_GATE_ID					CONSTLIT("destGateID")
 #define PROPERTY_DEST_ID						CONSTLIT("destID")
 #define PROPERTY_GATE_ID						CONSTLIT("gateID")
@@ -180,29 +182,17 @@ ALERROR CTopologyNode::AddStargateAndReturn (const SStargateDesc &GateDesc)
 	return NOERROR;
 	}
 
-int CTopologyNode::CalcMatchStrength (const CAttributeCriteria &Criteria)
+int CTopologyNode::CalcAffinity (const CAffinityCriteria &Criteria) const
 
-//	CalcMatchStrength
+//	CalcAffinity
 //
-//	Calculates the match strength of topology node and the criteria.
+//	Computes the affinity value of this node given the criteria.
 
 	{
-	int i;
-
-	int iStrength = 1000;
-	for (i = 0; i < Criteria.GetCount(); i++)
-		{
-		DWORD dwMatchStrength;
-		bool bIsSpecial;
-		const CString &sAttrib = Criteria.GetAttribAndWeight(i, &dwMatchStrength, &bIsSpecial);
-
-		bool bHasAttrib = (bIsSpecial ? HasSpecialAttribute(sAttrib) : HasAttribute(sAttrib));
-		int iAdj = CAttributeCriteria::CalcWeightAdj(bHasAttrib, dwMatchStrength);
-
-		iStrength = iStrength * iAdj / 1000;
-		}
-
-	return iStrength;
+	return Criteria.CalcWeight(
+		[this](const CString &sAttrib) { return HasAttribute(sAttrib); },
+		[this](const CString &sAttrib) { return HasSpecialAttribute(sAttrib); }
+		);
 	}
 
 void CTopologyNode::CreateFromStream (SUniverseLoadCtx &Ctx, CTopologyNode **retpNode)
@@ -518,15 +508,29 @@ Metric CTopologyNode::GetLinearDistanceTo2 (const CTopologyNode *pNode) const
 	return ((xDiff * xDiff) + (yDiff * yDiff));
 	}
 
-ICCItem *CTopologyNode::GetProperty (const CString &sName)
+ICCItemPtr CTopologyNode::GetProperty (const CString &sName) const
 
 //	GetProperty
 //
 //	Get topology node property
 
 	{
-	if (strEquals(sName, PROPERTY_KNOWN))
-		return CCodeChain::CreateBool(IsKnown());
+	if (strEquals(sName, PROPERTY_ATTRIBUTES))
+		{
+		TArray<CString> Attribs;
+		ParseAttributes(GetAttributes(), &Attribs);
+		if (Attribs.GetCount() == 0)
+			return ICCItemPtr(ICCItem::Nil);
+
+		ICCItemPtr pResult(ICCItem::List);
+		for (int i = 0; i < Attribs.GetCount(); i++)
+			pResult->AppendString(Attribs[i]);
+
+		return pResult;
+		}
+
+	else if (strEquals(sName, PROPERTY_KNOWN))
+		return ICCItemPtr(IsKnown());
 
 	else if (strEquals(sName, PROPERTY_LAST_VISITED_GAME_SECONDS))
 		{
@@ -534,47 +538,42 @@ ICCItem *CTopologyNode::GetProperty (const CString &sName)
 
 		DWORD dwLastVisited = GetLastVisitedTime();
 		if (dwLastVisited == 0xffffffff)
-			return CCodeChain::CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 
 		CTimeSpan Span = Universe.GetElapsedGameTimeAt(Universe.GetTicks()) - Universe.GetElapsedGameTimeAt(GetLastVisitedTime());
-		return CCodeChain::CreateInteger(Span.Seconds());
+		return ICCItemPtr(Span.Seconds());
 		}
 	else if (strEquals(sName, PROPERTY_LAST_VISITED_ON))
 		{
 		DWORD dwLastVisited = GetLastVisitedTime();
 		if (dwLastVisited == 0xffffffff)
-			return CCodeChain::CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 		else
-			return CCodeChain::CreateInteger(dwLastVisited);
+			return ICCItemPtr(dwLastVisited);
 		}
 	else if (strEquals(sName, PROPERTY_LEVEL))
-		return CCodeChain::CreateInteger(GetLevel());
+		return ICCItemPtr(GetLevel());
 
 	else if (strEquals(sName, PROPERTY_NAME))
-		return CCodeChain::CreateString(GetSystemName());
+		return ICCItemPtr(GetSystemName());
 
 	else if (strEquals(sName, PROPERTY_POS))
 		{
 		//	If no map, then no position
 
 		if (m_pMap == NULL)
-			return CCodeChain::CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 
 		//	Create a list
 
-		ICCItem *pResult = CCodeChain::CreateLinkedList();
-		if (pResult->IsError())
-			return pResult;
-
-		CCLinkedList *pList = (CCLinkedList *)pResult;
-
-		pList->AppendInteger(m_xPos);
-		pList->AppendInteger(m_yPos);
+		ICCItemPtr pResult(ICCItem::List);
+		pResult->AppendInteger(m_xPos);
+		pResult->AppendInteger(m_yPos);
 
 		return pResult;
 		}
 	else
-		return CCodeChain::CreateNil();
+		return ICCItemPtr(ICCItem::Nil);
 	}
 
 CString CTopologyNode::GetStargate (int iIndex)
@@ -634,7 +633,7 @@ ICCItemPtr CTopologyNode::GetStargateProperty (const CString &sName, const CStri
 		return ICCItemPtr(ICCItem::Nil);
 	}
 
-void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc)
+void CTopologyNode::GetStargateRouteDesc (int iIndex, SStargateRouteDesc *retRouteDesc) const
 
 //	GetStargateRouteDesc
 //
@@ -734,7 +733,7 @@ void CTopologyNode::InitCriteriaCtx (SCriteriaCtx &Ctx, const SCriteria &Criteri
 			bool bNew;
 			TSortMap<CString, int> *pDistMap = Ctx.DistanceCache.SetAt(pSource->GetID(), &bNew);
 			if (bNew)
-				Ctx.Topology.CalcDistances(pSource, *pDistMap);
+				Ctx.Topology.CalcDistances(*pSource, *pDistMap);
 			}
 		}
 	}
@@ -810,50 +809,11 @@ bool CTopologyNode::IsCriteriaAll (const SCriteria &Crit)
 			&& Crit.iMinInterNodeDist == 0
 			&& Crit.iMaxStargates == -1
 			&& Crit.iMinStargates == 0
-			&& Crit.AttribCriteria.AttribsNotAllowed.GetCount() == 0
-			&& Crit.AttribCriteria.AttribsRequired.GetCount() == 0
-			&& Crit.DistanceTo.GetCount() == 0
-			&& Crit.AttribCriteria.SpecialRequired.GetCount() == 0
-			&& Crit.AttribCriteria.SpecialNotAllowed.GetCount() == 0);
+			&& Crit.AttribCriteria.IsEmpty()
+			&& Crit.DistanceTo.GetCount() == 0);
 	}
 
-bool CTopologyNode::MatchesAttributeCriteria (const SAttributeCriteria &Crit) const
-
-//	MatchesAttributeCriteria
-//
-//	Returns TRUE if this node matches the given criteria
-
-	{
-	int i;
-
-	//	Check required attributes
-
-	for (i = 0; i < Crit.AttribsRequired.GetCount(); i++)
-		if (!::HasModifier(m_sAttributes, Crit.AttribsRequired[i]))
-			return false;
-
-	//	Check disallowed attributes
-
-	for (i = 0; i < Crit.AttribsNotAllowed.GetCount(); i++)
-		if (::HasModifier(m_sAttributes, Crit.AttribsNotAllowed[i]))
-			return false;
-
-	//	Check special required attributes
-
-	for (i = 0; i < Crit.SpecialRequired.GetCount(); i++)
-		if (!HasSpecialAttribute(Crit.SpecialRequired[i]))
-			return false;
-
-	//	Check disallowed special attributes
-
-	for (i = 0; i < Crit.SpecialNotAllowed.GetCount(); i++)
-		if (HasSpecialAttribute(Crit.SpecialNotAllowed[i]))
-			return false;
-
-	return true;
-	}
-
-bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
+bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit) const
 
 //	MatchesCriteria
 //
@@ -869,7 +829,7 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 
 	//	Check attributes
 
-	if (!MatchesAttributeCriteria(Crit.AttribCriteria))
+	if (!Crit.AttribCriteria.Matches(*this))
 		return false;
 
 	//	Stargates
@@ -931,51 +891,6 @@ bool CTopologyNode::MatchesCriteria (SCriteriaCtx &Ctx, const SCriteria &Crit)
 	return true;
 	}
 
-ALERROR CTopologyNode::ParseAttributeCriteria (const CString &sCriteria, SAttributeCriteria *retCrit)
-
-//	ParseAttributeCriteria
-//
-//	Parses a string criteria
-
-	{
-	*retCrit = SAttributeCriteria();
-
-	char *pPos = sCriteria.GetASCIIZPointer();
-	while (*pPos != '\0')
-		{
-		switch (*pPos)
-			{
-			case '+':
-			case '-':
-				{
-				bool bRequired = (*pPos == '+');
-				bool bBinaryParam;
-				CString sParam = ::ParseCriteriaParam(&pPos, false, &bBinaryParam);
-
-				if (bRequired)
-					{
-					if (bBinaryParam)
-						retCrit->SpecialRequired.Insert(sParam);
-					else
-						retCrit->AttribsRequired.Insert(sParam);
-					}
-				else
-					{
-					if (bBinaryParam)
-						retCrit->SpecialNotAllowed.Insert(sParam);
-					else
-						retCrit->AttribsNotAllowed.Insert(sParam);
-					}
-				break;
-				}
-			}
-
-		pPos++;
-		}
-
-	return NOERROR;
-	}
-
 ALERROR CTopologyNode::ParseCriteria (const CString &sCriteria, SCriteria *retCrit, CString *retsError)
 
 //	ParseCriteria
@@ -983,13 +898,8 @@ ALERROR CTopologyNode::ParseCriteria (const CString &sCriteria, SCriteria *retCr
 //	Parses a string criteria
 
 	{
-	retCrit->iChance = 100;
-	retCrit->iMaxInterNodeDist = -1;
-	retCrit->iMinInterNodeDist = 0;
-	retCrit->iMaxStargates = -1;
-	retCrit->iMinStargates = 0;
-
-	return ParseAttributeCriteria(sCriteria, &retCrit->AttribCriteria);
+	(*retCrit) = SCriteria();
+	return retCrit->AttribCriteria.Init(sCriteria);
 	}
 
 ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CString *retsError)
@@ -1016,7 +926,7 @@ ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CS
 			if (strEquals(pItem->GetTag(), ATTRIBUTES_TAG))
 				{
 				CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
-				ParseAttributeCriteria(sCriteria, &retCrit->AttribCriteria);
+				retCrit->AttribCriteria.Init(sCriteria);
 				}
 			else if (strEquals(pItem->GetTag(), CHANCE_TAG))
 				{
@@ -1036,7 +946,7 @@ ALERROR CTopologyNode::ParseCriteria (CXMLElement *pCrit, SCriteria *retCrit, CS
 				CString sCriteria;
 				if (pItem->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 					{
-					if (ParseAttributeCriteria(sCriteria, &pDistTo->AttribCriteria) != NOERROR)
+					if (pDistTo->AttribCriteria.Init(sCriteria) != NOERROR)
 						{
 						*retsError = strPatternSubst(CONSTLIT("Unable to parse criteria: %s"), sCriteria);
 						return ERR_FAIL;
@@ -1079,13 +989,13 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 	if (!pItem || pItem->IsNil())
 		return NOERROR;
 
-	else if (!pItem->IsSymbolTable())
+	else if (pItem->IsIdentifier())
 		{
-		if (retsError) *retsError = CONSTLIT("Criteria must be a structure.");
-		return ERR_FAIL;
+		if (ALERROR error = retCrit.AttribCriteria.Init(pItem->GetStringValue()))
+			return error;
 		}
 
-	else
+	else if (pItem->IsSymbolTable())
 		{
 		int iMaxDist = -1;
 		int iMinDist = 0;
@@ -1093,7 +1003,13 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 		for (i = 0; i < pItem->GetCount(); i++)
 			{
 			CString sKey = pItem->GetKey(i);
-			if (strEquals(sKey, FIELD_MAX_DIST))
+
+			if (strEquals(sKey, FIELD_CRITERIA))
+				{
+				if (ALERROR error = retCrit.AttribCriteria.Init(pItem->GetElement(i)->GetStringValue()))
+					return error;
+				}
+			else if (strEquals(sKey, FIELD_MAX_DIST))
 				{
 				iMaxDist = pItem->GetElement(i)->GetIntegerValue();
 				}
@@ -1147,9 +1063,14 @@ ALERROR CTopologyNode::ParseCriteria (CUniverse &Universe, ICCItem *pItem, SCrit
 			pDistCriteria->iMaxDist = iMaxDist;
 			pDistCriteria->iMinDist = iMinDist;
 			}
-
-		return NOERROR;
 		}
+	else
+		{
+		if (retsError) *retsError = CONSTLIT("Invalid criteria.");
+		return ERR_FAIL;
+		}
+
+	return NOERROR;
 	}
 
 ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *retPoints)
@@ -1165,7 +1086,7 @@ ALERROR CTopologyNode::ParsePointList (const CString &sValue, TArray<SPoint> *re
 
 	//	Keep parsing until we hit the end
 
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 	bool bInvalid = false;
 
 	while (!bInvalid)
@@ -1229,7 +1150,7 @@ ALERROR CTopologyNode::ParsePosition (const CString &sValue, int *retx, int *ret
 
 	//	Parse
 
-	char *pPos = sValue.GetASCIIZPointer();
+	const char *pPos = sValue.GetASCIIZPointer();
 
 	bool bInvalid;
 	*retx = ::strParseInt(pPos, 0, &pPos, &bInvalid);

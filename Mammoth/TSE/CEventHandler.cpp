@@ -4,6 +4,13 @@
 
 #include "PreComp.h"
 
+static TStaticStringTable<SSimpleStringEntry, 4> DIAGNOSTIC_EVENTS = {
+	"OnGlobalEndDiagnostics",
+	"OnGlobalRunDiagnostics",
+	"OnGlobalStartDiagnostics",
+	"OnGlobalSystemDiagnostics",
+	};
+
 CEventHandler::CEventHandler (void)
 
 //	CEventHandler constructor
@@ -137,6 +144,16 @@ const CString &CEventHandler::GetEvent (int iIndex, ICCItem **retpCode) const
 	return m_Handlers.GetKey(iIndex);
 	}
 
+bool CEventHandler::IsDiagnosticsEvent (const CString &sEvent)
+
+//	IsDiagnosticsEvent
+//
+//	Returns TRUE if this is a diagnostics event.
+
+	{
+	return DIAGNOSTIC_EVENTS.FindPos(sEvent);
+	}
+
 ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 
 //	InitFromXML
@@ -144,11 +161,20 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 //	Load all handlers
 
 	{
-	int i;
+	//	Load all sub-elements
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
 		{
 		CXMLElement *pHandler = pDesc->GetContentElement(i);
+
+		//	If this is diagnostics code and we're not loading diagnostics, then
+		//	skip.
+
+		if (!Ctx.bLoadDiagnostics 
+				&& IsDiagnosticsEvent(pHandler->GetTag()))
+			continue;
+
+		//	Parse the code
 
 		CCodeChain::SLinkOptions Options;
 		Options.bNullIfEmpty = true;
@@ -172,13 +198,11 @@ ALERROR CEventHandler::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		//	If this is an old extension, then make sure the code is not using the
 		//	gStation variable, because we no longer support it
 
-		if (Ctx.GetAPIVersion() < 2)
+		else if (Ctx.GetAPIVersion() < 2
+				&& Ctx.GetUniverse().GetCC().HasIdentifier(pCode, CONSTLIT("gStation")))
 			{
-			if (Ctx.GetUniverse().GetCC().HasIdentifier(pCode, CONSTLIT("gStation")))
-				{
-				Ctx.sError = CONSTLIT("gStation variable has been deprecated--use gSource instead.");
-				return ERR_FAIL;
-				}
+			Ctx.sError = CONSTLIT("gStation variable has been deprecated--use gSource instead.");
+			return ERR_FAIL;
 			}
 
 		//	Done

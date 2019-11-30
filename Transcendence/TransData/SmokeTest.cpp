@@ -25,6 +25,7 @@ void DoRandomNumberTest (void)
 struct STestCtx
 	{
 	SSystemUpdateCtx UpdateCtx;
+	CDesignCollection::SDiagnosticsCtx DiagnosticsCtx;
 
 	int iSystemSample = 0;
 	int iSystemUpdateTime = 0;
@@ -91,12 +92,12 @@ void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine)
 		//	Start diagnostics are always in SE (if available)
 
 		CSystem *pSE = NULL;
-		if (AllSystems.Find(CONSTLIT("SE"), &pSE))
+		if (AllSystems.Find(Universe.GetCurrentAdventureDesc().GetStartingNodeID(), &pSE))
 			{
 			RunSystem(Universe, *pSE, Ctx);
 			}
 		else
-			printf("WARNING: Unable to find SE. Cannot run <OnGlobalStartDiagnostics>\n");
+			printf("WARNING: Unable to find starting system. Cannot run <OnGlobalStartDiagnostics>\n");
 
 		//	Now update all system
 
@@ -112,7 +113,7 @@ void DoSmokeTest (CUniverse &Universe, CXMLElement *pCmdLine)
 		if (!Ctx.bNoDiagnostics)
 			{
 			printf("END DIAGNOSTICS\n");
-			Universe.GetDesignCollection().FireOnGlobalEndDiagnostics();
+			Universe.GetDesignCollection().FireOnGlobalEndDiagnostics(Ctx.DiagnosticsCtx);
 			}
 
 		Universe.Reinit();
@@ -158,7 +159,7 @@ void RunSystem (CUniverse &Universe, CSystem &System, STestCtx &Ctx)
 	if (Ctx.bRunStartDiag)
 		{
 		printf("\nSTART DIAGNOSTICS\n");
-		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics();
+		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics(Ctx.DiagnosticsCtx);
 		Ctx.bRunStartDiag = false;
 		}
 
@@ -179,7 +180,7 @@ void RunSystem (CUniverse &Universe, CSystem &System, STestCtx &Ctx)
 	if (!Ctx.bNoDiagnostics)
 		{
 		printf("DIAGNOSTICS: %s\n", (LPSTR)System.GetName());
-		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics();
+		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics(Ctx.DiagnosticsCtx);
 		}
 
 	//	Done with system

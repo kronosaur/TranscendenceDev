@@ -611,58 +611,75 @@
 -->
 
 	<DockScreen UNID="&dsRPGUpgradeDevice;"
-			type=				"itemPicker"
 			inherit=			"&dsDockScreenBase;"
 			nestedScreen=		"true"
 			>
+		<Properties>
+			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.criteria">(or (@ gData 'criteria) "dUN")</Variant>
+			<Variant id="rpg.replaceItem">(@ gData 'replaceItem)</Variant>
+			<Variant id="rpg.showActualItem">(objGetProperty gSource 'rpg.showActualItem)</Variant>
+			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
+		</Properties>
 
-		<ListOptions
-				dataFrom=	"=(if (@ gData 'sourceObj) (@ gData 'sourceObj) 'source)"
+		<Display type="itemPicker"
+				dataFrom=	"=(or (scrGetProperty gScreen 'rpg.sourceObj) 'source)"
 				list=		"*"
 				>
-			(block (
-				(criteria (if (@ gData 'criteria) (@ gData 'criteria) "dUN"))
-				(minLevel (if (@ gData 'replaceItem) (itmGetLevel (@ gData 'replaceItem)) 1))
-				)
+			<OnDisplayInit>
+				(block (
+					(criteria (scrGetProperty gScreen 'rpg.criteria))
+					(replaceItem (scrGetProperty gScreen 'rpg.replaceItem))
+					(minLevel (or (itmGetLevel replaceItem) 1))
+					)
 				
-				(scrSetListFilter gScreen (lambda (theItem)
-					(and
-						(itmMatches theItem criteria)
-						(objGetSellPrice gSource theItem)
-						(objGetItemProperty gSource theItem 'installDevicePrice)
-						(or
-							(not (@ gData 'replaceItem))
-							(not (itmIsEqual theItem (@ gData 'replaceItem) 'ignoreInstalled))
+					(scrSetListFilter gScreen (lambda (theItem)
+						(and
+							(itmMatches theItem criteria)
+							(objGetSellPrice gSource theItem)
+							(objGetItemProperty gSource theItem 'installDevicePrice)
+							(or
+								(not replaceItem)
+								(not (itmIsEqual theItem replaceItem 'ignoreInstalled))
+								)
+							(or
+								(geq (itmGetLevel theItem) minLevel)
+								(= (itmGetProperty theItem 'category) 'cargoHold)
+								)
+							(!= (@ (objCanInstallItem gPlayerShip theItem) 1) 'notCompatible)
 							)
-						(or
-							(geq (itmGetLevel theItem) minLevel)
-							(= (itmGetProperty theItem 'category) 'cargoHold)
-							)
-						(!= (@ (objCanInstallItem gPlayerShip theItem) 1) 'notCompatible)
-						)
-					))
-				)
-		</ListOptions>
+						))
+
+					;	We set the underlying engine property based on inputs.
+
+					(scrSetProperty gScreen 'showActualItem (scrGetProperty gScreen 'rpg.showActualItem))
+					)
+			</OnDisplayInit>
+		</Display>
 
 		<Panes>
 			<Default>
 				<OnPaneInit>
-					(block (thisItem theResult)
+					(block (
+						(replaceItem (scrGetProperty gScreen 'rpg.replaceItem))
+						thisItem theResult
+						)
 						(setq theResult (rpgInstallDevicePrep {
 							item: (scrGetItem gScreen)
 
 							upgrade: True
-							checkMilitaryID: (@ gData 'checkMilitaryID)
+							checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)
 							checkTotalPower: True
 							currencyUsed: (objGetDefaultCurrency gSource)
 							installerObj: gSource
-							replaceItem: (@ gData 'replaceItem)
+							replaceItem: replaceItem
+							showActualItem: (scrGetProperty gScreen 'rpg.showActualItem)
 							}))
 
-						(if (@ gData 'replaceItem)
+						(if replaceItem
 							(scrSetControlValue gScreen 'currentItem {
 								source: gPlayerShip
-								item: (@ gData 'replaceItem)
+								item: replaceItem
 								})
 							)
 

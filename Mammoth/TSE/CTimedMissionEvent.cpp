@@ -29,7 +29,7 @@ CTimedMissionEvent::CTimedMissionEvent (SLoadCtx &Ctx) : CSystemEvent(Ctx)
 	DWORD dwLoad;
 
 	Ctx.pStream->Read(dwLoad);
-	m_pMission = g_pUniverse->FindMission(dwLoad);
+	m_pMission = Ctx.GetUniverse().FindMission(dwLoad);
 
 	m_sEvent.ReadFromStream(Ctx.pStream);
 	Ctx.pStream->Read(m_iInterval);

@@ -235,6 +235,9 @@
     <ClCompile Include="CXForm3D.cpp">
       <Filter>Source Files\Euclid</Filter>
     </ClCompile>
+    <ClCompile Include="CHTML.cpp">
+      <Filter>Source Files\Internets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Crypto.h">

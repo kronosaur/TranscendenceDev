@@ -147,37 +147,6 @@ CDeviceClass *CItemCtx::GetDeviceClass (void)
 	return NULL;
 	}
 
-bool CItemCtx::GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList)
-
-//	GetEnhancementDisplayAttributes
-//
-//	Returns a list of display attributes that are currently enhancing the item.
-//	Returns FALSE if there are none.
-
-	{
-	//	Get attributes from the enhancement stack
-
-	const CItemEnhancementStack *pEnhancements = GetEnhancementStack();
-	if (pEnhancements && !pEnhancements->IsEmpty())
-		{
-		pEnhancements->AccumulateAttributes(*this, retList);
-		return (retList->GetCount() > 0);
-		}
-
-	//	Otherwise, if the item is enhanced, then return that
-
-	else if (GetItem().IsEnhanced())
-		{
-		retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("+enhanced"), true));
-		return true;
-		}
-
-	//	Otherwise, not enhanced.
-
-	else
-		return false;
-	}
-
 TSharedPtr<CItemEnhancementStack> CItemCtx::GetEnhancementStack (void)
 
 //	GetEnhancementStack

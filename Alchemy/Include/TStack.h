@@ -44,7 +44,7 @@ template <class VALUE> class TStack : public CStackBase
 				pElement->VALUE::~VALUE();
 			}
 
-		inline VALUE &operator [] (int iIndex) const 
+		VALUE &operator [] (int iIndex) const 
 			{
 			return *(VALUE *)(m_pBlock + (iIndex * sizeof(VALUE)));
 			}

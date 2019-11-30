@@ -29,6 +29,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_IS_ACTIVE			6
 #define FN_DEBUG_GET				7
 #define FN_DEBUG_SET				8
+#define FN_DEBUG_BREAK				9
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -240,6 +241,10 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_HAS_SERVICE			133
 #define FN_OBJ_CONDITION			134
 #define FN_OBJ_ABANDON				135
+#define FN_OBJ_INC_PROPERTY			136
+#define FN_OBJ_INC_OVERLAY_PROPERTY	137
+#define FN_OBJ_CAN_ENHANCE_ITEM		138
+#define FN_OBJ_ENHANCE_ITEM			139
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -390,6 +395,7 @@ ICCItem *fnRollDice (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSystemCreateEffect (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateMarker (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
 ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData);
+ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
 #define FN_SYS_FIND						0
@@ -484,6 +490,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_STARGATE_PROPERTY		38
 #define FN_SYS_LOCATIONS				39
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
+#define FN_SYS_GET_ASCENDED_OBJECTS		41
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -640,6 +647,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Debug functions
 		//	---------------
+
+		{	"dbgBreak",						fnDebug,		FN_DEBUG_BREAK,
+			"(dbgBreak)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
@@ -830,11 +842,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged\n"
 			"   'description\n"
 			"   'disrupted\n"
+			"   'enhancement\n"
 			"   'hasUseScreen\n"
 			"   'installed\n"
 			"   'level\n"
 			"   'reference\n"
 			"   'rootName\n"
+			"   'unknownType\n"
+			"   'unknownTypeIndex\n"
 			"   'used\n"
 			"\n"
 			"property (device)\n\n"
@@ -884,6 +899,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repairLevel\n"
 			"   'shatterImmune\n"
 			"   'stdHP\n"
+			"   'stealth\n"
 			"\n"
 			"property (all)\n\n"
 			"   'category\n"
@@ -1233,11 +1249,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpInstallArmor",				fnShipSet,			FN_SHIP_INSTALL_ARMOR,
-			"(shpInstallArmor ship item armorSegment) -> True/Nil",
+			"(shpInstallArmor ship item armorSegment) -> itemStruct (or Nil)",
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot])",
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
@@ -1260,9 +1276,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIsShip obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpEnhanceItem",				fnShipSetOld,		FN_SHIP_ENHANCE_ITEM,
-			"(shpEnhanceItem ship item [mods]) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpEnhanceItem",				fnShipSet,			FN_SHIP_ENHANCE_ITEM,
+			"(shpEnhanceItem ship item [mods|options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   enhancement: enhancement code/desc (required)\n"
+
+			"   lifetime: (in ticks)\n"
+			"   type: item causing enhancement\n",
+
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
 			"(shpMakeRadioactive ship) -> True/Nil",
@@ -1411,10 +1435,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objAddItem obj item|type [count]) -> item",
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
-		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
-			"(objAddItemEnhancement obj item enhancementType [lifetime]) -> enhancementID",
-			"ivi*",	PPFLAG_SIDEEFFECTS,	},
-
 		{	"objAddOverlay",				fnObjSet,		FN_OBJ_ADD_OVERLAY,
 			"(objAddOverlay obj overlayType [lifetime]) -> overlayID\n"
 			"(objAddOverlay obj overlayType pos rotation [lifetime]) -> overlayID\n"
@@ -1448,6 +1468,32 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objCanDetectTarget",				fnObjGet,			FN_OBJ_CAN_DETECT_TARGET,
 			"(objCanDetectTarget obj target) -> True/Nil",
 			"ii",	0,	},
+
+		{	"objCanEnhanceItem",		fnObjGet,		FN_OBJ_CAN_ENHANCE_ITEM,
+			"(objCanEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+
+			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens.\n"
+			"   'repaired: Device was repaired.\n",
+
+			"ivv",	0,	},
 
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
 			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
@@ -1563,6 +1609,33 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objDestroy obj [objSource]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
+			"(objEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+			
+			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   id: Enhancement ID (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens\n"
+			"   'repaired: Device was repaired\n",
+
+			"ivv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objEnumItems",					fnObjEnumItems,	0,
 			"(objEnumItems obj criteria itemVar exp) -> value\n\n"
 
@@ -1645,6 +1718,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"
+			"   'shieldBlocked\n"
 			"   'spinning\n"
 			"   'timeStopped",
 
@@ -1860,6 +1934,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (all)\n\n"
 
 			"   'ascended\n"
+			"   'canAttack\n"
+			"   'canBeAttacked\n"
 			"   'category -> 'beam | 'effect | 'marker | 'missile | 'mission | 'ship | 'station\n"
 			"   'commsKey\n"
 			"   'currency -> currency type UNID\n"
@@ -1898,6 +1974,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (ships)\n\n"
 			
 			"   'alwaysLeaveWreck\n"
+			"   'armorCount\n"
 			"   'autoTarget\n"
 			"   'availableDeviceSlots\n"
 			"   'availableNonWeaponSlots\n"
@@ -2087,6 +2164,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIncOverlayData obj overlayID attrib [increment]) -> new value",
 			"iis*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objIncOverlayProperty",		fnObjGet,		FN_OBJ_INC_OVERLAY_PROPERTY,
+			"(objIncOverlayProperty obj overlayID property [increment]) -> new value",
+			"iis*",	PPFLAG_SIDEEFFECTS,	},
+
+		{	"objIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(objIncProperty obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objIncVel",					fnObjSet,		FN_OBJ_INCREMENT_VELOCITY,	
 			"(objIncVel obj velVector) -> velVector\n\n"
 
@@ -2214,6 +2299,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 
 			"   'charges charges\n"
+			"   'cycleFire [True|Nil]"
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
@@ -2223,7 +2309,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions list-of-options\n"
 			"   'pos (angle radius [z])\n"
 			"   'secondary [True|Nil]"
-			"   'cycleFire [True|Nil]",
+			"   'unknownTypeIndex [integer|Nil]",
 
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2519,6 +2605,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'debrieferID       ID of the object that will debrief the player\n"
 			"   'forceUndockAfterDebrief  Force undock after showing debrief screen\n"
 			"   'hasDebrief        Mission has a debrief phase\n"
+			"   'hasInProgress     Mission show in progress text\n"
 			"   'id                Mission object ID\n"
 			"   'inProgress        Active player mission and not completed\n"
 			"   'isActive          Is an active player mission\n"
@@ -2554,6 +2641,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"msnIncData",					fnObjData,		FN_OBJ_INCREMENT_DATA,
 			"(msnIncData missionObj attrib [increment]) -> new value",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
+
+		{	"msnIncProperty",				fnObjSet,		FN_OBJ_INC_PROPERTY,
+			"(msnIncProperty obj property [increment]) -> new value",
+			"is*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"msnRefreshSummary",			fnMissionSet,		FN_MISSION_REFRESH_SUMMARY,
 			"(msnRefreshSummary missionObj)",
@@ -2757,7 +2848,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
-		{	"sysCreateStargate",			fnSystemCreateStation,	FN_SYS_CREATE_STARGATE,
+		{	"sysCreateStargate",			fnSystemCreateStargate,	FN_SYS_CREATE_STARGATE,
 			"(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj",
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2853,6 +2944,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysFindObjectAtPos source criteria pos [destPos]) -> list of objects",
 			"isv*",	0,	},
 
+		{	"sysGetAscendedObjects",		fnSystemGet,	FN_SYS_GET_ASCENDED_OBJECTS,
+			"(sysGetAscendedObjects) -> list of objects",
+			"*",	0,	},
+
 		{	"sysGetData",					fnSystemGet,	FN_SYS_GET_DATA,
 			"(sysGetData [nodeID] attrib) -> data",
 			"s*",	0,	},
@@ -2890,10 +2985,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"sysGetNodes",					fnSystemGet,	FN_SYS_ALL_NODES,
-			"(sysGetNodes [criteria]) -> list of nodeIDs\n\n"
+			"(sysGetNodes [criteria|options]) -> list of nodeIDs\n\n"
 			
-			"criteria:\n\n"
+			"options:\n\n"
 			
+			"   criteria:       Only nodes that match attributes\n"
 			"   knownOnly:True  Only nodes known to player\n"
 			"   maxDist:n       Only nodes n or fewer gates away.\n"
 			"   minDist:n       Only nodes n or more gates away.\n",
@@ -2909,6 +3005,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes        Attributes of the system\n"
 			"   'known             Known to player\n"
 			"   'lastVisitOn       Tick on which player last visited\n"
 			"   'lastVisitSeconds  Game seconds since player last visited\n"
@@ -3581,6 +3678,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   A                  Active objects only\n"
 			"   K                  Killed objects only\n"
 			"   L:x-y;             Objects of level x to y\n"
+			"   P                  Only objects known to the player\n"
 			"   V                  Include virtual objects\n"
 			"   +/-{attrib}        Require/exclude types with given attribute\n"
 			"   +/-unid:{unid}     Require/exclude types of given unid\n"
@@ -3614,6 +3712,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(unvGetProperty property)\n\n"
 				
 			"   'apiVersion        Engine API version\n"
+			"   'defaultCurrency   Default currency\n"
 			"   'minAPIVersion     Lowest API version used by extensions\n",
 
 			"s",	0,	},
@@ -4014,6 +4113,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"envHasAttribute",				fnEnvironmentGet,		FN_ENV_HAS_ATTRIBUTE,
 			"DEPRECATED: Use typHasAttribute instead",
 			"is",	0,	},
+
+		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
+			"DEPRECATED: Use objEnhanceItem instead",
+			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 	};
 
 #define EXTENSIONS_COUNT		(sizeof(g_Extensions) / sizeof(g_Extensions[0]))
@@ -4081,7 +4184,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(ArmorItem.GetMaxHP());
 
 		case FN_ARM_REPAIRCOST:
-			return pCC->CreateInteger(ArmorItem.GetRepairCost());
+			return pCC->CreateInteger((int)ArmorItem.GetRepairCost());
 
 		case FN_ARM_REPAIRTECH:
 			return pCC->CreateInteger(ArmorItem.GetRepairLevel());
@@ -4110,6 +4213,9 @@ ICCItem *fnCurrency (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_CURRENCY_EXCHANGE:
 			{
+			if (pArgs->GetElement(0)->IsNil())
+				return pCC->CreateNil();
+
 			int iValue = pArgs->GetElement(0)->GetIntegerValue();
 
 			const CEconomyType *pEconFrom = GetEconomyTypeFromItem(*pCC, pArgs->GetElement(1));
@@ -4148,6 +4254,17 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_API_VERSION:
 			return pCC->CreateInteger(pCtx->GetAPIVersion());
+
+		case FN_DEBUG_BREAK:
+			{
+			CString sText = (pArgs->GetCount() > 0 ? pArgs->GetElement(0)->GetStringValue() : NULL_STR);
+#ifdef DEBUG
+			DebugBreak();
+			return pCC->CreateTrue();
+#else
+			return pCC->CreateNil();
+#endif
+			}
 
 		case FN_DEBUG_GET:
 			{
@@ -4493,9 +4610,9 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sProperty = pArgs->GetElement(1)->GetStringValue();
 			if (sProperty.IsBlank())
-				return pCC->CreateNil();
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
 
-			return pType->IncTypeProperty(sProperty, pArgs->GetElement(2))->Reference();
+			return pCtx->DebugError(pType->IncTypeProperty(sProperty, pArgs->GetElement(2)))->Reference();
 			}
 
 		case FN_DESIGN_MARK_IMAGES:
@@ -4529,7 +4646,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (sProperty.IsBlank())
 				return pCC->CreateNil();
 
-			return pCC->CreateBool(pType->SetTypeProperty(sProperty, pArgs->GetElement(2)));
+			return pCC->CreateBool(pType->SetTypeProperty(sProperty, *pArgs->GetElement(2)));
 			}
 
 		case FN_DESIGN_TRANSLATE:
@@ -4776,8 +4893,7 @@ ICCItem *fnItemCreateByName (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	//	Parse criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(sCriteria, &Criteria);
+	CItemCriteria Criteria(sCriteria);
 
 	//	Create the item
 
@@ -4808,8 +4924,7 @@ ICCItem *fnItemCreateRandom (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 
 	//	Parse criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(sCriteria, &Criteria);
+	CItemCriteria Criteria(sCriteria);
 
 	//	Create the item
 
@@ -4832,8 +4947,7 @@ ICCItem *fnItemGetTypes (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Get the criteria
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(0)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(0)->GetStringValue());
 
 	//	Create a linked list for the result
 
@@ -4885,7 +4999,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -4952,7 +5067,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_ITEM_INSTALL_COST:
 			{
-			int iCost = pType->GetInstallCost(CItemCtx(Item));
+			int iCost = Item.GetInstallCost();
 			if (iCost == -1)
 				return pCC->CreateNil();
 
@@ -5086,7 +5201,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
+			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5142,7 +5257,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pCtx->InEvent(eventGetName) && pCtx->GetItemType() == Item.GetType())
 				dwFlags |= nounNoEvent;
 
-			pResult = pCC->CreateString(Item.GetNounPhrase(CItemCtx(Item), dwFlags));
+			pResult = pCC->CreateString(Item.GetNounPhrase(dwFlags));
 			break;
 			}
 
@@ -5172,8 +5287,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_ITEM_MATCHES:
 			{
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();
-			CItemCriteria Criteria;
-			CItem::ParseCriteria(sCriteria, &Criteria);
+			CItemCriteria Criteria(sCriteria);
 			pResult = pCC->CreateBool(Item.MatchesCriteria(Criteria));
 			break;
 			}
@@ -5218,7 +5332,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5273,7 +5388,7 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CItemEnhancement Mods;
 			CString sError;
-			if (Mods.InitFromDesc(pArgs->GetElement(1), &sError) != NOERROR)
+			if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(1), &sError) != NOERROR)
 				return pCC->CreateError(sError, pArgs->GetElement(1));
 
 			Item.AddEnhancement(Mods);
@@ -5292,12 +5407,19 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			if (!Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), &sError))
+			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+
+			switch (iResult)
 				{
-				if (sError.IsBlank())
-					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+				case resultPropertyError:
+				case resultPropertyNotFound:
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+
+				default:
+					break;
 				}
 
 			return CreateListFromItem(Item);
@@ -5672,8 +5794,7 @@ ICCItem *fnObjEnumItems (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwDa
 		return pCC->CreateNil();
 		}
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(1)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(1)->GetStringValue());
 
 	pVar = pArgs->GetElement(2);
 	pBody = pArgs->GetElement(3);
@@ -5841,8 +5962,7 @@ ICCItem *fnItemEnumTypes (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwD
 	if (pArgs->IsError())
 		return pArgs;
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(pArgs->GetElement(0)->GetStringValue(), &Criteria);
+	CItemCriteria Criteria(pArgs->GetElement(0)->GetStringValue());
 
 	pVar = pArgs->GetElement(1);
 	pBody = pArgs->GetElement(2);
@@ -6233,6 +6353,30 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(Perception.CanBeTargeted(pTarget, pObj->GetDistance2(pTarget)));
 			}
 
+		case FN_OBJ_CAN_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CItem::SEnhanceItemResult Result = pObj->CanEnhanceItem(ItemList, EnhancementItem);
+			if (Result.iResult == eisUnknown)
+				return pCC->CreateError("Invalid enhancement.");
+
+			//	Encode result
+
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+			}
+
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
@@ -6551,7 +6695,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 
-			return CreateDisposition(*pCC, pObj->GetDispositionTowards(pTarget));
+			return CreateDisposition(*pCC, pObj->GetDispositionTowards(*pTarget));
 			}
 
 		case FN_OBJ_GET_EVENT_HANDLER:
@@ -6995,6 +7139,22 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
             return pOverlays->IncData(dwID, sAttrib, (pArgs->GetCount() > 3 ? pArgs->GetElement(3) : NULL))->Reference();
 			}
 
+		case FN_OBJ_INC_OVERLAY_PROPERTY:
+			{
+			DWORD dwID = (DWORD)pArgs->GetElement(1)->GetIntegerValue();
+			CString sAttrib = pArgs->GetElement(2)->GetStringValue();
+
+            COverlayList *pOverlays = pObj->GetOverlays();
+            if (pOverlays == NULL)
+                return pCC->CreateNil();
+
+			ICCItemPtr pResult;
+			if (!pOverlays->IncProperty(*pObj, dwID, sAttrib, pArgs->GetElement(3), pResult))
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(2))->Reference();
+
+			return pResult->Reference();
+			}
+
 		case FN_OBJ_IS_ANGRY_AT:
 			{
 			CSpaceObject *pTargetObj = CreateObjFromItem(pArgs->GetElement(1));
@@ -7028,9 +7188,21 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pSource = CreateObjFromItem(pArgs->GetElement(1));
 
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
-			CSpaceObjectCriteria::SCtx Ctx(Criteria);
+			//	We force including intangibles. We need to do this because this
+			//	is often called inside of <OnObjDestroyed>, and since the object
+			//	has been destroyed, it will fail the match unless we include
+			//	intangibles.
+			//
+			//	To exclude destroyed objects, callers should ask for active
+			//	objects.
+
+			Criteria.SetIncludeIntangible(true);
+
+			//	Match
+
+			CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}
 
@@ -7631,11 +7803,28 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), NULL);
 
-			//	Get optional lifetime
+			//	Get options
 
 			int iLifetime = -1;
+			CItemEnhancement Mods;
 			if (pArgs->GetCount() > 3 && !pArgs->GetElement(3)->IsNil())
-				iLifetime = pArgs->GetElement(3)->GetIntegerValue();
+				{
+				ICCItem *pOptions = pArgs->GetElement(3);
+				if (pOptions->IsSymbolTable())
+					{
+					ICCItem *pMods = pOptions->GetElement(CONSTLIT("enhancement"));
+					if (pMods)
+						{
+						CString sError;
+						if (Mods.InitFromDesc(pCtx->GetUniverse(), *pMods, &sError) != NOERROR)
+							return pCC->CreateError(sError, pMods);
+						}
+
+					iLifetime = pOptions->GetIntegerAt(CONSTLIT("lifetime"), -1);
+					}
+				else
+					iLifetime = pOptions->GetIntegerValue();
+				}
 
 			//	Add
 
@@ -7644,10 +7833,20 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Done
 
-			if (dwID != OBJID_NULL)
-				return pCC->CreateInteger(dwID);
-			else
-				return pCC->CreateNil();
+			switch (iResult)
+				{
+				case eisNoEffect:
+				case eisAlreadyEnhanced:
+				case eisCantReplaceDefect:
+				case eisCantReplaceEnhancement:
+					return pCC->CreateNil();
+
+				default:
+					if (dwID != OBJID_NULL)
+						return pCC->CreateInteger(dwID);
+					else
+						return pCC->CreateNil();
+				}
 			}
 
 		case FN_OBJ_ADD_OVERLAY:
@@ -7956,6 +8155,31 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 			}
 
+		case FN_OBJ_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CItem::SEnhanceItemResult Result;
+			CString sError;
+			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
+				return pCC->CreateError(sError);
+
+			//	Encode result
+
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+			}
+
 		case FN_OBJ_FIRE_EVENT:
 			{
 			ICCItem *pResult;
@@ -8142,6 +8366,15 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Return the newly changed item
 
 			return CreateListFromItem(Item);
+			}
+
+		case FN_OBJ_INC_PROPERTY:
+			{
+			ICCItemPtr pResult;
+			if (!pObj->IncProperty(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2), pResult))
+				return pCtx->CreateDebugError(CONSTLIT("Invalid property"), pArgs->GetElement(1))->Reference();
+
+			return pResult->Reference();
 			}
 
 		case FN_OBJ_INCREMENT_VELOCITY:
@@ -8878,8 +9111,7 @@ ICCItem *fnObjItemOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			CString sCriteria = pArgs->GetElement(1)->GetStringValue();
 			pArgs->Discard();
 
-			CItemCriteria Criteria;
-			CItem::ParseCriteria(sCriteria, &Criteria);
+			CItemCriteria Criteria(sCriteria);
 
 			pResult = pCC->CreateLinkedList();
 			if (pResult->IsError())
@@ -8988,52 +9220,84 @@ ICCItem *fnMission (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_MISSION_CREATE:
 			{
-			//	Get the list of mission types
-
-			ICCItem *pList = pArgs->GetElement(0);
-			TArray<CMissionType *> Missions;
-			Missions.GrowToFit(pList->GetCount());
-
-			for (int i = 0; i < pList->GetCount(); i++)
-				{
-				CMissionType *pType = pCtx->GetUniverse().FindMissionType((DWORD)pList->GetElement(i)->GetIntegerValue());
-				if (pType == NULL)
-					return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown mission type: %x."), pList->GetElement(i)->GetIntegerValue()), pList->GetElement(i));
-
-				Missions.Insert(pType);
-				}
-				
 			//	Get arguments
 
 			CSpaceObject *pOwner = CreateObjFromItem(pArgs->GetElement(1));
 			ICCItem *pData = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
 
-			//	Sort the mission list by priority order.
+			//	If we have a list of missions, then we need to choose one 
+			//	randomly.
 
-			CMissionList::Sort(Missions);
-
-			//	Create the mission
-
-			CString sError;
-			CMission *pMission;
-			if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+			if (pArgs->GetElement(0)->IsList())
 				{
-				//	ERR_NOTFOUND means that conditions do not allow for the
-				//	mission to be created. This is not technically an error; it
-				//	just means that the caller must do something else.
+				//	Get the list of mission types
 
-				if (error = ERR_NOTFOUND)
-					return pCC->CreateNil();
+				ICCItem *pList = pArgs->GetElement(0);
+				TArray<CMissionType *> Missions;
+				Missions.GrowToFit(pList->GetCount());
 
-				//	Otherwise, we report an error
+				for (int i = 0; i < pList->GetCount(); i++)
+					{
+					CMissionType *pType = pCtx->GetUniverse().FindMissionType((DWORD)pList->GetElement(i)->GetIntegerValue());
+					if (pType == NULL)
+						return pCC->CreateError(strPatternSubst(CONSTLIT("Unknown mission type: %x."), pList->GetElement(i)->GetIntegerValue()), pList->GetElement(i));
 
-				else
-					return pCC->CreateError(sError);
+					Missions.Insert(pType);
+					}
+				
+				//	Sort the mission list by priority order.
+
+				CMissionList::Sort(Missions);
+
+				//	Create the mission
+
+				CString sError;
+				CMission *pMission;
+				if (error = pCtx->GetUniverse().CreateRandomMission(Missions, pOwner, pData, &pMission, &sError))
+					{
+					//	ERR_NOTFOUND means that conditions do not allow for the
+					//	mission to be created. This is not technically an error; it
+					//	just means that the caller must do something else.
+
+					if (error == ERR_NOTFOUND)
+						return pCC->CreateNil();
+
+					//	Otherwise, we report an error
+
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the mission object
+
+				return pCC->CreateInteger((int)pMission);
 				}
 
-			//	Return the mission object
+			//	Otherwise we expect a mission type.
 
-			return pCC->CreateInteger((int)pMission);
+			else
+				{
+				CMissionType *pType = pCtx->GetUniverse().FindMissionType(pArgs->GetElement(0)->GetIntegerValue());
+				if (pType == NULL)
+					return pCC->CreateError(CONSTLIT("Unknown mission type"), pArgs->GetElement(0));
+
+				CString sError;
+				CMission *pMission;
+				if (error = pCtx->GetUniverse().CreateMission(pType, pOwner, pData, &pMission, &sError))
+					{
+					//	ERR_NOTFOUND means the mission refused to be created,
+					//	so we return Nil.
+
+					if (error == ERR_NOTFOUND)
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+					}
+
+				//	Return the mission object
+
+				return pCC->CreateInteger((int)pMission);
+				}
 			}
 
 		case FN_MISSION_FIND:
@@ -9983,6 +10247,65 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iResult);
 			}
 
+		case FN_SHIP_ENHANCE_ITEM:
+			{
+			CItemListManipulator *pItemList = NULL;
+			CItemListManipulator ItemList(pShip->GetItemList());
+
+			//	If the argument is a list then it is an item (which means we have to find
+			//	the item in the manipulator). If the argument is an integer then we expect
+			//	an item list manipulator pointer.
+
+			if (pArgs->GetElement(1)->IsInteger())
+				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
+			else
+				{
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (!ItemList.SetCursorAtItem(Item))
+					{
+					if (pCtx->GetAPIVersion() >= 18)
+						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+					else
+						return pCC->CreateNil();
+					}
+
+				pItemList = &ItemList;
+				}
+
+			//	Get the enhancement
+
+			CItemEnhancement Mods;
+			if (pArgs->GetCount() > 2)
+				{
+				CString sError;
+				if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(2), &sError) != NOERROR)
+					return pCC->CreateError(sError);
+				}
+
+			if (pItemList == NULL)
+				return pCC->CreateNil();
+
+			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
+				{
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
+				{
+				if (Mods.IsEmpty())
+					Mods = CItemEnhancement(etBinaryEnhancement);
+
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else
+				{
+				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
+				return pCC->CreateTrue();
+				}
+			break;
+			}
+
 		case FN_SHIP_FIX_BLINDNESS:
 			{
 			bool bNoMessage = (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil());
@@ -10026,7 +10349,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Install
 
 			pShip->InstallItemAsArmor(ItemList, iSegment);
-			return pCC->CreateTrue();
+			return CreateListFromItem(ItemList.GetItemAtCursor());
 			}
 
 		case FN_SHIP_INSTALL_DEVICE:
@@ -10315,8 +10638,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			|| dwData == FN_SHIP_ORDER_HOLD
 			|| dwData == FN_SHIP_CONTROLLER)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("i*"));
-	else if (dwData == FN_SHIP_ENHANCE_ITEM)
-		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv*"));
 	else
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv"));
 	if (pArgs->IsError())
@@ -10657,75 +10978,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				}
 			else
 				pResult = pCC->CreateNil();
-			break;
-			}
-
-		case FN_SHIP_ENHANCE_ITEM:
-			{
-			CItemListManipulator *pItemList = NULL;
-			CItemListManipulator ItemList(pShip->GetItemList());
-
-			//	If the argument is a list then it is an item (which means we have to find
-			//	the item in the manipulator). If the argument is an integer then we expect
-			//	an item list manipulator pointer.
-
-			if (pArgs->GetElement(1)->IsInteger())
-				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
-			else
-				{
-				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-				if (!ItemList.SetCursorAtItem(Item))
-					{
-					pArgs->Discard();
-					if (pCtx->GetAPIVersion() >= 18)
-						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
-					else
-						return pCC->CreateNil();
-					}
-
-				pItemList = &ItemList;
-				}
-
-			//	Get the enhancement
-
-			CItemEnhancement Mods;
-			CString sError;
-			if (pArgs->GetCount() > 2)
-				{
-				if (Mods.InitFromDesc(pArgs->GetElement(2), &sError) != NOERROR)
-					{
-					pArgs->Discard();
-					pResult = pCC->CreateError(sError);
-					break;
-					}
-				}
-
-			if (pItemList == NULL)
-				{
-				pArgs->Discard();
-				pResult = pCC->CreateNil();
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
-				{
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
-				{
-				if (Mods.IsEmpty())
-					Mods = CItemEnhancement(etBinaryEnhancement);
-
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else
-				{
-				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
-				pArgs->Discard();
-				pResult = pCC->CreateTrue();
-				}
 			break;
 			}
 
@@ -11142,7 +11394,8 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		case FN_STATION_SHOW_MAP_LABEL:
-			pStation->SetShowMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetForceMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetSuppressMapLabel(pArgs->GetElement(1)->IsNil());
 			return pCC->CreateTrue();
 
 		default:
@@ -11569,6 +11822,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
 				return pResult->Reference();
 				}
+
+			else
+				return pCC->CreateNil();
 			}
 
 		case FN_SYS_CREATE_ENVIRONMENT:
@@ -11947,7 +12203,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (iBonus != 0)
 				{
 				pEnhancements.TakeHandoff(new CItemEnhancementStack);
-				pEnhancements->InsertHPBonus(iBonus);
+				pEnhancements->InsertHPBonus(NULL, iBonus);
 				}
 
 			//	Create the weapon shot
@@ -12288,11 +12544,179 @@ ICCItem *fnSystemCreateShip (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 		}
 	}
 
+ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
+
+//	fnSystemCreateStargate
+//
+//	(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj
+
+	{
+	ALERROR error;
+	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
+	if (pCtx == NULL)
+		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
+	SSystemCreateCtx *pSysCreateCtx = pCtx->GetSystemCreateCtx();
+
+	CSystem *pSystem = pCtx->GetUniverse().GetCurrentSystem();
+	if (pSystem == NULL)
+		return StdErrorNoSystem(*pCC);
+
+	//	Get the station type
+
+	CStationType *pType = pCtx->GetUniverse().FindStationType(pArgs->GetElement(0)->GetIntegerValue());
+	if (pType == NULL)
+		return pCC->CreateError(CONSTLIT("Unknown station type"), pArgs->GetElement(0));
+
+	//	Get the position
+
+	CVector vPos;
+	int iLocID;
+	if (error = GetPosOrObject(pEvalCtx, pArgs->GetElement(1), &vPos, NULL, &iLocID))
+		{
+		//	If we couldn't find a location, then we abort, but return Nil
+		//	so that callers can recover.
+
+		if (error == ERR_NOTFOUND)
+			{
+			if (pCtx->GetUniverse().InDebugMode())
+				::kernelDebugLogPattern("WARNING: Unable to create station at %s (in %s)", pArgs->GetElement(1)->Print(), pSystem->GetName());
+			return pCC->CreateNil();
+			}
+
+		//	Otherwise, this is a real error.
+
+		else
+			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
+		}
+
+	//	Get stargate-specific information
+
+	CString sStargateName = pArgs->GetElement(2)->GetStringValue();
+	if (sStargateName.IsBlank())
+		return pCC->CreateError(CONSTLIT("Stargate must have a name"), pArgs->GetElement(2));
+
+	//	Look for the stargate in the topology
+
+	CString sDestName;
+	CTopologyNode *pDestNode = pSystem->GetStargateDestination(sStargateName, &sDestName);
+		
+	//	If the stargate doesn't exist yet, then see if we have enough parameters
+	//	to create it.
+
+	CString sDestNode;
+	if (pDestNode == NULL)
+		{
+		if (pArgs->GetCount() < 5)
+			return pCC->CreateError(CONSTLIT("Topology does not have stargate of that name"), pArgs->GetElement(2));
+
+		sDestNode = pArgs->GetElement(3)->GetStringValue();
+		if (sDestNode.IsBlank())
+			return pCC->CreateError(CONSTLIT("Invalid destination node"), pArgs->GetElement(3));
+
+		sDestName = pArgs->GetElement(4)->GetStringValue();
+		if (sDestName.IsBlank())
+			return pCC->CreateError(CONSTLIT("Invalid destination stargate"), pArgs->GetElement(4));
+		}
+	else
+		sDestNode = pDestNode->GetID();
+
+	//	Make sure we can encounter the station
+
+	if (!pType->CanBeEncountered(pSystem))
+		return pCC->CreateNil();
+
+	//	Create the station (or ship encounter). If we are in the middle of system
+	//	create, then we can use the proper context. Otherwise, we do without.
+
+	CSpaceObject *pStation;
+	if (pSysCreateCtx && iLocID != -1)
+		{
+		CLocationDef &Loc = pSystem->GetLocation(iLocID);
+
+		SObjCreateCtx CreateCtx(*pSysCreateCtx);
+		CreateCtx.vPos = vPos;
+		CreateCtx.pLoc = &Loc;
+		CreateCtx.pOrbit = &Loc.GetOrbit();
+		CreateCtx.bCreateSatellites = true;
+
+		if (pSystem->CreateStation(pSysCreateCtx,
+				pType,
+				CreateCtx,
+				&pStation) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
+		}
+
+	//	Otherwise, we do without a context
+
+	else
+		{
+		if (pSystem->CreateStation(pType, NULL, vPos, &pStation) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Unable to create station"), NULL);
+		}
+
+	//	If we have a location, remove it from the list of available locations
+
+	if (iLocID != -1 && pStation)
+		pSystem->SetLocationObjID(iLocID, pStation->GetID());
+
+	//	If we're creating a stargate, do some extra stuff
+
+	CStation *pStargate = (pStation ? pStation->AsStation() : NULL);
+
+	//	Must have a station
+
+	if (pStargate == NULL)
+		return pCC->CreateError(CONSTLIT("Stargate must be a station"), NULL);
+
+	//	If we don't have a destination node, then we need to add the stargate
+
+	if (pDestNode == NULL)
+		{
+		CTopologyNode *pNode = pSystem->GetTopology();
+		if (pNode == NULL)
+			return pCC->CreateError(CONSTLIT("No topology for current system"), NULL);
+
+		CTopologyNode::SStargateDesc GateDesc;
+		GateDesc.sName = sStargateName;
+		GateDesc.sDestNode = sDestNode;
+		GateDesc.sDestName = sDestName;
+		if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
+			return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
+
+		pDestNode = pCtx->GetUniverse().FindTopologyNode(sDestNode);
+		if (pDestNode == NULL)
+			return pCC->CreateError(CONSTLIT("Unknown topology node"), NULL);
+		}
+
+	//	Add a named object
+
+	pSystem->NameObject(sStargateName, *pStargate);
+
+	//	Set stargate properties (note: CreateStation also looks at objName and adds the name
+	//	to the named-objects system table.)
+
+	pStargate->SetStargate(sDestNode, sDestName);
+
+	//	If we haven't already set the name, set the name of the stargate
+	//	to include the name of the destination system
+
+	if (!pStargate->IsNameSet())
+		pStargate->SetName(strPatternSubst(CONSTLIT("%s Stargate"), pDestNode->GetSystemName()), nounDefiniteArticle);
+
+	//	Done
+
+	if (pStation)
+		return pCC->CreateInteger((int)pStation);
+	else
+		return pCC->CreateNil();
+	}
+
 ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 //	fnSystemCreateStation
 //
-//	(sysCreateStargate unid pos gateID [destNodeID destGateID]) -> obj
 //	(sysCreateStation unid pos) -> station
 
 	{
@@ -12336,50 +12760,14 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 			return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(1));
 		}
 
-	//	If we're creating a stargate, get some extra information
+	//	Get options
 
 	CDesignType *pEventHandler = NULL;
-	CString sStargateName;
-	CTopologyNode *pDestNode = NULL;
-	CString sDestNode;
-	CString sDestName;
-	if (dwData == FN_SYS_CREATE_STARGATE)
+	if (pArgs->GetCount() >= 3)
 		{
-		sStargateName = pArgs->GetElement(2)->GetStringValue();
-		if (sStargateName.IsBlank())
-			return pCC->CreateError(CONSTLIT("Stargate must have a name"), pArgs->GetElement(2));
-
-		//	Look for the stargate in the topology
-
-		pDestNode = pSystem->GetStargateDestination(sStargateName, &sDestName);
-		
-		//	If the stargate doesn't exist yet, then see if we have enough parameters
-		//	to create it.
-
-		if (pDestNode == NULL)
-			{
-			if (pArgs->GetCount() < 5)
-				return pCC->CreateError(CONSTLIT("Topology does not have stargate of that name"), pArgs->GetElement(2));
-
-			sDestNode = pArgs->GetElement(3)->GetStringValue();
-			if (sDestNode.IsBlank())
-				return pCC->CreateError(CONSTLIT("Invalid destination node"), pArgs->GetElement(3));
-
-			sDestName = pArgs->GetElement(4)->GetStringValue();
-			if (sDestName.IsBlank())
-				return pCC->CreateError(CONSTLIT("Invalid destination stargate"), pArgs->GetElement(4));
-			}
-		else
-			sDestNode = pDestNode->GetID();
-		}
-	else
-		{
-		if (pArgs->GetCount() >= 3)
-			{
-			pEventHandler = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(2)->GetIntegerValue());
-			if (pEventHandler == NULL)
-				return pCC->CreateError(CONSTLIT("Invalid event handler"), pArgs->GetElement(2));
-			}
+		pEventHandler = pCtx->GetUniverse().FindDesignType(pArgs->GetElement(2)->GetIntegerValue());
+		if (pEventHandler == NULL)
+			return pCC->CreateError(CONSTLIT("Invalid event handler"), pArgs->GetElement(2));
 		}
 
 	//	Make sure we can encounter the station
@@ -12422,53 +12810,6 @@ ICCItem *fnSystemCreateStation (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dw
 	if (iLocID != -1 && pStation)
 		pSystem->SetLocationObjID(iLocID, pStation->GetID());
 
-	//	If we're creating a stargate, do some extra stuff
-
-	if (dwData == FN_SYS_CREATE_STARGATE)
-		{
-		CStation *pStargate = (pStation ? pStation->AsStation() : NULL);
-
-		//	Must have a station
-
-		if (pStargate == NULL)
-			return pCC->CreateError(CONSTLIT("Stargate must be a station"), NULL);
-
-		//	If we don't have a destination node, then we need to add the stargate
-
-		if (pDestNode == NULL)
-			{
-			CTopologyNode *pNode = pSystem->GetTopology();
-			if (pNode == NULL)
-				return pCC->CreateError(CONSTLIT("No topology for current system"), NULL);
-
-			CTopologyNode::SStargateDesc GateDesc;
-			GateDesc.sName = sStargateName;
-			GateDesc.sDestNode = sDestNode;
-			GateDesc.sDestName = sDestName;
-			if (pNode->AddStargateAndReturn(GateDesc) != NOERROR)
-				return pCC->CreateError(CONSTLIT("Unable to add stargate to topology node"), NULL);
-
-			pDestNode = pCtx->GetUniverse().FindTopologyNode(sDestNode);
-			if (pDestNode == NULL)
-				return pCC->CreateError(CONSTLIT("Unknown topology node"), NULL);
-			}
-
-		//	Add a named object
-
-		pSystem->NameObject(sStargateName, pStargate);
-
-		//	Set stargate properties (note: CreateStation also looks at objName and adds the name
-		//	to the named-objects system table.)
-
-		pStargate->SetStargate(sDestNode, sDestName);
-
-		//	If we haven't already set the name, set the name of the stargate
-		//	to include the name of the destination system
-
-		if (!pStargate->IsNameSet())
-			pStargate->SetName(strPatternSubst(CONSTLIT("%s Stargate"), pDestNode->GetSystemName()), nounDefiniteArticle);
-		}
-
 	//	Done
 
 	if (pStation)
@@ -12495,7 +12836,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Second argument is the filter
 
 	CString sFilter = pArgs->GetElement(1)->GetStringValue();
-	CSpaceObjectCriteria Criteria(pSource, sFilter);
+	CSpaceObjectCriteria Criteria(sFilter);
 
 	//	If we're checking for position, we need to do some extra work
 
@@ -12533,9 +12874,11 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Prepare result list (if necessary)
 	
+	CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
+
 	ICCItem *pResult;
 	CCLinkedList *pList;
-	if (!Criteria.MatchesNearestOnly() && !Criteria.MatchesFarthestOnly())
+	if (!Ctx.bNearestOnly && !Ctx.bFarthestOnly)
 		{
 		pResult = pCC->CreateLinkedList();
 		if (pResult->IsError())
@@ -12553,11 +12896,10 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	NOTE: We have this convoluted code path because we want to optimize
 	//	adding items to our list [not sure if it's worth it, though].
 
-	bool bGenerateOurOwnList = (pList && (Criteria.GetSort() == CSpaceObjectCriteria::sortNone));
+	bool bGenerateOurOwnList = (pList && (Ctx.iSort == CSpaceObjectCriteria::sortNone));
 
 	//	Do the search
 
-	CSpaceObjectCriteria::SCtx Ctx(Criteria);
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
@@ -12575,7 +12917,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If we only want the nearest/farthest object, then find it now
 
-	if (Criteria.MatchesNearestOnly() || Criteria.MatchesFarthestOnly())
+	if (Ctx.bNearestOnly || Ctx.bFarthestOnly)
 		{
 		//	Return the object
 
@@ -12703,6 +13045,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateNil();
 			}
 
+		case FN_SYS_GET_ASCENDED_OBJECTS:
+			{
+			CAscendedObjectList &ObjList = pCtx->GetUniverse().GetAscendedObjects();
+			if (ObjList.GetCount() == 0)
+				return pCC->CreateNil();
+
+			ICCItemPtr pResult(ICCItem::List);
+			for (int i = 0; i < ObjList.GetCount(); i++)
+				pResult->Append(CTLispConvert::CreateObject(ObjList.GetObj(i)));
+
+			return pResult->Reference();
+			}
+
 		case FN_SYS_GET_FIRE_SOLUTION:
 			{
 			CVector vPos;
@@ -12756,7 +13111,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get the property
 
-			return pNode->GetProperty(sProperty);
+			return pNode->GetProperty(sProperty)->Reference();
 			}
 
 		case FN_SYS_GET_POV:
@@ -13262,16 +13617,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ORBIT_CREATE:
 			{
+			COrbit Orbit;
+
 			CVector vCenter;
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			Metric rRadius = Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND);
-			Metric rAngle = mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue());
-			Metric rEccentricity = Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99));
-			Metric rRotation = (pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetFocus(vCenter);
+			Orbit.SetSemiMajorAxis(Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND));
+			Orbit.SetObjectAngle(mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue()));
+			Orbit.SetEccentricity(Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99)));
+			Orbit.SetRotation(pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetInclination(pArgs->GetCount() >= 6 ? mathDegreesToRadians(pArgs->GetElement(5)->GetDoubleValue()) : 0.0);
 
-			COrbit Orbit(vCenter, rRadius, rEccentricity, rRotation, rAngle);
 			return CreateListFromOrbit(*pCC, Orbit);
 			}
 
@@ -13533,7 +13891,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 					
 				TSortMap<CString, int> Distances;
-				pCtx->GetUniverse().GetTopology().CalcDistances(pNode, Distances);
+				pCtx->GetUniverse().GetTopology().CalcDistances(*pNode, Distances);
 
 				ICCItemPtr pResult(ICCItem::SymbolTable);
 				for (int i = 0; i < Distances.GetCount(); i++)
@@ -13886,15 +14244,13 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Adjust the orbit
 
-			COrbit NewOrbitDesc(OrbitDesc.GetFocus(),
-					Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleOffset);
-
+			COrbit NewOrbit = OrbitDesc;
+			NewOrbit.SetSemiMajorAxis(Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset));
+			NewOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
+			
 			//	Done
 
-			return CreateListFromVector(NewOrbitDesc.GetObjectPos());
+			return CreateListFromVector(NewOrbit.GetObjectPos());
 			}
 
 		default:
@@ -14034,7 +14390,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetCount() > 3)
 				sFilter = pArgs->GetElement(3)->GetStringValue();
 
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	Keep trying random positions until we find something that works
 			//	(or until we run out of tries)
@@ -14067,7 +14423,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				//	See if any object is within the separation range. If there 
 				//	is, then we continue.
 
-				if (pSystem->FindObjectInRange(vTry, rSeparation, Criteria)
+				if (pSystem->FindObjectInRange(pSource, vTry, rSeparation, Criteria)
 						&& --iTries > 0)
 					continue;
 
@@ -14513,8 +14869,7 @@ ICCItem *fnUniverseGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			if (!bFound)
 				{
-				CItemCriteria Crit;
-				CItem::InitCriteriaAll(&Crit);
+				CItemCriteria Crit(CItemCriteria::ALL);
 				CItem Item = CItem::CreateItemByName(pCtx->GetUniverse(), sName, Crit, true);
 				if (Item.GetType())
 					{

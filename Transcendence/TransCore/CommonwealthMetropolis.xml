@@ -22,7 +22,6 @@
 			regen=				"8"
 			shipRegen=			"4"
 			
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -45,7 +44,6 @@
 		</Names>
 		
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -53,8 +51,8 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -defective; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -147,12 +145,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 			
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnTrafficControl>
 				(comTrafficControl gSource 20)
 			</OnTrafficControl>
@@ -179,7 +171,6 @@
 			regen=				"15"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -202,7 +193,6 @@
 		</Names>
 
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -210,8 +200,8 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -defective; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -307,12 +297,6 @@
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<OnTrafficControl>
 				(comTrafficControl gSource 20)
@@ -527,9 +511,7 @@
 					</Action>
 
 					<Action id="actionCommoditiesExchange" default="1">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 					</Action>
 
 					<Action id="actionDockServices">

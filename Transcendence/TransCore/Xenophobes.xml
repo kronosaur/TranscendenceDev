@@ -423,7 +423,7 @@
 
 			attributes=			"benninXenophobes, capitalShip, genericClass, majorShip"
 			
-			size=				"200"
+			size=				"190"
 			mass=				"150000"
 			thrustRatio=		"0.5"
 			maxSpeed=			"6"

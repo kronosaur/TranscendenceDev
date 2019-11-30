@@ -5,9 +5,9 @@
 
 #pragma once
 
-constexpr DWORD API_VERSION =							44;
-constexpr DWORD UNIVERSE_SAVE_VERSION =					37;
-constexpr DWORD SYSTEM_SAVE_VERSION =					174;
+constexpr DWORD API_VERSION =							47;
+constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
+constexpr DWORD SYSTEM_SAVE_VERSION =					176;
 
 //	Uncomment out the following define when building a stable release
 
@@ -110,6 +110,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //
 //	37: 1.9 Alpha 1
 //		Added m_dwLastAcceptedOn in CMissionType
+//
+//	38: 1.9 Alpha 3
+//		Added m_Difficulty to CUniverse
 
 
 //	SYSTEM VERSION HISTORY -----------------------------------------------------
@@ -641,3 +644,9 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					174;
 //
 //	174: 1.9 Alpha 1
 //		Add source to CItem
+//
+//	175: 1.9 Alpha 3
+//		Changes to COrbit
+//
+//	176: 1.9 Alpha 3
+//		m_iType in CStationHull
