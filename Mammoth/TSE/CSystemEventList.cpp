@@ -169,6 +169,20 @@ void CSystemEventList::OnObjDestroyed (CSpaceObject *pObj)
 		}
 	}
 
+void CSystemEventList::OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options)
+
+//	OnPlayerChangedShips
+//
+//	Player has changed ships.
+
+	{
+	for (int i = 0; i < GetCount(); i++)
+		{
+		CSystemEvent *pEvent = GetEvent(i);
+		pEvent->OnPlayerChangedShips(OldShip, NewShip, Options);
+		}
+	}
+
 void CSystemEventList::OnStationDestroyed (CSpaceObject *pObj)
 
 //	OnStationDestroyed

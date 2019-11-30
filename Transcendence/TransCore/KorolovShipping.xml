@@ -177,8 +177,6 @@
 
 	EXTRA DATA
 
-	assistantDirector:	Last name of the assistant director overseeing this station
-
 	charonStronghold:	Primary Charon base in the system
 
 	-->
@@ -201,7 +199,6 @@
 			regen=              "6"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -219,11 +216,19 @@
 				unique=					"inSystem"
 				/>
 
+		<!-- Properties -->
+
+		<Properties>
+			<Variant id="rpgCharacter.assistantDirector">
+				(rpgCharacterRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
+			</Variant>
+		</Properties>
+
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -illegal; -notForSale; -notStandard;"	priceAdj="100"	noDescription="true"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -illegal; -notForSale; -notStandard;"	priceAdj="100"	noDescription="true"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-5;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
@@ -728,9 +733,6 @@
 		<Events>
 			<OnCreate>
 				(block (charonStronghold)
-					;	Initialize our characters
-					(rpgCharacterAssignRandom gSource "x +assistantDirector; +korolov;" 'assistantDirector)
-
 					; Register a recurring event
 					(sysAddObjRecurringTimerEvent 240 gSource "OnTrafficControl")
 

@@ -90,6 +90,7 @@
 	<!ENTITY itLaserCannon				"0x0000400D">
 	<!ENTITY itHelium3FuelRod			"0x0000403C">
 	<!ENTITY itTritiumPropulsionUpgrade	"0x0000404B">
+	<!ENTITY itUnknownROM				"0x00004061">
 	<!ENTITY itBallistaCannon			"0x000041A2">
 	
 	<!ENTITY vtWreckEjecta				"0x00005004">
@@ -200,6 +201,10 @@
 	<!-- 0100-0139 DIAGNOSTICS AND DEBUGGING -->
 
 	<!ENTITY efTestOrbEffect			"0x00030100">
+
+	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
+
+	<!ENTITY vtGenericEnhancement		"0x00030140">
 
 	]>
 	

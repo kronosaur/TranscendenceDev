@@ -2,6 +2,12 @@
 //
 //	Classes and functions for dock screen types.
 //	Copyright (c) 2018 Kronosaur Productions, LLC. All Rights Reserved.
+//
+//	USAGE
+//
+//	CDockSession encapsulates all state for a docking session, including the
+//	screen stack, screen data, etc. It has a weak pointer to a dock screen UI
+//	object, to which it will send notifications.
 
 #pragma once
 
@@ -25,8 +31,22 @@ class IDockScreenUI
 			int iOriginalCursor = -1;
 			};
 
-		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { }
-		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { }
+		virtual ICCItemPtr GetProperty (const CString &sProperty) const { return NULL; }
+		virtual void OnModifyItemBegin (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { }
+		virtual void OnModifyItemComplete (SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { }
+		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
+		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
+	};
+
+struct SScreenSetTab
+	{
+	CString sID;							//	ID (to refer to it)
+	CString sName;							//	User-visible tab name
+	CString sScreen;						//	Screen to navigate to
+	CString sPane;							//	Pane to navigate to
+	ICCItemPtr pData;						//	Data for screen
+
+	bool bEnabled = true;					//	Table is enabled
 	};
 
 struct SDockFrame
@@ -39,35 +59,47 @@ struct SDockFrame
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
 
+	TArray<SScreenSetTab> ScreenSet;		//	Current screen set
+	CString sCurrentTab;					//	Current tab in screen set.
+
 	CDesignType *pResolvedRoot = NULL;
 	CString sResolvedScreen;
 
 	TSortMap<CString, CString> DisplayData;	//	Opaque data used by displays
 	};
 
+struct SShowScreenCtx
+	{
+	CDesignType *pRoot = NULL;
+	CString sScreen;
+	CString sPane;
+	ICCItemPtr pData;
+
+	CString sTab;
+	bool bReturn = false;
+	bool bFirstFrame = false;
+	};
+
 class CDockScreenStack
 	{
 	public:
 		void DeleteAll (void);
-		ICCItem *GetData (const CString &sAttrib);
 		const CString &GetDisplayData (const CString &sID);
-		inline int GetCount (void) const { return m_Stack.GetCount(); }
+		int GetCount (void) const { return m_Stack.GetCount(); }
+		SDockFrame &GetCallingFrame (void) { return (m_Stack.GetCount() < 2 ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 2]); }
+		SDockFrame &GetCurrent (void) { ASSERT(!IsEmpty()); return (IsEmpty() ? const_cast<SDockFrame &>(m_NullFrame) : m_Stack[m_Stack.GetCount() - 1]); }
 		const SDockFrame &GetCurrent (void) const;
-		ICCItem *GetReturnData (const CString &sAttrib);
-		void IncData (const CString &sAttrib, ICCItem *pData, ICCItem **retpResult = NULL);
-		inline bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Stack.GetCount() == 0); }
 		void Push (const SDockFrame &Frame);
 		void Pop (void);
 		void ResolveCurrent (const SDockFrame &ResolvedFrame);
 		void SetCurrent (const SDockFrame &NewFrame, SDockFrame *retPrevFrame = NULL);
 		void SetCurrentPane (const CString &sPane);
-		void SetData (const CString &sAttrib, ICCItem *pData);
 		void SetDisplayData (const CString &sID, const CString &sData);
 		void SetLocation (CSpaceObject *pLocation);
-		void SetReturnData (const CString &sAttrib, ICCItem *pData);
 
 	private:
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
 
 		TArray<SDockFrame> m_Stack;
 
@@ -83,20 +115,37 @@ class CDockSession
 
 		bool ExitScreen (DWORD dwFlags = 0);
 		bool FindScreenRoot (const CString &sScreen, CDesignType **retpRoot, CString *retsScreen, ICCItemPtr *retpData) const;
+		const SScreenSetTab *FindTab (const CString &sID) const;
 		const SDockFrame &GetCurrentFrame (void) const { return m_DockFrames.GetCurrent(); }
+		ICCItemPtr GetData (const CString &sAttrib) const;
 		CDockScreenStack &GetFrameStack (void) { return m_DockFrames; }
 		const CDockScreenStack &GetFrameStack (void) const { return m_DockFrames; }
-		inline CUniverse &GetUniverse (void) const { return *g_pUniverse; }
-		inline bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
-		inline void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemBegin(Ctx, pSource, Item); }
-		inline void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result) { if (ModifyItemNotificationNeeded(pSource)) m_pDockScreenUI->OnModifyItemComplete(Ctx, pSource, Result); }
+		ICCItemPtr GetProperty (const CString &sProperty) const;
+		ICCItemPtr GetReturnData (const CString &sAttrib) const;
+		IDockScreenUI &GetUI (void) const { return *m_pDockScreenUI; }
+		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
+		void IncData (const CString &sAttrib, ICCItem *pOptionalInc, ICCItemPtr *retpResult);
+		void InitCustomProperties (void);
+		bool InSession (void) const { return !m_DockFrames.IsEmpty(); }
+		void OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemBegin(Ctx, Source, Item); }
+		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemComplete(Ctx, Source, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
+		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
+		bool SetData (const CString &sAttrib, const ICCItem *pValue);
+		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
+		bool SetReturnData (const CString &sAttrib, ICCItem *pValues);
+		bool SetScreenSet (const ICCItem &ScreenSet);
+		bool Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pResult, CString *retsError = NULL) const;
 
 	private:
-		bool ModifyItemNotificationNeeded (CSpaceObject *pSource) const;
+		void InitCustomProperties (const CDesignType &Type, const SDockFrame &Frame);
+		bool ModifyItemNotificationNeeded (const CSpaceObject &Source) const;
 
-		IDockScreenUI *m_pDockScreenUI = NULL;		//	Wormhole to dockscreen UI
-		CDesignType *m_pDefaultScreensRoot = NULL;	//	Default root to look for local screens
-		CDockScreenStack m_DockFrames;				//	Stack of dock screens
+		IDockScreenUI *m_pDockScreenUI = &m_NullUI;		//	Wormhole to dockscreen UI
+		CDesignType *m_pDefaultScreensRoot = NULL;		//	Default root to look for local screens
+		CDockScreenStack m_DockFrames;					//	Stack of dock screens
+
+		static TPropertyHandler<CDockSession> m_PropertyTable;
+		static IDockScreenUI m_NullUI;
 	};

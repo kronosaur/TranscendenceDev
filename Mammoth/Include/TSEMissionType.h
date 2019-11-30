@@ -7,6 +7,15 @@
 
 class CMissionList;
 
+enum class EMissionAutoAccept
+	{
+	none,
+	error,
+
+	acceptAndExit,
+	acceptAndContinue,
+	};
+
 class CMissionType : public CDesignType
 	{
 	public:
@@ -20,7 +29,7 @@ class CMissionType : public CDesignType
 			};
 
 		bool CanBeCreated (const CMissionList &AllMissions, CSpaceObject *pOwner, ICCItem *pCreateData) const;
-		bool CanBeDeclined (void) const { return !m_fNoDecline; }
+		bool CanBeDeclined (void) const { return (m_iAutoAccept == EMissionAutoAccept::none); }
 		bool CanBeDeleted (void) const { return m_fAllowDelete; }
 		bool CanBeEncountered (void) const { return (m_iMaxAppearing == -1 || m_iExisting < m_iMaxAppearing); }
 		bool CleanNonPlayer(void) const { return !m_fRecordNonPlayer; }
@@ -31,6 +40,7 @@ class CMissionType : public CDesignType
 		bool ForceUndockAfterDebrief (void) const { return m_fForceUndockAfterDebrief; }
 		const CString &GetArc (void) const { return m_sArc; }
 		int GetArcSequence (void) const { return m_iArcSequence; }
+		EMissionAutoAccept GetAutoAccept (void) const { return m_iAutoAccept; }
 		const CString &GetName (void) const { return m_sName; }
 		int GetExpireTime (void) const { return m_iExpireTime; }
 		DWORD GetLastAcceptedOn (void) const { return m_dwLastAcceptedOn; }
@@ -38,6 +48,7 @@ class CMissionType : public CDesignType
 		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
 		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
+		bool HasInProgress (void) const { return !m_fNoInProgress; }
 		void IncAccepted (void);
 		bool KeepsStats (void) const { return !m_fNoStats; }
 		void OnMissionCreated (void) { m_iExisting++; }
@@ -64,6 +75,9 @@ class CMissionType : public CDesignType
 
 	private:
 		bool FireCanCreate (CSpaceObject *pOwner, ICCItem *pCreateData) const;
+
+		static ICCItemPtr AutoAcceptAsItem (EMissionAutoAccept iAutoAccept);
+		static EMissionAutoAccept ParseAutoAccept (SDesignLoadCtx &Ctx, const CString &sValue);
 		static bool ParseMissionArc (SDesignLoadCtx &Ctx, const CString &sValue, CString *retsArc = NULL, int *retiSequence = NULL, CString *retsError = NULL);
 
 		//	Basic properties
@@ -73,6 +87,7 @@ class CMissionType : public CDesignType
 		CString m_sArc;						//	For related missions
 		int m_iArcSequence = -1;			//	Missions assigned in this order (lower numbers first)
 		int m_iPriority;					//	Relative priority (default = 1)
+		EMissionAutoAccept m_iAutoAccept = EMissionAutoAccept::none;
 
 		//	Mission creation
 
@@ -105,10 +120,10 @@ class CMissionType : public CDesignType
 		DWORD m_fCloseIfOutOfSystem:1;		//	If TRUE, mission is closed if player leaves system.
 		DWORD m_fForceUndockAfterDebrief:1;	//	If TRUE, default mission screen undocks after debrief
 		DWORD m_fAllowDelete:1;				//	If TRUE, player can delete mission
-		DWORD m_fNoDecline:1;				//	If TRUE, mission cannot be declined once offered.
 		DWORD m_fRecordNonPlayer:1;			//	If TRUE, non-player missions will not be deleted after completion
-
 		DWORD m_fDestroyOnDecline:1;		//	If TRUE, destroy mission if player declines.
+
+		DWORD m_fNoInProgress:1;			//	If TRUE, no in progress messages
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

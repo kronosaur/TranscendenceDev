@@ -111,7 +111,7 @@ void CPlayerSettings::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 	retTypesUsed->SetAt(strToInt(m_pDockServicesScreen.GetUNID(), 0), true);
 	retTypesUsed->SetAt(strToInt(m_pShipConfigScreen.GetUNID(), 0), true);
 
-    GetDockScreenVisuals().AddTypesUsed(retTypesUsed);
+    //GetDockScreenVisuals().AddTypesUsed(retTypesUsed);
 
 	//	LATER: Add armor images, etc.
 	}
@@ -502,7 +502,7 @@ void CPlayerSettings::MergeFrom (const CPlayerSettings &Src)
         }
 	}
 
-void CPlayerSettings::Resolve (const CPlayerSettings *pSrc)
+void CPlayerSettings::Resolve (CUniverse &Universe, const CPlayerSettings *pSrc)
 
 //  Resolve
 //
@@ -534,7 +534,7 @@ void CPlayerSettings::Resolve (const CPlayerSettings *pSrc)
     //  If we still don't have a dock screen visual, get the default.
 
     if (m_pDockScreenDesc == NULL)
-        m_pDockScreenDesc = &CDockScreenVisuals::GetDefault();
+        m_pDockScreenDesc = &CDockScreenVisuals::GetDefault(Universe);
 
     //  No need to resolve again, until we re-bind
 

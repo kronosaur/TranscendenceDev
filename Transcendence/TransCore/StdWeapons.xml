@@ -31,7 +31,7 @@
 
 				damage=				"blast:4d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"10"
+				hitPoints=			"7"
 				lifetime=			"90"
 				powerUse=			"1"
 				charges=			"true"
@@ -74,7 +74,7 @@
 
 				damage=				"laser:1d4"
 				fireRate=			"10"
-				lifetime=			"30"
+				range=				"60"
 				powerUse=			"10"
 
 				effect=				"&efLaserBeamDefault;"
@@ -106,7 +106,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"10"
 				
@@ -139,7 +138,6 @@
 				damage=				"kinetic:1d3+1; momentum1"
 				fireRate=			"10"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"40"
 				powerUse=			"11"
 
@@ -210,7 +208,7 @@
 
 				damage=				"blast:5d6; momentum4; WMD5"
 				fireRate=			"30"
-				hitPoints=			"10"
+				hitPoints=			"12"
 				lifetime=			"120"
 				powerUse=			"2"
 				charges=			"true"
@@ -318,7 +316,6 @@
 				damage=				"kinetic:2d6-1; momentum:1; WMD:4"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"80"
 				powerUse=			"22"
 
@@ -352,7 +349,6 @@
 				damage=				"kinetic:1d3+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"30"
 				lifetime=			"40"
 				powerUse=			"20"
 
@@ -394,7 +390,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"24"
 				missileSpeed=		"40"
-				interaction=		"50"
 				lifetime=			"60"
 				powerUse=			"70"
 
@@ -464,7 +459,6 @@
 				damage=				"blast:1d6+1; momentum:1; WMD:3"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"24"
 				powerUse=			"50"
 
@@ -564,7 +558,6 @@
 				damage=				"kinetic:2d8+2; momentum:1; WMD:4"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"60"
 
@@ -586,7 +579,7 @@
 			value=				"1300"
 			mass=				"3000"
 			  
-			description=		"Rasiermesser brought the SmartCannon to market despite opposition from law enforcement. The weapon requires SmartCannon rounds."
+			description=		"Rasiermesser brought the SmartCannon to market despite opposition from law enforcement."
 			>
 
 		<Image imageID="&rsItemsRasiermesser1;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -680,7 +673,6 @@
 				damage=				"kinetic:1d6+1; momentum1"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"30"
 
@@ -746,7 +738,6 @@
 				damage=				"kinetic:14d8; momentum:5; WMD:5"
 				fireRate=			"46"
 				missileSpeed=		"45"
-				interaction=		"90"
 				hitPoints=			"5"
 				lifetime=			"67"
 				powerUse=			"160"
@@ -781,7 +772,6 @@
 				fireRate=			"15"
 				missileSpeed=		"90"
 				lifetime=			"50"
-				interaction=		"20"
 				powerUse=			"130"
 
 				effect=				"&efKineticBoltDefault;"
@@ -930,7 +920,6 @@
 				damage=				"blast:1d6+1; momentum1; WMD3"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"40"
 				powerUse=			"100"
 
@@ -970,7 +959,6 @@
 				damage=				"kinetic:2d8+2; momentum:1; WMD:4"
 				fireRate=			"16"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"60"
 				powerUse=			"100"
 
@@ -1092,7 +1080,7 @@
 			value=				"10000"
 			mass=				"3000"
 			  
-			description=		"The Akan 30 is a powerful cannon designed by the Rasiermesser Corporation. This weapon requires Akan 30 cannon shells."
+			description=		"The Akan 30 is a powerful cannon designed by the Rasiermesser Corporation."
 			>
 
 		<Image imageID="&rsItemsRasiermesser3;" imageX="96" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -1144,7 +1132,6 @@
 				fireRate=			"16"
 				missileSpeed=		"90"
 				lifetime=			"50"
-				interaction=		"20"
 				powerUse=			"300"
 
 				effect=				"&efKineticBoltDefault;"
@@ -1405,7 +1392,6 @@
 				damage=				"blast:1d6+1; momentum1; WMD3"
 				fireRate=			"15"
 				missileSpeed=		"40"
-				interaction=		"80"
 				lifetime=			"40"
 				powerUse=			"250"
 
@@ -1498,7 +1484,7 @@
 			value=				"25000"
 			mass=				"5000"
 			  
-			description=		"This weapons places an Akan 30 cannon on a computer-controlled, omnidirectional turret. This weapon requires Akan 30 cannon shells."
+			description=		"This weapons places an Akan 30 cannon on a computer-controlled, omnidirectional turret."
 			>
 
 		<Image imageID="&rsItemsRasiermesser3;" imageX="192" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -1539,7 +1525,7 @@
 			value=				"22000"
 			mass=				"1200"
 			  
-			description=		"This cheap cartridge missile launcher fires three tracking micro-missiles. The weapon requires Dragonfly missile cartridges."
+			description=		"This cheap cartridge missile launcher fires three tracking micro-missiles."
 			>
 
 		<Image imageID="&rsItemsEI2;" imageX="96" imageY="288" imageWidth="96" imageHeight="96"/>
@@ -1740,40 +1726,6 @@
 				sound=				"&snLaserCannon;"
 				>
 		</Weapon>
-	</ItemType>
-
-	<!-- Ion Disruptor -->
-
-	<ItemType UNID="&itIonDisruptor;"
-			name=				"ion disruptor"
-			attributes=			"commonwealth, EI, energyWeapon, military, majorItem, specialty"
-			  
-			level=				"7"
-			frequency=			"rare"
-
-			value=				"35000"
-			mass=				"3000"
-			  
-			description=		"The ion disruptor's beam can penetrate a ship's hull and ionize the delicate mechanisms of weapons and other devices."
-			>
-
-		<Image imageID="&rsItemsEI3;" imageX="288" imageY="0" imageWidth="96" imageHeight="96"/>
-
-		<Weapon
-				type=				"beam"
-
-				damage=				"ion:5d6; deviceDisrupt:2"
-				fireRate=			"20"
-				lifetime=			"30"
-				powerUse=			"500"
-
-				effect=				"&efEIDisruptorBeam;"
-				fireEffect=			"&efEIDisruptorFire;"
-				hitEffect=			"&efEIDisruptorHit;"
-				sound=				"&snLaserCannon;"
-				>
-		</Weapon>
-
 	</ItemType>
 
 	<!-- Light Ion Blaster -->
@@ -2051,7 +2003,7 @@
 			value=				"32000"
 			mass=				"5000"
 			  
-			description=		"Produced in great numbers in the Syrtis War, the cannon is now common throughout the Outer Realm. The cannon requires thermo cannon shells."
+			description=		"Produced in great numbers in the Syrtis War, the cannon is now common throughout the Outer Realm."
 			>
 
 		<Image imageID="&rsItemsBushido2;" imageX="192" imageY="0" imageWidth="96" imageHeight="96"/>
@@ -2266,7 +2218,7 @@
 			value=				"165000"
 			mass=				"6000"
 			  
-			description=		"This is a modified thermo cannon mounted on an automated turret. It requires thermo cannon shells."
+			description=		"This is a modified thermo cannon mounted on an automated turret."
 			>
 
 		<Image imageID="&rsItemsBushido2;" imageX="288" imageY="192" imageWidth="96" imageHeight="96"/>
@@ -2309,7 +2261,7 @@
 			value=				"120000"
 			mass=				"2000"
 			  
-			description=		"Taikon's TM7 cannon launches warheads that split into three independent missiles. The cannon requires TM7 warheads."
+			description=		"Taikon's TM7 cannon launches warheads that split into three independent missiles."
 			>
 
 		<Image imageID="&rsItemsTaikon1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>

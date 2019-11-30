@@ -118,7 +118,7 @@ ALERROR CFileWriteStream::Open (void)
 	return NOERROR;
 	}
 
-ALERROR CFileWriteStream::Write (char *pData, int iLength, int *retiBytesWritten)
+ALERROR CFileWriteStream::Write (const char *pData, int iLength, int *retiBytesWritten)
 
 //	Write
 //

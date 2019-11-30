@@ -32,50 +32,6 @@ const SDockFrame &CDockScreenStack::GetCurrent (void) const
 	return m_Stack[iTop];
 	}
 
-ICCItem *CDockScreenStack::GetData (const CString &sAttrib)
-
-//	GetData
-//
-//	Returns data for the given attribute. The caller is responsible for 
-//	discarding this data.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return CC.CreateNil();
-
-	ICCItem *pResult = NULL;
-	ICCItem *pKey = CC.CreateString(sAttrib);
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (Frame.pStoredData)
-		{
-		pResult = Frame.pStoredData->Lookup(&CC, pKey);
-		if (pResult->IsError())
-			{
-			pResult->Discard();
-			pResult = NULL;
-			}
-		}
-
-	if (pResult == NULL && Frame.pInitialData)
-		{
-		pResult = Frame.pInitialData->Lookup(&CC, pKey);
-		if (pResult->IsError())
-			{
-			pResult->Discard();
-			pResult = NULL;
-			}
-		}
-
-	pKey->Discard();
-
-	if (pResult == NULL)
-		pResult = CC.CreateNil();
-
-	return pResult;
-	}
-
 const CString &CDockScreenStack::GetDisplayData (const CString &sID)
 
 //	GetDisplayData
@@ -92,29 +48,6 @@ const CString &CDockScreenStack::GetDisplayData (const CString &sID)
 		return NULL_STR;
 
 	return *pValue;
-	}
-
-ICCItem *CDockScreenStack::GetReturnData (const CString &sAttrib)
-
-//	GetReturnData
-//
-//	Returns data for the given attribute. The caller is responsible for 
-//	discarding this data.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return CC.CreateNil();
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (Frame.pReturnData)
-		{
-		ICCItem *pResult = Frame.pReturnData->GetElement(sAttrib);
-		if (pResult)
-			return pResult->Reference();
-		}
-
-	return CC.CreateNil();
 	}
 
 void CDockScreenStack::Push (const SDockFrame &Frame)
@@ -165,6 +98,7 @@ void CDockScreenStack::ResolveCurrent (const SDockFrame &ResolvedFrame)
 
 		m_Stack[iTop].pResolvedRoot = ResolvedFrame.pResolvedRoot;
 		m_Stack[iTop].sResolvedScreen = ResolvedFrame.sResolvedScreen;
+		m_Stack[iTop].sCurrentTab = ResolvedFrame.sCurrentTab;
 		}
 	}
 
@@ -203,85 +137,6 @@ void CDockScreenStack::SetCurrentPane (const CString &sPane)
 		}
 	}
 
-void CDockScreenStack::IncData (const CString &sAttrib, ICCItem *pValue, ICCItem **retpResult)
-
-//	IncData
-//
-//	Increments data
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		{
-		if (retpResult) *retpResult = CC.CreateNil();
-		return;
-		}
-
-    //  If pValue is NULL, we default to 1. We add ref no matter what so that
-    //  we can discard unconditionally.
-
-    if (pValue == NULL)
-        pValue = CC.CreateInteger(1);
-    else
-        pValue->Reference();
-
-    //  If the entry is currently blank, then we just take the increment.
-
-	ICCItem *pOriginal = GetData(sAttrib);
-    ICCItem *pResult = NULL;
-    if (pOriginal->IsNil())
-        pResult = pValue->Reference();
-
-    //  Otherwise, we need to get the data value
-
-    else
-        {
-        if (pOriginal->IsDouble() || pValue->IsDouble())
-            pResult = CC.CreateDouble(pOriginal->GetDoubleValue() + pValue->GetDoubleValue());
-        else
-            pResult = CC.CreateInteger(pOriginal->GetIntegerValue() + pValue->GetIntegerValue());
-        }
-
-    pOriginal->Discard();
-
-    //  Store
-
-	SetData(sAttrib, pResult);
-
-    //  Done
-
-    if (retpResult)
-        *retpResult = pResult;
-    else
-        pResult->Discard();
-
-    pValue->Discard();
-	}
-
-void CDockScreenStack::SetData (const CString &sAttrib, ICCItem *pData)
-
-//	SetData
-//
-//	Sets data associated with the current frame
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (IsEmpty())
-		return;
-
-	//	If necessary, create the stored data block
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 1];
-	if (!Frame.pStoredData)
-		Frame.pStoredData = ICCItemPtr(ICCItem::SymbolTable);
-
-	//	Add the entry
-
-	ICCItem *pKey = CC.CreateString(sAttrib);
-	Frame.pStoredData->AddEntry(pKey, pData);
-	pKey->Discard();
-	}
-
 void CDockScreenStack::SetDisplayData (const CString &sID, const CString &sData)
 
 //	SetDisplayData
@@ -309,24 +164,3 @@ void CDockScreenStack::SetLocation (CSpaceObject *pLocation)
 		m_Stack[i].pLocation = pLocation;
 	}
 
-void CDockScreenStack::SetReturnData (const CString &sAttrib, ICCItem *pData)
-
-//	SetReturnData
-//
-//	Sets data associated with previous frame.
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-	if (m_Stack.GetCount() < 2)
-		return;
-
-	//	If necessary, create the stored data block
-
-	SDockFrame &Frame = m_Stack[m_Stack.GetCount() - 2];
-	if (!Frame.pReturnData)
-		Frame.pReturnData = ICCItemPtr(ICCItem::SymbolTable);
-
-	//	Add the entry
-
-	Frame.pReturnData->SetAt(sAttrib, pData);
-	}

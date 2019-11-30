@@ -38,6 +38,18 @@
 
 #define PROPERTY_LIST_SOURCE		CONSTLIT("listSource")
 
+#define SCREEN_TYPE_ARMOR_SELECTOR		CONSTLIT("armorSelector")
+#define SCREEN_TYPE_CANVAS				CONSTLIT("canvas")
+#define SCREEN_TYPE_CAROUSEL_SELECTOR	CONSTLIT("carouselSelector")
+#define SCREEN_TYPE_CUSTOM_PICKER		CONSTLIT("customPicker")
+#define SCREEN_TYPE_CUSTOM_ITEM_PICKER	CONSTLIT("customItemPicker")
+#define SCREEN_TYPE_DETAILS_PANE		CONSTLIT("detailsPane")
+#define SCREEN_TYPE_DEVICE_SELECTOR		CONSTLIT("deviceSelector")
+#define SCREEN_TYPE_ITEM_PICKER			CONSTLIT("itemPicker")
+#define SCREEN_TYPE_MISC_SELECTOR		CONSTLIT("miscSelector")
+#define SCREEN_TYPE_SUBJUGATE_MINIGAME	CONSTLIT("subjugateMinigame")
+#define SCREEN_TYPE_WEAPONS_SELECTOR	CONSTLIT("weaponsSelector")
+
 #define TYPE_HERO					CONSTLIT("hero")
 #define TYPE_IMAGE					CONSTLIT("image")
 #define TYPE_NONE					CONSTLIT("none")
@@ -46,6 +58,54 @@
 
 const int ICON_WIDTH =				96;
 const int ICON_HEIGHT =				96;
+
+IDockScreenDisplay *IDockScreenDisplay::Create (CDockScreen &DockScreen, const CString &sType, CString *retsError)
+
+//	Create
+//
+//	Creates a display of the given type (or return NULL if there was an error).
+//	NOTE: Callers must still call Init on the display after this.
+
+	{
+	if (sType.IsBlank() || strEquals(sType, SCREEN_TYPE_CANVAS))
+		return new CDockScreenNullDisplay(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_ITEM_PICKER))
+		return new CDockScreenItemList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CAROUSEL_SELECTOR))
+		return new CDockScreenCarousel(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CUSTOM_PICKER))
+		return new CDockScreenCustomList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_CUSTOM_ITEM_PICKER))
+		return new CDockScreenCustomItemList(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_DETAILS_PANE))
+		return new CDockScreenDetailsPane(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_ARMOR_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configArmor);
+
+	else if (strEquals(sType, SCREEN_TYPE_DEVICE_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configDevices);
+
+	else if (strEquals(sType, SCREEN_TYPE_MISC_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configMiscDevices);
+
+	else if (strEquals(sType, SCREEN_TYPE_SUBJUGATE_MINIGAME))
+		return new CDockScreenSubjugate(DockScreen);
+
+	else if (strEquals(sType, SCREEN_TYPE_WEAPONS_SELECTOR))
+		return new CDockScreenSelector(DockScreen, CGSelectorArea::configWeapons);
+	
+	else
+		{
+		if (retsError) *retsError = strPatternSubst(CONSTLIT("ERROR: Invalid display type: %s."), sType);
+		return NULL;
+		}
+	}
 
 bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retOptions, CString *retsError)
 
@@ -213,7 +273,7 @@ ICCItemPtr IDockScreenDisplay::GetProperty (const CString &sProperty) const
 		return OnGetProperty(sProperty);
 	}
 
-bool IDockScreenDisplay::SetProperty (const CString &sProperty, ICCItem &Value)
+bool IDockScreenDisplay::SetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetProperty
 //
@@ -232,6 +292,7 @@ bool IDockScreenDisplay::EvalBool (const CString &sCode, bool *retbResult, CStri
 	{
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetScreen(&m_DockScreen);
+	Ctx.DefineContainingType(m_DockScreen.GetRoot());
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -265,7 +326,8 @@ CSpaceObject *IDockScreenDisplay::EvalListSource (const CString &sString, CStrin
 	if (*pPos == '=')
 		{
 		CCodeChainCtx Ctx(GetUniverse());
-		Ctx.SetScreen(this);
+		Ctx.SetScreen(&m_DockScreen);
+		Ctx.DefineContainingType(m_DockScreen.GetRoot());
 		Ctx.SaveAndDefineSourceVar(m_pLocation);
 		Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -313,6 +375,7 @@ bool IDockScreenDisplay::EvalString (const CString &sString, bool bPlain, ECodeC
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.SetEvent(iEvent);
 	Ctx.SetScreen(&m_DockScreen);
+	Ctx.DefineContainingType(m_DockScreen.GetRoot());
 	Ctx.SaveAndDefineSourceVar(m_pLocation);
 	Ctx.SaveAndDefineDataVar(m_pData);
 
@@ -360,20 +423,25 @@ ICCItemPtr IDockScreenDisplay::OnGetProperty (const CString &sProperty) const
 //	Default has no properties
 
 	{
-	return ICCItemPtr(ICCItem::Nil);
+	return NULL;
 	}
 
-void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Item)
+void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Item) const
 
 //	OnModifyItemBeing
 //
-//	An item on pSource is about to be modified.
+//	An item on Source is about to be modified. This is used to set state in Ctx
+//	so that we know how to update the UI after the modification happens.
+//
+//	NOTE: We do not guarantee that OnModifyItemComplete will ever be called 
+//	(we could fail due to error), so we should not alter any state (which is
+//	why this method is const).
 
 	{
 	//	If we're not displaying items from this source, then we don't need to
 	//	do anything.
 
-	if (GetSource() != pSource)
+	if (GetSource() != Source)
 		{ }
 
 	//	If this is a selector area, then just reset the list
@@ -395,7 +463,7 @@ void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, 
 		}
 
 	//	If the item that we're going to modify is the currently selected item, 
-	//	then we select the modified out.
+	//	then we select the modified one.
 
 	else if (GetCurrentItem().IsEqual(Item))
 		{
@@ -412,7 +480,7 @@ void IDockScreenDisplay::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &Ctx, 
 		}
 	}
 
-IDockScreenDisplay::EResults IDockScreenDisplay::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, CSpaceObject *pSource, const CItem &Result)
+IDockScreenDisplay::EResults IDockScreenDisplay::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result)
 
 //	OnModifyItemComplete
 //

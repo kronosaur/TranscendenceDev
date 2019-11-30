@@ -214,7 +214,7 @@
 				(block (
 					(transData {
 						item: theItem
-						itemName: (itmGetName theItem 'article)
+						itemName: (itmGetName theItem '(article noModifiers))
 						})
 					)
 					(switch
@@ -1467,6 +1467,12 @@
 										(setq damagedItemCount (add damagedItemCount tenth (if (leq (random 1 10) tenthMod) 1 0) tenth (if (leq (random 1 10) tenthMod) 1 0)))
 										)
 
+								; 90% chance of ammo being destroyed
+								(itmMatches theItem "m")
+									(if (gr (random 1 100) 90)
+										(setq undamagedItemCount (divide (multiply 50 (itmGetCount theItem)) 100))
+										)
+
 								; 70% of other items are destroyed
 								(block Nil
 									(setq undamagedItemCount (divide (multiply 30 (itmGetCount theItem)) 100))
@@ -1506,14 +1512,19 @@
 			;	We return the first entry that matches the given item.
 
 			(setq rpgFindItemInTable (lambda (theItem theTable)
-				(block (result)
-					(enumWhile theTable (not result) theEntry
-						(if (and (@ theEntry 'criteria) (itmMatches theItem (@ theEntry 'criteria)))
-							(setq result theEntry)
-							)
-						)
+				(switch
+					(= (typeof theTable) 'struct)
+						theTable
 
-					result
+					(block (result)
+						(enumWhile theTable (not result) theEntry
+							(if (and (@ theEntry 'criteria) (itmMatches theItem (@ theEntry 'criteria)))
+								(setq result theEntry)
+								)
+							)
+
+						result
+						)
 					)
 				))
 
@@ -1721,6 +1732,7 @@
 				;	maxTechLevel:			The maximum tech level we will install (unless we match techCriteriaOverride)
 				;	noCargoCheck:			If True, then we don't check to see if the old device fits in cargo
 				;	replaceItem:			If not Nil, we try to replace this device.
+				;	showActualItem:			Show true item, even if unknown to player.
 				;	targetObj:				Object on which to install (if Nil, we assume player ship)
 				;	techCriteria:			If not Nil, the item must match this criteria
 				;	techCriteriaOverride:	If not Nil, and item matches this criteria, install even if above maxTechLevel
@@ -1740,7 +1752,11 @@
 					(targetObj (if (@ data 'targetObj) (@ data 'targetObj) gPlayerShip))
 					(installerObj (if (@ data 'installerObj) (@ data 'installerObj) gSource))
 					(currencyUsed (if (@ data 'currencyUsed) (@ data 'currencyUsed) (objGetDefaultCurrency installerObj)))
-					(itemName (itmGetName thisItem 'article))
+					(itemName 
+						(itmGetName thisItem 
+							(list 'article (if (@ data 'showActualItem) 'actual))
+							)
+						)
 					(canInstall Nil)
 					(militaryCheck (rpgCheckMilitaryIDPolicy installerObj (@ data 'checkMilitaryID)))
 
@@ -1787,7 +1803,9 @@
 								)
 							(itemPrice
 								(if (or (@ data 'upgrade) (@ data 'buyAndInstall))
-									(objGetSellPrice installerObj thisItem)
+									(objGetSellPrice installerObj thisItem {
+										actual: (@ data 'showActualItem)
+										})
 									0
 									)
 								)
@@ -2340,6 +2358,43 @@
 							(scrSetActionDesc gScreen actionID (scrTranslate gScreen 'core.noItemsHereDesc))
 							)
 						)
+					)
+				))
+
+			;	STORAGE FUNCTIONS ------------------------------------------------------------------
+
+			(setq rpgGetStorage (lambda (sourceObj)
+				(block (
+					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageObj (objGetObjByID storageID))
+					)
+					(switch
+						(not storageObj)
+							Nil
+
+						(not (objGetItems storageObj "*"))
+							Nil
+
+						storageObj
+						)
+					)
+				))
+
+			(setq rpgStoreItem (lambda (sourceObj theItem)
+				(block (
+					(storageID (objGetProperty sourceObj 'rpg.storageID))
+					(storageObj (objGetObjByID storageID))
+					)
+					;	Create storage if necessary
+
+					(if (not storageObj)
+						(block ()
+							(setq storageObj (sysCreateMarker "RPG Storage" (objGetPos sourceObj) (objGetProperty sourceObj 'sovereign)))
+							(objSetProperty sourceObj 'rpg.storageID (objGetID storageObj))
+							)
+						)
+
+					(objAddItem storageObj theItem)
 					)
 				))
 			)

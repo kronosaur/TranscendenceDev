@@ -68,7 +68,7 @@ void ICCItem::AppendString (const CString &sValue)
 	pItem->Discard();
 	}
 
-void ICCItem::CloneItem (ICCItem *pItem)
+void ICCItem::CloneItem (const ICCItem *pItem)
 
 //	CloneItem
 //
@@ -125,7 +125,7 @@ ICCItem *ICCItem::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pCtx->pCC->CreateNil();
 	}
 
-bool ICCItem::GetBooleanAt (const CString &sKey)
+bool ICCItem::GetBooleanAt (const CString &sKey) const
 
 //	GetBooleanAt
 //
@@ -167,7 +167,7 @@ ICCItem *ICCItem::GetElement (CCodeChain *pCC, int iIndex) const
 	return pItem->Reference();
 	}
 
-double ICCItem::GetDoubleAt (const CString &sKey, double rDefault)
+double ICCItem::GetDoubleAt (const CString &sKey, double rDefault) const
 
 //	GetDoubleAt
 //
@@ -181,7 +181,7 @@ double ICCItem::GetDoubleAt (const CString &sKey, double rDefault)
 	return pItem->GetDoubleValue();
 	}
 
-int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
+int ICCItem::GetIntegerAt (const CString &sKey, int iDefault) const
 
 //	GetIntegerAt
 //
@@ -195,7 +195,7 @@ int ICCItem::GetIntegerAt (const CString &sKey, int iDefault)
 	return pItem->GetIntegerValue();
 	}
 
-CString ICCItem::GetStringAt (const CString &sKey, const CString &sDefault)
+CString ICCItem::GetStringAt (const CString &sKey, const CString &sDefault) const
 
 //	GetStringAt
 //
@@ -281,6 +281,17 @@ void ICCItem::ResetItem (void)
 	m_bNoRefCount = false;
 	}
 
+void ICCItem::DeleteAt (const CString &sKey)
+
+//	DeleteAt
+//
+//	Deletes a key-value pair.
+
+	{
+	ICCItemPtr pKey(sKey);
+	DeleteEntry(pKey);
+	}
+
 void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 //	SetAt
@@ -289,7 +300,12 @@ void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 	{
 	ICCItem *pKey = CCodeChain::CreateString(sKey);
-	AddEntry(pKey, pValue);
+
+	if (pValue->IsNil())
+		DeleteEntry(pKey);
+	else
+		AddEntry(pKey, pValue);
+
 	pKey->Discard();
 	}
 
@@ -300,10 +316,8 @@ void ICCItem::SetBooleanAt (const CString &sKey, bool bValue)
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CCodeChain::CreateString(sKey);
 	ICCItem *pValue = (bValue ? CCodeChain::CreateTrue() : CCodeChain::CreateNil());
-	AddEntry(pKey, pValue);
-	pKey->Discard();
+	SetAt(sKey, pValue);
 	pValue->Discard();
 	}
 

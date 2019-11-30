@@ -232,7 +232,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				g_pTrans->m_pCurrentScreen->Update();
 
 				if (!bShowSRS)
-					g_pTrans->PaintMainScreenBorder(m_CurrentDock.GetVisuals().GetWindowBackgroundColor());
+					g_pTrans->PaintMainScreenBorder(m_CurrentDock.GetDockScreenVisuals().GetWindowBackgroundColor());
 
                 //  Paint displays
 

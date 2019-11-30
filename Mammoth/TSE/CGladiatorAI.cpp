@@ -321,9 +321,9 @@ void CGladiatorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		default:
 			//	Generic reset
 
-			if (m_pDest == Ctx.pObj)
+			if (m_pDest == Ctx.Obj)
 				m_pDest = NULL;
-			if (m_pTarget == Ctx.pObj)
+			if (m_pTarget == Ctx.Obj)
 				m_pTarget = NULL;
 		}
 	}

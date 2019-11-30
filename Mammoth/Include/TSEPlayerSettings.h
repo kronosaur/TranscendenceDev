@@ -30,19 +30,25 @@ class CDockScreenVisuals
     public:
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const;
         ALERROR Bind (SDesignLoadCtx &Ctx);
-        inline const CObjectImageArray &GetBackground (void) const { return m_Background; }
-        inline const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
-        inline CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
-        inline CG32bitPixel GetTextColor (void) const { return m_rgbText; }
-        inline CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
-        inline CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
-        inline CG32bitPixel GetWindowBackgroundColor (void) const { return CG32bitPixel::Darken(m_rgbTitleBackground, 30);  }
+        const CObjectImageArray &GetBackground (void) const { return m_Background; }
+		int GetBorderRadius (void) const { return DEFAULT_BORDER_RADIUS; }
+        const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
+		const CG16bitFont &GetStatusFont (void) const { return *m_pStatusFont; }
+		int GetTabHeight (void) const { return DEFAULT_TAB_HEIGHT; }
+        CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
+        CG32bitPixel GetTextColor (void) const { return m_rgbText; }
+        CG32bitPixel GetTitleBackgroundColor (void) const { return m_rgbTitleBackground; }
+        CG32bitPixel GetTitleTextColor (void) const { return m_rgbTitleText; }
+        CG32bitPixel GetWindowBackgroundColor (void) const { return CG32bitPixel::Darken(m_rgbTitleBackground, 30);  }
         ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
         void MarkImages (void) const;
 
-        static CDockScreenVisuals &GetDefault (void);
+        static CDockScreenVisuals &GetDefault (CUniverse &Universe);
 
     private:
+		static constexpr int DEFAULT_BORDER_RADIUS = 4;
+		static constexpr int DEFAULT_TAB_HEIGHT = 24;
+
         CObjectImageArray m_Background;     //  Background image for dock screen.
         CObjectImageArray m_ContentMask;    //  Mask for content
 
@@ -51,9 +57,26 @@ class CDockScreenVisuals
         CG32bitPixel m_rgbTextBackground;   //  Color of normal text backgrounds
         CG32bitPixel m_rgbText;             //  Color of normal text
 
+		const CG16bitFont *m_pStatusFont = NULL;
+
         static CDockScreenVisuals m_Default;
         static bool m_bDefaultInitialized;
     };
+
+class CDockScreenPainter
+	{
+	public:
+		CDockScreenPainter (const CDockScreenVisuals &Visuals) :
+				m_Visuals(Visuals)
+			{ }
+
+		void PaintDisplayFrame (CG32bitImage &Dest, const RECT &rcRect) const;
+
+	private:
+		static constexpr int BORDER_RADIUS = 4;
+
+		const CDockScreenVisuals &m_Visuals;
+	};
 
 class CPlayerSettings
 	{
@@ -70,7 +93,7 @@ class CPlayerSettings
 		inline EUITypes GetDefaultUI (void) const { return m_iDefaultUI; }
 		inline const CString &GetDesc (void) const { return m_sDesc; }
 		inline const CDockScreenTypeRef &GetDockServicesScreen (void) const { return m_pDockServicesScreen; }
-        inline const CDockScreenVisuals &GetDockScreenVisuals (void) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault()); }
+        inline const CDockScreenVisuals &GetDockScreenVisuals (CUniverse &Universe) const { return (m_pDockScreenDesc ? *m_pDockScreenDesc : CDockScreenVisuals::GetDefault(Universe)); }
 		inline CXMLElement *GetHUDDesc (EHUDTypes iType) const { ASSERT(iType >= 0 && iType < hudCount); return m_HUDDesc[iType].pDesc; }
 		inline DWORD GetLargeImage (void) const { return m_dwLargeImage; }
 		inline const CDockScreenTypeRef &GetShipConfigScreen (void) const { return m_pShipConfigScreen; }
@@ -87,9 +110,9 @@ class CPlayerSettings
 		inline bool IsIncludedInAllAdventures (void) const { return (m_fIncludeInAllAdventures ? true : false); }
 		inline bool IsInitialClass (void) const { return (m_fInitialClass ? true : false); }
         inline bool IsResolved (void) const { return (m_fResolved ? true : false); }
-        inline void MarkImages (void) const { GetDockScreenVisuals().MarkImages(); }
+        inline void MarkImages (CUniverse &Universe) const { GetDockScreenVisuals(Universe).MarkImages(); }
 		void MergeFrom (const CPlayerSettings &Src);
-        void Resolve (const CPlayerSettings *pSrc);
+        void Resolve (CUniverse &Universe, const CPlayerSettings *pSrc);
 
 	private:
 		struct SHUDDesc

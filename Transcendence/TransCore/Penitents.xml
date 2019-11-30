@@ -39,7 +39,6 @@
 			multiHull=			"true"
             regen=              "2"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			noFriendlyFire=		"true"
@@ -134,7 +133,6 @@
 			multiHull=			"true"
             regen=              "8"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			noFriendlyFire=		"true"
@@ -209,7 +207,6 @@
 			multiHull=			"true"
             regen=              "35"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			noFriendlyFire=		"true"

@@ -83,14 +83,15 @@
 	<StationType UNID="&stBattleArena;"
 			name=				"Battle Arena Maximus"
 			sovereign=			"&svCorporate;"
-			level=				"2"
-				 
-			attributes=			"battleArena, battleArenaMaximus, battleArenaSegment, corporate, corporateCustoms, corporateDecon, friendly, generic, human, majorStation, populated"
-				 
-			dockScreen=			"Main"
 			inherit=			"&unidCommonText;"
+
+			attributes=			"battleArena, battleArenaMaximus, battleArenaSegment, corporate, corporateCustoms, corporateDecon, friendly, generic, human, majorStation, populated"
+
+			dockScreen=			"Main"
 			defaultBackgroundID="&rsBattleArenaBkgnd;"
 				 
+			level=				"5"
+			size=				"5000"
 			barrier=			"true"
 			barrierEffect=		"&efBattleArenaWallHit;"
 			canAttack=			"true"
@@ -107,11 +108,15 @@
 			<InstallDevice	criteria="d L:1-6;" priceAdj="100"/>
 			<RemoveDevice	criteria="d L:1-6;" priceAdj="100"/>
 
-			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
+			<ConsumeTrade	criteria="{human.armor}"		impact="25"/>
+			<ConsumeTrade	criteria="{human.shields}"		impact="25"/>
+			<ConsumeTrade	criteria="{human.weapons}"		impact="25"/>
+
+			<BalanceTrade	criteria="{core.fusionFuel}"	impact="20"/>
 			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
-			<BalanceTrade	criteria="{human.lux}"		impact="20"/>
-			<BalanceTrade	criteria="{human.meds}"		impact="20"/>
-			<BalanceTrade	criteria="{human.res}"		impact="20"/>
+			<BalanceTrade	criteria="{human.lux}"			impact="20"/>
+			<BalanceTrade	criteria="{human.meds}"			impact="20"/>
+			<BalanceTrade	criteria="{human.res}"			impact="20"/>
 		</Trade>
 		
 		<!-- Satellites -->
@@ -977,21 +982,10 @@
 		<Tables>
 			<ArmsQuarterStation>
 				<Table>
-					<Station chance="15" type="&stArmorDealer;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-
-					<Station chance="40" type="&stArmsDealer;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-
-					<Station chance="25" type="&stArmsDealerMakayev;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
-					
-					<Station chance="20" type="&stArmsDealerRasiermesser;" noMapLabel="true">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
+					<Station chance="15" type="&stArmorDealer;" noMapLabel="true"/>
+					<Station chance="40" type="&stArmsDealer;" noMapLabel="true"/>
+					<Station chance="25" type="&stArmsDealerMakayev;" noMapLabel="true"/>
+					<Station chance="20" type="&stArmsDealerRasiermesser;" noMapLabel="true"/>
 				</Table>
 			</ArmsQuarterStation>
 
@@ -1028,38 +1022,13 @@
 				<Table>
 					<Station chance="20" type="&stCorporateEnclave;"/>
 					<Station chance="20" type="&stMiningColony;"/>
-					<Station chance="15" type="&stArmorDealer;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-					<Station chance="15" type="&stArmsDealer;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-					</Station>
-					<Station chance="10" type="&stArmsDealerMakayev;">
-						<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 140)</OnCreate>
-					</Station>
+					<Station chance="15" type="&stArmorDealer;"/>
+					<Station chance="15" type="&stArmsDealer;"/>
+					<Station chance="10" type="&stArmsDealerMakayev;"/>
 					<Station chance="10" type="&stCommonwealthSlums;"/>
 					<Station chance="10" type="&stFuelDepot;"/>
 				</Table>
 			</OtherStations>
-
-			<SeverusAsteroid>
-				<Table>
-					<Station chance="35" type="&stRockyOuterAsteroidSizeA;"/>
-					<Station chance="10" type="&stMetallicAsteroidSizeA;"/>
-					<Station chance="45" type="&stRockyAsteroidSizeA;"/>
-					<Station chance="4" type="&stRockyOuterAsteroidSizeB;"/>
-					<Station chance="1" type="&stMetallicAsteroidSizeB;"/>
-					<Station chance="5" type="&stRockyAsteroidSizeB;"/>
-				</Table>
-			</SeverusAsteroid>
-
-			<SeverusTrojans>
-				<Group>
-					<OrbitalDistribution count="2d25+75" arcLength="720" radialWidth="60">
-						<Lookup table="SeverusAsteroid"/>
-					</OrbitalDistribution>
-				</Group>
-			</SeverusTrojans>
 		</Tables>
 
 		<SystemGroup>
@@ -1121,22 +1090,13 @@
 						<Label attributes="greenhouse, planet, planetary, terrestrial"/>
 					</Orbitals>
 
+					<Lookup table="AsteroidTrojans25"/>
+
 					<Trojan>
-						<Group>
-							<Orbitals count="2d4+4" distance="1d24" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="1d6" distance="2d8+8" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Orbitals distance="2d8+6" angle="random">
-								<RandomStation stationCriteria="*enemy" locationAttribs="asteroids, rocky, trojan"/>
-							</Orbitals>
-						</Group>
+						<Orbitals distance="2d8+6" angle="random">
+							<RandomStation stationCriteria="*enemy" locationAttribs="asteroids, rocky, trojan"/>
+						</Orbitals>
 					</Trojan>
-
 				</Group>
 			</Orbitals>
 
@@ -1155,22 +1115,13 @@
 						<Label attributes="desert, planet, planetary, terrestrial"/>
 					</Orbitals>
 
+					<Lookup table="AsteroidAntiTrojans25"/>
+
 					<AntiTrojan>
-						<Group>
-							<Orbitals count="4d4+8" distance="1d48" angle="random">
-								<Station type="&stRockyAsteroidSizeA;"/>
-							</Orbitals>
-
-							<Orbitals count="2d6" distance="1d36" angle="random">
-								<Station type="&stRockyAsteroidSizeB;"/>
-							</Orbitals>
-
-							<Orbitals distance="2d8+6" angle="random">
-								<RandomStation stationCriteria="*enemy" locationAttribs="asteroids, rocky, trojan"/>
-							</Orbitals>
-						</Group>
+						<Orbitals distance="2d8+6" angle="random">
+							<RandomStation stationCriteria="*enemy" locationAttribs="asteroids, rocky, trojan"/>
+						</Orbitals>
 					</AntiTrojan>
-
 				</Group>
 			</Orbitals>
 
@@ -1212,9 +1163,7 @@
 							<!-- Arms Quarter -->
 						
 							<Offset scale="pixel"				xOffset="719"	 yOffset="-1709">
-								<Station type="&stArmorDealer;" noMapLabel="true">
-									<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-								</Station>
+								<Station type="&stArmorDealer;" noMapLabel="true"/>
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="1118"	 yOffset="-1556">
@@ -1226,9 +1175,7 @@
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="839"	 yOffset="-2075">
-								<Station type="&stArmsDealer;" noMapLabel="true">
-									<OnCreate>(objAddSellOrder gSource "*NU -Illegal; -ID; -NotForSale;" 130)</OnCreate>
-								</Station>
+								<Station type="&stArmsDealer;" noMapLabel="true"/>
 							</Offset>
 
 							<Offset scale="pixel"				xOffset="1295"	 yOffset="-1934">
@@ -1333,9 +1280,9 @@
 						</Offset>
 					</Trojan>
 
-					<AntiTrojan>
-						<Lookup table="SeverusTrojans"/>
+					<Lookup table="AsteroidAntiTrojans100"/>
 
+					<AntiTrojan>
 						<Orbitals distance="1d8+6" angle="random">
 							<Station type="&stBlackMarketStation;"/>
 						</Orbitals>

@@ -198,6 +198,7 @@
 				<OnPaneInit>
 					(block (
 						(missionObj (scrGetData gScreen 'missionObj))
+						(missionAutoAccept (msnGetProperty missionObj 'autoAccept))
 						)
 						(rpgPagePaneInit gScreen 
 							(msnTranslate (scrGetData gScreen 'missionObj) 'Briefing)
@@ -207,7 +208,7 @@
 									(switch
 										;	If no decline, then we always accept and undock.
 										
-										(not (msnGetProperty (@ options 'missionObj) 'canBeDeclined))
+										(= missionAutoAccept 'acceptAndExit)
 											(block Nil
 												(msnAccept (@ options 'missionObj))
 												(scrSetData gScreen 'curPage Nil)
@@ -222,6 +223,26 @@
 
 												(gamSave 'missionCheckpoint)
 												)
+
+										;	If acceptAndContinue, we continue
+
+										(= missionAutoAccept 'acceptAndContinue)
+											(block Nil
+												(msnAccept (@ options 'missionObj))
+												(scrSetData gScreen 'curPage Nil)
+
+												;	If no ReplyAccept, then we're done
+												(if (msnTranslate missionObj 'AcceptReply)
+													(scrShowPane gScreen "ReplyAccept")
+													(block Nil
+														;	Done
+														(scrExitScreen gScreen)
+
+														;	Save the game
+														(gamSave 'missionCheckpoint)
+														)
+													)
+												)
 												
 										;	If we accept, then navigate to ReplyAccept
 										
@@ -234,7 +255,9 @@
 												(if (msnTranslate missionObj 'AcceptReply)
 													(scrShowPane gScreen "ReplyAccept")
 													(block Nil
+
 														;	Undock
+												
 														(scrExitScreen gScreen 'forceUndock)
 														(setq aDockTarget gSource)
 														(msnFireEvent missionObj "OnAcceptedUndock")
@@ -980,7 +1003,9 @@
 
 					(switch
 						;	If we have an active mission from this station then we return it.
-						(setq theMission (msnFind gSource (cat "aSP " displayCriteria)))
+						(and (setq theMission (msnFind gSource (cat "aSP " displayCriteria)))
+								(msnGetProperty theMission 'hasInProgress)
+								)
 							theMission
 
 						;	If we have an open mission available then return it.
@@ -1112,16 +1137,10 @@
 				))
 
 			(setq rpgMissionRewardPayment (lambda (theReward currency)
-				(if currency
-					(block Nil
-						(plyCredit gPlayer currency theReward)
-						(typIncGlobalData &svPlayer; "missionRewards" 
-							(ecoExchange theReward 'credit currency)
-							)
-						)
-					(block Nil
-						(plyCredit gPlayer theReward)
-						(typIncGlobalData &svPlayer; "missionRewards" theReward)
+				(block Nil
+					(plyCredit gPlayer (or currency 'credit) theReward)
+					(typIncGlobalData &svPlayer; "missionRewards" 
+						(ecoExchange theReward (or currency 'credit) (unvGetProperty 'defaultCurrency))
 						)
 					)
 				))

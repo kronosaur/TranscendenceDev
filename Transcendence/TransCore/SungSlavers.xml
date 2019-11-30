@@ -55,7 +55,6 @@
 			sovereign=			"&svSung;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
@@ -129,7 +128,6 @@
 			sovereign=			"&svSung;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itSungArmor;"
@@ -228,7 +226,6 @@
 			noMapLabel=			"true"
 			fireRateAdj=		"40"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"2500"
 			armorID=			"&itPlasteelPlate;"
@@ -259,7 +256,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -285,7 +281,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -311,7 +306,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -337,7 +331,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"50000"
 			multiHull=			"true"
@@ -412,7 +405,7 @@
 
 	</ShipClass>
 
-	<!-- Slaver, Steel -->
+	<!-- Level 5: Slaver, Steel -->
 
 	<ShipClass UNID="&scSteelSlaver;"
 			manufacturer=		"Sung Empire"
@@ -421,14 +414,40 @@
 			defaultSovereign=	"&svSung;"
 
 			attributes=			"genericClass, sungSlavers"
-			   
-			mass=				"150"
-			thrustRatio=		"4"
-			maxSpeed=			"15"
-			cargoSpace=			"10"
+			>
+
+		<!-- Hull -->
+
+		<Hull
+			size=				"52"
+			mass=				"800"
+			cargoSpace=			"200"
+
+			maxReactorPower=	"10000"
+			maxCargoSpace=		"200"
+			maxDevices=			"8"
+			maxWeapons=			"2"
+
+			maxArmor=			"heavy"
+			stdArmor=			"medium"
 
 			cyberDefenseLevel=	"6"
-			>
+			/>
+
+		<Drive
+			maxSpeed=			"15"
+			thrust=				"3000"
+			/>
+
+		<Maneuver
+			maxRotationRate=	"5.0"
+			rotationAccel=		"1.0"
+			/>
+
+		<DeviceSlots>
+			<DeviceSlot id="omni1" criteria="w +property:omnidirectional;" posAngle="180" posRadius="3" posZ="8"/>
+			<DeviceSlot criteria="w" posAngle="0" posRadius="20"/>
+		</DeviceSlots>
 
 		<!-- Configuration -->
 		
@@ -438,15 +457,10 @@
 			/>
 		
 		<Devices>
-			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true"/>
+			<Device deviceID="&itParticleBeamWeapon;" omnidirectional="true" slotID="omni1"/>
 			<Device deviceID="&itCyberDeckDisarm;"/>
 			<Device deviceID="&itYoroiS100;"/>
 		</Devices>
-
-		<Maneuver
-			maxRotationRate=	"5.0"
-			rotationAccel=		"1.0"
-			/>
 
 		<Items>
 			<Item chance="50"	count="1d6"		item="&itHeliumAssembly;"/>
@@ -454,11 +468,12 @@
 
 		<!-- Image and Effects -->
 		
-		<Image imageID="&rsSteelSlaverHD;" imageX="0" imageY="0" imageWidth="64" imageHeight="64" rotationCount="120" rotationColumns="12" />
+		<Image imageID="&rsSteelSlaver;" imageWidth="76" imageHeight="76" rotationCount="120" rotationColumns="12" viewportRatio="0.006875"/>
+		<HeroImage imageID="&rsSteelSlaverHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
-			<Effect type="thrustMain"		posAngle="166"	posRadius="25"	posZ="0"	rotation="180"/>
-			<Effect type="thrustMain"		posAngle="-166"	posRadius="25"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="170"	posRadius="35"	posZ="0"	rotation="180"/>
+			<Effect type="thrustMain"		posAngle="-170"	posRadius="35"	posZ="0"	rotation="180"/>
 		</Effects>
 
 		<!-- AI and Behavior -->
@@ -1058,6 +1073,15 @@
 			sortName=			"Sung armor.10"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:125	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1071,10 +1095,6 @@
 				EMPDamageAdj=	"0"
 				radiationImmune="true"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">125</Data>
-		</StaticData>
 	</ItemType>
 
 	<!-- Dragon Shields -->
@@ -1140,19 +1160,19 @@
 			description=		"Longzhu spheres are antimatter containment vessels used by the Sung Slavers as power sources."
 			>
 
-		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
-
-		<StaticData>
-			<Data id="enhancementTable">
-				(
-					{	criteria:"Ds L:1-10; -nonEnergyShields;"	repair:True	}
-					{	criteria:"Dw L:1-10; +EnergyWeapon;"		repair:True	}
-					{	criteria:"s L:1-10; -nonEnergyShields;"	enhancement:"+hpBonus:20"	}
-					{	criteria:"w L:1-10; +EnergyWeapon;"		enhancement:"+hpBonus:20"	}
-					{	criteria:"v L:1-10; -Alien;"	enhancement:Nil	}
+		<Properties>
+			<Constant id="rpg.enhancementTable">
+				'(
+					{	criteria:"Ds L:1-10; -nonEnergyShields;"	enhancement:"+repair:10"	}
+					{	criteria:"Dw L:1-10; +EnergyWeapon;"		enhancement:"+repair:10"	}
+					{	criteria:"s L:1-10; -nonEnergyShields;"		enhancement:"+hpBonus:20"	}
+					{	criteria:"w L:1-10; +EnergyWeapon;"			enhancement:"+hpBonus:20"	}
+					{	criteria:"v L:1-10; -Alien;"				enhancement:"+enhance"	}
 					)
-			</Data>
-		</StaticData>
+			</Constant>
+		</Properties>
+
+		<Image imageID="&rsItems1;" imageX="0" imageY="288" imageWidth="96" imageHeight="96"/>
 
 		<Events>
 			<OnUseOnItem>
@@ -1216,7 +1236,7 @@
 			numberAppearing=	"1"
 			attributes=			"MajorItem; Military; NotForSale; sungSlavers"
 
-			description=		"The Nandao bolt cannon fires a sublight pulse of heavy ions. The weapon requires Nandao bolt cartridges."
+			description=		"The Nandao bolt cannon fires a sublight pulse of heavy ions."
 			>
 
 		<Image imageID="&rsItems6;" imageX="0" imageY="96" imageWidth="96" imageHeight="96"/>
@@ -1298,6 +1318,15 @@
 			sortName=			"Sung armor.20"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:90		}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1308,10 +1337,6 @@
 				deviceDamageAdj="25"
 				EMPDamageAdj=	"10"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">90</Data>
-		</StaticData>
 	</ItemType>
 
 <!-- LEVEL V ITEMS -->
@@ -1354,6 +1379,15 @@
 			sortName=			"Sung armor.30"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:35	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1366,10 +1400,6 @@
 				deviceDamageAdj="50"
 				EMPDamageAdj=	"25"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">35</Data>
-		</StaticData>
 	</ItemType>
 	
 <!-- LEVEL II ITEMS -->
@@ -1394,6 +1424,15 @@
 			sortName=			"Sung armor.40"
 			>
 
+		<Properties>
+			<Constant id="rpg.repairTable">
+				'(
+					{	criteria:"a +tiledArmor;"	maxLevel:10		repairHP:12	}
+					{	criteria:"a"								descID:'descMustBeTiledArmor	}
+					)
+			</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems2;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
 
 		<Armor
@@ -1405,10 +1444,6 @@
 				blindingDamageAdj="0"
 				EMPDamageAdj=	"25"
 				/>
-
-		<StaticData>
-			<Data id="RepairHP">12</Data>
-		</StaticData>
 	</ItemType>
 
 <!-- MISCELLANEOUS -->
@@ -1504,11 +1539,9 @@
 	<Type unid="&baSungArmor;"
 			inherit=			"&baStdArmorRepair;"
 			>
-		<Events>
-			<CanRepairItem>
-				(itmMatches aItemToRepair "a +TiledArmor")
-			</CanRepairItem>
-		</Events>
+		<Language>
+			<Text id="descMustBeTiledArmor">%UseItem% can only repair other tiled armor, such as Sung armor.</Text>
+		</Language>
 	</Type>
 	
 <!-- EFFECTS -->
@@ -1704,9 +1737,11 @@
 	
 <!-- RESOURCES -->
 
+	<Image UNID="&rsSteelSlaver;"		bitmap="Resources\SteelSlaver.jpg"	bitmask="Resources\SteelSlaverMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsSteelSlaverHero;"	bitmap="Resources\SteelSlaverLarge.jpg"	bitmask="Resources\SteelSlaverLargeMask.bmp"  loadOnUse="true"/>
+
 	<Image UNID="&rsDragonSlaverImage;"	bitmap="Resources\DragonSlaver.jpg"		bitmask="Resources\DragonSlaverMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsSungTransport;"		bitmap="Resources\SungTransport.jpg"	bitmask="Resources\SungTransportMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsWindSlaverHD;"		bitmap="Resources\WindSlaverHD.jpg"		bitmask="Resources\WindSlaverHDMask.bmp"  loadOnUse="true"/>
-	<Image UNID="&rsSteelSlaverHD;"		bitmap="Resources\SteelSlaverHD.jpg"	bitmask="Resources\SteelSlaverHDMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

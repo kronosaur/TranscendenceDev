@@ -31,7 +31,6 @@
 			sovereign=			"&svRanxEmpire;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightOrthoSteel;"
@@ -90,7 +89,6 @@
 			sovereign=			"&svRanxEmpire;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itOrthoSteel;"

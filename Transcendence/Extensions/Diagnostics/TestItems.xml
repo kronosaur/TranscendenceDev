@@ -15,6 +15,21 @@
 			description=		"Test armor: scaled."
 			>
 
+		<Properties>
+			<Constant id="test.constant1">'foo</Constant>
+			<Constant id="test.constant2">1</Constant>
+			<Constant id="test.constant3">(+ 1 1)</Constant>
+
+			<Global id="test.global1">17</Global>
+			<Global id="test.global2">(+ 2 2)</Global>
+
+			<Data id="test.data1">1</Data>
+			<Data id="test.data2">(+ 1 1)</Data>
+
+			<DynamicData id="test.dynamicData1">1</DynamicData>
+			<DynamicData id="test.dynamicData2">(+ 2 2)</DynamicData>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="672" imageWidth="96" imageHeight="96"/>
         
 		<Armor
@@ -48,6 +63,36 @@
 				powerUse=		"2000"
 				/>
 
+	</ItemType>
+
+	<ItemType UNID="&itTestWeaponRelativistic;"
+			name=				"relativistic weapon"
+			attributes=			"testItem"
+
+			level=				"3-8"
+			frequency=			"common"
+
+			value=				"1000"
+			mass=				"3000"
+
+			description=		"Test weapon: relativistic."
+			>
+
+		<Image imageID="&rsItemsNAMI1;" imageX="96" imageY="0" imageWidth="96" imageHeight="96"/>
+
+		<Weapon
+				type=				"continuousBeam"
+				repeating=			"4"
+
+				damage=				"antimatter:2d20"
+				fireRate=			"16"
+				relativisticSpeed=	"100"
+				lifetime=			"3"
+				powerUse=			"10"
+
+				effect=				"&efKineticBoltDefault;"
+				sound=				"&snRecoillessCannon;"
+				/>
 	</ItemType>
 
 	<ItemType UNID="&itTestWeaponScaled;"

@@ -320,6 +320,24 @@
     <ClInclude Include="..\Include\TSEItemEnhancements.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameFileCompatibility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEResourceDb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSESpaceObjectUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\TSEOverlays.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemCreateImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CAdventureRecord.cpp">
@@ -409,9 +427,6 @@
     <ClCompile Include="SFXImageFracture.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
-    <ClCompile Include="SFXLightningShockwave.cpp">
-      <Filter>Source Files\SFX</Filter>
-    </ClCompile>
     <ClCompile Include="SFXMoltenBolt.cpp">
       <Filter>Source Files\SFX</Filter>
     </ClCompile>
@@ -488,9 +503,6 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CAttackDetector.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
-    <ClCompile Include="CAttributeCriteria.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="CAttributeDataBlock.cpp">
@@ -802,9 +814,6 @@
     <ClCompile Include="CMissionType.cpp">
       <Filter>Source Files\Missions</Filter>
     </ClCompile>
-    <ClCompile Include="CObjectTracker.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="COrderList.cpp">
       <Filter>Source Files\ShipAI</Filter>
     </ClCompile>
@@ -1009,9 +1018,6 @@
     <ClCompile Include="CDriveDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
-    <ClCompile Include="CDockScreenVisuals.cpp">
-      <Filter>Source Files\Ships</Filter>
-    </ClCompile>
     <ClCompile Include="CArmorSystem.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
@@ -1153,9 +1159,6 @@
     <ClCompile Include="CEnhancementDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
-    <ClCompile Include="CItemPriceTracker.cpp">
-      <Filter>Source Files\Items</Filter>
-    </ClCompile>
     <ClCompile Include="CTradingDesc.cpp">
       <Filter>Source Files\Trading</Filter>
     </ClCompile>
@@ -1216,9 +1219,6 @@
     <ClCompile Include="CDeviceSystem.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="CObjectTrackerCriteria.cpp">
-      <Filter>Source Files\SpaceObjects</Filter>
-    </ClCompile>
     <ClCompile Include="CItemLevelCriteria.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -1260,9 +1260,6 @@
     </ClCompile>
     <ClCompile Include="CConditionSet.cpp">
       <Filter>Source Files\Ships</Filter>
-    </ClCompile>
-    <ClCompile Include="CMapLabelArranger.cpp">
-      <Filter>Source Files\StarSystem</Filter>
     </ClCompile>
     <ClCompile Include="CSpaceObjectPool.cpp">
       <Filter>Source Files\Utilities</Filter>
@@ -1320,6 +1317,69 @@
     </ClCompile>
     <ClCompile Include="CDesignPropertyDefinitions.cpp">
       <Filter>Source Files\DesignTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenVisuals.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenPainter.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTrackerCriteria.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjectTracker.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CItemCriteria.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntegerRangeCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CDeviceItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="DockSessionProperties.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoTargetCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoDockCalc.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="CTopologyAttributeCriteria.cpp">
+      <Filter>Source Files\Topology</Filter>
+    </ClCompile>
+    <ClCompile Include="CAffinityCriteria.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="CLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelArranger.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CMapLabelPainter.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
+    <ClCompile Include="CAngleGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="COrbitFocusGenerator.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CSmartSystemCreateOptions.cpp">
+      <Filter>Source Files\StarSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDifficultyOptions.cpp">
+      <Filter>Source Files\Universe</Filter>
+    </ClCompile>
+    <ClCompile Include="CStationCreateOptions.cpp">
+      <Filter>Source Files\Stations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -96,9 +96,15 @@
 			startingSystem=			"SE"
 			startingPos=			"Start"
 			>
+
+		<Properties>
+			<Constant id="core.defaultInteraction">Nil</Constant>
+			<Constant id="core.defaultShotHP">Nil</Constant>
+		</Properties>
 		
 		<EncounterOverrides>
-			<Encounter unid="&stTinkerGathering;"	minAppearing="1"/>
+			<Encounter unid="&stRasiermesserFactory;"	minAppearing="1"/>
+			<Encounter unid="&stTinkerGathering;"		minAppearing="1"/>
 		</EncounterOverrides>
 
 		<Language>

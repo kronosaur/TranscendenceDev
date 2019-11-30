@@ -41,7 +41,7 @@ void CSoundResource::LoadResource (void) const
 
 	//	If no sounds, then skip
 
-	CSoundMgr *pSoundMgr = g_pUniverse->GetSoundMgr();
+	CSoundMgr *pSoundMgr = GetUniverse().GetSoundMgr();
 	if (pSoundMgr == NULL)
 		return;
 
@@ -53,7 +53,7 @@ void CSoundResource::LoadResource (void) const
 	//	Open the database
 
 	CResourceDb ResDb(m_sResourceDb, !strEquals(m_sResourceDb, g_pUniverse->GetResourceDb()));
-	ResDb.SetDebugMode(g_pUniverse->InDebugMode());
+	ResDb.SetDebugMode(GetUniverse().InDebugMode());
 	if (ResDb.Open(DFOPEN_FLAG_READ_ONLY, &sError) != NOERROR)
 		{
 		::kernelDebugLogPattern("Unable to open resource db: %s", m_sResourceDb);
@@ -137,6 +137,6 @@ void CSoundResource::UnloadResource (void)
 
 	//	Unload
 
-	g_pUniverse->GetSoundMgr()->Delete(m_iChannel);
+	GetUniverse().GetSoundMgr()->Delete(m_iChannel);
 	m_iChannel = -1;
 	}

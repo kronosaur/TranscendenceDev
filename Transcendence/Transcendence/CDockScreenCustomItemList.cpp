@@ -24,6 +24,7 @@ ALERROR CDockScreenCustomItemList::OnInitList (SInitCtx &Ctx, const SDisplayOpti
 
 	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(Ctx.pDockScreen);
+	CCCtx.DefineContainingType(Ctx.pDockScreen->GetRoot());
 	CCCtx.SaveAndDefineSourceVar(Ctx.pLocation);
 	CCCtx.SaveAndDefineDataVar(Ctx.pData);
 

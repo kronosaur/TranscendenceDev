@@ -4,6 +4,7 @@
 
 #include "PreComp.h"
 
+#define BALANCE_ADJ_ATTRIB						CONSTLIT("balanceAdj")
 #define BLINDING_DAMAGE_ADJ_ATTRIB				CONSTLIT("blindingDamageAdj")
 #define BLINDING_IMMUNE_ATTRIB					CONSTLIT("blindingImmune")
 #define CHARGE_DECAY_ATTRIB						CONSTLIT("chargeDecay")
@@ -64,6 +65,7 @@
 #define MASS_CLASS_STANDARD_ID					CONSTLIT("medium")
 
 #define PROPERTY_ARMOR_CLASS					CONSTLIT("armorClass")
+#define PROPERTY_BALANCE_ADJ					CONSTLIT("balanceAdj")
 #define PROPERTY_BLINDING_IMMUNE				CONSTLIT("blindingImmune")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_DEVICE_DAMAGE_IMMUNE			CONSTLIT("deviceDamageImmune")
@@ -79,9 +81,12 @@
 #define PROPERTY_POWER_USE						CONSTLIT("powerUse")
 #define PROPERTY_PRIME_SEGMENT					CONSTLIT("primeSegment")
 #define PROPERTY_RADIATION_IMMUNE				CONSTLIT("radiationImmune")
+#define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 #define PROPERTY_SHATTER_IMMUNE					CONSTLIT("shatterImmune")
+#define PROPERTY_STD_COST						CONSTLIT("stdCost")
 #define PROPERTY_STD_HP							CONSTLIT("stdHP")
+#define PROPERTY_STEALTH						CONSTLIT("stealth")
 
 constexpr int MAX_REFLECTION_CHANCE =			95;
 constexpr int ARMOR_HP_PER_SHIELD_HP =			4;
@@ -127,9 +132,14 @@ const Metric MASS_BALANCE_K1 =					-0.47;
 const Metric MASS_BALANCE_K2 =					0.014;
 const Metric MASS_BALANCE_ADJ =					60.0;	//	Linear relationship between curve and mass balance
 const Metric MASS_BALANCE_LIMIT =				16.0;	//	Above this mass (in tons) we don't get any additional bonus
+const Metric MASS_STD_MASS =					(-MASS_BALANCE_K1 - sqrt(MASS_BALANCE_K1 * MASS_BALANCE_K1 - 4.0 * MASS_BALANCE_K2 * MASS_BALANCE_K0)) / (2.0 * MASS_BALANCE_K2);
+const Metric MASS_COST_POWER =					0.5;
 
 const Metric BALANCE_COST_RATIO =				-0.5;	//  Each percent of cost above standard is a 0.5%
 const Metric BALANCE_MAX_DAMAGE_ADJ =			400.0;	//	Max change in balance due to a single damage type
+
+constexpr int EXTRA_REPAIR_COST_FACTOR =		3;  //  Damage over 50% cost 3 times more to repair
+
 
 static CArmorClass::SStdStats STD_STATS[MAX_ITEM_LEVEL] =
 	{
@@ -353,7 +363,7 @@ EDamageResults CArmorClass::AbsorbDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 	DEBUG_CATCH
 	}
 
-void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttribute> *retList)
+void CArmorClass::AccumulateAttributes (const CArmorItem &ArmorItem, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes
 //
@@ -362,8 +372,7 @@ void CArmorClass::AccumulateAttributes (CItemCtx &ItemCtx, TArray<SDisplayAttrib
 
 	{
 	int i;
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 
 	//	If we require a higher level to repair
 
@@ -546,7 +555,7 @@ bool CArmorClass::AccumulateEnhancements (CItemCtx &ItemCtx, CInstalledDevice *p
 
 		//	Add HP bonus enhancements
 
-		pEnhancements->InsertHPBonus(m_iDeviceBonus);
+		pEnhancements->InsertHPBonus(ItemCtx.GetItem().GetType(), m_iDeviceBonus);
 		if (!m_sEnhancementType.IsBlank())
 			EnhancementIDs.Insert(m_sEnhancementType);
 
@@ -732,7 +741,8 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 //	Initializes Ctx.iArmorDamage to account for damage type adjustments, etc.
 
 	{
-	CInstalledArmor *pArmor = ItemCtx.GetArmor();
+	const CItem &Item = ItemCtx.GetItem();
+	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
 
 	//	Adjust for special armor damage:
 	//
@@ -744,17 +754,17 @@ void CArmorClass::CalcAdjustedDamage (CItemCtx &ItemCtx, SDamageCtx &Ctx)
 
 	int iDamageLevel = Ctx.Damage.GetArmorDamageLevel();
 	if (iDamageLevel > 0)
-		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ItemCtx, Ctx.Damage));
+		Ctx.iArmorDamage = mathAdjust(Ctx.iDamage, CalcArmorDamageAdj(ArmorItem, Ctx.Damage));
 	else
 		Ctx.iArmorDamage = Ctx.iDamage;
 
 	//	Adjust for damage type
 
-	int iDamageAdj = GetDamageAdj(ItemCtx, Ctx.Damage);
+	int iDamageAdj = GetDamageAdj(ArmorItem, Ctx.Damage);
 	Ctx.iArmorDamage = mathAdjust(Ctx.iArmorDamage, iDamageAdj);
 	}
 
-int CArmorClass::CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const
+int CArmorClass::CalcArmorDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
 
 //	CalcArmorDamageAdj
 //
@@ -771,7 +781,7 @@ int CArmorClass::CalcArmorDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage
 	if (iDamageLevel <= 0)
 		return 100;
 
-	int iDiff = m_pItemType->GetLevel(ItemCtx) - iDamageLevel;
+	int iDiff = ArmorItem.GetLevel() - iDamageLevel;
 
 	switch (iDiff)
 		{
@@ -803,7 +813,9 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 	int i;
 	Metric rTotalAdj = 0.0;
 	int iCount = 0;
-	int iArmorLevel = m_pItemType->GetLevel(ItemCtx);
+	const CItem &Item = ItemCtx.GetItem();
+	const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
+	int iArmorLevel = ArmorItem.GetLevel();
 
 	for (i = damageLaser; i < damageCount; i++)
 		{
@@ -814,8 +826,8 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 		if (iArmorLevel < iDamageLevel + 5
 				&& iArmorLevel > iDamageLevel - 3)
 			{
-			int iStdAdj = GetStdDamageAdj(iArmorLevel, (DamageTypes)i);
-			int iDamageAdj = GetDamageAdj(ItemCtx, (DamageTypes)i);
+			int iStdAdj = GetStdDamageAdj(GetUniverse(), iArmorLevel, (DamageTypes)i);
+			int iDamageAdj = GetDamageAdj(ArmorItem, (DamageTypes)i);
 
 			rTotalAdj += (iStdAdj > 0.0 ? (Metric)iDamageAdj * 100.0 / iStdAdj : 1000.0);
 			iCount++;
@@ -827,7 +839,7 @@ int CArmorClass::CalcAverageRelativeDamageAdj (CItemCtx &ItemCtx)
 	return (iCount > 0 ? mathRound(rTotalAdj / iCount) : 100);
 	}
 
-int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
+int CArmorClass::CalcBalance (const CArmorItem &ArmorItem, CArmorItem::SBalance &retBalance) const
 
 //	CalcBalance
 //
@@ -835,11 +847,9 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 //	mean the item is underpowered. Positive numbers mean the item is overpowered.
 
 	{
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-
 	//	Initialize
 
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	retBalance.iLevel = Stats.iLevel;
 
 	//	Figure out how may HPs standard armor at this level should have.
@@ -855,20 +865,20 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Calculate the balance contribution of damage adjustment
 
-	retBalance.rDamageAdj = CalcBalanceDamageAdj(ItemCtx, Stats);
+	retBalance.rDamageAdj = CalcBalanceDamageAdj(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rDamageAdj;
 
-	retBalance.rDamageEffectAdj = CalcBalanceDamageEffectAdj(ItemCtx, Stats);
+	retBalance.rDamageEffectAdj = CalcBalanceDamageEffectAdj(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rDamageEffectAdj;
 
 	//	Calculate regeneration/decay/etc.
 
-	retBalance.rRegen = CalcBalanceRegen(ItemCtx, Stats);
+	retBalance.rRegen = CalcBalanceRegen(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rRegen;
 
 	//	Repair tech
 
-	retBalance.rRepairAdj = CalcBalanceRepair(ItemCtx, Stats);
+	retBalance.rRepairAdj = CalcBalanceRepair(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rRepairAdj;
 
 	//	If we have an armor complete bonus, we add a penalty to balance.
@@ -898,7 +908,7 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Power use
 
-	retBalance.rPowerUse = CalcBalancePower(ItemCtx, Stats);
+	retBalance.rPowerUse = CalcBalancePower(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rPowerUse;
 
 	//	Speed adjustment
@@ -908,25 +918,37 @@ int CArmorClass::CalcBalance (CItemCtx &ItemCtx, SBalance &retBalance) const
 
 	//	Special features
 
-	retBalance.rDeviceBonus = CalcBalanceSpecial(ItemCtx, Stats);
+	retBalance.rDeviceBonus = CalcBalanceSpecial(ArmorItem, Stats);
 	retBalance.rBalance += retBalance.rDeviceBonus;
 	
 	//	Mass
 
-	retBalance.rMass = CalcBalanceMass(ItemCtx, Stats);
+	retBalance.rMass = CalcBalanceMass(ArmorItem, Stats, &retBalance.rStdMass);
 	retBalance.rBalance += retBalance.rMass;
+
+	//	Compute standard hit point for the given mass
+
+	retBalance.rStdHP = StdStats.iHP * pow(2.0, Max(-2.0, Min(2.0, -retBalance.rMass / 100.0)));
+
+	//	Standard cost depends on mass
+
+	retBalance.rStdCost = Max(1.0, StdStats.iCost * mathRound(10.0 * pow(ArmorItem.GetMassKg() / (1000.0 * retBalance.rStdMass), MASS_COST_POWER)) / 10.0);
 
 	//	Cost
 
-	Metric rCost = (Metric)CEconomyType::ExchangeToCredits(m_pItemType->GetCurrencyAndValue(ItemCtx, true));
-	Metric rCostDelta = 100.0 * (rCost - StdStats.iCost) / (Metric)StdStats.iCost;
+	Metric rCost = (Metric)CEconomyType::ExchangeToCredits(ArmorItem.GetCurrencyAndValue(true));
+	Metric rCostDelta = 100.0 * (rCost - retBalance.rStdCost) / retBalance.rStdCost;
 	retBalance.rCost = BALANCE_COST_RATIO * rCostDelta;
 	retBalance.rBalance += retBalance.rCost;
+
+	//	Manual adjustment
+
+	retBalance.rBalance += m_iBalanceAdj;
 
 	return (int)retBalance.rBalance;
 	}
 
-Metric CArmorClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceDamageAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalanceDamageAdj
 //
@@ -974,7 +996,7 @@ Metric CArmorClass::CalcBalanceDamageAdj (CItemCtx &ItemCtx, const SScalableStat
 	return rTotalBalance;
 	}
 
-Metric CArmorClass::CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceDamageEffectAdj (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalanceDamageEffectAdj
 //
@@ -1046,7 +1068,7 @@ Metric CArmorClass::CalcBalanceDamageEffectAdj (CItemCtx &ItemCtx, const SScalab
 	return rBalance;
 	}
 
-Metric CArmorClass::CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceMass (const CArmorItem &ArmorItem, const SScalableStats &Stats, Metric *retrStdMass) const
 
 //	CalcBalanceMass
 //
@@ -1069,12 +1091,17 @@ Metric CArmorClass::CalcBalanceMass (CItemCtx &ItemCtx, const SScalableStats &St
 
 	rMass = Min(rAdj * rMass, MASS_BALANCE_LIMIT);
 
+	//	Compute the standard mass that results in 0 balance.
+
+	if (retrStdMass)
+		*retrStdMass = MASS_STD_MASS / (rAdj > 0.0 ? rAdj : 1.0);
+
 	//	This polynomial generates a balance based on mass.
 
 	return MASS_BALANCE_ADJ * ((MASS_BALANCE_K2 * rMass * rMass) + MASS_BALANCE_K1 * rMass + MASS_BALANCE_K0);
 	}
 
-Metric CArmorClass::CalcBalancePower (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalancePower (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalancePower
 //
@@ -1098,7 +1125,7 @@ Metric CArmorClass::CalcBalancePower (CItemCtx &ItemCtx, const SScalableStats &S
 	return rTotalBalance;
 	}
 
-Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceRegen (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalanceRegen
 //
@@ -1178,7 +1205,7 @@ Metric CArmorClass::CalcBalanceRegen (CItemCtx &ItemCtx, const SScalableStats &S
 	return rTotalBalance;
 	}
 
-Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceRepair (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalanceRepair
 //
@@ -1190,7 +1217,7 @@ Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &
 	//	Repair tech (NOTE we use base level as comparison because repair tech
 	//	does not currently scale).
 
-	int iRepair = m_pItemType->GetLevel(CItemCtx()) - m_iRepairTech;
+	int iRepair = ArmorItem.GetLevel() - m_iRepairTech;
 	if (iRepair < 0)
 		rTotalBalance += HIGHER_REPAIR_LEVEL_BALANCE_BONUS * -iRepair;
 	else if (iRepair > 0)
@@ -1208,7 +1235,7 @@ Metric CArmorClass::CalcBalanceRepair (CItemCtx &ItemCtx, const SScalableStats &
 	return rTotalBalance;
 	}
 
-Metric CArmorClass::CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats &Stats) const
+Metric CArmorClass::CalcBalanceSpecial (const CArmorItem &ArmorItem, const SScalableStats &Stats) const
 
 //	CalcBalanceSpecial
 //
@@ -1232,20 +1259,21 @@ Metric CArmorClass::CalcBalanceSpecial (CItemCtx &ItemCtx, const SScalableStats 
 	return rTotalBalance;
 	}
 
-void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx)
+void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 //	CalcDamageEffects
 //
 //	Initialize the damage effects based on the damage and on this armor type.
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
+	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
+    const SScalableStats &Stats = GetScaledStats(ArmorItem);
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
 	//	Reflect
 
-	Ctx.SetShotReflected(IsReflective(ItemCtx, Ctx.Damage) && Ctx.iDamage > 0);
+	Ctx.SetShotReflected(IsReflective(ArmorItem, Ctx.Damage) && Ctx.iDamage > 0);
 
 	//	Disintegration
 
@@ -1322,8 +1350,17 @@ int CArmorClass::CalcIntegrity (int iHP, int iMaxHP)
 	{
 	if (iMaxHP == 0 || iMaxHP <= iHP)
 		return 100;
+	else if (iHP == 0)
+		return 0;
+	else
+		{
+		int iPercent = ((1000 * iHP / iMaxHP) + 5) / 10;
 
-	return ((1000 * iHP / iMaxHP) + 5) / 10;
+		//	Always show 1% instead of 0% if HP > 0.
+		//	Always show 99% instead of 100% if HP < MaxHP.
+
+		return Max(1, Min(iPercent, 99));
+		}
 	}
 
 int CArmorClass::CalcMaxHPChange (int iCurHP, int iCurMaxHP, int iNewMaxHP)
@@ -1412,6 +1449,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	pArmor->m_Stats.iHitPoints = pDesc->GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0);
 	pArmor->m_iArmorCompleteBonus = pDesc->GetAttributeIntegerBounded(COMPLETE_BONUS_ATTRIB, 0);
 	pArmor->m_iHPBonusPerCharge = pDesc->GetAttributeIntegerBounded(HP_BONUS_PER_CHARGE_ATTRIB, 0, -1, 0);
+	pArmor->m_iBalanceAdj = pDesc->GetAttributeIntegerBounded(BALANCE_ADJ_ATTRIB, -200, 200, 0);
 
 	//	Regen
 
@@ -1479,7 +1517,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	//	Load the new damage adjustment structure
 
 	pArmor->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, iLevel);
-	if (error = pArmor->m_Stats.DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pArmor->m_Stats.DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Blind-immune
@@ -1582,7 +1620,7 @@ ALERROR CArmorClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CIt
 	if (!pDesc->FindAttribute(DEVICE_CRITERIA_ATTRIB, &sCriteria))
 		sCriteria = CONSTLIT("s");
 
-	CItem::ParseCriteria(sCriteria, &pArmor->m_DeviceCriteria);
+	pArmor->m_DeviceCriteria.Init(sCriteria);
 
 	//	Ship speed bonus
 
@@ -1616,19 +1654,19 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 	if (strEquals(sField, FIELD_HP))
 		*retsValue = strFromInt(m_Stats.iHitPoints);
 	else if (strEquals(sField, FIELD_BALANCE))
-		*retsValue = strFromInt(CalcBalance(CItemCtx(), SBalance()));
+		*retsValue = strFromInt(CalcBalance(ArmorItem, CArmorItem::SBalance()));
 	else if (strEquals(sField, FIELD_EFFECTIVE_HP))
 		{
 		int iHP;
 		int iHPbyDamageType[damageCount];
-		GetReferenceDamageAdj(NULL, NULL, &iHP, iHPbyDamageType);
+		GetReferenceDamageAdj(ArmorItem, &iHP, iHPbyDamageType);
 		*retsValue = strFromInt(::CalcEffectiveHP(m_pItemType->GetLevel(), iHP, iHPbyDamageType));
 		}
 	else if (strEquals(sField, FIELD_ADJUSTED_HP))
 		{
 		int iHP;
 		int iHPbyDamageType[damageCount];
-		GetReferenceDamageAdj(NULL, NULL, &iHP, iHPbyDamageType);
+		GetReferenceDamageAdj(ArmorItem, &iHP, iHPbyDamageType);
 
 		CString sResult;
 		for (i = 0; i < damageCount; i++)
@@ -1670,11 +1708,11 @@ bool CArmorClass::FindDataField (const CString &sField, CString *retsValue)
 		*retsValue = sResult;
 		}
 	else if (strEquals(sField, FIELD_REPAIR_COST))
-		*retsValue = strFromInt(ArmorItem.GetRepairCost());
+		*retsValue = strFromInt((int)ArmorItem.GetRepairCost());
 	else if (strEquals(sField, FIELD_REGEN))
 		*retsValue = strFromInt((int)m_Stats.Regen.GetHPPer180());
 	else if (strEquals(sField, FIELD_INSTALL_COST))
-		*retsValue = strFromInt(GetInstallCost(CItemCtx()));
+		*retsValue = strFromInt(ArmorItem.GetInstallCost());
 	else if (strEquals(sField, FIELD_SHIELD_INTERFERENCE))
 		{
 		if (m_fShieldInterference)
@@ -1831,18 +1869,18 @@ void CArmorClass::GenerateScaledStats (void)
         }
     }
 
-int CArmorClass::GetDamageAdj (CItemCtx &ItemCtx, const DamageDesc &Damage) const
+int CArmorClass::GetDamageAdj (const CArmorItem &ArmorItem, const DamageDesc &Damage) const
 
 //	GetDamageAdj
 //
 //	Returns the damage adjustment for the given damage type
 
 	{
-	int iDamageAdj = GetDamageAdj(ItemCtx, Damage.GetDamageType());
+	int iDamageAdj = GetDamageAdj(ArmorItem, Damage.GetDamageType());
 	if (iDamageAdj >= CDamageAdjDesc::MAX_DAMAGE_ADJ)
 		return CDamageAdjDesc::MAX_DAMAGE_ADJ;
 
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 	if (Enhancements.IsEmpty())
 		return iDamageAdj;
 
@@ -1864,7 +1902,10 @@ int CArmorClass::GetDamageAdjForWeaponLevel (int iLevel)
 		{
 		if (CWeaponClass::IsStdDamageType((DamageTypes)i, iLevel))
 			{
-			int iDamageAdj = GetDamageAdj(CItemCtx(), (DamageTypes)i);
+			const CItem Item(m_pItemType, 1);
+			const CArmorItem ArmorItem = Item.AsArmorItemOrThrow();
+
+			int iDamageAdj = GetDamageAdj(ArmorItem, (DamageTypes)i);
 			if (iDamageAdj > iBestAdj)
 				iBestAdj = iDamageAdj;
 			}
@@ -1873,11 +1914,11 @@ int CArmorClass::GetDamageAdjForWeaponLevel (int iLevel)
 	return iBestAdj;
 	}
 
-int CArmorClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon)
+int CArmorClass::GetDamageEffectiveness (const CArmorItem &ArmorItem, CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const
 
 //	GetDamageEffectiveness
 //
-//	Returns the effectiveness of the given weapon against this shield.
+//	Returns the effectiveness of the given weapon against this armor.
 //
 //	< 0		The weapon is ineffective against us.
 //	0-99	The weapon is less effective than average.
@@ -1904,7 +1945,7 @@ int CArmorClass::GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevi
 	//	See if we do extra damage
 
 	if (pDamage->GetArmorDamageLevel())
-		iScore += (CalcArmorDamageAdj(CItemCtx(), *pDamage) / 2);
+		iScore += (CalcArmorDamageAdj(ArmorItem, *pDamage) / 2);
 
 	//	Done
 
@@ -1983,6 +2024,14 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	if (strEquals(sName, PROPERTY_ARMOR_CLASS))
 		return ICCItemPtr(m_sMassClass);
 
+	else if (strEquals(sName, PROPERTY_BALANCE_ADJ))
+		{
+		if (m_iBalanceAdj)
+			return ICCItemPtr(m_iBalanceAdj);
+		else
+			return ICCItemPtr(ICCItem::Nil);
+		}
+
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialBlinding));
 
@@ -2022,14 +2071,54 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialRadiation));
 
+	else if (strEquals(sName, PROPERTY_REFLECT))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+
+		for (int iDamage = 0; iDamage < damageCount; iDamage++)
+			{
+			DamageDesc Damage((DamageTypes)iDamage, DiceRange(1, 1, 0));
+			int iChance;
+			IsReflective(ArmorItem, Damage, &iChance);
+
+			if (iChance > 0)
+				pResult->SetIntegerAt(::GetDamageType((DamageTypes)iDamage), iChance);
+			}
+
+		if (pResult->GetCount() == 0)
+			return ICCItemPtr(ICCItem::Nil);
+		else
+			return pResult;
+		}
+
 	else if (strEquals(sName, PROPERTY_REGEN))
 		return ICCItemPtr(mathRound(CalcRegen180(Ctx)));
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
 		return ICCItemPtr(IsImmune(Ctx, specialShatter));
 
+	else if (strEquals(sName, PROPERTY_STD_COST))
+		{
+		CArmorItem::SBalance Balance;
+		CalcBalance(ArmorItem, Balance);
+		return ICCItemPtr(mathRound(Balance.rStdCost));
+		}
+
 	else if (strEquals(sName, PROPERTY_STD_HP))
-		return ICCItemPtr(GetStdHP(Stats.iLevel));
+		{
+		CArmorItem::SBalance Balance;
+		CalcBalance(ArmorItem, Balance);
+		return ICCItemPtr(mathRound(Balance.rStdHP));
+		}
+
+	else if (strEquals(sName, PROPERTY_STEALTH))
+		{
+		int iStealth = GetStealth();
+		if (iStealth <= CSpaceObject::stealthNormal)
+			return ICCItemPtr(ICCItem::Nil);
+		else
+			return ICCItemPtr(iStealth);
+		}
 
 	else
 		return NULL;
@@ -2126,7 +2215,7 @@ CString CArmorClass::GetReference (CItemCtx &Ctx)
 	return sReference;
 	}
 
-bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray)
+bool CArmorClass::GetReferenceDamageAdj (const CArmorItem &ArmorItem, int *retiHP, int *retArray) const
 
 //	GetReferenceDamageAdj
 //
@@ -2135,8 +2224,6 @@ bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInst
 	{
 	int i;
 
-	CItemCtx ItemCtx(pItem, pInstalled);
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
 	int iHP = ArmorItem.GetMaxHP();
 
 	if (retiHP)
@@ -2145,7 +2232,7 @@ bool CArmorClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInst
 	for (i = 0; i < damageCount; i++)
 		{
 		DamageDesc Damage((DamageTypes)i, DiceRange(0, 0, 0));
-		int iAdj = GetDamageAdj(ItemCtx, Damage);
+		int iAdj = GetDamageAdj(ArmorItem, Damage);
 
 		if (retArray)
 			retArray[i] = CalcHPDamageAdj(iHP, iAdj);
@@ -2198,7 +2285,7 @@ bool CArmorClass::GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) co
 	return true;
 	}
 
-int CArmorClass::GetRepairCost (const CArmorItem &ArmorItem) const
+CurrencyValue CArmorClass::GetRepairCost (const CArmorItem &ArmorItem, int iHPToRepair) const
 
 //	GetRepairCost
 //
@@ -2206,7 +2293,29 @@ int CArmorClass::GetRepairCost (const CArmorItem &ArmorItem) const
 
 	{
 	const SScalableStats &Stats = GetScaledStats(ArmorItem);
-	return (int)ArmorItem.GetCurrencyType().Exchange(Stats.RepairCost);
+
+	if (iHPToRepair == 1)
+		return ArmorItem.GetCurrencyType().Exchange(Stats.RepairCost);
+
+	else
+		{
+		int iMaxHP = ArmorItem.GetMaxHP();
+		int iHalf = iMaxHP / 2;
+
+		//  We can repair up to half of maximum damage at normal price
+
+		int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
+		CurrencyValue iBasePrice = iHPAtNormalPrice * Stats.RepairCost.GetCreditValue();
+
+		//  If we have more damage than that, we pay double price
+
+		int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
+		iBasePrice += iHPAtExtraPrice * Stats.RepairCost.GetCreditValue() * EXTRA_REPAIR_COST_FACTOR;
+
+		//	Convert the total to the armor item's currency
+
+		return ArmorItem.GetCurrencyType().Exchange(iBasePrice);
+		}
 	}
 
 int CArmorClass::GetRepairLevel (const CArmorItem &ArmorItem) const
@@ -2282,7 +2391,7 @@ int CArmorClass::GetStdCost (int iLevel)
 	return STD_STATS[iLevel - 1].iCost;
 	}
 
-int CArmorClass::GetStdDamageAdj (int iLevel, DamageTypes iDamage)
+int CArmorClass::GetStdDamageAdj (CUniverse &Universe, int iLevel, DamageTypes iDamage)
 
 //	GetStdDamageAdj
 //
@@ -2290,23 +2399,25 @@ int CArmorClass::GetStdDamageAdj (int iLevel, DamageTypes iDamage)
 //	the given level
 
 	{
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
-	return g_pUniverse->GetArmorDamageAdj(iLevel)->GetAdj(iDamage);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		throw CException(ERR_FAIL);
+
+	return Universe.GetArmorDamageAdj(iLevel)->GetAdj(iDamage);
 	}
 
-int CArmorClass::GetStdEffectiveHP (int iLevel)
+int CArmorClass::GetStdEffectiveHP (CUniverse &Universe, int iLevel)
 
 //	GetStdEffectiveHP
 //
 //	Returns effective HP by level
 
 	{
-	int i;
-	ASSERT(iLevel >= 1 && iLevel <= MAX_ITEM_LEVEL);
+	if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
+		return -1;
 
 	int iHPbyDamageType[damageCount];
-	for (i = 0; i < damageCount; i++)
-		iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, g_pUniverse->GetArmorDamageAdj(iLevel)->GetAdj((DamageTypes)i));
+	for (int i = 0; i < damageCount; i++)
+		iHPbyDamageType[i] = CalcHPDamageAdj(STD_STATS[iLevel - 1].iHP, Universe.GetArmorDamageAdj(iLevel)->GetAdj((DamageTypes)i));
 
 	return ::CalcEffectiveHP(iLevel, STD_STATS[iLevel - 1].iHP, iHPbyDamageType);
 	}
@@ -2401,15 +2512,14 @@ bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)
 	return (m_fShieldInterference || Enhancements.IsShieldInterfering());
 	}
 
-bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
+bool CArmorClass::IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance) const
 
 //	IsReflective
 //
 //	Returns TRUE if the armor reflects this damage
 
 	{
-	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 
 	int iReflectChance = 0;
 
@@ -2426,21 +2536,27 @@ bool CArmorClass::IsReflective (CItemCtx &ItemCtx, const DamageDesc &Damage)
 
 	//	Done
 
-	if (iReflectChance)
+	if (iReflectChance > 0)
 		{
-		CInstalledArmor *pSect = ItemCtx.GetArmor();
-
-		int iMaxHP = ArmorItem.GetMaxHP();
-		int iHP = (pSect ? pSect->GetHitPoints() : iMaxHP);
+		int iMaxHP;
+		int iHP = ArmorItem.GetHP(&iMaxHP);
 
 		//	Adjust based on how damaged the armor is
 
 		iReflectChance = (iMaxHP > 0 ? iHP * iReflectChance / iMaxHP : iReflectChance);
 
+		if (retiChance)
+			*retiChance = iReflectChance;
+
 		return (mathRandom(1, 100) <= iReflectChance);
 		}
 	else
+		{
+		if (retiChance)
+			*retiChance = 0;
+
 		return false;
+		}
 	}
 
 ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
@@ -2485,7 +2601,7 @@ ALERROR CArmorClass::OnBindDesign (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, ICCItem &Value, CString *retsError)
+ESetPropertyResults CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError)
 
 //	SetItemProperty
 //
@@ -2506,7 +2622,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return false;
+				return resultPropertyError;
 				}
 
 			iHP = Max(0, Min(iHP, ArmorItem.GetMaxHP()));
@@ -2538,7 +2654,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			if (pShip == NULL)
 				{
 				if (retsError) *retsError = CONSTLIT("Not yet implemented.");
-				return false;
+				return resultPropertyError;
 				}
 
 			if (iChange < 0)
@@ -2570,7 +2686,7 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
         //  Set the level
 
         if (!Item.SetLevel(Value.GetIntegerValue(), retsError))
-            return false;
+			return resultPropertyError;
 
         //  Set armor HP
 
@@ -2582,16 +2698,14 @@ bool CArmorClass::SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sP
 			pArmor->SetHitPoints(iNewHP);
 		else
 			Item.SetDamaged(iNewMaxHP - iNewHP);
-
-        return true;
 		}
 	else
 		{
 		*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sProperty);
-		return false;
+		return resultPropertyNotFound;
 		}
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CArmorClass::Update (CItemCtx &ItemCtx, SUpdateCtx &UpdateCtx, int iTick, bool *retbModified)

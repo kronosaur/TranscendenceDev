@@ -45,6 +45,9 @@
     <Filter Include="Source Files\Artifact Awakening">
       <UniqueIdentifier>{87d58081-1ea7-431e-9628-572c79e4a22f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PackageContents">
+      <UniqueIdentifier>{618e89f8-4e8a-4018-a516-48eaf35493cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CLoadGameWithSignInTask.cpp">
@@ -299,6 +302,12 @@
     <ClCompile Include="CDetailArea.cpp">
       <Filter>Source Files\Displays</Filter>
     </ClCompile>
+    <ClCompile Include="CGTabArea.cpp">
+      <Filter>Source Files\Displays</Filter>
+    </ClCompile>
+    <ClCompile Include="CDockScreenLayout.cpp">
+      <Filter>Source Files\Dock Screens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BackgroundTasks.h">
@@ -351,9 +360,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Game\Readme.htm">
-      <Filter>Notes and Documents</Filter>
-    </None>
     <None Include="..\Game\ReadmeSource.htm">
       <Filter>Notes and Documents</Filter>
     </None>
@@ -401,6 +407,12 @@
     </None>
     <None Include="..\..\README">
       <Filter>Notes and Documents</Filter>
+    </None>
+    <None Include="..\Game\Readme.htm">
+      <Filter>PackageContents</Filter>
+    </None>
+    <None Include="..\Game\Transcendence.tdb">
+      <Filter>PackageContents</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -469,5 +481,10 @@
       <Filter>Resources</Filter>
     </Image>
     <Image Include="Resources\GenericExtensionSmall.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="..\Game\TranscendenceIntro.mp3">
+      <Filter>PackageContents</Filter>
+    </Media>
   </ItemGroup>
 </Project>

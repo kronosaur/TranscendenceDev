@@ -140,7 +140,7 @@ ICCItemPtr CDockScreenList::OnGetProperty (const CString &sProperty) const
 		return ICCItemPtr(m_pItemListControl->IsDisplayAsKnown());
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
 IDockScreenDisplay::EResults CDockScreenList::OnHandleAction (DWORD dwTag, DWORD dwData)
@@ -297,8 +297,17 @@ IDockScreenDisplay::EResults CDockScreenList::OnHandleKeyDown (int iVirtKey)
 			if (!m_bNoListNavigation)
 				{
 				DWORD dwNextTab;
-				if (!m_pItemListControl->GetNextTab(&dwNextTab))
-					return resultHandled;
+
+				if (uiIsShiftDown())
+					{
+					if (!m_pItemListControl->GetPrevTab(&dwNextTab))
+						return resultHandled;
+					}
+				else
+					{
+					if (!m_pItemListControl->GetNextTab(&dwNextTab))
+						return resultHandled;
+					}
 
 				if (!SelectTab(dwNextTab))
 					return resultHandled;
@@ -325,7 +334,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
 
 	int i;
 	ALERROR error;
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -352,6 +361,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
     m_pItemListControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
 	m_pItemListControl->SetNoArmorSpeedDisplay(Options.bNoArmorSpeedDisplay);
 	m_pItemListControl->SetDisplayAsKnown(Options.bActualItems);
+	m_pItemListControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.
@@ -550,7 +560,7 @@ IDockScreenDisplay::EResults CDockScreenList::OnSetLocation (CSpaceObject *pLoca
 	return resultShowPane;
 	}
 
-bool CDockScreenList::OnSetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreenList::OnSetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	OnSetProperty
 //

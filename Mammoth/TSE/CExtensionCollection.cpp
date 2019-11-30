@@ -31,8 +31,8 @@
 const int DIGEST_SIZE = 20;
 static BYTE g_BaseFileDigest[] =
 	{
-    252, 167, 149, 205,  79, 141,   5, 137, 230, 229,
-    237,   7, 214,  61, 211, 114,   2,  35,  87, 231,
+     89,  95, 122,  55, 175,   2, 113, 165, 201, 126,
+    187, 187, 101, 193, 249,  23,  38,  31, 194, 193,
 	};
 
 class CLibraryResolver : public IXMLParserController
@@ -255,6 +255,7 @@ ALERROR CExtensionCollection::AddToBindList (CExtension *pExtension, DWORD dwFla
 	CExtension::SLoadOptions LoadOptions;
 	LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 	LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+	LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 	//	Make sure the extension is loaded completely.
 
@@ -917,6 +918,13 @@ bool CExtensionCollection::ComputeDownloads (const TArray<CMultiverseCatalogEntr
 				&& !LibrariesUsed.Find(Entry.GetUNID()))
 			continue;
 
+		//	If we already requested a download for this entry, then don't bother
+		//	again. This can happen if the UNID in the TDB doesn't match the UNID
+		//	in the catalog entry.
+
+		if (Entry.IsDownloadRequested())
+			continue;
+
 		//	Look for this extension in our list. If we found it then compare
 		//	the signature to make sure that we have the right version.
 
@@ -1509,6 +1517,7 @@ ALERROR CExtensionCollection::Load (const CString &sFilespec, const TSortMap<DWO
 		CExtension::SLoadOptions LoadOptions;
 		LoadOptions.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) == FLAG_NO_RESOURCES);
 		LoadOptions.bNoDigestCheck = ((dwFlags & FLAG_NO_COLLECTION_CHECK) == FLAG_NO_COLLECTION_CHECK);
+		LoadOptions.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) == FLAG_DIAGNOSTICS);
 
 		//	If this extension has been manually disabled, then don't bother with
 		//	the digest because it is expensive. We'll compute it later.
@@ -1604,6 +1613,7 @@ ALERROR CExtensionCollection::LoadBaseFile (const CString &sFilespec, DWORD dwFl
 	Ctx.sResDb = sFilespec;
 	Ctx.pResDb = &Resources;
 	Ctx.bNoResources = ((dwFlags & FLAG_NO_RESOURCES) ? true : false);
+	Ctx.bLoadDiagnostics = ((dwFlags & FLAG_DIAGNOSTICS) ? true : false);
 	Ctx.sErrorFilespec = sFilespec;
 
 	//	Load it.
@@ -1729,6 +1739,7 @@ ALERROR CExtensionCollection::LoadEmbeddedExtension (SDesignLoadCtx &Ctx, CXMLEl
 	ExtCtx.sResDb = Ctx.sResDb;
 	ExtCtx.pResDb = Ctx.pResDb;
 	ExtCtx.bNoResources = Ctx.bNoResources;
+	ExtCtx.bLoadDiagnostics = Ctx.bLoadDiagnostics;
 	ExtCtx.dwInheritAPIVersion = m_pBase->GetAPIVersion();
 	//	No need to set bBindAsNewGame because it is only useful during Bind.
 	//	AdvCtx.bBindAsNewGame = Ctx.bBindAsNewGame;

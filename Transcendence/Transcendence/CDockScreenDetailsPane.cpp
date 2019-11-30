@@ -25,7 +25,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 	{
 	DEBUG_TRY
 
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -39,7 +39,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	//	Create the picker control
 
-	m_pControl = new CGDetailsArea(g_pHI->GetVisuals());
+	m_pControl = new CGDetailsArea(g_pHI->GetVisuals(), DockScreenVisuals);
 	if (m_pControl == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");
@@ -48,6 +48,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
     m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
     m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.
@@ -62,6 +63,7 @@ ALERROR CDockScreenDetailsPane::OnInit (SInitCtx &Ctx, const SDisplayOptions &Op
 
 	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(&m_DockScreen);
+	CCCtx.DefineContainingType(m_DockScreen.GetRoot());
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);
 

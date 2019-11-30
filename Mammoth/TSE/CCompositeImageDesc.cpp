@@ -198,8 +198,10 @@ class CLocationCriteriaTableEntry : public IImageEntry
 		struct SEntry
 			{
 			IImageEntry *pImage;
-			CAttributeCriteria Criteria;
+			CAffinityCriteria Criteria;
 			};
+
+		static int CalcLocationAffinity (SSelectorInitCtx &InitCtx, const CAffinityCriteria &Criteria);
 
 		TArray<SEntry> m_Table;
 		int m_iDefault;
@@ -612,7 +614,7 @@ ALERROR CCompositeImageDesc::InitEntryFromXML (SDesignLoadCtx &Ctx, CXMLElement 
 	else if (strEquals(pDesc->GetTag(), LOOKUP_TAG) || strEquals(pDesc->GetTag(), IMAGE_LOOKUP_TAG))
 		{
 		DWORD dwUNID = pDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
-		CCompositeImageType *pEntry = Ctx.GetUniverse().FindCompositeImageType(dwUNID);
+		CCompositeImageType *pEntry = Ctx.GetUniverse().FindCompositeImageTypeBound(Ctx, dwUNID);
 		if (pEntry == NULL)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find composite image type: %08x."), dwUNID);
@@ -1604,6 +1606,19 @@ void CLocationCriteriaTableEntry::AddTypesUsed (TSortMap<DWORD, bool> *retTypesU
 		m_Table[i].pImage->AddTypesUsed(retTypesUsed);
 	}
 
+int CLocationCriteriaTableEntry::CalcLocationAffinity (SSelectorInitCtx &InitCtx, const CAffinityCriteria &Criteria)
+
+//	CalcLocationAffinity
+//
+//	Computes the location affinity.
+
+	{
+	if (InitCtx.pSystem)
+		return InitCtx.pSystem->CalcLocationAffinity(Criteria, InitCtx.sLocAttribs, InitCtx.vObjPos);
+	else
+		return Criteria.CalcWeight([InitCtx](const CString &sAttrib) { return ::HasModifier(InitCtx.sLocAttribs, sAttrib); });
+	}
+
 IImageEntry *CLocationCriteriaTableEntry::Clone (void)
 
 //  Clone
@@ -1723,7 +1738,7 @@ ALERROR CLocationCriteriaTableEntry::InitFromXML (SDesignLoadCtx &Ctx, CIDCounte
 		//	Load the criteria
 
 		CString sCriteria = pItem->GetAttribute(CRITERIA_ATTRIB);
-		if (error = m_Table[i].Criteria.Parse(sCriteria, 0, &Ctx.sError))
+		if (error = m_Table[i].Criteria.Parse(sCriteria, &Ctx.sError))
 			return error;
 
 		if (m_iDefault == -1 && m_Table[i].Criteria.MatchesDefault())
@@ -1758,7 +1773,7 @@ void CLocationCriteriaTableEntry::InitSelector (SSelectorInitCtx &InitCtx, CComp
 		//	Compute the probability of this entry at the
 		//	given location.
 
-		int iChance = m_Table[i].Criteria.CalcLocationWeight(InitCtx.pSystem, InitCtx.sLocAttribs, InitCtx.vObjPos);
+		int iChance = CalcLocationAffinity(InitCtx, m_Table[i].Criteria);
 		if (iChance > 0)
 			ProbTable.Insert(i, iChance);
 		}

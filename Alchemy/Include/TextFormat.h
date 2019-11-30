@@ -73,13 +73,13 @@ class CTextBlock
 		CTextBlock (void) { }
 
 		void AddTextSpan (const CString &sText, const STextFormat &Format, bool bEoP = false);
-		inline void DeleteAll (void) { m_Formatted.DeleteAll(); m_Text.DeleteAll(); }
+		void DeleteAll (void) { m_Formatted.DeleteAll(); m_Text.DeleteAll(); }
 		void Format (const SBlockFormatDesc &BlockFormat);
 		void GetBounds (RECT *retrcRect);
-		inline const SFormattedTextSpan &GetFormattedSpan (int iIndex) const { return m_Formatted[iIndex]; }
-		inline int GetFormattedSpanCount (void) const { return m_Formatted.GetCount(); }
+		const SFormattedTextSpan &GetFormattedSpan (int iIndex) const { return m_Formatted[iIndex]; }
+		int GetFormattedSpanCount (void) const { return m_Formatted.GetCount(); }
 		bool InitFromRTF (const CString &RTF, const IFontTable &FontTable, const SBlockFormatDesc &BlockFormat, CString *retsError = NULL);
-		inline bool IsEmpty (void) const { return (m_Formatted.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_Formatted.GetCount() == 0); }
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 
 		static CString Escape (const CString &sText);
@@ -115,7 +115,7 @@ class CCartoucheBlock
 		void Format (int cxWidth);
 		RECT GetBounds (void) const;
 		void Paint (CG32bitImage &Dest, int x, int y) const;
-		inline void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
+		void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
 
 	private:
 		static constexpr int ATTRIB_PADDING_X =	4;
@@ -137,7 +137,7 @@ class CCartoucheBlock
 			int cy = 0;
 			};
 
-		inline void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
+		void Invalidate (void) { m_bFormatted = false; m_cxWidth = 0; m_cyHeight = 0; }
 
 		TArray<SCartouche> m_Data;
 		const CG16bitFont *m_pFont = NULL;

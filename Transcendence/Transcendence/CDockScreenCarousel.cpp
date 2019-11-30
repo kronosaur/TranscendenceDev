@@ -128,7 +128,7 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 	{
 	DEBUG_TRY
 
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -142,7 +142,7 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	//	Create the picker control
 
-	m_pControl = new CGCarouselArea(g_pHI->GetVisuals());
+	m_pControl = new CGCarouselArea(g_pHI->GetVisuals(), DockScreenVisuals);
 	if (m_pControl == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");
@@ -179,6 +179,7 @@ ALERROR CDockScreenCarousel::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
 	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.SetScreen(&m_DockScreen);
+	CCCtx.DefineContainingType(m_DockScreen.GetRoot());
 	CCCtx.SaveAndDefineSourceVar(m_pLocation);
 	CCCtx.SaveAndDefineDataVar(m_pData);
 

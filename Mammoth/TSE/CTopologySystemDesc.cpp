@@ -140,7 +140,7 @@ void CTopologySystemDesc::Apply (CTopology &Topology, CTopologyNode *pNode) cons
 	if (bAddSystemAttributes 
 			&& pNode->GetSystemTypeUNID())
 		{
-		CSystemType *pSystemType = g_pUniverse->FindSystemType(pNode->GetSystemTypeUNID());
+		CSystemType *pSystemType = Topology.GetUniverse().FindSystemType(pNode->GetSystemTypeUNID());
 		if (pSystemType && !pSystemType->GetAttributes().IsBlank())
 			pNode->AddAttributes(pSystemType->GetAttributes());
 		}

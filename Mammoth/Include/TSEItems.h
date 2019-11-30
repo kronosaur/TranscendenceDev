@@ -11,13 +11,41 @@ class CItemList;
 class CShipClass;
 
 //	ITEM -----------------------------------------------------------------------
+//
+//	HACK: The pattern below does not deal with const properly. When we migrate
+//	to C++17 we should use the following pattern:
+//
+//	#include <type_traits>
+//	
+//	class Foo;
+//	
+//	template<bool IsConst>
+//	class FooWrapper {
+//	    using reference_type = std::conditional_t<IsConst, const Foo&, Foo&>;
+//	
+//	    public:
+//	    FooWrapper(reference_type foo) : foo(foo) {}
+//	
+//	    private:
+//	    reference_type foo;
+//	};
+//	
+//	template<typename T> FooWrapper(T& t) -> FooWrapper<std::is_const_v<T>>;
+//	
+//	void bar(const Foo& foo1, Foo& foo2)
+//	{
+//	    FooWrapper wrapper1(foo1); // FooWrapper<false>
+//	    FooWrapper wrapper2(foo2); // FooWrapper<true>
+//	}
 
 class CDifferentiatedItem
 	{
 	public:
 		inline int GetCharges (void) const;
+		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
+		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
@@ -43,19 +71,50 @@ class CDifferentiatedItem
 class CArmorItem : public CDifferentiatedItem
 	{
 	public:
+		struct SBalance
+			{
+			Metric rBalance = 0.0;				//	Total balance (+100 = 100% overpowered)
+			int iLevel = 0;						//	Level for which we balanced
+			Metric rHP = 0.0;					//	Max HP for armor (counting bonuses, etc.).
+			Metric rStdMass = 0.0;				//	Standard mass (balance = 0.0)
+			Metric rStdCost = 0.0;				//	Standard cost for mass.
+			Metric rStdHP = 0.0;				//	Standard HP for mass.
+
+			Metric rHPBalance = 0.0;			//	Balance contribution from raw HP
+			Metric rDamageAdj = 0.0;			//	Balance contribution from damage adj
+			Metric rDamageEffectAdj = 0.0;		//	Balance contribution from damage effect adj (EMP-resist, etc.).
+			Metric rRegen = 0.0;				//	Balance from regeneration/decay/distribution
+			Metric rRepairAdj = 0.0;			//	Balance from repair level/cost
+			Metric rArmorComplete = 0.0;		//	Balance from armor complete bonus
+			Metric rStealth = 0.0;				//	Balance from stealth bonus
+			Metric rPowerUse = 0.0;				//	Balance from power use
+			Metric rSpeedAdj = 0.0;				//	Balance from speed bonus/penalty
+			Metric rDeviceBonus = 0.0;			//	Balance from device bonus
+
+			Metric rMass = 0.0;					//	Balance from mass
+			Metric rCost = 0.0;					//	Balance from cost
+			};
+
 		operator bool () const { return (m_pCItem != NULL); }
 		operator bool () { return (m_pItem != NULL); }
 		operator const CItem & () const { return *m_pCItem; }
 		operator CItem & () { return *m_pItem; }
 
+		void AccumulateAttributes (TArray<SDisplayAttribute> *retList) const;
+		inline int CalcBalance (SBalance &retBalance) const;
 		ICCItemPtr FindProperty (const CString &sProperty) const;
 		inline const CArmorClass &GetArmorClass (void) const;
 		inline CArmorClass &GetArmorClass (void);
+        inline int GetDamageAdj (DamageTypes iDamage) const;
+		inline int GetDamageAdj (const DamageDesc &Damage) const;
+		inline int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		inline int GetInstallCost (void) const;
 		inline const CInstalledArmor *GetInstalledArmor (void) const;
 		inline int GetMaxHP (bool bForceComplete = false) const;
-		inline int GetRepairCost (void) const;
+		inline bool GetReferenceDamageAdj (int *retiHP, int *retArray) const;
+		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
 
@@ -71,20 +130,69 @@ class CArmorItem : public CDifferentiatedItem
 	friend class CItem;
 	};
 
+class CDeviceItem : public CDifferentiatedItem
+	{
+	public:
+
+		operator bool () const { return (m_pCItem != NULL); }
+		operator bool () { return (m_pItem != NULL); }
+		operator const CItem & () const { return *m_pCItem; }
+		operator CItem & () { return *m_pItem; }
+
+		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
+		inline const CDeviceClass &GetDeviceClass (void) const;
+		inline CDeviceClass &GetDeviceClass (void);
+		inline const CItemEnhancementStack &GetEnhancements (void) const;
+		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
+		inline const CInstalledDevice *GetInstalledDevice (void) const;
+		DWORD GetLinkedFireOptions (void) const;
+		int GetMaxHP (void) const;
+		inline CSpaceObject *GetSource (void) const;
+
+	private:
+		CDeviceItem (CItem *pItem) : CDifferentiatedItem(pItem)
+			{ }
+
+		CDeviceItem (const CItem *pItem): CDifferentiatedItem(pItem)
+			{ }
+
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
+
+	friend class CItem;
+	};
+
 class CItem
 	{
 	public:
-		enum EFlags
+		//	IsEqual
+
+		static constexpr DWORD FLAG_IGNORE_INSTALLED =			0x00000001;
+		static constexpr DWORD FLAG_IGNORE_CHARGES =			0x00000002;
+		static constexpr DWORD FLAG_IGNORE_DATA =				0x00000004;
+		static constexpr DWORD FLAG_IGNORE_DISRUPTED =			0x00000008;
+		static constexpr DWORD FLAG_IGNORE_ENHANCEMENTS =		0x00000010;
+
+		static constexpr DWORD FLAG_FIND_MIN_CHARGES =			0x00010000;	//	Item with least number of charges
+		static constexpr DWORD FLAG_ACTUAL =					0x00020000;	//	Ignore unknown status
+
+		enum PFlags
 			{
-			//	IsEqual
+			flagDamaged =		0x01,			//	Item is damaged
+			flagUnused1 =		0x02,
+			flagUnused2 =		0x04,
+			flagUnknownBit3 =	0x08,
+			flagEnhanced =		0x10,			//	Item is enhanced (Mod 1)
 
-			FLAG_IGNORE_INSTALLED =			0x00000001,
-			FLAG_IGNORE_CHARGES =			0x00000002,
-			FLAG_IGNORE_DATA =				0x00000004,
-			FLAG_IGNORE_DISRUPTED =			0x00000008,
-			FLAG_IGNORE_ENHANCEMENTS =		0x00000010,
+			flagUnknownBit0 =	0x20,
+			flagUnknownBit1 =	0x40,
+			flagUnknownBit2 =	0x80,
+			};
 
-			FLAG_FIND_MIN_CHARGES =			0x00010000,	//	Item with least number of charges
+		struct SEnhanceItemResult
+			{
+			EnhanceItemStatus iResult = eisUnknown;
+			CItemEnhancement Enhancement;
+			CString sDesc;
 			};
 
 		CItem (void);
@@ -93,70 +201,84 @@ class CItem
 		~CItem (void);
 		CItem &operator= (const CItem &Copy);
 
+		operator bool () const { return (m_pItemType != NULL); }
+
+		bool AccumulateEnhancementDisplayAttributes (TArray<SDisplayAttribute> &retList) const;
 		DWORD AddEnhancement (const CItemEnhancement &Enhancement);
 		CString CalcSortKey (void) const;
-		bool CanBeUsed (CItemCtx &ItemCtx, CString *retsUseKey = NULL) const;
+		bool CanBeUsed (CString *retsUseKey = NULL) const;
 		void ClearDamaged (void);
 		void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
 		void ClearInstalled (void);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
-		inline bool IsDevice (void) const;
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
 		bool IsUsed (void) const;
 		bool FireCanBeInstalled (CSpaceObject *pSource, int iSlot, CString *retsError) const;
 		bool FireCanBeUninstalled (CSpaceObject *pSource, CString *retsError) const;
+		bool FireCanEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireCustomEvent (CItemCtx &ItemCtx, const CString &sEvent, ICCItem *pData, ICCItem **retpResult) const;
 		void FireOnAddedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced, EnhanceItemStatus iStatus) const;
 		bool FireOnDestroyCheck (CItemCtx &ItemCtx, DestructionTypes iCause, const CDamageSource &Attacker) const;
 		void FireOnDisabled (CSpaceObject *pSource) const;
 		void FireOnDocked (CSpaceObject *pSource, CSpaceObject *pDockedAt) const;
 		void FireOnEnabled (CSpaceObject *pSource) const;
+		bool FireOnEnhanceItem (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		void FireOnInstall (CSpaceObject *pSource) const;
 		void FireOnObjDestroyed (CSpaceObject *pSource, const SDestroyCtx &Ctx) const;
 		bool FireOnReactorOverload (CSpaceObject *pSource) const;
 		void FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced) const;
 		void FireOnUninstall (CSpaceObject *pSource) const;
-		inline int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
-		inline int GetCount (void) const { return (int)m_dwCount; }
+		int GetApparentLevel (void) const;
+		int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
+		int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
 		inline const CEconomyType *GetCurrencyType (void) const;
 		int GetDamagedHP (void) const;
 		ICCItemPtr GetDataAsItem (const CString &sAttrib) const;
-		CString GetDesc (CItemCtx &ItemCtx, bool bActual = false) const;
-		bool GetDisplayAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
+		CString GetDesc (bool bActual = false) const;
+		inline CDeviceClass *GetDeviceClass (void) const;
+		bool GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData = NULL, bool bActual = false) const;
 		DWORD GetDisruptedDuration (void) const;
 		bool GetDisruptedStatus (DWORD *retdwTimeLeft = NULL, bool *retbRepairedEvent = NULL) const;
-		CString GetEnhancedDesc (CSpaceObject *pInstalled = NULL) const;
+		CString GetEnhancedDesc (void) const;
+		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
+		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
+		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
-		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
+		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
         int GetLevel (void) const;
-		inline Metric GetMass (void) const { return GetMassKg() / 1000.0; }
+		Metric GetMass (void) const { return GetMassKg() / 1000.0; }
 		int GetMassKg (void) const;
 		int GetMaxCharges (void) const;
-		inline const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
+		const CItemEnhancement &GetMods (void) const { return (m_pExtra ? m_pExtra->m_Mods : m_NullMod); }
 		static const CItem &GetNullItem (void) { return m_NullItem; }
 		static const CItemEnhancement &GetNullMod (void) { return m_NullMod; }
 		CString GetReference (CItemCtx &ItemCtx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		bool GetReferenceDamageAdj (CSpaceObject *pInstalled, DWORD dwFlags, int *retiHP, int *retArray) const;
 		bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags, DamageTypes *retiDamage, CString *retsReference) const;
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeedBonus) const;
-		CString GetNounPhrase (CItemCtx &Ctx, DWORD dwFlags = 0) const;
-		inline int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
-		int GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const;
-		inline CItemType *GetType (void) const { return m_pItemType; }
+		CSpaceObject *GetSource (void) const;
+		CString GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const;
+		CString GetNounPhrase (DWORD dwFlags = 0) const;
+		int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
+		int GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
+		CItemType *GetType (void) const { return m_pItemType; }
 		CUniverse &GetUniverse (void) const;
-		int GetUnknownIndex (void) const { return (int)((m_dwFlags & flagUnknownBit3) | ((m_dwFlags & UNKNOWN_INDEX_LOWER_MASK) >> UNKNOWN_INDEX_LOWER_SHIFT)); }
-		inline int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		int GetUnknownIndex (void) const;
+		CItemType *GetUnknownType (void) const;
+		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
+		int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
-		inline bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
+		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
 		bool HasUseItemScreen (void) const;
 		bool IsDamaged (int *retiDamagedHP = NULL) const;
@@ -164,26 +286,27 @@ class CItem
 		bool IsDisrupted (DWORD dwNow) const { return (m_pExtra ? (m_pExtra->m_dwDisruptedTime >= dwNow) : false); }
         bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
+		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
 		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
-		bool IsKnown (void) const;
+		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
 		bool IsVirtual (void) const;
-		inline void MarkForDelete (void) { m_dwCount = 0xffff; }
+		void MarkForDelete (void) { m_dwCount = 0xffff; }
 		bool RemoveEnhancement (DWORD dwID);
 		void SetCharges (int iCharges);
-		inline void SetCount (int iCount) { m_dwCount = (DWORD)iCount; }
+		void SetCount (int iCount) { m_dwCount = (DWORD)iCount; }
 		void SetDamaged (bool bDamaged = true) { ClearDamaged(); if (bDamaged) m_dwFlags |= flagDamaged; }
 		void SetDamaged (int iDamagedHP);
-		inline void SetData (const CString &sAttrib, ICCItem *pData) { Extra(); m_pExtra->m_Data.SetData(sAttrib, pData); }
+		void SetData (const CString &sAttrib, ICCItem *pData) { Extra(); m_pExtra->m_Data.SetData(sAttrib, pData); }
 		void SetDisrupted (DWORD dwDuration);
-		inline void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
-		inline void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
+		void SetEnhanced (void) { m_dwFlags |= flagEnhanced; }
+		void SetEnhanced (bool bEnhanced) { ClearEnhanced(); if (bEnhanced) SetEnhanced(); }
 		void SetInstalled (CInstalledArmor &Installed);
 		void SetInstalled (CInstalledDevice &Installed);
 		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
-		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
+		ESetPropertyResults SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
@@ -216,12 +339,15 @@ class CItem
 		const CArmorItem AsArmorItemOrThrow (void) const { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
 		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
 
+		inline bool IsDevice (void) const;
+		const CDeviceItem AsDeviceItem (void) const { return CDeviceItem(IsDevice() ? this : NULL); }
+		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? this : NULL); }
+		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(this); else throw CException(ERR_FAIL); }
+		CDeviceItem AsDeviceItemOrThrow (void) { if (IsDevice()) return CDeviceItem(this); else throw CException(ERR_FAIL); }
+
 		//	Item Criteria
 
-		static CString GenerateCriteria (const CItemCriteria &Criteria);
-		static void InitCriteriaAll (CItemCriteria *retCriteria);
 		static const CItem &NullItem (void) { return CItem::m_NullItem; }
-		static void ParseCriteria (const CString &sCriteria, CItemCriteria *retCriteria);
 		static DWORD ParseFlags (ICCItem *pItem);
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
 
@@ -232,19 +358,6 @@ class CItem
 		ICCItem *WriteToCCItem (void) const;
 
 	private:
-		enum PFlags
-			{
-			flagDamaged =		0x01,			//	Item is damaged
-			flagUnused1 =		0x02,
-			flagUnused2 =		0x04,
-			flagUnknownBit3 =	0x08,
-			flagEnhanced =		0x10,			//	Item is enhanced (Mod 1)
-
-			flagUnknownBit0 =	0x20,
-			flagUnknownBit1 =	0x40,
-			flagUnknownBit2 =	0x80,
-			};
-
 		enum EInstallTypes
 			{
 			installedNone,
@@ -274,7 +387,7 @@ class CItem
 			CAttributeDataBlock m_Data;			//	Opaque data
 			};
 
-		void AccumulateCustomAttributes (CItemCtx &Ctx, TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
+		void AccumulateCustomAttributes (TArray<SDisplayAttribute> *retList, ICCItem *pData) const;
 		void Extra (void);
         int GetScalableLevel (void) const { return (m_pExtra ? (int)m_pExtra->m_dwLevel : 0); }
 		int GetValue (bool bActual = false) const;
@@ -311,14 +424,14 @@ class CItemList
 		void AddItem (const CItem &Item);
 		void DeleteAll (void);
 		void DeleteItem (int iIndex);
-		inline int GetCount (void) const { return m_List.GetCount(); }
-		inline CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
-		inline const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
+		int GetCount (void) const { return m_List.GetCount(); }
+		CItem &GetItem (int iIndex) { return *m_List[iIndex]; }
+		const CItem &GetItem (int iIndex) const { return *m_List[iIndex]; }
 		void ReadFromStream (SLoadCtx &Ctx);
 		void SortItems (void);
 		void WriteToStream (IWriteStream *pStream);
 
-		inline static CItemList &Null (void) { return m_Null; }
+		static CItemList &Null (void) { return m_Null; }
 
 	private:
 		void Copy (const CItemList &Src);
@@ -338,18 +451,18 @@ class CItemListManipulator
 		void AddItem (const CItem &Item);
 		bool AddItems (const CItemList &ItemList, int iChance = 100);
 
-		inline bool FindItem (const CItem &Item, DWORD dwFlags, int *retiCursor) 
+		bool FindItem (const CItem &Item, DWORD dwFlags, int *retiCursor) 
 			{ int iCursor = FindItem(Item, dwFlags); if (iCursor == -1) return false; if (retiCursor) *retiCursor = iCursor; return true; }
 		int GetCount (void) const { return m_ViewMap.GetCount(); }
 		int GetCursor (void) const { return m_iCursor; }
-		inline void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
+		void SetCursor (int iCursor) { m_iCursor = Min(Max(-1, iCursor), GetCount() - 1); }
 		bool SetCursorAtItem (const CItem &Item, DWORD dwFlags = 0);
 		void SetFilter (const CItemCriteria &Filter);
 
 		static constexpr DWORD FLAG_SORT_ITEMS = 0x00000001;
 		bool Refresh (const CItem &Item, DWORD dwFlags = 0);
 
-		inline bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
+		bool IsCursorValid (void) const { return (m_iCursor != -1 && m_iCursor < m_ItemList.GetCount()); }
 		bool MoveCursorBack (void);
 		bool MoveCursorForward (void);
 		void ResetCursor (void);
@@ -413,25 +526,24 @@ class CItemCtx
 		CArmorClass *GetArmorClass (void) const;
 		CInstalledDevice *GetDevice (void);
 		CDeviceClass *GetDeviceClass (void);
-		bool GetEnhancementDisplayAttributes (TArray<SDisplayAttribute> *retList);
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void);
 		const CItemEnhancementStack &GetEnhancements (void) { const CItemEnhancementStack *pStack = GetEnhancementStack(); if (pStack) return *pStack; else return *m_pNullEnhancements; }
 		const CItem &GetItem (void) const;
 		int GetItemCharges (void);
 		int GetItemVariantNumber (void);
 		const CItemEnhancement &GetMods (void);
-		inline CSpaceObject *GetSource (void) { return m_pSource; }
+		CSpaceObject *GetSource (void) { return m_pSource; }
 		const CShipClass *GetSourceShipClass (void) const;
-		inline int GetVariant (void) const { return m_iVariant; }
-		inline CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
-        inline const CItem &GetVariantItem (void) const { return m_Variant; }
-        inline bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
+		int GetVariant (void) const { return m_iVariant; }
+		CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
+        const CItem &GetVariantItem (void) const { return m_Variant; }
+        bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
 		bool IsDeviceDamaged (void);
 		bool IsDeviceDisrupted (void);
         bool IsDeviceEnabled (void);
 		bool IsDeviceWorking (void);
 		bool ResolveVariant (void);
-        inline void SetVariantItem (const CItem &Item) { m_Variant = Item; }
+        void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 
 	private:
 		const CItem *GetItemPointer (void) const;
@@ -457,16 +569,36 @@ class CItemCtx
 
 struct SItemAddCtx
 	{
-	SItemAddCtx (CItemListManipulator &theItemList) : 
-			ItemList(theItemList)
+	SItemAddCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg),
+			m_Internal(CItemList::Null()),
+			ItemList(m_Internal)
 		{ }
 
+	SItemAddCtx (CUniverse &UniverseArg, CItemListManipulator &ItemListArg) :
+			Universe(UniverseArg),
+			ItemList(ItemListArg),
+			m_Internal(CItemList::Null())
+		{ }
+
+	SItemAddCtx (CItemListManipulator &theItemList) : 
+			Universe(*g_pUniverse),
+			ItemList(theItemList),
+			m_Internal(CItemList::Null())
+		{ }
+
+	CUniverse &GetUniverse (void) { return Universe; }
+
+	CUniverse &Universe;
 	CItemListManipulator &ItemList;				//	Item list to add items to
 
 	CSystem *pSystem = NULL;					//	System where we're creating items
 	CSpaceObject *pDest = NULL;					//	Object to add to (may be NULL)
 	CVector vPos;								//	Position to use (for LocationCriteriaTable)
 	int iLevel = 1;								//	Level to use for item create (for LevelTable)
+
+	private:
+		CItemListManipulator m_Internal;
 	};
 
 class CItemTypeProbabilityTable
@@ -474,11 +606,11 @@ class CItemTypeProbabilityTable
 	public:
 		void Add (CItemType *pType, Metric rProbability = 1.0);
 		void Add (const CItemTypeProbabilityTable &Src);
-		inline void DeleteAll (void) { m_Table.DeleteAll(); }
-		inline int GetCount (void) const { return m_Table.GetCount(); }
-		inline Metric GetProbability (int iIndex) const { return m_Table[iIndex]; }
-		inline Metric GetProbability (CItemType *pType) const { const Metric *pProb = m_Table.GetAt(pType); return (pProb ? *pProb : 0.0); }
-		inline CItemType *GetType (int iIndex) const { return m_Table.GetKey(iIndex); }
+		void DeleteAll (void) { m_Table.DeleteAll(); }
+		int GetCount (void) const { return m_Table.GetCount(); }
+		Metric GetProbability (int iIndex) const { return m_Table[iIndex]; }
+		Metric GetProbability (CItemType *pType) const { const Metric *pProb = m_Table.GetAt(pType); return (pProb ? *pProb : 0.0); }
+		CItemType *GetType (int iIndex) const { return m_Table.GetKey(iIndex); }
 		void Scale (Metric rProbability);
 		void Union (CItemType *pType, Metric rProbability = 1.0);
 		void Union (const CItemTypeProbabilityTable &Src);
@@ -492,14 +624,16 @@ class IItemGenerator
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
 		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
-		static ALERROR CreateRandomItemTable (const CItemCriteria &Crit, 
+		static ALERROR CreateRandomItemTable (CUniverse &Universe,
+											  const CItemCriteria &Crit, 
 											  const CString &sLevelFrequency,
 											  IItemGenerator **retpGenerator);
 
 		virtual ~IItemGenerator (void) { }
 		virtual void AddItems (SItemAddCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
-		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) { return 0; }
+		virtual CCurrencyAndValue GetDesiredValue (SItemAddCtx &Ctx, int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual CItemType *GetItemType (int iIndex) { return NULL; }
@@ -508,4 +642,7 @@ class IItemGenerator
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
+
+	protected:
+		static int CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCriteria &Criteria);
 	};

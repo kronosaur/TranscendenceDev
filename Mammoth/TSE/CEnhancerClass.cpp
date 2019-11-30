@@ -73,7 +73,7 @@ bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTa
 
 	if (iBonus != 0)
 		{
-		pEnhancements->InsertHPBonus(iBonus);
+		pEnhancements->InsertHPBonus(GetItemType(), iBonus);
 		bEnhanced = true;
 		}
 
@@ -81,7 +81,7 @@ bool CEnhancerClass::AccumulateOldStyle (CItemCtx &Device, CInstalledDevice *pTa
 
 	if (m_iActivateAdj != 100)
 		{
-		pEnhancements->InsertActivateAdj(m_iActivateAdj, m_iMinActivateDelay, m_iMaxActivateDelay);
+		pEnhancements->InsertActivateAdj(GetItemType(), m_iActivateAdj, m_iMinActivateDelay, m_iMaxActivateDelay);
 		bEnhanced = true;
 		}
 
@@ -159,7 +159,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	RootStats.sCriteria = pDesc->GetAttribute(CRITERIA_ATTRIB);
 	if (!RootStats.sCriteria.IsBlank())
-		CItem::ParseCriteria(RootStats.sCriteria, &RootStats.Criteria);
+		RootStats.Criteria.Init(RootStats.sCriteria);
 
 	RootStats.iPowerUse = pDesc->GetAttributeIntegerBounded(POWER_USE_ATTRIB, 0, -1, -1);
 	if (error = RootStats.LevelCheck.InitFromXML(Ctx, pDesc->GetAttribute(LEVEL_CHECK_ATTRIB)))
@@ -212,7 +212,7 @@ ALERROR CEnhancerClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 		if (!pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 			sCriteria = CONSTLIT("w");
 
-		CItem::ParseCriteria(sCriteria, &pDevice->m_Criteria);
+		pDevice->m_Criteria.Init(sCriteria);
 		}
 
 	//	Done
@@ -341,7 +341,7 @@ ALERROR CEnhancerClass::InitFromEnhanceXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	Initialize the enhancements
 
-	if (error = m_pDesc[0].Enhancements.InitFromXML(Ctx, pDesc))
+	if (error = m_pDesc[0].Enhancements.InitFromXML(Ctx, pDesc, pType))
 		return error;
 
 	//	If necessary, we inherit some values from the root element
@@ -394,7 +394,7 @@ ALERROR CEnhancerClass::InitFromScalingXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 		//	Initialize the enhancements
 
-		if (error = m_pDesc[iIndex].Enhancements.InitFromXML(Ctx, pEntry))
+		if (error = m_pDesc[iIndex].Enhancements.InitFromXML(Ctx, pEntry, pType))
 			return error;
 
 		//	If necessary, we inherit some values from the root element

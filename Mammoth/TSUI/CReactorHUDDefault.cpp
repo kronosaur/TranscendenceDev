@@ -127,7 +127,7 @@ ALERROR CReactorHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass
 			rcRect.right = 202;
 			rcRect.bottom = 116;
 
-			m_PowerGenImage.Init(DEFAULT_REACTOR_DISPLAY_IMAGE, rcRect, 1, 1);
+			m_PowerGenImage.Init(Ctx.GetUniverse(), DEFAULT_REACTOR_DISPLAY_IMAGE, rcRect, 1, 1);
 			m_xPowerGenImage = m_xPowerLevelImage;
 			m_yPowerGenImage = m_yPowerLevelImage;
 			}

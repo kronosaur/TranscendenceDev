@@ -139,7 +139,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 //	Initialize
 
 	{
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -154,7 +154,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
     CGSelectorArea::SOptions SelOptions;
     SelOptions.iConfig = m_iConfig;
-    CItem::ParseCriteria(Options.sItemCriteria, &SelOptions.ItemCriteria);
+	SelOptions.ItemCriteria.Init(Options.sItemCriteria);
     SelOptions.bNoEmptySlots = Options.bNoEmptySlots;
 
     //  If we're on API < 30, then we always show shields on armor selectors
@@ -164,9 +164,17 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
     if (Ctx.pRoot && Ctx.pRoot->GetAPIVersion() < 30)
         SelOptions.bAlwaysShowShields = true;
 
+	//	Calculate some basic metrics
+
+	RECT rcControl = Ctx.rcRect;
+	rcControl.left += Options.rcControl.left;
+	rcControl.right = rcControl.left + RectWidth(Options.rcControl);
+	rcControl.top += Options.rcControl.top;
+	rcControl.bottom = rcControl.top + RectHeight(Options.rcControl);
+
 	//	Create the selector control
 
-	m_pControl = new CGSelectorArea(*Ctx.pVI);
+	m_pControl = new CGSelectorArea(*Ctx.pVI, DockScreenVisuals);
 	if (m_pControl == NULL)
 		{
 		*retsError = CONSTLIT("Out of memory.");
@@ -175,11 +183,12 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
     m_pControl->SetColor(DockScreenVisuals.GetTitleTextColor());
     m_pControl->SetBackColor(DockScreenVisuals.GetTextBackgroundColor());
+	m_pControl->SetTabRegion(Options.cyTabRegion);
 
 	//	Create. NOTE: Once we add it to the screen, it takes ownership of it. 
 	//	We do not have to free it.
 
-	Ctx.pScreen->AddArea(m_pControl, Ctx.rcRect, m_dwID);
+	Ctx.pScreen->AddArea(m_pControl, rcControl, m_dwID);
 
 	//	Initialize the control
 
@@ -242,6 +251,28 @@ bool CDockScreenSelector::OnIsCurrentItemValid (void) const
 
 	{
 	return m_pControl->IsCursorValid();
+	}
+
+IDockScreenDisplay::EResults CDockScreenSelector::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
+
+//	OnObjDestroyedNotify
+//
+//	An object was destroyed.
+
+	{
+	if (Ctx.Obj == m_pLocation)
+		{
+		//	No need to do anything because we will undock in this case.
+
+		return resultNone;
+		}
+	else if (m_pControl->GetSource() == Ctx.Obj)
+		{
+		m_pControl->SetRegions(NULL, CGSelectorArea::SOptions());
+		return resultShowPane;
+		}
+	else
+		return resultNone;
 	}
 
 IDockScreenDisplay::EResults CDockScreenSelector::OnResetList (CSpaceObject *pLocation)

@@ -12,6 +12,7 @@
 #define FIELD_LARGE_ICON_SCALE				CONSTLIT("largeIconScale")
 #define FIELD_TITLE							CONSTLIT("title")
 
+#define STYLE_FULL							CONSTLIT("full")
 #define STYLE_STACKED						CONSTLIT("stacked")
 
 CDetailArea::EStyles CDetailArea::GetStyle (ICCItem *pData)
@@ -25,7 +26,9 @@ CDetailArea::EStyles CDetailArea::GetStyle (ICCItem *pData)
 		return styleDefault;
 
 	CString sStyle = pData->GetStringAt(FIELD_DETAILS_STYLE);
-	if (strEquals(sStyle, STYLE_STACKED))
+	if (strEquals(sStyle, STYLE_FULL))
+		return styleFull;
+	else if (strEquals(sStyle, STYLE_STACKED))
 		return styleStacked;
 	else
 		return styleDefault;
@@ -39,6 +42,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 
 	{
 	CCodeChain &CC = m_Universe.GetCC();
+	CDockScreenPainter Painter(m_Theme);
 
 	//	Colors and metrics
 
@@ -49,7 +53,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 	if (pData == NULL || pData->IsNil() || !pData->IsSymbolTable())
 		{
 		PaintBackground(Dest, rcRect, rgbFadeBackColor);
-		//PaintBackgroundFrame(Dest, rcRect);
+		Painter.PaintDisplayFrame(Dest, rcRect);
 		return;
 		}
 
@@ -97,6 +101,24 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 			break;
 			}
 
+		//	Similar to default, but we assume that we have more room and thus 
+		//	paint a fully visible large icon.
+
+		case styleFull:
+			{
+			dwDetailFlags = CDetailList::FORMAT_PLACE_BOTTOM | CDetailList::FORMAT_ALIGN_BOTTOM | CDetailList::FORMAT_ANTI_MIRROR_COLUMNS;
+
+			//	Paint background
+
+			PaintBackground(Dest, rcRect, rgbFadeBackColor);
+
+			//	Paint icon
+
+			ICCItem *pLargeIcon = pData->GetElement(FIELD_LARGE_ICON);
+			PaintBackgroundImage(Dest, rcRect, pLargeIcon, BACKGROUND_IMAGE_MARGIN_Y);
+			break;
+			}
+
 		default:
 			{
 			dwDetailFlags = CDetailList::FORMAT_PLACE_BOTTOM | CDetailList::FORMAT_ALIGN_BOTTOM | CDetailList::FORMAT_ANTI_MIRROR_COLUMNS;
@@ -122,7 +144,7 @@ void CDetailArea::Paint (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pData)
 
 	//	Paint a frame on top
 
-	//PaintBackgroundFrame(Dest, rcRect);
+	Painter.PaintDisplayFrame(Dest, rcRect);
 	}
 
 void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32bitPixel rgbColor)
@@ -134,31 +156,14 @@ void CDetailArea::PaintBackground (CG32bitImage &Dest, const RECT &rcRect, CG32b
 	{
 	CGDraw::RoundedRect(Dest,
 			rcRect.left,
-			rcRect.top,
+			rcRect.top + m_cyTabRegion,
 			RectWidth(rcRect),
-			RectHeight(rcRect),
+			RectHeight(rcRect) - m_cyTabRegion,
 			BORDER_RADIUS + 1,
 			rgbColor);
 	}
 
-void CDetailArea::PaintBackgroundFrame (CG32bitImage &Dest, const RECT &rcRect)
-
-//	PaintBackgroundFrame
-//
-//	Paint the content frame
-
-	{
-	CGDraw::RoundedRectOutline(Dest,
-			rcRect.left,
-			rcRect.top,
-			RectWidth(rcRect),
-			RectHeight(rcRect),
-			BORDER_RADIUS,
-			1,
-			CG32bitPixel(80,80,80));
-	}
-
-void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc)
+void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, ICCItem *pImageDesc, int cyExtraMargin)
 
 //	PaintBackgroundImage
 //
@@ -178,7 +183,7 @@ void CDetailArea::PaintBackgroundImage (CG32bitImage &Dest, const RECT &rcRect, 
 	int cyImage = RectHeight(rcImage);
 
 	int x = rcRect.left + (RectWidth(rcRect) - m_cxLargeIcon) / 2;
-	int y = rcRect.top;
+	int y = rcRect.top + cyExtraMargin;
 
 	CPaintHelper::PaintScaledImage(Dest, x, y, m_cxLargeIcon, m_cyLargeIcon, *pImage, rcImage);
 	}

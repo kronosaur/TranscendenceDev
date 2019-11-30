@@ -166,7 +166,7 @@ void Kernel::utlMemSet (LPVOID pDest, DWORD Count, BYTE Value)
 	std::memset(pDest, Value, Count);
 	}
 
-void Kernel::utlMemCopy (char *pSource, char *pDest, DWORD dwCount)
+void Kernel::utlMemCopy (const char *pSource, char *pDest, DWORD dwCount)
 
 //	utlMemCopy
 //

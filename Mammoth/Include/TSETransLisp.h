@@ -7,6 +7,10 @@
 
 class CInstalledArmor;
 class CInstalledDevice;
+class CItemCtx;
+class COrbit;
+struct SDamageCtx;
+struct SSystemCreateCtx;
 
 //	CodeChain context
 
@@ -36,6 +40,8 @@ class CCodeChainCtx
 		~CCodeChainCtx (void);
 
 		ICCItemPtr Create (ICCItem::ValueTypes iType);
+		ICCItemPtr CreateDebugError (const CString &sError, ICCItem *pValue = NULL) const;
+		ICCItemPtr DebugError (ICCItem *pResult) const;
 		void DefineContainingType (const CDesignType *pType);
 		void DefineContainingType (const CItem &Item);
 		void DefineContainingType (const COverlay *pOverlay);
@@ -52,7 +58,8 @@ class CCodeChainCtx
 		inline void DefineNil (const CString &sVar) { m_CC.DefineGlobal(sVar, m_CC.CreateNil()); }
 		void DefineOrbit (const CString &sVar, const COrbit &OrbitDesc);
 		void DefineSource (CSpaceObject *pSource);
-		void DefineSpaceObject (const CString &sVar, CSpaceObject *pObj);
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj);
+		void DefineSpaceObject (const CString &sVar, const CSpaceObject &Obj) { m_CC.DefineGlobalInteger(sVar, (int)&Obj); }
 		inline void DefineString (const CString &sVar, const CString &sValue) { m_CC.DefineGlobalString(sVar, sValue); }
 		inline void DefineVar (const CString &sVar, ICCItem *pValue) { m_CC.DefineGlobal(sVar, pValue); }
 		void DefineVector (const CString &sVar, const CVector &vVector);
@@ -97,7 +104,7 @@ class CCodeChainCtx
 		bool AsArc (ICCItem *pItem, int *retiMinArc, int *retiMaxArc, bool *retbOmnidirectional = NULL);
 		CInstalledArmor *AsInstalledArmor (CSpaceObject *pObj, ICCItem *pItem) const;
 		CInstalledDevice *AsInstalledDevice (CSpaceObject *pObj, ICCItem *pItem) const;
-		CItem AsItem (ICCItem *pItem) const;
+		CItem AsItem (ICCItem *pItem, bool *retbItemType = NULL) const;
 		CItemType *AsItemType (ICCItem *pItem) const;
 		DWORD AsNameFlags (ICCItem *pItem);
 		CSpaceObject *AsSpaceObject (ICCItem *pItem);
@@ -154,12 +161,12 @@ class CFunctionContextWrapper : public ICCAtom
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
 		virtual ICCItem *Execute (CEvalContext *pCtx, ICCItem *pArgs) override;
 		virtual CString GetHelp (void) override { return NULL_STR; }
-		virtual CString GetStringValue (void) override { return m_pFunction->GetStringValue(); }
-		virtual ValueTypes GetValueType (void) override { return Function; }
-		virtual bool IsIdentifier (void) override { return false; }
-		virtual bool IsFunction (void) override { return true; }
-		virtual bool IsLambdaFunction (void) override { return true; }
-		virtual bool IsPrimitive (void) override { return false; }
+		virtual CString GetStringValue (void) const override { return m_pFunction->GetStringValue(); }
+		virtual ValueTypes GetValueType (void) const override { return Function; }
+		virtual bool IsIdentifier (void) const override { return false; }
+		virtual bool IsFunction (void) const override { return true; }
+		virtual bool IsLambdaFunction (void) const override { return true; }
+		virtual bool IsPrimitive (void) const override { return false; }
 		virtual CString Print (DWORD dwFlags = 0) override { return m_pFunction->Print(dwFlags); }
 		virtual void Reset (void) override { }
 
@@ -196,12 +203,12 @@ class CCXMLWrapper : public ICCAtom
 		//	ICCItem virtuals
 
 		virtual ICCItem *Clone (CCodeChain *pCC) override;
-		virtual CString GetStringValue (void) override { return m_pXML->ConvertToString(); }
+		virtual CString GetStringValue (void) const override { return m_pXML->ConvertToString(); }
 		virtual CString GetTypeOf (void) override { return CONSTLIT("xmlElement"); }
-		virtual ValueTypes GetValueType (void) override { return Complex; }
-		virtual bool IsIdentifier (void) override { return false; }
-		virtual bool IsFunction (void) override { return false; }
-		virtual bool IsPrimitive (void) override { return false; }
+		virtual ValueTypes GetValueType (void) const override { return Complex; }
+		virtual bool IsIdentifier (void) const override { return false; }
+		virtual bool IsFunction (void) const override { return false; }
+		virtual bool IsPrimitive (void) const override { return false; }
 		virtual CString Print (DWORD dwFlags = 0) override { return CCString::Print(GetStringValue(), dwFlags); }
 		virtual void Reset (void) override { }
 
@@ -258,7 +265,7 @@ class CAttributeDataBlock
 		void OnSystemChanged (CSystem *pSystem);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ReadFromStream (IReadStream *pStream);
-		void SetData (const CString &sAttrib, ICCItem *pItem);
+		void SetData (const CString &sAttrib, const ICCItem *pItem);
 		void SetFromXML (CXMLElement *pData);
 		void SetObjRefData (const CString &sAttrib, CSpaceObject *pObj);
 		void WriteToStream (IWriteStream *pStream, CSystem *pSystem = NULL);
