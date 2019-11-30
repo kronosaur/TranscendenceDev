@@ -141,6 +141,8 @@ class CNearestInArcAndRadiusRange
 class CAnyObjSelector
 	{
 	public:
+		bool CanUseSovereignEnemyList (void) const { return true; }
+
 		Metric GetMaxRange (void) const
 			{
 			return g_InfiniteDistance;
@@ -169,6 +171,8 @@ class CCriteriaObjSelector
 				m_Criteria(Criteria),
 				m_Ctx(pSource, m_Criteria)
 			{ }
+
+		bool CanUseSovereignEnemyList (void) const { return true; }
 
 		Metric GetMaxRange (void) const
 			{
@@ -204,6 +208,8 @@ class CVisibleEnemyObjSelector
 				m_Perception(Source.GetPerception())
 			{ }
 
+		bool CanUseSovereignEnemyList (void) const { return !m_bIncludeTargetableMissiles; }
+
 		Metric GetMaxRange (void) const
 			{
 			return m_Perception.GetRange(0);
@@ -224,19 +230,19 @@ class CVisibleEnemyObjSelector
 			{
 			return (Obj.GetCategory() == CSpaceObject::catShip
 						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
-						|| (m_bIncludeMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
+						|| (m_bIncludeTargetableMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
-		bool m_bIncludeMissiles = false;
+		bool m_bIncludeTargetableMissiles = false;
 	};
 
 //	CVisibleAggressorObjSelector
@@ -252,6 +258,8 @@ class CVisibleAggressorObjSelector
 				m_Perception(Source.GetPerception()),
 				m_iAggressorThreshold(Source.GetUniverse().GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD)
 			{ }
+
+		bool CanUseSovereignEnemyList (void) const { return !m_bIncludeTargetableMissiles; }
 
 		Metric GetMaxRange (void) const
 			{
@@ -301,6 +309,8 @@ class CVisibleObjSelector
 				m_Source(Source),
 				m_Perception(Source.GetPerception())
 			{ }
+
+		bool CanUseSovereignEnemyList (void) const { return !m_bIncludeTargetableMissiles; }
 
 		Metric GetMaxRange (void) const
 			{
@@ -358,7 +368,8 @@ class CSpaceObjectEnum
 			//	If we're the player, then we can't use the sovereign enemy list
 			//	because it doesn't handle angry objects.
 
-			if (pSovereign->IsPlayer())
+			if (pSovereign->IsPlayer()
+					|| !Selector.CanUseSovereignEnemyList())
 				{
 				const CSpaceObjectGrid &Grid = System.GetObjectGrid();
 				SSpaceObjectGridEnumerator i;
@@ -450,7 +461,8 @@ class CSpaceObjectEnum
 			//	If we're the player, then we can't use the sovereign enemy list
 			//	because it doesn't handle angry objects.
 
-			if (pSovereign->IsPlayer())
+			if (pSovereign->IsPlayer()
+					|| !Selector.CanUseSovereignEnemyList())
 				{
 				const CSpaceObjectGrid &Grid = System.GetObjectGrid();
 				SSpaceObjectGridEnumerator i;

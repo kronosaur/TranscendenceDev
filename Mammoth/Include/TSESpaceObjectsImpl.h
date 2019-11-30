@@ -514,7 +514,6 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool CanAttack (void) const override { return m_fTargetable; }
 		virtual bool CanBeAttacked (void) const override { return m_fTargetable; }
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
-		virtual bool ClassCanAttack (void) override { return m_fTargetable; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
