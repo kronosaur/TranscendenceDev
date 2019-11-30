@@ -281,7 +281,7 @@ class CTimeSpan
 		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
-		static bool ParsePartial (char *pPos, DWORD *retdwDays, DWORD *retdwMilliseconds, char **retpPos);
+		static bool ParsePartial (const char *pPos, DWORD *retdwDays, DWORD *retdwMilliseconds, const char **retpPos);
 
 		DWORD m_Days;
 		DWORD m_Milliseconds;
@@ -557,6 +557,38 @@ struct SConstString
 #define CONSTUSE(constEntry)	CString((constEntry).pszString, (constEntry).iLen, true)
 extern const CString NULL_STR;
 
+static constexpr char CHAR_LEFT_DOUBLE_QUOTE =		'\x93';
+static constexpr char CHAR_RIGHT_DOUBLE_QUOTE =		'\x94';
+
+static constexpr SConstString CSTR_LEFT_DOUBLE_QUOTE =	CONSTDEFS("\x93");
+static constexpr SConstString CSTR_RIGHT_DOUBLE_QUOTE =	CONSTDEFS("\x94");
+static constexpr SConstString CSTR_BULLET =				CONSTDEFS("\x95");
+static constexpr SConstString CSTR_MDASH =				CONSTDEFS("\x97");
+static constexpr SConstString CSTR_TRADEMARK =			CONSTDEFS("\x99");
+static constexpr SConstString CSTR_COPYRIGHT =			CONSTDEFS("\xA9");
+static constexpr SConstString CSTR_REGISTERED =			CONSTDEFS("\xAE");
+static constexpr SConstString CSTR_DEGREE =				CONSTDEFS("\xB0");
+static constexpr SConstString CSTR_PLUS_MINUS =			CONSTDEFS("\xB1");
+
+static constexpr SConstString CSTR_CAP_AACUTE =			CONSTDEFS("\xC1");
+static constexpr SConstString CSTR_CAP_EACUTE =			CONSTDEFS("\xC9");
+static constexpr SConstString CSTR_CAP_IACUTE =			CONSTDEFS("\xCD");
+static constexpr SConstString CSTR_CAP_NTILDE =			CONSTDEFS("\xD1");
+static constexpr SConstString CSTR_CAP_OACUTE =			CONSTDEFS("\xD3");
+static constexpr SConstString CSTR_TIMES =				CONSTDEFS("\xD7");
+static constexpr SConstString CSTR_CAP_UACUTE =			CONSTDEFS("\xDA");
+static constexpr SConstString CSTR_CAP_UUML =			CONSTDEFS("\xDC");
+static constexpr SConstString CSTR_AACUTE =				CONSTDEFS("\xE1");
+static constexpr SConstString CSTR_EACUTE =				CONSTDEFS("\xE9");
+static constexpr SConstString CSTR_IACUTE =				CONSTDEFS("\xED");
+static constexpr SConstString CSTR_NTILDE =				CONSTDEFS("\xF1");
+static constexpr SConstString CSTR_OACUTE =				CONSTDEFS("\xF3");
+static constexpr SConstString CSTR_UACUTE =				CONSTDEFS("\xFA");
+static constexpr SConstString CSTR_UUML =				CONSTDEFS("\xFC");
+
+static constexpr SConstString CSTR_WINGDING_LEFT_ARROW =	CONSTDEFS("\xE7");
+static constexpr SConstString CSTR_WINGDING_RIGHT_ARROW =	CONSTDEFS("\xE8");
+
 class CString : public CObject
 	{
 	public:
@@ -576,8 +608,9 @@ class CString : public CObject
 		CString (void);
 		CString (const char *pString);
 		CString (CharacterSets iCharSet, const char *pString);
-		CString (char *pString, int iLength);
+		CString (const char *pString, int iLength);
 		CString (const char *pString, int iLength, BOOL bExternal);
+		CString (const SConstString &String);
 		virtual ~CString (void);
 
 		CString (const CString &pString);
@@ -932,7 +965,7 @@ class IWriteStream
 	public:
 		virtual ALERROR Close (void) = 0;
 		virtual ALERROR Create (void) = 0;
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
+		virtual ALERROR Write (const char *pData, int iLength, int *retiBytesWritten = NULL) = 0;
 
 		ALERROR Write (char chChar, int iLength = 1) { return WriteChar(chChar, iLength); }
 		ALERROR Write (int iValue) { return Write((char *)&iValue, sizeof(DWORD)); }
@@ -972,7 +1005,7 @@ class CMemoryWriteStream : public CObject, public IWriteStream
 
 		virtual ALERROR Close (void) override;
 		virtual ALERROR Create (void) override;
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+		virtual ALERROR Write (const char *pData, int iLength, int *retiBytesWritten = NULL) override;
 
 		//	We want to inherit all the overloaded versions of Write.
 
@@ -1048,7 +1081,7 @@ class CFileWriteStream : public CObject, public IWriteStream
 
 		virtual ALERROR Close (void) override;
 		virtual ALERROR Create (void) override;
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+		virtual ALERROR Write (const char *pData, int iLength, int *retiBytesWritten = NULL) override;
 
 		//	We want to inherit all the overloaded versions of Write.
 
@@ -1396,7 +1429,7 @@ bool kernelDispatchUntilEventSet (HANDLE hEvent, DWORD dwTimeout = INFINITE);
 CString strCat (const CString &sString1, const CString &sString2);
 int strCompare (const CString &sString1, const CString &sString2);
 int strCompareAbsolute (const CString &sString1, const CString &sString2);
-int strCompareAbsolute (const char *pS1, const char *pS2);
+int strCompareAbsolute (LPCSTR pS1, LPCSTR pS2);
 CString strConvert (const CString &sText, DWORD dwFromCP, DWORD dwToCP);
 inline CString strANSIToUTF8 (const CString &sText) { return strConvert(sText, CP_ACP, CP_UTF8); }
 inline CString strUTF8ToANSI (const CString &sText) { return strConvert(sText, CP_UTF8, CP_ACP); }
@@ -1438,28 +1471,28 @@ CString strFormatMicroseconds (DWORD dwMicroseconds);
 CString strFormatMilliseconds (DWORD dwMilliseconds);
 CString strFromDouble (double rValue, int iDecimals = -1);
 CString strFromInt (int iInteger, bool bSigned = true);
-int strGetHexDigit (char *pPos);
+int strGetHexDigit (const char *pPos);
 char strGetHexDigit (int iDigit);
-inline bool strIsAlpha (char *pPos) { return (::IsCharAlpha(*pPos) == TRUE); }
-inline bool strIsAlphaNumeric (char *pPos) { return (::IsCharAlphaNumeric(*pPos) == TRUE); }
-inline bool strIsASCIIAlpha (char *pPos) { return (*pPos >= 'a' && *pPos <= 'z') || (*pPos >= 'A' && *pPos <= 'Z'); }
-inline bool strIsASCIIControl (char *pPos) { return ((BYTE)*pPos <= (BYTE)0x1f) || *pPos == 0x7f; }
-bool strIsASCIISymbol (char *pPos);
-inline bool strIsDigit (char *pPos) { return (*pPos >= '0' && *pPos <= '9'); }
+inline bool strIsAlpha (const char *pPos) { return (::IsCharAlpha(*pPos) == TRUE); }
+inline bool strIsAlphaNumeric (const char *pPos) { return (::IsCharAlphaNumeric(*pPos) == TRUE); }
+inline bool strIsASCIIAlpha (const char *pPos) { return (*pPos >= 'a' && *pPos <= 'z') || (*pPos >= 'A' && *pPos <= 'Z'); }
+inline bool strIsASCIIControl (const char *pPos) { return ((BYTE)*pPos <= (BYTE)0x1f) || *pPos == 0x7f; }
+bool strIsASCIISymbol (const char *pPos);
+inline bool strIsDigit (const char *pPos) { return (*pPos >= '0' && *pPos <= '9'); }
 bool strIsInt (const CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
-inline bool strIsWhitespace (char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
+inline bool strIsWhitespace (const char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
 CString strJoin (const TArray<CString> &List, const CString &sConjunction);
 CString strLoadFromRes (HINSTANCE hInst, int iResID);
 inline char strLowerCaseAbsolute (char chChar) { return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
 bool strNeedsEscapeCodes (const CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001
-double strParseDouble (char *pStart, double rNullResult, char **retpEnd, bool *retbNullValue);
-int strParseInt (char *pStart, int iNullResult, DWORD dwFlags, char **retpEnd = NULL, bool *retbNullValue = NULL);
-inline int strParseInt (char *pStart, int iNullResult, char **retpEnd = NULL, bool *retbNullValue = NULL) { return strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
-int strParseIntOfBase (char *pStart, int iBase, int iNullResult, char **retpEnd = NULL, bool *retbNullValue = NULL);
+double strParseDouble (const char *pStart, double rNullResult, const char **retpEnd, bool *retbNullValue);
+int strParseInt (const char *pStart, int iNullResult, DWORD dwFlags, const char **retpEnd = NULL, bool *retbNullValue = NULL);
+inline int strParseInt (const char *pStart, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL) { return strParseInt(pStart, iNullResult, 0, retpEnd, retbNullValue); }
+int strParseIntOfBase (const char *pStart, int iBase, int iNullResult, const char **retpEnd = NULL, bool *retbNullValue = NULL);
 
-void strParseWhitespace (char *pPos, char **retpPos);
+void strParseWhitespace (const char *pPos, const char **retpPos);
 CString strPattern (const CString &sPattern, LPVOID *pArgs);
 CString strPatternSubst (CString sLine, ...);
 
@@ -1557,6 +1590,7 @@ bool strRegEx (char *pStart, const CString &sPattern, TArray<SRegExMatch> *retMa
 //	Math functions (Math.cpp)
 
 int mathAdjust (int iValue, int iPercent);
+int mathAdjustRound (int iValue, int iPercent);
 DWORD mathGetSeed (void);
 DWORD mathMakeSeed (DWORD dwValue);
 int mathNearestPowerOf2 (int x);
@@ -1592,7 +1626,7 @@ bool sysOpenURL (const CString &sURL);
 
 DWORD utlHashFunctionCase (BYTE *pKey, int iKeyLen);
 void utlMemSet (LPVOID pDest, DWORD Count, BYTE Value);
-void utlMemCopy (char *pSource, char *pDest, DWORD dwCount);
+void utlMemCopy (const char *pSource, char *pDest, DWORD dwCount);
 BOOL utlMemCompare (char *pSource, char *pDest, DWORD dwCount);
 inline LPVOID MemAlloc (int iSize) { return (BYTE *)HeapAlloc(GetProcessHeap(), 0, iSize); }
 inline void MemFree (LPVOID pMem) { HeapFree(GetProcessHeap(), 0, pMem); }
@@ -1626,6 +1660,12 @@ int KeyCompare (const KEY &Key1, const KEY &Key2)
 		return -1;
 	else
 		return 0;
+	}
+
+template<>
+inline int KeyCompare<LPCSTR> (const LPCSTR &Key1, const LPCSTR &Key2)
+	{
+	return strCompareAbsolute(Key1, Key2);
 	}
 
 template<>

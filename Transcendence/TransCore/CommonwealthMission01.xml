@@ -37,6 +37,7 @@
 			forceUndockAfterDebrief=	"false"
 			noDebrief=					"false"
 			noFailureOnOwnerDestroyed=	"false"
+			noInProgress=				"false"
 			noStats=					"false"
 			recordNonPlayer=			"false"
 			>

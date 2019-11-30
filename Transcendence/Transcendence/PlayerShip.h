@@ -189,6 +189,7 @@ class CPlayerShipController : public IShipController
 		virtual CString GetAISettingString (const CString &sSetting) override;
 		virtual CString GetClass (void) override { return CONSTLIT("player"); }
 		virtual int GetCombatPower (void) override;
+		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override { return &m_Credits; }
 		virtual CCurrencyBlock *GetCurrencyBlock (void) override { return &m_Credits; }
 		virtual OrderTypes GetCurrentOrderEx (CSpaceObject **retpTarget = NULL, IShipController::SData *retData = NULL) override;
 		virtual CSpaceObject *GetDestination (void) const override { return m_pDestination; }
@@ -202,8 +203,8 @@ class CPlayerShipController : public IShipController
 		virtual int GetOrderCount (void) const override { return (m_iOrder == IShipController::orderNone ? 0 : 1); }
 		virtual bool GetDeviceActivate (void) override;
 		virtual int GetFireDelay (void) override { return mathRound(5.0 / STD_SECONDS_PER_UPDATE); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles = false) override;
-		virtual bool IsAngryAt (CSpaceObject *pObj) const override;
+		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
+		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayer (void) const override { return true; }
 		virtual void ReadFromStream (SLoadCtx &Ctx, CShip *pShip) override;
 		virtual void SetManeuver (EManeuverTypes iManeuver) override { m_iManeuver = iManeuver; }

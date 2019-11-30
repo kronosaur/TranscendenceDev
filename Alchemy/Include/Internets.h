@@ -254,7 +254,7 @@ class CBase64Encoder : public IWriteStream
 
 		virtual ALERROR Close (void) override;
 		virtual ALERROR Create (void) override { return NOERROR; }
-		virtual ALERROR Write (char *pData, int iLength, int *retiBytesWritten = NULL) override;
+		virtual ALERROR Write (const char *pData, int iLength, int *retiBytesWritten = NULL) override;
 
 		//	We want to inherit all the overloaded versions of Write.
 
@@ -270,6 +270,13 @@ class CBase64Encoder : public IWriteStream
 	};
 
 //	Utilities ------------------------------------------------------------------
+
+class CHTML
+	{
+	public:
+		static bool FindStdEntity (const CString &sEntity, CString *retsValue);
+		static CString TranslateStdEntity (const CString &sEntity);
+	};
 
 CString urlCompose (const CString &sProtocol, const CString &sHost, const CString &sPath);
 CString urlDecode (const CString &sURL, DWORD dwFlags = 0);

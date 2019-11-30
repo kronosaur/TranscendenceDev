@@ -23,7 +23,6 @@
 			regen=              "16"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion5;"
 			ejectaType=			"&vtWreckEjecta;"
 

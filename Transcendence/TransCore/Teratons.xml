@@ -28,7 +28,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -175,9 +174,7 @@
 
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -369,7 +366,7 @@
 						}))
 					(if (gr (count text) 46)
 						(setq text (cat (subset text 0 45)
-										(typTranslate &unidCommonText; 'elipsis)
+										(typTranslate &unidCommonText; 'ellipsis)
 							))
 						)
 					text
@@ -445,7 +442,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -514,9 +510,7 @@
 
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -562,7 +556,6 @@
 			sovereign=			"&svTeratons;"
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itIthaliumArmor;"
@@ -633,9 +626,7 @@
 						<Actions>
 							<Action id="actionCommoditiesExchange">
 								(if (not (intTeratonMugging))
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -684,7 +675,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			mass=				"5000"
@@ -777,7 +767,6 @@
 			dockingPorts=		"4"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			mass=				"5000"
@@ -972,6 +961,13 @@
 	<Type UNID="&baTeratonNestBase;"
 			inherit=			"&unidCommonText;"
 			>
+		<Properties>
+			<!--
+			By default Teratons do not bother checking for military ID.
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+		</Properties>
+
 		<Language>
 			<Text id="actionCommoditiesExchange">[T]rading Chamber</Text>
 

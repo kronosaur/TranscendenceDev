@@ -12,6 +12,16 @@
 #define PROPERTY_REPAIR_COST					CONSTLIT("repairCost")
 #define PROPERTY_REPAIR_LEVEL					CONSTLIT("repairLevel")
 
+void CArmorItem::AccumulateAttributes (TArray<SDisplayAttribute> *retList) const
+
+//	AccumulateAttributes
+//
+//	Accumulate display attributes.
+
+	{
+	GetArmorClass().AccumulateAttributes(*this, retList);
+	}
+
 ICCItemPtr CArmorItem::FindProperty (const CString &sProperty) const
 
 //	FindProperty

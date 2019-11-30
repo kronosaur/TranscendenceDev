@@ -84,46 +84,50 @@ class DamageDesc
 			{ }
 
 		void AddEnhancements (const CItemEnhancementStack *pEnhancements);
-		inline bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
+		bool CausesSRSFlash (void) const { return (m_fNoSRSFlash ? false : true); }
 		ICCItem *FindProperty (const CString &sName) const;
-		inline DestructionTypes GetCause (void) const { return m_iCause; }
-		inline const DiceRange &GetDamageRange (void) const { return m_Damage; }
-		inline DamageTypes GetDamageType (void) const { return m_iType; }
+		DestructionTypes GetCause (void) const { return m_iCause; }
+		const DiceRange &GetDamageRange (void) const { return m_Damage; }
+		DamageTypes GetDamageType (void) const { return m_iType; }
 		Metric GetDamageValue (DWORD dwFlags = 0) const;
 		CString GetDesc (DWORD dwFlags = 0);
 		int GetMinDamage (void) const;
 		int GetMaxDamage (void) const;
 		int GetSpecialDamage (SpecialDamageTypes iSpecial, DWORD dwFlags = 0) const;
 		bool IsAutomatedWeapon (void) const { return (m_fAutomatedWeapon ? true : false); }
+		bool IsEmpty (void) const { return (m_Damage.IsEmpty() && m_iType == damageGeneric); }
 		bool IsEnergyDamage (void) const;
 		bool IsMatterDamage (void) const;
 		ALERROR LoadFromXML (SDesignLoadCtx &Ctx, const CString &sAttrib);
 		void ReadFromStream (SLoadCtx &Ctx);
 		int RollDamage (void) const;
-        inline void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
-		inline void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
-		inline void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
+        void ScaleDamage (Metric rAdj) { m_Damage.Scale(rAdj); }
+		void SetAutomatedWeapon (void) { m_fAutomatedWeapon = true; }
+		void SetCause (DestructionTypes iCause) { m_iCause = iCause; }
 		void SetDamage (int iDamage);
-		inline void SetDamageType (DamageTypes iType) { m_iType = iType; }
-		inline void SetNoSRSFlash (void) { m_fNoSRSFlash = true; }
+		void SetDamageType (DamageTypes iType) { m_iType = iType; }
+		void SetNoSRSFlash (void) { m_fNoSRSFlash = true; }
 		void SetSpecialDamage (SpecialDamageTypes iSpecial, int iLevel);
 		void WriteToStream (IWriteStream *pStream) const;
 
-		inline int GetArmorDamageLevel (void) const { return (int)m_ArmorDamage; }
-		inline int GetBlindingDamage (void) const { return (int)m_BlindingDamage; }
-		inline int GetDeviceDamage (void) const { return (int)m_DeviceDamage; }
-		inline int GetDeviceDisruptDamage (void) const { return (int)m_DeviceDisruptDamage; }
-		inline int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
-		inline int GetEMPDamage (void) const { return (int)m_EMPDamage; }
+		int GetArmorDamageLevel (void) const { return (int)m_ArmorDamage; }
+		int GetBlindingDamage (void) const { return (int)m_BlindingDamage; }
+		int GetDeviceDamage (void) const { return (int)m_DeviceDamage; }
+		int GetDeviceDisruptDamage (void) const { return (int)m_DeviceDisruptDamage; }
+		int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
+		int GetEMPDamage (void) const { return (int)m_EMPDamage; }
         int GetMassDestructionAdj (void) const;
+		int GetMassDestructionDamage (void) const { return m_MassDestructionAdj; }
         int GetMassDestructionLevel (void) const;
-		inline int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
-		inline int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
-		inline int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
-		inline int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
-		inline int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
-		inline int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
-		inline int GetTimeStopDamageLevel (void) const { return (int)m_TimeStopDamage; }
+		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
+		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningWMDAdj (void);
+		int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
+		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
+		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
+		int GetShieldDamageLevel (void) const { return (int)m_ShieldDamage; }
+		int GetShieldPenetratorAdj (void) const { return (int)(m_ShieldPenetratorAdj ? (2 * (m_ShieldPenetratorAdj * m_ShieldPenetratorAdj) + 2) : 0); }
+		int GetTimeStopDamageLevel (void) const { return (int)m_TimeStopDamage; }
 		int GetTimeStopResistChance (int iTargetLevel) const;
 
 		static SpecialDamageTypes ConvertPropertyToSpecialDamageTypes (const CString &sValue);
@@ -131,10 +135,11 @@ class DamageDesc
         static int GetDamageLevel (DamageTypes iType);
         static int GetDamageTier (DamageTypes iType);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
+        static int GetMassDestructionAdjFromValue (int iValue);
         static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
-		inline void AddBonus (int iBonus) { m_iBonus += iBonus; }
+		void AddBonus (int iBonus) { m_iBonus += iBonus; }
 		ALERROR LoadTermFromXML (SDesignLoadCtx &Ctx, const CString &sType, const CString &sArg);
 		ALERROR ParseTerm (SDesignLoadCtx &Ctx, char *pPos, CString *retsKeyword, CString *retsValue, char **retpPos);
 
@@ -202,32 +207,32 @@ struct SDamageCtx
 		SDamageCtx (const DamageDesc &DamageArg);
 		~SDamageCtx (void);
 
-		inline void ClearTimeStop (void) { m_bTimeStop = false; }
-		inline int GetBlindTime (void) const { return m_iBlindTime; }
-		inline int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
-		inline CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
-		inline int GetParalyzedTime (void) const { return m_iParalyzeTime; }
-		inline bool IsBlinded (void) const { return m_bBlind; }
-		inline bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
-		inline bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
-		inline bool IsDisintegrated (void) const { return m_bDisintegrate; }
-		inline bool IsParalyzed (void) const { return m_bParalyze; }
-		inline bool IsRadioactive (void) const { return m_bRadioactive; }
-		inline bool IsShattered (void) const { return m_bShatter; }
-		inline bool IsShotReflected (void) const { return m_bReflect; }
-		inline bool IsTimeStopped (void) const { return m_bTimeStop; }
-		inline void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
-		inline void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
-		inline void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }
-		inline void SetDeviceDisrupted (bool bValue = true) { m_bDeviceDisrupt = bValue; }
-		inline void SetDeviceDisruptedTime (int iTime) { m_iDisruptTime = iTime; }
-		inline void SetDisintegrated (bool bValue = true) { m_bDisintegrate = bValue; }
-		inline void SetParalyzed (bool bValue = true) { m_bParalyze = bValue; }
-		inline void SetParalyzedTime (int iTime) { m_iParalyzeTime = iTime; }
-		inline void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
-		inline void SetShattered (bool bValue = true) { m_bShatter = bValue; }
-		inline void SetShotReflected (bool bValue = true) { m_bReflect = bValue; }
-		inline void SetTimeStopped (bool bValue = true) { m_bTimeStop = bValue; }
+		void ClearTimeStop (void) { m_bTimeStop = false; }
+		int GetBlindTime (void) const { return m_iBlindTime; }
+		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
+		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
+		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
+		bool IsBlinded (void) const { return m_bBlind; }
+		bool IsDeviceDamaged (void) const { return m_bDeviceDamage; }
+		bool IsDeviceDisrupted (void) const { return m_bDeviceDisrupt; }
+		bool IsDisintegrated (void) const { return m_bDisintegrate; }
+		bool IsParalyzed (void) const { return m_bParalyze; }
+		bool IsRadioactive (void) const { return m_bRadioactive; }
+		bool IsShattered (void) const { return m_bShatter; }
+		bool IsShotReflected (void) const { return m_bReflect; }
+		bool IsTimeStopped (void) const { return m_bTimeStop; }
+		void SetBlinded (bool bValue = true) { m_bBlind = bValue; }
+		void SetBlindedTime (int iTime) { m_iBlindTime = iTime; }
+		void SetDeviceDamaged (bool bValue = true) { m_bDeviceDamage = bValue; }
+		void SetDeviceDisrupted (bool bValue = true) { m_bDeviceDisrupt = bValue; }
+		void SetDeviceDisruptedTime (int iTime) { m_iDisruptTime = iTime; }
+		void SetDisintegrated (bool bValue = true) { m_bDisintegrate = bValue; }
+		void SetParalyzed (bool bValue = true) { m_bParalyze = bValue; }
+		void SetParalyzedTime (int iTime) { m_iParalyzeTime = iTime; }
+		void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
+		void SetShattered (bool bValue = true) { m_bShatter = bValue; }
+		void SetShotReflected (bool bValue = true) { m_bReflect = bValue; }
+		void SetTimeStopped (bool bValue = true) { m_bTimeStop = bValue; }
 
 		CSpaceObject *pObj = NULL;					//	Object hit
 		CWeaponFireDesc *pDesc = NULL;				//	WeaponFireDesc
@@ -285,10 +290,14 @@ struct SDamageCtx
 
 struct SDestroyCtx
 	{
-	CSpaceObject *GetOrderGiver (void) const;
-	inline bool WasDestroyed (void) const { return (iCause != enteredStargate && iCause != ascended); }
+	SDestroyCtx (CSpaceObject &ObjArg) :
+			Obj(ObjArg)
+		{ }
 
-	CSpaceObject *pObj = NULL;						//	Object destroyed
+	CSpaceObject *GetOrderGiver (void) const;
+	bool WasDestroyed (void) const { return (iCause != enteredStargate && iCause != ascended); }
+
+	CSpaceObject &Obj;								//	Object destroyed
 	CWeaponFireDesc *pDesc = NULL;					//	WeaponFireDesc
 	CDamageSource Attacker;							//	Ultimate attacker
 	CSpaceObject *pWreck = NULL;					//	Wreck left behind
@@ -307,7 +316,7 @@ class DamageTypeSet
 		ALERROR InitFromXML (const CString &sAttrib);
 		void Add (int iType) { if (iType > damageGeneric) m_dwSet |= (1 << iType); }
 		bool InSet (int iType) const { return (iType <= damageGeneric ? false : ((m_dwSet & (1 << iType)) ? true : false)); }
-		inline bool IsEmpty (void) const { return (m_dwSet == 0); }
+		bool IsEmpty (void) const { return (m_dwSet == 0); }
 		void Remove (int iType) { if (iType > damageGeneric) m_dwSet &= ~(1 << iType); }
 
 	private:
@@ -399,17 +408,13 @@ class CWeaponFireDesc
 
 		struct SInitOptions
 			{
-			SInitOptions (void) :
-					iLevel(1),
-					bDamageOnly(false)
-				{ }
-
 			CString sUNID;					//	UNID of weapon fire desc
-			int iLevel;						//	Level (for scalable weapons)
+			int iLevel = 1;					//	Level (for scalable weapons)
 
 			//	Options
 
-			bool bDamageOnly;				//	Defines damage (not entire projectile desc)
+			bool bDamageOnly = false;		//	Defines damage (not entire projectile desc)
+			bool bIsFragment = false;		//	We're initializing a fragment
 			};
 
         struct SVaporTrailDesc
@@ -432,10 +437,11 @@ class CWeaponFireDesc
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
         void ApplyAcceleration (CSpaceObject *pMissile) const;
-		inline bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
-        inline bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
+		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
+		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
+        bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (CSpaceObject *pObj) const;
-		inline bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
+		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		IEffectPainter *CreateEffectPainter (SShotCreateCtx &CreateCtx);
 		void CreateFireEffect (CSystem *pSystem, CSpaceObject *pSource, const CVector &vPos, const CVector &vVel, int iDir);
 		void CreateHitEffect (CSystem *pSystem, SDamageCtx &DamageCtx);
@@ -445,7 +451,7 @@ class CWeaponFireDesc
 		bool FindDataField (const CString &sField, CString *retsValue) const;
 		CEffectCreator *FindEffectCreator (const CString &sUNID);
 		bool FindEventHandler (const CString &sEvent, SEventHandlerDesc *retEvent = NULL) const;
-		inline bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
+		bool FindEventHandler (ECachedHandlers iEvent, SEventHandlerDesc *retEvent = NULL) const 
 			{
 			if (!m_CachedEvents[iEvent].pCode)
 				return false;
@@ -455,9 +461,8 @@ class CWeaponFireDesc
 			}
 
 		ICCItem *FindProperty (const CString &sProperty) const;
-		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, char **retpPos = NULL);
+		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, const char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
-        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx);
 		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);
 		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
@@ -535,6 +540,7 @@ class CWeaponFireDesc
         bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
+		bool IsTracking (const SShotCreateCtx &Ctx) const;
 		bool IsTrackingOrHasTrackingFragments (void) const;
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
@@ -555,13 +561,20 @@ class CWeaponFireDesc
 		CWeaponFireDesc (const CWeaponFireDesc &Desc) = delete;
         CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
+		int CalcDefaultHitPoints (void) const;
+		int CalcDefaultInteraction (void) const;
         Metric CalcMaxEffectiveRange (void) const;
-		Metric CalcSpeed (Metric rPercentOfLight) const;
+		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
         SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
+		bool InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+		bool InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+		bool InitMissileSpeed (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
+
+		static bool LoadFireType (const CString &sValue, FireTypes *retiFireType = NULL);
 
 		CExtension *m_pExtension = NULL;		//	Extension that defines the weaponfiredesc
 		CString m_sUNID;						//	Identification. The format is
@@ -656,9 +669,18 @@ class CWeaponFireDesc
         DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
         DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
         DWORD m_fTargetable:1;					//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
-        DWORD m_fSpare8:1;
+        DWORD m_fDefaultInteraction:1;			//	If TRUE, compute default interaction at bind-time.
 
-		DWORD m_dwSpare:16;
+		DWORD m_fDefaultHitPoints:1;			//	If TRUE, computer hit points at bind-time.
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
         static SOldEffects m_NullOldEffects;
 	};

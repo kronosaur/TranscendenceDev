@@ -286,6 +286,24 @@
 					{	test: '(= nil '(1 2 3))			result: Nil }
 					{	test: '(!= nil '(1 2 3))			result: True }
 
+					{	test: '(= { } { })					result: True }
+					{	test: '(= nil { })					result: True }
+					{	test: '(= nil { a:1 })				result: Nil }
+
+					{	test: '(= { a:1 b:'foo }
+								{ b:'foo a:1 }
+								)							result: True }
+
+					{	test: '(= { a:1 b:nil } { a:1 })		result: True }
+
+					{	test: '(= (set@ { a:1 b:'foo } 'b nil)
+								{ a:1 }
+								)							result: True }
+
+					{	test: '(= (struct '(a 1) '(b nil))
+								{ a:1 }
+								)							result: True }
+
 					;	Conversion code
 
 					{	test: '(convertTo 'int32 5)			result: 5 }

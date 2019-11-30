@@ -32,7 +32,6 @@
 			sovereign=			"&svSapiens;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			armorID=			"&itHardenedReactiveArmor;"
 			hitPoints=			"120"
@@ -117,7 +116,6 @@
 			sovereign=			"&svSapiens;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itHardenedReactiveArmor;"

@@ -23,7 +23,7 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 
 	//	Now parse any pieces that we deal with.
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)

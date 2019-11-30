@@ -52,7 +52,9 @@
 
 			<!-- Basic -->
 
+			<Text id="dashSeparator">" &mdash; "</Text>
 			<Text id="elipsis">...</Text>
+			<Text id="ellipsis">...</Text>
 			<Text id="listAnd">" and "</Text>
 			<Text id="listComma">", "</Text>
 			<Text id="listCommaAnd">", and "</Text>

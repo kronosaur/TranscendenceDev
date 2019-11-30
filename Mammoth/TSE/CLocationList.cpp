@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-const Metric OVERLAP_DIST =	25.0 * LIGHT_SECOND;
-
 void CLocationList::FillCloseLocations (void)
 
 //	FillCloseLocations
@@ -19,8 +17,6 @@ void CLocationList::FillCloseLocations (void)
 
 	if (!m_bMinDistCheck)
 		{
-		Metric rMinDist2 = OVERLAP_DIST * OVERLAP_DIST;
-
 		//	Find overlapping locations by looping over all
 		//	pair combinations.
 
@@ -48,14 +44,14 @@ void CLocationList::FillCloseLocations (void)
 				//	Compute the distance between the two locations
 
 				CVector vDist = L2.GetOrbit().GetObjectPos() - L1.GetOrbit().GetObjectPos();
-				if (vDist.Length2() < rMinDist2)
+				if (vDist.Length2() < OVERLAP_DIST2)
 					{
 					//	pL1 and pL2 are two locations that are too close to each other
 					//	and neither is blocked.
 					//
 					//	If both locations are currently empty, then block one at random
 
-					if (L1.IsEmpty() && L2.IsEmpty())
+					if (L1.CanBeBlocked() && L2.CanBeBlocked())
 						{
 						if (mathRandom(1, 100) <= 50)
 							L1.SetBlocked();
@@ -65,9 +61,9 @@ void CLocationList::FillCloseLocations (void)
 
 					//	Otherwise, block the non-empty one
 
-					else if (L1.IsEmpty())
+					else if (L1.CanBeBlocked())
 						L1.SetBlocked();
-					else if (L2.IsEmpty())
+					else if (L2.CanBeBlocked())
 						L2.SetBlocked();
 
 					//	If neither is empty, then there is nothing we can do
@@ -75,7 +71,7 @@ void CLocationList::FillCloseLocations (void)
 					else
 						{
 						//	Technically, this should never happen.
-						::kernelDebugLogPattern("Found two non-empty locations within 25 light-seconds.");
+						::kernelDebugLogPattern("Found two conflicting locations within 25 light-seconds.");
 						}
 
 					//	Continue looping, since there could be another location that is
@@ -103,7 +99,7 @@ void CLocationList::FillOverlappingWith (CSpaceObject *pObj)
 	for (i = 0; i < m_List.GetCount(); i++)
 		{
 		CLocationDef &Loc = GetLocation(i);
-		if (Loc.IsBlocked() || !Loc.IsEmpty())
+		if (Loc.IsBlocked() || !Loc.CanBeBlocked())
 			continue;
 
 		CVector vPos = Loc.GetOrbit().GetObjectPos();

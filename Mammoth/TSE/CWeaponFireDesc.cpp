@@ -67,6 +67,7 @@
 #define PARTICLE_SPREAD_WIDTH_ATTRIB			CONSTLIT("particleSpreadWidth")
 #define PASSTHROUGH_ATTRIB						CONSTLIT("passthrough")
 #define POWER_USE_ATTRIB						CONSTLIT("powerUse")
+#define RANGE_ATTRIB							CONSTLIT("range")
 #define RELATIVISTIC_SPEED_ATTRIB				CONSTLIT("relativisticSpeed")
 #define BEAM_CONTINUOUS_ATTRIB					CONSTLIT("repeating")
 #define CONTINUOUS_FIRE_DELAY_ATTRIB			CONSTLIT("repeatingDelay")
@@ -103,12 +104,13 @@
 #define ON_DESTROY_SHOT_EVENT					CONSTLIT("OnDestroyShot")
 #define ON_FRAGMENT_EVENT						CONSTLIT("OnFragment")
 
+#define PROPERTY_INTERACTION					CONSTLIT("interaction")
 #define PROPERTY_LIFETIME						CONSTLIT("lifetime")
+#define PROPERTY_STD_HP							CONSTLIT("stdHP")
+#define PROPERTY_STD_INTERACTION				CONSTLIT("stdInteraction")
 #define PROPERTY_TRACKING						CONSTLIT("tracking")
 
 #define STR_SHIELD_REFLECT						CONSTLIT("reflect")
-
-const Metric DEFAULT_FRAG_THRESHOLD =			4.0;	//	4 light-seconds (~95 pixels)
 
 CWeaponFireDesc::SOldEffects CWeaponFireDesc::m_NullOldEffects;
 
@@ -197,6 +199,172 @@ void CWeaponFireDesc::ApplyAcceleration (CSpaceObject *pMissile) const
 		}
     }
 
+Metric CWeaponFireDesc::CalcDamage (DWORD dwDamageFlags) const
+
+//	CalcDamage
+//
+//	Computes the total average damage for this shot.
+
+	{
+	//	If we have fragments we need to recurse
+
+	if (HasFragments())
+		{
+		Metric rTotal = 0.0;
+
+		SFragmentDesc *pFragment = GetFirstFragment();
+		while (pFragment)
+			{
+			//	By default, 1/8 of fragments hit, unless the fragments are radius type
+
+			Metric rHitFraction;
+			switch (pFragment->pDesc->GetType())
+				{
+				case ftArea:
+				case ftRadius:
+					rHitFraction = 1.0;
+					break;
+
+				default:
+                    if (pFragment->pDesc->IsTracking())
+                        rHitFraction = CWeaponClass::EXPECTED_TRACKING_FRAGMENT_HITS;
+                    else
+                        rHitFraction = CWeaponClass::EXPECTED_FRAGMENT_HITS;
+                    break;
+				}
+
+            //  Adjust for passthrough
+
+            if (pFragment->pDesc->GetPassthrough() > 0)
+                {
+                Metric rPassthroughProb = Min(0.99, pFragment->pDesc->GetPassthrough() / 100.0);
+                rHitFraction *= Min(1.0 / (1.0 - rPassthroughProb), CWeaponClass::MAX_EXPECTED_PASSTHROUGH);
+                }
+
+			//	Add up values
+
+			rTotal += rHitFraction * pFragment->Count.GetAveValueFloat() * pFragment->pDesc->CalcDamage(dwDamageFlags);
+
+			pFragment = pFragment->pNext;
+			}
+
+		return rTotal;
+		}
+	else
+		{
+		//	Average damage depends on type
+
+		switch (GetType())
+			{
+			case ftArea:
+				//	Assume 1/8th damage points hit on average
+				return CWeaponClass::EXPECTED_SHOCKWAVE_HITS * GetAreaDamageDensityAverage() * GetDamage().GetDamageValue(dwDamageFlags);
+
+			case ftRadius:
+				//	Assume average target is far enough away to take half damage
+				return CWeaponClass::EXPECTED_RADIUS_DAMAGE * GetDamage().GetDamageValue(dwDamageFlags);
+
+			default:
+				return GetDamage().GetDamageValue(dwDamageFlags);
+			}
+		}
+	}
+
+int CWeaponFireDesc::CalcDefaultHitPoints (void) const
+
+//	CalcDefaultHitPoints
+//
+//	Computes default hit points.
+
+	{
+	int iDefault;
+
+	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultShotHP()) != -1)
+		return iDefault;
+
+	//	Beams never interact
+
+	else if (m_iFireType == ftBeam)
+		return 0;
+
+	//	Ammo items get hit points proportional to level and mass.
+
+	else if (m_pAmmoType)
+		{
+		CItem AmmoItem(m_pAmmoType, 1);
+		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(AmmoItem.GetLevel());
+		Metric rMassAdj = AmmoItem.GetMassKg() / CWeaponClass::STD_AMMO_MASS;
+
+		return mathRound(rMassAdj * rStdHP);
+		}
+
+	//	Otherwise, compute based on damage ratio.
+
+	else if (m_iFireType == ftMissile)
+		{
+		//	Compute the damage of this shot as a ratio of the standard
+		//	damage for the level. 
+
+		Metric rStdDamage = CWeaponClass::GetStdDamage(GetLevel());
+		Metric rShotDamage = CalcDamage();
+		Metric rRatio = rShotDamage / rStdDamage;
+
+		Metric rStdHP = CWeaponClass::HP_ARMOR_RATIO * CArmorClass::GetStdHP(GetLevel());
+
+		return mathRound(CWeaponClass::DEFAULT_HP_DAMAGE_RATIO * rRatio * rStdHP);
+		}
+
+	//	No hit points
+
+	else
+		return 0;
+	}
+
+int CWeaponFireDesc::CalcDefaultInteraction (void) const
+
+//	CalcDefaultInteraction
+//
+//	Computes the default interaction.
+
+	{
+	int iDefault;
+
+	if ((iDefault = GetUniverse().GetEngineOptions().GetDefaultInteraction()) != -1)
+		return iDefault;
+
+	else if (m_iFireType == ftBeam)
+		return 0;
+
+	else if (m_pAmmoType)
+		return 100;
+
+	else if (m_iFireType == ftMissile)
+		{
+		//	Compute the damage of this shot as a ratio of the standard
+		//	damage for the level. 
+
+		Metric rStdDamage = CWeaponClass::GetStdDamage(GetLevel());
+		Metric rShotDamage = CalcDamage();
+		Metric rRatio = rShotDamage / rStdDamage;
+
+		//	Shots above 0.5c (like Flenser) have a maximum interaction, which
+		//	linearly decreases from 100 at 0.5c to 0 at 1c.
+
+		Metric rMaxInteraction = Max(Min(1.0, 2.0 * (1.0 - (GetRatedSpeed() / LIGHT_SPEED))), 0.0);
+
+		//	Convert to interaction
+
+		Metric rInteraction = Min(rMaxInteraction,
+				pow(rRatio, CWeaponClass::DEFAULT_INTERACTION_EXP)
+					- pow(CWeaponClass::DEFAULT_INTERACTION_MIN_RATIO, CWeaponClass::DEFAULT_INTERACTION_EXP));
+
+		return mathRound(100.0 * Max(0.0, Min(rInteraction, 1.0)));
+		}
+
+	else
+		return 0;
+	}
+
 Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
 
 //  CalcMaxEffectiveRange
@@ -233,7 +401,7 @@ Metric CWeaponFireDesc::CalcMaxEffectiveRange (void) const
     return rRange;
     }
 
-Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight) const
+Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight, bool bRelativistic)
 
 //	CalcSpeed
 //
@@ -244,7 +412,7 @@ Metric CWeaponFireDesc::CalcSpeed (Metric rPercentOfLight) const
 
 	//	If specified, we increase speed to simulate light-lag.
 
-	if (m_fRelativisticSpeed)
+	if (bRelativistic)
 		rSpeed = CSystem::CalcApparentSpeedAdj(rSpeed) * rSpeed;
 
 	return rSpeed;
@@ -304,7 +472,7 @@ IEffectPainter *CWeaponFireDesc::CreateEffectPainter (SShotCreateCtx &CreateCtx)
 	{
 	CCreatePainterCtx PainterCtx;
 	PainterCtx.SetWeaponFireDesc(this);
-	PainterCtx.SetTrackingObject(CreateCtx.pTarget && IsTracking());
+	PainterCtx.SetTrackingObject(IsTracking(CreateCtx));
 	PainterCtx.SetUseObjectCenter(true);
 
 	//	If this is an explosion, then we pass the source as an anchor.
@@ -499,63 +667,6 @@ bool CWeaponFireDesc::FindDataField (const CString &sField, CString *retsValue) 
 	return true;
 	}
 
-ALERROR CWeaponFireDesc::FinishBindDesign (SDesignLoadCtx &Ctx)
-
-//  FinishBindDesign
-//
-//  Last pass
-
-    {
-    ALERROR error;
-    int i;
-
-#ifdef DEBUG_BIND
-    CItemType *pDevice;
-	CItemType *pAmmo = GetWeaponType(&pDevice);
-    if (pAmmo)
-        ::kernelDebugLogPattern("Bind design for: %s [%s]\n", pAmmo->GetNounPhrase(), GetUNID());
-#endif
-
-	//	Load some events for efficiency
-
-	for (i = 0; i < evtCount; i++)
-		{
-		if (!FindEventHandler(CString(CACHED_EVENTS[i], -1, true), &m_CachedEvents[i]))
-			{
-			m_CachedEvents[i].pExtension = NULL;
-			m_CachedEvents[i].pCode = NULL;
-			}
-		}
-
-	//	If we have an OnFragment event, then we enable proximity blast
-	//	(But only if we don't have periodic fragmentation.)
-
-	if (HasOnFragmentEvent() && m_FragInterval.IsEmpty())
-		m_fProximityBlast = true;
-
-	//	Fragment
-
-	SFragmentDesc *pNext = m_pFirstFragment;
-	while (pNext)
-		{
-		if (error = pNext->pDesc->FinishBindDesign(Ctx))
-			return error;
-
-		pNext = pNext->pNext;
-		}
-
-    //  Scaled levels
-
-    if (m_pScalable)
-        {
-        for (i = 0; i < m_iScaledLevels; i++)
-            if (error = m_pScalable[i].FinishBindDesign(Ctx))
-                return error;
-        }
-
-    return NOERROR;
-    }
-
 Metric CWeaponFireDesc::GetAveParticleCount (void) const
 
 //	GetAveParticleCount
@@ -582,7 +693,7 @@ CEffectCreator *CWeaponFireDesc::FindEffectCreator (const CString &sUNID)
 //	Finds effect creator from a partial UNID
 
 	{
-	char *pPos;
+	const char *pPos;
 
 	//	Get the appropriate weapon fire desc and the parse position
 
@@ -668,8 +779,17 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 
 	//	We handle some properties
 
-	if (strEquals(sProperty, PROPERTY_LIFETIME))
+	if (strEquals(sProperty, PROPERTY_INTERACTION))
+		return CC.CreateInteger(GetInteraction());
+
+	else if (strEquals(sProperty, PROPERTY_LIFETIME))
 		return CC.CreateNumber(m_Lifetime.GetAveValueFloat());
+
+	else if (strEquals(sProperty, PROPERTY_STD_HP))
+		return CC.CreateInteger(CalcDefaultHitPoints());
+
+	else if (strEquals(sProperty, PROPERTY_STD_INTERACTION))
+		return CC.CreateInteger(CalcDefaultInteraction());
 
 	else if (strEquals(sProperty, PROPERTY_TRACKING))
 		return CC.CreateBool(IsTrackingOrHasTrackingFragments());
@@ -695,14 +815,14 @@ ICCItem *CWeaponFireDesc::FindProperty (const CString &sProperty) const
 		return NULL;
 	}
 
-CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, char **retpPos)
+CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDesc (const CString &sUNID, const char **retpPos)
 
 //	FindWeaponFireDesc
 //
 //	Finds the weapon fire desc from a partial UNID
 
 	{
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we're done, then we want this descriptor
 
@@ -764,7 +884,7 @@ CWeaponFireDesc *CWeaponFireDesc::FindWeaponFireDescFromFullUNID (const CString 
 //	Finds the descriptor by name
 
 	{
-	char *pPos = sUNID.GetPointer();
+	const char *pPos = sUNID.GetPointer();
 
 	//	Get the UNID of the type
 
@@ -1171,7 +1291,7 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 
 		CCCtx.DefineContainingType(GetWeaponType());
 		CCCtx.SaveAndDefineSourceVar(Ctx.Attacker.GetObj());
-		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -1183,7 +1303,7 @@ void CWeaponFireDesc::FireOnDestroyObj (const SDestroyCtx &Ctx)
 
 		ICCItem *pResult = CCCtx.Run(Event);
 		if (pResult->IsError())
-			Ctx.pObj->ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
+			Ctx.Obj.ReportEventError(ON_DESTROY_OBJ_EVENT, pResult);
 
 		CCCtx.Discard(pResult);
 		}
@@ -1277,7 +1397,7 @@ Metric CWeaponFireDesc::GetAveInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)
-		return CalcSpeed(m_MissileSpeed.GetAveValueFloat());
+		return CalcSpeed(m_MissileSpeed.GetAveValueFloat(), m_fRelativisticSpeed);
 	else
 		return GetRatedSpeed();
 	}
@@ -1340,7 +1460,7 @@ Metric CWeaponFireDesc::GetInitialSpeed (void) const
 
 	{
 	if (m_fVariableInitialSpeed)
-		return CalcSpeed(m_MissileSpeed.Roll());
+		return CalcSpeed(m_MissileSpeed.Roll(), m_fRelativisticSpeed);
 	else
 		return GetRatedSpeed();
 	}
@@ -1462,7 +1582,7 @@ CItemType *CWeaponFireDesc::GetWeaponType (CItemType **retpLauncher) const
 //	we return the weapon item UNID
 
 	{
-	char *pPos = m_sUNID.GetPointer();
+	const char *pPos = m_sUNID.GetPointer();
 
 	//	Get the weapon UNID and the ordinal
 
@@ -1611,6 +1731,8 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 
 	m_iHitPoints = 0;
 	m_iInteraction = 0;
+	m_fDefaultHitPoints = false;
+	m_fDefaultInteraction = false;
 
 	//	We initialize this with the UNID, and later resolve the reference
 	//	during OnDesignLoadComplete
@@ -1631,7 +1753,7 @@ void CWeaponFireDesc::InitFromDamage (const DamageDesc &Damage)
 	m_pFirstFragment = NULL;
 	m_fProximityBlast = false;
 	m_iProximityFailsafe = 0;
-	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
 	m_rMinFragThreshold = 0.0;
 	m_FragInterval.SetConstant(0);
 
@@ -1691,38 +1813,21 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	int i;
 
 	m_pExtension = Ctx.pExtension;
-    m_iLevel = Options.iLevel;
-	m_fVariableInitialSpeed = false;
-	m_fFragment = false;
+    m_iLevel = Max(1, Options.iLevel);
+	m_fFragment = Options.bIsFragment;
 
 	//	Fire type
 
 	CString sValue = pDesc->GetAttribute(FIRE_TYPE_ATTRIB);
-	if (strEquals(sValue, FIRE_TYPE_MISSILE) || sValue.IsBlank())
-		m_iFireType = ftMissile;
-	else if (strEquals(sValue, FIRE_TYPE_BEAM))
-		m_iFireType = ftBeam;
-	else if (strEquals(sValue, FIRE_TYPE_AREA) || strEquals(sValue, FIRE_TYPE_SHOCKWAVE))
-		m_iFireType = ftArea;
-	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
-		m_iFireType = ftContinuousBeam;
-	else if (strEquals(sValue, FIRE_TYPE_PARTICLES))
-		m_iFireType = ftParticles;
-	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
-		m_iFireType = ftRadius;
-	else if (Options.bDamageOnly)
-		m_iFireType = ftMissile;
-	else
+	if (!LoadFireType(sValue, &m_iFireType))
 		{
-		Ctx.sError = CONSTLIT("Invalid weapon fire type");
+		Ctx.sError = strPatternSubst(CONSTLIT("Invalid weapon fire type: %s"), sValue);
 		return ERR_FAIL;
 		}
 
 	//	Load basic attributes
 
 	m_sUNID = Options.sUNID;
-	m_Lifetime.LoadFromXML(pDesc->GetAttribute(LIFETIME_ATTRIB));
-	int iMaxLifetime = m_Lifetime.GetMaxValue();
 	m_fCanDamageSource = pDesc->GetAttributeBool(CAN_HIT_SOURCE_ATTRIB);
 	m_fAutoTarget = pDesc->GetAttributeBool(AUTO_TARGET_ATTRIB);
 	m_fTargetRequired = pDesc->GetAttributeBool(TARGET_REQUIRED_ATTRIB);
@@ -1752,55 +1857,12 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load missile speed
 
-	CString sData;
-	bool bDefaultMissileSpeed = false;
+	InitMissileSpeed(Ctx, *pDesc);
 
-	if (pDesc->FindAttribute(RELATIVISTIC_SPEED_ATTRIB, &sData))
-		{
-		int iSpeed;
+	//	Initialize lifetime either from an explicit parameter or from range.
 
-		if (CXMLElement::IsBoolTrueValue(sData))
-			{
-			m_fRelativisticSpeed = true;
-			bDefaultMissileSpeed = true;
-			iSpeed = 100;
-			}
-		else if ((iSpeed = strToInt(sData, -1)) > 0)
-			{
-			m_fRelativisticSpeed = true;
-			}
-		else
-			{
-			m_fRelativisticSpeed = false;
-			bDefaultMissileSpeed = true;
-			iSpeed = 100;
-			}
-
-		m_MissileSpeed.SetConstant(iSpeed);
-		m_fVariableInitialSpeed = false;
-		m_rMissileSpeed = CalcSpeed(iSpeed);
-		}
-	else if (pDesc->FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
-		{
-		if (error = m_MissileSpeed.LoadFromXML(sData))
-			{
-			Ctx.sError = CONSTLIT("Invalid missile speed attribute");
-			return ERR_FAIL;
-			}
-
-		m_fRelativisticSpeed = false;
-		m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
-		m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat());
-		}
-	else
-		{
-		bDefaultMissileSpeed = true;
-
-		m_MissileSpeed.SetConstant(100);
-		m_fRelativisticSpeed = false;
-		m_fVariableInitialSpeed = false;
-		m_rMissileSpeed = CalcSpeed(100.0);
-		}
+	if (!InitLifetime(Ctx, *pDesc))
+		return ERR_FAIL;
 
 	//	Load the effect to use. By default we expect images to loop (since they need to last
     //  as long as the missile).
@@ -1819,14 +1881,12 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	//	Load stealth
 
-	m_iStealth = pDesc->GetAttributeInteger(STEALTH_ATTRIB);
-	if (m_iStealth == 0)
-		m_iStealth = CSpaceObject::stealthNormal;
+	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
-	//	Initialize some variables not used by all types
+	//	Initialize interaction and hit points
 
-	m_iHitPoints = 0;
-    m_iInteraction = 100;
+	if (!InitHitPoints(Ctx, *pDesc))
+		return ERR_FAIL;
 
 	//	Load specific properties
 
@@ -1855,22 +1915,6 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			if (m_fDirectional && m_pEffect)
 				m_pEffect->SetVariants(g_RotationRange);
 
-			m_iAccelerationFactor = pDesc->GetAttributeInteger(ACCELERATION_FACTOR_ATTRIB);
-			int iMaxSpeed = pDesc->GetAttributeInteger(MAX_MISSILE_SPEED_ATTRIB);
-			if (iMaxSpeed == 0)
-				m_rMaxMissileSpeed = m_rMissileSpeed;
-			else
-				m_rMaxMissileSpeed = CalcSpeed((Metric)iMaxSpeed);
-
-			//	Hit points and interaction
-
-			m_iHitPoints = pDesc->GetAttributeInteger(HIT_POINTS_ATTRIB);
-			CString sInteraction;
-			if (pDesc->FindAttribute(INTERACTION_ATTRIB, &sInteraction))
-				m_iInteraction = strToInt(sInteraction, 100);
-			else
-				m_iInteraction = (m_iFireType == ftBeam ? 0 : 100);
-
 			//	Load exhaust data
 
 			CXMLElement *pExhaust = pDesc->GetContentElementByTag(MISSILE_EXHAUST_TAG);
@@ -1891,19 +1935,9 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 		case ftArea:
 			{
-			//	If no missile speed specified, then 0
-
-			if (bDefaultMissileSpeed)
-				{
-				m_MissileSpeed.SetConstant(0);
-				m_fVariableInitialSpeed = false;
-				m_rMissileSpeed = 0.0;
-				}
-
-			m_rMaxMissileSpeed = m_rMissileSpeed;
-
 			//	Load expansion speed
 
+			CString sData;
 			if (pDesc->FindAttribute(EXPANSION_SPEED_ATTRIB, &sData))
 				{
 				if (error = m_ExpansionSpeed.LoadFromXML(sData))
@@ -1939,15 +1973,10 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 			}
 
 		case ftContinuousBeam:
-			{
-			m_rMaxMissileSpeed = m_rMissileSpeed;
 			break;
-			}
 
 		case ftParticles:
 			{
-			m_iFireType = ftParticles;
-
 			//	Initialize a particle system descriptor
 
 			m_pParticleDesc = new CParticleSystemDesc;
@@ -1963,11 +1992,13 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 				//	We take certain values from the particle system.
 
-				m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
 				m_Lifetime.SetConstant(m_pParticleDesc->GetParticleLifetime().GetMaxValue() + (m_pParticleDesc->GetEmitLifetime().GetMaxValue() - 1));
-				iMaxLifetime = m_Lifetime.GetMaxValue();
+
+				m_MissileSpeed = m_pParticleDesc->GetEmitSpeed();
 				m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
-				m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat());
+				m_fRelativisticSpeed = false;
+				m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat(), m_fRelativisticSpeed);
+				m_rMaxMissileSpeed = m_rMissileSpeed;
 				}
 
 			//	Otherwise, we initialize from our root (in backwards compatible mode).
@@ -1997,31 +2028,19 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 				return ERR_FAIL;
 				}
 
-			//	Initialize other variables
-
-			m_rMaxMissileSpeed = m_rMissileSpeed;
 			break;
 			}
 
 		case ftRadius:
 			{
-			m_iFireType = ftRadius;
-
-			//	If no missile speed specified, then 0
-
-			if (bDefaultMissileSpeed)
-				{
-				m_MissileSpeed.SetConstant(0);
-				m_fVariableInitialSpeed = false;
-				m_rMissileSpeed = 0.0;
-				}
-
-			m_rMaxMissileSpeed = m_rMissileSpeed;
-
 			m_rMinRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MIN_RADIUS_ATTRIB);
 			m_rMaxRadius = LIGHT_SECOND * (Metric)pDesc->GetAttributeInteger(MAX_RADIUS_ATTRIB);
 			break;
 			}
+
+		default:
+			ASSERT(false);
+			return ERR_FAIL;
 		}
 
 	//	The effect should have the same lifetime as the shot
@@ -2030,7 +2049,7 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	if (m_pEffect
 			&& m_iFireType != ftRadius)
-		m_pEffect->SetLifetime(iMaxLifetime);
+		m_pEffect->SetLifetime(m_Lifetime.GetMaxValue());
 
 	//	We initialize this with the UNID, and later resolve the reference
 	//	during OnDesignLoadComplete
@@ -2111,12 +2130,11 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 		SInitOptions FragOptions;
 		FragOptions.sUNID = strPatternSubst("%s/f%d", m_sUNID, iFragCount++);
 		FragOptions.iLevel = m_iLevel;
+		FragOptions.bIsFragment = true;
 
 		pNewDesc->pDesc = new CWeaponFireDesc;
 		if (error = pNewDesc->pDesc->InitFromXML(Ctx, pFragDesc, FragOptions))
 			return error;
-
-		pNewDesc->pDesc->m_fFragment = true;
 
 		//	Set the fragment count
 
@@ -2138,12 +2156,13 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 
 	m_fProximityBlast = (iFragCount != 0);
 	m_iProximityFailsafe = pDesc->GetAttributeInteger(FAILSAFE_ATTRIB);
-	m_rMaxFragThreshold = LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
-	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * DEFAULT_FRAG_THRESHOLD;
+	m_rMaxFragThreshold = LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
+	m_rMinFragThreshold = 0.5 * LIGHT_SECOND * CWeaponClass::DEFAULT_FRAG_THRESHOLD;
 
 	//	If we've got a fragment interval set, then it means we periodically 
 	//	fragment (instead of fragmenting on proximity).
 
+	CString sData;
 	if (pDesc->FindAttribute(FRAGMENT_INTERVAL_ATTRIB, &sData))
 		{
 		if (error = m_FragInterval.LoadFromXML(pDesc->GetAttribute(FRAGMENT_INTERVAL_ATTRIB)))
@@ -2237,6 +2256,159 @@ ALERROR CWeaponFireDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, c
 	m_fTargetable = pDesc->GetAttributeBool(TARGETABLE_ATTRIB);
 
 	return NOERROR;
+	}
+
+bool CWeaponFireDesc::InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
+
+//	InitHitPoints
+//
+//	Initializes:
+//
+//	m_iInteraction
+//	m_iHitPoints
+//	m_fDefaultInteraction
+//	m_fDefaultHitPoints
+
+	{
+	//	Beams and missiles get non-zero interaction and hit points.
+
+	if (m_iFireType == ftBeam || m_iFireType == ftMissile)
+		{
+		m_iHitPoints = XMLDesc.GetAttributeIntegerBounded(HIT_POINTS_ATTRIB, 0, -1, -1);
+		m_fDefaultHitPoints = (m_iHitPoints == -1);
+
+		m_iInteraction = XMLDesc.GetAttributeIntegerBounded(INTERACTION_ATTRIB, 0, 100, -1);
+		m_fDefaultInteraction = (m_iInteraction == -1);
+		}
+
+	//	Otherwise, none
+
+	else
+		{
+		m_iHitPoints = 0;
+		m_iInteraction = 100;
+		m_fDefaultHitPoints = false;
+		m_fDefaultInteraction = false;
+		}
+
+	return true;
+	}
+
+bool CWeaponFireDesc::InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
+
+//	InitLifetime
+//
+//	Initializes m_Lifetime. We must have already called InitMissileSpeed.
+
+	{
+	CString sValue;
+	if (XMLDesc.FindAttribute(LIFETIME_ATTRIB, &sValue))
+		{
+		if (m_Lifetime.LoadFromXML(sValue) != NOERROR)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Invalid lifetime: %s"), sValue);
+			return false;
+			}
+		}
+	else
+		{
+		Metric rRange = XMLDesc.GetAttributeIntegerBounded(RANGE_ATTRIB, 0, -1, 0) * LIGHT_SECOND;
+		if (m_rMaxMissileSpeed > 0.0)
+			{
+			Metric rLifetimeSeconds = rRange / m_rMaxMissileSpeed;
+			m_Lifetime.SetConstant(Max(1, Seconds2Ticks(rLifetimeSeconds)));
+			}
+		else
+			m_Lifetime.SetConstant(0);
+		}
+
+	return true;
+	}
+
+bool CWeaponFireDesc::InitMissileSpeed (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc)
+
+//	InitMissileSpeed
+//
+//	Initializes missile speed from XML. Returns FALSE if we could not initialize
+//	for some reason.
+//
+//	Guarantees initialization of:
+//
+//	m_MissileSpeed
+//	m_rMissileSpeed
+//	m_rMaxMissileSpeed
+//	m_iAccelerationFactor
+//	m_fRelativisticSpeed
+//	m_fVariableInitialSpeed
+
+	{
+	CString sData;
+
+	if (XMLDesc.FindAttribute(RELATIVISTIC_SPEED_ATTRIB, &sData))
+		{
+		int iSpeed;
+
+		if (CXMLElement::IsBoolTrueValue(sData))
+			{
+			m_fRelativisticSpeed = true;
+			iSpeed = 100;
+			}
+		else if ((iSpeed = strToInt(sData, -1)) > 0)
+			{
+			m_fRelativisticSpeed = true;
+			}
+		else
+			{
+			m_fRelativisticSpeed = false;
+			iSpeed = 100;
+			}
+
+		m_MissileSpeed.SetConstant(iSpeed);
+		m_fVariableInitialSpeed = false;
+		m_rMissileSpeed = CalcSpeed(iSpeed, m_fRelativisticSpeed);
+		}
+	else if (XMLDesc.FindAttribute(MISSILE_SPEED_ATTRIB, &sData))
+		{
+		if (ALERROR error = m_MissileSpeed.LoadFromXML(sData))
+			{
+			Ctx.sError = CONSTLIT("Invalid missile speed attribute");
+			return ERR_FAIL;
+			}
+
+		m_fRelativisticSpeed = false;
+		m_fVariableInitialSpeed = !m_MissileSpeed.IsConstant();
+		m_rMissileSpeed = CalcSpeed(m_MissileSpeed.GetAveValueFloat(), false);
+		}
+	else
+		{
+		switch (m_iFireType)
+			{
+			case ftArea:
+			case ftRadius:
+				m_MissileSpeed.SetConstant(0);
+				m_rMissileSpeed = 0.0;
+				break;
+
+			default:
+				m_MissileSpeed.SetConstant(100);
+				m_rMissileSpeed = CalcSpeed(100.0, false);
+				break;
+			}
+
+		m_fRelativisticSpeed = false;
+		m_fVariableInitialSpeed = false;
+		}
+
+	//	See if we accelerate and compute maximum speed.
+
+	m_iAccelerationFactor = XMLDesc.GetAttributeInteger(ACCELERATION_FACTOR_ATTRIB);
+	int iMaxSpeed = XMLDesc.GetAttributeInteger(MAX_MISSILE_SPEED_ATTRIB);
+	if (iMaxSpeed == 0)
+		m_rMaxMissileSpeed = m_rMissileSpeed;
+	else
+		m_rMaxMissileSpeed = CalcSpeed(iMaxSpeed, m_fRelativisticSpeed);
+
+	return true;
 	}
 
 ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CItemType *pItem, CWeaponClass *pWeapon)
@@ -2359,6 +2531,9 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     m_fFragment = Src.m_fFragment;
     m_fProximityBlast = Src.m_fProximityBlast;
 	m_FragInterval = Src.m_FragInterval;
+	m_fTargetable = Src.m_fTargetable;
+	m_fDefaultInteraction = Src.m_fDefaultInteraction;
+	m_fDefaultHitPoints = Src.m_fDefaultHitPoints;
 
     m_pEffect = Src.m_pEffect;
     m_pHitEffect = Src.m_pHitEffect;
@@ -2416,6 +2591,18 @@ ALERROR CWeaponFireDesc::InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDes
     return NOERROR;
     }
 
+bool CWeaponFireDesc::IsTracking (const SShotCreateCtx &Ctx) const
+
+//	IsTracking
+//
+//	Returns TRUE if the shot we're creating tracks.
+
+	{
+	return Ctx.pTarget
+			&& (IsTracking()
+				|| (Ctx.pEnhancements && Ctx.pEnhancements->IsTracking()));
+	}
+
 bool CWeaponFireDesc::IsTrackingOrHasTrackingFragments (void) const
 
 //	IsTrackingOrHasTrackingFragments
@@ -2428,6 +2615,36 @@ bool CWeaponFireDesc::IsTrackingOrHasTrackingFragments (void) const
 
 	return (IsTracking()
             || ((pFragment = GetFirstFragment()) && pFragment->pDesc->IsTrackingOrHasTrackingFragments()));
+	}
+
+bool CWeaponFireDesc::LoadFireType (const CString &sValue, FireTypes *retiFireType)
+
+//	LoadFireType
+//
+//	Parses a fire type string value.
+
+	{
+	FireTypes iFireType;
+
+	if (strEquals(sValue, FIRE_TYPE_MISSILE) || sValue.IsBlank())
+		iFireType = ftMissile;
+	else if (strEquals(sValue, FIRE_TYPE_BEAM))
+		iFireType = ftBeam;
+	else if (strEquals(sValue, FIRE_TYPE_AREA) || strEquals(sValue, FIRE_TYPE_SHOCKWAVE))
+		iFireType = ftArea;
+	else if (strEquals(sValue, FIRE_TYPE_CONTINUOUS_BEAM))
+		iFireType = ftContinuousBeam;
+	else if (strEquals(sValue, FIRE_TYPE_PARTICLES))
+		iFireType = ftParticles;
+	else if (strEquals(sValue, FIRE_TYPE_RADIUS))
+		iFireType = ftRadius;
+	else
+		return false;
+
+	if (retiFireType)
+		*retiFireType = iFireType;
+
+	return true;
 	}
 
 void CWeaponFireDesc::MarkImages (void)
@@ -2505,6 +2722,12 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (error = m_pExplosionType.Bind(Ctx))
 		return error;
 
+	if (m_fDefaultHitPoints)
+		m_iHitPoints = CalcDefaultHitPoints();
+
+	if (m_fDefaultInteraction)
+		m_iInteraction = CalcDefaultInteraction();
+
 	//	Fragment
 
 	SFragmentDesc *pNext = m_pFirstFragment;
@@ -2524,6 +2747,23 @@ ALERROR CWeaponFireDesc::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
             if (error = m_pScalable[i].OnDesignLoadComplete(Ctx))
                 return error;
         }
+
+	//	Load some events for efficiency
+
+	for (i = 0; i < evtCount; i++)
+		{
+		if (!FindEventHandler(CString(CACHED_EVENTS[i], -1, true), &m_CachedEvents[i]))
+			{
+			m_CachedEvents[i].pExtension = NULL;
+			m_CachedEvents[i].pCode = NULL;
+			}
+		}
+
+	//	If we have an OnFragment event, then we enable proximity blast
+	//	(But only if we don't have periodic fragmentation.)
+
+	if (HasOnFragmentEvent() && m_FragInterval.IsEmpty())
+		m_fProximityBlast = true;
 
 	return NOERROR;
 

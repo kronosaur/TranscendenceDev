@@ -31,6 +31,16 @@ bool CSpaceObjectAddressResolver::HasUnresolved (void)
 			if (pEntry->pfnResolveProc)
 				(pEntry->pfnResolveProc)(pEntry->pCtx, m_List.GetKey(i), NULL);
 
+			//	If this is an optional reference, then we allow it to stay NULL, 
+			//	but we write a warning. This only happens if there is a bug, but
+			//	it allows us to recover corrupt save files.
+
+			else if (pEntry->bOptional)
+				{
+				(*(CSpaceObject **)pEntry->pCtx) = NULL;
+				kernelDebugLogPattern("WARNING: Unresolved object ignored: %x", m_List.GetKey(i));
+				}
+
 			//	Otherwise this is unresolved
 
 			else
@@ -55,9 +65,13 @@ void CSpaceObjectAddressResolver::InsertRef (DWORD dwObjID, void *pCtx, PRESOLVE
 	SEntry *pEntry = pList->Insert();
 	pEntry->pCtx = pCtx;
 	pEntry->pfnResolveProc = pfnResolveProc;
+
+#ifdef DEBUG
+	pEntry->dwID = m_dwNextID++;
+#endif
 	}
 
-void CSpaceObjectAddressResolver::InsertRef (DWORD dwObjID, CSpaceObject **ppAddr)
+void CSpaceObjectAddressResolver::InsertRef (DWORD dwObjID, CSpaceObject **ppAddr, bool bOptional)
 
 //	InsertRef
 //
@@ -68,6 +82,11 @@ void CSpaceObjectAddressResolver::InsertRef (DWORD dwObjID, CSpaceObject **ppAdd
 	SEntry *pEntry = pList->Insert();
 	pEntry->pCtx = ppAddr;
 	pEntry->pfnResolveProc = NULL;
+	pEntry->bOptional = bOptional;
+
+#ifdef DEBUG
+	pEntry->dwID = m_dwNextID++;
+#endif
 	}
 
 void CSpaceObjectAddressResolver::ResolveRefs (DWORD dwObjID, CSpaceObject *pObj)

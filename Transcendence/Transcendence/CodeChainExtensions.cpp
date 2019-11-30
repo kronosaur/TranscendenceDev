@@ -1471,12 +1471,15 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	{
 	CCodeChain *pCC = pEvalCtx->pCC;
+	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 
 	//	Convert the first argument into a dock screen object
 
 	CDockScreen *pScreen = GetDockScreenArg(pArgs->GetElement(0));
 	if (pScreen == NULL)
 		return pCC->CreateError(CONSTLIT("Screen expected"), pArgs->GetElement(0));
+
+	CDockSession &DockSession = pCtx->GetUniverse().GetDockSession();
 
 	//	Do the appropriate command
 
@@ -1486,12 +1489,7 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(pScreen->GetListCursor());
 
 		case FN_SCR_DATA:
-			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
-
-			return g_pTrans->GetModel().GetScreenData(pArgs->GetElement(1)->GetStringValue());
-			}
+			return DockSession.GetData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_DESC:
 			{
@@ -1503,21 +1501,14 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_SCR_GET_PROPERTY:
-			{
-			ICCItemPtr pResult = pScreen->GetProperty(pArgs->GetElement(1)->GetStringValue());
-			if (!pResult)
-				return pCC->CreateNil();
-
-			return pResult->Reference();
-			}
+			return DockSession.GetProperty(pArgs->GetElement(1)->GetStringValue())->Reference();
 
         case FN_SCR_GET_SCREEN:
             {
-            const CDockScreenStack &DockFrames = g_pTrans->GetModel().GetScreenStack();
-            if (DockFrames.IsEmpty())
+            if (!DockSession.InSession())
                 return pCC->CreateNil();
 
-            const SDockFrame &CurFrame = DockFrames.GetCurrent();
+            const SDockFrame &CurFrame = DockSession.GetCurrentFrame();
 			DWORD dwRootUNID = (CurFrame.pResolvedRoot ? CurFrame.pResolvedRoot->GetUNID() : 0);
             CString sScreen = CurFrame.sResolvedScreen;
 
@@ -1571,12 +1562,7 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_SCR_RETURN_DATA:
-			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
-
-			return g_pTrans->GetModel().GetScreenStack().GetReturnData(pArgs->GetElement(1)->GetStringValue());
-			}
+			return DockSession.GetReturnData(pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_SCR_TRANSLATE:
 			{
@@ -1590,7 +1576,7 @@ ICCItem *fnScrGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				pData = pArgs->GetElement(2);
 
 			ICCItemPtr pResult;
-			if (!g_pTrans->GetModel().ScreenTranslate(sText, pData, pResult))
+			if (!DockSession.Translate(sText, pData, pResult))
 				return pCC->CreateNil();
 
 			return pResult->Reference();
@@ -1674,6 +1660,8 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	CCodeChainCtx *pCtx = (CCodeChainCtx *)pEvalCtx->pExternalCtx;
 	if (pCtx == NULL)
 		return pCC->CreateError(ERR_NO_CODE_CHAIN_CTX);
+
+	CDockSession &DockSession = pCtx->GetUniverse().GetDockSession();
 
 	//	Convert the first argument into a dock screen object
 
@@ -1837,12 +1825,8 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Translate
 
 			ICCItemPtr pResult;
-			CString sError;
-			if (!g_pTrans->GetModel().ScreenTranslate(sText, pData, pResult))
-				{
-				pScreen->SetDescription(sError);
+			if (!DockSession.Translate(sText, pData, pResult))
 				return pCC->CreateNil();
-				}
 
 			//	Set the screen descriptor
 
@@ -1850,13 +1834,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
             }
 
 		case FN_SCR_DATA:
-			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
-
-			g_pTrans->GetModel().SetScreenData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2));
-			return pCC->CreateTrue();
-			}
+			return pCC->CreateBool(DockSession.SetData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)));
 
 		case FN_SCR_DESC:
 			{
@@ -1898,7 +1876,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			ICCItemPtr pResult;
 			CString sError;
-			if (!g_pTrans->GetModel().ScreenTranslate(sText, pData, pResult, &sError))
+			if (!DockSession.Translate(sText, pData, pResult, &sError))
 				{
 				pScreen->SetDescription(sError);
 				return pCC->CreateNil();
@@ -1944,12 +1922,12 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_INC_DATA:
 			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
+			CString sAttrib = pArgs->GetElement(1)->GetStringValue();
+			ICCItem *pInc = (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL);
+			ICCItemPtr pResult;
 
-			ICCItem *pResult;
-			g_pTrans->GetModel().IncScreenData(pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() >= 3 ? pArgs->GetElement(2) : NULL), &pResult);
-			return pResult;
+			DockSession.IncData(sAttrib, pInc, &pResult);
+			return pResult->Reference();
 			}
 
 		case FN_SCR_REFRESH_SCREEN:
@@ -1975,22 +1953,12 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_SCR_RETURN_DATA:
-			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
-
-			g_pTrans->GetModel().GetScreenStack().SetReturnData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2));
-			return pCC->CreateTrue();
-			}
+			return pCC->CreateBool(DockSession.SetReturnData(pArgs->GetElement(1)->GetStringValue(), pArgs->GetElement(2)));
 
 		case FN_SCR_SCREEN_SET:
 			{
-			if (!g_pTrans->GetModel().InScreenSession())
-				return pCC->CreateNil();
-
 			ICCItem *pScreenSet = pArgs->GetElement(1);
-			g_pTrans->GetModel().GetScreenStack().SetScreenSet(*pScreenSet);
-			return pCC->CreateTrue();
+			return pCC->CreateBool(DockSession.SetScreenSet(*pScreenSet));
 			}
 
 		case FN_SCR_SHOW_TAB:
@@ -2037,8 +2005,14 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_SET_PROPERTY:
 			{
-			if (!pScreen->SetProperty(pArgs->GetElement(1)->GetStringValue(), *pArgs->GetElement(2)))
-				return pCC->CreateNil();
+			CString sError;
+			if (!DockSession.SetProperty(pArgs->GetElement(1)->GetStringValue(), *pArgs->GetElement(2), &sError))
+				{
+				if (pCtx->GetUniverse().InDebugMode())
+					return pCC->CreateError(sError);
+				else
+					return pCC->CreateNil();
+				}
 
 			return pCC->CreateTrue();
 			}

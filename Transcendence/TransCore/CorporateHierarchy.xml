@@ -108,7 +108,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightGusokuArmor;"
@@ -155,13 +154,13 @@
 					criteria=		"a L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
 					criteria=		"w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="1d12" 
 					criteria=		"d~w L:1-10; -illegal; -Specialty; -NotStandard; -NotForSale;"
@@ -187,8 +186,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="ufNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="amdufNU -Illegal; -ID;"				priceAdj="10"/>
@@ -199,14 +198,6 @@
 			<InstallDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -221,9 +212,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -275,7 +264,6 @@
 			multiHull=			"true"
 			regen=				"2"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -302,7 +290,7 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="asU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="asU -Illegal; -ID;"				priceAdj="10"/>
 			
@@ -317,13 +305,13 @@
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:u|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8-12" 
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|u|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="6-10" 
 					criteria=		"as L:1-7; -Illegal; -Military; -NotStandard; -NotForSale;"
@@ -384,9 +372,7 @@
 							</Action>
 							
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -409,14 +395,6 @@
 					)
 			</NPCService>
 		</StaticData>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
         <Language>
 			<Text id="descWelcome">
@@ -446,7 +424,6 @@
 			multiHull=			"true"
 			regen=				"2"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -473,8 +450,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="mwU -Illegal; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="mwU -Illegal; -ID;"				priceAdj="10"/>
 			
@@ -487,19 +464,19 @@
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:-|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement2)"
+					enhancement=	"=(intHPEnhancement2 gItem)"
 					/>
 			<RandomItem count="15" 
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|ur"
 					enhanced=		"10"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 			<RandomItem count="8" 
 					criteria=		"w L:1-6; -Illegal; -Military; -NotStandard; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"5"
-					enhancement=	"=(intHPEnhancement1)"
+					enhancement=	"=(intHPEnhancement1 gItem)"
 					/>
 
 			<RandomItem count="25-35" 
@@ -552,9 +529,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -567,14 +542,6 @@
 		</DockScreens>
 
 		<!-- Events and Behavior -->
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
         <Language>
 			<Text id="actionWeapons">[W]eapons</Text>
@@ -598,7 +565,6 @@
 
 			dockScreen=			"&dsArmsDealerSpecial;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"5"
 			multiHull=			"true"
@@ -652,7 +618,7 @@
 					criteria=		"w L:1-7; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem chance="65" count="1d4" 
@@ -674,8 +640,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +makayev; -defective; -military; -illegal; -notForSale;" priceAdj="100" inventoryAdj="500" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<RepairArmor	criteria="a L:1-8;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a +makayev; L:1-7;" priceAdj="100"/>
@@ -689,14 +655,6 @@
 		<StaticData>
 			<LongName>"a Makayev-Energia weapons franchise"</LongName>
 		</StaticData>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<Language>
 			<Text id="descNoInstall">
@@ -731,7 +689,6 @@
 
 			dockScreen=			"&dsArmsDealerSpecial;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightGusokuArmor;"
@@ -785,7 +742,7 @@
 					criteria=		"w L:1-10; +Bushido; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intBushidoWeaponEnhancement)"
+					enhancement=	"=(intBushidoWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="1d12" 
@@ -811,8 +768,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +bushido; -illegal; -notForSale;" priceAdj="100" inventoryAdj="300" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +bushido; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="300" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
 			<ReplaceArmor	criteria="a +bushido; L:1-10;" priceAdj="100"/>
@@ -862,7 +819,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -919,17 +875,9 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -937,15 +885,11 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action name="Buy Autons" default="1" key="B">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									showActualItem: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action name="Sell Autons" key="S">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action name="Repair Active Autons" key="R">
@@ -1079,7 +1023,6 @@
 			multiHull=			"true"
 			regen=              "6"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1224,8 +1167,7 @@
 					<Default descID="descCorporateLevel">
 						<Actions>
 							<Action id="actionSellItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionLeave" cancel="1">
@@ -1241,14 +1183,6 @@
 		</DockScreens>
 
 		<!-- Events and Data -->
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
         <Language>
 			<Text id="descWelcome">
@@ -1323,7 +1257,6 @@
 			multiHull=			"true"
 			regen=              "2"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1350,8 +1283,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="fNU +basicFuel; L:1-4; -illegal; -ID; -notForSale;"	priceAdj="90"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="fNU +basicFuel; L:1-4; -defective; -illegal; -ID; -notForSale;"	priceAdj="90"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-4;" priceAdj="90"/>
 			<Refuel			criteria="f +BasicFuel; L:5-10;" priceAdj="100"/>
@@ -1426,9 +1359,7 @@
 							</Action>
 
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -1470,7 +1401,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -1521,7 +1451,7 @@
 					criteria=		"w L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:uc|c|crv"
 					enhanced=		"20"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
@@ -1535,7 +1465,7 @@
 					criteria=		"w L:1-10; +Makayev; -NotForSale;"
 					levelFrequency=	"systemLevel:r|c|cur"
 					enhanced=		"10"
-					enhancement=	"=(intMakayevWeaponEnhancement)"
+					enhancement=	"=(intMakayevWeaponEnhancement gItem)"
 					/>
 
 			<RandomItem count="2d6"
@@ -1552,8 +1482,8 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="m +makayev; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU +makayev; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +makayev; -defective; -illegal; -notForSale;" priceAdj="100" inventoryAdj="800" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU +makayev; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
 			<RepairArmor	criteria="a L:1-9;" priceAdj="100"/>
@@ -1577,14 +1507,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<DockScreens>
 			<Main>
 				<Panes>
@@ -1597,9 +1519,7 @@
 							</Action>
 
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionRepairItems">
@@ -1688,7 +1608,6 @@
 			multiHull=			"true"
 			regen=              "6"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1751,14 +1670,11 @@
 
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 							
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 							
 							<Action id="actionUndock" cancel="1">
@@ -1773,12 +1689,6 @@
 		<!-- Events and Behavior -->
 		
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnCreate>
 				(block (
 					;	We have different kinds of manufacturing plants
@@ -1955,7 +1865,6 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -2003,12 +1912,6 @@
 		</Trade>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<GetRumors>
 				{
 					attributes: "commonwealthPub"
@@ -2063,8 +1966,7 @@
 
 						<Actions>
 							<Action id="actionSellItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionLeave" cancel="1">
@@ -2132,7 +2034,6 @@
 			multiHull=			"true"
 			regen=              "1"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -2150,7 +2051,7 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU +Lux; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +Lux; -defective; -NotForSale;"	priceAdj="100"/>
 
 			<Buy	criteria="*NU +Food; -Lux; -Illegal; &lt;=$100; -NotForSale;"	priceAdj="105"/>
 			<Buy	criteria="*NU" item="&itHydrocarbons;"		priceAdj="105"/>
@@ -2218,14 +2119,11 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -2238,14 +2136,6 @@
 		</DockScreens>
 
 		<!-- Events and Data -->
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
         <Language>
 			<Text id="core.name">Ice Farm</Text>
@@ -2280,7 +2170,6 @@
 			regen=              "5"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -2299,10 +2188,10 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +Taikon;"				priceAdj="100"/>
-			<Sell	criteria="*NU +RingerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU +Alien;"				priceAdj="120"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +Taikon; -defective;"				priceAdj="100"/>
+			<Sell	criteria="*NU +RingerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU +Alien; -defective;"				priceAdj="120"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 
 			<Refuel			criteria="f +unid:&itPteracniumFuelRod;;" priceAdj="100"/>
 			<Refuel			criteria="f +BasicFuel; L:1-10;" priceAdj="100"/>
@@ -2384,9 +2273,7 @@
 					<Default descID="descWelcome">
 						<Actions>
 							<Action id="actionBuyItems">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionDockServices" default="1">
@@ -2407,14 +2294,6 @@
 
 		<!-- Events and Behavior -->
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">
 				You are docked at a Taikon Ventures station.
@@ -2432,7 +2311,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -2485,7 +2363,7 @@
 		</Items>
 
 		<Trade currency="credit">
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -ID; -NotForSale;"	priceAdj="50"/>
 			<Buy	criteria="uNU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="amduNU -Illegal; -ID;"				priceAdj="10"/>
@@ -2496,14 +2374,6 @@
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"	upgradeInstallOnly="true"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"	upgradeInstallOnly="true"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -2518,9 +2388,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -2681,15 +2549,39 @@
 	<Globals>
 		(block Nil
 			(setq intBushidoArmorEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0309 0x0329))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+					{	enhancement:"+reflect:laser"		type:&itReflectiveArmorCoating;	}
+					{	enhancement:"+reflect:particle"		type:&itParticleReflectCoating; }
+					))
 				))
 
 			(setq intBushidoShieldEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0104 0x0824 0x0842 0xf03))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:20"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:20"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:30"			type:&itDiamondCrystal;	}
+					{	enhancement:"+hpBonus:40"			type:&itDiamondCrystal;	}
+					{	enhancement:"+resistDamageTier:particle:60"		type:&itRubidiumCrystal;	}
+					{	enhancement:"+resistDamageTier:ion:60"		type:&itSuperlatticeCrystal; }
+					{	enhancement:"+efficient:20"			type:&itShieldPowerSaver;	}
+					))
 				))
 
-			(setq intBushidoWeaponEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0f03 0x1002))
+			(setq intBushidoWeaponEnhancement (lambda (theItem)
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:20"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+hpBonus:30"			type:(intGetEnhancementByDamageType theItem)	}
+					{	enhancement:"+efficient:20"			type:&itWeaponEfficiencyROM;	}
+					{	enhancement:"+speed:80"				type:&itWeaponSpeedROM;	}
+					))
 				))
 
 			(setq intCorporateCrime (lambda (severity description)
@@ -2719,23 +2611,13 @@
 				))
 
 			(setq intCorporateGenerateEnhancement (lambda (theItem)
-				(block (theCategory)
-					(setq theCategory (itmGetCategory theItem))
-					(switch
-						; Armor enhancements
-						(eq theCategory 0x0002)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						; Shield enhancements
-						(eq theCategory 0x0080)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						; Weapon enhancements
-						(eq theCategory 0x0004)
-							(random (list 0x0101 0x0102 0x0102 0x0103))
-
-						0x0000
-						)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						))
 					)
 				))
 
@@ -2785,24 +2667,108 @@
 					)
 				))
 
-			(setq intHPEnhancement1 (lambda Nil
-				(random (list 0x0101 0x0101 0x0102 0x0102 0x0103))
+			(setq intHPEnhancement1 (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:10"
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						))
+					)
 				))
 
-			(setq intHPEnhancement2 (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0103 0x0104))
+			(setq intHPEnhancement2 (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:10"
+						"+hpBonus:20"
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						))
+					)
 				))
 
-			(setq intHPEnhancement3 (lambda Nil
-				(random (list 0x0102 0x0103 0x0103 0x0104 0x0104 0x0105))
+			(setq intHPEnhancement3 (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						"+hpBonus:40"
+						"+hpBonus:50"
+						))
+					)
 				))
 
 			(setq intMakayevArmorEnhancement (lambda Nil
-				(random (list 0x0101 0x0102 0x0102 0x0103 0x0103 0x0104 0x0b00 0x0c00))
+				(random (list
+					{	enhancement:"+hpBonus:10"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:20"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:30"			type:&itPlasteelNanos;	}
+					{	enhancement:"+hpBonus:40"			type:&itPlasteelNanos;	}
+					{	enhancement:"+immunity:radiation"	type:&itRadiationImmuneCoating;	}
+					{	enhancement:"+immunity:ionEffects"	type:&itIonEffectImmuneCoating; }
+					))
 				))
 
-			(setq intMakayevWeaponEnhancement (lambda Nil
-				(random (list 0x0102 0x0103 0x0103 0x0104 0x0104 0x0105))
+			(setq intMakayevWeaponEnhancement (lambda (theItem)
+				(intCreateHPBonusEnhancement theItem
+					(random (list 
+						"+hpBonus:20"
+						"+hpBonus:30"
+						"+hpBonus:30"
+						"+hpBonus:40"
+						"+hpBonus:40"
+						"+hpBonus:50"
+						))
+					)
+				))
+
+			(setq intGetEnhancementByDamageType (lambda (theItem)
+				(block (
+					(damageType (itmGetProperty theItem 'damageTypeID))
+					)
+					(switch
+						(= damageType 'laser)		&itLaserAmplifier;
+						(= damageType 'kinetic)		&itKineticUpgrade;
+						(= damageType 'particle)	&itParticleUpgrade;
+						(= damageType 'bast)		&itBlastUpgrade;
+						(= damageType 'ion)			&itIonUpgrade;
+						(= damageType 'thermo)		&itThermoUpgrade;
+						)
+					)
+				))
+
+			(setq intCreateHPBonusEnhancement (lambda (theItem theMod)
+				(block (
+					(theCategory (itmGetProperty theItem 'category))
+					)
+					(switch
+						(= theCategory 'armor)
+							{	enhancement:theMod		type:&itPlasteelNanos;	}
+
+						(= theCategory 'shields)
+							(switch
+								(leq (itmGetLevel theItem) 5)
+									{	enhancement:theMod		type:&itSilicarbCrystal;	}
+
+								{	enhancement:theMod		type:&itDiamondCrystal;	}
+								)
+
+						(= theCategory 'weapon)
+							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
+
+						;	No enhancement. Note that sometimes this gets called
+						;	on a non-enhanceable item (e.g., ammo).
+						)
+					)
 				))
 			)
 	</Globals>
@@ -2828,9 +2794,7 @@
 					</Action>
 
 					<Action id="actionBuyItems">
-						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-							checkMilitaryID: True
-							})
+						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 					</Action>
 
 					<Action id="actionUndock" cancel="1">
@@ -2877,8 +2841,20 @@
 	-->
 	
 	<Type unid="&baCorporateStation;"
-		inherit=			"&dsDockScreenBase;"
+		inherit=			"&unidCommonText;"
 		>
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+
+			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</COnstant>
+		</Properties>
+
 		<Events>
 			<OnDestroy>
 				(intCorporateOnDestroy)
@@ -2886,13 +2862,19 @@
 		</Events>
 		
 		<Language>
+			<Text id="actionOperations">[O]perations Level</Text>
+
 			<Text id="customs.chargedForDecon">
+
 				Corporate security stops your ship for decontamination.
 				You are automatically charged %cost% for decontaminating your ship.
+
 			</Text>
 			<Text id="customs.cantAffordDecon">
+
 				Corporate security stops your ship for decontamination.
 				Unfortunately, you do not have %cost% to pay for decontamination.
+
 			</Text>
 		</Language>
 	</Type>

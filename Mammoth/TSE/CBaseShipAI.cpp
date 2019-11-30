@@ -4,22 +4,6 @@
 
 #include "PreComp.h"
 
-constexpr Metric MAX_AREA_WEAPON_CHECK =	(15.0 * LIGHT_SECOND);
-constexpr Metric MAX_AREA_WEAPON_CHECK2 =	(MAX_AREA_WEAPON_CHECK * MAX_AREA_WEAPON_CHECK);
-constexpr Metric MIN_TARGET_DIST =			(5.0 * LIGHT_SECOND);
-constexpr Metric MIN_TARGET_DIST2 =			(MIN_TARGET_DIST * MIN_TARGET_DIST);
-constexpr Metric MIN_STATION_TARGET_DIST =	(10.0 * LIGHT_SECOND);
-constexpr Metric MIN_STATION_TARGET_DIST2 =	(MIN_STATION_TARGET_DIST * MIN_STATION_TARGET_DIST);
-constexpr Metric HIT_NAV_POINT_DIST =		(8.0 * LIGHT_SECOND);
-constexpr Metric HIT_NAV_POINT_DIST2 =		(HIT_NAV_POINT_DIST * HIT_NAV_POINT_DIST);
-constexpr Metric MAX_TARGET_OF_OPPORTUNITY_RANGE = (20.0 * LIGHT_SECOND);
-constexpr Metric ESCORT_DISTANCE =			(6.0 * LIGHT_SECOND);
-constexpr Metric MAX_ESCORT_DISTANCE =		(12.0 * LIGHT_SECOND);
-constexpr Metric ATTACK_RANGE =				(20.0 * LIGHT_SECOND);
-constexpr Metric CLOSE_RANGE =				(50.0 * LIGHT_SECOND);
-constexpr Metric CLOSE_RANGE2 =				(CLOSE_RANGE * CLOSE_RANGE);
-constexpr Metric MIN_POTENTIAL2 =			(KLICKS_PER_PIXEL * KLICKS_PER_PIXEL * 25.0);
-
 constexpr int MAX_TARGETS =				10;
 
 #ifdef DEBUG_COMBAT
@@ -759,7 +743,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
+void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
@@ -781,12 +765,12 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 
 		DWORD dwFlags = 0;
 		if (m_AICtx.IsAggressor())
-			dwFlags |= FLAG_INCLUDE_NON_AGGRESSORS;
+			dwFlags |= CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS;
 
 		//  Include missiles if appropriate
 
-		if (bTargetMissiles)
-			dwFlags |= FLAG_INCLUDE_MISSILES;
+		if (pDevice && pDevice->CanTargetMissiles())
+			dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
 
 		//	First build a list of the nearest enemy ships within
 		//	range of the ship.
@@ -933,7 +917,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
 	}
 
-bool CBaseShipAI::IsAngryAt (CSpaceObject *pObj) const
+bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -1259,7 +1243,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	(we will be updated when we enter the new system).
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
-			&& Ctx.pObj == GetCurrentOrderTarget())
+			&& Ctx.Obj == GetCurrentOrderTarget())
 		return;
 
 	//	If we're following the player through a gate and the object
@@ -1268,14 +1252,14 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	if (GetCurrentOrder() == IShipController::orderFollowPlayerThroughGate
 			&& Ctx.iCause == enteredStargate
-			&& Ctx.pObj->FollowsObjThroughGate(NULL))
+			&& Ctx.Obj.FollowsObjThroughGate(NULL))
 		return;
 
 	//	If we are following an object and it is about to be resurrected,
 	//	then don't cancel the escort order
 
 	if (GetCurrentOrder() == IShipController::orderEscort
-			&& Ctx.pObj == GetCurrentOrderTarget()
+			&& Ctx.Obj == GetCurrentOrderTarget()
 			&& Ctx.bResurrectPending)
 		return;
 
@@ -1293,7 +1277,7 @@ void CBaseShipAI::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	delete any that refer to this object.
 
 	bool bChanged;
-	m_Orders.OnObjDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnObjDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}
@@ -1403,7 +1387,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	Station has been destroyed
 
 	{
-	ASSERT(!Ctx.pObj->IsDestroyed());
+	ASSERT(!Ctx.Obj.IsDestroyed());
 
 	//	In some cases we ignore the notification because the station still
 	//	exists
@@ -1420,7 +1404,7 @@ void CBaseShipAI::OnStationDestroyed (const SDestroyCtx &Ctx)
 	//	Remove orders as appropriate
 
 	bool bChanged;
-	m_Orders.OnStationDestroyed(Ctx.pObj, &bChanged);
+	m_Orders.OnStationDestroyed(&Ctx.Obj, &bChanged);
 	if (bChanged)
 		FireOnOrderChanged();
 	}

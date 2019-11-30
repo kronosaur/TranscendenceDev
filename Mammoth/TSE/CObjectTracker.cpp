@@ -88,6 +88,7 @@ void CObjectTracker::AccumulateEntry (const SObjList &ObjList, DWORD dwObjID, co
     pEntry->fFriendly = ObjData.fFriendly;
     pEntry->fEnemy = ObjData.fEnemy;
 	pEntry->fInactive = ObjData.fInactive;
+	pEntry->fPlayerBlacklisted = ObjData.fPlayerBlacklisted;
 
 	if (ObjData.pExtra)
 		{
@@ -254,14 +255,14 @@ bool CObjectTracker::Find (SNodeData *pNodeData, CSpaceObject *pObj, SObjBasics 
     return true;
     }
 
-bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjData, CString *retsDesc) const
+bool CObjectTracker::GetCustomDesc (const CSpaceObject &Obj, const SObjBasics &ObjData, CString *retsDesc) const
 
 //	GetCustomDesc
 //
 //	Returns a custom description for object services.
 
 	{
-	CDesignType *pType = pObj->GetType();
+	CDesignType *pType = Obj.GetType();
 	if (pType == NULL || !pType->HasCustomMapDescLanguage())
 		return false;
 
@@ -275,17 +276,17 @@ bool CObjectTracker::GetCustomDesc (CSpaceObject *pObj, const SObjBasics &ObjDat
     CString sTradeDesc;
 	if (!ObjData.fShowDestroyed
 			&& (pTrade = pType->GetTradingDesc())
-			&& pTrade->ComposeDescription(&sTradeDesc))
+			&& pTrade->ComposeDescription(Obj.GetUniverse(), &sTradeDesc))
 		{
 		pData->SetStringAt(CONSTLIT("tradeDesc"), sTradeDesc);
 		}
 
 	//	Translate
 
-    return pObj->TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
+    return Obj.TranslateText((ObjData.fShowDestroyed ? LANGID_DESC_GALACTIC_MAP_ABANDONED_CUSTOM : LANGID_DESC_GALACTIC_MAP_CUSTOM), pData, retsDesc);
 	}
 
-void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<SObjEntry> &Results) const
+void CObjectTracker::GetGalacticMapObjects (const CTopologyNode &Node, TArray<SObjEntry> &Results) const
 
 //  GetGalacticMapObjects
 //
@@ -301,7 +302,7 @@ void CObjectTracker::GetGalacticMapObjects (const CTopologyNode *pNode, TArray<S
 
 	//	Look in the index of nodes
 
-	const SNodeData *pNodeData = m_ByNode.GetAt(pNode->GetID());
+	const SNodeData *pNodeData = m_ByNode.GetAt(Node.GetID());
     if (pNodeData == NULL)
         return;
 
@@ -541,7 +542,7 @@ void CObjectTracker::Insert (CSpaceObject *pObj)
     //  Insert and update
 
 	SObjBasics *pEntry = pList->Objects.Insert(pObj->GetID());
-    Refresh(pObj, pEntry, pPlayer);
+    Refresh(*pObj, *pEntry, pPlayer);
 	}
 
 void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
@@ -659,6 +660,7 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                         pObjData->fFriendly =		((dwLoad & 0x00000010) ? true : false);
                         pObjData->fEnemy =			((dwLoad & 0x00000020) ? true : false);
                         pObjData->fInactive =		((dwLoad & 0x00000040) ? true : false);
+                        pObjData->fPlayerBlacklisted = ((dwLoad & 0x00000080) ? true : false);
 
                         //  Extra, if we've got it
 
@@ -702,13 +704,13 @@ void CObjectTracker::ReadFromStream (SUniverseLoadCtx &Ctx)
                 //  Read orbits
 
                 for (i = 0; i < iOrbitCount; i++)
-                    Ctx.pStream->Read((char *)&pNodeData->Orbits[i], sizeof(COrbit));
+					pNodeData->Orbits[i].ReadFromStream(SystemCtx);
                 }
             else
                 {
                 COrbit Dummy;
                 for (i = 0; i < iOrbitCount; i++)
-                    Ctx.pStream->Read((char *)&Dummy, sizeof(COrbit));
+					Dummy.ReadFromStream(SystemCtx);
                 }
 
 			//	Read the command list
@@ -929,42 +931,49 @@ void CObjectTracker::Refresh (CSystem *pSystem)
 
         //  Refresh
 
-        Refresh(pObj, pObjData, pPlayer);
+        Refresh(*pObj, *pObjData, pPlayer);
         }
     }
 
-void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceObject *pPlayer)
+void CObjectTracker::Refresh (const CSpaceObject &Obj, SObjBasics &ObjData, const CSpaceObject *pPlayer)
 
 //  Refresh
 //
 //  Refresh the object data from the actual object.
 
     {
-	CDesignType *pType = pObj->GetType();
+	CDesignType *pType = Obj.GetType();
 	if (pType == NULL)
 		return;
 
     //  Update flags
 
-    pObjData->vPos = pObj->GetPos();
-    pObjData->fKnown = pObj->IsKnown();
-    pObjData->fShowDestroyed = pObj->ShowStationDamage();
-    pObjData->fShowInMap = pObj->IsShownInGalacticMap();
-	pObjData->fInactive = pObj->IsInactive();
+    ObjData.vPos = Obj.GetPos();
+    ObjData.fKnown = Obj.IsKnown();
+    ObjData.fShowDestroyed = Obj.ShowStationDamage();
+    ObjData.fShowInMap = Obj.IsShownInGalacticMap();
+	ObjData.fInactive = Obj.IsInactive();
+	ObjData.fPlayerBlacklisted = (pPlayer && !Obj.IsEnemy(pPlayer) && Obj.IsAngryAt(pPlayer));
 
     //  Track our disposition relative to the player
 
     if (pPlayer)
         {
-        CSovereign::Disposition iDisp = pObj->GetDispositionTowards(pPlayer);
-        pObjData->fFriendly = (iDisp == CSovereign::dispFriend);
-        pObjData->fEnemy = (iDisp == CSovereign::dispEnemy);
+        CSovereign::Disposition iDisp = Obj.GetDispositionTowards(*pPlayer);
+        ObjData.fFriendly = (iDisp == CSovereign::dispFriend);
+        ObjData.fEnemy = (iDisp == CSovereign::dispEnemy);
         }
+	else if (const CSovereign *pSovereign = Obj.GetUniverse().FindSovereign(g_PlayerSovereignUNID))
+		{
+        CSovereign::Disposition iDisp = Obj.GetDispositionTowards(*pSovereign);
+        ObjData.fFriendly = (iDisp == CSovereign::dispFriend);
+        ObjData.fEnemy = (iDisp == CSovereign::dispEnemy);
+		}
 
     //  See if we have a custom services description
 
     CString sCustomNotes;
-    bool bHasCustomNotes = GetCustomDesc(pObj, *pObjData, &sCustomNotes);
+    bool bHasCustomNotes = GetCustomDesc(Obj, ObjData, &sCustomNotes);
 
 	//	If the name of this object does not match the type, then we store it.
 	//
@@ -973,19 +982,19 @@ void CObjectTracker::Refresh (CSpaceObject *pObj, SObjBasics *pObjData, CSpaceOb
 
 	DWORD dwNameFlags;
 	DWORD dwDummyFlags;
-	CString sName = pObj->GetNamePattern(0, &dwNameFlags);
+	CString sName = Obj.GetNamePattern(0, &dwNameFlags);
 	if (!pType->GetTypeImage().IsConstant()
             || bHasCustomNotes
             || !strEquals(sName, pType->GetNamePattern(0, &dwDummyFlags)))
 		{
-        SObjExtra &Extra = pObjData->SetExtra();
+        SObjExtra &Extra = ObjData.SetExtra();
 		Extra.sName = sName;
 		Extra.dwNameFlags = dwNameFlags;
-        Extra.ImageSel = pObj->GetImageSelector();
+        Extra.ImageSel = Obj.GetImageSelector();
         Extra.sNotes = sCustomNotes;
 		}
     else
-        pObjData->DeleteExtra();
+        ObjData.DeleteExtra();
     }
 
 void CObjectTracker::ReplayCommands (CSystem *pSystem)
@@ -1278,13 +1287,14 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
                 //  Flags
 
                 dwSave = 0;
-                dwSave |= (ObjData.pExtra           ? 0x00000001 : 0);
-                dwSave |= (ObjData.fKnown           ? 0x00000002 : 0);
-                dwSave |= (ObjData.fShowDestroyed   ? 0x00000004 : 0);
-                dwSave |= (ObjData.fShowInMap       ? 0x00000008 : 0);
-                dwSave |= (ObjData.fFriendly        ? 0x00000010 : 0);
-                dwSave |= (ObjData.fEnemy           ? 0x00000020 : 0);
-                dwSave |= (ObjData.fInactive        ? 0x00000040 : 0);
+                dwSave |= (ObjData.pExtra				? 0x00000001 : 0);
+                dwSave |= (ObjData.fKnown				? 0x00000002 : 0);
+                dwSave |= (ObjData.fShowDestroyed		? 0x00000004 : 0);
+                dwSave |= (ObjData.fShowInMap			? 0x00000008 : 0);
+                dwSave |= (ObjData.fFriendly			? 0x00000010 : 0);
+                dwSave |= (ObjData.fEnemy				? 0x00000020 : 0);
+                dwSave |= (ObjData.fInactive			? 0x00000040 : 0);
+                dwSave |= (ObjData.fPlayerBlacklisted	? 0x00000080 : 0);
 			    pStream->Write((char *)&dwSave, sizeof(DWORD));
 
                 //  If we have extra data, save that
@@ -1308,10 +1318,7 @@ void CObjectTracker::WriteToStream (IWriteStream *pStream)
         //  Write each of the orbits
 
         for (i = 0; i < m_ByNode[iNode].Orbits.GetCount(); i++)
-            {
-            const COrbit &Orbit = m_ByNode[iNode].Orbits[i];
-	        pStream->Write((char *)&Orbit, sizeof(COrbit));
-            }
+			m_ByNode[iNode].Orbits[i].WriteToStream(*pStream);
 
 		//	Write any delayed commands
 

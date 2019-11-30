@@ -48,6 +48,7 @@ class CMissionType : public CDesignType
 		int GetPriority (void) const { return (m_pArcRoot ? m_pArcRoot->m_iPriority : m_iPriority); }
 		DWORD GetShuffle (void) const { return (m_pArcRoot ? m_pArcRoot->m_dwShuffle : m_dwShuffle); }
 		bool HasDebrief (void) const { return !m_fNoDebrief; }
+		bool HasInProgress (void) const { return !m_fNoInProgress; }
 		void IncAccepted (void);
 		bool KeepsStats (void) const { return !m_fNoStats; }
 		void OnMissionCreated (void) { m_iExisting++; }
@@ -122,7 +123,7 @@ class CMissionType : public CDesignType
 		DWORD m_fRecordNonPlayer:1;			//	If TRUE, non-player missions will not be deleted after completion
 		DWORD m_fDestroyOnDecline:1;		//	If TRUE, destroy mission if player declines.
 
-		DWORD m_fSpare1:1;
+		DWORD m_fNoInProgress:1;			//	If TRUE, no in progress messages
 		DWORD m_fSpare2:1;
 		DWORD m_fSpare3:1;
 		DWORD m_fSpare4:1;

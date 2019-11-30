@@ -1314,8 +1314,16 @@ ALERROR CObjectImageArray::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 
 	if (m_dwBitmapUNID)
 		{
-		m_pImage = Ctx.GetUniverse().FindLibraryImage(m_dwBitmapUNID);
-		if (m_pImage == NULL)
+		m_pImage = Ctx.GetUniverse().FindLibraryImageUnbound(m_dwBitmapUNID);
+		if (m_pImage)
+			{
+			if (!m_pImage->IsBound())
+				{
+				if (ALERROR error = m_pImage->BindDesign(Ctx))
+					return error;
+				}
+			}
+		else
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unknown image: %x"), m_dwBitmapUNID);
 			return ERR_FAIL;

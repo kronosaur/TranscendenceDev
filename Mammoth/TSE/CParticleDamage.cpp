@@ -115,7 +115,7 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	//	Create the effect painter, if we've got one
 
-	bool bIsTracking = Ctx.pTarget && Ctx.pDesc->IsTracking();
+	bool bIsTracking = Ctx.pTarget && pParticles->IsTracking();
 	pParticles->m_pEffectPainter = Ctx.pDesc->CreateSecondaryPainter(bIsTracking, true);
 
 	//	Particle Painter
@@ -139,7 +139,7 @@ ALERROR CParticleDamage::Create (CSystem &System, SShotCreateCtx &Ctx, CParticle
 
 	CVector vInitialVel;
 	if (!Ctx.Source.IsEmpty() 
-			&& !pParticles->m_pDesc->IsTracking()
+			&& !pParticles->IsTracking()
 			&& !(Ctx.dwFlags & SShotCreateCtx::CWF_FRAGMENT))
 		vInitialVel = Ctx.Source.GetObj()->GetVel();
 
@@ -203,6 +203,17 @@ CString CParticleDamage::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFl
 	if (retdwFlags)
 		*retdwFlags = 0;
 	return CONSTLIT("enemy weapon");
+	}
+
+bool CParticleDamage::IsTracking (void) const
+
+//	IsTracking
+//
+//	Returns TRUE if these track.
+
+	{
+	return (m_pDesc->IsTracking() 
+			|| (m_pEnhancements && m_pEnhancements->IsTracking()));
 	}
 
 void CParticleDamage::OnDestroyed (SDestroyCtx &Ctx)
@@ -313,9 +324,9 @@ void CParticleDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 	}
 
@@ -395,7 +406,7 @@ void CParticleDamage::OnReadFromStream (SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		}
 

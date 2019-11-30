@@ -9,6 +9,7 @@
 #define ALIGN_CENTER							CONSTLIT("center")
 #define ALIGN_RIGHT								CONSTLIT("right")
 
+#define CMD_CHANGE_DIFFICULTY					CONSTLIT("cmdChangeDifficulty")
 #define CMD_CHANGE_GENOME						CONSTLIT("cmdChangeGenome")
 #define CMD_CLOSE_SESSION						CONSTLIT("cmdCloseSession")
 #define CMD_EDIT_NAME							CONSTLIT("cmdEditName")
@@ -52,7 +53,9 @@
 
 #define STYLE_IMAGE								CONSTLIT("image")
 
+#define STR_DIFFICULTY							CONSTLIT("difficulty")
 #define STR_GENOME								CONSTLIT("gender")
+#define STR_NAME								CONSTLIT("name")
 
 const int ICON_HEIGHT =							48;
 const int ICON_WIDTH =							48;
@@ -80,14 +83,17 @@ const int SPECIAL_DEVICE_SLOTS =				104;
 
 CNewGameSession::CNewGameSession (CHumanInterface &HI, CCloudService &Service, const SNewGameSettings &Defaults) : IHISession(HI),
 		m_Service(Service),
-		m_Settings(Defaults)
+		m_Settings(Defaults),
+		m_PlayerGenome(*this),
+		m_PlayerName(*this),
+		m_Difficulty(*this)
 
 //	CNewGameSession constructor
 
 	{
 	}
 
-void CNewGameSession::AddClassInfo (CShipClass *pClass, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni)
+void CNewGameSession::AddClassInfo (const CShipClass &Class, const CDeviceDescList &Devices, const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpAni)
 
 //	AddClassInfo
 //
@@ -102,23 +108,23 @@ void CNewGameSession::AddClassInfo (CShipClass *pClass, const CDeviceDescList &D
 	switch (Item.GetCount())
 		{
 		case SPECIAL_ARMOR:
-			Helper.CreateClassInfoArmor(pClass, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
+			Helper.CreateClassInfoArmor(Class, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
 			break;
 
 		case SPECIAL_CARGO:
-			Helper.CreateClassInfoCargo(pClass, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
+			Helper.CreateClassInfoCargo(Class, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
 			break;
 
 		case SPECIAL_DEVICE_SLOTS:
-			Helper.CreateClassInfoDeviceSlots(pClass, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
+			Helper.CreateClassInfoDeviceSlots(Class, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
 			break;
 
 		case SPECIAL_DRIVE:
-			Helper.CreateClassInfoDrive(pClass, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
+			Helper.CreateClassInfoDrive(Class, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
 			break;
 
 		case SPECIAL_REACTOR:
-			Helper.CreateClassInfoReactor(pClass, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
+			Helper.CreateClassInfoReactor(Class, Devices, x, y, cxWidth, dwOptions, retcyHeight, retpAni);
 			break;
 
 		default:
@@ -143,6 +149,17 @@ void CNewGameSession::CmdCancel (void)
 	HI.HICommand(CMD_BACK_TO_INTRO);
 	}
 
+void CNewGameSession::CmdChangeDifficulty (void)
+
+//	CmdChangeDifficulty
+//
+//	Change the difficulty
+
+	{
+	m_Settings.iDifficulty = CDifficultyOptions::NextLevel(m_Settings.iDifficulty);
+	SetDifficulty(m_Settings.iDifficulty);
+	}
+
 void CNewGameSession::CmdChangeGenome (void)
 
 //	CmdChangeGenom
@@ -155,7 +172,7 @@ void CNewGameSession::CmdChangeGenome (void)
 	else
 		m_Settings.iPlayerGenome = genomeHumanMale;
 
-	SetPlayerGenome(m_Settings.iPlayerGenome, m_xPlayerGenome, m_yPlayerGenome, m_cxPlayerGenome);
+	SetPlayerGenome(m_Settings.iPlayerGenome);
 	}
 
 void CNewGameSession::CmdEditName (void)
@@ -167,47 +184,22 @@ void CNewGameSession::CmdEditName (void)
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
-	if (m_bEditingName)
+	if (m_PlayerName.IsEditing())
 		{
-		IAnimatron *pEdit;
-		if (m_pRoot->FindElement(ID_PLAYER_NAME_FIELD, &pEdit))
-			{
-			m_Settings.sPlayerName = CUniverse::ValidatePlayerName(pEdit->GetPropertyString(PROP_TEXT));
-			m_Settings.bDefaultPlayerName = false;
+		CString sValue;
+		m_PlayerName.StopEdit(&sValue);
 
-			DeleteElement(ID_PLAYER_NAME_FIELD);
-			}
+		m_Settings.sPlayerName = CUniverse::ValidatePlayerName(sValue);
+		m_Settings.bDefaultPlayerName = false;
 
-		SetPlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-		m_bEditingName = false;
+		SetPlayerName(m_Settings.sPlayerName);
 		}
 
 	//	If we're not editing, then start editing
 
 	else
 		{
-		DeleteElement(ID_PLAYER_NAME);
-
-		//	Create edit control
-
-		IAnimatron *pEdit;
-		VI.CreateEditControl(NULL,
-				ID_PLAYER_NAME_FIELD,
-				m_xPlayerName + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ,
-				m_yPlayerName,
-				NAME_FIELD_WIDTH,
-				0,
-				NULL_STR,
-				&pEdit,
-				NULL);
-
-		pEdit->SetPropertyString(PROP_TEXT, m_Settings.sPlayerName);
-
-		m_pRoot->AddLine(pEdit);
-
-		SetInputFocus(ID_PLAYER_NAME_FIELD);
-
-		m_bEditingName = true;
+		m_PlayerName.StartEdit(NAME_FIELD_WIDTH, m_Settings.sPlayerName);
 		}
 	}
 
@@ -218,11 +210,10 @@ void CNewGameSession::CmdEditNameCancel (void)
 //	Cancel editing name
 
 	{
-	if (m_bEditingName)
+	if (m_PlayerName.IsEditing())
 		{
-		DeleteElement(ID_PLAYER_NAME_FIELD);
-		SetPlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-		m_bEditingName = false;
+		m_PlayerName.StopEdit();
+		SetPlayerName(m_Settings.sPlayerName);
 		}
 	}
 
@@ -235,7 +226,7 @@ void CNewGameSession::CmdNextShipClass (void)
 	{
 	if (m_iCurShipClass + 1 < m_ShipClasses.GetCount())
 		{
-		SetShipClass(m_ShipClasses[++m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
+		SetShipClass(*m_ShipClasses[++m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
 
 		//	See if we need to disable the next button
 
@@ -268,6 +259,7 @@ void CNewGameSession::CmdOK (void)
 	NewGame.iPlayerGenome = m_Settings.iPlayerGenome;
 	NewGame.dwPlayerShip = m_ShipClasses[m_iCurShipClass]->GetUNID();
 	NewGame.bDefaultPlayerName = m_Settings.bDefaultPlayerName;
+	NewGame.iDifficulty = m_Settings.iDifficulty;
 
 	//	Remember some variables because after we close the session this object
 	//	will be gone.
@@ -288,7 +280,7 @@ void CNewGameSession::CmdPrevShipClass (void)
 	{
 	if (m_iCurShipClass > 0)
 		{
-		SetShipClass(m_ShipClasses[--m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
+		SetShipClass(*m_ShipClasses[--m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
 
 		//	See if we need to disable the prev button
 
@@ -307,93 +299,7 @@ void CNewGameSession::CmdPrevShipClass (void)
 		}
 	}
 
-void CNewGameSession::CreatePlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth)
-
-//	CreatePlayerGenome
-//
-//	Creates the player genome UI section
-
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x, y));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, STR_GENOME);
-	pLabel->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
-
-	m_pRoot->AddLine(pLabel);
-
-	//	Create a button
-
-	IAnimatron *pButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_CHANGE_GENOME, 
-			x + cxWidth - SMALL_BUTTON_WIDTH, 
-			y,
-			&VI.GetImage(imageSmallHumanMale),
-			0,
-			&pButton);
-
-	pButton->SetID(CMD_CHANGE_GENOME);
-
-	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, CMD_CHANGE_GENOME);
-	m_pRoot->AddLine(pButton);
-
-	//	Player genome
-
-	SetPlayerGenome(iGenome, x, y, cxWidth);
-	}
-
-void CNewGameSession::CreatePlayerName (const CString &sName, int x, int y, int cxWidth)
-
-//	CreatePlayerName
-//
-//	Creates the player name UI section
-
-	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ, y));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, CONSTLIT("name"));
-
-	m_pRoot->AddLine(pLabel);
-
-	//	Create a button
-
-	IAnimatron *pButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_EDIT_NAME, 
-			x, 
-			y,
-			&VI.GetImage(imageSmallEditIcon),
-			0,
-			&pButton);
-
-	pButton->SetID(CMD_EDIT_NAME);
-
-	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, CMD_EDIT_NAME);
-	m_pRoot->AddLine(pButton);
-
-	//	Player name
-
-	SetPlayerName(sName, x, y, cxWidth);
-	}
-
-void CNewGameSession::CreateShipClass (CShipClass *pClass, int x, int y, int cxWidth)
+void CNewGameSession::CreateShipClass (const CShipClass &Class, int x, int y, int cxWidth)
 
 //	CreateShipClass
 //
@@ -408,52 +314,45 @@ void CNewGameSession::CreateShipClass (CShipClass *pClass, int x, int y, int cxW
 
 	int xCenter = (x + cxWidth / 2);
 	int xHalfSpacing = SMALL_SPACING_HORZ / 2;
+	int yTop = y;
 
-	IAnimatron *pLeftButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_PREV_SHIP_CLASS, 
-			xCenter - xHalfSpacing - SMALL_BUTTON_WIDTH, 
-			y,
-			&VI.GetImage(imageSmallLeftIcon),
-			0,
-			&pLeftButton);
+	CreateShipClassButton(CMD_PREV_SHIP_CLASS, 
+			x,
+			yTop,
+			VI.GetImage(imageSmallLeftIcon),
+			m_iCurShipClass > 0);
 
-	if (m_iCurShipClass == 0)
-		pLeftButton->SetPropertyBool(PROP_ENABLED, false);
-
-	RegisterPerformanceEvent(pLeftButton, EVENT_ON_CLICK, CMD_PREV_SHIP_CLASS);
-	m_pRoot->AddLine(pLeftButton);
-
-	IAnimatron *pRightButton;
-	VI.CreateImageButtonSmall(NULL, 
-			CMD_NEXT_SHIP_CLASS, 
-			xCenter + xHalfSpacing, 
-			y,
-			&VI.GetImage(imageSmallRightIcon),
-			0,
-			&pRightButton);
-
-	if (m_iCurShipClass + 1 == m_ShipClasses.GetCount())
-		pRightButton->SetPropertyBool(PROP_ENABLED, false);
-
-	RegisterPerformanceEvent(pRightButton, EVENT_ON_CLICK, CMD_NEXT_SHIP_CLASS);
-	m_pRoot->AddLine(pRightButton);
-
-	//	Label
-
-	IAnimatron *pLabel = new CAniText;
-	pLabel->SetPropertyVector(PROP_POSITION, CVector(x, y + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT));
-	pLabel->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pLabel->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
-	pLabel->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pLabel->SetPropertyString(PROP_TEXT, CONSTLIT("ship class"));
-	pLabel->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);
-
-	m_pRoot->AddLine(pLabel);
+	CreateShipClassButton(CMD_NEXT_SHIP_CLASS,
+			x + cxWidth - SMALL_BUTTON_WIDTH,
+			yTop,
+			VI.GetImage(imageSmallRightIcon),
+			m_iCurShipClass + 1 < m_ShipClasses.GetCount());
 
 	//	Ship class
 
-	SetShipClass(pClass, x, y, cxWidth);
+	SetShipClass(Class, x, y, cxWidth);
+	}
+
+void CNewGameSession::CreateShipClassButton (const CString &sID, int x, int y, const CG32bitImage &Image, bool bEnabled)
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
+	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
+
+	IAnimatron *pButton;
+	VI.CreateImageButtonSmall(NULL, 
+			sID, 
+			x, 
+			y,
+			&Image,
+			0,
+			&pButton);
+
+	if (!bEnabled)
+		pButton->SetPropertyBool(PROP_ENABLED, false);
+
+	RegisterPerformanceEvent(pButton, EVENT_ON_CLICK, sID);
+	m_pRoot->AddLine(pButton);
 	}
 
 void CNewGameSession::OnCleanUp (void)
@@ -480,6 +379,8 @@ ALERROR CNewGameSession::OnCommand (const CString &sCmd, void *pData)
 		CmdNextShipClass();
 	else if (strEquals(sCmd, CMD_PREV_SHIP_CLASS))
 		CmdPrevShipClass();
+	else if (strEquals(sCmd, CMD_CHANGE_DIFFICULTY))
+		CmdChangeDifficulty();
 	else if (strEquals(sCmd, CMD_CHANGE_GENOME))
 		CmdChangeGenome();
 	else if (strEquals(sCmd, CMD_EDIT_NAME))
@@ -499,44 +400,34 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 	int i;
 
 	const CVisualPalette &VI = m_HI.GetVisuals();
-
-	//	The main pane is divided into three columns. Compute the size and
-	//	position here.
+	CUIHelper Helper(m_HI);
 
 	RECT rcCenter;
 	VI.GetWidescreenRect(&rcCenter);
 
-	m_cxLeftCol = RectWidth(rcCenter) / 3;
-	m_cxRightCol = m_cxLeftCol;
-	m_cxCenterCol = RectWidth(rcCenter) - (m_cxLeftCol + m_cxRightCol);
+	//	Background
 
-	m_xLeftCol = 0;
-	m_xCenterCol = m_cxLeftCol;
-	m_xRightCol = m_cxLeftCol + m_cxCenterCol;
+	int cyBackground = SMALL_BUTTON_HEIGHT + 2 * MAJOR_PADDING_VERT;
+	m_Background = Helper.CreateGlowBackground();
+	m_Background.Fill(0, m_Background.GetHeight() - cyBackground, m_Background.GetWidth(), cyBackground, CG32bitPixel(255, 255, 255, 20));
 
 	//	Compute the location of various elements (relative to the upper-left of
 	//	the root vscroller).
 
-	m_xPlayerName = m_xLeftCol;
-	m_yPlayerName = MAJOR_PADDING_TOP;
-	m_cxPlayerName = m_cxLeftCol;
-	m_xPlayerGenome = m_xRightCol;
-	m_yPlayerGenome = MAJOR_PADDING_TOP;
-	m_cxPlayerGenome = m_cxRightCol;
-	m_xShipClass = m_xLeftCol;
+	m_xShipClass = 0;
 	m_yShipClass = MAJOR_PADDING_TOP;
 	m_cxShipClass = RectWidth(rcCenter);
 
 	//	Generate a list of ship classes
 
-	CAdventureDesc *pAdventure = g_pUniverse->GetCurrentAdventureDesc();
-	if (pAdventure == NULL)
+	CAdventureDesc &Adventure = g_pUniverse->GetCurrentAdventureDesc();
+	if (Adventure.IsNull())
 		{
 		*retsError = ERR_NO_ADVENTURE;
 		return ERR_FAIL;
 		}
 
-	if (error = pAdventure->GetStartingShipClasses(&m_ShipClasses, retsError))
+	if (error = Adventure.GetStartingShipClasses(&m_ShipClasses, retsError))
 		return error;
 
 	if (m_ShipClasses.GetCount() == 0)
@@ -557,9 +448,8 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Create the title
 
-	CUIHelper Helper(m_HI);
 	IAnimatron *pTitle;
-	Helper.CreateSessionTitle(this, m_Service, pAdventure->GetName(), NULL, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
+	Helper.CreateSessionTitle(this, m_Service, Adventure.GetName(), NULL, CUIHelper::OPTION_SESSION_OK_BUTTON, &pTitle);
 	StartPerformance(pTitle, ID_CTRL_TITLE, CReanimator::SPR_FLAG_DELETE_WHEN_DONE);
 
 	//	Create a scroller to hold all the settings
@@ -572,16 +462,46 @@ ALERROR CNewGameSession::OnInit (CString *retsError)
 
 	//	Create the player name
 
-	CreatePlayerName(m_Settings.sPlayerName, m_xPlayerName, m_yPlayerName, m_cxPlayerName);
-	m_bEditingName = false;
+	int cxBar = RectWidth(rcCenter);
+	int cyBar = cyBackground;
+	int xBar = 0;
+	int yBar = RectHeight(rcCenter) - cyBar + (cyBar - SMALL_BUTTON_HEIGHT) / 2;
+	int cxColumn = cxBar / 3;
+
+	m_PlayerName.Create(*m_pRoot,
+			CMD_EDIT_NAME,
+			STR_NAME,
+			xBar,
+			yBar,
+			cxColumn,
+			alignLeft);
+	SetPlayerName(m_Settings.sPlayerName);
+
+	//	Create the difficulty option
+
+	m_Difficulty.Create(*m_pRoot, 
+			CMD_CHANGE_DIFFICULTY, 
+			STR_DIFFICULTY, 
+			xBar + (cxBar / 2) - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ / 2, 
+			yBar, 
+			cxColumn, 
+			alignLeft);
+	SetDifficulty(m_Settings.iDifficulty);
 
 	//	Create the player genome
 
-	CreatePlayerGenome(m_Settings.iPlayerGenome, m_xPlayerGenome, m_yPlayerGenome, m_cxPlayerGenome);
+	m_PlayerGenome.Create(*m_pRoot, 
+			CMD_CHANGE_GENOME, 
+			STR_GENOME, 
+			xBar + cxBar - cxColumn, 
+			yBar, 
+			cxColumn, 
+			alignRight);
+	SetPlayerGenome(m_Settings.iPlayerGenome);
 
 	//	Create the ship class
 
-	CreateShipClass(m_ShipClasses[m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
+	CreateShipClass(*m_ShipClasses[m_iCurShipClass], m_xShipClass, m_yShipClass, m_cxShipClass);
 
 	//	Start the settings pane
 
@@ -602,14 +522,14 @@ void CNewGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 	switch (iVirtKey)
 		{
 		case VK_RETURN:
-			if (m_bEditingName)
+			if (m_PlayerName.IsEditing())
 				CmdEditName();
 			else
 				CmdOK();
 			break;
 
 		case VK_ESCAPE:
-			if (m_bEditingName)
+			if (m_PlayerName.IsEditing())
 				CmdEditNameCancel();
 			else
 				CmdCancel();
@@ -621,10 +541,6 @@ void CNewGameSession::OnKeyDown (int iVirtKey, DWORD dwKeyData)
 
 		case VK_RIGHT:
 			CmdNextShipClass();
-			break;
-
-		default:
-			HandlePageScrollKeyDown(ID_SETTINGS, iVirtKey, dwKeyData);
 			break;
 		}
 	}
@@ -645,7 +561,6 @@ void CNewGameSession::OnMouseWheel (int iDelta, int x, int y, DWORD dwFlags)
 //	Handle mouse wheel
 
 	{
-	HandlePageScrollMouseWheel(ID_SETTINGS, iDelta);
 	}
 
 void CNewGameSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
@@ -658,7 +573,7 @@ void CNewGameSession::OnPaint (CG32bitImage &Screen, const RECT &rcInvalid)
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
 	RECT rcCenter;
-	VI.DrawSessionBackground(Screen, CG32bitImage(), CG32bitPixel(), CVisualPalette::OPTION_SESSION_DLG_BACKGROUND, &rcCenter);
+	VI.DrawSessionBackground(Screen, m_Background, CG32bitPixel(), CVisualPalette::OPTION_SESSION_DLG_BACKGROUND, &rcCenter);
 	}
 
 void CNewGameSession::OnReportHardCrash (CString *retsMessage)
@@ -680,7 +595,38 @@ void CNewGameSession::OnUpdate (bool bTopMost)
 	{
 	}
 
-void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cxWidth)
+void CNewGameSession::SetDifficulty (CDifficultyOptions::ELevels iLevel)
+
+//	SetDifficulty
+//
+//	Sets the difficulty control.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	m_Difficulty.SetText(CDifficultyOptions::GetLabel(iLevel));
+
+	switch (iLevel)
+		{
+		case CDifficultyOptions::lvlStory:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyStory));
+			break;
+
+		case CDifficultyOptions::lvlNormal:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyNormal));
+			break;
+
+		case CDifficultyOptions::lvlPermadeath:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyPermadeath));
+			break;
+
+		default:
+			m_Difficulty.SetImage(VI.GetImage(imageDifficultyChallenge));
+			break;
+		}
+	}
+
+void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome)
 
 //	SetPlayerGenome
 //
@@ -688,198 +634,54 @@ void CNewGameSession::SetPlayerGenome (GenomeTypes iGenome, int x, int y, int cx
 
 	{
 	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
 
-	//	Delete the previous one
+	if (iGenome == genomeHumanMale)
+		m_PlayerGenome.SetImage(VI.GetImage(imageSmallHumanMale));
+	else
+		m_PlayerGenome.SetImage(VI.GetImage(imageSmallHumanFemale));
 
-	DeleteElement(ID_PLAYER_GENOME);
-
-	//	Player genome
-
-	IAnimatron *pGenome = new CAniText;
-	pGenome->SetID(ID_PLAYER_GENOME);
-	pGenome->SetPropertyVector(PROP_POSITION, CVector(x, y + MediumBoldFont.GetHeight()));
-	pGenome->SetPropertyVector(PROP_SCALE, CVector(cxWidth - SMALL_BUTTON_WIDTH - MAJOR_PADDING_HORZ, 100.0));
-	pGenome->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
-	pGenome->SetPropertyFont(PROP_FONT, &SubTitleFont);
-	pGenome->SetPropertyString(PROP_TEXT, strTitleCapitalize(GetGenomeName(iGenome)));
-	pGenome->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
-
-	m_pRoot->AddLine(pGenome);
-
-	//	Change the button image
-
-	IAnimatron *pButton;
-	if (m_pRoot->FindElement(CMD_CHANGE_GENOME, &pButton))
-		{
-		const CG32bitImage *pImage;
-
-		if (iGenome == genomeHumanMale)
-			pImage = &VI.GetImage(imageSmallHumanMale);
-		else
-			pImage = &VI.GetImage(imageSmallHumanFemale);
-
-		IAnimatron *pStyle = pButton->GetStyle(STYLE_IMAGE);
-		pStyle->SetFillMethod(new CAniImageFill(pImage, false));
-		}
+	m_PlayerGenome.SetText(strTitleCapitalize(GetGenomeName(iGenome)));
 	}
 
-void CNewGameSession::SetPlayerName (const CString &sName, int x, int y, int cxWidth)
+void CNewGameSession::SetPlayerName (const CString &sName)
 
 //	SetPlayerName
 //
 //	Sets the current player name
 
 	{
-	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
-	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
-
-	//	Delete the previous one
-
-	DeleteElement(ID_PLAYER_NAME);
-
-	//	Player name
-
-	IAnimatron *pName = new CAniText;
-	pName->SetID(ID_PLAYER_NAME);
-	pName->SetPropertyVector(PROP_POSITION, CVector(x + SMALL_BUTTON_WIDTH + MAJOR_PADDING_HORZ, y + MediumBoldFont.GetHeight()));
-	pName->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
-	pName->SetPropertyFont(PROP_FONT, &SubTitleFont);
-	pName->SetPropertyString(PROP_TEXT, sName);
-
-	m_pRoot->AddLine(pName);
+	m_PlayerName.SetText(sName);
 	}
 
-void CNewGameSession::SetShipClass (CShipClass *pClass, int x, int y, int cxWidth)
+void CNewGameSession::SetShipClass (const CShipClass &Class, int x, int y, int cxWidth)
 
 //	SetShipClass
 //
 //	Sets the ship class
 
 	{
-	int i;
-
 	g_pUniverse->SetLogImageLoad(false);
 
-	const CPlayerSettings *pPlayerSettings = pClass->GetPlayerSettings();
-
 	const CVisualPalette &VI = m_HI.GetVisuals();
-	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
+	const CG16bitFont &MediumFont = VI.GetFont(fontMedium);
 	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
 
-	//	Ship class name
+	int yLine = y;
 
-	SetShipClassName(pClass->GetNounPhrase(nounGeneric), x, y, cxWidth);
-	SetShipClassDesc(pClass->GetDesc(), x, y, cxWidth);
+	//	Name
 
-	//	Offset
+	SetShipClassName(Class.GetNounPhrase(nounGeneric), x, yLine, cxWidth);
+	yLine += SubTitleFont.GetHeight();
 
-	int yOffset = SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + MediumBoldFont.GetHeight() + 2 * SubTitleFont.GetHeight();
+	//	Description
 
-	//	Ship class image
+	SetShipClassDesc(Class.GetDesc(), x, yLine, cxWidth);
+	yLine += 3 * MediumFont.GetHeight();
 
-	SetShipClassImage(pClass, x, y + yOffset, cxWidth);
+	//	Image and Details
 
-	//	Delete previous info
-
-	DeleteElement(ID_SHIP_CLASS_INFO);
-
-	//	Create a sequencer for all class info components
-
-	CAniSequencer *pClassInfo;
-	CAniSequencer::Create(CVector(x, y + yOffset + SubTitleFont.GetHeight()), &pClassInfo);
-	pClassInfo->SetID(ID_SHIP_CLASS_INFO);
-
-	//	Generate default devices for the ship class
-
-	CDeviceDescList Devices;
-	pClass->GenerateDevices(1, Devices);
-
-	//	Generate list of all weapons, sorted by level and name
-
-	TSortMap<CString, CItem> RightSide;
-	for (i = 0; i < Devices.GetCount(); i++)
-		{
-        const CItem &DevItem = Devices.GetDeviceDesc(i).Item;
-		CDeviceClass *pDevice = Devices.GetDeviceClass(i);
-		if (pDevice->GetCategory() == itemcatWeapon ||
-				pDevice->GetCategory() == itemcatLauncher)
-			RightSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 1, DevItem.GetLevel(), DevItem.GetNounPhrase(CItemCtx(DevItem))), DevItem);
-		}
-
-	//	Add shields
-
-	TSortMap<CString, CItem> LeftSide;
-    const SDeviceDesc *pShields = Devices.GetDeviceDescByName(devShields);
-	if (pShields)
-		RightSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 2, pShields->Item.GetLevel(), pShields->Item.GetNounPhrase(CItemCtx(pShields->Item))), pShields->Item);
-
-	//	Add armor
-
-	RightSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_ARMOR));
-
-	//	Add reactor
-
-	LeftSide.Insert(CONSTLIT("01"), CItem(g_pUniverse->GetItemType(0), SPECIAL_REACTOR));
-
-	//	Add engines
-
-	LeftSide.Insert(CONSTLIT("02"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DRIVE));
-
-	//	Add cargo
-
-	LeftSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_CARGO));
-
-	//	Add misc devices
-
-	for (i = 0; i < Devices.GetCount(); i++)
-		{
-        const CItem &DevItem = Devices.GetDeviceDesc(i).Item;
-		CDeviceClass *pDevice = Devices.GetDeviceClass(i);
-		if (pDevice->GetCategory() == itemcatMiscDevice)
-			LeftSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 4, DevItem.GetLevel(), DevItem.GetNounPhrase(CItemCtx(DevItem))), DevItem);
-		}
-
-	//	Add device slots
-
-	LeftSide.Insert(CONSTLIT("05"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DEVICE_SLOTS));
-
-	//	Set the ship class info. All weapons go to the right of the ship image
-
-	int xPos = (cxWidth / 2) + (SHIP_IMAGE_RECT_WIDTH / 2);
-	int yPos = 0;
-	int cxInfo = (cxWidth - xPos);
-
-	for (i = 0; i < RightSide.GetCount(); i++)
-		{
-		int cyInfo;
-		IAnimatron *pInfo;
-		AddClassInfo(pClass, Devices, RightSide[i], xPos, yPos, cxInfo, 0, &cyInfo, &pInfo);
-
-		pClassInfo->AddTrack(pInfo, 0);
-		yPos += cyInfo + ITEM_INFO_PADDING_VERT;
-		}
-
-	//	Misc devices go on the left
-
-	xPos = (cxWidth / 2) - (SHIP_IMAGE_RECT_WIDTH / 2);
-	yPos = 0;
-	cxInfo = xPos;
-
-	for (i = 0; i < LeftSide.GetCount(); i++)
-		{
-		int cyInfo;
-		IAnimatron *pInfo;
-		AddClassInfo(pClass, Devices, LeftSide[i], xPos, yPos, cxInfo, CUIHelper::OPTION_ITEM_RIGHT_ALIGN, &cyInfo, &pInfo);
-
-		pClassInfo->AddTrack(pInfo, 0);
-		yPos += cyInfo + ITEM_INFO_PADDING_VERT;
-		}
-
-	m_pRoot->AddLine(pClassInfo);
+	SetShipClassDetails(Class, x, yLine, cxWidth);
+	yLine += SHIP_IMAGE_HEIGHT;
 
 	g_pUniverse->SetLogImageLoad(true);
 	}
@@ -907,7 +709,7 @@ void CNewGameSession::SetShipClassDesc (const CString &sDesc, int x, int y, int 
 
 	IAnimatron *pDesc = new CAniText;
 	pDesc->SetID(ID_SHIP_CLASS_DESC);
-	pDesc->SetPropertyVector(PROP_POSITION, CVector(xCenter - cxDesc / 2, y + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + MediumBoldFont.GetHeight() + SubTitleFont.GetHeight()));
+	pDesc->SetPropertyVector(PROP_POSITION, CVector(xCenter - cxDesc / 2, y));
 	pDesc->SetPropertyVector(PROP_SCALE, CVector(cxDesc, 100.0));
 	pDesc->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
 	pDesc->SetPropertyFont(PROP_FONT, &MediumFont);
@@ -917,18 +719,134 @@ void CNewGameSession::SetShipClassDesc (const CString &sDesc, int x, int y, int 
 	m_pRoot->AddLine(pDesc);
 	}
 
-void CNewGameSession::SetShipClassImage (CShipClass *pClass, int x, int y, int cxWidth)
+void CNewGameSession::SetShipClassDetails (const CShipClass &Class, int x, int y, int cxWidth)
+
+//	SetShipClassDetails
+//
+//	Sets the ship image and device/armor description lines.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &MediumBoldFont = VI.GetFont(fontMediumBold);
+	const CG16bitFont &SubTitleFont = VI.GetFont(fontSubTitle);
+
+	const CPlayerSettings *pPlayerSettings = Class.GetPlayerSettings();
+
+	//	Ship class image
+
+	SetShipClassImage(Class, x, y, cxWidth);
+
+	//	Delete previous info
+
+	DeleteElement(ID_SHIP_CLASS_INFO);
+
+	//	Create a sequencer for all class info components
+
+	CAniSequencer *pClassInfo;
+	CAniSequencer::Create(CVector(x, y + SubTitleFont.GetHeight()), &pClassInfo);
+	pClassInfo->SetID(ID_SHIP_CLASS_INFO);
+
+	//	Generate default devices for the ship class
+
+	CDeviceDescList Devices;
+	Class.GenerateDevices(1, Devices);
+
+	//	Generate list of all weapons, sorted by level and name
+
+	TSortMap<CString, CItem> RightSide;
+	for (int i = 0; i < Devices.GetCount(); i++)
+		{
+        const CItem &DevItem = Devices.GetDeviceDesc(i).Item;
+		CDeviceClass *pDevice = Devices.GetDeviceClass(i);
+		if (pDevice->GetCategory() == itemcatWeapon ||
+				pDevice->GetCategory() == itemcatLauncher)
+			RightSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 1, DevItem.GetLevel(), DevItem.GetNounPhrase()), DevItem);
+		}
+
+	//	Add shields
+
+	TSortMap<CString, CItem> LeftSide;
+    const SDeviceDesc *pShields = Devices.GetDeviceDescByName(devShields);
+	if (pShields)
+		RightSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 2, pShields->Item.GetLevel(), pShields->Item.GetNounPhrase()), pShields->Item);
+
+	//	Add armor
+
+	RightSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_ARMOR));
+
+	//	Add reactor
+
+	LeftSide.Insert(CONSTLIT("01"), CItem(g_pUniverse->GetItemType(0), SPECIAL_REACTOR));
+
+	//	Add engines
+
+	LeftSide.Insert(CONSTLIT("02"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DRIVE));
+
+	//	Add cargo
+
+	LeftSide.Insert(CONSTLIT("03"), CItem(g_pUniverse->GetItemType(0), SPECIAL_CARGO));
+
+	//	Add misc devices
+
+	for (int i = 0; i < Devices.GetCount(); i++)
+		{
+        const CItem &DevItem = Devices.GetDeviceDesc(i).Item;
+		CDeviceClass *pDevice = Devices.GetDeviceClass(i);
+		if (pDevice->GetCategory() == itemcatMiscDevice)
+			LeftSide.Insert(strPatternSubst(CONSTLIT("%02d_%02d_%s"), 4, DevItem.GetLevel(), DevItem.GetNounPhrase()), DevItem);
+		}
+
+	//	Add device slots
+
+	LeftSide.Insert(CONSTLIT("05"), CItem(g_pUniverse->GetItemType(0), SPECIAL_DEVICE_SLOTS));
+
+	//	Set the ship class info. All weapons go to the right of the ship image
+
+	int xPos = (cxWidth / 2) + (SHIP_IMAGE_RECT_WIDTH / 2);
+	int yPos = 0;
+	int cxInfo = (cxWidth - xPos);
+
+	for (int i = 0; i < RightSide.GetCount(); i++)
+		{
+		int cyInfo;
+		IAnimatron *pInfo;
+		AddClassInfo(Class, Devices, RightSide[i], xPos, yPos, cxInfo, 0, &cyInfo, &pInfo);
+
+		pClassInfo->AddTrack(pInfo, 0);
+		yPos += cyInfo + ITEM_INFO_PADDING_VERT;
+		}
+
+	//	Misc devices go on the left
+
+	xPos = (cxWidth / 2) - (SHIP_IMAGE_RECT_WIDTH / 2);
+	yPos = 0;
+	cxInfo = xPos;
+
+	for (int i = 0; i < LeftSide.GetCount(); i++)
+		{
+		int cyInfo;
+		IAnimatron *pInfo;
+		AddClassInfo(Class, Devices, LeftSide[i], xPos, yPos, cxInfo, CUIHelper::OPTION_ITEM_RIGHT_ALIGN, &cyInfo, &pInfo);
+
+		pClassInfo->AddTrack(pInfo, 0);
+		yPos += cyInfo + ITEM_INFO_PADDING_VERT;
+		}
+
+	m_pRoot->AddLine(pClassInfo);
+	}
+
+void CNewGameSession::SetShipClassImage (const CShipClass &Class, int x, int y, int cxWidth)
 
 //	SetShipClassImage
 //
 //	Sets the current ship class image
 
 	{
-	const CPlayerSettings *pPlayerSettings = pClass->GetPlayerSettings();
+	const CPlayerSettings *pPlayerSettings = Class.GetPlayerSettings();
 
     //  Ask the class for a hero image
 
-    const CG32bitImage *pImage = (!pClass->GetHeroImage().IsEmpty() ? &pClass->GetHeroImage().GetImage(CONSTLIT("New Game")) : NULL);
+    const CG32bitImage *pImage = (!Class.GetHeroImage().IsEmpty() ? &Class.GetHeroImage().GetImage(CONSTLIT("New Game")) : NULL);
     
 	//	Delete the previous one
 
@@ -975,7 +893,7 @@ void CNewGameSession::SetShipClassImage (CShipClass *pClass, int x, int y, int c
 		pNewImage->Create(SHIP_IMAGE_WIDTH, SHIP_IMAGE_HEIGHT);
 
 		ViewportTransform Trans;
-		pClass->Paint(*pNewImage, 
+		Class.Paint(*pNewImage, 
 				SHIP_IMAGE_WIDTH / 2, 
 				SHIP_IMAGE_HEIGHT / 2, 
 				Trans, 
@@ -994,7 +912,7 @@ void CNewGameSession::SetShipClassImage (CShipClass *pClass, int x, int y, int c
 
 	//	New image frame
 
-	bool bAutoMask = (pClass->GetAPIVersion() < 26);
+	bool bAutoMask = (Class.GetAPIVersion() < 26);
 
 	IAnimatron *pImageFrame = new CAniRect;
 	pImageFrame->SetID(ID_SHIP_CLASS_IMAGE);
@@ -1024,9 +942,9 @@ void CNewGameSession::SetShipClassName (const CString &sName, int x, int y, int 
 
 	IAnimatron *pName = new CAniText;
 	pName->SetID(ID_SHIP_CLASS_NAME);
-	pName->SetPropertyVector(PROP_POSITION, CVector(x, y + SMALL_BUTTON_HEIGHT + SMALL_SPACING_VERT + MediumBoldFont.GetHeight()));
+	pName->SetPropertyVector(PROP_POSITION, CVector(x, y));
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxWidth, 100.0));
-	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogLabel));
+	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pName->SetPropertyFont(PROP_FONT, &SubTitleFont);
 	pName->SetPropertyString(PROP_TEXT, sName);
 	pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_CENTER);

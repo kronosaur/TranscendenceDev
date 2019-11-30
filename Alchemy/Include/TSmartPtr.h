@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 template <class OBJ> class TRefCounted
 	{
 	public:
@@ -43,6 +45,16 @@ template <class OBJ> class TSharedPtr
 		TSharedPtr (TSharedPtr<OBJ> &&Src) : m_pPtr(Src.m_pPtr)
 			{
 			Src.m_pPtr = NULL;
+			}
+
+		template<class OBJ2,
+				class = typename std::enable_if<std::is_convertible<OBJ2 *, OBJ *>::value, void>::type>
+		TSharedPtr (const TSharedPtr<OBJ2>& Src) _NOEXCEPT
+			{
+			if (Src.m_pPtr)
+				m_pPtr = Src.m_pPtr->AddRef();
+			else
+				m_pPtr = NULL;
 			}
 
 		~TSharedPtr (void)

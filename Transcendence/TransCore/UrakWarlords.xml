@@ -29,7 +29,6 @@
 			name=				"Urak outpost"
 			sovereign=			"&svUrakWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itUrakArmorLight;"
@@ -101,7 +100,6 @@
 			name=				"Urak mine"
 			sovereign=			"&svUrakWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itUrakArmorLight;"
@@ -175,7 +173,6 @@
 			sovereign=			"&svUrakWarlords;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itUrakArmorHeavy;"

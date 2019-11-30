@@ -387,7 +387,7 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 		//	Paint the modifiers
 
 		TArray<SDisplayAttribute> Attribs;
-		if (ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
+		if (pArmor->GetItem()->AccumulateEnhancementDisplayAttributes(Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
 

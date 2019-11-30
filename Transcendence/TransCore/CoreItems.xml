@@ -19,5 +19,15 @@
 		</AttributeDesc>
 	</Type>
 
+	<!-- Generic Enhancement -->
+
+	<ItemType UNID="&vtGenericEnhancement;"
+			name=				"enhancement"
+			virtual=			"true"
+			level=				"1"
+			>
+		<Image imageID="&rsItems1;" imageX="288" imageY="768" imageWidth="96" imageHeight="96"/>
+	</ItemType>
+
 </TranscendenceModule>
 	

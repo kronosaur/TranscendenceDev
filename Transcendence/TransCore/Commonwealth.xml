@@ -178,7 +178,6 @@
 			regen=              "6"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -211,8 +210,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -289,9 +288,7 @@
 							</Action>
 					
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -324,12 +321,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 			
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -337,11 +328,13 @@
 		
 		<Language>
 			<Text id="descWelcome">
+
 				You are in the docking bay of a Commonwealth colony. Except for a few shuttles,
 				the docking bay of this station is deserted. A loose hose spills dirty
 				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
 				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
 				and exhaust.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -357,7 +350,6 @@
 			dockScreen=			"Main"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"2000"
 			armorID=			"&itP120HexphaseArmor;"
@@ -426,7 +418,6 @@
 			regen=              "10"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -455,8 +446,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -553,9 +544,7 @@
 							</Action>
 					
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -588,12 +577,6 @@
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
@@ -631,7 +614,6 @@
 			regen=              "8"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -650,7 +632,6 @@
 				/>
 
 		<Properties>
-			<Constant		id="rpg.checkMilitaryID">True</Constant>
 			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -military; -notStandard; +shipBroker;"</Constant>
 			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
 		</Properties>
@@ -658,8 +639,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; +basicAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; +basicAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -735,9 +716,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices" default="1">
@@ -765,14 +744,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
 		</Language>
@@ -799,7 +770,6 @@
 			regen=              "4"
 			shipRegen=			"1"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -834,7 +804,7 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="*NU +Meds; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="*NU +Meds; -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Food; -Illegal;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Lux; -Illegal;"	priceAdj="100"/>
 
@@ -895,9 +865,7 @@
 
 						<Actions>
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionUndock" cancel="1">
@@ -911,14 +879,6 @@
 		
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="descWelcome">
 				You are in the docking bay of %objName%. Medical professionals
@@ -949,7 +909,6 @@
 			multiHull=			"true"
 			regen=              "6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -999,14 +958,6 @@
 
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">
 				Welcome to Commonwealth Residentials.
@@ -1030,7 +981,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"3"
 			multiHull=			"true"
@@ -1073,12 +1023,6 @@
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stCommonwealthSlums; "* +commonwealthHabitat;")
 			</GetGlobalAchievements>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<GetGlobalRumors>
 				(append
@@ -1253,7 +1197,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -1312,12 +1255,6 @@
 		</StaticData>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnObjDestroyed>
 				(if (eq aObjDestroyed (objGetObjRefData gSource "target"))
 					(block Nil
@@ -1486,7 +1423,6 @@
 			regen=              "20"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -1508,8 +1444,8 @@
 		<!-- Trade and Items -->
 		
 		<Trade currency="credit">
-			<Sell	criteria="m +commonwealth; -premiumAmmo; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
-			<Sell	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Sell	criteria="m +commonwealth; -premiumAmmo; -defective; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="200" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
 			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
 			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
@@ -1607,9 +1543,7 @@
 							</Action>
 
 							<Action id="actionCommoditiesExchange">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 							</Action>
 
 							<Action id="actionDockServices">
@@ -1636,14 +1570,6 @@
 					)
 			</NPCService>
 		</StaticData>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<Language>
 			<Text id="descWelcome">
@@ -2945,7 +2871,22 @@
 			inherit=			"&unidCommonText;"
 			>
 		<Properties>
-			<Data		id="rpg.triageMissionCriteria">(cat "n +commonwealth; +triage; =" (sysGetLevel) ";")</Data>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+
+			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</Constant>
+
+			<!--
+			A destroyed station may give out the following missions. Unless the
+			station was destroyed by the player, in which case, this criteria
+			will change.
+			-->
+			<Data		id="rpg.triageMissionCriteria">(cat "n +commonwealth; +triage; -destroyedByPlayer; =" (sysGetLevel) ";")</Data>
 		</Properties>
 
 		<Events>

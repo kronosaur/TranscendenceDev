@@ -77,6 +77,7 @@
 #define ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT		CONSTLIT("OnGlobalPlayerSoldItem")
 #define ON_GLOBAL_RESURRECT_EVENT				CONSTLIT("OnGlobalResurrect")
 #define ON_GLOBAL_TOPOLOGY_CREATED_EVENT		CONSTLIT("OnGlobalTopologyCreated")
+#define ON_GLOBAL_RUN_DIAGNOSTICS_EVENT			CONSTLIT("OnGlobalRunDiagnostics")
 #define ON_GLOBAL_START_DIAGNOSTICS_EVENT		CONSTLIT("OnGlobalStartDiagnostics")
 #define ON_GLOBAL_SYSTEM_DIAGNOSTICS_EVENT		CONSTLIT("OnGlobalSystemDiagnostics")
 #define ON_GLOBAL_SYSTEM_CREATED_EVENT			CONSTLIT("OnGlobalSystemCreated")
@@ -227,17 +228,42 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 	
 	{
-	ALERROR error;
-	int i;
+	//	Short-circuit, if already bound
+
+	if (m_bBindCalled)
+		return NOERROR;
+
+	if (Ctx.bTraceBind)
+		{
+		CString sName = GetEntityName();
+		if (sName.IsBlank())
+			sName = GetNounPhrase();
+		if (sName.IsBlank())
+			{
+			if (m_dwUNID)
+				sName = strPatternSubst(CONSTLIT("UNID %08x"), m_dwUNID);
+			else
+				sName = CONSTLIT("Unknown");
+			}
+
+		Ctx.iBindNesting++;
+		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind %02d> %s"), Ctx.iBindNesting, sName));
+		}
+
+	//	Bind. Set the flag so that we do not recurse.
 
 	Ctx.pType = this;
+	m_bBindCalled = true;
 
 	//	If necessary, evaluate any bind-time design properties
 
 	if (m_pExtra)
 		{
-		if (error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
 			return error;
+			}
 		}
 
 	//	Initialize data
@@ -250,7 +276,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (m_pInheritFrom)
 		{
 		ASSERT(IsModification() || m_pInheritFrom->GetUNID() != GetUNID());
-		for (i = 0; i < evtCount; i++)
+		for (int i = 0; i < evtCount; i++)
 			{
 			if (!HasCachedEvent((ECachedHandlers)i))
 				{
@@ -269,7 +295,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	try
 		{
-		error = OnBindDesign(Ctx);
+		if (ALERROR error = OnBindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
+			return error;
+			}
 		}
 	catch (...)
 		{
@@ -278,8 +308,26 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		throw;
 		}
 
+	//	Done
+
+	if (Ctx.bTraceBind)
+		Ctx.iBindNesting--;
+
 	Ctx.pType = NULL;
-	return error;
+	return NOERROR;
+	}
+
+int CDesignType::CalcAffinity (const CAffinityCriteria &Criteria) const
+
+//	CalcAffinity
+//
+//	Computes the affinity value of this type given the criteria.
+
+	{
+	return Criteria.CalcWeight(
+		[this](const CString &sAttrib) { return HasAttribute(sAttrib); },
+		[this](const CString &sAttrib) { return HasSpecialAttribute(sAttrib); }
+		);
 	}
 
 ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const
@@ -832,16 +880,14 @@ void CDesignType::FireCustomEvent (const CString &sEvent, ECodeChainEvents iEven
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(sEvent, pResult);
 
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -868,28 +914,24 @@ bool CDesignType::FireGetCreatePos (CSpaceObject *pBase, CSpaceObject *pTarget, 
 		Ctx.DefineSpaceObject(CONSTLIT("aBaseObj"), pBase);
 		Ctx.DefineSpaceObject(CONSTLIT("aTargetObj"), pTarget);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(GET_CREATE_POS_EVENT, pResult);
 
-		bool bResult;
 		if (pResult->IsInteger())
 			{
 			*retpGate = Ctx.AsSpaceObject(pResult);
 			*retvPos = (*retpGate)->GetPos();
-			bResult = true;
+			return true;
 			}
 		else if (pResult->IsList())
 			{
 			*retpGate = NULL;
 			*retvPos = Ctx.AsVector(pResult);
-			bResult = true;
+			return true;
 			}
 		else
-			bResult = false;
-
-		Ctx.Discard(pResult);
-		return bResult;
+			return false;
 		}
 
 	return false;
@@ -1004,7 +1046,7 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 
 	int iPriceAdj = 100;
 	if (pResult->IsError())
@@ -1013,10 +1055,6 @@ bool CDesignType::FireGetGlobalPlayerPriceAdj (const SEventHandlerDesc &Event, S
 		;
 	else
 		iPriceAdj = pResult->GetIntegerValue();
-
-	//	Done
-
-	Ctx.Discard(pResult);
 
 	if (retiPriceAdj)
 		*retiPriceAdj = iPriceAdj;
@@ -1032,8 +1070,6 @@ int CDesignType::FireGetGlobalResurrectPotential (void)
 //	(0 = no chance; 100 = greatest potential)
 
 	{
-	int iResult = 0;
-
 	SEventHandlerDesc Event;
 	if (FindEventHandler(GET_GLOBAL_RESURRECT_POTENTIAL_EVENT, &Event))
 		{
@@ -1041,16 +1077,17 @@ int CDesignType::FireGetGlobalResurrectPotential (void)
 		Ctx.DefineContainingType(this);
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
+			{
 			ReportEventError(GET_GLOBAL_RESURRECT_POTENTIAL_EVENT, pResult);
-		else
-			iResult = pResult->GetIntegerValue();
+			return 0;
+			}
 
-		Ctx.Discard(pResult);
+		return pResult->GetIntegerValue();
 		}
 
-	return iResult;
+	return 0;
 	}
 
 void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj, ICCItem *pData, ICCItem **retpResult)
@@ -1069,16 +1106,14 @@ void CDesignType::FireObjCustomEvent (const CString &sEvent, CSpaceObject *pObj,
 		Ctx.SaveAndDefineSourceVar(pObj);
 		Ctx.SaveAndDefineDataVar(pData);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			pObj->ReportEventError(sEvent, pResult);
 
 		//	Either return the event result or discard it
 
 		if (retpResult)
-			*retpResult = pResult;
-		else
-			Ctx.Discard(pResult);
+			*retpResult = pResult->Reference();
 		}
 	else
 		{
@@ -1112,13 +1147,12 @@ ALERROR CDesignType::FireOnGlobalDockPaneInit (const SEventHandlerDesc &Event, v
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_DOCK_PANE_INIT_EVENT, pResult);
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return NOERROR;
 	}
 
@@ -1135,13 +1169,9 @@ void CDesignType::FireOnGlobalIntroCommand(const SEventHandlerDesc &Event, const
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_INTRO_COMMAND_EVENT, pResult);
-
-	//	Done
-
-	Ctx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
@@ -1156,13 +1186,9 @@ void CDesignType::FireOnGlobalIntroStarted (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_INTRO_STARTED_EVENT, pResult);
-
-	//	Done
-
-	Ctx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price)
@@ -1184,11 +1210,9 @@ void CDesignType::FireOnGlobalPlayerBoughtItem (const SEventHandlerDesc &Event, 
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_PLAYER_BOUGHT_ITEM_EVENT, pResult);
-
-	Ctx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CSpaceObject *pBuyerObj, const CItem &Item, const CCurrencyAndValue &Price)
@@ -1210,14 +1234,12 @@ void CDesignType::FireOnGlobalPlayerSoldItem (const SEventHandlerDesc &Event, CS
 
 	//	Run
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_PLAYER_SOLD_ITEM_EVENT, pResult);
-
-	Ctx.Discard(pResult);
 	}
 
-void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalEndDiagnostics
 //
@@ -1228,11 +1250,16 @@ void CDesignType::FireOnGlobalEndDiagnostics (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_END_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
 
-	CCCtx.Discard(pResult);
+	//	Success!
+
+	return true;
 	}
 
 void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)
@@ -1246,11 +1273,9 @@ void CDesignType::FireOnGlobalMarkImages (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_MARK_IMAGES_EVENT, pResult);
-
-	CCCtx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDestroyCtx &Ctx)
@@ -1263,7 +1288,7 @@ void CDesignType::FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDes
 	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.DefineContainingType(this);
 
-	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 	CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 	CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 	CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -1272,11 +1297,9 @@ void CDesignType::FireOnGlobalObjDestroyed (const SEventHandlerDesc &Event, SDes
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_OBJ_DESTROYED_EVENT, pResult);
-
-	CCCtx.Discard(pResult);
 	}
 
 bool CDesignType::FireOnGlobalObjGateCheck (const SEventHandlerDesc &Event, CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pGateObj)
@@ -1326,11 +1349,9 @@ ALERROR CDesignType::FireOnGlobalPlayerChangedShips (CSpaceObject *pOldShip, CSt
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_PLAYER_CHANGED_SHIPS_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1352,11 +1373,9 @@ ALERROR CDesignType::FireOnGlobalPlayerEnteredSystem (CString *retsError)
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_PLAYER_ENTERED_SYSTEM_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1378,11 +1397,9 @@ ALERROR CDesignType::FireOnGlobalPlayerLeftSystem (CString *retsError)
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_PLAYER_LEFT_SYSTEM_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1404,17 +1421,38 @@ ALERROR CDesignType::FireOnGlobalResurrect (CString *retsError)
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_RESURRECT_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
 	}
 
-void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalRunDiagnostics (const SEventHandlerDesc &Event)
+
+//	FireOnGlobalRunDiagnostics
+//
+//	Fires OnGlobalRunDiagnostics
+
+	{
+	CCodeChainCtx CCCtx(GetUniverse());
+
+	//	Run code
+
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
+	if (pResult->IsError())
+		{
+		ReportEventError(ON_GLOBAL_RUN_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
+
+	//	Success
+
+	return true;
+	}
+
+bool CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalStartDiagnostics
 //
@@ -1425,14 +1463,19 @@ void CDesignType::FireOnGlobalStartDiagnostics (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_START_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
 
-	CCCtx.Discard(pResult);
+	//	Success
+
+	return true;
 	}
 
-void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
+bool CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
 
 //	FireOnGlobalSystemDiagnostics
 //
@@ -1443,11 +1486,16 @@ void CDesignType::FireOnGlobalSystemDiagnostics (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
+		{
 		ReportEventError(ON_GLOBAL_SYSTEM_DIAGNOSTICS_EVENT, pResult);
+		return false;
+		}
 
-	CCCtx.Discard(pResult);
+	//	Success
+
+	return true;
 	}
 
 ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, CString *retsError)
@@ -1467,11 +1515,9 @@ ALERROR CDesignType::FireOnGlobalSystemCreated (SSystemCreateCtx &SysCreateCtx, 
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_SYSTEM_CREATED_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1490,11 +1536,9 @@ void CDesignType::FireOnGlobalSystemStarted (const SEventHandlerDesc &Event, DWO
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_SYSTEM_STARTED_EVENT, pResult);
-
-	CCCtx.Discard(pResult);
 	}
 
 void CDesignType::FireOnGlobalSystemStopped (const SEventHandlerDesc &Event)
@@ -1509,11 +1553,9 @@ void CDesignType::FireOnGlobalSystemStopped (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = CCCtx.Run(Event);
+	ICCItemPtr pResult = CCCtx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_SYSTEM_STOPPED_EVENT, pResult);
-
-	CCCtx.Discard(pResult);
 	}
 
 ALERROR CDesignType::FireOnGlobalTopologyCreated (CString *retsError)
@@ -1532,11 +1574,9 @@ ALERROR CDesignType::FireOnGlobalTopologyCreated (CString *retsError)
 
 		//	Run code
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_GLOBAL_TOPOLOGY_CREATED_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1557,14 +1597,12 @@ ALERROR CDesignType::FireOnGlobalTypesInit (SDesignLoadCtx &Ctx)
 		CCCtx.DefineContainingType(this);
 		CCCtx.SetEvent(eventOnGlobalTypesInit);
 
-		ICCItem *pResult = CCCtx.Run(Event);
+		ICCItemPtr pResult = CCCtx.RunCode(Event);
 		if (pResult->IsError())
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("OnGlobalTypesInit (%x): %s"), GetUNID(), pResult->GetStringValue());
 			return ERR_FAIL;
 			}
-
-		CCCtx.Discard(pResult);
 		}
 
 	return NOERROR;
@@ -1582,13 +1620,12 @@ ALERROR CDesignType::FireOnGlobalUniverseCreated (const SEventHandlerDesc &Event
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UNIVERSE_CREATED_EVENT, pResult);
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return NOERROR;
 	}
 
@@ -1609,13 +1646,12 @@ ALERROR CDesignType::FireOnGlobalUniverseLoad (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UNIVERSE_LOAD_EVENT, pResult);
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return NOERROR;
 	}
 
@@ -1631,13 +1667,12 @@ ALERROR CDesignType::FireOnGlobalUniverseSave (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UNIVERSE_SAVE_EVENT, pResult);
 
 	//	Done
 
-	Ctx.Discard(pResult);
 	return NOERROR;
 	}
 
@@ -1653,13 +1688,9 @@ void CDesignType::FireOnGlobalUpdate (const SEventHandlerDesc &Event)
 
 	//	Run code
 
-	ICCItem *pResult = Ctx.Run(Event);
+	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
 		ReportEventError(ON_GLOBAL_UPDATE_EVENT, pResult);
-
-	//	Done
-
-	Ctx.Discard(pResult);
 	}
 
 void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
@@ -1677,11 +1708,9 @@ void CDesignType::FireOnRandomEncounter (CSpaceObject *pObj)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(pObj);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 		if (pResult->IsError())
 			ReportEventError(ON_RANDOM_ENCOUNTER_EVENT, pResult);
-
-		Ctx.Discard(pResult);
 		}
 	}
 
@@ -1807,12 +1836,12 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         CString sTradeDesc;
         CTradingDesc *pTrade = GetTradingDesc();
         if (pTrade)
-            pTrade->ComposeDescription(&sTradeDesc);
+            pTrade->ComposeDescription(GetUniverse(), &sTradeDesc);
 
         //  If we have both main and trade descriptors, combine them.
 
         if (!sMainDesc.IsBlank() && !sTradeDesc.IsBlank())
-            return strPatternSubst(CONSTLIT("%s — %s"), sMainDesc, sTradeDesc);
+            return strPatternSubst(CONSTLIT("%s %&mdash; %s"), sMainDesc, sTradeDesc);
 
         //  If all we have is main desc, return that.
 
@@ -1837,7 +1866,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         }
     }
 
-CCurrencyAndValue CDesignType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CDesignType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //
@@ -2174,7 +2203,7 @@ const CEconomyType *CDesignType::GetEconomyType (void) const
 	if (pTrade)
 		return pTrade->GetEconomyType();
 
-	return CEconomyType::AsType(GetUniverse().FindDesignType(DEFAULT_ECONOMY_UNID));
+	return &GetUniverse().GetDefaultCurrency();
 	}
 
 void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap<CString, SEventHandlerDesc> *retInheritedHandlers)
@@ -2421,7 +2450,7 @@ bool CDesignType::HasSpecialAttribute (const CString &sAttrib) const
 		//	Parse from and to
 
 		CString sParam = strSubString(sAttrib, SPECIAL_SYSTEM_LEVEL.GetLength());
-		char *pPos = sParam.GetASCIIZPointer();
+		const char *pPos = sParam.GetASCIIZPointer();
 		bool bFailed;
 		int iFrom = strParseInt(pPos, 0, &pPos, &bFailed);
 		if (bFailed)
@@ -2720,7 +2749,10 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 //	Returns TRUE if this type matches the given criteria
 
 	{
-	int i;
+	//	If we have an OR expression, check that first.
+
+	if (Criteria.HasORExpression() && MatchesCriteria(Criteria.GetORExpression()))
+		return true;
 
 	//	If this type is not part of the criteria, then we're done
 
@@ -2754,21 +2786,21 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 
 	//	Check required attributes
 
-	for (i = 0; i < Criteria.GetRequiredAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetRequiredAttribCount(); i++)
 		if (!HasLiteralAttribute(Criteria.GetRequiredAttrib(i)))
 			return false;
 
-	for (i = 0; i < Criteria.GetRequiredSpecialAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetRequiredSpecialAttribCount(); i++)
 		if (!HasSpecialAttribute(Criteria.GetRequiredSpecialAttrib(i)))
 			return false;
 
 	//	Check excluded attributes
 
-	for (i = 0; i < Criteria.GetExcludedAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetExcludedAttribCount(); i++)
 		if (HasLiteralAttribute(Criteria.GetExcludedAttrib(i)))
 			return false;
 
-	for (i = 0; i < Criteria.GetExcludedSpecialAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetExcludedSpecialAttribCount(); i++)
 		if (HasSpecialAttribute(Criteria.GetExcludedSpecialAttrib(i)))
 			return false;
 
@@ -2872,7 +2904,7 @@ void CDesignType::Reinit (void)
 	DEBUG_CATCH_MSG1(CONSTLIT("Crash in CDesignType::Reinit Type = %x"), GetUNID())
 	}
 
-void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) const
+void CDesignType::ReportEventError (const CString &sEvent, const ICCItem *pError) const
 
 //	ReportEventError
 //
@@ -2887,7 +2919,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 	GetUniverse().LogOutput(sError);
 	}
 
-bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
+bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetTypeProperty
 //
@@ -2897,18 +2929,23 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	if (!FindCustomPropertyRaw(sProperty, pDummy, &iType))
-		return false;
+	if (OnSetTypeProperty(sProperty, Value))
+		return true;
 
-	switch (iType)
+	else if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		{
-		case EPropertyType::propGlobal:
-			SetGlobalData(sProperty, pValue);
-			return true;
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				SetGlobalData(sProperty, &Value);
+				return true;
 
-		default:
-			return false;
+			default:
+				return false;
+			}
 		}
+	else
+		return false;
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
@@ -2929,7 +2966,7 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return false;
 	}
 
-bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2972,7 +3009,7 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 	return false;
 	}
 	
-bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3020,7 +3057,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 	return false;
 	}
 
-bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
+bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
 
 //	TranslateVersion2
 //
@@ -3098,19 +3135,9 @@ ALERROR CArmorClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown armor design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Armor item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetArmorClass();
 		if (m_pType == NULL)
@@ -3129,19 +3156,9 @@ ALERROR CDeviceClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown device design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Device item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetDeviceClass();
 		if (m_pType == NULL)
@@ -3174,12 +3191,9 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-        CItemType *pItemType = Ctx.GetUniverse().FindItemType(m_dwUNID);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %08x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
         m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
         if (m_pType == NULL)

@@ -301,7 +301,7 @@ COverlay *COverlayList::FindField (DWORD dwID)
 	return NULL;
 	}
 
-bool COverlayList::FireGetDockScreen (CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
+bool COverlayList::FireGetDockScreen (const CSpaceObject *pSource, CDockScreenSys::SSelector *retSelector) const
 
 //	FireGetDockScreen
 //
@@ -606,7 +606,7 @@ int COverlayList::GetWeaponBonus (CInstalledDevice *pDevice, CSpaceObject *pSour
 
 //	GetWeaponBonus
 //
-//	Returns the weapon bonus confered by the fields
+//	Returns the weapon bonus conferred by the fields
 
 	{
 	int iBonus = 0;

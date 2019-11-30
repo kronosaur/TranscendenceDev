@@ -9,12 +9,14 @@
 	<!ENTITY unidRPGUnitTests			"0xA0010004">
 	<!ENTITY unidTopologyTests			"0xA0010005">
 	<!ENTITY unidMissionUnitTests		"0xA0010006">
+	<!ENTITY unidItemEnhancementUnitTests	"0xA0010007">
 
 	<!-- 0040-007F TEST ITEMS -->
 
 	<!ENTITY itTestDriveDualSlot		"0xA0010040">
 	<!ENTITY itTestArmorScaled			"0xA0010041">
 	<!ENTITY itTestWeaponScaled			"0xA0010042">
+	<!ENTITY itTestWeaponRelativistic	"0xA0010043">
 
 	<!-- 0080-00BF TEST FUNCTIONS -->
 
@@ -23,6 +25,7 @@
 	<!ENTITY unidMathTests				"0xA0010082">
 	<!ENTITY unidCCStringTests			"0xA0010083">
 	<!ENTITY unidCCLogicalOperators		"0xA0010084">
+	<!ENTITY unidSystemFunctionTests	"0xA0010085">
 
 	<!-- 00C0-00FF TEST MISSIONS -->
 
@@ -48,6 +51,10 @@
 	<!ENTITY unidTestOverlays			"0xA0010140">
 	<!ENTITY ovTestOverlay01			"0xA0010141">
 
+	<!-- 0180-01CF TEST TSE -->
+
+	<!ENTITY unidTestTSE				"0xA0010180">
+
 	<!-- OTHER -->
 
 	<!ENTITY unidStarsOfThePilgrim		"0x00200000">
@@ -69,14 +76,17 @@
 	<Module filename="DesignTypeTests.xml"/>
 	<Module filename="DockScreenTests.xml"/>
 	<Module filename="FunctionTests.xml"/>
+	<Module filename="ItemEnhancementUnitTests.xml"/>
 	<Module filename="ItemUnitTests.xml"/>
 	<Module filename="MissionUnitTests.xml"/>
 	<Module filename="RPGUnitTests.xml"/>
+	<Module filename="SystemFunctionTests.xml"/>
 	<Module filename="TestArmorClasses.xml"/>
 	<Module filename="TestItems.xml"/>
 	<Module filename="TestMissions.xml"/>
 	<Module filename="TestOverlays.xml"/>
 	<Module filename="TestStationTypes.xml"/>
+	<Module filename="TestTSE.xml"/>
 	<Module filename="TopologyTests.xml"/>
 
 <!-- DIAGNOSTICS -->
@@ -91,6 +101,7 @@
 
 					(diagTestAutonBay)
 					(diagTestDeviceSlots)
+					(diagTestMeteorsteel)
 					)
 			</OnGlobalStartDiagnostics>
 
@@ -109,6 +120,10 @@
 					)
 					(print "Total Tests: " (fmtNumber totalTests))
 					(print "Failed Tests: " (fmtNumber totalFailures) "\n")
+
+					(if (gr totalFailures 0)
+						(error "One or more tests failed.")
+						)
 					)
 			</OnGlobalEndDiagnostics>
 		</Events>
@@ -212,6 +227,44 @@
 
 					(lambda () 
 						(diagInstallItem gPlayerShip (itmCreate &itTestDriveDualSlot; 1))
+						)
+
+					;	Done with the player ship
+
+					(lambda () 
+						(block ()
+							(objDestroy gPlayerShip)
+							(setq gPlayerShip Nil)
+							)
+						)
+					))
+				)
+			))
+
+		(setq diagTestMeteorsteel (lambda ()
+			(block ()
+				(diagRun (list
+
+					;	Create ship
+
+					(lambda () (diagCreatePlayerShip))
+
+					;	Install meteorsteel armor
+
+					(lambda () 
+						(diagInstallItem gPlayerShip (itmCreate &itLightMeteorsteel; 1))
+						)
+
+					;	See if shields are disabled
+
+					(lambda ()
+						(block (
+							(shieldItem (@ (objGetItems gPlayerShip "sI") 0))
+							)
+							(if (not (objGetCondition gPlayerShip 'shieldBlocked))
+								(error "Shield not disabled by meteorsteel")
+								)
+							)
 						)
 
 					;	Done with the player ship
@@ -341,6 +394,7 @@
 				(objAddItem gPlayerShip (itmCreate &it1GWReactor; 1))
 				(shpInstallDevice gPlayerShip (itmCreate &it1GWReactor; 1))
 				(shpRefuelFromItem gPlayerShip (itmCreate &itHadronVacuumFuelCell; 100))
+				(objAddItem gPlayerShip (itmCreate &itMilitaryID; 1))
 
 				;	Add money
 
@@ -366,11 +420,21 @@
 						(error (cat "Cannot install: " (@ result 1)))
 
 					(@ result 0)
-						(block (installedItem)
+						(block (
+							(itemCat (itmGetProperty theItem 'category))
+							installedItem
+							)
 							(objAddItem theShip theItem)
-							(setq installedItem (shpInstallDevice theShip theItem))
+
+							(switch
+								(= itemCat 'armor)
+									(setq installedItem (shpInstallArmor theShip theItem (or (@ options 'armorSeg) 0)))
+
+								(setq installedItem (shpInstallDevice theShip theItem))
+								)
+
 							(if (not (itmGetProperty installedItem 'installed))
-								(error "Installation failed.")
+								(error (cat "Installation failed: " (itmGetName installedItem 0) "."))
 								)
 							)
 					)

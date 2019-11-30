@@ -155,7 +155,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 	//	Attributes
 
 	TArray<SDisplayAttribute> Attribs;
-	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
+	if (Item.GetDisplayAttributes(&Attribs, NULL, bActual))
 		{
 		int cyAttribs;
 		CCartoucheBlock AttribBlock;
@@ -189,7 +189,7 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	//	Measure the description
 
-	CString sDesc = Item.GetDesc(Ctx, bActual);
+	CString sDesc = Item.GetDesc(bActual);
 	iLines = Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
 	cyHeight += iLines * Medium.GetHeight();
 
@@ -199,6 +199,17 @@ int CUIHelper::CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, co
 
 	if (!bNoIcon)
 		cyHeight = Max(cyIcon, cyHeight);
+
+	//	Enhancements
+
+	const CItemEnhancementStack *pEnhancements = Ctx.GetEnhancementStack();
+	if (pEnhancements)
+		{
+		for (int i = 0; i < pEnhancements->GetCount(); i++)
+			{
+			cyHeight += Max(ENHANCEMENT_ICON_HEIGHT, 2 * Medium.GetHeight());
+			}
+		}
 
 	//	Done
 
@@ -380,6 +391,44 @@ void CUIHelper::CreateBarButtons (CAniSequencer *pSeq, const RECT &rcRect, IHISe
 			}
 		}
 
+	}
+
+CG32bitImage CUIHelper::CreateGlowBackground (void) const
+
+//	CreateGlowBackground
+//
+//	Creates a standard background.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+
+	RECT rcRect;
+	VI.GetWidescreenRect(NULL, &rcRect);
+
+	CG32bitPixel rgbBack = VI.GetColor(colorAreaDialog);
+	CG32bitPixel rgbCenter = CG32bitPixel::Blend(rgbBack, CG32bitPixel(255, 255, 255), 0.1);
+
+	return CreateGlowBackground(RectWidth(rcRect), RectHeight(rcRect), rgbCenter, rgbBack);
+	}
+
+CG32bitImage CUIHelper::CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const
+
+//	CreateGlowBackground
+//
+//	Creates a background image with a circular gradient.
+
+	{
+	CG32bitImage Image;
+	if (!Image.Create(cxWidth, cyHeight, CG32bitImage::alphaNone, rgbEdge))
+		throw CException(ERR_MEMORY);
+
+	int xCenter = cxWidth / 2;
+	int yCenter = cyHeight / 2;
+	int iRadius = cxWidth / 2;
+
+	CGDraw::CircleGradient(Image, xCenter, yCenter, iRadius, rgbCenter);
+
+	return Image;
 	}
 
 void CUIHelper::CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg) const
@@ -965,6 +1014,65 @@ void CUIHelper::PaintDisplayAttribs (CG32bitImage &Dest, int x, int y, const TAr
 		}
 	}
 
+void CUIHelper::PaintItemEnhancement (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, int *retcyHeight) const
+
+//	PaintItemEnhancement
+//
+//	Paints an item enhancement as apart of an item entry.
+
+	{
+	const CVisualPalette &VI = m_HI.GetVisuals();
+	const CG16bitFont &Medium = VI.GetFont(fontMedium);
+
+	//	Paint the enhancement icon
+
+	const CItemType *pEnhancer = Enhancement.GetEnhancementType();
+	if (pEnhancer == NULL)
+		{
+		pEnhancer = Item.GetUniverse().FindItemType(UNID_GENERIC_ENHANCEMENT);
+		if (pEnhancer == NULL)
+			return;
+		}
+
+	DrawItemTypeIcon(Dest, rcRect.left, rcRect.top, pEnhancer, ENHANCEMENT_ICON_WIDTH, ENHANCEMENT_ICON_HEIGHT);
+
+	//	Figure out the description and attributes
+
+	RECT rcDesc = rcRect;
+	rcDesc.left += ENHANCEMENT_ICON_WIDTH + ITEM_TEXT_MARGIN_X;
+
+	CString sDesc = pEnhancer->GetNounPhrase(nounShort | nounTitleCapitalize);
+
+	TArray<SDisplayAttribute> Attribs;
+	Enhancement.AccumulateAttributes(Item, &Attribs, CItemEnhancement::FLAG_INCLUDE_HP_BONUS | CItemEnhancement::FLAG_INCLUDE_EXPIRATION);
+
+	int cyAttribHeight;
+	CCartoucheBlock AttribBlock;
+	FormatDisplayAttributes(Attribs, rcDesc, AttribBlock, &cyAttribHeight);
+
+	//	Vertically center the description and attribs.
+
+	int cyTotalHeight = Medium.GetHeight() + cyAttribHeight;
+	rcDesc.top += Max(0, (ENHANCEMENT_ICON_HEIGHT - cyTotalHeight) / 2);
+	rcDesc.bottom = rcDesc.top + cyTotalHeight;
+
+	//	Paint the description
+
+	Medium.DrawText(Dest,
+			rcDesc,
+			rgbText,
+			sDesc,
+			0,
+			CG16bitFont::SmartQuotes);
+
+	//	Enhancement
+
+	AttribBlock.Paint(Dest, rcDesc.left, rcDesc.top + Medium.GetHeight());
+
+	if (retcyHeight)
+		*retcyHeight = Max(ENHANCEMENT_ICON_HEIGHT, cyTotalHeight);
+	}
+
 void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, CG32bitPixel rgbText, DWORD dwOptions) const
 
 //	PaintItemEntry
@@ -1032,7 +1140,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	LargeBold.DrawText(Dest,
 			rcTitle,
 			rgbColorTitle,
-			Item.GetNounPhrase(Ctx, dwNounPhraseFlags),
+			Item.GetNounPhrase(dwNounPhraseFlags),
 			0,
 			CG16bitFont::SmartQuotes | CG16bitFont::TruncateLine,
 			&cyHeight);
@@ -1044,7 +1152,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	//	Paint the display attributes
 
 	TArray<SDisplayAttribute> Attribs;
-	if (Item.GetDisplayAttributes(Ctx, &Attribs, NULL, bActual))
+	if (Item.GetDisplayAttributes(&Attribs, NULL, bActual))
 		{
 		CCartoucheBlock AttribBlock;
 		FormatDisplayAttributes(Attribs, rcDrawRect, AttribBlock, &cyHeight);
@@ -1057,7 +1165,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 	CString sStat;
 	DWORD dwRefFlags = (bActual ? CItemType::FLAG_ACTUAL_ITEM : 0);
 
-	int iLevel = (bActual ? pItemType->GetLevel(Ctx) : pItemType->GetApparentLevel(Ctx));
+	int iLevel = (bActual ? Item.GetLevel() : Item.GetApparentLevel());
 	CString sReference = Item.GetReference(Ctx, CItem(), dwRefFlags);
 	DamageTypes iDamageType;
 	CString sDamageRef;
@@ -1151,12 +1259,12 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 			if (rgbBonus != rgbColorRef)
 				{
-				sReference = strPatternSubst(CONSTLIT("{/rtf %s — {/c:%d; %s}}"), CTextBlock::Escape(sReference), (COLORREF)rgbBonus, CTextBlock::Escape(sBonus));
+				sReference = strPatternSubst(CONSTLIT("{/rtf %s %&mdash; {/c:%d; %s}}"), CTextBlock::Escape(sReference), (COLORREF)rgbBonus, CTextBlock::Escape(sBonus));
 				PaintRTFText(Dest, rcDrawRect, sReference, Medium, rgbColorRef, &cyHeight);
 				}
 			else
 				{
-				sReference = strPatternSubst(CONSTLIT("%s — %s"), sReference, sBonus);
+				sReference = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sReference, sBonus);
 				Medium.DrawText(Dest, rcDrawRect, rgbColorRef, sReference, 0, 0, &cyHeight);
 				}
 
@@ -1195,7 +1303,7 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 
 	//	Description
 
-	CString sDesc = Item.GetDesc(Ctx, bActual);
+	CString sDesc = Item.GetDesc(bActual);
 	Medium.DrawText(Dest,
 			rcDrawRect,
 			(bSelected ? rgbColorDescSel : rgbColorDesc),
@@ -1204,6 +1312,20 @@ void CUIHelper::PaintItemEntry (CG32bitImage &Dest, CSpaceObject *pSource, const
 			CG16bitFont::SmartQuotes,
 			&cyHeight);
 	rcDrawRect.top += cyHeight;
+
+	//	Paint Enhancements
+
+	TSharedPtr<CItemEnhancementStack> pEnhancements = Item.GetEnhancementStack();
+	if (pEnhancements)
+		{
+		for (int i = 0; i < pEnhancements->GetCount(); i++)
+			{
+			int cyHeight;
+			PaintItemEnhancement(Dest, pSource, Item, pEnhancements->GetEnhancement(i), rcDrawRect, (bSelected ? rgbColorDescSel : rgbColorDesc), &cyHeight);
+
+			rcDrawRect.top += cyHeight;
+			}
+		}
 	}
 
 void CUIHelper::PaintReferenceDamageAdj (CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText) const

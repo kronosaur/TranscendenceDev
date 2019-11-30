@@ -312,7 +312,7 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = retDesc->Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = retDesc->Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return error;
 		}
 
@@ -707,7 +707,7 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return error;
 		}
 
@@ -748,6 +748,9 @@ ALERROR CSingleDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	if (m_pExtraItems)
 		if (error = m_pExtraItems->OnDesignLoadComplete(Ctx))
 			return error;
+
+	if (m_Enhancements.Bind(Ctx))
+		return error;
 
 	//	Error checking
 
@@ -1146,10 +1149,9 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (DeviceNames iDev, SDeviceDesc *r
 	TSortMap<int, int> BestEntry;
 	for (i = 0; i < m_SlotDesc.GetCount(); i++)
 		{
-		if ((m_SlotDesc[i].Criteria.dwItemCategories & Category)
-				&& !(m_SlotDesc[i].Criteria.dwExcludeCategories & Category))
+		if (m_SlotDesc[i].Criteria.MatchesItemCategory(Category))
 			{
-			BestEntry.Insert(CItem::GenerateCriteria(m_SlotDesc[i].Criteria).GetLength(), i);
+			BestEntry.Insert(m_SlotDesc[i].Criteria.AsString().GetLength(), i);
 			}
 		}
 
@@ -1409,11 +1411,14 @@ ALERROR CGroupOfDeviceGenerators::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 //	Resolve references
 
 	{
-	int i;
 	ALERROR error;
 
-	for (i = 0; i < m_Table.GetCount(); i++)
+	for (int i = 0; i < m_Table.GetCount(); i++)
 		if (error = m_Table[i].pDevice->OnDesignLoadComplete(Ctx))
+			return error;
+
+	for (int i = 0; i < m_SlotDesc.GetCount(); i++)
+		if (error = m_SlotDesc[i].DefaultDesc.Enhancements.Bind(Ctx))
 			return error;
 
 	return NOERROR;

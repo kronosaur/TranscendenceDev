@@ -299,8 +299,7 @@ void CPlayerShipController::Dock (void)
 
 	if (m_pStation)
 		{
-		m_pStation->Undock(m_pShip);
-		m_pStation = NULL;
+		Undock();
 		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
 		return;
 		}
@@ -632,14 +631,15 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
+void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
 //	Returns a list of nearest targets
 
 	{
-	int i;
+	constexpr int MAX_TARGETS = 10;
+
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
 
@@ -657,10 +657,11 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	Get other targets
 
-		DWORD dwFlags = bTargetMissiles ? (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS | FLAG_INCLUDE_MISSILES)
-			: (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
-		int iMaxTargets = 10;
-		m_pShip->GetNearestVisibleEnemies(iMaxTargets,
+		DWORD dwFlags = CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS;
+		if (pDevice && pDevice->CanTargetMissiles())
+			dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
+
+		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
 				MAX_AUTO_TARGET_DISTANCE,
 				&TargetingCtx.Targets,
 				pMainTarget,
@@ -671,7 +672,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 	//	Now find a target for the given weapon.
 
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
 		{
 		int iFireAngle;
 		if (pWeapon->IsWeaponAligned(m_pShip, pDevice, TargetingCtx.Targets[i], NULL, &iFireAngle))
@@ -745,6 +746,13 @@ void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
 
 	m_bDockPortIndicators = (strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_ENABLED)
 			|| strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_TRUE));
+
+	//	If we saved while docked, we undock ourselves. This can happen if we 
+	//	call (gamSave) from inside a dock screen. But since we don't save our
+	//	dock state, we need to undock when we come back.
+
+	if (m_pStation)
+		Undock();
 	}
 
 void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdate)
@@ -795,7 +803,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanAttack()))
+			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
 				{
 				if (iTargetType == targetEnemies)
 					{
@@ -804,7 +812,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 					}
 				else
 					{
-					if (pObj->CanAttack() || pObj->SupportsDockingFast())
+					if (pObj->CanBeAttacked() || pObj->SupportsDockingFast())
 						{
 						if (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							iMainKey = 0;
@@ -902,7 +910,7 @@ void CPlayerShipController::InsuranceClaim (void)
 	DEBUG_CATCH
 	}
 
-bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
+bool CPlayerShipController::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -1525,7 +1533,7 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	A station has been destroyed
 
 	{
-	bool bIsMajorStation = Ctx.pObj->HasAttribute(CONSTLIT("majorStation"));
+	bool bIsMajorStation = Ctx.Obj.HasAttribute(CONSTLIT("majorStation"));
 
 	//	If we are the cause of the destruction and then record stat
 
@@ -1537,26 +1545,26 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 		//	NOTE: Here we care about enemy instead of angry.
 
 		if (bIsMajorStation)
-			m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-					Ctx.pObj,
+			m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+					&Ctx.Obj,
 					Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	Otherwise, record the event if this is a major station
 
 	else if (bIsMajorStation)
-		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+		m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 
 	//	If the station was targeted, then clear the target
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		SetTarget(NULL);
         if (m_pSession)
             m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -1996,9 +2004,9 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	NOTE: We don't care about stations here because those will be
 	//	handled in OnStationDestroyed
 
-	if (Ctx.pObj->GetCategory() == CSpaceObject::catShip)
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catShip)
 		{
-		bool bIsMajorShip = Ctx.pObj->HasAttribute(CONSTLIT("majorShip"));
+		bool bIsMajorShip = Ctx.Obj.HasAttribute(CONSTLIT("majorShip"));
 
 		if (Ctx.Attacker.IsCausedByPlayer())
 			{
@@ -2008,20 +2016,20 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 				{
 			//	NOTE: Here we care about enemy instead of angry.
 
-				m_Stats.OnKeyEvent((Ctx.pObj->IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
-						Ctx.pObj,
+				m_Stats.OnKeyEvent((Ctx.Obj.IsEnemy(m_pShip) ? CPlayerGameStats::eventEnemyDestroyedByPlayer : CPlayerGameStats::eventFriendDestroyedByPlayer),
+						&Ctx.Obj,
 						Ctx.Attacker.GetSovereignUNID());
 				}
 			}
 		else if (bIsMajorShip)
-			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, Ctx.pObj, Ctx.Attacker.GetSovereignUNID());
+			m_Stats.OnKeyEvent(CPlayerGameStats::eventMajorDestroyed, &Ctx.Obj, Ctx.Attacker.GetSovereignUNID());
 		}
 
 	//	If the object we're docked with got destroyed, then undock
 
-	if (m_pStation == Ctx.pObj || Ctx.pObj->IsPlayerDocked())
+	if (m_pStation == Ctx.Obj || Ctx.Obj.IsPlayerDocked())
 		{
-		if (Ctx.pObj->IsPlayerDocked())
+		if (Ctx.Obj.IsPlayerDocked())
 			g_pTrans->GetModel().ExitScreenSession(true);
 
 		m_pStation = NULL;
@@ -2029,7 +2037,7 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	Clear out some variables
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		{
 		m_pTarget = NULL;
 		ClearFireAngle();
@@ -2037,16 +2045,16 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
             m_pSession->OnTargetChanged(m_pTarget);
 		}
 
-	if (m_pDestination == Ctx.pObj)
+	if (m_pDestination == Ctx.Obj)
 		m_pDestination = NULL;
 
-	if (m_pAutoDock == Ctx.pObj)
+	if (m_pAutoDock == Ctx.Obj)
 		m_pAutoDock = NULL;
 
-	if (m_pAutoTarget == Ctx.pObj)
+	if (m_pAutoTarget == Ctx.Obj)
 		m_pAutoTarget = NULL;
 
-	if (m_pAutoDamage == Ctx.pObj)
+	if (m_pAutoDamage == Ctx.Obj)
 		{
 		m_pAutoDamage->ClearShowDamageBar();
 		m_pAutoDamage = NULL;
@@ -2055,7 +2063,7 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 	//	Clear out the target list
 
 	int iIndex;
-	if (m_TargetList.FindByValue(Ctx.pObj, &iIndex))
+	if (m_TargetList.FindByValue(&Ctx.Obj, &iIndex))
 		m_TargetList.Delete(iIndex);
 
 	//	Let the UI deal with destroyed objects
@@ -2086,25 +2094,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Remember the AutoTarget. NOTE: We need to check again to see if the
-	//	target is destroyed because it could have gotten destroyed after it
-	//	was picked.
+	//	Remember the AutoTarget.
 
-	if (Ctx.pTargetObj && !Ctx.pTargetObj->IsDestroyed())
-		{
-		m_pAutoTarget = Ctx.pTargetObj;
-		if (Ctx.bNeedsAutoTarget)
-			m_bShowAutoTarget = true;
-		else
-			m_bShowAutoTarget = false;
-		}
-	else
-		{
-		m_pAutoTarget = NULL;
-		m_bShowAutoTarget = false;
-		}
-
-	m_bTargetOutOfRange = Ctx.bPlayerTargetOutOfRange;
+	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
+	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
+	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
 
 	//	Compute the AutoDock target.
 	//
@@ -2133,17 +2127,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Otherwise, if we are close to a port then we use that.
 
-	else if (Ctx.pDockingObj && !Ctx.pDockingObj->IsDestroyed())
+	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.AutoDock.GetDockObj()))
 		{
-		m_pAutoDock = Ctx.pDockingObj;
-		m_iAutoDockPort = Ctx.iDockingPort;
-		m_vAutoDockPort = Ctx.vDockingPort;
+		m_iAutoDockPort = Ctx.AutoDock.GetDockingPortIndex();
+		m_vAutoDockPort = Ctx.AutoDock.GetDockingPortPos();
 		}
-
-	//	Otherwise, nothing to dock with
-
-	else
-		m_pAutoDock = NULL;
 
 	//	Notify the game controller when we transition in/out of combat.
 	//
@@ -2259,7 +2247,7 @@ void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
 	CSystem::ReadObjRefFromStream(Ctx, (CSpaceObject **)&m_pShip);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pStation);
 	CSystem::ReadObjRefFromStream(Ctx, &m_pTarget);
-	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination);
+	CSystem::ReadObjRefFromStream(Ctx, &m_pDestination, true);
 
 	if (Ctx.dwVersion >= 100)
 		{
@@ -2391,9 +2379,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 	CInstalledDevice *pNewWeapon = pCurWeapon;
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-		&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+	DWORD bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+	DWORD bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+		&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 			: true)) : 0x0;
 
 	//	Keep switching until we find a weapon that is not disabled
@@ -2405,9 +2393,9 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		m_pShip->ReadyNextWeapon(iDir);
 		pNewWeapon = m_pShip->GetNamedDevice(devPrimaryWeapon);
-		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetLinkedFireOptions() & dwLinkedFireSelected : 0x0;
-		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
-			&& (pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
+		bCurWeaponLkfSelected = (pCurWeapon != NULL) ? pCurWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected : 0x0;
+		bNextWeaponLkfSelected = (pCurWeapon != NULL) ? (pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected && pNewWeapon->GetUNID() == pCurWeapon->GetUNID()
+			&& (pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() == CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber()
 				: true)) : 0x0;
 		}
 	
@@ -2415,7 +2403,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 			&& pCurWeapon
 			&& pNewWeapon != pCurWeapon
 			&& (bCurWeaponLkfSelected ? (bNextWeaponLkfSelected ? 
-		(pNewWeapon->GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
+		(pNewWeapon->GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ? 
 			(CItemCtx(m_pShip, pNewWeapon).GetItemVariantNumber() != CItemCtx(m_pShip, pCurWeapon).GetItemVariantNumber() || pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) :
 			pNewWeapon->GetUNID() != pCurWeapon->GetUNID()) : !pNewWeapon->IsEnabled()) : !pNewWeapon->IsEnabled()));
 
@@ -2425,7 +2413,7 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 		{
 		//	There is a delay in activation (except for linkedFire='whenSelected' guns)
 
-		if (!(pNewWeapon->GetLinkedFireOptions() & dwLinkedFireSelected))
+		if (!(pNewWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 			m_pShip->SetFireDelay(pNewWeapon);
 
 		//	Feedback to player
@@ -2604,7 +2592,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 	//	If a friendly is already selected, then cycle
 	//	to the next friendly.
 
-	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack()))
+	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked()))
 		{
 		InitTargetList(targetFriendlies, true);
 
@@ -2672,7 +2660,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 	//	If an enemy target is already selected, then cycle
 	//	to the next enemy.
 
-	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack())
+	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked())
 		{
 		InitTargetList(targetEnemies, true);
 
@@ -2818,7 +2806,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//
 	//	NOTE: This transfers equipment such as targeting computers that are 
 	//	installed on the ship. It does not include (not should it include) 
-	//	abilities/equipment confered by devices or enhancements.
+	//	abilities/equipment conferred by devices or enhancements.
 
 	if (Options.bTransferEquipment)
 		{
@@ -2857,6 +2845,11 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 	pNewShip->TrackFuel();
 	pNewShip->TrackMass();
+
+	//	Transfer event registrations
+
+	pNewShip->AddEventSubscribers(pOldShip->GetEventSubscribers());
+	pOldShip->RemoveAllEventSubscribers();
 
 	//	Reset all other settings
 

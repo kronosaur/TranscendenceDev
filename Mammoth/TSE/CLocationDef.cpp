@@ -5,13 +5,22 @@
 
 #include "PreComp.h"
 
-CLocationDef::CLocationDef (void) : 
-		m_dwObjID(0),
-		m_bBlocked(false)
+bool CLocationDef::CanBeBlocked (void) const
 
-//	CLocationDef constructor
+//	CanBeBlocked
+//
+//	Returns TRUE if we can be blocked by other location that is too close to us.
 
 	{
+	//	Can't be blocked if we're already full or if we're a required location.
+
+	if (!IsEmpty() || IsRequired())
+		return false;
+
+	//	Otherwise, we can be blocked.
+
+	else
+		return true;
 	}
 
 void CLocationDef::ReadFromStream (SLoadCtx &Ctx)
@@ -28,7 +37,7 @@ void CLocationDef::ReadFromStream (SLoadCtx &Ctx)
 	DWORD dwLoad;
 
 	m_sID.ReadFromStream(Ctx.pStream);
-	Ctx.pStream->Read((char *)&m_OrbitDesc, sizeof(COrbit));
+	m_OrbitDesc.ReadFromStream(Ctx);
 	m_sAttributes.ReadFromStream(Ctx.pStream);
 
 	Ctx.pStream->Read((char *)&m_dwObjID, sizeof(DWORD));
@@ -53,7 +62,7 @@ void CLocationDef::WriteToStream (IWriteStream *pStream)
 	DWORD dwSave;
 
 	m_sID.WriteToStream(pStream);
-	pStream->Write((char *)&m_OrbitDesc, sizeof(COrbit));
+	m_OrbitDesc.WriteToStream(*pStream);
 	m_sAttributes.WriteToStream(pStream);
 
 	pStream->Write((char *)&m_dwObjID, sizeof(DWORD));

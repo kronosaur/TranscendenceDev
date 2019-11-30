@@ -34,7 +34,7 @@ void CStationEncounterCtx::AddEncounter (CSystem *pSystem)
 		}
 	}
 
-int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyNode::SAttributeCriteria &Criteria)
+int CStationEncounterCtx::CalcDistanceToCriteria (CTopologyNode *pNode, const CTopologyAttributeCriteria &Criteria)
 
 //	CalcDistanceToCriteria
 //
@@ -150,7 +150,7 @@ int CStationEncounterCtx::GetBaseFrequencyForNode (CTopologyNode *pNode, CStatio
 		//	Adjust based on affinity
 
 		int iAffinity;
-		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(pNode)) < ftCommon)
+		if (pStats->iNodeCriteria > 0 && (iAffinity = Desc.CalcAffinity(*pNode)) < ftCommon)
 			{
 			pStats->iNodeCriteria = pStats->iNodeCriteria * iAffinity / ftCommon;
 			}
@@ -177,6 +177,22 @@ int CStationEncounterCtx::GetCountInSystem (CSystem *pSystem, CStationType *pSta
 		return 0;
 
 	return pCount->iCount;
+	}
+
+TSortMap<CString, int> CStationEncounterCtx::GetEncounterCountByNode (void) const
+
+//	GetEncounterCountByNode
+//
+//	Returns the count of stations encountered for each node ID.
+
+	{
+	TSortMap<CString, int> Result;
+	Result.GrowToFit(m_ByNode.GetCount());
+
+	for (int i = 0; i < m_ByNode.GetCount(); i++)
+		Result.SetAt(m_ByNode.GetKey(i), m_ByNode[i].iCount);
+
+	return Result;
 	}
 
 int CStationEncounterCtx::GetFrequencyByLevel (int iLevel, const CStationEncounterDesc &Desc)
@@ -232,7 +248,7 @@ int CStationEncounterCtx::GetFrequencyForSystem (CSystem *pSystem, CStationType 
 
 	int iLimit;
 	if (Desc.HasSystemLimit(&iLimit) && GetCountInSystem(pSystem, pStation) >= iLimit)
-		return false;
+		return 0;
 
 	//	Check for a level limit
 
@@ -275,7 +291,7 @@ int CStationEncounterCtx::GetRequiredForNode (CTopologyNode *pNode, const CStati
 
 	int iLimit;
 	if (Desc.HasSystemLimit(&iLimit) && pStats->iCount >= iLimit)
-		return false;
+		return 0;
 
 	//	Check node minimums
 

@@ -29,6 +29,7 @@ ICCItem *fnEnvironmentGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_DEBUG_IS_ACTIVE			6
 #define FN_DEBUG_GET				7
 #define FN_DEBUG_SET				8
+#define FN_DEBUG_BREAK				9
 
 ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -242,6 +243,8 @@ ICCItem *fnObjActivateItem(CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 #define FN_OBJ_ABANDON				135
 #define FN_OBJ_INC_PROPERTY			136
 #define FN_OBJ_INC_OVERLAY_PROPERTY	137
+#define FN_OBJ_CAN_ENHANCE_ITEM		138
+#define FN_OBJ_ENHANCE_ITEM			139
 
 #define NAMED_ITEM_SELECTED_WEAPON		CONSTLIT("selectedWeapon")
 #define NAMED_ITEM_SELECTED_LAUNCHER	CONSTLIT("selectedLauncher")
@@ -487,6 +490,7 @@ ICCItem *fnSystemAddStationTimerEvent (CEvalContext *pEvalCtx, ICCItem *pArgs, D
 #define FN_SYS_STARGATE_PROPERTY		38
 #define FN_SYS_LOCATIONS				39
 #define FN_SYS_TOPOLOGY_DISTANCE_TO_CRITERIA		40
+#define FN_SYS_GET_ASCENDED_OBJECTS		41
 
 ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
 
@@ -643,6 +647,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 
 		//	Debug functions
 		//	---------------
+
+		{	"dbgBreak",						fnDebug,		FN_DEBUG_BREAK,
+			"(dbgBreak)",
+			
+			"*",	PPFLAG_SIDEEFFECTS, },
 
 		{	"dbgGet",					fnDebug,		FN_DEBUG_GET,
 			"(dbgGet property) -> value\n\n"
@@ -833,11 +842,14 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'damaged\n"
 			"   'description\n"
 			"   'disrupted\n"
+			"   'enhancement\n"
 			"   'hasUseScreen\n"
 			"   'installed\n"
 			"   'level\n"
 			"   'reference\n"
 			"   'rootName\n"
+			"   'unknownType\n"
+			"   'unknownTypeIndex\n"
 			"   'used\n"
 			"\n"
 			"property (device)\n\n"
@@ -887,6 +899,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'repairLevel\n"
 			"   'shatterImmune\n"
 			"   'stdHP\n"
+			"   'stealth\n"
 			"\n"
 			"property (all)\n\n"
 			"   'category\n"
@@ -1236,11 +1249,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"i",	0,	},
 
 		{	"shpInstallArmor",				fnShipSet,			FN_SHIP_INSTALL_ARMOR,
-			"(shpInstallArmor ship item armorSegment) -> True/Nil",
+			"(shpInstallArmor ship item armorSegment) -> itemStruct (or Nil)",
 			"ivi",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpInstallDevice",				fnShipSet,			FN_SHIP_INSTALL_DEVICE,
-			"(shpInstallDevice ship item [deviceSlot])",
+			"(shpInstallDevice ship item [deviceSlot]) -> itemStruct (or Nil)",
 			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpIsBlind",					fnShipGetOld,		FN_SHIP_BLINDNESS,
@@ -1263,9 +1276,17 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objIsShip obj) -> True/Nil",
 			NULL,	PPFLAG_SIDEEFFECTS,	},
 
-		{	"shpEnhanceItem",				fnShipSetOld,		FN_SHIP_ENHANCE_ITEM,
-			"(shpEnhanceItem ship item [mods]) -> True/Nil",
-			NULL,	PPFLAG_SIDEEFFECTS,	},
+		{	"shpEnhanceItem",				fnShipSet,			FN_SHIP_ENHANCE_ITEM,
+			"(shpEnhanceItem ship item [mods|options]) -> True/Nil\n\n"
+			
+			"options:\n\n"
+			
+			"   enhancement: enhancement code/desc (required)\n"
+
+			"   lifetime: (in ticks)\n"
+			"   type: item causing enhancement\n",
+
+			"iv*",	PPFLAG_SIDEEFFECTS,	},
 
 		{	"shpMakeRadioactive",			fnShipGetOld,		FN_SHIP_MAKE_RADIOACTIVE,
 			"(shpMakeRadioactive ship) -> True/Nil",
@@ -1414,10 +1435,6 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objAddItem obj item|type [count]) -> item",
 			"iv*",		PPFLAG_SIDEEFFECTS,	},
 
-		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
-			"(objAddItemEnhancement obj item enhancementType [lifetime]) -> enhancementID",
-			"ivi*",	PPFLAG_SIDEEFFECTS,	},
-
 		{	"objAddOverlay",				fnObjSet,		FN_OBJ_ADD_OVERLAY,
 			"(objAddOverlay obj overlayType [lifetime]) -> overlayID\n"
 			"(objAddOverlay obj overlayType pos rotation [lifetime]) -> overlayID\n"
@@ -1451,6 +1468,32 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"objCanDetectTarget",				fnObjGet,			FN_OBJ_CAN_DETECT_TARGET,
 			"(objCanDetectTarget obj target) -> True/Nil",
 			"ii",	0,	},
+
+		{	"objCanEnhanceItem",		fnObjGet,		FN_OBJ_CAN_ENHANCE_ITEM,
+			"(objCanEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+
+			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens.\n"
+			"   'repaired: Device was repaired.\n",
+
+			"ivv",	0,	},
 
 		{	"objCanInstallItem",				fnObjGet,			FN_OBJ_CAN_INSTALL_ITEM,
 			"(objCanInstallItem obj item [armorSeg|deviceSlot]) -> (True/Nil resultCode resultString [itemToReplace])\n\n"
@@ -1566,6 +1609,33 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(objDestroy obj [objSource]) -> True/Nil",
 			"i*",	PPFLAG_SIDEEFFECTS,	},
 
+		{	"objEnhanceItem",		fnObjSet,		FN_OBJ_ENHANCE_ITEM,
+			"(objEnhanceItem obj item enhancementType|item) -> result\n\n"
+			
+			"result:\n\n"
+			
+			"   resultCode: Result of enhancement\n"
+			"   desc: Explanation of result (optional)\n"
+			"   enhancement: Enhancement applied (optional)\n"
+			"   id: Enhancement ID (optional)\n"
+			"   lifetime: Lifetime in ticks (optional)\n\n"
+			
+			"resultCode:\n\n"
+			
+			"   'ok: Enhancement applied\n"
+			"   'alreadyEnhanced: Already has this exact enhancement\n"
+			"   'damaged: Device was damaged\n"
+			"   'defectRemoved: Existing defective removed\n"
+			"   'defectReplaced: Existing defective replaced with defective mod\n"
+			"   'degraded: Enhancement kept, but made worse\n"
+			"   'enhancementRemoved: Existing enhancement removed\n"
+			"   'enhancementReplaced: Existing enhancement replaced\n"
+			"   'improved: Enhancement kept, but made better\n"
+			"   'noEffect: Nothing happens\n"
+			"   'repaired: Device was repaired\n",
+
+			"ivv",	PPFLAG_SIDEEFFECTS,	},
+
 		{	"objEnumItems",					fnObjEnumItems,	0,
 			"(objEnumItems obj criteria itemVar exp) -> value\n\n"
 
@@ -1648,6 +1718,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'lrsBlind\n"
 			"   'paralyzed\n"
 			"   'radioactive\n"
+			"   'shieldBlocked\n"
 			"   'spinning\n"
 			"   'timeStopped",
 
@@ -1863,6 +1934,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (all)\n\n"
 
 			"   'ascended\n"
+			"   'canAttack\n"
+			"   'canBeAttacked\n"
 			"   'category -> 'beam | 'effect | 'marker | 'missile | 'mission | 'ship | 'station\n"
 			"   'commsKey\n"
 			"   'currency -> currency type UNID\n"
@@ -1901,6 +1974,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (ships)\n\n"
 			
 			"   'alwaysLeaveWreck\n"
+			"   'armorCount\n"
 			"   'autoTarget\n"
 			"   'availableDeviceSlots\n"
 			"   'availableNonWeaponSlots\n"
@@ -2225,6 +2299,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property\n\n"
 
 			"   'charges charges\n"
+			"   'cycleFire [True|Nil]"
 			"   'damaged [True|Nil]\n"
 			"   'disrupted [True|Nil|ticks]\n"
 			"   'enabled [True|Nil|'silentDisabled|'silentEnabled]\n"
@@ -2234,7 +2309,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'linkedFireOptions list-of-options\n"
 			"   'pos (angle radius [z])\n"
 			"   'secondary [True|Nil]"
-			"   'cycleFire [True|Nil]",
+			"   'unknownTypeIndex [integer|Nil]",
 
 			"ivs*",	PPFLAG_SIDEEFFECTS,	},
 
@@ -2530,6 +2605,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'debrieferID       ID of the object that will debrief the player\n"
 			"   'forceUndockAfterDebrief  Force undock after showing debrief screen\n"
 			"   'hasDebrief        Mission has a debrief phase\n"
+			"   'hasInProgress     Mission show in progress text\n"
 			"   'id                Mission object ID\n"
 			"   'inProgress        Active player mission and not completed\n"
 			"   'isActive          Is an active player mission\n"
@@ -2868,6 +2944,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"(sysFindObjectAtPos source criteria pos [destPos]) -> list of objects",
 			"isv*",	0,	},
 
+		{	"sysGetAscendedObjects",		fnSystemGet,	FN_SYS_GET_ASCENDED_OBJECTS,
+			"(sysGetAscendedObjects) -> list of objects",
+			"*",	0,	},
+
 		{	"sysGetData",					fnSystemGet,	FN_SYS_GET_DATA,
 			"(sysGetData [nodeID] attrib) -> data",
 			"s*",	0,	},
@@ -2905,10 +2985,11 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			NULL,	0,	},
 
 		{	"sysGetNodes",					fnSystemGet,	FN_SYS_ALL_NODES,
-			"(sysGetNodes [criteria]) -> list of nodeIDs\n\n"
+			"(sysGetNodes [criteria|options]) -> list of nodeIDs\n\n"
 			
-			"criteria:\n\n"
+			"options:\n\n"
 			
+			"   criteria:       Only nodes that match attributes\n"
 			"   knownOnly:True  Only nodes known to player\n"
 			"   maxDist:n       Only nodes n or fewer gates away.\n"
 			"   minDist:n       Only nodes n or more gates away.\n",
@@ -2924,6 +3005,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes        Attributes of the system\n"
 			"   'known             Known to player\n"
 			"   'lastVisitOn       Tick on which player last visited\n"
 			"   'lastVisitSeconds  Game seconds since player last visited\n"
@@ -4031,6 +4113,10 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 		{	"envHasAttribute",				fnEnvironmentGet,		FN_ENV_HAS_ATTRIBUTE,
 			"DEPRECATED: Use typHasAttribute instead",
 			"is",	0,	},
+
+		{	"objAddItemEnhancement",		fnObjSet,		FN_OBJ_ADD_ITEM_ENHANCEMENT,
+			"DEPRECATED: Use objEnhanceItem instead",
+			"ivi*",	PPFLAG_SIDEEFFECTS,	},
 	};
 
 #define EXTENSIONS_COUNT		(sizeof(g_Extensions) / sizeof(g_Extensions[0]))
@@ -4168,6 +4254,17 @@ ICCItem *fnDebug (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		{
 		case FN_API_VERSION:
 			return pCC->CreateInteger(pCtx->GetAPIVersion());
+
+		case FN_DEBUG_BREAK:
+			{
+			CString sText = (pArgs->GetCount() > 0 ? pArgs->GetElement(0)->GetStringValue() : NULL_STR);
+#ifdef DEBUG
+			DebugBreak();
+			return pCC->CreateTrue();
+#else
+			return pCC->CreateNil();
+#endif
+			}
 
 		case FN_DEBUG_GET:
 			{
@@ -4549,7 +4646,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (sProperty.IsBlank())
 				return pCC->CreateNil();
 
-			return pCC->CreateBool(pType->SetTypeProperty(sProperty, pArgs->GetElement(2)));
+			return pCC->CreateBool(pType->SetTypeProperty(sProperty, *pArgs->GetElement(2)));
 			}
 
 		case FN_DESIGN_TRANSLATE:
@@ -4902,7 +4999,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5103,7 +5201,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
+			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5159,7 +5257,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pCtx->InEvent(eventGetName) && pCtx->GetItemType() == Item.GetType())
 				dwFlags |= nounNoEvent;
 
-			pResult = pCC->CreateString(Item.GetNounPhrase(CItemCtx(Item), dwFlags));
+			pResult = pCC->CreateString(Item.GetNounPhrase(dwFlags));
 			break;
 			}
 
@@ -5234,7 +5332,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5289,7 +5388,7 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CItemEnhancement Mods;
 			CString sError;
-			if (Mods.InitFromDesc(pArgs->GetElement(1), &sError) != NOERROR)
+			if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(1), &sError) != NOERROR)
 				return pCC->CreateError(sError, pArgs->GetElement(1));
 
 			Item.AddEnhancement(Mods);
@@ -5308,12 +5407,19 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			if (!Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), &sError))
+			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+
+			switch (iResult)
 				{
-				if (sError.IsBlank())
-					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+				case resultPropertyError:
+				case resultPropertyNotFound:
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+
+				default:
+					break;
 				}
 
 			return CreateListFromItem(Item);
@@ -6247,6 +6353,30 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateBool(Perception.CanBeTargeted(pTarget, pObj->GetDistance2(pTarget)));
 			}
 
+		case FN_OBJ_CAN_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CItem::SEnhanceItemResult Result = pObj->CanEnhanceItem(ItemList, EnhancementItem);
+			if (Result.iResult == eisUnknown)
+				return pCC->CreateError("Invalid enhancement.");
+
+			//	Encode result
+
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
+			}
+
 		case FN_OBJ_CAN_INSTALL_ITEM:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
@@ -6565,7 +6695,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 
-			return CreateDisposition(*pCC, pObj->GetDispositionTowards(pTarget));
+			return CreateDisposition(*pCC, pObj->GetDispositionTowards(*pTarget));
 			}
 
 		case FN_OBJ_GET_EVENT_HANDLER:
@@ -7058,9 +7188,21 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pSource = CreateObjFromItem(pArgs->GetElement(1));
 
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
-			CSpaceObjectCriteria::SCtx Ctx(Criteria);
+			//	We force including intangibles. We need to do this because this
+			//	is often called inside of <OnObjDestroyed>, and since the object
+			//	has been destroyed, it will fail the match unless we include
+			//	intangibles.
+			//
+			//	To exclude destroyed objects, callers should ask for active
+			//	objects.
+
+			Criteria.SetIncludeIntangible(true);
+
+			//	Match
+
+			CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}
 
@@ -7661,11 +7803,28 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pType == NULL)
 				return pCC->CreateError(CONSTLIT("Unknown item type"), NULL);
 
-			//	Get optional lifetime
+			//	Get options
 
 			int iLifetime = -1;
+			CItemEnhancement Mods;
 			if (pArgs->GetCount() > 3 && !pArgs->GetElement(3)->IsNil())
-				iLifetime = pArgs->GetElement(3)->GetIntegerValue();
+				{
+				ICCItem *pOptions = pArgs->GetElement(3);
+				if (pOptions->IsSymbolTable())
+					{
+					ICCItem *pMods = pOptions->GetElement(CONSTLIT("enhancement"));
+					if (pMods)
+						{
+						CString sError;
+						if (Mods.InitFromDesc(pCtx->GetUniverse(), *pMods, &sError) != NOERROR)
+							return pCC->CreateError(sError, pMods);
+						}
+
+					iLifetime = pOptions->GetIntegerAt(CONSTLIT("lifetime"), -1);
+					}
+				else
+					iLifetime = pOptions->GetIntegerValue();
+				}
 
 			//	Add
 
@@ -7674,10 +7833,20 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Done
 
-			if (dwID != OBJID_NULL)
-				return pCC->CreateInteger(dwID);
-			else
-				return pCC->CreateNil();
+			switch (iResult)
+				{
+				case eisNoEffect:
+				case eisAlreadyEnhanced:
+				case eisCantReplaceDefect:
+				case eisCantReplaceEnhancement:
+					return pCC->CreateNil();
+
+				default:
+					if (dwID != OBJID_NULL)
+						return pCC->CreateInteger(dwID);
+					else
+						return pCC->CreateNil();
+				}
 			}
 
 		case FN_OBJ_ADD_OVERLAY:
@@ -7984,6 +8153,31 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Done
 
 			return pCC->CreateTrue();
+			}
+
+		case FN_OBJ_ENHANCE_ITEM:
+			{
+			//	Target item
+
+			CItemListManipulator ItemList(pObj->GetItemList());
+			CItem TargetItem(pCtx->AsItem(pArgs->GetElement(1)));
+			if (!ItemList.SetCursorAtItem(TargetItem))
+				return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+
+			//	Enhancement item
+
+			CItem EnhancementItem(pCtx->AsItem(pArgs->GetElement(2)));
+
+			//	Do it
+
+			CItem::SEnhanceItemResult Result;
+			CString sError;
+			if (!pObj->EnhanceItem(ItemList, EnhancementItem, Result, &sError))
+				return pCC->CreateError(sError);
+
+			//	Encode result
+
+			return CSpaceObject::AsCCItem(*pCtx, Result)->Reference();
 			}
 
 		case FN_OBJ_FIRE_EVENT:
@@ -10053,6 +10247,65 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(iResult);
 			}
 
+		case FN_SHIP_ENHANCE_ITEM:
+			{
+			CItemListManipulator *pItemList = NULL;
+			CItemListManipulator ItemList(pShip->GetItemList());
+
+			//	If the argument is a list then it is an item (which means we have to find
+			//	the item in the manipulator). If the argument is an integer then we expect
+			//	an item list manipulator pointer.
+
+			if (pArgs->GetElement(1)->IsInteger())
+				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
+			else
+				{
+				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
+				if (!ItemList.SetCursorAtItem(Item))
+					{
+					if (pCtx->GetAPIVersion() >= 18)
+						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
+					else
+						return pCC->CreateNil();
+					}
+
+				pItemList = &ItemList;
+				}
+
+			//	Get the enhancement
+
+			CItemEnhancement Mods;
+			if (pArgs->GetCount() > 2)
+				{
+				CString sError;
+				if (Mods.InitFromDesc(pCtx->GetUniverse(), *pArgs->GetElement(2), &sError) != NOERROR)
+					return pCC->CreateError(sError);
+				}
+
+			if (pItemList == NULL)
+				return pCC->CreateNil();
+
+			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
+				{
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
+				{
+				if (Mods.IsEmpty())
+					Mods = CItemEnhancement(etBinaryEnhancement);
+
+				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
+				return pCC->CreateInteger(iResult);
+				}
+			else
+				{
+				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
+				return pCC->CreateTrue();
+				}
+			break;
+			}
+
 		case FN_SHIP_FIX_BLINDNESS:
 			{
 			bool bNoMessage = (pArgs->GetCount() > 1 && !pArgs->GetElement(1)->IsNil());
@@ -10096,7 +10349,7 @@ ICCItem *fnShipSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			//	Install
 
 			pShip->InstallItemAsArmor(ItemList, iSegment);
-			return pCC->CreateTrue();
+			return CreateListFromItem(ItemList.GetItemAtCursor());
 			}
 
 		case FN_SHIP_INSTALL_DEVICE:
@@ -10385,8 +10638,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 			|| dwData == FN_SHIP_ORDER_HOLD
 			|| dwData == FN_SHIP_CONTROLLER)
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("i*"));
-	else if (dwData == FN_SHIP_ENHANCE_ITEM)
-		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv*"));
 	else
 		pArgs = pCC->EvaluateArgs(pEvalCtx, pArguments, CONSTLIT("iv"));
 	if (pArgs->IsError())
@@ -10727,75 +10978,6 @@ ICCItem *fnShipSetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData
 				}
 			else
 				pResult = pCC->CreateNil();
-			break;
-			}
-
-		case FN_SHIP_ENHANCE_ITEM:
-			{
-			CItemListManipulator *pItemList = NULL;
-			CItemListManipulator ItemList(pShip->GetItemList());
-
-			//	If the argument is a list then it is an item (which means we have to find
-			//	the item in the manipulator). If the argument is an integer then we expect
-			//	an item list manipulator pointer.
-
-			if (pArgs->GetElement(1)->IsInteger())
-				pItemList = (CItemListManipulator *)pArgs->GetElement(1)->GetIntegerValue();
-			else
-				{
-				CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-				if (!ItemList.SetCursorAtItem(Item))
-					{
-					pArgs->Discard();
-					if (pCtx->GetAPIVersion() >= 18)
-						return pCC->CreateError(CONSTLIT("Unable to find specified item in object."));
-					else
-						return pCC->CreateNil();
-					}
-
-				pItemList = &ItemList;
-				}
-
-			//	Get the enhancement
-
-			CItemEnhancement Mods;
-			CString sError;
-			if (pArgs->GetCount() > 2)
-				{
-				if (Mods.InitFromDesc(pArgs->GetElement(2), &sError) != NOERROR)
-					{
-					pArgs->Discard();
-					pResult = pCC->CreateError(sError);
-					break;
-					}
-				}
-
-			if (pItemList == NULL)
-				{
-				pArgs->Discard();
-				pResult = pCC->CreateNil();
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsArmor())
-				{
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else if (pItemList->GetItemAtCursor().GetType()->IsDevice())
-				{
-				if (Mods.IsEmpty())
-					Mods = CItemEnhancement(etBinaryEnhancement);
-
-				EnhanceItemStatus iResult = pShip->EnhanceItem(*pItemList, Mods);
-				pArgs->Discard();
-				pResult = pCC->CreateInteger(iResult);
-				}
-			else
-				{
-				pShip->EnhanceItem(*pItemList, etBinaryEnhancement);
-				pArgs->Discard();
-				pResult = pCC->CreateTrue();
-				}
 			break;
 			}
 
@@ -11212,7 +11394,8 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		case FN_STATION_SHOW_MAP_LABEL:
-			pStation->SetShowMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetForceMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetSuppressMapLabel(pArgs->GetElement(1)->IsNil());
 			return pCC->CreateTrue();
 
 		default:
@@ -11639,6 +11822,9 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				ICCItemPtr pResult = CTLispConvert::CreateObjectList(Ctx.Result);
 				return pResult->Reference();
 				}
+
+			else
+				return pCC->CreateNil();
 			}
 
 		case FN_SYS_CREATE_ENVIRONMENT:
@@ -12017,7 +12203,7 @@ ICCItem *fnSystemCreate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (iBonus != 0)
 				{
 				pEnhancements.TakeHandoff(new CItemEnhancementStack);
-				pEnhancements->InsertHPBonus(iBonus);
+				pEnhancements->InsertHPBonus(NULL, iBonus);
 				}
 
 			//	Create the weapon shot
@@ -12506,7 +12692,7 @@ ICCItem *fnSystemCreateStargate (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD d
 
 	//	Add a named object
 
-	pSystem->NameObject(sStargateName, pStargate);
+	pSystem->NameObject(sStargateName, *pStargate);
 
 	//	Set stargate properties (note: CreateStation also looks at objName and adds the name
 	//	to the named-objects system table.)
@@ -12650,7 +12836,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Second argument is the filter
 
 	CString sFilter = pArgs->GetElement(1)->GetStringValue();
-	CSpaceObjectCriteria Criteria(pSource, sFilter);
+	CSpaceObjectCriteria Criteria(sFilter);
 
 	//	If we're checking for position, we need to do some extra work
 
@@ -12688,9 +12874,11 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Prepare result list (if necessary)
 	
+	CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
+
 	ICCItem *pResult;
 	CCLinkedList *pList;
-	if (!Criteria.MatchesNearestOnly() && !Criteria.MatchesFarthestOnly())
+	if (!Ctx.bNearestOnly && !Ctx.bFarthestOnly)
 		{
 		pResult = pCC->CreateLinkedList();
 		if (pResult->IsError())
@@ -12708,11 +12896,10 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	NOTE: We have this convoluted code path because we want to optimize
 	//	adding items to our list [not sure if it's worth it, though].
 
-	bool bGenerateOurOwnList = (pList && (Criteria.GetSort() == CSpaceObjectCriteria::sortNone));
+	bool bGenerateOurOwnList = (pList && (Ctx.iSort == CSpaceObjectCriteria::sortNone));
 
 	//	Do the search
 
-	CSpaceObjectCriteria::SCtx Ctx(Criteria);
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
@@ -12730,7 +12917,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If we only want the nearest/farthest object, then find it now
 
-	if (Criteria.MatchesNearestOnly() || Criteria.MatchesFarthestOnly())
+	if (Ctx.bNearestOnly || Ctx.bFarthestOnly)
 		{
 		//	Return the object
 
@@ -12856,6 +13043,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				return pCC->CreateInteger(pEnvironment->GetUNID());
 			else
 				return pCC->CreateNil();
+			}
+
+		case FN_SYS_GET_ASCENDED_OBJECTS:
+			{
+			CAscendedObjectList &ObjList = pCtx->GetUniverse().GetAscendedObjects();
+			if (ObjList.GetCount() == 0)
+				return pCC->CreateNil();
+
+			ICCItemPtr pResult(ICCItem::List);
+			for (int i = 0; i < ObjList.GetCount(); i++)
+				pResult->Append(CTLispConvert::CreateObject(ObjList.GetObj(i)));
+
+			return pResult->Reference();
 			}
 
 		case FN_SYS_GET_FIRE_SOLUTION:
@@ -13417,16 +13617,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ORBIT_CREATE:
 			{
+			COrbit Orbit;
+
 			CVector vCenter;
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			Metric rRadius = Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND);
-			Metric rAngle = mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue());
-			Metric rEccentricity = Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99));
-			Metric rRotation = (pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetFocus(vCenter);
+			Orbit.SetSemiMajorAxis(Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND));
+			Orbit.SetObjectAngle(mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue()));
+			Orbit.SetEccentricity(Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99)));
+			Orbit.SetRotation(pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetInclination(pArgs->GetCount() >= 6 ? mathDegreesToRadians(pArgs->GetElement(5)->GetDoubleValue()) : 0.0);
 
-			COrbit Orbit(vCenter, rRadius, rEccentricity, rRotation, rAngle);
 			return CreateListFromOrbit(*pCC, Orbit);
 			}
 
@@ -13688,7 +13891,7 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateError(CONSTLIT("Invalid nodeID"), pArgs->GetElement(0));
 					
 				TSortMap<CString, int> Distances;
-				pCtx->GetUniverse().GetTopology().CalcDistances(pNode, Distances);
+				pCtx->GetUniverse().GetTopology().CalcDistances(*pNode, Distances);
 
 				ICCItemPtr pResult(ICCItem::SymbolTable);
 				for (int i = 0; i < Distances.GetCount(); i++)
@@ -14041,15 +14244,13 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Adjust the orbit
 
-			COrbit NewOrbitDesc(OrbitDesc.GetFocus(),
-					Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleOffset);
-
+			COrbit NewOrbit = OrbitDesc;
+			NewOrbit.SetSemiMajorAxis(Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset));
+			NewOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
+			
 			//	Done
 
-			return CreateListFromVector(NewOrbitDesc.GetObjectPos());
+			return CreateListFromVector(NewOrbit.GetObjectPos());
 			}
 
 		default:
@@ -14189,7 +14390,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetCount() > 3)
 				sFilter = pArgs->GetElement(3)->GetStringValue();
 
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	Keep trying random positions until we find something that works
 			//	(or until we run out of tries)
@@ -14222,7 +14423,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				//	See if any object is within the separation range. If there 
 				//	is, then we continue.
 
-				if (pSystem->FindObjectInRange(vTry, rSeparation, Criteria)
+				if (pSystem->FindObjectInRange(pSource, vTry, rSeparation, Criteria)
 						&& --iTries > 0)
 					continue;
 

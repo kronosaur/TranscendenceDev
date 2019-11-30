@@ -33,6 +33,7 @@ class CDockScreenVisuals
         const CObjectImageArray &GetBackground (void) const { return m_Background; }
 		int GetBorderRadius (void) const { return DEFAULT_BORDER_RADIUS; }
         const CObjectImageArray &GetContentMask (void) const { return m_ContentMask; }
+		const CG16bitFont &GetStatusFont (void) const { return *m_pStatusFont; }
 		int GetTabHeight (void) const { return DEFAULT_TAB_HEIGHT; }
         CG32bitPixel GetTextBackgroundColor (void) const { return m_rgbTextBackground; }
         CG32bitPixel GetTextColor (void) const { return m_rgbText; }
@@ -55,6 +56,8 @@ class CDockScreenVisuals
         CG32bitPixel m_rgbTitleText;        //  Color of title area text
         CG32bitPixel m_rgbTextBackground;   //  Color of normal text backgrounds
         CG32bitPixel m_rgbText;             //  Color of normal text
+
+		const CG16bitFont *m_pStatusFont = NULL;
 
         static CDockScreenVisuals m_Default;
         static bool m_bDefaultInitialized;

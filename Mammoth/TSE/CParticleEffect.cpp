@@ -446,7 +446,7 @@ void CParticleEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	if (Ctx.pObj == m_pAnchor)
+	if (Ctx.Obj == m_pAnchor)
 		m_pAnchor = NULL;
 	}
 
@@ -910,7 +910,7 @@ void CParticleEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+	UpdateDrag(Ctx, g_SpaceDragFactor);
 	}
 
 void CParticleEffect::PaintFlameParticles (SParticleArray *pGroup, CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)

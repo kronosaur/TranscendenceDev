@@ -79,7 +79,6 @@
 			regen=              "15"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -98,8 +97,8 @@
 		<!-- Trade and Items -->
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +ringerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
 			<Buy	criteria="*NU +res; &gt;=4;"		priceAdj="90"/>
 
@@ -202,9 +201,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -219,9 +216,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>
@@ -267,7 +262,6 @@
 			regen=              "25"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -286,8 +280,8 @@
 		<!-- Trade and items -->
 
 		<Trade currency="rin">
-			<Sell	criteria="*NU +ringerValuable;"		priceAdj="250"/>
-			<Sell	criteria="*NU -ID;"					priceAdj="100"/>
+			<Sell	criteria="*NU +ringerValuable; -defective;"		priceAdj="250"/>
+			<Sell	criteria="*NU -defective; -ID;"					priceAdj="100"/>
 			<Buy	criteria="*NU +ringerValuable;"		priceAdj="200"/>
 			<Buy	criteria="*NU +res; &gt;=4;"		priceAdj="90"/>
 			
@@ -373,9 +367,7 @@
 									(= (objGetBalance gPlayerShip 'rin) 0)
 										(scrShowPane gScreen 'ExchangeIntro)
 
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 
@@ -401,9 +393,7 @@
 							<Action id="actionContinue" cancel="1" default="1">
 								(block Nil
 									(scrShowPane gScreen 'Default)
-									(scrShowScreen gScreen &dsRPGCommoditiesExchange; {
-										checkMilitaryID: Nil
-										})
+									(scrShowScreen gScreen &dsRPGCommoditiesExchange;)
 									)
 							</Action>
 						</Actions>
@@ -591,6 +581,19 @@
 	<Type unid="&baRingersStation;"
 			inherit=			"&unidCommonText;"
 			>
+
+		<Properties>
+			<!--
+			By default Ringers do not bother checking for military ID.
+			-->
+			<Constant	id="rpg.checkMilitaryID">Nil</Constant>
+
+			<!--
+			By default we reveal unknown items when they are for sale.
+			-->
+			<Constant	id="rpg.showActualItem">True</Constant>
+		</Properties>
+
 		<Language>
 			<Text id="actionCommoditiesExchange">[E]xchange</Text>
 

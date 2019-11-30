@@ -389,6 +389,7 @@
     <ClCompile Include="CDockScreenCustomList.cpp" />
     <ClCompile Include="CDockScreenDetailsPane.cpp" />
     <ClCompile Include="CDockScreenItemList.cpp" />
+    <ClCompile Include="CDockScreenLayout.cpp" />
     <ClCompile Include="CDockScreenList.cpp" />
     <ClCompile Include="CDockScreenSelector.cpp" />
     <ClCompile Include="CDockScreenSubjugate.cpp" />

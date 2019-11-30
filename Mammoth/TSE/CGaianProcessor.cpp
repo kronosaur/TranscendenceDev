@@ -299,7 +299,7 @@ void CGaianProcessorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 			{
 			//	If we just pulverized a wreck, suck in all the particles
 
-			if (Ctx.pObj == m_pDest)
+			if (Ctx.Obj == m_pDest)
 				{
 				Metric rDist2 = (m_pDest->GetPos() - m_pShip->GetPos()).Length2();
 				if (rDist2 < (MAX_EATING_DISTANCE * MAX_EATING_DISTANCE))
@@ -361,10 +361,10 @@ void CGaianProcessorAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 
 	//	If we haven't handled it, make sure we rest
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		SetState(stateNone);
 
-	if (m_pDest == Ctx.pObj)
+	if (m_pDest == Ctx.Obj)
 		SetState(stateNone);
 	}
 

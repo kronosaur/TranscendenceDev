@@ -42,10 +42,12 @@
 #define FIELD_REGEN								CONSTLIT("regen")
 #define FIELD_WEAPON_SUPPRESS					CONSTLIT("weaponSuppress")
 
+#define PROPERTY_ABSORB_ADJ						CONSTLIT("absorbAdj")
 #define PROPERTY_DAMAGE_ADJ						CONSTLIT("damageAdj")
 #define PROPERTY_HP								CONSTLIT("hp")
 #define PROPERTY_HP_BONUS						CONSTLIT("hpBonus")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
+#define PROPERTY_REFLECT						CONSTLIT("reflect")
 #define PROPERTY_REGEN							CONSTLIT("regen")
 
 #define STR_BY_SHIELD_INTEGRITY					CONSTLIT("byShieldIntegrity")
@@ -132,7 +134,8 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 	DEBUG_TRY
 
 	CItemCtx ItemCtx(pShip, pDevice);
-	const CItemEnhancementStack *pEnhancements = ItemCtx.GetEnhancementStack();
+	const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItemOrThrow();
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 
 	//	If we're depleted then we cannot absorb anything
 
@@ -145,15 +148,11 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	Calculate how much we will absorb
 
-	int iAbsorbAdj = (Ctx.Damage.GetDamageType() == damageGeneric ? 100 : m_iAbsorbAdj[Ctx.Damage.GetDamageType()]);
-	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, iAbsorbAdj);
-	if (pEnhancements)
-		Ctx.iAbsorb = mathAdjust(Ctx.iAbsorb, pEnhancements->GetAbsorbAdj(Ctx.Damage));
+	Ctx.iAbsorb = mathAdjust(Ctx.iDamage, GetAbsorbAdj(DeviceItem, Enhancements, Ctx.Damage));
 
 	//	Compute how much damage we take (based on the type of damage)
 
-	int iAdj = GetDamageAdj(Ctx.Damage, pEnhancements);
-	Ctx.iShieldDamage = mathAdjust(Ctx.iAbsorb, iAdj);
+	Ctx.iShieldDamage = mathAdjust(Ctx.iAbsorb, GetDamageAdj(Ctx.Damage, &Enhancements));
 
 	//	If shield generator is damaged then sometimes we take extra damage
 
@@ -180,68 +179,16 @@ bool CShieldClass::AbsorbDamage (CInstalledDevice *pDevice, CSpaceObject *pShip,
 
 	//	See if we're reflective
 
-	int iReflectChance = 0;
-	if (pEnhancements)
-		pEnhancements->ReflectsDamage(Ctx.Damage.GetDamageType(), &iReflectChance);
-	if (m_Reflective.InSet(Ctx.Damage.GetDamageType()))
-		iReflectChance = Max(iReflectChance, MAX_REFLECTION_CHANCE);
-	if (iReflectChance 
-			&& Ctx.pCause)
+	int iReflectChance = GetReflectChance(DeviceItem, Enhancements, Ctx.Damage, Ctx.iHPLeft, DeviceItem.GetMaxHP());
+	if (Ctx.pCause
+			&& iReflectChance
+			&& mathRandom(1, 100) <= iReflectChance)
 		{
-		CItemCtx ItemCtx(pShip, pDevice);
-
-		//	If the shot has shield damage, we adjust the chance of reflecting.
-		//	Adjust based on difference in level (negative numbers means the shield
-		//	is lower than the damage level):
-		//
-		//	...
-		//	<-3 =	No reflect
-		//	-3  =	50% reflect adj
-		//	-2	=	75% reflect adj
-		//	-1	=	90% reflect adj
-		//	>=0	=	Full reflect
-
-		if (Ctx.Damage.GetShieldDamageLevel() > 0)
-			{
-			int iDiff = GetLevel() - Ctx.Damage.GetShieldDamageLevel();
-			switch (iDiff)
-				{
-				case -3:
-					iReflectChance = 50 * iReflectChance / 100;
-					break;
-
-				case -2:
-					iReflectChance = 75 * iReflectChance / 100;
-					break;
-
-				case -1:
-					iReflectChance = 90 * iReflectChance / 100;
-					break;
-
-				default:
-					if (iDiff < -3)
-						iReflectChance = 0;
-					break;
-				}
-			}
-
-		//	Compute the chance that we will reflect (based on the strength of
-		//	our shields)
-
-		int iMaxHP = GetMaxHP(ItemCtx);
-		int iEfficiency = (iMaxHP == 0 ? 100 : 50 + (Ctx.iHPLeft * 50 / iMaxHP));
-		int iChance = iEfficiency * iReflectChance / 100;
-
-		//	See if we reflect
-
-		Ctx.SetShotReflected(mathRandom(1, 100) <= iChance);
-		if (Ctx.IsShotReflected())
-			{
-			Ctx.iOriginalAbsorb = Ctx.iAbsorb;
-			Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
-			Ctx.iAbsorb = Ctx.iDamage;
-			Ctx.iShieldDamage = 0;
-			}
+		Ctx.SetShotReflected(true);
+		Ctx.iOriginalAbsorb = Ctx.iAbsorb;
+		Ctx.iOriginalShieldDamage = Ctx.iShieldDamage;
+		Ctx.iAbsorb = Ctx.iDamage;
+		Ctx.iShieldDamage = 0;
 		}
 	else
 		Ctx.SetShotReflected(false);
@@ -782,7 +729,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	Load damage adjustment
 
 	pShield->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, InitCtx.pType->GetLevel());
-	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Load absorb adjustment; if attribute not found, assume 100% for everything
@@ -1093,6 +1040,20 @@ void CShieldClass::FireOnShieldDown (CInstalledDevice *pDevice, CSpaceObject *pS
 		}
 	}
 
+int CShieldClass::GetAbsorbAdj (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage) const
+
+//	GetAbsorbAdj
+//
+//	Get the absorb adjustment given the damage.
+
+	{
+	int iAbsorbAdj = (Damage.GetDamageType() == damageGeneric ? 100 : m_iAbsorbAdj[Damage.GetDamageType()]);
+	if (!Enhancements.IsEmpty())
+		iAbsorbAdj = mathAdjustRound(iAbsorbAdj, Enhancements.GetAbsorbAdj(Damage));
+
+	return iAbsorbAdj;
+	}
+
 int CShieldClass::GetDamageAdj (const DamageDesc &Damage, const CItemEnhancementStack *pEnhancements) const
 
 //	GetDamageAdj
@@ -1223,6 +1184,8 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
+	const CItem &Item = Ctx.GetItem();
+	const CDeviceItem DeviceItem = Item.AsDeviceItem();
 
 	//	Enhancements
 
@@ -1230,7 +1193,26 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	//	Get the property
 
-	if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
+	if (strEquals(sName, PROPERTY_ABSORB_ADJ))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+
+		for (int iDamage = 0; iDamage < damageCount; iDamage++)
+			{
+			DamageDesc Damage((DamageTypes)iDamage, DiceRange(1, 1, 0));
+
+			int iAbsorbAdj = GetAbsorbAdj(DeviceItem, (pEnhancements ? *pEnhancements : DeviceItem.GetEnhancements()), Damage);
+			if (iAbsorbAdj != 100)
+				pResult->SetIntegerAt(::GetDamageType((DamageTypes)iDamage), iAbsorbAdj);
+			}
+
+		if (pResult->GetCount() == 0)
+			return CC.CreateNil();
+		else
+			return pResult->Reference();
+		}
+
+	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
 		return m_DamageAdj.GetDamageAdjProperty(pEnhancements);
 
 	else if (strEquals(sName, PROPERTY_HP))
@@ -1241,6 +1223,25 @@ ICCItem *CShieldClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_MAX_HP))
 		return CC.CreateInteger(GetMaxHP(Ctx));
+
+	else if (strEquals(sName, PROPERTY_REFLECT))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+
+		for (int iDamage = 0; iDamage < damageCount; iDamage++)
+			{
+			DamageDesc Damage((DamageTypes)iDamage, DiceRange(1, 1, 0));
+
+			int iChance = GetReflectChance(DeviceItem, Damage);
+			if (iChance > 0)
+				pResult->SetIntegerAt(::GetDamageType((DamageTypes)iDamage), iChance);
+			}
+
+		if (pResult->GetCount() == 0)
+			return CC.CreateNil();
+		else
+			return pResult->Reference();
+		}
 
 	else if (strEquals(sName, PROPERTY_REGEN))
 		return CC.CreateInteger(mathRound(CalcRegen180(Ctx)));
@@ -1377,6 +1378,87 @@ bool CShieldClass::GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pIns
 	return true;
 	}
 
+int CShieldClass::GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const
+
+//	GetReflectChange
+//
+//	Computes the chance of reflection.
+
+	{
+	int iMaxHP;
+	int iHP = DeviceItem.GetHP(&iMaxHP);
+	return GetReflectChance(DeviceItem, DeviceItem.GetEnhancements(), Damage, iHP, iMaxHP);
+	}
+
+int CShieldClass::GetReflectChance (const CDeviceItem &DeviceItem, const CItemEnhancementStack &Enhancements, const DamageDesc &Damage, int iHP, int iMaxHP) const
+
+//	GetReflectChance
+//
+//	Computes the chance of reflection.
+
+	{
+	//	If the shield is reflective, the start with that.
+
+	int iReflect = 0;
+	if (m_Reflective.InSet(Damage.GetDamageType()))
+		iReflect = MAX_REFLECTION_CHANCE;
+
+	//	See if enhancements adjust that.
+
+	int iEnhancementReflect;
+	if (Enhancements.ReflectsDamage(Damage.GetDamageType(), &iEnhancementReflect))
+		iReflect = Max(iReflect, iEnhancementReflect);
+
+	//	Short-circuit
+
+	if (iReflect == 0)
+		return 0;
+
+	//	If the shot has shield damage, we adjust the chance of reflecting.
+	//	Adjust based on difference in level (negative numbers means the shield
+	//	is lower than the damage level):
+	//
+	//	...
+	//	<-3 =	No reflect
+	//	-3  =	50% reflect adj
+	//	-2	=	75% reflect adj
+	//	-1	=	90% reflect adj
+	//	>=0	=	Full reflect
+
+	if (Damage.GetShieldDamageLevel() > 0)
+		{
+		int iDiff = GetLevel() - Damage.GetShieldDamageLevel();
+		switch (iDiff)
+			{
+			case -3:
+				iReflect = 50 * iReflect / 100;
+				break;
+
+			case -2:
+				iReflect = 75 * iReflect / 100;
+				break;
+
+			case -1:
+				iReflect = 90 * iReflect / 100;
+				break;
+
+			default:
+				if (iDiff < -3)
+					iReflect = 0;
+				break;
+			}
+		}
+
+	//	Lastly, we adjust for current shield hitpoints
+
+	int iEfficiency = (iMaxHP == 0 ? 100 : 50 + (iHP * 50 / iMaxHP));
+	iReflect = iEfficiency * iReflect / 100;
+
+	//	Done
+
+	return iReflect;
+	}
+
 void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus)
 
 //	GetStatus
@@ -1469,29 +1551,33 @@ bool CShieldClass::IsDepleted (CInstalledDevice *pDevice)
 	return ((int)pDevice->GetData() < 0); 
 	}
 
-void CShieldClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CShieldClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	OnAccumulateAttributes
 //
 //	Returns display attributes
 
 	{
-	int i;
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 
 	//	Reflection
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_Reflective.InSet(iDamage) || Enhancements.ReflectsDamage(iDamage))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName(iDamage))));
 		}
 
 	//	Weapon suppress
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_WeaponSuppress.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_WeaponSuppress.InSet(iDamage))
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName(iDamage))));
 		}
 	}
 
@@ -1532,7 +1618,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If the hit effect is NULL, then use default
 
 	if (m_pHitEffect == NULL)
-		m_pHitEffect.Set(GetUniverse().FindEffectType(g_ShieldEffectUNID));
+		m_pHitEffect.Set(GetUniverse().FindEffectTypeBound(Ctx, g_ShieldEffectUNID));
 
 	return NOERROR;
 	}
@@ -1620,9 +1706,9 @@ CString CShieldClass::OnGetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dw
 			{
 			int iMultiple10 = mathRound(10.0 * (iPercent + 100.0) / 100.0);
 			if ((iMultiple10 % 10) == 0)
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d× longer recovery"), iMultiple10 / 10));
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%&times; longer recovery"), iMultiple10 / 10));
 			else
-				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d× longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
+				AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d.%d%&times; longer recovery"), iMultiple10 / 10, iMultiple10 % 10));
 			}
 		else if (iPercent > 0)
 			AppendReferenceString(&sReference, strPatternSubst(CONSTLIT("%d%% longer recovery"), iPercent));
@@ -1767,7 +1853,7 @@ void CShieldClass::SetHitPoints (CItemCtx &ItemCtx, int iHP)
 	SetHPLeft(pDevice, pSource, Min(GetMaxHP(ItemCtx), iHP), true);
 	}
 
-bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -1785,7 +1871,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			|| !Ctx.GetItem().IsInstalled())
 		{
 		*retsError = CONSTLIT("Item is not an installed device on object.");
-		return false;
+		return resultPropertyError;
 		}
 
 	//	Handle it.
@@ -1816,7 +1902,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	//	Success
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)

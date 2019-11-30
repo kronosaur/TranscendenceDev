@@ -226,13 +226,16 @@ CInstalledDevice *CCodeChainCtx::AsInstalledDevice (CSpaceObject *pObj, ICCItem 
 	return pDevice;
 	}
 
-CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
+CItem CCodeChainCtx::AsItem (ICCItem *pItem, bool *retbItemType) const
 
 //	AsItem
 //
 //	Get an item
 
 	{
+	if (retbItemType)
+		*retbItemType = false;
+
 	if (pItem == NULL || pItem->IsNil())
 		return CItem();
 
@@ -247,6 +250,9 @@ CItem CCodeChainCtx::AsItem (ICCItem *pItem) const
 		CItemType *pType = GetUniverse().FindItemType(pItem->GetIntegerValue());
 		if (pType == NULL)
 			return CItem();
+
+		if (retbItemType)
+			*retbItemType = true;
 
 		return CItem(pType, 1);
 		}
@@ -318,6 +324,8 @@ CSpaceObject *CCodeChainCtx::AsSpaceObject (ICCItem *pItem)
 	try
 		{
 		pObj = reinterpret_cast<CSpaceObject *>(pItem->GetIntegerValue());
+		if (pObj && ((DWORD)pObj->GetCategory() & ~CSpaceObject::catMask))
+			pObj = NULL;
 		}
 	catch (...)
 		{
@@ -570,7 +578,7 @@ void CCodeChainCtx::DefineSource (CSpaceObject *pSource)
 	DefineGlobalSpaceObject(m_CC, STR_G_SOURCE, pSource);
 	}
 
-void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
+void CCodeChainCtx::DefineSpaceObject (const CString &sVar, const CSpaceObject *pObj)
 
 //	DefineSpaceObject
 //
@@ -578,7 +586,7 @@ void CCodeChainCtx::DefineSpaceObject (const CString &sVar, CSpaceObject *pObj)
 
 	{
 	if (pObj)
-		m_CC.DefineGlobalInteger(sVar, (int)pObj);
+		DefineSpaceObject(sVar, *pObj);
 	else
 		{
 		ICCItem *pValue = m_CC.CreateNil();

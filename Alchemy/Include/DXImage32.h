@@ -133,9 +133,12 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		CG32bitImage (void);
 		CG32bitImage (const CG32bitImage &Src);
+		CG32bitImage (CG32bitImage &&Src) {	TakeHandoff(Src); }
+
 		~CG32bitImage (void);
 
 		CG32bitImage &operator= (const CG32bitImage &Src);
+		CG32bitImage &operator= (CG32bitImage &&Src) { TakeHandoff(Src); return *this; }
 
 		static CG32bitImage &Null (void) { return m_NullImage; }
 
@@ -211,13 +214,13 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		void Copy (const CG32bitImage &Src);
 		void InitBMI (BITMAPINFO **retpbi) const;
 
-		CG32bitPixel *m_pRGBA;
-		bool m_bFreeRGBA;					//	If TRUE, we own the memory
-		bool m_bMarked;						//	Mark/sweep flag (for use by caller)
-		int m_iPitch;						//	Bytes per row
-		EAlphaTypes m_AlphaType;
+		CG32bitPixel *m_pRGBA = NULL;
+		bool m_bFreeRGBA = false;				//	If TRUE, we own the memory
+		bool m_bMarked = false;					//	Mark/sweep flag (for use by caller)
+		int m_iPitch = 0;						//	Bytes per row
+		EAlphaTypes m_AlphaType = alphaNone;
 
-		mutable BITMAPINFO *m_pBMI;			//	Used for blting to a DC
+		mutable BITMAPINFO *m_pBMI = NULL;		//	Used for blting to a DC
 		static CG32bitImage m_NullImage;
 	};
 

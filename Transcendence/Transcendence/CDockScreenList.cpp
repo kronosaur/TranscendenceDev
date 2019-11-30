@@ -140,7 +140,7 @@ ICCItemPtr CDockScreenList::OnGetProperty (const CString &sProperty) const
 		return ICCItemPtr(m_pItemListControl->IsDisplayAsKnown());
 
 	else
-		return ICCItemPtr(ICCItem::Nil);
+		return NULL;
 	}
 
 IDockScreenDisplay::EResults CDockScreenList::OnHandleAction (DWORD dwTag, DWORD dwData)
@@ -334,7 +334,7 @@ ALERROR CDockScreenList::OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, 
 
 	int i;
 	ALERROR error;
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -560,7 +560,7 @@ IDockScreenDisplay::EResults CDockScreenList::OnSetLocation (CSpaceObject *pLoca
 	return resultShowPane;
 	}
 
-bool CDockScreenList::OnSetProperty (const CString &sProperty, ICCItem &Value)
+bool CDockScreenList::OnSetProperty (const CString &sProperty, const ICCItem &Value)
 
 //	OnSetProperty
 //

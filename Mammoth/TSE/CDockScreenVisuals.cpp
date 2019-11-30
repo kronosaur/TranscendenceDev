@@ -12,6 +12,8 @@
 #define TITLE_BACKGROUND_ATTRIB					CONSTLIT("titleBackgroundColor")
 #define TITLE_TEXT_ATTRIB				    	CONSTLIT("titleTextColor")
 
+#define FONT_MEDIUM_HEAVY_BOLD					CONSTLIT("MediumHeavyBold")
+
 const CG32bitPixel RGB_TEXT =                   CG32bitPixel(0xb0, 0xb8, 0xbf);    //   H:210 S:8   B:75
 const CG32bitPixel RGB_TEXT_BACKGROUND =        CG32bitPixel(0x2a, 0x31, 0x38);    //   H:210 S:25  B:22
 const CG32bitPixel RGB_TITLE_BACKGROUND =       CG32bitPixel(0x37, 0x3f, 0x47);    //   H:240 S:23  B:28
@@ -73,6 +75,10 @@ CDockScreenVisuals &CDockScreenVisuals::GetDefault (CUniverse &Universe)
         m_Default.m_rgbTitleBackground = RGB_TITLE_BACKGROUND;
         m_Default.m_rgbTitleText = RGB_TITLE_TEXT;
 
+		//	Default fonts
+
+		m_Default.m_pStatusFont = &Universe.GetFont(FONT_MEDIUM_HEAVY_BOLD);
+
         m_bDefaultInitialized = true;
         }
 
@@ -112,6 +118,10 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
     m_rgbTitleBackground = ::LoadRGBColor(pDesc->GetAttribute(TITLE_BACKGROUND_ATTRIB), RGB_TITLE_BACKGROUND);
     m_rgbTitleText = ::LoadRGBColor(pDesc->GetAttribute(TITLE_TEXT_ATTRIB), m_rgbText);
+
+	//	Fonts
+
+	m_pStatusFont = &Ctx.GetUniverse().GetFont(FONT_MEDIUM_HEAVY_BOLD);
 
     return NOERROR;
     }

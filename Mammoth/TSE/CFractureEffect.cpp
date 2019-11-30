@@ -284,7 +284,7 @@ void CFractureEffect::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Handle it when another object is destroyed
 
 	{
-	if (m_pAttractor == Ctx.pObj)
+	if (m_pAttractor == Ctx.Obj)
 		m_pAttractor = NULL;
 	}
 
@@ -543,7 +543,7 @@ void CFractureEffect::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	If we're moving, slow down
 
-	SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+	UpdateDrag(Ctx, g_SpaceDragFactor);
 
 	DEBUG_CATCH
 	}

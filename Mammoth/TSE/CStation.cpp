@@ -47,6 +47,7 @@
 #define PROPERTY_ROTATION_SPEED					CONSTLIT("rotationSpeed")
 #define PROPERTY_SHIP_CONSTRUCTION_ENABLED		CONSTLIT("shipConstructionEnabled")
 #define PROPERTY_SHIP_REINFORCEMENT_ENABLED		CONSTLIT("shipReinforcementEnabled")
+#define PROPERTY_SHIP_REINFORCEMENT_REQUESTED	CONSTLIT("shipReinforcementRequested")
 #define PROPERTY_SHOW_MAP_LABEL					CONSTLIT("showMapLabel")
 #define PROPERTY_SHOW_MAP_ORBIT					CONSTLIT("showMapOrbit")
 #define PROPERTY_STARGATE_ID					CONSTLIT("stargateID")
@@ -115,7 +116,9 @@ CStation::CStation (CUniverse &Universe) : TSpaceObjectImpl(Universe),
 		m_iAngryCounter(0),
 		m_iReinforceRequestCount(0),
 		m_pMoney(NULL),
-		m_pTrade(NULL)
+		m_pTrade(NULL),
+		m_fForceMapLabel(false),
+		m_fMapLabelInitialized(false)
 
 //	CStation constructor
 
@@ -157,8 +160,7 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 
 	m_Hull.SetHitPoints(0);
 
-	SDestroyCtx DestroyCtx;
-	DestroyCtx.pObj = this;
+	SDestroyCtx DestroyCtx(*this);
 	DestroyCtx.pDesc = pWeaponDesc;
 	DestroyCtx.Attacker = Attacker;
 	DestroyCtx.pWreck = this;
@@ -478,13 +480,13 @@ void CStation::CalcDeviceBonus (void)
 
 				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
 				if (iBonus != 0)
-					pEnhancements->InsertHPBonus(iBonus);
+					pEnhancements->InsertHPBonus(NULL, iBonus);
 				break;
 				}
 			}
 
 		//	Set the bonuses
-		//	Note that these include any bonuses confered by item enhancements
+		//	Note that these include any bonuses conferred by item enhancements
 
 		Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
 
@@ -746,7 +748,7 @@ void CStation::CreateDestructionEffect (void)
 		if (Explosion.iBonus != 0)
 			{
 			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
@@ -917,7 +919,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_fNoReinforcements = false;
 	pStation->m_fNoConstruction = false;
 	pStation->m_fRadioactive = false;
-	pStation->m_iMapLabelPos = CMapLabelArranger::posRight;
+	pStation->m_MapLabel.SetPos(CMapLabelPainter::posRight);
 	pStation->m_rMass = pType->GetMass();
 	pStation->m_dwWreckUNID = 0;
 	pStation->m_fNoBlacklist = false;
@@ -925,6 +927,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
 	pStation->m_fDestroyIfEmpty = false;
     pStation->m_fIsSegment = CreateCtx.bIsSegment;
+	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
 
 	//	Set up rotation, if necessary
 
@@ -997,7 +1000,8 @@ ALERROR CStation::CreateFromType (CSystem &System,
 		pStation->m_pMapOrbit = NULL;
 
 	pStation->m_fShowMapOrbit = false;
-	pStation->m_fNoMapLabel = !pType->ShowsMapLabel();
+	pStation->m_fSuppressMapLabel = false;
+	pStation->m_fForceMapLabel = false;
 
 	//	We block others (CanBlock returns TRUE only for other stations)
 
@@ -1218,7 +1222,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	DEBUG_CATCH
 	}
 
-ALERROR CStation::CreateMapImage (void)
+ALERROR CStation::CreateMapImage (void) const
 
 //	CreateMapImage
 //
@@ -1371,7 +1375,7 @@ void CStation::CreateStructuralDestructionEffect (SDestroyCtx &Ctx)
 		if (Explosion.iBonus != 0)
 			{
 			Ctx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			Ctx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			Ctx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		Ctx.Source = CDamageSource(this, Explosion.iCause);
@@ -1524,6 +1528,16 @@ Metric CStation::GetAttackDistance (void) const
 		return Max(MAX_ATTACK_DISTANCE, m_pType->GetMaxEffectiveRange());
 	else
 		return MAX_ATTACK_DISTANCE;
+	}
+
+const CCurrencyBlock *CStation::GetCurrencyBlock (void) const
+
+//	GetCurrencyBlock
+//
+//	Returns our currency store, creating one if required.
+
+	{
+	return m_pMoney;
 	}
 
 CCurrencyBlock *CStation::GetCurrencyBlock (bool bCreate)
@@ -1785,6 +1799,9 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_ENABLED))
 		return CC.CreateBool(!m_fNoReinforcements);
 
+	else if (strEquals(sName, PROPERTY_SHIP_REINFORCEMENT_REQUESTED))
+		return (m_iReinforceRequestCount ? CC.CreateInteger(m_iReinforceRequestCount) : CC.CreateNil());
+
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(ShowMapLabel());
 
@@ -1945,19 +1962,6 @@ bool CStation::HasAttribute (const CString &sAttribute) const
 	return m_pType->HasLiteralAttribute(sAttribute);
 	}
 
-bool CStation::HasMapLabel (void)
-
-//	HasMapLabel
-//
-//	Returns TRUE if the object has a map label
-
-	{
-	return m_Scale != scaleWorld
-			&& m_Scale != scaleStar
-			&& m_pType->ShowsMapIcon() 
-			&& !m_fNoMapLabel;
-	}
-
 bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos)
 
 //	ImageInObject
@@ -1973,21 +1977,7 @@ bool CStation::ImageInObject (const CVector &vObjPos, const CObjectImageArray &I
 			DestImage, iDestTick, iDestVariant, vObjPos);
 	}
 
-void CStation::InitMapLabel (void)
-
-//	InitMapLabel
-//
-//	Make sure the map label is initialized.
-
-	{
-	if (m_sMapLabel.IsBlank())
-		{
-		m_sMapLabel = GetNounPhrase(nounTitleCapitalize);
-		CMapLabelArranger::CalcLabelPos(m_sMapLabel, m_iMapLabelPos, m_xMapLabel, m_yMapLabel);
-		}
-	}
-
-bool CStation::IsBlacklisted (CSpaceObject *pObj) const
+bool CStation::IsBlacklisted (const CSpaceObject *pObj) const
 
 //	IsBlacklisted
 //
@@ -2054,7 +2044,7 @@ bool CStation::IsShownInGalacticMap (void) const
 	//	overrides, because sometimes the object just hides the map label to keep
 	//	the map clean (not because it is not an interesting station).
 
-    if (!m_pType->ShowsMapIcon() || !m_pType->ShowsMapLabel())
+    if (!m_pType->ShowsMapIcon() || m_pType->SuppressMapLabel())
         return false;
 
     //  Skip stargates, which we don't need to show in the details pane
@@ -2092,6 +2082,8 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	DEBUG_TRY
 
 	int i;
+
+	GetUniverse().AdjustDamage(Ctx);
 
 	//	Stations don't have armor segments
 
@@ -2224,15 +2216,10 @@ EDamageResults CStation::OnDamageAbandoned (SDamageCtx &Ctx)
 	if (Ctx.Damage.GetMiningAdj())
 		FireOnMining(Ctx);
 
-	//	Once the station is abandoned, only WMD damage can destroy it.
-    //  NOTE: We check level (which is 0 for no WMD) rather than 
-    //  MassDestructionAdj, because we always have a little WMD. But for 
-    //  this case, we want "real" WMD.
+	//	Adjust the damage based on WMD requirements. Most hull types require
+	//	WMD damage to be hurt.
 
-    if (Ctx.Damage.GetMassDestructionLevel() > 0)
-        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
-	else
-		Ctx.iDamage = 0;
+	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -2386,11 +2373,10 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		Ctx.iDamage = Ctx.iArmorDamage;
 		}
 
-	//	If we're a multi-hull object then we adjust for mass destruction
-	//	effects (non-mass destruction weapons don't hurt us very much)
+	//	Adjust the damage based on WMD requirements. Most hull types require
+	//	WMD damage to be hurt.
 
-    if (Ctx.iDamage > 0 && m_Hull.IsMultiHull())
-        Ctx.iDamage = mathAdjust(Ctx.iDamage, Ctx.Damage.GetMassDestructionAdj());
+	Ctx.iDamage = m_Hull.CalcAdjustedDamage(Ctx);
 
 	//	Give events a chance to change the damage
 
@@ -2630,25 +2616,25 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	If this object is docked with us, remove it from the
 	//	docking table.
 
-	m_DockingPorts.OnObjDestroyed(this, Ctx.pObj);
+	m_DockingPorts.OnObjDestroyed(this, &Ctx.Obj);
 
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Delete(Ctx.pObj);
+	m_Targets.Delete(&Ctx.Obj);
 
 	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.pObj)
+		if (m_WeaponTargets[i] == Ctx.Obj)
 			m_WeaponTargets[i] = NULL;
 
 	//	If this was our base, remove it.
 
-	if (Ctx.pObj == m_pBase)
+	if (Ctx.Obj == m_pBase)
 		m_pBase = NULL;
 
 	//	Remove from the subordinate list. No need to take action because the 
 	//	ship/turret will communicate if we need to avenge.
 
-	m_Subordinates.Delete(Ctx.pObj);
+	m_Subordinates.Delete(&Ctx.Obj);
 	}
 
 bool CStation::ObjectInObject (const CVector &vObj1Pos, CSpaceObject *pObj2, const CVector &vObj2Pos)
@@ -3154,6 +3140,7 @@ void CStation::OnPaintAnnotations (CG32bitImage &Dest, int x, int y, SViewportPa
 	//	asteroids we've scanned or not.
 
 	if (!m_fExplored 
+			&& !IsOutOfPlaneObj()
 			&& m_pType->ShowsUnexploredAnnotation()
 			&& Ctx.bShowUnexploredAnnotation)
 		{
@@ -3239,6 +3226,17 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 				y - (m_MapImage.GetHeight() / 2));
 
 		m_Overlays.PaintMapAnnotations(Ctx, Dest, x, y);
+
+		//	Paint name
+
+		if (ShowMapLabel())
+			{
+			Ctx.GetLabelPainter().AddLabel(m_MapLabel.GetLabel(),
+					m_MapLabel.GetFont(),
+					CG32bitPixel(255, 255, 255, 0x80),
+					x + m_MapLabel.GetPosX(),
+					y + m_MapLabel.GetPosY());
+			}
 		}
 	else if (m_Scale == scaleStar)
 		{
@@ -3308,22 +3306,18 @@ void CStation::OnPaintMap (CMapViewportCtx &Ctx, CG32bitImage &Dest, int x, int 
 
 		//	Paint the label
 
-		if (!m_fNoMapLabel)
+		if (ShowMapLabel())
 			{
-			//	We cache the label and the position here.
-
-			InitMapLabel();
-
 			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
-					x + m_xMapLabel + 1, 
-					y + m_yMapLabel + 1, 
+					x + m_MapLabel.GetPosX() + 1, 
+					y + m_MapLabel.GetPosY() + 1, 
 					0,
-					m_sMapLabel);
+					m_MapLabel.GetLabel());
 			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
-					x + m_xMapLabel, 
-					y + m_yMapLabel, 
+					x + m_MapLabel.GetPosX(), 
+					y + m_MapLabel.GetPosY(), 
 					RGB_MAP_LABEL,
-					m_sMapLabel);
+					m_MapLabel.GetLabel());
 			}
 		}
 	}
@@ -3477,33 +3471,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (dwLoad != 0xffffffff)
 		{
 		m_pMapOrbit = new COrbit;
-		//	LATER: COrbit should load itself
-		Ctx.pStream->Read((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->ReadFromStream(Ctx);
 		}
 
 	//	Map label
 
-	if (Ctx.dwVersion >= 162)
-		{
-		Ctx.pStream->Read(dwLoad);
-		m_iMapLabelPos = CMapLabelArranger::LoadPosition(dwLoad);
-		}
-	else
-		{
-		int xMapLabel, yMapLabel;
-		Ctx.pStream->Read(xMapLabel);
-		Ctx.pStream->Read(yMapLabel);
-
-		//	For backwards compatibility we reverse engineer label coordinates
-		//	to a label position.
-
-		if (xMapLabel < 0 && yMapLabel > 0)
-			m_iMapLabelPos = CMapLabelArranger::posBottom;
-		else if (xMapLabel < 0)
-			m_iMapLabelPos = CMapLabelArranger::posLeft;
-		else
-			m_iMapLabelPos = CMapLabelArranger::posRight;
-		}
+	m_MapLabel.ReadFromStream(Ctx);
 
 	//	Parallax
 
@@ -3740,7 +3713,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	Ctx.pStream->Read(dwLoad);
 	m_fArmed =				((dwLoad & 0x00000001) ? true : false);
 	m_fKnown =				((dwLoad & 0x00000002) ? true : false);
-	m_fNoMapLabel =			((dwLoad & 0x00000004) ? true : false);
+	m_fSuppressMapLabel =	((dwLoad & 0x00000004) ? true : false);
 	m_fRadioactive =		((dwLoad & 0x00000008) ? true : false);
 	bool bHasRotation =		(Ctx.dwVersion >= 146 ? ((dwLoad & 0x00000010) ? true : false) : false);
 	m_fActive =				((dwLoad & 0x00000020) ? true : false);
@@ -3765,6 +3738,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
+	m_fForceMapLabel =		((dwLoad & 0x00200000) ? true : false);
 
 	//	Init name flags
 
@@ -3799,7 +3773,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	if (Ctx.dwVersion < 151)
 		{
 		m_Hull.SetImmutable(bImmutable);
-		m_Hull.SetMultiHull(m_pType->GetHullDesc().IsMultiHull());
+		m_Hull.SetHullType(m_pType->GetHullDesc().GetHullType());
 		}
 
 	//	Rotation
@@ -3847,10 +3821,10 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 
 	//	Remove the object from any lists that it may be on
 
-	m_Targets.Delete(Ctx.pObj);
+	m_Targets.Delete(&Ctx.Obj);
 
 	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.pObj)
+		if (m_WeaponTargets[i] == Ctx.Obj)
 			m_WeaponTargets[i] = NULL;
 	}
 
@@ -3864,7 +3838,6 @@ void CStation::OnSubordinateDestroyed (SDestroyCtx &Ctx)
 //	(that can happen in occupation situations).
 
 	{
-	CSpaceObject *pSubordinate = Ctx.pObj;
 	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	CSpaceObject *pTarget;
@@ -3923,7 +3896,6 @@ void CStation::OnSubordinateHit (SDamageCtx &Ctx)
 //	One of our subordinates was hit.
 
 	{
-	CSpaceObject *pSubordinate = Ctx.pObj;
 	CSpaceObject *pAttacker = (Ctx.Attacker.GetObj());
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	CSpaceObject *pTarget;
@@ -3988,7 +3960,6 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 	{
 	DEBUG_TRY
 
-	int i;
     bool bCalcBounds = false;
 	bool bCalcDeviceBonus = false;
 	int iTick = GetSystem()->GetTick() + GetDestiny();
@@ -4003,100 +3974,62 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		return;
 		}
 
-	//	Basic update
+	//	Active station attack, etc.
 
-	UpdateAttacking(Ctx, iTick);
+	if (!IsAbandoned())
+		{
+		//	Update blacklist counter
+		//	NOTE: Once the player is blacklisted by this station, there is
+		//	no way to get off the blacklist. (At least no automatic way).
+
+		m_Blacklist.Update(iTick);
+
+		//	Update attacks
+
+		if (m_fArmed && !m_pType->IsVirtual())
+			{
+			if (!UpdateAttacking(Ctx, iTick))
+				return;
+			}
+
+		//	Update reinforcements
+
+		UpdateReinforcements(iTick);
+
+		//	Update trade
+
+		if ((iTick % TRADE_UPDATE_FREQUENCY) == 0)
+			UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
+		}
+
+	//	Update docking ports
+
 	m_DockingPorts.UpdateAll(Ctx, this);
-	UpdateReinforcements(iTick);
 
-	//	Trade
-
-	if ((iTick % TRADE_UPDATE_FREQUENCY) == 0
-			 && !IsAbandoned())
-		UpdateTrade(Ctx, INVENTORY_REFRESHED_PER_UPDATE);
-
-	//	Update each device
+	//	Update each device. If updating destroys the station, then we're done.
 
 	if (m_pDevices)
 		{
-		CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
-		for (i = 0; i < maxDevices; i++)
-			{
-			DeviceCtx.ResetOutputs();
-
-			m_pDevices[i].Update(this, DeviceCtx);
-			if (DeviceCtx.bSourceDestroyed)
-				return;
-
-			//	If the device was repaired or disabled, we need to update
-
-			if (DeviceCtx.bRepaired)
-				{
-				bCalcDeviceBonus = true;
-				}
-
-			if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
-				{
-				bCalcDeviceBonus = true;
-				}
-			}
+		if (!UpdateDevices(Ctx, iTick, bCalcDeviceBonus))
+			return;
 		}
 
 	//	Update destroy animation
 
 	if (m_iDestroyedAnimation)
-		{
-		const CObjectImageArray &Image = GetImage(false);
-		int cxWidth = RectWidth(Image.GetImageRect());
-
-		CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
-		if (pEffect)
-			{
-			for (int i = 0; i < mathRandom(1, 3); i++)
-				{
-				CVector vPos = GetPos() 
-						+ PolarToVector(mathRandom(0, 359), g_KlicksPerPixel * mathRandom(1, cxWidth / 3));
-
-				pEffect->CreateEffect(GetSystem(),
-						this,
-						vPos,
-						GetVel(),
-						0);
-				}
-			}
-
-		m_iDestroyedAnimation--;
-		}
+		UpdateDestroyedAnimation();
 
 	//	If we're moving, slow down
 
-	if (!IsAnchored() && !GetVel().IsNull())
-		{
-		//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
-		//	and not have to compute wreck movement down to infinitesimal distances.
-
-		if (GetVel().Length2() < g_MinSpeed2)
-			SetVel(NullVector);
-		else
-			SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
-		}
+	if (!IsAnchored())
+		UpdateDrag(Ctx, g_SpaceDragFactor);
 
 	//	Overlays
 
 	if (!m_Overlays.IsEmpty())
 		{
-		bool bModified;
-
-		const CObjectImageArray &Image = GetImage(true);
-
-		m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
-		if (CSpaceObject::IsDestroyedInUpdate())
+		if (!UpdateOverlays(Ctx, bCalcBounds, bCalcDeviceBonus))
 			return;
-		else if (bModified)
-			{
-			bCalcBounds = true;
-			bCalcDeviceBonus = true;
-			}
 		}
 
 	//	Update as necessary
@@ -4203,8 +4136,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 		{
 		dwSave = 1;
 		pStream->Write(dwSave);
-		//	LATER: COrbit should have a save method
-		pStream->Write((char *)m_pMapOrbit, sizeof(COrbit));
+		m_pMapOrbit->WriteToStream(*pStream);
 		}
 	else
 		{
@@ -4212,7 +4144,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 		pStream->Write(dwSave);
 		}
 
-	pStream->Write(CMapLabelArranger::SavePosition(m_iMapLabelPos));
+	m_MapLabel.WriteToStream(*pStream);
 	pStream->Write(m_rParallaxDist);
 	m_sStargateDestNode.WriteToStream(pStream);
 	m_sStargateDestEntryPoint.WriteToStream(pStream);
@@ -4272,7 +4204,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave = 0;
 	dwSave |= (m_fArmed ?				0x00000001 : 0);
 	dwSave |= (m_fKnown ?				0x00000002 : 0);
-	dwSave |= (m_fNoMapLabel ?			0x00000004 : 0);
+	dwSave |= (m_fSuppressMapLabel ?	0x00000004 : 0);
 	dwSave |= (m_fRadioactive ?			0x00000008 : 0);
 	dwSave |= (m_pRotation ?			0x00000010 : 0);
 	dwSave |= (m_fActive ?				0x00000020 : 0);
@@ -4291,6 +4223,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
+	dwSave |= (m_fForceMapLabel ?		0x00200000 : 0);
 	pStream->Write(dwSave);
 
 	//	Rotation
@@ -4354,17 +4287,13 @@ void CStation::PaintLRSBackground (CG32bitImage &Dest, int x, int y, const Viewp
 		{
 		//	Paint the label in the background
 
-		if (m_fKnown 
-				&& m_pType->ShowsMapIcon() 
-				&& !m_fNoMapLabel)
+		if (m_fKnown && ShowMapLabel())
 			{
-			InitMapLabel();
-
 			GetUniverse().GetNamedFont(CUniverse::fontMapLabel).DrawText(Dest, 
-					x + m_xMapLabel, 
-					y + m_yMapLabel, 
+					x + m_MapLabel.GetPosX(), 
+					y + m_MapLabel.GetPosY(), 
 					RGB_LRS_LABEL,
-					m_sMapLabel);
+					m_MapLabel.GetLabel());
 			}
 		}
 
@@ -4713,7 +4642,8 @@ void CStation::SetName (const CString &sName, DWORD dwFlags)
 
 	//	Clear cache so we recompute label metrics
 
-	m_sMapLabel = NULL_STR;
+	m_MapLabel.CleanUp();
+	m_fMapLabelInitialized = false;
 	}
 
 void CStation::SetStargate (const CString &sDestNode, const CString &sDestEntryPoint)
@@ -4955,7 +4885,8 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		{
-		m_fNoMapLabel = pValue->IsNil();
+		m_fSuppressMapLabel = pValue->IsNil();
+		m_fForceMapLabel = !pValue->IsNil();
 		return true;
 		}
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_ORBIT))
@@ -4975,6 +4906,114 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		}
 	else
 		return CSpaceObject::SetProperty(sName, pValue, retsError);
+	}
+
+bool CStation::ShowMapLabel (int *retcxLabel, int *retcyLabel) const
+
+//	ShowMapLabel
+//
+//	Returns TRUE if the object has a map label. This will also make sure that
+//	m_MapLabel is initialized and valid.
+//
+//	If we have a map label, and if we support re-positioning labels to avoid
+//	overlap, then we optionally return the width and height of the label in 
+//	pixels.
+
+	{
+	//	If we're not initialized, then we need to figure out the deal with our
+	//	map label.
+
+	if (!m_fMapLabelInitialized)
+		{
+		switch (m_Scale)
+			{
+			case scaleStar:
+				//	Stars never have a map label
+				m_MapLabel.CleanUp();
+				break;
+
+			case scaleWorld:
+				{
+				CString sMapLabel = GetNounPhrase(nounTitleCapitalize);
+				int iPlanetarySize = GetPlanetarySize();
+				bool bHasMapLabel;
+
+				//	Figure out if our creator is either forcing or suppressing
+				//	a map label.
+
+				if (m_fSuppressMapLabel || m_pType->SuppressMapLabel() || !m_pType->ShowsMapIcon())
+					bHasMapLabel = false;
+
+				else if (m_fForceMapLabel || m_pType->ForceMapLabel())
+					bHasMapLabel = true;
+
+				//	Otherwise, figure out if this planet is large enough to
+				//	deserve a label.
+
+				else
+					{
+					bHasMapLabel = !sMapLabel.IsBlank() 
+						&& *sMapLabel.GetASCIIZPointer() != '('
+						&& iPlanetarySize >= MIN_NAMED_WORLD_SIZE;
+					}
+
+				//	If we have a map label, initialize it now.
+
+				if (bHasMapLabel)
+					{
+					//	We must have a map image to compute the label position.
+
+					if (m_MapImage.IsEmpty())
+						CreateMapImage();
+
+					if (iPlanetarySize < LARGE_WORLD_SIZE)
+						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontPlanetoidMapLabel));
+					else
+						m_MapLabel.SetLabel(sMapLabel, GetUniverse().GetNamedFont(CUniverse::fontWorldMapLabel));
+					m_MapLabel.SetPos(-m_MapLabel.GetFont().MeasureText(sMapLabel) / 2, m_MapImage.GetHeight() / 2);
+					}
+				else
+					m_MapLabel.CleanUp();
+
+				break;
+				}
+
+			default:
+				{
+				if (m_fSuppressMapLabel || m_pType->SuppressMapLabel() || !m_pType->ShowsMapIcon())
+					m_MapLabel.CleanUp();
+				else
+					{
+					m_MapLabel.SetLabel(GetNounPhrase(nounTitleCapitalize), GetUniverse().GetNamedFont(CUniverse::fontMapLabel));
+					m_MapLabel.RealizePos();
+					}
+				}
+			}
+
+		//	Initialized
+
+		m_fMapLabelInitialized = true;
+		}
+
+	//	Once initialized, we store the map label (if any) in m_MapLabel.
+
+	if (m_MapLabel.IsEmpty())
+		return false;
+	else if (retcxLabel == NULL && retcyLabel == NULL)
+		return true;
+	else if (m_Scale == scaleWorld)
+		{
+		//	World labels are never repositioned
+
+		if (retcxLabel) *retcxLabel = 0;
+		if (retcyLabel) *retcyLabel = 0;
+		return true;
+		}
+	else
+		{
+		m_MapLabel.MeasureLabel(retcxLabel, retcyLabel);
+		return true;
+		}
 	}
 
 void CStation::Undock (CSpaceObject *pObj)
@@ -4997,29 +5036,18 @@ void CStation::Undock (CSpaceObject *pObj)
 		m_fDestroyIfEmpty = true;
 	}
 
-void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
+bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 //	UpdateAttacking
 //
-//	Station attacks any enemies in range
+//	Station attacks any enemies in range. Returns FALSE if the station was
+//	destroyed.
 
 	{
 	DEBUG_TRY
 
 	int i, j;
 	
-	//	Update blacklist counter
-	//	NOTE: Once the player is blacklisted by this station, there is
-	//	no way to get off the blacklist. (At least no automatic way).
-
-	m_Blacklist.Update(iTick);
-
-	//	If we're abandoned or if we have no weapons then
-	//	there's nothing we can do
-
-	if (IsAbandoned() || !m_fArmed || m_pType->IsVirtual())
-		return;
-
 	//	Compute the range at which we attack enemies
 
 	Metric rAttackRange;
@@ -5088,7 +5116,7 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					pWeapon->SetTarget(pTarget);
 					pWeapon->Activate(this, pTarget, &bSourceDestroyed);
 					if (bSourceDestroyed)
-						return;
+						return false;
 
 					pWeapon->SetTimeUntilReady(m_pType->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
 
@@ -5100,7 +5128,98 @@ void CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 			}
 		}
 
+	return true;
+
 	DEBUG_CATCH
+	}
+
+void CStation::UpdateDestroyedAnimation (void)
+
+//	UpdateDestroyedAnimation
+//
+//	Updates animation when station is destroyed.
+
+	{
+	ASSERT(m_iDestroyedAnimation > 0);
+
+	const CObjectImageArray &Image = GetImage(false);
+	int cxWidth = RectWidth(Image.GetImageRect());
+
+	CEffectCreator *pEffect = GetUniverse().FindEffectType(g_StationDestroyedUNID);
+	if (pEffect)
+		{
+		for (int i = 0; i < mathRandom(1, 3); i++)
+			{
+			CVector vPos = GetPos() 
+					+ PolarToVector(mathRandom(0, 359), g_KlicksPerPixel * mathRandom(1, cxWidth / 3));
+
+			pEffect->CreateEffect(GetSystem(),
+					this,
+					vPos,
+					GetVel(),
+					0);
+			}
+		}
+
+	m_iDestroyedAnimation--;
+	}
+
+bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
+
+//	UpdateDevices
+//
+//	Updates all devices. We set iobModified to TRUE if a device was modified,
+//	requiring a device recalc.
+//
+//	We return TRUE if successful. FALSE if the station was destroyed inside the
+//	update.
+
+	{
+	ASSERT(m_pDevices);
+
+	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
+	for (int i = 0; i < maxDevices; i++)
+		{
+		DeviceCtx.ResetOutputs();
+
+		m_pDevices[i].Update(this, DeviceCtx);
+		if (DeviceCtx.bSourceDestroyed)
+			return false;
+
+		//	If the device was repaired or disabled, we need to update
+
+		if (DeviceCtx.bRepaired)
+			iobModified = true;
+
+		else if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
+			iobModified = true;
+		}
+
+	return true;
+	}
+
+bool CStation::UpdateOverlays (SUpdateCtx &Ctx, bool &iobCalcBounds, bool &iobCalcDevices)
+
+//	UpdateOverlays
+//
+//	Update overlays. Returns TRUE if we succeed or FALSE if the update destroyed
+//	the station.
+
+	{
+	bool bModified;
+	const CObjectImageArray &Image = GetImage(true);
+
+	m_Overlays.Update(this, Image.GetImageViewportSize(), GetRotation(), &bModified);
+	if (CSpaceObject::IsDestroyedInUpdate())
+		return false;
+
+	else if (bModified)
+		{
+		iobCalcBounds = true;
+		iobCalcDevices = true;
+		}
+
+	return true;
 	}
 
 void CStation::UpdateReinforcements (int iTick)
@@ -5111,11 +5230,6 @@ void CStation::UpdateReinforcements (int iTick)
 
 	{
 	DEBUG_TRY
-
-	//	Nothing to do if we're abandoned
-
-	if (IsAbandoned())
-		return;
 
 	//	Repair damage
 
@@ -5162,44 +5276,46 @@ void CStation::UpdateReinforcements (int iTick)
 
 	//	Get reinforcements
 
-	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0
-			&& !m_fNoReinforcements
-			&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
+	if ((iTick % STATION_REINFORCEMENT_FREQUENCY) == 0)
 		{
-		//	If we've requested several rounds of reinforcements but have
-		//	never received any, then it's likely that they are being
-		//	destroyed at the gate, so we stop requesting so many
-
-		if (m_iReinforceRequestCount > 0)
+		if (!m_fNoReinforcements
+				&& m_pType->GetDefenderCount().NeedsMoreReinforcements(this))
 			{
-			int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
-			int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
-			if ((iLongTick % iCycle) != 0)
-				return;
+			//	If we've requested several rounds of reinforcements but have
+			//	never received any, then it's likely that they are being
+			//	destroyed at the gate, so we stop requesting so many
+
+			if (m_iReinforceRequestCount > 0)
+				{
+				int iLongTick = (iTick / STATION_REINFORCEMENT_FREQUENCY);
+				int iCycle = Min(32, m_iReinforceRequestCount * m_iReinforceRequestCount);
+				if ((iLongTick % iCycle) != 0)
+					return;
+				}
+
+			//	We either bring in ships from the nearest gate or we build
+			//	them ourselves.
+
+			CSpaceObject *pGate;
+			if (m_pType->BuildsReinforcements()
+					|| (pGate = GetNearestStargate(true)) == NULL)
+				pGate = this;
+
+			//	Generate reinforcements
+
+			SShipCreateCtx Ctx;
+			Ctx.pSystem = GetSystem();
+			Ctx.pBase = this;
+			Ctx.pGate = pGate;
+			m_pType->GetReinforcementsTable()->CreateShips(Ctx);
+
+			//	Increment counter
+
+			m_iReinforceRequestCount++;
 			}
-
-		//	We either bring in ships from the nearest gate or we build
-		//	them ourselves.
-
-		CSpaceObject *pGate;
-		if (m_pType->BuildsReinforcements()
-				|| (pGate = GetNearestStargate(true)) == NULL)
-			pGate = this;
-
-		//	Generate reinforcements
-
-		SShipCreateCtx Ctx;
-		Ctx.pSystem = GetSystem();
-		Ctx.pBase = this;
-		Ctx.pGate = pGate;
-		m_pType->GetReinforcementsTable()->CreateShips(Ctx);
-
-		//	Increment counter
-
-		m_iReinforceRequestCount++;
+		else
+			m_iReinforceRequestCount = 0;
 		}
-	else
-		m_iReinforceRequestCount = 0;
 
 	//	Attack targets on the target list
 

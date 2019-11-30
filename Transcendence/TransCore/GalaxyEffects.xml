@@ -8,6 +8,7 @@
 
 	<ItemType UNID="&vtStoneAsteroidEjecta;"
 			name=				"stone asteroid ejecta"
+			attributes=			"ejecta"
 			virtual=			"true"
 			>
 
@@ -31,6 +32,7 @@
 
 	<ItemType UNID="&vtIceAsteroidEjecta;"
 			name=				"ice asteroid ejecta"
+			attributes=			"ejecta"
 			virtual=			"true"
 			>
 
@@ -54,6 +56,7 @@
 
 	<ItemType UNID="&vtMetallicAsteroidEjecta;"
 			name=				"metallic asteroid ejecta"
+			attributes=			"ejecta"
 			virtual=			"true"
 			>
 
@@ -77,6 +80,7 @@
 
 	<ItemType UNID="&vtVolcanicAsteroidEjecta;"
 			name=				"volcanic asteroid ejecta"
+			attributes=			"ejecta"
 			virtual=			"true"
 			>
 

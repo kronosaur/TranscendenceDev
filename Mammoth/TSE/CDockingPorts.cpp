@@ -675,7 +675,7 @@ void CDockingPorts::InitXYPortPos (int iRotation, int iScale) const
 	m_iLastRotation = iRotation;
 	}
 
-bool CDockingPorts::IsDocked (CSpaceObject *pObj, int *retiPort) const
+bool CDockingPorts::IsDocked (const CSpaceObject *pObj, int *retiPort) const
 
 //	IsDocked
 //
@@ -694,7 +694,7 @@ bool CDockingPorts::IsDocked (CSpaceObject *pObj, int *retiPort) const
 	return false;
 	}
 
-bool CDockingPorts::IsDockedOrDocking (CSpaceObject *pObj)
+bool CDockingPorts::IsDockedOrDocking (const CSpaceObject *pObj) const
 
 //	IsDockedOrDocking
 //
@@ -1073,27 +1073,10 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 		//	Otherwise, if the port is open, see if this is the nearest port to
 		//	the current player position.
 
-		else if (m_pPort[i].iStatus == psEmpty)
+		else if (pPlayer && m_pPort[i].iStatus == psEmpty)
 			{
-			if (pPlayer)
-				{
-				//	Compute the distance from the player to the port
-
-				CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
-				Metric rDist2 = (vPortPos - pPlayer->GetPos()).Length2();
-
-				//	If this is a better port, then replace the existing 
-				//	solution.
-
-				if (rDist2 <= rMaxDist2
-						&& (Ctx.pDockingObj == NULL || rDist2 < Ctx.rDockingPortDist2))
-					{
-					Ctx.pDockingObj = pOwner;
-					Ctx.iDockingPort = i;
-					Ctx.rDockingPortDist2 = rDist2;
-					Ctx.vDockingPort = vPortPos;
-					}
-				}
+			CVector vPortPos = GetPortPos(pOwner, m_pPort[i], pPlayer);
+			Ctx.AutoDock.Update(*pPlayer, *pOwner, vPortPos, i, rMaxDist2);
 			}
 		}
 
@@ -1145,7 +1128,7 @@ void CDockingPorts::UpdateDockingManeuvers (CSpaceObject *pOwner, SDockingPort &
 				&& pOwner->HasOnObjDockedEvent() 
 				&& pOwner != pShip
 				&& !pOwner->IsDestroyed()
-				&& pShip->IsSubscribedToEvents(pOwner))
+				&& pShip->FindEventSubscriber(*pOwner))
 			pOwner->FireOnObjDocked(pShip, pOwner);
 
 		//	Notify any overlays on the station that a ship docked.

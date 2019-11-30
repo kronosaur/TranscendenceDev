@@ -10,9 +10,7 @@
 #define MIN_GAME_FILE_VERSION					5
 #define GAME_FILE_VERSION						11
 
-CGameFile::CGameFile (void) : 
-		m_pFile(NULL),
-		m_iRefCount(0)
+CGameFile::CGameFile (void)
 
 //	CGameFile constructor
 
@@ -29,6 +27,21 @@ CGameFile::~CGameFile (void)
 		m_iRefCount = 1;
 		Close();
 		}
+	}
+
+ALERROR CGameFile::ClearEndGame (void)
+
+//	ClearEndGame
+//
+//	Clears the end game bit.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	m_Header.dwFlags &= ~GAME_FLAG_END_GAME;
+	return SaveGameHeader(m_Header);
 	}
 
 ALERROR CGameFile::ClearRegistered (void)
@@ -200,6 +213,34 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	return NOERROR;
 	}
 
+DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
+
+//	EncodeDifficulty
+//
+//	Encodes into flags.
+
+	{
+	switch (iLevel)
+		{
+		//	Challenge level is the default
+
+		case CDifficultyOptions::lvlChallenge:
+			return 0;
+
+		case CDifficultyOptions::lvlNormal:
+			return (1 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlStory:
+			return (2 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlPermadeath:
+			return (3 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		default:
+			return 0;
+		}
+	}
+
 CString CGameFile::GenerateFilename (const CString &sName)
 
 //	GenerateFilename
@@ -239,6 +280,34 @@ CString CGameFile::GetCreateVersion (DWORD dwFlags) const
 
 	else
 		return CString(m_Header.szCreateVersion);
+	}
+
+CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
+
+//	GetDifficulty
+//
+//	Decodes the difficulty from flags.
+
+	{
+	DWORD dwFlags = (m_Header.dwFlags & GAME_FLAG_DIFFICULTY_MASK) >> GAME_FLAG_DIFFICULTY_SHIFT;
+
+	switch (dwFlags)
+		{
+		case 0:
+			return CDifficultyOptions::lvlChallenge;
+
+		case 1:
+			return CDifficultyOptions::lvlNormal;
+
+		case 2:
+			return CDifficultyOptions::lvlStory;
+
+		case 3:
+			return CDifficultyOptions::lvlPermadeath;
+
+		default:
+			return CDifficultyOptions::lvlChallenge;
+		}
 	}
 
 CString CGameFile::GetPlayerName (void) const
@@ -623,6 +692,15 @@ ALERROR CGameFile::LoadUniverse (CUniverse &Univ, DWORD *retdwSystemID, DWORD *r
 		Stream.Close();
 		return error;
 		}
+
+	//	If the game file thinks we're in debug mode, then set debug mode, 
+	//	because sometimes we clear the debug mode bit and want to propagate it.
+
+	if (IsDebug())
+		Univ.SetDebugMode();
+
+	if (!IsRegistered())
+		Univ.SetRegistered(false);
 
 	//	Done
 
@@ -1106,7 +1184,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	if (m_Header.dwAdventure == 0)
 		{
-		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc()->GetExtensionUNID();
+		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc().GetExtensionUNID();
 
 		CString sPlayerName = Univ.GetPlayerName();
 		lstrcpyn(m_Header.szPlayerName, sPlayerName.GetASCIIZPointer(), sizeof(m_Header.szPlayerName));
@@ -1191,6 +1269,11 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 			}
 		}
 
+	//	Set difficulty
+
+	dwNewFlags &= ~GAME_FLAG_DIFFICULTY_MASK;
+	dwNewFlags |= EncodeDifficulty(Univ.GetDifficultyLevel());
+
 	//	If flags have changed, save the header
 
 	if (dwNewFlags != m_Header.dwFlags)
@@ -1232,7 +1315,33 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	m_pFile->Flush();
 
+	//	Remember when we saved, in case we try to save again this tick.
+
+	m_dwLastSavedOn = Univ.GetTicks();
+
 	return NOERROR;
+	}
+
+ALERROR CGameFile::SetDebugMode (bool bValue)
+
+//	SetDebugMode
+//
+//	Sets or clears debug mode.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	if (IsDebug() == bValue)
+		return NOERROR;
+
+	if (bValue)
+		m_Header.dwFlags |= GAME_FLAG_DEBUG;
+	else
+		m_Header.dwFlags &= ~GAME_FLAG_DEBUG;
+
+	return SaveGameHeader(m_Header);
 	}
 
 ALERROR CGameFile::SetGameResurrect (void)

@@ -202,6 +202,50 @@ bool CDriveClass::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
+const CDriveClass::SScalableStats *CDriveClass::GetDesc (const CDeviceItem &DeviceItem) const
+
+//	GetDesc
+//
+//	Returns the drive descriptor
+
+	{
+    if (m_pDesc == NULL)
+        return NULL;
+
+    const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice();
+    int iBaseLevel = m_pDesc[0].iLevel;
+
+    //  Figure out if we want a scaled item
+
+    int iIndex = Min(Max(0, (!DeviceItem ? 0 : DeviceItem.GetLevel() - iBaseLevel)), m_iLevels - 1);
+
+    //  If no device, then standard descriptor
+
+	if (pDevice == NULL)
+		return &m_pDesc[iIndex];
+
+    //  If the device is damaged, then return damaged descriptor
+
+    else if (pDevice->IsDamaged() || pDevice->IsDisrupted())
+        {
+        InitDamagedDesc();
+		return &m_pDamagedDesc[iIndex];
+        }
+
+    //  If enhanced, then return enhanced descriptor
+
+    else if (pDevice->IsEnhanced())
+        {
+        InitEnhancedDesc();
+		return &m_pEnhancedDesc[iIndex];
+        }
+
+    //  Otherwise, standard descriptor.
+
+	else
+		return &m_pDesc[iIndex];
+	}
+
 const CDriveClass::SScalableStats *CDriveClass::GetDesc (CItemCtx &Ctx) const
 
 //	GetDesc
@@ -384,14 +428,14 @@ ALERROR CDriveClass::InitStatsFromXML (SDesignLoadCtx &Ctx, int iLevel, DWORD dw
     return NOERROR;
     }
 
-void CDriveClass::OnAccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CDriveClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	OnAccumulateAttributes
 //
 //	Returns display attributes
 
 	{
-	const SScalableStats *pDesc = GetDesc(ItemCtx);
+	const SScalableStats *pDesc = GetDesc(DeviceItem);
     if (pDesc == NULL)
         return;
 
