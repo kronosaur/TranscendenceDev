@@ -606,8 +606,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	//	NOTE: Selectable means that the weapon is not a secondary weapon
 	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
 	//  linked-fire weapons, which normally count as "selectable", from this definition.
-	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
@@ -634,6 +634,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
 		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
 		//  same variant and type.
+
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
