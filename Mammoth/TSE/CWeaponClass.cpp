@@ -1691,6 +1691,44 @@ bool CWeaponClass::FindDataField (const CString &sField, CString *retsValue)
 	return FindAmmoDataField(Ammo, sRootField, retsValue);
 	}
 
+bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount) const
+
+//	FireGetAmmoCountToDisplay
+//
+//	Fires <GetAmmoCountToDisplay> and returns the ammo count.
+//
+//	NOTE: This is only used to change the display value, it does not affect the
+//	actual ammo count available. See: https://github.com/kronosaur/TranscendenceDev/pull/18
+
+	{
+	SEventHandlerDesc Event;
+	if (!FindEventHandlerWeaponClass(evtGetAmmoCountToDisplay, &Event))
+		return false;
+
+	CCodeChainCtx CCX(GetUniverse());
+	CCX.DefineContainingType(GetItemType());
+	CCX.SaveAndDefineSourceVar(DeviceItem.GetSource());
+	CCX.SaveAndDefineItemVar(DeviceItem);
+	CCX.DefineItemType(CONSTLIT("aWeaponType"), Shot.GetWeaponType());
+
+	ICCItemPtr pResult = CCX.RunCode(Event);
+
+	if (pResult->IsError())
+		{
+		DeviceItem.ReportEventError(GET_AMMO_COUNT_TO_DISPLAY_EVENT, *pResult);
+		return false;
+		}
+	else if (pResult->IsNumber())
+		{
+		if (retiAmmoCount)
+			*retiAmmoCount = pResult->GetIntegerValue();
+
+		return true;
+		}
+	else
+		return false;
+	}
+
 int CWeaponClass::FireGetAmmoToConsume (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount)
 
 //	FireOnFireWeapon
@@ -3167,9 +3205,14 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 		if (retiAmmoLeft)
 			{
+			//	See if we use an event
+
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+
 			//	If each ammo item uses charges, then we need a different method.
 
-			if (pShot->GetAmmoType()->AreChargesAmmo())
+			else if (pShot->GetAmmoType()->AreChargesAmmo())
 				{
 				int iCharges = 0;
 				CItemListManipulator ItemList(pSource->GetItemList());
@@ -3216,7 +3259,12 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retsLabel = CString();
 
 		if (retiAmmoLeft)
-			*retiAmmoLeft = pDevice->GetCharges(pSource);
+			{
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+			else
+				*retiAmmoLeft = pDevice->GetCharges(pSource);
+			}
 
 		if (retpType)
 			*retpType = GetItemType();
@@ -3230,41 +3278,15 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			*retsLabel = CString();
 
 		if (retiAmmoLeft)
-			*retiAmmoLeft = -1;
+			{
+			if (bUseCustomAmmoCountHandler && FireGetAmmoCountToDisplay(Ctx.GetItem().AsDeviceItem(), *pShot, retiAmmoLeft))
+				{ }
+			else
+				*retiAmmoLeft = -1;
+			}
 
 		if (retpType)
 			*retpType = GetItemType();
-		}
-
-
-	//  If we are displaying this on the UI, call the item's ammo display event
-	//  if applicable
-	if (retiAmmoLeft && bUseCustomAmmoCountHandler)
-		{
-		SEventHandlerDesc Event;
-		if (retiAmmoLeft && (bUseCustomAmmoCountHandler && (FindEventHandlerWeaponClass(evtGetAmmoCountToDisplay, &Event))))
-			{
-			CCodeChainCtx CCCtx(GetUniverse());
-			int iResult;
-
-			CCCtx.DefineContainingType(GetItemType());
-			CCCtx.SaveAndDefineSourceVar(pSource);
-			CCCtx.SaveAndDefineItemVar(Ctx);
-			CCCtx.DefineItemType(CONSTLIT("aWeaponType"), pShot->GetWeaponType());
-
-			ICCItem *pResult = CCCtx.Run(Event);
-			if (pResult->IsError())
-				pSource->ReportEventError(GET_AMMO_COUNT_TO_DISPLAY_EVENT, pResult);
-
-			if (pResult->IsInteger() && !pResult->IsNil())
-				{
-				iResult = pResult->GetIntegerValue();
-				*retiAmmoLeft = iResult;
-				}
-
-			CCCtx.Discard(pResult);
-			}
-
 		}
 	}
 

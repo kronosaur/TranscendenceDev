@@ -2904,7 +2904,7 @@ void CDesignType::Reinit (void)
 	DEBUG_CATCH_MSG1(CONSTLIT("Crash in CDesignType::Reinit Type = %x"), GetUNID())
 	}
 
-void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) const
+void CDesignType::ReportEventError (const CString &sEvent, const ICCItem *pError) const
 
 //	ReportEventError
 //

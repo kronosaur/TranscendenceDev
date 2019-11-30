@@ -49,6 +49,7 @@ class CDifferentiatedItem
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
+		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
 		CDifferentiatedItem (CItem *pItem) :
@@ -148,6 +149,7 @@ class CDeviceItem : public CDifferentiatedItem
 		DWORD GetLinkedFireOptions (void) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
 		CDeviceItem (CItem *pItem) : CDifferentiatedItem(pItem)

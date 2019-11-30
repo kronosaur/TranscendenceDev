@@ -7162,7 +7162,7 @@ void CSpaceObject::RepairItem (CItemListManipulator &ItemList)
 		}
 	}
 
-void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) const
+void CSpaceObject::ReportEventError (const CString &sEvent, const ICCItem *pError) const
 
 //	ReportEventError
 //

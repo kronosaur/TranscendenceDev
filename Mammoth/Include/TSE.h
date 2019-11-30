@@ -526,7 +526,7 @@ class CSpaceObject
 		void RemoveAllEventSubscriptions (CSystem *pSystem, TArray<DWORD> *retRemoved = NULL);
 		void RemoveAllEventSubscribers (void) { m_SubscribedObjs.DeleteAll(); }
 		void RemoveEventSubscriber (CSpaceObject *pObj) { m_SubscribedObjs.Delete(pObj); }
-		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
+		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetEventFlags (void);
 
 		//	Fuel

@@ -325,6 +325,7 @@ class CDesignType
 		bool IsModification (void) const { return m_bIsModification; }
 		bool IsOptional (void) const { return (m_dwObsoleteVersion > 0) || (m_dwMinVersion > 0) || (m_pExtra && (m_pExtra->Excludes.GetCount() > 0 || m_pExtra->Extends.GetCount() > 0)); }
 		void MarkImages (void) { OnMarkImages(); }
+		void ReportEventError (const CString &sEvent, const ICCItem *pError) const;
 		void SetGlobalData (const CString &sAttrib, const ICCItem *pData) { SetExtra()->GlobalData.SetData(sAttrib, pData); }
 		void SetInheritFrom (CDesignType *pType) { m_pInheritFrom = pType; }
 		void SetMerged (bool bValue = true) { m_bIsMerged = true; }
@@ -361,7 +362,6 @@ class CDesignType
 		ICCItem *FindBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty) const;
 		bool IsValidLoadXML (const CString &sTag);
 		void ReadGlobalData (SUniverseLoadCtx &Ctx);
-		void ReportEventError (const CString &sEvent, ICCItem *pError) const;
 
 		//	CDesignType overrides
 		virtual ~CDesignType (void);

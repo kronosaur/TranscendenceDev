@@ -808,6 +808,7 @@ class CWeaponClass : public CDeviceClass
 		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		void FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed);
+		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
 		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
 							  CWeaponFireDesc *pShot,
 							  int iRepeatingCount);
