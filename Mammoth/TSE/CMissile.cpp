@@ -501,6 +501,18 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
+int CMissile::GetLastFireTime (void) const
+
+//	GetLastFireTime
+//
+//	Returns 'last fire time', which is 0 if missile is not targetable, or current time if it is.
+
+	{
+	if (IsTargetableProjectile())
+		return GetUniverse().GetTicks();
+	return 0;
+	}
+
 int CMissile::GetManeuverRate (void) const
 
 //	GetManeuverRate
