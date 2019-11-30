@@ -1,6 +1,7 @@
 //	CSpaceObject.cpp
 //
 //	CSpaceObject class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -13,8 +14,6 @@ static DWORD g_dwTotalTime = 0;
 #define MAX_DELTA2								(MAX_DELTA * MAX_DELTA)
 #define MAX_DELTA_VEL							(g_KlicksPerPixel / 2.0)
 #define MAX_DELTA_VEL2							(MAX_DELTA_VEL * MAX_DELTA_VEL)
-
-#define MAX_DISTANCE							(700.0 * g_KlicksPerPixel)
 
 const int ITEM_UPDATE_CYCLE =					30;
 const int HIGHLIGHT_TIMER =						200;
@@ -101,6 +100,8 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define ORDER_DOCKED							CONSTLIT("docked")
 
 #define PROPERTY_ASCENDED						CONSTLIT("ascended")
+#define PROPERTY_CAN_ATTACK						CONSTLIT("canAttack")
+#define PROPERTY_CAN_BE_ATTACKED				CONSTLIT("canBeAttacked")
 #define PROPERTY_CATEGORY						CONSTLIT("category")
 #define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
 #define PROPERTY_CURRENCY						CONSTLIT("currency")
@@ -277,7 +278,8 @@ CSpaceObject::CSpaceObject (CUniverse &Universe) :
 		m_fManualAnchor(false),
 		m_fCollisionTestNeeded(false),
 		m_fHasDockScreenMaybe(false),
-		m_fAutoClearDestinationOnGate(false)
+		m_fAutoClearDestinationOnGate(false),
+		m_f3DExtra(false)
 
 //	CSpaceObject constructor
 
@@ -426,6 +428,24 @@ void CSpaceObject::AddEventSubscriber (CSpaceObject *pObj)
 		m_SubscribedObjs.Add(pObj); 
 	}
 
+void CSpaceObject::AddEventSubscribers (const CSpaceObjectList &Objs)
+
+//	AddEventSubscribers
+//
+//	Adds the given set of objects as subscribers to our events. We check for
+//	duplicates before adding.
+
+	{
+	for (int i = 0; i < Objs.GetCount(); i++)
+		{
+		CSpaceObject *pObj = Objs.GetObj(i);
+		if (!pObj->IsDestroyed() 
+				&& pObj->NotifyOthersWhenDestroyed()
+				&& !FindEventSubscriber(*pObj))
+			m_SubscribedObjs.Add(pObj);
+		}
+	}
+
 EnhanceItemStatus CSpaceObject::AddItemEnhancement (const CItem &itemToEnhance, 
 													CItemType *pEnhancement, 
 													int iLifetime, 
@@ -460,8 +480,6 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 //	AddItemEnhancement
 //
 //	Adds an enhancement to the given item
-//
-//	LATER: This should be replaced with EnhanceItem(), which is a superset.
 
 	{
 	//	Pre-init in case we exit early
@@ -469,54 +487,20 @@ EnhanceItemStatus CSpaceObject::AddItemEnhancement (CItemListManipulator &ItemLi
 	if (retdwID)
 		*retdwID = OBJID_NULL;
 
-	//	Determine the mod code of the new enhancement
-
-	DWORD dwNewModCode = pEnhancement->GetModCode();
-
-	//	For now we always replace any existing enhancements
-	//	But we compute whether we repair or replace any existing enhancements
-
-	EnhanceItemStatus iResult;
-	const CItemEnhancement &OldEnhancement = ItemList.GetItemAtCursor().GetMods();
-	if (OldEnhancement.IsEmpty())
-		iResult = eisOK;
-	else if (OldEnhancement.IsDisadvantage())
-		iResult = eisRepaired;
-	else if (OldEnhancement.GetModCode() == dwNewModCode)
-		iResult = eisOK;
-	else
-		iResult = eisEnhancementReplaced;
-
 	//	Compute expire time
 
 	int iExpireTime = (iLifetime != -1 ? GetUniverse().GetTicks() + iLifetime : -1);
 
-	//	Add the item enhancement
+	//	Create a new enhancement
 
 	CItemEnhancement NewEnhancement;
 	NewEnhancement.SetEnhancementType(pEnhancement);
-	NewEnhancement.SetModCode(dwNewModCode);
+	NewEnhancement.SetModCode(pEnhancement->GetModCode());
 	NewEnhancement.SetExpireTime(iExpireTime);
-	DWORD dwID = ItemList.AddItemEnhancementAtCursor(NewEnhancement);
 
-	//	Give the object a chance to respond to the enhancement
+	//	Enhance
 
-	ItemEnhancementModified(ItemList);
-
-	//	Fire On event to the enhancement
-
-	if (ItemList.IsCursorValid())
-		{
-		CItem theEnhancement(pEnhancement, 1);
-		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
-		}
-
-	//	Done
-
-	if (retdwID)
-		*retdwID = dwID;
-
-	return iResult;
+	return EnhanceItem(ItemList, NewEnhancement, retdwID);
 	}
 
 void CSpaceObject::AddOverlay (COverlayType *pType, const CVector &vPos, int iRotation, int iPosZ, int iLifetime, DWORD *retdwID)
@@ -584,6 +568,32 @@ ALERROR CSpaceObject::AddToSystem (CSystem &System, bool bNoGlobalInsert)
 		System.GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 
 	return NOERROR;
+	}
+
+ICCItemPtr CSpaceObject::AsCCItem (CCodeChainCtx &Ctx, const CItem::SEnhanceItemResult &Result)
+
+//	AsCCItem
+//
+//	Encode as a structure.
+
+	{
+	ICCItemPtr pResult(ICCItem::SymbolTable);
+	pResult->SetStringAt(CONSTLIT("resultCode"), CItemEnhancement::EnhanceItemStatusToString(Result.iResult));
+
+	if (!Result.Enhancement.IsEmpty())
+		pResult->SetStringAt(CONSTLIT("enhancement"), strPatternSubst(CONSTLIT("0x%08x"), Result.Enhancement.GetModCode()));
+
+	if (Result.Enhancement.GetID() != OBJID_NULL)
+		pResult->SetIntegerAt(CONSTLIT("id"), Result.Enhancement.GetID());
+
+	if (Result.Enhancement.GetExpireTime() != 0xffffffff
+			&& Result.Enhancement.GetExpireTime() > Ctx.GetUniverse().GetTicks())
+		pResult->SetIntegerAt(CONSTLIT("lifetime"), Result.Enhancement.GetExpireTime() - Ctx.GetUniverse().GetTicks());
+
+	if (!Result.sDesc.IsBlank())
+		pResult->SetStringAt(CONSTLIT("desc"), Result.sDesc);
+
+	return pResult;
 	}
 
 void CSpaceObject::Ascend (void)
@@ -711,7 +721,7 @@ DWORD CSpaceObject::CalcSRSVisibility (SViewportPaintCtx &Ctx) const
 		return 0;
 
 	Metric rRange = CPerceptionCalc::GetRange(iRangeIndex);
-	Metric rDist = Ctx.pCenter->GetDistance(const_cast<CSpaceObject *>(this));
+	Metric rDist = Ctx.pCenter->GetDistance(this);
 	if (rDist <= rRange)
 		return 0;
 
@@ -902,6 +912,66 @@ bool CSpaceObject::CanDetect (int iPerception, CSpaceObject *pObj)
 	{
 	CVector vDist = pObj->GetPos() - GetPos();
 	return (vDist.Length2() < pObj->GetDetectionRange2(iPerception));
+	}
+
+CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CString *retsError) const
+
+//	CanEnhanceItem
+//
+//	Returns an SEnhanceItemResult structure. If the result is eisUnknown, then 
+//	we got an error trying to enhance.
+
+	{
+	ASSERT(ItemList.IsCursorValid());
+	ASSERT(!EnhancementItem.IsEmpty());
+
+	DEBUG_TRY
+
+	const CItem &TargetItem = ItemList.GetItemAtCursor();
+
+	//	See if we have an explicit event
+
+	CItem::SEnhanceItemResult Result;
+	if (!EnhancementItem.FireCanEnhanceItem(*this, TargetItem, Result, retsError))
+		{
+		Result.iResult = eisUnknown;
+		return Result;
+		}
+
+	//	If <CanEnhanceItem> worked, then we're done.
+
+	if (Result.iResult != eisUnknown)
+		return Result;
+
+	//	Get the enhancement to confer
+
+	if (!EnhancementItem.GetEnhancementConferred(*this, TargetItem, Result, retsError))
+		{
+		Result.iResult = eisUnknown;
+		return Result;
+		}
+
+	//	If no mod, nothing to do (but Result.sDesc might explain what happened).
+
+	if (Result.Enhancement.IsEmpty())
+		{
+		Result.iResult = eisNoEffect;
+		return Result;
+		}
+
+	//	Figure out the effect of the enhancement on the item
+
+	else
+		{
+		CItemEnhancement OldEnhancement = TargetItem.GetMods();
+		Result.iResult = OldEnhancement.Combine(TargetItem, Result.Enhancement);
+
+		//	Done
+
+		return Result;
+		}
+
+	DEBUG_CATCH
 	}
 
 bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj)
@@ -1279,6 +1349,7 @@ void CSpaceObject::CreateFromStream (SLoadCtx &Ctx, CSpaceObject **retpObj)
 	pObj->m_fHasOnAttackedByPlayerEvent =	((dwLoad & 0x00000004) ? true : false);
 	pObj->m_fHasOnOrderChangedEvent =	((dwLoad & 0x00000008) ? true : false);
 	pObj->m_fManualAnchor =				((dwLoad & 0x00000010) ? true : false);
+	pObj->m_f3DExtra =					((dwLoad & 0x00000020) ? true : false);
 
 	//	No need to save the following
 
@@ -1485,8 +1556,7 @@ void CSpaceObject::Destroy (DestructionTypes iCause, const CDamageSource &Attack
 
 	//	Prepare struct
 
-	SDestroyCtx Ctx;
-	Ctx.pObj = this;
+	SDestroyCtx Ctx(*this);
 	Ctx.pDesc = pWeaponDesc;
 	Ctx.iCause = iCause;
 	Ctx.Attacker = Attacker;
@@ -1619,59 +1689,50 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 
 	//	Get the item to enhance
 
-	const CItem &Item = ItemList.GetItemAtCursor();
-	CItemType *pType = Item.GetType();
-
-	//	If this is an old-style enhancement, then handle it the old way
-
-	if (Mods.GetModCode() == etBinaryEnhancement)
-		{
-		//	If the item is damaged, then enhancing it repairs it
-
-		if (Item.IsDamaged())
-			ItemList.SetDamagedAtCursor(false);
-
-		//	Otherwise, enhance it if it is not already enhanced
-
-		else if (!Item.IsEnhanced())
-			ItemList.SetEnhancedAtCursor(true);
-
-		//	Otherwise, we are already enhanced
-
-		else
-			return eisAlreadyEnhanced;
-
-		//	Raise event
-
-		ItemEnhancementModified(ItemList);
-
-		return eisOK;
-		}
+	const CItem &TargetItem = ItemList.GetItemAtCursor();
 
 	//	Figure out the effect of the enhancement on the item
 
-	CItemEnhancement Enhancement = Item.GetMods();
-	EnhanceItemStatus iResult = Enhancement.Combine(Item, Mods.GetModCode());
+	CItemEnhancement Enhancement = TargetItem.GetMods();
+	EnhanceItemStatus iResult = Enhancement.Combine(TargetItem, Mods);
 
-	//	Handle some special cases
+	//	If no enhancement, then we exit
 
-	if (pType->IsArmor())
+	switch (iResult)
 		{
-		CInstalledArmor *pArmor = FindArmor(ItemList.GetItemAtCursor());
-		CArmorClass *pArmorClass = pType->GetArmorClass();
+		case eisNoEffect:
+		case eisAlreadyEnhanced:
+		case eisCantReplaceDefect:
+		case eisCantReplaceEnhancement:
+			return iResult;
 
-		//	If we're trying to make armor immune to radiation and it is already immune
-		//	then we return already enhanced
-
-		if (iResult == eisOK 
-				&& Enhancement.IsRadiationImmune()
-				&& pArmorClass->IsImmune(CItemCtx(this, pArmor), specialRadiation))
-			return eisAlreadyEnhanced;
+		case eisItemRepaired:
+			ItemList.SetDamagedAtCursor(false);
+			return iResult;
 		}
+
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, TargetItem);
 
 	//	Enhance
 
-	DWORD dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+	DWORD dwID;
+	switch (Enhancement.GetModCode())
+		{
+		case etBinaryEnhancement:
+			dwID = OBJID_NULL;
+			ItemList.SetEnhancedAtCursor(true);
+			break;
+
+		default:
+			//	NOTE: This call handles etNone properly by removing the 
+			//	enhancement and returning a null ID.
+
+			dwID = ItemList.AddItemEnhancementAtCursor(Enhancement);
+			break;
+		}
 
 	//	Deal with installed items
 
@@ -1685,6 +1746,11 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 		theEnhancement.FireOnAddedAsEnhancement(this, ItemList.GetItemAtCursor(), iResult);
 		}
 
+	//	Update the object
+
+	if (ItemList.IsCursorValid())
+		OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
+
 	//	Done
 
 	if (retdwID)
@@ -1695,6 +1761,52 @@ EnhanceItemStatus CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, con
 	return iResult;
 
 	DEBUG_CATCH
+	}
+
+bool CSpaceObject::EnhanceItem (CItemListManipulator &ItemList, const CItem &EnhancementItem, CItem::SEnhanceItemResult &retResult, CString *retsError)
+
+//	EnhanceItem
+//
+//	Enhances the currently selected item with the given enhancement.
+
+	{
+	ASSERT(ItemList.IsCursorValid());
+	ASSERT(!EnhancementItem.IsEmpty());
+
+	//	See if we have an <OnEnhanceItem> event.
+
+	retResult = CItem::SEnhanceItemResult();
+	if (!EnhancementItem.FireOnEnhanceItem(*this, ItemList.GetItemAtCursor(), retResult, retsError))
+		return false;
+
+	if (retResult.iResult != eisUnknown)
+		return true;
+
+	//	Get the enhancement to confer
+
+	if (!EnhancementItem.GetEnhancementConferred(*this, ItemList.GetItemAtCursor(), retResult, retsError))
+		return false;
+
+	//	If no mod, nothing to do.
+
+	if (retResult.Enhancement.IsEmpty())
+		{
+		retResult.iResult = eisNoEffect;
+		return true;
+		}
+
+	//	Otherwise, enhance
+
+	else
+		{
+		DWORD dwID;
+		retResult.iResult = EnhanceItem(ItemList, retResult.Enhancement, &dwID);
+		retResult.Enhancement.SetID(dwID);
+		}
+
+	//	Done
+
+	return true;
 	}
 
 void CSpaceObject::EnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)
@@ -2113,7 +2225,7 @@ bool CSpaceObject::FireGetDockScreen (CDockScreenSys::SSelector *retSelector) co
 
 	CCodeChainCtx Ctx(GetUniverse());
 	Ctx.DefineContainingType(this);
-	Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
+	Ctx.SaveAndDefineSourceVar(this);
 
 	ICCItemPtr pResult = Ctx.RunCode(Event);
 	if (pResult->IsError())
@@ -2138,7 +2250,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 		Ctx.DefineContainingType(this);
-		Ctx.SaveAndDefineSourceVar(const_cast<CSpaceObject *>(this));
+		Ctx.SaveAndDefineSourceVar(this);
 
 		ICCItem *pResult = Ctx.Run(Event);
 		if (pResult->IsError())
@@ -2206,7 +2318,7 @@ bool CSpaceObject::FireGetExplosionType (SExplosionType *retExplosion) const
 		}
 	}
 
-bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj)
+bool CSpaceObject::FireGetPlayerPriceAdj (STradeServiceCtx &ServiceCtx, ICCItem *pData, int *retiPriceAdj) const
 
 //	FireGetPlayerPriceAdj
 //
@@ -2588,7 +2700,7 @@ void CSpaceObject::FireOnDestroyObj (const SDestroyCtx &Ctx)
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -2617,29 +2729,26 @@ bool CSpaceObject::FireOnDockObjAdj (CSpaceObject **retpObj)
 		Ctx.DefineContainingType(this);
 		Ctx.SaveAndDefineSourceVar(this);
 
-		ICCItem *pResult = Ctx.Run(Event);
+		ICCItemPtr pResult = Ctx.RunCode(Event);
 
 		if (pResult->IsError())
 			{
 			ReportEventError(ON_DOCK_OBJ_ADJ_EVENT, pResult);
-			Ctx.Discard(pResult);
 			return false;
 			}
-		else if (pResult->IsNil())
-			{
-			Ctx.Discard(pResult);
-			return false;
-			}
-		else
+		else if (pResult->IsInteger())
 			{
 			CSpaceObject *pNewObj = Ctx.AsSpaceObject(pResult);
-			Ctx.Discard(pResult);
 
 			if (pNewObj == NULL || pNewObj == this)
 				return false;
 
 			*retpObj = pNewObj;
 			return true;
+			}
+		else
+			{
+			return false;
 			}
 		}
 
@@ -2661,7 +2770,7 @@ void CSpaceObject::FireOnDockObjDestroyed (CSpaceObject *pDockTarget, const SDes
 	CCodeChainCtx CCCtx(GetUniverse());
 	CCCtx.DefineContainingType(this);
 	CCCtx.SaveAndDefineSourceVar(this);
-	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+	CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 	CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 	CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 	CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -2861,7 +2970,7 @@ void CSpaceObject::FireOnObjDestroyed (const SDestroyCtx &Ctx)
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -3399,7 +3508,7 @@ void CSpaceObject::FireOnSystemObjDestroyed (SDestroyCtx &Ctx)
 		CCodeChainCtx CCCtx(GetUniverse());
 		CCCtx.DefineContainingType(this);
 		CCCtx.SaveAndDefineSourceVar(this);
-		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.pObj);
+		CCCtx.DefineSpaceObject(CONSTLIT("aObjDestroyed"), Ctx.Obj);
 		CCCtx.DefineSpaceObject(CONSTLIT("aDestroyer"), Ctx.Attacker.GetObj());
 		CCCtx.DefineSpaceObject(CONSTLIT("aOrderGiver"), Ctx.GetOrderGiver());
 		CCCtx.DefineSpaceObject(CONSTLIT("aWreckObj"), Ctx.pWreck);
@@ -3691,16 +3800,30 @@ int CSpaceObject::GetDetectionRangeIndex (int iPerception) const
 	return CPerceptionCalc::GetRangeIndex(GetStealth(), iPerception);
 	}
 
-CSovereign::Disposition CSpaceObject::GetDispositionTowards (CSpaceObject *pObj)
+CSovereign::Disposition CSpaceObject::GetDispositionTowards (const CSpaceObject &Obj) const
 
 //	GetDispositionTowards
 //
 //	Returns the disposition of this objects towards the given object
 
 	{
-	CSovereign *pOurSovereign = GetSovereign();
+	const CSovereign *pOurSovereign = GetSovereign();
 	if (pOurSovereign)
-		return pOurSovereign->GetDispositionTowards(pObj->GetSovereign());
+		return pOurSovereign->GetDispositionTowards(Obj.GetSovereign());
+	else
+		return CSovereign::dispFriend;
+	}
+
+CSovereign::Disposition CSpaceObject::GetDispositionTowards (const CSovereign &Sovereign) const
+
+//	GetDispositionTowards
+//
+//	Returns the disposition of this objects towards the given object
+
+	{
+	const CSovereign *pOurSovereign = GetSovereign();
+	if (pOurSovereign)
+		return pOurSovereign->GetDispositionTowards(&Sovereign);
 	else
 		return CSovereign::dispFriend;
 	}
@@ -3976,19 +4099,19 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 
 	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
 		{
-		CVisibleObjSelector Selector(this);
+		CVisibleObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
+		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
 		}
 	else
 		{
-		CVisibleAggressorObjSelector Selector(this);
+		CVisibleAggressorObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
+		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
 		}
@@ -4005,7 +4128,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncl
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleObjSelector Selector(this);
+	CVisibleObjSelector Selector(*this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 
@@ -4026,7 +4149,7 @@ CSpaceObject *CSpaceObject::GetNearestVisibleEnemyInArc (int iMinFireArc, int iM
 	if (pSystem == NULL)
 		return NULL;
 
-	CVisibleObjSelector Selector(this);
+	CVisibleObjSelector Selector(*this);
 	Selector.SetIncludeStations(bIncludeStations);
 	Selector.SetExcludeObj(pExcludeObj);
 
@@ -4135,6 +4258,12 @@ ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	if (strEquals(sName, PROPERTY_ASCENDED))
 		return CC.CreateBool(IsAscended());
+
+	else if (strEquals(sName, PROPERTY_CAN_ATTACK))
+		return CC.CreateBool(CanAttack());
+
+	else if (strEquals(sName, PROPERTY_CAN_BE_ATTACKED))
+		return CC.CreateBool(CanBeAttacked());
 
 	else if (strEquals(sName, PROPERTY_CATEGORY))
 		{
@@ -4733,7 +4862,7 @@ bool CSpaceObject::HasDockScreen (void) const
 
 	const COverlayList *pOverlays;
 	if ((pOverlays = GetOverlays()) 
-			&& pOverlays->FireGetDockScreen(const_cast<CSpaceObject *>(this)))
+			&& pOverlays->FireGetDockScreen(this))
 		return true;
 
 	//	If we still have no screens, we call <GetGlobalDockScreen>, but we're
@@ -5090,7 +5219,7 @@ CSpaceObject *CSpaceObject::HitTestProximity (const CVector &vStart,
 		bool bCanTriggerDetonation = (pObj->GetScale() == scaleShip
 					|| pObj->GetScale() == scaleStructure)
 				&& IsAngryAt(pObj)
-				&& pObj->CanAttack();
+				&& pObj->CanBeAttacked();
 
 		//	Compute the size of the object, if we're doing proximity computations
 
@@ -5262,6 +5391,48 @@ bool CSpaceObject::InBarrier (const CVector &vPos)
 		}
 
 	return false;
+	}
+
+bool CSpaceObject::IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult)
+
+//	IncProperty
+//
+//	Increment the given property.
+
+	{
+	//	First see if our sub-classes handle this property
+
+	if (OnIncProperty(sProperty, pInc, pResult))
+		return true;
+
+	//	See if this is a custom property, we set data
+
+	else if (CDesignType *pType = GetType())
+		{
+		ICCItemPtr pDummy;
+		EPropertyType iType;
+		if (!pType->FindCustomProperty(sProperty, pDummy, &iType))
+			return false;
+
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				pResult = pType->IncGlobalData(sProperty, pInc);
+				return true;
+
+			case EPropertyType::propData:
+				pResult = IncData(sProperty, pInc);
+				return true;
+
+			default:
+				return false;
+			}
+		}
+
+	//	Not handled
+
+	else
+		return false;
 	}
 
 bool CSpaceObject::InteractsWith (int iInteraction) const
@@ -5704,7 +5875,7 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 		CSpaceObject *pObj = pSystem->EnumObjectsInBoxGetNextFast(i);
 
 		if (!pObj->IsDestroyed()
-				&& pObj->CanAttack()
+				&& pObj->CanBeAttacked()
 				//	Only check for ships, structures
 				&& (pObj->GetScale() == scaleStructure 
 					|| pObj->GetScale() == scaleShip)
@@ -5760,39 +5931,62 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 			//	Skip if we're too far
 
-			CVector vDist = pObj->GetPos() - vSource;
-			if (vDist.Length2() > rMaxDist2)
+			CVector vCurObjPos = pObj->GetPos();
+			CVector vCurDist = vCurObjPos - vSource;
+			Metric rCurDist2 = vCurDist.Length2();
+			if (rCurDist2 > rMaxDist2)
 				continue;
 
-			//	Figure out the object's bearing relative to us
+			//	Get the current distance. Because this is all a heuristic, we
+			//	assume that this is not too different from the object distance
+			//	when the shot gets there.
 
-			Metric rDist;
-			int iObjAngle = VectorToPolar(vDist, &rDist);
+			Metric rCurDist = sqrt(rCurDist2);
 
 			//	If we're inside the object radius, then we would hit it no matter what
 			//	the angle.
 
 			Metric rHalfSize = 0.5 * pObj->GetHitSize();
-			if (rDist < rHalfSize)
+			if (rCurDist < rHalfSize)
 				{
 				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
 				break;
 				}
 
-			//	Figure out how big the object is from that distance
+			//	Figure out where the object will be by the time the shot gets
+			//	to it.
+
+			CVector vFutureDist;
+			if (rShotSpeed > 0.0 && pObj->CanThrust())
+				{
+				Metric rTimeToReachObj = rCurDist / rShotSpeed;
+				CVector vFutureObjPos = vCurObjPos + (rTimeToReachObj * pObj->GetVel());
+				vFutureDist = vFutureObjPos - vSource;
+				}
+			else
+				vFutureDist = vCurDist;
+
+			//	Figure out the object's bearing relative to us
+
+			int iFutureAngle = VectorToPolar(vFutureDist);
+
+			//	Figure out how big the object is from that distance.
+			//
+			//	NOTE: For now we use the current (not future) distance because
+			//	we assume it is close enough (as opposed to the angle).
 
 			int iHalfAngularSize;
-			if (rDist < rHalfSize + TOO_CLOSE)
+			if (rCurDist < rHalfSize + TOO_CLOSE)
 				iHalfAngularSize = 90;
 			else if (bAreaWeapon)
 				iHalfAngularSize = 45;
 			else
-				iHalfAngularSize = pObj->GetHitSizeHalfAngle(rDist);
+				iHalfAngularSize = pObj->GetHitSizeHalfAngle(rCurDist);
 
 			//	See if it is in our line of fire
 
-			if (AreAnglesAligned(iAngle, iObjAngle, iHalfAngularSize))
+			if (AreAnglesAligned(iAngle, iFutureAngle, iHalfAngularSize))
 				{
 				if (retpFriend) *retpFriend = pObj;
 				bResult = false;
@@ -5857,9 +6051,16 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 //	Returns TRUE if this object matches the criteria
 
 	{
-	CSpaceObject *pSource = Crit.GetSource();
+	CSpaceObject *pSource = Ctx.pSource;
 	if (pSource == this)
 		return false;
+
+	//	If we have an OR expression and that matches, then we're done.
+
+	if (Crit.HasORExpression() && MatchesCriteria(Ctx, Crit.GetORExpression()))
+		return true;
+
+	//	Match player
 
 	if (!(Crit.MatchesCategory(GetCategory()))
 			&& (!Crit.MatchesPlayer() || !IsPlayer()))
@@ -5885,14 +6086,19 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 			&& (GetScale() == scaleWorld || GetScale() == scaleStar))
 		return false;
 
-	if (Crit.MatchesKilledOnly() && (CanAttack() || IsVirtual()))
+	if (Crit.MatchesKilledOnly() && (CanBeAttacked() || IsVirtual()))
 		return false;
 
 	if (!Crit.MatchesSovereign(GetSovereign()))
 		return false;
 
+	if (Crit.MatchesSourceSovereign() 
+			&& pSource 
+			&& GetSovereignUNID() != pSource->GetSovereignUNID())
+		return false;
+
 	if (Crit.MatchesDockedWithSource())
-		if (pSource == NULL || !pSource->IsObjDocked(const_cast<CSpaceObject *>(this)))
+		if (pSource == NULL || !pSource->IsObjDocked(this))
 			return false;
 
 	if (Crit.MatchesFriendlyOnly() 
@@ -5961,9 +6167,9 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If necessary, compute the distance and angle from the source to the obj.
 
-	int iObjAngle;
-	Metric rObjDist;
-	Metric rObjDist2;
+	int iObjAngle = -1;
+	Metric rObjDist = -1.0;
+	Metric rObjDist2 = -1.0;
 	if (Ctx.bCalcPolar)
 		{
 		CVector vCenter = (pSource ? pSource->GetPos() : CVector());
@@ -5982,17 +6188,25 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 		rObjDist2 = vDist.Length2();
 		}
 
+	ASSERT(!Crit.MatchesNearerThan() || rObjDist2 >= 0.0);
+	ASSERT(!Crit.MatchesFartherThan() || rObjDist2 >= 0.0);
+	ASSERT(!Crit.MatchesPerceivableOnly() || rObjDist2 >= 0.0);
+	ASSERT(Crit.MatchesIntersectAngle() == -1 || (rObjDist >= 0.0 && iObjAngle >= 0));
+	ASSERT(!Ctx.bNearestOnly || rObjDist2 >= 0.0);
+	ASSERT(!Ctx.bFarthestOnly || rObjDist2 >= 0.0);
+	ASSERT(Ctx.iSort == CSpaceObjectCriteria::sortNone || rObjDist2 >= 0.0);
+
 	//	Ranges
 
-	if (Crit.MatchesNearerThan() && rObjDist2 > Ctx.rMaxRadius2)
+	if (Crit.MatchesNearerThan() && rObjDist2 > Crit.MatchesMaxRadius2())
 		return false;
 
-	if (Crit.MatchesFartherThan() && rObjDist2 < Ctx.rMinRadius2)
+	if (Crit.MatchesFartherThan() && rObjDist2 < Crit.MatchesMinRadius2())
 		return false;
 
 	//	Visible only
 
-	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Crit.MatchesPerception()))
+	if (Crit.MatchesPerceivableOnly() && rObjDist2 > GetDetectionRange2(Ctx.iSourcePerception))
 		return false;
 
 	//	Angle
@@ -6019,7 +6233,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If we're looking for the nearest or farthest, do that computation now
 
-	if (Crit.MatchesNearestOnly())
+	if (Ctx.bNearestOnly)
 		{
 		if (rObjDist2 < Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
@@ -6028,7 +6242,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 			Ctx.rBestDist2 = rObjDist2;
 			}
 		}
-	else if (Crit.MatchesFarthestOnly())
+	else if (Ctx.bFarthestOnly)
 		{
 		if (rObjDist2 > Ctx.rBestDist2
 				&& (!IsIntangible() || IsVirtual()))
@@ -6040,10 +6254,27 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 
 	//	If we're sorting by distance, then add the object to the list
 
-	if (Crit.GetSort() == CSpaceObjectCriteria::sortByDistance)
+	if (Ctx.iSort == CSpaceObjectCriteria::sortByDistance)
 		Ctx.DistSort.Insert(rObjDist2, const_cast<CSpaceObject *>(this));
 
 	return true;
+	}
+
+bool CSpaceObject::MatchesCriteriaCategory (CSpaceObjectCriteria::SCtx &Ctx, const CSpaceObjectCriteria &Crit) const
+
+//	MatchesCriteriaCategory
+//
+//	Returns TRUE if this object matches just the category portion of the 
+//	criteria. We expose this for optimizations.
+
+	{
+	if (Crit.MatchesCategory(GetCategory()))
+		return true;
+
+	if (Crit.HasORExpression())
+		return MatchesCriteriaCategory(Ctx, Crit.GetORExpression());
+
+	return false;
 	}
 
 bool CSpaceObject::MissileCanHitObj (CSpaceObject *pObj, CDamageSource &Source, CWeaponFireDesc *pDesc)
@@ -6281,14 +6512,14 @@ bool CSpaceObject::ObjRequestDock (CSpaceObject *pObj, int iPort)
 		}
 	}
 
-void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item)
+void CSpaceObject::OnModifyItemBegin (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Item) const
 
 //	OnModifyItemBegin
 //
 //	The given Item (which must be part of the object) is about to be modified.
 
 	{
-	GetUniverse().GetDockSession().OnModifyItemBegin(ModifyCtx, this, Item);
+	GetUniverse().GetDockSession().OnModifyItemBegin(ModifyCtx, *this, Item);
 	}
 
 void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCtx, const CItem &Result)
@@ -6299,7 +6530,7 @@ void CSpaceObject::OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &ModifyCt
 
 	{
 	InvalidateItemListState();
-	GetUniverse().GetDockSession().OnModifyItemComplete(ModifyCtx, this, Result);
+	GetUniverse().GetDockSession().OnModifyItemComplete(ModifyCtx, *this, Result);
 	}
 
 void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
@@ -6320,11 +6551,11 @@ void CSpaceObject::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	//	NULL-out any references to the object
 
-	m_Data.OnObjDestroyed(Ctx.pObj);
+	m_Data.OnObjDestroyed(&Ctx.Obj);
 
 	//	Remove the object if it had a subscription to us
 
-	m_SubscribedObjs.Delete(Ctx.pObj);
+	m_SubscribedObjs.Delete(&Ctx.Obj);
 
 	DEBUG_CATCH
 	}
@@ -6804,8 +7035,7 @@ void CSpaceObject::Remove (DestructionTypes iCause, const CDamageSource &Attacke
 
 		//	Remove
 
-		SDestroyCtx Ctx;
-		Ctx.pObj  = this;
+		SDestroyCtx Ctx(*this);
 		Ctx.iCause = iCause;
 		Ctx.Attacker = Attacker;
 		Ctx.pWreck = NULL;
@@ -6937,7 +7167,7 @@ void CSpaceObject::RepairItem (CItemListManipulator &ItemList)
 		}
 	}
 
-void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) const
+void CSpaceObject::ReportEventError (const CString &sEvent, const ICCItem *pError) const
 
 //	ReportEventError
 //
@@ -6947,7 +7177,7 @@ void CSpaceObject::ReportEventError (const CString &sEvent, ICCItem *pError) con
 	CString sError = strPatternSubst(CONSTLIT("%s [%s]: %s"), sEvent, GetNounPhrase(), pError->GetStringValue());
 	CSpaceObject *pPlayer = GetUniverse().GetPlayerShip();
 	if (pPlayer)
-		pPlayer->SendMessage(const_cast<CSpaceObject *>(this), sError);
+		pPlayer->SendMessage(this, sError);
 
 	kernelDebugLogString(sError);
 	}
@@ -7252,13 +7482,22 @@ bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *
 		{
 		ICCItemPtr pDummy;
 		EPropertyType iType;
-		if (pType->FindCustomProperty(sName, pDummy, &iType) && iType == EPropertyType::propData)
-			{
-			SetData(sName, pValue);
-			return true;
-			}
-		else
+		if (!pType->FindCustomProperty(sName, pDummy, &iType))
 			return false;
+
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				pType->SetGlobalData(sName, pValue);
+				return true;
+
+			case EPropertyType::propData:
+				SetData(sName, pValue);
+				return true;
+
+			default:
+				return false;
+			}
 		}
 
 	else
@@ -7312,7 +7551,7 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &re
 	return false;
 	}
 
-bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *retsText)
+bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -7434,7 +7673,7 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 			&& !Ctx.pPlayer->IsDestroyed()
 			&& this != Ctx.pPlayer)
 		{
-		UpdatePlayerTarget(Ctx);
+		Ctx.AutoTarget.Update(*Ctx.pPlayer, *this);
 		}
 
 	//	See if we have a dock screen. We only check every 20 ticks or so, so this
@@ -7452,6 +7691,25 @@ void CSpaceObject::Update (SUpdateCtx &Ctx)
 	//	Done
 
 	ClearInUpdateCode();
+	}
+
+void CSpaceObject::UpdateDrag (SUpdateCtx &Ctx, Metric rDragFactor)
+
+//	UpdateDrag
+//
+//	Slow down the update based on drag factor.
+
+	{
+	if (GetVel().IsNull())
+		;
+
+	//	If we're moving really slowly, force to 0. We do this so that we can optimize calculations
+	//	and not have to compute wreck movement down to infinitesimal distances.
+
+	else if (GetVel().Length2() < g_MinSpeed2)
+		SetVel(NullVector);
+	else
+		SetVel(CVector(GetVel().GetX() * rDragFactor, GetVel().GetY() * rDragFactor));
 	}
 
 void CSpaceObject::UpdateEffects (void)
@@ -7515,99 +7773,6 @@ void CSpaceObject::UpdateExtended (const CTimeSpan &ExtraTime)
 	OnUpdateExtended(ExtraTime);
 	}
 
-void CSpaceObject::UpdatePlayerTarget (SUpdateCtx &Ctx)
-
-//	UpdatePlayerTarget
-//
-//	Called during update to see if this could be the player's best target.
-
-	{
-	bool bIsAngryAtPlayer = IsAngryAt(Ctx.pPlayer);
-	CVector vDist = GetPos() - Ctx.pPlayer->GetPos();
-
-	//	If this is the player's current target, then see if we can actually
-	//	hit it with any of our weapons.
-
-	if (Ctx.pPlayerTarget == this)
-		{
-		Metric rDist;
-		int iAngle = VectorToPolar(vDist, &rDist);
-
-		//	If we're out of range of both the primary and the launcher, then 
-		//	we remember that fact.
-
-		if (rDist > Ctx.pPlayer->GetMaxWeaponRange())
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	If we have a fire arc and we're outside the arc, then we're not in
-		//	range either.
-
-		else if (Ctx.iMinFireArc != Ctx.iMaxFireArc
-				&& !AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc))
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	If we're outside detection range, then we can't keep the target
-
-		else if (rDist > GetDetectionRange(Ctx.iPlayerPerception))
-			Ctx.bPlayerTargetOutOfRange = true;
-
-		//	Otherwise, if this object is angry at the player, then it is a
-		//	valid auto-target
-
-		else if (bIsAngryAtPlayer && CanAttack())
-			{
-			Metric rDist2 = rDist * rDist;
-			if (rDist2 < Ctx.rTargetDist2)
-				{
-				Ctx.pTargetObj = this;
-				Ctx.rTargetDist2 = rDist2;
-				}
-			}
-		}
-
-	//	If the object cannot attack, then it is never an auto-target.
-
-	else if (!CanAttack())
-		{ }
-
-	//	If this object is not angry at us, then it can never be an auto-
-	//	target.
-
-	else if (!bIsAngryAtPlayer)
-		{ }
-
-	//	If the player's weapons has an arc of fire, then limit ourselves to
-	//	targets in the arc.
-
-	else if (Ctx.iMinFireArc != Ctx.iMaxFireArc)
-		{
-		Metric rDist;
-		int iAngle = VectorToPolar(vDist, &rDist);
-		Metric rDist2 = rDist * rDist;
-
-		if (rDist2 < Ctx.rTargetDist2
-				&& AngleInArc(iAngle, Ctx.iMinFireArc, Ctx.iMaxFireArc)
-				&& rDist <= GetDetectionRange(Ctx.iPlayerPerception))
-			{
-			Ctx.pTargetObj = this;
-			Ctx.rTargetDist2 = rDist2;
-			}
-		}
-
-	//	Otherwise, just find the nearest target
-
-	else
-		{
-		Metric rDist2 = vDist.Length2();
-		if (rDist2 < Ctx.rTargetDist2
-				&& rDist2 <= GetDetectionRange2(Ctx.iPlayerPerception))
-			{
-			Ctx.pTargetObj = this;
-			Ctx.rTargetDist2 = rDist2;
-			}
-		}
-	}
-
 bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 //	UseItem
@@ -7631,7 +7796,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsEnabled())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not enabled"), Item.GetNounPhrase(nounCapitalize));
 				return false;
 				}
 
@@ -7639,7 +7804,7 @@ bool CSpaceObject::UseItem (const CItem &Item, CString *retsError)
 
 			if (!pDevice->IsReady())
 				{
-				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(CItemCtx(Item), nounCapitalize));
+				if (retsError) *retsError = strPatternSubst(CONSTLIT("%s not yet recharged"), Item.GetNounPhrase(nounCapitalize));
 				return false;
 				}
 
@@ -7790,6 +7955,7 @@ void CSpaceObject::WriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fHasOnAttackedByPlayerEvent	? 0x00000004 : 0);
 	dwSave |= (m_fHasOnOrderChangedEvent	? 0x00000008 : 0);
 	dwSave |= (m_fManualAnchor				? 0x00000010 : 0);
+	dwSave |= (m_f3DExtra					? 0x00000020 : 0);
 	pStream->Write((char *)&dwSave, sizeof(DWORD));
 
 	//	Write out the opaque data

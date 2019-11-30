@@ -76,7 +76,7 @@ int CreateScanLinesFromSimplePolygon (int iVertexCount, SPoint *pVertexList, CG1
 
 	int iLineCount;
 	if ((iLineCount = MaxPoint_Y - MinPoint_Y) <= 0)
-		return 0;		//	there’s nothing to draw, so we’re done
+		return 0;		//	there's nothing to draw, so we’re done
 
 	int yStart = MinPoint_Y;
 
@@ -183,7 +183,7 @@ bool IsSimplePolygon (int iVertexCount, SPoint *pVertexList)
 	int NumYReversals = 0;
 	SPoint *VertexPtr = pVertexList;
 
-	//	Three or fewer points can’t make a non-vertical-monotone polygon
+	//	Three or fewer points can't make a non-vertical-monotone polygon
 
 	if ((Length = iVertexCount) < 4)
 		return true;
@@ -202,7 +202,7 @@ bool IsSimplePolygon (int iVertexCount, SPoint *pVertexList)
 		return true;	//	polygon is a flat line
 
 	//	Now count Y reversals. Might miss one reversal, at the last vertex, but 
-	//	because reversal counts must be even, being off by one isn’t a problem
+	//	because reversal counts must be even, being off by one isn't a problem
 
 	do
 		{
@@ -219,7 +219,7 @@ bool IsSimplePolygon (int iVertexCount, SPoint *pVertexList)
 		}
 	while (i++ < (Length-1));
 
-	return true;	//	it’s a vertical-monotone polygon
+	return true;	//	it's a vertical-monotone polygon
 	}
 
 void ScanEdge (int X1,

@@ -31,7 +31,7 @@
 
 const Metric DEFAULT_ENEMY_EXCLUSION =			50.0 * LIGHT_SECOND;
 
-int CStationEncounterDesc::CalcAffinity (CTopologyNode *pNode) const
+int CStationEncounterDesc::CalcAffinity (const CTopologyNode &Node) const
 
 //	CalcAffinity
 //
@@ -42,7 +42,7 @@ int CStationEncounterDesc::CalcAffinity (CTopologyNode *pNode) const
 	if (m_SystemAffinity.MatchesAll())
 		return ftCommon;
 
-	int iWeight = m_SystemAffinity.CalcNodeWeight(pNode);
+	int iWeight = Node.CalcAffinity(m_SystemAffinity);
 	return (ftCommon * iWeight / 1000);
 	}
 
@@ -264,7 +264,7 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 
 	if (Override.FindAttribute(DISTANCE_CRITERIA_ATTRIB, &sAttrib))
 		{
-		if (CTopologyNode::ParseAttributeCriteria(sAttrib, &m_DistanceCriteria) != NOERROR)
+		if (m_DistanceCriteria.Init(sAttrib) != NOERROR)
 			return false;
 		}
 
@@ -275,11 +275,14 @@ bool CStationEncounterDesc::InitAsOverride (const CStationEncounterDesc &Origina
 		m_sLevelFrequency = sAttrib;
 
 	if (Override.FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
-		m_sLocationCriteria = sAttrib;
+		{
+		if (m_LocationCriteria.Parse(sAttrib, retsError))
+			return false;
+		}
 
 	if (Override.FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
 		{
-		if (m_SystemAffinity.Parse(sAttrib, 0, retsError) != NOERROR)
+		if (m_SystemAffinity.Parse(sAttrib, retsError) != NOERROR)
 			return false;
 		}
 
@@ -410,16 +413,21 @@ ALERROR CStationEncounterDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pD
 
 	//	Level frequency and criteria
 
-	if (error = CTopologyNode::ParseAttributeCriteria(pDesc->GetAttribute(DISTANCE_CRITERIA_ATTRIB), &m_DistanceCriteria))
+	if (error = m_DistanceCriteria.Init(pDesc->GetAttribute(DISTANCE_CRITERIA_ATTRIB)))
 		return error;
 
 	m_sDistanceFrequency = pDesc->GetAttribute(DISTANCE_FREQUENCY_ATTRIB);
 	m_sLevelFrequency = pDesc->GetAttribute(LEVEL_FREQUENCY_ATTRIB);
-	m_sLocationCriteria = pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB);
+
+	if (pDesc->FindAttribute(LOCATION_CRITERIA_ATTRIB, &sAttrib))
+		{
+		if (error = m_LocationCriteria.Parse(sAttrib, &Ctx.sError))
+			return error;
+		}
 
 	if (pDesc->FindAttribute(SYSTEM_AFFINITY_ATTRIB, &sAttrib))
 		{
-		if (error = m_SystemAffinity.Parse(sAttrib, 0, &Ctx.sError))
+		if (error = m_SystemAffinity.Parse(sAttrib, &Ctx.sError))
 			return error;
 		}
 

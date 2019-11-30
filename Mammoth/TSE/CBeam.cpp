@@ -114,9 +114,9 @@ void CBeam::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pHit)
+	if (Ctx.Obj == m_pHit)
 		m_pHit = NULL;
 	}
 
@@ -225,7 +225,7 @@ void CBeam::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 		//	Old-style bonus
 
 		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
-		pEnhancements->InsertHPBonus(m_iBonus);
+		pEnhancements->InsertHPBonus(NULL, m_iBonus);
 
 		//	Tell the object hit that it has been damaged
 

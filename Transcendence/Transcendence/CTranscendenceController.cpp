@@ -124,6 +124,7 @@
 #define CMD_UI_BACK_TO_INTRO					CONSTLIT("uiBackToIntro")
 #define CMD_UI_CHANGE_PASSWORD					CONSTLIT("uiChangePassword")
 #define CMD_UI_EXIT								CONSTLIT("uiExit")
+#define CMD_UI_GET_COLLECTION					CONSTLIT("uiGetCollection")
 #define CMD_UI_MUSIC_VOLUME_DOWN				CONSTLIT("uiMusicVolumeDown")
 #define CMD_UI_MUSIC_VOLUME_UP					CONSTLIT("uiMusicVolumeUp")
 #define CMD_UI_RESET_PASSWORD					CONSTLIT("uiResetPassword")
@@ -584,9 +585,14 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	retOptions->m_bWindowedMode = m_Settings.GetBoolean(CGameSettings::windowedMode);
 	if (retOptions->m_bWindowedMode)
 		{
-		//	If we're forcing 1024, then we know the size
+		//	If we're forcing a resolution, then we know the size
 
-		if (m_Settings.GetBoolean(CGameSettings::force1024Res))
+		if (m_Settings.GetBoolean(CGameSettings::force1280Res))
+			{
+			retOptions->m_cxScreenDesired = 1280;
+			retOptions->m_cyScreenDesired = 768;
+			}
+		else if (m_Settings.GetBoolean(CGameSettings::force1024Res))
 			{
 			retOptions->m_cxScreenDesired = 1024;
 			retOptions->m_cyScreenDesired = 768;
@@ -641,11 +647,11 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 	//	Now set other options for HI
 
 	retOptions->m_iColorDepthDesired = 16;
-	retOptions->m_bForceDX = (m_Settings.GetBoolean(CGameSettings::forceDirectX) || m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
+	retOptions->m_bForceDX = (m_Settings.GetBoolean(CGameSettings::forceDirectX) || m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res) || m_Settings.GetBoolean(CGameSettings::force1280Res));
 	retOptions->m_bForceNonDX = (m_Settings.GetBoolean(CGameSettings::forceNonDirectX) && !retOptions->m_bForceDX);
 	retOptions->m_bForceExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceExclusive) || m_Settings.GetBoolean(CGameSettings::force1024Res));
 	retOptions->m_bForceNonExclusiveMode = (m_Settings.GetBoolean(CGameSettings::forceNonExclusive) && !retOptions->m_bForceExclusiveMode);
-	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res);
+	retOptions->m_bForceScreenSize = m_Settings.GetBoolean(CGameSettings::force1024Res) || m_Settings.GetBoolean(CGameSettings::force1280Res);
 	retOptions->m_bNoGPUAcceleration = m_Settings.GetBoolean(CGameSettings::noGPUAcceleration);
 	retOptions->m_iSoundVolume = m_Settings.GetInteger(CGameSettings::soundVolume);
 	retOptions->m_sMusicFolder = m_Settings.GetString(CGameSettings::musicPath);
@@ -853,6 +859,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 		SNewGameSettings Defaults;
 		Defaults.sPlayerName = m_Settings.GetString(CGameSettings::playerName);
 		Defaults.iPlayerGenome = ParseGenomeID(m_Settings.GetString(CGameSettings::playerGenome));
+		Defaults.iDifficulty = CDifficultyOptions::ParseID(m_Settings.GetString(CGameSettings::lastDifficulty));
 		Defaults.dwPlayerShip = (DWORD)m_Settings.GetInteger(CGameSettings::playerShipClass);
 
 		//	If the player name is NULL then we come up with a better idea
@@ -875,6 +882,11 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		if (Defaults.iPlayerGenome == genomeUnknown)
 			Defaults.iPlayerGenome = (mathRandom(1, 2) == 1 ? genomeHumanFemale : genomeHumanMale);
+
+		//	Validate difficulty
+
+		if (Defaults.iDifficulty == CDifficultyOptions::lvlUnknown)
+			Defaults.iDifficulty = CDifficultyOptions::lvlStory;
 
 		//	New game screen
 
@@ -928,7 +940,8 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		m_Settings.SetString(CGameSettings::playerGenome, GetGenomeID(pNewGame->iPlayerGenome));
 		m_Settings.SetInteger(CGameSettings::playerShipClass, (int)pNewGame->dwPlayerShip);
-		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc()->GetExtensionUNID());
+		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc().GetExtensionUNID());
+		m_Settings.SetString(CGameSettings::lastDifficulty, CDifficultyOptions::GetID(pNewGame->iDifficulty));
 
 		//	Report creation
 
@@ -1086,7 +1099,7 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 
 		//	Remember the last adventure so that we load this in the intro next time.
 
-		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc()->GetExtensionUNID());
+		m_Settings.SetInteger(CGameSettings::lastAdventure, (int)m_Model.GetUniverse().GetCurrentAdventureDesc().GetExtensionUNID());
 
 		//	Start game (this does some stuff and then calls cmdGameStart)
 
@@ -1559,6 +1572,11 @@ ALERROR CTranscendenceController::OnCommand (const CString &sCmd, void *pData)
 			}
 		else
 			m_HI.HISessionCommand(CMD_SERVICE_EXTENSION_LOADED);
+		}
+	else if (strEquals(sCmd, CMD_UI_GET_COLLECTION))
+		{
+		TArray<CMultiverseCatalogEntry> *pCollection = static_cast<TArray<CMultiverseCatalogEntry> *>(pData);
+		*pCollection = m_Multiverse.GetCollection();
 		}
 
 	//	Service housekeeping
@@ -2256,6 +2274,7 @@ bool CTranscendenceController::RequestCatalogDownload (const TArray<CMultiverseC
 		{
 		//	Get the name of the filePath of the file to download
 
+		DWORD dwUNID = Downloads[i].GetUNID();
 		const CString &sFilePath = Downloads[i].GetTDBFileRef().GetFilePath();
 		const CIntegerIP &FileDigest = Downloads[i].GetTDBFileRef().GetDigest();
 
@@ -2266,7 +2285,12 @@ bool CTranscendenceController::RequestCatalogDownload (const TArray<CMultiverseC
 		//	Request a download. (We can do this synchronously because it
 		//	doesn't take long and the call is thread-safe).
 
-		m_Service.RequestExtensionDownload(sFilePath, sFilespec, FileDigest);
+		m_Service.RequestExtensionDownload(dwUNID, sFilePath, sFilespec, FileDigest);
+
+		//	Remember that we requested a download for this entry so that we
+		//	don't try to download it again.
+
+		m_Multiverse.SetEntryDownloadRequested(dwUNID);
 		}
 
 	//	Done
@@ -2315,7 +2339,7 @@ bool CTranscendenceController::RequestResourceDownload (const TArray<CMultiverse
 		//	Request a download. (We can do this synchronously because it
 		//	doesn't take long and the call is thread-safe).
 
-		m_Service.RequestExtensionDownload(Downloads[i].GetFilePath(), pathAddComponent(sDestFolder, sDestFilename), CIntegerIP());
+		m_Service.RequestExtensionDownload(0, Downloads[i].GetFilePath(), pathAddComponent(sDestFolder, sDestFilename), CIntegerIP());
 		}
 
 	//	Done

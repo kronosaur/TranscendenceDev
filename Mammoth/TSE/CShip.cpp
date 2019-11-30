@@ -48,6 +48,7 @@ const DWORD MAX_DISRUPT_TIME_BEFORE_DAMAGE =	(60 * g_TicksPerSecond);
 #define FIELD_THRUST_TO_WEIGHT					CONSTLIT("thrustToWeight")
 
 #define PROPERTY_ALWAYS_LEAVE_WRECK				CONSTLIT("alwaysLeaveWreck")
+#define PROPERTY_ARMOR_COUNT					CONSTLIT("armorCount")
 #define PROPERTY_AUTO_TARGET					CONSTLIT("autoTarget")
 #define PROPERTY_AVAILABLE_DEVICE_SLOTS			CONSTLIT("availableDeviceSlots")
 #define PROPERTY_AVAILABLE_NON_WEAPON_SLOTS		CONSTLIT("availableNonWeaponSlots")
@@ -533,13 +534,13 @@ void CShip::CalcDeviceBonus (void)
 
 					int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
 					if (iBonus != 0)
-						pEnhancements->InsertHPBonus(iBonus);
+						pEnhancements->InsertHPBonus(NULL, iBonus);
 					break;
 					}
 				}
 
 			//	Set the bonuses
-			//	Note that these include any bonuses confered by item enhancements
+			//	Note that these include any bonuses conferred by item enhancements
 
 			Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
 
@@ -605,10 +606,10 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	//	NOTE: Selectable means that the weapon is not a secondary weapon
 	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
 	//  linked-fire weapons, which normally count as "selectable", from this definition.
+
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-
-	if (pDevice->IsSelectable(ItemCtx) && !(pDevice->GetLinkedFireOptions() & dwLinkedFireSelected))
+	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
 		*retpTarget = m_pController->GetTarget(ItemCtx);
 		*retiFireSolution = -1;
@@ -623,7 +624,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		//	Get the actual options.
 
-		DWORD dwLinkedFireOptions = pWeapon->GetLinkedFireOptions(ItemCtx);
+		const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
+		DWORD dwLinkedFireOptions = DeviceItem.GetLinkedFireOptions();
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
@@ -632,6 +634,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
 		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
 		//  same variant and type.
+
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
@@ -640,10 +643,10 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
 				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetLinkedFireOptions() & dwLinkedFireSelected) : false) &&
+				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
 			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
 				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
 			(dwLinkedFireOptions & dwLinkedFireSelected) &&
@@ -668,7 +671,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution, pDevice->CanTargetMissiles());
+			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 
@@ -1444,7 +1447,7 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		if (Explosion.iBonus != 0)
 			{
 			ShotCtx.pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			ShotCtx.pEnhancements->InsertHPBonus(Explosion.iBonus);
+			ShotCtx.pEnhancements->InsertHPBonus(NULL, Explosion.iBonus);
 			}
 
 		ShotCtx.Source = CDamageSource(this, Explosion.iCause, Ctx.pWreck);
@@ -1485,7 +1488,8 @@ void CShip::CreateExplosion (SDestroyCtx &Ctx)
 		rcRect.top = 0;
 		rcRect.right = 4;
 		rcRect.bottom = 4;
-		Image.Init(g_ShipExplosionParticlesUNID,
+		Image.Init(GetUniverse(),
+				g_ShipExplosionParticlesUNID,
 				rcRect,
 				8,
 				3);
@@ -2525,7 +2529,8 @@ AbilityStatus CShip::GetAbility (Abilities iAbility) const
 		}
 	}
 
-int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
+int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
+
 //  GetAmmoForSelectedLinkedFireWeapons
 //
 //  If the given device is a linked-fire weapon of type "whenSelected",
@@ -2533,32 +2538,33 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 //  "whenSelected" weapons of the same type installed on the ship, and adding
 //  their ammo counts (if they use charges) or the number of rounds left in the
 //  cargo hold (if they don't). The latter should be added only once.
+
 	{
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
-	if (pDevice->GetLinkedFireOptions() & dwLinkedFireSelected)
+	if (pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected)
 		{
 		int iAmmoCount = 0;
 		TSortMap<CItemType *, bool> AmmoItemTypes;
 		DWORD iGunUNID = pDevice->GetUNID();
 		for (int i = 0; i < m_Devices.GetCount(); i++)
 			{
-			CInstalledDevice currDevice = m_Devices.GetDevice(i);
+			CInstalledDevice &currDevice = m_Devices.GetDevice(i);
 			CDeviceClass *pCurrDeviceClass = currDevice.GetClass();
 			if (!currDevice.IsEmpty())
 				{
 				if (currDevice.GetCategory() == (itemcatWeapon))
 					{
 					CItemCtx ItemCtx(this, pDevice);
-					bool bCheckSameVariant = currDevice.GetLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
+					bool bCheckSameVariant = currDevice.GetSlotLinkedFireOptions() & CDeviceClass::lkfSelectedVariant ?
 						ItemCtx.GetItemVariantNumber() == CItemCtx(this, &currDevice).GetItemVariantNumber() : true;
-					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
+					if (iGunUNID == currDevice.GetUNID() && (currDevice.GetSlotLinkedFireOptions() & dwLinkedFireSelected) && bCheckSameVariant)
 						{
 						bool bUsesItemsForAmmo = (pCurrDeviceClass->AsWeaponClass()->GetWeaponFireDesc(ItemCtx)->GetAmmoType() != NULL);
 						if (pCurrDeviceClass->IsAmmoWeapon() && !bUsesItemsForAmmo)
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
 							{
 							int iAmmoLeft = 0;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, true);
 							iAmmoCount += iAmmoLeft;
 							}
 
@@ -2569,7 +2575,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice)
 							bool ammoIsAdded = false;
 							int iAmmoLeft = 0;
 							CItemType *pAmmoType;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType, true);
 							AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
 							if (!ammoIsAdded)
 								{
@@ -2723,6 +2729,25 @@ int CShip::GetCombatPower (void)
 
 	{
 	return m_pController->GetCombatPower();
+	}
+
+const CCurrencyBlock *CShip::GetCurrencyBlock (void) const
+
+//	GetCurrencyBlock
+//
+//	Returns the currency store object.
+
+	{
+	//	If our controller has a block, then use that (this is how the player
+	//	stores money).
+
+	CCurrencyBlock *pMoney = m_pController->GetCurrencyBlock();
+	if (pMoney)
+		return pMoney;
+
+	//	Done
+
+	return m_pMoney;
 	}
 
 CCurrencyBlock *CShip::GetCurrencyBlock (bool bCreate)
@@ -3108,7 +3133,7 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		}
 	}
 
-int CShip::GetPerception (void)
+int CShip::GetPerception (void) const
 
 //	GetPerception
 //
@@ -3149,6 +3174,9 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	if (strEquals(sName, PROPERTY_ALWAYS_LEAVE_WRECK))
 		return CC.CreateBool(m_fAlwaysLeaveWreck || m_pClass->GetWreckChance() >= 100);
+
+	else if (strEquals(sName, PROPERTY_ARMOR_COUNT))
+		return CC.CreateInteger(GetArmorSectionCount());
 
 	else if (strEquals(sName, PROPERTY_AUTO_TARGET))
 		{
@@ -3420,8 +3448,7 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 		Stats.pReactorImage = &pReactor->GetItem()->GetType()->GetImage();
 		Stats.bReactorDamaged = pReactor->IsDamaged();
 
-		CItemCtx ItemCtx(this, pReactor);
-		ItemCtx.GetEnhancementDisplayAttributes(&Stats.Enhancements);
+		pReactor->GetItem()->AccumulateEnhancementDisplayAttributes(Stats.Enhancements);
 		}
 	else
 		{
@@ -3474,12 +3501,7 @@ int CShip::GetShieldLevel (void)
 	if (pShields == NULL)
 		return -1;
 
-	int iHP, iMaxHP;
-	pShields->GetStatus(this, &iHP, &iMaxHP);
-	if (iMaxHP == 0)
-		return -1;
-
-	return iHP * 100 / iMaxHP;
+	return pShields->GetHitPointsPercent(this);
 	}
 
 int CShip::GetStealth (void) const
@@ -3536,7 +3558,7 @@ int CShip::GetTotalArmorHP (int *retiMaxHP) const
 	return iHP;
 	}
 
-CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
+CCurrencyAndValue CShip::GetTradePrice (const CSpaceObject *pProvider) const
 
 //	GetTradePrice
 //
@@ -3550,7 +3572,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 
 	//	Add up the value of all installed items
 
-	CItemListManipulator AllItems(GetItemList());
+	CItemListManipulator AllItems(const_cast<CItemList &>(GetItemList()));
 	while (AllItems.MoveCursorForward())
 		{
 		const CItem &Item = AllItems.GetItemAtCursor();
@@ -3567,7 +3589,7 @@ CCurrencyAndValue CShip::GetTradePrice (CSpaceObject *pProvider)
 
 			//	Need to include install cost
 
-			Value.Add(CCurrencyAndValue(Item.GetType()->GetInstallCost(CItemCtx(Item)), Item.GetCurrencyType()));
+			Value.Add(CCurrencyAndValue(Item.GetInstallCost(), Item.GetCurrencyType()));
 			}
 		}
 
@@ -3857,6 +3879,7 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	ItemList.Refresh(NewArmor);
 
 	pSect->Install(*this, ItemList, iSect);
+	NewArmor = ItemList.GetItemAtCursor();
 
 	//	The item is now known and referenced.
 
@@ -3983,7 +4006,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	InvalidateItemListState();
 	}
 
-bool CShip::IsAngryAt (CSpaceObject *pObj) const
+bool CShip::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -4164,18 +4187,18 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 
 	//	If what we're docked with got destroyed, clear it
 
-	if (GetDockedObj() == Ctx.pObj)
+	if (GetDockedObj() == Ctx.Obj)
 		m_pDocked = NULL;
 
 	//	If this object is docked with us, remove it from the
 	//	docking table.
 
-	m_DockingPorts.OnObjDestroyed(this, Ctx.pObj);
+	m_DockingPorts.OnObjDestroyed(this, &Ctx.Obj);
 
 	//	If our exit gate got destroyed, then we're OK (this can happen if
 	//	a carrier gets destroyed while gunships are being launched)
 
-	if (m_pExitGate == Ctx.pObj)
+	if (m_pExitGate == Ctx.Obj)
 		{
 		Place(m_pExitGate->GetPos());
 
@@ -4189,7 +4212,7 @@ void CShip::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Irradiated by
 
 	if (m_pIrradiatedBy)
-		m_pIrradiatedBy->OnObjDestroyed(Ctx.pObj);
+		m_pIrradiatedBy->OnObjDestroyed(Ctx.Obj);
 
 	//	If we've got attached objects, see if one of them got destroyed.
 
@@ -4401,9 +4424,11 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	int i;
 
+	GetUniverse().AdjustDamage(Ctx);
+
 	//	Short-circuit
 
-	if (Ctx.iDamage == 0)
+	if (Ctx.iDamage == 0 || GetSystem() == NULL)
 		return damageNoDamage;
 
 	bool bIsPlayer = IsPlayer();
@@ -4997,6 +5022,9 @@ bool CShip::OnGetCondition (CConditionSet::ETypes iCondition) const
 		case CConditionSet::cndRadioactive:
 			return (m_fRadioactive ? true : false);
 
+		case CConditionSet::cndShieldBlocked:
+			return m_Perf.HasShieldInterference();
+
 		default:
 			return false;
 		}
@@ -5023,8 +5051,7 @@ void CShip::OnHitByDeviceDamage (void)
 	{
 	//	We pick a random installed device
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(CONSTLIT("dI +canBeDamaged:true;"), &Criteria);
+	CItemCriteria Criteria(CONSTLIT("dI +canBeDamaged:true;"));
 
 	CItemListManipulator ItemList(GetItemList());
 	SetCursorAtRandomItem(ItemList, Criteria);
@@ -5047,8 +5074,7 @@ void CShip::OnHitByDeviceDisruptDamage (DWORD dwDuration)
 	{
 	//	We pick a random installed device
 
-	CItemCriteria Criteria;
-	CItem::ParseCriteria(CONSTLIT("dI +canBeDisrupted:true;"), &Criteria);
+	CItemCriteria Criteria(CONSTLIT("dI +canBeDisrupted:true;"));
 
 	CItemListManipulator ItemList(GetItemList());
 	SetCursorAtRandomItem(ItemList, Criteria);
@@ -6247,7 +6273,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
 						//  type, and increment their fire delays.
-						DWORD dwLinkedFireOptions = pDevice->GetLinkedFireOptions();
+						DWORD dwLinkedFireOptions = pDevice->GetSlotLinkedFireOptions();
 						DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
@@ -6264,11 +6290,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 									{
 									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
-											&& currDevice != pDevice && currDevice->IsEnabled())
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
+											&& currDevice != pDevice && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
 											{
 											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
-											if (currDevice->GetLinkedFireOptions()
+											if (currDevice->GetSlotLinkedFireOptions()
 												& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
 												{
 												//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
@@ -6355,7 +6381,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         //	Slow down
 
-        SetVel(CVector(GetVel().GetX() * g_SpaceDragFactor, GetVel().GetY() * g_SpaceDragFactor));
+		UpdateDrag(Ctx, g_SpaceDragFactor);
 
         if (m_iParalysisTimer > 0)
             m_iParalysisTimer--;
@@ -7452,7 +7478,7 @@ DeviceNames CShip::SelectWeapon (const CItem &Item)
 	return SelectWeapon(iDev, iVariant);
 	}
 
-void CShip::SendMessage (CSpaceObject *pSender, const CString &sMsg)
+void CShip::SendMessage (const CSpaceObject *pSender, const CString &sMsg)
 
 //	SendMessage
 //
@@ -8232,7 +8258,7 @@ void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
 
 		if (!pDevice->IsEmpty()
 				&& (pDevice == pPrimaryDevice
-					|| (pDevice->IsLinkedFire(Ctx, iCat))))
+					|| (pDevice->IsLinkedFire(iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
 	}
@@ -8261,7 +8287,7 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 
 		if (!pDevice->IsEmpty()
 				&& (pDevice == pWeapon 
-					|| (pDevice->IsLinkedFire(Ctx, iCat))))
+					|| (pDevice->IsLinkedFire(iCat))))
 			pDevice->SetTriggered(bTriggered);
 		}
 	}

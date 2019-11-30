@@ -75,10 +75,16 @@
 			multiHull=			"true"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
+
+		<Properties>
+			<!--
+			By default we accept any military ID (even ones from APD or ED).
+			-->
+			<Constant	id="rpg.checkMilitaryID">"* +militaryID;"</COnstant>
+		</Properties>
 
 		<!-- Encounter Info -->
 
@@ -184,14 +190,11 @@
 
 						<Actions>
 							<Action id="actionBuyScrap" default="1">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
-									checkMilitaryID: True
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy;)
 							</Action>
 
 							<Action id="actionSellScrap">
-								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
-									})
+								(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell;)
 							</Action>
 
 							<Action id="actionCustomWork">
@@ -262,7 +265,11 @@
 									;	Make immune
 									(objEnumItems gPlayerShip "aI" theItem
 										(block (result)
-											(setq result (shpEnhanceItem gPlayerShip theItem 0x0b00))
+											(setq result (shpEnhanceItem gPlayerShip theItem {
+												enhancement: "+immunity:radiation"
+												type: &itRadiationImmuneCoating;
+												}))
+
 											(switch
 												(or (eq result 0) (eq result 2) (eq result 6) (eq result 7))
 													(setq armorEnhanced (add armorEnhanced 1))

@@ -19,8 +19,11 @@
 //	s	Argument is a CString. The string is substituted
 //
 //	x	Argument is an unsigned 32-bit integer. The hex value is substituted
+//
+//	&	Followed by an XML entity and semicolon
 
 #include "PreComp.h"
+#include "Internets.h"
 
 void WritePadding (CString &sOutput, char chChar, int iLen);
 
@@ -33,9 +36,9 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 	{
 	CString sOutput;
 	sOutput.GrowToFit(4000);
-	char *pPos = sPattern.GetPointer();
+	const char *pPos = sPattern.GetPointer();
 	int iLength = sPattern.GetLength();
-	char *pRunStart;
+	const char *pRunStart;
 	int iRunLength;
 	int iLastInteger = 1;
 
@@ -96,7 +99,7 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 				if (*pPos >= '0' && *pPos <= '9')
 					{
-					char *pNewPos;
+					const char *pNewPos;
 					bPadWithZeros = (*pPos == '0');
 					iMinFieldWidth = strParseInt(pPos, 0, &pNewPos);
 
@@ -198,6 +201,30 @@ CString Kernel::strPattern (const CString &sPattern, LPVOID *pArgs)
 
 					pPos++;
 					iLength--;
+					}
+				else if (*pPos == '&')
+					{
+					//	Get the entity name
+
+					pPos++;
+					iLength--;
+					const char *pStart = pPos;
+					while (iLength > 0 && *pPos != ';')
+						{
+						pPos++;
+						iLength--;
+						}
+
+					CString sEntity(pStart, (int)(pPos - pStart));
+					CString sResult = CHTML::TranslateStdEntity(sEntity);
+
+					sOutput.Append(sResult);
+
+					if (iLength > 0 && *pPos == ';')
+						{
+						pPos++;
+						iLength--;
+						}
 					}
 				else if (*pPos == '%')
 					{

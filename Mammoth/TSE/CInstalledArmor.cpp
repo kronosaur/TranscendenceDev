@@ -25,7 +25,7 @@ bool CInstalledArmor::AccumulatePerformance (CItemCtx &ItemCtx, SShipPerformance
 //	Accumulate enhancements on devices.
 
 	{
-	if (m_pArmorClass)
+	if (m_pArmorClass == NULL)
 		return false;
 
     return m_pArmorClass->AccumulatePerformance(ItemCtx, Ctx);

@@ -132,7 +132,8 @@ void CMission::CompleteMission (ECompletedReasons iReason)
 
 			//	Let the player record the mission failure
 
-			pPlayer->OnMissionCompleted(this, false);
+			if (pPlayer)
+				pPlayer->OnMissionCompleted(this, false);
 			}
 
 		//	Mission success
@@ -277,7 +278,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we haven't subscribed to the owner, do it now
 
-	if (pOwner && !pOwner->FindEventSubscriber(pMission))
+	if (pOwner && !pOwner->FindEventSubscriber(*pMission))
 		pOwner->AddEventSubscriber(pMission);
 
 	//	Mission created
@@ -789,7 +790,7 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 
 	//	If this is the owner then the mission fails
 
-	if (Ctx.pObj->GetID() == m_pOwner.GetID())
+	if (Ctx.Obj.GetID() == m_pOwner.GetID())
 		{
 		//	Mission fails
 
@@ -816,7 +817,7 @@ void CMission::OnObjDestroyedNotify (SDestroyCtx &Ctx)
 			m_pOwner = Ctx.pWreck;
 		}
 
-	if (Ctx.pObj->GetID() == m_pDebriefer.GetID())
+	if (Ctx.Obj.GetID() == m_pDebriefer.GetID())
 		{
 		//	If our debriefer has been destroyed, then remove it.
 		//	(But only if it didn't leave a wreck).
@@ -1038,7 +1039,7 @@ bool CMission::ParseCriteria (const CString &sCriteria, SCriteria *retCriteria)
 
 	//	Parse
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)

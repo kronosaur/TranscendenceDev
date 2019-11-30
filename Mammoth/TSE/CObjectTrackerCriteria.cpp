@@ -23,7 +23,7 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 
 	//	Now parse any pieces that we deal with.
 
-	char *pPos = sCriteria.GetPointer();
+	const char *pPos = sCriteria.GetPointer();
 	while (*pPos != '\0')
 		{
 		switch (*pPos)
@@ -34,6 +34,10 @@ bool CObjectTrackerCriteria::ParseCriteria (const CString &sCriteria)
 
 			case 'K':
 				m_bKilledOnly = true;
+				break;
+
+			case 'P':
+				m_bKnownOnly = true;
 				break;
 
 			//	We need to skip these values that are handled by CDesignTypeCriteria

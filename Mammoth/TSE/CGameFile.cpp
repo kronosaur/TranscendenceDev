@@ -5,13 +5,12 @@
 
 #include "PreComp.h"
 #include "Zip.h"
+#include "GameFileCompatibility.h"
 
 #define MIN_GAME_FILE_VERSION					5
-#define GAME_FILE_VERSION						10
+#define GAME_FILE_VERSION						11
 
-CGameFile::CGameFile (void) : 
-		m_pFile(NULL),
-		m_iRefCount(0)
+CGameFile::CGameFile (void)
 
 //	CGameFile constructor
 
@@ -28,6 +27,21 @@ CGameFile::~CGameFile (void)
 		m_iRefCount = 1;
 		Close();
 		}
+	}
+
+ALERROR CGameFile::ClearEndGame (void)
+
+//	ClearEndGame
+//
+//	Clears the end game bit.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	m_Header.dwFlags &= ~GAME_FLAG_END_GAME;
+	return SaveGameHeader(m_Header);
 	}
 
 ALERROR CGameFile::ClearRegistered (void)
@@ -138,7 +152,7 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 
 	//	Universe not yet saved
 
-	::ZeroMemory(&m_Header, sizeof(m_Header));
+	m_Header = SGameHeader();
 
 	m_Header.dwVersion = GAME_FILE_VERSION;
 	m_Header.dwCreateVersion = fileGetProductVersion();
@@ -151,11 +165,6 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	m_Header.dwCreateVersionPoint = HIWORD((DWORD)VerInfo.dwProductVersion);
 	m_Header.dwCreateVersionBuild = LOWORD((DWORD)VerInfo.dwProductVersion);
 	lstrcpyn(m_Header.szCreateVersion, VerInfo.sProductVersion.GetASCIIZPointer(), sizeof(m_Header.szCreateVersion));
-
-	m_Header.dwUniverse = INVALID_ENTRY;
-	m_Header.dwGameStats = INVALID_ENTRY;
-	m_Header.dwResurrectCount = 0;
-	m_Header.dwFlags = 0;
 
 	//	If we have a username then we treat this as a regulation game.
 
@@ -204,6 +213,34 @@ ALERROR CGameFile::Create (const CString &sFilename, const CString &sUsername)
 	return NOERROR;
 	}
 
+DWORD CGameFile::EncodeDifficulty (CDifficultyOptions::ELevels iLevel)
+
+//	EncodeDifficulty
+//
+//	Encodes into flags.
+
+	{
+	switch (iLevel)
+		{
+		//	Challenge level is the default
+
+		case CDifficultyOptions::lvlChallenge:
+			return 0;
+
+		case CDifficultyOptions::lvlNormal:
+			return (1 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlStory:
+			return (2 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		case CDifficultyOptions::lvlPermadeath:
+			return (3 << GAME_FLAG_DIFFICULTY_SHIFT);
+
+		default:
+			return 0;
+		}
+	}
+
 CString CGameFile::GenerateFilename (const CString &sName)
 
 //	GenerateFilename
@@ -245,6 +282,34 @@ CString CGameFile::GetCreateVersion (DWORD dwFlags) const
 		return CString(m_Header.szCreateVersion);
 	}
 
+CDifficultyOptions::ELevels CGameFile::GetDifficulty (void) const
+
+//	GetDifficulty
+//
+//	Decodes the difficulty from flags.
+
+	{
+	DWORD dwFlags = (m_Header.dwFlags & GAME_FLAG_DIFFICULTY_MASK) >> GAME_FLAG_DIFFICULTY_SHIFT;
+
+	switch (dwFlags)
+		{
+		case 0:
+			return CDifficultyOptions::lvlChallenge;
+
+		case 1:
+			return CDifficultyOptions::lvlNormal;
+
+		case 2:
+			return CDifficultyOptions::lvlStory;
+
+		case 3:
+			return CDifficultyOptions::lvlPermadeath;
+
+		default:
+			return CDifficultyOptions::lvlChallenge;
+		}
+	}
+
 CString CGameFile::GetPlayerName (void) const
 
 //	GetPlayerName
@@ -260,6 +325,51 @@ CString CGameFile::GetPlayerName (void) const
 		sName = pathStripExtension(pathGetFilename(m_pFile->GetFilename()));
 
 	return sName;
+	}
+
+CString CGameFile::GetPlayerShipClassName (void) const
+
+//	GetPlayerShipClassName
+//
+//	Returns the ship class (or NULL_STR if none stored).
+
+	{
+	return CString((char *)m_Header.szShipClassName);
+	}
+
+bool CGameFile::GetPlayerShipImage (CG32bitImage &Image) const
+
+//	GetPlayerShipImage
+//
+//	Returns the player ship image (or FALSE if we don't have one stored).
+
+	{
+	if (m_pFile == NULL || m_Header.dwShipImage == INVALID_ENTRY)
+		return false;
+
+	CString sEntry;
+	if (m_pFile->ReadEntry(m_Header.dwShipImage, &sEntry) != NOERROR)
+		return false;
+
+	CBufferReadBlock Buffer(sEntry);
+	if (Buffer.Open() != NOERROR)
+		return false;
+
+	CMemoryWriteStream Bitmap;
+	if (Bitmap.Create() != NOERROR)
+		return false;
+
+	if (!zipDecompress(Buffer, compressionZlib, Bitmap))
+		return false;
+
+	CMemoryReadStream BitmapReader(Bitmap.GetPointer(), Bitmap.GetLength());
+	if (BitmapReader.Open() != NOERROR)
+		return false;
+
+	if (!Image.CreateFromWindowsBMP(BitmapReader))
+		return false;
+
+	return true;
 	}
 
 CString CGameFile::GetSystemName (void) const
@@ -288,6 +398,8 @@ ALERROR CGameFile::LoadGameHeader (SGameHeader *retHeader)
 	{
 	ALERROR error;
 
+	*retHeader = SGameHeader();
+
 	CString sHeader;
 	if (error = m_pFile->ReadEntry(m_iHeaderID, &sHeader))
 		return error;
@@ -297,31 +409,16 @@ ALERROR CGameFile::LoadGameHeader (SGameHeader *retHeader)
 	if (sHeader.GetLength() == sizeof(SGameHeader8))
 		{
 		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader8));
-
-		//	Initialize additional data
-
-		retHeader->szUsername[0] = '\0';
-		retHeader->szGameID[0] = '\0';
-		retHeader->dwAdventure = 0;
-		retHeader->szPlayerName[0] = '\0';
-		retHeader->dwGenome = 0;
-		retHeader->dwPlayerShip = 0;
-		retHeader->dwScore = 0;
-		retHeader->szEpitaph[0] = '\0';
 		}
 
 	else if (sHeader.GetLength() == sizeof(SGameHeader9))
 		{
 		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader9));
+		}
 
-		//	Initialize additional data
-
-		retHeader->dwCreateAPI = 0;
-		retHeader->dwCreateVersionMajor = 0;
-		retHeader->dwCreateVersionMinor = 0;
-		retHeader->dwCreateVersionPoint = 0;
-		retHeader->dwCreateVersionBuild = 0;
-		retHeader->szCreateVersion[0] = '\0';
+	else if (sHeader.GetLength() == sizeof(SGameHeader10))
+		{
+		utlMemCopy(sHeader.GetPointer(), (char *)retHeader, sizeof(SGameHeader10));
 		}
 
 	//	Read current version
@@ -596,6 +693,15 @@ ALERROR CGameFile::LoadUniverse (CUniverse &Univ, DWORD *retdwSystemID, DWORD *r
 		return error;
 		}
 
+	//	If the game file thinks we're in debug mode, then set debug mode, 
+	//	because sometimes we clear the debug mode bit and want to propagate it.
+
+	if (IsDebug())
+		Univ.SetDebugMode();
+
+	if (!IsRegistered())
+		Univ.SetRegistered(false);
+
 	//	Done
 
 	Stream.Close();
@@ -755,6 +861,65 @@ ALERROR CGameFile::SaveGameStats (const CGameStats &Stats)
 	//	Done
 
 	m_pFile->Flush();
+
+	return NOERROR;
+	}
+
+ALERROR CGameFile::SaveShipImage (CUniverse &Universe, CSpaceObject &ShipObj)
+
+//	SaveShipImage
+//
+//	Saves the ship image.
+
+	{
+	CShipClass *pClass = CShipClass::AsType(ShipObj.GetType());
+	if (pClass == NULL || !pClass->GetImage().IsLoaded())
+		return ERR_FAIL;
+
+	//	Figure out the size of the image. We use the original size or 96 
+	//	pixels, whichever is smaller.
+
+	int cxIcon = Min(SHIP_IMAGE_SIZE, pClass->CalcImageSize());
+
+	//	Create the image, scaled to the right size
+
+	CG32bitImage NewImage;
+	pClass->CreateScaledImage(NewImage, 0, 90, cxIcon, cxIcon);
+
+	//	Save to bitmap
+
+	CMemoryWriteStream Bitmap;
+	if (Bitmap.Create() != NOERROR)
+		return ERR_FAIL;
+
+	if (!NewImage.WriteToWindowsBMP(&Bitmap))
+		return ERR_FAIL;
+
+	//	Compress
+
+	CMemoryReadBlockWrapper BitmapSrc(Bitmap);
+	if (BitmapSrc.Open() != NOERROR)
+		return ERR_FAIL;
+
+	CMemoryWriteStream BitmapCompressed;
+	if (BitmapCompressed.Create() != NOERROR)
+		return ERR_FAIL;
+
+	if (!zipCompress(BitmapSrc, compressionZlib, BitmapCompressed))
+		return ERR_FAIL;
+
+	//	Write to the database
+
+	if (m_Header.dwShipImage != INVALID_ENTRY)
+		{
+		if (m_pFile->WriteEntry(m_Header.dwShipImage, CString(BitmapCompressed.GetPointer(), BitmapCompressed.GetLength(), true)) != NOERROR)
+			return ERR_FAIL;
+		}
+	else
+		{
+		if (m_pFile->AddEntry(CString(BitmapCompressed.GetPointer(), BitmapCompressed.GetLength(), true), (int *)&m_Header.dwShipImage) != NOERROR)
+			return ERR_FAIL;
+		}
 
 	return NOERROR;
 	}
@@ -1019,7 +1184,7 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	if (m_Header.dwAdventure == 0)
 		{
-		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc()->GetExtensionUNID();
+		m_Header.dwAdventure = Univ.GetCurrentAdventureDesc().GetExtensionUNID();
 
 		CString sPlayerName = Univ.GetPlayerName();
 		lstrcpyn(m_Header.szPlayerName, sPlayerName.GetASCIIZPointer(), sizeof(m_Header.szPlayerName));
@@ -1029,9 +1194,17 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	//	Save the genome and player ship in the header
 
-	if (pPlayerObj && pPlayerObj->GetType()->GetUNID() != m_Header.dwPlayerShip)
+	if (pPlayerObj 
+			&& (pPlayerObj->GetType()->GetUNID() != m_Header.dwPlayerShip
+				|| m_Header.dwShipImage == INVALID_ENTRY))
 		{
 		m_Header.dwPlayerShip = pPlayerObj->GetType()->GetUNID();
+
+		CString sShipClass = pPlayerObj->GetNounPhrase(nounGeneric);
+		lstrcpyn(m_Header.szShipClassName, sShipClass.GetASCIIZPointer(), sizeof(m_Header.szShipClassName));
+
+		SaveShipImage(Univ, *pPlayerObj);
+
 		bUpdateHeader = true;
 		}
 
@@ -1096,6 +1269,11 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 			}
 		}
 
+	//	Set difficulty
+
+	dwNewFlags &= ~GAME_FLAG_DIFFICULTY_MASK;
+	dwNewFlags |= EncodeDifficulty(Univ.GetDifficultyLevel());
+
 	//	If flags have changed, save the header
 
 	if (dwNewFlags != m_Header.dwFlags)
@@ -1137,7 +1315,33 @@ ALERROR CGameFile::SaveUniverse (CUniverse &Univ, DWORD dwFlags)
 
 	m_pFile->Flush();
 
+	//	Remember when we saved, in case we try to save again this tick.
+
+	m_dwLastSavedOn = Univ.GetTicks();
+
 	return NOERROR;
+	}
+
+ALERROR CGameFile::SetDebugMode (bool bValue)
+
+//	SetDebugMode
+//
+//	Sets or clears debug mode.
+
+	{
+	ASSERT(m_pFile);
+	if (m_pFile == NULL)
+		return ERR_FAIL;
+
+	if (IsDebug() == bValue)
+		return NOERROR;
+
+	if (bValue)
+		m_Header.dwFlags |= GAME_FLAG_DEBUG;
+	else
+		m_Header.dwFlags &= ~GAME_FLAG_DEBUG;
+
+	return SaveGameHeader(m_Header);
 	}
 
 ALERROR CGameFile::SetGameResurrect (void)

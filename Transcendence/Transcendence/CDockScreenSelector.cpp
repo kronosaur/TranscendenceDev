@@ -139,7 +139,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 //	Initialize
 
 	{
-    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = Ctx.pDockScreen->GetDockScreenVisuals();
 
 	m_dwID = Ctx.dwFirstID;
 
@@ -154,7 +154,7 @@ ALERROR CDockScreenSelector::OnInit (SInitCtx &Ctx, const SDisplayOptions &Optio
 
     CGSelectorArea::SOptions SelOptions;
     SelOptions.iConfig = m_iConfig;
-    CItem::ParseCriteria(Options.sItemCriteria, &SelOptions.ItemCriteria);
+	SelOptions.ItemCriteria.Init(Options.sItemCriteria);
     SelOptions.bNoEmptySlots = Options.bNoEmptySlots;
 
     //  If we're on API < 30, then we always show shields on armor selectors
@@ -251,6 +251,28 @@ bool CDockScreenSelector::OnIsCurrentItemValid (void) const
 
 	{
 	return m_pControl->IsCursorValid();
+	}
+
+IDockScreenDisplay::EResults CDockScreenSelector::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
+
+//	OnObjDestroyedNotify
+//
+//	An object was destroyed.
+
+	{
+	if (Ctx.Obj == m_pLocation)
+		{
+		//	No need to do anything because we will undock in this case.
+
+		return resultNone;
+		}
+	else if (m_pControl->GetSource() == Ctx.Obj)
+		{
+		m_pControl->SetRegions(NULL, CGSelectorArea::SOptions());
+		return resultShowPane;
+		}
+	else
+		return resultNone;
 	}
 
 IDockScreenDisplay::EResults CDockScreenSelector::OnResetList (CSpaceObject *pLocation)

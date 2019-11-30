@@ -1,6 +1,7 @@
 //	CNavigationPath.cpp
 //
 //	CNavigationPath class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -247,7 +248,7 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, CSpaceOb
 	CVector vEnd = pEnd->GetPos();
 
 	CNavigationPath *pNewPath = new CNavigationPath;
-	pNewPath->m_dwID = g_pUniverse->CreateGlobalID();
+	pNewPath->m_dwID = pSystem->GetUniverse().CreateGlobalID();
 	pNewPath->m_pSovereign = pSovereign;
 	pNewPath->m_iStartIndex = pStart->GetID();
 	pNewPath->m_iEndIndex = pEnd->GetID();
@@ -271,7 +272,7 @@ void CNavigationPath::Create (CSystem *pSystem, CSovereign *pSovereign, const CV
 
 	{
 	CNavigationPath *pNewPath = new CNavigationPath;
-	pNewPath->m_dwID = g_pUniverse->CreateGlobalID();
+	pNewPath->m_dwID = pSystem->GetUniverse().CreateGlobalID();
 	pNewPath->m_pSovereign = pSovereign;
 	pNewPath->m_iStartIndex = -1;
 	pNewPath->m_iEndIndex = -1;

@@ -12,6 +12,8 @@
 #define TITLE_BACKGROUND_ATTRIB					CONSTLIT("titleBackgroundColor")
 #define TITLE_TEXT_ATTRIB				    	CONSTLIT("titleTextColor")
 
+#define FONT_MEDIUM_HEAVY_BOLD					CONSTLIT("MediumHeavyBold")
+
 const CG32bitPixel RGB_TEXT =                   CG32bitPixel(0xb0, 0xb8, 0xbf);    //   H:210 S:8   B:75
 const CG32bitPixel RGB_TEXT_BACKGROUND =        CG32bitPixel(0x2a, 0x31, 0x38);    //   H:210 S:25  B:22
 const CG32bitPixel RGB_TITLE_BACKGROUND =       CG32bitPixel(0x37, 0x3f, 0x47);    //   H:240 S:23  B:28
@@ -49,7 +51,7 @@ ALERROR CDockScreenVisuals::Bind (SDesignLoadCtx &Ctx)
     return NOERROR;
     }
 
-CDockScreenVisuals &CDockScreenVisuals::GetDefault (void)
+CDockScreenVisuals &CDockScreenVisuals::GetDefault (CUniverse &Universe)
 
 //  GetDefault
 //
@@ -63,8 +65,8 @@ CDockScreenVisuals &CDockScreenVisuals::GetDefault (void)
         //  NOTE: We need to resolve the default image now because we don't get
         //  called at bind (because we're a default image).
 
-        m_Default.m_Background.Init(DEFAULT_DOCK_SCREEN_IMAGE_UNID, 1, 1, true);
-        m_Default.m_ContentMask.Init(DEFAULT_DOCK_SCREEN_MASK_UNID, 1, 1, true);
+        m_Default.m_Background.Init(Universe, DEFAULT_DOCK_SCREEN_IMAGE_UNID, 1, 1, true);
+        m_Default.m_ContentMask.Init(Universe, DEFAULT_DOCK_SCREEN_MASK_UNID, 1, 1, true);
 
         //  Default colors
 
@@ -72,6 +74,10 @@ CDockScreenVisuals &CDockScreenVisuals::GetDefault (void)
         m_Default.m_rgbTextBackground = RGB_TEXT_BACKGROUND;
         m_Default.m_rgbTitleBackground = RGB_TITLE_BACKGROUND;
         m_Default.m_rgbTitleText = RGB_TITLE_TEXT;
+
+		//	Default fonts
+
+		m_Default.m_pStatusFont = &Universe.GetFont(FONT_MEDIUM_HEAVY_BOLD);
 
         m_bDefaultInitialized = true;
         }
@@ -91,7 +97,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
     DWORD dwImageUNID;
 	if ((::LoadUNID(Ctx, pDesc->GetAttribute(BACKGROUND_IMAGE_ATTRIB), &dwImageUNID) != NOERROR)
             || (dwImageUNID != 0 
-                && (m_Background.Init(dwImageUNID, 1, 1) != NOERROR)))
+                && (m_Background.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
         Ctx.sError = strPatternSubst("Unable to initialize image: %08x", dwImageUNID);
         return ERR_FAIL;
@@ -99,7 +105,7 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	if ((::LoadUNID(Ctx, pDesc->GetAttribute(CONTENT_MASK_ATTRIB), &dwImageUNID) != NOERROR)
             || (dwImageUNID != 0 
-                && (m_ContentMask.Init(dwImageUNID, 1, 1) != NOERROR)))
+                && (m_ContentMask.Init(Ctx.GetUniverse(), dwImageUNID, 1, 1) != NOERROR)))
         {
         Ctx.sError = strPatternSubst("Unable to initialize image: %08x", dwImageUNID);
         return ERR_FAIL;
@@ -112,6 +118,10 @@ ALERROR CDockScreenVisuals::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
     m_rgbTitleBackground = ::LoadRGBColor(pDesc->GetAttribute(TITLE_BACKGROUND_ATTRIB), RGB_TITLE_BACKGROUND);
     m_rgbTitleText = ::LoadRGBColor(pDesc->GetAttribute(TITLE_TEXT_ATTRIB), m_rgbText);
+
+	//	Fonts
+
+	m_pStatusFont = &Ctx.GetUniverse().GetFont(FONT_MEDIUM_HEAVY_BOLD);
 
     return NOERROR;
     }

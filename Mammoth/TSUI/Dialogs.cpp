@@ -279,7 +279,7 @@ void CVisualPalette::CreateCheckbox (CAniSequencer *pContainer,
 	pStyle = new CAniText;
 	pStyle->SetPropertyColor(PROP_COLOR, GetColor(colorTextDialogInput));
 	pStyle->SetPropertyFont(PROP_FONT, &GetFont(fontHeaderBold));
-	pStyle->SetPropertyString(PROP_TEXT, CONSTLIT("×"));
+	pStyle->SetPropertyString(PROP_TEXT, CSTR_TIMES);
 	pStyle->SetPropertyString(PROP_TEXT_ALIGN_HORZ, CONSTLIT("center"));
 	pStyle->SetPropertyString(PROP_TEXT_ALIGN_VERT, CONSTLIT("center"));
 	pButton->SetStyle(STYLE_CHECK, pStyle);

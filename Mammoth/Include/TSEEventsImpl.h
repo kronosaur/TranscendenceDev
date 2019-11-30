@@ -17,6 +17,7 @@ class CRangeTypeEvent : public CSystemEvent
 		virtual CString GetEventHandlerName (void) override { return m_sEvent; }
 		virtual CDesignType *GetEventHandlerType (void) override { return m_pType; }
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
+		virtual void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options) override;
 
 	protected:
 		virtual Classes GetClass (void) const override { return cRangeTypeEvent; }
@@ -56,6 +57,7 @@ class CTimedEncounterEvent : public CSystemEvent
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DoEvent (DWORD dwTick, CSystem &System) override;
 		virtual bool OnObjDestroyed (CSpaceObject *pObj) override;
+		virtual void OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options) override;
 		virtual bool OnStationDestroyed (CSpaceObject *pObj) override;
 
 	protected:

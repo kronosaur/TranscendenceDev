@@ -11,6 +11,7 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 	ALERROR error;
 	CString sError;
 	CSovereign *pPlayer = Universe.FindSovereign(g_PlayerSovereignUNID);
+	CDesignCollection::SDiagnosticsCtx DiagnosticsCtx;
 
 	//	Create all systems.
 
@@ -38,18 +39,22 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 		printf("Created %s\n", (LPSTR)pNode->GetSystemName());
 		}
 
-	//	Start diagnostics are always in SE (if available)
+	Universe.StartGame(true);
+
+	//	Start diagnostics are always in the starting system (if available)
 
 	CSystem *pSE = NULL;
-	if (AllSystems.Find(CONSTLIT("SE"), &pSE))
+	if (AllSystems.Find(Universe.GetCurrentAdventureDesc().GetStartingNodeID(), &pSE))
 		{
 		Universe.SetCurrentSystem(pSE);
-		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics();
+
+		Universe.GetDesignCollection().FireOnGlobalStartDiagnostics(DiagnosticsCtx);
+		Universe.GetDesignCollection().FireOnGlobalRunDiagnostics(DiagnosticsCtx);
 		}
 	else
-		printf("WARNING: Unable to find SE. Cannot run <OnGlobalStartDiagnostics>\n");
+		printf("WARNING: Unable to find starting system. Cannot run <OnGlobalStartDiagnostics>\n");
 
-	//	Now loop over all systems are invoke OnSystemDiagnostics
+	//	Now loop over all systems and invoke OnSystemDiagnostics
 
 	for (i = 0; i < AllSystems.GetCount(); i++)
 		{
@@ -60,10 +65,14 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 
 		//	System diagnostics
 
-		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics();
+		Universe.GetDesignCollection().FireOnGlobalSystemDiagnostics(DiagnosticsCtx);
 		}
 
 	//	Fire OnEndDiagnostics
 
-	Universe.GetDesignCollection().FireOnGlobalEndDiagnostics();
+	Universe.GetDesignCollection().FireOnGlobalEndDiagnostics(DiagnosticsCtx);
+
+	//	Results
+
+	printf("TOTAL DIAGNOSTICS: %d\nTOTAL ERRORS: %d\n", DiagnosticsCtx.iTotalTests, DiagnosticsCtx.iTotalErrors);
 	}

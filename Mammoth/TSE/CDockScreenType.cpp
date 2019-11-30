@@ -128,19 +128,8 @@ ALERROR CDockScreenTypeRef::Bind (SDesignLoadCtx &Ctx, CXMLElement *pLocalScreen
 
 		else
 			{
-			CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(dwUNID);
-			if (pBaseType == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Unknown dock screen design type: %x"), dwUNID);
-				return ERR_FAIL;
-				}
-
-			m_pType = CDockScreenType::AsType(pBaseType);
-			if (m_pType == NULL)
-				{
-				Ctx.sError = strPatternSubst(CONSTLIT("Dock screen type expected: %x"), dwUNID);
-				return ERR_FAIL;
-				}
+			if (ALERROR error = CDesignTypeRef<CDockScreenType>::BindType(Ctx, dwUNID, m_pType))
+				return error;
 			}
 		}
 
@@ -202,7 +191,7 @@ void CDockScreenTypeRef::LoadUNID (SDesignLoadCtx &Ctx, const CString &sUNID)
 	{
 	if (Ctx.pExtension)
 		{
-		char *pPos = sUNID.GetASCIIZPointer();
+		const char *pPos = sUNID.GetASCIIZPointer();
 		if (*pPos == '@')
 			{
 			WORD wLow = LOWORD(Ctx.pExtension->GetUNID()) + (WORD)strParseIntOfBase(pPos+1, 16, 0);

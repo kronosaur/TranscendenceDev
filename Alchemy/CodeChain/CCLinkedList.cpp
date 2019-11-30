@@ -94,7 +94,7 @@ ICCItem *CCLinkedList::Clone (CCodeChain *pCC)
 	return pClone;
 	}
 
-ICCItem *CCLinkedList::CloneContainer (void)
+ICCItem *CCLinkedList::CloneContainer (void) const
 
 //	CloneContainer
 //

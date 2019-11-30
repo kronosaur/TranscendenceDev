@@ -34,7 +34,6 @@
 			multiHull=			"true"
             regen=              "4"
 
-			canAttack=			"true"
 			fireRateAdj=		"40"
 			explosionType=		"&vtThermoExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -112,7 +111,6 @@
 			multiHull=			"true"
             regen=              "25"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -214,7 +212,6 @@
 			multiHull=			"true"
             regen=              "22"
 
-			canAttack=			"true"
 			explosionType=		"&vtPlasmaExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -444,8 +441,4 @@
 	<Image UNID="&rsAresOutpost;"				bitmap="Resources\AresOutpost.jpg" bitmask="Resources\AresOutpostMask.bmp" loadOnUse="true" />
 	<Image UNID="&rsAresShipyard;"				bitmap="Resources\AresShipyard.jpg" bitmask="Resources\AresShipyardMask.bmp" loadOnUse="true" />
 
-	<Image UNID="&rsChasmHD;"					bitmap="Resources\ChasmHD.jpg" bitmask="Resources\ChasmHDMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsSandstormHD;"				bitmap="Resources\SandstormHD.jpg" bitmask="Resources\SandstormHDMask.bmp" loadOnUse="true" />
-	<Image UNID="&rsTundraHD;"					bitmap="Resources\TundraHD.jpg" bitmask="Resources\TundraHDMask.bmp" loadOnUse="true" />
-	
 </TranscendenceModule>

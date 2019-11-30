@@ -36,7 +36,6 @@
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itDwargChitonArmor;"
@@ -95,7 +94,6 @@
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itDwargCatoptricArmor;"
@@ -194,7 +192,6 @@
 			name=				"Dwarg colony|Dwarg colonies"
 			sovereign=			"&svDwargRaiders;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 			noMapLabel=			"true"
 
 			multiHull=			"true"
@@ -244,7 +241,6 @@
 			name=				"Dwarg fortress(es)"
 			sovereign=			"&svDwargRaiders;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itDwargHolochroalArmor;"
@@ -351,6 +347,8 @@
 			maxSpeed=			"19"
 
 			attributes=			"dwarg, genericClass, zoanthrope"
+
+			explosionType=		"&vtKineticExplosion2;"
 			>
 
 		<Armor>
@@ -468,8 +466,8 @@
 		
 		<Devices>
 			<Device deviceID="&itDwargBehemothCannon;"/>
-			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="90" posRadius="30"/>
-			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="270" posRadius="30"/>
+			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="350" maxFireArc="190" posAngle="95" posRadius="38"/>
+			<Device deviceID="&itDwargXiphonCannon;" secondaryWeapon="true" minFireArc="170" maxFireArc="10" posAngle="-95" posRadius="38"/>
 		</Devices>
 
 		<Maneuver
@@ -502,7 +500,7 @@
 			</Table>
 		</Items>
 
-		<Image imageID="&rsMediumShips4;" imageX="896" imageY="0" imageWidth="128" imageHeight="128"/>
+		<Image imageID="&rsDwargBehemothHD;" imageWidth="128" imageHeight="128" rotationCount="120" rotationColumns="12" viewportRatio="0.014375"/>
 		<HeroImage imageID="&rsDwargBehemothHero;" imageWidth="320" imageHeight="320"/>
 
 		<Effects>
@@ -845,6 +843,7 @@
 	
 <!-- RESOURCES -->
 	
+	<Image UNID="&rsDwargBehemothHD;"		bitmap="Resources\DwargBehemothHD.jpg"	bitmask="Resources\DwargBehemothHDMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsDwargBehemothHero;"		bitmap="Resources\DwargBehemothLarge.jpg"	bitmask="Resources\DwargBehemothLargeMask.bmp" 	loadOnUse="true" />
 	<Image UNID="&rsZoanthropeRaiderHD;"	bitmap="Resources\ZoanthropeRaiderHD.jpg"	bitmask="Resources\ZoanthropeRaiderHDMask.bmp" 	loadOnUse="true" />
 

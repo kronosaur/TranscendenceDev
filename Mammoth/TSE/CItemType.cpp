@@ -334,6 +334,8 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 //	Returns meta-data
 
 	{
+	CItem Item(const_cast<CItemType *>(this), 1);
+
 	//	Deal with the meta-data that we know about
 
 	if (strEquals(sField, FIELD_LEVEL))
@@ -419,7 +421,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_INSTALL_COST))
 		{
-		int iCost = GetInstallCost(CItemCtx());
+		int iCost = Item.GetInstallCost();
 		if (iCost == -1)
 			*retsValue = NULL_STR;
 		else
@@ -451,7 +453,7 @@ bool CItemType::FindDataField (const CString &sField, CString *retsValue) const
 
 	else if (strEquals(sField, FIELD_UNKNOWN_TYPE))
 		{
-		CItemType *pUnknownType = GetUnknownType(CItemCtx(this));
+		CItemType *pUnknownType = Item.GetUnknownType();
 		*retsValue = (pUnknownType ? strPatternSubst(CONSTLIT("0x%x"), pUnknownType->GetUNID()) : NULL_STR);
 		}
 
@@ -553,7 +555,10 @@ ICCItemPtr CItemType::FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CStrin
 		return ICCItemPtr(GetFrequencyName((FrequencyTypes)GetFrequency()));
 
     else if (strEquals(sProperty, PROPERTY_KNOWN))
-        return ICCItemPtr(IsKnown(CItemCtx(this)));
+		{
+		CItem Item(const_cast<CItemType *>(this), 1);
+        return ICCItemPtr(Item.IsKnown());
+		}
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return ICCItemPtr(GetLevel());
@@ -654,45 +659,7 @@ CDeviceClass *CItemType::GetAmmoLauncher (int *retiVariant) const
 //	Returns a weapon that can launch this ammo (or NULL)
 
 	{
-	int i;
-
-	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
-		{
-		CItemType *pType = GetUniverse().GetItemType(i);
-		CDeviceClass *pWeapon;
-
-		if (pType->IsDevice() 
-				&& (pWeapon = pType->GetDeviceClass()))
-			{
-			int iVariant = pWeapon->GetAmmoVariant(this);
-			if (iVariant != -1)
-				{
-				if (retiVariant)
-					*retiVariant = iVariant;
-				return pWeapon;
-				}
-			}
-		}
-
-	return NULL;
-	}
-
-int CItemType::GetApparentLevel (CItemCtx &Ctx) const
-
-//	GetApparentLevel
-//
-//	Returns the level that the item appears to be
-
-	{
-	//	NOTE: We assume that all unknown item types have the same level. If this
-	//	ever changes, we should look at the item in Ctx and use the actual 
-	//	index.
-
-	int iUnknownIndex;
-	if (!IsKnown(Ctx, &iUnknownIndex))
-		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetLevel();
-
-	return GetLevel(Ctx);
+	return (m_Weapons.GetCount() > 0 ? m_Weapons[0] : NULL);
 	}
 
 ItemCategories CItemType::GetCategory (void) const
@@ -761,8 +728,8 @@ CCurrencyAndValue CItemType::GetCurrencyAndValue (CItemCtx &Ctx, bool bActual) c
 	//	NOTE: We have got that guaranteed m_pUnknownType is non-NULL if IsKnown is FALSE.
 
 	int iUnknownIndex;
-	if (!IsKnown(Ctx, &iUnknownIndex) && !bActual)
-		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetCurrencyAndValue(Ctx);
+	if (!Ctx.GetItem().IsKnown(&iUnknownIndex) && !bActual)
+		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetCurrencyAndValue(CItemCtx());
 
 	//	If this is a scalable item, then we need to ask the class
 
@@ -809,8 +776,10 @@ const CString &CItemType::GetDesc (bool bActual) const
 //	Get description for the item
 	
 	{
+	CItem Item(const_cast<CItemType *>(this), 1);
+
 	int iUnknownIndex;
-	if (!bActual && !IsKnown(CItemCtx(this), &iUnknownIndex))
+	if (!bActual && !Item.IsKnown(&iUnknownIndex))
 		return m_UnknownTypes[iUnknownIndex].pUnknownType->GetDesc();
 
 	return m_sDescription; 
@@ -857,21 +826,6 @@ int CItemType::GetFrequencyByLevel (int iLevel)
 		default:
 			return 0;
 		}
-	}
-
-int CItemType::GetInstallCost (CItemCtx &Ctx) const
-
-//	GetInstallCost
-//
-//	Returns the cost to install the item (or -1 if the item cannot be installed)
-
-	{
-	if (m_pArmor)
-		return m_pArmor->GetInstallCost(Ctx);
-	else if (m_pDevice)
-		return m_pDevice->GetInstallCost(Ctx);
-	else
-		return -1;
 	}
 
 CString CItemType::GetItemCategory (ItemCategories iCategory)
@@ -925,20 +879,6 @@ CString CItemType::GetItemCategory (ItemCategories iCategory)
 		}
 	}
 
-int CItemType::GetLevel (CItemCtx &Ctx) const
-
-//  GetLevel
-//
-//  Returns the level of the item. For some items, the level varies based on the
-//  charge.
-
-    {
-    if (IsScalable() && !Ctx.IsItemNull())
-        return Ctx.GetItem().GetLevel();
-    else
-        return m_iLevel;
-    }
-
 int CItemType::GetMassKg (CItemCtx &Ctx) const
 
 //	GetMassKg
@@ -972,36 +912,6 @@ int CItemType::GetMaxHPBonus (void) const
 		return 150;
 	}
 
-CString CItemType::GetNamePattern (CItemCtx &Ctx, DWORD dwNounFormFlags, DWORD *retdwFlags) const
-
-//	GetNamePattern
-//
-//	Returns the noun pattern
-
-	{
-	bool bActualName = (dwNounFormFlags & nounActual) != 0;
-
-	int iUnknownIndex;
-	if (!IsKnown(Ctx, &iUnknownIndex) && !bActualName)
-		{
-		const SUnknownTypeDesc &Unknown = m_UnknownTypes[iUnknownIndex];
-		if (!Unknown.sUnknownName.IsBlank())
-			{
-			if (retdwFlags)
-				*retdwFlags = 0;
-
-			return Unknown.sUnknownName;
-			}
-		else
-			return Unknown.pUnknownType->GetNamePattern(Ctx, dwNounFormFlags, retdwFlags);
-		}
-
-	if (retdwFlags)
-		*retdwFlags = m_dwNameFlags;
-
-	return m_sName;
-	}
-
 int CItemType::GetRandomUnknownTypeIndex (void) const
 
 //	GetRandomUnknownTypeIndex
@@ -1030,7 +940,7 @@ CString CItemType::GetReference (CItemCtx &Ctx, const CItem &Ammo, DWORD dwFlags
 
 	//	No reference if unknown
 
-	if (!IsKnown(Ctx) && !(dwFlags & FLAG_ACTUAL_ITEM))
+	if (!Ctx.GetItem().IsKnown() && !(dwFlags & FLAG_ACTUAL_ITEM))
 		return NULL_STR;
 
 	//	Return armor reference, if this is armor
@@ -1062,7 +972,7 @@ CString CItemType::GetSortName (CItemCtx &Ctx) const
 
 	{
 	int iUnknownIndex;
-	if (!IsKnown(Ctx, &iUnknownIndex) && !m_UnknownTypes[iUnknownIndex].sUnknownName.IsBlank())
+	if (!Ctx.GetItem().IsKnown(&iUnknownIndex) && !m_UnknownTypes[iUnknownIndex].sUnknownName.IsBlank())
 		return m_UnknownTypes[iUnknownIndex].sUnknownName;
 	else
 		return m_sSortName;
@@ -1079,7 +989,7 @@ const CItemType::SStdStats &CItemType::GetStdStats (int iLevel)
     return m_Stats[iLevel - 1];
     }
 
-CCurrencyAndValue CItemType::GetTradePrice (CSpaceObject *pObj, bool bActual) const
+CCurrencyAndValue CItemType::GetTradePrice (const CSpaceObject *pObj, bool bActual) const
 
 //	GetTradePrice
 //
@@ -1090,33 +1000,9 @@ CCurrencyAndValue CItemType::GetTradePrice (CSpaceObject *pObj, bool bActual) co
 	return CCurrencyAndValue(Item.GetTradePrice(pObj, bActual), GetCurrencyType());
 	}
 
-int CItemType::GetUnknownIndex (CItemCtx &Ctx) const
+CString CItemType::GenerateUnknownName (int iIndex, DWORD *retdwFlags)
 
-//	GetUnknownIndex
-//
-//	Returns the unknown index from an item.
-
-	{
-	//	If not unknown, then we're done.
-
-	int iUnknownCount = m_UnknownTypes.GetCount();
-	if (iUnknownCount == 0)
-		return -1;
-
-	//	Get the item; if we don't have a valid item, then we assume the first 
-	//	unknown item.
-
-	const CItem &Item = Ctx.GetItem();
-	if (Item.GetType() != this)
-		return 0;
-
-	int iIndex = Item.GetUnknownIndex();
-	return Max(0, Min(iIndex, iUnknownCount - 1));
-	}
-
-CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
-
-//	GetUnknownName
+//	GenerateUnknownName
 //
 //	Returns the unknown name of the item
 
@@ -1125,44 +1011,6 @@ CString CItemType::GetUnknownName (int iIndex, DWORD *retdwFlags)
 		return GenerateRandomName(m_UnknownNames[iIndex]);
 
 	return GetNamePattern(0, retdwFlags);
-	}
-
-CItemType *CItemType::GetUnknownType (CItemCtx &Ctx) const
-
-//	GetUnknownType
-//
-//	Returns the unknown type.
-
-	{
-	int iIndex = GetUnknownIndex(Ctx);
-	if (iIndex < 0)
-		return NULL;
-
-	return m_UnknownTypes[iIndex].pUnknownType;
-	}
-
-CItemType *CItemType::GetUnknownTypeIfUnknown (CItemCtx &Ctx, bool bActual) const
-
-//	GetUnknownTypeIfUnknown
-//
-//	Returns the unknown type.
-
-	{
-	//	NOTE: We add this so that we can do expressions like this:
-	//
-	//	if (CItemType *pUnknownType = GetUnknownTypeIfUnknown(Ctx, bActual))
-	//		...
-
-	if (bActual)
-		return NULL;
-
-	int iIndex = GetUnknownIndex(Ctx);
-	if (iIndex < 0)
-		return NULL;
-	else if (m_UnknownTypes[iIndex].bKnown)
-		return NULL;
-	else
-		return m_UnknownTypes[iIndex].pUnknownType;
 	}
 
 bool CItemType::GetUseDesc (SUseDesc *retDesc) const
@@ -1227,6 +1075,10 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
 //
 //                              this->IsMissile()           this->IsWeapon()
 //  ----------------------------------------------------------------------------
+//	Ctx=null					missile desc, for			weapon desc (use first
+//									first weapon that			variant for 
+//									fires this missile.			launchers).
+//
 //  Ctx=installed weapon        missile desc, if            weapon desc (use variant
 //                                  fired by weapon.            item for missile).
 //
@@ -1411,12 +1263,11 @@ void CItemType::InitRandomNames (void)
 
 //	InitRandomNames
 //
-//	Initialize random names
+//	Initialize random names. NOTE: This is called from inside BindDesign, so we
+//	need to deal with the fact that other item types might not yet be bound.
 
 	{
 	DEBUG_TRY
-
-	int i;
 
 	//	If we don't have random names for other items then we're done
 
@@ -1428,7 +1279,7 @@ void CItemType::InitRandomNames (void)
 
 	TArray<int> Randomize;
 	Randomize.InsertEmpty(iCount);
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		Randomize[i] = i;
 
 	Randomize.Shuffle();
@@ -1439,9 +1290,11 @@ void CItemType::InitRandomNames (void)
 
 	//	Loop over all items and assign each item that has us as the
 	//	unknown placeholder.
+	//
+	//	NOTE: This code must work even if some of the items are not yet bound.
 
 	int j = 0;
-	for (i = 0; i < GetUniverse().GetItemTypeCount(); i++)
+	for (int i = 0; i < GetUniverse().GetItemTypeCount(); i++)
 		{
 		CItemType *pType = GetUniverse().GetItemType(i);
 		int iUnknownIndex;
@@ -1475,23 +1328,6 @@ bool CItemType::IsFuel (void) const
 
 	{
 	return HasLiteralAttribute(STR_FUEL);
-	}
-
-bool CItemType::IsKnown (CItemCtx &Ctx, int *retiUnknownIndex) const
-
-//	IsKnown
-//
-//	Returns TRUE if the item is known.
-
-	{
-	int iIndex = GetUnknownIndex(Ctx);
-	if (iIndex < 0)
-		return true;
-
-	if (retiUnknownIndex)
-		*retiUnknownIndex = iIndex;
-
-	return m_UnknownTypes[iIndex].bKnown;
 	}
 
 bool CItemType::IsMissile (void) const
@@ -1601,12 +1437,8 @@ ALERROR CItemType::OnBindDesign (SDesignLoadCtx &Ctx)
 	//	Call contained objects
 
 	if (m_pComponents)
-		{
 		if (error = m_pComponents->OnDesignLoadComplete(Ctx))
 			return error;
-
-		InitComponents();
-		}
 
 	if (m_pDevice)
 		if (error = m_pDevice->Bind(Ctx))
@@ -1949,29 +1781,19 @@ CEffectCreator *CItemType::OnFindEffectCreator (const CString &sUNID)
 		return NULL;
 	}
 
-ALERROR CItemType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
+const CEconomyType &CItemType::OnGetDefaultCurrency (void) const
 
-//  OnFinishBindDesign
+//	OnGetDefaultCurrency
 //
-//  Done with binding
+//	Returns default currency.
 
-    {
-    ALERROR error;
+	{
+	const CEconomyType *pCurrency = GetCurrencyType();
+	if (pCurrency == NULL)
+		return GetUniverse().GetDefaultCurrency();
 
-    if (m_pDevice)
-        if (error = m_pDevice->FinishBind(Ctx))
-            return error;
-
-    if (m_pArmor)
-        if (error = m_pArmor->FinishBindDesign(Ctx))
-            return error;
-
-    if (m_pMissile)
-        if (error = m_pMissile->FinishBindDesign(Ctx))
-            return error;
-
-    return NOERROR;
-    }
+	return *pCurrency;
+	}
 
 ICCItemPtr CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
@@ -1983,7 +1805,21 @@ ICCItemPtr CItemType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sPropert
 	CItem Item(const_cast<CItemType *>(this), 1);
 	CItemCtx ItemCtx(Item);
 
-	return ICCItemPtr(Item.GetItemProperty(Ctx, ItemCtx, sProperty));
+	return ICCItemPtr(Item.GetItemProperty(Ctx, ItemCtx, sProperty, true));
+	}
+
+bool CItemType::OnSetTypeProperty (const CString &sProperty, const ICCItem &Value)
+
+//	OnSetTypeProperty
+//
+//	Sets a property.
+
+	{
+	CItem Item(this, 1);
+	CItemCtx ItemCtx(Item);
+
+	ESetPropertyResults iResult = Item.SetProperty(ItemCtx, sProperty, &Value, true);
+	return (iResult == resultPropertySet);
 	}
 
 bool CItemType::OnHasSpecialAttribute (const CString &sAttrib) const
@@ -2079,10 +1915,9 @@ ALERROR CItemType::OnPrepareBindDesign (SDesignLoadCtx &Ctx)
 //	Get ready to bind
 
 	{
-	//	Delete the weapon relationship until we've bound everything and known
-	//	what we've got.
-
-	m_Weapons.DeleteAll();
+	if (m_pDevice)
+		if (ALERROR error = m_pDevice->PrepareBind(Ctx))
+			return error;
 
 	//	Done
 
@@ -2168,7 +2003,7 @@ void CItemType::OnReadFromStream (SUniverseLoadCtx &Ctx)
 
 			if (iUnknownItem != -1 && m_UnknownTypes.GetCount() > 0)
 				{
-				m_UnknownTypes[0].sUnknownName = m_UnknownTypes[0].pUnknownType->GetUnknownName(iUnknownItem);
+				m_UnknownTypes[0].sUnknownName = m_UnknownTypes[0].pUnknownType->GenerateUnknownName(iUnknownItem);
 				m_UnknownTypes[0].bKnown = bKnown;
 				}
 			}
@@ -2199,6 +2034,19 @@ void CItemType::OnReinit (void)
 
 	InitRandomNames();
 	InitComponents();
+	}
+
+void CItemType::OnUnbindDesign (void)
+
+//	OnUnbindDesign
+//
+//	Reset
+
+	{
+	//	Delete the weapon relationship until we've bound everything and know
+	//	what we've got.
+
+	m_Weapons.DeleteAll();
 	}
 
 void CItemType::OnWriteToStream (IWriteStream *pStream)
@@ -2321,16 +2169,3 @@ void CItemType::SetAllKnown (bool bKnown)
 		m_UnknownTypes[i].bKnown = bKnown;
 	}
 
-void CItemType::SetKnown (CItemCtx &Ctx, bool bKnown)
-
-//	SetKnown
-//
-//	Sets whether or not the item is identified.
-
-	{
-	int iIndex = GetUnknownIndex(Ctx);
-	if (iIndex < 0)
-		return;
-
-	m_UnknownTypes[iIndex].bKnown = bKnown;
-	}

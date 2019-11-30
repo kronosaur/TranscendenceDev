@@ -11,6 +11,7 @@
 #define ARMOR_LEVEL_ATTRIB						CONSTLIT("armorLevel")
 #define CANNOT_BE_HIT_ATTRIB					CONSTLIT("cannotBeHit")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
+#define HULL_TYPE_ATTRIB						CONSTLIT("hullType")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
 #define MAX_HIT_POINTS_ATTRIB					CONSTLIT("maxHitPoints")
 #define MAX_STRUCTURAL_HIT_POINTS_ATTRIB		CONSTLIT("maxStructuralHitPoints")
@@ -23,6 +24,11 @@
 #define FIELD_ARMOR_LEVEL						CONSTLIT("armorLevel")
 #define FIELD_HP								CONSTLIT("hp")
 #define FIELD_REGEN								CONSTLIT("regen")					//	hp repaired per 180 ticks
+
+#define HULL_TYPE_ASTEROID						CONSTLIT("asteroidHull")
+#define HULL_TYPE_MULTIPLE						CONSTLIT("multiHull")
+#define HULL_TYPE_SINGLE						CONSTLIT("singleHull")
+#define HULL_TYPE_UNDERGROUND					CONSTLIT("undergroundHull")
 
 void CStationHullDesc::AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) const
 
@@ -46,6 +52,12 @@ ALERROR CStationHullDesc::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_pArmor.Bind(Ctx, itemcatArmor))
 		return error;
 
+	if (m_pArmor && !m_pArmor->IsArmor())
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Station armor not an armor item: %s"), m_pArmor->GetNounPhrase());
+		return ERR_FAIL;
+		}
+
 	return NOERROR;
 	}
 
@@ -56,9 +68,11 @@ int CStationHullDesc::CalcDamageEffectiveness (CSpaceObject *pAttacker, CInstall
 //	Returns the effectiveness of the given weapon on this station hull (0-100).
 
 	{
-	CArmorClass *pArmor = GetArmorClass();
-	if (pArmor)
-		return pArmor->GetDamageEffectiveness(pAttacker, pWeapon);
+	if (const CItem Item = GetArmorItem())
+		{
+		const CArmorItem ArmorItem = Item.AsArmorItem();
+		return ArmorItem.GetDamageEffectiveness(pAttacker, pWeapon);
+		}
 	else
 		return 100;
 	}
@@ -84,7 +98,7 @@ Metric CStationHullDesc::CalcHitsToDestroy (int iLevel) const
 
 	//	If the station is multi-hulled, then assume WMD4 and adjust weapon damage.
 
-	if (IsMultiHull())
+	if (m_iType != hullSingle)
 		{
 		int iWMD = 34;
 		rWeaponDamage = Max(1.0, (iWMD * rWeaponDamage / 100.0));
@@ -152,6 +166,23 @@ bool CStationHullDesc::FindDataField (const CString &sField, CString *retsValue)
 	return true;
 	}
 
+CItem CStationHullDesc::GetArmorItem (void) const
+
+//	GetArmorItem
+//
+//	Returns an item representing the armor type. NOTE: May be empty.
+
+	{
+	if (m_pArmor == NULL)
+		return CItem();
+
+	CItem Item(m_pArmor, 1);
+	if (m_pArmor->IsScalable())
+		Item.SetLevel(m_iArmorLevel);
+
+	return Item;
+	}
+
 int CStationHullDesc::GetArmorLevel (void) const
 
 //	GetArmorLevel
@@ -175,6 +206,32 @@ int CStationHullDesc::GetArmorLevel (void) const
 		return 1;
 	}
 
+CString CStationHullDesc::GetID (EHullTypes iType)
+
+//	GetID
+//
+//	Returns as an ID
+
+	{
+	switch (iType)
+		{
+		case hullSingle:
+			return HULL_TYPE_SINGLE;
+
+		case hullMultiple:
+			return HULL_TYPE_MULTIPLE;
+
+		case hullAsteroid:
+			return HULL_TYPE_ASTEROID;
+
+		case hullUnderground:
+			return HULL_TYPE_UNDERGROUND;
+
+		default:
+			return NULL_STR;
+		}
+	}
+
 ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bMultiHullDefault)
 
 //	InitFromXML
@@ -191,8 +248,21 @@ ALERROR CStationHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, 
 
 	//	Multi-hull defaults to TRUE if you use the <Hull> element.
 
-	if (!pDesc->FindAttributeBool(MULTI_HULL_ATTRIB, &m_bMultiHull))
-		m_bMultiHull = bMultiHullDefault;
+	bool bMultiHull;
+	CString sHullType;
+	if (pDesc->FindAttribute(HULL_TYPE_ATTRIB, &sHullType))
+		{
+		m_iType = ParseHullType(sHullType);
+		if (m_iType == hullUnknown)
+			{
+			Ctx.sError = strPatternSubst(CONSTLIT("Unknown hullType: %s"), sHullType);
+			return ERR_FAIL;
+			}
+		}
+	else if (pDesc->FindAttributeBool(MULTI_HULL_ATTRIB, &bMultiHull))
+		m_iType = (bMultiHull ? hullMultiple : hullSingle);
+	else
+		m_iType = (bMultiHullDefault ? hullMultiple : hullSingle);
 
 	//	Get hit points and max hit points
 
@@ -272,3 +342,23 @@ ALERROR CStationHullDesc::InitFromStationXML (SDesignLoadCtx &Ctx, CXMLElement *
 
 	return InitFromXML(Ctx, pDesc, false);
 	}
+
+CStationHullDesc::EHullTypes CStationHullDesc::ParseHullType (const CString &sValue)
+
+//	ParseHullType
+//
+//	Parses a hull type ID and returns it. If invalid, we return hullUnknown.
+
+	{
+	if (strEquals(sValue, HULL_TYPE_SINGLE))
+		return hullSingle;
+	else if (strEquals(sValue, HULL_TYPE_MULTIPLE))
+		return hullMultiple;
+	else if (strEquals(sValue, HULL_TYPE_ASTEROID))
+		return hullAsteroid;
+	else if (strEquals(sValue, HULL_TYPE_UNDERGROUND))
+		return hullUnderground;
+	else
+		return hullUnknown;
+	}
+

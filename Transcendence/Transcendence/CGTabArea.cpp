@@ -77,14 +77,16 @@ bool CGTabArea::HitTest (int x, int y, int *retiTab) const
 //	See if we hit a tab.
 
 	{
-	int i;
+	if (m_bNoNavigation)
+		return false;
+
 	RECT rcRect = GetRect();
 
 	if (y >= rcRect.top && y < rcRect.top + m_cyTabHeight)
 		{
 		int xTab = rcRect.left;
 
-		for (i = 0; i < m_Tabs.GetCount(); i++)
+		for (int i = 0; i < m_Tabs.GetCount(); i++)
 			{
 			if (x >= xTab && x < xTab + m_Tabs[i].cxWidth)
 				{

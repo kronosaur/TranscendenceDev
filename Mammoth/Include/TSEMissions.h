@@ -85,7 +85,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const override;
-		virtual bool IsMission (void) override { return true; }
+		virtual bool IsMission (void) const override { return true; }
 		virtual bool IsNonSystemObj (void) override { return true; }
 		virtual void OnNewSystem (CSystem *pSystem) override;
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError) override;

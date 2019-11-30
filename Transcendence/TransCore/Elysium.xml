@@ -76,12 +76,12 @@
 				</Group>
 			</Orbitals>
 
-			<!-- Grom.e -->
+			<!-- Elysium B -->
 
 			<Orbitals distance="7" scale="light-minute" angle="random">
 				<Group>
 					<Station type="&stHydrogenGasGiantSizeM;" 
-							name="GromE" 
+							name="Elysium B" 
 							showOrbit="true"
 							/>
 

@@ -11,7 +11,7 @@ ALERROR CSoundRef::Bind (SDesignLoadCtx &Ctx)
 //	Binds the design (looking up the actual sound file)
 
 	{
-	if (Ctx.bNoResources || g_pUniverse->GetSoundMgr() == NULL)
+	if (Ctx.bNoResources || Ctx.GetUniverse().GetSoundMgr() == NULL)
 		{
 		m_pSound = NULL;
 		return NOERROR;
@@ -19,8 +19,16 @@ ALERROR CSoundRef::Bind (SDesignLoadCtx &Ctx)
 
 	if (m_dwUNID)
 		{
-		m_pSound = g_pUniverse->FindSoundResource(m_dwUNID);
-		if (m_pSound == NULL && Ctx.GetAPIVersion() >= 12)
+		m_pSound = Ctx.GetUniverse().FindSoundResource(m_dwUNID);
+		if (m_pSound)
+			{
+			if (!m_pSound->IsBound())
+				{
+				if (ALERROR error = m_pSound->BindDesign(Ctx))
+					return error;
+				}
+			}
+		else if (Ctx.GetAPIVersion() >= 12)
 			{
 			Ctx.sError = strPatternSubst(CONSTLIT("Unable to find sound: %x."), m_dwUNID);
 			return ERR_FAIL;

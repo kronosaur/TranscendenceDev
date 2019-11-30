@@ -283,6 +283,18 @@ bool CTimedEncounterEvent::OnObjDestroyed (CSpaceObject *pObj)
 	return (m_Targets.GetCount() == 0);
 	}
 
+void CTimedEncounterEvent::OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options)
+
+//	OnPlayerChangedShips
+//
+//	Switch any references to the player ship.
+
+	{
+	if (m_Targets.Delete(&OldShip)
+			&& !m_Targets.FindObj(&NewShip))
+		m_Targets.Add(&NewShip);
+	}
+
 bool CTimedEncounterEvent::OnStationDestroyed (CSpaceObject *pObj)
 
 //	OnStationDestroyed

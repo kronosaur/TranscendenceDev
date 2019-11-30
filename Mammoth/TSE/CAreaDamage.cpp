@@ -138,7 +138,7 @@ void CAreaDamage::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Called when another object is destroyed
 
 	{
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 	}
 
 void CAreaDamage::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
@@ -191,7 +191,7 @@ void CAreaDamage::OnReadFromStream (SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		}
 

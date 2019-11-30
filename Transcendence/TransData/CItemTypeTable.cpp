@@ -40,8 +40,7 @@ bool CItemTypeTable::Filter (const CString &sCriteria)
 
 	//	Compute the criteria
 
-	CItemCriteria Crit;
-	CItem::ParseCriteria(sCriteria, &Crit);
+	CItemCriteria Crit(sCriteria);
 
 	//	Loop over all the current items in the table and generate a new table
 	//	with the selection.

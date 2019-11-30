@@ -120,7 +120,7 @@ void CDockPane::CreateControl (EControlTypes iType, const CString &sID, const CS
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
 
 	switch (iType)
 		{
@@ -561,7 +561,7 @@ void CDockPane::GetControlStyle (const CString &sStyle, SControlStyle *retStyle)
 
 	{
 	const CVisualPalette &VI = g_pHI->GetVisuals();
-    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetVisuals();
+    const CDockScreenVisuals &DockScreenVisuals = m_pDockScreen->GetDockScreenVisuals();
 
 	if (strEquals(sStyle, STYLE_WARNING))
 		{
@@ -876,7 +876,7 @@ bool CDockPane::InitLayout (const CString &sLayout, const RECT &rcFullRect, CStr
 	return true;
 	}
 
-ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect)
+ALERROR CDockPane::InitPane (CDockSession &DockSession, CDockScreen &DockScreen, CXMLElement *pPaneDesc, const RECT &rcFullRect)
 
 //	InitPane
 //
@@ -887,10 +887,10 @@ ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, c
 
 	//	Initialize
 
-	AGScreen *pScreen = pDockScreen->GetScreen();
+	AGScreen *pScreen = DockScreen.GetScreen();
 	CleanUp(pScreen);
 
-	m_pDockScreen = pDockScreen;
+	m_pDockScreen = &DockScreen;
 	m_pPaneDesc = pPaneDesc;
 	ICCItem *pData = m_pDockScreen->GetData();
 
@@ -954,7 +954,7 @@ ALERROR CDockPane::InitPane (CDockScreen *pDockScreen, CXMLElement *pPaneDesc, c
 	else if (m_pPaneDesc->FindAttribute(DESC_ID_ATTRIB, &sValue))
 		{
 		ICCItemPtr pResult;
-		if (!m_pDockScreen->Translate(sValue, pData, pResult))
+		if (!DockSession.Translate(sValue, pData, pResult))
 			ReportError(strPatternSubst(CONSTLIT("Unknown language ID: %s"), sValue));
 		else
 			SetDescription(pResult->GetStringValue());
@@ -1111,7 +1111,7 @@ void CDockPane::RenderControlsBottomBar (void)
 
 	//	Create the action buttons at the bottom
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeHorizontal, m_rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.
@@ -1172,7 +1172,7 @@ void CDockPane::RenderControlsColumn (void)
 	rcActions.right = m_rcControls.right;
 	rcActions.bottom = m_rcControls.bottom;
 
-	m_Actions.CreateButtons(m_pDockScreen->GetVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
+	m_Actions.CreateButtons(m_pDockScreen->GetDockScreenVisuals(), m_pContainer, m_pDockScreen->GetResolvedRoot(), CDockScreen::FIRST_ACTION_ID, CDockScreenActions::arrangeVertical, rcActions);
 
 	//	Now that we know the size of the pane, we set the container size so that we
 	//	don't overlap the screen display.

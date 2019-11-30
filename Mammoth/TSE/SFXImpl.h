@@ -143,13 +143,13 @@ class CEffectGroupCreator : public CEffectCreator
 
 		void ApplyOffsets (SViewportPaintCtx *ioCtx, int *retx, int *rety);
 		IEffectPainter *CreateSubPainter (CCreatePainterCtx &Ctx, int iIndex) { return m_pCreators[iIndex].CreatePainter(Ctx); }
-		inline int GetCount (void) { return m_iCount; }
-		inline CEffectCreator *GetCreator (int iIndex) { return m_pCreators[iIndex]; }
+		int GetCount (void) { return m_iCount; }
+		CEffectCreator *GetCreator (int iIndex) { return m_pCreators[iIndex]; }
 		static CString GetClassTag (void) { return CONSTLIT("Group"); }
 		CVector GetOffsetPos (int iRotation);
-		inline int GetRotationAdj (void) const { return m_iRotationAdj; }
+		int GetRotationAdj (void) const { return m_iRotationAdj; }
 		virtual CString GetTag (void) { return GetClassTag(); }
-		inline bool HasOffsets (void) { return m_bHasOffsets; }
+		bool HasOffsets (void) { return m_bHasOffsets; }
 
 		//	Virtuals
 
@@ -199,11 +199,11 @@ class CEffectSequencerCreator : public CEffectCreator
 		virtual ~CEffectSequencerCreator (void);
 
 		static CString GetClassTag (void) { return CONSTLIT("Sequencer"); }
-		inline int GetCount (void) const { return m_Timeline.GetCount(); }
-		inline CEffectCreator *GetCreator (int iIndex) { return m_Timeline[iIndex].pCreator; }
+		int GetCount (void) const { return m_Timeline.GetCount(); }
+		CEffectCreator *GetCreator (int iIndex) { return m_Timeline[iIndex].pCreator; }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 		TimeTypes GetTime (int iIndex, int iStart, int iEnd = -1);
-		inline bool IsTime (int iIndex, int iStart, int iEnd) { return (iStart <= m_Timeline[iIndex].iTime) && (m_Timeline[iIndex].iTime <= iEnd); }
+		bool IsTime (int iIndex, int iStart, int iEnd) { return (iStart <= m_Timeline[iIndex].iTime) && (m_Timeline[iIndex].iTime <= iEnd); }
 
 		//	CEffectCreator virtuals
 		virtual ALERROR CreateEffect (CSystem *pSystem,
@@ -242,9 +242,9 @@ class CEffectVariantCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("Variants"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
-		inline int GetVariantCount (void) const { return m_Effects.GetCount(); }
-		inline CEffectCreator *GetVariantCreator (int iIndex) const { return m_Effects[iIndex].pEffect; }
-		inline int GetVariantCreatorIndex (int iVariantValue) { int iIndex; ChooseVariant(iVariantValue, &iIndex); return iIndex; }
+		int GetVariantCount (void) const { return m_Effects.GetCount(); }
+		CEffectCreator *GetVariantCreator (int iIndex) const { return m_Effects[iIndex].pEffect; }
+		int GetVariantCreatorIndex (int iVariantValue) { int iIndex; ChooseVariant(iVariantValue, &iIndex); return iIndex; }
 
 		//	CEffectCreator methods
 		virtual ALERROR CreateEffect (CSystem *pSystem,
@@ -329,11 +329,11 @@ class CFlareEffectCreator : public CEffectCreator
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
 		void CreateFlareSpike (int iAngle, int iLength, int iWidth, SPoint *Poly);
-		inline int GetLifetime (void) const { return m_iLifetime; }
-		inline CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
-		inline int GetRadius (void) const { return m_iRadius; }
-		inline CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
-		inline Styles GetStyle (void) const { return m_iStyle; }
+		int GetLifetime (void) const { return m_iLifetime; }
+		CG32bitPixel GetPrimaryColor (void) const { return m_rgbPrimaryColor; }
+		int GetRadius (void) const { return m_iRadius; }
+		CG32bitPixel GetSecondaryColor (void) const { return m_rgbSecondaryColor; }
+		Styles GetStyle (void) const { return m_iStyle; }
 
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) override { return m_iLifetime; }
@@ -397,10 +397,10 @@ class CImageEffectCreator : public CEffectCreator,
 		static CString GetClassTag (void) { return CONSTLIT("Image"); }
 		virtual CString GetTag (void) { return GetClassTag(); }
 
-		inline CCompositeImageDesc &GetImage (void) { return m_Image; }
-		inline bool HasRandomStartFrame (void) const { return m_bRandomStartFrame; }
-		inline bool ImageRotationNeeded (void) const { return m_bRotateImage; }
-		inline bool IsDirectional (void) const { return m_bDirectional; }
+		CCompositeImageDesc &GetImage (void) { return m_Image; }
+		bool HasRandomStartFrame (void) const { return m_bRandomStartFrame; }
+		bool ImageRotationNeeded (void) const { return m_bRotateImage; }
+		bool IsDirectional (void) const { return m_bDirectional; }
 
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) { return m_iLifetime; }
@@ -634,26 +634,26 @@ class CParticleCloudEffectCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("ParticleCloud"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
-		inline Metric GetDrag (void) const { return m_rDrag; }
-		inline int GetCohesion (void) const { return m_iCohesion; }
-		inline int GetEmitLifetime (void) const { return m_iEmitLifetime; }
-		inline int GetEmitRotation (void) const { return m_iEmitRotation; }
+		Metric GetDrag (void) const { return m_rDrag; }
+		int GetCohesion (void) const { return m_iCohesion; }
+		int GetEmitLifetime (void) const { return m_iEmitLifetime; }
+		int GetEmitRotation (void) const { return m_iEmitRotation; }
 		Metric GetEmitSpeed (void) const;
-		inline Metric GetMaxRadius (void) const { return m_rMaxRadius; }
-		inline Metric GetMinRadius (void) const { return m_rMinRadius; }
-		inline int GetNewParticleCount (void) const { return m_NewParticles.Roll(); }
-		inline int GetNewParticleMax (void) const { return m_NewParticles.GetMaxValue(); }
-		inline int GetParticleCount (void) const { return m_ParticleCount.Roll(); }
-		inline int GetParticleCountMax (void) const { return m_ParticleCount.GetMaxValue(); }
-		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
-		inline int GetParticleLifetime (void) const { return (m_rSlowMotionFactor == 1.0 ? m_ParticleLifetime.Roll() : (int)((m_ParticleLifetime.Roll() / m_rSlowMotionFactor))); }
-		inline int GetParticleLifetimeMax (void) const { return Max(1, (m_rSlowMotionFactor == 1.0 ? m_ParticleLifetime.GetMaxValue() : (int)(m_ParticleLifetime.GetMaxValue() / m_rSlowMotionFactor))); }
-		inline Metric GetRingRadius (void) const { return m_rRingRadius; }
-		inline Metric GetSlowMotionFactor (void) const { return m_rSlowMotionFactor; }
-		inline int GetSpreadAngle (void) const { return m_Spread.Roll(); }
-		inline Styles GetStyle (void) const { return m_iStyle; }
-		inline int GetViscosity (void) const { return m_iViscosity; }
-		inline int GetWakePotential (void) const { return m_iWakePotential; }
+		Metric GetMaxRadius (void) const { return m_rMaxRadius; }
+		Metric GetMinRadius (void) const { return m_rMinRadius; }
+		int GetNewParticleCount (void) const { return m_NewParticles.Roll(); }
+		int GetNewParticleMax (void) const { return m_NewParticles.GetMaxValue(); }
+		int GetParticleCount (void) const { return m_ParticleCount.Roll(); }
+		int GetParticleCountMax (void) const { return m_ParticleCount.GetMaxValue(); }
+		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
+		int GetParticleLifetime (void) const { return (m_rSlowMotionFactor == 1.0 ? m_ParticleLifetime.Roll() : (int)((m_ParticleLifetime.Roll() / m_rSlowMotionFactor))); }
+		int GetParticleLifetimeMax (void) const { return Max(1, (m_rSlowMotionFactor == 1.0 ? m_ParticleLifetime.GetMaxValue() : (int)(m_ParticleLifetime.GetMaxValue() / m_rSlowMotionFactor))); }
+		Metric GetRingRadius (void) const { return m_rRingRadius; }
+		Metric GetSlowMotionFactor (void) const { return m_rSlowMotionFactor; }
+		int GetSpreadAngle (void) const { return m_Spread.Roll(); }
+		Styles GetStyle (void) const { return m_iStyle; }
+		int GetViscosity (void) const { return m_iViscosity; }
+		int GetWakePotential (void) const { return m_iWakePotential; }
 
 		//	CEffectCreator virtuals
 		virtual ~CParticleCloudEffectCreator (void) override;
@@ -699,7 +699,7 @@ class CParticlePatternEffectCreator : public CEffectCreator
 		CParticlePatternEffectCreator (void);
 		virtual ~CParticlePatternEffectCreator (void);
 
-		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
+		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
 
 		static CString GetClassTag (void) { return CONSTLIT("ParticlePattern"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
@@ -767,7 +767,7 @@ class CParticleSystemEffectCreator : public CEffectCreator
 		CParticleSystemEffectCreator (void);
 		~CParticleSystemEffectCreator (void);
 			
-		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
+		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
 
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
@@ -895,14 +895,14 @@ class CShapeEffectCreator : public CEffectCreator
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
 		void CreateShapeRegion (int iAngle, int iLength, int iWidth, CG16bitBinaryRegion *pRegion);
-		inline CGDraw::EBlendModes GetBlendMode (void) const { return m_iBlendMode; }
-		inline CG32bitPixel GetColor (void) const { return m_rgbColor; }
-		inline int GetLength (void) const { return m_iLength; }
-		inline int GetLengthInc (void) const { return m_iLengthInc; }
-		inline DWORD GetOpacity (void) const { return m_byOpacity; }
-		inline int GetWidth (void) const { return m_iWidth; }
-		inline int GetWidthInc (void) const { return m_iWidthInc; }
-		inline bool IsDirectional (void) const { return m_bDirectional; }
+		CGDraw::EBlendModes GetBlendMode (void) const { return m_iBlendMode; }
+		CG32bitPixel GetColor (void) const { return m_rgbColor; }
+		int GetLength (void) const { return m_iLength; }
+		int GetLengthInc (void) const { return m_iLengthInc; }
+		DWORD GetOpacity (void) const { return m_byOpacity; }
+		int GetWidth (void) const { return m_iWidth; }
+		int GetWidthInc (void) const { return m_iWidthInc; }
+		bool IsDirectional (void) const { return m_bDirectional; }
 
 		//	CEffectCreator virtuals
 		virtual ~CShapeEffectCreator (void);
@@ -999,15 +999,15 @@ class CSmokeTrailEffectCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("SmokeTrail"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
-		inline int GetEmitLifetime (void) const { return m_iEmitLifetime; }
+		int GetEmitLifetime (void) const { return m_iEmitLifetime; }
 		Metric GetEmitSpeed (void) const;
-		inline int GetNewParticleCount (void) const { return m_NewParticles.Roll(); }
-		inline int GetNewParticleMax (void) const { return m_NewParticles.GetMaxValue(); }
-		inline CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
-		inline int GetParticleLifetime (void) const { return Max(1, m_ParticleLifetime.Roll()); }
-		inline int GetParticleLifetimeMax (void) const { return Max(1, m_ParticleLifetime.GetMaxValue()); }
-		inline int GetRotation (void) const { return m_iRotation; }
-		inline int GetSpread (void) const { return m_Spread.Roll(); }
+		int GetNewParticleCount (void) const { return m_NewParticles.Roll(); }
+		int GetNewParticleMax (void) const { return m_NewParticles.GetMaxValue(); }
+		CEffectCreator *GetParticleEffect (void) const { return m_pParticleEffect; }
+		int GetParticleLifetime (void) const { return Max(1, m_ParticleLifetime.Roll()); }
+		int GetParticleLifetimeMax (void) const { return Max(1, m_ParticleLifetime.GetMaxValue()); }
+		int GetRotation (void) const { return m_iRotation; }
+		int GetSpread (void) const { return m_Spread.Roll(); }
 
 		//	CEffectCreator virtuals
 		virtual ~CSmokeTrailEffectCreator (void) override;
@@ -1087,10 +1087,10 @@ class CTextEffectCreator : public CEffectCreator
 		static CString GetClassTag (void) { return CONSTLIT("Text"); }
 		virtual CString GetTag (void) override { return GetClassTag(); }
 
-		inline const CG16bitFont *GetFont (void) { return m_pFont; }
-		inline DWORD GetFontFlags (void) { return m_dwAlignment; }
-		inline DWORD GetOpacity (void) { return m_byOpacity; }
-		inline CG32bitPixel GetPrimaryColor (void) { return m_rgbPrimaryColor; }
+		const CG16bitFont *GetFont (void) { return m_pFont; }
+		DWORD GetFontFlags (void) { return m_dwAlignment; }
+		DWORD GetOpacity (void) { return m_byOpacity; }
+		CG32bitPixel GetPrimaryColor (void) { return m_rgbPrimaryColor; }
 
 		//	CEffectCreator virtuals
 		virtual int GetLifetime (void) override { return m_iLifetime; }

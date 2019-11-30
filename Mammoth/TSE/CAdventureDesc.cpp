@@ -32,84 +32,15 @@
 
 #define ERR_STARTING_SHIP_CRITERIA				CONSTLIT("Unable to parse startingShipCriteria")
 
-static int g_StdArmorDamageAdj[MAX_ITEM_LEVEL][damageCount] =
-	{
-		//	lsr knt par blt ion thr pos pls am  nan grv sng dac dst dlg dfr
-		{	100,100,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 80, 80,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 60, 60,100,100,100,100,100,100,125,125,200,200,300,300,500,500 },
-		{	 40, 40,100,100,100,100,100,100,100,100,125,125,200,200,300,300 },
-		{	 25, 25, 80, 80,100,100,100,100,100,100,125,125,200,200,300,300 },
-
-		{	 14, 14, 60, 60,100,100,100,100,100,100,125,125,200,200,300,300 },
-		{	  8,  8, 40, 40,100,100,100,100,100,100,100,100,125,125,200,200 },
-		{	  4,  4, 25, 25, 80, 80,100,100,100,100,100,100,125,125,200,200 },
-		{	  2,  2, 14, 14, 60, 60,100,100,100,100,100,100,125,125,200,200 },
-		{	  1,  1,  8,  8, 40, 40,100,100,100,100,100,100,100,100,125,125 },
-
-		{	  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100,100,100,125,125 },
-		{	  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100,100,100,125,125 },
-		{	  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100,100,100 },
-
-		{	  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80,100,100 },
-
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40,100,100 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  4,  4, 25, 25, 80, 80 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  2, 14, 14, 60, 60 },
-		{	  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  8,  8, 40, 40 },
-	};
-
-static int g_StdShieldDamageAdj[MAX_ITEM_LEVEL][damageCount] =
-	{
-		//	lsr knt par blt  ion thr pos pls  am  nan grv sng  dac dst dlg dfr
-		{	100,100,100,100, 100,100,160,160, 225,225,300,300, 375,375,500,500 },
-		{	 95, 95,100,100, 100,100,140,140, 200,200,275,275, 350,350,450,450 },
-		{	 90, 90,100,100, 100,100,120,120, 180,180,250,250, 325,325,400,400 },
-		{	 85, 85,100,100, 100,100,100,100, 160,160,225,225, 300,300,375,375 },
-		{	 80, 80, 95, 95, 100,100,100,100, 140,140,200,200, 275,275,350,350 },
-
-		{	 75, 75, 90, 90, 100,100,100,100, 120,120,180,180, 250,250,325,325 },
-		{	 70, 70, 85, 85, 100,100,100,100, 100,100,160,160, 225,225,300,300 },
-		{	 65, 65, 80, 80,  95, 95,100,100, 100,100,140,140, 200,200,275,275 },
-		{	 60, 60, 75, 75,  90, 90,100,100, 100,100,120,120, 180,180,250,250 },
-		{	 55, 55, 70, 70,  85, 85,100,100, 100,100,100,100, 160,160,225,225 },
-
-		{	 50, 50, 65, 65,  80, 80, 95, 95, 100,100,100,100, 140,140,200,200 },
-		{	 40, 40, 60, 60,  75, 75, 90, 90, 100,100,100,100, 120,120,180,180 },
-		{	 30, 30, 55, 55,  70, 70, 85, 85, 100,100,100,100, 100,100,160,160 },
-		{	 20, 20, 50, 50,  65, 65, 80, 80,  95, 95,100,100, 100,100,140,140 },
-		{	 10, 10, 40, 40,  60, 60, 75, 75,  90, 90,100,100, 100,100,120,120 },
-
-		{	  0,  0, 30, 30,  55, 55, 70, 70,  85, 85,100,100, 100,100,100,100 },
-		{	  0,  0, 20, 20,  50, 50, 65, 65,  80, 80, 95, 95, 100,100,100,100 },
-		{	  0,  0, 10, 10,  40, 40, 60, 60,  75, 75, 90, 90, 100,100,100,100 },
-		{	  0,  0,  0,  0,  30, 30, 55, 55,  70, 70, 85, 85, 100,100,100,100 },
-		{	  0,  0,  0,  0,  20, 20, 50, 50,  65, 65, 80, 80,  95, 95,100,100 },
-
-		{	  0,  0,  0,  0,  10, 10, 40, 40,  60, 60, 75, 75,  90, 90,100,100 },
-		{	  0,  0,  0,  0,   0,  0, 30, 30,  55, 55, 70, 70,  85, 85,100,100 },
-		{	  0,  0,  0,  0,   0,  0, 20, 20,  50, 50, 65, 65,  80, 80, 95, 95 },
-		{	  0,  0,  0,  0,   0,  0, 10, 10,  40, 40, 60, 60,  75, 75, 90, 90 },
-		{	  0,  0,  0,  0,   0,  0,  0,  0,  30, 30, 55, 55,  70, 70, 85, 85 },
-	};
-
-static bool g_bDamageAdjInit = false;
-static CDamageAdjDesc g_ArmorDamageAdj[MAX_ITEM_LEVEL];
-static CDamageAdjDesc g_ShieldDamageAdj[MAX_ITEM_LEVEL];
-
 CAdventureDesc::CAdventureDesc (void) :
-		m_fInInitEncounterOverrides(false)
+		m_fIsCurrentAdventure(false),
+		m_fInDefaultResource(false),
+		m_fIncludeOldShipClasses(false)
 
 //	CAdventureDesc constructor
 
 	{
+	m_sWelcomeMessage = CONSTLIT("Welcome to Transcendence!");
 	}
 
 bool CAdventureDesc::FindDataField (const CString &sField, CString *retsValue) const
@@ -188,17 +119,6 @@ void CAdventureDesc::FireOnGameStart (void)
 		}
 	}
 
-const CDamageAdjDesc *CAdventureDesc::GetDefaultArmorDamageAdj (int iLevel)
-
-//	GetDefaultArmorDamageAdj
-//
-//	Returns the default table
-
-	{
-	InitDefaultDamageAdj();
-	return &g_ArmorDamageAdj[iLevel - 1];
-	}
-
 const CEconomyType &CAdventureDesc::GetDefaultCurrency (void) const
 
 //	GetDefaultCurrency
@@ -210,17 +130,6 @@ const CEconomyType &CAdventureDesc::GetDefaultCurrency (void) const
 		return *m_pDefaultCurrency;
 
 	return GetUniverse().GetCreditCurrency();
-	}
-
-const CDamageAdjDesc *CAdventureDesc::GetDefaultShieldDamageAdj (int iLevel)
-
-//	GetDefaultShieldDamageAdj
-//
-//	Returns the default table
-
-	{
-	InitDefaultDamageAdj();
-	return &g_ShieldDamageAdj[iLevel - 1];
 	}
 
 CString CAdventureDesc::GetDesc (void)
@@ -235,24 +144,6 @@ CString CAdventureDesc::GetDesc (void)
 		return CTextBlock::LoadAsRichText(sText);
 	else
 		return CONSTLIT("{/rtf }");
-	}
-
-const CStationEncounterDesc *CAdventureDesc::GetEncounterDesc (DWORD dwUNID) const
-
-//	GetEncounterDesc
-//
-//	See if we override the given encounter descriptor.
-
-	{
-	//	If we're initializing the encounter overrides, then we always return
-	//	NULL, otherwise we would be returning uninitialized data.
-
-	if (m_fInInitEncounterOverrides)
-		return NULL;
-
-	//	Look for an override. We return NULL if not found.
-
-	return m_Encounters.GetAt(dwUNID);
 	}
 
 ALERROR CAdventureDesc::GetStartingShipClasses (TSortMap<CString, CShipClass *> *retClasses, CString *retsError)
@@ -283,97 +174,6 @@ ALERROR CAdventureDesc::GetStartingShipClasses (TSortMap<CString, CShipClass *> 
 	return NOERROR;
 	}
 
-void CAdventureDesc::InitDefaultDamageAdj (void)
-
-//	InitDefaultDamageAdj
-//
-//	Initialize default tables
-
-	{
-	int i;
-
-	if (!g_bDamageAdjInit)
-		{
-		for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-			{
-			g_ArmorDamageAdj[i - 1].InitFromArray(g_StdArmorDamageAdj[i - 1]);
-			g_ShieldDamageAdj[i - 1].InitFromArray(g_StdShieldDamageAdj[i - 1]);
-			}
-
-		g_bDamageAdjInit = true;
-		}
-	}
-
-bool CAdventureDesc::InitEncounterOverrides (CString *retsError)
-
-//	InitEncounterOverrides
-//
-//	Apply our overrides to the station type encounters.
-
-	{
-	int i;
-	SDesignLoadCtx LoadCtx;
-
-	//	Remember that we're overriding so that we don't re-enter
-
-	m_fInInitEncounterOverrides = true;
-
-	//	Loop over all overrides
-
-	for (i = 0; i < m_EncounterOverridesXML.GetContentElementCount(); i++)
-		{
-		CXMLElement *pOverride = m_EncounterOverridesXML.GetContentElement(i);
-
-		//	Get the UNID that we're overriding
-
-		DWORD dwUNID;
-		if (::LoadUNID(LoadCtx, pOverride->GetAttribute(FIELD_UNID), &dwUNID) != NOERROR)
-			{
-			if (retsError) *retsError = LoadCtx.sError;
-			return false;
-			}
-
-		if (dwUNID == 0)
-			{
-			if (retsError) *retsError = CONSTLIT("Encounter override must specify UNID to override.");
-			return false;
-			}
-
-		//	Get the station type. If we don't find the station, skip it. We 
-		//	assume that this is an optional type.
-
-		CStationType *pType = GetUniverse().FindStationType(dwUNID);
-		if (pType == NULL)
-			{
-			if (GetUniverse().InDebugMode())
-				::kernelDebugLogPattern("Skipping encounter override %08x because type is not found.", dwUNID);
-			continue;
-			}
-
-		//	Add an entry to our table
-
-		CStationEncounterDesc *pNewDesc = m_Encounters.SetAt(dwUNID);
-
-		//	Override it.
-
-		if (!pNewDesc->InitAsOverride(pType->GetEncounterDesc(), *pOverride, retsError))
-			return false;
-
-		//	Reinitialize the level frequency, if necessary.
-		//
-		//	NOTE: There is no need to save these level tables since we will 
-		//	recreate them at load time (i.e., we run through this code at load
-		//	time again).
-
-		pNewDesc->InitLevelFrequency(GetUniverse().GetTopology());
-		}
-
-	//	Done
-
-	m_fInInitEncounterOverrides = false;
-	return true;
-	}
-
 bool CAdventureDesc::IsValidStartingClass (CShipClass *pClass)
 
 //	IsValidStartingClass
@@ -399,10 +199,11 @@ ALERROR CAdventureDesc::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 
 	{
-	ALERROR error;
-
-	if (error = m_pDefaultCurrency.Bind(Ctx))
+	if (ALERROR error = m_pDefaultCurrency.Bind(Ctx))
 		return error;
+
+	if (!m_EngineOptions.InitFromProperties(Ctx, *this))
+		return ERR_FAIL;
 
 	return NOERROR;
 	}
@@ -484,15 +285,6 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	else if (Ctx.pExtension && strFind(Ctx.pExtension->GetName(), CONSTLIT("Extension")) == 0)
 		Ctx.pExtension->SetName(m_sName);
 
-	//	Initialize armor and shield damage adjustment tables
-
-	InitDefaultDamageAdj();
-	for (i = 1; i <= MAX_ITEM_LEVEL; i++)
-		{
-		m_ArmorDamageAdj[i - 1] = g_ArmorDamageAdj[i - 1];
-		m_ShieldDamageAdj[i - 1] = g_ShieldDamageAdj[i - 1];
-		}
-
 	//	Load constants
 
 	CXMLElement *pConstants = pDesc->GetContentElementByTag(CONSTANTS_TAG);
@@ -504,20 +296,12 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 			if (strEquals(pItem->GetTag(), ARMOR_DAMAGE_ADJ_TAG))
 				{
-				int iLevel = pItem->GetAttributeInteger(LEVEL_ATTRIB);
-				if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
-					return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Invalid level: %d."), iLevel));
-
-				if (error = m_ArmorDamageAdj[iLevel - 1].InitFromXML(Ctx, pItem, true))
+				if (!m_EngineOptions.InitArmorDamageAdjFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			else if (strEquals(pItem->GetTag(), SHIELD_DAMAGE_ADJ_TAG))
 				{
-				int iLevel = pItem->GetAttributeInteger(LEVEL_ATTRIB);
-				if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL)
-					return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Invalid level: %d."), iLevel));
-
-				if (error = m_ShieldDamageAdj[iLevel - 1].InitFromXML(Ctx, pItem, true))
+				if (!m_EngineOptions.InitShieldDamageAdjFromXML(Ctx, *pItem))
 					return ComposeLoadError(Ctx, Ctx.sError);
 				}
 			else
@@ -533,4 +317,3 @@ ALERROR CAdventureDesc::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	return NOERROR;
 	}
-
