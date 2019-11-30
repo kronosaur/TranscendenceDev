@@ -284,7 +284,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 
 	CString sVariant;
 	int iAmmoLeft;
-	pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft);
+	pClass->GetSelectedVariantInfo(pShip, pDevice, &sVariant, &iAmmoLeft, NULL, true);
 	int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 	if (iSelectedFireAmmoLeft >= 0)
 		iAmmoLeft = iSelectedFireAmmoLeft;
