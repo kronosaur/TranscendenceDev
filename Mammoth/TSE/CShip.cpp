@@ -6290,8 +6290,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 									{
 									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
-											&& currDevice != pDevice && currDevice->IsEnabled())
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
+											&& currDevice != pDevice && currDevice->IsEnabled() && !(currDevice->GetLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
 											{
 											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
 											if (currDevice->GetSlotLinkedFireOptions()
