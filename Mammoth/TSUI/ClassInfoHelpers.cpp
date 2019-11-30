@@ -30,16 +30,19 @@ const int SMALL_ICON_WIDTH =					48;
 #define PROP_UL_RADIUS							CONSTLIT("ulRadius")
 #define PROP_UR_RADIUS							CONSTLIT("urRadius")
 
-void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
+void CUIHelper::CreateClassInfoArmor (const CShipClass &Class, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
 
 //	CreateClassInfoArmor
 //
 //	Creates info about the ship class' armor
 
 	{
+	CUniverse &Universe = Class.GetUniverse();
+	auto &Hull = Class.GetHullDesc();
+
 	//	Edge condition
 
-	if (pClass->GetHullSectionCount() == 0)
+	if (Class.GetHullSectionCount() == 0)
 		{
 		if (retcyHeight)
 			*retcyHeight = 0;
@@ -51,17 +54,41 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 	//	Get the armor used
 
     CItem ArmorItem;
-    pClass->GetHullSection(0).CreateArmorItem(&ArmorItem);
+    Class.GetHullSection(0).CreateArmorItem(&ArmorItem);
+	ArmorItem.SetCount(Class.GetHullSectionCount());
 
-	//	Compute the max armor limit
+	//	Compute the armor limits
 
-	int iMaxArmorMass = pClass->GetHullDesc().GetArmorLimits().GetMaxArmorMass();
 	CString sMaxArmor;
-	if ((iMaxArmorMass % 1000) == 0)
-		sMaxArmor = strPatternSubst(CONSTLIT("%d"), iMaxArmorMass / 1000);
-	else
-		sMaxArmor = strPatternSubst(CONSTLIT("%d.%d"), iMaxArmorMass / 1000, ((iMaxArmorMass % 1000) + 50) / 100);
 
+	CString sMaxArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetMaxArmorMass());
+	const CString &sMaxMassClass = Hull.GetArmorLimits().GetMaxArmorClass();
+	if (!sMaxMassClass.IsBlank())
+		{
+		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sMaxArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sMaxMassClass), sMaxArmorLimit);
+		}
+	else if (Hull.GetArmorLimits().GetMaxArmorMass() > 0) 
+		sMaxArmor = sMaxArmorLimit;
+	else
+		sMaxArmor = "unlimited";
+
+	CString sStdArmor;
+
+	CString sStdArmorLimit = CLanguage::ComposeNumber(CLanguage::numberMass, Hull.GetArmorLimits().GetStdArmorMass());
+	const CString &sStdMassClass = Hull.GetArmorLimits().GetStdArmorClass();
+	if (!sStdMassClass.IsBlank())
+		{
+		const CArmorMassDefinitions &MassDef = Universe.GetDesignCollection().GetArmorMassDefinitions();
+		sStdArmor = strPatternSubst(CONSTLIT("%s (%s)"), MassDef.GetMassClassLabel(sStdMassClass), sStdArmorLimit);
+		}
+	else if (Hull.GetArmorLimits().GetStdArmorMass() > 0) 
+		sStdArmor = sStdArmorLimit;
+	else
+		sStdArmor = "unlimited";
+
+	CString sExtraDesc = strPatternSubst(CONSTLIT("\nstd. armor: %s\nmax. armor: %s"), sStdArmor, sMaxArmor);
+	
 	//	Info
 
 	CreateClassInfoItem(ArmorItem, 
@@ -69,12 +96,12 @@ void CUIHelper::CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWi
 			y, 
 			cxWidth, 
 			dwOptions, 
-			strPatternSubst(CONSTLIT("\noptional upgrade up to %s ton segments"), sMaxArmor),
+			sExtraDesc,
 			retcyHeight, 
 			retpInfo);
 	}
 
-void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
+void CUIHelper::CreateClassInfoCargo (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
 
 //	CreateClassInfoCargo
 //
@@ -84,7 +111,7 @@ void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList 
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
     const CItem *pCargoExpansion;
-	const CCargoDesc &CargoDesc = pClass->GetCargoDesc(&pCargoExpansion);
+	const CCargoDesc &CargoDesc = Class.GetCargoDesc(&pCargoExpansion);
 
 	//	Icon
 
@@ -98,12 +125,12 @@ void CUIHelper::CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList 
 			(COLORREF)VI.GetColor(colorTextDialogInput),
 			(pCargoExpansion ? strPatternSubst(CONSTLIT("ton %s"), CTextBlock::Escape(pCargoExpansion->GetType()->GetNounPhrase(nounActual))) : CONSTLIT("ton cargo hold")),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
-			(CargoDesc.GetCargoSpace() < pClass->GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), pClass->GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
+			(CargoDesc.GetCargoSpace() < Class.GetHullDesc().GetMaxCargoSpace() ? strPatternSubst(CONSTLIT("optional expansion up to %d tons"), Class.GetHullDesc().GetMaxCargoSpace()) : CONSTLIT("cargo space cannot be expanded")));
 
 	CreateClassInfoSpecialItem(pItemIcon, sText, x, y, cxWidth, dwOptions, retcyHeight, retpInfo);
 	}
 
-void CUIHelper::CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
+void CUIHelper::CreateClassInfoDeviceSlots (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
 
 //	CreateClassInfoDeviceSlots
 //
@@ -131,9 +158,9 @@ void CUIHelper::CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDes
 			iNonWeapons += iSlots;
 		}
 
-	int iAllLeft = Max(0, pClass->GetHullDesc().GetMaxDevices() - iAll);
-	int iWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetHullDesc().GetMaxWeapons() - iWeapons));
-	int iNonWeaponsLeft = Max(0, Min(iAllLeft, pClass->GetHullDesc().GetMaxNonWeapons() - iNonWeapons));
+	int iAllLeft = Max(0, Class.GetHullDesc().GetMaxDevices() - iAll);
+	int iWeaponsLeft = Max(0, Min(iAllLeft, Class.GetHullDesc().GetMaxWeapons() - iWeapons));
+	int iNonWeaponsLeft = Max(0, Min(iAllLeft, Class.GetHullDesc().GetMaxNonWeapons() - iNonWeapons));
 
 	//	Add the device slot statistic
 
@@ -208,7 +235,7 @@ void CUIHelper::CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDes
 	*retpInfo = pRoot;
 	}
 
-void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
+void CUIHelper::CreateClassInfoDrive (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
 
 //	CreateClassInfoDrive
 //
@@ -218,7 +245,7 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 	const CVisualPalette &VI = m_HI.GetVisuals();
 
     const CItem *pDriveItem;
-	const CDriveDesc &DriveDesc = pClass->GetDriveDesc(&pDriveItem);
+	const CDriveDesc &DriveDesc = Class.GetDriveDesc(&pDriveItem);
 
 	//	Base speed and thrust
 
@@ -242,18 +269,18 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 		sSpeedNumber = strPatternSubst(CONSTLIT("%d.%02dc"), iFTL, iFrac);
 		}
 
-	CString sSpeedHeader = (pDriveItem ? pDriveItem->GetNounPhrase(CItemCtx(pDriveItem), nounActual) : CONSTLIT("main drive"));
+	CString sSpeedHeader = (pDriveItem ? pDriveItem->GetNounPhrase(nounActual) : CONSTLIT("main drive"));
 
 	//	Add thrust/mass ratio
 
-	Metric rMass = pClass->CalcMass(Devices);
+	Metric rMass = Class.CalcMass(Devices);
 	int iRatio = mathRound(200.0 * (rMass > 0.0 ? iThrust / rMass : 0.0));
 
 	CString sThrustNumber = strPatternSubst(CONSTLIT("%d.%d"), iRatio / 100, ((iRatio % 100) + 5) / 10);
 
 	//	Add maneuver speed
 
-    const CIntegralRotationDesc &RotationDesc = pClass->GetIntegralRotationDesc();
+    const CIntegralRotationDesc &RotationDesc = Class.GetIntegralRotationDesc();
 	Metric rManeuver = g_SecondsPerUpdate * RotationDesc.GetMaxRotationSpeedDegrees();
 	int iManeuver = mathRound(rManeuver * 100);
 	CString sManeuverNumber = strPatternSubst(CONSTLIT("%d.%d"), iManeuver / 100, ((iManeuver % 100) + 5) / 10);
@@ -262,11 +289,8 @@ void CUIHelper::CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList 
 
 	CString sText = strPatternSubst(CONSTLIT(
 			"{/rtf/f:Medium;/c:%d; {/f:LargeBold;/c:%d; %s} {/f:MediumBold;/c:%d; %s}\n"
-			"(max speed as fraction of light-speed)\n"
 			"{/f:LargeBold;/c:%d; %s} thrust//mass ratio\n"
-			"(thrust as proportion of total mass)\n"
-			"{/f:LargeBold;/c:%d; %s} maneuverability\n"
-			"(degrees//sec)}"),
+			"{/f:LargeBold;/c:%d; %s} maneuverability}"),
 
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
 			(COLORREF)VI.GetColor(colorTextDialogLabel),
@@ -351,13 +375,16 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	//	Create text
 
 	int cyText = 0;
+	CString sItemName = Item.GetNounPhrase(nounActual | nounShort);
+	if (Item.GetCount() > 1)
+		sItemName = strPatternSubst(CONSTLIT("%s (%&times;%d)"), sItemName, Item.GetCount());
 
 	IAnimatron *pName = new CAniText;
 	pName->SetPropertyVector(PROP_POSITION, CVector(xText, yText + cyText));
 	pName->SetPropertyVector(PROP_SCALE, CVector(cxText, 1000));
 	pName->SetPropertyColor(PROP_COLOR, VI.GetColor(colorTextDialogInput));
 	pName->SetPropertyFont(PROP_FONT, &MediumBoldFont);
-	pName->SetPropertyString(PROP_TEXT, Item.GetNounPhrase(CItemCtx(Item), nounActual));
+	pName->SetPropertyString(PROP_TEXT, sItemName);
 	if (bRightAlign)
 		pName->SetPropertyString(PROP_TEXT_ALIGN_HORZ, ALIGN_RIGHT);
 
@@ -390,7 +417,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	if (sRef.IsBlank())
 		sRef = strPatternSubst(CONSTLIT("Level %s%s"), strLevel(Item.GetLevel()), sExtraDesc);
 	else
-		sRef = strPatternSubst(CONSTLIT("Level %s — %s%s"), strLevel(Item.GetLevel()), sRef, sExtraDesc);
+		sRef = strPatternSubst(CONSTLIT("Level %s %&mdash; %s%s"), strLevel(Item.GetLevel()), sRef, sExtraDesc);
 
 	IAnimatron *pRef = new CAniText;
 	pRef->SetPropertyVector(PROP_POSITION, CVector(xText, yText + cyText));
@@ -415,7 +442,7 @@ void CUIHelper::CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidt
 	*retpInfo = pRoot;
 	}
 
-void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
+void CUIHelper::CreateClassInfoReactor (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const
 
 //	CreateClassInfoReactor
 //
@@ -427,12 +454,12 @@ void CUIHelper::CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescLis
 	//	Get reactor info from the ship class
 
     const CItem *pReactorItem;
-	const CReactorDesc &ReactorDesc = pClass->GetReactorDesc(&pReactorItem);
+	const CReactorDesc &ReactorDesc = Class.GetReactorDesc(&pReactorItem);
 
 	//	Get the icon (OK if this is NULL)
 
 	CItemType *pItemIcon = (pReactorItem ? pReactorItem->GetType() : g_pUniverse->FindItemType(NOVA25_REACTOR_UNID));
-	CString sHeader = (pReactorItem ? CTextBlock::Escape(pReactorItem->GetNounPhrase(CItemCtx(pReactorItem), nounActual)) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(pClass->GetShortName())));
+	CString sHeader = (pReactorItem ? CTextBlock::Escape(pReactorItem->GetNounPhrase(nounActual)) : strPatternSubst(CONSTLIT("%s reactor"), CTextBlock::Escape(Class.GetShortName())));
 
 	//	Create the info
 

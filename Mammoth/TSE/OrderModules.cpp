@@ -208,12 +208,12 @@ void IOrderModule::ObjDestroyed (CShip *pShip, const SDestroyCtx &Ctx)
 	bool bCancelOrder = false;
 
 	for (i = 0; i < m_iObjCount; i++)
-		if (Ctx.pObj == m_Objs[i])
+		if (Ctx.Obj == m_Objs[i])
 			{
 			//	If this object is a target, and a friendly ship destroyed it, then
 			//	thank the object who helped.
 
-			if (GetTarget() == Ctx.pObj && Ctx.Attacker.IsCausedByFriendOf(pShip) && Ctx.Attacker.GetObj())
+			if (GetTarget() == Ctx.Obj && Ctx.Attacker.IsCausedByFriendOf(pShip) && Ctx.Attacker.GetObj())
 				pShip->Communicate(Ctx.Attacker.GetObj(), msgNiceShooting);
 
 			//	Clear out the variable. We do this first because the derived class

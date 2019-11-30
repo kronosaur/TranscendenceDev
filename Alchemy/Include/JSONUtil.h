@@ -32,9 +32,9 @@ class CJSONValue
 		CJSONValue &operator= (const CJSONValue &Source);
 
 		CString AsCP1252 (void) const;
-		inline double AsDouble (void) const { return (m_iType == typeNumber ? *(double *)m_pValue : 0.0); }
-		inline int AsInt32 (void) const { return (m_iType == typeNumber ? (int)*(double *)m_pValue : 0); }
-		inline CString AsString (void) const { return (m_iType == typeString ? CString::INTMakeString(m_pValue) : NULL_STR); }
+		double AsDouble (void) const { return (m_iType == typeNumber ? *(double *)m_pValue : 0.0); }
+		int AsInt32 (void) const { return (m_iType == typeNumber ? (int)*(double *)m_pValue : 0); }
+		CString AsString (void) const { return (m_iType == typeString ? CString::INTMakeString(m_pValue) : NULL_STR); }
 		static ALERROR Deserialize (const CString &sBuffer, CJSONValue *retValue, CString *retsError);
 		int GetCount (void) const;
 		const CJSONValue &GetElement (int iIndex) const;
@@ -46,8 +46,8 @@ class CJSONValue
 		void Insert (const CString &sKey, const CJSONValue &Source);
 		void InsertHandoff (CJSONValue &Source);
 		void InsertHandoff (const CString &sKey, CJSONValue &Source);
-		inline bool IsNotFalse (void) const { return ((m_iType != typeFalse) && (m_iType != typeNull)); }
-		inline bool IsNull (void) const { return (m_iType == typeNull); }
+		bool IsNotFalse (void) const { return ((m_iType != typeFalse) && (m_iType != typeNull)); }
+		bool IsNull (void) const { return (m_iType == typeNull); }
 		void Serialize (IWriteStream *pOutput) const;
 		static void SerializeString (IWriteStream *pOutput, const CString &sText);
 		void TakeHandoff (CJSONValue &Source);

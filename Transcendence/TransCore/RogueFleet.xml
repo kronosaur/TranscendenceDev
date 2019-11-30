@@ -29,7 +29,6 @@
 			sovereign=			"&svRogueFleet;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itP120HexphaseArmor;"
@@ -98,7 +97,6 @@
 			regen=              "20"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"20"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"

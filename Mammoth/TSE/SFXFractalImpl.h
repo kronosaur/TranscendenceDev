@@ -17,7 +17,7 @@ class CSphericalTextureMapper
 				m_pTexture(NULL)
 			{ }
 
-		inline BYTE GetPixel (int iAngle, int iRadius) const
+		BYTE GetPixel (int iAngle, int iRadius) const
 			{
 			return (m_pTexture ? m_pTexture->GetPixel(m_AngleToX[iAngle], m_RadiusToY[iRadius]) : 0);
 			}
@@ -38,7 +38,7 @@ class CSphericalTextureMapper
 class CCircleRadiusDisruptor
 	{
 	public:
-		inline int GetAdjustedRadius (int iAngle, int iRadius) const
+		int GetAdjustedRadius (int iAngle, int iRadius) const
 			{
 			return (int)(m_RadiusAdj[iAngle] * iRadius);
 			}
@@ -47,7 +47,7 @@ class CCircleRadiusDisruptor
 
 	private:
 		void InitSegment (int iStart, int iCount, Metric rEndAdj, Metric rDisruption);
-		inline Metric RandomPoint (Metric rRange) { return mathRandomGaussian() * rRange; }
+		Metric RandomPoint (Metric rRange) { return mathRandomGaussian() * rRange; }
 
 		TArray<Metric> m_RadiusAdj;
 		TArray<Metric> m_FullRadiusAdj;
@@ -124,7 +124,7 @@ template <class BLENDER> class CCloudCirclePainter : public TCirclePainter32<CCl
 			return true;
 			}
 
-		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
+		CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 
 		//	GetColorAt
 		//
@@ -186,7 +186,7 @@ template <class BLENDER> class CDiffractionCirclePainter : public TCirclePainter
 			return true;
 			}
 
-		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
+		CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 
 		//	GetColorAt
 		//
@@ -263,7 +263,7 @@ template <class BLENDER> class CFireblastCirclePainter : public TCirclePainter32
 			return true;
 			}
 
-		inline CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
+		CG32bitPixel GetColorAt (int iAngle, int iRadius) const 
 
 		//	GetColorAt
 		//

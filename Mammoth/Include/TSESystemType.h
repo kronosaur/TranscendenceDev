@@ -71,7 +71,7 @@ class CSystemType : public CDesignType
 		ETileSize m_iTileSize;				//	Tile size for environment
 		CImageFilterStack m_ImageFilters;	//	Filters on object images
 		CSpaceObjectCriteria m_ImageFilterCriteria;	//	Only if object matches criteria
-		CEnhancementDesc m_Enhancements;	//	Enhancements confered on items
+		CEnhancementDesc m_Enhancements;	//	Enhancements conferred on items
 
 		CXMLElement *m_pDesc;				//	System definition
 		CXMLElement *m_pLocalTables;		//	Local system tables

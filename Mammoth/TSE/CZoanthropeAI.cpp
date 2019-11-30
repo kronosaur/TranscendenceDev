@@ -518,10 +518,10 @@ void CZoanthropeAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 	{
 	//	Reset
 
-	if (m_pBase == Ctx.pObj)
+	if (m_pBase == Ctx.Obj)
 		SetState(stateNone);
 
-	if (m_pTarget == Ctx.pObj)
+	if (m_pTarget == Ctx.Obj)
 		SetState(stateNone);
 	}
 

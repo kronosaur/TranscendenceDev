@@ -178,6 +178,7 @@
     <ClCompile Include="CReactorHUDCircular.cpp" />
     <ClCompile Include="CReactorHUDDefault.cpp" />
     <ClCompile Include="CShieldHUDDefault.cpp" />
+    <ClCompile Include="CSmallOptionButtonAnimator.cpp" />
     <ClCompile Include="CSoundtrackManager.cpp" />
     <ClCompile Include="CAutomataEffectPainter.cpp" />
     <ClCompile Include="CStargateEffectPainter.cpp" />

@@ -103,13 +103,23 @@
 						(block Nil
 							(if (= (msnIncData gSource 'attackerCount -1) 0)
 								(msnSuccess gSource)
+								(msnSetPlayerTarget gSource)
 								)
 							)
 					)
 			</OnObjDestroyed>
 
 			<OnSetPlayerTarget>
-				(rpgSetTarget gSource aReason (objGetObjByID (msnGetProperty gSource 'ownerID)))
+				(switch
+					(gr (msnGetData gSource 'attackerCount) 0)
+						(block (
+							(bestTargetObj (sysFindObject gPlayerShip "sN D:huariMission;"))
+							)
+							(rpgSetTarget gSource aReason bestTargetObj 'attack)
+							)
+
+					(rpgSetTarget gSource aReason (objGetObjByID (msnGetProperty gSource 'ownerID)))
+					)
 			</OnSetPlayerTarget>
 
 			<OnReward>
@@ -155,31 +165,41 @@
 			<Text id="Name">Defend Huari Fortress</Text>
 			<Text id="textSummary">Defend a Huari Fortress from a Sung attack.</Text>
 			<Text id="Briefing">
+
 				"The Sung have pursued us for hundreds of years. They took our
 				stations and our worlds. Now they come to this station and they
-				mean to wipe us out. A Sung fleet is on its way even now."
+				mean to wipe us out. A Sung fleet is on its way even now.
 
 				"If it's true what they say about you, then only you can save us.
 				By the blessings of the Light, fight with us!"
+
 			</Text>
 			<Text id="AcceptReply">
-				"Then let us face our persecutors once again."
+
+				"Then let us face our persecutors once again.
 
 				"I dare not hope, but I will not give up either. No matter what
 				happens we will see each other again, either here in this dark
 				world or elsewhere bathed in the salvation of the Light!"
+
 			</Text>
 			<Text id="DeclineReply">
+
 				"Let the will of the Light be done, though we cannot understand
 				His methods."
+
 			</Text>
-			<Text id="InProgress">
-				"\"We're a little busy right now.\""
-			</Text>
+			<String id="InProgress">
+
+				"We're a little busy right now."
+
+			</String>
 			<Text id="SuccessDebrief">
+
 				"By the Light's joy! It feels good to fight and win against the Sung for
 				a change! Maybe the revelations are right. If you are truly the Solti
 				then nothing is impossible!"
+
 			</Text>
 		</Language>
 	</MissionType>

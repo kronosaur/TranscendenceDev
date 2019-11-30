@@ -578,7 +578,7 @@ bool CMissile::HasAttribute (const CString &sAttribute) const
 	return pType->HasLiteralAttribute(sAttribute);
 	}
 
-bool CMissile::IsAngryAt (CSpaceObject *pObj) const
+bool CMissile::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -832,12 +832,12 @@ void CMissile::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	{
 	//	If our source is destroyed, clear it
 
-	m_Source.OnObjDestroyed(Ctx.pObj);
+	m_Source.OnObjDestroyed(Ctx.Obj);
 
-	if (Ctx.pObj == m_pHit)
+	if (Ctx.Obj == m_pHit)
 		m_pHit = NULL;
 
-	if (Ctx.pObj == m_pTarget)
+	if (Ctx.Obj == m_pTarget)
 		m_pTarget = NULL;
 	}
 
@@ -996,7 +996,7 @@ void CMissile::OnReadFromStream (SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		}
 

@@ -17,8 +17,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 	CItemType *pItem = Universe.FindItemType(dwUNID);
 	if (pItem == NULL)
 		{
-		CItemCriteria Crit;
-		CItem::InitCriteriaAll(&Crit);
+		CItemCriteria Crit(CItemCriteria::ALL);
 		CItem Item = CItem::CreateItemByName(Universe, sUNID, Crit);
 		pItem = Item.GetType();
 
@@ -45,7 +44,7 @@ void GenerateShieldStats (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	int iDamageAdj[damageCount];
 	CString sDamageAdj = pItem->GetDataField(CONSTLIT("damageAdj"));
-	char *pPos = sDamageAdj.GetASCIIZPointer();
+	const char *pPos = sDamageAdj.GetASCIIZPointer();
 	int iCount = 0;
 	while (iCount < damageCount)
 		{

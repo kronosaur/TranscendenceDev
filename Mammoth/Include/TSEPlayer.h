@@ -163,7 +163,7 @@ class IPlayerController
 		virtual bool GetPropertyString (const CString &sProperty, CString *retsValue) { return false; }
 		virtual CSovereign *GetSovereign (void) const;
 		virtual EUIMode GetUIMode (void) const { return uimodeUnknown; }
-		virtual void OnMessageFromObj (CSpaceObject *pSender, const CString &sMessage) { }
+		virtual void OnMessageFromObj (const CSpaceObject *pSender, const CString &sMessage) { }
 		virtual bool SetPropertyInteger (const CString &sProperty, int iValue) { return false; }
 		virtual bool SetPropertyItemList (const CString &sProperty, const CItemList &ItemList) { return false; }
 		virtual bool SetPropertyString (const CString &sProperty, const CString &sValue) { return false; }

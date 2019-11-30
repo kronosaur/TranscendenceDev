@@ -33,8 +33,6 @@
 #define UNAVAILABLE_PREFIX						CONSTLIT("unavailable")
 #define VARIABLE_PREFIX							CONSTLIT("variable")
 
-const int EXTRA_REPAIR_COST_FACTOR =            3;  //  Damage over 50% cost 3 times more to repair
-
 struct SServiceData
 	{
 	char *pszName;
@@ -133,7 +131,7 @@ void CTradingDesc::AddOrder (ETradeServiceTypes iService, const CString &sCriter
 	Commodity.iService = iService;
 	Commodity.pItemType = pItemType;
 	if (pItemType == NULL)
-		CItem::ParseCriteria(sCriteria, &Commodity.ItemCriteria);
+		Commodity.ItemCriteria.Init(sCriteria);
 	Commodity.PriceAdj.SetInteger(iPriceAdj);
 	Commodity.dwFlags = 0;
 	Commodity.sID = ComputeID(iService, Commodity.pItemType.GetUNID(), sCriteria, Commodity.dwFlags);
@@ -199,7 +197,7 @@ void CTradingDesc::AddOrder (CItemType *pItemType, const CString &sCriteria, int
 	pCommodity->iService = iService;
 	pCommodity->pItemType = pItemType;
 	if (pItemType == NULL)
-		CItem::ParseCriteria(sCriteria, &pCommodity->ItemCriteria);
+		pCommodity->ItemCriteria.Init(sCriteria);
 	pCommodity->PriceAdj.SetInteger(iPriceAdj);
 	pCommodity->dwFlags = dwNewFlags;
 	pCommodity->sID = ComputeID(iService, pCommodity->pItemType.GetUNID(), sCriteria, dwNewFlags);
@@ -221,6 +219,9 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 //	Returns a price adjusted by the system trading table.
 
 	{
+	if (iPrice <= 0)
+		return iPrice;
+
 	const CTopologyNode *pNode = Ctx.pNode;
 	if (pNode == NULL)
 		{
@@ -240,7 +241,7 @@ int CTradingDesc::AdjustForSystemPrice (STradeServiceCtx &Ctx, int iPrice)
 	if (!pNode->GetTradingEconomy().FindPriceAdj(Ctx.pItem->GetType(), &iAdj))
 		return iPrice;
 
-	return iPrice * iAdj / 100;
+	return Max(1, iPrice * iAdj / 100);
 	}
 
 CurrencyValue CTradingDesc::CalcMaxBalance (int iLevel, const CEconomyType *pCurrency)
@@ -280,7 +281,7 @@ CurrencyValue CTradingDesc::CalcMaxBalance (CSpaceObject *pObj, CurrencyValue *r
 	return iMaxBalance * (90 + ((pObj->GetDestiny() + 9) / 18)) / 100;
 	}
 
-int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
+int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, const CSpaceObject *pProvider, const CItem &Item, int iCount, DWORD dwFlags)
 
 //	CalcPriceForService
 //
@@ -302,7 +303,7 @@ int CTradingDesc::CalcPriceForService (ETradeServiceTypes iService, CSpaceObject
 	return ComputePrice(Ctx, Default, dwFlags);
 	}
 
-bool CTradingDesc::ComposeDescription (CString *retsDesc) const
+bool CTradingDesc::ComposeDescription (CUniverse &Universe, CString *retsDesc) const
 
 //  ComposeDescription
 //
@@ -320,10 +321,10 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Buying and selling ships
 
     SServiceTypeInfo BuyShips;
-    GetServiceTypeInfo(serviceBuyShip, BuyShips);
+    GetServiceTypeInfo(Universe, serviceBuyShip, BuyShips);
 
     SServiceTypeInfo SellShips;
-    GetServiceTypeInfo(serviceSellShip, SellShips);
+    GetServiceTypeInfo(Universe, serviceSellShip, SellShips);
 
     CString sBuySellShips;
     if (BuyShips.bAvailable && SellShips.bAvailable)
@@ -336,12 +337,12 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Refuels
 
     SServiceTypeInfo Refuel;
-    if (GetServiceTypeInfo(serviceRefuel, Refuel))
+    if (GetServiceTypeInfo(Universe, serviceRefuel, Refuel))
         {
         CString sText = strPatternSubst(CONSTLIT("Refuels up to level %d"), Refuel.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -349,10 +350,10 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Repair armor
 
     SServiceTypeInfo RepairArmor;
-    GetServiceTypeInfo(serviceRepairArmor, RepairArmor);
+    GetServiceTypeInfo(Universe, serviceRepairArmor, RepairArmor);
 
     SServiceTypeInfo InstallArmor;
-    GetServiceTypeInfo(serviceReplaceArmor, InstallArmor);
+    GetServiceTypeInfo(Universe, serviceReplaceArmor, InstallArmor);
 
     if (RepairArmor.iMaxLevel != -1 || InstallArmor.iMaxLevel != -1)
         {
@@ -362,14 +363,14 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         if (RepairArmor.iMaxLevel == InstallArmor.iMaxLevel)
             sText = strPatternSubst(CONSTLIT("Repairs/installs %sarmor up to level %d"), sPurchased, RepairArmor.iMaxLevel);
         else if (RepairArmor.iMaxLevel != -1 && InstallArmor.iMaxLevel != -1)
-            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d — Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
+            sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d %&mdash; Installs %sarmor up to level %d"), RepairArmor.iMaxLevel, sPurchased, InstallArmor.iMaxLevel);
         else if (RepairArmor.iMaxLevel != -1)
             sText = strPatternSubst(CONSTLIT("Repairs armor up to level %d"), RepairArmor.iMaxLevel);
         else
             sText = strPatternSubst(CONSTLIT("Installs %sarmor up to level %d"), sPurchased, InstallArmor.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -377,7 +378,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
     //  Install devices
 
     SServiceTypeInfo InstallDevice;
-    GetServiceTypeInfo(serviceInstallDevice, InstallDevice);
+    GetServiceTypeInfo(Universe, serviceInstallDevice, InstallDevice);
 
     if (InstallDevice.iMaxLevel != -1)
         {
@@ -385,16 +386,16 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
         CString sText = strPatternSubst(CONSTLIT("Installs %sdevices up to level %d"), sPurchased, InstallDevice.iMaxLevel);
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
 
     SServiceTypeInfo Buys;
-    GetServiceTypeInfo(serviceBuy, Buys);
+    GetServiceTypeInfo(Universe, serviceBuy, Buys);
 
     SServiceTypeInfo Sells;
-    GetServiceTypeInfo(serviceSell, Sells);
+    GetServiceTypeInfo(Universe, serviceSell, Sells);
 
     if (Buys.bAvailable || Sells.bAvailable)
         {
@@ -407,7 +408,7 @@ bool CTradingDesc::ComposeDescription (CString *retsDesc) const
             sText = CONSTLIT("Sells commodities");
 
         if (!sDesc.IsBlank())
-            sDesc = strPatternSubst(CONSTLIT("%s — %s"), sDesc, sText);
+            sDesc = strPatternSubst(CONSTLIT("%s %&mdash; %s"), sDesc, sText);
         else
             sDesc = sText;
         }
@@ -507,38 +508,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 			if (!ArmorItem)
 				return -1;
 
-            //  If we don't have a source, then we only do a basic calculation. 
-            //  This should not happen (as long as the TLisp code follows 
-            //  guidelines).
-
-            if (Ctx.pObj == NULL)
-    			iBasePrice = Ctx.iCount * ArmorItem.GetRepairCost();
-
-            //  Otherwise, the price is based on how much damage we've taken
-
-            else
-                {
-                CInstalledArmor *pSeg = Ctx.pObj->FindArmor(*Ctx.pItem);
-                if (pSeg == NULL)
-                    return -1;
-
-                CItemCtx ItemCtx(Ctx.pItem, Ctx.pObj, pSeg);
-
-                int iMaxHP = ArmorItem.GetMaxHP();
-                int iHalf = iMaxHP / 2;
-
-                //  We can repair up to half of maximum damage at normal price
-
-                int iHPToRepair = Ctx.iCount;
-                int iHPAtNormalPrice = Min(iHalf, iHPToRepair);
-                iBasePrice = iHPAtNormalPrice * ArmorItem.GetRepairCost();
-
-                //  If we have more damage than that, we pay double price
-
-                int iHPAtExtraPrice = iHPToRepair - iHPAtNormalPrice;
-                iBasePrice += iHPAtExtraPrice * ArmorItem.GetRepairCost() * EXTRA_REPAIR_COST_FACTOR;
-                }
-
+   			iBasePrice = (int)ArmorItem.GetRepairCost(Ctx.iCount);
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
@@ -546,14 +516,14 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 		case serviceInstallDevice:
 		case serviceReplaceArmor:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem));
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetInstallCost();
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
 
 		case serviceRemoveDevice:
 			{
-			iBasePrice = Ctx.iCount * Ctx.pItem->GetType()->GetInstallCost(CItemCtx(*Ctx.pItem)) / 2;
+			iBasePrice = Ctx.iCount * Ctx.pItem->GetInstallCost() / 2;
 			pBaseEconomy = Ctx.pItem->GetCurrencyType();
 			break;
 			}
@@ -665,7 +635,7 @@ int CTradingDesc::ComputePrice (STradeServiceCtx &Ctx, const SServiceDesc &Commo
 	return (int)Ctx.pCurrency->Exchange(pBaseEconomy, iPrice);
 	}
 
-ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CTradingDesc **retpTrade)
+ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, CTradingDesc **retpTrade)
 
 //	InitFromXML
 //
@@ -738,10 +708,7 @@ ALERROR CTradingDesc::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CT
 
 			else
 				{
-				if (!sCriteria.IsBlank())
-					CItem::ParseCriteria(sCriteria, &pCommodity->ItemCriteria);
-				else
-					CItem::InitCriteriaAll(&pCommodity->ItemCriteria);
+				pCommodity->ItemCriteria.Init(sCriteria, CItemCriteria::ALL);
 
 				//	Item
 
@@ -1120,12 +1087,12 @@ bool CTradingDesc::HasSameCriteria (const SServiceDesc &S1, const SServiceDesc &
 			if (S1.pItemType)
 				return (S1.pItemType == S2.pItemType);
 			else
-				return strEquals(CItem::GenerateCriteria(S1.ItemCriteria), CItem::GenerateCriteria(S2.ItemCriteria));
+				return (S1.ItemCriteria == S2.ItemCriteria);
 			}
 		}
 	}
 
-bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
+bool CTradingDesc::GetArmorInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason) const
 
 //	GetArmorInstallPrice
 //
@@ -1136,7 +1103,7 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceReplaceArmor;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1171,7 +1138,7 @@ bool CTradingDesc::GetArmorInstallPrice (CSpaceObject *pObj, const CItem &Item, 
 	return false;
 	}
 
-bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
+bool CTradingDesc::GetArmorRepairPrice (const CSpaceObject &Obj, CSpaceObject *pSource, const CItem &Item, int iHPToRepair, DWORD dwFlags, int *retiPrice) const
 
 //	GetArmorRepairPrice
 //
@@ -1182,7 +1149,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSourc
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRepairArmor;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
     Ctx.pObj = pSource;
 	Ctx.pItem = &Item;
@@ -1211,7 +1178,7 @@ bool CTradingDesc::GetArmorRepairPrice (CSpaceObject *pObj, CSpaceObject *pSourc
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceInstallPrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, CString *retsReason, DWORD *retdwPriceFlags) const
 
 //	GetDeviceInstallPrice
 //
@@ -1222,7 +1189,7 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceInstallDevice;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1264,7 +1231,7 @@ bool CTradingDesc::GetDeviceInstallPrice (CSpaceObject *pObj, const CItem &Item,
 	return false;
 	}
 
-bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
+bool CTradingDesc::GetDeviceRemovePrice (const CSpaceObject &Obj, const CItem &Item, DWORD dwFlags, int *retiPrice, DWORD *retdwPriceFlags) const
 
 //	GetDeviceRemovePrice
 //
@@ -1275,7 +1242,7 @@ bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, 
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRemoveDevice;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.pItem = &Item;
 	Ctx.iCount = 1;
@@ -1310,7 +1277,7 @@ bool CTradingDesc::GetDeviceRemovePrice (CSpaceObject *pObj, const CItem &Item, 
 	return false;
 	}
 
-int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescriptionOnly) const
+int CTradingDesc::GetMaxLevelMatched (CUniverse &Universe, ETradeServiceTypes iService, bool bDescriptionOnly) const
 
 //	GetMaxLevelMatched
 //
@@ -1341,7 +1308,7 @@ int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescrip
 			if (m_List[i].pItemType)
 				iLevel = m_List[i].pItemType->GetLevel();
 			else
-				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched();
+				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched(Universe);
 
 			if (iLevel > iMaxLevel)
 				iMaxLevel = iLevel;
@@ -1350,13 +1317,15 @@ int CTradingDesc::GetMaxLevelMatched (ETradeServiceTypes iService, bool bDescrip
 	return iMaxLevel;
 	}
 
-bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
+bool CTradingDesc::GetRefuelItemAndPrice (const CSpaceObject &Obj, CSpaceObject *pObjToRefuel, DWORD dwFlags, CItemType **retpItemType, int *retiPrice) const
 
 //	GetRefuelItemAndPrice
 //
 //	Returns the appropriate fuel and price to refuel the given object.
 
 	{
+	CUniverse &Universe = Obj.GetUniverse();
+
 	int i, j;
 	CShip *pShipToRefuel = pObjToRefuel->AsShip();
 	if (pShipToRefuel == NULL)
@@ -1364,7 +1333,7 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 
 	STradeServiceCtx Ctx;
 	Ctx.iService = serviceRefuel;
-	Ctx.pProvider = pObj;
+	Ctx.pProvider = &Obj;
 	Ctx.pCurrency = m_pCurrency;
 	Ctx.iCount = 1;
 
@@ -1381,9 +1350,9 @@ bool CTradingDesc::GetRefuelItemAndPrice (CSpaceObject *pObj, CSpaceObject *pObj
 			//	If we find it, then we use it. We use the lowest-level item 
 			//	because we want the cheapest price per fuel.
 
-			for (j = 0; j < g_pUniverse->GetItemTypeCount(); j++)
+			for (j = 0; j < Universe.GetItemTypeCount(); j++)
 				{
-				CItemType *pType = g_pUniverse->GetItemType(j);
+				CItemType *pType = Universe.GetItemType(j);
 				CItem Item(pType, 1);
 
 				if (Item.MatchesCriteria(m_List[i].ItemCriteria)
@@ -1452,7 +1421,7 @@ void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 
 	Result.iService = Service.iService;
 	Result.pItemType = Service.pItemType;
-	Result.sItemCriteria = CItem::GenerateCriteria(Service.ItemCriteria);
+	Result.sItemCriteria = Service.ItemCriteria.AsString();
 	Result.sTypeCriteria = Service.TypeCriteria.AsString();
 	Result.iPriceAdj = Service.PriceAdj.EvalAsInteger(NULL);
 
@@ -1460,7 +1429,7 @@ void CTradingDesc::GetServiceInfo (int iIndex, SServiceInfo &Result) const
 	Result.bUpgradeInstallOnly = ((Service.dwFlags & FLAG_UPGRADE_INSTALL_ONLY) ? true : false);
 	}
 
-bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceTypeInfo &Info) const
+bool CTradingDesc::GetServiceTypeInfo (CUniverse &Universe, ETradeServiceTypes iService, SServiceTypeInfo &Info) const
 
 //  GetServiceTypeInfo
 //
@@ -1505,7 +1474,7 @@ bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceType
 			if (m_List[i].pItemType)
 				iLevel = m_List[i].pItemType->GetLevel();
 			else
-				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched();
+				iLevel = m_List[i].ItemCriteria.GetMaxLevelMatched(Universe);
 
 			if (iLevel > Info.iMaxLevel)
 				Info.iMaxLevel = iLevel;
@@ -1514,7 +1483,7 @@ bool CTradingDesc::GetServiceTypeInfo (ETradeServiceTypes iService, SServiceType
 	return Info.bAvailable;
     }
 
-bool CTradingDesc::HasService (ETradeServiceTypes iService, const SHasServiceOptions &Options) const
+bool CTradingDesc::HasService (CUniverse &Universe, ETradeServiceTypes iService, const SHasServiceOptions &Options) const
 
 //	HasService
 //
@@ -1535,7 +1504,7 @@ bool CTradingDesc::HasService (ETradeServiceTypes iService, const SHasServiceOpt
 
 			//	Make sure we match the options
 
-			if (!MatchesHasServiceOptions(Options, m_List[i]))
+			if (!MatchesHasServiceOptions(Universe, Options, m_List[i]))
 				continue;
 
 			//	Found it!
@@ -1642,7 +1611,7 @@ bool CTradingDesc::Matches (CDesignType *pType, const SServiceDesc &Commodity) c
 	return pType->MatchesCriteria(Commodity.TypeCriteria);
 	}
 
-bool CTradingDesc::MatchesHasServiceOptions (const SHasServiceOptions &Options, const SServiceDesc &Service) const
+bool CTradingDesc::MatchesHasServiceOptions (CUniverse &Universe, const SHasServiceOptions &Options, const SServiceDesc &Service) const
 
 //	MatchesHasServiceOptions
 //
@@ -1676,7 +1645,7 @@ bool CTradingDesc::MatchesHasServiceOptions (const SHasServiceOptions &Options, 
 				{
 				if (Service.pItemType && !CItem(Service.pItemType, 1).MatchesCriteria(Options.ItemCriteria))
 					return false;
-				else if (!Service.ItemCriteria.Intersects(Options.ItemCriteria))
+				else if (!Service.ItemCriteria.Intersects(Universe, Options.ItemCriteria))
 					return false;
 				}
 			break;
@@ -1759,9 +1728,7 @@ bool CTradingDesc::ParseHasServiceOptions (ICCItem *pOptions, SHasServiceOptions
 
 	//	Item criteria
 
-	CString sCriteria = pOptions->GetStringAt(CONSTLIT("itemCriteria"));
-	if (!sCriteria.IsBlank())
-		CItem::ParseCriteria(sCriteria, &retOptions.ItemCriteria);
+	retOptions.ItemCriteria.Init(pOptions->GetStringAt(CONSTLIT("itemCriteria")), CItemCriteria::NONE);
 
 	return true;
 	}
@@ -1860,13 +1827,13 @@ void CTradingDesc::ReadFromStream (SLoadCtx &Ctx)
 					|| Commodity.iService == serviceSellShip)
 				{
 				CDesignTypeCriteria::ParseCriteria(sCriteria, &Commodity.TypeCriteria);
-				CItem::InitCriteriaAll(&Commodity.ItemCriteria);
+				Commodity.ItemCriteria.Init(CItemCriteria::ALL);
 				}
 
 			//	Otherwise, this is an item criteria
 
 			else
-				CItem::ParseCriteria(sCriteria, &Commodity.ItemCriteria);
+				Commodity.ItemCriteria.Init(sCriteria);
 
 			//	Prices
 
@@ -2217,7 +2184,7 @@ void CTradingDesc::WriteToStream (IWriteStream *pStream)
 				|| Commodity.iService == serviceSellShip)
 			sCriteria = Commodity.TypeCriteria.AsString();
 		else
-			sCriteria = CItem::GenerateCriteria(Commodity.ItemCriteria);
+			sCriteria = Commodity.ItemCriteria.AsString();
 
 		sCriteria.WriteToStream(pStream);
 

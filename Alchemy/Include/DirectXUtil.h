@@ -151,8 +151,8 @@ class CNoiseGenerator
 		inline Metric GetAt (SNoisePos &x, SNoisePos &y);
 		inline Metric GetAt (SNoisePos &x, SNoisePos &y, SNoisePos &z);
 		inline Metric GetAtPeriodic (int iPeriod, SNoisePos &x, SNoisePos &y, SNoisePos &z);
-		inline void Next (SNoisePos &i) { if (++i.iFraction == m_iScale) { i.iInteger++; i.iFraction = 0; } }
-		inline void Reset (SNoisePos &i, int iPos) { i.iInteger = iPos / m_iScale; i.iFraction = iPos % m_iScale; }
+		void Next (SNoisePos &i) { if (++i.iFraction == m_iScale) { i.iInteger++; i.iFraction = 0; } }
+		void Reset (SNoisePos &i, int iPos) { i.iInteger = iPos / m_iScale; i.iFraction = iPos % m_iScale; }
 
 	private:
 		int m_iScale;
@@ -219,7 +219,7 @@ class CSoundMgr
 		ALERROR LoadWaveFile (const CString &sFilename, int *retiChannel);
 		ALERROR LoadWaveFromBuffer (IReadBlock &Data, int *retiChannel);
 		void Play (int iChannel, int iVolume, int iPan);
-		inline void SetWaveVolume (int iVolumeLevel) { m_iSoundVolume = iVolumeLevel; }
+		void SetWaveVolume (int iVolumeLevel) { m_iSoundVolume = iVolumeLevel; }
 
 		bool CanPlayMusic (const CString &sFilename);
 		void GetMusicCatalog (const CString &sMusicFolder, TArray<CString> *retCatalog);
@@ -240,8 +240,8 @@ class CSoundMgr
 		void AddMusicFolder (const CString &sFolder, TArray<CString> *retCatalog);
 		int AllocChannel (void);
 		void CleanUpChannel (SChannel &Channel);
-		inline SChannel *GetChannel (int iChannel) { return &m_Channels[iChannel]; }
-		inline int GetChannelCount (void) { return m_Channels.GetCount(); }
+		SChannel *GetChannel (int iChannel) { return &m_Channels[iChannel]; }
+		int GetChannelCount (void) { return m_Channels.GetCount(); }
 		ALERROR LoadWaveFile (HMMIO hFile, int *retiChannel);
 
 		LPDIRECTSOUND m_pDS;

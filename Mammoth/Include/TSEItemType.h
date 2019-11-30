@@ -89,61 +89,57 @@ class CItemType : public CDesignType
 			}
 
 		ICCItemPtr FindItemTypeBaseProperty (CCodeChainCtx &Ctx, const CString &sProperty, EPropertyType *retiType = NULL) const;
-		int GetApparentLevel (CItemCtx &Ctx) const;
 		CDeviceClass *GetAmmoLauncher (int *retiVariant = NULL) const;
-		inline CArmorClass *GetArmorClass (void) const { return m_pArmor; }
+		CArmorClass *GetArmorClass (void) const { return m_pArmor; }
 		ItemCategories GetCategory (void) const;
-		inline int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
-		inline int GetChargesLimit (void) const { return m_iMaxCharges; }
-		inline const CItemList &GetComponents (void) const { return m_Components; }
+		int GetCharges (void) const { return (m_fInstanceData ? m_InitDataValue.Roll() : 0); }
+		int GetChargesLimit (void) const { return m_iMaxCharges; }
+		const CItemList &GetComponents (void) const { return m_Components; }
         CCurrencyAndValue GetCurrencyAndValue (CItemCtx &Ctx, bool bActual = false) const;
-		inline const CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
-		inline const CString &GetData (void) const { return m_sData; }
+		const CEconomyType *GetCurrencyType (void) const { return m_iValue.GetCurrencyType(); }
+		const CString &GetData (void) const { return m_sData; }
 		const CString &GetDesc (bool bActual = false) const;
-		inline CDeviceClass *GetDeviceClass (void) const { return m_pDevice; }
-		inline CObjectImageArray &GetFlotsamImage (void) { if (!m_FlotsamImage.IsLoaded()) CreateFlotsamImage(); return m_FlotsamImage; }
-		inline int GetFrequency (void) const { return m_Frequency; }
+		CDeviceClass *GetDeviceClass (void) const { return m_pDevice; }
+		CObjectImageArray &GetFlotsamImage (void) { if (!m_FlotsamImage.IsLoaded()) CreateFlotsamImage(); return m_FlotsamImage; }
+		int GetFrequency (void) const { return m_Frequency; }
 		int GetFrequencyByLevel (int iLevel);
-		inline const CObjectImageArray &GetImage (void) { return m_Image; }
-		int GetInstallCost (CItemCtx &Ctx) const;
+		const CObjectImageArray &GetImage (void) const { return m_Image; }
 		const TArray<CDeviceClass *> &GetLaunchWeapons (void) const { return m_Weapons; }
-        int GetLevel (CItemCtx &Ctx) const;
-		inline Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
-		inline int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
+		Metric GetMass (CItemCtx &Ctx) const { return GetMassKg(Ctx) / 1000.0; }
+		int GetMassBonusPerCharge (void) const { return m_iExtraMassPerCharge; }
 		int GetMassKg (CItemCtx &Ctx) const;
-		inline int GetMaxCharges (void) const { return (m_iMaxCharges == -1 ? GetMaxInitialCharges() : m_iMaxCharges); }
+		int GetMaxCharges (void) const { return (m_iMaxCharges == -1 ? GetMaxInitialCharges() : m_iMaxCharges); }
 		int GetMaxHPBonus (void) const;
-		inline int GetMaxInitialCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
-        inline int GetMaxLevel (void) const { return m_iMaxLevel; }
-		inline int GetMinLevel (void) const { return m_iLevel; }
-		inline CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
-		inline DWORD GetModCode (void) const { return m_dwModCode; }
-		CString GetNamePattern (CItemCtx &Ctx, DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const;
-		inline const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
+		int GetMaxInitialCharges (void) const { return (m_fInstanceData ? m_InitDataValue.GetMaxValue() : 0); }
+        int GetMaxLevel (void) const { return m_iMaxLevel; }
+		int GetMinLevel (void) const { return m_iLevel; }
+		CWeaponFireDesc *GetMissileDesc (void) const { return m_pMissile;  }
+		DWORD GetModCode (void) const { return m_dwModCode; }
+		const DiceRange &GetNumberAppearing (void) const { return m_NumberAppearing; }
 		int GetRandomUnknownTypeIndex (void) const;
 		CString GetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) const;
 		const CString &GetRole (void) const { return m_sRole; }
 		CString GetSortName (CItemCtx &Ctx) const;
-		CItemType *GetUnknownType (CItemCtx &Ctx) const;
+		const CString &GetUnknownName (int iIndex) const { return m_UnknownTypes[iIndex].sUnknownName; }
+		CItemType *GetUnknownType (int iIndex) const { return m_UnknownTypes[iIndex].pUnknownType; }
 		int GetUnknownTypeCount (void) const { return m_UnknownTypes.GetCount(); }
-		CItemType *GetUnknownTypeIfUnknown (CItemCtx &Ctx, bool bActual = false) const;
-		inline ICCItem *GetUseCode (void) const { return m_pUseCode; }
+		ICCItem *GetUseCode (void) const { return m_pUseCode; }
 		bool GetUseDesc (SUseDesc *retDesc = NULL) const;
-        inline int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
-		inline int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
+        int GetValue (CItemCtx &Ctx, bool bActual = false) const { return (int)GetCurrencyAndValue(Ctx, bActual).GetValue(); }
+		int GetValueBonusPerCharge (void) const { return m_iExtraValuePerCharge; }
         CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError = NULL) const;
-		inline bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
-		inline bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
+		bool HasOnRefuelCode (void) const { return FindEventHandlerItemType(evtOnRefuel); }
+		bool HasOnInstallCode (void) const { return FindEventHandlerItemType(evtOnInstall); }
 		bool IsAmmunition (void) const;
 		bool IsArmor (void) const { return (m_pArmor != NULL); }
 		bool IsDevice (void) const { return (m_pDevice != NULL); }
-		bool IsKnown (CItemCtx &Ctx, int *retiUnknownIndex = NULL) const;
+		bool IsKnown (int iIndex) const { return m_UnknownTypes[iIndex].bKnown; }
 		bool IsFuel (void) const;
 		bool IsMissile (void) const;
 		bool IsScalable (void) const { return (m_fScalable ? true : false); }
 		bool IsUsable (void) const { return GetUseDesc(NULL); }
 		void SetAllKnown (bool bKnown = true);
-		void SetKnown (CItemCtx &Ctx, bool bKnown = true);
+		void SetKnown (int iIndex, bool bKnown = true) { m_UnknownTypes[iIndex].bKnown = bKnown; }
 		void SetShowReference (void) { m_fReference = true; }
 		bool ShowChargesInUseMenu (void) const { return (m_fShowChargesInUseMenu ? true : false); }
 		bool ShowReference (void) const { return (m_fReference ? true : false); }
@@ -153,8 +149,8 @@ class CItemType : public CDesignType
 		static CItemType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemType) ? (CItemType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual int GetLevel (int *retiMinLevel = NULL, int *retiMaxLevel = NULL) const override { if (retiMinLevel) *retiMinLevel = m_iLevel; if (retiMaxLevel) *retiMaxLevel = m_iMaxLevel; return m_iLevel; }
-		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override { return GetNamePattern(CItemCtx(this), dwNounFormFlags, retdwFlags); }
-		virtual CCurrencyAndValue GetTradePrice (CSpaceObject *pObj = NULL, bool bActual = false) const override;
+		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = m_dwNameFlags; return m_sName; }
+		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const override;
 		virtual DesignTypes GetType (void) const override { return designItemType; }
 		virtual bool IsVirtual (void) const override { return (m_fVirtual ? true : false); }
 
@@ -171,12 +167,14 @@ class CItemType : public CDesignType
 		virtual ALERROR OnBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual ALERROR OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual ALERROR OnFinishBindDesign (SDesignLoadCtx &Ctx) override;
+		virtual const CEconomyType &OnGetDefaultCurrency (void) const override;
 		virtual ICCItemPtr OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual bool OnHasSpecialAttribute (const CString &sAttrib) const override;
 		virtual ALERROR OnPrepareBindDesign (SDesignLoadCtx &Ctx) override;
 		virtual void OnReadFromStream (SUniverseLoadCtx &Ctx) override;
 		virtual void OnReinit (void) override;
+		virtual bool OnSetTypeProperty (const CString &sProperty, const ICCItem &Value) override;
+		virtual void OnUnbindDesign (void) override;
 		virtual void OnWriteToStream (IWriteStream *pStream) override;
 
 	private:
@@ -190,9 +188,8 @@ class CItemType : public CDesignType
 		void CreateFlotsamImage (void);
 		CString GenerateRandomName (const CString &sTemplate, const TArray<CString> &RetiredNames = TArray<CString>(), bool *retbTempletized = NULL) const;
 		CStationType *GetFlotsamStationType (void);
-		CString GetUnknownName (int iIndex, DWORD *retdwFlags = NULL);
-		int GetUnknownIndex (CItemCtx &Ctx) const;
-		inline CDesignType *GetUseScreen (CString *retsName) const;
+		CString GenerateUnknownName (int iIndex, DWORD *retdwFlags = NULL);
+		CDesignType *GetUseScreen (CString *retsName) const;
 		void InitRandomNames (void);
 		void InitComponents (void);
 		bool IsUnknownType (DWORD dwUNID, int *retiUnknownIndex = NULL) const;
@@ -280,11 +277,11 @@ class CItemTable : public CDesignType
 		CItemTable (void);
 		virtual ~CItemTable (void);
 
-		inline void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
-		inline CurrencyValue GetAverageValue (int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(iLevel) : 0); }
-		inline IItemGenerator *GetGenerator (void) { return m_pGenerator; }
-		inline CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return m_pGenerator->GetProbabilityTable(Ctx); }
-		inline bool HasItemAttribute (const CString &sAttrib) const { return (m_pGenerator ? m_pGenerator->HasItemAttribute(sAttrib) : false); }
+		void AddItems (SItemAddCtx &Ctx) { if (m_pGenerator) m_pGenerator->AddItems(Ctx); }
+		CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) const { return (m_pGenerator ? m_pGenerator->GetAverageValue(Ctx, iLevel) : 0); }
+		IItemGenerator *GetGenerator (void) { return m_pGenerator; }
+		CItemTypeProbabilityTable GetProbabilityTable (SItemAddCtx &Ctx) const { return m_pGenerator->GetProbabilityTable(Ctx); }
+		bool HasItemAttribute (const CString &sAttrib) const { return (m_pGenerator ? m_pGenerator->HasItemAttribute(sAttrib) : false); }
 
 		//	CDesignType overrides
 		static CItemTable *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designItemTable) ? (CItemTable *)pType : NULL); }

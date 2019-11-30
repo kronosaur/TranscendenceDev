@@ -98,7 +98,7 @@ void CRangeTypeEvent::DoEvent (DWORD dwTick, CSystem &System)
 			m_bCriteriaInit = true;
 			}
 
-		CCriteriaObjSelector Selector(m_Criteria);
+		CCriteriaObjSelector Selector(m_pCenter, m_Criteria);
 		CNearestInRadiusRange Range(vCenter, m_rRadius);
 
 		pFound = CSpaceObjectEnum::FindObjInRange(System, Range, Selector);
@@ -169,6 +169,17 @@ bool CRangeTypeEvent::OnObjDestroyed (CSpaceObject *pObj)
 		}
 
 	return false;
+	}
+
+void CRangeTypeEvent::OnPlayerChangedShips (CSpaceObject &OldShip, CSpaceObject &NewShip, SPlayerChangedShipsCtx &Options)
+
+//	OnPlayerChangedShips
+//
+//	Switch any references to the player ship.
+
+	{
+	if (m_pCenter == OldShip)
+		m_pCenter = &NewShip;
 	}
 
 void CRangeTypeEvent::OnWriteToStream (CSystem *pSystem, IWriteStream *pStream)

@@ -52,26 +52,26 @@ class CVector
 		CVector (void) : x(0.0), y(0.0) { }
 		CVector (Metric ix, Metric iy) : x(ix), y(iy) { }
 
-		inline bool operator == (const CVector &vA) const { return (x == vA.x && y == vA.y); }
+		bool operator == (const CVector &vA) const { return (x == vA.x && y == vA.y); }
 
 		bool Clip (Metric rLength);
-		inline Metric Distance (const CVector &vA) const { return sqrt(Distance2(vA)); }
-		inline Metric Distance2 (const CVector &vA) const { Metric xDiff = (vA.x - x); Metric yDiff = (vA.y - y); return (xDiff * xDiff + yDiff * yDiff); }
-		inline Metric Dot (const CVector &vA) const { return x * vA.x + y * vA.y; }
+		Metric Distance (const CVector &vA) const { return sqrt(Distance2(vA)); }
+		Metric Distance2 (const CVector &vA) const { Metric xDiff = (vA.x - x); Metric yDiff = (vA.y - y); return (xDiff * xDiff + yDiff * yDiff); }
+		Metric Dot (const CVector &vA) const { return x * vA.x + y * vA.y; }
 		void GenerateOrthogonals (const CVector &vNormal, Metric *retvPara, Metric *retvPerp) const;
-		inline const Metric &GetX (void) const { return x; }
-		inline const Metric &GetY (void) const { return y; }
-		inline bool InBox (const CVector &vUR, const CVector &vLL) const { return (x >= vLL.x && x < vUR.x	&& y >= vLL.y && y < vUR.y); }
-		inline bool IsNull (void) const { return (x == 0.0 && y == 0.0); }
-		inline Metric Length (void) const { return sqrt(x * x + y * y); }
-		inline Metric Length2 (void) const { return (x * x + y * y); }
-		inline Metric Longest (void) const
+		const Metric &GetX (void) const { return x; }
+		const Metric &GetY (void) const { return y; }
+		bool InBox (const CVector &vUR, const CVector &vLL) const { return (x >= vLL.x && x < vUR.x	&& y >= vLL.y && y < vUR.y); }
+		bool IsNull (void) const { return (x == 0.0 && y == 0.0); }
+		Metric Length (void) const { return sqrt(x * x + y * y); }
+		Metric Length2 (void) const { return (x * x + y * y); }
+		Metric Longest (void) const
 			{
 			Metric ax = (x < 0.0 ? -x : x);
 			Metric ay = (y < 0.0 ? -y : y);
 			return (ax > ay ? ax : ay);
 			}
-		inline CVector Normal (void) const 
+		CVector Normal (void) const 
 			{
 			Metric rLength = Length();
 
@@ -84,7 +84,7 @@ class CVector
 			else
 				return CVector(x / rLength, y / rLength);
 			}
-		inline CVector Normal (Metric *retrLength) const
+		CVector Normal (Metric *retrLength) const
 			{
 			*retrLength = Length();
 			if (*retrLength == 0.0)
@@ -92,17 +92,17 @@ class CVector
 			else
 				return CVector(x / *retrLength, y / *retrLength);
 			}
-		inline CVector Perpendicular (void) const { return CVector(-y, x); }
+		CVector Perpendicular (void) const { return CVector(-y, x); }
 		Metric Polar (Metric *retrRadius = NULL) const;
 		void ReadFromStream (IReadStream &Stream) { Stream.Read((char *)this, sizeof(CVector)); }
-		inline CVector Reflect (void) const { return CVector(-x, -y); }
+		CVector Reflect (void) const { return CVector(-x, -y); }
 		CVector Rotate (int iAngle) const;
 		CVector Rotate (Metric rRadians) const;
-		inline void SetX (Metric NewX) { x = NewX; }
-		inline void SetY (Metric NewY) { y = NewY; }
+		void SetX (Metric NewX) { x = NewX; }
+		void SetY (Metric NewY) { y = NewY; }
 		void WriteToStream (IWriteStream &Stream) const { Stream.Write((char *)this, sizeof(CVector)); }
-		inline const Metric &X (void) const { return x; }
-		inline const Metric &Y (void) const { return y; }
+		const Metric &X (void) const { return x; }
+		const Metric &Y (void) const { return y; }
 
 		static CVector FromPolar (const CVector &vA) { return CVector(vA.y * cos(vA.x), vA.y * sin(vA.x)); }
 		static CVector FromPolar (Metric rAngle, Metric rRadius) { return CVector(rRadius * cos(rAngle), rRadius * sin(rAngle)); }
@@ -141,10 +141,10 @@ class CLine
 				m_vTo(vTo)
 			{ }
 
-		inline const CVector &From (void) const { return m_vFrom; }
-		inline const CVector &To (void) const { return m_vTo; }
-		inline void SetFrom (const CVector &vVector) { m_vFrom = vVector; }
-		inline void SetTo (const CVector &vVector) { m_vTo = vVector; }
+		const CVector &From (void) const { return m_vFrom; }
+		const CVector &To (void) const { return m_vTo; }
+		void SetFrom (const CVector &vVector) { m_vFrom = vVector; }
+		void SetTo (const CVector &vVector) { m_vTo = vVector; }
 
 	private:
 		CVector m_vFrom;
@@ -260,16 +260,16 @@ class CIntGraph
 		void CreateNodeIndex (void);
 		void FreeConnection (int iConnection);
 		void FreeNode (int iNode);
-		inline const SConnection *GetBackwardConnection (const SNode *pNode) const { return (pNode->iFirstBackward >= 0 ? GetConnection(pNode->iFirstBackward) : NULL); }
-		inline const SConnection *GetConnection (int iConnection) const { return &m_Connections[iConnection]; }
-		inline SConnection *GetConnection (int iConnection) { return &m_Connections[iConnection]; }
-		inline const SConnection *GetForwardConnection (const SNode *pNode) const { return (pNode->iFirstForward >= 0 ? GetConnection(pNode->iFirstForward) : NULL); }
-		inline const SConnection *GetNextConnection (const SConnection *pConnection) const { return (pConnection->iNext >= 0 ? GetConnection(pConnection->iNext) : NULL); }
-		inline int GetNextFreeNode (SNode *pNode) { return (pNode->iFirstBackward); }
-		inline const SNode *GetNode (int iNode) const { return &m_Nodes[iNode]; }
-		inline SNode *GetNode (int iNode) { return &m_Nodes[iNode]; }
-		inline void MakeNodeFree (SNode *pNode, int iNextFree) { pNode->iFirstForward = -2; pNode->iFirstBackward = iNextFree; }
-		inline bool NodeIsFree (SNode *pNode) { return (pNode->iFirstForward == -2); }
+		const SConnection *GetBackwardConnection (const SNode *pNode) const { return (pNode->iFirstBackward >= 0 ? GetConnection(pNode->iFirstBackward) : NULL); }
+		const SConnection *GetConnection (int iConnection) const { return &m_Connections[iConnection]; }
+		SConnection *GetConnection (int iConnection) { return &m_Connections[iConnection]; }
+		const SConnection *GetForwardConnection (const SNode *pNode) const { return (pNode->iFirstForward >= 0 ? GetConnection(pNode->iFirstForward) : NULL); }
+		const SConnection *GetNextConnection (const SConnection *pConnection) const { return (pConnection->iNext >= 0 ? GetConnection(pConnection->iNext) : NULL); }
+		int GetNextFreeNode (SNode *pNode) { return (pNode->iFirstBackward); }
+		const SNode *GetNode (int iNode) const { return &m_Nodes[iNode]; }
+		SNode *GetNode (int iNode) { return &m_Nodes[iNode]; }
+		void MakeNodeFree (SNode *pNode, int iNextFree) { pNode->iFirstForward = -2; pNode->iFirstBackward = iNextFree; }
+		bool NodeIsFree (SNode *pNode) { return (pNode->iFirstForward == -2); }
 
 		TArray<SNode> m_Nodes;
 		TArray<SConnection> m_Connections;
@@ -294,9 +294,9 @@ class CIntegerIP
 		bool operator== (const CIntegerIP &Src) const;
 
 		CString AsBase64 (void) const;
-		inline BYTE *GetBytes (void) const { return m_pNumber; }
-		inline int GetLength (void) const { return m_iCount; }
-		inline bool IsEmpty (void) const { return (m_pNumber == NULL); }
+		BYTE *GetBytes (void) const { return m_pNumber; }
+		int GetLength (void) const { return m_iCount; }
+		bool IsEmpty (void) const { return (m_pNumber == NULL); }
 		void TakeHandoff (CIntegerIP &Src);
 
 	private:
@@ -360,10 +360,10 @@ template <class VALUE> class TNumberSeries
 				}
 			}
 
-		inline void DeleteAll (void) { m_Series.DeleteAll(); }
+		void DeleteAll (void) { m_Series.DeleteAll(); }
 
-		inline VALUE GetMean (void) const { return (m_Series.GetCount() > 0 ? (m_Total / m_Series.GetCount()) : 0); }
-		inline VALUE GetMedian (void) const
+		VALUE GetMean (void) const { return (m_Series.GetCount() > 0 ? (m_Total / m_Series.GetCount()) : 0); }
+		VALUE GetMedian (void) const
 			{
 			int iCount = m_Series.GetCount();
 
@@ -379,8 +379,8 @@ template <class VALUE> class TNumberSeries
 				}
 			}
 
-		inline VALUE GetMax (void) const { return (m_Series.GetCount() > 0 ? m_Max : 0); }
-		inline VALUE GetMin (void) const { return (m_Series.GetCount() > 0 ? m_Min : 0); }
+		VALUE GetMax (void) const { return (m_Series.GetCount() > 0 ? m_Max : 0); }
+		VALUE GetMin (void) const { return (m_Series.GetCount() > 0 ? m_Min : 0); }
 
 		void Insert (VALUE Value)
 			{
@@ -485,11 +485,11 @@ class CLabelArranger
 
         CLabelArranger (void);
 
-        inline void AddExclusion (const RECT &rcRect) { m_Exclusions.Insert(rcRect); }
+        void AddExclusion (const RECT &rcRect) { m_Exclusions.Insert(rcRect); }
         void Arrange (TArray<SLabelDesc> &Labels) const;
         void SetBounds (const RECT &rcRect);
-        inline void SetRadius (int iRadius) { m_iRadius = iRadius; }
-        inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
+        void SetRadius (int iRadius) { m_iRadius = iRadius; }
+        void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
 
     private:
         enum EConstraints

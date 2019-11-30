@@ -22,8 +22,7 @@ int g_cyScreen = 0;
 #define CONTROLLER_PLAYER					CONSTLIT("player")
 
 #define STR_SMALL_TYPEFACE					CONSTLIT("Tahoma")
-#define STR_MEDIUM_TYPEFACE					CONSTLIT("Tahoma")
-#define STR_LARGE_TYPEFACE					CONSTLIT("Trebuchet MS")
+#define STR_MEDIUM_TYPEFACE					CONSTLIT("Lucida Sans")
 #define STR_FIXED_TYPEFACE					CONSTLIT("Lucida Console")
 
 #define BAR_COLOR							CG32bitPixel(0, 2, 10)
@@ -577,6 +576,22 @@ void CTranscendenceWnd::ReportCrashSystem (CString *retsMessage) const
 //	Reports information about the current system.
 
 	{
+	//	Save file
+
+	CString sFilespec;
+	try
+		{
+		sFilespec = GetGameFile().GetFilespec();
+		if (!sFilespec.IsBlank())
+			retsMessage->Append(strPatternSubst(CONSTLIT("save file: %s\r\n"), pathGetFilename(sFilespec)));
+		}
+	catch (...)
+		{
+		retsMessage->Append(CONSTLIT("save file: crash obtaining filespec\r\n"));
+		}
+
+	//	If we don't have a system, then NULL.
+
 	CSystem *pSystem = (g_pUniverse ? g_pUniverse->GetCurrentSystem() : NULL);
 	if (pSystem == NULL)
 		{
@@ -584,48 +599,52 @@ void CTranscendenceWnd::ReportCrashSystem (CString *retsMessage) const
 			retsMessage->Append(CONSTLIT("system: NULL\r\n"));
 		else
 			retsMessage->Append(CONSTLIT("universe: NULL\r\n"));
-		return;
 		}
 
-	CString sSystemNode;
-	CString sSystemName;
-	DWORD dwSystemType = 0;
-	CSystem::SDebugInfo DebugInfo;
+	//	Otherwise, get system data
 
-	try
+	else
 		{
-		//	Get some basic data
+		CString sSystemNode;
+		CString sSystemName;
+		DWORD dwSystemType = 0;
+		CSystem::SDebugInfo DebugInfo;
 
-		CTopologyNode *pNode = pSystem->GetTopology();
-		if (pNode == NULL)
-			sSystemNode = CONSTLIT("none");
-		else
-			sSystemNode = pNode->GetID();
+		try
+			{
+			//	Get some basic data
 
-		CSystemType *pType = pSystem->GetType();
-		dwSystemType = (pType ? pType->GetUNID() : 0);
+			CTopologyNode *pNode = pSystem->GetTopology();
+			if (pNode == NULL)
+				sSystemNode = CONSTLIT("none");
+			else
+				sSystemNode = pNode->GetID();
 
-		sSystemName = pSystem->GetName();
+			CSystemType *pType = pSystem->GetType();
+			dwSystemType = (pType ? pType->GetUNID() : 0);
 
-		//	Debug info
+			sSystemName = pSystem->GetName();
 
-		pSystem->GetDebugInfo(DebugInfo);
+			//	Debug info
+
+			pSystem->GetDebugInfo(DebugInfo);
+			}
+		catch (...)
+			{
+			retsMessage->Append(CONSTLIT("error obtaining system data.\r\n"));
+			}
+
+		retsMessage->Append(strPatternSubst(CONSTLIT("system: %s\r\nsystem type: %08x\r\nsystem name: %s\r\n"), sSystemNode, dwSystemType, sSystemName));
+		retsMessage->Append(strPatternSubst(CONSTLIT("total objs: %d\r\ndestroyed: %d\r\ndeleted: %d\r\nbad: %d\r\nstars: %d\r\n"), 
+				DebugInfo.iTotalObjs, 
+				DebugInfo.iDestroyedObjs,
+				DebugInfo.iDeletedObj,
+				DebugInfo.iBadObjs,
+				DebugInfo.iStarObjs));
+
+		if (DebugInfo.bBadStarCache)
+			retsMessage->Append(CONSTLIT("bad star cache\r\n"));
 		}
-	catch (...)
-		{
-		retsMessage->Append(CONSTLIT("error obtaining system data.\r\n"));
-		}
-
-	retsMessage->Append(strPatternSubst(CONSTLIT("system: %s\r\nsystem type: %08x\r\nsystem name: %s\r\n"), sSystemNode, dwSystemType, sSystemName));
-	retsMessage->Append(strPatternSubst(CONSTLIT("total objs: %d\r\ndestroyed: %d\r\ndeleted: %d\r\nbad: %d\r\nstars: %d\r\n"), 
-			DebugInfo.iTotalObjs, 
-			DebugInfo.iDestroyedObjs,
-			DebugInfo.iDeletedObj,
-			DebugInfo.iBadObjs,
-			DebugInfo.iStarObjs));
-
-	if (DebugInfo.bBadStarCache)
-		retsMessage->Append(CONSTLIT("bad star cache\r\n"));
 	}
 
 void CTranscendenceWnd::ShowErrorMessage (const CString &sError)
@@ -660,7 +679,7 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	//	Welcome
 
 	m_MessageDisplay.ClearAll();
-	const CString &sWelcome = g_pUniverse->GetCurrentAdventureDesc()->GetWelcomeMessage();
+	const CString &sWelcome = g_pUniverse->GetCurrentAdventureDesc().GetWelcomeMessage();
 	if (!sWelcome.IsBlank())
 		m_MessageDisplay.DisplayMessage(sWelcome, m_Fonts.rgbTitleColor);
 

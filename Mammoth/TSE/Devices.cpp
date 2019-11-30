@@ -107,7 +107,7 @@ inline const SStdDeviceStats *GetStdDeviceStats (int iLevel)
 		return NULL;
 	}
 
-void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, TArray<SDisplayAttribute> *retList)
+void CDeviceClass::AccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const
 
 //	AccumulateAttributes
 //
@@ -120,18 +120,16 @@ void CDeviceClass::AccumulateAttributes (CItemCtx &ItemCtx, const CItem &Ammo, T
 
 	if (Ammo.IsEmpty())
 		{
-		CInstalledDevice *pDevice = ItemCtx.GetDevice();
-
 		//	Linked-fire
 
-		DWORD dwOptions = GetLinkedFireOptions(ItemCtx);
+		DWORD dwOptions = DeviceItem.GetLinkedFireOptions();
 		if ((dwOptions != 0) && (dwOptions != CDeviceClass::lkfNever))
 			retList->Insert(SDisplayAttribute(attribPositive, CONSTLIT("linked-fire")));
 		}
 
 	//	Let our subclasses add their own attributes
 
-	OnAccumulateAttributes(ItemCtx, Ammo, retList);
+	OnAccumulateAttributes(DeviceItem, Ammo, retList);
 	}
 
 bool CDeviceClass::AccumulateEnhancements (CItemCtx &Device, CInstalledArmor *pTarget, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements)
@@ -234,11 +232,41 @@ ALERROR CDeviceClass::Bind (SDesignLoadCtx &Ctx)
 	if (error = m_pOverlayType.Bind(Ctx))
 		return error;
 
+	if (error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	m_pItemType->InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return OnDesignLoadComplete(Ctx);
 
 	DEBUG_CATCH
+	}
+
+DWORD CDeviceClass::CombineLinkedFireOptions (DWORD dwSrc1, DWORD dwSrc2)
+
+//	CombineLinkedFireOptions
+//
+//	Combines linked fire options.
+
+	{
+	if (dwSrc1 == 0)
+		return dwSrc2;
+	else if (dwSrc2 == 0)
+		return dwSrc1;
+	else if (dwSrc1 == lkfNever || dwSrc2 == lkfNever)
+		return lkfNever;
+	else if (dwSrc1 == lkfAlways || dwSrc2 == lkfAlways)
+		return lkfAlways;
+	else if (dwSrc1 == lkfEnemyInRange || dwSrc2 == lkfEnemyInRange)
+		return lkfEnemyInRange;
+	else if (dwSrc1 == lkfTargetInRange || dwSrc2 == lkfTargetInRange)
+		return lkfTargetInRange;
+	else if (dwSrc1 == lkfSelected || dwSrc2 == lkfSelected)
+		return lkfSelected;
+	else if (dwSrc1 == lkfSelectedVariant || dwSrc2 == lkfSelectedVariant)
+		return lkfSelectedVariant;
+	else
+		return dwSrc1;
 	}
 
 COverlayType *CDeviceClass::FireGetOverlayType (CItemCtx &ItemCtx) const
@@ -318,7 +346,7 @@ int CDeviceClass::GetInstallCost (CItemCtx &ItemCtx)
 	if (m_pItemType == NULL)
 		return -1;
 
-	const SStdDeviceStats *pStats = GetStdDeviceStats(m_pItemType->GetApparentLevel(ItemCtx));
+	const SStdDeviceStats *pStats = GetStdDeviceStats(ItemCtx.GetItem().GetApparentLevel());
 	if (pStats == NULL)
 		return -1;
 
@@ -421,7 +449,7 @@ ALERROR CDeviceClass::InitDeviceFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, pType))
 			return error;
 		}
 
@@ -857,8 +885,8 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 	{
 	//	Look for a :nn suffix specifying a variant
 
-	char *pStart = sName.GetASCIIZPointer();
-	char *pPos = pStart;
+	const char *pStart = sName.GetASCIIZPointer();
+	const char *pPos = pStart;
 	while (*pPos != '\0')
 		{
 		if (*pPos == ':')
@@ -877,7 +905,7 @@ int CDeviceClass::ParseVariantFromPropertyName (const CString &sName, CString *r
 	return -1;
 	}
 
-bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -886,6 +914,6 @@ bool CDeviceClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	{
 	*retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-	return false;
+	return resultPropertyNotFound;
 	}
 

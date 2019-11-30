@@ -165,7 +165,7 @@ ALERROR CSystemMap::GenerateTopology (CTopology &Topology, TSortMap<DWORD, CTopo
 	//	Add background annotations
 
 	if (!m_pBackgroundEffect.IsEmpty())
-		AddAnnotation(m_pBackgroundEffect, 0, 0, 0);
+		GetDisplayMap()->AddAnnotation(m_pBackgroundEffect, 0, 0, 0);
 
 	//	Iterate over all creators and execute them
 
@@ -539,7 +539,7 @@ CEffectCreator *CSystemMap::OnFindEffectCreator (const CString &sUNID)
 	{
 	//	We start after the map class UNID
 
-	char *pPos = sUNID.GetASCIIZPointer();
+	const char *pPos = sUNID.GetASCIIZPointer();
 
 	//	If we have a slash, then dive into the topology nodes
 

@@ -97,9 +97,9 @@ class CXMLElement
 		bool FindAttributeDouble (const CString &sName, double *retrValue = NULL) const;
 		bool FindAttributeInteger (const CString &sName, int *retiValue = NULL) const;
 		CString GetAttribute (const CString &sName) const;
-		inline CString GetAttribute (int iIndex) const { return m_Attributes[iIndex]; }
+		CString GetAttribute (int iIndex) const { return m_Attributes[iIndex]; }
 		bool GetAttributeBool (const CString &sName) const;
-		inline int GetAttributeCount (void) const { return m_Attributes.GetCount(); }
+		int GetAttributeCount (void) const { return m_Attributes.GetCount(); }
 		double GetAttributeDouble (const CString &sName) const;
 		double GetAttributeDoubleBounded (const CString &sName, double rMin, double rMax = -1.0, double rNull = 0.0) const;
 		int GetAttributeInteger (const CString &sName) const;
@@ -108,16 +108,16 @@ class CXMLElement
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<int> *pList) const;
 		ALERROR GetAttributeIntegerList (const CString &sName, TArray<DWORD> *pList) const;
 		double GetAttributeFloat (const CString &sName) const;
-		inline const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
+		const CString &GetAttributeName (int iIndex) const { return m_Keywords.GetIdentifier(m_Attributes.GetKey(iIndex)); }
 		int GetAttributeTriState (const CString &sName) const;
-		inline int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
-		inline CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
+		int GetContentElementCount (void) const { return m_ContentElements.GetCount(); }
+		CXMLElement *GetContentElement (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentElements.GetCount()) ? m_ContentElements[iOrdinal] : NULL); }
 		CXMLElement *GetContentElementByTag (const CString &sTag) const;
 		CXMLElement *GetContentElementByTag (DWORD dwID) const;
-		inline const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
+		const CString &GetContentText (int iOrdinal) const { return ((iOrdinal >= 0 && iOrdinal < m_ContentText.GetCount()) ? m_ContentText[iOrdinal] : NULL_STR); }
 		int GetMemoryUsage (void) const;
-		inline CXMLElement *GetParentElement (void) const { return m_pParent; }
-		inline const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
+		CXMLElement *GetParentElement (void) const { return m_pParent; }
+		const CString &GetTag (void) const { return m_Keywords.GetIdentifier(m_dwTag); }
 		void InitFromMerge (const CXMLElement &A, const CXMLElement &B, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>(), bool *retbMerged = NULL);
 		void Merge (const CXMLElement &Src, const TSortMap<DWORD, DWORD> &MergeFlags = TSortMap<DWORD, DWORD>());
 		void MergeAttributes (const CXMLElement &Src);
@@ -154,10 +154,10 @@ class CExternalEntityTable : public IXMLParserController
 		CExternalEntityTable (void);
 
 		void AddTable (CSymbolTable &Table);
-		inline int GetCount (void) { return m_Entities.GetCount(); }
+		int GetCount (void) { return m_Entities.GetCount(); }
 		void GetEntity (int iIndex, CString *retsEntity, CString *retsValue);
-        inline const CString &GetName (void) const { return m_sName; }
-        inline void SetName (const CString &sName) { m_sName = sName; }
+        const CString &GetName (void) const { return m_sName; }
+        void SetName (const CString &sName) { m_sName = sName; }
 
 		virtual CString ResolveExternalEntity (const CString &sName, bool *retbFound = NULL);
 		virtual void SetParent (IXMLParserController *pParent) { m_pParent = pParent; }
@@ -173,7 +173,7 @@ class CEntityResolverList : public IXMLParserController
 	public:
 		CEntityResolverList (void) { }
 
-		inline void AddResolver (IXMLParserController *pResolver) { m_Resolvers.Insert(pResolver); }
+		void AddResolver (IXMLParserController *pResolver) { m_Resolvers.Insert(pResolver); }
 
 		//	IXMLParserController virtuals
 		virtual CString ResolveExternalEntity (const CString &sName, bool *retbFound = NULL);

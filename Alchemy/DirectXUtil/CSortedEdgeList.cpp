@@ -35,11 +35,11 @@ void CSortedEdgeList::Advance (void)
 			}
 		else 
 			{
-			//	Advance the edge’s X coordinate by minimum move
+			//	Advance the edge's X coordinate by minimum move
 
 			pCurrentEdge->x += pCurrentEdge->xWholePixelMove;
 
-			//	Determine whether it’s time for X to advance one extra
+			//	Determine whether it's time for X to advance one extra
 			
 			if ((pCurrentEdge->iErrorTerm +=
 					pCurrentEdge->iErrorTermAdjUp) > 0)

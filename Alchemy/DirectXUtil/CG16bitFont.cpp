@@ -127,7 +127,7 @@ int CG16bitFont::BreakText (const CString &sText, int cxWidth, TArray<CString> *
 		else
 			{
 			char chChar = *pPos;
-			if (chChar == '"' && ioInSmartQuotes) chChar = '“';
+			if (chChar == '"' && ioInSmartQuotes) chChar = CHAR_LEFT_DOUBLE_QUOTE;
 
 			//	Get the metrics for the character
 
@@ -1037,7 +1037,7 @@ bool CG16bitFont::ParseFontDesc (const CString &sDesc, CString *retsTypeface, in
 //	Returns TRUE if valid
 
 	{
-	char *pPos = sDesc.GetASCIIZPointer();
+	const char *pPos = sDesc.GetASCIIZPointer();
 	CString sTypeface = CONSTLIT("Arial");
 	int iSize = 16;
 	bool bBold = false;
@@ -1061,7 +1061,7 @@ bool CG16bitFont::ParseFontDesc (const CString &sDesc, CString *retsTypeface, in
 
 	//	Look for typeface
 
-	char *pStart = pPos;
+	const char *pStart = pPos;
 	while (*pPos != '\'' && *pPos != '\"' && (!bSpaceDelimiter || *pPos != ' ') && *pPos != '\0')
 		pPos++;
 
@@ -1243,9 +1243,9 @@ void FormatLine (char *pPos, int iLen, bool *ioInSmartQuotes, TArray<CString> *r
 					sLine.Append(CString(pStart, pPos - pStart, true));
 
 				if (*ioInSmartQuotes)
-					sLine.Append(CString("”", 1, true));
+					sLine.Append(CSTR_RIGHT_DOUBLE_QUOTE);
 				else
-					sLine.Append(CString("“", 1, true));
+					sLine.Append(CSTR_LEFT_DOUBLE_QUOTE);
 
 				*ioInSmartQuotes = !(*ioInSmartQuotes);
 

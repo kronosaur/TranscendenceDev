@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+	
+	<!-- Find Dvalin ===========================================================
+
+	EXTRA DATA
+
+	======================================================================== -->
+	
+	<MissionType UNID="&msRasiermesserFindDvalin;"
+			name=				"Find Dvalin"
+			attributes=			"rasiermesser, rasiermesserArmsDealer"
+
+			level=				"1-10"
+				 
+			maxAppearing=		"1"
+			autoAccept=			"acceptAndContinue"
+			noDebrief=			"true"
+			noInProgress=		"true"
+			>
+
+		<Properties>
+			<Data id="dvalinNodeID"></Data>
+			<Data id="dvalinObjID"></Data>
+		</Properties>
+
+		<Events>
+			<OnCreate>
+				(block (
+					(dvalinNodeID (typGetProperty &stRasiermesserFactory; 'DvalinSystem))
+
+					(dvalinSearch
+						(filter (unvFindObject "tA +unid:&stRasiermesserFactory;") theDesc
+							(= (@ theDesc 2) dvalinNodeID)
+							)
+						)
+					(dvalinDesc (@ dvalinSearch 0))
+					(dvalinObjID (@ dvalinDesc 0))
+					)
+					(switch
+						;	Make sure there exists a Rasiermesser factory 
+						;	somewhere in the universe.
+
+						(not dvalinDesc)
+							(msnDestroy gSource)
+
+						;	Set up the mission
+
+						(block Nil
+							;	Remember the system and station ID
+
+							(msnSetProperty gSource 'dvalinNodeID dvalinNodeID)
+							(msnSetProperty gSource 'dvalinObjID dvalinObjID)
+							)
+						)
+					)
+			</OnCreate>
+
+			<OnAccepted>
+				(block Nil
+					(msnRegisterForEvents gSource gPlayerShip)
+					)
+			</OnAccepted>
+
+			<OnSetPlayerTarget>
+				(if (= (sysGetNode) (msnGetProperty gSource 'dvalinNodeID))
+					(rpgSetTarget gSource aReason (objGetObjByID (msnGetProperty gSource 'dvalinObjID)) 'dock)
+					)
+			</OnSetPlayerTarget>
+			
+			<OnObjDocked>
+				(switch
+					(and (= aObjDocked gPlayerShip) 
+							(= (objGetID aDockTarget) (msnGetProperty gSource 'dvalinObjID))
+							)
+						(msnSuccess gSource)
+					)
+			</OnObjDocked>
+		</Events>
+		
+		<Language>
+			<Text id="Name">
+				"Visit Dvalin at a Rasiermesser Factory"
+			</Text>
+			<Text id="Summary">
+				(msnTranslate gSource 'textSummary {
+					systemName: (sysGetName (msnGetProperty gSource 'dvalinNodeID))
+					})
+			</Text>
+			<Text id="Intro">
+				(msnTranslate gSource 'textIntro {
+					systemName: (sysGetName (msnGetProperty gSource 'dvalinNodeID))
+					})
+			</Text>
+			<Text id="Briefing">
+				(msnTranslate gSource 'textBriefing {
+					systemName: (sysGetName (msnGetProperty gSource 'dvalinNodeID))
+					})
+			</Text>
+
+			<Text id="textSummary">
+
+					Travel to the %systemName% system and visit Dvalin, the chief
+					scientist of the Rasiermesser Corporation.
+
+					System: %systemName%\n
+					Payment: None
+
+			</Text>
+			<Text id="textIntro">
+				
+				The operations level is filled with screens. A couple of 
+				controllers sit in front of them looking bored. One of them 
+				talks to you:
+
+				"I joined Rasiermesser because they've got the best technology.
+				Much better than the boring systems of EI or the blunt 
+				instruments of Makayev."
+
+			</Text>
+			<Text id="textBriefing">
+
+				"If you get as far as the %systemName% system you should visit the
+				factory there. Dvalin, our chief scientist, works there and he'll
+				show you tech that will blow your mind.
+
+				"You won't regret it."
+			
+			</Text>
+			<Text id="SuccessMsg">
+				"Mission complete!"
+			</Text>
+		</Language>
+	</MissionType>
+
+</TranscendenceModule>

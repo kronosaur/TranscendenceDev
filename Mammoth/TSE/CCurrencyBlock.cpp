@@ -4,7 +4,7 @@
 
 #include "PreComp.h"
 
-CurrencyValue CCurrencyBlock::GetCredits (DWORD dwEconomyUNID)
+CurrencyValue CCurrencyBlock::GetCredits (DWORD dwEconomyUNID) const
 
 //	GetCredits
 //
@@ -14,14 +14,14 @@ CurrencyValue CCurrencyBlock::GetCredits (DWORD dwEconomyUNID)
 	if (dwEconomyUNID == 0)
 		dwEconomyUNID = DEFAULT_ECONOMY_UNID;
 
-	SEntry *pEntry = m_Block.GetAt(dwEconomyUNID);
+	const SEntry *pEntry = m_Block.GetAt(dwEconomyUNID);
 	if (pEntry == NULL)
 		return 0;
 
 	return pEntry->iValue;
 	}
 
-CurrencyValue CCurrencyBlock::GetCredits (const CString &sCurrency)
+CurrencyValue CCurrencyBlock::GetCredits (const CString &sCurrency) const
 
 //	GetCredits
 //

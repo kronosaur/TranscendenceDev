@@ -26,12 +26,12 @@ class CNFA
 		bool CalcMove (const CLargeSet &In, char *pPos, CLargeSet *retOut);
 		static ALERROR CreateRegExNFA (char *pPos, char **retpEnd, CNFA *retN, CString *retsError);
 		void DebugDump (void);
-		inline int GetEndState (void) const { return (m_pEnd ? m_pEnd->iID : -1); }
-		inline int GetStartState (void) const { return (m_pStart ? m_pStart->iID : -1); }
-		inline int GetStateCount (void) const { return m_States.GetCount(); }
+		int GetEndState (void) const { return (m_pEnd ? m_pEnd->iID : -1); }
+		int GetStartState (void) const { return (m_pStart ? m_pStart->iID : -1); }
+		int GetStateCount (void) const { return m_States.GetCount(); }
 		int GetSubExpressionCount (void);
 		bool GetSubExpressions (TArray<SRegExMatch> *retMatches) const;
-		inline bool IsEmpty (void) { return (m_States.GetCount() == 0); }
+		bool IsEmpty (void) { return (m_States.GetCount() == 0); }
 
 	private:
 		struct SState;
@@ -71,12 +71,12 @@ class CNFA
 				~CSubExpState (void) { if (m_pArray) delete m_pArray; }
 				CSubExpState &operator= (const CSubExpState &Obj) { if (m_pArray) delete m_pArray; if (Obj.m_pArray) m_pArray = new TArray<SSubExp>(*Obj.m_pArray); else m_pArray = NULL; return *this; }
 
-				inline int GetCount (void) { return (m_pArray ? m_pArray->GetCount() : 0); }
-				inline char *GetEnd (int iIndex) { return m_pArray->GetAt(iIndex).pEnd; }
-				inline char *GetStart (int iIndex) { return m_pArray->GetAt(iIndex).pStart; }
+				int GetCount (void) { return (m_pArray ? m_pArray->GetCount() : 0); }
+				char *GetEnd (int iIndex) { return m_pArray->GetAt(iIndex).pEnd; }
+				char *GetStart (int iIndex) { return m_pArray->GetAt(iIndex).pStart; }
 				void Init (int iCount) { if (m_pArray == NULL) { m_pArray = new TArray<SSubExp>; m_pArray->InsertEmpty(iCount); } }
-				inline void SetStart (int iIndex, char *pPos) { m_pArray->GetAt(iIndex).pStart = pPos; }
-				inline void SetEnd (int iIndex, char *pPos) { m_pArray->GetAt(iIndex).pEnd = pPos; }
+				void SetStart (int iIndex, char *pPos) { m_pArray->GetAt(iIndex).pStart = pPos; }
+				void SetEnd (int iIndex, char *pPos) { m_pArray->GetAt(iIndex).pEnd = pPos; }
 
 			private:
 				TArray<SSubExp> *m_pArray;

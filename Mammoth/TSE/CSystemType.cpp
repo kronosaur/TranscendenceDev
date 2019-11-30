@@ -151,6 +151,9 @@ ALERROR CSystemType::OnBindDesign (SDesignLoadCtx &Ctx)
 //	Bind design
 
 	{
+	if (ALERROR error = m_Enhancements.Bind(Ctx))
+		return error;
+
 	InitCachedEvents(evtCount, CACHED_EVENTS, m_CachedEvents);
 
 	return NOERROR;
@@ -239,7 +242,7 @@ ALERROR CSystemType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pEnhanceList = pDesc->GetContentElementByTag(ENHANCE_ABILITIES_TAG);
 	if (pEnhanceList)
 		{
-		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList))
+		if (error = m_Enhancements.InitFromXML(Ctx, pEnhanceList, NULL))
 			return ComposeLoadError(Ctx, Ctx.sError);
 		}
 

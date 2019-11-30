@@ -87,7 +87,7 @@ void CPolygonRasterizer::AddPolygonToGET (const TArray<CVector> &Points)
 			Swap(yStart, yEnd);
 			}
 
-		//	Skip if this can’t ever be an active edge (has 0 height)
+		//	Skip if this can't ever be an active edge (has 0 height)
 
 		int yDelta = yEnd - yStart;
 		if (yDelta == 0)

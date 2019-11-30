@@ -436,8 +436,8 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 			if (Item.IsInstalled())
 				{
-				CString sEnhancement = Item.GetEnhancedDesc(pShip);
-				CString sItemName = Item.GetNounPhrase(CItemCtx(Item), nounActual | nounCountOnly | nounShort);
+				CString sEnhancement = Item.GetEnhancedDesc();
+				CString sItemName = Item.GetNounPhrase(nounActual | nounCountOnly | nounShort);
 				CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 
 				bool bInserted;
@@ -458,12 +458,12 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 			{
 			//	Redo the line now that we know the proper count
 
-			CString sEnhancement = InstalledItems[j].GetEnhancedDesc(pShip);
+			CString sEnhancement = InstalledItems[j].GetEnhancedDesc();
 			DWORD dwFlags = nounActual | nounCountOnly;
 			if (!sEnhancement.IsBlank())
 				dwFlags |= nounNoModifiers;
 
-			CString sItemName = InstalledItems[j].GetNounPhrase(CItemCtx(InstalledItems[j]), dwFlags);
+			CString sItemName = InstalledItems[j].GetNounPhrase(dwFlags);
 			CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 
 			//	Compute the sort order
@@ -513,12 +513,12 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 			if (!Item.IsInstalled())
 				{
-				CString sEnhancement = Item.GetEnhancedDesc(pShip);
+				CString sEnhancement = Item.GetEnhancedDesc();
 				DWORD dwFlags = nounActual | nounCountOnly;
 				if (!sEnhancement.IsBlank())
 					dwFlags |= nounNoModifiers;
 
-				CString sItemName = Item.GetNounPhrase(CItemCtx(Item), dwFlags);
+				CString sItemName = Item.GetNounPhrase(dwFlags);
 				CString sLine = (sEnhancement.IsBlank() ? sItemName : strPatternSubst(CONSTLIT("%s [%s]"), sItemName, sEnhancement));
 				CString sSort = strPatternSubst(CONSTLIT("%03d%s"), 100 - Item.GetType()->GetLevel(), sLine);
 
@@ -690,8 +690,7 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 
 	else
 		{
-		CItemCriteria Crit;
-		CItem::ParseCriteria(pItemCriteria->GetStringValue(), &Crit);
+		CItemCriteria Crit(pItemCriteria->GetStringValue());
 
 		CMapIterator i;
 		m_ItemStats.Reset(i);
@@ -1409,12 +1408,12 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 //	Object destroyed by player
 
 	{
-	bool bIsEnemy = Ctx.pObj->IsEnemy(pPlayer);
+	bool bIsEnemy = Ctx.Obj.IsEnemy(pPlayer);
 
 	//	Is this a ship?
 
 	CShip *pShip;
-	if (Ctx.pObj->GetCategory() == CSpaceObject::catShip && (pShip = Ctx.pObj->AsShip()))
+	if (Ctx.Obj.GetCategory() == CSpaceObject::catShip && (pShip = Ctx.Obj.AsShip()))
 		{
 		CShipClass *pClass = pShip->GetClass();
 		SShipClassStats *pStats = GetShipStats(pClass->GetUNID());
@@ -1430,27 +1429,27 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 
 		//	Tell the sovereign that the player destroyed one of their ships.
 
-		CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+		CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 		if (pSovereign)
-			pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
+			pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
 		}
 
 	//	Is this a station?
 
-	else if (Ctx.pObj->GetCategory() == CSpaceObject::catStation)
+	else if (Ctx.Obj.GetCategory() == CSpaceObject::catStation)
 		{
-		if (Ctx.pObj->HasAttribute(CONSTLIT("populated"))
-				|| Ctx.pObj->HasAttribute(CONSTLIT("score")))
+		if (Ctx.Obj.HasAttribute(CONSTLIT("populated"))
+				|| Ctx.Obj.HasAttribute(CONSTLIT("score")))
 			{
-			SStationTypeStats *pStats = GetStationStats(Ctx.pObj->GetType()->GetUNID());
+			SStationTypeStats *pStats = GetStationStats(Ctx.Obj.GetType()->GetUNID());
 
 			pStats->iDestroyed++;
 
 			//	Tell the sovereign that the player destroyed one of their stations.
 
-			CSovereign *pSovereign = Ctx.pObj->GetSovereign();
+			CSovereign *pSovereign = Ctx.Obj.GetSovereign();
 			if (pSovereign)
-				pSovereign->OnObjDestroyedByPlayer(Ctx.pObj);
+				pSovereign->OnObjDestroyedByPlayer(&Ctx.Obj);
 			}
 		}
 	}

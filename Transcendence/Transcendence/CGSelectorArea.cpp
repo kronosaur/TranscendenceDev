@@ -141,12 +141,12 @@ const int FIRST_UNNAMED_SLOT_INDEX =		3;
 
 CGSelectorArea::CGSelectorArea (const CVisualPalette &VI, const CDockScreenVisuals &Theme) :
 		m_VI(VI),
-		m_Theme(Theme)
+		m_Theme(Theme),
+		m_Criteria(CItemCriteria::ALL)
 
 //	CGSelectorArea constructor
 
 	{
-    CItem::InitCriteriaAll(&m_Criteria);
 	}
 
 CGSelectorArea::~CGSelectorArea (void)
@@ -853,7 +853,7 @@ void CGSelectorArea::PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect,
 	m_VI.GetFont(fontMedium).DrawText(Dest, 
 			rcText,
 			m_rgbTextColor,
-			Item.GetNounPhrase(CItemCtx(Item), nounShort | nounNoModifiers),
+			Item.GetNounPhrase(nounShort | nounNoModifiers),
 			0,
 			CG16bitFont::AlignCenter);
 
@@ -895,7 +895,7 @@ void CGSelectorArea::PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect,
 		//	Modifiers
 
 		TArray<SDisplayAttribute> Attribs;
-		if (Entry.pItemCtx->GetEnhancementDisplayAttributes(&Attribs))
+		if (Item.AccumulateEnhancementDisplayAttributes(Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
 
@@ -972,7 +972,7 @@ void CGSelectorArea::PaintInstalledItem (CG32bitImage &Dest, const RECT &rcRect,
 		//	Modifiers
 
 		TArray<SDisplayAttribute> Attribs;
-		if (Entry.pItemCtx->GetEnhancementDisplayAttributes(&Attribs))
+		if (Item.AccumulateEnhancementDisplayAttributes(Attribs))
 			{
 			CUIHelper Helper(*g_pHI);
 

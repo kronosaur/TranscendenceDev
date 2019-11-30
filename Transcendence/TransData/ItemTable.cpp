@@ -353,7 +353,7 @@ void OutputByComponent (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 		for (j = 0; j < Components.GetCount(); j++)
 			{
 			const CItem &ComponentItem = Components.GetItem(j);
-			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase(CItemCtx(ComponentItem)));
+			CString sUNID = strPatternSubst(CONSTLIT("%08x: %s"), ComponentItem.GetType()->GetUNID(), ComponentItem.GetNounPhrase());
 			bool bNew;
 			SAttributeEntry *pEntry = ByComponentTable.SetAt(sUNID, &bNew);
 			if (bNew)
@@ -604,7 +604,9 @@ void OutputHeader (SItemTableCtx &Ctx)
 					"balSpeedAdj\t"
 					"balDeviceBonus\t"
 					"balMass\t"
-					"balCost");
+					"balCost\t"
+					"stdMass\t"
+					"stdCost");
 			else if (Ctx.bShieldBalanceStats)
 				printf("balance\t"
 					"balanceExcludeCost\t"
@@ -687,14 +689,14 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
                     if (Stats.pBestArmor)
                         {
                         CItem BestArmor(Stats.pBestArmor, 1);
-                        sBestArmor = BestArmor.GetNounPhrase(ItemCtx, nounShort);
+                        sBestArmor = BestArmor.GetNounPhrase(nounShort);
                         }
 
                     CString sWorstArmor;
                     if (Stats.pWorstArmor)
                         {
                         CItem WorstArmor(Stats.pWorstArmor, 1);
-                        sWorstArmor = WorstArmor.GetNounPhrase(ItemCtx, nounShort);
+                        sWorstArmor = WorstArmor.GetNounPhrase(nounShort);
                         }
 
                     printf("%d\t%s\t%d\t%s\t%d",
@@ -713,9 +715,11 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 					CArmorClass *pArmor = pType->GetArmorClass();
 					if (pArmor)
 						{
-						CArmorClass::SBalance Balance;
-						pArmor->CalcBalance(ItemCtx, Balance);
-						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f",
+						CArmorItem ArmorItem = Item.AsArmorItem();
+
+						CArmorItem::SBalance Balance;
+						ArmorItem.CalcBalance(Balance);
+						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%d",
 								Balance.rBalance,
 								Balance.rBalance - Balance.rCost,
 								Balance.rHPBalance,
@@ -729,7 +733,9 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 								Balance.rSpeedAdj,
 								Balance.rDeviceBonus,
 								Balance.rMass,
-								Balance.rCost
+								Balance.rCost,
+								Balance.rStdMass,
+								mathRound(Balance.rStdCost)
 								);
 						}
 					else
@@ -853,11 +859,7 @@ void SelectByCriteria (SItemTableCtx &Ctx, const CString &sCriteria, TArray<CIte
 
 	//	Compute the criteria
 
-	CItemCriteria Crit;
-	if (!sCriteria.IsBlank())
-		CItem::ParseCriteria(sCriteria, &Crit);
-	else
-		CItem::InitCriteriaAll(&Crit);
+	CItemCriteria Crit(sCriteria, CItemCriteria::ALL);
 
 	//	Loop over all items that match and add them to
 	//	a sorted table.

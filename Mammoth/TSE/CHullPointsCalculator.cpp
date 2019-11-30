@@ -91,7 +91,7 @@ CHullPointsCalculator::CHullPointsCalculator (const CShipClass &Class, const CSh
 
 	const CArmorLimits &ArmorLimits = Hull.GetArmorLimits();
 	CArmorLimits::SSummary ArmorSummary;
-	ArmorLimits.CalcSummary(g_pUniverse->GetDesignCollection().GetArmorMassDefinitions(), ArmorSummary);
+	ArmorLimits.CalcSummary(Class.GetUniverse().GetDesignCollection().GetArmorMassDefinitions(), ArmorSummary);
 
 	//	These factors control how important it is to have lots of armor choices.
 	//	If we get a speed bonus below std armor mass, then we get a bonus. 

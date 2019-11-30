@@ -21,12 +21,13 @@ class CEconomyType : public CDesignType
 		inline bool IsCreditEquivalent (void) const { return (m_iCreditConversion == 100); }
 
 		static CurrencyValue ExchangeToCredits (const CEconomyType *pFrom, CurrencyValue iAmount);
-		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value);
+		static CurrencyValue ExchangeToCredits (const CCurrencyAndValue &Value) { return ExchangeToCredits(Value.GetCurrencyType(), Value.GetValue()); }
 		static CString RinHackGet (CSpaceObject *pObj);
 		static CurrencyValue RinHackInc (CSpaceObject *pObj, CurrencyValue iInc);
 		static void RinHackSet (CSpaceObject *pObj, const CString &sData);
 
 		//	CDesignType overrides
+		static CEconomyType *AsType (CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (CEconomyType *)pType : NULL); }
 		static const CEconomyType *AsType (const CDesignType *pType) { return ((pType && pType->GetType() == designEconomyType) ? (const CEconomyType *)pType : NULL); }
 		virtual bool FindDataField (const CString &sField, CString *retsValue) const override;
 		virtual CString GetNamePattern (DWORD dwNounFormFlags = 0, DWORD *retdwFlags = NULL) const { if (retdwFlags) *retdwFlags = 0; return m_sCurrencyName; }

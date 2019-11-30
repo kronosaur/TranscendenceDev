@@ -247,11 +247,16 @@ void CGameSession::OnObjDestroyed (const SDestroyCtx &Ctx)
 		HideMenu();
 		ShowMenu(menuCommsTarget);
 		}
-	else if (m_CurrentMenu == menuComms && m_pCurrentComms == Ctx.pObj)
+	else if (m_CurrentMenu == menuComms && m_pCurrentComms == Ctx.Obj)
 		{
 		HideMenu();
 		m_pCurrentComms = NULL;
 		}
+
+	//	If we're in a docking screen, let it know that the object got destroyed.
+
+	if (g_pTrans->m_State == CTranscendenceWnd::gsDocked)
+		m_CurrentDock.OnObjDestroyed(Ctx);
 	}
 
 void CGameSession::OnPlayerDestroyed (SDestroyCtx &Ctx, const CString &sEpitaph)

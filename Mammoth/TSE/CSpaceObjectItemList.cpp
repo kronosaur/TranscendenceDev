@@ -63,7 +63,11 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 	{
 	DEBUG_TRY
 
-	if (pItems)
+	//	Out of plane objects don't get inventory; this handles the case of out
+	//	of plane asteroids getting ore.
+
+	if (pItems 
+			&& !IsOutOfPlaneObj())
 		{
 		//	Notify any dock screens that we might modify an item
 		//	Null item means preserve current selection.
@@ -141,7 +145,7 @@ CItem CSpaceObject::GetItemForDevice (CInstalledDevice *pDevice)
 	return ItemList.GetItemAtCursor();
 	}
 
-ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName)
+ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName) const
 
 //	GetItemProperty
 //
@@ -266,13 +270,17 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 	else
 		{
 		//	Select the item (to make sure that it is part of the object)
+		//
+		//	LATER: We need a const-version of CItemListManupulator
 
-		CItemListManipulator ItemList(GetItemList());
+		CItemListManipulator ItemList(const_cast<CItemList &>(GetItemList()));
 		if (!ItemList.SetCursorAtItem(Item))
 			return CC.CreateError(CONSTLIT("Item not found on object."));
 
-		CItemCtx Ctx(&Item, this);
-		return Item.GetItemProperty(CCCtx, Ctx, sName);
+		//	LATER: Eventually we will get rid of CItemCtx.
+
+		CItemCtx Ctx(&Item, const_cast<CSpaceObject *>(this));
+		return Item.GetItemProperty(CCCtx, Ctx, sName, false);
 		}
 	}
 
@@ -378,6 +386,11 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		return false;
 		}
 
+	//	Notify any dock screens that we might modify an item
+
+	IDockScreenUI::SModifyItemCtx ModifyCtx;
+	OnModifyItemBegin(ModifyCtx, Item);
+
 	//	We handle damage differently because we may need to remove enhancements,
 	//	etc.
 
@@ -464,10 +477,16 @@ bool CSpaceObject::SetItemProperty (const CItem &Item, const CString &sName, ICC
 		ItemEnhancementModified(ItemList);
 		}
 
-	//	Done
+	//	Return the newly changed item. We do this before the notification 
+	//	because the notification might change the underlying item list (because
+	//	it sorts).
 
 	if (retItem)
 		*retItem = ItemList.GetItemAtCursor();
+
+	//	Update the object
+
+	OnModifyItemComplete(ModifyCtx, ItemList.GetItemAtCursor());
 
 	return true;
 	}

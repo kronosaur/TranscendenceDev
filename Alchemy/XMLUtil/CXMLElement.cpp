@@ -241,7 +241,7 @@ bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) cons
 
 	{
 	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
-	if (pValue == NULL)
+	if (pValue == NULL || pValue->IsBlank())
 		return false;
 
 	if (retbValue)
@@ -446,7 +446,7 @@ bool CXMLElement::GetAttributeIntegerRange (const CString &sName, int *retiLow, 
 
     //  Parse the first number
 
-    char *pPos = sValue.GetASCIIZPointer();
+    const char *pPos = sValue.GetASCIIZPointer();
     bool bNullValue;
 	int iValue = strParseInt(pPos, 0, &pPos, &bNullValue);
     if (bNullValue)

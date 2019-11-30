@@ -1064,6 +1064,7 @@ ALERROR CExtension::Load (ELoadStates iDesiredState, IXMLParserController *pReso
 			Ctx.pResDb = &ExtDb;
 			Ctx.bNoResources = Options.bNoResources;
 			Ctx.bLoadAdventureDesc = (iDesiredState == loadAdventureDesc);
+			Ctx.bLoadDiagnostics = Options.bLoadDiagnostics;
 			Ctx.sErrorFilespec = m_sFilespec;
 
 			//	If this is a registered extension then compute a digest for the

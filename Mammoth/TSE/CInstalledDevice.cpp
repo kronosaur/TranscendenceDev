@@ -70,7 +70,7 @@ bool CInstalledDevice::AccumulateSlotEnhancements (CSpaceObject *pSource, TArray
 
 //	AccumulateSlotEnhancements
 //
-//	Accumulates enhancements confered by the slot itself.
+//	Accumulates enhancements conferred by the slot itself.
 
 	{
 	bool bEnhanced = false;
@@ -160,27 +160,17 @@ int CInstalledDevice::GetActivateDelay (CSpaceObject *pSource) const
 	return m_iActivateDelay;
 	}
 
-CString CInstalledDevice::GetEnhancedDesc (CSpaceObject *pSource, const CItem *pItem)
+CString CInstalledDevice::GetEnhancedDesc (void)
 
 //	GetEnhancedDesc
 //
 //	Returns description of the enhancement
 
 	{
-	CItemCtx ItemCtx(pSource, this);
-
-	TArray<SDisplayAttribute> Attribs;
-	if (!ItemCtx.GetEnhancementDisplayAttributes(&Attribs))
+	if (m_pItem == NULL)
 		return NULL_STR;
 
-	CString sResult = Attribs[0].sText;
-	for (int i = 1; i < Attribs.GetCount(); i++)
-		{
-		sResult.Append(CONSTLIT(" "));
-		sResult.Append(Attribs[i].sText);
-		}
-
-	return sResult;
+	return m_pItem->GetEnhancedDesc();
 	}
 
 ItemFates CInstalledDevice::GetFate (void) const
@@ -215,10 +205,8 @@ int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
 
 	if (iMaxHP <= 0)
 		return -1;
-	else if (iMaxHP <= iHP)
-		return 100;
-
-	return ((1000 * iHP / iMaxHP) + 5) / 10;
+	else
+		return CArmorClass::CalcIntegrity(iHP, iMaxHP);
 	}
 
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
@@ -236,9 +224,9 @@ CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) 
 		return NULL;
 	}
 
-DWORD CInstalledDevice::GetLinkedFireOptions (void) const
+DWORD CInstalledDevice::GetSlotLinkedFireOptions (void) const
 
-//	GetLinkedFireOptions
+//	GetSlotLinkedFireOptions
 //
 //	Returns linked-fire options for the device slot.
 
@@ -469,14 +457,14 @@ void CInstalledDevice::Install (CSpaceObject &Source, CItemListManipulator &Item
 	DEBUG_CATCH
 	}
 
-bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) const
+bool CInstalledDevice::IsLinkedFire (ItemCategories iTriggerCat) const
 
 //	IsLinkedFire
 //
 //	Returns TRUE if we're linked to weapon trigger
 
 	{
-	DWORD dwOptions = GetClass()->GetLinkedFireOptions(Ctx);
+	DWORD dwOptions = m_pItem->AsDeviceItemOrThrow().GetLinkedFireOptions();
 	if (dwOptions == 0)
 		return false;
 	else if (iTriggerCat == itemcatNone)
@@ -485,17 +473,19 @@ bool CInstalledDevice::IsLinkedFire (CItemCtx &Ctx, ItemCategories iTriggerCat) 
 		return (GetClass()->GetCategory() == iTriggerCat);
 	}
 
-bool CInstalledDevice::IsSelectable (CItemCtx &Ctx) const
+bool CInstalledDevice::IsSelectable (void) const
 
 //	IsSelectable
 //
 //	Returns TRUE if device can be selected as a primary weapon or launcher.
 
 	{
+	DWORD dwOptions = m_pItem->AsDeviceItemOrThrow().GetLinkedFireOptions();
+
 	return (!IsSecondaryWeapon()
-			&& (GetClass()->GetLinkedFireOptions(Ctx) == 0
-			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelected
-			|| GetClass()->GetLinkedFireOptions(Ctx) == CDeviceClass::lkfSelectedVariant));
+			&& (dwOptions == 0
+			|| dwOptions == CDeviceClass::lkfSelected
+			|| dwOptions == CDeviceClass::lkfSelectedVariant));
 	}
 
 ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
@@ -508,6 +498,9 @@ ALERROR CInstalledDevice::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	ALERROR error;
 
 	if (error = m_pClass.Bind(Ctx))
+		return error;
+
+	if (error = m_SlotEnhancements.Bind(Ctx))
 		return error;
 
 	return NOERROR;
@@ -637,7 +630,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 	if (dwLoad == 0xffffffff)
 		return;
 
-	m_pClass.Set(g_pUniverse->FindDeviceClass(dwLoad));
+	m_pClass.Set(Ctx.GetUniverse().FindDeviceClass(dwLoad));
 
 	//	Other data
 
@@ -684,7 +677,7 @@ void CInstalledDevice::ReadFromStream (CSpaceObject &Source, SLoadCtx &Ctx)
 		if (iBonus != 0)
 			{
 			m_pEnhancements.TakeHandoff(new CItemEnhancementStack);
-			m_pEnhancements->InsertHPBonus(iBonus);
+			m_pEnhancements->InsertHPBonus(NULL, iBonus);
 			}
 		m_iSlotPosIndex = -1;
 		}
@@ -997,7 +990,7 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 		m_fLinkedFireNever = true;
 	}
 
-bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetProperty
 //
@@ -1008,7 +1001,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("No device installed.");
-		return false;
+		return resultPropertyError;
 		}
 
 	//	Figure out what to set
@@ -1027,7 +1020,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
-            return false;
+			return resultPropertyError;
             }
         }
 
@@ -1050,7 +1043,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			if (m_pClass->IsExternal() && !bSetExternal)
 				{
 				if (retsError) *retsError = CONSTLIT("Device is natively external and cannot be made internal.");
-				return false;
+				return resultPropertyError;
 				}
 
 			SetExternal(bSetExternal);
@@ -1104,7 +1097,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid fireArc parameter.");
-			return false;
+			return resultPropertyError;
 			}
 		}
 
@@ -1116,7 +1109,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		if (!::GetLinkedFireOptions(pValue, &dwOptions, retsError))
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid linked-fire option.");
-			return false;
+			return resultPropertyError;
 			}
 
 		//	Set
@@ -1151,7 +1144,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid angle and radius");
-			return false;
+			return resultPropertyError;
 			}
 
 		//	Set it
@@ -1175,7 +1168,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
-            return false;
+			return resultPropertyError;
             }
         }
 	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
@@ -1189,7 +1182,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 	else
 		return m_pClass->SetItemProperty(Ctx, sName, pValue, retsError);
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList)

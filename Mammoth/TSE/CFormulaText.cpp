@@ -15,14 +15,14 @@ ALERROR CFormulaText::InitFromString (SDesignLoadCtx &Ctx, const CString &sText)
 	return NOERROR;
 	}
 
-int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CString *retsSuffix, CString *retsError) const
+int CFormulaText::EvalAsInteger (const CSpaceObject *pSource, CString *retsPrefix, CString *retsSuffix, CString *retsError) const
 
 //	EvalAsInteger
 //
 //	Evaluates the formula and returns integer
 
 	{
-	char *pPos = m_sText.GetASCIIZPointer();
+	const char *pPos = m_sText.GetASCIIZPointer();
 
 	//	Skip whitespace
 
@@ -75,7 +75,7 @@ int CFormulaText::EvalAsInteger (CSpaceObject *pSource, CString *retsPrefix, CSt
 
 	else
 		{
-		char *pStart = pPos;
+		const char *pStart = pPos;
 		while (*pPos != '\0' && *pPos != ':' && !strIsWhitespace(pPos))
 			pPos++;
 

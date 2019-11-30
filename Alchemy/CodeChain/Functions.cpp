@@ -1500,7 +1500,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 			if (pValue->IsIdentifier())
 				{
 				CString sValue = pValue->GetStringValue();
-				char *pEnd;
+				const char *pEnd;
 				bool bFailed;
 				int iValue = strParseIntOfBase(sValue.GetASCIIZPointer(), 16, 0, &pEnd, &bFailed);
 				if (bFailed || *pEnd != '\0')
@@ -1608,9 +1608,20 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
             {
             ICCItem *pList = pArgs->GetElement(0);
 
+			//	Exclude nil elements
+
+			TArray<CString> List;
+			for (int i = 0; i < pList->GetCount(); i++)
+				{
+				if (pList->GetElement(i)->IsNil())
+					continue;
+
+				List.Insert(pList->GetElement(i)->GetStringValue());
+				}
+
             //  Short-circuit.
 
-            if (pList->GetCount() == 0)
+            if (List.GetCount() == 0)
                 return pCC->CreateNil();
 
             //  Prepare output buffer
@@ -1621,28 +1632,28 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
             //  We always start with the first element
 
-            Stream.WriteChars(pList->GetElement(0)->GetStringValue());
+            Stream.WriteChars(List[0]);
 
             //  If no separator, then we just concatenate all entries
 
             CString sSeparator = (pArgs->GetCount() >= 2 ? pArgs->GetElement(1)->GetStringValue() : NULL_STR);
             if (sSeparator.IsBlank())
                 {
-                for (i = 1; i < pList->GetCount(); i++)
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                for (i = 1; i < List.GetCount(); i++)
+                    Stream.WriteChars(List[i]);
                 }
 
             //  If oxford comma, concatenate
 
             else if (strEquals(sSeparator, CONSTLIT("oxfordComma")))
                 {
-                for (i = 1; i < pList->GetCount(); i++)
+                for (i = 1; i < List.GetCount(); i++)
                     {
                     //  Either comma or comma-and
 
-                    if (i == pList->GetCount() - 1)
+                    if (i == List.GetCount() - 1)
                         {
-                        if (pList->GetCount() == 2)
+                        if (List.GetCount() == 2)
                             Stream.WriteChars(CONSTLIT(" and "));
                         else
                             Stream.WriteChars(CONSTLIT(", and "));
@@ -1652,7 +1663,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
                     //  Write entry
 
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(List[i]);
                     }
                 }
 
@@ -1660,7 +1671,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
             else
                 {
-                for (i = 1; i < pList->GetCount(); i++)
+                for (i = 1; i < List.GetCount(); i++)
                     {
                     //  Write separator
 
@@ -1668,7 +1679,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
                     //  Write entry
 
-                    Stream.WriteChars(pList->GetElement(i)->GetStringValue());
+                    Stream.WriteChars(List[i]);
                     }
                 }
 
@@ -1785,11 +1796,8 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				for (i = 0; i < pTable->GetCount(); i++)
 					{
-					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
-
-					pTarget->AddEntry(pKey, pItem);
-					pKey->Discard();
+					pTarget->SetAt(pTable->GetKey(i), pItem);
 					}
 
 				return pTarget;
@@ -1812,7 +1820,7 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				if (pValue->IsNil())
 					{
-					pTarget->DeleteEntry(pCC, pKey);
+					pTarget->DeleteEntry(pKey);
 					}
 
 				//	Otherwise, add it
@@ -4040,10 +4048,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArg->GetElement(1));
-			else
-				pResult->SetAt(sKey, pArg->GetElement(1));
+			if (!pArg->GetElement(1)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArg->GetElement(1));
+				else
+					pResult->SetAt(sKey, pArg->GetElement(1));
+				}
+
             iArg++;
             }
 
@@ -4068,10 +4080,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArgs->GetElement(iArg));
-			else
-				pResult->SetAt(sKey, pArgs->GetElement(iArg));
+			if (!pArgs->GetElement(iArg)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArgs->GetElement(iArg));
+				else
+					pResult->SetAt(sKey, pArgs->GetElement(iArg));
+				}
+
             iArg++;
             }
 
@@ -4167,7 +4183,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 	CCodeChain *pCC = pCtx->pCC;
 
 	CString sPattern = pArgs->GetElement(0)->GetStringValue();
-	char *pPos = sPattern.GetASCIIZPointer();
+	const char *pPos = sPattern.GetASCIIZPointer();
 
 	ICCItem *pStruct = ((pArgs->GetCount() > 1) ? pArgs->GetElement(1) : NULL);
 
@@ -4211,7 +4227,7 @@ ICCItem *fnSubst (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 			else
 				{
-				char *pStart = pPos;
+				const char *pStart = pPos;
 				while (*pPos != '%' && *pPos != '\0')
 					pPos++;
 
@@ -5214,7 +5230,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					char *pEnd;
+					const char *pEnd;
 					CString sSecond = pSecond->GetStringValue();
 					double rSecondValue = strParseDouble(sSecond.GetASCIIZPointer(), 0.0, &pEnd, &bFailed);
 					if (bFailed || *pEnd != '\0')
@@ -5248,7 +5264,7 @@ int HelperCompareItems (ICCItem *pFirst, ICCItem *pSecond, DWORD dwCoerceFlags)
 				case ICCItem::String:
 					{
 					bool bFailed;
-					char *pEnd;
+					const char *pEnd;
 					CString sSecond = pSecond->GetStringValue();
 					int iSecondValue = strParseInt(sSecond.GetASCIIZPointer(), 0, &pEnd, &bFailed);
 

@@ -761,7 +761,6 @@
 				fireRate=			"15"
 				missileSpeed=		"90"
 				lifetime=			"27"
-				interaction=		"20"
 				powerUse=			"100"
 
 				effect=				"&efKineticBoltDefault;"
