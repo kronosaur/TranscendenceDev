@@ -279,7 +279,7 @@ class CVisibleAggressorObjSelector
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
-		void SetIncludeMissiles(bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 
 	private:
 		CPerceptionCalc m_Perception;

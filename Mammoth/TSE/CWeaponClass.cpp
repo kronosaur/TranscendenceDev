@@ -1,6 +1,7 @@
 //	CWeaponClass.cpp
 //
 //	CWeaponClass class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
