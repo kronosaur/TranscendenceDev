@@ -1,9 +1,61 @@
 #pragma once
 
+/*
+DESIGN DOC FOR OPENGL'ING TRANS!
+
+-First, start with something simple. Say, the spaceObject PAINT function. Either enable batched painting for specific object classes on a class by class basis,
+or modify the Image.PaintImage function (CObjectImageArray.cpp::1344) to blt to an OpenGL quad instead of the canvas. First is recommended, since that is ultimately what we want to do.
+
+-We will need to come up with the following things:
+1. Render queue to organize all the things we need to paint, and how to best paint them (i.e. instancing)
+2. Function to replace CObjectImageArray::PaintImage
+
+The simple and hacky way to go is to attach an OpenGL render queue object (which we'll have to define ourselves) to the CG32bitImage class. Note that the Dest for most spaceobject renderings is the same
+as the canvas object we blt to a quad in the render phase, so we can use OpenGL to do batched or naive rendering as we see fit. Once we have the render queue object, we can then decide what to do with our
+objects to render. Start with a simple naive render of 'load texture, render, load next texture'. In the Paint functions, we can generate and attach objects to the render queues.
+
+For spaceobjects with image textures, we will probably need a custom OpenGLVAO object. Features we may need include: rotation index vao, vao specifying texture rows/columns, bool vao specifying whether to
+go by row order or column order (or maybe use different shader for that), vao specifying texture size, 
+
+Things needed per spobject:
+-Start position pixel (supplied by function)
+-Size of the ship object in pixels
+-Position of the ship object in pixel coords
+-Size of the screen in pixels
+-Texture to use for the ship
+
+The spobject render queue contains the following globals:
+-Vector with order of textures to render
+-Subqueue containing which texture to use for the ship 
+
+*/
+
 #include "OpenGLIncludes.h"
 #include "OpenGLShader.h"
 #include <vector>
 
+class OpenGLInstancedRenderQueue {
+	// Contains all the objects to render for a single given texture.
+public:
+	OpenGLInstancedRenderQueue (void) { }
+	~OpenGLInstancedRenderQueue (void);
+	void addObjToRender(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY);
+	void addObjToRender(float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
+private:
+	std::vector<glm::vec2> startPositionsFloat;
+	std::vector<glm::vec2> quadSizesFloat;
+	std::vector<glm::vec2> canvasPositionsFloat;
+};
+/*
+class OpenGLMasterRenderQueue {
+public:
+	OpenGLTextureRenderQueue(void) { }
+	~OpenGLTextureRenderQueue(void);
+	void pushSpaceObjectOntoQueue();
+private:
+
+};
+*/
 class OpenGLTexture {
 public:
 	OpenGLTexture (void) { }
