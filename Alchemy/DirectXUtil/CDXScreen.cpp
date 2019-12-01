@@ -632,7 +632,11 @@ void CDXScreen::Render (void)
 				m_pOpenGLTexture->updateTexture2D(pPixelArray, Layer.cxWidth, Layer.cyHeight);
 		}
 		if (m_pOpenGLTexture)
+		{
+			Layer.BackBuffer.InitOpenGL();
+			Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());
 			m_pOGLContext->testTextures(m_pOpenGLTexture);
+		}
 		else
 			m_pOGLContext->testShaders();
 		}

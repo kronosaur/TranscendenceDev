@@ -94,11 +94,11 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 
 void OpenGLContext::prepSquareCanvas ()
 {
-	//
+	// Prepare the background canvas.
 	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 	Shader* pTestShader = new Shader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
 	float fSize = 0.5f;
-	float posZ = 0.0f;
+	float posZ = 255.0f;
 
 	std::vector<float> vertices {
 		fSize, fSize, posZ,
@@ -272,7 +272,7 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 	// 10 deg FOV in y direction, 0.1 distance to near clipping plane, 100 distance to far clipping plane
 	// Note, FOV is in radians!
 	//glm::mat4 projectionMatrix = glm::perspective(glm::radians(90.0f), (float)m_iWindowWidth / (float)m_iWindowHeight, 0.1f, 100.0f);
-	glm::mat4 projectionMatrix = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.1f, 100.0f);
+	glm::mat4 projectionMatrix = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, 0.1f, 256.0f);
 
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 	glViewport(0, 0, m_iWindowWidth, m_iWindowHeight); // Set the viewport size to fill the window

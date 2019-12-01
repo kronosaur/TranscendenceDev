@@ -4,7 +4,7 @@
 DESIGN DOC FOR OPENGL'ING TRANS!
 
 -First, start with something simple. Say, the spaceObject PAINT function. Either enable batched painting for specific object classes on a class by class basis,
-or modify the Image.PaintImage function (CObjectImageArray.cpp::1344) to blt to an OpenGL quad instead of the canvas. First is recommended, since that is ultimately what we want to do.
+or modify the Image.PaintImage function (CObjectImageArray.cpp::1352) to blt to an OpenGL quad instead of the canvas. First is recommended, since that is ultimately what we want to do.
 
 -We will need to come up with the following things:
 1. Render queue to organize all the things we need to paint, and how to best paint them (i.e. instancing)
@@ -34,18 +34,6 @@ The spobject render queue contains the following globals:
 #include "OpenGLShader.h"
 #include <vector>
 
-class OpenGLInstancedRenderQueue {
-	// Contains all the objects to render for a single given texture.
-public:
-	OpenGLInstancedRenderQueue (void) { }
-	~OpenGLInstancedRenderQueue (void);
-	void addObjToRender(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY);
-	void addObjToRender(float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
-private:
-	std::vector<glm::vec2> startPositionsFloat;
-	std::vector<glm::vec2> quadSizesFloat;
-	std::vector<glm::vec2> canvasPositionsFloat;
-};
 /*
 class OpenGLMasterRenderQueue {
 public:
@@ -91,6 +79,7 @@ public:
 	void removeTexture ();
 	Shader* getShader (void) { return m_pShader; }
 	unsigned int* getVAO (void) { return vaoID; }
+	unsigned int* getinstancedVBO(void) { return instancedVboID; }
 
 private:
 	Shader *m_pShader;
@@ -99,6 +88,7 @@ private:
 	unsigned int vaoID[128];
 	unsigned int vboID[128];
 	unsigned int eboID[128];
+	unsigned int instancedVboID[128];
 };
 
 class OpenGLContext {
@@ -145,4 +135,30 @@ protected:
 	HGLRC m_renderContext;
 	HDC m_deviceContext;
 	HWND m_windowID;
+};
+
+class OpenGLInstancedRenderQueue {
+	// Contains all the objects to render for a single given texture.
+public:
+	OpenGLInstancedRenderQueue (void);
+	~OpenGLInstancedRenderQueue (void);
+	void Render (Shader *shader, OpenGLVAO *vao);
+	void clear (void);
+	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth);
+	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
+	OpenGLVAO* getVAO (void) { return vao; }
+	void setShader(Shader *shader) { m_pShader = shader; }
+	Shader* getShader(void) { return m_pShader; }
+private:
+	// TODO(heliogenesis): Maybe move this function to the parent class once it's done. Same with the vao.
+	// We should only need one for all instanced render queues. Same with deinitVAO, and shader related things.
+	void initializeVAO(void);
+	void deinitVAO(void);
+
+	int m_iNumObjectsToRender = 0;
+	std::vector<glm::vec2> m_texturePositionsFloat;
+	std::vector<glm::vec2> m_quadSizesFloat;
+	std::vector<glm::vec2> m_canvasPositionsFloat;
+	OpenGLVAO* vao;
+	Shader* m_pShader;
 };

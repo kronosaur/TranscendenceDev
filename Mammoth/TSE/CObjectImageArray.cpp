@@ -1359,12 +1359,17 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 	if (m_pImage)
 		{
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
+		OpenGLInstancedRenderQueue *pRenderQueue = Dest.GetInstancedRenderQueue();
 		if (pSource == NULL)
 			return;
 
 		int xSrc;
 		int ySrc;
+		int iCanvasHeight = Dest.GetHeight();
+		int iCanvasWidth = Dest.GetWidth();
 		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+
+		pRenderQueue->addObjToRender(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth);
 
 		if (m_pRotationOffset)
 			{

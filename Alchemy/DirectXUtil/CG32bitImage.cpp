@@ -32,6 +32,9 @@ CG32bitImage::~CG32bitImage (void)
 
 	{
 	CleanUp();
+
+	if (m_pOGLRenderQueue)
+		delete[] m_pOGLRenderQueue;
 	}
 
 CG32bitImage &CG32bitImage::operator= (const CG32bitImage &Src)
@@ -1127,6 +1130,16 @@ void CG32bitImage::InitBMI (BITMAPINFO **retpbi) const
 	//	Done
 
 	*retpbi = pbmi;
+	}
+
+void CG32bitImage::InitOpenGL(void)
+	{
+	if (!m_pOGLRenderQueue)
+		{
+		m_pOGLRenderQueue = new OpenGLInstancedRenderQueue();
+		Shader *pRenderShader = new Shader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
+		m_pOGLRenderQueue->setShader(pRenderShader);
+		}
 	}
 
 bool CG32bitImage::SaveAsWindowsBMP (const CString &sFilespec)

@@ -4,6 +4,7 @@
 //	Copyright (c) 2015 by Kronosaur Productions, LLC. All Rights Reserved.
 
 #pragma once
+#include "OpenGL.h"
 
 class CG8bitImage;
 class CG16bitFont;
@@ -153,10 +154,12 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		bool CreateFromWindowsBMP (IReadStream &Stream);
 		EAlphaTypes GetAlphaType (void) const { return m_AlphaType; }
 		CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
-		CG32bitPixel *GetPixelArray(void) const { return m_pRGBA; }
+		CG32bitPixel *GetPixelArray (void) const { return m_pRGBA; }
 		CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
+		OpenGLInstancedRenderQueue *GetInstancedRenderQueue (void) const { return m_pOGLRenderQueue; }
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }
+		void InitOpenGL (void);
 		CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
 		void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
@@ -223,6 +226,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		mutable BITMAPINFO *m_pBMI = NULL;		//	Used for blting to a DC
 		static CG32bitImage m_NullImage;
+		OpenGLInstancedRenderQueue *m_pOGLRenderQueue = NULL;
 	};
 
 //	Drawing Classes ------------------------------------------------------------
