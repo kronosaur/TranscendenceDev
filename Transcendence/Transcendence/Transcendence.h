@@ -96,19 +96,13 @@ struct SFontTable
 
 struct SNewGameSettings
 	{
-	SNewGameSettings (void) :
-			iPlayerGenome(genomeUnknown),
-			dwPlayerShip(0),
-			bFullCreate(false),
-			bDefaultPlayerName(false)
-		{ }
-
 	CString sPlayerName;						//	Character name
-	GenomeTypes iPlayerGenome;					//	Genome
-	DWORD dwPlayerShip;							//	Starting ship class
+	GenomeTypes iPlayerGenome = genomeUnknown;	//	Genome
+	CDifficultyOptions::ELevels iDifficulty = CDifficultyOptions::lvlUnknown;
+	DWORD dwPlayerShip = 0;						//	Starting ship class
 
-	bool bFullCreate;							//	If TRUE, create all systems
-	bool bDefaultPlayerName;					//	If TRUE, this is a default player name
+	bool bFullCreate = false;					//	If TRUE, create all systems
+	bool bDefaultPlayerName = false;			//	If TRUE, this is a default player name
 	};
 
 struct SAdventureSettings
@@ -820,7 +814,7 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void SetGameCreated (bool bValue = true) { m_bGameCreated = bValue; }
 		bool IsGameCreated (void) { return m_bGameCreated; }
 
-		inline CGameFile &GetGameFile (void);
+		inline CGameFile &GetGameFile (void) const;
 
 		LONG WMChar (char chChar, DWORD dwKeyData);
 		LONG WMClose (void);
@@ -1032,6 +1026,7 @@ class CTranscendenceModel
 		CMusicResource *GetCrawlSoundtrack (void) const { return m_pCrawlSoundtrack; }
 		const CString &GetCrawlText (void) const { return m_sCrawlText; }
 		bool GetDebugMode (void) const { return m_bDebugMode; }
+		const CGameFile &GetGameFile (void) const { return m_GameFile; }
 		CGameFile &GetGameFile (void) { return m_GameFile; }
 		const CGameRecord &GetGameRecord (void) { return m_GameRecord; }
 		CHighScoreList &GetHighScoreListOld (void) { return m_HighScoreList; }
@@ -1145,6 +1140,7 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 		CCommandLineDisplay &GetDebugConsole (void) { return m_DebugConsole; }
         CGameSession *GetGameSession (void) { return m_pGameSession; }
 		const CGameKeys &GetKeyMap (void) const { return m_Settings.GetKeyMap(); }
+		const CTranscendenceModel &GetModel (void) const { return m_Model; }
 		CTranscendenceModel &GetModel (void) { return m_Model; }
 		CMultiverseModel &GetMultiverse (void) { return m_Multiverse; }
 		bool GetOptionBoolean (int iOption) { return m_Settings.GetBoolean(iOption); }
@@ -1256,7 +1252,7 @@ inline bool CTranscendenceWnd::GetDebugGame (void)
 	return m_pTC->GetModel().GetDebugMode(); 
 	}
 
-inline CGameFile &CTranscendenceWnd::GetGameFile (void)
+inline CGameFile &CTranscendenceWnd::GetGameFile (void) const
 	{
 	return m_pTC->GetModel().GetGameFile();
 	}

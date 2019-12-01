@@ -58,6 +58,7 @@ class IHICommand
 		IHICommand (CHumanInterface &HI) : m_HI(HI) { }
 		virtual ~IHICommand (void) { }
 
+		CHumanInterface &GetHI (void) const { return m_HI; }
 		inline void HICleanUp (void) { OnCleanUp(); }
 		inline ALERROR HICommand (const CString &sCmd, void *pData = NULL) { return OnCommand(sCmd, pData); }
 		inline CString HIGetPropertyString (const CString &sProperty) { return OnGetPropertyString(sProperty); }
@@ -468,8 +469,12 @@ enum EImageLibrary
 	imagePlayIcon =					25,
 	imageDebugIcon =				26,
 	imageSettingsIcon =				27,
+	imageDifficultyStory =			28,
+	imageDifficultyNormal =			29,
+	imageDifficultyChallenge =		30,
+	imageDifficultyPermadeath =		31,
 
-	imageCount =					28,
+	imageCount =					32,
 	};
 
 class CVisualPalette : public IFontTable

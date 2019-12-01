@@ -729,7 +729,7 @@ ALERROR CShieldClass::CreateFromXML (SDesignLoadCtx &Ctx, SInitCtx &InitCtx, CXM
 	//	Load damage adjustment
 
 	pShield->m_iDamageAdjLevel = pDesc->GetAttributeIntegerBounded(DAMAGE_ADJ_LEVEL_ATTRIB, 1, MAX_ITEM_LEVEL, InitCtx.pType->GetLevel());
-	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, pDesc))
+	if (error = pShield->m_DamageAdj.InitFromXML(Ctx, *pDesc))
 		return error;
 
 	//	Load absorb adjustment; if attribute not found, assume 100% for everything
@@ -1558,22 +1558,26 @@ void CShieldClass::OnAccumulateAttributes (const CDeviceItem &DeviceItem, const 
 //	Returns display attributes
 
 	{
-	int i;
+	const CItemEnhancementStack &Enhancements = DeviceItem.GetEnhancements();
 
 	//	Reflection
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_Reflective.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_Reflective.InSet(iDamage) || Enhancements.ReflectsDamage(iDamage))
+			retList->Insert(SDisplayAttribute(attribPositive, strPatternSubst(CONSTLIT("%s reflecting"), GetDamageShortName(iDamage))));
 		}
 
 	//	Weapon suppress
 
-	for (i = 0; i < damageCount; i++)
+	for (int i = 0; i < damageCount; i++)
 		{
-		if (m_WeaponSuppress.InSet((DamageTypes)i))
-			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName((DamageTypes)i))));
+		DamageTypes iDamage = (DamageTypes)i;
+
+		if (m_WeaponSuppress.InSet(iDamage))
+			retList->Insert(SDisplayAttribute(attribNegative, strPatternSubst(CONSTLIT("%s suppressing"), GetDamageShortName(iDamage))));
 		}
 	}
 
@@ -1614,7 +1618,7 @@ ALERROR CShieldClass::OnDesignLoadComplete (SDesignLoadCtx &Ctx)
 	//	If the hit effect is NULL, then use default
 
 	if (m_pHitEffect == NULL)
-		m_pHitEffect.Set(GetUniverse().FindEffectType(g_ShieldEffectUNID));
+		m_pHitEffect.Set(GetUniverse().FindEffectTypeBound(Ctx, g_ShieldEffectUNID));
 
 	return NOERROR;
 	}
@@ -1849,7 +1853,7 @@ void CShieldClass::SetHitPoints (CItemCtx &ItemCtx, int iHP)
 	SetHPLeft(pDevice, pSource, Min(GetMaxHP(ItemCtx), iHP), true);
 	}
 
-bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetItemProperty
 //
@@ -1867,7 +1871,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			|| !Ctx.GetItem().IsInstalled())
 		{
 		*retsError = CONSTLIT("Item is not an installed device on object.");
-		return false;
+		return resultPropertyError;
 		}
 
 	//	Handle it.
@@ -1898,7 +1902,7 @@ bool CShieldClass::SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 
 	//	Success
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CShieldClass::Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx)

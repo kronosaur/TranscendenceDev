@@ -1098,6 +1098,7 @@
 
 					(shipsToCreate 
 						(or
+							(objFireEvent sellerObj 'GetShipClassesForSale { })
 							(map classesForSale 'excludeNil theClass
 								(switch
 									(gr (random) (typGetProperty theClass 'frequencyRatio))

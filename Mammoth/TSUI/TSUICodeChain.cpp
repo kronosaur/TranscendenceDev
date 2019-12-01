@@ -11,6 +11,7 @@
 #define FN_CAN_PLAY_MUSIC				3
 #define FN_GET_MUSIC_STATE				4
 #define FN_KEY_PRESSED					5
+#define FN_GET_MOUSE_POSITION			6
 
 
 ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData);
@@ -27,6 +28,10 @@ static PRIMITIVEPROCDEF g_Primitives[] =
 		{	"uiGetMusicCatalog",			fnUI,			FN_GET_MUSIC_CATALOG,
 			"(uiGetMusicCatalog) -> list of files",
 			"",	0,	},
+
+		{   "uiGetMousePos",				fnUI,			FN_GET_MOUSE_POSITION,
+			"(uiGetMousePos) -> (x y)",
+			"",	0,  },
 
 		{	"uiGetMusicState",				fnUI,			FN_GET_MUSIC_STATE,
 			"(uiGetMusicState) -> ('playing filename position length)",
@@ -114,6 +119,30 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			for (i = 0; i < Catalog.GetCount(); i++)
 				pList->AppendString(pathMakeRelative(Catalog[i], g_pHI->GetOptions().m_sMusicFolder, true));
+
+			return pResult;
+			}
+
+		case FN_GET_MOUSE_POSITION:
+			{
+			//  Get mouse position
+
+			int iScreenResolutionX = g_pHI->GetScreenWidth();
+			int iScreenResolutionY = g_pHI->GetScreenHeight();
+
+			int x, y;
+			g_pHI->GetMousePos(&x, &y);
+
+			ICCItem *pResult = pCC->CreateLinkedList();
+			if (pResult->IsError())
+				return pResult;
+
+			CCLinkedList *pList = (CCLinkedList *)pResult;
+
+			//	Add to list
+
+			pList->AppendInteger((x + 1) - (iScreenResolutionX / 2));
+			pList->AppendInteger((y + 1) - (iScreenResolutionY / 2));
 
 			return pResult;
 			}

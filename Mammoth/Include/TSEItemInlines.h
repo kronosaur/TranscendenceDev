@@ -17,6 +17,11 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
+inline bool CItem::HasAttribute (const CString &sAttrib) const
+	{
+	return (m_pItemType ? m_pItemType->HasLiteralAttribute(sAttrib): false);
+	}
+
 inline bool CItem::IsArmor (void) const
 	{
 	return (m_pItemType && m_pItemType->IsArmor());
@@ -58,6 +63,11 @@ inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 inline int CDifferentiatedItem::GetLevel (void) const
 	{
 	return m_pCItem->GetLevel();
+	}
+
+inline int CDifferentiatedItem::GetMassKg (void) const
+	{
+	return m_pCItem->GetMassKg();
 	}
 
 inline int CDifferentiatedItem::GetMinLevel (void) const

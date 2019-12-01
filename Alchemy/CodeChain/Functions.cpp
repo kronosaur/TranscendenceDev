@@ -1796,11 +1796,8 @@ ICCItem *fnItem (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
 
 				for (i = 0; i < pTable->GetCount(); i++)
 					{
-					ICCItem *pKey = pCC->CreateString(pTable->GetKey(i));
 					ICCItem *pItem = pTable->GetElement(i);
-
-					pTarget->AddEntry(pKey, pItem);
-					pKey->Discard();
+					pTarget->SetAt(pTable->GetKey(i), pItem);
 					}
 
 				return pTarget;
@@ -4051,10 +4048,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArg->GetElement(1));
-			else
-				pResult->SetAt(sKey, pArg->GetElement(1));
+			if (!pArg->GetElement(1)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArg->GetElement(1));
+				else
+					pResult->SetAt(sKey, pArg->GetElement(1));
+				}
+
             iArg++;
             }
 
@@ -4079,10 +4080,14 @@ ICCItem *fnStruct (CEvalContext *pCtx, ICCItem *pArgs, DWORD dwData)
                 break;
                 }
 
-			if (bAppend)
-				pResult->AppendAt(sKey, pArgs->GetElement(iArg));
-			else
-				pResult->SetAt(sKey, pArgs->GetElement(iArg));
+			if (!pArgs->GetElement(iArg)->IsNil())
+				{
+				if (bAppend)
+					pResult->AppendAt(sKey, pArgs->GetElement(iArg));
+				else
+					pResult->SetAt(sKey, pArgs->GetElement(iArg));
+				}
+
             iArg++;
             }
 

@@ -1346,7 +1346,7 @@ int CTopology::GetDistance (const CTopologyNode *pSrc, const CTopologyNode *pTar
 	return UNKNOWN_DISTANCE;
 	}
 
-int CTopology::GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const
+int CTopology::GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const
 
 //	GetDistanceToCriteria
 //
@@ -1371,7 +1371,7 @@ int CTopology::GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopology
 		if (pNode == NULL || pNode->IsEndGame())
 			continue;
 
-		if (pNode->MatchesAttributeCriteria(Criteria)
+		if (Criteria.Matches(*pNode)
 				&& (iBestDist == UNKNOWN_DISTANCE || Result[i] < iBestDist))
 			{
 			iBestDist = Result[i];
@@ -1381,7 +1381,7 @@ int CTopology::GetDistanceToCriteria (const CTopologyNode *pSrc, const CTopology
 	return iBestDist;
 	}
 
-int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyNode::SAttributeCriteria &Criteria) const
+int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CTopologyAttributeCriteria &Criteria) const
 
 //	GetDistanceToCriteriaNoMatch
 //
@@ -1406,7 +1406,7 @@ int CTopology::GetDistanceToCriteriaNoMatch (const CTopologyNode *pSrc, const CT
 		if (pNode == NULL || pNode->IsEndGame())
 			continue;
 
-		if (!pNode->MatchesAttributeCriteria(Criteria)
+		if (!Criteria.Matches(*pNode)
 				&& (iBestDist == UNKNOWN_DISTANCE || Result[i] < iBestDist))
 			{
 			iBestDist = Result[i];

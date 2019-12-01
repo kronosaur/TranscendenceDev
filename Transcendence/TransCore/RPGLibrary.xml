@@ -115,6 +115,7 @@
 	<!ENTITY baStdArmorRepair			"0x000100B1">
 	<!ENTITY baStdPasteBarrel			"0x000100B2">
 	<!ENTITY baStdDeviceEnhancement		"0x000100B3">
+	<!ENTITY baStdEquipmentItem			"0x000100B4">
 
 	<!-- 00D0-00EF WINGMEN -->
 

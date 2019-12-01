@@ -300,7 +300,12 @@ void ICCItem::SetAt (const CString &sKey, ICCItem *pValue)
 
 	{
 	ICCItem *pKey = CCodeChain::CreateString(sKey);
-	AddEntry(pKey, pValue);
+
+	if (pValue->IsNil())
+		DeleteEntry(pKey);
+	else
+		AddEntry(pKey, pValue);
+
 	pKey->Discard();
 	}
 
@@ -311,10 +316,8 @@ void ICCItem::SetBooleanAt (const CString &sKey, bool bValue)
 //	Set key-value pair.
 
 	{
-	ICCItem *pKey = CCodeChain::CreateString(sKey);
 	ICCItem *pValue = (bValue ? CCodeChain::CreateTrue() : CCodeChain::CreateNil());
-	AddEntry(pKey, pValue);
-	pKey->Discard();
+	SetAt(sKey, pValue);
 	pValue->Discard();
 	}
 

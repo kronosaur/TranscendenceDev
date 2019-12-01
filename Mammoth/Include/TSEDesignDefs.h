@@ -62,3 +62,78 @@ class CDesignPropertyDefinitions
 
 		TSortMap<CString, SDef> m_Defs;
 	};
+
+//	Difficulty Levels ----------------------------------------------------------
+
+class CDifficultyOptions
+	{
+	public:
+		enum ELevels
+			{
+			lvlUnknown			= -1,
+
+			lvlStory			= 0,
+			lvlNormal			= 1,
+			lvlChallenge		= 2,
+			lvlPermadeath		= 3,
+
+			lvlCount			= 4,
+			};
+
+		Metric GetEnemyDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rEnemyDamageAdj; }
+		ELevels GetLevel (void) const { return m_iLevel; }
+		Metric GetPlayerDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rPlayerDamageAdj; }
+		void ReadFromStream (IReadStream &Stream);
+		bool SaveOnUndock (void) const;
+		void SetLevel (ELevels iLevel) { m_iLevel = iLevel; }
+		void WriteToStream (IWriteStream &Stream) const;
+
+		static CString GetID (ELevels iLevel);
+		static CString GetLabel (ELevels iLevel);
+		static ELevels NextLevel (ELevels iLevel) { iLevel = (ELevels)(iLevel + 1); if (iLevel == lvlCount) iLevel = lvlStory; return iLevel; }
+		static ELevels ParseID (const CString &sValue);
+
+	private:
+		struct SDesc
+			{
+			LPCSTR pID;
+			LPCSTR pName;
+			Metric rPlayerDamageAdj;
+			Metric rEnemyDamageAdj;
+			};
+
+		ELevels m_iLevel = lvlUnknown;
+
+		static const SDesc m_Table[lvlCount];
+	};
+
+//	Engine Options -------------------------------------------------------------
+
+class CEngineOptions
+	{
+	public:
+		CEngineOptions (void);
+
+		const CDamageAdjDesc *GetArmorDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ArmorDamageAdj[iLevel - 1]; }
+		int GetDefaultInteraction (void) const { return m_iDefaultInteraction; }
+		int GetDefaultShotHP (void) const { return m_iDefaultShotHP; }
+		const CDamageAdjDesc *GetShieldDamageAdj (int iLevel) const { if (iLevel < 1 || iLevel > MAX_ITEM_LEVEL) throw CException(ERR_FAIL); return &m_ShieldDamageAdj[iLevel - 1]; }
+		bool InitArmorDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomArmorDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ArmorDamageAdj); }
+		bool InitFromProperties (SDesignLoadCtx &Ctx, const CDesignType &Type);
+		bool InitShieldDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc) { m_bCustomShieldDamageAdj = true; return InitDamageAdjFromXML(Ctx, XMLDesc, m_ShieldDamageAdj); }
+		void Merge (const CEngineOptions &Src);
+
+	private:
+		bool InitDamageAdjFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, CDamageAdjDesc *DestTable);
+
+		static void InitDefaultDamageAdj (void);
+
+		CDamageAdjDesc m_ArmorDamageAdj[MAX_ITEM_LEVEL];
+		CDamageAdjDesc m_ShieldDamageAdj[MAX_ITEM_LEVEL];
+		int m_iDefaultInteraction = -1;
+		int m_iDefaultShotHP = -1;
+
+		bool m_bCustomArmorDamageAdj = false;
+		bool m_bCustomShieldDamageAdj = false;
+	};
+

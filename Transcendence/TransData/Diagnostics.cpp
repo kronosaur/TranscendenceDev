@@ -74,5 +74,5 @@ void GenerateDiagnostics (CUniverse &Universe, CXMLElement *pCmdLine)
 
 	//	Results
 
-	printf("TOTAL TESTS: %d\nTOTAL ERRORS: %d\n", DiagnosticsCtx.iTotalTests, DiagnosticsCtx.iTotalErrors);
+	printf("TOTAL DIAGNOSTICS: %d\nTOTAL ERRORS: %d\n", DiagnosticsCtx.iTotalTests, DiagnosticsCtx.iTotalErrors);
 	}

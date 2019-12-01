@@ -1,6 +1,7 @@
 //	CreateSystem.cpp
 //
 //	CreateSystem class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 #include "math.h"
@@ -29,6 +30,7 @@
 #define ITEMS_TAG						CONSTLIT("Items")
 #define LABEL_TAG						CONSTLIT("Label")
 #define LEVEL_TABLE_TAG					CONSTLIT("LevelTable")
+#define LOCATION_TAG					CONSTLIT("Location")
 #define LOCATION_ATTRIBUTES_TAG			CONSTLIT("LocationAttributes")
 #define LOCATION_CRITERIA_TABLE_TAG		CONSTLIT("LocationCriteriaTable")
 #define LOOKUP_TAG						CONSTLIT("Lookup")
@@ -58,6 +60,7 @@
 #define VARIANT_TAG						CONSTLIT("Variant")
 #define VARIANTS_TAG					CONSTLIT("Variants")
 #define VARIANTS_TABLE_TAG				CONSTLIT("VariantTable")
+#define Z_ADJUST_TAG					CONSTLIT("ZAdjust")
 
 #define ANGLE_ATTRIB					CONSTLIT("angle")
 #define ANGLE_ADJ_ATTRIB				CONSTLIT("angleAdj")
@@ -80,10 +83,12 @@
 #define ENCOUNTERS_ATTRIB				CONSTLIT("encountersCount")
 #define ERODE_ATTRIB					CONSTLIT("erode")
 #define EVENT_HANDLER_ATTRIB			CONSTLIT("eventHandler")
+#define EXCLUDE_LOCATIONS_ATTRIB		CONSTLIT("excludeLocations")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
 #define IMAGE_VARIANT_ATTRIB			CONSTLIT("imageVariant")
+#define INCLINATION_ATTRIB				CONSTLIT("inclination")
 #define INCLUDE_ALL_ATTRIB				CONSTLIT("includeAll")
 #define INTERVAL_ATTRIB					CONSTLIT("interval")
 #define LEVEL_FREQUENCY_ATTRIB			CONSTLIT("levelFrequency")
@@ -104,6 +109,7 @@
 #define NO_RANDOM_ENCOUNTERS_ATTRIB		CONSTLIT("noRandomEncounters")
 #define NO_REINFORCEMENTS_ATTRIB		CONSTLIT("noReinforcements")
 #define NO_SATELLITES_ATTRIB			CONSTLIT("noSatellites")
+#define NO_WARNINGS_ATTRIB				CONSTLIT("noWarnings")
 #define OBJ_NAME_ATTRIB					CONSTLIT("objName")
 #define OFFSET_ATTRIB					CONSTLIT("offset")
 #define ORDERS_ATTRIB					CONSTLIT("orders")
@@ -119,10 +125,12 @@
 #define RADIUS_ATTRIB					CONSTLIT("radius")
 #define RADIUS_DEC_ATTRIB				CONSTLIT("radiusDec")
 #define RADIUS_INC_ATTRIB				CONSTLIT("radiusInc")
+#define REQUIRED_ATTRIB					CONSTLIT("required")
 #define ROTATION_ATTRIB					CONSTLIT("rotation")
 #define SEGMENT_ATTRIB			        CONSTLIT("segment")
 #define SEPARATE_ENEMIES_ATTRIB			CONSTLIT("separateEnemies")
 #define SHAPE_ATTRIB					CONSTLIT("shape")
+#define SHOW_MAP_LABEL_ATTRIB			CONSTLIT("showMapLabel")
 #define SHOW_ORBIT_ATTRIB				CONSTLIT("showOrbit")
 #define SOVEREIGN_ATTRIB				CONSTLIT("sovereign")
 #define SPACE_SCALE_ATTRIB				CONSTLIT("spaceScale")
@@ -139,6 +147,8 @@
 #define WRECK_TYPE_ATTRIB				CONSTLIT("wreckType")
 #define X_OFFSET_ATTRIB					CONSTLIT("xOffset")
 #define Y_OFFSET_ATTRIB					CONSTLIT("yOffset")
+#define Z_HEIGHT_ATTRIB					CONSTLIT("zHeight")
+#define Z_OFFSET_ATTRIB					CONSTLIT("zOffset")
 
 #define SPECIAL_ATTRIB_INNER_SYSTEM		CONSTLIT("innerSystem")
 #define SPECIAL_ATTRIB_OUTER_SYSTEM		CONSTLIT("outerSystem")
@@ -230,6 +240,7 @@ static char g_ProbabilitiesAttrib[] = "probabilities";
 ALERROR AddAttribute (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 ALERROR AddLabelAttributes (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
 ALERROR AddTerritory (SSystemCreateCtx *pCtx, CXMLElement *pObj, const COrbit &OrbitDesc);
+ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, CStation &Station, const CStationCreateOptions &StationCreate);
 bool CheckForOverlap (SSystemCreateCtx *pCtx, const CVector &vPos);
 ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx, 
 							  const SLocationCriteria &Criteria, 
@@ -244,13 +255,7 @@ ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx,
 							  COrbit *retOrbitDesc, 
 							  CString *retsAttribs,
 							  int *retiLabelPos);
-int ComputeLocationWeight (SSystemCreateCtx *pCtx, 
-						   const CString &sLocationAttribs,
-						   const CVector &vPos,
-						   const CString &sAttrib, 
-						   DWORD dwMatchStrength);
 const COrbit *ComputeOffsetOrbit (CXMLElement *pObj, const COrbit &Original, COrbit *retOrbit);
-int ComputeStationWeight (SSystemCreateCtx *pCtx, CStationType *pType, const CString &sAttrib, DWORD dwMatchStrength);
 ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx, 
 												  TProbabilityTable<int> &LocationTable,
 												  const CString &sStationCriteria,
@@ -269,8 +274,8 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						const COrbit &OrbitDesc);
 ALERROR CreateRandomStation (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc);
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc);
-ALERROR CreateShipsForStation (SSystemCreateCtx &Ctx, CSpaceObject *pStation, CXMLElement *pShips);
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc);
+ALERROR CreateShipsForStation (SSystemCreateCtx &Ctx, CSpaceObject *pStation, const CXMLElement *pShips);
 ALERROR CreateSiblings (SSystemCreateCtx *pCtx, 
 						CXMLElement *pObj, 
 						const COrbit &OrbitDesc);
@@ -292,7 +297,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 							const COrbit &OrbitDesc,
 							bool bIgnoreChance = false);
 ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
-ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter = 0);
+ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc);
 void DumpDebugStack (SSystemCreateCtx *pCtx);
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit);
 ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
@@ -304,7 +309,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 									bool *retbAddToCache);
 ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocationCriteria *retCriteria);
 bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric rRadius);
-ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc);
+ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc);
 inline void PopDebugStack (SSystemCreateCtx *pCtx) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Pop(); }
 inline void PushDebugStack (SSystemCreateCtx *pCtx, const CString &sLine) { if (pCtx->GetUniverse().InDebugMode()) pCtx->DebugStack.Push(sLine); }
 
@@ -461,7 +466,7 @@ ALERROR ChooseRandomLocation (SSystemCreateCtx *pCtx,
 	//	Parse the criteria
 
 	SLocationCriteria Criteria;
-	if (error = Criteria.AttribCriteria.Parse(sCriteria, 0, &pCtx->sError))
+	if (error = Criteria.AttribCriteria.Parse(sCriteria, &pCtx->sError))
 		return error;
 
 	//	Choose a random location
@@ -533,7 +538,7 @@ ALERROR ChooseRandomStation (SSystemCreateCtx *pCtx,
 		//	If we want to separate enemies, then see if there are any
 		//	enemies of this station type at this location.
 
-		if (bSeparateEnemies && !pCtx->System.IsExclusionZoneClear(vPos, Entry.pType))
+		if (bSeparateEnemies && !pCtx->System.IsExclusionZoneClear(vPos, *Entry.pType))
 			continue;
 
 		//	Add it
@@ -590,31 +595,6 @@ const COrbit *ComputeOffsetOrbit (CXMLElement *pObj, const COrbit &Original, COr
 	return retOrbit;
 	}
 
-int ComputeLocationWeight (SSystemCreateCtx *pCtx, 
-						   const CString &sLocationAttribs,
-						   const CVector &vPos,
-						   const CString &sAttrib, 
-						   DWORD dwMatchStrength)
-
-//	ComputeLocationWeight
-//
-//	Computes the weight of the given location if we're looking for
-//	locations with the given criteria.
-
-	{
-	return CAttributeCriteria::CalcLocationWeight(&pCtx->System, sLocationAttribs, vPos, sAttrib, dwMatchStrength);
-	}
-
-int ComputeStationWeight (SSystemCreateCtx *pCtx, CStationType *pType, const CString &sAttrib, DWORD dwMatchStrength)
-
-//	ComputeStationWeight
-//
-//	Returns the weight of this station type given the attribute and match weight
-
-	{
-	return CAttributeCriteria::CalcWeightAdj(pType->HasAttribute(sAttrib), dwMatchStrength);
-	}
-
 ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc)
 
 //	DistributeStationsAtRandomLocations
@@ -636,7 +616,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	//	Create a list of appropriate locations
 
 	TProbabilityTable<int> LocationTable;
-	if (!pCtx->System.GetEmptyLocations(LocationCriteria, OrbitDesc, NULL, &LocationTable))
+	if (!pCtx->System.GetEmptyLocations(LocationCriteria, OrbitDesc, NULL, 0.0, &LocationTable))
 		{
 		if (pCtx->GetUniverse().InDebugMode())
 			{
@@ -654,7 +634,7 @@ ALERROR DistributeStationsAtRandomLocations (SSystemCreateCtx *pCtx, CXMLElement
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = iPercent * iLocationCount / 100;
+		iCount = mathAdjust(iLocationCount, iPercent);
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -896,6 +876,7 @@ ALERROR CreateAppropriateStationAtRandomLocation (SSystemCreateCtx *pCtx,
 		CreateCtx.pLoc = &Loc;
 		CreateCtx.pOrbit = &Loc.GetOrbit();
 		CreateCtx.bCreateSatellites = true;
+		CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 		if (error = pCtx->System.CreateStation(pCtx, pType, CreateCtx))
 			return error;
@@ -935,8 +916,24 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 	int iArcLength = pObj->GetAttributeIntegerBounded(ARC_LENGTH_ATTRIB, 0, -1, 0);
 	int iRadialWidth = pObj->GetAttributeIntegerBounded(RADIAL_WIDTH_ATTRIB, 0, -1, 0);
+	int iZHeight = pObj->GetAttributeIntegerBounded(Z_HEIGHT_ATTRIB, 0, -1, 0);
 	Metric rScale = GetScale(pObj);
 	Metric rMaxStdDev = 3.0;
+
+	//	Inclination
+
+	SZAdjust OldZAdjust = pCtx->ZAdjust;
+	CAngleGenerator Inclination;
+	if (ALERROR error = Inclination.InitFromInclination(*pCtx, *pObj, iCount, OrbitDesc.GetInclination()))
+		return error;
+
+	//	Z offset
+
+	COrbitFocusGenerator Focus;
+	if (ALERROR error = Focus.InitFromXML(*pCtx, *pObj, OrbitDesc.GetFocus3D(), iCount))
+		return error;
+
+	Metric rZFactor = rScale * iZHeight / (2.0 * rMaxStdDev);
 
 	//	If arc length is 0 then it means that we distribute evenly around the
 	//	entire orbit.
@@ -945,26 +942,37 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 		{
 		int iGapWidth = pObj->GetAttributeIntegerBounded(GAP_WIDTH_ATTRIB, 0, -1, 0);
 
-		Metric rWidth = rScale * iRadialWidth / 2.0;
+		Metric rWidthFactor = rScale * iRadialWidth / (2.0 * rMaxStdDev);
 		Metric rGapWidth = rScale * iGapWidth / 2.0;
 
 		if (iGapWidth > 0)
 			{
 			for (i = 0; i < iCount; i++)
 				{
-				Metric rPos = mathRandomGaussian() / rMaxStdDev;
+				COrbit SiblingOrbit = OrbitDesc;
 
+				//	Orbit focus
+
+				if (iZHeight)
+					SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+				else
+					SiblingOrbit.SetFocus(Focus.GetValue(i));
+
+				//	Radius
+
+				Metric rPos = mathRandomGaussian();
 				Metric rRadius = OrbitDesc.GetSemiMajorAxis();
 				if (rPos >= 0)
-					rRadius = rRadius + rGapWidth + (rWidth * rPos);
+					rRadius = rRadius + rGapWidth + (rWidthFactor * rPos);
 				else
-					rRadius = rRadius - rGapWidth + (rWidth * rPos);
+					rRadius = rRadius - rGapWidth + (rWidthFactor * rPos);
 
-				COrbit SiblingOrbit(OrbitDesc.GetFocus(),
-						rRadius,
-						OrbitDesc.GetEccentricity(),
-						OrbitDesc.GetRotation(),
-						COrbit::RandomAngle());
+				SiblingOrbit.SetSemiMajorAxis(rRadius);
+
+				//	More
+
+				SiblingOrbit.SetObjectAngle(COrbit::RandomAngle());
+				SiblingOrbit.SetInclination(Inclination.GetValue(i));
 
 				if (error = CreateSystemObject(pCtx, 
 						pObj->GetContentElement(0), 
@@ -976,13 +984,20 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 			{
 			for (i = 0; i < iCount; i++)
 				{
-				Metric rPos = mathRandomGaussian() / rMaxStdDev;
+				COrbit SiblingOrbit = OrbitDesc;
 
-				COrbit SiblingOrbit(OrbitDesc.GetFocus(),
-						OrbitDesc.GetSemiMajorAxis() + (rWidth * rPos),
-						OrbitDesc.GetEccentricity(),
-						OrbitDesc.GetRotation(),
-						COrbit::RandomAngle());
+				//	Orbit focus
+
+				if (iZHeight)
+					SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+				else
+					SiblingOrbit.SetFocus(Focus.GetValue(i));
+
+				//	More
+
+				SiblingOrbit.SetSemiMajorAxis(OrbitDesc.GetSemiMajorAxis() + (rWidthFactor * mathRandomGaussian()));
+				SiblingOrbit.SetObjectAngle(COrbit::RandomAngle());
+				SiblingOrbit.SetInclination(Inclination.GetValue(i));
 
 				if (error = CreateSystemObject(pCtx, 
 						pObj->GetContentElement(0), 
@@ -1005,6 +1020,15 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 		for (i = 0; i < iCount; i++)
 			{
+			COrbit SiblingOrbit = OrbitDesc;
+
+			//	Orbit focus
+
+			if (iZHeight)
+				SiblingOrbit.SetFocus(Focus.GetValue(i) + CVector3D(0.0, 0.0, rZFactor * mathRandomGaussian()));
+			else
+				SiblingOrbit.SetFocus(Focus.GetValue(i));
+
 			//	First compute a random offset along the orbit.
 
 			Metric rArcOffset = (mathRandomGaussian() / rMaxStdDev) * rArc;
@@ -1017,18 +1041,18 @@ ALERROR CreateArcDistribution (SSystemCreateCtx *pCtx, CXMLElement *pObj, const 
 
 			//	Create orbit
 
-			COrbit SiblingOrbit(OrbitDesc.GetFocus(),
-					OrbitDesc.GetSemiMajorAxis() + rRadialOffset,
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleOffset);
-
+			SiblingOrbit.SetSemiMajorAxis(OrbitDesc.GetSemiMajorAxis() + rRadialOffset);
+			SiblingOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
+			SiblingOrbit.SetInclination(Inclination.GetValue(i));
+			
 			if (error = CreateSystemObject(pCtx, 
 					pObj->GetContentElement(0), 
 					SiblingOrbit))
 				return error;
 			}
 		}
+
+	pCtx->ZAdjust = OldZAdjust;
 
 	return NOERROR;
 	}
@@ -1046,10 +1070,24 @@ ALERROR CreateLabel (SSystemCreateCtx *pCtx,
 	if (pCtx->sLabelAttribs)
 		sAttribs = ::AppendModifiers(pCtx->sLabelAttribs, sAttribs);
 
+	//	Ignore Z-axis?
+
+	COrbit LocationOrbit = OrbitDesc;
+	if (pCtx->ZAdjust.bIgnoreLocations)
+		{
+		LocationOrbit.SetInclination(0.0);
+		}
+
+	//	Options
+
+	DWORD dwLocationFlags = 0;
+	if (pObj->GetAttributeBool(REQUIRED_ATTRIB))
+		dwLocationFlags |= CSystem::FLAG_REQUIRED_LOCATION;
+
 	//	Add the label to the list
 
 	CLocationDef *pLoc;
-	pCtx->System.CreateLocation(NULL_STR, OrbitDesc, sAttribs, &pLoc);
+	pCtx->System.CreateLocation(NULL_STR, LocationOrbit, sAttribs, dwLocationFlags, &pLoc);
 
 	//	Keep stats
 
@@ -1116,7 +1154,7 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 
 	{
 	ALERROR error;
-	int i, j;
+	int i;
 
 	//	First we generate a table of probabilities
 
@@ -1136,26 +1174,12 @@ ALERROR CreateLocationCriteriaTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc,
 		CString sCriteria;
 		if (pEntry->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 			{
-			if (!strEquals(sCriteria, MATCH_ALL))
-				{
-				CAttributeCriteria Criteria;
-				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
-					return error;
+			CAffinityCriteria Criteria;
+			if (error = Criteria.Parse(sCriteria, &pCtx->sError))
+				return error;
 
-				for (j = 0; j < Criteria.GetCount(); j++)
-					{
-					DWORD dwMatchStrength;
-					const CString &sAttrib = Criteria.GetAttribAndWeight(j, &dwMatchStrength);
-
-					int iAdj = ComputeLocationWeight(pCtx, 
-							pCtx->sLocationAttribs,
-							OrbitDesc.GetObjectPos(),
-							sAttrib,
-							dwMatchStrength);
-
-					ProbTable[i] = (ProbTable[i] * iAdj) / 1000;
-					}
-				}
+			int iAdj = pCtx->System.CalcLocationAffinity(Criteria, pCtx->sLocationAttribs, OrbitDesc.GetObjectPos());
+			ProbTable[i] = (ProbTable[i] * iAdj) / 1000;
 			}
 
 		//	Add up
@@ -1207,13 +1231,23 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	if (error = GetLocationCriteria(pCtx, pDesc, &Criteria))
 		return error;
 
+	//	Minimum exclusion
+
+	Metric rScale = GetScale(pDesc);
+	Metric rExclusionRadius = rScale * pDesc->GetAttributeDoubleBounded(EXCLUSION_RADIUS_ATTRIB, 0.0, -1.0, -1.0);
+
 	//	If we're placing a single station, then get its type so that we can 
 	//	use it when picking a location. In particular, this allows us to honor 
 	//	the station exclusion radius.
+	//
+	//	NOTE: If the caller specifies an exclusion radius, we take it, even if
+	//	it is 0.0
 
 	CStationType *pStationToPlace = NULL;
 	CXMLElement *pChild = pDesc->GetContentElement(0);
-	if (iChildCount == 1 && strEquals(pChild->GetTag(), STATION_TAG))
+	if (iChildCount == 1 
+			&& strEquals(pChild->GetTag(), STATION_TAG)
+			&& rExclusionRadius < 0.0)
 		{
 		pStationToPlace = pCtx->GetUniverse().FindStationType((DWORD)pChild->GetAttributeInteger(TYPE_ATTRIB));
 		}
@@ -1221,9 +1255,10 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	//	Generate a list of all locations that match the given criteria.
 
 	TProbabilityTable<int> Table;
-	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, &Table))
+	if (!pCtx->System.GetEmptyLocations(Criteria, OrbitDesc, pStationToPlace, rExclusionRadius, &Table))
 		{
-		if (pCtx->GetUniverse().InDebugMode())
+		if (pCtx->GetUniverse().InDebugMode()
+				&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 			{
 			pCtx->GetUniverse().LogOutput(CONSTLIT("Warning: No locations found for RandomLocation"));
 			DumpDebugStack(pCtx);
@@ -1238,7 +1273,7 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 	int iCount;
 	int iPercent;
 	if (pDesc->FindAttributeInteger(PERCENT_FULL_ATTRIB, &iPercent))
-		iCount = Max(0, iPercent * Table.GetCount() / 100);
+		iCount = mathAdjust(Table.GetCount(), Min(Max(0, iPercent), 100));
 	else
 		iCount = GetDiceCountFromAttribute(pDesc->GetAttribute(COUNT_ATTRIB));
 
@@ -1257,7 +1292,8 @@ ALERROR CreateObjectAtRandomLocation (SSystemCreateCtx *pCtx, CXMLElement *pDesc
 
 		if (Table.IsEmpty())
 			{
-			if (pCtx->GetUniverse().InDebugMode())
+			if (pCtx->GetUniverse().InDebugMode()
+					&& !pDesc->GetAttributeBool(NO_WARNINGS_ATTRIB))
 				{
 				pCtx->GetUniverse().LogOutput(CONSTLIT("Warning: Ran out of locations in RandomLocation directive"));
 				DumpDebugStack(pCtx);
@@ -1353,7 +1389,23 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 			}
 		}
 
-	CString sEllipseRotation = pObj->GetAttribute(ROTATION_ATTRIB);
+	//	...inclination and rotation
+
+	SZAdjust OldZAdjust = pCtx->ZAdjust;
+
+	CAngleGenerator Rotation;
+	if (ALERROR error = Rotation.InitFromRotation(*pCtx, *pObj, iCount))
+		return error;
+
+	CAngleGenerator Inclination;
+	if (ALERROR error = Inclination.InitFromInclination(*pCtx, *pObj, iCount, OrbitDesc.GetInclination()))
+		return error;
+
+	//	...center
+
+	COrbitFocusGenerator Focus;
+	if (ALERROR error = Focus.InitFromXML(*pCtx, *pObj, OrbitDesc.GetObjectPos3D(), iCount))
+		return error;
 
 	//	...other parameters
 
@@ -1371,7 +1423,6 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 		Metric *rDistance = (Metric *)_malloca(iCount * sizeof(Metric));
 		Metric *rAngle = (Metric *)_malloca(iCount * sizeof(Metric));
 		Metric *rEccentricity = (Metric *)_malloca(iCount * sizeof(Metric));
-		Metric *rRotation = (Metric *)_malloca(iCount * sizeof(Metric));
 
 		//	Calculate the distance for each object. If the distance is specified
 		//	then use that.
@@ -1472,19 +1523,6 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				rEccentricity[i] = 0.99;
 			}
 
-		//	Calculate ellipse rotation angles for each object
-
-		if (!sEllipseRotation.IsBlank())
-			{
-			if (error = GenerateAngles(pCtx, sEllipseRotation, iCount, rRotation))
-				return error;
-			}
-		else
-			{
-			for (i = 0; i < iCount; i++)
-				rRotation[i] = 0.0;
-			}
-
 		//	Calculate the angle for each object. If we want to check for overlap, we
 		//	iterate several times to make sure that we have chosen non-overlapping
 		//	points.
@@ -1509,28 +1547,32 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 					if (iExclusionRadius != 0 || pCtx->iOverlapCheck != SSystemCreateCtx::checkOverlapNone)
 						{
-						COrbit NewOrbit(OrbitDesc.GetObjectPos(),
-								rDistance[i],
-								rEccentricity[i],
-								rRotation[i],
-								rAngle[i]);
-
+						COrbit NewOrbit;
+						NewOrbit.SetFocus(Focus.GetValue(i));
+						NewOrbit.SetSemiMajorAxis(rDistance[i]);
+						NewOrbit.SetEccentricity(rEccentricity[i]);
+						NewOrbit.SetRotation(Rotation.GetValue(i));
+						NewOrbit.SetInclination(Inclination.GetValue(i));
+						NewOrbit.SetObjectAngle(rAngle[i]);
+						
 						if (!IsExclusionZoneClear(pCtx, NewOrbit.GetObjectPos(), rExclusionRadius))
 							bAngleOK = false;
 
-						//	Make none we are not near any other point that we 
+						//	Make sure we are not near any other point that we 
 						//	just generated.
 
 						if (bAngleOK && iExclusionRadius != 0)
 							{
 							for (j = 0; j < i; j++)
 								{
-								COrbit OtherOrbit(OrbitDesc.GetObjectPos(),
-										rDistance[j],
-										rEccentricity[j],
-										rRotation[j],
-										rAngle[j]);
-
+								COrbit OtherOrbit;
+								OtherOrbit.SetFocus(Focus.GetValue(j));
+								OtherOrbit.SetSemiMajorAxis(rDistance[j]);
+								OtherOrbit.SetEccentricity(rEccentricity[j]);
+								OtherOrbit.SetRotation(Rotation.GetValue(j));
+								OtherOrbit.SetInclination(Inclination.GetValue(j));
+								OtherOrbit.SetObjectAngle(rAngle[j]);
+								
 								CVector vDist = OtherOrbit.GetObjectPos() - NewOrbit.GetObjectPos();
 								if (vDist.Length2() < rExclusionRadius2)
 									{
@@ -1542,11 +1584,13 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 						}
 					else if (bNoOverlap)
 						{
-						COrbit NewOrbit(OrbitDesc.GetObjectPos(),
-								rDistance[i],
-								rEccentricity[i],
-								rRotation[i],
-								rAngle[i]);
+						COrbit NewOrbit;
+						NewOrbit.SetFocus(Focus.GetValue(i));
+						NewOrbit.SetSemiMajorAxis(rDistance[i]);
+						NewOrbit.SetEccentricity(rEccentricity[i]);
+						NewOrbit.SetRotation(Rotation.GetValue(i));
+						NewOrbit.SetInclination(Inclination.GetValue(i));
+						NewOrbit.SetObjectAngle(rAngle[i]);
 
 						if (CheckForOverlap(pCtx, NewOrbit.GetObjectPos()))
 							bAngleOK = false;
@@ -1572,7 +1616,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 				{
 				int iJitter = 100 * (DIST_ANGLE_MAX_TRIES - iTries) / DIST_ANGLE_MAX_TRIES;
 
-				if (error = GenerateAngles(pCtx, sAngle, iCount, rAngle, iJitter))
+				if (error = CAngleGenerator::Generate(*pCtx, sAngle, iCount, rAngle, iJitter))
 					return error;
 
 				//	If any of the positions overlap, then the configuration is not OK
@@ -1582,12 +1626,14 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 					bConfigurationOK = true;
 					for (i = 0; i < iCount; i++)
 						{
-						COrbit NewOrbit(OrbitDesc.GetObjectPos(),
-								rDistance[i],
-								rEccentricity[i],
-								rRotation[i],
-								rAngle[i]);
-
+						COrbit NewOrbit;
+						NewOrbit.SetFocus(Focus.GetValue(i));
+						NewOrbit.SetSemiMajorAxis(rDistance[i]);
+						NewOrbit.SetEccentricity(rEccentricity[i]);
+						NewOrbit.SetRotation(Rotation.GetValue(i));
+						NewOrbit.SetInclination(Inclination.GetValue(i));
+						NewOrbit.SetObjectAngle(rAngle[i]);
+						
 						if (!IsExclusionZoneClear(pCtx, NewOrbit.GetObjectPos(), rExclusionRadius))
 							{
 							bConfigurationOK = false;
@@ -1600,11 +1646,13 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 					bConfigurationOK = true;
 					for (i = 0; i < iCount; i++)
 						{
-						COrbit NewOrbit(OrbitDesc.GetObjectPos(),
-								rDistance[i],
-								rEccentricity[i],
-								rRotation[i],
-								rAngle[i]);
+						COrbit NewOrbit;
+						NewOrbit.SetFocus(Focus.GetValue(i));
+						NewOrbit.SetSemiMajorAxis(rDistance[i]);
+						NewOrbit.SetEccentricity(rEccentricity[i]);
+						NewOrbit.SetRotation(Rotation.GetValue(i));
+						NewOrbit.SetInclination(Inclination.GetValue(i));
+						NewOrbit.SetObjectAngle(rAngle[i]);
 
 						if (CheckForOverlap(pCtx, NewOrbit.GetObjectPos()))
 							{
@@ -1638,12 +1686,14 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 		int iLoops = Max(iCount, pObj->GetContentElementCount());
 		for (i = 0; i < iLoops; i++)
 			{
-			COrbit NewOrbit(OrbitDesc.GetObjectPos(),
-					rDistance[iPos],
-					rEccentricity[iPos],
-					rRotation[iPos],
-					rAngle[iPos]);
-
+			COrbit NewOrbit;
+			NewOrbit.SetFocus(Focus.GetValue(iPos));
+			NewOrbit.SetSemiMajorAxis(rDistance[iPos]);
+			NewOrbit.SetEccentricity(rEccentricity[iPos]);
+			NewOrbit.SetRotation(Rotation.GetValue(iPos));
+			NewOrbit.SetInclination(Inclination.GetValue(iPos));
+			NewOrbit.SetObjectAngle(rAngle[iPos]);
+			
 			//	If the configuration is NOT OK, then we check to see if this point
 			//	overlaps a planet. If it does, then we skip creation.
 
@@ -1675,6 +1725,7 @@ ALERROR CreateOrbitals (SSystemCreateCtx *pCtx,
 
 	//	Done
 
+	pCtx->ZAdjust = OldZAdjust;
 	PopDebugStack(pCtx);
 
 	return NOERROR;
@@ -1817,11 +1868,14 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 
 	//	Create the station at the location
 
+	Metric rPosZ;
 	SObjCreateCtx CreateCtx(*pCtx);
-	CreateCtx.vPos = OrbitDesc.GetObjectPos();
+	CreateCtx.vPos = OrbitDesc.GetObjectPos(&rPosZ);
+	CreateCtx.rParallax = COrbit::ZToParallax(rPosZ);
 	CreateCtx.pOrbit = &OrbitDesc;
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
+	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 	CSpaceObject *pObj;
 	if (error = pCtx->System.CreateStation(pCtx,
@@ -1839,7 +1893,7 @@ ALERROR CreateRandomStation (SSystemCreateCtx *pCtx,
 
 	//	Modify the station, if necessary
 
-	if (error = ModifyCreatedStation(pCtx, pStation, pDesc, OrbitDesc))
+	if (error = ModifyCreatedStation(*pCtx, *pStation, *pDesc, OrbitDesc))
 		return error;
 
 	PopDebugStack(pCtx);
@@ -1907,7 +1961,8 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 		CString sLocationAttribs;
 		int iLocation;
 		if (error = ChooseRandomLocation(pCtx, 
-				pType->GetLocationCriteria(), 
+				SLocationCriteria(pType->GetLocationCriteria()), 
+				COrbit(),
 				(bSeparateEnemies ? pType : NULL),
 				&OrbitDesc, 
 				&sLocationAttribs,
@@ -1932,11 +1987,14 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 
 		//	Create the station at the location
 
+		Metric rPosZ;
 		SObjCreateCtx CreateCtx(*pCtx);
-		CreateCtx.vPos = OrbitDesc.GetObjectPos();
+		CreateCtx.vPos = OrbitDesc.GetObjectPos(&rPosZ);
+		CreateCtx.rParallax = COrbit::ZToParallax(rPosZ);
 		CreateCtx.pLoc = &pCtx->System.GetLocation(iLocation);
 		CreateCtx.pOrbit = &OrbitDesc;
 		CreateCtx.bCreateSatellites = true;
+		CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 		if (error = pCtx->System.CreateStation(pCtx, pType, CreateCtx))
 			return error;
@@ -1959,7 +2017,7 @@ ALERROR CreateRandomStationAtAppropriateLocation (SSystemCreateCtx *pCtx, CXMLEl
 	return NOERROR;
 	}
 
-ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, CXMLElement *pSatellites, const COrbit &OrbitDesc)
+ALERROR CreateSatellites (SSystemCreateCtx *pCtx, CSpaceObject *pStation, const CXMLElement *pSatellites, const COrbit &OrbitDesc)
 
 //	CreateSatellites
 //
@@ -2030,6 +2088,19 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 	if (iCount <= 0)
 		return NOERROR;
 
+	//	Inclination
+
+	SZAdjust OldZAdjust = pCtx->ZAdjust;
+	CAngleGenerator Inclination;
+	if (ALERROR error = Inclination.InitFromInclination(*pCtx, *pObj, iCount, OrbitDesc.GetInclination()))
+		return error;
+
+	//	Z offset
+
+	COrbitFocusGenerator Focus;
+	if (ALERROR error = Focus.InitFromXML(*pCtx, *pObj, OrbitDesc.GetFocus3D(), iCount))
+		return error;
+
 	//	Create a random distribution
 
 	if (pObj->FindAttribute(DISTRIBUTION_ATTRIB, &sDistribution))
@@ -2040,12 +2111,12 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 
 		for (i = 0; i < iCount; i++)
 			{
-			COrbit SiblingOrbit(OrbitDesc.GetFocus(),
-					OrbitDesc.GetSemiMajorAxis() + (rScale * Distribution.Roll()),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					COrbit::RandomAngle());
-
+			COrbit SiblingOrbit = OrbitDesc;
+			SiblingOrbit.SetFocus(Focus.GetValue(i));
+			SiblingOrbit.SetSemiMajorAxis(OrbitDesc.GetSemiMajorAxis() + (rScale * Distribution.Roll()));
+			SiblingOrbit.SetObjectAngle(COrbit::RandomAngle());
+			SiblingOrbit.SetInclination(Inclination.GetValue(i));
+			
 			if (error = CreateSystemObject(pCtx, 
 					pObj->GetContentElement(0), 
 					SiblingOrbit))
@@ -2098,7 +2169,7 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 			{
 			iAngleInc = incFixed;
 			pAngles = new Metric [iCount];
-			if (error = GenerateAngles(pCtx, sAttrib, iCount, pAngles))
+			if (error = CAngleGenerator::Generate(*pCtx, sAttrib, iCount, pAngles))
 				return error;
 			}
 		else if (pObj->FindAttribute(ARC_INC_ATTRIB, &sAttrib))
@@ -2151,11 +2222,11 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 					rAngleAdj = 0.0;
 				}
 
-			Orbits[i] = COrbit(OrbitDesc.GetFocus(),
-					OrbitDesc.GetSemiMajorAxis() + rRadiusAdj,
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleAdj);
+			Orbits[i] = OrbitDesc;
+			Orbits[i].SetFocus(Focus.GetValue(i));
+			Orbits[i].SetSemiMajorAxis(OrbitDesc.GetSemiMajorAxis() + rRadiusAdj);
+			Orbits[i].SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleAdj);
+			Orbits[i].SetInclination(Inclination.GetValue(i));
 			}
 
 		//	Loop over count
@@ -2179,10 +2250,12 @@ ALERROR CreateSiblings (SSystemCreateCtx *pCtx,
 			delete [] pAngles;
 		}
 
+	pCtx->ZAdjust = OldZAdjust;
+
 	return NOERROR;
 	}
 
-ALERROR CreateShipsForStation (SSystemCreateCtx &CreateCtx, CSpaceObject *pStation, CXMLElement *pShips)
+ALERROR CreateShipsForStation (SSystemCreateCtx &CreateCtx, CSpaceObject *pStation, const CXMLElement *pShips)
 
 //	CreateShipsForStation
 //
@@ -2506,9 +2579,15 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 	{
 	ALERROR error;
-	CString sTag = pObj->GetTag();
 
 	STATION_PLACEMENT_OUTPUT(strPatternSubst(CONSTLIT("<%s>\n"), sTag).GetASCIIZPointer());
+
+	//	Initialize some common options. This will set some options in 
+	//	SSystemCreateCtx and undo them when we exit.
+
+	CSmartSystemCreateOptions SmartOptions(*pCtx);
+	if (ALERROR error = SmartOptions.Init(*pObj))
+		return error;
 
 	//	Nothing to do if this is a debug-only object and we are not in
 	//	debug mode.
@@ -2527,9 +2606,12 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 	//	Act based on the tag
 
+	CString sTag = pObj->GetTag();
 	if (strEquals(sTag, STATION_TAG))
 		{
-		if (error = CreateStationFromElement(pCtx, pObj, OrbitDesc))
+		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
+
+		if (error = CreateStationFromElement(pCtx, pObj, ZAdj.GetOrbit()))
 			return error;
 		}
 	else if (strEquals(sTag, TABLE_TAG))
@@ -2565,15 +2647,19 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, LOOKUP_TAG))
 		{
-		CString sTable = pObj->GetAttribute(TABLE_ATTRIB);
-
 		//	If we've got an offset, change the orbit
 
 		COrbit NewOrbit;
 		const COrbit *pOrbitDesc = ComputeOffsetOrbit(pObj, OrbitDesc, &NewOrbit);
 
+		//	If we've got an station create changes, load them.
+
+		CSmartStationCreateOptions SmartStationOptions(*pCtx);
+		SmartStationOptions.InitFromSimpleXML(*pObj);
+
 		//	Create
 
+		CString sTable = pObj->GetAttribute(TABLE_ATTRIB);
 		if (error = pCtx->System.CreateLookup(pCtx, sTable, *pOrbitDesc, pObj))
 			return error;
 		}
@@ -2584,6 +2670,8 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, TROJAN_TAG))
 		{
+		CSmartZAdjust ZAdj(*pCtx);
+
 		PushDebugStack(pCtx, TROJAN_TAG);
 
 		Metric rOffset;
@@ -2599,17 +2687,14 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		else
 			rOffset = (PI / 3.0);
 
-		COrbit TrojanOrbit(OrbitDesc.GetFocus(),
-				OrbitDesc.GetSemiMajorAxis(),
-				OrbitDesc.GetEccentricity(),
-				OrbitDesc.GetRotation(),
-				OrbitDesc.GetObjectAngle() + rOffset);
-
+		COrbit TrojanOrbit = OrbitDesc;
+		TrojanOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rOffset);
+		
 		for (int i = 0; i < pObj->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pObj->GetContentElement(i);
 
-			if (error = CreateSystemObject(pCtx, pItem, TrojanOrbit))
+			if (error = CreateSystemObject(pCtx, pItem, ZAdj.GetOrbit(TrojanOrbit)))
 				return error;
 			}
 
@@ -2617,6 +2702,8 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, ANTI_TROJAN_TAG))
 		{
+		CSmartZAdjust ZAdj(*pCtx);
+
 		PushDebugStack(pCtx, TROJAN_TAG);
 
 		Metric rOffset;
@@ -2632,17 +2719,14 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		else
 			rOffset = (PI / 3.0);
 
-		COrbit TrojanOrbit(OrbitDesc.GetFocus(),
-				OrbitDesc.GetSemiMajorAxis(),
-				OrbitDesc.GetEccentricity(),
-				OrbitDesc.GetRotation(),
-				OrbitDesc.GetObjectAngle() - rOffset);
+		COrbit TrojanOrbit = OrbitDesc;
+		TrojanOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() - rOffset);
 
 		for (int i = 0; i < pObj->GetContentElementCount(); i++)
 			{
 			CXMLElement *pItem = pObj->GetContentElement(i);
 
-			if (error = CreateSystemObject(pCtx, pItem, TrojanOrbit))
+			if (error = CreateSystemObject(pCtx, pItem, ZAdj.GetOrbit(TrojanOrbit)))
 				return error;
 			}
 
@@ -2667,7 +2751,9 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, RANDOM_STATION_TAG))
 		{
-		if (error = CreateRandomStation(pCtx, pObj, OrbitDesc))
+		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
+
+		if (error = CreateRandomStation(pCtx, pObj, ZAdj.GetOrbit()))
 			return error;
 		}
 	else if (strEquals(sTag, SIBLINGS_TAG))
@@ -2688,7 +2774,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		PopDebugStack(pCtx);
 		}
-	else if (strEquals(sTag, LABEL_TAG))
+	else if (strEquals(sTag, LABEL_TAG) || strEquals(sTag, LOCATION_TAG))
 		{
 		if (error = CreateLabel(pCtx, pObj, OrbitDesc))
 			return error;
@@ -2793,6 +2879,8 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, SHIP_TAG))
 		{
+		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
+
 		int iCount = GetDiceCountFromAttribute(pObj->GetAttribute(COUNT_ATTRIB));
 
 		PushDebugStack(pCtx, SHIP_TAG);
@@ -2817,7 +2905,7 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 
 		SShipCreateCtx CreateCtx;
 		CreateCtx.pSystem = &pCtx->System;
-		CreateCtx.vPos = OrbitDesc.GetObjectPos();
+		CreateCtx.vPos = ZAdj.GetOrbit().GetObjectPos();
 		CreateCtx.pBase = pCtx->pStation;
 		if (iCount > 1)
 			CreateCtx.PosSpread = DiceRange(6, 2, 1);
@@ -2844,11 +2932,13 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		}
 	else if (strEquals(sTag, PARTICLES_TAG))
 		{
+		CSmartZAdjust ZAdj(*pCtx, OrbitDesc);
+
 		CParticleEffect *pSObj;
 
 		PushDebugStack(pCtx, PARTICLES_TAG);
 
-		if (error = pCtx->System.CreateParticles(pObj, OrbitDesc, &pSObj))
+		if (error = pCtx->System.CreateParticles(pObj, ZAdj.GetOrbit(), &pSObj))
 			{
 			pCtx->sError = CONSTLIT("Unable to create particle field");
 			return error;
@@ -2919,6 +3009,15 @@ ALERROR CreateSystemObject (SSystemCreateCtx *pCtx,
 		pCode->Discard();
 		PopDebugStack(pCtx);
 		}
+	else if (strEquals(sTag, Z_ADJUST_TAG))
+		{
+		PushDebugStack(pCtx, Z_ADJUST_TAG);
+
+		if (error = CreateZAdjust(pCtx, pObj, OrbitDesc))
+			return error;
+
+		PopDebugStack(pCtx);
+		}
 	else if (strEquals(sTag, NULL_TAG))
 		NULL;
 	else
@@ -2940,7 +3039,7 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 
 	{
 	ALERROR error;
-	int i, j;
+	int i;
 
 	//	Loop over all elements and return the first one that matches
 	//	all the conditions
@@ -2975,34 +3074,14 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 		CString sCriteria;
 		if (pVariant->FindAttribute(VARIANT_LOCATION_CRITERIA_ATTRIB, &sCriteria))
 			{
-			if (!strEquals(sCriteria, MATCH_ALL))
-				{
-				CAttributeCriteria Criteria;
-				if (error = Criteria.Parse(sCriteria, 0, &pCtx->sError))
-					return error;
+			CAffinityCriteria Criteria;
+			if (error = Criteria.Parse(sCriteria, &pCtx->sError))
+				return error;
+				
+			//	If we don't match this criteria, skip.
 
-				bool bMatched = true;
-				for (j = 0; j < Criteria.GetCount(); j++)
-					{
-					bool bRequired;
-					const CString &sAttrib = Criteria.GetAttribAndRequired(j, &bRequired);
-
-					int iAdj = ComputeLocationWeight(pCtx, 
-							pCtx->sLocationAttribs,
-							OrbitDesc.GetObjectPos(),
-							sAttrib,
-							(bRequired ? CAttributeCriteria::matchRequired : CAttributeCriteria::matchExcluded));
-
-					if (iAdj == 0)
-						{
-						bMatched = false;
-						break;
-						}
-					}
-
-				if (!bMatched)
-					continue;
-				}
+			if (!pCtx->System.MatchesLocationAffinity(Criteria, pCtx->sLocationAttribs, OrbitDesc.GetObjectPos()))
+				continue;
 			}
 
 		//	If we get this far, then this location matched the variant
@@ -3058,6 +3137,42 @@ ALERROR CreateVariantsTable (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const C
 	return NOERROR;
 	}
 
+ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit &OrbitDesc)
+
+//	CreateZAdjust
+//
+//	Adjusts parameters for Z axis.
+
+	{
+	//	Save the previous adjustment
+
+	SZAdjust OldZAdjust = pCtx->ZAdjust;
+
+	//	Modify
+
+	pCtx->ZAdjust.sInclination = pDesc->GetAttribute(INCLINATION_ATTRIB);
+	pCtx->ZAdjust.sRotation = pDesc->GetAttribute(ROTATION_ATTRIB);
+	pCtx->ZAdjust.ZOffset.LoadFromXML(pDesc->GetAttribute(Z_OFFSET_ATTRIB));
+	pCtx->ZAdjust.rScale = GetScale(pDesc);
+
+	pCtx->ZAdjust.bIgnoreLocations = pDesc->GetAttributeBool(EXCLUDE_LOCATIONS_ATTRIB);
+
+	//	Create all objects.
+
+	for (int i = 0; i < pDesc->GetContentElementCount(); i++)
+		{
+		CXMLElement *pItem = pDesc->GetContentElement(i);
+
+		if (ALERROR error = CreateSystemObject(pCtx, pItem, OrbitDesc))
+			return error;
+		}
+
+	//	Restore
+
+	pCtx->ZAdjust = OldZAdjust;
+	return NOERROR;
+	}
+
 bool CheckForOverlap (SSystemCreateCtx *pCtx, const CVector &vPos)
 
 //	CheckForOverlap
@@ -3104,163 +3219,6 @@ void DumpDebugStack (SSystemCreateCtx *pCtx)
 
 		pCtx->GetUniverse().LogOutput(sStack);
 		}
-	}
-
-ALERROR GenerateAngles (SSystemCreateCtx *pCtx, const CString &sAngle, int iCount, Metric *pAngles, int iJitter)
-
-//	GenerateAngles
-//
-//	Generates random angles based on the angle type. Jitter is a value from 0-100
-//	indicating a jitter in angle generation. Our caller will increase jitter to
-//	try to find non-overlapping patterns.
-//
-//	SYNTAX
-//
-//	"n"							Position object at given angle
-//	"{dice}"					Roll angle to determine position
-//
-//	"equidistant"				Start at random angle and distribute evenly.
-//	"equidistant:n"				Start at angle n and distribute objects evenly.
-//	"equidistant:{dice}"		Start at random angle and offset each position
-//									by given param.
-//
-//	"incrementing:{dice}"		Start at random angle and increment angle by
-//									param for each subsequent object.
-//
-//	"minSeparation:{dice}"		Random, but not closer than param (in degrees)
-
-	{
-	ALERROR error;
-	int i;
-
-	//	Separate value after colon
-
-	char *pString = sAngle.GetASCIIZPointer();
-	char *pColon = pString;
-	while (pColon && *pColon != ':' && *pColon != '\0')
-		pColon++;
-
-	CString sKeyword;
-	CString sValue;
-	if (pColon && *pColon == ':')
-		{
-		sKeyword = CString(pString, pColon - pString);
-		sValue = CString(pColon+1);
-		}
-	else
-		sKeyword = sAngle;
-
-	//	Generate list of angles
-
-	if (strEquals(sKeyword, RANDOM_ANGLE))
-		{
-		for (i = 0; i < iCount; i++)
-			pAngles[i] = COrbit::RandomAngle();
-		}
-	else if (strEquals(sKeyword, MIN_SEPARATION_ANGLE))
-		{
-		DiceRange SepRange;
-		if (error = SepRange.LoadFromXML(sValue))
-			{
-			pCtx->sError = CONSTLIT("Invalid minSeparation range in orbitals");
-			return error;
-			}
-
-		Metric rMinSep = mathDegreesToRadians(SepRange.Roll());
-
-		for (i = 0; i < iCount; i++)
-			{
-			bool bAngleIsOK;
-			int iTries = RANDOM_ANGLE_MAX_TRIES;
-
-			do 
-				{
-				pAngles[i] = COrbit::RandomAngle();
-				bAngleIsOK = true;
-
-				for (int k = 0; k < i; k++)
-					{
-					if (Absolute(pAngles[i] - pAngles[k]) < rMinSep
-							|| pAngles[i] + (2.0 * PI) - pAngles[k] < rMinSep
-							|| pAngles[k] + (2.0 * PI) - pAngles[i] < rMinSep)
-						{
-						bAngleIsOK = false;
-						break;
-						}
-					}
-				}
-			while (iTries-- > 0 && !bAngleIsOK);
-			}
-		}
-	else if (strEquals(sKeyword, EQUIDISTANT_ANGLE))
-		{
-		DiceRange OffsetRange(0, 0, 0);
-		int iStart;
-
-		//	If we have a parameter, then treat that as an angle start
-
-		if (!sValue.IsBlank())
-			{
-			if (error = OffsetRange.LoadFromXML(sValue))
-				{
-				pCtx->sError = CONSTLIT("Invalid equidistant range in orbitals");
-				return error;
-				}
-
-			//	If the offset is constant, the we assume it is a start angle.
-			//	Otherwise, it is just an offset.
-
-			if (OffsetRange.IsConstant())
-				iStart = 0;
-			else
-				iStart = mathRandom(0, 3599);
-			}
-
-		//	Otherwise, we randomize the start angle.
-
-		else
-			iStart = mathRandom(0, 3599);
-
-		int iSeparation = 3600 / iCount;
-		for (i = 0; i < iCount; i++)
-			{
-			int iAngleJitter = (iJitter > 0 ? iJitter * mathRandom(-iSeparation / 2, iSeparation / 2) / 100 : 0);
-			pAngles[i] = mathDegreesToRadians((Metric)OffsetRange.Roll() + ((3600 + iStart + iAngleJitter + iSeparation * i) % 3600) / 10.0);
-			}
-		}
-	else if (strEquals(sKeyword, INCREMENTING_ANGLE))
-		{
-		DiceRange IncRange;
-		if (error = IncRange.LoadFromXML(sValue))
-			{
-			pCtx->sError = CONSTLIT("Invalid increment range in orbitals");
-			return error;
-			}
-
-		int iAngle = mathRandom(0, 359);
-
-		for (i = 0; i < iCount; i++)
-			{
-			pAngles[i] = mathDegreesToRadians(iAngle % 360);
-			iAngle += IncRange.Roll();
-			}
-		}
-	else
-		{
-		DiceRange AngleRange;
-		if (error = AngleRange.LoadFromXML(sAngle))
-			{
-			pCtx->sError = CONSTLIT("Invalid angle in orbitals");
-			return error;
-			}
-
-		int iAngleJitter = (iJitter > 0 && AngleRange.IsConstant() ? iJitter * mathRandom(-20, 20) / 100 : 0);
-
-		for (i = 0; i < iCount; i++)
-			pAngles[i] = mathDegreesToRadians(iAngleJitter + AngleRange.Roll());
-		}
-
-	return NOERROR;
 	}
 
 void GenerateRandomPosition (SSystemCreateCtx *pCtx, CStationType *pStationToPlace, COrbit *retOrbit)
@@ -3388,7 +3346,7 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 
 	{
 	ALERROR error;
-	int i, j;
+	int i;
 
 	//	Loop over all station types
 
@@ -3424,8 +3382,8 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 		{
 		//	Parse station criteria if we've got it.
 
-		CAttributeCriteria StationCriteria;
-		if (error = StationCriteria.Parse(sCriteria, 0, &pCtx->sError))
+		CAffinityCriteria StationCriteria;
+		if (error = StationCriteria.Parse(sCriteria, &pCtx->sError))
 			return error;
 
 		for (i = 0; i < iCount; i++)
@@ -3433,21 +3391,8 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
 			if (pType->GetTempChance())
 				{
-				for (j = 0; j < StationCriteria.GetCount(); j++)
-					{
-					DWORD dwMatchStrength;
-					const CString &sAttrib = StationCriteria.GetAttribAndWeight(j, &dwMatchStrength);
-
-					int iAdj = ComputeStationWeight(pCtx, pType, sAttrib, dwMatchStrength);
-
-					if (iAdj > 0)
-						pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-					else
-						{
-						pType->SetTempChance(0);
-						break;
-						}
-					}
+				int iAdj = pType->CalcAffinity(StationCriteria);
+				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
 				}
 			}
 		}
@@ -3462,28 +3407,9 @@ ALERROR GenerateRandomStationTable (SSystemCreateCtx *pCtx,
 			CStationType *pType = pCtx->GetUniverse().GetStationType(i);
 			if (pType->GetTempChance())
 				{
-				if (!strEquals(pType->GetLocationCriteria(), MATCH_ALL))
-					{
-					CAttributeCriteria Criteria;
-					if (error = Criteria.Parse(pType->GetLocationCriteria(), 0, &pCtx->sError))
-						{
-						pCtx->sError = strPatternSubst(CONSTLIT("StationType %x: Invalid locationCriteria"), pType->GetUNID());
-						return error;
-						}
-
-					for (j = 0; j < Criteria.GetCount(); j++)
-						{
-						DWORD dwMatchStrength;
-						const CString &sAttrib = Criteria.GetAttribAndWeight(j, &dwMatchStrength);
-
-						int iAdj = ComputeLocationWeight(pCtx,
-								sLocationAttribs,
-								vPos,
-								sAttrib,
-								dwMatchStrength);
-						pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
-						}
-					}
+				const CAffinityCriteria &LocationCriteria = pType->GetLocationCriteria();
+				int iAdj = pCtx->System.CalcLocationAffinity(LocationCriteria, pCtx->sLocationAttribs, vPos);
+				pType->SetTempChance((pType->GetTempChance() * iAdj) / 1000);
 				}
 			}
 		}
@@ -3559,7 +3485,7 @@ ALERROR GetLocationCriteria (SSystemCreateCtx *pCtx, CXMLElement *pDesc, SLocati
 	{
 	ALERROR error;
 
-	if (error = retCriteria->AttribCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), 0, &pCtx->sError))
+	if (error = retCriteria->AttribCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), &pCtx->sError))
 		return error;
 
 	Metric rScale = GetScale(pDesc);
@@ -3666,109 +3592,93 @@ bool IsExclusionZoneClear (SSystemCreateCtx *pCtx, const CVector &vPos, Metric r
 	return true;
 	}
 
-ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLElement *pDesc, const COrbit &OrbitDesc)
-
-//	ModifyCreatedStation
-//
-//	Modifies a newly created station based on commands in the original element
-//	descriptor.
-
+ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDesc, CStation &Station, const CStationCreateOptions &StationCreate)
 	{
-	ALERROR error;
-
-	ASSERT(pStation);
-	if (pStation == NULL)
-		return ERR_FAIL;
-
 	//	Set the name of the station, if specified by the system
 
-	CNameDesc Name;
-	if (error = Name.InitFromXMLRoot(SDesignLoadCtx(), pDesc))
-		return error;
-
-	if (!Name.IsEmpty())
+	if (!StationCreate.GetNameDesc().IsEmpty())
 		{
 		DWORD dwNameFlags;
-		CString sName = Name.GenerateName(&pCtx->NameParams, &dwNameFlags);
-		pStation->SetName(sName, dwNameFlags);
+		CString sName = StationCreate.GetNameDesc().GenerateName(&Ctx.NameParams, &dwNameFlags);
+		Station.SetName(sName, dwNameFlags);
 		}
 
 	//	If we want to show the orbit for this station, set the orbit desc
 
-	if (pDesc->GetAttributeBool(SHOW_ORBIT_ATTRIB)
-			&& !OrbitDesc.IsNull())
-		pStation->SetMapOrbit(OrbitDesc);
+	if (StationCreate.ForceMapOrbit() && !OrbitDesc.IsNull())
+		Station.SetMapOrbit(OrbitDesc);
 
 	//	Set the image variant
 
-	int iVariant;
-	if (pDesc->FindAttributeInteger(IMAGE_VARIANT_ATTRIB, &iVariant))
-		pStation->SetImageVariant(iVariant);
+	if (StationCreate.GetImageVariant() != -1)
+		Station.SetImageVariant(StationCreate.GetImageVariant());
 
 	//	Paint layer
 
-	CString sPaintLayer;
-	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sPaintLayer) 
-			&& strEquals(sPaintLayer, CONSTLIT("overhang")))
-		pStation->SetPaintOverhang();
+	if (StationCreate.ForcePaintOverhang())
+		Station.SetPaintOverhang();
 
 	//	If this station is a gate entry-point, then add it to
 	//	the table in the system.
 
-	CString sEntryPoint = pDesc->GetAttribute(OBJ_NAME_ATTRIB);
-	if (!sEntryPoint.IsBlank())
-		pCtx->System.NameObject(sEntryPoint, *pStation);
+	if (!StationCreate.GetObjName().IsBlank())
+		Ctx.System.NameObject(StationCreate.GetObjName(), Station);
 
 	//	If we don't want to show a map label
 
-	if (pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB))
-		pStation->SetNoMapLabel();
+	if (StationCreate.ForceMapLabel())
+		{
+		Station.SetForceMapLabel(true);
+		Station.SetSuppressMapLabel(false);
+		}
+	else if (StationCreate.SuppressMapLabel())
+		{
+		Station.SetForceMapLabel(false);
+		Station.SetSuppressMapLabel(true);
+		}
 
 	//	No reinforcements
 
-	if (pDesc->GetAttributeBool(NO_CONSTRUCTION_ATTRIB))
-		pStation->SetNoConstruction();
+	if (StationCreate.SuppressConstruction())
+		Station.SetNoConstruction();
 
-	if (pDesc->GetAttributeBool(NO_REINFORCEMENTS_ATTRIB))
-		pStation->SetNoReinforcements();
+	if (StationCreate.SuppressReinforcements())
+		Station.SetNoReinforcements();
 
 	//	Create additional satellites
 
-	CXMLElement *pSatellites = pDesc->GetContentElementByTag(SATELLITES_TAG);
-	if (pSatellites)
+	if (const CXMLElement *pSatellites = StationCreate.GetSatellitesXML())
 		{
-		if (error = CreateSatellites(pCtx, pStation, pSatellites, OrbitDesc))
+		if (ALERROR error = CreateSatellites(&Ctx, &Station, pSatellites, OrbitDesc))
 			return error;
 		}
 
 	//	See if we need to create additional ships
 
-	CXMLElement *pShips = pDesc->GetContentElementByTag(SHIPS_TAG);
-	if (pShips)
+	if (const CXMLElement *pShips = StationCreate.GetShipsXML())
 		{
-		if (error = CreateShipsForStation(*pCtx, pStation, pShips))
+		if (ALERROR error = CreateShipsForStation(Ctx, &Station, pShips))
 			{
-			pCtx->sError = CONSTLIT("Unable to create ships for station");
+			Ctx.sError = CONSTLIT("Unable to create ships for station");
 			return error;
 			}
 		}
 
 	//	If we have a <Trade> element, then add it to the object.
 
-	CXMLElement *pTrade = pDesc->GetContentElementByTag(TRADE_TAG);
-	if (pTrade)
+	if (const CXMLElement *pTrade = StationCreate.GetTradeXML())
 		{
 		SDesignLoadCtx LoadCtx;
 		CTradingDesc *pNewTrade;
-		if (error = CTradingDesc::CreateFromXML(LoadCtx, pTrade, &pNewTrade))
+		if (ALERROR error = CTradingDesc::CreateFromXML(LoadCtx, pTrade, &pNewTrade))
 			{
-			pCtx->sError = strPatternSubst(CONSTLIT("Unable to load <Trade> element: %s"), LoadCtx.sError);
+			Ctx.sError = strPatternSubst(CONSTLIT("Unable to load <Trade> element: %s"), LoadCtx.sError);
 			return error;
 			}
 
 		//	Add to station
 
-		pStation->AddTradeDesc(*pNewTrade);
+		Station.AddTradeDesc(*pNewTrade);
 
 		//	Done
 
@@ -3777,9 +3687,42 @@ ALERROR ModifyCreatedStation (SSystemCreateCtx *pCtx, CStation *pStation, CXMLEl
 
 	//	If we have an OnCreate block then add it to the set of deferred code
 
-	CXMLElement *pOnCreate = pDesc->GetContentElementByTag(ON_CREATE_EVENT);
-	if (pOnCreate)
-		pCtx->Events.AddDeferredEvent(pStation, pCtx->pExtension, pOnCreate);
+	if (const CXMLElement *pOnCreate = StationCreate.GetOnCreateXML())
+		Ctx.Events.AddDeferredEvent(&Station, Ctx.pExtension, pOnCreate);
+
+	//	Done
+
+	return NOERROR;
+	}
+
+ALERROR ModifyCreatedStation (SSystemCreateCtx &Ctx, CStation &Station, const CXMLElement &XMLDesc, const COrbit &OrbitDesc)
+
+//	ModifyCreatedStation
+//
+//	Modifies a newly created station based on commands in the original element
+//	descriptor.
+
+	{
+	//	Load any station modifications on top of the station options.
+
+	CStationCreateOptions StationCreate;
+	if (ALERROR error = StationCreate.InitFromXML(Ctx, XMLDesc))
+		return error;
+
+	//	If already have station options in the context block, we need to merge 
+	//	them.
+
+	if (Ctx.bHasStationCreate)
+		{
+		CStationCreateOptions Merged = Ctx.StationCreate;
+		Merged.Merge(StationCreate);
+		StationCreate = Merged;
+		}
+
+	//	Apply options
+
+	if (ALERROR error = ApplyStationCreateOptions(Ctx, OrbitDesc, Station, StationCreate))
+		return error;
 
 	//	Done
 
@@ -3955,7 +3898,8 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 				CString sLocationAttribs;
 				int iLocation;
 				if (error = ChooseRandomLocation(&Ctx, 
-						pType->GetLocationCriteria(), 
+						SLocationCriteria(pType->GetLocationCriteria()), 
+						COrbit(),
 						pType,
 						&OrbitDesc, 
 						&sLocationAttribs,
@@ -4011,7 +3955,7 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 
 	//	Arrange all map labels so that they don't overlap
 
-	CMapLabelArranger::Arrange(pSystem);
+	CMapLabelArranger::Arrange(*pSystem);
 	pSystem->ComputeStars();
 
 	//	Call each object and tell it that the system has been
@@ -4051,6 +3995,10 @@ ALERROR CSystem::CreateFromXML (CUniverse &Universe,
 			Universe.LogOutput(strPatternSubst(CONSTLIT("Warning: Unable to find required stargate: %s"), pTopology->GetStargate(i)));
 			DumpDebugStack(&Ctx);
 			}
+
+	//	Sort by paint order
+
+	pSystem->SortByPaintOrder();
 
 #ifdef DEBUG_EXCLUSION_RADIUS
 	if (pCtx->GetUniverse().InDebugMode())
@@ -4128,7 +4076,7 @@ ALERROR CSystem::CreateLookup (SSystemCreateCtx *pCtx, const CString &sTable, co
 
 	PushDebugStack(pCtx, strPatternSubst(CONSTLIT("Lookup table=%s"), sTable));
 
-	//	Keep track of the current extension, because we may change it below
+	//	Keep track of some context properties in case we change them
 
 	CExtension *pOldExtension = pCtx->pExtension;
 
@@ -4614,7 +4562,8 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Compute position of station
 
-	CVector vPos(OrbitDesc.GetObjectPos());
+	Metric rPosZ;
+	CVector vPos(OrbitDesc.GetObjectPos(&rPosZ));
 	if (x != 0 || y != 0)
 		vPos = vPos + CVector(x * g_KlicksPerPixel, y * g_KlicksPerPixel);
 
@@ -4626,6 +4575,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	CreateCtx.bCreateSatellites = !pDesc->GetAttributeBool(NO_SATELLITES_ATTRIB);
 	CreateCtx.pExtraData = pDesc->GetContentElementByTag(INITIAL_DATA_TAG);
     CreateCtx.bIsSegment = pDesc->GetAttributeBool(SEGMENT_ATTRIB);
+	CreateCtx.bIs3DExtra = pCtx->bIs3DExtra;
 
 	if (!pDesc->FindAttributeInteger(ROTATION_ATTRIB, &CreateCtx.iRotation))
 		CreateCtx.iRotation = -1;
@@ -4633,6 +4583,8 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	int iParallax = pDesc->GetAttributeIntegerBounded(BACKGROUND_PLANE_ATTRIB, 1, -1, 100);
 	if (iParallax != 100)
 		CreateCtx.rParallax = iParallax / 100.0;
+	else
+		CreateCtx.rParallax = COrbit::ZToParallax(rPosZ);
 
 	//	Since this is an explicit creation of a station, ignore limits
 
@@ -4663,6 +4615,12 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 	if (pObj)
 		pStation = pObj->AsStation();
 
+	if (pStation == NULL)
+		{
+		pCtx->sError = CONSTLIT("No station created.");
+		return ERR_FAIL;
+		}
+
 #ifdef DEBUG_STATION_PLACEMENT2
 	if (pStation->GetScale() == scaleStructure)
 		{
@@ -4684,7 +4642,7 @@ ALERROR CreateStationFromElement (SSystemCreateCtx *pCtx, CXMLElement *pDesc, co
 
 	//	Modify the station based on attributes
 
-	if (error = ModifyCreatedStation(pCtx, pStation, pDesc, OrbitDesc))
+	if (error = ModifyCreatedStation(*pCtx, *pStation, *pDesc, OrbitDesc))
 		return error;
 
 	//	Done

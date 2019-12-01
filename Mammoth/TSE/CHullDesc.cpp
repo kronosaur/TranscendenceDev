@@ -78,7 +78,7 @@ ALERROR CHullDesc::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, int iMa
 	//	Always allow virtual items, because we often use them and we don't want
 	//	to force the modder to always include them in the criteria.
 
-	m_DeviceCriteria.bExcludeVirtual = false;
+	m_DeviceCriteria.SetExcludeVirtual(false);
 
 	//	Maximums
 

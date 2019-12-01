@@ -35,7 +35,6 @@ PLAYER DATA
 			regen=			    "6"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -505,7 +504,6 @@ PLAYER DATA
 			shipRegen=			"11"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -671,7 +669,6 @@ PLAYER DATA
 			multiHull=			"true"
 			regen=			    "1.3"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

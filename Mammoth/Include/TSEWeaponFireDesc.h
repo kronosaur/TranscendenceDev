@@ -117,8 +117,11 @@ class DamageDesc
 		int GetDisintegrationDamage (void) const { return (int)m_DisintegrationDamage; }
 		int GetEMPDamage (void) const { return (int)m_EMPDamage; }
         int GetMassDestructionAdj (void) const;
+		int GetMassDestructionDamage (void) const { return m_MassDestructionAdj; }
         int GetMassDestructionLevel (void) const;
 		int GetMiningAdj (void) const { return (int)(m_MiningAdj ? (2 * (m_MiningAdj * m_MiningAdj) + 2) : 0); }
+		int GetMiningDamage (void) const { return m_MiningAdj; }
+		int GetMiningWMDAdj (void);
 		int GetMomentumDamage (void) const { return (int)m_MomentumDamage; }
 		int GetRadiationDamage (void) const { return (int)m_RadiationDamage; }
 		int GetShatterDamage (void) const { return (int)m_ShatterDamage; }
@@ -132,6 +135,7 @@ class DamageDesc
         static int GetDamageLevel (DamageTypes iType);
         static int GetDamageTier (DamageTypes iType);
 		static CString GetSpecialDamageName (SpecialDamageTypes iSpecial);
+        static int GetMassDestructionAdjFromValue (int iValue);
         static int GetMassDestructionLevelFromValue (int iValue);
 
 	private:
@@ -433,6 +437,7 @@ class CWeaponFireDesc
 
 		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed);
         void ApplyAcceleration (CSpaceObject *pMissile) const;
+		Metric CalcDamage (DWORD dwDamageFlags = 0) const;
 		bool CanAutoTarget (void) const { return (m_fAutoTarget ? true : false); }
         bool CanDamageSource (void) const { return (m_fCanDamageSource ? true : false); }
 		bool CanHit (CSpaceObject *pObj) const;
@@ -458,7 +463,6 @@ class CWeaponFireDesc
 		ICCItem *FindProperty (const CString &sProperty) const;
 		CWeaponFireDesc *FindWeaponFireDesc (const CString &sUNID, const char **retpPos = NULL);
 		static CWeaponFireDesc *FindWeaponFireDescFromFullUNID (const CString &sUNID);
-        ALERROR FinishBindDesign (SDesignLoadCtx &Ctx);
 		void FireOnCreateShot (const CDamageSource &Source, CSpaceObject *pShot, CSpaceObject *pTarget);
 		bool FireOnDamageAbandoned (SDamageCtx &Ctx);
 		bool FireOnDamageArmor (SDamageCtx &Ctx);
@@ -536,6 +540,7 @@ class CWeaponFireDesc
         bool IsScalable (void) const { return (m_pScalable != NULL); }
 		bool IsTargetRequired (void) const { return (m_fTargetRequired ? true : false); }
 		bool IsTracking (void) const { return m_iManeuverability != 0; }
+		bool IsTracking (const SShotCreateCtx &Ctx) const;
 		bool IsTrackingOrHasTrackingFragments (void) const;
 		bool IsTrackingTime (int iTick) const { return (m_iManeuverability > 0 && (iTick % m_iManeuverability) == 0); }
 		void MarkImages (void);
@@ -556,13 +561,20 @@ class CWeaponFireDesc
 		CWeaponFireDesc (const CWeaponFireDesc &Desc) = delete;
         CWeaponFireDesc & operator= (const CWeaponFireDesc &Desc) = delete;
 
+		int CalcDefaultHitPoints (void) const;
+		int CalcDefaultInteraction (void) const;
         Metric CalcMaxEffectiveRange (void) const;
-		Metric CalcSpeed (Metric rPercentOfLight) const;
+		static Metric CalcSpeed (Metric rPercentOfLight, bool bRelativistic);
 		CEffectCreator *GetFireEffect (void) const;
         SOldEffects &GetOldEffects (void) const { return (m_pOldEffects ? *m_pOldEffects : m_NullOldEffects); }
 		CUniverse &GetUniverse (void) const { return *g_pUniverse; }
         SOldEffects &SetOldEffects (void) { if (m_pOldEffects == NULL) m_pOldEffects = new SOldEffects; return *m_pOldEffects; }
+		bool InitHitPoints (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+		bool InitLifetime (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
+		bool InitMissileSpeed (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc);
         ALERROR InitScaledStats (SDesignLoadCtx &Ctx, CXMLElement *pDesc, CWeaponClass *pWeapon, const CWeaponFireDesc &Src, int iBaseLevel, int iScaledLevel);
+
+		static bool LoadFireType (const CString &sValue, FireTypes *retiFireType = NULL);
 
 		CExtension *m_pExtension = NULL;		//	Extension that defines the weaponfiredesc
 		CString m_sUNID;						//	Identification. The format is
@@ -657,9 +669,18 @@ class CWeaponFireDesc
         DWORD m_fRelativisticSpeed:1;			//	If TRUE, adjust speed to simulate for light-lag
         DWORD m_fTargetRequired:1;				//	If TRUE, do not fragment unless we have a target
         DWORD m_fTargetable:1;					//	If TRUE, and type is 'missile', the weaponFire can be shot at by weapons with canTargetMissiles=true
-        DWORD m_fSpare8:1;
+        DWORD m_fDefaultInteraction:1;			//	If TRUE, compute default interaction at bind-time.
 
-		DWORD m_dwSpare:16;
+		DWORD m_fDefaultHitPoints:1;			//	If TRUE, computer hit points at bind-time.
+		DWORD m_fSpare2:1;
+		DWORD m_fSpare3:1;
+		DWORD m_fSpare4:1;
+		DWORD m_fSpare5:1;
+		DWORD m_fSpare6:1;
+		DWORD m_fSpare7:1;
+		DWORD m_fSpare8:1;
+
+		DWORD m_dwSpare:8;
 
         static SOldEffects m_NullOldEffects;
 	};

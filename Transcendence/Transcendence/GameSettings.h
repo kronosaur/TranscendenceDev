@@ -199,6 +199,7 @@ class CGameSettings
 			playerGenome,					//	Default player genome ("humanMale" or "humanFemale")
 			playerShipClass,				//	Default player ship class
 			lastAdventure,					//	Last adventure created
+			lastDifficulty,					//	Last difficulty level played
 
 			dockPortIndicator,				//	Options for dock port indicator
 			allowInvokeLetterHotKeys,		//	Allow invoke entries to have letter hot keys
@@ -224,7 +225,9 @@ class CGameSettings
 			useBackgroundBlt,				//	Blt in the background
 			force1024Res,					//	Force 1024x768 resolution
 			force600Res,					//	Force 1024x600 resolution
+			force1280Res,					//	Force 1280x768 resolution
 			graphicsQuality,				//	SFX vs performance
+			no3DExtras,						//	Do not create out of plane objects
 			no3DSystemMap,					//	3D system map projection
 			maxResolution,					//	Maximum vertical resolution
 			noGPUAcceleration,				//	Do not use GPU textures for blts
@@ -249,7 +252,7 @@ class CGameSettings
 			introSpoilers,					//	Show high-level ships in intro
 
 			//	Constants
-			OPTIONS_COUNT = 43,
+			OPTIONS_COUNT = 46,
 			};
 
 		CGameSettings (IExtraSettingsHandler *pExtra = NULL) : m_pExtra(pExtra) { }

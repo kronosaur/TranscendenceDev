@@ -427,7 +427,11 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 //	name. If there is ambiguity, a random item is chosen.
 
 	{
-	int i;
+	if (!Universe.GetDesignCollection().IsBindComplete())
+		{
+		ASSERT(false);
+		return CItem();
+		}
 
 	TArray<CItemType *> List;
 
@@ -445,7 +449,7 @@ CItem CItem::CreateItemByName (CUniverse &Universe, const CString &sName, const 
 
 	int iBestMatch = -1000;
 	int iBestNonCriteriaMatch = -1000;
-	for (i = 0; i < Universe.GetItemTypeCount(); i++)
+	for (int i = 0; i < Universe.GetItemTypeCount(); i++)
 		{
 		CItemType *pType = Universe.GetItemType(i);
 		CItem Item(pType, 1);
@@ -1196,10 +1200,6 @@ bool CItem::GetDisplayAttributes (TArray<SDisplayAttribute> *retList, ICCItem *p
 		if (m_pItemType->HasLiteralAttribute(CONSTLIT("Illegal")))
 			retList->Insert(SDisplayAttribute(attribNegative, CONSTLIT("illegal")));
 
-		//	Add any enhancements
-
-		AccumulateEnhancementDisplayAttributes(*retList);
-
 		//	Charges
 
 		CString sNoun;
@@ -1359,7 +1359,7 @@ bool CItem::GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem 
 	//	Otherwise, see if we have properties.
 
 	CCodeChainCtx Ctx(GetUniverse());
-	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT));
+	ICCItemPtr pEnhancementDesc(GetItemProperty(Ctx, CItemCtx(*this), PROPERTY_CORE_ENHANCEMENT, false));
 	if (pEnhancementDesc && !pEnhancementDesc->IsNil())
 		{
 		CString sError;
@@ -1638,7 +1638,7 @@ int CItem::GetInstallCost (void) const
 		return -1;
 	}
 
-ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const
+ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const
 
 //	GetItemProperty
 //
@@ -1739,6 +1739,23 @@ ICCItem *CItem::GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CStr
 
 	else if (strEquals(sProperty, PROPERTY_INSTALLED))
 		return CC.CreateBool(IsInstalled());
+
+	else if (strEquals(sProperty, PROPERTY_KNOWN))
+		{
+		if (bOnType)
+			{
+			//	If asking about the type, we return True if all unknown types 
+			//	are known.
+
+			for (int i = 0; i < m_pItemType->GetUnknownTypeCount(); i++)
+				if (!m_pItemType->IsKnown(i))
+					return CC.CreateNil();
+
+			return CC.CreateTrue();
+			}
+		else
+			return CC.CreateBool(IsKnown());
+		}
 
     else if (strEquals(sProperty, PROPERTY_LEVEL))
         return CC.CreateInteger(GetLevel());
@@ -1887,7 +1904,7 @@ Metric CItem::GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const 
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0.0;
 
@@ -1904,7 +1921,7 @@ int CItem::GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CS
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0;
 
@@ -1921,7 +1938,7 @@ CString CItem::GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const
 
 	{
 	CCodeChain &CC = GetUniverse().GetCC();
-	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty);
+	ICCItem *pResult = GetItemProperty(CCCtx, Ctx, sProperty, false);
 	if (pResult == NULL)
 		return 0;
 
@@ -2297,7 +2314,7 @@ bool CItem::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty()));
+		ICCItemPtr pValue = ICCItemPtr(GetItemProperty(CCodeChainCtx(GetUniverse()), CItemCtx(*this), Compare.GetProperty(), false));
 		return Compare.Eval(pValue);
 		}
 	else
@@ -2567,15 +2584,12 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 //	Return TRUE if this item matches the given criteria
 
 	{
-	int i;
-    CItemCtx ItemCtx(*this);
-
 	if (m_pItemType == NULL)
 		return false;
 
 	//	If we've got a filter, then use that
 
-	if (ICCItem *pFilter = Criteria.GetFilter())
+	else if (ICCItem *pFilter = Criteria.GetFilter())
 		{
 		CCodeChainCtx CCCtx(GetUniverse());
 
@@ -2596,401 +2610,85 @@ bool CItem::MatchesCriteria (const CItemCriteria &Criteria) const
 		return bMatches;
 		}
 
+	//	If we've got an OR expression and it matches, then we're done.
+
+	else if (Criteria.HasORExpression() && MatchesCriteria(Criteria.GetORExpression()))
+		return true;
+
 	//	If we've got a lookup, then recurse
 
-	else if (!Criteria.sLookup.IsBlank())
+	else if (!Criteria.GetLookup().IsBlank())
 		{
-		const CItemCriteria *pCriteria = GetUniverse().GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.sLookup);
+		const CItemCriteria *pCriteria = GetUniverse().GetDesignCollection().GetDisplayAttributes().FindCriteriaByID(Criteria.GetLookup());
 		if (pCriteria == NULL)
 			return false;
 
 		return MatchesCriteria(*pCriteria);
 		}
 
-	//	If we're looking for anything, then continue
+	//	Otherwise, process criteria
 
-	if (Criteria.dwItemCategories == 0xFFFFFFFF)
-		NULL;
-
-	//	If we're looking for fuel and this item is fuel, then
-	//	we continue
-
-	else if ((Criteria.dwItemCategories & itemcatFuel)
-			&& m_pItemType->IsFuel())
-		NULL;
-
-	//	If we're looking for missiles and this item is a
-	//	missile, then we continue.
-
-	else if ((Criteria.dwItemCategories & itemcatMissile)
-			&& m_pItemType->IsMissile())
-		NULL;
-
-	//	If we're looking for usable items and this item is
-	//	isable, then we continue
-
-	else if ((Criteria.dwItemCategories & itemcatUseful)
-			&& m_pItemType->IsUsable())
-		NULL;
-
-	//	Otherwise, if this is not one of the required categories, bail out
-
-	else if (!(Criteria.dwItemCategories & m_pItemType->GetCategory()))
-		return false;
-
-	//	Deal with exclusion
-
-	if (Criteria.dwExcludeCategories == 0)
-		NULL;
-	else if ((Criteria.dwExcludeCategories & itemcatFuel) && m_pItemType->IsFuel())
-		return false;
-	else if ((Criteria.dwExcludeCategories & itemcatMissile) && m_pItemType->IsMissile())
-		return false;
-	else if ((Criteria.dwExcludeCategories & itemcatUseful) && m_pItemType->IsUsable())
-		return false;
-	else if (Criteria.dwExcludeCategories & m_pItemType->GetCategory())
-		return false;
-
-	//	Deal with must have
-
-	if (Criteria.dwMustHaveCategories != 0)
-		{
-		if ((Criteria.dwMustHaveCategories & itemcatFuel) && !m_pItemType->IsFuel())
-			return false;
-		if ((Criteria.dwMustHaveCategories & itemcatMissile) && !m_pItemType->IsMissile())
-			return false;
-		if ((Criteria.dwMustHaveCategories & itemcatUseful) && !m_pItemType->IsUsable())
-			return false;
-
-		if ((Criteria.dwMustHaveCategories & itemcatDeviceMask) == itemcatDeviceMask)
-			{
-			if (!(m_pItemType->GetCategory() & itemcatDeviceMask))
-				return false;
-			}
-		else if ((Criteria.dwMustHaveCategories & itemcatWeaponMask) == itemcatWeaponMask)
-			{
-			if (!(m_pItemType->GetCategory() & itemcatWeaponMask))
-				return false;
-			}
-		else
-			{
-			DWORD dwCat = 1;
-			for (i = 0; i < itemcatCount; i++)
-				{
-				if (dwCat != itemcatFuel && dwCat != itemcatMissile && dwCat != itemcatUseful
-						&& (Criteria.dwMustHaveCategories & dwCat)
-						&& m_pItemType->GetCategory() != dwCat)
-					return false;
-				
-				dwCat = dwCat << 1;
-				}
-			}
-		}
-
-	//	If any of the flags that must be set is not set, then
-	//	we do not match.
-
-	if ((Criteria.wFlagsMustBeSet & m_dwFlags) != Criteria.wFlagsMustBeSet)
-		return false;
-
-	//	If any of the flags that must be cleared is set, then
-	//	we do not match.
-
-	if ((Criteria.wFlagsMustBeCleared & m_dwFlags) != 0)
-		return false;
-
-	//	Check installed flags
-
-	if (Criteria.bInstalledOnly && !IsInstalled())
-		return false;
-
-	if (Criteria.bNotInstalledOnly && IsInstalled())
-		return false;
-
-	//	Check miscellaneous flags
-
-	CItemType::SUseDesc UseDesc;
-	if (Criteria.bUsableItemsOnly && (!m_pItemType->GetUseDesc(&UseDesc) || UseDesc.pScreenRoot == NULL))
-		return false;
-
-	if (Criteria.bExcludeVirtual && m_pItemType->IsVirtual())
-		return false;
-
-	if (Criteria.bLauncherMissileOnly && m_pItemType->IsAmmunition())
-		return false;
-
-	//	Check required modifiers
-
-	for (i = 0; i < Criteria.ModifiersRequired.GetCount(); i++)
-		if (!m_pItemType->HasLiteralAttribute(Criteria.ModifiersRequired[i]))
-			return false;
-
-	//	Check modifiers not allowed
-
-	for (i = 0; i < Criteria.ModifiersNotAllowed.GetCount(); i++)
-		if (m_pItemType->HasLiteralAttribute(Criteria.ModifiersNotAllowed[i]))
-			return false;
-
-	//	Check required special attributes
-
-	for (i = 0; i < Criteria.SpecialAttribRequired.GetCount(); i++)
-		if (!HasSpecialAttribute(Criteria.SpecialAttribRequired[i]))
-			return false;
-
-	//	Check special attributes not allowed
-
-	for (i = 0; i < Criteria.SpecialAttribNotAllowed.GetCount(); i++)
-		if (HasSpecialAttribute(Criteria.SpecialAttribNotAllowed[i]))
-			return false;
-
-	//	Check frequency range
-
-	if (!Criteria.Frequency.IsBlank())
-		{
-		int iFreq = m_pItemType->GetFrequency();
-		char *pPos = Criteria.Frequency.GetASCIIZPointer();
-		bool bMatch = false;
-		while (*pPos != '\0' && !bMatch)
-			{
-			switch (*pPos)
-				{
-				case 'c':
-				case 'C':
-					if (iFreq == ftCommon)
-						bMatch = true;
-					break;
-
-				case 'u':
-				case 'U':
-					if (iFreq == ftUncommon)
-						bMatch = true;
-					break;
-
-				case 'r':
-				case 'R':
-					if (iFreq == ftRare)
-						bMatch = true;
-					break;
-
-				case 'v':
-				case 'V':
-					if (iFreq == ftVeryRare)
-						bMatch = true;
-					break;
-
-				case '-':
-				case 'n':
-				case 'N':
-					if (iFreq == ftNotRandom)
-						bMatch = true;
-					break;
-				}
-
-			pPos++;
-			}
-
-		if (!bMatch)
-			return false;
-		}
-
-	//	Check for level modifiers
-
-	if (Criteria.iEqualToLevel != -1 && GetLevel() != Criteria.iEqualToLevel)
-		return false;
-
-	if (Criteria.iGreaterThanLevel != -1 && GetLevel() <= Criteria.iGreaterThanLevel)
-		return false;
-
-	if (Criteria.iLessThanLevel != -1 && GetLevel() >= Criteria.iLessThanLevel)
-		return false;
-
-	//	Check for price modifiers
-
-	if (Criteria.iEqualToPrice != -1 && GetValue() != Criteria.iEqualToPrice)
-		return false;
-
-	if (Criteria.iGreaterThanPrice != -1 && GetValue() <= Criteria.iGreaterThanPrice)
-		return false;
-
-	if (Criteria.iLessThanPrice != -1 && GetValue() >= Criteria.iLessThanPrice)
-		return false;
-
-	//	Check for mass modifiers
-
-	if (Criteria.iEqualToMass != -1 && GetMassKg() != Criteria.iEqualToMass)
-		return false;
-
-	if (Criteria.iGreaterThanMass != -1 && GetMassKg() <= Criteria.iGreaterThanMass)
-		return false;
-
-	if (Criteria.iLessThanMass != -1 && GetMassKg() >= Criteria.iLessThanMass)
-		return false;
-
-	//	Otherwise, we match completely
-
-	return true;
-	}
-
-void WriteCategoryFlags (CMemoryWriteStream &Output, DWORD dwCategories)
-	{
-	if (dwCategories & itemcatArmor)
-		Output.Write("a", 1);
-	if (dwCategories & itemcatMiscDevice)
-		Output.Write("b", 1);
-	if (dwCategories & itemcatCargoHold)
-		Output.Write("c", 1);
-	if (dwCategories & itemcatFuel)
-		Output.Write("f", 1);
-	if (dwCategories & itemcatLauncher)
-		Output.Write("l", 1);
-	if (dwCategories & itemcatMissile)
-		Output.Write("m", 1);
-	if (dwCategories & itemcatWeapon)
-		Output.Write("p", 1);
-	if (dwCategories & itemcatReactor)
-		Output.Write("r", 1);
-	if (dwCategories & itemcatShields)
-		Output.Write("s", 1);
-	if (dwCategories & itemcatMisc)
-		Output.Write("t", 1);
-	if (dwCategories & itemcatUseful)
-		Output.Write("u", 1);
-	if (dwCategories & itemcatDrive)
-		Output.Write("v", 1);
-	}
-
-CString CItem::GenerateCriteria (const CItemCriteria &Criteria)
-
-//	GenerateCriteria
-//
-//	Returns a criteria string from a criteria structure
-
-	{
-	int i;
-	CMemoryWriteStream Output(64 * 1024);
-	CString sTerm;
-
-	if (!Criteria.sLookup.IsBlank())
-		return strPatternSubst(CONSTLIT("{%s}"), Criteria.sLookup);
-	
-	if (Output.Create() != NOERROR)
-		return NULL_STR;
-
-	if (Criteria.dwItemCategories == 0xFFFFFFFF)
-		Output.Write("*", 1);
-	else
-		WriteCategoryFlags(Output, Criteria.dwItemCategories);
-
-	if (Criteria.dwExcludeCategories != 0)
-		{
-		Output.Write("~", 1);
-		WriteCategoryFlags(Output, Criteria.dwExcludeCategories);
-		}
-
-	if (Criteria.dwMustHaveCategories != 0)
-		{
-		Output.Write("&", 1);
-		WriteCategoryFlags(Output, Criteria.dwMustHaveCategories);
-		}
-
-	if (Criteria.wFlagsMustBeSet & flagDamaged)
-		Output.Write("D", 1);
-
-	if (Criteria.wFlagsMustBeCleared & flagDamaged)
-		Output.Write("N", 1);
-
-	if (Criteria.bUsableItemsOnly)
-		Output.Write("S", 1);
-
-	if (Criteria.bInstalledOnly)
-		Output.Write("I", 1);
-
-	if (Criteria.bNotInstalledOnly)
-		Output.Write("U", 1);
-
-	if (Criteria.bLauncherMissileOnly)
-		Output.Write("M", 1);
-
-	if (!Criteria.bExcludeVirtual)
-		Output.Write("V", 1);
-
-	for (i = 0; i < Criteria.ModifiersRequired.GetCount(); i++)
-		{
-		sTerm = strPatternSubst(CONSTLIT(" +%s;"), Criteria.ModifiersRequired[i]);
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-		}
-
-	for (i = 0; i < Criteria.ModifiersNotAllowed.GetCount(); i++)
-		{
-		sTerm = strPatternSubst(CONSTLIT(" -%s;"), Criteria.ModifiersNotAllowed[i]);
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-		}
-
-	for (i = 0; i < Criteria.SpecialAttribRequired.GetCount(); i++)
-		{
-		sTerm = strPatternSubst(CONSTLIT(" +%s;"), Criteria.SpecialAttribRequired[i]);
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-		}
-
-	for (i = 0; i < Criteria.SpecialAttribNotAllowed.GetCount(); i++)
-		{
-		sTerm = strPatternSubst(CONSTLIT(" +%s;"), Criteria.SpecialAttribNotAllowed[i]);
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-		}
-
-	if (!Criteria.Frequency.IsBlank())
-		{
-		sTerm = strPatternSubst(CONSTLIT(" F:%s;"), Criteria.Frequency);
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-		}
-
-	sTerm = NULL_STR;
-	if (Criteria.iEqualToLevel != -1)
-		sTerm = strPatternSubst(CONSTLIT(" =%d"), Criteria.iEqualToLevel);
-	else if (Criteria.iGreaterThanLevel != -1 && Criteria.iLessThanLevel != -1)
-		sTerm = strPatternSubst(CONSTLIT(" L:%d-%d;"), Criteria.iGreaterThanLevel + 1, Criteria.iLessThanLevel - 1);
 	else
 		{
-		if (Criteria.iGreaterThanLevel != -1)
-			sTerm = strPatternSubst(CONSTLIT(" >%d"), Criteria.iGreaterThanLevel);
-		if (Criteria.iLessThanLevel != -1)
-			sTerm = strPatternSubst(CONSTLIT(" <%d"), Criteria.iLessThanLevel);
+		//	Match item categories
+
+		if (!Criteria.MatchesItemCategory(*m_pItemType))
+			return false;
+
+		//	Match item flags
+
+		if (!Criteria.MatchesFlags(m_dwFlags))
+			return false;
+
+		//	Check installed flags
+
+		if (Criteria.MatchesInstalledOnly() && !IsInstalled())
+			return false;
+
+		if (Criteria.MatchesNotInstalledOnly() && IsInstalled())
+			return false;
+
+		//	Check miscellaneous flags
+
+		CItemType::SUseDesc UseDesc;
+		if (Criteria.MatchesUsableOnly() && (!m_pItemType->GetUseDesc(&UseDesc) || UseDesc.pScreenRoot == NULL))
+			return false;
+
+		if (Criteria.ExcludesVirtual() && m_pItemType->IsVirtual())
+			return false;
+
+		if (Criteria.MatchesLauncherMissilesOnly() && m_pItemType->IsAmmunition())
+			return false;
+
+		//	Check required modifiers
+
+		if (!Criteria.MatchesAttributes(*this))
+			return false;
+
+		//	Check frequency range
+
+		if (!Criteria.MatchesFrequency((FrequencyTypes)m_pItemType->GetFrequency()))
+			return false;
+
+		//	Check for level modifiers
+
+		if (!Criteria.MatchesLevel(GetLevel()))
+			return false;
+
+		//	Check for price modifiers
+
+		if (!Criteria.MatchesPrice(GetValue()))
+			return false;
+
+		//	Check for mass modifiers
+
+		if (!Criteria.MatchesMass(GetMassKg()))
+			return false;
+
+		//	Otherwise, we match completely
+
+		return true;
 		}
-
-	if (!sTerm.IsBlank())
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-
-	sTerm = NULL_STR;
-	if (Criteria.iEqualToPrice != -1)
-		sTerm = strPatternSubst(CONSTLIT(" =$%d"), Criteria.iEqualToPrice);
-	else
-		{
-		if (Criteria.iGreaterThanPrice != -1)
-			sTerm = strPatternSubst(CONSTLIT(" >=$%d"), Criteria.iGreaterThanPrice + 1);
-		if (Criteria.iLessThanPrice != -1)
-			sTerm = strPatternSubst(CONSTLIT(" <=$%d"), Criteria.iLessThanPrice - 1);
-		}
-
-	if (!sTerm.IsBlank())
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-
-	sTerm = NULL_STR;
-	if (Criteria.iEqualToMass != -1)
-		sTerm = strPatternSubst(CONSTLIT(" =#%d"), Criteria.iEqualToMass);
-	else
-		{
-		if (Criteria.iGreaterThanMass != -1)
-			sTerm = strPatternSubst(CONSTLIT(" >=#%d"), Criteria.iGreaterThanMass + 1);
-		if (Criteria.iLessThanMass != -1)
-			sTerm = strPatternSubst(CONSTLIT(" <=#%d"), Criteria.iLessThanMass - 1);
-		}
-
-	if (!sTerm.IsBlank())
-		Output.Write(sTerm.GetPointer(), sTerm.GetLength());
-
-	//	Done
-
-	return CString(Output.GetPointer(), Output.GetLength());
 	}
 
 DWORD CItem::ParseFlags (ICCItem *pItem)
@@ -3406,7 +3104,7 @@ void CItem::SetPrepareUninstalled (void)
 	m_dwInstalled = (BYTE)(char)-2;
 	}
 
-bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CItem::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError)
 
 //	SetProperty
 //
@@ -3422,7 +3120,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("Unable to set propery on a null item.");
-		return false;
+		return resultPropertyError;
 		}
 
 	else if (strEquals(sName, PROPERTY_CHARGES))
@@ -3430,7 +3128,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 			
 		SetCharges(pValue->GetIntegerValue());
@@ -3465,7 +3163,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		else if (pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 		else
 			SetCharges(Max(0, GetCharges() + pValue->GetIntegerValue()));
@@ -3479,7 +3177,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			{
 			CItemEnhancement NewEnhancement;
 			if (NewEnhancement.InitFromDesc(GetUniverse(), *pValue, retsError) != NOERROR)
-				return false;
+				return resultPropertyError;
 
 			AddEnhancement(NewEnhancement);
 			}
@@ -3492,13 +3190,16 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Unable to set installation flag on item.");
-			return false;
+			return resultPropertyError;
 			}
 		}
 
     else if (strEquals(sName, PROPERTY_KNOWN))
 		{
-		SetKnown(pValue && !pValue->IsNil());
+		if (bOnType)
+			m_pItemType->SetAllKnown(!pValue->IsNil());
+		else
+			SetKnown(pValue && !pValue->IsNil());
 		}
 
     else if (strEquals(sName, PROPERTY_LEVEL))
@@ -3512,9 +3213,7 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 		//	Otherwise, we just set the item level.
 
         if (!SetLevel((pValue ? pValue->GetIntegerValue() : 0), retsError))
-            return false;
-
-        return true;
+			return resultPropertyError;
         }
 	else if (strEquals(sName, PROPERTY_UNKNOWN_TYPE_INDEX))
 		{
@@ -3530,15 +3229,13 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 			int iIndex = Max(0, Min(pValue->GetIntegerValue(), iUnknownTypeCount - 1));
 			SetUnknownIndex(iIndex);
 			}
-
-		return true;
 		}
 	else if (strEquals(sName, PROPERTY_VARIANT))
 		{
 		if (pValue == NULL || pValue->IsNil())
 			{
 			if (retsError) *retsError = NULL_STR;
-			return false;
+			return resultPropertyError;
 			}
 
 		SetVariantNumber(pValue->GetIntegerValue());
@@ -3559,10 +3256,10 @@ bool CItem::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, C
 	else
 		{
 		if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown item property: %s."), sName);
-		return false;
+		return resultPropertyNotFound;
 		}
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CItem::SetUnknownIndex (int iIndex)

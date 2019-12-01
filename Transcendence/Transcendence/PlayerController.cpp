@@ -299,8 +299,7 @@ void CPlayerShipController::Dock (void)
 
 	if (m_pStation)
 		{
-		m_pStation->Undock(m_pShip);
-		m_pStation = NULL;
+		Undock();
 		m_pTrans->DisplayMessage(CONSTLIT("Docking canceled"));
 		return;
 		}
@@ -632,14 +631,15 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution, bool bTargetMissiles)
+void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
 //	Returns a list of nearest targets
 
 	{
-	int i;
+	constexpr int MAX_TARGETS = 10;
+
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
 	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
 
@@ -657,10 +657,11 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	Get other targets
 
-		DWORD dwFlags = bTargetMissiles ? (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS | FLAG_INCLUDE_MISSILES)
-			: (FLAG_INCLUDE_NON_AGGRESSORS | FLAG_INCLUDE_STATIONS);
-		int iMaxTargets = 10;
-		m_pShip->GetNearestVisibleEnemies(iMaxTargets,
+		DWORD dwFlags = CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS;
+		if (pDevice && pDevice->CanTargetMissiles())
+			dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
+
+		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
 				MAX_AUTO_TARGET_DISTANCE,
 				&TargetingCtx.Targets,
 				pMainTarget,
@@ -671,7 +672,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 	//	Now find a target for the given weapon.
 
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
 		{
 		int iFireAngle;
 		if (pWeapon->IsWeaponAligned(m_pShip, pDevice, TargetingCtx.Targets[i], NULL, &iFireAngle))
@@ -745,6 +746,13 @@ void CPlayerShipController::Init (CTranscendenceWnd *pTrans)
 
 	m_bDockPortIndicators = (strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_ENABLED)
 			|| strEquals(pTrans->GetSettings().GetString(CGameSettings::dockPortIndicator), SETTING_TRUE));
+
+	//	If we saved while docked, we undock ourselves. This can happen if we 
+	//	call (gamSave) from inside a dock screen. But since we don't save our
+	//	dock state, we need to undock when we come back.
+
+	if (m_pStation)
+		Undock();
 	}
 
 void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdate)
@@ -795,7 +803,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 			//	we're looking for friendly targets
 
 			int iMainKey = -1;
-			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanAttack()))
+			if ((iTargetType == targetEnemies) == (m_pShip->IsAngryAt(pObj) && pObj->CanBeAttacked()))
 				{
 				if (iTargetType == targetEnemies)
 					{
@@ -804,7 +812,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 					}
 				else
 					{
-					if (pObj->CanAttack() || pObj->SupportsDockingFast())
+					if (pObj->CanBeAttacked() || pObj->SupportsDockingFast())
 						{
 						if (pObj->GetScale() == scaleShip || pObj->GetScale() == scaleStructure)
 							iMainKey = 0;
@@ -902,7 +910,7 @@ void CPlayerShipController::InsuranceClaim (void)
 	DEBUG_CATCH
 	}
 
-bool CPlayerShipController::IsAngryAt (CSpaceObject *pObj) const
+bool CPlayerShipController::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -2086,25 +2094,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	//	Remember the AutoTarget. NOTE: We need to check again to see if the
-	//	target is destroyed because it could have gotten destroyed after it
-	//	was picked.
+	//	Remember the AutoTarget.
 
-	if (Ctx.pTargetObj && !Ctx.pTargetObj->IsDestroyed())
-		{
-		m_pAutoTarget = Ctx.pTargetObj;
-		if (Ctx.bNeedsAutoTarget)
-			m_bShowAutoTarget = true;
-		else
-			m_bShowAutoTarget = false;
-		}
-	else
-		{
-		m_pAutoTarget = NULL;
-		m_bShowAutoTarget = false;
-		}
-
-	m_bTargetOutOfRange = Ctx.bPlayerTargetOutOfRange;
+	m_pAutoTarget = const_cast<CSpaceObject *>(Ctx.AutoTarget.GetAutoTarget());
+	m_bShowAutoTarget = Ctx.AutoTarget.IsAutoTargetNeeded();
+	m_bTargetOutOfRange = Ctx.AutoTarget.IsPlayerTargetOutOfRange();
 
 	//	Compute the AutoDock target.
 	//
@@ -2133,17 +2127,11 @@ void CPlayerShipController::OnUpdatePlayer (SUpdateCtx &Ctx)
 
 	//	Otherwise, if we are close to a port then we use that.
 
-	else if (Ctx.pDockingObj && !Ctx.pDockingObj->IsDestroyed())
+	else if (m_pAutoDock = const_cast<CSpaceObject *>(Ctx.AutoDock.GetDockObj()))
 		{
-		m_pAutoDock = Ctx.pDockingObj;
-		m_iAutoDockPort = Ctx.iDockingPort;
-		m_vAutoDockPort = Ctx.vDockingPort;
+		m_iAutoDockPort = Ctx.AutoDock.GetDockingPortIndex();
+		m_vAutoDockPort = Ctx.AutoDock.GetDockingPortPos();
 		}
-
-	//	Otherwise, nothing to dock with
-
-	else
-		m_pAutoDock = NULL;
 
 	//	Notify the game controller when we transition in/out of combat.
 	//
@@ -2604,7 +2592,7 @@ void CPlayerShipController::SelectNextFriendly (int iDir)
 	//	If a friendly is already selected, then cycle
 	//	to the next friendly.
 
-	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack()))
+	if (m_pTarget && !(m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked()))
 		{
 		InitTargetList(targetFriendlies, true);
 
@@ -2672,7 +2660,7 @@ void CPlayerShipController::SelectNextTarget (int iDir)
 	//	If an enemy target is already selected, then cycle
 	//	to the next enemy.
 
-	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanAttack())
+	if (m_pTarget && m_pShip->IsAngryAt(m_pTarget) && m_pTarget->CanBeAttacked())
 		{
 		InitTargetList(targetEnemies, true);
 
@@ -2857,6 +2845,11 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 	pNewShip->TrackFuel();
 	pNewShip->TrackMass();
+
+	//	Transfer event registrations
+
+	pNewShip->AddEventSubscribers(pOldShip->GetEventSubscribers());
+	pOldShip->RemoveAllEventSubscribers();
 
 	//	Reset all other settings
 

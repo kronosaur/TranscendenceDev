@@ -22,7 +22,6 @@
 			regen=				"8"
 			shipRegen=			"4"
 			
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion4;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -146,12 +145,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 			
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnTrafficControl>
 				(comTrafficControl gSource 20)
 			</OnTrafficControl>
@@ -178,7 +171,6 @@
 			regen=				"15"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -305,12 +297,6 @@
 			<OnCreate>
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<OnTrafficControl>
 				(comTrafficControl gSource 20)

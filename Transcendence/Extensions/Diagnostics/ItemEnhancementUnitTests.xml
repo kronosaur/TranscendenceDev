@@ -586,6 +586,84 @@
 						{	test:'(enum (objGetItems gPlayerShip "dU") theItem 
 									(objRemoveItem gPlayerShip theItem)
 									)												result:'ignore	}
+
+						;	Visual Enhancement ROM -------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itEnhanceSRSROM; 1)
+									)												result:'ignore	}
+
+						{	test:'(objFireItemInvoke gPlayerShip 
+									(itmCreate &itEnhanceSRSROM; 1)
+									)												result:True	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'SRSEnhancer
+									)												result:'ready	}
+
+						{	test:'(objChangeEquipmentStatus gPlayerShip 
+									'SRS 'damage
+									)												result:True	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'SRS
+									)												result:'damaged	}
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itEnhanceSRSROM; 1)
+									)												result:'ignore	}
+
+						{	test:'(objFireItemInvoke gPlayerShip 
+									(itmCreate &itEnhanceSRSROM; 1)
+									)												result:True	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'SRS
+									)												result:'ready	}
+
+						;	Targeting ROM ----------------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itTargetingComputerROM; 1)
+									)												result:'ignore	}
+
+						{	test:'(objFireItemInvoke gPlayerShip 
+									(itmCreate &itTargetingComputerROM; 1)
+									)												result:True	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'targetingComputer
+									)												result:'ready	}
+
+						;	Trading Computer -------------------------------------------------------
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itCargoHoldExpansion; 1)
+									)												result:'ignore	}
+
+						{	test:'(shpInstallDevice gPlayerShip 
+									(itmCreate &itCargoHoldExpansion; 1)
+									)												result:'ignore	}
+
+						{	test:'(objAddItem gPlayerShip 
+									(itmCreate &itTradingComputerROM; 1)
+									)												result:'ignore	}
+
+						{	test:'(objFireItemInvoke gPlayerShip 
+									(itmCreate &itTradingComputerROM; 1)
+									)												result:True	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'tradingComputer
+									)												result:'ready	}
+
+						{	test:'(shpRemoveDevice gPlayerShip 
+									(@ (objGetItems gPlayerShip "cI") 0)
+									)												result:'ignore	}
+
+						{	test:'(objGetEquipmentStatus gPlayerShip 
+									'tradingComputer
+									)												result:'ready	}
 						))
 
 					;	Armor paste iterations

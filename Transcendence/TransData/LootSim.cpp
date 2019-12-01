@@ -156,7 +156,7 @@ void GenerateLootSim (CUniverse &Universe, CXMLElement *pCmdLine)
 
 			//	Create a table of all items
 
-			CSpaceObjectCriteria::SCtx Ctx(Criteria);
+			CSpaceObjectCriteria::SCtx Ctx(NULL, Criteria);
 			for (j = 0; j < pSystem->GetObjectCount(); j++)
 				{
 				CSpaceObject *pObj = pSystem->GetObject(j);

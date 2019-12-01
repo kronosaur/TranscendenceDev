@@ -7,6 +7,8 @@
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
+const CSpaceObjectCriteria CSpaceObjectCriteria::m_Null;
+
 CSpaceObjectCriteria::CSpaceObjectCriteria (const CString &sCriteria)
 
 //	CSpaceObjectCriteria constructor
@@ -15,12 +17,34 @@ CSpaceObjectCriteria::CSpaceObjectCriteria (const CString &sCriteria)
 	Parse(NULL, sCriteria);
 	}
 
-CSpaceObjectCriteria::CSpaceObjectCriteria (CSpaceObject *pSourceArg, const CString &sCriteria)
+CSpaceObjectCriteria::CriteriaSortTypes CSpaceObjectCriteria::GetSort (void) const
 
-//	CSpaceObjectCriteria constructor
+//	GetSort
+//
+//	Returns the desired sort.
 
 	{
-	Parse(pSourceArg, sCriteria);
+	if (m_iSort != sortNone)
+		return m_iSort;
+	else if (m_pOr)
+		return m_pOr->GetSort();
+	else
+		return sortNone;
+	}
+
+ESortOptions CSpaceObjectCriteria::GetSortOrder (void) const
+
+//	GetSortOrder
+//
+//	Returns the sort order
+
+	{
+	if (m_iSort != sortNone)
+		return m_iSortOrder;
+	else if (m_pOr)
+		return m_pOr->GetSortOrder();
+	else
+		return AscendingSort;
 	}
 
 bool CSpaceObjectCriteria::MatchesAttributes (const CSpaceObject &Obj) const
@@ -239,16 +263,21 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 //		=n			Level comparisons
 
 	{
+	const char *pPos = sCriteria.GetPointer();
+	ParseSubExpression(pPos);
+	}
+
+void CSpaceObjectCriteria::ParseSubExpression (const char *pPos)
+
+//	ParseSubExpression
+//
+//	Parses a sub-expression and returns the first character after the sub-
+//	expression.
+
+	{
 	CString sParam;
 
-	//	Initialize
-
-	m_pSource = pSource;
-
-	//	Parse
-
-	const char *pPos = sCriteria.GetPointer();
-	while (*pPos != '\0')
+	while (*pPos != '\0' && *pPos != '|')
 		{
 		switch (*pPos)
 			{
@@ -305,7 +334,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 				else
 					{
 					m_bSourceSovereignOnly = true;
-					m_dwSovereignUNID = (pSource && pSource->GetSovereign() ? pSource->GetSovereign()->GetUNID() : 0);
+					m_dwSovereignUNID = 0;
 					}
 				break;
 
@@ -370,6 +399,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 					{
 					m_bNearerThan = true;
 					m_rMaxRadius = LIGHT_SECOND * strToInt(sParam, 0, NULL);
+					m_rMaxRadius2 = m_rMaxRadius * m_rMaxRadius;
 					}
 				break;
 
@@ -389,7 +419,6 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 
 			case 'P':
 				m_bPerceivableOnly = true;
-				m_iPerception = (pSource ? pSource->GetPerception() : 0);
 				break;
 
 			case 'R':
@@ -400,6 +429,7 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 					{
 					m_bFartherThan = true;
 					m_rMinRadius = LIGHT_SECOND * strToInt(sParam, 0, NULL);
+					m_rMinRadius2 = m_rMinRadius * m_rMinRadius;
 					}
 				break;
 
@@ -542,46 +572,47 @@ void CSpaceObjectCriteria::Parse (CSpaceObject *pSource, const CString &sCriteri
 
 		pPos++;
 		}
-	}
 
-void CSpaceObjectCriteria::SetSource (CSpaceObject *pSource)
+	//	If we have a sub-expression, recurse
 
-//	SetSource
-//
-//	Sets the source.
+	if (*pPos == '|')
+		{
+		pPos++;
 
-	{
-	ASSERT(pSource);
-
-	m_pSource = pSource;
-
-	if (m_bSourceSovereignOnly)
-		m_dwSovereignUNID = (pSource->GetSovereign() ? pSource->GetSovereign()->GetUNID() : 0);
-
-	if (m_bPerceivableOnly)
-		m_iPerception = pSource->GetPerception();
+		m_pOr.Set(new CSpaceObjectCriteria);
+		m_pOr->ParseSubExpression(pPos);
+		}
 	}
 
 //	SCtx -----------------------------------------------------------------------
 
-CSpaceObjectCriteria::SCtx::SCtx (const CSpaceObjectCriteria &Crit) :
+CSpaceObjectCriteria::SCtx::SCtx (CSpaceObject *pSourceArg, const CSpaceObjectCriteria &Crit) :
 		DistSort(Crit.GetSortOrder())
 
 //	SCriteriaMatchCtx constructor
 
 	{
+	pSource = pSourceArg;
+
+	if (Crit.NeedsSourcePerception())
+		iSourcePerception = (pSource ? pSource->GetPerception() : 0);
+	else
+		iSourcePerception = 0;
+
+	if (Crit.NeedsSourceSovereign())
+		dwSourceSovereignUNID = (pSource ? pSource->GetSovereignUNID() : 0);
+	else
+		dwSourceSovereignUNID = 0;
+
 	pBestObj = NULL;
-	rBestDist2 = (Crit.MatchesNearestOnly() ? g_InfiniteDistance * g_InfiniteDistance : 0.0);
+	iSort = Crit.GetSort();
+	bNearestOnly = Crit.MatchesNearestOnly();
+	bFarthestOnly = Crit.MatchesFarthestOnly();
+	rBestDist2 = (bNearestOnly ? g_InfiniteDistance * g_InfiniteDistance : 0.0);
 
-	bCalcPolar = (Crit.MatchesIntersectAngle() != -1);
+	bCalcPolar = Crit.NeedsPolarCalc();
 	bCalcDist2 = (!bCalcPolar 
-			&& (Crit.MatchesNearestOnly() 
-				|| Crit.MatchesFarthestOnly() 
-				|| Crit.MatchesNearerThan() 
-				|| Crit.MatchesFartherThan() 
-				|| Crit.MatchesPerceivableOnly()
-				|| Crit.GetSort() == CSpaceObjectCriteria::sortByDistance));
-
-	rMinRadius2 = Crit.MatchesMinRadius() * Crit.MatchesMinRadius();
-	rMaxRadius2 = Crit.MatchesMaxRadius() * Crit.MatchesMaxRadius();
+			&& (bNearestOnly 
+				|| bFarthestOnly 
+				|| Crit.NeedsDistCalc()));
 	}

@@ -129,7 +129,6 @@
 			name=				"outlaw camp"
 			sovereign=			"&svOutlaw;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itUltraLightTitaniumArmor;"
@@ -209,7 +208,6 @@
 			name=				"outlaw base"
 			sovereign=			"&svOutlaw;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itCeramicPlate;"
@@ -282,7 +280,6 @@
 			name=				"outlaw haven"
 			sovereign=			"&svOutlaw;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itHeavyCeramicPlate;"

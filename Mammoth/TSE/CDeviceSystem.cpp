@@ -632,6 +632,33 @@ bool CDeviceSystem::IsSlotAvailable (ItemCategories iItemCat, int *retiSlot) con
 		}
 	}
 
+bool CDeviceSystem::IsWeaponRepeating (DeviceNames iDev) const
+
+//	IsWeaponRepeating
+//
+//	Returns TRUE if the given weapon is repeating. If iDev == devNone, then we
+//	return TRUE if any weapon is currently repeating.
+
+	{
+	if (iDev == devNone)
+		{
+		for (int i = 0; i < m_Devices.GetCount(); i++)
+			if (!m_Devices[i].IsEmpty() 
+					&& (m_Devices[i].GetCategory() == itemcatWeapon || m_Devices[i].GetCategory() == itemcatLauncher))
+				{
+				if (m_Devices[i].GetContinuousFire() != 0)
+					return true;
+				}
+
+		return false;
+		}
+	else if (const CInstalledDevice *pDevice = GetNamedDevice(iDev))
+		return (pDevice->GetContinuousFire() != 0);
+
+	else
+		return false;
+	}
+
 void CDeviceSystem::MarkImages (void)
 
 //	MarkImages

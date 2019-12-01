@@ -266,6 +266,7 @@
 							currencyUsed: currencyUsed
 							installerObj: gSource
 							itemInCargo: True
+							showActualItem: (scrGetProperty gScreen 'rpg.showActualItem)
 							}))
 						
 						(tradeData (rpgItemTradeComputer thisItem rawCost currencyUsed))

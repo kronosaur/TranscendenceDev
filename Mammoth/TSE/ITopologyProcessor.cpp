@@ -162,7 +162,7 @@ ALERROR ITopologyProcessor::InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 	CString sCriteria;
 	if (pDesc->FindAttribute(CRITERIA_ATTRIB, &sCriteria))
 		{
-		if (CTopologyNode::ParseAttributeCriteria(sCriteria, &m_Criteria.AttribCriteria) != NOERROR)
+		if (m_Criteria.AttribCriteria.Init(sCriteria) != NOERROR)
 			{
 			Ctx.sError = CONSTLIT("Invalid criteria syntax.");
 			return ERR_FAIL;

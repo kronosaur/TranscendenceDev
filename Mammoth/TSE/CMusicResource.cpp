@@ -139,7 +139,7 @@ ALERROR CMusicResource::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc
 
 	m_iPriority = pDesc->GetAttributeIntegerBounded(PRIORITY_ATTRIB, 0, -1, 0);
 
-	if (error = m_LocationCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), 0, &Ctx.sError))
+	if (error = m_LocationCriteria.Parse(pDesc->GetAttribute(LOCATION_CRITERIA_ATTRIB), &Ctx.sError))
 		return ComposeLoadError(Ctx, Ctx.sError);
 
 	//	Load any segments

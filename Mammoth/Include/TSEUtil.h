@@ -5,21 +5,18 @@
 
 #pragma once
 
+#include <functional>
+
 class CDesignType;
-class CEconomyType;
-class CItemCtx;
+class CItemCriteria;
 class CItemEnhancementStack;
 class CExtension;
-class CLocationDef;
-class COrbit;
 class CTopology;
 class CTopologyNode;
-struct CItemCriteria;
 struct SDesignLoadCtx;
-struct SDamageCtx;
 struct SDestroyCtx;
-struct SSystemCreateCtx;
 struct SSpaceObjectGridEnumerator;
+struct SUpdateCtx;
 
 //	Utility inlines
 
@@ -67,6 +64,7 @@ inline int AngleBearing (int iDir, int iTarget)
 	else
 		return iBearing;
 	}
+inline int Seconds2Ticks (Metric rSeconds) { return mathRound(rSeconds / g_SecondsPerUpdate); }
 inline Metric Ticks2Seconds (int iTicks) { return (Metric)iTicks * g_SecondsPerUpdate; }
 
 //	Debugging Support
@@ -289,55 +287,6 @@ struct SViewportAnnotations
 #endif
 	};
 
-struct SUpdateCtx
-	{
-	public:
-		int GetLightIntensity (CSpaceObject *pObj) const;
-		bool IsTimeStopped (void) const { return m_bTimeStopped; }
-		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
-
-		CSystem *pSystem = NULL;					//	Current system
-		CSpaceObject *pPlayer = NULL;				//	The player
-		TArray<CSpaceObject *> PlayerObjs;			//	List of player objects, if pPlayer == NULL
-		SViewportAnnotations *pAnnotations = NULL;	//	Extra structure to deliver to PaintViewport
-
-		//	Used to compute nearest docking port to player
-
-		CSpaceObject *pDockingObj = NULL;			//	If non-null, nearest object to dock with
-		int iDockingPort = -1;						//	Nearest docking port
-		CVector vDockingPort;						//	Position of docking port (absolute)
-		Metric rDockingPortDist2 = 0.0;				//	Distance from player to docking port
-
-		//	Used to compute player's auto target
-
-		bool bNeedsAutoTarget = false;				//	TRUE if player's weapon needs an autotarget
-		bool bPlayerTargetOutOfRange = false;		//	TRUE if player's current target is unreachable
-		int iPlayerPerception = 0;					//	Player's perception
-
-		CSpaceObject *pPlayerTarget = NULL;			//	Current player target (may be NULL)
-		CSpaceObject *pTargetObj = NULL;			//	If non-null, nearest possible target for player
-		Metric rTargetDist2 = g_InfiniteDistance2;	//	Distance from player to target
-		int iMinFireArc = 0;						//	Fire arc of primary weapon
-		int iMaxFireArc = 0;
-
-		//	Misc flags
-
-		bool bGravityWarning = false;				//	Player in a dangerous gravity field
-		bool bHasShipBarriers = false;				//	TRUE if the system has ship barriers (e.g., Arena)
-		bool bHasGravity = false;					//	TRUE if the system has gravity
-
-	private:
-
-		//	About the object being updated
-
-		bool m_bTimeStopped = false;				//	Object is currently time-stopped (cached for perf).
-
-		//	Cached computed values
-
-		mutable CSpaceObject *m_pCacheObj = NULL;	//	Cached values apply to this object.
-		mutable int m_iLightIntensity = -1;			//	Light intensity at pCacheObj (-1 if not computed).
-	};
-
 //	Utility classes
 
 class CIDCounter
@@ -350,40 +299,30 @@ class CIDCounter
 		DWORD m_dwNextID;
 	};
 
-class CAttributeCriteria
+class CAffinityCriteria
 	{
 	public:
+		CAffinityCriteria (void) { }
+
+		CString AsString (void) const;
+		int CalcWeight (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib = NULL, std::function<int(const CString &)> fnGetFreq = NULL) const;
+		bool Matches (std::function<bool(const CString &)> fnHasAttrib, std::function<bool(const CString &)> fnHasSpecialAttrib = NULL) const;
+		bool MatchesAll (void) const { return (GetCount() == 0); }
+		bool MatchesDefault (void) const { return ((m_dwFlags & flagDefault) ? true : false); }
+		ALERROR Parse (const CString &sCriteria, CString *retsError = NULL);
+
+	private:
+		enum EFlags
+			{
+			flagDefault =					0x00000001,
+			};
+
 		enum EMatchStrength
 			{
 			matchRequired =					0x00010000,
 			matchExcluded =					0x00020000,
 			};
 
-		enum EFlags
-			{
-			flagDefault =					0x00000001,
-			};
-
-		CAttributeCriteria (void) :
-				m_dwFlags(0)
-			{ }
-
-		int AdjLocationWeight (CSystem *pSystem, CLocationDef *pLoc, int iOriginalWeight = 1000) const;
-		int AdjStationWeight (CStationType *pType, int iOriginalWeight = 1000) const;
-		int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos) const;
-		int CalcNodeWeight (CTopologyNode *pNode) const;
-		int GetCount (void) const { return m_Attribs.GetCount(); }
-		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired) const;
-		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
-		bool MatchesAll (void) const { return (GetCount() == 0); }
-		bool MatchesDefault (void) const { return (m_dwFlags & flagDefault); }
-		ALERROR Parse (const CString &sCriteria, DWORD dwFlags = 0, CString *retsError = NULL);
-
-		static int CalcLocationWeight (CSystem *pSystem, const CString &sLocationAttribs, const CVector &vPos, const CString &sAttrib, DWORD dwMatchStrength);
-		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq = -1);
-		static void WriteAsString (IWriteStream &Stream, const TArray<CString> &Attribs, const CString &sPrefix);
-
-	private:
 		enum MatchStrengthEncoding
 			{
 			CODE_MASK =						0xFFFF0000,
@@ -410,15 +349,25 @@ class CAttributeCriteria
 		struct SEntry
 			{
 			CString sAttrib;
-			DWORD dwMatchStrength;
-			bool bIsSpecial;
+			DWORD dwMatchStrength = 0;
+			bool bIsSpecial = false;
 			};
 
+		const CString &GetAttribAndRequired (int iIndex, bool *retbRequired, bool *retbIsSpecial = NULL) const;
+		const CString &GetAttribAndWeight (int iIndex, DWORD *retdwMatchStrength, bool *retbIsSpecial = NULL) const;
+		int GetCount (void) const { return m_Attribs.GetCount(); }
+		static bool IsCustomAttribOperator (const char *pPos);
+		ALERROR ParseSubExpression (const char *pPos, CString *retsError = NULL);
+		void WriteSubExpression (CMemoryWriteStream &Stream) const;
+
+		static int CalcWeightAdj (bool bHasAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdjCustom (bool bHasAttrib, DWORD dwMatchStrength);
 		static int CalcWeightAdjWithAttribFreq (bool bHasAttrib, DWORD dwMatchStrength, int iAttribFreq);
 
 		TArray<SEntry> m_Attribs;
-		DWORD m_dwFlags;
+		DWORD m_dwFlags = 0;
+
+		TUniquePtr<CAffinityCriteria> m_pOr;
 	};
 
 class CIntegerRangeCriteria
@@ -436,7 +385,6 @@ class CIntegerRangeCriteria
 		int m_iEqualToValue = -1;				//	If not -1, match only this value
 		int m_iGreaterThanValue = -1;			//	If not -1, match only greater than this value
 		int m_iLessThanValue = -1;				//	If not -1, match only less than this value
-		
 	};
 
 class DiceRange
@@ -713,7 +661,7 @@ class CDamageAdjDesc
 		ALERROR InitFromArray (int *pTable);
 		ALERROR InitFromDamageAdj (SDesignLoadCtx &Ctx, const CString &sAttrib, bool bNoDefault);
 		ALERROR InitFromHPBonus (SDesignLoadCtx &Ctx, const CString &sAttrib);
-		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, bool bIsDefault = false);
+		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement &XMLDesc, bool bIsDefault = false);
 		bool IsEmpty (void) const;
 
 		static int GetBonusFromAdj (int iDamageAdj, int iDefault = 100);
@@ -877,7 +825,7 @@ class CSpaceObjectList
 		void DeleteAll (void) { m_List.DeleteAll(); }
 		void FastAdd (CSpaceObject *pObj, int *retiIndex = NULL) { if (retiIndex) *retiIndex = m_List.GetCount(); m_List.Insert(pObj); }
 		void FastAdd (const CSpaceObjectList &List);
-		bool FindObj (CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(pObj, retiIndex); }
+		bool FindObj (const CSpaceObject *pObj, int *retiIndex = NULL) const { return m_List.Find(const_cast<CSpaceObject *>(pObj), retiIndex); }
 		int GetCount (void) const { return m_List.GetCount(); }
 		CSpaceObject *GetObj (int iIndex) const { return m_List[iIndex]; }
 		CSpaceObject *GetRandomObj (void) const { return (m_List.GetCount() == 0 ? NULL : m_List[mathRandom(0, m_List.GetCount() - 1)]); }

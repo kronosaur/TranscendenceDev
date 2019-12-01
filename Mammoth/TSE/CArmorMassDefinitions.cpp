@@ -124,7 +124,7 @@ Metric CArmorMassDefinitions::GetFrequencyMax (const CString &sID) const
 //	are either ultraLight, light, medium, or heavy.
 //
 //	NOTE: This call is only valid after all armor types have been bound. You may
-//	call this from FinishBindDesign or later.
+//	call this after BindDesign
 
 	{
 	//	Find the armor class by ID

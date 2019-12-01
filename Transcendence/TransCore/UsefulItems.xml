@@ -401,40 +401,30 @@
 
 	<ItemType UNID="&itAutopilotROM;"
 			name=				"autopilot ROM"
+			attributes=			"info, minorItem, shipEquipment"
+			inherit=			"&baStdEquipmentItem;"
+
 			level=				"1"
+			frequency=			"uncommon"
+
 			value=				"50"
 			mass=				"1"
-			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"This program allows the ship's captain to rest while the ship maintains a steady course."
 			>
 
+		<Properties>
+			<Constant id="rpg.equipment">'autopilot</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block Nil
-				; Install
-				(if (not (eq (objGetEquipmentStatus gSource 'Autopilot) 'notInstalled))
-					(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
-					(block Nil
-						(objChangeEquipmentStatus gSource 'Autopilot 'install)
-						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
-						)
-					)
-
-				; Identify the item
-				(itmSetKnown gItem)
-
-				; Remove ROM
-				(objRemoveItem gSource gItem 1)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgResult">Autopilot installed</Text>
-			<Text id="msgNoEffect">Ship already has an autopilot</Text>
+			<Text id="rpg.equipmentInstalled">Autopilot installed</Text>
+			<Text id="rpg.equipmentNoEffect">Ship already has an autopilot</Text>
+			<Text id="rpg.equipmentRedundant">Installed redundant autopilot</Text>
+			<Text id="rpg.equipmentRepaired">Autopilot repaired</Text>
 		</Language>
 	</ItemType>
 
@@ -569,48 +559,31 @@
 
 	<ItemType UNID="&itEnhanceSRSROM;"
 			name=				"visual display enhancement ROM"
+			attributes=			"info, minorItem, shipEquipment"
+			inherit=			"&baStdEquipmentItem;"
+
 			level=				"2"
+			frequency=			"common"
+
 			value=				"150"
 			mass=				"1"
-			frequency=			"common"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"This ROM enhances a ship's visual display to show the bearing of ships and stations beyond normal visual range."
 			>
 
+		<Properties>
+			<Constant id="rpg.equipment">'srsEnhancer</Constant>
+			<Constant id="rpg.alternateEquipment">'srs</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block Nil
-				(switch
-					(eq (objGetEquipmentStatus gSource 'SRS) 'damaged)
-						(block Nil
-							(objChangeEquipmentStatus gSource 'SRS 'repair 'noMessage)
-							(objSendMessage gSource Nil (typTranslate gType 'msgRepaired))
-							)
-
-					(eq (objGetEquipmentStatus gSource 'SRSEnhancer) 'ready)
-						(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
-
-					(block Nil
-						(objChangeEquipmentStatus gSource 'SRSEnhancer 'install)
-						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
-						)
-					)
-
-				; Identify the item
-				(itmSetKnown gItem)
-
-				; Remove ROM
-				(objRemoveItem gSource gItem 1)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgResult">Visual display enhanced</Text>
-			<Text id="msgRepaired">Visual display repaired</Text>
-			<Text id="msgNoEffect">Visual display already enhanced</Text>
+			<Text id="rpg.equipmentInstalled">Visual display enhanced</Text>
+			<Text id="rpg.equipmentNoEffect">Visual display already enhanced</Text>
+			<Text id="rpg.equipmentRedundant">Visual display already enhanced</Text>
+			<Text id="rpg.equipmentRepaired">Visual display repaired</Text>
 		</Language>
 	</ItemType>
 
@@ -776,39 +749,30 @@
 
 	<ItemType UNID="&itTargetingComputerROM;"
 			name=				"targeting program ROM"
+			attributes=			"info, minorItem, shipEquipment"
+			inherit=			"&baStdEquipmentItem;"
+
 			level=				"3"
+			frequency=			"uncommon"
+
 			value=				"300"
 			mass=				"1"
-			frequency=			"uncommon"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"A targeting program is required to aim guided missiles such as the KM500 Stiletto."
 			>
 
+		<Properties>
+			<Constant id="rpg.equipment">'targetingComputer</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block Nil
-				(if (eq (objGetEquipmentStatus gPlayerShip 'TargetingComputer) 'ready)
-					(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
-					(block Nil
-						(objChangeEquipmentStatus gPlayerShip 'TargetingComputer 'install)
-						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
-						)
-					)
-
-				; Identify the item
-				(itmSetKnown gItem)
-
-				; Remove ROM
-				(objRemoveItem gSource gItem 1)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgResult">Targeting program installed</Text>
-			<Text id="msgNoEffect">Ship already has a targeting program</Text>
+			<Text id="rpg.equipmentInstalled">Targeting program installed</Text>
+			<Text id="rpg.equipmentNoEffect">Ship already has a targeting program</Text>
+			<Text id="rpg.equipmentRedundant">Installed redundant targeting system</Text>
+			<Text id="rpg.equipmentRepaired">Targeting system repaired</Text>
 		</Language>
 	</ItemType>
 
@@ -816,56 +780,30 @@
 
 	<ItemType UNID="&itTradingComputerROM;"
 			name=				"trading computer ROM"
+			attributes=			"info, minorItem, shipEquipment"
+			inherit=			"&baStdEquipmentItem;"
+
 			level=				"2"
+			frequency=			"rare"
+
 			value=				"300"
 			mass=				"1"
-			frequency=			"rare"
 			unknownType=		"&itUnknownROM;, &itUnknownROMB;, &itUnknownROMC;"
-			attributes=			"info, minorItem, shipEquipment"
 
 			description=		"A trading computer tracks prices for known stations and suggests the best place to sell commodities."
 			>
 
+		<Properties>
+			<Constant id="rpg.equipment">'tradingComputer</Constant>
+		</Properties>
+
 		<Image imageID="&rsItems1;" imageX="192" imageY="96" imageWidth="96" imageHeight="96"/>
 
-		<Invoke>
-			(block (
-				(hasTradingComputer (= (objGetEquipmentStatus gPlayerShip 'TradingComputer) 'ready))
-				)
-				;	Handle each of the cases
-
-				(switch
-					;	Try to install the trading computer. If it fails, then it means
-					;	that we already have a trading computer installed on the ship.
-
-					(not (objChangeEquipmentStatus gPlayerShip 'TradingComputer 'install))
-						(objSendMessage gSource Nil (typTranslate gType 'msgNoEffect))
-						
-					;	If we didn't have a trading computer before, and installation
-					;	succeeds, then we've succeeded.
-
-					(not hasTradingComputer)
-						(objSendMessage gSource Nil (typTranslate gType 'msgResult))
-
-					;	If we DID have a trading computer before and installation succeeded
-					;	anyway, then it means we have a trading computer on some device
-					;	(e.g., a cargo hold) and now we have a redundant one installed on
-					;	the ship.
-
-					(objSendMessage gSource Nil (typTranslate gType 'msgRedundant))
-					)
-
-				;	Identify and remove
-
-				(itmSetKnown gItem)
-				(objRemoveItem gSource gItem 1)
-				)
-		</Invoke>
-
 		<Language>
-			<Text id="msgResult">Trading computer installed</Text>
-			<Text id="msgNoEffect">Ship already has a trading computer</Text>
-			<Text id="msgRedundant">Redundant trading computer installed</Text>
+			<Text id="rpg.equipmentInstalled">Trading computer installed</Text>
+			<Text id="rpg.equipmentNoEffect">Ship already has a trading computer</Text>
+			<Text id="rpg.equipmentRedundant">Redundant trading computer installed</Text>
+			<Text id="rpg.equipmentRepaired">Trading computer repaired</Text>
 		</Language>
 	</ItemType>
 

@@ -30,7 +30,6 @@
 			regen=				"1"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 
@@ -150,7 +149,6 @@
 			regen=				"1"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtKineticExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -266,7 +264,6 @@
 			regen=				"2"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -378,7 +375,6 @@
 			regen=				"2"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -507,7 +503,6 @@
 			regen=				"2"
 			multiHull=			"true"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtStoneAsteroidEjecta;"
 			>
@@ -638,7 +633,6 @@
 			structuralHitPoints="25"
 			fireRateAdj=		"20"
 				 
-			canAttack=			"true"
 			ejectaType=			"&vtWreckEjecta;"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"

@@ -178,7 +178,6 @@
 			regen=              "6"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -322,12 +321,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 			
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -335,11 +328,13 @@
 		
 		<Language>
 			<Text id="descWelcome">
+
 				You are in the docking bay of a Commonwealth colony. Except for a few shuttles,
 				the docking bay of this station is deserted. A loose hose spills dirty
 				water onto the landing pad; elsewhere, an automatic load-lifter moves forward
 				and back again as it unloads a ship's cargo hold. The air smells of liquid fuel
 				and exhaust.
+
 			</Text>
 		</Language>
 	</StationType>
@@ -355,7 +350,6 @@
 			dockScreen=			"Main"
 			noMapLabel=			"true"
 			noFriendlyFire=		"true"
-			canAttack=			"true"
 
 			mass=				"2000"
 			armorID=			"&itP120HexphaseArmor;"
@@ -424,7 +418,6 @@
 			regen=              "10"
 			shipRegen=			"6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -585,12 +578,6 @@
 				(sysAddObjRecurringTimerEvent 150 gSource "OnTrafficControl")
 			</OnCreate>
 
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnTrafficControl>
 				(comTrafficControl gSource 10)
 			</OnTrafficControl>
@@ -627,7 +614,6 @@
 			regen=              "8"
 			shipRegen=			"8"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -758,14 +744,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">Your ship is in dry dock.</Text>
 		</Language>
@@ -792,7 +770,6 @@
 			regen=              "4"
 			shipRegen=			"1"
 				 
-			canAttack=			"true"
 			fireRateAdj=		"80"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
@@ -902,14 +879,6 @@
 		
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="descWelcome">
 				You are in the docking bay of %objName%. Medical professionals
@@ -940,7 +909,6 @@
 			multiHull=			"true"
 			regen=              "6"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -990,14 +958,6 @@
 
 		<!-- Events and Data -->
 		
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">
 				Welcome to Commonwealth Residentials.
@@ -1021,7 +981,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"3"
 			multiHull=			"true"
@@ -1064,12 +1023,6 @@
 			<GetGlobalAchievements>
 				(rpgMissionAchievements &stCommonwealthSlums; "* +commonwealthHabitat;")
 			</GetGlobalAchievements>
-
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
 
 			<GetGlobalRumors>
 				(append
@@ -1244,7 +1197,6 @@
 				 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -1303,12 +1255,6 @@
 		</StaticData>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnObjDestroyed>
 				(if (eq aObjDestroyed (objGetObjRefData gSource "target"))
 					(block Nil
@@ -1477,7 +1423,6 @@
 			regen=              "20"
 			shipRegen=			"4"
 				 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			fireRateAdj=		"40"
@@ -1625,14 +1570,6 @@
 					)
 			</NPCService>
 		</StaticData>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateStandardRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<Language>
 			<Text id="descWelcome">

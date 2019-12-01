@@ -606,8 +606,8 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	//	NOTE: Selectable means that the weapon is not a secondary weapon
 	//	and not a linked-fire weapon. We specifically exclude "fire if selected"
 	//  linked-fire weapons, which normally count as "selectable", from this definition.
-	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
+	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
@@ -634,6 +634,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		//  but the primary weapon or launcher isn't both "fire if selected" AND of the same type, then don't fire.
 		//  If a weapon is "fire if selected and same variant", then it only fires if the primary weapon is of the
 		//  same variant and type.
+
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
@@ -670,7 +671,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution, pDevice->CanTargetMissiles());
+			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 
@@ -2563,7 +2564,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							//  If it is an ammo weapon, but does not require items, then it is a charges weapon. Add its ammo to the count.
 							{
 							int iAmmoLeft = 0;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, NULL, true);
 							iAmmoCount += iAmmoLeft;
 							}
 
@@ -2574,7 +2575,7 @@ int CShip::GetAmmoForSelectedLinkedFireWeapons (CInstalledDevice *pDevice)
 							bool ammoIsAdded = false;
 							int iAmmoLeft = 0;
 							CItemType *pAmmoType;
-							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType);
+							pCurrDeviceClass->GetSelectedVariantInfo(this, &currDevice, NULL, &iAmmoLeft, &pAmmoType, true);
 							AmmoItemTypes.Find(pAmmoType, &ammoIsAdded);
 							if (!ammoIsAdded)
 								{
@@ -3132,7 +3133,7 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		}
 	}
 
-int CShip::GetPerception (void)
+int CShip::GetPerception (void) const
 
 //	GetPerception
 //
@@ -3500,12 +3501,7 @@ int CShip::GetShieldLevel (void)
 	if (pShields == NULL)
 		return -1;
 
-	int iHP, iMaxHP;
-	pShields->GetStatus(this, &iHP, &iMaxHP);
-	if (iMaxHP == 0)
-		return -1;
-
-	return iHP * 100 / iMaxHP;
+	return pShields->GetHitPointsPercent(this);
 	}
 
 int CShip::GetStealth (void) const
@@ -4010,7 +4006,7 @@ void CShip::InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot
 	InvalidateItemListState();
 	}
 
-bool CShip::IsAngryAt (CSpaceObject *pObj) const
+bool CShip::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //
@@ -4427,6 +4423,8 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	DEBUG_TRY
 
 	int i;
+
+	GetUniverse().AdjustDamage(Ctx);
 
 	//	Short-circuit
 
@@ -6292,8 +6290,8 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 									{
 									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
 										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected && currDevice->GetCycleFireSettings()
-											&& currDevice != pDevice && currDevice->IsEnabled())
+										if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
+											&& currDevice != pDevice && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
 											{
 											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
 											if (currDevice->GetSlotLinkedFireOptions()

@@ -47,7 +47,6 @@
 			multiHull=			"true"
             regen=              "3.0"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>

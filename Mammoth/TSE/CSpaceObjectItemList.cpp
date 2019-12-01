@@ -63,7 +63,11 @@ ALERROR CSpaceObject::CreateRandomItems (IItemGenerator *pItems, CSystem *pSyste
 	{
 	DEBUG_TRY
 
-	if (pItems)
+	//	Out of plane objects don't get inventory; this handles the case of out
+	//	of plane asteroids getting ore.
+
+	if (pItems 
+			&& !IsOutOfPlaneObj())
 		{
 		//	Notify any dock screens that we might modify an item
 		//	Null item means preserve current selection.
@@ -276,7 +280,7 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		//	LATER: Eventually we will get rid of CItemCtx.
 
 		CItemCtx Ctx(&Item, const_cast<CSpaceObject *>(this));
-		return Item.GetItemProperty(CCCtx, Ctx, sName);
+		return Item.GetItemProperty(CCCtx, Ctx, sName, false);
 		}
 	}
 

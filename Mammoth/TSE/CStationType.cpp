@@ -36,7 +36,6 @@
 #define ALERT_WHEN_ATTACKED_ATTRIB				CONSTLIT("alertWhenAttacked")
 #define ALERT_WHEN_DESTROYED_ATTRIB				CONSTLIT("alertWhenDestroyed")
 #define ALLOW_ENEMY_DOCKING_ATTRIB				CONSTLIT("allowEnemyDocking")
-#define ARMOR_ID_ATTRIB							CONSTLIT("armorID")
 #define BACKGROUND_PLANE_ATTRIB					CONSTLIT("backgroundPlane")
 #define BARRIER_EFFECT_ATTRIB					CONSTLIT("barrierEffect")
 #define BEACON_ATTRIB							CONSTLIT("beacon")
@@ -62,6 +61,7 @@
 #define GATE_EFFECT_ATTRIB						CONSTLIT("gateEffect")
 #define GRAVITY_RADIUS_ATTRIB					CONSTLIT("gravityRadius")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
+#define IGNORE_FRIENDLY_FIRE_ATTRIB				CONSTLIT("ignoreFriendlyFire")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
 #define INACTIVE_ATTRIB							CONSTLIT("inactive")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -93,6 +93,7 @@
 #define SHIP_REGEN_ATTRIB						CONSTLIT("shipRegen")
 #define SHIP_REPAIR_RATE_ATTRIB					CONSTLIT("shipRepairRate")
 #define SHIPWRECK_UNID_ATTRIB					CONSTLIT("shipwreckID")
+#define SHOW_MAP_LABEL_ATTRIB					CONSTLIT("showMapLabel")
 #define SIGN_ATTRIB								CONSTLIT("sign")
 #define SIZE_ATTRIB								CONSTLIT("size")
 #define SOVEREIGN_ATTRIB						CONSTLIT("sovereign")
@@ -154,8 +155,12 @@
 #define FIELD_WEAPON_STRENGTH					CONSTLIT("weaponStrength")			//	Strength of weapons (100 = level weapon @ 1/4 fire rate).
 
 #define PROPERTY_AUTO_LEVEL_FREQUENCY			CONSTLIT("autoLevelFrequency")
+#define PROPERTY_ENCOUNTERED_BY_NODE			CONSTLIT("encounteredByNode")
+#define PROPERTY_ENCOUNTERED_TOTAL				CONSTLIT("encounteredTotal")
 #define PROPERTY_LEVEL_FREQUENCY				CONSTLIT("levelFrequency")
 #define PROPERTY_NAME							CONSTLIT("name")
+#define PROPERTY_PRIMARY_WEAPON					CONSTLIT("primaryWeapon")
+#define PROPERTY_PRIMARY_WEAPON_LEVEL			CONSTLIT("primaryWeaponLevel")
 #define PROPERTY_SHOWS_UNEXPLORED_ANNOTATION	CONSTLIT("showsUnexploredAnnotation")
 #define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
 #define PROPERTY_SOVEREIGN_NAME					CONSTLIT("sovereignName")
@@ -657,7 +662,10 @@ Metric CStationType::CalcTreasureValue (int iLevel) const
 	Metric rTotal = 0.0;
 
 	if (m_pItems)
-		rTotal += m_pItems->GetAverageValue(iLevel);
+		{
+		SItemAddCtx AddItemCtx(GetUniverse());
+		rTotal += m_pItems->GetAverageValue(AddItemCtx, iLevel);
+		}
 
 	if (m_pSatellitesDesc)
 		rTotal += CalcSatelliteTreasureValue(m_pSatellitesDesc, iLevel);
@@ -735,7 +743,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
     else if (strEquals(sField, FIELD_LEVEL))
         *retsValue = strFromInt(GetLevel());
     else if (strEquals(sField, FIELD_LOCATION_CRITERIA))
-        *retsValue = GetLocationCriteria();
+        *retsValue = GetLocationCriteria().AsString();
     else if (strEquals(sField, FIELD_NAME))
         *retsValue = GetNounPhrase();
 	else if (strEquals(sField, FIELD_FIRE_RATE_ADJ))
@@ -744,7 +752,7 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 		*retsValue = strFromInt(CalcHitsToDestroy(GetLevel()));
 	else if (strEquals(sField, FIELD_INSTALL_DEVICE_MAX_LEVEL))
 		{
-		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(serviceInstallDevice) : -1);
+		int iMaxLevel = (m_pTrade ? m_pTrade->GetMaxLevelMatched(GetUniverse(), serviceInstallDevice) : -1);
 		*retsValue = (iMaxLevel != -1 ? strFromInt(iMaxLevel) : NULL_STR);
 		}
 
@@ -825,7 +833,7 @@ CCommunicationsHandler *CStationType::GetCommsHandler (void)
 		return (m_OriginalCommsHandler.GetCount() ? &m_OriginalCommsHandler : NULL);
 	}
 
-CSovereign *CStationType::GetControllingSovereign (void)
+CSovereign *CStationType::GetControllingSovereign (void) const
 
 //	GetControllingSovereign
 //
@@ -931,6 +939,33 @@ CString CStationType::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) 
 
 	{
 	return m_Name.GetConstantName(retdwFlags);
+	}
+
+CItem CStationType::GetPrimaryWeapon (void) const
+
+//	GetPrimaryWeapon
+//
+//	Returns the highest-level weapon on the station.
+
+	{
+	const CDeviceClass *pBestDevice = NULL;
+	for (int i = 0; i < GetDeviceCount(); i++)
+		{
+		auto &Device = GetDevice(i);
+		const CDeviceClass *pDevice = Device.GetClass();
+		if (pDevice->GetCategory() == itemcatWeapon
+				|| pDevice->GetCategory() == itemcatLauncher)
+			{
+			if (pBestDevice == NULL
+					|| pDevice->GetLevel() > pBestDevice->GetLevel())
+				pBestDevice = pDevice;
+			}
+		}
+
+	if (pBestDevice)
+		return CItem(pBestDevice->GetItemType(), 1);
+	else
+		return CItem();
 	}
 
 IShipGenerator *CStationType::GetReinforcementsTable (void)
@@ -1299,18 +1334,46 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fBeacon = pDesc->GetAttributeBool(BEACON_ATTRIB);
 	m_fRadioactive = pDesc->GetAttributeBool(RADIOACTIVE_ATTRIB);
 	m_fNoMapIcon = pDesc->GetAttributeBool(NO_MAP_ICON_ATTRIB);
-    m_fNoMapLabel = pDesc->GetAttributeBool(NO_MAP_LABEL_ATTRIB);
     m_fNoMapDetails = pDesc->GetAttributeBool(NO_MAP_DETAILS_ATTRIB);
 	m_fTimeStopImmune = pDesc->GetAttributeBool(TIME_STOP_IMMUNE_ATTRIB);
 	m_fCanAttack = pDesc->GetAttributeBool(CAN_ATTACK_ATTRIB);
 	m_fReverseArticle = pDesc->GetAttributeBool(REVERSE_ARTICLE_ATTRIB);
-	m_fNoBlacklist = pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB);
+	m_fNoBlacklist = (pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB) || pDesc->GetAttributeBool(IGNORE_FRIENDLY_FIRE_ATTRIB));
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
 	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
 	m_fCalcMaxAttackDist = false;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
+	//	Suppress or force map label
+	//
+	//	If showMapLabel="true", we force showing the label, even if we normally
+	//	would not. Conversely, if ="false", we always suppress showing the 
+	//	label. If not specified, we let the station do the default behavior.
+
+	bool bValue;
+	if (pDesc->FindAttributeBool(SHOW_MAP_LABEL_ATTRIB, &bValue))
+		{
+		m_fForceMapLabel = bValue;
+		m_fSuppressMapLabel = !bValue;
+		}
+
+	//	Handle this for backwards compatibility.
+
+	else if (pDesc->FindAttributeBool(NO_MAP_LABEL_ATTRIB, &bValue))
+		{
+		m_fSuppressMapLabel = bValue;
+		m_fForceMapLabel = false;
+		}
+
+	//	Else, let the station do default behavior.
+
+	else
+		{
+		m_fForceMapLabel = false;
+		m_fSuppressMapLabel = false;
+		}
+		
 	CString sLayer;
 	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sLayer)
 			&& strEquals(sLayer, CONSTLIT("overhang")))
@@ -1711,16 +1774,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	return NOERROR;
 	}
 
-ALERROR CStationType::OnFinishBindDesign (SDesignLoadCtx &Ctx)
-
-//	OnFinishBindDesign
-//
-//	Do stuff after all types bound
-
-	{
-	return NOERROR;
-	}
-
 ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	OnGetProperty
@@ -1733,8 +1786,32 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 	if (strEquals(sProperty, PROPERTY_AUTO_LEVEL_FREQUENCY))
 		return (GetEncounterDesc().HasAutoLevelFrequency() ? ICCItemPtr(GetEncounterDesc().GetLevelFrequency()) : ICCItemPtr(ICCItem::Nil));
 
+	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_BY_NODE))
+		{
+		ICCItemPtr pResult(ICCItem::SymbolTable);
+		TSortMap<CString, int> ByNode = m_EncounterRecord.GetEncounterCountByNode();
+		for (int i = 0; i < ByNode.GetCount(); i++)
+			pResult->SetIntegerAt(ByNode.GetKey(i), ByNode[i]);
+
+		return pResult;
+		}
+	else if (strEquals(sProperty, PROPERTY_ENCOUNTERED_TOTAL))
+		return ICCItemPtr(m_EncounterRecord.GetTotalCount());
+
 	else if (strEquals(sProperty, PROPERTY_LEVEL_FREQUENCY))
 		return ICCItemPtr(GetEncounterDesc().GetLevelFrequency());
+
+	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON))
+		{
+		CItem PrimaryWeapon = GetPrimaryWeapon();
+		return (PrimaryWeapon.IsEmpty() ? ICCItemPtr(ICCItem::Nil) : ICCItemPtr(PrimaryWeapon.GetNounPhrase()));
+		}
+
+	else if (strEquals(sProperty, PROPERTY_PRIMARY_WEAPON_LEVEL))
+		{
+		CItem PrimaryWeapon = GetPrimaryWeapon();
+		return (PrimaryWeapon.IsEmpty() ? ICCItemPtr(ICCItem::Nil) : ICCItemPtr(PrimaryWeapon.GetLevel()));
+		}
 
 	else if (strEquals(sProperty, PROPERTY_SHOWS_UNEXPLORED_ANNOTATION))
 		return ICCItemPtr(ShowsUnexploredAnnotation());
@@ -1766,7 +1843,8 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
-		CCurrencyAndValue Value = m_pItems->GetDesiredValue(GetLevel());
+		SItemAddCtx AddItemCtx(GetUniverse());
+		CCurrencyAndValue Value = m_pItems->GetDesiredValue(AddItemCtx, GetLevel());
 		if (Value.IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
@@ -1778,8 +1856,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
+		SItemAddCtx AddItemCtx(GetUniverse());
 		int iLoopCount;
-		if (m_pItems->GetDesiredValue(GetLevel(), &iLoopCount).IsEmpty())
+		if (m_pItems->GetDesiredValue(AddItemCtx, GetLevel(), &iLoopCount).IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(iLoopCount);
@@ -1790,8 +1869,9 @@ ICCItemPtr CStationType::OnGetProperty (CCodeChainCtx &Ctx, const CString &sProp
 		if (m_pItems == NULL)
 			return ICCItemPtr(ICCItem::Nil);
 
+		SItemAddCtx AddItemCtx(GetUniverse());
 		Metric rScale;
-		if (m_pItems->GetDesiredValue(GetLevel(), NULL, &rScale).IsEmpty())
+		if (m_pItems->GetDesiredValue(AddItemCtx, GetLevel(), NULL, &rScale).IsEmpty())
 			return ICCItemPtr(ICCItem::Nil);
 
 		return ICCItemPtr(rScale);

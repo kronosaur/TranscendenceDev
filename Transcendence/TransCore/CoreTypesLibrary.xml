@@ -202,6 +202,10 @@
 
 	<!ENTITY efTestOrbEffect			"0x00030100">
 
+	<!-- 0140-017F MISCELLANEOUS EFFECTS -->
+
+	<!ENTITY vtGenericEnhancement		"0x00030140">
+
 	]>
 	
 <CoreLibrary

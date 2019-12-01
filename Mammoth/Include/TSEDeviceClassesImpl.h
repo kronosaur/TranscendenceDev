@@ -108,7 +108,8 @@ class CCyberDeckClass : public CDeviceClass
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
-											 CItemType **retpType = NULL) override;
+											 CItemType **retpType = NULL,
+											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -467,7 +468,7 @@ class CShieldClass : public CDeviceClass
 		virtual bool RequiresItems (void) const override;
 		virtual void Reset (CInstalledDevice *pDevice, CSpaceObject *pSource) override;
 		virtual void SetHitPoints (CItemCtx &ItemCtx, int iHP) override;
-		virtual bool SetItemProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError) override;
+		virtual ESetPropertyResults SetItemProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
 
 		static Metric GetStdCost (int iLevel);
@@ -569,12 +570,37 @@ class CSolarDeviceClass : public CDeviceClass
 class CWeaponClass : public CDeviceClass
 	{
 	public:
+		//	Ammo constants
+
+		static constexpr Metric HP_ARMOR_RATIO = 0.1;						//	Ammo HP per standard armor HP of same level
+		static constexpr Metric STD_AMMO_MASS =	10.0;						//	Standard ammo mass (in kg)
+		static constexpr Metric DEFAULT_HP_DAMAGE_RATIO = 0.5;				//	Used to compute default HP.
+																			//		See: CWeaponFireDesc::CalcDefaultHitPoints
+
+		//	Balance computation
+
+		static constexpr Metric EXPECTED_FRAGMENT_HITS = 0.2;				//  Fraction of fragments that hit (for balance purposes)
+		static constexpr Metric EXPECTED_RADIUS_DAMAGE = 0.8;				//  Fraction of radius damage (for balance purposes)
+		static constexpr Metric EXPECTED_SHOCKWAVE_HITS = 0.2;				//  Fraction of shockwave that hits (for balance purposes)
+		static constexpr Metric EXPECTED_TRACKING_FRAGMENT_HITS = 0.9;		//  Fraction of tracking fragments that hit (for balance purposes)
+		static constexpr Metric MAX_EXPECTED_PASSTHROUGH = 4.0;
+
+		//	Fragmentation
+
+		static constexpr Metric DEFAULT_FRAG_THRESHOLD = 4.0;				//	4 light-seconds (~95 pixels)
+
+		//	Interaction
+
+		static constexpr Metric DEFAULT_INTERACTION_MIN_RATIO = 0.5;		//	Ratio at which default interaction is 0.
+		static constexpr Metric DEFAULT_INTERACTION_EXP = 0.7;				//	Exponent for computing default interaction
+																			//		See: CWeaponFireDesc::CalcDefaultInteraction
 		enum ECachedHandlers
 			{
 			evtOnFireWeapon				= 0,
 			evtGetAmmoToConsume			= 1,
+			evtGetAmmoCountToDisplay	= 2,
 
-			evtCount					= 2,
+			evtCount					= 3,
 			};
 
         struct SBalance
@@ -685,7 +711,8 @@ class CWeaponClass : public CDeviceClass
 											 CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
-											 CItemType **retpType = NULL) override;
+											 CItemType **retpType = NULL,
+											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
@@ -708,9 +735,9 @@ class CWeaponClass : public CDeviceClass
 		virtual void OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) override;
 		virtual void OnAccumulateAttributes (const CDeviceItem &DeviceItem, const CItem &Ammo, TArray<SDisplayAttribute> *retList) const override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
-        virtual ALERROR OnFinishBind (SDesignLoadCtx &Ctx) override;
 		virtual CString OnGetReference (CItemCtx &Ctx, const CItem &Ammo = CItem(), DWORD dwFlags = 0) override;
 		virtual void OnMarkImages (void) override;
+		virtual ALERROR OnPrepareBind (SDesignLoadCtx &Ctx) override;
 
 	private:
 		static constexpr int CONTINUOUS_START = 0xff;
@@ -781,6 +808,7 @@ class CWeaponClass : public CDeviceClass
 		bool ConsumeAmmo (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, int iRepeatingCount, bool *retbConsumed);
 		bool ConsumeCapacitor (CItemCtx &ItemCtx, CWeaponFireDesc *pShot);
 		void FailureExplosion (CItemCtx &ItemCtx, CWeaponFireDesc *pShot, bool *retbSourceDestroyed);
+		bool FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, const CWeaponFireDesc &Shot, int *retiAmmoCount = NULL) const;
 		int FireGetAmmoToConsume(CItemCtx &ItemCtx,
 							  CWeaponFireDesc *pShot,
 							  int iRepeatingCount);
@@ -826,9 +854,9 @@ class CWeaponClass : public CDeviceClass
 		inline bool UsesAmmo (void) const { return (m_ShotData.GetCount() > 0 && m_ShotData[0].pDesc->GetAmmoType() != NULL); }
 		bool VariantIsValid (CSpaceObject *pSource, CInstalledDevice *pDevice, CWeaponFireDesc &ShotData);
 
-		int GetAlternatingPos (CInstalledDevice *pDevice) const;
-		DWORD GetContinuousFire (CInstalledDevice *pDevice) const;
-		int GetCurrentVariant (CInstalledDevice *pDevice) const;
+		int GetAlternatingPos (const CInstalledDevice *pDevice) const;
+		DWORD GetContinuousFire (const CInstalledDevice *pDevice) const;
+		int GetCurrentVariant (const CInstalledDevice *pDevice) const;
 		void SetAlternatingPos (CInstalledDevice *pDevice, int iAlternatingPos) const;
 		void SetContinuousFire (CInstalledDevice *pDevice, DWORD dwContinuous) const;
 		void SetCurrentVariant (CInstalledDevice *pDevice, int iVariant) const;

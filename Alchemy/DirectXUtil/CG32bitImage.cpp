@@ -11,13 +11,7 @@
 
 CG32bitImage CG32bitImage::m_NullImage;
 
-CG32bitImage::CG32bitImage (void) :
-		m_pRGBA(NULL),
-		m_bFreeRGBA(false),
-		m_bMarked(false),
-		m_iPitch(0),
-		m_AlphaType(alphaNone),
-		m_pBMI(NULL)
+CG32bitImage::CG32bitImage (void)
 
 //	CG32bitImage constructor
 

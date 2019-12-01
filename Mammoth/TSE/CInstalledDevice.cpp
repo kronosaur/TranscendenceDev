@@ -205,10 +205,8 @@ int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
 
 	if (iMaxHP <= 0)
 		return -1;
-	else if (iMaxHP <= iHP)
-		return 100;
-
-	return ((1000 * iHP / iMaxHP) + 5) / 10;
+	else
+		return CArmorClass::CalcIntegrity(iHP, iMaxHP);
 	}
 
 CSpaceObject *CInstalledDevice::GetLastShot (CSpaceObject *pSource, int iIndex) const
@@ -992,7 +990,7 @@ void CInstalledDevice::SetLinkedFireOptions (DWORD dwOptions)
 		m_fLinkedFireNever = true;
 	}
 
-bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError)
+ESetPropertyResults CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, CString *retsError)
 
 //	SetProperty
 //
@@ -1003,7 +1001,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 	if (IsEmpty())
 		{
 		if (retsError) *retsError = CONSTLIT("No device installed.");
-		return false;
+		return resultPropertyError;
 		}
 
 	//	Figure out what to set
@@ -1022,7 +1020,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntCapacitor, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set capacitor value.");
-            return false;
+			return resultPropertyError;
             }
         }
 
@@ -1045,7 +1043,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 			if (m_pClass->IsExternal() && !bSetExternal)
 				{
 				if (retsError) *retsError = CONSTLIT("Device is natively external and cannot be made internal.");
-				return false;
+				return resultPropertyError;
 				}
 
 			SetExternal(bSetExternal);
@@ -1099,7 +1097,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid fireArc parameter.");
-			return false;
+			return resultPropertyError;
 			}
 		}
 
@@ -1111,7 +1109,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		if (!::GetLinkedFireOptions(pValue, &dwOptions, retsError))
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid linked-fire option.");
-			return false;
+			return resultPropertyError;
 			}
 
 		//	Set
@@ -1146,7 +1144,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 		else
 			{
 			if (retsError) *retsError = CONSTLIT("Invalid angle and radius");
-			return false;
+			return resultPropertyError;
 			}
 
 		//	Set it
@@ -1170,7 +1168,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
         if (!m_pClass->SetCounter(this, pSource, CDeviceClass::cntTemperature, pValue->GetIntegerValue()))
             {
             if (retsError) *retsError = CONSTLIT("Unable to set temperature value.");
-            return false;
+			return resultPropertyError;
             }
         }
 	else if (strEquals(sName, PROPERTY_SHOT_SEPARATION_SCALE))
@@ -1184,7 +1182,7 @@ bool CInstalledDevice::SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem
 	else
 		return m_pClass->SetItemProperty(Ctx, sName, pValue, retsError);
 
-	return true;
+	return resultPropertySet;
 	}
 
 void CInstalledDevice::Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList)

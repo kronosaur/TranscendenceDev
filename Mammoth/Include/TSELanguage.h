@@ -103,7 +103,7 @@ class CLanguage
 		static CString ComposeVerb (const CString &sVerb, DWORD dwVerbFlags);
 		static bool FindGenderedWord (const CString &sWord, GenomeTypes iGender, CString *retsResult = NULL);
 		static ICCItemPtr GetNounFlags (DWORD dwFlags);
-		static DWORD LoadNameFlags (CXMLElement *pDesc);
+		static DWORD LoadNameFlags (const CXMLElement *pDesc);
 		static void ParseItemName (const CString &sName, CString *retsRoot, CString *retsModifiers);
 		static void ParseLabelDesc (const CString &sLabelDesc, CString *retsLabel, CString *retsKey = NULL, int *retiKey = NULL, TArray<ELabelAttribs> *retAttribs = NULL);
 		static DWORD ParseNounFlags (const CString &sValue);
@@ -149,9 +149,9 @@ class CLanguageDataBlock
 		inline bool IsEmpty (void) const { return (m_Data.GetCount() == 0); }
 		void MergeFrom (const CLanguageDataBlock &Source);
 		bool Translate (const CDesignType &Type, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
-		bool Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
+		bool Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const;
 		bool TranslateText (const CDesignType &Type, const CString &sID, ICCItem *pData, CString *retsText) const;
-		bool TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
+		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
 	private:
@@ -180,7 +180,7 @@ class CLanguageDataBlock
 		bool IsCode (const CString &sText) const;
 		CString ParseTextBlock (const CString &sText) const;
 		ETranslateResult TranslateFull (const CDesignType &Type, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
-		ETranslateResult TranslateFull (CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
+		ETranslateResult TranslateFull (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		ETranslateResult TranslateFull (const CItem &Item, const CString &sID, ICCItem *pData, TArray<CString> *retText, CString *retsText, ICCItemPtr *retpResult = NULL) const;
 		const SEntry *TranslateTry (const CString &sID, ICCItem *pData, ETranslateResult &retiResult, TArray<CString> *retText = NULL, CString *retsText = NULL) const;
 
@@ -193,12 +193,13 @@ class CNameDesc
 		CNameDesc (void);
 
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
-		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
+		ALERROR InitFromXMLRoot (SDesignLoadCtx &Ctx, const CXMLElement *pDesc);
 //		CString GenerateName (CSystem *pSystem, DWORD *retdwNameFlags) const;
 		CString GenerateName (TSortMap<CString, CString> *pParams = NULL, DWORD *retdwNameFlags = NULL) const;
-		inline const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }
-		inline bool IsConstant (void) const { return (m_Names.GetCount() == 0); }
-		inline bool IsEmpty (void) const { return m_sConstantName.IsBlank(); }
+		const CString &GetConstantName (DWORD *retdwNameFlags) const { if (retdwNameFlags) *retdwNameFlags = m_dwConstantNameFlags; return m_sConstantName; }
+		bool IsConstant (void) const { return (m_Names.GetCount() == 0); }
+		bool IsEmpty (void) const { return (m_sConstantName.IsBlank() && m_Names.GetCount() == 0); }
+		bool IsHidden (void) const { return IsEmpty() || *m_sConstantName.GetASCIIZPointer() == '('; }
 		void Reinit (void);
 
 	private:

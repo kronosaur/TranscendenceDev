@@ -26,7 +26,6 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
-			canAttack=			"true"
 
 			armorID=			"&itUltraLightTitaniumArmor;"
 			hitPoints=			"50"
@@ -91,7 +90,6 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
-			canAttack=			"true"
 
 			armorID=			"&itTitaniumArmor;"
 			hitPoints=			"50"
@@ -164,7 +162,6 @@
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"4"
 			noMapLabel=			"true"
-			canAttack=			"true"
 
 			armorID=			"&itTitaniumArmor;"
 			hitPoints=			"50"
@@ -220,7 +217,6 @@
 			sovereign=			"&svAnarchists;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightPlasteelPlate;"

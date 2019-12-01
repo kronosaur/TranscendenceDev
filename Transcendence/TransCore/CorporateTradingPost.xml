@@ -14,7 +14,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -77,12 +76,6 @@
 		</Trade>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<OnObjDestroyed>
 				(if (and (eq (objGetData gSource "MissionStatus") "intransit")
 						(eq aObjDestroyed (objGetObjRefData gSource "Transport")))

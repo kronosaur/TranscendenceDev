@@ -604,7 +604,9 @@ void OutputHeader (SItemTableCtx &Ctx)
 					"balSpeedAdj\t"
 					"balDeviceBonus\t"
 					"balMass\t"
-					"balCost");
+					"balCost\t"
+					"stdMass\t"
+					"stdCost");
 			else if (Ctx.bShieldBalanceStats)
 				printf("balance\t"
 					"balanceExcludeCost\t"
@@ -717,7 +719,7 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 
 						CArmorItem::SBalance Balance;
 						ArmorItem.CalcBalance(Balance);
-						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f",
+						printf("%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%.1f\t%d",
 								Balance.rBalance,
 								Balance.rBalance - Balance.rCost,
 								Balance.rHPBalance,
@@ -731,7 +733,9 @@ void OutputTable (SItemTableCtx &Ctx, const SItemTypeList &ItemList)
 								Balance.rSpeedAdj,
 								Balance.rDeviceBonus,
 								Balance.rMass,
-								Balance.rCost
+								Balance.rCost,
+								Balance.rStdMass,
+								mathRound(Balance.rStdCost)
 								);
 						}
 					else

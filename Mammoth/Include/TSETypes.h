@@ -111,6 +111,11 @@ static constexpr int GLOBAL_ON_UPDATE_CYCLE =			30;					//	OnGlobalUpdate for al
 
 static constexpr int ON_SCREEN_UPDATE_CYCLE =			15;					//	OnScreenUpdate for <DockScreen>
 
+//	Constants & Enums
+
+static constexpr int MAX_OBJECT_LEVEL =					25;	//	Max level for space objects
+static constexpr int MAX_ITEM_LEVEL =					25;	//	Max level for items
+
 //	Special UNIDs
 //	LATER: UNID should not be hard-coded
 
@@ -191,6 +196,7 @@ static constexpr DWORD COMPATIBLE_SHIP_CONFIG_SCREEN =	0x0000A01B;
 static constexpr DWORD UNID_DEFAULT_SYSTEM_BACKGROUND =	0x00030001;
 static constexpr DWORD UNID_DISINTEGRATION_EXPLOSION =	0x00030044;
 static constexpr DWORD UNID_TIME_STOP_OVERLAY =			0x00030080;
+static constexpr DWORD UNID_GENERIC_ENHANCEMENT =		0x00030140;
 
 #ifdef DEBUG_HENCHMAN
 const DWORD g_DebugHenchmenShipUNID =		0x00103001;	//	scCenturion

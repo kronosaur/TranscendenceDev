@@ -112,10 +112,9 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 
 	TArray<CString> Info;
 
-	//	Permadeath
+	//	Difficulty
 
-	if (bPermadeath)
-		Info.Insert(CONSTLIT("Permadeath"));
+	Info.Insert(CDifficultyOptions::GetLabel(GameFile.GetDifficulty()));
 
 	//	Ship class
 
@@ -139,7 +138,7 @@ void CListSaveFilesTask::CreateFileEntry (CGameFile &GameFile, const CTimeDate &
 		Info.Insert(strPatternSubst(CONSTLIT("Ended the game in the %s System"), GameFile.GetSystemName()));
 	else if (GameFile.IsGameResurrect())
 		{
-		if(m_Options.bFilterPermadeath)
+		if(m_Options.bFilterPermadeath || GameFile.GetDifficulty() == CDifficultyOptions::lvlPermadeath)
 			Info.Insert(strPatternSubst(CONSTLIT("Died in the %s System"), GameFile.GetSystemName()));
 		else
 			Info.Insert(strPatternSubst(CONSTLIT("Resurrect in the %s System%s"), GameFile.GetSystemName(), bPermadeath ? CONSTLIT(" and remove Permadeath") : NULL_STR));

@@ -317,6 +317,9 @@
     <ClCompile Include="CItemTypeTable.cpp" />
     <ClCompile Include="Compile.cpp" />
     <ClCompile Include="COutputChart.cpp" />
+    <ClCompile Include="CReferenceEntry.cpp" />
+    <ClCompile Include="CReferenceLibrary.cpp" />
+    <ClCompile Include="CReferenceSection.cpp" />
     <ClCompile Include="CSimViewer.cpp" />
     <ClCompile Include="CWeaponBenchmarkCtx.cpp" />
     <ClCompile Include="Diagnostics.cpp" />
@@ -377,6 +380,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="Reference.cpp" />
     <ClCompile Include="ShieldStats.cpp" />
     <ClCompile Include="ShipImage.cpp" />
     <ClCompile Include="ShipImageChart.cpp" />
@@ -454,6 +458,7 @@
   <ItemGroup>
     <ClInclude Include="ItemBenchmarks.h" />
     <ClInclude Include="PreComp.h" />
+    <ClInclude Include="Reference.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="TransData.h" />
     <ClInclude Include="Utilities.h" />

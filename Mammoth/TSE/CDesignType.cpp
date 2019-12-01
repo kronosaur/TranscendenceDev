@@ -228,17 +228,42 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 //	Bind design elements
 	
 	{
-	ALERROR error;
-	int i;
+	//	Short-circuit, if already bound
+
+	if (m_bBindCalled)
+		return NOERROR;
+
+	if (Ctx.bTraceBind)
+		{
+		CString sName = GetEntityName();
+		if (sName.IsBlank())
+			sName = GetNounPhrase();
+		if (sName.IsBlank())
+			{
+			if (m_dwUNID)
+				sName = strPatternSubst(CONSTLIT("UNID %08x"), m_dwUNID);
+			else
+				sName = CONSTLIT("Unknown");
+			}
+
+		Ctx.iBindNesting++;
+		Ctx.GetUniverse().LogOutput(strPatternSubst(CONSTLIT("Bind %02d> %s"), Ctx.iBindNesting, sName));
+		}
+
+	//	Bind. Set the flag so that we do not recurse.
 
 	Ctx.pType = this;
+	m_bBindCalled = true;
 
 	//	If necessary, evaluate any bind-time design properties
 
 	if (m_pExtra)
 		{
-		if (error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+		if (ALERROR error = m_pExtra->PropertyDefs.BindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
 			return error;
+			}
 		}
 
 	//	Initialize data
@@ -251,7 +276,7 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 	if (m_pInheritFrom)
 		{
 		ASSERT(IsModification() || m_pInheritFrom->GetUNID() != GetUNID());
-		for (i = 0; i < evtCount; i++)
+		for (int i = 0; i < evtCount; i++)
 			{
 			if (!HasCachedEvent((ECachedHandlers)i))
 				{
@@ -270,7 +295,11 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 
 	try
 		{
-		error = OnBindDesign(Ctx);
+		if (ALERROR error = OnBindDesign(Ctx))
+			{
+			Ctx.pType = NULL;
+			return error;
+			}
 		}
 	catch (...)
 		{
@@ -279,8 +308,26 @@ ALERROR CDesignType::BindDesign (SDesignLoadCtx &Ctx)
 		throw;
 		}
 
+	//	Done
+
+	if (Ctx.bTraceBind)
+		Ctx.iBindNesting--;
+
 	Ctx.pType = NULL;
-	return error;
+	return NOERROR;
+	}
+
+int CDesignType::CalcAffinity (const CAffinityCriteria &Criteria) const
+
+//	CalcAffinity
+//
+//	Computes the affinity value of this type given the criteria.
+
+	{
+	return Criteria.CalcWeight(
+		[this](const CString &sAttrib) { return HasAttribute(sAttrib); },
+		[this](const CString &sAttrib) { return HasSpecialAttribute(sAttrib); }
+		);
 	}
 
 ALERROR CDesignType::ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const
@@ -1789,7 +1836,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         CString sTradeDesc;
         CTradingDesc *pTrade = GetTradingDesc();
         if (pTrade)
-            pTrade->ComposeDescription(&sTradeDesc);
+            pTrade->ComposeDescription(GetUniverse(), &sTradeDesc);
 
         //  If we have both main and trade descriptors, combine them.
 
@@ -2702,7 +2749,10 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 //	Returns TRUE if this type matches the given criteria
 
 	{
-	int i;
+	//	If we have an OR expression, check that first.
+
+	if (Criteria.HasORExpression() && MatchesCriteria(Criteria.GetORExpression()))
+		return true;
 
 	//	If this type is not part of the criteria, then we're done
 
@@ -2736,21 +2786,21 @@ bool CDesignType::MatchesCriteria (const CDesignTypeCriteria &Criteria)
 
 	//	Check required attributes
 
-	for (i = 0; i < Criteria.GetRequiredAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetRequiredAttribCount(); i++)
 		if (!HasLiteralAttribute(Criteria.GetRequiredAttrib(i)))
 			return false;
 
-	for (i = 0; i < Criteria.GetRequiredSpecialAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetRequiredSpecialAttribCount(); i++)
 		if (!HasSpecialAttribute(Criteria.GetRequiredSpecialAttrib(i)))
 			return false;
 
 	//	Check excluded attributes
 
-	for (i = 0; i < Criteria.GetExcludedAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetExcludedAttribCount(); i++)
 		if (HasLiteralAttribute(Criteria.GetExcludedAttrib(i)))
 			return false;
 
-	for (i = 0; i < Criteria.GetExcludedSpecialAttribCount(); i++)
+	for (int i = 0; i < Criteria.GetExcludedSpecialAttribCount(); i++)
 		if (HasSpecialAttribute(Criteria.GetExcludedSpecialAttrib(i)))
 			return false;
 
@@ -2854,7 +2904,7 @@ void CDesignType::Reinit (void)
 	DEBUG_CATCH_MSG1(CONSTLIT("Crash in CDesignType::Reinit Type = %x"), GetUNID())
 	}
 
-void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) const
+void CDesignType::ReportEventError (const CString &sEvent, const ICCItem *pError) const
 
 //	ReportEventError
 //
@@ -2869,7 +2919,7 @@ void CDesignType::ReportEventError (const CString &sEvent, ICCItem *pError) cons
 	GetUniverse().LogOutput(sError);
 	}
 
-bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
+bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Value)
 
 //	SetTypeProperty
 //
@@ -2879,18 +2929,23 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, ICCItem *pValue)
 	ICCItemPtr pDummy;
 	EPropertyType iType;
 
-	if (!FindCustomPropertyRaw(sProperty, pDummy, &iType))
-		return false;
+	if (OnSetTypeProperty(sProperty, Value))
+		return true;
 
-	switch (iType)
+	else if (FindCustomPropertyRaw(sProperty, pDummy, &iType))
 		{
-		case EPropertyType::propGlobal:
-			SetGlobalData(sProperty, pValue);
-			return true;
+		switch (iType)
+			{
+			case EPropertyType::propGlobal:
+				SetGlobalData(sProperty, &Value);
+				return true;
 
-		default:
-			return false;
+			default:
+				return false;
+			}
 		}
+	else
+		return false;
 	}
 
 bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
@@ -2911,7 +2966,7 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return false;
 	}
 
-bool CDesignType::Translate (CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2954,7 +3009,7 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 	return false;
 	}
 	
-bool CDesignType::TranslateText (CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
@@ -3002,7 +3057,7 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 	return false;
 	}
 
-bool CDesignType::TranslateVersion2 (CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
+bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const
 
 //	TranslateVersion2
 //
@@ -3080,19 +3135,9 @@ ALERROR CArmorClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown armor design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Armor item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetArmorClass();
 		if (m_pType == NULL)
@@ -3111,19 +3156,9 @@ ALERROR CDeviceClassRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-		CDesignType *pBaseType = Ctx.GetUniverse().FindDesignType(m_dwUNID);
-		if (pBaseType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Unknown device design type: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
-
-		CItemType *pItemType = CItemType::AsType(pBaseType);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Device item type expected: %x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
 		m_pType = pItemType->GetDeviceClass();
 		if (m_pType == NULL)
@@ -3156,12 +3191,9 @@ ALERROR CWeaponFireDescRef::Bind (SDesignLoadCtx &Ctx)
 	{
 	if (m_dwUNID)
 		{
-        CItemType *pItemType = Ctx.GetUniverse().FindItemType(m_dwUNID);
-		if (pItemType == NULL)
-			{
-			Ctx.sError = strPatternSubst(CONSTLIT("Weapon item type expected: %08x"), m_dwUNID);
-			return ERR_FAIL;
-			}
+		CItemType *pItemType;
+		if (ALERROR error = CDesignTypeRef<CItemType>::BindType(Ctx, m_dwUNID, pItemType))
+			return error;
 
         m_pType = pItemType->GetWeaponFireDesc(CItemCtx(), &Ctx.sError);
         if (m_pType == NULL)

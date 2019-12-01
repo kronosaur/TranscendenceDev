@@ -5,6 +5,39 @@
 
 #pragma once
 
+class CSmallOptionButtonAnimator
+	{
+	public:
+		CSmallOptionButtonAnimator (IHISession &Session) :
+				m_Session(Session)
+			{ }
+
+		void Create (CAniVScroller &Root, const CString &sID, const CString &sLabel, int x, int y, int cxWidth, AlignmentStyles iAlign = alignLeft);
+		bool IsEditing (void) const { return m_bInEditMode; }
+		void SetImage (const CG32bitImage &Image, bool bFreeImage = false);
+		void SetText (const CString &sText);
+		void StartEdit (int cxWidth, const CString &sValue);
+		void StopEdit (CString *retsValue = NULL);
+
+	private:
+		static constexpr int MAJOR_PADDING_BOTTOM =				20;
+		static constexpr int MAJOR_PADDING_HORZ =				20;
+		static constexpr int MAJOR_PADDING_TOP =				20;
+		static constexpr int MAJOR_PADDING_VERT =				20;
+		static constexpr int SMALL_BUTTON_HEIGHT =				48;
+		static constexpr int SMALL_BUTTON_WIDTH =				48;
+
+		IHISession &m_Session;
+
+		CAniVScroller *m_pRoot = NULL;
+		CString m_sID;
+		int m_x = 0;
+		int m_y = 0;
+		int m_cxWidth = 0;
+		AlignmentStyles m_iAlign = alignLeft;
+		bool m_bInEditMode = false;
+	};
+
 class CItemDataAnimatron : public IAnimatron
 	{
 	public:
@@ -184,12 +217,14 @@ class CUIHelper
 		int CalcItemEntryHeight (CSpaceObject *pSource, const CItem &Item, const RECT &rcRect, DWORD dwOptions) const;
 
 		//	OPTION_ITEM_RIGHT_ALIGN
-		void CreateClassInfoArmor (CShipClass *pClass, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoCargo (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoDeviceSlots (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoDrive (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoArmor (const CShipClass &Class, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoCargo (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoDeviceSlots (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoDrive (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
 		void CreateClassInfoItem (const CItem &Item, int x, int y, int cxWidth, DWORD dwOptions, const CString &sExtraDesc, int *retcyHeight, IAnimatron **retpInfo) const;
-		void CreateClassInfoReactor (CShipClass *pClass, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		void CreateClassInfoReactor (const CShipClass &Class, const CDeviceDescList &Devices, int x, int y, int cxWidth, DWORD dwOptions, int *retcyHeight, IAnimatron **retpInfo) const;
+		CG32bitImage CreateGlowBackground (void) const;
+		CG32bitImage CreateGlowBackground (int cxWidth, int cyHeight, CG32bitPixel rgbCenter, CG32bitPixel rgbEdge) const;
 		void CreateInputErrorMessage (IHISession *pSession, const RECT &rcRect, const CString &sTitle, CString &sDesc, IAnimatron **retpMsg = NULL) const;
 
 		//	OPTION_FRAME_ALIGN_TOP

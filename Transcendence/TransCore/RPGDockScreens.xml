@@ -589,7 +589,9 @@
 								(scrSetActionLabel gScreen 'actionLoot (@ gData 'lootLabel))
 							)
 
-						(scrSetDescTranslate gScreen 'rpg.lootQuantity)
+						(scrSetDesc gScreen (or (@ gData 'descLootQuantity)
+												(scrTranslate gScreen 'rpg.lootQuantity)
+												))
 						(scrSetCounter gScreen (scrGetData gScreen 'maxCount))
 						)
 				</OnPaneInit>

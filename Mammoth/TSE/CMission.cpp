@@ -278,7 +278,7 @@ ALERROR CMission::Create (CUniverse &Universe,
 
 	//	If we haven't subscribed to the owner, do it now
 
-	if (pOwner && !pOwner->FindEventSubscriber(pMission))
+	if (pOwner && !pOwner->FindEventSubscriber(*pMission))
 		pOwner->AddEventSubscriber(pMission);
 
 	//	Mission created

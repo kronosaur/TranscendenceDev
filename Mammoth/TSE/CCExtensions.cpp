@@ -1934,6 +1934,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"property (all)\n\n"
 
 			"   'ascended\n"
+			"   'canAttack\n"
+			"   'canBeAttacked\n"
 			"   'category -> 'beam | 'effect | 'marker | 'missile | 'mission | 'ship | 'station\n"
 			"   'commsKey\n"
 			"   'currency -> currency type UNID\n"
@@ -3003,6 +3005,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			
 			"property:\n\n"
 			
+			"   'attributes        Attributes of the system\n"
 			"   'known             Known to player\n"
 			"   'lastVisitOn       Tick on which player last visited\n"
 			"   'lastVisitSeconds  Game seconds since player last visited\n"
@@ -4643,7 +4646,7 @@ ICCItem *fnDesignGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (sProperty.IsBlank())
 				return pCC->CreateNil();
 
-			return pCC->CreateBool(pType->SetTypeProperty(sProperty, pArgs->GetElement(2)));
+			return pCC->CreateBool(pType->SetTypeProperty(sProperty, *pArgs->GetElement(2)));
 			}
 
 		case FN_DESIGN_TRANSLATE:
@@ -4996,7 +4999,8 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5197,7 +5201,7 @@ ICCItem *fnItemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_ITEM_PROPERTY:
-			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue());
+			return Item.GetItemProperty(*pCtx, CItemCtx(Item), pArgs->GetElement(1)->GetStringValue(), bOnType);
 
 		case FN_ITEM_DAMAGED:
 			pResult = pCC->CreateBool(Item.IsDamaged());
@@ -5328,7 +5332,8 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Convert the first argument into an item
 
-	CItem Item = pCtx->AsItem(pArgs->GetElement(0));
+	bool bOnType;
+	CItem Item = pCtx->AsItem(pArgs->GetElement(0), &bOnType);
 	CItemType *pType = Item.GetType();
 	if (pType == NULL)
 		return pCC->CreateNil();
@@ -5402,12 +5407,19 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			{
 			CString sError;
 			CItemCtx ItemCtx(&Item);
-			if (!Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), &sError))
+			ESetPropertyResults iResult = Item.SetProperty(ItemCtx, pArgs->GetElement(1)->GetStringValue(), (pArgs->GetCount() > 2 ? pArgs->GetElement(2) : NULL), bOnType, &sError);
+
+			switch (iResult)
 				{
-				if (sError.IsBlank())
-					return pCC->CreateNil();
-				else
-					return pCC->CreateError(sError);
+				case resultPropertyError:
+				case resultPropertyNotFound:
+					if (sError.IsBlank())
+						return pCC->CreateNil();
+					else
+						return pCC->CreateError(sError);
+
+				default:
+					break;
 				}
 
 			return CreateListFromItem(Item);
@@ -6683,7 +6695,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pTarget == NULL)
 				return pCC->CreateNil();
 
-			return CreateDisposition(*pCC, pObj->GetDispositionTowards(pTarget));
+			return CreateDisposition(*pCC, pObj->GetDispositionTowards(*pTarget));
 			}
 
 		case FN_OBJ_GET_EVENT_HANDLER:
@@ -7176,7 +7188,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			CSpaceObject *pSource = CreateObjFromItem(pArgs->GetElement(1));
 
 			CString sFilter = pArgs->GetElement(2)->GetStringValue();
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	We force including intangibles. We need to do this because this
 			//	is often called inside of <OnObjDestroyed>, and since the object
@@ -7190,7 +7202,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Match
 
-			CSpaceObjectCriteria::SCtx Ctx(Criteria);
+			CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
 			return pCC->CreateBool(pObj->MatchesCriteria(Ctx, Criteria));
 			}
 
@@ -11382,7 +11394,8 @@ ICCItem *fnStationSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateTrue();
 
 		case FN_STATION_SHOW_MAP_LABEL:
-			pStation->SetShowMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetForceMapLabel(!pArgs->GetElement(1)->IsNil());
+			pStation->SetSuppressMapLabel(pArgs->GetElement(1)->IsNil());
 			return pCC->CreateTrue();
 
 		default:
@@ -12823,7 +12836,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	Second argument is the filter
 
 	CString sFilter = pArgs->GetElement(1)->GetStringValue();
-	CSpaceObjectCriteria Criteria(pSource, sFilter);
+	CSpaceObjectCriteria Criteria(sFilter);
 
 	//	If we're checking for position, we need to do some extra work
 
@@ -12861,9 +12874,11 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	Prepare result list (if necessary)
 	
+	CSpaceObjectCriteria::SCtx Ctx(pSource, Criteria);
+
 	ICCItem *pResult;
 	CCLinkedList *pList;
-	if (!Criteria.MatchesNearestOnly() && !Criteria.MatchesFarthestOnly())
+	if (!Ctx.bNearestOnly && !Ctx.bFarthestOnly)
 		{
 		pResult = pCC->CreateLinkedList();
 		if (pResult->IsError())
@@ -12881,11 +12896,10 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 	//	NOTE: We have this convoluted code path because we want to optimize
 	//	adding items to our list [not sure if it's worth it, though].
 
-	bool bGenerateOurOwnList = (pList && (Criteria.GetSort() == CSpaceObjectCriteria::sortNone));
+	bool bGenerateOurOwnList = (pList && (Ctx.iSort == CSpaceObjectCriteria::sortNone));
 
 	//	Do the search
 
-	CSpaceObjectCriteria::SCtx Ctx(Criteria);
 	for (i = 0; i < pSystem->GetObjectCount(); i++)
 		{
 		CSpaceObject *pObj = pSystem->GetObject(i);
@@ -12903,7 +12917,7 @@ ICCItem *fnSystemFind (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 	//	If we only want the nearest/farthest object, then find it now
 
-	if (Criteria.MatchesNearestOnly() || Criteria.MatchesFarthestOnly())
+	if (Ctx.bNearestOnly || Ctx.bFarthestOnly)
 		{
 		//	Return the object
 
@@ -13603,16 +13617,19 @@ ICCItem *fnSystemGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SYS_ORBIT_CREATE:
 			{
+			COrbit Orbit;
+
 			CVector vCenter;
 			if (GetPosOrObject(pEvalCtx, pArgs->GetElement(0), &vCenter) != NOERROR)
 				return pCC->CreateError(CONSTLIT("Invalid pos"), pArgs->GetElement(0));
 
-			Metric rRadius = Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND);
-			Metric rAngle = mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue());
-			Metric rEccentricity = Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99));
-			Metric rRotation = (pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetFocus(vCenter);
+			Orbit.SetSemiMajorAxis(Max(0.0, pArgs->GetElement(1)->GetDoubleValue() * LIGHT_SECOND));
+			Orbit.SetObjectAngle(mathDegreesToRadians(pArgs->GetElement(2)->GetDoubleValue()));
+			Orbit.SetEccentricity(Max(0.0, Min((pArgs->GetCount() >= 4 ? pArgs->GetElement(3)->GetDoubleValue() : 0.0), 0.99)));
+			Orbit.SetRotation(pArgs->GetCount() >= 5 ? mathDegreesToRadians(pArgs->GetElement(4)->GetDoubleValue()) : 0.0);
+			Orbit.SetInclination(pArgs->GetCount() >= 6 ? mathDegreesToRadians(pArgs->GetElement(5)->GetDoubleValue()) : 0.0);
 
-			COrbit Orbit(vCenter, rRadius, rEccentricity, rRotation, rAngle);
 			return CreateListFromOrbit(*pCC, Orbit);
 			}
 
@@ -14227,15 +14244,13 @@ ICCItem *fnSystemOrbit (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Adjust the orbit
 
-			COrbit NewOrbitDesc(OrbitDesc.GetFocus(),
-					Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset),
-					OrbitDesc.GetEccentricity(),
-					OrbitDesc.GetRotation(),
-					OrbitDesc.GetObjectAngle() + rAngleOffset);
-
+			COrbit NewOrbit = OrbitDesc;
+			NewOrbit.SetSemiMajorAxis(Max(1.0, OrbitDesc.GetSemiMajorAxis() + rRadiusOffset));
+			NewOrbit.SetObjectAngle(OrbitDesc.GetObjectAngle() + rAngleOffset);
+			
 			//	Done
 
-			return CreateListFromVector(NewOrbitDesc.GetObjectPos());
+			return CreateListFromVector(NewOrbit.GetObjectPos());
 			}
 
 		default:
@@ -14375,7 +14390,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 			if (pArgs->GetCount() > 3)
 				sFilter = pArgs->GetElement(3)->GetStringValue();
 
-			CSpaceObjectCriteria Criteria(pSource, sFilter);
+			CSpaceObjectCriteria Criteria(sFilter);
 
 			//	Keep trying random positions until we find something that works
 			//	(or until we run out of tries)
@@ -14408,7 +14423,7 @@ ICCItem *fnSystemVectorMath (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwDat
 				//	See if any object is within the separation range. If there 
 				//	is, then we continue.
 
-				if (pSystem->FindObjectInRange(vTry, rSeparation, Criteria)
+				if (pSystem->FindObjectInRange(pSource, vTry, rSeparation, Criteria)
 						&& --iTries > 0)
 					continue;
 

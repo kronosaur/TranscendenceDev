@@ -108,7 +108,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightGusokuArmor;"
@@ -200,14 +199,6 @@
 			<RemoveDevice	criteria="d L:1-10;" priceAdj="110"	upgradeInstallOnly="true"/>
 		</Trade>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<DockScreens>
 			<Main>
 				<Panes>
@@ -273,7 +264,6 @@
 			multiHull=			"true"
 			regen=				"2"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -406,14 +396,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="descWelcome">
 				You are docked at an armor dealer station.
@@ -442,7 +424,6 @@
 			multiHull=			"true"
 			regen=				"2"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -562,14 +543,6 @@
 
 		<!-- Events and Behavior -->
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="actionWeapons">[W]eapons</Text>
 
@@ -592,7 +565,6 @@
 
 			dockScreen=			"&dsArmsDealerSpecial;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"5"
 			multiHull=			"true"
@@ -684,14 +656,6 @@
 			<LongName>"a Makayev-Energia weapons franchise"</LongName>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descNoInstall">
 
@@ -725,7 +689,6 @@
 
 			dockScreen=			"&dsArmsDealerSpecial;"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itLightGusokuArmor;"
@@ -856,7 +819,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -916,14 +878,6 @@
 			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
 			<Buy	criteria="*NU +Auton; -Illegal; -NotForSale;"	priceAdj="90"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -1069,7 +1023,6 @@
 			multiHull=			"true"
 			regen=              "6"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1231,14 +1184,6 @@
 
 		<!-- Events and Data -->
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="descWelcome">
 
@@ -1312,7 +1257,6 @@
 			multiHull=			"true"
 			regen=              "2"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1457,7 +1401,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -1564,14 +1507,6 @@
 			</NPCService>
 		</StaticData>
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<DockScreens>
 			<Main>
 				<Panes>
@@ -1673,7 +1608,6 @@
 			multiHull=			"true"
 			regen=              "6"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion3;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -1755,12 +1689,6 @@
 		<!-- Events and Behavior -->
 		
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-			
 			<OnCreate>
 				(block (
 					;	We have different kinds of manufacturing plants
@@ -1937,7 +1865,6 @@
 
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
-			canAttack=			"true"
 
 			level=				"4"
 			multiHull=			"true"
@@ -1985,12 +1912,6 @@
 		</Trade>
 
 		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-
 			<GetRumors>
 				{
 					attributes: "commonwealthPub"
@@ -2113,7 +2034,6 @@
 			multiHull=			"true"
 			regen=              "1"
 
-			canAttack=			"true"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtIceAsteroidEjecta;"
 			>
@@ -2217,14 +2137,6 @@
 
 		<!-- Events and Data -->
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
         <Language>
 			<Text id="core.name">Ice Farm</Text>
 
@@ -2258,7 +2170,6 @@
 			regen=              "5"
 			fireRateAdj=		"10"
 
-			canAttack=			"true"
 			explosionType=		"&vtThermoExplosion2;"
 			ejectaType=			"&vtWreckEjecta;"
 			>
@@ -2383,14 +2294,6 @@
 
 		<!-- Events and Behavior -->
 
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
-
 		<Language>
 			<Text id="descWelcome">
 				You are docked at a Taikon Ventures station.
@@ -2408,7 +2311,6 @@
 			dockScreen=			"Main"
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 			dockingPorts=		"8"
-			canAttack=			"true"
 
 			multiHull=			"true"
 			armorID=			"&itAdvancedPlasteelPlate;"
@@ -2472,14 +2374,6 @@
 			<InstallDevice	criteria="d L:1-9;" priceAdj="100"	upgradeInstallOnly="true"/>
 			<RemoveDevice	criteria="d L:1-9;" priceAdj="100"	upgradeInstallOnly="true"/>
 		</Trade>
-
-		<Events>
-			<OnContractGenerate>
-				(intGenerateIndustrialRequestContract1)
-			</OnContractGenerate>
-
-			<OnContractQuery>True</OnContractQuery>
-		</Events>
 
 		<DockScreens>
 			<Main>
@@ -2871,9 +2765,8 @@
 						(= theCategory 'weapon)
 							{	enhancement:theMod		type:(intGetEnhancementByDamageType theItem) }
 
-						;	Failsafe, in case we pass a Nil item or something.
-
-						{	enhancement:theMod	}
+						;	No enhancement. Note that sometimes this gets called
+						;	on a non-enhanceable item (e.g., ammo).
 						)
 					)
 				))

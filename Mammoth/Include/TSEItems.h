@@ -45,9 +45,11 @@ class CDifferentiatedItem
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
+		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
+		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
 		CDifferentiatedItem (CItem *pItem) :
@@ -75,6 +77,9 @@ class CArmorItem : public CDifferentiatedItem
 			Metric rBalance = 0.0;				//	Total balance (+100 = 100% overpowered)
 			int iLevel = 0;						//	Level for which we balanced
 			Metric rHP = 0.0;					//	Max HP for armor (counting bonuses, etc.).
+			Metric rStdMass = 0.0;				//	Standard mass (balance = 0.0)
+			Metric rStdCost = 0.0;				//	Standard cost for mass.
+			Metric rStdHP = 0.0;				//	Standard HP for mass.
 
 			Metric rHPBalance = 0.0;			//	Balance contribution from raw HP
 			Metric rDamageAdj = 0.0;			//	Balance contribution from damage adj
@@ -144,6 +149,7 @@ class CDeviceItem : public CDifferentiatedItem
 		DWORD GetLinkedFireOptions (void) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
 		CDeviceItem (CItem *pItem) : CDifferentiatedItem(pItem)
@@ -246,7 +252,7 @@ class CItem
 		CInstalledArmor *GetInstalledArmor (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
 		const CInstalledDevice *GetInstalledDevice (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (const CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
 		CInstalledDevice *GetInstalledDevice (void) { if (m_pExtra && m_pExtra->m_iInstalled == installedDevice) return (CInstalledDevice *)m_pExtra->m_pInstalled; else return NULL; }
-		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
+		ICCItem *GetItemProperty (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty, bool bOnType) const;
 		Metric GetItemPropertyDouble (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		int GetItemPropertyInteger (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
 		CString GetItemPropertyString (CCodeChainCtx &CCCtx, CItemCtx &Ctx, const CString &sProperty) const;
@@ -272,6 +278,7 @@ class CItem
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
 		int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
 		bool HasSpecialAttribute (const CString &sAttrib) const;
@@ -301,7 +308,7 @@ class CItem
 		void SetKnown (bool bKnown = true) const;
         bool SetLevel (int iLevel, CString *retsError = NULL);
 		void SetPrepareUninstalled (void);
-		bool SetProperty (CItemCtx &Ctx, const CString &sName, ICCItem *pValue, CString *retsError);
+		ESetPropertyResults SetProperty (CItemCtx &Ctx, const CString &sName, const ICCItem *pValue, bool bOnType, CString *retsError = NULL);
 		void SetUnknownIndex (int iIndex);
 		void SetVariantNumber (int iVariantCounter);
 
@@ -342,7 +349,6 @@ class CItem
 
 		//	Item Criteria
 
-		static CString GenerateCriteria (const CItemCriteria &Criteria);
 		static const CItem &NullItem (void) { return CItem::m_NullItem; }
 		static DWORD ParseFlags (ICCItem *pItem);
 		bool MatchesCriteria (const CItemCriteria &Criteria) const;
@@ -565,18 +571,36 @@ class CItemCtx
 
 struct SItemAddCtx
 	{
-	SItemAddCtx (CItemListManipulator &theItemList) : 
-			ItemList(theItemList)
+	SItemAddCtx (CUniverse &UniverseArg) :
+			Universe(UniverseArg),
+			m_Internal(CItemList::Null()),
+			ItemList(m_Internal)
 		{ }
 
-	CUniverse &GetUniverse (void) { return *g_pUniverse; }
+	SItemAddCtx (CUniverse &UniverseArg, CItemListManipulator &ItemListArg) :
+			Universe(UniverseArg),
+			ItemList(ItemListArg),
+			m_Internal(CItemList::Null())
+		{ }
 
+	SItemAddCtx (CItemListManipulator &theItemList) : 
+			Universe(*g_pUniverse),
+			ItemList(theItemList),
+			m_Internal(CItemList::Null())
+		{ }
+
+	CUniverse &GetUniverse (void) { return Universe; }
+
+	CUniverse &Universe;
 	CItemListManipulator &ItemList;				//	Item list to add items to
 
 	CSystem *pSystem = NULL;					//	System where we're creating items
 	CSpaceObject *pDest = NULL;					//	Object to add to (may be NULL)
 	CVector vPos;								//	Position to use (for LocationCriteriaTable)
 	int iLevel = 1;								//	Level to use for item create (for LevelTable)
+
+	private:
+		CItemListManipulator m_Internal;
 	};
 
 class CItemTypeProbabilityTable
@@ -602,15 +626,16 @@ class IItemGenerator
 	public:
 		static ALERROR CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc, IItemGenerator **retpGenerator);
 		static ALERROR CreateLookupTable (SDesignLoadCtx &Ctx, DWORD dwUNID, IItemGenerator **retpGenerator);
-		static ALERROR CreateRandomItemTable (const CItemCriteria &Crit, 
+		static ALERROR CreateRandomItemTable (CUniverse &Universe,
+											  const CItemCriteria &Crit, 
 											  const CString &sLevelFrequency,
 											  IItemGenerator **retpGenerator);
 
 		virtual ~IItemGenerator (void) { }
 		virtual void AddItems (SItemAddCtx &Ctx) { }
 		virtual void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { }
-		virtual CurrencyValue GetAverageValue (int iLevel) { return 0; }
-		virtual CCurrencyAndValue GetDesiredValue (int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
+		virtual CurrencyValue GetAverageValue (SItemAddCtx &Ctx, int iLevel) { return 0; }
+		virtual CCurrencyAndValue GetDesiredValue (SItemAddCtx &Ctx, int iLevel, int *retiLoopCount = NULL, Metric *retrScale = NULL) const { return CCurrencyAndValue(); }
 		virtual IItemGenerator *GetGenerator (int iIndex) { return NULL; }
 		virtual int GetGeneratorCount (void) { return 0; }
 		virtual CItemType *GetItemType (int iIndex) { return NULL; }
@@ -619,4 +644,7 @@ class IItemGenerator
 		virtual bool HasItemAttribute (const CString &sAttrib) const { return false; }
 		virtual ALERROR LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc) { return NOERROR; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) { return NOERROR; }
+
+	protected:
+		static int CalcLocationAffinity (SItemAddCtx &Ctx, const CAffinityCriteria &Criteria);
 	};

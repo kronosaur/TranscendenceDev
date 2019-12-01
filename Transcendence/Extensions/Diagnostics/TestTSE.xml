@@ -7,6 +7,104 @@
 			<OnGlobalStartDiagnostics>
 				(diagEval (list
 
+					;	CAffinityCriteria
+
+					{	test:'(tseAffinityCriteria
+								"*"
+								"asteroids")								result:{ criteria:"*" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*~"
+								"asteroids")								result:{ criteria:"*~" match:Nil weight:0 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids"
+								"asteroids")								result:{ criteria:"+asteroids;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"++asteroids"
+								"asteroids")								result:{ criteria:"++asteroids;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+++asteroids"
+								"asteroids")								result:{ criteria:"+++asteroids;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*asteroids"
+								"asteroids")								result:{ criteria:"*asteroids;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids"
+								"planet")									result:{ criteria:"+asteroids;" match:Nil weight:500 }	}
+
+					{	test:'(tseAffinityCriteria
+								"++asteroids"
+								"planet")									result:{ criteria:"++asteroids;" match:Nil weight:250 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+++asteroids"
+								"planet")									result:{ criteria:"+++asteroids;" match:Nil weight:100 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*asteroids"
+								"planet")									result:{ criteria:"*asteroids;" match:Nil weight:0 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids"
+								"asteroids" 20)								result:{ criteria:"+asteroids;" match:True weight:3000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"++asteroids"
+								"asteroids" 20)								result:{ criteria:"++asteroids;" match:True weight:4360 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+++asteroids"
+								"asteroids" 20)								result:{ criteria:"+++asteroids;" match:True weight:4800 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*asteroids"
+								"asteroids" 20)								result:{ criteria:"*asteroids;" match:True weight:5000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids"
+								"planet" 20)								result:{ criteria:"+asteroids;" match:Nil weight:500 }	}
+
+					{	test:'(tseAffinityCriteria
+								"++asteroids"
+								"planet" 20)								result:{ criteria:"++asteroids;" match:Nil weight:160 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+++asteroids"
+								"planet" 20)								result:{ criteria:"+++asteroids;" match:Nil weight:50 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*asteroids"
+								"planet" 20)								result:{ criteria:"*asteroids;" match:Nil weight:0 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids|+planet"
+								"planet")									result:{ criteria:"+asteroids; | +planet;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"++asteroids|++planet"
+								"planet")									result:{ criteria:"++asteroids; | ++planet;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+++asteroids|+++planet"
+								"planet")									result:{ criteria:"+++asteroids; | +++planet;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"*asteroids|*planet"
+								"planet")									result:{ criteria:"*asteroids; | *planet;" match:True weight:1000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids|+100"
+								"asteroids")								result:{ criteria:"+asteroids=+100;" match:True weight:2000 }	}
+
+					{	test:'(tseAffinityCriteria
+								"+asteroids|+100|+planet=+100"
+								"planet")									result:{ criteria:"+asteroids=+100; | +planet=+100;" match:True weight:2000 }	}
+
 					;	CIntegerRangeCriteria
 
 					{	test:'(tseParseIntegerRange "=1;")					result:{ equalTo:1 }	}

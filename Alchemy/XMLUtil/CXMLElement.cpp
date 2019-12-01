@@ -241,7 +241,7 @@ bool CXMLElement::FindAttributeBool (const CString &sName, bool *retbValue) cons
 
 	{
 	const CString *pValue = m_Attributes.GetAt(m_Keywords.Atomize(sName));
-	if (pValue == NULL)
+	if (pValue == NULL || pValue->IsBlank())
 		return false;
 
 	if (retbValue)

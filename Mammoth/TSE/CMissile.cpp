@@ -501,6 +501,17 @@ CSpaceObject::Categories CMissile::GetCategory (void) const
 	return ((m_pDesc->GetFireType() == CWeaponFireDesc::ftBeam || m_pDesc->GetInteraction() < MIN_MISSILE_INTERACTION) ? catBeam : catMissile);
 	}
 
+int CMissile::GetLastFireTime (void) const
+
+//	GetLastFireTime
+//
+//	For purposes of aggression, we always treat missiles are recently 
+//	aggressive (we need this so that these missiles are targeted).
+
+	{
+	return GetUniverse().GetTicks();
+	}
+
 int CMissile::GetManeuverRate (void) const
 
 //	GetManeuverRate
@@ -578,7 +589,7 @@ bool CMissile::HasAttribute (const CString &sAttribute) const
 	return pType->HasLiteralAttribute(sAttribute);
 	}
 
-bool CMissile::IsAngryAt (CSpaceObject *pObj) const
+bool CMissile::IsAngryAt (const CSpaceObject *pObj) const
 
 //	IsAngryAt
 //

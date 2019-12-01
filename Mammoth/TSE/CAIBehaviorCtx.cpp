@@ -200,7 +200,15 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	{
 	int i;
 
-	if (m_fRecalcBestWeapon)
+	//	NOTE: We skip this if the ship is in the middle of firing a repeating
+	//	weapon because this function selects each missile to determine its 
+	//	stats, and switching missiles cancels repeat firing.
+	//
+	//	LATER: A better fix is to use a non-destructive (const) technique to
+	//	inquire about each missile.
+
+	if (m_fRecalcBestWeapon
+			&& !pShip->IsWeaponRepeating(devMissileWeapon))
 		{
 		ASSERT(pShip);
 
