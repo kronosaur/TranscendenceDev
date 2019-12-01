@@ -1534,7 +1534,7 @@ CString CItem::GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const
 	return m_pItemType->GetNamePattern(dwNounFormFlags, retdwFlags);
 	}
 
-CString CItem::GetNounPhrase (DWORD dwFlags, bool isCalledFromHUD) const
+CString CItem::GetNounPhrase (DWORD dwFlags) const
 
 //	GetNounPhrase
 //
@@ -1549,7 +1549,7 @@ CString CItem::GetNounPhrase (DWORD dwFlags, bool isCalledFromHUD) const
 
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetHUDName, &Event)
-		&& !(dwFlags & nounNoEvent) && isCalledFromHUD)
+		&& !(dwFlags & nounNoEvent) && (dwFlags & nounHUDName))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 

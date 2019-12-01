@@ -269,7 +269,7 @@ class CItem
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, DWORD dwFlags, int *retiSpeedBonus) const;
 		CSpaceObject *GetSource (void) const;
 		CString GetNamePattern (DWORD dwNounFormFlags, DWORD *retdwFlags) const;
-		CString GetNounPhrase (DWORD dwFlags = 0, bool isCalledFromHUD = false) const;
+		CString GetNounPhrase (DWORD dwFlags = 0) const;
 		int GetRawPrice (bool bActual = false) const { return GetValue(bActual); }
 		int GetTradePrice (const CSpaceObject *pObj = NULL, bool bActual = false) const;
 		CItemType *GetType (void) const { return m_pItemType; }

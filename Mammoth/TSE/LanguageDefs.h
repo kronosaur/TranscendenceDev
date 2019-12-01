@@ -41,6 +41,7 @@ static TStaticStringTable<TStaticStringEntry<DWORD>, 21> NOUN_FLAG_TABLE = {
 
 	"escapeQuotes",			nounEscapeQuotes,
 	"generic",				nounGeneric,
+	"hudName",				nounHUDName,
 	"installedState",		nounInstalledState,
 	"noDeterminer",			nounNoDeterminer,
 	"noEvent",				nounNoEvent,
