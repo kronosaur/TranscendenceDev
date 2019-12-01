@@ -338,7 +338,7 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 
 	//	Paint the target
 
-	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	CSpaceObject *pTarget = pShip->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 	if (pTarget)
 		{
 		//	Paint image

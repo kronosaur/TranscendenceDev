@@ -752,53 +752,10 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 	{
 	int i;
 	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
 
-	//	Get targets, if necessary
+	//	Make sure we have a list of targets.
 
-	if (TargetingCtx.bRecalcTargets)
-		{
-		TargetingCtx.Targets.DeleteAll();
-
-		//	If we are aggressive, then include ships that haven't fired 
-		//	their weapons recently
-
-		DWORD dwFlags = 0;
-		if (m_AICtx.IsAggressor())
-			dwFlags |= CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS;
-
-		//  Include missiles if appropriate
-
-		if (pDevice && pDevice->CanTargetMissiles())
-			dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
-
-		//	First build a list of the nearest enemy ships within
-		//	range of the ship.
-
-		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
-				m_AICtx.GetBestWeaponRange(),
-				&TargetingCtx.Targets,
-				GetBase(),
-				dwFlags);
-
-		//	If we've got a target, add it to the list. Sometimes this will be 
-		//	a duplicate, but that's OK.
-
-		CSpaceObject *pTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
-		if (pTarget)
-			TargetingCtx.Targets.Insert(pTarget);
-
-		//	If the player is blacklisted, add her to the list.
-
-		if (m_fPlayerBlacklisted)
-			{
-			pTarget = m_pShip->GetPlayerShip();
-			if (pTarget)
-				TargetingCtx.Targets.Insert(pTarget);
-			}
-
-		TargetingCtx.bRecalcTargets = false;
-		}
+	InitTargetList(TargetingCtx);
 
 	//	Now find a target for the given weapon.
 
@@ -877,7 +834,7 @@ CSpaceObject *CBaseShipAI::GetPlayerOrderGiver (void) const
 		return m_pShip;
 	}
 
-CSpaceObject *CBaseShipAI::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CBaseShipAI::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
@@ -901,7 +858,7 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 	//	unless they were targeting us.
 
 	if (!pAttacker->IsPlayer() 
-			&& pAttacker->GetTarget(CItemCtx()) != m_pShip)
+			&& pAttacker->GetTarget() != m_pShip)
 		NULL;
 
 	//	If the player hit us (and it seems to be on purpose) then raise an event
@@ -915,6 +872,64 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 
 	else
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
+	}
+
+void CBaseShipAI::InitTargetList (STargetingCtx &TargetingCtx) const
+
+//	CalcTargetsOfOpportunity
+//
+//	Returns a list of targets of opportunity.
+
+	{
+	//	If we've already initialized the target list, then nothing to do.
+
+	if (!TargetingCtx.bRecalcTargets)
+		return;
+
+	//	Start with a blank list.
+
+	TargetingCtx.Targets.DeleteAll();
+
+	//	If we are aggressive, then include ships that haven't fired 
+	//	their weapons recently
+
+	DWORD dwFlags = 0;
+	if (m_AICtx.IsAggressor())
+		dwFlags |= CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS;
+
+	//  Include missiles if appropriate
+
+	if (m_AICtx.ShootsTargetableMissiles())
+		dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
+
+	//	First build a list of the nearest enemy ships within
+	//	range of the ship.
+
+	m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
+			m_AICtx.GetBestWeaponRange(),
+			&TargetingCtx.Targets,
+			GetBase(),
+			dwFlags);
+
+	//	If we've got a target, add it to the list. Sometimes this will be 
+	//	a duplicate, but that's OK.
+
+	CSpaceObject *pTarget = GetTarget(FLAG_NO_AUTO_TARGET);
+	if (pTarget)
+		TargetingCtx.Targets.Insert(pTarget);
+
+	//	If the player is blacklisted, add her to the list.
+
+	if (m_fPlayerBlacklisted)
+		{
+		pTarget = m_pShip->GetPlayerShip();
+		if (pTarget)
+			TargetingCtx.Targets.Insert(pTarget);
+		}
+
+	//	Remember that we're initialized
+
+	TargetingCtx.bRecalcTargets = false;
 	}
 
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
@@ -931,7 +946,7 @@ bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const
 
 	//	If we're attacking the object, then we're angry at it.
 
-	if (GetTarget(CItemCtx()) == pObj)
+	if (GetTarget() == pObj)
 		return true;
 
 	//	Are we angry at the player?

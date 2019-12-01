@@ -293,7 +293,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 		CSpaceObject *pTarget;
 		if (Ctx.pPlayer 
-				&& (pTarget = GetTarget(CItemCtx()))
+				&& (pTarget = GetTarget())
 				&& Ctx.pPlayer->IsEnemy(this)
 				&& (GetUniverse().GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
 				&& (pTarget == Ctx.pPlayer || pTarget->IsPlayerEscortTarget(Ctx.pPlayer)))
@@ -611,7 +611,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
-		*retpTarget = m_pController->GetTarget(ItemCtx);
+		*retpTarget = m_pController->GetTarget();
 		*retiFireSolution = -1;
 		return true;
 		}
@@ -642,16 +642,17 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
 			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
-			(dwLinkedFireOptions & dwLinkedFireSelected) &&
-			IsPlayer()
-			))
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) 
+			|| (((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
+							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false)
+							)
+						&& (pWeapon->GetCategory() == itemcatWeapon))
+					|| (!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
+							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
+						&& (pWeapon->GetCategory() == itemcatLauncher)))
+				&& (dwLinkedFireOptions & dwLinkedFireSelected) 
+				&& IsPlayer()
+				))
 			{
 			return false;
 			}
@@ -661,7 +662,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
 			{
-			*retpTarget = m_pController->GetTarget(ItemCtx);
+			*retpTarget = m_pController->GetTarget();
 			*retiFireSolution = -1;
 
 			return true;
@@ -3180,7 +3181,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_AUTO_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), 0);
+		CSpaceObject *pTarget = GetTarget();
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3399,7 +3400,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+		CSpaceObject *pTarget = GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3521,14 +3522,14 @@ int CShip::GetStealth (void) const
 	return Min((int)stealthMax, iStealth);
 	}
 
-CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CShip::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
 //	Returns the target that this ship is attacking
 
 	{
-	return m_pController->GetTarget(ItemCtx, dwFlags);
+	return m_pController->GetTarget(dwFlags);
 	}
 
 int CShip::GetTotalArmorHP (int *retiMaxHP) const

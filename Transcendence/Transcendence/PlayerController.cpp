@@ -651,7 +651,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	The principal target is always first.
 
-		CSpaceObject *pMainTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
+		CSpaceObject *pMainTarget = GetTarget(FLAG_NO_AUTO_TARGET);
 		if (pMainTarget)
 			TargetingCtx.Targets.Insert(pMainTarget);
 
@@ -1872,7 +1872,7 @@ bool CPlayerShipController::GetDeviceActivate (void)
 	return m_bActivate;
 	}
 
-CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //

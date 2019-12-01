@@ -307,7 +307,7 @@ class IShipController
 
 		static constexpr DWORD FLAG_ACTUAL_TARGET =		0x00000001;
 		static constexpr DWORD FLAG_NO_AUTO_TARGET =	0x00000002;
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const { return NULL; }
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 
 		virtual bool GetThrust (void) = 0;
 		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) { }

@@ -7518,7 +7518,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_TARGET:
 			{
-			CSpaceObject *pTarget = pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+			CSpaceObject *pTarget = pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 			if (pTarget)
 				pResult = pCC->CreateInteger((int)pTarget);
 			else
@@ -8241,7 +8241,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pArgs->GetCount() >= 3)
 				pTarget = CreateObjFromItem(pArgs->GetElement(2));
 			else
-				pTarget = pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+				pTarget = pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 
 			CString sError;
 

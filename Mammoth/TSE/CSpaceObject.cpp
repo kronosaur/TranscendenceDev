@@ -5557,7 +5557,7 @@ bool CSpaceObject::IsPlayerAttackJustified (void) const
 
 		if (pObj
 				&& IsEnemy(pObj)
-				&& ((pTarget = pObj->GetTarget(CItemCtx())) == this
+				&& ((pTarget = pObj->GetTarget()) == this
 						|| pTarget == pPlayer)
 				&& pObj != pPlayer
 				&& pObj != this)
@@ -5641,7 +5641,7 @@ bool CSpaceObject::IsUnderAttack (void)
 		CSpaceObject *pObj = GetSystem()->GetObject(i);
 
 		if (pObj
-				&& pObj->GetTarget(CItemCtx()) == this
+				&& pObj->GetTarget() == this
 				&& IsEnemy(pObj)
 				&& pObj != this)
 			return true;
@@ -6124,7 +6124,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 	if (Crit.MatchesHomeBaseIsSource() && GetBase() != pSource)
 		return false;
 
-	if (Crit.MatchesTargetIsSource() && GetTarget(CItemCtx()) != pSource)
+	if (Crit.MatchesTargetIsSource() && GetTarget() != pSource)
 		return false;
 
 	//	Check level

@@ -533,7 +533,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual int GetStealth (void) const override;
-        virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override { return m_pTarget; }
+        virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override { return m_pTarget; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
@@ -1172,7 +1172,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetStealth (void) const override;
 		virtual Metric GetMaxSpeed (void) override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
@@ -1530,7 +1530,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CString GetStargateID (void) const override;
 		virtual int GetStealth (void) const override;
 		virtual Metric GetStellarMass (void) const override { return (GetScale() == scaleStar ? m_rMass : 0.0); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }
