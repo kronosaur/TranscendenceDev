@@ -346,6 +346,8 @@ class CVisibleObjSelector
 		bool m_bIncludeTargetableMissiles = false;
 	};
 
+//	ENUMERATION FUNCTIONS ------------------------------------------------------
+
 class CSpaceObjectEnum
 	{
 	public:

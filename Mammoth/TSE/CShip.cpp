@@ -6271,57 +6271,12 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                         if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
                             m_iLastFireTime = GetUniverse().GetTicks();
 
-						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
-						//  type, and increment their fire delays.
-						DWORD dwLinkedFireOptions = pDevice->GetSlotLinkedFireOptions();
-						DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+						//  Set the delay for the next activation.
 
-						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
-							{
-							int iFireDelayToIncrement = 0;
-							int iNumberOfGuns = 1;
-							TQueue<CInstalledDevice *> WeaponsInFireGroup;
-							DWORD iGunUNID = pDevice->GetUNID();
-
-							for (int i = 0; i < m_Devices.GetCount(); i++)
-								{
-								CInstalledDevice *currDevice = GetDevice(i);
-								if (!currDevice->IsEmpty())
-									{
-									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
-										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
-											&& currDevice != pDevice && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
-											{
-											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
-											if (currDevice->GetSlotLinkedFireOptions()
-												& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
-												{
-												//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
-												iNumberOfGuns++;
-												if (currDevice->IsReady())
-													WeaponsInFireGroup.Enqueue(currDevice);
-												}
-											}
-										}
-									}
-								}
-							iFireDelayToIncrement = (m_pController->GetFireRateAdj() * pDevice->GetActivateDelay(this) / 10);
-							iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
-							while (WeaponsInFireGroup.GetCount() > 0)
-								{
-								SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
-								WeaponsInFireGroup.Dequeue();
-								}
-							//	Set delay for next activation
-
-							SetFireDelay(pDevice, iNumberOfGuns > 1 ? iFireDelayToIncrement * iNumberOfGuns : -1);
-							}
+						if ((pDevice->GetSlotLinkedFireOptions() != 0) && pDevice->GetCycleFireSettings())
+							SetFireDelayForCycleWeapons(*pDevice);
 						else
-							//	Set delay for next activation
-
 							SetFireDelay(pDevice);
-
                         }
                     }
                 }
@@ -7712,6 +7667,59 @@ void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)
 		pWeapon->SetTimeUntilReady(iDelay);
 
 	DEBUG_CATCH
+	}
+
+void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
+
+//	SetFireDelayForCycleWeapons
+//
+//  If the options is "fire if selected", and "cycleFire" is True, then find 
+//	the other weapons installed of the same type, and increment their fire 
+//	delays.
+
+	{
+	CItemCtx DeviceCtx(this, &Device);
+
+	int iFireDelayToIncrement = 0;
+	int iNumberOfGuns = 1;
+	TQueue<CInstalledDevice *> WeaponsInFireGroup;
+	DWORD iGunUNID = Device.GetUNID();
+
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		{
+		CInstalledDevice *currDevice = GetDevice(i);
+		if (!currDevice->IsEmpty())
+			{
+			if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
+				{
+				if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
+					&& currDevice != &Device && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
+					{
+					//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
+					if (currDevice->GetSlotLinkedFireOptions()
+						& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
+						{
+						//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
+						iNumberOfGuns++;
+						if (currDevice->IsReady())
+							WeaponsInFireGroup.Enqueue(currDevice);
+						}
+					}
+				}
+			}
+		}
+
+	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
+	while (WeaponsInFireGroup.GetCount() > 0)
+		{
+		SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
+		WeaponsInFireGroup.Dequeue();
+		}
+
+	//	Set delay for next activation
+
+	SetFireDelay(&Device, iNumberOfGuns > 1 ? iFireDelayToIncrement * iNumberOfGuns : -1);
 	}
 
 void CShip::SetInGate (CSpaceObject *pGate, int iTickCount)
