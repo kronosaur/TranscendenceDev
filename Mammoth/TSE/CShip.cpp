@@ -5299,7 +5299,7 @@ void CShip::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx)
 	//	Paint the ship
 
 	//	Paint the body of the ship
-	::kernelDebugLogPattern("[OpenGL] Failed to choose pixel format.");
+
 	if (byShimmer)
 		Image.PaintImageShimmering(Dest, x, y, Ctx.iTick, m_Rotation.GetFrameIndex(), byShimmer);
 	else if (IsRadioactive())
