@@ -12,6 +12,9 @@ class CShipClass;
 
 //	ITEM -----------------------------------------------------------------------
 //
+//	CDifferentiatedItem and its subclasses are used to access functionality
+//	specific to armor, devices, etc.
+//
 //	HACK: The pattern below does not deal with const properly. When we migrate
 //	to C++17 we should use the following pattern:
 //
@@ -52,17 +55,17 @@ class CDifferentiatedItem
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
-		CDifferentiatedItem (CItem *pItem) :
-				m_pCItem(pItem),
-				m_pItem(pItem)
+		CDifferentiatedItem (CItem &Item) :
+				m_Item(Item)
 			{ }
 
-		CDifferentiatedItem (const CItem *pItem) :
-				m_pCItem(pItem)
+		//	NOTE: See comment above.
+
+		CDifferentiatedItem (const CItem &Item) :
+				m_Item(const_cast<CItem &>(Item))
 			{ }
 
-		const CItem *m_pCItem = NULL;
-		CItem *m_pItem = NULL;
+		CItem &m_Item;
 
 		mutable TSharedPtr<CItemEnhancementStack> m_pEnhancements;	//	Only used if we need to cons one up
 
@@ -96,10 +99,9 @@ class CArmorItem : public CDifferentiatedItem
 			Metric rCost = 0.0;					//	Balance from cost
 			};
 
-		operator bool () const { return (m_pCItem != NULL); }
-		operator bool () { return (m_pItem != NULL); }
-		operator const CItem & () const { return *m_pCItem; }
-		operator CItem & () { return *m_pItem; }
+		inline operator bool () const;
+		operator const CItem & () const { return m_Item; }
+		operator CItem & () { return m_Item; }
 
 		void AccumulateAttributes (TArray<SDisplayAttribute> *retList) const;
 		inline int CalcBalance (SBalance &retBalance) const;
@@ -120,10 +122,10 @@ class CArmorItem : public CDifferentiatedItem
 		inline CSpaceObject *GetSource (void) const;
 
 	private:
-		CArmorItem (CItem *pItem) : CDifferentiatedItem(pItem)
+		CArmorItem (CItem &Item) : CDifferentiatedItem(Item)
 			{ }
 
-		CArmorItem (const CItem *pItem) : CDifferentiatedItem(pItem)
+		CArmorItem (const CItem &Item) : CDifferentiatedItem(Item)
 			{ }
 
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
@@ -135,10 +137,9 @@ class CDeviceItem : public CDifferentiatedItem
 	{
 	public:
 
-		operator bool () const { return (m_pCItem != NULL); }
-		operator bool () { return (m_pItem != NULL); }
-		operator const CItem & () const { return *m_pCItem; }
-		operator CItem & () { return *m_pItem; }
+		inline operator bool () const;
+		operator const CItem & () const { return m_Item; }
+		operator CItem & () { return m_Item; }
 
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
@@ -152,10 +153,10 @@ class CDeviceItem : public CDifferentiatedItem
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
-		CDeviceItem (CItem *pItem) : CDifferentiatedItem(pItem)
+		CDeviceItem (CItem &Item) : CDifferentiatedItem(Item)
 			{ }
 
-		CDeviceItem (const CItem *pItem): CDifferentiatedItem(pItem)
+		CDeviceItem (const CItem &Item): CDifferentiatedItem(Item)
 			{ }
 
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
@@ -336,16 +337,16 @@ class CItem
 		//	Similar patterns apply for other item categories (devices, etc.).
 
 		inline bool IsArmor (void) const;
-		const CArmorItem AsArmorItem (void) const { return CArmorItem(IsArmor() ? this : NULL); }
-		CArmorItem AsArmorItem (void) { return CArmorItem(IsArmor() ? this : NULL); }
-		const CArmorItem AsArmorItemOrThrow (void) const { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
-		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(this); else throw CException(ERR_FAIL); }
+		const CArmorItem AsArmorItem (void) const { return CArmorItem(IsArmor() ? *this : CItem::m_NullItem); }
+		CArmorItem AsArmorItem (void) { return CArmorItem(IsArmor() ? *this : CItem::m_NullItem); }
+		const CArmorItem AsArmorItemOrThrow (void) const { if (IsArmor()) return CArmorItem(*this); else throw CException(ERR_FAIL); }
+		CArmorItem AsArmorItemOrThrow (void) { if (IsArmor()) return CArmorItem(*this); else throw CException(ERR_FAIL); }
 
 		inline bool IsDevice (void) const;
-		const CDeviceItem AsDeviceItem (void) const { return CDeviceItem(IsDevice() ? this : NULL); }
-		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? this : NULL); }
-		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(this); else throw CException(ERR_FAIL); }
-		CDeviceItem AsDeviceItemOrThrow (void) { if (IsDevice()) return CDeviceItem(this); else throw CException(ERR_FAIL); }
+		const CDeviceItem AsDeviceItem (void) const { return CDeviceItem(IsDevice() ? *this : NullItem()); }
+		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? *this : CItem::m_NullItem); }
+		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
+		CDeviceItem AsDeviceItemOrThrow (void) { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
 
 		//	Item Criteria
 
