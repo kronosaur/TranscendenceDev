@@ -1719,7 +1719,7 @@ bool CWeaponClass::FireGetAmmoCountToDisplay (const CDeviceItem &DeviceItem, con
 		DeviceItem.ReportEventError(GET_AMMO_COUNT_TO_DISPLAY_EVENT, *pResult);
 		return false;
 		}
-	else if (pResult->IsNumber())
+	else if (pResult->IsNumber() && !pResult->IsNil())
 		{
 		if (retiAmmoCount)
 			*retiAmmoCount = pResult->GetIntegerValue();
