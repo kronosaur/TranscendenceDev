@@ -33,7 +33,7 @@ void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 	// Using glTexStorage2D + glTexSubImage2D gives acceptable performance unlike initialization with glTexImage2D. Not sure why.
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, m_pixelFormat, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -59,7 +59,7 @@ void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
 		memcpy(pMappedBuffer, texture, iDataSize);
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	}
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, m_pixelFormat, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
