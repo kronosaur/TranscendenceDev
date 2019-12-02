@@ -9,8 +9,13 @@ in vec2 aCanvasPositions;
 out vec3 pass_Color;
 void main(void)
 {
-	vec2 pos2d = vec2(aPos[0] * aQuadSizes[0], aPos[1] * aQuadSizes[1]) + aCanvasPositions + (aTexPositions * 0.0001f);
+	// Fix positions and sizes
+	vec2 fixedSize = aQuadSizes * 2.0;
+	vec2 positionOffset = vec2(fixedSize[0], -fixedSize[1]) / 2.0;
+	vec2 fixedCanvPos = vec2((aCanvasPositions[0] * 2.0) - 1.0, (aCanvasPositions[1] * -2.0) + 1.0);
+	fixedCanvPos = fixedCanvPos + positionOffset;
+	vec2 pos2d = vec2(aPos[0] * fixedSize[0], aPos[1] * fixedSize[1]) + fixedCanvPos;
 	
     gl_Position = vec4(pos2d, aPos[2], 1.0);
-    pass_Color = aColor;
+    pass_Color = vec3(aTexPositions, 1.0) + aColor;
 }

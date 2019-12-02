@@ -109,15 +109,15 @@ void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY
 	int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight,
 	int canvasWidth)
 	{
-	glm::vec2 texPos((float)startPixelX / (float)canvasHeight,
-		(float)startPixelY / (float)canvasWidth);
-	glm::vec2 size((float)sizePixelX / (float)canvasHeight,
-		(float)sizePixelY / (float)canvasWidth);
-	glm::vec2 canvasPos((float)posPixelX / (float)canvasHeight,
-		(float)posPixelY / (float)canvasWidth);
+	glm::vec2 texPos((float)startPixelX / (float)canvasWidth,
+		(float)startPixelY / (float)canvasHeight);
+	glm::vec2 size((float)sizePixelX / (float)canvasWidth,
+		(float)sizePixelY / (float)canvasHeight);
+	glm::vec2 canvasPos((float)posPixelX / (float)canvasWidth,
+		(float)posPixelY / (float)canvasHeight);
 
-	m_texturePositionsFloat.insert(m_texturePositionsFloat.begin(), texPos);
-	m_quadSizesFloat.insert(m_quadSizesFloat.begin(), size);
-	m_canvasPositionsFloat.insert(m_canvasPositionsFloat.begin(), canvasPos);
+	m_texturePositionsFloat.insert(m_texturePositionsFloat.end(), texPos);
+	m_quadSizesFloat.insert(m_quadSizesFloat.end(), size);
+	m_canvasPositionsFloat.insert(m_canvasPositionsFloat.end(), canvasPos);
 	m_iNumObjectsToRender++;
 	}
