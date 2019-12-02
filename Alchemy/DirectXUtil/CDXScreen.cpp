@@ -634,8 +634,8 @@ void CDXScreen::Render (void)
 		if (m_pOpenGLTexture)
 		{
 			Layer.BackBuffer.InitOpenGL();
-			Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());
 			m_pOGLContext->testTextures(m_pOpenGLTexture);
+			Layer.BackBuffer.GetInstancedRenderQueue()->Render(Layer.BackBuffer.GetInstancedRenderQueue()->getShader(), Layer.BackBuffer.GetInstancedRenderQueue()->getVAO());
 		}
 		else
 			m_pOGLContext->testShaders();

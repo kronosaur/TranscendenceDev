@@ -1359,7 +1359,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 	if (m_pImage)
 		{
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
-		OpenGLInstancedRenderQueue *pRenderQueue = Dest.GetInstancedRenderQueue();
+ 		OpenGLInstancedRenderQueue *pRenderQueue = Dest.GetInstancedRenderQueue();
 		if (pSource == NULL)
 			return;
 

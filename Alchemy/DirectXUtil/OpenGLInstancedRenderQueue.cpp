@@ -26,7 +26,7 @@ void OpenGLInstancedRenderQueue::initializeVAO(void)
 	// be the basis for all of our quads rendered using this queue.
 	// TODO(heliogenesis): Allow passing in of the texture for loading. Maybe move
 	// this VAO to the parent class once it's done?
-	float fSize = 1.0f;
+	float fSize = 0.5f;
 	float posZ = 0.0f; // TODO(heliogenesis): Fix this
 
 	std::vector<float> vertices{
@@ -61,15 +61,15 @@ void OpenGLInstancedRenderQueue::initializeVAO(void)
 	glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(3);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[1]);
-	glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glVertexAttribPointer((GLuint)3, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
-	glVertexAttribPointer((GLuint)2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glVertexAttribPointer((GLuint)4, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(2, 1);
-	glVertexAttribDivisor(3, 2);
-	glVertexAttribDivisor(4, 3);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
 	glBindVertexArray(0);
 	
 	}
@@ -87,10 +87,10 @@ void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *vao)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_quadSizesFloat[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_canvasPositionsFloat[0], GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		shader->bind();
-		glDrawElementsInstanced(GL_TRIANGLES, 0, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
 		shader->unbind();
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 		clear();
 		}
