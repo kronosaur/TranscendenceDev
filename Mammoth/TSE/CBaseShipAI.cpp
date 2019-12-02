@@ -1792,22 +1792,18 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 //	Upgrade the ship's weapon with a better one in cargo
 
 	{
-	int i;
-
 	//	Loop over all currently installed weapons
 
 	bool bWeaponsInstalled = false;
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() 
-				&& pDevice->GetCategory() == itemcatWeapon)
+		if (DeviceItem.GetCategory() == itemcatWeapon)
 			{
 			//	Loop over all uninstalled weapons and see if we can
 			//	find something better than this one.
 
 			CItem BestItem;
-			int iBestLevel = pDevice->GetLevel();
+			int iBestLevel = DeviceItem.GetLevel();
 
 			CItemListManipulator ItemList(m_pShip->GetItemList());
 			while (ItemList.MoveCursorForward())
@@ -1842,17 +1838,19 @@ void CBaseShipAI::UpgradeWeaponBehavior (void)
 
 			//	If we found a better weapon, upgrade
 
-			if (BestItem.GetType())
+			if (!BestItem.IsEmpty())
 				{
+				int iSlot = DeviceItem.GetInstalledDevice()->GetDeviceSlot();
+
 				//	Uninstall the previous weapon
 
-				m_pShip->SetCursorAtDevice(ItemList, i);
+				m_pShip->SetCursorAtDevice(ItemList, iSlot);
 				m_pShip->RemoveItemAsDevice(ItemList);
 
 				//	Install the new item
 
 				ItemList.SetCursorAtItem(BestItem);
-				m_pShip->InstallItemAsDevice(ItemList, i);
+				m_pShip->InstallItemAsDevice(ItemList, iSlot);
 
 				bWeaponsInstalled = true;
 				}

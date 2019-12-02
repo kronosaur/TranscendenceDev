@@ -15,8 +15,8 @@ class CShipClass;
 //	CDifferentiatedItem and its subclasses are used to access functionality
 //	specific to armor, devices, etc.
 //
-//	HACK: The pattern below does not deal with const properly. When we migrate
-//	to C++17 we should use the following pattern:
+//	HACK: The pattern below does not deal with const properly. Consider using 
+//	the following pattern:
 //
 //	#include <type_traits>
 //	
@@ -44,12 +44,14 @@ class CShipClass;
 class CDifferentiatedItem
 	{
 	public:
+		inline ItemCategories GetCategory (void) const;
 		inline int GetCharges (void) const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
+		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
@@ -144,9 +146,11 @@ class CDeviceItem : public CDifferentiatedItem
 		void AccumulateAttributes (const CItem &Ammo, TArray<SDisplayAttribute> *retList) const;
 		inline const CDeviceClass &GetDeviceClass (void) const;
 		inline CDeviceClass &GetDeviceClass (void);
+		inline int GetDeviceSlot (void) const;
 		inline const CItemEnhancementStack &GetEnhancements (void) const;
 		int GetHP (int *retiMaxHP = NULL, bool bUninstalled = false) const;
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
+		inline CInstalledDevice *GetInstalledDevice (void);
 		DWORD GetLinkedFireOptions (void) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;

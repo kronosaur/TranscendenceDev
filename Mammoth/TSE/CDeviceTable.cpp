@@ -1190,8 +1190,7 @@ bool CGroupOfDeviceGenerators::FindDefaultDesc (CSpaceObject *pObj, const CItem 
 		if (m_SlotDesc[i].iMaxCount != -1 
 				&& !m_SlotDesc[i].DefaultDesc.sID.IsBlank()
 				&& pObj
-				&& pObj->GetDeviceSystem()
-				&& pObj->GetDeviceSystem()->GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
+				&& pObj->GetDeviceSystem().GetCountByID(m_SlotDesc[i].DefaultDesc.sID) >= m_SlotDesc[i].iMaxCount)
 			continue;
 
 		//	If we get this far, then this is a valid slot.

@@ -477,7 +477,8 @@ class CSpaceObject
 
 		//	Devices
 
-		virtual CDeviceSystem *GetDeviceSystem (void) { return NULL; }
+		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
+		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 
 		//	Docking
 

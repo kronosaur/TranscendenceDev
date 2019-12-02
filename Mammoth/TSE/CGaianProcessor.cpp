@@ -201,38 +201,34 @@ void CGaianProcessorAI::CalcDevices (void)
 //	m_dwAmmo
 
 	{
-	int i;
-
 	if (m_iDestructorDev == -1)
 		{
 		//	Loop over all devices to find the weapons
 
-		for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 			{
-			CInstalledDevice *pWeapon = m_pShip->GetDevice(i);
-			CItemCtx Ctx(m_pShip, pWeapon);
+			CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
+			CItemCtx Ctx(m_pShip, &Weapon);
 
-			if (pWeapon->IsEmpty())
-				NULL;
-			else if (pWeapon->IsSecondaryWeapon())
+			if (Weapon.IsSecondaryWeapon())
 				{
 				if (m_dwAmmo == 0)
 					{
 					CItemType *pAmmoType = NULL;
-					pWeapon->GetSelectedVariantInfo(m_pShip, NULL, NULL, &pAmmoType);
+					Weapon.GetSelectedVariantInfo(m_pShip, NULL, NULL, &pAmmoType);
 					if (pAmmoType)
 						m_dwAmmo = pAmmoType->GetUNID();
 					}
 				}
 			else
 				{
-				const DamageDesc *pDamage = pWeapon->GetDamageDesc(Ctx);
+				const DamageDesc *pDamage = Weapon.GetDamageDesc(Ctx);
 				if (pDamage)
 					{
 					if (pDamage->GetMassDestructionLevel())
-						m_iDestructorDev = i;
+						m_iDestructorDev = Weapon.GetDeviceSlot();
 					else if (pDamage->GetEMPDamage())
-						m_iDisablerDev = i;
+						m_iDisablerDev = Weapon.GetDeviceSlot();
 					}
 				}
 			}

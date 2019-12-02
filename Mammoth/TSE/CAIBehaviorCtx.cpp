@@ -221,32 +221,29 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 	int iPrimaryCount = 0;
 	int iBestNonLauncherLevel = 0;
 
-	//	Loop over all devices to find the best weapon
-
-	for (int i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pWeapon = pShip->GetDevice(i);
-		CItemCtx ItemCtx(pShip, pWeapon);
+		CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
 
 		//	If this weapon is not working, then skip it
 
-		if (pWeapon->IsEmpty() || !pWeapon->IsWorking())
+		if (!Weapon.IsWorking())
 			continue;
 
 		//	See if this weapon shoots missiles.
 
-		if (pWeapon->CanTargetMissiles())
+		if (Weapon.CanTargetMissiles())
 			m_fShootTargetableMissiles = true;
 
 		//	If this is a secondary weapon, remember that we have some and 
 		//	keep track of the best range.
 
-		if (pWeapon->IsSecondaryWeapon())
+		if (Weapon.IsSecondaryWeapon())
 			{
 			//	Remember the range in case we end up with no good weapons and we need to set 
 			//	a course towards the target.
 
-			Metric rRange = pWeapon->GetClass()->GetMaxEffectiveRange(pShip, pWeapon, pTarget);
+			Metric rRange = Weapon.GetClass()->GetMaxEffectiveRange(pShip, &Weapon, pTarget);
 			if (rRange < rBestRange)
 				rBestRange = rRange;
 
@@ -256,7 +253,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 		//	Skip linked-fire weapons
 
-		else if (pWeapon->IsLinkedFire())
+		else if (Weapon.IsLinkedFire())
 			continue;
 
 		//	Otherwise, this is a primary weapon or launcher
@@ -265,24 +262,24 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 			{
 			//	Compute score
 
-			switch (pWeapon->GetCategory())
+			switch (Weapon.GetCategory())
 				{
 				case itemcatWeapon:
 					{
-					int iScore = CalcWeaponScore(pShip, pTarget, pWeapon, rTargetDist2);
+					int iScore = CalcWeaponScore(pShip, pTarget, &Weapon, rTargetDist2);
 					if (iScore > iBestScore)
 						{
-						iBestWeapon = i;
+						iBestWeapon = Weapon.GetDeviceSlot();
 						iBestWeaponVariant = 0;
 						iBestScore = iScore;
 						}
 
-					Metric rMaxRange = pWeapon->GetMaxEffectiveRange(pShip);
+					Metric rMaxRange = Weapon.GetMaxEffectiveRange(pShip);
 					if (rMaxRange > m_rMaxWeaponRange)
 						m_rMaxWeaponRange = rMaxRange;
 
-                    int iWeaponLevel = pWeapon->GetLevel();
-					if (!pWeapon->GetClass()->IsAmmoWeapon()
+                    int iWeaponLevel = Weapon.GetLevel();
+					if (!Weapon.GetClass()->IsAmmoWeapon()
 							&& iWeaponLevel > iBestNonLauncherLevel)
 						iBestNonLauncherLevel = iWeaponLevel;
 
@@ -299,7 +296,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 						for (int j = 0; j < iCount; j++)
 							{
-							int iScore = CalcWeaponScore(pShip, pTarget, pWeapon, rTargetDist2);
+							int iScore = CalcWeaponScore(pShip, pTarget, &Weapon, rTargetDist2);
 
 							//	If we only score 1 and we've got secondary weapons, then don't
 							//	bother with this missile (we don't want to waste it)
@@ -311,7 +308,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 								//	Remember the range in case we end up with no good weapons and we need to set 
 								//	a course towards the target.
 
-								Metric rRange = pWeapon->GetClass()->GetMaxEffectiveRange(pShip, pWeapon, pTarget);
+								Metric rRange = Weapon.GetClass()->GetMaxEffectiveRange(pShip, &Weapon, pTarget);
 								if (rRange < rBestRange)
 									rBestRange = rRange;
 
@@ -321,7 +318,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 							if (iScore > iBestScore)
 								{
-								iBestWeapon = i;
+								iBestWeapon = Weapon.GetDeviceSlot();
 								iBestWeaponVariant = j;
 								iBestScore = iScore;
 								}
@@ -385,8 +382,6 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 //	Calculates some invariant properties of the ship
 
 	{
-	int i;
-
 	//	Basic properties
 
 	m_fImmobile = (pShip->GetMaxSpeed() == 0.0);
@@ -434,23 +429,23 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 
 	int iPrimaryCount = 0;
 
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
-		if (pDevice->IsEmpty() || !pDevice->IsWorking())
+		if (!Device.IsWorking())
 			continue;
 
-		switch (pDevice->GetCategory())
+		switch (Device.GetCategory())
 			{
 			case itemcatWeapon:
 			case itemcatLauncher:
 				{
 				//	Figure out the best non-launcher level
 
-                int iWeaponLevel = pDevice->GetLevel();
-				if (pDevice->GetCategory() != itemcatLauncher
-						&& !pDevice->GetClass()->IsAmmoWeapon()
+                int iWeaponLevel = Device.GetLevel();
+				if (Device.GetCategory() != itemcatLauncher
+						&& !Device.GetClass()->IsAmmoWeapon()
 						&& iWeaponLevel > m_iBestNonLauncherWeaponLevel)
 					{
 					m_iBestNonLauncherWeaponLevel = iWeaponLevel;
@@ -458,17 +453,17 @@ void CAIBehaviorCtx::CalcInvariants (CShip *pShip)
 
 				//	Secondary
 
-				if (pDevice->IsSecondaryWeapon())
+				if (Device.IsSecondaryWeapon())
 					m_fHasSecondaryWeapons = true;
-				else if (pDevice->GetCategory() == itemcatWeapon)
+				else if (Device.GetCategory() == itemcatWeapon)
 					iPrimaryCount++;
 
 				break;
 				}
 
 			case itemcatShields:
-				m_pShields = pDevice;
-				if (pDevice->GetClass()->GetUNID() == g_SuperconductingShieldsUNID)
+				m_pShields = &Device;
+				if (Device.GetClass()->GetUNID() == g_SuperconductingShieldsUNID)
 					m_fSuperconductingShields = true;
 				break;
 			}

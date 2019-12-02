@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <iterator>
+
 struct SShipPerformanceCtx;
 
 //	Basic ship properties ------------------------------------------------------
@@ -129,6 +131,66 @@ class CDeviceSystem
 		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const;
 		bool Uninstall (CSpaceObject *pObj, CItemListManipulator &ItemList, ItemCategories *retiCat = NULL);
         void WriteToStream (IWriteStream *pStream);
+
+		class iterator
+			{
+			public:
+				using iterator_category = std::forward_iterator_tag;
+
+				iterator (void) { }
+				iterator (CInstalledDevice *pPos, CInstalledDevice *pEnd);
+
+				iterator &operator= (const iterator &Src) { m_pPos = Src.m_pPos; return *this; }
+				friend bool operator== (const iterator &lhs, const iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
+				friend bool operator!= (const iterator &lhs, const iterator &rhs) { return !(lhs == rhs); }
+
+				iterator &operator++ ();
+				iterator operator++ (int) {	iterator Old = *this; ++(*this); return Old; }
+
+				CInstalledDevice &operator* () const { return *m_pPos; }
+				CInstalledDevice *operator-> () const { return m_pPos; }
+
+				friend void swap (iterator &lhs, iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
+
+			private:
+				CInstalledDevice *m_pPos = NULL;
+				CInstalledDevice *m_pEnd = NULL;
+			};
+
+		class const_iterator
+			{
+			public:
+				using iterator_category = std::forward_iterator_tag;
+
+				const_iterator (void) { }
+				const_iterator (const CInstalledDevice *pPos, const CInstalledDevice *pEnd);
+
+				const_iterator &operator= (const const_iterator &Src) { m_pPos = Src.m_pPos; return *this; }
+				friend bool operator== (const const_iterator &lhs, const const_iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
+				friend bool operator!= (const const_iterator &lhs, const const_iterator &rhs) { return !(lhs == rhs); }
+
+				const_iterator &operator++ ();
+				const_iterator operator++ (int) { const_iterator Old = *this; ++(*this); return Old; }
+
+				const CInstalledDevice &operator* () const { return *m_pPos; }
+				const CInstalledDevice *operator-> () const { return m_pPos; }
+
+				friend void swap (const_iterator &lhs, const_iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
+
+			private:
+				const CInstalledDevice *m_pPos = NULL;
+				const CInstalledDevice *m_pEnd = NULL;
+			};
+
+		const_iterator begin (void) const {	return cbegin(); }
+		const_iterator cbegin (void) const { return (m_Devices.GetCount() == 0 ? const_iterator() : const_iterator(&m_Devices[0], &m_Devices[0] + m_Devices.GetCount())); }
+		const_iterator end (void) const { return cend(); }
+		const_iterator cend (void) const { return (m_Devices.GetCount() == 0 ? const_iterator() : const_iterator(&m_Devices[0] + m_Devices.GetCount(), &m_Devices[0] + m_Devices.GetCount())); }
+
+		iterator begin (void) {	return (m_Devices.GetCount() == 0 ? iterator() : iterator(&m_Devices[0], &m_Devices[0] + m_Devices.GetCount())); }
+		iterator end (void) { return (m_Devices.GetCount() == 0 ? iterator() : iterator(&m_Devices[0] + m_Devices.GetCount(), &m_Devices[0] + m_Devices.GetCount())); }
+
+		static CDeviceSystem m_Null;
 
 	private:
 		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;

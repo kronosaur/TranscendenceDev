@@ -41,6 +41,11 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline ItemCategories CDifferentiatedItem::GetCategory (void) const
+	{
+	return GetType().GetCategory();
+	}
+
 inline int CDifferentiatedItem::GetCharges (void) const
 	{
 	return m_Item.GetCharges();
@@ -73,6 +78,11 @@ inline int CDifferentiatedItem::GetMassKg (void) const
 inline int CDifferentiatedItem::GetMinLevel (void) const
 	{
 	return GetType().GetMinLevel();
+	}
+
+inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
+	{
+	return m_Item.GetNounPhrase(dwFlags);
 	}
 
 inline const CItemType &CDifferentiatedItem::GetType (void) const
@@ -247,6 +257,14 @@ inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	return *GetType().GetDeviceClass();
 	}
 
+inline int CDeviceItem::GetDeviceSlot (void) const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->GetDeviceSlot();
+	else
+		return -1;
+	}
+
 inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
 	{
 	const CItemEnhancementStack *pStack = GetEnhancementStack();
@@ -257,6 +275,11 @@ inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
 	}
 
 inline const CInstalledDevice *CDeviceItem::GetInstalledDevice (void) const
+	{
+	return m_Item.GetInstalledDevice();
+	}
+
+inline CInstalledDevice *CDeviceItem::GetInstalledDevice (void)
 	{
 	return m_Item.GetInstalledDevice();
 	}

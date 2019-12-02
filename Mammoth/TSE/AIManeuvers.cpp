@@ -1333,8 +1333,6 @@ void CAIBehaviorCtx::ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceOb
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	If this ship has secondary weapons that also fire at will
 	//	(note that we don't turn this on normally because it is relatively
 	//	expensive)
@@ -1342,11 +1340,12 @@ void CAIBehaviorCtx::ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceOb
 	if (HasSecondaryWeapons() 
 			&& !m_AISettings.NoTargetsOfOpportunity())
 		{
-		for (i = 0; i < pShip->GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 			{
-			CInstalledDevice *pDevice = pShip->GetDevice(i);
-			if (!pDevice->IsEmpty() && pDevice->IsSecondaryWeapon() && pDevice->IsReady())
-				pDevice->SetTriggered(true);
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+			if (Device.IsSecondaryWeapon() && Device.IsReady())
+				Device.SetTriggered(true);
 			}
 		}
 
