@@ -58,6 +58,8 @@ public:
 private:
 	unsigned int m_pTextureID[1];
 	unsigned int pboID[2];
+	GLint m_pixelFormat;
+	GLint m_pixelType;
 };
 
 class OpenGLVAO {

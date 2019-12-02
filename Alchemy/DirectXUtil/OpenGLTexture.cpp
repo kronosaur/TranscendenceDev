@@ -11,6 +11,9 @@ void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 
 	int iNumOfChannels = 4;
 	int iDataSize = width * height * iNumOfChannels;
+	glGetInternalformativ(GL_TEXTURE_2D, GL_RGBA8, GL_TEXTURE_IMAGE_FORMAT, 1, &m_pixelFormat);
+	glGetInternalformativ(GL_TEXTURE_2D, GL_RGBA8, GL_TEXTURE_IMAGE_TYPE, 1, &m_pixelType);
+
 	glGenBuffers(2, &pboID[0]);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pboID[0]);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, iDataSize, 0, GL_STREAM_DRAW);
@@ -26,10 +29,11 @@ void OpenGLTexture::initTexture2D (GLvoid* texture, int width, int height)
 	// set texture filtering parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
 	// Using glTexStorage2D + glTexSubImage2D gives acceptable performance unlike initialization with glTexImage2D. Not sure why.
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, m_pixelFormat, GL_UNSIGNED_INT_8_8_8_8_REV, texture);
 	// glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	}
@@ -40,6 +44,7 @@ void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
 	static int iPBOInd = 0;
 	int iPBOIndPlus1 = 0;
 	int iDataSize = width * height * iNumOfChannels;
+
 	// Code adapted from Song Ho Ahn's PBO test code, found at http://www.songho.ca/opengl/gl_pbo.html
 	iPBOInd = (iPBOInd + 1) % 2;
 	iPBOIndPlus1 = (iPBOInd + 1) % 2;
@@ -54,7 +59,7 @@ void OpenGLTexture::updateTexture2D (GLvoid* texture, int width, int height)
 		memcpy(pMappedBuffer, texture, iDataSize);
 		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	}
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, m_pixelFormat, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 

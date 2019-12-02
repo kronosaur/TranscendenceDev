@@ -295,6 +295,7 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 	int projectionMatrixLocation = glGetUniformLocation(pShader->id(), "projectionMatrix");
 	int viewMatrixLocation = glGetUniformLocation(pShader->id(), "viewMatrix");
 	int modelMatrixLocation = glGetUniformLocation(pShader->id(), "modelMatrix");
+	glUniform1i(glGetUniformLocation(pShader->id(), "ourTexture"), 0);
 
 	// Send our matrices into the shader variables
 	glUniformMatrix4fv(projectionMatrixLocation, 1, GL_FALSE, &projectionMatrix[0][0]);
