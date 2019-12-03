@@ -179,6 +179,18 @@ void CEnhancementDesc::InsertHPBonus (int iBonus)
 	pEnhance->Enhancement.SetModBonus(iBonus);
 	}
 
+void CEnhancementDesc::InsertMissileDefense (void)
+
+//	InsertMissileDefense
+//
+//	Adds a missile defense enhancement.
+
+	{
+	SEnhancerDesc *pEnhance = m_Enhancements.Insert();
+	pEnhance->Criteria.Init(CItemCriteria::ALL);
+	pEnhance->Enhancement.SetModMissileDefense();
+	}
+
 void CEnhancementDesc::SetCriteria (int iEntry, const CItemCriteria &Criteria)
 
 //	SetCriteria

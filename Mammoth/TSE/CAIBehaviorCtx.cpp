@@ -232,7 +232,10 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 
 		//	See if this weapon shoots missiles.
 
-		if (Weapon.CanTargetMissiles())
+		if (DeviceItem.IsMissileDefenseWeapon())
+			m_fShootAllMissiles = true;
+
+		else if (Weapon.CanTargetMissiles())
 			m_fShootTargetableMissiles = true;
 
 		//	If this is a secondary weapon, remember that we have some and 
@@ -243,7 +246,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 			//	Remember the range in case we end up with no good weapons and we need to set 
 			//	a course towards the target.
 
-			Metric rRange = Weapon.GetClass()->GetMaxEffectiveRange(pShip, &Weapon, pTarget);
+			Metric rRange = DeviceItem.GetMaxEffectiveRange(pTarget);
 			if (rRange < rBestRange)
 				rBestRange = rRange;
 
@@ -274,7 +277,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 						iBestScore = iScore;
 						}
 
-					Metric rMaxRange = Weapon.GetMaxEffectiveRange(pShip);
+					Metric rMaxRange = DeviceItem.GetMaxEffectiveRange();
 					if (rMaxRange > m_rMaxWeaponRange)
 						m_rMaxWeaponRange = rMaxRange;
 
@@ -308,7 +311,7 @@ void CAIBehaviorCtx::CalcBestWeapon (CShip *pShip, CSpaceObject *pTarget, Metric
 								//	Remember the range in case we end up with no good weapons and we need to set 
 								//	a course towards the target.
 
-								Metric rRange = Weapon.GetClass()->GetMaxEffectiveRange(pShip, &Weapon, pTarget);
+								Metric rRange = DeviceItem.GetMaxEffectiveRange(pTarget);
 								if (rRange < rBestRange)
 									rBestRange = rRange;
 

@@ -85,6 +85,11 @@ inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
 	return m_Item.GetNounPhrase(dwFlags);
 	}
 
+inline int CDifferentiatedItem::GetVariantNumber (void) const
+	{
+	return m_Item.GetVariantNumber();
+	}
+
 inline const CItemType &CDifferentiatedItem::GetType (void) const
 	{
 	return *m_Item.GetType();
@@ -235,7 +240,7 @@ inline CString CDeviceClass::GetName (void)
 	return m_pItemType->GetNounPhrase();
 	}
 
-inline DWORD CDeviceClass::GetUNID (void)
+inline DWORD CDeviceClass::GetUNID (void) const
 	{
 	return m_pItemType->GetUNID();
 	}

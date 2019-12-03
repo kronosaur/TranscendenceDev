@@ -1146,8 +1146,10 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
             //  We prefer the item from the context. NOTE: We assume that the
             //  context has already validated that this ammo is compatible.
 
+#if 0
             else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
                 { }
+#endif
 
             //  If we are the same weapon, then we use the first ammo item
 

@@ -328,7 +328,7 @@ class CStationType : public CDesignType
 		bool CanBeEncountered (CSystem *pSystem) { return m_EncounterRecord.CanBeEncounteredInSystem(pSystem, this, GetEncounterDesc()); }
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
-		bool CanHitFriends (void) { return (m_fNoFriendlyFire ? false : true); }
+		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
 		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }

@@ -345,7 +345,7 @@ Metric CAutoDefenseClass::GetShotSpeed (CItemCtx &Ctx) const
 	return pWeapon->GetShotSpeed(Ctx);
 	}
 
-bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
+bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const
 
 //	IsAreaWeapon
 //

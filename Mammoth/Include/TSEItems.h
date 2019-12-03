@@ -54,6 +54,7 @@ class CDifferentiatedItem
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
+		inline int GetVariantNumber (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
@@ -152,8 +153,12 @@ class CDeviceItem : public CDifferentiatedItem
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
 		DWORD GetLinkedFireOptions (void) const;
+		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		bool IsMissileDefenseWeapon (void) const;
+		bool IsTargetableMissileDefenseWeapon (void) const;
+		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
@@ -543,14 +548,12 @@ class CItemCtx
 		const CShipClass *GetSourceShipClass (void) const;
 		int GetVariant (void) const { return m_iVariant; }
 		CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
-        const CItem &GetVariantItem (void) const { return m_Variant; }
         bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
 		bool IsDeviceDamaged (void);
 		bool IsDeviceDisrupted (void);
         bool IsDeviceEnabled (void);
 		bool IsDeviceWorking (void);
 		bool ResolveVariant (void);
-        void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 
 	private:
 		const CItem *GetItemPointer (void) const;
@@ -562,7 +565,6 @@ class CItemCtx
 		mutable CInstalledArmor *m_pArmor = NULL;		//	Installation structure (may be NULL)
 		CInstalledDevice *m_pDevice = NULL;		//	Installation structure (may be NULL)
 
-        CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
 		CDeviceClass *m_pWeapon = NULL;			//	This is the weapon that uses the given item
 		int m_iVariant = -1;					//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.

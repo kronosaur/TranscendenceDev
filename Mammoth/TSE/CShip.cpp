@@ -574,7 +574,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
 	}
 
-bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	CalcDeviceTarget
 //
@@ -593,7 +593,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	{
 	DEBUG_TRY
 
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
 	//	For primary weapons, the target is the controller target.
 	//	
@@ -603,7 +603,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
+	if (Device.IsSelectable() && !(Device.GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
 		*retpTarget = m_pController->GetTarget();
 		*retiFireSolution = -1;
@@ -614,12 +614,11 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 	else
 		{
-		CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
+		const CDeviceClass &Weapon = WeaponItem.GetDeviceClass();
 
 		//	Get the actual options.
 
-		const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
-		DWORD dwLinkedFireOptions = DeviceItem.GetLinkedFireOptions();
+		DWORD dwLinkedFireOptions = WeaponItem.GetLinkedFireOptions();
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
@@ -632,18 +631,18 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
+			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
 		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
+			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
 		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) 
 			|| (((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false)
+							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false)
 							)
-						&& (pWeapon->GetCategory() == itemcatWeapon))
+						&& (Weapon.GetCategory() == itemcatWeapon))
 					|| (!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
-							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
-						&& (pWeapon->GetCategory() == itemcatLauncher)))
+							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
+						&& (Weapon.GetCategory() == itemcatLauncher)))
 				&& (dwLinkedFireOptions & dwLinkedFireSelected) 
 				&& IsPlayer()
 				))
@@ -666,7 +665,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution);
+			m_pController->GetWeaponTarget(Ctx, WeaponItem, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 
@@ -6208,7 +6207,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
                 CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
                 if (Device.IsTriggered() && Device.IsReady())
                     {
-                    CItemCtx DeviceCtx(this, &Device);
                     bool bSourceDestroyed = false;
                     bool bConsumedItems = false;
 
@@ -6216,7 +6214,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
                     CSpaceObject *pTarget;
                     int iFireAngle;
-                    if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
+                    if (!CalcDeviceTarget(TargetingCtx, DeviceItem, &pTarget, &iFireAngle))
                         {
                         //	Do not consume power, even though we're triggered.
 

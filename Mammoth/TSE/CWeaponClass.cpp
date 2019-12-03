@@ -2531,6 +2531,7 @@ ICCItem *CWeaponClass::FindAmmoItemProperty (CItemCtx &Ctx, const CItem &Ammo, c
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfSelectedVariant));
 		else if (dwOptions & CDeviceClass::lkfNever)
 			pList->AppendString(CDeviceClass::GetLinkedFireOptionString(CDeviceClass::lkfNever));
+
 		//	Done
 
 		return pResult;
@@ -2756,7 +2757,7 @@ ICCItem *CWeaponClass::FindItemProperty (CItemCtx &Ctx, const CString &sName)
     return FindAmmoItemProperty(Ctx, Ammo, sProperty);
 	}
 
-Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+Metric CWeaponClass::GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
 
 //	GetMaxEffectiveRange
 //
@@ -3375,7 +3376,7 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 		}
 	}
 
-int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
 
 //	GetWeaponEffectiveness
 //
@@ -3411,6 +3412,17 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	if (m_bTargetStationsOnly 
 			&& (pTarget == NULL || pTarget->GetCategory() != CSpaceObject::catStation))
 		return -100;
+
+	//	If the target is a missile, then we need to be able to hit missiles.
+
+	if (pTarget && pTarget->GetCategory() == CSpaceObject::catMissile)
+		{
+		if (const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem())
+			{
+			if (!DeviceItem.IsMissileDefenseWeapon())
+				return -100;
+			}
+		}
 
 	//	Check our state
 
@@ -3451,9 +3463,9 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 	//  weapon is not effective.
 
 	if (pSource->IsBlind() && (!m_bCanFireWhenBlind))
-	{
+		{
 		return -100;
-	}
+		}
 
 	//	If the weapon has EMP damage and the target has no shields and is not paralysed then
 	//	this is very effective.
@@ -3491,6 +3503,115 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevic
 
 	return iScore;
 	}
+
+CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo) const
+
+//  GetWeaponFireDesc
+//
+//  Get weapon fire descriptor for the weapon when shooting the given ammo.
+//  ItemCtx may optionally refer to the installed weapon (it must not contain
+//  a different item, though it may be empty).
+//
+//  Ammo may be specified either through the ammo item or through ItemCtx
+//  (as an installed device selection).
+//
+//	NOTE: If Ammo is passed in, we expect it to be fired by this weapon. Check
+//	before calling if not sure.
+
+    {
+	DEBUG_TRY
+
+    if (m_ShotData.GetCount() == 0)
+        return NULL;
+
+	//	Handle scalable levels
+
+	else if (m_iVariantType == varLevelScaling)
+		{
+		//	We assume that all levels are represented in m_ShotData.
+
+        int iIndex = Min(Max(0, DeviceItem.GetLevel() - m_ShotData[0].pDesc->GetLevel()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+	//	Handle counter variants
+
+	else if (m_iVariantType == varCounter)
+		{
+		//	We assume that all charge values are represented in m_ShotData.
+
+		int iIndex = Min(Max(0, DeviceItem.GetVariantNumber()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+	//	Handle charge variants
+
+	else if (m_iVariantType == varCharges)
+		{
+		//	We assume that all charge values are represented in m_ShotData.
+
+        int iIndex = Min(Max(0, DeviceItem.GetCharges()), m_ShotData.GetCount() - 1);
+		return m_ShotData[iIndex].pDesc;
+		}
+
+    //  If we need ammo, then we have extra work to do.
+    //  NOTE: Currently, if one variant uses ammo, all need to use ammo.
+	//	NOTE 2: This only applies to launchers. By definition, non-launchers
+	//	never have more than one type of ammo. [But some launchers do not
+	//	have ammo, so we need to check that they use ammo.]
+
+    else if (IsLauncherWithAmmo())
+        {
+		CWeaponFireDesc *pRoot = NULL;
+		int iLevel = -1;
+
+        //  If we have ammo, use it (this overrides whatever item is selected 
+        //  in ItemCtx).
+
+        if (!Ammo.IsEmpty())
+            {
+            int iSelection = GetAmmoVariant(Ammo.GetType());
+            if (iSelection != -1)
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  If we have a device, we ask it for the variant
+        //
+        //  NOTE: We need to make sure we check that the source exists because
+        //  some code (like CStationType::OnBindDesign) will call this with a
+        //  valid CInstalledDevice but a NULL source.
+
+        else if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
+            {
+            int iSelection = GetCurrentVariant(pDevice);
+            if (iSelection != -1 && iSelection < m_ShotData.GetCount())
+                pRoot = m_ShotData[iSelection].pDesc;
+            else
+                return NULL;
+            }
+
+        //  Otherwise, just return the first entry
+
+        else
+            pRoot = m_ShotData[0].pDesc;
+
+        //  For now, the scaling for ammo weapons always comes from the weapon
+        //  (we can't have scalable ammo).
+
+        iLevel = DeviceItem.GetLevel();
+		return (iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+        }
+    else
+        {
+        CWeaponFireDesc *pRoot = m_ShotData[0].pDesc;
+        int iLevel = DeviceItem.GetLevel();
+	    return (iLevel == 0 ? pRoot : pRoot->GetScaledDesc(iLevel));
+        }
+
+	DEBUG_CATCH
+    }
 
 CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo) const
 
@@ -3580,6 +3701,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
                 return NULL;
             }
 
+#if 0
         else if (!ItemCtx.GetVariantItem().IsEmpty())
             {
             int iSelection = GetAmmoVariant(ItemCtx.GetVariantItem().GetType());
@@ -3588,6 +3710,7 @@ CWeaponFireDesc *CWeaponClass::GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem
             else
                 return NULL;
             }
+#endif
 
         else if (ItemCtx.GetVariant() != -1 && ItemCtx.GetVariant() < m_ShotData.GetCount())
             {
@@ -3767,7 +3890,7 @@ bool CWeaponClass::IsAmmoWeapon (void)
 	return (UsesAmmo() || m_bCharges);
 	}
 
-bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice)
+bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const
 
 //	IsAreaWeapon
 //
@@ -3920,10 +4043,10 @@ bool CWeaponClass::IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *p
 	}
 
 bool CWeaponClass::IsWeaponAligned (CSpaceObject *pShip, 
-									CInstalledDevice *pDevice, 
+									const CInstalledDevice *pDevice, 
 									CSpaceObject *pTarget, 
 									int *retiAimAngle, 
-									int *retiFireAngle)
+									int *retiFireAngle) const
 
 //	IsWeaponAligned
 //

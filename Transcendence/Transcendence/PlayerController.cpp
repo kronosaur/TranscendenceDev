@@ -624,7 +624,7 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
@@ -632,9 +632,6 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 	{
 	constexpr int MAX_TARGETS = 10;
-
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
-	CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
 
 	//	Get targets, if necessary
 
@@ -651,8 +648,14 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 		//	Get other targets
 
 		DWORD dwFlags = CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS;
-		if (pDevice && pDevice->CanTargetMissiles())
-			dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
+		if (WeaponItem)
+			{
+			if (WeaponItem.IsMissileDefenseWeapon())
+				dwFlags |= CSpaceObject::FLAG_INCLUDE_MISSILES;
+
+			else if (WeaponItem.IsTargetableMissileDefenseWeapon())
+				dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
+			}
 
 		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
 				MAX_AUTO_TARGET_DISTANCE,
@@ -668,7 +671,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
 		{
 		int iFireAngle;
-		if (pWeapon->IsWeaponAligned(m_pShip, pDevice, TargetingCtx.Targets[i], NULL, &iFireAngle))
+		if (WeaponItem.IsWeaponAligned(TargetingCtx.Targets[i], NULL, &iFireAngle))
 			{
 			*retpTarget = TargetingCtx.Targets[i];
 			*retiFireSolution = iFireAngle;

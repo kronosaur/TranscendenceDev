@@ -259,7 +259,7 @@ class CVisibleAggressorObjSelector
 				m_iAggressorThreshold(Source.GetUniverse().GetTicks() - CSpaceObject::AGGRESSOR_THRESHOLD)
 			{ }
 
-		bool CanUseSovereignEnemyList (void) const { return !m_bIncludeTargetableMissiles; }
+		bool CanUseSovereignEnemyList (void) const { return (!m_bIncludeTargetableMissiles && !m_bIncludeMissiles); }
 
 		Metric GetMaxRange (void) const
 			{
@@ -268,24 +268,34 @@ class CVisibleAggressorObjSelector
 
 		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (Obj.CanAttack()
-				&& m_Source.IsAngryAt(&Obj)
-				&& m_Perception.CanBeTargeted(&Obj, rDist2)
-				&& !Obj.IsUnreal()
-				&& Obj != m_Source
-				&& Obj != m_pExcludeObj
-				&& Obj.GetLastFireTime() > m_iAggressorThreshold
-				&& !Obj.IsEscortingFriendOf(&m_Source));
+			if (Obj.GetCategory() == CSpaceObject::catMissile)
+				{
+				return (m_Perception.CanBeTargeted(&Obj, rDist2)
+					&& !Obj.IsUnreal()
+					&& Obj != m_pExcludeObj);
+				}
+			else
+				{
+				return (Obj.CanAttack()
+					&& m_Perception.CanBeTargeted(&Obj, rDist2)
+					&& !Obj.IsUnreal()
+					&& Obj != m_Source
+					&& Obj != m_pExcludeObj
+					&& Obj.GetLastFireTime() > m_iAggressorThreshold
+					&& !Obj.IsEscortingFriendOf(&m_Source));
+				}
 			}
 
 		bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return (Obj.GetCategory() == CSpaceObject::catShip
 						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && Obj.GetCategory() == CSpaceObject::catMissile)
 						|| (m_bIncludeTargetableMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
 		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
@@ -294,6 +304,7 @@ class CVisibleAggressorObjSelector
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		int m_iAggressorThreshold = -1;
+		bool m_bIncludeMissiles = false;
 		bool m_bIncludeStations = false;
 		bool m_bIncludeTargetableMissiles = false;
 	};
@@ -310,7 +321,7 @@ class CVisibleObjSelector
 				m_Perception(Source.GetPerception())
 			{ }
 
-		bool CanUseSovereignEnemyList (void) const { return !m_bIncludeTargetableMissiles; }
+		bool CanUseSovereignEnemyList (void) const { return (!m_bIncludeTargetableMissiles && !m_bIncludeMissiles); }
 
 		Metric GetMaxRange (void) const
 			{
@@ -319,22 +330,33 @@ class CVisibleObjSelector
 
 		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
-			return (Obj.CanAttack()
-				&& m_Perception.CanBeTargeted(&Obj, rDist2)
-				&& !Obj.IsUnreal()
-				&& Obj != m_Source
-				&& Obj != m_pExcludeObj
-				&& !Obj.IsEscortingFriendOf(&m_Source));
+			if (Obj.GetCategory() == CSpaceObject::catMissile)
+				{
+				return (m_Perception.CanBeTargeted(&Obj, rDist2)
+					&& !Obj.IsUnreal()
+					&& Obj != m_pExcludeObj);
+				}
+			else
+				{
+				return (Obj.CanAttack()
+					&& m_Perception.CanBeTargeted(&Obj, rDist2)
+					&& !Obj.IsUnreal()
+					&& Obj != m_Source
+					&& Obj != m_pExcludeObj
+					&& !Obj.IsEscortingFriendOf(&m_Source));
+				}
 			}
 
 		bool MatchesCategory (CSpaceObject &Obj) const
 			{
 			return (Obj.GetCategory() == CSpaceObject::catShip
 						|| (m_bIncludeStations && Obj.GetCategory() == CSpaceObject::catStation)
+						|| (m_bIncludeMissiles && Obj.GetCategory() == CSpaceObject::catMissile)
 						|| (m_bIncludeTargetableMissiles && (Obj.GetCategory() == CSpaceObject::catMissile && Obj.IsTargetableProjectile())));
 			}
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
+		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
 		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
@@ -343,6 +365,7 @@ class CVisibleObjSelector
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
 		bool m_bIncludeStations = false;
+		bool m_bIncludeMissiles = false;
 		bool m_bIncludeTargetableMissiles = false;
 	};
 

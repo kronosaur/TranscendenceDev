@@ -607,7 +607,7 @@ class CSpaceObject
 		bool CanBeHitByFriends (void) { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);
 		bool CanCommunicateWith (CSpaceObject *pSender);
-		bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
+		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
 		void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
 		void ClearPlayerTarget (void) { m_fPlayerTarget = false; }
@@ -715,7 +715,8 @@ class CSpaceObject
 
 		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =		0x00000001;
 		static constexpr DWORD FLAG_INCLUDE_STATIONS =				0x00000002;
-		static constexpr DWORD FLAG_INCLUDE_TARGETABLE_MISSILES =	0x00000004;
+		static constexpr DWORD FLAG_INCLUDE_MISSILES =				0x00000004;
+		static constexpr DWORD FLAG_INCLUDE_TARGETABLE_MISSILES =	0x00000008;
 		int GetNearestVisibleEnemies (int iMaxEnemies, 
 									  Metric rMaxDist, 
 									  TArray<CSpaceObject *> *pretList, 
@@ -781,7 +782,7 @@ class CSpaceObject
 		bool IsFriend (const CSpaceObject *pObj) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
-		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
+		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
 		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)

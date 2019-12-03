@@ -743,15 +743,14 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
 //	Returns a list of nearest targets
 
 	{
-	int i;
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
 	//	Make sure we have a list of targets.
 
@@ -759,18 +758,18 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCt
 
 	//	Now find a target for the given weapon.
 
-	Metric rMaxRange = pDevice->GetClass()->GetMaxEffectiveRange(m_pShip, pDevice, NULL);
+	Metric rMaxRange = WeaponItem.GetMaxEffectiveRange();
 	Metric rMaxRange2 = rMaxRange * rMaxRange;
-	for (i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
 		{
 		int iFireAngle;
 		CSpaceObject *pTarget = TargetingCtx.Targets[i];
 		Metric rDist2 = (pTarget->GetPos() - m_pShip->GetPos()).Length2();
 
 		if (rDist2 < rMaxRange2 
-				&& pDevice->GetWeaponEffectiveness(m_pShip, pTarget) >= 0
-				&& pDevice->IsWeaponAligned(m_pShip, pTarget, NULL, &iFireAngle)
-				&& m_AICtx.CheckForFriendsInLineOfFire(m_pShip, pDevice, pTarget, iFireAngle, rMaxRange))
+				&& Device.GetWeaponEffectiveness(m_pShip, pTarget) >= 0
+				&& WeaponItem.IsWeaponAligned(pTarget, NULL, &iFireAngle)
+				&& m_AICtx.CheckForFriendsInLineOfFire(m_pShip, &Device, pTarget, iFireAngle, rMaxRange))
 			{
 			*retpTarget = pTarget;
 			*retiFireSolution = iFireAngle;
@@ -899,7 +898,10 @@ void CBaseShipAI::InitTargetList (STargetingCtx &TargetingCtx) const
 
 	//  Include missiles if appropriate
 
-	if (m_AICtx.ShootsTargetableMissiles())
+	if (m_AICtx.ShootsAllMissiles())
+		dwFlags |= CSpaceObject::FLAG_INCLUDE_MISSILES;
+
+	else if (m_AICtx.ShootsTargetableMissiles())
 		dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
 
 	//	First build a list of the nearest enemy ships within

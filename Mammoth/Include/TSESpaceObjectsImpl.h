@@ -539,7 +539,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
-		virtual bool IsIntangible (void) const override { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
+		virtual bool IsIntangible (void) const override { return (IsInactive() || IsDestroyed()); }
 		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
@@ -1291,7 +1291,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		bool CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
+		bool CalcDeviceTarget (STargetingCtx &Ctx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
         void CalcPerformance (void);

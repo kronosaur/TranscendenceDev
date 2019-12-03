@@ -4101,7 +4101,9 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 		{
 		CVisibleObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+		if (dwFlags & FLAG_INCLUDE_MISSILES)
+			Selector.SetIncludeMissiles();
+		else if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
 			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
@@ -4110,7 +4112,9 @@ int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies,
 		{
 		CVisibleAggressorObjSelector Selector(*this);
 		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
+		if (dwFlags & FLAG_INCLUDE_MISSILES)
+			Selector.SetIncludeMissiles();
+		else if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
 			Selector.SetIncludeTargetableMissiles();
 
 		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
@@ -5814,7 +5818,7 @@ bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 		return pOurSovereign->IsFriend(pEnemySovereign);
 	}
 
-bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
+bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 									  CSpaceObject *pTarget, 
 									  int iAngle, 
 									  Metric rDistance,
