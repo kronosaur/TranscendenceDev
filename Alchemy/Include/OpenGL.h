@@ -28,11 +28,25 @@ The spobject render queue contains the following globals:
 -Vector with order of textures to render
 -Subqueue containing which texture to use for the ship 
 
+The master render queue will need the following:
+-Sub render queues, which are vectors of OpenGLInstancedRenderQueues, one for each layer
+-For each render queue, a parallel vector that contains RenderSpecs. These RenderSpecs contain references to which shaders and textures (if applicable) are to be used to render a given render queue
+-The master quad which is used for all instanced rendering
+-A set of textures, lazy loaded.
+
+We should probably include the shimmering and glowing effects in the texture shader used for the texture class. For the effects, we can either go with a mega shader (nightmare to maintain) or multiple small shaders (much more modular).
+Maybe start with a single megashader for now, just make sure to put things in functions (should be quite simple, since this shader simply reads things and writes them) and hope we don't exceed the max number of vbos...
+
+The cleaner solution (and the one that's probably implemented right now) for non-texture effects is to have a separate shader for each one, and a "render spec" for these shaders (one per shader).
+
+We'll need a separate texture queue for effects that don't use textures...
+
 */
 
 #include "OpenGLIncludes.h"
 #include "OpenGLShader.h"
 #include <vector>
+#include <map>
 
 /*
 class OpenGLMasterRenderQueue {
@@ -163,4 +177,17 @@ private:
 	std::vector<glm::vec2> m_canvasPositionsFloat;
 	OpenGLVAO* vao;
 	Shader* m_pShader;
+};
+
+class OpenGLMasterRenderQueue {
+public:
+	OpenGLMasterRenderQueue (void);
+	~OpenGLMasterRenderQueue (void);
+private:
+	void addObjectToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image);
+	void initializeVAO (void);
+	void deinitVAO (void);
+	OpenGLVAO* m_pVao;
+	Shader *m_pTextureShader;
+	std::map<GLvoid*, OpenGLTexture*> m_textures;
 };
