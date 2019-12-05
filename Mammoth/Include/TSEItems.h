@@ -156,6 +156,7 @@ class CDeviceItem : public CDifferentiatedItem
 		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline bool IsAreaWeapon (void) const;
 		bool IsMissileDefenseWeapon (void) const;
 		bool IsTargetableMissileDefenseWeapon (void) const;
 		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
@@ -242,6 +243,7 @@ class CItem
 		void FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced) const;
 		void FireOnUninstall (CSpaceObject *pSource) const;
 		int GetApparentLevel (void) const;
+		inline ItemCategories GetCategory (void) const;
 		int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
 		int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;

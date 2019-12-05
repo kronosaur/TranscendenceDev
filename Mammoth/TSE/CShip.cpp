@@ -1696,14 +1696,10 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 				if (pArmor)
 					pArmor->FinishInstall(*pShip);
 				}
-			else
-				{
-				CInstalledDevice *pDevice = pShip->FindDevice(Item);
-				if (pDevice)
-					pDevice->FinishInstall();
-				}
 			}
 		}
+
+	pShip->m_Devices.FinishInstall();
 
 	//	Ship interior
 

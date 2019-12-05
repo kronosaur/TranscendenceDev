@@ -261,21 +261,7 @@ static SStdStationDesc STD_STATION_DATA[] =
 
 CIntegralRotationDesc CStationType::m_DefaultRotation;
 
-CStationType::CStationType (void) : 
-		m_pDesc(NULL),
-		m_pInitialShips(NULL),
-		m_pReinforcements(NULL),
-		m_pEncounters(NULL),
-		m_iEncounterFrequency(ftNotRandom),
-		m_pSatellitesDesc(NULL),
-		m_pConstruction(NULL),
-		m_iShipConstructionRate(0),
-		m_iMaxConstruction(0),
-		m_Devices(NULL),
-		m_iAnimationsCount(0),
-		m_pAnimations(NULL),
-		m_pItems(NULL),
-		m_pTrade(NULL)
+CStationType::CStationType (void)
 
 //	CStationType constructor
 
@@ -287,8 +273,8 @@ CStationType::~CStationType (void)
 //	CStationType destructor
 
 	{
-	if (m_Devices)
-		delete [] m_Devices;
+	if (m_pDevices)
+		delete m_pDevices;
 
 	if (m_pItems)
 		delete m_pItems;
@@ -393,37 +379,6 @@ int CStationType::CalcHitsToDestroy (int iLevel) const
 	//	DOne
 
 	return (int)rTotalHits;
-	}
-
-Metric CStationType::CalcMaxAttackDistance (void)
-
-//	CalcMaxAttackDistance
-//
-//	Initializes m_rMaxAttackDistance, if necessary.
-
-	{
-	if (m_fCalcMaxAttackDist 
-			&& GetUniverse().GetDesignCollection().IsBindComplete())
-		{
-		Metric rBestRange = MAX_ATTACK_DISTANCE;
-
-		for (int i = 0; i < m_iDevicesCount; i++)
-			{
-			if (m_Devices[i].GetCategory() == itemcatWeapon
-					|| m_Devices[i].GetCategory() == itemcatLauncher)
-				{
-				CItem Item(m_Devices[i].GetClass()->GetItemType(), 1);
-				Metric rRange = m_Devices[i].GetMaxRange(CItemCtx(Item));
-				if (rRange > rBestRange)
-					rBestRange = rRange;
-				}
-			}
-
-		m_rMaxAttackDistance = rBestRange;
-		m_fCalcMaxAttackDist = false;
-		}
-
-	return m_rMaxAttackDistance;
 	}
 
 Metric CStationType::CalcSatelliteHitsToDestroy (CXMLElement *pSatellites, int iLevel, bool bIgnoreChance)
@@ -681,20 +636,17 @@ Metric CStationType::CalcWeaponStrength (int iLevel) const
 //	1.0 = level weapon at 1/4 fire rate.
 
 	{
-	int i;
-
 	//	Start by adding up all weapons.
 
 	Metric rTotal = 0.0;
-	for (i = 0; i < m_iDevicesCount; i++)
+	for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
-		if (m_Devices[i].IsEmpty()
-				|| (m_Devices[i].GetCategory() != itemcatWeapon
-					&& m_Devices[i].GetCategory() != itemcatLauncher))
+		const CDeviceItem DeviceItem = m_AverageDevices.GetDeviceItem(i);
+		if (DeviceItem.GetCategory() != itemcatWeapon
+				&& DeviceItem.GetCategory() != itemcatLauncher)
 			continue;
 
-		CDeviceClass *pDeviceClass = m_Devices[i].GetClass();
-		int iDevLevel = pDeviceClass->GetLevel();
+		int iDevLevel = DeviceItem.GetLevel();
 
 		//	Lower level weapons count less; higher level weapons count more.
 
@@ -796,6 +748,26 @@ bool CStationType::FindDataField (const CString &sField, CString *retsValue) con
 	return true;
 	}
 
+void CStationType::GenerateDevices (int iLevel, CDeviceDescList &Devices) const
+
+//	GenerateDevices
+//
+//	Generate a list of devices
+	
+	{
+	Devices.DeleteAll();
+
+	if (m_pDevices)
+		{
+		SDeviceGenerateCtx Ctx(GetUniverse());
+		Ctx.iLevel = iLevel;
+		Ctx.pRoot = m_pDevices;
+		Ctx.pResult = &Devices;
+
+		m_pDevices->AddDevices(Ctx);
+		}
+	}
+
 CurrencyValue CStationType::GetBalancedTreasure (void) const
 
 //	GetBalancedTreasure
@@ -876,8 +848,6 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 //	backwards compatibility issues.
 
 	{
-	int i;
-
 	//	If necessary, calculate level.
 
 	if (m_iLevel == 0)
@@ -886,17 +856,17 @@ int CStationType::GetLevel (int *retiMinLevel, int *retiMaxLevel) const
 
 		if (m_iLevel == 0)
 			{
+			m_iLevel = m_HullDesc.GetArmorLevel();
+
 			//	Take the highest level of armor or devices
 
-			m_iLevel = m_HullDesc.GetArmorLevel();
-			for (i = 0; i < m_iDevicesCount; i++)
+			for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 				{
-				if (!m_Devices[i].IsEmpty())
-					{
-					int iDeviceLevel = m_Devices[i].GetClass()->GetLevel();
-					if (iDeviceLevel > m_iLevel)
-						m_iLevel = iDeviceLevel;
-					}
+				const CDeviceItem DeviceItem = m_AverageDevices.GetDeviceItem(i);
+
+				int iDeviceLevel = DeviceItem.GetLevel();
+				if (iDeviceLevel > m_iLevel)
+					m_iLevel = iDeviceLevel;
 				}
 			}
 		}
@@ -948,22 +918,21 @@ CItem CStationType::GetPrimaryWeapon (void) const
 //	Returns the highest-level weapon on the station.
 
 	{
-	const CDeviceClass *pBestDevice = NULL;
-	for (int i = 0; i < GetDeviceCount(); i++)
+	const CItem *pBestItem = NULL;
+
+	for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
-		auto &Device = GetDevice(i);
-		const CDeviceClass *pDevice = Device.GetClass();
-		if (pDevice->GetCategory() == itemcatWeapon
-				|| pDevice->GetCategory() == itemcatLauncher)
+		const CItem &Item = m_AverageDevices.GetDeviceItem(i);
+		if (Item.GetCategory() == itemcatWeapon || Item.GetCategory() == itemcatLauncher)
 			{
-			if (pBestDevice == NULL
-					|| pDevice->GetLevel() > pBestDevice->GetLevel())
-				pBestDevice = pDevice;
+			if (pBestItem == NULL 
+					|| Item.GetLevel() > pBestItem->GetLevel())
+				pBestItem = &Item;
 			}
 		}
 
-	if (pBestDevice)
-		return CItem(pBestDevice->GetItemType(), 1);
+	if (pBestItem)
+		return *pBestItem;
 	else
 		return CItem();
 	}
@@ -1094,12 +1063,8 @@ void CStationType::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)
 
 	m_HullDesc.AddTypesUsed(retTypesUsed);
 
-	for (i = 0; i < m_iDevicesCount; i++)
-		{
-		CItem *pItem = m_Devices[i].GetItem();
-		if (pItem)
-			retTypesUsed->SetAt(pItem->GetType()->GetUNID(), true);
-		}
+	if (m_pDevices)
+		m_pDevices->AddTypesUsed(retTypesUsed);
 
 	if (m_pItems)
 		m_pItems->AddTypesUsed(retTypesUsed);
@@ -1183,21 +1148,17 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 		goto Fail;
 
 	//	Resolve the devices pointer
-    //
-    //  LATER: We shouldn't have CInstalledDevices here. We should use the same
-    //  system that ships use.
 
-	for (i = 0; i < m_iDevicesCount; i++)
+	if (m_pDevices)
 		{
-		if (error = m_Devices[i].OnDesignLoadComplete(Ctx))
+		if (error = m_pDevices->OnDesignLoadComplete(Ctx))
 			goto Fail;
+
+		//	NOTE: Can't call GetLevel because it relies on m_AverageDevices.
+
+		int iLevel = Max(m_iLevel, GetEncounterDesc().CalcLevelFromFrequency());
+		GenerateDevices(iLevel, m_AverageDevices);
 		}
-
-	//	We'll recompute attack distance based on weapons later (on demand). We
-	//	can't compute it here because the weapons haven't necessarily bound yet.
-
-	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
-	m_fCalcMaxAttackDist = true;
 
 	//	Items
 
@@ -1263,7 +1224,7 @@ ALERROR CStationType::OnBindDesign (SDesignLoadCtx &Ctx)
 
 	m_fStatic = (m_HullDesc.GetMaxHitPoints() == 0)
 			&& (m_HullDesc.GetMaxStructuralHP() == 0)
-			&& (m_iDevicesCount == 0)
+			&& (m_pDevices == NULL)
 			&& (GetAbandonedScreen() == NULL)
 			&& (GetFirstDockScreen() == NULL)
 			&& (m_pInitialShips == NULL)
@@ -1341,8 +1302,6 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoBlacklist = (pDesc->GetAttributeBool(NO_BLACKLIST_ATTRIB) || pDesc->GetAttributeBool(IGNORE_FRIENDLY_FIRE_ATTRIB));
 	m_iAlertWhenAttacked = pDesc->GetAttributeInteger(ALERT_WHEN_ATTACKED_ATTRIB);
 	m_iAlertWhenDestroyed = pDesc->GetAttributeInteger(ALERT_WHEN_DESTROYED_ATTRIB);
-	m_rMaxAttackDistance = MAX_ATTACK_DISTANCE;
-	m_fCalcMaxAttackDist = false;
 	m_iStealth = pDesc->GetAttributeIntegerBounded(STEALTH_ATTRIB, CSpaceObject::stealthMin, CSpaceObject::stealthMax, CSpaceObject::stealthNormal);
 
 	//	Suppress or force map label
@@ -1475,26 +1434,9 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	CXMLElement *pDevices = pDesc->GetContentElementByTag(DEVICES_TAG);
 	if (pDevices)
 		{
-		m_iDevicesCount = pDevices->GetContentElementCount();
-		if (m_iDevicesCount)
-			{
-			m_Devices = new CInstalledDevice [m_iDevicesCount];
-
-			for (i = 0; i < m_iDevicesCount; i++)
-				{
-				CXMLElement *pDeviceDesc = pDevices->GetContentElement(i);
-				if (error = m_Devices[i].InitFromXML(Ctx, pDeviceDesc))
-					return ComposeLoadError(Ctx, Ctx.sError);
-
-				//	Must have a device
-
-				if (m_Devices[i].GetUNID() == 0)
-					return ComposeLoadError(Ctx, CONSTLIT("No item specified in <Device> element."));
-				}
-			}
+		if (error = IDeviceGenerator::CreateFromXML(Ctx, pDevices, &m_pDevices))
+			return ComposeLoadError(Ctx, Ctx.sError);
 		}
-	else
-		m_iDevicesCount = 0;
 
 	//	Keep the descriptor
 	
@@ -2141,8 +2083,6 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 //	Paints the position of all the devices
 
 	{
-	int i;
-
 	const int ARC_RADIUS = 30;
 	CG32bitPixel rgbLine = CG32bitPixel(255, 255, 0);
 	CG32bitPixel rgbArc = CG32bitPixel(rgbLine, 128);
@@ -2153,16 +2093,16 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 
 	int iScale = GetImage(Selector, CCompositeImageModifiers()).GetImageViewportSize();
 
-	for (i = 0; i < m_iDevicesCount; i++)
+	for (int i = 0; i < m_AverageDevices.GetCount(); i++)
 		{
-		CInstalledDevice &Device = m_Devices[i];
+		auto &DeviceDesc = m_AverageDevices.GetDeviceDesc(i);
 
 		int xPos;
 		int yPos;
-		if (Device.Has3DPos())
-			C3DConversion::CalcCoord(iScale, Device.GetPosAngle(), Device.GetPosRadius(), Device.GetPosZ(), &xPos, &yPos);
+		if (DeviceDesc.b3DPosition)
+			C3DConversion::CalcCoord(iScale, DeviceDesc.iPosAngle, DeviceDesc.iPosRadius, DeviceDesc.iPosZ, &xPos, &yPos);
 		else
-			C3DConversion::CalcCoordCompatible(Device.GetPosAngle(), Device.GetPosRadius(), &xPos, &yPos);
+			C3DConversion::CalcCoordCompatible(DeviceDesc.iPosAngle, DeviceDesc.iPosRadius, &xPos, &yPos);
 
 		int xCenter = x + xPos;
 		int yCenter = y + yPos;
@@ -2171,10 +2111,10 @@ void CStationType::PaintDevicePositions (CG32bitImage &Dest, int x, int y)
 
 		//	Draw fire arc
 
-		if (!Device.IsOmniDirectional())
+		if (!DeviceDesc.bOmnidirectional)
 			{
-			int iMinFireArc = Device.GetMinFireArc();
-			int iMaxFireArc = Device.GetMaxFireArc();
+			int iMinFireArc = DeviceDesc.iMinFireArc;
+			int iMaxFireArc = DeviceDesc.iMaxFireArc;
 
 			CGDraw::Arc(Dest, CVector(xCenter, yCenter), ARC_RADIUS, mathDegreesToRadians(iMinFireArc), mathDegreesToRadians(iMaxFireArc), ARC_RADIUS / 2, rgbArc);
 

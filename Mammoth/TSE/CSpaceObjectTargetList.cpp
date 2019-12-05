@@ -54,6 +54,8 @@ bool CSpaceObjectTargetList::FindTargetInRange (CSpaceObject &SourceObj, const C
 
 	{
 	bool bCheckLineOfFire = ((dwFlags & FLAG_NO_LINE_OF_FIRE_CHECK) ? false : true);
+	bool bCheckRange = ((dwFlags & FLAG_NO_RANGE_CHECK) ? false : true);
+
 	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
 	Metric rMaxRange = WeaponItem.GetMaxEffectiveRange();
@@ -64,7 +66,7 @@ bool CSpaceObjectTargetList::FindTargetInRange (CSpaceObject &SourceObj, const C
 		CSpaceObject *pTarget = m_List[i];
 		Metric rDist2 = (pTarget->GetPos() - SourceObj.GetPos()).Length2();
 
-		if (rDist2 < rMaxRange2 
+		if ((!bCheckRange || rDist2 < rMaxRange2)
 				&& Device.GetWeaponEffectiveness(&SourceObj, pTarget) >= 0
 				&& WeaponItem.IsWeaponAligned(pTarget, NULL, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
@@ -137,8 +139,11 @@ void CSpaceObjectTargetList::InitWithNearestVisibleEnemies (CSpaceObject &Source
 		return;
 
 	CSystem *pSystem = SourceObj.GetSystem();
-	if (pSystem == NULL)
+	if (pSystem == NULL || iMaxTargets <= 0 || rMaxDist <= 0.0)
+		{
+		InitEmpty();
 		return;
+		}
 
 	m_List.DeleteAll();
 

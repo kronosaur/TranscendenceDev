@@ -106,19 +106,13 @@ const int g_iMapScale = 5;
 const int DEFAULT_TIME_STOP_TIME =				150;
 
 CStation::CStation (CUniverse &Universe) : TSpaceObjectImpl(Universe),
+		m_Devices(CDeviceSystem::FLAG_NO_NAMED_DEVICES),
 		m_fArmed(false),
-		m_dwSpare(0),
-		m_pType(NULL),
-		m_pRotation(NULL),
-		m_pMapOrbit(NULL),
-		m_pBase(NULL),
-		m_pDevices(NULL),
-		m_iAngryCounter(0),
-		m_iReinforceRequestCount(0),
-		m_pMoney(NULL),
-		m_pTrade(NULL),
 		m_fForceMapLabel(false),
-		m_fMapLabelInitialized(false)
+		m_fMapLabelInitialized(false),
+		m_fHasMissileDefense(false),
+		m_fMaxAttackDistValid(false),
+		m_dwSpare(0)
 
 //	CStation constructor
 
@@ -135,9 +129,6 @@ CStation::~CStation (void)
 
 	if (m_pMapOrbit)
 		delete m_pMapOrbit;
-
-	if (m_pDevices)
-		delete [] m_pDevices;
 
 	if (m_pMoney)
 		delete m_pMoney;
@@ -185,7 +176,7 @@ void CStation::Abandon (DestructionTypes iCause, const CDamageSource &Attacker, 
 			//	Uninstall the device
 
 			int iDevSlot = Item.GetInstalled();
-			CInstalledDevice *pDevice = &m_pDevices[iDevSlot];
+			CInstalledDevice *pDevice = GetDevice(iDevSlot);
 			pDevice->Uninstall(this, Items);
 
 			//	Chance that the item is destroyed
@@ -408,7 +399,7 @@ void CStation::CalcDeviceBonus (void)
 
 	//	Short-circuit if no devices
 
-	if (m_pDevices == NULL)
+	if (m_Devices.IsEmpty())
 		return;
 
 	//	Enhancements from system
@@ -886,7 +877,6 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	ALERROR error;
 	CStation *pStation;
 	CXMLElement *pDesc = pType->GetDesc();
-	int i;
 
 	if (!CreateCtx.bIgnoreLimits && !pType->CanBeEncountered())
 		{
@@ -1066,63 +1056,12 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Initialize devices
 
-	CXMLElement *pDevices = pDesc->GetContentElementByTag(DEVICES_TAG);
-	if (pDevices)
-		{
-		CItemListManipulator Items(pStation->GetItemList());
+	CDeviceDescList Devices;
+	pType->GenerateDevices(System.GetLevel(), Devices);
 
-		for (i = 0; 
-				(i < pDevices->GetContentElementCount() && i < maxDevices);
-				i++)
-			{
-			CXMLElement *pDeviceDesc = pDevices->GetContentElement(i);
-			DWORD dwDeviceID = pDeviceDesc->GetAttributeInteger(DEVICE_ID_ATTRIB);
-			if (dwDeviceID == 0)
-				dwDeviceID = pDeviceDesc->GetAttributeInteger(ITEM_ATTRIB);
-			CDeviceClass *pClass = System.GetUniverse().FindDeviceClass(dwDeviceID);
-			if (pClass == NULL)
-				{
-				if (retsError)
-					*retsError = strPatternSubst(CONSTLIT("Cannot find deviceID: %08x"), dwDeviceID);
-				return ERR_FAIL;
-				}
-
-			//	Allocate the devices structure
-
-			if (pStation->m_pDevices == NULL)
-				pStation->m_pDevices = new CInstalledDevice [maxDevices];
-
-			//	Add as an item
-
-			CItem DeviceItem(pClass->GetItemType(), 1);
-			Items.AddItem(DeviceItem);
-
-			//	Initialize properties of the device slot
-
-			SDesignLoadCtx Ctx;
-			pStation->m_pDevices[i].InitFromXML(Ctx, pDeviceDesc);
-			pStation->m_pDevices[i].OnDesignLoadComplete(Ctx);
-
-			//	Install the device
-
-			pStation->m_pDevices[i].Install(*pStation, Items, i, true);
-
-			//	Is this a weapon? If so, set a flag so that we know that
-			//	this station is armed. This is an optimization so that we don't
-			//	do a lot of work for stations that have no weapons (e.g., asteroids)
-
-			if (pStation->m_pDevices[i].GetCategory() == itemcatWeapon
-					|| pStation->m_pDevices[i].GetCategory() == itemcatLauncher)
-				{
-				pStation->m_fArmed = true;
-				pStation->m_pDevices[i].SelectFirstVariant(pStation);
-				}
-			}
-
-		//	Compute bonuses
-
-		pStation->CalcDeviceBonus();
-		}
+	pStation->m_Devices.Init(pStation, Devices);
+	pStation->m_fArmed = pStation->m_Devices.FindWeapon();
+	pStation->CalcDeviceBonus();
 
 	//	Get notifications when other objects are destroyed
 
@@ -1177,12 +1116,7 @@ ALERROR CStation::CreateFromType (CSystem &System,
 
 	//	Fire events on devices
 
-	if (pStation->m_pDevices)
-		{
-		for (i = 0; i < maxDevices; i++)
-			if (!pStation->m_pDevices[i].IsEmpty())
-				pStation->m_pDevices[i].FinishInstall();
-		}
+	pStation->m_Devices.FinishInstall();
 
 	//	Set override, just before creation.
 	//	
@@ -1517,6 +1451,37 @@ void CStation::FinishCreation (SSystemCreateCtx *pSysCreateCtx)
 	GetUniverse().GetGlobalObjects().InsertIfTracked(this);
 	}
 
+Metric CStation::CalcMaxAttackDist (void) const
+
+//	CalcMaxAttackDist
+//
+//	Returns the maximum attack distance based on weapons.
+
+	{
+	if (!m_fMaxAttackDistValid)
+		{
+		Metric rBestRange = 0.0;
+
+		for (const CDeviceItem &DeviceItem : GetDeviceSystem())
+			{
+			const CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+			if (Device.GetCategory() == itemcatWeapon
+					|| Device.GetCategory() == itemcatLauncher)
+				{
+				Metric rRange = Device.GetMaxRange(CItemCtx(this, &Device));
+				if (rRange > rBestRange)
+					rBestRange = rRange;
+				}
+			}
+
+		m_rMaxAttackDist = rBestRange;
+		m_fMaxAttackDistValid = true;
+		}
+
+	return m_rMaxAttackDist;
+	}
+
 Metric CStation::GetAttackDistance (void) const
 
 //	GetAttackDistance
@@ -1525,7 +1490,7 @@ Metric CStation::GetAttackDistance (void) const
 
 	{
 	if (m_iAngryCounter > 0)
-		return Max(MAX_ATTACK_DISTANCE, m_pType->GetMaxEffectiveRange());
+		return Max(MAX_ATTACK_DISTANCE, CalcMaxAttackDist());
 	else
 		return MAX_ATTACK_DISTANCE;
 	}
@@ -1675,17 +1640,7 @@ Metric CStation::GetMaxWeaponRange (void) const
 //	Returns the maximum range of weapons.
 
 	{
-	int i;
-
-	Metric rRange = 0.0;
-	if (m_pDevices)
-		{
-		for (i = 0; i < maxDevices; i++)
-			if (!m_pDevices[i].IsEmpty())
-				rRange = Max(rRange, m_pDevices[i].GetMaxRange(CItemCtx(const_cast<CStation *>(this), &m_pDevices[i])));
-		}
-
-	return rRange;
+	return CalcMaxAttackDist();
 	}
 
 CString CStation::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) const
@@ -2081,8 +2036,6 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	{
 	DEBUG_TRY
 
-	int i;
-
 	GetUniverse().AdjustDamage(Ctx);
 
 	//	Stations don't have armor segments
@@ -2137,17 +2090,17 @@ EDamageResults CStation::OnDamage (SDamageCtx &Ctx)
 	//	Let our shield generators take a crack at it
 
 	Ctx.iShieldHitDamage = Ctx.iDamage;
-	if (m_pDevices && !Ctx.bIgnoreShields)
+	if (!Ctx.bIgnoreShields)
 		{
-		for (i = 0; i < maxDevices; i++)
-			if (!m_pDevices[i].IsEmpty())
-				{
-				bool bAbsorbed = m_pDevices[i].AbsorbDamage(this, Ctx);
-				if (IsDestroyed())
-					return damageDestroyed;
-				else if (bAbsorbed)
-					return damageAbsorbedByShields;
-				}
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
+			{
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+			bool bAbsorbed = Device.AbsorbDamage(this, Ctx);
+			if (IsDestroyed())
+				return damageDestroyed;
+			else if (bAbsorbed)
+				return damageAbsorbedByShields;
+			}
 		}
 
 	//	If we're immutable, then nothing else happens.
@@ -2837,27 +2790,15 @@ void CStation::OnComponentChanged (ObjectComponentTypes iComponent)
 //	Some part of the object has changed
 
 	{
-	int i;
-
 	switch (iComponent)
 		{
 		case comCargo:
 			{
-			if (m_pDevices)
+			for (CDeviceItem DeviceItem : GetDeviceSystem())
 				{
-				for (i = 0; i < maxDevices; i++)
-					{
-					CInstalledDevice *pDevice = &m_pDevices[i];
-					if (pDevice->IsEmpty())
-						continue;
-
-					//	If one of our weapons doesn't have a variant selected, then
-					//	try to select it now (if we just got some new ammo, this will
-					//	select the ammo)
-
-					if (!pDevice->IsVariantSelected(this))
-						pDevice->SelectFirstVariant(this);
-					}
+				CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+				if (!Device.IsVariantSelected(this))
+					Device.SelectFirstVariant(this);
 				}
 
 			break;
@@ -3555,19 +3496,12 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 
 	//	Devices
 
-	Ctx.pStream->Read(dwLoad);
-	if (dwLoad)
-		{
-		m_pDevices = new CInstalledDevice [dwLoad];
+	m_Devices.ReadFromStream(Ctx, this);
 
-		for (int i = 0; i < (int)dwLoad; i++)
-			m_pDevices[i].ReadFromStream(*this, Ctx);
+	//	In debug mode, recalc weapon bonus in case anything has changed.
 
-		//	In debug mode, recalc weapon bonus in case anything has changed.
-
-		if (Ctx.GetUniverse().InDebugMode())
-			CalcDeviceBonus();
-		}
+	if (Ctx.GetUniverse().InDebugMode())
+		CalcDeviceBonus();
 
 	//	Overlays
 
@@ -3988,7 +3922,7 @@ void CStation::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	//	Update each device. If updating destroys the station, then we're done.
 
-	if (m_pDevices)
+	if (!m_Devices.IsEmpty())
 		{
 		if (!UpdateDevices(Ctx, iTick, bCalcDeviceBonus))
 			return;
@@ -4099,7 +4033,6 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //	DWORD		target (CSpaceObject ref)
 
 	{
-	int i;
 	DWORD dwSave;
 
 	dwSave = m_pType->GetUNID();
@@ -4130,15 +4063,8 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	m_sStargateDestEntryPoint.WriteToStream(pStream);
 
 	m_Hull.WriteToStream(*pStream, this);
-
-	dwSave = (m_pDevices ? maxDevices : 0);
-	pStream->Write(dwSave);
-
-	for (i = 0; i < (int)dwSave; i++)
-		m_pDevices[i].WriteToStream(pStream);
-
+	m_Devices.WriteToStream(pStream);
 	m_Overlays.WriteToStream(pStream);
-
 	m_DockingPorts.WriteToStream(this, pStream);
 
 	GetSystem()->WriteObjRefToStream(m_pBase, pStream, this);
@@ -5020,15 +4946,13 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	{
 	DEBUG_TRY
 
-	int i;
-	
 	//	Compute the range at which we attack enemies
 
 	Metric rAttackRange;
 	Metric rAttackRange2;
 	if (m_iAngryCounter > 0)
 		{
-		rAttackRange = Max(MAX_ATTACK_DISTANCE, m_pType->GetMaxEffectiveRange());
+		rAttackRange = CPerceptionCalc::GetMaxDist(GetPerception());
 		rAttackRange2 = rAttackRange * rAttackRange;
 
 		//	If the player is in range, then she is under attack
@@ -5055,39 +4979,42 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	//	Fire with all weapons (if we've got a target)
 
 	if (m_WeaponTargets.GetList().GetCount() > 0 
-			&& m_pDevices
 			&& !IsParalyzed()
 			&& !IsDisarmed())
 		{
 		bool bSourceDestroyed = false;
 
-		for (i = 0; i < maxDevices; i++)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			CInstalledDevice *pWeapon = &m_pDevices[i];
+			CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
 
 			//	Skip non-weapons and weapons that aren't ready.
 
-			if (pWeapon->IsEmpty() 
-					|| (pWeapon->GetCategory() != itemcatWeapon && pWeapon->GetCategory() != itemcatLauncher)
-					|| !pWeapon->IsReady())
+			if ((DeviceItem.GetCategory() != itemcatWeapon && DeviceItem.GetCategory() != itemcatLauncher)
+					|| !Weapon.IsReady())
 				continue;
 
-			CDeviceItem WeaponItem = pWeapon->GetItem()->AsDeviceItemOrThrow();
+			//	If we're angry and this is an area weapon, then we fire 
+			//	regardless of range so that we can soak up missiles/shots.
+
+			DWORD dwFlags = 0;
+			if (DeviceItem.IsAreaWeapon())
+				dwFlags |= CSpaceObjectTargetList::FLAG_NO_RANGE_CHECK;
 
 			//	Find the best target for this weapon and fire.
 
 			CSpaceObject *pTarget;
 			int iFireAngle;
-			if (m_WeaponTargets.FindTargetInRange(*this, WeaponItem, 0, &pTarget, &iFireAngle))
+			if (m_WeaponTargets.FindTargetInRange(*this, DeviceItem, dwFlags, &pTarget, &iFireAngle))
 				{
-				pWeapon->SetTarget(pTarget);
-				pWeapon->SetFireAngle(iFireAngle);
+				Weapon.SetTarget(pTarget);
+				Weapon.SetFireAngle(iFireAngle);
 
-				pWeapon->Activate(this, pTarget, &bSourceDestroyed);
+				Weapon.Activate(this, pTarget, &bSourceDestroyed);
 				if (bSourceDestroyed)
 					return false;
 
-				pWeapon->SetTimeUntilReady(m_pType->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
+				Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
 				}
 			}
 		}
@@ -5139,14 +5066,14 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 //	update.
 
 	{
-	ASSERT(m_pDevices);
-
 	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
-	for (int i = 0; i < maxDevices; i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
 		DeviceCtx.ResetOutputs();
 
-		m_pDevices[i].Update(this, DeviceCtx);
+		Device.Update(this, DeviceCtx);
 		if (DeviceCtx.bSourceDestroyed)
 			return false;
 
@@ -5155,7 +5082,7 @@ bool CStation::UpdateDevices (SUpdateCtx &Ctx, int iTick, bool &iobModified)
 		if (DeviceCtx.bRepaired)
 			iobModified = true;
 
-		else if (DeviceCtx.bSetDisabled && m_pDevices[i].SetEnabled(this, false))
+		else if (DeviceCtx.bSetDisabled && Device.SetEnabled(this, false))
 			iobModified = true;
 		}
 
@@ -5322,7 +5249,7 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 //	Update the targets for each weapon.
 
 	{
-	constexpr int MAX_ENEMIES = 0;
+	constexpr int MAX_ENEMIES = 10;
 
 	DWORD dwFlags = CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
 	if (m_Blacklist.IsBlacklisted())

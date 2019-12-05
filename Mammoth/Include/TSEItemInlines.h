@@ -7,6 +7,11 @@
 
 //	CItem Inlines --------------------------------------------------------------
 
+inline ItemCategories CItem::GetCategory (void) const
+	{
+	return (m_pItemType ? m_pItemType->GetCategory() : itemcatNone);
+	}
+
 inline const CEconomyType *CItem::GetCurrencyType (void) const
 	{
 	return m_pItemType->GetCurrencyType();
@@ -43,7 +48,7 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 inline ItemCategories CDifferentiatedItem::GetCategory (void) const
 	{
-	return GetType().GetCategory();
+	return m_Item.GetCategory();
 	}
 
 inline int CDifferentiatedItem::GetCharges (void) const
@@ -295,6 +300,11 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return pInstalled->GetSource();
 	else
 		return NULL;
+	}
+
+inline bool CDeviceItem::IsAreaWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsAreaWeapon(GetSource(), GetInstalledDevice());
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

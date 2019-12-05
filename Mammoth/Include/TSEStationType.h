@@ -330,6 +330,7 @@ class CStationType : public CDesignType
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
 		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
+		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
 		CDesignType *GetAbandonedScreen (CString *retsName) { return m_pAbandonedDockScreen.GetDockScreen(this, retsName); }
 		CurrencyValue GetBalancedTreasure (void) const;
@@ -341,8 +342,6 @@ class CStationType : public CDesignType
 		CXMLElement *GetDesc (void) { return m_pDesc; }
 		CString GetDestNodeID (void) { return m_sStargateDestNode; }
 		CString GetDestEntryPoint (void) { return m_sStargateDestEntryPoint; }
-		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
-		int GetDeviceCount (void) const { return m_iDevicesCount; }
 		int GetEjectaAdj (void) { return m_iEjectaAdj; }
 		CWeaponFireDesc *GetEjectaType (void) { return m_pEjectaType; }
 		const CStationEncounterDesc &GetEncounterDesc (void) const;
@@ -372,7 +371,6 @@ class CStationType : public CDesignType
 		Metric GetLevelStrength (int iLevel);
 		const CAffinityCriteria &GetLocationCriteria (void) const { return GetEncounterDesc().GetLocationCriteria(); }
 		Metric GetMass (void) { return m_rMass; }
-		Metric GetMaxEffectiveRange (void) { if (m_fCalcMaxAttackDist) CalcMaxAttackDistance(); return m_rMaxAttackDistance; }
 		int GetMaxLightDistance (void) { return m_iMaxLightDistance; }
 		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
@@ -475,41 +473,40 @@ class CStationType : public CDesignType
 		Metric CalcBalance (void) const;
 		Metric CalcDefenderStrength (int iLevel) const;
 		int CalcHitsToDestroy (int iLevel) const;
-		Metric CalcMaxAttackDistance (void);
 		Metric CalcTreasureValue (int iLevel) const;
 		Metric CalcWeaponStrength (int iLevel) const;
 		CStationEncounterDesc &GetEncounterDesc (void);
 		void InitStationDamage (void);
 
-		CXMLElement *m_pDesc;
+		CXMLElement *m_pDesc = NULL;
 
 		//	Basic station descriptors
 
 		CNameDesc m_Name;								//	Name
 		CSovereignRef m_pSovereign;						//	Sovereign
-		ScaleTypes m_iScale;							//	Scale
-		Metric m_rParallaxDist;							//	Parallax distance for background objects
-		mutable int m_iLevel;							//	Station level
-		Metric m_rMass;									//	Mass of station
+		ScaleTypes m_iScale = scaleNone;				//	Scale
+		Metric m_rParallaxDist = 1.0;					//	Parallax distance for background objects
+		mutable int m_iLevel = 0;						//	Station level
+		Metric m_rMass = 0.0;							//	Mass of station
 														//		For stars, this is in solar masses
 														//		For worlds, this is in Earth masses
 														//		Otherwise, in metric tons
-		int m_iSize;									//	Size
+		int m_iSize = 0;								//	Size
 														//		For stars and worlds, this is in kilometers
 														//		Otherwise, in meters
-		int m_iFireRateAdj;								//	Fire rate adjustment
+		int m_iFireRateAdj = 10;						//	Fire rate adjustment
 
 		//	Armor & Hull
 		CStationHullDesc m_HullDesc;					//	Hull descriptor
-		int m_iStealth;									//	Stealth
+		int m_iStealth = 0;								//	Stealth
 
 		//	Devices
-		int m_iDevicesCount;							//	Number of devices in array
-		CInstalledDevice *m_Devices;					//	Device array
+		IDeviceGenerator *m_pDevices = NULL;			//	Devices for the station
+		CDeviceDescList m_AverageDevices;
 
 		//	Items
-		IItemGenerator *m_pItems;						//	Random item table
-		CTradingDesc *m_pTrade;							//	Trading structure
+		IItemGenerator *m_pItems = NULL;				//	Random item table
+		CTradingDesc *m_pTrade = NULL;					//	Trading structure
 
 		DWORD m_fMobile:1;								//	Station moves
 		DWORD m_fWall:1;								//	Station is a wall
@@ -542,27 +539,26 @@ class CStationType : public CDesignType
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
-		DWORD m_fCalcMaxAttackDist:1;					//	If TRUE, we need to compute m_rMaxAttackDistance
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
+		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 
 		//	Images
 		CCompositeImageDesc m_Image;
 		TArray<DWORD> m_ShipWrecks;						//	Class IDs to use as image (for shipwrecks)
-		int m_iAnimationsCount;							//	Number of animation sections
-		SAnimationSection *m_pAnimations;				//	Animation sections (may be NULL)
+		int m_iAnimationsCount = 0;						//	Number of animation sections
+		SAnimationSection *m_pAnimations = NULL;		//	Animation sections (may be NULL)
 		CCompositeImageDesc m_HeroImage;				//	For use in dock screens and covers
 
 		//	Docking
 		CDockScreenTypeRef m_pFirstDockScreen;			//	First screen (may be NULL)
 		CDockScreenTypeRef m_pAbandonedDockScreen;		//	Screen to use when abandoned (may be NULL)
-		DWORD m_dwDefaultBkgnd;							//	Default background screen
+		DWORD m_dwDefaultBkgnd = 0;						//	Default background screen
 
 		//	Behaviors
-		int m_iAlertWhenAttacked;						//	Chance that station will warn others when attacked
-		int m_iAlertWhenDestroyed;						//	Chance that station will warn others when destroyed
-		Metric m_rMaxAttackDistance;					//	Max range at which station guns attack
+		int m_iAlertWhenAttacked = 0;					//	Chance that station will warn others when attacked
+		int m_iAlertWhenDestroyed = 0;					//	Chance that station will warn others when destroyed
 
 		CCommunicationsHandler m_OriginalCommsHandler;
 		CCommunicationsHandler m_CommsHandler;			//	Communications handler
@@ -574,23 +570,23 @@ class CStationType : public CDesignType
 
 		//	Ships
 		CShipChallengeDesc m_DefenderCount;				//	Station should have this number of ships
-		IShipGenerator *m_pInitialShips;				//	Ships at creation time
-		IShipGenerator *m_pReinforcements;				//	Reinforcements table
-		IShipGenerator *m_pEncounters;					//	Random encounters table
-		int m_iEncounterFrequency;						//	Frequency of random encounter
+		IShipGenerator *m_pInitialShips = NULL;			//	Ships at creation time
+		IShipGenerator *m_pReinforcements = NULL;		//	Reinforcements table
+		IShipGenerator *m_pEncounters = NULL;			//	Random encounters table
+		int m_iEncounterFrequency = ftNotRandom;		//	Frequency of random encounter
 		CRegenDesc m_ShipRegen;							//	Regen for ships docked with us
-		IShipGenerator *m_pConstruction;				//	Ships built by station
-		int m_iShipConstructionRate;					//	Ticks between each construction
-		int m_iMaxConstruction;							//	Stop building when we get this many ships
+		IShipGenerator *m_pConstruction = NULL;			//	Ships built by station
+		int m_iShipConstructionRate = 0;				//	Ticks between each construction
+		int m_iMaxConstruction = 0;						//	Stop building when we get this many ships
 
 		//	Satellites
-		CXMLElement *m_pSatellitesDesc;
+		CXMLElement *m_pSatellitesDesc = NULL;
 
 		//	Explosion
 		CWeaponFireDescRef m_pExplosionType;			//	Explosion to create when station is destroyed
 
 		//	Ejecta
-		int m_iEjectaAdj;								//	Adjustment to probability for ejecta when hit by weapon
+		int m_iEjectaAdj = 0;							//	Adjustment to probability for ejecta when hit by weapon
 														//		0 = no chance of ejecta
 														//		100 = normal chance
 														//		>100 = greater than normal chance
@@ -598,8 +594,8 @@ class CStationType : public CDesignType
 
 		//	Stellar objects
 		CG32bitPixel m_rgbSpaceColor;					//	Space color
-		int m_iMaxLightDistance;						//	Max distance at which there is no (effective) light from star
-		Metric m_rGravityRadius;						//	Gravity radius
+		int m_iMaxLightDistance = 0;					//	Max distance at which there is no (effective) light from star
+		Metric m_rGravityRadius = 0.0;					//	Gravity radius
 
 		//	Stargates
 		CString m_sStargateDestNode;					//	Dest node
@@ -615,7 +611,7 @@ class CStationType : public CDesignType
 		mutable Metric m_rCombatBalance = 0.0;			//	Station power relative to level (1.0 == balanced)
 
 		//	Temporary
-		int m_iChance;									//	Used when computing chance of encounter
+		int m_iChance = 0;								//	Used when computing chance of encounter
 
 		static CIntegralRotationDesc m_DefaultRotation;
 	};

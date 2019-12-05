@@ -1498,8 +1498,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
-		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_pDevices[iDev]; }
-		virtual int GetDeviceCount (void) const override { return (m_pDevices ? maxDevices : 0); }
+		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
+		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
+		virtual const CDeviceSystem &GetDeviceSystem (void) const { return m_Devices; }
+		virtual CDeviceSystem &GetDeviceSystem (void) { return m_Devices; }
 		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
@@ -1630,6 +1632,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CalcBounds (void);
 		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
+		Metric CalcMaxAttackDist (void) const;
 		int CalcNumberOfShips (void);
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
@@ -1659,38 +1662,39 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
 
-		CStationType *m_pType;					//	Station type
+		CStationType *m_pType = NULL;			//	Station type
 		CString m_sName;						//	Station name
-		DWORD m_dwNameFlags;					//	Name flags
-		CSovereign *m_pSovereign;				//	Allegiance
-		ScaleTypes m_Scale;						//	Scale of station
-		Metric m_rMass;							//	Mass of station (depends on scale)
-		CIntegralRotation *m_pRotation;			//	Rotation parameters (may be NULL)
+		DWORD m_dwNameFlags = 0;				//	Name flags
+		CSovereign *m_pSovereign = NULL;		//	Allegiance
+		ScaleTypes m_Scale = scaleNone;			//	Scale of station
+		Metric m_rMass = 0.0;					//	Mass of station (depends on scale)
+		CIntegralRotation *m_pRotation = NULL;	//	Rotation parameters (may be NULL)
 
 		CCompositeImageSelector m_ImageSelector;//	Image variant to display
-		int m_iDestroyedAnimation;				//	Frames left of destroyed animation
-		COrbit *m_pMapOrbit;					//	Orbit to draw on map
-		Metric m_rParallaxDist;					//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
+		int m_iDestroyedAnimation = 0;			//	Frames left of destroyed animation
+		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
+		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
 
 		CStationHull m_Hull;					//	Hull and armor
-		CInstalledDevice *m_pDevices;			//	Array of devices
+		CDeviceSystem m_Devices;				//	Array of CInstalledDevice
+		mutable Metric m_rMaxAttackDist = 0.0;	//	Maximum attack distance
 		COverlayList m_Overlays;				//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
-		CSpaceObject *m_pBase;					//	If we're a subordinate, this points to our base
+		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
 		CSpaceObjectTargetList m_WeaponTargets;	//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
-		int m_iAngryCounter;					//	Attack cycles until station is not angry
-		int m_iReinforceRequestCount;			//	Number of times we've requested reinforcements
+		int m_iAngryCounter = 0;				//	Attack cycles until station is not angry
+		int m_iReinforceRequestCount = 0;		//	Number of times we've requested reinforcements
 
-		CCurrencyBlock *m_pMoney;				//	Money left (may be NULL)
-		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
+		CCurrencyBlock *m_pMoney = NULL;		//	Money left (may be NULL)
+		CTradingDesc *m_pTrade = NULL;			//	Override of trading desc (may be NULL)
 
 		DWORD m_fArmed:1;						//	TRUE if station has weapons
 		DWORD m_fKnown:1;						//	TRUE if known to the player
@@ -1711,8 +1715,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
 
 		DWORD m_fForceMapLabel:1;				//	Force showing map label
+		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
-		DWORD m_dwSpare:14;
+		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
+		DWORD m_dwSpare:13;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)

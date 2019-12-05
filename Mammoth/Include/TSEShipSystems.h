@@ -79,7 +79,8 @@ class CArmorSystem
 class CDeviceSystem
 	{
 	public:
-		CDeviceSystem (void);
+		static constexpr DWORD FLAG_NO_NAMED_DEVICES = 0x00000001;
+		CDeviceSystem (DWORD dwFlags = 0);
 
 		void AccumulateEnhancementsToArmor (CSpaceObject *pObj, CInstalledArmor *pArmor, TArray<CString> &EnhancementIDs, CItemEnhancementStack *pEnhancements);
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
@@ -96,16 +97,20 @@ class CDeviceSystem
 		int FindNamedIndex (const CItem &Item) const;
 		int FindNextIndex (CSpaceObject *pObj, int iStart, ItemCategories Category, int iDir = 1, bool switchWeapons = false) const;
 		int FindRandomIndex (bool bEnabledOnly) const;
+		bool FindWeapon (int *retiIndex = NULL) const;
 		bool FindWeaponByItem (const CItem &Item, int *retiIndex = NULL, int *retiVariant = NULL) const;
+		void FinishInstall (void);
 		int GetCount (void) const { return m_Devices.GetCount(); }
 		int GetCountByID (const CString &sID) const;
 		CInstalledDevice &GetDevice (int iIndex) { return m_Devices[iIndex]; }
 		const CInstalledDevice &GetDevice (int iIndex) const { return m_Devices[iIndex]; }
-		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
-		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
-		int GetNamedIndex (DeviceNames iDev) const { return m_NamedDevices[iDev]; }
+		const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		CInstalledDevice *GetNamedDevice (DeviceNames iDev) { if (HasNamedDevices() && m_NamedDevices[iDev] != -1) return &GetDevice(m_NamedDevices[iDev]); else return NULL; }
+		int GetNamedIndex (DeviceNames iDev) const { return (HasNamedDevices() ? m_NamedDevices[iDev] : -1); }
+		bool HasNamedDevices (void) const { return (m_NamedDevices.GetCount() > 0); }
 		bool Init (CSpaceObject *pObj, const CDeviceDescList &Devices, int iMaxDevices = 0);
 		bool Install (CSpaceObject *pObj, CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1, bool bInCreate = false, int *retiDeviceSlot = NULL);
+		bool IsEmpty (void) const { return (m_Devices.GetCount() == 0); }
 		bool IsSlotAvailable (ItemCategories iItemCat, int *retiSlot = NULL) const;
 		bool IsWeaponRepeating (DeviceNames iDev = devNone) const;
 		void MarkImages (void);
@@ -186,7 +191,7 @@ class CDeviceSystem
 		DeviceNames GetNamedFromDeviceIndex (int iIndex) const;
 
 		TArray<CInstalledDevice> m_Devices;
-		int m_NamedDevices[devNamesCount];
+		TArray<int> m_NamedDevices;
 	};
 
 //	Ship Structure and Compartments --------------------------------------------
