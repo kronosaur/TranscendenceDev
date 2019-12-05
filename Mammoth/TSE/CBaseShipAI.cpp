@@ -743,7 +743,7 @@ CSpaceObject *CBaseShipAI::GetEscortPrincipal (void) const
 		}
 	}
 
-void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
+void CBaseShipAI::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
@@ -752,35 +752,65 @@ void CBaseShipAI::GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceIte
 	{
 	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
-	//	Make sure we have a list of targets.
+	//	Make sure we have a list of targets. This will initialize a list of
+	//	nearby targets and (if required) a list of missiles to defend against.
+	//	It will store them in UpdateCtx so that more than one weapon can access
+	//	the list without recomputing.
 
-	InitTargetList(TargetingCtx);
+	InitTargetList(UpdateCtx);
 
-	//	Now find a target for the given weapon.
+	//	If this weapon does not target missiles, then we just do a quick find.
 
-	Metric rMaxRange = WeaponItem.GetMaxEffectiveRange();
-	Metric rMaxRange2 = rMaxRange * rMaxRange;
-	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	if (!WeaponItem.IsMissileDefenseWeapon() && !WeaponItem.IsTargetableMissileDefenseWeapon())
 		{
-		int iFireAngle;
-		CSpaceObject *pTarget = TargetingCtx.Targets[i];
-		Metric rDist2 = (pTarget->GetPos() - m_pShip->GetPos()).Length2();
-
-		if (rDist2 < rMaxRange2 
-				&& Device.GetWeaponEffectiveness(m_pShip, pTarget) >= 0
-				&& WeaponItem.IsWeaponAligned(pTarget, NULL, &iFireAngle)
-				&& m_AICtx.CheckForFriendsInLineOfFire(m_pShip, &Device, pTarget, iFireAngle, rMaxRange))
+		if (!UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
+				WeaponItem, 
+				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+				retpTarget,
+				retiFireSolution))
 			{
-			*retpTarget = pTarget;
-			*retiFireSolution = iFireAngle;
-			return;
+			*retpTarget = NULL;
+			*retiFireSolution = -1;
 			}
 		}
 
-	//	If we get this far then no target found
+	//	Otherwise, we look in both the target and the missile lists and choose
+	//	the nearest one.
 
-	*retpTarget = NULL;
-	*retiFireSolution = -1;
+	else
+		{
+		CSpaceObject *pTarget = NULL;
+		int iFireSolution = -1;
+		Metric rDist2;
+
+		UpdateCtx.Targets.FindTargetInRange(*m_pShip, 
+				WeaponItem, 
+				m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+				&pTarget,
+				&iFireSolution,
+				&rDist2);
+
+		CSpaceObject *pMissile = NULL;
+		int iMissileFireSolution = -1;
+		Metric rMissileDist2;
+
+		if (!UpdateCtx.Missiles.FindTargetInRange(*m_pShip, 
+					WeaponItem, 
+					m_AICtx.NoFriendlyFireCheck() ? CSpaceObjectTargetList::FLAG_NO_LINE_OF_FIRE_CHECK : 0,
+					&pMissile, 
+					&iMissileFireSolution, 
+					&rMissileDist2)
+				|| (pTarget && rDist2 < rMissileDist2))
+			{
+			*retpTarget = pTarget;
+			*retiFireSolution = iFireSolution;
+			}
+		else
+			{
+			*retpTarget = pMissile;
+			*retiFireSolution = iMissileFireSolution;
+			}
+		}
 	}
 
 CSpaceObject *CBaseShipAI::GetOrderGiver (void)
@@ -873,65 +903,51 @@ void CBaseShipAI::HandleFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOr
 		m_pShip->Communicate(pOrderGiver, msgWatchTargets);
 	}
 
-void CBaseShipAI::InitTargetList (STargetingCtx &TargetingCtx) const
+void CBaseShipAI::InitTargetList (SUpdateCtx &UpdateCtx) const
 
 //	CalcTargetsOfOpportunity
 //
 //	Returns a list of targets of opportunity.
 
 	{
-	//	If we've already initialized the target list, then nothing to do.
+	//	Initialize the targets list if necessary
 
-	if (!TargetingCtx.bRecalcTargets)
-		return;
-
-	//	Start with a blank list.
-
-	TargetingCtx.Targets.DeleteAll();
-
-	//	If we are aggressive, then include ships that haven't fired 
-	//	their weapons recently
-
-	DWORD dwFlags = 0;
-	if (m_AICtx.IsAggressor())
-		dwFlags |= CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS;
-
-	//  Include missiles if appropriate
-
-	if (m_AICtx.ShootsAllMissiles())
-		dwFlags |= CSpaceObject::FLAG_INCLUDE_MISSILES;
-
-	else if (m_AICtx.ShootsTargetableMissiles())
-		dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
-
-	//	First build a list of the nearest enemy ships within
-	//	range of the ship.
-
-	m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
-			m_AICtx.GetBestWeaponRange(),
-			&TargetingCtx.Targets,
-			GetBase(),
-			dwFlags);
-
-	//	If we've got a target, add it to the list. Sometimes this will be 
-	//	a duplicate, but that's OK.
-
-	CSpaceObject *pTarget = GetTarget(FLAG_NO_AUTO_TARGET);
-	if (pTarget)
-		TargetingCtx.Targets.Insert(pTarget);
-
-	//	If the player is blacklisted, add her to the list.
-
-	if (m_fPlayerBlacklisted)
+	if (!UpdateCtx.Targets.IsValid())
 		{
-		pTarget = m_pShip->GetPlayerShip();
-		if (pTarget)
-			TargetingCtx.Targets.Insert(pTarget);
+		//	If we are aggressive, then include ships that haven't fired 
+		//	their weapons recently
+
+		DWORD dwFlags = 0;
+		if (m_AICtx.IsAggressor())
+			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
+
+		//	Include our target
+
+		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET;
+
+		//	Include the player
+
+		if (m_fPlayerBlacklisted)
+			dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
+		
+		//	Init
+
+		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), GetBase(), dwFlags);
 		}
 
-	//	Remember that we're initialized
+	//	Initialize the list of missiles, if necessary
 
-	TargetingCtx.bRecalcTargets = false;
+	if (!UpdateCtx.Missiles.IsValid())
+		{
+		if (m_AICtx.ShootsAllMissiles())
+			UpdateCtx.Missiles.InitWithNearestMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
+
+		else if (m_AICtx.ShootsTargetableMissiles())
+			UpdateCtx.Missiles.InitWithNearestTargetableMissiles(*m_pShip, MAX_TARGETS, m_AICtx.GetBestWeaponRange(), 0);
+
+		else
+			UpdateCtx.Missiles.InitEmpty();
+		}
 	}
 
 bool CBaseShipAI::IsAngryAt (const CSpaceObject *pObj) const

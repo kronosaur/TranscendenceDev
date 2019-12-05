@@ -260,11 +260,8 @@ class CVisibleAggressorObjSelector
 			{ }
 
 		bool CanUseSovereignEnemyList (void) const { return (!m_bIncludeTargetableMissiles && !m_bIncludeMissiles); }
-
-		Metric GetMaxRange (void) const
-			{
-			return m_Perception.GetRange(0);
-			}
+		CSpaceObject *GetIncludePlayer (void) const { return m_pIncludePlayer; }
+		Metric GetMaxRange (void) const { return m_Perception.GetRange(0); }
 
 		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
@@ -296,6 +293,7 @@ class CVisibleAggressorObjSelector
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludePlayer (bool bValue = true) { m_pIncludePlayer = (bValue ? m_Source.GetPlayerShip() : NULL); }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
 		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
@@ -303,6 +301,7 @@ class CVisibleAggressorObjSelector
 		CPerceptionCalc m_Perception;
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
+		CSpaceObject *m_pIncludePlayer = NULL;
 		int m_iAggressorThreshold = -1;
 		bool m_bIncludeMissiles = false;
 		bool m_bIncludeStations = false;
@@ -322,11 +321,8 @@ class CVisibleObjSelector
 			{ }
 
 		bool CanUseSovereignEnemyList (void) const { return (!m_bIncludeTargetableMissiles && !m_bIncludeMissiles); }
-
-		Metric GetMaxRange (void) const
-			{
-			return m_Perception.GetRange(0);
-			}
+		CSpaceObject *GetIncludePlayer (void) const { return m_pIncludePlayer; }
+		Metric GetMaxRange (void) const	{ return m_Perception.GetRange(0); }
 
 		bool Matches (CSpaceObject &Obj, Metric rDist2) const
 			{
@@ -357,6 +353,7 @@ class CVisibleObjSelector
 
 		void SetExcludeObj (CSpaceObject *pObj) { m_pExcludeObj = pObj; }
 		void SetIncludeMissiles (bool bValue = true) { m_bIncludeMissiles = bValue; }
+		void SetIncludePlayer (bool bValue = true) { m_pIncludePlayer = (bValue ? m_Source.GetPlayerShip() : NULL); }
 		void SetIncludeStations (bool bValue = true) { m_bIncludeStations = bValue; }
 		void SetIncludeTargetableMissiles (bool bValue = true) { m_bIncludeTargetableMissiles = bValue; }
 
@@ -364,9 +361,68 @@ class CVisibleObjSelector
 		CPerceptionCalc m_Perception;
 		CSpaceObject &m_Source;
 		CSpaceObject *m_pExcludeObj = NULL;
-		bool m_bIncludeStations = false;
+		CSpaceObject *m_pIncludePlayer = NULL;
 		bool m_bIncludeMissiles = false;
+		bool m_bIncludeStations = false;
 		bool m_bIncludeTargetableMissiles = false;
+	};
+
+class CVisibleMissileObjSelector
+	{
+	public:
+		CVisibleMissileObjSelector (CSpaceObject &Source) :
+				m_Source(Source),
+				m_Perception(Source.GetPerception())
+			{ }
+
+		bool CanUseSovereignEnemyList (void) const { return false; }
+		CSpaceObject *GetIncludePlayer (void) const { return NULL; }
+		Metric GetMaxRange (void) const	{ return m_Perception.GetRange(0); }
+
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
+			{
+			return (Obj.GetInteraction() >= 100
+				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsUnreal());
+			}
+
+		bool MatchesCategory (CSpaceObject &Obj) const
+			{
+			return (Obj.GetCategory() == CSpaceObject::catMissile);
+			}
+
+	private:
+		CPerceptionCalc m_Perception;
+		CSpaceObject &m_Source;
+	};
+
+class CVisibleTargetableMissileObjSelector
+	{
+	public:
+		CVisibleTargetableMissileObjSelector (CSpaceObject &Source) :
+				m_Source(Source),
+				m_Perception(Source.GetPerception())
+			{ }
+
+		bool CanUseSovereignEnemyList (void) const { return false; }
+		CSpaceObject *GetIncludePlayer (void) const { return NULL; }
+		Metric GetMaxRange (void) const	{ return m_Perception.GetRange(0); }
+
+		bool Matches (CSpaceObject &Obj, Metric rDist2) const
+			{
+			return (Obj.IsTargetableProjectile()
+				&& m_Perception.CanBeTargeted(&Obj, rDist2)
+				&& !Obj.IsUnreal());
+			}
+
+		bool MatchesCategory (CSpaceObject &Obj) const
+			{
+			return (Obj.GetCategory() == CSpaceObject::catMissile);
+			}
+
+	private:
+		CPerceptionCalc m_Perception;
+		CSpaceObject &m_Source;
 	};
 
 //	ENUMERATION FUNCTIONS ------------------------------------------------------
@@ -483,6 +539,10 @@ class CSpaceObjectEnum
 
 			Range.ReduceRadius(Selector.GetMaxRange());
 
+			//	Remember to add the player and source target, if desired.
+
+			CSpaceObject *pAddPlayer = Selector.GetIncludePlayer();
+
 			//	If we're the player, then we can't use the sovereign enemy list
 			//	because it doesn't handle angry objects.
 
@@ -510,6 +570,10 @@ class CSpaceObjectEnum
 
 						if (Sorted.GetCount() >= iMaxObjs)
 							Range.SetBestDist2(Sorted.GetKey(iMaxObjs - 1));
+
+						//	Keep track of whether we inserted required objects
+
+						if (pObj == pAddPlayer) pAddPlayer = NULL;
 						}
 					}
 				}
@@ -532,6 +596,7 @@ class CSpaceObjectEnum
 						&& Selector.Matches(*pPlayer, rDist2))
 					{
 					Sorted.Insert(rDist2, pPlayer);
+					pAddPlayer = NULL;
 
 					//	NOTE: We don't bother setting the best distance, since
 					//	we probably don't have enough objects to fill the list.
@@ -556,8 +621,22 @@ class CSpaceObjectEnum
 
 						if (Sorted.GetCount() >= iMaxObjs)
 							Range.SetBestDist2(Sorted.GetKey(iMaxObjs - 1));
+
+						//	Keep track of whether we inserted required objects
+
+						if (pObj == pAddPlayer) pAddPlayer = NULL;
 						}
 					}
+				}
+
+			//	If we haven't yet added required targets, do it now
+
+			if (pAddPlayer)
+				{
+				Metric rDist2;
+				if (Range.Matches(*pAddPlayer, &rDist2)
+						&& Selector.Matches(*pAddPlayer, rDist2))
+					Sorted.Insert(rDist2, pAddPlayer);
 				}
 
 			//	Add each of the entries in the array to the	output.

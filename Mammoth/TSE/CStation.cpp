@@ -2611,8 +2611,6 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 //	Notification of another object being destroyed
 
 	{
-	int i;
-
 	//	If this object is docked with us, remove it from the
 	//	docking table.
 
@@ -2621,10 +2619,7 @@ void CStation::ObjectDestroyedHook (const SDestroyCtx &Ctx)
 	//	Remove the object from any lists that it may be on
 
 	m_Targets.Delete(&Ctx.Obj);
-
-	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.Obj)
-			m_WeaponTargets[i] = NULL;
+	m_WeaponTargets.Delete(Ctx.Obj);
 
 	//	If this was our base, remove it.
 
@@ -3424,7 +3419,6 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 #ifdef DEBUG_LOAD
 	::OutputDebugString("CStation::OnReadFromStream\n");
 #endif
-	int i;
 	DWORD dwLoad;
 
 	//	Station type
@@ -3566,7 +3560,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		{
 		m_pDevices = new CInstalledDevice [dwLoad];
 
-		for (i = 0; i < (int)dwLoad; i++)
+		for (int i = 0; i < (int)dwLoad; i++)
 			m_pDevices[i].ReadFromStream(*this, Ctx);
 
 		//	In debug mode, recalc weapon bonus in case anything has changed.
@@ -3588,7 +3582,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 		Ctx.pStream->Read(dwCount);
 		if (dwCount)
 			{
-			for (i = 0; i < (int)dwCount; i++)
+			for (int i = 0; i < (int)dwCount; i++)
 				{
 				DWORD dwObjID;
 				Ctx.pStream->Read(dwObjID);
@@ -3789,16 +3783,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	//	Weapon targets
 
 	if (m_fArmed && Ctx.dwVersion >= 153)
-		{
-		int iCount;
-		Ctx.pStream->Read(iCount);
-		m_WeaponTargets.InsertEmpty(iCount);
-
-		for (i = 0; i < iCount; i++)
-			{
-			CSystem::ReadObjRefFromStream(Ctx, &m_WeaponTargets[i]);
-			}
-		}
+		m_WeaponTargets.ReadFromStream(Ctx);
 	}
 
 void CStation::OnSetEventFlags (void)
@@ -3817,15 +3802,10 @@ void CStation::OnStationDestroyed (const SDestroyCtx &Ctx)
 //	Station in the system has been destroyed
 
 	{
-	int i;
-
 	//	Remove the object from any lists that it may be on
 
 	m_Targets.Delete(&Ctx.Obj);
-
-	for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-		if (m_WeaponTargets[i] == Ctx.Obj)
-			m_WeaponTargets[i] = NULL;
+	m_WeaponTargets.Delete(Ctx.Obj);
 	}
 
 void CStation::OnSubordinateDestroyed (SDestroyCtx &Ctx)
@@ -4234,13 +4214,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	//	Weapon targets
 
 	if (m_fArmed)
-		{
-		dwSave = m_WeaponTargets.GetCount();
-		pStream->Write(dwSave);
-
-		for (i = 0; i < m_WeaponTargets.GetCount(); i++)
-			GetSystem()->WriteObjRefToStream(m_WeaponTargets[i], pStream, this);
-		}
+		m_WeaponTargets.WriteToStream(*GetSystem(), *pStream);
 	}
 
 void CStation::MarkImages (void)
@@ -5046,7 +5020,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	{
 	DEBUG_TRY
 
-	int i, j;
+	int i;
 	
 	//	Compute the range at which we attack enemies
 
@@ -5080,7 +5054,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 	//	Fire with all weapons (if we've got a target)
 
-	if (m_WeaponTargets.GetCount() > 0 
+	if (m_WeaponTargets.GetList().GetCount() > 0 
 			&& m_pDevices
 			&& !IsParalyzed()
 			&& !IsDisarmed())
@@ -5098,32 +5072,22 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !pWeapon->IsReady())
 				continue;
 
+			CDeviceItem WeaponItem = pWeapon->GetItem()->AsDeviceItemOrThrow();
+
 			//	Find the best target for this weapon and fire.
 
-			for (j = 0; j < m_WeaponTargets.GetCount(); j++)
+			CSpaceObject *pTarget;
+			int iFireAngle;
+			if (m_WeaponTargets.FindTargetInRange(*this, WeaponItem, 0, &pTarget, &iFireAngle))
 				{
-				CSpaceObject *pTarget = m_WeaponTargets[j];
-				if (pTarget == NULL)
-					continue;
+				pWeapon->SetTarget(pTarget);
+				pWeapon->SetFireAngle(iFireAngle);
 
-				//	See if we can hit this target. If so, then we fire.
+				pWeapon->Activate(this, pTarget, &bSourceDestroyed);
+				if (bSourceDestroyed)
+					return false;
 
-				int iFireAngle;
-				if (pWeapon->IsWeaponAligned(this, pTarget, NULL, &iFireAngle)
-						&& IsLineOfFireClear(pWeapon, pTarget, iFireAngle, rAttackRange))
-					{
-					pWeapon->SetFireAngle(iFireAngle);
-					pWeapon->SetTarget(pTarget);
-					pWeapon->Activate(this, pTarget, &bSourceDestroyed);
-					if (bSourceDestroyed)
-						return false;
-
-					pWeapon->SetTimeUntilReady(m_pType->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
-
-					//	Found a target, so stop looking
-
-					break;
-					}
+				pWeapon->SetTimeUntilReady(m_pType->GetFireRateAdj() * pWeapon->GetActivateDelay(this) / 10);
 				}
 			}
 		}
@@ -5358,28 +5322,16 @@ void CStation::UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange)
 //	Update the targets for each weapon.
 
 	{
-	CPerceptionCalc Perception(GetPerception());
-	Metric rAttackRange2 = rAttackRange * rAttackRange;
+	constexpr int MAX_ENEMIES = 0;
 
-	//	We start by creating a list of all targets within the attack range.
-
-	m_WeaponTargets.DeleteAll();
-
-	//	If the player is blacklisted, then we add her first.
-
+	DWORD dwFlags = CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS;
 	if (m_Blacklist.IsBlacklisted())
-		{
-		CSpaceObject *pPlayerShip = GetUniverse().GetPlayerShip();
-		Metric rDist2;
-		if (pPlayerShip
-				&& (rDist2 = GetDistance2(pPlayerShip)) <= rAttackRange2
-				&& Perception.CanBeTargeted(pPlayerShip, rDist2))
-			m_WeaponTargets.Insert(pPlayerShip);
-		}
+		dwFlags |= CSpaceObjectTargetList::FLAG_INCLUDE_PLAYER;
 
-	//	Add the list of enemy objects in range. This list will come back in
-	//	sorted order, with the nearest enemies first.
-
-	int MAX_ENEMIES = 10;
-	GetNearestVisibleEnemies(MAX_ENEMIES, rAttackRange, &m_WeaponTargets, NULL, FLAG_INCLUDE_NON_AGGRESSORS);
+	m_WeaponTargets.CleanUp();
+	m_WeaponTargets.InitWithNearestVisibleEnemies(*this,
+			MAX_ENEMIES,
+			rAttackRange,
+			NULL,
+			dwFlags);
 	}

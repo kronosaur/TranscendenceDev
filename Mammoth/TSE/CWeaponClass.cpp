@@ -1995,12 +1995,9 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
 
         if (iShotCount > 1)
             {
-		    TArray<CSpaceObject *> TargetList;
-		    int iFound = pSource->GetNearestVisibleEnemies(iShotCount, 
-				    MAX_TARGET_RANGE, 
-				    &TargetList, 
-				    pTarget, 
-				    CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS);
+			CSpaceObjectTargetList Targets;
+			Targets.InitWithNearestVisibleEnemies(*pSource, iShotCount, MAX_TARGET_RANGE, pTarget, CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS);
+			int iFound = Targets.GetList().GetCount();
 
             int iNextTarget = 0;
             for (i = 1; i < iShotCount; i++)
@@ -2016,7 +2013,7 @@ bool CWeaponClass::FireWeapon (CInstalledDevice *pDevice,
                     }
                 else
                     {
-			        CSpaceObject *pNewTarget = TargetList[iNextTarget++ % iFound];
+			        CSpaceObject *pNewTarget = Targets.GetList()[iNextTarget++ % iFound];
 
                     //	Calculate direction to fire in
 

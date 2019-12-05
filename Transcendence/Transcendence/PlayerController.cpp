@@ -624,7 +624,7 @@ IShipController::OrderTypes CPlayerShipController::GetOrder (int iIndex, CSpaceO
 		}
 	}
 
-void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
+void CPlayerShipController::GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	GetNearestTargets
 //
@@ -635,54 +635,22 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, const 
 
 	//	Get targets, if necessary
 
-	if (TargetingCtx.bRecalcTargets)
+	if (!UpdateCtx.Targets.IsValid())
 		{
-		TargetingCtx.Targets.DeleteAll();
-
-		//	The principal target is always first.
-
-		CSpaceObject *pMainTarget = GetTarget(FLAG_NO_AUTO_TARGET);
-		if (pMainTarget)
-			TargetingCtx.Targets.Insert(pMainTarget);
-
-		//	Get other targets
-
-		DWORD dwFlags = CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS;
-		if (WeaponItem)
-			{
-			if (WeaponItem.IsMissileDefenseWeapon())
-				dwFlags |= CSpaceObject::FLAG_INCLUDE_MISSILES;
-
-			else if (WeaponItem.IsTargetableMissileDefenseWeapon())
-				dwFlags |= CSpaceObject::FLAG_INCLUDE_TARGETABLE_MISSILES;
-			}
-
-		m_pShip->GetNearestVisibleEnemies(MAX_TARGETS,
+		UpdateCtx.Targets.InitWithNearestVisibleEnemies(*m_pShip,
+				MAX_TARGETS,
 				MAX_AUTO_TARGET_DISTANCE,
-				&TargetingCtx.Targets,
-				pMainTarget,
-				dwFlags);
-
-		TargetingCtx.bRecalcTargets = false;
+				NULL,
+				CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS | CSpaceObjectTargetList::FLAG_INCLUDE_SOURCE_TARGET);
 		}
 
 	//	Now find a target for the given weapon.
 
-	for (int i = 0; i < TargetingCtx.Targets.GetCount(); i++)
+	if (!UpdateCtx.Targets.FindTargetAligned(*m_pShip, WeaponItem, retpTarget, retiFireSolution))
 		{
-		int iFireAngle;
-		if (WeaponItem.IsWeaponAligned(TargetingCtx.Targets[i], NULL, &iFireAngle))
-			{
-			*retpTarget = TargetingCtx.Targets[i];
-			*retiFireSolution = iFireAngle;
-			return;
-			}
+		*retpTarget = NULL;
+		*retiFireSolution = -1;
 		}
-
-	//	If we get this far then no target found
-
-	*retpTarget = NULL;
-	*retiFireSolution = -1;
 	}
 
 bool CPlayerShipController::HasCommsTarget (void)

@@ -43,16 +43,6 @@ struct ProgramDesc
 	ICCItem *ProgramCode;
 	};
 
-struct STargetingCtx
-	{
-	STargetingCtx (void) :
-			bRecalcTargets(true)
-		{ }
-
-	TArray<CSpaceObject *> Targets;
-	bool bRecalcTargets;
-	};
-
 //	Armor ----------------------------------------------------------------------
 
 class CArmorSystem

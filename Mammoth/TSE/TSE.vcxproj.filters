@@ -1123,9 +1123,6 @@
     <ClCompile Include="CPowerConsumption.cpp">
       <Filter>Source Files\Ships</Filter>
     </ClCompile>
-    <ClCompile Include="SUpdateCtx.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="CFailureDesc.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
@@ -1380,6 +1377,12 @@
     </ClCompile>
     <ClCompile Include="CStationCreateOptions.cpp">
       <Filter>Source Files\Stations</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpaceObjectTargetList.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="SUpdateCtx.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

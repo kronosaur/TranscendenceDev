@@ -574,7 +574,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
 	}
 
-bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
+bool CShip::CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	CalcDeviceTarget
 //
@@ -665,7 +665,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, const CDeviceItem &WeaponItem,
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, WeaponItem, retpTarget, retiFireSolution);
+			m_pController->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 
@@ -6200,8 +6200,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         if (!IsDisarmed())
             {
-            STargetingCtx TargetingCtx;
-
 			for (CDeviceItem DeviceItem : GetDeviceSystem())
                 {
                 CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
@@ -6214,7 +6212,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
                     CSpaceObject *pTarget;
                     int iFireAngle;
-                    if (!CalcDeviceTarget(TargetingCtx, DeviceItem, &pTarget, &iFireAngle))
+                    if (!CalcDeviceTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
                         {
                         //	Do not consume power, even though we're triggered.
 

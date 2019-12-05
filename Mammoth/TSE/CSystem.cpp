@@ -1673,58 +1673,54 @@ ALERROR CSystem::CreateWeaponFragments (SShotCreateCtx &Ctx, CSpaceObject *pMiss
 			//	For multitargets, we need to find a target 
 			//	for each fragment
 
-			if (pFragDesc->bMIRV)
+			if (pFragDesc->bMIRV && pMissileSource)
 				{
-				TArray<CSpaceObject *> TargetList;
+				CSpaceObjectTargetList TargetList;
+				TargetList.InitWithNearestVisibleEnemies(*pMissileSource, 
+						iFragmentCount, 
+						MAX_MIRV_TARGET_RANGE, 
+						NULL, 
+						CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS);
+				int iFound = TargetList.GetList().GetCount();
+				Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
 
-				if (pMissileSource)
+				if (iFound > 0)
 					{
-					int iFound = pMissileSource->GetNearestVisibleEnemies(iFragmentCount, 
-							MAX_MIRV_TARGET_RANGE, 
-							&TargetList, 
-							NULL, 
-							CSpaceObject::FLAG_INCLUDE_NON_AGGRESSORS | CSpaceObject::FLAG_INCLUDE_STATIONS);
-
-					Metric rSpeed = pFragDesc->pDesc->GetInitialSpeed();
-
-					if (iFound > 0)
+					for (i = 0; i < iFragmentCount; i++)
 						{
-						for (i = 0; i < iFragmentCount; i++)
-							{
-							CSpaceObject *pTarget = TargetList[i % iFound];
-							Targets[i] = pTarget;
+						CSpaceObject *pTarget = TargetList.GetList()[i % iFound];
+						Targets[i] = pTarget;
 
-							//	Calculate direction to fire in
+						//	Calculate direction to fire in
 
-							CVector vTarget = pTarget->GetPos() - Ctx.vPos;
-							Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
-							CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
+						CVector vTarget = pTarget->GetPos() - Ctx.vPos;
+						Metric rTimeToIntercept = CalcInterceptTime(vTarget, pTarget->GetVel(), rSpeed);
+						CVector vInterceptPoint = vTarget + pTarget->GetVel() * rTimeToIntercept;
 
-							//	If fragments can maneuver, then fire angle jitters a bit.
+						//	If fragments can maneuver, then fire angle jitters a bit.
 
-							if (pFragDesc->pDesc->IsTracking())
-								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
+						if (pFragDesc->pDesc->IsTracking())
+							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-45, 45));
 
-							//	If we've got multiple fragments to the same target, then
-							//	jitter a bit.
+						//	If we've got multiple fragments to the same target, then
+						//	jitter a bit.
 
-							else if (i >= iFound)
-								Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
+						else if (i >= iFound)
+							Angles[i] = AngleMod(VectorToPolar(vInterceptPoint, NULL) + mathRandom(-6, 6));
 
-							//	Otherwise, head straight for the target
+						//	Otherwise, head straight for the target
 
-							else
-								Angles[i] = VectorToPolar(vInterceptPoint, NULL);
-							}
+						else
+							Angles[i] = VectorToPolar(vInterceptPoint, NULL);
 						}
+					}
 
-					//	If no targets found, an we require a target, then we skip
+				//	If no targets found, an we require a target, then we skip
 
-					else if (Ctx.pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
-						{
-						pFragDesc = pFragDesc->pNext;
-						continue;
-						}
+				else if (Ctx.pDesc->IsTargetRequired() || pFragDesc->pDesc->IsTargetRequired())
+					{
+					pFragDesc = pFragDesc->pNext;
+					continue;
 					}
 				}
 
@@ -4695,7 +4691,7 @@ void CSystem::Update (SSystemUpdateCtx &SystemCtx, SViewportAnnotations *pAnnota
 
 		//	Initialize context
 
-		Ctx.SetTimeStopped(pObj->IsTimeStopped());
+		Ctx.OnStartUpdate(*pObj);
 
 		//	Update behavior first.
 

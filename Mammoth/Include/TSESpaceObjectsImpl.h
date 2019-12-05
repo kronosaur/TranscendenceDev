@@ -1291,7 +1291,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		bool CalcDeviceTarget (STargetingCtx &Ctx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
+		bool CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
         void CalcPerformance (void);
@@ -1683,7 +1683,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		CSpaceObject *m_pBase;					//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
-		TArray<CSpaceObject *> m_WeaponTargets;	//	Targets to destroy (by our weapons)
+		CSpaceObjectTargetList m_WeaponTargets;	//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
 		int m_iAngryCounter;					//	Attack cycles until station is not angry

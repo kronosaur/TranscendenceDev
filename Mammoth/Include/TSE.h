@@ -254,7 +254,7 @@ struct SUpdateCtx
 	public:
 		int GetLightIntensity (CSpaceObject *pObj) const;
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
-		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
+		void OnStartUpdate (CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
 		CSpaceObject *pPlayer = NULL;				//	The player
@@ -263,6 +263,9 @@ struct SUpdateCtx
 
 		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
 		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
+
+		CSpaceObjectTargetList Targets;				//	Cached list of targets for object being updated
+		CSpaceObjectTargetList Missiles;			//	Cached list of missiles for object being updated
 		
 		//	Misc flags
 
@@ -712,17 +715,6 @@ class CSpaceObject
 		int GetIndex (void) const { return m_iIndex; }
 		CSpaceObject *GetNearestEnemyStation (Metric rMaxRange = g_InfiniteDistance);
 		CSpaceObject *GetNearestStargate (bool bExcludeUncharted = false);
-
-		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =		0x00000001;
-		static constexpr DWORD FLAG_INCLUDE_STATIONS =				0x00000002;
-		static constexpr DWORD FLAG_INCLUDE_MISSILES =				0x00000004;
-		static constexpr DWORD FLAG_INCLUDE_TARGETABLE_MISSILES =	0x00000008;
-		int GetNearestVisibleEnemies (int iMaxEnemies, 
-									  Metric rMaxDist, 
-									  TArray<CSpaceObject *> *pretList, 
-									  CSpaceObject *pExcludeObj = NULL,
-									  DWORD dwFlags = 0);
-
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CString GetNounPhrase (DWORD dwFlags = 0) const;

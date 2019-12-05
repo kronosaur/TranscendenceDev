@@ -4077,50 +4077,6 @@ CSpaceObject *CSpaceObject::GetNearestStargate (bool bExcludeUncharted)
 	return pNearestGate;
 	}
 
-int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies, 
-											Metric rMaxDist, 
-											TArray<CSpaceObject *> *pretList, 
-											CSpaceObject *pExcludeObj,
-											DWORD dwFlags)
-
-//	GetNearestVisibleEnemies
-//
-//	Returns a list of the nearest n enemies visible to this object. The targets
-//	are added in ascending order of distance.
-//
-//	NOTE: We append to the list because callers may have added their own.
-
-	{
-	CSystem *pSystem = GetSystem();
-	if (pSystem == NULL)
-		return NULL;
-
-	CNearestInRadiusRange Range(GetPos(), rMaxDist);
-
-	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
-		{
-		CVisibleObjSelector Selector(*this);
-		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
-		else if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
-			Selector.SetIncludeTargetableMissiles();
-
-		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
-		}
-	else
-		{
-		CVisibleAggressorObjSelector Selector(*this);
-		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_MISSILES)
-			Selector.SetIncludeMissiles();
-		else if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
-			Selector.SetIncludeTargetableMissiles();
-
-		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
-		}
-	}
-
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)
 
 //	GetNearestVisibleEnemy
@@ -4719,13 +4675,13 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 
 	//	Include stations
 
-	bool bIncludeStations = ((dwFlags & FLAG_INCLUDE_STATIONS) ? true : false);
+	bool bIncludeStations = ((dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
 
 	//	If a ship has fired its weapon after this time, then it counts
 	//	as an aggressor
 
 	int iAggressorThreshold;
-	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
+	if (dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
 		iAggressorThreshold = -1;
 	else
 		iAggressorThreshold = GetUniverse().GetTicks() - AGGRESSOR_THRESHOLD;

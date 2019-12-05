@@ -341,7 +341,7 @@ class CBaseShipAI : public IShipController
 		virtual bool GetStopThrust (void) override { return false; }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override;
+		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
@@ -397,7 +397,7 @@ class CBaseShipAI : public IShipController
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
-		void InitTargetList (STargetingCtx &TargetingCtx) const;
+		void InitTargetList (SUpdateCtx &UpdateCtx) const;
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }
