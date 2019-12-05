@@ -49,7 +49,7 @@ template <class OBJ> class TSharedPtr
 
 		template<class OBJ2,
 				class = typename std::enable_if<std::is_convertible<OBJ2 *, OBJ *>::value, void>::type>
-		TSharedPtr (const TSharedPtr<OBJ2>& Src) _NOEXCEPT
+		TSharedPtr (const TSharedPtr<OBJ2>& Src) noexcept
 			{
 			if (Src.m_pPtr)
 				m_pPtr = Src.m_pPtr->AddRef();

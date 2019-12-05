@@ -5,6 +5,8 @@
 
 #include "PreComp.h"
 
+CDeviceSystem CDeviceSystem::m_Null;
+
 CDeviceSystem::CDeviceSystem (void)
 
 //	CDeviceSystem constructor
@@ -1025,3 +1027,52 @@ void CDeviceSystem::WriteToStream (IWriteStream *pStream)
 		pStream->Write(dwSave);
 		}
 	}
+
+//	CDeviceSystem::iterator ----------------------------------------------------
+
+CDeviceSystem::iterator::iterator (CInstalledDevice *pPos, CInstalledDevice *pEnd) :
+		m_pPos(pPos),
+		m_pEnd(pEnd)
+	{
+	if (m_pPos && m_pEnd)
+		{
+		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+			m_pPos++;
+		}
+	}
+
+CDeviceSystem::iterator &CDeviceSystem::iterator::operator++ ()
+	{
+	do
+		{
+		m_pPos++;
+		}
+	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+
+	return *this;
+	}
+
+//	CDeviceSystem::const_iterator ----------------------------------------------------
+
+CDeviceSystem::const_iterator::const_iterator (const CInstalledDevice *pPos, const CInstalledDevice *pEnd) :
+		m_pPos(pPos),
+		m_pEnd(pEnd)
+	{
+	if (m_pPos && m_pEnd)
+		{
+		while (m_pPos < m_pEnd && m_pPos->IsEmpty())
+			m_pPos++;
+		}
+	}
+
+CDeviceSystem::const_iterator &CDeviceSystem::const_iterator::operator++ ()
+	{
+	do
+		{
+		m_pPos++;
+		}
+	while (m_pPos < m_pEnd && m_pPos->IsEmpty());
+
+	return *this;
+	}
+

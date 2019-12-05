@@ -477,7 +477,8 @@ class CSpaceObject
 
 		//	Devices
 
-		virtual CDeviceSystem *GetDeviceSystem (void) { return NULL; }
+		virtual CDeviceSystem &GetDeviceSystem (void) { return CDeviceSystem::m_Null; }
+		virtual const CDeviceSystem &GetDeviceSystem (void) const { return CDeviceSystem::m_Null; }
 
 		//	Docking
 
@@ -1133,7 +1134,7 @@ class CSpaceObject
 		virtual const CInstalledDevice *GetNamedDevice (DeviceNames iDev) const { return NULL; }
 		virtual CInstalledDevice *GetNamedDevice (DeviceNames iDev) { return NULL; }
 		virtual int GetPerception (void) const { return perceptNormal; }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const { return NULL; }
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
 		virtual int GetShieldLevel (void) { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }

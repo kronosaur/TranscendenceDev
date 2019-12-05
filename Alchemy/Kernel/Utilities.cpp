@@ -106,7 +106,7 @@ DWORD Kernel::utlHashFunctionCase (BYTE *pKey, int iKeyLen)
 	{
 	DWORD initval = 1013;
 	BYTE *k = pKey;
-	register DWORD a,b,c,len;
+	DWORD a,b,c,len;
 
 	//	Set up the internal state
 	len = iKeyLen;

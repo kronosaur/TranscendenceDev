@@ -514,7 +514,6 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool CanAttack (void) const override { return m_fTargetable; }
 		virtual bool CanBeAttacked (void) const override { return m_fTargetable; }
 		virtual bool CanThrust (void) const override { return (m_pDesc->GetManeuverRate() > 0); }
-		virtual bool ClassCanAttack (void) override { return m_fTargetable; }
 		virtual void CreateReflection (const CVector &vPos, int iDirection, CMissile **retpReflection = NULL) override;
 		virtual CString DebugCrashInfo (void) override;
 		virtual void DetonateNow (CSpaceObject *pHit) override;
@@ -534,7 +533,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual int GetStealth (void) const override;
-        virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override { return m_pTarget; }
+        virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override { return m_pTarget; }
 		virtual CDesignType *GetType (void) const override { return m_pDesc->GetWeaponType(); }
 		virtual CWeaponFireDesc *GetWeaponFireDesc (void) override { return m_pDesc; }
 		virtual bool HasAttribute (const CString &sAttribute) const override;
@@ -1139,7 +1138,8 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
 		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
-		virtual CDeviceSystem *GetDeviceSystem (void) { return &m_Devices; }
+		virtual const CDeviceSystem &GetDeviceSystem (void) const { return m_Devices; }
+		virtual CDeviceSystem &GetDeviceSystem (void) { return m_Devices; }
 		virtual CVector GetDockingPortOffset (int iRotation) override { return m_pClass->GetDockingPortOffset(iRotation); }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pEncounterInfo; }
 		virtual CSpaceObject *GetEscortPrincipal (void) const override;
@@ -1173,7 +1173,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual int GetStealth (void) const override;
 		virtual Metric GetMaxSpeed (void) override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
@@ -1312,6 +1312,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
 		void ReactorOverload (int iPowerDrain);
         ALERROR ReportCreateError (const CString &sError) const;
+		void SetFireDelayForCycleWeapons (CInstalledDevice &Device);
 		void SetOrdersFromGenerator (SShipGeneratorCtx &Ctx);
 		void SetTotalArmorHP (int iNewHP);
 		bool ShowParalyzedEffect (void) const { return (m_iParalysisTimer != 0 || m_iDisarmedTimer > 0 || m_fDeviceDisrupted); }
@@ -1530,7 +1531,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CString GetStargateID (void) const override;
 		virtual int GetStealth (void) const override;
 		virtual Metric GetStellarMass (void) const override { return (GetScale() == scaleStar ? m_rMass : 0.0); }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }

@@ -25,7 +25,7 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 	{
 	//	If we have installed armor, then get the enhancement stack from it.
 
-	if (const CInstalledDevice *pInstalled = m_pCItem->GetInstalledDevice())
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
 		return pInstalled->GetEnhancementStack();
 
 	//	Otherwise, see if we've got a cached enhancement stack
@@ -35,7 +35,7 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 
 	//	Otherwise, we need to create one from mods
 
-	const CItemEnhancement &Mods = m_pCItem->GetMods();
+	const CItemEnhancement &Mods = m_Item.GetMods();
 	if (Mods.IsEmpty())
 		return NULL;
 
@@ -77,7 +77,7 @@ DWORD CDeviceItem::GetLinkedFireOptions (void) const
 
 	//	Options from the device slot
 
-	if (const CInstalledDevice *pInstalled = m_pCItem->GetInstalledDevice())
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
 		dwOptions = CDeviceClass::CombineLinkedFireOptions(dwOptions, pInstalled->GetSlotLinkedFireOptions());
 
 	//	Options from device class

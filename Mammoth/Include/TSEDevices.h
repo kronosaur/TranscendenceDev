@@ -461,10 +461,15 @@ class CInstalledDevice
 	public:
 		CInstalledDevice (void);
 
+		operator CDeviceItem () const { return GetDeviceItem(); }
+
 		//	Create/Install/uninstall/Save/Load methods
 
 		void FinishInstall (void);
 		CDeviceClass *GetClass (void) const { return m_pClass; }
+		const CDeviceItem GetDeviceItem (void) const { return (m_pItem ? m_pItem->AsDeviceItemOrThrow() : CItem().AsDeviceItem()); }
+		CDeviceItem GetDeviceItem (void) { return (m_pItem ? m_pItem->AsDeviceItemOrThrow() : CItem().AsDeviceItem()); }
+		CItem *GetItem (void) const { return m_pItem; }
 		DWORD GetUNID (void) const { return m_pClass.GetUNID(); }
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		void InitFromDesc (const SDeviceDesc &Desc);
@@ -494,7 +499,6 @@ class CInstalledDevice
 		int GetFireAngle (void) const { return m_iFireAngle; }
 		int GetHitPointsPercent (CSpaceObject *pSource);
 		const CString &GetID (void) const { return m_sID; }
-		CItem *GetItem (void) const { return m_pItem; }
 		DWORD GetSlotLinkedFireOptions (void) const;
         int GetLevel (void) const { return (m_pItem ? m_pItem->GetLevel() : GetClass()->GetLevel()); }
 		int GetMinFireArc (void) const { return m_iMinFireArc; }

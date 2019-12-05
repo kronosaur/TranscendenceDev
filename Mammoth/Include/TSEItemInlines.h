@@ -41,14 +41,19 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline ItemCategories CDifferentiatedItem::GetCategory (void) const
+	{
+	return GetType().GetCategory();
+	}
+
 inline int CDifferentiatedItem::GetCharges (void) const
 	{
-	return m_pCItem->GetCharges();
+	return m_Item.GetCharges();
 	}
 
 inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual) const
 	{
-	return GetType().GetCurrencyAndValue(CItemCtx(*m_pCItem), bActual);
+	return GetType().GetCurrencyAndValue(CItemCtx(m_Item), bActual);
 	}
 
 inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
@@ -62,12 +67,12 @@ inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 
 inline int CDifferentiatedItem::GetLevel (void) const
 	{
-	return m_pCItem->GetLevel();
+	return m_Item.GetLevel();
 	}
 
 inline int CDifferentiatedItem::GetMassKg (void) const
 	{
-	return m_pCItem->GetMassKg();
+	return m_Item.GetMassKg();
 	}
 
 inline int CDifferentiatedItem::GetMinLevel (void) const
@@ -75,14 +80,19 @@ inline int CDifferentiatedItem::GetMinLevel (void) const
 	return GetType().GetMinLevel();
 	}
 
+inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
+	{
+	return m_Item.GetNounPhrase(dwFlags);
+	}
+
 inline const CItemType &CDifferentiatedItem::GetType (void) const
 	{
-	return *m_pCItem->GetType();
+	return *m_Item.GetType();
 	}
 
 inline CItemType &CDifferentiatedItem::GetType (void)
 	{
-	return *m_pItem->GetType();
+	return *m_Item.GetType();
 	}
 
 //	CArmorClass Inlines --------------------------------------------------------
@@ -108,6 +118,11 @@ inline DWORD CArmorClass::GetUNID (void)
 	}
 
 //	CArmorItem Inlines ---------------------------------------------------------
+
+inline CArmorItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
 
 inline int CArmorItem::CalcBalance (SBalance &retBalance) const
 	{
@@ -155,7 +170,7 @@ inline int CArmorItem::GetInstallCost (void) const
 
 inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
 	{
-	return m_pCItem->GetInstalledArmor();
+	return m_Item.GetInstalledArmor();
 	}
 
 inline int CArmorItem::GetMaxHP (bool bForceComplete) const
@@ -227,6 +242,11 @@ inline DWORD CDeviceClass::GetUNID (void)
 
 //	CDeviceItem Inlines --------------------------------------------------------
 
+inline CDeviceItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
+
 inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
 	{
 	return *GetType().GetDeviceClass();
@@ -235,6 +255,14 @@ inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
 inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	{
 	return *GetType().GetDeviceClass();
+	}
+
+inline int CDeviceItem::GetDeviceSlot (void) const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->GetDeviceSlot();
+	else
+		return -1;
 	}
 
 inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
@@ -248,7 +276,12 @@ inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
 
 inline const CInstalledDevice *CDeviceItem::GetInstalledDevice (void) const
 	{
-	return m_pCItem->GetInstalledDevice();
+	return m_Item.GetInstalledDevice();
+	}
+
+inline CInstalledDevice *CDeviceItem::GetInstalledDevice (void)
+	{
+	return m_Item.GetInstalledDevice();
 	}
 
 inline CSpaceObject *CDeviceItem::GetSource (void) const

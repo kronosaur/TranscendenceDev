@@ -103,14 +103,12 @@ bool CPlayerShipController::AreAllDevicesEnabled (void)
 //	are disabled.
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (pDevice && !pDevice->IsEmpty() && pDevice->CanBeDisabled(CItemCtx(m_pShip, pDevice)))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)))
 			{
-			if (!pDevice->IsEnabled())
+			if (!Device.IsEnabled())
 				return false;
 			}
 		}
@@ -255,15 +253,12 @@ void CPlayerShipController::ClearFireAngle (void)
 //	Clears the fire angle of weapon and launcher
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (!pDevice->IsEmpty()
-				&& (pDevice->GetCategory() == itemcatWeapon 
-					|| pDevice->GetCategory() == itemcatLauncher))
-			pDevice->SetFireAngle(-1);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if ((Device.GetCategory() == itemcatWeapon 
+					|| Device.GetCategory() == itemcatLauncher))
+			Device.SetFireAngle(-1);
 		}
 	}
 
@@ -363,14 +358,12 @@ void CPlayerShipController::EnableAllDevices (bool bEnable)
 //	Enables or disables all devices
 
 	{
-	int i;
-
-	for (i = 0; i < m_pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : m_pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = m_pShip->GetDevice(i);
-		if (pDevice && !pDevice->IsEmpty() && pDevice->CanBeDisabled(CItemCtx(m_pShip, pDevice)) && pDevice->IsEnabled() != bEnable)
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.CanBeDisabled(CItemCtx(m_pShip, &Device)) && Device.IsEnabled() != bEnable)
 			{
-			m_pShip->EnableDevice(i, bEnable);
+			m_pShip->EnableDevice(Device.GetDeviceSlot(), bEnable);
 
 			//	Note: We will get called at OnDeviceEnabledDisabled for each
 			//	device that we touch.
@@ -651,7 +644,7 @@ void CPlayerShipController::GetWeaponTarget (STargetingCtx &TargetingCtx, CItemC
 
 		//	The principal target is always first.
 
-		CSpaceObject *pMainTarget = GetTarget(ItemCtx, FLAG_NO_AUTO_TARGET);
+		CSpaceObject *pMainTarget = GetTarget(FLAG_NO_AUTO_TARGET);
 		if (pMainTarget)
 			TargetingCtx.Targets.Insert(pMainTarget);
 
@@ -1643,11 +1636,11 @@ void CPlayerShipController::PaintDebugLineOfFire (SViewportPaintCtx &Ctx, CG32bi
 	if (pDevice && !pDevice->IsSecondaryWeapon())
 		PaintDebugLineOfFire(Ctx, Dest, TargetObj, *pDevice);
 
-	for (int i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() && pDevice->IsSecondaryWeapon())
-			PaintDebugLineOfFire(Ctx, Dest, TargetObj, *pDevice);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.IsSecondaryWeapon())
+			PaintDebugLineOfFire(Ctx, Dest, TargetObj, Device);
 		}
 	}
 
@@ -1872,7 +1865,7 @@ bool CPlayerShipController::GetDeviceActivate (void)
 	return m_bActivate;
 	}
 
-CSpaceObject *CPlayerShipController::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CPlayerShipController::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
