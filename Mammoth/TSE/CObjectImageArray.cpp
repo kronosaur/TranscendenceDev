@@ -1368,18 +1368,18 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 		int ySrc;
 		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
 
-		if (pRenderQueue)
-			{
-			int iCanvasHeight = Dest.GetHeight();
-			int iCanvasWidth = Dest.GetWidth();
-			pRenderQueue->addObjToRender(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth);
-			}
-
 		if (m_pRotationOffset)
 			{
 			x += m_pRotationOffset[iRotation % m_iRotationCount].x;
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
+
+		if (pRenderQueue)
+		{
+			int iCanvasHeight = Dest.GetHeight();
+			int iCanvasWidth = Dest.GetWidth();
+			pRenderQueue->addObjToRender(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth);
+		}
 
 		if (bComposite)
 			{
