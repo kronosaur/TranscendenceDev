@@ -300,8 +300,7 @@
 					(autonItem (itmCreate autonType 1))
 					(shieldMaxHP (shpGetShieldMaxHitPoints gSource))
 					(shieldDamage (shpGetShieldDamage gSource))
-					armorDamaged
-					repairID
+					armorDamaged config
 					)
 					
 					;	Assign a repair ID if there's any armor damage
@@ -309,11 +308,10 @@
 					(enum (objGetItems gSource "aI") theArmor
 						(if (gr (objGetArmorDamage gSource theArmor) 0) (setq armorDamaged True))
 						)
-					(if armorDamaged (setq repairID (rpgGetNextAutonRepairID)))
 						
-					;	Store the current armor and devices on the auton
+					;	Store the current armor, devices, and status on the auton
 					
-					(setq autonItem (itmSetData autonItem 'autonConfig {
+					(setq config {
 						armor: (map (objGetItems gSource "aI") theArmor	{
 							item: (itmSetProperty theArmor 'installed Nil)
 							hp: (subtract (itmGetProperty theArmor 'completeHP) (objGetArmorDamage gSource theArmor))
@@ -336,9 +334,13 @@
 									(rpgSanitizeAutonName (objGetName gSource))
 									)
 									
-						repairID: repairID
-						}))
-						
+						repairID: (if armorDamaged (rpgGetNextAutonRepairID))
+						})
+					
+					(if (neq config (rpgGetAutonDefaultConfig autonItem))
+						(setq autonItem (itmSetData autonItem 'autonConfig config))
+						)
+					
 					;	Add one charge on the item for every ton of cargo inside the auton
 					
 					(setq autonItem (itmSetProperty autonItem 'charges
@@ -680,6 +682,14 @@
 				))
 				
 			(setq rpgGetAutonConfig (lambda (autonItem)
+				;	Return the saved config if there is one, otherwise the default for the item type
+				
+				(or (itmGetData autonItem 'autonConfig)
+					(rpgGetAutonDefaultConfig autonItem)
+					)
+				))
+			
+			(setq rpgGetAutonDefaultConfig (lambda (autonItem)
 				;
 				;	We return a struct with the following elements:
 				;
@@ -688,45 +698,31 @@
 				;				item: An item descriptor
 				;				hp: The number of hit points left
 				;
-				;		default: If True, then the auton is identical to its original
-				;				ship class.
-				;
 				;		devices: An array of structs, each struct with the following
 				;				elements:
 				;
 				;				item: An item descriptor
-				
-				(block (savedConfig autonShipClass)
-				
-					(switch
-						;	We've already stored the information, so we just return it.
-						
-						(setq savedConfig (itmGetData autonItem 'autonConfig))
-							savedConfig
-							
-						;	If we have the ship class then we can take information directly
-						;	from it.
-						
-						(setq autonShipClass (itmGetStaticData autonItem 'autonShipClass))
-							{	default: True
-							
-								armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
-									{
-										item: theArmor
-										hp: (itmGetProperty theArmor 'completeHP)
-										}
-									)
+				(block (
+					(autonShipClass (itmGetStaticData autonItem 'autonShipClass))
+					)
+					(if autonShipClass
+						{
+							armor: (map (typGetDataField autonShipClass 'armorItems) Nil theArmor
+								{
+									item: theArmor
+									hp: (itmGetProperty theArmor 'completeHP)
+									}
+								)
 
-								devices: (map (typGetDataField autonShipClass 'deviceItems) Nil theDevice
-									{
-										item: theDevice
-										}
-									)
-								}
-
+							devices: (map (typGetDataField autonShipClass 'deviceItems) Nil theDevice
+								{
+									item: theDevice
+									}
+								)
+							}
+						
 						;	Otherwise, there is nothing we can do.
-
-						Nil
+						
 						)
 					)
 				))

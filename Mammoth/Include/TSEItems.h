@@ -217,6 +217,7 @@ class CItem
 		void ClearDamaged (void);
 		void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
+		void ClearExtra (void) { delete m_pExtra; m_pExtra = NULL; }
 		void ClearInstalled (void);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
@@ -282,7 +283,7 @@ class CItem
 		int GetUnknownIndex (void) const;
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
-		int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		int GetVariantNumber (void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
@@ -294,6 +295,7 @@ class CItem
         bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
+		bool IsExtraEmpty (DWORD dwFlags = 0);
 		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
 		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
