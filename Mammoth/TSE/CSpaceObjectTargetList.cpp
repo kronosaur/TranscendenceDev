@@ -45,7 +45,7 @@ bool CSpaceObjectTargetList::FindTargetAligned (CSpaceObject &SourceObj, const C
 	return false;
 	}
 
-bool CSpaceObjectTargetList::FindTargetInRange (CSpaceObject &SourceObj, const CDeviceItem &WeaponItem, DWORD dwFlags, CSpaceObject **retpTarget, int *retiFireAngle, Metric *retrDist2) const
+bool CSpaceObjectTargetList::FindTargetInRange (const CSpaceObject &SourceObj, const CDeviceItem &WeaponItem, DWORD dwFlags, CSpaceObject **retpTarget, int *retiFireAngle, Metric *retrDist2) const
 
 //	FindTargetInRange
 //
@@ -67,7 +67,7 @@ bool CSpaceObjectTargetList::FindTargetInRange (CSpaceObject &SourceObj, const C
 		Metric rDist2 = (pTarget->GetPos() - SourceObj.GetPos()).Length2();
 
 		if ((!bCheckRange || rDist2 < rMaxRange2)
-				&& Device.GetWeaponEffectiveness(&SourceObj, pTarget) >= 0
+				&& WeaponItem.GetWeaponEffectiveness(pTarget) >= 0
 				&& WeaponItem.IsWeaponAligned(pTarget, NULL, &iFireAngle)
 				&& (!bCheckLineOfFire || SourceObj.IsLineOfFireClear(&Device, pTarget, iFireAngle, rMaxRange)))
 			{

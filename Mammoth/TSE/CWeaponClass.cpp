@@ -3373,7 +3373,7 @@ int CWeaponClass::GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice 
 		}
 	}
 
-int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
+int CWeaponClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
 
 //	GetWeaponEffectiveness
 //
@@ -3389,14 +3389,14 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalle
 	{
 	int iScore = 0;
 
-	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	CSpaceObject *pSource = DeviceItem.GetSource();
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return -100;
 
 	//	If we don't enough ammo, clearly we will not be effective
 
-	if (pShot->GetAmmoType())
+	if (pSource && pShot->GetAmmoType())
 		{
 		CItemListManipulator ItemList(pSource->GetItemList());
 		CItem Item(pShot->GetAmmoType(), 1);
@@ -3414,52 +3414,52 @@ int CWeaponClass::GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalle
 
 	if (pTarget && pTarget->GetCategory() == CSpaceObject::catMissile)
 		{
-		if (const CDeviceItem DeviceItem = Ctx.GetItem().AsDeviceItem())
-			{
-			if (!DeviceItem.IsMissileDefenseWeapon())
-				return -100;
-			}
+		if (!DeviceItem.IsMissileDefenseWeapon())
+			return -100;
 		}
 
 	//	Check our state
 
-	switch (m_Counter)
+	if (const CInstalledDevice *pDevice = DeviceItem.GetInstalledDevice())
 		{
-		//	If we're overheating, we will not be effective
+		switch (m_Counter)
+			{
+			//	If we're overheating, we will not be effective
 
-		case cntTemperature:
-			if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
-				return -100;
+			case cntTemperature:
+				if (pDevice->IsWaiting() && pDevice->GetTemperature() > 0)
+					return -100;
 
-			if (pDevice->GetTemperature() + m_iCounterActivate >= MAX_COUNTER)
-				{
-				pDevice->SetWaiting(true);
-				return -100;
-				}
+				if (pDevice->GetTemperature() + m_iCounterActivate >= MAX_COUNTER)
+					{
+					pDevice->SetWaiting(true);
+					return -100;
+					}
 
-			pDevice->SetWaiting(false);
-			break;
+				pDevice->SetWaiting(false);
+				break;
 
-		//	If our capacitor is discharged, we will not be effective
+			//	If our capacitor is discharged, we will not be effective
 
-		case cntCapacitor:
-			if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
-				return -100;
+			case cntCapacitor:
+				if (pDevice->IsWaiting() && pDevice->GetTemperature() < MAX_COUNTER)
+					return -100;
 
-			if (pDevice->GetTemperature() < m_iCounterActivate)
-				{
-				pDevice->SetWaiting(true);
-				return -100;
-				}
+				if (pDevice->GetTemperature() < m_iCounterActivate)
+					{
+					pDevice->SetWaiting(true);
+					return -100;
+					}
 
-			pDevice->SetWaiting(false);
-			break;
+				pDevice->SetWaiting(false);
+				break;
+			}
 		}
 
 	//  If we're blind and this weapon doesn't have the canFireWhenBlind attribute, then
 	//  weapon is not effective.
 
-	if (pSource->IsBlind() && (!m_bCanFireWhenBlind))
+	if (pSource && pSource->IsBlind() && (!m_bCanFireWhenBlind))
 		{
 		return -100;
 		}
@@ -3887,15 +3887,14 @@ bool CWeaponClass::IsAmmoWeapon (void)
 	return (UsesAmmo() || m_bCharges);
 	}
 
-bool CWeaponClass::IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const
+bool CWeaponClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsAreaWeapon
 //
 //	Is this a weapon with an area of effect
 
 	{
-	CItemCtx Ctx(pSource, pDevice);
-	CWeaponFireDesc *pShot = GetWeaponFireDesc(Ctx);
+	CWeaponFireDesc *pShot = GetWeaponFireDesc(DeviceItem);
 	if (pShot == NULL)
 		return false;
 

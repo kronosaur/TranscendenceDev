@@ -1254,7 +1254,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 	protected:
 
 		//	CSpaceObject virtuals
-		virtual bool CanFireOn (CSpaceObject *pObj) override { return CanFireOnObjHelper(pObj); }
+		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
@@ -1595,7 +1595,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 	protected:
 
 		//	CSpaceObject virtuals
-		virtual bool CanFireOn (CSpaceObject *pObj) override { return CanFireOnObjHelper(pObj); }
+		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
@@ -1634,6 +1634,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
 		Metric CalcMaxAttackDist (void) const;
 		int CalcNumberOfShips (void);
+		bool CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const;
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);

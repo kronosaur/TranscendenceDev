@@ -173,7 +173,7 @@ void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 		*retpType = GetItemType();
 	}
 
-int CCyberDeckClass::GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
+int CCyberDeckClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
 
 //	GetWeaponEffectiveness
 //

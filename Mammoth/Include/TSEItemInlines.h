@@ -302,9 +302,14 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return NULL;
 	}
 
+inline int CDeviceItem::GetWeaponEffectiveness (CSpaceObject *pTarget) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponEffectiveness(*this, pTarget);
+	}
+
 inline bool CDeviceItem::IsAreaWeapon (void) const
 	{
-	return GetType().GetDeviceClass()->IsAreaWeapon(GetSource(), GetInstalledDevice());
+	return GetType().GetDeviceClass()->IsAreaWeapon(*this);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------

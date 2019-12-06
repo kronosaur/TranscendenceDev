@@ -974,7 +974,7 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 	DEBUG_CATCH
 	}
 
-bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj)
+bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 
 //	CanFireOnObjHelper
 //
@@ -5778,7 +5778,7 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 									  CSpaceObject *pTarget, 
 									  int iAngle, 
 									  Metric rDistance,
-									  CSpaceObject **retpFriend)
+									  CSpaceObject **retpFriend) const
 
 //	IsLineOfFireClear
 //
@@ -5795,8 +5795,9 @@ bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 
 	//	Compute some values
 
+	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
 	CVector vSource = pWeapon->GetPos(this);
-	bool bAreaWeapon = pWeapon->IsAreaWeapon(this);
+	bool bAreaWeapon = WeaponItem.IsAreaWeapon();
 
 	//	We need to adjust the angle to compensate for the fact that the shot
 	//	will take on the velocity of the ship.

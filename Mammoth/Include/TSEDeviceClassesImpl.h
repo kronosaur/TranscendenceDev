@@ -20,7 +20,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
-		virtual bool IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const override;
+		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
@@ -111,7 +111,7 @@ class CCyberDeckClass : public CDeviceClass
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
-		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
+		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -716,9 +716,9 @@ class CWeaponClass : public CDeviceClass
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
-		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
+		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsAmmoWeapon (void) override;
-		virtual bool IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const override;
+		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsTrackingWeapon (CItemCtx &Ctx) override;
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;

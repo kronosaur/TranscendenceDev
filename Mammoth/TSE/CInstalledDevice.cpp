@@ -249,7 +249,7 @@ DWORD CInstalledDevice::GetSlotLinkedFireOptions (void) const
 		return 0;
 	}
 
-CVector CInstalledDevice::GetPos (CSpaceObject *pSource) const
+CVector CInstalledDevice::GetPos (const CSpaceObject *pSource) const
 
 //	GetPos
 //

@@ -4108,7 +4108,7 @@ bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiA
 	if (pWeapon)
 		{
 		int iAimAngle;
-		bool bAligned = pWeapon->IsWeaponAligned(this, pTarget, &iAimAngle, retiFireAngle);
+		bool bAligned = pWeapon->GetDeviceItem().IsWeaponAligned(pTarget, &iAimAngle, retiFireAngle);
 
 		if (retiAimAngle)
 			*retiAimAngle = iAimAngle;

@@ -412,11 +412,12 @@ void CStation::CalcDeviceBonus (void)
 
 	//	Loop over all devices
 
-	for (int i = 0; i < GetDeviceCount(); i++)
+	m_fArmed = false;
+	m_fHasMissileDefense = false;
+
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = *GetDevice(i);
-		if (Device.IsEmpty())
-			continue;
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
         CItemCtx ItemCtx(this, &Device);
 
@@ -446,10 +447,10 @@ void CStation::CalcDeviceBonus (void)
 
 		//	Add enhancements from other devices
 
-		for (int j = 0; j < GetDeviceCount(); j++)
+		for (CDeviceItem OtherDevItem : GetDeviceSystem())
 			{
-			CInstalledDevice &OtherDev = *GetDevice(j);
-			if (i != j && !OtherDev.IsEmpty())
+			CInstalledDevice &OtherDev = *OtherDevItem.GetInstalledDevice();
+			if (OtherDev.GetDeviceSlot() != Device.GetDeviceSlot())
 				{
 				OtherDev.AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements);
 				}
@@ -467,11 +468,16 @@ void CStation::CalcDeviceBonus (void)
 			case itemcatLauncher:
 			case itemcatWeapon:
 				{
+				//	Cache some properties
+
+				m_fArmed = true;
+
 				//	Overlays add a bonus
 
 				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
 				if (iBonus != 0)
 					pEnhancements->InsertHPBonus(NULL, iBonus);
+
 				break;
 				}
 			}
@@ -484,6 +490,13 @@ void CStation::CalcDeviceBonus (void)
 		//	Take ownership of the stack.
 
 		Device.SetEnhancements(pEnhancements);
+
+		//	If this is a missile defense weapon, cache that info. NOTE: We need
+		//	to do this AFTER we set up the enhancements stack, since this 
+		//	usually comes from the device slot.
+
+		if (DeviceItem.IsMissileDefenseWeapon())
+			m_fHasMissileDefense = true;
 		}
 
 	//	Mark devices as duplicate (or not)
@@ -582,6 +595,66 @@ bool CStation::CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int
 	//	Get the shadow line from the image
 
 	return Image.CalcVolumetricShadowLine(Ctx, iTick, iVariant, retxCenter, retyCenter, retiWidth, retiLength);
+	}
+
+bool CStation::CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const
+
+//	CalcWeaponTarget
+//
+//	Calculates the target for the given weapon.
+
+	{
+	//	If we're angry and this is an area weapon, then we fire 
+	//	regardless of range so that we can soak up missiles/shots.
+
+	DWORD dwFlags = 0;
+	if (m_iAngryCounter > 0 && WeaponItem.IsAreaWeapon())
+		dwFlags |= CSpaceObjectTargetList::FLAG_NO_RANGE_CHECK;
+
+	//	If this weapon does not target missiles, then we can just look for enemy
+	//	ships.
+
+	if (!WeaponItem.IsMissileDefenseWeapon())
+		return m_WeaponTargets.FindTargetInRange(*this, WeaponItem, dwFlags, retpTarget, retiFireSolution);
+
+	//	Otherwise we look in both the ship list and the missile list.
+
+	else
+		{
+		CSpaceObject *pTarget = NULL;
+		int iFireSolution = -1;
+		Metric rDist2;
+
+		m_WeaponTargets.FindTargetInRange(*this, 
+				WeaponItem, 
+				dwFlags,
+				&pTarget,
+				&iFireSolution,
+				&rDist2);
+
+		CSpaceObject *pMissile = NULL;
+		int iMissileFireSolution = -1;
+		Metric rMissileDist2;
+
+		if (!UpdateCtx.Missiles.FindTargetInRange(*this, 
+					WeaponItem, 
+					dwFlags,
+					&pMissile, 
+					&iMissileFireSolution, 
+					&rMissileDist2)
+				|| (pTarget && rDist2 < rMissileDist2))
+			{
+			*retpTarget = pTarget;
+			*retiFireSolution = iFireSolution;
+			}
+		else
+			{
+			*retpTarget = pMissile;
+			*retiFireSolution = iMissileFireSolution;
+			}
+
+		return (*retpTarget) != NULL;
+		}
 	}
 
 bool CStation::CanAttack (void) const
@@ -1060,7 +1133,6 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pType->GenerateDevices(System.GetLevel(), Devices);
 
 	pStation->m_Devices.Init(pStation, Devices);
-	pStation->m_fArmed = pStation->m_Devices.FindWeapon();
 	pStation->CalcDeviceBonus();
 
 	//	Get notifications when other objects are destroyed
@@ -3667,6 +3739,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
 	m_fForceMapLabel =		((dwLoad & 0x00200000) ? true : false);
+	m_fHasMissileDefense =	((dwLoad & 0x00400000) ? true : false);
 
 	//	Init name flags
 
@@ -4130,6 +4203,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
 	dwSave |= (m_fForceMapLabel ?		0x00200000 : 0);
+	dwSave |= (m_fHasMissileDefense ?	0x00400000 : 0);
 	pStream->Write(dwSave);
 
 	//	Rotation
@@ -4945,6 +5019,7 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 
 	{
 	DEBUG_TRY
+	constexpr int MAX_ENEMIES = 10;
 
 	//	Compute the range at which we attack enemies
 
@@ -4952,12 +5027,19 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	Metric rAttackRange2;
 	if (m_iAngryCounter > 0)
 		{
+		//	If we're angry, we look for targets out to our perception range.
+		//	We used to check out to the range of the farthest weapon, but for
+		//	some cases, such as Penitents' Oracus weapon, we want to fire even
+		//	if the target is well out of range (because we want to block 
+		//	incoming missiles).
+
 		rAttackRange = CPerceptionCalc::GetMaxDist(GetPerception());
 		rAttackRange2 = rAttackRange * rAttackRange;
 
 		//	If the player is in range, then she is under attack
 
 		if (Ctx.pPlayer 
+				&& IsAngryAt(Ctx.pPlayer)
 				&& GetDistance2(Ctx.pPlayer) < rAttackRange2)
 			Ctx.pSystem->SetPlayerUnderAttack();
 
@@ -4976,14 +5058,20 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 	if ((iTick % STATION_SCAN_TARGET_FREQUENCY) == 0)
 		UpdateTargets(Ctx, rAttackRange + GetHitSize());
 
+	//	If we have missile defense, then make a list.
+	//
+	//	NOTE: We only do this if we're angry (are under attack) so that we don't
+	//	waste cycles.
+
+	if (m_fHasMissileDefense && m_iAngryCounter > 0 && !Ctx.Missiles.IsValid())
+		Ctx.Missiles.InitWithNearestMissiles(*this, MAX_ENEMIES, rAttackRange + GetHitSize(), 0);
+
 	//	Fire with all weapons (if we've got a target)
 
-	if (m_WeaponTargets.GetList().GetCount() > 0 
+	if ((!m_WeaponTargets.IsEmpty() || !Ctx.Missiles.IsEmpty())
 			&& !IsParalyzed()
 			&& !IsDisarmed())
 		{
-		bool bSourceDestroyed = false;
-
 		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
 			CInstalledDevice &Weapon = *DeviceItem.GetInstalledDevice();
@@ -4994,28 +5082,24 @@ bool CStation::UpdateAttacking (SUpdateCtx &Ctx, int iTick)
 					|| !Weapon.IsReady())
 				continue;
 
-			//	If we're angry and this is an area weapon, then we fire 
-			//	regardless of range so that we can soak up missiles/shots.
-
-			DWORD dwFlags = 0;
-			if (DeviceItem.IsAreaWeapon())
-				dwFlags |= CSpaceObjectTargetList::FLAG_NO_RANGE_CHECK;
-
-			//	Find the best target for this weapon and fire.
+			//	Get the target and fire angle
 
 			CSpaceObject *pTarget;
 			int iFireAngle;
-			if (m_WeaponTargets.FindTargetInRange(*this, DeviceItem, dwFlags, &pTarget, &iFireAngle))
-				{
-				Weapon.SetTarget(pTarget);
-				Weapon.SetFireAngle(iFireAngle);
+			if (!CalcWeaponTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
+				continue;
 
-				Weapon.Activate(this, pTarget, &bSourceDestroyed);
-				if (bSourceDestroyed)
-					return false;
+			//	Fire the weapon
 
-				Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
-				}
+			Weapon.SetTarget(pTarget);
+			Weapon.SetFireAngle(iFireAngle);
+
+			bool bSourceDestroyed = false;
+			Weapon.Activate(this, pTarget, &bSourceDestroyed);
+			if (bSourceDestroyed)
+				return false;
+
+			Weapon.SetTimeUntilReady(m_pType->GetFireRateAdj() * Weapon.GetActivateDelay(this) / 10);
 			}
 		}
 

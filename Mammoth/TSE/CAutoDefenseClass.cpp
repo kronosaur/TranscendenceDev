@@ -345,7 +345,7 @@ Metric CAutoDefenseClass::GetShotSpeed (CItemCtx &Ctx) const
 	return pWeapon->GetShotSpeed(Ctx);
 	}
 
-bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const
+bool CAutoDefenseClass::IsAreaWeapon (const CDeviceItem &DeviceItem) const
 
 //	IsAreaWeapon
 //
@@ -356,7 +356,7 @@ bool CAutoDefenseClass::IsAreaWeapon (CSpaceObject *pSource, const CInstalledDev
 	if (pWeapon == NULL)
 		return false;
 
-	return pWeapon->IsAreaWeapon(pSource, pDevice);
+	return pWeapon->IsAreaWeapon(DeviceItem);
 	}
 
 void CAutoDefenseClass::OnAddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed)

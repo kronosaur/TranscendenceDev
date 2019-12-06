@@ -733,11 +733,12 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 
 	{
 	int iScore = 0;
+	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
 
 	//	If this is an EMP weapon adjust the score based on the state of
 	//	the target.
 
-	int iEffectiveness = pWeapon->GetClass()->GetWeaponEffectiveness(pShip, pWeapon, pTarget);
+	int iEffectiveness = WeaponItem.GetWeaponEffectiveness(pTarget);
 	if (iEffectiveness < 0)
 		return 0;
 
@@ -813,13 +814,13 @@ int CAIBehaviorCtx::CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInsta
 
 	//	If this weapon aligned, then prefer this weapon
 
-	if (pTarget && pWeapon->IsWeaponAligned(pShip, pTarget))
+	if (pTarget && WeaponItem.IsWeaponAligned(pTarget))
 		iScore += 10;
 
 	//	If this is an area weapon then make sure there aren't too many friendlies around
 
 #if 0
-	if (iScore > 0 && pWeapon->IsAreaWeapon(pShip))
+	if (iScore > 0 && pWeapon->IsAreaWeapon())
 		{
 		int i;
 		CSystem *pSystem = pShip->GetSystem();

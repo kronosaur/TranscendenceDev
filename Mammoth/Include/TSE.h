@@ -774,7 +774,7 @@ class CSpaceObject
 		bool IsFriend (const CSpaceObject *pObj) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
-		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
+		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
 		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
@@ -1225,7 +1225,7 @@ class CSpaceObject
 
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
-		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
+		virtual bool CanFireOn (CSpaceObject *pObj) const { return true; }
 		virtual DWORD GetClassID (void) const = 0;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
@@ -1273,7 +1273,7 @@ class CSpaceObject
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
 		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
-		bool CanFireOnObjHelper (CSpaceObject *pObj);
+		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		void ClearInDamageCode (void) { m_fInDamage = false; }
 		void ClearInUpdateCode (void) { m_pObjInUpdate = NULL; m_bObjDestroyed = false; }

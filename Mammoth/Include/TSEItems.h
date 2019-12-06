@@ -156,6 +156,7 @@ class CDeviceItem : public CDifferentiatedItem
 		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
 		inline bool IsAreaWeapon (void) const;
 		bool IsMissileDefenseWeapon (void) const;
 		bool IsTargetableMissileDefenseWeapon (void) const;

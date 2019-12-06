@@ -291,9 +291,9 @@ class CDeviceClass
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const { return 0.0; }
 		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { *retiStatus = 0; *retiMaxStatus = 0; }
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) { return 0; }
-		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const { return 0; }
+		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const { return 0; }
 		virtual bool IsAmmoWeapon (void) { return false; }
-		virtual bool IsAreaWeapon (CSpaceObject *pSource, const CInstalledDevice *pDevice) const { return false; }
+		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const { return false; }
 		virtual bool IsAutomatedWeapon (void) { return false; }
 		virtual bool IsExternal (void) const { return (m_fExternal ? true : false); }
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) { return true; }
@@ -595,7 +595,7 @@ class CInstalledDevice
 		Metric GetMaxEffectiveRange (CSpaceObject *pSource, CSpaceObject *pTarget = NULL) const { return m_pClass->GetMaxEffectiveRange(pSource, this, pTarget); }
 		Metric GetMaxRange (CItemCtx &ItemCtx) const { return m_pClass->GetMaxRange(ItemCtx); }
 		CString GetName (void) { return m_pClass->GetName(); }
-		CVector GetPos (CSpaceObject *pSource) const;
+		CVector GetPos (const CSpaceObject *pSource) const;
 		CVector GetPosOffset (CSpaceObject *pSource);
 		int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const { return m_pClass->GetPowerRating(Ctx, retiIdlePowerUse); }
 		void GetSelectedVariantInfo (CSpaceObject *pSource, 
@@ -608,11 +608,9 @@ class CInstalledDevice
 		void GetStatus (CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) { m_pClass->GetStatus(this, pSource, retiStatus, retiMaxStatus); }
 		CSpaceObject *GetTarget (CSpaceObject *pSource) const;
 		int GetValidVariantCount (CSpaceObject *pSource) { return m_pClass->GetValidVariantCount(pSource, this); }
-		int GetWeaponEffectiveness (CSpaceObject *pSource, CSpaceObject *pTarget) const { return m_pClass->GetWeaponEffectiveness(pSource, this, pTarget); }
 		bool HasLastShots (void) const { return (m_LastShotIDs.GetCount() > 0); }
 		int IncCharges (CSpaceObject *pSource, int iChange);
 		bool IsAutomatedWeapon (void) { return m_pClass->IsAutomatedWeapon(); }
-		bool IsAreaWeapon (CSpaceObject *pSource) const { return m_pClass->IsAreaWeapon(pSource, this); }
 		bool IsFirstVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsFirstVariantSelected(pSource, this) : true); }
 		bool IsFuelCompatible (CItemCtx &Ctx, const CItem &FuelItem) { return m_pClass->IsFuelCompatible(Ctx, FuelItem); }
 		bool IsLastVariantSelected(CSpaceObject *pSource) { return (m_pClass ? m_pClass->IsLastVariantSelected(pSource, this) : true); }
@@ -640,7 +638,6 @@ class CInstalledDevice
 		bool IsDamaged (void) const { return (m_pItem ? m_pItem->IsDamaged() : false); }
 		bool IsDisrupted (void) const { return (m_pItem ? m_pItem->IsDisrupted() : false); }
 		bool IsEnhanced (void) const { return (m_pItem ? m_pItem->IsEnhanced() : false); }
-		bool IsWeaponAligned (CSpaceObject *pShip, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const { return m_pClass->IsWeaponAligned(pShip, this, pTarget, retiAimAngle, retiFireAngle); }
 
 		static void PaintDevicePos (const SDeviceDesc &Device, CG32bitImage &Dest, int x, int y, int iScale, int iRotation);
 
