@@ -1360,7 +1360,7 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 		{
 
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
- 		OpenGLInstancedRenderQueue *pRenderQueue = Dest.GetInstancedRenderQueue();
+ 		OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 		if (pSource == NULL)
 			return;
 
@@ -1378,7 +1378,8 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 		{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
-			pRenderQueue->addObjToRender(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth);
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth,
+				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight());
 		}
 
 		if (bComposite)

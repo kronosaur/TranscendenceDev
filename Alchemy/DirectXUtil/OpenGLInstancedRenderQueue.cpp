@@ -3,13 +3,13 @@
 
 OpenGLInstancedRenderQueue::OpenGLInstancedRenderQueue(void) 
 	{
-	initializeVAO();
+	//initializeVAO();
 	}
 
 OpenGLInstancedRenderQueue::~OpenGLInstancedRenderQueue(void)
 	{
 	clear();
-	deinitVAO();
+	//deinitVAO();
 	}
 
 void OpenGLInstancedRenderQueue::deinitVAO(void)
@@ -74,12 +74,13 @@ void OpenGLInstancedRenderQueue::initializeVAO(void)
 	
 	}
 
-void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *vao)
+void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture)
 	{
+	// TODO(heliogenesis): Allow usage of an array of textures.
 	if (m_iNumObjectsToRender > 0)
 		{
-		unsigned int iVAOID = vao->getVAO()[0];
-		unsigned int *instancedVBO = vao->getinstancedVBO();
+		unsigned int iVAOID = quad->getVAO()[0];
+		unsigned int *instancedVBO = quad->getinstancedVBO();
 		glBindVertexArray(iVAOID);
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_texturePositionsFloat[0], GL_STATIC_DRAW);
@@ -87,7 +88,11 @@ void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *vao)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_quadSizesFloat[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[2]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_canvasPositionsFloat[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * m_iNumObjectsToRender, &m_textureSizesFloat[0], GL_STATIC_DRAW);
 		shader->bind();
+		glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
+		texture->bindTexture2D(GL_TEXTURE0);
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
 		shader->unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -102,22 +107,27 @@ void OpenGLInstancedRenderQueue::clear(void)
 	m_texturePositionsFloat.clear();
 	m_quadSizesFloat.clear();
 	m_canvasPositionsFloat.clear();
+	m_textureSizesFloat.clear();
 	m_iNumObjectsToRender = 0;
 	}
 
 void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY,
 	int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight,
-	int canvasWidth)
+	int canvasWidth, int texHeight, int texWidth)
 	{
-	glm::vec2 texPos((float)startPixelX / (float)canvasWidth,
-		(float)startPixelY / (float)canvasHeight);
+	glm::vec2 texPos((float)startPixelX / (float)texWidth,
+		(float)startPixelY / (float)texHeight);
+	glm::vec2 texSize((float)sizePixelX / (float)texWidth,
+		(float)sizePixelY / (float)texHeight);
 	glm::vec2 size((float)sizePixelX / (float)canvasWidth,
 		(float)sizePixelY / (float)canvasHeight);
 	glm::vec2 canvasPos((float)posPixelX / (float)canvasWidth,
 		(float)posPixelY / (float)canvasHeight);
+	//glm::vec2 texSize((float)texWidth, (float)texHeight);
 
 	m_texturePositionsFloat.insert(m_texturePositionsFloat.end(), texPos);
 	m_quadSizesFloat.insert(m_quadSizesFloat.end(), size);
 	m_canvasPositionsFloat.insert(m_canvasPositionsFloat.end(), canvasPos);
+	m_textureSizesFloat.insert(m_textureSizesFloat.end(), texSize);
 	m_iNumObjectsToRender++;
 	}

@@ -1136,9 +1136,9 @@ void CG32bitImage::InitOpenGL(void)
 	{
 	if (!m_pOGLRenderQueue)
 		{
-		m_pOGLRenderQueue = new OpenGLInstancedRenderQueue();
+		m_pOGLRenderQueue = new OpenGLMasterRenderQueue();
 		Shader *pRenderShader = new Shader("./shaders/instanced_vertex_shader.glsl", "./shaders/instanced_fragment_shader.glsl");
-		m_pOGLRenderQueue->setShader(pRenderShader);
+		m_pOGLRenderQueue->setObjectTextureShader(pRenderShader);
 		}
 	}
 

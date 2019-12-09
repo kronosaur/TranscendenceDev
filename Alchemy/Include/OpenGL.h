@@ -158,13 +158,17 @@ class OpenGLInstancedRenderQueue {
 public:
 	OpenGLInstancedRenderQueue (void);
 	~OpenGLInstancedRenderQueue (void);
-	void Render (Shader *shader, OpenGLVAO *vao);
+	// TODO: Allow this function to take an array of textures.
+	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
-	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth);
+	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth);
 	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
 	OpenGLVAO* getVAO (void) { return vao; }
+	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
 	void setShader(Shader *shader) { m_pShader = shader; }
 	Shader* getShader(void) { return m_pShader; }
+	void setTexture(OpenGLTexture *texture) { m_pTexture = texture; }
+	OpenGLTexture* getTexture(void) { return m_pTexture; }
 private:
 	// TODO(heliogenesis): Maybe move this function to the parent class once it's done. Same with the vao.
 	// We should only need one for all instanced render queues. Same with deinitVAO, and shader related things.
@@ -175,19 +179,26 @@ private:
 	std::vector<glm::vec2> m_texturePositionsFloat;
 	std::vector<glm::vec2> m_quadSizesFloat;
 	std::vector<glm::vec2> m_canvasPositionsFloat;
+	std::vector<glm::vec2> m_textureSizesFloat;
 	OpenGLVAO* vao;
 	Shader* m_pShader;
+	OpenGLTexture* m_pTexture;
 };
 
 class OpenGLMasterRenderQueue {
 public:
 	OpenGLMasterRenderQueue (void);
 	~OpenGLMasterRenderQueue (void);
+	void renderAllQueues (void);
+	void setObjectTextureShader(Shader *shader) { m_pObjectTextureShader = shader; }
+	Shader* getObjectTextureShader(void) { return m_pObjectTextureShader; }
+	void addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight);
 private:
-	void addObjectToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image);
 	void initializeVAO (void);
 	void deinitVAO (void);
+	void clear (void);
 	OpenGLVAO* m_pVao;
-	Shader *m_pTextureShader;
+	Shader *m_pObjectTextureShader;
+	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
 };

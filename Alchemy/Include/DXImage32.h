@@ -156,7 +156,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		CG32bitPixel *GetPixelArray (void) const { return m_pRGBA; }
 		CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
-		OpenGLInstancedRenderQueue *GetInstancedRenderQueue (void) const { return m_pOGLRenderQueue; }
+		OpenGLMasterRenderQueue *GetMasterRenderQueue (void) const { return m_pOGLRenderQueue; }
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }
 		void InitOpenGL (void);
@@ -226,7 +226,7 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 
 		mutable BITMAPINFO *m_pBMI = NULL;		//	Used for blting to a DC
 		static CG32bitImage m_NullImage;
-		OpenGLInstancedRenderQueue *m_pOGLRenderQueue = NULL;
+		OpenGLMasterRenderQueue *m_pOGLRenderQueue = NULL;
 	};
 
 //	Drawing Classes ------------------------------------------------------------

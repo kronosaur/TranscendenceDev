@@ -446,5 +446,8 @@
     <ClCompile Include="OpenGLInstancedRenderQueue.cpp">
       <Filter>Source Files\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGLMasterRenderQueue.cpp">
+      <Filter>Source Files\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
