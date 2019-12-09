@@ -110,25 +110,15 @@
 
 				<Invoke>
 					(block (behavior)
-						(setq behavior (objGetData gSource "behavior"))
-						(switch
-							(eq behavior 'escorting)
-								(block Nil
-									(objCommunicate gSource gSender 'FormUp)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-
-							(block Nil
-								(objSetData gSource "behavior" 'escorting)
-								(if (or (eq behavior 'attackingTarget) (eq behavior 'attackingAtWill))
-									(objSendMessageTranslate gSender gSource 'CancelAttackAck)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-									
-								(shpCancelOrders gSource)
-								(shpOrder gSource 'follow gPlayerShip)
-								)
+						(setq behavior (objGetData gSource 'behavior))
+						(objSetData gSource 'behavior 'escorting)
+						(if (or (eq behavior 'attackingTarget) (eq behavior 'attackingAtWill))
+							(objSendMessageTranslate gSender gSource 'CancelAttackAck)
+							(objSendMessageTranslate gSender gSource 'FormUpAck)
 							)
+							
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'follow gPlayerShip)
 						)
 				</Invoke>
 			</Message>

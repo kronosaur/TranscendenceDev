@@ -107,7 +107,7 @@
 			
 	LANGUAGE
 	
-	Derrived types may define the following language elements:
+	Derived types may define the following language elements:
 	
 	AttackTargetAck: Reply when auton is ordered to attack a valid target.
 	
@@ -180,23 +180,12 @@
 				</OnShow>
 
 				<Invoke>
-					(block (behavior)
-						(setq behavior (objGetData gSource 'behavior))
-						(switch
-							(or (not behavior) (eq behavior 'escorting))
-								(block Nil
-									(objCommunicate gSource gSender 'FormUp)
-									(objSendMessageTranslate gSender gSource 'FormUpAck)
-									)
-
-							(block Nil
-								(objSetData gSource 'behavior 'escorting)
-								(objSendMessageTranslate gSender gSource 'FormUpAck)
-								
-								(shpCancelOrders gSource)
-								(shpOrder gSource 'escort gPlayerShip)
-								)
-							)
+					(block Nil
+						(objSetData gSource 'behavior 'escorting)
+						(objSendMessageTranslate gSender gSource 'FormUpAck)
+						
+						(shpCancelOrders gSource)
+						(shpOrder gSource 'escort gPlayerShip)
 						)
 				</Invoke>
 			</Message>
