@@ -1,6 +1,7 @@
 //	CStation.cpp
 //
 //	CStation class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -35,8 +36,10 @@
 #define PROPERTY_EXPLORED						CONSTLIT("explored")
 #define PROPERTY_IGNORE_FRIENDLY_FIRE			CONSTLIT("ignoreFriendlyFire")
 #define PROPERTY_IMAGE_SELECTOR					CONSTLIT("imageSelector")
+#define PROPERTY_IMAGE_VARIANT					CONSTLIT("imageVariant")
 #define PROPERTY_MAX_HP							CONSTLIT("maxHP")
 #define PROPERTY_MAX_STRUCTURAL_HP				CONSTLIT("maxStructuralHP")
+#define PROPERTY_NO_FRIENDLY_FIRE				CONSTLIT("noFriendlyFire")
 #define PROPERTY_OPEN_DOCKING_PORT_COUNT		CONSTLIT("openDockingPortCount")
 #define PROPERTY_ORBIT							CONSTLIT("orbit")
 #define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
@@ -987,9 +990,9 @@ ALERROR CStation::CreateFromType (CSystem &System,
 	pStation->m_dwWreckUNID = 0;
 	pStation->m_fNoBlacklist = false;
 	pStation->SetHasGravity(pType->HasGravity());
-	pStation->m_fPaintOverhang = pType->IsPaintLayerOverhang();
+	pStation->m_iPaintOrder = pType->GetPaintOrder();
 	pStation->m_fDestroyIfEmpty = false;
-    pStation->m_fIsSegment = CreateCtx.bIsSegment;
+	pStation->m_fIsSegment = CreateCtx.bIsSegment;
 	pStation->Set3DExtra(CreateCtx.bIs3DExtra);
 
 	//	Set up rotation, if necessary
@@ -1740,7 +1743,7 @@ CSystem::LayerEnum CStation::GetPaintLayer (void) const
 	{
 	//	Overrides
 
-	if (m_fPaintOverhang)
+	if (m_iPaintOrder == CPaintOrder::paintOverhang)
 		return CSystem::layerOverhang;
 
 	switch (m_Scale)
@@ -1802,6 +1805,22 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_IMAGE_SELECTOR))
 		return m_ImageSelector.WriteToItem()->Reference();
 
+	else if (strEquals(sName, PROPERTY_IMAGE_VARIANT))
+		{
+		IImageEntry *pRoot = m_pType->GetImage().GetRoot();
+		DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
+		int iVariantID = m_ImageSelector.GetVariant(dwID);
+
+		CString sVariantID;
+		if (pRoot && !(sVariantID = pRoot->GetVariantID(iVariantID)).IsBlank())
+			return CC.CreateString(sVariantID);
+		else
+			return CC.CreateInteger(iVariantID);
+		}
+
+	else if (strEquals(sName, PROPERTY_NO_FRIENDLY_FIRE))
+		return CC.CreateBool(!CanHitFriends());
+
 	else if (strEquals(sName, PROPERTY_OPEN_DOCKING_PORT_COUNT))
 		return CC.CreateInteger(GetOpenDockingPortCount());
 
@@ -1810,6 +1829,14 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_PARALLAX))
 		return (m_rParallaxDist != 1.0 ? CC.CreateInteger((int)(m_rParallaxDist * 100.0)) : CC.CreateNil());
+
+	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
+		{
+		if (m_iPaintOrder == CPaintOrder::none)
+			return CC.CreateNil();
+		else
+			return CC.CreateString(CPaintOrder::GetID(m_iPaintOrder));
+		}
 
 	else if (strEquals(sName, PROPERTY_PLAYER_BACKLISTED))
 		return CC.CreateBool(IsBlacklisted(NULL));
@@ -2944,8 +2971,6 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	{
 	int i;
-	RECT rcOldObjBounds;
-	int yOldAnnotions;
 
 	//	Known
 
@@ -2987,16 +3012,14 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	m_Overlays.PaintBackground(Dest, x, y, Ctx);
 
+	//	Paint satellites behind the station.
+
+	PaintSatellites(Dest, x, y, CPaintOrder::sendToBack, Ctx);
+
 	//	First paint any object that are docked behind us
 
 	if (!Ctx.fNoDockedShips)
 		{
-		//	If we need to paint docked ships, then preserve the object-specific
-		//	context.
-
-		rcOldObjBounds = Ctx.rcObjBounds;
-		yOldAnnotions = Ctx.yAnnotations;
-
 		//	Paint docked ships
 
 		for (i = 0; i < m_DockingPorts.GetPortCount(this); i++)
@@ -3031,29 +3054,9 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 	else
 		Image.PaintImage(Dest, x, y, iTick, iVariant);
 
-    //  If necessary, paint attached satellite stations
+    //  Paint satellites in front of the station.
 
-    if (Ctx.fShowSatellites)
-        {
-		CSpaceObject *pOldObj = Ctx.pObj;
-
-        //  Loop over all our subordinates and paint any segments.
-
-        for (i = 0; i < m_Subordinates.GetCount(); i++)
-            {
-            CSpaceObject *pObj = m_Subordinates.GetObj(i);
-            if (pObj->IsSatelliteSegmentOf(this))
-                {
-				int xObj, yObj;
-				Ctx.XForm.Transform(pObj->GetPos(), &xObj, &yObj);
-
-				Ctx.pObj = pObj;
-				pObj->Paint(Dest, xObj, yObj, Ctx);
-                }
-            }
-
-		Ctx.pObj = pOldObj;
-        }
+	PaintSatellites(Dest, x, y, (Ctx.fShowSatellites ? CPaintOrder::none : CPaintOrder::bringToFront), Ctx);
 
 	//	Paint animations
 
@@ -3100,11 +3103,6 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 				Ctx.pObj = pOldObj;
 				}
 			}
-
-		//	Restore context
-
-		Ctx.rcObjBounds = rcOldObjBounds;
-		Ctx.yAnnotations = yOldAnnotions;
 		}
 
 #ifdef DEBUG_BOUNDING_RECT
@@ -3422,6 +3420,7 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 //
 //	DWORD		m_dwWreckUNID
 //	DWORD		flags
+//	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation m_pRotation
 //
@@ -3734,12 +3733,33 @@ void CStation::OnReadFromStream (SLoadCtx &Ctx)
 	m_fNoBlacklist =		((dwLoad & 0x00004000) ? true : false);
 	m_fNoConstruction =		((dwLoad & 0x00008000) ? true : false);
 	m_fBlocksShips =		((dwLoad & 0x00010000) ? true : false);
-	m_fPaintOverhang =		((dwLoad & 0x00020000) ? true : false);
+
+	bool bPaintOverhang;
+	if (Ctx.dwVersion < 177)
+		bPaintOverhang =	((dwLoad & 0x00020000) ? true : false);
+	else
+		bPaintOverhang = false;
+
 	m_fShowMapOrbit =		((dwLoad & 0x00040000) ? true : false);
 	m_fDestroyIfEmpty =		((dwLoad & 0x00080000) ? true : false);
 	m_fIsSegment =		    ((dwLoad & 0x00100000) ? true : false);
 	m_fForceMapLabel =		((dwLoad & 0x00200000) ? true : false);
 	m_fHasMissileDefense =	((dwLoad & 0x00400000) ? true : false);
+
+	//	Paint order
+
+	if (Ctx.dwVersion >= 177)
+		{
+		Ctx.pStream->Read(dwLoad);
+		m_iPaintOrder = (CPaintOrder::Types)dwLoad;
+		}
+	else
+		{
+		if (bPaintOverhang)
+			m_iPaintOrder = CPaintOrder::paintOverhang;
+		else
+			m_iPaintOrder = CPaintOrder::none;
+		}
 
 	//	Init name flags
 
@@ -4099,6 +4119,7 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 //
 //	DWORD		m_dwWreckUNID
 //	DWORD		flags
+//	DWORD		m_iPaintOrder
 //
 //	CIntegralRotation	m_pRotation
 //
@@ -4198,12 +4219,17 @@ void CStation::OnWriteToStream (IWriteStream *pStream)
 	dwSave |= (m_fNoBlacklist ?			0x00004000 : 0);
 	dwSave |= (m_fNoConstruction ?		0x00008000 : 0);
 	dwSave |= (m_fBlocksShips ?			0x00010000 : 0);
-	dwSave |= (m_fPaintOverhang ?		0x00020000 : 0);
+	//	0x00020000 retired at 177
 	dwSave |= (m_fShowMapOrbit ?		0x00040000 : 0);
 	dwSave |= (m_fDestroyIfEmpty ?		0x00080000 : 0);
 	dwSave |= (m_fIsSegment ?		    0x00100000 : 0);
 	dwSave |= (m_fForceMapLabel ?		0x00200000 : 0);
 	dwSave |= (m_fHasMissileDefense ?	0x00400000 : 0);
+	pStream->Write(dwSave);
+
+	//	Paint order
+
+	dwSave = (DWORD)m_iPaintOrder;
 	pStream->Write(dwSave);
 
 	//	Rotation
@@ -4337,6 +4363,56 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 		}
 
 	DEBUG_CATCH_MSG1("Crash in CStation::PaintLRSForeground: type: %08x", m_pType->GetUNID());
+	}
+
+void CStation::PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const
+
+//	PaintSatellites
+//
+//	Paint satellites. dwPaintOptions is one of the following:
+//
+//	CPaintOrder::none: Paint all satellites, regardless of paint order
+//	CPaintOrder::bringToFront: Paint all satellites with bringToFront paint 
+//		order.
+//	CPaintOrder::sendToBack: Paint all satellites with sendToBack paint order.
+
+	{
+	CSpaceObject *pOldObj = Ctx.pObj;
+	bool bOldInPaintSubordinate = Ctx.bInPaintSubordinate;
+	Ctx.bInPaintSubordinate = true;
+
+    //  Loop over all our subordinates and paint any segments.
+
+    for (int i = 0; i < m_Subordinates.GetCount(); i++)
+        {
+        CSpaceObject *pObj = m_Subordinates.GetObj(i);
+
+		//	If not a satellite, then ignore.
+
+		CPaintOrder::Types iPaintOrder;
+        if (!pObj->IsSatelliteSegmentOf(*this, &iPaintOrder))
+			continue;
+
+		//	If not the right paint order, then skip.
+
+		if (dwPaintOptions != CPaintOrder::none
+				&& !(iPaintOrder & dwPaintOptions))
+			continue;
+
+		//	Paint
+
+		if (dwPaintOptions == CPaintOrder::none || pObj->IsPaintNeeded())
+			{
+			int xObj, yObj;
+			Ctx.XForm.Transform(pObj->GetPos(), &xObj, &yObj);
+
+			Ctx.pObj = pObj;
+			pObj->Paint(Dest, xObj, yObj, Ctx);
+			}
+        }
+
+	Ctx.pObj = pOldObj;
+	Ctx.bInPaintSubordinate = bOldInPaintSubordinate;
 	}
 
 bool CStation::PointInObject (const CVector &vObjPos, const CVector &vPointPos) const
@@ -4590,6 +4666,20 @@ void CStation::SetImageVariant (int iVariant)
 	CalcBounds();
 	}
 
+void CStation::SetImageVariant (const CString &sVariantID)
+
+//	SetImageVariant
+//
+//	Sets image variant from a string, which can be either a number or an ID.
+
+	{
+	int iVariant = m_pType->GetImage().GetVariantByID(sVariantID);
+	if (iVariant == -1)
+		SetImageVariant(0);
+	else
+		SetImageVariant(iVariant);
+	}
+
 void CStation::SetMapOrbit (const COrbit &oOrbit)
 
 //	SetMapOrbit
@@ -4750,16 +4840,66 @@ bool CStation::SetProperty (const CString &sName, ICCItem *pValue, CString *rets
 		m_ImageSelector.ReadFromItem(GetUniverse().GetDesignCollection(), ICCItemPtr(pValue->Reference()));
 		return true;
 		}
+	else if (strEquals(sName, PROPERTY_IMAGE_VARIANT))
+		{
+		IImageEntry *pRoot = m_pType->GetImage().GetRoot();
+		if (pRoot == NULL)
+			{
+			*retsError = CONSTLIT("Station has no image.");
+			return false;
+			}
+
+		if (pValue->IsNumber())
+			{
+			int iVariant = pValue->GetIntegerValue();
+			if (iVariant < 0 || iVariant >= pRoot->GetVariantCount())
+				{
+				*retsError = strPatternSubst(CONSTLIT("Invalid variant: %d"), iVariant);
+				return false;
+				}
+
+			SetImageVariant(iVariant);
+			}
+		else
+			{
+			CString sVariant = pValue->GetStringValue();
+			int iVariant = pRoot->GetVariantByID(sVariant);
+			if (iVariant < 0 || iVariant >= pRoot->GetVariantCount())
+				{
+				*retsError = strPatternSubst(CONSTLIT("Invalid variant: %s"), sVariant);
+				return false;
+				}
+
+			SetImageVariant(iVariant);
+			}
+
+		return true;
+		}
+
+	else if (strEquals(sName, PROPERTY_NO_FRIENDLY_FIRE))
+		{
+		if (pValue->IsNil())
+			ClearNoFriendlyFire();
+		else
+			SetNoFriendlyFire();
+
+		return true;
+		}
+
 	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
 		{
 		if (pValue->IsNil())
-			m_fPaintOverhang = false;
-		else if (strEquals(pValue->GetStringValue(), PAINT_LAYER_OVERHANG))
-			m_fPaintOverhang = true;
+			m_iPaintOrder = CPaintOrder::none;
 		else
 			{
-			*retsError = strPatternSubst(CONSTLIT("Unable to set paint layer: %s"), pValue->GetStringValue());
-			return false;
+			CPaintOrder::Types iOrder = CPaintOrder::Parse(pValue->GetStringValue());
+			if (iOrder == CPaintOrder::error)
+				{
+				*retsError = strPatternSubst(CONSTLIT("Unable to set paint layer: %s"), pValue->GetStringValue());
+				return false;
+				}
+
+			m_iPaintOrder = iOrder;
 			}
 
 		return true;

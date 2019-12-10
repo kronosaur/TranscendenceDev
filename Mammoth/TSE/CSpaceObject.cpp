@@ -5021,9 +5021,30 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	int iSteps = 0;
 	CVector vStep;
 
+	//	Remember what we hit
+
+	CSpaceObject *pHit = NULL;
+	CVector vHitPos;
+
 	//	See if the beam hit anything. We start with a crude first pass.
 	//	Any objects near the beam are then analyzed further to see if
 	//	the beam hit them.
+	//
+	//	LATER: Note that this is an NxM loop, where N is the number of objects
+	//	in an area and M is the number of steps to increment so we can find the
+	//	precise point of intersection.
+	//
+	//	We should probably loop over steps first and then for each step loop 
+	//	over objects, because that should guarantee the smallest number of
+	//	loops. For example, assume that the object hit is the Ith object on
+	//	the Jth step. In that case we would do a maximum of JxN loops.
+	//
+	//	In contrast, looping over objects first means we do IxM + (N-I)xJ
+	//	loops. If on average I is N/2 and J is M/2, then we end up doing
+	//	MxN/2 + MxN/4 or 3xMxN/4 total loops for the current code versus
+	//	MxN/2 total loops for the optimal case.
+	//
+	//	Of course, this doesn't matter if M and N are small (as they should be).
 
 	int k;
 	while (GetSystem()->EnumObjectsInBoxHasMore(i))
@@ -5066,19 +5087,37 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		CVector vTest = vStart;
 		for (k = 0; k < iSteps; k++)
 			{
-			//	If we hit this object then we're done.
+			//	If we hit this object then keep track.
 
 			if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 				{
-				if (retvHitPos)
-					*retvHitPos = vTest;
+				//	If we hit this on the first step, then we're done
 
-				//	Figure out the direction that the hit came from
+				if (k == 0)
+					{
+					if (retvHitPos)
+						*retvHitPos = vTest;
 
-				if (retiHitDir)
-					*retiHitDir = VectorToPolar(-vStep, NULL);
+					//	Figure out the direction that the hit came from
 
-				return pObj;
+					if (retiHitDir)
+						*retiHitDir = VectorToPolar(-vStep, NULL);
+
+					return pObj;
+					}
+
+				//	Otherwise, we remember it and keep looping in case there
+				//	is another closer object.
+
+				else
+					{
+					pHit = pObj;
+					vHitPos = vTest;
+
+					//	No need to look at steps beyond this one.
+
+					iSteps = k;
+					}
 				}
 
 			//	Next
@@ -5089,9 +5128,20 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 
 	pObj = NULL;
 
-	//	We didn't hit anything.
+	//	See if we hit anything
 
-	return NULL;
+	if (pHit)
+		{
+		if (retvHitPos)
+			*retvHitPos = vHitPos;
+
+		if (retiHitDir)
+			*retiHitDir = VectorToPolar(-vStep, NULL);
+
+		return pHit;
+		}
+	else
+		return NULL;
 
 	DEBUG_CATCH_OBJ_LOOP
 	}
@@ -6553,7 +6603,9 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 //	Paint the object
 
 	{
-	if (IsHidden())
+	if (IsPaintDeferred(Ctx))
+		return;
+	else if (IsHidden())
 		{
 		SetPainted();
 		ClearPaintNeeded();

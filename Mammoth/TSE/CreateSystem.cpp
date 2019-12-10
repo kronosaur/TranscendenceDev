@@ -3610,13 +3610,13 @@ ALERROR ApplyStationCreateOptions (SSystemCreateCtx &Ctx, const COrbit &OrbitDes
 
 	//	Set the image variant
 
-	if (StationCreate.GetImageVariant() != -1)
+	if (!StationCreate.GetImageVariant().IsBlank())
 		Station.SetImageVariant(StationCreate.GetImageVariant());
 
 	//	Paint layer
 
-	if (StationCreate.ForcePaintOverhang())
-		Station.SetPaintOverhang();
+	if (StationCreate.GetPaintOrder() != CPaintOrder::none)
+		Station.SetPaintOrder(StationCreate.GetPaintOrder());
 
 	//	If this station is a gate entry-point, then add it to
 	//	the table in the system.
@@ -4488,12 +4488,12 @@ ALERROR CSystem::CreateStation (SSystemCreateCtx *pCtx,
 
 	//	If this is a satellite, then add it as a subordinate
 
-	if (pStation && pCtx->pStation && pStation->CanAttack())
+	if (pStation && pCtx->pStation && (pStation->CanAttack() || CreateCtx.bIsSegment))
 		pCtx->pStation->AddSubordinate(pStation);
 
 	//	Create any satellites of the station
 
-	CXMLElement *pSatellites = pType->GetSatellitesDesc();
+	const CXMLElement *pSatellites = pType->GetSatellitesDesc();
 	if (pSatellites 
 			&& CreateCtx.bCreateSatellites
 			&& CreateCtx.pOrbit)

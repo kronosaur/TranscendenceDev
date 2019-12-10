@@ -237,11 +237,11 @@ class CStationCreateOptions
 	public:
 		bool ForceMapLabel (void) const { return m_bForceMapLabel; }
 		bool ForceMapOrbit (void) const { return m_bForceMapOrbit; }
-		bool ForcePaintOverhang (void) const { return strEquals(m_sPaintLayer, CONSTLIT("overhang")); }
-		int GetImageVariant (void) const { return m_iImageVariant; }
+		const CString &GetImageVariant (void) const { return m_sImageVariant; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		const CString &GetObjName (void) const { return m_sObjName; }
 		const CXMLElement *GetOnCreateXML (void) const { return m_pOnCreate; }
+		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
 		const CXMLElement *GetSatellitesXML (void) const { return m_pSatellites; }
 		const CXMLElement *GetShipsXML (void) const { return m_pShips; }
 		const CXMLElement *GetTradeXML (void) const { return m_pTrade; }
@@ -256,9 +256,9 @@ class CStationCreateOptions
 		void CopyOnWrite (bool &bCopied, CStationCreateOptions *retCopy);
 
 		CNameDesc m_Name;
-		int m_iImageVariant = -1;
-		CString m_sPaintLayer;
+		CString m_sImageVariant;
 		CString m_sObjName;
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;
 
 		const CXMLElement *m_pOnCreate = NULL;
 
@@ -329,6 +329,7 @@ class CStationType : public CDesignType
 		bool CanBeEncounteredRandomly (void) const { return GetEncounterDesc().CanBeRandomlyEncountered(); }
 		bool CanBeHitByFriends (void) { return (m_fNoFriendlyTarget ? false : true); }
 		bool CanHitFriends (void) const { return (m_fNoFriendlyFire ? false : true); }
+		TSharedPtr<CG32bitImage> CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const;
 		bool ForceMapLabel (void) const { return m_fForceMapLabel; }
 		void GenerateDevices (int iLevel, CDeviceDescList &Devices) const;
 		CXMLElement *GetAbandonedScreen (void) { return m_pAbandonedDockScreen.GetDesc(); }
@@ -364,8 +365,8 @@ class CStationType : public CDesignType
 		Metric GetGravityRadius (void) const { return m_rGravityRadius; }
 		const CObjectImageArray &GetHeroImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_HeroImage.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
 		const CStationHullDesc &GetHullDesc (void) const { return m_HullDesc; }
-		const CCompositeImageDesc &GetImage (void) { return m_Image; }
-		const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
+		const CCompositeImageDesc &GetImage (void) const { return m_Image; }
+		const CObjectImageArray &GetImage (const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, int *retiRotation = NULL) const { return m_Image.GetImage(SGetImageCtx(GetUniverse()), Selector, Modifiers, retiRotation); }
 		int GetImageVariants (void) { return m_Image.GetVariantCount(); }
 		IShipGenerator *GetInitialShips (void) const { return m_pInitialShips; }
 		Metric GetLevelStrength (int iLevel);
@@ -375,12 +376,13 @@ class CStationType : public CDesignType
 		int GetMaxShipConstruction (void) { return m_iMaxConstruction; }
 		const CNameDesc &GetNameDesc (void) const { return m_Name; }
 		int GetNumberAppearing (void) const { return m_EncounterRecord.GetTotalMinimum(); }
+		CPaintOrder::Types GetPaintOrder (void) const { return m_iPaintOrder; }
 		Metric GetParallaxDist (void) const { return m_rParallaxDist; }
 		CItem GetPrimaryWeapon (void) const;
 		IItemGenerator *GetRandomItemTable (void) { return m_pItems; }
 		IShipGenerator *GetReinforcementsTable (void);
 		const CIntegralRotationDesc &GetRotationDesc (void);
-		CXMLElement *GetSatellitesDesc (void) { return m_pSatellitesDesc; }
+		const CXMLElement *GetSatellitesDesc (void) const { return m_pSatellitesDesc; }
 		ScaleTypes GetScale (void) const { return m_iScale; }
 		int GetSize (void) const { return m_iSize; }
 		int GetShipConstructionRate (void) { return m_iShipConstructionRate; }
@@ -400,7 +402,6 @@ class CStationType : public CDesignType
 		bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
 		bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
 		bool IsMobile (void) const { return (m_fMobile ? true : false); }
-		bool IsPaintLayerOverhang (void) const { return (m_fPaintOverhang ? true : false); }
 		bool IsRadioactive (void) { return (m_fRadioactive ? true : false); }
 		bool IsSign (void) { return (m_fSign ? true : false); }
 		bool IsSizeClass (ESizeClass iClass) const;
@@ -529,17 +530,17 @@ class CStationType : public CDesignType
 		DWORD m_fOutOfPlane:1;							//	Background or foreground object
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
-		DWORD m_fPaintOverhang:1;						//	If TRUE, paint in overhang layer
 		DWORD m_fCommsHandlerInit:1;					//	TRUE if comms handler has been initialized
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
 		DWORD m_fSuppressMapLabel:1;					//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
-
 		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
+
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
+		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
@@ -550,6 +551,7 @@ class CStationType : public CDesignType
 		int m_iAnimationsCount = 0;						//	Number of animation sections
 		SAnimationSection *m_pAnimations = NULL;		//	Animation sections (may be NULL)
 		CCompositeImageDesc m_HeroImage;				//	For use in dock screens and covers
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint layer (if special)
 
 		//	Docking
 		CDockScreenTypeRef m_pFirstDockScreen;			//	First screen (may be NULL)

@@ -1460,12 +1460,13 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetFlotsamImage (CItemType *pItemType);
 		void SetForceMapLabel (bool bValue = true) { m_fForceMapLabel = bValue; }
 		void SetImageVariant (int iVariant);
+		void SetImageVariant (const CString &sVariantID);
 		void SetInactive (void) { m_fActive = false; }
 		void SetMapOrbit (const COrbit &oOrbit);
 		void SetMass (Metric rMass) { m_rMass = rMass; }
 		void SetNoConstruction (void) { m_fNoConstruction = true; }
 		void SetNoReinforcements (void) { m_fNoReinforcements = true; }
-		void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
+		void SetPaintOrder (CPaintOrder::Types iOrder) { m_iPaintOrder = iOrder; }
 		void SetReconned (void) { m_fReconned = true; }
 		void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
 		void SetSuppressMapLabel (bool bValue = true) { m_fSuppressMapLabel = bValue; }
@@ -1481,7 +1482,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
 		virtual bool CanAttack (void) const override;
-		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack()); }
+		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack() || (m_fIsSegment && m_Hull.GetStructuralHP() > 0)); }
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
@@ -1555,7 +1556,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed() || IsOutOfPlaneObj()); }
 		virtual bool IsKnown (void) const override { return m_fKnown; }
 		virtual bool IsMultiHull (void) override { return (m_Hull.GetHullType() != CStationHullDesc::hullSingle); }
-        virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
+		virtual bool IsPaintDeferred (SViewportPaintCtx &Ctx) const override { return (m_iPaintOrder & (CPaintOrder::bringToFront | CPaintOrder::sendToBack)) && !Ctx.bInPaintSubordinate; }
+        virtual bool IsSatelliteSegmentOf (const CSpaceObject &Base, CPaintOrder::Types *retiPaintOrder = NULL) const override { if (retiPaintOrder) *retiPaintOrder = m_iPaintOrder; return (m_fIsSegment && (m_pBase == Base)); }
         virtual bool IsShownInGalacticMap (void) const override;
 		virtual bool IsStargate (void) const override { return !m_sStargateDestNode.IsBlank(); }
 		virtual bool IsUnreal (void) const override { return (IsSuspended() || IsDestroyed()); }
@@ -1653,6 +1655,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		void PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const;
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
@@ -1675,6 +1678,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		int m_iDestroyedAnimation = 0;			//	Frames left of destroyed animation
 		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
 		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
@@ -1710,12 +1714,11 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
 		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
-		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
-
 		DWORD m_fForceMapLabel:1;				//	Force showing map label
+
 		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
 		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid

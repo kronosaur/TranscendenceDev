@@ -62,6 +62,7 @@
 #define GRAVITY_RADIUS_ATTRIB					CONSTLIT("gravityRadius")
 #define HIT_POINTS_ATTRIB						CONSTLIT("hitPoints")
 #define IGNORE_FRIENDLY_FIRE_ATTRIB				CONSTLIT("ignoreFriendlyFire")
+#define IMAGE_VARIANT_ATTRIB					CONSTLIT("imageVariant")
 #define IMMUTABLE_ATTRIB						CONSTLIT("immutable")
 #define INACTIVE_ATTRIB							CONSTLIT("inactive")
 #define LEVEL_ATTRIB							CONSTLIT("level")
@@ -89,6 +90,7 @@
 #define REPAIR_RATE_ATTRIB						CONSTLIT("repairRate")
 #define REVERSE_ARTICLE_ATTRIB					CONSTLIT("reverseArticle")
 #define SCALE_ATTRIB							CONSTLIT("scale")
+#define SEGMENT_ATTRIB							CONSTLIT("segment")
 #define SHIP_ENCOUNTER_ATTRIB					CONSTLIT("shipEncounter")
 #define SHIP_REGEN_ATTRIB						CONSTLIT("shipRegen")
 #define SHIP_REPAIR_RATE_ATTRIB					CONSTLIT("shipRepairRate")
@@ -108,7 +110,9 @@
 #define VIRTUAL_ATTRIB							CONSTLIT("virtual")
 #define WALL_ATTRIB								CONSTLIT("barrier")
 #define X_ATTRIB								CONSTLIT("x")
+#define X_OFFSET_ATTRIB							CONSTLIT("xOffset")
 #define Y_ATTRIB								CONSTLIT("y")
+#define Y_OFFSET_ATTRIB							CONSTLIT("yOffset")
 
 #define LARGE_DAMAGE_IMAGE_ID_ATTRIB			CONSTLIT("largeDamageImageID")
 #define LARGE_DAMAGE_WIDTH_ATTRIB				CONSTLIT("largeDamageWidth")
@@ -660,6 +664,146 @@ Metric CStationType::CalcWeaponStrength (int iLevel) const
 	//	Done
 
 	return rTotal;
+	}
+
+TSharedPtr<CG32bitImage> CStationType::CreateFullImage (SGetImageCtx &ImageCtx, const CCompositeImageSelector &Selector, const CCompositeImageModifiers &Modifiers, RECT &retrcImage, int &retxCenter, int &retyCenter) const
+
+//	CreateFullImage
+//
+//	Returns an image of the station, including any satellite segments.
+
+	{
+	struct SSatImageDesc
+		{
+		const CObjectImageArray *pImage;
+		CCompositeImageSelector Selector;
+		int xOffset;
+		int yOffset;
+		};
+
+	SSelectorInitCtx InitCtx;
+	int iVariant;
+	const CObjectImageArray *pMainImage = &GetImage(Selector, Modifiers, &iVariant);
+
+	//	Loop over all satellites and get metrics
+
+	RECT rcBounds;
+	TArray<SSatImageDesc> SatImages;
+	if (const CXMLElement *pSatellites = GetSatellitesDesc())
+		{
+		RECT rcMainImage = pMainImage->GetImageRect();
+		rcBounds.left = -(RectWidth(rcMainImage) / 2);
+		rcBounds.top = -(RectHeight(rcMainImage) / 2);
+		rcBounds.right = rcBounds.left + RectWidth(rcMainImage);
+		rcBounds.bottom = rcBounds.top + RectHeight(rcMainImage);
+
+		for (int i = 0; i < pSatellites->GetContentElementCount(); i++)
+			{
+			const CXMLElement *pSatDesc = pSatellites->GetContentElement(i);
+			if (!pSatDesc->FindAttribute(SEGMENT_ATTRIB)
+					|| !strEquals(STATION_TAG, pSatDesc->GetTag()))
+				continue;
+
+			//	Get the type of the satellite
+
+			CStationType *pSatType = GetUniverse().FindStationType(pSatDesc->GetAttributeInteger(TYPE_ATTRIB));
+			if (pSatType == NULL)
+				continue;
+
+			//	Prepare the image for the satellite
+
+			SSatImageDesc *pSatImage = SatImages.Insert();
+			pSatType->SetImageSelector(InitCtx, &pSatImage->Selector);
+
+			//	If we have an image variant, then set it
+
+			CString sVariant;
+			if (pSatDesc->FindAttribute(IMAGE_VARIANT_ATTRIB, &sVariant))
+				{
+				IImageEntry *pRoot = pSatType->GetImage().GetRoot();
+				DWORD dwID = (pRoot ? pRoot->GetID() : DEFAULT_SELECTOR_ID);
+				int iVariant = pSatType->GetImage().GetVariantByID(sVariant);
+
+				if (iVariant != -1)
+					{
+					pSatImage->Selector.DeleteAll();
+					pSatImage->Selector.AddVariant(dwID, iVariant);
+					}
+				}
+
+			pSatImage->pImage = &pSatType->GetImage(pSatImage->Selector, CCompositeImageModifiers());
+
+			//	Now get the offset
+
+			pSatImage->xOffset = pSatDesc->GetAttributeInteger(X_OFFSET_ATTRIB);
+			pSatImage->yOffset = pSatDesc->GetAttributeInteger(Y_OFFSET_ATTRIB);
+
+			//	Compute the satellite rect
+
+			RECT rcSatImage = pSatImage->pImage->GetImageRect();
+			RECT rcSatBounds;
+			rcSatBounds.left = pSatImage->xOffset - (RectWidth(rcSatImage) / 2);
+			rcSatBounds.top = -pSatImage->yOffset - (RectHeight(rcSatImage) / 2);
+			rcSatBounds.right = rcSatBounds.left + RectWidth(rcSatImage);
+			rcSatBounds.bottom = rcSatBounds.top + RectHeight(rcSatImage);
+
+			//	Increase the size of the bounds
+
+			rcBounds.left = Min(rcBounds.left, rcSatBounds.left);
+			rcBounds.right = Max(rcBounds.right, rcSatBounds.right);
+			rcBounds.top = Min(rcBounds.top, rcSatBounds.top);
+			rcBounds.bottom = Max(rcBounds.bottom, rcSatBounds.bottom);
+			}
+		}
+
+	//	If no segments, then we just return the basic image
+
+	if (SatImages.GetCount() == 0)
+		{
+		//	If we don't have a main image, then return NULL. Callers should 
+		//	handle this and use a different image. NOTE: We check here because
+		//	it is possible to not have a main image but to have satellites
+		//	(e.g., St. Kats).
+
+		if (!pMainImage->IsLoaded())
+			return NULL;
+
+		CG32bitImage *pBmpImage = &pMainImage->GetImage(CONSTLIT("CStationType::CreateFullImage"));
+		retrcImage = pMainImage->GetImageRect(0, iVariant, &retxCenter, &retyCenter);
+
+		//	AddRef because we don't want callers to free this bitmap, since it
+		//	is owned by the type.
+
+		return TSharedPtr<CG32bitImage>(pBmpImage->AddRef());
+		}
+
+	//	Create an image that will hold the composite
+
+	TSharedPtr<CG32bitImage> pCompositeImage(new CG32bitImage);
+	pCompositeImage->Create(RectWidth(rcBounds), RectHeight(rcBounds), CG32bitImage::alpha8, CG32bitPixel::Null());
+	int xCenter = -rcBounds.left;
+	int yCenter = -rcBounds.top;
+
+	//	Paint the main image
+
+	pMainImage->PaintImage(*pCompositeImage, xCenter, yCenter, 0, Modifiers.GetRotation(), true);
+
+	//	Paint all the satellites
+
+	for (int i = 0; i < SatImages.GetCount(); i++)
+		SatImages[i].pImage->PaintImage(*pCompositeImage, xCenter + SatImages[i].xOffset, yCenter - SatImages[i].yOffset, 0, 0, true);
+
+	//	Now return the composite image
+
+	retrcImage.left = 0;
+	retrcImage.top = 0;
+	retrcImage.right = RectWidth(rcBounds);
+	retrcImage.bottom = RectHeight(rcBounds);
+
+    retxCenter = xCenter;
+    retyCenter = yCenter;
+
+	return pCompositeImage;
 	}
 
 bool CStationType::FindDataField (const CString &sField, CString *retsValue) const
@@ -1333,12 +1477,9 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_fSuppressMapLabel = false;
 		}
 		
-	CString sLayer;
-	if (pDesc->FindAttribute(PAINT_LAYER_ATTRIB, &sLayer)
-			&& strEquals(sLayer, CONSTLIT("overhang")))
-		m_fPaintOverhang = true;
-	else
-		m_fPaintOverhang = false;
+	m_iPaintOrder = CPaintOrder::Parse(pDesc->GetAttribute(PAINT_LAYER_ATTRIB));
+	if (m_iPaintOrder == CPaintOrder::error)
+		return ComposeLoadError(Ctx, strPatternSubst(CONSTLIT("Invalid paintLayer: %s"), pDesc->GetAttribute(PAINT_LAYER_ATTRIB)));
 
 	//	Get the scale (default to structure)
 

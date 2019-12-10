@@ -186,6 +186,7 @@
 			definiteArticle=	"true"
 			
             level=              "7"
+			size=				"5000"
 			attributes=			"commonwealthCustoms, dockObj, generic, human, majorStation, stKatsArcology"
 			>
 

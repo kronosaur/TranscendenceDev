@@ -1316,7 +1316,7 @@
 	<!ENTITY scVentariDestroyer			"0x080100C1">	<!-- Reclassified -->
 	<!ENTITY scVentariCruiser			"0x080100C1">	<!-- For compatibility -->
 
-	<!ENTITY stAbbasidOutpost			"0x08010100">
+	<!ENTITY stAbbasidOutpostCompatible	"0x08010100">
 	<!ENTITY itAbbasidThanogram			"0x08010101">
 
 	<!ENTITY stPteravoreLair			"0x08010140">
@@ -2241,6 +2241,11 @@
 	<!-- 0600-061F ABBASID -->
 
 	<!ENTITY smAbbasidSpace				"0x00100600">
+
+	<!ENTITY rsAbbasidOutpost			"0x00100601">
+	<!ENTITY stAbbasidOutpostWall		"0x00100602">
+	<!ENTITY stAbbasidOutpost			"0x00100603">
+	<!ENTITY rsAbbasidOutpostWalls		"0x00100604">
 
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 

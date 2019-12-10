@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							47;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					176;
+constexpr DWORD SYSTEM_SAVE_VERSION =					177;
 
 //	Uncomment out the following define when building a stable release
 
@@ -650,3 +650,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					176;
 //
 //	176: 1.9 Alpha 3
 //		m_iType in CStationHull
+//
+//	177: 1.9 Alpha 4
+//		m_iPaintOrder in CStation

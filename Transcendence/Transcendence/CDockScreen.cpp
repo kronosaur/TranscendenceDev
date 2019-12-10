@@ -499,7 +499,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 			CSpaceObject *pBase = Desc.pObj->GetBase();
 			int xPaint, yPaint;
-			if (pBase && Desc.pObj->IsSatelliteSegmentOf(pBase))
+			if (pBase && Desc.pObj->IsSatelliteSegmentOf(*pBase))
 				{
 				Ctx.pObj = pBase;
 				Ctx.XForm.Transform(pBase->GetPos(), &xPaint, &yPaint);

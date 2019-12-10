@@ -360,8 +360,24 @@ void CWeaponHUDDefault::Realize (SHUDPaintCtx &Ctx)
 			Ctx.fNoRecon = true;
 			Ctx.fNoDockedShips = true;
 			Ctx.fNoSelection = true;
+            Ctx.fShowSatellites = true;
 
-			pTarget->Paint(m_Target, TARGET_IMAGE_X, TARGET_IMAGE_Y, Ctx);
+			int xCenter = TARGET_IMAGE_X;
+			int yCenter = TARGET_IMAGE_Y;
+
+			//	If we've docked with a satellite of a composite object, then we 
+			//	figure out the parent so that we can paint the entire composite.
+
+			CSpaceObject *pBase = pTarget->GetBase();
+			if (pBase && pTarget->IsSatelliteSegmentOf(*pBase))
+				{
+				Ctx.XForm.Transform(pBase->GetPos(), &xCenter, &yCenter);
+				Ctx.pObj = pBase;
+				}
+
+			//	Paint
+
+			Ctx.pObj->Paint(m_Target, xCenter, yCenter, Ctx);
 
 			//	Blt on buffer through the target mask
 

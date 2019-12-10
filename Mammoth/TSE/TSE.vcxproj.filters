@@ -1384,5 +1384,8 @@
     <ClCompile Include="SUpdateCtx.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
+    <ClCompile Include="CPaintOrder.cpp">
+      <Filter>Source Files\Painting</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
