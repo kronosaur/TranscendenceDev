@@ -41,6 +41,8 @@ The cleaner solution (and the one that's probably implemented right now) for non
 
 We'll need a separate texture queue for effects that don't use textures...
 
+For special effects that use textures (such as glow), what we can do is use a separate instanced render queue that will make use of the glow shader, rendered after the texture itself is done.
+
 */
 
 #include "OpenGLIncludes.h"
@@ -127,6 +129,7 @@ public:
 	void swapBuffers (HWND hwnd);
 	void getWGLError ();
 	void getWGLSwapError ();
+	void setBlendMode ();
 
 private:
 	int m_iWindowWidth;

@@ -89,7 +89,14 @@ bool OpenGLContext::initOpenGL (HWND hwnd, HDC hdc)
 	::kernelDebugLogPattern("[OpenGL] Using graphics device: %s", CString((LPCSTR)renderer));
 	::kernelDebugLogPattern("[OpenGL] Maximum %d textures at resolution %dx%d, max %d per shader", iMaxTextures, iMaxTextureSize, iMaxTextureSize, iMaxTexturesPerShader);
 	prepSquareCanvas();
+	setBlendMode();
 	return true;
+	}
+
+void OpenGLContext::setBlendMode ()
+	{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 void OpenGLContext::prepSquareCanvas ()

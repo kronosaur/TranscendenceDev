@@ -1375,14 +1375,13 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			}
 
 		if (pRenderQueue)
-		{
+			{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth,
 				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight());
-		}
-
-		if (bComposite)
+			}
+		else if (bComposite)
 			{
 			Dest.Composite(xSrc,
 					ySrc,
