@@ -258,38 +258,6 @@
 		
 		<HeroImage imageID="&rsStKatsArcologyHero;" imageWidth="800" imageHeight="528"/>
 		
-		<StaticData>
-			<ParliamentDebate>
-				(
-					(cat "\n\nThe minister from Zhang Li makes an impassioned appeal for "
-						"a bill funding the construction of three new Commonwealth Star Carriers. "
-						"She shows pictures of refugees displaced by the Ares, but the chamber "
-						"is nearly empty and her energy fades in mid-speech."
-						)
-					(cat "\n\nThe chamber is nearly full as ministers debate a bill calling for "
-						"material support to the Huari people. Those in favor cite the brutal and cruel "
-						"treatment the Huari have received under the Sung Slavers. Those opposed "
-						"recall that the Huari themselves were once aggressors who killed Commonwealth "
-						"settlers in the Ungoverned Territories."
-						)
-					(cat "The minister from 70 Ophiuchi speaks in the Center Well:\n\n"
-						"\"...and so I urge my fellow ministers to meet this challenge. With the "
-						"appropriations of CP1175 we can finally provide enough resources to the "
-						"Militia in order to secure the safety of our citizens against Marauder tyranny.\""
-						)
-					(cat "\n\nThe minister from Kinder's Star reads a bill commemorating the death of "
-						"Militia Colonel Simon Francis Jezerski, who was killed in the line of duty in "
-						"a confrontation with the Death Drugs Cartel."
-						)
-					(cat "The minister from Numerianus speaks in the Center Well:\n\n"
-						"\"My fellow citizens, if compassion is not enough to compel you to vote for "
-						"this bill, then consider the risk that we take by opposing it. If we do not provide "
-						"a safe home for our zoanthrope brethren then the Dwarg will happily exploit them."
-						)
-					)
-			</ParliamentDebate>
-		</StaticData>
-
 		<Events>
 			<OnCreate>
 				(block Nil
@@ -408,12 +376,84 @@
 						)
 					)
 			</OnTrafficControl>
+
+			<GetRumors>
+				(append
+					(rpgRumorAdd 'stKatsParliament (make 'sequence 1 5) 20)
+					)
+			</GetRumors>
 		</Events>
         
         <Language>
             <Text id="core.mapDescMain">
                 "Capital of the Commonwealth"
             </Text>
+
+			<Text id="rumor.stKatsParliament.1">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+				
+				The minister from Zhang Li makes an impassioned appeal for a 
+				bill funding the construction of three new Commonwealth Star 
+				Carriers.
+
+				She shows pictures of refugees displaced by the Ares, but the 
+				chamber is nearly empty and her energy fades in mid-speech.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.2">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The chamber is nearly full as ministers debate a bill calling 
+				for material support to the Huari people. Those in favor cite 
+				the cruel treatment the Huari have received under the Sung 
+				Slavers.
+				
+				Those opposed recall that the Huari themselves were once 
+				aggressors who killed Commonwealth settlers in the Ungoverned 
+				Territories.
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.3">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from 70 Ophiuchi speaks in the Center Well:
+
+				"...and so I urge my fellow ministers to meet this challenge. 
+				With the appropriations of CP1175 we can finally provide enough 
+				resources to the Militia in order to secure the safety of our 
+				citizens against Marauder tyranny."
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.4">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Kinder's Star reads a bill commemorating the 
+				death of Militia Colonel Simon Francis Jezerski, who was killed 
+				in the line of duty in a confrontation with the Death Drugs 
+				Cartel.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.5">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Numerianus speaks in the Center Well:
+
+				"My fellow citizens, if compassion is not enough to compel you 
+				to vote for this bill, then consider the risk that we take by 
+				opposing it. If we do not provide a safe home for our zoanthrope
+				brethren then the Dwarg will happily exploit them."
+				
+			</Text>
         </Language>
 	</StationType>
 	
@@ -868,51 +908,6 @@
 			<Lookup count="1d4" table="&tbCommPrivateCrafts;"/>
 		</Ships>
 		
-		<StaticData>
-			<BarEncounter>
-				(
-					(cat "You talk to a pilgrim from Eridani:\n\n"
-						"\"Other pilgrims say that the way to the Core is blocked! "
-						"The Iocrym have trapped us in Human Space! Why does Domina call us? Why? "
-						"Is it all some sick joke?\""
-						)
-					(cat "You sit next to a couple of tourists:\n\n"
-						"\"We don't need aliens interfering in our affairs, you know? How would they "
-						"feel if we started flying around their worlds? I'm glad they're gone!\""
-						)
-					(cat "At the bar you talk with a young researcher who studies the Iocrym:\n\n"
-						"\"You wanna hear something that's not on the guided tour? We never actually "
-						"saw the Iocrym. I mean, we never saw the aliens themselves\x97we communicated with "
-						"their ships. But were we talking to them? Or were we talking to an AI? "
-						"We still don't know.\""
-						)
-					(cat "You talk to a pilgrim from Cairn:\n\n"
-						"\"Domina has a plan and I'm sure that the Iocrym are a part of it.\""
-						)
-					(cat "You sit next to two young men from New Victoria:\n\n"
-						"\"We're idiots if we trust the Iocrym. I bet they're preparing for an invasion "
-						"right now! Why else would they be gone so long? We have to be ready!\""
-						)
-					(if (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
-						(cat "You talk to a scientist from New Victoria:\n\n"
-							"\"So you're a pilgrim, huh? Well don't get too excited about getting to the Core. "
-							"I have a couple of friends in the Heretic system who say that the way is blocked. "
-							"Nobody knows why, but the Iocrym don't want us to leave.\""
-							)
-						(cat "You talk to a scientist from New Victoria:\n\n"
-							"\"I have a couple of friends in the Heretic system who say Human Space has been quarantined. "
-							"Nobody knows why, but the Iocrym don't want us to leave.\""
-							)
-						)
-					(cat "You sit next to a young man in a fancy corporate suit:\n\n"
-						"\"When the Iocrym return they will teach us how to live in peace. Why are humans "
-						"always trying to kill each other? The Ancient Races of the Galaxy have lived in "
-						"peace for millions of years! We should listen to them.\""
-						)
-					)
-			</BarEncounter>
-		</StaticData>
-		
 		<DockScreens>
 			<Main>
 				<Panes>
@@ -990,7 +985,13 @@
 								(if (geq (plyGetCredits gPlayer) 10)
 									(block Nil
 										(plyCharge gPlayer 10)
-										(scrShowPane gScreen "Story")
+										(rpgMissionAssignment {
+											missionCriteria: "n +iocrymMonumentPub; =4;"
+											noMissionTextID: 'descNoRumors
+											actionDoneID: 'actionLeave
+											maxPerStation: 1
+											rumorInterval: 1800
+											})
 										)
 									(scrShowPane gScreen "NoMoney")
 									)
@@ -1001,23 +1002,7 @@
 							</Action>
 						</Actions>
 					</Pub>
-					
-					<Story>
-						<OnPaneInit>
-							(scrSetDesc gScreen
-								(cat (eval (intRandomMessage gSource "BarEncounter"))
-									"\n\nYou settle the 10 credit bill and call it a night."
-									)
-								)
-						</OnPaneInit>
-						
-						<Actions>
-							<Action id="actionLeave" default="1" cancel="1">
-								<ShowPane pane="Default"/>
-							</Action>
-						</Actions>
-					</Story>
-					
+
 					<NoMoney descID="descNoMoney">
 						<Actions>
 							<Action id="actionLeave" default="1" cancel="1">
@@ -1039,6 +1024,18 @@
 			<Port x="92"	y="-33" />
 			<Port x="42"	y="-85" />
 		</DockingPorts>
+
+		<Events>
+			<GetRumors>
+				(append
+					(rpgRumorAdd 'iocrymMonumentPub (make 'sequence 1 6) 20)
+					(if (eq (objGetProperty gPlayerShip 'characterClass) &unidPilgrimClass;)
+						(rpgRumorAdd 'iocrymMonumentPub 'pilgrim.1 20)
+						(rpgRumorAdd 'iocrymMonumentPub 'quarantine.1 20)
+						)
+					)
+			</GetRumors>
+		</Events>
         
         <Language>
 			<Text id="actionInformation">[I]nformation</Text>
@@ -1114,6 +1111,101 @@
 				join our alien brethren as equals.
 
 			</Text>
+			<Text id="rumor.iocrymMonumentPub.1">
+
+				You talk to a pilgrim from Eridani:
+
+				"Other pilgrims say that the way to the Core is blocked! The 
+				Iocrym have trapped us in Human Space! Why does Domina call us? 
+				Why? Is it all some sick joke?"
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.2">
+
+				You sit next to a couple of tourists:
+
+				"We don't need aliens interfering in our affairs, you know? How
+				would they feel if we started flying around their worlds? I'm 
+				glad they're gone!"
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.3">
+
+				At the bar you talk with a young researcher who studies the 
+				Iocrym:
+
+				"You wanna hear something that's not on the guided tour? We 
+				never actually saw the Iocrym. I mean, we never saw the aliens 
+				themselves&mdash;we communicated with their ships. But were we 
+				talking to them? Or were we talking to an AI?
+
+				"We still don't know."
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.4">
+
+				You talk to a pilgrim from Cairn:
+				
+				"Domina has a plan and I'm sure that the Iocrym are a part of 
+				it."
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.5">
+
+				You sit next to two young men from New Victoria:
+
+				"We're idiots if we trust the Iocrym. I bet they're preparing 
+				for an invasion right now! Why else would they be gone so long? 
+				We have to be ready!"
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.6">
+
+				You sit next to a young man in a fancy corporate suit:
+
+				"When the Iocrym return they will teach us how to live in peace.
+				Why are humans always trying to kill each other? The Ancient 
+				Races of the Galaxy have lived in peace for millions of years!
+				We should listen to them."
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.pilgrim.1">
+
+				You talk to a scientist from New Victoria:
+
+				"So you're a pilgrim, huh? Well don't get too excited about 
+				getting to the Core. I have a couple of friends in the Heretic 
+				system who say that the way is blocked.
+
+				"Nobody knows why, but the Iocrym don't want us to leave."
+
+				You spend 10 credits on drinks.
+
+			</Text>
+			<Text id="rumor.iocrymMonumentPub.quarantine.1">
+
+				You talk to a scientist from New Victoria:
+
+				"I have a couple of friends in the Heretic system who say Human 
+				Space has been quarantined. Nobody knows why, but the Iocrym 
+				don't want us to leave."
+
+				You spend 10 credits on drinks.
+
+			</Text>
+
 			<Text id="descPub">
 
 				You are in a large restaurant and bar filled with monument visitors.
@@ -1123,6 +1215,11 @@
 
 				You hang around for a while, but you have no money to buy drinks.
 
+			</Text>
+			<Text id="descNoRumors">
+
+				You spend 10 credits on food and drinks.
+			
 			</Text>
 
 			<Text id="core.mapDesc">
@@ -1208,7 +1305,14 @@
 			<Default descID="descParliamentQuarter">
 				<Actions>
 					<Action id="actionParliament" default="1">
-						<ShowPane pane="Parliament"/>
+						(rpgMissionAssignment {
+							missionCriteria: "n +stKatsParliament; =4;"
+							displayCriteria: "n +stKatsParliament;"
+							noMissionTextID: 'descParliamentEmpty
+							maxPerStation: (+ 3 (modulo (objGetDestiny gSource) 3))
+							intervalPerStation: (random 2400 3600)
+							rumorInterval: 1800
+							})
 					</Action>
 					
 					<Action id="actionMilitia">
@@ -1234,22 +1338,6 @@
 					</Action>
 				</Actions>
 			</Default>
-			
-			<Parliament>
-				<OnPaneInit>
-					(scrSetDesc gScreen
-						"You enter a beautiful hall in which ministers from all over the "
-						"Commonwealth gather to legislate and debate."
-						(eval (intRandomMessage gSource "ParliamentDebate"))
-						)
-				</OnPaneInit>
-				
-				<Actions>
-					<Action id="actionLeave" default="1" cancel="1">
-						<ShowPane pane="Default"/>
-					</Action>
-				</Actions>
-			</Parliament>
 		</Panes>
 
 		<Language>
@@ -1259,8 +1347,17 @@
 
 			<Text id="descParliamentQuarter">
 
-				You are in the Parliament Quarter. Well-dressed men and women walk along the wide avenues of the quarter,
-				making their way to jobs in Commonwealth government.
+				You are in the Parliament Quarter. Well-dressed men and women 
+				walk along the wide avenues of the quarter,	making their way to
+				jobs in Commonwealth government.
+
+			</Text>
+			<Text id="descParliamentEmpty">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The hall is currently empty.
 
 			</Text>
 			<String id="descNoMissions">
@@ -1270,12 +1367,14 @@
 			</String>
 			<String id="descTooManyFailures">
 			
-				"How about getting us a cup of tea or something? That's probably a mission you could handle."
+				"How about getting us a cup of tea or something? That's probably
+				a mission you could handle."
 				
 			</String>
 			<Text id="descAccessDenied">
 
-				Two guards flank the door to the Headquarters. One of them checks your ID against a computer list:
+				Two guards flank the door to the Headquarters. One of them 
+				checks your ID against a computer list:
 
 				"Sorry, %sir%, only experienced captains are allowed inside."
 

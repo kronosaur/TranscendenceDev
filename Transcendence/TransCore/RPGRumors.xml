@@ -181,6 +181,9 @@
 				;
 				;		actionDoneID: Action ID to use for the done button (defaults to
 				;				'actionContinue).
+				;
+				;		rumorInterval: If non-nil, then we keep the same rumor for 
+				;				the given number of ticks.
 
 				(block (
 					;	
@@ -218,7 +221,7 @@
 								(typFireEvent theType 'GetGlobalRumors eventData)
 								)
 							)
-						(map (sysFindObject Nil "AT") 'excludeNil theObj
+						(map (sysFindObject Nil "ATV") 'excludeNil theObj
 							(setRumorDefaults
 								{	sourceObj: theObj	}
 								(objFireEvent theObj 'GetRumors eventData)
@@ -245,11 +248,24 @@
 
 					;	Chance of rumor being selected is proportional to its priority
 					;	If all priorities are equal this is equivalent to (random rumorList)
-					(theRoll (random 1 (+ (map filteredRumors theRumor (or (@ theRumor 'priority) 10)))))
+					(maxRoll
+						(+ (map filteredRumors theRumor (or (@ theRumor 'priority) 10)))
+						)
+
+					(theRoll 
+						(switch
+							(gr (@ options 'rumorInterval) 0)
+								(seededRandom (* (objGetProperty gSource 'destiny) (divide (unvGetTick) (@ options 'rumorInterval))) 1 maxRoll)
+
+							(random 1 maxRoll)
+							)
+						)
+
 					(theRumor (match filteredRumors theRumor
 						(ls (setq theRoll (- theRoll (or (@ theRumor 'priority) 10))) 1)
 						))
 					)
+
 					(if (@ options 'debug)
 						(block ()
 							(dbgOutput "All: " allRumors)
