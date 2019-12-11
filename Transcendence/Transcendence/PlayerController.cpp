@@ -2848,7 +2848,19 @@ void CPlayerShipController::Undock (void)
 	{
 	if (m_pStation)
 		{
-		m_pShip->Undock();
+		//	If we're docked, then let the ship undock us.
+
+		if (m_pShip->GetDockedObj())
+			m_pShip->Undock();
+
+		//	Otherwise, we're in the middle of docking, so tell the station to
+		//	cancel docking (the ship does not yet have m_pDocked set).
+
+		else
+			m_pStation->Undock(m_pShip);
+
+		//	Done
+
 		m_pStation = NULL;
 		}
 	}
