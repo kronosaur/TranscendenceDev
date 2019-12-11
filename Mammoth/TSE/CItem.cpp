@@ -2457,6 +2457,11 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
 	}
 
+bool CItem::IsExtraEmpty (DWORD dwFlags)
+	{
+	return !m_pExtra || IsExtraEmpty(m_pExtra, dwFlags, GetUniverse().GetTicks());
+	}
+
 bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const
 
 //	IsExtraEqual

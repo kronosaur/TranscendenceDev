@@ -5422,6 +5422,9 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					break;
 				}
 
+			if (Item.IsExtraEmpty())
+				Item.ClearExtra();
+
 			return CreateListFromItem(Item);
 			}
 
