@@ -62,6 +62,7 @@
 #define VARIANTS_TABLE_TAG				CONSTLIT("VariantTable")
 #define Z_ADJUST_TAG					CONSTLIT("ZAdjust")
 
+#define ALLOW_3D_LOCATIONS_ATTRIB		CONSTLIT("allow3DLocations")
 #define ANGLE_ATTRIB					CONSTLIT("angle")
 #define ANGLE_ADJ_ATTRIB				CONSTLIT("angleAdj")
 #define ANGLE_INC_ATTRIB				CONSTLIT("angleInc")
@@ -83,7 +84,6 @@
 #define ENCOUNTERS_ATTRIB				CONSTLIT("encountersCount")
 #define ERODE_ATTRIB					CONSTLIT("erode")
 #define EVENT_HANDLER_ATTRIB			CONSTLIT("eventHandler")
-#define EXCLUDE_LOCATIONS_ATTRIB		CONSTLIT("excludeLocations")
 #define EXCLUSION_RADIUS_ATTRIB			CONSTLIT("exclusionRadius")
 #define GAP_WIDTH_ATTRIB				CONSTLIT("gapWidth")
 #define ID_ATTRIB						CONSTLIT("id")
@@ -1076,6 +1076,7 @@ ALERROR CreateLabel (SSystemCreateCtx *pCtx,
 	if (pCtx->ZAdjust.bIgnoreLocations)
 		{
 		LocationOrbit.SetInclination(0.0);
+		LocationOrbit.SetFocus(LocationOrbit.GetFocus());
 		}
 
 	//	Options
@@ -3155,7 +3156,7 @@ ALERROR CreateZAdjust (SSystemCreateCtx *pCtx, CXMLElement *pDesc, const COrbit 
 	pCtx->ZAdjust.ZOffset.LoadFromXML(pDesc->GetAttribute(Z_OFFSET_ATTRIB));
 	pCtx->ZAdjust.rScale = GetScale(pDesc);
 
-	pCtx->ZAdjust.bIgnoreLocations = pDesc->GetAttributeBool(EXCLUDE_LOCATIONS_ATTRIB);
+	pCtx->ZAdjust.bIgnoreLocations = !pDesc->GetAttributeBool(ALLOW_3D_LOCATIONS_ATTRIB);
 
 	//	Create all objects.
 
