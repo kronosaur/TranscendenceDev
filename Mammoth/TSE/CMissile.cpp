@@ -1323,10 +1323,15 @@ void CMissile::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 					bDestroy = (m_iHitPoints == 0);
 					}
 
-				//	Set the missile to destroy itself after a hit, if we did not
-				//	pass through
+				//	If we have passthrough and we did not reflect, then we 
+				//	continue without being destroyed.
 
-				else if (!m_fPassthrough)
+				else if (m_fPassthrough && !DamageCtx.IsShotReflected())
+					{ }
+
+				//	Otherwise, missile is destroyed on hit
+
+				else
 					bDestroy = true;
 				}
 			}
