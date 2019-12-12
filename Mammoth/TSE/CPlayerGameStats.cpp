@@ -1422,7 +1422,11 @@ void CPlayerGameStats::OnObjDestroyedByPlayer (const SDestroyCtx &Ctx, CSpaceObj
 			{
 			pStats->iEnemyDestroyed++;
 
-			m_iScore += pClass->GetScore();
+			//	Adjust score for difficulty
+
+			int iScore = Max(1, mathRound(pClass->GetScore() * m_Universe.GetDifficulty().GetScoreAdj()));
+
+			m_iScore += iScore;
 			}
 		else
 			pStats->iFriendDestroyed++;
