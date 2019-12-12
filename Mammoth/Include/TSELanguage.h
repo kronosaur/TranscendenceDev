@@ -43,6 +43,7 @@ enum NounPhraseFlags
 	nounNoDeterminer		= 0x00040000,	//	No count or article, but pluralize if count > 1
 	nounNoQuotes			= 0x00080000,	//	Convert double-quotes to single-quotes (for use inside quoted text)
 	nounEscapeQuotes		= 0x00100000,	//	Convert double-quotes to escaped double-quotes
+	nounHUDName				= 0x00200000,	//  Name to be displayed on the HUD
 	};
 
 class CLanguage
