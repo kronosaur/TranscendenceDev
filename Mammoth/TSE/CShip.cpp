@@ -859,7 +859,7 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 			if (iSlotToReplace == -1
 					|| (iThisType > iBestType)
-					|| (iThisType == iBestType && iThisLevel > iBestLevel))
+					|| (iThisType == iBestType && iThisLevel < iBestLevel))
 				{
 				iSlotToReplace = Device.GetDeviceSlot();
 				iBestType = iThisType;
