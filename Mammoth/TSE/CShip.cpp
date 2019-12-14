@@ -842,9 +842,9 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 			int iThisLevel = Device.GetLevel();
 
-			//	We never recommend replacing the same item
+			//	We never recommend replacing an identical item
 
-			if (Device.GetClass() == Item.GetType()->GetDeviceClass())
+			if (Item.IsEqual(DeviceItem, CItem::FLAG_IGNORE_INSTALLED))
 				continue;
 
 			//	See if uninstalling this device would be enough; if not, then
