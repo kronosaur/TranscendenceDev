@@ -15,7 +15,8 @@ const int ITEM_TEXT_MARGIN_BOTTOM =				10;
 
 CGItemDisplayArea::CGItemDisplayArea (void) :
 		m_pSource(NULL),
-        m_rgbTextColor(255, 255, 255)
+        m_rgbTextColor(255, 255, 255),
+		m_ItemPainter(g_pHI->GetVisuals())
 
 //	CGItemDisplayArea constructor
 
@@ -41,8 +42,12 @@ int CGItemDisplayArea::Justify (const RECT &rcRect)
 
 	if (m_Item.GetType())
 		{
-		CUIHelper UIHelper(*g_pHI);
-		return (2 * PADDING) + UIHelper.CalcItemEntryHeight(m_pSource, m_Item, rcInner, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE);
+		CItemPainter::SOptions Options;
+		Options.bNoIcon = true;
+		Options.bTitle = true;
+		m_ItemPainter.Init(m_Item, RectWidth(rcInner), Options);
+
+		return (2 * PADDING) + m_ItemPainter.GetHeight();
 		}
 
 	//	Otherwise, we expect a title and description
@@ -107,8 +112,7 @@ void CGItemDisplayArea::Paint (CG32bitImage &Dest, const RECT &rcRect)
 
 	if (m_Item.GetType())
 		{
-		CUIHelper UIHelper(*g_pHI);
-		UIHelper.PaintItemEntry(Dest, m_pSource, m_Item, rcInner, m_rgbTextColor, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE);
+		m_ItemPainter.Paint(Dest, rcInner.left, rcInner.top, m_rgbTextColor);
 		}
 
 	//	Paint title and text

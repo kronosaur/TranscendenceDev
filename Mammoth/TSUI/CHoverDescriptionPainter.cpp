@@ -154,22 +154,19 @@ void CHoverDescriptionPainter::PaintItem (CG32bitImage &Dest) const
 //	Paint an item description
 
 	{
-	CUIHelper Helper(*g_pHI);
+	CItemPainter Painter(g_pHI->GetVisuals());
 
-	//	Compute the size of the content
-	
-	RECT rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = m_cxWidth - (DEFAULT_PADDING_LEFT + DEFAULT_PADDING_RIGHT);
-	rcRect.bottom = 1000;
+	CItemPainter::SOptions Options;
+	Options.bNoIcon = true;
+	Options.bTitle = true;
+	Options.bNoPadding = true;
 
-	int cyContent = Helper.CalcItemEntryHeight(NULL, m_Item, rcRect, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE | CUIHelper::OPTION_NO_PADDING);
+	Painter.Init(m_Item, m_cxWidth - (DEFAULT_PADDING_LEFT + DEFAULT_PADDING_RIGHT), Options);
 
 	//	Figure out the position of the outer and inner rects based on our width
 	//	and height.
 
-	InitRects(m_cxWidth, DEFAULT_PADDING_TOP + cyContent + DEFAULT_PADDING_BOTTOM);
+	InitRects(m_cxWidth, DEFAULT_PADDING_TOP + Painter.GetHeight() + DEFAULT_PADDING_BOTTOM);
 
 	//	Paint the background
 
@@ -177,7 +174,7 @@ void CHoverDescriptionPainter::PaintItem (CG32bitImage &Dest) const
 
 	//	Paint the item
 
-	Helper.PaintItemEntry(Dest, NULL, m_Item, m_rcText, m_rgbTitle, CUIHelper::OPTION_NO_ICON | CUIHelper::OPTION_TITLE | CUIHelper::OPTION_NO_PADDING);
+	Painter.Paint(Dest, m_rcText.left, m_rcText.top, m_rgbTitle);
 	}
 
 void CHoverDescriptionPainter::PaintText (CG32bitImage &Dest) const

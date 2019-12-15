@@ -114,6 +114,8 @@ class CCartoucheBlock
 		void AddCartouche (const CString &sText, CG32bitPixel rgbColor, CG32bitPixel rgbBack);
 		void Format (int cxWidth);
 		RECT GetBounds (void) const;
+		int GetHeight (void) const { return m_cyHeight; }
+		bool IsEmpty (void) const { return m_Data.GetCount() == 0; }
 		void Paint (CG32bitImage &Dest, int x, int y) const;
 		void SetFont (const CG16bitFont *pFont) { if (m_pFont != pFont) { m_pFont = pFont; Invalidate(); } }
 
