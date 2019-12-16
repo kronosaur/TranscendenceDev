@@ -1909,7 +1909,7 @@
 							;	Ask the object if we can install the item
 
 							(setq returnValue (objCanInstallItem targetObj thisItem recommendedSlot))
-							(if debug (dbgOutput (cat "returnValue = (" (join (map returnValue entry (or entry "Nil")) " ") ")" )))
+							(if debug (dbgOutput (cat "returnValue = " returnValue)))
 							(setq resultCode (@ returnValue 1))
 							(setq resultMessage (@ returnValue 2))
 							(setq itemToReplace (@ returnValue 3))
