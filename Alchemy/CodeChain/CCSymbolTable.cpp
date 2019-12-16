@@ -574,7 +574,7 @@ ICCItem *CCSymbolTable::LookupByOffset (CCodeChain *pCC, int iOffset)
 		return pCC->CreateErrorCode(CCRESULT_NOTFOUND);
 	}
 
-CString CCSymbolTable::Print (DWORD dwFlags)
+CString CCSymbolTable::Print (DWORD dwFlags) const
 
 //	Print
 //
