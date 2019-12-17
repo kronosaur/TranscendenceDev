@@ -97,6 +97,8 @@ void OpenGLContext::setBlendMode ()
 	{
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_DEPTH_TEST);
+
 	}
 
 void OpenGLContext::prepSquareCanvas ()
@@ -104,8 +106,8 @@ void OpenGLContext::prepSquareCanvas ()
 	// Prepare the background canvas.
 	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 	Shader* pTestShader = new Shader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
-	float fSize = 0.5f;
-	float posZ = 0.0f;
+	float fSize = 1.0f;
+	float posZ = 0.9999f;
 
 	std::vector<float> vertices {
 		fSize, fSize, posZ,
@@ -239,7 +241,7 @@ void OpenGLContext::testShaders ()
 																				// glm::mat4(1.0f) seems to make an identity matrix?
 																				// View matrix translates 5 units back into the scene
 
-	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 	// Model matrix rotates by 45 degrees
 	static float rotation = 0.0f;
 	glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -289,7 +291,7 @@ void OpenGLContext::testTextures (OpenGLTexture* texture)
 																				// glm::mat4(1.0f) seems to make an identity matrix?
 																				// View matrix translates 5 units back into the scene
 
-	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+	glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	// Model matrix rotates by 45 degrees
 	static float rotation = 180.0f;
 	glm::mat4 modelMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));

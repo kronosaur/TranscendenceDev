@@ -1,10 +1,15 @@
 #include "OpenGL.h"
 #include "PreComp.h"
 
+const float OpenGLMasterRenderQueue::m_fDepthDelta = 0.000001f; // Up to one million different depth levels
+const float OpenGLMasterRenderQueue::m_fDepthStart = 0.999f; // Up to one million different depth levels
+
 OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 {
 	// Initialize the VAO.
 	initializeVAO();
+	// Depth level starts at one minus the delta.
+	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
@@ -21,7 +26,7 @@ void OpenGLMasterRenderQueue::deinitVAO(void)
 	delete[] m_pVao;
 }
 
-void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight)
+void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, float alphaStrength)
 	{
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
@@ -42,7 +47,8 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		m_shipRenderQueues[pTextureToUse] = new OpenGLInstancedRenderQueue();
 		}
 	// Add this quad to the render queue.
-	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth);
+	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, m_fDepthLevel, alphaStrength);
+	m_fDepthLevel -= m_fDepthDelta;
 	}
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
@@ -52,8 +58,11 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 	{
 		OpenGLTexture *pTextureToUse = p.first;
 		OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
+		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
 		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse);
 	}
+	// Reset the depth level.
+	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
 }
 
 void OpenGLMasterRenderQueue::initializeVAO(void)
@@ -63,7 +72,7 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	// TODO(heliogenesis): Allow passing in of the texture for loading. Maybe move
 	// this VAO to the parent class once it's done?
 	float fSize = 0.5f;
-	float posZ = 0.0f; // TODO(heliogenesis): Fix this
+	float posZ = 0.9f; // TODO(heliogenesis): Fix this
 
 	std::vector<float> vertices{
 		fSize, fSize, posZ,
@@ -91,7 +100,7 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	unsigned int iVAOID = m_pVao->getVAO()[0];
 	unsigned int *instancedVBO = m_pVao->getinstancedVBO();
 	glBindVertexArray(iVAOID);
-	glGenBuffers(4, &instancedVBO[0]);
+	glGenBuffers(6, &instancedVBO[0]);
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
 	glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
@@ -104,12 +113,20 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glEnableVertexAttribArray(4);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[3]);
 	glVertexAttribPointer((GLuint)4, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(5);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[4]);
+	glVertexAttribPointer((GLuint)5, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(6);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
+	glVertexAttribPointer((GLuint)6, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);
 	glVertexAttribDivisor(2, 1);
 	glVertexAttribDivisor(3, 1);
 	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
+	glVertexAttribDivisor(6, 1);
 	glBindVertexArray(0);
 }
 

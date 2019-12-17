@@ -1430,6 +1430,7 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 	if (m_pImage)
 		{
 		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
+		OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
 		if (pSource == NULL)
 			return;
 
@@ -1443,7 +1444,16 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
 			}
 
-		CGDraw::BltShimmer(Dest,
+		if (pRenderQueue)
+			{
+			int iCanvasHeight = Dest.GetHeight();
+			int iCanvasWidth = Dest.GetWidth();
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth,
+				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
+			}
+		else
+			{
+			CGDraw::BltShimmer(Dest,
 				x - (RectWidth(m_rcImage) / 2),
 				y - (RectHeight(m_rcImage) / 2),
 				*pSource,
@@ -1453,6 +1463,7 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 				RectHeight(m_rcImage),
 				(BYTE)byOpacity,
 				iTick);
+			}
 		}
 	}
 
