@@ -5,7 +5,7 @@
 
 #include "stdafx.h"
 
-int CItemPainter::CalcItemEntryHeight (int cxWidth)
+int CItemPainter::CalcItemEntryHeight (int cxWidth) const
 
 //	CalcItemEntryHeight
 //
@@ -18,36 +18,10 @@ int CItemPainter::CalcItemEntryHeight (int cxWidth)
 	const CG16bitFont &LargeBold = m_VI.GetFont(fontLargeBold);
 	const CG16bitFont &Medium = m_VI.GetFont(fontMedium);
 
-	//	Icons size
-
-	int cxIcon = (m_Options.bSmallIcon ? SMALL_ICON_WIDTH : ICON_WIDTH);
-	int cyIcon = (m_Options.bSmallIcon ? SMALL_ICON_HEIGHT : ICON_HEIGHT);
-
 	//	Get the item
 
 	CItemCtx Ctx(m_pItem, m_pItem->GetSource());
 	const CItemType &Type = *m_pItem->GetType();
-
-	//	Compute the rect where the reference text will paint
-
-	RECT rcDrawRect;
-	rcDrawRect.left = 0;
-	rcDrawRect.right = cxWidth;
-	rcDrawRect.top = 0;
-	rcDrawRect.bottom = ITEM_DEFAULT_HEIGHT;
-	if (!m_Options.bNoPadding)
-		{
-		rcDrawRect.left += ITEM_TEXT_MARGIN_X;
-		rcDrawRect.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
-		}
-
-	if (!m_Options.bNoIcon)
-		{
-		if (m_Options.bNoPadding)
-			rcDrawRect.left += cxIcon + ITEM_TEXT_MARGIN_X;
-		else
-			rcDrawRect.left += ITEM_LEFT_PADDING + cxIcon;
-		}
 
 	//	Compute the height of the row
 
@@ -65,15 +39,8 @@ int CItemPainter::CalcItemEntryHeight (int cxWidth)
 
 	//	Attributes
 
-	TArray<SDisplayAttribute> Attribs;
-	if (m_pItem->GetDisplayAttributes(&Attribs, NULL, m_Options.bDisplayAsKnown))
-		{
-		int cyAttribs;
-		FormatDisplayAttributes(m_VI, Attribs, rcDrawRect, m_AttribBlock, &cyAttribs);
-		cyHeight += cyAttribs + ATTRIB_SPACING_Y;
-		}
-	else
-		m_AttribBlock = CCartoucheBlock();
+	if (!m_AttribBlock.IsEmpty())
+		cyHeight += m_AttribBlock.GetHeight() + ATTRIB_SPACING_Y;
 
 	//	Reference
 
@@ -90,19 +57,24 @@ int CItemPainter::CalcItemEntryHeight (int cxWidth)
 	else if (m_pItem->GetReferenceDamageAdj(m_pItem->GetSource(), dwRefFlags, NULL, NULL))
 		cyHeight += Medium.GetHeight();
 
+	//	Launchers
+
+	if (!m_Launchers.IsEmpty())
+		cyHeight += m_Launchers.GetHeight();
+
 	//	Measure the reference text
 
 	int iLines;
 	if (!sReference.IsBlank())
 		{
-		iLines = Medium.BreakText(sReference, RectWidth(rcDrawRect), NULL, 0);
+		iLines = Medium.BreakText(sReference, RectWidth(m_rcDraw), NULL, 0);
 		cyHeight += iLines * Medium.GetHeight();
 		}
 
 	//	Measure the description
 
 	CString sDesc = m_pItem->GetDesc(m_Options.bDisplayAsKnown);
-	iLines = Medium.BreakText(sDesc, RectWidth(rcDrawRect), NULL, 0);
+	iLines = Medium.BreakText(sDesc, RectWidth(m_rcDraw), NULL, 0);
 	cyHeight += iLines * Medium.GetHeight();
 
 	//	Margin
@@ -110,7 +82,7 @@ int CItemPainter::CalcItemEntryHeight (int cxWidth)
 	cyHeight += (m_Options.bNoPadding ? 0 : ITEM_TEXT_MARGIN_BOTTOM);
 
 	if (!m_Options.bNoIcon)
-		cyHeight = Max(cyIcon, cyHeight);
+		cyHeight = Max(m_cyIcon, cyHeight);
 
 	//	Enhancements
 
@@ -180,6 +152,41 @@ void CItemPainter::FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDi
 		*retcyHeight = RectHeight(retBlock.GetBounds());
 	}
 
+void CItemPainter::FormatLaunchers (const CVisualPalette &VI, const CMissileItem &MissileItem, const TArray<CItem> &Launchers, const RECT &rcRect, CIconLabelBlock &retLaunchers)
+
+//	FormatLaunchers
+//
+//	Format the list of launchers for this missile.
+
+	{
+	retLaunchers.DeleteAll();
+
+	for (int i = 0; i < Launchers.GetCount(); i++)
+		{
+		const CItem &Launcher = Launchers[i];
+		CIconLabelBlock::SLabelDesc NewEntry;
+
+		//	Generate a launcher icon.
+
+		const CObjectImageArray &Image = Launchers[i].GetImage();
+		NewEntry.pIcon = TSharedPtr<CG32bitImage>(new CG32bitImage);
+		NewEntry.pIcon->Create(LAUNCHER_ICON_WIDTH, LAUNCHER_ICON_HEIGHT, CG32bitImage::alpha8, CG32bitPixel::Null());
+		Image.PaintScaledImage(*NewEntry.pIcon, 0, 0, 0, 0, LAUNCHER_ICON_WIDTH, LAUNCHER_ICON_HEIGHT, CObjectImageArray::FLAG_UPPER_LEFT);
+
+		//	Add the text
+
+		NewEntry.sText = MissileItem.GetLaunchedByText(Launcher);
+
+		//	Add it
+
+		NewEntry.bNewLine = true;
+		retLaunchers.Add(NewEntry);
+		}
+
+	retLaunchers.SetFont(VI.GetFont(fontMedium));
+	retLaunchers.Format(RectWidth(rcRect));
+	}
+
 void CItemPainter::Init (const CItem &Item, int cxWidth, const SOptions &Options)
 
 //	Init
@@ -187,11 +194,67 @@ void CItemPainter::Init (const CItem &Item, int cxWidth, const SOptions &Options
 //	Initializes the painter with the given item and options.
 
 	{
+	if (Item.IsEmpty())
+		{
+		ASSERT(false);
+		return;
+		}
+
 	m_pItem = &Item;
 	m_Options = Options;
-
 	m_cxWidth = cxWidth;
+
+	InitMetrics(cxWidth);
+
+	//	Initialize attributes
+
+	TArray<SDisplayAttribute> Attribs;
+	if (m_pItem->GetDisplayAttributes(&Attribs, NULL, m_Options.bDisplayAsKnown))
+		FormatDisplayAttributes(m_VI, Attribs, m_rcDraw, m_AttribBlock);
+	else
+		m_AttribBlock = CCartoucheBlock();
+
+	//	Init launcher lines
+
+	m_Launchers = CIconLabelBlock();
+	if (m_Options.bDisplayAsKnown || Item.IsKnown())
+		{
+		if (const CMissileItem MissileItem = Item.AsMissileItem())
+			FormatLaunchers(m_VI, MissileItem, MissileItem.GetLaunchWeapons(), m_rcDraw, m_Launchers);
+		}
+
+	//	Compute height
+
 	m_cyHeight = CalcItemEntryHeight(cxWidth);
+	}
+
+void CItemPainter::InitMetrics (int cxWidth)
+
+//	InitMetrics
+//
+//	Initializes rects and metrics
+
+	{
+	m_cxIcon = (m_Options.bSmallIcon ? SMALL_ICON_WIDTH : ICON_WIDTH);
+	m_cyIcon = (m_Options.bSmallIcon ? SMALL_ICON_HEIGHT : ICON_HEIGHT);
+
+	m_rcDraw.left = 0;
+	m_rcDraw.right = cxWidth;
+	m_rcDraw.top = 0;
+	m_rcDraw.bottom = ITEM_DEFAULT_HEIGHT;
+	if (!m_Options.bNoPadding)
+		{
+		m_rcDraw.left += ITEM_TEXT_MARGIN_X;
+		m_rcDraw.right -= ITEM_TEXT_MARGIN_X + ITEM_RIGHT_PADDING;
+		}
+
+	if (!m_Options.bNoIcon)
+		{
+		if (m_Options.bNoPadding)
+			m_rcDraw.left += m_cxIcon + ITEM_TEXT_MARGIN_X;
+		else
+			m_rcDraw.left += ITEM_LEFT_PADDING + m_cxIcon;
+		}
 	}
 
 void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor, DWORD dwOptions) const
@@ -422,6 +485,14 @@ void CItemPainter::Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbText
 				&cyHeight);
 
 		rcDrawRect.top += cyHeight;
+		}
+
+	//	Launchers
+
+	if (!m_Launchers.IsEmpty())
+		{
+		m_Launchers.Paint(Dest, rcDrawRect.left, rcDrawRect.top, rgbTextColor);
+		rcDrawRect.top += m_Launchers.GetHeight();
 		}
 
 	//	Description

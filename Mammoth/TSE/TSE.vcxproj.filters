@@ -1387,5 +1387,8 @@
     <ClCompile Include="CPaintOrder.cpp">
       <Filter>Source Files\Painting</Filter>
     </ClCompile>
+    <ClCompile Include="CMissileItem.cpp">
+      <Filter>Source Files\Items</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

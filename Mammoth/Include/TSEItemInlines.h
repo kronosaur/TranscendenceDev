@@ -22,6 +22,11 @@ inline CDeviceClass *CItem::GetDeviceClass (void) const
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
 	}
 
+inline const CObjectImageArray &CItem::GetImage (void) const
+	{
+	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
+	}
+
 inline bool CItem::HasAttribute (const CString &sAttrib) const
 	{
 	return (m_pItemType ? m_pItemType->HasLiteralAttribute(sAttrib): false);
@@ -35,6 +40,11 @@ inline bool CItem::IsArmor (void) const
 inline bool CItem::IsDevice (void) const
 	{
 	return (m_pItemType && m_pItemType->IsDevice());
+	}
+
+inline bool CItem::IsMissile (void) const
+	{
+	return (m_pItemType && m_pItemType->IsMissile());
 	}
 
 //	CItemType Inlines ----------------------------------------------------------
@@ -68,6 +78,11 @@ inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 		return *pCurrency;
 	else
 		return GetType().GetUniverse().GetCreditCurrency();
+	}
+
+inline const CObjectImageArray &CDifferentiatedItem::GetImage (void) const
+	{
+	return m_Item.GetImage();
 	}
 
 inline int CDifferentiatedItem::GetLevel (void) const
@@ -329,3 +344,11 @@ inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const
 	{
 	return m_List[iIndex].Item.GetType()->GetDeviceClass();
 	}
+
+//	CMissileItem Inlines -------------------------------------------------------
+
+inline CMissileItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
+

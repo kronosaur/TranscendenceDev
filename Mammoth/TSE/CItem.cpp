@@ -1549,7 +1549,7 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 
 	SEventHandlerDesc Event;
 	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetHUDName, &Event)
-		&& !(dwFlags & nounNoEvent) && (dwFlags & nounHUDName))
+			&& !(dwFlags & nounNoEvent) && (dwFlags & nounHUDName))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 

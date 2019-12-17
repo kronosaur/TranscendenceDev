@@ -75,6 +75,8 @@ class CItemPainter
 		static constexpr int ITEM_TEXT_MARGIN_X =				4;
 		static constexpr int ITEM_TEXT_MARGIN_BOTTOM =			10;
 		static constexpr int ITEM_TITLE_EXTRA_MARGIN =			4;
+		static constexpr int LAUNCHER_ICON_HEIGHT =				16;
+		static constexpr int LAUNCHER_ICON_WIDTH =				16;
 		static constexpr int SMALL_ICON_HEIGHT =				64;
 		static constexpr int SMALL_ICON_WIDTH =					64;
 
@@ -120,9 +122,11 @@ class CItemPainter
 		void Paint (CG32bitImage &Dest, int x, int y, CG32bitPixel rgbTextColor = RGB_NORMAL_TEXT, DWORD dwOptions = 0) const;
 
 	private:
-		int CalcItemEntryHeight (int cxWidth);
+		int CalcItemEntryHeight (int cxWidth) const;
+		void InitMetrics (int cxWidth);
 
-		static void FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight);
+		static void FormatDisplayAttributes (const CVisualPalette &VI, TArray<SDisplayAttribute> &Attribs, const RECT &rcRect, CCartoucheBlock &retBlock, int *retcyHeight = NULL);
+		static void FormatLaunchers (const CVisualPalette &VI, const CMissileItem &MissileItem, const TArray<CItem> &Launchers, const RECT &rcRect, CIconLabelBlock &retLaunchers);
 		static void PaintItemEnhancement (const CVisualPalette &VI, CG32bitImage &Dest, CSpaceObject *pSource, const CItem &Item, const CItemEnhancement &Enhancement, const RECT &rcRect, CG32bitPixel rgbText, int *retcyHeight = NULL);
 		static void PaintReferenceDamageAdj (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iLevel, int iHP, const int *iDamageAdj, CG32bitPixel rgbText);
 		static void PaintReferenceDamageType (const CVisualPalette &VI, CG32bitImage &Dest, int x, int y, int iDamageType, const CString &sRef, CG32bitPixel rgbText);
@@ -133,9 +137,15 @@ class CItemPainter
 
 		//	Computed after Init
 
+		CCartoucheBlock m_AttribBlock;		//	Formatted attributes
+		CIconLabelBlock m_Launchers;		//	Formatted list of launchers
+
 		int m_cxWidth = 0;
 		int m_cyHeight = 0;
-		CCartoucheBlock m_AttribBlock;
+
+		int m_cxIcon = 0;
+		int m_cyIcon = 0;
+		RECT m_rcDraw = { 0 };				//	Rect where text goes
 	};
 
 class CStargateEffectPainter

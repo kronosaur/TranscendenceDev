@@ -15,6 +15,12 @@ class CShipClass;
 //	CDifferentiatedItem and its subclasses are used to access functionality
 //	specific to armor, devices, etc.
 //
+//	WARNING: These classes are meant to be used as wrappers to an underlying
+//	CItem object. The lifetime of a CDifferentiatedItem is tied to the CItem 
+//	from which it came. Thus you cannot construct a CItem on the stack and 
+//	return a CDifferentiatedItem (because you'll end up with a reference to an
+//	invalid stack frame).
+//
 //	HACK: The pattern below does not deal with const properly. Consider using 
 //	the following pattern:
 //
@@ -48,6 +54,7 @@ class CDifferentiatedItem
 		inline int GetCharges (void) const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
+		inline const CObjectImageArray &GetImage (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
@@ -175,6 +182,27 @@ class CDeviceItem : public CDifferentiatedItem
 	friend class CItem;
 	};
 
+class CMissileItem : public CDifferentiatedItem
+	{
+	public:
+		
+		inline operator bool () const;
+		operator const CItem & () const { return m_Item; }
+		operator CItem & () { return m_Item; }
+
+		TArray<CItem> GetLaunchWeapons (void) const;
+		CString GetLaunchedByText (const CItem &Launcher) const;
+
+	private:
+		CMissileItem (CItem &Item) : CDifferentiatedItem(Item)
+			{ }
+
+		CMissileItem (const CItem &Item) : CDifferentiatedItem(Item)
+			{ }
+
+	friend class CItem;
+	};
+
 class CItem
 	{
 	public:
@@ -260,6 +288,7 @@ class CItem
 		CString GetEnhancedDesc (void) const;
 		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
+		inline const CObjectImageArray &GetImage (void) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
@@ -361,6 +390,12 @@ class CItem
 		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? *this : CItem::m_NullItem); }
 		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
 		CDeviceItem AsDeviceItemOrThrow (void) { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
+
+		inline bool IsMissile (void) const;
+		const CMissileItem AsMissileItem (void) const { return CMissileItem(IsMissile() ? *this : NullItem()); }
+		CMissileItem AsMissileItem (void) { return CMissileItem(IsMissile() ? *this : NullItem()); }
+		const CMissileItem AsMissileItemOrThrow (void) const { if (IsMissile()) return CMissileItem(*this); else throw CException(ERR_FAIL); }
+		CMissileItem AsMissileItemOrThrow (void) { if (IsMissile()) return CMissileItem(*this); else throw CException(ERR_FAIL); }
 
 		//	Item Criteria
 

@@ -247,11 +247,16 @@ bool CItemType::IsAmmunition (void) const
 	if (!IsMissile())
 		return false;
 
-	CDeviceClass *pWeapon;
-	if (!CDeviceClass::FindWeaponFor(const_cast<CItemType *>(this), &pWeapon))
-		return false;
+	//	If any of the weapons that launches is is a missile launcher, then we
+	//	count as a missile.
 
-	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
+	for (int i = 0; i < m_Weapons.GetCount(); i++)
+		if (m_Weapons[i]->GetItemType()->GetCategory() == itemcatLauncher)
+			return false;
+
+	//	Otherwise, we count as ammo
+
+	return true;
 	}
 
 void CItemType::CreateEmptyFlotsam (CSystem &System, 
@@ -1337,13 +1342,17 @@ bool CItemType::IsMissile (void) const
 
 //	IsMissile
 //
-//	Returns TRUE if this is a missile
+//	Returns TRUE if this is a missile/ammo fired by some weapon.
 
 	{
 	if (m_pMissile)
 		return true;
 
-	return HasLiteralAttribute(STR_MISSILE);
+	else if (m_Weapons.GetCount() > 0)
+		return true;
+
+	else
+		return HasLiteralAttribute(STR_MISSILE);
 	}
 
 bool CItemType::IsUnknownType (DWORD dwUNID, int *retiUnknownIndex) const
