@@ -2,7 +2,7 @@
 #include "PreComp.h"
 
 const float OpenGLMasterRenderQueue::m_fDepthDelta = 0.000001f; // Up to one million different depth levels
-const float OpenGLMasterRenderQueue::m_fDepthStart = 0.999f; // Up to one million different depth levels
+const float OpenGLMasterRenderQueue::m_fDepthStart = 0.999998f; // Up to one million different depth levels
 
 OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 {
@@ -47,8 +47,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		m_shipRenderQueues[pTextureToUse] = new OpenGLInstancedRenderQueue();
 		}
 	// Add this quad to the render queue.
-	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, m_fDepthLevel, alphaStrength);
-	m_fDepthLevel -= m_fDepthDelta;
+	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, alphaStrength);
 	}
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
@@ -59,7 +58,9 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		OpenGLTexture *pTextureToUse = p.first;
 		OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
-		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse);
+		float depthLevel = m_fDepthLevel;
+		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse, depthLevel, m_fDepthDelta);
+		m_fDepthLevel = depthLevel;
 	}
 	// Reset the depth level.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;

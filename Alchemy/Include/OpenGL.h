@@ -162,16 +162,17 @@ public:
 	OpenGLInstancedRenderQueue (void);
 	~OpenGLInstancedRenderQueue (void);
 	// TODO: Allow this function to take an array of textures.
-	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
+	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth);
 	void RenderNonInstanced (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
-	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth, float depth, float alphaStrength = 1.0f);
+	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth, float alphaStrength = 1.0f);
 	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
-	void setShader(Shader *shader) { m_pShader = shader; }
-	Shader* getShader(void) { return m_pShader; }
-	void setTexture(OpenGLTexture *texture) { m_pTexture = texture; }
-	OpenGLTexture* getTexture(void) { return m_pTexture; }
+	void setShader (Shader *shader) { m_pShader = shader; }
+	Shader* getShader (void) { return m_pShader; }
+	void setTexture (OpenGLTexture *texture) { m_pTexture = texture; }
+	OpenGLTexture* getTexture (void) { return m_pTexture; }
+	int getNumObjectsToRender (void) { return m_iNumObjectsToRender; }
 private:
 
 	int m_iNumObjectsToRender = 0;

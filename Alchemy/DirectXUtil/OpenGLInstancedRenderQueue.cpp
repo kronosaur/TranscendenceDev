@@ -41,11 +41,16 @@ void OpenGLInstancedRenderQueue::RenderNonInstanced(Shader *shader, OpenGLVAO *q
 	clear();
 	}
 
-void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture)
+void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth)
 	{
 	// TODO(heliogenesis): Allow usage of an array of textures.
 	if (m_iNumObjectsToRender > 0)
 		{
+		for (int i = 0; i < m_iNumObjectsToRender; i++)
+			{
+			m_depthsFloat.insert(m_depthsFloat.end(), startingDepth);
+			startingDepth -= incDepth;
+			}
 		unsigned int iVAOID = quad->getVAO()[0];
 		unsigned int *instancedVBO = quad->getinstancedVBO();
 		glBindVertexArray(iVAOID);
@@ -86,7 +91,7 @@ void OpenGLInstancedRenderQueue::clear(void)
 
 void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY,
 	int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight,
-	int canvasWidth, int texHeight, int texWidth, float depth, float alphaStrength)
+	int canvasWidth, int texHeight, int texWidth, float alphaStrength)
 	{
 	glm::vec2 texPos((float)startPixelX / (float)texWidth,
 		(float)startPixelY / (float)texHeight);
@@ -103,6 +108,6 @@ void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY
 	m_canvasPositionsFloat.insert(m_canvasPositionsFloat.end(), canvasPos);
 	m_textureSizesFloat.insert(m_textureSizesFloat.end(), texSize);
 	m_alphaStrengthsFloat.insert(m_alphaStrengthsFloat.end(), alphaStrength);
-	m_depthsFloat.insert(m_depthsFloat.end(), depth);
+	//m_depthsFloat.insert(m_depthsFloat.end(), depth);
 	m_iNumObjectsToRender++;
 	}

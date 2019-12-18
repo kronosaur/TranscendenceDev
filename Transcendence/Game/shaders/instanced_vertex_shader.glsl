@@ -27,6 +27,7 @@ void main(void)
 	vec2 texPos2d = vec2(aPos[0] * fixedTexSize[0], -aPos[1] * fixedTexSize[1]) + fixedTexPos + texPositionOffset;
 	
     gl_Position = vec4(pos2d, aDepth, 1.0);
+	depth = aDepth;
     texture_uv = texPos2d;
 	texture_pos = aTexPositions;
 	texture_size = fixedTexSize;

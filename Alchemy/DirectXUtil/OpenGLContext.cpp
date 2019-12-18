@@ -107,7 +107,7 @@ void OpenGLContext::prepSquareCanvas ()
 	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
 	Shader* pTestShader = new Shader("./shaders/texture_vertex_shader.glsl", "./shaders/texture_fragment_shader.glsl");
 	float fSize = 1.0f;
-	float posZ = 0.9999f;
+	float posZ = 0.999999f;
 
 	std::vector<float> vertices {
 		fSize, fSize, posZ,
