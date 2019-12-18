@@ -192,6 +192,15 @@ enum EDamageResults
 	damageResultCount =				11,
 	};
 
+enum class EDamageHint
+	{
+	none =							0,	//	No hint for player
+
+	useMiningOrWMD,						//	Use either mining or WMD
+	useMining,							//	Use mining weapons
+	useWMD,								//	Use WMD
+	};
+
 struct SDamageCtx
 	{
 	public:
@@ -210,6 +219,7 @@ struct SDamageCtx
 		void ClearTimeStop (void) { m_bTimeStop = false; }
 		int GetBlindTime (void) const { return m_iBlindTime; }
 		int GetDeviceDisruptTime (void) const { return m_iDisruptTime; }
+		EDamageHint GetHint (void) const { return m_iHint; }
 		CSpaceObject *GetOrderGiver (void) const { return Attacker.GetOrderGiver(); }
 		int GetParalyzedTime (void) const { return m_iParalyzeTime; }
 		bool IsBlinded (void) const { return m_bBlind; }
@@ -227,6 +237,7 @@ struct SDamageCtx
 		void SetDeviceDisrupted (bool bValue = true) { m_bDeviceDisrupt = bValue; }
 		void SetDeviceDisruptedTime (int iTime) { m_iDisruptTime = iTime; }
 		void SetDisintegrated (bool bValue = true) { m_bDisintegrate = bValue; }
+		void SetHint (EDamageHint iHint) { m_iHint = iHint; }
 		void SetParalyzed (bool bValue = true) { m_bParalyze = bValue; }
 		void SetParalyzedTime (int iTime) { m_iParalyzeTime = iTime; }
 		void SetRadioactive (bool bValue = true) { m_bRadioactive = bValue; }
@@ -269,6 +280,8 @@ struct SDamageCtx
 
 		SDamageCtx (const SDamageCtx &Src) = delete;
         SDamageCtx & operator= (const SDamageCtx &Src) = delete;
+
+		EDamageHint m_iHint = EDamageHint::none;	//	Hints to player
 
 		//	Damage effects
 

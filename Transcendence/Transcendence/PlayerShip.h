@@ -232,7 +232,7 @@ class CPlayerShipController : public IShipController
 		virtual void OnItemUninstalled (const CItem &Item) override { m_Stats.OnItemUninstalled(Item); }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;
-		virtual void OnObjDamaged (const SDamageCtx &Ctx) override;
+		virtual void OnObjHit (const SDamageCtx &Ctx) override;
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override;
 		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) override;
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override;

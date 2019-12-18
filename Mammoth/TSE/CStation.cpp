@@ -2440,15 +2440,15 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 	if (!Ctx.bNoHitEffect)
 		Ctx.pDesc->CreateHitEffect(GetSystem(), Ctx);
 
+	//	Tell our attacker that we got hit
+
+	if (pOrderGiver && pOrderGiver->CanAttack())
+		pOrderGiver->OnObjHit(Ctx);
+
 	//	If no damage, we're done
 
 	if (Ctx.iDamage == 0 && !bCustomDamage)
 		return damageNoDamage;
-
-	//	Tell our attacker that we got hit
-
-	if (pOrderGiver && pOrderGiver->CanAttack())
-		pOrderGiver->OnObjDamaged(Ctx);
 
 	//	Handle special attacks
 

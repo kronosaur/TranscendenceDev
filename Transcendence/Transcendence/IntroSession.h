@@ -199,7 +199,7 @@ class CIntroShipController : public IShipController
         virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override { m_pDelegate->OnFuelConsumed(rFuel, iUse); }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) override { m_pDelegate->OnHitBarrier(pBarrierObj, vPos); }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pDelegate->OnMissionCompleted(pMission, bSuccess); }
-		virtual void OnObjDamaged (const SDamageCtx &Ctx) override { m_pDelegate->OnObjDamaged(Ctx); }
+		virtual void OnObjHit (const SDamageCtx &Ctx) override { m_pDelegate->OnObjHit(Ctx); }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override { m_pDelegate->OnObjDestroyed(Ctx); }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override { m_pDelegate->OnObjEnteredGate(pObj, pDestNode, sDestEntryPoint, pStargate); }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override { m_pDelegate->OnPaintSRSEnhancements(Dest, Ctx); }

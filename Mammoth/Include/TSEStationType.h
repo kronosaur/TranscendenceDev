@@ -97,6 +97,7 @@ class CStationHull
 		void WriteToStream (IWriteStream &Stream, CStation *pStation);
 
 	private:
+		static constexpr int HINT_THRESHOLD =		40;
 		static constexpr DWORD HULL_TYPES_MASK =	0x000000f0;
 		static constexpr DWORD HULL_TYPES_SHIFT =	4;
 

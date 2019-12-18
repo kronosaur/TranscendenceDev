@@ -1925,36 +1925,6 @@ void CPlayerShipController::OnNewSystem (CSystem *pSystem)
 	{
 	}
 
-void CPlayerShipController::OnObjDamaged (const SDamageCtx &Ctx)
-
-//	OnObjDamaged
-//
-//	We damaged an object
-
-	{
-	//	Skip if we're dead
-
-	if (m_pShip == NULL || m_pShip->IsDestroyed())
-		return;
-
-	//	Remember that we caused damage to this object (but only if it is an 
-	//	enemy station or a capital ship of some sort).
-
-	if (Ctx.pObj 
-			&& !Ctx.pObj->IsDestroyed()
-			&& m_pShip->IsAngryAt(Ctx.pObj)
-			&& (Ctx.pObj->GetCategory() == CSpaceObject::catStation
-				|| Ctx.pObj->IsMultiHull()))
-		{
-		if (m_pAutoDamage)
-			m_pAutoDamage->ClearShowDamageBar();
-
-		m_pAutoDamage = Ctx.pObj;
-		m_pAutoDamage->SetShowDamageBar();
-		m_dwAutoDamageExpire = m_Universe.GetTicks() + DAMAGE_BAR_TIMER;
-		}
-	}
-
 void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 //	OnObjDestroyed
@@ -2034,6 +2004,60 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 
 	if (m_pSession)
 		m_pSession->OnObjDestroyed(Ctx);
+	}
+
+void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
+
+//	OnObjHit
+//
+//	We hit an object.
+
+	{
+	EDamageHint iHint;
+
+	//	Skip if we're dead
+
+	if (m_pShip == NULL || m_pShip->IsDestroyed())
+		return;
+
+	//	Skip if we don't care about these objects.
+
+	else if (Ctx.pObj == NULL || Ctx.pObj->IsDestroyed() || !m_pShip->IsAngryAt(Ctx.pObj))
+		return;
+
+	//	If we have a hint, then show it to the player.
+
+	else if ((iHint = Ctx.GetHint()) != EDamageHint::none)
+		{
+		switch (iHint)
+			{
+			case EDamageHint::useMiningOrWMD:
+				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
+				break;
+
+			case EDamageHint::useWMD:
+				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use WMD weapons to damage reinforced station"));
+				break;
+
+			case EDamageHint::useMining:
+				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use mining weapons to damage burried station"));
+				break;
+			}
+		}
+
+	//	Remember that we caused damage to this object (but only if it is an 
+	//	enemy station or a capital ship of some sort).
+
+	else if (Ctx.pObj->GetCategory() == CSpaceObject::catStation
+				|| Ctx.pObj->IsMultiHull())
+		{
+		if (m_pAutoDamage)
+			m_pAutoDamage->ClearShowDamageBar();
+
+		m_pAutoDamage = Ctx.pObj;
+		m_pAutoDamage->SetShowDamageBar();
+		m_dwAutoDamageExpire = m_Universe.GetTicks() + DAMAGE_BAR_TIMER;
+		}
 	}
 
 void CPlayerShipController::OnProgramDamage (CSpaceObject *pHacker, const ProgramDesc &Program)

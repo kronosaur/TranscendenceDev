@@ -4604,7 +4604,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	if (pOrderGiver && pOrderGiver->CanAttack())
-		pOrderGiver->OnObjDamaged(Ctx);
+		pOrderGiver->OnObjHit(Ctx);
 
 	//	Handle special attacks
 
