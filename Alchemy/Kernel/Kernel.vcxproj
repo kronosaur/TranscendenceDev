@@ -287,6 +287,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='SteamRelease|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="CConsoleFormat.cpp" />
     <ClCompile Include="CDataFile.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
@@ -697,6 +698,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Alchemy.h" />
+    <ClInclude Include="..\Include\Console.h" />
     <ClInclude Include="..\Include\Crypto.h" />
     <ClInclude Include="..\Include\Euclid.h" />
     <ClInclude Include="..\Include\EuclidMatrix.h" />

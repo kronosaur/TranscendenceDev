@@ -1,6 +1,7 @@
 //	CLanguageDataBlock.cpp
 //
 //	CLanguageDataBlock class
+//	Copyright (c) 2019 Kronosaur Productions, LLC. All Rights Reserved.
 
 #include "PreComp.h"
 
@@ -11,6 +12,8 @@
 
 #define ID_ATTRIB								CONSTLIT("id")
 #define TEXT_ATTRIB								CONSTLIT("text")
+
+const CLanguageDataBlock CLanguageDataBlock::m_Null;
 
 void CLanguageDataBlock::AddEntry (const CString &sID, const CString &sText)
 

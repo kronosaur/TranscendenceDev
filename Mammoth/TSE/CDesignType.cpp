@@ -2232,6 +2232,19 @@ void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap
 	AddUniqueHandlers(retInheritedHandlers);
 	}
 
+const CLanguageDataBlock &CDesignType::GetLanguageBlock (void) const
+
+//	GetLanguageBlock
+//
+//	REturns the language block for this type.
+
+	{
+	if (m_pExtra)
+		return m_pExtra->Language;
+	else
+		return CLanguageDataBlock::m_Null;
+	}
+
 CXMLElement *CDesignType::GetLocalScreens (void) const
 
 //	GetLocalScreens

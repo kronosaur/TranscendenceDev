@@ -155,6 +155,8 @@ class CLanguageDataBlock
 		bool TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const;
 		bool TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const;
 
+		static const CLanguageDataBlock m_Null;
+
 	private:
 		enum ETranslateResult
 			{

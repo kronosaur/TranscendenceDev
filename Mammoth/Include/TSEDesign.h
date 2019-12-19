@@ -292,6 +292,7 @@ class CDesignType
 		ICCItemPtr GetGlobalData (const CString &sAttrib) const;
 		CDesignType *GetInheritFrom (void) const { return m_pInheritFrom; }
 		DWORD GetInheritFromUNID (void) const { return m_dwInheritFrom; }
+		const CLanguageDataBlock &GetLanguageBlock (void) const;
 		CXMLElement *GetLocalScreens (void) const;
         CString GetMapDescription (SMapDescriptionCtx &Ctx) const;
 		CLanguageDataBlock GetMergedLanguageBlock (void) const;
