@@ -13,7 +13,6 @@
 		
 			attributes=			"debris, friendly"
 
-			dockScreen=			"Main"
 			abandonedScreen=	"Main"
 
 			scale=				"ship"
@@ -722,7 +721,7 @@
 	<StationType UNID="&stWeaponsCache;"
 			name=				"(weapons cache)"
 			sovereign=			"&svOutlaw;"
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			structuralHitPoints="15"
 			ejectaType=			"&vtWreckEjecta;"
@@ -805,7 +804,7 @@
 	<StationType UNID="&stWeaponsCrate;"
 			name=				"(weapons cache)"
 			sovereign=			"&svOutlaw;"
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			attributes=			"noSalvage"
 

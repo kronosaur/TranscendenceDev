@@ -4356,7 +4356,7 @@ void CStation::PaintLRSForeground (CG32bitImage &Dest, int x, int y, const Viewp
 				Dest.DrawDot(x, y, rgbColor, markerSmallSquare);
 				}
 			}
-		else if (IsWreck())
+		else if (IsAbandoned())
 			{
 			Dest.DrawDot(x, y, 
 					(m_fExplored ? CG32bitPixel(128, 128, 128) : rgbColor),

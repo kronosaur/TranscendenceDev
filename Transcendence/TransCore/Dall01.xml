@@ -485,7 +485,7 @@
 			name=				"inert metal sphere"
 			sovereign=			"&svNeutral;"
 			inherit=			"&unidCommonText;"
-			dockScreen=			"Main"
+			abandonedScreen=	"Main"
 
 			scale=				"ship"
 			mobile=				"true"
