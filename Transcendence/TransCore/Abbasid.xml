@@ -151,6 +151,7 @@
 			attributes=			"abbasidWall"
 
 			scale=				"ship"
+			destroyWhenAbandoned="true"
 			paintLayer=			"bringToFront"
 			noMapIcon=			"true"
 			ejectaType=			"&vtWreckEjecta;"
@@ -160,7 +161,7 @@
 
 		<Hull 	hullType=		"multiHull"
 				armorID=		"&itLightTitaniumArmor;"
-				structuralHitPoints="100"
+				hitPoints=		"100"
 				/>
 
 		<!-- Images and Effects -->

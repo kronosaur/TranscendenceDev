@@ -400,6 +400,7 @@ class CStationType : public CDesignType
 		bool IsOutOfPlaneObject (void) { return (m_fOutOfPlane ? true : false); }
 		bool IsBeacon (void) { return (m_fBeacon ? true : false); }
 		bool IsBlacklistEnabled (void) { return (m_fNoBlacklist ? false : true); }
+		bool IsDestroyWhenAbandoned (void) { return (m_fDestroyWhenAbandoned ? true : false); }
 		bool IsDestroyWhenEmpty (void) { return (m_fDestroyWhenEmpty ? true : false); }
 		bool IsEnemyDockingAllowed (void) { return (m_fAllowEnemyDocking ? true : false); }
 		bool IsMobile (void) const { return (m_fMobile ? true : false); }
@@ -513,12 +514,13 @@ class CStationType : public CDesignType
 		DWORD m_fMobile:1;								//	Station moves
 		DWORD m_fWall:1;								//	Station is a wall
 		DWORD m_fInactive:1;							//	Station starts inactive
+		DWORD m_fDestroyWhenAbandoned:1;				//	Station is destroyed when at 0 hit points
 		DWORD m_fDestroyWhenEmpty:1;					//	Station is destroyed when last item removed
 		DWORD m_fAllowEnemyDocking:1;					//	Station allows enemies to dock
 		DWORD m_fNoFriendlyFire:1;						//	Station cannot hit friends
 		DWORD m_fSign:1;								//	Station is a text sign
-		DWORD m_fBeacon:1;								//	Station is a nav beacon
 
+		DWORD m_fBeacon:1;								//	Station is a nav beacon
 		DWORD m_fRadioactive:1;							//	Station is radioactive
 		DWORD m_fCanAttack:1;							//	Station is active (i.e., will react if attacked)
 		DWORD m_fShipEncounter:1;						//	This is a ship encounter
@@ -526,8 +528,8 @@ class CStationType : public CDesignType
 		DWORD m_fTimeStopImmune:1;						//	TRUE if station is immune to time-stop
 		DWORD m_fNoBlacklist:1;							//	Does not blacklist player if attacked
 		DWORD m_fReverseArticle:1;						//	Use "a" instead of "an" and vice versa
-		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
 
+		DWORD m_fStatic:1;								//	Use CStatic instead of CStation
 		DWORD m_fOutOfPlane:1;							//	Background or foreground object
 		DWORD m_fNoFriendlyTarget:1;					//	Station cannot be hit by friends
 		DWORD m_fVirtual:1;								//	Virtual stations do not show up
@@ -535,13 +537,12 @@ class CStationType : public CDesignType
 		DWORD m_fNoMapDetails:1;                        //  If TRUE, do not show in details pane in galactic map
 		DWORD m_fSuppressMapLabel:1;					//	If TRUE, do not show a label on system map
 		DWORD m_fBuildReinforcements:1;					//	If TRUE, reinforcements are built instead of brought in
-		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
 
+		DWORD m_fStationEncounter:1;					//	If TRUE, we're just an encounter wrapper that creates stations
 		DWORD m_fCalcLevel:1;							//	If TRUE, m_iLevel needs to be computed
 		DWORD m_fBalanceValid:1;						//	If TRUE, m_rCombatBalance is valid
 		DWORD m_fShowsUnexploredAnnotation:1;			//	If TRUE, we show unexplored annotation (used for asteroids)
 		DWORD m_fForceMapLabel:1;						//	If TRUE, show map label, even if we wouldn't by default.
-		DWORD m_fSpare5:1;
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;

@@ -49,6 +49,7 @@
 #define DEFAULT_BACKGROUND_ID_ATTRIB			CONSTLIT("defaultBackgroundID")
 #define DEST_ENTRY_POINT_ATTRIB					CONSTLIT("destEntryPoint")	
 #define DEST_NODE_ATTRIB						CONSTLIT("destNodeID")
+#define DESTROY_WHEN_ABANDONED_ATTRIB			CONSTLIT("destroyWhenAbandoned")
 #define DESTROY_WHEN_EMPTY_ATTRIB				CONSTLIT("destroyWhenEmpty")
 #define DOCK_SCREEN_ATTRIB						CONSTLIT("dockScreen")
 #define DOCKING_PORTS_ATTRIB					CONSTLIT("dockingPorts")
@@ -1433,6 +1434,7 @@ ALERROR CStationType::OnCreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 	m_fNoFriendlyFire = pDesc->GetAttributeBool(NO_FRIENDLY_FIRE_ATTRIB);
 	m_fNoFriendlyTarget = pDesc->GetAttributeBool(NO_FRIENDLY_TARGET_ATTRIB);
 	m_fInactive = pDesc->GetAttributeBool(INACTIVE_ATTRIB);
+	m_fDestroyWhenAbandoned = pDesc->GetAttributeBool(DESTROY_WHEN_ABANDONED_ATTRIB);
 	m_fDestroyWhenEmpty = pDesc->GetAttributeBool(DESTROY_WHEN_EMPTY_ATTRIB);
 	m_fAllowEnemyDocking = pDesc->GetAttributeBool(ALLOW_ENEMY_DOCKING_ATTRIB);
 	m_fSign = pDesc->GetAttributeBool(SIGN_ATTRIB);

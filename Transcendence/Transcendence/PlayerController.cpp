@@ -2032,15 +2032,15 @@ void CPlayerShipController::OnObjHit (const SDamageCtx &Ctx)
 		switch (iHint)
 			{
 			case EDamageHint::useMiningOrWMD:
-				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
+				m_pTrans->DisplayMessage(CONSTLIT("Use mining or WMD weapons to damage asteroid station"));
 				break;
 
 			case EDamageHint::useWMD:
-				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use WMD weapons to damage reinforced station"));
+				m_pTrans->DisplayMessage(CONSTLIT("Use WMD weapons to damage reinforced station"));
 				break;
 
 			case EDamageHint::useMining:
-				m_pShip->SendMessage(Ctx.pObj, CONSTLIT("Use mining weapons to damage burried station"));
+				m_pTrans->DisplayMessage(CONSTLIT("Use mining weapons to damage burried station"));
 				break;
 			}
 		}

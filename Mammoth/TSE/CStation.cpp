@@ -2472,7 +2472,15 @@ EDamageResults CStation::OnDamageNormal (SDamageCtx &Ctx)
 		return damageArmorHit;
 		}
 
-	//	Otherwise we're in big trouble
+	//	Some stations are destroyed when abandoned.
+
+	else if (m_pType->IsDestroyWhenAbandoned())
+		{
+		Destroy(Ctx);
+		return damageDestroyed;
+		}
+
+	//	Otherwise we're abandoned
 
 	else
 		{
