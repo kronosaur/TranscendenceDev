@@ -409,10 +409,6 @@
 				</Actions>
 			</Default>
 		</Panes>
-	
-		<Language>
-			<Text id="actionInstall">[I]nstall</Text>
-		</Language>
 	</DockScreen>
 
 <!-- INSTALL DEVICE SCREEN =====================================================
@@ -594,7 +590,6 @@
         </Panes>
 
 		<Language>
-			<Text id="actionInstall">[I]nstall</Text>
 			<Text id="actionBuyAndInstall">[B]uy and Install</Text>
 		</Language>
     </DockScreen>
