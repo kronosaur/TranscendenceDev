@@ -108,7 +108,10 @@
 							(objGetArmorReplacePrice gSource thisItem)
 							(+ (objGetSellPrice gSource thisItem) (objGetArmorReplacePrice gSource thisItem))
 							))
-						(cargoNeeded (itmGetMass oldItem))
+						(cargoNeeded (- (itmGetMass oldItem) 
+										(if installOnly (itmGetMass thisItem) 0)
+										)
+							)
 
 						(desc Nil)
 						(descID Nil)
