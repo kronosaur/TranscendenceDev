@@ -162,7 +162,7 @@ public:
 	OpenGLInstancedRenderQueue (void);
 	~OpenGLInstancedRenderQueue (void);
 	// TODO: Allow this function to take an array of textures.
-	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth);
+	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
 	void RenderNonInstanced (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
 	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth, float alphaStrength = 1.0f);
@@ -191,9 +191,10 @@ public:
 	OpenGLMasterRenderQueue (void);
 	~OpenGLMasterRenderQueue (void);
 	void renderAllQueues (void);
-	void setObjectTextureShader(Shader *shader) { m_pObjectTextureShader = shader; }
-	Shader* getObjectTextureShader(void) { return m_pObjectTextureShader; }
-	void addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, float alphaStrength = 1.0);
+	void setObjectTextureShader (Shader *shader) { m_pObjectTextureShader = shader; }
+	Shader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
+	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, float alphaStrength = 1.0);
+	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 private:
 	void initializeVAO (void);
 	void deinitVAO (void);
@@ -205,4 +206,5 @@ private:
 	float m_fDepthLevel;
 	static const float m_fDepthDelta;
 	static const float m_fDepthStart;
+	unsigned int m_iCurrentTick; // Used instead of ticks
 };

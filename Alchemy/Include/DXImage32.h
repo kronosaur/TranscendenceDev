@@ -156,10 +156,8 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		CG32bitPixel GetPixel (int x, int y) const { return *GetPixelPos(x, y); }
 		CG32bitPixel *GetPixelArray (void) const { return m_pRGBA; }
 		CG32bitPixel *GetPixelPos (int x, int y) const { return (CG32bitPixel *)((BYTE *)m_pRGBA + (y * m_iPitch)) + x; }
-		OpenGLMasterRenderQueue *GetMasterRenderQueue (void) const { return m_pOGLRenderQueue; }
 		bool IsEmpty (void) const { return (m_pRGBA == NULL); }
 		bool IsMarked (void) const { return m_bMarked; }
-		void InitOpenGL (void);
 		CG32bitPixel *NextRow (CG32bitPixel *pPos) const { return (CG32bitPixel *)((BYTE *)pPos + m_iPitch); }
 		void SetMarked (bool bMarked = true) { m_bMarked = bMarked; }
 
@@ -212,6 +210,11 @@ class CG32bitImage : public TImagePlane<CG32bitImage>
 		void SwapBuffers (CG32bitImage &Other);
 		void TakeHandoff (CG32bitImage &Src);
 		bool WriteToWindowsBMP (IWriteStream *pStream);
+
+		//  OpenGL functions
+		OpenGLMasterRenderQueue *GetMasterRenderQueue (void) const { return m_pOGLRenderQueue; }
+		void InitOpenGL (void);
+		void SetCurrentTickForShaders (int currTick) { if (m_pOGLRenderQueue) m_pOGLRenderQueue->setCurrentTick(currTick); }
 
 	private:
 		static int CalcBufferSize (int cxWidth, int cyHeight) { return (cxWidth * cyHeight); }

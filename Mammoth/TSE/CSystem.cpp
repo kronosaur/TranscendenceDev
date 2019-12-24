@@ -3272,6 +3272,7 @@ void CSystem::PaintViewport (CG32bitImage &Dest,
 	//	Done
 
 	Dest.ResetClipRect();
+	Dest.SetCurrentTickForShaders(GetUniverse().GetTicks());
 
 	DEBUG_CATCH
 	}

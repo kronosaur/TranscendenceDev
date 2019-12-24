@@ -41,7 +41,7 @@ void OpenGLInstancedRenderQueue::RenderNonInstanced(Shader *shader, OpenGLVAO *q
 	clear();
 	}
 
-void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth)
+void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick)
 	{
 	// TODO(heliogenesis): Allow usage of an array of textures.
 	if (m_iNumObjectsToRender > 0)
@@ -68,6 +68,7 @@ void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLT
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_depthsFloat[0], GL_STATIC_DRAW);
 		shader->bind();
 		glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
+		glUniform1i(glGetUniformLocation(shader->id(), "current_tick"), currentTick);
 		texture->bindTexture2D(GL_TEXTURE0);
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
 		shader->unbind();

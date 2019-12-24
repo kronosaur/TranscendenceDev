@@ -2,11 +2,13 @@
 in vec2 texture_uv;
 in vec2 texture_pos;
 in vec2 texture_size;
+in vec2 fragment_pos;
 in float alpha_strength;
 in float depth;
 out vec4 out_Color;
 
 uniform sampler2D obj_texture;
+uniform int current_tick;
 
 
 //	Classic Perlin 3D Noise 
@@ -88,11 +90,18 @@ float cnoise(vec3 P){
 void main(void)
 {		
 	float alphaIsZero_Epsilon = 0.01;
+	int alphaNoisePeriodTime = 5;
+	float alphaNoisePeriodXY = 1000.0f;
 
 	vec2 onePixel = vec2(1.0, 1.0) / textureSize(obj_texture, 0);
 	vec4 RealColor = texture(obj_texture, vec2(texture_uv[0], texture_uv[1]));
 	bool alphaIsZero = RealColor[3] < alphaIsZero_Epsilon;
 	gl_FragDepth = depth + float(alphaIsZero);
+	float alphaNoiseTimeAxis = (float(current_tick) / float(alphaNoisePeriodTime));
+	float alphaNoise = (cnoise(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
+	alphaNoise = alphaNoise + float(alpha_strength > 0.9999);
+	alphaNoise = (alpha_strength + (alphaNoise * alpha_strength));
+	alphaNoise = (float(alphaNoise > 0.5) * 2) - 1;
 	
-    out_Color = vec4(RealColor[0], RealColor[1], RealColor[2], RealColor[3] * alpha_strength);
+    out_Color = vec4(RealColor[0], RealColor[1], RealColor[2], RealColor[3] * alphaNoise * alpha_strength);
 }

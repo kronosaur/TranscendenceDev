@@ -11,6 +11,7 @@ in float aDepth;
 out vec2 texture_uv;
 out vec2 texture_pos;
 out vec2 texture_size;
+out vec2 fragment_pos;
 out float alpha_strength;
 out float depth;
 void main(void)
@@ -31,5 +32,6 @@ void main(void)
     texture_uv = texPos2d;
 	texture_pos = aTexPositions;
 	texture_size = fixedTexSize;
+	fragment_pos = vec2(aPos[0] + 0.5f, aPos[1] + 0.5f);
 	alpha_strength = aAlphaStrength;
 }

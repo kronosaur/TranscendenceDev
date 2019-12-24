@@ -59,7 +59,7 @@ void OpenGLMasterRenderQueue::renderAllQueues(void)
 		OpenGLInstancedRenderQueue *pInstancedRenderQueue = p.second;
 		// TODO: Set the depths here before rendering. This will ensure that we always render from back to front, which should solve most issues with blending.
 		float depthLevel = m_fDepthLevel;
-		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse, depthLevel, m_fDepthDelta);
+		pInstancedRenderQueue->Render(m_pObjectTextureShader, m_pVao, pTextureToUse, depthLevel, m_fDepthDelta, m_iCurrentTick);
 		m_fDepthLevel = depthLevel;
 	}
 	// Reset the depth level.
