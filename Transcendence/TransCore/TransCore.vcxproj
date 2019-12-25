@@ -551,6 +551,7 @@
     <Xml Include="Fiona.xml">
       <SubType>Designer</SubType>
     </Xml>
+    <Xml Include="FirstContactMonument.xml" />
     <Xml Include="Gaians.xml">
       <SubType>Designer</SubType>
     </Xml>

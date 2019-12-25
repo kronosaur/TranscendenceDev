@@ -147,7 +147,15 @@
 						data: data
 						onExitRumor: (switch
 							(isfunction special) special
-							(= special 'scan) (lambda (theRumor) (objSetKnown (@ theRumor 'sourceObj)))
+							(= special 'scan) 
+								(lambda (theRumor) 
+									(if (not (objGetProperty (@ theRumor 'sourceObj) 'known))
+										(block ()
+											(objSetKnown (@ theRumor 'sourceObj))
+											(objSetShowAsDestination (@ theRumor 'sourceObj) 'autoClear)
+											)
+										)
+									)
 							)
 						}
 					)
@@ -182,7 +190,7 @@
 				;		actionDoneID: Action ID to use for the done button (defaults to
 				;				'actionContinue).
 				;
-				;		rumorInterval: If non-nil, then we keep the same rumor for 
+				;		rumorInterval: If greater than 0, then we keep the same rumor for 
 				;				the given number of ticks.
 
 				(block (
@@ -246,6 +254,9 @@
 							)
 						))
 
+					;	Rumor interval defaults to 1800
+					(rumorInterval (or (@ options 'rumorInterval) 1800))
+
 					;	Chance of rumor being selected is proportional to its priority
 					;	If all priorities are equal this is equivalent to (random rumorList)
 					(maxRoll
@@ -254,8 +265,8 @@
 
 					(theRoll 
 						(switch
-							(gr (@ options 'rumorInterval) 0)
-								(seededRandom (* (objGetProperty gSource 'destiny) (divide (unvGetTick) (@ options 'rumorInterval))) 1 maxRoll)
+							(gr rumorInterval 0)
+								(seededRandom (* (objGetProperty gSource 'destiny) (divide (unvGetTick) rumorInterval)) 1 maxRoll)
 
 							(random 1 maxRoll)
 							)

@@ -320,9 +320,12 @@
 								(plyCharge gPlayer 5)
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthPub; =" (sysGetLevel) ";")
-									noMissionTextID: 'descNoRumors
 									actionDoneID: 'actionLeave
 									maxPerStation: 1
+
+									rumorInterval: 0
+									noMissionTextID: 'descNoRumors
+									debug: True
 									})
 								)
 							(scrShowPane gScreen "NoMoney")

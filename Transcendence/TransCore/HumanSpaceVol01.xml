@@ -2524,6 +2524,7 @@
 	<!-- St. Katharine's Star -->
 
 	<Module filename="Dall01.xml"/>
+	<Module filename="FirstContactMonument.xml"/>
 	<Module filename="StKatharines.xml"/>
 
 	<!-- Star Systems -->
