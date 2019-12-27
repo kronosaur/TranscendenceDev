@@ -1796,7 +1796,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_BACKGROUND_IMAGE:
 			{
-			IDockScreenDisplay::SBackgroundDesc Desc;
+			SDockScreenBackgroundDesc Desc;
 			if (!IDockScreenDisplay::ParseBackgrounDesc(pArgs->GetElement(1), &Desc))
 				return pCC->CreateError(CONSTLIT("Invalid image description"), pArgs->GetElement(1));
 

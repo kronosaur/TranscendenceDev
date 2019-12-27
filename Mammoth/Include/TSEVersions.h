@@ -7,7 +7,7 @@
 
 constexpr DWORD API_VERSION =							48;
 constexpr DWORD UNIVERSE_SAVE_VERSION =					38;
-constexpr DWORD SYSTEM_SAVE_VERSION =					177;
+constexpr DWORD SYSTEM_SAVE_VERSION =					178;
 
 //	Uncomment out the following define when building a stable release
 
@@ -653,3 +653,6 @@ constexpr DWORD SYSTEM_SAVE_VERSION =					177;
 //
 //	177: 1.9 Alpha 4
 //		m_iPaintOrder in CStation
+//
+//	178: 1.9 Alpha 5
+//		m_rMaxPlayerDist in CDockingPorts

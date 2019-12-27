@@ -5,6 +5,7 @@
 #include "PreComp.h"
 #include "Transcendence.h"
 
+#define HERO_IMAGE_TAG				CONSTLIT("HeroImage")
 #define LIST_TAG					CONSTLIT("List")
 #define LIST_OPTIONS_TAG			CONSTLIT("ListOptions")
 #define ON_DISPLAY_INIT_TAG			CONSTLIT("OnDisplayInit")
@@ -17,6 +18,11 @@
 #define ICON_HEIGHT_ATTRIB			CONSTLIT("iconHeight")
 #define ICON_SCALE_ATTRIB			CONSTLIT("iconScale")
 #define ICON_WIDTH_ATTRIB			CONSTLIT("iconWidth")
+#define IMAGE_HEIGHT_ATTRIB			CONSTLIT("imageHeight")
+#define IMAGE_ID_ATTRIB				CONSTLIT("imageID")
+#define IMAGE_WIDTH_ATTRIB			CONSTLIT("imageWidth")
+#define IMAGE_X_ATTRIB				CONSTLIT("imageX")
+#define IMAGE_Y_ATTRIB				CONSTLIT("imageY")
 #define INITIAL_ITEM_ATTRIB			CONSTLIT("initialItem")
 #define LIST_ATTRIB					CONSTLIT("list")
 #define NO_ARMOR_SPEED_DISPLAY_ATTRIB	CONSTLIT("noArmorSpeedDisplay")
@@ -120,17 +126,26 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 	//	Initialize background image options
 
 	CString sBackgroundID;
-	if (Ctx.pDesc->FindAttribute(BACKGROUND_ID_ATTRIB, &sBackgroundID))
+	if (const CXMLElement *pImageDesc = Ctx.pDesc->GetContentElementByTag(HERO_IMAGE_TAG))
+		{
+		retOptions->BackgroundDesc.iType = EDockScreenBackground::heroImage;
+		retOptions->BackgroundDesc.dwImageID = pImageDesc->GetAttributeInteger(IMAGE_ID_ATTRIB);
+		retOptions->BackgroundDesc.rcImage.left = pImageDesc->GetAttributeInteger(IMAGE_X_ATTRIB);
+		retOptions->BackgroundDesc.rcImage.top = pImageDesc->GetAttributeInteger(IMAGE_Y_ATTRIB);
+		retOptions->BackgroundDesc.rcImage.right = retOptions->BackgroundDesc.rcImage.left + pImageDesc->GetAttributeInteger(IMAGE_WIDTH_ATTRIB);
+		retOptions->BackgroundDesc.rcImage.bottom = retOptions->BackgroundDesc.rcImage.top + pImageDesc->GetAttributeInteger(IMAGE_HEIGHT_ATTRIB);
+		}
+	else if (Ctx.pDesc->FindAttribute(BACKGROUND_ID_ATTRIB, &sBackgroundID))
 		{
 		//	If the attribute exists, but is empty (or equals "none") then
 		//	we don't have a background
 
 		if (sBackgroundID.IsBlank() || strEquals(sBackgroundID, CONSTLIT("none")))
-			retOptions->BackgroundDesc.iType = backgroundNone;
+			retOptions->BackgroundDesc.iType = EDockScreenBackground::none;
 
 		else if (strEquals(sBackgroundID, TYPE_HERO))
 			{
-			retOptions->BackgroundDesc.iType = backgroundObjHeroImage;
+			retOptions->BackgroundDesc.iType = EDockScreenBackground::objHeroImage;
 			retOptions->BackgroundDesc.pObj = Ctx.pLocation;
 			}
 
@@ -140,14 +155,14 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 			{
 			retOptions->BackgroundDesc.pObj = Ctx.pLocation;
             if (Ctx.pLocation->IsPlayer())
-			    retOptions->BackgroundDesc.iType = backgroundObjSchematicImage;
+			    retOptions->BackgroundDesc.iType = EDockScreenBackground::objSchematicImage;
             else
-			    retOptions->BackgroundDesc.iType = backgroundObjHeroImage;
+			    retOptions->BackgroundDesc.iType = EDockScreenBackground::objHeroImage;
 			}
 
 		else if (strEquals(sBackgroundID, TYPE_SCHEMATIC))
 			{
-			retOptions->BackgroundDesc.iType = backgroundObjSchematicImage;
+			retOptions->BackgroundDesc.iType = EDockScreenBackground::objSchematicImage;
 			retOptions->BackgroundDesc.pObj = Ctx.pLocation;
 			}
 
@@ -158,7 +173,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 			CSpaceObject *pPlayer = g_pUniverse->GetPlayerShip();
 			if (pPlayer)
 				{
-				retOptions->BackgroundDesc.iType = backgroundObjSchematicImage;
+				retOptions->BackgroundDesc.iType = EDockScreenBackground::objSchematicImage;
 				retOptions->BackgroundDesc.pObj = pPlayer;
 				}
 			}
@@ -167,7 +182,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 
 		else
 			{
-			retOptions->BackgroundDesc.iType = backgroundImage;
+			retOptions->BackgroundDesc.iType = EDockScreenBackground::image;
 			retOptions->BackgroundDesc.dwImageID = strToInt(sBackgroundID, 0);
 			}
 		}
@@ -177,7 +192,7 @@ bool IDockScreenDisplay::GetDisplayOptions (SInitCtx &Ctx, SDisplayOptions *retO
 	//
 	//	NOTE: This RECT is relative to Ctx.rcRect.
 
-	if (retOptions->BackgroundDesc.iType != backgroundDefault)
+	if (retOptions->BackgroundDesc.iType != EDockScreenBackground::default)
 		{
 		retOptions->rcControl.left = 4;
 		retOptions->rcControl.top = 12;
@@ -382,7 +397,7 @@ bool IDockScreenDisplay::EvalString (const CString &sString, bool bPlain, ECodeC
 	return Ctx.RunEvalString(sString, bPlain, retsResult);
 	}
 
-bool IDockScreenDisplay::GetDefaultBackground (SBackgroundDesc *retDesc)
+bool IDockScreenDisplay::GetDefaultBackground (SDockScreenBackgroundDesc *retDesc)
 
 //	GetDefaultBackground
 //
@@ -533,7 +548,7 @@ void IDockScreenDisplay::OnShowPane (bool bNoListNavigation)
 	SelectArmor(-1); 
 	}
 
-bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *retDesc)
+bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SDockScreenBackgroundDesc *retDesc)
 
 //	ParseBackroundDesc
 //
@@ -543,7 +558,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 	//	Nil means no default value
 
 	if (pDesc->IsNil())
-		retDesc->iType = backgroundDefault;
+		retDesc->iType = EDockScreenBackground::default;
 
 	//	If we have a struct, we expect a certain format
 
@@ -551,18 +566,18 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 		{
 		CString sType = pDesc->GetStringAt(FIELD_TYPE);
 		if (sType.IsBlank() || strEquals(sType, TYPE_NONE))
-			retDesc->iType = backgroundNone;
+			retDesc->iType = EDockScreenBackground::none;
 
 		else if (strEquals(sType, TYPE_HERO))
 			{
-			retDesc->iType = backgroundObjHeroImage;
+			retDesc->iType = EDockScreenBackground::objHeroImage;
 			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
 			}
 		else if (strEquals(sType, TYPE_IMAGE))
 			{
-			retDesc->iType = backgroundImage;
+			retDesc->iType = EDockScreenBackground::image;
 
 			ICCItem *pImage = pDesc->GetElement(FIELD_IMAGE);
 			if (pImage == NULL)
@@ -581,13 +596,13 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 				return false;
 
             if (retDesc->pObj->IsPlayer())
-    			retDesc->iType = backgroundObjSchematicImage;
+    			retDesc->iType = EDockScreenBackground::objSchematicImage;
             else
-    			retDesc->iType = backgroundObjHeroImage;
+    			retDesc->iType = EDockScreenBackground::objHeroImage;
 			}
 		else if (strEquals(sType, TYPE_SCHEMATIC))
 			{
-			retDesc->iType = backgroundObjSchematicImage;
+			retDesc->iType = EDockScreenBackground::objSchematicImage;
 			retDesc->pObj = CreateObjFromItem(pDesc->GetElement(FIELD_OBJ));
 			if (retDesc->pObj == NULL)
 				return false;
@@ -599,7 +614,7 @@ bool IDockScreenDisplay::ParseBackgrounDesc (ICCItem *pDesc, SBackgroundDesc *re
 	//	Otherwise, we can't parse.
 	//
 	//	LATER: We should eventually handle a list-based image descriptor, but we
-	//	would need to enhance SBackgroundDesc for that.
+	//	would need to enhance SDockScreenBackgroundDesc for that.
 
 	else
 		return false;

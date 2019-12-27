@@ -38,6 +38,25 @@ class IDockScreenUI
 		virtual bool SetProperty (const CString &sProperty, const ICCItem &Value) { return false; }
 	};
 
+enum class EDockScreenBackground
+	{
+	default,						//	Use the default specified by the display
+
+	none,							//	No background image
+	image,							//	Use an image (by UNID)
+	objHeroImage,					//	Use the object's hero image
+	objSchematicImage,				//	Use the object's top-down image
+	heroImage,						//	Use specified image as hero image
+	};
+
+struct SDockScreenBackgroundDesc
+	{
+	EDockScreenBackground iType = EDockScreenBackground::default;		//	Type of image defined
+	DWORD dwImageID = 0;				//	UNID to use (if iType == backgroundImage)
+	RECT rcImage = { 0 };				//	Source image rect (if 0, use entire image)
+	CSpaceObject *pObj = NULL;			//	Object to query (if iType == backgroundObjXXX)
+	};
+
 struct SScreenSetTab
 	{
 	CString sID;							//	ID (to refer to it)
@@ -58,6 +77,8 @@ struct SDockFrame
 	ICCItemPtr pInitialData;				//	Data for the screen
 	ICCItemPtr pStoredData;					//	Read-write data
 	ICCItemPtr pReturnData;					//	Data returns from a previous screen
+
+	SDockScreenBackgroundDesc BackgroundDesc;
 
 	TArray<SScreenSetTab> ScreenSet;		//	Current screen set
 	CString sCurrentTab;					//	Current tab in screen set.
@@ -93,6 +114,7 @@ class CDockScreenStack
 		void Push (const SDockFrame &Frame);
 		void Pop (void);
 		void ResolveCurrent (const SDockFrame &ResolvedFrame);
+		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc);
 		void SetCurrent (const SDockFrame &NewFrame, SDockFrame *retPrevFrame = NULL);
 		void SetCurrentPane (const CString &sPane);
 		void SetDisplayData (const CString &sID, const CString &sData);
@@ -131,6 +153,7 @@ class CDockSession
 		void OnModifyItemComplete (IDockScreenUI::SModifyItemCtx &Ctx, const CSpaceObject &Source, const CItem &Result) { if (ModifyItemNotificationNeeded(Source)) m_pDockScreenUI->OnModifyItemComplete(Ctx, Source, Result); }
 		CSpaceObject *OnPlayerDocked (IDockScreenUI &DockScreenUI, CSpaceObject *pObj);
 		void OnPlayerShowShipScreen (IDockScreenUI &DockScreenUI, CDesignType *pDefaultScreensRoot);
+		void SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc) { m_DockFrames.SetBackgroundDesc(BackgroundDesc); }
 		void SetCurrentPane (const CString &sPane) { m_DockFrames.SetCurrentPane(sPane); }
 		bool SetData (const CString &sAttrib, const ICCItem *pValue);
 		bool SetProperty (const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);

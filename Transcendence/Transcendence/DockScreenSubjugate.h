@@ -475,7 +475,7 @@ class CDockScreenSubjugate : public IDockScreenDisplay
 
 		//	IDockScreenDisplay
 
-		virtual bool OnGetDefaultBackground (SBackgroundDesc *retDesc) override { retDesc->iType = backgroundNone; return true; }
+		virtual bool OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc) override { retDesc->iType = EDockScreenBackground::none; return true; }
 		virtual EResults OnHandleKeyDown (int iVirtKey) override;
 		virtual ALERROR OnInit (SInitCtx &Ctx, const SDisplayOptions &Options, CString *retsError) override;
 		virtual ICCItemPtr OnGetProperty (const CString &sProperty) const override;

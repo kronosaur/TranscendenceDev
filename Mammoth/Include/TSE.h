@@ -690,7 +690,7 @@ class CSpaceObject
 		void FireOnUpdate (void);
 		DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
 		void GetBoundingRect (CVector *retvUR, CVector *retvLL);
-		CVector GetBoundsDiag (void) { return CVector(m_rBoundsX, m_rBoundsY); }
+		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
 		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
 		CCommunicationsHandler *GetCommsHandler (void);
 		int GetCommsMessageCount (void);

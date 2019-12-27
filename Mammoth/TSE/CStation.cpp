@@ -286,6 +286,13 @@ void CStation::AddSubordinate (CSpaceObject *pSubordinate)
 	CStation *pSatellite = pSubordinate->AsStation();
 	if (pSatellite)
 		pSatellite->SetBase(this);
+
+	//	Recalc bounds, if necessary
+
+	CPaintOrder::Types iPaintOrder;
+	if (pSubordinate->IsSatelliteSegmentOf(*this, &iPaintOrder)
+			&& iPaintOrder != CPaintOrder::none)
+		CalcBounds();
 	}
 
 CTradingDesc *CStation::AllocTradeDescOverride (void)
@@ -371,8 +378,21 @@ void CStation::CalcBounds (void)
 //	Calculates and sets station bounds
 
 	{
+	//	Start with image bounds
+
 	const CObjectImageArray &Image = GetImage(false, NULL, NULL);
-	RECT rcBounds = Image.GetImageRect();
+	const RECT &rcImageRect = Image.GetImageRect();
+
+	int cxWidth = RectWidth(rcImageRect);
+	int cyHeight = RectHeight(rcImageRect);
+	
+	RECT rcBounds;
+	rcBounds.left = -cxWidth / 2;
+	rcBounds.right = rcBounds.left + cxWidth;
+	rcBounds.top = -cyHeight / 2;
+	rcBounds.bottom = rcBounds.top + cyHeight;
+
+	//	Adjust if offset
 
 	int xOffset;
 	int yOffset;
@@ -385,6 +405,30 @@ void CStation::CalcBounds (void)
 	//	Add overlays
 
 	m_Overlays.AccumulateBounds(this, Image.GetImageViewportSize(), GetRotation(), &rcBounds);
+
+	//	Add subordinates
+
+	for (int i = 0; i < m_Subordinates.GetCount(); i++)
+		{
+		const CSpaceObject *pSatellite = m_Subordinates.GetObj(i);
+		CPaintOrder::Types iPaintOrder;
+		if (pSatellite->IsSatelliteSegmentOf(*this, &iPaintOrder)
+				&& iPaintOrder != CPaintOrder::none)
+			{
+			CVector vPos = pSatellite->GetPos() - GetPos();
+			CVector vDiag = pSatellite->GetBoundsDiag();
+			RECT rcRect;
+			rcRect.left = mathRound((vPos.GetX() - vDiag.GetX()) / g_KlicksPerPixel);
+			rcRect.top = mathRound((-vPos.GetY() - vDiag.GetY()) / g_KlicksPerPixel);
+			rcRect.right = mathRound((vPos.GetX() + vDiag.GetX())  / g_KlicksPerPixel);
+			rcRect.bottom = mathRound((-vPos.GetY() + vDiag.GetY()) / g_KlicksPerPixel);
+
+			rcBounds.left = Min(rcBounds.left, rcRect.left);
+			rcBounds.top = Min(rcBounds.top, rcRect.top);
+			rcBounds.right = Max(rcBounds.right, rcRect.right);
+			rcBounds.bottom = Max(rcBounds.bottom, rcRect.bottom);
+			}
+		}
 
 	//	Set it
 
@@ -3020,10 +3064,6 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 
 	m_Overlays.PaintBackground(Dest, x, y, Ctx);
 
-	//	Paint satellites behind the station.
-
-	PaintSatellites(Dest, x, y, CPaintOrder::sendToBack, Ctx);
-
 	//	First paint any object that are docked behind us
 
 	if (!Ctx.fNoDockedShips)
@@ -3050,6 +3090,10 @@ void CStation::OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx
 				}
 			}
 		}
+
+	//	Paint satellites behind the station.
+
+	PaintSatellites(Dest, x, y, CPaintOrder::sendToBack, Ctx);
 
 	//	Paint
 

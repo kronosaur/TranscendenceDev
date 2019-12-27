@@ -599,6 +599,7 @@
     <Xml Include="KSMissionC02.xml" />
     <Xml Include="Marauders.xml" />
     <Xml Include="MRAD.xml" />
+    <Xml Include="NewVictoria.xml" />
     <Xml Include="Ore.xml" />
     <Xml Include="OreStone.xml" />
     <Xml Include="Outlaws.xml" />
