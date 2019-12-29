@@ -3853,10 +3853,6 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	ItemList.SetPrepareUninstalledAtCursor();
 	OldArmor = ItemList.GetItemAtCursor();
 
-	//	How damaged is the current armor?
-
-	bool bDestroyOldArmor = !IsArmorRepairable(iSect);
-
 	//	Now install the selected item as new armor
 
 	ItemList.Refresh(NewArmor);
@@ -3881,17 +3877,14 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 		ItemList.DeleteAtCursor(1);
 		InvalidateItemListAddRemove();
 
-		if (!bDestroyOldArmor)
-			{
-			OldArmor.ClearInstalled();
-			OldArmor.SetCount(1);
+		OldArmor.ClearInstalled();
+		OldArmor.SetCount(1);
 
-			CArmorItem OldArmorItem = OldArmor.AsArmorItemOrThrow();
-			int iNewMaxHP = OldArmorItem.GetMaxHP();
-			OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
+		CArmorItem OldArmorItem = OldArmor.AsArmorItemOrThrow();
+		int iNewMaxHP = OldArmorItem.GetMaxHP();
+		OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
 
-			ItemList.AddItem(OldArmor);
-			}
+		ItemList.AddItem(OldArmor);
 		}
 
 	//	Restore the cursor to point at the new armor segment
@@ -4008,17 +4001,6 @@ bool CShip::IsArmorDamaged (int iSect)
 	{
 	CInstalledArmor *pSect = GetArmorSection(iSect);
 	return (pSect->GetHitPoints() < pSect->GetMaxHP(this));
-	}
-
-bool CShip::IsArmorRepairable (int iSect)
-
-//	IsArmorRepairable
-//
-//	Returns TRUE if the given armor section can be repaired
-
-	{
-	CInstalledArmor *pSect = GetArmorSection(iSect);
-	return (pSect->GetHitPoints() >= (pSect->GetMaxHP(this) / 4));
 	}
 
 bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)

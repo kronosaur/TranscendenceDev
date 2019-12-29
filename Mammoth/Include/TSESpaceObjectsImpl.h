@@ -980,7 +980,6 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int DamageArmor (int iSect, DamageDesc &Damage);
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
-		bool IsArmorRepairable (int iSect);
 		void RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired = NULL);
 		bool SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const;
 		void UninstallArmor (CItemListManipulator &ItemList);

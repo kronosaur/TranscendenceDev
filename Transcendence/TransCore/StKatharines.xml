@@ -272,7 +272,7 @@
 
 				You are in the Parliament Quarter. Well-dressed men and women 
 				walk along the wide avenues of the quarter,	making their way to
-				jobs in Commonwealth government.
+				jobs in the Commonwealth government.
 
 			</Text>
 			<Text id="descParliamentEmpty">
@@ -593,8 +593,8 @@
 			<Text id="actionLeave">[L]eave</Text>
 
 			<Text id="descArtsQuarter">
-				The innovative architecture of the Arts Quarter draws tourists from
-				all over Human Space.
+				The trendy scene of the Arts Quarter draws tourists from all 
+				over Human Space.
 			</Text>
 		</Language>
 	</DockScreen>
