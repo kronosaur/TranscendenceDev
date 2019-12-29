@@ -388,6 +388,7 @@ class CUniverse
 		void SetSoundMgr (CSoundMgr *pSoundMgr) { m_pSoundMgr = pSoundMgr; }
 		void StartGameTime (void);
 		CTimeSpan StopGameTime (void);
+		CString TranslateEngineText (const CString &sID, ICCItem *pData = CCodeChain::CreateNil()) const;
 		void UnregisterForNotifications (INotifications *pSubscriber) { m_Subscribers.DeleteValue(pSubscriber); }
 		static CString ValidatePlayerName (const CString &sName);
 
