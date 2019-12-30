@@ -1384,8 +1384,8 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			int iTexQuadHeight = RectHeight(m_rcImage);
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
 				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
-			int iGQuadWidth = int(RectWidth(m_rcImage) * 1.2);
-			int iGQuadHeight = int(RectHeight(m_rcImage) * 1.2);
+			int iGQuadWidth = int(RectWidth(m_rcImage) * 1.00);
+			int iGQuadHeight = int(RectHeight(m_rcImage) * 1.00);
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
 				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.3f, 1.0f, 0.7f, 0.8f, 1.0f);
 			}

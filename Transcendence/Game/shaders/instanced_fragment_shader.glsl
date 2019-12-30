@@ -7,7 +7,7 @@ in float alpha_strength;
 in float depth;
 in vec4 glow_color;
 in float glow_noise;
-out vec4 out_Color;
+out vec4 out_color;
 
 uniform sampler2D obj_texture;
 uniform int current_tick;
@@ -89,19 +89,72 @@ float cnoise(vec3 P){
   return 2.2 * n_xyz;
 }
 
+float getGlowBoundaries(float epsilon, vec2 texture_size, vec2 texture_uv, sampler2D obj_texture)
+{
+	vec2 onePixel = vec2(1.0, 1.0) / textureSize(obj_texture, 0);
+	vec2 offset1 = vec2(onePixel[0], 0);
+	vec2 offset2 = vec2(-onePixel[0], 0);
+	vec2 offset3 = vec2(0, onePixel[1]);
+	vec2 offset4 = vec2(0, -onePixel[1]);
+	vec2 offset5 = vec2(-onePixel[0], onePixel[1]);
+	vec2 offset6 = vec2(onePixel[0], -onePixel[1]);
+	vec2 offset7 = vec2(-onePixel[0], -onePixel[1]);
+	vec2 offset8 = vec2(onePixel[0], onePixel[1]);
+	vec2 offset9 = vec2(onePixel[0], 0) * 2.0f;
+	vec2 offset10 = vec2(-onePixel[0], 0) * 2.0f;
+	vec2 offset11 = vec2(0, onePixel[1]) * 2.0f;
+	vec2 offset12 = vec2(0, -onePixel[1]) * 2.0f;
+	vec2 offset13 = vec2(0.0, 0.0);
+	
+	float sample1 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset1)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset1)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample2 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset2)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset2)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample3 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset3)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset3)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample4 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset4)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset4)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample5 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset5)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset5)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample6 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset6)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset6)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample7 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset7)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset7)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample8 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset8)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset8)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample9 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset9)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset9)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample10 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset10)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset10)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample11 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset11)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset11)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample12 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset12)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset12)[3] > epsilon)) * (1.0f / 20.0f);
+	float sample13 = min(1.0, fwidth(float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset13)[3])) + float(texture(obj_texture, vec2(texture_uv[0], texture_uv[1]) + offset13)[3] > epsilon)) * (8.0f / 20.0f);
+	
+	
+	
+	//float glowBoundaries = min(1.0, fwidth(color[3]) + float(color[3] > epsilon));
+	float glowBoundaries = sample1 + sample2 + sample3 + sample4 + sample5 + sample6 + sample7 + sample8 + sample9 + sample10 + sample11 + sample12 + sample13;
+    return glowBoundaries;
+}
 
+vec4 getGlowColor_PerlinNoise(float glowNoisePeriodXY, vec2 fragment_pos, float alphaNoiseTimeAxis, float epsilon, vec4 color, vec2 texture_size, vec2 texture_uv, sampler2D obj_texture)
+{
+    float perlinNoiseGlow = (cnoise(vec3(fragment_pos[0] * glowNoisePeriodXY, fragment_pos[1] * glowNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
+	float glowBoundaries = getGlowBoundaries(epsilon, texture_size, texture_uv, obj_texture);
+	
+	vec4 glowColor = vec4(glow_color[0], glow_color[1], glow_color[2], glow_color[3] * ((perlinNoiseGlow / 2.0) + 0.5)) * glowBoundaries;
+	
+	return glowColor;
+}
+
+vec4 getGlowColor_Static(float epsilon, vec4 color, vec2 texture_size, vec2 texture_uv, sampler2D obj_texture)
+{
+	float glowBoundaries = getGlowBoundaries(epsilon, texture_size, texture_uv, obj_texture);
+	
+	vec4 glowColor = vec4(glow_color[0], glow_color[1], glow_color[2], glow_color[3]) * glowBoundaries;
+	
+	return glowColor;
+}
 
 void main(void)
 {		
-	float Epsilon = 0.01;
+	float epsilon = 0.01;
 	int alphaNoisePeriodTime = 5;
 	float alphaNoisePeriodXY = 1000.0f;
 	float glowNoisePeriodXY = 10.0f;
 
-	vec2 onePixel = vec2(1.0, 1.0) / textureSize(obj_texture, 0);
-	vec4 RealColor = texture(obj_texture, vec2(texture_uv[0], texture_uv[1]));
-	bool alphaIsZero = RealColor[3] < Epsilon;
-	gl_FragDepth = depth + float(alphaIsZero);
+	vec4 realColor = texture(obj_texture, vec2(texture_uv[0], texture_uv[1]));
+	bool alphaIsZero = realColor[3] < epsilon;
 	float alphaNoiseTimeAxis = (float(current_tick) / float(alphaNoisePeriodTime));
 	float perlinNoise = (cnoise(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
 	float perlinNoiseGlow = (cnoise(vec3(fragment_pos[0] * glowNoisePeriodXY, fragment_pos[1] * glowNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
@@ -109,15 +162,18 @@ void main(void)
 	alphaNoise = (alpha_strength + (alphaNoise * alpha_strength));
 	alphaNoise = (float(alphaNoise > 0.5) * 2) - 1;
 	
+	//vec4 glowColor = getGlowColor_PerlinNoise(20.0f, fragment_pos, alphaNoiseTimeAxis, epsilon, realColor, texture_size, texture_uv, obj_texture);
+	vec4 glowColor = getGlowColor_Static(epsilon, realColor, texture_size, texture_uv, obj_texture);
+	
 	// If a glow color is specified, use glow instead of using the ship texture
 	// Also add noise to the glow as appropriate
 	// Glow size is controlled via the quad size; we use separate quads for glow and standard ship texture
-	float glowBoundaries = min(1.0, fwidth(RealColor[3]) + float(RealColor[3] > Epsilon));
+	bool useGlow = (glow_color[3] > epsilon);
+	gl_FragDepth = depth + float(alphaIsZero) - float(glowColor[3] > epsilon);
 	
-	bool useGlow = (glow_color[3] > Epsilon);
-	vec4 textureColor = vec4(RealColor[0], RealColor[1], RealColor[2], RealColor[3] * alphaNoise * alpha_strength);
-	//vec4 glowColor = vec4(fwidth(RealColor[3]), fwidth(RealColor[3]), fwidth(RealColor[3]), fwidth(RealColor[3]));
-	vec4 glowColor = vec4(glow_color[0], glow_color[1], glow_color[2], glow_color[3] * ((perlinNoiseGlow / 2.0) + 0.5)) * glowBoundaries;
 	
-    out_Color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
+	vec4 textureColor = vec4(realColor[0], realColor[1], realColor[2], realColor[3] * alphaNoise * alpha_strength);
+	
+	
+    out_color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
 }
