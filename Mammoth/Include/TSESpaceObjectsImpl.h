@@ -339,7 +339,6 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
-		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sProperty) const override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError) override;
 
@@ -348,6 +347,7 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		//	CSpaceObject virtuals
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -528,7 +528,6 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
-		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -555,6 +554,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
@@ -602,6 +602,10 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		DWORD m_fTargetable:1;					//	TRUE if we can be targetted
 
 		DWORD m_dwSpareFlags:25;				//	Flags
+
+		//	Property table
+
+		static TPropertyHandler<CMissile> m_PropertyTable;
 	};
 
 class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>

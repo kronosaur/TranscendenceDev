@@ -63,6 +63,26 @@
 #define SCALE_SHIP								CONSTLIT("ship")
 #define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
+TPropertyHandler<CSpaceObject> CSpaceObject::m_BasePropertyTable = std::array<TPropertyHandler<CSpaceObject>::SPropertyDef, 3> {{
+		{
+		"ascended",		"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.IsAscended()); },
+		NULL,
+		},
+
+		{
+		"canAttack",	"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanAttack()); },
+		NULL,
+		},
+
+		{
+		"canBeAttacked",	"True|Nil",
+		[](const CSpaceObject &Obj, const CString &sProperty) { return ICCItemPtr(Obj.CanBeAttacked()); },
+		NULL,
+		}
+	}};
+
 ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const
 
 //	GetProperty
@@ -72,6 +92,10 @@ ICCItemPtr CSpaceObject::GetProperty (CCodeChainCtx &CCX, const CString &sProper
 	{
 	if (ICCItemPtr pValue = OnFindProperty(CCX, sProperty))
 		return pValue;
+
+	else if (m_BasePropertyTable.FindProperty(*this, sProperty, pValue))
+		return pValue;
+
 	else
 		{
 		ICCItemPtr pResult(GetPropertyCompatible(CCX, sProperty));
@@ -90,16 +114,7 @@ ICCItem *CSpaceObject::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString 
 	CCodeChain &CC = GetUniverse().GetCC();
 	CDesignType *pType;
 
-	if (strEquals(sName, PROPERTY_ASCENDED))
-		return CC.CreateBool(IsAscended());
-
-	else if (strEquals(sName, PROPERTY_CAN_ATTACK))
-		return CC.CreateBool(CanAttack());
-
-	else if (strEquals(sName, PROPERTY_CAN_BE_ATTACKED))
-		return CC.CreateBool(CanBeAttacked());
-
-	else if (strEquals(sName, PROPERTY_CATEGORY))
+	if (strEquals(sName, PROPERTY_CATEGORY))
 		{
 		switch (GetCategory())
 			{

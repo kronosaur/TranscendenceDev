@@ -81,7 +81,6 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		virtual CMission *AsMission (void) override { return this; }
 		virtual Categories GetCategory (void) const override { return catMission; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
-		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const override;
@@ -95,6 +94,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMission"); }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
@@ -141,6 +141,10 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
 		DWORD m_dwSpare:24;
+
+		//	Property table
+
+		static TPropertyHandler<CMission> m_PropertyTable;
 	};
 
 class CMissionList

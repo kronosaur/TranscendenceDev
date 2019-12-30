@@ -12,26 +12,6 @@
 #define EVENT_ON_SET_PLAYER_TARGET				CONSTLIT("OnSetPlayerTarget")
 #define EVENT_ON_STARTED						CONSTLIT("OnStarted")
 
-#define PROPERTY_ACCEPTED_ON					CONSTLIT("acceptedOn")
-#define PROPERTY_COMPLETED_ON					CONSTLIT("completedOn")
-#define PROPERTY_DEBRIEFER_ID					CONSTLIT("debrieferID")
-#define PROPERTY_IN_PROGRESS					CONSTLIT("inProgress")
-#define PROPERTY_IS_ACTIVE						CONSTLIT("isActive")
-#define PROPERTY_IS_COMPLETED					CONSTLIT("isCompleted")
-#define PROPERTY_IS_DEBRIEFED					CONSTLIT("isDebriefed")
-#define PROPERTY_IS_DECLINED					CONSTLIT("isDeclined")
-#define PROPERTY_IS_FAILURE						CONSTLIT("isFailure")
-#define PROPERTY_IS_INTRO_SHOWN					CONSTLIT("isIntroShown")
-#define PROPERTY_IS_OPEN						CONSTLIT("isOpen")
-#define PROPERTY_IS_RECORDED					CONSTLIT("isRecorded")
-#define PROPERTY_IS_SUCCESS						CONSTLIT("isSuccess")
-#define PROPERTY_IS_UNAVAILABLE					CONSTLIT("isUnavailable")
-#define PROPERTY_NAME							CONSTLIT("name")
-#define PROPERTY_NODE_ID						CONSTLIT("nodeID")
-#define PROPERTY_OWNER_ID						CONSTLIT("ownerID")
-#define PROPERTY_SUMMARY						CONSTLIT("summary")
-#define PROPERTY_UNID							CONSTLIT("unid")
-
 #define REASON_ACCEPTED							CONSTLIT("accepted")
 #define REASON_DEBRIEFED						CONSTLIT("debriefed")
 #define REASON_DESTROYED						CONSTLIT("destroyed")
@@ -477,85 +457,6 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 			ReportEventError(EVENT_ON_COMPLETED, pResult);
 		Ctx.Discard(pResult);
 		}
-	}
-
-ICCItem *CMission::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
-
-//	GetProperty
-//
-//	Returns a property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-	if (strEquals(sName, PROPERTY_ACCEPTED_ON))
-		return (m_fAcceptedByPlayer ? CC.CreateInteger(m_dwAcceptedOn) : CC.CreateNil());
-
-	else if (strEquals(sName, PROPERTY_COMPLETED_ON))
-		return (IsCompleted() ? CC.CreateInteger(m_dwCompletedOn) : CC.CreateNil());
-
-	else if (strEquals(sName, PROPERTY_DEBRIEFER_ID))
-		{
-		if (m_pDebriefer.GetID() != OBJID_NULL)
-			return CC.CreateInteger(m_pDebriefer.GetID());
-		else if (m_pOwner.GetID() != OBJID_NULL)
-			return CC.CreateInteger(m_pOwner.GetID());
-		else
-			return CC.CreateNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_IN_PROGRESS))
-		return CC.CreateBool(IsActive() && !IsCompleted());
-
-	else if (strEquals(sName, PROPERTY_IS_ACTIVE))
-		return CC.CreateBool(IsActive());
-
-	else if (strEquals(sName, PROPERTY_IS_COMPLETED))
-		return CC.CreateBool(IsCompleted());
-
-	else if (strEquals(sName, PROPERTY_IS_DEBRIEFED))
-		return CC.CreateBool(m_fDebriefed);
-
-	else if (strEquals(sName, PROPERTY_IS_DECLINED))
-		return CC.CreateBool(m_fDeclined);
-
-	else if (strEquals(sName, PROPERTY_IS_FAILURE))
-		return CC.CreateBool(IsFailure());
-
-	else if (strEquals(sName, PROPERTY_IS_INTRO_SHOWN))
-		return CC.CreateBool(m_fIntroShown);
-
-	else if (strEquals(sName, PROPERTY_IS_OPEN))
-		return CC.CreateBool(m_iStatus == statusOpen);
-
-	else if (strEquals(sName, PROPERTY_IS_RECORDED))
-		return CC.CreateBool(IsRecorded());
-
-	else if (strEquals(sName, PROPERTY_IS_SUCCESS))
-		return CC.CreateBool(IsSuccess());
-
-	else if (strEquals(sName, PROPERTY_IS_UNAVAILABLE))
-		return CC.CreateBool(IsUnavailable());
-
-	else if (strEquals(sName, PROPERTY_NAME))
-		return CC.CreateString(m_sTitle);
-
-	else if (strEquals(sName, PROPERTY_NODE_ID))
-		return (m_sNodeID.IsBlank() ? CC.CreateNil() : CC.CreateString(m_sNodeID));
-
-	else if (strEquals(sName, PROPERTY_OWNER_ID))
-		{
-		if (m_pOwner.GetID() == OBJID_NULL)
-			return CC.CreateNil();
-		else
-			return CC.CreateInteger(m_pOwner.GetID());
-		}
-
-	else if (strEquals(sName, PROPERTY_SUMMARY))
-		return CC.CreateString(m_sInstructions);
-
-	else
-		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 bool CMission::HasSpecialAttribute (const CString &sAttrib) const
@@ -1395,70 +1296,6 @@ bool CMission::SetPlayerTarget (void)
 	FireOnSetPlayerTarget(REASON_IN_PROGRESS);
 
 	//	Done
-
-	return true;
-	}
-
-bool CMission::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
-
-//	SetProperty
-//
-//	Sets an object property
-
-	{
-	if (strEquals(sName, PROPERTY_IS_DEBRIEFED))
-		{
-		if (m_iStatus == statusPlayerSuccess || m_iStatus == statusPlayerFailure)
-			{
-			if (!pValue->IsNil())
-				{
-				if (!m_fDebriefed)
-					{
-					m_fDebriefed = true;
-
-					FireOnSetPlayerTarget(REASON_DEBRIEFED);
-					CloseMission();
-					}
-				}
-			else
-				m_fDebriefed = false;
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_DEBRIEFER_ID))
-		{
-		if (pValue->IsNil())
-			m_pDebriefer.SetID(OBJID_NULL);
-		else
-			m_pDebriefer.SetID(pValue->GetIntegerValue());
-		}
-
-	else if (strEquals(sName, PROPERTY_IS_DECLINED))
-		{
-		if (m_iStatus == statusOpen)
-			m_fDeclined = !pValue->IsNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_IS_INTRO_SHOWN))
-		{
-		if (m_iStatus == statusOpen)
-			m_fIntroShown = !pValue->IsNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_NAME))
-		{
-		if (IsActive())
-			m_sTitle = pValue->GetStringValue();
-		}
-
-	else if (strEquals(sName, PROPERTY_SUMMARY))
-		{
-		if (IsActive())
-			m_sInstructions = pValue->GetStringValue();
-		}
-
-	else
-		return CSpaceObject::SetProperty(sName, pValue, retsError);
 
 	return true;
 	}

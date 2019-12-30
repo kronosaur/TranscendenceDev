@@ -956,6 +956,7 @@ class CSpaceObject
 		//	Properties
 
 		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
+		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -1429,6 +1430,10 @@ class CSpaceObject
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector
 #endif
+
+		//	Property table
+
+		static TPropertyHandler<CSpaceObject> m_BasePropertyTable;
 
 		//	This is a global variable that is set when we update an object.
 		//	We use it to detect when an object gets destroyed inside its

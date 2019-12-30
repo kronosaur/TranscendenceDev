@@ -7,11 +7,6 @@
 #define TRAIL_COUNT								4
 #define MAX_TARGET_RANGE						(24.0 * LIGHT_SECOND)
 
-#define PROPERTY_LIFE_LEFT						CONSTLIT("lifeLeft")
-#define PROPERTY_ROTATION						CONSTLIT("rotation")
-#define PROPERTY_SOURCE							CONSTLIT("source")
-#define PROPERTY_TARGET							CONSTLIT("target")
-
 const DWORD VAPOR_TRAIL_OPACITY =				80;
 
 const Metric MAX_MIRV_TARGET_RANGE =			50.0 * LIGHT_SECOND;
@@ -538,31 +533,6 @@ CString CMissile::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) co
 		*retdwFlags = nounNoArticle;
 
 	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->GetDamage().GetDamageType()));
-	}
-
-ICCItem *CMissile::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
-
-//	GetProperty
-//
-//	Returns a property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-	if (strEquals(sName, PROPERTY_LIFE_LEFT))
-		return (m_fDestroyOnAnimationDone ? CC.CreateInteger(0) : CC.CreateInteger(m_iLifeLeft));
-
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		return CC.CreateInteger(GetRotation());
-
-	else if (strEquals(sName, PROPERTY_SOURCE))
-		return ::CreateDamageSource(CC, m_Source);
-
-	else if (strEquals(sName, PROPERTY_TARGET))
-		return ::CreateObjPointer(CC, m_pTarget);
-
-	else
-		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 int CMissile::GetStealth (void) const
@@ -1538,43 +1508,3 @@ bool CMissile::SetMissileFade (void)
 	return true;
 	}
 
-bool CMissile::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
-
-//	SetProperty
-//
-//	Sets an object property
-
-	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
-    if (strEquals(sName, PROPERTY_LIFE_LEFT))
-        {
-        if (!m_fDestroyOnAnimationDone)
-            m_iLifeLeft = Max(0, pValue->GetIntegerValue());
-        return true;
-        }
-
-	else if (strEquals(sName, PROPERTY_ROTATION))
-		{
-		m_iRotation = AngleMod(pValue->GetIntegerValue());
-		return true;
-		}
-
-	else if (strEquals(sName, PROPERTY_SOURCE))
-		{
-		//	NOTE: CDamageSource handles the case where any objects are destroyed.
-		//	so we don't need to check anything here.
-
-		m_Source = ::GetDamageSourceArg(CC, pValue);
-		return true;
-		}
-
-	else if (strEquals(sName, PROPERTY_TARGET))
-		{
-		m_pTarget = ::CreateObjFromItem(pValue, CCUTIL_FLAG_CHECK_DESTROYED);
-		return true;
-		}
-
-	else
-		return CSpaceObject::SetProperty(sName, pValue, retsError);
-	}
