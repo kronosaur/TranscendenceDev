@@ -18,6 +18,8 @@ out float alpha_strength;
 out float depth;
 out vec4 glow_color;
 out float glow_noise;
+out vec2 texture_bounds_min;
+out vec2 texture_bounds_max;
 void main(void)
 {
 	// Fix positions and sizes
@@ -40,4 +42,6 @@ void main(void)
 	alpha_strength = aAlphaStrength;
 	glow_color = aGlowColor;
 	glow_noise = aGlowNoise;
+	texture_bounds_min = fixedTexPos;
+	texture_bounds_max = fixedTexPos + texPositionOffset*2;
 }

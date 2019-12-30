@@ -1384,10 +1384,6 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			int iTexQuadHeight = RectHeight(m_rcImage);
 			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
 				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
-			int iGQuadWidth = int(RectWidth(m_rcImage) * 1.00);
-			int iGQuadHeight = int(RectHeight(m_rcImage) * 1.00);
-			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.3f, 1.0f, 0.7f, 0.8f, 1.0f);
 			}
 		else if (bComposite)
 			{
@@ -1573,6 +1569,46 @@ void CObjectImageArray::PaintImageWithGlow (CG32bitImage &Dest,
 //	This effect does not work with blending modes.
 
 	{
+	//  First, check to see if we're using OpenGL - if we are, then paint a glow quad underneath the texture quad
+	OpenGLMasterRenderQueue *pRenderQueue = Dest.GetMasterRenderQueue();
+	if (pRenderQueue && m_pImage)
+	{
+		CG32bitImage *pSource = m_pImage->GetRawImage(NULL_STR);
+		if (pSource == NULL)
+			return;
+
+		int xSrc;
+		int ySrc;
+		ComputeSourceXY(iTick, iRotation, &xSrc, &ySrc);
+		if (m_pRotationOffset)
+		{
+			x += m_pRotationOffset[iRotation % m_iRotationCount].x;
+			y -= m_pRotationOffset[iRotation % m_iRotationCount].y;
+		}
+
+		//	Glow strength
+
+		int iStrength = 64 + (4 * Absolute((iTick % 65) - 32));
+		if (iStrength > 255)
+			iStrength = 255;
+		float fStrength = iStrength / 255.0f;
+
+		int iCanvasHeight = Dest.GetHeight();
+		int iCanvasWidth = Dest.GetWidth();
+		int iQuadWidth = RectWidth(m_rcImage);
+		int iQuadHeight = RectHeight(m_rcImage);
+		int iTexQuadWidth = RectWidth(m_rcImage);
+		int iTexQuadHeight = RectHeight(m_rcImage);
+		int iGQuadWidth = int(RectWidth(m_rcImage) * 1.00);
+		int iGQuadHeight = int(RectHeight(m_rcImage) * 1.00);
+		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
+			pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
+		pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
+			pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.0f, 1.0f, 0.0f, fStrength, 0.0f);
+		return;
+	}
+
+
 	//	Paint the image
 
 	PaintImage(Dest, x, y, iTick, iRotation);

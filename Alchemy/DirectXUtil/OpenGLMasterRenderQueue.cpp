@@ -104,7 +104,7 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	unsigned int iVAOID = m_pVao->getVAO()[0];
 	unsigned int *instancedVBO = m_pVao->getinstancedVBO();
 	glBindVertexArray(iVAOID);
-	glGenBuffers(8, &instancedVBO[0]);
+	glGenBuffers(16, &instancedVBO[0]);
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
 	glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
@@ -129,6 +129,31 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glEnableVertexAttribArray(8);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[7]);
 	glVertexAttribPointer((GLuint)8, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	// Ones below these lines are placeholders...
+	glEnableVertexAttribArray(9);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[8]);
+	glVertexAttribPointer((GLuint)9, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(10);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[9]);
+	glVertexAttribPointer((GLuint)10, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(11);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[10]);
+	glVertexAttribPointer((GLuint)11, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(12);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[11]);
+	glVertexAttribPointer((GLuint)12, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(13);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[12]);
+	glVertexAttribPointer((GLuint)13, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(14);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[13]);
+	glVertexAttribPointer((GLuint)14, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(15);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[14]);
+	glVertexAttribPointer((GLuint)15, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(16);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[15]);
+	glVertexAttribPointer((GLuint)16, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);
@@ -139,6 +164,14 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glVertexAttribDivisor(6, 1);
 	glVertexAttribDivisor(7, 1);
 	glVertexAttribDivisor(8, 1);
+	glVertexAttribDivisor(9, 1);
+	glVertexAttribDivisor(10, 1);
+	glVertexAttribDivisor(11, 1);
+	glVertexAttribDivisor(12, 1);
+	glVertexAttribDivisor(13, 1);
+	glVertexAttribDivisor(14, 1);
+	glVertexAttribDivisor(15, 1);
+	glVertexAttribDivisor(16, 1);
 	glBindVertexArray(0);
 }
 
