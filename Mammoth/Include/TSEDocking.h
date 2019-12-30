@@ -20,16 +20,16 @@ class CDockingPorts
 		void DockAtRandomPort (CSpaceObject *pOwner, CSpaceObject *pObj);
 		bool DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const;
 		int FindNearestEmptyPort (CSpaceObject *pOwner, CSpaceObject *pRequestingObj, CVector *retvDistance = NULL, int *retiEmptyPortCount = NULL);
-		int GetPortCount (CSpaceObject *pOwner = NULL) const { return m_iPortCount; }
-		CSpaceObject *GetPortObj (CSpaceObject *pOwner, int iPort) { ASSERT(m_pPort[iPort].pObj == NULL || m_pPort[iPort].iStatus != psEmpty); return m_pPort[iPort].pObj; }
-		CVector GetPortPos (CSpaceObject *pOwner, int iPort, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) { return GetPortPos(pOwner, m_pPort[iPort], pShip, retbPaintInFront, retiRotation); }
-		int GetPortsInUseCount (CSpaceObject *pOwner);
+		int GetPortCount (const CSpaceObject *pOwner = NULL) const { return m_iPortCount; }
+		CSpaceObject *GetPortObj (const CSpaceObject *pOwner, int iPort) const { ASSERT(m_pPort[iPort].pObj == NULL || m_pPort[iPort].iStatus != psEmpty); return m_pPort[iPort].pObj; }
+		CVector GetPortPos (const CSpaceObject *pOwner, int iPort, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const { return GetPortPos(pOwner, m_pPort[iPort], pShip, retbPaintInFront, retiRotation); }
+		int GetPortsInUseCount (const CSpaceObject *pOwner) const;
 		void InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius);
 		void InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc);
 		void InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale = -1);
 		bool IsObjDocked (const CSpaceObject *pObj, int *retiPort = NULL) const { return IsDocked(pObj, retiPort); }
 		bool IsObjDockedOrDocking (const CSpaceObject *pObj) const { return IsDockedOrDocking(pObj); }
-		bool IsPortEmpty (CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
+		bool IsPortEmpty (const CSpaceObject *pOwner, int iPort) const { return (m_pPort[iPort].iStatus == psEmpty); }
 		void MoveAll (CSpaceObject *pOwner);
 		void OnDestroyed (void);
 		void OnDockObjDestroyed (CSpaceObject *pOwner, const SDestroyCtx &Ctx);
@@ -82,10 +82,10 @@ class CDockingPorts
 
 		void CleanUp (void);
 		void Copy (const CDockingPorts &Src);
-		CVector GetPortPos (CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
+		CVector GetPortPos (const CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		CVector GetPortPosAtRotation (int iOwnerRotation, int iScale, int iPort, bool *retbPaintInFront = NULL, int *retiRotation = NULL) const;
 		int GetScale (int iScale = -1) const { return (m_iScale > 0 ? m_iScale : iScale); }
-		void InitXYPortPos (CSpaceObject *pOwner, int iScale = -1, int *retiMaxRadius = NULL) const;
+		void InitXYPortPos (const CSpaceObject *pOwner, int iScale = -1, int *retiMaxRadius = NULL) const;
 		void InitXYPortPos (int iRotation, int iScale, int *retiMaxRadius = NULL) const;
 		bool IsDocked (const CSpaceObject *pObj, int *retiPort = NULL) const;
 		bool IsDockedOrDocking (const CSpaceObject *pObj) const;

@@ -192,7 +192,7 @@ ItemFates CInstalledDevice::GetFate (void) const
 		return fateNone;
 	}
 
-int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
+int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 
 //	GetHitPointsPercent
 //

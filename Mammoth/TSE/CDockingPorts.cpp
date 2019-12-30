@@ -305,7 +305,7 @@ bool CDockingPorts::DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const
 		}
 	}
 
-CVector CDockingPorts::GetPortPos (CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront, int *retiRotation) const
+CVector CDockingPorts::GetPortPos (const CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront, int *retiRotation) const
 
 //	GetPortPos
 //
@@ -406,7 +406,7 @@ CVector CDockingPorts::GetPortPosAtRotation (int iOwnerRotation, int iScale, int
 	return Port.vPos;
 	}
 
-int CDockingPorts::GetPortsInUseCount (CSpaceObject *pOwner)
+int CDockingPorts::GetPortsInUseCount (const CSpaceObject *pOwner) const
 
 //	GetPortsInUseCount
 //
@@ -631,7 +631,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 				64 * g_KlicksPerPixel);
 	}
 
-void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale, int *retiMaxRadius) const
+void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale, int *retiMaxRadius) const
 
 //	InitXYPortPos
 //

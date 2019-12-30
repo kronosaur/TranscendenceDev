@@ -540,7 +540,7 @@ CString CMissile::GetNamePattern (DWORD dwNounPhraseFlags, DWORD *retdwFlags) co
 	return strPatternSubst(CONSTLIT("%s damage"), GetDamageShortName(m_pDesc->GetDamage().GetDamageType()));
 	}
 
-ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CMissile::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -562,7 +562,7 @@ ICCItem *CMissile::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return ::CreateObjPointer(CC, m_pTarget);
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 int CMissile::GetStealth (void) const

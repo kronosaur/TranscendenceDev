@@ -3167,8 +3167,8 @@ int CWeaponClass::GetSelectVariantCount (void) const
 		}
 	}
 
-void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
-										   CInstalledDevice *pDevice,
+void CWeaponClass::GetSelectedVariantInfo (const CSpaceObject *pSource, 
+										   const CInstalledDevice *pDevice,
 										   CString *retsLabel,
 										   int *retiAmmoLeft,
 										   CItemType **retpType,
@@ -3214,7 +3214,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 			else if (pShot->GetAmmoType()->AreChargesAmmo())
 				{
 				int iCharges = 0;
-				CItemListManipulator ItemList(pSource->GetItemList());
+				CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
 				while (ItemList.MoveCursorForward())
 					{
 					const CItem &Item = ItemList.GetItemAtCursor();
@@ -3229,7 +3229,7 @@ void CWeaponClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 
 			else
 				{
-				CItemListManipulator ItemList(pSource->GetItemList());
+				CItemListManipulator ItemList(const_cast<CSpaceObject *>(pSource)->GetItemList());
 				CItem Item(pShot->GetAmmoType(), 1);
 				if (ItemList.SetCursorAtItem(Item, CItem::FLAG_IGNORE_CHARGES))
 					*retiAmmoLeft = ItemList.GetItemAtCursor().GetCount();

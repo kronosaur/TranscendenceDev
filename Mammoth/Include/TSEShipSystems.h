@@ -48,30 +48,92 @@ struct ProgramDesc
 class CArmorSystem
     {
     public:
-        CArmorSystem (void) :
-                m_iHealerLeft(0)
-            { }
+		class iterator
+			{
+			public:
+				using iterator_category = std::forward_iterator_tag;
+
+				iterator (void) { }
+				iterator (CInstalledArmor *pPos, CInstalledArmor *pEnd) :
+						m_pPos(pPos),
+						m_pEnd(pEnd)
+					{ }
+
+				iterator &operator= (const iterator &Src) { m_pPos = Src.m_pPos; return *this; }
+				friend bool operator== (const iterator &lhs, const iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
+				friend bool operator!= (const iterator &lhs, const iterator &rhs) { return !(lhs == rhs); }
+
+				iterator &operator++ () { m_pPos++; return *this; }
+				iterator operator++ (int) {	iterator Old = *this; ++(*this); return Old; }
+
+				CInstalledArmor &operator* () const { return *m_pPos; }
+				CInstalledArmor *operator-> () const { return m_pPos; }
+
+				friend void swap (iterator &lhs, iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
+
+			private:
+				CInstalledArmor *m_pPos = NULL;
+				CInstalledArmor *m_pEnd = NULL;
+			};
+
+		class const_iterator
+			{
+			public:
+				using iterator_category = std::forward_iterator_tag;
+
+				const_iterator (void) { }
+				const_iterator (const CInstalledArmor *pPos, const CInstalledArmor *pEnd) :
+						m_pPos(pPos),
+						m_pEnd(pEnd)
+					{ }
+
+				const_iterator &operator= (const const_iterator &Src) { m_pPos = Src.m_pPos; return *this; }
+				friend bool operator== (const const_iterator &lhs, const const_iterator &rhs) { return lhs.m_pPos == rhs.m_pPos; }
+				friend bool operator!= (const const_iterator &lhs, const const_iterator &rhs) { return !(lhs == rhs); }
+
+				const_iterator &operator++ () { m_pPos++; return *this; }
+				const_iterator operator++ (int) { const_iterator Old = *this; ++(*this); return Old; }
+
+				const CInstalledArmor &operator* () const { return *m_pPos; }
+				const CInstalledArmor *operator-> () const { return m_pPos; }
+
+				friend void swap (const_iterator &lhs, const_iterator &rhs)	{ Swap(lhs.m_pPos, rhs.m_pPos);	Swap(lhs.m_pEnd, rhs.m_pEnd); }
+
+			private:
+				const CInstalledArmor *m_pPos = NULL;
+				const CInstalledArmor *m_pEnd = NULL;
+			};
+
+		const_iterator begin (void) const {	return cbegin(); }
+		const_iterator cbegin (void) const { return (m_Segments.GetCount() == 0 ? const_iterator() : const_iterator(&m_Segments[0], &m_Segments[0] + m_Segments.GetCount())); }
+		const_iterator end (void) const { return cend(); }
+		const_iterator cend (void) const { return (m_Segments.GetCount() == 0 ? const_iterator() : const_iterator(&m_Segments[0] + m_Segments.GetCount(), &m_Segments[0] + m_Segments.GetCount())); }
+
+		iterator begin (void) {	return (m_Segments.GetCount() == 0 ? iterator() : iterator(&m_Segments[0], &m_Segments[0] + m_Segments.GetCount())); }
+		iterator end (void) { return (m_Segments.GetCount() == 0 ? iterator() : iterator(&m_Segments[0] + m_Segments.GetCount(), &m_Segments[0] + m_Segments.GetCount())); }
+
+		static CArmorSystem m_Null;
 
 		void AccumulatePerformance (SShipPerformanceCtx &Ctx) const;
 		void AccumulatePowerUsed (SUpdateCtx &Ctx, CSpaceObject *pObj, int &iPowerUsed, int &iPowerGenerated);
-		int CalcTotalHitPoints (CSpaceObject *pSource, int *retiMaxHP = NULL) const;
+		int CalcTotalHitPoints (int *retiMaxHP = NULL) const;
         int GetHealerLeft (void) const { return m_iHealerLeft; }
 		CInstalledArmor &GetSegment (int iSeg) { return m_Segments[iSeg]; }
 		int GetSegmentCount (void) const { return m_Segments.GetCount(); }
         int IncHealerLeft (int iInc) { SetHealerLeft(m_iHealerLeft + iInc); return m_iHealerLeft; }
         void Install (CSpaceObject &Source, const CShipArmorDesc &Desc, bool bInCreate = false);
-		bool IsImmune (CSpaceObject *pObj, SpecialDamageTypes iSpecialDamage) const;
+		bool IsImmune (SpecialDamageTypes iSpecialDamage) const;
         void ReadFromStream (SLoadCtx &Ctx, CSpaceObject &Source);
 		bool RepairAll (CSpaceObject *pSource);
 		bool RepairSegment (CSpaceObject *pSource, int iSeg, int iHPToRepair, int *retiHPRepaired = NULL);
         void SetHealerLeft (int iValue) { m_iHealerLeft = Max(0, iValue); }
 		void SetTotalHitPoints (CSpaceObject *pSource, int iNewHP);
 		bool Update (SUpdateCtx &Ctx, CSpaceObject *pSource, int iTick);
-        void WriteToStream (IWriteStream *pStream);
+        void WriteToStream (IWriteStream *pStream) const;
 
     private:
         TArray<CInstalledArmor> m_Segments;         //  Armor segments
-        int m_iHealerLeft;                          //  HP of healing left (for bioships)
+        int m_iHealerLeft = 0;						//  HP of healing left (for bioships)
     };
 
 //	Devices --------------------------------------------------------------------
@@ -271,7 +333,7 @@ class CShipInterior
 		bool FindAttachedObject (const CShipInteriorDesc &Desc, const CString &sID, CSpaceObject **retpObj) const;
 		CSpaceObject *GetAttached (int iIndex) const { return m_Compartments[iIndex].pAttached; }
 		int GetCount (void) const { return m_Compartments.GetCount(); }
-		void GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
+		void GetHitPoints (const CShip &Ship, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP = NULL) const;
 		void Init (const CShipInteriorDesc &Desc);
 		bool IsEmpty (void) const { return m_Compartments.GetCount() == 0; }
 		void OnDestroyed (CShip *pShip, const SDestroyCtx &Ctx);

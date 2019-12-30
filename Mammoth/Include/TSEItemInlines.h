@@ -226,6 +226,12 @@ inline CSpaceObject *CArmorItem::GetSource (void) const
 		return NULL;
 	}
 
+inline bool CArmorItem::IsImmune (SpecialDamageTypes iSpecialDamage) const
+	{
+	return GetArmorClass().IsImmune(*this, iSpecialDamage);
+	}
+
+
 //	CInstalledArmor Inlines ----------------------------------------------------
 
 inline EDamageResults CInstalledArmor::AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx)

@@ -151,8 +151,8 @@ Metric CCyberDeckClass::GetMaxRange (CItemCtx &ItemCtx)
 	return m_iRange * LIGHT_SECOND;
 	}
 
-void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
-											  CInstalledDevice *pDevice,
+void CCyberDeckClass::GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											  const CInstalledDevice *pDevice,
 											  CString *retsLabel,
 											  int *retiAmmoLeft,
 											  CItemType **retpType,

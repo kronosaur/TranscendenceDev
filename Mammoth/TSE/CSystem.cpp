@@ -1922,7 +1922,7 @@ CSpaceObject *CSystem::FindObjectWithOrbit (const COrbit &Orbit) const
 	return NULL;
     }
 
-bool CSystem::FindObjectName (CSpaceObject *pObj, CString *retsName)
+bool CSystem::FindObjectName (const CSpaceObject *pObj, CString *retsName)
 
 //	FindObjectName
 //

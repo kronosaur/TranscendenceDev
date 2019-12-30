@@ -130,6 +130,7 @@ class CArmorItem : public CDifferentiatedItem
 		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline bool IsImmune (SpecialDamageTypes iSpecialDamage) const;
 
 	private:
 		CArmorItem (CItem &Item) : CDifferentiatedItem(Item)

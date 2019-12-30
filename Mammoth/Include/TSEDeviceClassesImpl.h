@@ -104,8 +104,8 @@ class CCyberDeckClass : public CDeviceClass
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageGeneric; }
 		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
-		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
-											 CInstalledDevice *pDevice,
+		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
@@ -460,7 +460,7 @@ class CShieldClass : public CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const override;
 		virtual int GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const override;
-		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
+		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
@@ -708,8 +708,8 @@ class CWeaponClass : public CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const override;
-		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
-											 CInstalledDevice *pDevice,
+		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,

@@ -1390,5 +1390,8 @@
     <ClCompile Include="CMissileItem.cpp">
       <Filter>Source Files\Items</Filter>
     </ClCompile>
+    <ClCompile Include="CSpaceObjectProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

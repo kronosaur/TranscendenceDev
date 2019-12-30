@@ -479,7 +479,7 @@ void CMission::FireOnStop (const CString &sReason, ICCItem *pData)
 		}
 	}
 
-ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CMission::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -555,7 +555,7 @@ ICCItem *CMission::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CC.CreateString(m_sInstructions);
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 bool CMission::HasSpecialAttribute (const CString &sAttrib) const

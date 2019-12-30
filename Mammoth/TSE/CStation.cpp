@@ -1808,7 +1808,7 @@ CSystem::LayerEnum CStation::GetPaintLayer (void) const
 		}
 	}
 
-ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CStation::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -1949,7 +1949,7 @@ ICCItem *CStation::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return pResult;
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 IShipGenerator *CStation::GetRandomEncounterTable (int *retiFrequency) const

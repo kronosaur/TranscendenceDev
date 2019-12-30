@@ -82,7 +82,7 @@ class CArmorClass
 		CString GetReference (CItemCtx &Ctx);
 		bool GetReferenceSpeedBonus (CItemCtx &Ctx, int *retiSpeedBonus) const;
         Metric GetScaledCostAdj (CItemCtx &ItemCtx) const;
-		bool IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const;
+		bool IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpecialDamage) const;
 		bool IsReflective (const CArmorItem &ArmorItem, const DamageDesc &Damage, int *retiChance = NULL) const;
 		bool IsShieldInterfering (CItemCtx &ItemCtx);
 		ESetPropertyResults SetItemProperty (CItemCtx &Ctx, CItem &Item, const CString &sProperty, const ICCItem &Value, CString *retsError = NULL);
@@ -155,6 +155,8 @@ class CArmorClass
 		int UpdateCustom (CInstalledArmor *pArmor, CSpaceObject *pSource, SEventHandlerDesc Event) const;
 		bool UpdateDecay (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
 		bool UpdateDistribute (CItemCtx &ItemCtx, const SScalableStats &Stats, int iTick);
+
+		static bool IsImmune (const SScalableStats &Stats, const CItemEnhancementStack &Enhancements, SpecialDamageTypes iSpecialDamage);
 
         SScalableStats m_Stats;                 //  Base stats capable of being scaled
 
@@ -254,6 +256,8 @@ class CShipArmorDesc
 class CInstalledArmor
 	{
 	public:
+		operator CArmorItem () const { return AsArmorItem(); }
+
 		const CArmorItem AsArmorItem (void) const { return m_pItem->AsArmorItemOrThrow(); }
 		CArmorItem AsArmorItem (void) { return m_pItem->AsArmorItemOrThrow(); }
 		inline EDamageResults AbsorbDamage (CSpaceObject *pSource, SDamageCtx &Ctx);
@@ -284,7 +288,7 @@ class CInstalledArmor
 		void SetHitPoints (int iHP) { m_iHitPoints = iHP; }
 		void SetSect (int iSect) { m_iSect = iSect; }
 		void ReadFromStream (CSpaceObject &Source, int iSect, SLoadCtx &Ctx);
-		void WriteToStream (IWriteStream *pStream);
+		void WriteToStream (IWriteStream *pStream) const;
 
 	private:
 		CSpaceObject *m_pSource = NULL;				//	Installed on this object

@@ -13,7 +13,7 @@ TPropertyHandler<CEffect> CEffect::m_PropertyTable = std::array<TPropertyHandler
 		}
 	};
 
-ICCItem *CEffect::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItem *CEffect::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sProperty) const
 
 //	GetProperty
 //
@@ -39,7 +39,7 @@ ICCItem *CEffect::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	//	Lastly, get the base class properties
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sProperty);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sProperty);
 	}
 
 bool CEffect::SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)

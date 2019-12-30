@@ -81,7 +81,7 @@ class CMission : public TSpaceObjectImpl<OBJID_CMISSION>
 		virtual CMission *AsMission (void) override { return this; }
 		virtual Categories GetCategory (void) const override { return catMission; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_pType->GetName(); }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
+		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual bool HasAttribute (const CString &sAttribute) const override { return m_pType->HasLiteralAttribute(sAttribute); }
 		virtual bool HasSpecialAttribute (const CString &sAttrib) const override;

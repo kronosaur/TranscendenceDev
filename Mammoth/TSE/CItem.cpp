@@ -2411,17 +2411,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 	{
 	if (IsArmor())
 		{
-		const CArmorClass *pArmor = GetType()->GetArmorClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		CArmorItem ArmorItem = BasicItem.AsArmorItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etSpecialDamage:
 				if (Enhancement.IsDisadvantage())
-					return pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 				else
-					return !pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return !ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 
 			default:
 				return true;
