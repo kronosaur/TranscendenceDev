@@ -1373,7 +1373,7 @@ void CPlayerShipController::OnShipStatus (EShipStatusNotifications iEvent, DWORD
 
 			if (iSeq == -1)
 				{
-				m_pTrans->DisplayMessage(CONSTLIT("Out of fuel!"));
+				m_pTrans->DisplayMessage(g_pUniverse->TranslateEngineText(CONSTLIT("msgOutOfFuel")));
 
 				//	Stop
 
