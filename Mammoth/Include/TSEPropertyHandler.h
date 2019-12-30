@@ -21,8 +21,6 @@ class TPropertyHandler
 	public:
 		struct SPropertyDef
 			{
-			~SPropertyDef (void) { }
-
 			LPCSTR pProperty;
 			LPCSTR pShortDesc;
 			std::function<ICCItemPtr(const OBJ &, const CString &)> fnGet;
@@ -35,6 +33,8 @@ class TPropertyHandler
 
 		template <int N> TPropertyHandler (const std::array<SPropertyDef, N> &Table)
 			{
+			m_Table.GrowToFit(N);
+
 			for (int i = 0; i < N; i++)
 				m_Table.SetAt(Table[i].pProperty, Table[i]);
 			}
@@ -114,5 +114,5 @@ class TPropertyHandler
 			}
 
 	private:
-		TSortMap<LPCSTR, SPropertyDef, true> m_Table;
+		TSortMap<LPCSTR, SPropertyDef> m_Table;
 	};
