@@ -1539,6 +1539,7 @@
 						(not (objIsRadioactive theObj))
 						(not (objGetData theObj (or lootedVar 'core.salvaged)))
 						(not (objGetData theObj 'core.noSalvage))
+						(not (objGetProperty theObj 'core.noSalvage))
 						)
 					)
 				))

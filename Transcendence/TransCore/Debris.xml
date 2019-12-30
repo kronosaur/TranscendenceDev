@@ -735,6 +735,10 @@
 			attributes=			"enemy, envEarth, envAvoidsAir, noSalvage"
 			>
 
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
+
 		<!-- Encounter Info -->
 
 		<Encounter
@@ -817,6 +821,10 @@
 			noMapIcon=			"true"
 			destroyWhenEmpty=	"true"
 			>
+
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
 
 		<ImageVariants>
 			<Image			imageID="&rsStations1;" imageX="480" imageY="256" imageWidth="32" imageHeight="32" />
