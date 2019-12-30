@@ -26,7 +26,9 @@ void OpenGLMasterRenderQueue::deinitVAO(void)
 	delete[] m_pVao;
 }
 
-void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, float alphaStrength)
+void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX,
+	int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight,
+	float alphaStrength, float glowR, float glowG, float glowB, float glowA, float glowNoise)
 	{
 	// Note, image is a pointer to the CG32bitPixel* we want to use as a texture. We can use CG32bitPixel->GetPixelArray() to get this pointer.
 	// To get the width and height, we can use pSource->GetWidth() and pSource->GetHeight() respectively.
@@ -47,7 +49,8 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		m_shipRenderQueues[pTextureToUse] = new OpenGLInstancedRenderQueue();
 		}
 	// Add this quad to the render queue.
-	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, alphaStrength);
+	glm::vec4 glow(glowR, glowG, glowB, glowA);
+	m_shipRenderQueues[m_textures[image]]->addObjToRender(startPixelX, startPixelY, sizePixelX, sizePixelY, posPixelX, posPixelY, canvasHeight, canvasWidth, texHeight, texWidth, texQuadWidth, texQuadHeight, alphaStrength, glow, glowNoise);
 	}
 
 void OpenGLMasterRenderQueue::renderAllQueues(void)
@@ -101,7 +104,7 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	unsigned int iVAOID = m_pVao->getVAO()[0];
 	unsigned int *instancedVBO = m_pVao->getinstancedVBO();
 	glBindVertexArray(iVAOID);
-	glGenBuffers(6, &instancedVBO[0]);
+	glGenBuffers(8, &instancedVBO[0]);
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[0]);
 	glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
@@ -120,6 +123,12 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glEnableVertexAttribArray(6);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
 	glVertexAttribPointer((GLuint)6, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(7);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
+	glVertexAttribPointer((GLuint)7, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(8);
+	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[7]);
+	glVertexAttribPointer((GLuint)8, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);
@@ -128,6 +137,8 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
 	glVertexAttribDivisor(6, 1);
+	glVertexAttribDivisor(7, 1);
+	glVertexAttribDivisor(8, 1);
 	glBindVertexArray(0);
 }
 

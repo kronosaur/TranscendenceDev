@@ -165,7 +165,8 @@ public:
 	void Render (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture, float &startingDepth, float incDepth, int currentTick);
 	void RenderNonInstanced (Shader *shader, OpenGLVAO *vao, OpenGLTexture *texture);
 	void clear (void);
-	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth, float alphaStrength = 1.0f);
+	void addObjToRender (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, int texHeight, int texWidth,
+		int texQuadWidth, int texQuadHeight, float alphaStrength, glm::vec4 glow, float glowNoise);
 	void addObjToRender (float startFX, float startFY, float sizeFX, float sizeFY, float posFX, float posFY);
 	// TODO(heliogenesis): Remove getters/setters for shader and texture. Also remove the pointers for shader and texture.
 	void setShader (Shader *shader) { m_pShader = shader; }
@@ -182,6 +183,8 @@ private:
 	std::vector<glm::vec2> m_textureSizesFloat;
 	std::vector<float> m_alphaStrengthsFloat;
 	std::vector<float> m_depthsFloat;
+	std::vector<glm::vec4> m_glowColorFloat;
+	std::vector<float> m_glowNoiseFactorFloat;
 	Shader* m_pShader;
 	OpenGLTexture* m_pTexture;
 };
@@ -193,7 +196,9 @@ public:
 	void renderAllQueues (void);
 	void setObjectTextureShader (Shader *shader) { m_pObjectTextureShader = shader; }
 	Shader* getObjectTextureShader (void) { return m_pObjectTextureShader; }
-	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, float alphaStrength = 1.0);
+	void addShipToRenderQueue (int startPixelX, int startPixelY, int sizePixelX, int sizePixelY, int posPixelX, int posPixelY,
+		int canvasHeight, int canvasWidth, GLvoid *image, int texWidth, int texHeight, int texQuadWidth, int texQuadHeight, float alphaStrength = 1.0,
+		float glowR = 0.0, float glowG = 0.0, float glowB = 0.0, float glowA = 0.0, float glowNoise = 0.0);
 	void setCurrentTick (int currTick) { m_iCurrentTick = currTick; }
 private:
 	void initializeVAO (void);

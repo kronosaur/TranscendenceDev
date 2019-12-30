@@ -5,6 +5,8 @@ in vec2 texture_size;
 in vec2 fragment_pos;
 in float alpha_strength;
 in float depth;
+in vec4 glow_color;
+in float glow_noise;
 out vec4 out_Color;
 
 uniform sampler2D obj_texture;
@@ -87,21 +89,35 @@ float cnoise(vec3 P){
   return 2.2 * n_xyz;
 }
 
+
+
 void main(void)
 {		
-	float alphaIsZero_Epsilon = 0.01;
+	float Epsilon = 0.01;
 	int alphaNoisePeriodTime = 5;
 	float alphaNoisePeriodXY = 1000.0f;
+	float glowNoisePeriodXY = 10.0f;
 
 	vec2 onePixel = vec2(1.0, 1.0) / textureSize(obj_texture, 0);
 	vec4 RealColor = texture(obj_texture, vec2(texture_uv[0], texture_uv[1]));
-	bool alphaIsZero = RealColor[3] < alphaIsZero_Epsilon;
+	bool alphaIsZero = RealColor[3] < Epsilon;
 	gl_FragDepth = depth + float(alphaIsZero);
 	float alphaNoiseTimeAxis = (float(current_tick) / float(alphaNoisePeriodTime));
-	float alphaNoise = (cnoise(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
-	alphaNoise = alphaNoise + float(alpha_strength > 0.9999);
+	float perlinNoise = (cnoise(vec3(fragment_pos[0] * alphaNoisePeriodXY, fragment_pos[1] * alphaNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
+	float perlinNoiseGlow = (cnoise(vec3(fragment_pos[0] * glowNoisePeriodXY, fragment_pos[1] * glowNoisePeriodXY, alphaNoiseTimeAxis)) + 0.0f);
+	float alphaNoise = perlinNoise + float(alpha_strength > 0.9999);
 	alphaNoise = (alpha_strength + (alphaNoise * alpha_strength));
 	alphaNoise = (float(alphaNoise > 0.5) * 2) - 1;
 	
-    out_Color = vec4(RealColor[0], RealColor[1], RealColor[2], RealColor[3] * alphaNoise * alpha_strength);
+	// If a glow color is specified, use glow instead of using the ship texture
+	// Also add noise to the glow as appropriate
+	// Glow size is controlled via the quad size; we use separate quads for glow and standard ship texture
+	float glowBoundaries = min(1.0, fwidth(RealColor[3]) + float(RealColor[3] > Epsilon));
+	
+	bool useGlow = (glow_color[3] > Epsilon);
+	vec4 textureColor = vec4(RealColor[0], RealColor[1], RealColor[2], RealColor[3] * alphaNoise * alpha_strength);
+	//vec4 glowColor = vec4(fwidth(RealColor[3]), fwidth(RealColor[3]), fwidth(RealColor[3]), fwidth(RealColor[3]));
+	vec4 glowColor = vec4(glow_color[0], glow_color[1], glow_color[2], glow_color[3] * ((perlinNoiseGlow / 2.0) + 0.5)) * glowBoundaries;
+	
+    out_Color = (float(!useGlow) * textureColor) + (float(useGlow) * glowColor);
 }

@@ -7,6 +7,8 @@ in vec2 aCanvasPositions;
 in vec2 aTexQuadSizes;
 in float aAlphaStrength;
 in float aDepth;
+in vec4 aGlowColor;
+in float aGlowNoise;
 
 out vec2 texture_uv;
 out vec2 texture_pos;
@@ -14,6 +16,8 @@ out vec2 texture_size;
 out vec2 fragment_pos;
 out float alpha_strength;
 out float depth;
+out vec4 glow_color;
+out float glow_noise;
 void main(void)
 {
 	// Fix positions and sizes
@@ -34,4 +38,6 @@ void main(void)
 	texture_size = fixedTexSize;
 	fragment_pos = vec2(aPos[0] + 0.5f, aPos[1] + 0.5f);
 	alpha_strength = aAlphaStrength;
+	glow_color = aGlowColor;
+	glow_noise = aGlowNoise;
 }

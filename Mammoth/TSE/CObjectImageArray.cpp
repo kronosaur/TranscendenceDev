@@ -1378,8 +1378,16 @@ void CObjectImageArray::PaintImage (CG32bitImage &Dest, int x, int y, int iTick,
 			{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
-			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight());
+			int iQuadWidth = RectWidth(m_rcImage);
+			int iQuadHeight = RectHeight(m_rcImage);
+			int iTexQuadWidth = RectWidth(m_rcImage);
+			int iTexQuadHeight = RectHeight(m_rcImage);
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
+				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight);
+			int iGQuadWidth = int(RectWidth(m_rcImage) * 1.2);
+			int iGQuadHeight = int(RectHeight(m_rcImage) * 1.2);
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iGQuadWidth, iGQuadHeight, x - (iGQuadWidth / 2), y - (iGQuadHeight / 2), iCanvasHeight, iCanvasWidth,
+				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, 1.0f, 0.3f, 1.0f, 0.7f, 0.8f, 1.0f);
 			}
 		else if (bComposite)
 			{
@@ -1448,8 +1456,12 @@ void CObjectImageArray::PaintImageShimmering (CG32bitImage &Dest, int x, int y, 
 			{
 			int iCanvasHeight = Dest.GetHeight();
 			int iCanvasWidth = Dest.GetWidth();
-			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, RectWidth(m_rcImage), RectHeight(m_rcImage), x - (RectWidth(m_rcImage) / 2), y - (RectHeight(m_rcImage) / 2), iCanvasHeight, iCanvasWidth,
-				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
+			int iQuadWidth = RectWidth(m_rcImage) * 2;
+			int iQuadHeight = RectHeight(m_rcImage) * 2;
+			int iTexQuadWidth = RectWidth(m_rcImage);
+			int iTexQuadHeight = RectHeight(m_rcImage);
+			pRenderQueue->addShipToRenderQueue(xSrc, ySrc, iQuadWidth, iQuadHeight, x - (iQuadWidth / 2), y - (iQuadHeight / 2), iCanvasHeight, iCanvasWidth,
+				pSource->GetPixelArray(), pSource->GetWidth(), pSource->GetHeight(), iTexQuadWidth, iTexQuadHeight, (byOpacity == 0 ? 1.0f : (float)(static_cast<int>(byOpacity) / 255.0f)));
 			}
 		else
 			{

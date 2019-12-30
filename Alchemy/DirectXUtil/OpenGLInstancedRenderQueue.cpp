@@ -66,6 +66,10 @@ void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLT
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_alphaStrengthsFloat[0], GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[5]);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_depthsFloat[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[6]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec4) * m_iNumObjectsToRender, &m_glowColorFloat[0], GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[7]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_glowNoiseFactorFloat[0], GL_STATIC_DRAW);
 		shader->bind();
 		glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
 		glUniform1i(glGetUniformLocation(shader->id(), "current_tick"), currentTick);
@@ -86,18 +90,21 @@ void OpenGLInstancedRenderQueue::clear(void)
 	m_canvasPositionsFloat.clear();
 	m_textureSizesFloat.clear();
 	m_alphaStrengthsFloat.clear();
+	m_glowColorFloat.clear();
+	m_glowNoiseFactorFloat.clear();
 	m_depthsFloat.clear();
 	m_iNumObjectsToRender = 0;
 	}
 
 void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY,
 	int sizePixelX, int sizePixelY, int posPixelX, int posPixelY, int canvasHeight,
-	int canvasWidth, int texHeight, int texWidth, float alphaStrength)
+	int canvasWidth, int texHeight, int texWidth, int texQuadWidth, int texQuadHeight, float alphaStrength,
+	glm::vec4 glow, float glowNoise)
 	{
 	glm::vec2 texPos((float)startPixelX / (float)texWidth,
 		(float)startPixelY / (float)texHeight);
-	glm::vec2 texSize((float)sizePixelX / (float)texWidth,
-		(float)sizePixelY / (float)texHeight);
+	glm::vec2 texSize((float)texQuadWidth / (float)texWidth,
+		(float)texQuadHeight / (float)texHeight);
 	glm::vec2 size((float)sizePixelX / (float)canvasWidth,
 		(float)sizePixelY / (float)canvasHeight);
 	glm::vec2 canvasPos((float)posPixelX / (float)canvasWidth,
@@ -109,6 +116,8 @@ void OpenGLInstancedRenderQueue::addObjToRender(int startPixelX, int startPixelY
 	m_canvasPositionsFloat.insert(m_canvasPositionsFloat.end(), canvasPos);
 	m_textureSizesFloat.insert(m_textureSizesFloat.end(), texSize);
 	m_alphaStrengthsFloat.insert(m_alphaStrengthsFloat.end(), alphaStrength);
+	m_glowColorFloat.insert(m_glowColorFloat.end(), glow);
+	m_glowNoiseFactorFloat.insert(m_glowNoiseFactorFloat.end(), glowNoise);
 	//m_depthsFloat.insert(m_depthsFloat.end(), depth);
 	m_iNumObjectsToRender++;
 	}
