@@ -241,7 +241,7 @@ template <class KEY, class VALUE> class TMap : public CMapBase
 
 const DWORD NULL_ATOM = 0xffffffff;
 
-template <class KEY, class VALUE> class TSortMap
+template <class KEY, class VALUE, bool NO_CLEAN_UP = false> class TSortMap
 	{
 	public:
 		TSortMap (ESortOptions iOrder = AscendingSort) : m_iOrder(iOrder) { }
@@ -664,7 +664,7 @@ template <class KEY, class VALUE> class TSortMap
 
 		ESortOptions m_iOrder;
 		TArray<int> m_Index;
-		TArray<SEntry> m_Array;
+		TArray<SEntry, NO_CLEAN_UP> m_Array;
 		TArray<int> m_Free;
 	};
 

@@ -21,6 +21,8 @@ class TPropertyHandler
 	public:
 		struct SPropertyDef
 			{
+			~SPropertyDef (void) { }
+
 			LPCSTR pProperty;
 			LPCSTR pShortDesc;
 			std::function<ICCItemPtr(const OBJ &, const CString &)> fnGet;
@@ -112,5 +114,5 @@ class TPropertyHandler
 			}
 
 	private:
-		TSortMap<LPCSTR, SPropertyDef> m_Table;
+		TSortMap<LPCSTR, SPropertyDef, true> m_Table;
 	};

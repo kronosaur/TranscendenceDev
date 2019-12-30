@@ -134,7 +134,7 @@ template <class VALUE> class TRawArray : public CArrayBase
 		int m_iExtraBytes;
 	};
 
-template <class VALUE> class TArray : public Kernel::CArrayBase
+template <class VALUE, bool NO_CLEAN_UP = false> class TArray : public Kernel::CArrayBase
 	{
 	public:
 		TArray (void) : CArrayBase(NULL, DEFAULT_ARRAY_GRANULARITY) { }
@@ -154,7 +154,7 @@ template <class VALUE> class TArray : public Kernel::CArrayBase
 			Src.m_pBlock = NULL;
 			}
 
-		~TArray (void) { DeleteAll(); }
+		~TArray (void) { if (!NO_CLEAN_UP) DeleteAll(); }
 
 		TArray<VALUE> &operator= (const TArray<VALUE> &Obj)
 			{
