@@ -57,7 +57,7 @@ CString CGameStats::GetTextValue (CDesignType *pType, const CString &sIDField, c
 	if (pItem && !pItem->IsNil())
 		{
 		CString sText;
-		if (!pType->TranslateText(NULL, pItem->GetStringValue(), NULL, &sText))
+		if (!pType->TranslateText(pItem->GetStringValue(), NULL, &sText))
 			return NULL_STR;
 
 		return sText;

@@ -7097,19 +7097,19 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &re
 	{
 	//	First we ask the override
 
-	if (m_pOverride && m_pOverride->Translate(this, sID, pData, retResult))
+	if (m_pOverride && m_pOverride->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Ask the type
 
 	CDesignType *pType = GetType();
-	if (pType && pType->Translate(this, sID, pData, retResult))
+	if (pType && pType->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, see if the sovereign has it
 
 	CSovereign *pSovereign = GetSovereign();
-	if (pSovereign && pSovereign->Translate(this, sID, pData, retResult))
+	if (pSovereign && pSovereign->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, we can't find it.
@@ -7126,19 +7126,19 @@ bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *r
 	{
 	//	Ask the override
 
-	if (m_pOverride && m_pOverride->TranslateText(this, sID, pData, retsText))
+	if (m_pOverride && m_pOverride->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Then the type
 
 	CDesignType *pType = GetType();
-	if (pType && pType->TranslateText(this, sID, pData, retsText))
+	if (pType && pType->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Otherwise, see if the sovereign has it
 
 	CSovereign *pSovereign = GetSovereign();
-	if (pSovereign && pSovereign->TranslateText(this, sID, pData, retsText))
+	if (pSovereign && pSovereign->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Otherwise, we can't find it.
