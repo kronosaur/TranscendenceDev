@@ -5,8 +5,6 @@
 
 #include "PreComp.h"
 
-const DWORD INVALID_TIME = 0xffffffff;
-
 #define BEST_ENEMY_SHIPS_DESTROYED_STATS		CONSTLIT("bestEnemyShipsDestroyed")
 #define ENEMY_OBJS_DESTROYED_STAT				CONSTLIT("enemyObjsDestroyed")
 #define ENEMY_SHIPS_DESTROYED_STAT				CONSTLIT("enemyShipsDestroyed")
@@ -18,6 +16,8 @@ const DWORD INVALID_TIME = 0xffffffff;
 #define ITEMS_BOUGHT_VALUE_STAT					CONSTLIT("itemsBoughtValue")
 #define ITEMS_DAMAGED_HP_STAT					CONSTLIT("itemsDamagedHP")
 #define ITEMS_FIRED_COUNT_STAT					CONSTLIT("itemsFiredCount")
+#define ITEMS_MINED_COUNT_STAT					CONSTLIT("itemsMinedCount")
+#define ITEMS_MINED_VALUE_STAT					CONSTLIT("itemsMinedValue")
 #define ITEMS_SOLD_COUNT_STAT					CONSTLIT("itemsSoldCount")
 #define ITEMS_SOLD_VALUE_STAT					CONSTLIT("itemsSoldValue")
 #define MISSION_COMPLETED_STAT					CONSTLIT("missionCompleted")
@@ -58,8 +58,6 @@ class CStatCounterArray
 
 		TMap<CString, TMap<CString, SEntry>> m_Array;
 	};
-
-void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime);
 
 CPlayerGameStats::CPlayerGameStats (CUniverse &Universe) : 
 		m_Universe(Universe)
@@ -386,7 +384,7 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 
 	CounterArray.GenerateGameStats(Stats);
 
-	//	Add stat for every weapon fired
+	//	Add stat for every item
 
 	m_ItemStats.Reset(i);
 	while (m_ItemStats.HasMore(i))
@@ -416,6 +414,16 @@ void CPlayerGameStats::GenerateGameStats (CGameStats &Stats, CSpaceObject *pPlay
 					strFormatInteger(pStats->iHPDamaged, -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED),
 					CONSTLIT("Damage sustained"),
 					sSort);
+
+		//	Mined ore
+
+		if (pStats->iCountMined > 0)
+			{
+			Stats.Insert(sName, 
+					strFormatInteger(pStats->iCountMined, -1, FORMAT_THOUSAND_SEPARATOR | FORMAT_UNSIGNED), 
+					CONSTLIT("Ore mined"), 
+					sSort);
+			}
 		}
 
 	//	Stats for player equipment (but only if the game is done)
@@ -741,6 +749,23 @@ CString CPlayerGameStats::GetItemStat (const CString &sStat, ICCItem *pItemCrite
 		for (j = 0; j < List.GetCount(); j++)
 			iTotalCount += List[j].pStats->iCountFired;
 		return ::strFromInt(iTotalCount);
+		}
+	else if (strEquals(sStat, ITEMS_MINED_COUNT_STAT))
+		{
+		int iTotalCount = 0;
+		for (j = 0; j < List.GetCount(); j++)
+			iTotalCount += List[j].pStats->iCountMined;
+		return ::strFromInt(iTotalCount);
+		}
+	else if (strEquals(sStat, ITEMS_MINED_VALUE_STAT))
+		{
+		CurrencyValue iTotal = 0;
+		for (j = 0; j < List.GetCount(); j++)
+			{
+			CItem Ore(List[j].pType, 1);
+			iTotal += Ore.GetRawPrice(true) * List[j].pStats->iCountMined;
+			}
+		return ::strFromInt((int)iTotal);
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_COUNT_STAT))
 		{
@@ -1191,6 +1216,11 @@ int CPlayerGameStats::IncItemStat (const CString &sStat, DWORD dwUNID, int iInc)
 		{
 		pStats->iCountFired += Max(0, iInc);
 		return pStats->iCountFired;
+		}
+	else if (strEquals(sStat, ITEMS_MINED_COUNT_STAT))
+		{
+		pStats->iCountMined += Max(0, iInc);
+		return pStats->iCountMined;
 		}
 	else if (strEquals(sStat, ITEMS_SOLD_COUNT_STAT))
 		{
@@ -1875,6 +1905,17 @@ void CPlayerGameStats::WriteToStream (IWriteStream *pStream)
 		}
 	}
 
+void CPlayerGameStats::WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime)
+	{
+	if (dwTime == INVALID_TIME)
+		Output.Write(NIL_VALUE.GetASCIIZPointer(), NIL_VALUE.GetLength());
+	else
+		{
+		CString sInt = strFromInt(dwTime);
+		Output.Write(sInt.GetASCIIZPointer(), sInt.GetLength());
+		}
+	}
+
 //	CStatCounterArray ---------------------------------------------------------
 
 void CStatCounterArray::GenerateGameStats (CGameStats &Stats)
@@ -1946,17 +1987,6 @@ void CStatCounterArray::Insert (const CString &sStat, int iCount, const CString 
 			pEntry->sSort = sSort;
 
 		pEntry->iCount += iCount;
-		}
-	}
-
-void WriteTimeValue (CMemoryWriteStream &Output, DWORD dwTime)
-	{
-	if (dwTime == INVALID_TIME)
-		Output.Write(NIL_VALUE.GetASCIIZPointer(), NIL_VALUE.GetLength());
-	else
-		{
-		CString sInt = strFromInt(dwTime);
-		Output.Write(sInt.GetASCIIZPointer(), sInt.GetLength());
 		}
 	}
 

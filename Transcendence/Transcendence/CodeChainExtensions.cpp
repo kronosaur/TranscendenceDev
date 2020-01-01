@@ -484,6 +484,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsBoughtValue\n"
 			"   'itemsDamagedHP\n"
 			"   'itemsFiredCount\n"
+			"   'itemsMinedCount\n"
+			"   'itemsMinedValue\n"
 			"   'itemsSoldCount\n"
 			"   'itemsSoldValue",
 
@@ -545,6 +547,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsBoughtValue\n"
 			"   'itemsDamagedHP\n"
 			"   'itemsFiredCount\n"
+			"   'itemsMinedCount\n"
 			"   'itemsSoldCount\n"
 			"   'itemsSoldValue",
 
