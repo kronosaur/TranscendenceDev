@@ -32,7 +32,7 @@ void OpenGLInstancedRenderQueue::RenderNonInstanced(Shader *shader, OpenGLVAO *q
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float), &m_alphaStrengthsFloat[i], GL_DYNAMIC_DRAW);
 		shader->bind();
 		glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
-		texture->bindTexture2D(GL_TEXTURE0);
+		texture->getGlowMap()->bindTexture2D(GL_TEXTURE0);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		shader->unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -72,8 +72,10 @@ void OpenGLInstancedRenderQueue::Render(Shader *shader, OpenGLVAO *quad, OpenGLT
 		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_iNumObjectsToRender, &m_glowNoiseFactorFloat[0], GL_STATIC_DRAW);
 		shader->bind();
 		glUniform1i(glGetUniformLocation(shader->id(), "obj_texture"), 0);
+		glUniform1i(glGetUniformLocation(shader->id(), "glow_map"), 1);
 		glUniform1i(glGetUniformLocation(shader->id(), "current_tick"), currentTick);
 		texture->bindTexture2D(GL_TEXTURE0);
+		texture->getGlowMap()->bindTexture2D(GL_TEXTURE1);
 		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, m_iNumObjectsToRender);
 		shader->unbind();
 		glBindBuffer(GL_ARRAY_BUFFER, 0);

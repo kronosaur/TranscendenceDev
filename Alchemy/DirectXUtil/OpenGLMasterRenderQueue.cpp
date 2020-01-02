@@ -10,19 +10,82 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	initializeVAO();
 	// Depth level starts at one minus the delta.
 	m_fDepthLevel = m_fDepthStart - m_fDepthDelta;
+	// Initialize the FBO.
+	glGenFramebuffers(1, &fbo);
+	glGenRenderbuffers(1, &rbo);
+	m_pGlowmapShader_5 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_5.glsl");
+	m_pGlowmapShader_10 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_10.glsl");
+	m_pGlowmapShader_20 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_20.glsl");
+	initializeCanvasVAO();
 }
 
 OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
 {
 	clear();
 	deinitVAO();
+	glDeleteFramebuffers(1, &fbo);
+	glDeleteRenderbuffers(1, &rbo);
+	delete m_pGlowmapShader_5;
+	delete m_pGlowmapShader_10;
+	delete m_pGlowmapShader_20;
+}
+
+void OpenGLMasterRenderQueue::initializeCanvasVAO()
+{
+	// Prepare the background canvas.
+	//Shader* pTestShader = new Shader("./shaders/test_vertex_shader.glsl", "./shaders/test_fragment_shader.glsl");
+
+	float fSize = 1.0f;
+	float posZ = 0.999999f;
+
+	std::vector<float> vertices{
+		fSize, fSize, posZ,
+		fSize, -fSize, posZ,
+		-fSize, -fSize, posZ,
+		-fSize, fSize, posZ,
+	};
+
+	std::vector<float> colors{
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f
+	};
+
+	std::vector<float> texcoords{
+		1.0f, 1.0f,
+		1.0f, 0.0f,
+		0.0f, 0.0f,
+		0.0f, 1.0f,
+	};
+
+	std::vector<unsigned int> indices{
+		0, 1, 3,
+		1, 2, 3
+	};
+
+	std::vector<std::vector<float>> vbos{ vertices, colors };
+	std::vector<std::vector<float>> texcoord_arr{ texcoords };
+	std::vector<std::vector<unsigned int>> ebos{ indices, indices, indices };
+
+	m_pCanvasVAO = new OpenGLVAO(vbos, ebos, texcoord_arr);
+	m_pCanvasVAO->setShader(m_pGlowmapShader_5);
+
+}
+
+void OpenGLMasterRenderQueue::deinitCanvasVAO(void)
+{
+	// TODO(heliogenesis): Move this VAO to the parent class once it's done
+	unsigned int *canvasVAO = m_pCanvasVAO->getinstancedVBO();
+	glDeleteBuffers(16, &canvasVAO[0]);
+	delete[] m_pCanvasVAO;
 }
 
 void OpenGLMasterRenderQueue::deinitVAO(void)
 {
 	// TODO(heliogenesis): Move this VAO to the parent class once it's done
 	unsigned int *instancedVBO = m_pVao->getinstancedVBO();
-	glDeleteBuffers(4, &instancedVBO[0]);
+	glDeleteBuffers(16, &instancedVBO[0]);
 	delete[] m_pVao;
 }
 
@@ -38,6 +101,12 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		{
 		// If not, then add that texture to the list on our master render queue.
 		OpenGLTexture *pTextureToUse = new OpenGLTexture(image, texWidth, texHeight);
+		Shader* pGlowmapShader;
+		if (std::max(texQuadWidth, texQuadHeight) < 50)
+			pGlowmapShader = m_pGlowmapShader_5;
+		else
+			pGlowmapShader = m_pGlowmapShader_10;
+		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
 		m_textures[image] = pTextureToUse;
 		}
 
@@ -151,9 +220,6 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glEnableVertexAttribArray(15);
 	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[14]);
 	glVertexAttribPointer((GLuint)15, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(16);
-	glBindBuffer(GL_ARRAY_BUFFER, instancedVBO[15]);
-	glVertexAttribPointer((GLuint)16, 1, GL_FLOAT, GL_FALSE, 1 * sizeof(float), (void*)0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);
@@ -171,7 +237,6 @@ void OpenGLMasterRenderQueue::initializeVAO(void)
 	glVertexAttribDivisor(13, 1);
 	glVertexAttribDivisor(14, 1);
 	glVertexAttribDivisor(15, 1);
-	glVertexAttribDivisor(16, 1);
 	glBindVertexArray(0);
 }
 

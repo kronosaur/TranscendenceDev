@@ -49,6 +49,7 @@ For special effects that use textures (such as glow), what we can do is use a se
 #include "OpenGLShader.h"
 #include <vector>
 #include <map>
+#include <algorithm>
 
 /*
 class OpenGLMasterRenderQueue {
@@ -60,23 +61,6 @@ private:
 
 };
 */
-class OpenGLTexture {
-public:
-	OpenGLTexture (void) { }
-	OpenGLTexture (void* texture, int width, int height);
-	~OpenGLTexture (void);
-	void initTexture2D (void* texture, int width, int height);
-	void bindTexture2D (GLenum glTexture) { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
-	void unbindTexture2D (void) { glBindTexture(GL_TEXTURE_2D, 0); }
-	void updateTexture2D (void* texture, int width, int height);
-	unsigned int* getTexture (void) { return m_pTextureID; }
-
-private:
-	unsigned int m_pTextureID[1];
-	unsigned int pboID[2];
-	GLint m_pixelFormat;
-	GLint m_pixelType;
-};
 
 class OpenGLVAO {
 public:
@@ -107,6 +91,31 @@ private:
 	unsigned int vboID[128];
 	unsigned int eboID[128];
 	unsigned int instancedVboID[128];
+};
+
+class OpenGLTexture {
+public:
+	OpenGLTexture(void) { }
+	OpenGLTexture(void* texture, int width, int height);
+	OpenGLTexture(int width, int height);
+	~OpenGLTexture(void);
+	void initTexture2D(int width, int height);
+	void initTexture2D(void* texture, int width, int height);
+	void bindTexture2D(GLenum glTexture) { glActiveTexture(glTexture); glBindTexture(GL_TEXTURE_2D, m_pTextureID[0]); }
+	void unbindTexture2D(void) { glBindTexture(GL_TEXTURE_2D, 0); }
+	void updateTexture2D(void* texture, int width, int height);
+	unsigned int* getTexture(void) { return m_pTextureID; }
+	OpenGLTexture *GenerateGlowMap(unsigned int fbo, OpenGLVAO* vao, Shader* shader, glm::vec2 texQuadSize);
+	OpenGLTexture *getGlowMap (void) { return m_pGlowMap; }
+
+private:
+	unsigned int m_pTextureID[1];
+	unsigned int pboID[2];
+	unsigned int m_iWidth;
+	unsigned int m_iHeight;
+	GLint m_pixelFormat;
+	GLint m_pixelType;
+	OpenGLTexture *m_pGlowMap;
 };
 
 class OpenGLContext {
@@ -203,13 +212,22 @@ public:
 private:
 	void initializeVAO (void);
 	void deinitVAO (void);
+	void initializeCanvasVAO (void);
+	void deinitCanvasVAO (void);
 	void clear (void);
 	OpenGLVAO* m_pVao;
+	OpenGLVAO* m_pCanvasVAO;
 	Shader *m_pObjectTextureShader;
+	Shader *m_pGlowmapShader_5;
+	Shader *m_pGlowmapShader_10;
+	Shader *m_pGlowmapShader_20;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
 	float m_fDepthLevel;
 	static const float m_fDepthDelta;
 	static const float m_fDepthStart;
 	unsigned int m_iCurrentTick; // Used instead of ticks
+	unsigned int fbo;
+	unsigned int rbo;
+
 };
