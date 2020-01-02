@@ -586,7 +586,7 @@ CDesignType *CDesignCollection::FindEntry (DWORD dwUNID)
 		return NULL;
 
 #ifdef DEBUG
-	if (!pType->IsBound() && false)
+	if (!pType->IsBound())
 		{
 		DebugBreak();
 		}
