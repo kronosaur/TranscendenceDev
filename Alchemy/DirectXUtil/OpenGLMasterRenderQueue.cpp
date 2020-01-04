@@ -15,7 +15,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	glGenRenderbuffers(1, &rbo);
 	m_pGlowmapShader_5 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_5.glsl");
 	m_pGlowmapShader_10 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_10.glsl");
-	m_pGlowmapShader_20 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_20.glsl");
+	m_pGlowmapShader_var = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_20.glsl"); // TODO: fix
 	initializeCanvasVAO();
 }
 
@@ -27,7 +27,7 @@ OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
 	glDeleteRenderbuffers(1, &rbo);
 	delete m_pGlowmapShader_5;
 	delete m_pGlowmapShader_10;
-	delete m_pGlowmapShader_20;
+	delete m_pGlowmapShader_var;
 }
 
 void OpenGLMasterRenderQueue::initializeCanvasVAO()
@@ -106,7 +106,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 			pGlowmapShader = m_pGlowmapShader_5;
 		else
 			pGlowmapShader = m_pGlowmapShader_10;
-		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
+		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader_var, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
 		m_textures[image] = pTextureToUse;
 		}
 
