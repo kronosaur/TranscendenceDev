@@ -218,9 +218,7 @@ private:
 	OpenGLVAO* m_pVao;
 	OpenGLVAO* m_pCanvasVAO;
 	Shader *m_pObjectTextureShader;
-	Shader *m_pGlowmapShader_5;
-	Shader *m_pGlowmapShader_10;
-	Shader *m_pGlowmapShader_var;
+	Shader *m_pGlowmapShader;
 	std::map<OpenGLTexture*, OpenGLInstancedRenderQueue*> m_shipRenderQueues;
 	std::map<GLvoid*, OpenGLTexture*> m_textures;
 	float m_fDepthLevel;

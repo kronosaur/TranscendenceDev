@@ -133,14 +133,14 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	// Render to the new texture
 	glViewport(0, 0, m_iWidth, m_iHeight); // Set the viewport size to fill the window
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	shader->bind();
 	glm::mat4 rotationMatrix = glm::mat4(glm::vec4(1.0, 0.0, 0.0, 0.0), glm::vec4(0.0, 1.0, 0.0, 0.0), glm::vec4(0.0, 0.0, 1.0, 0.0), glm::vec4(0.0, 0.0, 0.0, 1.0));
 	int rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
 	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 	glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
 	glUniform2f(glGetUniformLocation(shader->id(), "quadSize"), texQuadSize[0], texQuadSize[1]);
-	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), 11); // TODO: fix
+	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10)));
 	glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
 	glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
 
@@ -148,40 +148,23 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	glBindVertexArray((vao->getVAO())[0]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	// Clean up
-	glBindVertexArray(0); // Unbind our Vertex Array Object
-	this->unbindTexture2D();
-	shader->unbind(); // Unbind our shader
-	// Unbind the frame buffer and delete our rbo
-	glDeleteRenderbuffers(1, &rbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	// Second pass
 	m_pGlowMap = new OpenGLTexture(m_iWidth, m_iHeight);
-	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pGlowMap->getTexture()[0], 0);
-	glGenRenderbuffers(1, &rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_iWidth, m_iHeight);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete");
 	// Render to the new texture
-	glViewport(0, 0, m_iWidth, m_iHeight); // Set the viewport size to fill the window
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-	shader->bind();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
 	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 	glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
 	glUniform2f(glGetUniformLocation(shader->id(), "quadSize"), texQuadSize[0], texQuadSize[1]);
-	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), 11); // TODO: fix
+	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10)));
 	glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_FALSE);
 	glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_TRUE);
 
 	pTempTexture.bindTexture2D(GL_TEXTURE0);
-	glBindVertexArray((vao->getVAO())[0]);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	// Clean up

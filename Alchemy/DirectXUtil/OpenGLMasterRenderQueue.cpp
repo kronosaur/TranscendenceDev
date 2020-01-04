@@ -13,9 +13,7 @@ OpenGLMasterRenderQueue::OpenGLMasterRenderQueue(void)
 	// Initialize the FBO.
 	glGenFramebuffers(1, &fbo);
 	glGenRenderbuffers(1, &rbo);
-	m_pGlowmapShader_5 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_5.glsl");
-	m_pGlowmapShader_10 = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_10.glsl");
-	m_pGlowmapShader_var = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader_20.glsl"); // TODO: fix
+	m_pGlowmapShader = new Shader("./shaders/glowmap_vertex_shader.glsl", "./shaders/glowmap_fragment_shader.glsl"); // TODO: fix
 	initializeCanvasVAO();
 }
 
@@ -25,9 +23,7 @@ OpenGLMasterRenderQueue::~OpenGLMasterRenderQueue(void)
 	deinitVAO();
 	glDeleteFramebuffers(1, &fbo);
 	glDeleteRenderbuffers(1, &rbo);
-	delete m_pGlowmapShader_5;
-	delete m_pGlowmapShader_10;
-	delete m_pGlowmapShader_var;
+	delete m_pGlowmapShader;
 }
 
 void OpenGLMasterRenderQueue::initializeCanvasVAO()
@@ -69,7 +65,7 @@ void OpenGLMasterRenderQueue::initializeCanvasVAO()
 	std::vector<std::vector<unsigned int>> ebos{ indices, indices, indices };
 
 	m_pCanvasVAO = new OpenGLVAO(vbos, ebos, texcoord_arr);
-	m_pCanvasVAO->setShader(m_pGlowmapShader_5);
+	m_pCanvasVAO->setShader(m_pGlowmapShader);
 
 }
 
@@ -101,12 +97,7 @@ void OpenGLMasterRenderQueue::addShipToRenderQueue(int startPixelX, int startPix
 		{
 		// If not, then add that texture to the list on our master render queue.
 		OpenGLTexture *pTextureToUse = new OpenGLTexture(image, texWidth, texHeight);
-		Shader* pGlowmapShader;
-		if (std::max(texQuadWidth, texQuadHeight) < 50)
-			pGlowmapShader = m_pGlowmapShader_5;
-		else
-			pGlowmapShader = m_pGlowmapShader_10;
-		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader_var, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
+		pTextureToUse->GenerateGlowMap(fbo, m_pCanvasVAO, m_pGlowmapShader, glm::vec2(float(texQuadWidth), float(texQuadHeight)));
 		m_textures[image] = pTextureToUse;
 		}
 
