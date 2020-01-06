@@ -129,7 +129,7 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete");
+		::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete p1");
 	// Render to the new texture
 	glViewport(0, 0, m_iWidth, m_iHeight); // Set the viewport size to fill the window
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -140,7 +140,7 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
 	glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
 	glUniform2f(glGetUniformLocation(shader->id(), "quadSize"), texQuadSize[0], texQuadSize[1]);
-	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10)));
+	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::min(25, std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10))));
 	glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_TRUE);
 	glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_FALSE);
 
@@ -152,15 +152,10 @@ OpenGLTexture* OpenGLTexture::GenerateGlowMap (unsigned int fbo, OpenGLVAO* vao,
 	m_pGlowMap = new OpenGLTexture(m_iWidth, m_iHeight);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_pGlowMap->getTexture()[0], 0);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete");
+		::kernelDebugLogPattern("[OpenGL] Framebuffer is not complete p2");
 	// Render to the new texture
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	rotationMatrixLocation = glGetUniformLocation(shader->id(), "rotationMatrix");
-	glUniformMatrix4fv(rotationMatrixLocation, 1, GL_FALSE, &rotationMatrix[0][0]);
-	glUniform1i(glGetUniformLocation(shader->id(), "ourTexture"), 0);
-	glUniform2f(glGetUniformLocation(shader->id(), "quadSize"), texQuadSize[0], texQuadSize[1]);
-	glUniform1i(glGetUniformLocation(shader->id(), "kernelSize"), std::max(3, int(std::min(texQuadSize[0], texQuadSize[1]) / 10)));
 	glUniform1i(glGetUniformLocation(shader->id(), "use_x_axis"), GL_FALSE);
 	glUniform1i(glGetUniformLocation(shader->id(), "second_pass"), GL_TRUE);
 
