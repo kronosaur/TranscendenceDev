@@ -131,7 +131,7 @@ ALERROR CCyberDeckClass::CreateFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc,
 	return NOERROR;
 	}
 
-Metric CCyberDeckClass::GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+Metric CCyberDeckClass::GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const
 
 //	GetMaxEffectiveRange
 //
@@ -151,8 +151,8 @@ Metric CCyberDeckClass::GetMaxRange (CItemCtx &ItemCtx)
 	return m_iRange * LIGHT_SECOND;
 	}
 
-void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource, 
-											  CInstalledDevice *pDevice,
+void CCyberDeckClass::GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											  const CInstalledDevice *pDevice,
 											  CString *retsLabel,
 											  int *retiAmmoLeft,
 											  CItemType **retpType,
@@ -173,7 +173,7 @@ void CCyberDeckClass::GetSelectedVariantInfo (CSpaceObject *pSource,
 		*retpType = GetItemType();
 	}
 
-int CCyberDeckClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget)
+int CCyberDeckClass::GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const
 
 //	GetWeaponEffectiveness
 //
@@ -213,10 +213,10 @@ int CCyberDeckClass::GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDe
 	}
 
 bool CCyberDeckClass::IsWeaponAligned (CSpaceObject *pShip, 
-									   CInstalledDevice *pDevice, 
+									   const CInstalledDevice *pDevice, 
 									   CSpaceObject *pTarget, 
 									   int *retiAimAngle, 
-									   int *retiFireAngle)
+									   int *retiFireAngle) const
 
 //	IsWeaponAligned
 //

@@ -87,53 +87,50 @@
 				))
 				  
 			(setq intGetGlobalAchievements (lambda ()
-				(block (theList 
-						resurrectCount
-						totalGMProfit totalArmsProfit totalEquipProfit totalMedsProfit totalLuxProfit totalIllegalProfit
-						friendlyShipsDestroyed friendlyStationsDestroyed
-						systemData neverBacktracked
-						slavesFreed slaveSales
-						neverReachedBA neverReachedStK neverReachedJiangs neverReachedPointJuno neverReachedHeretic)
-				
+				(block (
+					theList 
+
 					; Game stats
-					(setq resurrectCount (plyGetStat gPlayer "resurrectCount"))
+					(resurrectCount (plyGetStat gPlayer "resurrectCount"))
 				
 					; Commerce stats
-					(setq totalGMProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;")
+					(totalGMProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~fudam -Fuel; -Illegal; -Lux; -Meds;"))
 						)
-					(setq totalArmsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "wsam")
+					(totalArmsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "wsam")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "wsam"))
 						)
-					(setq totalEquipProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "fud~ws")
+					(totalEquipProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "fud~ws")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "fud~ws"))
 						)
-					(setq totalMedsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Meds")
+					(totalMedsProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Meds")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Meds"))
 						)
-					(setq totalLuxProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Lux")
+					(totalLuxProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Lux")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Lux"))
 						)
-					(setq totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
+					(totalIllegalProfit (subtract (plyGetItemStat gPlayer "itemsSoldValue" "*~wsam +Illegal")
 						(plyGetItemStat gPlayer "itemsBoughtValue" "*~wsam +Illegal"))
 						)
-						
+					(totalOreMinedValue (plyGetItemStat gPlayer 'itemsMinedValue "* +ore"))
+
 					; Conducts
-					(setq systemData (plyGetStat gPlayer "systemData"))
-					(setq neverBacktracked (not (filter systemData theData (not (eq (item theData 1) (item theData 2))))))
-					(setq friendlyShipsDestroyed (plyGetStat gPlayer "friendlyShipsDestroyed"))
-					(setq friendlyStationsDestroyed (plyGetStat gPlayer "friendlyStationsDestroyed"))
+					(systemData (plyGetStat gPlayer "systemData"))
+					(neverBacktracked (not (filter systemData theData (not (eq (item theData 1) (item theData 2))))))
+					(friendlyShipsDestroyed (plyGetStat gPlayer "friendlyShipsDestroyed"))
+					(friendlyStationsDestroyed (plyGetStat gPlayer "friendlyStationsDestroyed"))
 					
 					; Exploration
-					(setq neverReachedBA (not (find systemData "BA" 0)))
-					(setq neverReachedStK (not (find systemData "SK" 0)))
-					(setq neverReachedJiangs (not (find systemData "C9" 0)))
-					(setq neverReachedPointJuno (not (find systemData "PJ" 0)))
-					(setq neverReachedHeretic (not (find systemData "G2" 0)))
-					
+					(neverReachedBA (not (find systemData "BA" 0)))
+					(neverReachedStK (not (find systemData "SK" 0)))
+					(neverReachedJiangs (not (find systemData "C9" 0)))
+					(neverReachedPointJuno (not (find systemData "PJ" 0)))
+					(neverReachedHeretic (not (find systemData "G2" 0)))
+				
 					; Misc
-					(setq slavesFreed (objGetData gPlayerShip "slavesFreed"))
-					(setq slaveSales (objGetData gPlayerShip "slaveSales"))
+					(slavesFreed (objGetData gPlayerShip "slavesFreed"))
+					(slaveSales (objGetData gPlayerShip "slaveSales"))
+					)
 					
 					; First add all the stats that are unconditional
 					(setq theList (list
@@ -202,6 +199,9 @@
 							)
 						(if (gr totalEquipProfit 0)
 							(list (list "Profit on ship's equipment" totalEquipProfit "commerce"))
+							)
+						(if (gr totalOreMinedValue 0)
+							(list (list "Value of ore mined" totalOreMinedValue "commerce"))
 							)
 							
 						; Slave sales

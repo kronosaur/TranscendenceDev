@@ -630,7 +630,7 @@ bool CSpaceObject::GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *re
 	return false;
 	}
 
-int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService)
+int CSpaceObject::GetTradeMaxLevel (ETradeServiceTypes iService) const
 
 //	GetTradeMaxLevel
 //
@@ -688,7 +688,7 @@ bool CSpaceObject::HasTradeService (ETradeServiceTypes iService, const CTradingD
 	return false;
 	}
 
-bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService)
+bool CSpaceObject::HasTradeUpgradeOnly (ETradeServiceTypes iService) const
 
 //	HasTradeUpgradeOnly
 //

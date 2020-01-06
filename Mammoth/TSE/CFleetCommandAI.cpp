@@ -829,7 +829,7 @@ void CFleetCommandAI::OnObjDestroyedNotify (const SDestroyCtx &Ctx)
 		//	field. (Obviously this could be a different enemy than the one
 		//	that killed the asset).
 
-		if ((pTarget = FindTarget(Ctx.Obj.GetTarget(CItemCtx()))) != NULL)
+		if ((pTarget = FindTarget(Ctx.Obj.GetTarget())) != NULL)
 			pTarget->iAssignedTo -= Ctx.Obj.GetCombatPower();
 		}
 

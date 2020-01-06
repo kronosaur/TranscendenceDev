@@ -25,7 +25,7 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 	{
 	//	If we have installed armor, then get the enhancement stack from it.
 
-	if (const CInstalledDevice *pInstalled = m_pCItem->GetInstalledDevice())
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
 		return pInstalled->GetEnhancementStack();
 
 	//	Otherwise, see if we've got a cached enhancement stack
@@ -35,7 +35,7 @@ TSharedPtr<CItemEnhancementStack> CDeviceItem::GetEnhancementStack (void) const
 
 	//	Otherwise, we need to create one from mods
 
-	const CItemEnhancement &Mods = m_pCItem->GetMods();
+	const CItemEnhancement &Mods = m_Item.GetMods();
 	if (Mods.IsEmpty())
 		return NULL;
 
@@ -77,7 +77,7 @@ DWORD CDeviceItem::GetLinkedFireOptions (void) const
 
 	//	Options from the device slot
 
-	if (const CInstalledDevice *pInstalled = m_pCItem->GetInstalledDevice())
+	if (const CInstalledDevice *pInstalled = m_Item.GetInstalledDevice())
 		dwOptions = CDeviceClass::CombineLinkedFireOptions(dwOptions, pInstalled->GetSlotLinkedFireOptions());
 
 	//	Options from device class
@@ -87,6 +87,23 @@ DWORD CDeviceItem::GetLinkedFireOptions (void) const
 	//	Done
 
 	return dwOptions;
+	}
+
+Metric CDeviceItem::GetMaxEffectiveRange (CSpaceObject *pTarget) const
+
+//	GetMaxEffectiveRange
+//
+//	Returns the maximum effective range.
+
+	{
+	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
+		{
+		return GetDeviceClass().GetMaxEffectiveRange(pInstalled->GetSource(), pInstalled, pTarget);
+		}
+	else
+		{
+		return GetDeviceClass().GetMaxEffectiveRange(NULL, NULL, pTarget);
+		}
 	}
 
 int CDeviceItem::GetMaxHP (void) const
@@ -111,4 +128,56 @@ int CDeviceItem::GetMaxHP (void) const
 		}
 
 	return iMaxHP;
+	}
+
+bool CDeviceItem::IsMissileDefenseWeapon (void) const
+
+//	IsMissileDefenseWeapon
+//
+//	Returns TRUE if this weapon has missile defense capabilities.
+//
+//	LATER: Paradoxically, this return FALSE for missile defense devices. In the
+//	future we should fix that. The semantics is that we fire on missiles during
+//	a normal fire (Activate) call, not during OnUpdate.
+
+	{
+	//	See if this is confered via enhancement or via slot property.
+
+	if (const CItemEnhancementStack *pStack = GetEnhancementStack())
+		{
+		if (pStack->IsMissileDefense())
+			return true;
+		}
+
+	return false;
+	}
+
+bool CDeviceItem::IsTargetableMissileDefenseWeapon (void) const
+
+//	IsTargetableMissileDefenseWeapon
+//
+//	Returns TRUE if we target specially marked missiles.
+
+	{
+	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
+		{
+		return pInstalled->CanTargetMissiles();
+		}
+	else
+		return false;
+	}
+
+bool CDeviceItem::IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle, int *retiFireAngle) const
+
+//	IsWeaponAligned
+//
+//	Returns TRUE if we're aligned.
+
+	{
+	if (const CInstalledDevice *pInstalled = GetInstalledDevice())
+		{
+		return GetDeviceClass().IsWeaponAligned(pInstalled->GetSource(), pInstalled, pTarget, retiAimAngle, retiFireAngle);
+		}
+	else
+		return false;
 	}

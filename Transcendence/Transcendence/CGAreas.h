@@ -247,8 +247,8 @@ class CGItemDisplayArea : public AGArea
 	public:
 		CGItemDisplayArea (void);
 
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetItem (CSpaceObject *pSource, const CItem &Item) { m_pSource = pSource; m_Item = Item; Invalidate(); }
 		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; Invalidate(); }
 
@@ -265,6 +265,8 @@ class CGItemDisplayArea : public AGArea
 
         CG32bitPixel m_rgbTextColor;
         CG32bitPixel m_rgbBackColor;
+
+		CItemPainter m_ItemPainter;			//	Used to paint item
 	};
 
 class CGItemListDisplayArea : public AGArea
@@ -341,8 +343,8 @@ class CGItemListArea : public AGArea
 		void MoveTabToFront (DWORD dwID);
 		void ResetCursor (void) { if (m_pListData) m_pListData->ResetCursor(); InitRowDesc(); Invalidate(); }
 		void SelectTab (DWORD dwID);
-        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
-        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+        void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; Invalidate(); }
+        void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; Invalidate(); }
 		void SetCursor (int iIndex) { if (m_pListData) m_pListData->SetCursor(iIndex); Invalidate(); }
 		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; InitRowDesc(); Invalidate(); }
 		void SetFilter (const CItemCriteria &Filter) { if (m_pListData) m_pListData->SetFilter(Filter); InitRowDesc(); Invalidate(); }
@@ -379,6 +381,8 @@ class CGItemListArea : public AGArea
 			{
 			int yPos;							//	Position of the row (sum of height of previous rows)
 			int cyHeight;						//	Height of this row
+
+			CItemPainter Painter;				//	Painter used for the item, which keeps some metrics.
 			};
 
 		struct STabDesc
@@ -398,13 +402,13 @@ class CGItemListArea : public AGArea
 		static const int ICON_HEIGHT =						96;
 
 
-		int CalcRowHeight (int iRow);
+		void InitRowHeight (int iRow, SRowDesc &RowDesc);
 		void InitRowDesc (void);
 		int FindRow (int y);
 		bool FindTab (DWORD dwID, int *retiIndex = NULL) const;
 		bool HitTestTabs (int x, int y, int *retiTab);
 		void PaintCustom (CG32bitImage &Dest, const RECT &rcRect, bool bSelected);
-		void PaintItem (CG32bitImage &Dest, const CItem &Item, const RECT &rcRect, bool bSelected);
+		void PaintItem (CG32bitImage &Dest, const SRowDesc &RowDesc, const RECT &rcRect, bool bSelected);
 		void PaintTab (CG32bitImage &Dest, const STabDesc &Tab, const RECT &rcRect, bool bSelected, bool bHover);
 
 		IListData *m_pListData = NULL;

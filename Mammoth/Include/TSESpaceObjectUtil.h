@@ -91,3 +91,36 @@ class CAutoTargetCalc
 		int m_iMaxFireArc = 0;
 	};
 
+class CSpaceObjectTargetList
+	{
+	public:
+		void CleanUp (void) { m_bValid = false; }
+		void Delete (const CSpaceObject &Obj);
+
+		static constexpr DWORD FLAG_NO_LINE_OF_FIRE_CHECK =			0x00000001;
+		static constexpr DWORD FLAG_NO_RANGE_CHECK =				0x00000002;
+		bool FindTargetAligned (CSpaceObject &SourceObj, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget = NULL, int *retiFireAngle = NULL) const;
+		bool FindTargetInRange (const CSpaceObject &SourceObj, const CDeviceItem &WeaponItem, DWORD dwFlags = 0, CSpaceObject **retpTarget = NULL, int *retiFireAngle = NULL, Metric *retrDist2 = NULL) const;
+
+		const TArray<CSpaceObject *> &GetList (void) const { return m_List; }
+		void InitEmpty (void) { m_List.DeleteAll(); m_bValid = true; }
+		void InitWithNearestMissiles (CSpaceObject &SourceObj, int iMaxTargets, Metric rMaxDist, DWORD dwFlags);
+		void InitWithNearestTargetableMissiles (CSpaceObject &SourceObj, int iMaxTargets, Metric rMaxDist, DWORD dwFlags);
+
+		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =		0x00000010;
+		static constexpr DWORD FLAG_INCLUDE_STATIONS =				0x00000020;
+		static constexpr DWORD FLAG_INCLUDE_PLAYER =				0x00000040;
+		static constexpr DWORD FLAG_INCLUDE_SOURCE_TARGET =			0x00000080;
+		void InitWithNearestVisibleEnemies (CSpaceObject &SourceObj, int iMaxTargets, Metric rMaxDist, CSpaceObject *pExcludeObj, DWORD dwFlags);
+
+		bool IsEmpty (void) const { return (!m_bValid || m_List.GetCount() == 0); }
+		bool IsValid (void) const { return m_bValid; }
+		void ReadFromStream (SLoadCtx &Ctx);
+		void WriteToStream (CSystem &System, IWriteStream &Stream) const;
+
+	private:
+		static constexpr DWORD SPECIAL_INVALID_COUNT = 0xffffffff;
+
+		TArray<CSpaceObject *> m_List;
+		bool m_bValid = false;
+	};

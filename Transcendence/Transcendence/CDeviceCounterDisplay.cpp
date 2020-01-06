@@ -170,8 +170,6 @@ void CDeviceCounterDisplay::Update (void)
 //	Updates buffer
 
 	{
-	int i;
-
 	if (m_pPlayer == NULL)
 		{
 		m_bInvalid = false;
@@ -183,10 +181,10 @@ void CDeviceCounterDisplay::Update (void)
 
 	CShip *pShip = m_pPlayer->GetShip();
 	int iCount = 0;
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() && pDevice->GetCounter(pShip))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.GetCounter(pShip))
 			iCount++;
 		}
 
@@ -227,12 +225,12 @@ void CDeviceCounterDisplay::Update (void)
 	//	Paint all device counters
 
 	int x = 0;
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (!pDevice->IsEmpty() && pDevice->GetCounter(pShip))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.GetCounter(pShip))
 			{
-			PaintDevice(pDevice, x);
+			PaintDevice(&Device, x);
 
 			x += ICON_WIDTH + SPACING_X;
 			}

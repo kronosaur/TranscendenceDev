@@ -25,23 +25,21 @@
 
 <!-- STATION TYPES -->
 
-	<!-- Abbasid Outpost -->
+	<!-- Level 2: Abbasid Outpost -->
 
 	<StationType UNID="&stAbbasidOutpost;"
 			name=				"Abbasid outpost"
 			sovereign=			"&svAbbasid;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-			dockingPorts=		"8"
 
-			multiHull=			"true"
-			armorID=			"&itLightTitaniumArmor;"
-			hitPoints=			"90"
-			regen=				"1"
+			attributes=			"abbasid, enemy, envFire, envAvoidsWater, generic, human, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"176"
 			fireRateAdj=		"40"
+			noFriendlyFire=		"true"
 			explosionType=		"&vtBlastExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envFire, envAvoidsWater, generic, human, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -55,11 +53,7 @@
 				enemyExclusionRadius=	"100"
 				/>
 
-		<Image			imageID="&rsStations1;" imageX="256" imageY="512" imageWidth="128" imageHeight="128"/>
-
-		<Devices>
-			<Device deviceID="&itLaserArray;"	omnidirectional="true"/>
-		</Devices>
+		<!-- Treasure and Items -->
 
 		<Items>
 			<Item chance="10"	count="1"		item="&itAbbasidThanogram;" />
@@ -75,8 +69,30 @@
 			</Table>
 		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"singleHull"
+				armorID=		"&itLightTitaniumArmor;"
+				hitPoints=		"50"
+				regen=			"1"
+				/>
+		
+		<Devices>
+			<Device deviceID="&itLaserArray;"	posAngle="15"  posRadius="30" posZ="50"	fireAngle="15"  fireArc="120" />
+			<Device deviceID="&itLaserArray;"	posAngle="105" posRadius="30" posZ="50"	fireAngle="105" fireArc="120" />
+			<Device deviceID="&itLaserArray;"	posAngle="195" posRadius="30" posZ="50"	fireAngle="195" fireArc="120" />
+			<Device deviceID="&itLaserArray;"	posAngle="285" posRadius="30" posZ="50"	fireAngle="285" fireArc="120" />
+		</Devices>
+
+		<!-- Satellites -->
+
 		<Satellites>
-			<Orbitals count="1d4" distance="2d8+6" angle="random">
+			<Station type="&stAbbasidOutpostWall;"	imageVariant="north"	yOffset="52"	segment="true"/>
+			<Station type="&stAbbasidOutpostWall;"	imageVariant="east"		xOffset="52"	segment="true"/>
+			<Station type="&stAbbasidOutpostWall;"	imageVariant="west"		xOffset="-52"	segment="true"/>
+			<Station type="&stAbbasidOutpostWall;"	imageVariant="south"	yOffset="-40"	segment="true"/>
+
+			<Orbitals count="1d4+1" distance="2d8+6" angle="random">
 				<Station type="&stShipwreck1;">
 					<InitialData>
 						<!-- We don't want salvagers to take this loot (technically because
@@ -89,14 +105,23 @@
 			</Orbitals>
 		</Satellites>
 
+		<!-- Images and Effects -->
+
+		<Image imageID="&rsAbbasidOutpost;" imageX="0" imageY="0" imageWidth="172" imageHeight="172" viewportRatio="0.02625"/>
+
+		<DockingPorts
+				portAngle=		"15"
+				portCount=		"4"
+				portRadius=		"92"
+				/>
+
+		<!-- Events and Data -->
+
 		<Events>
 			<GetRumors>
-				{
-					attributes: "commonwealthPub"
-					priority: 22
-					textID: 'rumor.commonwealthPub
-					onExitRumor: (lambda (theRumor) (objSetKnown (@ theRumor 'sourceObj)))
-					}
+				(append
+					(rpgRumorAdd 'commonwealthPub Nil 22 'scan)
+					)
 			</GetRumors>
 		</Events>
 
@@ -106,7 +131,7 @@
 				A woman weeps softly as she tells her story:
 
 				"Our freighter strayed near an Abbasid outpost by mistake.
-				They had no mercy&mdash;they just kept firing on us&mdash;the
+				They showed no mercy&mdash;they just kept firing on us&mdash;the
 				captain begged them to stop, but the blasts kept coming! Then
 				our cabin got hit and my husband..."
 
@@ -114,6 +139,37 @@
 
 			</Text>
 		</Language>
+	</StationType>
+
+	<StationType UNID="&stAbbasidOutpostWall;"
+			name=				"Abbasid outpost wall"
+			sovereign=			"&svAbbasid;"
+
+			attributes=			"abbasidWall"
+
+			scale=				"ship"
+			destroyWhenAbandoned="true"
+			paintLayer=			"bringToFront"
+			noMapIcon=			"true"
+			ejectaType=			"&vtWreckEjecta;"
+			>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itLightTitaniumArmor;"
+				hitPoints=		"100"
+				/>
+
+		<!-- Images and Effects -->
+
+		<ImageVariants>
+			<Image id="north"	imageID="&rsAbbasidOutpostWalls;" imageX="0"   imageY="0"   imageWidth="172" imageHeight="68"  viewportRatio="0.02625"/>
+			<Image id="east"	imageID="&rsAbbasidOutpostWalls;" imageX="104" imageY="172" imageWidth="68"  imageHeight="172" viewportRatio="0.02625"/>
+			<Image id="west"	imageID="&rsAbbasidOutpostWalls;" imageX="0"   imageY="172" imageWidth="68"  imageHeight="172" viewportRatio="0.02625"/>
+			<Image id="south"	imageID="&rsAbbasidOutpostWalls;" imageX="0"   imageY="80"  imageWidth="172" imageHeight="92"  viewportRatio="0.02625"/>
+		</ImageVariants>
+
 	</StationType>
 
 <!-- ITEM TYPES -->
@@ -134,5 +190,10 @@
 		<Image imageID="&rsItems1;" imageX="192" imageY="288" imageWidth="96" imageHeight="96"/>
 
 	</ItemType>
+
+<!-- RESOURCES -->
+
+	<Image UNID="&rsAbbasidOutpost;"		bitmap="Resources\AbbasidOutpost.jpg"		bitmask="Resources\AbbasidOutpostMask.bmp"	hitMask="Resources\AbbasidOutpostHitMask.bmp" loadOnUse="true"/>
+	<Image UNID="&rsAbbasidOutpostWalls;"	bitmap="Resources\AbbasidOutpostWalls.jpg"		bitmask="Resources\AbbasidOutpostWallsMask.bmp"	loadOnUse="true"/>
 
 </TranscendenceModule>

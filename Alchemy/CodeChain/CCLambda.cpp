@@ -291,7 +291,7 @@ ICCItem *CCLambda::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pResult;
 	}
 
-CString CCLambda::Print (DWORD dwFlags)
+CString CCLambda::Print (DWORD dwFlags) const
 
 //	Print
 //

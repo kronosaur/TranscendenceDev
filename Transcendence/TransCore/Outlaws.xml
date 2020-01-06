@@ -123,20 +123,20 @@
 		</Events>
 	</StationType>
 
-	<!-- Outlaw Base -->
+	<!-- Level 1: Outlaw Camp -->
 
 	<StationType UNID="&stOutlawBase;"
 			name=				"outlaw camp"
 			sovereign=			"&svOutlaw;"
+
+			level=				"1"
+			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+
 			abandonedScreen=	"&dsRPGAbandonedStation;"
 
-			multiHull=			"true"
-			armorID=			"&itUltraLightTitaniumArmor;"
-			hitPoints=			"50"
+			size=				"69"
 			explosionType=		"&vtKineticExplosion1;"
 			ejectaType=			"&vtWreckEjecta;"
-
-			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
 			>
 
 		<!-- Encounter Info -->
@@ -149,14 +149,29 @@
 				locationCriteria=		"--innerSystem, +planetary"
 				/>
 
-		<Image imageID="&rsOutlawCamp;"			imageWidth="96" imageHeight="96"	viewportRatio="0.009375"/>
+		<!-- Treasure and Items -->
 
-		<DockingPorts
-				portAngle=		"-15"
-				portCount=		"8"
-				portRadius=		"60"
-				>
-		</DockingPorts>
+		<Items>
+			<Lookup chance="25" count="1d2" table="&trIllegalItems1;"/>
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&trConsumables2;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem2;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem2;"/>
+			</Table>
+		</Items>
+
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itLightCeramicPlate;"
+				hitPoints=		"50"
+				/>
+		
+		<Devices>
+			<Device deviceID="&itRecoillessCannon;"	posAngle="0" posRadius="0" posZ="56" omnidirectional="true" missileDefense="true" />
+		</Devices>
+
+		<!-- Ships and Defenses -->
 
 		<Ships>
 			<Table>
@@ -170,18 +185,21 @@
 			</Table>
 		</Ships>
 
-		<Items>
-			<Lookup chance="25" count="1d2" table="&trIllegalItems1;"/>
-			<Table chance="50">
-				<Lookup chance="40" count="1" table="&trConsumables2;"/>
-				<Lookup chance="40" count="1" table="&trMinorItem2;"/>
-				<Lookup chance="20" count="1" table="&trMajorItem2;"/>
-			</Table>
-		</Items>
-
 		<Encounters frequency="common">
 			<Lookup table="&tbOutlawEncounters;"/>
 		</Encounters>
+
+		<!-- Images and Effects -->
+
+		<Image imageID="&rsOutlawCamp;"			imageWidth="96" imageHeight="96"	viewportRatio="0.009375"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"60"
+				/>
+
+		<!-- Events and Data -->
 
 		<Events>
 			<GetRumors>
@@ -202,22 +220,20 @@
 		</Language>
 	</StationType>
 
-	<!-- Outlaw Base 2 -->
+	<!-- Level 2: Outlaw Base -->
 
 	<StationType UNID="&stOutlawBase2;"
 			name=				"outlaw base"
 			sovereign=			"&svOutlaw;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			multiHull=			"true"
-			armorID=			"&itCeramicPlate;"
-			hitPoints=			"90"
-            regen=              "1"
-			fireRateAdj=		"40"
-			explosionType=		"&vtKineticExplosion2;"
-			ejectaType=			"&vtWreckEjecta;"
 
 			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlaws, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"186"
+			fireRateAdj=		"30"
+			explosionType=		"&vtKineticExplosion2;"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<!-- Encounter Info -->
@@ -230,18 +246,31 @@
 				locationCriteria=		"--innerSystem, +planetary"
 				/>
 
-		<Image imageID="&rsOutlawBase;"			imageWidth="186" imageHeight="186"	viewportRatio="0.025"/>
+		<!-- Treasure and Items -->
 
-		<DockingPorts
-				portAngle=		"-15"
-				portCount=		"8"
-				portRadius=		"110"
-				>
-		</DockingPorts>
+		<Items>
+			<Lookup					count="1d2" table="&trIllegalItems1;"/>
+			<Table chance="50">
+				<Lookup chance="40" count="1" table="&trConsumables3;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem3;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem3;"/>
+			</Table>
+		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itCeramicPlate;"
+				hitPoints=		"90"
+				regen=			"1"
+				/>
+		
 		<Devices>
-			<Device deviceID="&itLaserCannon;"	omnidirectional="true"/>
+			<Device deviceID="&itHeavyRecoillessCannon;"	posAngle="-15" posRadius="40" posZ="20"	fireAngle="-15" fireArc="200"	missileDefense="true" />
+			<Device deviceID="&itHeavyRecoillessCannon;"	posAngle="165" posRadius="40" posZ="20"	fireAngle="165" fireArc="200"	missileDefense="true" />
 		</Devices>
+
+		<!-- Ships and Defense -->
 
 		<Ships>
 			<Table>
@@ -259,37 +288,35 @@
 			</Table>
 		</Ships>
 
-		<Items>
-			<Lookup					count="1d2" table="&trIllegalItems1;"/>
-			<Table chance="50">
-				<Lookup chance="40" count="1" table="&trConsumables3;"/>
-				<Lookup chance="40" count="1" table="&trMinorItem3;"/>
-				<Lookup chance="20" count="1" table="&trMajorItem3;"/>
-			</Table>
-		</Items>
-
 		<Encounters frequency="common">
 			<Lookup table="&tbOutlawEncounters;"/>
 		</Encounters>
 
+		<!-- Images and Effects -->
+
+		<Image imageID="&rsOutlawBase;"			imageWidth="186" imageHeight="186"	viewportRatio="0.025"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"110"
+				/>
 	</StationType>
 
-	<!-- Outlaw Haven -->
+	<!-- Level 3: Outlaw Haven -->
 
 	<StationType UNID="&stOutlawHaven;"
 			name=				"outlaw haven"
 			sovereign=			"&svOutlaw;"
-			abandonedScreen=	"&dsRPGAbandonedStation;"
-
-			multiHull=			"true"
-			armorID=			"&itHeavyCeramicPlate;"
-			hitPoints=			"250"
-            regen=              "5"
-			fireRateAdj=		"30"
-			explosionType=		"&vtKineticExplosion3;"
-			ejectaType=			"&vtWreckEjecta;"
 
 			attributes=			"enemy, envWater, envAvoidsEarth, generic, human, outlawHaven, outlaws, populated"
+
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+
+			size=				"200"
+			fireRateAdj=		"20"
+			explosionType=		"&vtKineticExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
 			>
 
 		<!-- Encounter Info -->
@@ -303,19 +330,32 @@
 				enemyExclusionRadius=	"100"
 				/>
 
-		<Image imageID="&rsOutlawHaven;"			imageWidth="200" imageHeight="200"	viewportRatio="0.0275"/>
+		<!-- Treasure and Items -->
 
-		<DockingPorts
-				portAngle=		"-15"
-				portCount=		"8"
-				portRadius=		"115"
-				>
-		</DockingPorts>
+		<Items>
+			<Table>
+				<Lookup chance="40" count="1" table="&trConsumables3;"/>
+				<Lookup chance="40" count="1" table="&trMinorItem3;"/>
+				<Lookup chance="20" count="1" table="&trMajorItem3;"/>
+			</Table>
+		</Items>
 
+		<!-- Configuration -->
+
+		<Hull 	hullType=		"multiHull"
+				armorID=		"&itHeavyCeramicPlate;"
+				hitPoints=		"250"
+				regen=			"5"
+				/>
+		
 		<Devices>
-			<Device deviceID="&itLaserCannon;"	omnidirectional="true" posAngle="45"  posRadius="60"/>
-			<Device deviceID="&itLaserCannon;"	omnidirectional="true" posAngle="215" posRadius="60"/>
+			<Device deviceID="&itArbalestCannon;"	posAngle="30"  posRadius="40" posZ="20"	fireAngle="30"  fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="120" posRadius="40" posZ="20"	fireAngle="120" fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="210" posRadius="40" posZ="20"	fireAngle="210" fireArc="180"	missileDefense="true" />
+			<Device deviceID="&itArbalestCannon;"	posAngle="300" posRadius="40" posZ="20"	fireAngle="300" fireArc="180"	missileDefense="true" />
 		</Devices>
+
+		<!-- Ships and Defense -->
 
 		<Ships>
 			<Table>
@@ -359,17 +399,19 @@
 			</Table>
 		</Reinforcements>
 
-		<Items>
-			<Table>
-				<Lookup chance="40" count="1" table="&trConsumables3;"/>
-				<Lookup chance="40" count="1" table="&trMinorItem3;"/>
-				<Lookup chance="20" count="1" table="&trMajorItem3;"/>
-			</Table>
-		</Items>
-
 		<Encounters frequency="common">
 			<Lookup table="&tbOutlawEncounters;"/>
 		</Encounters>
+
+		<!-- Images and Effects -->
+
+		<Image imageID="&rsOutlawHaven;"			imageWidth="200" imageHeight="200"	viewportRatio="0.0275"/>
+
+		<DockingPorts
+				portAngle=		"-15"
+				portCount=		"8"
+				portRadius=		"115"
+				/>
 	</StationType>
 
 <!-- SHIP CLASSES -->

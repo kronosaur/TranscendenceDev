@@ -722,6 +722,7 @@ class CPerceptionCalc
 		bool IsVisibleInLRS (CSpaceObject *pSource, CSpaceObject *pTarget) const;
 		void SetPerception (int iPerception) { m_iPerception = iPerception; }
 
+		static Metric GetMaxDist (int iPerception);
 		static Metric GetRange (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange[iIndex])); }
 		static Metric GetRange2 (int iIndex) { return (iIndex < 0 ? g_InfiniteDistance : (iIndex >= RANGE_ARRAY_SIZE ? 0.0 : m_rRange2[iIndex])); }
 		static int GetRangeIndex (int iStealth, int iPerception);

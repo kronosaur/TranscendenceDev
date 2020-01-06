@@ -99,43 +99,6 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 
 #define ORDER_DOCKED							CONSTLIT("docked")
 
-#define PROPERTY_ASCENDED						CONSTLIT("ascended")
-#define PROPERTY_CAN_ATTACK						CONSTLIT("canAttack")
-#define PROPERTY_CAN_BE_ATTACKED				CONSTLIT("canBeAttacked")
-#define PROPERTY_CATEGORY						CONSTLIT("category")
-#define PROPERTY_COMMS_KEY						CONSTLIT("commsKey")
-#define PROPERTY_CURRENCY						CONSTLIT("currency")
-#define PROPERTY_CURRENCY_NAME					CONSTLIT("currencyName")
-#define PROPERTY_CYBER_DEFENSE_LEVEL			CONSTLIT("cyberDefenseLevel")
-#define PROPERTY_DAMAGE_DESC					CONSTLIT("damageDesc")
-#define PROPERTY_DESTINY						CONSTLIT("destiny")
-#define PROPERTY_DOCKING_PORTS					CONSTLIT("dockingPorts")
-#define PROPERTY_EVENT_SUBSCRIBERS				CONSTLIT("eventSubscribers")
-#define PROPERTY_HAS_DOCKING_PORTS				CONSTLIT("hasDockingPorts")
-#define PROPERTY_ID								CONSTLIT("id")
-#define PROPERTY_IDENTIFIED						CONSTLIT("identified")
-#define PROPERTY_INSTALL_ARMOR_MAX_LEVEL		CONSTLIT("installArmorMaxLevel")
-#define PROPERTY_INSTALL_DEVICE_MAX_LEVEL		CONSTLIT("installDeviceMaxLevel")
-#define PROPERTY_INSTALL_DEVICE_UPGRADE_ONLY	CONSTLIT("installDeviceUpgradeOnly")
-#define PROPERTY_KNOWN							CONSTLIT("known")
-#define PROPERTY_LEVEL							CONSTLIT("level")
-#define PROPERTY_MASS							CONSTLIT("mass")
-#define PROPERTY_NAME_PATTERN					CONSTLIT("namePattern")
-#define PROPERTY_PAINT_LAYER					CONSTLIT("paintLayer")
-#define PROPERTY_PLAYER_MISSIONS_GIVEN			CONSTLIT("playerMissionsGiven")
-#define PROPERTY_RADIOACTIVE					CONSTLIT("radioactive")
-#define PROPERTY_REFUEL_MAX_LEVEL				CONSTLIT("refuelMaxLevel")
-#define PROPERTY_REMOVE_DEVICE_MAX_LEVEL		CONSTLIT("removeDeviceMaxLevel")
-#define PROPERTY_REPAIR_ARMOR_MAX_LEVEL			CONSTLIT("repairArmorMaxLevel")
-#define PROPERTY_SCALE							CONSTLIT("scale")
-#define PROPERTY_SHOW_AS_DESTINATION			CONSTLIT("showAsDestination")
-#define PROPERTY_SIZE_PIXELS					CONSTLIT("sizePixels")
-#define PROPERTY_SOVEREIGN						CONSTLIT("sovereign")
-#define PROPERTY_STEALTH						CONSTLIT("stealth")
-#define PROPERTY_SUSPENDED						CONSTLIT("suspended")
-#define PROPERTY_TYPE							CONSTLIT("type")
-#define PROPERTY_UNDER_ATTACK					CONSTLIT("underAttack")
-
 #define SPECIAL_CHARACTER						CONSTLIT("character:")
 #define SPECIAL_DATA							CONSTLIT("data:")
 #define SPECIAL_IS_PLANET						CONSTLIT("isPlanet:")
@@ -144,20 +107,6 @@ const Metric g_rMaxCommsRange2 =				(g_rMaxCommsRange * g_rMaxCommsRange);
 #define SPECIAL_UNID							CONSTLIT("unid:")
 
 #define SPECIAL_VALUE_TRUE						CONSTLIT("true")
-
-#define CATEGORY_BEAM							CONSTLIT("beam")
-#define CATEGORY_EFFECT							CONSTLIT("effect")
-#define CATEGORY_MARKER							CONSTLIT("marker")
-#define CATEGORY_MISSILE						CONSTLIT("missile")
-#define CATEGORY_MISSION						CONSTLIT("mission")
-#define CATEGORY_SHIP							CONSTLIT("ship")
-#define CATEGORY_STATION						CONSTLIT("station")
-
-#define SCALE_STAR								CONSTLIT("star")
-#define SCALE_WORLD								CONSTLIT("world")
-#define SCALE_STATION							CONSTLIT("station")
-#define SCALE_SHIP								CONSTLIT("ship")
-#define SCALE_FLOTSAM							CONSTLIT("flotsam")
 
 static Metric g_rMaxPerceptionRange[CSpaceObject::perceptMax+1] =
 	{
@@ -975,7 +924,7 @@ CItem::SEnhanceItemResult CSpaceObject::CanEnhanceItem (CItemListManipulator &It
 	DEBUG_CATCH
 	}
 
-bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj)
+bool CSpaceObject::CanFireOnObjHelper (CSpaceObject *pObj) const
 
 //	CanFireOnObjHelper
 //
@@ -4078,46 +4027,6 @@ CSpaceObject *CSpaceObject::GetNearestStargate (bool bExcludeUncharted)
 	return pNearestGate;
 	}
 
-int CSpaceObject::GetNearestVisibleEnemies (int iMaxEnemies, 
-											Metric rMaxDist, 
-											TArray<CSpaceObject *> *pretList, 
-											CSpaceObject *pExcludeObj,
-											DWORD dwFlags)
-
-//	GetNearestVisibleEnemies
-//
-//	Returns a list of the nearest n enemies visible to this object. The targets
-//	are added in ascending order of distance.
-//
-//	NOTE: We append to the list because callers may have added their own.
-
-	{
-	CSystem *pSystem = GetSystem();
-	if (pSystem == NULL)
-		return NULL;
-
-	CNearestInRadiusRange Range(GetPos(), rMaxDist);
-
-	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
-		{
-		CVisibleObjSelector Selector(*this);
-		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
-			Selector.SetIncludeTargetableMissiles();
-
-		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
-		}
-	else
-		{
-		CVisibleAggressorObjSelector Selector(*this);
-		Selector.SetExcludeObj(pExcludeObj);
-		if (dwFlags & FLAG_INCLUDE_TARGETABLE_MISSILES)
-			Selector.SetIncludeTargetableMissiles();
-
-		return CSpaceObjectEnum::FindNearestEnemyObjs(*pSystem, *this, Range, Selector, *pretList, iMaxEnemies);
-		}
-	}
-
 CSpaceObject *CSpaceObject::GetNearestVisibleEnemy (Metric rMaxRange, bool bIncludeStations, CSpaceObject *pExcludeObj)
 
 //	GetNearestVisibleEnemy
@@ -4244,333 +4153,6 @@ bool CSpaceObject::GetPlayerDestinationOptions (SPlayerDestinationOptions &retOp
 	retOptions.bShowHighlight = (m_fShowHighlight ? true : false);
 
 	return true;
-	}
-
-ICCItem *CSpaceObject::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
-
-//	GetProperty
-//
-//	Returns the property
-
-	{
-	int i;
-	CCodeChain &CC = GetUniverse().GetCC();
-	CDesignType *pType;
-
-	if (strEquals(sName, PROPERTY_ASCENDED))
-		return CC.CreateBool(IsAscended());
-
-	else if (strEquals(sName, PROPERTY_CAN_ATTACK))
-		return CC.CreateBool(CanAttack());
-
-	else if (strEquals(sName, PROPERTY_CAN_BE_ATTACKED))
-		return CC.CreateBool(CanBeAttacked());
-
-	else if (strEquals(sName, PROPERTY_CATEGORY))
-		{
-		switch (GetCategory())
-			{
-			case catShip:
-				return CC.CreateString(CATEGORY_SHIP);
-
-			case catStation:
-				return CC.CreateString(CATEGORY_STATION);
-
-			case catBeam:
-				return CC.CreateString(CATEGORY_BEAM);
-
-			case catMissile:
-				return CC.CreateString(CATEGORY_MISSILE);
-
-			case catMission:
-				return CC.CreateString(CATEGORY_MISSION);
-
-			case catMarker:
-				return CC.CreateString(CATEGORY_MARKER);
-
-			default:
-				return CC.CreateString(CATEGORY_EFFECT);
-			}
-		}
-	else if (strEquals(sName, PROPERTY_COMMS_KEY))
-		{
-		if (m_iHighlightChar)
-			{
-			char chChar = m_iHighlightChar;
-			return CC.CreateString(CString(&chChar, 1));
-			}
-		else if (m_iDesiredHighlightChar)
-			{
-			char chChar = m_iHighlightChar;
-			return CC.CreateString(CString(&chChar, 1));
-			}
-		else
-			return CC.CreateNil();
-		}
-	else if (strEquals(sName, PROPERTY_CURRENCY))
-		return CC.CreateInteger(GetDefaultEconomy()->GetUNID());
-
-	else if (strEquals(sName, PROPERTY_CURRENCY_NAME))
-		return CC.CreateString(GetDefaultEconomy()->GetSID());
-
-	else if (strEquals(sName, PROPERTY_CYBER_DEFENSE_LEVEL))
-		return CC.CreateInteger(GetCyberDefenseLevel());
-
-	else if (strEquals(sName, PROPERTY_DAMAGE_DESC))
-		{
-		ICCItem *pResult = CC.CreateSymbolTable();
-		SVisibleDamage Damage;
-		GetVisibleDamageDesc(Damage);
-
-		if (Damage.iShieldLevel != -1)
-			pResult->SetIntegerAt(FIELD_SHIELD_LEVEL, Damage.iShieldLevel);
-
-		if (Damage.iArmorLevel != -1)
-			pResult->SetIntegerAt(FIELD_ARMOR_INTEGRITY, Damage.iArmorLevel);
-
-		if (Damage.iHullLevel != -1)
-			pResult->SetIntegerAt(FIELD_HULL_INTEGRITY, Damage.iHullLevel);
-
-		return pResult;
-		}
-
-	else if (strEquals(sName, PROPERTY_DESTINY))
-		return CC.CreateInteger(GetDestiny());
-
-	else if (strEquals(sName, PROPERTY_DOCKING_PORTS))
-		{
-		CDockingPorts *pPorts = GetDockingPorts();
-		if (pPorts == NULL || pPorts->GetPortCount(this) == 0)
-			return CC.CreateNil();
-
-		ICCItem *pList = CC.CreateLinkedList();
-		for (i = 0; i < pPorts->GetPortCount(this); i++)
-			{
-			ICCItem *pPortDesc = CC.CreateSymbolTable();
-
-			//	Status
-
-			if (pPorts->IsPortEmpty(this, i))
-				pPortDesc->SetStringAt(FIELD_STATUS, CONSTLIT("empty"));
-			else
-				pPortDesc->SetStringAt(FIELD_STATUS, CONSTLIT("inUse"));
-
-			//	Position
-
-			ICCItem *pValue = ::CreateListFromVector(pPorts->GetPortPos(this, i, NULL));
-			pPortDesc->SetAt(FIELD_POS, pValue);
-			pValue->Discard();
-
-			//	ObjectID
-
-			CSpaceObject *pObj = pPorts->GetPortObj(this, i);
-			if (pObj)
-				pPortDesc->SetIntegerAt(FIELD_OBJ_ID, pObj->GetID());
-
-			//	Add to list
-
-			pList->Append(pPortDesc);
-			pPortDesc->Discard();
-			}
-
-		return pList;
-		}
-
-	else if (strEquals(sName, PROPERTY_EVENT_SUBSCRIBERS))
-		{
-		ICCItem *pResult = CC.CreateLinkedList();
-		for (int i = 0; i < m_SubscribedObjs.GetCount(); i++)
-			{
-			CSpaceObject *pObj = m_SubscribedObjs.GetObj(i);
-			if (!pObj->IsDestroyed())
-				pResult->AppendInteger((int)pObj);
-			}
-
-		if (pResult->GetCount() == 0)
-			{
-			pResult->Discard();
-			return CC.CreateNil();
-			}
-		else
-			return pResult;
-		}
-
-	else if (strEquals(sName, PROPERTY_HAS_DOCKING_PORTS))
-		return CC.CreateBool(GetDockingPortCount() > 0);
-
-	else if (strEquals(sName, PROPERTY_ID))
-		return CC.CreateInteger(GetID());
-
-	else if (strEquals(sName, PROPERTY_IDENTIFIED))
-		return CC.CreateBool(IsIdentified());
-
-	else if (strEquals(sName, PROPERTY_INSTALL_ARMOR_MAX_LEVEL))
-		{
-		int iMaxLevel = GetTradeMaxLevel(serviceReplaceArmor);
-		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_MAX_LEVEL))
-		{
-		int iMaxLevel = GetTradeMaxLevel(serviceInstallDevice);
-		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_UPGRADE_ONLY))
-		return CC.CreateBool(HasTradeUpgradeOnly(serviceInstallDevice));
-
-	else if (strEquals(sName, PROPERTY_KNOWN))
-		return CC.CreateBool(IsKnown());
-
-	else if (strEquals(sName, PROPERTY_LEVEL))
-		return CC.CreateInteger(GetLevel());
-
-	else if (strEquals(sName, PROPERTY_MASS))
-		return CC.CreateInteger((int)GetMass());
-
-    else if (strEquals(sName, PROPERTY_NAME_PATTERN))
-		{
-		ICCItem *pResult = CC.CreateSymbolTable();
-		DWORD dwFlags;
-		pResult->SetStringAt(CONSTLIT("pattern"), GetNamePattern(0, &dwFlags));
-		pResult->SetIntegerAt(CONSTLIT("flags"), dwFlags);
-		return pResult;
-		}
-
-	else if (strEquals(sName, PROPERTY_PAINT_LAYER))
-		return CC.CreateString(GetPaintLayerID(GetPaintLayer()));
-
-	else if (strEquals(sName, PROPERTY_PLAYER_MISSIONS_GIVEN))
-		{
-		int iCount = GetUniverse().GetObjStats(GetID()).iPlayerMissionsGiven;
-		if (iCount > 0)
-			return CC.CreateInteger(iCount);
-		else
-			return CC.CreateNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_RADIOACTIVE))
-		return CC.CreateBool(IsRadioactive());
-
-	else if (strEquals(sName, PROPERTY_REFUEL_MAX_LEVEL))
-		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRefuel);
-		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_REMOVE_DEVICE_MAX_LEVEL))
-		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRemoveDevice);
-		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_REPAIR_ARMOR_MAX_LEVEL))
-		{
-		int iMaxLevel = GetTradeMaxLevel(serviceRepairArmor);
-		return (iMaxLevel != -1 ? CC.CreateInteger(iMaxLevel) : CC.CreateNil());
-		}
-
-	else if (strEquals(sName, PROPERTY_SCALE))
-		{
-		switch (GetScale())
-			{
-			case scaleStar:
-				return CC.CreateString(SCALE_STAR);
-
-			case scaleWorld:
-				return CC.CreateString(SCALE_WORLD);
-
-			case scaleStructure:
-				return CC.CreateString(SCALE_STATION);
-
-			case scaleShip:
-				return CC.CreateString(SCALE_SHIP);
-
-			case scaleFlotsam:
-				return CC.CreateString(SCALE_FLOTSAM);
-
-			default:
-				return CC.CreateNil();
-			}
-		}
-
-	else if (strEquals(sName, PROPERTY_SHOW_AS_DESTINATION))
-		{
-		if (!IsPlayerDestination())
-			return CC.CreateNil();
-
-		ICCItemPtr pResult(ICCItem::SymbolTable);
-		pResult->SetBooleanAt(CONSTLIT("showDestination"), true);
-
-		if (m_fAutoClearDestination)			pResult->SetBooleanAt(CONSTLIT("autoClear"), true);
-		if (m_fAutoClearDestinationOnDestroy)	pResult->SetBooleanAt(CONSTLIT("autoClearOnDestroy"), true);
-		if (m_fAutoClearDestinationOnDock)		pResult->SetBooleanAt(CONSTLIT("autoClearOnDock"), true);
-		if (m_fAutoClearDestinationOnGate)		pResult->SetBooleanAt(CONSTLIT("autoClearOnGate"), true);
-		if (m_fShowDistanceAndBearing)			pResult->SetBooleanAt(CONSTLIT("showDistance"), true);
-		if (m_fShowHighlight)					pResult->SetBooleanAt(CONSTLIT("showHighlight"), true);
-
-		return pResult->Reference();
-		}
-
-	else if (strEquals(sName, PROPERTY_SIZE_PIXELS))
-		return CC.CreateInteger(GetHitSizePixels());
-
-	else if (strEquals(sName, PROPERTY_SOVEREIGN))
-		{
-		CSovereign *pSovereign = GetSovereign();
-		if (pSovereign)
-			return CC.CreateInteger(pSovereign->GetUNID());
-		else
-			return CC.CreateNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_STEALTH))
-		return CC.CreateInteger(GetStealth());
-
-	else if (strEquals(sName, PROPERTY_SUSPENDED))
-		return CC.CreateBool(IsSuspended());
-
-	else if (strEquals(sName, PROPERTY_TYPE))
-		{
-		if (CDesignType *pType = GetType())
-			return CC.CreateInteger(pType->GetUNID());
-		else
-			return CC.CreateNil();
-		}
-
-	else if (strEquals(sName, PROPERTY_UNDER_ATTACK))
-		return CC.CreateBool(IsUnderAttack());
-
-	else if (pType = GetType())
-		{
-		EPropertyType iType;
-		ICCItemPtr pResult = pType->GetProperty(Ctx, sName, &iType);
-
-		//	If the property is an object property, then we need to look in 
-		//	object data.
-
-		if (iType == EPropertyType::propVariant || iType == EPropertyType::propData)
-			return GetData(sName)->Reference();
-
-		//	If this is a dynamic property, we need to evaluate.
-
-		else if (iType == EPropertyType::propDynamicData)
-			{
-			CCodeChainCtx Ctx(GetUniverse());
-			Ctx.SaveAndDefineSourceVar(this);
-
-			ICCItemPtr pValue = Ctx.RunCode(pResult);
-			return pValue->Reference();
-			}
-
-		//	Otherwise we have a valid property.
-
-		else
-			return pResult->Reference();
-		}
-
-	else
-		return CC.CreateNil();
 	}
 
 CXMLElement *CSpaceObject::GetScreen (const CString &sName)
@@ -4716,13 +4298,13 @@ void CSpaceObject::GetVisibleEnemies (DWORD dwFlags, TArray<CSpaceObject *> *ret
 
 	//	Include stations
 
-	bool bIncludeStations = ((dwFlags & FLAG_INCLUDE_STATIONS) ? true : false);
+	bool bIncludeStations = ((dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_STATIONS) ? true : false);
 
 	//	If a ship has fired its weapon after this time, then it counts
 	//	as an aggressor
 
 	int iAggressorThreshold;
-	if (dwFlags & FLAG_INCLUDE_NON_AGGRESSORS)
+	if (dwFlags & CSpaceObjectTargetList::FLAG_INCLUDE_NON_AGGRESSORS)
 		iAggressorThreshold = -1;
 	else
 		iAggressorThreshold = GetUniverse().GetTicks() - AGGRESSOR_THRESHOLD;
@@ -4995,7 +4577,7 @@ bool CSpaceObject::HasSpecialAttribute (const CString &sAttrib) const
 			return false;
 			}
 
-		ICCItemPtr pValue = ICCItemPtr(((CSpaceObject *)this)->GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty()));
+		ICCItemPtr pValue = GetProperty(CCodeChainCtx(GetUniverse()), Compare.GetProperty());
 		return Compare.Eval(pValue);
 		}
 	else
@@ -5062,9 +4644,30 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 	int iSteps = 0;
 	CVector vStep;
 
+	//	Remember what we hit
+
+	CSpaceObject *pHit = NULL;
+	CVector vHitPos;
+
 	//	See if the beam hit anything. We start with a crude first pass.
 	//	Any objects near the beam are then analyzed further to see if
 	//	the beam hit them.
+	//
+	//	LATER: Note that this is an NxM loop, where N is the number of objects
+	//	in an area and M is the number of steps to increment so we can find the
+	//	precise point of intersection.
+	//
+	//	We should probably loop over steps first and then for each step loop 
+	//	over objects, because that should guarantee the smallest number of
+	//	loops. For example, assume that the object hit is the Ith object on
+	//	the Jth step. In that case we would do a maximum of JxN loops.
+	//
+	//	In contrast, looping over objects first means we do IxM + (N-I)xJ
+	//	loops. If on average I is N/2 and J is M/2, then we end up doing
+	//	MxN/2 + MxN/4 or 3xMxN/4 total loops for the current code versus
+	//	MxN/2 total loops for the optimal case.
+	//
+	//	Of course, this doesn't matter if M and N are small (as they should be).
 
 	int k;
 	while (GetSystem()->EnumObjectsInBoxHasMore(i))
@@ -5107,19 +4710,37 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 		CVector vTest = vStart;
 		for (k = 0; k < iSteps; k++)
 			{
-			//	If we hit this object then we're done.
+			//	If we hit this object then keep track.
 
 			if (pObj->PointInObject(PiOCtx, pObj->GetPos(), vTest))
 				{
-				if (retvHitPos)
-					*retvHitPos = vTest;
+				//	If we hit this on the first step, then we're done
 
-				//	Figure out the direction that the hit came from
+				if (k == 0)
+					{
+					if (retvHitPos)
+						*retvHitPos = vTest;
 
-				if (retiHitDir)
-					*retiHitDir = VectorToPolar(-vStep, NULL);
+					//	Figure out the direction that the hit came from
 
-				return pObj;
+					if (retiHitDir)
+						*retiHitDir = VectorToPolar(-vStep, NULL);
+
+					return pObj;
+					}
+
+				//	Otherwise, we remember it and keep looping in case there
+				//	is another closer object.
+
+				else
+					{
+					pHit = pObj;
+					vHitPos = vTest;
+
+					//	No need to look at steps beyond this one.
+
+					iSteps = k;
+					}
 				}
 
 			//	Next
@@ -5130,9 +4751,20 @@ CSpaceObject *CSpaceObject::HitTest (const CVector &vStart,
 
 	pObj = NULL;
 
-	//	We didn't hit anything.
+	//	See if we hit anything
 
-	return NULL;
+	if (pHit)
+		{
+		if (retvHitPos)
+			*retvHitPos = vHitPos;
+
+		if (retiHitDir)
+			*retiHitDir = VectorToPolar(-vStep, NULL);
+
+		return pHit;
+		}
+	else
+		return NULL;
 
 	DEBUG_CATCH_OBJ_LOOP
 	}
@@ -5558,7 +5190,7 @@ bool CSpaceObject::IsPlayerAttackJustified (void) const
 
 		if (pObj
 				&& IsEnemy(pObj)
-				&& ((pTarget = pObj->GetTarget(CItemCtx())) == this
+				&& ((pTarget = pObj->GetTarget()) == this
 						|| pTarget == pPlayer)
 				&& pObj != pPlayer
 				&& pObj != this)
@@ -5626,7 +5258,7 @@ bool CSpaceObject::IsStargateInRange (Metric rMaxRange)
 	return false;
 	}
 
-bool CSpaceObject::IsUnderAttack (void)
+bool CSpaceObject::IsUnderAttack (void) const
 
 //	IsUnderAttack
 //
@@ -5642,7 +5274,7 @@ bool CSpaceObject::IsUnderAttack (void)
 		CSpaceObject *pObj = GetSystem()->GetObject(i);
 
 		if (pObj
-				&& pObj->GetTarget(CItemCtx()) == this
+				&& pObj->GetTarget() == this
 				&& IsEnemy(pObj)
 				&& pObj != this)
 			return true;
@@ -5815,11 +5447,11 @@ bool CSpaceObject::IsFriend (const CSpaceObject *pObj) const
 		return pOurSovereign->IsFriend(pEnemySovereign);
 	}
 
-bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
+bool CSpaceObject::IsLineOfFireClear (const CInstalledDevice *pWeapon,
 									  CSpaceObject *pTarget, 
 									  int iAngle, 
 									  Metric rDistance,
-									  CSpaceObject **retpFriend)
+									  CSpaceObject **retpFriend) const
 
 //	IsLineOfFireClear
 //
@@ -5836,8 +5468,9 @@ bool CSpaceObject::IsLineOfFireClear (CInstalledDevice *pWeapon,
 
 	//	Compute some values
 
+	const CDeviceItem WeaponItem = pWeapon->GetDeviceItem();
 	CVector vSource = pWeapon->GetPos(this);
-	bool bAreaWeapon = pWeapon->IsAreaWeapon(this);
+	bool bAreaWeapon = WeaponItem.IsAreaWeapon();
 
 	//	We need to adjust the angle to compensate for the fact that the shot
 	//	will take on the velocity of the ship.
@@ -6125,7 +5758,7 @@ bool CSpaceObject::MatchesCriteria (CSpaceObjectCriteria::SCtx &Ctx, const CSpac
 	if (Crit.MatchesHomeBaseIsSource() && GetBase() != pSource)
 		return false;
 
-	if (Crit.MatchesTargetIsSource() && GetTarget(CItemCtx()) != pSource)
+	if (Crit.MatchesTargetIsSource() && GetTarget() != pSource)
 		return false;
 
 	//	Check level
@@ -6593,7 +6226,9 @@ void CSpaceObject::Paint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &C
 //	Paint the object
 
 	{
-	if (IsHidden())
+	if (IsPaintDeferred(Ctx))
+		return;
+	else if (IsHidden())
 		{
 		SetPainted();
 		ClearPaintNeeded();
@@ -7436,70 +7071,6 @@ void CSpaceObject::SetPlayerDestination (const SPlayerDestinationOptions &Option
 		m_fShowHighlight = true;
 	}
 
-bool CSpaceObject::SetProperty (const CString &sName, ICCItem *pValue, CString *retsError)
-
-//	SetProperty
-//
-//	Sets an object property
-
-	{
-	if (strEquals(sName, PROPERTY_IDENTIFIED))
-		{
-		SetIdentified(!pValue->IsNil());
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_COMMS_KEY))
-		{
-		CString sKey = pValue->GetStringValue();
-		m_iDesiredHighlightChar = *sKey.GetASCIIZPointer();
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_KNOWN))
-		{
-		SetKnown(!pValue->IsNil());
-		return true;
-		}
-	else if (strEquals(sName, PROPERTY_SOVEREIGN))
-		{
-		CSovereign *pSovereign = GetUniverse().FindSovereign(pValue->GetIntegerValue());
-		if (pSovereign == NULL)
-			{
-			if (retsError) *retsError = strPatternSubst(CONSTLIT("Unknown sovereign: %s."), pValue->GetStringValue());
-			return false;
-			}
-
-		SetSovereign(pSovereign);
-		return true;
-		}
-
-	//	See if this is a custom property, we set data
-
-	else if (CDesignType *pType = GetType())
-		{
-		ICCItemPtr pDummy;
-		EPropertyType iType;
-		if (!pType->FindCustomProperty(sName, pDummy, &iType))
-			return false;
-
-		switch (iType)
-			{
-			case EPropertyType::propGlobal:
-				pType->SetGlobalData(sName, pValue);
-				return true;
-
-			case EPropertyType::propData:
-				SetData(sName, pValue);
-				return true;
-
-			default:
-				return false;
-			}
-		}
-
-	else
-		return false;
-	}
-
 void CSpaceObject::SetSovereign (CSovereign *pSovereign)
 
 //	SetSovereign
@@ -7527,19 +7098,19 @@ bool CSpaceObject::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &re
 	{
 	//	First we ask the override
 
-	if (m_pOverride && m_pOverride->Translate(this, sID, pData, retResult))
+	if (m_pOverride && m_pOverride->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Ask the type
 
 	CDesignType *pType = GetType();
-	if (pType && pType->Translate(this, sID, pData, retResult))
+	if (pType && pType->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, see if the sovereign has it
 
 	CSovereign *pSovereign = GetSovereign();
-	if (pSovereign && pSovereign->Translate(this, sID, pData, retResult))
+	if (pSovereign && pSovereign->Translate(*this, sID, pData, retResult))
 		return true;
 
 	//	Otherwise, we can't find it.
@@ -7556,19 +7127,19 @@ bool CSpaceObject::TranslateText (const CString &sID, ICCItem *pData, CString *r
 	{
 	//	Ask the override
 
-	if (m_pOverride && m_pOverride->TranslateText(this, sID, pData, retsText))
+	if (m_pOverride && m_pOverride->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Then the type
 
 	CDesignType *pType = GetType();
-	if (pType && pType->TranslateText(this, sID, pData, retsText))
+	if (pType && pType->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Otherwise, see if the sovereign has it
 
 	CSovereign *pSovereign = GetSovereign();
-	if (pSovereign && pSovereign->TranslateText(this, sID, pData, retsText))
+	if (pSovereign && pSovereign->TranslateText(*this, sID, pData, retsText))
 		return true;
 
 	//	Otherwise, we can't find it.

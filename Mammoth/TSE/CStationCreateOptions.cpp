@@ -51,8 +51,13 @@ ALERROR CStationCreateOptions::InitFromXML (SSystemCreateCtx &Ctx, const CXMLEle
 
 	//	Image and painting options
 
-	m_iImageVariant = XMLDesc.GetAttributeIntegerBounded(IMAGE_VARIANT_ATTRIB, 0, -1, -1);
-	m_sPaintLayer = XMLDesc.GetAttribute(PAINT_LAYER_ATTRIB);
+	m_sImageVariant = XMLDesc.GetAttribute(IMAGE_VARIANT_ATTRIB);
+	m_iPaintOrder = CPaintOrder::Parse(XMLDesc.GetAttribute(PAINT_LAYER_ATTRIB));
+	if (m_iPaintOrder == CPaintOrder::error)
+		{
+		Ctx.sError = strPatternSubst(CONSTLIT("Unknown paintLayer: %s"), XMLDesc.GetAttribute(PAINT_LAYER_ATTRIB));
+		return ERR_FAIL;
+		}
 
 	//	Map options
 
@@ -103,11 +108,11 @@ void CStationCreateOptions::Merge (const CStationCreateOptions &Src)
 	if (!Src.m_sObjName.IsBlank())
 		m_sObjName = Src.m_sObjName;
 
-	if (Src.m_iImageVariant != -1)
-		m_iImageVariant = Src.m_iImageVariant;
+	if (!Src.m_sImageVariant.IsBlank())
+		m_sImageVariant = Src.m_sImageVariant;
 
-	if (!Src.m_sPaintLayer.IsBlank())
-		m_sPaintLayer = Src.m_sPaintLayer;
+	if (Src.m_iPaintOrder != CPaintOrder::none)
+		m_iPaintOrder = Src.m_iPaintOrder;
 
 	if (Src.m_bForceMapLabel)
 		{

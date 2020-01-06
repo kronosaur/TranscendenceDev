@@ -39,6 +39,19 @@ CString CDifficultyOptions::GetLabel (ELevels iLevel)
 		return NULL_STR;
 	}
 
+Metric CDifficultyOptions::GetScoreAdj (void) const
+
+//	GetScoreAdj
+//
+//	Score adjustment.
+
+	{
+	if (m_iLevel >= 0 && m_iLevel < lvlCount)
+		return GetPlayerDamageAdj() / GetEnemyDamageAdj();
+	else
+		return 1.0;
+	}
+
 CDifficultyOptions::ELevels CDifficultyOptions::ParseID (const CString &sValue)
 
 //	ParseID

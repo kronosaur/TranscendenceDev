@@ -552,6 +552,11 @@
 							(block (itemsToLoot)
 								(setq itemsToLoot (scrRemoveItem gScreen 1))
 								(objAddItem gPlayerShip itemsToLoot)
+
+								(if (objHasAttribute gSource 'minedOre)
+									(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot 1)
+									)
+
 								(scrShowPane gScreen "Default")
 								)
 							)
@@ -607,6 +612,11 @@
 								(block (itemsToLoot)
 									(setq itemsToLoot (scrRemoveItem gScreen count))
 									(objAddItem gPlayerShip itemsToLoot)
+
+									(if (objHasAttribute gSource 'minedOre)
+										(plyIncItemStat gPlayer 'itemsMinedCount itemsToLoot count)
+										)
+
 									(scrShowPane gScreen "Default")
 									)
 								)

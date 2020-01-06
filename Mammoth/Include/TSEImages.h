@@ -409,7 +409,9 @@ class IImageEntry
 		virtual int GetMaxLifetime (void) const { return 0; }
 		virtual CShipClass *GetShipwreckClass (const CCompositeImageSelector &Selector) const { return NULL; }
         virtual CObjectImageArray &GetSimpleImage (void);
+		virtual int GetVariantByID (const CString &sID) const { return -1; }
 		virtual int GetVariantCount (void) = 0;
+		virtual CString GetVariantID (int iVariant) const { return NULL_STR; }
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CIDCounter &IDGen, CXMLElement *pDesc) { return NOERROR; }
 		virtual void InitSelector (SSelectorInitCtx &InitCtx, CCompositeImageSelector *retSelector) { }
 		virtual bool IsConstant (void) = 0;
@@ -472,6 +474,7 @@ class CCompositeImageDesc
 		IImageEntry *GetRoot (void) const { return m_pRoot; }
         const CObjectImageArray &GetSimpleImage (void) const { return (m_pRoot ? m_pRoot->GetSimpleImage() : CObjectImageArray::Null()); }
         CObjectImageArray &GetSimpleImage (void);
+		int GetVariantByID (const CString &sID) const;
 		int GetVariantCount (void) const { return (m_pRoot ? m_pRoot->GetVariantCount() : 0); }
 		bool HasShipwreckClass (const CCompositeImageSelector &Selector, CShipClass **retpClass = NULL) const;
 		ALERROR InitAsShipwreck (SDesignLoadCtx &Ctx);

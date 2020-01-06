@@ -192,7 +192,7 @@ ItemFates CInstalledDevice::GetFate (void) const
 		return fateNone;
 	}
 
-int CInstalledDevice::GetHitPointsPercent (CSpaceObject *pSource)
+int CInstalledDevice::GetHitPointsPercent (const CSpaceObject *pSource) const
 
 //	GetHitPointsPercent
 //
@@ -249,7 +249,7 @@ DWORD CInstalledDevice::GetSlotLinkedFireOptions (void) const
 		return 0;
 	}
 
-CVector CInstalledDevice::GetPos (CSpaceObject *pSource)
+CVector CInstalledDevice::GetPos (const CSpaceObject *pSource) const
 
 //	GetPos
 //

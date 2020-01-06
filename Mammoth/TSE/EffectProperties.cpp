@@ -5,15 +5,15 @@
 
 #include "PreComp.h"
 
-TPropertyHandler<CEffect> CEffect::m_PropertyTable = std::array<TPropertyHandler<CEffect>::SPropertyDef, 1> {
+TPropertyHandler<CEffect> CEffect::m_PropertyTable = std::array<TPropertyHandler<CEffect>::SPropertyDef, 1> {{
 		{
 		"lifetime",		"ticks",
 		[](const CEffect &Obj, const CString &sProperty) { return ICCItemPtr(Obj.GetLifetime()); },
 		[](CEffect &Obj, const CString &sProperty, const ICCItem &Value, CString *retsError) { Obj.SetLifetime(Value.GetIntegerValue()); return true; }
 		}
-	};
+	}};
 
-ICCItem *CEffect::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
+ICCItemPtr CEffect::OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const
 
 //	GetProperty
 //
@@ -26,20 +26,20 @@ ICCItem *CEffect::GetProperty (CCodeChainCtx &Ctx, const CString &sProperty)
 	CEffectParamDesc ParamValue;
 
 	if (m_PropertyTable.FindProperty(*this, sProperty, pValue))
-		return pValue->Reference();
+		return pValue;
 
 	//	Otherwise, see if this is a property of the effect painter.
 
 	else if (m_pPainter && m_pPainter->GetParam(sProperty, &ParamValue))
 		{
 		pValue = ParamValue.AsItem();
-		return pValue->Reference();
+		return pValue;
 		}
 
-	//	Lastly, get the base class properties
+	//	Otherwise, not found
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sProperty);
+		return ICCItemPtr();
 	}
 
 bool CEffect::SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError)

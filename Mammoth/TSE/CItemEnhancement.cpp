@@ -228,6 +228,10 @@ void CItemEnhancement::AccumulateAttributes (const CItem &Item, TArray<SDisplayA
 				retList->Insert(SDisplayAttribute(iDisplayType, strPatternSubst(CONSTLIT("+swivel %d"), GetDataX()), true));
 			break;
 
+		case etMissileDefense:
+			retList->Insert(SDisplayAttribute(iDisplayType, (IsDisadvantage() ? CONSTLIT("-blinded") : CONSTLIT("+missileDefense")), true));
+			break;
+
 		case etLinkedFire:
 			{
 			DWORD dwOptions = (DWORD)GetDataX();
@@ -1608,6 +1612,7 @@ int CItemEnhancement::GetValueAdj (const CItem &Item) const
 			case etPhotoRegenerate:
 			case etPhotoRecharge:
 			case etRepairOnHit:
+			case etMissileDefense:
 				return 30;
 
 			case etRegenerate:
@@ -1660,6 +1665,7 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 //	+hpBonus:{n}				Add hp bonus.
 //	+hpBonus:{s}:{n}			DamageAdj for type s set to hpBonus n
 //	+immunity:{s}				Immunity to special damage s.
+//	+missileDefense				Add missile defense to weapons
 //	+omnidirectional			Omnidirectional.
 //	+reflect:{s}				Reflects damage type s.
 //	+regen						Regenerate
@@ -2006,6 +2012,10 @@ ALERROR CItemEnhancement::InitFromDesc (const CString &sDesc, CString *retsError
 			SetModTracking(9);
 		else
 			SetModTracking(Min(iValue, 180));
+		}
+	else if (strEquals(sID, CONSTLIT("missileDefense")))
+		{
+		m_dwMods = EncodeAX(etMissileDefense | (bDisadvantage ? etDisadvantage : 0));
 		}
 
 	//	Linked-fire

@@ -162,6 +162,9 @@
     <ClCompile Include="CSmallOptionButtonAnimator.cpp">
       <Filter>Source Files\Painters</Filter>
     </ClCompile>
+    <ClCompile Include="CItemPainter.cpp">
+      <Filter>Source Files\Painters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

@@ -13,7 +13,6 @@
 		
 			attributes=			"debris, friendly"
 
-			dockScreen=			"Main"
 			abandonedScreen=	"Main"
 
 			scale=				"ship"
@@ -722,7 +721,7 @@
 	<StationType UNID="&stWeaponsCache;"
 			name=				"(weapons cache)"
 			sovereign=			"&svOutlaw;"
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			structuralHitPoints="15"
 			ejectaType=			"&vtWreckEjecta;"
@@ -735,6 +734,10 @@
 
 			attributes=			"enemy, envEarth, envAvoidsAir, noSalvage"
 			>
+
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
 
 		<!-- Encounter Info -->
 
@@ -805,7 +808,7 @@
 	<StationType UNID="&stWeaponsCrate;"
 			name=				"(weapons cache)"
 			sovereign=			"&svOutlaw;"
-			dockScreen=			"&dsRPGAbandonedStation;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
 
 			attributes=			"noSalvage"
 
@@ -818,6 +821,10 @@
 			noMapIcon=			"true"
 			destroyWhenEmpty=	"true"
 			>
+
+		<Properties>
+			<Constant id="core.noSalvage">True</Constant>
+		</Properties>
 
 		<ImageVariants>
 			<Image			imageID="&rsStations1;" imageX="480" imageY="256" imageWidth="32" imageHeight="32" />

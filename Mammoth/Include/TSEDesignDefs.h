@@ -83,6 +83,7 @@ class CDifficultyOptions
 		Metric GetEnemyDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rEnemyDamageAdj; }
 		ELevels GetLevel (void) const { return m_iLevel; }
 		Metric GetPlayerDamageAdj (void) const { ASSERT(m_iLevel != lvlUnknown); return m_Table[m_iLevel].rPlayerDamageAdj; }
+		Metric GetScoreAdj (void) const;
 		void ReadFromStream (IReadStream &Stream);
 		bool SaveOnUndock (void) const;
 		void SetLevel (ELevels iLevel) { m_iLevel = iLevel; }
