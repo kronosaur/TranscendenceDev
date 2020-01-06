@@ -2423,6 +2423,7 @@
 	<Module filename="CorporateHierarchy.xml"/>
 	<Module filename="CorporateInsurance.xml"/>
 	<Module filename="CorporateTradingPost.xml"/>
+	<Module filename="Makayev.xml"/>
 	<Module filename="Rasiermesser.xml"/>
 	<Module filename="RasiermesserMission01.xml"/>
 
