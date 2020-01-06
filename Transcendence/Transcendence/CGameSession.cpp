@@ -44,6 +44,7 @@ void CGameSession::DismissMenu (void)
 
 		ShowCursor(false);
 		SyncMouseToPlayerShip();
+		ExecuteCommandRefresh();
 
 		//	Ignore the next mouse move message, for purpose of enabling mouse
 		//	control.
