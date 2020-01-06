@@ -190,6 +190,7 @@ static char *CACHED_EVENTS[CItemType::evtCount] =
 		"OnEnable",
 		"OnInstall",
 		"OnRefuel",
+		"GetHUDName",
 	};
 
 static TStaticStringTable<TStaticStringEntry<ItemFates>, 5> FATE_TABLE = {
@@ -246,11 +247,16 @@ bool CItemType::IsAmmunition (void) const
 	if (!IsMissile())
 		return false;
 
-	CDeviceClass *pWeapon;
-	if (!CDeviceClass::FindWeaponFor(const_cast<CItemType *>(this), &pWeapon))
-		return false;
+	//	If any of the weapons that launches is is a missile launcher, then we
+	//	count as a missile.
 
-	return (pWeapon->GetItemType()->GetCategory() != itemcatLauncher);
+	for (int i = 0; i < m_Weapons.GetCount(); i++)
+		if (m_Weapons[i]->GetItemType()->GetCategory() == itemcatLauncher)
+			return false;
+
+	//	Otherwise, we count as ammo
+
+	return true;
 	}
 
 void CItemType::CreateEmptyFlotsam (CSystem &System, 
@@ -1146,8 +1152,10 @@ CWeaponFireDesc *CItemType::GetWeaponFireDesc (CItemCtx &Ctx, CString *retsError
             //  We prefer the item from the context. NOTE: We assume that the
             //  context has already validated that this ammo is compatible.
 
+#if 0
             else if (!(pAmmo = &Ctx.GetVariantItem())->IsEmpty())
                 { }
+#endif
 
             //  If we are the same weapon, then we use the first ammo item
 
@@ -1334,13 +1342,17 @@ bool CItemType::IsMissile (void) const
 
 //	IsMissile
 //
-//	Returns TRUE if this is a missile
+//	Returns TRUE if this is a missile/ammo fired by some weapon.
 
 	{
 	if (m_pMissile)
 		return true;
 
-	return HasLiteralAttribute(STR_MISSILE);
+	else if (m_Weapons.GetCount() > 0)
+		return true;
+
+	else
+		return HasLiteralAttribute(STR_MISSILE);
 	}
 
 bool CItemType::IsUnknownType (DWORD dwUNID, int *retiUnknownIndex) const

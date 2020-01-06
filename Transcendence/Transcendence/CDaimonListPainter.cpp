@@ -149,12 +149,11 @@ int CDaimonListPainter::Justify (int cxWidth) const
 	if (m_pList == NULL)
 		return 0;
 
-	CUIHelper Helper(*g_pHI);
-	RECT rcRect;
-	rcRect.left = 0;
-	rcRect.top = 0;
-	rcRect.right = cxWidth;
-	rcRect.bottom = 1000;
+	CItemPainter Painter(g_pHI->GetVisuals());
+
+	CItemPainter::SOptions Options;
+	Options.bSmallIcon = true;
+	Options.bTitle = true;
 
 	int yTotal = 0;
 	for (i = 0; i < m_pList->GetCount(); i++)
@@ -171,7 +170,8 @@ int CDaimonListPainter::Justify (int cxWidth) const
 
 		CItemType *pDaimon = m_pList->GetDaimon(i);
 
-		int yDaimon = Helper.CalcItemEntryHeight(NULL, CItem(pDaimon, 1), rcRect, CUIHelper::OPTION_SMALL_ICON | CUIHelper::OPTION_TITLE);
+		Painter.Init(CItem(pDaimon, 1), cxWidth, Options);
+		int yDaimon = Painter.GetHeight();
 
 		m_pList->SetDaimonHeight(i, yDaimon);
 		yTotal += yDaimon;
@@ -295,14 +295,14 @@ void CDaimonListPainter::PaintDaimon (CG32bitImage &Dest, CItemType *pDaimon, in
 //	Paints a daimon entry at the given position.
 
 	{
-	CUIHelper Helper(*g_pHI);
+	CItemPainter Painter(g_pHI->GetVisuals());
 
-	RECT rcItem;
-	rcItem.left = x;
-	rcItem.top = y;
-	rcItem.right = x + cxWidth;
-	rcItem.bottom = y + cyHeight;
-	Helper.PaintItemEntry(Dest, NULL, CItem(pDaimon, 1), rcItem, AA_STYLECOLOR(colorDeployDaimonTitle), CUIHelper::OPTION_SMALL_ICON | CUIHelper::OPTION_TITLE);
+	CItemPainter::SOptions Options;
+	Options.bSmallIcon = true;
+	Options.bTitle = true;
+	Painter.Init(CItem(pDaimon, 1), cxWidth, Options);
+
+	Painter.Paint(Dest, x, y, AA_STYLECOLOR(colorDeployDaimonTitle));
 	}
 
 bool CDaimonListPainter::Update (void)

@@ -504,7 +504,7 @@ TArray <int> GetExtractedVectorShape(CCodeChain *pCC, TArray <int> vShape, CCLin
 
 	return vResultShape;
 };
-ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
+ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices) const
 
 //	IndexVector
 //
@@ -570,7 +570,7 @@ ICCItem *CCVector::IndexVector(CCodeChain *pCC, ICCItem *pIndices)
 		}
 	}
 
-CString CCVectorOld::Print (DWORD dwFlags)
+CString CCVectorOld::Print (DWORD dwFlags) const
 
 //	Print
 //
@@ -582,7 +582,7 @@ CString CCVectorOld::Print (DWORD dwFlags)
 	return strPatternSubst(LITERAL("[vector with (%d) elements]"), m_iCount);
 	}
 
-CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags)
+CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags) const
 	{
 	int i;
 	double dData;
@@ -649,7 +649,7 @@ CString CCVector::PrintWithoutShape (CCodeChain *pCC, DWORD dwFlags)
 		}
 	}
 
-CString CCVector::Print (DWORD dwFlags)
+CString CCVector::Print (DWORD dwFlags) const
 	//	Print
 	//
 	//	Print a user-visible message

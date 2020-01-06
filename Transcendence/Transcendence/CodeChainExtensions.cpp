@@ -484,6 +484,8 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsBoughtValue\n"
 			"   'itemsDamagedHP\n"
 			"   'itemsFiredCount\n"
+			"   'itemsMinedCount\n"
+			"   'itemsMinedValue\n"
 			"   'itemsSoldCount\n"
 			"   'itemsSoldValue",
 
@@ -545,6 +547,7 @@ static PRIMITIVEPROCDEF g_Extensions[] =
 			"   'itemsBoughtValue\n"
 			"   'itemsDamagedHP\n"
 			"   'itemsFiredCount\n"
+			"   'itemsMinedCount\n"
 			"   'itemsSoldCount\n"
 			"   'itemsSoldValue",
 
@@ -1796,7 +1799,7 @@ ICCItem *fnScrSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 		case FN_SCR_BACKGROUND_IMAGE:
 			{
-			IDockScreenDisplay::SBackgroundDesc Desc;
+			SDockScreenBackgroundDesc Desc;
 			if (!IDockScreenDisplay::ParseBackgrounDesc(pArgs->GetElement(1), &Desc))
 				return pCC->CreateError(CONSTLIT("Invalid image description"), pArgs->GetElement(1));
 

@@ -353,7 +353,7 @@ int CShipInterior::FindNextCompartmentHit (SHitTestCtx &HitCtx, int xHitPos, int
 		return HitCtx.HitOrder.GetValue(HitCtx.iPos++);
 	}
 
-void CShipInterior::GetHitPoints (CShip *pShip, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP) const
+void CShipInterior::GetHitPoints (const CShip &Ship, const CShipInteriorDesc &Desc, int *retiHP, int *retiMaxHP) const
 
 //	GetHitPoints
 //

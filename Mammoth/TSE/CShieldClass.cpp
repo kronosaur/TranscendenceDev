@@ -1459,7 +1459,7 @@ int CShieldClass::GetReflectChance (const CDeviceItem &DeviceItem, const CItemEn
 	return iReflect;
 	}
 
-void CShieldClass::GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus)
+void CShieldClass::GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus)
 
 //	GetStatus
 //

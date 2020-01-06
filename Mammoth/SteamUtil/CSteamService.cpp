@@ -77,6 +77,12 @@ SSteamEntryCreate AVAILABLE_EXTENSIONS[] =
 
 			""
 			},
+
+		{	0x00920000,		364510,
+			"Near Stars Expansion", extExtension, CMultiverseCatalogEntry::licenseSteam,
+
+			"This expansion adds the Near Stars, including Sol, to The Stars of the Pilgrim. You must have Eternity Port installed to use it."
+			},
 	};
 
 const int AVAILABLE_EXTENSIONS_COUNT = (sizeof(AVAILABLE_EXTENSIONS) / sizeof(AVAILABLE_EXTENSIONS[0]));

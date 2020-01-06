@@ -649,6 +649,7 @@ class CString : public CObject
 		static CString INTMakeString (void *pvStore);
 		static void INTSetStorage (CString &sString, void *pStore);
 		void INTTakeStorage (void *pStore);
+		static void InitLowerCaseAbsoluteTable (void);
 
 		//	Debugging APIs
 
@@ -697,8 +698,6 @@ class CString : public CObject
 		static constexpr DWORD FLAG_PRESERVE_CONTENTS =		0x00000001;
 		static constexpr DWORD FLAG_GEOMETRIC_GROWTH =		0x00000002;
 		void Size (int iLength, DWORD dwFlags = 0);
-
-		static void InitLowerCaseAbsoluteTable (void);
 
 		PSTORESTRUCT m_pStore;
 
@@ -1407,6 +1406,7 @@ class CThreadPool
 		CManualEvent m_Quit;
 	};
 
+extern bool g_bLowerCaseAbsoluteTableInit;
 extern char g_LowerCaseAbsoluteTable[256];
 
 //	Initialization functions (Kernel.cpp)
@@ -1483,7 +1483,7 @@ bool strIsInt (const CString &sValue, DWORD dwFlags = 0, int *retiValue = NULL);
 inline bool strIsWhitespace (const char *pPos) { return *pPos == ' ' || *pPos == '\t' || *pPos == '\n' || *pPos == '\r'; }
 CString strJoin (const TArray<CString> &List, const CString &sConjunction);
 CString strLoadFromRes (HINSTANCE hInst, int iResID);
-inline char strLowerCaseAbsolute (char chChar) { return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
+inline char strLowerCaseAbsolute (char chChar) { if (!g_bLowerCaseAbsoluteTableInit) CString::InitLowerCaseAbsoluteTable(); return g_LowerCaseAbsoluteTable[(BYTE)chChar]; }
 bool strNeedsEscapeCodes (const CString &sString);
 
 #define PARSE_THOUSAND_SEPARATOR				0x00000001

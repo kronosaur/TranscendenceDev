@@ -102,6 +102,20 @@ void CDockScreenStack::ResolveCurrent (const SDockFrame &ResolvedFrame)
 		}
 	}
 
+void CDockScreenStack::SetBackgroundDesc (const SDockScreenBackgroundDesc &BackgroundDesc)
+
+//	SetBackgroundDesc
+//
+//	Sets the current background descriptor
+
+	{
+	if (!IsEmpty())
+		{
+		int iTop = m_Stack.GetCount() - 1;
+		m_Stack[iTop].BackgroundDesc = BackgroundDesc;
+		}
+	}
+
 void CDockScreenStack::SetCurrent (const SDockFrame &NewFrame, SDockFrame *retPrevFrame)
 
 //	SetCurrent

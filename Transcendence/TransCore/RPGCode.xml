@@ -1539,6 +1539,7 @@
 						(not (objIsRadioactive theObj))
 						(not (objGetData theObj (or lootedVar 'core.salvaged)))
 						(not (objGetData theObj 'core.noSalvage))
+						(not (objGetProperty theObj 'core.noSalvage))
 						)
 					)
 				))
@@ -1826,6 +1827,7 @@
 							
 							(if debug
 								(block ()
+									(dbgOutput "")
 									(dbgOutput "data = " data)
 									(dbgOutput "installerObj = " (objGetName installerObj))
 									(dbgOutput "status = " status)
@@ -1908,6 +1910,7 @@
 							;	Ask the object if we can install the item
 
 							(setq returnValue (objCanInstallItem targetObj thisItem recommendedSlot))
+							(if debug (dbgOutput (cat "returnValue = " returnValue)))
 							(setq resultCode (@ returnValue 1))
 							(setq resultMessage (@ returnValue 2))
 							(setq itemToReplace (@ returnValue 3))

@@ -5,6 +5,23 @@
 
 #pragma once
 
+class CPaintOrder
+	{
+	public:
+		enum Types
+			{
+			error =				0xffffffff,	//	Error parsing
+			none =				0x00000000,	//	No specific paint order
+
+			bringToFront =		0x00000001,	//	Paint in front
+			sendToBack =		0x00000002,	//	Paint behind
+			paintOverhang =		0x00000004,	//	Paint above player ship
+			};
+
+		static Types Parse (const CString &sValue);
+		static CString GetID (Types iType);
+	};
+
 class CLabelPainter
 	{
 	public:
@@ -38,6 +55,8 @@ struct SViewportPaintCtx
 			pFrame->iRotation = iRotation;
 			pFrame->iTick = iTick;
 			pFrame->iVariant = iVariant;
+			pFrame->yAnnotations = yAnnotations;
+			pFrame->rcObjBounds = rcObjBounds;
 			}
 
 		void Restore (void)
@@ -54,6 +73,8 @@ struct SViewportPaintCtx
 				iRotation = pFrame->iRotation;
 				iTick = pFrame->iTick;
 				iVariant = pFrame->iVariant;
+				yAnnotations = pFrame->yAnnotations;
+				rcObjBounds = pFrame->rcObjBounds;
 
 				m_SaveStack.Delete(iLastIndex);
 				}
@@ -102,6 +123,7 @@ struct SViewportPaintCtx
 		bool bShowBounds = false;
 		bool bShowFacingsAngle = false;
 		bool bNo3DExtras = false;
+		bool bInPaintSubordinate = false;
 
 		CSpaceObject *pObj = NULL;				//	Current object being painted
 		RECT rcObjBounds;						//	Object bounds in screen coordinates.
@@ -131,6 +153,8 @@ struct SViewportPaintCtx
 			int iDestiny;
 			int iRotation;
 			int iMaxLength;
+			int yAnnotations;
+			RECT rcObjBounds;
 			};
 
 		//	Stack of modifications

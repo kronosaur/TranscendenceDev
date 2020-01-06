@@ -15,6 +15,12 @@ class CShipClass;
 //	CDifferentiatedItem and its subclasses are used to access functionality
 //	specific to armor, devices, etc.
 //
+//	WARNING: These classes are meant to be used as wrappers to an underlying
+//	CItem object. The lifetime of a CDifferentiatedItem is tied to the CItem 
+//	from which it came. Thus you cannot construct a CItem on the stack and 
+//	return a CDifferentiatedItem (because you'll end up with a reference to an
+//	invalid stack frame).
+//
 //	HACK: The pattern below does not deal with const properly. Consider using 
 //	the following pattern:
 //
@@ -48,12 +54,14 @@ class CDifferentiatedItem
 		inline int GetCharges (void) const;
 		inline CCurrencyAndValue GetCurrencyAndValue (bool bActual = false) const;
 		inline const CEconomyType &GetCurrencyType (void) const;
+		inline const CObjectImageArray &GetImage (void) const;
 		inline int GetLevel (void) const;
 		inline int GetMassKg (void) const;
 		inline int GetMinLevel (void) const;
 		inline CString GetNounPhrase (DWORD dwFlags = 0) const;
 		inline const CItemType &GetType (void) const;
 		inline CItemType &GetType (void);
+		inline int GetVariantNumber (void) const;
 		void ReportEventError (const CSpaceObject *pSource, const CString &sEvent, const ICCItem &ErrorItem) const;
 
 	protected:
@@ -122,6 +130,7 @@ class CArmorItem : public CDifferentiatedItem
 		inline CurrencyValue GetRepairCost (int iHPToRepair = 1) const;
 		inline int GetRepairLevel (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline bool IsImmune (SpecialDamageTypes iSpecialDamage) const;
 
 	private:
 		CArmorItem (CItem &Item) : CDifferentiatedItem(Item)
@@ -152,8 +161,14 @@ class CDeviceItem : public CDifferentiatedItem
 		inline const CInstalledDevice *GetInstalledDevice (void) const;
 		inline CInstalledDevice *GetInstalledDevice (void);
 		DWORD GetLinkedFireOptions (void) const;
+		Metric GetMaxEffectiveRange (CSpaceObject *pTarget = NULL) const;
 		int GetMaxHP (void) const;
 		inline CSpaceObject *GetSource (void) const;
+		inline int GetWeaponEffectiveness (CSpaceObject *pTarget) const;
+		inline bool IsAreaWeapon (void) const;
+		bool IsMissileDefenseWeapon (void) const;
+		bool IsTargetableMissileDefenseWeapon (void) const;
+		bool IsWeaponAligned (CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const;
 		void ReportEventError (const CString &sEvent, const ICCItem &ErrorItem) const { CDifferentiatedItem::ReportEventError(GetSource(), sEvent, ErrorItem); }
 
 	private:
@@ -164,6 +179,27 @@ class CDeviceItem : public CDifferentiatedItem
 			{ }
 
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
+
+	friend class CItem;
+	};
+
+class CMissileItem : public CDifferentiatedItem
+	{
+	public:
+		
+		inline operator bool () const;
+		operator const CItem & () const { return m_Item; }
+		operator CItem & () { return m_Item; }
+
+		TArray<CItem> GetLaunchWeapons (void) const;
+		CString GetLaunchedByText (const CItem &Launcher) const;
+
+	private:
+		CMissileItem (CItem &Item) : CDifferentiatedItem(Item)
+			{ }
+
+		CMissileItem (const CItem &Item) : CDifferentiatedItem(Item)
+			{ }
 
 	friend class CItem;
 	};
@@ -217,6 +253,7 @@ class CItem
 		void ClearDamaged (void);
 		void ClearDisrupted (void) { if (m_pExtra) m_pExtra->m_dwDisruptedTime = 0; }
 		void ClearEnhanced (void) { m_dwFlags &= ~flagEnhanced; }
+		void ClearExtra (void) { delete m_pExtra; m_pExtra = NULL; }
 		void ClearInstalled (void);
 		static CItem CreateItemByName (CUniverse &Universe, const CString &sName, const CItemCriteria &Criteria, bool bActualName = false);
 		bool IsEqual (const CItem &Item, DWORD dwFlags = 0) const;
@@ -237,6 +274,7 @@ class CItem
 		void FireOnRemovedAsEnhancement (CSpaceObject *pSource, const CItem &ItemEnhanced) const;
 		void FireOnUninstall (CSpaceObject *pSource) const;
 		int GetApparentLevel (void) const;
+		inline ItemCategories GetCategory (void) const;
 		int GetCharges (void) const { return (m_pExtra ? (int)m_pExtra->m_dwCharges : 0); }
 		int GetCount (void) const { return (int)m_dwCount; }
 		const CItemList &GetComponents (void) const;
@@ -251,6 +289,7 @@ class CItem
 		CString GetEnhancedDesc (void) const;
 		bool GetEnhancementConferred (const CSpaceObject &TargetObj, const CItem &TargetItem, SEnhanceItemResult &retResult, CString *retsError = NULL) const;
 		TSharedPtr<CItemEnhancementStack> GetEnhancementStack (void) const;
+		inline const CObjectImageArray &GetImage (void) const;
 		int GetInstallCost (void) const;
 		int GetInstalled (void) const { return (int)(char)m_dwInstalled; }
 		const CInstalledArmor *GetInstalledArmor (void) const { if (m_pExtra && m_pExtra->m_iInstalled == installedArmor) return (const CInstalledArmor *)m_pExtra->m_pInstalled; else return NULL; }
@@ -282,7 +321,7 @@ class CItem
 		int GetUnknownIndex (void) const;
 		CItemType *GetUnknownType (void) const;
 		CItemType *GetUnknownTypeIfUnknown (bool bActual = false) const;
-		int GetVariantNumber(void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
+		int GetVariantNumber (void) const { return (m_pExtra ? (int)m_pExtra->m_dwVariantCounter : 0); }
 		inline bool HasAttribute (const CString &sAttrib) const;
 		bool HasComponents (void) const;
 		bool HasMods (void) const { return (m_pExtra && m_pExtra->m_Mods.IsNotEmpty()); }
@@ -294,6 +333,7 @@ class CItem
         bool IsEmpty (void) const { return (m_pItemType == NULL); }
 		bool IsEnhanced (void) const { return (m_dwFlags & flagEnhanced ? true : false); }
 		bool IsEnhancementEffective (const CItemEnhancement &Enhancement) const;
+		bool IsExtraEmpty (DWORD dwFlags = 0);
 		bool IsInstalled (void) const { return (m_dwInstalled != 0xff); }
 		bool IsKnown (int *retiUnknownIndex = NULL) const;
 		bool IsMarkedForDelete (void) { return (m_dwCount == 0xffff); }
@@ -351,6 +391,12 @@ class CItem
 		CDeviceItem AsDeviceItem (void) { return CDeviceItem(IsDevice() ? *this : CItem::m_NullItem); }
 		const CDeviceItem AsDeviceItemOrThrow (void) const { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
 		CDeviceItem AsDeviceItemOrThrow (void) { if (IsDevice()) return CDeviceItem(*this); else throw CException(ERR_FAIL); }
+
+		inline bool IsMissile (void) const;
+		const CMissileItem AsMissileItem (void) const { return CMissileItem(IsMissile() ? *this : NullItem()); }
+		CMissileItem AsMissileItem (void) { return CMissileItem(IsMissile() ? *this : NullItem()); }
+		const CMissileItem AsMissileItemOrThrow (void) const { if (IsMissile()) return CMissileItem(*this); else throw CException(ERR_FAIL); }
+		CMissileItem AsMissileItemOrThrow (void) { if (IsMissile()) return CMissileItem(*this); else throw CException(ERR_FAIL); }
 
 		//	Item Criteria
 
@@ -543,14 +589,12 @@ class CItemCtx
 		const CShipClass *GetSourceShipClass (void) const;
 		int GetVariant (void) const { return m_iVariant; }
 		CDeviceClass *GetVariantDevice (void) const { return m_pWeapon; }
-        const CItem &GetVariantItem (void) const { return m_Variant; }
         bool IsItemNull (void) { GetItem(); return (m_pItem == NULL || m_pItem->GetType() == NULL); }
 		bool IsDeviceDamaged (void);
 		bool IsDeviceDisrupted (void);
         bool IsDeviceEnabled (void);
 		bool IsDeviceWorking (void);
 		bool ResolveVariant (void);
-        void SetVariantItem (const CItem &Item) { m_Variant = Item; }
 
 	private:
 		const CItem *GetItemPointer (void) const;
@@ -562,7 +606,6 @@ class CItemCtx
 		mutable CInstalledArmor *m_pArmor = NULL;		//	Installation structure (may be NULL)
 		CInstalledDevice *m_pDevice = NULL;		//	Installation structure (may be NULL)
 
-        CItem m_Variant;                        //  Stores the selected missile/ammo for a weapon.
 		CDeviceClass *m_pWeapon = NULL;			//	This is the weapon that uses the given item
 		int m_iVariant = -1;					//	NOTE: In this case, m_pItem may be either a
 												//	missile or the weapon.

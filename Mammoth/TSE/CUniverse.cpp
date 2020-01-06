@@ -21,6 +21,8 @@
 #define PROPERTY_DIFFICULTY					CONSTLIT("difficulty")
 #define PROPERTY_MIN_API_VERSION			CONSTLIT("minAPIVersion")
 
+#define UNID_ENGINE_TEXT					0x00030004
+
 struct SExtensionSaveDesc
 	{
 	DWORD dwUNID = 0;
@@ -2887,6 +2889,19 @@ CTimeSpan CUniverse::StopGameTime (void)
 	{
 	CTimeDate StopTime(CTimeDate::Now);
 	return timeSpan(m_StartTime, StopTime);
+	}
+
+CString CUniverse::TranslateEngineText(const CString &sID, ICCItem *pData) const
+	{
+	const CDesignType *pEngineTextType = FindDesignType(UNID_ENGINE_TEXT);
+	if (!pEngineTextType)
+		return CONSTLIT("Error: Can't find engine text type.");
+	ICCItemPtr pResult;
+	if (!pEngineTextType->Translate(sID, pData, pResult))
+		return strPatternSubst(CONSTLIT("Error: Can't find engine text ID %s"), sID);
+	if (pResult->IsNil())
+		return strPatternSubst(CONSTLIT("Error: Engine text ID %s returned Nil."), sID);
+	return pResult->GetStringValue();
 	}
 
 void CUniverse::Update (SSystemUpdateCtx &Ctx)

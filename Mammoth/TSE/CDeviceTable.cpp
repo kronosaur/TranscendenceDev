@@ -40,6 +40,7 @@
 #define MAX_COUNT_ATTRIB						CONSTLIT("maxCount")
 #define MAX_FIRE_ARC_ATTRIB						CONSTLIT("maxFireArc")
 #define MIN_FIRE_ARC_ATTRIB						CONSTLIT("minFireArc")
+#define MISSILE_DEFENSE_ATTRIB					CONSTLIT("missileDefense")
 #define OMNIDIRECTIONAL_ATTRIB					CONSTLIT("omnidirectional")
 #define SECONDARY_WEAPON_ATTRIB					CONSTLIT("secondaryWeapon")
 #define SHOT_SEPARATION_SCALE_ATTRIB			CONSTLIT("shotSeparationScale")
@@ -317,6 +318,9 @@ ALERROR IDeviceGenerator::InitDeviceDescFromXML (SDesignLoadCtx &Ctx, CXMLElemen
 		}
 
 	retDesc->iSlotBonus = pDesc->GetAttributeInteger(HP_BONUS_ATTRIB);
+
+	if (pDesc->GetAttributeBool(MISSILE_DEFENSE_ATTRIB))
+		retDesc->Enhancements.InsertMissileDefense();
 
 	return NOERROR;
 	}
@@ -720,6 +724,9 @@ ALERROR CSingleDevice::LoadFromXML (SDesignLoadCtx &Ctx, CXMLElement *pDesc)
 		m_iSlotBonus = 0;
 		m_bDefaultSlotBonus = true;
 		}
+
+	if (pDesc->GetAttributeBool(MISSILE_DEFENSE_ATTRIB))
+		m_Enhancements.InsertMissileDefense();
 
 	//	Load extra items
 

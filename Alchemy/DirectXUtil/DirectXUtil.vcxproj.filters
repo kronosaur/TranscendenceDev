@@ -449,5 +449,8 @@
     <ClCompile Include="OpenGLMasterRenderQueue.cpp">
       <Filter>Source Files\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="CIconLabelBlock.cpp">
+      <Filter>Source Files\TextFormat</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -613,6 +613,7 @@ void CStandardShipAI::OnBehavior (SUpdateCtx &Ctx)
 							&& !pObj->IsIntangible()
 							&& (pObj->CanObjRequestDock() == CSpaceObject::dockingOK)
 							&& !pObj->HasAttribute(FIELD_NO_SALVAGE)
+							&& pObj->GetProperty(FIELD_CORE_NO_SALVAGE)->IsNil()
 							&& pObj->GetData(FIELD_CORE_NO_SALVAGE)->IsNil()
 							&& pObj->GetData(FIELD_SCAVENGE)->IsNil())
 						{

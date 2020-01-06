@@ -166,7 +166,7 @@ class CIntroShipController : public IShipController
 		virtual bool GetStopThrust (void) override { return m_pDelegate->GetStopThrust(); }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags) const override { return m_pDelegate->GetTarget(dwFlags); }
 		virtual bool GetThrust (void) override { return m_pDelegate->GetThrust(); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(TargetingCtx, ItemCtx, retpTarget, retiFireSolution); }
+		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override { m_pDelegate->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return m_pDelegate->IsAngryAt(pObj); }
 		virtual int SetAISettingInteger (const CString &sSetting, int iValue) override { return m_pDelegate->SetAISettingInteger(sSetting, iValue); }
 		virtual CString SetAISettingString (const CString &sSetting, const CString &sValue) override { return m_pDelegate->SetAISettingString(sSetting, sValue); }
@@ -199,7 +199,7 @@ class CIntroShipController : public IShipController
         virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override { m_pDelegate->OnFuelConsumed(rFuel, iUse); }
 		virtual void OnHitBarrier (CSpaceObject *pBarrierObj, const CVector &vPos) override { m_pDelegate->OnHitBarrier(pBarrierObj, vPos); }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pDelegate->OnMissionCompleted(pMission, bSuccess); }
-		virtual void OnObjDamaged (const SDamageCtx &Ctx) override { m_pDelegate->OnObjDamaged(Ctx); }
+		virtual void OnObjHit (const SDamageCtx &Ctx) override { m_pDelegate->OnObjHit(Ctx); }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) override { m_pDelegate->OnObjDestroyed(Ctx); }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) override { m_pDelegate->OnObjEnteredGate(pObj, pDestNode, sDestEntryPoint, pStargate); }
 		virtual void OnPaintSRSEnhancements (CG32bitImage &Dest, SViewportPaintCtx &Ctx) override { m_pDelegate->OnPaintSRSEnhancements(Dest, Ctx); }

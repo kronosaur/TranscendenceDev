@@ -30,7 +30,7 @@ class CAreaDamage : public TSpaceObjectImpl<OBJID_CAREADAMAGE>
 
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
-		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetAveExpansionSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetAveExpansionSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CAreaDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
@@ -78,7 +78,7 @@ class CBeam : public TSpaceObjectImpl<OBJID_CBEAM>
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return 0; }
-		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerStations; }
@@ -167,7 +167,7 @@ class CContinuousBeam : public TSpaceObjectImpl<OBJID_CCONTINUOUSBEAM>
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
-		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CContinuousBeam"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
@@ -339,7 +339,6 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		virtual bool IsAnchored (void) const override { return (m_pAnchor != NULL); }
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CEffect"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sProperty) override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual bool SetProperty (const CString &sProperty, ICCItem *pValue, CString *retsError) override;
 
@@ -348,6 +347,7 @@ class CEffect : public TSpaceObjectImpl<OBJID_CEFFECT>
 		//	CSpaceObject virtuals
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override { return damagePassthrough; }
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
@@ -469,7 +469,7 @@ class CMarker : public TSpaceObjectImpl<OBJID_CMARKER>
 		virtual const COrbit *GetMapOrbit (void) const override { return m_pMapOrbit; }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override { if (retdwFlags) *retdwFlags = 0; return m_sName; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
+		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual bool IsAnchored (void) const override { return true; }
 		virtual bool IsMarker (void) const override { return true; }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) override;
@@ -524,11 +524,10 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual int GetInteraction (void) const override { return m_pDesc->GetInteraction(); }
 		virtual int GetLastFireTime (void) const override;
 		virtual int GetLevel (void) const override { return m_pDesc->GetLevel(); }
-		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CMissile"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_pDesc->GetPassthrough() > 0 ? CSystem::layerEffects : CSystem::layerStations); }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
 		virtual int GetRotation (void) const override { return m_iRotation; }
 		virtual CSpaceObject *GetSecondarySource (void) override { return m_Source.GetSecondaryObj(); }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
@@ -539,7 +538,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsInactive (void) const override { return (m_fDestroyOnAnimationDone ? true : false); }
-		virtual bool IsIntangible (void) const override { return ((m_fDestroyOnAnimationDone || IsDestroyed()) ? true : false); }
+		virtual bool IsIntangible (void) const override { return (IsInactive() || IsDestroyed()); }
 		virtual bool IsTargetableProjectile (void) const override { return m_fTargetable; }
 		virtual bool IsUnreal (void) const override { return (IsInactive() || IsSuspended() || IsDestroyed()); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
@@ -555,6 +554,7 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) override;
 		virtual void OnDestroyed (SDestroyCtx &Ctx) override;
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const override;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SViewportPaintCtx &Ctx) override;
 		virtual void OnReadFromStream (SLoadCtx &Ctx) override;
 		virtual void OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick) override;
@@ -602,6 +602,10 @@ class CMissile : public TSpaceObjectImpl<OBJID_CMISSILE>
 		DWORD m_fTargetable:1;					//	TRUE if we can be targetted
 
 		DWORD m_dwSpareFlags:25;				//	Flags
+
+		//	Property table
+
+		static TPropertyHandler<CMissile> m_PropertyTable;
 	};
 
 class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
@@ -618,7 +622,7 @@ class CParticleDamage : public TSpaceObjectImpl<OBJID_CPARTICLEDAMAGE>
 		virtual Categories GetCategory (void) const override;
 		virtual CString GetDamageCauseNounPhrase (DWORD dwFlags) override { return m_Source.GetDamageCauseNounPhrase(dwFlags); }
 		virtual const CDamageSource &GetDamageSource (void) const override { return m_Source; }
-		virtual Metric GetMaxSpeed (void) override { return m_pDesc->GetRatedSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_pDesc->GetRatedSpeed(); }
 		virtual CString GetNamePattern (DWORD dwNounPhraseFlags = 0, DWORD *retdwFlags = NULL) const override;
 		virtual CString GetObjClassName (void) override { return CONSTLIT("CParticleDamage"); }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return CSystem::layerEffects; }
@@ -976,17 +980,16 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 
 		//	Armor methods
 		CInstalledArmor *GetArmorSection (int iSect) { return &m_Armor.GetSegment(iSect); }
-		int GetArmorSectionCount (void) { return m_Armor.GetSegmentCount(); }
+		int GetArmorSectionCount (void) const { return m_Armor.GetSegmentCount(); }
 		int DamageArmor (int iSect, DamageDesc &Damage);
 		void InstallItemAsArmor (CItemListManipulator &ItemList, int iSect);
 		bool IsArmorDamaged (int iSect);
-		bool IsArmorRepairable (int iSect);
 		void RepairArmor (int iSect, int iHitPoints, int *retiHPRepaired = NULL);
 		bool SetCursorAtArmor (CItemListManipulator &ItemList, int iSect) const;
 		void UninstallArmor (CItemListManipulator &ItemList);
 
 		//	Compartments
-		virtual bool IsMultiHull (void) override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
+		virtual bool IsMultiHull (void) const override { return m_pClass->GetInteriorDesc().IsMultiHull(); }
 
 		void GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const;
 		bool HasAttachedSections (void) const { return m_fHasShipCompartments; }
@@ -1007,7 +1010,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int GetAmmoForSelectedLinkedFireWeapons(CInstalledDevice *pDevice);
 		DeviceNames GetDeviceNameForCategory (ItemCategories iCategory);
 		int GetItemDeviceName (const CItem &Item) const;
-		CItem GetNamedDeviceItem (DeviceNames iDev);
+		CItem GetNamedDeviceItem (DeviceNames iDev) const;
 		bool HasNamedDevice (DeviceNames iDev) const;
 		void InstallItemAsDevice (CItemListManipulator &ItemList, int iDeviceSlot = -1, int iSlotPosIndex = -1);
 		bool IsDeviceSlotAvailable (ItemCategories iItemCat = itemcatNone, int *retiSlot = NULL);
@@ -1021,7 +1024,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		DeviceNames SelectWeapon (int iDev, int iVariant);
 		DeviceNames SelectWeapon (const CItem &Item);
 		void SetCursorAtDevice (CItemListManipulator &ItemList, int iDev);
-		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev);
+		void SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const;
 		void SetWeaponTriggered (DeviceNames iDev, bool bTriggered = true);
 		void SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered = true);
 		CDeviceClass *GetNamedDeviceClass (DeviceNames iDev);
@@ -1047,13 +1050,13 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void SetSRSEnhanced (void) { SetAbility(ablExtendedScanner, ablInstall, -1, 0); }
 
 		//	Reactor methods
-		Metric GetFuelLeft (void) { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
+		Metric GetFuelLeft (void) const { return (m_pPowerUse ? m_pPowerUse->GetFuelLeft() : 0.0); }
 		Metric GetMaxFuel (void) const;
 		const CReactorDesc &GetReactorDesc (void) const { return m_Perf.GetReactorDesc(); }
 		void GetReactorStats (SReactorStats &Stats) const;
 		void TrackFuel (bool bTrack = true);
 		void TrackMass (bool bTrack = true) { m_fTrackMass = bTrack; }
-		int GetPowerConsumption (void);
+		int GetPowerConsumption (void) const;
 		bool IsFuelCompatible (const CItem &Item);
 
 		//	Drive methods
@@ -1116,19 +1119,20 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual AbilityStatus GetAbility (Abilities iAbility) const override;
 		virtual int GetAISettingInteger (const CString &sSetting) override { return m_pController->GetAISettingInteger(sSetting); }
 		virtual CString GetAISettingString (const CString &sSetting) override { return m_pController->GetAISettingString(sSetting); }
+		virtual const CArmorSystem &GetArmorSystem (void) const override { return m_Armor; }
 		virtual CArmorSystem *GetArmorSystem (void) override { return &m_Armor; }
 		virtual CSpaceObject *GetAttachedRoot (void) const;
 		virtual CSpaceObject *GetBase (void) const override;
-		virtual Metric GetCargoSpaceLeft (void) override;
+		virtual Metric GetCargoSpaceLeft (void) const override;
 		virtual Categories GetCategory (void) const override { return catShip; }
 		virtual CDesignType *GetCharacter (void) const override { return m_pCharacter; }
 		virtual DWORD GetClassUNID (void) override { return m_pClass->GetUNID(); }
 		virtual int GetCombatPower (void) override;
-		virtual int GetCounterValue (void) override { return m_iCounterValue; }
-		virtual int GetCounterIncrementRate(void) override { return m_pClass->GetHullDesc().GetCounterIncrementRate(); }
+		virtual int GetCounterValue (void) const override { return m_iCounterValue; }
+		virtual int GetCounterIncrementRate (void) const override { return m_pClass->GetHullDesc().GetCounterIncrementRate(); }
 		virtual const CCurrencyBlock *GetCurrencyBlock (void) const override;
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
-		virtual int GetCyberDefenseLevel (void) override { return m_pClass->GetCyberDefenseLevel(); }
+		virtual int GetCyberDefenseLevel (void) const override { return m_pClass->GetCyberDefenseLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DamageTypes GetDamageType (void) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pClass->GetDefaultBkgnd(); }
@@ -1161,24 +1165,24 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual const COverlayList *GetOverlays (void) const override { return &m_Overlays; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const override { return (m_fShipCompartment ? CSystem::layerOverhang : CSystem::layerShips); }
 		virtual int GetPerception (void) const override;
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
+		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual int GetRotation (void) const override { return m_Rotation.GetRotationAngle(m_Perf.GetIntegralRotationDesc()); }
 		virtual int GetRotationFrameIndex (void) const override { return m_Rotation.GetFrameIndex(); }
 		virtual ScaleTypes GetScale (void) const override { return scaleShip; }
 		virtual int GetScore (void) override { return m_pClass->GetScore(); }
 		virtual CXMLElement *GetScreen (const CString &sName) override { return m_pClass->GetScreen(sName); }
-		virtual int GetShieldLevel (void) override;
+		virtual int GetShieldLevel (void) const override;
 		virtual const CShipPerformanceDesc &GetShipPerformance (void) const override { return m_Perf; }
 		virtual CSovereign *GetSovereign (void) const override { return m_pSovereign; }
 		virtual int GetStealth (void) const override;
-		virtual Metric GetMaxSpeed (void) override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
+		virtual Metric GetMaxSpeed (void) const override { return m_Perf.GetDriveDesc().GetMaxSpeed(); }
 		virtual Metric GetMaxWeaponRange (void) const override;
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CCurrencyAndValue GetTradePrice (const CSpaceObject *pProvider) const override;
 		virtual CDesignType *GetType (void) const override { return m_pClass; }
 		virtual int GetVisibleDamage (void) override;
-		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override;
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool ImageInObject (const CVector &vObjPos, const CObjectImageArray &Image, int iTick, int iRotation, const CVector &vImagePos) override;
 		virtual void IncCounterValue(int iCounterValue) override { m_iCounterValue += iCounterValue; }
@@ -1187,7 +1191,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual bool IsAttached (void) const override { return m_fShipCompartment; }
 		virtual bool IsEscortingPlayer (void) const override;
 		virtual bool IsHidden (void) const override { return (m_fManualSuspended || IsInGate()); }
-		virtual bool IsIdentified (void) override { return m_fIdentified; }
+		virtual bool IsIdentified (void) const override { return m_fIdentified; }
 		virtual bool IsInactive (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed()); }
 		virtual bool IsIntangible (void) const override { return (m_fManualSuspended || IsInGate() || IsDestroyed() || IsVirtual()); }
 		virtual bool IsKnown (void) const override { return m_fKnown; }
@@ -1216,7 +1220,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) override { m_pController->OnMissionCompleted(pMission, bSuccess); }
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void OnNewSystem (CSystem *pSystem) override;
-		virtual void OnObjDamaged (SDamageCtx &Ctx) override { m_pController->OnObjDamaged(Ctx); }
+		virtual void OnObjHit (SDamageCtx &Ctx) override { m_pController->OnObjHit(Ctx); }
 		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) override { m_pController->OnOverlayConditionChanged(iCondition, iChange); }
 		virtual void OnPlayerChangedShips (CSpaceObject *pOldShip, SPlayerChangedShipsCtx &Options) override;
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) override;
@@ -1254,7 +1258,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 	protected:
 
 		//	CSpaceObject virtuals
-		virtual bool CanFireOn (CSpaceObject *pObj) override { return CanFireOnObjHelper(pObj); }
+		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual CDesignType *GetDefaultOverride (void) const { return m_pClass->GetDefaultEventHandler(); }
@@ -1291,7 +1295,7 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		void CalcBounds (void);
 		int CalcMaxCargoSpace (void) const;
 		void CalcDeviceBonus (void);
-		bool CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution);
+		bool CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution);
 		InstallItemResults CalcDeviceToReplace (const CItem &Item, int iSuggestedSlot, int *retiSlot = NULL);
 		DWORD CalcEffectsMask (void);
         void CalcPerformance (void);
@@ -1303,10 +1307,11 @@ class CShip : public TSpaceObjectImpl<OBJID_CSHIP>
 		int FindNextDevice (int iStart, ItemCategories Category, int iDir = 1);
 		int FindRandomDevice (bool bEnabledOnly = false);
 		void FinishCreation (SShipGeneratorCtx *pCtx = NULL, SSystemCreateCtx *pSysCreateCtx = NULL);
-		Metric GetCargoMass (void);
+		Metric GetCargoMass (void) const;
 		CCurrencyAndValue GetHullValue (void) const;
 		Metric GetItemMass (void) const;
 		int GetTotalArmorHP (int *retiMaxHP = NULL) const;
+		void InvalidateItemMass (void) const { m_fRecalcItemMass = true; }
 		bool IsSingletonDevice (ItemCategories iItemCat);
 		void PaintMapShipCompartments (CG32bitImage &Dest, int x, int y, CMapViewportCtx &Ctx);
 		void PaintShipCompartments (CG32bitImage &Dest, SViewportPaintCtx &Ctx);
@@ -1450,8 +1455,8 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		const CStationHull &GetHull (void) const { return m_Hull; }
 		int GetImageVariant (void);
 		int GetImageVariantCount (void) { return m_pType->GetImageVariants(); }
-		int GetSubordinateCount (void) { return m_Subordinates.GetCount(); }
-		CSpaceObject *GetSubordinate (int iIndex) { return m_Subordinates.GetObj(iIndex); }
+		int GetSubordinateCount (void) const { return m_Subordinates.GetCount(); }
+		CSpaceObject *GetSubordinate (int iIndex) const { return m_Subordinates.GetObj(iIndex); }
 		bool IsNameSet (void) const;
 		bool IsReconned (void) { return (m_fReconned ? true : false); }
 		void SetActive (void) { m_fActive = true; }
@@ -1460,12 +1465,13 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void SetFlotsamImage (CItemType *pItemType);
 		void SetForceMapLabel (bool bValue = true) { m_fForceMapLabel = bValue; }
 		void SetImageVariant (int iVariant);
+		void SetImageVariant (const CString &sVariantID);
 		void SetInactive (void) { m_fActive = false; }
 		void SetMapOrbit (const COrbit &oOrbit);
 		void SetMass (Metric rMass) { m_rMass = rMass; }
 		void SetNoConstruction (void) { m_fNoConstruction = true; }
 		void SetNoReinforcements (void) { m_fNoReinforcements = true; }
-		void SetPaintOverhang (bool bOverhang = true) { m_fPaintOverhang = bOverhang; }
+		void SetPaintOrder (CPaintOrder::Types iOrder) { m_iPaintOrder = iOrder; }
 		void SetReconned (void) { m_fReconned = true; }
 		void SetRotation (int iAngle) { if (m_pRotation) m_pRotation->SetRotationAngle(m_pType->GetRotationDesc(), iAngle); }
 		void SetSuppressMapLabel (bool bValue = true) { m_fSuppressMapLabel = bValue; }
@@ -1481,7 +1487,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CStation *AsStation (void) override { return this; }
 		virtual bool CalcVolumetricShadowLine (SLightingCtx &Ctx, int *retxCenter, int *retyCenter, int *retiWidth, int *retiLength) override;
 		virtual bool CanAttack (void) const override;
-		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack()); }
+		virtual bool CanBeAttacked (void) const override { return (m_Hull.GetHitPoints() > 0 || CanAttack() || (m_fIsSegment && m_Hull.GetStructuralHP() > 0)); }
 		virtual bool CanBeDestroyed (void) override { return m_Hull.CanBeDestroyed(); }
 		virtual bool CanBlock (CSpaceObject *pObj) override;
 		virtual bool CanBlockShips (void) override { return m_fBlocksShips; }
@@ -1498,8 +1504,10 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CCurrencyBlock *GetCurrencyBlock (bool bCreate = false) override;
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) override;
 		virtual DWORD GetDefaultBkgnd (void) override { return m_pType->GetDefaultBkgnd(); }
-		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_pDevices[iDev]; }
-		virtual int GetDeviceCount (void) const override { return (m_pDevices ? maxDevices : 0); }
+		virtual CInstalledDevice *GetDevice (int iDev) override { return &m_Devices.GetDevice(iDev); }
+		virtual int GetDeviceCount (void) const override { return m_Devices.GetCount(); }
+		virtual const CDeviceSystem &GetDeviceSystem (void) const { return m_Devices; }
+		virtual CDeviceSystem &GetDeviceSystem (void) { return m_Devices; }
 		virtual const CDockingPorts *GetDockingPorts (void) const override { return &m_DockingPorts; }
 		virtual CDockingPorts *GetDockingPorts (void) override { return &m_DockingPorts; }
 		virtual CStationType *GetEncounterInfo (void) override { return m_pType; }
@@ -1521,7 +1529,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual Metric GetParallaxDist (void) override { return m_rParallaxDist; }
 		virtual EDamageResults GetPassthroughDefault (void) override { return m_Hull.GetPassthroughDefault(); }
 		virtual int GetPlanetarySize (void) const override { return (GetScale() == scaleWorld ? m_pType->GetSize() : 0); }
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName) override;
+		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const override;
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const override;
 		virtual int GetRotation (void) const override { return (m_pRotation ? m_pRotation->GetRotationAngle(m_pType->GetRotationDesc()) : 0); }
 		virtual ScaleTypes GetScale (void) const override { return m_Scale; }
@@ -1535,7 +1543,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual CTradingDesc *GetTradeDescOverride (void) const override { return m_pTrade; }
 		virtual CDesignType *GetType (void) const override { return m_pType; }
 		virtual int GetVisibleDamage (void) override { return m_Hull.GetVisibleDamage(); }
-		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) override { return m_Hull.GetVisibleDamageDesc(Damage); }
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const override { return m_Hull.GetVisibleDamageDesc(Damage); }
 		virtual CDesignType *GetWreckType (void) const override;
 		virtual bool HasAttribute (const CString &sAttribute) const override;
 		virtual bool HasStarlightImage (void) const override { return (GetScale() == scaleWorld); }
@@ -1547,13 +1555,14 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		virtual bool IsAngry (void) override { return (!IsAbandoned() && (m_iAngryCounter > 0)); }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override { return (IsEnemy(pObj) || IsBlacklisted(pObj)); }
 		virtual bool IsExplored (void) override { return m_fExplored; }
-		virtual bool IsIdentified (void) override { return m_fKnown; }
+		virtual bool IsIdentified (void) const override { return m_fKnown; }
 		virtual bool IsImmutable (void) const override { return m_Hull.IsImmutable(); }
 		virtual bool IsInactive (void) const override { return !CanBeAttacked(); }
 		virtual bool IsIntangible (void) const override { return (IsVirtual() || IsSuspended() || IsDestroyed() || IsOutOfPlaneObj()); }
 		virtual bool IsKnown (void) const override { return m_fKnown; }
-		virtual bool IsMultiHull (void) override { return (m_Hull.GetHullType() != CStationHullDesc::hullSingle); }
-        virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const override { return (m_fIsSegment && (m_pBase == pBase)); }
+		virtual bool IsMultiHull (void) const override { return (m_Hull.GetHullType() != CStationHullDesc::hullSingle); }
+		virtual bool IsPaintDeferred (SViewportPaintCtx &Ctx) const override { return (m_iPaintOrder & (CPaintOrder::bringToFront | CPaintOrder::sendToBack)) && !Ctx.bInPaintSubordinate; }
+        virtual bool IsSatelliteSegmentOf (const CSpaceObject &Base, CPaintOrder::Types *retiPaintOrder = NULL) const override { if (retiPaintOrder) *retiPaintOrder = m_iPaintOrder; return (m_fIsSegment && (m_pBase == Base)); }
         virtual bool IsShownInGalacticMap (void) const override;
 		virtual bool IsStargate (void) const override { return !m_sStargateDestNode.IsBlank(); }
 		virtual bool IsUnreal (void) const override { return (IsSuspended() || IsDestroyed()); }
@@ -1593,7 +1602,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 	protected:
 
 		//	CSpaceObject virtuals
-		virtual bool CanFireOn (CSpaceObject *pObj) override { return CanFireOnObjHelper(pObj); }
+		virtual bool CanFireOn (CSpaceObject *pObj) const override { return CanFireOnObjHelper(pObj); }
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const override;
 		virtual void OnMove (const CVector &vOldPos, Metric rSeconds) override;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) override;
@@ -1630,7 +1639,9 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void CalcBounds (void);
 		void CalcDeviceBonus (void);
 		void CalcImageModifiers (CCompositeImageModifiers *retModifiers, int *retiTick = NULL) const;
+		Metric CalcMaxAttackDist (void) const;
 		int CalcNumberOfShips (void);
+		bool CalcWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) const;
 		bool CanBlacklist (void) const { return (m_pType->IsBlacklistEnabled() && !IsImmutable() && !m_fNoBlacklist); }
 		void ClearBlacklist (CSpaceObject *pObj);
 		void CreateDestructionEffect (void);
@@ -1649,6 +1660,7 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void OnDestroyedByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByFriendlyFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
 		void OnHitByHostileFire (CSpaceObject *pAttacker, CSpaceObject *pOrderGiver);
+		void PaintSatellites (CG32bitImage &Dest, int x, int y, DWORD dwPaintOptions, SViewportPaintCtx &Ctx) const;
 		void RaiseAlert (CSpaceObject *pTarget);
 		void SetAngry (void);
 		void SetWreckParams (CShipClass *pWreckClass, CShip *pShip = NULL);
@@ -1659,38 +1671,40 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		void UpdateReinforcements (int iTick);
 		void UpdateTargets (SUpdateCtx &Ctx, Metric rAttackRange);
 
-		CStationType *m_pType;					//	Station type
+		CStationType *m_pType = NULL;			//	Station type
 		CString m_sName;						//	Station name
-		DWORD m_dwNameFlags;					//	Name flags
-		CSovereign *m_pSovereign;				//	Allegiance
-		ScaleTypes m_Scale;						//	Scale of station
-		Metric m_rMass;							//	Mass of station (depends on scale)
-		CIntegralRotation *m_pRotation;			//	Rotation parameters (may be NULL)
+		DWORD m_dwNameFlags = 0;				//	Name flags
+		CSovereign *m_pSovereign = NULL;		//	Allegiance
+		ScaleTypes m_Scale = scaleNone;			//	Scale of station
+		Metric m_rMass = 0.0;					//	Mass of station (depends on scale)
+		CIntegralRotation *m_pRotation = NULL;	//	Rotation parameters (may be NULL)
 
 		CCompositeImageSelector m_ImageSelector;//	Image variant to display
-		int m_iDestroyedAnimation;				//	Frames left of destroyed animation
-		COrbit *m_pMapOrbit;					//	Orbit to draw on map
-		Metric m_rParallaxDist;					//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
+		int m_iDestroyedAnimation = 0;			//	Frames left of destroyed animation
+		COrbit *m_pMapOrbit = NULL;				//	Orbit to draw on map
+		Metric m_rParallaxDist = 1.0;			//	Parallax distance (1.0 = normal; > 1.0 = background; < 1.0 = foreground)
+		CPaintOrder::Types m_iPaintOrder = CPaintOrder::none;	//	Paint order instructions
 
 		CString m_sStargateDestNode;			//	Destination node
 		CString m_sStargateDestEntryPoint;		//	Destination entry point
 
 		CStationHull m_Hull;					//	Hull and armor
-		CInstalledDevice *m_pDevices;			//	Array of devices
+		CDeviceSystem m_Devices;				//	Array of CInstalledDevice
+		mutable Metric m_rMaxAttackDist = 0.0;	//	Maximum attack distance
 		COverlayList m_Overlays;				//	List of overlays
 		CDockingPorts m_DockingPorts;			//	Docking ports
 
-		CSpaceObject *m_pBase;					//	If we're a subordinate, this points to our base
+		CSpaceObject *m_pBase = NULL;			//	If we're a subordinate, this points to our base
 		CSpaceObjectList m_Subordinates;		//	List of subordinates
 		CSpaceObjectList m_Targets;				//	Targets to destroy (by our ships)
-		TArray<CSpaceObject *> m_WeaponTargets;	//	Targets to destroy (by our weapons)
+		CSpaceObjectTargetList m_WeaponTargets;	//	Targets to destroy (by our weapons)
 
 		CAttackDetector m_Blacklist;			//	Player blacklisted
-		int m_iAngryCounter;					//	Attack cycles until station is not angry
-		int m_iReinforceRequestCount;			//	Number of times we've requested reinforcements
+		int m_iAngryCounter = 0;				//	Attack cycles until station is not angry
+		int m_iReinforceRequestCount = 0;		//	Number of times we've requested reinforcements
 
-		CCurrencyBlock *m_pMoney;				//	Money left (may be NULL)
-		CTradingDesc *m_pTrade;					//	Override of trading desc (may be NULL)
+		CCurrencyBlock *m_pMoney = NULL;		//	Money left (may be NULL)
+		CTradingDesc *m_pTrade = NULL;			//	Override of trading desc (may be NULL)
 
 		DWORD m_fArmed:1;						//	TRUE if station has weapons
 		DWORD m_fKnown:1;						//	TRUE if known to the player
@@ -1705,14 +1719,15 @@ class CStation : public TSpaceObjectImpl<OBJID_CSTATION>
 		DWORD m_fNoBlacklist:1;					//	If TRUE, do not blacklist player on friendly fire
 		DWORD m_fNoConstruction:1;				//	Do not build new ships
 		DWORD m_fBlocksShips:1;					//	TRUE if we block ships
-		DWORD m_fPaintOverhang:1;				//	If TRUE, paint above player ship
 		DWORD m_fShowMapOrbit:1;				//	If TRUE, show orbit in map
 		DWORD m_fDestroyIfEmpty:1;				//	If TRUE, we destroy the station as soon as it is empty
 		DWORD m_fIsSegment:1;                   //  If TRUE, we are a segment of some other object (m_pBase)
-
 		DWORD m_fForceMapLabel:1;				//	Force showing map label
+
+		DWORD m_fHasMissileDefense:1;			//	If TRUE, at least one device is a missile defense weapon
 		mutable DWORD m_fMapLabelInitialized:1;	//	If TRUE, we've initialized m_MapLabel
-		DWORD m_dwSpare:14;
+		mutable DWORD m_fMaxAttackDistValid:1;	//	TRUE if m_rMaxAttackDist is valid
+		DWORD m_dwSpare:13;
 
 		//	Wreck image
 		DWORD m_dwWreckUNID;					//	UNID of wreck class (0 if none)

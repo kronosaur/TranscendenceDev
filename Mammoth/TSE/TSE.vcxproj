@@ -437,6 +437,7 @@
     <ClCompile Include="CLightningBundlePainter.cpp" />
     <ClCompile Include="CMapLabelArranger.cpp" />
     <ClCompile Include="CMapLabelPainter.cpp" />
+    <ClCompile Include="CMissileItem.cpp" />
     <ClCompile Include="CNameDesc.cpp" />
     <ClCompile Include="CNamedEffects.cpp" />
     <ClCompile Include="CNetworkTopologyCreator.cpp" />
@@ -455,6 +456,7 @@
     <ClCompile Include="CImageArranger.cpp" />
     <ClCompile Include="CInstalledDevice.cpp" />
     <ClCompile Include="CIntegralRotation.cpp" />
+    <ClCompile Include="CPaintOrder.cpp" />
     <ClCompile Include="CPerceptionCalc.cpp" />
     <ClCompile Include="CPhysicsContact.cpp" />
     <ClCompile Include="CPhysicsContactResolver.cpp" />
@@ -526,6 +528,8 @@
     <ClCompile Include="CSpaceObjectCriteria.cpp" />
     <ClCompile Include="CSpaceObjectItemList.cpp" />
     <ClCompile Include="CSpaceObjectPool.cpp" />
+    <ClCompile Include="CSpaceObjectProperties.cpp" />
+    <ClCompile Include="CSpaceObjectTargetList.cpp" />
     <ClCompile Include="CSpaceObjectTrade.cpp" />
     <ClCompile Include="CSphericalTextureMapper.cpp" />
     <ClCompile Include="CStationCreateOptions.cpp" />
@@ -608,6 +612,8 @@
     <ClCompile Include="IPaintList.cpp" />
     <ClCompile Include="IPlayerController.cpp" />
     <ClCompile Include="IShipController.cpp" />
+    <ClCompile Include="MissileProperties.cpp" />
+    <ClCompile Include="MissionProperties.cpp" />
     <ClCompile Include="SDamageCtx.cpp" />
     <ClCompile Include="SFXDisintegrate.cpp" />
     <ClCompile Include="SFXGlow.cpp" />

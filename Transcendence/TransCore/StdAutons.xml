@@ -748,21 +748,21 @@
 					(block (
 						;	Look for the nearest unknown object
 						
-						(targetObj (ObjFireEvent gSource 'GetExploreTarget))
+						(targetObj (objFireEvent gSource 'GetExploreTarget))
 						)
 						
 						(switch
 							;	If no unknown objects, then say so
 
 							(not targetObj)
-								(objSendMessage gSender gSource (objTranslate gSource 'NoExploreTarget))
+								(objSendMessageTranslate gSender gSource 'NoExploreTarget)
 							
 							;	Otherwise, send the auton to the nearest object
 							
 							(block Nil
 								(objSetData gSource 'behavior 'exploring)
 								(objSetData gSource 'targetID (objGetID targetObj))
-								(objSendMessage gSender gSource (objTranslate gSource 'ExploreAck))
+								(objSendMessageTranslate gSender gSource 'ExploreAck)
 								
 								(shpCancelOrders gSource)
 								(shpOrder gSource 'approach targetObj 75)
@@ -813,7 +813,7 @@
 									(not targetObj)
 										(block Nil
 											(objSetData gSource 'behavior 'escorting)
-											(objSendMessage gPlayerShip gSource (objTranslate gSource 'ExplorationDone))
+											(objSendMessageTranslate gPlayerShip gSource 'ExplorationDone)
 											
 											(shpOrder gSource 'escort gPlayerShip)
 											)

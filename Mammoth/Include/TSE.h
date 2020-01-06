@@ -254,7 +254,7 @@ struct SUpdateCtx
 	public:
 		int GetLightIntensity (CSpaceObject *pObj) const;
 		bool IsTimeStopped (void) const { return m_bTimeStopped; }
-		void SetTimeStopped (bool bValue = true) { m_bTimeStopped = bValue; }
+		void OnStartUpdate (CSpaceObject &Obj);
 
 		CSystem *pSystem = NULL;					//	Current system
 		CSpaceObject *pPlayer = NULL;				//	The player
@@ -263,6 +263,9 @@ struct SUpdateCtx
 
 		CAutoDockCalc AutoDock;						//	Used to compute nearest docking port
 		CAutoTargetCalc AutoTarget;					//	Used to compute player's auto target
+
+		CSpaceObjectTargetList Targets;				//	Cached list of targets for object being updated
+		CSpaceObjectTargetList Missiles;			//	Cached list of missiles for object being updated
 		
 		//	Misc flags
 
@@ -497,9 +500,9 @@ class CSpaceObject
 		virtual CDockingPorts *GetDockingPorts (void) { return NULL; }
 		virtual void Undock (CSpaceObject *pObj) { }
 
-		int GetDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortCount(this) : 0); }
+		int GetDockingPortCount (void) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortCount(this) : 0); }
 		int GetNearestDockPort (CSpaceObject *pRequestingObj, CVector *retvPort = NULL);
-		int GetOpenDockingPortCount (void) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? (pPorts->GetPortCount(this) - pPorts->GetPortsInUseCount(this)) : 0); }
+		int GetOpenDockingPortCount (void) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? (pPorts->GetPortCount(this) - pPorts->GetPortsInUseCount(this)) : 0); }
 		CSpaceObject *GetShipAtDockingPort (int iPort) { CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->GetPortObj(this, iPort) : NULL); }
 		bool IsObjDocked (const CSpaceObject *pObj) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDocked(pObj) : false); }
 		bool IsObjDockedOrDocking (CSpaceObject *pObj) const { const CDockingPorts *pPorts = GetDockingPorts(); return (pPorts ? pPorts->IsObjDockedOrDocking(pObj) : false); }
@@ -607,7 +610,7 @@ class CSpaceObject
 		bool CanBeHitByFriends (void) { return !m_fNoFriendlyTarget; }
 		bool CanDetect (int Perception, CSpaceObject *pObj);
 		bool CanCommunicateWith (CSpaceObject *pSender);
-		bool CanHitFriends (void) { return !m_fNoFriendlyFire; }
+		bool CanHitFriends (void) const { return !m_fNoFriendlyFire; }
 		void ClearNoFriendlyTarget (void) { m_fNoFriendlyTarget = false; }
 		void ClearPlayerDocked (void) { m_fPlayerDocked = false; }
 		void ClearPlayerTarget (void) { m_fPlayerTarget = false; }
@@ -687,7 +690,7 @@ class CSpaceObject
 		void FireOnUpdate (void);
 		DWORD GetAPIVersion (void) const { CDesignType *pType = GetType(); return (pType ? pType->GetAPIVersion() : API_VERSION); }
 		void GetBoundingRect (CVector *retvUR, CVector *retvLL);
-		CVector GetBoundsDiag (void) { return CVector(m_rBoundsX, m_rBoundsY); }
+		CVector GetBoundsDiag (void) const { return CVector(m_rBoundsX, m_rBoundsY); }
 		Metric GetBoundsRadius (void) const { return Max(m_rBoundsX, m_rBoundsY); }
 		CCommunicationsHandler *GetCommsHandler (void);
 		int GetCommsMessageCount (void);
@@ -712,16 +715,6 @@ class CSpaceObject
 		int GetIndex (void) const { return m_iIndex; }
 		CSpaceObject *GetNearestEnemyStation (Metric rMaxRange = g_InfiniteDistance);
 		CSpaceObject *GetNearestStargate (bool bExcludeUncharted = false);
-
-		static constexpr DWORD FLAG_INCLUDE_NON_AGGRESSORS =		0x00000001;
-		static constexpr DWORD FLAG_INCLUDE_STATIONS =				0x00000002;
-		static constexpr DWORD FLAG_INCLUDE_TARGETABLE_MISSILES =	0x00000004;
-		int GetNearestVisibleEnemies (int iMaxEnemies, 
-									  Metric rMaxDist, 
-									  TArray<CSpaceObject *> *pretList, 
-									  CSpaceObject *pExcludeObj = NULL,
-									  DWORD dwFlags = 0);
-
 		CSpaceObject *GetNearestVisibleEnemy (Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CSpaceObject *GetNearestVisibleEnemyInArc (int iMinFireArc, int iMaxFireArc, Metric rMaxRange = g_InfiniteDistance, bool bIncludeStations = false, CSpaceObject *pExcludeObj = NULL);
 		CString GetNounPhrase (DWORD dwFlags = 0) const;
@@ -781,7 +774,7 @@ class CSpaceObject
 		bool IsFriend (const CSpaceObject *pObj) const;
 		bool IsHighlighted (void) const { return ((m_iHighlightCountdown != 0) || m_fSelected || m_iHighlightChar); }
 		bool IsInDamageCode (void) const { return (m_fInDamage ? true : false); }
-		bool IsLineOfFireClear (CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL);
+		bool IsLineOfFireClear (const CInstalledDevice *pWeapon, CSpaceObject *pTarget, int iAngle, Metric rDistance = (30.0 * LIGHT_SECOND), CSpaceObject **retpFriend = NULL) const;
 		bool IsMarked (void) const { return m_fMarked; }
 		bool IsNamed (void) const { return m_fHasName; }
 		bool IsPartlyVisibleInBox (const CVector &vUR, const CVector &vLL)
@@ -799,7 +792,7 @@ class CSpaceObject
 		bool IsSelected (void) const { return m_fSelected; }
 		bool IsShowingDamageBar (void) const { return m_fShowDamageBar; }
 		bool IsStargateInRange (Metric rMaxRange);
-		bool IsUnderAttack (void);
+		bool IsUnderAttack (void) const;
 		void LoadObjReferences (CSystem *pSystem) { m_Data.LoadObjReferences(pSystem); }
 		void NotifyOnNewSystem (CSystem *pNewSystem);
 		void NotifyOnObjDestroyed (SDestroyCtx &Ctx);
@@ -878,7 +871,7 @@ class CSpaceObject
 
 		virtual bool CanMove (void) const { return !IsAnchored(); }
 		virtual bool CanThrust (void) const { return false; }
-		virtual Metric GetMaxSpeed (void) { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
+		virtual Metric GetMaxSpeed (void) const { return (IsAnchored() ? 0.0 : MAX_SYSTEM_SPEED); }
 		virtual bool IsAnchored (void) const { return IsManuallyAnchored(); }
 
 		void Accelerate (const CVector &vPush, Metric rSeconds);
@@ -925,6 +918,7 @@ class CSpaceObject
 
 		//	Painting
 
+		virtual bool IsPaintDeferred (SViewportPaintCtx &Ctx) const { return false; }
 		virtual CSystem::LayerEnum GetPaintLayer (void) const { return CSystem::layerStations; }
 		virtual void PaintLRSBackground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans) { }
 		virtual void PaintLRSForeground (CG32bitImage &Dest, int x, int y, const ViewportTransform &Trans);
@@ -961,7 +955,8 @@ class CSpaceObject
 
 		//	Properties
 
-		virtual ICCItem *GetProperty (CCodeChainCtx &Ctx, const CString &sName);
+		ICCItemPtr GetProperty (CCodeChainCtx &CCX, const CString &sProperty) const;
+		ICCItemPtr GetProperty (const CString &sProperty) const { CCodeChainCtx CCX(GetUniverse()); return GetProperty(CCX, sProperty); }
 		bool IncProperty (const CString &sProperty, ICCItem *pInc, ICCItemPtr &pResult);
 		virtual bool SetProperty (const CString &sName, ICCItem *pValue, CString *retsError);
 
@@ -993,9 +988,9 @@ class CSpaceObject
 		bool GetShipBuyPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CShipClass *pClass, DWORD dwFlags, int *retiPrice);
 		bool GetShipSellPrice (CSpaceObject *pShip, DWORD dwFlags, int *retiPrice);
-		int GetTradeMaxLevel (ETradeServiceTypes iService);
+		int GetTradeMaxLevel (ETradeServiceTypes iService) const;
 		bool HasTradeService (ETradeServiceTypes iService, const CTradingDesc::SHasServiceOptions &Options = CTradingDesc::SHasServiceOptions());
-		bool HasTradeUpgradeOnly (ETradeServiceTypes iService);
+		bool HasTradeUpgradeOnly (ETradeServiceTypes iService) const;
 		void RecordBuyItem (CSpaceObject *pSellerObj, const CItem &Item, const CCurrencyAndValue &Price);
 		void SetTradeDesc (const CEconomyType *pCurrency, int iMaxCurrency, int iReplenishCurrency);
 
@@ -1110,13 +1105,14 @@ class CSpaceObject
 		virtual bool FindDeviceSlotDesc (const CItem &Item, SDeviceDesc *retDesc) { return false; }
 		virtual int GetAISettingInteger (const CString &sSetting) { return 0; }
 		virtual CString GetAISettingString (const CString &sSetting) { return NULL_STR; }
+		virtual const CArmorSystem &GetArmorSystem (void) const { return CArmorSystem::m_Null; }
 		virtual CArmorSystem *GetArmorSystem (void) { return NULL; }
 		virtual CurrencyValue GetBalancedTreasure (void) const { return 0; }
-		virtual Metric GetCargoSpaceLeft (void) { return 1000000.0; }
+		virtual Metric GetCargoSpaceLeft (void) const { return 1000000.0; }
 		virtual int GetCombatPower (void) { return 0; }
-		virtual int GetCounterIncrementRate(void) { return NULL; }
-		virtual int GetCounterValue(void) { return NULL; }
-		virtual int GetCyberDefenseLevel (void) { return GetLevel(); }
+		virtual int GetCounterIncrementRate (void) const { return 0; }
+		virtual int GetCounterValue (void) const { return 0; }
+		virtual int GetCyberDefenseLevel (void) const { return GetLevel(); }
 		virtual int GetDamageEffectiveness (CSpaceObject *pAttacker, CInstalledDevice *pWeapon) { return 0; }
 		virtual DamageTypes GetDamageType (void) { return damageGeneric; }
 		virtual CSpaceObject *GetDestination (void) const { return NULL; }
@@ -1136,16 +1132,16 @@ class CSpaceObject
 		virtual int GetPerception (void) const { return perceptNormal; }
 		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 		virtual int GetScore (void) { return 0; }
-		virtual int GetShieldLevel (void) { return -1; }
+		virtual int GetShieldLevel (void) const { return -1; }
 		virtual CG32bitPixel GetSpaceColor (void) { return 0; }
 		virtual int GetStealth (void) const { return stealthNormal; }
 		virtual int GetVisibleDamage (void) { return 0; }
-		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) { Damage = SVisibleDamage(); }
+		virtual void GetVisibleDamageDesc (SVisibleDamage &Damage) const { Damage = SVisibleDamage(); }
 		virtual void IncCounterValue(int iCounterValue) { }
 		virtual bool IsAngry (void) { return false; }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return IsEnemy(pObj); }
-		virtual bool IsIdentified (void) { return true; }
-		virtual bool IsMultiHull (void) { return false; }
+		virtual bool IsIdentified (void) const { return true; }
+		virtual bool IsMultiHull (void) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual void OnComponentChanged (ObjectComponentTypes iComponent) { }
 		virtual bool OnDestroyCheck (DestructionTypes iCause, const CDamageSource &Attacker) { return true; }
@@ -1154,7 +1150,7 @@ class CSpaceObject
 		virtual void OnHitByDeviceDamage (void) { }
 		virtual void OnHitByDeviceDisruptDamage (DWORD dwDuration) { }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) { }
-		virtual void OnObjDamaged (SDamageCtx &Ctx) { }
+		virtual void OnObjHit (SDamageCtx &Ctx) { }
 		virtual void OnObjDestroyedNotify (SDestroyCtx &Ctx) { FireOnObjDestroyed(Ctx); }
 		virtual void OnObjLeaveGate (CSpaceObject *pObj) { }
 		virtual void OnPlayerObj (CSpaceObject *pPlayer) { }
@@ -1212,7 +1208,7 @@ class CSpaceObject
 		virtual void AddSubordinate (CSpaceObject *pSubordinate) { }
 		virtual IShipGenerator *GetRandomEncounterTable (int *retiFrequency = NULL) const { if (retiFrequency) *retiFrequency = 0; return NULL; }
 		virtual bool IsAbandoned (void) const { return false; }
-        virtual bool IsSatelliteSegmentOf (CSpaceObject *pBase) const { return false; }
+        virtual bool IsSatelliteSegmentOf (const CSpaceObject &Base, CPaintOrder::Types *retiPaintOrder = NULL) const { return false; }
 		virtual bool RemoveSubordinate (CSpaceObject *pSubordinate) { return false; }
 		virtual bool ShowMapLabel (int *retcxLabel = NULL, int *retcyLabel = NULL) const { return false; }
         virtual bool ShowMapOrbit (void) const { return false; }
@@ -1232,11 +1228,12 @@ class CSpaceObject
 
 		virtual bool CanBlock (CSpaceObject *pObj) { return false; }
 		virtual bool CanBlockShips (void) { return false; }
-		virtual bool CanFireOn (CSpaceObject *pObj) { return true; }
+		virtual bool CanFireOn (CSpaceObject *pObj) const { return true; }
 		virtual DWORD GetClassID (void) const = 0;
 		virtual CDesignType *GetDefaultDockScreen (CString *retsName = NULL) const { return NULL; }
 		virtual void GateHook (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) { if (!bAscend) Destroy(removedFromSystem, CDamageSource()); }
 		virtual CDesignType *GetDefaultOverride (void) const { return NULL; }
+		virtual ICCItem *GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const;
 		virtual void ObjectDestroyedHook (const SDestroyCtx &Ctx) { }
 		virtual void ObjectEnteredGateHook (CSpaceObject *pObjEnteredGate) { }
 		virtual void OnAscended (void) { }
@@ -1244,6 +1241,7 @@ class CSpaceObject
 		virtual DWORD OnCommunicate (CSpaceObject *pSender, MessageTypes iMessage, CSpaceObject *pParam1, DWORD dwParam2) { return resNoAnswer; }
 		virtual EDamageResults OnDamage (SDamageCtx &Ctx) { return damageNoDamage; }
 		virtual void OnDestroyed (SDestroyCtx &Ctx) { }
+		virtual ICCItemPtr OnFindProperty (CCodeChainCtx &CCX, const CString &sProperty) const { return ICCItemPtr(); }
 		virtual bool OnGetCondition (CConditionSet::ETypes iCondition) const { return false; }
 		virtual CSpaceObject *OnGetOrderGiver (void) { return this; }
 		virtual bool OnIncProperty (const CString &sProperty, ICCItem *pValue, ICCItemPtr &pResult) { return false; }
@@ -1280,7 +1278,7 @@ class CSpaceObject
 		void AddEffect (IEffectPainter *pPainter, int xOffset, int yOffset, int iTick = 0, int iRotation = 0);
 		void CalcInsideBarrier (void);
 		Metric CalculateItemMass (Metric *retrCargoMass = NULL) const;
-		bool CanFireOnObjHelper (CSpaceObject *pObj);
+		bool CanFireOnObjHelper (CSpaceObject *pObj) const;
 		void ClearCannotBeHit (void) { m_fCannotBeHit = false; }
 		void ClearInDamageCode (void) { m_fInDamage = false; }
 		void ClearInUpdateCode (void) { m_pObjInUpdate = NULL; m_bObjDestroyed = false; }
@@ -1432,6 +1430,10 @@ class CSpaceObject
 #ifdef DEBUG_VECTOR
 		CVector m_vDebugVector;			//	Draw a vector
 #endif
+
+		//	Property table
+
+		static TPropertyHandler<CSpaceObject> m_BasePropertyTable;
 
 		//	This is a global variable that is set when we update an object.
 		//	We use it to detect when an object gets destroyed inside its

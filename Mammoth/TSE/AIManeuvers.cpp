@@ -763,7 +763,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 		case aicombatAdvanced:
 			{
 			bool bWeAreFaster = (pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed());
-			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->IsAreaWeapon(pShip));
+			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->GetDeviceItem().IsAreaWeapon());
 
 			const int MAX_BRAVERY_TICKS = 300;				//	Number of ticks since last attack to be 100% brave
 			const Metric BRAVERY_DECAY_POWER = 2.0;

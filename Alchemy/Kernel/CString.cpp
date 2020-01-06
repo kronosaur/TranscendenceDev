@@ -25,6 +25,7 @@ const CString Kernel::NULL_STR;
 int g_iStoreCount = 0;
 #endif
 
+bool Kernel::g_bLowerCaseAbsoluteTableInit = false;
 char Kernel::g_LowerCaseAbsoluteTable[256];
 
 //	List of English prepositions. The short list only includes prepositions that
@@ -661,26 +662,31 @@ void CString::InitLowerCaseAbsoluteTable (void)
 //	for non-localized purposes, such as absolute sorting used by CSymbolTable
 
 	{
-	int chChar;
-
-	for (chChar = 0; chChar < 256; chChar++)
+	if (!g_bLowerCaseAbsoluteTableInit)
 		{
-		if (chChar >= 'A' && chChar <= 'Z')
-			g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
-		else if (chChar == 0x8A)
-			g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9A;
-		else if (chChar == 0x8C)
-			g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9C;
-		else if (chChar == 0x8E)
-			g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9E;
-		else if (chChar == 0x9F)
-			g_LowerCaseAbsoluteTable[chChar] = (BYTE)0xFF;
-		else if (chChar >= 0xC0 && chChar <= 0xD6)
-			g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
-		else if (chChar >= 0xD8 && chChar <= 0xDE)
-			g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
-		else
-			g_LowerCaseAbsoluteTable[chChar] = chChar;
+		int chChar;
+
+		for (chChar = 0; chChar < 256; chChar++)
+			{
+			if (chChar >= 'A' && chChar <= 'Z')
+				g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
+			else if (chChar == 0x8A)
+				g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9A;
+			else if (chChar == 0x8C)
+				g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9C;
+			else if (chChar == 0x8E)
+				g_LowerCaseAbsoluteTable[chChar] = (BYTE)0x9E;
+			else if (chChar == 0x9F)
+				g_LowerCaseAbsoluteTable[chChar] = (BYTE)0xFF;
+			else if (chChar >= 0xC0 && chChar <= 0xD6)
+				g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
+			else if (chChar >= 0xD8 && chChar <= 0xDE)
+				g_LowerCaseAbsoluteTable[chChar] = chChar + 0x20;
+			else
+				g_LowerCaseAbsoluteTable[chChar] = chChar;
+			}
+
+		g_bLowerCaseAbsoluteTableInit = true;
 		}
 	}
 

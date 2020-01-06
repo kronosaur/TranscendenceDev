@@ -266,25 +266,35 @@ bool CGalacticMapSystemDetails::CreateObjIcon (const CObjectTracker::SObjEntry &
     if (Obj.fShowDestroyed)
         Modifiers.SetStationDamage(true);
 
-    int iVariant;
-    const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(ImageCtx, Obj.ImageSel, Modifiers, &iVariant);
-    CG32bitImage *pBmpImage = (FullImage.IsLoaded() ? &FullImage.GetImage(CONSTLIT("Galactic map")) : NULL);
-	RECT rcBmpImage = FullImage.GetImageRect(0, iVariant);
-    if (pBmpImage == NULL)
-        {
-        CStationType *pStationType = CStationType::AsType(Obj.pType);
-        if (pStationType == NULL)
-            return false;
+	TSharedPtr<CG32bitImage> pBmpImage;
+	RECT rcBmpImage;
+	if (CStationType *pStationType = CStationType::AsType(Obj.pType))
+		{
+		int xCenter, yCenter;
+		pBmpImage = pStationType->CreateFullImage(ImageCtx, Obj.ImageSel, Modifiers, rcBmpImage, xCenter, yCenter);
+		if (!pBmpImage)
+			{
+			//  If we can't find the standard image, see if we have a hero image.
 
-        //  If we can't find the standard image, see if we have a hero image.
+			int iVariant;
+			const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iVariant);
+			if (!HeroImage.IsLoaded())
+				return false;
 
-        const CObjectImageArray &HeroImage = pStationType->GetHeroImage(CCompositeImageSelector(), Modifiers, &iVariant);
-        pBmpImage = (HeroImage.IsLoaded() ? &HeroImage.GetImage(CONSTLIT("Galactic map")) : NULL);
-        if (pBmpImage == NULL)
-            return false;
+			pBmpImage = TSharedPtr<CG32bitImage>(HeroImage.GetImage(CONSTLIT("Galactic map")).AddRef());
+			rcBmpImage = HeroImage.GetImageRect(0, iVariant);
+			}
+		}
+	else
+		{
+		int iVariant;
+		const CObjectImageArray &FullImage = Obj.pType->GetTypeImage().GetImage(ImageCtx, Obj.ImageSel, Modifiers, &iVariant);
+		if (!FullImage.IsLoaded())
+			return false;
 
-        rcBmpImage = HeroImage.GetImageRect(0, iVariant);
-        }
+		pBmpImage = TSharedPtr<CG32bitImage>(FullImage.GetImage(CONSTLIT("Galactic map")).AddRef());
+		rcBmpImage = FullImage.GetImageRect(0, iVariant);
+		}
 
     int iSize = Max(RectWidth(rcBmpImage), RectHeight(rcBmpImage));
     if (iSize <= 0)
@@ -455,15 +465,14 @@ bool CGalacticMapSystemDetails::GetObjList (const CTopologyNode &Node, TSortMap<
 		if (Objs[i].fEnemy && Objs[i].fShowDestroyed)
 			iDispSort = 4;
 
-		//	Friendly stations show first
-
-		else if (Objs[i].fFriendly)
-			iDispSort = 1;
-
-		//	Next are neutral stations
+		//	Friendly/neutral stations show first.
+		//
+		//	NOTE: We used to show neutral stations after all friendly ones, but
+		//	that caused things like Eternity Port to sort after all small 
+		//	friendly stations.
 
 		else if (!Objs[i].fEnemy)
-			iDispSort = 2;
+			iDispSort = 1;
 
 		//	And then enemy stations
 

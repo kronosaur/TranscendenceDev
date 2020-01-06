@@ -703,7 +703,7 @@ int CDockScreenActions::Justify (CDesignType *pRoot, int cxJustify)
 		if (pAction->sLabel.IsBlank() 
 				&& pRoot
 				&& !pAction->sID.IsBlank()
-				&& pRoot->TranslateText(NULL, pAction->sID, NULL, &sLabelDesc))
+				&& pRoot->TranslateText(pAction->sID, NULL, &sLabelDesc))
 			{
 			TArray<CLanguage::ELabelAttribs> Special;
 			CLanguage::ParseLabelDesc(sLabelDesc, &pAction->sLabelTmp, &pAction->sKeyTmp, &pAction->iKeyTmp, &Special);
@@ -743,7 +743,7 @@ int CDockScreenActions::Justify (CDesignType *pRoot, int cxJustify)
 
 		else if (!pAction->sDescID.IsBlank() && pRoot)
 			{
-			if (!pRoot->TranslateText(NULL, pAction->sDescID, NULL, &pAction->sDescTmp))
+			if (!pRoot->TranslateText(pAction->sDescID, NULL, &pAction->sDescTmp))
 				pAction->sDescTmp = NULL_STR;
 			}
 		else

@@ -468,7 +468,7 @@ bool CCLinkedList::HasReferenceTo (ICCItem *pSrc)
 	return false;
 	}
 
-CString CCLinkedList::Print (DWORD dwFlags)
+CString CCLinkedList::Print (DWORD dwFlags) const
 
 //	Print
 //

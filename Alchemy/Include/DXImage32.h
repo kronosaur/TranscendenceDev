@@ -19,13 +19,15 @@ class CG32bitPixel
 	public:
 		CG32bitPixel (void) { }
 
-		CG32bitPixel (BYTE byRed, BYTE byGreen, BYTE byBlue)
-			{ m_dwPixel = 0xff000000 | ((DWORD)byRed << 16) | ((DWORD)byGreen << 8) | (DWORD)byBlue; }
+		constexpr CG32bitPixel (BYTE byRed, BYTE byGreen, BYTE byBlue) :
+				m_dwPixel(0xff000000 | ((DWORD)byRed << 16) | ((DWORD)byGreen << 8) | (DWORD)byBlue)
+			{ }
 
-		CG32bitPixel (BYTE byRed, BYTE byGreen, BYTE byBlue, BYTE byAlpha)
-			{ m_dwPixel = ((DWORD)byAlpha << 24) | ((DWORD)byRed << 16) | ((DWORD)byGreen << 8) | (DWORD)byBlue; }
+		constexpr CG32bitPixel (BYTE byRed, BYTE byGreen, BYTE byBlue, BYTE byAlpha) :
+				m_dwPixel(((DWORD)byAlpha << 24) | ((DWORD)byRed << 16) | ((DWORD)byGreen << 8) | (DWORD)byBlue)
+			{ }
 
-		CG32bitPixel (const CG32bitPixel &Src, BYTE byNewAlpha)
+		CG32bitPixel (const CG32bitPixel &Src, BYTE byNewAlpha) 
 			{ m_dwPixel = (byNewAlpha << 24) | (Src.m_dwPixel & 0x00ffffff); }
 
 		CG32bitPixel (WORD wPixel);
