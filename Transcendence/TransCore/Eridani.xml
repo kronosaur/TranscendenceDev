@@ -466,10 +466,10 @@
 		<Events>
 			<OnCreate>
 				(block (centauriStations)
-					; Devices greater than level III are not for sale in Eridani
+					; Armor above level 4 and devices above level 3 are not for sale in Eridani
 					(enum (sysFindObject Nil "TF +populated;") theObj
-						(enum (objGetItems theObj "dU") theItem
-							(if (and (gr (itmGetLevel theItem) 3) (objGetSellPrice theObj theItem))
+						(enum (objGetItems theObj "dU L:4-; | aU L:5-;") theItem
+							(if (objGetSellPrice theObj theItem)
 								(objRemoveItem theObj theItem)
 								)
 							)
