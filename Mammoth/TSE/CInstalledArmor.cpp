@@ -249,7 +249,7 @@ void CInstalledArmor::SetEnhancements (CSpaceObject *pSource, const TSharedPtr<C
 	m_iHitPoints = CArmorClass::CalcMaxHPChange(m_iHitPoints, iOldMaxHP, ArmorItem.GetMaxHP());
 	}
 
-void CInstalledArmor::WriteToStream (IWriteStream *pStream)
+void CInstalledArmor::WriteToStream (IWriteStream *pStream) const
 
 //	WriteToStream
 //

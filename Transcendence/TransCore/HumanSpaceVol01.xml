@@ -805,7 +805,7 @@
 	<!ENTITY stStKatsArcology285		"0x0010201C">
 	<!ENTITY stStKatsArcology315		"0x0010201D">
 	<!ENTITY stStKatsArcology345		"0x0010201E">
-	<!ENTITY stStKatsArcology			"0x0010201F">
+	<!ENTITY stStKatsArcologyOld		"0x0010201F">
 	<!ENTITY stIocrymMonument			"0x00102020">
 	<!ENTITY baStKatsArcologyBaseObsolete	"0x00102021">
 	<!ENTITY stDallMissionWreck			"0x00102022">
@@ -827,7 +827,7 @@
 	<!ENTITY scIAVHeavy					"0x0010300A">
 	<!ENTITY scManticore				"0x0010300B">
 	<!ENTITY evCommTrafficBehavior		"0x0010300C">
-	<!ENTITY evStKatsTrafficBehavior	"0x0010300D">
+	<!ENTITY evStKatsTrafficBehaviorOld	"0x0010300D">
 	
 	<!ENTITY itIncandescentStrawberries	"0x00104001">
 	<!ENTITY itIncandescentPeaches		"0x00104002">
@@ -862,7 +862,7 @@
 	<!ENTITY rsIAVLight					"0x0010F002">
 	<!ENTITY rsIAVMedium				"0x0010F003">
 	<!ENTITY rsIAVHeavy					"0x0010F004">
-	<!ENTITY rsStKatsArcology			"0x0010F005">
+	<!ENTITY rsStKatsArcologyOld		"0x0010F005">
 	<!ENTITY rsStKatsArcologyScreen		"0x0010F006">
 	<!ENTITY rsStKatsArcologySchematic	"0x0010F007">
 	<!ENTITY rsManticore				"0x0010F008">
@@ -1316,7 +1316,7 @@
 	<!ENTITY scVentariDestroyer			"0x080100C1">	<!-- Reclassified -->
 	<!ENTITY scVentariCruiser			"0x080100C1">	<!-- For compatibility -->
 
-	<!ENTITY stAbbasidOutpost			"0x08010100">
+	<!ENTITY stAbbasidOutpostCompatible	"0x08010100">
 	<!ENTITY itAbbasidThanogram			"0x08010101">
 
 	<!ENTITY stPteravoreLair			"0x08010140">
@@ -2242,6 +2242,11 @@
 
 	<!ENTITY smAbbasidSpace				"0x00100600">
 
+	<!ENTITY rsAbbasidOutpost			"0x00100601">
+	<!ENTITY stAbbasidOutpostWall		"0x00100602">
+	<!ENTITY stAbbasidOutpost			"0x00100603">
+	<!ENTITY rsAbbasidOutpostWalls		"0x00100604">
+
 	<!-- 0620-063F GAIAN TERRAFORMERS -->
 
 	<!ENTITY smGaianSpace				"0x00100620">
@@ -2288,6 +2293,11 @@
 	<!ENTITY scWolfenC2					"0x00100701">
 	<!ENTITY scWolfenC3					"0x00100702">
 	<!ENTITY vtUniversityEnhancement	"0x00100703">
+
+	<!ENTITY stStKatsArcology			"0x00100704">
+	<!ENTITY stStKatsArcologySegment	"0x00100705">
+	<!ENTITY rsStKatsArcologySegments	"0x00100706">
+	<!ENTITY evStKatsTrafficBehavior	"0x00100707">
 
 	<!-- 0740-075F RASIERMESSER -->
 
@@ -2519,6 +2529,8 @@
 	<!-- St. Katharine's Star -->
 
 	<Module filename="Dall01.xml"/>
+	<Module filename="FirstContactMonument.xml"/>
+	<Module filename="NewVictoria.xml"/>
 	<Module filename="StKatharines.xml"/>
 
 	<!-- Star Systems -->

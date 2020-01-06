@@ -1809,7 +1809,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         {
         //  If we've got a specific language element, use that.
 
-        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_ABANDONED, NULL, &sDesc))
+        if (!TranslateText(LANGID_CORE_MAP_DESC_ABANDONED, NULL, &sDesc))
             sDesc = CONSTLIT("Abandoned");
 
         return sDesc;
@@ -1817,7 +1817,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
 
     //  If we have a specific language element for this, then we return it.
 
-    else if (TranslateText(NULL, LANGID_CORE_MAP_DESC, NULL, &sDesc))
+    else if (TranslateText(LANGID_CORE_MAP_DESC, NULL, &sDesc))
         return sDesc;
 
     //  Otherwise, check the trade descriptors and compose our own.
@@ -1828,7 +1828,7 @@ CString CDesignType::GetMapDescription (SMapDescriptionCtx &Ctx) const
         //  ask the subclass
 
         CString sMainDesc;
-        if (!TranslateText(NULL, LANGID_CORE_MAP_DESC_MAIN, NULL, &sMainDesc))
+        if (!TranslateText(LANGID_CORE_MAP_DESC_MAIN, NULL, &sMainDesc))
             sMainDesc = OnGetMapDescriptionMain(Ctx);
 
         //  Get the trade descriptor
@@ -2230,6 +2230,19 @@ void CDesignType::GetEventHandlers (const CEventHandler **retpHandlers, TSortMap
 	*retpHandlers = NULL;
 	retInheritedHandlers->DeleteAll();
 	AddUniqueHandlers(retInheritedHandlers);
+	}
+
+const CLanguageDataBlock &CDesignType::GetLanguageBlock (void) const
+
+//	GetLanguageBlock
+//
+//	REturns the language block for this type.
+
+	{
+	if (m_pExtra)
+		return m_pExtra->Language;
+	else
+		return CLanguageDataBlock::m_Null;
 	}
 
 CXMLElement *CDesignType::GetLocalScreens (void) const
@@ -2948,17 +2961,24 @@ bool CDesignType::SetTypeProperty (const CString &sProperty, const ICCItem &Valu
 		return false;
 	}
 
-bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CDesignType &Type, const CString &sID, const CLanguageDataBlock::SParams &Params, ICCItemPtr &retResult) const
 
 //	Translate
 //
-//	Translate from a <Language> block to a CodeChain item.
+//	Translates assuming that Type is the root type.
 
 	{
-	if (m_pExtra && m_pExtra->Language.Translate(*this, sID, pData, retResult))
+	if (m_pExtra && m_pExtra->Language.Translate(Type, sID, Params, retResult))
 		return true;
 
-	if (m_pInheritFrom && m_pInheritFrom->Translate(sID, pData, retResult))
+	if (m_pInheritFrom && m_pInheritFrom->Translate(Type, sID, Params, retResult))
+		return true;
+
+	//	Backwards compatible translate
+
+	if (GetVersion() <= 2 
+			&& Params.pSource
+			&& TranslateVersion2(Params.pSource, sID, retResult))
 		return true;
 
 	//	Not found
@@ -2966,7 +2986,20 @@ bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &ret
 	return false;
 	}
 
-bool CDesignType::Translate (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+bool CDesignType::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
+
+//	Translate
+//
+//	Translate
+
+	{
+	CLanguageDataBlock::SParams Params;
+	Params.pData = pData;
+
+	return Translate(*this, sID, Params, retResult);
+	}
+
+bool CDesignType::Translate (const CSpaceObject &Source, const CString &sID, ICCItem *pData, ICCItemPtr &retResult) const
 
 //	Translate
 //
@@ -2975,16 +3008,39 @@ bool CDesignType::Translate (const CSpaceObject *pObj, const CString &sID, ICCIt
 //	NOTE: Caller is responsible for discarding the result (if we return TRUE).
 	
 	{
-	if (m_pExtra && m_pExtra->Language.Translate(pObj, sID, pData, retResult))
+	CLanguageDataBlock::SParams Params;
+	Params.pSource = &Source;
+	Params.pData = pData;
+
+	return Translate(*this, sID, Params, retResult);
+	}
+
+bool CDesignType::TranslateText (const CDesignType &Type, const CString &sID, const CLanguageDataBlock::SParams &Params, CString *retsText) const
+
+//	TranslateText
+//
+//	Translate assuming that Type is the root type.
+
+	{
+	if (m_pExtra && m_pExtra->Language.TranslateText(Type, sID, Params, retsText))
 		return true;
 
-	if (m_pInheritFrom && m_pInheritFrom->Translate(pObj, sID, pData, retResult))
+	if (m_pInheritFrom && m_pInheritFrom->TranslateText(Type, sID, Params, retsText))
 		return true;
 
 	//	Backwards compatible translate
 
-	if (GetVersion() <= 2 && TranslateVersion2(pObj, sID, retResult))
+	if (GetVersion() <= 2 && Params.pSource)
+		{
+		ICCItemPtr pItem;
+		if (!TranslateVersion2(Params.pSource, sID, pItem))
+			return false;
+
+		if (retsText)
+			*retsText = pItem->GetStringValue();
+
 		return true;
+		}
 
 	//	Not found
 
@@ -2998,47 +3054,24 @@ bool CDesignType::TranslateText (const CString &sID, ICCItem *pData, CString *re
 //	Translate from a <Language> block to text.
 
 	{
-	if (m_pExtra && m_pExtra->Language.TranslateText(*this, sID, pData, retsText))
-		return true;
+	CLanguageDataBlock::SParams Params;
+	Params.pData = pData;
 
-	if (m_pInheritFrom && m_pInheritFrom->TranslateText(sID, pData, retsText))
-		return true;
-
-	//	Not found
-
-	return false;
+	return TranslateText(*this, sID, Params, retsText);
 	}
 	
-bool CDesignType::TranslateText (const CSpaceObject *pObj, const CString &sID, ICCItem *pData, CString *retsText) const
+bool CDesignType::TranslateText (const CSpaceObject &Source, const CString &sID, ICCItem *pData, CString *retsText) const
 
 //	Translate
 //
 //	Translate from a <Language> block to text.
 
 	{
-	if (m_pExtra && m_pExtra->Language.TranslateText(pObj, sID, pData, retsText))
-		return true;
+	CLanguageDataBlock::SParams Params;
+	Params.pSource = &Source;
+	Params.pData = pData;
 
-	if (m_pInheritFrom && m_pInheritFrom->TranslateText(pObj, sID, pData, retsText))
-		return true;
-
-	//	Backwards compatible translate
-
-	if (GetVersion() <= 2)
-		{
-		ICCItemPtr pItem;
-		if (!TranslateVersion2(pObj, sID, pItem))
-			return false;
-
-		if (retsText)
-			*retsText = pItem->GetStringValue();
-
-		return true;
-		}
-
-	//	Not found
-
-	return false;
+	return TranslateText(*this, sID, Params, retsText);
 	}
 	
 bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem *pData, CString *retsText) const
@@ -3048,13 +3081,11 @@ bool CDesignType::TranslateText (const CItem &Item, const CString &sID, ICCItem 
 //	Translate from a <Language> block on an item to text.
 
 	{
-	if (m_pExtra && m_pExtra->Language.TranslateText(Item, sID, pData, retsText))
-		return true;
+	CLanguageDataBlock::SParams Params;
+	Params.pItem = &Item;
+	Params.pData = pData;
 
-	if (m_pInheritFrom && m_pInheritFrom->TranslateText(Item, sID, pData, retsText))
-		return true;
-
-	return false;
+	return TranslateText(*this, sID, Params, retsText);
 	}
 
 bool CDesignType::TranslateVersion2 (const CSpaceObject *pObj, const CString &sID, ICCItemPtr &retResult) const

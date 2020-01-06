@@ -326,7 +326,7 @@ bool CAIBehaviorCtx::CalcFormationParams (CShip *pShip,
 	bool bResult = CShipAIHelper::CalcFormationParams(pShip, vDestPos, vDestVel, retvRecommendedVel, retrDeltaPos2, retrDeltaVel2);
 
 	if (g_pUniverse->GetPlayerShip() 
-			&& g_pUniverse->GetPlayerShip()->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET) == pShip
+			&& g_pUniverse->GetPlayerShip()->GetTarget(IShipController::FLAG_ACTUAL_TARGET) == pShip
 			&& m_pUpdateCtx->pAnnotations)
 		{
 		m_pUpdateCtx->pAnnotations->bDebugFormation = true;
@@ -763,7 +763,7 @@ bool CAIBehaviorCtx::ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *
 		case aicombatAdvanced:
 			{
 			bool bWeAreFaster = (pShip->GetMaxSpeed() >= pTarget->GetMaxSpeed());
-			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->IsAreaWeapon(pShip));
+			bool bUsingStandOffWeapon = (m_pBestWeapon && m_pBestWeapon->GetDeviceItem().IsAreaWeapon());
 
 			const int MAX_BRAVERY_TICKS = 300;				//	Number of ticks since last attack to be 100% brave
 			const Metric BRAVERY_DECAY_POWER = 2.0;
@@ -1333,8 +1333,6 @@ void CAIBehaviorCtx::ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceOb
 	{
 	DEBUG_TRY
 
-	int i;
-
 	//	If this ship has secondary weapons that also fire at will
 	//	(note that we don't turn this on normally because it is relatively
 	//	expensive)
@@ -1342,11 +1340,12 @@ void CAIBehaviorCtx::ImplementFireOnTargetsOfOpportunity (CShip *pShip, CSpaceOb
 	if (HasSecondaryWeapons() 
 			&& !m_AISettings.NoTargetsOfOpportunity())
 		{
-		for (i = 0; i < pShip->GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 			{
-			CInstalledDevice *pDevice = pShip->GetDevice(i);
-			if (!pDevice->IsEmpty() && pDevice->IsSecondaryWeapon() && pDevice->IsReady())
-				pDevice->SetTriggered(true);
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+			if (Device.IsSecondaryWeapon() && Device.IsReady())
+				Device.SetTriggered(true);
 			}
 		}
 

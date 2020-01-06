@@ -1268,6 +1268,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 	{
 	const CArmorItem ArmorItem = ItemCtx.GetItem().AsArmorItemOrThrow();
     const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
 	CSpaceObject *pSource = ItemCtx.GetSource();
 	CInstalledArmor *pArmor = ItemCtx.GetArmor();
 
@@ -1277,19 +1278,19 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	//	Disintegration
 
-	if (Ctx.IsDisintegrated() && IsImmune(ItemCtx, specialDisintegration))
+	if (Ctx.IsDisintegrated() && IsImmune(Stats, Enhancements, specialDisintegration))
 		Ctx.SetDisintegrated(false);
 
 	//	Shatter
 
-	if (Ctx.IsShattered() && IsImmune(ItemCtx, specialShatter))
+	if (Ctx.IsShattered() && IsImmune(Stats, Enhancements, specialShatter))
 		Ctx.SetShattered(false);
 
 	//	Blinding
 
 	if (Ctx.IsBlinded())
 		{
-		if (IsImmune(ItemCtx, specialBlinding))
+		if (IsImmune(Stats, Enhancements, specialBlinding))
 			Ctx.SetBlinded(false);
 		else if (Stats.iBlindingDamageAdj != 100 && mathRandom(1, 100) >= Stats.iBlindingDamageAdj)
 			Ctx.SetBlinded(false);
@@ -1299,7 +1300,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	if (Ctx.IsParalyzed())
 		{
-		if (IsImmune(ItemCtx, specialEMP))
+		if (IsImmune(Stats, Enhancements, specialEMP))
 			Ctx.SetParalyzed(false);
 		else if (Stats.iEMPDamageAdj != 100 && mathRandom(1, 100) >= Stats.iEMPDamageAdj)
 			Ctx.SetParalyzed(false);
@@ -1309,7 +1310,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	if (Ctx.IsDeviceDisrupted())
 		{
-		if (IsImmune(ItemCtx, specialDeviceDisrupt))
+		if (IsImmune(Stats, Enhancements, specialDeviceDisrupt))
 			Ctx.SetDeviceDisrupted(false);
 		else if (Stats.iDeviceDamageAdj != 100 && mathRandom(1, 100) >= Stats.iDeviceDamageAdj)
 			Ctx.SetDeviceDisrupted(false);
@@ -1317,7 +1318,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	if (Ctx.IsDeviceDamaged())
 		{
-		if (IsImmune(ItemCtx, specialDeviceDamage))
+		if (IsImmune(Stats, Enhancements, specialDeviceDamage))
 			Ctx.SetDeviceDamaged(false);
 		else if (Stats.iDeviceDamageAdj != 100 && mathRandom(1, 100) >= Stats.iDeviceDamageAdj)
 			Ctx.SetDeviceDamaged(false);
@@ -1325,7 +1326,7 @@ void CArmorClass::CalcDamageEffects (CItemCtx &ItemCtx, SDamageCtx &Ctx) const
 
 	//	Radiation
 
-	if (Ctx.IsRadioactive() && IsImmune(ItemCtx, specialRadiation))
+	if (Ctx.IsRadioactive() && IsImmune(Stats, Enhancements, specialRadiation))
 		Ctx.SetRadioactive(false);
 
 	//	Time Stop
@@ -2033,22 +2034,22 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 		}
 
 	else if (strEquals(sName, PROPERTY_BLINDING_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialBlinding));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialBlinding));
 
 	else if (strEquals(sName, PROPERTY_DAMAGE_ADJ))
 		return ICCItemPtr(Stats.DamageAdj.GetDamageAdjProperty(&Enhancements));
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialDeviceDamage));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialDeviceDamage));
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialDeviceDisrupt));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialDeviceDisrupt));
 
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialDisintegration));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialDisintegration));
 
 	else if (strEquals(sName, PROPERTY_EMP_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialEMP));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialEMP));
 
 	else if (strEquals(sName, PROPERTY_HP_BONUS))
 		return ICCItemPtr(Stats.DamageAdj.GetHPBonusProperty(&Enhancements));
@@ -2069,7 +2070,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 		}
 
 	else if (strEquals(sName, PROPERTY_RADIATION_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialRadiation));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialRadiation));
 
 	else if (strEquals(sName, PROPERTY_REFLECT))
 		{
@@ -2095,7 +2096,7 @@ ICCItemPtr CArmorClass::FindItemProperty (const CArmorItem &ArmorItem, const CSt
 		return ICCItemPtr(mathRound(CalcRegen180(Ctx)));
 
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
-		return ICCItemPtr(IsImmune(Ctx, specialShatter));
+		return ICCItemPtr(IsImmune(Stats, Enhancements, specialShatter));
 
 	else if (strEquals(sName, PROPERTY_STD_COST))
 		{
@@ -2465,16 +2466,13 @@ CUniverse &CArmorClass::GetUniverse (void) const
 	return (m_pItemType ? m_pItemType->GetUniverse() : *g_pUniverse);
 	}
 
-bool CArmorClass::IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage) const
+bool CArmorClass::IsImmune (const SScalableStats &Stats, const CItemEnhancementStack &Enhancements, SpecialDamageTypes iSpecialDamage)
 
 //	IsImmune
 //
 //	Returns TRUE if we are (completely) immune to the given special damage.
 
 	{
-    const SScalableStats &Stats = GetScaledStats(ItemCtx.GetItem().AsArmorItemOrThrow());
-	const CItemEnhancementStack &Enhancements = ItemCtx.GetEnhancements();
-
 	switch (iSpecialDamage)
 		{
 		case specialBlinding:
@@ -2499,6 +2497,19 @@ bool CArmorClass::IsImmune (CItemCtx &ItemCtx, SpecialDamageTypes iSpecialDamage
 		default:
 			return false;
 		}
+	}
+
+bool CArmorClass::IsImmune (const CArmorItem &ArmorItem, SpecialDamageTypes iSpecialDamage) const
+
+//	IsImmune
+//
+//	Returns TRUE if we are (completely) immune to the given special damage.
+
+	{
+	const SScalableStats &Stats = GetScaledStats(ArmorItem);
+	const CItemEnhancementStack &Enhancements = ArmorItem.GetEnhancements();
+
+	return IsImmune(Stats, Enhancements, iSpecialDamage);
 	}
 
 bool CArmorClass::IsShieldInterfering (CItemCtx &ItemCtx)

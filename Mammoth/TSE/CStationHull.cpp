@@ -31,6 +31,8 @@ int CStationHull::CalcAdjustedDamage (SDamageCtx &Ctx) const
 //	Adjusts damage because some hulls require WMD.
 
 	{
+	EDamageHint iHint = EDamageHint::none;
+
 	//	Short-circuit
 
 	if (Ctx.iDamage == 0)
@@ -45,6 +47,7 @@ int CStationHull::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 		case CStationHullDesc::hullMultiple:
 			iSpecialDamage = Ctx.Damage.GetMassDestructionDamage();
+			iHint = EDamageHint::useWMD;
 			break;
 
 		//	Stations built on asteroids must be attacked with either WMD or
@@ -52,12 +55,14 @@ int CStationHull::CalcAdjustedDamage (SDamageCtx &Ctx) const
 
 		case CStationHullDesc::hullAsteroid:
 			iSpecialDamage = Max(Ctx.Damage.GetMassDestructionDamage(), Ctx.Damage.GetMiningDamage());
+			iHint = EDamageHint::useMiningOrWMD;
 			break;
 
 		//	Underground stations must be attacked with  mining damage.
 
 		case CStationHullDesc::hullUnderground:
 			iSpecialDamage = Ctx.Damage.GetMiningDamage();
+			iHint = EDamageHint::useMining;
 			break;
 
 		//	For single-hull stations we don't need special damage, except if the
@@ -90,7 +95,18 @@ int CStationHull::CalcAdjustedDamage (SDamageCtx &Ctx) const
 	else
 		{
         int iDamageAdj = DamageDesc::GetMassDestructionAdjFromValue(iSpecialDamage);
-        return mathAdjust(Ctx.iDamage, iDamageAdj);
+		int iDamage = mathAdjust(Ctx.iDamage, iDamageAdj);
+
+		//	If we're not making progress, then return a hint about what to do.
+
+		if (iHint != EDamageHint::none 
+				&& iDamageAdj <= 25 
+				&& (iDamage == 0 || (m_iHitPoints / iDamage) > HINT_THRESHOLD))
+			Ctx.SetHint(iHint);
+
+		//	Return adjusted damage
+
+        return iDamage;
 		}
 	}
 

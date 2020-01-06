@@ -282,8 +282,8 @@
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthColony; =" (sysGetLevel) ";")
-									noMissionTextID: 'descHallEmpty
 									maxPerStation: 1
+									noMissionTextID: 'descHallEmpty
 									})
 							</Action>
 					
@@ -538,8 +538,8 @@
 							<Action id="actionMainHall" default="1">
 								(rpgMissionAssignment {
 									missionCriteria: (cat "n +commonwealthColonyArmed; =" (sysGetLevel) ";")
-									noMissionTextID: 'descHallEmpty
 									maxPerStation: 1
+									noMissionTextID: 'descHallEmpty
 									})
 							</Action>
 					
@@ -1024,7 +1024,7 @@
 				(rpgMissionAchievements &stCommonwealthSlums; "* +commonwealthHabitat;")
 			</GetGlobalAchievements>
 
-			<GetGlobalRumors>
+			<GetRumors>
 				(append
 					(rpgRumorAdd 'commonwealthHabitat (make 'sequence 4))
 
@@ -1045,7 +1045,7 @@
 						{	shipName: (objGetName gPlayerShip)	}
 						)
 					)
-			</GetGlobalRumors>
+			</GetRumors>
 		</Events>
 
 		<DockScreens>
@@ -1062,8 +1062,8 @@
 									missionCriteria: "n +commonwealthHabitat;"
 									maxActive: 1
 									intervalPerType: (+ 5400 (* (objGetDestiny gSource) 10))
-									noMissionTextID: 'descNoMissions
 									missionGiver: (rpgCharacterGetInfo gSource 'stationMaster)
+									noMissionTextID: 'descNoMissions
 									})
 							</Action>
 
@@ -1309,9 +1309,9 @@
 					)
 			</OrderDockWithTarget>
 
-			<GetGlobalRumors>
+			<GetRumors>
 				(rpgRumorAdd 'commonwealthContainer (make 'sequence 6))
-			</GetGlobalRumors>
+			</GetRumors>
 		</Events>
 
 		<DockScreens>

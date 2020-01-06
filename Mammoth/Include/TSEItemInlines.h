@@ -7,6 +7,11 @@
 
 //	CItem Inlines --------------------------------------------------------------
 
+inline ItemCategories CItem::GetCategory (void) const
+	{
+	return (m_pItemType ? m_pItemType->GetCategory() : itemcatNone);
+	}
+
 inline const CEconomyType *CItem::GetCurrencyType (void) const
 	{
 	return m_pItemType->GetCurrencyType();
@@ -15,6 +20,11 @@ inline const CEconomyType *CItem::GetCurrencyType (void) const
 inline CDeviceClass *CItem::GetDeviceClass (void) const
 	{
 	return (IsDevice() ? m_pItemType->GetDeviceClass() : NULL);
+	}
+
+inline const CObjectImageArray &CItem::GetImage (void) const
+	{
+	return (m_pItemType ? m_pItemType->GetImage() : CObjectImageArray::Null());
 	}
 
 inline bool CItem::HasAttribute (const CString &sAttrib) const
@@ -32,6 +42,11 @@ inline bool CItem::IsDevice (void) const
 	return (m_pItemType && m_pItemType->IsDevice());
 	}
 
+inline bool CItem::IsMissile (void) const
+	{
+	return (m_pItemType && m_pItemType->IsMissile());
+	}
+
 //	CItemType Inlines ----------------------------------------------------------
 
 inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
@@ -41,14 +56,19 @@ inline CDesignType *CItemType::GetUseScreen (CString *retsName) const
 
 //	CDifferentiatedItem Inlines ------------------------------------------------
 
+inline ItemCategories CDifferentiatedItem::GetCategory (void) const
+	{
+	return m_Item.GetCategory();
+	}
+
 inline int CDifferentiatedItem::GetCharges (void) const
 	{
-	return m_pCItem->GetCharges();
+	return m_Item.GetCharges();
 	}
 
 inline CCurrencyAndValue CDifferentiatedItem::GetCurrencyAndValue (bool bActual) const
 	{
-	return GetType().GetCurrencyAndValue(CItemCtx(*m_pCItem), bActual);
+	return GetType().GetCurrencyAndValue(CItemCtx(m_Item), bActual);
 	}
 
 inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
@@ -60,14 +80,19 @@ inline const CEconomyType &CDifferentiatedItem::GetCurrencyType (void) const
 		return GetType().GetUniverse().GetCreditCurrency();
 	}
 
+inline const CObjectImageArray &CDifferentiatedItem::GetImage (void) const
+	{
+	return m_Item.GetImage();
+	}
+
 inline int CDifferentiatedItem::GetLevel (void) const
 	{
-	return m_pCItem->GetLevel();
+	return m_Item.GetLevel();
 	}
 
 inline int CDifferentiatedItem::GetMassKg (void) const
 	{
-	return m_pCItem->GetMassKg();
+	return m_Item.GetMassKg();
 	}
 
 inline int CDifferentiatedItem::GetMinLevel (void) const
@@ -75,14 +100,24 @@ inline int CDifferentiatedItem::GetMinLevel (void) const
 	return GetType().GetMinLevel();
 	}
 
+inline CString CDifferentiatedItem::GetNounPhrase (DWORD dwFlags) const
+	{
+	return m_Item.GetNounPhrase(dwFlags);
+	}
+
+inline int CDifferentiatedItem::GetVariantNumber (void) const
+	{
+	return m_Item.GetVariantNumber();
+	}
+
 inline const CItemType &CDifferentiatedItem::GetType (void) const
 	{
-	return *m_pCItem->GetType();
+	return *m_Item.GetType();
 	}
 
 inline CItemType &CDifferentiatedItem::GetType (void)
 	{
-	return *m_pItem->GetType();
+	return *m_Item.GetType();
 	}
 
 //	CArmorClass Inlines --------------------------------------------------------
@@ -108,6 +143,11 @@ inline DWORD CArmorClass::GetUNID (void)
 	}
 
 //	CArmorItem Inlines ---------------------------------------------------------
+
+inline CArmorItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
 
 inline int CArmorItem::CalcBalance (SBalance &retBalance) const
 	{
@@ -155,7 +195,7 @@ inline int CArmorItem::GetInstallCost (void) const
 
 inline const CInstalledArmor *CArmorItem::GetInstalledArmor (void) const
 	{
-	return m_pCItem->GetInstalledArmor();
+	return m_Item.GetInstalledArmor();
 	}
 
 inline int CArmorItem::GetMaxHP (bool bForceComplete) const
@@ -185,6 +225,12 @@ inline CSpaceObject *CArmorItem::GetSource (void) const
 	else
 		return NULL;
 	}
+
+inline bool CArmorItem::IsImmune (SpecialDamageTypes iSpecialDamage) const
+	{
+	return GetArmorClass().IsImmune(*this, iSpecialDamage);
+	}
+
 
 //	CInstalledArmor Inlines ----------------------------------------------------
 
@@ -220,12 +266,17 @@ inline CString CDeviceClass::GetName (void)
 	return m_pItemType->GetNounPhrase();
 	}
 
-inline DWORD CDeviceClass::GetUNID (void)
+inline DWORD CDeviceClass::GetUNID (void) const
 	{
 	return m_pItemType->GetUNID();
 	}
 
 //	CDeviceItem Inlines --------------------------------------------------------
+
+inline CDeviceItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
 
 inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
 	{
@@ -235,6 +286,14 @@ inline const CDeviceClass &CDeviceItem::GetDeviceClass (void) const
 inline CDeviceClass &CDeviceItem::GetDeviceClass (void)
 	{
 	return *GetType().GetDeviceClass();
+	}
+
+inline int CDeviceItem::GetDeviceSlot (void) const
+	{
+	if (const CInstalledDevice *pDevice = GetInstalledDevice())
+		return pDevice->GetDeviceSlot();
+	else
+		return -1;
 	}
 
 inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
@@ -248,7 +307,12 @@ inline const CItemEnhancementStack &CDeviceItem::GetEnhancements (void) const
 
 inline const CInstalledDevice *CDeviceItem::GetInstalledDevice (void) const
 	{
-	return m_pCItem->GetInstalledDevice();
+	return m_Item.GetInstalledDevice();
+	}
+
+inline CInstalledDevice *CDeviceItem::GetInstalledDevice (void)
+	{
+	return m_Item.GetInstalledDevice();
 	}
 
 inline CSpaceObject *CDeviceItem::GetSource (void) const
@@ -257,6 +321,16 @@ inline CSpaceObject *CDeviceItem::GetSource (void) const
 		return pInstalled->GetSource();
 	else
 		return NULL;
+	}
+
+inline int CDeviceItem::GetWeaponEffectiveness (CSpaceObject *pTarget) const
+	{
+	return GetType().GetDeviceClass()->GetWeaponEffectiveness(*this, pTarget);
+	}
+
+inline bool CDeviceItem::IsAreaWeapon (void) const
+	{
+	return GetType().GetDeviceClass()->IsAreaWeapon(*this);
 	}
 
 //	CInstalledDevice Inlines ---------------------------------------------------
@@ -276,3 +350,11 @@ inline CDeviceClass *CDeviceDescList::GetDeviceClass (int iIndex) const
 	{
 	return m_List[iIndex].Item.GetType()->GetDeviceClass();
 	}
+
+//	CMissileItem Inlines -------------------------------------------------------
+
+inline CMissileItem::operator bool () const
+	{
+	return !m_Item.IsEmpty();
+	}
+

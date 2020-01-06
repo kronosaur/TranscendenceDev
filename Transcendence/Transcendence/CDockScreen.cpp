@@ -24,7 +24,6 @@ const int EXTRA_BACKGROUND_IMAGE =	128;
 
 #define ALIGN_ATTRIB				CONSTLIT("align")
 #define ANIMATE_ATTRIB				CONSTLIT("animate")
-#define BACKGROUND_ID_ATTRIB		CONSTLIT("backgroundID")
 #define BOTTOM_ATTRIB				CONSTLIT("bottom")
 #define CENTER_ATTRIB				CONSTLIT("center")
 #define COLOR_ATTRIB				CONSTLIT("color")
@@ -394,7 +393,7 @@ void CDockScreen::CleanUpScreen (void)
 	DEBUG_CATCH
 	}
 
-ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroundDesc &Desc, const RECT &rcRect, int xOffset)
+ALERROR CDockScreen::CreateBackgroundImage (const SDockScreenBackgroundDesc &Desc, const RECT &rcRect, int xOffset)
 
 //	CreateBackgroundImage
 //
@@ -411,8 +410,14 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 	//	Load the image
 
 	CG32bitImage *pImage = NULL;
-	if (Desc.iType == IDockScreenDisplay::backgroundImage && Desc.dwImageID)
-		pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
+	switch (Desc.iType)
+		{
+		case EDockScreenBackground::image:
+		case EDockScreenBackground::heroImage:
+			if (Desc.dwImageID)
+				pImage = g_pUniverse->GetLibraryBitmap(Desc.dwImageID);
+			break;
+		}
 
 	//	Create a new image for the background
 
@@ -434,12 +439,29 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 	//	If not image, then we're done
 
-	if (Desc.iType == IDockScreenDisplay::backgroundNone)
+	if (Desc.iType == EDockScreenBackground::none)
 		;
 
 	//	Paint hero object
 
-	else if (Desc.iType == IDockScreenDisplay::backgroundObjHeroImage)
+	else if (Desc.iType == EDockScreenBackground::heroImage)
+		{
+		if (pImage)
+			{
+			BltSystemBackground(g_pUniverse->GetCurrentSystem(), rcRect);
+
+			m_pBackgroundImage->Blt(Desc.rcImage.left,
+					Desc.rcImage.top,
+					RectWidth(Desc.rcImage),
+					RectHeight(Desc.rcImage),
+					255,
+					*pImage,
+					xOffset + m_Layout.GetFrameImageFocusX() - (RectWidth(Desc.rcImage) / 2),
+					m_Layout.GetFrameImageFocusY() - (RectHeight(Desc.rcImage) / 2));
+			}
+		}
+
+	else if (Desc.iType == EDockScreenBackground::objHeroImage)
 		{
 		//	If we have a hero image, then use that
 
@@ -499,7 +521,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
 			CSpaceObject *pBase = Desc.pObj->GetBase();
 			int xPaint, yPaint;
-			if (pBase && Desc.pObj->IsSatelliteSegmentOf(pBase))
+			if (pBase && Desc.pObj->IsSatelliteSegmentOf(*pBase))
 				{
 				Ctx.pObj = pBase;
 				Ctx.XForm.Transform(pBase->GetPos(), &xPaint, &yPaint);
@@ -526,7 +548,7 @@ ALERROR CDockScreen::CreateBackgroundImage (const IDockScreenDisplay::SBackgroun
 
     //  Paint a schematic (top-down) image
 
-    else if (Desc.iType == IDockScreenDisplay::backgroundObjSchematicImage)
+    else if (Desc.iType == EDockScreenBackground::objSchematicImage)
         {
         //  LATER: We should call a separate method and allow the developer
         //  to specify separate images.
@@ -1260,7 +1282,6 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	DEBUG_TRY
 
 	ALERROR error;
-	int i;
 
 	//	Make sure we clean up first
 
@@ -1348,10 +1369,10 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If we have a deferred background setting, then use that (and reset it
 	//	so that we don't use it again).
 
-	if (m_DeferredBackground.iType != IDockScreenDisplay::backgroundDefault)
+	if (m_DeferredBackground.iType != EDockScreenBackground::default)
 		{
 		DisplayOptions.BackgroundDesc = m_DeferredBackground;
-		m_DeferredBackground.iType = IDockScreenDisplay::backgroundDefault;
+		m_DeferredBackground.iType = EDockScreenBackground::default;
 		}
 
 	//	Creates the title area
@@ -1412,7 +1433,7 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 
 		//	Set any deferred text
 
-		for (i = 0; i < m_DeferredDisplayText.GetCount(); i++)
+		for (int i = 0; i < m_DeferredDisplayText.GetCount(); i++)
 			SetDisplayText(m_DeferredDisplayText.GetKey(i), m_DeferredDisplayText[i]);
 
 		m_DeferredDisplayText.DeleteAll();
@@ -1421,13 +1442,23 @@ ALERROR CDockScreen::InitScreen (CDockSession &DockSession,
 	//	If the screen did not define a background image, then ask the display
 	//	to do so.
 
-	IDockScreenDisplay::SBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
-	if (BackgroundDesc.iType == IDockScreenDisplay::backgroundDefault)
+	SDockScreenBackgroundDesc BackgroundDesc = DisplayOptions.BackgroundDesc;
+	if (BackgroundDesc.iType == EDockScreenBackground::default)
 		{
 		m_pDisplay->GetDefaultBackground(&BackgroundDesc);
 
 		//	It's OK if m_pDisplay leaves it as a default. SetBackground (below)
 		//	will handle the default properly.
+		}
+
+	//	If we've got a default background and we're a nested frame, then use the
+	//	background of the previous frame.
+
+	if (BackgroundDesc.iType == EDockScreenBackground::default
+			&& m_pDockSession->GetFrameStack().GetCount() > 1
+			&& m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc.iType != EDockScreenBackground::default)
+		{
+		BackgroundDesc = m_pDockSession->GetFrameStack().GetCallingFrame().BackgroundDesc;
 		}
 
 	//	Create the background area. We do this after the display init because we
@@ -1785,7 +1816,7 @@ void CDockScreen::ShowDisplay (bool bAnimateOnly)
 		}
 	}
 
-void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc)
+void CDockScreen::SetBackground (const SDockScreenBackgroundDesc &Desc)
 
 //	SetBackground
 //
@@ -1797,27 +1828,32 @@ void CDockScreen::SetBackground (const IDockScreenDisplay::SBackgroundDesc &Desc
 	//	If we haven't yet initialized the screen (e.g., we're inside of
 	//	OnScreenInit) then we need to defer this.
 
-	if (m_pScreen == NULL)
+	if (m_pScreen == NULL || m_pDockSession == NULL)
 		{
 		m_DeferredBackground = Desc;
 		return;
 		}
 
+	//	Remember the background description on the stack so that we can access
+	//	it later.
+
+	m_pDockSession->SetBackgroundDesc(Desc);
+
 	//	Use a default, if necessary
 
-	if (Desc.iType == IDockScreenDisplay::backgroundDefault)
+	if (Desc.iType == EDockScreenBackground::default)
 		{
-		IDockScreenDisplay::SBackgroundDesc DefaultDesc;
+		SDockScreenBackgroundDesc DefaultDesc;
 
 		if (DefaultDesc.dwImageID = m_pLocation->GetDefaultBkgnd())
-			DefaultDesc.iType = IDockScreenDisplay::backgroundImage;
+			DefaultDesc.iType = EDockScreenBackground::image;
 		else
 			{
 			DefaultDesc.pObj = m_pLocation;
             if (m_pLocation->IsPlayer())
-			    DefaultDesc.iType = IDockScreenDisplay::backgroundObjSchematicImage;
+			    DefaultDesc.iType = EDockScreenBackground::objSchematicImage;
             else
-			    DefaultDesc.iType = IDockScreenDisplay::backgroundObjHeroImage;
+			    DefaultDesc.iType = EDockScreenBackground::objHeroImage;
 			}
 
 		CreateBackgroundImage(DefaultDesc, m_Layout.GetFrameImageRect(), m_Layout.GetContentRect().left - m_Layout.GetFrameImageRect().left);

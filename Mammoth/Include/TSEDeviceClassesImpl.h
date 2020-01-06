@@ -20,7 +20,7 @@ class CAutoDefenseClass : public CDeviceClass
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
-		virtual bool IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
+		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsAutomatedWeapon (void) override { return true; }
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual void Update (CInstalledDevice *pDevice, CSpaceObject *pSource, SDeviceUpdateCtx &Ctx) override;
@@ -98,24 +98,24 @@ class CCyberDeckClass : public CDeviceClass
 							   CSpaceObject *pTarget,
 							   bool *retbSourceDestroyed,
 							   bool *retbConsumedItems = NULL) override;
-		virtual bool CanHitFriends (void) override { return false; }
+		virtual bool CanHitFriends (void) const override { return false; }
 		virtual int GetActivateDelay (CItemCtx &ItemCtx) const override { return 30; }
 		virtual ItemCategories GetImplCategory (void) const override { return itemcatWeapon; }
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override { return damageGeneric; }
-		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
-		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
-											 CInstalledDevice *pDevice,
+		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return 1; }
-		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
-		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) override;
+		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const override;
 		virtual bool SelectFirstVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
 		virtual bool SelectNextVariant (CSpaceObject *pSource, CInstalledDevice *pDevice, int iDir = 1) override { return true; }
 		virtual bool ValidateSelectedVariant (CSpaceObject *pSource, CInstalledDevice *pDevice) override { return true; }
@@ -460,7 +460,7 @@ class CShieldClass : public CDeviceClass
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageAdj (const CItem *pItem, CSpaceObject *pInstalled, int *retiHP, int *retArray) const override;
 		virtual int GetReflectChance (const CDeviceItem &DeviceItem, const DamageDesc &Damage) const override;
-		virtual void GetStatus (CInstalledDevice *pDevice, CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
+		virtual void GetStatus (const CInstalledDevice *pDevice, const CSpaceObject *pSource, int *retiStatus, int *retiMaxStatus) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual CEffectCreator *OnFindEffectCreator (const CString &sUNID) override;
 		virtual void OnInstall (CInstalledDevice *pDevice, CSpaceObject *pSource, CItemListManipulator &ItemList) override;
@@ -672,6 +672,7 @@ class CWeaponClass : public CDeviceClass
         int GetAmmoItemCount (void) const;
 		inline int GetIdlePowerUse (void) const { return m_iIdlePowerUse; }
         CWeaponFireDesc *GetWeaponFireDesc (CItemCtx &ItemCtx, const CItem &Ammo = CItem()) const;
+		CWeaponFireDesc *GetWeaponFireDesc (const CDeviceItem &DeviceItem, const CItem &Ammo = CItem()) const;
 
         static const SStdStats &GetStdStats (int iLevel);
 		static int GetStdDamage (int iLevel);
@@ -702,27 +703,27 @@ class CWeaponClass : public CDeviceClass
 		virtual const DamageDesc *GetDamageDesc (CItemCtx &Ctx) override;
 		virtual DamageTypes GetDamageType (CItemCtx &Ctx, const CItem &Ammo = CItem()) const override;
 		virtual DWORD GetLinkedFireOptions (void) const override { return m_dwLinkedFireOptions; }
-		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual Metric GetMaxEffectiveRange (CSpaceObject *pSource, const CInstalledDevice *pDevice, CSpaceObject *pTarget) const override;
 		virtual Metric GetMaxRange (CItemCtx &ItemCtx) override;
 		virtual int GetPowerRating (CItemCtx &Ctx, int *retiIdlePowerUse = NULL) const override;
 		virtual bool GetReferenceDamageType (CItemCtx &Ctx, const CItem &Ammo, DamageTypes *retiDamage, CString *retsReference) const override;
 		virtual DeviceRotationTypes GetRotationType (CItemCtx &Ctx, int *retiMinArc = NULL, int *retiMaxArc = NULL) const override;
-		virtual void GetSelectedVariantInfo (CSpaceObject *pSource, 
-											 CInstalledDevice *pDevice,
+		virtual void GetSelectedVariantInfo (const CSpaceObject *pSource, 
+											 const CInstalledDevice *pDevice,
 											 CString *retsLabel,
 											 int *retiAmmoLeft,
 											 CItemType **retpType = NULL,
 											 bool bUseCustomAmmoCountHandler = false) override;
 		virtual Metric GetShotSpeed (CItemCtx &Ctx) const override;
 		virtual int GetValidVariantCount (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
-		virtual int GetWeaponEffectiveness (CSpaceObject *pSource, CInstalledDevice *pDevice, CSpaceObject *pTarget) override;
+		virtual int GetWeaponEffectiveness (const CDeviceItem &DeviceItem, CSpaceObject *pTarget) const override;
 		virtual bool IsAmmoWeapon (void) override;
-		virtual bool IsAreaWeapon (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
+		virtual bool IsAreaWeapon (const CDeviceItem &DeviceItem) const override;
 		virtual bool IsFirstVariantSelected(CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsTrackingWeapon (CItemCtx &Ctx) override;
 		virtual bool IsVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
 		virtual bool IsLastVariantSelected (CSpaceObject *pSource, CInstalledDevice *pDevice) override;
-		virtual bool IsWeaponAligned (CSpaceObject *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) override;
+		virtual bool IsWeaponAligned (CSpaceObject *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int *retiAimAngle = NULL, int *retiFireAngle = NULL) const override;
 		virtual bool NeedsAutoTarget (CItemCtx &Ctx, int *retiMinFireArc = NULL, int *retiMaxFireArc = NULL) override;
 		virtual ALERROR OnDesignLoadComplete (SDesignLoadCtx &Ctx) override;
 		virtual bool RequiresItems (void) const override;

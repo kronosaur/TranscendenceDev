@@ -1160,7 +1160,6 @@ void CGSelectorArea::SetRegionsFromDevices (CSpaceObject *pSource)
 //	Creates regions based on installed devices.
 
 	{
-	int i;
 	ASSERT(pSource);
 	if (pSource == NULL)
 		return;
@@ -1175,22 +1174,21 @@ void CGSelectorArea::SetRegionsFromDevices (CSpaceObject *pSource)
 
 	TArray<bool> SlotStatus;
 	SlotStatus.InsertEmpty(MISC_DEVICES_LAYOUT_COUNT);
-	for (i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
+	for (int i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
 		SlotStatus[i] = true;
 
 	//	Create a region for each device.
 
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (pDevice->IsEmpty() 
-				|| !pDevice->GetItem()->MatchesCriteria(m_Criteria))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (!Device.GetItem()->MatchesCriteria(m_Criteria))
 			continue;
 
 		//	If the device already has a position index, then use that (assuming
 		//	it's free).
 
-		int iIndex = pDevice->GetSlotPosIndex();
+		int iIndex = Device.GetSlotPosIndex();
 		if (iIndex < 0 || iIndex >= SlotStatus.GetCount() || !SlotStatus[iIndex])
 			iIndex = -1;
 
@@ -1198,12 +1196,12 @@ void CGSelectorArea::SetRegionsFromDevices (CSpaceObject *pSource)
 
 		if (iIndex == -1)
 			{
-			if (!FindLayoutForPos(pDevice->GetPosOffset(pShip), SlotStatus, &iIndex))
+			if (!FindLayoutForPos(Device.GetPosOffset(pShip), SlotStatus, &iIndex))
 				continue;
 
 			//	Remember so we stay in this location.
 
-			pDevice->SetSlotPosIndex(iIndex);
+			Device.SetSlotPosIndex(iIndex);
 			}
 
 		//	Create the region
@@ -1212,8 +1210,8 @@ void CGSelectorArea::SetRegionsFromDevices (CSpaceObject *pSource)
 
 		SEntry *pEntry = m_Regions.Insert();
 		pEntry->iType = typeInstalledItem;
-		pEntry->pItemCtx = new CItemCtx(pShip, pDevice);
-		pEntry->sSlotID = pDevice->GetID();
+		pEntry->pItemCtx = new CItemCtx(pShip, &Device);
+		pEntry->sSlotID = Device.GetID();
 
 		pEntry->iSlotPosIndex = iIndex;
 		pEntry->rcRect.left = pLayout->xLeft;
@@ -1248,7 +1246,7 @@ void CGSelectorArea::SetRegionsFromDevices (CSpaceObject *pSource)
         if (pClass->FindDeviceSlotDesc(devPrimaryWeapon, &DeviceDesc))
             vWeaponPos = pClass->GetPosOffset(DeviceDesc.iPosAngle, DeviceDesc.iPosRadius, DeviceDesc.iPosZ, DeviceDesc.b3DPosition);
 
-        for (i = 0; i < iEmptySlots; i++)
+        for (int i = 0; i < iEmptySlots; i++)
             {
             //	Find a position
 
@@ -1281,7 +1279,6 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 //	and cargo hold).
 
 	{
-	int i;
 	ASSERT(pSource);
 	if (pSource == NULL)
 		return;
@@ -1296,7 +1293,7 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 
 	TArray<bool> SlotStatus;
 	SlotStatus.InsertEmpty(MISC_DEVICES_LAYOUT_COUNT);
-	for (i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
+	for (int i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
 		SlotStatus[i] = true;
 
 	//	Reserve the slots for named device types
@@ -1310,13 +1307,13 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 
 	int iSlottedDevices = 0;
 	int iNonSlotDevices = 0;
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (pDevice->IsEmpty() || !pDevice->GetItem()->MatchesCriteria(m_Criteria))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (!Device.GetItem()->MatchesCriteria(m_Criteria))
 			continue;
 
-		if (pDevice->GetClass()->GetSlotsRequired() > 0)
+		if (Device.GetClass()->GetSlotsRequired() > 0)
 			iSlottedDevices++;
 		else
 			iNonSlotDevices++;
@@ -1334,17 +1331,17 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 	bool bHasDrive = false;
 	bool bHasCargo = false;
 	int iNextUnamedSlot = FIRST_UNNAMED_SLOT_INDEX;
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (pDevice->IsEmpty() || !pDevice->GetItem()->MatchesCriteria(m_Criteria))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (!Device.GetItem()->MatchesCriteria(m_Criteria))
 			continue;
 
 		//	Figure out the layout descriptor
 
 		iIndex = -1;
 		const SLayoutDesc *pLayout = NULL;
-		switch (pDevice->GetCategory())
+		switch (Device.GetCategory())
 			{
 			case itemcatCargoHold:
 				pLayout = &g_MiscDevicesLayout[CARGO_SLOT_INDEX];
@@ -1361,14 +1358,14 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 				//	If this is a 0-slot device and we have no more room for
 				//	0-slot devices, then we skip it.
 
-				if (pDevice->GetClass()->GetSlotsRequired() == 0
+				if (Device.GetClass()->GetSlotsRequired() == 0
 						&& iNonSlotDeviceSlotsAvail <= 0)
 					continue;
 
 				//	If the device already has a position index, then use that (assuming
 				//	it's free).
 
-				iIndex = pDevice->GetSlotPosIndex();
+				iIndex = Device.GetSlotPosIndex();
 				if (iIndex < 0 || iIndex >= SlotStatus.GetCount() || !SlotStatus[iIndex])
 					iIndex = -1;
 
@@ -1378,12 +1375,12 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 					{
 					//	Look for a new position
 
-					if (!FindLayoutForPos(pDevice->GetPosOffset(pShip), SlotStatus, &iIndex))
+					if (!FindLayoutForPos(Device.GetPosOffset(pShip), SlotStatus, &iIndex))
 						continue;
 
 					//	Remember so we stay in this location.
 
-					pDevice->SetSlotPosIndex(iIndex);
+					Device.SetSlotPosIndex(iIndex);
 					}
 
 				//	Remember the layout and mark it as used.
@@ -1406,8 +1403,8 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 			{
 			SEntry *pEntry = m_Regions.Insert();
 			pEntry->iType = typeInstalledItem;
-			pEntry->pItemCtx = new CItemCtx(pShip, pDevice);
-			pEntry->sSlotID = pDevice->GetID();
+			pEntry->pItemCtx = new CItemCtx(pShip, &Device);
+			pEntry->sSlotID = Device.GetID();
 
 			pEntry->iSlotPosIndex = iIndex;
 			pEntry->rcRect.left = pLayout->xLeft;
@@ -1480,7 +1477,7 @@ void CGSelectorArea::SetRegionsFromMiscDevices (CSpaceObject *pSource)
 	    int iEmptySlots = Max(1, Min((pClass->GetMaxDevices() - iTotalSlotsInUse), (pClass->GetMaxNonWeapons() - iNonWeaponSlotsInUse)) - (bHasReactor ? 0 : 1) - (bHasDrive ? 0 : 1) - (bHasCargo ? 0 : 1));
 #endif
 
-	    for (i = 0; i < iEmptySlots; i++)
+	    for (int i = 0; i < iEmptySlots; i++)
 		    {
 		    if (FindLayoutForPos(CVector(), SlotStatus, &iIndex))
 			    {
@@ -1509,7 +1506,6 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
 //	Creates regions based on installed weapons.
 
 	{
-	int i;
 	ASSERT(pSource);
 	if (pSource == NULL)
 		return;
@@ -1524,7 +1520,7 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
 
 	TArray<bool> SlotStatus;
 	SlotStatus.InsertEmpty(MISC_DEVICES_LAYOUT_COUNT);
-	for (i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
+	for (int i = 0; i < MISC_DEVICES_LAYOUT_COUNT; i++)
 		SlotStatus[i] = true;
 
 	//	If we don't have a launcher, we place the launcher slot first because we
@@ -1566,20 +1562,19 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
 
 	//	Create a region for each weapon.
 
-	for (i = 0; i < pShip->GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : pShip->GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = pShip->GetDevice(i);
-		if (pDevice->IsEmpty() 
-				|| !pDevice->GetItem()->MatchesCriteria(m_Criteria))
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (!Device.GetItem()->MatchesCriteria(m_Criteria))
 			continue;
 
-		if (pDevice->GetCategory() == itemcatLauncher)
+		if (Device.GetCategory() == itemcatLauncher)
 			bHasLauncher = true;
 
 		//	If the device already has a position index, then use that (assuming
 		//	it's free).
 
-		iIndex = pDevice->GetSlotPosIndex();
+		iIndex = Device.GetSlotPosIndex();
 		if (iIndex < 0 || iIndex >= SlotStatus.GetCount() || !SlotStatus[iIndex])
 			iIndex = -1;
 
@@ -1587,12 +1582,12 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
 
 		if (iIndex == -1)
 			{
-			if (!FindLayoutForPos(pDevice->GetPosOffset(pShip), SlotStatus, &iIndex))
+			if (!FindLayoutForPos(Device.GetPosOffset(pShip), SlotStatus, &iIndex))
 				continue;
 
 			//	Remember so we stay in this location.
 
-			pDevice->SetSlotPosIndex(iIndex);
+			Device.SetSlotPosIndex(iIndex);
 			}
 
 		//	Create the region
@@ -1601,8 +1596,8 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
 
 		SEntry *pEntry = m_Regions.Insert();
 		pEntry->iType = typeInstalledItem;
-		pEntry->pItemCtx = new CItemCtx(pShip, pDevice);
-		pEntry->sSlotID = pDevice->GetID();
+		pEntry->pItemCtx = new CItemCtx(pShip, &Device);
+		pEntry->sSlotID = Device.GetID();
 
 		pEntry->iSlotPosIndex = iIndex;
 		pEntry->rcRect.left = pLayout->xLeft;
@@ -1637,7 +1632,7 @@ void CGSelectorArea::SetRegionsFromWeapons (CSpaceObject *pSource)
         if (pClass->FindDeviceSlotDesc(devPrimaryWeapon, &DeviceDesc))
             vWeaponPos = pClass->GetPosOffset(DeviceDesc.iPosAngle, DeviceDesc.iPosRadius, DeviceDesc.iPosZ, DeviceDesc.b3DPosition);
 
-        for (i = 0; i < iEmptySlots; i++)
+        for (int i = 0; i < iEmptySlots; i++)
             {
             //	Find a position
 

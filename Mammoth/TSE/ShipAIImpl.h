@@ -80,6 +80,8 @@ class CAIBehaviorCtx
 		bool IsNonCombatant (void) const { return m_AISettings.IsNonCombatant(); }
 		bool IsSecondAttack (void) const;
 		bool IsWaitingForShieldsToRegen (void) const { return m_fWaitForShieldsToRegen; }
+		bool ShootsAllMissiles (void) const { return m_fShootAllMissiles; }
+		bool ShootsTargetableMissiles (void) const { return m_fShootTargetableMissiles; }
 		bool NoAttackOnThreat (void) const { return m_AISettings.NoAttackOnThreat(); }
 		bool NoDogfights (void) const { return m_AISettings.NoDogfights(); }
 		bool NoFriendlyFire (void) const { return m_AISettings.NoFriendlyFire(); }
@@ -152,7 +154,7 @@ class CAIBehaviorCtx
 		void CalcShieldState (CShip *pShip);
 		int CalcWeaponScore (CShip *pShip, CSpaceObject *pTarget, CInstalledDevice *pWeapon, Metric rTargetDist2);
 		void CancelDocking (CShip *pShip, CSpaceObject *pBase);
-		bool CheckForFriendsInLineOfFire (CShip *pShip, CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
+		bool CheckForFriendsInLineOfFire (CShip *pShip, const CInstalledDevice *pDevice, CSpaceObject *pTarget, int iFireAngle, Metric rMaxRange)
 			{ return (NoFriendlyFireCheck() || pShip->IsLineOfFireClear(pDevice, pTarget, iFireAngle, rMaxRange)); }
 		CVector CombinePotential (const CVector &vDir)
 			{ return GetPotential() + (vDir.Normal() * 100.0 * g_KlicksPerPixel);	}
@@ -166,52 +168,52 @@ class CAIBehaviorCtx
 		bool CalcFlockingFormationRandom (CShip *pShip, CSpaceObject *pLeader, CVector *retvPos, CVector *retvVel, int *retiFacing);
 		bool ImplementAttackTargetManeuver (CShip *pShip, CSpaceObject *pTarget, const CVector &vTarget, Metric rTargetDist2);
 
-		CAISettings m_AISettings;				//	Settings
+		CAISettings m_AISettings;					//	Settings
 
 		//	Ship control
-		CAIShipControls m_ShipControls;			//	Current ship control state
+		CAIShipControls m_ShipControls;				//	Current ship control state
 
 		//	State
-		EManeuverTypes m_iLastTurn;				//	Last turn direction
-		int m_iLastTurnCount;					//	Number of updates turning
-		int m_iManeuverCounter;					//	Counter used by maneuvers
-		int m_iLastAttack;						//	Tick of last attack on us
-		CVector m_vPotential;					//	Avoid potential
-		CNavigationPath *m_pNavPath;			//	Current navigation path
-		int m_iNavPathPos:16;					//	-1 = not in nav path
-		int m_iBarrierClock:16;					//	We've hit a barrier, so try to recover
+		EManeuverTypes m_iLastTurn = NoRotation;	//	Last turn direction
+		int m_iLastTurnCount = 0;					//	Number of updates turning
+		int m_iManeuverCounter = 0;					//	Counter used by maneuvers
+		int m_iLastAttack = 0;						//	Tick of last attack on us
+		CVector m_vPotential;						//	Avoid potential
+		CNavigationPath *m_pNavPath = NULL;			//	Current navigation path
+		int16_t m_iNavPathPos = -1;					//	-1 = not in nav path
+		int16_t m_iBarrierClock = -1;				//	We've hit a barrier, so try to recover
 
-		DWORD m_fDockingRequested:1;			//	TRUE if we've requested docking
-		DWORD m_fWaitForShieldsToRegen:1;		//	TRUE if ship is waiting for shields to regen
+		DWORD m_fDockingRequested:1;				//	TRUE if we've requested docking
+		DWORD m_fWaitForShieldsToRegen:1;			//	TRUE if ship is waiting for shields to regen
 		DWORD m_dwSpare1:30;
 
 		//	Cached values
-		SUpdateCtx *m_pUpdateCtx;				//	System update context
-		CInstalledDevice *m_pShields;			//	Shields (NULL if none)
-		CInstalledDevice *m_pBestWeapon;		//	Best weapon
-		DeviceNames m_iBestWeapon;
-		Metric m_rBestWeaponRange;				//	Range of best weapon
-		Metric m_rPrimaryAimRange2;				//	If further than this, close on target
-		Metric m_rFlankDist;					//	Flank distance
-		int m_iMaxTurnCount;					//	Max ticks turning in the same direction
-		Metric m_rMaxWeaponRange;				//	Range of longest range primary weapon
-		int m_iBestNonLauncherWeaponLevel;		//	Level of best non-launcher weapon
-		int m_iPrematureFireChance;				//	Chance of firing prematurely
+		SUpdateCtx *m_pUpdateCtx = NULL;			//	System update context
+		CInstalledDevice *m_pShields = NULL;		//	Shields (NULL if none)
+		CInstalledDevice *m_pBestWeapon = NULL;		//	Best weapon
+		DeviceNames m_iBestWeapon = devNone;
+		Metric m_rBestWeaponRange = 0.0;			//	Range of best weapon
+		Metric m_rPrimaryAimRange2 = 0.0;			//	If further than this, close on target
+		Metric m_rFlankDist = 0.0;					//	Flank distance
+		int m_iMaxTurnCount = 0;					//	Max ticks turning in the same direction
+		Metric m_rMaxWeaponRange = 0.0;				//	Range of longest range primary weapon
+		int m_iBestNonLauncherWeaponLevel = 0;		//	Level of best non-launcher weapon
+		int m_iPrematureFireChance = 0;				//	Chance of firing prematurely
 
-		DWORD m_fImmobile:1;					//	TRUE if ship does not move
-		DWORD m_fSuperconductingShields:1;		//	TRUE if ship has superconducting shields
-		DWORD m_fHasMultipleWeapons:1;			//	TRUE if ship has more than 1 primary
-		DWORD m_fThrustThroughTurn:1;			//	TRUE if ship thrusts through a turn
-		DWORD m_fAvoidExplodingStations:1;		//	TRUE if ship avoids exploding stations
-		DWORD m_fRecalcBestWeapon:1;			//	TRUE if we need to recalc best weapon
-		DWORD m_fHasSecondaryWeapons:1;			//	TRUE if ship has secondary weapons
-		DWORD m_fHasEscorts:1;					//	TRUE if ship has escorts
+		DWORD m_fImmobile:1;						//	TRUE if ship does not move
+		DWORD m_fSuperconductingShields:1;			//	TRUE if ship has superconducting shields
+		DWORD m_fHasMultipleWeapons:1;				//	TRUE if ship has more than 1 primary
+		DWORD m_fThrustThroughTurn:1;				//	TRUE if ship thrusts through a turn
+		DWORD m_fAvoidExplodingStations:1;			//	TRUE if ship avoids exploding stations
+		DWORD m_fRecalcBestWeapon:1;				//	TRUE if we need to recalc best weapon
+		DWORD m_fHasSecondaryWeapons:1;				//	TRUE if ship has secondary weapons
+		DWORD m_fHasEscorts:1;						//	TRUE if ship has escorts
 
-		DWORD m_fHasMultiplePrimaries:1;		//	TRUE if ship has multiple primary weapons (non-launchers)
-		DWORD m_fFreeNavPath:1;					//	TRUE if we own the nav path object
-		DWORD m_fHasAvoidPotential:1;			//	TRUE if there is something to avoid
-		DWORD m_fSpare4:1;
-		DWORD m_fSpare5:1;
+		DWORD m_fHasMultiplePrimaries:1;			//	TRUE if ship has multiple primary weapons (non-launchers)
+		DWORD m_fFreeNavPath:1;						//	TRUE if we own the nav path object
+		DWORD m_fHasAvoidPotential:1;				//	TRUE if there is something to avoid
+		DWORD m_fShootTargetableMissiles:1;			//	TRUE if we try to hit targetable missiles with secondaries
+		DWORD m_fShootAllMissiles:1;				//	TRUE if we try to hit all missiles with secondaries
 		DWORD m_fSpare6:1;
 		DWORD m_fSpare7:1;
 		DWORD m_fSpare8:1;
@@ -337,9 +339,9 @@ class CBaseShipAI : public IShipController
 		virtual bool GetReverseThrust (void) override { return false; }
 		virtual CSpaceObject *GetShip (void) override { return m_pShip; }
 		virtual bool GetStopThrust (void) override { return false; }
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const override;
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const override;
 		virtual bool GetThrust (void) override { return m_AICtx.GetThrust(m_pShip); }
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) override;
+		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) override;
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const override;
 		virtual bool IsPlayerBlacklisted (void) const override { return (m_fPlayerBlacklisted ? true : false); }
 		virtual bool IsPlayerWingman (void) const override { return (m_fIsPlayerWingman ? true : false); }
@@ -395,6 +397,7 @@ class CBaseShipAI : public IShipController
 		CSpaceObject *GetPlayerOrderGiver (void) const;
 		CUniverse &GetUniverse (void) const { return (m_pShip ? m_pShip->GetUniverse() : *g_pUniverse); }
 		bool InitOrderModule (void);
+		void InitTargetList (SUpdateCtx &UpdateCtx) const;
 		bool IsImmobile (void) const { return m_AICtx.IsImmobile(); }
 		bool IsPlayerOrPlayerFollower (CSpaceObject *pObj, int iRecursions = 0);
 		bool IsWaitingForShieldsToRegen (void) { return m_AICtx.IsWaitingForShieldsToRegen(); }

@@ -195,10 +195,7 @@ bool CCargoSpaceClass::OnAccumulatePerformance (CItemCtx &ItemCtx, SShipPerforma
 //  Modifies the performance of the ship.
 
     {
-    //  If disabled, then nothing
-
-    if (!ItemCtx.IsDeviceEnabled())
-        return false;
+    //  Note: we still add cargo space if the device is disabled
 
     //  Get the stats (this checks for damage)
 

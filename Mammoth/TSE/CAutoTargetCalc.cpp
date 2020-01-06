@@ -28,7 +28,7 @@ void CAutoTargetCalc::Init (const CSpaceObject &PlayerObj)
 //	Initializes. Call this before Update.
 
 	{
-	m_pPlayerTarget = PlayerObj.GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	m_pPlayerTarget = PlayerObj.GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 
 	//	Check to see if the primary weapon requires autotargetting
 

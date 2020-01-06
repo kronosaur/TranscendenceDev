@@ -24,6 +24,7 @@
 #define POS_Z_ATTRIB							CONSTLIT("posZ")
 #define ROTATION_ATTRIB							CONSTLIT("rotation")
 #define SEND_TO_BACK_ATTRIB						CONSTLIT("sendToBack")
+#define VIEWPORT_SIZE_ATTRIB					CONSTLIT("viewportSize")
 #define X_ATTRIB								CONSTLIT("x")
 #define Y_ATTRIB								CONSTLIT("y")
 
@@ -31,21 +32,8 @@
 #define MIN_PORT_DISTANCE2						(MIN_PORT_DISTANCE * MIN_PORT_DISTANCE)
 
 const int DEFAULT_PORT_POS_RADIUS =				64;
-const int DEFAULT_DOCK_DISTANCE_LS =			12;
-const Metric DEFAULT_DOCK_DISTANCE2 =			(LIGHT_SECOND * LIGHT_SECOND * DEFAULT_DOCK_DISTANCE_LS * DEFAULT_DOCK_DISTANCE_LS);
 const Metric GATE_DIST =						KLICKS_PER_PIXEL * 64.0;
 const Metric GATE_DIST2 =						GATE_DIST * GATE_DIST;
-
-CDockingPorts::CDockingPorts (void) : 
-		m_iPortCount(0),
-		m_pPort(NULL),
-		m_iMaxDist(DEFAULT_DOCK_DISTANCE_LS),
-		m_iLastRotation(-1)
-
-//	CDockingPorts constructor
-
-	{
-	}
 
 void CDockingPorts::CleanUp (void)
 
@@ -83,6 +71,8 @@ void CDockingPorts::Copy (const CDockingPorts &Src)
 		m_pPort = NULL;
 
 	m_iMaxDist = Src.m_iMaxDist;
+	m_iScale = Src.m_iScale;
+	m_rMaxPlayerDist = Src.m_rMaxPlayerDist;
 	m_iLastRotation = Src.m_iLastRotation;
 	}
 
@@ -99,7 +89,7 @@ void CDockingPorts::DebugPaint (CG32bitImage &Dest, int x, int y, int iOwnerRota
 		{
 		int iRotation;
 		bool bInFront;
-		CVector vPos = GetPortPosAtRotation(iOwnerRotation, iScale, i, &bInFront, &iRotation);
+		CVector vPos = GetPortPosAtRotation(iOwnerRotation, GetScale(iScale), i, &bInFront, &iRotation);
 
 		//	Colors
 
@@ -315,7 +305,7 @@ bool CDockingPorts::DoesPortPaintInFront (CSpaceObject *pOwner, int iPort) const
 		}
 	}
 
-CVector CDockingPorts::GetPortPos (CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront, int *retiRotation) const
+CVector CDockingPorts::GetPortPos (const CSpaceObject *pOwner, const SDockingPort &Port, CSpaceObject *pShip, bool *retbPaintInFront, int *retiRotation) const
 
 //	GetPortPos
 //
@@ -385,7 +375,7 @@ CVector CDockingPorts::GetPortPosAtRotation (int iOwnerRotation, int iScale, int
 	//	Recalc the port positions if we've rotated.
 
 	if (m_iLastRotation != iOwnerRotation)
-		InitXYPortPos(iOwnerRotation, iScale);
+		InitXYPortPos(iOwnerRotation, GetScale(iScale));
 
 	//	Paint layer
 
@@ -416,7 +406,7 @@ CVector CDockingPorts::GetPortPosAtRotation (int iOwnerRotation, int iScale, int
 	return Port.vPos;
 	}
 
-int CDockingPorts::GetPortsInUseCount (CSpaceObject *pOwner)
+int CDockingPorts::GetPortsInUseCount (const CSpaceObject *pOwner) const
 
 //	GetPortsInUseCount
 //
@@ -446,10 +436,10 @@ void CDockingPorts::InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius)
 		m_iPortCount = iCount;
 		m_pPort = new SDockingPort[iCount];
 
-		int iAngle = 360 / iCount;
+		Metric rAngle = 360.0 / iCount;
 		for (int i = 0; i < iCount; i++)
 			{
-			int iPortAngle = i * iAngle;
+			int iPortAngle = mathRound(i * rAngle);
 			m_pPort[i].Pos = C3DObjectPos(iPortAngle, mathRound(rRadius / g_KlicksPerPixel));
 			m_pPort[i].vPos = PolarToVector(iPortAngle, rRadius);
 			m_pPort[i].iRotation = AngleMod(iPortAngle + 180);
@@ -457,6 +447,7 @@ void CDockingPorts::InitPorts (CSpaceObject *pOwner, int iCount, Metric rRadius)
 		}
 
 	m_iMaxDist = DEFAULT_DOCK_DISTANCE_LS;
+	m_rMaxPlayerDist = rRadius + (LIGHT_SECOND * m_iMaxDist);
 	m_iLastRotation = (pOwner ? pOwner->GetRotation() : 0);
 	}
 
@@ -469,6 +460,7 @@ void CDockingPorts::InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc
 	{
 	ASSERT(m_pPort == NULL);
 
+	Metric rMaxRadius = 0.0;
 	if (Desc.GetCount() > 0)
 		{
 		m_iPortCount = Desc.GetCount();
@@ -478,10 +470,15 @@ void CDockingPorts::InitPorts (CSpaceObject *pOwner, const TArray<CVector> &Desc
 			{
 			m_pPort[i].vPos = Desc[i];
 			m_pPort[i].iRotation = (VectorToPolar(Desc[i]) + 180) % 360;
+
+			Metric rRadius = Desc[i].Length();
+			if (rRadius > rMaxRadius)
+				rMaxRadius = rRadius;
 			}
 		}
 
 	m_iMaxDist = DEFAULT_DOCK_DISTANCE_LS;
+	m_rMaxPlayerDist = rMaxRadius + (LIGHT_SECOND * m_iMaxDist);
 	}
 
 void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElement, int iScale)
@@ -511,6 +508,14 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 		//	stations.
 
 		m_iMaxDist = pDockingPorts->GetAttributeIntegerBounded(MAX_DIST_ATTRIB, 1, -1, DEFAULT_DOCK_DISTANCE_LS);
+
+		//	Some stations define a viewport size here. For example, the St. Kats
+		//	arcology is an invisible station surrounded by segments. The 
+		//	viewport size (scale) is equal to:
+		//
+		//	Width(image) / (2.0 * viewport-ratio)
+
+		m_iScale = pDockingPorts->GetAttributeIntegerBounded(VIEWPORT_SIZE_ATTRIB, 1, -1, -1);
 
 		//	Sometimes we specify x,y coordinate but want to convert to rotating 
 		//	polar coordinate.
@@ -554,7 +559,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 						if (iScale <= 0)
 							iScale = (pOwner ? pOwner->GetImageScale() : 512);
 
-						m_pPort[i].Pos.InitFromXY(iScale, vDockPos, pPort->GetAttributeInteger(POS_Z_ATTRIB));
+						m_pPort[i].Pos.InitFromXY(GetScale(iScale), vDockPos, pPort->GetAttributeInteger(POS_Z_ATTRIB));
 
 						//	If the conversion rotation is non-zero then it means that the port
 						//	x,y coordinates are for the given rotation, and thus we need to 
@@ -589,14 +594,14 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 			{
 			int iRadius = pDockingPorts->GetAttributeIntegerBounded(PORT_RADIUS_ATTRIB, 0, -1, DEFAULT_PORT_POS_RADIUS);
 			int iStartAngle = AngleMod(pDockingPorts->GetAttributeInteger(PORT_ANGLE_ATTRIB));
-			int iAngle = 360 / m_iPortCount;
+			Metric rAngle = 360.0 / m_iPortCount;
 
 			//	Initialize ports
 
 			m_pPort = new SDockingPort[m_iPortCount];
 			for (i = 0; i < m_iPortCount; i++)
 				{
-				int iPortAngle = AngleMod(iStartAngle + i * iAngle);
+				int iPortAngle = AngleMod(iStartAngle + mathRound(i * rAngle));
 				m_pPort[i].Pos = C3DObjectPos(iPortAngle, iRadius);
 				m_pPort[i].iRotation = AngleMod(iPortAngle + 180);
 				}
@@ -612,7 +617,10 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 
 		//	Convert from polar to Cartessian
 
-		InitXYPortPos(pOwner, iScale);
+		int iMaxRadius;
+		InitXYPortPos(pOwner, GetScale(iScale), &iMaxRadius);
+
+		m_rMaxPlayerDist = (iMaxRadius + m_iMaxDist) * LIGHT_SECOND;
 		}
 
 	//	Otherwise, initialize ports based on a count
@@ -623,7 +631,7 @@ void CDockingPorts::InitPortsFromXML (CSpaceObject *pOwner, CXMLElement *pElemen
 				64 * g_KlicksPerPixel);
 	}
 
-void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale) const
+void CDockingPorts::InitXYPortPos (const CSpaceObject *pOwner, int iScale, int *retiMaxRadius) const
 
 //	InitXYPortPos
 //
@@ -631,7 +639,10 @@ void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale) const
 
 	{
 	if (m_iPortCount == 0)
+		{
+		if (retiMaxRadius) *retiMaxRadius = 0;
 		return;
+		}
 
 	//	If we've already computed x,y for this object rotation, then we're done.
 
@@ -650,29 +661,36 @@ void CDockingPorts::InitXYPortPos (CSpaceObject *pOwner, int iScale) const
 
 	//	Compute coordinates for each port
 
-	InitXYPortPos(iRotation, iScale);
+	InitXYPortPos(iRotation, GetScale(iScale), retiMaxRadius);
 	}
 
-void CDockingPorts::InitXYPortPos (int iRotation, int iScale) const
+void CDockingPorts::InitXYPortPos (int iRotation, int iScale, int *retiMaxRadius) const
 
 //	InitXYPortPos
 //
 //	Initialize to the given rotation and scale.
 
 	{
-	int i;
-
 	ASSERT(iScale > 0);
 
 	//	Compute coordinates for each port
 
-	for (i = 0; i < m_iPortCount; i++)
+	int iMaxRadius = 0;
+	for (int i = 0; i < m_iPortCount; i++)
 		if (!m_pPort[i].Pos.IsEmpty())
-			m_pPort[i].Pos.CalcCoord(iScale, iRotation, &m_pPort[i].vPos);
+			{
+			m_pPort[i].Pos.CalcCoord(GetScale(iScale), iRotation, &m_pPort[i].vPos);
+
+			int iRadius = m_pPort[i].Pos.GetRadius();
+			if (iRadius > iMaxRadius)
+				iMaxRadius = iRadius;
+			}
 
 	//	Done
 
 	m_iLastRotation = iRotation;
+	if (retiMaxRadius)
+		*retiMaxRadius = iMaxRadius;
 	}
 
 bool CDockingPorts::IsDocked (const CSpaceObject *pObj, int *retiPort) const
@@ -855,6 +873,25 @@ void CDockingPorts::ReadFromStream (CSpaceObject *pOwner, SLoadCtx &Ctx)
 		Ctx.pStream->Read(m_iMaxDist);
 	else
 		m_iMaxDist = DEFAULT_DOCK_DISTANCE_LS;
+
+	if (Ctx.dwVersion >= 178)
+		{
+		Ctx.pStream->Read(m_iScale);
+		Ctx.pStream->Read(m_rMaxPlayerDist);
+		}
+	else
+		{
+		Metric rMaxRadius = 0;
+		for (int i = 0; i < m_iPortCount; i++)
+			{
+			Metric rRadius = m_pPort[i].vPos.Length();
+			if (rRadius > rMaxRadius)
+				rMaxRadius = rRadius;
+			}
+
+		m_iScale = -1;
+		m_rMaxPlayerDist = rMaxRadius + (m_iMaxDist * LIGHT_SECOND);
+		}
 	}
 
 void CDockingPorts::RepairAll (CSpaceObject *pOwner, int iRepairRate)
@@ -1050,7 +1087,7 @@ void CDockingPorts::UpdateAll (SUpdateCtx &Ctx, CSpaceObject *pOwner)
 
 	if (pPlayer)
 		{
-		Metric rMaxRadius = (0.5 * pOwner->GetHitSize()) + (LIGHT_SECOND * m_iMaxDist);
+		Metric rMaxRadius = m_rMaxPlayerDist;
 		if (rDist2 > rMaxRadius * rMaxRadius)
 			pPlayer = NULL;
 		}
@@ -1237,13 +1274,11 @@ void CDockingPorts::UpdatePortsFromXML (CSpaceObject *pOwner, CXMLElement *pElem
 //	Updates the port positions in case they changed.
 
 	{
-	int i;
-
 	CDockingPorts NewPorts;
-	NewPorts.InitPortsFromXML(pOwner, pElement, iScale);
+	NewPorts.InitPortsFromXML(pOwner, pElement, GetScale(iScale));
 
 	int iCount = Min(NewPorts.GetPortCount(), GetPortCount());
-	for (i = 0; i < iCount; i++)
+	for (int i = 0; i < iCount; i++)
 		{
 		m_pPort[i].Pos = NewPorts.m_pPort[i].Pos;
 		m_pPort[i].iLayer = NewPorts.m_pPort[i].iLayer;
@@ -1257,6 +1292,8 @@ void CDockingPorts::UpdatePortsFromXML (CSpaceObject *pOwner, CXMLElement *pElem
 		}
 
 	m_iMaxDist = NewPorts.m_iMaxDist;
+	m_iScale = NewPorts.m_iScale;
+	m_rMaxPlayerDist = NewPorts.m_rMaxPlayerDist;
 	m_iLastRotation = NewPorts.m_iLastRotation;
 	}
 
@@ -1294,4 +1331,6 @@ void CDockingPorts::WriteToStream (CSpaceObject *pOwner, IWriteStream *pStream)
 		}
 
 	pStream->Write(m_iMaxDist);
+	pStream->Write(m_iScale);
+	pStream->Write(m_rMaxPlayerDist);
 	}

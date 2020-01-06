@@ -501,8 +501,13 @@ bool CDockSession::Translate (const CString &sID, ICCItem *pData, ICCItemPtr &pR
 
 	//	Otherwise, let the screen translate
 
-	if (Frame.pResolvedRoot && Frame.pResolvedRoot->Translate(Frame.pLocation, sID, pData, pResult))
-		return true;
+	if (Frame.pResolvedRoot)
+		{
+		if (Frame.pLocation && Frame.pResolvedRoot->Translate(*Frame.pLocation, sID, pData, pResult))
+			return true;
+		else if (Frame.pResolvedRoot->Translate(sID, pData, pResult))
+			return true;
+		}
 
 	//	Otherwise, we have no translation
 

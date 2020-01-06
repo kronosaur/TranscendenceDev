@@ -4190,7 +4190,7 @@ ICCItem *fnArmGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			return pCC->CreateInteger(ArmorItem.GetRepairLevel());
 
 		case FN_ARM_IS_RADIATION_IMMUNE:
-			return pCC->CreateBool(ArmorItem.GetArmorClass().IsImmune(CItemCtx(&Item), specialRadiation));
+			return pCC->CreateBool(ArmorItem.IsImmune(specialRadiation));
 
 		default:
 			ASSERT(FALSE);
@@ -5421,6 +5421,9 @@ ICCItem *fnItemSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 				default:
 					break;
 				}
+
+			if (Item.IsExtraEmpty())
+				Item.ClearExtra();
 
 			return CreateListFromItem(Item);
 			}
@@ -6928,7 +6931,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			}
 
 		case FN_OBJ_GET_PROPERTY:
-			return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue());
+			return pObj->GetProperty(*pCtx, pArgs->GetElement(1)->GetStringValue())->Reference();
 
 		case FN_OBJ_GET_REFUEL_ITEM:
 			{
@@ -7518,7 +7521,7 @@ ICCItem *fnObjGetOld (CEvalContext *pEvalCtx, ICCItem *pArguments, DWORD dwData)
 
 		case FN_OBJ_TARGET:
 			{
-			CSpaceObject *pTarget = pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+			CSpaceObject *pTarget = pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 			if (pTarget)
 				pResult = pCC->CreateInteger((int)pTarget);
 			else
@@ -8241,7 +8244,7 @@ ICCItem *fnObjSet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pArgs->GetCount() >= 3)
 				pTarget = CreateObjFromItem(pArgs->GetElement(2));
 			else
-				pTarget = pObj->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+				pTarget = pObj->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 
 			CString sError;
 
@@ -9793,19 +9796,14 @@ ICCItem *fnShipGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 			if (pArgs->GetCount() > 1)
 				{
 				CItem Item = pCtx->AsItem(pArgs->GetElement(1));
-				CItemType *pType = Item.GetType();
-				if (pType == NULL)
+				if (!Item.IsArmor())
 					return pCC->CreateNil();
 
-				CArmorClass *pArmor = pType->GetArmorClass();
-				if (pArmor == NULL)
+				const CArmorItem ArmorItem = Item.AsArmorItem();
+				if (!ArmorItem)
 					return pCC->CreateNil();
 
-				CInstalledArmor *pInstalled = NULL;
-				if (Item.IsInstalled())
-					pInstalled = pShip->GetArmorSection(Item.GetInstalled());
-
-				return pCC->CreateBool(pArmor->IsImmune(CItemCtx(pShip, pInstalled), specialRadiation));
+				return pCC->CreateBool(ArmorItem.IsImmune(specialRadiation));
 				}
 			else
 				return pCC->CreateBool(pShip->IsImmuneTo(CConditionSet::cndRadioactive));

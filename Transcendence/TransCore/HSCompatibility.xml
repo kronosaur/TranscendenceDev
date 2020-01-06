@@ -22,7 +22,7 @@
 			obsoleteVersion=			"37"
 			name=				"abandoned cargo crate"
 			sovereign=			"&svNeutral;"
-			dockScreen=			"&dsAbandonedCrate;"
+			abandonedScreen=	"&dsAbandonedCrate;"
 
 			structuralHitPoints="10"
 			ejectaType=			"&vtWreckEjecta;"
@@ -5325,6 +5325,942 @@
 		</Events>
 	</ShipClass>
 
+	<StationType UNID="&stAbbasidOutpostCompatible;"
+			obsoleteVersion=	"48"
+			name=				"Abbasid outpost"
+			sovereign=			"&svAbbasid;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			dockingPorts=		"8"
+
+			multiHull=			"true"
+			armorID=			"&itLightTitaniumArmor;"
+			hitPoints=			"90"
+			regen=				"1"
+			fireRateAdj=		"40"
+			explosionType=		"&vtBlastExplosion1;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"enemy, envFire, envAvoidsWater, human, populated"
+			>
+
+		<!-- Encounter Info -->
+
+		<Image			imageID="&rsStations1;" imageX="256" imageY="512" imageWidth="128" imageHeight="128"/>
+
+		<Devices>
+			<Device deviceID="&itLaserArray;"	omnidirectional="true"/>
+		</Devices>
+
+		<Items>
+			<Item chance="10"	count="1"		item="&itAbbasidThanogram;" />
+
+			<Item chance="60"	count="1d12"	item="&itHelium3FuelRod;" />
+			<Item chance="20"	count="1d12"	item="&itWaterIce;" />
+			<Item chance="30"	count="1d12"	item="&itFrozenSupplies;" />
+			<Table chance="30">
+				<Lookup chance="20" count="1" table="&trConsumables2;"/>
+				<Lookup chance="20" count="1" table="&trMinorItem2;"/>
+				<Lookup chance="10" count="1" table="&trMajorItem2;"/>
+				<Item   chance="50" count="1" item="&itLaserArray;" />
+			</Table>
+		</Items>
+
+		<Satellites>
+			<Orbitals count="1d4" distance="2d8+6" angle="random">
+				<Station type="&stShipwreck1;">
+					<InitialData>
+						<!-- We don't want salvagers to take this loot (technically because
+							they don't want to get close to the outpost, but game-wise 
+							because we want players to get this loot). -->
+
+						<Data id="core.noSalvage">True</Data>
+					</InitialData>
+				</Station>
+			</Orbitals>
+		</Satellites>
+	</StationType>
+
+	<!-- Arcology
+	
+	EXTRA DATA
+	
+	totalProduced:		Total number of items produced
+
+	-->
+	
+	<StationType UNID="&stStKatsArcologyOld;"
+			obsoleteVersion=	"49"
+			name=				"Arcology of New Victoria"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+
+			virtual=			"true"
+			definiteArticle=	"true"
+			
+            level=              "7"
+			size=				"5000"
+			attributes=			"commonwealthCustoms, dockObj, human, majorStation, stKatsArcology"
+			>
+
+		<Properties>
+			<Constant		id="rpg.checkMilitaryID">"* +militaryID;"</Constant>
+			<Constant		id="rpg.showActualItem">True</Constant>
+			<Constant		id="rpg.shipBrokerCriteria">"s +systemLevel:0-2; +commonwealth; -notStandard; +shipBroker;"</Constant>
+			<DynamicData	id="rpg.shipBrokerInventory">(rpgGetShipInventory gSource)</DynamicData>
+		</Properties>
+
+		<Items>
+			<RandomItem count="8d10" 
+					criteria=		"ad~r L:1-7; -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					levelFrequency=	"systemLevel:r|c|cur"
+					/>
+			<RandomItem count="1d6" 
+					criteria=		"r L:3-7; -alien; -illegal; -military; -notForSale; -notStandard;"	
+					levelFrequency="systemLevel:ru|c|curv"
+					/>
+			
+			<RandomItem count="20" 
+					criteria=		"*~ad -alien; -illegal; -military; -notForSale; -notStandard; -specialty;"
+					levelFrequency=	"systemLevel:ru|c|cur"
+					/>
+					
+			<Item count="1d20" item="&itIncandescentCoffee;"/>
+		</Items>
+
+		<Trade currency="credit">
+			<Sell	criteria="m +commonwealth; -defective; -military; -illegal; -notForSale; -notStandard;" priceAdj="100" inventoryAdj="400" levelFrequency="systemLevel:ruc|c|cur"/>
+			<Sell	criteria="*NU -defective; -Illegal; -ID; -NotForSale;"	priceAdj="100"/>
+			<Buy	criteria="amdNU -Illegal; -NotForSale;"		priceAdj="50"/>
+			<Buy	criteria="*NU -Illegal; -ID; -NotForSale;"	priceAdj="90"/>
+			<Buy	criteria="*NU -Illegal; -ID;"				priceAdj="10"/>
+			
+			<Refuel			criteria="f +BasicFuel; L:1-7;" priceAdj="100"/>
+			<RepairArmor	criteria="a L:1-7;" priceAdj="100"/>
+			<ReplaceArmor	criteria="a L:1-7;" priceAdj="100"/>
+			<InstallDevice	criteria="d L:1-7;" priceAdj="100"/>
+			<RemoveDevice	criteria="d L:1-7;" priceAdj="100"/>
+
+			<SellShip		criteria="s -notForSale;" priceAdj="100"/>
+			<BuyShip		criteria="s L:1-10; -notForSale;" priceAdj="80"/>
+
+			<BalanceTrade	criteria="{core.fusionFuel}"		impact="20"/>
+			<BalanceTrade	criteria="{human.basicFood}"	impact="20"/>
+			<BalanceTrade	criteria="{human.lux}"		impact="20"/>
+			<BalanceTrade	criteria="{human.meds}"		impact="20"/>
+			<BalanceTrade	criteria="{human.res}"		impact="20"/>
+			<BalanceTrade	criteria="{core.ore}"			impact="10"/>
+		</Trade>
+		
+		<!-- Satellites -->
+
+		<Satellites>
+			<Station type="&stStKatsArcology15;"	xOffset="355"	 yOffset="88"	segment="true"/>
+			<Station type="&stStKatsArcology45;"	xOffset="260"	 yOffset="237"	segment="true"/>
+			<Station type="&stStKatsArcology75;"	xOffset="95"	 yOffset="320"	segment="true"/>
+			<Station type="&stStKatsArcology105;"	xOffset="-95"	 yOffset="320"	segment="true"/>
+			<Station type="&stStKatsArcology135;"	xOffset="-260"	 yOffset="237"	segment="true"/>
+			<Station type="&stStKatsArcology165;"	xOffset="-355"	 yOffset="88"	segment="true"/>
+			<Station type="&stStKatsArcology195;"	xOffset="-355"	 yOffset="-90"	segment="true"/>
+			<Station type="&stStKatsArcology225;"	xOffset="-260"	 yOffset="-252"	segment="true"/>
+			<Station type="&stStKatsArcology255;"	xOffset="-95"	 yOffset="-323"	segment="true"/>
+			<Station type="&stStKatsArcology285;"	xOffset="95"	 yOffset="-323"	segment="true"/>
+			<Station type="&stStKatsArcology315;"	xOffset="260"	 yOffset="-252"	segment="true"/>
+			<Station type="&stStKatsArcology345;"	xOffset="355"	 yOffset="-90"	segment="true"/>
+		</Satellites>
+		
+		<HeroImage imageID="&rsStKatsArcologyHero;" imageWidth="800" imageHeight="528"/>
+		
+		<Events>
+			<OnCreate>
+				(block Nil
+					(enum (sysFindObject gSource "T +arcology") theObj
+						(block Nil
+							; Create some visiting ships
+							(for i 1 (random 2 3)
+								(block (theShip)
+									(setq theShip (sysCreateShip 
+										&tbStKatsTraffic;
+										(sysVectorPolarOffset theObj (random 0 359) 10)
+										&svCommonwealth;
+										&evStKatsTrafficBehaviorOld;
+										))
+										
+									(setq aDockObj theObj)
+									(objFireEvent theShip "OrderDockAtStKats")
+									)
+								)
+							
+							; Register for events from all the objects that make up
+							; the arcology
+							(objRegisterForEvents gSource theObj)
+							)
+						)
+						
+					; Register a callbacks
+					(sysAddObjRecurringTimerEvent 60 gSource "OnProduceProduction")
+					(sysAddObjRecurringTimerEvent 90 gSource "OnTrafficControl")
+					)
+			</OnCreate>
+
+			<OnProduceProduction>
+				(block Nil
+					; Discard any rotted produce
+					(enum (objGetItems gSource "* +FreshFood") theItem
+						(if (eq (itmGetData theItem "status") 'rotted)
+							(block Nil
+								(objRemoveItem gSource theItem)
+								
+								; Rotted items don't count as "produced" so subtract 
+								(objIncData gSource "totalProduced" (subtract 0 (itmGetCount theItem)))
+								)
+							)
+						)
+						
+					; Add fresh produce
+					(if (leq (random 1 100) 5)
+						(block (produceAvail)
+							(setq produceAvail 0)
+							(enum (objGetItems gSource "* +FreshFood") theItem
+								(setq produceAvail (add produceAvail (itmGetCount theItem)))
+								)
+							
+							(if (and (ls produceAvail 20) 
+									(ls (objGetData gSource "totalProduced") 50)
+									)
+								(block (produceCount theMonth theItemUNID expireTime)
+									; Figure out how much to produce
+									(setq produceCount (random 10 20))
+									
+									; Figure out which to produce based on the real
+									; calendar
+									
+									(setq theMonth (item (unvGetRealDate) 1))
+									(switch
+										(leq theMonth 3)
+											(setq theItemUNID &itIncandescentLucuma;)
+											
+										(leq theMonth 6)
+											(setq theItemUNID &itIncandescentPeaches;)
+											
+										(leq theMonth 9)
+											(setq theItemUNID &itIncandescentStrawberries;)
+											
+										(setq theItemUNID &itIncandescentBellFruit;)
+										)
+										
+									; Expire time
+									(setq expireTime (typGetStaticData theItemUNID "expireTime"))
+										
+									(objAddItem gSource 
+										(itmSetData 
+											(itmCreate theItemUNID produceCount)
+											"expireTime"
+											(add (unvGetTick) (random expireTime (add expireTime 1800)))
+											produceCount
+											)
+										)
+										
+									(objIncData gSource "totalProduced" produceCount)
+									)
+								)
+							)
+						)
+					)
+			</OnProduceProduction>
+			
+			<OnTrafficControl>
+				(block (totalShips)
+					; Count the number of ships under traffic control
+					(setq totalShips (count (sysFindObject Nil "s D:0010201F_status")))
+					
+					; If less than the ideal number, new ships jump in
+					(if (ls totalShips 50)
+						(block (theShip theTarget)
+							(setq theShip (sysCreateShip 
+								&tbStKatsTraffic;
+								(random (sysFindObject Nil "G"))
+								&svCommonwealth;
+								&evStKatsTrafficBehaviorOld;
+								))
+								
+							(objFireEvent theShip "OrderEnterSystem")
+							)
+						)
+					)
+			</OnTrafficControl>
+
+			<GetRumors>
+				(append
+					(rpgRumorAdd 'stKatsParliament (make 'sequence 1 5) 20)
+					)
+			</GetRumors>
+		</Events>
+        
+        <Language>
+            <Text id="core.mapDescMain">
+                "Capital of the Commonwealth"
+            </Text>
+
+			<Text id="rumor.stKatsParliament.1">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+				
+				The minister from Zhang Li makes an impassioned appeal for a 
+				bill funding the construction of three new Commonwealth Star 
+				Carriers.
+
+				She shows pictures of refugees displaced by the Ares, but the 
+				chamber is nearly empty and her energy fades in mid-speech.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.2">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The chamber is nearly full as ministers debate a bill calling 
+				for material support to the Huari people. Those in favor cite 
+				the cruel treatment the Huari have received under the Sung 
+				Slavers.
+				
+				Those opposed recall that the Huari themselves were once 
+				aggressors who killed Commonwealth settlers in the Ungoverned 
+				Territories.
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.3">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from 70 Ophiuchi speaks in the Center Well:
+
+				"...and so I urge my fellow ministers to meet this challenge. 
+				With the appropriations of CP1175 we can finally provide enough 
+				resources to the Militia in order to secure the safety of our 
+				citizens against Marauder tyranny."
+				
+			</Text>
+			<Text id="rumor.stKatsParliament.4">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Kinder's Star reads a bill commemorating the 
+				death of Militia Colonel Simon Francis Jezerski, who was killed 
+				in the line of duty in a confrontation with the Death Drugs 
+				Cartel.
+
+			</Text>
+			<Text id="rumor.stKatsParliament.5">
+
+				You enter the beautiful hall where ministers from all over the 
+				Commonwealth gather to legislate and debate.
+
+				The minister from Numerianus speaks in the Center Well:
+
+				"My fellow citizens, if compassion is not enough to compel you 
+				to vote for this bill, then consider the risk that we take by 
+				opposing it. If we do not provide a safe home for our zoanthrope
+				brethren then the Dwarg will happily exploit them."
+				
+			</Text>
+        </Language>
+	</StationType>
+	
+	<!-- Arcology Segment Base -->
+	
+	<Type UNID="&baStKatsArcologyBase;"
+			obsoleteVersion=	"49"
+			>
+		<StaticData>
+			<NPCService>
+				(	;	service					level	margin
+					(	'repairArmor			7		100		)
+					)
+			</NPCService>
+		</StaticData>
+
+		<Events>
+			<OnDestroy>
+				(intCommonwealthOnDestroy)
+			</OnDestroy>
+			
+			<OnDockObjAdj>
+				(if (not (objIsAbandoned gSource))
+					(sysFindObject Nil "TNV +stKatsArcology;")
+					Nil
+					)
+			</OnDockObjAdj>
+		</Events>
+	</Type>
+	
+	<!-- Arcology 15 -->
+	
+	<StationType UNID="&stStKatsArcology15;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="45" imageY="0" imageWidth="115" imageHeight="220"/>
+
+		<DockingPorts>
+			<Port x="39"	y="60"	rotation="-159" />
+			<Port x="55"	y="18"	rotation="-164"/>
+			<Port x="67"	y="-31" rotation="-170"/>
+			<Port x="-34"	y="-38" rotation="10"/>
+			<Port x="-48"	y="8"	rotation="19"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 45 -->
+	
+	<StationType UNID="&stStKatsArcology45;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="0" imageY="245" imageWidth="220" imageHeight="180"/>
+
+		<DockingPorts>
+			<Port x="7"		y="76"	rotation="-128" />
+			<Port x="45"	y="45"	rotation="-134"/>
+			<Port x="80"	y="8"	rotation="-141"/>
+			<Port x="-22"	y="-55"	rotation="42"/>
+			<Port x="-53"	y="-15"	rotation="50"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 75 -->
+	
+	<StationType UNID="&stStKatsArcology75;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="0" imageY="500" imageWidth="220" imageHeight="115"/>
+
+		<DockingPorts>
+			<Port x="-30"	y="70"	rotation="-94" />
+			<Port x="26"	y="65"	rotation="-102"/>
+			<Port x="76"	y="49"	rotation="-112"/>
+			<Port x="18"	y="-65"	rotation="69"/>
+			<Port x="-33"	y="-45"	rotation="77"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 105 -->
+	
+	<StationType UNID="&stStKatsArcology105;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="220" imageY="500" imageWidth="220" imageHeight="115"/>
+
+		<DockingPorts>
+			<Port x="-72"	y="48"	rotation="-70" />
+			<Port x="-22"	y="62"	rotation="-74"/>
+			<Port x="31"	y="71"	rotation="-80"/>
+			<Port x="36"	y="-46"	rotation="107"/>
+			<Port x="-21"	y="-57"	rotation="102"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 135 -->
+	
+	<StationType UNID="&stStKatsArcology135;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="220" imageY="245" imageWidth="220" imageHeight="180"/>
+
+		<DockingPorts>
+			<Port x="-84"	y="14"	rotation="-37" />
+			<Port x="-48"	y="51"	rotation="-47"/>
+			<Port x="-8"	y="76"	rotation="-56"/>
+			<Port x="49"	y="-20"	rotation="138"/>
+			<Port x="13"	y="-52"	rotation="132"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 165 -->
+	
+	<StationType UNID="&stStKatsArcology165;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="280" imageY="0" imageWidth="115" imageHeight="220"/>
+
+		<DockingPorts>
+			<Port x="-70"	y="-29"	rotation="-6" />
+			<Port x="-61"	y="22"	rotation="-14"/>
+			<Port x="-42"	y="62"	rotation="-23"/>
+			<Port x="53"	y="9"	rotation="168"/>
+			<Port x="38"	y="-39"	rotation="161"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 195 -->
+	
+	<StationType UNID="&stStKatsArcology195;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="500" imageY="0" imageWidth="115" imageHeight="220"/>
+
+		<DockingPorts>
+			<Port x="-48"	y="-54"	rotation="21" />
+			<Port x="-65"	y="-9"	rotation="12"/>
+			<Port x="-70"	y="37"	rotation="3"/>
+			<Port x="35"	y="35"	rotation="-161"/>
+			<Port x="54"	y="-10"	rotation="-167"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 225 -->
+	
+	<StationType UNID="&stStKatsArcology225;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="440" imageY="245" imageWidth="220" imageHeight="180"/>
+
+		<DockingPorts>
+			<Port x="-6"	y="-75"	rotation="56" />
+			<Port x="-51"	y="-43"	rotation="47"/>
+			<Port x="-88"	y="0"	rotation="35"/>
+			<Port x="11"	y="60"	rotation="-131"/>
+			<Port x="48"	y="27"	rotation="-139"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 255 -->
+	
+	<StationType UNID="&stStKatsArcology255;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="440" imageY="485" imageWidth="220" imageHeight="115"/>
+
+		<DockingPorts>
+			<Port x="37"	y="-73"	rotation="84" />
+			<Port x="-22"	y="-62"	rotation="74"/>
+			<Port x="-77"	y="-43"	rotation="63"/>
+			<Port x="-18"	y="57"	rotation="-105"/>
+			<Port x="32"	y="44"	rotation="-107"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 285 -->
+	
+	<StationType UNID="&stStKatsArcology285;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="660" imageY="485" imageWidth="220" imageHeight="115"/>
+
+		<DockingPorts>
+			<Port x="77"	y="-50"	rotation="114" />
+			<Port x="24"	y="-66"	rotation="103"/>
+			<Port x="-30"	y="-73"	rotation="93"/>
+			<Port x="-41"	y="40"	rotation="-80"/>
+			<Port x="16"	y="54"	rotation="-73"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 315 -->
+	
+	<StationType UNID="&stStKatsArcology315;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="660" imageY="245" imageWidth="220" imageHeight="180"/>
+
+		<DockingPorts>
+			<Port x="85"	y="2"	rotation="146" />
+			<Port x="53"	y="-35"	rotation="134"/>
+			<Port x="10"	y="-65"	rotation="125"/>
+			<Port x="-48"	y="28"	rotation="-54"/>
+			<Port x="-9"	y="60"	rotation="-47"/>
+		</DockingPorts>
+	</StationType>
+	
+	<!-- Arcology 345 -->
+	
+	<StationType UNID="&stStKatsArcology345;"
+			obsoleteVersion=	"49"
+			name=				"New Victoria arcology segment"
+			sovereign=			"&svCommonwealth;"
+			dockScreen=			"&dsStKatsArcology;"
+			abandonedScreen=	"&dsRPGAbandonedStation;"
+			noMapLabel=			"true"
+
+			multiHull=			"true"
+			armorID=			"&itBlastPlate;"
+			hitPoints=			"1000"
+			regen=				"20"
+			shipRegen=			"6"
+			explosionType=		"&vtBlastExplosion3;"
+			ejectaType=			"&vtWreckEjecta;"
+
+			attributes=			"arcology, commonwealth, commonwealthCustoms, friendly, human, majorStation, populated"
+
+			inherit=			"&baStKatsArcologyBase;"
+			>
+
+		<Image imageID="&rsStKatsArcologyOld;" imageX="705" imageY="0" imageWidth="115" imageHeight="220"/>
+
+		<DockingPorts>
+			<Port x="72"	y="39"	rotation="162" />
+			<Port x="63"	y="-9"	rotation="170"/>
+			<Port x="47"	y="-56"	rotation="178"/>
+			<Port x="-51"	y="-10"	rotation="-19"/>
+			<Port x="-33"	y="43"	rotation="-11"/>
+		</DockingPorts>
+	</StationType>
+	
+	<ShipClass UNID="&evStKatsTrafficBehaviorOld;"
+			obsoleteVersion=	"49"
+			class=				"(St Katharine's traffic behavior)"
+			virtual=			"true"
+			
+			attributes=			"behaviorClass"
+			>
+
+		<Events>
+			<OrderDockAtStKats>
+				(block Nil
+					(shpOrder gSource 'dock aDockObj)
+					(shpOrder gSource 'waitForThreat (random 10 200))
+					(objSetData gSource "0010201F_status" 'dockedAtNewVictoria)
+					)
+			</OrderDockAtStKats>
+			
+			<OrderEnterSystem>
+				(objSetData gSource "0010201F_status" 'enteredSystem)
+			</OrderEnterSystem>
+			
+			<OnOrdersCompleted>
+				(block (status dockedAt allLoot)
+					; Different order depending on our current state
+					(setq status (objGetData gSource "0010201F_status"))
+					(setq dockedAt (shpGetDockObj gSource))
+					
+					; If we're docked at an object, dump any loot that we found
+					(if (and dockedAt
+							(objHasAttribute dockedAt "populated")
+							
+							; Compose a list of all loot on board that the station
+							; might want to buy from us.
+							
+							(setq allLoot (filter (objGetItems gSource "*~mf U") theItem
+								(objGetBuyPrice dockedAt theItem)
+								))
+							)
+						(block Nil
+							(enum allLoot theItem (objRemoveItem gSource theItem))
+							(enum allLoot theItem (objAddItem dockedAt theItem))
+							)
+						)
+					
+					; Figure out what to do next
+					(switch
+						(eq status 'enteredSystem)
+							(block Nil
+								(setq theTarget (random (sysFindObject gSource "T +arcology")))
+								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 20 (random 20 40))
+								(shpOrder gSource 'dock theTarget)
+								(shpOrder gSource 'waitForThreat (random 10 60))
+								(objSetData gSource "0010201F_status" 'dockedAtNewVictoria)
+								)
+								
+						(eq status 'dockedAtNewVictoria)
+							(block (roll allWrecks)
+								; When leaving new victoria, orbit around for a bit
+								(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 20 (random 20 40))
+								
+								; Randomly choose a path
+								(setq roll (random 1 100))
+								(switch
+									; Gate out
+									(leq roll 30)
+										(block Nil
+											(shpOrder gSource 'gate)
+											(objSetData gSource "0010201F_status" 'leavingSystem)
+											)
+											
+									; If there are wrecks in the area, loot them
+									(and (leq (objGetDestiny gSource) 180)
+											(not (objHasAttribute gSource "freighter"))
+											(leq (random 1 100) 50)
+											
+											; Compose a list of all wrecks in the area
+											
+											(setq allWrecks (rpgFindWrecksToSalvage gSource '0010201F_marked))
+											)
+										(block (destObj)
+											(setq destObj (random allWrecks))
+											(shpOrder gSource 'loot destObj)
+											(objSetData destObj "0010201F_marked" True)
+											(objSetData gSource "0010201F_status" 'dockedAtStation)
+											)
+											
+									; Dock at a random station in the system
+									(block (theTarget)
+										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
+										(shpOrder gSource 'dock theTarget)
+										(shpOrder gSource 'waitForThreat (random 10 20))
+										(objSetData gSource "0010201F_status" 'dockedAtStation)
+										)
+									)
+								)
+								
+						(eq status 'dockedAtStation)
+							(block (roll allWrecks)
+								; Randomly choose a path
+								(setq roll (random 1 100))
+								(switch
+									; Gate out
+									(leq roll 30)
+										(block Nil
+											(shpOrder gSource 'gate)
+											(objSetData gSource "0010201F_status" 'leavingSystem)
+											)
+											
+									; If there are wrecks in the area, loot them
+									(and (leq (objGetDestiny gSource) 180)
+											(not (objHasAttribute gSource "freighter"))
+											(leq (random 1 100) 50)
+											
+											; Compose a list of all wrecks in the area
+											
+											(setq allWrecks (rpgFindWrecksToSalvage gSource '0010201F_marked))
+											)
+										(block (destObj)
+											(setq destObj (random allWrecks))
+											(shpOrder gSource 'loot destObj)
+											(objSetData destObj "0010201F_marked" True)
+											(objSetData gSource "0010201F_status" 'dockedAtStation)
+											)
+											
+									; Dock at new victoria
+									(leq roll 80)
+										(block (theTarget)
+											(setq theTarget (random (sysFindObject gSource "T +arcology")))
+											(shpOrder gSource 'orbit (sysFindObject Nil "TNV +stKatsArcology;") 20 (random 20 40))
+											(shpOrder gSource 'dock theTarget)
+											(shpOrder gSource 'waitForThreat (random 10 60))
+											(objSetData gSource "0010201F_status" 'dockedAtNewVictoria)
+											)
+											
+									; Dock at a random station in the system
+									(block (theTarget)
+										(setq theTarget (random (sysFindObject gSource "TAF +populated; -arcology; -occupation;")))
+										(shpOrder gSource 'dock theTarget)
+										(shpOrder gSource 'waitForThreat (random 10 20))
+										(objSetData gSource "0010201F_status" 'dockedAtStation)
+										)
+									)
+								)
+						)
+						
+					; If we were docked at an object that we just looted, then destroy the object
+					(if (and (objGetData dockedAt "0010201F_marked")
+							(ls (objGetProperty dockedAt 'mass) 2000)
+							(not (objGetProperty dockedAt 'immutable))
+							)
+						(objDestroy dockedAt gSource)
+						)
+					)
+			</OnOrdersCompleted>
+		</Events>
+	</ShipClass>
+	
 	<!-- Old Image -->
 
 	<Image UNID="&rsEI100Image;"	obsoleteVersion="40" bitmap="Resources\EI100.jpg" 		bitmask="Resources\EI100Mask.bmp" loadOnUse="true"/>
@@ -5360,5 +6296,9 @@
 	<Image UNID="&rsBorer;"				obsoleteVersion="46"			bitmap="Resources\Borer.jpg" bitmask="Resources\BorerMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsWolfenGunship;"		obsoleteVersion="46" bitmap="Resources\ShipsWolfenGunship.jpg" bitmask="Resources\ShipsWolfenGunshipMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsWolfenGunshipHD;"	obsoleteVersion="46" bitmap="Resources\WolfenGunshipHD.jpg" bitmask="Resources\WolfenGunshipHDMask.bmp" loadOnUse="true"/>
+
+	<Image UNID="&rsStKatsArcologyOld;"	obsoleteVersion="49"		bitmap="Resources\StKatsArcologyOld.jpg" bitmask="Resources\StKatsArcologyOldMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsStKatsArcologyScreen;" obsoleteVersion="49"		bitmap="Resources\StKatsArcologyScreen.jpg" loadOnUse="true"/>
+	<Image UNID="&rsStKatsArcologySchematic;" obsoleteVersion="49"	bitmap="Resources\StKatsArcologySchematic.jpg" bitmask="Resources\StKatsArcologySchematicMask.bmp"  loadOnUse="true"/>
 
 </TranscendenceModule>

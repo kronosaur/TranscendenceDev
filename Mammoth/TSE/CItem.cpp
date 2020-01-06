@@ -1548,8 +1548,38 @@ CString CItem::GetNounPhrase (DWORD dwFlags) const
 	//	If we have code, call it to generate the name
 
 	SEventHandlerDesc Event;
-	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
-			&& !(dwFlags & nounNoEvent))
+	if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetHUDName, &Event)
+			&& !(dwFlags & nounNoEvent) && (dwFlags & nounHUDName))
+		{
+		CCodeChainCtx Ctx(GetUniverse());
+
+		Ctx.SetEvent(eventGetName);
+		Ctx.SetItemType(GetType());
+		Ctx.DefineContainingType(m_pItemType);
+		Ctx.SaveAndDefineSourceVar(NULL);
+		Ctx.SaveAndDefineItemVar(*this);
+		Ctx.DefineVar(CONSTLIT("aFlags"), CLanguage::GetNounFlags(dwFlags));
+
+		ICCItem *pResult = Ctx.Run(Event);
+		if (pResult->IsError())
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		else if (pResult->IsList() && pResult->GetCount() >= 2)
+			{
+			sName = pResult->GetElement(0)->GetStringValue();
+			dwNounFlags = pResult->GetElement(1)->GetIntegerValue();
+			}
+		else
+			{
+			sName = pResult->GetStringValue();
+			dwNounFlags = 0;
+			}
+		Ctx.Discard(pResult);
+		}
+	else if (m_pItemType->FindEventHandlerItemType(CItemType::evtGetName, &Event)
+			 && !(dwFlags & nounNoEvent))
 		{
 		CCodeChainCtx Ctx(GetUniverse());
 
@@ -2381,17 +2411,16 @@ bool CItem::IsEnhancementEffective (const CItemEnhancement &Enhancement) const
 	{
 	if (IsArmor())
 		{
-		const CArmorClass *pArmor = GetType()->GetArmorClass();
 		CItem BasicItem(GetType(), 1);
-		CItemCtx ItemCtx(BasicItem);
+		CArmorItem ArmorItem = BasicItem.AsArmorItemOrThrow();
 
 		switch (Enhancement.GetType())
 			{
 			case etSpecialDamage:
 				if (Enhancement.IsDisadvantage())
-					return pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 				else
-					return !pArmor->IsImmune(ItemCtx, Enhancement.GetSpecialDamage());
+					return !ArmorItem.IsImmune(Enhancement.GetSpecialDamage());
 
 			default:
 				return true;
@@ -2455,6 +2484,11 @@ bool CItem::IsExtraEmpty (const SExtra *pExtra, DWORD dwFlags, DWORD dwNow)
 			&& (bIgnoreDisrupted || (pExtra->m_dwDisruptedTime == 0 || pExtra->m_dwDisruptedTime < dwNow))
 			&& (bIgnoreEnhancements || pExtra->m_Mods.IsEmpty())
 			&& (bIgnoreData || pExtra->m_Data.IsEmpty()));
+	}
+
+bool CItem::IsExtraEmpty (DWORD dwFlags)
+	{
+	return !m_pExtra || IsExtraEmpty(m_pExtra, dwFlags, GetUniverse().GetTicks());
 	}
 
 bool CItem::IsExtraEqual (SExtra *pSrc, DWORD dwFlags) const

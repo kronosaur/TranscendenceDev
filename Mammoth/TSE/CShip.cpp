@@ -293,7 +293,7 @@ void CShip::Behavior (SUpdateCtx &Ctx)
 
 		CSpaceObject *pTarget;
 		if (Ctx.pPlayer 
-				&& (pTarget = GetTarget(CItemCtx()))
+				&& (pTarget = GetTarget())
 				&& Ctx.pPlayer->IsEnemy(this)
 				&& (GetUniverse().GetTicks() - GetLastFireTime()) < ATTACK_THRESHOLD
 				&& (pTarget == Ctx.pPlayer || pTarget->IsPlayerEscortTarget(Ctx.pPlayer)))
@@ -443,7 +443,7 @@ void CShip::CalcDeviceBonus (void)
 	{
 	DEBUG_TRY
 
-	int i, j;
+	int j;
 
 	//	Enhancements from system
 
@@ -455,111 +455,105 @@ void CShip::CalcDeviceBonus (void)
 
 	//	Loop over all devices
 
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = m_Devices.GetDevice(i);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+        CItemCtx ItemCtx(this, &Device);
 
-		if (!Device.IsEmpty())
+		//	Keep track of device types to see if we have duplicates
+
+		bool bNewDevice;
+		int *pCount = DeviceTypes.SetAt(Device.GetClass()->GetUNID(), &bNewDevice);
+		if (bNewDevice)
+			*pCount = 1;
+		else
+			*pCount += 1;
+
+		//	Keep an enhancement stack for this device
+
+		TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
+		TArray<CString> EnhancementIDs;
+
+		//	Add any enhancements on the item itself
+
+		const CItemEnhancement &Mods = ItemCtx.GetMods();
+		if (!Mods.IsEmpty())
+			pEnhancements->Insert(Mods);
+
+		//	Add enhancements from the slot
+
+		Device.AccumulateSlotEnhancements(this, EnhancementIDs, pEnhancements);
+
+		//	Add enhancements from other devices
+
+		for (CDeviceItem OtherDevItem : GetDeviceSystem())
 			{
-            CItemCtx ItemCtx(this, &Device);
-
-			//	Keep track of device types to see if we have duplicates
-
-			bool bNewDevice;
-			int *pCount = DeviceTypes.SetAt(Device.GetClass()->GetUNID(), &bNewDevice);
-			if (bNewDevice)
-				*pCount = 1;
-			else
-				*pCount += 1;
-
-			//	Keep an enhancement stack for this device
-
-			TSharedPtr<CItemEnhancementStack> pEnhancements(new CItemEnhancementStack);
-			TArray<CString> EnhancementIDs;
-
-			//	Add any enhancements on the item itself
-
-			const CItemEnhancement &Mods = ItemCtx.GetMods();
-			if (!Mods.IsEmpty())
-				pEnhancements->Insert(Mods);
-
-			//	Add enhancements from the slot
-
-			Device.AccumulateSlotEnhancements(this, EnhancementIDs, pEnhancements);
-
-			//	Add enhancements from other devices
-
-			for (j = 0; j < GetDeviceCount(); j++)
+			CInstalledDevice &OtherDev = *OtherDevItem.GetInstalledDevice();
+			if (OtherDev.GetDeviceSlot() != Device.GetDeviceSlot())
 				{
-				CInstalledDevice &OtherDev = m_Devices.GetDevice(j);
-				if (i != j && !OtherDev.IsEmpty())
+				//	See if this device enhances us
+
+				if (OtherDev.AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements))
 					{
-					//	See if this device enhances us
+					//	If the device affected something, then we now know what it is
 
-					if (OtherDev.AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements))
-						{
-						//	If the device affected something, then we now know what it is
-
-						if (IsPlayer())
-							OtherDev.GetItem()->SetKnown();
-						}
-					}
-				}
-
-			//	Add enhancements from armor
-
-			for (j = 0; j < GetArmorSectionCount(); j++)
-				{
-				CInstalledArmor *pArmor = GetArmorSection(j);
-				if (pArmor->AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements))
-					{
 					if (IsPlayer())
-						pArmor->GetItem()->SetKnown();
+						OtherDev.GetItem()->SetKnown();
 					}
 				}
-
-			//	Add enhancements from system
-
-			if (pSystemEnhancements)
-				pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
-
-			//	Deal with class specific stuff
-
-			switch (Device.GetCategory())
-				{
-				case itemcatLauncher:
-				case itemcatWeapon:
-					{
-					//	Overlays add a bonus
-
-					int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
-					if (iBonus != 0)
-						pEnhancements->InsertHPBonus(NULL, iBonus);
-					break;
-					}
-				}
-
-			//	Set the bonuses
-			//	Note that these include any bonuses conferred by item enhancements
-
-			Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
-
-			//	Take ownership of the stack.
-
-			Device.SetEnhancements(pEnhancements);
 			}
+
+		//	Add enhancements from armor
+
+		for (j = 0; j < GetArmorSectionCount(); j++)
+			{
+			CInstalledArmor *pArmor = GetArmorSection(j);
+			if (pArmor->AccumulateEnhancements(this, &Device, EnhancementIDs, pEnhancements))
+				{
+				if (IsPlayer())
+					pArmor->GetItem()->SetKnown();
+				}
+			}
+
+		//	Add enhancements from system
+
+		if (pSystemEnhancements)
+			pSystemEnhancements->Accumulate(GetSystem()->GetLevel(), ItemCtx.GetItem(), EnhancementIDs, pEnhancements);
+
+		//	Deal with class specific stuff
+
+		switch (Device.GetCategory())
+			{
+			case itemcatLauncher:
+			case itemcatWeapon:
+				{
+				//	Overlays add a bonus
+
+				int iBonus = m_Overlays.GetWeaponBonus(&Device, this);
+				if (iBonus != 0)
+					pEnhancements->InsertHPBonus(NULL, iBonus);
+				break;
+				}
+			}
+
+		//	Set the bonuses
+		//	Note that these include any bonuses conferred by item enhancements
+
+		Device.SetActivateDelay(pEnhancements->CalcActivateDelay(ItemCtx));
+
+		//	Take ownership of the stack.
+
+		Device.SetEnhancements(pEnhancements);
 		}
 
 	//	Mark devices as duplicate (or not)
 
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = m_Devices.GetDevice(i);
-		if (!Device.IsEmpty())
-			{
-			int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
-			Device.SetDuplicate(*pCount > 1);
-			}
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+		int *pCount = DeviceTypes.GetAt(Device.GetClass()->GetUNID());
+		Device.SetDuplicate(*pCount > 1);
 		}
 
 	//	Make sure we don't overflow fuel (in case we downgrade the reactor)
@@ -580,7 +574,7 @@ int CShip::CalcDeviceSlotsInUse (int *retiWeaponSlots, int *retiNonWeapon) const
 	return m_Devices.CalcSlotsInUse(retiWeaponSlots, retiNonWeapon);
 	}
 
-bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution)
+bool CShip::CalcDeviceTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution)
 
 //	CalcDeviceTarget
 //
@@ -599,7 +593,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 	{
 	DEBUG_TRY
 
-	CInstalledDevice *pDevice = ItemCtx.GetDevice();
+	const CInstalledDevice &Device = *WeaponItem.GetInstalledDevice();
 
 	//	For primary weapons, the target is the controller target.
 	//	
@@ -609,9 +603,9 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 	DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
-	if (pDevice->IsSelectable() && !(pDevice->GetSlotLinkedFireOptions() & dwLinkedFireSelected))
+	if (Device.IsSelectable() && !(Device.GetSlotLinkedFireOptions() & dwLinkedFireSelected))
 		{
-		*retpTarget = m_pController->GetTarget(ItemCtx);
+		*retpTarget = m_pController->GetTarget();
 		*retiFireSolution = -1;
 		return true;
 		}
@@ -620,12 +614,11 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 	else
 		{
-		CDeviceClass *pWeapon = ItemCtx.GetDeviceClass();
+		const CDeviceClass &Weapon = WeaponItem.GetDeviceClass();
 
 		//	Get the actual options.
 
-		const CDeviceItem DeviceItem = ItemCtx.GetItem().AsDeviceItem();
-		DWORD dwLinkedFireOptions = DeviceItem.GetLinkedFireOptions();
+		DWORD dwLinkedFireOptions = WeaponItem.GetLinkedFireOptions();
 
 		CInstalledDevice *pPrimaryWeapon = GetNamedDevice(devPrimaryWeapon);
 		CInstalledDevice *pSelectedLauncher = GetNamedDevice(devMissileWeapon);
@@ -638,20 +631,21 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 		DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
 
 		bool bPrimaryWeaponCheckVariant = pPrimaryWeapon != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
+			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pPrimaryWeapon).GetItemVariantNumber() : true) : false;
 		bool bSelectedLauncherCheckVariant = pSelectedLauncher != NULL ? (dwLinkedFireOptions
-			& CDeviceClass::lkfSelectedVariant ? ItemCtx.GetItemVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
+			& CDeviceClass::lkfSelectedVariant ? WeaponItem.GetVariantNumber() == CItemCtx(this, pSelectedLauncher).GetItemVariantNumber() : true) : false;
 
-		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) || (
-			((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == pWeapon->GetUNID()) && bPrimaryWeaponCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatWeapon)) ||
-				(!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) &&
-			(pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == pWeapon->GetUNID()) && bSelectedLauncherCheckVariant) : false))
-				&& (pWeapon->GetCategory() == itemcatLauncher))) &&
-			(dwLinkedFireOptions & dwLinkedFireSelected) &&
-			IsPlayer()
-			))
+		if ((dwLinkedFireOptions & CDeviceClass::lkfNever) 
+			|| (((!((pPrimaryWeapon != NULL ? (pPrimaryWeapon->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
+							&& (pPrimaryWeapon != NULL ? ((pPrimaryWeapon->GetUNID() == Weapon.GetUNID()) && bPrimaryWeaponCheckVariant) : false)
+							)
+						&& (Weapon.GetCategory() == itemcatWeapon))
+					|| (!((pSelectedLauncher != NULL ? (pSelectedLauncher->GetSlotLinkedFireOptions() & dwLinkedFireSelected) : false) 
+							&& (pSelectedLauncher != NULL ? ((pSelectedLauncher->GetUNID() == Weapon.GetUNID()) && bSelectedLauncherCheckVariant) : false))
+						&& (Weapon.GetCategory() == itemcatLauncher)))
+				&& (dwLinkedFireOptions & dwLinkedFireSelected) 
+				&& IsPlayer()
+				))
 			{
 			return false;
 			}
@@ -661,7 +655,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else if ((dwLinkedFireOptions & CDeviceClass::lkfAlways) || (dwLinkedFireOptions & dwLinkedFireSelected))
 			{
-			*retpTarget = m_pController->GetTarget(ItemCtx);
+			*retpTarget = m_pController->GetTarget();
 			*retiFireSolution = -1;
 
 			return true;
@@ -671,7 +665,7 @@ bool CShip::CalcDeviceTarget (STargetingCtx &Ctx, CItemCtx &ItemCtx, CSpaceObjec
 
 		else
 			{
-			m_pController->GetWeaponTarget(Ctx, ItemCtx, retpTarget, retiFireSolution);
+			m_pController->GetWeaponTarget(UpdateCtx, WeaponItem, retpTarget, retiFireSolution);
 
 			//	We only fire if we have a target
 
@@ -690,7 +684,6 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 //	installed device.
 
 	{
-	int i;
 	const CHullDesc &Hull = m_pClass->GetHullDesc();
 
 	//	Pre-initialize
@@ -829,50 +822,48 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 		int iBestLevel;
 		int iBestType;
 
-		for (i = 0; i < GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			CInstalledDevice *pDevice = GetDevice(i);
-			if (!pDevice->IsEmpty())
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+
+			bool bThisIsWeapon = (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher);
+			bool bThisIsMisc = (Device.GetCategory() == itemcatMiscDevice);
+			int iAllSlotsFreed = Device.GetClass()->GetSlotsRequired();
+			int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
+			int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
+
+			int iThisType;
+			if (bThisIsMisc)
+				iThisType = 3;
+			else if (bThisIsWeapon)
+				iThisType = 2;
+			else
+				iThisType = 1;
+
+			int iThisLevel = Device.GetLevel();
+
+			//	We never recommend replacing an identical item
+
+			if (Item.IsEqual(DeviceItem, CItem::FLAG_IGNORE_INSTALLED))
+				continue;
+
+			//	See if uninstalling this device would be enough; if not, then
+			//	don't bother.
+
+			if (iAllSlotsFreed < iAllSlotsNeeded
+					|| iWeaponSlotsFreed < iWeaponSlotsNeeded
+					|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded)
+				continue;
+
+			//	See if removing this device is better than removing another one.
+
+			if (iSlotToReplace == -1
+					|| (iThisType > iBestType)
+					|| (iThisType == iBestType && iThisLevel < iBestLevel))
 				{
-				bool bThisIsWeapon = (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher);
-				bool bThisIsMisc = (pDevice->GetCategory() == itemcatMiscDevice);
-				int iAllSlotsFreed = pDevice->GetClass()->GetSlotsRequired();
-				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
-				int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
-
-				int iThisType;
-				if (bThisIsMisc)
-					iThisType = 3;
-				else if (bThisIsWeapon)
-					iThisType = 2;
-				else
-					iThisType = 1;
-
-				int iThisLevel = pDevice->GetLevel();
-
-				//	We never recommend replacing the same item
-
-				if (pDevice->GetClass() == Item.GetType()->GetDeviceClass())
-					continue;
-
-				//	See if uninstalling this device would be enough; if not, then
-				//	don't bother.
-
-				if (iAllSlotsFreed < iAllSlotsNeeded
-						|| iWeaponSlotsFreed < iWeaponSlotsNeeded
-						|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded)
-					continue;
-
-				//	See if removing this device is better than removing another one.
-
-				if (iSlotToReplace == -1
-						|| (iThisType > iBestType)
-						|| (iThisType == iBestType && iThisLevel > iBestLevel))
-					{
-					iSlotToReplace = i;
-					iBestType = iThisType;
-					iBestLevel = iThisLevel;
-					}
+				iSlotToReplace = Device.GetDeviceSlot();
+				iBestType = iThisType;
+				iBestLevel = iThisLevel;
 				}
 			}
 		}
@@ -1378,8 +1369,11 @@ void CShip::ClearAllTriggered (void)
 //	Clear the triggered flag on all devices
 
 	{
-	for (int i = 0; i < GetDeviceCount(); i++)
-		GetDevice(i)->SetTriggered(false);
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
+		{
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		Device.SetTriggered(false);
+		}
 	}
 
 void CShip::ConsumeFuel (Metric rFuel, CReactorDesc::EFuelUseTypes iUse)
@@ -1702,14 +1696,10 @@ ALERROR CShip::CreateFromClass (CSystem &System,
 				if (pArmor)
 					pArmor->FinishInstall(*pShip);
 				}
-			else
-				{
-				CInstalledDevice *pDevice = pShip->FindDevice(Item);
-				if (pDevice)
-					pDevice->FinishInstall();
-				}
 			}
 		}
+
+	pShip->m_Devices.FinishInstall();
 
 	//	Ship interior
 
@@ -2058,16 +2048,13 @@ void CShip::DisableAllDevices (void)
 //	Disable all devices that can be disabled.
 
 	{
-	int i;
-
-    for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
         {
-		CInstalledDevice &Device = m_Devices.GetDevice(i);
-        if (!Device.IsEmpty()
-				&& Device.IsEnabled()
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+        if (Device.IsEnabled()
 				&& Device.CanBeDisabled(CItemCtx(this, &Device)))
             {
-            EnableDevice(i, false);
+            EnableDevice(Device.GetDeviceSlot(), false);
             }
         }
 	}
@@ -2284,8 +2271,6 @@ bool CShip::FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice)
 //	Returns a random device within a few pixels of the given position.
 
 	{
-	int i;
-
 	const Metric MAX_DIST = 5.0 * g_KlicksPerPixel;
 	CVector vUR(vPos.GetX() + MAX_DIST, vPos.GetY() + MAX_DIST);
 	CVector vLL(vPos.GetX() - MAX_DIST, vPos.GetY() - MAX_DIST);
@@ -2293,12 +2278,11 @@ bool CShip::FindDeviceAtPos (const CVector &vPos, CInstalledDevice **retpDevice)
 	//	Make a list of all devices near the given position
 
 	TArray<CInstalledDevice *> List;
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = GetDevice(i);
-		if (!pDevice->IsEmpty()
-				&& pDevice->GetPos(this).InBox(vUR, vLL))
-			List.Insert(pDevice);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.GetPos(this).InBox(vUR, vLL))
+			List.Insert(&Device);
 		}
 
 	//	Do we have any devices? If so, return a random one.
@@ -2321,9 +2305,8 @@ int CShip::FindDeviceIndex (CInstalledDevice *pDevice) const
 //	Finds the index for the given device
 
 	{
-	for (int i = 0; i < GetDeviceCount(); i++)
-		if (pDevice == &m_Devices.GetDevice(i))
-			return i;
+	if (pDevice && pDevice->GetSource() == this)
+		return pDevice->GetDeviceSlot();
 
 	return -1;
 	}
@@ -2646,7 +2629,7 @@ void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
 	SAttachedSectionInfo *pSection = Result.Insert();
 	pSection->pObj = const_cast<CShip *>(this);
 	pSection->vPos = rPosAdj * vOrigin;
-	pSection->iHP = m_Armor.CalcTotalHitPoints(const_cast<CShip *>(this), &pSection->iMaxHP);
+	pSection->iHP = m_Armor.CalcTotalHitPoints(&pSection->iMaxHP);
 
 	//	Now add all attached sections
 
@@ -2660,7 +2643,7 @@ void CShip::GetAttachedSectionInfo (TArray<SAttachedSectionInfo> &Result) const
 		pSection = Result.Insert();
 		pSection->pObj = pShip;
 		pSection->vPos = rPosAdj * (vOrigin + Pos[i]);
-		pSection->iHP = pShip->m_Armor.CalcTotalHitPoints(pShip, &pSection->iMaxHP);
+		pSection->iHP = pShip->m_Armor.CalcTotalHitPoints(&pSection->iMaxHP);
 		}
 	}
 
@@ -2682,7 +2665,7 @@ CSpaceObject *CShip::GetBase (void) const
 		return m_pController->GetBase();
 	}
 
-Metric CShip::GetCargoMass (void)
+Metric CShip::GetCargoMass (void) const
 
 //	GetCargoMass
 //
@@ -2698,7 +2681,7 @@ Metric CShip::GetCargoMass (void)
 	return m_rCargoMass;
 	}
 
-Metric CShip::GetCargoSpaceLeft (void)
+Metric CShip::GetCargoSpaceLeft (void) const
 
 //	GetCargoSpaceLeft
 //
@@ -2710,9 +2693,9 @@ Metric CShip::GetCargoSpaceLeft (void)
 
 	Metric rCargoSpace = (Metric)CalcMaxCargoSpace();
 	
-	//	Compute cargo mass
+	//	Recompute cargo mass
 
-	OnComponentChanged(comCargo);
+	InvalidateItemMass();
 
 	//	Compute space left
 
@@ -3115,7 +3098,7 @@ CDeviceClass *CShip::GetNamedDeviceClass (DeviceNames iDev)
 		return pDev->GetClass(); 
 	}
 
-CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
+CItem CShip::GetNamedDeviceItem (DeviceNames iDev) const
 
 //	GetNamedDeviceItem
 //
@@ -3127,7 +3110,7 @@ CItem CShip::GetNamedDeviceItem (DeviceNames iDev)
 		return CItem();
 	else
 		{
-		CItemListManipulator ItemList(GetItemList());
+		CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
 		SetCursorAtNamedDevice(ItemList, iDev);
 		return ItemList.GetItemAtCursor();
 		}
@@ -3148,7 +3131,7 @@ int CShip::GetPerception (void) const
 	return Max((int)perceptMin, iPerception);
 	}
 
-int CShip::GetPowerConsumption (void)
+int CShip::GetPowerConsumption (void) const
 
 //	GetPowerConsumption
 //
@@ -3162,7 +3145,7 @@ int CShip::GetPowerConsumption (void)
 		return 0;
 	}
 
-ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CShip::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -3180,7 +3163,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_AUTO_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), 0);
+		CSpaceObject *pTarget = GetTarget();
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3215,7 +3198,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_CARGO_SPACE_USED_KG))
 		{
-		OnComponentChanged(comCargo);
+		InvalidateItemMass();
 		return CC.CreateInteger(mathRound(GetCargoMass() * 1000.0));
 		}
 
@@ -3229,13 +3212,13 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return (m_pCharacter ? CC.CreateInteger(m_pCharacter->GetUNID()) : CC.CreateNil());
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DAMAGE_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialDeviceDamage));
+		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDamage));
 
 	else if (strEquals(sName, PROPERTY_DEVICE_DISRUPT_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialDeviceDisrupt));
+		return CC.CreateBool(m_Armor.IsImmune(specialDeviceDisrupt));
 
 	else if (strEquals(sName, PROPERTY_DISINTEGRATION_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialDisintegration));
+		return CC.CreateBool(m_Armor.IsImmune(specialDisintegration));
 
 	else if (strEquals(sName, PROPERTY_DOCKED_AT_ID))
 		return (!m_fShipCompartment && m_pDocked ? CC.CreateInteger(m_pDocked->GetID()) : CC.CreateNil());
@@ -3270,7 +3253,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 	else if (strEquals(sName, PROPERTY_INTERIOR_HP))
 		{
 		int iHP;
-		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP);
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP);
 		return CC.CreateInteger(iHP);
 		}
 
@@ -3294,7 +3277,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		{
 		int iHP;
 		int iMaxHP;
-		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
 		return CC.CreateInteger(iMaxHP);
 		}
 
@@ -3344,7 +3327,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		}
 	else if (strEquals(sName, PROPERTY_SELECTED_MISSILE))
 		{
-		CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
+		const CInstalledDevice *pLauncher = GetNamedDevice(devMissileWeapon);
 		if (pLauncher == NULL)
 			return CC.CreateNil();
 
@@ -3355,7 +3338,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 		if (pType->IsMissile())
 			{
-			CItemListManipulator ItemList(GetItemList());
+			CItemListManipulator ItemList(const_cast<CShip *>(this)->GetItemList());
 			CItem theItem(pType, 1);
 			if (!ItemList.SetCursorAtItem(theItem))
 				return CC.CreateNil();
@@ -3384,7 +3367,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 		return CreateListFromItem(theItem);
 		}
 	else if (strEquals(sName, PROPERTY_SHATTER_IMMUNE))
-		return CC.CreateBool(m_Armor.IsImmune(this, specialShatter));
+		return CC.CreateBool(m_Armor.IsImmune(specialShatter));
 
 	else if (strEquals(sName, PROPERTY_SHOW_MAP_LABEL))
 		return CC.CreateBool(m_fShowMapLabel);
@@ -3399,7 +3382,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
 
 	else if (strEquals(sName, PROPERTY_TARGET))
 		{
-		CSpaceObject *pTarget = GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+		CSpaceObject *pTarget = GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 		return (pTarget ? CC.CreateInteger((int)pTarget) : CC.CreateNil());
 		}
 
@@ -3429,7 +3412,7 @@ ICCItem *CShip::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         return pResult;
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 void CShip::GetReactorStats (SReactorStats &Stats) const
@@ -3490,14 +3473,14 @@ void CShip::GetReactorStats (SReactorStats &Stats) const
 		}
 	}
 
-int CShip::GetShieldLevel (void)
+int CShip::GetShieldLevel (void) const
 
 //	GetShieldLevel
 //
 //	Returns the % shield level of the ship (or -1 if the ship has no shields)
 
 	{
-	CInstalledDevice *pShields = GetNamedDevice(devShields);
+	const CInstalledDevice *pShields = GetNamedDevice(devShields);
 	if (pShields == NULL)
 		return -1;
 
@@ -3521,14 +3504,14 @@ int CShip::GetStealth (void) const
 	return Min((int)stealthMax, iStealth);
 	}
 
-CSpaceObject *CShip::GetTarget (CItemCtx &ItemCtx, DWORD dwFlags) const
+CSpaceObject *CShip::GetTarget (DWORD dwFlags) const
 
 //	GetTarget
 //
 //	Returns the target that this ship is attacking
 
 	{
-	return m_pController->GetTarget(ItemCtx, dwFlags);
+	return m_pController->GetTarget(dwFlags);
 	}
 
 int CShip::GetTotalArmorHP (int *retiMaxHP) const
@@ -3644,7 +3627,7 @@ int CShip::GetVisibleDamage (void)
 
 		int iMaxInterior;
 		int iInteriorLeft;
-		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iInteriorLeft, &iMaxInterior);
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iInteriorLeft, &iMaxInterior);
 		int iInteriorDamage = (iMaxInterior > 0 ? 100 - (iInteriorLeft * 100 / iMaxInterior) : 100);
 
 		//	Combine all damage together, scaled so that interior + worst damage are 90%
@@ -3677,15 +3660,13 @@ int CShip::GetVisibleDamage (void)
 		}
 	}
 
-void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
+void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage) const
 
 //	GetVisibleDamageDesc
 //
 //	Returns the amount of damage (%) that the object has taken
 
 	{
-	int i;
-
 	//	Get shield level
 
 	Damage.iShieldLevel = GetShieldLevel();
@@ -3704,14 +3685,11 @@ void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
 		int iTotalArmorLeft = 0;
 		int iWorstDamage = 0;
 
-		for (i = 0; i < GetArmorSectionCount(); i++)
+		for (CArmorItem ArmorItem : GetArmorSystem())
 			{
-			CInstalledArmor *pArmor = GetArmorSection(i);
-
-			int iMaxHP = pArmor->GetMaxHP(this);
+			int iMaxHP;
+			int iLeft = ArmorItem.GetHP(&iMaxHP);
 			iTotalMaxArmor += iMaxHP;
-
-			int iLeft = pArmor->GetHitPoints();
 			iTotalArmorLeft += iLeft;
 
 			int iDamage = 100 - CArmorClass::CalcIntegrity(iLeft, iMaxHP);
@@ -3727,7 +3705,7 @@ void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
 
 		int iMaxInterior;
 		int iInteriorLeft;
-		m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iInteriorLeft, &iMaxInterior);
+		m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iInteriorLeft, &iMaxInterior);
 
 		//	Combine all damage together, scaled so that interior + worst damage are 90%
 		//	of the result.
@@ -3744,12 +3722,11 @@ void CShip::GetVisibleDamageDesc (SVisibleDamage &Damage)
 
 		//	Compute max and actual HP
 
-		for (i = 0; i < GetArmorSectionCount(); i++)
+		for (CArmorItem ArmorItem : GetArmorSystem())
 			{
-			CInstalledArmor *pArmor = GetArmorSection(i);
-
-			int iMaxHP = pArmor->GetMaxHP(this);
-			int iDamage = 100 - CArmorClass::CalcIntegrity(pArmor->GetHitPoints(), iMaxHP);
+			int iMaxHP;
+			int iHP = ArmorItem.GetHP(&iMaxHP);
+			int iDamage = 100 - CArmorClass::CalcIntegrity(iHP, iMaxHP);
 			if (iDamage > iMaxPercent)
 				iMaxPercent = iDamage;
 			}
@@ -3870,10 +3847,6 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 	ItemList.SetPrepareUninstalledAtCursor();
 	OldArmor = ItemList.GetItemAtCursor();
 
-	//	How damaged is the current armor?
-
-	bool bDestroyOldArmor = !IsArmorRepairable(iSect);
-
 	//	Now install the selected item as new armor
 
 	ItemList.Refresh(NewArmor);
@@ -3898,17 +3871,14 @@ void CShip::InstallItemAsArmor (CItemListManipulator &ItemList, int iSect)
 		ItemList.DeleteAtCursor(1);
 		InvalidateItemListAddRemove();
 
-		if (!bDestroyOldArmor)
-			{
-			OldArmor.ClearInstalled();
-			OldArmor.SetCount(1);
+		OldArmor.ClearInstalled();
+		OldArmor.SetCount(1);
 
-			CArmorItem OldArmorItem = OldArmor.AsArmorItemOrThrow();
-			int iNewMaxHP = OldArmorItem.GetMaxHP();
-			OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
+		CArmorItem OldArmorItem = OldArmor.AsArmorItemOrThrow();
+		int iNewMaxHP = OldArmorItem.GetMaxHP();
+		OldArmor.SetDamaged(iNewMaxHP - CArmorClass::CalcMaxHPChange(iOldHP, iOldMaxHP, iNewMaxHP));
 
-			ItemList.AddItem(OldArmor);
-			}
+		ItemList.AddItem(OldArmor);
 		}
 
 	//	Restore the cursor to point at the new armor segment
@@ -4027,17 +3997,6 @@ bool CShip::IsArmorDamaged (int iSect)
 	return (pSect->GetHitPoints() < pSect->GetMaxHP(this));
 	}
 
-bool CShip::IsArmorRepairable (int iSect)
-
-//	IsArmorRepairable
-//
-//	Returns TRUE if the given armor section can be repaired
-
-	{
-	CInstalledArmor *pSect = GetArmorSection(iSect);
-	return (pSect->GetHitPoints() >= (pSect->GetMaxHP(this) / 4));
-	}
-
 bool CShip::IsDeviceSlotAvailable (ItemCategories iItemCat, int *retiSlot)
 
 //	IsDeviceSlotAvailable
@@ -4125,7 +4084,7 @@ bool CShip::IsWeaponAligned (DeviceNames iDev, CSpaceObject *pTarget, int *retiA
 	if (pWeapon)
 		{
 		int iAimAngle;
-		bool bAligned = pWeapon->IsWeaponAligned(this, pTarget, &iAimAngle, retiFireAngle);
+		bool bAligned = pWeapon->GetDeviceItem().IsWeaponAligned(pTarget, &iAimAngle, retiFireAngle);
 
 		if (retiAimAngle)
 			*retiAimAngle = iAimAngle;
@@ -4384,12 +4343,11 @@ void CShip::OnComponentChanged (ObjectComponentTypes iComponent)
 			//	try to select it now (if we just got some new ammo, this will
 			//	select the ammo)
 
-			int i;
-			for (i = 0; i < GetDeviceCount(); i++)
+			for (CDeviceItem DeviceItem : GetDeviceSystem())
 				{
-				CInstalledDevice *pDevice = GetDevice(i);
-				if (!pDevice->IsVariantSelected(this))
-					pDevice->SelectFirstVariant(this);
+				CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+				if (!Device.IsVariantSelected(this))
+					Device.SelectFirstVariant(this);
 				}
 
 			//	Update weapons display (in case it changed)
@@ -4421,8 +4379,6 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	{
 	DEBUG_TRY
-
-	int i;
 
 	GetUniverse().AdjustDamage(Ctx);
 
@@ -4492,9 +4448,9 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	Ctx.iShieldHitDamage = Ctx.iDamage;
 	if (!Ctx.bIgnoreShields)
 		{
-		for (i = 0; i < GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			CInstalledDevice &Device = m_Devices.GetDevice(i);
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 			bool bAbsorbed = Device.AbsorbDamage(this, Ctx);
 
 			//	If this is the player, report stats
@@ -4530,18 +4486,17 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 	//	Ignore devices with overlays because they get damaged in the overlay
 	//	damage section.
 
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice &Device = m_Devices.GetDevice(i);
-		if (!Device.IsEmpty() 
-				&& Device.IsExternal()
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+		if (Device.IsExternal()
 				&& Device.GetOverlay() == NULL)
 			{
 			//	The chance that the device got hit depends on the number of armor segments
 			//	A device takes up 1/9th of the surface area of a segment.
 
 			if (mathRandom(1, GetArmorSectionCount() * 9) == 7)
-				DamageExternalDevice(i, Ctx);
+				DamageExternalDevice(Device.GetDeviceSlot(), Ctx);
 			}
 		}
 
@@ -4625,7 +4580,7 @@ EDamageResults CShip::OnDamage (SDamageCtx &Ctx)
 
 	CSpaceObject *pOrderGiver = Ctx.GetOrderGiver();
 	if (pOrderGiver && pOrderGiver->CanAttack())
-		pOrderGiver->OnObjDamaged(Ctx);
+		pOrderGiver->OnObjHit(Ctx);
 
 	//	Handle special attacks
 
@@ -5122,13 +5077,13 @@ bool CShip::OnIsImmuneTo (CConditionSet::ETypes iCondition) const
 	switch (iCondition)
 		{
 		case CConditionSet::cndBlind:
-			return m_Armor.IsImmune(const_cast<CShip *>(this), specialBlinding);
+			return m_Armor.IsImmune(specialBlinding);
 
 		case CConditionSet::cndParalyzed:
-			return m_Armor.IsImmune(const_cast<CShip *>(this), specialEMP);
+			return m_Armor.IsImmune(specialEMP);
 			
 		case CConditionSet::cndRadioactive:
-			return m_Armor.IsImmune(const_cast<CShip *>(this), specialRadiation);
+			return m_Armor.IsImmune(specialRadiation);
 			
 		case CConditionSet::cndTimeStopped:
 			return m_pClass->IsTimeStopImmune();
@@ -6169,7 +6124,6 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
     {
     DEBUG_TRY
 
-    int i;
     bool bOverlaysChanged = false;
     bool bWeaponStatusChanged = false;
     bool bArmorStatusChanged = false;
@@ -6218,14 +6172,11 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
         if (!IsDisarmed())
             {
-            STargetingCtx TargetingCtx;
-
-            for (i = 0; i < GetDeviceCount(); i++)
+			for (CDeviceItem DeviceItem : GetDeviceSystem())
                 {
-                CInstalledDevice *pDevice = GetDevice(i);
-                if (pDevice->IsTriggered() && pDevice->IsReady())
+                CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
+                if (Device.IsTriggered() && Device.IsReady())
                     {
-                    CItemCtx DeviceCtx(this, pDevice);
                     bool bSourceDestroyed = false;
                     bool bConsumedItems = false;
 
@@ -6233,23 +6184,23 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
                     CSpaceObject *pTarget;
                     int iFireAngle;
-                    if (!CalcDeviceTarget(TargetingCtx, DeviceCtx, &pTarget, &iFireAngle))
+                    if (!CalcDeviceTarget(Ctx, DeviceItem, &pTarget, &iFireAngle))
                         {
                         //	Do not consume power, even though we're triggered.
 
-                        pDevice->SetLastActivateSuccessful(false);
+                        Device.SetLastActivateSuccessful(false);
                         continue;
                         }
 
                     //	Set the target on the device. We need to do this for 
                     //	repeating weapons.
 
-                    pDevice->SetFireAngle(iFireAngle);
-                    pDevice->SetTarget(pTarget);
+                    Device.SetFireAngle(iFireAngle);
+                    Device.SetTarget(pTarget);
 
                     //	Fire
 
-                    bool bSuccess = pDevice->Activate(this,
+                    bool bSuccess = Device.Activate(this,
                         pTarget,
                         &bSourceDestroyed,
                         &bConsumedItems);
@@ -6268,60 +6219,15 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
                         //	Remember the last time we fired a weapon
 
-                        if (pDevice->GetCategory() == itemcatWeapon || pDevice->GetCategory() == itemcatLauncher)
+                        if (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher)
                             m_iLastFireTime = GetUniverse().GetTicks();
 
-						//  If the options is "fire if selected", and "cycleFire" is True, then find the other weapons installed of the same
-						//  type, and increment their fire delays.
-						DWORD dwLinkedFireOptions = pDevice->GetSlotLinkedFireOptions();
-						DWORD dwLinkedFireSelected = CDeviceClass::lkfSelected | CDeviceClass::lkfSelectedVariant;
+						//  Set the delay for the next activation.
 
-						if ((dwLinkedFireOptions != 0) && pDevice->GetCycleFireSettings())
-							{
-							int iFireDelayToIncrement = 0;
-							int iNumberOfGuns = 1;
-							TQueue<CInstalledDevice *> WeaponsInFireGroup;
-							DWORD iGunUNID = pDevice->GetUNID();
-
-							for (int i = 0; i < m_Devices.GetCount(); i++)
-								{
-								CInstalledDevice *currDevice = GetDevice(i);
-								if (!currDevice->IsEmpty())
-									{
-									if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
-										{
-										if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
-											&& currDevice != pDevice && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
-											{
-											//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
-											if (currDevice->GetSlotLinkedFireOptions()
-												& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
-												{
-												//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
-												iNumberOfGuns++;
-												if (currDevice->IsReady())
-													WeaponsInFireGroup.Enqueue(currDevice);
-												}
-											}
-										}
-									}
-								}
-							iFireDelayToIncrement = (m_pController->GetFireRateAdj() * pDevice->GetActivateDelay(this) / 10);
-							iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
-							while (WeaponsInFireGroup.GetCount() > 0)
-								{
-								SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
-								WeaponsInFireGroup.Dequeue();
-								}
-							//	Set delay for next activation
-
-							SetFireDelay(pDevice, iNumberOfGuns > 1 ? iFireDelayToIncrement * iNumberOfGuns : -1);
-							}
+						if ((Device.GetSlotLinkedFireOptions() != 0) && Device.GetCycleFireSettings())
+							SetFireDelayForCycleWeapons(Device);
 						else
-							//	Set delay for next activation
-
-							SetFireDelay(pDevice);
-
+							SetFireDelay(&Device);
                         }
                     }
                 }
@@ -6433,9 +6339,9 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 
 	CDeviceClass::SDeviceUpdateCtx DeviceCtx(iTick);
     m_fDeviceDisrupted = false;
-    for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
         {
-		CInstalledDevice &Device = m_Devices.GetDevice(i);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
 		DeviceCtx.ResetOutputs();
 
@@ -6470,7 +6376,7 @@ void CShip::OnUpdate (SUpdateCtx &Ctx, Metric rSecondsPerTick)
 			bWeaponStatusChanged = true;
 			bArmorStatusChanged = true;
 
-			m_pController->OnDeviceEnabledDisabled(i, false);
+			m_pController->OnDeviceEnabledDisabled(Device.GetDeviceSlot(), false);
 			}
         }
 
@@ -7135,8 +7041,6 @@ void CShip::ReactorOverload (int iPowerDrain)
 //	This is called every FUEL_CHECK_CYCLE when the reactor is overloading
 
 	{
-	int i;
-
 	//	There is a 1 in 10 chance that something bad will happen
 	//	(or, if the overload is severe, something bad always happens)
 
@@ -7157,20 +7061,20 @@ void CShip::ReactorOverload (int iPowerDrain)
 
 		int iBestDev = -1;
 		int iBestPower = 0;
-		for (i = 0; i < GetDeviceCount(); i++)
+		for (CDeviceItem DeviceItem : GetDeviceSystem())
 			{
-			CInstalledDevice &Device = m_Devices.GetDevice(i);
+			CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 			if (!Device.IsEmpty() 
 					&& Device.IsEnabled()
 					&& Device.CanBeDisabled(CItemCtx(this, &Device)))
 				{
-				SetCursorAtDevice(ItemList, i);
+				SetCursorAtDevice(ItemList, Device.GetDeviceSlot());
 
 				CItem Item = ItemList.GetItemAtCursor();
 				int iDevicePower = Device.GetPowerRating(CItemCtx(&Item, this));
 				if (iDevicePower > iBestPower)
 					{
-					iBestDev = i;
+					iBestDev = Device.GetDeviceSlot();
 					iBestPower = iDevicePower;
 					}
 				}
@@ -7388,7 +7292,7 @@ void CShip::RepairDamage (int iHPToRepair)
 
 	//	If we've got internal damage, repair that first.
 
-	m_Interior.GetHitPoints(this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
+	m_Interior.GetHitPoints(*this, m_pClass->GetInteriorDesc(), &iHP, &iMaxHP);
 	if (iHP < iMaxHP)
 		{
 		//	Negative HP means we repair all
@@ -7686,7 +7590,7 @@ void CShip::SetCursorAtDevice (CItemListManipulator &ItemList, int iDev)
 	m_Devices.SetCursorAtDevice(ItemList, iDev);
 	}
 
-void CShip::SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev)
+void CShip::SetCursorAtNamedDevice (CItemListManipulator &ItemList, DeviceNames iDev) const
 
 //	SetCursorAtNamedDevice
 //
@@ -7712,6 +7616,59 @@ void CShip::SetFireDelay (CInstalledDevice *pWeapon, int iDelay)
 		pWeapon->SetTimeUntilReady(iDelay);
 
 	DEBUG_CATCH
+	}
+
+void CShip::SetFireDelayForCycleWeapons (CInstalledDevice &Device)
+
+//	SetFireDelayForCycleWeapons
+//
+//  If the options is "fire if selected", and "cycleFire" is True, then find 
+//	the other weapons installed of the same type, and increment their fire 
+//	delays.
+
+	{
+	CItemCtx DeviceCtx(this, &Device);
+
+	int iFireDelayToIncrement = 0;
+	int iNumberOfGuns = 1;
+	TQueue<CInstalledDevice *> WeaponsInFireGroup;
+	DWORD iGunUNID = Device.GetUNID();
+
+	for (int i = 0; i < m_Devices.GetCount(); i++)
+		{
+		CInstalledDevice *currDevice = GetDevice(i);
+		if (!currDevice->IsEmpty())
+			{
+			if ((currDevice->GetCategory() == (itemcatWeapon)) || (currDevice->GetCategory() == (itemcatLauncher)))
+				{
+				if (iGunUNID == currDevice->GetUNID() && currDevice->GetCycleFireSettings()
+					&& currDevice != &Device && currDevice->IsEnabled() && !(currDevice->GetSlotLinkedFireOptions() & CDeviceClass::lkfEnemyInRange))
+					{
+					//  If the gun we're iterating on is "fire if selected based on variant", then check to see if it has the same variant as the selected gun.
+					if (currDevice->GetSlotLinkedFireOptions()
+						& CDeviceClass::lkfSelectedVariant ? DeviceCtx.GetItemVariantNumber() == CItemCtx(this, currDevice).GetItemVariantNumber() : true)
+						{
+						//  Add the items to a linked list object. We'll then iterate through that linked list, and increment the fire delays.
+						iNumberOfGuns++;
+						if (currDevice->IsReady())
+							WeaponsInFireGroup.Enqueue(currDevice);
+						}
+					}
+				}
+			}
+		}
+
+	iFireDelayToIncrement = (m_pController->GetFireRateAdj() * Device.GetActivateDelay(this) / 10);
+	iFireDelayToIncrement = (iFireDelayToIncrement + (iNumberOfGuns - 1)) / iNumberOfGuns;
+	while (WeaponsInFireGroup.GetCount() > 0)
+		{
+		SetFireDelay(WeaponsInFireGroup.Head(), iFireDelayToIncrement * (iNumberOfGuns - WeaponsInFireGroup.GetCount()));
+		WeaponsInFireGroup.Dequeue();
+		}
+
+	//	Set delay for next activation
+
+	SetFireDelay(&Device, iNumberOfGuns > 1 ? iFireDelayToIncrement * iNumberOfGuns : -1);
 	}
 
 void CShip::SetInGate (CSpaceObject *pGate, int iTickCount)
@@ -8241,25 +8198,21 @@ void CShip::SetWeaponTriggered (DeviceNames iDev, bool bTriggered)
 //	associated linked-fire devices.
 
 	{
-	int i;
-
 	CInstalledDevice *pPrimaryDevice = GetNamedDevice(iDev);	//	OK if NULL.
 	ItemCategories iCat = (iDev == devMissileWeapon ? itemcatLauncher : itemcatWeapon);
 
 	//	Loop over all devices and activate the appropriate ones
 
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = GetDevice(i);
-		CItemCtx Ctx(this, pDevice);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
 		//	If this is the primary device, or if it is a device that
 		//	is linked to the primary device, then activate it.
 
-		if (!pDevice->IsEmpty()
-				&& (pDevice == pPrimaryDevice
-					|| (pDevice->IsLinkedFire(iCat))))
-			pDevice->SetTriggered(bTriggered);
+		if (&Device == pPrimaryDevice
+				|| (Device.IsLinkedFire(iCat)))
+			Device.SetTriggered(bTriggered);
 		}
 	}
 
@@ -8271,24 +8224,20 @@ void CShip::SetWeaponTriggered (CInstalledDevice *pWeapon, bool bTriggered)
 //	associated linked-fire devices.
 
 	{
-	int i;
-
 	ItemCategories iCat = pWeapon->GetCategory();
 
 	//	Loop over all devices and activate the appropriate ones
 
-	for (i = 0; i < GetDeviceCount(); i++)
+	for (CDeviceItem DeviceItem : GetDeviceSystem())
 		{
-		CInstalledDevice *pDevice = GetDevice(i);
-		CItemCtx Ctx(this, pDevice);
+		CInstalledDevice &Device = *DeviceItem.GetInstalledDevice();
 
 		//	If this is the primary device, or if it is a device that
 		//	is linked to the primary device, then activate it.
 
-		if (!pDevice->IsEmpty()
-				&& (pDevice == pWeapon 
-					|| (pDevice->IsLinkedFire(iCat))))
-			pDevice->SetTriggered(bTriggered);
+		if (&Device == pWeapon
+				|| (Device.IsLinkedFire(iCat)))
+			Device.SetTriggered(bTriggered);
 		}
 	}
 

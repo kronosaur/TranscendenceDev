@@ -154,6 +154,7 @@
 	<!ENTITY rsDeepSpace				"0x00030001">
 	<!ENTITY unidCoreCriteria			"0x00030002">
 	<!ENTITY efNullEffect				"0x00030003">
+	<!ENTITY unidEngineText				"0x00030004">
 	
 	<!-- 0020-002F PROJECTILE EFFECTS -->
 	
@@ -217,6 +218,7 @@
 
 	<Module filename="CoreCode.xml"/>
 	<Module filename="CoreEffects.xml"/>
+	<Module filename="CoreEngineText.xml"/>
 	<Module filename="CoreExplosions.xml"/>
 	<Module filename="CoreFireEffects.xml"/>
 	<Module filename="CoreHitEffects.xml"/>

@@ -35,7 +35,7 @@ ICCItem *CDockScreenSelector::OnGetCurrentListEntry (void) const
 	return m_pControl->GetEntryAtCursor();
 	}
 
-bool CDockScreenSelector::OnGetDefaultBackground (SBackgroundDesc *retDesc)
+bool CDockScreenSelector::OnGetDefaultBackground (SDockScreenBackgroundDesc *retDesc)
 
 //	OnGetDefaultBackground
 //
@@ -46,7 +46,7 @@ bool CDockScreenSelector::OnGetDefaultBackground (SBackgroundDesc *retDesc)
 	if (pSource == NULL)
 		return false;
 
-	retDesc->iType = backgroundObjSchematicImage;
+	retDesc->iType = EDockScreenBackground::objSchematicImage;
 	retDesc->pObj = pSource;
 
 	return true;

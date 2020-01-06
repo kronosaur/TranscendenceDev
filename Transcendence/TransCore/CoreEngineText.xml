@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TranscendenceModule>
+
+	<Type UNID="&unidEngineText;">
+		<Language>
+			<Text id="msgOutOfFuel">Out of fuel!</Text>
+			<Text id="averageCommodityPrices">Average commodity prices</Text>
+		</Language>
+	</Type>
+
+</TranscendenceModule>

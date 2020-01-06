@@ -307,10 +307,10 @@ class IShipController
 
 		static constexpr DWORD FLAG_ACTUAL_TARGET =		0x00000001;
 		static constexpr DWORD FLAG_NO_AUTO_TARGET =	0x00000002;
-		virtual CSpaceObject *GetTarget (CItemCtx &ItemCtx, DWORD dwFlags = 0) const { return NULL; }
+		virtual CSpaceObject *GetTarget (DWORD dwFlags = 0) const { return NULL; }
 
 		virtual bool GetThrust (void) = 0;
-		virtual void GetWeaponTarget (STargetingCtx &TargetingCtx, CItemCtx &ItemCtx, CSpaceObject **retpTarget, int *retiFireSolution) { }
+		virtual void GetWeaponTarget (SUpdateCtx &UpdateCtx, const CDeviceItem &WeaponItem, CSpaceObject **retpTarget, int *retiFireSolution) { }
 		virtual bool IsAngryAt (const CSpaceObject *pObj) const { return false; }
 		virtual bool IsPlayer (void) const { return false; }
 		virtual bool IsPlayerBlacklisted (void) const { return false; }
@@ -359,7 +359,7 @@ class IShipController
 		virtual void OnItemUninstalled (const CItem &Item) { }
 		virtual void OnMissionCompleted (CMission *pMission, bool bSuccess) { }
 		virtual void OnNewSystem (CSystem *pSystem) { }
-		virtual void OnObjDamaged (const SDamageCtx &Ctx) { }
+		virtual void OnObjHit (const SDamageCtx &Ctx) { }
 		virtual void OnObjDestroyed (const SDestroyCtx &Ctx) { }
 		virtual void OnObjEnteredGate (CSpaceObject *pObj, CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate) { }
 		virtual void OnOverlayConditionChanged (CConditionSet::ETypes iCondition, CConditionSet::EModifications iChange) { }

@@ -549,10 +549,10 @@
 
 		<DeviceSlots>
 			<DeviceSlot id="omni1"		criteria="w"	posAngle="0"    posRadius="30"   posZ="16"	omnidirectional="true"/>
-			<DeviceSlot id="port1"		criteria="w"	posAngle="17"   posRadius="70"   posZ="5"	fireAngle="70"	fireArc="180"	secondaryWeapon="true"/>
-			<DeviceSlot id="port2"		criteria="w"	posAngle="60"   posRadius="38"   posZ="10"	fireAngle="80"	fireArc="180"	secondaryWeapon="true"/>
-			<DeviceSlot id="starboard1"	criteria="w"	posAngle="-17"  posRadius="70"   posZ="5"	fireAngle="-70"	fireArc="180"	secondaryWeapon="true"/>
-			<DeviceSlot id="starboard2"	criteria="w"	posAngle="-60"  posRadius="38"   posZ="10"	fireAngle="-80"	fireArc="180"	secondaryWeapon="true"/>
+			<DeviceSlot id="port1"		criteria="w"	posAngle="17"   posRadius="70"   posZ="5"	fireAngle="70"	fireArc="180"	secondaryWeapon="true"	missileDefense="true"/>
+			<DeviceSlot id="port2"		criteria="w"	posAngle="60"   posRadius="38"   posZ="10"	fireAngle="80"	fireArc="180"	secondaryWeapon="true"	missileDefense="true"/>
+			<DeviceSlot id="starboard1"	criteria="w"	posAngle="-17"  posRadius="70"   posZ="5"	fireAngle="-70"	fireArc="180"	secondaryWeapon="true"	missileDefense="true"/>
+			<DeviceSlot id="starboard2"	criteria="w"	posAngle="-60"  posRadius="38"   posZ="10"	fireAngle="-80"	fireArc="180"	secondaryWeapon="true"	missileDefense="true"/>
 		</DeviceSlots>
 
 		<Interior>
@@ -625,7 +625,7 @@
 		
 		<AISettings
 			aggressor=			"true"
-			fireRateAdj=		"40"
+			fireRateAdj=		"20"
 			fireAccuracy=		"90"
 			perception=			"5"
 			

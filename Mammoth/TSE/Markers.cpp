@@ -79,7 +79,7 @@ ALERROR CMarker::Create (CSystem &System,
 	return NOERROR;
 	}
 
-ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
+ICCItem *CMarker::GetPropertyCompatible (CCodeChainCtx &Ctx, const CString &sName) const
 
 //	GetProperty
 //
@@ -101,7 +101,7 @@ ICCItem *CMarker::GetProperty (CCodeChainCtx &Ctx, const CString &sName)
         }
 
 	else
-		return CSpaceObject::GetProperty(Ctx, sName);
+		return CSpaceObject::GetPropertyCompatible(Ctx, sName);
 	}
 
 CSovereign *CMarker::GetSovereign (void) const

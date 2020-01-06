@@ -15,3 +15,10 @@ int SUpdateCtx::GetLightIntensity (CSpaceObject *pObj) const
 	return m_iLightIntensity;
 	}
 
+void SUpdateCtx::OnStartUpdate (CSpaceObject &Obj)
+	{
+	Targets.CleanUp();
+	Missiles.CleanUp();
+
+	m_bTimeStopped = Obj.IsTimeStopped();
+	}

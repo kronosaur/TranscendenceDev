@@ -888,5 +888,11 @@
     <Xml Include="..\Extensions\Diagnostics\SystemFunctionTests.xml">
       <Filter>Extensions\Diagnostics</Filter>
     </Xml>
+    <Xml Include="FirstContactMonument.xml">
+      <Filter>Human Space Library\St Katharines</Filter>
+    </Xml>
+    <Xml Include="NewVictoria.xml">
+      <Filter>Human Space Library\St Katharines</Filter>
+    </Xml>
   </ItemGroup>
 </Project>

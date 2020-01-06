@@ -99,7 +99,7 @@ ICCItem *CCPrimitive::Execute (CEvalContext *pCtx, ICCItem *pArgs)
 	return pResult;
 	}
 
-CString CCPrimitive::Print (DWORD dwFlags)
+CString CCPrimitive::Print (DWORD dwFlags) const
 
 //	Print
 //

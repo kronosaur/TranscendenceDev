@@ -140,56 +140,56 @@ class CParticleSystemDesc
 
 		CParticleSystemDesc (void);
 
-		inline void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_pParticleEffect.GetUNID(), true); }
-		inline ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pParticleEffect.Bind(Ctx); }
-		inline IEffectPainter *CreateParticlePainter (CCreatePainterCtx &Ctx) { return m_pParticleEffect.CreatePainter(Ctx); }
+		void AddTypesUsed (TSortMap<DWORD, bool> *retTypesUsed) { retTypesUsed->SetAt(m_pParticleEffect.GetUNID(), true); }
+		ALERROR Bind (SDesignLoadCtx &Ctx) { return m_pParticleEffect.Bind(Ctx); }
+		IEffectPainter *CreateParticlePainter (CCreatePainterCtx &Ctx) { return m_pParticleEffect.CreatePainter(Ctx); }
 		ALERROR InitFromWeaponDescXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, const CString &sUNID);
 		ALERROR InitFromWeaponDescXMLCompatible (SDesignLoadCtx &Ctx, CXMLElement *pDesc);
 		ALERROR InitFromXML (SDesignLoadCtx &Ctx, const CXMLElement *pDesc, const CString &sUNID);
-		inline Metric GetCohesionFactor (void) const { return m_rCohesionFactor; }
-		inline int GetCohesionPotential (void) const { return mathRound(m_rCohesionFactor * 100.0); }
-		inline int GetEmitChance (void) const { return m_iEmitChance; }
-		inline const DiceRange &GetEmitLifetime (void) const { return m_EmitLifetime; }
-		inline const DiceRange &GetEmitRate (void) const { return m_EmitRate; }
-		inline const DiceRange &GetEmitSpeed (void) const { return m_EmitSpeed; }
-		inline const DiceRange &GetEmitWidth (void) const { return m_EmitWidth; }
-		inline int GetMissChance (void) const { return m_iMissChance; }
-		inline CEffectCreator *GetParticleEffect (void) { return m_pParticleEffect; }
-		inline const DiceRange &GetParticleLifetime (void) const { return m_ParticleLifetime; }
-		inline const DiceRange &GetRadius (void) const { return m_Radius; }
-		inline int GetSplashChance (void) const { return m_iSplashChance; }
-		inline const DiceRange &GetSpreadAngle (void) const { return m_SpreadAngle; }
-		inline EStyles GetStyle (void) const { return m_iStyle; }
-		inline const DiceRange &GetTangentSpeed (void) const { return m_TangentSpeed; }
-		inline Metric GetWakeFactor (void) const { return m_rWakeFactor; }
-		inline int GetWakePotential (void) const { return mathRound(m_rWakeFactor * 100.0); }
-		inline int GetXformRotation (void) const { return m_iXformRotation; }
-		inline Metric GetXformTime (void) const { return m_rXformTime; }
-		inline bool HasWakeFactor (void) const { return m_bHasWake; }
-		inline bool IsFixedPos (void) const { return m_bFixedPos; }
-		inline bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
-		inline bool IsTrackingObject (void) const { return m_bTrackingObject; }
+		Metric GetCohesionFactor (void) const { return m_rCohesionFactor; }
+		int GetCohesionPotential (void) const { return mathRound(m_rCohesionFactor * 100.0); }
+		int GetEmitChance (void) const { return m_iEmitChance; }
+		const DiceRange &GetEmitLifetime (void) const { return m_EmitLifetime; }
+		const DiceRange &GetEmitRate (void) const { return m_EmitRate; }
+		const DiceRange &GetEmitSpeed (void) const { return m_EmitSpeed; }
+		const DiceRange &GetEmitWidth (void) const { return m_EmitWidth; }
+		int GetMissChance (void) const { return m_iMissChance; }
+		CEffectCreator *GetParticleEffect (void) { return m_pParticleEffect; }
+		const DiceRange &GetParticleLifetime (void) const { return m_ParticleLifetime; }
+		const DiceRange &GetRadius (void) const { return m_Radius; }
+		int GetSplashChance (void) const { return m_iSplashChance; }
+		const DiceRange &GetSpreadAngle (void) const { return m_SpreadAngle; }
+		EStyles GetStyle (void) const { return m_iStyle; }
+		const DiceRange &GetTangentSpeed (void) const { return m_TangentSpeed; }
+		Metric GetWakeFactor (void) const { return m_rWakeFactor; }
+		int GetWakePotential (void) const { return mathRound(m_rWakeFactor * 100.0); }
+		int GetXformRotation (void) const { return m_iXformRotation; }
+		Metric GetXformTime (void) const { return m_rXformTime; }
+		bool HasWakeFactor (void) const { return m_bHasWake; }
+		bool IsFixedPos (void) const { return m_bFixedPos; }
+		bool IsSprayCompatible (void) const { return m_bSprayCompatible; }
+		bool IsTrackingObject (void) const { return m_bTrackingObject; }
 		void MarkImages (void);
-		inline void SetCohesionPotential (int iValue) { m_rCohesionFactor = Max(0, iValue) / 100.0; }
-		inline void SetEmitChance (int iValue) { m_iEmitChance = iValue; }
-		inline void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
-		inline void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
-		inline void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
-		inline void SetEmitWidth (const DiceRange &Value) { m_EmitWidth = Value; }
-		inline void SetFixedPos (bool bValue = true) { m_bFixedPos = bValue; }
-		inline void SetMissChance (int iValue) { m_iMissChance = iValue; }
-		inline void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
-		inline void SetRadius (const DiceRange &Value) { m_Radius = Value; }
-		inline void SetSplashChance (int iValue) { m_iSplashChance = iValue; }
-		inline void SetSprayCompatible (bool bValue = true) { m_bSprayCompatible = bValue; }
-		inline void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
-		inline void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
+		void SetCohesionPotential (int iValue) { m_rCohesionFactor = Max(0, iValue) / 100.0; }
+		void SetEmitChance (int iValue) { m_iEmitChance = iValue; }
+		void SetEmitLifetime (const DiceRange &Value) { m_EmitLifetime = Value; }
+		void SetEmitRate (const DiceRange &Value) { m_EmitRate = Value; }
+		void SetEmitSpeed (const DiceRange &Value) { m_EmitSpeed = Value; }
+		void SetEmitWidth (const DiceRange &Value) { m_EmitWidth = Value; }
+		void SetFixedPos (bool bValue = true) { m_bFixedPos = bValue; }
+		void SetMissChance (int iValue) { m_iMissChance = iValue; }
+		void SetParticleLifetime (const DiceRange &Value) { m_ParticleLifetime = Value; }
+		void SetRadius (const DiceRange &Value) { m_Radius = Value; }
+		void SetSplashChance (int iValue) { m_iSplashChance = iValue; }
+		void SetSprayCompatible (bool bValue = true) { m_bSprayCompatible = bValue; }
+		void SetSpreadAngle (const DiceRange &Value) { m_SpreadAngle = Value; }
+		void SetStyle (EStyles iStyle) { m_iStyle = iStyle; }
 		void SetStyle (const CEffectParamDesc &Value);
-		inline void SetTangentSpeed (const DiceRange &Value) { m_TangentSpeed = Value; }
-		inline void SetTrackingObject (bool bValue = true) { m_bTrackingObject = bValue; }
-		inline void SetWakePotential (int iValue) { m_rWakeFactor = Max(0, iValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
-		inline void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
-		inline void SetXformTime (Metric rValue) { m_rXformTime = rValue; }
+		void SetTangentSpeed (const DiceRange &Value) { m_TangentSpeed = Value; }
+		void SetTrackingObject (bool bValue = true) { m_bTrackingObject = bValue; }
+		void SetWakePotential (int iValue) { m_rWakeFactor = Max(0, iValue) / 100.0; m_bHasWake = (m_rWakeFactor > 0.0); }
+		void SetXformRotation (int iValue) { m_iXformRotation = iValue; }
+		void SetXformTime (Metric rValue) { m_rXformTime = rValue; }
 
 		static EStyles ParseStyle (const CString &sValue);
 
@@ -266,13 +266,13 @@ class CParticleArray
 		void Update (const CParticleSystemDesc &Desc, SEffectUpdateCtx &Ctx);
 
 		void AddParticle (const CVector &vPos, const CVector &vVel, int iLifeLeft = -1, int iRotation = -1, int iDestiny = -1, int iGeneration = 0, Metric rData = 0.0);
-		inline SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
+		SParticle *GetArray (int *retiCount = NULL) const { if (retiCount) *retiCount = m_iCount; return m_pArray; }
 		const RECT &GetBounds (void) const { return m_rcBounds; }
 		void GetBounds (CVector *retvUR, CVector *retvLL);
-		inline int GetCount (void) const { return m_iCount; }
-		inline int GetLastEmitDirection (void) const { return m_iLastEmitDirection; }
-		inline const CVector &GetLastEmitPos (void) const { return m_vLastEmitSource; }
-		inline const CVector &GetOrigin (void) const { return m_vOrigin; }
+		int GetCount (void) const { return m_iCount; }
+		int GetLastEmitDirection (void) const { return m_iLastEmitDirection; }
+		const CVector &GetLastEmitPos (void) const { return m_vLastEmitSource; }
+		const CVector &GetOrigin (void) const { return m_vOrigin; }
 		void Init (int iMaxCount, const CVector &vOrigin = NullVector);
 		void Move (const CVector &vMove);
 		void Paint (CG32bitImage &Dest,
@@ -288,7 +288,7 @@ class CParticleArray
 					Metric rRatedSpeed = 0.0);
 		void ReadFromStream (SLoadCtx &Ctx);
 		void ResetLastEmit (int iLastDirection, const CVector &vLastEmitPos, const CVector &vLastEmitVel = NullVector);
-		inline void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
+		void SetOrigin (const CVector &vOrigin) { m_vOrigin = vOrigin; }
 		void UpdateMotionLinear (bool *retbAlive = NULL, CVector *retvAveragePos = NULL);
 		void UpdateRingCohesion (Metric rRadius, Metric rMinRadius, Metric rMaxRadius, int iCohesion, int iResistance);
 		void WriteToStream (IWriteStream *pStream) const;

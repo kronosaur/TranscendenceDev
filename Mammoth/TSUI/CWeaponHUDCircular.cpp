@@ -288,7 +288,7 @@ void CWeaponHUDCircular::PaintWeaponStatus (CShip *pShip, CInstalledDevice *pDev
 	int iSelectedFireAmmoLeft = pShip->GetAmmoForSelectedLinkedFireWeapons(pDevice);
 	if (iSelectedFireAmmoLeft >= 0)
 		iAmmoLeft = iSelectedFireAmmoLeft;
-	CString sDevName = pDevice->GetItem()->GetNounPhrase(nounDuplicateModifier | nounNoModifiers);
+	CString sDevName = pDevice->GetItem()->GetNounPhrase(nounDuplicateModifier | nounNoModifiers | nounHUDName);
 	CString sName = (sVariant.IsBlank() ? sDevName : sVariant);
 
 	//	Figure out metrics for the background
@@ -361,7 +361,7 @@ void CWeaponHUDCircular::Realize (SHUDPaintCtx &Ctx)
 
 	//	Get the current target
 
-	CSpaceObject *pTarget = pShip->GetTarget(CItemCtx(), IShipController::FLAG_ACTUAL_TARGET);
+	CSpaceObject *pTarget = pShip->GetTarget(IShipController::FLAG_ACTUAL_TARGET);
 
 	//	Set up some metrics
 
