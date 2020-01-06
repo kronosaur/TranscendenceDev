@@ -25,32 +25,35 @@
 		</StaticData>
 
 		<Events>
-			<OnCreate>
+			<CanCreate>
 				(block ()
-					(switch
-						;	See if the mission is still available
+					;	See if the mission is still available
 
-						(not (benedict_isMissionAvailable (objGetType gSource)))
-							(msnDestroy gSource)
-							
-						;	Only if we're in the New Beyond
+					(not (benedict_isMissionAvailable (objGetType gSource)))
+						Nil
+
+					;	Only if we're in the New Beyond
 						
-						(not (sysHasAttribute 'newBeyond))
-							(msnDestroy gSource)
+					(not (sysHasAttribute 'newBeyond))
+						Nil
 							
-						;	If Fiona is dead, mission doesn't show up
+					;	If Fiona is dead, mission doesn't show up
 						
-						(not (rpgCharacterIsAliveAndWell &unidFiona;))
-							(msnDestroy gSource)
+					(not (rpgCharacterIsAliveAndWell &unidFiona;))
+						Nil
 							
-						;	If player skipped original Fiona mission, then nothing here.
+					;	If player skipped original Fiona mission, then nothing here.
 						
-						(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
-							(msnDestroy gSource)
-							
-						;	OK
-						)
+					(not (msnFind "r +unid:&msBenedictAndFiona;; +property:isSuccess;"))
+						Nil
+
+					;	Mission can be created
+
+					True
 					)
+			</CanCreate>
+
+			<OnCreate>
 			</OnCreate>
 
 			<OnAccepted>
