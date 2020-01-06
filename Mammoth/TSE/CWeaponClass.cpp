@@ -4957,7 +4957,7 @@ bool CWeaponClass::UpdateTemperature (CItemCtx &ItemCtx, CWeaponFireDesc *pShot,
 	return true;
 	}
 
-bool CWeaponClass::UsesLauncherControls(void)
+bool CWeaponClass::UsesLauncherControls (void) const
 
 //	UsesLauncherControls
 //

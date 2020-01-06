@@ -849,11 +849,11 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 
 			if (!Device.IsEmpty())
 				{
-				bool bThisIsWeapon = (Device->GetCategory() == itemcatWeapon || Device->GetCategory() == itemcatLauncher);
 				bool bThisIsWeapon = (Device.GetCategory() == itemcatWeapon || Device.GetCategory() == itemcatLauncher);
+				bool bThisIsLauncher = (pDevice->GetCategory() == itemcatLauncher);
 				bool bThisIsMisc = (Device.GetCategory() == itemcatMiscDevice);
 				int iAllSlotsFreed = Device.GetClass()->GetSlotsRequired();
-				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed	: 0);
+				int iWeaponSlotsFreed = (bThisIsWeapon ? iAllSlotsFreed : 0);
 				int iNonWeaponSlotsFreed = (!bThisIsWeapon ? iAllSlotsFreed : 0);
 				int iLauncherSlotsFreed = (bThisIsLauncher ? 1 : 0);
 
@@ -875,16 +875,16 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 				//	See if uninstalling this device would be enough; if not, then
 				//	don't bother.
 				if (iAllSlotsFreed < iAllSlotsNeeded
-						|| iWeaponSlotsFreed < iWeaponSlotsNeeded
-						|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded
-						|| iLauncherSlotsFreed < iLauncherSlotsNeeded)
+					|| iWeaponSlotsFreed < iWeaponSlotsNeeded
+					|| iNonWeaponSlotsFreed < iNonWeaponSlotsNeeded
+					|| iLauncherSlotsFreed < iLauncherSlotsNeeded)
 					continue;
 
 				//	See if removing this device is better than removing another one.
 
 				if (iSlotToReplace == -1
-						|| (iThisType > iBestType)
-						|| (iThisType == iBestType && iThisLevel < iBestLevel))
+					|| (iThisType > iBestType)
+					|| (iThisType == iBestType && iThisLevel < iBestLevel))
 					{
 					iSlotToReplace = Device.GetDeviceSlot();
 					iBestType = iThisType;
@@ -892,16 +892,17 @@ CSpaceObject::InstallItemResults CShip::CalcDeviceToReplace (const CItem &Item, 
 					}
 				}
 			}
+		}
 
 	//	If we found it, then OK. Otherwise, we cannot install
 
 	if (iSlotToReplace != -1)
-	{
+		{
 		if (retiSlot)
 			*retiSlot = iSlotToReplace;
 
 		return insReplaceOther;
-	}
+		}
 	else if (iLauncherSlotsNeeded > 0)
 		return insNoLauncherSlotsLeft;
 	else if (iWeaponSlotsNeeded > 0)
