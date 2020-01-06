@@ -389,3 +389,31 @@ void CGameSession::ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys:
 			break;
 		}
 	}
+
+void CGameSession::ExecuteCommandRefresh (void)
+	{
+	if (CPlayerShipController *pPlayer = m_Model.GetPlayer())
+		ExecuteCommandRefresh(*pPlayer);
+	}
+
+void CGameSession::ExecuteCommandRefresh (CPlayerShipController &Player)
+
+//	ExecuteCommandRefresh
+//
+//	For stateful commands, set to the correct state based on the key state.
+
+	{
+	const CGameKeys &Keys = m_Settings.GetKeyMap();
+
+	Player.SetThrust(Keys.IsKeyDown(CGameKeys::keyThrustForward));
+	Player.SetStopThrust(Keys.IsKeyDown(CGameKeys::keyStop));
+	Player.SetFireMain(Keys.IsKeyDown(CGameKeys::keyFireWeapon));
+	Player.SetFireMissile(Keys.IsKeyDown(CGameKeys::keyFireMissile));
+
+	if (Keys.IsKeyDown(CGameKeys::keyRotateLeft))
+		Player.SetManeuver(RotateLeft);
+	else if (Keys.IsKeyDown(CGameKeys::keyRotateRight))
+		Player.SetManeuver(RotateRight);
+	else
+		Player.SetManeuver(NoRotation);
+	}

@@ -142,6 +142,7 @@ class CGameKeys
         DWORD GetKey (Keys iCommand) const;
         ELayouts GetLayout (void) const { return m_iLayout; }
         CString GetLayoutName (ELayouts iLayout) const;
+		bool IsKeyDown (Keys iCommand) const;
         bool IsModified (void) const { return m_bModified; }
 		bool IsNonRepeatCommand (Keys iCommand) const;
 		bool IsStatefulCommand (Keys iCommand) const;

@@ -393,6 +393,23 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
         }
     }
 
+bool CGameKeys::IsKeyDown (Keys iCommand) const
+
+//	IsKeyDown
+//
+//	Returns TRUE if the key for the given command is currently down.
+
+	{
+	DWORD dwKey = GetKey(iCommand);
+
+	if (dwKey == CVirtualKeyData::INVALID_VIRT_KEY)
+		return false;
+
+	//	NOTE: This works for mouse buttons (e.g., VK_LBUTTON).
+
+	return ::uiIsKeyDown((int)dwKey);
+	}
+
 bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const
 
 //	IsNonRepeatCommand

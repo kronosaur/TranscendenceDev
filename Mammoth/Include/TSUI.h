@@ -134,8 +134,10 @@ class IHISession : public IHICommand, public IAniCommand
 		IHISession (CHumanInterface &HI);
 		virtual ~IHISession (void);
 
+		void HIActivate (void) { OnActivate(); }
 		void HIAnimate (CG32bitImage &Screen, bool bTopMost) { OnAnimate(Screen, bTopMost); }
 		void HIChar (char chChar, DWORD dwKeyData);
+		void HIDeactivate (void) { OnDeactivate(); }
 		CReanimator &HIGetReanimator (void) { return GetReanimator(); }
 		inline void HIInvalidate (const RECT &rcRect);
 		inline void HIInvalidate (void);
@@ -195,8 +197,10 @@ class IHISession : public IHICommand, public IAniCommand
 			};
 
 		virtual CReanimator &GetReanimator (void) { return m_Reanimator; }
+		virtual void OnActivate (void) { }
 		virtual void OnAnimate (CG32bitImage &Screen, bool bTopMost) { DefaultOnAnimate(Screen, bTopMost); }
 		virtual void OnChar (char chChar, DWORD dwKeyData) { }
+		virtual void OnDeactivate (void) { }
 		virtual void OnKeyDown (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnKeyUp (int iVirtKey, DWORD dwKeyData) { }
 		virtual void OnLButtonDblClick (int x, int y, DWORD dwFlags) { }

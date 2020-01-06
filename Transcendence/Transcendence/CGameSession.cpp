@@ -186,6 +186,19 @@ void CGameSession::InitUI (void)
 	pPlayer->OnMouseAimSetting(m_bMouseAim);
 	}
 
+void CGameSession::OnActivate (void)
+
+//	OnActivate
+//
+//	Session has been activated after a popup has been dismissed. For example, the
+//	help screen has been dismissed.
+
+	{
+	//	Refresh commands in case keyboard state has changed.
+
+	ExecuteCommandRefresh();
+	}
+
 void CGameSession::OnCleanUp (void)
 
 //  OnCleanUp
@@ -355,6 +368,7 @@ void CGameSession::OnShowDockScreen (bool bShow)
 		//	New state
 
 		g_pUniverse->SetLogImageLoad(true);
+		ExecuteCommandRefresh();
 		g_pTrans->m_State = CTranscendenceWnd::gsInGame;
 
 		//	Clean up

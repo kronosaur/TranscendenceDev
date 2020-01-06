@@ -382,6 +382,7 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 					{
 					g_pHI->HICommand(CONSTLIT("gameLeaveStargate"));
 					g_pTrans->m_State = CTranscendenceWnd::gsInGame;
+					ExecuteCommandRefresh();
 					}
 				break;
 				}

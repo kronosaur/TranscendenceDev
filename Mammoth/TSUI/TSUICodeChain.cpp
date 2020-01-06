@@ -194,53 +194,53 @@ ICCItem *fnUI (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 					return pCC->CreateNil();
 				}
 			else
-			{
+				{
 				//  Non-alphanumeric case. Use a switch statement.
 				char iKey = 0;
 				if (strEquals(sKey, "shift"))
-				{
+					{
 					iKey = VK_SHIFT;
-				}
+					}
 				else if (strEquals(sKey, "up"))
-				{
+					{
 					iKey = VK_UP;
-				}
+					}
 				else if (strEquals(sKey, "down"))
-				{
+					{
 					iKey = VK_DOWN;
-				}
+					}
 				else if (strEquals(sKey, "left"))
-				{
+					{
 					iKey = VK_LEFT;
-				}
+					}
 				else if (strEquals(sKey, "right"))
-				{
+					{
 					iKey = VK_RIGHT;
-				}
+					}
 				else if (strEquals(sKey, "up"))
-				{
+					{
 					iKey = VK_UP;
-				}
+					}
 				else if (strEquals(sKey, "space"))
-				{
+					{
 					iKey = VK_SPACE;
-				}
+					}
 				else if (strEquals(sKey, "esc"))
-				{
+					{
 					iKey = VK_ESCAPE;
-				}
+					}
 				else if (strEquals(sKey, "ctrl"))
-				{
+					{
 					iKey = VK_CONTROL;
-				}
+					}
 				else if (strEquals(sKey, "lmb"))
-				{
+					{
 					iKey = VK_LBUTTON;
-				}
+					}
 				else if (strEquals(sKey, "rmb"))
-				{
+					{
 					iKey = VK_RBUTTON;
-				}
+					}
 				else return pCC->CreateNil();
 
 				if (uiIsKeyDown(iKey) == true)
