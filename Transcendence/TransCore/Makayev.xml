@@ -78,7 +78,13 @@
 		<!-- Configuration -->
 
 		<Devices>
-			<Device deviceID="&itMarkIHowitzer;"	omnidirectional="true"/>
+			<LevelTable>
+				<Device levelFrequency="ucr-- -----"	deviceID="&itMoskvaLightTurret;" />
+				<Device levelFrequency="rucr- -----"	deviceID="&itSlamCannon;"		omnidirectional="true"/>
+				<Device levelFrequency="-rucr -----"	deviceID="&itMarkIHowitzer;"	omnidirectional="true"/>
+				<Device levelFrequency="--ruc r----"	deviceID="&itMarkIIIHowitzer;"	omnidirectional="true"/>
+				<Device levelFrequency="---ru cr---"	deviceID="&itMarkVHowitzer;"	omnidirectional="true"/>
+			</LevelTable>
 		</Devices>
 
 		<!-- Ships and Defenses -->

@@ -597,6 +597,7 @@
     <Xml Include="KSMission03.xml" />
     <Xml Include="KSMissionC01.xml" />
     <Xml Include="KSMissionC02.xml" />
+    <Xml Include="Makayev.xml" />
     <Xml Include="Marauders.xml" />
     <Xml Include="MRAD.xml" />
     <Xml Include="NewVictoria.xml" />
