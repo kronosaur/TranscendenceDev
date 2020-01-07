@@ -1399,5 +1399,8 @@
     <ClCompile Include="MissileProperties.cpp">
       <Filter>Source Files\SpaceObjects</Filter>
     </ClCompile>
+    <ClCompile Include="SpaceObjectItemProperties.cpp">
+      <Filter>Source Files\SpaceObjects</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
