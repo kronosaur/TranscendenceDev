@@ -10,15 +10,16 @@ class CHeadsUpDisplay
     public:
         CHeadsUpDisplay (CHumanInterface &HI, CTranscendenceModel &Model) :
                 m_HI(HI),
-                m_Model(Model),
-                m_pArmorPainter(NULL),
-                m_pShieldsPainter(NULL),
-                m_iSelection(-1),
-                m_pReactorPainter(NULL),
-                m_pWeaponsPainter(NULL)
+                m_Model(Model)
             { }
 
-        inline ~CHeadsUpDisplay (void) { CleanUp(); }
+		CHeadsUpDisplay (const CHeadsUpDisplay &Src) = delete;
+		CHeadsUpDisplay (CHeadsUpDisplay &&Src) = delete;
+
+        ~CHeadsUpDisplay (void) { CleanUp(); }
+
+		CHeadsUpDisplay &operator= (const CHeadsUpDisplay &Src) = delete;
+		CHeadsUpDisplay &operator= (CHeadsUpDisplay &&Src) = delete;
 
         void CleanUp (void);
         void GetClearHorzRect (RECT *retrcRect) const;
@@ -29,23 +30,19 @@ class CHeadsUpDisplay
         void Update (int iTick);
 
     private:
+		void InvalidateHUD (EHUDTypes iHUD) { if (m_pHUD[iHUD]) m_pHUD[iHUD]->Invalidate(); }
+		void PaintHUD (EHUDTypes iHUD, CG32bitImage &Screen, SHUDPaintCtx &PaintCtx) const;
+		void SetHUDLocation (EHUDTypes iHUD, const RECT &rcRect, DWORD dwLocation)
+			{ if (m_pHUD[iHUD]) m_pHUD[iHUD]->SetLocation(rcRect, dwLocation); }
+
         CHumanInterface &m_HI;
         CTranscendenceModel &m_Model;
         RECT m_rcScreen;
 
-        //  Armor/Shields Display
+		//	HUDs
 
-		IHUDPainter *m_pArmorPainter;
-		IHUDPainter *m_pShieldsPainter;
-        int m_iSelection;                   //  Selected armor seg (or -1)
-
-        //  Reactor Display
-
-        IHUDPainter *m_pReactorPainter;
-
-        //  Weapons Display
-
-        IHUDPainter *m_pWeaponsPainter;
+		TUniquePtr<IHUDPainter> m_pHUD[hudCount];
+		int m_iSelection = -1;						//  Selected armor seg (or -1)
     };
 
 class CSystemMapDisplay

@@ -66,14 +66,15 @@ class IHUDPainter
 
 		virtual ALERROR Bind (SDesignLoadCtx &Ctx) = 0;
 		virtual void GetBounds (int *retWidth, int *retHeight) const = 0;
-		inline void GetPos (int *retx, int *rety) const { *retx = m_xPos; *rety = m_yPos; }
+		DWORD GetLocation (void) const { return m_dwLoc; }
+		void GetPos (int *retx, int *rety) const { *retx = m_xPos; *rety = m_yPos; }
 		void GetRect (RECT *retrcRect) const;
 		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) = 0;
 		virtual void Invalidate (void) { }
-		inline void Paint (CG32bitImage &Dest, SHUDPaintCtx &Ctx) { OnPaint(Dest, m_xPos, m_yPos, Ctx); }
-		inline void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) { OnPaint(Dest, x, y, Ctx); }
+		void Paint (CG32bitImage &Dest, SHUDPaintCtx &Ctx) { OnPaint(Dest, m_xPos, m_yPos, Ctx); }
+		void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) { OnPaint(Dest, x, y, Ctx); }
 		void SetLocation (const RECT &rcRect, DWORD dwLocation);
-		inline void Update (SHUDUpdateCtx &Ctx) { OnUpdate(Ctx); }
+		void Update (SHUDUpdateCtx &Ctx) { OnUpdate(Ctx); }
 
 		static IHUDPainter *Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType);
 
@@ -89,7 +90,9 @@ class IHUDPainter
 		ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
 
 	private:
-		int m_xPos;
-		int m_yPos;
+		int m_xPos = 0;
+		int m_yPos = 0;
+
+		DWORD m_dwLoc = 0;
 	};
 

@@ -201,7 +201,7 @@ ALERROR IHUDPainter::InitRectFromElement (CXMLElement *pItem, RECT *retRect)
 	retRect->top = pItem->GetAttributeInteger(Y_ATTRIB);
 	retRect->right = retRect->left + pItem->GetAttributeInteger(WIDTH_ATTRIB);
 	retRect->bottom = retRect->top + pItem->GetAttributeInteger(HEIGHT_ATTRIB);
-
+	
 	return NOERROR;
 	}
 
@@ -212,11 +212,12 @@ void IHUDPainter::SetLocation (const RECT &rcRect, DWORD dwLocation)
 //	Sets the location on the screen.
 
 	{
+	m_dwLoc = dwLocation;
+
 	if (dwLocation == locNone)
 		{
 		m_xPos = 0;
 		m_yPos = 0;
-		return;
 		}
 	else
 		{
