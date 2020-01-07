@@ -10,6 +10,18 @@
 //	This is the default set of HUDs, created at the dawn of the game. This set
 //	mostly relies on images.
 
+class CAccelerateHUD : public IHUDPainter
+	{
+	public:
+		virtual ALERROR Bind (SDesignLoadCtx &Ctx) override { return NOERROR; }
+		virtual void GetBounds (int *retWidth, int *retHeight) const override;
+		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) override { return NOERROR; }
+		virtual void Invalidate (void) override { }
+
+	protected:
+		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+	};
+
 class CArmorHUDImages : public IHUDPainter
 	{
 	public:

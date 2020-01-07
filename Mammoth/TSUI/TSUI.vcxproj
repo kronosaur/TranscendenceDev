@@ -171,6 +171,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CAccelerateHUD.cpp" />
     <ClCompile Include="CArmorHUDImages.cpp" />
     <ClCompile Include="CArmorHUDRectangular.cpp" />
     <ClCompile Include="CArmorHUDRingSegments.cpp" />

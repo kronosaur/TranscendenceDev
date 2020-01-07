@@ -29,15 +29,23 @@ IHUDPainter *IHUDPainter::Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDT
 	CXMLElement *pDesc = pSettings->GetHUDDesc(iType);
 	if (pDesc == NULL)
 		{
-		//	For backwards compatibility we still allow no targeting descriptor.
+		//	If no descriptor, come up with defaults
 
-		if (iType == hudTargeting)
-			return new CWeaponHUDDefault;
+		switch (iType)
+			{
+			case hudAccelerate:
+				return new CAccelerateHUD;
 
-		//	Otherwise, no HUD
+			//	For backwards compatibility we still allow no targeting descriptor.
 
-		else
-			return NULL;
+			case hudTargeting:
+				return new CWeaponHUDDefault;
+
+			//	Otherwise, no HUD
+
+			default:
+				return NULL;
+			}
 		}
 
 	//	Create

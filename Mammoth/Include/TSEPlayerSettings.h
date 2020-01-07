@@ -17,12 +17,13 @@ enum EHUDTypes
 	{
 	hudNone =						-1,	//	Invalid HUD
 
-	hudArmor =						0,
-	hudReactor =					1,
-	hudShields =					2,
-	hudTargeting =					3,
+	hudAccelerate =					0,
+	hudArmor =						1,
+	hudReactor =					2,
+	hudShields =					3,
+	hudTargeting =					4,
 
-	hudCount =						4,
+	hudCount =						5,
 	};
 
 class CDockScreenVisuals
