@@ -20,24 +20,22 @@
 #define PROPERTY_REMOVE_DEVICE_PRICE			CONSTLIT("removeDevicePrice")
 #define PROPERTY_REMOVE_ITEM_STATUS				CONSTLIT("removeItemStatus")
 
-ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item, const CString &sName) const
+ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item, const CString &sName) const
 
 //	GetItemProperty
 //
 //	Returns an item property
 
 	{
-	CCodeChain &CC = GetUniverse().GetCC();
-
 	//	Return the property
 
 	if (strEquals(sName, PROPERTY_INSTALL_DEVICE_PRICE))
 		{
 		int iPrice;
 		if (!GetDeviceInstallPrice(Item, 0, &iPrice))
-			return CC.CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 
-		return CC.CreateInteger(iPrice);
+		return ICCItemPtr(iPrice);
 		}
 	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_STATUS))
 		{
@@ -55,11 +53,11 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 
 		//	Create the structure
 
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
+		ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
+		pResult->SetBooleanAt(FIELD_CAN_INSTALL, bCanInstall);
 		pResult->SetIntegerAt(FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (bCanInstall && (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetBooleanAt(FIELD_UPGRADE_INSTALL_ONLY, true);
 
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
@@ -88,12 +86,12 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 
 		//	Create the structure
 
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(FIELD_CAN_INSTALL, (bCanInstall ? CC.CreateTrue() : CC.CreateNil()));
+		ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
+		pResult->SetBooleanAt(FIELD_CAN_INSTALL, bCanInstall);
 		pResult->SetIntegerAt(FIELD_PRICE, (bCanInstall ? iPrice : -1));
 		if (bCanInstall 
 				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetBooleanAt(FIELD_UPGRADE_INSTALL_ONLY, true);
 
 		//	NOTE: Message is valid even if we cannot install
 
@@ -106,9 +104,9 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 		{
 		int iPrice;
 		if (!GetDeviceRemovePrice(Item, 0, &iPrice))
-			return CC.CreateNil();
+			return ICCItemPtr(ICCItem::Nil);
 
-		return CC.CreateInteger(iPrice);
+		return ICCItemPtr(iPrice);
 		}
 	else if (strEquals(sName, PROPERTY_REMOVE_ITEM_STATUS))
 		{
@@ -130,12 +128,12 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 
 		//	Create the structure
 
-		ICCItem *pResult = CC.CreateSymbolTable();
-		pResult->SetAt(FIELD_CAN_REMOVE, (bCanRemove ? CC.CreateTrue() : CC.CreateNil()));
+		ICCItemPtr pResult = ICCItemPtr(ICCItem::SymbolTable);
+		pResult->SetBooleanAt(FIELD_CAN_REMOVE, bCanRemove);
 		pResult->SetIntegerAt(FIELD_PRICE, (bCanRemove ? iPrice : -1));
 		if (bCanRemove 
 				&& (dwPriceFlags & CTradingDesc::PRICE_UPGRADE_INSTALL_ONLY))
-			pResult->SetAt(FIELD_UPGRADE_INSTALL_ONLY, CC.CreateTrue());
+			pResult->SetBooleanAt(FIELD_UPGRADE_INSTALL_ONLY, true);
 
 		if (!sMessageID.IsBlank())
 			pResult->SetStringAt(FIELD_DESC_ID, sMessageID);
@@ -150,12 +148,12 @@ ICCItem *CSpaceObject::GetItemProperty (CCodeChainCtx &CCCtx, const CItem &Item,
 
 		CItemListManipulator ItemList(const_cast<CItemList &>(GetItemList()));
 		if (!ItemList.SetCursorAtItem(Item))
-			return CC.CreateError(CONSTLIT("Item not found on object."));
+			return ICCItemPtr::Error(CONSTLIT("Item not found on object."));
 
 		//	LATER: Eventually we will get rid of CItemCtx.
 
 		CItemCtx Ctx(&Item, const_cast<CSpaceObject *>(this));
-		return Item.GetItemProperty(CCCtx, Ctx, sName, false);
+		return ICCItemPtr(Item.GetItemProperty(CCX, Ctx, sName, false));
 		}
 	}
 

@@ -6581,19 +6581,19 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 		case FN_OBJ_DEVICE_FIRE_ARC:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("fireArc"))->Reference();
 			}
 
 		case FN_OBJ_DEVICE_LINKED_FIRE_OPTIONS:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("linkedFireOptions"))->Reference();
 			}
 
 		case FN_OBJ_DEVICE_POS:
 			{
 			CItem Item(pCtx->AsItem(pArgs->GetElement(1)));
-			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"));
+			return pObj->GetItemProperty(*pCtx, Item, CONSTLIT("pos"))->Reference();
 			}
 
 		case FN_OBJ_DOCKED_AT:
@@ -6727,7 +6727,7 @@ ICCItem *fnObjGet (CEvalContext *pEvalCtx, ICCItem *pArgs, DWORD dwData)
 
 			//	Get it
 
-			return pObj->GetItemProperty(*pCtx, Item, sProperty);
+			return pObj->GetItemProperty(*pCtx, Item, sProperty)->Reference();
 			}
 
 		case FN_OBJ_GET_NAMED_ITEM:

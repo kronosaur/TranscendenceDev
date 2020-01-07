@@ -277,6 +277,8 @@ class ICCItemPtr
 			*this = Src;
 			}
 
+		static ICCItemPtr Error (const CString &sError, ICCItem *pData = NULL);
+
 	private:
 		ICCItem *m_pPtr;
 	};
