@@ -40,6 +40,10 @@
 								(not (itmIsEqual theItem damagedComponent compareFlags))
 									Nil
 
+								;	Skip unknown items, since we don't know what they are.
+								(not (itmIsKnown theItem))
+									Nil
+
 								(= leftToAdd 0)
 									(block ()
 										(setq availCount (+ availCount (itmGetCount theItem)))
@@ -64,6 +68,10 @@
 						(map (objGetItems theSource "*U") 'excludeNil theItem
 							(switch
 								(not (itmIsEqual theItem theComponent compareFlags))
+									Nil
+
+								;	Skip unknown items, since we don't know what they are.
+								(not (itmIsKnown theItem))
 									Nil
 
 								(= leftToAdd 0)

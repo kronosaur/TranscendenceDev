@@ -342,7 +342,7 @@ class CDockPane
 			CG32bitPixel TextColor;
 			};
 
-		void CreateControl (EControlTypes iType, const CString &sID, const CString &sStyle, RECT rcPane);
+		void CreateControl (EControlTypes iType, const CString &sID, const CXMLElement &ControlDesc, RECT rcPane);
 		ALERROR CreateControls (RECT rcPane, CString *retsError);
 		void ExecuteAction (int iAction);
 		bool FindControl (const CString &sID, const SControl **retpControl = NULL) const;

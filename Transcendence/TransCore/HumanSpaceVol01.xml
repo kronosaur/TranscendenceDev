@@ -1897,6 +1897,7 @@
 	
 	<!ENTITY itAmmoBoxXM900 			"0x001001F0">
 	<!ENTITY smTinkerSpace	 			"0x001001F1">
+	<!ENTITY vtTinkerEnhancement		"0x001001F2">
     
     <!-- 0200-020F BLACK MARKET -->
     

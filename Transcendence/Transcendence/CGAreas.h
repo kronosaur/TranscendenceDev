@@ -277,6 +277,7 @@ class CGItemListDisplayArea : public AGArea
 		bool InitFromDesc (ICCItem *pDesc);
         void SetBackColor (CG32bitPixel rgbColor) { m_rgbBackColor = rgbColor; }
         void SetColor (CG32bitPixel rgbColor) { m_rgbTextColor = rgbColor; }
+		void SetDisplayAsKnown (bool bValue = true) { m_bActualItems = bValue; Invalidate(); }
 		void SetItemList (CSpaceObject *pSource, const CItemList &ItemList);
 		void SetText (const CString &sTitle, const CString &sDesc) { m_sTitle = sTitle; m_sDesc = sDesc; m_ItemList.DeleteAll(); Invalidate(); }
 
@@ -307,6 +308,8 @@ class CGItemListDisplayArea : public AGArea
 
 		CG32bitPixel m_rgbTextColor;
 		CG32bitPixel m_rgbBackColor;
+
+		bool m_bActualItems = false;			//	Show actual items, even if unknown
 
 		//	Initialized on Justify
 
