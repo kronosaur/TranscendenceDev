@@ -365,6 +365,39 @@
 								)
 							)
 						))
+
+					;	Unit Tests on Missile Properties
+
+					(block (i)
+						(setq gPlayerShip (sysCreateShip &scSapphirePlayer; Nil &svPlayer;))
+						(if (not gPlayerShip)
+							(error "Unable to create player ship.")
+							)
+						(shpOrder gPlayerShip 'hold)
+
+						;	Install NAMI launcher
+
+						(objAddItem gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+						(shpInstallDevice gPlayerShip (itmCreate &itNAMIMissileLauncher; 1))
+						)
+
+					;	Some tests
+
+					(diagEval (list
+						{	test:'(objGetItemProperty gPlayerShip 
+									(itmCreate &itKM100Missile; 1) 
+									'canBeFired
+									)														result:True }
+						{	test:'(objGetItemProperty gPlayerShip 
+									(itmCreate &itSmartCannonShell; 1) 
+									'canBeFired
+									)														result:Nil }
+						))
+
+					;	Clean up
+
+					(objDestroy gPlayerShip)
+					(setq gPlayerShip Nil)
 					)
 			</OnGlobalStartDiagnostics>
 		</Events>

@@ -11,6 +11,7 @@
 #define FIELD_PRICE								CONSTLIT("price")
 #define FIELD_UPGRADE_INSTALL_ONLY				CONSTLIT("upgradeInstallOnly")
 
+#define PROPERTY_CAN_BE_FIRED					CONSTLIT("canBeFired")
 #define PROPERTY_DAMAGED						CONSTLIT("damaged")
 #define PROPERTY_ENABLED						CONSTLIT("enabled")
 #define PROPERTY_HP								CONSTLIT("hp")
@@ -29,11 +30,29 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 	{
 	//	Return the property
 
-	if (strEquals(sName, PROPERTY_INSTALL_DEVICE_PRICE))
+	if (strEquals(sName, PROPERTY_CAN_BE_FIRED))
+		{
+		CMissileItem MissileItem = Item.AsMissileItem();
+		if (!MissileItem)
+			return ICCItemPtr::Nil();
+
+		TArray<CItem> Launchers = MissileItem.GetLaunchWeapons();
+
+		const CDeviceSystem &Devices = GetDeviceSystem();
+		for (CDeviceItem DeviceItem : Devices)
+			{
+			for (int i = 0; i < Launchers.GetCount(); i++)
+				if (Launchers[i].GetType() == &DeviceItem.GetType())
+					return ICCItemPtr::True();
+			}
+
+		return ICCItemPtr::Nil();
+		}
+	else if (strEquals(sName, PROPERTY_INSTALL_DEVICE_PRICE))
 		{
 		int iPrice;
 		if (!GetDeviceInstallPrice(Item, 0, &iPrice))
-			return ICCItemPtr(ICCItem::Nil);
+			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
 		}
@@ -104,7 +123,7 @@ ICCItemPtr CSpaceObject::GetItemProperty (CCodeChainCtx &CCX, const CItem &Item,
 		{
 		int iPrice;
 		if (!GetDeviceRemovePrice(Item, 0, &iPrice))
-			return ICCItemPtr(ICCItem::Nil);
+			return ICCItemPtr::Nil();
 
 		return ICCItemPtr(iPrice);
 		}

@@ -278,6 +278,8 @@ class ICCItemPtr
 			}
 
 		static ICCItemPtr Error (const CString &sError, ICCItem *pData = NULL);
+		static ICCItemPtr Nil (void) { return ICCItemPtr(ICCItem::Nil); }
+		static ICCItemPtr True (void) { return ICCItemPtr(ICCItem::True); }
 
 	private:
 		ICCItem *m_pPtr;
