@@ -47,7 +47,9 @@
 			nestedScreen=		"true"
 			>
 		<Properties>
+			<Variant id="rpg.buyCriteria">(@ gData 'buyCriteria)</Variant>
 			<Variant id="rpg.checkMilitaryID">(or (objGetProperty gSource 'rpg.checkMilitaryID) (@ gData 'checkMilitaryID))</Variant>
+			<Variant id="rpg.sellCriteria">(@ gData 'sellCriteria)</Variant>
 			<Variant id="rpg.showActualItem">(or (objGetProperty gSource 'rpg.showActualItem) (@ gData 'showActualItem))</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
@@ -64,6 +66,7 @@
 				<Actions>
 					<Action id="actionBuyItems" default="1">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeBuy; {
+							rpg.criteria: (scrGetProperty gScreen 'rpg.buyCriteria)
 							rpg.checkMilitaryID: (scrGetProperty gScreen 'rpg.checkMilitaryID)
 							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
@@ -71,6 +74,7 @@
 
 					<Action id="actionSellItems">
 						(scrShowScreen gScreen &dsRPGCommoditiesExchangeSell; {
+							rpg.criteria: (scrGetProperty gScreen 'rpg.sellCriteria)
 							rpg.sourceObj: (scrGetProperty gScreen 'rpg.sourceObj)
 							})
 					</Action>
@@ -156,36 +160,19 @@
 					)
 				
 					(switch
-						;	If we specify an item criteria, then create a function
-						;	that will filter.
-					
-						(and itemCriteria
-								(neq itemCriteria "*")
-								)
-							(scrSetListFilter gScreen (lambda (theItem)
-								(switch
-									(not (itmMatches theItem itemCriteria))
-										Nil
-								
-									(rpgCalcSellPrice theItem)
-									)
-								))
-							
 						;	If we specify a function, use that
 					
 						(@ gData 'listFilter)
 							(scrSetListFilter gScreen (@ gData 'listFilter))
 						
-						;	If we want to hide installables, then we need to add some
-						;	user-selectable filters.
+						;	Backwards compatibility
 					
-						(not (@ gData 'showInstallables))
-							(rpgCreateBuyItemTabs)
-					
-						;	Otherwise, we sell everything listed in our Trade
-						;	directives.
-					
-						(scrSetListFilter gScreen rpgCalcSellPrice)
+						(@ gData 'showInstallables)
+							(scrSetListFilter gScreen rpgCalcSellPrice)
+
+						;	Categorize items into tabs
+
+						(rpgCreateBuyItemTabs itemCriteria)
 						)
 
 					;	We set the underlying engine property based on inputs.
@@ -650,6 +637,7 @@
 			nestedScreen=		"true"
 			>
 		<Properties>
+			<Variant id="rpg.criteria">(@ gData 'criteria)</Variant>
 			<Variant id="rpg.sourceObj">(@ gData 'sourceObj)</Variant>
 		</Properties>
 
@@ -1014,10 +1002,15 @@
 				(objGetSellPrice gSource thisItem)
 				))
 
-			(setq rpgCreateBuyItemTabs (lambda ()
-				(block ()
+			(setq rpgCreateBuyItemTabs (lambda (criteria)
+				(block (
+					(theCriteria criteria)
+					)
 					(scrAddListFilter gScreen 'filterGeneral "General" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "adm")
 								Nil
 											
@@ -1027,6 +1020,9 @@
 									
 					(scrAddListFilter gScreen 'filterInstallable "Devices &amp; Armor" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "ad")
 								(rpgCalcSellPrice theItem)
 							)
@@ -1034,12 +1030,23 @@
 							
 					(scrAddListFilter gScreen 'filterAmmo "Ammo" (lambda (theItem)
 						(switch
+							(and theCriteria (not (itmMatches theItem theCriteria)))
+								Nil
+
 							(itmMatches theItem "m")
 								(rpgCalcSellPrice theItem)
 							)
 						))
-							
-					(scrAddListFilter gScreen 'filterAll "All" rpgCalcSellPrice)
+
+					(if theCriteria							
+						(scrAddListFilter gScreen 'filterAll "All" (lambda (theItem)
+							(if (itmMatches theItem theCriteria)
+									(rpgCalcSellPrice theItem)
+								)
+							))
+
+						(scrAddListFilter gScreen 'filterAll "All" rpgCalcSellPrice)
+						)
 					)
 				))
 
