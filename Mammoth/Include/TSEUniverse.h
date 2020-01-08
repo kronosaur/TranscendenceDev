@@ -208,6 +208,17 @@ class CUniverse
 				virtual void OnObjDestroyed (SDestroyCtx &Ctx) { }
 			};
 
+		enum EUpdateSpeeds
+			{
+			updateNone,
+
+			updateNormal,
+			updateAccelerated,
+			updatePaused,
+			updateSingleFrame,
+			updateSlowMotion,
+			};
+
 		struct SInitDesc
 			{
 			IHost *pHost = NULL;						//	Host
@@ -336,6 +347,7 @@ class CUniverse
         CObjectTracker &GetGlobalObjects (void) { return m_Objects; }
         const CObjectTracker &GetGlobalObjects (void) const { return m_Objects; }
 		IHost *GetHost (void) const { return m_pHost; }
+		EUpdateSpeeds GetLastUpdateSpeed (void) const { return m_iLastUpdateSpeed; }
 		CMission *GetMission (int iIndex) { return m_AllMissions.GetMission(iIndex); }
 		int GetMissionCount (void) const { return m_AllMissions.GetCount(); }
 		CMissionList &GetMissions (void) { return m_AllMissions; }
@@ -434,6 +446,7 @@ class CUniverse
 		IPlayerController::EUIMode GetCurrentUIMode (void) const { return (m_pPlayer ? m_pPlayer->GetUIMode() : IPlayerController::uimodeUnknown); }
 		const CDifficultyOptions &GetDifficulty (void) const { return m_Difficulty; }
 		CDifficultyOptions::ELevels GetDifficultyLevel (void) const { return m_Difficulty.GetLevel(); }
+		DWORD GetFrameTicks (void) const { return m_dwFrame; }
 		int GetPaintTick (void) { return m_iPaintTick; }
 		CSpaceObject *GetPOV (void) const { return m_pPOV; }
 		IPlayerController *GetPlayer (void) const { return m_pPlayer; }
@@ -480,7 +493,7 @@ class CUniverse
 		void PaintPOVLRS (CG32bitImage &Dest, const RECT &rcView, Metric rScale, DWORD dwFlags, bool *retbNewEnemies = NULL);
 		void PaintPOVMap (CG32bitImage &Dest, const RECT &rcView, Metric rMapScale);
 		void SetLogImageLoad (bool bLog = true) { CSmartLock Lock(m_cs); m_iLogImageLoad += (bLog ? -1 : +1); }
-		void Update (SSystemUpdateCtx &Ctx);
+		bool Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode = updateNormal);
 		void UpdateExtended (void);
 
 		void DebugOutput (char *pszLine, ...);
@@ -514,6 +527,7 @@ class CUniverse
 		ALERROR InitTopology (DWORD dwStartingMap, CString *retsError);
 		void SetHost (IHost *pHost);
 		void SetPlayer (IPlayerController *pPlayer);
+		void UpdateTick (SSystemUpdateCtx &Ctx);
 		void UpdateMissions (int iTick, CSystem *pSystem);
 		void UpdateSovereigns (int iTick, CSystem *pSystem);
 
@@ -568,6 +582,8 @@ class CUniverse
 		CFractalTextureLibrary m_FractalTextureLibrary;
 		CGImageCache m_DynamicImageLibrary;
 		SViewportAnnotations m_ViewportAnnotations;
+		EUpdateSpeeds m_iLastUpdateSpeed = updateNone;
+		DWORD m_dwFrame = 0;
 
 		//	Cached singletons
 

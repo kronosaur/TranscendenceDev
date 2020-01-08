@@ -115,8 +115,8 @@ class CPlayerShipController : public IShipController
 		inline int GetCargoSpace (void) { return mathRound(m_pShip->GetCargoSpaceLeft()); }
 		inline int GetEndGameScore (void) { return m_Stats.CalcEndGameScore(); }
 		inline int GetEnemiesDestroyed (void) { return ::strToInt(m_Stats.GetStat(CONSTLIT("enemyShipsDestroyed")), 0); }
-        inline CGameSession *GetGameSession (void) { return m_pSession; }
-        inline CPlayerGameStats &GetGameStats (void) { return m_Stats; }
+		inline CGameSession *GetGameSession (void) { return m_pSession; }
+		inline CPlayerGameStats &GetGameStats (void) { return m_Stats; }
 		inline CString GetItemStat (const CString &sStat, ICCItem *pItemCriteria) const { return m_Stats.GetItemStat(sStat, pItemCriteria); }
 		inline CString GetKeyEventStat (const CString &sStat, const CString &sNodeID, const CDesignTypeCriteria &Crit) const { return m_Stats.GetKeyEventStat(sStat, sNodeID, Crit); }
 		inline GenomeTypes GetPlayerGenome (void) const { return m_iGenome; }
@@ -139,17 +139,17 @@ class CPlayerShipController : public IShipController
 		void OnEnemyShipsDetected (void);
 		inline void OnGameEnd (void) { m_Stats.OnGameEnd(m_pShip); }
 		inline void OnMouseAimSetting (bool bEnabled) { if (!bEnabled) m_ManeuverController.CmdCancel(); }
-        void OnStartGame (void);
+		void OnStartGame (void);
 		void OnSystemEntered (CSystem *pSystem, int *retiLastVisit = NULL) { m_Stats.OnSystemEntered(pSystem, retiLastVisit); }
 		void OnSystemLeft (CSystem *pSystem) { m_Stats.OnSystemLeft(pSystem); }
 		inline CurrencyValue Payment (DWORD dwEconUNID, CurrencyValue iCredits) { return m_Credits.IncCredits(dwEconUNID, iCredits); }
 		void ReadyNextWeapon (int iDir = 1);
 		void ReadyNextMissile (int iDir = 1);
 		inline void SetCharacterClass (CGenericType *pClass) { m_pCharacterClass = pClass; }
-        inline void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
+		inline void SetGameSession (CGameSession *pSession) { m_pSession = pSession; }
 		inline void SetGenome (GenomeTypes iGenome) { m_iGenome = iGenome; }
 		inline void SetMapHUD (bool bActive) { m_bMapHUD = bActive; }
-        inline void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
+		inline void SetMouseAimAngle (int iAngle) { m_ManeuverController.CmdMouseAim(iAngle); }
 		inline void SetName (const CString &sName) { m_sName = sName; }
 		inline void SetResurrectCount (int iCount) { m_Stats.SetStat(CONSTLIT("resurrectCount"), ::strFromInt(iCount)); }
 		inline void SetStartingShipClass (DWORD dwUNID) { m_dwStartingShipClass = dwUNID; }
@@ -185,7 +185,7 @@ class CPlayerShipController : public IShipController
 		virtual void CancelDocking (void) override;
 		virtual bool CancelOrder (int iIndex) override;
 		virtual CString DebugCrashInfo (void) override;
-        virtual ICCItem *FindProperty (const CString &sProperty) override;
+		virtual ICCItem *FindProperty (const CString &sProperty) override;
 		virtual CString GetAISettingString (const CString &sSetting) override;
 		virtual CString GetClass (void) override { return CONSTLIT("player"); }
 		virtual int GetCombatPower (void) override;
@@ -223,7 +223,7 @@ class CPlayerShipController : public IShipController
 		virtual void OnDeviceStatus (CInstalledDevice *pDev, CDeviceClass::DeviceNotificationTypes iEvent) override;
 		virtual void OnDocked (CSpaceObject *pObj) override;
 		virtual void OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend) override;
-        virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override;
+		virtual void OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUseTypes iUse) override;
 		virtual void OnItemBought (const CItem &Item, CurrencyValue iTotalPrice) override { m_Stats.OnItemBought(Item, iTotalPrice); }
 		virtual void OnItemDamaged (const CItem &Item, int iHP) override { m_Stats.OnItemDamaged(Item, iHP); }
 		virtual void OnItemFired (const CItem &Item) override { m_Stats.OnItemFired(Item); }
@@ -263,7 +263,7 @@ class CPlayerShipController : public IShipController
 
 		CUniverse &m_Universe;
 		CTranscendenceWnd *m_pTrans = NULL;
-        CGameSession *m_pSession = NULL;            //  Game session
+		CGameSession *m_pSession = NULL;            //  Game session
 		CShip *m_pShip = NULL;
 
 		OrderTypes m_iOrder = orderNone;			//	Last order
@@ -289,7 +289,7 @@ class CPlayerShipController : public IShipController
 		bool m_bMapHUD = true;						//	Show HUD on map
 		bool m_bDockPortIndicators = true;			//	Dock ports light up when near by
 
-        int m_iMouseAimAngle = -1;					//  Angle to aim towards
+		int m_iMouseAimAngle = -1;					//  Angle to aim towards
 
 		CCurrencyBlock m_Credits;					//	Money available to player
 		CPlayerGameStats m_Stats;					//	Player stats, including score

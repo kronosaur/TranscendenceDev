@@ -20,6 +20,20 @@ class CAccelerateHUD : public IHUDPainter
 
 	protected:
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) override;
+		virtual void OnUpdate (SHUDUpdateCtx &Ctx) override;
+
+	private:
+		static constexpr int DISPLAY_HEIGHT = 160;
+		static constexpr int DISPLAY_WIDTH = 160;
+		static constexpr int FADE_START = 150;
+		static constexpr int FADE_TIME = 30;
+		static constexpr int ICON_HEIGHT = 128;
+		static constexpr int ICON_WIDTH = 128;
+
+		bool IsNewMode (CUniverse::EUpdateSpeeds iCurMode, CUniverse::EUpdateSpeeds iNewMode) const;
+
+		CUniverse::EUpdateSpeeds m_iLastMode = CUniverse::updateNone;
+		int m_iLastModeTick = 0;
 	};
 
 class CArmorHUDImages : public IHUDPainter

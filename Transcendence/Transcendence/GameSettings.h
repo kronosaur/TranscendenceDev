@@ -10,15 +10,15 @@
 class CGameKeys
 	{
 	public:
-        enum ELayouts
-            {
-            layoutNone =                -1,
+		enum ELayouts
+			{
+			layoutNone =                -1,
 
-            layoutDefault =             0,  //  Default layout
-            layoutCustom =              1,  //  Configured by player
+			layoutDefault =             0,  //  Default layout
+			layoutCustom =              1,  //  Configured by player
 
-            layoutCount =               2,
-            };
+			layoutCount =               2,
+			};
 
 		enum Keys
 			{
@@ -120,59 +120,59 @@ class CGameKeys
 
 		struct SBindingDesc
 			{
-            CString sKeyID;
-            DWORD dwVirtKey;
+			CString sKeyID;
+			DWORD dwVirtKey;
 			};
 
-        struct SCommandKeyDesc
-            {
-            CGameKeys::Keys iCmd;
-            CString sCmdID;
-            CString sCmdLabel;
+		struct SCommandKeyDesc
+			{
+			CGameKeys::Keys iCmd;
+			CString sCmdID;
+			CString sCmdLabel;
 
 			TArray<SBindingDesc> Keys;
-            };
+			};
 
 		CGameKeys (void);
 
-        void GetCommands (TArray<SCommandKeyDesc> &Result) const;
+		void GetCommands (TArray<SCommandKeyDesc> &Result) const;
 		Keys GetGameCommand (DWORD dwVirtKey) const { return m_iMap[(dwVirtKey < 256 ? dwVirtKey : 0)]; }
-        Keys GetGameCommandFromChar (char chChar) const;
+		Keys GetGameCommandFromChar (char chChar) const;
 		char GetKeyIfChar (Keys iCommand) const;
-        DWORD GetKey (Keys iCommand) const;
-        ELayouts GetLayout (void) const { return m_iLayout; }
-        CString GetLayoutName (ELayouts iLayout) const;
+		DWORD GetKey (Keys iCommand) const;
+		ELayouts GetLayout (void) const { return m_iLayout; }
+		CString GetLayoutName (ELayouts iLayout) const;
 		bool IsKeyDown (Keys iCommand) const;
-        bool IsModified (void) const { return m_bModified; }
+		bool IsModified (void) const { return m_bModified; }
 		bool IsNonRepeatCommand (Keys iCommand) const;
 		bool IsStatefulCommand (Keys iCommand) const;
 		ALERROR ReadFromXML (CXMLElement *pDesc);
-        void SetGameKey (const CString &sKeyID, Keys iCommand);
-        void SetLayout (ELayouts iLayout);
+		void SetGameKey (const CString &sKeyID, Keys iCommand);
+		void SetLayout (ELayouts iLayout);
 		ALERROR WriteAsXML (IWriteStream *pOutput);
 
 		static CGameKeys::Keys GetGameCommand (const CString &sCmd);
 
 	private:
-        struct SKeyMapEntry
-	        {
-	        int iVirtKey;
-	        CGameKeys::Keys iGameKey;
-	        };
+		struct SKeyMapEntry
+			{
+			int iVirtKey;
+			CGameKeys::Keys iGameKey;
+			};
 
-        void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
+		void SetLayoutFromStatic (const SKeyMapEntry *pLayout, int iLayoutCount);
 
-        static CString GetLayoutID (ELayouts iLayout);
-        static ELayouts GetLayoutFromID (const CString &sLayoutID);
+		static CString GetLayoutID (ELayouts iLayout);
+		static ELayouts GetLayoutFromID (const CString &sLayoutID);
 
-        ELayouts m_iLayout;                 //  Current layout to use
+		ELayouts m_iLayout;                 //  Current layout to use
 		Keys m_iMap[256];                   //  Current mappings
 
-        Keys m_CustomMap[256];
-        bool m_bModified;                   //  TRUE if modified since we loaded
+		Keys m_CustomMap[256];
+		bool m_bModified;                   //  TRUE if modified since we loaded
 
-        static const SKeyMapEntry DEFAULT_MAP[];
-        static const int DEFAULT_MAP_COUNT;
+		static const SKeyMapEntry DEFAULT_MAP[];
+		static const int DEFAULT_MAP_COUNT;
 	};
 
 //	Game settings class -------------------------------------------------------

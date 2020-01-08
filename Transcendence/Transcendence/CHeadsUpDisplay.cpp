@@ -12,10 +12,10 @@ void CHeadsUpDisplay::CleanUp (void)
 //
 //  Release resources
 
-    {
+	{
 	for (int i = 0; i < hudCount; i++)
 		m_pHUD[i].Delete();
-    }
+	}
 
 void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 
@@ -23,7 +23,7 @@ void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 //
 //  Returns a RECT that excludes all corner HUD elements.
 
-    {
+	{
 	RECT rcRect = m_rcScreen;
 
 	for (int i = 0; i < hudCount; i++)
@@ -47,7 +47,7 @@ void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 
 	if (retrcRect)
 		*retrcRect = rcRect;
-    }
+	}
 
 bool CHeadsUpDisplay::Init (const RECT &rcRect)
 
@@ -55,39 +55,44 @@ bool CHeadsUpDisplay::Init (const RECT &rcRect)
 //
 //  Initialize
 
-    {
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return false;
+	{
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return false;
 
-    CShip *pShip = pPlayer->GetShip();
-    if (pShip == NULL)
-        return false;
+	CShip *pShip = pPlayer->GetShip();
+	if (pShip == NULL)
+		return false;
 
-    CleanUp();
-    m_rcScreen = rcRect;
+	CleanUp();
+	m_rcScreen = rcRect;
 
-    //  Initialize armor
+	//  Initialize armor
 
 	SDesignLoadCtx Ctx;
 	m_pHUD[hudArmor].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudArmor));
 	m_pHUD[hudShields].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudShields));
 	SetHUDLocation(hudArmor, rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignRight);
 
-    //  Initialize reactor
+	//  Initialize reactor
 
 	m_pHUD[hudReactor].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudReactor));
 	SetHUDLocation(hudReactor, rcRect, IHUDPainter::locAlignTop | IHUDPainter::locAlignLeft);
 
-    //  Initialize weapons
+	//  Initialize weapons
 
 	m_pHUD[hudTargeting].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudTargeting));
 	SetHUDLocation(hudTargeting, rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignLeft);
 
-    //  Success!
+	//	Other HUDs
 
-    return true;
-    }
+	m_pHUD[hudAccelerate].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudAccelerate));
+	SetHUDLocation(hudAccelerate, rcRect, IHUDPainter::locAlignTop | IHUDPainter::locAlignCenter);
+
+	//  Success!
+
+	return true;
+	}
 
 void CHeadsUpDisplay::Invalidate (EHUDTypes iHUD)
 
@@ -95,56 +100,61 @@ void CHeadsUpDisplay::Invalidate (EHUDTypes iHUD)
 //
 //  Invalidates a specific HUD. If iHUD == hudNone, then we invalidate all HUDs.
 
-    {
-    switch (iHUD)
-        {
-        case hudNone:
+	{
+	switch (iHUD)
+		{
+		case hudNone:
 			for (int i = 0; i < hudCount; i++)
 				InvalidateHUD((EHUDTypes)i);
-            break;
+			break;
 
-        case hudArmor:
-        case hudShields:
+		case hudArmor:
+		case hudShields:
 			InvalidateHUD(hudArmor);
 			InvalidateHUD(hudShields);
-            break;
+			break;
 
-        default:
-            InvalidateHUD(iHUD);
-            break;
-        }
-    }
+		default:
+			InvalidateHUD(iHUD);
+			break;
+		}
+	}
 
-void CHeadsUpDisplay::Paint (CG32bitImage &Screen, bool bInDockScreen)
+void CHeadsUpDisplay::Paint (CG32bitImage &Screen, int iTick, bool bInDockScreen)
 
 //  Paint
 //
 //  Paint
 
-    {
+	{
 	DEBUG_TRY
 
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return;
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
 
-	SHUDPaintCtx PaintCtx;
-	PaintCtx.pSource = pPlayer->GetShip();
-	PaintCtx.byOpacity = g_pUniverse->GetSFXOptions().GetHUDOpacity();
+	CSpaceObject *pSource = pPlayer->GetShip();
+	if (pSource == NULL)
+		return;
 
-    //  If we're in a dock screen, we don't always paint the HUD if we don't 
-    //  have enough room.
+	CUniverse &Universe = m_Model.GetUniverse();
+	SHUDPaintCtx PaintCtx(Universe, m_HI.GetVisuals(), *pSource);
+	PaintCtx.iTick = iTick;
+	PaintCtx.byOpacity = Universe.GetSFXOptions().GetHUDOpacity();
 
-    bool bPaintTop = true;
-    bool bPaintBottom = true;
-    if (bInDockScreen)
-        {
-        if (Screen.GetHeight() < 768)
-            bPaintBottom = false;
+	//  If we're in a dock screen, we don't always paint the HUD if we don't 
+	//  have enough room.
 
-        if (Screen.GetHeight() < 960)
-            bPaintTop = false;
-        }
+	bool bPaintTop = true;
+	bool bPaintBottom = true;
+	if (bInDockScreen)
+		{
+		if (Screen.GetHeight() < 768)
+			bPaintBottom = false;
+
+		if (Screen.GetHeight() < 960)
+			bPaintTop = false;
+		}
 
 	//	Paint
 
@@ -169,7 +179,7 @@ void CHeadsUpDisplay::Paint (CG32bitImage &Screen, bool bInDockScreen)
 		}
 
 	DEBUG_CATCH
-    }
+	}
 
 void CHeadsUpDisplay::PaintHUD (EHUDTypes iHUD, CG32bitImage &Screen, SHUDPaintCtx &PaintCtx) const
 
@@ -212,13 +222,13 @@ void CHeadsUpDisplay::SetArmorSelection (int iSelection)
 //
 //  Selects a given armor section.
 
-    {
-    if (m_iSelection != iSelection)
-        {
-        m_iSelection = iSelection;
-        Invalidate(hudArmor);
-        }
-    }
+	{
+	if (m_iSelection != iSelection)
+		{
+		m_iSelection = iSelection;
+		Invalidate(hudArmor);
+		}
+	}
 
 void CHeadsUpDisplay::Update (int iTick)
 
@@ -226,15 +236,18 @@ void CHeadsUpDisplay::Update (int iTick)
 //
 //  Update displays
 
-    {
+	{
 	DEBUG_TRY
 
-    CPlayerShipController *pPlayer = m_Model.GetPlayer();
-    if (pPlayer == NULL)
-        return;
+	CPlayerShipController *pPlayer = m_Model.GetPlayer();
+	if (pPlayer == NULL)
+		return;
 
-	SHUDUpdateCtx UpdateCtx;
-	UpdateCtx.pSource = pPlayer->GetShip();
+	CSpaceObject *pSource = pPlayer->GetShip();
+	if (pSource == NULL)
+		return;
+
+	SHUDUpdateCtx UpdateCtx(m_Model.GetUniverse(), *pSource);
 	UpdateCtx.iTick = iTick;
 
 	for (int i = 0; i < hudCount; i++)
@@ -242,4 +255,4 @@ void CHeadsUpDisplay::Update (int iTick)
 			m_pHUD[i]->Update(UpdateCtx);
 
 	DEBUG_CATCH
-    }
+	}

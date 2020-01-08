@@ -442,12 +442,12 @@ ICCItem *CPlayerShipController::FindProperty (const CString &sProperty)
 //  Returns the given property, or NULL if not found. Caller is responsible for
 //  discarding the result if not NULL.
 
-    {
+	{
 	if (strEquals(sProperty, PROPERTY_CHARACTER_CLASS))
 		return (m_pCharacterClass ? CCodeChain::CreateInteger(m_pCharacterClass->GetUNID()) : CCodeChain::CreateNil());
 	else
 		return m_Stats.FindProperty(sProperty);
-    }
+	}
 
 void CPlayerShipController::Gate (void)
 
@@ -755,7 +755,7 @@ void CPlayerShipController::InitTargetList (TargetTypes iTargetType, bool bUpdat
 		if (pObj 
 				&& pObj->CanBeHit()
 				&& !pObj->IsDestroyed()
-                && (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
+				&& (pObj->GetCategory() == CSpaceObject::catShip || pObj->GetCategory() == CSpaceObject::catStation)
 				&& !pObj->IsAttached()
 				&& pObj != m_pShip)
 			{
@@ -1098,8 +1098,8 @@ void CPlayerShipController::OnDestroyed (SDestroyCtx &Ctx)
 	CString sEpitaph;
 	g_pTrans->GetModel().OnPlayerDestroyed(Ctx, &sEpitaph);
 
-    if (m_pSession)
-        m_pSession->OnPlayerDestroyed(Ctx, sEpitaph);
+	if (m_pSession)
+		m_pSession->OnPlayerDestroyed(Ctx, sEpitaph);
 
 	DEBUG_CATCH
 	}
@@ -1205,13 +1205,13 @@ void CPlayerShipController::OnFuelConsumed (Metric rFuel, CReactorDesc::EFuelUse
 //
 //  Fuel consumed
 
-    {
+	{
 	//	We track fuel consumption (but not fuel drain, such as from pteravores).
 	//	Bioships use fuel consumption to track growth.
 
 	if (iUse == CReactorDesc::fuelConsume)
 		m_Stats.OnFuelConsumed(m_pShip, rFuel);
-    }
+	}
 
 void CPlayerShipController::OnEnterGate (CTopologyNode *pDestNode, const CString &sDestEntryPoint, CSpaceObject *pStargate, bool bAscend)
 
@@ -1524,8 +1524,8 @@ void CPlayerShipController::OnStationDestroyed (const SDestroyCtx &Ctx)
 	if (m_pTarget == Ctx.Obj)
 		{
 		SetTarget(NULL);
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
 	if (m_pAutoDamage == Ctx.Obj)
@@ -1806,8 +1806,8 @@ EManeuverTypes CPlayerShipController::GetManeuver (void)
 	{
 	if (m_ManeuverController.IsManeuverActive())
 		return m_ManeuverController.GetManeuver(m_pShip);
-    else
-	    return m_iManeuver;
+	else
+		return m_iManeuver;
 	}
 
 bool CPlayerShipController::GetThrust (void)
@@ -1975,8 +1975,8 @@ void CPlayerShipController::OnObjDestroyed (const SDestroyCtx &Ctx)
 		{
 		m_pTarget = NULL;
 		ClearFireAngle();
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
 	if (m_pDestination == Ctx.Obj)
@@ -2188,8 +2188,8 @@ void CPlayerShipController::OnWeaponStatusChanged (void)
 //	Weapon status has changed
 
 	{
-    if (m_pSession)
-        m_pSession->OnWeaponStatusChanged();
+	if (m_pSession)
+		m_pSession->OnWeaponStatusChanged();
 	}
 
 void CPlayerShipController::ReadFromStream (SLoadCtx &Ctx, CShip *pShip)
@@ -2349,8 +2349,8 @@ void CPlayerShipController::ReadyNextMissile (int iDir)
 			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("%s ready"), sVariant));
 			}
 
-        if (m_pSession)
-            m_pSession->OnWeaponStatusChanged();
+		if (m_pSession)
+			m_pSession->OnWeaponStatusChanged();
 		}
 	else
 		m_pTrans->DisplayMessage(CONSTLIT("No launcher installed"));
@@ -2412,8 +2412,8 @@ void CPlayerShipController::ReadyNextWeapon (int iDir)
 			m_pTrans->DisplayMessage(strPatternSubst(CONSTLIT("Disabled %s selected"), pNewWeapon->GetName()));
 		}
 
-    if (m_pSession)
-        m_pSession->OnWeaponStatusChanged();
+	if (m_pSession)
+		m_pSession->OnWeaponStatusChanged();
 	}
 
 void CPlayerShipController::Reset (void)
@@ -2430,8 +2430,8 @@ void CPlayerShipController::Reset (void)
 	if (m_pTarget)
 		{
 		SetTarget(NULL);
-        if (m_pSession)
-            m_pSession->OnTargetChanged(m_pTarget);
+		if (m_pSession)
+			m_pSession->OnTargetChanged(m_pTarget);
 		}
 
 	//	Clear destination
@@ -2768,7 +2768,7 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	//	Old ship stops tracking fuel (otherwise, it would run out)
 
 	pOldShip->TrackFuel(false);
-    pOldShip->TrackMass(false);
+	pOldShip->TrackMass(false);
 
 	//	Transfer cargo from the old ship to the new one
 
@@ -2851,10 +2851,10 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 	SetFireMissile(false);
 	m_bActivate = false;
 
-    //  Tell the ships that we've switched
+	//  Tell the ships that we've switched
 
-    pOldShip->FireOnPlayerLeftShip(pNewShip);
-    pNewShip->FireOnPlayerEnteredShip(pOldShip);
+	pOldShip->FireOnPlayerLeftShip(pNewShip);
+	pNewShip->FireOnPlayerEnteredShip(pOldShip);
 
 	//	Tell the model that we changed ships
 
@@ -2862,8 +2862,8 @@ ALERROR CPlayerShipController::SwitchShips (CShip *pNewShip, SPlayerChangedShips
 
 	//	Update displays
 
-    if (m_pSession)
-        m_pSession->OnPlayerChangedShips(pOldShip);
+	if (m_pSession)
+		m_pSession->OnPlayerChangedShips(pOldShip);
 
 	return NOERROR;
 	}
@@ -3030,7 +3030,7 @@ void CPlayerShipController::UpdateHelp (int iTick)
 
 		if (rSpeed > 0.9 * m_pShip->GetMaxSpeed())
 			{
-			m_pTrans->DisplayMessage(CONSTLIT("(press [A] to engage autopilot and accelerate time)"));
+			m_pTrans->DisplayMessage(CONSTLIT("(press [A] to accelerate time)"));
 			m_iLastHelpTick = iTick;
 			return;
 			}

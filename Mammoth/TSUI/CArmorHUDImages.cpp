@@ -240,9 +240,8 @@ void CArmorHUDImages::Realize (SHUDPaintCtx &Ctx)
 
 	//	Skip if we don't have a ship
 
-	CShip *pShip;
-	if (Ctx.pSource == NULL
-			|| (pShip = Ctx.pSource->AsShip()) == NULL)
+	CShip *pShip = Ctx.Source.AsShip();
+	if (pShip == NULL)
 		return;
 
 	const CVisualPalette &VI = g_pHI->GetVisuals();

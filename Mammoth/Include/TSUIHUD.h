@@ -16,34 +16,36 @@ struct SHUDPaintCtx
 		paintOverBuffer,
 		};
 
-	SHUDPaintCtx (void) :
-			pSource(NULL),
-			iMode(paintNormal),
-			byOpacity(255),
-			iSegmentSelected(-1),
-			pShieldsHUD(NULL)
+	SHUDPaintCtx (CUniverse &UniverseArg, const CVisualPalette &VIArg, CSpaceObject &SourceArg) :
+			Universe(UniverseArg),
+			VI(VIArg),
+			Source(SourceArg)
 		{ }
 
-	CSpaceObject *pSource;
-	RECT rcRect;
+	CUniverse &Universe;
+	const CVisualPalette &VI;
+	CSpaceObject &Source;
+	int iTick = 0;
+	RECT rcRect = { 0 };
 
-	EPaintModes iMode;						//	To coordinate painting to a buffer
-	BYTE byOpacity;							//	Opacity to paint with
-	int iSegmentSelected;					//	Armor segment selected
-	IHUDPainter *pShieldsHUD;				//	Armor display also paints shields
+	EPaintModes iMode = paintNormal;					//	To coordinate painting to a buffer
+	BYTE byOpacity = 255;								//	Opacity to paint with
+	int iSegmentSelected = -1;							//	Armor segment selected
+	IHUDPainter *pShieldsHUD = NULL;					//	Armor display also paints shields
 
 	TArray<CShip::SAttachedSectionInfo> SectionInfo;	//	Used during Realize
 	};
 
 struct SHUDUpdateCtx
 	{
-	SHUDUpdateCtx (void) :
-			pSource(NULL),
-			iTick(0)
+	SHUDUpdateCtx (CUniverse &UniverseArg, CSpaceObject &SourceArg) :
+			Universe(UniverseArg),
+			Source(SourceArg)
 		{ }
 
-	CSpaceObject *pSource;
-	int iTick;
+	CUniverse &Universe;
+	CSpaceObject &Source;
+	int iTick = 0;
 	};
 
 class IHUDPainter

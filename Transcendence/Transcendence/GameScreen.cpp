@@ -95,7 +95,6 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			{
 			if (GetPlayer()->GetShip()->HasAutopilot())
 				{
-				DisplayMessage(CONSTLIT("Autopilot engaged"));
 				m_bAutopilot = true;
 				}
 			else
@@ -103,10 +102,8 @@ void CTranscendenceWnd::Autopilot (bool bTurnOn)
 			}
 		else
 			{
-			DisplayMessage(CONSTLIT("Autopilot disengaged"));
 			m_bAutopilot = false;
 			}
-
 		}
 	}
 
@@ -502,7 +499,7 @@ void CTranscendenceWnd::PaintLRS (void)
 
 	//	Update the LRS every 10 ticks
 
-	if ((m_iTick % LRS_UPDATE_DELAY) == 0)
+	if ((g_pUniverse->GetFrameTicks() % LRS_UPDATE_DELAY) == 0)
 		m_LRSDisplay.Update();
 
 	//	Blt the LRS

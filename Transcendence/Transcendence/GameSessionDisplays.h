@@ -25,7 +25,7 @@ class CHeadsUpDisplay
         void GetClearHorzRect (RECT *retrcRect) const;
         bool Init (const RECT &rcRect);
         void Invalidate (EHUDTypes iHUD = hudNone);
-        void Paint (CG32bitImage &Screen, bool bInDockScreen = false);
+        void Paint (CG32bitImage &Screen, int iTick, bool bInDockScreen = false);
         void SetArmorSelection (int iSelection);
         void Update (int iTick);
 

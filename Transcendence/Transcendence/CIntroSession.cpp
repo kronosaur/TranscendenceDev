@@ -284,7 +284,7 @@ void CIntroSession::CreateIntroShips (DWORD dwNewShipClass, DWORD dwSovereign, C
 	g_pUniverse->MarkLibraryBitmaps();
 	g_pUniverse->SweepLibraryBitmaps();
 
-	g_pTrans->m_iLastShipCreated = g_pTrans->m_iTick;
+	g_pTrans->m_iLastShipCreated = g_pUniverse->GetTicks();
 
 	DEBUG_CATCH
 	}
@@ -361,8 +361,7 @@ void CIntroSession::CreateIntroSystem (void)
 
 	g_pUniverse->SetSound(false);
 
-	g_pTrans->m_iTick = 0;
-	g_pTrans->m_iLastShipCreated = g_pTrans->m_iTick;
+	g_pTrans->m_iLastShipCreated = g_pUniverse->GetTicks();
 
 	//	Initialize the system
 
@@ -1719,7 +1718,7 @@ void CIntroSession::Update (void)
 
 	//	If the same ship has been here for a while, then create a new ship
 
-	if (g_pTrans->m_iTick - g_pTrans->m_iLastShipCreated > MAX_TIME_WITH_ONE_SHIP)
+	if ((int)g_pUniverse->GetTicks() - g_pTrans->m_iLastShipCreated > MAX_TIME_WITH_ONE_SHIP)
 		{
 		CShip *pShip = g_pUniverse->GetPOV()->AsShip();
 		if (pShip)
@@ -1736,7 +1735,6 @@ void CIntroSession::Update (void)
 	if (!g_pTrans->m_bPaused)
 		{
 		g_pUniverse->Update(Ctx);
-		g_pTrans->m_iTick++;
 		}
 
 	//	Slight HACK: If the current POV is not a ship, then create a new one

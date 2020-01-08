@@ -477,8 +477,11 @@ enum EImageLibrary
 	imageDifficultyNormal =			29,
 	imageDifficultyChallenge =		30,
 	imageDifficultyPermadeath =		31,
+	imagePlay =						32,
+	imagePause =					33,
+	imageFastForward =				34,
 
-	imageCount =					32,
+	imageCount =					35,
 	};
 
 class CVisualPalette : public IFontTable

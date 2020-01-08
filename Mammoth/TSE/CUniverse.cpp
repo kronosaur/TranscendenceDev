@@ -2904,9 +2904,48 @@ CString CUniverse::TranslateEngineText(const CString &sID, ICCItem *pData) const
 	return pResult->GetStringValue();
 	}
 
-void CUniverse::Update (SSystemUpdateCtx &Ctx)
+bool CUniverse::Update (SSystemUpdateCtx &Ctx, EUpdateSpeeds iUpdateMode)
 
 //	Update
+//
+//	Updates one frame. Returns TRUE if the universe was actually updated.
+
+	{
+	m_iLastUpdateSpeed = iUpdateMode;
+
+	switch (iUpdateMode)
+		{
+		case updateAccelerated:
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+
+		case updatePaused:
+			return false;
+
+		case updateSlowMotion:
+			if ((m_dwFrame++ % 4) == 0)
+				{
+				UpdateTick(Ctx);
+				return true;
+				}
+			else
+				return false;
+
+		default:
+			UpdateTick(Ctx);
+			m_dwFrame++;
+			return true;
+		}
+	}
+
+void CUniverse::UpdateTick (SSystemUpdateCtx &Ctx)
+
+//	UpdateTick
 //
 //	Update the system of the current point of view
 

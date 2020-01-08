@@ -432,7 +432,7 @@ class CButtonBarDisplay
 		void OnMouseMove (int x, int y);
 		void Paint (CG32bitImage &Dest);
 		void SetFontTable (const SFontTable *pFonts) { m_pFonts = pFonts; }
-        void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
+		void SetRect (const RECT &rcRect) { m_rcRect = rcRect;  ComputeButtonRects();  }
 		void Update (void);
 
 	private:
@@ -691,8 +691,8 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void OnStargateSystemReady (void);
 		void PlayerEndGame (void);
 		void PlayerEnteredGate (CSystem *pSystem, 
-							    CTopologyNode *pDestNode,
-							    const CString &sDestEntryPoint);
+								CTopologyNode *pDestNode,
+								const CString &sDestEntryPoint);
 		void RedirectDisplayMessage (bool bRedirect = true);
 		void UpdateDeviceCounterDisplay (void) { m_DeviceDisplay.Invalidate(); }
 
@@ -844,7 +844,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		bool m_bPausedStep;					//	Step one frame
 		char m_chKeyDown;					//	Processed a WM_KEYDOWN (skip WM_CHAR)
 		bool m_bDockKeyDown;				//	Used to de-bounce dock key (so holding down 'D' does not select a dock action).
-		int m_iTick;
 		AGScreen *m_pCurrentScreen;
 		MenuTypes m_CurrentMenu;
 		CMenuData m_MenuData;
@@ -959,7 +958,7 @@ class CTranscendencePlayer : public IPlayerController
 		//	IPlayerController interface
 
 		virtual ICCItem *CreateGlobalRef (CCodeChain &CC) override { return CC.CreateInteger((int)m_pPlayer); }
-        virtual CPlayerGameStats *GetGameStats (void) const override { return &m_pPlayer->GetGameStats(); }
+		virtual CPlayerGameStats *GetGameStats (void) const override { return &m_pPlayer->GetGameStats(); }
 		virtual GenomeTypes GetGenome (void) const override;
 		virtual CString GetName (void) const override;
 		virtual EUIMode GetUIMode (void) const override;
@@ -991,8 +990,8 @@ class CTranscendenceModel
 		void OnPlayerTraveledThroughGate (void);
 		CDockSession &GetDockSession (void) { return m_Universe.GetDockSession(); }
 		const CDockSession &GetDockSession (void) const { return m_Universe.GetDockSession(); }
-        CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
-        const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
+		CDockScreenStack &GetScreenStack (void) { return m_Universe.GetDockSession().GetFrameStack(); }
+		const CDockScreenStack &GetScreenStack (void) const { return m_Universe.GetDockSession().GetFrameStack(); }
 		ALERROR EndGame (void);
 		ALERROR EndGame (const CString &sReason, const CString &sEpitaph, int iScoreChange = 0);
 		ALERROR EndGameClose (CString *retsError = NULL);
@@ -1007,7 +1006,7 @@ class CTranscendenceModel
 		int GetLastHighScore (void) { return m_iLastHighScore; }
 		const SFileVersionInfo &GetProgramVersion (void) const { return m_Version; }
 		void GetScreenSession (SDockFrame *retFrame);
-        CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
+		CSystemMapThumbnails &GetSystemMapThumbnails (void) { return m_SystemMapThumbnails; }
 		bool InScreenSession (void) const { return GetDockSession().InSession(); }
 		bool IsGalacticMapAvailable (CString *retsError = NULL);
 		void RecordFinalScore (const CString &sEpitaph, const CString &sEndGameReason, bool bEscaped);
@@ -1085,7 +1084,7 @@ class CTranscendenceModel
 		bool m_bForceTDB;							//	Use TDB even if XML files exist
 		bool m_bNoSound;							//	No sound
 		bool m_bNoMissionCheckpoint;				//	Do not save game on mission accept
-        bool m_bNoCollectionLoad;                   //  Do not load collection
+		bool m_bNoCollectionLoad;                   //  Do not load collection
 		bool m_bForcePermadeath;					//	Replace resurrection with final stats
 
 		CGameFile m_GameFile;
@@ -1097,8 +1096,8 @@ class CTranscendenceModel
 		CHighScoreList m_HighScoreList;
 		int m_iLastHighScore;						//	Index to last high-score
 
-        //  Caches
-        CSystemMapThumbnails m_SystemMapThumbnails;
+		//  Caches
+		CSystemMapThumbnails m_SystemMapThumbnails;
 
 		//	Temporaries
 		CDesignType *m_pResurrectType;				//	DesignType that will handle resurrect (or NULL)
@@ -1138,7 +1137,7 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 			}
 
 		CCommandLineDisplay &GetDebugConsole (void) { return m_DebugConsole; }
-        CGameSession *GetGameSession (void) { return m_pGameSession; }
+		CGameSession *GetGameSession (void) { return m_pGameSession; }
 		const CGameKeys &GetKeyMap (void) const { return m_Settings.GetKeyMap(); }
 		const CTranscendenceModel &GetModel (void) const { return m_Model; }
 		CTranscendenceModel &GetModel (void) { return m_Model; }
@@ -1218,7 +1217,7 @@ class CTranscendenceController : public IHIController, public IExtraSettingsHand
 
 		CGameSettings m_Settings;
 
-        CGameSession *m_pGameSession = NULL;	//  Keep a pointer so we can call it directly.
+		CGameSession *m_pGameSession = NULL;	//  Keep a pointer so we can call it directly.
 	};
 
 //	Utility functions

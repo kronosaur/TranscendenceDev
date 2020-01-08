@@ -90,7 +90,7 @@ SGameKeyData g_GameKeyData[CGameKeys::keyCount] =
 	{
 		{	NULL },	//	keyNone
 
-		{	"Autopilot",            "Autopilot",                    SGameKeyData::FLAG_NO_REPEAT },
+		{	"Autopilot",            "Accelerate Time",				SGameKeyData::FLAG_NO_REPEAT },
 		{	"EnableDevices",        "Enable/Disable Devices",       SGameKeyData::FLAG_NO_REPEAT },
 		{	"Communications",       "Communications",               SGameKeyData::FLAG_NO_REPEAT },
 		{	"Dock",                 "Request Dock",                 SGameKeyData::FLAG_NO_REPEAT },

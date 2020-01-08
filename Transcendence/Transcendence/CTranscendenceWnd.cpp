@@ -691,7 +691,6 @@ ALERROR CTranscendenceWnd::StartGame (void)
 	m_bAutopilot = false;
 	m_CurrentPicker = pickNone;
 	m_CurrentMenu = menuNone;
-	m_iTick = 0;
 
 	return NOERROR;
 	}

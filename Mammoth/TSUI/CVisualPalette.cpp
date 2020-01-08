@@ -162,6 +162,10 @@ static SImageInitTable IMAGE_TABLE[] =
 		{	"NormalDifficultyIcon",		"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	576,	 32,	 32, },
 		{	"ChallengeDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 64,	608,	 32,	 32, },
 		{	"PermadeathDifficultyIcon",	"JPEG_UI_ICONS",			"BMP_UI_ICONS_MASK",			 96,	608,	 32,	 32, },
+
+		{	"PlayIcon",				"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	  0,	128,	128, },
+		{	"PauseIcon",			"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	128,	128,	128, },
+		{	"FastForwardIcon",		"JPEG_UI_ICONS",				"BMP_UI_ICONS_MASK",			128,	256,	128,	128, },
 	};
 
 class CResourceImageCache

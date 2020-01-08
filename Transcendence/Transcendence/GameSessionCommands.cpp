@@ -116,7 +116,6 @@ void CGameSession::ExecuteCommand (CPlayerShipController *pPlayer, CGameKeys::Ke
 				pPlayer->SetFireMissile(false);
 				}
 			g_pHI->HICommand(CONSTLIT("gamePause"));
-			g_pTrans->DisplayMessage(CONSTLIT("Game paused"));
 			break;
 			}
 
@@ -384,7 +383,6 @@ void CGameSession::ExecuteCommandEnd (CPlayerShipController *pPlayer, CGameKeys:
 
 				g_pTrans->m_bPaused = false;
 				g_pHI->HICommand(CONSTLIT("gameUnpause"));
-				g_pTrans->DisplayMessage(CONSTLIT("Game continues"));
 				}
 			break;
 		}
