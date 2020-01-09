@@ -19,11 +19,12 @@ enum EHUDTypes
 
 	hudAccelerate =					0,
 	hudArmor =						1,
-	hudReactor =					2,
-	hudShields =					3,
-	hudTargeting =					4,
+	hudLRS =						2,
+	hudReactor =					3,
+	hudShields =					4,
+	hudTargeting =					5,
 
-	hudCount =						5,
+	hudCount =						6,
 	};
 
 class CDockScreenVisuals

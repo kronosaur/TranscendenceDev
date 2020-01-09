@@ -255,17 +255,17 @@ void CArmorHUDRingSegments::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = m_cyDisplay;
 	}
 
-ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CArmorHUDRingSegments::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
 //	Initialize from XML
 
 	{
-	m_rgbArmor = ::LoadRGBColor(pDesc->GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
+	m_rgbArmor = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(ARMOR_COLOR_ATTRIB), CG32bitPixel(255, 128, 0));
 	m_rgbArmorText = CG32bitPixel::Fade(m_rgbArmor, CG32bitPixel(255, 255, 255), 80);
 	m_rgbArmorTextBack = CG32bitPixel::Darken(m_rgbArmor, 128);
-	m_rgbShields = ::LoadRGBColor(pDesc->GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
+	m_rgbShields = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(SHIELDS_COLOR_ATTRIB), CG32bitPixel(103, 204, 0));
 	m_rgbShieldsText = CG32bitPixel::Fade(m_rgbShields, CG32bitPixel(255, 255, 255), 80);
 	m_rgbShieldsTextBack = CG32bitPixel::Darken(m_rgbShields, 128);
 
@@ -291,7 +291,7 @@ ALERROR CArmorHUDRingSegments::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pCl
 
 	m_cxMaxValue = MediumFont.MeasureText(CONSTLIT("100%"), &m_cyMaxValue);
 
-	return NOERROR;
+	return true;
 	}
 
 void CArmorHUDRingSegments::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)

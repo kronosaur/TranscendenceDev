@@ -7,6 +7,22 @@
 
 class IHUDPainter;
 
+struct SHUDCreateCtx
+	{
+	SHUDCreateCtx (CUniverse &UniverseArg, const CVisualPalette &VIArg, const CShipClass &ClassArg, const CXMLElement &DescArg) :
+			Universe(UniverseArg),
+			VI(VIArg),
+			Class(ClassArg),
+			Desc(DescArg)
+		{ }
+
+	CUniverse &Universe;
+	const CVisualPalette &VI;
+	const CShipClass &Class;
+	const CXMLElement &Desc;
+	RECT rcScreen = { 0 };
+	};
+
 struct SHUDPaintCtx
 	{
 	enum EPaintModes
@@ -66,35 +82,38 @@ class IHUDPainter
 
 		virtual ~IHUDPainter (void) { }
 
-		virtual ALERROR Bind (SDesignLoadCtx &Ctx) = 0;
 		virtual void GetBounds (int *retWidth, int *retHeight) const = 0;
 		DWORD GetLocation (void) const { return m_dwLoc; }
 		void GetPos (int *retx, int *rety) const { *retx = m_xPos; *rety = m_yPos; }
 		void GetRect (RECT *retrcRect) const;
-		virtual ALERROR InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) = 0;
 		virtual void Invalidate (void) { }
 		void Paint (CG32bitImage &Dest, SHUDPaintCtx &Ctx) { OnPaint(Dest, m_xPos, m_yPos, Ctx); }
 		void Paint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) { OnPaint(Dest, x, y, Ctx); }
-		void SetLocation (const RECT &rcRect, DWORD dwLocation);
 		void Update (SHUDUpdateCtx &Ctx) { OnUpdate(Ctx); }
 
-		static IHUDPainter *Create (SDesignLoadCtx &Ctx, CShipClass *pClass, EHUDTypes iType);
+		static IHUDPainter *Create (EHUDTypes iType, CUniverse &Universe, const CVisualPalette &VI, const CShipClass &SourceClass, const RECT &rcScreen, CString *retsError = NULL);
 
 	protected:
 
+		virtual bool OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError = NULL) = 0;
 		virtual void OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx) = 0;
 		virtual void OnUpdate (SHUDUpdateCtx &Ctx) { }
 
 		//	Helpers
 
-		ALERROR ComposeLoadError (SDesignLoadCtx &Ctx, const CString &sError) const { Ctx.sError = sError; return ERR_FAIL; }
+		bool ComposeLoadError (const CString &sError, CString *retsError = NULL) const { if (retsError) *retsError = sError; return false; }
 		void DrawModifier (CG32bitImage &Dest, int x, int y, const CString &sText, DWORD dwLocation);
 		ALERROR InitRectFromElement (CXMLElement *pItem, RECT *retRect);
+		void SetLocation (const RECT &rcRect, DWORD dwLocation);
+
+		static DWORD GetDefaultLocation (EHUDTypes iType);
 
 	private:
 		int m_xPos = 0;
 		int m_yPos = 0;
 
 		DWORD m_dwLoc = 0;
+
+		static const CXMLElement m_NullDesc;
 	};
 

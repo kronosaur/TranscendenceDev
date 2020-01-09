@@ -53,7 +53,7 @@ void CReactorHUDCircular::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = m_cyDisplay;
 	}
 
-ALERROR CReactorHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CReactorHUDCircular::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -69,11 +69,11 @@ ALERROR CReactorHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClas
 
 	//	Colors
 
-	m_rgbGaugeBack = ::LoadRGBColor(pDesc->GetAttribute(BACKGROUND_COLOR_ATTRIB), CG32bitPixel(55, 58, 64));
-	m_rgbFuelGauge = ::LoadRGBColor(pDesc->GetAttribute(FUEL_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
-	m_rgbPowerGauge = ::LoadRGBColor(pDesc->GetAttribute(POWER_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
-	m_rgbOtherPower = ::LoadRGBColor(pDesc->GetAttribute(POWER_GEN_COLOR_ATTRIB), CG32bitPixel(4, 108, 212));
-	m_rgbGaugeWarning = ::LoadRGBColor(pDesc->GetAttribute(WARNING_COLOR_ATTRIB), CG32bitPixel(211, 5, 5));
+	m_rgbGaugeBack = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(BACKGROUND_COLOR_ATTRIB), CG32bitPixel(55, 58, 64));
+	m_rgbFuelGauge = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(FUEL_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
+	m_rgbPowerGauge = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(POWER_COLOR_ATTRIB), CG32bitPixel(5, 211, 5));
+	m_rgbOtherPower = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(POWER_GEN_COLOR_ATTRIB), CG32bitPixel(4, 108, 212));
+	m_rgbGaugeWarning = ::LoadRGBColor(CreateCtx.Desc.GetAttribute(WARNING_COLOR_ATTRIB), CG32bitPixel(211, 5, 5));
 
 	//	Calculate metrics
 
@@ -86,7 +86,7 @@ ALERROR CReactorHUDCircular::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClas
 
 	//	Done
 
-	return NOERROR;
+	return true;
 	}
 
 void CReactorHUDCircular::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)

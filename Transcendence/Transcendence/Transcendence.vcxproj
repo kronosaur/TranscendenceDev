@@ -434,7 +434,6 @@
     </ClCompile>
     <ClCompile Include="CKeyboardMapSession.cpp" />
     <ClCompile Include="CLoadGameWithSignInTask.cpp" />
-    <ClCompile Include="CLRSDisplay.cpp" />
     <ClCompile Include="CManeuverController.cpp" />
     <ClCompile Include="CodeChainExtensions.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>

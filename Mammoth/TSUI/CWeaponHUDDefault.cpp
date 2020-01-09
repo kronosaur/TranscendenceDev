@@ -80,7 +80,7 @@ void CWeaponHUDDefault::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CWeaponHUDDefault::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
@@ -88,16 +88,24 @@ ALERROR CWeaponHUDDefault::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass,
 
 	{
 	ALERROR error;
+	SDesignLoadCtx Ctx;
 
 	//	Load the image
 
-	if (error = m_BackImage.InitFromXML(Ctx, 
-			pDesc->GetContentElementByTag(IMAGE_TAG)))
-		return ComposeLoadError(Ctx, ERR_WEAPON_DISPLAY_NEEDED);
+	if (CXMLElement *pImage = CreateCtx.Desc.GetContentElementByTag(IMAGE_TAG))
+		{
+		if (error = m_BackImage.InitFromXML(Ctx, pImage))
+			return ComposeLoadError(ERR_WEAPON_DISPLAY_NEEDED, retsError);
+		}
+
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
 
 	//	Done
 
-	return NOERROR;
+	return true;
 	}
 
 void CWeaponHUDDefault::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)

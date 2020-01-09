@@ -69,7 +69,7 @@ ALERROR CArmorHUDImages::Bind (SDesignLoadCtx &Ctx)
 	return NOERROR;
 	}
 
-int CArmorHUDImages::GetArmorSegment (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc) const
+int CArmorHUDImages::GetArmorSegment (SDesignLoadCtx &Ctx, const CShipClass &Class, CXMLElement *pDesc) const
 
 //	GetArmorSegment
 //
@@ -103,29 +103,28 @@ void CArmorHUDImages::GetBounds (int *retWidth, int *retHeight) const
 	*retHeight = DISPLAY_HEIGHT;
 	}
 
-ALERROR CArmorHUDImages::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, CXMLElement *pDesc)
+bool CArmorHUDImages::OnCreate (SHUDCreateCtx &CreateCtx, CString *retsError)
 
 //	InitFromXML
 //
 //	Initializes from XML
 
 	{
-	ALERROR error;
-	int i;
+	SDesignLoadCtx Ctx;
 
 	//	Loop over all sub elements
 
-	for (i = 0; i < pDesc->GetContentElementCount(); i++)
+	for (int i = 0; i < CreateCtx.Desc.GetContentElementCount(); i++)
 		{
-		CXMLElement *pSub = pDesc->GetContentElement(i);
+		CXMLElement *pSub = CreateCtx.Desc.GetContentElement(i);
 
 		if (strEquals(pSub->GetTag(), ARMOR_SECTION_TAG))
 			{
-			int iSegment = GetArmorSegment(Ctx, pClass, pSub);
+			int iSegment = GetArmorSegment(Ctx, CreateCtx.Class, pSub);
 			SArmorSegmentImageDesc &ArmorDesc = *m_Segments.SetAt(iSegment);
 
-			if (error = ArmorDesc.Image.InitFromXML(Ctx, pSub))
-				return ComposeLoadError(Ctx, ERR_ARMOR_DISPLAY_NEEDED);
+			if (ALERROR error = ArmorDesc.Image.InitFromXML(Ctx, pSub))
+				return ComposeLoadError(ERR_ARMOR_DISPLAY_NEEDED, retsError);
 
 			ArmorDesc.sName = pSub->GetAttribute(NAME_ATTRIB);
 			ArmorDesc.xDest = pSub->GetAttributeInteger(DEST_X_ATTRIB);
@@ -139,22 +138,27 @@ ALERROR CArmorHUDImages::InitFromXML (SDesignLoadCtx &Ctx, CShipClass *pClass, C
 			}
 		else if (strEquals(pSub->GetTag(), SHIP_IMAGE_TAG))
 			{
-			if (error = m_ShipImage.InitFromXML(Ctx, pSub))
-				return ComposeLoadError(Ctx, ERR_SHIP_IMAGE_NEEDED);
+			if (ALERROR error = m_ShipImage.InitFromXML(Ctx, pSub))
+				return ComposeLoadError(ERR_SHIP_IMAGE_NEEDED, retsError);
 			}
 		else
-			return ComposeLoadError(Ctx, strPatternSubst(ERR_UNKNOWN_ELEMENT, pSub->GetTag()));
+			return ComposeLoadError(strPatternSubst(ERR_UNKNOWN_ELEMENT, pSub->GetTag()), retsError);
 		}
 
 	//	Make sure we have valid data
 
-	if (m_Segments.GetCount() != pClass->GetHullSectionCount())
+	if (m_Segments.GetCount() != CreateCtx.Class.GetHullSectionCount())
 		{
-		if (pClass->GetAPIVersion() >= 29)
-			return ComposeLoadError(Ctx, ERR_INSUFFICIENT_SEGMENTS);
+		if (CreateCtx.Class.GetAPIVersion() >= 29)
+			return ComposeLoadError(ERR_INSUFFICIENT_SEGMENTS, retsError);
 		}
 
-	return NOERROR;
+	//	Bind
+
+	if (Bind(Ctx) != NOERROR)
+		return ComposeLoadError(Ctx.sError, retsError);
+
+	return true;
 	}
 
 void CArmorHUDImages::OnPaint (CG32bitImage &Dest, int x, int y, SHUDPaintCtx &Ctx)

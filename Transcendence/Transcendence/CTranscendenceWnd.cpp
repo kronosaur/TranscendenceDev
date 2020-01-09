@@ -58,7 +58,6 @@ void CTranscendenceWnd::CleanUpPlayerShip (void)
 	{
 	DEBUG_TRY
 
-	m_LRSDisplay.CleanUp();
 	m_DeviceDisplay.CleanUp();
 	m_MenuDisplay.CleanUp();
 	m_PickerDisplay.CleanUp();

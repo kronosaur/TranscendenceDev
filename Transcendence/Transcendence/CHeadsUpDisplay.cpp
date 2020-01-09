@@ -49,7 +49,22 @@ void CHeadsUpDisplay::GetClearHorzRect (RECT *retrcRect) const
 		*retrcRect = rcRect;
 	}
 
-bool CHeadsUpDisplay::Init (const RECT &rcRect)
+bool CHeadsUpDisplay::CreateHUD (EHUDTypes iHUD, const CShipClass &SourceClass, const RECT &rcScreen, CString *retsError)
+
+//	CreateHUD
+//
+//	Creates a new HUD object of the given type.
+
+	{
+	IHUDPainter *pHUD = IHUDPainter::Create(iHUD, m_Model.GetUniverse(), m_HI.GetVisuals(), SourceClass, rcScreen, retsError);
+	if (pHUD == NULL)
+		return false;
+
+	m_pHUD[iHUD].Set(pHUD);
+	return true;
+	}
+
+bool CHeadsUpDisplay::Init (const RECT &rcRect, CString *retsError)
 
 //  Init
 //
@@ -67,27 +82,13 @@ bool CHeadsUpDisplay::Init (const RECT &rcRect)
 	CleanUp();
 	m_rcScreen = rcRect;
 
-	//  Initialize armor
+	//	Create all HUD painters
 
-	SDesignLoadCtx Ctx;
-	m_pHUD[hudArmor].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudArmor));
-	m_pHUD[hudShields].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudShields));
-	SetHUDLocation(hudArmor, rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignRight);
-
-	//  Initialize reactor
-
-	m_pHUD[hudReactor].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudReactor));
-	SetHUDLocation(hudReactor, rcRect, IHUDPainter::locAlignTop | IHUDPainter::locAlignLeft);
-
-	//  Initialize weapons
-
-	m_pHUD[hudTargeting].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudTargeting));
-	SetHUDLocation(hudTargeting, rcRect, IHUDPainter::locAlignBottom | IHUDPainter::locAlignLeft);
-
-	//	Other HUDs
-
-	m_pHUD[hudAccelerate].Set(IHUDPainter::Create(Ctx, pShip->GetClass(), hudAccelerate));
-	SetHUDLocation(hudAccelerate, rcRect, IHUDPainter::locAlignTop | IHUDPainter::locAlignCenter);
+	for (int i = 0; i < hudCount; i++)
+		{
+		if (!CreateHUD((EHUDTypes)i, *pShip->GetClass(), rcRect, retsError))
+			return false;
+		}
 
 	//  Success!
 
@@ -152,7 +153,7 @@ void CHeadsUpDisplay::Paint (CG32bitImage &Screen, int iTick, bool bInDockScreen
 		if (Screen.GetHeight() < 768)
 			bPaintBottom = false;
 
-		if (Screen.GetHeight() < 960)
+		if (Screen.GetWidth() < 1920)
 			bPaintTop = false;
 		}
 

@@ -529,36 +529,6 @@ class CPlayerDisplay
 		const SFontTable *m_pFonts;
 	};
 
-class CLRSDisplay
-	{
-	public:
-		CLRSDisplay (void) :
-				m_rgbBackground(CG32bitPixel(0, 0, 0)),
-				m_pBackground(NULL),
-				m_pSnow(NULL)
-			{ }
-
-		void CleanUp (void);
-		const RECT &GetRect (void) { return m_rcRect; }
-		ALERROR Init (CPlayerShipController *pPlayer, const RECT &rcRect);
-		void Paint (CG32bitImage &Dest);
-		void SetBackgroundColor (CG32bitPixel rgbColor) { m_rgbBackground = rgbColor; }
-		void SetBackgroundImage (const CG32bitImage *pImage) { m_pBackground = pImage; }
-		void SetSnowImage (const CG32bitImage *pSnow) { m_pSnow = pSnow; }
-		void Update (void);
-
-	private:
-		CPlayerShipController *m_pPlayer;
-
-		RECT m_rcRect;
-		int m_iDiameter;					//	Diameter of scanner in pixels
-		CG32bitImage m_Buffer;
-		CG8bitImage m_Mask;
-		CG32bitPixel m_rgbBackground;
-		const CG32bitImage *m_pBackground;
-		const CG32bitImage *m_pSnow;
-	};
-
 class CCommandLineDisplay
 	{
 	public:
@@ -785,7 +755,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		void ComputeScreenSize (void);
 		void PaintDebugLines (void);
 		void PaintFrameRate (void);
-		void PaintLRS (void);
 		void PaintMainScreenBorder (CG32bitPixel rgbColor);
 		void PaintSnow (CG32bitImage &Dest, int x, int y, int cxWidth, int cyHeight);
 		void PaintSRSSnow (void);
@@ -904,7 +873,6 @@ class CTranscendenceWnd : public CUniverse::IHost, public IAniCommand
 		CG32bitImage *m_pSRSSnow;			//	SRS snow image
 
 		CDeviceCounterDisplay m_DeviceDisplay;	//	Device counter display
-		CLRSDisplay m_LRSDisplay;			//	LRS display
 		CMessageDisplay m_MessageDisplay;	//	Message display object
 		CMenuDisplay m_MenuDisplay;			//	Menu display
 		CPickerDisplay m_PickerDisplay;		//	Picker display

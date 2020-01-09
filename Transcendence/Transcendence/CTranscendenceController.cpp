@@ -590,7 +590,7 @@ ALERROR CTranscendenceController::OnBoot (char *pszCommandLine, SHIOptions *retO
 		if (m_Settings.GetBoolean(CGameSettings::force1280Res))
 			{
 			retOptions->m_cxScreenDesired = 1280;
-			retOptions->m_cyScreenDesired = 768;
+			retOptions->m_cyScreenDesired = 960;
 			}
 		else if (m_Settings.GetBoolean(CGameSettings::force1024Res))
 			{

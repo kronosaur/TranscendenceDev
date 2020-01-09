@@ -47,7 +47,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Paint various displays
 
 				SetProgramState(psPaintingLRS);
-				g_pTrans->PaintLRS();
 
 				bool bShowMapHUD = (g_pTrans->GetPlayer() && g_pTrans->GetPlayer()->IsMapHUDActive());
 				if (!m_bShowingSystemMap || bShowMapHUD)
@@ -242,14 +241,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks(), true);
 
-				//	If we have even more room, paint the LRS and reactor display
-
-				if (g_cyScreen >= 960)
-					{
-					SetProgramState(psPaintingLRS);
-					g_pTrans->PaintLRS();
-					}
-
 				//	Debug console
 
 				m_DebugConsole.Paint(Screen);
@@ -285,7 +276,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Tell the universe to paint
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
-				g_pTrans->PaintLRS();
 
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
@@ -349,7 +339,6 @@ void CGameSession::OnAnimate (CG32bitImage &Screen, bool bTopMost)
 				//	Tell the universe to paint
 
 				g_pUniverse->PaintPOV(Screen, m_rcScreen, 0);
-				g_pTrans->PaintLRS();
 
                 m_HUD.Update(g_pUniverse->GetFrameTicks());
                 m_HUD.Paint(Screen, g_pUniverse->GetFrameTicks());
