@@ -32,36 +32,6 @@
 					)
 				))
 
-			(setq intArmorEnhanceStatus (lambda (result)
-				(switch
-					(eq result 0)	;	ok
-						""
-
-					(eq result 1)	;	noEffect
-						" But it has no effect on your armor."
-
-					(eq result 2)	;	alreadyEnhanced
-						" But your armor is already enhanced."
-
-					(eq result 3)	;	degraded
-						" Your armor has weakened further."
-
-					(eq result 4)	;	defectRemoved
-						" It seems to have restored your armor."
-
-					(eq result 5)	;	enhancementRemoved
-						" Your armor has lost its enhancement."
-
-					(eq result 6)	;	enhancementReplaced
-						" Unfortunately, your armor has lost its previous enhancement."
-
-					(eq result 7)	;	improved
-						" Your armor has been further enhanced."
-
-					""
-					)
-				))
-
 			(setq intComputeBuyPrice (lambda (thisItem)
 				(objGetBuyPrice gSource thisItem)
 				))
@@ -219,36 +189,6 @@
 					)
 				))
 
-			(setq intItemEnhanceStatus (lambda (result successText itemName)
-				(switch
-					(eq result 0)
-						successText
-
-					(eq result 1)
-						"The enhancement has no effect"
-
-					(eq result 2)
-						(cat (strCapitalize itemName) " is already enhanced")
-
-					(eq result 3)
-						(cat (strCapitalize itemName) " has weakened further")
-
-					(eq result 4)
-						(cat (strCapitalize itemName) " has been repaired")
-
-					(eq result 5)
-						(cat (strCapitalize itemName) " has lost its enhancement")
-
-					(eq result 6)
-						(cat successText " (previous enhancement lost)")
-
-					(eq result 7)
-						(cat (strCapitalize itemName) " has been further enhanced")
-
-					""
-					)
-				))
-				
 			(setq intLootAllItems (lambda (theSource theDest criteria)
 				(block (lootedItems)
 					(setq lootedItems (objGetItems theSource criteria))
