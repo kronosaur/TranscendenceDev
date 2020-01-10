@@ -862,7 +862,7 @@
 	<!ENTITY rsIAVLight					"0x0010F002">
 	<!ENTITY rsIAVMedium				"0x0010F003">
 	<!ENTITY rsIAVHeavy					"0x0010F004">
-	<!ENTITY rsStKatsArcologyOld		"0x0010F005">
+	<!ENTITY rsStKatsArcology			"0x0010F005">
 	<!ENTITY rsStKatsArcologyScreen		"0x0010F006">
 	<!ENTITY rsStKatsArcologySchematic	"0x0010F007">
 	<!ENTITY rsManticore				"0x0010F008">

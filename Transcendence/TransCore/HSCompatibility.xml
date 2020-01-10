@@ -5749,7 +5749,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="45" imageY="0" imageWidth="115" imageHeight="220"/>
+		<Image imageID="&rsStKatsArcology;" imageX="45" imageY="0" imageWidth="115" imageHeight="220"/>
 
 		<DockingPorts>
 			<Port x="39"	y="60"	rotation="-159" />
@@ -5783,7 +5783,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="0" imageY="245" imageWidth="220" imageHeight="180"/>
+		<Image imageID="&rsStKatsArcology;" imageX="0" imageY="245" imageWidth="220" imageHeight="180"/>
 
 		<DockingPorts>
 			<Port x="7"		y="76"	rotation="-128" />
@@ -5817,7 +5817,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="0" imageY="500" imageWidth="220" imageHeight="115"/>
+		<Image imageID="&rsStKatsArcology;" imageX="0" imageY="500" imageWidth="220" imageHeight="115"/>
 
 		<DockingPorts>
 			<Port x="-30"	y="70"	rotation="-94" />
@@ -5851,7 +5851,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="220" imageY="500" imageWidth="220" imageHeight="115"/>
+		<Image imageID="&rsStKatsArcology;" imageX="220" imageY="500" imageWidth="220" imageHeight="115"/>
 
 		<DockingPorts>
 			<Port x="-72"	y="48"	rotation="-70" />
@@ -5885,7 +5885,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="220" imageY="245" imageWidth="220" imageHeight="180"/>
+		<Image imageID="&rsStKatsArcology;" imageX="220" imageY="245" imageWidth="220" imageHeight="180"/>
 
 		<DockingPorts>
 			<Port x="-84"	y="14"	rotation="-37" />
@@ -5919,7 +5919,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="280" imageY="0" imageWidth="115" imageHeight="220"/>
+		<Image imageID="&rsStKatsArcology;" imageX="280" imageY="0" imageWidth="115" imageHeight="220"/>
 
 		<DockingPorts>
 			<Port x="-70"	y="-29"	rotation="-6" />
@@ -5953,7 +5953,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="500" imageY="0" imageWidth="115" imageHeight="220"/>
+		<Image imageID="&rsStKatsArcology;" imageX="500" imageY="0" imageWidth="115" imageHeight="220"/>
 
 		<DockingPorts>
 			<Port x="-48"	y="-54"	rotation="21" />
@@ -5987,7 +5987,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="440" imageY="245" imageWidth="220" imageHeight="180"/>
+		<Image imageID="&rsStKatsArcology;" imageX="440" imageY="245" imageWidth="220" imageHeight="180"/>
 
 		<DockingPorts>
 			<Port x="-6"	y="-75"	rotation="56" />
@@ -6021,7 +6021,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="440" imageY="485" imageWidth="220" imageHeight="115"/>
+		<Image imageID="&rsStKatsArcology;" imageX="440" imageY="485" imageWidth="220" imageHeight="115"/>
 
 		<DockingPorts>
 			<Port x="37"	y="-73"	rotation="84" />
@@ -6055,7 +6055,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="660" imageY="485" imageWidth="220" imageHeight="115"/>
+		<Image imageID="&rsStKatsArcology;" imageX="660" imageY="485" imageWidth="220" imageHeight="115"/>
 
 		<DockingPorts>
 			<Port x="77"	y="-50"	rotation="114" />
@@ -6089,7 +6089,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="660" imageY="245" imageWidth="220" imageHeight="180"/>
+		<Image imageID="&rsStKatsArcology;" imageX="660" imageY="245" imageWidth="220" imageHeight="180"/>
 
 		<DockingPorts>
 			<Port x="85"	y="2"	rotation="146" />
@@ -6123,7 +6123,7 @@
 			inherit=			"&baStKatsArcologyBase;"
 			>
 
-		<Image imageID="&rsStKatsArcologyOld;" imageX="705" imageY="0" imageWidth="115" imageHeight="220"/>
+		<Image imageID="&rsStKatsArcology;" imageX="705" imageY="0" imageWidth="115" imageHeight="220"/>
 
 		<DockingPorts>
 			<Port x="72"	y="39"	rotation="162" />
@@ -6327,7 +6327,7 @@
 	<Image UNID="&rsWolfenGunship;"		obsoleteVersion="46" bitmap="Resources\ShipsWolfenGunship.jpg" bitmask="Resources\ShipsWolfenGunshipMask.bmp" loadOnUse="true"/>
 	<Image UNID="&rsWolfenGunshipHD;"	obsoleteVersion="46" bitmap="Resources\WolfenGunshipHD.jpg" bitmask="Resources\WolfenGunshipHDMask.bmp" loadOnUse="true"/>
 
-	<Image UNID="&rsStKatsArcologyOld;"	obsoleteVersion="49"		bitmap="Resources\StKatsArcologyOld.jpg" bitmask="Resources\StKatsArcologyOldMask.bmp"  loadOnUse="true"/>
+	<Image UNID="&rsStKatsArcology;"	obsoleteVersion="49"		bitmap="Resources\StKatsArcologyOld.jpg" bitmask="Resources\StKatsArcologyOldMask.bmp"  loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologyScreen;" obsoleteVersion="49"		bitmap="Resources\StKatsArcologyScreen.jpg" loadOnUse="true"/>
 	<Image UNID="&rsStKatsArcologySchematic;" obsoleteVersion="49"	bitmap="Resources\StKatsArcologySchematic.jpg" bitmask="Resources\StKatsArcologySchematicMask.bmp"  loadOnUse="true"/>
 
