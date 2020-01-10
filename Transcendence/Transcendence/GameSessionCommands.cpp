@@ -403,10 +403,16 @@ void CGameSession::ExecuteCommandRefresh (CPlayerShipController &Player)
 	{
 	const CGameKeys &Keys = m_Settings.GetKeyMap();
 
-	Player.SetThrust(Keys.IsKeyDown(CGameKeys::keyThrustForward));
-	Player.SetStopThrust(Keys.IsKeyDown(CGameKeys::keyStop));
-	Player.SetFireMain(Keys.IsKeyDown(CGameKeys::keyFireWeapon));
-	Player.SetFireMissile(Keys.IsKeyDown(CGameKeys::keyFireMissile));
+	//	If we've changed state due to a key press, then check to see if that key 
+	//	also maps to a command. If it does, then we ignore it for purposes of
+	//	setting state.
+
+	CGameKeys::Keys iCmdTrigger = Keys.GetGameCommand(m_HI.GetLastVirtualKey());
+
+	Player.SetThrust(Keys.IsKeyDown(CGameKeys::keyThrustForward) && iCmdTrigger != CGameKeys::keyThrustForward);
+	Player.SetStopThrust(Keys.IsKeyDown(CGameKeys::keyStop) && iCmdTrigger != CGameKeys::keyStop);
+	Player.SetFireMain(Keys.IsKeyDown(CGameKeys::keyFireWeapon) && iCmdTrigger != CGameKeys::keyFireWeapon);
+	Player.SetFireMissile(Keys.IsKeyDown(CGameKeys::keyFireMissile) && iCmdTrigger != CGameKeys::keyFireMissile);
 
 	if (Keys.IsKeyDown(CGameKeys::keyRotateLeft))
 		Player.SetManeuver(RotateLeft);

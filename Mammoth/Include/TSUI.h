@@ -733,6 +733,7 @@ class CHumanInterface
 		void Exit (void);
 		void GetCodeChainPrimitives (SPrimitiveDefTable *retTable);
 		HWND GetHWND (void) { return m_hWnd; }
+		int GetLastVirtualKey (void) const { return m_iLastVirtualKey; }
         bool GetMousePos (int *retx, int *rety) const;
 		const SHIOptions &GetOptions (void) { return m_Options; }
 		CReanimator &GetReanimator (void);
@@ -859,6 +860,7 @@ class CHumanInterface
 		bool m_bMouseMoved;					//	Mouse moved from previous OnMouseMove
         int m_xLastMousePos;
         int m_yLastMousePos;
+		int m_iLastVirtualKey = 0;
 
 		//	Sound
 		CSoundMgr m_SoundMgr;

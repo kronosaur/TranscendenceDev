@@ -191,6 +191,16 @@ CGameKeys::CGameKeys (void) :
 		m_CustomMap[i] = keyNone;
 	}
 
+CString CGameKeys::GetCommandID (Keys iCommand)
+
+//	GetCommandID
+//
+//	Returns the command ID
+
+	{
+	return CString(g_GameKeyData[iCommand].pszName, -1, true);
+	}
+
 void CGameKeys::GetCommands (TArray<SCommandKeyDesc> &Result) const
 
 //  GetCommands
@@ -393,21 +403,54 @@ CString CGameKeys::GetLayoutName (ELayouts iLayout) const
         }
     }
 
+bool CGameKeys::IsKeyMapped (int iVirtKey, Keys iCommand) const
+
+//	IsKeyMapped
+//
+//	Returns TRUE if the given virtual key maps to the given command.
+
+	{
+	for (int i = 0; i < 256; i++)
+        if (m_iMap[i] == iCommand)
+            {
+            //  If this is a non-standard key, then skip it because
+            //  we won't be able to see it in the keyboard UI.
+
+            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+                continue;
+
+            //  Found it
+
+            return true;
+            }
+
+    return false;
+	}
+
 bool CGameKeys::IsKeyDown (Keys iCommand) const
 
 //	IsKeyDown
 //
-//	Returns TRUE if the key for the given command is currently down.
+//	Returns TRUE if the key for the given command is currently down. This handles
+//	multiple keys mapped to the same command.
 
 	{
-	DWORD dwKey = GetKey(iCommand);
+	for (int i = 0; i < 256; i++)
+        if (m_iMap[i] == iCommand)
+            {
+            //  If this is a non-standard key, then skip it because
+            //  we won't be able to see it in the keyboard UI.
 
-	if (dwKey == CVirtualKeyData::INVALID_VIRT_KEY)
-		return false;
+            if (CVirtualKeyData::GetKeyFlags(i) & CVirtualKeyData::FLAG_NON_STANDARD)
+                continue;
 
-	//	NOTE: This works for mouse buttons (e.g., VK_LBUTTON).
+            //  Found it
 
-	return ::uiIsKeyDown((int)dwKey);
+            if (::uiIsKeyDown(i))
+				return true;
+            }
+
+    return false;
 	}
 
 bool CGameKeys::IsNonRepeatCommand (Keys iCommand) const

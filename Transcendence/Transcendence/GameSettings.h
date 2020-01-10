@@ -142,6 +142,7 @@ class CGameKeys
 		DWORD GetKey (Keys iCommand) const;
 		ELayouts GetLayout (void) const { return m_iLayout; }
 		CString GetLayoutName (ELayouts iLayout) const;
+		bool IsKeyMapped (int iVirtKey, Keys iCommand) const;
 		bool IsKeyDown (Keys iCommand) const;
 		bool IsModified (void) const { return m_bModified; }
 		bool IsNonRepeatCommand (Keys iCommand) const;
@@ -151,6 +152,7 @@ class CGameKeys
 		void SetLayout (ELayouts iLayout);
 		ALERROR WriteAsXML (IWriteStream *pOutput);
 
+		static CString GetCommandID (Keys iCommand);
 		static CGameKeys::Keys GetGameCommand (const CString &sCmd);
 
 	private:
