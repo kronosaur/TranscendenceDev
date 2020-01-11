@@ -331,6 +331,32 @@
 					{	test: '(if (list) 1)				result: Nil }
 					{	test: '(if nil 1)					result: Nil }
 
+					;	Map
+
+					{	test: '(map '(1 2 3 4) i i)			result: '(1 2 3 4) }
+					{	test: '(map '(1 2 3 4) i (+ i i))	result: '(2 4 6 8) }
+					{	test: '(map '(1 2 Nil 4) 'excludeNil i
+							i
+							)								result: '(1 2 4) }
+					{	test: '(map '(1.5 2.5 3.5 4) i i)	result: '(1.5 2.5 3.5 4) }
+					{	test: '(map '(1 2 3 4) 'reduceMin i
+							i
+							)								result: 1 }
+					{	test: '(map '(1 2 3 4) 'reduceMax i
+							i
+							)								result: 4 }
+					{	test: '(map '(1 2 3 4) 'reduceMin i
+							(+ i 2)
+							)								result: 3 }
+					{	test: '(map '(1 2 3 4) '(original reduceMin) i
+							(+ i 2)
+							)								result: 1 }
+					{	test: '(map '(1 2 3 4) 'reduceSum i
+							i
+							)								result: 10 }
+					{	test: '(map '(1 2.5 3 4) 'reduceSum i
+							i
+							)								result: 10.5 }
 					))
 				]]>
 			</OnGlobalStartDiagnostics>
