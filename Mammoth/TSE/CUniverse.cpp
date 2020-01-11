@@ -174,7 +174,7 @@ void CUniverse::AdjustDamage (SDamageCtx &Ctx) const
 
 	//	Otherwise, if the attacker is the player, then adjust
 
-	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer())
+	else if ((pOrderGiver = Ctx.Attacker.GetOrderGiver()) && pOrderGiver->IsPlayer() && pOrderGiver->IsAngryAt(Ctx.pObj))
 		rAdjust = m_Difficulty.GetEnemyDamageAdj();
 
 	//	Otherwise, no adjustment.
